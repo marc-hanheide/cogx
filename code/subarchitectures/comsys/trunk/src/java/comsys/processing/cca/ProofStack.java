@@ -12,6 +12,8 @@ import comsys.processing.cca.abduction.ProofUtils;
 
 public class ProofStack {
 
+	public static final int NOT_FOUND = 999;
+	
 	public ProofBlock[] blocks = null;
 	
 	public ProofStack() {
@@ -98,7 +100,7 @@ public class ProofStack {
 				return i;
 			}
 		}
-		return 999;  // ugly
+		return NOT_FOUND;  // ugly
 	}
 	
 	public ProofBlock retrieveBlockByIntention(String intentionPredSym) {

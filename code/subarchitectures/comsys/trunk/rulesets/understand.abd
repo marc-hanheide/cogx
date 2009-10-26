@@ -225,11 +225,23 @@ polarity(Nom, pos) <-
 
 %-------------------------------------------------------------------------
 
-% "good" etc
 understand : event : uttered(h, Nom) <-
+	%d_units_list(Nom, FirstNom, NextNom),
+	i : sort(Nom, 'd-units'),
+	intention : reuse_last_intention(h).
+
+%-------------------------------------------------------------------------
+
+% "good" etc
+understand : event : uttered(Ag, Nom) <-
 	i : sort(Nom, marker),
 	i : prop(Nom, Prop),
-	intention : positive_feedback(Nom) / 2.0.
+	intention : positive_feedback(Ag) / 2.0.
+
+understand : event : uttered(Ag, Nom) <-
+	i : sort(Nom, 'q-attitude'),
+	i : prop(Nom, correct),
+	intention : positive_feedback(Ag) / 2.0.
 
 %understand : event : uttered(h, Nom) <-
 %	i : sort(Nom, marker),

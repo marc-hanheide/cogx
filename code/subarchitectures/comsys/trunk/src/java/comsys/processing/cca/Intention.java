@@ -1,13 +1,14 @@
 package comsys.processing.cca;
 
+import beliefmodels.adl.Agent;
 import Abducer.ModalisedFormula;
 import Abducer.Predicate;
 
 public interface Intention {
 
-	public String getPredicateSymbol();
+	public Predicate toPredicate();
 
-	public Predicate getPredicate();
+	public Agent sourceAgent();
 
-	public boolean relatedTo(ModalisedFormula mf);
+	public ContextUpdate doUpdate(ProofStack stack);
 }
