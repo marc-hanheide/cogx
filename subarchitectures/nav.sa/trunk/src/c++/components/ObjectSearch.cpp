@@ -1084,6 +1084,8 @@ void ObjectSearch::Recognize(){
 
 	  if(m_tiltRads > 0) {
 
+	  log("now moving tilty tilty");
+
 	    //negative with tilt
 	    n= 1;
 	    while(anglediff - n*m_ptustep > -M_PI/2  && m_status != STOPPED){
@@ -1096,7 +1098,8 @@ void ObjectSearch::Recognize(){
 	      n++;
 	    }
 	  }
-	  
+
+	  n = 1;
 	  //postive with tilt
 	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
 	    m_status = 	RECOGNITIONINPROGRESS;
