@@ -76,8 +76,8 @@ public class InsertButtonListener implements ActionListener {
 					if (subcompo.getName() != null && subcompo.getName().equals("proxyID")) {
 						proxyID = ((JTextField)subcompo).getText();
 						log("Proxy ID: " + proxyID);
-						((JTextField)subcompo).setText("proxyID" + ControlPanel.proxyCount);
-						ControlPanel.proxyCount++;
+						((JTextField)subcompo).setText("proxyID" + InsertProxyWindow.proxyCount);
+						InsertProxyWindow.proxyCount++;
 					}
 					if (subcompo.getName() != null && subcompo.getName().equals("subarch")) {
 						subarch = ((JTextField)subcompo).getText();
