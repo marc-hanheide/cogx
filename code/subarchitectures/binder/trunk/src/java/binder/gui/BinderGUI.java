@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 import binder.components.BinderMonitor;
 import binder.utils.GenericUtils;
 
+import binder.gui.ProxyInfoGUI;
+
 import cast.core.logging.ComponentLogger;
 
 // import com.jgoodies.forms.layout.*;
@@ -73,7 +75,8 @@ public class BinderGUI extends JFrame {
 	}
 
 	private void menuItem11ActionPerformed(ActionEvent e) {
-		new InsertProxyWindow(bm);
+		ProxyInfoGUI proxyInfo = new ProxyInfoGUI(this);
+		proxyInfo.setVisible(true);
 	}
 
 	private void menuItem8ActionPerformed(ActionEvent e) {

@@ -69,6 +69,9 @@ public class UnionConstructor  {
 	private static Logger logger = ComponentLogger.getLogger(UnionConstructor.class);
 
 	
+	public boolean MERGE_FEATURES = false;
+	
+	
 	// the Bayesian network manager
 	BayesianNetworkManager BNManager;
 
@@ -173,7 +176,6 @@ public class UnionConstructor  {
 		Collection<Feature> featuresC = getFeatures(includedEntities);
 		Feature[] features = new Feature[featuresC.size()];
 		features = featuresC.toArray(features);
-
 		
 		// Create a new union with a new data ID
 
@@ -327,6 +329,7 @@ public class UnionConstructor  {
 	
 	private Collection<Feature> getFeatures (Vector<PerceivedEntity> includedEntities) {
 
+		if (MERGE_FEATURES) {
 		HashMap<String, Feature> features = new HashMap<String, Feature>();
 		
 		for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
@@ -353,6 +356,28 @@ public class UnionConstructor  {
 
 		}
 		return features.values();
+		}
+		else {
+			Vector<Feature> features = new Vector<Feature>();
+			
+			for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
+				PerceivedEntity prox = e.nextElement();
+				for (int i = 0; i < prox.features.length ; i++) {
+					Feature feat = new Feature();
+					feat.featlabel = prox.features[i].featlabel;
+					feat.alternativeValues = new FeatureValue[prox.features[i].alternativeValues.length];
+					for (int j =0; j < prox.features[i].alternativeValues.length ; j++) {
+						feat.alternativeValues[j] = 
+							FeatureValueUtils.cloneFeatureValue(prox.features[i].alternativeValues[j]);
+					}
+					
+					features.add(feat);
+				}
+				
+
+			}
+			return features;
+		}
 	}
 	
 	

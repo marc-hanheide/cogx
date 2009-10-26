@@ -33,7 +33,6 @@ import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.filtering.ConfigurationComparator;
 import binder.gui.BindingVisualizer;
-import binder.utils.BinderUtils;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -42,7 +41,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
-
+ 
 /**
  * Module monitoring the state of the binder working memory, and reporting
  * the evolution of its content (either textually or graphically)
