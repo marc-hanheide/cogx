@@ -9,7 +9,7 @@ include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 cast_slice2cpp(GEN_CPP GEN_HPP Video.ice ${CAST_SLICE_DIR}
     ${COGX_ROOT}/tools/math/src/slice)
 add_library(Video SHARED ${GEN_CPP})
-target_link_libraries(Video CDL  Ice IceUtil Math)
+target_link_libraries(Video CDL  ${ICE_LIBS} Math)
 install(TARGETS Video LIBRARY DESTINATION lib)
 
 
