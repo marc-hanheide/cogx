@@ -1,6 +1,8 @@
 ./subarchitectures/comsys/rulesets/understand-lib.abd
 ./subarchitectures/comsys/rulesets/understand-engagement.abd
 ./subarchitectures/comsys/rulesets/understand.abd
+./subarchitectures/comsys/rulesets/generate-lib.abd
+./subarchitectures/comsys/rulesets/generate-engagement.abd
 ./subarchitectures/comsys/rulesets/generate.abd
 ./subarchitectures/comsys/rulesets/dummy-nominals.abd
 ./subarchitectures/comsys/rulesets/cheating.abd

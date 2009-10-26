@@ -119,21 +119,21 @@ assert_prop_noint(Nom, Union, Polarity) <-
 
 %-------------------------------------------------------------------------
 
-assert_prop(RestrRef, Polarity, Nom) <-
+assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	?( k(now, attrib(r, h)) : color(RestrRef, PolarProp) ),
-	intention : assert_prop(h, RestrRef, color) / 0.5.
+	?( k(now, attrib(r, h)) : color(Union, PolarProp) ),
+	intention : assert_prop(h, Union, color) / 0.5.
 
-assert_prop(RestrRef, Polarity, Nom) <-
+assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : shape(RestrRef, PolarProp) ),
-	intention : assert_prop(h, RestrRef, shape) / 0.5.
+	intention : assert_prop(h, Union, shape) / 0.5.
 
-assert_prop(Ref, Polarity, Nom) <-
+assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, thing),
 	i : prop(Nom, Prop),
 	i : feat_Delimitation(Nom, existential),
@@ -141,8 +141,8 @@ assert_prop(Ref, Polarity, Nom) <-
 	i : feat_Quantification(Nom, specific),
 	%maybe_assert_modifier(Ref, Polarity, Nom),  % XXX explosion!!
 	polarprop(Prop, Polarity, PolarProp),
-	?( k(now, attrib(r, h)) : objecttype(Ref, PolarProp) ),
-	intention : assert_prop(h, Ref, objecttype) / 0.5.
+	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ),
+	intention : assert_prop(h, Union, objecttype) / 0.5.
 
 %-------------------------------------------------------------------------
 
