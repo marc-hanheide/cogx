@@ -771,7 +771,8 @@ public class UtterancePlanner {
      *  known, and has the feature, the method checks whether the
      *  value for that feature equals the value specified by the
      *  inquiry's "val" parameter. The answerset for this inquiry is
-     *  <tt>{true, false, unknown}</tt>. The value "unknown" is returned if the feature has no value. 
+     *  <tt>{true, false}</tt>. 
+	  *  (Removed: The value "unknown" is returned if the feature has no value.)
      */
 
     public String inqcodeQExFV (UPGInquiry inq, LogicalForm lf, UPLocus lcs) throws UPGException { 
@@ -957,6 +958,7 @@ public class UtterancePlanner {
      *  The method <i>inqcodeQExRel</i> checks whether the relation
      *  given by the "val" parameter holds at the locus nominal. The
      *  answerset for this inquiry is <tt>{true, false}</tt>.
+	  *  This checks whether the given relation occurs under the nominal.
      */
 
     public String inqcodeQExRel (UPGInquiry inq, LogicalForm lf, UPLocus lcs) throws UPGException { 

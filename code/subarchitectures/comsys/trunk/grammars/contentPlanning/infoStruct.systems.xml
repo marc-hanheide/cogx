@@ -34,8 +34,12 @@ Simple first-shot version:
       </action>   
       <action choice="proof-status-unknown">
         	<add-feature feature="ProofStatus" value="unknown" />
-      </action>     
-   </actions>
+      </action> 
+          
+      <action choice="doneRheme">
+      </action>    
+      
+    </actions>
 </system>
 
 
@@ -65,78 +69,144 @@ BUT: if quality-standalone were to be generated, this system should apply.
       <action choice="proof-status-unknown">
         	<add-feature feature="ProofStatus" value="unknown" />
       </action>   
+      <action choice="doNothing">
+      </action>   
     </actions>
 </system>
 
 <system id="rhemeAssign.color" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.inheritance.color"/> 
+   <chooser id="c-rhemeAssign.color"/> 
    <conditions>
       <condition features="@type:q-color"/> 
     </conditions>
    <actions>
-      <action choice="proof-status-assumed">
+      <action choice="m-focus-true-assumed">
         	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-asserted">
+      <action choice="m-focus-false-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
+      <action choice="m-focus-true-asserted">
         	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-unknown">
-        	<add-feature feature="ProofStatus" value="unknown" />
-      </action>   
+      <action choice="m-focus-false-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
     </actions>
 </system>
 
 <system id="rhemeAssign.size" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.inheritance.size"/> 
+   <chooser id="c-rhemeAssign.size"/> 
    <conditions>
       <condition features="@type:q-size"/> 
     </conditions>
    <actions>
-      <action choice="proof-status-assumed">
+      <action choice="m-focus-true-assumed">
         	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-asserted">
+      <action choice="m-focus-false-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
+      <action choice="m-focus-true-asserted">
         	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-unknown">
-        	<add-feature feature="ProofStatus" value="unknown" />
-      </action>   
+      <action choice="m-focus-false-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
     </actions>
 </system>
 
 <system id="rhemeAssign.shape" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.inheritance.shape"/> 
+   <chooser id="c-rhemeAssign.shape"/> 
    <conditions>
       <condition features="@type:q-shape"/> 
     </conditions>
    <actions>
-      <action choice="proof-status-assumed">
+      <action choice="m-focus-true-assumed">
         	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-asserted">
+      <action choice="m-focus-false-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
+      <action choice="m-focus-true-asserted">
         	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-unknown">
-        	<add-feature feature="ProofStatus" value="unknown" />
-      </action>   
+      <action choice="m-focus-false-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
     </actions>
 </system>
 
 <system id="rhemeAssign.ordinal" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.inheritance.ordinal"/> 
+   <chooser id="c-rhemeAssign.ordinal"/> 
    <conditions>
       <condition features="@type:number-ordinal"/> 
     </conditions>
    <actions>
-      <action choice="proof-status-assumed">
+      <action choice="m-focus-true-assumed">
         	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-asserted">
+      <action choice="m-focus-false-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
+      <action choice="m-focus-true-asserted">
         	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="proof-status-unknown">
-        	<add-feature feature="ProofStatus" value="unknown" />
-      </action>   
+      <action choice="m-focus-false-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>     
+
+    </actions>
+</system>
+
+<system id="rhemeAssign.name" region="infoStruct" metafunction="textual">
+   <chooser id="c-rhemeAssign.name"/> 
+   <conditions>
+      <condition features="@type:entity"/> <!-- really, this should be contrained to only apply to entity under compoun relation -->
+    </conditions>
+   <actions>
+      <action choice="t-focus-true-assumed">
+        	<add-feature feature="Rheme" value="t-rheme-false" />
+        	<add-feature feature="Focus" value="t-focus-true" />
+      </action>     
+      <action choice="t-focus-false-assumed">
+        	<add-feature feature="Rheme" value="t-rheme-false" />
+        	<add-feature feature="Focus" value="t-focus-false" />
+      </action>     
+
+      <action choice="t-focus-true-asserted">
+        	<add-feature feature="Rheme" value="t-rheme-true" />
+        	<add-feature feature="Focus" value="t-focus-true" />
+      </action>     
+      <action choice="t-focus-false-asserted">
+        	<add-feature feature="Rheme" value="t-rheme-true" />
+        	<add-feature feature="Focus" value="t-focus-false" />
+      </action>     
+      <action choice="doneRheme">
+      </action>
     </actions>
 </system>
 
@@ -317,26 +387,40 @@ Simplest first shot:
 */
 -->
 <system id="focus.assignment" region="infoStruct" metafunction="textual">
-   <chooser id="c-themerheme.type"/> 
+   <chooser id="c-focus.assignment"/> 
    <conditions>
       <condition features="@feat:Rheme"/>   <!-- this means either Theme or Rheme is present, which it is always -->
    </conditions>
    <actions>
 
-      <action choice="t-rheme">
+      <action choice="t-focus-true">
         	<add-feature feature="Focus" value="t-focus-true"  /> <!-- must go locally -->
       </action>   
 
-      <action choice="m-rheme">
-        	<add-feature feature="Focus" value="m-focus-true"  /> <!-- must go locally -->
+      <action choice="m-focus-true">
+        	<add-feature feature="Focus" value="m-focus-true"  /> 
       </action>   
       
-      <action choice="e-rheme">
-        	<add-feature feature="Focus" value="e-focus-true"  /> <!-- must go locally -->
+      <action choice="e-focus-true">
+        	<add-feature feature="Focus" value="e-focus-true"  /> 
       </action>         
       
+
+      <action choice="t-focus-false">
+        	<add-feature feature="Focus" value="t-focus-false"  /> 
+      </action>   
+
+      <action choice="m-focus-false">
+        	<add-feature feature="Focus" value="m-focus-false"  /> 
+      </action>   
+      
+      <action choice="e-focus-false">
+        	<add-feature feature="Focus" value="e-focus-false"  /> 
+      </action>         
+
+    
       <action choice="noRhemeFeature">
-       </action>        
+      </action>        
               
    </actions>
 </system>

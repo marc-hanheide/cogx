@@ -10,97 +10,261 @@
 <chooser id="c-proofStatus" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
-		    <f-featval feat="ProofStatus"  />
+         <inquiry id="q-deprel-type" type="string" answerset="@true @false"> 
+		    <q-deprel-type mode="Compound" />  <!-- check whether this entity is a compound-modifier -->
 		 </inquiry>			
-		 <choicenode answer = "assumed">  
-			<result val="proof-status-assumed"/>			
-		 </choicenode>
-		 <choicenode answer = "asserted">
-			<result val="proof-status-asserted"/>
-		 </choicenode>
-		 <choicenode answer = "unknown">
-			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
-            <!-- check if in ascr -->
-            
-            
+		 <choicenode answer = "true">  <!-- this entity is a compound-modifier-->
+            <result val="doNothing"/>
          </choicenode>
-	   </choicenode>
+       
+		 <choicenode answer = "false">  <!-- this entity is not a compound-modifier-->
+         <!-- check whether Rheme has already been set to avoid duplication -->
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+		    <q-ex-feat feat="Rheme"/>
+		 </inquiry>			
+            <choicenode answer = "true">
+                <result val="doneRheme"/>
+            </choicenode>
+		 <choicenode answer = "false">         
+           <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
+		      <f-featval feat="ProofStatus"  />
+		   </inquiry>			
+		   <choicenode answer = "assumed">  
+			  <result val="proof-status-assumed"/>			
+		   </choicenode>
+		   <choicenode answer = "asserted">
+			  <result val="proof-status-asserted"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">
+			  <result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+              <!-- check if in ascr -->
+           </choicenode>            
+           </choicenode>  <!-- end Rheme check -->            
+         </choicenode>  <!-- end compound check -->
+	   </choicenode>  <!-- end TOP -->
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.inheritance.color" region="infoStruct" metafunction="textual">
+<chooser id="c-rhemeAssign.color" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
 		    <f-featval feat="ProofStatus" nomvar="ENTITY4COLOR" />
 		 </inquiry>			
-		 <choicenode answer = "assumed">  
-			<result val="proof-status-assumed"/>			
-		 </choicenode>
-		 <choicenode answer = "asserted">
-			<result val="proof-status-asserted"/>
-		 </choicenode>
-		 <choicenode answer = "unknown">
-			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+		 <choicenode answer = "assumed">  <!-- color is thematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastColor" nomvar="ENTITY4COLOR" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-assumed"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-assumed"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-false-assumed"/>		<!-- Focus=false is the default in theme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end color is thematic -->
+
+		 <choicenode answer = "asserted">  <!-- color is rhematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastColor" nomvar="ENTITY4COLOR" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-asserted"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-asserted"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-true-asserted"/>		<!-- Focus=true is the default in rheme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end color is rhematic -->
+
+		 <choicenode answer = "unknown">               <!-- default -->
+			  <result val="m-focus-false-asserted"/>
          </choicenode>
-	   </choicenode>
+
+	   </choicenode>  <!-- and TOP -->
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.inheritance.size" region="infoStruct" metafunction="textual">
+<chooser id="c-rhemeAssign.size" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
 		    <f-featval feat="ProofStatus" nomvar="ENTITY4SIZE" />
 		 </inquiry>			
-		 <choicenode answer = "assumed">  
-			<result val="proof-status-assumed"/>			
-		 </choicenode>
-		 <choicenode answer = "asserted">
-			<result val="proof-status-asserted"/>
-		 </choicenode>
-		 <choicenode answer = "unknown">
-			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+		 <choicenode answer = "assumed">   <!-- sie is thematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastSize" nomvar="ENTITY4SIZE" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-assumed"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-assumed"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-false-assumed"/>		<!-- Focus=false is the default in theme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end size is thematic -->
+
+		 <choicenode answer = "asserted">  <!-- color is rhematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastColor" nomvar="ENTITY4SIZE" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-asserted"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-asserted"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-true-asserted"/>		<!-- Focus=true is the default in rheme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end size is rhematic -->
+
+		 <choicenode answer = "unknown">               <!-- default -->
+			  <result val="m-focus-false-asserted"/>
          </choicenode>
 	   </choicenode>
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.inheritance.shape" region="infoStruct" metafunction="textual">
+<chooser id="c-rhemeAssign.shape" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
 		    <f-featval feat="ProofStatus" nomvar="ENTITY4SHAPE" />
 		 </inquiry>			
-		 <choicenode answer = "assumed">  
-			<result val="proof-status-assumed"/>			
-		 </choicenode>
-		 <choicenode answer = "asserted">
-			<result val="proof-status-asserted"/>
-		 </choicenode>
-		 <choicenode answer = "unknown">
-			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+		 <choicenode answer = "assumed">  <!-- shape is thematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastShape" nomvar="ENTITY4SHAPE" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-assumed"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-assumed"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-false-assumed"/>		<!-- Focus=false is the default in theme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end shape is thematic -->
+
+		 <choicenode answer = "asserted">  <!-- shape is rhematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastColor" nomvar="ENTITY4SHAPE" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-asserted"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-asserted"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-true-asserted"/>		<!-- Focus=true is the default in rheme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end shape is rhematic -->
+
+		 <choicenode answer = "unknown">               <!-- default -->
+			  <result val="m-focus-false-asserted"/>
          </choicenode>
 	   </choicenode>
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.inheritance.ordinal" region="infoStruct" metafunction="textual">
+<chooser id="c-rhemeAssign.ordinal" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
 		    <f-featval feat="ProofStatus" nomvar="ENTITY4ORDINAL" />
 		 </inquiry>			
-		 <choicenode answer = "assumed">  
-			<result val="proof-status-assumed"/>			
-		 </choicenode>
-		 <choicenode answer = "asserted">
-			<result val="proof-status-asserted"/>
-		 </choicenode>
-		 <choicenode answer = "unknown">
-			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+		 <choicenode answer = "assumed">  <!-- number is thematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastNumberID" nomvar="ENTITY4ORDINAL" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-assumed"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-assumed"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-false-assumed"/>		<!-- Focus=false is the default in theme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end number is thematic -->
+
+		 <choicenode answer = "asserted">  <!-- number is rhematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastNumberID" nomvar="ENTITY4ORDINAL" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="m-focus-true-asserted"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="m-focus-false-asserted"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="m-focus-true-asserted"/>		<!-- Focus=true is the default in rheme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end number is rhematic -->
+
+		 <choicenode answer = "unknown">               <!-- default -->
+			  <result val="m-focus-false-asserted"/>
          </choicenode>
+	   </choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-rhemeAssign.name" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-deprel-type" type="string" answerset="@true @false"> 
+		    <q-deprel-type mode="Compound" />  <!-- check whether this entity is a compound-modifier -->
+		 </inquiry>			
+		 <choicenode answer = "false">  <!-- this entity is not a compound-modifier-->
+            <result val="doNothing"/>
+         </choicenode>
+		 <choicenode answer = "true">  <!-- this entity is a compound-modifier-->       
+         <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
+		    <f-featval feat="ProofStatus" nomvar="ENTITY4NAME" />
+		 </inquiry>			
+		 <choicenode answer = "assumed">  <!-- name is thematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastName" nomvar="ENTITY4NAME" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="t-focus-true-assumed"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="t-focus-false-assumed"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="t-focus-false-assumed"/>		<!-- Focus=false is the default in theme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end name is thematic -->
+
+		 <choicenode answer = "asserted">  <!-- name is rhematic -->
+           <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+    		    <f-featval feat="KontrastName" nomvar="ENTITY4NAME" />
+   		   </inquiry>			
+		   <choicenode answer = "true">  
+			  <result val="t-focus-true-asserted"/>			
+		   </choicenode>
+		   <choicenode answer = "false">
+			  <result val="t-focus-false-asserted"/>
+		   </choicenode>
+		   <choicenode answer = "unknown">  
+			  <result val="t-focus-true-asserted"/>		<!-- Focus=true is the default in rheme -->	
+		   </choicenode>			
+		 </choicenode>  <!-- end name is rhematic -->
+
+		 <choicenode answer = "unknown">               <!-- default -->
+			  <result val="t-focus-false-asserted"/>
+         </choicenode>
+	   </choicenode>  <!-- end compound check -->
 	   </choicenode>
    </dectree>
 </chooser>
@@ -157,6 +321,132 @@
                 <result val="hearerThOwner"/>  <!-- defaut -->
           </choicenode>
        </choicenode>
+   </dectree>
+</chooser>
+
+
+<chooser id="c-focus.assignment" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+       
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+		    <q-ex-feat feat="Focus" />  <!-- check if Focus already assigned -->
+ 		 </inquiry>	
+        <choicenode answer = "true">           <!-- is assigned -->       
+            <result val="doneFocus"/>
+        </choicenode>
+
+        <choicenode answer = "false">           <!-- is not assigned -->      
+         <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+		    <f-featval feat="Kontrast" />  <!-- check explicit Kontrast feature in input LF -->
+ 		 </inquiry>			
+            <choicenode answer = "true">           <!-- is Kontrastive -->
+                <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                <f-featval feat="Rheme"/>
+            </inquiry>			
+                <choicenode answer = "t-rheme-false">
+                    <result val="t-focus-true"/>
+                </choicenode>
+
+                    <choicenode answer = "m-rheme-false">
+                        <result val="m-focus-true"/>
+                    </choicenode>
+
+                <choicenode answer = "e-rheme-false">
+                    <result val="e-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "t-rheme-true">
+                    <result val="t-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "m-rheme-true">
+                    <result val="m-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "e-rheme-true">
+                    <result val="e-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                    <result val="noRhemeFeature"/>
+                </choicenode>
+            </choicenode> <!-- end is Kontrastive -->
+
+            <choicenode answer = "false">           <!-- is not Kontrastive -->
+                <inquiry id="f-featval" type="string" answerset=
+                                       "@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                <f-featval feat="Rheme"/>
+            </inquiry>			
+                <choicenode answer = "t-rheme-false">
+                    <result val="t-focus-false"/>
+                </choicenode>
+
+                    <choicenode answer = "m-rheme-false">
+                        <result val="m-focus-false"/>
+                    </choicenode>
+
+                <choicenode answer = "e-rheme-false">
+                    <result val="e-focus-false"/>
+                </choicenode>
+
+                <choicenode answer = "t-rheme-true">
+                    <result val="t-focus-false"/>
+                </choicenode>
+
+                <choicenode answer = "m-rheme-true">
+                    <result val="m-focus-false"/>
+                </choicenode>
+
+                <choicenode answer = "e-rheme-true">
+                    <result val="e-focus-false"/>
+                </choicenode>
+
+                <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                    <result val="noRhemeFeature"/>
+                </choicenode>
+            </choicenode> <!-- end is not Kontrastive -->
+
+            <choicenode answer = "unknown">           <!-- no Kontrast feature: do some default magic later -->
+               <!-- if modifier then no focus -->
+               <!-- if verb then no focus -->
+               <!-- if Thematic then no focus -->
+            
+                <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                <f-featval feat="Rheme"/>
+            </inquiry>			
+                <choicenode answer = "t-rheme-false">
+                    <result val="t-focus-true"/>
+                </choicenode>
+
+                    <choicenode answer = "m-rheme-false">
+                        <result val="m-focus-true"/>
+                    </choicenode>
+
+                <choicenode answer = "e-rheme-false">
+                    <result val="e-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "t-rheme-true">
+                    <result val="t-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "m-rheme-true">
+                    <result val="m-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "e-rheme-true">
+                    <result val="e-focus-true"/>
+                </choicenode>
+
+                <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                    <result val="noRhemeFeature"/>
+                </choicenode>
+            </choicenode> <!-- end no Kontrast feature -->
+
+       </choicenode> <!-- end is not assigned -->
+
+     </choicenode> <!-- end TOP -->
    </dectree>
 </chooser>
 

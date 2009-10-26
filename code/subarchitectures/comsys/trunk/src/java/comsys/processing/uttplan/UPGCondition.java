@@ -183,7 +183,8 @@ public class UPGCondition {
 			} // end check for proposition
 			
 			
-			if (feat.equals("rel")) {						// CHECKING for rel 
+			if (feat.equals("rel")) {						// CHECKING for rel:  
+																	// this probably means a check that there is the given rel under this nominal 
 				// log("The condition is a relation");
 				for (int i=0; i < locus.rels.length ; i++) {
 					// log("Checking ["+locus.rels[i].mode+"] against ["+val+"]");

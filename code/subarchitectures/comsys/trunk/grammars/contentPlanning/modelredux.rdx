@@ -23,5 +23,13 @@ QWhPropertyOther
 Modality
 ProofStatus
 BeliefStatus
+Kontrast
+KontrastColor
+KontrastSize
+KontrastShape
+KontrastNumberID
+KontrastName
+
+
 
 
