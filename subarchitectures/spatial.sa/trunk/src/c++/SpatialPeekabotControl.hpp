@@ -99,6 +99,7 @@ protected:
   int m_maxPlaceholderID;
 private:
   NavData::FNodePtr getCurrentNavNode();
+  bool m_hideGadget;
 };
 
 }; // namespace spatial
