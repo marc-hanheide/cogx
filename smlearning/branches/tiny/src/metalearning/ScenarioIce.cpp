@@ -168,6 +168,29 @@ void ScenarioIce::createFinger(JointPrx& pEffector, ArmPrx& pArm) {
 	
 }
 
+///
+///create gripper
+///
+void ScenarioIce::createGripper(JointPrx& pEffector, ArmPrx& pArm) {
+
+	// get the end-effector reference pose
+	golem::tinyice::Mat34 referencePose = pArm->getReferencePose();
+
+	const double gripperLength = 0.135;
+	const double gripperDiam = 0.02;
+	BoxShapeDesc* pGripperRodShapeDesc = new BoxShapeDescI;
+	pGripperRodShapeDesc->dimensions.v1 = gripperDiam/2.0;
+	pGripperRodShapeDesc->dimensions.v2 = gripperLength/2.0;
+	pGripperRodShapeDesc->dimensions.v3 = gripperDiam/2.0;
+	pGripperRodShapeDesc->localPose = referencePose;
+	pGripperRodShapeDesc->localPose.p.v2 += gripperLength/2.0;
+	ShapePrx pGripperRodShape = pEffector->createShape(ShapeDescPtr(pGripperRodShapeDesc));
+	// change reference pose, so the end-effector pose will be further referred to the gripper tip
+	referencePose.p.v2 += gripperLength;
+	pArm->setReferencePose(referencePose);
+	
+}
+
 
 
 ///
