@@ -138,8 +138,10 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     if (it != _config.end()) {
         m_tiltRads = -(atof(it->second.c_str()))*M_PI/180;
     }
+    
     log("Tilt pose set to: %f",m_tiltRads);
-
+    // cout<<"Tilt pose set to: "<<m_tiltRads<<endl;
+//     sleepComponent(5000);
 
     //Coverage percent treshold
     m_covthresh = 70.0;
@@ -1031,9 +1033,10 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
 void ObjectSearch::Recognize(){
 	ptz::PTZReading ptz;
 	ptz.pose.pan = 0;
-	if (m_CtrlPTU)
-		ptz::PTZReading ptz = m_PTUServer->getPose();
-		
+	if (m_CtrlPTU) {
+	  ptz::PTZReading ptz = m_PTUServer->getPose();
+	}
+
 	Cure::Pose3D currpos = m_TOPP.getPose();
 	double plantheta = m_plan.plan[whereinplan].getTheta();
 	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
@@ -1058,7 +1061,6 @@ void ObjectSearch::Recognize(){
 
 	  log("now moving extras");
 	  int n = 1;
-
 	  //postive
 	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
 	    m_status = 	RECOGNITIONINPROGRESS;
@@ -1082,9 +1084,13 @@ void ObjectSearch::Recognize(){
 	    n++;
 	  }
 
-	  if(m_tiltRads > 0) {
+	  if(m_status == STOPPED) {
+	    log("STOPPED BEFORE TILTING");
+	  }
 
-	  log("now moving tilty tilty");
+	  if(m_tiltRads != 0) {
+	    
+	    log("now moving tilty tilty");
 
 	    //negative with tilt
 	    n= 1;
@@ -1097,20 +1103,21 @@ void ObjectSearch::Recognize(){
 	      }
 	      n++;
 	    }
-	  }
+	    
 
-	  n = 1;
-	  //postive with tilt
-	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
-	    m_status = 	RECOGNITIONINPROGRESS;
-	    MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
-	    PostRecognitionCommand();
-	    while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
-	      sleepComponent(10);
+	    n = 1;
+	    //postive with tilt
+	    while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
+	      m_status = 	RECOGNITIONINPROGRESS;
+	      MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
+	      PostRecognitionCommand();
+	      while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
+		sleepComponent(10);
+	      }
+	      n++;
 	    }
-	    n++;
+	  	
 	  }
-	  	  	  	  
 	}
 	//belt up for safety
 	lockComponent();	
