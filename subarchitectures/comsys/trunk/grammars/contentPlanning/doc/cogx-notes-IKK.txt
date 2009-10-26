@@ -5,15 +5,12 @@ korbay:[~/CogX/cogx-svn/dfki] % java comsys.processing.uttplan.UPDebugger
 To do
 -------
 
-Java 1.6 problem:
-entry condition checking for @type:substance and @feat:NumberID 
-systems in delimitation and quantification entered though shouldn't be
-for now added checking in the chooser as well
-check for encoding; we use utf=8 but standard is 16, could there be something with this?
-
------
 
 InfoStruct Problems:
+
+Rheme assignment with <Name> : duplication!!!!
+
+need to make sure there is at least one focus=true!!!
 
 @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>action)
 "Sure thing"
@@ -24,11 +21,7 @@ relational-attribute modifiers (type m-location) don't get any InfoStruct feat a
 
 in compounds don't currently inherit rheme/theme from head, thus expect problem in grammar
 
-
------
-
-Insert <proofStatus> into all templates
-
+default IS will be assigned to stuff in templates
 
 -----
 
@@ -205,9 +198,18 @@ Utterance planner
 
 Oct 2009:
 
+
+Java 1.6 problem:
+entry condition checking for @type:substance and @feat:NumberID 
+systems in delimitation and quantification entered though shouldn't be
+for now added checking in the chooser as well
+check for encoding; we use utf=8 but standard is 16, could there be something with this?
+
+
 Chooser call from a system: would be useful to be able to give a locus as argument; see infoStruct.systems, how rheme assignment is done for color, shape etc. One could call the same chooser on different nominal, would be more lelegant; currently have to have different systems and call different choosers. 
 
 
+System entry condition: would be useful to constrain on the dependency relation type under which the nominal is
 
 
 
