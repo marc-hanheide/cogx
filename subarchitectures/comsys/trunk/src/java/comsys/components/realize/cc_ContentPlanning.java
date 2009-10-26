@@ -306,11 +306,11 @@ public class cc_ContentPlanning
 				String dataType = data.getType();
 				log("Execute content planning task on data item [" + dataType + "]");
 				if (data != null) {
-					log("Now try to start content planning with the goal LF");
 					// Get the input object
 					ContentPlanningGoal contentPlanningGoal = (ContentPlanningGoal) data.getData();
 					// Get the logical form
 					LogicalForm goalLF = contentPlanningGoal.lform;
+					log("Now try to start content planning with the goal LF "+LFUtils.lfToString(goalLF));
 					// Create the logical form for the goal
 					LogicalForm contentPlanLF = planner.plan(goalLF);
 					// Apply model reduction
