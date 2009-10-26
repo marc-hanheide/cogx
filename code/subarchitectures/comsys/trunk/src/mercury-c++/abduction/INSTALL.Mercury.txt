@@ -23,7 +23,7 @@ in your system.
 3) Run the following command (but only after you've read the short note
    under it):
 
-     $ ./configure --enable-libgrades=hlc.gc,hlc.gc.prof,hlc.gc.memprof,hlc.gc.tr,hlc.par.gc
+     $ ./configure --enable-libgrades=hlc.gc
 
    I also recommend using the --prefix=INSTALLPATH option to `configure'
    so that you have the installation under control. The INSTALLPATH
