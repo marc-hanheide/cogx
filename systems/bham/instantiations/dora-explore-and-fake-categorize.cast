@@ -5,7 +5,7 @@ HOST localhost
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-binder.cast
-INCLUDE includes/spatial.sa/spatial-objsearch.cast
+INCLUDE includes/spatial.sa/spatial-objsearch-no-ptu.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 # vision ######################################################################
