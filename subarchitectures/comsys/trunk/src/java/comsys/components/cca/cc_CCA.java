@@ -566,6 +566,12 @@ public class cc_CCA extends BeliefModelInterface {
 
 				int idxValueNeed = ccaEngine.stack.findTopmostBlockByIntention("need_get_value");
 				int idxValueVerify = ccaEngine.stack.findTopmostBlockByIntention("need_verify_hypothesis");
+
+				if (idxValueNeed == ProofStack.NOT_FOUND && idxValueVerify == ProofStack.NOT_FOUND) {
+					cu.beliefs = new Belief[0];
+					cu.intention = PredicateFactory.predicate("not_understood", new Term[] {PredicateFactory.term("r")});
+					return cu;
+				}
 				
 				ProofBlock related = null;
 				if (idxValueNeed < idxValueVerify) {

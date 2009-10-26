@@ -365,3 +365,17 @@ generate : intention : not_understood(Ag) <-
 %			i : sort(QualityNom, quality) / 1.0,
 %			i : prop(QualityNom, color) / 1.0,
 %			i : feat_Questioned(QualityNom, true) / 1.0.
+
+%-------------------------------------------------------------------------
+
+generate : intention : reuse_last_intention(h) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'I_do_not_know_what_you_mean') / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%-------------------------------------------------------------------------
+
+generate : intention : positive_feedback(h) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'Thank_you') / 1.0,
+	event : produce(r, Nom) / 1.0.
