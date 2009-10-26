@@ -49,6 +49,15 @@ else
 GRADE?=asm_fast.gc
 endif
 
+ifeq ($(origin ICE_HOME), undefined)
+$(info )
+$(info Please set the environment variable ICE_HOME to the root of your Ice)
+$(info installation.)
+$(info e.g. export ICE_HOME=/opt/local)
+$(info )
+$(error ICE_HOME undefined)
+endif
+
 # on BSD, without deactivating suffix rules, any "non-suffixed"
 # target would be matched by some sort of default rule (using
 # $(CC)), not by our rule.
