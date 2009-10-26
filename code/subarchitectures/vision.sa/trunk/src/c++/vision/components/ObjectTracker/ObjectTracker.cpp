@@ -246,12 +246,13 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
   
+/*
   log("**    ObjectTracker by Thomas Moerwald    **");
   log("**       moerwald@acin.tuwien.ac.at       **");
   log("**                                        **");
   log("** please lookup the README file in the   **");
   log("** component directory for usage          **");
- 
+ */
   if((it = _config.find("--videoname")) != _config.end())
   {
     videoServerName = it->second;
