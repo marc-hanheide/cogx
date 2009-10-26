@@ -104,6 +104,10 @@ enum ObjSearchCommand {
     
     SearchPlan m_plan;
 	double m_pan;
+
+
+    //what tilt to try the detection at
+    double m_tiltRads;
     double m_vpthreshold;
     // fill in the blanks
     //SearchPlan m_searchplan;
@@ -111,7 +115,7 @@ enum ObjSearchCommand {
     
     std::vector<std::vector<int> > ViewConePts;
     std::vector<Cure::Pose3D> candidatePoses;
-    void MovePanTilt(double pan,double tolerance = 0.08);
+    void MovePanTilt(double pan,double tilt,double tolerance = 0.08);
 	void Recognize(); //30 degrees
     void Plan ();
     void ExecutePlan();
