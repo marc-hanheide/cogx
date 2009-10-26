@@ -75,6 +75,8 @@ static void DrawCorners()
     CvScalar col = (display_text == TEXT_WHITE ? cvScalar(255, 255, 255) :
         cvScalar(0, 0, 0));
     cvPutText(display, str.str().c_str(), cvPoint(10, 30), &font, col);
+    cvPutText(display, "start top left, go clockwise", cvPoint(10, 55),
+        &font, col);
   }
 }
 
@@ -111,13 +113,15 @@ int main(int argc, char **argv)
   {
     printf("Load an image foo.jpg and click on the four corners of a ROI.\n"
            "ROI corners are saved in clicked order in foo.jpg.roi\n"
+           "NOTE: for the FERNS detector it is important to start with the\n"
+           "TOP LEFT corner and then click CLOCKWISE!\n"
            "usage: %s <image>\n"
            "  image .. image file, any format\n",
            argv[0]);
     exit(EXIT_FAILURE);
   }
 
-  printf("left-click to add corners\n"
+  printf("left-click to add corners, start TOP LEFT and go CLOCKWISE\n"
          "hot keys:\n"
          "  r .. reset corners\n"
          "  s .. save ROI to imagename.roi\n"
@@ -127,7 +131,7 @@ int main(int argc, char **argv)
   img = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
   if(img == 0)
   {
-    printf("failed to load image '%s'", argv[1]);
+    printf("failed to load image '%s'\n", argv[1]);
     exit(EXIT_FAILURE);
   }
   display = cvCloneImage(img);
