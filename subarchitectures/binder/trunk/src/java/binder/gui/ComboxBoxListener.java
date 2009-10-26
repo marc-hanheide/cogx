@@ -30,8 +30,11 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -42,7 +45,7 @@ import cast.core.logging.ComponentLogger;
 
 public class ComboxBoxListener implements ActionListener {
 	
-	ControlPanel controlPanel;
+	InsertProxyWindow insertProxyWindow;
 	
 	int nbFeatureBoxesShown = 0;
 	int nbFeatureValuesBoxesShown = 0;
@@ -51,12 +54,12 @@ public class ComboxBoxListener implements ActionListener {
 	HashMap<Integer,Vector<JPanel>> curFeatureValuePanels;
 	
 	
-	public boolean LOGGING = false;
+	public boolean LOGGING = true;
 	private static Logger logger = ComponentLogger.getLogger(ComboxBoxListener.class);
 
 	
-	public ComboxBoxListener(ControlPanel controlPanel) {
-		this.controlPanel = controlPanel;
+	public ComboxBoxListener(InsertProxyWindow insertProxyWindow) {
+		this.insertProxyWindow = insertProxyWindow;
 		curFeaturePanels = new Vector<JPanel>();
 		curFeatureValuePanels = new HashMap<Integer,Vector<JPanel>>();
 		
@@ -72,7 +75,7 @@ public class ComboxBoxListener implements ActionListener {
         
         for (Enumeration<JPanel> e = curFeaturePanels.elements(); e.hasMoreElements(); ) {
         	JPanel prevFeatPanel = e.nextElement();
-        	controlPanel.proxyPanel.remove(prevFeatPanel);
+        	insertProxyWindow.proxyPanel.remove(prevFeatPanel);
         	
         }
         curFeaturePanels.removeAllElements();
@@ -82,7 +85,7 @@ public class ComboxBoxListener implements ActionListener {
     		JPanel freespacePanel = new JPanel();
     		JLabel freespace = new JLabel(" ");
     		freespacePanel.add(freespace);
-    		controlPanel.proxyPanel.add(freespacePanel);
+    		insertProxyWindow.proxyPanel.add(freespacePanel);
       		curFeaturePanels.add(freespacePanel); 
       		
       		JPanel featurePanel = new JPanel();
@@ -123,7 +126,7 @@ public class ComboxBoxListener implements ActionListener {
    			featurePanel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(5,5,5,5)));
    			featurePanel.setName("feature"+i);
       		
-   			controlPanel.proxyPanel.add(featurePanel);
+   			insertProxyWindow.proxyPanel.add(featurePanel);
       		curFeaturePanels.add(featurePanel);
       	}
 
@@ -202,12 +205,15 @@ public class ComboxBoxListener implements ActionListener {
        		}
        	}
        	
+    	
+		insertProxyWindow.proxyPanel.remove(insertProxyWindow.buttonPanel);
+       	insertProxyWindow.proxyPanel.add(insertProxyWindow.buttonPanel);
 
-       	controlPanel.proxyPanel.remove(controlPanel.buttonPanel);
-       	controlPanel.proxyPanel.add(controlPanel.buttonPanel);
-     
-       	controlPanel.validate();
-       	controlPanel.repaint();
+
+       	insertProxyWindow.validate();
+       	insertProxyWindow.repaint();
+       	
+
 	}
 
 

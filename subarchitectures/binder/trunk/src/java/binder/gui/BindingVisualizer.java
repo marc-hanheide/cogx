@@ -1,25 +1,11 @@
-// =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
-//                                                                                                                          
-// This library is free software; you can redistribute it and/or                                                            
-// modify it under the terms of the GNU Lesser General Public License                                                       
-// as published by the Free Software Foundation; either version 2.1 of                                                      
-// the License, or (at your option) any later version.                                                                      
-//                                                                                                                          
-// This library is distributed in the hope that it will be useful, but                                                      
-// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
-// Lesser General Public License for more details.                                                                          
-//                                                                                                                          
-// You should have received a copy of the GNU Lesser General Public                                                         
-// License along with this program; if not, write to the Free Software                                                      
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
-// 02111-1307, USA.                                                                                                         
-// =================================================================                                                        
-
 package binder.gui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,38 +16,43 @@ import javax.swing.JFrame;
 
 import org.apache.log4j.Logger;
 
-
 import binder.abstr.BindingPredictor;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
+import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
-import binder.autogen.core.Union;
+import binder.components.BinderMonitor;
 import binder.utils.FeatureValueUtils;
 import binder.utils.GenericUtils;
-import binder.components.BinderMonitor;
 
 import cast.cdl.CASTTime;
 import cast.core.logging.ComponentLogger;
 
+import com.mxgraph.model.mxGraphModel.mxValueChange;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
+import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.view.mxGraph;
 
 
-// TODO: document this GUI class !!
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.swing.handler.mxKeyboardHandler;
+import com.mxgraph.swing.handler.mxRubberband;
+import com.mxgraph.util.mxEvent;
+import com.mxgraph.util.mxEventObject;
+import com.mxgraph.util.mxUtils;
+import com.mxgraph.util.mxEventSource.mxIEventListener;
+import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxMultiplicity;
 
-// TODO: integrate Graph Layout into the GUI
+public class BindingVisualizer {
 
-// TODO: possibility to modify the cross-modal content in the binder on the fly, using the GUI
-
-public class BinderMonitorGUI extends JFrame
-{
 
 	// No idea what that is
 	private static final long serialVersionUID = 1L;
@@ -75,6 +66,8 @@ public class BinderMonitorGUI extends JFrame
 
 	mxGraph graph;
 	Object parent;
+	
+	BinderGUI frame;
 
 	int curProxyPosition_X= 50;
 	int curProxyPosition_Y = 500;	
@@ -82,14 +75,11 @@ public class BinderMonitorGUI extends JFrame
 	int curUnionPosition_X = 120;
 	int curUnionPosition_Y= 150;
 	
-	ControlPanel controlPanel;
 	BinderMonitor bm;
-	
-	WestArrowPanel arrowPanel;
-	
-	public boolean LOGGING = false;
+		
+	public boolean LOGGING = true;
 
-	private static Logger logger = ComponentLogger.getLogger(BinderMonitorGUI.class);
+	private static Logger logger = ComponentLogger.getLogger(BindingVisualizer.class);
 
 	
 	HashMap<String,Object> insertedProxies;
@@ -99,25 +89,53 @@ public class BinderMonitorGUI extends JFrame
 	
 	Vector<RelationUnion> relationUnions;
 	
+	
+	mxIEventListener listener;
+	
 
-	public BinderMonitorGUI(BinderMonitor bm) {
-		this.bm = bm;
+	public BindingVisualizer(BinderMonitor bm) {
+		this.bm = bm; 
+		this.frame = new BinderGUI(bm);
 		init();
 	}
 
 
-	public void init(){		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setTitle("Binder GUI");		
-		setSize(1000, 700);
 
-		controlPanel = new ControlPanel(bm);
-		getContentPane().add(controlPanel, BorderLayout.LINE_END);
+	
+	public void selection () {
+		log("WHOOOWOO OBJECT SELECTED!");
+		String curSelectedEntity = "";
 		
-		arrowPanel = new WestArrowPanel(bm);
-		getContentPane().add(arrowPanel, BorderLayout.LINE_START);
+		Object selected = graph.getSelectionCell();
+		if (selected != null) {
+		log(selected.toString());
+		for (Iterator<String> ids = insertedProxies.keySet().iterator(); ids.hasNext();) {
+			String curId = ids.next();
+			Object curObj = insertedProxies.get(curId);
+			if (curObj.equals(selected)) {
+				log("FOUND: " + curId);
+				curSelectedEntity = curId;
+			}
+		}
+		
+		}
+		frame.setCurSelectedEntity(curSelectedEntity);
+	}
+	
+	public void init(){		
 
 		graph = new mxGraph();
+		
+		listener = new mxIEventListener()
+		{
+			public void invoke(Object sender, mxEventObject evt)
+			{
+				selection();
+			}
+		};
+		
+		graph.getSelectionModel().addListener(mxEvent.CHANGE, listener);
+		
 		parent = graph.getDefaultParent();
 		
 		insertedProxies = new HashMap<String, Object>();
@@ -126,8 +144,6 @@ public class BinderMonitorGUI extends JFrame
 		insertedObjects = new Vector<Object>();
 		
 		relationUnions = new Vector<RelationUnion>();
-		
-		setVisible(true);
 	}
 	
 	
@@ -502,6 +518,8 @@ public class BinderMonitorGUI extends JFrame
 	
 	public void updateGUI (Proxy updatedProxy) {
 
+	//	graph.getModel().removeListener(listener);
+
 		try {
 
 			graph.getModel().beginUpdate();
@@ -518,71 +536,164 @@ public class BinderMonitorGUI extends JFrame
 		try {
 			mxGraphComponent graphComponent = new mxGraphComponent(graph);
 			// getContentPane().removeAll();
-			getContentPane().add(graphComponent);
-			setVisible(true);
+			frame.getContentPane().add(graphComponent);
+			frame.setVisible(true);
 		}
 		catch (Exception e) {		}
-	}
-
-	
-	
-	
-	public void addNewRelationProxy (RelationProxy relationProxy, int xpos) {
 		
-		String colour = "#FFFF99";
-		addNewProxy(relationProxy, xpos, Math.abs(curProxyPosition_Y + 200), colour);
+//		graph.getModel().addListener(mxEvent.SELECT, listener);
 
-		Object vertex = insertedProxies.get(relationProxy.entityID);
-		insertSourceAndTargetEdges(relationProxy, vertex);
-		log("OK FOR RELATION PROXY");
 	}
 
 	
-	public void addNewPhantomProxy (PhantomProxy phantomProxy, int xpos) {
-		
-		String colour = "#FFE4C4";
-		addNewProxy(phantomProxy, xpos, curProxyPosition_Y, colour);
 
-		log("OK FOR PHANTOM PROXY");
-	}
-	
-	
-	public void addNewFeatures(Feature[] features, Object vertex, int width, String colour) {
-
-		if (features != null) {
-
-			Object[] objects_feats = new Object[features.length];
-
-			int curYPosition = DEFAULT_ENTITY_BOX_HEIGHT;
-			for (int i = 0; i < features.length; i++) {
-				Feature feat = features[i];
-				
+	 public void updateGUI(Vector<Proxy> newProxies, 
+			Vector<Union> newUnions, 
+			Vector<Proxy> proxiesToDelete, 
+			Vector<Union> unionsToDelete, UnionConfiguration config) {
+		 	
+//		 graph.getModel().removeListener(listener);
+		 
+		try {
+			graph.getModel().beginUpdate();
 			
-		//		if (!FeatureValueUtils.hasUnknownValue(FeatureValueUtils.getMaxFeatureValue(feat))) {
-
-					String featureText = createFeatureText(feat);
-					log("feature text for " + i + ": " + featureText);
-					int featHeight= computeHeight(feat);
-					objects_feats[i] = graph.insertVertex(vertex, null, featureText, 6, curYPosition, width - 20, featHeight);
-					curYPosition += featHeight + 10;
-					insertedObjects.add(objects_feats[i]);
-		//		}
+			for (Enumeration<Proxy> e = proxiesToDelete.elements(); e.hasMoreElements();) {
+				Proxy proxy = e.nextElement();
+					deleteProxy(proxy);
+					log("Proxy deleted");
 			}
+						
+			for (Enumeration<Union> e = unionsToDelete.elements(); e.hasMoreElements();) {
+				Union union = e.nextElement();
+					deleteUnion(union);
+					log("Union deleted");
+			}
+			
+			boolean mustRegenerateRelationUnions = false;
+			for (Enumeration<Union> e = newUnions.elements(); e.hasMoreElements();) {
+				Union union = e.nextElement();
+				if (!insertedUnions.containsKey(union.entityID)) {
+					log("Adding new union..." + union.entityID);
+					
+					addNewUnionAndIncludedProxies(union);
+				}
+			}
+			
+			// UNSTABLE ?? TESTING!
+			for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
+				Proxy proxy = e.nextElement();
+				if (!insertedProxies.containsKey(proxy.entityID)) {
+					log("Adding new proxy..." + proxy.entityID);
+					
+					addNewProxy(proxy);
+				}
+			}
+		
+			if (mustRegenerateRelationUnions) {
+			for (Enumeration<RelationUnion> e = relationUnions.elements(); e.hasMoreElements();) {
+				RelationUnion ru = e.nextElement();
+				deleteUnion(ru);
+				addNewRelationUnion(ru);
+			}
+			}
+		
+		}
+		
+		catch (Exception e) {	
+			e.printStackTrace();
+		}
 
-			graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, colour, objects_feats);
-			graph.setCellStyles(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT, objects_feats);
-			graph.setCellStyles(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE, objects_feats);
-			graph.setCellStyles(mxConstants.STYLE_FONTFAMILY, "Monaco", objects_feats);
-			graph.setCellStyles(mxConstants.STYLE_SHADOW, "false", objects_feats);
-			graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "8", objects_feats);
-		}		
+		finally
+		{
+			int rank = bm.alternativeConfigs.alterconfigs.length -
+							GenericUtils.getIndex(bm.alternativeConfigs.alterconfigs, config);
+			Object configinfo = graph.insertVertex(parent, null, "\n Union configuration: \n Prob:  " +
+					roundProb((float)config.configProb) + "\n Rank: " + rank + 
+					" (out of " + bm.alternativeConfigs.alterconfigs.length + ")", 10 , 10, 150, 80);
+			Object[] configinfos = new Object[1];
+			configinfos[0] = configinfo;
+			graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, "white", configinfos);
+			graph.setCellStyles(mxConstants.STYLE_ROUNDED, "false", configinfos);
+			graph.setCellStyles(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT, configinfos);
+			graph.setCellStyles(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP, configinfos);
+			graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", configinfos);
+			graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "14", configinfos);
+			
+			graph.getModel().endUpdate();
+		}
 
-		log("Visual representation of features sucessfully inserted");
+		try {
+		mxGraphComponent graphComponent = new mxGraphComponent(graph);
+		frame.getContentPane().removeAll();
+		frame.getContentPane().add(graphComponent);
+		frame.setVisible(true);
+		}
+		catch (Exception e) {	
+			e.printStackTrace();
+		}
+		
+//		graph.getModel().addListener(mxEvent.SELECT, listener);
+
 	}
+	
 
-	private void log(String s) {
-		if (LOGGING)
-			logger.debug("[BinderMonitorGUI]" + s);
-	}
+		public void addNewRelationProxy (RelationProxy relationProxy, int xpos) {
+			
+			String colour = "#FFFF99";
+			addNewProxy(relationProxy, xpos, Math.abs(curProxyPosition_Y + 200), colour);
+
+			Object vertex = insertedProxies.get(relationProxy.entityID);
+			insertSourceAndTargetEdges(relationProxy, vertex);
+			log("OK FOR RELATION PROXY");
+		}
+
+		
+		public void addNewPhantomProxy (PhantomProxy phantomProxy, int xpos) {
+			
+			String colour = "#FFE4C4";
+			addNewProxy(phantomProxy, xpos, curProxyPosition_Y, colour);
+
+			log("OK FOR PHANTOM PROXY");
+		}
+		
+		
+		public void addNewFeatures(Feature[] features, Object vertex, int width, String colour) {
+
+			if (features != null) {
+
+				Object[] objects_feats = new Object[features.length];
+
+				int curYPosition = DEFAULT_ENTITY_BOX_HEIGHT;
+				for (int i = 0; i < features.length; i++) {
+					Feature feat = features[i];
+					
+				
+			//		if (!FeatureValueUtils.hasUnknownValue(FeatureValueUtils.getMaxFeatureValue(feat))) {
+
+						String featureText = createFeatureText(feat);
+						log("feature text for " + i + ": " + featureText);
+						int featHeight= computeHeight(feat);
+						objects_feats[i] = graph.insertVertex(vertex, null, featureText, 6, curYPosition, width - 20, featHeight);
+						curYPosition += featHeight + 10;
+						insertedObjects.add(objects_feats[i]);
+			//		}
+				}
+
+				graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, colour, objects_feats);
+				graph.setCellStyles(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT, objects_feats);
+				graph.setCellStyles(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE, objects_feats);
+				graph.setCellStyles(mxConstants.STYLE_FONTFAMILY, "Monaco", objects_feats);
+				graph.setCellStyles(mxConstants.STYLE_SHADOW, "false", objects_feats);
+				graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "8", objects_feats);
+			}		
+
+			log("Visual representation of features sucessfully inserted");
+		}
+
+		private void log(String s) {
+			if (LOGGING) {
+		//		System.out.println("[BindingVisualizer]" + s);
+				logger.debug("[BindingVisualizer]" + s);
+			}
+		}
 }
-
