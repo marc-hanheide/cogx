@@ -1,20 +1,3 @@
-% h: hi robot
-understand : event : uttered(h, Nom) <-
-	i : sort(Nom, 'd-units'),
-	i : prop(Nom, list),
-	i : rel_First(Nom, FirstNom),
-		i : sort(FirstNom, greeting),
-		i : prop(FirstNom, GreetProp),
-	i : rel_Next(Nom, NextNom),
-		i : sort(NextNom, animate),
-		i : prop(NextNom, Robot),
-	intention : greeting(h, r) / 0.1.
-
-understand : event : uttered(h, Nom) <-
-	i : sort(Nom, greeting),
-	i : prop(Nom, GreetProp),
-	intention : greeting(h, r) / 0.5.
-
 %event : clarify(h, CR) <-
 %	i : cr_modality(CR, vision),
 %	i : cr_entity(CR, Entity),
@@ -226,22 +209,20 @@ polarity(Nom, pos) <-
 %-------------------------------------------------------------------------
 
 understand : event : uttered(h, Nom) <-
-	%d_units_list(Nom, FirstNom, NextNom),
-	i : sort(Nom, 'd-units'),
-	intention : reuse_last_intention(h).
+	d_units_list(Nom, FirstNom, NextNom),
+	i : sort(FirstNom, marker),
+	i : prop(FirstNom, and),
+	object_id(NextNom, ObjectId),
+	intention : reuse_last_intention(h, ObjectId) / 10.0.
+
+object_id(Nom, Id) <-
+	d_units_list(Nom, FirstNom, NextNom),
+	att : refers_to(FirstNom, Id) / reference_resolution.
+
+object_id(Nom, Id) <-
+	att : refers_to(Nom, Id) / reference_resolution.
 
 %-------------------------------------------------------------------------
-
-% "good" etc
-understand : event : uttered(Ag, Nom) <-
-	i : sort(Nom, marker),
-	i : prop(Nom, Prop),
-	intention : positive_feedback(Ag) / 2.0.
-
-understand : event : uttered(Ag, Nom) <-
-	i : sort(Nom, 'q-attitude'),
-	i : prop(Nom, correct),
-	intention : positive_feedback(Ag) / 2.0.
 
 %understand : event : uttered(h, Nom) <-
 %	i : sort(Nom, marker),
@@ -365,3 +346,4 @@ maybe_assert_modifier(Ref, Polarity, Nom) <-
 
 polarprop(Prop, pos, Prop).
 polarprop(Prop, neg, not(Prop)).
+
