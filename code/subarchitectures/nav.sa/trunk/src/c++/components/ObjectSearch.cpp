@@ -314,24 +314,48 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
       m_PTUServer->setPose(p);
       bool run = true;
       ptuPose = m_PTUServer->getPose();
-      double actualpose = ptuPose.pose.pan;
+      double actualpan = ptuPose.pose.pan;
+      double actualtilt = ptuPose.pose.tilt;
+
       while(run){
-	m_PTUServer->setPose(p);
+	//m_PTUServer->setPose(p);
 	ptuPose = m_PTUServer->getPose();
-	actualpose = ptuPose.pose.pan;
-	log("actualpose is: %f", actualpose);
-	if (pan > actualpose){
-	  if (actualpose > abs(pan) - tolerance){
-	    log("false actualpose is: %f, %f", actualpose, abs(pan) + tolerance);
+	actualpan = ptuPose.pose.pan;
+	actualtilt = ptuPose.pose.tilt;
+
+	log("actualpan is: %f", actualpan);
+
+	
+	if (pan > actualpan){
+	  if (actualpan > abs(pan) - tolerance){
+	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
 	    run = false;
 	  }
 	}
-	if (actualpose > pan){
-	  if (actualpose < abs(pan) + tolerance)
+	else if (actualpan > pan){
+	  if (actualpan < abs(pan) + tolerance)
 	    run = false;
 	}
-	if(pan == actualpose)
+	else if(pan == actualpan) {
 	  run = false;
+	}
+
+
+	if (tilt > actualtilt){
+	  if (actualtilt > abs(tilt) - tolerance){
+	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);
+	    run = false;
+	  }
+	}
+	else if (actualtilt > tilt){
+	  if (actualtilt < abs(tilt) + tolerance)
+	    run = false;
+	}
+	else if(tilt == actualtilt) {
+	  run = false;
+	}
+
+
 	
 	usleep(10000);
       }
