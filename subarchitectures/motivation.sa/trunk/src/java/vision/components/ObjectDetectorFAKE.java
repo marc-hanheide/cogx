@@ -3,6 +3,8 @@ package vision.components;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
+
 import VisionData.DetectionCommand;
 import VisionData.Face;
 import VisionData.GeometryModel;
@@ -63,6 +65,21 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 		DetectionCommand dc = getMemoryEntry(_arg0.address,
 				DetectionCommand.class);
 
+		// NEW CODE
+		// ask the user for a selection (added: hz, 2009-10-26)
+		String objectLabel = (String) JOptionPane.showInputDialog(
+				null, null, "Select an object to recognize", 
+				JOptionPane.PLAIN_MESSAGE, null, dc.labels, null);  
+		
+		VisualObject vobj = newVisualObject();
+
+		vobj.detectionConfidence = getConfidenceForLabel(objectLabel);
+		vobj.label = objectLabel;
+		addToWorkingMemory(newDataID(), vobj);
+		
+		if (true) return;
+		
+		// OLD CODE
 		// because vision is never this quick...
 		sleepComponent(100);
 
