@@ -192,6 +192,7 @@
 <http://dora.cogx.eu#Suncream> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Sunroom> .
 <http://dora.cogx.eu#Tableware> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Dining_room> .
 <http://dora.cogx.eu#Tea> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
+<http://dora.cogx.eu#Teabox> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
 <http://dora.cogx.eu#Toaster> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Utility_room> .
 <http://dora.cogx.eu#Toaster> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
 <http://dora.cogx.eu#Toy_car> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Game_room> .
