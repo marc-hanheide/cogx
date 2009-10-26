@@ -1,9 +1,3 @@
-% hi
-generate : intention : greeting(h, r) <-
-	utt_head(Nom),
-	i : feat_SpeechAct(Nom, greeting) / 1.0,
-	event : produce(r, Nom) / 1.0.
-
 % @d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
 % what do i have here
 %generate : intention : new_object_visible(Entity) <-
@@ -48,36 +42,8 @@ generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 	check_property_value(Object, Prop, unknown),
 	generate : i_dont_know(Nom, Prop),
 	event : produce(r, Nom) / 1.0.
-	
-%generate : intention : ask_yn(h, Object, Prop, PropValue) <-
-%	query_belief(Object, Prop, PropValue, negative),
-%	dummy_againnom(AgNom) / 1.0,
-%	i : sort(AgNom, dvp) / 1.0,
-%	i : prop(AgNom, 'c-goal') / 1.0,
-%	i : feat_CannedText(AgNom, 'No') / 1.0,
-%	event : produce(r, AgNom) / 1.0,
-%	mention_value_if_known(Nom, Object, Prop).
 
-	% known
-%mention_value_if_known(Nom, Object, Prop) <-
-%	check_property_value(Object, Prop, known(Value)),
-%	reply_to_result(Nom, Object, Prop, known(Value)).
-
-	% unknown
-%mention_value_if_known(Nom, Object, Prop) <-
-%	check_property_value(Object, Prop, unknown).
-
-
-utt_head(Nom) <-
-	dummy_nom1(Nom),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0.
-
-generate : it(Nom) <-
-	i : sort(Nom, entity) / 1.0,
-	i : prop(Nom, object) / 1.0,  % will be suppressed anyway
-	i : feat_Salient(Nom, true) / 1.0,
-	i : feat_InfoStatus(Nom, familiar) / 1.0.
+%----------------------------------------------------------------------
 
 %generate: i_dont_know(Nom) <-
 %	i : feat_CannedText(Nom, 'I_do_not_know') / 1.0.
@@ -99,18 +65,7 @@ generate : i_dont_know(Nom, Prop) <-
 			i : prop(ActorNom, 'I') / 1.0,
 		add_patient(ContentNom, PatNom, Prop).
 
-add_patient(Nom, PatNom, Prop) <-
-	Prop \= objecttype,
-	i : rel_Patient(Nom, PatNom) / 1.0,
-		i : sort(PatNom, entity) / 1.0,
-		i : prop(PatNom, Prop) / 1.0,
-		i : feat_InfoStatus(PatNom, familiar) / 1.0.
-
-add_patient(Nom, PatNom, objecttype) <-
-	dont_add_patient(PatNom) / 6.0.
-
-%<Patient>(b:entity ^ object ^ <Salient>true)
-
+%----------------------------------------------------------------------
 
 generate : intention : ask_known(h, Object, Prop) <-
 	check_property_value(Object, Prop, Result),
@@ -123,10 +78,13 @@ generate : intention : ask_property(h, Object, Prop) <-
 	reply_to_result(Nom, Object, Prop, Result),
 	event : produce(r, Nom) / 1.0.
 
+%----------------------------------------------------------------------
+
+	% value unknown
 reply_to_result(Nom, Object, Prop, unknown) <-
 	generate : i_dont_know(Nom, Prop).
 
-%@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ box)  ^ <Color>(b3:quality ^ blue)))
+	% value known
 reply_to_result(Nom, Object, Prop, known(Value)) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
@@ -140,60 +98,7 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 			generate : it(TargetNom),
 		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value).
 
-add_prop_value_to_protolf(Nom, UsedNom, color, Value) <-
-	i : rel_Color(Nom, UsedNom) / 1.0,
-		i : sort(UsedNom, quality) / 1.0,
-		i : prop(UsedNom, Value) / 1.0.
-
-add_prop_value_to_protolf(Nom, UsedNom, objecttype, Value) <-
-	i : rel_Type(Nom, UsedNom) / 1.0,
-		i : sort(UsedNom, entity) / 1.0,
-		i : prop(UsedNom, Value) / 1.0.
-
 %----------------------------------------------------------------------
-
-check_property_value(Union, color, known(Value)) <-
-	k(now, private(r)) : color(Union, Value),
-	Value \= unknownColor.
-
-check_property_value(Union, shape, known(Value)) <-
-	k(now, private(r)) : shape(Union, Value),
-	Value \= unknownShape.
-
-check_property_value(Union, objecttype, known(Value)) <-
-	k(now, private(r)) : objecttype(Union, Value),
-	Value \= unknownObjectType.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	% The following might not be necessary as we don't
-	% make a distinction between "known unknown" and
-	% truly unknown property values.
-
-%check_property_value(Union, color, unknown) <-
-%	k(now, private(r)) : color(Union, unknownColor).
-
-%check_property_value(Union, shape, unknown) <-
-%	k(now, private(r)) : shape(Union, unknownShape).
-
-%check_property_value(Union, objecttyp, unknown) <-
-%	k(now, private(r)) : objecttyp(Union, unknownObjectType).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-check_property_value(Union, Prop, unknown) <-
-	property_value_unknown(Union, Prop) / 15.0.
-
-%----------------------------------------------------------------------
-
-% "ok", "i see" etc
-%generate : intention : grounding(Modality, assertionVerified) <-
-%	utt_head(Nom),
-%	i : feat_SpeechAct(Nom, assertion) / 1.0,
-%	grounding_result_to_relation(assertionVerified, Relation),
-%	i : feat_Relation(Nom, Relation) / 1.0,
-%	i : feat_Modality(Nom, Modality) / 1.0,
-%	event : produce(r, Nom) / 1.0.
 
 % @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\accept)
 generate : intention : grounding(Ag, Modality, assertionVerified) <-
@@ -210,11 +115,9 @@ generate : intention : grounding(Ag, Modality, assertionVerified) <-
 generate : intention : grounding(h, discourse, assertionFalsified) <-
 	utt_head(Nom),
 	i : feat_Relation(Nom, filler) / 1.0,
-	event : produce(r, Nom) / 1.0.
 %	i : feat_CannedText(Nom, 'Too_bad') / 1.0,
-%	event : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
-% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\reject ^ /AcknoModality\vision)
 generate : intention : grounding(r, vision, assertionFalsified) <-
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
@@ -222,45 +125,7 @@ generate : intention : grounding(r, vision, assertionFalsified) <-
 	i : feat_AcknoModality(Nom, vision) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-grounding_result_to_relation(assertionVerified, accept).
-grounding_result_to_relation(assertionFalsified, reject).
-
-opposite_answertype(positive, negative).
-opposite_answertype(negative, positive).
-
-% a positive query
-% max cost = 3.5
-query_belief(Object, Prop, yes(PropValue), AnswerType) <-
-	query_belief0(Object, Prop, PropValue, AnswerType),
-	dummy_assumption(x) / 1.0.  % XXX don't remember why?
-
-% negative query
-% max cost = 3.5
-query_belief(Object, Prop, no(PropValue), AnswerType) <-
-	query_belief0(Object, Prop, PropValue, OppAnswerType),
-	opposite_answertype(OppAnswerType, AnswerType).
-
-% positive/negative query about something unknown
-query_belief(Object, Prop, Value, negative) <-
-	feature_value_unknown(Object, Prop, Value) / 6.0.
-
-
-	% query atomic value
-
-% max cost = 2.5
-query_belief0(Object, objecttype, Value, Polarity) <-
-	k(now, private(r)) : objecttype(Object, FeatValue),
-	equality_to_polarity(Value, FeatValue, Polarity).
-
-query_belief0(Object, color, Value, Polarity) <-
-	k(now, private(r)) : color(Object, FeatValue),
-	equality_to_polarity(Value, FeatValue, Polarity).
-
-equality_to_polarity(X, Y, positive) <-
-	X = Y.
-
-equality_to_polarity(X, Y, negative) <-
-	X \= Y.
+%----------------------------------------------------------------------
 
 % we know the value
 %query_belief0(Object, objecttype, PropValue, positive) <-
@@ -276,6 +141,8 @@ generate : intention : assert_prop(h, Object, Property) <-
 	i : feat_Relation(Nom, hold) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
+%----------------------------------------------------------------------
+
 generate : intention : need_get_value(Modality, Entity, Prop, repeated) <-
 	dummy_againnom(AgNom),
 	i : sort(AgNom, dvp) / 1.0,
@@ -283,6 +150,8 @@ generate : intention : need_get_value(Modality, Entity, Prop, repeated) <-
 	i : feat_CannedText(AgNom, 'That_is_not_what_I_meant') / 1.0,
 	event : produce(r, AgNom) / 1.0,
 	generate : intention : need_get_value0(Modality, Entity, Prop).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 generate : intention : need_get_value(Modality, Entity, Prop, not_repeated) <-
 	generate : intention : need_get_value0(Modality, Entity, Prop).
@@ -313,6 +182,8 @@ generate : intention : need_get_value0(Modality, Entity, color) <-
 			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
+%----------------------------------------------------------------------
+
 % is the object blue
 %d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue)))
 generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
@@ -336,6 +207,8 @@ generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis
 			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
+%----------------------------------------------------------------------
+
 generate : intention : not_understood(Ag) <-
 	utt_head(Nom),
 	i : feat_CannedText(Nom, 'Sorry_I_did_not_understand') / 1.0,
@@ -344,43 +217,10 @@ generate : intention : not_understood(Ag) <-
 	%i : feat_AcknoModality(Nom, action) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-% NOT THE FIRST is the box red or orange?” / “what color does the box have
-%what color does the box have
-%intention : produce(r, Nom) <-
-%	dummy_nom1(Nom),
-%	dummy_nom2(ContentNom),
-%	dummy_nom3(TargetNom),
-%	dummy_nom4(QualityNom),
-%	k(now, private(r)) : objecttype(Object, box),
-%	k(now, private(r)) : color(Object, unknownColor),
-%	i : sort(Nom, dvp) / 1.0,
-%	i : prop(Nom, 'c-goal') / 1.0,
-%	i : feat_SpeechAct(Nom, question) / 1.0,
-%	i : rel_Content(Nom, ContentNom) / 1.0,
-%		i : sort(ContentNom, ascription) / 1.0,
-%		i : rel_Target(ContentNom, TargetNom) / 1.0,
-%			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
-%			i : prop(TargetNom, box) / 1.0,
-%		i : rel_Color(ContentNom, QualityNom) / 1.0,
-%			i : sort(QualityNom, quality) / 1.0,
-%			i : prop(QualityNom, color) / 1.0,
-%			i : feat_Questioned(QualityNom, true) / 1.0.
-
 %-------------------------------------------------------------------------
 
-generate : intention : reuse_last_intention(h) <-
+generate : intention : reuse_last_intention(h, Id) <-
 	utt_head(Nom),
 	i : feat_CannedText(Nom, 'I_do_not_know_what_you_mean') / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-%-------------------------------------------------------------------------
-
-generate : intention : positive_feedback(h) <-
-	utt_head(Nom),
-	i : feat_SpeechAct(Nom, thanking) / 1.0,
-	event : produce(r, Nom) / 1.0.
-
-generate : intention : disengage(h) <-
-	utt_head(Nom),
-	i : feat_CannedText(Nom, 'Bye') / 1.0,
-	event : produce(r, Nom) / 1.0.
