@@ -37,9 +37,9 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 
 	public static class GoalTranslator {
 
-		public static String motive2PlannerGoal(HomingMotive m) {
+		public static String motive2PlannerGoal(HomingMotive m, String placeUnion, String robotUnion) {
 			// TODO: this has to be implemented with lookup to the unions
-			return new String("");
+			return new String("(located "+robotUnion + " " + placeUnion+")");
 		}
 
 		public static String motive2PlannerGoal(CategorizeRoomMotive m,
@@ -140,8 +140,11 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 									.getUnion(crm.correspondingUnion).entityID,
 									getAgentUnion());
 			} else if (m instanceof HomingMotive) {
+				HomingMotive crm = (HomingMotive) m;
+				crm.correspondingUnion = resolveMotive(crm);
 				conjunctiveGoal = GoalTranslator
-						.motive2PlannerGoal((HomingMotive) m);
+						.motive2PlannerGoal(crm, binderFacade
+								.getUnion(crm.correspondingUnion).entityID, getAgentUnion());
 			} else if (m instanceof CategorizePlaceMotive) {
 				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(
 						(CategorizePlaceMotive) m, binderFacade
@@ -229,6 +232,22 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 				if (roomID == cpm.placeID) {
 					component.log("found a corresponding union for roomId "
 							+ cpm.placeID + ": " + entry.getKey());
+					// TODO: we hope, that there is only ONE union with this
+					// roomId, so let's break
+					return entry.getKey();
+				}
+			}
+
+		} else if (m instanceof HomingMotive) {
+			// place_ids for
+			// union ids
+			for (Entry<String, FeatureValue> entry : unionsWithPlaceID
+					.entrySet()) {
+				int roomID = Integer
+						.parseInt(((StringValue) entry.getValue()).val);
+				if (roomID == 0) {
+					component.log("found a corresponding union for roomId "
+							+ 0+ ": " + entry.getKey());
 					// TODO: we hope, that there is only ONE union with this
 					// roomId, so let's break
 					return entry.getKey();

@@ -54,7 +54,15 @@ public class PlanAllManager extends ManagedComponent {
 
 	Executor backgroundExecutor;
 
-	int failsafeTimeoutSecs = 100;
+	/** this is the the very last resort time out... if a plan has been executed in this amount of time we break
+	 * 
+	 */
+	int failsafeExectutionTimeoutSecs = 450;
+
+	/** this is the the very last resort time out... if a plan has not been delivered in time 
+	 * 
+	 */
+	int failsafePlanningTimeoutSecs = 10;
 
 	/**
 	 * @param specificType
@@ -112,7 +120,7 @@ public class PlanAllManager extends ManagedComponent {
 		log("configure manager");
 		String valStr;
 		if ((valStr = arg0.get("--failsafetimeout")) != null)
-			failsafeTimeoutSecs = Integer.parseInt(valStr);
+			failsafeExectutionTimeoutSecs = Integer.parseInt(valStr);
 	}
 
 	/*
@@ -193,7 +201,7 @@ public class PlanAllManager extends ManagedComponent {
 								break;
 							} catch (TimeoutException e) {
 								log("not finished execution yet... continue waiting");
-								if (++loopCount > failsafeTimeoutSecs) {
+								if (++loopCount > failsafeExectutionTimeoutSecs) {
 									log("timeout in execution");
 									interrupt = true;
 								}
