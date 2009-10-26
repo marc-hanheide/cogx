@@ -124,6 +124,7 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     if (it != _config.end()) {
         m_fov = (atof(it->second.c_str()))*M_PI/180;
     }
+
 	
 
 	m_ptustep = M_PI/6;
@@ -131,6 +132,15 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     if (it != _config.end()) {
         m_ptustep = (atof(it->second.c_str()))*M_PI/180;
     }
+
+    m_tiltRads = 0.0;
+    it = _config.find("--tilt");
+    if (it != _config.end()) {
+        m_tiltRads = (atof(it->second.c_str()))*M_PI/180;
+    }
+    log("Tilt pose set to: %f",m_tiltRads);
+
+
     //Coverage percent treshold
     m_covthresh = 70.0;
     it = _config.find("--coverage-threshold");
@@ -161,6 +171,8 @@ void ObjectSearch::configure(const map<string,string>& _config) {
         m_awayfromobstacles = (atof(it->second.c_str()));
     }
     log("Away from obstacle set to: %f",m_awayfromobstacles);
+
+
 
     //Laser pose
     if (cfg.getSensorPose(1, m_LaserPoseR)) {
@@ -273,7 +285,7 @@ void ObjectSearch::runComponent() {
   lockComponent();
   setupPushScan2d(*this, -1);
   setupPushOdometry(*this, -1);
-  MovePanTilt(0 , 5*M_PI/180);
+  MovePanTilt(0 , 0, 5*M_PI/180);
   unlockComponent();
   
   //clock_t start_time,elapsed;
@@ -290,14 +302,14 @@ void ObjectSearch::runComponent() {
     sleepComponent(1000);
   }
 }
-void ObjectSearch::MovePanTilt(double pan,double tolerance){
+void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
   if (m_CtrlPTU)
     {
       log(" Moving pantilt to: %f with %f tolerance", pan, tolerance);
       ptz::PTZPose p;
       ptz::PTZReading ptuPose;
       p.pan = pan;
-      p.tilt = -45 * M_PI / 180;
+      p.tilt = tilt;
       p.zoom = 0;
       m_PTUServer->setPose(p);
       bool run = true;
@@ -1003,7 +1015,7 @@ void ObjectSearch::Recognize(){
 	log("plantheta : %f, currtheta, %f", plantheta, currpos.getTheta());
 	log("anglediff is: %f", anglediff);
 	log("ptz reading: %f", ptz.pose.pan);
-	MovePanTilt(anglediff);
+	MovePanTilt(anglediff,0);
 	m_status = 	RECOGNITIONINPROGRESS;
 
 
@@ -1020,26 +1032,56 @@ void ObjectSearch::Recognize(){
 
 	  log("now moving extras");
 	  int n = 1;
+
+	  //postive
 	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
 	    m_status = 	RECOGNITIONINPROGRESS;
-	    MovePanTilt(anglediff + n*m_ptustep);
+	    MovePanTilt(anglediff + n*m_ptustep,0);
 	    PostRecognitionCommand();
 	    while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
 	      sleepComponent(10);
 	    }
 	    n++;
 	  }
+
+	  //negative
 	  n= 1;
 	  while(anglediff - n*m_ptustep > -M_PI/2  && m_status != STOPPED){
 	    m_status = 	RECOGNITIONINPROGRESS;
-	    MovePanTilt(anglediff - n*m_ptustep);
+	    MovePanTilt(anglediff - n*m_ptustep,0);
 	    PostRecognitionCommand();
 	    while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED)  {
 	      sleepComponent(10);
 	    }
 	    n++;
 	  }
+
+	  if(m_tiltRads > 0) {
+
+	    //negative with tilt
+	    n= 1;
+	    while(anglediff - n*m_ptustep > -M_PI/2  && m_status != STOPPED){
+	      m_status = 	RECOGNITIONINPROGRESS;
+	      MovePanTilt(anglediff - n*m_ptustep,m_tiltRads);
+	      PostRecognitionCommand();
+	      while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED)  {
+		sleepComponent(10);
+	      }
+	      n++;
+	    }
+	  }
 	  
+	  //postive with tilt
+	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
+	    m_status = 	RECOGNITIONINPROGRESS;
+	    MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
+	    PostRecognitionCommand();
+	    while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
+	      sleepComponent(10);
+	    }
+	    n++;
+	  }
+	  	  	  	  
 	}
 	//belt up for safety
 	lockComponent();	
