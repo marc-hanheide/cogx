@@ -189,9 +189,9 @@ public class DoraVerbalisation extends ManagedComponent {
 //		// when navigation is told to move the robot
 //		m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
 
-		// when plan execution is triggered
-		m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
-				"Starting plan execution.");
+//		// when plan execution is triggered
+//		m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
+//				"Starting plan execution.");
 
 		// when AVS is triggered
 		m_verbals.verbaliseCannedTextOnAddition(AVSCommand.class,
