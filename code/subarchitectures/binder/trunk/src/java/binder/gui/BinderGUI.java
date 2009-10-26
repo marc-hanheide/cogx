@@ -30,7 +30,7 @@ public class BinderGUI extends JFrame {
 	
 	public boolean LOGGING = false;
 
-	private static Logger logger = ComponentLogger.getLogger(BinderMonitorGUI.class);
+	private static Logger logger = ComponentLogger.getLogger(BinderGUI.class);
 	
 	BinderMonitor bm;
 	 	

@@ -55,7 +55,6 @@ import beliefmodels.domainmodel.cogx.ContinualFormula;
 import beliefmodels.domainmodel.cogx.UnionRefProperty;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.FloatValue;
-import binder.gui.ControlPanel;
 
 
 /**
@@ -94,7 +93,7 @@ public class BeliefModelUtils {
 	 */
 
 	public static UncertainSuperFormula createNewProperty(String featlabel, FeatureValue fv) {
-
+ 
 		// types for the colour feature
 		if (featlabel.equals("colour")) {
 

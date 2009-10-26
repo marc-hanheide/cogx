@@ -32,7 +32,6 @@ import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.filtering.ConfigurationComparator;
-import binder.gui.BinderMonitorGUI;
 import binder.gui.BindingVisualizer;
 import binder.utils.BinderUtils;
 import cast.architecture.ManagedComponent;
