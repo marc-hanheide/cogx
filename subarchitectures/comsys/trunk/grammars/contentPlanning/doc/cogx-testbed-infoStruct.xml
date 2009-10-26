@@ -47,9 +47,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar ^ <ProofStatus>assumed ^ <Kontrast>false))
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar ^ <ProofStatus>assumed ^ <Kontrast>false  ^ <KontrastColor>true ^ <KontrastSize>true))
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar ^ /ProofStatus\assumed))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar ^ /ProofStatus\assumed ^ /Kontrast\false))
 </input>
 <realizations>
 <!-- (the BIG RED ball)th -->
