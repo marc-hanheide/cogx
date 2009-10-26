@@ -42,6 +42,7 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 	private static final int LABEL_CONFIG_PREFIX_LENGTH = LABEL_CONFIG_PREFIX
 			.length();
 
+	private boolean m_gui = false;	
 	private final Map<String, Double> m_label2confidence;
 	private double m_defaultConfidence;
 
@@ -67,27 +68,30 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 
 		// NEW CODE
 		// ask the user for a selection (added: hz, 2009-10-26)
-		String objectLabel = (String) JOptionPane.showInputDialog(
+		String objectLabel = "";
+		
+		if (m_gui) {
+			objectLabel = (String) JOptionPane.showInputDialog(
 				null, null, "Select an object to recognize", 
-				JOptionPane.PLAIN_MESSAGE, null, dc.labels, null);  
+				JOptionPane.PLAIN_MESSAGE, null, dc.labels, null);
+		}
 		
-		VisualObject vobj = newVisualObject();
-
-		vobj.detectionConfidence = getConfidenceForLabel(objectLabel);
-		vobj.label = objectLabel;
-		addToWorkingMemory(newDataID(), vobj);
-		
-		if (true) return;
-		
-		// OLD CODE
-		// because vision is never this quick...
-		sleepComponent(100);
+//		because vision is never this quick...
+//		sleepComponent(100);
 
 		for (String label : dc.labels) {
 			// for the time being just fail
 			VisualObject obj = newVisualObject();
-
-			obj.detectionConfidence = getConfidenceForLabel(label);
+		
+			if (m_gui) {
+				if (label.equals(objectLabel)) {
+					obj.detectionConfidence = getConfidenceForLabel(label);
+				} else {
+					obj.detectionConfidence = m_defaultConfidence;
+				}
+			} else {
+				obj.detectionConfidence = getConfidenceForLabel(label);
+			}
 			obj.label = label;
 			addToWorkingMemory(newDataID(), obj);
 		}
@@ -120,6 +124,14 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 			m_defaultConfidence = Double.parseDouble(defaultString);
 		}
 		log("default confidence: " + m_defaultConfidence);
+		
+		String guiFlag = _arg0.get("--gui");
+		if (guiFlag != null) {
+			if (!guiFlag.toLowerCase().equals("false")) {
+				m_gui = true;
+			}
+		}
+		log("m_gui: " + (m_gui ? "true" : "false"));		
 	}
 
 	/**
