@@ -40,6 +40,7 @@
     <target name="expandlibs" depends="prepare">
            <echo message="Expanding external libraries for the binder to output/classes"/>
            <unzip dest="${output.dir}" src="./lib/jgraphx.jar"/>
+           <unzip dest="${output.dir}" src="./lib/log4j-1.2.12.jar"/>
     </target>
 
 
