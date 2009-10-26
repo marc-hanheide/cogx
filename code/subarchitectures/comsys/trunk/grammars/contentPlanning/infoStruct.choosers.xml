@@ -340,6 +340,7 @@
          <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
 		    <f-featval feat="Kontrast" />  <!-- check explicit Kontrast feature in input LF -->
  		 </inquiry>			
+ 
             <choicenode answer = "true">           <!-- is Kontrastive -->
                 <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
                 <f-featval feat="Rheme"/>
@@ -407,10 +408,11 @@
                 </choicenode>
             </choicenode> <!-- end is not Kontrastive -->
 
-            <choicenode answer = "unknown">           <!-- no Kontrast feature: do some default magic later -->
-               <!-- if modifier then no focus -->
-               <!-- if verb then no focus -->
-               <!-- if Thematic then no focus -->
+            <choicenode answer = "unknown">           <!-- no Kontrast feature: assign focus by default -->
+              <!-- do some default magic later 
+                    if modifier then no focus 
+                    if verb then no focus 
+                    if Thematic then no focus -->
             
                 <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
                 <f-featval feat="Rheme"/>

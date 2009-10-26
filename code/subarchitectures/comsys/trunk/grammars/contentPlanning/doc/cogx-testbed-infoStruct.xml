@@ -2,7 +2,11 @@
 
 <!-- ========== INFORMATION STRUCTURE ========== -->
 
-<!-- without explicit kontrast, so all parts get focussed by default -->
+<!-- without explicit ProofSTatus, all parts of the LF become Rheme by default -->
+<!-- without explicit kontrast, all parts get focussed by default -->
+
+
+<!-- entity reference -->
 
 <utterance>
 <input>
@@ -49,22 +53,24 @@
 <!--
 @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar ^ <ProofStatus>assumed ^ <Kontrast>false  ^ <KontrastColor>true ^ <KontrastSize>true))
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar ^ /ProofStatus\assumed ^ /Kontrast\false))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar ^ /ProofStatus\assumed ^ /Kontrast\false ^ /KontrastColor\true ^ /KontrastSize\true))
 </input>
 <realizations>
-<!-- (the BIG RED ball)th -->
+<!-- (the BIG_f RED_f ball)th -->
 <string>the big red ball</string> 
 <string>the red big ball</string>
 </realizations>
 </utterance>
 
 
+<!-- ascription -->
+
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <ProofStatus>asserted ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted )) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <ProofStatus>asserted ^ <Kontrast>false ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <Kontrast>false ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted ^ <Kontrast>true)) 
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed) ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(e1:ascription ^ /ProofStatus\asserted ^ /Kontrast\false ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /Kontrast\false ^ /ProofStatus\assumed) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted ^ /Kontrast\true))) 
 </input>
 <realizations>
 <!-- 
@@ -75,13 +81,29 @@ A: (the box)Th (is blue_F)Rh
 </realizations>
 </utterance>
 
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <ProofStatus>asserted ^ <Kontrast>false ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <Kontrast>true ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted ^ <Kontrast>true)) 
+-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(e1:ascription ^ /ProofStatus\asserted ^ /Kontrast\false ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /Kontrast\true ^ /ProofStatus\assumed) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted ^ /Kontrast\true))) 
+</input>
+<realizations>
+<!-- 
+Q: What about the box?
+A: (the box_f)Th (is blue_F)Rh
+-->
+<string>the box is blue</string>
+</realizations>
+</utterance>
+
 
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <ProofStatus>assumed ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted )) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <ProofStatus>assumed ^ <Kontrast>false ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <Kontrast>false ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted )) 
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed) ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /ProofStatus\assumed ^ /Kontrast\false ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed ^ /Kontrast\false) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted))) 
 </input>
 <realizations>
 <!-- 
@@ -96,9 +118,58 @@ A: (the box is)Th (blue_F)Rh
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <ProofStatus>assumed ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted ^ <Questioned>true)) 
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <ProofStatus>assumed ^ <Kontrast>false ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <Kontrast>false ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted )) 
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(e1:ascription ^ /ProofStatus\assumed ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed) ^ /Color\(b3:quality ^ blue ^ /Questioned\true))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Relation\answer ^ /Content\(e1:ascription ^ /ProofStatus\assumed ^ /Kontrast\false ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed ^ /Kontrast\false) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted))) 
+</input>
+<realizations>
+<!-- 
+A: (is the box)Th (blue_F)Rh
+-->
+<string>is the box blue</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <ProofStatus>asserted ^ <Kontrast>false ^ <Target>(b2:entity ^ <ProofStatus>asserted ^ <Kontrast>false ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted )) 
+-->
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Relation\answer ^ /Content\(e1:ascription ^ /ProofStatus\asserted ^ /Kontrast\false ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\asserted ^ /Kontrast\false) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted))) 
+</input>
+<realizations>
+<!-- 
+A: (is the box blue_F)Rh
+-->
+<string>is the box blue</string>
+</realizations>
+</utterance>
+
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <ProofStatus>assumed ^ <Kontrast>true ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <Kontrast>false ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>assumed ^ <Kontrast>false)) 
+-->
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /ProofStatus\assumed ^ /Kontrast\true ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed ^ /Kontrast\false) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted ^ /Kontrast\false))) 
+</input>
+<realizations>
+<!-- 
+A: (is_f the box blue)Th
+-->
+<string>is the box blue</string>
+</realizations>
+</utterance>
+
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <ProofStatus>assumed ^ <Kontrast>false ^ <Target>(b2:entity ^ <ProofStatus>assumed ^<Kontrast>false ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted )) 
+-->
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /ProofStatus\assumed ^ /Kontrast\false ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed ^ /Kontrast\false) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted))) 
 </input>
 <realizations>
 <!-- 
@@ -109,43 +180,40 @@ A: (is the box)Th (blue_F)Rh
 </utterance>
 
 
-
-
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <ProofStatus>asserted ^ <Actor>(i:person ^ I ^ <ProofStatus>assumed) ^ <Patient>(b:entity ^ object ^ <Salient>true ^ <ProofStatus>assumed )  )  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:cognition ^ know ^ <ProofStatus>asserted ^ <Actor>(i:person ^ I ^ <ProofStatus>assumed) ^ <Patient>(b:entity ^ object ^ <Salient>true ^ <ProofStatus>assumed ^ <Kotrast>false)  )  )
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(b:entity ^ object ^ /Salient\true))  )
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /ProofStatus\asserted ^ /Actor\(i:person ^ I ^ /ProofStatus\assumed) ^ /Patient\(b:entity ^ object ^ /Salient\true ^ /ProofStatus\assumed))  )
 </input>
 <realizations>
-<!-- (I)th (know)rh (this)th -->
+<!-- (I_f)th (know_f)rh (this)th -->
 <string>I know this</string>
 <string>I know that</string>
 </realizations>
 </utterance>
 
-<!-- include questios in indicative mood!! -->
-
-
-
-
-
-<!-- with kontrast -->
-
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar ^ <ProofStatus>asserted))
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:cognition ^ know ^ <ProofStatus>assumed ^ <Kontrast>false ^ <Actor>(i:person ^ I ^ <ProofStatus>assumed) ^ <Patient>(b:entity ^ object ^ <Salient>true ^ <ProofStatus>asserted ^ <Kontrast>true)  )  )
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(e1:cognition ^ know ^ /ProofStatus\assumed ^ /Kontrast\false ^ /Actor\(i:person ^ I ^ /ProofStatus\assumed) ^ /Patient\(b:entity ^ object ^ /Salient\true ^ /ProofStatus\asserted ^ /Kontrast\true))  )
 </input>
 <realizations>
-<!-- (the big red ball)rh -->
-<string>the big red ball</string> 
-<string>the red big ball</string>
+<!-- 
+   Q: What do you know?
+   A: (I_f know )th (this)rh -->
+<string>I know this</string>
+<string>I know that</string>
 </realizations>
 </utterance>
+
+
+<!-- include questios in indicative mood!! -->
+
+
 
 
 
