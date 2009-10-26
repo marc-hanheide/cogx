@@ -1,6 +1,5 @@
 package motivation.components.filters;
 
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -144,9 +143,72 @@ public class ManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.add(getJSliderTest());
 			jMotivesPanel.add(new JLabel("Homing"));
 			jMotivesPanel.add(getJSliderHome());
+			jMotivesPanel.add(getPresetPanel());
 		}
 		return jMotivesPanel;
 	}
+
+	private JPanel getPresetPanel() {
+		JPanel presetPanel = new JPanel();
+		presetPanel.add(new JLabel("presets:"));
+		JButton ecButton = new JButton("explore > categorize");
+		ecButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					jExplorePrioritySlider.setValue(2);
+					jCategorizePrioritySlider.setValue(1);
+					component.checkAll();
+				} catch (CASTException e1) {
+					component.println("unexpected exception in checkAll: ");
+					e1.printStackTrace();
+				}
+
+			}
+		});
+		
+		presetPanel.add(ecButton);
+	
+		JButton ceButton = new JButton("categorize > explore");
+		ceButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					jExplorePrioritySlider.setValue(1);
+					jCategorizePrioritySlider.setValue(2);
+					component.checkAll();
+				} catch (CASTException e1) {
+					component.println("unexpected exception in checkAll: ");
+					e1.printStackTrace();
+				}
+
+			}
+		});
+		presetPanel.add(ceButton);
+
+		JButton nullButton = new JButton("unsurface all");
+		nullButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					jExplorePrioritySlider.setValue(0);
+					jCategorizePrioritySlider.setValue(0);
+					jHomePrioritySlider.setValue(0);
+					jTestPrioritySlider.setValue(0);
+					component.checkAll();
+				} catch (CASTException e1) {
+					component.println("unexpected exception in checkAll: ");
+					e1.printStackTrace();
+				}
+
+			}
+		});
+		presetPanel.add(nullButton);
+		
+		
+		return presetPanel;
+	}
+
 
 	private JSlider createPrioritySlider() {
 		JSlider jSlider = new JSlider(JSlider.HORIZONTAL,
