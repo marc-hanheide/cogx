@@ -1,44 +1,30 @@
 package motivation.util.viewer;
 
-import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.swing.JFrame;
 
-import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
-import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveSet;
 import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.CategoryAnnotation;
-import org.jfree.chart.annotations.CategoryTextAnnotation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberAxis3D;
-import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.CombinedDomainCategoryPlot;
-import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.BarRenderer3D;
-import org.jfree.chart.renderer.category.LayeredBarRenderer;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.chart.renderer.category.StackedBarRenderer;
+import org.jfree.chart.renderer.category.LineRenderer3D;
 import org.jfree.chart.renderer.category.StackedBarRenderer3D;
 import org.jfree.chart.title.LegendTitle;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RefineryUtilities;
 
 import Ice.ObjectImpl;
-
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -49,11 +35,13 @@ public class MotiveChartViewer extends ManagedComponent implements
 	protected class Frame extends JFrame {
 
 		DefaultCategoryDataset dsStatus;
-		DefaultCategoryDataset dsInformationGain;
+		DefaultCategoryDataset dsGainCosts;
 		DefaultCategoryDataset dsTries;
-		CategoryPlot gainPlot;
+		DefaultCategoryDataset dsRank;
+		CategoryPlot gainCostsPlot;
 		CategoryPlot statusPlot;
 		CategoryPlot triesPlot;
+		CategoryPlot rankPlot;
 
 		/**
 		 * Creates a new demo instance.
@@ -64,8 +52,9 @@ public class MotiveChartViewer extends ManagedComponent implements
 		public Frame(final String title) {
 			super(title);
 			dsStatus = new DefaultCategoryDataset();
-			dsInformationGain = new DefaultCategoryDataset();
+			dsGainCosts = new DefaultCategoryDataset();
 			dsTries = new DefaultCategoryDataset();
+			dsRank = new DefaultCategoryDataset();
 			final ChartPanel chartPanel = new ChartPanel(createChart());
 			chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
 			setContentPane(chartPanel);
@@ -75,7 +64,6 @@ public class MotiveChartViewer extends ManagedComponent implements
 		 * 
 		 */
 		private static final long serialVersionUID = -6559252766578349920L;
-
 
 		/**
 		 * Creates a chart.
@@ -96,14 +84,24 @@ public class MotiveChartViewer extends ManagedComponent implements
 					statusRender);
 			statusPlot.setDomainGridlinesVisible(true);
 
-			final NumberAxis gainAxis = new NumberAxis("Gain");
-			gainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			final StackedBarRenderer3D gainRender = new StackedBarRenderer3D();
-			gainRender
+			final NumberAxis gainCostsAxis = new NumberAxis("Gain/costs");
+			gainCostsAxis.setStandardTickUnits(NumberAxis
+					.createIntegerTickUnits());
+			final BarRenderer3D gainCostsRender = new BarRenderer3D();
+			gainCostsRender
 					.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
-			gainPlot = new CategoryPlot(dsInformationGain, null, gainAxis,
-					gainRender);
-			gainPlot.setDomainGridlinesVisible(true);
+			gainCostsPlot = new CategoryPlot(dsGainCosts, null, gainCostsAxis,
+					gainCostsRender);
+			gainCostsPlot.setDomainGridlinesVisible(true);
+
+			final NumberAxis rankAxis = new NumberAxis("rank");
+			gainCostsAxis.setStandardTickUnits(NumberAxis
+					.createIntegerTickUnits());
+			final LineRenderer3D rankRender = new LineRenderer3D();
+			rankRender
+					.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
+			rankPlot = new CategoryPlot(dsRank, null, rankAxis, rankRender);
+			rankPlot.setDomainGridlinesVisible(true);
 
 			final NumberAxis triesAxis = new NumberAxis("# tries / priority");
 			triesAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
@@ -117,13 +115,15 @@ public class MotiveChartViewer extends ManagedComponent implements
 			final CombinedDomainCategoryPlot plot = new CombinedDomainCategoryPlot(
 					domainAxis);
 			plot.add(statusPlot, 3);
-			plot.add(triesPlot, 2);
-			plot.add(gainPlot, 1);
+			plot.add(rankPlot, 3);
+			plot.add(triesPlot, 3);
+			plot.add(gainCostsPlot, 3);
 
 			final JFreeChart result = new JFreeChart("Motive Monitor",
 					new Font("SansSerif", Font.BOLD, 10), plot, false);
 			result.addLegend(new LegendTitle(statusPlot));
 			result.addLegend(new LegendTitle(triesPlot));
+			result.addLegend(new LegendTitle(gainCostsPlot));
 			return result;
 
 		}
@@ -133,28 +133,33 @@ public class MotiveChartViewer extends ManagedComponent implements
 			case ADD:
 				dsStatus.addValue(motive.status.value() + 1, motive.getClass()
 						.getSimpleName(), wmc.address.id);
-				dsInformationGain.addValue(motive.informationGain, "",
+				dsGainCosts.addValue(motive.informationGain, "gain",
 						wmc.address.id);
 				dsTries.addValue(motive.tries, "tries", wmc.address.id);
-				dsTries.addValue(motive.costs, "costs", wmc.address.id);
-				dsTries.addValue(motive.priority.value(), "priority", wmc.address.id);
+				dsGainCosts.addValue(motive.costs/10, "costs", wmc.address.id);
+				dsTries.addValue(motive.priority.value(), "priority",
+						wmc.address.id);
+				dsRank.addValue(motive.rank, "", wmc.address.id);
 				break;
 			case DELETE:
 				dsStatus.removeValue(motive.getClass().getSimpleName(),
 						wmc.address.id);
-				dsInformationGain.removeValue("", wmc.address.id);
+				dsGainCosts.removeValue("gain", wmc.address.id);
 				dsTries.removeValue("tries", wmc.address.id);
-				dsTries.removeValue("costs", wmc.address.id);
+				dsGainCosts.removeValue("costs", wmc.address.id);
 				dsTries.removeValue("priority", wmc.address.id);
+				dsRank.removeValue("", wmc.address.id);
 				break;
 			case OVERWRITE:
 				dsStatus.setValue(motive.status.value() + 1, motive.getClass()
 						.getSimpleName(), wmc.address.id);
-				dsInformationGain.setValue(motive.informationGain, "",
+				dsGainCosts.setValue(motive.informationGain, "gain",
 						wmc.address.id);
 				dsTries.setValue(motive.tries, "tries", wmc.address.id);
-				dsTries.setValue(motive.costs, "costs", wmc.address.id);
-				dsTries.setValue(motive.priority.value(), "priority", wmc.address.id);
+				dsGainCosts.setValue(motive.costs/10, "costs", wmc.address.id);
+				dsTries.setValue(motive.priority.value(), "priority",
+						wmc.address.id);
+				dsRank.setValue(motive.rank, "", wmc.address.id);
 				break;
 			}
 
