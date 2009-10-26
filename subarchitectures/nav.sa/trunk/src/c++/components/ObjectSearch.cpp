@@ -285,7 +285,7 @@ void ObjectSearch::runComponent() {
   lockComponent();
   setupPushScan2d(*this, -1);
   setupPushOdometry(*this, -1);
-  MovePanTilt(m_ptustep, m_tiltRads);
+  MovePanTilt(0, 0);
   unlockComponent();
   
   //clock_t start_time,elapsed;
@@ -316,6 +316,8 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
       ptuPose = m_PTUServer->getPose();
       double actualpan = ptuPose.pose.pan;
       double actualtilt = ptuPose.pose.tilt;
+      bool panDone = false;
+      bool tiltDone = false;
 
       while(run){
 	//m_PTUServer->setPose(p);
@@ -329,33 +331,33 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
 	if (pan > actualpan){
 	  if (actualpan > abs(pan) - tolerance){
 	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
-	    run = false;
+	    panDone = true;
 	  }
 	}
 	else if (actualpan > pan){
 	  if (actualpan < abs(pan) + tolerance)
-	    run = false;
+	    panDone = true;
 	}
 	else if(pan == actualpan) {
-	  run = false;
+	  panDone = true;
 	}
 
 
 	if (tilt > actualtilt){
 	  if (actualtilt > abs(tilt) - tolerance){
 	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);
-	    run = false;
+	    tiltDone = true;
 	  }
 	}
 	else if (actualtilt > tilt){
 	  if (actualtilt < abs(tilt) + tolerance)
-	    run = false;
+	    tiltDone = true;
 	}
 	else if(tilt == actualtilt) {
-	  run = false;
+	  tiltDone = true;
 	}
-
-
+	
+	run = !(tiltDone && panDone);
 	
 	usleep(10000);
       }
@@ -1109,6 +1111,8 @@ void ObjectSearch::Recognize(){
 	}
 	//belt up for safety
 	lockComponent();	
+	//reset to home
+	MovePanTilt(0,0);
 }
 void ObjectSearch::PostRecognitionCommand(){
 	log("Posting Recog. Command now");
