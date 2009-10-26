@@ -27,6 +27,8 @@ default IS will be assigned to stuff in templates
 
 InfoStruct defaults
 
+if not explicitly given, inherit from above
+
 Theme
  - ascription target (but maybe not in a question)
 

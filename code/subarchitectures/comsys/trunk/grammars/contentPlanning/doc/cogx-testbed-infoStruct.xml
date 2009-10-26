@@ -63,7 +63,7 @@
 </utterance>
 
 
-<!-- ascription -->
+<!-- ascription: assertion -->
 
 <utterance>
 <input>
@@ -115,6 +115,8 @@ A: (the box is)Th (blue_F)Rh
 </utterance>
 
 
+<!-- ascription: yes/no question -->
+
 <utterance>
 <input>
 <!--
@@ -162,6 +164,31 @@ A: (is_f the box blue)Th
 <string>is the box blue</string>
 </realizations>
 </utterance>
+
+
+<!-- ascription: wh-question -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <ProofStatus>asserted ^ <Kontrast>true ^ <Target>(b2:entity ^ <Salient>true ^ object ^ <Kontrast>false) ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ^ <Kontrast>false))  )  
+*** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***
+-->
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /ProofStatus\assumed ^ /Kontrast\true ^ /Target\(b2:entity ^ /Salient\true ^ object ^ /ProofStatus\asserted ^ /Kontrast\false) ^ /Type\(b3:ont-entity ^ object ^ /ProofStatus\asserted ^ /Kontrast\false ^ /Questioned\true))) 
+</input>
+<realizations>
+<!-- 
+(What is_f that)rh
+-->
+<string>what is this </string>
+<string>what is that </string>
+<string>what is this object </string>
+<string>what is that object </string>
+</realizations>
+</utterance>
+
+
+
 
 
 <utterance>
