@@ -15,7 +15,12 @@ import cast.cdl.CASTTime;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.featvalues.AddressValue;
+import binder.autogen.featvalues.BooleanValue;
+import binder.autogen.featvalues.FloatValue;
+import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
+import binder.autogen.featvalues.UnknownValue;
 import binder.components.BinderMonitor;
 import binder.constructors.ProxyConstructor;
 import binder.utils.FeatureValueUtils;
@@ -46,15 +51,15 @@ public class FeatureInfoGUI extends JDialog {
 	}
 
 	private void button1ActionPerformed(ActionEvent e) {
-		setSize(new Dimension(450, 500));
-		setPreferredSize(new Dimension(450, 500));
+		setSize(new Dimension(450, 450  + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(450, 450  + (25 * curFeature.alternativeValues.length)));
 		panel5.setVisible(true);
 	}
 
 	private void button4ActionPerformed(ActionEvent e) {
 		panel5.setVisible(false);
-		setSize(new Dimension(450, 350));
-		setPreferredSize(new Dimension(450, 350));
+		setSize(new Dimension(450, 300  + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(450, 300  + (25 * curFeature.alternativeValues.length)));
 	}
 
 	private void button2ActionPerformed(ActionEvent e) {
@@ -68,27 +73,108 @@ public class FeatureInfoGUI extends JDialog {
 			updateFeatureValuesFrame();
 		}
 		
+		if (comboBox1.getSelectedItem().equals("IntegerValue")) {
+			float prob = Float.parseFloat(textField3.getText());
+			CASTTime time = bm.getCASTTimeInMonitor();
+			String val = textField2.getText();
+			try {
+			IntegerValue sv = new IntegerValue(prob, time, Integer.parseInt(val));
+			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
+			updateFeatureValuesFrame();
+			}
+			catch (NumberFormatException ex) {
+				log("sorry, wrong format");
+			}
+		}
+		
+		if (comboBox1.getSelectedItem().equals("FloatValue")) {
+			float prob = Float.parseFloat(textField3.getText());
+			CASTTime time = bm.getCASTTimeInMonitor();
+			String val = textField2.getText();
+			try {
+				FloatValue sv = new FloatValue(prob, time, Float.parseFloat(val));
+			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
+			updateFeatureValuesFrame();
+			}
+			catch (NumberFormatException ex) {
+				log("sorry, wrong format");
+			}
+		}
+		if (comboBox1.getSelectedItem().equals("BooleanValue")) {
+			float prob = Float.parseFloat(textField3.getText());
+			CASTTime time = bm.getCASTTimeInMonitor();
+			String val = textField2.getText();
+			try {
+				BooleanValue sv = new BooleanValue(prob, time, Boolean.parseBoolean(val));
+			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
+			updateFeatureValuesFrame();
+			}
+			catch (NumberFormatException ex) {
+				log("sorry, wrong format");
+			}
+		}
+		if (comboBox1.getSelectedItem().equals("AddressValue")) {
+			float prob = Float.parseFloat(textField3.getText());
+			CASTTime time = bm.getCASTTimeInMonitor();
+			String val = textField2.getText();
+			AddressValue sv = new AddressValue(prob, time, val);
+			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
+			updateFeatureValuesFrame();
+		}
+		if (comboBox1.getSelectedItem().equals("UnknownValue")) {
+			float prob = Float.parseFloat(textField3.getText());
+			CASTTime time = bm.getCASTTimeInMonitor();
+			UnknownValue sv = new UnknownValue(prob, time);
+			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
+			updateFeatureValuesFrame();
+		}
+		
 		panel5.setVisible(false);
-		setSize(new Dimension(450, 250));
-		setPreferredSize(new Dimension(450, 250));
+		setSize(new Dimension(450, 300 + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(450, 300  + (25 * curFeature.alternativeValues.length)));
 	}
 	
 	
 	private void updateFeatureValuesFrame() {
 		log("WOOHOOO update feature values frame!!!!!!!");
 		log("nb feat values: " + curFeature.alternativeValues.length);
-		if (curFeature.alternativeValues.length > 0 ) {
-			String featvaltext = "";
 
-			for (int i = 0 ; i <curFeature.alternativeValues.length ; i++) {
-				featvaltext += FeatureValueUtils.toString(curFeature.alternativeValues[i]);
-				featvaltext += " (Pr. = " + curFeature.alternativeValues[i].independentProb + ")";
-				if (i < (curFeature.alternativeValues.length - 1)) {
-					featvaltext += "\n";
-				}
-			}
-	//		label3.setText(featvaltext);
+		if (table1.getModel().getRowCount() < curFeature.alternativeValues.length) {
+			
+			log("Have to enlarge the panel and the table...");
+			
+			scrollPane1.setMinimumSize(new Dimension(50, 30 + (23* curFeature.alternativeValues.length)));
+			
+			table1.setModel(new DefaultTableModel(
+					new Object[curFeature.alternativeValues.length][3] ,
+					new String[] {
+						"Entry", "Type", "Probability"
+					}
+				) {
+					Class[] columnTypes = new Class[] {
+						String.class, String.class, Float.class
+					};
+					boolean[] columnEditable = new boolean[] {
+						false, false, false
+					};
+					@Override
+					public Class<?> getColumnClass(int columnIndex) {
+						return columnTypes[columnIndex];
+					}
+					@Override
+					public boolean isCellEditable(int rowIndex, int columnIndex) {
+						return columnEditable[columnIndex];
+					}
+				});
+			
 		}
+			for (int i = 0 ; i <curFeature.alternativeValues.length ; i++) {
+				String entry = FeatureValueUtils.toString(curFeature.alternativeValues[i]);
+				float prob = curFeature.alternativeValues[i].independentProb;
+				table1.getModel().setValueAt(entry, i, 0);
+				table1.getModel().setValueAt(curFeature.alternativeValues[i].getClass().getSimpleName(), i, 1);
+				table1.getModel().setValueAt(new Float(prob), i, 2);
+			}
 	}
 
 	private void initComponents() {
@@ -177,9 +263,9 @@ public class FeatureInfoGUI extends JDialog {
 			{
 				panel2.setLayout(new GridBagLayout());
 				((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 25, 208, 0};
-				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {35, 12, 0, 0, 0, 0, 0};
+				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {35, 0, 0, 0, 0, 0};
 				((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
-				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
 				//======== scrollPane1 ========
 				{
@@ -188,7 +274,7 @@ public class FeatureInfoGUI extends JDialog {
 					//---- table1 ----
 					table1.setModel(new DefaultTableModel(
 						new Object[][] {
-							{" No feature values", " ", null},
+							{" (No feature values)", " ", null},
 						},
 						new String[] {
 							"Entry", "Type", "Probability"
@@ -242,7 +328,7 @@ public class FeatureInfoGUI extends JDialog {
 				}
 				panel2.add(scrollPane1, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-					new Insets(20, 20, 25, 20), 0, 0));
+					new Insets(5, 20, 10, 20), 0, 0));
 
 				//---- button1 ----
 				button1.setText("Add new feature value");
@@ -252,7 +338,7 @@ public class FeatureInfoGUI extends JDialog {
 						button1ActionPerformed(e);
 					}
 				});
-				panel2.add(button1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+				panel2.add(button1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(0, 20, 5, 5), 0, 0));
 
@@ -270,7 +356,7 @@ public class FeatureInfoGUI extends JDialog {
 					label5.setFont(new Font("Lucida Grande", Font.BOLD, 10));
 					panel4.add(label5, BorderLayout.EAST);
 				}
-				panel2.add(panel4, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0,
+				panel2.add(panel4, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
 					GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
 					new Insets(0, 0, 5, 20), 0, 0));
 
@@ -341,7 +427,7 @@ public class FeatureInfoGUI extends JDialog {
 							panel7.add(slider1, BorderLayout.CENTER);
 
 							//---- textField3 ----
-							textField3.setText("dfsdf");
+							textField3.setText("0.0");
 							panel7.add(textField3, BorderLayout.EAST);
 						}
 						panel5.add(panel7, new GridBagConstraints(5, 2, 1, 1, 0.0, 0.0,
@@ -363,7 +449,6 @@ public class FeatureInfoGUI extends JDialog {
 							button2.addActionListener(new ActionListener() {
 								public void actionPerformed(ActionEvent e) {
 									button2ActionPerformed(e);
-									button2ActionPerformed(e);
 								}
 							});
 							panel8.add(button2, BorderLayout.CENTER);
@@ -372,7 +457,6 @@ public class FeatureInfoGUI extends JDialog {
 							button4.setText("Cancel");
 							button4.addActionListener(new ActionListener() {
 								public void actionPerformed(ActionEvent e) {
-									button4ActionPerformed(e);
 									button4ActionPerformed(e);
 								}
 							});
@@ -384,7 +468,7 @@ public class FeatureInfoGUI extends JDialog {
 					}
 					panel6.add(panel5, BorderLayout.CENTER);
 				}
-				panel2.add(panel6, new GridBagConstraints(0, 4, 3, 1, 0.0, 0.0,
+				panel2.add(panel6, new GridBagConstraints(0, 3, 3, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(0, 0, 5, 0), 0, 0));
 			}
@@ -416,8 +500,8 @@ public class FeatureInfoGUI extends JDialog {
 		setLocationRelativeTo(getOwner());
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 		
-		setSize(new Dimension(450, 350));
-		setPreferredSize(new Dimension(450, 350));
+		setSize(new Dimension(450, 300));
+		setPreferredSize(new Dimension(450, 300));
 		panel5.setVisible(false);
 	}
 
