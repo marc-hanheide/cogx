@@ -63,7 +63,7 @@ class LocalMapManager : public cast::ManagedComponent,
     friend class EvaluationServer;
     
     class LocalMapServer: public FrontierInterface::LocalMapInterface {
-      virtual FrontierInterface::LocalGridMap getCombinedGridMap(const std::vector<int> &places,
+      virtual FrontierInterface::LocalGridMap getCombinedGridMap(const SpatialData::PlaceIDSeq &places,
 	  const Ice::Current &_context);
       LocalMapManager *m_pOwner;
       LocalMapServer(LocalMapManager *owner) : m_pOwner(owner)
@@ -118,7 +118,7 @@ private:
   NavData::FNodePtr getCurrentNavNode();
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
   void getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
-      const std::vector<int> &places);
+      const SpatialData::PlaceIDSeq &places);
 };
 }; // namespace spatial
 

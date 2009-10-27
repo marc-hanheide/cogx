@@ -457,7 +457,7 @@ LocalMapManager::EvaluationServer::getHypothesisEvaluation(int hypID,
 }
 
 FrontierInterface::LocalGridMap
-LocalMapManager::LocalMapServer::getCombinedGridMap(const vector<int> &places,
+LocalMapManager::LocalMapServer::getCombinedGridMap(const SpatialData::PlaceIDSeq &places,
     const Ice::Current &_context)
 {
   m_pOwner->lockComponent();
@@ -471,10 +471,10 @@ LocalMapManager::LocalMapServer::getCombinedGridMap(const vector<int> &places,
 
 void 
 LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
-    const vector<int> &places)
+    const SpatialData::PlaceIDSeq &places)
 {
   vector<const Cure::LocalGridMap<unsigned char> *>maps;
-  for (vector<int>::const_iterator it = places.begin(); it != places.end(); it++) {
+  for (SpatialData::PlaceIDSeq::const_iterator it = places.begin(); it != places.end(); it++) {
     NavData::FNodePtr node = m_placeInterface->getNodeFromPlaceID(*it);
     if (node != 0) {
       if (m_nodeGridMaps.find(node->nodeId) != m_nodeGridMaps.end()) {
