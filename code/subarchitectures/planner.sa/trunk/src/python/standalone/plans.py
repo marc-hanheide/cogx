@@ -145,7 +145,10 @@ class MAPLPlan(graph.DAG):
         def declare_node(node_id):
             label = self.labels.get(node_id)
             if label is None: label = node_id
-            return '"%s" ["%s"]' % (node_id, label) 
+            params = ""
+            if node_id.status == ActionStatusEnum.EXECUTED:
+                params += "style=filled, fillcolor=grey, "
+            return '"%s" [%s "%s"]' % (node_id, params, label) 
         def declare_edge(node_id1, node_id2):
             label = ""
 #             if (node_id1, node_id2) in self.labels:
