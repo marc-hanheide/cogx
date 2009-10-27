@@ -1103,7 +1103,8 @@ void ObjectSearch::Recognize(){
 	      }
 	      n++;
 	    }
-	    
+
+	    MovePanTilt(anglediff,0);	    
 
 	    n = 1;
 	    //postive with tilt
