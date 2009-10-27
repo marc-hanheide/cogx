@@ -532,11 +532,15 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   map.data.reserve(newSize*newSize);
 
   //Sample each of the maps into the new map
+log("Sample each of the maps into the new map");
   for (vector<const Cure::LocalGridMap<unsigned char> *>::iterator it = maps.begin();
       it != maps.end(); it++) {
+	log("looping over map");
     for (int y = -(*it)->getSize(); y <= (*it)->getSize(); y++) {
       for (int x = -(*it)->getSize(); x <= (*it)->getSize(); x++) {
+
 	char val = (**it)(x,y);
+	
 	if (val != '2') {
 	  double dx, dy;
 	  (*it)->index2WorldCoords(x, y, dx, dy);
@@ -553,7 +557,12 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
       }
     }
   }
-  for (int i = 0; i < newSize*newSize; i++) {
-    map.data.push_back(newMap[i]);
-  }
+for (int x = 0 ; x < newSize; x++){
+for (int y = 0 ; y < newSize; y++){
+    map.data.push_back(newMap(x,y));
+if (newMap(x,y) == '0')
+		log("asdf free");
+}
+}
+																													
 }
