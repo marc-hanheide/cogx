@@ -290,7 +290,6 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
   char path[32];
 if(plan->planlist.size() > 0)
     {
-		m_ProxyViewPoints.add(m_PeekabotClient, "root.viewpoints",peekabot::REPLACE_ON_CONFLICT);
 		 double color[3];
   color[0] = 0.9;
   color[1] = 0.1;
@@ -1415,6 +1414,7 @@ void DisplayNavInPB::connectPeekabot()
     m_ProxyObjectLabels.add(m_ProxyGraph,
                        "labels",
                        peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyViewPoints.add(m_PeekabotClient, "root.viewpoints",peekabot::REPLACE_ON_CONFLICT);
 
     createRobotFOV();
     log("Connection to Peekabot established");
