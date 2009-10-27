@@ -304,10 +304,28 @@ ObjGridLineRayTracer<MAPDATA>::drawLineYn()
 
 template <class MAPDATA>
 void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan, 
-                                         const Cure::Pose3D &sp, 
-                                         double maxRange)
+                                            const Cure::Pose3D &sp, 
+                                            double maxRange)
 {
+  const double eps = 1e-2;
+
   for (int i = 0; i < scan.getNPts(); i++) {
+
+    // Filter single max range readings. We require to get at least
+    // two consecutive max readings to say that it really is one,
+    // otherwise we skip that datapoint
+    if (i == 0) {
+      if (scan.getRange(i) >= maxRange-eps &&
+          scan.getRange(i+1) < maxRange-eps) continue;
+    } else if (i == scan.getNPts()-1) {
+      if (scan.getRange(i) >= maxRange-eps &&
+          scan.getRange(i-1) < maxRange-eps) continue;
+    } else {
+      if (scan.getRange(i) >= maxRange-eps &&
+          scan.getRange(i-1) < maxRange-eps &&
+          scan.getRange(i+1) < maxRange-eps) continue;
+    }
+
   	/*if (scan.getRange(i) > maxRange - 0.5){
 		data() = 120;
   		continue;
@@ -331,9 +349,9 @@ void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan,
 
 template <class MAPDATA>
 void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan, 
-                                         const Cure::Pose3D &sp, 
-                                         double maxRange,
-					 double FOV)
+                                            const Cure::Pose3D &sp, 
+                                            double maxRange,
+                                            double FOV)
 {
   double startAngle = -FOV * 0.5;
   startAngle = startAngle < scan.getStartAngle() ? scan.getStartAngle() : 
@@ -342,7 +360,25 @@ void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan,
   int startIndex = (1-fieldFraction)*0.5*scan.getNPts();
   int endIndex = scan.getNPts()-startIndex;
 
+  const double eps = 1e-2;
+
   for (int i = startIndex; i < endIndex; i++) {
+
+    // Filter single max range readings. We require to get at least
+    // two consecutive max readings to say that it really is one,
+    // otherwise we skip that datapoint
+    if (i == 0) {
+      if (scan.getRange(i) >= maxRange-eps &&
+          scan.getRange(i+1) < maxRange-eps) continue;
+    } else if (i == scan.getNPts()-1) {
+      if (scan.getRange(i) >= maxRange-eps &&
+          scan.getRange(i-1) < maxRange-eps) continue;
+    } else {
+      if (scan.getRange(i) >= maxRange-eps &&
+          scan.getRange(i-1) < maxRange-eps &&
+          scan.getRange(i+1) < maxRange-eps) continue;
+    }
+
     setStart(sp.getX(),
              sp.getY(),
              sp.getTheta() + 
