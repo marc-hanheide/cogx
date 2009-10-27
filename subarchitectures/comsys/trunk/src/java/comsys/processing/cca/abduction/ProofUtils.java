@@ -3,12 +3,17 @@ package comsys.processing.cca.abduction;
 import java.util.*;
 import beliefmodels.adl.*;
 import beliefmodels.domainmodel.cogx.*;
+import binder.abstr.BeliefModelInterface;
+import comsys.processing.cca.BeliefUtils;
+import comsys.processing.cca.Counter;
 import comsys.processing.cca.MercuryUtils;
 import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 import Abducer.*;
 
 public class ProofUtils {
 
+	private static Counter counter = new Counter("proofs");
+	
 	/**
 	 * Given a sequence of queries, return all queries marked as asserted.
 	 * 
@@ -49,15 +54,33 @@ public class ProofUtils {
 	 */
 	public static Belief[] extractAssertedBeliefs(MarkedQuery[] proof) {
 		AssertedQuery[] assertions = filterAsserted(proof);
-		ArrayList<Belief> list = new ArrayList<Belief>();
+		Vector<Belief> bs = new Vector<Belief>();
 
 		for (int i = 0; i < assertions.length; i++) {
 			Belief b = assertionToBelief(assertions[i]);
+			// find a belief that has the same agent status and unionref
+			for (int j = 0; j < bs.size(); j++) {
+				Belief oldB = bs.elementAt(j);
+				System.err.println("looking at it");
+				System.err.println("ref old=" + BeliefModelInterface.referringUnionId(oldB) + ", new=" + BeliefModelInterface.referringUnionId(b));
+				if (BeliefUtils.agentStatusesEqual(oldB.ags, b.ags) 
+						&& BeliefModelInterface.referringUnionId(oldB).equals(BeliefModelInterface.referringUnionId(b))) {
+					System.err.println("merging");
+//					String unionId = BeliefModelInterface.referringUnionId(oldB);
+					// merge them
+//					oldB.phi = BeliefUtils.removeUnionRefs((SuperFormula) oldB.phi);
+					SuperFormula addF = BeliefUtils.removeUnionRefs((SuperFormula) b.phi);
+					BeliefUtils.mergeFormulaIntoBelief(oldB, addF);
+//					oldB.phi = BeliefUtils.addUnionRef(f, unionId)addUnionRef()
+					b = null;
+					break;
+				}
+			}
 			if (b != null) {
-				list.add(b);
+				bs.add(b);
 			}
 		}
-		return list.toArray(new Belief[0]);
+		return bs.toArray(new Belief[0]);
 	}
 	
 	/**
@@ -135,7 +158,7 @@ public class ProofUtils {
 		if (m instanceof KModality) {
 			Belief b = new Belief();
 			b.ags = kModalityToAgentStatus((KModality) m);
-			System.out.println(b.ags.getClass());
+			//System.out.println(b.ags.getClass());
 			b.sigma = kModalityToSpatioTemporalFrame((KModality) m);
 			b.phi = null;
 			//System.out.println("in modalityToBeliefStub: b.ags=" + PrettyPrinting.agentStatusToString(b.ags));
@@ -273,7 +296,7 @@ public class ProofUtils {
 	public static ComplexFormula predicateToComplexFormula(Predicate p, ContinualStatus cstatus) {
 
 		ComplexFormula f = new ComplexFormula();
-		f.id = "p2cf";
+		f.id = counter.inc("pred2cplxf");
 		f.op = LogicalOp.and;
 		f.formulae = new ContinualFormula[2];
 		f.prob = 1.0f;
@@ -319,12 +342,12 @@ public class ProofUtils {
 		unionRef.cstatus = ContinualStatus.proposition;
 		unionRef.prob = 1.0f;
 		unionRef.unionRef = ref;
-		unionRef.id = "ref";
+		unionRef.id = counter.inc("ref");
 		f.formulae[0] = unionRef;
 		
 		cprop.cstatus = cstatus;
 		cprop.prob = 1.0f;
-		cprop.id = "prop";
+		cprop.id = counter.inc("prop");
 		f.formulae[1] = cprop;
 		
 		return f;
