@@ -22,7 +22,7 @@ function varargout = DSdialogue(varargin)
 
 % Edit the above text to modify the response to help DSdialogue
 
-% Last Modified by GUIDE v2.5 25-Aug-2009 16:01:56
+% Last Modified by GUIDE v2.5 27-Oct-2009 15:49:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,6 +52,12 @@ function DSdialogue_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to DSdialogue (see VARARGIN)
 
+global currMode ;
+
+%Reload global variables from CONFIG FILE
+confFile='config/cogLearn.config';
+loadConfig(confFile);
+
 % Choose default command line output for DSdialogue
 handles.output = hObject;
 
@@ -65,6 +71,44 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 set(handles.lb_dlg, 'String', cell(0));
 set(handles.lb_dlg, 'Value', 1);
+
+lenLabels = length(currMode.avNames)
+for i = 1 : lenLabels
+   avNames={'red';'green';'blue';'yellow';'black'; 'white'; 'orange'; 'pink'; 'compact';'elongated'};
+   
+   switch i
+       case 1
+           set(handles.pb_av1,'String',currMode.avNames{i}) ;
+           set(handles.pb_av1,'Visible','on') ;
+       case 2
+           set(handles.pb_av2,'String',currMode.avNames{i}) ;
+           set(handles.pb_av2,'Visible','on') ;
+       case 3
+           set(handles.pb_av3,'String',currMode.avNames{i}) ;           
+           set(handles.pb_av3,'Visible','on') ;
+       case 4
+           set(handles.pb_av4,'String',currMode.avNames{i}) ;
+           set(handles.pb_av4,'Visible','on') ;
+       case 5
+           set(handles.pb_av5,'String',currMode.avNames{i}) ;
+           set(handles.pb_av5,'Visible','on') ;
+       case 6
+           set(handles.pb_av6,'String',currMode.avNames{i}) ;
+           set(handles.pb_av6,'Visible','on') ;
+       case 7
+           set(handles.pb_av7,'String',currMode.avNames{i}) ;
+           set(handles.pb_av7,'Visible','on') ;
+       case 8
+           set(handles.pb_av8,'String',currMode.avNames{i}) ;
+           set(handles.pb_av8,'Visible','on') ;
+       case 9
+           set(handles.pb_av9,'String',currMode.avNames{i}) ;           
+           set(handles.pb_av9,'Visible','on') ;
+       case 10   
+           set(handles.pb_av10,'String',currMode.avNames{i}) ;
+           set(handles.pb_av10,'Visible','on') ;
+   end
+end
 
 
 % --- Outputs from this function are returned to the command line.
@@ -458,4 +502,83 @@ set(handles.tx_robot,'String','');
 DSextendDlg(['H: ' DScreateSentence(handles.data)]);
 DSinterfaceOut(handles.data);
 handles.data=[];guidata(hObject,handles);
+
+
+
+% --- Executes on button press in pushbutton32.
+function pushbutton32_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton32 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+i_nextits = str2num(get(handles.ed_numNext,'String')) ;
+
+global Data;
+
+i_nextits = 50 ;
+for i = 1 : i_nextits
+    
+    VSnextImg;
+    
+    if ~isempty(Data.Cgt)
+        handles.data=DSappendWord(handles.data,-7);guidata(hObject,handles);
+        sent=DScreateSentence(handles.data);
+        set(handles.tx_tutor,'String',sent);
+        set(handles.tx_robot,'String','');
+        
+        cgt=find(Data.Cgt(:,Data.currImg));
+        
+        for i=1:length(cgt);
+            handles.data=DSappendWord(handles.data,cgt(i));guidata(hObject,handles);
+            sent=DScreateSentence(handles.data);
+            set(handles.tx_tutor,'String',sent);
+            set(handles.tx_robot,'String','');
+        end
+        DSextendDlg(['H: ' DScreateSentence(handles.data)]);
+        DSinterfaceOut(handles.data);
+        handles.data=[];guidata(hObject,handles);
+    end
+    
+    pause(0.1) ;
+end
+
+
+
+function ed_numNext_Callback(hObject, eventdata, handles)
+% hObject    handle to ed_numNext (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ed_numNext as text
+%        str2double(get(hObject,'String')) returns contents of ed_numNext as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ed_numNext_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ed_numNext (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+
+% --- Executes on button press in pb_av11.
+function pb_av11_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_av11 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pb_av12.
+function pb_av12_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_av12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
 

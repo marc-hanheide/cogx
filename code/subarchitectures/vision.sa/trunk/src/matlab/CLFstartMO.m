@@ -13,9 +13,9 @@ global currMode
 currMode=struct('learnMode',2,'THRs',[5 1 .5]/100,'wT',1,'wYes',.75,'wPy',.25,'qnt2qlD',0,'CTT',[]);
 currMode.CTT=[1:7;1 1 1 1 2 2 2]';
 
-global Dirs Data
+global Dirs Data 
 if nargin==0 || strcmp(opSys,'win')
-   Dirs.cogLearn='C:/danijels/Matlab/matlab/';
+   Dirs.cogLearn='D:\Work\Matlab\CogX\DK_code\';
 else   
    Dirs.cogLearn='./';
 end
@@ -23,12 +23,12 @@ end
 global SaveImgs ImgNo
 SaveImgs=0;
 ImgNo=0;
-Dirs.images=[Dirs.cogLearn 'files/images/']';
+
 
 global ASVon ASVidx
 ASVon=0;
 ASVidx=0;
-Dirs.asv=[Dirs.cogLearn 'files/asv/'];
+
 
 Dirs.data=[Dirs.cogLearn 'Sim/data/objects_newvis'];
 Data.numImgs=300;
@@ -49,6 +49,9 @@ Params.FV=3;
 %Reload global variables from CONFIG FILE
 confFile='config/cogLearn.config';
 loadConfig(confFile);
+
+Dirs.images=[Dirs.cogLearn 'files/images/']';
+Dirs.asv=[Dirs.cogLearn 'files/asv/'];
 
 %GT data
 Data.Cgt=[];
