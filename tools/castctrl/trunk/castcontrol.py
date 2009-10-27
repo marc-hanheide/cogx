@@ -9,7 +9,7 @@ from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages
 from core import legacy
-from qtui import uimainwindow
+from qtui import uimainwindow, icons
 import processtree
 
 LOGGER = messages.CInternalLogger()
@@ -122,6 +122,9 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         # Context menu actions for QTextEdit
         self.ui.buildLogfileTxt.contextActions.append(self.ui.actCtxShowBuildError)
+
+        pic = QtGui.QPixmap(icons.icon_cogx)
+        self.setWindowIcon(QtGui.QIcon(pic))
 
     def _initContent(self):
         for fn in self._options.mruCfgCast:

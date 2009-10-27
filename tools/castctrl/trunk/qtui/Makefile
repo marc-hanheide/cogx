@@ -10,6 +10,8 @@ uimainwindow.py: mainwindow.ui
 		-e 's/self.mainLogfileTxt = QtGui.QTextEdit(/self.mainLogfileTxt = CCastTextEdit(/' \
 		uimainwindow.py
 
-
 uiconfigdlg.py: configdlg.ui
 	@pyuic4 -o uiconfigdlg.py configdlg.ui
+
+#icons.py: res/cogx.xpm
+#   @python makeres.py
