@@ -531,6 +531,7 @@ public class cc_TTS extends ManagedComponent {
 	            int exitVal = proc.waitFor();
 	            System.out.println("Process exitValue: " + exitVal);
 
+	            sleepComponent(200);
 				}
 				catch(Exception e){
 					//process exception
