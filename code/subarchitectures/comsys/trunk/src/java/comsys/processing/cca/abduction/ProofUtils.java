@@ -1,7 +1,10 @@
 package comsys.processing.cca.abduction;
 
 import java.util.*;
+
+import cast.cdl.CASTTime;
 import beliefmodels.adl.*;
+import beliefmodels.adl.Agent;
 import beliefmodels.domainmodel.cogx.*;
 import binder.abstr.BeliefModelInterface;
 import comsys.processing.cca.BeliefUtils;
@@ -149,18 +152,18 @@ public class ProofUtils {
 	/**
 	 * Create a belief stub (a belief with a null formula) from a modality.
 	 * 
-	 * FIXME: currently, the spatiotemporal frame is set to null. 
-	 * 
 	 * @param m the modality
 	 * @return belief stub, null if the modality is not convertible
 	 */
 	public static Belief modalityToBeliefStub(Modality m) {
 		if (m instanceof KModality) {
-			Belief b = new Belief();
-			b.ags = kModalityToAgentStatus((KModality) m);
+			Belief b = new Belief(
+					"stub",
+					AbstractBeliefFactory.createHereNowFrame(new Agent[]{new Agent("robot")}),
+					kModalityToAgentStatus((KModality) m),
+					null,
+					new CASTTime(0, 0));
 			//System.out.println(b.ags.getClass());
-			b.sigma = kModalityToSpatioTemporalFrame((KModality) m);
-			b.phi = null;
 			//System.out.println("in modalityToBeliefStub: b.ags=" + PrettyPrinting.agentStatusToString(b.ags));
 			return b;
 		}

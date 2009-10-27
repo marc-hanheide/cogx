@@ -145,7 +145,7 @@ public abstract class AbstractBeliefFactory
 	 is initialized by the given agent. 
 	 */ 
 
-	protected SpatioTemporalFrame createHereNowFrame(Agent[] agents) { 
+	public static SpatioTemporalFrame createHereNowFrame(Agent[] agents) { 
 		SpatialInterval spInt = new SpatialInterval();
 		spInt.id = "here";
 		TemporalInterval tmpInt = new TemporalInterval();
