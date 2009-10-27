@@ -224,6 +224,13 @@ namespace binder {
      * @param proxy the proxy to delete
      */
     void deleteEntityInWM(autogen::core::ProxyPtr proxy);
+    
+    
+     /**
+     * Delete an existing proxy
+     * @param _wma the address of the proxy to delete
+     */   
+    void deleteEntityInWM(std::string _id);
 
   };
 
