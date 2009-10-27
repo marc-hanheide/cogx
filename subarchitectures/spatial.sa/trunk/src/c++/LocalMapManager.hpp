@@ -61,6 +61,16 @@ class LocalMapManager : public cast::ManagedComponent,
       friend class LocalMapManager;
     };
     friend class EvaluationServer;
+    
+    class LocalMapServer: public FrontierInterface::LocalMapInterface {
+      virtual FrontierInterface::LocalGridMap getCombinedGridMap(const std::vector<int> &places,
+	  const Ice::Current &_context);
+      LocalMapManager *m_pOwner;
+      LocalMapServer(LocalMapManager *owner) : m_pOwner(owner)
+      {}
+      friend class LocalMapManager;
+    };
+    friend class LocalMapServer;
 public:
   LocalMapManager();
   virtual ~LocalMapManager();
@@ -99,6 +109,7 @@ protected:
 
   std::string m_RobotServerHost;
   Robotbase::RobotbaseServerPrx m_RobotServer;
+  FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
 private:
   void receiveScan2d(const Laser::Scan2d &castScan);
@@ -106,6 +117,8 @@ private:
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
   NavData::FNodePtr getCurrentNavNode();
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
+  void getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
+      const std::vector<int> &places);
 };
 }; // namespace spatial
 
