@@ -462,7 +462,9 @@ LocalMapManager::LocalMapServer::getCombinedGridMap(const vector<int> &places,
 {
   m_pOwner->lockComponent();
   FrontierInterface::LocalGridMap ret; 
+  m_pOwner->log("3");
   m_pOwner->getCombinedGridMap(ret, places);
+  m_pOwner->log("4");
   m_pOwner->unlockComponent();
   return ret;
 }
@@ -488,6 +490,8 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   }
 
   if (maps.empty()) {
+    map.size = 0;
+    map.data.clear();
     return;
   }
 
@@ -525,6 +529,7 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   map.cellSize = cellSize;
   map.size = newSize;
   map.data.clear();
+  map.data.reserve(newSize*newSize);
 
   //Sample each of the maps into the new map
   for (vector<const Cure::LocalGridMap<unsigned char> *>::iterator it = maps.begin();
