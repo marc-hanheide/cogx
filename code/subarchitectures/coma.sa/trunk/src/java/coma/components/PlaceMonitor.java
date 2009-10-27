@@ -68,6 +68,7 @@ public class PlaceMonitor extends ManagedComponent {
 	private HashMap<Long, HashSet<WorkingMemoryAddress>> m_tempAdjacencyStore;
 	
 	private int m_roomIndexCounter = 0;
+	private int m_objectIndexCounter = 0;
 	private HashSet<String> m_existingRoomProxies;
 	private HashMap<String,HashSet<String>> m_existingRelationProxies;
 	
@@ -353,17 +354,32 @@ public class PlaceMonitor extends ManagedComponent {
 		// TODO handle probability distribution 
 //		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
 		
-		createObject(_objProp);
+		boolean _objectCreated = createObject(_objProp);
 		// trigger room creation, splitting, merging, maintenance
 		// because their class might have changed
-		maintainRooms();
+		if (_objectCreated) maintainRooms();
 	}
 		
-	private void createObject(ObjectPlaceProperty _objProp) {
-		// the place is immediately asserted to contain an instance of the object category
+	private boolean createObject(ObjectPlaceProperty _objProp) {
+		// establish the ontology member names
 		String category = ((SpatialProperties.StringValue)_objProp.mapValue).value;
-		m_comareasoner.addInstance("dora:object"+_objProp.placeId, "dora:" + ComaHelper.firstCap(category));
-		m_comareasoner.addRelation("dora:object"+_objProp.placeId, "dora:in", "dora:place"+_objProp.placeId);
+		String placeIns = "dora:place"+_objProp.placeId;
+		String inRel = "dora:in";
+		
+		// check whether the given place already contains an instance of the given category
+		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, inRel);
+		for (String obj : objsInPlace) {
+			if (m_comareasoner.isInstanceOf(obj, category)) {
+				return false;
+				// if such an object exists, don't create a new instance!
+			}
+		}
+		
+		String objIns = "dora:object" + m_objectIndexCounter++; 
+		
+		m_comareasoner.addInstance(objIns, category);
+		m_comareasoner.addRelation(objIns, inRel, placeIns);
+		return true;
 	}
 
 	private boolean processOverwrittenPlace(WorkingMemoryChange _wmc) {
