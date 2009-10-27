@@ -100,6 +100,9 @@ protected:
 private:
   NavData::FNodePtr getCurrentNavNode();
   bool m_hideGadget;
+
+  FrontierInterface::PlaceInterfacePrx m_placeInterface;
+
 };
 
 }; // namespace spatial

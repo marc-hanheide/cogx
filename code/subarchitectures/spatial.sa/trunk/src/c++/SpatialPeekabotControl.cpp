@@ -131,6 +131,7 @@ void SpatialPeekabotControl::start()
 
   println("start entered");
   
+  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
 }
 
 void SpatialPeekabotControl::runComponent() {
@@ -151,9 +152,6 @@ void SpatialPeekabotControl::runComponent() {
 
 
   if(!m_hideGadget) {
-    
-    FrontierInterface::PlaceInterfacePrx agg(getIceServer
-					     <FrontierInterface::PlaceInterface>("place.manager"));
     
     bool sentplancommand = false;
     double radius = 0.75;
@@ -277,7 +275,7 @@ void SpatialPeekabotControl::runComponent() {
 			fnodeseq[h]->x - r.get_result().m_c[0]) < radius) {
 		// seems we are asked to search this node
 		//log("fnodeid %i",fnodeseq[h]->nodeId);
-		SpatialData::PlacePtr place = agg->getPlaceFromNodeID(fnodeseq[h]->nodeId);
+		SpatialData::PlacePtr place = m_placeInterface->getPlaceFromNodeID(fnodeseq[h]->nodeId);
 		//check if we already added this 
 		bool isadded = false;
 		for (unsigned int l = 0; l < placeseq.size(); l++){
@@ -387,7 +385,7 @@ void SpatialPeekabotControl::runComponent() {
 		    }
 		    else {
 		      SpatialData::PlacePtr curPlace =
-			agg->getPlaceFromNodeID(curNode->nodeId);
+			m_placeInterface->getPlaceFromNodeID(curNode->nodeId);
 		      if (curPlace == 0) {
 			log("Could not compute current Place!");
 			probRequest->startPlaceID = 0;
@@ -575,6 +573,18 @@ void SpatialPeekabotControl::updatePeekabotGadget()
     }
     lp.set_alignment(peekabot::ALIGN_CENTER);
 
+    NavData::FNodePtr node = m_placeInterface->getNodeFromPlaceID((*it)->id);
+    if (node != 0) {
+      peekabot::LabelProxy lp2;
+      sprintf(identifier, "nodelabel%d", i);
+      lp2.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
+      sprintf(identifier, "%d", (int)(*it)->id);
+      lp2.set_text(identifier);
+      lp2.set_pose(node->x,node->y - 0.5,0,0,0,0);
+      lp2.set_scale(30);
+      lp2.set_alignment(peekabot::ALIGN_CENTER);
+    }
+
     sprintf(identifier, "circle%d", i);
     peekabot::CircleProxy cp;
     cp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
@@ -667,28 +677,37 @@ SpatialPeekabotControl::updatePlaceholderVisualization()
   for (int i = 0; i <= m_maxPlaceholderID; i++) {
     //map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
     //m_nodeHypotheses.find(i);
-    for (it = hypotheses.begin(); it != hypotheses.end(); it++) {
-      if ((*it)->hypID == i)
-	break;
+    bool drawn = false;
+    SpatialData::PlacePtr place = m_placeInterface->getPlaceFromHypID(i);
+    if (place != 0) {
+      int placeID = place->id;
+
+      for (it = hypotheses.begin(); it != hypotheses.end(); it++) {
+	if ((*it)->hypID == i)
+	  break;
+      }
+
+      if (it != hypotheses.end()) {
+	peekabot::CircleProxy cp;
+	char buffer[256];
+	sprintf(buffer, "plchldr%i", i);
+	cp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
+	cp.set_scale(0.1);
+	cp.set_position((*it)->x, (*it)->y,0);
+
+	peekabot::LabelProxy lp;
+	sprintf(buffer, "plchldr_l%i", i);
+	lp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
+	lp.set_scale(20);
+	sprintf(buffer, "%i(%i)", placeID, (*it)->originPlaceID);
+	lp.set_text(buffer);
+	lp.set_position((*it)->x, (*it)->y,0);
+
+	drawn = true;
+      }
     }
 
-    if (it != hypotheses.end()) {
-      peekabot::CircleProxy cp;
-      char buffer[256];
-      sprintf(buffer, "plchldr%i", i);
-      cp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
-      cp.set_scale(0.1);
-      cp.set_position((*it)->x, (*it)->y,0);
-
-      peekabot::LabelProxy lp;
-      sprintf(buffer, "plchldr_l%i", i);
-      lp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
-      lp.set_scale(20);
-      sprintf(buffer, "%i(%i)", i, (*it)->originPlaceID);
-      lp.set_text(buffer);
-      lp.set_position((*it)->x, (*it)->y,0);
-    }
-    else {
+    if (!drawn) {
       peekabot::CircleProxy cp;
       char buffer[256];
       sprintf(buffer, "plchldr%i", i);
