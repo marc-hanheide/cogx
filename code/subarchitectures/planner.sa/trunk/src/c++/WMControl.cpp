@@ -98,7 +98,7 @@ void WMControl::runComponent() {
             }
             execute.clear();
         }
-        sleepComponent(1000);
+        sleepComponent(200);
     }
 }
 
