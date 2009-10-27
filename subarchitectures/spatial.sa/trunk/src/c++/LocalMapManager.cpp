@@ -529,7 +529,7 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   map.cellSize = cellSize;
   map.size = newSize;
   map.data.clear();
-  map.data.reserve(newSize*newSize);
+  map.data.reserve(4*newSize*newSize + 4*newSize + 1);
 
   //Sample each of the maps into the new map
 log("Sample each of the maps into the new map");
@@ -557,8 +557,8 @@ log("Sample each of the maps into the new map");
       }
     }
   }
-  for (int x = -newSize ; x < newSize; x++){
-    for (int y = -newSize ; y < newSize; y++){
+  for (int x = -newSize ; x <= newSize; x++){
+    for (int y = -newSize ; y <= newSize; y++){
       map.data.push_back(newMap(x,y));
     }
   }
