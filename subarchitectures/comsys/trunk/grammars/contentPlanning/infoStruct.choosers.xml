@@ -410,23 +410,34 @@
 
             <choicenode answer = "unknown">           <!-- no Kontrast feature: assign focus by default -->
               <!-- do some default magic later 
-                    if modifier then no focus 
+                    if noun-modifier then no focus (done in rhemeAssign, first need to stop it there)
                     if verb then no focus 
-                    if Thematic then no focus -->
+                    if Thematic then no focus (done)
+                    if "I" then no focus (done)
+                     -->
+
+            <inquiry id="q-ex-prop" type="string" answerset="@true @false"> 
+                <q-ex-prop val="I" />  <!-- check if "I" -->
+            </inquiry>	
+            <choicenode answer = "true">           <!-- is "I" -->       
+                <result val="t-focus-false"/>
+            </choicenode>
+
+            <choicenode answer = "false">           <!-- is not "I" -->      
             
                 <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
                 <f-featval feat="Rheme"/>
             </inquiry>			
                 <choicenode answer = "t-rheme-false">
-                    <result val="t-focus-true"/>
+                    <result val="t-focus-false"/>
                 </choicenode>
 
                     <choicenode answer = "m-rheme-false">
-                        <result val="m-focus-true"/>
+                        <result val="m-focus-false"/>
                     </choicenode>
 
                 <choicenode answer = "e-rheme-false">
-                    <result val="e-focus-true"/>
+                    <result val="e-focus-false"/>
                 </choicenode>
 
                 <choicenode answer = "t-rheme-true">
@@ -434,8 +445,17 @@
                 </choicenode>
 
                 <choicenode answer = "m-rheme-true">
-                    <result val="m-focus-true"/>
-                </choicenode>
+                    <inquiry id="q-deprel-type" type="string" answerset="@true @false"> 
+                        <q-deprel-type mode="Modifier" />  <!-- check if noun-modifier -->
+                    </inquiry>	
+                    <choicenode answer = "true">           <!-- is noun-modifier -->       
+                        <result val="m-focus-false"/>
+                    </choicenode>
+
+                    <choicenode answer = "false">           <!-- is not noun modifier, so it is a property in ascription -->      
+                        <result val="m-focus-true"/>
+                    </choicenode>                    
+                </choicenode>  <!-- end m-rheme-true -->
 
                 <choicenode answer = "e-rheme-true">
                     <result val="e-focus-true"/>
@@ -445,6 +465,8 @@
                     <result val="noRhemeFeature"/>
                 </choicenode>
             </choicenode> <!-- end no Kontrast feature -->
+
+       </choicenode> <!-- end is not "I" -->
 
        </choicenode> <!-- end is not assigned -->
 

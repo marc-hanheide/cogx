@@ -418,7 +418,9 @@ Simplest first shot:
         	<add-feature feature="Focus" value="e-focus-false"  /> 
       </action>         
 
-    
+      <action choice="doneFocus">
+      </action>    
+          
       <action choice="noRhemeFeature">
       </action>        
               
