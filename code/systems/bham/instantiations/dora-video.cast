@@ -4,10 +4,10 @@ HOST localhost
 # spatial #####################################################################
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
-INCLUDE includes/spatial.sa/spatial-gripper.cast
+INCLUDE includes/spatial.sa/spatial-gripper.sa
 INCLUDE includes/spatial.sa/spatial-binder.cast
 INCLUDE includes/spatial.sa/spatial-objsearch.cast
-INCLUDE includes/spatial.sa/spatial-peekabot-gripper.cast
+INCLUDE includes/spatial.sa/spatial-peekabot-gripper.sa
 
 # vision ######################################################################
 #INCLUDE includes/vision.sa/vision-fake.cast
