@@ -36,9 +36,13 @@
   (?loc rdfs:subClassOf dora:PhysicalRoom)]
   
 [omicsCrispInferenceRule:
-  (?objClass dora:typicalObjectInRoom ?areaClass),
-  (?objIns rdf:type ?objClass),
-  (?areaIns dora:contains ?objIns)
+  (?objClass1 dora:typicalObjectInRoom ?areaClass),
+  (?objClass2 dora:typicalObjectInRoom ?areaClass),
+  (?objIns1 rdf:type ?objClass1),
+  (?objIns2 rdf:type ?objClass2),
+  (?areaIns dora:contains ?objIns1)
+  (?areaIns dora:contains ?objIns2)
+  notEqual(?objIns1,?objIns2)
   ->
   (?areaIns rdf:type ?areaClass)]  
 
