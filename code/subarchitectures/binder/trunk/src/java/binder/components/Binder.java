@@ -306,8 +306,7 @@ public class Binder extends ManagedComponent  {
 		log("--------STOP BINDING UPDATE (AFTER OVERWRITE) ----------");
 	}
 
-
-
+	
 	/**
 	 * Update the binding working memory after the deletion of an existing proxy
 	 * 
@@ -512,7 +511,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
 							unionsToMerge.add(existingUnion);
 							unionsToMerge.add(newUnion);
-							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, forgeTimeStamp(unionsToMerge));
+							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
 							if (newMergedUnion instanceof RelationUnion) {
 								newMergedUnion = 
