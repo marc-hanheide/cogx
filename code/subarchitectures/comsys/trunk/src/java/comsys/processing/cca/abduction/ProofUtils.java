@@ -61,11 +61,11 @@ public class ProofUtils {
 			// find a belief that has the same agent status and unionref
 			for (int j = 0; j < bs.size(); j++) {
 				Belief oldB = bs.elementAt(j);
-				System.err.println("looking at it");
-				System.err.println("ref old=" + BeliefModelInterface.referringUnionId(oldB) + ", new=" + BeliefModelInterface.referringUnionId(b));
+//				System.err.println("looking at it");
+//				System.err.println("ref old=" + BeliefModelInterface.referringUnionId(oldB) + ", new=" + BeliefModelInterface.referringUnionId(b));
 				if (BeliefUtils.agentStatusesEqual(oldB.ags, b.ags) 
 						&& BeliefModelInterface.referringUnionId(oldB).equals(BeliefModelInterface.referringUnionId(b))) {
-					System.err.println("merging");
+//					System.err.println("merging");
 //					String unionId = BeliefModelInterface.referringUnionId(oldB);
 					// merge them
 //					oldB.phi = BeliefUtils.removeUnionRefs((SuperFormula) oldB.phi);

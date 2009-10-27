@@ -78,9 +78,10 @@ public class BeliefUtils {
 			}
 			
 			if (formula instanceof ComplexFormula) {
-				for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
-					if (!formulae.contains(((ComplexFormula)formula).formulae[i])) {
-						formulae.add(((ComplexFormula)formula).formulae[i]);
+				ComplexFormula addCf = (ComplexFormula) formula;
+				for (int i = 0; i < addCf.formulae.length ; i++) {
+					if (!formulae.contains(addCf.formulae[i])) {
+ 						formulae.add(addCf.formulae[i]);
 					}
 				}
 			}
@@ -96,7 +97,7 @@ public class BeliefUtils {
 			float prob = ((ComplexFormula)initBelief.phi).prob;
 			String phiId = initBelief.phi.id;
 			
-			phi = new ComplexFormula(phiId, prob, op, formulaeArray);
+			initBelief.phi = new ComplexFormula(phiId, prob, op, formulaeArray);
 		}
 		else {
 			SuperFormula[] formulaeArray = new SuperFormula[2];
@@ -104,7 +105,7 @@ public class BeliefUtils {
 			formulaeArray[1] = formula;
 			String phiId = initBelief.phi.id;
 			
-			phi = new ComplexFormula(phiId, 1.0f, LogicalOp.and, formulaeArray);
+			initBelief.phi = new ComplexFormula(phiId, 1.0f, LogicalOp.and, formulaeArray);
 		}
 	}
 	
