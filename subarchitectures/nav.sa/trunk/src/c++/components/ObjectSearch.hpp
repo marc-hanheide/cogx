@@ -18,6 +18,7 @@
 #include "XVector3D.h"
 #include <Navigation/LocalMap.hh>
 #include <FrontierInterface.hpp>
+#include <NavX/XDisplayLocalGridMap.hh>
 
 class ObjectSearch : public cast::ManagedComponent,
       public Scan2dReceiver,
@@ -152,7 +153,9 @@ enum ObjSearchCommand {
     Cure::LocalMap m_LMap;
   	Cure::ObjGridLineRayTracer<double>* m_Glrt;
     Cure::X11DispLocalGridMap<double>* m_Displaylgm;
-    Cure::X11DispLocalGridMap<char>* m_Displaykrsjlgm;
+
+    Cure::XDisplayLocalGridMap<char>* m_Displaykrsjlgm;
+
     Cure::X11DispLocalGridMap<double>* m_Displaypdf;
 
     bool m_CtrlPTU;
