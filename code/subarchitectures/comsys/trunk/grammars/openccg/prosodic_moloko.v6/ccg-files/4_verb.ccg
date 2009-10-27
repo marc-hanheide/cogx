@@ -293,16 +293,27 @@
 
   # This handles irregular verbs, i.e. each form must be fully specified
   #
-  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic(stem, stem, 3sing, ving, pasttense, pastpart, mod, class, props) }
-  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {
+  #PROSG09 changes
+  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(stem, stem,markWordsINTO(stem), 3sing,markWordsINTO(3sing),ving,markWordsINTO(ving), pasttense,markWordsINTO(pasttense), pastpart,markWordsINTO(pastpart), mod, class, props) }
+
+  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(prd, stem, markWordsINTO(stem), 3sing,markWordsINTO(3sing),ving,markWordsINTO(ving), pasttense,markWordsINTO(pasttense), pastpart,markWordsINTO(pastpart), mod, class, props) }
+
+ #PROSG09 changes
+  def _verb-basic_ip(prd, stem,stem_hs,stem_ls,stem_lphs,3sing,3sing_hs,3sing_ls,3sing_lphs,ving,ving_hs,ving_ls,ving_lphs, pasttense,,pasttense_hs,pasttense_ls,pasttense_lphs, pastpart,pastpart_hs,pastpart_ls,pastpart_lpls, mod, class, props) {
     word stem.-verb-.class.mod:props(class, pred=prd) {
-      stem:      mod fin-full pres s-pos do non-3rd s-sg  ;  	
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-true;  	
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-false;  	
+      stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-true hs;  	
+      stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false lphs;  	
       3sing:     mod fin-full pres s-pos do 3rd     s-sg  ;
       stem:      mod fin-full pres s-pos do         s-pl  ;
       pasttense: mod fin-full past s-pos do               ;
       pastpart:  mod pp                                   ;
       ving:      mod ing                                  ;
-      stem:      mod vf-base                              ;
+      stem:      mod vf-base e-focus-false e-uncontentious e-rheme-true ;
+      stem:      mod vf-base e-focus-false e-uncontentious e-rheme-false;
+      stem_hs:   mod vf-base e-focus-true e-uncontentious e-rheme-true hs ;
+      stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false lphs;
       stem:      mod vf-to-imp                            ;   # This entry gets turned into an imp via rule (see above)
 
     }
