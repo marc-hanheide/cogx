@@ -11,6 +11,7 @@
 #include <cctype>
 #include <cassert>
 #include <sstream>
+#include <set>
 #include <highgui.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
@@ -208,6 +209,7 @@ ObjectDetectorFERNS::ObjectDetectorFERNS()
 {
   mode = DETECT_AND_TRACK;
   camId = 0;
+  numDetectionAttempts = 1;
   doDisplay = false;
   show_tracked_locations = false;
   show_keypoints = false;
@@ -295,6 +297,12 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
     istr >> camId;
   }
 
+  if((it = _config.find("--numattempts")) != _config.end())
+  {
+    istringstream istr(it->second);
+    istr >> numDetectionAttempts;
+  }
+
   if((it = _config.find("--displaylevel")) != _config.end())
   {
     istringstream istr(it->second);
@@ -335,6 +343,14 @@ void ObjectDetectorFERNS::start()
         &ObjectDetectorFERNS::receiveDetectionCommand));
 }
 
+size_t ObjectDetectorFERNS::indexOf(const string &label)
+{
+  for(size_t i = 0; i < model_labels.size(); i++)
+    if(label == model_labels[i])
+      return i;
+  return model_labels.npos;
+}
+
 void ObjectDetectorFERNS::receiveDetectionCommand(
     const cdl::WorkingMemoryChange & _wmc)
 {
@@ -347,19 +363,41 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   log("FERNS detecting: %s", ostr.str().c_str());
 
   Video::Image image;
-  videoServer->getImage(camId, image);
-  IplImage *grayImage = convertImageToIplGray(image);
-  detectObjects(grayImage, cmd->labels);
-  postObjectsToWM(cmd->labels, image);
-  if(doDisplay)
+
+  // set holding all objects that were detected over a series of images
+  set<string> detectedObjects;
+
+  // try detection in a series of images
+  for(int i = 0; i < numDetectionAttempts; i++)
   {
-    drawResults(grayImage);
-    cvShowImage("ObjectDetectorFERNS", grayImage);
-    // needed to make the window appear
-    // (an odd behaviour of OpenCV windows!)
-    cvWaitKey(10);
+    videoServer->getImage(camId, image);
+    IplImage *grayImage = convertImageToIplGray(image);
+    detectObjects(grayImage, cmd->labels);
+    // remember what objects were detected
+    for(size_t i = 0; i < cmd->labels)
+      if(last_frame_ok[indexOf(cmd->labels[i])])
+        detectedObjects.insert(cmd->labels[i]);
+    if(doDisplay)
+    {
+      drawResults(grayImage);
+      cvShowImage("ObjectDetectorFERNS", grayImage);
+      // needed to make the window appear
+      // (an odd behaviour of OpenCV windows!)
+      cvWaitKey(10);
+    }
+    cvReleaseImage(&grayImage);
   }
-  cvReleaseImage(&grayImage);
+  // a bit HACKy: say that we detected an object with a given label
+  // in the last frame, when actually we only know that we detected it at
+  // least in one of the last numDetectionAttempts frames
+  // This is required because postObjectsToWM() looks at last_frame_ok when
+  // setting detection confidence.
+  for(set<string>::iterator it = detectedObjects.begin();
+      it != detectObjects.end(); it++)
+  {
+    last_frame_ok[indexOf(*it)] = true;
+  }
+  postObjectsToWM(cmd->labels, image);
 
   // executed the command, results (if any) are on working memory,
   // now delete command as not needed anymore
@@ -569,7 +607,7 @@ VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
 
   obj->label = model_labels[i];
   obj->time = image.time;
-  if(detectors[i]->pattern_is_detected || last_frame_ok[i])
+  if(last_frame_ok[i])
     obj->detectionConfidence = 1.;
   else
     obj->detectionConfidence = 0.;
