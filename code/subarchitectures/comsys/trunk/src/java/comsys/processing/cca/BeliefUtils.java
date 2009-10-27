@@ -97,11 +97,32 @@ public class BeliefUtils {
 		return false;
 	}
 
+	public static AgentStatus raise(AgentStatus as, Agent a) {
+		if (as instanceof PrivateAgentStatus) {
+			PrivateAgentStatus pas = (PrivateAgentStatus) as;
+			if (!pas.ag.id.equals(a.id)) {
+				return attribute(pas, a);
+			}
+		}
+		else if (as instanceof AttributedAgentStatus) {
+			AttributedAgentStatus aas = (AttributedAgentStatus) as;
+			if (aas.ag.id.equals(a.id)) {
+				return raiseToMutual(aas);
+			}
+		}
+		else if (as instanceof MutualAgentStatus) {
+			MutualAgentStatus mas = (MutualAgentStatus) as;
+			return addToGroup(mas, a);
+		}
+		
+		return null;
+	}
+	
 	public static AttributedAgentStatus attribute(PrivateAgentStatus as, Agent a) {
 		return new AttributedAgentStatus(as.ag, a);
 	}
 
-	public static MutualAgentStatus raise(AttributedAgentStatus as) {
+	public static MutualAgentStatus raiseToMutual(AttributedAgentStatus as) {
 		return new MutualAgentStatus(new Agent[] {as.ag, as.ag2});
 	}
 	

@@ -16,16 +16,20 @@ you(Nom) <-
 	i : sort(Nom, person),
 	i : prop(Nom, you).
 
-what(Nom) <-
-%	i : sort(Nom, entity),
-	i : prop(Nom, what).
-
 this(Nom) <-
 	i : sort(Nom, entity),
 	i : feat_Delimitation(Nom, unique),
 	i : feat_Num(Nom, sg),
 	i : feat_Proximity(Nom, proximal),
 	i : feat_Quantification(Nom, specific).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+what_which(Nom) <-
+	i : prop(Nom, what).
+
+what_which(Nom) <-
+	i : prop(Nom, which).
 
 %-------------------------------------------------------------------------
 
@@ -124,14 +128,14 @@ assert_prop(Union, Polarity, Nom) <-
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : color(Union, PolarProp) ),
-	intention : assert_prop(h, Union, color) / 0.5.
+	intention : value_assertion(h, Union, color) / 0.5.
 
 assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : shape(RestrRef, PolarProp) ),
-	intention : assert_prop(h, Union, shape) / 0.5.
+	intention : value_assertion(h, Union, shape) / 0.5.
 
 assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, thing),
@@ -142,7 +146,7 @@ assert_prop(Union, Polarity, Nom) <-
 	%maybe_assert_modifier(Ref, Polarity, Nom),  % XXX explosion!!
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ),
-	intention : assert_prop(h, Union, objecttype) / 0.5.
+	intention : value_assertion(h, Union, objecttype) / 0.5.
 
 %-------------------------------------------------------------------------
 

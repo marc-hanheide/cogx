@@ -9,17 +9,7 @@
 %	i : feat_AcknoModality(Nom, vision) / 1.0,
 %	event : produce(r, Nom) / 1.0.
 
-% no I do not know what this is
-%generate : intention : ask_yn(h, Object, Prop, PropValue) <-
-%	query_belief(Object, Prop, PropValue, AnswerType),
-%	utt_head(Nom),
-%	i : feat_SpeechAct(Nom, assertion) / 1.0,
-%	i : feat_Relation(Nom, answer) / 1.0,
-%	i : feat_AnswerType(Nom, AnswerType) / 1.0,
-%	event : produce(r, Nom) / 1.0.
-
-generate : intention : ask_yn(h, Object, Prop, PropValue) <-
-	%query_belief(Object, Prop, PropValue, positive),
+generate : intention : value_verification_request(h, Object, Prop, PropValue) <-
 	check_property_value(Object, Prop, known(PropValue)),
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
@@ -27,7 +17,7 @@ generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 	i : feat_AnswerType(Nom, positive) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-generate : intention : ask_yn(h, Object, Prop, PropValue) <-
+generate : intention : value_verification_request(h, Object, Prop, PropValue) <-
 	check_property_value(Object, Prop, known(DifferentValue)),
 	PropValue \= DifferentValue,
 	dummy_againnom(AgNom),
@@ -38,7 +28,7 @@ generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 	reply_to_result(Nom, Object, Prop, known(DifferentValue)),
 	event : produce(r, Nom) / 1.0.
 
-generate : intention : ask_yn(h, Object, Prop, PropValue) <-
+generate : intention : value_verification_request(h, Object, Prop, PropValue) <-
 	check_property_value(Object, Prop, unknown),
 	generate : i_dont_know(Nom, Prop),
 	event : produce(r, Nom) / 1.0.
@@ -63,7 +53,8 @@ generate : i_dont_know(Nom, Prop) <-
 		i : rel_Actor(ContentNom, ActorNom) / 1.0,
 			i : sort(ActorNom, person) / 1.0,
 			i : prop(ActorNom, 'I') / 1.0,
-		add_patient(ContentNom, PatNom, Prop).
+		add_patient(ContentNom, PatNom, Prop),
+		i : feat_ProofStatus(PatNom, assumed) / 1.0.
 
 %----------------------------------------------------------------------
 
@@ -96,7 +87,9 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 		i : sort(ContentNom, ascription) / 1.0,
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
 			generate : it(TargetNom),
-		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value).
+		i : feat_ProofStatus(TargetNom, assumed) / 1.0,
+		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value),
+		i : feat_ProofStatus(PropNom, assumed) / 1.0.
 
 %----------------------------------------------------------------------
 
@@ -127,16 +120,7 @@ generate : intention : grounding(r, vision, assertionFalsified) <-
 
 %----------------------------------------------------------------------
 
-% we know the value
-%query_belief0(Object, objecttype, PropValue, positive) <-
-%	k(now, private(r)) : objecttype(Object, PropValue),
-%	dummy_assumption(x) / 2.0.  % to make it more costly in case of "not"
-
-% we can assume that the value is unknown, but for a huge cost
-%query_belief0(Object, Prop, PropValue, negative) <-
-%	feat_not_equal_to(Object, Prop, PropValue) / 20.0.
-
-generate : intention : assert_prop(h, Object, Property) <-
+generate : intention : value_assertion(h, Object, Property) <-
 	utt_head(Nom),
 	i : feat_Relation(Nom, hold) / 1.0,
 	event : produce(r, Nom) / 1.0.
@@ -197,8 +181,9 @@ generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis
 		i : sort(ContentNom, ascription) / 1.0,
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
 			i : sort(TargetNom, entity) / 1.0,
-			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
 			i : prop(TargetNom, Type) / 1.0,
+			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
+			i : feat_ProofStatus(QualityNom, assumed) / 1.0,
 		i : rel_Color(ContentNom, QualityNom) / 1.0,
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, Hypothesis) / 1.0,

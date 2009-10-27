@@ -29,7 +29,7 @@ understand : event : uttered(h, Nom) <-
 	i : rel_Actor(Nom, ActorNom),
 		you(ActorNom),
 	i : rel_Patient(Nom, WhatNom),
-		what(WhatNom),
+		what_which(WhatNom),
 
 	i : sort(AscrNom, ascription),
 	i : 'rel_Cop-Restr'(AscrNom, ThisNom),
@@ -49,12 +49,13 @@ understand : event : uttered(h, Nom) <-
 	att : refers_to(RestrNom, RestrRef) / ref_resolution,
 	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
 	i : 'rel_Wh-Restr'(Nom, WhNom),
-		i : prop(WhNom, what),
+		what_which(WhNom),
 		i : rel_Scope(WhNom, QueryNom),
 			i : prop(QueryNom, XProp),
 	to_property(XProp, Prop),
 	intention : ask_property(h, RestrRef, Prop) / 0.2.
 
+% what is this
 understand : event : uttered(h, Nom) <-
 	i : sort(Nom, ascription),
 	i : 'feat_Mood'(Nom, int),
@@ -66,7 +67,7 @@ understand : event : uttered(h, Nom) <-
 	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
 	i : 'rel_Wh-Restr'(Nom, WhNom),
 		i : prop(WhNom, what),
-	intention : ask_property(h, RestrRef, objecttype) / 5.2.
+	intention : ask_property(h, RestrRef, objecttype) / 6.2.
 
 % could you tell me what X is
 understand : event : uttered(h, Nom) <-
@@ -112,7 +113,7 @@ understand : event : uttered(h, Nom) <-
 	att : refers_to(RestrNom, RestrRef) / ref_resolution,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom),
 	query_prop(ScopeNom, Prop, PropValue),
-	intention : ask_yn(h, RestrRef, Prop, PropValue) / 0.2.
+	intention : value_verification_request(h, RestrRef, Prop, PropValue) / 0.2.
 
 %-------------------------------------------------------------------------
 

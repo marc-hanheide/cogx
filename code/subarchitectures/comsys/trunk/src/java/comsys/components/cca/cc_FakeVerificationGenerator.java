@@ -202,12 +202,7 @@ public class cc_FakeVerificationGenerator
 		Belief b = null;
 		String beliefId = entityField.getText();
 		log("retrieving belief id '" + beliefId + "'");
-		try {
-			b = getBelief(beliefId);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		b = getBelief(beliefId);
 		if (b == null) {
 			log("no such belief found!");
 			return null;
@@ -230,7 +225,13 @@ public class cc_FakeVerificationGenerator
 		g.reason = new SuperFormula(); // truth -> empty formula
 
 		GroundedBelief verif = new GroundedBelief();
-		verif.ags = AbstractBeliefFactory.createMutualAgentStatus(new String[] {"robot", "human"}); // XXX
+		Agent robot = new Agent("robot");
+		AgentStatus newAgs = BeliefUtils.raise(b.ags, robot);
+		if (newAgs == null) {
+			log("robot can't verify the belief " + b.id + "!");
+			return null;
+		}
+		verif.ags = newAgs;
 		verif.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, prob);
 		verif.sigma = b.sigma;
 		verif.timeStamp = getCASTTime();
