@@ -550,6 +550,14 @@ void ObjectSearch::ExecutePlan () {
 }
 
 
+void ObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap){
+	log("icemap.size: %d, icemap.cellSize: %f, centerx,centery: %f,%f",icemap.size,icemap.cellSize,icemap.xCenter, icemap.yCenter);
+	m_krsjlgm = new Cure::LocalGridMap<char>(icemap.size, icemap.cellSize, 0, Cure::LocalGridMap<char>::MAP1, icemap.xCenter,icemap.yCenter);
+	for(unsigned int i =0 ; i < icemap.size*icemap.size ; i ++){
+		(*m_krsjlgm)[i] = icemap.data[i];
+	}
+    log("concerted icemap to krsjmap");	
+}
 void ObjectSearch::GenViewPoints() {
 	srand ( time(NULL) );
     //log("Generating %i random samples", m_samplesize);
@@ -561,8 +569,15 @@ void ObjectSearch::GenViewPoints() {
     log("creating placeinterface proxy");
     FrontierInterface::LocalGridMap combined_lgm;
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    log("getting combined lgm");
     FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
+    for (int i = 0 ; i < placestosearch.size() ; i ++)
+	log("%d",placestosearch[i]);
     combined_lgm = agg2->getCombinedGridMap(placestosearch);
+    log("have combined lgm");
+    IcetoCureLGM(combined_lgm);
+
+    m_Displaykrsjlgm = new Cure::XDispLocalGridMap<char>(*m_krsjlgm);
 
     log("created placeinterface proxy");
 
