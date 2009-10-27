@@ -9,6 +9,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.*;
 import javax.swing.table.*;
 
 import cast.cdl.CASTTime;
@@ -51,15 +52,21 @@ public class FeatureInfoGUI extends JDialog {
 	}
 
 	private void button1ActionPerformed(ActionEvent e) {
+		if (!panel5.isVisible()) {
 		setSize(new Dimension(450, 450  + (30 * curFeature.alternativeValues.length)));
 		setPreferredSize(new Dimension(450, 450  + (25 * curFeature.alternativeValues.length)));
 		panel5.setVisible(true);
+		}
+		else {
+			button1.setEnabled(false);
+		}
 	}
 
 	private void button4ActionPerformed(ActionEvent e) {
 		panel5.setVisible(false);
 		setSize(new Dimension(450, 300  + (30 * curFeature.alternativeValues.length)));
 		setPreferredSize(new Dimension(450, 300  + (25 * curFeature.alternativeValues.length)));
+		button1.setEnabled(true);
 	}
 
 	private void button2ActionPerformed(ActionEvent e) {
@@ -132,12 +139,11 @@ public class FeatureInfoGUI extends JDialog {
 		panel5.setVisible(false);
 		setSize(new Dimension(450, 300 + (30 * curFeature.alternativeValues.length)));
 		setPreferredSize(new Dimension(450, 300  + (25 * curFeature.alternativeValues.length)));
+		button1.setEnabled(true);
 	}
 	
 	
 	private void updateFeatureValuesFrame() {
-		log("WOOHOOO update feature values frame!!!!!!!");
-		log("nb feat values: " + curFeature.alternativeValues.length);
 
 		if (table1.getModel().getRowCount() < curFeature.alternativeValues.length) {
 			
@@ -175,6 +181,30 @@ public class FeatureInfoGUI extends JDialog {
 				table1.getModel().setValueAt(curFeature.alternativeValues[i].getClass().getSimpleName(), i, 1);
 				table1.getModel().setValueAt(new Float(prob), i, 2);
 			}
+			
+			label5.setText(""+curFeature.alternativeValues.length);
+	}
+
+	private void slider1StateChanged(ChangeEvent e) {
+	    JSlider source = (JSlider)e.getSource();
+	    float fps = (source.getValue()/100.0f);
+	    double roundedProb = Math.round(fps*100.0) / 100.0;
+	    textField3.setText(""+roundedProb);
+	}
+
+	private void button3ActionPerformed(ActionEvent e) {
+		comboBox1.setSelectedItem(comboBox1.getModel().getElementAt(0));
+		textField2.setText("");
+		textField3.setText("0.5");
+		slider1.setValue(50);
+	}
+
+	private void table1MouseClicked(MouseEvent e) {
+		// TODO add your code here
+	}
+
+	private void menuItem1ActionPerformed(ActionEvent e) {
+		log("action in menu item 1 performed!!");
 	}
 
 	private void initComponents() {
@@ -211,6 +241,8 @@ public class FeatureInfoGUI extends JDialog {
 		buttonBar = new JPanel();
 		okButton = new JButton();
 		cancelButton = new JButton();
+		popupMenu1 = new JPopupMenu();
+		menuItem1 = new JMenuItem();
 
 		//======== this ========
 		setTitle("Insert new Feature in Proxy");
@@ -245,7 +277,6 @@ public class FeatureInfoGUI extends JDialog {
 					new Insets(0, 0, 5, 5), 0, 0));
 
 				//---- textField1 ----
-				textField1.setText("dgdfgsdf");
 				textField1.setColumns(12);
 				panel1.add(textField1, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -283,21 +314,13 @@ public class FeatureInfoGUI extends JDialog {
 						Class[] columnTypes = new Class[] {
 							String.class, String.class, Float.class
 						};
-						boolean[] columnEditable = new boolean[] {
-							false, false, false
-						};
 						@Override
 						public Class<?> getColumnClass(int columnIndex) {
 							return columnTypes[columnIndex];
 						}
-						@Override
-						public boolean isCellEditable(int rowIndex, int columnIndex) {
-							return columnEditable[columnIndex];
-						}
 					});
 					{
 						TableColumnModel cm = table1.getColumnModel();
-						cm.getColumn(1).setResizable(false);
 						cm.getColumn(1).setMinWidth(100);
 						cm.getColumn(1).setMaxWidth(200);
 						cm.getColumn(1).setPreferredWidth(150);
@@ -311,7 +334,6 @@ public class FeatureInfoGUI extends JDialog {
 								"AddressValue",
 								"UnknownValue"
 							}))));
-						cm.getColumn(2).setResizable(false);
 						cm.getColumn(2).setMinWidth(60);
 						cm.getColumn(2).setMaxWidth(100);
 						cm.getColumn(2).setPreferredWidth(80);
@@ -319,11 +341,11 @@ public class FeatureInfoGUI extends JDialog {
 					table1.setBorder(new CompoundBorder(
 						new BevelBorder(BevelBorder.LOWERED),
 						new EmptyBorder(30, 30, 30, 30)));
-					table1.setBackground(SystemColor.window);
 					table1.setGridColor(Color.black);
 					table1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 					table1.setIntercellSpacing(new Dimension(0, 0));
 					table1.setRowHeight(25);
+					table1.setComponentPopupMenu(popupMenu1);
 					scrollPane1.setViewportView(table1);
 				}
 				panel2.add(scrollPane1, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
@@ -423,11 +445,17 @@ public class FeatureInfoGUI extends JDialog {
 							panel7.setLayout(new BorderLayout());
 
 							//---- slider1 ----
-							slider1.setMaximum(1);
+							slider1.setMinorTickSpacing(10);
+							slider1.addChangeListener(new ChangeListener() {
+								public void stateChanged(ChangeEvent e) {
+									slider1StateChanged(e);
+								}
+							});
 							panel7.add(slider1, BorderLayout.CENTER);
 
 							//---- textField3 ----
-							textField3.setText("0.0");
+							textField3.setText("0.5");
+							textField3.setColumns(3);
 							panel7.add(textField3, BorderLayout.EAST);
 						}
 						panel5.add(panel7, new GridBagConstraints(5, 2, 1, 1, 0.0, 0.0,
@@ -436,6 +464,11 @@ public class FeatureInfoGUI extends JDialog {
 
 						//---- button3 ----
 						button3.setText("Reset");
+						button3.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								button3ActionPerformed(e);
+							}
+						});
 						panel5.add(button3, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
 							GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
 							new Insets(0, 0, 5, 5), 0, 0));
@@ -498,6 +531,19 @@ public class FeatureInfoGUI extends JDialog {
 		contentPane.add(dialogPane, BorderLayout.CENTER);
 		pack();
 		setLocationRelativeTo(getOwner());
+
+		//======== popupMenu1 ========
+		{
+
+			//---- menuItem1 ----
+			menuItem1.setText("Remove Feature");
+			menuItem1.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					menuItem1ActionPerformed(e);
+				}
+			});
+			popupMenu1.add(menuItem1);
+		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 		
 		setSize(new Dimension(450, 300));
@@ -538,6 +584,8 @@ public class FeatureInfoGUI extends JDialog {
 	private JPanel buttonBar;
 	private JButton okButton;
 	private JButton cancelButton;
+	private JPopupMenu popupMenu1;
+	private JMenuItem menuItem1;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
