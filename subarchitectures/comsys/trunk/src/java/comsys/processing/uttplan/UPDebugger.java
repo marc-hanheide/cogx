@@ -350,7 +350,7 @@ public class UPDebugger
 		} 
 		log("Wrote LF to \"" + dumpLFfile + "\"");
 		
-		return output.replace('_',' ');  // replace underscores because of thank_you
+		return output;  // replace underscores because of thank_you
     } // end realizeLfWithGrammar
 
 	
@@ -452,7 +452,7 @@ public class UPDebugger
 	String reduxfile = curDir+"/subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx";
 
 	// Default the realizer grammar to moloko6
-	String ccgfile = curDir+"/subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml"; 
+	String ccgfile = curDir+"/subarchitectures/comsys/grammars/openccg/prosodic_moloko.v6/grammar.xml"; 
 	Realizer realizer = null;
 
 	// Default ngrams corpus
