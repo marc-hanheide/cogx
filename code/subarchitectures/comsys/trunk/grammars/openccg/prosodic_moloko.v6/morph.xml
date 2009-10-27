@@ -8,32 +8,74 @@
   <entry word="LH%" macros="@th-hearer" pos="IntmPhr_t" stem="t_intmphr"/>
   <entry word="HL%" macros="@th-speaker" pos="IntmPhr_t" stem="t_intmphr"/>
   <entry word="HH%" macros="@th-hearer" pos="IntmPhr_t" stem="t_intmphr"/>
-  <entry word="I" macros="@1st @s-sg @nom @pro @sg" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
-  <entry word="me" macros="@1st @s-sg @acc @pro @sg" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="I" macros="@1st @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="I" macros="@1st @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="I@H*" macros="@1st @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="I@L+H*" macros="@1st @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="me" macros="@1st @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="me" macros="@1st @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="me@H*" macros="@1st @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
+  <entry word="me@L+H*" macros="@1st @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
   <entry word="my" macros="@sg" pos="Owner-pro" stem="I-owner-sg" class="entity" pred="I"/>
   <entry word="mine" macros="@sg" pos="Owned-np" stem="I-owned-sg" class="entity" pred="I"/>
-  <entry word="we" macros="@1st @s-pl @nom @pro @pl" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
-  <entry word="us" macros="@1st @s-pl @acc @pro @pl" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="we" macros="@1st @s-pl @nom @pro @pl @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="we" macros="@1st @s-pl @nom @pro @pl @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="we@H*" macros="@1st @s-pl @nom @pro @pl @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="we@L+H*" macros="@1st @s-pl @nom @pro @pl @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="us" macros="@1st @s-pl @acc @pro @pl @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="us" macros="@1st @s-pl @acc @pro @pl @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="us@H*" macros="@1st @s-pl @acc @pro @pl @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
+  <entry word="us@L+H*" macros="@1st @s-pl @acc @pro @pl @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="I-pro-pers-pl" class="person" pred="I"/>
   <entry word="our" macros="@pl" pos="Owner-pro" stem="I-owner-pl" class="entity" pred="I"/>
   <entry word="ours" macros="@pl" pos="Owned-np" stem="I-owned-pl" class="entity" pred="I"/>
-  <entry word="you" macros="@2nd @s-sg @nom @pro @sg" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
-  <entry word="you" macros="@2nd @s-sg @acc @pro @sg" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you" macros="@2nd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you" macros="@2nd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you@H*" macros="@2nd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you@L+H*" macros="@2nd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you" macros="@2nd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you" macros="@2nd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you@H*" macros="@2nd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
+  <entry word="you@L+H*" macros="@2nd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="you-pro-pers-sg" class="person" pred="you"/>
   <entry word="your" macros="@sg" pos="Owner-pro" stem="you-owner-sg" class="entity" pred="you"/>
   <entry word="yours" macros="@sg" pos="Owned-np" stem="you-owned-sg" class="entity" pred="you"/>
-  <entry word="he" macros="@3rd @s-sg @nom @pro @sg" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
-  <entry word="him" macros="@3rd @s-sg @acc @pro @sg" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="he" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="he" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="he@H*" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="he@L+H*" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="him" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="him" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="him@H*" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
+  <entry word="him@L+H*" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="he-pro-pers-sg" class="person" pred="he"/>
   <entry word="his" macros="@sg" pos="Owner-pro" stem="he-owner-sg" class="entity" pred="he"/>
   <entry word="his" macros="@sg" pos="Owned-np" stem="he-owned-sg" class="entity" pred="he"/>
-  <entry word="she" macros="@3rd @s-sg @nom @pro @sg" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
-  <entry word="her" macros="@3rd @s-sg @acc @pro @sg" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="she" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="she" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="she@H*" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="she@L+H*" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="her" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="her" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="her@H*" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
+  <entry word="her@L+H*" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="she-pro-pers-sg" class="person" pred="she"/>
   <entry word="her" macros="@sg" pos="Owner-pro" stem="she-owner-sg" class="entity" pred="she"/>
   <entry word="hers" macros="@sg" pos="Owned-np" stem="she-owned-sg" class="entity" pred="she"/>
-  <entry word="it" macros="@3rd @s-sg @nom @pro @sg" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
-  <entry word="it" macros="@3rd @s-sg @acc @pro @sg" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it@H*" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it@L+H*" macros="@3rd @s-sg @nom @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it@H*" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
+  <entry word="it@L+H*" macros="@3rd @s-sg @acc @pro @sg @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="it-pro-pers-sg" class="thing" pred="it"/>
   <entry word="its" macros="@sg" pos="Owner-pro" stem="it-owner-sg" class="entity" pred="it"/>
   <entry word="its" macros="@sg" pos="Owned-np" stem="it-owned-sg" class="entity" pred="it"/>
-  <entry word="they" macros="@3rd @s-pl @nom @pro @pl" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
-  <entry word="them" macros="@3rd @s-pl @acc @pro @pl" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="they" macros="@3rd @s-pl @nom @pro @pl @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="they" macros="@3rd @s-pl @nom @pro @pl @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="they@H*" macros="@3rd @s-pl @nom @pro @pl @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="they@L+H*" macros="@3rd @s-pl @nom @pro @pl @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="them" macros="@3rd @s-pl @acc @pro @pl @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="them" macros="@3rd @s-pl @acc @pro @pl @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="them@H*" macros="@3rd @s-pl @acc @pro @pl @t-uncontentious @t-focus-true @t-rheme-true @hs" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
+  <entry word="them@L+H*" macros="@3rd @s-pl @acc @pro @pl @t-uncontentious @t-focus-true @t-rheme-false @lphs" pos="Bare-np" stem="they-pro-pers-pl" class="entity" pred="they"/>
   <entry word="their" macros="@pl" pos="Owner-pro" stem="they-owner-pl" class="entity" pred="they"/>
   <entry word="theirs" macros="@pl" pos="Owned-np" stem="they-owned-pl" class="entity" pred="they"/>
   <entry word="that" macros="@3rd @s-sg @acc @pro @sg @asr-correction" pos="Bare-np" stem="it-pro-3rd-sg" class="thing" pred="it"/>
@@ -748,7 +790,7 @@
   <entry word="size" pos="Quality-class" stem="sizesize-quality-class" class="quality" pred="size"/>
   <entry word="shape" pos="Quality-class" stem="shapeshape-quality-class" class="quality" pred="shape"/>
   <entry word="color" pos="Quality-class" stem="colorcolor-quality-class" class="quality" pred="color"/>
-  <entry word="colour" pos="Quality-class" stem="colourcolor-quality-class" class="quality" pred="color"/>
+  <entry word="colour" pos="Quality-class" stem="colourcolour-quality-class" class="quality" pred="colour"/>
   <entry word="age" pos="Quality-class" stem="ageage-quality-class" class="quality" pred="age"/>
   <entry word="material" pos="Quality-class" stem="materialmaterial-quality-class" class="quality" pred="material"/>
   <entry word="substance" pos="Quality-class" stem="substancesubstance-quality-class" class="quality" pred="substance"/>

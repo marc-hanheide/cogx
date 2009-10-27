@@ -313,9 +313,14 @@
     word form.-wh-comp.class.props: props(class, pred=prd)  { form: args ; }
   }
 
-  def  quality-class (form) { _quality-class(form, form) } 
-  def _quality-class (prd, form) {
-    word form.prd.-quality-class: Quality-class(quality, pred=prd) { form; }
+  def  quality-class (form) { _quality-class_ip(form, form, markWordHs(form), markWordLs(form), markWordLpHs(form)) } 
+
+  def _quality-class (prd, form) { _quality-class_ip(form, form, markWordHs(form), markWordLs(form), markWordLpHs(form)) } 
+  def _quality-class_ip (prd, form, prd_hs,prd_ls,prd_lphs) {
+    word form.prd.-quality-class: Quality-class(quality, pred=prd) { 
+	form; 
+#        prd_hs : m-focus-true m-uncontentious m-rheme-true hs;
+	}
   }
 
 
