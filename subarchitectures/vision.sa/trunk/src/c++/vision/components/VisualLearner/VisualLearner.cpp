@@ -188,13 +188,7 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    };
    // TODO: lock pProtoObj
 
-   //VL_recognise_attributes(*pProtoObj, _pTask->labels, _pTask->distribution);
-   int color = rand() % 5 + 1;
-   _pTask->labels.push_back(color);
-   _pTask->distribution.push_back(0.70f);
-   
-   _pTask->labels.push_back((color + rand() % 3 + 1) % 5 + 1);
-   _pTask->distribution.push_back(0.3f);
+   VL_recognise_attributes(*pProtoObj, _pTask->labels, _pTask->distribution);
 
    // TODO: unlock pProtoObj
    return true;
@@ -222,7 +216,7 @@ bool VisualLearner::updateModel(VisualLearnerLearningTaskPtr _pTask)
       return false;
    };
 
-   //VL_update_model(*pProtoObj, _pTask->labels, _pTask->distribution);
+   VL_update_model(*pProtoObj, _pTask->labels, _pTask->distribution);
 
    return true;
 }
