@@ -23,7 +23,7 @@
 		;; special
 		(has-goal ?a - agent)
 		(commited ?a - agent)
-        (connects ?p1 - place_id ?p2 - place_id)
+        ;;(connects ?p1 - place_id ?p2 - place_id)
     )	
 
 	(:functions
@@ -72,7 +72,9 @@
 	 :parameters (?to - place)
 	 :variables (?from - place)
 	 :precondition (and
-		(located ?a ?from) 
+		(located ?a ?from)
+        (or (= (explored ?to) true)
+            (connected ?from ?to)) 
 		)
 	 :effect (and
 		(not (located ?a ?from))
