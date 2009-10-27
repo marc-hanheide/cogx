@@ -66,7 +66,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
   
 
       <action choice="hold">
-	   <add-lf lf="@content:modal(let ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:animate ^ addressee) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:animate) ^ &lt;Patient&gt;(i1_0:animate ^ I))" dest="CONTENT" />
+	   <add-lf lf="@content:modal(let ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:animate ^ addressee ^  &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:animate ^  &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;true) ^ &lt;Patient&gt;(i1_0:animate ^ I ^  &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false))" dest="CONTENT" />
 <!-- PROBLEM WITH INCOMPLETE EDGE -->
 
 <!--  <add-lf lf="@content:perception(see ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(act:person ^ speaker+addressee) ^ &lt;Subject&gt;act:person)" dest="CONTENT" />   THIS PARSES (let's see), BUT DOES NOT GENERATE -->
@@ -88,7 +88,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 
       <action choice="accept-isee">
 <!--			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person"   dest="CONTENT"/>  -->
-			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I )"   dest="CONTENT"/>
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind  &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;true ^ &lt;Actor&gt;(i1:person ^ I &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false)"   dest="CONTENT"/>
       </action>      
 
       <action choice="reject-sorry">
