@@ -170,11 +170,22 @@
       form :  s-sg 3rd full args;
     }
   }
- 
-  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {
+
+  #PROSG09 chnages for prosodic marking on pronouns: I_H*, me_L+H* 
+  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {pronoun_ip(prd, pers, num, nom-form, markWordHs(nom-form),markWordLs(nom-form),markWordLpHs(nom-form), acc-form,markWordHs(acc-form),markWordLs(acc-form),markWordLpHs(acc-form), owner,markWordHs(owner),markWordLs(owner),markWordLpHs(owner), owned,markWordHs(owned),markWordLs(owned),markWordLpHs(owned), class,)	}
+
+ def pronoun_ip(prd, pers, num, nom-form,nom-form_hs,nom-form_ls,nom-form_lphs, acc-form,acc-form_hs,acc-form_ls,acc-form_lphs, owner,owner_hs,owner_ls,owner_lphs, owned,owned_hs,owned_ls,owned_lphs, class,) {
     word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
-      nom-form :  pers s-.num nom pro num ;
-      acc-form :  pers s-.num acc pro num ;
+      #nom-form :  pers s-.num nom pro num ;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true;
+      nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true hs;
+      nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false lphs;
+      #acc-form :  pers s-.num acc pro num ;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true;
+      acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true hs;
+      acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false lphs;
     }
     word prd.-owner-.num:Owner-pro('entity', pred=prd) {
       owner : num ;

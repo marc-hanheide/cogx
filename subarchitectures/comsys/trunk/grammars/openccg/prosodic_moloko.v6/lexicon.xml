@@ -22846,7 +22846,7 @@
     <member stem="sizesize-quality-class" pred="size"/>
     <member stem="shapeshape-quality-class" pred="shape"/>
     <member stem="colorcolor-quality-class" pred="color"/>
-    <member stem="colourcolor-quality-class" pred="color"/>
+    <member stem="colourcolour-quality-class" pred="colour"/>
     <member stem="ageage-quality-class" pred="age"/>
     <member stem="materialmaterial-quality-class" pred="material"/>
     <member stem="substancesubstance-quality-class" pred="substance"/>
