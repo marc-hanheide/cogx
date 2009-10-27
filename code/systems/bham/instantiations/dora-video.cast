@@ -36,7 +36,7 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 
 
-JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom, binder.autogen.core.UnionConfiguration"
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialProperties.ObjectPlaceProperty, SpatialProperties.GatewayPlaceProperty, SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom, binder.autogen.core.UnionConfiguration"
 
 
 # verb stuff
