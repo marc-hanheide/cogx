@@ -89,7 +89,7 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 			generate : it(TargetNom),
 		i : feat_ProofStatus(TargetNom, assumed) / 1.0,
 		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value),
-		i : feat_ProofStatus(PropNom, assumed) / 1.0.
+		i : feat_ProofStatus(PropNom, asserted) / 1.0.
 
 %----------------------------------------------------------------------
 
