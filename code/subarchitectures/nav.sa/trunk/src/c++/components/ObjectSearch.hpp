@@ -17,6 +17,7 @@
 #include "ObjPdf.hpp"
 #include "XVector3D.h"
 #include <Navigation/LocalMap.hh>
+#include <FrontierInterface.hpp>
 
 class ObjectSearch : public cast::ManagedComponent,
       public Scan2dReceiver,
@@ -128,6 +129,7 @@ enum ObjSearchCommand {
 	SearchPlan GeneratePlan(double covpercent,std::vector<double> PDFsum);    
 	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
     void GenViewPoints();
+    void IcetoCureLGM(FrontierInterface::LocalGridMap icemap);
     std::vector<double> ScorebyPDF();
     void UpdateDisplays();
     void CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c);
@@ -146,9 +148,11 @@ enum ObjSearchCommand {
 	NavData::ObjectSearchPlanPtr ConvertPlantoIce();
     IceUtil::Mutex m_Mutex;
     Cure::LocalGridMap<double>* m_lgm;
+    Cure::LocalGridMap<char>* m_krsjlgm;
     Cure::LocalMap m_LMap;
   	Cure::ObjGridLineRayTracer<double>* m_Glrt;
     Cure::X11DispLocalGridMap<double>* m_Displaylgm;
+    Cure::X11DispLocalGridMap<char>* m_Displaykrsjlgm;
     Cure::X11DispLocalGridMap<double>* m_Displaypdf;
 
     bool m_CtrlPTU;
