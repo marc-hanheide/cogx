@@ -31,3 +31,5 @@ if nargin>0
    end
    
 end
+
+dispCurrData; %DEBUG!!!
