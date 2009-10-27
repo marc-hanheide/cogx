@@ -86,10 +86,6 @@
            <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JTextField</string> 
             <void method="setProperty"> 
-             <string>text</string> 
-             <string>dgdfgsdf</string> 
-            </void> 
-            <void method="setProperty"> 
              <string>columns</string> 
              <int>12</int> 
             </void> 
@@ -231,13 +227,13 @@
                 </object> 
                 <object class="java.util.Vector"> 
                  <void method="add"> 
-                  <boolean>false</boolean> 
+                  <boolean>true</boolean> 
                  </void> 
                  <void method="add"> 
-                  <boolean>false</boolean> 
+                  <boolean>true</boolean> 
                  </void> 
                  <void method="add"> 
-                  <boolean>false</boolean> 
+                  <boolean>true</boolean> 
                  </void> 
                 </object> 
                 <object class="java.util.Vector"> 
@@ -272,7 +268,7 @@
                    <int>150</int> 
                    <int>100</int> 
                    <int>200</int> 
-                   <boolean>false</boolean> 
+                   <boolean>true</boolean> 
                   </object> 
                  </void> 
                  <void method="add"> 
@@ -281,7 +277,7 @@
                    <int>80</int> 
                    <int>60</int> 
                    <int>100</int> 
-                   <boolean>false</boolean> 
+                   <boolean>true</boolean> 
                   </object> 
                  </void> 
                 </object> 
@@ -306,10 +302,6 @@
                </object> 
               </void> 
               <void method="setProperty"> 
-               <string>background</string> 
-               <object class="java.awt.SystemColor" field="window"/> 
-              </void> 
-              <void method="setProperty"> 
                <string>gridColor</string> 
                <object class="java.awt.Color" field="black"/> 
               </void> 
@@ -327,6 +319,12 @@
               <void method="setProperty"> 
                <string>rowHeight</string> 
                <int>25</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>componentPopupMenu</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>popupMenu1</string> 
+               </object> 
               </void> 
               <void property="name"> 
                <string>table1</string> 
@@ -718,11 +716,19 @@
                  <object class="com.jformdesigner.model.FormComponent"> 
                   <string>javax.swing.JSlider</string> 
                   <void method="setProperty"> 
-                   <string>maximum</string> 
-                   <int>1</int> 
+                   <string>minorTickSpacing</string> 
+                   <int>10</int> 
                   </void> 
                   <void property="name"> 
                    <string>slider1</string> 
+                  </void> 
+                  <void method="addEvent"> 
+                   <object class="com.jformdesigner.model.FormEvent"> 
+                    <string>javax.swing.event.ChangeListener</string> 
+                    <string>stateChanged</string> 
+                    <string>slider1StateChanged</string> 
+                    <boolean>true</boolean> 
+                   </object> 
                   </void> 
                  </object> 
                  <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -738,7 +744,11 @@
                   <string>javax.swing.JTextField</string> 
                   <void method="setProperty"> 
                    <string>text</string> 
-                   <string>0.0</string> 
+                   <string>0.5</string> 
+                  </void> 
+                  <void method="setProperty"> 
+                   <string>columns</string> 
+                   <int>3</int> 
                   </void> 
                   <void property="name"> 
                    <string>textField3</string> 
@@ -774,6 +784,14 @@
                 </void> 
                 <void property="name"> 
                  <string>button3</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>button3ActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
                 </void> 
                </object> 
                <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -1015,6 +1033,39 @@
        <object class="java.awt.Dimension"> 
         <int>580</int> 
         <int>540</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormContainer"> 
+      <string>javax.swing.JPopupMenu</string> 
+      <object class="com.jformdesigner.model.FormLayoutManager"> 
+       <class>javax.swing.JPopupMenu</class> 
+      </object> 
+      <void property="name"> 
+       <string>popupMenu1</string> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormComponent"> 
+        <string>javax.swing.JMenuItem</string> 
+        <void method="setProperty"> 
+         <string>text</string> 
+         <string>Remove Feature</string> 
+        </void> 
+        <void property="name"> 
+         <string>menuItem1</string> 
+        </void> 
+       </object> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>145</int> 
+        <int>630</int> 
        </object> 
       </void> 
      </object> 
