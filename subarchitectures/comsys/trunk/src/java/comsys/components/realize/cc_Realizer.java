@@ -400,7 +400,7 @@ public class cc_Realizer
 */
 					if (bestEdge != null) { 
 						// String bestEdgeString = bestEdge.getSign().getOrthography().toString();
-						return bestEdge.getSign().getOrthography().toString();  
+						return bestEdge.getSign().getOrthography().toString().replace('_',' ');  // replace underscores because of thank_you;  
 					} else {
 						return "";
 					}
