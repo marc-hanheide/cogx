@@ -99,7 +99,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     print "The following plan was found:\n", plan
 
     dot_str = plan.to_dot()
-    dot_fn = abspath(join(this_path, "plan.dot"))
+    dot_fn = abspath(join(this_path, "plan%d.dot" % task.taskID))
     open(dot_fn, "w").write(dot_str)
     print "Dot file for plan is stored in", dot_fn
     
