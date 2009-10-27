@@ -362,7 +362,7 @@ public class PlaceMonitor extends ManagedComponent {
 		
 	private boolean createObject(ObjectPlaceProperty _objProp) {
 		// establish the ontology member names
-		String category = ((SpatialProperties.StringValue)_objProp.mapValue).value;
+		String category = "dora:" + ComaHelper.firstCap(((SpatialProperties.StringValue)_objProp.mapValue).value);
 		String placeIns = "dora:place"+_objProp.placeId;
 		String inRel = "dora:in";
 		
