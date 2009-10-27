@@ -44,6 +44,11 @@ static GLfloat col_highlight[4];
 static vector<SurfacePoint> points;
 static size_t selected_point = UINT_MAX;
 static Vector3 img_cam_pos;
+/**
+ * Whether or not to display reprojected 3D points overlaid on image
+ */
+static bool displayProjectedPoints = true;
+static bool displayCameraImage = false;
 
 static void InitWin()
 {
@@ -168,49 +173,12 @@ static void DrawOverlays()
     }
   }
 
-  // draw z=0 plane
-  glBegin(GL_LINE_LOOP);
-  glColor4f(0., 1., 0., 1.);
-  glVertex3d(-1., -1., 0.);
-  glVertex3d(1., -1., 0.);
-  glVertex3d(1., 1., 0.);
-  glVertex3d(-1., 1., 0.);
-  glEnd();
-
   // draw left camera position
   glColor4f(1., 1., 1., 1.);
   glPushMatrix();
   glTranslatef(img_cam_pos.x, img_cam_pos.y, img_cam_pos.z);
   glutWireSphere(0.01, 10, 10);
   glPopMatrix();
-
-  // HACK draw DFKI tea box
-  /*glBegin(GL_LINE_LOOP);
-  glColor4f(0., 1., 0., 1.);
-  glVertex3d(0.000, 0.000, 0.000);
-  glVertex3d(0.160, 0.000, 0.000);
-  glVertex3d(0.160, 0.065, 0.000);
-  glVertex3d(0.000, 0.065, 0.000);
-  glEnd();
-  glBegin(GL_LINE_LOOP);
-  glVertex3d(0.000, 0.000, 0.073);
-  glVertex3d(0.160, 0.000, 0.073);
-  glVertex3d(0.160, 0.065, 0.073);
-  glVertex3d(0.000, 0.065, 0.073);
-  glEnd();
-  glBegin(GL_LINE_LOOP);
-  glVertex3d(0.000, 0.000, 2*0.073);
-  glVertex3d(0.160, 0.000, 2*0.073);
-  glVertex3d(0.160, 0.065, 2*0.073);
-  glVertex3d(0.000, 0.065, 2*0.073);
-  glEnd();
-  glBegin(GL_LINE_LOOP);
-  glVertex3d(0.000, 0.000, 3*0.073);
-  glVertex3d(0.160, 0.000, 3*0.073);
-  glVertex3d(0.160, 0.065, 3*0.073);
-  glVertex3d(0.000, 0.065, 3*0.073);
-  glEnd();*/
-  // HACK END
 }
 
 static void DrawPoints()
@@ -317,6 +285,7 @@ static void MouseMove(int x, int y)
 /**
  * This assume that the left optical axis is equal to the global z axis, i.e.
  * that the left camera is the coordinate origin.
+ * TODO: use camera pose
  */
 static void selectPointNearLeftOpticalAxis()
 {
@@ -376,6 +345,10 @@ void StereoViewer::runComponent()
 
   cvNamedWindow(getComponentID().c_str(), 1);
  
+  println("hotkeys for camera window");
+  println("  p .. turn on/off display of reprojected 3D points");
+  println("  o .. turn on/off display of rectified camera image");
+
   while(isRunning())
   {
     Video::Image image;
@@ -388,117 +361,44 @@ void StereoViewer::runComponent()
     selectPointNearLeftOpticalAxis();
 
     cvSaveImage("viewer-rect-L.png", iplImage);
-    //cvSet(iplImage, cvScalar(0));
+
+    if(!displayCameraImage)
+      cvSet(iplImage, cvScalarAll(0));
+
+    if(displayCameraImage && !displayProjectedPoints)
+      cvShowImage(getComponentID().c_str(), iplImage);
+
     for(size_t i = 0; i < points.size(); i++)
     {
-      //if(points[i].p.z > 0.05)  // above the table plane, which is a z = 0
-      {
-        Vector2 p = projectPoint(image.camPars, points[i].p);
-        distortPoint(image.camPars, p, p);
-        cvCircle(iplImage, cvPoint(p.x, p.y), 0,
-            CV_RGB((unsigned char)points[i].c.r,
-                   (unsigned char)points[i].c.g,
-                   (unsigned char)points[i].c.b));
-      }
+      Vector2 p = projectPoint(image.camPars, points[i].p);
+      distortPoint(image.camPars, p, p);
+      cvCircle(iplImage, cvPoint(p.x, p.y), 0,
+          CV_RGB((unsigned char)points[i].c.r,
+                 (unsigned char)points[i].c.g,
+                 (unsigned char)points[i].c.b));
     }
+
     cvSaveImage("viewer-overlay.png", iplImage);
 
-    // HACK draw DFKI tea box
-    /*Vector2 p;
-    p = projectPoint(image.camPars, vector3(0.000, 0.000, 0.000));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.000, 0.000));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.065, 0.000));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.000, 0.065, 0.000));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    // show image with projected points overlaid
+    if(displayProjectedPoints)
+      cvShowImage(getComponentID().c_str(), iplImage);
 
-    p = projectPoint(image.camPars, vector3(0.000, 0.000, 0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.000, 0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.065, 0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.000, 0.065, 0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-
-    p = projectPoint(image.camPars, vector3(0.000, 0.000, 2*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.000, 2*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.065, 2*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.000, 0.065, 2*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-
-    p = projectPoint(image.camPars, vector3(0.000, 0.000, 3*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.000, 3*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.160, 0.065, 3*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    p = projectPoint(image.camPars, vector3(0.000, 0.065, 3*0.073));
-    distortPoint(image.camPars, p, p);
-    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
-    */
-
-    /*p = projectPoint(image.camPars, vector3(0.000, -1.000, 1.000));
-    cout << "StereoViewer projected origin " << p;
-    distortPoint(image.camPars, p, p);
-    cout << "  distorted " << p << endl;
-    */
-
-    // HACK END
-    /* image being the right camera image, this draws a nice epipolar line
-    for(int i = 1; i <= 5; i++)
+    switch(cvWaitKey(10) & 0xff)
     {
-      Vector2 p = projectPoint(image.camPars, vector3(0., 0., 0.5 + (double)i*0.2));
-      cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(0,255,0));
-      distortPoint(image.camPars, p, p);
-      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(255,0,0));
-    }*/
-
-    // draw points of the calibration pattern
-    /*{
-      Vector2 p;
-      p = projectPoint(image.camPars, vector3(0.000, 0.000, 0.000));
-      distortPoint(image.camPars, p, p);
-      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.240, 0.000, 0.000));
-      distortPoint(image.camPars, p, p);
-      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.240, 0.120, 0.000));
-      distortPoint(image.camPars, p, p);
-      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.200, 0.120, 0.000));
-      distortPoint(image.camPars, p, p);
-      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.000, 0.160, 0.000));
-      distortPoint(image.camPars, p, p);
-      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-    }*/
-
-    cvShowImage(getComponentID().c_str(), iplImage);
-
-    // needed to make the window appear
-    // (an odd behaviour of OpenCV windows!)
-    cvWaitKey(10);
+      case 'o':
+        displayCameraImage = !displayCameraImage;
+        println("displaying rectified camera image; %s",
+          displayCameraImage ? "true" :
+          "false");
+        break;
+      case 'p':
+        displayProjectedPoints = !displayProjectedPoints;
+        println("overlaying reprojected points; %s",
+          displayProjectedPoints ? "true" :
+          "false");
+        break;
+    }
     cvReleaseImage(&iplImage);
 
     glutPostRedisplay();
