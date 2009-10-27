@@ -113,6 +113,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
                                                      m_RobotServerHost);
   FrontierInterface::HypothesisEvaluatorPtr servant = new EvaluationServer(this);
   registerIceServer<FrontierInterface::HypothesisEvaluator, FrontierInterface::HypothesisEvaluator>(servant);
+
+  FrontierInterface::LocalMapInterfacePtr mapservant = new LocalMapServer(this);
+  registerIceServer<FrontierInterface::LocalMapInterface, FrontierInterface::LocalMapInterface>(mapservant);
 } 
 
 void LocalMapManager::start() 
@@ -126,6 +129,7 @@ void LocalMapManager::start()
 		  new MemberFunctionChangeReceiver<LocalMapManager>(this,
 								  &LocalMapManager::newRobotPose));  
   
+  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   log("LocalMapManager started");
   
 }
@@ -452,3 +456,99 @@ LocalMapManager::EvaluationServer::getHypothesisEvaluation(int hypID,
   return ret;
 }
 
+FrontierInterface::LocalGridMap
+LocalMapManager::LocalMapServer::getCombinedGridMap(const vector<int> &places,
+    const Ice::Current &_context)
+{
+  m_pOwner->lockComponent();
+  FrontierInterface::LocalGridMap ret; 
+  m_pOwner->getCombinedGridMap(ret, places);
+  m_pOwner->unlockComponent();
+  return ret;
+}
+
+void 
+LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
+    const vector<int> &places)
+{
+  vector<const Cure::LocalGridMap<unsigned char> *>maps;
+  for (vector<int>::const_iterator it = places.begin(); it != places.end(); it++) {
+    NavData::FNodePtr node = m_placeInterface->getNodeFromPlaceID(*it);
+    if (node != 0) {
+      if (m_nodeGridMaps.find(node->nodeId) != m_nodeGridMaps.end()) {
+	maps.push_back(m_nodeGridMaps[node->nodeId]);
+      }
+      else {
+	log("Couldn't find grid map for node %d", node->nodeId);
+      }
+    }
+    else {
+      log ("No grid map for Place %d; not a node!", *it);
+    }
+  }
+
+  if (maps.empty()) {
+    return;
+  }
+
+  double minx = FLT_MAX;
+  double maxx = -FLT_MAX;
+  double miny = FLT_MAX;
+  double maxy = -FLT_MAX;
+
+  //Find bounds of the merged grid map
+  for (vector<const Cure::LocalGridMap<unsigned char> *>::iterator it = maps.begin();
+      it != maps.end(); it++) {
+    double mapminx = (*it)->getCentXW() - (*it)->getSize() * (*it)->getCellSize();
+    double mapmaxx = (*it)->getCentXW() + (*it)->getSize() * (*it)->getCellSize();
+    double mapminy = (*it)->getCentYW() - (*it)->getSize() * (*it)->getCellSize();
+    double mapmaxy = (*it)->getCentYW() + (*it)->getSize() * (*it)->getCellSize();
+    minx = minx < mapminx ? minx : mapminx;
+    maxx = maxx > mapmaxx ? maxx : mapmaxx;
+    miny = miny < mapminy ? miny : mapminy;
+    maxy = maxy > mapmaxy ? maxy : mapmaxy;
+  }
+
+  double dsize = maxx-minx;
+  double cellSize = maps[0]->getCellSize();
+  double cx = (minx+maxx)/2;
+  double cy = (miny+maxy)/2;
+
+  if (maxy-miny > dsize) 
+    dsize = maxy-miny;
+  int newSize = (int)((dsize + cellSize/2) / cellSize);
+  Cure::LocalGridMap<unsigned char> newMap(newSize, cellSize, '2',
+      Cure::LocalGridMap<unsigned char>::MAP1, cx, cy);
+
+  map.xCenter = cx;
+  map.yCenter = cy;
+  map.cellSize = cellSize;
+  map.size = newSize;
+  map.data.clear();
+
+  //Sample each of the maps into the new map
+  for (vector<const Cure::LocalGridMap<unsigned char> *>::iterator it = maps.begin();
+      it != maps.end(); it++) {
+    for (int y = -(*it)->getSize(); y <= (*it)->getSize(); y++) {
+      for (int x = -(*it)->getSize(); x <= (*it)->getSize(); x++) {
+	char val = (**it)(x,y);
+	if (val != '2') {
+	  double dx, dy;
+	  (*it)->index2WorldCoords(x, y, dx, dy);
+	  int nx, ny;
+	  if (newMap.worldCoords2Index(dx, dy, nx, ny)) {
+	    log("Error! bounds incorrect in getCombinedGridMaps!");
+	  }
+	  else {
+	    if (newMap(nx, ny) == '2' || newMap(nx, ny) == '0') {
+	      newMap(nx, ny) = val;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  for (int i = 0; i < newSize*newSize; i++) {
+    map.data.push_back(newMap[i]);
+  }
+}

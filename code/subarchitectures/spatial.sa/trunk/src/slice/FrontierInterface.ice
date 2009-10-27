@@ -62,8 +62,7 @@ module FrontierInterface {
     double yCenter;
     double cellSize;
 
-    int width;
-    int height;
+    int size;
     CellSeq data;
   };
 
