@@ -31,6 +31,8 @@ public class ProsodicTextToRawMARYXml {
 	
 	private static final String SententialPause = new String ("6");
 	private static final String IntraSententialPause = new String ("2");
+	private static final String ProsodicLex = new String ("@");
+	private static final String BoundryLex = new String ("%");
 	/**
 	 * @param args
 	 */
@@ -79,7 +81,7 @@ public class ProsodicTextToRawMARYXml {
 			//Keep the trace of line count
 				UtteranceCount++;
 			//Just an indicator
-				if(l_utterance.contains("%") || l_utterance.contains("_")) prosody= true;
+				if(l_utterance.contains(BoundryLex) || l_utterance.contains(ProsodicLex)) prosody= true;
 				else prosody= false;
 			//pass this line to the conversion function
 			l_xmlfile=ConvertToRawMarxXml(l_utterance.substring(l_substr));
@@ -150,12 +152,12 @@ public class ProsodicTextToRawMARYXml {
 	}
 
 	public static boolean AccentedWord(String i_word){
-		if (i_word.contains("_")) return true; //for the moment we only check for an "_" in accented words. e.g. red_H*, red_L+H*
+		if (i_word.contains(ProsodicLex)) return true; //for the moment we only check for an "_" in accented words. e.g. red_H*, red_L+H*
 		else return false;
 		
 	}
 	public static boolean isBoundaryTone(String i_btone){
-		if(i_btone.contains("%")) return true; //for the moment we only check for an "%" in boundary tones. e.g. LL%, LH%, HH%, HL%.
+		if(i_btone.contains(BoundryLex)) return true; //for the moment we only check for an "%" in boundary tones. e.g. LL%, LH%, HH%, HL%.
 		else return false;
 	}
 	public static String HandleAccentedWord(String i_acc_word) {
@@ -168,7 +170,7 @@ public class ProsodicTextToRawMARYXml {
 		l_xmlto_return.append(XMLtag_whitespace);
 		l_xmlto_return.append(XMLtag_ACCENT_prefix);
 		//Tokenise word and accent, i.e. red_H* into red and H*
-		StringTokenizer l_tkns = new StringTokenizer(i_acc_word,"_");
+		StringTokenizer l_tkns = new StringTokenizer(i_acc_word,ProsodicLex);
 		String l_word =new String("");
 		String l_accent = new String("");
 		while (l_tkns.hasMoreTokens()){
@@ -212,13 +214,13 @@ public class ProsodicTextToRawMARYXml {
 		 l_xmlto_return.append(XMLtag_whitespace);
 		 l_xmlto_return.append(XMLtag_TONE_prefix);
 		
-		 //RawMaryXML takes LL% as L-L%, !LH% as !L-H% and so on
+		 //RawMaryXML takes LL% as L-L%, !LH% as !L-H% and L as L-
 		 if(i_bndry.length()>2 && i_bndry.length() <5 ){
-			//e.g. LL%, H^H%,
+			//e.g. LL% as L-L%, !LH% as !L-H%
 			l_lhs=i_bndry.substring(0,1);
 			l_rhs=i_bndry.substring(1);
 		 }else if (i_bndry.length()<=2){
-			//e.g. !H -> !H- , H -> L-
+			//e.g. !H as !H- , H as H- and so on
 			l_lhs=i_bndry;
 			l_rhs="";
 		 }else if (i_bndry.length()==5){
