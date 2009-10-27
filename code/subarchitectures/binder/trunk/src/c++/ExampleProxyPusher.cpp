@@ -38,12 +38,11 @@ void ExampleProxyPusher::runComponent() {
   FeaturePtr feat1a = new Feature();
   feat1a->featlabel = "category";
   feat1a->alternativeValues.push_back(new
-				   binder::autogen::featvalues::StringValue(1, getCASTTime(), "robot"));
+				   binder::autogen::featvalues::StringValue(1, getCASTTime(), "roboeeeet"));
   addFeatureToProxy(proxy1, feat1a);
 
   addProxyToWM(proxy1);
 
-  sleepComponent(1000);
 
   WorkingMemoryPointerPtr origin2 = createWorkingMemoryPointer ("spatial.sa", "bong", "place");
   ProxyPtr proxy2 = createNewProxy (origin2, 1.0f);
@@ -58,7 +57,8 @@ void ExampleProxyPusher::runComponent() {
 
   addProxyToWM(proxy2);
 
-  // sleepComponent(1000);
+   sleepComponent(1000);
+
 
   cast::cdl::WorkingMemoryPointerPtr origin3 = new cast::cdl::WorkingMemoryPointer();
     origin3->address.subarchitecture = "no";
@@ -83,13 +83,13 @@ void ExampleProxyPusher::runComponent() {
   				   binder::autogen::featvalues::StringValue(1, getCASTTime(), "true"));
     addFeatureToProxy(proxy3, feat3a);
 
-
-    addProxyToWM(proxy3);
-
-
+    proxy3->entityID = proxy1->entityID;
+    overwriteProxyInWM(proxy3);
 
 
- //   sleepComponent(1000);
+
+
+ /**   sleepComponent(1000);
 
     WorkingMemoryPointerPtr origin4 = createWorkingMemoryPointer ("spatial.sa", "bong", "place");
     ProxyPtr proxy4 = createNewProxy (origin4, 1.0f);
@@ -98,20 +98,21 @@ void ExampleProxyPusher::runComponent() {
     FeaturePtr feat4a = createFeatureWithUniqueFeatureValue("place.id", one);
     addFeatureToProxy (proxy4, feat4a);
 
-    FeatureValuePtr explored2 = createStringValue ("true" , 1.0f);
+    FeatureValuePtr explored2 = createStringValue ("trsasue" , 1.0f);
     FeaturePtr feat4b = createFeatureWithUniqueFeatureValue("explored", explored2);
     addFeatureToProxy (proxy4, feat4b);
 
-    addProxyToWM(proxy4);
+ //   addProxyToWM(proxy4);
 
     sleepComponent(1000);
 
-    deleteEntityInWM(proxy3);
+    proxy4->entityID = proxy1->entityID;
+    overwriteProxyInWM(proxy4);*/
 
 
 
    //  sleepComponent(1000);
-
+/**
     cast::cdl::WorkingMemoryPointerPtr origin5 = new cast::cdl::WorkingMemoryPointer();
       origin5->address.subarchitecture = "no";
       origin5->address.id = "local";
@@ -199,6 +200,6 @@ void ExampleProxyPusher::runComponent() {
 
           addProxyToWM(proxy7);
 
-
+*/
 
 }

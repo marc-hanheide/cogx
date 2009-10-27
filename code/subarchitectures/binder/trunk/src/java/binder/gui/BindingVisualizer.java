@@ -545,7 +545,7 @@ public class BindingVisualizer {
 
 		try {
 			mxGraphComponent graphComponent = new mxGraphComponent(graph);
-			// getContentPane().removeAll();
+			frame.getContentPane().removeAll();
 			frame.getContentPane().add(graphComponent);
 			frame.setVisible(true);
 		}
@@ -557,7 +557,7 @@ public class BindingVisualizer {
 
 	
 
-	 public void updateGUI(Vector<Proxy> newProxies, 
+	synchronized public void updateGUI(Vector<Proxy> newProxies, 
 			Vector<Union> newUnions, 
 			Vector<Proxy> proxiesToDelete, 
 			Vector<Union> unionsToDelete, UnionConfiguration config) {

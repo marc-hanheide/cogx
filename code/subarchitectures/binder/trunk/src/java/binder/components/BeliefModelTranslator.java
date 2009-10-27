@@ -103,7 +103,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 					// add non-binder beliefs
 					beliefs.addAll(getNonBinderBeliefs());
-					
+										
 					for (Enumeration<Belief> e = beliefs.elements(); e.hasMoreElements(); ) {
 						Belief curB = e.nextElement();
 						if (isUpdateNeeded(curB)) {
@@ -116,6 +116,17 @@ public class BeliefModelTranslator extends ManagedComponent {
 							log("belief update not necessary");
 						}
 					}
+
+					
+					CASTData<Belief>[] beliefsInWM = getWorkingMemoryEntries(Binder.BINDER_SA, Belief.class);
+					for (int i = 0 ; i < beliefsInWM.length ; i++) {
+						Belief b = beliefsInWM[i].getData();
+						if (!containsBelief(beliefs, b)) {
+							log("Belief to delete:" + BeliefModelUtils.getBeliefPrettyPrint(b, 1));
+							deleteFromWorkingMemory(beliefsInWM[i].getID(), Binder.BINDER_SA);
+						}
+					}
+					
 
 					String id = "";
 					CASTData<BeliefModel>[] bmodels = getWorkingMemoryEntries(Binder.BINDER_SA, BeliefModel.class);
@@ -145,6 +156,15 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 
 
+	private boolean containsBelief (Vector<Belief> beliefs, Belief belief) {
+		for (int i = 0 ; i < beliefs.size(); i++) {
+			Belief curBelief = beliefs.elementAt(i);
+			if (curBelief.id.equals(belief.id)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	// =================================================================
 	// METHODS FOR TRANSLATING UNION CONFIGURATIONS INTO BELIEF MODELS
@@ -289,7 +309,8 @@ public class BeliefModelTranslator extends ManagedComponent {
 		}	
 
 		log("Belief set successfully built!");
-
+		log("Size: " + beliefs.size());
+		
 		return beliefs;
 	}
 

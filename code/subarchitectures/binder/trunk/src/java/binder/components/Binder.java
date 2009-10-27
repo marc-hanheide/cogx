@@ -46,6 +46,7 @@ import binder.constructors.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -355,7 +356,7 @@ public class Binder extends ManagedComponent  {
 							if (proxies.size() > 0) { 
 								
 								Union updatedUnion = 
-									constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
+									constructor.constructNewUnion(proxies, existingUnion.entityID, existingUnion.timeStamp);								
 								existingUnionConfig.includedUnions[i] = updatedUnion;
 							}
 							else {
@@ -511,7 +512,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
 							unionsToMerge.add(existingUnion);
 							unionsToMerge.add(newUnion);
-							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
+							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, forgeTimeStamp(unionsToMerge));
 							
 							if (newMergedUnion instanceof RelationUnion) {
 								newMergedUnion = 
@@ -631,6 +632,23 @@ public class Binder extends ManagedComponent  {
 		}
 		
 	}
+	
+	
+	private CASTTime forgeTimeStamp (Vector<PerceivedEntity> entities) {
+		
+		if (entities.size() == 2 && ((Union)entities.elementAt(1)).includedProxies.length == 1 && 
+				((Union)entities.elementAt(1)).includedProxies[0] instanceof PhantomProxy) {
+			return entities.elementAt(0).timeStamp;
+		}
+		if (entities.size() == 2 && ((Union)entities.elementAt(0)).includedProxies.length == 1 && 
+				((Union)entities.elementAt(0)).includedProxies[0] instanceof PhantomProxy) {
+			return entities.elementAt(1).timeStamp;
+		}
+		else {
+			return getCASTTime();
+		}
+	}
+	
 	
 	
 	private Vector<UnionConfiguration> recompute (Vector<UnionConfiguration> configs) {
