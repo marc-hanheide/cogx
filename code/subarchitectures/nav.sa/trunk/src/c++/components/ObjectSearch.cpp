@@ -552,11 +552,11 @@ void ObjectSearch::ExecutePlan () {
 
 void ObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap){
 	log("icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",icemap.size, icemap.data.size(), icemap.cellSize, icemap.xCenter, icemap.yCenter);
-	m_krsjlgm = new Cure::LocalGridMap<char>(icemap.size, icemap.cellSize, '2', Cure::LocalGridMap<char>::MAP1, icemap.xCenter,icemap.yCenter);
+	m_krsjlgm = new Cure::LocalGridMap<unsigned char>(icemap.size, icemap.cellSize, '2', Cure::LocalGridMap<char>::MAP1, icemap.xCenter,icemap.yCenter);
 	int lp = 0;
 	for(int x = -icemap.size ; x <= icemap.size; x++){
 		for(int y = -icemap.size ; y <= icemap.size; y++){ 
-			(*m_krsjlgm)(x,y) = char(icemap.data[lp]);
+			(*m_krsjlgm)(x,y) = (icemap.data[lp]);
 			lp++;
 		}
 	}
@@ -579,7 +579,7 @@ void ObjectSearch::GenViewPoints() {
     log("have combined lgm");
     IcetoCureLGM(combined_lgm);
 
-    m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<char>(*m_krsjlgm);
+    m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_krsjlgm);
     m_Displaykrsjlgm->updateDisplay();
 
     sleep(3);

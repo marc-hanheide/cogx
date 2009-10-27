@@ -149,12 +149,12 @@ enum ObjSearchCommand {
 	NavData::ObjectSearchPlanPtr ConvertPlantoIce();
     IceUtil::Mutex m_Mutex;
     Cure::LocalGridMap<double>* m_lgm;
-    Cure::LocalGridMap<char>* m_krsjlgm;
+    Cure::LocalGridMap< unsigned char>* m_krsjlgm;
     Cure::LocalMap m_LMap;
   	Cure::ObjGridLineRayTracer<double>* m_Glrt;
     Cure::X11DispLocalGridMap<double>* m_Displaylgm;
 
-    Cure::XDisplayLocalGridMap<char>* m_Displaykrsjlgm;
+    Cure::XDisplayLocalGridMap< unsigned char>* m_Displaykrsjlgm;
 
     Cure::X11DispLocalGridMap<double>* m_Displaypdf;
 
