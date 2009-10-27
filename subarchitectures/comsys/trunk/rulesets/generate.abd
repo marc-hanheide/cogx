@@ -53,8 +53,8 @@ generate : i_dont_know(Nom, Prop) <-
 		i : rel_Actor(ContentNom, ActorNom) / 1.0,
 			i : sort(ActorNom, person) / 1.0,
 			i : prop(ActorNom, 'I') / 1.0,
-		add_patient(ContentNom, PatNom, Prop),
-		i : feat_ProofStatus(PatNom, assumed) / 1.0.
+			i : feat_ProofStatus(ActorNom, assumed) / 1.0,
+		add_patient(ContentNom, PatNom, Prop).
 
 %----------------------------------------------------------------------
 
