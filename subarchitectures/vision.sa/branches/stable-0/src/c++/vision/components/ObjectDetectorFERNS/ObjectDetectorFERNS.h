@@ -127,7 +127,7 @@ private:
   /**
    * Return the index for all the various arrays given a label
    */
-  size_t indexOf(const string &label);
+  size_t indexOf(const string &label) throw(std::runtime_error);
   /**
    * called internally by all detectObject methods
    * @param frame (in) image in which to detect the object
