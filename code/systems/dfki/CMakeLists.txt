@@ -82,8 +82,7 @@ endif(BUILD_HAL_TESTS)
 
 # UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
 
-
-#add_subdirectory (tools/math)
+add_subdirectory (tools/math)
 
 option(BUILD_HAL_VIDEO "Build hardware video" YES)
 if(BUILD_HAL_VIDEO)
@@ -100,6 +99,12 @@ if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
 endif(BUILD_SA_VISION)
 
+# Beliefs
+
+option(BUILD_BELIEF_MODELS "Build belief models" YES)
+if(BUILD_BELIEF_MODELS)
+add_subdirectory (tools/beliefmodels)
+endif(BUILD_BELIEF_MODELS)
 
 # Spatial
 option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
