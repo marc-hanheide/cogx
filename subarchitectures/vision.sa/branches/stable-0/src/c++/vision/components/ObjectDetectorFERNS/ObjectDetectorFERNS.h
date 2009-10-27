@@ -84,6 +84,12 @@ private:
    */
   std::vector<std::string> navWMIds;
   /**
+   * Number of attempts to detect (track) an object when receiving a single
+   * detection command.
+   * It sometimes just makes sense to try a few images before giving up.
+   */
+  int numDetectionAttempts;
+  /**
    * Whether to open own (OpenCV) windows and display stuff
    * Default is false.
    */
@@ -118,6 +124,10 @@ private:
    * load and decompress the stored trained models.
    */
   void setupFERNS() throw(std::runtime_error);
+  /**
+   * Return the index for all the various arrays given a label
+   */
+  size_t indexOf(const string &label);
   /**
    * called internally by all detectObject methods
    * @param frame (in) image in which to detect the object
