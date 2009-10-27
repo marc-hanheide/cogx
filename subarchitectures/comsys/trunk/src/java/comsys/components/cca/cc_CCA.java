@@ -564,86 +564,93 @@ public class cc_CCA extends BeliefModelInterface {
 				String modality = ((FunctionTerm) cu.intention.args[1]).functor;
 				String result = ((FunctionTerm) cu.intention.args[2]).functor;
 
-				int idxValueNeed = ccaEngine.stack.findTopmostBlockByIntention("need_get_value");
-				int idxValueVerify = ccaEngine.stack.findTopmostBlockByIntention("need_verify_hypothesis");
-
-				if (idxValueNeed == ProofStack.NOT_FOUND && idxValueVerify == ProofStack.NOT_FOUND) {
-					cu.beliefs = new Belief[0];
-					cu.intention = PredicateFactory.predicate("not_understood", new Term[] {PredicateFactory.term("r")});
-					return cu;
-				}
+				if (sourceAgent.id.equals("human")) {
+					// grounding through discourse
 				
-				ProofBlock related = null;
-				if (idxValueNeed < idxValueVerify) {
-					// "yes" as a response to the robot's "what color is the box?"
-					related = ccaEngine.stack.retrieveBlockByIntention("need_get_value");
-					cu.intention = related.intention;
-					cu.intention.args[3] = PredicateFactory.term("repeated");
-					cu.intention.predSym = cu.intention.predSym;
-					updates = new Belief[0];
-					ccaEngine.stack.push(related);
-				}
-				else {
-					// expected response
-					related = ccaEngine.stack.retrieveBlockByIntention("need_verify_hypothesis");
-					
-					Agent speaker = new Agent("human");
-					
-					if (related != null && result.equals("assertionVerified")) {
-						updates = new Belief[related.assertedBeliefIds.length];
-						for (int i = 0; i < related.assertedBeliefIds.length; i++) {
-							Belief b = getBelief(related.assertedBeliefIds[i]);
+					int idxValueNeed = ccaEngine.stack.findTopmostBlockByIntention("need_get_value");
+					int idxValueVerify = ccaEngine.stack.findTopmostBlockByIntention("need_verify_hypothesis");
 	
-							if (b.ags instanceof PrivateAgentStatus) {
-								b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
-							}
-							if (b.ags instanceof AttributedAgentStatus) {
-								b.ags = BeliefUtils.raiseToMutual((AttributedAgentStatus) b.ags);
-							}
-							if (b.ags instanceof MutualAgentStatus) {
-								b.ags = BeliefUtils.addToGroup((MutualAgentStatus) b.ags, speaker);
-							}
-	
-							b.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, 1.0f);
-							updates[i] = b;
-						}
+					if (idxValueNeed == ProofStack.NOT_FOUND && idxValueVerify == ProofStack.NOT_FOUND) {
+						cu.beliefs = new Belief[0];
+						cu.intention = PredicateFactory.predicate("not_understood", new Term[] {PredicateFactory.term("r")});
+						return cu;
 					}
-					else if (related != null && result.equals("assertionFalsified")) {
+					
+					ProofBlock related = null;
+					if (idxValueNeed < idxValueVerify) {
+						// "yes" as a response to the robot's "what color is the box?"
+						related = ccaEngine.stack.retrieveBlockByIntention("need_get_value");
+						cu.intention = related.intention;
+						cu.intention.args[3] = PredicateFactory.term("repeated");
+						cu.intention.predSym = cu.intention.predSym;
+						updates = new Belief[0];
+						ccaEngine.stack.push(related);
+					}
+					else {
+						// expected response
+						related = ccaEngine.stack.retrieveBlockByIntention("need_verify_hypothesis");
 						
-						if (pi.assertedBeliefIds.length == 0) {
-							// no reason, just flip the polarities
+						Agent speaker = new Agent("human");
+						
+						if (related != null && result.equals("assertionVerified")) {
 							updates = new Belief[related.assertedBeliefIds.length];
 							for (int i = 0; i < related.assertedBeliefIds.length; i++) {
 								Belief b = getBelief(related.assertedBeliefIds[i]);
-	
+		
 								if (b.ags instanceof PrivateAgentStatus) {
 									b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
 								}
-	
-								b.phi = BeliefUtils.swapPolarityOfAssertions((SuperFormula) b.phi);
+								if (b.ags instanceof AttributedAgentStatus) {
+									b.ags = BeliefUtils.raiseToMutual((AttributedAgentStatus) b.ags);
+								}
+								if (b.ags instanceof MutualAgentStatus) {
+									b.ags = BeliefUtils.addToGroup((MutualAgentStatus) b.ags, speaker);
+								}
+		
+								b.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, 1.0f);
 								updates[i] = b;
 							}
 						}
-						else {
-							// with reason, overwrite the belief formula
-							// TODO: consistency
-							assert related.assertedBeliefIds.length == 1;
-							updates = new Belief[1];
+						else if (related != null && result.equals("assertionFalsified")) {
 							
-							Belief b = getBelief(related.assertedBeliefIds[0]);
-	
-							if (b.ags instanceof PrivateAgentStatus) {
-								b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+							if (pi.assertedBeliefIds.length == 0) {
+								// no reason, just flip the polarities
+								updates = new Belief[related.assertedBeliefIds.length];
+								for (int i = 0; i < related.assertedBeliefIds.length; i++) {
+									Belief b = getBelief(related.assertedBeliefIds[i]);
+		
+									if (b.ags instanceof PrivateAgentStatus) {
+										b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+									}
+		
+									b.phi = BeliefUtils.swapPolarityOfAssertions((SuperFormula) b.phi);
+									updates[i] = b;
+								}
 							}
-	
-							b.phi = cu.beliefs[0].phi;
-							updates[0] = b;
+							else {
+								// with reason, overwrite the belief formula
+								// TODO: consistency
+								assert related.assertedBeliefIds.length == 1;
+								updates = new Belief[1];
+								
+								Belief b = getBelief(related.assertedBeliefIds[0]);
+		
+								if (b.ags instanceof PrivateAgentStatus) {
+									b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+								}
+		
+								b.phi = cu.beliefs[0].phi;
+								updates[0] = b;
+							}
 						}
+						// push it back, it's still asserted
+						ccaEngine.stack.push(related);
 					}
-					// push it back, it's still asserted
-					ccaEngine.stack.push(related);
+					cu.beliefs = updates;
 				}
-				cu.beliefs = updates;
+				else {
+					// grounding originating from within the robot
+				}
 			}
 
 			// assert_prop(h, 0:G, color)
