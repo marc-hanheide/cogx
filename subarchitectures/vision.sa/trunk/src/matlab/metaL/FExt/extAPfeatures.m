@@ -1,4 +1,4 @@
-function F=extAPfeatures(X,B,FV)
+function F=extAPfeatures(X,B,FV,pts3d)
 %[F,Fnames]=extAPfeatures(X,B)
 %Extract appearance properties features.
 %Extract simple apperarnce and shape features.
@@ -10,19 +10,24 @@ function F=extAPfeatures(X,B,FV)
 
 %features' variantS
 
-if nargin<3
-   FV=4;
+if nargin < 3
+   FV=5;%4;
 end;   
 
 if nargin==1
    FV=X;
 end   
 
+if nargin < 4
+    pts3d = [] ;
+end
+
 switch FV
-   case 1, Fnames=['Hu';'Sa';'In';'Ar';'Pr';'Co'];
-   case 2, Fnames=['Hu';'Sa';'In';'Ar';'Cp';'Ec'];
-   case 3, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3';'S4'];
-   case 4, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3';'S4';'S5'];
+    case 1, Fnames=['Hu';'Sa';'In';'Ar';'Pr';'Co'];
+    case 2, Fnames=['Hu';'Sa';'In';'Ar';'Cp';'Ec'];
+    case 3, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3';'S4'];
+    case 4, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3';'S4';'S5'];
+    case 5, Fnames=['Hu';'Sa';'In';'S1';'S2';'S3'];
 end
 
 
@@ -116,8 +121,7 @@ else
          for jj=2:4
             mg(jj-1)=sqrt(sum(sin(f*jj).*anghist)^2+sum(cos(f*jj).*anghist)^2);
          end
-
-
+ 
       end
 
       if FV ==4
@@ -126,13 +130,20 @@ else
          ec=rp.Eccentricity;
       end
 
-
+      if ~isempty(pts3d)
+          shp3d = extractShpFts( pts3d ) ;
+      else
+          shp3d = [ -666, -666, -666 ] ;
+      end
+      
+      
       %COMPOUND DATA
       switch FV
          case 1, F(:,ii)=[hu;sa;in;ar;pr;co];
          case 2, F(:,ii)=[hu;sa;in;ar;df;ec];
          case 3, F(:,ii)=[hu;sa;in;mg';sum(mg)];
          case 4, F(:,ii)=[hu;sa;in;mg';sum(mg);ec];
+         case 5, F(:,ii)=[hu; sa; in; shp3d(1); shp3d(2); shp3d(3)];    
       end
 
    end;

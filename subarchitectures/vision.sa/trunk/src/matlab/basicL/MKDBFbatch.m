@@ -4,15 +4,17 @@ CCT=.5; %CompressionClusterThreshold
 SEL=2;
 
 %CM=[1:6;1 1 1 1 2 2]'; %concept number -> concept group mapping
-CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
+%CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
 %CM=[1:7;1 1 1 1 2 2 2]'; %concept number -> concept group mapping
 %CM=[1:11;1 1 1 1 1 1 1 1 1 2 2]';
 %CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
 
 
+
 global currMode
 if ~isempty(currMode)
-   %CM=currMode.CTT;
+   MDF=currMode.MDF;
+   CM=currMode.CTT;
 end
 
 numC=size(C,1);
@@ -44,7 +46,7 @@ end;
 % return
 
 %MDF={1,2,1:2,1:3,4:6};
-MDF={1,2,3,1:2,2:3,[1 3],1:3,4,5,6,4:5,5:6,[4,6],4:6};
+%MDF={1,2,3,1:2,2:3,[1 3],1:3,4,5,6,4:5,5:6,[4,6],4:6};
 %MDF={1:3,4:6};
 
 Fbs=selectFeatures(mC,CM,MDF);

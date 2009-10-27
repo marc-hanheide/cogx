@@ -1,3 +1,3 @@
-function [x,b]=VSinterface
+function [x,b,pt3d]=VSinterface
 
-[x,b]=getImage;
+[x,b,pt3d]=getImage;

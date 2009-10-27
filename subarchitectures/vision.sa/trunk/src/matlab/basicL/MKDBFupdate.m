@@ -15,11 +15,12 @@ if ~isempty(Params)
 end;
 
 %MDF={1,2,3,1:2,2:3,[1 3],1:3,4,5,6,4:5,5:6,[4,6],4:6};
-MDF={1,[1 3],1:3,4:6};
+%MDF={1,[1 3],1:3,4:6};
 %MDF={1:3,4:6};
 global currMode
 if ~isempty(currMode)
    MDF=currMode.MDF;
+   CM=currMode.CTT;
 end
 
 
@@ -117,8 +118,8 @@ elseif ~isempty(C) %at least one concept given
 %    end
 % end
 
-CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
-CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
+%CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
+%CM=[1:10;1 1 1 1 1 1 1 1 2 2]'; %concept number -> concept group mapping
 Fbs=selectFeatures(mC,CM,MDF);
    
    for i=1:numC

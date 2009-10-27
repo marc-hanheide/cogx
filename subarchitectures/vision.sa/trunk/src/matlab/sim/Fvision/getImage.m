@@ -1,5 +1,5 @@
-function [x,b]=getImage
+function [x,b,pt3d]=getImage
 
 global Data;
 
-[x,b]=readImage(Data.currImg);
+[x,b,pt3d]=readImage(Data.currImg);

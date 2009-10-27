@@ -12,7 +12,6 @@ if nargout==3
 end;
 
 for i=1:N
-   i
    datfile=[fdir 'dat' num2str(idxs(i),'%04d') ,'.mat'];
    load(datfile,'gt');
 
