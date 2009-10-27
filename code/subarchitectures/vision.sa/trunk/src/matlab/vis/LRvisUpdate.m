@@ -9,4 +9,4 @@ global avNames avAcronyms
 Fnames=extAPfeatures;%['Hu';'Sa';'In';'Ar';'Cp';'Ec'];
 
 global mAV LRguiLH
-showLmodels(mAV,Fnames,avAcronyms,[2 4],LRguiLH);
+showLmodels(mAV,Fnames,avAcronyms,[2 5],LRguiLH);

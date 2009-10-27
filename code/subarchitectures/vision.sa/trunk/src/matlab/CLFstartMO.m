@@ -30,7 +30,7 @@ ASVon=0;
 ASVidx=0;
 Dirs.asv=[Dirs.cogLearn 'files/asv/'];
 
-Dirs.data=[Dirs.cogLearn 'sim/data/'];
+Dirs.data=[Dirs.cogLearn 'Sim/data/objects_newvis'];
 Data.numImgs=300;
 Data.currImg=1;
 Data.imgFormat='.jpg';

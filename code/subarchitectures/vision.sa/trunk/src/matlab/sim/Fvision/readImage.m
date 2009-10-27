@@ -1,4 +1,4 @@
-function [x,b]=readImage(idx)
+function [x,b,pt3d]=readImage(idx)
 
 %IDIR='C:\danijels\Matlab\cogLearn\data\objects\';
 %IDIR='';
@@ -8,6 +8,12 @@ global Dirs Data
 %IDIR=[Dirs.data 'shapes/'];
 x0=imread([Dirs.data Data.imgName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.imgFormat]);
 b0=imread([Dirs.data Data.mskName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.imgFormat]);
+try
+    pt3d = load([Dirs.data Data.ptsName num2str(idx,['%0' num2str(Data.numDigit) 'd']) Data.ptsFormat]) ;
+catch
+    pt3d = [] ; warning('3d data not available?') ;
+end
+
 %b0=imread([Dirs.data 'msk' num2str(idx,'%03d') '.jpg']);
 
 

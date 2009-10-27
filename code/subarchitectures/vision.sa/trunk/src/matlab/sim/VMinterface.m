@@ -13,8 +13,8 @@ else
    if pl1(1)==1
       f=currState.f;
    else
-      [x,b]=OSinterface;
-      f=FEinterface(x,b);
+      [x,b,pt3d]=OSinterface;
+      f=FEinterface(x,b,pt3d);
       currState.f=f;
       currState.lastRansw=[];
    end;
