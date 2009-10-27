@@ -54,7 +54,6 @@ module FrontierInterface {
   };
 
   sequence<byte> CellSeq;
-  sequence<int> PlaceIDSeq;
 
   struct LocalGridMap
   {
@@ -67,10 +66,10 @@ module FrontierInterface {
   };
 
   interface LocalMapInterface {
-    LocalGridMap getCombinedGridMap(PlaceIDSeq places);
+    LocalGridMap getCombinedGridMap(SpatialData::PlaceIDSeq places);
   };
   interface LocalMapInterfaceAsComponent extends cast::interfaces::CASTComponent {
-    LocalGridMap getCombinedGridMap(PlaceIDSeq places);
+    LocalGridMap getCombinedGridMap(SpatialData::PlaceIDSeq places);
   };
 
   interface HypothesisEvaluator {
