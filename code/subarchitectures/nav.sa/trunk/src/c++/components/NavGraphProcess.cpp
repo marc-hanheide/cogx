@@ -858,11 +858,17 @@ void NavGraphProcess::writeGraphToWorkingMemory(bool forceWrite)
   log("Will write %d changed object to WM", m_ChangedObjects.size());
   while (!m_ChangedObjects.empty()) {
 
-    std::list< ObjDataHolder* >::iterator i;
-    i = m_ChangedObjects.begin();
-    
-    overwriteWorkingMemory<NavData::ObjData>((*i)->m_WMid,
-                                             (*i)->m_data);    
+  std::list< ObjDataHolder* >::iterator i;
+  i = m_ChangedObjects.begin();
+  try {
+	  lockEntry((*i)->m_WMid, cdl::LOCKEDO);
+	  overwriteWorkingMemory<NavData::ObjData>((*i)->m_WMid,
+			  (*i)->m_data);    
+  }
+  catch (DoesNotExistOnWMException) {
+	  log("Error! Object data struct missing!");
+  }
+unlockEntry((*i)->m_WMid);
 
     // Remove all instances of this so that we do not send out more
     // than one message about it
