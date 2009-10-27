@@ -343,12 +343,13 @@ void ObjectDetectorFERNS::start()
         &ObjectDetectorFERNS::receiveDetectionCommand));
 }
 
-size_t ObjectDetectorFERNS::indexOf(const string &label)
+size_t ObjectDetectorFERNS::indexOf(const string &label) throw(runtime_error)
 {
   for(size_t i = 0; i < model_labels.size(); i++)
     if(label == model_labels[i])
       return i;
-  return model_labels.npos;
+  throw runtime_error(exceptionMessage(__HERE__, "unknown label '%s'", label.c_str()));
+  return 0;
 }
 
 void ObjectDetectorFERNS::receiveDetectionCommand(
@@ -365,7 +366,7 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   Video::Image image;
 
   // set holding all objects that were detected over a series of images
-  set<string> detectedObjects;
+  std::set<string> detectedObjects;
 
   // try detection in a series of images
   for(int i = 0; i < numDetectionAttempts; i++)
@@ -374,7 +375,7 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
     IplImage *grayImage = convertImageToIplGray(image);
     detectObjects(grayImage, cmd->labels);
     // remember what objects were detected
-    for(size_t i = 0; i < cmd->labels)
+    for(size_t i = 0; i < cmd->labels.size(); i++)
       if(last_frame_ok[indexOf(cmd->labels[i])])
         detectedObjects.insert(cmd->labels[i]);
     if(doDisplay)
@@ -392,8 +393,8 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   // least in one of the last numDetectionAttempts frames
   // This is required because postObjectsToWM() looks at last_frame_ok when
   // setting detection confidence.
-  for(set<string>::iterator it = detectedObjects.begin();
-      it != detectObjects.end(); it++)
+  for(std::set<string>::iterator it = detectedObjects.begin();
+      it != detectedObjects.end(); it++)
   {
     last_frame_ok[indexOf(*it)] = true;
   }
