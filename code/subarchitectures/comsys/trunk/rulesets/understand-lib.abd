@@ -143,19 +143,19 @@ assert_prop(Union, Polarity, Nom) <-
 	i : feat_Delimitation(Nom, existential),
 	i : feat_Num(Nom, sg),
 	i : feat_Quantification(Nom, specific),
-	%maybe_assert_modifier(Ref, Polarity, Nom),  % XXX explosion!!
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ),
+	maybe_assert_modifier(Nom, Union, Polarity),
 	intention : value_assertion(h, Union, objecttype) / 0.5.
 
 %-------------------------------------------------------------------------
 
-maybe_assert_modifier(Ref, Polarity, Nom) <-
-	no_modifier(Nom) / 8.0.
+maybe_assert_modifier(Nom, Union, Polarity) <-
+	no_modifier(Nom) / 10.0.
 
-maybe_assert_modifier(Ref, Polarity, Nom) <-
+maybe_assert_modifier(Nom, Union, Polarity) <-
 	i : rel_Modifier(Nom, ModifierNom),
-	assert_prop(Ref, Polarity, ModifierNom).
+	assert_prop_noint(ModifierNom, Union, Polarity).
 
 %-------------------------------------------------------------------------
 
