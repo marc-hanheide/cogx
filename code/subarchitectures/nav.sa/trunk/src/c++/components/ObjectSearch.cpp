@@ -23,7 +23,10 @@ extern "C" {
 
 ObjectSearch::ObjectSearch() {}
 
-ObjectSearch::~ObjectSearch() {}
+ObjectSearch::~ObjectSearch() {
+
+
+}
 void ObjectSearch::start() {
     addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
                     new MemberFunctionChangeReceiver<ObjectSearch>(this,
@@ -138,10 +141,8 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     if (it != _config.end()) {
         m_tiltRads = -(atof(it->second.c_str()))*M_PI/180;
     }
-    
     log("Tilt pose set to: %f",m_tiltRads);
-    // cout<<"Tilt pose set to: "<<m_tiltRads<<endl;
-//     sleepComponent(5000);
+
 
     //Coverage percent treshold
     m_covthresh = 70.0;
@@ -287,7 +288,7 @@ void ObjectSearch::runComponent() {
   lockComponent();
   setupPushScan2d(*this, -1);
   setupPushOdometry(*this, -1);
-  MovePanTilt(0, 0);
+  MovePanTilt(m_ptustep, m_tiltRads);
   unlockComponent();
   
   //clock_t start_time,elapsed;
@@ -303,6 +304,8 @@ void ObjectSearch::runComponent() {
     unlockComponent();
     sleepComponent(1000);
   }
+
+
 }
 void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
   if (m_CtrlPTU)
@@ -318,8 +321,6 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
       ptuPose = m_PTUServer->getPose();
       double actualpan = ptuPose.pose.pan;
       double actualtilt = ptuPose.pose.tilt;
-      bool panDone = false;
-      bool tiltDone = false;
 
       while(run){
 	//m_PTUServer->setPose(p);
@@ -333,33 +334,33 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
 	if (pan > actualpan){
 	  if (actualpan > abs(pan) - tolerance){
 	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
-	    panDone = true;
+	    run = false;
 	  }
 	}
 	else if (actualpan > pan){
 	  if (actualpan < abs(pan) + tolerance)
-	    panDone = true;
+	    run = false;
 	}
 	else if(pan == actualpan) {
-	  panDone = true;
+	  run = false;
 	}
 
 
 	if (tilt > actualtilt){
 	  if (actualtilt > abs(tilt) - tolerance){
 	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);
-	    tiltDone = true;
+	    run = false;
 	  }
 	}
 	else if (actualtilt > tilt){
 	  if (actualtilt < abs(tilt) + tolerance)
-	    tiltDone = true;
+	    run = false;
 	}
 	else if(tilt == actualtilt) {
-	  tiltDone = true;
+	  run = false;
 	}
-	
-	run = !(tiltDone && panDone);
+
+
 	
 	usleep(10000);
       }
@@ -487,7 +488,7 @@ void ObjectSearch::ExecuteNextInPlan () {
 
 ObjectSearch::NavCommandReceiver::NavCommandReceiver(ObjectSearch & _component, SpatialData::NavCommandPtr _cmd) :
   m_component(_component), m_cmd(_cmd) {
-
+  m_component.log("received NavCommandReceiver notification");
   string id(m_component.newDataID());
   m_component.log("ID post: %s",id.c_str());
 
@@ -498,18 +499,23 @@ ObjectSearch::NavCommandReceiver::NavCommandReceiver(ObjectSearch & _component, 
 
 void ObjectSearch::NavCommandReceiver::workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc) {
   m_component.log("received inner notification");
-  
-  m_component.owtNavCommand(_wmc);
+    try { 
+	  m_component.owtNavCommand(_wmc);
 
   SpatialData::NavCommandPtr cmd(m_component.getMemoryEntry<SpatialData::NavCommand>(_wmc.address));
 
   if(cmd->comp == SpatialData::COMMANDSUCCEEDED) {
     m_component.log("receiver cleaning up on success");
     //delete nav cmd
-    m_component.deleteFromWorkingMemory(_wmc.address);
+    //m_component.deleteFromWorkingMemory(_wmc.address);
     //get CAST to delete self
-    m_component.removeChangeFilter(this, cdl::DELETERECEIVER);
+    //m_component.removeChangeFilter(this, cdl::DELETERECEIVER);
+
   }
+    }	    
+    catch(const CASTException &e) {
+//      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+    }
   
 }
 
@@ -530,7 +536,7 @@ void ObjectSearch::PostNavCommand(Cure::Pose3D position) {
     cmd->pose.resize(2);
     cmd->pose[0] = position.getX();
     cmd->pose[1] = position.getY();
-	//cmd->pose[2] = position.getTheta();
+    cmd->pose[2] = position.getTheta();
     cmd->tolerance.resize(1);
     cmd->tolerance[0] = 0.1;
     cmd->status = SpatialData::NONE;
@@ -553,7 +559,11 @@ void ObjectSearch::GenViewPoints() {
     int i=0;
     std::vector<double> angles;
     log("creating placeinterface proxy");
+    FrontierInterface::LocalGridMap combined_lgm;
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
+    combined_lgm = agg2->getCombinedGridMap(placestosearch);
+
     log("created placeinterface proxy");
 
 //     std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
@@ -571,7 +581,7 @@ void ObjectSearch::GenViewPoints() {
 // 	fnodeseq.push_back(obj[i]->getData());
 //     }
     
-    for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/90) {
+    for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/3) {
         angles.push_back(rad);
     }
 
@@ -584,7 +594,7 @@ void ObjectSearch::GenViewPoints() {
       randx = (randx % (m_gridsize)) - m_gridsize/2;
       randy = (randy % (m_gridsize)) - m_gridsize/2;
       m_lgm->index2WorldCoords(randx,randy,xW,yW);
-      
+
       if ((*m_lgm)(randx,randy) == 0) {
 	if (m_lgm->isCircleObstacleFree(xW,yW, m_awayfromobstacles) &&
 	    m_LMap.goalReachable(xW,yW, 1,0.3)) { //if random point is free space
@@ -1033,10 +1043,9 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
 void ObjectSearch::Recognize(){
 	ptz::PTZReading ptz;
 	ptz.pose.pan = 0;
-	if (m_CtrlPTU) {
-	  ptz::PTZReading ptz = m_PTUServer->getPose();
-	}
-
+	if (m_CtrlPTU)
+		ptz::PTZReading ptz = m_PTUServer->getPose();
+		
 	Cure::Pose3D currpos = m_TOPP.getPose();
 	double plantheta = m_plan.plan[whereinplan].getTheta();
 	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
@@ -1061,6 +1070,7 @@ void ObjectSearch::Recognize(){
 
 	  log("now moving extras");
 	  int n = 1;
+
 	  //postive
 	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
 	    m_status = 	RECOGNITIONINPROGRESS;
@@ -1084,13 +1094,7 @@ void ObjectSearch::Recognize(){
 	    n++;
 	  }
 
-	  if(m_status == STOPPED) {
-	    log("STOPPED BEFORE TILTING");
-	  }
-
-	  if(m_tiltRads != 0) {
-	    
-	    log("now moving tilty tilty");
+	  if(m_tiltRads > 0) {
 
 	    //negative with tilt
 	    n= 1;
@@ -1103,27 +1107,22 @@ void ObjectSearch::Recognize(){
 	      }
 	      n++;
 	    }
-
-	    MovePanTilt(anglediff,0);	    
-
-	    n = 1;
-	    //postive with tilt
-	    while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
-	      m_status = 	RECOGNITIONINPROGRESS;
-	      MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
-	      PostRecognitionCommand();
-	      while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
-		sleepComponent(10);
-	      }
-	      n++;
-	    }
-	  	
 	  }
+	  
+	  //postive with tilt
+	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
+	    m_status = 	RECOGNITIONINPROGRESS;
+	    MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
+	    PostRecognitionCommand();
+	    while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
+	      sleepComponent(10);
+	    }
+	    n++;
+	  }
+	  	  	  	  
 	}
 	//belt up for safety
 	lockComponent();	
-	//reset to home
-	MovePanTilt(0,0);
 }
 void ObjectSearch::PostRecognitionCommand(){
 	log("Posting Recog. Command now");
