@@ -120,10 +120,18 @@ class Planner(object):
             return True
 
         self.update_plan(task.get_plan(), task._mapltask)
-        
+                
         t0 = time.time()
         state = task.get_state().copy()
         plan = task.get_plan().topological_sort(include_depths=False)
+
+        #check if the goal is already satisfied
+        if self.check_node(task.get_plan().goal_node, state):
+            print "Goal is reached"
+            for pnode in plan:
+                pnode.status = plans.ActionStatusEnum.EXECUTED
+            return False
+
         #check for expandable assertions
         for pnode in plan:
             if isinstance(pnode, plans.DummyNode):
@@ -138,7 +146,7 @@ class Planner(object):
         print "checking plan validity."
         #print "current state is:", map(str, state.iterfacts())
         #check for plan validity: test all preconditions and apply effects
-        skipped_actions = 0
+        skipped_actions = -1
         first_invalid_action = None
         for i,pnode in enumerate(plan):
             if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
@@ -166,11 +174,14 @@ class Planner(object):
         #print "state after execution is:", map(str, state.iterfacts())
         print "checking if goal is still satisfied."
         if self.check_node(task.get_plan().goal_node, state):
-            if skipped_actions > 0:
+            if skipped_actions > -1:
                 print "Skipped the first %d actions." % skipped_actions
                 #newplan = task.get_plan().copy()
-                for pnode in plan[0:skipped_actions-1]:
+                for pnode in plan[0:skipped_actions]:
                    pnode.status = plans.ActionStatusEnum.EXECUTED
+                #we skipped all actions and the goal ist still satisfied: done
+                if skipped_actions > len(plan)-2:
+                    task.get_plan().goal_node.status = plans.ActionStatusEnum.EXECUTED
                 #task.set_plan(newplan)
             print "Plan is still valid."
             print "time for goal validation:", time.time()-t2
