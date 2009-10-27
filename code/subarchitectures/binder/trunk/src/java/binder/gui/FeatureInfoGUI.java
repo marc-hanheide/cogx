@@ -6,6 +6,8 @@ package binder.gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.*;
+import java.util.Vector;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -30,91 +32,133 @@ import binder.utils.FeatureValueUtils;
  * @author Pierre Lison
  */
 public class FeatureInfoGUI extends JDialog {
-	
+
 	BinderMonitor bm;
-	
+
 	Feature curFeature;
-	
+
 	public boolean LOGGING = true;
+
+	ProxyInfoGUI proxyWindow;
 	
+	private enum OPERATION {INSERT, MODIFY };
 	
+	OPERATION optype;
+	
+
 	public FeatureInfoGUI(ProxyInfoGUI owner) {
 		super(owner);
+		proxyWindow = owner;
 		bm = owner.bm;
 		initComponents();
-		
+
 		curFeature = new Feature("", new FeatureValue[0]);
+		((TitledBorder)((CompoundBorder)dialogPane.getBorder()).getOutsideBorder()).setTitle("");
+		
+		optype = OPERATION.INSERT;
 	}
-
-	public FeatureInfoGUI(Dialog owner) {
+	
+	
+	public FeatureInfoGUI(ProxyInfoGUI owner, Feature feature) {
 		super(owner);
+		proxyWindow = owner;
+		bm = owner.bm;
 		initComponents();
-	}
 
+		setTitle("Modify existing Feature in Proxy");
+		okButton.setText("Modify Feature");
+		curFeature = feature;
+		
+		textField1.setText(feature.featlabel);
+		updateFeatureValuesFrame();
+		
+		((TitledBorder)((CompoundBorder)dialogPane.getBorder()).getOutsideBorder()).setTitle("");
+		
+		optype = OPERATION.MODIFY;
+	}
+	
+	
 	private void button1ActionPerformed(ActionEvent e) {
 		if (!panel5.isVisible()) {
-		setSize(new Dimension(450, 450  + (30 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(450, 450  + (25 * curFeature.alternativeValues.length)));
-		panel5.setVisible(true);
+			setSize(new Dimension(450, 400  + (25 * curFeature.alternativeValues.length)));
+			setPreferredSize(new Dimension(450, 400  + (25 * curFeature.alternativeValues.length)));
+			panel5.setVisible(true);
 		}
 		else {
 			button1.setEnabled(false);
 		}
+		comboBox1.setSelectedItem("StringValue");
+		textField2.setText("");
+		textField3.setText("0.75");
+		button3.setVisible(false);
+		button2.setText("Add");
 	}
 
 	private void button4ActionPerformed(ActionEvent e) {
 		panel5.setVisible(false);
-		setSize(new Dimension(450, 300  + (30 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(450, 300  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
 	}
 
 	private void button2ActionPerformed(ActionEvent e) {
 		
+		FeatureValue featval = constructFeatureValue();
+		
+		if (button2.getText().equals("Add")) {
+			addFeatureValue(featval);
+		}
+		else if (button2.getText().equals("Modify") && table1.getSelectedRow() >= 0 && 
+				table1.getSelectedRow() < curFeature.alternativeValues.length ) {
+			updateFeatureValue(featval, table1.getSelectedRow());
+		}
+	}
+	
+	
+	private FeatureValue constructFeatureValue() {
+
+		FeatureValue featval = null;
 		if (comboBox1.getSelectedItem().equals("StringValue")) {
 			float prob = Float.parseFloat(textField3.getText());
 			CASTTime time = bm.getCASTTimeInMonitor();
 			String val = textField2.getText();
-			StringValue sv = new StringValue(prob, time, val);
-			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
-			updateFeatureValuesFrame();
+			featval = new StringValue(prob, time, val);
+			ProxyConstructor.setTimeStamp(featval, bm.getCASTTimeInMonitor());
 		}
-		
+
 		if (comboBox1.getSelectedItem().equals("IntegerValue")) {
 			float prob = Float.parseFloat(textField3.getText());
 			CASTTime time = bm.getCASTTimeInMonitor();
 			String val = textField2.getText();
 			try {
-			IntegerValue sv = new IntegerValue(prob, time, Integer.parseInt(val));
-			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
-			updateFeatureValuesFrame();
+				featval = new IntegerValue(prob, time, Integer.parseInt(val));
+				ProxyConstructor.setTimeStamp(featval, bm.getCASTTimeInMonitor());
+			}
+			catch (NumberFormatException ex) {
+				log("sorry, wrong format");
+			}
+		}
+
+		if (comboBox1.getSelectedItem().equals("FloatValue")) {
+			float prob = Float.parseFloat(textField3.getText());
+			CASTTime time = bm.getCASTTimeInMonitor();
+			String val = textField2.getText();
+			try {
+				featval = new FloatValue(prob, time, Float.parseFloat(val));
+				ProxyConstructor.setTimeStamp(featval, bm.getCASTTimeInMonitor());
 			}
 			catch (NumberFormatException ex) {
 				log("sorry, wrong format");
 			}
 		}
 		
-		if (comboBox1.getSelectedItem().equals("FloatValue")) {
-			float prob = Float.parseFloat(textField3.getText());
-			CASTTime time = bm.getCASTTimeInMonitor();
-			String val = textField2.getText();
-			try {
-				FloatValue sv = new FloatValue(prob, time, Float.parseFloat(val));
-			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
-			updateFeatureValuesFrame();
-			}
-			catch (NumberFormatException ex) {
-				log("sorry, wrong format");
-			}
-		}
 		if (comboBox1.getSelectedItem().equals("BooleanValue")) {
 			float prob = Float.parseFloat(textField3.getText());
 			CASTTime time = bm.getCASTTimeInMonitor();
 			String val = textField2.getText();
 			try {
-				BooleanValue sv = new BooleanValue(prob, time, Boolean.parseBoolean(val));
-			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
-			updateFeatureValuesFrame();
+				featval = new BooleanValue(prob, time, Boolean.parseBoolean(val));
+				ProxyConstructor.setTimeStamp(featval, bm.getCASTTimeInMonitor());
 			}
 			catch (NumberFormatException ex) {
 				log("sorry, wrong format");
@@ -124,87 +168,110 @@ public class FeatureInfoGUI extends JDialog {
 			float prob = Float.parseFloat(textField3.getText());
 			CASTTime time = bm.getCASTTimeInMonitor();
 			String val = textField2.getText();
-			AddressValue sv = new AddressValue(prob, time, val);
-			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
+			featval = new AddressValue(prob, time, val);
+			ProxyConstructor.setTimeStamp(featval, bm.getCASTTimeInMonitor());
 			updateFeatureValuesFrame();
 		}
 		if (comboBox1.getSelectedItem().equals("UnknownValue")) {
 			float prob = Float.parseFloat(textField3.getText());
 			CASTTime time = bm.getCASTTimeInMonitor();
-			UnknownValue sv = new UnknownValue(prob, time);
-			ProxyConstructor.addFeatureValueToFeature(curFeature, sv);
-			updateFeatureValuesFrame();
+			featval = new UnknownValue(prob, time);
+			ProxyConstructor.setTimeStamp(featval, bm.getCASTTimeInMonitor());
 		}
 		
+		return featval;
+	}
+	
+	public void addFeatureValue(FeatureValue featval) {
+		ProxyConstructor.addFeatureValueToFeature(curFeature, featval);
+		updateFeatureValuesFrame();
+		
 		panel5.setVisible(false);
-		setSize(new Dimension(450, 300 + (30 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(450, 300  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(450, 250 + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
+		button1.setEnabled(true);
+	}
+
+	
+	public void updateFeatureValue(FeatureValue featval, int index) {
+		
+		if (index >= 0 && index < curFeature.alternativeValues.length) {
+			curFeature.alternativeValues[index] = featval;
+		}
+		updateFeatureValuesFrame();
+		
+		panel5.setVisible(false);
+		setSize(new Dimension(450, 250 + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
 	}
 	
 	
-	private void updateFeatureValuesFrame() {
-
-		if (table1.getModel().getRowCount() < curFeature.alternativeValues.length) {
-			
-			log("Have to enlarge the panel and the table...");
-			
-			scrollPane1.setMinimumSize(new Dimension(50, 30 + (23* curFeature.alternativeValues.length)));
-			
-			table1.setModel(new DefaultTableModel(
-					new Object[curFeature.alternativeValues.length][3] ,
-					new String[] {
-						"Entry", "Type", "Probability"
-					}
-				) {
-					Class[] columnTypes = new Class[] {
-						String.class, String.class, Float.class
-					};
-					boolean[] columnEditable = new boolean[] {
-						false, false, false
-					};
-					@Override
-					public Class<?> getColumnClass(int columnIndex) {
-						return columnTypes[columnIndex];
-					}
-					@Override
-					public boolean isCellEditable(int rowIndex, int columnIndex) {
-						return columnEditable[columnIndex];
-					}
-				});
-			
-		}
-			for (int i = 0 ; i <curFeature.alternativeValues.length ; i++) {
-				String entry = FeatureValueUtils.toString(curFeature.alternativeValues[i]);
-				float prob = curFeature.alternativeValues[i].independentProb;
-				table1.getModel().setValueAt(entry, i, 0);
-				table1.getModel().setValueAt(curFeature.alternativeValues[i].getClass().getSimpleName(), i, 1);
-				table1.getModel().setValueAt(new Float(prob), i, 2);
-			}
-			
-			label5.setText(""+curFeature.alternativeValues.length);
-	}
-
 	private void slider1StateChanged(ChangeEvent e) {
-	    JSlider source = (JSlider)e.getSource();
-	    float fps = (source.getValue()/100.0f);
-	    double roundedProb = Math.round(fps*100.0) / 100.0;
-	    textField3.setText(""+roundedProb);
+		JSlider source = (JSlider)e.getSource();
+		float fps = (source.getValue()/100.0f);
+		double roundedProb = Math.round(fps*100.0) / 100.0;
+		textField3.setText(""+roundedProb);
 	}
 
+	
 	private void button3ActionPerformed(ActionEvent e) {
-		comboBox1.setSelectedItem(comboBox1.getModel().getElementAt(0));
-		textField2.setText("");
-		textField3.setText("0.5");
-		slider1.setValue(50);
+		
+		if (curFeature.alternativeValues.length > 0) {
+			Vector<FeatureValue> featvals = new Vector<FeatureValue>();
+			for (int i = 0 ; i < curFeature.alternativeValues.length ; i++) {
+				featvals.add(curFeature.alternativeValues[i]);
+			}
+
+			for (int i = 0 ; i < table1.getSelectedRows().length ; i++) {
+				FeatureValue toBeRemoved = curFeature.alternativeValues[table1.getSelectedRows()[i]];
+				featvals.remove(toBeRemoved);
+			}
+
+			curFeature.alternativeValues = new FeatureValue[featvals.size()];
+			curFeature.alternativeValues = featvals.toArray(curFeature.alternativeValues);
+			updateFeatureValuesFrame();
+		}
 	}
+	
+
+	private void cancelButtonActionPerformed(ActionEvent e) {
+		dispose();
+	}
+
+	private void okButtonActionPerformed(ActionEvent e) {
+		curFeature.featlabel = textField1.getText();
+		if (verifyFeatureIsWellFormed()) {
+			if (optype.equals(OPERATION.INSERT)) {
+				proxyWindow.addFeatureToProxy(curFeature);
+			}
+			else {
+				proxyWindow.updateFeaturesFrame();
+			}
+			dispose();
+		}
+	}
+
 
 	private void table1MouseClicked(MouseEvent e) {
-		// TODO add your code here
-	}
+		if (table1.isEnabled()) {
+		if (!panel5.isVisible()) {
+			setSize(new Dimension(450, 400  + (30 * curFeature.alternativeValues.length)));
+			setPreferredSize(new Dimension(450, 400  + (25 * curFeature.alternativeValues.length)));
+			panel5.setVisible(true);
+		}
 
-	private void menuItem1ActionPerformed(ActionEvent e) {
-		log("action in menu item 1 performed!!");
+		int row = table1.rowAtPoint(e.getPoint());
+		if (row >= 0 && row < curFeature.alternativeValues.length) {
+			FeatureValue featval = curFeature.alternativeValues[row];
+			comboBox1.setSelectedItem(featval.getClass().getSimpleName());
+			textField2.setText(FeatureValueUtils.toString(featval));
+			textField3.setText(""+featval.independentProb);
+			slider1.setValue((int)(featval.independentProb * 100));
+		}
+		button3.setVisible(true);
+		button2.setText("Modify");
+		}
 	}
 
 	private void initComponents() {
@@ -215,10 +282,10 @@ public class FeatureInfoGUI extends JDialog {
 		label1 = new JLabel();
 		textField1 = new JTextField();
 		label2 = new JLabel();
+		button1 = new JButton();
 		panel2 = new JPanel();
 		scrollPane1 = new JScrollPane();
 		table1 = new JTable();
-		button1 = new JButton();
 		panel4 = new JPanel();
 		label4 = new JLabel();
 		label5 = new JLabel();
@@ -234,15 +301,12 @@ public class FeatureInfoGUI extends JDialog {
 		panel7 = new JPanel();
 		slider1 = new JSlider();
 		textField3 = new JTextField();
-		button3 = new JButton();
 		panel8 = new JPanel();
 		button2 = new JButton();
-		button4 = new JButton();
+		button3 = new JButton();
 		buttonBar = new JPanel();
 		okButton = new JButton();
 		cancelButton = new JButton();
-		popupMenu1 = new JPopupMenu();
-		menuItem1 = new JMenuItem();
 
 		//======== this ========
 		setTitle("Insert new Feature in Proxy");
@@ -265,7 +329,7 @@ public class FeatureInfoGUI extends JDialog {
 			//======== panel1 ========
 			{
 				panel1.setLayout(new GridBagLayout());
-				((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {121, 55, 166, 0};
+				((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {131, 74, 88, 0};
 				((GridBagLayout)panel1.getLayout()).rowHeights = new int[] {0, 30, 0};
 				((GridBagLayout)panel1.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
 				((GridBagLayout)panel1.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
@@ -277,9 +341,9 @@ public class FeatureInfoGUI extends JDialog {
 					new Insets(0, 0, 5, 5), 0, 0));
 
 				//---- textField1 ----
-				textField1.setColumns(12);
+				textField1.setColumns(10);
 				panel1.add(textField1, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+					GridBagConstraints.EAST, GridBagConstraints.VERTICAL,
 					new Insets(0, 0, 5, 0), 0, 0));
 
 				//---- label2 ----
@@ -287,16 +351,27 @@ public class FeatureInfoGUI extends JDialog {
 				panel1.add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(0, 0, 0, 5), 0, 0));
+
+				//---- button1 ----
+				button1.setText("Add new value");
+				button1.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						button1ActionPerformed(e);
+					}
+				});
+				panel1.add(button1, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
+					GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
+					new Insets(0, 0, 0, 0), 0, 0));
 			}
 			dialogPane.add(panel1, BorderLayout.NORTH);
 
 			//======== panel2 ========
 			{
 				panel2.setLayout(new GridBagLayout());
-				((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 25, 208, 0};
-				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {35, 0, 0, 0, 0, 0};
+				((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {155, 56, 208, 0};
+				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {38, 0, 0, 0, 0};
 				((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
-				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
+				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
 				//======== scrollPane1 ========
 				{
@@ -305,7 +380,7 @@ public class FeatureInfoGUI extends JDialog {
 					//---- table1 ----
 					table1.setModel(new DefaultTableModel(
 						new Object[][] {
-							{" (No feature values)", " ", null},
+							{" (None)", " ", null},
 						},
 						new String[] {
 							"Entry", "Type", "Probability"
@@ -335,7 +410,7 @@ public class FeatureInfoGUI extends JDialog {
 								"UnknownValue"
 							}))));
 						cm.getColumn(2).setMinWidth(60);
-						cm.getColumn(2).setMaxWidth(100);
+						cm.getColumn(2).setMaxWidth(80);
 						cm.getColumn(2).setPreferredWidth(80);
 					}
 					table1.setBorder(new CompoundBorder(
@@ -345,24 +420,19 @@ public class FeatureInfoGUI extends JDialog {
 					table1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 					table1.setIntercellSpacing(new Dimension(0, 0));
 					table1.setRowHeight(25);
-					table1.setComponentPopupMenu(popupMenu1);
+					table1.setRowSelectionAllowed(false);
+					table1.setEnabled(false);
+					table1.addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							table1MouseClicked(e);
+						}
+					});
 					scrollPane1.setViewportView(table1);
 				}
 				panel2.add(scrollPane1, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
 					new Insets(5, 20, 10, 20), 0, 0));
-
-				//---- button1 ----
-				button1.setText("Add new feature value");
-				button1.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						button1ActionPerformed(e);
-						button1ActionPerformed(e);
-					}
-				});
-				panel2.add(button1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-					new Insets(0, 20, 5, 5), 0, 0));
 
 				//======== panel4 ========
 				{
@@ -400,13 +470,13 @@ public class FeatureInfoGUI extends JDialog {
 							new EtchedBorder(EtchedBorder.RAISED),
 							new EmptyBorder(8, 8, 8, 8)));
 						panel5.setLayout(new GridBagLayout());
-						((GridBagLayout)panel5.getLayout()).columnWidths = new int[] {0, 25, 173, 25, 58, 121, 0, 20, 0};
+						((GridBagLayout)panel5.getLayout()).columnWidths = new int[] {0, 25, 144, 25, 58, 188, 0, 20, 0};
 						((GridBagLayout)panel5.getLayout()).rowHeights = new int[] {0, 0, 0, 29, 0, 0};
 						((GridBagLayout)panel5.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0E-4};
 						((GridBagLayout)panel5.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
 						//---- label6 ----
-						label6.setText("Feature value type:  ");
+						label6.setText("Feature value type: ");
 						panel5.add(label6, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 							new Insets(0, 0, 5, 5), 0, 0));
@@ -445,7 +515,7 @@ public class FeatureInfoGUI extends JDialog {
 							panel7.setLayout(new BorderLayout());
 
 							//---- slider1 ----
-							slider1.setMinorTickSpacing(10);
+							slider1.setValue(75);
 							slider1.addChangeListener(new ChangeListener() {
 								public void stateChanged(ChangeEvent e) {
 									slider1StateChanged(e);
@@ -454,23 +524,12 @@ public class FeatureInfoGUI extends JDialog {
 							panel7.add(slider1, BorderLayout.CENTER);
 
 							//---- textField3 ----
-							textField3.setText("0.5");
+							textField3.setText("0.75");
 							textField3.setColumns(3);
 							panel7.add(textField3, BorderLayout.EAST);
 						}
 						panel5.add(panel7, new GridBagConstraints(5, 2, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-							new Insets(0, 0, 5, 5), 0, 0));
-
-						//---- button3 ----
-						button3.setText("Reset");
-						button3.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								button3ActionPerformed(e);
-							}
-						});
-						panel5.add(button3, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
-							GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
 							new Insets(0, 0, 5, 5), 0, 0));
 
 						//======== panel8 ========
@@ -486,14 +545,14 @@ public class FeatureInfoGUI extends JDialog {
 							});
 							panel8.add(button2, BorderLayout.CENTER);
 
-							//---- button4 ----
-							button4.setText("Cancel");
-							button4.addActionListener(new ActionListener() {
+							//---- button3 ----
+							button3.setText("Delete");
+							button3.addActionListener(new ActionListener() {
 								public void actionPerformed(ActionEvent e) {
-									button4ActionPerformed(e);
+									button3ActionPerformed(e);
 								}
 							});
-							panel8.add(button4, BorderLayout.EAST);
+							panel8.add(button3, BorderLayout.EAST);
 						}
 						panel5.add(panel8, new GridBagConstraints(5, 3, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -503,7 +562,7 @@ public class FeatureInfoGUI extends JDialog {
 				}
 				panel2.add(panel6, new GridBagConstraints(0, 3, 3, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-					new Insets(0, 0, 5, 0), 0, 0));
+					new Insets(0, 0, 0, 0), 0, 0));
 			}
 			dialogPane.add(panel2, BorderLayout.CENTER);
 
@@ -516,12 +575,22 @@ public class FeatureInfoGUI extends JDialog {
 
 				//---- okButton ----
 				okButton.setText("Insert Feature");
+				okButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						okButtonActionPerformed(e);
+					}
+				});
 				buttonBar.add(okButton, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(0, 0, 0, 5), 0, 0));
 
 				//---- cancelButton ----
 				cancelButton.setText("Cancel");
+				cancelButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						cancelButtonActionPerformed(e);
+					}
+				});
 				buttonBar.add(cancelButton, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
 					GridBagConstraints.EAST, GridBagConstraints.VERTICAL,
 					new Insets(0, 0, 0, 0), 0, 0));
@@ -531,23 +600,10 @@ public class FeatureInfoGUI extends JDialog {
 		contentPane.add(dialogPane, BorderLayout.CENTER);
 		pack();
 		setLocationRelativeTo(getOwner());
-
-		//======== popupMenu1 ========
-		{
-
-			//---- menuItem1 ----
-			menuItem1.setText("Remove Feature");
-			menuItem1.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					menuItem1ActionPerformed(e);
-				}
-			});
-			popupMenu1.add(menuItem1);
-		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
-		
-		setSize(new Dimension(450, 300));
-		setPreferredSize(new Dimension(450, 300));
+
+		setSize(new Dimension(450, 250));
+		setPreferredSize(new Dimension(450, 250));
 		panel5.setVisible(false);
 	}
 
@@ -558,10 +614,10 @@ public class FeatureInfoGUI extends JDialog {
 	private JLabel label1;
 	private JTextField textField1;
 	private JLabel label2;
+	private JButton button1;
 	private JPanel panel2;
 	private JScrollPane scrollPane1;
 	private JTable table1;
-	private JButton button1;
 	private JPanel panel4;
 	private JLabel label4;
 	private JLabel label5;
@@ -577,15 +633,12 @@ public class FeatureInfoGUI extends JDialog {
 	private JPanel panel7;
 	private JSlider slider1;
 	private JTextField textField3;
-	private JButton button3;
 	private JPanel panel8;
 	private JButton button2;
-	private JButton button4;
+	private JButton button3;
 	private JPanel buttonBar;
 	private JButton okButton;
 	private JButton cancelButton;
-	private JPopupMenu popupMenu1;
-	private JMenuItem menuItem1;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
@@ -594,33 +647,81 @@ public class FeatureInfoGUI extends JDialog {
 			System.out.println("[FeatureInfoGUI] " + s);
 		}
 	}
-}
 
 
-final class FeatureValueCellRenderer 
-       extends DefaultTableCellRenderer {
+	private void printWarningMessage(String mess) {
+		((TitledBorder)((CompoundBorder)dialogPane.getBorder()).getOutsideBorder()).setTitle(mess);
+		pack();
+		setSize(new Dimension (getSize().width, getSize().height +1));
+		setPreferredSize(getPreferredSize());
+	}
 	
-  public Component getTableCellRendererComponent(JTable table,
-                                                 Object value,
-                                                 boolean isSelected,
-                                                 boolean hasFocus,
-                                                 int row,
-                                                 int column) {
-    Component c = 
-      super.getTableCellRendererComponent(table, value,
-                                          isSelected, hasFocus,
-                                          row, column);
+	private boolean verifyFeatureIsWellFormed() {
+		if (curFeature.featlabel.equals("")) {
+			printWarningMessage("Failed: no feature label specified");	
+			return false;
+		}
+		else if (curFeature.alternativeValues.length == 0) {
+			printWarningMessage("Failed: no feature value specified");
+			return false;
+		}
+		return true;
+	}
 
-    System.out.println("ROW: " + row);
-    if (row == 1 ) {
-       c.setFont(new Font("Lucida Grande", Font.BOLD, 13));
-       // you may want to address isSelected here too
-       c.setForeground(Color.WHITE);
-       c.setBackground(Color.BLUE);
-    }
-    return c;
-  }
-  
+
+	private DefaultTableModel createTableModelForSize (int size) {
+		return new DefaultTableModel(
+				new Object[size][3] ,
+				new String[] {
+						"Entry", "Type", "Probability"
+				}
+		) {
+			Class[] columnTypes = new Class[] {
+					String.class, String.class, Float.class
+			};
+			boolean[] columnEditable = new boolean[] {
+					false, false, false
+			};
+			@Override
+			public Class<?> getColumnClass(int columnIndex) {
+				return columnTypes[columnIndex];
+			}
+			@Override
+			public boolean isCellEditable(int rowIndex, int columnIndex) {
+				return columnEditable[columnIndex];
+			}
+		};
+	}
+
+	private void updateFeatureValuesFrame() {
+
+		if (curFeature.alternativeValues.length == 0) {
+			table1.setModel(createTableModelForSize(1));
+			table1.getModel().setValueAt(" (None) ", 0, 0);
+			table1.setRowSelectionAllowed(false);
+			table1.setEnabled(false);
+		}
+
+		else {
+
+			table1.setRowSelectionAllowed(true);
+			table1.setEnabled(true);
+
+			scrollPane1.setMinimumSize(new Dimension(50, 30 + (23* curFeature.alternativeValues.length)));
+
+			table1.setModel(createTableModelForSize(curFeature.alternativeValues.length));
+
+		}
+		for (int i = 0 ; i <curFeature.alternativeValues.length ; i++) {
+			String entry = FeatureValueUtils.toString(curFeature.alternativeValues[i]);
+			float prob = curFeature.alternativeValues[i].independentProb;
+			table1.getModel().setValueAt(entry, i, 0);
+			table1.getModel().setValueAt(curFeature.alternativeValues[i].getClass().getSimpleName(), i, 1);
+			table1.getModel().setValueAt(new Float(prob), i, 2);
+		}
+
+		label5.setText(""+curFeature.alternativeValues.length);
+	}
 }
 
 

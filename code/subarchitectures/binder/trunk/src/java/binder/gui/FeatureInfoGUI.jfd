@@ -41,7 +41,7 @@
            <class>java.awt.GridBagLayout</class> 
            <void method="setProperty"> 
             <string>$columnSpecs</string> 
-            <string>116, 50:1.0, center:166</string> 
+            <string>126, 69:1.0, left:88</string> 
            </void> 
            <void method="setProperty"> 
             <string>$rowSpecs</string> 
@@ -87,7 +87,7 @@
             <string>javax.swing.JTextField</string> 
             <void method="setProperty"> 
              <string>columns</string> 
-             <int>12</int> 
+             <int>10</int> 
             </void> 
             <void property="name"> 
              <string>textField1</string> 
@@ -101,7 +101,7 @@
             </void> 
             <void method="setProperty"> 
              <string>hAlign</string> 
-             <int>5</int> 
+             <int>4</int> 
             </void> 
            </object> 
           </void> 
@@ -124,6 +124,37 @@
             </void> 
            </object> 
           </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JButton</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Add new value</string> 
+            </void> 
+            <void property="name"> 
+             <string>button1</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>button1ActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
+            <void method="setProperty"> 
+             <string>gridx</string> 
+             <int>2</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>gridy</string> 
+             <int>1</int> 
+            </void> 
+           </object> 
+          </void> 
          </object> 
          <object class="com.jformdesigner.model.FormLayoutConstraints"> 
           <class>java.lang.String</class> 
@@ -140,11 +171,11 @@
            <class>java.awt.GridBagLayout</class> 
            <void method="setProperty"> 
             <string>$columnSpecs</string> 
-            <string>0, 20:1.0, left:208</string> 
+            <string>150, 51:1.0, left:208</string> 
            </void> 
            <void method="setProperty"> 
             <string>$rowSpecs</string> 
-            <string>center:30:1.0, 0, 0, 0, 0</string> 
+            <string>center:33, 0, 0, 0</string> 
            </void> 
            <void method="setProperty"> 
             <string>$hGap</string> 
@@ -192,7 +223,7 @@
                  <void method="add"> 
                   <object class="java.util.Vector"> 
                    <void method="add"> 
-                    <string> (No feature values)</string> 
+                    <string> (None)</string> 
                    </void> 
                    <void method="add"> 
                     <string> </string> 
@@ -276,7 +307,7 @@
                    <null/> 
                    <int>80</int> 
                    <int>60</int> 
-                   <int>100</int> 
+                   <int>80</int> 
                    <boolean>true</boolean> 
                   </object> 
                  </void> 
@@ -321,13 +352,23 @@
                <int>25</int> 
               </void> 
               <void method="setProperty"> 
-               <string>componentPopupMenu</string> 
-               <object class="com.jformdesigner.model.FormReference"> 
-                <string>popupMenu1</string> 
-               </object> 
+               <string>rowSelectionAllowed</string> 
+               <boolean>false</boolean> 
+              </void> 
+              <void method="setProperty"> 
+               <string>enabled</string> 
+               <boolean>false</boolean> 
               </void> 
               <void property="name"> 
                <string>table1</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.MouseListener</string> 
+                <string>mouseClicked</string> 
+                <string>table1MouseClicked</string> 
+                <boolean>true</boolean> 
+               </object> 
               </void> 
              </object> 
             </void> 
@@ -345,50 +386,6 @@
               <int>20</int> 
               <int>5</int> 
               <int>20</int> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JButton</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Add new feature value</string> 
-            </void> 
-            <void property="name"> 
-             <string>button1</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>button1ActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>button1ActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
-            <void method="setProperty"> 
-             <string>gridy</string> 
-             <int>1</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>insets</string> 
-             <object class="java.awt.Insets"> 
-              <int>0</int> 
-              <int>20</int> 
-              <int>0</int> 
-              <int>0</int> 
              </object> 
             </void> 
            </object> 
@@ -464,10 +461,6 @@
              <int>2</int> 
             </void> 
             <void method="setProperty"> 
-             <string>gridy</string> 
-             <int>1</int> 
-            </void> 
-            <void method="setProperty"> 
              <string>insets</string> 
              <object class="java.awt.Insets"> 
               <int>0</int> 
@@ -475,6 +468,10 @@
               <int>0</int> 
               <int>20</int> 
              </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>gridy</string> 
+             <int>1</int> 
             </void> 
            </object> 
           </void> 
@@ -532,7 +529,7 @@
                <class>java.awt.GridBagLayout</class> 
                <void method="setProperty"> 
                 <string>$columnSpecs</string> 
-                <string>0, left:20, 168, 20, 53:1.0, 116, 0, 20</string> 
+                <string>0, left:20, 139, 20, 53:1.0, 183, 0, 20</string> 
                </void> 
                <void method="setProperty"> 
                 <string>$rowSpecs</string> 
@@ -579,7 +576,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Feature value type:  </string> 
+                 <string>Feature value type: </string> 
                 </void> 
                 <void property="name"> 
                  <string>label6</string> 
@@ -716,8 +713,8 @@
                  <object class="com.jformdesigner.model.FormComponent"> 
                   <string>javax.swing.JSlider</string> 
                   <void method="setProperty"> 
-                   <string>minorTickSpacing</string> 
-                   <int>10</int> 
+                   <string>value</string> 
+                   <int>75</int> 
                   </void> 
                   <void property="name"> 
                    <string>slider1</string> 
@@ -744,7 +741,7 @@
                   <string>javax.swing.JTextField</string> 
                   <void method="setProperty"> 
                    <string>text</string> 
-                   <string>0.5</string> 
+                   <string>0.75</string> 
                   </void> 
                   <void method="setProperty"> 
                    <string>columns</string> 
@@ -771,41 +768,6 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>gridy</string> 
-                 <int>2</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JButton</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Reset</string> 
-                </void> 
-                <void property="name"> 
-                 <string>button3</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>button3ActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
-                <void method="setProperty"> 
-                 <string>gridy</string> 
-                 <int>3</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>gridx</string> 
-                 <int>2</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>hAlign</string> 
                  <int>2</int> 
                 </void> 
                </object> 
@@ -851,16 +813,16 @@
                   <string>javax.swing.JButton</string> 
                   <void method="setProperty"> 
                    <string>text</string> 
-                   <string>Cancel</string> 
+                   <string>Delete</string> 
                   </void> 
                   <void property="name"> 
-                   <string>button4</string> 
+                   <string>button3</string> 
                   </void> 
                   <void method="addEvent"> 
                    <object class="com.jformdesigner.model.FormEvent"> 
                     <string>java.awt.event.ActionListener</string> 
                     <string>actionPerformed</string> 
-                    <string>button4ActionPerformed</string> 
+                    <string>button3ActionPerformed</string> 
                     <boolean>true</boolean> 
                    </object> 
                   </void> 
@@ -961,6 +923,14 @@
             <void property="name"> 
              <string>okButton</string> 
             </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>okButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
             <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
@@ -983,6 +953,14 @@
             </void> 
             <void property="name"> 
              <string>cancelButton</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>cancelButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
             </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -1031,41 +1009,8 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>580</int> 
-        <int>540</int> 
-       </object> 
-      </void> 
-     </object> 
-    </void> 
-    <void method="add"> 
-     <object class="com.jformdesigner.model.FormContainer"> 
-      <string>javax.swing.JPopupMenu</string> 
-      <object class="com.jformdesigner.model.FormLayoutManager"> 
-       <class>javax.swing.JPopupMenu</class> 
-      </object> 
-      <void property="name"> 
-       <string>popupMenu1</string> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JMenuItem</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>Remove Feature</string> 
-        </void> 
-        <void property="name"> 
-         <string>menuItem1</string> 
-        </void> 
-       </object> 
-      </void> 
-     </object> 
-     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-      <null/> 
-      <void method="setProperty"> 
-       <string>location</string> 
-       <object class="java.awt.Point"> 
-        <int>145</int> 
-        <int>630</int> 
+        <int>490</int> 
+        <int>450</int> 
        </object> 
       </void> 
      </object> 

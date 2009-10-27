@@ -103,9 +103,8 @@ public class BindingVisualizer {
 
 	
 	public void selection () {
-		log("WHOOOWOO OBJECT SELECTED!");
-		String curSelectedEntity = "";
-		
+		String curSelectedEntityId = "";
+		Class curSelectedType = null ;
 		Object selected = graph.getSelectionCell();
 		if (selected != null) {
 		log(selected.toString());
@@ -113,14 +112,25 @@ public class BindingVisualizer {
 			String curId = ids.next();
 			Object curObj = insertedProxies.get(curId);
 			if (curObj.equals(selected)) {
-				log("FOUND: " + curId);
-				curSelectedEntity = curId;
+				curSelectedEntityId = curId;
+				curSelectedType = Proxy.class;
+			}
+		}
+		
+		for (Iterator<String> ids = insertedUnions.keySet().iterator(); ids.hasNext();) {
+			String curId = ids.next();
+			Object curObj = insertedUnions.get(curId);
+			if (curObj.equals(selected)) {
+				curSelectedEntityId = curId;
+				curSelectedType = Union.class;
 			}
 		}
 		
 		}
-		frame.setCurSelectedEntity(curSelectedEntity);
+		
+		frame.setCurrentSelection(curSelectedEntityId, curSelectedType);
 	}
+	
 	
 	public void init(){		
 
