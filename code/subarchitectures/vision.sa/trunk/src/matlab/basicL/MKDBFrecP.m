@@ -16,16 +16,15 @@ function [pcx,pxc,pc]=MKDBFrecP(F,mC)
 MINCONF=3; %minimum number of previously observed objects of the particular category
 
 %CM=[1:6;1 1 1 1 2 2]'; %concept number -> concept group mapping
-%CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
+CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
 %CM=[1:7;1 1 1 1 2 2 2]'; %concept number -> concept group mapping
 %CM=[1:11;1 1 1 1 1 1 1 1 1 2 2]';
-CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
-
+%CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
 
 
 global currMode
 if ~isempty(currMode)
-   CM=currMode.CTT;
+   %CM=currMode.CTT;
 end
 
 

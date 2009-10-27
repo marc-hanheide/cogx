@@ -7,7 +7,7 @@ function [mC]=MKDBFunlearn(F,C,mC)
 
 
 %parameters
-ING=2; %Initial Gaussians
+   ING=2; %Initial Gaussians
 CCT=.5; %CompressionClusterThreshold
 global Params
 if ~isempty(Params)
@@ -57,21 +57,25 @@ end;
 MDF={[1 3],1:3,4:6};
 %   MDF={1:3,4:6};
 numMDF=length(MDF);
+CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
+CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
 
-dsts=ones(numC,numMDF)*1e10;
-for i=1:numMDF
-   for j=1:numC
-      for k=j+1:numC
-         if mC(j).conf>=ING && mC(k).conf>=ING && ~isempty(mC(j).kde) && ~isempty(mC(k).kde)
-            res = executeOperatorIKDE( mC(j).kde, 'additional_kde', mC(k).kde, 'evalHellingerBetween' , 'selectSubDimensions', MDF{i} ) ;
-            dst=res.distance_hell;
-            dsts(j,i)=min(dsts(j,i),dst);
-            dsts(k,i)=min(dsts(k,i),dst);
-         end
-      end
-   end
-end
-[foo,Fbs]=max(dsts');
+Fbs=selectFeatures(mC,CM,MDF);
+
+% dsts=ones(numC,numMDF)*1e10;
+% for i=1:numMDF
+%    for j=1:numC
+%       for k=j+1:numC
+%          if mC(j).conf>=ING && mC(k).conf>=ING && ~isempty(mC(j).kde) && ~isempty(mC(k).kde)
+%             res = executeOperatorIKDE( mC(j).kde, 'additional_kde', mC(k).kde, 'evalHellingerBetween' , 'selectSubDimensions', MDF{i} ) ;
+%             dst=res.distance_hell;
+%             dsts(j,i)=min(dsts(j,i),dst);
+%             dsts(k,i)=min(dsts(k,i),dst);
+%          end
+%       end
+%    end
+% end
+% [foo,Fbs]=max(dsts');
 
 for i=1:numC
    oldFb=mC(i).Fb;

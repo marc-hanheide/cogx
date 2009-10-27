@@ -15,9 +15,9 @@ currMode.CTT=[1:7;1 1 1 1 2 2 2]';
 
 global Dirs Data
 if nargin==0 || strcmp(opSys,'win')
-   Dirs.cogLearn='C:/danijels/Matlab/cmLearn/';
+   Dirs.cogLearn='C:/danijels/Matlab/matlab/';
 else   
-   Dirs.cogLearn='/home/user/localsvn/CosyDevVision/trunk/subarchitectures/vision/src/matlab/';
+   Dirs.cogLearn='./';
 end
 
 global SaveImgs ImgNo
@@ -30,7 +30,7 @@ ASVon=0;
 ASVidx=0;
 Dirs.asv=[Dirs.cogLearn 'files/asv/'];
 
-Dirs.data=[Dirs.cogLearn 'Sim/data/'];
+Dirs.data=[Dirs.cogLearn 'sim/data/'];
 Data.numImgs=300;
 Data.currImg=1;
 Data.imgFormat='.jpg';
