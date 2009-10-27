@@ -169,7 +169,7 @@ void VisualMediator::runComponent()
 
 	  if(!proxyToAdd.empty())
 	  { 
-		log("An add object instruction");
+		log("An add proxy instruction");
 		VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
 
 		if(data.status == STABLE)
@@ -206,7 +206,7 @@ void VisualMediator::runComponent()
 	  }
 	  else if(!proxyToUpdate.empty())
 	  {
-		log("An update object instruction"); 
+		log("An update proxy instruction"); 
 		VisualObjectData &data = VisualObjectMap[proxyToUpdate.front()];
 	
 		if(data.status == STABLE)
@@ -243,27 +243,25 @@ void VisualMediator::runComponent()
 	  }
 	  else if(!proxyToDelete.empty())
 	  {
-		log("A delete proto-object instruction");
-		/* VisualObjectData &obj = VisualObjectMap[proxyToDelete.front()];
+		log("A delete proxy instruction");
+		VisualObjectData &obj = VisualObjectMap[proxyToDelete.front()];
 
 		  if(obj.status == DELETED)
 		  {
 			try
-			{
-			  deleteFromWorkingMemory(obj.objId);
-
+			{  
+			  deleteEntityInWM(obj.proxyId);
+			  
+			  log("A proxy deleted ID: %s", obj.proxyId.c_str());
 			  VisualObjectMap.erase(proxyToDelete.front());
-
-			  log("A proto-object deleted ID: %s TIME: %u",
-			  obj.objId, obj.stableTime.s, obj.stableTime.us);
 			}
 			catch (DoesNotExistOnWMException e)
 			{
-			  log("WARNING: Proto-object ID %s already removed", obj.objId);
+			  log("WARNING: Proto-object ID %s already removed", obj.proxyId);
 			}
 		  }
 
-		  proxyToDelete.pop(); */
+		  proxyToDelete.pop();
 	  }
 	}
 	//    else
@@ -318,14 +316,12 @@ void VisualMediator::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
 
   VisualObjectData &obj = VisualObjectMap[_wmc.address.id];
-
+  log("Detected deletion if the VisualObject ID %s ", obj.addr.id.c_str());
+  
   CASTTime time=getCASTTime();
   obj.status= DELETED;
   obj.deleteTime = time;
   proxyToDelete.push(obj.addr.id);
-
-  log("Deleted Visual object ID %s ",
-	  obj.addr.id.c_str());
 
   queuesNotEmpty->post();		 
 }
