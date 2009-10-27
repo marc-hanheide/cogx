@@ -240,6 +240,7 @@ void CTestRecognizer::_test_addRecognitionTask()
       ProtoObjectPtr pproto = loadFakeProtoObject();
       string protoId = newDataID();
       addToWorkingMemory(protoId, pproto);
+      m_protoIDs.push_back(protoId);
 
       println("Adding new VisualLearnerRecognitionTask");
       VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
@@ -252,6 +253,7 @@ void CTestRecognizer::_test_addRecognitionTask()
       ProtoObjectPtr pproto = loadFakeProtoObject();
       string protoId = newDataID();
       addToWorkingMemory(protoId, pproto);
+      m_protoIDs.push_back(protoId);
    }
 }
 
@@ -345,6 +347,15 @@ void CTestRecognizer::runComponent()
             }
             sleepComponent(500);
          }
+         
+         if(nCalls == 0 && m_protoIDs.size() > 1 && testmode == "fake-proto")
+         {
+            sleep(2);
+            deleteFromWorkingMemory(m_protoIDs.back());
+            m_protoIDs.pop_back();
+         }
+         
+            
 
          sleepComponent(300);
       }

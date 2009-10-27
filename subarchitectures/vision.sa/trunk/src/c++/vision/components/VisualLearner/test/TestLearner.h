@@ -16,6 +16,8 @@ private:
    int nRequests;
    int learningStepsComplete;
    std::vector<int> labels;
+   
+   std::vector<std::string> m_protoIDs;
 
    // Proof of concept
    class CMyVideoClient: public cast::VideoClient {
