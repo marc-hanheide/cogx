@@ -557,12 +557,10 @@ log("Sample each of the maps into the new map");
       }
     }
   }
-for (int x = 0 ; x < newSize; x++){
-for (int y = 0 ; y < newSize; y++){
-    map.data.push_back(newMap(x,y));
-if (newMap(x,y) == '0')
-		log("asdf free");
-}
-}
-																													
+  for (int x = -newSize ; x < newSize; x++){
+    for (int y = -newSize ; y < newSize; y++){
+      map.data.push_back(newMap(x,y));
+    }
+  }
+
 }
