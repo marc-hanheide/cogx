@@ -16,7 +16,8 @@ add_patient(Nom, PatNom, Prop) <-
 	i : rel_Patient(Nom, PatNom) / 1.0,
 		i : sort(PatNom, entity) / 1.0,
 		i : prop(PatNom, Prop) / 1.0,
-		i : feat_InfoStatus(PatNom, familiar) / 1.0.
+		i : feat_InfoStatus(PatNom, familiar) / 1.0,
+		i : feat_ProofStatus(PatNom, asserted) / 1.0.
 
 add_patient(Nom, PatNom, objecttype) <-
 	dont_add_patient(PatNom) / 6.0.

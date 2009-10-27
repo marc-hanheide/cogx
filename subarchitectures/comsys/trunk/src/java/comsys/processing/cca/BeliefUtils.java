@@ -78,11 +78,11 @@ public class BeliefUtils {
 			}
 			
 			if (formula instanceof ComplexFormula) {
-			for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
-				if (!formulae.contains(((ComplexFormula)formula).formulae[i])) {
-					formulae.add(((ComplexFormula)formula).formulae[i]);
+				for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
+					if (!formulae.contains(((ComplexFormula)formula).formulae[i])) {
+						formulae.add(((ComplexFormula)formula).formulae[i]);
+					}
 				}
-			}
 			}
 			else {
 				if (!formulae.contains(formula)) {
