@@ -157,7 +157,9 @@ void StereoServer::configure(const map<string,string> & _config)
     stereoHeight = stereoCam.cam[LEFT].height;
   }
   // now set the input image size to be used by stereo matching
-  stereoCam.SetInputImageSize(cvSize(stereoWidth, stereoHeight));
+  // HACK: use original image size until disparity calculation
+  //stereoCam.SetInputImageSize(cvSize(stereoWidth, stereoHeight));
+  // HACK END
   stereoCam.SetupImageRectification();
 
   // allocate the actual stereo matcher with given max disparity
@@ -187,11 +189,20 @@ void StereoServer::start()
   // allocate all our various images
   for(int i = LEFT; i <= RIGHT; i++)
   {
-    colorImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 3);
-    rectColorImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 3);
+    // HACK: use original image size until disparity calculation
+    //colorImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 3);
+    colorImg[i] = cvCreateImage(cvSize(
+      stereoCam.cam[LEFT].width, stereoCam.cam[LEFT].height), IPL_DEPTH_8U, 3);
+    //rectColorImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 3);
+    rectColorImg[i] = cvCreateImage(cvSize(
+      stereoCam.cam[LEFT].width, stereoCam.cam[LEFT].height), IPL_DEPTH_8U, 3);
+    // HACK END
     rectGreyImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
   }
-  disparityImg = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
+  // HACK: use original image size until disparity calculation
+  //disparityImg = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
+  disparityImg = cvCreateImage(cvSize(
+    stereoCam.cam[LEFT].width, stereoCam.cam[LEFT].height), IPL_DEPTH_8U, 1);
   cvSet(disparityImg, cvScalar(0));
 
   // NOTE: stupid polling runloop is still necessary
@@ -298,18 +309,32 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
   {
     convertImageToIpl(images[i], &colorImg[i]);
     stereoCam.RectifyImage(colorImg[i], rectColorImg[i], i);
-    cvCvtColor(rectColorImg[i], rectGreyImg[i], CV_RGB2GRAY);
+    // HACK: use original image size until disparity calculation
+    IplImage *greyTmp = cvCreateImage(cvSize(colorImg[i]->width, colorImg[i]->height), IPL_DEPTH_8U, 1);
+    //cvCvtColor(rectColorImg[i], rectGreyImg[i], CV_RGB2GRAY);
+    cvCvtColor(rectColorImg[i], greyTmp, CV_RGB2GRAY);
+    cvResize(greyTmp, rectGreyImg[i], CV_INTER_LINEAR);
+    cvReleaseImage(&greyTmp);
+    // HACK END
   }
 
-  cvSet(disparityImg, cvScalar(0));
+  // HACK: use original image size until disparity calculation
+  //cvSet(disparityImg, cvScalar(0));
+  IplImage *dispTmp = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
+  cvSet(dispTmp, cvScalar(0));
   census->setImages(rectGreyImg[LEFT], rectGreyImg[RIGHT]);
   census->match();
   // in case we are interested how blazingly fast the matching is :)
   // census->printTiming();
-  census->getDisparityMap(disparityImg);
+  //census->getDisparityMap(disparityImg);
+  census->getDisparityMap(dispTmp);
+  cvResize(dispTmp, disparityImg, CV_INTER_NN);
+  cvReleaseImage(&dispTmp);
+  // HACK END
 
   if(medianSize > 0)
   {
+    // TODO: avoid allocate/deallocating all the time
     IplImage *tmp = cvCloneImage(disparityImg);
     cvSmooth(disparityImg, tmp, CV_MEDIAN, medianSize);
     swap(disparityImg, tmp);
@@ -348,7 +373,10 @@ void StereoServer::runComponent()
   vector<Video::Image> images;
   while(isRunning())
   {
-    videoServer->getScaledImages(stereoWidth, stereoHeight, images);
+    // HACK: use original image size until disparity calculation
+    //videoServer->getScaledImages(stereoWidth, stereoHeight, images);
+    videoServer->getImages(images);
+    // HACK END
     receiveImages(images);
     sleepComponent(100);
   }
