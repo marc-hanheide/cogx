@@ -50,6 +50,7 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -211,6 +212,7 @@ public class BeliefModelChartViewer
 			case DELETE:
 				dsBeliefs.removeValue("beliefs", wmc.address.id);
 					if (belief.ags instanceof PrivateAgentStatus) {
+						System.out.println("DELETING HERE!!");
 						dsBeliefs.removeValue("private: {robot}", wmc.address.id);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
 						dsBeliefs.removeValue("attributed: {robot[human]}", wmc.address.id);						
@@ -218,6 +220,7 @@ public class BeliefModelChartViewer
 						dsBeliefs.removeValue("shared: {robot,human}", wmc.address.id);													   
 					}
 					dsTruth.removeColumn(wmc.address.id);
+					dsCertainty.removeColumn(wmc.address.id);
 				break;
 			case OVERWRITE:
 					if (belief.ags instanceof PrivateAgentStatus) {
@@ -283,7 +286,8 @@ public class BeliefModelChartViewer
 	}
 		
 		
-		
+	HashMap<String, Belief> hash = new HashMap<String, Belief>();
+
 		
 	/*
 	 * start up the GUI, and register the change listeners for Belief and BeliefModel objects
@@ -309,8 +313,15 @@ public class BeliefModelChartViewer
 						
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						try {
+							if (existsOnWorkingMemory(_wmc.address)) {
 							Belief belief = getMemoryEntry(_wmc.address, Belief.class);
 							guiFrame.update(_wmc, belief);
+							hash.put(_wmc.address.id, belief);
+							}
+							else {
+								guiFrame.update(_wmc, hash.get(_wmc.address.id));
+							}
+							
 						}
 						catch (Exception e) {
 							e.printStackTrace();
