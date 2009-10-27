@@ -305,7 +305,7 @@ function pb_av7_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %handles.data=DSappendWord(handles.data,7);guidata(hObject,handles);
-handles.data=DSappendWord(handles.data,5);guidata(hObject,handles);
+handles.data=DSappendWord(handles.data,7);guidata(hObject,handles);
 sent=DScreateSentence(handles.data);
 set(handles.tx_tutor,'String',sent);
 set(handles.tx_robot,'String','');
@@ -317,7 +317,7 @@ function pb_av8_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %handles.data=DSappendWord(handles.data,8);guidata(hObject,handles);
-handles.data=DSappendWord(handles.data,6);guidata(hObject,handles);
+handles.data=DSappendWord(handles.data,8);guidata(hObject,handles);
 sent=DScreateSentence(handles.data);
 set(handles.tx_tutor,'String',sent);
 set(handles.tx_robot,'String','');
@@ -329,7 +329,7 @@ function pb_av9_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %handles.data=DSappendWord(handles.data,9);guidata(hObject,handles);
-handles.data=DSappendWord(handles.data,7);guidata(hObject,handles);
+handles.data=DSappendWord(handles.data,9);guidata(hObject,handles);
 sent=DScreateSentence(handles.data);
 set(handles.tx_tutor,'String',sent);
 set(handles.tx_robot,'String','');
@@ -341,7 +341,7 @@ function pb_av10_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %handles.data=DSappendWord(handles.data,10);guidata(hObject,handles);
-handles.data=DSappendWord(handles.data,8);guidata(hObject,handles);
+handles.data=DSappendWord(handles.data,10);guidata(hObject,handles);
 sent=DScreateSentence(handles.data);
 set(handles.tx_tutor,'String',sent);
 set(handles.tx_robot,'String','');
@@ -573,6 +573,10 @@ function pb_av11_Callback(hObject, eventdata, handles)
 % hObject    handle to pb_av11 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.data=DSappendWord(handles.data,11);guidata(hObject,handles);
+sent=DScreateSentence(handles.data);
+set(handles.tx_tutor,'String',sent);
+set(handles.tx_robot,'String','');
 
 
 % --- Executes on button press in pb_av12.
@@ -580,5 +584,8 @@ function pb_av12_Callback(hObject, eventdata, handles)
 % hObject    handle to pb_av12 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+handles.data=DSappendWord(handles.data,12);guidata(hObject,handles);
+sent=DScreateSentence(handles.data);
+set(handles.tx_tutor,'String',sent);
+set(handles.tx_robot,'String','');
 

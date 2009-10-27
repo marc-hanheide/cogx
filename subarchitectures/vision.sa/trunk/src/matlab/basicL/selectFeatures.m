@@ -45,7 +45,7 @@ if SEL==1
 else
    %select best feature for concept goroups
    names=[mC.name];
-   nCG=max(CM(:,2));
+   nCG=max(CM(names,2));
    ICM=zeros(numC,2);
    for i=1:nCG
       cs=find(CM(:,2)==i);
