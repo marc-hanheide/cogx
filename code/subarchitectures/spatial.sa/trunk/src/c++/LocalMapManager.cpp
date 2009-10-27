@@ -520,7 +520,7 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
 
   if (maxy-miny > dsize) 
     dsize = maxy-miny;
-  int newSize = (int)((dsize + cellSize/2) / cellSize);
+  int newSize = (int)((dsize/2 + cellSize/2) / cellSize);
   Cure::LocalGridMap<unsigned char> newMap(newSize, cellSize, '2',
       Cure::LocalGridMap<unsigned char>::MAP1, cx, cy);
 
