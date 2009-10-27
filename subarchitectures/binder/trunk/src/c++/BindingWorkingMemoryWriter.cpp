@@ -199,6 +199,18 @@ namespace binder {
       println("EXCEPTION in BindingWorkingMemoryWriter::deleteEntityInWM: %s", e.message.c_str());
     }
   }
+  
+  
+  void BindingWorkingMemoryWriter::deleteEntityInWM(std::string _id) {
+
+    try {
+      ProxyPtr proxy = getMemoryEntry<Proxy>(_id, m_bindingSA);
+      deleteEntityInWM(proxy);
+    }
+    catch (cast::CASTException &e) {
+      println("EXCEPTION in BindingWorkingMemoryWriter::deleteEntityInWM: %s", e.message.c_str());
+    }
+  }
 
   void BindingWorkingMemoryWriter::storeOriginInfo(autogen::core::ProxyPtr _proxy) {
     OriginMapPtr om;
