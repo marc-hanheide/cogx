@@ -1,0 +1,66 @@
+
+
+SUBARCHITECTURE vision.sa 192.168.176.29
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# live images
+# CPP MG VideoServer OpenCvLiveServer --camids 0 --devnums 0
+
+# reading stored images
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0" --devnums "0" --files "subarchitectures/vision.sa/config/test-objrecognizer/video/SwGreenTea/smaller40/image_%d.jpg" --start 0 --end 15 --framerate_ms 300
+
+#CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid "0"
+
+#CPP MG vis.recognizer ObjectRecognizer --videohost localhost --videoname VideoServer --modeldir "subarchitectures/vision.sa/config/test-objrecognizer/model" --models "SwGreenTea ShelcoreCube TwLemonTea" --matcher-cuda --log true
+
+CPP MG vis.learner     VisualLearner --log --debug
+CPP MG vis.analyzer    ObjectAnalyzer --log --debug
+CPP MG vis.tester      TestVisualLearner --testmode "fake-proto" --log
+CPP MG vis.mediator             VisualMediator --log --debug
+
+HOST localhost
+SUBARCHITECTURE comsys
+## -------------------------------------------
+## Working memory and task manager
+## -------------------------------------------
+JAVA WM                 cast.architecture.SubarchitectureWorkingMemory #--log true --debug
+JAVA TM                 cast.architecture.AlwaysPositiveTaskManager #--log --debug
+JAVA MG asr     comsys.components.asr.cc_ASR --src gui #--log --debug
+JAVA GD parser  comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml #--log true #--debug
+JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile ./subarchitectures/comsys/learning/params.txt --asr-correction false --discourse-level-composition true --disfluency-correction false #--log true #--debug
+
+JAVA GD fakeclarification comsys.components.cca.cc_FakeClarificationGenerator --modality vision #--log
+JAVA GD fakeverification comsys.components.cca.cc_FakeVerificationGenerator --modality vision #--log
+
+JAVA GD refreadings comsys.components.reference.cc_ReferentialReadings #--log
+JAVA GD refbindings comsys.components.reference.cc_ReferentialBindings --log
+JAVA GD cca comsys.components.cca.cc_CCA --ruleset ./subarchitectures/comsys/rulesets/comsys-rulefiles.txt #--log #--debug
+
+JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar ./subarchitectures/comsys/grammars/contentPlanning/grammar.xml --redux ./subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx --log
+#JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --ngrams ./subarchitectures/comsys/grammars/contentPlanning/ngram-corpus.txt #--log
+JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/prosodic_moloko.v6/grammar.xml --ngrams ./subarchitectures/comsys/grammars/contentPlanning/ngram-corpus.txt #--log
+#JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice us1 --log true --startserver #--debug true
+JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice us1 --log true --rawMaryXmlHeader ./subarchitectures/comsys/src/java/comsys/components/tts/RAWMARYXMLhead.xml --writeXmlTo ./subarchitectures/comsys/maryXML/ --delXml true #--debug true
+
+SUBARCHITECTURE binder
+
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM binder.components.BindingWorkingMemory #--log
+
+#JAVA MG fakehaptic binder.fakeproxygenerators.FakeVisualUnknownProxyGenerator --nbproxies 1  --pauses false  --log
+#JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 1 --pauses true --deleteproxies true --log
+
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
+JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
+JAVA MG translator binder.components.BeliefModelTranslator --log
+
+JAVA MG monitor binder.components.BinderMonitor --gui --log
+JAVA MG bmmonitor binder.components.BeliefModelMonitor #--log
+
+JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer #--log
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent --subscribe "beliefmodels.adl.Belief"
+
+
+
+#JAVA MG test binder.abstr.BindingWorkingMemoryReader --log
+
