@@ -533,7 +533,7 @@ void ObjectSearch::PostNavCommand(Cure::Pose3D position) {
     SpatialData::NavCommandPtr cmd = newNavCommand();
     cmd->prio = SpatialData::URGENT;
     cmd->cmd = SpatialData::GOTOPOSITION;
-    cmd->pose.resize(2);
+    cmd->pose.resize(3);
     cmd->pose[0] = position.getX();
     cmd->pose[1] = position.getY();
     cmd->pose[2] = position.getTheta();
