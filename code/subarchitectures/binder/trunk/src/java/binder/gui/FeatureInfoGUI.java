@@ -416,7 +416,6 @@ public class FeatureInfoGUI extends JDialog {
 					table1.setBorder(new CompoundBorder(
 						new BevelBorder(BevelBorder.LOWERED),
 						new EmptyBorder(30, 30, 30, 30)));
-					table1.setGridColor(Color.black);
 					table1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 					table1.setIntercellSpacing(new Dimension(0, 0));
 					table1.setRowHeight(25);

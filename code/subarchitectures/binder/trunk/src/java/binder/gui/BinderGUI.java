@@ -65,7 +65,11 @@ public class BinderGUI extends JFrame {
 		curSelectedEntityId = entityId;
 		curSelectedEntityClass = type;
 		
-		if (type.equals(Proxy.class)) {
+		if (type == null) {
+			menuItem7.setEnabled(false);
+			menuItem8.setEnabled(false);	
+		}
+		else if (type.equals(Proxy.class)) {
 			menuItem7.setEnabled(true);
 			menuItem8.setEnabled(true);
 		}
@@ -89,7 +93,7 @@ public class BinderGUI extends JFrame {
 	private void menuItem11ActionPerformed(ActionEvent e) {
 		ProxyInfoGUI proxyInfo = new ProxyInfoGUI(this);
 		proxyInfo.setVisible(true);
-	}
+	} 
 
 	private void menuItem8ActionPerformed(ActionEvent e) {
 		

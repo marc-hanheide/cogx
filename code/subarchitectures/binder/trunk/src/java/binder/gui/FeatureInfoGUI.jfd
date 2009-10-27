@@ -333,10 +333,6 @@
                </object> 
               </void> 
               <void method="setProperty"> 
-               <string>gridColor</string> 
-               <object class="java.awt.Color" field="black"/> 
-              </void> 
-              <void method="setProperty"> 
                <string>autoResizeMode</string> 
                <int>4</int> 
               </void> 
