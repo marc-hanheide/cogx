@@ -18,6 +18,7 @@ import beliefmodels.adl.BeliefModel;
 import beliefmodels.adl.AttributedAgentStatus;
 import beliefmodels.adl.PrivateAgentStatus;
 import beliefmodels.adl.MutualAgentStatus;
+import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.ContinualStatus;
 import beliefmodels.domainmodel.cogx.ContinualFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
@@ -205,16 +206,7 @@ public class BeliefModelChartViewer
 						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);						
 					}
 					dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
-					int polarity = 1;
-					if (belief.phi instanceof ContinualFormula) { 
-						ContinualFormula phi = (ContinualFormula)belief.phi;
-						if (phi.polarity == false) { polarity = -1; }
-						if (phi.cstatus == ContinualStatus.proposition) { 
-							dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "factual", wmc.address.id);
-						} else { 
-							dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "unknown", wmc.address.id);
-						} 
-					} 
+					updateTruth(wmc,belief);
 					break;
 			case DELETE:
 				dsBeliefs.removeValue("beliefs", wmc.address.id);
@@ -236,12 +228,48 @@ public class BeliefModelChartViewer
 						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);
 					}
 					dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
+					updateTruth(wmc,belief);					
 					break;
 			}
 
 		}
 
-			
+		/** cycles over the complex formula of a belief. if one formula has asserted content, the truth status of the belief is set to asserted; otherwise, fact. */
+		
+		synchronized void updateTruth (WorkingMemoryChange wmc, final Belief belief) { 
+			try { 
+			if (belief.phi instanceof ComplexFormula) { 
+				ComplexFormula phi = (ComplexFormula) belief.phi;
+				int polarity = 1;
+				boolean asserted = false; 
+				for (int i = 0; i < phi.formulae.length; i++) {
+					ContinualFormula formula = (ContinualFormula) phi.formulae[i]; 
+					if (formula.cstatus.equals(ContinualStatus.assertion)) { 
+						asserted = true;
+					} // end if
+				} // end for
+				if (asserted) { 
+					dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "asserted", wmc.address.id);
+				} else { 
+					dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "factual", wmc.address.id);		
+				}
+			} else { 
+				if (belief.phi instanceof ContinualFormula) { 
+					int polarity = 1;
+					if (((ContinualFormula)belief.phi).polarity == false) { polarity = -1; }
+					if (((ContinualFormula)belief.phi).cstatus.equals(ContinualStatus.assertion)) {
+						dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "assertion", wmc.address.id);
+					} else { 	
+						dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "factual", wmc.address.id);							
+					} 
+				} else { 
+					dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob, "factual", wmc.address.id);					
+				} 
+			} 
+			} catch (ClassCastException e) { 
+				System.out.println("[BMCW] cce on ["+(belief.phi).getClass().toString()+"]");
+			} 
+		} // end updateTruth
 		
 	}
 
