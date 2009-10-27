@@ -946,24 +946,3 @@ def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event}
   
   modifier(right, prep, pre, manner )
   modifier(up, prep, pre, manner )
-
-
-####################
-# Prosodic Entries #
-####################
-
-#  noun("ball_L+H*", thing, t-given t-thm-focus lphs ) 
-#  noun("ball_H*", thing, t-new  t-rhm-focus hs ) 
-#  noun("ball_L*", thing, t-new  t-rhm-focus hs ) 
-#  noun("box_L+H*", thing, t-given t-thm-focus lphs ) 
-#  noun("box_H*", thing, t-new  t-rhm-focus hs ) 
-#  noun("box_L*", thing, t-new  t-rhm-focus ls ) 
-#  noun("robot_L+H*", animate, t-given t-thm-focus lphs ) 
-#  noun("robot_H*", animate, t-new  t-rhm-focus hs ) 
-#  noun("robot_L*", animate, t-new  t-rhm-focus ls ) 
-
-#  adj-deg("red_L+H*", redder, reddest, q-color, m-given  m-thm-focus lphs)
-#  adj-deg("red_H*", redder, reddest, q-color, m-new  m-rhm-focus hs)
-#  adj-deg("red_H*c", redder, reddest, q-color, m-contrast  m-rhm-focus hs)
-#  adj-deg("red_L*", redder, reddest, q-color, m-new  m-rhm-focus hs)
-

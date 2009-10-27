@@ -433,8 +433,8 @@ def be-forms (args) {
 	"aren't":  be  pres  2nd     s-sg s-neg      neg  args;
         is:        be  pres  3rd     s-sg s-prov-pos      e-focus-false e-uncontentious e-rheme-true args;
         is:        be  pres  3rd     s-sg s-prov-pos      e-focus-false e-uncontentious e-rheme-false args;
-        "is_H*":     be  pres  3rd     s-sg s-prov-pos     hs e-focus-true e-uncontentious e-rheme-true args;
-        "is_L+H*":   be  pres  3rd     s-sg s-prov-pos      e-focus-true e-uncontentious e-rheme-false lphs args;
+        "is@H*":     be  pres  3rd     s-sg s-prov-pos     hs e-focus-true e-uncontentious e-rheme-true args;
+        "is@L+H*":   be  pres  3rd     s-sg s-prov-pos      e-focus-true e-uncontentious e-rheme-false lphs args;
         "isn't":   be  pres  3rd     s-sg s-neg      neg  args;
 	"ain't":   be  pres               s-neg      neg  args;
 	was:       be  past  1st     s-sg s-prov-pos      args;
