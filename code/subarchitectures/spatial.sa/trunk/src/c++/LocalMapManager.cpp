@@ -19,6 +19,7 @@
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
 #include <float.h>
+#include <NavX/XDisplayLocalGridMap.hh>
 
 using namespace cast;
 using namespace std;
@@ -557,10 +558,25 @@ log("Sample each of the maps into the new map");
       }
     }
   }
+
   for (int x = -newSize ; x <= newSize; x++){
     for (int y = -newSize ; y <= newSize; y++){
       map.data.push_back(newMap(x,y));
     }
   }
+
+  Cure::LocalGridMap<unsigned char> newMap2(newSize, cellSize, '2',
+      Cure::LocalGridMap<unsigned char>::MAP1, cx, cy);
+
+int lp = 0;
+for(int x = -map.size ; x <= map.size; x++){
+		for(int y = -map.size ; y <= map.size; y++){ 
+			(newMap2)(x,y) = map.data[lp];
+			lp++;
+		}
+}
+    Cure::XDisplayLocalGridMap<unsigned char>* m_Displaykrsjlgm;
+    m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<unsigned char>(newMap2);
+    m_Displaykrsjlgm->updateDisplay();
 
 }
