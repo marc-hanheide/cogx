@@ -12,8 +12,8 @@ if nargout==3
 end;
 
 for i=1:N
-   
-   datfile=[fdir 'dat' num2str(idxs(i),'%03d') ,'.mat'];
+   i
+   datfile=[fdir 'dat' num2str(idxs(i),'%04d') ,'.mat'];
    load(datfile,'gt');
 
    for j=1:size(gt.AP,1);
@@ -21,6 +21,9 @@ for i=1:N
       CF(gt.AP(j,1),i)=gt.AP(j,2);
    end;
    if nargout==3
+      if isempty(gt.MOK)
+         gt.MOK=0;
+      end
       MOK(i)=gt.MOK;
    end;
 

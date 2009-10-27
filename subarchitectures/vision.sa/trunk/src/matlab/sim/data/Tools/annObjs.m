@@ -306,7 +306,7 @@ set(handles.lb_optm,'String',optm);
 function annShowImgs(handles)
 
 img=imread(['img' num2str(handles.II,'%03d') '.jpg']);
-mask=imread(['mask' num2str(handles.II,'%03d') '.jpg']);
+mask=imread(['msk' num2str(handles.II,'%03d') '.jpg']);
 maskI=mask;%imread(['maskI' num2str(handles.II,'%03d') '.jpg']);
 
 axes(handles.ax_img);

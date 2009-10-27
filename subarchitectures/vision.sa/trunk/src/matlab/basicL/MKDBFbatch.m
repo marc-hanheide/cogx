@@ -1,6 +1,19 @@
 function mC=MKDBFbatch(F,C)
 
-CCT=.5 %CompressionClusterThreshold
+CCT=.5; %CompressionClusterThreshold
+SEL=2;
+
+%CM=[1:6;1 1 1 1 2 2]'; %concept number -> concept group mapping
+CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
+%CM=[1:7;1 1 1 1 2 2 2]'; %concept number -> concept group mapping
+%CM=[1:11;1 1 1 1 1 1 1 1 1 2 2]';
+%CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
+
+
+global currMode
+if ~isempty(currMode)
+   %CM=currMode.CTT;
+end
 
 numC=size(C,1);
 namesC=1:numC;
@@ -33,22 +46,50 @@ end;
 %MDF={1,2,1:2,1:3,4:6};
 MDF={1,2,3,1:2,2:3,[1 3],1:3,4,5,6,4:5,5:6,[4,6],4:6};
 %MDF={1:3,4:6};
-numMDF=length(MDF);
 
-dsts=ones(numC,numMDF)*1e10;
-for i=1:numMDF
-   for j=1:numC
-      for k=j+1:numC
-         res = executeOperatorIKDE( mC(j).kde, 'additional_kde', mC(k).kde, 'evalHellingerBetween' , 'selectSubDimensions', MDF{i} ) ;
-         dst=res.distance_hell;
-         dsts(j,i)=min(dsts(j,i),dst);
-         dsts(k,i)=min(dsts(k,i),dst);
-      end
-   end
-   dsts(:,i)=dsts(:,i).^length(MDF{i});
-end
-[foo,Fbs]=max(dsts');
+Fbs=selectFeatures(mC,CM,MDF);
 
+% numMDF=length(MDF);
+% 
+% dsts=ones(numC,numMDF)*1e10;
+% for i=1:numMDF
+%    for j=1:numC
+%       for k=j+1:numC
+%          res = executeOperatorIKDE( mC(j).kde, 'additional_kde', mC(k).kde, 'evalHellingerBetween' , 'selectSubDimensions', MDF{i} ) ;
+%          dst=res.distance_hell;
+%          dsts(j,i)=min(dsts(j,i),dst);
+%          dsts(k,i)=min(dsts(k,i),dst);
+%       end
+%    end
+%    dsts(:,i)=dsts(:,i).^length(MDF{i});
+% end
+% 
+% if SEL==1
+%    [foo,Fbs]=max(dsts');
+% else
+%    %select best feature for concept goroups
+%    names=[mC.name];
+%    nCG=max(CM(:,2));
+%    ICM=zeros(numC,2);
+%    for i=1:nCG
+%       cs=find(CM(:,2)==i);
+%       ics=find(ismember(names,cs));
+%       ICM(ics,1)=names(ics);
+%       ICM(ics,2)=i;
+%    end;
+%    
+%    dsts1=zeros(nCG,numMDF);
+%    for i=1:nCG
+%       dsts1(i,:)=sum(dsts(ICM(:,2)==i,:));
+%    end
+%    [foo,Fbs1]=max(dsts1');
+%    
+%    for i=1:numC
+%       Fbs(i)=Fbs1(ICM(i,2));
+%    end
+% end
+
+%pack the results
 for i=1:numC
    mC(i).Fb=MDF{Fbs(i)};
 end

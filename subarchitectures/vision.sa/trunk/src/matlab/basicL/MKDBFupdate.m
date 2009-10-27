@@ -15,7 +15,7 @@ if ~isempty(Params)
 end;
 
 %MDF={1,2,3,1:2,2:3,[1 3],1:3,4,5,6,4:5,5:6,[4,6],4:6};
-MDF={[1 3],1:3,4:6};
+MDF={1,[1 3],1:3,4:6};
 %MDF={1:3,4:6};
 global currMode
 if ~isempty(currMode)
@@ -70,33 +70,63 @@ elseif ~isempty(C) %at least one concept given
    
 %FEATURE SELECTION
 
-   numMDF=length(MDF);
-   dsts=ones(numC,numMDF)*1e10;
-   for i=1:numMDF
-      for j=1:numC
-         for k=j+1:numC
-            if mC(j).conf>=ING && mC(k).conf>=ING
-               res = executeOperatorIKDE( mC(j).kde, 'additional_kde', mC(k).kde, 'evalHellingerBetween' , 'selectSubDimensions', MDF{i} ) ;
-               dst=res.distance_hell;
-               dsts(j,i)=min(dsts(j,i),dst);
-               dsts(k,i)=min(dsts(k,i),dst);
-            end
-         end
-      end
-      %normalize distances
-      %dsts(:,i)=dsts(:,i).^(1/length(MDF{i}));
-      dsts(:,i)=dsts(:,i).^length(MDF{i});   
-      %dsts(:,i)=dsts(:,i).^(-(1+length(MDF{i})/100));   
-      %dsts(:,i)=dsts(:,i)/length(MDF{i});
-   end
-  [foo,Fbs]=max(dsts');
+%    numMDF=length(MDF);
+%    dsts=ones(numC,numMDF)*1e10;
+%    for i=1:numMDF
+%       for j=1:numC
+%          for k=j+1:numC
+%             if mC(j).conf>=ING && mC(k).conf>=ING
+%                res = executeOperatorIKDE( mC(j).kde, 'additional_kde', mC(k).kde, 'evalHellingerBetween' , 'selectSubDimensions', MDF{i} ) ;
+%                dst=res.distance_hell;
+%                dsts(j,i)=min(dsts(j,i),dst);
+%                dsts(k,i)=min(dsts(k,i),dst);
+%             end
+%          end
+%       end
+%       %normalize distances
+%       %dsts(:,i)=dsts(:,i).^(1/length(MDF{i}));
+%       dsts(:,i)=dsts(:,i).^length(MDF{i});   
+%       %dsts(:,i)=dsts(:,i).^(-(1+length(MDF{i})/100));   
+%       %dsts(:,i)=dsts(:,i)/length(MDF{i});
+%    end
+%    
+%    SEL=2;
+%    if SEL==1
+%    [foo,Fbs]=max(dsts');
+% else
+%    %select best feature for concept goroups
+%    CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
+%    names=[mC.name];
+%    nCG=max(CM(:,2));
+%    ICM=zeros(numC,2);
+%    for i=1:nCG
+%       cs=find(CM(:,2)==i);
+%       ics=find(ismember(names,cs));
+%       ICM(ics,1)=names(ics);
+%       ICM(ics,2)=i;
+%    end;
+%    
+%    dsts1=zeros(nCG,numMDF);
+%    for i=1:nCG
+%       dsts1(i,:)=sum(dsts(ICM(:,2)==i,:));
+%    end
+%    [foo,Fbs1]=max(dsts1');
+%    
+%    for i=1:numC
+%       Fbs(i)=Fbs1(ICM(i,2));
+%    end
+% end
+
+CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
+CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
+Fbs=selectFeatures(mC,CM,MDF);
    
    for i=1:numC
       oldFb=mC(i).Fb;
       newFb=MDF{Fbs(i)};
       mC(i).Fb=newFb;
       if ~isequal(newFb,oldFb) %new best feature
-         %disp(['SW-UPD: i=' num2str(i) ' C=' num2str(mC(i).name) ' Fb:' num2str(oldFb) ' -> ' num2str(newFb) ' (conf=' num2str(mC(i).conf) ')']);
+         disp(['SW-UPD: i=' num2str(i) ' C=' num2str(mC(i).name) ' Fb:' num2str(oldFb) ' -> ' num2str(newFb) ' (conf=' num2str(mC(i).conf) ')']);
       end
    end
    

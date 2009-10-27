@@ -13,6 +13,7 @@ b0=imread([Dirs.data Data.mskName num2str(idx,['%0' num2str(Data.numDigit) 'd'])
 
 
 b1=bin(b0);
+%b1=(b0==120);
 [b2,bb2]=crop(b1);
 x2=crop(x0,bb2);
 
