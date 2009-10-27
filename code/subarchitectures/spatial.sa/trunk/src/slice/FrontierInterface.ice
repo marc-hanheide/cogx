@@ -53,6 +53,24 @@ module FrontierInterface {
     float gatewayValue;
   };
 
+  struct LocalGridMap
+  {
+    double xCenter;
+    double yCenter;
+    double cellSize;
+
+    int width;
+    int height;
+    sequence<byte> data;
+  };
+
+  interface LocalMapInterface {
+    LocalGridMap getCombinedGridMap(sequence<int> places);
+  }
+  interface LocalMapInterfaceAsComponent extends cast::interfaces::CASTComponent {
+    LocalGridMap getCombinedGridMap(sequence<int> places);
+  }
+
   interface HypothesisEvaluator {
     HypothesisEvaluation getHypothesisEvaluation(int hypID);
   };
