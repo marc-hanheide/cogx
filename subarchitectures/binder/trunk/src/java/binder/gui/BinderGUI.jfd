@@ -171,6 +171,13 @@
              <string>text</string> 
              <string>Insert</string> 
             </void> 
+            <void method="setProperty"> 
+             <string>icon</string> 
+             <object class="com.jformdesigner.model.SwingIcon"> 
+              <int>1</int> 
+              <string>/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/add2.png</string> 
+             </object> 
+            </void> 
             <void property="name"> 
              <string>menu6</string> 
             </void> 
@@ -194,6 +201,22 @@
               </void> 
              </object> 
             </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JMenuItem</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>New Feature in Proxy</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>enabled</string> 
+               <boolean>false</boolean> 
+              </void> 
+              <void property="name"> 
+               <string>menuItem18</string> 
+              </void> 
+             </object> 
+            </void> 
            </object> 
           </void> 
           <void method="add"> 
@@ -204,11 +227,26 @@
              <string>Modify</string> 
             </void> 
             <void method="setProperty"> 
+             <string>icon</string> 
+             <object class="com.jformdesigner.model.SwingIcon"> 
+              <int>1</int> 
+              <string>/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/modify2.png</string> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
              <string>enabled</string> 
              <boolean>false</boolean> 
             </void> 
             <void property="name"> 
              <string>menuItem7</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>menuItem7ActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
             </void> 
            </object> 
           </void> 
@@ -218,6 +256,17 @@
             <void method="setProperty"> 
              <string>text</string> 
              <string>Delete</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>icon</string> 
+             <object class="com.jformdesigner.model.SwingIcon"> 
+              <int>1</int> 
+              <string>/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/delete2.png</string> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>enabled</string> 
+             <boolean>false</boolean> 
             </void> 
             <void property="name"> 
              <string>menuItem8</string> 
@@ -246,6 +295,37 @@
           </void> 
           <void property="name"> 
            <string>menu7</string> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Refresh</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>enabled</string> 
+             <boolean>false</boolean> 
+            </void> 
+            <void method="setProperty"> 
+             <string>icon</string> 
+             <object class="com.jformdesigner.model.SwingIcon"> 
+              <int>1</int> 
+              <string>/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/refresh.png</string> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>menuItem19</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JPopupMenu$Separator</string> 
+            <void property="name"> 
+             <string>separator5</string> 
+            </void> 
+           </object> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 

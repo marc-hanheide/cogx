@@ -7,6 +7,7 @@ import javax.swing.*;
 
 import org.apache.log4j.Logger;
 
+import binder.autogen.core.Proxy;
 import binder.components.BinderMonitor;
 import binder.utils.GenericUtils;
 
@@ -38,7 +39,8 @@ public class BinderGUI extends JFrame {
 	 	
 	int config_CurrentRank = 1;
 
-	String curSelectedEntity = "";
+	String curSelectedEntityId = "";
+	Class curSelectedEntityClass ;
 	
 	public BinderGUI(BinderMonitor bm) {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -59,8 +61,18 @@ public class BinderGUI extends JFrame {
 	}
 	
 	
-	public void setCurSelectedEntity (String entity) {
-		curSelectedEntity = entity;
+	public void setCurrentSelection (String entityId, Class type) {
+		curSelectedEntityId = entityId;
+		curSelectedEntityClass = type;
+		
+		if (type.equals(Proxy.class)) {
+			menuItem7.setEnabled(true);
+			menuItem8.setEnabled(true);
+		}
+		else {
+			menuItem7.setEnabled(false);
+			menuItem8.setEnabled(false);
+		}
 	}
 
 
@@ -81,10 +93,9 @@ public class BinderGUI extends JFrame {
 
 	private void menuItem8ActionPerformed(ActionEvent e) {
 		
-		if (!curSelectedEntity.equals("")) {
-		//	System.out.println("GOING TO DELETE: " + curSelectedEntity);
+		if (!curSelectedEntityId.equals("")) {
 			try {
-			bm.deleteFromWorkingMemory(curSelectedEntity);
+			bm.deleteFromWorkingMemory(curSelectedEntityId);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -95,6 +106,19 @@ public class BinderGUI extends JFrame {
 
 	private void menuItem5ActionPerformed(ActionEvent e) {
 		dispose();
+	}
+
+	private void menuItem7ActionPerformed(ActionEvent e) {
+		
+		try {
+			Proxy proxy = bm.getMemoryEntry(curSelectedEntityId, Proxy.class);
+			ProxyInfoGUI proxyInfo = new ProxyInfoGUI(this, proxy);
+			proxyInfo.setVisible(true);
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
 	}
 	
 	
@@ -111,9 +135,11 @@ public class BinderGUI extends JFrame {
 		menu2 = new JMenu();
 		menu6 = new JMenu();
 		menuItem11 = new JMenuItem();
+		menuItem18 = new JMenuItem();
 		menuItem7 = new JMenuItem();
 		menuItem8 = new JMenuItem();
 		menu7 = new JMenu();
+		menuItem19 = new JMenuItem();
 		menuItem3 = new JMenuItem();
 		menuItem17 = new JMenuItem();
 		menu3 = new JMenu();
@@ -180,6 +206,7 @@ public class BinderGUI extends JFrame {
 				//======== menu6 ========
 				{
 					menu6.setText("Insert");
+					menu6.setIcon(new ImageIcon("/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/add2.png"));
 
 					//---- menuItem11 ----
 					menuItem11.setText("New Proxy");
@@ -189,16 +216,29 @@ public class BinderGUI extends JFrame {
 						}
 					});
 					menu6.add(menuItem11);
+
+					//---- menuItem18 ----
+					menuItem18.setText("New Feature in Proxy");
+					menuItem18.setEnabled(false);
+					menu6.add(menuItem18);
 				}
 				menu2.add(menu6);
 
 				//---- menuItem7 ----
 				menuItem7.setText("Modify");
+				menuItem7.setIcon(new ImageIcon("/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/modify2.png"));
 				menuItem7.setEnabled(false);
+				menuItem7.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						menuItem7ActionPerformed(e);
+					}
+				});
 				menu2.add(menuItem7);
 
 				//---- menuItem8 ----
 				menuItem8.setText("Delete");
+				menuItem8.setIcon(new ImageIcon("/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/delete2.png"));
+				menuItem8.setEnabled(false);
 				menuItem8.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						menuItem8ActionPerformed(e);
@@ -211,6 +251,13 @@ public class BinderGUI extends JFrame {
 			//======== menu7 ========
 			{
 				menu7.setText("View");
+
+				//---- menuItem19 ----
+				menuItem19.setText("Refresh");
+				menuItem19.setEnabled(false);
+				menuItem19.setIcon(new ImageIcon("/Users/plison/svn.cogx/systems/dfki/subarchitectures/binder/imgs/refresh.png"));
+				menu7.add(menuItem19);
+				menu7.addSeparator();
 
 				//---- menuItem3 ----
 				menuItem3.setText("Zoom in");
@@ -312,9 +359,11 @@ public class BinderGUI extends JFrame {
 	private JMenu menu2;
 	private JMenu menu6;
 	private JMenuItem menuItem11;
+	private JMenuItem menuItem18;
 	private JMenuItem menuItem7;
 	private JMenuItem menuItem8;
 	private JMenu menu7;
+	private JMenuItem menuItem19;
 	private JMenuItem menuItem3;
 	private JMenuItem menuItem17;
 	private JMenu menu3;

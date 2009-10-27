@@ -339,6 +339,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	private boolean isMoreRecent (CASTTime time1, CASTTime time2) {
 		
 		if (time1 != null && time2 != null) {
+			
 		if (time1.s > time2.s) {
 			return true;
 		}
