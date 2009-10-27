@@ -350,7 +350,7 @@ public class UPDebugger
 		} 
 		log("Wrote LF to \"" + dumpLFfile + "\"");
 		
-		return output;
+		return output.replace('_',' ');  // replace underscores because of thank_you
     } // end realizeLfWithGrammar
 
 	
