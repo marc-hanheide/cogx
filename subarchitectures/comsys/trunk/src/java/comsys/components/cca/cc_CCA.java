@@ -598,7 +598,7 @@ public class cc_CCA extends BeliefModelInterface {
 								b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
 							}
 							if (b.ags instanceof AttributedAgentStatus) {
-								b.ags = BeliefUtils.raise((AttributedAgentStatus) b.ags);
+								b.ags = BeliefUtils.raiseToMutual((AttributedAgentStatus) b.ags);
 							}
 							if (b.ags instanceof MutualAgentStatus) {
 								b.ags = BeliefUtils.addToGroup((MutualAgentStatus) b.ags, speaker);
@@ -647,7 +647,7 @@ public class cc_CCA extends BeliefModelInterface {
 			}
 
 			// assert_prop(h, 0:G, color)
-			else if (cu.intention.predSym.equals("assert_prop")) {
+			else if (cu.intention.predSym.equals("value_assertion")) {
 				
 				// need_get_value(vision, 0:G, color)
 

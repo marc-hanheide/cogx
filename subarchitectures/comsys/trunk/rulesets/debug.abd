@@ -1,4 +1,4 @@
-% CHEATING
+% DEBUGGING
 
 %k(now, private(r)) : objecttype('form-2:B', mug).
 %k(now, private(r)) : objecttype('form-2:B', unknownObjectType).
