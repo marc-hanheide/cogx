@@ -53,6 +53,9 @@ module FrontierInterface {
     float gatewayValue;
   };
 
+  sequence<byte> CellSeq;
+  sequence<int> PlaceIDSeq;
+
   struct LocalGridMap
   {
     double xCenter;
@@ -61,15 +64,15 @@ module FrontierInterface {
 
     int width;
     int height;
-    sequence<byte> data;
+    CellSeq data;
   };
 
   interface LocalMapInterface {
-    LocalGridMap getCombinedGridMap(sequence<int> places);
-  }
+    LocalGridMap getCombinedGridMap(PlaceIDSeq places);
+  };
   interface LocalMapInterfaceAsComponent extends cast::interfaces::CASTComponent {
-    LocalGridMap getCombinedGridMap(sequence<int> places);
-  }
+    LocalGridMap getCombinedGridMap(PlaceIDSeq places);
+  };
 
   interface HypothesisEvaluator {
     HypothesisEvaluation getHypothesisEvaluation(int hypID);
