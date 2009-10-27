@@ -77,6 +77,8 @@
 # We do not want to enumerate all possible prosodic markers on words in the dictionary.
 # It saves effort to use these proxy-lexical rules for marking words with prosodic indicatores
 
+def markWordsINTO(word) { markWordHs(word),markWordLs(word),markWordLpHs(word)}
+
 # input is 'word', output is 'word@H*'
 def markWordHs(word) {
     ifmatch(word, word, word .'@H*', word)
