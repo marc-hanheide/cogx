@@ -36,7 +36,7 @@
 			  <result val="proof-status-asserted"/>
 		   </choicenode>
 		   <choicenode answer = "unknown">
-			  <result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+			  <result val="proof-status-assumed"/>  <!-- Rheme is the default --> 
               <!-- check if in ascr -->
            </choicenode>            
            </choicenode>  <!-- end Rheme check -->            
@@ -82,7 +82,7 @@
 		 </choicenode>  <!-- end color is rhematic -->
 
 		 <choicenode answer = "unknown">               <!-- default -->
-			  <result val="m-focus-false-asserted"/>
+			  <result val="m-focus-false-assumed"/>
          </choicenode>
 
 	   </choicenode>  <!-- and TOP -->
@@ -126,7 +126,7 @@
 		 </choicenode>  <!-- end size is rhematic -->
 
 		 <choicenode answer = "unknown">               <!-- default -->
-			  <result val="m-focus-false-asserted"/>
+			  <result val="m-focus-false-assumed"/>
          </choicenode>
 	   </choicenode>
    </dectree>
@@ -169,7 +169,7 @@
 		 </choicenode>  <!-- end shape is rhematic -->
 
 		 <choicenode answer = "unknown">               <!-- default -->
-			  <result val="m-focus-false-asserted"/>
+			  <result val="m-focus-false-assumed"/>
          </choicenode>
 	   </choicenode>
    </dectree>
@@ -212,7 +212,7 @@
 		 </choicenode>  <!-- end number is rhematic -->
 
 		 <choicenode answer = "unknown">               <!-- default -->
-			  <result val="m-focus-false-asserted"/>
+			  <result val="m-focus-false-assumed"/>
          </choicenode>
 	   </choicenode>
    </dectree>
@@ -262,7 +262,7 @@
 		 </choicenode>  <!-- end name is rhematic -->
 
 		 <choicenode answer = "unknown">               <!-- default -->
-			  <result val="t-focus-false-asserted"/>
+			  <result val="t-focus-false-assumed"/>
          </choicenode>
 	   </choicenode>  <!-- end compound check -->
 	   </choicenode>
