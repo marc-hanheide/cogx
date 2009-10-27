@@ -307,23 +307,20 @@ void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan,
                                             const Cure::Pose3D &sp, 
                                             double maxRange)
 {
-  const double eps = 1e-2;
+  const double maxDiff = 0.1;
 
   for (int i = 0; i < scan.getNPts(); i++) {
 
-    // Filter single max range readings. We require to get at least
-    // two consecutive max readings to say that it really is one,
+    // Filter single long read. We require to get at least
+    // two consecutive long readings to say that it really is one,
     // otherwise we skip that datapoint
     if (i == 0) {
-      if (scan.getRange(i) >= maxRange-eps &&
-          scan.getRange(i+1) < maxRange-eps) continue;
+      if (scan.getRange(i) - scan.getRange(i+1) > maxDiff) continue;
     } else if (i == scan.getNPts()-1) {
-      if (scan.getRange(i) >= maxRange-eps &&
-          scan.getRange(i-1) < maxRange-eps) continue;
+      if (scan.getRange(i) - scan.getRange(i-1) > maxDiff) continue;
     } else {
-      if (scan.getRange(i) >= maxRange-eps &&
-          scan.getRange(i-1) < maxRange-eps &&
-          scan.getRange(i+1) < maxRange-eps) continue;
+      if ((scan.getRange(i) - scan.getRange(i-1) > maxDiff) &&
+	  (scan.getRange(i) - scan.getRange(i+1) > maxDiff)) continue;
     }
 
   	/*if (scan.getRange(i) > maxRange - 0.5){
@@ -360,23 +357,20 @@ void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan,
   int startIndex = (1-fieldFraction)*0.5*scan.getNPts();
   int endIndex = scan.getNPts()-startIndex;
 
-  const double eps = 1e-2;
+  const double maxDiff = 0.1;
 
   for (int i = startIndex; i < endIndex; i++) {
 
-    // Filter single max range readings. We require to get at least
-    // two consecutive max readings to say that it really is one,
+    // Filter single long read. We require to get at least
+    // two consecutive long readings to say that it really is one,
     // otherwise we skip that datapoint
     if (i == 0) {
-      if (scan.getRange(i) >= maxRange-eps &&
-          scan.getRange(i+1) < maxRange-eps) continue;
+      if (scan.getRange(i) - scan.getRange(i+1) > maxDiff) continue;
     } else if (i == scan.getNPts()-1) {
-      if (scan.getRange(i) >= maxRange-eps &&
-          scan.getRange(i-1) < maxRange-eps) continue;
+      if (scan.getRange(i) - scan.getRange(i-1) > maxDiff) continue;
     } else {
-      if (scan.getRange(i) >= maxRange-eps &&
-          scan.getRange(i-1) < maxRange-eps &&
-          scan.getRange(i+1) < maxRange-eps) continue;
+      if ((scan.getRange(i) - scan.getRange(i-1) > maxDiff) &&
+	  (scan.getRange(i) - scan.getRange(i+1) > maxDiff)) continue;
     }
 
     setStart(sp.getX(),
