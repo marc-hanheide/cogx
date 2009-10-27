@@ -556,6 +556,11 @@ void ObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap){
 	for(unsigned int i =0 ; i < icemap.size*icemap.size ; i ++){
 		(*m_krsjlgm)[i] = icemap.data[i];
 	}
+
+for(unsigned int i =0 ; i < icemap.size*icemap.size ; i ++){	
+	if ((*m_krsjlgm)[i] == '0')
+		log("0");
+}
     log("concerted icemap to krsjmap");	
 }
 void ObjectSearch::GenViewPoints() {
@@ -577,8 +582,10 @@ void ObjectSearch::GenViewPoints() {
     log("have combined lgm");
     IcetoCureLGM(combined_lgm);
 
-    m_Displaykrsjlgm = new Cure::XDispLocalGridMap<char>(*m_krsjlgm);
+    m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<char>(*m_krsjlgm);
+    m_Displaykrsjlgm->updateDisplay();
 
+    sleep(3);
     log("created placeinterface proxy");
 
 //     std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
