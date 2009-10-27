@@ -2,7 +2,7 @@
 
 <!-- ========== INFORMATION STRUCTURE ========== -->
 
-<!-- without explicit ProofSTatus, all parts of the LF become Rheme by default -->
+<!-- without explicit ProofSTatus, all parts of the LF become Theme by default -->
 <!-- without explicit kontrast, all parts get focussed by default -->
 
 
@@ -51,12 +51,12 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar ^ <ProofStatus>assumed ^ <Kontrast>false  ^ <KontrastColor>true ^ <KontrastSize>true))
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar ^ <ProofStatus>asserted ^ <Kontrast>false  ^ <KontrastColor>true ^ <KontrastSize>true))
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar ^ /ProofStatus\assumed ^ /Kontrast\false ^ /KontrastColor\true ^ /KontrastSize\true))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar ^ /ProofStatus\asserted ^ /Kontrast\false ^ /KontrastColor\true ^ /KontrastSize\true))
 </input>
 <realizations>
-<!-- (the BIG_f RED_f ball)th -->
+<!-- (the BIG_f RED_f ball)rh -->
 <string>the big red ball</string> 
 <string>the red big ball</string>
 </realizations>
@@ -178,7 +178,7 @@ A: (is_f the box blue)Th
 </input>
 <realizations>
 <!-- 
-(What is_f that)rh
+(What is_f)rh (that)th
 -->
 <string>what is this </string>
 <string>what is that </string>
