@@ -21,7 +21,7 @@ public class ProsodicTextToRawMARYXml {
 	private static final String XMLtag_BREAKInd_prefix = new String("breakindex=\"");
 	private static final String XMLtag_BREAKInd_suffix = new String("\"");
 	private static final String XMLtag_BOUNDARY_close = new String("/>");
-	private static String XMLtag_BOUNDARY_pause = new String("4");
+	private static String XMLtag_BOUNDARY_pause = new String("6");
 	
 	private static String RAWMARYXMLHead;
 	private static String GenratedXMLFileLocation;
@@ -29,7 +29,7 @@ public class ProsodicTextToRawMARYXml {
 	private static String stub;
 	private static boolean prosody=false;
 	
-	private static final String SententialPause = new String ("4");
+	private static final String SententialPause = new String ("6");
 	private static final String IntraSententialPause = new String ("2");
 	/**
 	 * @param args
@@ -82,33 +82,28 @@ public class ProsodicTextToRawMARYXml {
 				if(l_utterance.contains("%") || l_utterance.contains("_")) prosody= true;
 				else prosody= false;
 			//pass this line to the conversion function
+			l_xmlfile=ConvertToRawMarxXml(l_utterance.substring(l_substr));
 				
-				l_xmlfile=ConvertToRawMarxXml(l_utterance.substring(l_substr));
+			//A function that takes the prosodic text as input and returns a filename
+			System.out.println("XML file written: "+ l_xmlfile);
 				
-				//A function that takes the prosodic text as input and returns a filename
-				System.out.println("XML file written: "+ l_xmlfile);
-				
-				//Synthesize this file
-				try {
-						SynthesisRAWMaryXMLInput.Utter(GenratedXMLFileLocation.concat(l_xmlfile),l_voicename);
-						Thread.sleep(2500);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			//Synthesize this file
+			try {
+					SynthesisRAWMaryXMLInput.Utter(GenratedXMLFileLocation.concat(l_xmlfile),l_voicename);
+					Thread.sleep(2500);
+			} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			}
 				
 			}
-			
-			
 		}
 		catch (IOException io_e) {
 			// TODO: handle exception
 			System.out.println(io_e);
 		}
-		
-		
-		
 	}
+	
 	public static String ConvertToRawMarxXml(String inp_prosodictxt){
 		if(debug){
 			System.out.println("Convert to XML got: " + inp_prosodictxt);
