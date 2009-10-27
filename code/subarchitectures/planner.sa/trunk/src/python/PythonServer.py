@@ -175,6 +175,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
             pnode.status = plans.ActionStatusEnum.EXECUTED
           elif action.status == Planner.Completion.ABORTED or Planner.Completion.FAILED:
             pnode.status = plans.ActionStatusEnum.FAILED
+            task.mark_changed()
             
       if requires_action_dispatch:
         task.mark_changed()
