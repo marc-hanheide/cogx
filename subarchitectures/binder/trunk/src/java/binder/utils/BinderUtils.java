@@ -114,6 +114,7 @@ public class BinderUtils {
 			}
 		}
 		
+		
 		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
 			Union u = e.next();
 			if (u.probExists == 0.0f) {
@@ -151,8 +152,7 @@ public class BinderUtils {
 		}
 		
 		// if the probability distribution of the updated proxy is unavailable, regenerate it
-		if (proxy.distribution == null || 
-				!(proxy.distribution instanceof DiscreteProbabilityDistribution)) {
+		if (true) {
 			proxy.distribution = 
 				DistributionGeneration.generateProbabilityDistribution(proxy);
 			
@@ -217,7 +217,7 @@ public class BinderUtils {
 			}
 
 			// If the unknown feature value is likely enough, add it to the feature values set
-			if (!alreadyIncludesUnknownValue && totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) && features.length < 4) {
+			if (!alreadyIncludesUnknownValue && totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) ) { // && features.length < 4) {
 				features[i].alternativeValues = new FeatureValue[values.size() + 1];
 				for (int j = 0 ; j < values.size(); j++ ) {
 					features[i].alternativeValues[j] = values.elementAt(j);
@@ -323,6 +323,13 @@ public class BinderUtils {
 	public static String getPrettyPrintProbabilityAssignment
 	(DiscreteProbabilityAssignment assignment) {
 
+		if (assignment == null) {
+			return "";
+		}
+		else if (assignment.featurepairs == null) {
+			return "";
+		}
+		
 		String text = "P ( " ;
 		for (int j = 0; j < assignment.featurepairs.length ; j++) {
 			text += assignment.featurepairs[j].featlabel + " = " + 

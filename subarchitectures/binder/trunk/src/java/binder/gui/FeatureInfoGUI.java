@@ -18,12 +18,14 @@ import cast.cdl.CASTTime;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
+import binder.components.Binder;
 import binder.components.BinderMonitor;
 import binder.constructors.ProxyConstructor;
 import binder.utils.FeatureValueUtils;
@@ -41,7 +43,9 @@ public class FeatureInfoGUI extends JDialog {
 
 	ProxyInfoGUI proxyWindow;
 	
-	private enum OPERATION {INSERT, MODIFY };
+	Proxy proxy;
+	
+	private enum OPERATION {INSERT, MODIFY, INSERT_FROM_MAINWINDOW };
 	
 	OPERATION optype;
 	
@@ -56,6 +60,21 @@ public class FeatureInfoGUI extends JDialog {
 		((TitledBorder)((CompoundBorder)dialogPane.getBorder()).getOutsideBorder()).setTitle("");
 		
 		optype = OPERATION.INSERT;
+	}
+	
+	
+
+	public FeatureInfoGUI(BinderGUI owner, Proxy proxy) {
+		super(owner);
+		bm = owner.bm;
+		initComponents();
+		
+		this.proxy = proxy;
+
+		curFeature = new Feature("", new FeatureValue[0]);
+		((TitledBorder)((CompoundBorder)dialogPane.getBorder()).getOutsideBorder()).setTitle("");
+		
+		optype = OPERATION.INSERT_FROM_MAINWINDOW;
 	}
 	
 	
@@ -245,8 +264,17 @@ public class FeatureInfoGUI extends JDialog {
 			if (optype.equals(OPERATION.INSERT)) {
 				proxyWindow.addFeatureToProxy(curFeature);
 			}
-			else {
+			else if (optype.equals(OPERATION.MODIFY)){
 				proxyWindow.updateFeaturesFrame();
+			}
+			else if (optype.equals(OPERATION.INSERT_FROM_MAINWINDOW)) {
+				ProxyConstructor.addFeatureToProxy(proxy, curFeature);
+				try {
+					bm.overwriteWorkingMemory(proxy.entityID, Binder.BINDER_SA, proxy);
+				}
+				catch (Exception ex) {
+					ex.printStackTrace();
+				}
 			}
 			dispose();
 		}

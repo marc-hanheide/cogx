@@ -385,10 +385,23 @@ public class EntityFilter {
 	private static boolean isFeatValuePairInAssignment 
 	(FeatureValuePair pair, DiscreteProbabilityAssignment assign) {
 
+		if (pair == null || assign == null) {
+			return false;
+		}
+		
+		if (assign.featurepairs == null) {
+			return false;
+		}
+		
 		// loop on the feat-value pairs in the assignment
 		for (int i = 0; i < assign.featurepairs.length ; i++) {
+		
 			FeatureValuePair pair2 = assign.featurepairs[i];
 
+			if (pair2 == null) {
+				return false;
+			}
+			
 			if (pair.featlabel.equals(pair2.featlabel) && 
 					(FeatureValueUtils.haveEqualValue(pair.featvalue, pair2.featvalue))) {
 				return true;

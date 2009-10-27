@@ -33,9 +33,11 @@ public class BeliefModelMonitor extends ManagedComponent {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
+					if (existsOnWorkingMemory(_wmc.address)) {
 					Belief belief = getMemoryEntry(_wmc.address, Belief.class);
 					log("Updated belief : \n" + BeliefModelUtils.getBeliefPrettyPrint(belief, 1));
 					log("----------------------");
+					}
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -49,6 +51,8 @@ public class BeliefModelMonitor extends ManagedComponent {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
 					BeliefModel bmodel = getMemoryEntry(_wmc.address, BeliefModel.class);
+					CASTData<Belief>[] beliefs = getWorkingMemoryEntries(Belief.class);
+					log("Number of beliefs: " + beliefs.length);
 					log("Updated belief model: \n" + BeliefModelUtils.getBeliefModelPrettyPrint(bmodel, 1));
 				}
 				catch (Exception e) {

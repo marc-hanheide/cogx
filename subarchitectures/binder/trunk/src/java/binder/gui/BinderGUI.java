@@ -67,15 +67,18 @@ public class BinderGUI extends JFrame {
 		
 		if (type == null) {
 			menuItem7.setEnabled(false);
-			menuItem8.setEnabled(false);	
+			menuItem8.setEnabled(false);
+			menuItem18.setEnabled(false);
 		}
 		else if (type.equals(Proxy.class)) {
 			menuItem7.setEnabled(true);
 			menuItem8.setEnabled(true);
+			menuItem18.setEnabled(true);
 		}
 		else {
 			menuItem7.setEnabled(false);
 			menuItem8.setEnabled(false);
+			menuItem18.setEnabled(false);
 		}
 	}
 
@@ -123,6 +126,17 @@ public class BinderGUI extends JFrame {
 			ex.printStackTrace();
 		}
 
+	}
+
+	private void menuItem18ActionPerformed(ActionEvent e) {
+		try {
+			Proxy proxy = bm.getMemoryEntry(curSelectedEntityId, Proxy.class);
+		FeatureInfoGUI featureInfo = new FeatureInfoGUI(this, proxy);
+		featureInfo.setVisible(true);
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	
@@ -224,6 +238,11 @@ public class BinderGUI extends JFrame {
 					//---- menuItem18 ----
 					menuItem18.setText("New Feature in Proxy");
 					menuItem18.setEnabled(false);
+					menuItem18.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							menuItem18ActionPerformed(e);
+						}
+					});
 					menu6.add(menuItem18);
 				}
 				menu2.add(menu6);
