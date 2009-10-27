@@ -92,7 +92,6 @@ void VisualMediator::start()
   addChangeFilter(createGlobalTypeFilter<Belief>(cdl::ADD),
 	  new MemberFunctionChangeReceiver<VisualMediator>(this,
 		&VisualMediator::updatedBelief));
-
   
   addChangeFilter(createGlobalTypeFilter<Belief>(cdl::OVERWRITE),
 	  new MemberFunctionChangeReceiver<VisualMediator>(this,
@@ -575,11 +574,11 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 			break;
 			
 		case 5:
-			value = createStringValue ("black", *disti);
+			value = createStringValue ("spherical", *disti); //black
 			break;
 
 		case 6:
-			value = createStringValue ("white", *disti);	
+			value = createStringValue ("cylindrical", *disti);	 //white
 			break;
 			
 		case 7:
@@ -604,12 +603,12 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 	}
 	
 	FeaturePtr label;
-	if(*labi < 10)
+	if(*labi < 5)
 	{
 //	  value = createStringValue (colorStrEnums[*labi], *disti);
 	  colorValues.push_back(value);
 	}
-	else if(*labi < 13)
+	else if(*labi < 7)
 	{
 //	  value = createStringValue (shapeStrEnums[*labi], *disti);
 	  shapeValues.push_back(value);  
@@ -705,12 +704,12 @@ void VisualMediator::compileAndSendLearnTask(const string visualObjID,
 	{ 
 		case spherical:
 			debug("Adding spherical shape to learning task");
-			ltask->labels.push_back(11);	
+			ltask->labels.push_back(5); //11	
 			break;
 
 		case cylindrical:
 			debug("Adding cylindrical shape to learning task");
-			ltask->labels.push_back(12);		
+			ltask->labels.push_back(6);	//12	
 			break;
 			
 		default:
