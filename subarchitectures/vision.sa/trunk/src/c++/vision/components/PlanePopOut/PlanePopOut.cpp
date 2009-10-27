@@ -17,7 +17,7 @@
 #define Lower_BG 1.2	// 1.2-1.8 radius of BoundingSphere
 #define min_height_of_obj 0.02	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.5	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
-#define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses 
+#define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
 #define Torleration 2		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 
@@ -110,7 +110,7 @@ void InitWin()
   view_dir = vector3(0.0, 0.0, 1.0);
   view_up = vector3(0.0, -1.0, 0.0);
   view_normal = cross(view_dir, view_up);
- 
+
   // black background
   col_background[0] = 0.0;
   col_background[1] = 0.0;
@@ -234,7 +234,7 @@ void DrawPlaneGrid()
 }
 
 void DrawPoints()
-{ 
+{
   glPointSize(2);
   glBegin(GL_POINTS);
   for(size_t i = 0; i < pointsN.size(); i++)
@@ -330,10 +330,10 @@ void DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 		{
 			if (v3Obj.x>Max.at(label-1).p.x) Max.at(label-1).p.x = v3Obj.x;
 			if (v3Obj.x<Min.at(label-1).p.x) Min.at(label-1).p.x = v3Obj.x;
-	
+
 			if (v3Obj.y>Max.at(label-1).p.y) Max.at(label-1).p.y = v3Obj.y;
 			if (v3Obj.y<Min.at(label-1).p.y) Min.at(label-1).p.y = v3Obj.y;
-	
+
 			if (v3Obj.z>Max.at(label-1).p.z) Max.at(label-1).p.z = v3Obj.z;
 			if (v3Obj.z<Min.at(label-1).p.z) Min.at(label-1).p.z = v3Obj.z;
 		}
@@ -347,7 +347,7 @@ void DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 		s.z = (Max.at(i).p.z-Min.at(i).p.z)/2;
 		v3size.push_back(s);
 	}
-/*	
+/*
 	for (int i = 0; i<objnumber; i++)
 	{
 		DrawOneCuboid(Max.at(i),Min.at(i));
@@ -478,7 +478,7 @@ void DrawOnePrism(vector <Vector3> ppSeq, double hei)
 	}
 	mObjSeq.push_back(OObj);
 	glBegin(GL_POLYGON);
-	glColor3f(1.0,1.0,1.0);	
+	glColor3f(1.0,1.0,1.0);
 	for (unsigned int i = 0; i<ppSeq.size(); i++)
 		glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
 	glEnd();
@@ -652,7 +652,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 */			}
 		}
 	}
-	
+
 	center.clear();
 	amount.clear();
 	radius_world.clear();
@@ -786,7 +786,7 @@ void PlanePopOut::start()
 }
 
 void PlanePopOut::runComponent()
-{	
+{
   while(isRunning())
   {
 	VisionData::SurfacePointSeq tempPoints = points;
@@ -804,7 +804,7 @@ void PlanePopOut::runComponent()
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
-	
+
 
 		if (RANSAC(pointsN,points_label))
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
@@ -835,8 +835,8 @@ void PlanePopOut::runComponent()
 			{
 				CurrentObjList.at(i).id = newDataID();
 				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-cout<<" ID of this added SOI (empty) = "<<CurrentObjList.at(i).id<<endl;
-				addToWorkingMemory(CurrentObjList.at(i).id, obj);	
+//cout<<" ID of this added SOI (empty) = "<<CurrentObjList.at(i).id<<endl;
+				addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 			PreviousObjList = CurrentObjList;
 		}
@@ -851,12 +851,12 @@ cout<<" ID of this added SOI (empty) = "<<CurrentObjList.at(i).id<<endl;
 					if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
 					{
 						flag = true;
-						
+
 						CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
-						
+						CurrentObjList.at(i).id = PreviousObjList.at(j).id;
 						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 //cout<<" ID of this overwrite SOI = "<<PreviousObjList.at(j).id<<endl;
-						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);	
+						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
 						break;
 					}
 				}
@@ -869,8 +869,8 @@ cout<<" ID of this added SOI (empty) = "<<CurrentObjList.at(i).id<<endl;
 				{
 					CurrentObjList.at(newObjList.at(i)).id = newDataID();
 					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI, CurrentObjList.at(newObjList.at(i)).EQInOneSOI);
-cout<<" ID of this added SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
-					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);	
+//cout<<" ID of this added SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
+					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
 					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 				}
 			}
@@ -897,7 +897,7 @@ cout<<" ID of this added SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
 					for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all objects
 					{
 						deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
-cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
+//cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
 					}
 					std::vector<ObjPara> new_PreviousList;
 					new_PreviousList.reserve(PreviousObjList.size()-disappearedObjList.size());
@@ -905,12 +905,12 @@ cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i))
 					{
 						bool temp_flag = false;
 						for (unsigned int j=0; j<disappearedObjList.size(); j++)
-						{								
+						{
 							if (i == disappearedObjList.at(j))
 							{
 								temp_flag = true;
 								break;
-							}									
+							}
 						}
 						if (!temp_flag)
 							new_PreviousList.push_back( PreviousObjList.at(i) );
@@ -923,7 +923,7 @@ cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i))
 				{
 					m_torleration++;
 					PreviousObjList = CurrentObjList;
-				}		
+				}
 		}
 	}
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
@@ -948,7 +948,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 	Vector3 v3BestMean;
 	Vector3 v3BestNormal;
 	double dBestDistSquared = 9999999999999999.9;
-	
+
 	for(int i=0; i<nRansacs; i++)
 	{
 		int nA, nB, nC;
@@ -978,7 +978,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 			double dDistSq = dot(v3Diff, v3Diff);
 			if(dDistSq == 0.0)
 			continue;
-			double dNormDist = fabs(dot(v3Diff, v3Normal));	
+			double dNormDist = fabs(dot(v3Diff, v3Normal));
 			if(dNormDist > min_height_of_obj)
 			dNormDist = min_height_of_obj;
 			dSumError += dNormDist;
@@ -1143,7 +1143,7 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
 	if (sqrt((obj1.c.x-obj2.c.x)*(obj1.c.x-obj2.c.x)+(obj1.c.y-obj2.c.y)*(obj1.c.y-obj2.c.y)+(obj1.c.z-obj2.c.z)*(obj1.c.z-obj2.c.z))<rate_of_centers*obj1.r && obj1.r/obj2.r>ratio_of_radius && obj1.r/obj2.r<1/ratio_of_radius)
 		return true; //the same object
-	else	
+	else
 		return false; //not the same one
 }
 
