@@ -50,24 +50,30 @@ understand : event : uttered(h, Nom) <-
 	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
 	i : 'rel_Wh-Restr'(Nom, WhNom),
 		what_which(WhNom),
-		i : rel_Scope(WhNom, QueryNom),
-			i : prop(QueryNom, XProp),
-	to_property(XProp, Prop),
+		sought_property(WhNom, Prop),
 	intention : ask_property(h, RestrRef, Prop) / 0.2.
 
+sought_property(Nom, Prop) <-
+	i : rel_Scope(Nom, QueryNom),
+	i : prop(QueryNom, XProp),
+	to_property(XProp, Prop).
+
+sought_property(Nom, objecttype) <-
+	seeking_type(Nom) / 4.0.
+
 % what is this
-understand : event : uttered(h, Nom) <-
-	i : sort(Nom, ascription),
-	i : 'feat_Mood'(Nom, int),
-	i : 'feat_Tense'(Nom, pres),
-	%polarity(Nom, Polarity),
-	i : 'rel_Subject'(Nom, SubjNom),
-	i : 'rel_Cop-Restr'(Nom, RestrNom),
-	att : refers_to(RestrNom, RestrRef) / ref_resolution,
-	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
-	i : 'rel_Wh-Restr'(Nom, WhNom),
-		i : prop(WhNom, what),
-	intention : ask_property(h, RestrRef, objecttype) / 6.2.
+%understand : event : uttered(h, Nom) <-
+%	i : sort(Nom, ascription),
+%	i : 'feat_Mood'(Nom, int),
+%	i : 'feat_Tense'(Nom, pres),
+%	%polarity(Nom, Polarity),
+%	i : 'rel_Subject'(Nom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),
+%	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+%	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
+%	i : 'rel_Wh-Restr'(Nom, WhNom),
+%		i : prop(WhNom, what),
+%	intention : ask_property(h, RestrRef, objecttype) / 6.2.
 
 % could you tell me what X is
 understand : event : uttered(h, Nom) <-
