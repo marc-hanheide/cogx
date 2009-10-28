@@ -94,9 +94,11 @@ public class cc_FakeVerificationGenerator
 	private int pdIdCounter;
 
 	static boolean OKBUTTON_PUSHED = false ;
-	JTextField entityField;
+//	JTextField entityField;
 	JTextField modalityField;
 	JTextField probField;
+	JComboBox beliefBox;
+	Vector<String> currentBeliefs = new Vector<String>();
 	JDialog dialog;
 	String defaultModality = "";
 	float defaultProb = 1.0f;
@@ -117,7 +119,49 @@ public class cc_FakeVerificationGenerator
 	public void start() {
 		super.start();
 		init();
-	}	
+		
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(beliefmodels.adl.Belief.class, WorkingMemoryOperation.WILDCARD),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleBeliefModelUpdate(_wmc);
+					}
+				});
+	}
+	
+	public void handleBeliefModelUpdate(WorkingMemoryChange wmc) {
+		BeliefModel model = getCurrentBeliefModel();
+		Vector<String> asserted = beliefsWithAssertions(model);
+//		String s = "currently asserted:\n";
+		for (int i = 0; i < asserted.size(); i++) {
+			String beliefId = asserted.elementAt(i);
+//			s += beliefId + "\n";
+			if (!currentBeliefs.contains(beliefId)) {
+				beliefBox.addItem(beliefId);
+			}
+		}
+		for (int i = 0; i < currentBeliefs.size(); i++) {
+			String beliefId = currentBeliefs.elementAt(i);
+			if (!asserted.contains(beliefId)) {
+				beliefBox.removeItem(beliefId);
+			}
+		}
+		currentBeliefs = asserted;
+		ok.setEnabled(currentBeliefs.size() > 0);
+//		log(s);
+	}
+	
+	public Vector<String> beliefsWithAssertions(BeliefModel model) {
+		Vector<String> asserted = new Vector<String>();
+		for (int i = 0; i < model.k.length; i++) {
+			Belief b = getBelief(model.k[i]);
+			if (BeliefUtils.formulaHasAssertions((SuperFormula) b.phi)) {
+				asserted.add(b.id);
+			}
+		}
+		return asserted;
+	}
+
 	
 	@Override
 	protected void taskAdopted(String _goalID) {
@@ -191,7 +235,7 @@ public class cc_FakeVerificationGenerator
 	
 	public GroundedBelief getGUIRequest() {
 		
-		entityField.requestFocusInWindow();
+//		entityField.requestFocusInWindow();
 		
 		while (!OKBUTTON_PUSHED) {
 			this.sleepComponent(100);
@@ -200,7 +244,13 @@ public class cc_FakeVerificationGenerator
 		OKBUTTON_PUSHED = false;
 		
 		Belief b = null;
-		String beliefId = entityField.getText();
+//		String beliefId = entityField.getText();
+		Object curItem = beliefBox.getSelectedItem();
+		if (curItem == null) {
+			return null;
+		}
+		String beliefId = curItem.toString();
+		
 		log("retrieving belief id '" + beliefId + "'");
 		b = getBelief(beliefId);
 		if (b == null) {
@@ -241,7 +291,7 @@ public class cc_FakeVerificationGenerator
 		//use entityField.getText();
 		
 		// return the result
-		entityField.setText("");
+//		entityField.setText("");
 		return verif;
 	} // end getGUIRequest	
 		
@@ -265,6 +315,15 @@ public class cc_FakeVerificationGenerator
 		modalityPanel.add(modalityField);
 		dialogPanel.add(modalityPanel);
 
+        JPanel beliefPanel = new JPanel();
+        beliefPanel.setLayout(new BoxLayout(beliefPanel, BoxLayout.LINE_AXIS));
+        JLabel beliefLabel = new JLabel("Belief ID:");
+        beliefPanel.add(beliefLabel);
+        beliefBox = new JComboBox();
+		beliefPanel.add(beliefBox);
+		dialogPanel.add(beliefPanel);
+
+/*
         JPanel entityPanel = new JPanel();
         entityPanel.setLayout(new BoxLayout(entityPanel, BoxLayout.LINE_AXIS));
         JLabel entityLabel = new JLabel("Belief ID:");
@@ -272,6 +331,7 @@ public class cc_FakeVerificationGenerator
         entityField = new JTextField();
 		entityPanel.add(entityField);
 		dialogPanel.add(entityPanel);
+*/
 		
         JPanel probPanel = new JPanel();
         probPanel.setLayout(new BoxLayout(probPanel, BoxLayout.LINE_AXIS));
@@ -288,6 +348,7 @@ public class cc_FakeVerificationGenerator
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
 		buttonPanel.add(Box.createHorizontalGlue());
 		ok = new JButton("Verify all assertions");
+		ok.setEnabled(false);  // disabled at the beginning
 		buttonPanel.add(ok);
 		dialogPanel.add(buttonPanel);
 
@@ -297,9 +358,9 @@ public class cc_FakeVerificationGenerator
 		dialog.setLocation(600, 220);
 
 		Dimension dim = dialogPanel.getPreferredSize();
-		dialog.setSize(200, dim.height + 25);
+		dialog.setSize(250, dim.height + 25);
 		dialog.setVisible(true);
-		entityField.requestFocusInWindow();
+//		entityField.requestFocusInWindow();
 		
 		KeyboardFocusManager.getCurrentKeyboardFocusManager()
 		.addKeyEventDispatcher(new KeyEventDispatcher(){
