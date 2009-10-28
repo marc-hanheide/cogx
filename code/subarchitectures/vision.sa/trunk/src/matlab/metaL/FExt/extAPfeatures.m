@@ -1,4 +1,4 @@
-function F=extAPfeatures(X,B,FV,pts3d)
+function [F,rgb3d]=extAPfeatures(X,B,FV,pts3d)
 %[F,Fnames]=extAPfeatures(X,B)
 %Extract appearance properties features.
 %Extract simple apperarnce and shape features.
@@ -131,6 +131,12 @@ else
       end
 
       if ~isempty(pts3d)
+          if size(pts3d,2) > 3
+              rgb3d = pts3d(:,4:6) ;
+              pts3d = pts3d(:,1:3) ;
+          else
+              rgb3d = [] ;
+          end
           shp3d = extractShpFts( pts3d ) ;
       else
           shp3d = [ -666, -666, -666 ] ;
@@ -150,4 +156,8 @@ else
    
    %showROI(X,B,F);
    
+end
+
+if nargout < 2
+    rgb3d = [] ;
 end
