@@ -10,7 +10,7 @@ function [rCqnt] = cogxVisualLearner_recognise(X, B, pts3d)
    global Params
    X = uint8(X);
    f = extAPfeatures(X,B,Params.FV,pts3d);
-   showROI(X,B,f);
+   showROI(X,B,f,pts3d);
 
    % figure('color','k');
    % image(X);

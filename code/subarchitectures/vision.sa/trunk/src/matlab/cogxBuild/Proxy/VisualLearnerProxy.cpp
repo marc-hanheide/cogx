@@ -90,9 +90,12 @@ void protoObjectToMwArray(const ProtoObject &Object, mwArray &image, mwArray &ma
    // Convert 3D points
    int npts = Object.points.size();
    const int ncol = 6;
-   if (npts < 1) 
-      points3d = mwArray(mxDOUBLE_CLASS, mxREAL); // an empty array
+   if (npts < 1) {
+      printf("**** note enough points\n");
+      points3d = mwArray();
+   }
    else {
+      printf("**** have %d 3D points\n", npts);
       // x, y, z, r, g, b
       mwSize dimensions[2] = {npts, ncol};
       points3d = mwArray(2, dimensions, mxDOUBLE_CLASS, mxREAL);
@@ -125,6 +128,14 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
    CheckInit();
    mwArray image, mask, pts3d;
    protoObjectToMwArray(Object, image, mask, pts3d);
+   /* DEBUG */
+   printf("**** WEIRD\n");
+   sleep(0.01);
+   mwArray dims = pts3d.GetDimensions();
+   int dim0 = dims.Get(mwSize(1), 1);
+   int dim1 = dims.Get(mwSize(1), 2);
+   printf("**** ML: converted pts3d size: %dx%d\n", dim0, dim1);
+   /* END-DEBUG */
 
    // Extract features and recognise.
    mwArray rCqnt;
