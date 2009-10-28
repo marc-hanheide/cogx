@@ -11,6 +11,33 @@
 <utterance>
 <input>
 <!--
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(b1:entity ^ ball ^ <InfoStatus>familiar ^ <ProofStatus>assumed ^ <Kontrast>false))
+-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /InfoStatus\familiar ^ /ProofStatus\assumed ^ /Kontrast\false))
+</input>
+<realizations>
+<!-- (the ball)th -->
+<string>the ball</string> 
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <QuestionType>type ^ <Content>(b1:entity ^ ball ^ <InfoStatus>familiar ^ <ProofStatus>assumed ^ <Kontrast>false))
+-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /QuestionType\type ^ /Content\(b1:entity ^ ball ^ /ProofStatus\assumed ^ /Kontrast\false))
+</input>
+<realizations>
+<!-- (a ball)rh -->
+<string>a ball</string> 
+<string>one ball</string> 
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
 @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <InfoStatus>familiar ^ <ProofStatus>assumed ^ <Kontrast>false))
 -->
 @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /InfoStatus\familiar ^ /ProofStatus\assumed ^ /Kontrast\false))
@@ -64,6 +91,23 @@
 
 
 <!-- ascription: assertion -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <QuestionType>color ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <Kontrast>false ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue)) 
+-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(e1:ascription ^ /ProofStatus\asserted ^ /Kontrast\false ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /Kontrast\false ^ /ProofStatus\assumed) ^ /Color\(b3:quality ^ blue ^ /ProofStatus\asserted ^ /Kontrast\true))) 
+</input>
+<realizations>
+<!-- 
+Q: What about the box?
+A: (the box)Th (is blue_F)Rh
+-->
+<string>the box is blue</string>
+</realizations>
+</utterance>
+
 
 <utterance>
 <input>

@@ -153,6 +153,7 @@ public class UPGChoosersReader
 	if (eName.equals("q-ex-feat")) { processEndQExFeat (eName); } 
 	if (eName.equals("q-ex-fv")) { processEndQExFV (eName); } 
 	if (eName.equals("q-ex-prop")) { processEndQExProp (eName); } 
+   if (eName.equals("q-ex-sort")) { processEndQExSort (eName); } 
 	if (eName.equals("q-ex-rel")) { processEndQExRel (eName); } 
 	if (eName.equals("f-relation")) { processEndFRelation (eName); } 
 	if (eName.equals("f-featval")) { processEndFFeatVal (eName); } 
@@ -181,6 +182,7 @@ public class UPGChoosersReader
 	if (eName.equals("q-ex-feat")) { processStartQExFeat (eName,attrs); }
 	if (eName.equals("q-ex-fv")) { processStartQExFV (eName,attrs); }
 	if (eName.equals("q-ex-prop")) { processStartQExProp (eName,attrs); }	
+	if (eName.equals("q-ex-sort")) { processStartQExSort (eName,attrs); }	
 	if (eName.equals("q-ex-rel")) { processStartQExRel (eName,attrs); }	
 	if (eName.equals("f-relation")) { processStartFRelation (eName,attrs); }	
 	if (eName.equals("f-featval")) { processStartFFeatVal(eName,attrs); }	
@@ -386,13 +388,34 @@ public class UPGChoosersReader
     } /// end processStartComponent
 
     /**
-     *  The method <i>processStartQExProp</i> sets the code id of the
-     *  current inquiry to "q-ex-prop", reads the value of the "val"
+     *  The method <i>processStartQExSort</i> sets the code id of the
+     *  current inquiry to "q-ex-sort", reads the value of the "val"
      *  attribute, and adds the value for this attribute to the
      *  inquiry's parameters.
      */
 
-    public void processStartQExProp (String eName, Attributes attrs) {
+	public void processStartQExSort (String eName, Attributes attrs) {
+		String val = "";
+		String nomvar = "locus";
+		for (int i = 0; i < attrs.getLength(); i++) {
+			String aName = attrs.getQName(i);
+			if (aName.equals("val")) { val = attrs.getValue(i); }
+			if (aName.equals("nomvar")) { nomvar = attrs.getValue(i); }		
+		} // end for over attributes
+		currentInq.setCodeId("q-ex-sort");
+		currentInq.setParameterValue("val",val);
+		currentInq.setParameterValue("nomvar",nomvar);		
+	} /// end processStartComponent
+	
+	
+	/**
+	 *  The method <i>processStartQExProp</i> sets the code id of the
+	 *  current inquiry to "q-ex-prop", reads the value of the "val"
+	 *  attribute, and adds the value for this attribute to the
+	 *  inquiry's parameters.
+	 */
+	
+	public void processStartQExProp (String eName, Attributes attrs) {
 		String val = "";
 		String nomvar = "locus";
 		for (int i = 0; i < attrs.getLength(); i++) {
@@ -624,7 +647,14 @@ public class UPGChoosersReader
     public void processEndQExFV (String eName) { 
     } // end processEndComponent
 
-
+	/**
+	 *  The method <i>processEndQExSort</i> has no functionality
+	 */
+	
+	public void processEndQExSort (String eName) { 
+	} // end processEndComponent
+	
+	
     /**
      *  The method <i>processEndQExProp</i> has no functionality
      */

@@ -561,6 +561,7 @@ public class UtterancePlanner {
 			if (inqcode.equals("q-ex-feat")) { answer = inqcodeQExFeat(inq,lf,lcs); }	
 			if (inqcode.equals("q-ex-fv"))   { answer = inqcodeQExFV(inq,lf,lcs); }
 			if (inqcode.equals("q-ex-prop")) { answer = inqcodeQExProp(inq,lf,lcs); }
+			if (inqcode.equals("q-ex-sort")) { answer = inqcodeQExSort(inq,lf,lcs); }
 //			if (inqcode.equals("q-prop"))	 { answer = inqcodeQProp(inq,lf,lcs); } assuming a nominal always has one
 			if (inqcode.equals("q-ex-rel"))  { answer = inqcodeQExRel(inq,lf,lcs); }
 			if (inqcode.equals("q-mod-maxevid-bool")) { answer = inqcodeQModMaxevidBool(inq,lf,lcs); }	    
@@ -919,6 +920,39 @@ public class UtterancePlanner {
 		} // end if..else check whether nominal in logical form
     } // end inqcodeQExProp
 */ 
+	
+	/**
+	 *  The method <i>inqcodeQExSort</i> checks whether the
+	 *  sort given by the "val" parameter holds at the locus
+	 *  nominal or the nominal given by the "nomvar" parameter. 
+	 *  The answerset for this inquiry is <tt>{true, false}</tt>.
+	 */
+	
+	public String inqcodeQExSort (UPGInquiry inq, LogicalForm lf, UPLocus lcs) throws UPGException { 
+		log(2,"Running inquiry code for q-ex-sort");
+		String answer; 
+		boolean answerbool = false;
+		LFNominal nom = null; 
+		String nomvar = inq.getParameterValue("nomvar"); 
+		if (nomvar.equals("locus") || nomvar.equals("")) {
+			nom = lcs.getNominal();
+			nomvar = nom.nomVar;
+		} else {
+			nomvar = lcs.getVariableId(nomvar);
+		} // end if..else check for locus/other nominal		
+		
+		LFNominal lcn = LFUtils.lfGetNominal(lf, nomvar);
+		if (lcn.nomVar.equals("unknown")) { 
+			throw new UPGException("Unknown nominal "+nomvar+" in logical form "+LFUtils.lfToString(lf));
+		} else { 
+			String val = inq.getParameterValue("val");
+			log(0,"Checking at nominal ["+lcn.nomVar+"] with sort ["+lcn.sort+"] against inquiry value ["+val+"]");
+			answerbool = lcn.sort.equals(val);
+			if (answerbool) { answer = "true"; } else { answer = "false"; } 
+			log(2,"Returned answer: "+answer);
+			return answer;
+		} // end if..else check whether nominal in logical form
+	} // end inqcodeQExSort
 	
 	
     /**
