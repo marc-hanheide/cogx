@@ -104,7 +104,7 @@ public class cc_FakeClarificationGenerator
 	private String defaultSourceId = "";
 	
 	JButton ok;
-	
+
 	private void init() {
 		// general information processing structures
 		m_proposedProcessing = new Hashtable<String, ProcessingData>();
@@ -240,10 +240,16 @@ public class cc_FakeClarificationGenerator
 		OKBUTTON_PUSHED = false;
 		
 		// construct the clarification request
+
+		if (needField.getText().equals("") || modalityField.equals("")) {
+			return null;
+		}
 		
 		ClarificationRequest result = new ClarificationRequest();
 		result.id = newDataID();
+		
 		result.about = constructFormula(aboutField.getText());
+		result.clarificationNeed = constructFormula(needField.getText());
 
 		result.sourceModality = modalityField.getText();
 		
@@ -252,11 +258,10 @@ public class cc_FakeClarificationGenerator
 			return null;
 		}
 		result.sourceEntityID = curItem.toString();
-		
-		result.clarificationNeed = constructFormula(needField.getText());
-		
+
 		// return the result
 		aboutField.setText("");
+		needField.setText("");
 		return result;
 	} // end getGUIPhonString	
 	

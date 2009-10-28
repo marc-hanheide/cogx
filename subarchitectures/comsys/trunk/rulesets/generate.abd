@@ -150,17 +150,13 @@ generate : intention : need_get_value0(Modality, Entity, Prop) <-
 	dummy_nom4(QualityNom),
 	%k(now, private(r)) : objecttype(Object, box),
 	%k(now, private(r)) : color(Object, unknownColor),
-	k(now, private(r)) : objecttype(Entity, Type) / belief_model,
 %	k(now, attrib(r, h)) : objecttype(Entity, Type) / 1.0,
 	%k(now, attrib(r, h)) : objecttype(Entity, Type),
 	i : feat_SpeechAct(Nom, question) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
-			i : sort(TargetNom, entity) / 1.0,
-			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
-			i : prop(TargetNom, Type) / 1.0,
-			i : feat_ProofStatus(TargetNom, assumed) / 1.0,
+			referring_expression(TargetNom, Entity),
 		add_prop_value_to_protolf(ContentNom, QualityNom, Prop, Prop),
 %		i : rel_Color(ContentNom, QualityNom) / 1.0,
 %			i : sort(QualityNom, quality) / 1.0,
@@ -168,6 +164,16 @@ generate : intention : need_get_value0(Modality, Entity, Prop) <-
 			i : feat_Questioned(QualityNom, true) / 1.0,
 			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
 	event : produce(r, Nom) / 1.0.
+
+referring_expression(Nom, Union) <-
+	check_property_value(Union, objecttype, known(Type)),
+	i : sort(Nom, entity) / 1.0,
+	i : feat_InfoStatus(Nom, familiar) / 1.0,
+	i : prop(Nom, Type) / 1.0.
+	
+referring_expression(Nom, Union) <-
+	check_property_value(Union, objecttype, unknown),
+	generate : this(Nom).
 
 %----------------------------------------------------------------------
 
