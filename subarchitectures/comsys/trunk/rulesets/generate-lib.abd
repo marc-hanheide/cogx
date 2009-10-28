@@ -32,7 +32,8 @@ add_prop_value_to_protolf(Nom, UsedNom, color, Value) <-
 add_prop_value_to_protolf(Nom, UsedNom, shape, Value) <-
 	i : rel_Shape(Nom, UsedNom) / 1.0,
 		i : sort(UsedNom, quality) / 1.0,
-		i : prop(UsedNom, Value) / 1.0.
+		portray_shape_prop(Value, NiceValue),
+		i : prop(UsedNom, NiceValue) / 1.0.
 
 add_prop_value_to_protolf(Nom, UsedNom, objecttype, Value) <-
 	i : rel_Type(Nom, UsedNom) / 1.0,
@@ -66,6 +67,9 @@ propname_to_questiontype(shape, shape).
 
 %----------------------------------------------------------------------
 
+%portray_shape_prop(P, P).
+
+portray_shape_prop(shape, shape).  % for generating questions
 portray_shape_prop(cubic, square).
 portray_shape_prop(spherical, round).
 
