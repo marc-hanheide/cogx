@@ -5,6 +5,8 @@
 %%
 function showSurfaceFromPoints( x, rgb3d, LRaxRoi )
 
+turnoffDelaunay = 1 ;
+
 if nargin < 2
     rgb3d = [] ;
 end
@@ -15,8 +17,11 @@ end
 
 
 x(:,3) = -x(:,3) ;
-
-TRI = delaunay(x(:,1),x(:,2));
+if turnoffDelaunay == 0
+    TRI = delaunay(x(:,1),x(:,2));
+else
+    TRI = [] ;
+end
 if isempty(rgb3d)
     if ~isempty( LRaxRoi )
         trisurf(TRI,x(:,1),x(:,2),x(:,3),'Parent',LRaxRoi) ;
