@@ -154,8 +154,14 @@ public class cc_FakeVerificationGenerator
 	public Vector<String> beliefsWithAssertions(BeliefModel model) {
 		Vector<String> asserted = new Vector<String>();
 		for (int i = 0; i < model.k.length; i++) {
-			Belief b = getBelief(model.k[i]);
-			if (BeliefUtils.formulaHasAssertions((SuperFormula) b.phi)) {
+			Belief b = null;
+			if (existsOnWorkingMemory(model.k[i])) {
+				b = getBelief(model.k[i]);
+			}
+			else {
+				System.err.println("got a DoesNotExistOnWM");
+			}
+			if (b != null && BeliefUtils.formulaHasAssertions((SuperFormula) b.phi)) {
 				asserted.add(b.id);
 			}
 		}

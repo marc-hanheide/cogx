@@ -35,6 +35,7 @@ package comsys.components.cca;
 import beliefmodels.adl.*;
 import beliefmodels.clarification.ClarificationRequest; 
 import beliefmodels.domainmodel.cogx.*;
+import binder.autogen.core.UnionConfiguration;
 
 //-----------------------------------------------------------------
 // CAST IMPORTS
@@ -61,6 +62,7 @@ import comsys.arch.ProcessingData;
 import java.util.*;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -91,9 +93,12 @@ public class cc_FakeClarificationGenerator
 	JTextField aboutField;	
 	JTextField needField;		
 	JTextField modalityField;
-	JTextField sourceField;	
+//	JTextField sourceField;
+	JComboBox unionBox;
 	JTextField formulaField;	
 	JDialog dialog;
+	
+	Vector<String> currentUnions = new Vector<String>();
 	
 	private String defaultModality = "";
 	private String defaultSourceId = "";
@@ -113,8 +118,50 @@ public class cc_FakeClarificationGenerator
 	@Override
 	public void start() {
 		init();
-	}	
-	
+		
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class, WorkingMemoryOperation.WILDCARD),
+				new WorkingMemoryChangeReceiver() {
+
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						try {
+							UnionConfiguration config = 
+								getMemoryEntry(_wmc.address, UnionConfiguration.class);
+							updateWithConfiguration(config);
+						}
+						catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+	}
+
+	private void updateWithConfiguration(UnionConfiguration config) {
+		Vector<String> newItems = new Vector<String>();
+
+		for (int i = 0; i < config.includedUnions.length; i++) {
+			String unionId = config.includedUnions[i].entityID;
+			newItems.add(unionId);
+		}
+		
+		for (int i = 0; i < newItems.size(); i++) {
+			String unionId = newItems.elementAt(i);
+			if (!currentUnions.contains(unionId)) {
+				unionBox.addItem(unionId);
+			}
+		}
+
+		for (int i = 0; i < currentUnions.size(); i++) {
+			String unionId = currentUnions.elementAt(i);
+			if (!newItems.contains(unionId)) {
+				unionBox.removeItem(unionId);
+			}
+		}
+		currentUnions = newItems;
+		ok.setEnabled(currentUnions.size() > 0);
+
+	}
+
 	@Override
 	protected void taskAdopted(String _goalID) {
 		
@@ -199,7 +246,12 @@ public class cc_FakeClarificationGenerator
 		result.about = constructFormula(aboutField.getText());
 
 		result.sourceModality = modalityField.getText();
-		result.sourceEntityID = sourceField.getText();
+		
+		Object curItem = unionBox.getSelectedItem();
+		if (curItem == null) {
+			return null;
+		}
+		result.sourceEntityID = curItem.toString();
 		
 		result.clarificationNeed = constructFormula(needField.getText());
 		
@@ -230,6 +282,15 @@ public class cc_FakeClarificationGenerator
 		modalityPanel.add(modalityField);
 		dialogPanel.add(modalityPanel);
 
+        JPanel unionIdPanel = new JPanel();
+        unionIdPanel.setLayout(new BoxLayout(unionIdPanel, BoxLayout.LINE_AXIS));
+        JLabel unionIdLabel = new JLabel("Union ID:");
+        unionIdPanel.add(unionIdLabel);
+        unionBox = new JComboBox();
+		unionIdPanel.add(unionBox);
+		dialogPanel.add(unionIdPanel);
+
+/*
         JPanel sourcePanel = new JPanel();
         sourcePanel.setLayout(new BoxLayout(sourcePanel, BoxLayout.LINE_AXIS));
         JLabel sourceLabel = new JLabel("Source ID:");
@@ -239,6 +300,7 @@ public class cc_FakeClarificationGenerator
 		//sourceField.setPreferredSize(new Dimension(100,20));
 		sourcePanel.add(sourceField);
 		dialogPanel.add(sourcePanel);
+*/
 
         JPanel aboutPanel = new JPanel();
         aboutPanel.setLayout(new BoxLayout(aboutPanel, BoxLayout.LINE_AXIS));
@@ -264,6 +326,7 @@ public class cc_FakeClarificationGenerator
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
 		buttonPanel.add(Box.createHorizontalGlue());
 		ok = new JButton("Issue request");
+		ok.setEnabled(false);  // disabled at the beginning
 		buttonPanel.add(ok);
 		dialogPanel.add(buttonPanel);
 
