@@ -18,7 +18,6 @@ import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
-import motivation.slice.TestMotive;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryChange;
 
@@ -41,8 +40,6 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JSlider jExplorePrioritySlider = null; // @jve:decl-index=0:visual-constraint="414,85"
 
-	private JSlider jTestPrioritySlider =null;
-
 	private JSlider jHomePrioritySlider = null;
 
 	private JSlider jCategorizePrioritySlider = null;
@@ -51,8 +48,6 @@ public class ManualSelectFilter implements MotiveFilter {
 		
 		if (motive instanceof ExploreMotive)
 			return MotivePriority.convert(jExplorePrioritySlider.getValue());
-		else if (motive instanceof TestMotive)
-			return MotivePriority.convert(jTestPrioritySlider.getValue());
 		else if (motive instanceof HomingMotive)
 			return MotivePriority.convert(jHomePrioritySlider.getValue());
 		else if (motive instanceof CategorizeRoomMotive)
@@ -194,7 +189,6 @@ public class ManualSelectFilter implements MotiveFilter {
 					jExplorePrioritySlider.setValue(0);
 					jCategorizePrioritySlider.setValue(0);
 					jHomePrioritySlider.setValue(0);
-					jTestPrioritySlider.setValue(0);
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
@@ -242,17 +236,7 @@ public class ManualSelectFilter implements MotiveFilter {
 		return jExplorePrioritySlider;
 	}
 
-	/**
-	 * This method initializes jExplorePrioritySlider
-	 * 
-	 * @return javax.swing.JSlider
-	 */
-	private JSlider getJSliderTest() {
-		if (jTestPrioritySlider == null) {
-			jTestPrioritySlider = createPrioritySlider();
-		}
-		return jTestPrioritySlider;
-	}
+
 	/**
 	 * This method initializes jExplorePrioritySlider
 	 * 
