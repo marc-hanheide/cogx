@@ -215,10 +215,26 @@
   <entry word="1" pos="Number-id" stem="1-number-id" class="number-id" pred="1"/>
   <entry word="1" pos="Number-id" stem="1-number-id" class="number-id" pred="one"/>
   <entry word="one" pos="Number-id" stem="one-number-id" class="number-id" pred="1"/>
-  <entry word="first" macros="@s-degree-base" pos="Adj" stem="firstone-adj" class="number-ordinal" pred="one"/>
-  <entry word="1st" macros="@s-degree-base" pos="Adj" stem="1st1-adj" class="number-ordinal" pred="1"/>
-  <entry word="1st" macros="@s-degree-base" pos="Adj" stem="1stone-adj" class="number-ordinal" pred="one"/>
-  <entry word="first" macros="@s-degree-base" pos="Adj" stem="first1-adj" class="number-ordinal" pred="1"/>
+  <entry word="first" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="1st" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="1st@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="1st1st-adj" class="number-ordinal" pred="1st"/>
+  <entry word="first" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
+  <entry word="first@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="firstfirst-adj" class="number-ordinal" pred="first"/>
   <entry word="first" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="firstone-context-n+modifier" class="number-ordinal" pred="one"/>
   <entry word="1st" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="1st1-context-n+modifier" class="number-ordinal" pred="1"/>
   <entry word="1st" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="1stone-context-n+modifier" class="number-ordinal" pred="one"/>
@@ -256,10 +272,26 @@
   <entry word="2" pos="Number-id" stem="2-number-id" class="number-id" pred="2"/>
   <entry word="2" pos="Number-id" stem="2-number-id" class="number-id" pred="two"/>
   <entry word="two" pos="Number-id" stem="two-number-id" class="number-id" pred="2"/>
-  <entry word="second" macros="@s-degree-base" pos="Adj" stem="secondtwo-adj" class="number-ordinal" pred="two"/>
-  <entry word="2nd" macros="@s-degree-base" pos="Adj" stem="2nd2-adj" class="number-ordinal" pred="2"/>
-  <entry word="2nd" macros="@s-degree-base" pos="Adj" stem="2ndtwo-adj" class="number-ordinal" pred="two"/>
-  <entry word="second" macros="@s-degree-base" pos="Adj" stem="second2-adj" class="number-ordinal" pred="2"/>
+  <entry word="second" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="2nd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="2nd@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="2nd2nd-adj" class="number-ordinal" pred="2nd"/>
+  <entry word="second" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
+  <entry word="second@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="secondsecond-adj" class="number-ordinal" pred="second"/>
   <entry word="second" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="secondtwo-context-n+modifier" class="number-ordinal" pred="two"/>
   <entry word="2nd" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="2nd2-context-n+modifier" class="number-ordinal" pred="2"/>
   <entry word="2nd" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="2ndtwo-context-n+modifier" class="number-ordinal" pred="two"/>
@@ -292,10 +324,26 @@
   <entry word="3" pos="Number-id" stem="3-number-id" class="number-id" pred="3"/>
   <entry word="3" pos="Number-id" stem="3-number-id" class="number-id" pred="three"/>
   <entry word="three" pos="Number-id" stem="three-number-id" class="number-id" pred="3"/>
-  <entry word="third" macros="@s-degree-base" pos="Adj" stem="thirdthree-adj" class="number-ordinal" pred="three"/>
-  <entry word="3rd" macros="@s-degree-base" pos="Adj" stem="3rd3-adj" class="number-ordinal" pred="3"/>
-  <entry word="3rd" macros="@s-degree-base" pos="Adj" stem="3rdthree-adj" class="number-ordinal" pred="three"/>
-  <entry word="third" macros="@s-degree-base" pos="Adj" stem="third3-adj" class="number-ordinal" pred="3"/>
+  <entry word="third" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="3rd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="3rd@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="3rd3rd-adj" class="number-ordinal" pred="3rd"/>
+  <entry word="third" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
+  <entry word="third@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="thirdthird-adj" class="number-ordinal" pred="third"/>
   <entry word="third" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="thirdthree-context-n+modifier" class="number-ordinal" pred="three"/>
   <entry word="3rd" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="3rd3-context-n+modifier" class="number-ordinal" pred="3"/>
   <entry word="3rd" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="3rdthree-context-n+modifier" class="number-ordinal" pred="three"/>
@@ -328,10 +376,26 @@
   <entry word="4" pos="Number-id" stem="4-number-id" class="number-id" pred="4"/>
   <entry word="4" pos="Number-id" stem="4-number-id" class="number-id" pred="four"/>
   <entry word="four" pos="Number-id" stem="four-number-id" class="number-id" pred="4"/>
-  <entry word="fourth" macros="@s-degree-base" pos="Adj" stem="fourthfour-adj" class="number-ordinal" pred="four"/>
-  <entry word="4th" macros="@s-degree-base" pos="Adj" stem="4th4-adj" class="number-ordinal" pred="4"/>
-  <entry word="4th" macros="@s-degree-base" pos="Adj" stem="4thfour-adj" class="number-ordinal" pred="four"/>
-  <entry word="fourth" macros="@s-degree-base" pos="Adj" stem="fourth4-adj" class="number-ordinal" pred="4"/>
+  <entry word="fourth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="4th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="4th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="4th4th-adj" class="number-ordinal" pred="4th"/>
+  <entry word="fourth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
+  <entry word="fourth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fourthfourth-adj" class="number-ordinal" pred="fourth"/>
   <entry word="fourth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="fourthfour-context-n+modifier" class="number-ordinal" pred="four"/>
   <entry word="4th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="4th4-context-n+modifier" class="number-ordinal" pred="4"/>
   <entry word="4th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="4thfour-context-n+modifier" class="number-ordinal" pred="four"/>
@@ -364,10 +428,26 @@
   <entry word="5" pos="Number-id" stem="5-number-id" class="number-id" pred="5"/>
   <entry word="5" pos="Number-id" stem="5-number-id" class="number-id" pred="five"/>
   <entry word="five" pos="Number-id" stem="five-number-id" class="number-id" pred="5"/>
-  <entry word="fifth" macros="@s-degree-base" pos="Adj" stem="fifthfive-adj" class="number-ordinal" pred="five"/>
-  <entry word="5th" macros="@s-degree-base" pos="Adj" stem="5th5-adj" class="number-ordinal" pred="5"/>
-  <entry word="5th" macros="@s-degree-base" pos="Adj" stem="5thfive-adj" class="number-ordinal" pred="five"/>
-  <entry word="fifth" macros="@s-degree-base" pos="Adj" stem="fifth5-adj" class="number-ordinal" pred="5"/>
+  <entry word="fifth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="5th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="5th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="5th5th-adj" class="number-ordinal" pred="5th"/>
+  <entry word="fifth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
+  <entry word="fifth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fifthfifth-adj" class="number-ordinal" pred="fifth"/>
   <entry word="fifth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="fifthfive-context-n+modifier" class="number-ordinal" pred="five"/>
   <entry word="5th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="5th5-context-n+modifier" class="number-ordinal" pred="5"/>
   <entry word="5th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="5thfive-context-n+modifier" class="number-ordinal" pred="five"/>
@@ -400,10 +480,26 @@
   <entry word="6" pos="Number-id" stem="6-number-id" class="number-id" pred="6"/>
   <entry word="6" pos="Number-id" stem="6-number-id" class="number-id" pred="six"/>
   <entry word="six" pos="Number-id" stem="six-number-id" class="number-id" pred="6"/>
-  <entry word="sixth" macros="@s-degree-base" pos="Adj" stem="sixthsix-adj" class="number-ordinal" pred="six"/>
-  <entry word="6th" macros="@s-degree-base" pos="Adj" stem="6th6-adj" class="number-ordinal" pred="6"/>
-  <entry word="6th" macros="@s-degree-base" pos="Adj" stem="6thsix-adj" class="number-ordinal" pred="six"/>
-  <entry word="sixth" macros="@s-degree-base" pos="Adj" stem="sixth6-adj" class="number-ordinal" pred="6"/>
+  <entry word="sixth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="6th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="6th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="6th6th-adj" class="number-ordinal" pred="6th"/>
+  <entry word="sixth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
+  <entry word="sixth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="sixthsixth-adj" class="number-ordinal" pred="sixth"/>
   <entry word="sixth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="sixthsix-context-n+modifier" class="number-ordinal" pred="six"/>
   <entry word="6th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="6th6-context-n+modifier" class="number-ordinal" pred="6"/>
   <entry word="6th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="6thsix-context-n+modifier" class="number-ordinal" pred="six"/>
@@ -436,10 +532,26 @@
   <entry word="7" pos="Number-id" stem="7-number-id" class="number-id" pred="7"/>
   <entry word="7" pos="Number-id" stem="7-number-id" class="number-id" pred="seven"/>
   <entry word="seven" pos="Number-id" stem="seven-number-id" class="number-id" pred="7"/>
-  <entry word="seventh" macros="@s-degree-base" pos="Adj" stem="seventhseven-adj" class="number-ordinal" pred="seven"/>
-  <entry word="7th" macros="@s-degree-base" pos="Adj" stem="7th7-adj" class="number-ordinal" pred="7"/>
-  <entry word="7th" macros="@s-degree-base" pos="Adj" stem="7thseven-adj" class="number-ordinal" pred="seven"/>
-  <entry word="seventh" macros="@s-degree-base" pos="Adj" stem="seventh7-adj" class="number-ordinal" pred="7"/>
+  <entry word="seventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="7th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="7th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="7th7th-adj" class="number-ordinal" pred="7th"/>
+  <entry word="seventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
+  <entry word="seventh@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="seventhseventh-adj" class="number-ordinal" pred="seventh"/>
   <entry word="seventh" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="seventhseven-context-n+modifier" class="number-ordinal" pred="seven"/>
   <entry word="7th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="7th7-context-n+modifier" class="number-ordinal" pred="7"/>
   <entry word="7th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="7thseven-context-n+modifier" class="number-ordinal" pred="seven"/>
@@ -472,10 +584,26 @@
   <entry word="8" pos="Number-id" stem="8-number-id" class="number-id" pred="8"/>
   <entry word="8" pos="Number-id" stem="8-number-id" class="number-id" pred="eight"/>
   <entry word="eight" pos="Number-id" stem="eight-number-id" class="number-id" pred="8"/>
-  <entry word="eighth" macros="@s-degree-base" pos="Adj" stem="eightheight-adj" class="number-ordinal" pred="eight"/>
-  <entry word="8th" macros="@s-degree-base" pos="Adj" stem="8th8-adj" class="number-ordinal" pred="8"/>
-  <entry word="8th" macros="@s-degree-base" pos="Adj" stem="8theight-adj" class="number-ordinal" pred="eight"/>
-  <entry word="eighth" macros="@s-degree-base" pos="Adj" stem="eighth8-adj" class="number-ordinal" pred="8"/>
+  <entry word="eighth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="8th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="8th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="8th8th-adj" class="number-ordinal" pred="8th"/>
+  <entry word="eighth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
+  <entry word="eighth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="eightheighth-adj" class="number-ordinal" pred="eighth"/>
   <entry word="eighth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="eightheight-context-n+modifier" class="number-ordinal" pred="eight"/>
   <entry word="8th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="8th8-context-n+modifier" class="number-ordinal" pred="8"/>
   <entry word="8th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="8theight-context-n+modifier" class="number-ordinal" pred="eight"/>
@@ -508,10 +636,26 @@
   <entry word="9" pos="Number-id" stem="9-number-id" class="number-id" pred="9"/>
   <entry word="9" pos="Number-id" stem="9-number-id" class="number-id" pred="nine"/>
   <entry word="nine" pos="Number-id" stem="nine-number-id" class="number-id" pred="9"/>
-  <entry word="nineth" macros="@s-degree-base" pos="Adj" stem="ninethnine-adj" class="number-ordinal" pred="nine"/>
-  <entry word="9th" macros="@s-degree-base" pos="Adj" stem="9th9-adj" class="number-ordinal" pred="9"/>
-  <entry word="9th" macros="@s-degree-base" pos="Adj" stem="9thnine-adj" class="number-ordinal" pred="nine"/>
-  <entry word="nineth" macros="@s-degree-base" pos="Adj" stem="nineth9-adj" class="number-ordinal" pred="9"/>
+  <entry word="nineth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="9th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="9th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="9th9th-adj" class="number-ordinal" pred="9th"/>
+  <entry word="nineth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
+  <entry word="nineth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="ninethnineth-adj" class="number-ordinal" pred="nineth"/>
   <entry word="nineth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="ninethnine-context-n+modifier" class="number-ordinal" pred="nine"/>
   <entry word="9th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="9th9-context-n+modifier" class="number-ordinal" pred="9"/>
   <entry word="9th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="9thnine-context-n+modifier" class="number-ordinal" pred="nine"/>
@@ -544,10 +688,26 @@
   <entry word="10" pos="Number-id" stem="10-number-id" class="number-id" pred="10"/>
   <entry word="10" pos="Number-id" stem="10-number-id" class="number-id" pred="ten"/>
   <entry word="ten" pos="Number-id" stem="ten-number-id" class="number-id" pred="10"/>
-  <entry word="tenth" macros="@s-degree-base" pos="Adj" stem="tenthten-adj" class="number-ordinal" pred="ten"/>
-  <entry word="10th" macros="@s-degree-base" pos="Adj" stem="10th10-adj" class="number-ordinal" pred="10"/>
-  <entry word="10th" macros="@s-degree-base" pos="Adj" stem="10thten-adj" class="number-ordinal" pred="ten"/>
-  <entry word="tenth" macros="@s-degree-base" pos="Adj" stem="tenth10-adj" class="number-ordinal" pred="10"/>
+  <entry word="tenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="10th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="10th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="10th10th-adj" class="number-ordinal" pred="10th"/>
+  <entry word="tenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
+  <entry word="tenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="tenthtenth-adj" class="number-ordinal" pred="tenth"/>
   <entry word="tenth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="tenthten-context-n+modifier" class="number-ordinal" pred="ten"/>
   <entry word="10th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="10th10-context-n+modifier" class="number-ordinal" pred="10"/>
   <entry word="10th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="10thten-context-n+modifier" class="number-ordinal" pred="ten"/>
@@ -580,10 +740,26 @@
   <entry word="11" pos="Number-id" stem="11-number-id" class="number-id" pred="11"/>
   <entry word="11" pos="Number-id" stem="11-number-id" class="number-id" pred="eleven"/>
   <entry word="eleven" pos="Number-id" stem="eleven-number-id" class="number-id" pred="11"/>
-  <entry word="eleventh" macros="@s-degree-base" pos="Adj" stem="eleventheleven-adj" class="number-ordinal" pred="eleven"/>
-  <entry word="11th" macros="@s-degree-base" pos="Adj" stem="11th11-adj" class="number-ordinal" pred="11"/>
-  <entry word="11th" macros="@s-degree-base" pos="Adj" stem="11theleven-adj" class="number-ordinal" pred="eleven"/>
-  <entry word="eleventh" macros="@s-degree-base" pos="Adj" stem="eleventh11-adj" class="number-ordinal" pred="11"/>
+  <entry word="eleventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="11th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="11th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="11th11th-adj" class="number-ordinal" pred="11th"/>
+  <entry word="eleventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
+  <entry word="eleventh@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="eleventheleventh-adj" class="number-ordinal" pred="eleventh"/>
   <entry word="eleventh" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="eleventheleven-context-n+modifier" class="number-ordinal" pred="eleven"/>
   <entry word="11th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="11th11-context-n+modifier" class="number-ordinal" pred="11"/>
   <entry word="11th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="11theleven-context-n+modifier" class="number-ordinal" pred="eleven"/>
@@ -616,10 +792,26 @@
   <entry word="12" pos="Number-id" stem="12-number-id" class="number-id" pred="12"/>
   <entry word="12" pos="Number-id" stem="12-number-id" class="number-id" pred="twelve"/>
   <entry word="twelve" pos="Number-id" stem="twelve-number-id" class="number-id" pred="12"/>
-  <entry word="twelveth" macros="@s-degree-base" pos="Adj" stem="twelvethtwelve-adj" class="number-ordinal" pred="twelve"/>
-  <entry word="12th" macros="@s-degree-base" pos="Adj" stem="12th12-adj" class="number-ordinal" pred="12"/>
-  <entry word="12th" macros="@s-degree-base" pos="Adj" stem="12thtwelve-adj" class="number-ordinal" pred="twelve"/>
-  <entry word="twelveth" macros="@s-degree-base" pos="Adj" stem="twelveth12-adj" class="number-ordinal" pred="12"/>
+  <entry word="twelveth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="12th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="12th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="12th12th-adj" class="number-ordinal" pred="12th"/>
+  <entry word="twelveth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
+  <entry word="twelveth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="twelvethtwelveth-adj" class="number-ordinal" pred="twelveth"/>
   <entry word="twelveth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="twelvethtwelve-context-n+modifier" class="number-ordinal" pred="twelve"/>
   <entry word="12th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="12th12-context-n+modifier" class="number-ordinal" pred="12"/>
   <entry word="12th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="12thtwelve-context-n+modifier" class="number-ordinal" pred="twelve"/>
@@ -652,10 +844,26 @@
   <entry word="13" pos="Number-id" stem="13-number-id" class="number-id" pred="13"/>
   <entry word="13" pos="Number-id" stem="13-number-id" class="number-id" pred="thirteen"/>
   <entry word="thirteen" pos="Number-id" stem="thirteen-number-id" class="number-id" pred="13"/>
-  <entry word="thirteenth" macros="@s-degree-base" pos="Adj" stem="thirteenththirteen-adj" class="number-ordinal" pred="thirteen"/>
-  <entry word="13th" macros="@s-degree-base" pos="Adj" stem="13th13-adj" class="number-ordinal" pred="13"/>
-  <entry word="13th" macros="@s-degree-base" pos="Adj" stem="13ththirteen-adj" class="number-ordinal" pred="thirteen"/>
-  <entry word="thirteenth" macros="@s-degree-base" pos="Adj" stem="thirteenth13-adj" class="number-ordinal" pred="13"/>
+  <entry word="thirteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="13th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="13th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="13th13th-adj" class="number-ordinal" pred="13th"/>
+  <entry word="thirteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
+  <entry word="thirteenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="thirteenththirteenth-adj" class="number-ordinal" pred="thirteenth"/>
   <entry word="thirteenth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="thirteenththirteen-context-n+modifier" class="number-ordinal" pred="thirteen"/>
   <entry word="13th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="13th13-context-n+modifier" class="number-ordinal" pred="13"/>
   <entry word="13th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="13ththirteen-context-n+modifier" class="number-ordinal" pred="thirteen"/>
@@ -688,10 +896,26 @@
   <entry word="14" pos="Number-id" stem="14-number-id" class="number-id" pred="14"/>
   <entry word="14" pos="Number-id" stem="14-number-id" class="number-id" pred="fourteen"/>
   <entry word="fourteen" pos="Number-id" stem="fourteen-number-id" class="number-id" pred="14"/>
-  <entry word="fourteenth" macros="@s-degree-base" pos="Adj" stem="fourteenthfourteen-adj" class="number-ordinal" pred="fourteen"/>
-  <entry word="14th" macros="@s-degree-base" pos="Adj" stem="14th14-adj" class="number-ordinal" pred="14"/>
-  <entry word="14th" macros="@s-degree-base" pos="Adj" stem="14thfourteen-adj" class="number-ordinal" pred="fourteen"/>
-  <entry word="fourteenth" macros="@s-degree-base" pos="Adj" stem="fourteenth14-adj" class="number-ordinal" pred="14"/>
+  <entry word="fourteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="14th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="14th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="14th14th-adj" class="number-ordinal" pred="14th"/>
+  <entry word="fourteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
+  <entry word="fourteenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fourteenthfourteenth-adj" class="number-ordinal" pred="fourteenth"/>
   <entry word="fourteenth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="fourteenthfourteen-context-n+modifier" class="number-ordinal" pred="fourteen"/>
   <entry word="14th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="14th14-context-n+modifier" class="number-ordinal" pred="14"/>
   <entry word="14th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="14thfourteen-context-n+modifier" class="number-ordinal" pred="fourteen"/>
@@ -724,10 +948,26 @@
   <entry word="15" pos="Number-id" stem="15-number-id" class="number-id" pred="15"/>
   <entry word="15" pos="Number-id" stem="15-number-id" class="number-id" pred="fifteen"/>
   <entry word="fifteen" pos="Number-id" stem="fifteen-number-id" class="number-id" pred="15"/>
-  <entry word="fifteenth" macros="@s-degree-base" pos="Adj" stem="fifteenthfifteen-adj" class="number-ordinal" pred="fifteen"/>
-  <entry word="15th" macros="@s-degree-base" pos="Adj" stem="15th15-adj" class="number-ordinal" pred="15"/>
-  <entry word="15th" macros="@s-degree-base" pos="Adj" stem="15thfifteen-adj" class="number-ordinal" pred="fifteen"/>
-  <entry word="fifteenth" macros="@s-degree-base" pos="Adj" stem="fifteenth15-adj" class="number-ordinal" pred="15"/>
+  <entry word="fifteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="15th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="15th@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="15th15th-adj" class="number-ordinal" pred="15th"/>
+  <entry word="fifteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
+  <entry word="fifteenth@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fifteenthfifteenth-adj" class="number-ordinal" pred="fifteenth"/>
   <entry word="fifteenth" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="fifteenthfifteen-context-n+modifier" class="number-ordinal" pred="fifteen"/>
   <entry word="15th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="15th15-context-n+modifier" class="number-ordinal" pred="15"/>
   <entry word="15th" macros="@s-sg @nf-ctxt @n-4" pos="Context-n+modifier" stem="15thfifteen-context-n+modifier" class="number-ordinal" pred="fifteen"/>
@@ -3123,16 +3363,56 @@
   <entry word="finest@H*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-uncontentious @m-rheme-false @hs" pos="Adj" stem="fine-adj" class="q-attitude" pred="fine"/>
   <entry word="finest@L*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-contentious @m-rheme-false @ls" pos="Adj" stem="fine-adj" class="q-attitude" pred="fine"/>
   <entry word="finest@L+H*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-uncontentious @m-rheme-true @lphs" pos="Adj" stem="fine-adj" class="q-attitude" pred="fine"/>
-  <entry word="sure" macros="@s-degree-base" pos="Adj" stem="suresure-adj" class="q-attitude" pred="sure"/>
-  <entry word="ok" macros="@s-degree-base" pos="Adj" stem="okok-adj" class="q-attitude" pred="ok"/>
-  <entry word="important" macros="@s-degree-base" pos="Adj" stem="importantimportant-adj" class="q-attitude" pred="important"/>
-  <entry word="correct" macros="@s-degree-base" pos="Adj" stem="correctcorrect-adj" class="q-attitude" pred="correct"/>
-  <entry word="incorrect" macros="@s-degree-base" pos="Adj" stem="incorrectincorrect-adj" class="q-attitude" pred="incorrect"/>
-  <entry word="right" macros="@s-degree-base" pos="Adj" stem="rightright-adj" class="q-attitude" pred="right"/>
-  <entry word="wrong" macros="@s-degree-base" pos="Adj" stem="wrongwrong-adj" class="q-attitude" pred="wrong"/>
-  <entry word="true" macros="@s-degree-base" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
-  <entry word="false" macros="@s-degree-base" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
-  <entry word="elongated" macros="@s-degree-base" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="sure" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="suresure-adj" class="q-attitude" pred="sure"/>
+  <entry word="sure" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="suresure-adj" class="q-attitude" pred="sure"/>
+  <entry word="sure@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="suresure-adj" class="q-attitude" pred="sure"/>
+  <entry word="sure@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="suresure-adj" class="q-attitude" pred="sure"/>
+  <entry word="sure@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="suresure-adj" class="q-attitude" pred="sure"/>
+  <entry word="ok" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="okok-adj" class="q-attitude" pred="ok"/>
+  <entry word="ok" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="okok-adj" class="q-attitude" pred="ok"/>
+  <entry word="ok@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="okok-adj" class="q-attitude" pred="ok"/>
+  <entry word="ok@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="okok-adj" class="q-attitude" pred="ok"/>
+  <entry word="ok@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="okok-adj" class="q-attitude" pred="ok"/>
+  <entry word="important" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="importantimportant-adj" class="q-attitude" pred="important"/>
+  <entry word="important" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="importantimportant-adj" class="q-attitude" pred="important"/>
+  <entry word="important@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="importantimportant-adj" class="q-attitude" pred="important"/>
+  <entry word="important@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="importantimportant-adj" class="q-attitude" pred="important"/>
+  <entry word="important@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="importantimportant-adj" class="q-attitude" pred="important"/>
+  <entry word="correct" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="correctcorrect-adj" class="q-attitude" pred="correct"/>
+  <entry word="correct" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="correctcorrect-adj" class="q-attitude" pred="correct"/>
+  <entry word="correct@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="correctcorrect-adj" class="q-attitude" pred="correct"/>
+  <entry word="correct@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="correctcorrect-adj" class="q-attitude" pred="correct"/>
+  <entry word="correct@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="correctcorrect-adj" class="q-attitude" pred="correct"/>
+  <entry word="incorrect" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="incorrectincorrect-adj" class="q-attitude" pred="incorrect"/>
+  <entry word="incorrect" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="incorrectincorrect-adj" class="q-attitude" pred="incorrect"/>
+  <entry word="incorrect@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="incorrectincorrect-adj" class="q-attitude" pred="incorrect"/>
+  <entry word="incorrect@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="incorrectincorrect-adj" class="q-attitude" pred="incorrect"/>
+  <entry word="incorrect@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="incorrectincorrect-adj" class="q-attitude" pred="incorrect"/>
+  <entry word="right" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="rightright-adj" class="q-attitude" pred="right"/>
+  <entry word="right" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="rightright-adj" class="q-attitude" pred="right"/>
+  <entry word="right@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="rightright-adj" class="q-attitude" pred="right"/>
+  <entry word="right@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="rightright-adj" class="q-attitude" pred="right"/>
+  <entry word="right@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="rightright-adj" class="q-attitude" pred="right"/>
+  <entry word="wrong" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="wrongwrong-adj" class="q-attitude" pred="wrong"/>
+  <entry word="wrong" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="wrongwrong-adj" class="q-attitude" pred="wrong"/>
+  <entry word="wrong@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="wrongwrong-adj" class="q-attitude" pred="wrong"/>
+  <entry word="wrong@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="wrongwrong-adj" class="q-attitude" pred="wrong"/>
+  <entry word="wrong@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="wrongwrong-adj" class="q-attitude" pred="wrong"/>
+  <entry word="true" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
+  <entry word="true" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
+  <entry word="true@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
+  <entry word="true@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
+  <entry word="true@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
+  <entry word="false" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
+  <entry word="false" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
+  <entry word="false@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
+  <entry word="false@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
+  <entry word="false@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
+  <entry word="elongated" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="elongated" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="elongated@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="elongated@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="elongated@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
   <entry word="big" macros="@s-degree-base @pre-n @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="big" macros="@s-degree-base @pre-n @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="big@H*" macros="@s-degree-base @pre-n @m-focus-true @m-uncontentious @m-rheme-true @hs" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
@@ -3523,23 +3803,101 @@
   <entry word="roundest@H*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-uncontentious @m-rheme-false @hs" pos="Adj" stem="round-adj" class="q-shape" pred="round"/>
   <entry word="roundest@L*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-contentious @m-rheme-false @ls" pos="Adj" stem="round-adj" class="q-shape" pred="round"/>
   <entry word="roundest@L+H*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-uncontentious @m-rheme-true @lphs" pos="Adj" stem="round-adj" class="q-shape" pred="round"/>
-  <entry word="oval" macros="@s-degree-base" pos="Adj" stem="ovaloval-adj" class="q-shape" pred="oval"/>
-  <entry word="square" macros="@s-degree-base" pos="Adj" stem="squaresquare-adj" class="q-shape" pred="square"/>
-  <entry word="triangular" macros="@s-degree-base" pos="Adj" stem="triangulartriangular-adj" class="q-shape" pred="triangular"/>
-  <entry word="open" macros="@s-degree-base" pos="Adj" stem="openopen-adj" class="q-physical" pred="open"/>
-  <entry word="closed" macros="@s-degree-base" pos="Adj" stem="closedclosed-adj" class="q-physical" pred="closed"/>
-  <entry word="cluttered" macros="@s-degree-base" pos="Adj" stem="clutteredcluttered-adj" class="q-physical" pred="cluttered"/>
-  <entry word="accessible" macros="@s-degree-base" pos="Adj" stem="accessibleaccessible-adj" class="q-physical" pred="accessible"/>
-  <entry word="inaccessible" macros="@s-degree-base" pos="Adj" stem="inaccessibleinaccessible-adj" class="q-physical" pred="inaccessible"/>
-  <entry word="reachable" macros="@s-degree-base" pos="Adj" stem="reachablereachable-adj" class="q-physical" pred="reachable"/>
-  <entry word="unreachable" macros="@s-degree-base" pos="Adj" stem="unreachableunreachable-adj" class="q-physical" pred="unreachable"/>
-  <entry word="visible" macros="@s-degree-base" pos="Adj" stem="visiblevisible-adj" class="q-physical" pred="visible"/>
-  <entry word="invisible" macros="@s-degree-base" pos="Adj" stem="invisibleinvisible-adj" class="q-physical" pred="invisible"/>
-  <entry word="graspable" macros="@s-degree-base" pos="Adj" stem="graspablegraspable-adj" class="q-physical" pred="graspable"/>
-  <entry word="ungraspable" macros="@s-degree-base" pos="Adj" stem="ungraspableungraspable-adj" class="q-physical" pred="ungraspable"/>
-  <entry word="top" macros="@s-degree-base" pos="Adj" stem="toptop-adj" class="q-location" pred="top"/>
-  <entry word="bottom" macros="@s-degree-base" pos="Adj" stem="bottombottom-adj" class="q-location" pred="bottom"/>
-  <entry word="middle" macros="@s-degree-base" pos="Adj" stem="middlemiddle-adj" class="q-location" pred="middle"/>
+  <entry word="oval" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="ovaloval-adj" class="q-shape" pred="oval"/>
+  <entry word="oval" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="ovaloval-adj" class="q-shape" pred="oval"/>
+  <entry word="oval@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="ovaloval-adj" class="q-shape" pred="oval"/>
+  <entry word="oval@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="ovaloval-adj" class="q-shape" pred="oval"/>
+  <entry word="oval@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="ovaloval-adj" class="q-shape" pred="oval"/>
+  <entry word="cubic" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="cubiccubic-adj" class="q-shape" pred="cubic"/>
+  <entry word="cubic" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="cubiccubic-adj" class="q-shape" pred="cubic"/>
+  <entry word="cubic@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="cubiccubic-adj" class="q-shape" pred="cubic"/>
+  <entry word="cubic@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="cubiccubic-adj" class="q-shape" pred="cubic"/>
+  <entry word="cubic@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="cubiccubic-adj" class="q-shape" pred="cubic"/>
+  <entry word="spherical" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="sphericalspherical-adj" class="q-shape" pred="spherical"/>
+  <entry word="spherical" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="sphericalspherical-adj" class="q-shape" pred="spherical"/>
+  <entry word="spherical@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="sphericalspherical-adj" class="q-shape" pred="spherical"/>
+  <entry word="spherical@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="sphericalspherical-adj" class="q-shape" pred="spherical"/>
+  <entry word="spherical@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="sphericalspherical-adj" class="q-shape" pred="spherical"/>
+  <entry word="square" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="squaresquare-adj" class="q-shape" pred="square"/>
+  <entry word="square" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="squaresquare-adj" class="q-shape" pred="square"/>
+  <entry word="square@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="squaresquare-adj" class="q-shape" pred="square"/>
+  <entry word="square@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="squaresquare-adj" class="q-shape" pred="square"/>
+  <entry word="square@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="squaresquare-adj" class="q-shape" pred="square"/>
+  <entry word="triangular" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="triangulartriangular-adj" class="q-shape" pred="triangular"/>
+  <entry word="triangular" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="triangulartriangular-adj" class="q-shape" pred="triangular"/>
+  <entry word="triangular@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="triangulartriangular-adj" class="q-shape" pred="triangular"/>
+  <entry word="triangular@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="triangulartriangular-adj" class="q-shape" pred="triangular"/>
+  <entry word="triangular@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="triangulartriangular-adj" class="q-shape" pred="triangular"/>
+  <entry word="open" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="openopen-adj" class="q-physical" pred="open"/>
+  <entry word="open" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="openopen-adj" class="q-physical" pred="open"/>
+  <entry word="open@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="openopen-adj" class="q-physical" pred="open"/>
+  <entry word="open@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="openopen-adj" class="q-physical" pred="open"/>
+  <entry word="open@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="openopen-adj" class="q-physical" pred="open"/>
+  <entry word="closed" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="closedclosed-adj" class="q-physical" pred="closed"/>
+  <entry word="closed" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="closedclosed-adj" class="q-physical" pred="closed"/>
+  <entry word="closed@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="closedclosed-adj" class="q-physical" pred="closed"/>
+  <entry word="closed@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="closedclosed-adj" class="q-physical" pred="closed"/>
+  <entry word="closed@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="closedclosed-adj" class="q-physical" pred="closed"/>
+  <entry word="cluttered" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="clutteredcluttered-adj" class="q-physical" pred="cluttered"/>
+  <entry word="cluttered" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="clutteredcluttered-adj" class="q-physical" pred="cluttered"/>
+  <entry word="cluttered@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="clutteredcluttered-adj" class="q-physical" pred="cluttered"/>
+  <entry word="cluttered@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="clutteredcluttered-adj" class="q-physical" pred="cluttered"/>
+  <entry word="cluttered@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="clutteredcluttered-adj" class="q-physical" pred="cluttered"/>
+  <entry word="accessible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="accessibleaccessible-adj" class="q-physical" pred="accessible"/>
+  <entry word="accessible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="accessibleaccessible-adj" class="q-physical" pred="accessible"/>
+  <entry word="accessible@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="accessibleaccessible-adj" class="q-physical" pred="accessible"/>
+  <entry word="accessible@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="accessibleaccessible-adj" class="q-physical" pred="accessible"/>
+  <entry word="accessible@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="accessibleaccessible-adj" class="q-physical" pred="accessible"/>
+  <entry word="inaccessible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="inaccessibleinaccessible-adj" class="q-physical" pred="inaccessible"/>
+  <entry word="inaccessible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="inaccessibleinaccessible-adj" class="q-physical" pred="inaccessible"/>
+  <entry word="inaccessible@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="inaccessibleinaccessible-adj" class="q-physical" pred="inaccessible"/>
+  <entry word="inaccessible@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="inaccessibleinaccessible-adj" class="q-physical" pred="inaccessible"/>
+  <entry word="inaccessible@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="inaccessibleinaccessible-adj" class="q-physical" pred="inaccessible"/>
+  <entry word="reachable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="reachablereachable-adj" class="q-physical" pred="reachable"/>
+  <entry word="reachable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="reachablereachable-adj" class="q-physical" pred="reachable"/>
+  <entry word="reachable@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="reachablereachable-adj" class="q-physical" pred="reachable"/>
+  <entry word="reachable@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="reachablereachable-adj" class="q-physical" pred="reachable"/>
+  <entry word="reachable@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="reachablereachable-adj" class="q-physical" pred="reachable"/>
+  <entry word="unreachable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="unreachableunreachable-adj" class="q-physical" pred="unreachable"/>
+  <entry word="unreachable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="unreachableunreachable-adj" class="q-physical" pred="unreachable"/>
+  <entry word="unreachable@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="unreachableunreachable-adj" class="q-physical" pred="unreachable"/>
+  <entry word="unreachable@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="unreachableunreachable-adj" class="q-physical" pred="unreachable"/>
+  <entry word="unreachable@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="unreachableunreachable-adj" class="q-physical" pred="unreachable"/>
+  <entry word="visible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="visiblevisible-adj" class="q-physical" pred="visible"/>
+  <entry word="visible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="visiblevisible-adj" class="q-physical" pred="visible"/>
+  <entry word="visible@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="visiblevisible-adj" class="q-physical" pred="visible"/>
+  <entry word="visible@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="visiblevisible-adj" class="q-physical" pred="visible"/>
+  <entry word="visible@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="visiblevisible-adj" class="q-physical" pred="visible"/>
+  <entry word="invisible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="invisibleinvisible-adj" class="q-physical" pred="invisible"/>
+  <entry word="invisible" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="invisibleinvisible-adj" class="q-physical" pred="invisible"/>
+  <entry word="invisible@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="invisibleinvisible-adj" class="q-physical" pred="invisible"/>
+  <entry word="invisible@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="invisibleinvisible-adj" class="q-physical" pred="invisible"/>
+  <entry word="invisible@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="invisibleinvisible-adj" class="q-physical" pred="invisible"/>
+  <entry word="graspable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="graspablegraspable-adj" class="q-physical" pred="graspable"/>
+  <entry word="graspable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="graspablegraspable-adj" class="q-physical" pred="graspable"/>
+  <entry word="graspable@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="graspablegraspable-adj" class="q-physical" pred="graspable"/>
+  <entry word="graspable@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="graspablegraspable-adj" class="q-physical" pred="graspable"/>
+  <entry word="graspable@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="graspablegraspable-adj" class="q-physical" pred="graspable"/>
+  <entry word="ungraspable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="ungraspableungraspable-adj" class="q-physical" pred="ungraspable"/>
+  <entry word="ungraspable" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="ungraspableungraspable-adj" class="q-physical" pred="ungraspable"/>
+  <entry word="ungraspable@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="ungraspableungraspable-adj" class="q-physical" pred="ungraspable"/>
+  <entry word="ungraspable@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="ungraspableungraspable-adj" class="q-physical" pred="ungraspable"/>
+  <entry word="ungraspable@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="ungraspableungraspable-adj" class="q-physical" pred="ungraspable"/>
+  <entry word="top" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="toptop-adj" class="q-location" pred="top"/>
+  <entry word="top" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="toptop-adj" class="q-location" pred="top"/>
+  <entry word="top@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="toptop-adj" class="q-location" pred="top"/>
+  <entry word="top@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="toptop-adj" class="q-location" pred="top"/>
+  <entry word="top@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="toptop-adj" class="q-location" pred="top"/>
+  <entry word="bottom" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="bottombottom-adj" class="q-location" pred="bottom"/>
+  <entry word="bottom" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="bottombottom-adj" class="q-location" pred="bottom"/>
+  <entry word="bottom@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="bottombottom-adj" class="q-location" pred="bottom"/>
+  <entry word="bottom@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="bottombottom-adj" class="q-location" pred="bottom"/>
+  <entry word="bottom@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="bottombottom-adj" class="q-location" pred="bottom"/>
+  <entry word="middle" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="middlemiddle-adj" class="q-location" pred="middle"/>
+  <entry word="middle" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="middlemiddle-adj" class="q-location" pred="middle"/>
+  <entry word="middle@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="middlemiddle-adj" class="q-location" pred="middle"/>
+  <entry word="middle@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="middlemiddle-adj" class="q-location" pred="middle"/>
+  <entry word="middle@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="middlemiddle-adj" class="q-location" pred="middle"/>
   <entry word="old" macros="@s-degree-base @pre-n @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="old-adj" class="q-age" pred="old"/>
   <entry word="old" macros="@s-degree-base @pre-n @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="old-adj" class="q-age" pred="old"/>
   <entry word="old@H*" macros="@s-degree-base @pre-n @m-focus-true @m-uncontentious @m-rheme-true @hs" pos="Adj" stem="old-adj" class="q-age" pred="old"/>
@@ -3570,25 +3928,101 @@
   <entry word="youngest@H*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-uncontentious @m-rheme-false @hs" pos="Adj" stem="young-adj" class="q-age" pred="young"/>
   <entry word="youngest@L*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-contentious @m-rheme-false @ls" pos="Adj" stem="young-adj" class="q-age" pred="young"/>
   <entry word="youngest@L+H*" macros="@s-superlative @pre-n @superlative @m-focus-true @m-uncontentious @m-rheme-true @lphs" pos="Adj" stem="young-adj" class="q-age" pred="young"/>
-  <entry word="first" macros="@s-degree-base" pos="Adj" stem="firstfirst-adj" class="q-position" pred="first"/>
-  <entry word="last" macros="@s-degree-base" pos="Adj" stem="lastlast-adj" class="q-position" pred="last"/>
-  <entry word="next" macros="@s-degree-base" pos="Adj" stem="nextnext-adj" class="q-position" pred="next"/>
-  <entry word="previous" macros="@s-degree-base" pos="Adj" stem="previousprevious-adj" class="q-position" pred="previous"/>
-  <entry word="other" macros="@s-degree-base" pos="Adj" stem="otherother-adj" class="q-position" pred="other"/>
-  <entry word="empty" macros="@s-degree-base" pos="Adj" stem="emptyempty-adj" class="q-state" pred="empty"/>
-  <entry word="full" macros="@s-degree-base" pos="Adj" stem="fullfull-adj" class="q-state" pred="full"/>
-  <entry word="hungry" macros="@s-degree-base" pos="Adj" stem="hungryhungry-adj" class="q-state" pred="hungry"/>
-  <entry word="thirsty" macros="@s-degree-base" pos="Adj" stem="thirstythirsty-adj" class="q-state" pred="thirsty"/>
-  <entry word="tired" macros="@s-degree-base" pos="Adj" stem="tiredtired-adj" class="q-state" pred="tired"/>
-  <entry word="finished" macros="@s-degree-base" pos="Adj" stem="finishedfinished-adj" class="q-state" pred="finished"/>
-  <entry word="started" macros="@s-degree-base" pos="Adj" stem="startedstarted-adj" class="q-state" pred="started"/>
-  <entry word="on" macros="@s-degree-base" pos="Adj" stem="onon-adj" class="q-state" pred="on"/>
-  <entry word="off" macros="@s-degree-base" pos="Adj" stem="offoff-adj" class="q-state" pred="off"/>
-  <entry word="ready" macros="@s-degree-base" pos="Adj" stem="readyready-adj" class="q-state" pred="ready"/>
-  <entry word="known" macros="@s-degree-base" pos="Adj" stem="knownknown-adj" class="quality" pred="known"/>
-  <entry word="unknown" macros="@s-degree-base" pos="Adj" stem="unknownunknown-adj" class="quality" pred="unknown"/>
-  <entry word="same" macros="@s-degree-base" pos="Adj" stem="samesame-adj" class="quality" pred="same"/>
-  <entry word="raw" macros="@s-degree-base" pos="Adj" stem="rawraw-adj" class="quality" pred="raw"/>
+  <entry word="first" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="firstfirst-adj" class="q-position" pred="first"/>
+  <entry word="first" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="firstfirst-adj" class="q-position" pred="first"/>
+  <entry word="first@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="firstfirst-adj" class="q-position" pred="first"/>
+  <entry word="first@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="firstfirst-adj" class="q-position" pred="first"/>
+  <entry word="first@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="firstfirst-adj" class="q-position" pred="first"/>
+  <entry word="last" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="lastlast-adj" class="q-position" pred="last"/>
+  <entry word="last" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="lastlast-adj" class="q-position" pred="last"/>
+  <entry word="last@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="lastlast-adj" class="q-position" pred="last"/>
+  <entry word="last@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="lastlast-adj" class="q-position" pred="last"/>
+  <entry word="last@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="lastlast-adj" class="q-position" pred="last"/>
+  <entry word="next" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="nextnext-adj" class="q-position" pred="next"/>
+  <entry word="next" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="nextnext-adj" class="q-position" pred="next"/>
+  <entry word="next@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="nextnext-adj" class="q-position" pred="next"/>
+  <entry word="next@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="nextnext-adj" class="q-position" pred="next"/>
+  <entry word="next@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="nextnext-adj" class="q-position" pred="next"/>
+  <entry word="previous" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="previousprevious-adj" class="q-position" pred="previous"/>
+  <entry word="previous" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="previousprevious-adj" class="q-position" pred="previous"/>
+  <entry word="previous@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="previousprevious-adj" class="q-position" pred="previous"/>
+  <entry word="previous@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="previousprevious-adj" class="q-position" pred="previous"/>
+  <entry word="previous@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="previousprevious-adj" class="q-position" pred="previous"/>
+  <entry word="other" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="otherother-adj" class="q-position" pred="other"/>
+  <entry word="other" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="otherother-adj" class="q-position" pred="other"/>
+  <entry word="other@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="otherother-adj" class="q-position" pred="other"/>
+  <entry word="other@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="otherother-adj" class="q-position" pred="other"/>
+  <entry word="other@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="otherother-adj" class="q-position" pred="other"/>
+  <entry word="empty" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="emptyempty-adj" class="q-state" pred="empty"/>
+  <entry word="empty" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="emptyempty-adj" class="q-state" pred="empty"/>
+  <entry word="empty@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="emptyempty-adj" class="q-state" pred="empty"/>
+  <entry word="empty@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="emptyempty-adj" class="q-state" pred="empty"/>
+  <entry word="empty@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="emptyempty-adj" class="q-state" pred="empty"/>
+  <entry word="full" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="fullfull-adj" class="q-state" pred="full"/>
+  <entry word="full" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="fullfull-adj" class="q-state" pred="full"/>
+  <entry word="full@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="fullfull-adj" class="q-state" pred="full"/>
+  <entry word="full@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="fullfull-adj" class="q-state" pred="full"/>
+  <entry word="full@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="fullfull-adj" class="q-state" pred="full"/>
+  <entry word="hungry" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="hungryhungry-adj" class="q-state" pred="hungry"/>
+  <entry word="hungry" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="hungryhungry-adj" class="q-state" pred="hungry"/>
+  <entry word="hungry@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="hungryhungry-adj" class="q-state" pred="hungry"/>
+  <entry word="hungry@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="hungryhungry-adj" class="q-state" pred="hungry"/>
+  <entry word="hungry@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="hungryhungry-adj" class="q-state" pred="hungry"/>
+  <entry word="thirsty" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="thirstythirsty-adj" class="q-state" pred="thirsty"/>
+  <entry word="thirsty" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="thirstythirsty-adj" class="q-state" pred="thirsty"/>
+  <entry word="thirsty@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="thirstythirsty-adj" class="q-state" pred="thirsty"/>
+  <entry word="thirsty@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="thirstythirsty-adj" class="q-state" pred="thirsty"/>
+  <entry word="thirsty@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="thirstythirsty-adj" class="q-state" pred="thirsty"/>
+  <entry word="tired" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="tiredtired-adj" class="q-state" pred="tired"/>
+  <entry word="tired" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="tiredtired-adj" class="q-state" pred="tired"/>
+  <entry word="tired@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="tiredtired-adj" class="q-state" pred="tired"/>
+  <entry word="tired@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="tiredtired-adj" class="q-state" pred="tired"/>
+  <entry word="tired@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="tiredtired-adj" class="q-state" pred="tired"/>
+  <entry word="finished" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="finishedfinished-adj" class="q-state" pred="finished"/>
+  <entry word="finished" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="finishedfinished-adj" class="q-state" pred="finished"/>
+  <entry word="finished@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="finishedfinished-adj" class="q-state" pred="finished"/>
+  <entry word="finished@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="finishedfinished-adj" class="q-state" pred="finished"/>
+  <entry word="finished@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="finishedfinished-adj" class="q-state" pred="finished"/>
+  <entry word="started" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="startedstarted-adj" class="q-state" pred="started"/>
+  <entry word="started" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="startedstarted-adj" class="q-state" pred="started"/>
+  <entry word="started@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="startedstarted-adj" class="q-state" pred="started"/>
+  <entry word="started@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="startedstarted-adj" class="q-state" pred="started"/>
+  <entry word="started@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="startedstarted-adj" class="q-state" pred="started"/>
+  <entry word="on" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="onon-adj" class="q-state" pred="on"/>
+  <entry word="on" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="onon-adj" class="q-state" pred="on"/>
+  <entry word="on@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="onon-adj" class="q-state" pred="on"/>
+  <entry word="on@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="onon-adj" class="q-state" pred="on"/>
+  <entry word="on@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="onon-adj" class="q-state" pred="on"/>
+  <entry word="off" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="offoff-adj" class="q-state" pred="off"/>
+  <entry word="off" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="offoff-adj" class="q-state" pred="off"/>
+  <entry word="off@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="offoff-adj" class="q-state" pred="off"/>
+  <entry word="off@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="offoff-adj" class="q-state" pred="off"/>
+  <entry word="off@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="offoff-adj" class="q-state" pred="off"/>
+  <entry word="ready" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="readyready-adj" class="q-state" pred="ready"/>
+  <entry word="ready" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="readyready-adj" class="q-state" pred="ready"/>
+  <entry word="ready@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="readyready-adj" class="q-state" pred="ready"/>
+  <entry word="ready@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="readyready-adj" class="q-state" pred="ready"/>
+  <entry word="ready@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="readyready-adj" class="q-state" pred="ready"/>
+  <entry word="known" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="knownknown-adj" class="quality" pred="known"/>
+  <entry word="known" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="knownknown-adj" class="quality" pred="known"/>
+  <entry word="known@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="knownknown-adj" class="quality" pred="known"/>
+  <entry word="known@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="knownknown-adj" class="quality" pred="known"/>
+  <entry word="known@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="knownknown-adj" class="quality" pred="known"/>
+  <entry word="unknown" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="unknownunknown-adj" class="quality" pred="unknown"/>
+  <entry word="unknown" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="unknownunknown-adj" class="quality" pred="unknown"/>
+  <entry word="unknown@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="unknownunknown-adj" class="quality" pred="unknown"/>
+  <entry word="unknown@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="unknownunknown-adj" class="quality" pred="unknown"/>
+  <entry word="unknown@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="unknownunknown-adj" class="quality" pred="unknown"/>
+  <entry word="same" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="samesame-adj" class="quality" pred="same"/>
+  <entry word="same" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="samesame-adj" class="quality" pred="same"/>
+  <entry word="same@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="samesame-adj" class="quality" pred="same"/>
+  <entry word="same@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="samesame-adj" class="quality" pred="same"/>
+  <entry word="same@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="samesame-adj" class="quality" pred="same"/>
+  <entry word="raw" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="rawraw-adj" class="quality" pred="raw"/>
+  <entry word="raw" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="rawraw-adj" class="quality" pred="raw"/>
+  <entry word="raw@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="rawraw-adj" class="quality" pred="raw"/>
+  <entry word="raw@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="rawraw-adj" class="quality" pred="raw"/>
+  <entry word="raw@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="rawraw-adj" class="quality" pred="raw"/>
   <entry word="go" macros="@m-class-all @fin-full @pres @s-pos @do @non-3rd @s-sg @e-focus-false @e-uncontentious @e-rheme-true" pos="V" stem="go-verb-action-motionm-class-all" class="action-motion" pred="go"/>
   <entry word="go" macros="@m-class-all @fin-full @pres @s-pos @do @non-3rd @s-sg @e-focus-false @e-uncontentious @e-rheme-false" pos="V" stem="go-verb-action-motionm-class-all" class="action-motion" pred="go"/>
   <entry word="go@H*" macros="@m-class-all @fin-full @pres @s-pos @do @non-3rd @s-sg @e-focus-true @e-uncontentious @e-rheme-true @hs" pos="V" stem="go-verb-action-motionm-class-all" class="action-motion" pred="go"/>
@@ -5171,7 +5605,11 @@
   <entry word="rights@H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-true @hs @cc-none" pos="Noun" stem="right-noun-n" class="e-region" pred="right"/>
   <entry word="rights@L*" macros="@s-pl-unsp @full @t-contentious @t-focus-true @t-rheme-true @ls @cc-none" pos="Noun" stem="right-noun-n" class="e-region" pred="right"/>
   <entry word="rights@L+H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-false @lphs @cc-none" pos="Noun" stem="right-noun-n" class="e-region" pred="right"/>
-  <entry word="right" macros="@s-degree-base" pos="Adj" stem="rightright-adj" class="q-location" pred="right"/>
+  <entry word="right" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="rightright-adj" class="q-location" pred="right"/>
+  <entry word="right" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="rightright-adj" class="q-location" pred="right"/>
+  <entry word="right@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="rightright-adj" class="q-location" pred="right"/>
+  <entry word="right@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="rightright-adj" class="q-location" pred="right"/>
+  <entry word="right@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="rightright-adj" class="q-location" pred="right"/>
   <entry word="left" macros="@x-location @prep-all" pos="Prep+of-np-" stem="left-prep+of-np-location" class="m-location" pred="left"/>
   <entry word="left" macros="@x-whereto @prep-2" pos="Prep+of-np-" stem="left-prep+of-np-whereto" class="m-whereto" pred="left"/>
   <entry word="left" macros="@x-direction @prep-2" pos="Prep+no-arg-" stem="left-prep+no-arg-direction" class="m-direction" pred="left"/>
@@ -5187,7 +5625,11 @@
   <entry word="lefts@H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-true @hs @cc-none" pos="Noun" stem="left-noun-n" class="e-region" pred="left"/>
   <entry word="lefts@L*" macros="@s-pl-unsp @full @t-contentious @t-focus-true @t-rheme-true @ls @cc-none" pos="Noun" stem="left-noun-n" class="e-region" pred="left"/>
   <entry word="lefts@L+H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-false @lphs @cc-none" pos="Noun" stem="left-noun-n" class="e-region" pred="left"/>
-  <entry word="left" macros="@s-degree-base" pos="Adj" stem="leftleft-adj" class="q-location" pred="left"/>
+  <entry word="left" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="leftleft-adj" class="q-location" pred="left"/>
+  <entry word="left" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="leftleft-adj" class="q-location" pred="left"/>
+  <entry word="left@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="leftleft-adj" class="q-location" pred="left"/>
+  <entry word="left@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="leftleft-adj" class="q-location" pred="left"/>
+  <entry word="left@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="leftleft-adj" class="q-location" pred="left"/>
   <entry word="front" macros="@x-location @prep-all" pos="Prep+of-np-" stem="front-prep+of-np-location" class="m-location" pred="front"/>
   <entry word="front" macros="@x-whereto @prep-2" pos="Prep+of-np-" stem="front-prep+of-np-whereto" class="m-whereto" pred="front"/>
   <entry word="front" macros="@x-direction @prep-2" pos="Prep+no-arg-" stem="front-prep+no-arg-direction" class="m-direction" pred="front"/>
@@ -5203,7 +5645,11 @@
   <entry word="fronts@H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-true @hs @cc-none" pos="Noun" stem="front-noun-n" class="e-region" pred="front"/>
   <entry word="fronts@L*" macros="@s-pl-unsp @full @t-contentious @t-focus-true @t-rheme-true @ls @cc-none" pos="Noun" stem="front-noun-n" class="e-region" pred="front"/>
   <entry word="fronts@L+H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-false @lphs @cc-none" pos="Noun" stem="front-noun-n" class="e-region" pred="front"/>
-  <entry word="front" macros="@s-degree-base" pos="Adj" stem="frontfront-adj" class="q-location" pred="front"/>
+  <entry word="front" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="frontfront-adj" class="q-location" pred="front"/>
+  <entry word="front" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="frontfront-adj" class="q-location" pred="front"/>
+  <entry word="front@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="frontfront-adj" class="q-location" pred="front"/>
+  <entry word="front@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="frontfront-adj" class="q-location" pred="front"/>
+  <entry word="front@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="frontfront-adj" class="q-location" pred="front"/>
   <entry word="back" macros="@x-location @prep-all" pos="Prep+of-np-" stem="back-prep+of-np-location" class="m-location" pred="back"/>
   <entry word="back" macros="@x-whereto @prep-2" pos="Prep+of-np-" stem="back-prep+of-np-whereto" class="m-whereto" pred="back"/>
   <entry word="back" macros="@x-direction @prep-2" pos="Prep+no-arg-" stem="back-prep+no-arg-direction" class="m-direction" pred="back"/>
@@ -5219,7 +5665,11 @@
   <entry word="backs@H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-true @hs @cc-none" pos="Noun" stem="back-noun-n" class="e-region" pred="back"/>
   <entry word="backs@L*" macros="@s-pl-unsp @full @t-contentious @t-focus-true @t-rheme-true @ls @cc-none" pos="Noun" stem="back-noun-n" class="e-region" pred="back"/>
   <entry word="backs@L+H*" macros="@s-pl-unsp @full @t-uncontentious @t-focus-true @t-rheme-false @lphs @cc-none" pos="Noun" stem="back-noun-n" class="e-region" pred="back"/>
-  <entry word="back" macros="@s-degree-base" pos="Adj" stem="backback-adj" class="q-location" pred="back"/>
+  <entry word="back" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="backback-adj" class="q-location" pred="back"/>
+  <entry word="back" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="backback-adj" class="q-location" pred="back"/>
+  <entry word="back@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="backback-adj" class="q-location" pred="back"/>
+  <entry word="back@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="backback-adj" class="q-location" pred="back"/>
+  <entry word="back@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="backback-adj" class="q-location" pred="back"/>
   <entry word="forward" macros="@x-direction @prep-2" pos="Prep+no-arg-" stem="forward-prep+no-arg-direction" class="m-direction" pred="forward"/>
   <entry word="forwards" macros="@x-direction @prep-2" pos="Prep+no-arg-" stem="forwards-prep+no-arg-direction" class="m-direction" pred="forward"/>
   <entry word="backward" macros="@x-direction @prep-2" pos="Prep+no-arg-" stem="backward-prep+no-arg-direction" class="m-direction" pred="backward"/>

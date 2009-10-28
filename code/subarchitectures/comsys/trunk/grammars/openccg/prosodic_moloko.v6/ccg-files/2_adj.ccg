@@ -60,12 +60,17 @@
 ## DICTIONARY FORMS  ##
 #######################
 
-  def _adj-none(prd, base, class, args) {
+  def _adj-none_ip(prd, base,base_hs,base_ls,base_lphs, class, args) {
     word base.prd.-adj:Adj(class, pred=prd) {
-      base : s-degree-base args;
+      base : s-degree-base m-uncontentious m-focus-false m-rheme-true args;
+      base : s-degree-base m-uncontentious m-focus-false m-rheme-false args ;
+      base_hs : s-degree-base m-uncontentious m-focus-true m-rheme-true hs args ;
+      base_ls : s-degree-base m-contentious m-focus-true m-rheme-true ls args ;
+      base_lphs : s-degree-base m-uncontentious m-focus-true m-rheme-false lphs args ;
     }
   }
-  def adj-none(base, class, args) { _adj-none(base, base, class, args) }
+  def adj-none(base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
+  def _adj-none(prd, base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
 
   #PROSG09 : change in the number of arguments for prosodically inflected args e.g red_H*i, redder_H*. 
   #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 

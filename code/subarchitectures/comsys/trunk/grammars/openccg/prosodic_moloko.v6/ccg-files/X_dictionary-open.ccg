@@ -395,6 +395,8 @@
   adj-deg(thin,thinner,thinnest,q-shape,) 
   adj-deg(round,rounder,roundest,q-shape,)  
   adj-none(oval,q-shape,) 
+  adj-none(cubic,q-shape,) 
+  adj-none(spherical,q-shape,) 
   adj-none(square,q-shape,)   
   adj-none(triangular,q-shape,)   
 

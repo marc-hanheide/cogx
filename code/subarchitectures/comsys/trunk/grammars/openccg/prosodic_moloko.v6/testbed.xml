@@ -112,6 +112,9 @@
   <item string="the box is blue@L+H* LH%" numOfParses="1"/>
   <item string="the box is@L+H* blue LH%" numOfParses="1"/>
   <item string="the box@L+H* LH% is@H* LL% blue@L+H* LH%" numOfParses="1"/>
+  <item string="I@L+H* see@L+H* LH% a car@H* and a blue@H* thing@H* LL%" numOfParses="1"/>
+  <item string="what color is@H* LH% the box@L+H* LH%" numOfParses="1"/>
+  <item string="what color@H* is LH% the box@L+H* LH%" numOfParses="1"/>
   <item string="the" numOfParses="6"/>
   <item string="the pizza" numOfParses="3"/>
   <item string="the pizza on" numOfParses="3"/>
