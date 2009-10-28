@@ -22,23 +22,25 @@ if turnoffDelaunay == 0
 else
     TRI = [] ;
 end
-if isempty(rgb3d)
-    if ~isempty( LRaxRoi )
-        trisurf(TRI,x(:,1),x(:,2),x(:,3),'Parent',LRaxRoi) ;
+
+if turnoffDelaunay == 0
+    if isempty(rgb3d)
+        if ~isempty( LRaxRoi )
+            trisurf(TRI,x(:,1),x(:,2),x(:,3),'Parent',LRaxRoi) ;
+        else
+            trisurf(TRI,x(:,1),x(:,2),x(:,3)) ;
+        end        
+        colormap bone ;
     else
-       trisurf(TRI,x(:,1),x(:,2),x(:,3)) ;  
+        if isempty( LRaxRoi )
+            trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]') ;
+        else
+            trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]','Parent',LRaxRoi) ;
+        end
+        
+        colormap(rgb3d/255) ;
+        %     shading interp ;
     end
- 
-    colormap bone ;
-else
-     if isempty( LRaxRoi )
-        trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]') ;
-    else
-       trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]','Parent',LRaxRoi) ;
-    end
-    
-    colormap(rgb3d/255) ;
-%     shading interp ;
 end
 hold on ;
 if ~isempty( LRaxRoi )
