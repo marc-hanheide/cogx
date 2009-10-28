@@ -15,65 +15,65 @@ using namespace std;
 using namespace boost;
 //using namespace Cure;
 extern "C" {
-    cast::CASTComponentPtr
-    newComponent() {
-        return new ObjectSearch();
-    }
+  cast::CASTComponentPtr
+  newComponent() {
+    return new ObjectSearch();
+  }
 }
 
 ObjectSearch::ObjectSearch() {}
 
 ObjectSearch::~ObjectSearch() {
-
-
+  
+  
 }
 void ObjectSearch::start() {
-    addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
-                    new MemberFunctionChangeReceiver<ObjectSearch>(this,
-                            &ObjectSearch::newRobotPose));
-
-    addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
-                    new MemberFunctionChangeReceiver<ObjectSearch>(this,
-                            &ObjectSearch::newRobotPose));
-
-
-    addChangeFilter(createChangeFilter<VisionData::VisualObject>
-		    (cdl::ADD,
-		     "",
-		     "",
-		     "vision.sa",
-		     cdl::ALLSA),
-		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
-								   &ObjectSearch::ObjectDetected));
-    
-    addChangeFilter(createChangeFilter<VisionData::VisualObject>
-		    (cdl::OVERWRITE,
-		     "",
-		     "",
-		     "vision.sa",
-		     cdl::ALLSA),
-		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
-								   &ObjectSearch::ObjectDetected));
-    
-    addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
-		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
-								   &ObjectSearch::newNavGraphNode));  
-    addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
-		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
-								   &ObjectSearch::newNavGraphNode)); 
-                                        
-     
-	addChangeFilter(createLocalTypeFilter<SpatialData::AVSCommand>(cdl::ADD),
+  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								 &ObjectSearch::newRobotPose));
+  
+  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								 &ObjectSearch::newRobotPose));
+  
+  
+  addChangeFilter(createChangeFilter<VisionData::VisualObject>
+		  (cdl::ADD,
+		   "",
+		   "",
+		   "vision.sa",
+		   cdl::ALLSA),
+		  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								 &ObjectSearch::ObjectDetected));
+  
+  addChangeFilter(createChangeFilter<VisionData::VisualObject>
+		  (cdl::OVERWRITE,
+		   "",
+		   "",
+		   "vision.sa",
+		   cdl::ALLSA),
+		  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								 &ObjectSearch::ObjectDetected));
+  
+  addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								 &ObjectSearch::newNavGraphNode));  
+  addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								 &ObjectSearch::newNavGraphNode)); 
+  
+  
+  addChangeFilter(createLocalTypeFilter<SpatialData::AVSCommand>(cdl::ADD),
                   new MemberFunctionChangeReceiver<ObjectSearch>(this,
-                                        &ObjectSearch::newAVSCommand));  
-                                        
+								 &ObjectSearch::newAVSCommand));  
+  
   addChangeFilter(createLocalTypeFilter<SpatialData::AVSCommand>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<ObjectSearch>(this,
-                                        &ObjectSearch::newAVSCommand)); 
+								 &ObjectSearch::newAVSCommand)); 
 }
 
 void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
-	  
+  
   shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
     getWorkingMemoryEntry<SpatialData::AVSCommand>(objID.address);
   
@@ -92,7 +92,7 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
 void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
   debug("new NavGraphNode");
-
+  
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(objID.address);
   
@@ -101,179 +101,179 @@ void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
   
 }
 void ObjectSearch::configure(const map<string,string>& _config) {
-    log("Configuring ObjectSearch");
-    map<string,string>::const_iterator it = _config.find("-c");
+  log("Configuring ObjectSearch");
+  map<string,string>::const_iterator it = _config.find("-c");
+  
+  if (it== _config.end()) {
+    log("configure(...) Need config file (use -c option)\n");
+    std::abort();
+  }
+  std::string configfile = it->second;
+  Cure::ConfigFileReader cfg;
+  if (cfg.init(configfile)) {
+    log("configure(...) Failed to open with %s\n",
+	configfile.c_str());
+    std::abort();
+  }
+  //Exploration range
+  m_MaxExplorationRange = 1;
+  it = _config.find("--explore-range");
+  if (it != _config.end()) {
+    m_MaxExplorationRange = (atof(it->second.c_str()));
+  }
+  
+  m_fov = M_PI/4;
+  it = _config.find("--cam-fov");
+  if (it != _config.end()) {
+    m_fov = (atof(it->second.c_str()))*M_PI/180;
+  }
+  
+  
 
-    if (it== _config.end()) {
-        log("configure(...) Need config file (use -c option)\n");
-        std::abort();
-    }
-    std::string configfile = it->second;
-    Cure::ConfigFileReader cfg;
-    if (cfg.init(configfile)) {
-        log("configure(...) Failed to open with %s\n",
-            configfile.c_str());
-        std::abort();
-    }
-    //Exploration range
-    m_MaxExplorationRange = 1;
-    it = _config.find("--explore-range");
-    if (it != _config.end()) {
-        m_MaxExplorationRange = (atof(it->second.c_str()));
-    }
+  m_ptustep = M_PI/6;
+  it = _config.find("--cam-step");
+  if (it != _config.end()) {
+    m_ptustep = (atof(it->second.c_str()))*M_PI/180;
+  }
+  
+  m_tiltRads = 0.0;
+  it = _config.find("--tilt");
+  if (it != _config.end()) {
+    m_tiltRads = -(atof(it->second.c_str()))*M_PI/180;
+  }
+  log("Tilt pose set to: %f",m_tiltRads);
+  
+  
+  //Coverage percent treshold
+  m_covthresh = 70.0;
+  it = _config.find("--coverage-threshold");
+  if (it != _config.end()) {
+    m_covthresh = (atof(it->second.c_str()));
+  }
+  log("Coverage threshold set to: %f",m_covthresh);
+  
+  
+  m_vpthreshold = 10.0;
+  it = _config.find("--vp-threshold");
+  if (it != _config.end()) {
+    m_vpthreshold = (atof(it->second.c_str()));
+  }
+  log("Viewpoint threshold set to: %f",m_vpthreshold);
+  
+  m_CamRange = 1;
+  it = _config.find("--cam-range");
+  if (it != _config.end()) {
+    m_CamRange = (atof(it->second.c_str()));
+  }
+  log("Camera range set to: %f",m_CamRange);
 
-	m_fov = M_PI/4;
-    it = _config.find("--cam-fov");
-    if (it != _config.end()) {
-        m_fov = (atof(it->second.c_str()))*M_PI/180;
-    }
-
-	
-
-	m_ptustep = M_PI/6;
-    it = _config.find("--cam-step");
-    if (it != _config.end()) {
-        m_ptustep = (atof(it->second.c_str()))*M_PI/180;
-    }
-
-    m_tiltRads = 0.0;
-    it = _config.find("--tilt");
-    if (it != _config.end()) {
-        m_tiltRads = -(atof(it->second.c_str()))*M_PI/180;
-    }
-    log("Tilt pose set to: %f",m_tiltRads);
-
-
-    //Coverage percent treshold
-    m_covthresh = 70.0;
-    it = _config.find("--coverage-threshold");
-    if (it != _config.end()) {
-        m_covthresh = (atof(it->second.c_str()));
-    }
-    log("Coverage threshold set to: %f",m_covthresh);
-
-
-    m_vpthreshold = 10.0;
-    it = _config.find("--vp-threshold");
-    if (it != _config.end()) {
-        m_vpthreshold = (atof(it->second.c_str()));
-    }
-    log("Viewpoint threshold set to: %f",m_vpthreshold);
-
-    m_CamRange = 1;
-    it = _config.find("--cam-range");
-    if (it != _config.end()) {
-        m_CamRange = (atof(it->second.c_str()));
-    }
-    log("Camera range set to: %f",m_CamRange);
-
-
-    m_awayfromobstacles = 1.0;
-    it = _config.find("--away-from-obstacles");
-    if (it != _config.end()) {
+  
+  m_awayfromobstacles = 1.0;
+  it = _config.find("--away-from-obstacles");
+  if (it != _config.end()) {
         m_awayfromobstacles = (atof(it->second.c_str()));
-    }
-    log("Away from obstacle set to: %f",m_awayfromobstacles);
-
-
-
-    //Laser pose
-    if (cfg.getSensorPose(1, m_LaserPoseR)) {
-        log("configure(...) Failed to get sensor pose");
-        std::abort();
-    }
-
-
-    m_gridsize = 400;
-    m_cellsize = 0.1;
-    it = _config.find("--gridsize");
-    if (it != _config.end()) {
-
-        m_gridsize = (atof(it->second.c_str()));
+  }
+  log("Away from obstacle set to: %f",m_awayfromobstacles);
+  
+  
+  
+  //Laser pose
+  if (cfg.getSensorPose(1, m_LaserPoseR)) {
+    log("configure(...) Failed to get sensor pose");
+    std::abort();
+  }
+  
+  
+  m_gridsize = 400;
+  m_cellsize = 0.1;
+  it = _config.find("--gridsize");
+  if (it != _config.end()) {
+    
+    m_gridsize = (atof(it->second.c_str()));
         log("Gridsize set to: %f",m_CamRange);
-    }
-
-
-    it = _config.find("--cellsize");
-    if (it != _config.end()) {
-        m_cellsize = (atof(it->second.c_str()));
-        log("Cellize set to: %f",m_cellsize);
-    }
-
-    int magnification = 1;
-    it = _config.find("--disp-magn");
-    if (it != _config.end()) {
-        magnification = (atoi(it->second.c_str()));
-        log("Display magnification set to: %f", magnification);
-    }
-
-    m_CtrlPTU = (_config.find("--ctrl-ptu") != _config.end());
-
-    m_samplesize = 100;
-    it = _config.find("--samplesize");
-    if (it != _config.end()) {
-        m_samplesize = (atof(it->second.c_str()));
-        log("Samplesize set to: %d",m_samplesize);
-    }
-    m_samples = new int[2*m_samplesize];
-    m_samplestheta = new double[m_samplesize];
-/*    if (_config.find("--no-x-window") == _config.end()) {
-
-      m_Displaylgm = new Cure::X11DispLocalGridMap<double>(*m_lgm,magnification);
+  }
+  
+  
+  it = _config.find("--cellsize");
+  if (it != _config.end()) {
+    m_cellsize = (atof(it->second.c_str()));
+    log("Cellize set to: %f",m_cellsize);
+  }
+  
+  int magnification = 1;
+  it = _config.find("--disp-magn");
+  if (it != _config.end()) {
+    magnification = (atoi(it->second.c_str()));
+    log("Display magnification set to: %f", magnification);
+  }
+  
+  m_CtrlPTU = (_config.find("--ctrl-ptu") != _config.end());
+  
+  m_samplesize = 100;
+  it = _config.find("--samplesize");
+  if (it != _config.end()) {
+    m_samplesize = (atof(it->second.c_str()));
+    log("Samplesize set to: %d",m_samplesize);
+  }
+  m_samples = new int[2*m_samplesize];
+  m_samplestheta = new double[m_samplesize];
+  /*    if (_config.find("--no-x-window") == _config.end()) {
+	
+	m_Displaylgm = new Cure::X11DispLocalGridMap<double>(*m_lgm,magnification);
         log("Will use X window to show the exploration map");
-    } else {
+	} else {
         m_Displaylgm = 0;
         log("Will NOT use X window to show the exploration map");
-    }
-
-    if (_config.find("--display-coverage") != _config.end()) {
-      m_Displaycoverage = new Cure::X11DispLocalGridMap<unsigned int>(*coveragemap,magnification);
-    } else {
+	}
+	
+	if (_config.find("--display-coverage") != _config.end()) {
+	m_Displaycoverage = new Cure::X11DispLocalGridMap<unsigned int>(*coveragemap,magnification);
+	} else {
         m_Displaycoverage = 0;
-    }*/
-   m_Displaykrsjlgm = 0;
-m_Displaycoverage = 0;
-    displayOn = true;
-    //Objects
-    if((it = _config.find("--objects")) != _config.end()) {
-        istringstream istr(it->second);
-        string label;
-        Object* obj;
-
-        while(istr >> label) {
+	}*/
+  m_Displaykrsjlgm = 0;
+  m_Displaycoverage = 0;
+  displayOn = true;
+  //Objects
+  if((it = _config.find("--objects")) != _config.end()) {
+    istringstream istr(it->second);
+    string label;
+    Object* obj;
+    
+    while(istr >> label) {
             obj = new Object();
             obj->ObjID = label;
             m_objectlist.push_back(obj);
-        }
     }
-    log("Loaded objects.");
-	
-    cmp = NavData::SUCCEEDED;
+  }
+  log("Loaded objects.");
+  
+  cmp = NavData::SUCCEEDED;
+  
+  m_coveragetotal = -1;
+  m_covered = 0;
+  m_status = STOPPED;
+  whereinplan = -1;
+  
+  if (m_CtrlPTU)  {
+    log("connecting to PTU");
+    Ice::CommunicatorPtr ic = getCommunicator();
     
-	m_coveragetotal = -1;
-    m_covered = 0;
-    m_status = STOPPED;
-    whereinplan = -1;
-
-    if (m_CtrlPTU)  {
-    	log("connecting to PTU");
-      Ice::CommunicatorPtr ic = getCommunicator();
-      
-      Ice::Identity id;
-      id.name = "PTZServer";
-      id.category = "PTZServer";
-      
-      std::ostringstream str;
-      str << ic->identityToString(id) 
-	  << ":default"
-	  << " -h localhost"
-	  << " -p " << cast::cdl::CPPSERVERPORT;
-      
-      Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-      m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
-    }
-
-    log("Configured ObjectSearch");
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
+    
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+	<< ":default"
+	<< " -h localhost"
+	<< " -p " << cast::cdl::CPPSERVERPORT;
+    
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
+  }
+  
+  log("Configured ObjectSearch");
 }
 
 void ObjectSearch::runComponent() {
@@ -292,15 +292,15 @@ void ObjectSearch::runComponent() {
     lockComponent();
     InterpretCommand ();
     if (m_Displaykrsjlgm != 0){
-    m_Displaykrsjlgm->updateDisplay(0,0,0,m_samplesize, m_samples,tpoints,ViewConePts,
-                                    1,m_plan.plan,m_plan.indexarray);
-     m_Displaycoverage->updateCoverageDisplay();
-}
+      m_Displaykrsjlgm->updateDisplay(0,0,0,m_samplesize, m_samples,tpoints,ViewConePts,
+				      1,m_plan.plan,m_plan.indexarray);
+      m_Displaycoverage->updateCoverageDisplay();
+    }
     unlockComponent();
     sleepComponent(1000);
   }
-
-
+  
+  
 }
 void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
   if (m_CtrlPTU)
@@ -552,168 +552,256 @@ void ObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap){
     log("converted icemap to krsjmap");	
 }
 void ObjectSearch::GenViewPoints() {
-    srand ( time(NULL) );
-    log("Generating %i random samples", m_samplesize);
-    ViewConePts.clear();
-    int randx,randy;
-    double xW,yW;
-    int i=0;
-    std::vector<double> angles;
-    log("creating placeinterface proxy");
-    FrontierInterface::LocalGridMap combined_lgm;
-    FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-    log("getting combined lgm");
-    FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
-    for (int g = 0; g < placestosearch.size(); g++)
-		log("%d",placestosearch[g]);
-    combined_lgm = agg2->getCombinedGridMap(placestosearch);
-    log("have combined lgm");
-    IcetoCureLGM(combined_lgm);
+  m_coveragetotal = -1;
 
-    coveragemap = new Cure::LocalGridMap<unsigned char>(*m_krsjlgm);          
-    fcm = new Cure::LocalGridMap<unsigned char>(*coveragemap);
-for(int x = -combined_lgm.size ; x <= combined_lgm.size; x++){
-		for(int y = -combined_lgm.size ; y <= combined_lgm.size; y++){ 
-	if ((*m_krsjlgm)(x,y) == '1') {
-                m_coveragetotal++;
-            }
-}
-}
-    log("created placeinterface proxy");
-
-    for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/3) {
-        angles.push_back(rad);
-    }
-   log("pushed angles");
-
-    while (i < m_samplesize) {
-
-//      log("processing sample %i/%i", i+1, m_samplesize);
-      
-      randx = rand();
-      randy = rand();
-      randx = (randx % (2*combined_lgm.size)) - combined_lgm.size;
-      randy = (randy % (2*combined_lgm.size)) - combined_lgm.size;
-      m_krsjlgm->index2WorldCoords(randx,randy,xW,yW);
-      m_krsjlgm->worldCoords2Index(xW,yW,randx,randy);
-      if ((*m_krsjlgm)(randx,randy) == '0') {
-	if (m_krsjlgm->isRectangleObstacleFree(xW,yW-0.5, xW,yW+0.5,1)){
-	    long nodeid = GetClosestFNode(xW,yW);
-	    SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
-	    long id = -1;
-        		if (place != NULL)
-        			id = place->id;
-        	    bool isincluded = false;
-        		for (unsigned int q= 0; q < placestosearch.size(); q++){
-        			if (placestosearch[q] == id){
-        				isincluded = true;
-        				break;
-        			}
-        		}
-if (isincluded) { //if sample is in a place we were asked to search
-	    m_samples[2*i] = randx;
-	    m_samples[2*i+1] = randy;
-	    int the = (int)(rand() % angles.size());
-	    m_samplestheta[i] = angles[the];
-	    i++;
-}
-}
+  srand ( time(NULL) );
+  log("Generating %i random samples", m_samplesize);
+  ViewConePts.clear();
+  int randx,randy;
+  double xW,yW;
+  int i=0;
+  std::vector<double> angles;
+  log("creating placeinterface proxy");
+  FrontierInterface::LocalGridMap combined_lgm;
+  FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+  log("getting combined lgm");
+  FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
+  for (int g = 0; g < placestosearch.size(); g++)
+    log("%d",placestosearch[g]);
+  combined_lgm = agg2->getCombinedGridMap(placestosearch);
+  log("have combined lgm");
+  IcetoCureLGM(combined_lgm);
+  
+  // set total coverage
+  coveragemap = new Cure::LocalGridMap<unsigned char>(*m_krsjlgm);          
+  fcm = new Cure::LocalGridMap<unsigned char>(*coveragemap);
+  for(int x = -combined_lgm.size ; x <= combined_lgm.size; x++){
+    for(int y = -combined_lgm.size ; y <= combined_lgm.size; y++){ 
+      if ((*m_krsjlgm)(x,y) == '1') {
+	m_coveragetotal++;
       }
     }
+  }
+  log("created placeinterface proxy");
+  
+  Cure::Pose3D currPose = m_TOPP.getPose();
+  /*Checking if a point in x,y is reachable */
+  
+  /// Binary grid that is 0 for foree space and 1 for occupied
+  Cure::BinaryMatrix m_NonFreeSpace;
+  
+  
+  // We make the number of columns of the BinaryMatrix a multiple
+  // of 32 so that we get the benefit of the representation.
+  // Here m_LGMap is assumed to be the LocalGridMap
+  int rows = 2 * combined_lgm.size + 1;
+  int cols = ((2 * combined_lgm.size + 1) / 32 + 1) * 32;
+  m_NonFreeSpace.reallocate(rows, cols);
+  m_NonFreeSpace = 0; // Set all cells to zero
+  
+  // First we create a binary matrix where all cells that
+  // corresponds to known obstacles are set to "1".
+  for (int x = -combined_lgm.size; x <= combined_lgm.size; x++) {
+    for (int y = -combined_lgm.size; y <= combined_lgm.size; y++) {
+      if ((*m_krsjlgm)(x,y) == '1') { // FIXME: =='1' need to be changed
+	m_NonFreeSpace.setBit(x + combined_lgm.size,
+			      y + combined_lgm.size,
+			      true);
+      }
+    }
+  }
+  
+  
+  // Create an istance of BinaryMatrx which will hold the result of
+  // expanding the obstacles
+  Cure::BinaryMatrix m_PathGrid;
+  m_PathGrid = 0;
+  
+  // Grow each occupied cell to account for the size of the
+  // robot. We put the result in another binary matrix, m_PathGrid
+  m_NonFreeSpace.growInto(m_PathGrid,
+			  0.5*0.45/combined_lgm.cellSize, // 0.45 is robot width hard coded here.
+			  true);
+  
+  // We treat all unknown cells as occupied so that the robot only
+  // uses paths that it knowns to be free. Note that we perfom this
+  // operation directly on the m_PathGrid, i.e. the grid with the
+  // expanded obstacle. The reasoning behind this is that we do not
+  // want the unknown cells to be expanded as well as we would have
+  // to recalculate the position of the frontiers otherwise, else
+  // they might end up inside an obstacle (could happen now as well
+  // from expanding the occupied cell but then it is known not to be
+  // reachable).
+  for (int x = -combined_lgm.size; x <= combined_lgm.size; x++) {
+    for (int y = -combined_lgm.size; y <= combined_lgm.size; y++) {
+      if ((*m_krsjlgm)(x,y) == '2') {
+	m_PathGrid.setBit(x + combined_lgm.size, 
+			  y + combined_lgm.size, 
+			  true);
+      }
+    }
+  }
+  
+  
+  /*Checking if a point in x,y is reachable */
+  
+  
+  for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/3) {
+    angles.push_back(rad);
+  }
+  log("pushed angles");
+  
+  while (i < m_samplesize) {
+    
+    //      log("processing sample %i/%i", i+1, m_samplesize);
+    
+    randx = rand();
+    randy = rand();
+    randx = (randx % (2*combined_lgm.size)) - combined_lgm.size;
+    randy = (randy % (2*combined_lgm.size)) - combined_lgm.size;
+    m_krsjlgm->index2WorldCoords(randx,randy,xW,yW);
+    if ((*m_krsjlgm)(randx,randy) == '0') {
+      if (m_krsjlgm->isRectangleObstacleFree(xW,yW-0.5, xW,yW+0.5,1)){
+	long nodeid = GetClosestFNode(xW,yW);
+	SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
+	long id = -1;
+	if (place != NULL)
+	  id = place->id;
+	bool isincluded = false;
+	for (unsigned int q= 0; q < placestosearch.size(); q++){
+	  if (placestosearch[q] == id){
+	    isincluded = true;
+	    break;
+	  }
+	}
+	if (isincluded) { //if sample is in a place we were asked to search
+	  /*if reachable*/
+	  // Get the indices of the destination coordinates
+	  int rS, cS, rE, cE;
+	  if (m_krsjlgm->worldCoords2Index(currPose.getX(), currPose.getY(), rS, cS) == 0 &&	      m_krsjlgm->worldCoords2Index(xW, yW, rE, cE) == 0) {
+	    // Compensate for the fact that the PathGrid is just a normal matrix where the cells are numbers from the corner
+	    cS += combined_lgm.size;
+	    rS += combined_lgm.size;
+	    cE += combined_lgm.size;
+	    
+rE += combined_lgm.size;
+	    
+	    Cure::ShortMatrix path;
+	    double d = (m_PathGrid.path(rS, cS, rE, cE, path,
+					20 * combined_lgm.size) *
+			combined_lgm.cellSize);
+	    if (d > 0) {
+         // There is a path to this destination
+	      m_samples[2*i] = randx;
+	      m_samples[2*i+1] = randy;
+	      int the = (int)(rand() % angles.size());
+	      m_samplestheta[i] = angles[the];
+	      i++;
+	    }
+	    /*if reachable*/
+
+	  }
+	}
+	    
+      }
+    }
+  }
+
+
     log("Calculating view cones for generated samples");
     Cure::Pose3D candidatePose;
     XVector3D a;
     
     for (int y=0; y < m_samplesize; y++) { //calc. view cone for each sample
       
-         m_krsjlgm->index2WorldCoords(m_samples[y*2],m_samples[2*y+1],a.x,a.y);
-        a.theta =  m_samplestheta[y];
-        tpoints = GetInsideViewCone(a, true);
-        ViewConePts.push_back(tpoints);
-        candidatePose.setTheta(m_samplestheta[y]);
-        candidatePose.setX(a.x);
-        candidatePose.setY(a.y);
-        //log("CurrentPose.Theta : %f", candidatePose.getTheta());
-        candidatePoses.push_back(candidatePose);
+      m_krsjlgm->index2WorldCoords(m_samples[y*2],m_samples[2*y+1],a.x,a.y);
+      a.theta =  m_samplestheta[y];
+      tpoints = GetInsideViewCone(a, true);
+      ViewConePts.push_back(tpoints);
+      candidatePose.setTheta(m_samplestheta[y]);
+      candidatePose.setX(a.x);
+      candidatePose.setY(a.y);
+      //log("CurrentPose.Theta : %f", candidatePose.getTheta());
+      candidatePoses.push_back(candidatePose);
     }
     log("View Cones calculated.");
     if (m_Displaykrsjlgm == 0)
-	    m_Displaykrsjlgm = new Cure::X11DispLocalGridMap<unsigned char>(*m_krsjlgm);
-if (m_Displaycoverage == 0)
-	    m_Displaycoverage = new Cure::X11DispLocalGridMap<unsigned char>(*fcm);
-
-
+      m_Displaykrsjlgm = new Cure::X11DispLocalGridMap<unsigned char>(*m_krsjlgm);
+    if (m_Displaycoverage == 0)
+      m_Displaycoverage = new Cure::X11DispLocalGridMap<unsigned char>(*fcm);
+    
+    
     displayOn = true;
-}
-long ObjectSearch::GetClosestFNode(double xW, double yW){
-	long nodeid;
+  }
+  long ObjectSearch::GetClosestFNode(double xW, double yW){
+    long nodeid;
     double hdist = DBL_MAX;
     for (unsigned int i = 0; i < fnodeseq.size() ; i++){
-        double dist = sqrt( pow((xW - fnodeseq[i]->x),2) + pow((yW - fnodeseq[i]->y),2) );
-        //log("node pose: %.2f,%.2f dist: %f", fnodeseq[i]->x,fnodeseq[i]->y, dist); 
-        if ( dist < hdist){
-        	hdist = dist;
-        	nodeid = fnodeseq[i]->nodeId;
-        }
+      double dist = sqrt( pow((xW - fnodeseq[i]->x),2) + pow((yW - fnodeseq[i]->y),2) );
+      //log("node pose: %.2f,%.2f dist: %f", fnodeseq[i]->x,fnodeseq[i]->y, dist); 
+      if ( dist < hdist){
+	hdist = dist;
+	nodeid = fnodeseq[i]->nodeId;
+      }
     }
     //log("closest node id : for point %f,%f is %i",xW,yW,nodeid);
     return nodeid;
-}
-std::vector<int> ObjectSearch::GetInsideViewCone(XVector3D &a, bool addall) {
-	tpoints.clear();
-	XVector3D b,c,p;
+  }
+  std::vector<int> ObjectSearch::GetInsideViewCone(XVector3D &a, bool addall) {
+    tpoints.clear();
+    XVector3D b,c,p;
     XVector3D m_a,m_b,m_c;
     int* rectangle = new int[4];
     int h,k;
-        //currentPose = m_TOPP.getPose();
-        CalculateViewCone(a,a.theta,m_CamRange,m_fov,b,c);
-
-        m_krsjlgm->worldCoords2Index(a.x,a.y,h,k);
-        m_a.x = h;
-        m_a.y = k;
-        m_krsjlgm->worldCoords2Index(b.x,b.y,h,k);
-        m_b.x = h;
-        m_b.y = k;
-        m_krsjlgm->worldCoords2Index(c.x,c.y,h,k);
-        m_c.x = h;
-        m_c.y = k;
-        //  log("Got Map triangle coordinates: A:(%f,%f),B:(%f,%f),C:(%f,%f) \n", m_a.x,m_a.y,m_b.x,m_b.y,m_c.x,m_c.y);
-
-        FindBoundingRectangle(m_a,m_b,m_c,rectangle);
-        //log("XRectangle coordinates: Min: (%i,%i), Max:(%i,%i)\n",rectangle[0],rectangle[2]
-        //,rectangle[1], rectangle[3]);
-        for (int x=rectangle[0]; x < rectangle[1] ; x++) // rectangle bounding triangle
-        {
-            for (int y=rectangle[2]; y < rectangle[3]; y++) {
-                p.x = x;
-                p.y = y;
-                if (addall){
-                    if (isPointInsideTriangle(p, m_a,m_b,m_c)) {
-                        tpoints.push_back(x);
-                        tpoints.push_back(y);
-                    }
-                }
-                else {
-                if ((*coveragemap)(x,y) == 1) {
-                    if (isPointInsideTriangle(p, m_a,m_b,m_c)) {
-                        tpoints.push_back(x);
-                        tpoints.push_back(y);
-                    }
-                }
-                }
-            }
-        }
-        vector<int>::iterator theIterator = tpoints.begin();
-        tpoints.insert( theIterator, 1, m_a.y);
-        theIterator = tpoints.begin();
-        tpoints.insert( theIterator, 1, m_a.x);
-        return tpoints;
-	
-}
-
-std::vector<double> ObjectSearch::ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm ) {
-	std::vector<double> CoverageSum;
-	int covered = m_covered;
+    //currentPose = m_TOPP.getPose();
+    CalculateViewCone(a,a.theta,m_CamRange,m_fov,b,c);
+    
+    m_krsjlgm->worldCoords2Index(a.x,a.y,h,k);
+    m_a.x = h;
+    m_a.y = k;
+    m_krsjlgm->worldCoords2Index(b.x,b.y,h,k);
+    m_b.x = h;
+    m_b.y = k;
+    m_krsjlgm->worldCoords2Index(c.x,c.y,h,k);
+    m_c.x = h;
+    m_c.y = k;
+    //  log("Got Map triangle coordinates: A:(%f,%f),B:(%f,%f),C:(%f,%f) \n", m_a.x,m_a.y,m_b.x,m_b.y,m_c.x,m_c.y);
+    
+    FindBoundingRectangle(m_a,m_b,m_c,rectangle);
+    //log("XRectangle coordinates: Min: (%i,%i), Max:(%i,%i)\n",rectangle[0],rectangle[2]
+    //,rectangle[1], rectangle[3]);
+    for (int x=rectangle[0]; x < rectangle[1] ; x++) // rectangle bounding triangle
+      {
+	for (int y=rectangle[2]; y < rectangle[3]; y++) {
+	  p.x = x;
+	  p.y = y;
+	  if (addall){
+	    if (isPointInsideTriangle(p, m_a,m_b,m_c)) {
+	      tpoints.push_back(x);
+	      tpoints.push_back(y);
+	    }
+	  }
+	  else {
+	    if ((*coveragemap)(x,y) == 1) {
+	      if (isPointInsideTriangle(p, m_a,m_b,m_c)) {
+		tpoints.push_back(x);
+		tpoints.push_back(y);
+	      }
+	    }
+	  }
+	}
+      }
+    vector<int>::iterator theIterator = tpoints.begin();
+    tpoints.insert( theIterator, 1, m_a.y);
+    theIterator = tpoints.begin();
+    tpoints.insert( theIterator, 1, m_a.x);
+    return tpoints;
+    
+  }
+  
+  std::vector<double> ObjectSearch::ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm ) {
+    std::vector<double> CoverageSum;
+    int covered = m_covered;
     for (unsigned int i = 0; i < ViewConePts.size(); i++) {
 		double score = GetExtraCoverage(ViewConePts[i], covered, fcm);
         CoverageSum.push_back(score);
