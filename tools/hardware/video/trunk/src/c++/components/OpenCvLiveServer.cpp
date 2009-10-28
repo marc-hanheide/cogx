@@ -169,10 +169,35 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
     }
   }
   // HACK
+	int w=0, h=0;
   cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH, width);
   cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT, height);
 	
+	w = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH);
+  h = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT);
+
+	if(w!=width || h!=height){
+
+		if(width == 320)
+			cvSetCaptureProperty(captures[0], CV_CAP_PROP_MODE, MODE_320x240_YUV422);
+		if(width == 640)
+			cvSetCaptureProperty(captures[0], CV_CAP_PROP_MODE, MODE_640x480_YUV411);
+		if(width == 800)
+			cvSetCaptureProperty(captures[0], CV_CAP_PROP_MODE, MODE_800x600_MONO);
+		if(width == 1024)
+			printf("[OpenCvLiveServer::init] Warning: setting video resolution to %d is not supported by this OpenCV implementation!\n", width);
+		if(width == 1600)
+			cvSetCaptureProperty(captures[0], CV_CAP_PROP_MODE, MODE_1600x1200_RGB);
+
+		w = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH);
+ 		h = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT);
+
+		if(w!=width)
+			printf("[OpenCvLiveServer::init] Warning: setting video resolution not supported by this OpenCV implementation!\n");
+	}
+	
 	// HACK END
+
   width = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH);
   height = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT);
   // frames per second
