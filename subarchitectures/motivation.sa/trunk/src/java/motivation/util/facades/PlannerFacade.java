@@ -39,7 +39,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 
 		public static String motive2PlannerGoal(HomingMotive m, String placeUnion, String robotUnion) {
 			// TODO: this has to be implemented with lookup to the unions
-			return new String("(located "+robotUnion + " " + placeUnion+")");
+			return new String("(located '"+robotUnion + "' '" + placeUnion+"')");
 		}
 
 		public static String motive2PlannerGoal(CategorizeRoomMotive m,
