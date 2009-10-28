@@ -37,16 +37,16 @@ add_prop_value_to_protolf(Nom, UsedNom, objecttype, Value) <-
 %----------------------------------------------------------------------
 
 check_property_value(Union, color, known(Value)) <-
-	k(now, private(r)) : color(Union, Value),
-	Value \= unknownColor.
+	k(now, private(r)) : color(Union, Value) / belief_model.
+%	Value \= unknownColor.
 
 check_property_value(Union, shape, known(Value)) <-
-	k(now, private(r)) : shape(Union, Value),
-	Value \= unknownShape.
+	k(now, private(r)) : shape(Union, Value) / belief_model.
+%	Value \= unknownShape.
 
 check_property_value(Union, objecttype, known(Value)) <-
-	k(now, private(r)) : objecttype(Union, Value),
-	Value \= unknownObjectType.
+	k(now, private(r)) : objecttype(Union, Value) / belief_model.
+%	Value \= unknownObjectType.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
