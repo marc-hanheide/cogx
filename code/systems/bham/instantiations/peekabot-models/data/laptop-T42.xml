@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<scene>
+  <model>
+    <name>laptop_base</name>
+    <file>laptop_bottom.pbmf</file>
+    <transform>
+      <rotate>
+        <axis>0 0 1</axis>
+        <pivot system="local">0 0 0</pivot>
+        <degrees>-90</degrees>
+      </rotate>
+    </transform>
+    <scale> 0.5 0.57 0.5 </scale>
+
+    <children>
+      <joint>
+	<axis>-1 0 0</axis>
+	<pivot>0 0 0.023</pivot>
+	<min><degrees>0</degrees></min>
+	<max><degrees>120</degrees></max>
+        <initial_angle> <degrees>90</degrees></initial_angle>
+	<children>
+	  <model>
+	    <name>laptop_top</name>
+	    <file>laptop_top.pbmf</file>
+            <scale> 0.5 0.57 0.5 </scale>
+	  </model>	  
+	</children>
+      </joint>
+    </children>
+
+  </model>
+</scene>

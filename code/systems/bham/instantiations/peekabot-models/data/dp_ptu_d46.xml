@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<!-- Directed Perception PTU-D46 pan-tilt unit -->
+
+<!-- Copyright 2008 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+  <model>
+    <file>dp-ptu-d46/bottom.pbmf</file>
+    <name>ptu_bottom</name>
+  </model>
+
+  <hinge>
+    <name>pan</name>
+    <axis>0 0 1</axis>
+    <children>
+      <model>
+	<file>dp-ptu-d46/middle.pbmf</file>
+	<name>ptu_middle</name>
+      </model>
+
+      <hinge>
+	<name>tilt</name>
+	<axis>0 1 0</axis>
+
+	<transform>
+	  <translate>0 0 0.0911</translate>
+	</transform>
+
+	<children>
+	  <model>
+	    <file>dp-ptu-d46/top.pbmf</file>
+	    <name>ptu_top</name>
+	  </model>
+	</children>
+      </hinge>
+    </children>
+  </hinge>
+</scene>
