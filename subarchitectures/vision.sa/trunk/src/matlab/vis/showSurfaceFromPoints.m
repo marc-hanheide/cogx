@@ -5,7 +5,7 @@
 %%
 function showSurfaceFromPoints( x, rgb3d, LRaxRoi )
 
-turnoffDelaunay = 1 ;
+turnoffDelaunay =0;
 
 if nargin < 2
     rgb3d = [] ;
@@ -26,19 +26,36 @@ end
 if turnoffDelaunay == 0
     if isempty(rgb3d)
         if ~isempty( LRaxRoi )
+            set(LRaxRoi, 'NextPlot', 'replace') ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),'Parent',LRaxRoi) ;
+            set(LRaxRoi, 'NextPlot', 'add') ;
+            colormap(LRaxRoi,'bone') ;
+             axis(LRaxRoi,'tight') ;
+            axis(LRaxRoi,'equal') ;
+            grid(LRaxRoi,'off') ;
+            box(LRaxRoi,'on') ;
         else
             trisurf(TRI,x(:,1),x(:,2),x(:,3)) ;
+            colormap(rgb3d/255) ;
         end        
-        colormap bone ;
+%         colormap bone ;
     else
         if isempty( LRaxRoi )
             trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]') ;
-        else
+            colormap(rgb3d/255) ;
+        else            
+            set(LRaxRoi, 'NextPlot', 'replace') ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]','Parent',LRaxRoi) ;
+            set(LRaxRoi, 'NextPlot', 'add') ;
+            %colormap(LRaxRoi,'bone') ;            
+            colormap(LRaxRoi,rgb3d/255) ;
+            axis(LRaxRoi,'tight') ;
+            axis(LRaxRoi,'equal') ;
+            grid(LRaxRoi,'off') ;
+            box(LRaxRoi,'on') ;
         end
         
-        colormap(rgb3d/255) ;
+%         colormap(rgb3d/255) ;
         %     shading interp ;
     end
 end
