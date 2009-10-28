@@ -184,13 +184,13 @@
                 <result val="doneRheme"/>
             </choicenode>
 		 <choicenode answer = "false">         
-           <inquiry id="f-featval" type="string" answerset="@standardRheme @denialTheme @unknown"> <!-- check AscriptionIS -->
-		     <f-featval feat="AscriptionPropertyIS-dontmatch" nomvar="CONTENT" />
+           <inquiry id="f-featval" type="string" answerset="@standardrheme @denialtheme @unknown"> <!-- check AscriptionIS -->
+		     <f-featval feat="AscriptionPropertyIS" nomvar="CONTENT" />
 		   </inquiry>			
-  		     <choicenode answer = "standardRheme">  
+  		     <choicenode answer = "standardrheme">  
 			    <result val="assignStandardRheme"/>			
 		     </choicenode>
-		     <choicenode answer = "denialTheme">
+		     <choicenode answer = "denialtheme">
 			    <result val="assignDenialTheme"/>
 		     </choicenode>
 		     <choicenode answer = "unknown">  <!-- AscriptionIS not assigned -->           
