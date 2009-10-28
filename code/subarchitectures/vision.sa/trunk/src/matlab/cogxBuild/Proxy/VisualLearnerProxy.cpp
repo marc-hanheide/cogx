@@ -135,6 +135,10 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
    int dim0 = dims.Get(mwSize(1), 1);
    int dim1 = dims.Get(mwSize(1), 2);
    printf("**** ML: converted pts3d size: %dx%d\n", dim0, dim1);
+   dims = image.GetDimensions();
+   dim0 = dims.Get(mwSize(1), 1);
+   dim1 = dims.Get(mwSize(1), 2);
+   printf("**** ML: converted image size: %dx%d\n", dim0, dim1);
    /* END-DEBUG */
 
    // Extract features and recognise.
