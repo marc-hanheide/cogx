@@ -52,7 +52,7 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 	 * This is an array of roomIds to be blocked, i.e. no CategorizeRoomMotive
 	 * are generated when this ComaRomm is created
 	 */
-	final private long[] blockedRoomIds = { 0, 2 };
+	final private long[] blockedRoomIds = { 0 };
 
 	public CategorizeRoomGenerator() {
 		super();
