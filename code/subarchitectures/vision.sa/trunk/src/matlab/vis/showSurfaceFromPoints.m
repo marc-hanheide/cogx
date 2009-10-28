@@ -33,7 +33,7 @@ else
     end
     
     colormap(rgb3d/255) ;
-    shading interp ;
+%     shading interp ;
 end
 hold on ;
 if ~isempty( LRaxRoi )

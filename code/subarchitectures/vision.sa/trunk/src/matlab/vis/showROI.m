@@ -15,8 +15,6 @@ set(LRaxPts3d,'Visible','off');
  
 
 if nargin>0
-
-
    x1=cutBG(x,b);
 
    %imshow(x1,'Parent',LRaxRoi);
@@ -30,7 +28,7 @@ if nargin>0
    set(LRaxPts3d,'Visible','on');
    axes(LRaxPts3d) ;
    if size(pts3d,2) < 6
-       ptcol = [] ;
+       ptcol = repmat(hsv2rgb(f(1:3)')*255, size(pts3d,1),1) ;
    else
        ptcol = pts3d(:,4:6) ;
    end
