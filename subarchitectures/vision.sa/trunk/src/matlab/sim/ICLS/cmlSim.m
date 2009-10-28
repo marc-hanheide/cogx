@@ -56,7 +56,7 @@ evalBatch='testBatch';
 %Intiate data
  loadConfig(iclsConfig);
 dataFile
-load(dataFile);
+%load(dataFile);
 
 
 cmlSimParam;

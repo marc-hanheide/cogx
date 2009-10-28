@@ -8,7 +8,7 @@ function [mC]=MKDBFunlearn(F,C,mC)
 
 %parameters
    ING=2; %Initial Gaussians
-CCT=.5; %CompressionClusterThreshold
+CCT=.1; % 0.5 %CompressionClusterThreshold
 global Params
 if ~isempty(Params)
    ING=Params.ING;
@@ -41,7 +41,8 @@ for ii=1:numC
       disp(['SizeUL: ' num2str(length(idxs)), '  cUL:  ', num2str(ii)]);
       f=F(:,idxs); %relevant feature vectors
       %save kdes mC f
-      mC(i).kde = executeOperatorIKDE( mC(i).kde, 'input_data', f,'unlearn_with_input' ) ;
+%      mC(i).kde = executeOperatorIKDE( mC(i).kde, 'input_data', f,'unlearn_with_input' ) ;
+      mC(i).kde = executeOperatorIKDE( mC(i).kde, 'input_data', f,'unlearn_with_input','selectSubDimensions',mC(i).Fb ) ;
       %mC1(i).conf=Fns(i);
    end;
 end;

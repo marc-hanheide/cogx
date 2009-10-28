@@ -35,7 +35,7 @@ for i=1:numMDF
    end
    %normalize distances
    %dsts(:,i)=dsts(:,i).^(1/length(MDF{i}));
-   dsts(:,i)=dsts(:,i).^length(MDF{i});
+   dsts(:,i)=dsts(:,i).^length(MDF{i}); %*(1/length(MDF{i}))^(1/3); %.^length(MDF{i});
    %dsts(:,i)=dsts(:,i).^(-(1+length(MDF{i})/100));
    %dsts(:,i)=dsts(:,i)/length(MDF{i});
 end
@@ -56,8 +56,8 @@ else
    
    dsts1=zeros(nCG,numMDF);
    for i=1:nCG
-      %dsts1(i,:)=sum(dsts(ICM(:,2)==i,:));
-      dsts1(i,:)=min(dsts(ICM(:,2)==i,:));
+      dsts1(i,:)=sum(dsts(ICM(:,2)==i,:));
+      %dsts1(i,:)=min(dsts(ICM(:,2)==i,:));
    end
    [foo,Fbs1]=max(dsts1');
    

@@ -8,6 +8,13 @@ function sout = extractShpFts( X )
 C = cov(X) ;
 [U,S,V] = svd(C) ;
 S = diag(S) ;
+
+% Y = X*U' ;
+% ma = max(Y) ;
+% mi = min(Y) ;
+% Sa = sort(abs(ma - mi), 'descend') ;
+
+
 sout = [ S(1)*1000, S(2)*1000, S(1) / (S(1)+S(2)) ] ;
 
 

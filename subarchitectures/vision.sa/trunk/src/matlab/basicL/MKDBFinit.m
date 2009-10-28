@@ -7,7 +7,8 @@ function [mC]=MKDBFinit
 
 
 %C (attribute values)
-mC=struct('name', [], 'kde', [], 'Fb', [], 'conf', [], 'x_init', []);
+mC=struct('name', [], 'kde', [], 'Fb', [], 'conf', [], 'x_init', [], 'Nall', 0);
+
 
 
 

@@ -22,7 +22,7 @@ for i = 1:2:nargs
         case 'showkdecolor', color = args{i+1} ;
         case 'useAlphaWeights', useAlphaWeights = args{i+1} ;
         case 'deactivateFaceColor', deactivateFaceColor = args{i+1} ;
-        case 'useEdgeColorBlack', useEdgeColorBlack =  args{i+1}     
+        case 'useEdgeColorBlack', useEdgeColorBlack =  args{i+1}   ;         
     end
 end
 
