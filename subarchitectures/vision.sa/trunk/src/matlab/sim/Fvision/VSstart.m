@@ -2,7 +2,7 @@ function vsHs=VSstart
 
 global X currIdx;
 global numVar varSiz varCol varNoise;
-global axCimgH;
+global axCimgH axCpts3dH;
 
 global vsHs;
 
@@ -22,6 +22,7 @@ currIdx=0;
 vsHs=VScontrol;
 
 axCimgH=findobj(vsHs, 'Tag','axCurrImg');
+axCpts3dH=findobj(vsHs, 'Tag','axCurr3d');
 
 f1=figure;
  set(f1,'Visible','off');

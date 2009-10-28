@@ -14,9 +14,10 @@ LRguiL=LRlearning;
 LRguiLH=findobj(LRguiL, 'tag','pnModels');
 showLmodels(mAV,Fnames,avAcronyms,[2,4],LRguiLH);
 
-global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi
+global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec LRtxFisRoi LRaxPts3d
 LRguiR=LRrecognition;
 LRaxRoi=findobj(LRguiR, 'Tag','ax_roi');
+LRaxPts3d=findobj(LRguiR, 'Tag','lrax_pts3d');
 LRtxFroi=findobj(LRguiR, 'tag','tx_Froi');
 LRaxRec=findobj(LRguiR, 'Tag','ax_rec');
 LRtxRec=findobj(LRguiR, 'Tag','tx_rec');
