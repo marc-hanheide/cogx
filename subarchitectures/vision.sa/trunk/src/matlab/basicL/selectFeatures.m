@@ -34,7 +34,7 @@ for i=1:numMDF
             dsts(j,i)=min(dsts(j,i),dst);
             dsts(k,i)=min(dsts(k,i),dst);
             
-            M_distances(j,k,i) = dst ;
+            M_distances(j,k,i) = dst.^(20*length(MDF{i})) ;
          end
       end
    end
