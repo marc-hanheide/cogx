@@ -1135,8 +1135,13 @@ void ObjectSearch::Recognize(){
 	  }
 	  	  	  	  
 	}
+	
+	MovePanTilt(0,0);
+	
 	//belt up for safety
 	lockComponent();	
+
+	
 }
 void ObjectSearch::PostRecognitionCommand(){
 	log("Posting Recog. Command now");
