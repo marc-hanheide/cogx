@@ -1269,66 +1269,36 @@
         </lf>
       </atomcat>
     </entry>
-    <member stem="firstone-adj" pred="one"/>
-    <member stem="1st1-adj" pred="1"/>
-    <member stem="1stone-adj" pred="one"/>
-    <member stem="first1-adj" pred="1"/>
-    <member stem="secondtwo-adj" pred="two"/>
-    <member stem="2nd2-adj" pred="2"/>
-    <member stem="2ndtwo-adj" pred="two"/>
-    <member stem="second2-adj" pred="2"/>
-    <member stem="thirdthree-adj" pred="three"/>
-    <member stem="3rd3-adj" pred="3"/>
-    <member stem="3rdthree-adj" pred="three"/>
-    <member stem="third3-adj" pred="3"/>
-    <member stem="fourthfour-adj" pred="four"/>
-    <member stem="4th4-adj" pred="4"/>
-    <member stem="4thfour-adj" pred="four"/>
-    <member stem="fourth4-adj" pred="4"/>
-    <member stem="fifthfive-adj" pred="five"/>
-    <member stem="5th5-adj" pred="5"/>
-    <member stem="5thfive-adj" pred="five"/>
-    <member stem="fifth5-adj" pred="5"/>
-    <member stem="sixthsix-adj" pred="six"/>
-    <member stem="6th6-adj" pred="6"/>
-    <member stem="6thsix-adj" pred="six"/>
-    <member stem="sixth6-adj" pred="6"/>
-    <member stem="seventhseven-adj" pred="seven"/>
-    <member stem="7th7-adj" pred="7"/>
-    <member stem="7thseven-adj" pred="seven"/>
-    <member stem="seventh7-adj" pred="7"/>
-    <member stem="eightheight-adj" pred="eight"/>
-    <member stem="8th8-adj" pred="8"/>
-    <member stem="8theight-adj" pred="eight"/>
-    <member stem="eighth8-adj" pred="8"/>
-    <member stem="ninethnine-adj" pred="nine"/>
-    <member stem="9th9-adj" pred="9"/>
-    <member stem="9thnine-adj" pred="nine"/>
-    <member stem="nineth9-adj" pred="9"/>
-    <member stem="tenthten-adj" pred="ten"/>
-    <member stem="10th10-adj" pred="10"/>
-    <member stem="10thten-adj" pred="ten"/>
-    <member stem="tenth10-adj" pred="10"/>
-    <member stem="eleventheleven-adj" pred="eleven"/>
-    <member stem="11th11-adj" pred="11"/>
-    <member stem="11theleven-adj" pred="eleven"/>
-    <member stem="eleventh11-adj" pred="11"/>
-    <member stem="twelvethtwelve-adj" pred="twelve"/>
-    <member stem="12th12-adj" pred="12"/>
-    <member stem="12thtwelve-adj" pred="twelve"/>
-    <member stem="twelveth12-adj" pred="12"/>
-    <member stem="thirteenththirteen-adj" pred="thirteen"/>
-    <member stem="13th13-adj" pred="13"/>
-    <member stem="13ththirteen-adj" pred="thirteen"/>
-    <member stem="thirteenth13-adj" pred="13"/>
-    <member stem="fourteenthfourteen-adj" pred="fourteen"/>
-    <member stem="14th14-adj" pred="14"/>
-    <member stem="14thfourteen-adj" pred="fourteen"/>
-    <member stem="fourteenth14-adj" pred="14"/>
-    <member stem="fifteenthfifteen-adj" pred="fifteen"/>
-    <member stem="15th15-adj" pred="15"/>
-    <member stem="15thfifteen-adj" pred="fifteen"/>
-    <member stem="fifteenth15-adj" pred="15"/>
+    <member stem="firstfirst-adj" pred="first"/>
+    <member stem="1st1st-adj" pred="1st"/>
+    <member stem="secondsecond-adj" pred="second"/>
+    <member stem="2nd2nd-adj" pred="2nd"/>
+    <member stem="thirdthird-adj" pred="third"/>
+    <member stem="3rd3rd-adj" pred="3rd"/>
+    <member stem="fourthfourth-adj" pred="fourth"/>
+    <member stem="4th4th-adj" pred="4th"/>
+    <member stem="fifthfifth-adj" pred="fifth"/>
+    <member stem="5th5th-adj" pred="5th"/>
+    <member stem="sixthsixth-adj" pred="sixth"/>
+    <member stem="6th6th-adj" pred="6th"/>
+    <member stem="seventhseventh-adj" pred="seventh"/>
+    <member stem="7th7th-adj" pred="7th"/>
+    <member stem="eightheighth-adj" pred="eighth"/>
+    <member stem="8th8th-adj" pred="8th"/>
+    <member stem="ninethnineth-adj" pred="nineth"/>
+    <member stem="9th9th-adj" pred="9th"/>
+    <member stem="tenthtenth-adj" pred="tenth"/>
+    <member stem="10th10th-adj" pred="10th"/>
+    <member stem="eleventheleventh-adj" pred="eleventh"/>
+    <member stem="11th11th-adj" pred="11th"/>
+    <member stem="twelvethtwelveth-adj" pred="twelveth"/>
+    <member stem="12th12th-adj" pred="12th"/>
+    <member stem="thirteenththirteenth-adj" pred="thirteenth"/>
+    <member stem="13th13th-adj" pred="13th"/>
+    <member stem="fourteenthfourteenth-adj" pred="fourteenth"/>
+    <member stem="14th14th-adj" pred="14th"/>
+    <member stem="fifteenthfifteenth-adj" pred="fifteenth"/>
+    <member stem="15th15th-adj" pred="15th"/>
     <member stem="good-adj" pred="good"/>
     <member stem="bad-adj" pred="bad"/>
     <member stem="sorry-adj" pred="sorry"/>
@@ -1376,6 +1346,8 @@
     <member stem="thin-adj" pred="thin"/>
     <member stem="round-adj" pred="round"/>
     <member stem="ovaloval-adj" pred="oval"/>
+    <member stem="cubiccubic-adj" pred="cubic"/>
+    <member stem="sphericalspherical-adj" pred="spherical"/>
     <member stem="squaresquare-adj" pred="square"/>
     <member stem="triangulartriangular-adj" pred="triangular"/>
     <member stem="openopen-adj" pred="open"/>
@@ -1394,7 +1366,6 @@
     <member stem="middlemiddle-adj" pred="middle"/>
     <member stem="old-adj" pred="old"/>
     <member stem="young-adj" pred="young"/>
-    <member stem="firstfirst-adj" pred="first"/>
     <member stem="lastlast-adj" pred="last"/>
     <member stem="nextnext-adj" pred="next"/>
     <member stem="previousprevious-adj" pred="previous"/>
