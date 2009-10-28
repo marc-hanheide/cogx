@@ -262,7 +262,9 @@ public class ComaInputWindow extends ManagedComponent {
 				log("Executing SPARQL query: " + str);
 				String result = m_comareasoner.executeSPARQL(str);
 				lastInputFreeForm = str;
+				outputArea.append(str + newline);
 				outputArea.append(result + newline);
+				outputArea.append("-----" + newline);
 				outputArea.setCaretPosition(outputArea.getDocument().getLength());
 			}
 			else {
