@@ -14,6 +14,7 @@
 	;	clear_facts
 	;	clear_facts_by_modality(modality)
 	;	clear_assumables
+	;	clear_assumable_function(string)
 	;	add_fact(string)
 	;	add_assumable(string, string, float)
 	;	prove(list(string))

@@ -46,8 +46,8 @@ public class BeliefModelSynchronization {
 		log("clearing K facts in the abducer");
 		abducer.clearFactsByModality(Abducer.ModalityType.K);
 		
-		log("clearing assumables");
-		abducer.clearAssumables();
+		log("clearing belief model assumability function");
+		abducer.clearAssumableFunction(ASSUMABLE_FUNC);
 
 		log("adding assumables");
 		// for all beliefs

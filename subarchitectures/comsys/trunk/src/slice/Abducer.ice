@@ -182,6 +182,7 @@ module Abducer {
 		void clearFacts();
 		void clearFactsByModality(ModalityType type);
 		void clearAssumables();
+		void clearAssumableFunction(string function);
 
 		void addFact(ModalisedFormula f);
 		void addAssumable(string function, ModalisedFormula f, float cost);
