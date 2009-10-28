@@ -20,9 +20,7 @@
 #include <FrontierInterface.hpp>
 #include <NavX/XDisplayLocalGridMap.hh>
 
-class ObjectSearch : public cast::ManagedComponent,
-      public Scan2dReceiver,
-      public OdometryReceiver
+class ObjectSearch : public cast::ManagedComponent
   { 
   public:
     
@@ -66,9 +64,9 @@ class ObjectSearch : public cast::ManagedComponent,
     NavData::FNodeSequence fnodeseq;
     SpatialData::PlaceIDSeq placestosearch;
     std::string id;
-    Cure::LocalGridMap<unsigned int>* coveragemap;
+    Cure::LocalGridMap<unsigned char>* coveragemap;
 	Cure::LocalGridMap<float>* pdf;
-    Cure::X11DispLocalGridMap<unsigned int>* m_Displaycoverage;
+    Cure::X11DispLocalGridMap<unsigned char>* m_Displaycoverage;
     double CoveragePercentage;
     double m_covthresh;
     struct Object{
@@ -131,32 +129,26 @@ enum ObjSearchCommand {
 	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
     void GenViewPoints();
     void IcetoCureLGM(FrontierInterface::LocalGridMap icemap);
-    std::vector<double> ScorebyPDF();
     void UpdateDisplays();
     void CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c);
-	std::vector<double> ScorebyCoverage(Cure::LocalGridMap<unsigned int> fcm );
+	std::vector<double> ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm );
     bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
     bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
     void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
-    double GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned int> &fcm, bool changefcm, std::vector<int> &rollback);
-	double GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned int> &fcm);
+    double GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned char> &fcm, bool changefcm, std::vector<int> &rollback);
+    double GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned char> &fcm);
     void Update_CoverageMap_with_GridMap();
-    double ModifyCoverageMap(std::vector<int> tpoints);
     std::vector<int> GetInsideViewCone(XVector3D &a, bool addall);
     void Update_PDF_with_GridMap();
     void UpdateGlobalPDF(int index = -1);
     void ModifyGlobalPDF();
 	NavData::ObjectSearchPlanPtr ConvertPlantoIce();
     IceUtil::Mutex m_Mutex;
-    Cure::LocalGridMap<double>* m_lgm;
     Cure::LocalGridMap< unsigned char>* m_krsjlgm;
-    Cure::LocalMap m_LMap;
   	Cure::ObjGridLineRayTracer<double>* m_Glrt;
-    Cure::X11DispLocalGridMap<double>* m_Displaylgm;
 
-    Cure::XDisplayLocalGridMap< unsigned char>* m_Displaykrsjlgm;
-
-    Cure::X11DispLocalGridMap<double>* m_Displaypdf;
+    Cure::X11DispLocalGridMap< unsigned char>* m_Displaykrsjlgm;
+    Cure::LocalGridMap<unsigned char>* fcm;
 
     bool m_CtrlPTU;
     ptz::PTZInterfacePrx m_PTUServer;
