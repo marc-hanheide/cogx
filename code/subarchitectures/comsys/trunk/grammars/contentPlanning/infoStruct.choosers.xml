@@ -7,6 +7,125 @@
 
 <choosers>
 
+
+<chooser id="c-rhemeAssign.answer" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-sort" type="string" answerset="@true @false"> 
+		    <q-ex-sort val="marker" nomvar="CONTENT" />  <!-- check whether real content is present under CONTENT -->
+		 </inquiry>			
+		 <choicenode answer = "true">  <!-- content is just a marker-->
+            <result val="doNothing"/>
+         </choicenode>
+       
+		 <choicenode answer = "false">  <!-- there is some content-->
+         <!-- check whether content is ascription -->
+         <inquiry id="q-ex-sort" type="string" answerset="@true @false"> 
+		    <q-ex-sort val="ascription" nomvar="CONTENT" />
+		 </inquiry>			
+            <choicenode answer = "false">  <!-- content is not ascription -->
+                                           <!-- check if entity answers type or quality answers shape/color -->
+           <inquiry id="f-featval" type="string" answerset="@type @color @shape @unknown"> <!-- check question type -->
+		      <f-featval feat="QuestionType"  />
+		   </inquiry>			
+		   <choicenode answer = "type">     <!-- answering TYPE question -->
+             <inquiry id="q-ex-sort" val="string" answerset="@true @false"> 
+	   	       <q-ex-sort val="entity" nomvar="CONTENT"  />  <!-- check whether sort of content is entity; strict type checking -->
+             </inquiry>			
+              <choicenode answer = "false">  <!-- something else; 
+                                                  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                <result val="nonmatchAnswer"/>  
+              </choicenode>
+              <choicenode answer = "true">  <!-- entity -->
+			    <result val="matchAnswer"/>			
+		      </choicenode>
+	      </choicenode>  <!-- end type question answer -->
+
+		   <choicenode answer = "color">    <!-- answering COLOR question -->
+             <inquiry id="q-ex-sort" val="string" answerset="@true @false"> 
+	   	       <q-ex-sort val="q-color" nomvar="CONTENT"  />  <!-- check whether sort of content is color -->
+             </inquiry>			
+              <choicenode answer = "false">  <!-- ascription of something else; 
+                                                  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                <result val="nonmatchAnswer"/>  
+              </choicenode>
+              <choicenode answer = "true">  <!-- color -->
+			    <result val="matchAnswer"/>			
+		      </choicenode>
+		   </choicenode> <!-- end color question answer -->
+
+		   <choicenode answer = "shape">    <!-- answering SHAPE question -->
+             <inquiry id="q-ex-sort" val="string" answerset="@true @false"> 
+	   	       <q-ex-sort val="q-shape" nomvar="CONTENT"  />  <!-- check whether sort of content is shape -->
+             </inquiry>			
+              <choicenode answer = "false">  <!-- ascription of something else; 
+                                                  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                <result val="nonmatchAnswer"/>  
+              </choicenode>
+              <choicenode answer = "true">  <!--  shape -->
+			    <result val="matchAnswer"/>			
+		      </choicenode>
+           </choicenode>  <!-- end shape question answer -->    
+          </choicenode>  <!-- end content is not ascription -->
+          
+		 <choicenode answer = "true">       <!-- content is ascription -->  
+           <inquiry id="f-featval" type="string" answerset="@type @color @shape @unknown"> <!-- check question type -->
+		      <f-featval feat="QuestionType"  />
+		   </inquiry>			
+		   <choicenode answer = "type">     <!-- answering TYPE question -->
+             <inquiry id="q-ex-rel" val="string" answerset="@true @false"> 
+	   	       <q-ex-rel val="Type" nomvar="CONTENT"  />  <!-- check whether ascription of type -->
+             </inquiry>			
+              <choicenode answer = "false">  <!-- ascription of something else; 
+                                                  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                <result val="nonmatchAnswer"/>  
+              </choicenode>
+              <choicenode answer = "true">  <!-- ascription of type -->
+			    <result val="matchAnswer"/>			
+		      </choicenode>
+	      </choicenode>  <!-- end type question answer -->
+
+		   <choicenode answer = "color">    <!-- answering COLOR question -->
+             <inquiry id="q-ex-rel" val="string" answerset="@true @false"> 
+	   	       <q-ex-rel val="Color" nomvar="CONTENT"  />  <!-- check whether ascription of color -->
+             </inquiry>			
+              <choicenode answer = "false">  <!-- ascription of something else; 
+                                                  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                                              <!-- doesn't take overanswering into account, e.g. answer it's a green box -->
+                <result val="nonmatchAnswer"/>  
+              </choicenode>
+              <choicenode answer = "true">  <!-- ascription of color -->
+			    <result val="matchAnswer"/>			
+		      </choicenode>
+		   </choicenode> <!-- end color question answer -->
+
+		   <choicenode answer = "shape">    <!-- answering SHAPE question -->
+             <inquiry id="q-ex-rel" val="string" answerset="@true @false"> 
+	   	       <q-ex-rel val="Shape" nomvar="CONTENT"  />  <!-- check whether ascription of shape -->
+             </inquiry>			
+              <choicenode answer = "false">  <!-- ascription of something else; 
+                                                  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                                              <!-- doesn't take overanswering into account, e.g. answer it's a square box -->
+                <result val="nonmatchAnswer"/>  
+              </choicenode>
+              <choicenode answer = "true">  <!-- ascription of shape -->
+			    <result val="matchAnswer"/>			
+		      </choicenode>
+           </choicenode>  <!-- end shape question answer -->    
+                   
+		   <choicenode answer = "unknown"> <!-- unknown or absent question type -->  
+                <result val="doNothing"/>
+            </choicenode>
+           
+           </choicenode>  <!-- end ascription check -->            
+         </choicenode>  <!-- end content check -->
+	   </choicenode>  <!-- end TOP -->
+   </dectree>
+</chooser>
+
+
+
+
 <chooser id="c-proofStatus" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
@@ -26,7 +145,7 @@
                 <result val="doneRheme"/>
             </choicenode>
 		 <choicenode answer = "false">         
-           <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
+           <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
 		      <f-featval feat="ProofStatus"  />
 		   </inquiry>			
 		   <choicenode answer = "assumed">  
@@ -44,6 +163,59 @@
 	   </choicenode>  <!-- end TOP -->
    </dectree>
 </chooser>
+
+
+<chooser id="c-rhemeAssign.quality" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-deprel-type" type="string" answerset="@true @false"> 
+		    <q-deprel-type mode="Compound" />  <!-- check whether this entity is a compound-modifier; should never be -->
+		 </inquiry>			
+		 <choicenode answer = "true">  <!-- this entity is a compound-modifier-->
+            <result val="doNothing"/>
+         </choicenode>
+       
+		 <choicenode answer = "false">  <!-- this entity is not a compound-modifier-->
+         <!-- check whether Rheme has already been set to avoid duplication -->
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+		    <q-ex-feat feat="Rheme"/>
+		 </inquiry>			
+            <choicenode answer = "true">
+                <result val="doneRheme"/>
+            </choicenode>
+		 <choicenode answer = "false">         
+           <inquiry id="f-featval" type="string" answerset="@standardRheme @denialTheme @unknown"> <!-- check AscriptionIS -->
+		     <f-featval feat="AscriptionPropertyIS" nomvar="CONTENT" />
+		   </inquiry>			
+  		     <choicenode answer = "standardRheme">  
+			    <result val="standardRheme"/>			
+		     </choicenode>
+		     <choicenode answer = "denialTheme">
+			    <result val="denialTheme"/>
+		     </choicenode>
+		     <choicenode answer = "unknown">  <!-- AscriptionIS not assigned -->           
+               <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
+		         <f-featval feat="ProofStatus"  />
+		       </inquiry>			
+		       <choicenode answer = "assumed">  
+			      <result val="assumed"/>			
+		       </choicenode>
+		       <choicenode answer = "asserted">
+			      <result val="asserted"/>
+		       </choicenode>
+		       <choicenode answer = "unknown">
+			      <result val="theme"/>  <!-- Theme is the default --> 
+                  <!-- check if in ascr -->
+               </choicenode>            
+               </choicenode>  <!-- end AscriptionIS check -->            
+               </choicenode>  <!-- end Rheme check -->            
+          </choicenode>  <!-- end compound check -->
+	   </choicenode>  <!-- end TOP -->
+   </dectree>
+</chooser>
+
+
+
 
 <chooser id="c-rhemeAssign.color" region="infoStruct" metafunction="textual">
    <dectree>
@@ -478,7 +650,16 @@
 <chooser id="c-themerheme.type" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> <!-- only the "theme" values -->
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+		    <q-ex-feat feat="Commitment" />  <!-- check if agreement already assigned -->
+ 		 </inquiry>	
+        <choicenode answer = "true">           <!-- is assigned -->       
+            <result val="doneCommitment"/>
+        </choicenode>
+
+        <choicenode answer = "false">           <!-- is not assigned -->      
+
+         <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
 		    <f-featval feat="Rheme"/>
 		 </inquiry>			
             <choicenode answer = "t-rheme-false">
@@ -508,7 +689,8 @@
 		 <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
                 <result val="noRhemeFeature"/>
           </choicenode>
-       </choicenode>
+       </choicenode>  <!-- end check if agreement assigned -->
+       </choicenode>  <!-- end TOP -->
    </dectree>
 </chooser>
 

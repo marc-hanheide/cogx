@@ -7,8 +7,33 @@
 
 <systems> 
 
+<!-- /** @system rhemeAssign.answer
 
-<!-- /** @system proofStatus.entity
+Assign Rheme acording to the type of question which the utterance is answering
+*/ -->
+
+<system id="rhemeAssign.answer" region="infoStruct" metafunction="textual">
+   <chooser id="c-rhemeAssign.answer"/> 
+   <conditions>
+      <!-- try to pick out answers to questions, not just any response -->
+      <condition features="@type:dvp @feat:QuestionType @rel:Content @feat:Relation:answer @feat:SpeechAct:assertion"/> 
+    </conditions>
+   <actions>
+      <action choice="matchAnswer">  <!-- ordinary answer Rheme in ascription -->
+        	<add-feature feature="AscriptionPropertyIS" value="standardRheme" dest="CONTENT" />
+      </action>     
+      <action choice="nonmatchAnswer">  <!--  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                                        <!-- but overanswering is not taken into account -->
+        	<add-feature feature="AscriptionPropertyIS" value="denialTheme" dest="CONTENT" />
+      </action>             
+      <action choice="doNothing">
+      </action>          
+    </actions>
+</system>
+
+
+
+<!-- /** @system rhemeAssign.entity
 
 Simple first-shot version: 
   if assumed then Theme
@@ -43,33 +68,41 @@ Simple first-shot version:
 </system>
 
 
-<!-- /** @system proofStatus.quality
+<!-- /** @system rhemeAssign.quality
 
 Simple first-shot version: 
   if assumed then Theme
   if asserted then Rheme
   
-This should only apply to quality in ascription-property; quality to realize as a modifier is curretly modeled as a feature in the input, ad thus should not trigger this system.
+This should only apply to quality in ascription-property; 
+quality to realize as a modifier is curretly modeled as a feature in the input, 
+and thus should (correctly) not trigger this system.
 
 BUT: if quality-standalone were to be generated, this system should apply.
 
 */ -->
 <system id="rhemeAssign.quality" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus"/> 
+   <chooser id="c-rhemeAssign.quality"/> 
    <conditions>
-      <condition features="@type:quality"/> 
+      <condition features="@type:quality"/> <!-- this means we're dealing with ascription property -->
     </conditions>
    <actions>
-      <action choice="proof-status-assumed">
+      <action choice="denialTheme">
         	<add-feature feature="Rheme" value="m-rheme-false" />
-      </action>     
-      <action choice="proof-status-asserted">
+        	<add-feature feature="Commitment" value="m-contentious"  /> <!-- must go locally -->
+       </action>     
+      <action choice="standardRheme">
         	<add-feature feature="Rheme" value="m-rheme-true" />
       </action>     
-      <action choice="proof-status-unknown">
-        	<add-feature feature="ProofStatus" value="unknown" />
-      </action>   
+      <action choice="assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
       <action choice="doNothing">
+      </action>   
+      <action choice="doneRheme">
       </action>   
     </actions>
 </system>
@@ -185,7 +218,7 @@ BUT: if quality-standalone were to be generated, this system should apply.
 <system id="rhemeAssign.name" region="infoStruct" metafunction="textual">
    <chooser id="c-rhemeAssign.name"/> 
    <conditions>
-      <condition features="@type:entity"/> <!-- really, this should be contrained to only apply to entity under compoun relation -->
+      <condition features="@type:entity"/> <!-- really, this should be constrained to only apply to entity under compound relation -->
     </conditions>
    <actions>
       <action choice="t-focus-true-assumed">
