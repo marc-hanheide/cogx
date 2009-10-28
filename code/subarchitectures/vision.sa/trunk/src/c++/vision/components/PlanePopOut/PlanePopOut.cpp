@@ -793,7 +793,10 @@ void PlanePopOut::runComponent()
 	points.resize(0);
 	getPoints(useGlobalPoints, points);
 	if (points.size() == 0)
+	{
 		points = tempPoints;
+		log("Attention: getpoints() gets ZERO point!!");
+	}
 	else
 	{	//cout<<"we get "<<points.size()<<" points"<<endl;
 		tempPoints.clear();
