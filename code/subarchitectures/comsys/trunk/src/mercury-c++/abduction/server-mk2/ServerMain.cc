@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 #include <Ice/Ice.h>
 #include <IceUtil/CtrlCHandler.h>
