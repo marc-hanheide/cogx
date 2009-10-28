@@ -67,7 +67,7 @@ namespace smlearning {
 ///This class encapsulates objects, agents and general configuration
 ///of the learning scenario for the robot
 ///
-class Scenario : protected Runnable
+class Scenario
 {
 	Thread thread;
 	int numSequences;
@@ -88,7 +88,7 @@ public:
 	///
 	bool runSimulatedOfflineExperiment (int argc, char *argv[], int numSequences = 100, int startingPosition = 0);
 
-	virtual void run ();
+// 	virtual void run ();
 
 	///
 	///creates objects (groundplane, polyflap)

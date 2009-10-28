@@ -161,9 +161,9 @@ void Scenario::addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, c
 ///Data are gathered and stored in a binary file for future use
 ///with learning machines running offline learning experiments.
 ///
-bool Scenario::runSimulatedOfflineExperiment (int argnr, char *arguments[], int nSeq, int startPos) {
-	argc = argnr;
-	argv = arguments;
+bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int nSeq, int startPos) {
+// 	argc = argnr;
+// 	argv = arguments;
 	numSequences = nSeq;
 	startingPosition = startPos;
 
@@ -171,11 +171,11 @@ bool Scenario::runSimulatedOfflineExperiment (int argnr, char *arguments[], int 
 // 		cout << "Unable to launch thread!" << endl;
 // 		return 0;
 // 	}
-	run();
-}
+// 	run();
+// }
 
 
-void Scenario::run () {
+// void Scenario::run () {
 	// Determine configuration file name
 	std::string cfg;
 	//if (argc == 1) {
@@ -194,14 +194,14 @@ void Scenario::run () {
 	if (!parser->load(FileReadStream(cfg.c_str()))) {
 		printf("unable to load configuration file: %s\n", cfg.c_str());
 		printf("%s <configuration_file>\n", argv[0]);
-		return /*false*/;
+		return false;
 	}
 
 	// Find program XML root context
 	XMLContext* xmlContext = parser->getContextRoot()->getContextFirst("golem");
 	if (xmlContext == NULL) {
 		printf("unknown configuration file: %s\n", cfg.c_str());
-		return /*false*/;
+		return false;
 	}
 
 	// Create program context
@@ -210,7 +210,7 @@ void Scenario::run () {
 	golem::Context::Ptr context = contextDesc.create();
 	if (context == NULL) {
 		printf("unable to create program context");
-		return /*false*/;
+		return false;
 	}
 
 	printf("Use the arrow keys to move the camera.\n");
@@ -262,7 +262,7 @@ void Scenario::run () {
 	std::string armType;
 	if (!XMLData(armType, xmlContext->getContextFirst("arm type"))) {
 		context->getLogger()->post(Message::LEVEL_CRIT, "Unspecified arm type");
-		return /*false*/;
+		return false;
 	}
 	
 	// Setup PhysReacPlanner controller description
@@ -286,7 +286,7 @@ void Scenario::run () {
 	
 	else {
 		context->getLogger()->post(Message::LEVEL_CRIT, "Unknown arm type");
-		return/* false*/;
+		return false;
 	}
 
 	// Create PhysReacPlanner
@@ -294,7 +294,7 @@ void Scenario::run () {
 	PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(physReacPlannerDesc));
 	if (pPhysReacPlanner == NULL) {
 		context->getLogger()->post(Message::LEVEL_CRIT, "Unable to create ReacPlanner");
-		return/* false*/;
+		return false;
 	}
 
 	// some useful pointers
