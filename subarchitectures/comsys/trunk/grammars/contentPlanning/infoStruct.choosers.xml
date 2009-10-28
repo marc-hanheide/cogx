@@ -185,13 +185,13 @@
             </choicenode>
 		 <choicenode answer = "false">         
            <inquiry id="f-featval" type="string" answerset="@standardRheme @denialTheme @unknown"> <!-- check AscriptionIS -->
-		     <f-featval feat="AscriptionPropertyIS" nomvar="CONTENT" />
+		     <f-featval feat="AscriptionPropertyIS-dontmatch" nomvar="CONTENT" />
 		   </inquiry>			
   		     <choicenode answer = "standardRheme">  
-			    <result val="standardRheme"/>			
+			    <result val="assignStandardRheme"/>			
 		     </choicenode>
 		     <choicenode answer = "denialTheme">
-			    <result val="denialTheme"/>
+			    <result val="assignDenialTheme"/>
 		     </choicenode>
 		     <choicenode answer = "unknown">  <!-- AscriptionIS not assigned -->           
                <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
@@ -204,8 +204,8 @@
 			      <result val="asserted"/>
 		       </choicenode>
 		       <choicenode answer = "unknown">
-			      <result val="theme"/>  <!-- Theme is the default --> 
-                  <!-- check if in ascr -->
+			      <result val="assumed"/>  <!-- Theme is the default --> 
+                  <!-- check if in ascr -->          
                </choicenode>            
                </choicenode>  <!-- end AscriptionIS check -->            
                </choicenode>  <!-- end Rheme check -->            

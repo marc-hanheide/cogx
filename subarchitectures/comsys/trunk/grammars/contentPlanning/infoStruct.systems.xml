@@ -87,11 +87,11 @@ BUT: if quality-standalone were to be generated, this system should apply.
       <condition features="@type:quality"/> <!-- this means we're dealing with ascription property -->
     </conditions>
    <actions>
-      <action choice="denialTheme">
+      <action choice="assignDenialTheme">
         	<add-feature feature="Rheme" value="m-rheme-false" />
         	<add-feature feature="Commitment" value="m-contentious"  /> <!-- must go locally -->
        </action>     
-      <action choice="standardRheme">
+      <action choice="assignStandardRheme">
         	<add-feature feature="Rheme" value="m-rheme-true" />
       </action>     
       <action choice="assumed">
