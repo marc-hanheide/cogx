@@ -37,7 +37,7 @@ void
 preparePlumbing(bool child);
 
 int
-main(int argc, void ** argv)
+main(int argc, char ** argv)
 {
 	if (argc != 2) {
 		cerr << "Usage error" << endl;
