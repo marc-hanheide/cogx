@@ -281,7 +281,7 @@ void ObjectSearch::runComponent() {
   
   
   lockComponent();
-  MovePanTilt(m_ptustep, m_tiltRads);
+  MovePanTilt(0, 0);
   unlockComponent();
   
   //clock_t start_time,elapsed;
@@ -1030,8 +1030,12 @@ void ObjectSearch::Recognize(){
 	      n++;
 	    }
 	  }
+
+	  MovePanTilt(anglediff,m_tiltRads);
+
 	  
 	  //postive with tilt
+	  n = 1;
 	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
 	    m_status = 	RECOGNITIONINPROGRESS;
 	    MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
