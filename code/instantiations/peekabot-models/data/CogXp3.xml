@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<!-- Copyright 2009 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+
+  <include file="p3dx-no-rear-sonar.xml">
+
+    <inject at="chassis">
+
+    <!-- ********************************************
+         ********** Hokuyo Urg rangefinder  *********
+	 ******************************************** -->
+      
+    <group>
+      <name>rangefinder</name>
+	
+      <transform>
+        <translate>0.14 0 0.24</translate>
+      </transform>
+      
+      <children>
+	<model><file>hokuyo_urg/hokuyo_urg.pbmf</file></model>
+      </children>
+    </group>
+    
+    <!-- ********************************************
+	 ********** PTU + Stereo camera  ************
+	 ******************************************** -->
+    
+    <group>
+      <name>camera</name>
+      
+      <transform>
+	<translate>0.14 0 0.31</translate>
+      </transform>
+      
+      <children>
+        <model>
+          <file>flea2.pbmf</file>
+          <name>cam_right</name>
+          <transform>
+            <translate>0 0 0</translate>
+          </transform>
+        </model>          
+      </children>
+    </group>
+
+    </inject>
+    
+  </include>
+
+</scene>
