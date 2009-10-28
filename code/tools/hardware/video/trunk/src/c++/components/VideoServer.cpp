@@ -279,7 +279,7 @@ void VideoServer::runComponent()
     // HACK: to let getImages() have chance to lockComponent()
     sleepComponent(20);
     int fr = getFramerateMilliSeconds();
-    log("grabbing with %d ms per frame (%.2f frames per second)",
+    debug("grabbing with %d ms per frame (%.2f frames per second)",
         fr, (fr > 0. ? 1000./fr : 0.));
   }
 }
