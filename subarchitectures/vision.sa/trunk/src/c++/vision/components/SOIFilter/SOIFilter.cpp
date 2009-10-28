@@ -1076,14 +1076,15 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	cvShowImage("Last object cost image", costPatch);
 	cvShowImage("Last surface cost image", bgCostPatch);
 
+
+#if 0 // Barry Code
 	// temp HACK OUTPUT
-
 	string id =  newDataID();
-	string patchName = string("patch") + id + string(".bmp");
-	string segName = string("segmentation") + id + string(".bmp");
-	string listName = string("points") + id + string(".txt");
+	string patchName = string("xdata/patch") + id + string(".bmp");
+	string segName = string("xdata/segmentation") + id + string(".bmp");
+	string listName = string("xdata/points") + id + string(".txt");
 
-	cvSaveImage(patchName.c_str(), iplPatch);
+	cvSaveImage(patchName.c_str(), iplPatch)
 	cvSaveImage(segName.c_str(), segPatch);
 
 	filebuf points;
@@ -1094,6 +1095,7 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	  os << soiPtr->points[i].p.x << " " << soiPtr->points[i].p.y << " " << soiPtr->points[i].p.z << "\n";
 
 	points.close();
+#endif
 
   }
 
