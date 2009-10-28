@@ -40,6 +40,12 @@ namespace spatial {
  * node is visited.
  * @param -c cure config file to define the robot shape, sensor pose, etc
  * @param --laser-range the range at which the laser is capped when sweeping out
+ * free space. NOTE: Takes precedence over the next two options
+ * @param --laser-range-for-placeholders Specific range for local maps used
+ * with placeholder evaluation
+ * @param --laser-range-for-combined-maps Specific range for local maps used
+ * with the getCombinedLocalMaps interface
+ * @param --laser-range the range at which the laser is capped when sweeping out
  * free space
  * @param --robot-server-host the ice server name for the robot server (default RobotbaseServer)
  * @param --no-tentative-window Do not show the window displaying the tentative map
@@ -83,7 +89,8 @@ protected:
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
 
-  double m_MaxLaserRange; 
+  double m_MaxLaserRangeForPlaceholders; 
+  double m_MaxLaserRangeForCombinedMaps;
 
   IceUtil::Mutex m_Mutex;
   // This grid map represents the current Place
@@ -97,7 +104,17 @@ protected:
   Cure::GridLineRayTracer<unsigned char>* m_Glrt2;
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm2;
 
+
+  //Same as above, for use if we're using different horizons for
+  //placeholder property evaluation and combined local map retrieval
+  Cure::LocalGridMap<unsigned char>* m_lgm1_alt;
+  Cure::GridLineRayTracer<unsigned char>* m_Glrt1_alt;
+  Cure::LocalGridMap<unsigned char>* m_lgm2_alt;
+  Cure::GridLineRayTracer<unsigned char>* m_Glrt2_alt;
+
   std::map<int, Cure::LocalGridMap<unsigned char> *> m_nodeGridMaps;
+  bool m_isUsingSeparateGridMaps;
+  std::map<int, Cure::LocalGridMap<unsigned char> *> m_nodeGridMapsAlt;
 
   Cure::TransformedOdomPoseProvider m_TOPP;
 
