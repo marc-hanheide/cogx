@@ -111,6 +111,7 @@ SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
+	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenario.cpp
 )
 
 SET(OFFLINE_EXPERIMENT_SOURCE
@@ -129,12 +130,18 @@ SET(ACTIVELEARN_EXPERIMENT_ICE_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
 )
 
+SET(ACTIVELEARN_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment.cpp
+)
+
+
 SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
 	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
 	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
+	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenario.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
 
@@ -183,6 +190,7 @@ QT4_WRAP_CPP( DATA_PLOT_TEST_GEN_MOC ${DATA_PLOT_TEST_MOC_HEADERS} )
 SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/defaultnet.config
 	${SMLEARNING_ROOT}/config/offline_experiment.xml
+	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
 )
@@ -239,6 +247,7 @@ INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
+ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
@@ -253,6 +262,7 @@ INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLear
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
