@@ -156,7 +156,7 @@ public class cc_FakeVerificationGenerator
 		for (int i = 0; i < model.k.length; i++) {
 			Belief b = null;
 			try {
-				if (existsOnWorkingMemory(model.k[i], Binder.BINDER_SA) {
+				if (existsOnWorkingMemory(model.k[i], Binder.BINDER_SA)) {
 					b = getBelief(model.k[i]);
 				}
 				else {
