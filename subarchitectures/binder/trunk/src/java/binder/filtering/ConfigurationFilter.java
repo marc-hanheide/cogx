@@ -60,6 +60,7 @@ public class ConfigurationFilter {
 	
 	private static Logger logger = ComponentLogger.getLogger(ConfigurationFilter.class);
 
+	public static float ORPHAN_PROXY_PRIOR_PROB = 0.6f;
 	
 	// ===================================================================
 	// METHODS FOR COMPUTATION & NORMALISATION OF CONFIG PROBABILITIES   
@@ -97,7 +98,7 @@ public class ConfigurationFilter {
 			if (config.orphanProxies != null) {
 				for (int i = 0 ; i < config.orphanProxies.length ; i++) {
 					Proxy orphan = config.orphanProxies[i];
-					float probNoUnionExists = (1.0f - orphan.probExists) ;
+					float probNoUnionExists = (1.0f - orphan.probExists) * ORPHAN_PROXY_PRIOR_PROB ;
 					score = score * probNoUnionExists;
 				}
 			}
