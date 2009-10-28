@@ -99,9 +99,11 @@ public class FeatureInfoGUI extends JDialog {
 	
 	private void button1ActionPerformed(ActionEvent e) {
 		if (!panel5.isVisible()) {
-			setSize(new Dimension(450, 400  + (25 * curFeature.alternativeValues.length)));
-			setPreferredSize(new Dimension(450, 400  + (25 * curFeature.alternativeValues.length)));
+			setSize(new Dimension(520, 430  + (25 * curFeature.alternativeValues.length)));
+			setPreferredSize(new Dimension(520, 430  + (25 * curFeature.alternativeValues.length)));
 			panel5.setVisible(true);
+			okButton.setEnabled(false);
+			cancelButton.setEnabled(false);
 		}
 		else {
 			button1.setEnabled(false);
@@ -115,20 +117,22 @@ public class FeatureInfoGUI extends JDialog {
 
 	private void button4ActionPerformed(ActionEvent e) {
 		panel5.setVisible(false);
-		setSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
+		okButton.setEnabled(true);
+		cancelButton.setEnabled(true);
 	}
 
 	private void button2ActionPerformed(ActionEvent e) {
 		
 		FeatureValue featval = constructFeatureValue();
 		
-		if (button2.getText().equals("Add")) {
+		if (button2.getText().equals("Add") && featval != null) {
 			addFeatureValue(featval);
 		}
 		else if (button2.getText().equals("Modify") && table1.getSelectedRow() >= 0 && 
-				table1.getSelectedRow() < curFeature.alternativeValues.length ) {
+				table1.getSelectedRow() < curFeature.alternativeValues.length && featval != null) {
 			updateFeatureValue(featval, table1.getSelectedRow());
 		}
 	}
@@ -203,12 +207,15 @@ public class FeatureInfoGUI extends JDialog {
 	
 	public void addFeatureValue(FeatureValue featval) {
 		ProxyConstructor.addFeatureValueToFeature(curFeature, featval);
+
 		updateFeatureValuesFrame();
 		
 		panel5.setVisible(false);
-		setSize(new Dimension(450, 250 + (30 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(520, 250 + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
+		okButton.setEnabled(true);
+		cancelButton.setEnabled(true);
 	}
 
 	
@@ -220,9 +227,11 @@ public class FeatureInfoGUI extends JDialog {
 		updateFeatureValuesFrame();
 		
 		panel5.setVisible(false);
-		setSize(new Dimension(450, 250 + (30 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(450, 250  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(520, 250 + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
+		okButton.setEnabled(true);
+		cancelButton.setEnabled(true);
 	}
 	
 	
@@ -249,6 +258,7 @@ public class FeatureInfoGUI extends JDialog {
 
 			curFeature.alternativeValues = new FeatureValue[featvals.size()];
 			curFeature.alternativeValues = featvals.toArray(curFeature.alternativeValues);
+			
 			updateFeatureValuesFrame();
 		}
 	}
@@ -284,9 +294,11 @@ public class FeatureInfoGUI extends JDialog {
 	private void table1MouseClicked(MouseEvent e) {
 		if (table1.isEnabled()) {
 		if (!panel5.isVisible()) {
-			setSize(new Dimension(450, 400  + (30 * curFeature.alternativeValues.length)));
-			setPreferredSize(new Dimension(450, 400  + (25 * curFeature.alternativeValues.length)));
+			setSize(new Dimension(520, 430  + (30 * curFeature.alternativeValues.length)));
+			setPreferredSize(new Dimension(520, 430  + (25 * curFeature.alternativeValues.length)));
 			panel5.setVisible(true);
+			okButton.setEnabled(false);
+			cancelButton.setEnabled(false);
 		}
 
 		int row = table1.rowAtPoint(e.getPoint());
@@ -310,10 +322,10 @@ public class FeatureInfoGUI extends JDialog {
 		label1 = new JLabel();
 		textField1 = new JTextField();
 		label2 = new JLabel();
-		button1 = new JButton();
 		panel2 = new JPanel();
 		scrollPane1 = new JScrollPane();
 		table1 = new JTable();
+		button1 = new JButton();
 		panel4 = new JPanel();
 		label4 = new JLabel();
 		label5 = new JLabel();
@@ -332,6 +344,7 @@ public class FeatureInfoGUI extends JDialog {
 		panel8 = new JPanel();
 		button2 = new JButton();
 		button3 = new JButton();
+		button4 = new JButton();
 		buttonBar = new JPanel();
 		okButton = new JButton();
 		cancelButton = new JButton();
@@ -357,9 +370,9 @@ public class FeatureInfoGUI extends JDialog {
 			//======== panel1 ========
 			{
 				panel1.setLayout(new GridBagLayout());
-				((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {131, 74, 88, 0};
+				((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {131, 0, 74, 88, 0};
 				((GridBagLayout)panel1.getLayout()).rowHeights = new int[] {0, 30, 0};
-				((GridBagLayout)panel1.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
+				((GridBagLayout)panel1.getLayout()).columnWeights = new double[] {0.0, 0.0, 1.0, 0.0, 1.0E-4};
 				((GridBagLayout)panel1.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
 
 				//---- label1 ----
@@ -369,27 +382,16 @@ public class FeatureInfoGUI extends JDialog {
 					new Insets(0, 0, 5, 5), 0, 0));
 
 				//---- textField1 ----
-				textField1.setColumns(10);
+				textField1.setColumns(12);
 				panel1.add(textField1, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-					GridBagConstraints.EAST, GridBagConstraints.VERTICAL,
-					new Insets(0, 0, 5, 0), 0, 0));
+					GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
+					new Insets(0, 0, 5, 5), 0, 0));
 
 				//---- label2 ----
 				label2.setText("Alternative feature values:");
 				panel1.add(label2, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(0, 0, 0, 5), 0, 0));
-
-				//---- button1 ----
-				button1.setText("Add new value");
-				button1.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						button1ActionPerformed(e);
-					}
-				});
-				panel1.add(button1, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
-					GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
-					new Insets(0, 0, 0, 0), 0, 0));
 			}
 			dialogPane.add(panel1, BorderLayout.NORTH);
 
@@ -397,13 +399,13 @@ public class FeatureInfoGUI extends JDialog {
 			{
 				panel2.setLayout(new GridBagLayout());
 				((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {155, 56, 208, 0};
-				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {38, 0, 0, 0, 0};
+				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {45, 0, 0, 0, 0};
 				((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
 				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
 				//======== scrollPane1 ========
 				{
-					scrollPane1.setMinimumSize(new Dimension(50, 45));
+					scrollPane1.setMinimumSize(new Dimension(50, 55));
 
 					//---- table1 ----
 					table1.setModel(new DefaultTableModel(
@@ -424,9 +426,12 @@ public class FeatureInfoGUI extends JDialog {
 					});
 					{
 						TableColumnModel cm = table1.getColumnModel();
-						cm.getColumn(1).setMinWidth(100);
-						cm.getColumn(1).setMaxWidth(200);
-						cm.getColumn(1).setPreferredWidth(150);
+						cm.getColumn(0).setMinWidth(160);
+						cm.getColumn(0).setMaxWidth(500);
+						cm.getColumn(0).setPreferredWidth(200);
+						cm.getColumn(1).setMinWidth(80);
+						cm.getColumn(1).setMaxWidth(160);
+						cm.getColumn(1).setPreferredWidth(120);
 						cm.getColumn(1).setCellEditor(new DefaultCellEditor(
 							new JComboBox(new DefaultComboBoxModel(new String[] {
 								" ",
@@ -437,8 +442,9 @@ public class FeatureInfoGUI extends JDialog {
 								"AddressValue",
 								"UnknownValue"
 							}))));
-						cm.getColumn(2).setMinWidth(60);
-						cm.getColumn(2).setMaxWidth(80);
+						cm.getColumn(2).setResizable(false);
+						cm.getColumn(2).setMinWidth(40);
+						cm.getColumn(2).setMaxWidth(70);
 						cm.getColumn(2).setPreferredWidth(80);
 					}
 					table1.setBorder(new CompoundBorder(
@@ -449,6 +455,8 @@ public class FeatureInfoGUI extends JDialog {
 					table1.setRowHeight(25);
 					table1.setRowSelectionAllowed(false);
 					table1.setEnabled(false);
+					table1.setMinimumSize(new Dimension(175, 25));
+					table1.setMaximumSize(new Dimension(2147483647, 25));
 					table1.addMouseListener(new MouseAdapter() {
 						@Override
 						public void mouseClicked(MouseEvent e) {
@@ -458,8 +466,19 @@ public class FeatureInfoGUI extends JDialog {
 					scrollPane1.setViewportView(table1);
 				}
 				panel2.add(scrollPane1, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0,
-					GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(5, 20, 10, 20), 0, 0));
+
+				//---- button1 ----
+				button1.setText("Add new value");
+				button1.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						button1ActionPerformed(e);
+					}
+				});
+				panel2.add(button1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+					new Insets(0, 0, 5, 5), 0, 0));
 
 				//======== panel4 ========
 				{
@@ -497,9 +516,9 @@ public class FeatureInfoGUI extends JDialog {
 							new EtchedBorder(EtchedBorder.RAISED),
 							new EmptyBorder(8, 8, 8, 8)));
 						panel5.setLayout(new GridBagLayout());
-						((GridBagLayout)panel5.getLayout()).columnWidths = new int[] {0, 25, 144, 25, 58, 188, 0, 20, 0};
+						((GridBagLayout)panel5.getLayout()).columnWidths = new int[] {0, 25, 144, 25, 58, 188, 0, 0, 20, 0};
 						((GridBagLayout)panel5.getLayout()).rowHeights = new int[] {0, 0, 0, 29, 0, 0};
-						((GridBagLayout)panel5.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0E-4};
+						((GridBagLayout)panel5.getLayout()).columnWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 						((GridBagLayout)panel5.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
 						//---- label6 ----
@@ -570,7 +589,7 @@ public class FeatureInfoGUI extends JDialog {
 									button2ActionPerformed(e);
 								}
 							});
-							panel8.add(button2, BorderLayout.CENTER);
+							panel8.add(button2, BorderLayout.WEST);
 
 							//---- button3 ----
 							button3.setText("Delete");
@@ -579,7 +598,16 @@ public class FeatureInfoGUI extends JDialog {
 									button3ActionPerformed(e);
 								}
 							});
-							panel8.add(button3, BorderLayout.EAST);
+							panel8.add(button3, BorderLayout.CENTER);
+
+							//---- button4 ----
+							button4.setText("Cancel");
+							button4.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									button4ActionPerformed(e);
+								}
+							});
+							panel8.add(button4, BorderLayout.EAST);
 						}
 						panel5.add(panel8, new GridBagConstraints(5, 3, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -629,8 +657,8 @@ public class FeatureInfoGUI extends JDialog {
 		setLocationRelativeTo(getOwner());
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
-		setSize(new Dimension(450, 250));
-		setPreferredSize(new Dimension(450, 250));
+		setSize(new Dimension(520, 250));
+		setPreferredSize(new Dimension(520, 250));
 		panel5.setVisible(false);
 	}
 
@@ -641,10 +669,10 @@ public class FeatureInfoGUI extends JDialog {
 	private JLabel label1;
 	private JTextField textField1;
 	private JLabel label2;
-	private JButton button1;
 	private JPanel panel2;
 	private JScrollPane scrollPane1;
 	private JTable table1;
+	private JButton button1;
 	private JPanel panel4;
 	private JLabel label4;
 	private JLabel label5;
@@ -663,6 +691,7 @@ public class FeatureInfoGUI extends JDialog {
 	private JPanel panel8;
 	private JButton button2;
 	private JButton button3;
+	private JButton button4;
 	private JPanel buttonBar;
 	private JButton okButton;
 	private JButton cancelButton;
