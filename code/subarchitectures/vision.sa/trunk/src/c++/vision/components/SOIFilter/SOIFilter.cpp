@@ -201,70 +201,72 @@ void SOIFilter::runComponent()
 	{
 	  log("Got something in my queues");
 
-	    if(!objToAdd.empty())
-	    { 
-	    
-	      log("An add proto-object instruction");
-	      SOIData &soi = SOIMap[objToAdd.front()];
-	      
-	      log("SOI retrieved");
-	      
-	      if(soi.status == STABLE)
-	      {
-		    try
-		    {
-		        SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
-		        
-		        ProtoObjectPtr pobj = new ProtoObject;
-		        pobj->time = getCASTTime();
-		        pobj->SOIList.push_back(soi.addr.id);
-		        segmentObject(soiPtr, pobj->image, pobj->mask);
-		        
-		
-		        string objId = newDataID();
-		        addToWorkingMemory(objId, pobj);
-		
-				soi.status = OBJECT;
-		        soi.objectTime = getCASTTime();
-		        soi.objId = objId;
-		
-		        log("A proto-object added ID %s count %u at %u ",
-	           			soi.addr.id.c_str(), soi.updCount,
-	           			soi.stableTime.s, soi.stableTime.us);
-		    }
-		    catch (DoesNotExistOnWMException e)
-		    {
-	            log("SOI ID: %s was removed before it could be processed", soi.addr.id);
-		    }
-	      }	   	   
-	      objToAdd.pop();
-	   }
-	   else if(!objToDelete.empty())
-	   {
-	      log("A delete proto-object instruction");
-	      SOIData &soi = SOIMap[objToDelete.front()];
-	       
-	      if(soi.status == DELETED)
-	      {
-		    try
-		    {
-		       	deleteFromWorkingMemory(soi.objId);
-		       	log("A proto-object deleted ID: %s", soi.objId);
-		        
-		        SOIMap.erase(objToDelete.front());
+	  if(!objToAdd.empty())
+	  { 
 
-		    }
-		    catch (DoesNotExistOnWMException e)
-		    {
-	            log("WARNING: Proto-object ID %s already removed", soi.objId);
-		    }
-  	     }	   
-	     objToDelete.pop();
+		log("An add proto-object instruction");
+		SOIData &soi = SOIMap[objToAdd.front()];
+
+		log("SOI retrieved");
+
+		if(soi.status == STABLE)
+		{
+		  try
+		  {
+			SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
+
+			ProtoObjectPtr pobj = new ProtoObject;
+			pobj->time = getCASTTime();
+			pobj->SOIList.push_back(soi.addr.id);
+			segmentObject(soiPtr, pobj->image, pobj->mask);
+			pobj->points = soiPtr->points;
+
+			string objId = newDataID();
+			addToWorkingMemory(objId, pobj);
+
+			soi.objectTime = getCASTTime();
+			soi.status = OBJECT;
+			soi.objId = objId;
+
+			log("A proto-object added ID %s count %u at %u ",
+				soi.addr.id.c_str(), soi.updCount,
+				soi.stableTime.s, soi.stableTime.us);
+		  }
+		  catch (DoesNotExistOnWMException e)
+		  {
+			log("SOI ID: %s was removed before it could be processed", soi.addr.id);
+		  }
+		}
+
+		objToAdd.pop();
 	  }
-    }
-//    else
-//		log("Timeout");   
+	  else if(!objToDelete.empty())
+	  {
+		log("A delete proto-object instruction");
+		/*	      SOIData &soi = SOIMap[objToDelete.front()];
 
+				  if(soi.status == DELETED)
+				  {
+				  try
+				  {
+				  deleteFromWorkingMemory(soi.objId);
+
+				  SOIMap.erase(objToDelete.front());
+
+				  log("A proto-object deleted ID: %s TIME: %u",
+				  soi.objId, soi.stableTime.s, soi.stableTime.us);
+				  }
+				  catch (DoesNotExistOnWMException e)
+				  {
+				  log("WARNING: Proto-object ID %s already removed", soi.objId);
+				  }
+				  }
+
+				  objToDelete.pop(); */
+	  }
+	}
+	//    else
+	//		log("Timeout");   
   }
 
   log("Removing semaphore ...");
@@ -349,8 +351,6 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
   debug("Detected SOI deletion ID %s count %u at %u:%u",
   	soi.addr.id.c_str(), soi.updCount, time.s, time.us);		 
 }
-
-
 
 void SOIFilter::project3DPoints(const vector<SurfacePoint> surfPoints, const ROI &roi, const float ratio,
 	const Video::CameraParameters &cam, vector<CvPoint> &projPoints, vector<int> &hull)
