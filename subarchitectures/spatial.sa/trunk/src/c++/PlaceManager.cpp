@@ -614,7 +614,6 @@ PlaceManager::evaluateUnexploredPaths()
 
 		string newID = newDataID();
 		m_HypIDToWMIDMap[newHyp->hypID]=newID;
-		addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
 		hypotheses.push_back(newHyp);
 		relevantHyps.push_back(newHyp);
 
@@ -635,6 +634,7 @@ PlaceManager::evaluateUnexploredPaths()
 		p.m_WMid = newDataID();
 		log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
 		addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+		addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
 
 		m_Places[newPlaceID]=p;
 	      }
