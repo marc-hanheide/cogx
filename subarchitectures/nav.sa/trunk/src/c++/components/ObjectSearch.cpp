@@ -1071,9 +1071,16 @@ void ObjectSearch::Recognize(){
 	log("plantheta : %f, currtheta, %f", plantheta, currpos.getTheta());
 	log("anglediff is: %f", anglediff);
 	log("ptz reading: %f", ptz.pose.pan);
+	
 	MovePanTilt(anglediff,0);
-	m_status = 	RECOGNITIONINPROGRESS;
 
+	if(m_status == STOPPED) {
+	  log("Stopping in Recognize()");
+	  return;
+	}
+	else {
+	  m_status = RECOGNITIONINPROGRESS;
+	}
 
 	//need to unlock to allow changes through for the original design, but this is dodgy
 	unlockComponent();
@@ -1157,16 +1164,18 @@ void ObjectSearch::Recognize(){
 	
 }
 void ObjectSearch::PostRecognitionCommand(){
-	log("Posting Recog. Command now");
-	 VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
-	 vector<string> obj_labels;
-	 for (unsigned int i= 0; i < m_objectlist.size(); i++)
-	 {
-		 obj_labels.push_back((m_objectlist[i]->ObjID));
-	 }
-	cmd->labels = obj_labels;
-	addToWorkingMemory(newDataID(), "vision.sa", cmd);
-	log("DetectionCommand added.");
+  if(m_status != STOPPED) {
+    log("Posting Recog. Command now");	
+    VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
+    vector<string> obj_labels;
+    for (unsigned int i= 0; i < m_objectlist.size(); i++)
+      {
+	obj_labels.push_back((m_objectlist[i]->ObjID));
+      }
+    cmd->labels = obj_labels;
+    addToWorkingMemory(newDataID(), "vision.sa", cmd);
+    log("DetectionCommand added.");
+  }
 }
 void ObjectSearch::newRobotPose(const cast::cdl::WorkingMemoryChange &objID) {
     shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
