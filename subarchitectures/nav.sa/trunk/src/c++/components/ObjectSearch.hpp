@@ -43,8 +43,7 @@ class ObjectSearch : public cast::ManagedComponent
     };
   protected:
     void configure(const std::map<std::string, std::string>& _config);
-    Cure::TransformedOdomPoseProvider m_TOPP;
-    Cure::Pose3D m_SlamRobotPose;
+    Cure::Pose3D m_currPose;
     double m_MaxExplorationRange;
     double m_CamRange;
     Cure::SensorPose m_LaserPoseR;
