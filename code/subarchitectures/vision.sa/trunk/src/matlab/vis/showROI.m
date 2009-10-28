@@ -44,4 +44,4 @@ if nargin>0
    
 end
 
-dispCurrData; %DEBUG!!!
+% dispCurrData; %DEBUG!!!
