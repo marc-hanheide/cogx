@@ -155,11 +155,16 @@ public class cc_FakeVerificationGenerator
 		Vector<String> asserted = new Vector<String>();
 		for (int i = 0; i < model.k.length; i++) {
 			Belief b = null;
-			if (existsOnWorkingMemory(model.k[i])) {
-				b = getBelief(model.k[i]);
-			}
-			else {
-				System.err.println("got a DoesNotExistOnWM");
+			try {
+				if (existsOnWorkingMemory(Binder.BINDER_SA, model.k[i])) {
+					b = getBelief(model.k[i]);
+				}
+				else {
+					System.err.println("got a DoesNotExistOnWM");
+				}
+			} catch (UnknownSubarchitectureException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			if (b != null && BeliefUtils.formulaHasAssertions((SuperFormula) b.phi)) {
 				asserted.add(b.id);
