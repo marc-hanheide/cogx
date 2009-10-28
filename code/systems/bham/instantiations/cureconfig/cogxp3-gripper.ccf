@@ -5,6 +5,7 @@ PEEKABOT_HOST
 127.0.0.1
 
 PEEKABOT_ROBOT_XML_FILE
+CogX_base.xml
 CogXp3.xml
 Robone.xml
 
