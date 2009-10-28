@@ -188,6 +188,25 @@ transform(L0, VS0, L, VS, Ctx) :-
 	) is nondet <= (modality(M), context(C, M)).
 
 
+step(assume(vs(m(MQ, PQ), VS), map.init, const(Cost)),
+		{QsL, cf(m(MQ, PQ), const(Cost)), QsR}, VS,
+		QsL ++ [assumed(m(MQ, PQ), const(Cost))] ++ QsR, VS,
+		_Ctx).
+
+step(assume(vs(m(MQ, PQ), VS), Uni, f(Func)),
+		{QsL0, cf(m(MQ, PQ0), f(Func)), QsR0}, VS,
+		QsL ++ [assumed(m(MQ, PQ), f(Func))] ++ QsR, VS,
+		Ctx) :-
+
+	assumable_func(Ctx, Func, m(MQ, GroundProp), _Cost),
+	ground_formula(Prop, GroundProp),
+	unify_formulas(PQ0, Prop, Uni),
+
+	PQ = apply_subst_to_formula(Uni, PQ0),
+	QsL = list.map(apply_subst_to_query(Uni), QsL0),
+	QsR = list.map(apply_subst_to_query(Uni), QsR0).
+
+/*
 	% assumption
 step(assume(vs(m(MQ, PQ), VS), Uni, F),
 		{QsL0, cf(m(MQ, PQ0), F), QsR0}, VS0,
@@ -215,7 +234,7 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "%", !IO) ),
 	QsR = list.map(apply_subst_to_query(Uni), QsR0),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "}", !IO) ).
-
+*/
 %	formula.is_ground(Q^p).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -256,7 +275,7 @@ step(use_fact(vs(m(MQ, PQ), VS), map.init),
 
 	% resolution with a rule
 step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
-		{QsL0, cf(m(MQ, PQ), _F), QsR0}, VS0,
+		{QsL0, cf(m(MQ, PQ), not_assumable), QsR0}, VS0,
 		QsL ++ QsInsert ++ QsR, VS,
 		Ctx) :-
 
