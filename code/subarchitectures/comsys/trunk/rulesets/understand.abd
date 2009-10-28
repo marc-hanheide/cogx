@@ -30,13 +30,13 @@ understand : event : uttered(h, Nom) <-
 		you(ActorNom),
 	i : rel_Patient(Nom, WhatNom),
 		what_which(WhatNom),
-
+		i : 'rel_Scope-in'(WhatNom, AscrNom),
+		i : 'rel_Cop-Scope'(AscrNom, WhatNom),
 	i : sort(AscrNom, ascription),
 	i : 'rel_Cop-Restr'(AscrNom, ThisNom),
-		this(ThisNom),
+%		this(ThisNom),
 		att : refers_to(ThisNom, Ref) / ref_resolution,
-	i : 'rel_Cop-Scope'(AscrNom, WhatNom),  % XXX "questioned" flag?
-	intention : ask_known(h, Ref, objecttype) / 0.5.
+	intention : ask_known(h, Ref, objecttype) / 0.51.
 
 %h: what Prop is Ref
 understand : event : uttered(h, Nom) <-
