@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <cv.h>
 #include <highgui.h>
+#include <libdc1394/dc1394_control.h>	// apt-get libdc1394-13-dev || libdc1394-22-dev
 #include "VideoServer.h"
 
 namespace cast
@@ -74,7 +75,7 @@ private:
   int framerateMillis;
   int width;
   int height;
-
+	
   /**
    * Timer to measure actual frame rate.
    */

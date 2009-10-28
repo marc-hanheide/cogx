@@ -169,9 +169,10 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
     }
   }
   // HACK
-  cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH, 640);
-  cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT, 480);
-  // HACK END
+  cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH, width);
+  cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT, height);
+	
+	// HACK END
   width = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH);
   height = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT);
   // frames per second
@@ -223,6 +224,12 @@ void OpenCvLiveServer::configure(const map<string,string> & _config)
   {
     // assume 0 as default device
     dev_nums.push_back(0);
+  }
+
+	if((it = _config.find("--imgsize")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> width >> height;
   }
 
   // if cameras return raw Bayer patterns
