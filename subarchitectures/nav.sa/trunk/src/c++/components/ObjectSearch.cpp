@@ -1120,8 +1120,14 @@ void ObjectSearch::Recognize(){
 	    }
 	  
 
+	    m_status = 	RECOGNITIONINPROGRESS;		      
 	    MovePanTilt(anglediff,m_tiltRads);
+	    PostRecognitionCommand();
+	    while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED) {
+	      sleepComponent(10);
+	    }
 	    
+
 	    //postive with tilt
 	    n = 1;
 	    while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
