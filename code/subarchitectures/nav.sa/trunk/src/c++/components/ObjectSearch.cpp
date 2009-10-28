@@ -81,14 +81,18 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
   m_lastCmdAddr = objID.address;
   
   if (oobj->getData()->cmd == SpatialData::PLAN){    
+    log("triggering AVS");
     placestosearch = oobj->getData()->placestosearch;
     m_command = PLAN;
   }
   else if (oobj->getData()->cmd == SpatialData::STOPAVS) {
+    log("stopping AVS");
     m_command = STOP;
     m_status = STOPPED;
+    whereinplan = -1;
   }
 }
+
 void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
   debug("new NavGraphNode");
@@ -97,9 +101,9 @@ void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
     getWorkingMemoryEntry<NavData::FNode>(objID.address);
   
   NavData::FNodePtr fnode = oobj->getData();
-  fnodeseq.push_back(fnode);
-  
+  fnodeseq.push_back(fnode);  
 }
+
 void ObjectSearch::configure(const map<string,string>& _config) {
   log("Configuring ObjectSearch");
   map<string,string>::const_iterator it = _config.find("-c");
@@ -385,6 +389,7 @@ void ObjectSearch::InterpretCommand () {
   switch(m_command) {
   case STOP: {
     m_command = IDLE;
+    m_status = STOPPED;
     log("Command: STOP");
     SpatialData::NavCommandPtr cmd = newNavCommand();
     cmd->prio = SpatialData::URGENT;
@@ -421,8 +426,7 @@ void ObjectSearch::InterpretCommand () {
     m_status = RECOGNITIONINPROGRESS;
     Recognize();
   case IDLE:
-    if(m_status == RECOGNITIONINCOMPLETE )
-      {
+    if(m_status == RECOGNITIONINCOMPLETE ) {
 	m_command = EXECUTE;
 	log("Recognition complete. Execute next in plan.");
       }
@@ -1012,43 +1016,46 @@ void ObjectSearch::owtNavCommand(const cdl::WorkingMemoryChange & objID) {
   }
 }
 void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
-	 shared_ptr<CASTData<VisionData::VisualObject> > oobj =
-        getWorkingMemoryEntry<VisionData::VisualObject>(objID.address);
-		
+  shared_ptr<CASTData<VisionData::VisualObject> > oobj =
+    getWorkingMemoryEntry<VisionData::VisualObject>(objID.address);
+  
   VisionData::VisualObjectPtr obj = oobj->getData();
   if(obj->detectionConfidence >= 0.5){
-	log("ok, detected '%s'", obj->label.c_str());
-
-	NavData::ObjObsPtr obs = new NavData::ObjObs;
-	obs->category = obj->label;
-	obs->time = obj->time;
-
-	static long objid = 0;
-	obs->id.resize(1);
-	obs->id[0] = objid++;
-
-	if (m_CtrlPTU) {
-	  ptz::PTZReading ptz = m_PTUServer->getPose();
-	  obs->angles.resize(2);
-	  obs->angles[0] = ptz.pose.pan;
-	  obs->angles[1] = ptz.pose.tilt;
-	}
-
-	// FIXME Use the position of the object in the image as well
-	// to get a better estimate of the direction to the object
-
-	// FIXME Estimate the distance as well based on eg bounding box size
-	
-	addToWorkingMemory(newDataID(), obs);
+    log("ok, detected '%s'", obj->label.c_str());
+    
+    NavData::ObjObsPtr obs = new NavData::ObjObs;
+    obs->category = obj->label;
+    obs->time = obj->time;
+    
+    static long objid = 0;
+    obs->id.resize(1);
+    obs->id[0] = objid++;
+    
+    if (m_CtrlPTU) {
+      ptz::PTZReading ptz = m_PTUServer->getPose();
+      obs->angles.resize(2);
+      obs->angles[0] = ptz.pose.pan;
+      obs->angles[1] = ptz.pose.tilt;
+    }
+    
+    // FIXME Use the position of the object in the image as well
+    // to get a better estimate of the direction to the object
+    
+    // FIXME Estimate the distance as well based on eg bounding box size
+    
+    addToWorkingMemory(newDataID(), obs);
   }
   else{
-	log("nah, did not detect '%s'", obj->label.c_str());	  
+    log("nah, did not detect '%s'", obj->label.c_str());	  
   }
-	if (obj->label == m_objectlist[m_objectlist.size()-1]->ObjID) {
-		log("got the last object. recognition complete.");
-		m_status = RECOGNITIONINCOMPLETE;  
-	}
-	
+  
+  if (obj->label == m_objectlist[m_objectlist.size()-1]->ObjID) {
+    log("got the last object. recognition complete.");
+    if(m_status != STOPPED) {
+      m_status = RECOGNITIONINCOMPLETE;  
+    }
+  }
+  
 }
 
 void ObjectSearch::Recognize(){
