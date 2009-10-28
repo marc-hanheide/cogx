@@ -59,6 +59,11 @@ else
       V0=reshape(HSV,IH*IW,1,3);
       V=V0(idxs,:);
 
+      
+      
+      disp('Extracting median HSV') ; 
+      size(V)
+      
       %get median
       medHSV=median(V)';
       [hu,sa,in]=deal(medHSV(1),medHSV(2),medHSV(3));
@@ -68,6 +73,8 @@ else
 %          in
       end; %saturated intensity values...
 
+      disp('median extracted') ;
+      
       %GET SHAPE FEATURES
       if FV <3
          bd=double(b);
