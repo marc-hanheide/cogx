@@ -379,7 +379,7 @@ void ObjectSearch::Plan () {
     m_plan = GeneratePlan(m_covthresh, ScorebyCoverage(*fcm));
     addToWorkingMemory(newDataID(), ConvertPlantoIce());
     log("Plan generated %i view points with %f coverage",m_plan.plan.size(),m_plan.totalcoverage);
-    m_command = EXECUTE;
+    m_command = PLAN;
 }
 void ObjectSearch::InterpretCommand () {
   switch(m_command) {
@@ -584,7 +584,7 @@ void ObjectSearch::GenViewPoints() {
   }
   log("created placeinterface proxy");
   
-  Cure::Pose3D currPose = m_TOPP.getPose();
+  Cure::Pose3D currPose = m_currPose;
   /*Checking if a point in x,y is reachable */
   
   /// Binary grid that is 0 for foree space and 1 for occupied
@@ -661,7 +661,7 @@ void ObjectSearch::GenViewPoints() {
     randy = (randy % (2*combined_lgm.size)) - combined_lgm.size;
     m_krsjlgm->index2WorldCoords(randx,randy,xW,yW);
     if ((*m_krsjlgm)(randx,randy) == '0') {
-      if (m_krsjlgm->isRectangleObstacleFree(xW,yW-0.5, xW,yW+0.5,1)){
+      if (m_krsjlgm->isRectangleObstacleFree(xW,yW-0.2, xW,yW+0.2,1)){
 	long nodeid = GetClosestFNode(xW,yW);
 	SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
 	long id = -1;
@@ -690,7 +690,7 @@ rE += combined_lgm.size;
 	    double d = (m_PathGrid.path(rS, cS, rE, cE, path,
 					20 * combined_lgm.size) *
 			combined_lgm.cellSize);
-	    if (d > 0) {
+	    if (true) {
          // There is a path to this destination
 	      m_samples[2*i] = randx;
 	      m_samples[2*i+1] = randy;
@@ -753,7 +753,6 @@ rE += combined_lgm.size;
     XVector3D m_a,m_b,m_c;
     int* rectangle = new int[4];
     int h,k;
-    //currentPose = m_TOPP.getPose();
     CalculateViewCone(a,a.theta,m_CamRange,m_fov,b,c);
     
     m_krsjlgm->worldCoords2Index(a.x,a.y,h,k);
@@ -965,7 +964,7 @@ void ObjectSearch::owtNavCommand(const cdl::WorkingMemoryChange & objID) {
       } 
       else {
 	
-	Cure::Pose3D currpos = m_TOPP.getPose();
+	Cure::Pose3D currpos = m_currPose;
 	double plantheta = m_plan.plan[whereinplan].getTheta();
 	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
 	log("plantheta : %f, currtheta, %f", plantheta, currpos.getTheta());
@@ -1058,7 +1057,7 @@ void ObjectSearch::Recognize(){
 	if (m_CtrlPTU)
 		ptz::PTZReading ptz = m_PTUServer->getPose();
 		
-	Cure::Pose3D currpos = m_TOPP.getPose();
+	Cure::Pose3D currpos = m_currPose;
 	double plantheta = m_plan.plan[whereinplan].getTheta();
 	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
 	
@@ -1161,10 +1160,8 @@ void ObjectSearch::newRobotPose(const cast::cdl::WorkingMemoryChange &objID) {
     shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
         getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
 
-    m_SlamRobotPose.setX(oobj->getData()->x);
-    m_SlamRobotPose.setY(oobj->getData()->y);
-    m_SlamRobotPose.setTheta(oobj->getData()->theta);
+        m_currPose.setX(oobj->getData()->x);
+        m_currPose.setY(oobj->getData()->y);
+        m_currPose.setTheta(oobj->getData()->theta);
 
-    Cure::Pose3D cp = m_SlamRobotPose;
-    m_TOPP.defineTransform(cp);
 }
