@@ -160,6 +160,17 @@ namespace binder {
     autogen::featvalues::IntegerValuePtr  createIntegerValue(int val, float prob) ;
 
 
+
+
+    /**
+     * Create a new UnknownValue given a probability
+     *
+     * @param prob the probability value
+     * @return the IntegerValue
+     */
+    autogen::featvalues::UnknownValuePtr  createUnknownValue(float prob) ;
+
+
     /**
      * Create a new BooleanValue given a boolean and a probability
      *
@@ -224,12 +235,12 @@ namespace binder {
      * @param proxy the proxy to delete
      */
     void deleteEntityInWM(autogen::core::ProxyPtr proxy);
-    
-    
+
+
      /**
      * Delete an existing proxy
      * @param _wma the address of the proxy to delete
-     */   
+     */
     void deleteEntityInWM(std::string _id);
 
   };
