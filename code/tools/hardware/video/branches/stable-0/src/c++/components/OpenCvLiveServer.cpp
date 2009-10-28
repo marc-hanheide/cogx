@@ -169,8 +169,10 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
     }
   }
   // HACK
-  cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH, 640);
-  cvSetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT, 480);
+  for(size_t i = 0; i < dev_nums.size(); i++) {
+    cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH, 1280);
+    cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT, 960);
+  }
   // HACK END
   width = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_WIDTH);
   height = (int)cvGetCaptureProperty(captures[0], CV_CAP_PROP_FRAME_HEIGHT);
