@@ -566,7 +566,7 @@ void ObjectSearch::GenViewPoints() {
   FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
   log("getting combined lgm");
   FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
-  for (int g = 0; g < placestosearch.size(); g++)
+  for (unsigned int g = 0; g < placestosearch.size(); g++)
     log("%d",placestosearch[g]);
   combined_lgm = agg2->getCombinedGridMap(placestosearch);
   log("have combined lgm");
