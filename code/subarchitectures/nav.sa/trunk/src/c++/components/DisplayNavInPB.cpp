@@ -283,13 +283,16 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
     getWorkingMemoryEntry<NavData::ObjectSearchPlan>(objID.address);
   
   NavData::ObjectSearchPlanPtr plan = oobj->getData();
-  
+
+  m_ProxyViewPoints.add(m_PeekabotClient, "root.viewpoints",peekabot::REPLACE_ON_CONFLICT);
+
   // Get nodeIDs stated in the plan, and search through navGraph to
   // each nodeID and finally put ordered numbers on top of nodes that
   // are in the plan.
   char path[32];
 if(plan->planlist.size() > 0)
     {
+		
 		 double color[3];
   color[0] = 0.9;
   color[1] = 0.1;

@@ -379,7 +379,7 @@ void ObjectSearch::Plan () {
     m_plan = GeneratePlan(m_covthresh, ScorebyCoverage(*fcm));
     addToWorkingMemory(newDataID(), ConvertPlantoIce());
     log("Plan generated %i view points with %f coverage",m_plan.plan.size(),m_plan.totalcoverage);
-    m_command = PLAN;
+    m_command = EXECUTE;
 }
 void ObjectSearch::InterpretCommand () {
   switch(m_command) {

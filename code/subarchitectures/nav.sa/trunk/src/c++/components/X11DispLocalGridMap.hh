@@ -321,11 +321,11 @@ X11DispLocalGridMap<MAPDATA>::updateCoverageDisplay() {
         for (int x = -m_Map.getSize(); x <= m_Map.getSize(); x++) {
           gridPt.x = x + m_Map.getSize();
           gridPt.y = 2 * m_Map.getSize() - (y + m_Map.getSize());
-          if (m_Map(x,y) == 0) {
+          if (m_Map(x,y) == '0') {
             XDrawPoints(disp, pixmap, gcGrey, &gridPt, 1, CoordModeOrigin);
-          } else if (m_Map(x,y) == 1) {
+          } else if (m_Map(x,y) == '1') {
             XDrawPoints(disp, pixmap,  gcBlack, &gridPt, 1, CoordModeOrigin);
-          } else if (m_Map(x,y) == 2) {
+          } else if (m_Map(x,y) == '2') {
             XDrawPoints(disp, pixmap,  gcYellow, &gridPt, 1, CoordModeOrigin);
           }
         }
@@ -343,11 +343,11 @@ X11DispLocalGridMap<MAPDATA>::updateCoverageDisplay() {
               gridPt.y = (2 * m_Map.getSize() - (y + m_Map.getSize()))*m_Magnification-my;
 
               if (m_Map(x,y) == 0) {
-                XDrawPoints(disp, pixmap, gcGrey, &gridPt, 1, CoordModeOrigin);
+                XDrawPoints(disp, pixmap, gcWhite, &gridPt, 1, CoordModeOrigin);
               } else if (m_Map(x,y) == 1) {
                 XDrawPoints(disp, pixmap,  gcBlack, &gridPt, 1, CoordModeOrigin);
               } else if (m_Map(x,y) == 2) {
-                XDrawPoints(disp, pixmap,  gcYellow, &gridPt, 1, CoordModeOrigin);
+                XDrawPoints(disp, pixmap,  gcGrey, &gridPt, 1, CoordModeOrigin);
               }
             }
           }
@@ -383,11 +383,11 @@ X11DispLocalGridMap<MAPDATA>::updateDisplay(Pose3D *robPose,
       for (int x = -m_Map.getSize(); x <= m_Map.getSize(); x++) {
         gridPt.x = x + m_Map.getSize();
         gridPt.y = 2 * m_Map.getSize() - (y + m_Map.getSize());
-        if (m_Map(x,y) == 1) {
+        if (m_Map(x,y) == '1') {
           XDrawPoints(disp, pixmap, gcBlack, &gridPt, 1, CoordModeOrigin);
         } //else if (0 <= m_Map(x,y) &&  m_Map(x,y) < 255) {
         //XDrawPoints(disp, pixmap, grayScale[int(m_Map(x,y))], &gridPt, 1, CoordModeOrigin);
-        else if (m_Map(x,y) == 0){
+        else if (m_Map(x,y) == '0'){
           XDrawPoints(disp, pixmap, gcWhite, &gridPt, 1, CoordModeOrigin);
         } else {
           XDrawPoints(disp, pixmap, gcMagenta, &gridPt, 1, CoordModeOrigin);
@@ -532,18 +532,18 @@ X11DispLocalGridMap<MAPDATA>::updateDisplay(Pose3D *robPose,
       setRobotPose(*robPose);
       XDrawPoints(disp,pixmap, gcBlack, m_RobPts, 50, CoordModeOrigin);
     }
-    int x,y;
-    /*if ( highestVCindex != -1) {
-      for (unsigned int i = 0; i < ViewConePts.size(); i++) {
+/*for (unsigned int i = 0; i < ViewConePts.size(); i++) {
         //printf("Displaying triangle with size %i\n", (int)ViewConePts[i].size());
         for (unsigned int j=0; j< (unsigned int)(ViewConePts[i].size()/2); j++) {
-          gridPt.x = ViewConePts[i][2*j]*m_Magnification + msize;
-          gridPt.y = 2 * msize - (ViewConePts[i][2*j + 1]*m_Magnification + msize);
-          if (i != (unsigned int)highestVCindex) {
-            //XDrawPoints(disp, pixmap, gcGreen, &gridPt, 1, CoordModeOrigin);
-          }
+          gridPt.x = ViewConePts[i][2*j]*1 + msize;
+          gridPt.y = 2 * msize - (ViewConePts[i][2*j + 1]*1 + msize);
+            XDrawPoints(disp, pixmap, gcYellow, &gridPt, 1, CoordModeOrigin);
         }
-      }
+      }*/
+
+    int x,y;
+    /*if ( highestVCindex != -1) {
+     
       for (unsigned int i = 0; i < ViewConePts.size(); i++) {
         //printf("Displaying triangle with size %i\n", (int)ViewConePts[i].size());
         for (unsigned int j=0; j< (unsigned int)(ViewConePts[i].size()/2); j++) {
