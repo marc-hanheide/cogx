@@ -5,6 +5,10 @@
 %%
 function sout = extractShpFts( X )
 
+if isempty(X)
+    sout = [ 0, 0, 0 ] ;
+end
+
 C = cov(X) ;
 [U,S,V] = svd(C) ;
 S = diag(S) ;
