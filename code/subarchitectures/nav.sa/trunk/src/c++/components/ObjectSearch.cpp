@@ -217,13 +217,7 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     }
     m_samples = new int[2*m_samplesize];
     m_samplestheta = new double[m_samplesize];
-    m_lgm = new Cure::LocalGridMap<double>(m_gridsize/2, m_cellsize, 256, Cure::LocalGridMap<float>::MAP1);
-    m_Glrt  = new Cure::ObjGridLineRayTracer<double>(*m_lgm);
-    //m_lmap = new LocalMap(*m_lgm);
-    // X window setting
-    coveragemap = new Cure::LocalGridMap<unsigned int>(m_gridsize/2, m_cellsize, 0, Cure::LocalGridMap<unsigned int>::MAP1);
-	pdf = new Cure::LocalGridMap<float>(m_gridsize/2, m_cellsize, 0, Cure::LocalGridMap<float>::MAP1);
-    if (_config.find("--no-x-window") == _config.end()) {
+/*    if (_config.find("--no-x-window") == _config.end()) {
 
       m_Displaylgm = new Cure::X11DispLocalGridMap<double>(*m_lgm,magnification);
         log("Will use X window to show the exploration map");
@@ -236,8 +230,9 @@ void ObjectSearch::configure(const map<string,string>& _config) {
       m_Displaycoverage = new Cure::X11DispLocalGridMap<unsigned int>(*coveragemap,magnification);
     } else {
         m_Displaycoverage = 0;
-    }
-
+    }*/
+   m_Displaykrsjlgm = 0;
+m_Displaycoverage = 0;
     displayOn = true;
     //Objects
     if((it = _config.find("--objects")) != _config.end()) {
@@ -286,8 +281,6 @@ void ObjectSearch::runComponent() {
   
   
   lockComponent();
-  setupPushScan2d(*this, -1);
-  setupPushOdometry(*this, -1);
   MovePanTilt(m_ptustep, m_tiltRads);
   unlockComponent();
   
@@ -297,10 +290,12 @@ void ObjectSearch::runComponent() {
   log("hey I run");
   while(isRunning()) {	
     lockComponent();
-    Update_PDF_with_GridMap();
-    Update_CoverageMap_with_GridMap();
     InterpretCommand ();
-    UpdateDisplays();
+    if (m_Displaykrsjlgm != 0){
+    m_Displaykrsjlgm->updateDisplay(0,0,0,m_samplesize, m_samples,tpoints,ViewConePts,
+                                    1,m_plan.plan,m_plan.indexarray);
+     m_Displaycoverage->updateCoverageDisplay();
+}
     unlockComponent();
     sleepComponent(1000);
   }
@@ -380,17 +375,11 @@ NavData::ObjectSearchPlanPtr ObjectSearch::ConvertPlantoIce()
 }
 void ObjectSearch::Plan () {
 	
-	Cure::LocalGridMap<unsigned int> fcm(*coveragemap);
     GenViewPoints();
-    m_plan = GeneratePlan(m_covthresh, ScorebyCoverage(fcm));
-	addToWorkingMemory(newDataID(), ConvertPlantoIce());
+    m_plan = GeneratePlan(m_covthresh, ScorebyCoverage(*fcm));
+    addToWorkingMemory(newDataID(), ConvertPlantoIce());
     log("Plan generated %i view points with %f coverage",m_plan.plan.size(),m_plan.totalcoverage);
-	
-    if (true) {
-      m_command = EXECUTE;
-    } else {
-        m_command = PLAN;
-    }
+    m_command = PLAN;
 }
 void ObjectSearch::InterpretCommand () {
   switch(m_command) {
@@ -563,8 +552,8 @@ void ObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap){
     log("converted icemap to krsjmap");	
 }
 void ObjectSearch::GenViewPoints() {
-	srand ( time(NULL) );
-    //log("Generating %i random samples", m_samplesize);
+    srand ( time(NULL) );
+    log("Generating %i random samples", m_samplesize);
     ViewConePts.clear();
     int randx,randy;
     double xW,yW;
@@ -575,81 +564,71 @@ void ObjectSearch::GenViewPoints() {
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
     log("getting combined lgm");
     FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
+    for (int g = 0; g < placestosearch.size(); g++)
+		log("%d",placestosearch[g]);
     combined_lgm = agg2->getCombinedGridMap(placestosearch);
     log("have combined lgm");
     IcetoCureLGM(combined_lgm);
 
-    m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_krsjlgm);
-    m_Displaykrsjlgm->updateDisplay();
-
-    sleep(3);
+    coveragemap = new Cure::LocalGridMap<unsigned char>(*m_krsjlgm);          
+    fcm = new Cure::LocalGridMap<unsigned char>(*coveragemap);
+for(int x = -combined_lgm.size ; x <= combined_lgm.size; x++){
+		for(int y = -combined_lgm.size ; y <= combined_lgm.size; y++){ 
+	if ((*m_krsjlgm)(x,y) == '1') {
+                m_coveragetotal++;
+            }
+}
+}
     log("created placeinterface proxy");
 
-//     std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
-//     while (obj.empty()) {
-//       log("loop obj.empty()");
-//       //nah: why only 20?
-//       //getWorkingMemoryEntries<NavData::FNode>(20, obj);	
-//       getWorkingMemoryEntries<NavData::FNode>(obj);	
-//       usleep(1000);
-//     }
-
-//     NavData::FNodeSequence fnodeseq;
-//     for (unsigned int i = 0; i < obj.size() ; i++)
-//       {
-// 	fnodeseq.push_back(obj[i]->getData());
-//     }
-    
     for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/3) {
         angles.push_back(rad);
     }
+   log("pushed angles");
 
     while (i < m_samplesize) {
 
-      debug("processing sample %i/%i", i+1, m_samplesize);
+//      log("processing sample %i/%i", i+1, m_samplesize);
       
       randx = rand();
       randy = rand();
-      randx = (randx % (m_gridsize)) - m_gridsize/2;
-      randy = (randy % (m_gridsize)) - m_gridsize/2;
-      m_lgm->index2WorldCoords(randx,randy,xW,yW);
-
-      if ((*m_lgm)(randx,randy) == 0) {
-	if (m_lgm->isCircleObstacleFree(xW,yW, m_awayfromobstacles) &&
-	    m_LMap.goalReachable(xW,yW, 1,0.3)) { //if random point is free space
-	  long nodeid = GetClosestFNode(xW,yW);
-	  SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
-	  long id = -1;
-	  if (place != NULL)
-	    id = place->id;
-	  bool isincluded = false;
-	  for (unsigned int q= 0; q < placestosearch.size(); q++){
-	    if (placestosearch[q] == id){
-	      isincluded = true;
-	      //log("searching place: %i", id);
-	      break;
-	    }
-	  }
-	  if (isincluded) { //if sample is in a place we were asked to search
+      randx = (randx % (2*combined_lgm.size)) - combined_lgm.size;
+      randy = (randy % (2*combined_lgm.size)) - combined_lgm.size;
+      m_krsjlgm->index2WorldCoords(randx,randy,xW,yW);
+      m_krsjlgm->worldCoords2Index(xW,yW,randx,randy);
+      if ((*m_krsjlgm)(randx,randy) == '0') {
+	if (m_krsjlgm->isRectangleObstacleFree(xW,yW-0.5, xW,yW+0.5,1)){
+	    long nodeid = GetClosestFNode(xW,yW);
+	    SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
+	    long id = -1;
+        		if (place != NULL)
+        			id = place->id;
+        	    bool isincluded = false;
+        		for (unsigned int q= 0; q < placestosearch.size(); q++){
+        			if (placestosearch[q] == id){
+        				isincluded = true;
+        				break;
+        			}
+        		}
+if (isincluded) { //if sample is in a place we were asked to search
 	    m_samples[2*i] = randx;
 	    m_samples[2*i+1] = randy;
 	    int the = (int)(rand() % angles.size());
 	    m_samplestheta[i] = angles[the];
 	    i++;
-	  }
-	}
+}
+}
       }
     }
-    
     log("Calculating view cones for generated samples");
     Cure::Pose3D candidatePose;
     XVector3D a;
     
     for (int y=0; y < m_samplesize; y++) { //calc. view cone for each sample
       
-        m_lgm->index2WorldCoords(m_samples[y*2],m_samples[2*y+1],a.x,a.y);
+         m_krsjlgm->index2WorldCoords(m_samples[y*2],m_samples[2*y+1],a.x,a.y);
         a.theta =  m_samplestheta[y];
-        tpoints = GetInsideViewCone(a, false);
+        tpoints = GetInsideViewCone(a, true);
         ViewConePts.push_back(tpoints);
         candidatePose.setTheta(m_samplestheta[y]);
         candidatePose.setX(a.x);
@@ -658,6 +637,12 @@ void ObjectSearch::GenViewPoints() {
         candidatePoses.push_back(candidatePose);
     }
     log("View Cones calculated.");
+    if (m_Displaykrsjlgm == 0)
+	    m_Displaykrsjlgm = new Cure::X11DispLocalGridMap<unsigned char>(*m_krsjlgm);
+if (m_Displaycoverage == 0)
+	    m_Displaycoverage = new Cure::X11DispLocalGridMap<unsigned char>(*fcm);
+
+
     displayOn = true;
 }
 long ObjectSearch::GetClosestFNode(double xW, double yW){
@@ -683,13 +668,13 @@ std::vector<int> ObjectSearch::GetInsideViewCone(XVector3D &a, bool addall) {
         //currentPose = m_TOPP.getPose();
         CalculateViewCone(a,a.theta,m_CamRange,m_fov,b,c);
 
-        m_lgm->worldCoords2Index(a.x,a.y,h,k);
+        m_krsjlgm->worldCoords2Index(a.x,a.y,h,k);
         m_a.x = h;
         m_a.y = k;
-        m_lgm->worldCoords2Index(b.x,b.y,h,k);
+        m_krsjlgm->worldCoords2Index(b.x,b.y,h,k);
         m_b.x = h;
         m_b.y = k;
-        m_lgm->worldCoords2Index(c.x,c.y,h,k);
+        m_krsjlgm->worldCoords2Index(c.x,c.y,h,k);
         m_c.x = h;
         m_c.y = k;
         //  log("Got Map triangle coordinates: A:(%f,%f),B:(%f,%f),C:(%f,%f) \n", m_a.x,m_a.y,m_b.x,m_b.y,m_c.x,m_c.y);
@@ -726,37 +711,17 @@ std::vector<int> ObjectSearch::GetInsideViewCone(XVector3D &a, bool addall) {
 	
 }
 
-std::vector<double> ObjectSearch::ScorebyCoverage(Cure::LocalGridMap<unsigned int> fcm ) {
+std::vector<double> ObjectSearch::ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm ) {
 	std::vector<double> CoverageSum;
 	int covered = m_covered;
     for (unsigned int i = 0; i < ViewConePts.size(); i++) {
 		double score = GetExtraCoverage(ViewConePts[i], covered, fcm);
         CoverageSum.push_back(score);
-        //log("Coverage Sum for view cone %i is: %f",i, score);
+//        log("Coverage Sum for view cone %i is: %f",i, score);
 	}
 	return CoverageSum;
 }
 
-std::vector<double> ObjectSearch::ScorebyPDF() {
-    //log("Selecting best view cone out of %i random samples.",m_samplesize);
-    std::vector<double> PDFsum;
-    int x,y;
-    double singlesum;
-    for (unsigned int i = 0; i < ViewConePts.size(); i++) {
-        singlesum = 0;
-        for (unsigned int j = 0; j < ViewConePts[i].size()/2; j++) {
-            x = ViewConePts[i][2*j];
-            y =ViewConePts[i][2*j + 1];
-            if((*coveragemap)(x,y) == 1) {
-                //println("obs: %f", SuperObject->pdf->pdfgrid[x+lsize][y+lsize]);
-                //singlesum = singlesum + SuperObject->pdf->pdfgrid[x+lsize][y+lsize];
-            }
-        }
-        PDFsum.push_back(singlesum);
-        debug("PDF Sum for view cone %i is: %f",i, singlesum);
-    }
-    return PDFsum;
-}
 bool comp (double i,double j) {
     return (i>j);
 }
@@ -768,7 +733,7 @@ ObjectSearch::SearchPlan ObjectSearch::GeneratePlan(double covpercent,std::vecto
     searchplan.indexarray.clear();
     std::vector<double> copy = PDFsum;
 
-    Cure::LocalGridMap<unsigned int> fcm(*coveragemap);
+    Cure::LocalGridMap<unsigned char> fcm(*coveragemap);
     int covered = m_covered;
     sort(copy.begin(),copy.end(),comp);
     while(copy.size() > 0) {
@@ -790,7 +755,7 @@ ObjectSearch::SearchPlan ObjectSearch::GeneratePlan(double covpercent,std::vecto
         	//just to display the selected viewcone
 			
         	XVector3D a;
-        	m_lgm->index2WorldCoords(m_samples[j*2],m_samples[2*j+1],a.x,a.y);
+        	m_krsjlgm->index2WorldCoords(m_samples[j*2],m_samples[2*j+1],a.x,a.y);
         	a.theta =  m_samplestheta[j];
         	ViewConePts[j] = GetInsideViewCone(a, true); 
 			searchplan.extracoverage.push_back(extracoverage);
@@ -822,69 +787,33 @@ ObjectSearch::SearchPlan ObjectSearch::GeneratePlan(double covpercent,std::vecto
     	return searchplan;
 }
 
-double ObjectSearch::GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned int> &fcm) {
+double ObjectSearch::GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned char> &fcm) {
 	std::vector<int> rollback;
 return GetExtraCoverage(tpoints, covered, fcm, false, rollback);
 }
-double ObjectSearch::GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned int> &fcm, bool changefcm,
+double ObjectSearch::GetExtraCoverage(std::vector<int> tpoints, int &covered,Cure::LocalGridMap<unsigned char> &fcm, bool changefcm,
 										std::vector<int> &rollback ) {
     double oldcov = (double)100*covered/m_coveragetotal;
+  //  log("total coverage space: %i, covered: %i,oldcov: %f",m_coveragetotal,covered, oldcov);
+
     int h = 0;
     int x,y;
     for (unsigned int j = 0; j < tpoints.size()/2; j++) {
         x = tpoints[2*j];
         y = tpoints[2*j + 1];
-        if ((fcm)(x,y) == 1) {
+        if ((fcm)(x,y) == '1') {
             h++;
 			if(changefcm)
-				fcm(x,y) = 2;
+				fcm(x,y) = '2';
 			rollback.push_back(x);
 			rollback.push_back(y);
         }
     }
     double cov = (double)100*(covered+h)/m_coveragetotal;
-    //log("Difference in cov: %f", (cov-oldcov));
+//    log("h: %i, Difference in cov: %f", h, (cov-oldcov));
 	return (cov-oldcov);
 }
 
-double ObjectSearch::ModifyCoverageMap(std::vector<int> tpoints) {
-    //log("ModifyCoverageMap");
-    int x,y;
-    for (unsigned int j = 0; j < tpoints.size()/2; j++) {
-        x = tpoints[2*j];
-        y = tpoints[2*j + 1];
-        if ((*m_lgm)(x,y) == 1 && (*coveragemap)(x,y) != 2) {
-            m_covered++;
-            (*coveragemap)(x,y) = 2; //obstacle covered
-        }
-    }
-    CoveragePercentage = (double)100*m_covered/m_coveragetotal;
-    return CoveragePercentage;
-}
-void ObjectSearch::Update_CoverageMap_with_GridMap() {
-    int msize = m_lgm->getSize();
-
-    for (int i=-msize; i < msize; i++) {
-        for (int j=-msize; j < msize; j++) {
-            if ((*m_lgm)(i,j) == 1 && (*coveragemap)(i,j) == 0) {
-                m_coveragetotal++;
-                (*coveragemap)(i,j) = 1; //obstacle not yet covered
-            }
-        }
-    }
-    CoveragePercentage = (double)100*m_covered/m_coveragetotal;
-}
-
-void ObjectSearch::Update_PDF_with_GridMap() {
-	int msize = m_lgm->getSize();
-    for (int i=-msize; i < msize; i++) {
-        for (int j=-msize; j < msize; j++) {
-            if ((*m_lgm)(i,j) == 1 && (*pdf)(i,j) == 0) {
-                (*pdf)(i,j) = 1;
-            }
-        }
-    }
-}
 void ObjectSearch::CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c) {
     //log("Direction: %f, FOV:%f, range: %f", direction, fov, range);
     float angle1 = direction + fov/2;
@@ -993,33 +922,6 @@ void ObjectSearch::owtNavCommand(const cdl::WorkingMemoryChange & objID) {
     }
   }
 }
-
-void ObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
-	
-    debug("Received Scan");
-    Cure::LaserScan2d cureScan;
-    CureHWUtils::convScan2dToCure(castScan, cureScan);
-    if (m_TOPP.isTransformDefined()) {
-        Cure::Pose3D scanPose;
-        if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-        	m_Mutex.lock();
-
-
-            m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-            m_Mutex.unlock();
-            
-            Cure::Pose3D lpW;
-            m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-                                        0.5,
-                                        0);
-            lpW.add(scanPose, m_LaserPoseR);
-            m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);
-	    //log("added scan");
-            
-        }
-    }
-
-}
 void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
 	 shared_ptr<CASTData<VisionData::VisualObject> > oobj =
         getWorkingMemoryEntry<VisionData::VisualObject>(objID.address);
@@ -1059,6 +961,7 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
 	}
 	
 }
+
 void ObjectSearch::Recognize(){
 	ptz::PTZReading ptz;
 	ptz.pose.pan = 0;
@@ -1165,31 +1068,4 @@ void ObjectSearch::newRobotPose(const cast::cdl::WorkingMemoryChange &objID) {
 
     Cure::Pose3D cp = m_SlamRobotPose;
     m_TOPP.defineTransform(cp);
-}
-
-void ObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom) {
-    Cure::Pose3D cureOdom;
-    CureHWUtils::convOdomToCure(castOdom, cureOdom);
-
-    debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
-          cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
-          cureOdom.getTime().getDouble());
-
-    m_TOPP.addOdometry(cureOdom);
-   Cure::Pose3D CurrPose = m_TOPP.getPose();
-   m_Mutex.lock();
-   m_LMap.moveRobot(CurrPose);
-   m_Mutex.unlock();
-}
-void ObjectSearch::UpdateDisplays () {
-    if (m_Displaylgm && displayOn) {
-        Cure::Pose3D currentPose = m_TOPP.getPose();
-        m_Displaylgm->updateDisplay(&currentPose,0,0,m_samplesize, m_samples,tpoints,ViewConePts,
-                                    1,m_plan.plan,m_plan.indexarray);
-    }
-    if(m_Displaycoverage) {
-        //log("Updating coverage map display");
-        m_Displaycoverage->updateCoverageDisplay();
-    }
-    usleep(100);
 }
