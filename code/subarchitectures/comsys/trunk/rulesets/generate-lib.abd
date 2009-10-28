@@ -55,6 +55,12 @@ check_property_value(Union, Prop, unknown) <-
 
 %----------------------------------------------------------------------
 
+propname_to_questiontype(objecttype, type).
+propname_to_questiontype(color, color).
+propname_to_questiontype(shape, shape).
+
+%----------------------------------------------------------------------
+
 grounding_result_to_relation(assertionVerified, accept).
 grounding_result_to_relation(assertionFalsified, reject).
 

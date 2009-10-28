@@ -81,6 +81,8 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	dummy_nom4(PropNom),
+	propname_to_questiontype(Prop, QuestionType),
+	i : feat_QuestionType(Nom, QuestionType) / 1.0,
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	%i : feat_Relation(Nom, answer) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
@@ -88,8 +90,8 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
 			generate : it(TargetNom),
 		i : feat_ProofStatus(TargetNom, assumed) / 1.0,
-		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value),
-		i : feat_ProofStatus(PropNom, asserted) / 1.0.
+		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value).
+%		i : feat_ProofStatus(PropNom, asserted) / 1.0.
 
 %----------------------------------------------------------------------
 
