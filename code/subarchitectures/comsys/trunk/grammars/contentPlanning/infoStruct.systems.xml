@@ -20,11 +20,11 @@ Assign Rheme acording to the type of question which the utterance is answering
     </conditions>
    <actions>
       <action choice="matchAnswer">  <!-- ordinary answer Rheme in ascription -->
-        	<add-feature feature="AscriptionPropertyIS" value="standardRheme" dest="CONTENT" />
+        	<add-feature feature="AscriptionPropertyIS" value="standardrheme" dest="CONTENT" />
       </action>     
       <action choice="nonmatchAnswer">  <!--  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
                                         <!-- but overanswering is not taken into account -->
-        	<add-feature feature="AscriptionPropertyIS" value="denialTheme" dest="CONTENT" />
+        	<add-feature feature="AscriptionPropertyIS" value="denialtheme" dest="CONTENT" />
       </action>             
       <action choice="doNothing">
       </action>          
