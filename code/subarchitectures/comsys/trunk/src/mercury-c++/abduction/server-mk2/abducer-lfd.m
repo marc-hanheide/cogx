@@ -52,7 +52,7 @@ inner_loop(!Ctx, !IO) :-
 				process_request(Request, !Ctx, !IO),
 				inner_loop(!Ctx, !IO)
 			else
-				trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "failed to parse the request\n", !IO) )
+				trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "failed to parse request:" ++ ReqStr ++ "\n", !IO) )
 			)
 		;
 			ReadTermResult = error(_Err, _LineNum),

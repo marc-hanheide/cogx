@@ -19,11 +19,17 @@ import beliefmodels.domainmodel.cogx.ContinualStatus;
 import beliefmodels.domainmodel.cogx.ObjectTypeProperty;
 import beliefmodels.domainmodel.cogx.ShapeProperty;
 import beliefmodels.domainmodel.cogx.SuperFormula;
+import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.utils.BeliefModelUtils;
 import binder.abstr.BeliefModelInterface;
 
 public class BeliefModelSynchronization {
 
+	private static final float COST_MIN = 1.0f;
+	private static final float COST_MAX = 10.0f;
+	
+	private static final String ASSUMABLE_FUNC = "belief_model";
+	
 	public static boolean logging = true;
 	
 	public static void sync(AbducerServerPrx abducer, Belief[] kBeliefs) {
@@ -39,6 +45,25 @@ public class BeliefModelSynchronization {
 
 		log("clearing K facts in the abducer");
 		abducer.clearFactsByModality(Abducer.ModalityType.K);
+		
+		log("clearing assumables");
+		abducer.clearAssumables();
+
+		log("adding assumables");
+		// for all beliefs
+		for (int i = 0; i < kBeliefs.length; i++) {
+			Belief b = kBeliefs[i];
+
+			String unionId = BeliefModelInterface.referringUnionId(b);
+			AgentStatus[] as = expandedAgentStatuses(b.ags);
+			
+			// for all agent statuses
+			for (int j = 0; j < as.length; j++) {
+
+				addAssumablesForFormula(abducer, as[j], unionId, (SuperFormula) b.phi);
+			}
+		}
+		log("done adding assumables");
 		
 		// map (unionId -> ( (expandedAgentStatusSTRING, predSym) -> (expandedAgentStatus, originAgentStatus, value) )
 		// Ice doesn't override hashCode() ;( ... we need to make the key hashable, so we convert it to
@@ -152,6 +177,93 @@ public class BeliefModelSynchronization {
 			return "not(" + s + ")";
 	}
 	
+	public static Term toMaybeNegatedTerm(boolean polarity, String s) {
+		Term arg = PredicateFactory.term(s);
+		if (polarity) {
+			return arg; 
+		}
+		else {
+			return PredicateFactory.term("not", new Term[] {arg});
+		}
+	}
+	
+	public static boolean isUnknown(String s) {
+		return s.startsWith("unknown");
+	}
+	
+	public static float probToCost(float prob) {
+		return COST_MAX - prob * (COST_MAX - COST_MIN);
+	}
+
+	public static void addAssumablesForFormula(AbducerServerPrx abducer, AgentStatus as, String unionId, SuperFormula sf) {
+		if (sf instanceof ComplexFormula) {
+    		ComplexFormula cf = (ComplexFormula) sf;
+    		for (int i = 0; i < cf.formulae.length; i++) {
+    			addAssumablesForFormula(abducer, as, unionId, cf.formulae[i]);
+    		}
+		}
+		
+		boolean polarity = true;
+		
+    	if (sf instanceof ContinualFormula) {
+    		if (((ContinualFormula)sf).cstatus == ContinualStatus.assertion) {
+    			//log("NOT adding an asserted formula");
+    			return;
+    		}
+    		polarity = ((ContinualFormula)sf).polarity;
+    	}
+
+    	float prob = 1.0f;
+    	if (sf instanceof UncertainSuperFormula) {
+    		prob = ((UncertainSuperFormula)sf).prob;
+    	}
+
+    	float cost = probToCost(prob);
+    	
+    	Modality[] mod = new Modality[] {
+    		ModalityFactory.kModality(as)
+    	};
+    	Term unionTerm = PredicateFactory.term(unionId);
+
+    	if (sf instanceof ObjectTypeProperty) {
+    		String valueString = ((ObjectTypeProperty)sf).typeValue.toString();
+    		if (!isUnknown(valueString)) {
+	    		Predicate p = PredicateFactory.predicate("objecttype", new Term[] {
+	    				unionTerm,
+	    				toMaybeNegatedTerm(polarity, valueString)
+	    			});
+	    		ModalisedFormula mf = AbducerUtils.modalisedFormula(mod, p);
+	    		log("    adding assumable: " + MercuryUtils.modalisedFormulaToString(mf) + " / " + ASSUMABLE_FUNC + " = " + cost);
+	    		abducer.addAssumable(ASSUMABLE_FUNC, mf, cost);
+    		}
+    	}
+    	if (sf instanceof ColorProperty) {
+    		String valueString = ((ColorProperty)sf).colorValue.toString();
+    		if (!isUnknown(valueString)) {
+	    		Predicate p = PredicateFactory.predicate("color", new Term[] {
+	    				unionTerm,
+	    				toMaybeNegatedTerm(polarity, valueString)
+	    			});
+	    		ModalisedFormula mf = AbducerUtils.modalisedFormula(mod, p);
+	    		log("    adding assumable: " + MercuryUtils.modalisedFormulaToString(mf) + " / " + ASSUMABLE_FUNC + " = " + cost);
+	    		abducer.addAssumable(ASSUMABLE_FUNC, mf, cost);
+    		}
+    	}
+    	if (sf instanceof ShapeProperty) {
+    		String valueString = ((ShapeProperty)sf).shapeValue.toString();
+    		if (!isUnknown(valueString)) {
+	    		Predicate p = PredicateFactory.predicate("shape", new Term[] {
+	    				unionTerm,
+	    				toMaybeNegatedTerm(polarity, valueString)
+	    			});
+	    		ModalisedFormula mf = AbducerUtils.modalisedFormula(mod, p);
+	    		log("    adding assumable: " + MercuryUtils.modalisedFormulaToString(mf) + " / " + ASSUMABLE_FUNC + " = " + cost);
+	    		abducer.addAssumable(ASSUMABLE_FUNC, mf, cost);
+    		}
+    	}
+
+	}
+
     public static Vector<Pair<String, String>> formulaToPredSymValuePairs(SuperFormula sf) {
     	Vector<Pair<String, String>> preds = new Vector<Pair<String, String>>();
     	
