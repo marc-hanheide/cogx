@@ -355,7 +355,7 @@ public class Binder extends ManagedComponent  {
 							if (proxies.size() > 0) { 
 								
 								Union updatedUnion = 
-									constructor.constructNewUnion(proxies, existingUnion.entityID, existingUnion.timeStamp);								
+									constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 								existingUnionConfig.includedUnions[i] = updatedUnion;
 							}
 							else {
@@ -419,6 +419,7 @@ public class Binder extends ManagedComponent  {
 
 			BinderUtils.completeProxy(newProxy, addUnknowns, proxyDistribFilter);
 
+			long midTime = System.currentTimeMillis();
 			// Perform the binding (either incrementally or by full rebinding)
 			if (incrementalBinding ) {
 				incrementalBinding(newProxy);
