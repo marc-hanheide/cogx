@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.swing.JFrame;
 
 import motivation.slice.Motive;
+import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveSet;
 import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 
@@ -14,6 +15,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberAxis3D;
+import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.CombinedDomainCategoryPlot;
@@ -71,8 +73,8 @@ public class MotiveChartViewer extends ManagedComponent implements
 		 * @return A chart.
 		 */
 		private JFreeChart createChart() {
-
-			final NumberAxis statusAxis = new NumberAxis3D("Status");
+			String[] labels = {"","UNSURFACED","SURFACED","","","ACTIVATED"};
+			final NumberAxis statusAxis = new SymbolAxis("Status",labels);
 			statusAxis.setLowerBound(0);
 			statusAxis.setUpperBound(5);
 			statusAxis
