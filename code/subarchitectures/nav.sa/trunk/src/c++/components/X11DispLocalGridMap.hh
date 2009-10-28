@@ -422,7 +422,7 @@ X11DispLocalGridMap<MAPDATA>::updateDisplay(Pose3D *robPose,
               XDrawPoints(disp, pixmap, gcMagenta, &gridPt, 1, CoordModeOrigin);
             }
 			else{
-			printf("%f\n",m_Map(x,y));
+			printf("%d\n",m_Map(x,y));
 			XDrawPoints(disp, pixmap, gcYellow, &gridPt, 1, CoordModeOrigin);
 }
           }

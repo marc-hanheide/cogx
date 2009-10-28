@@ -1360,7 +1360,9 @@ void DisplayNavInPB::connectPeekabot()
       nose.set_color(1,0,0);
 
     } else {
-      if (m_PbRobotFile == "CogXp3.xml" or m_PbRobotFile == "CogX_base_arm.xml") {
+      if (m_PbRobotFile == "CogXp3.xml" ||
+	  m_PbRobotFile == "CogX_base_arm.xml" ||
+	  m_PbRobotFile == "CogX_base.xml") {
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis.rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*240;
         m_ScanMaxRange = 5.6;
@@ -1371,8 +1373,14 @@ void DisplayNavInPB::connectPeekabot()
 			log("cam proxy failed.");
 		}
 		
-		m_ProxyPan.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan");
-		m_ProxyTilt.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan.tilt");
+		s4 = m_ProxyPan.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan").status();
+		if(s4.failed()){
+			log("cam proxy failed.");
+		}
+		s4 = m_ProxyTilt.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan.tilt").status();
+		if(s4.failed()){
+			log("cam proxy failed.");
+		}
 		m_ProxyPan.set_dof(0);
 		m_ProxyTilt.set_dof(30*M_PI/180.0);
 		

@@ -436,7 +436,7 @@ void ObjectSearch::InterpretCommand () {
 void ObjectSearch::ExecuteNextInPlan () {
   whereinplan++;
   log("Plan size %i, where in plan: %i.",m_plan.plan.size(),whereinplan);
-  if (whereinplan >= m_plan.plan.size()){
+  if (whereinplan >= (int)m_plan.plan.size()){
     log("Plan finished.");
     try {
       whereinplan = -1;
