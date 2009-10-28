@@ -130,6 +130,13 @@ namespace binder {
   }
 
 
+  UnknownValuePtr BindingWorkingMemoryWriter::createBooleanValue(float prob) {
+	  UnknownValuePtr uval = new UnknownValue();
+	  uval->independentProb = prob;
+    return uval;
+  }
+
+
   FeaturePtr BindingWorkingMemoryWriter::createFeature(const std::string & featlabel) {
     FeaturePtr feat = new Feature();
     feat->featlabel = featlabel;
@@ -199,8 +206,8 @@ namespace binder {
       println("EXCEPTION in BindingWorkingMemoryWriter::deleteEntityInWM: %s", e.message.c_str());
     }
   }
-  
-  
+
+
   void BindingWorkingMemoryWriter::deleteEntityInWM(std::string _id) {
 
     try {
