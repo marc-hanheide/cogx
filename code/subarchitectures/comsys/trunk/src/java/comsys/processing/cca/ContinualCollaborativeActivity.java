@@ -286,7 +286,7 @@ public class ContinualCollaborativeActivity {
 				String nomVar = binding.nomVar; 
 				// cycle over the anchorings for this nominal, ordered by costs -- we have all, not just the maximum
 
-				Anchor[] antecedents = null;
+				Anchor[] antecedents = new Anchor[0];
 				
 //				log("got " + binding.antecedents.length + " binding anchor(s)");
 				if (binding.antecedents.length == 0) {
@@ -297,8 +297,16 @@ public class ContinualCollaborativeActivity {
 						return;
 					}
 					else {
-						log("  -> using the last RefBinding");
-						antecedents = refStack.peek().antecedents;
+						if (nomVar.startsWith("it")) {
+							log("     the nominal seems to be an \"it\"");
+							log("  -> using the last RefBinding");
+							antecedents = refStack.peek().antecedents;
+						}
+						else {
+							log("     the nominal doesn't seem to be an \"it\"");
+							log("  -> leaving anchor set empty");
+						}
+						
 					}
 					
 				}
