@@ -181,11 +181,15 @@ void VisualMediator::runComponent()
 			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
 
 			FeatureValuePtr value = createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
-			FeaturePtr label = createFeatureWithUniqueFeatureValue ("label", value);
+			FeaturePtr label = createFeatureWithUniqueFeatureValue ("obj_label", value);
+
+			FeatureValuePtr salvalue = createStringValue ("high", 1.00f);
+			FeaturePtr saliency = createFeatureWithUniqueFeatureValue ("saliency", salvalue);
 
 			ProxyPtr proxy = createNewProxy (origin, 1.0f);
 
-			addFeatureToProxy (proxy, label);	
+			addFeatureToProxy (proxy, label);
+			addFeatureToProxy (proxy, saliency);
 			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
 
 			addProxyToWM(proxy);
@@ -218,7 +222,7 @@ void VisualMediator::runComponent()
 			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
 
 			FeatureValuePtr value = createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
-			FeaturePtr label = createFeatureWithUniqueFeatureValue ("label", value);
+			FeaturePtr label = createFeatureWithUniqueFeatureValue ("obj_label", value);
 
 			ProxyPtr proxy = createNewProxy (origin, 1.0f);
 
@@ -226,6 +230,9 @@ void VisualMediator::runComponent()
 			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
 			
 			proxy->entityID = data.proxyId;
+
+			FeaturePtr saliency = createFeatureWithUniqueFeatureValue ("saliency", createStringValue ("high", 1.0f));
+			addFeatureToProxy (proxy, saliency);
 			
 			overwriteProxyInWM(proxy);
 			
@@ -345,7 +352,6 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 	return;
   }
   
-  
   if(unionRef(obj->phi, unionID))
   {
 	debug("Found reference to union ID %s SA %s in belief", unionID.c_str(), m_bindingSA.c_str());
@@ -411,7 +417,7 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   {
 	debug("Found asserted colors or shapes");
 	
-	compileAndSendLearnTask(visObjID, colors, shapes, colorDist, shapeDist);
+	compileAndSendLearnTask(visObjID,  _wmc.address.id, colors, shapes, colorDist, shapeDist);
 	
 	log("Added a learning task for visual object ID %s", visObjID.c_str());
   }
@@ -420,6 +426,44 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 	debug("No asserted colors or shapes - no learning");
 	return;
   }
+}
+
+
+void VisualMediator::updatedLearningTask(const cdl::WorkingMemoryChange & _wmc)
+{
+  log("A learning Task was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
+  
+  VisualLearnerLearningTaskPtr task =
+	getMemoryEntry<VisualLearnerLearningTask>(_wmc.address);
+	
+  debug("Got an overwritten learning task ID: %s", _wmc.address.id.c_str());
+  
+  BeliefPtr belief = getMemoryEntry<Belief>(task->beliefId, m_bindingSA);
+  GroundedBeliefPtr grobelief = new GroundedBelief();
+  grobelief->sigma = belief->sigma;
+  grobelief->phi = belief->phi;
+	removeLearnedAssertions(grobelief->phi, task);
+	
+	MutualAgentStatusPtr agstatus = new MutualAgentStatus();
+	agstatus->ags.push_back(new Agent("robot"));
+	agstatus->ags.push_back(new Agent("human"));
+  grobelief->ags = agstatus;
+  grobelief->grounding = new Ground();
+  grobelief->grounding->gstatus = assertionVerified;
+  grobelief->grounding->modality = getSubarchitectureID();
+//  grobelief->grounding->indexSet
+  grobelief->grounding->reason = new SuperFormula();
+  grobelief->timeStamp = getCASTTime();
+  grobelief->id = belief->id;
+  
+  overwriteWorkingMemory(task->beliefId, m_bindingSA, grobelief);
+  log("Updated the belief ID %s with grounding", belief->id.c_str());
+
+  deleteFromWorkingMemory(_wmc.address);
+  log("Removed the learning task ID %s", _wmc.address.id.c_str());
+  
+  removeChangeFilter(TaskFilterMap[_wmc.address.id]);
+  TaskFilterMap.erase(_wmc.address.id);
 }
 
 
@@ -540,6 +584,40 @@ bool VisualMediator::AttrAgent(AgentStatusPtr ags)
 
 }
 
+
+void VisualMediator::removeLearnedAssertions(FormulaPtr fp, VisualLearnerLearningTaskPtr task)
+{
+  Formula *f = &(*fp);
+
+  if(typeid(*f) == typeid(ColorProperty))
+  {
+	ColorPropertyPtr color = dynamic_cast<ColorProperty*>(f);
+	
+	if(color->cstatus == assertion)
+	  color->cstatus = proposition;
+  }
+  else if(typeid(*f) == typeid(ShapeProperty))
+  {
+	ShapePropertyPtr shape = dynamic_cast<ShapeProperty*>(f);
+	
+	if(shape->cstatus == assertion)
+	  shape->cstatus = proposition;
+  }
+  else if(typeid(*f) == typeid(ComplexFormula))
+  {
+	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
+	vector<SuperFormulaPtr>::iterator it;
+
+	for(it = unif->formulae.begin(); it != unif->formulae.end(); it++)
+	{
+	  SuperFormulaPtr sf = *it;
+  
+	  removeLearnedAssertions(sf, task);
+	}	
+  }
+}
+
+
 void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, DoubleSeq distribution)
 {
   vector<int>::iterator labi;
@@ -621,7 +699,7 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 }
 
 
-void VisualMediator::compileAndSendLearnTask(const string visualObjID,
+void VisualMediator::compileAndSendLearnTask(const string visualObjID, const string beliefID,
 				vector<Color> &colors, vector<Shape> &shapes,
 				vector<float> &colorDist, vector<float> &shapeDist)
 {
@@ -630,6 +708,7 @@ void VisualMediator::compileAndSendLearnTask(const string visualObjID,
   VisualLearnerLearningTaskPtr ltask = new VisualLearnerLearningTask();
   
   ltask->visualObjectId = visualObjID;
+  ltask->beliefId = beliefID;
   ltask->protoObjectId = objPtr->protoObjectID;
   
   debug("Size of color list %i, distribution list %i", colors.size(), colorDist.size());  
@@ -716,7 +795,15 @@ void VisualMediator::compileAndSendLearnTask(const string visualObjID,
   }
   debug("Leaning task compiled");
   
-  addToWorkingMemory(newDataID(), subarchitectureID(), ltask);
+  string newID = newDataID();
+  
+  WorkingMemoryChangeReceiver *receiver = new MemberFunctionChangeReceiver<VisualMediator>(this, &VisualMediator::updatedLearningTask);
+   
+  TaskFilterMap.insert(make_pair(newID, receiver));
+  
+  addChangeFilter(createIDFilter(newID, cdl::OVERWRITE), receiver);
+	  
+  addToWorkingMemory(newID, subarchitectureID(), ltask);
   
   debug("Learning task sent");
 }

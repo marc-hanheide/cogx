@@ -71,6 +71,8 @@ class VisualMediator :
   };
 
   std::map<std::string, VisualObjectData>VisualObjectMap;
+  
+  std::map<std::string, cast::WorkingMemoryChangeReceiver*>TaskFilterMap;
 
   std::queue<std::string> proxyToAdd;
   std::queue<std::string> proxyToDelete;
@@ -97,6 +99,11 @@ class VisualMediator :
    * callback function called whenever a Belief changes
    */
   void updatedBelief(const cdl::WorkingMemoryChange & _wmc);
+  
+    /**
+   * callback function called whenever a learning task is overwritten
+   */
+  void updatedLearningTask(const cdl::WorkingMemoryChange & _wmc);
 
 //  bool unionRef(beliefmodels::domainmodel::cogx::SuperFormulaPtr f, std::string &unionID);
 
@@ -112,10 +119,12 @@ class VisualMediator :
   void addFeatureListToProxy(binder::autogen::core::ProxyPtr proxy, VisionData::IntSeq labels,
 							 VisionData::DoubleSeq distribution);
 							 
-  void compileAndSendLearnTask(std::string visualObjID,
+  void compileAndSendLearnTask(std::string visualObjID,  const std::string beliefID,
 				std::vector<beliefmodels::domainmodel::cogx::Color> &colors,
 				std::vector<beliefmodels::domainmodel::cogx::Shape> &shapes,
 				std::vector<float> &colorDist, std::vector<float> &shapeDist);
+				
+  void removeLearnedAssertions(beliefmodels::adl::FormulaPtr fp, VisionData::VisualLearnerLearningTaskPtr task);
 
  protected:
   /**
