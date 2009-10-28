@@ -71,6 +71,7 @@ public class ProxyInfoGUI extends JDialog {
 		updateFeaturesFrame();
 		if (proxy.features.length > 0) {
 			table1.setComponentPopupMenu(popupMenu1);
+			
 		}
 		okButton.setText("Modify");
 	}
@@ -173,9 +174,9 @@ public class ProxyInfoGUI extends JDialog {
 		label13 = new JLabel();
 		panel9 = new JPanel();
 		label6 = new JLabel();
-		button1 = new JButton();
 		scrollPane1 = new JScrollPane();
 		table1 = new JTable();
+		button1 = new JButton();
 		panel6 = new JPanel();
 		label7 = new JLabel();
 		label8 = new JLabel();
@@ -306,7 +307,7 @@ public class ProxyInfoGUI extends JDialog {
 			{
 				panel9.setLayout(new GridBagLayout());
 				((GridBagLayout)panel9.getLayout()).columnWidths = new int[] {138, 0, 180, 0};
-				((GridBagLayout)panel9.getLayout()).rowHeights = new int[] {0, 55, 0, 0, 0};
+				((GridBagLayout)panel9.getLayout()).rowHeights = new int[] {0, 50, 0, 0, 0};
 				((GridBagLayout)panel9.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
 				((GridBagLayout)panel9.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
 
@@ -315,17 +316,6 @@ public class ProxyInfoGUI extends JDialog {
 				panel9.add(label6, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(0, 0, 5, 5), 0, 0));
-
-				//---- button1 ----
-				button1.setText("Add new feature");
-				button1.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						button1ActionPerformed(e);
-					}
-				});
-				panel9.add(button1, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-					new Insets(0, 0, 5, 0), 0, 0));
 
 				//======== scrollPane1 ========
 				{
@@ -362,11 +352,23 @@ public class ProxyInfoGUI extends JDialog {
 					table1.setRowHeight(25);
 					table1.setRowSelectionAllowed(false);
 					table1.setEnabled(false);
+					table1.setBorder(new BevelBorder(BevelBorder.LOWERED));
 					scrollPane1.setViewportView(table1);
 				}
 				panel9.add(scrollPane1, new GridBagConstraints(0, 1, 3, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 					new Insets(0, 0, 5, 0), 0, 0));
+
+				//---- button1 ----
+				button1.setText("Add new feature");
+				button1.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						button1ActionPerformed(e);
+					}
+				});
+				panel9.add(button1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+					new Insets(0, 0, 5, 5), 0, 0));
 
 				//======== panel6 ========
 				{
@@ -374,6 +376,7 @@ public class ProxyInfoGUI extends JDialog {
 
 					//---- label7 ----
 					label7.setText("Total number of features:  ");
+					label7.setIcon(null);
 					panel6.add(label7, BorderLayout.CENTER);
 
 					//---- label8 ----
@@ -444,8 +447,8 @@ public class ProxyInfoGUI extends JDialog {
 		}
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 		
-		setSize(new Dimension(480, 350));
-		setPreferredSize(new Dimension(480, 350));
+		setSize(new Dimension(480, 340));
+		setPreferredSize(new Dimension(480, 340));
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -466,9 +469,9 @@ public class ProxyInfoGUI extends JDialog {
 	private JLabel label13;
 	private JPanel panel9;
 	private JLabel label6;
-	private JButton button1;
 	private JScrollPane scrollPane1;
 	private JTable table1;
+	private JButton button1;
 	private JPanel panel6;
 	private JLabel label7;
 	private JLabel label8;
@@ -484,8 +487,8 @@ public class ProxyInfoGUI extends JDialog {
 	public void addFeatureToProxy (Feature feat) {
 		ProxyConstructor.addFeatureToProxy(curProxy, feat);
 		updateFeaturesFrame();
-		setSize(new Dimension(480, 350 + (30 * curProxy.features.length)));
-		setPreferredSize(new Dimension(480, 350 + (30 * curProxy.features.length)));
+		setSize(new Dimension(480, 340 + (30 * curProxy.features.length)));
+		setPreferredSize(new Dimension(480, 340 + (30 * curProxy.features.length)));
 		table1.setComponentPopupMenu(popupMenu1);
 	}
 	
