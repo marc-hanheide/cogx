@@ -163,9 +163,32 @@ segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 
 transform(L0, VS0, L, VS, Ctx) :-
 	segment_proof_state(L0, SegL0),
-	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[", !IO) ),
-	step(_Step, SegL0, VS0, L, VS, Ctx),
-	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "]", !IO) ).
+	(if
+	 	% try to factor
+		do_factoring(SegL0, VS0, L1, VS1, Ctx)
+	then
+		% if it succeeds
+		(if
+			goal_solved(L1)
+		then
+			% we're done! the factoring was the last step
+			L = L1,
+			VS = VS1
+		else
+			% make the step on the factored proof
+			segment_proof_state(L1, SegL1),
+			step(_Step, SegL1, VS1, L, VS, Ctx)
+		)
+	else
+		% if not, continue as before
+		step(_Step, SegL0, VS0, L, VS, Ctx)
+	).
+		
+
+%	segment_proof_state(L0, SegL0),
+%	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[", !IO) ),
+%	step(_Step, SegL0, VS0, L, VS, Ctx),
+%	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "]", !IO) ).
 
 %------------------------------------------------------------------------------%
 
@@ -255,6 +278,8 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 	PF = rename_vars_in_formula(Renaming, PF0),
 
 	unify_formulas(PF, PQ0, Uni),
+
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "\\" ++ PredSym ++ "/", !IO) ),
 
 	PQ = apply_subst_to_formula(Uni, PQ0),
 	QsL = list.map(apply_subst_to_query(Uni), QsL0),
@@ -346,8 +371,24 @@ leftmost_unifiable(m(Mod, Pred), [m(ModH, PredH) | T], Subst) :-
 		leftmost_unifiable(m(Mod, Pred), T, Subst)
 	).
 
+:- pred do_factoring(
+			% input
+		{
+			list(query(M)),  % unsolved (preceding propositions)
+			with_cost_function(mprop(M)),  % proposition under examination + its assump.cost
+			list(query(M))  % following propositions
+		}::in,
+		varset::in,  % variables used in the proof
+
+			% output
+		list(query(M))::out,  % resulting goal after performing the step
+		varset::out,  % variables used in the goal
+
+		C::in  % knowledge base
+	) is semidet <= (modality(M), context(C, M)).
+
 	% factoring
-step(factor(Uni, VS),
+do_factoring(
 		{QsL0, cf(m(MQ, PQ), _F), QsR0}, VS,
 		QsL ++ QsR, VS,
 		_Ctx) :-
