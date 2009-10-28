@@ -6,7 +6,6 @@ import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
-import motivation.slice.PlanProxy;
 import motivation.util.castextensions.Accessor;
 import SpatialData.AVSCommand;
 import SpatialData.NavCommand;
@@ -175,23 +174,23 @@ public class DoraVerbalisation extends ManagedComponent {
 				MotiveStatus.ACTIVE, MOTIVE_ACTIVATED);
 
 		// when places are created
-//		m_verbals.verbaliseOnAddition(Place.class, NEW_PLACE_GENERATOR);
-		
-		 // when places are explored
-//		 m_verbals.verbaliseOnStateTransition(Place.class,
-//		 PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
-//		 PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
+		// m_verbals.verbaliseOnAddition(Place.class, NEW_PLACE_GENERATOR);
+
+		// when places are explored
+		// m_verbals.verbaliseOnStateTransition(Place.class,
+		// PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
+		// PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
 		//
 		// // when places are deleted (i.e. exploration could be carried out)
 		// m_verbals.verbaliseOnDeletion(Place.class,
 		// PLACE_EXPLORATION_FAILED_GENERATOR);
 
-//		// when navigation is told to move the robot
-//		m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
+		// // when navigation is told to move the robot
+		// m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
 
-//		// when plan execution is triggered
-//		m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
-//				"Starting plan execution.");
+		// // when plan execution is triggered
+		// m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
+		// "Starting plan execution.");
 
 		// when AVS is triggered
 		m_verbals.verbaliseCannedTextOnAddition(AVSCommand.class,
@@ -203,13 +202,13 @@ public class DoraVerbalisation extends ManagedComponent {
 
 		// when an object is added to the spatial model -> this is once per
 		// object class in place
-//		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
-//				OBJECT_PROPERTY_GENERATOR);
+		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
+				OBJECT_PROPERTY_GENERATOR);
 
 		// when an object is recognised at all -> is this every positive
 		// recognition result
-		m_verbals.verbaliseOnAddition(VisualObject.class,
-				VISUAL_OBJECT_GENERATOR);
+//		m_verbals.verbaliseOnAddition(VisualObject.class,
+//				VISUAL_OBJECT_GENERATOR);
 
 		m_verbals.verbaliseOnOverwrite(ComaRoom.class,
 				new RoomCategoryTextGenerator());
