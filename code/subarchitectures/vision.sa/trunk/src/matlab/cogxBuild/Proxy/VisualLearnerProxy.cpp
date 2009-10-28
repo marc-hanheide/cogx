@@ -75,6 +75,43 @@ static void copyLabels(const mwArray &ans, vector<int> &labels, vector<double> &
    }
 }
 
+void protoObjectToMwArray(const ProtoObject &Object, mwArray &image, mwArray &mask, mwArray &points3d)
+{
+   // Convert image patch
+   image = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
+         Object.image.width, Object.image.height, 3); // WISH: number of channels in image
+   printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
+
+   // Convert image mask
+   mask = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
+         Object.mask.width, Object.mask.height, 1);
+   printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
+
+   // Convert 3D points
+   int npts = Object.points.size();
+   const int ncol = 6;
+   if (npts < 1) 
+      points3d = mwArray(mxDOUBLE_CLASS, mxREAL); // an empty array
+   else {
+      // x, y, z, r, g, b
+      mwSize dimensions[2] = {npts, ncol};
+      points3d = mwArray(2, dimensions, mxDOUBLE_CLASS, mxREAL);
+      double *data = new double[npts * ncol];
+      for (int i = 0; i < npts; i++) {
+         const SurfacePoint &p = Object.points[i];
+         int irow = i * ncol;
+         data[irow + 0] = p.p.x;
+         data[irow + 1] = p.p.y;
+         data[irow + 2] = p.p.z;
+         data[irow + 3] = p.c.r;
+         data[irow + 4] = p.c.g;
+         data[irow + 5] = p.c.b;
+      }
+      points3d.SetData(data, npts*ncol);
+      delete data;
+   }
+}
+
 void VL_LoadAvModels(const char* filename)
 {
    CheckInit();
@@ -86,19 +123,12 @@ void VL_LoadAvModels(const char* filename)
 void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vector<double> &probs)
 {
    CheckInit();
-   // Add the ROI to Matlab engine
-   mwArray x = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
-         Object.image.width, Object.image.height, 3); // WISH: number of channels in image
-   printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
-
-   // Add the segmentation mask to the Matlab engine.
-   mwArray b0 = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
-         Object.mask.width, Object.mask.height, 1);
-   printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
+   mwArray image, mask, pts3d;
+   protoObjectToMwArray(Object, image, mask, pts3d);
 
    // Extract features and recognise.
    mwArray rCqnt;
-   cogxVisualLearner_recognise(1, rCqnt, x, b0);
+   cogxVisualLearner_recognise(1, rCqnt, image, mask, pts3d);
 
    labels.clear();
    probs.clear();
@@ -108,15 +138,8 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
 void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<double> &distribution)
 {
    CheckInit();
-   // Add the ROI to Matlab engine
-   mwArray x = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
-         Object.image.width, Object.image.height, 3); // WISH: number of channels in image
-   printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
-
-   // Add the segmentation mask to the Matlab engine.
-   mwArray b0 = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
-         Object.mask.width, Object.mask.height, 1);
-   printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
+   mwArray image, mask, pts3d;
+   protoObjectToMwArray(Object, image, mask, pts3d);
 
    long cntPlus = 0, cntMinus = 0;
    for (unsigned i = 0; i < labels.size(); i++) {
@@ -134,7 +157,7 @@ void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<
            row++;
         }
       }
-      cogxVisualLearner_update(x, b0, avw);
+      cogxVisualLearner_update(avw, image, mask, pts3d);
    }
 
    if (cntMinus > 0) {
@@ -147,7 +170,7 @@ void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<
            row++;
         }
       }
-      cogxVisualLearner_unlearn(x, b0, avw);
+      cogxVisualLearner_unlearn(avw, image, mask, pts3d);
    }
 }
 

@@ -4,15 +4,14 @@
 %**orig**: this->eval("mFS.AVmeans");
 %**orig**: this->eval("mFS.AVvars");
 %**orig**: this->eval("LRvisUpdate");
-function cogxVisualLearner_unlearn(X, B, avw)
+function cogxVisualLearner_unlearn(avw, X, B, pts3d)
    global mAV
    
    global Params
    B = double(B);
    B = (B==120);
    X = uint8(X);
-   f = extAPfeatures(X,B,Params.FV);
-
+   f = extAPfeatures(X,B,Params.FV,pts3d);
 
    mAV = MKDBFunlearn(f, avw(:,1), mAV);
    LRvisUpdate;

@@ -1,4 +1,4 @@
-function [rCqnt] = cogxVisualLearner_recognise(X, B)
+function [rCqnt] = cogxVisualLearner_recognise(X, B, pts3d)
    % X - image - byte_array
    % B - segmentation mask - byte_array
    % Copied from cosyFeatureExtractor_limitvalue
@@ -9,7 +9,7 @@ function [rCqnt] = cogxVisualLearner_recognise(X, B)
    % Copied from cosyFeatureExtractor_extract
    global Params
    X = uint8(X);
-   f = extAPfeatures(X,B,Params.FV);
+   f = extAPfeatures(X,B,Params.FV,pts3d);
    showROI(X,B,f);
 
    % figure('color','k');
