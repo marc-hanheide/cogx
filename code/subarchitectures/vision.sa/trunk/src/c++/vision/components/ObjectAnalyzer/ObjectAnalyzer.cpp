@@ -121,7 +121,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
 
   VisualObjectPtr pvobj = new VisualObject;
-	pvobj->label = "unkknown";
+	pvobj->label = "unknown";
 	pvobj->labelConfidence = 1.0f;
 	pvobj->protoObjectID = ptask->protoObjectId;
 	
