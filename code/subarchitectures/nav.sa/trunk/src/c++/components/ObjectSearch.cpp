@@ -962,31 +962,33 @@ void ObjectSearch::owtNavCommand(const cdl::WorkingMemoryChange & objID) {
       m_status = NAVCOMMANDCOMPLETED;
       if (m_plan.plan.size() == 0) {
 	m_command = PLAN;
-      } else {
+      } 
+      else {
 	
 	Cure::Pose3D currpos = m_TOPP.getPose();
 	double plantheta = m_plan.plan[whereinplan].getTheta();
 	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
-	if ( fabs(anglediff) > M_PI_2 )
-	  {
-	    log("First turning the robot a little.");
-	    double turnangle;
-	    if (anglediff < 0) {
-	      turnangle = anglediff + M_PI_2 - 0.2;
-	    } else {
-	      turnangle = anglediff - M_PI_2 + 0.2;
-	    }
-	    SpatialData::NavCommandPtr cmd = newNavCommand();
-	    cmd->prio = SpatialData::URGENT;
-	    cmd->cmd = SpatialData::TURN;
-	    cmd->angle.resize(1);
-	    cmd->angle[0] = turnangle;
-	    cmd->tolerance.resize(1);
-	    cmd->tolerance[0] = 0.1;
-	    
-	    new NavCommandReceiver(*this, cmd);
-	    break;
+	log("plantheta : %f, currtheta, %f", plantheta, currpos.getTheta());
+	log("anglediff is: %f", anglediff);
+	if ( fabs(anglediff) > M_PI_2 ) {
+	  log("First turning the robot a little.");
+	  double turnangle;
+	  if (anglediff < 0) {
+	    turnangle = anglediff + M_PI_2 - 0.2;
+	  } else {
+	    turnangle = anglediff - M_PI_2 + 0.2;
 	  }
+	  SpatialData::NavCommandPtr cmd = newNavCommand();
+	  cmd->prio = SpatialData::URGENT;
+	  cmd->cmd = SpatialData::TURN;
+	  cmd->angle.resize(1);
+	  cmd->angle[0] = turnangle;
+	  cmd->tolerance.resize(1);
+	  cmd->tolerance[0] = 0.1;
+	  
+	  new NavCommandReceiver(*this, cmd);
+	  break;
+	}
 	
 	log("command set to recognize");
 	m_command = RECOGNIZE;
