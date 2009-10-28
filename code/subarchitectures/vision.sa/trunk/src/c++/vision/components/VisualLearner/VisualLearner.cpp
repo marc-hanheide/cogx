@@ -57,7 +57,9 @@ void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
    try {
       // get the data from working memory
       // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+      // TODO: lock queue
       m_RecogTaskId_Queue.push_back(_wmc.address);
+      // TODO: unlock queue
       log("Request addr pushed: %s", descAddr(_wmc.address).c_str());
    }
    catch(cast::DoesNotExistOnWMException){
@@ -77,7 +79,9 @@ void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
    try {
       // get the data from working memory
       // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+      // TODO: lock queue
       m_LearnTaskId_Queue.push_back(_wmc.address);
+      // TODO: unlock queue
       log("Request addr pushed: %s", descAddr(_wmc.address).c_str());
    }
    catch(cast::DoesNotExistOnWMException){
@@ -97,9 +101,12 @@ void VisualLearner::runComponent()
       // lockComponent();
 
       foundSomething = false;
-      pwma = m_RecogTaskId_Queue.begin();
-      if (pwma != m_RecogTaskId_Queue.end()) {
+      if (m_RecogTaskId_Queue.size() > 0) {
+         // TODO: lock queue
+         pwma = m_RecogTaskId_Queue.begin();
          cdl::WorkingMemoryAddress addr = *pwma;
+         m_RecogTaskId_Queue.erase(pwma);
+         // TODO: unlock queue
          log("VL_Recognition Request addr popped: %s", descAddr(addr).c_str());
          VisualLearnerRecognitionTaskPtr pTaskData;
          try{
@@ -121,14 +128,15 @@ void VisualLearner::runComponent()
          };
          // TODO: catch other stuff from Matlab Proxy
 
-         // Erase and move to the next point in the list.
-         pwma = m_RecogTaskId_Queue.erase(pwma);
          log("VL_Recognition Task processed");
       } // while
 
-      pwma = m_LearnTaskId_Queue.begin();
-      if (pwma != m_LearnTaskId_Queue.end()) {
+      if (m_LearnTaskId_Queue.size() > 0) {
+         // TODO: lock queue
+         pwma = m_LearnTaskId_Queue.begin();
          cdl::WorkingMemoryAddress addr = *pwma;
+         m_LearnTaskId_Queue.erase(pwma);
+         // TODO: unlock queue
          log("Learning Request addr popped: %s", descAddr(addr).c_str());
          VisualLearnerLearningTaskPtr pTaskData;
          try{
@@ -150,8 +158,6 @@ void VisualLearner::runComponent()
          };
          // TODO: catch other stuff from Matlab Proxy
 
-         // Erase and move to the next point in the list.
-         pwma = m_LearnTaskId_Queue.erase(pwma);
          log("VL_Learning Task processed");
       }
 
