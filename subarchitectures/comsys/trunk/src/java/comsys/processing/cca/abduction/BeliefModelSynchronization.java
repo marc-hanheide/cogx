@@ -65,6 +65,7 @@ public class BeliefModelSynchronization {
 		}
 		log("done adding assumables");
 		
+/*
 		// map (unionId -> ( (expandedAgentStatusSTRING, predSym) -> (expandedAgentStatus, originAgentStatus, value) )
 		// Ice doesn't override hashCode() ;( ... we need to make the key hashable, so we convert it to
 		// string... nasty, but works
@@ -141,6 +142,7 @@ public class BeliefModelSynchronization {
 //				log("id=" + unionId + ", ags=" + PrettyPrinting.agentStatusToString(as) + ", sym=" + predSym + ", value=" + valueStr);
 			}
 		}
+*/
 		log("sync done");
 	}
 
