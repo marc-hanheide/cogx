@@ -74,6 +74,9 @@ to_property(P, P) <-
 
 prop_to_shape(round, spherical).
 prop_to_shape(square, cubic).
+prop_to_shape(cubic, cubic).
+prop_to_shape(cylindrical, cylindrical).
+prop_to_shape(spherical, spherical).
 
 %-------------------------------------------------------------------------
 

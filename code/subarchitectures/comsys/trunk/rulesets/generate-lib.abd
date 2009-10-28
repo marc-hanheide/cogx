@@ -72,6 +72,8 @@ propname_to_questiontype(shape, shape).
 portray_shape_prop(shape, shape).  % for generating questions
 portray_shape_prop(cubic, square).
 portray_shape_prop(spherical, round).
+portray_shape_prop(cylindrical, cylindrical).
+portray_shape_prop(spherical, spherical).
 
 %----------------------------------------------------------------------
 
