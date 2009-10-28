@@ -553,7 +553,12 @@ public class BindingVisualizer {
 			
 			frame.getContentPane().removeAll();
 			frame.getContentPane().add(graphComponent);
-
+			graph.setCellsEditable(false);
+			graph.setEdgeLabelsMovable(false);
+			graph.setDisconnectOnMove(false);
+			graph.setCellsDisconnectable(false);
+			graph.setConnectableEdges(false);
+			graph.setDropEnabled(false);
 			frame.setVisible(true);
 		}
 		catch (Exception e) {		}
@@ -643,6 +648,12 @@ public class BindingVisualizer {
 		final mxGraphComponent graphComponent = new mxGraphComponent(graph);
 		frame.getContentPane().removeAll();
 		frame.getContentPane().add(graphComponent);
+		graph.setCellsEditable(false);
+		graph.setEdgeLabelsMovable(false);
+		graph.setDisconnectOnMove(false);
+		graph.setCellsDisconnectable(false);
+		graph.setConnectableEdges(false);
+		graph.setDropEnabled(false);
 		addContextualMenu(graphComponent);
 		frame.setVisible(true);
 		}
