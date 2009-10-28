@@ -10,5 +10,12 @@ if nargin<2 %crop binary image
    bb=[min(p2i) min(p1i); max(p2i) max(p1i)];  %[minY,maxY;minX,maxX]
 end;
 
+try
 x1=x(bb(1,1):bb(2,1),bb(1,2):bb(2,2),:);
+catch 
+    fg = 0 ;
+    x1 = x ;
+    bb= [1,size(x,1),1,size(x,2)] ;
+end
+    
 bb1=bb;

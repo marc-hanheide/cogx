@@ -63,9 +63,9 @@ else
       medHSV=median(V)';
       [hu,sa,in]=deal(medHSV(1),medHSV(2),medHSV(3));
       if in==1 
-         in
+%          in
          in=in-abs(rand*1e-6); 
-         in
+%          in
       end; %saturated intensity values...
 
       %GET SHAPE FEATURES

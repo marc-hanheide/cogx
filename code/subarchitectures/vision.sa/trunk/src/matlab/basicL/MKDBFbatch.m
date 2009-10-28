@@ -1,6 +1,6 @@
 function mC=MKDBFbatch(F,C)
 
-CCT=.5; %CompressionClusterThreshold
+CCT=.5; % 0.1; %CompressionClusterThreshold
 SEL=2;
 
 %CM=[1:6;1 1 1 1 2 2]'; %concept number -> concept group mapping
@@ -22,8 +22,9 @@ namesC=1:numC;
 
 %ESTIMATE KDEs
 %select the best F for each C and save the model for each C
-mC=struct('name', [], 'kde', [], 'Fb', [], 'conf', []);
+mC=struct('name', [], 'kde', [], 'Fb', [], 'conf', [], 'Nall',[]);
 
+mC(1).Nall = size(F,2) ;
 for i=1:numC
    mC(i).name=namesC(i);
    idxs=find(C(i,:)==1);

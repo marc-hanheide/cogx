@@ -8,7 +8,7 @@ function [mC]=MKDBFupdate(F,C,mC)
 
 %parameters
 ING=2; %Initial Gaussians
-CCT=.5; %CompressionClusterThreshold
+CCT=0.1;  %.5; %CompressionClusterThreshold
 global Params
 if ~isempty(Params)
    ING=Params.ING;
@@ -22,9 +22,7 @@ if ~isempty(currMode)
    MDF=currMode.MDF;
    CM=currMode.CTT;
 end
-
-
-
+ 
 if size(F,2)>1   %several feature vectors given
    for i=1:size(F,2) %proces one by one
       [mC]=MKDBFupdate(F(:,i),lf2sf(C(:,i)),mC);
@@ -42,6 +40,7 @@ elseif ~isempty(C) %at least one concept given
    end;
    
    %UPDATE MKDE MODELS
+   mC(1).Nall=mC(1).Nall+mean(C(:,2));
    oldCs=[mC.name];
    for i=1:size(C,1) %for all currently observed concepts
       
@@ -58,8 +57,9 @@ elseif ~isempty(C) %at least one concept given
       %update MKDE model
       if mC(idx).conf<ING %collect initial samples
          mC(idx).x_init=[mC(idx).x_init F];
-      elseif mC(i).conf==ING %initialize KDE
+      elseif mC(idx).conf==ING %initialize KDE
          mC(idx).kde= executeOperatorIKDE( [], 'input_data', mC(idx).x_init, 'add_input', 'compressionClusterThresh', CCT   );
+         disp(['!!!!!!!!!!!!!!!!!!!!' num2str(i) '!!!!!!!!!!!!!!!!!!!!!!!!']);
       else %update KDE
          mC(idx).kde= executeOperatorIKDE( mC(idx).kde, 'input_data', F, 'add_input' );
          if mC(idx).conf> 10
@@ -70,56 +70,6 @@ elseif ~isempty(C) %at least one concept given
    
    
 %FEATURE SELECTION
-
-%    numMDF=length(MDF);
-%    dsts=ones(numC,numMDF)*1e10;
-%    for i=1:numMDF
-%       for j=1:numC
-%          for k=j+1:numC
-%             if mC(j).conf>=ING && mC(k).conf>=ING
-%                res = executeOperatorIKDE( mC(j).kde, 'additional_kde', mC(k).kde, 'evalHellingerBetween' , 'selectSubDimensions', MDF{i} ) ;
-%                dst=res.distance_hell;
-%                dsts(j,i)=min(dsts(j,i),dst);
-%                dsts(k,i)=min(dsts(k,i),dst);
-%             end
-%          end
-%       end
-%       %normalize distances
-%       %dsts(:,i)=dsts(:,i).^(1/length(MDF{i}));
-%       dsts(:,i)=dsts(:,i).^length(MDF{i});   
-%       %dsts(:,i)=dsts(:,i).^(-(1+length(MDF{i})/100));   
-%       %dsts(:,i)=dsts(:,i)/length(MDF{i});
-%    end
-%    
-%    SEL=2;
-%    if SEL==1
-%    [foo,Fbs]=max(dsts');
-% else
-%    %select best feature for concept goroups
-%    CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
-%    names=[mC.name];
-%    nCG=max(CM(:,2));
-%    ICM=zeros(numC,2);
-%    for i=1:nCG
-%       cs=find(CM(:,2)==i);
-%       ics=find(ismember(names,cs));
-%       ICM(ics,1)=names(ics);
-%       ICM(ics,2)=i;
-%    end;
-%    
-%    dsts1=zeros(nCG,numMDF);
-%    for i=1:nCG
-%       dsts1(i,:)=sum(dsts(ICM(:,2)==i,:));
-%    end
-%    [foo,Fbs1]=max(dsts1');
-%    
-%    for i=1:numC
-%       Fbs(i)=Fbs1(ICM(i,2));
-%    end
-% end
-
-%CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
-%CM=[1:10;1 1 1 1 1 1 1 1 2 2]'; %concept number -> concept group mapping
 Fbs=selectFeatures(mC,CM,MDF);
    
    for i=1:numC

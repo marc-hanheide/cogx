@@ -12,7 +12,7 @@ if nargout==3
 end;
 
 for i=1:N
-   datfile=[fdir 'dat' num2str(idxs(i),'%04d') ,'.mat'];
+   datfile=['D:\Work\Matlab\CogX\DK_code\sim\data\objects_newvis\' 'dat' num2str(idxs(i),'%04d') ,'.mat'];
    load(datfile,'gt');
 
    for j=1:size(gt.AP,1);
