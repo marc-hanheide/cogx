@@ -1,14 +1,19 @@
 package binder.abstr;
 
 
+import java.util.HashMap;
 import java.util.Vector;
 
+import beliefmodels.adl.Agent;
 import beliefmodels.adl.AgentStatus;
 import beliefmodels.adl.Belief;
 import beliefmodels.adl.BeliefModel;
 import beliefmodels.adl.Formula;
+import beliefmodels.adl.Perspective;
+import beliefmodels.adl.SpatialInterval;
 import beliefmodels.adl.SpatioTemporalFrame;
 import beliefmodels.adl.SpatioTemporalModel;
+import beliefmodels.adl.TemporalInterval;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.LogicalOp;
 import beliefmodels.domainmodel.cogx.SuperFormula;
@@ -61,18 +66,59 @@ public class BeliefModelInterface extends ManagedComponent{
 			} 
 		});
 	}
+
 	
-	 
+	
+
+	public final Agent robotAgent = new Agent("robot");
+	public final Agent humanAgent = new Agent("human");
+	public SpatioTemporalFrame curFrame = new SpatioTemporalFrame();
+	
+	// =================================================================
+	// INITIALISATION
+	// =================================================================
+
+ 
+	public void initializeAgentAndFrame () {
+		robotAgent.id = "robot";
+
+		String id = "here-and-now";
+		Agent[] ags = new Agent[1];
+		ags[0] = robotAgent;
+		Perspective persp = new Perspective("robotperspective", ags);
+		SpatialInterval spatialint = new SpatialInterval("here");
+		TemporalInterval tempint = new TemporalInterval("now", getCASTTime().toString(), getCASTTime().toString());
+		
+		curFrame = new SpatioTemporalFrame(id, spatialint, tempint, persp);
+	}
+
 	/**
 	 * Retrieve the current belief model
 	 * 
 	 * @return the belief model
 	 */
-	
+
 	public BeliefModel getCurrentBeliefModel ()  {
-		return currentBeliefModel;
+
+		if (currentBeliefModel != null) {
+			return currentBeliefModel;
+		}
+		else {
+			SpatioTemporalModel s = new SpatioTemporalModel();		
+			s.frames = new SpatioTemporalFrame[1];
+			s.frames[0] = curFrame;
+
+			String[] k = new String[0];
+
+			Agent[] a = new Agent[] { robotAgent, humanAgent };
+			String[] t = new String[0];
+			String[] f = new String[0];
+
+			BeliefModel bmodel = new BeliefModel(newDataID(), a, s, k, t, f);
+			return bmodel;
+		}
 	}
-	
+
 	/**
 	 * Add a new belief in the belief model, and update the working memory
 	 * 
