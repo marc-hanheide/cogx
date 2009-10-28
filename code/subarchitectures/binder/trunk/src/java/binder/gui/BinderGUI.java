@@ -31,7 +31,7 @@ import com.mxgraph.view.mxGraph;
 public class BinderGUI extends JFrame {
 	
 	
-	public boolean LOGGING = false;
+	public boolean LOGGING = true;
 
 	private static Logger logger = ComponentLogger.getLogger(BinderGUI.class);
 	
@@ -98,7 +98,7 @@ public class BinderGUI extends JFrame {
 		proxyInfo.setVisible(true);
 	} 
 
-	private void menuItem8ActionPerformed(ActionEvent e) {
+	public void menuItem8ActionPerformed(ActionEvent e) {
 		
 		if (!curSelectedEntityId.equals("")) {
 			try {
@@ -115,7 +115,7 @@ public class BinderGUI extends JFrame {
 		dispose();
 	}
 
-	private void menuItem7ActionPerformed(ActionEvent e) {
+	public void menuItem7ActionPerformed(ActionEvent e) {
 		
 		try {
 			Proxy proxy = bm.getMemoryEntry(curSelectedEntityId, Proxy.class);
@@ -138,6 +138,11 @@ public class BinderGUI extends JFrame {
 			ex.printStackTrace();
 		}
 	}
+
+	private void thisMouseClicked(MouseEvent e) {
+		// TODO add your code here
+	}
+
 	
 	
 	private void initComponents() {

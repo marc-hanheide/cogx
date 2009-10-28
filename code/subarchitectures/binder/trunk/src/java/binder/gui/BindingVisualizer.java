@@ -3,6 +3,9 @@ package binder.gui;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -13,6 +16,8 @@ import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import org.apache.log4j.Logger;
 
@@ -544,9 +549,11 @@ public class BindingVisualizer {
 		}
 
 		try {
-			mxGraphComponent graphComponent = new mxGraphComponent(graph);
+			final mxGraphComponent graphComponent = new mxGraphComponent(graph);
+			
 			frame.getContentPane().removeAll();
 			frame.getContentPane().add(graphComponent);
+
 			frame.setVisible(true);
 		}
 		catch (Exception e) {		}
@@ -633,9 +640,10 @@ public class BindingVisualizer {
 		}
 
 		try {
-		mxGraphComponent graphComponent = new mxGraphComponent(graph);
+		final mxGraphComponent graphComponent = new mxGraphComponent(graph);
 		frame.getContentPane().removeAll();
 		frame.getContentPane().add(graphComponent);
+		addContextualMenu(graphComponent);
 		frame.setVisible(true);
 		}
 		catch (Exception e) {	
@@ -645,8 +653,71 @@ public class BindingVisualizer {
 //		graph.getModel().addListener(mxEvent.SELECT, listener);
 
 	}
-	
 
+	
+	private void addContextualMenu(final mxGraphComponent graphComponent) {
+		
+		
+		//======== popupMenu1 ========
+		final JPopupMenu popupMenu1 = new JPopupMenu();
+		JMenuItem menuItem20 = new JMenuItem();
+		JMenuItem menuItem21 = new JMenuItem();
+
+			//---- menuItem20 ----
+			menuItem20.setText("Modify Proxy");
+			popupMenu1.add(menuItem20);
+			menuItem20.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frame.menuItem7ActionPerformed(e);
+				}
+			});
+			
+			//---- menuItem21 ----
+			menuItem21.setText("Delete Proxy");
+			popupMenu1.add(menuItem21);
+			menuItem21.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frame.menuItem8ActionPerformed(e);
+				}
+			});
+		
+		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
+		{
+			
+			 public void mousePressed(MouseEvent e) {
+				 if (e.getModifiers() == InputEvent.BUTTON3_MASK)
+			        maybeShowPopup(e);
+			    }
+
+			    public void mouseReleased(MouseEvent e) {
+			   	 if (e.getModifiers() == InputEvent.BUTTON3_MASK)
+			        maybeShowPopup(e);
+			    }
+
+			    
+			public void maybeShowPopup(MouseEvent e)
+			{
+				Object cell = graphComponent.getCellAt(e.getX(), e.getY());
+				
+				if (cell != null)
+				{
+					for (Iterator<String> ids = insertedProxies.keySet().iterator(); ids.hasNext();) {
+						String curId = ids.next();
+						Object curObj = insertedProxies.get(curId);
+						if (curObj.equals(cell)) {
+							frame.curSelectedEntityId = curId;
+							frame.curSelectedEntityClass = Proxy.class;
+						}
+					}
+					if (frame.curSelectedEntityClass != null && 
+							frame.curSelectedEntityClass.equals(Proxy.class)) {
+						popupMenu1.show(e.getComponent(), e.getX(), e.getY());
+					}
+				}
+			}
+		});
+	}
+	
 		public void addNewRelationProxy (RelationProxy relationProxy, int xpos) {
 			
 			String colour = "#FFFF99";

@@ -69,6 +69,9 @@ public class ProxyInfoGUI extends JDialog {
 		textField1.setText("" + proxy.probExists);
 		slider1.setValue((int)(proxy.probExists * 100));
 		updateFeaturesFrame();
+		if (proxy.features.length > 0) {
+			table1.setComponentPopupMenu(popupMenu1);
+		}
 		okButton.setText("Modify");
 	}
 
