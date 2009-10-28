@@ -67,6 +67,12 @@ endif
 
 ABDUCER_ICE_VERSION:=$(shell ./svn-file-version $(SLICE_PATH)/Abducer.ice)
 
+ifeq ($(origin DEBUG), undefined)
+else
+MCFLAGS+=--trace-flag=debug
+CXXFLAGS+=-DDEBUG
+endif
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 .PHONY: compile

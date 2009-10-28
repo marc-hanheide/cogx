@@ -116,12 +116,30 @@ ForwardedAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Cur
 	cout << "add_fact(\"" << modalisedFormulaToString(fact) << ".\")." << endl;
 }
 
+string
+ensureFloatPortrayal(double n)
+{
+	stringstream ss;
+	ss << n;
+	if (ss.str().find_first_of('.') == string::npos) {
+		// portrayed as an integer
+		ss << ".0";
+	}
+	return ss.str();
+}
+
+
 void
 ForwardedAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
 {
 	cerr << tty::green << "* adding assumable: " << f->p->predSym << "(...) / " << function << tty::dcol << endl;
+	stringstream ss;
+	ss << "add_assumable(\"" << function << "\", \"" << modalisedFormulaToString(f) << ".\", " << ensureFloatPortrayal(cost) << ")." << endl;
+
+	debug(cerr << "  the request: " << ss.str());
+
 //	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-	cout << "add_assumable(\"" << function << "\", \"" << modalisedFormulaToString(f) << ".\", " << cost << ")." << endl;
+	cout << ss.str();
 }
 
 ProveResult
@@ -148,13 +166,16 @@ ForwardedAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::C
 		debug(cerr << "RESPONSE: " << buf << endl);
 
 		if (*buf == 's') {
+			cerr << tty::green << "  a proof was found" << tty::dcol << endl;
 			return ProofFound;
 		}
 		else {
+			cerr << tty::green << "  no proof found" << tty::dcol << endl;
 			return NoProofFound;
 		}
 	}
 
+	cerr << tty::red << "  abduction error" << tty::dcol << endl;
 	return Error;
 /*
 	MR_Word vs;
@@ -319,4 +340,3 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 	}
 */
 }
-
