@@ -48,11 +48,22 @@ LocalMapManager::~LocalMapManager()
   delete m_Displaylgm2;
   delete m_Glrt1;
   delete m_Glrt2;
+
   for (map<int, Cure::LocalGridMap<unsigned char> *>::iterator it =
       m_nodeGridMaps.begin(); it != m_nodeGridMaps.end(); it++) {
     delete it->second;
   }
   delete m_lgm2;
+
+  if (m_isUsingSeparateGridMaps) {
+    delete m_Glrt1_alt;
+    delete m_Glrt2_alt;
+    for (map<int, Cure::LocalGridMap<unsigned char> *>::iterator it =
+	m_nodeGridMapsAlt.begin(); it != m_nodeGridMapsAlt.end(); it++) {
+      delete it->second;
+    }
+    delete m_lgm2_alt;
+  }
 }
 
 void LocalMapManager::configure(const map<string,string>& _config) 
@@ -76,11 +87,25 @@ void LocalMapManager::configure(const map<string,string>& _config)
     std::abort();
   } 
 
-  m_MaxLaserRange = 5.0;
+  m_MaxLaserRangeForPlaceholders = 5.0;
+  m_MaxLaserRangeForCombinedMaps = 5.0;
   it = _config.find("--laser-range");
   if (it != _config.end()) {
-    m_MaxLaserRange = (atof(it->second.c_str()));
+    m_MaxLaserRangeForPlaceholders = (atof(it->second.c_str()));
+    m_MaxLaserRangeForCombinedMaps = m_MaxLaserRangeForPlaceholders;
   }
+  else {
+    it = _config.find("--laser-range-for-placeholders");
+    if (it != _config.end()) {
+      m_MaxLaserRangeForPlaceholders = (atof(it->second.c_str()));
+    }
+    it = _config.find("--laser-range-for-combined-maps");
+    if (it != _config.end()) {
+      m_MaxLaserRangeForCombinedMaps = (atof(it->second.c_str()));
+    }
+  }
+  m_isUsingSeparateGridMaps = 
+    m_MaxLaserRangeForPlaceholders != m_MaxLaserRangeForCombinedMaps;
 
   it = _config.find("--robot-server-host");
   if (it != _config.end()) {
@@ -108,6 +133,14 @@ void LocalMapManager::configure(const map<string,string>& _config)
   } else {
     m_Displaylgm1 = 0;
     println("Will NOT use X window to show the current local map");
+  }
+
+  if (m_isUsingSeparateGridMaps) {
+    m_lgm1_alt = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+    m_nodeGridMapsAlt[0] = m_lgm1_alt;
+    m_Glrt1_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1_alt);
+    m_lgm2_alt = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+    m_Glrt2_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2_alt);
   }
   
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
@@ -160,27 +193,43 @@ void LocalMapManager::runComponent()
 	  m_nodeGridMaps[curNode->nodeId] = m_lgm2;
 	  log("Movin'");
 	  m_lgm2->moveCenterTo(curNode->x, curNode->y);
-	  //log("Moved");
 	  m_lgm1 = m_lgm2;
 	  log("Allocatin'");
 	  m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1, curNode->x, curNode->y);
-	  //log("Allocated");
+
+	  if (m_isUsingSeparateGridMaps) {
+	    m_nodeGridMapsAlt[curNode->nodeId] = m_lgm2_alt;
+	    m_lgm2_alt->moveCenterTo(curNode->x, curNode->y);
+	    m_lgm1_alt = m_lgm2_alt;
+	    m_lgm2_alt = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1, curNode->x, curNode->y);
+	  }
 	}
 	else {
 	  // Clear the temporary lgm
 	  m_lgm1 = m_nodeGridMaps[curNode->nodeId];
 	  log("Clearin'");
 	  m_lgm2->clearMap();
-	  //log("Clear'd");
 	  log("Movin' 2");
 	  m_lgm2->moveCenterTo(curNode->x, curNode->y, false);
-	  //log("Moved");
+
+	  if (m_isUsingSeparateGridMaps){
+	    m_lgm1_alt = m_nodeGridMapsAlt[curNode->nodeId];
+	    m_lgm2_alt->clearMap();
+	    m_lgm2_alt->moveCenterTo(curNode->x, curNode->y, false);
+	  }
 	}
 	delete m_Glrt1;
 	delete m_Glrt2;
 	m_Glrt1  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1);
 	m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
-	//log("Settin' maps");
+
+	if (m_isUsingSeparateGridMaps) {
+	  delete m_Glrt1_alt;
+	  delete m_Glrt2_alt;
+	  m_Glrt1_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1_alt);
+	  m_Glrt2_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2_alt);
+	}
+
 	if (m_Displaylgm1) {
 	  m_Displaylgm1->setMap(m_lgm1);
 	}
@@ -259,13 +308,14 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
     Cure::Pose3D scanPose;
     if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
       Cure::Pose3D lpW;
-//      m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-//                                  0.5*Cure::NavController::getRobotWidth(), 
-//                                  '0');
       lpW.add(scanPose, m_LaserPoseR);
       m_Mutex.lock();
-      m_Glrt1->addScan(cureScan, lpW, m_MaxLaserRange);      
-      m_Glrt2->addScan(cureScan, lpW, m_MaxLaserRange);      
+      m_Glrt1->addScan(cureScan, lpW, m_MaxLaserRangeForCombinedMaps);      
+      m_Glrt2->addScan(cureScan, lpW, m_MaxLaserRangeForCombinedMaps);      
+      if (m_isUsingSeparateGridMaps) {
+	m_Glrt1_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
+	m_Glrt2_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
+      }
       m_firstScanReceived = true;
       m_Mutex.unlock();
     }
@@ -378,11 +428,15 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
     double y;
     m_Mutex.lock();
     log("Checkin'");
-    for (int yi = -m_lgm1->getSize(); yi < m_lgm1->getSize()+1; yi++) {
-      y = m_lgm1->getCentYW() + yi * m_lgm1->getCellSize();
-      for (int xi = -m_lgm1->getSize(); xi < m_lgm1->getSize()+1; xi++) {
-	x = m_lgm1->getCentXW() + xi * m_lgm1->getCellSize();
-	if ((*m_lgm1)(xi,yi) == '0') {
+
+    Cure::LocalGridMap<unsigned char> *propertyLGM =
+      m_isUsingSeparateGridMaps ? m_lgm1_alt : m_lgm1;
+
+    for (int yi = -propertyLGM->getSize(); yi < propertyLGM->getSize()+1; yi++) {
+      y = propertyLGM->getCentYW() + yi * propertyLGM->getCellSize();
+      for (int xi = -propertyLGM->getSize(); xi < propertyLGM->getSize()+1; xi++) {
+	x = propertyLGM->getCentXW() + xi * propertyLGM->getCellSize();
+	if ((*propertyLGM)(xi,yi) == '0') {
 	  totalFreeCells++;
 	  //Cell is free
 	  double relevantDistSq = (x - relevantX)*(x - relevantX) +
@@ -426,7 +480,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 	      //Check if it borders on unknown space
 	      for (int yi2 = yi - 1; yi2 <= yi + 1; yi2++) {
 		for (int xi2 = xi - 1; xi2 <= xi + 1; xi2++) {
-		  if ((*m_lgm1)(xi2, yi2) == '2') {
+		  if ((*propertyLGM)(xi2, yi2) == '2') {
 		    ret.unexploredBorderValue += 1.0;
 		    yi2 = yi + 2;
 		    xi2 = xi + 2;
@@ -533,15 +587,15 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   map.data.reserve(4*newSize*newSize + 4*newSize + 1);
 
   //Sample each of the maps into the new map
-log("Sample each of the maps into the new map");
+  log("Sample each of the maps into the new map");
   for (vector<const Cure::LocalGridMap<unsigned char> *>::iterator it = maps.begin();
       it != maps.end(); it++) {
-	log("looping over map");
+    log("looping over map");
     for (int y = -(*it)->getSize(); y <= (*it)->getSize(); y++) {
       for (int x = -(*it)->getSize(); x <= (*it)->getSize(); x++) {
 
 	char val = (**it)(x,y);
-	
+
 	if (val != '2') {
 	  double dx, dy;
 	  (*it)->index2WorldCoords(x, y, dx, dy);
@@ -568,15 +622,15 @@ log("Sample each of the maps into the new map");
   Cure::LocalGridMap<unsigned char> newMap2(newSize, cellSize, '2',
       Cure::LocalGridMap<unsigned char>::MAP1, cx, cy);
 
-int lp = 0;
-for(int x = -map.size ; x <= map.size; x++){
-		for(int y = -map.size ; y <= map.size; y++){ 
-			(newMap2)(x,y) = map.data[lp];
-			lp++;
-		}
-}
-    Cure::XDisplayLocalGridMap<unsigned char>* m_Displaykrsjlgm;
-    m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<unsigned char>(newMap2);
-    m_Displaykrsjlgm->updateDisplay();
+  int lp = 0;
+  for(int x = -map.size ; x <= map.size; x++){
+    for(int y = -map.size ; y <= map.size; y++){ 
+      (newMap2)(x,y) = map.data[lp];
+      lp++;
+    }
+  }
+  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaykrsjlgm;
+  m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<unsigned char>(newMap2);
+  m_Displaykrsjlgm->updateDisplay();
 
 }
