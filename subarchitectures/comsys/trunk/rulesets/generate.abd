@@ -143,7 +143,7 @@ generate : intention : need_get_value(Modality, Entity, Prop, not_repeated) <-
 	generate : intention : need_get_value0(Modality, Entity, Prop).
 
 %what color does the box have
-generate : intention : need_get_value0(Modality, Entity, color) <-
+generate : intention : need_get_value0(Modality, Entity, Prop) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
@@ -161,9 +161,10 @@ generate : intention : need_get_value0(Modality, Entity, color) <-
 			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
 			i : prop(TargetNom, Type) / 1.0,
 			i : feat_ProofStatus(TargetNom, assumed) / 1.0,
-		i : rel_Color(ContentNom, QualityNom) / 1.0,
-			i : sort(QualityNom, quality) / 1.0,
-			i : prop(QualityNom, color) / 1.0,
+		add_prop_value_to_protolf(ContentNom, QualityNom, Prop, Prop),
+%		i : rel_Color(ContentNom, QualityNom) / 1.0,
+%			i : sort(QualityNom, quality) / 1.0,
+%			i : prop(QualityNom, color) / 1.0,
 			i : feat_Questioned(QualityNom, true) / 1.0,
 			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
 	event : produce(r, Nom) / 1.0.

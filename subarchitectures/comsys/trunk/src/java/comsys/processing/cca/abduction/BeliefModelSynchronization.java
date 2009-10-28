@@ -201,8 +201,11 @@ public class BeliefModelSynchronization {
 		if (sf instanceof ComplexFormula) {
     		ComplexFormula cf = (ComplexFormula) sf;
     		for (int i = 0; i < cf.formulae.length; i++) {
-    			addAssumablesForFormula(abducer, as, unionId, cf.formulae[i]);
+    			if (cf.formulae[i] != null) {
+    				addAssumablesForFormula(abducer, as, unionId, cf.formulae[i]);
+    			}
     		}
+    		return;
 		}
 		
 		boolean polarity = true;

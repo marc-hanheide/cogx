@@ -1,10 +1,22 @@
 to_assertion_question(color, Entity) <-
 	?( k(now, private(r)) : color(Entity, unknownColor)).
 
+to_assertion_question(shape, Entity) <-
+	?( k(now, private(r)) : shape(Entity, unknownShape)).
+
+to_assertion_question(objecttype, Entity) <-
+	?( k(now, private(r)) : objecttype(Entity, unknownObjectType)).
+
 %-------------------------------------------------------------------------
 
 to_asserted_predicate(color, Entity, Value) <-
 	?( k(now, private(r)) : color(Entity, Value) ).
+
+to_asserted_predicate(shape, Entity, Value) <-
+	?( k(now, private(r)) : shape(Entity, Value) ).
+
+to_asserted_predicate(shape, Entity, Value) <-
+	?( k(now, private(r)) : shape(Entity, Value) ).
 
 %-------------------------------------------------------------------------
 
@@ -37,9 +49,10 @@ query_prop(Nom, color, PropValue) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, PropValue).
 
-query_prop(Nom, shape, PropValue) <-
+query_prop(Nom, shape, Value) <-
 	i : sort(Nom, 'q-shape'),
-	i : prop(Nom, PropValue).
+	i : prop(Nom, PropValue),
+	prop_to_shape(PropValue, Value).
 
 query_prop(Nom, objecttype, PropValue) <-
 	i : sort(Nom, thing),
@@ -58,6 +71,9 @@ to_property(object, objecttype).
 to_property(thing, objecttype).
 to_property(P, P) <-
 	property_sort(P, PropSort).
+
+prop_to_shape(round, spherical).
+prop_to_shape(square, cubic).
 
 %-------------------------------------------------------------------------
 
@@ -107,8 +123,9 @@ assert_prop_noint(Nom, Union, Polarity) <-
 	property_sort(shape, Sort),
 	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
-	polarprop(Prop, Polarity, PolarProp),
-	?( k(now, attrib(r, h)) : shape(Union, PolarProp) ).
+	prop_to_shape(Prop, Value),
+	polarprop(Value, Polarity, PolarValue),
+	?( k(now, attrib(r, h)) : shape(Union, PolarValue) ).
 
 assert_prop_noint(Nom, Union, Polarity) <-
 	property_sort(shape, Sort),
@@ -133,8 +150,9 @@ assert_prop(Union, Polarity, Nom) <-
 assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
-	polarprop(Prop, Polarity, PolarProp),
-	?( k(now, attrib(r, h)) : shape(RestrRef, PolarProp) ),
+	prop_to_shape(Prop, Value),
+	polarprop(Value, Polarity, PolarValue),
+	?( k(now, attrib(r, h)) : shape(Union, PolarValue) ),
 	intention : value_assertion(h, Union, shape) / 0.5.
 
 assert_prop(Union, Polarity, Nom) <-
