@@ -89,7 +89,7 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
     log("stopping AVS");
     m_command = STOP;
     m_status = STOPPED;
-    whereinplan = -1;
+    whereinplan = m_plan.plan.size();
   }
 }
 
