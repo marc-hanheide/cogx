@@ -87,6 +87,7 @@ while i <= nargs
         case 'unlearn_with_input', operator_data = args{i} ; i = i + 1 ;             
         case 'compress_pdf', operator_data = args{i} ; i = i + 1 ; 
         case 'evalHellingerBetween', operator_data = args{i} ; i = i + 1 ;  
+        case 'evalLikBetween', operator_data = args{i} ; i = i + 1 ;     
         case 'getSubDimKDE', operator_data = args{i} ; i = i + 1 ;
         case 'evalTypOnData', operator_data = args{i} ; i = i + 1 ;   
         case 'showKDE', operator_data = args{i} ; i = i + 1 ;      
@@ -621,6 +622,40 @@ switch operator_data
          out_kde = [] ;
          out_kde.subRegularized = subindicator ;
          out_kde.distance_hell = distance_hell ;
+    case 'evalLikBetween'
+         % required : input_kde, 'additional_kde',  
+         % also available: 'selectSubDimensions'
+         kde1 = input_kde ;
+         kde2 = additional_kde ;
+
+         % verify if the user has chosen a subspace -- then marginalize
+         % mixtures as well as data
+         if ~isempty(selectSubDimensions)
+            kde1.pdf = marginalizeMixture( kde1.pdf, selectSubDimensions ) ;
+            kde2.pdf = marginalizeMixture( kde2.pdf, selectSubDimensions ) ;            
+         end
+         
+         % extract and analyze the current bandwidth -- regularize the
+         % null space                        
+         [kde1_r, subindicator1] = regularizeKDEInBandwidth( kde1, 'practicallyZero', 1e-5 ) ;
+        
+         % extract and analyze the current bandwidth -- regularize the
+         % null space                        
+         [kde2_r, subindicator2] = regularizeKDEInBandwidth( kde2, 'practicallyZero', 1e-5 ) ;
+         
+         subindicator = max([ subindicator1, subindicator2 ]) ;
+         
+         MaxV = 3 ;
+         [X, sigPointsPerComponent, w, k ] = getAllSigmaPointsOnMixture( kde1.pdf, MaxV ) ;
+         
+         p = executeOperatorIKDE( kde1, 'input_data', X, 'evalPdfOnData' ) ;
+         p = p.evalpdf ;
+         p = max([p,p*0+(1e-200)]')' ;
+         distance_nloglik = mean(-log(p)/log(2)) ;
+
+         out_kde = [] ;
+         out_kde.subRegularized = subindicator ;
+         out_kde.distance_nloglik = distance_nloglik ;
     case 'showKDE'
          if ~isempty(selectSubDimensions)
             input_kde.pdf = marginalizeMixture( input_kde.pdf, selectSubDimensions, 0 ) ;            

@@ -65,7 +65,7 @@ numMDF=length(MDF);
 %CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
 %CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
 
-Fbs=selectFeatures(mC,CM,MDF);
+[Fbs, M_distances]=selectFeatures(mC,CM,MDF);
 
 % dsts=ones(numC,numMDF)*1e10;
 % for i=1:numMDF

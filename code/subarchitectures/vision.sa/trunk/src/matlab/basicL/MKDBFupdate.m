@@ -8,7 +8,7 @@ function [mC]=MKDBFupdate(F,C,mC)
 
 %parameters
 ING=2; %Initial Gaussians
-CCT=0.1;  %.5; %CompressionClusterThreshold
+CCT=0.3;  %.5; %CompressionClusterThreshold
 global Params
 if ~isempty(Params)
    ING=Params.ING;
@@ -58,8 +58,7 @@ elseif ~isempty(C) %at least one concept given
       if mC(idx).conf<ING %collect initial samples
          mC(idx).x_init=[mC(idx).x_init F];
       elseif mC(idx).conf==ING %initialize KDE
-         mC(idx).kde= executeOperatorIKDE( [], 'input_data', mC(idx).x_init, 'add_input', 'compressionClusterThresh', CCT   );
-         disp(['!!!!!!!!!!!!!!!!!!!!' num2str(i) '!!!!!!!!!!!!!!!!!!!!!!!!']);
+         mC(idx).kde= executeOperatorIKDE( [], 'input_data', mC(idx).x_init, 'add_input', 'compressionClusterThresh', CCT   );      
       else %update KDE
          mC(idx).kde= executeOperatorIKDE( mC(idx).kde, 'input_data', F, 'add_input' );
          if mC(idx).conf> 10
@@ -70,7 +69,7 @@ elseif ~isempty(C) %at least one concept given
    
    
 %FEATURE SELECTION
-Fbs=selectFeatures(mC,CM,MDF);
+[Fbs, M_distances]=selectFeatures(mC,CM,MDF);
    
    for i=1:numC
       oldFb=mC(i).Fb;
