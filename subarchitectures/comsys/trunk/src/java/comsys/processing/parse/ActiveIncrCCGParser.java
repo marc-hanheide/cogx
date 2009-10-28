@@ -122,7 +122,7 @@ implements ContextActiveProcess {
 	protected boolean logging = false;
 
 	// last analysed utterance
-	String lastUtterance = "";
+	PhonString lastUtterance = new PhonString();
 
 	// Increment on the number of utterances
 	int utteranceIncrement = 0;
@@ -536,8 +536,8 @@ implements ContextActiveProcess {
 
 		// declare the stringpos, chart, initialization as per below
 		int stringPos = -1;		
-		if (!str.wordSequence.equals(lastUtterance)) {
-			lastUtterance = str.wordSequence;
+		if (!str.equals(lastUtterance)) {
+			lastUtterance = str;
 			utteranceIncrement++;
 		}
 
