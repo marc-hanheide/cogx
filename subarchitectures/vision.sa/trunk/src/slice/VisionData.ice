@@ -255,6 +255,7 @@ module VisionData {
 
     // ASYNC DATA 
     string visualObjectId;
+    string beliefId;
   };
 
   struct SegmentMask {
