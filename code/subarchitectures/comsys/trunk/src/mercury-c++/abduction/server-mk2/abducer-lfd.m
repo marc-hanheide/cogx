@@ -110,6 +110,12 @@ process_request(clear_assumables, !SCtx, !IO) :-
 	!:SCtx = !.SCtx^cx := NewCtx,
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] clear_rules\n", !IO) ).
 
+process_request(clear_assumable_function(Func), !SCtx, !IO) :-
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] clear_assumable_function\n", !IO) ),
+	set_assumables(map.delete(!.SCtx^cx^assumables, Func), !.SCtx^cx, NewCtx),
+	!:SCtx = !.SCtx^cx := NewCtx,
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] clear_assumable_function\n", !IO) ).
+
 process_request(add_fact(FactStr), !SCtx, !IO) :-
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] add_fact\n", !IO) ),
 	vs(MProp, VS) = det_string_to_vsmprop(FactStr),

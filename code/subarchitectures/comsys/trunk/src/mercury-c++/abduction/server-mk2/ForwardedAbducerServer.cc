@@ -109,6 +109,13 @@ ForwardedAbducerServer::clearAssumables(const Ice::Current&)
 }
 
 void
+ForwardedAbducerServer::clearAssumableFunction(const string & function, const Ice::Current&)
+{
+	cerr << tty::green << "* clearing assumable function: " << function << tty::dcol << endl;
+	cout << "clear_assumable_function(\"" << function << "\")." << endl;
+}
+
+void
 ForwardedAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
 {
 	cerr << tty::green << "* adding fact: " << fact->p->predSym << "(...)" << tty::dcol << endl;

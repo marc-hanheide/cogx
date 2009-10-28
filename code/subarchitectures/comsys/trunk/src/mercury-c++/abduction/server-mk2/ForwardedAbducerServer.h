@@ -15,6 +15,7 @@ public:
 	virtual void clearFacts(const Ice::Current&);
 	virtual void clearFactsByModality(Abducer::ModalityType type, const Ice::Current&);
 	virtual void clearAssumables(const Ice::Current&);
+	virtual void clearAssumableFunction(const std::string & function, const Ice::Current&);
 
 	virtual void addFact(const Abducer::ModalisedFormulaPtr & f, const Ice::Current&);
 	virtual void addAssumable(const std::string& function, const Abducer::ModalisedFormulaPtr & f, float cost, const Ice::Current&);
