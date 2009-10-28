@@ -130,7 +130,7 @@ namespace binder {
   }
 
 
-  UnknownValuePtr BindingWorkingMemoryWriter::createBooleanValue(float prob) {
+  UnknownValuePtr BindingWorkingMemoryWriter::createUnknownValue(float prob) {
 	  UnknownValuePtr uval = new UnknownValue();
 	  uval->independentProb = prob;
     return uval;
