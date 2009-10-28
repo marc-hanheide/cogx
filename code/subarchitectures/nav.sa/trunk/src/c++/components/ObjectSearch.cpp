@@ -1105,7 +1105,7 @@ void ObjectSearch::Recognize(){
 	    n++;
 	  }
 
-	  if(m_tiltRads > 0) {
+	  if(m_tiltRads != 0) {
 
 	    //negative with tilt
 	    n= 1;
@@ -1118,23 +1118,22 @@ void ObjectSearch::Recognize(){
 	      }
 	      n++;
 	    }
-	  }
-
-	  MovePanTilt(anglediff,m_tiltRads);
-
 	  
-	  //postive with tilt
-	  n = 1;
-	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
-	    m_status = 	RECOGNITIONINPROGRESS;
-	    MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
-	    PostRecognitionCommand();
-	    while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
-	      sleepComponent(10);
-	    }
-	    n++;
+
+	    MovePanTilt(anglediff,m_tiltRads);
+	    
+	    //postive with tilt
+	    n = 1;
+	    while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
+	      m_status = 	RECOGNITIONINPROGRESS;
+	      MovePanTilt(anglediff + n*m_ptustep,m_tiltRads);
+	      PostRecognitionCommand();
+	      while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
+		sleepComponent(10);
+	      }
+	      n++;
+	    }	    
 	  }
-	  	  	  	  
 	}
 	
 	MovePanTilt(0,0);
