@@ -9,6 +9,11 @@ generate : it(Nom) <-
 	i : feat_Salient(Nom, true) / 1.0,
 	i : feat_InfoStatus(Nom, familiar) / 1.0.
 
+generate : this(Nom) <-
+	i : sort(Nom, entity) / 1.0,
+	i : prop(Nom, object) / 1.0,  % will be suppressed anyway
+	i : feat_Salient(Nom, true) / 1.0.
+
 %-------------------------------------------------------------------------
 
 add_patient(Nom, PatNom, Prop) <-
