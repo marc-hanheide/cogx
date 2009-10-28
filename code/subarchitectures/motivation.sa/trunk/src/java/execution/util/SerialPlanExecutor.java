@@ -213,10 +213,11 @@ public class SerialPlanExecutor extends Thread {
 			return;
 		}
 
+		PlannedActionWrapper actionWrapper = null;
 		try {
 
 			// trigger the first action
-			PlannedActionWrapper actionWrapper = triggerNextAction(null);
+			actionWrapper = triggerNextAction(null);
 			assert actionWrapper != null : "first action should not be null";
 
 			while (m_component.isRunning() && hasNotBeenStopped()) {
@@ -256,7 +257,17 @@ public class SerialPlanExecutor extends Thread {
 			}
 
 		} catch (CASTException e) {
-			e.printStackTrace();
+			m_component.getLogger().warn("exception in serial executor", e);
+			if (actionWrapper != null) {
+				m_component.getLogger().warn("stopping action in progress");
+				try {
+					m_component.stopExecution(actionWrapper.getActionAddress());
+				} catch (CASTException e1) {
+					// we don't
+					e1.printStackTrace();
+				}
+			}
+
 		}
 
 	}

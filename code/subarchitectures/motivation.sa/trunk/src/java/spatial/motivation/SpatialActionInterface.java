@@ -50,8 +50,8 @@ public class SpatialActionInterface extends ManagedComponent {
 	private HashSet<Long> m_placeIDs;
 
 	/**
-	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to 5
-	 * minutes.
+	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to 0.
+	 * 
 	 */
 	private long m_avsTimeoutMillis = 0;
 
