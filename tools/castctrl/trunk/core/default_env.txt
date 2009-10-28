@@ -1,11 +1,17 @@
 COGX_ROOT=[PWD]
+
+CAST_DIR=/usr/local
+CAST_INSTALL_ROOT=${CAST_DIR}
+
+CUDA_ROOT=/usr/local/cuda
+MERCURY_ROOT=/usr/local/mercury-rotd-2009-10-25
+MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/glnx86
+# MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/glnx86
+
 COGX_BUILD_DIR=${COGX_ROOT}/BUILD
 COGX_LIB_DIR=${COGX_ROOT}/output/lib
 COGX_PY_DIR=${COGX_ROOT}/output/python
 COGX_CLASS_DIR=${COGX_ROOT}/output/classes
-
-CAST_DIR=/usr/local
-CAST_INSTALL_ROOT=${CAST_DIR}
 
 CAST_BIN_PREFIX=bin
 CAST_BIN_DIR=${CAST_INSTALL_ROOT}/${CAST_BIN_PREFIX}
@@ -24,12 +30,7 @@ ICE_JARS=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
 
 LOG4_JAR=/usr/share/java/log4j-1.2.jar
 
-MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/glnx86
-# MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/glnx86
-
-CUDA_ROOT=/usr/local/cuda
-
-PATH=${COGX_ROOT}/output/bin:${CUDA_ROOT}/bin:${PATH}
+PATH=${COGX_ROOT}/output/bin:${CUDA_ROOT}/bin:${MERCURY_ROOT}/bin:${PATH}
 LD_LIB_EXTRA=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CUDA_ROOT}/lib:${MATLAB_RUNTIME_DIR}
 LD_LIBRARY_PATH=${LD_LIB_EXTRA}:${LD_LIBRARY_PATH}
 DYLD_LIBRARY_PATH=${LD_LIB_EXTRA}:${DYLD_LIBRARY_PATH}
