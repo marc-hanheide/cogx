@@ -8,9 +8,7 @@ To do
 
 InfoStruct Problems:
 
-Rheme assignment with <Name> : duplication!!!!
-
-need to make sure there is at least one focus=true!!!
+need to make sure there is at least one focus=true!!! --not really, grammar does not choke on it
 
 @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>action)
 "Sure thing"
@@ -18,8 +16,6 @@ has Rheme=true but no other InfoStruct features; why?
 
 
 relational-attribute modifiers (type m-location) don't get any InfoStruct feat assigned for now
-
-in compounds don't currently inherit rheme/theme from head, thus expect problem in grammar
 
 default IS will be assigned to stuff in templates
 
@@ -213,9 +209,16 @@ Chooser call from a system: would be useful to be able to give a locus as argume
 
 System entry condition: would be useful to constrain on the dependency relation type under which the nominal is
 
+Inquiry code:
+ - type of a nominal
+ - feature or feature value one/any level up in the LF
+ - feature or feature value under a given relation from the current/given nominal 
 
+Add feature: replace if exists ?
 
+Chooser code should allow and/or
 
+Inquiry code should allow collecting answers
 
 
 ============
