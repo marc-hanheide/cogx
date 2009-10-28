@@ -34,6 +34,8 @@ if nargin>0
        else
            ptcol = pts3d(:,4:6) ;
        end
+       
+       ptcol = repmat( hsv2rgb(f(1:3)')*255, size(pts3d,1), 1 ) ;
        showSurfaceFromPoints( pts3d(:,1:3), ptcol, LRaxPts3d ) ;
    end
    
