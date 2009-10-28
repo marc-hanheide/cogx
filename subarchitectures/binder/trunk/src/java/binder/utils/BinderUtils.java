@@ -61,7 +61,7 @@ public class BinderUtils {
 	
 	
 	// minimum threshold above which unknown values can be created in features
-	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.02f;
+	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.2f;
 
 	public static boolean ADD_DEFAULT_SALIENCY = false;
 	public static String DEFAULT_SALIENCY = "high";
@@ -152,13 +152,15 @@ public class BinderUtils {
 		}
 		
 		// if the probability distribution of the updated proxy is unavailable, regenerate it
-			proxy.distribution = 
+	//	if (proxy.distribution == null ||  !(proxy.distribution instanceof DiscreteProbabilityDistribution)) {
+		proxy.distribution = 
 				DistributionGeneration.generateProbabilityDistribution(proxy);
 			
 			if (proxyDistribFilter > 0) {
 				proxy.distribution = 
 					EntityFilter.filterDistribution((DiscreteProbabilityDistribution)proxy.distribution, proxyDistribFilter);
 			}
+	//	}
 	}
 	
 	
