@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.CASTTime;
 import cast.core.logging.ComponentLogger;
 
 import binder.autogen.core.UnionConfiguration;
@@ -92,4 +93,26 @@ public class GenericUtils {
 	}
 
 
+	
+	public static boolean isMoreRecent (CASTTime time1, CASTTime time2) {
+		
+		if (time1 != null && time2 != null) {
+			
+		if (time1.s > time2.s) {
+			return true;
+		}
+		else if (time1.s < time2.s) {
+			return false;
+		}
+		else if (time1.us > time2.us) {
+			return true;
+		}
+		}
+		else {
+			return true;
+		}
+		return false;
+	}
+
+	
 }

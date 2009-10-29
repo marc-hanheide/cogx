@@ -39,6 +39,7 @@ import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
 import binder.filtering.ConfigurationFilter;
 import binder.constructors.DistributionGeneration;
+import binder.utils.FeatureValueUtils;
 import binder.utils.ProbabilityUtils;
 import binder.utils.RelationUnionUtils;
 import binder.utils.UnionConfigurationUtils;

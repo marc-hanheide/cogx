@@ -254,7 +254,7 @@ public class ProxyInfoGUI extends JDialog {
 					new Insets(0, 0, 3, 0), 0, 0));
 
 				//---- textField3 ----
-				textField3.setText("subarchY");
+				textField3.setText("vision");
 				textField3.setColumns(12);
 				panel2.add(textField3, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
 					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -309,7 +309,7 @@ public class ProxyInfoGUI extends JDialog {
 				((GridBagLayout)panel9.getLayout()).columnWidths = new int[] {138, 0, 180, 0};
 				((GridBagLayout)panel9.getLayout()).rowHeights = new int[] {0, 50, 0, 0, 0};
 				((GridBagLayout)panel9.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
-				((GridBagLayout)panel9.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+				((GridBagLayout)panel9.getLayout()).rowWeights = new double[] {0.0, 1.0, 0.0, 0.0, 1.0E-4};
 
 				//---- label6 ----
 				label6.setText("Included features: ");

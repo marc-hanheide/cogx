@@ -24,7 +24,9 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Vector;
 
+
 import binder.autogen.core.AlternativeUnionConfigurations;
+import binder.autogen.core.Feature;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
@@ -33,6 +35,7 @@ import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.filtering.ConfigurationComparator;
 import binder.gui.BindingVisualizer;
+import binder.utils.FeatureValueUtils;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -228,6 +231,7 @@ public class BinderMonitor extends ManagedComponent {
 					nbUnionsWithMoreThanOneProxy++;
 				}
 				UnionsV.add(config.includedUnions[i]);
+				
 			}
 			
 			// Create summary for the unions in the binder WM
