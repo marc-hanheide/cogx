@@ -680,13 +680,13 @@ void DisplayWin()
   glEnable(GL_LIGHTING);
   glEnable(GL_COLOR_MATERIAL);
   glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-  //DrawPoints();
+  DrawPoints();
   if (objnumber != 0)
   {
 	DrawCuboids(pointsN,points_label);
 	BoundingSphere(pointsN,points_label);
 	ConvexHullOfPlane(pointsN,points_label);
-	BoundingPrism(pointsN,points_label);
+	//BoundingPrism(pointsN,points_label);
   }
   else
   {
