@@ -10,8 +10,8 @@ SET(SOURCES
    )
 SET(HEADERS initlib.h RecogniserP.h)
 add_library(VisualLearnerProxy SHARED ${SOURCES})
-target_link_libraries(VisualLearnerProxy VisionData)
 target_link_libraries(VisualLearnerProxy VisualLearnerCtf)
+target_link_libraries(VisualLearnerProxy VisionData VideoUtils)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})

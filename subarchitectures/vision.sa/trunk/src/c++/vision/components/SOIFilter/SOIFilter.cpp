@@ -399,7 +399,7 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   // draw background points inside SOI
   for(size_t i = 0; i < bgProjPoints.size(); i++)
   {
-	//    cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 3, CV_RGB(255,0,0));
+	cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 3, CV_RGB(255,0,0));
   }
 }
 
@@ -933,11 +933,21 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 	//gc->setDataCost(&dataFn, &toFn);
 	long *data = new long[num_labels*num_pixels];
 
-	for(int i=0; i<num_pixels; i++) {
-	  int idx = num_labels *i;
-	  data[idx] = lblFixCost;
-	  data[idx + 1] = costImg->imageData[i];
-	  data[idx + 2] = bgCostImg->imageData[i];
+	// TODO: possible error: lines of IplImage are aligned to 4 bytes, while gc->data has no alignment!
+	//for(int i=0; i<num_pixels; i++) {
+	//  int idx = num_labels *i;
+	//  data[idx] = lblFixCost;
+	//  data[idx + 1] = costImg->imageData[i];
+	//  data[idx + 2] = bgCostImg->imageData[i];
+	//}
+	int idx = 0;
+	for (int i = 0; i < costImg->height; i++) {
+	  int lineoffs = i * costImg->widthStep;
+	  for (int j = 0; j < costImg->width; j++) {
+		data[idx++] = lblFixCost;
+		data[idx++] = costImg->imageData[lineoffs+j];
+		data[idx++] = bgCostImg->imageData[lineoffs+j];
+	  }
 	}
 
 	gc->setDataCost(data);

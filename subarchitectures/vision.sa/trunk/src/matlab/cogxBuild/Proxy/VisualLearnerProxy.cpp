@@ -10,6 +10,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include <VisionData.hpp>
+#include "../../../c++/vision/VisionUtils.h"
 
 #include "MatlabHelper.h"
 #include "VisualLearnerProxy.h"
@@ -45,7 +46,10 @@ public:
 } Terminator;
 static void CheckInit()
 {
-   if (!pInitializer) pInitializer = new CInitializer();
+   if (!pInitializer) {
+      pInitializer = new CInitializer();
+      // cvNamedWindow("vlproxy");
+   }
 }
 
 static void addLabels(mwArray &ans, double weight, vector<int> &labels, vector<double> &probs)
@@ -79,23 +83,23 @@ void protoObjectToMwArray(const ProtoObject &Object, mwArray &image, mwArray &ma
 {
    // Convert image patch
    image = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
-         Object.image.width, Object.image.height, 3); // WISH: number of channels in image
-   printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
+         Object.image.width, Object.image.height, 3, 1); // WISH: number of channels in image
+   // printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
 
    // Convert image mask
    mask = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
-         Object.mask.width, Object.mask.height, 1);
-   printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
+         Object.mask.width, Object.mask.height, 1, 1);
+   // printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
 
    // Convert 3D points
    int npts = Object.points.size();
    const int ncol = 6;
    if (npts < 1) {
-      printf("**** note enough points\n");
+      printf("**** not enough points\n");
       points3d = mwArray();
    }
    else {
-      printf("**** have %d 3D points\n", npts);
+      printf("**** we have %d 3D points\n", npts);
       // x, y, z, r, g, b
       mwSize dimensions[2] = {npts, ncol};
       points3d = mwArray(2, dimensions, mxDOUBLE_CLASS, mxREAL);
@@ -126,10 +130,25 @@ void VL_LoadAvModels(const char* filename)
 void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vector<double> &probs)
 {
    CheckInit();
+
+#if 0 /* DEBUG */
+   int npix = Object.mask.width * Object.mask.height;
+   Video::Image test;
+   test.width = Object.mask.width;
+   test.height = Object.mask.height;
+   for (int i = 0; i < npix; i++) {
+      for (int j = 0; j < 3; j++) test.data.push_back(Object.mask.data[i] * 63);
+   }
+   IplImage *pimg = convertImageToIpl(test);
+   cvShowImage("vlproxy", pimg);
+   cvReleaseImage(&pimg);
+#endif /* END-DEBUG */
+
    mwArray image, mask, pts3d;
    protoObjectToMwArray(Object, image, mask, pts3d);
-   /* DEBUG */
-   printf("**** WEIRD\n");
+   
+#if 1 /* DEBUG */
+   // printf("**** WEIRD\n");
    sleep(0.01);
    mwArray dims = pts3d.GetDimensions();
    int dim0 = dims.Get(mwSize(1), 1);
@@ -139,7 +158,7 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
    dim0 = dims.Get(mwSize(1), 1);
    dim1 = dims.Get(mwSize(1), 2);
    printf("**** ML: converted image size: %dx%d\n", dim0, dim1);
-   /* END-DEBUG */
+#endif /* END-DEBUG */
 
    // Extract features and recognise.
    mwArray rCqnt;
