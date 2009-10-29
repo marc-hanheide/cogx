@@ -65,12 +65,17 @@ public class CopulaReadings implements ReadingFactory {
 		LFRelation scope = LFUtils.lfNominalGetRelation(root,"Cop-Scope");	
 	/**	assert restrictor != null;
 		assert scope != null;  */
+		
+		if (restrictor == null || scope == null ) {
+			return results;
+		}
+		
 		LFNominal restrRoot = LFUtils.lfGetNominal(lf, restrictor.dep); 
 		LFNominal scopeRoot = LFUtils.lfGetNominal(lf, scope.dep);
 	/** assert restrRoot != null;
 		assert scopeRoot != null;  */
 	
-		if (restrictor == null || scope == null || restrRoot == null || scopeRoot == null) {
+		if (restrRoot == null || scopeRoot == null) {
 			return results;
 		}
 		// structures have now been properly initialized

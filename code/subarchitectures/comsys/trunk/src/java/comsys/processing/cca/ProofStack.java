@@ -36,7 +36,7 @@ public class ProofStack {
 	 * @return
 	 */
 	public static ProofBlock construct(ContextUpdate cu, Map<String, Belief> localBeliefs) {
-		System.err.println("stack.construct()");
+	//	System.err.println("stack.construct()");
 		ProofBlock pb = new ProofBlock();
 		pb.intention = cu.intention;
 		List<String> ids = new ArrayList<String>();

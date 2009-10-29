@@ -105,6 +105,11 @@ public class cc_FakeClarificationGenerator
 	
 	JButton ok;
 
+	public cc_FakeClarificationGenerator() {
+		init();
+	}
+	
+	
 	private void init() {
 		// general information processing structures
 		m_proposedProcessing = new Hashtable<String, ProcessingData>();
@@ -117,7 +122,6 @@ public class cc_FakeClarificationGenerator
 	
 	@Override
 	public void start() {
-		init();
 		
 		addChangeFilter(
 				ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class, WorkingMemoryOperation.WILDCARD),

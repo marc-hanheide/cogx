@@ -34,6 +34,7 @@ import gnu.trove.*;
  **/
 public class HyloVar extends HyloFormula implements Variable, Indexed {
     
+		
     protected final String _name;
     protected int _index;
     protected int _hashCode;

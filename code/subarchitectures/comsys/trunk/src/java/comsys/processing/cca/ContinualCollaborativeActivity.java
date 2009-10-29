@@ -92,7 +92,7 @@ public class ContinualCollaborativeActivity {
 	
     private Map<String, Belief> localBeliefs = new HashMap<String, Belief>(); 
     
-	boolean logging = true;
+	boolean logging = false;
 	
 	
 	/** 

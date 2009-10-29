@@ -65,6 +65,7 @@ public class ReferentialReadings {
 		RefReadings results = new RefReadings();
 		results.refRdngs = new RefReading[0];
 		
+		try {
 		Vector excludes = new Vector();
 		// cycle over the nominals in the logical form, examine the non-yet-excluded ones
 		Iterator<LFNominal> lfnomsIter = LFUtils.lfGetNominals(lf);
@@ -76,7 +77,7 @@ public class ReferentialReadings {
 					ReadingFactory factory = (ReadingFactory) readingFactories.get(nom.sort);
 					ReadingFactoryResults fresults = factory.constructReadings(lf);
 					// get the results: update the readings, update the excludes
-					if (fresults.getExcludes() != null) { 
+					if (fresults != null && fresults.getExcludes() != null) { 
 					excludes.addAll(fresults.getExcludes()); }
 					
 					RefReadings readings = fresults.getReadings();
@@ -89,6 +90,10 @@ public class ReferentialReadings {
 				}
 			} // end if.. 
 		} // end while
+		}
+		catch (Exception e) {
+			return results;
+		}
 		// return results
 		results.lform = lf;
 		return results;

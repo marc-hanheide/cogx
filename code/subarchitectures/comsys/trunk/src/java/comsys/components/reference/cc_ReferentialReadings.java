@@ -24,6 +24,7 @@ import cast.SubarchitectureComponentException;
 import comsys.arch.*;
 import comsys.datastructs.comsysEssentials.RefReadings;
 import comsys.datastructs.comsysEssentials.SelectedLogicalForm;
+import comsys.lf.utils.LFUtils;
 import comsys.processing.reference.ReferentialReadings;
 import comsys.utils.datastructs.*;
 
@@ -132,7 +133,7 @@ public class cc_ReferentialReadings
 			// get the data from working memory
 
 			SelectedLogicalForm slf = getMemoryEntry(_wmc.address, SelectedLogicalForm.class);
-	
+			log(LFUtils.lfToString(slf));
 			log("Starting task to determine the referential readings for the given LF");
 			// Create an id
 			String taskID = newTaskID();
@@ -163,12 +164,19 @@ public class cc_ReferentialReadings
 		CASTData<SelectedLogicalForm> data = pd.getByType(CASTUtils.typeName(SelectedLogicalForm.class));
 		if (data != null) {
 				RefReadings readings = readingsConstructor.constructReadings(data.getData());
-				assert readings != null; 
+		//		assert readings != null; 
 				
-				assert readings.lform != null;
-				
-				addToWorkingMemory(newDataID(),	readings);
-				log("referential readings successfully added to working memory");
+		//		assert readings.lform != null;
+		
+				if (readings != null && readings.lform != null) {
+					addToWorkingMemory(newDataID(),	readings);
+					log("referential readings successfully added to working memory");
+					log("SUCCESSFUL Logical form: " + LFUtils.lfToString(data.getData()));
+				}
+				else  {
+					log("WARNING: problem retrieving the referential readings");
+					log("FAILED Logical form: " + LFUtils.lfToString(data.getData()));
+				}
 			
 		} else {
 			throw new ComsysException(
