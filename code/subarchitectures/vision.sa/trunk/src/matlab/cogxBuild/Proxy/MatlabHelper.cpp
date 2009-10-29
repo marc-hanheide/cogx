@@ -55,7 +55,7 @@ mwArray CMatlabHelper::iplImage2array(const unsigned char *pImageData, unsigned 
    unsigned nChannels, unsigned align)
 {
    if (pImageData == NULL)
-      return  mwArray(mxDOUBLE_CLASS, mxREAL); // an empty array
+      return  mwArray(); // an empty array
 
    if (align < 1) align = 1;
    if (nChannels < 1) nChannels = 1;
@@ -63,9 +63,17 @@ mwArray CMatlabHelper::iplImage2array(const unsigned char *pImageData, unsigned 
    unsigned nArrayElements = CMatlabHelper::iplImage2rawArray<double>(
       pImageData, pArrayData,  width, height, nChannels, align);
    
-   mwSize dimensions[3] = {height, width, nChannels};
-   mwArray array(3, dimensions, mxDOUBLE_CLASS, mxREAL);
-   array.SetData((mxDouble*) pArrayData, nArrayElements);
+   mwArray array;
+   if (nChannels > 1) {
+      mwSize dimensions[3] = {height, width, nChannels};
+      array = mwArray(3, dimensions, mxDOUBLE_CLASS, mxREAL);
+      array.SetData((mxDouble*) pArrayData, nArrayElements);
+   }
+   else {
+      mwSize dimensions[2] = {height, width};
+      array = mwArray(2, dimensions, mxDOUBLE_CLASS, mxREAL);
+      array.SetData((mxDouble*) pArrayData, nArrayElements);
+   }
    
    if (pArrayData != NULL) delete pArrayData;
    return array;
