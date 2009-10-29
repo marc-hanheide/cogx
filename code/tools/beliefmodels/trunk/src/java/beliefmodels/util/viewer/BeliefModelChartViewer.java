@@ -67,6 +67,7 @@ import org.jfree.chart.annotations.CategoryTextAnnotation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberAxis3D;
+import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
@@ -149,9 +150,10 @@ public class BeliefModelChartViewer
 		private JFreeChart createChart() {
 
 			// set up the beliefs beliefs
-			final NumberAxis beliefsAxis = new NumberAxis3D("Beliefs");
+			String[] labels = {"","PRIVATE","ATTRIBUTED","SHARED"};
+			final NumberAxis beliefsAxis = new SymbolAxis("Beliefs",labels);
 			beliefsAxis.setLowerBound(0);
-			beliefsAxis.setUpperBound(5);
+			beliefsAxis.setUpperBound(3);
 			beliefsAxis
 					.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 			final StackedBarRenderer3D beliefsRender = new StackedBarRenderer3D();
