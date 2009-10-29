@@ -1,45 +1,73 @@
-a ball
+a bull
 
 color game
 Borland book
 
-what colour is a ball
-which colour is a ball
-what colour is a boll
-which colour is a boll
-what colour is a triangle
-which colour is a triangle
+what colour is a bull HH%
+which colour is a bull HH%
+what colour is a boll HH%
+which colour is a boll HH%
+what colour is a triangle HH%
+which colour is a triangle HH%
 
-what size is a ball
-which size is a ball
-what size is a boll
-which size is a boll
-what size is a triangle
-which size is a triangle
+what size is a boll HH%
+which size is a boll HH%
+what size is a boll HH%
+which size is a boll HH%
+what size is a triangle HH%
+which size is a triangle HH%
 
-what shape is a ball
-which shape is a ball
-what shape is a boll
-which shape is a boll
-what shape is a triangle
-which shape is a triangle
+what shape is a bull HH%
+which shape is a bull HH%
+what shape is a boll HH%
+which shape is a boll HH%
+what shape is a triangle HH%
+which shape is a triangle HH%
 
-this is a ball
-this is a boll
-this is a car
-this is a cow
-this is a triangle
-this is a star
+this is a bull LL%
+this is a boll LL%
+this is a car LL%
+this is a cow LL%
+this is a triangle LL%
+this is a star LL%
 
-the room is a kitchen
-the room is the kitchen
+is is a bull LL%
+is is a boll LL%
+is is a car LL%
+is is a cow LL%
+is is a triangle LL%
+is is a star LL%
 
-I see a ball
-I see the ball
-I see a boll
-I see the boll
-I see a triangle
-I see the car
+this is a bull LH%
+this is a boll LH%
+this is a car LH%
+this is a cow LH%
+this is a triangle LH%
+this is a star LH%
+
+it is a bull LH%
+it is a boll LH%
+it is a car LH%
+it is a cow LH%
+it is a triangle LH%
+it is a star LH%
+
+the room is a kitchen LL%
+the room is the kitchen LL%
+
+I see a bull LL%
+I see the bull LL%
+I see a boll LL%
+I see the boll LL%
+I see a triangle LL%
+I see the car LL%
+
+I see a boll LH%
+I see the bull LH%
+I see a boll LH%
+I see the boll LH%
+I see a triangle LH%
+I see the car LH%
 
 the color game
 the shape game
