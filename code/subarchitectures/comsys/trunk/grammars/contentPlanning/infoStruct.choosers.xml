@@ -37,8 +37,8 @@
                 <result val="nonmatchAnswer"/>  
               </choicenode>
               <choicenode answer = "true">  <!-- entity -->
-			    <result val="matchAnswer"/>			
-		      </choicenode>
+                <result val="matchAnswer" />
+		      </choicenode>  <!-- end entity answer to type question -->
 	      </choicenode>  <!-- end type question answer -->
 
 		   <choicenode answer = "color">    <!-- answering COLOR question -->
@@ -165,7 +165,7 @@
 </chooser>
 
 
-<chooser id="c-rhemeAssign.quality" region="infoStruct" metafunction="textual">
+<chooser id="c-rhemeAssign" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="q-deprel-type" type="string" answerset="@true @false"> 
@@ -180,34 +180,59 @@
          <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
 		    <q-ex-feat feat="Rheme"/>
 		 </inquiry>			
-            <choicenode answer = "true">
+            <choicenode answer = "true">  <!-- Rheme already assigned -->
                 <result val="doneRheme"/>
             </choicenode>
-		 <choicenode answer = "false">         
-           <inquiry id="f-featval" type="string" answerset="@standardrheme @denialtheme @unknown"> <!-- check AscriptionIS -->
-		     <f-featval feat="AscriptionPropertyIS" nomvar="CONTENT" />
-		   </inquiry>			
-  		     <choicenode answer = "standardrheme">  
-			    <result val="assignStandardRheme"/>			
-		     </choicenode>
-		     <choicenode answer = "denialtheme">
-			    <result val="assignDenialTheme"/>
-		     </choicenode>
-		     <choicenode answer = "unknown">  <!-- AscriptionIS not assigned -->           
-               <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
-		         <f-featval feat="ProofStatus"  />
-		       </inquiry>			
-		       <choicenode answer = "assumed">  
-			      <result val="assumed"/>			
-		       </choicenode>
-		       <choicenode answer = "asserted">
-			      <result val="asserted"/>
-		       </choicenode>
-		       <choicenode answer = "unknown">
-			      <result val="assumed"/>  <!-- Theme is the default --> 
+		 <choicenode answer = "false">     <!-- Rheme not yet assigned -->    
+           <!-- need to ensure it is not an entity in target of ascription -->
+           <inquiry id="q-deprel-type" val="string" answerset="@true @false"> 
+	   	       <q-deprel-type mode="Cop-Restr"/>  <!-- check whether entity in target of ascription -->
+             </inquiry>	
+
+                  <choicenode answer = "true">   <!-- entity under Target -->    
+                    <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
+                        <f-featval feat="ProofStatus"  />
+                    </inquiry>			
+                    <choicenode answer = "assumed">  
+                        <result val="proof-status-assumed"/>			
+                    </choicenode>
+                    <choicenode answer = "asserted">
+                        <result val="proof-status-asserted"/>
+                    </choicenode>
+                    <choicenode answer = "unknown">
+                        <result val="proof-status-assumed"/>  <!-- Theme is the default -->     
+                    </choicenode>            
+                 </choicenode>   <!-- end entity under Target -->
+  
+                  <choicenode answer = "false">  <!-- something not under Target -->                                    
+                    <inquiry id="f-featval" type="string" answerset="@standardrheme @denialtheme @unknown"> 
+                       <!-- check AscriptionPropertyIS-->
+                        <f-featval feat="AscriptionPropertyIS" nomvar="CONTENT" />
+                    </inquiry>			
+                    <choicenode answer = "standardrheme">  
+                        <result val="assignStandardRheme"/>			
+                    </choicenode>
+
+                    <choicenode answer = "denialtheme">
+                        <result val="assignDenialTheme"/>
+                    </choicenode>
+                    
+                  <choicenode answer = "unknown">  <!-- AscriptionPropertyIS not assigned -->           
+                    <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
+                        <f-featval feat="ProofStatus"  />
+                    </inquiry>			
+                    <choicenode answer = "assumed">  
+                        <result val="proof-status-assumed"/>			
+                    </choicenode>
+                    <choicenode answer = "asserted">
+                        <result val="proof-status-asserted"/>
+                    </choicenode>
+                    <choicenode answer = "unknown">
+                        <result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
                   <!-- check if in ascr -->          
-               </choicenode>            
-               </choicenode>  <!-- end AscriptionIS check -->            
+                    </choicenode>            
+                </choicenode>  <!-- end AscriptionIS check --> 
+                </choicenode>  <!-- end something not under Target -->                                                
                </choicenode>  <!-- end Rheme check -->            
           </choicenode>  <!-- end compound check -->
 	   </choicenode>  <!-- end TOP -->
@@ -221,40 +246,40 @@
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
-		    <f-featval feat="ProofStatus" nomvar="ENTITY4COLOR" />
+		    <f-featval feat="Rheme" nomvar="ENTITY4COLOR" />
 		 </inquiry>			
-		 <choicenode answer = "assumed">  <!-- color is thematic -->
+		 <choicenode answer = "t-rheme-false">  <!-- color is thematic -->
            <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
     		    <f-featval feat="KontrastColor" nomvar="ENTITY4COLOR" />
    		   </inquiry>			
 		   <choicenode answer = "true">  
-			  <result val="m-focus-true-assumed"/>			
+			  <result val="m-focus-true-thematic"/>			
 		   </choicenode>
 		   <choicenode answer = "false">
-			  <result val="m-focus-false-assumed"/>
+			  <result val="m-focus-false-thematic"/>
 		   </choicenode>
 		   <choicenode answer = "unknown">  
-			  <result val="m-focus-false-assumed"/>		<!-- Focus=false is the default in theme -->	
+			  <result val="m-focus-false-thematic"/>		<!-- Focus=false is the default in theme -->	
 		   </choicenode>			
 		 </choicenode>  <!-- end color is thematic -->
 
-		 <choicenode answer = "asserted">  <!-- color is rhematic -->
+		 <choicenode answer = "t-rheme-true">  <!-- color is rhematic -->
            <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
     		    <f-featval feat="KontrastColor" nomvar="ENTITY4COLOR" />
    		   </inquiry>			
 		   <choicenode answer = "true">  
-			  <result val="m-focus-true-asserted"/>			
+			  <result val="m-focus-true-rhematic"/>			
 		   </choicenode>
 		   <choicenode answer = "false">
-			  <result val="m-focus-false-asserted"/>
+			  <result val="m-focus-false-rhematic"/>
 		   </choicenode>
 		   <choicenode answer = "unknown">  
-			  <result val="m-focus-true-asserted"/>		<!-- Focus=true is the default in rheme -->	
+			  <result val="m-focus-true-rhematic"/>		<!-- Focus=true is the default in rheme -->	
 		   </choicenode>			
 		 </choicenode>  <!-- end color is rhematic -->
 
-		 <choicenode answer = "unknown">               <!-- default -->
-			  <result val="m-focus-false-assumed"/>
+		 <choicenode answer = "unknown">               <!-- no Rheme feature present at entity: default -->
+			  <result val="m-focus-false-thematic"/>
          </choicenode>
 
 	   </choicenode>  <!-- and TOP -->
@@ -446,34 +471,110 @@
        <choicenode answer="*TOP*">
 		 <!-- first check whether RhOwner has already been set to avoid duplication -->
          <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
-		    <q-ex-feat feat="RhOwner" nomvar="CONTENT"/>
+		    <q-ex-feat feat="Owner"/>
 		 </inquiry>			
-            <choicenode answer = "true">
+            <choicenode answer = "true">  <!-- assigned -->
                 <result val="doneRhOwner"/>
             </choicenode>
 
-		 <choicenode answer = "false">
+		 <choicenode answer = "false">  <!-- not assigned -->
 
            <inquiry id="f-featval" type="string" answerset="@assertion @question @directive @commitment @unknown"> 
                 <f-featval nomvar="DVP" feat="SpeechAct"/> 
             </inquiry>
-					<choicenode answer="assertion"> 
-					  <result val="speakerRhOwner"/>
-					</choicenode>
-					<choicenode answer="question">  <!-- question means something info request, really -->
-					  <result val="hearerRhOwner"/>
-					</choicenode>
-					<choicenode answer="directive">
-					  <result val="hearerRhOwner"/>  
-					</choicenode>
-					<choicenode answer="commitment">
-					   <result val="speakerRhOwner"/>
-					</choicenode>
-					<choicenode answer="unknown">  <!-- default -->
-					  <result val="speakerRhOwner"/>
-					</choicenode>
-        </choicenode>
-	</choicenode>
+            
+            <choicenode answer="assertion">   <!-- assertion: speakerRhOwner -->
+              <inquiry id="f-featval" type="string" answerset="@t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                 <f-featval feat="Rheme"/>
+              </inquiry>			
+              <choicenode answer = "t-rheme-true">
+                <result val="speaker-t-rheme"/>
+              </choicenode>
+              <choicenode answer = "m-rheme-true">
+                <result val="speaker-m-rheme"/>
+              </choicenode>
+              <choicenode answer = "e-rheme-true">
+                <result val="speaker-e-rheme"/>
+              </choicenode>
+		      <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                <result val="noRhemeFeature"/>
+              </choicenode>
+             </choicenode>  <!-- end assertion -->
+
+            <choicenode answer="question">  <!-- question: hearerRhOwner for now -->
+              <inquiry id="f-featval" type="string" answerset="@t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                 <f-featval feat="Rheme"/>
+              </inquiry>			
+              <choicenode answer = "t-rheme-true">
+                <result val="hearer-t-rheme"/>
+              </choicenode>
+              <choicenode answer = "m-rheme-true">
+                <result val="hearer-m-rheme"/>
+              </choicenode>
+              <choicenode answer = "e-rheme-true">
+                <result val="hearer-e-rheme"/>
+              </choicenode>
+		      <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                <result val="noRhemeFeature"/>
+              </choicenode>
+			</choicenode>  <!-- end question -->
+
+			<choicenode answer="directive">  <!-- directive: hearerRhOwner -->  
+              <inquiry id="f-featval" type="string" answerset="@t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                 <f-featval feat="Rheme"/>
+              </inquiry>			
+              <choicenode answer = "t-rheme-true">
+                <result val="hearer-t-rheme"/>
+              </choicenode>
+              <choicenode answer = "m-rheme-true">
+                <result val="hearer-m-rheme"/>
+              </choicenode>
+              <choicenode answer = "e-rheme-true">
+                <result val="hearer-e-rheme"/>
+              </choicenode>
+		      <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                <result val="noRhemeFeature"/>
+              </choicenode>
+			</choicenode>  <!-- end directive -->
+
+			<choicenode answer="commitment">  <!-- commitment: speakerRhOwner -->
+              <inquiry id="f-featval" type="string" answerset="@t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                 <f-featval feat="Rheme"/>
+              </inquiry>			
+              <choicenode answer = "t-rheme-true">
+                <result val="speaker-t-rheme"/>
+              </choicenode>
+              <choicenode answer = "m-rheme-true">
+                <result val="speaker-m-rheme"/>
+              </choicenode>
+              <choicenode answer = "e-rheme-true">
+                <result val="speaker-e-rheme"/>
+              </choicenode>
+		      <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                <result val="noRhemeFeature"/>
+              </choicenode>
+			</choicenode>  <!-- end commitment -->
+
+			<choicenode answer="unknown">  <!-- default: speakerRhOwner -->
+              <inquiry id="f-featval" type="string" answerset="@t-rheme-true @m-rheme-true @e-rheme-true @unknown"> 
+                 <f-featval feat="Rheme"/>
+              </inquiry>			
+              <choicenode answer = "t-rheme-true">
+                <result val="speaker-t-rheme"/>
+              </choicenode>
+              <choicenode answer = "m-rheme-true">
+                <result val="speaker-m-rheme"/>
+              </choicenode>
+              <choicenode answer = "e-rheme-true">
+                <result val="speaker-e-rheme"/>
+              </choicenode>
+		      <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                <result val="noRhemeFeature"/>
+              </choicenode>
+			</choicenode>  <!-- end default -->
+
+        </choicenode>  <!-- end not assigned -->
+	</choicenode>  <!-- end TOP -->
    </dectree>
 </chooser>
 
@@ -483,16 +584,31 @@
        <choicenode answer="*TOP*">
 		 <!-- first check whether ThOwner has already been set to avoid duplication -->
          <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
-		    <q-ex-feat feat="ThOwner" nomvar="CONTENT"/>
+		    <q-ex-feat feat="Owner"/>
 		 </inquiry>			
             <choicenode answer = "true">
                 <result val="doneThOwner"/>
             </choicenode>
 
-		 <choicenode answer = "false">
-                <result val="hearerThOwner"/>  <!-- defaut -->
-          </choicenode>
-       </choicenode>
+		 <choicenode answer = "false">  <!-- default: hearerThOwner -->
+              <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @unknown"> 
+                 <f-featval feat="Rheme"/>
+              </inquiry>			
+              <choicenode answer = "t-rheme-false">
+                <result val="hearer-t-theme"/>
+              </choicenode>
+              <choicenode answer = "m-rheme-false">
+                <result val="hearer-m-theme"/>
+              </choicenode>
+              <choicenode answer = "e-rheme-false">
+                <result val="hearer-e-theme"/>
+              </choicenode>
+		      <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                <result val="noRhemeFeature"/>
+              </choicenode>
+
+          </choicenode>  <!-- end default -->
+       </choicenode>  <!-- end TOP -->
    </dectree>
 </chooser>
 
@@ -586,6 +702,8 @@
                     if verb then no focus 
                     if Thematic then no focus (done)
                     if "I" then no focus (done)
+                    if the only (rhematic) element assign focus how?
+                    focus type/color/shape in answers according to QuestionType
                      -->
 
             <inquiry id="q-ex-prop" type="string" answerset="@true @false"> 
@@ -647,7 +765,7 @@
 </chooser>
 
 
-<chooser id="c-themerheme.type" region="infoStruct" metafunction="textual">
+<chooser id="c-themerheme.agreement" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
