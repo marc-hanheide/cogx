@@ -27,6 +27,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPermissions;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.ActiveVisualSearch;
@@ -274,6 +275,7 @@ public class SpatialActionInterface extends ManagedComponent {
 				throws CASTException {
 
 			// read in the nav cmd
+			lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
 			NavCommand cmd = getMemoryEntry(_wmc.address, NavCommand.class);
 			if (cmd.comp == Completion.COMMANDFAILED) {
 				log("command failed by the looks of this: " + cmd.comp);
@@ -289,6 +291,7 @@ public class SpatialActionInterface extends ManagedComponent {
 				removeChangeFilter(this);
 			} else {
 				log("command in progress: " + cmd.comp);
+				unlockEntry(_wmc.address);
 			}
 		}
 
@@ -300,10 +303,12 @@ public class SpatialActionInterface extends ManagedComponent {
 					log("aborting execution");
 					removeChangeFilter(this);
 					// reread
+					lockEntry(m_navCmdAddr, WorkingMemoryPermissions.LOCKEDODR);
 					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
 							NavCommand.class);
 					navCmd.comp = Completion.COMMANDABORTED;
 					overwriteWorkingMemory(m_navCmdAddr, navCmd);
+					unlockEntry(m_navCmdAddr);
 
 				} catch (DoesNotExistOnWMException e) {
 					//
