@@ -694,7 +694,7 @@ rE += combined_lgm.size;
 	    double d = (m_PathGrid.path(rS, cS, rE, cE, path,
 					20 * combined_lgm.size) *
 			combined_lgm.cellSize);
-	    if (d > 0) {
+	    if (d > 0 && d < 2) {
          // There is a path to this destination
 	      m_samples[2*i] = randx;
 	      m_samples[2*i+1] = randy;
