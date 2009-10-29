@@ -27,23 +27,23 @@ else
     TRI = [] ;
 end
 
+rgb3d = rgb3d / 255 ;
+if size( rgb3d , 2) == 3
+    for i = 1 : 3 
+        rgb3d(:,i) = max([0*rgb3d(:,i),rgb3d(:,i)]');
+    end
+end
+
 if turnoffDelaunay == 0
     if isempty(rgb3d)
         if ~isempty( LRaxRoi )
             set(LRaxRoi, 'NextPlot', 'replace') ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),'Parent',LRaxRoi,'EdgeAlpha', 0.3) ;  
             set(LRaxRoi, 'NextPlot', 'add') ;
-            
-            if ~isempty(rgb3d)
-                colormap(LRaxRoi,rgb3d/255) ;
-            end
         else
             hold off ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),'EdgeAlpha', 0.3) ;
             hold on ;
-            if ~isempty(rgb3d)
-                colormap(rgb3d/255) ;
-            end
         end        
 %         colormap bone ;
     else
@@ -51,22 +51,19 @@ if turnoffDelaunay == 0
             hold off ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]','EdgeAlpha', 0.3) ;
             hold on ;
-            if ~isempty(rgb3d)
-                colormap(rgb3d/255) ;
-            end
+            colormap(rgb3d) ;
+
         else            
             set(LRaxRoi, 'NextPlot', 'replace') ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]','Parent',LRaxRoi,'EdgeAlpha', 0.3) ;
             set(LRaxRoi, 'NextPlot', 'add') ;
-%             set(LRaxRoi, 'NextPlot', 'add') ;
 %             colormap(LRaxRoi,'bone') ;            
-            if ~isempty(rgb3d)
-                colormap(LRaxRoi,rgb3d/255) ;
-            end
+            colormap(LRaxRoi,rgb3d) ;
+
 
         end
         
-%         colormap(rgb3d/255) ;
+%         colormap(rgb3d) ;
         %     shading interp ;
     end
     
@@ -75,12 +72,7 @@ else
     hold off ;
 end
 
-
-
-
 if ~isempty( LRaxRoi )
-%      colormap(LRaxRoi,rgb3d/255) ;
-    
     plot3(x(:,1),x(:,2),x(:,3),'r.','Parent',LRaxRoi) ;
  %             colormap(LRaxRoi,'bone') ;
             axis(LRaxRoi,'tight') ;
