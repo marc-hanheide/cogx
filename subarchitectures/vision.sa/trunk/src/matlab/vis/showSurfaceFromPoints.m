@@ -31,6 +31,7 @@ rgb3d = rgb3d / 255 ;
 if size( rgb3d , 2) == 3
     for i = 1 : 3 
         rgb3d(:,i) = max([0*rgb3d(:,i),rgb3d(:,i)]');
+        rgb3d(:,i) = min([1+0*rgb3d(:,i),rgb3d(:,i)]');
     end
 end
 
