@@ -16,7 +16,7 @@ def from-ips(args)    { s<~10>[args] }
 # This allows unification of two intonation phrases.
 
 #family IntmPhr_r(indexRel=RhOwner) {entry: (from-ips(cp rhthm)$1)\*(ips(ip rhmf)$1);}
-family IntmPhr_rs(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(ip rhmf spkr)$1);}
+family IntmPhr_rs(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(ip rhmf owners)$1);}
 
 # Boundary take intermediate phrase of type Theme ans results into a Theme intonation phrase.
 # Ownership of Theme is indicated by semantic feature ThOwner in the LF.
@@ -25,7 +25,7 @@ family IntmPhr_rs(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ip
 # This allows unification of two intonation phrases.
 
 #family IntmPhr_t(indexRel=ThOwner) {entry: (from-ips(cp rhthm)$1)\*(ips(ip thmf)$1);}
-family IntmPhr_th(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(ip thmf hear)$1);}
+family IntmPhr_th(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(ip thmf owners)$1);}
 
 ################
 ## DICTIONARY ##
@@ -35,16 +35,16 @@ family IntmPhr_th(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ip
 ##Steedman 2000,pg 16-17. Ownership of Rhemes could be of speaker or hearer. 
 word r_intmphr:IntmPhr_rs{
 LL%: spkr;
-#LH%: hear;
+LH%: hear;
 HL%: spkr;
-#HH%: hear;
+HH%: hear;
 }
 
 ##Steedman 2000,pg 15. Themes can be marked by all types of boundaries. 
 ##Steedman 2000,pg 16-17. Ownership of Themes could be of speaker or hearer. 
 word t_intmphr:IntmPhr_th{
-#LL%: spkr;
+LL%: spkr;
 LH%: hear;
-#HL%: spkr;
+HL%: spkr;
 HH%: hear;
 }
