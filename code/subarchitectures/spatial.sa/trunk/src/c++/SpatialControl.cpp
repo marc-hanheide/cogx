@@ -657,6 +657,10 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
         Cure::NavController::setPositionToleranceFinal(m_TolPos);
         Cure::NavController::setOrientationTolerance(m_TolRot);
         ret = Cure::NavController::gotoXY(currentTaskId, m_commandX, m_commandY);
+	//Clean out path; use only final waypoint
+	Cure::NavGraphNode lastNode = m_Path.back();
+	m_Path.clear();
+	m_Path.push_back(lastNode);
       }
       
       // GOTO_POLAR
