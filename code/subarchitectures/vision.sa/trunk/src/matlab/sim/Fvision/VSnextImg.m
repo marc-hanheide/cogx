@@ -10,10 +10,13 @@ deterministic = 0 ;
 if deterministic == 0
     Data.currImg=ceil(rand*Data.numImgs);
 else
-    Data.currImg = Data.currImg + 1 ;
+    Data.currImg = Data.currImg + 1 ;        
+    if isfield(Data,'allindexes') && ~isempty(Data.allindexes)
+        Data.curridximg = Data.curridximg + 1 ;
+        Data.currImg = Data.allindexes(Data.curridximg) ;
+    end         
 end
-
-
+ 
 [x,b,pt3d]=readImage(Data.currImg);
 
 imshow(x,'Parent',axCimgH)
@@ -26,5 +29,7 @@ if ~isempty(pt3d)
  
     showSurfaceFromPoints( pt3d, repmat( hsv2rgb(f(1:3)')*255, size(pt3d,1), 1 ) ) ;
 end
+
+ msg = sprintf('Img %d has been read from the disk!',Data.currImg) ; disp(msg) ;
 
 ATinterface;
