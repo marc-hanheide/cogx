@@ -65,7 +65,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 		</action>  
   
 
-      <action choice="hold">
+      <action choice="hold">  <!-- let me see -->
 	   <add-lf lf="@content:modal(let ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:animate ^ addressee ^  &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:animate ^  &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;true) ^ &lt;Patient&gt;(i1_0:animate ^ I ^  &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false))" dest="CONTENT" />
 <!-- PROBLEM WITH INCOMPLETE EDGE -->
 
@@ -86,9 +86,8 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 	   <add-proposition propositions="@fine" />
       </action>      
 
-      <action choice="accept-isee">
-<!--			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person"   dest="CONTENT"/>  -->
-			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Rheme&gt;e-rheme-true ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;true ^ &lt;Actor&gt;(i1:person ^ I ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false)"   dest="CONTENT"/>
+      <action choice="accept-isee">  <!-- w/o explicit rheme, ownership and commitment not inserted for some weird reason -->
+			<add-lf lf="@content:perception(see ^ &lt;Rheme&gt;e-rheme-true ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;true ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false)"   dest="CONTENT"/>
       </action>      
 
       <action choice="reject-sorry">
