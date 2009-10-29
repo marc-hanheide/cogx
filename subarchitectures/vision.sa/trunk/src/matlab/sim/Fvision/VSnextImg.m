@@ -5,12 +5,9 @@ global Data;
 global Params ;
 
 
-deterministic = 0 ; 
-
-if deterministic == 0
+if Params.deterministic == 0
     Data.currImg=ceil(rand*Data.numImgs);
-else
-    Data.currImg = Data.currImg + 1 ;        
+else       
     if isfield(Data,'allindexes') && ~isempty(Data.allindexes)
         Data.curridximg = Data.curridximg + 1 ;
         Data.currImg = Data.allindexes(Data.curridximg) ;
