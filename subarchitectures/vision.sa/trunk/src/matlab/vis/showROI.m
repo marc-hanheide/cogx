@@ -12,7 +12,7 @@ set(LRtxFisRec,'Visible','off');
 set(LRtxFisRoi,'Visible','off');
 set(LRaxPts3d,'Visible','off');
 
- 
+uselocalcolorifok = 0 ; 
 
 if nargin>0
    x1=cutBG(x,b);
@@ -34,8 +34,9 @@ if nargin>0
        else
            ptcol = pts3d(:,4:6) ;
        end
-       
-       ptcol = repmat( hsv2rgb(f(1:3)')*255, size(pts3d,1), 1 ) ;
+       if uselocalcolorifok == 1
+            ptcol = repmat( hsv2rgb(f(1:3)')*255, size(pts3d,1), 1 ) ;
+       end
        showSurfaceFromPoints( pts3d(:,1:3), ptcol, LRaxPts3d ) ;
    end
    
