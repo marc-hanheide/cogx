@@ -271,7 +271,7 @@ public class ProxyInfoGUI extends JDialog {
 					panel1.setLayout(new BorderLayout());
 
 					//---- slider1 ----
-					slider1.setValue(75);
+					slider1.setValue(80);
 					slider1.addChangeListener(new ChangeListener() {
 						public void stateChanged(ChangeEvent e) {
 							slider1StateChanged(e);
@@ -280,7 +280,7 @@ public class ProxyInfoGUI extends JDialog {
 					panel1.add(slider1, BorderLayout.CENTER);
 
 					//---- textField1 ----
-					textField1.setText("0.75");
+					textField1.setText("0.80");
 					panel1.add(textField1, BorderLayout.EAST);
 				}
 				panel2.add(panel1, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,

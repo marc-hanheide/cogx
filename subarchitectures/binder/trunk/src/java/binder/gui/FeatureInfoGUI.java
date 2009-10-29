@@ -546,11 +546,6 @@ public class FeatureInfoGUI extends JDialog {
 							"AddressValue",
 							"UnknownValue"
 						}));
-						comboBox1.addItemListener(new ItemListener() {
-							public void itemStateChanged(ItemEvent e) {
-								comboBox1ItemStateChanged(e);
-							}
-						});
 						panel5.add(comboBox1, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 							new Insets(0, 0, 5, 5), 0, 0));
@@ -575,7 +570,7 @@ public class FeatureInfoGUI extends JDialog {
 							panel7.setLayout(new BorderLayout());
 
 							//---- slider1 ----
-							slider1.setValue(75);
+							slider1.setValue(80);
 							slider1.addChangeListener(new ChangeListener() {
 								public void stateChanged(ChangeEvent e) {
 									slider1StateChanged(e);
@@ -584,7 +579,7 @@ public class FeatureInfoGUI extends JDialog {
 							panel7.add(slider1, BorderLayout.CENTER);
 
 							//---- textField3 ----
-							textField3.setText("0.75");
+							textField3.setText("0.80");
 							textField3.setColumns(3);
 							panel7.add(textField3, BorderLayout.EAST);
 						}

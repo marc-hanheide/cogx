@@ -247,7 +247,7 @@
               <string>javax.swing.JSlider</string> 
               <void method="setProperty"> 
                <string>value</string> 
-               <int>75</int> 
+               <int>80</int> 
               </void> 
               <void property="name"> 
                <string>slider1</string> 
@@ -274,7 +274,7 @@
               <string>javax.swing.JTextField</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>0.75</string> 
+               <string>0.80</string> 
               </void> 
               <void property="name"> 
                <string>textField1</string> 

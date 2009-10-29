@@ -7,6 +7,7 @@ import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.filtering.ConfigurationFilter;
 
 public class UnionConfigurationUtils {
 
@@ -149,8 +150,27 @@ public class UnionConfigurationUtils {
 		return newConfig;
 	}
 	
-	
-	public static boolean isConfigurationAlreadyIncluded 
+	public static void addProbsOfConfig1IntoConfig2 (UnionConfiguration config1, UnionConfiguration config2) {
+		
+		for (int i = 0 ; i < config1.includedUnions.length ; i++) {
+			Union union1 = config1.includedUnions[i];
+			if (union1.probExists == 0.0f) {
+				union1.probExists = ConfigurationFilter.getProbabilitiesSum (union1.distribution);
+			}
+			for (int j = 0 ; j < config2.includedUnions.length; j++) {
+				Union union2 = config2.includedUnions[j];
+				
+				if (union1.entityID.equals(union2.entityID) && 
+						union1.includedProxies.length == union2.includedProxies.length && 
+						union1.features.length == union2.features.length) {
+					
+					union2.probExists = union2.probExists +  union1.probExists;
+				}
+					
+			}
+		}
+	}
+	public static UnionConfiguration getSimilarUnionConfig
 		(Vector<UnionConfiguration> configs, UnionConfiguration config) {
 		
 		for (int i = 0 ; i < configs.size(); i++) {
@@ -182,11 +202,11 @@ public class UnionConfigurationUtils {
 			}
 			
 			if (foundMatchingConfig) {
-				return true;
+				return curConfig;
 			}
 		}
 		
-		return false;
+		return null;
 	}
 	
 }
