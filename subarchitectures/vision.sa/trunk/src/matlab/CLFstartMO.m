@@ -49,7 +49,7 @@ Params.FV=3;
 %Reload global variables from CONFIG FILE
 confFile='config/cogLearn.config';
 loadConfig(confFile);
-loadpredefinedorder = 1 ; 
+loadpredefinedorder = 0 ; 
 Data.allindexes = [] ;
 if loadpredefinedorder == 1
     try
