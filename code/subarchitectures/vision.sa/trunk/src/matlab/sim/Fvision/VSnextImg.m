@@ -4,7 +4,16 @@ global axCimgH axCpts3dH;
 global Data;
 global Params ;
 
-Data.currImg=ceil(rand*Data.numImgs);
+
+deterministic = 0 ; 
+
+if deterministic == 0
+    Data.currImg=ceil(rand*Data.numImgs);
+else
+    Data.currImg = Data.currImg + 1 ;
+end
+
+
 [x,b,pt3d]=readImage(Data.currImg);
 
 imshow(x,'Parent',axCimgH)

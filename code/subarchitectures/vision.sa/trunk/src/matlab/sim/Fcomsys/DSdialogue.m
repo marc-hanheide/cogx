@@ -515,7 +515,6 @@ i_nextits = str2num(get(handles.ed_numNext,'String')) ;
 
 global Data;
 
-i_nextits = 50 ;
 for i = 1 : i_nextits
     
     VSnextImg;
