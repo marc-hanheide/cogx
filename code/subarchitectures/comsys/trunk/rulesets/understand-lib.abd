@@ -15,8 +15,19 @@ to_asserted_predicate(color, Entity, Value) <-
 to_asserted_predicate(shape, Entity, Value) <-
 	?( k(now, private(r)) : shape(Entity, Value) ).
 
-to_asserted_predicate(shape, Entity, Value) <-
-	?( k(now, private(r)) : shape(Entity, Value) ).
+to_asserted_predicate(objecttype, Entity, Value) <-
+	?( k(now, private(r)) : objecttype(Entity, Value) ).
+
+%-------------------------------------------------------------------------
+
+to_asserted_attrib_predicate(color, Entity, Value) <-
+	?( k(now, attrib(r, h)) : color(Entity, Value) ).
+
+to_asserted_attrib_predicate(shape, Entity, Value) <-
+	?( k(now, attrib(r, h)) : shape(Entity, Value) ).
+
+to_asserted_attrib_predicate(objecttype, Entity, Value) <-
+	?( k(now, attrib(r, h)) : objecttype(Entity, Value) ).
 
 %-------------------------------------------------------------------------
 
@@ -143,20 +154,48 @@ assert_prop_noint(Nom, Union, Polarity) <-
 
 %-------------------------------------------------------------------------
 
+check_value_grounding(Union, color, grounded(Value)) <-
+	k(now, mutual(r, h)) : color(Union, Value) / belief_model.
+
+check_value_grounding(Union, shape, grounded(Value)) <-
+	k(now, mutual(r, h)) : shape(Union, Value) / belief_model.
+
+check_value_grounding(Union, objecttype, grounded(Value)) <-
+	k(now, mutual(r, h)) : objecttype(Union, Value) / belief_model.
+
+check_value_grounding(Union, Prop, ungrounded(Value)) <-
+	property_value_ungrounded(Union, Prop) / 15.0.
+
+%-------------------------------------------------------------------------
+
+find_assert_value_intention(Union, Prop, Value) <-
+	check_value_grounding(Union, Prop, grounded(Value)),
+	intention : already_grounded(r, Union, Prop) / 0.5.
+
+find_assert_value_intention(Union, Prop, Value) <-
+	check_value_grounding(Union, Prop, ungrounded(Value)),
+	to_asserted_attrib_predicate(Prop, Union, Value),
+	intention : value_assertion(h, Union, Prop) / 0.5.
+
+%-------------------------------------------------------------------------
+
 assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, 'q-color'),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
-	?( k(now, attrib(r, h)) : color(Union, PolarProp) ),
-	intention : value_assertion(h, Union, color) / 0.5.
+	find_assert_value_intention(Union, color, PolarProp).
+%	check_value_grounding(Union, color, ungrounded),
+%	?( k(now, attrib(r, h)) : color(Union, PolarProp) ),
+%	intention : value_assertion(h, Union, color) / 0.5.
 
 assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, 'q-shape'),
 	i : prop(Nom, Prop),
 	prop_to_shape(Prop, Value),
 	polarprop(Value, Polarity, PolarValue),
-	?( k(now, attrib(r, h)) : shape(Union, PolarValue) ),
-	intention : value_assertion(h, Union, shape) / 0.5.
+	find_assert_value_intention(Union, shape, PolarProp).
+%	?( k(now, attrib(r, h)) : shape(Union, PolarValue) ),
+%	intention : value_assertion(h, Union, shape) / 0.5.
 
 assert_prop(Union, Polarity, Nom) <-
 	i : sort(Nom, thing),
@@ -165,9 +204,11 @@ assert_prop(Union, Polarity, Nom) <-
 	i : feat_Num(Nom, sg),
 	i : feat_Quantification(Nom, specific),
 	polarprop(Prop, Polarity, PolarProp),
-	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ),
 	maybe_assert_modifier(Nom, Union, Polarity),
-	intention : value_assertion(h, Union, objecttype) / 0.5.
+	find_assert_value_intention(Union, objecttype, PolarProp).
+%	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ),
+%	maybe_assert_modifier(Nom, Union, Polarity),
+%	intention : value_assertion(h, Union, objecttype) / 0.5.
 
 %-------------------------------------------------------------------------
 
