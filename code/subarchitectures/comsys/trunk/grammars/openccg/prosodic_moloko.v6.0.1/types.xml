@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<types name="moloko.ccg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../types.xsd">
+  <type name="OWNER"/>
+  <type name="owners" parents="OWNER"/>
+  <type name="hear" parents="OWNER"/>
+  <type name="spkr" parents="OWNER"/>
+  <type name="DELIMINATION"/>
+  <type name="unique" parents="DELIMINATION"/>
+  <type name="existential" parents="DELIMINATION"/>
+  <type name="variable" parents="DELIMINATION"/>
+  <type name="DEGREE"/>
+  <type name="s-no-degrees" parents="DEGREE"/>
+  <type name="s-degrees" parents="DEGREE"/>
+  <type name="s-degree-base" parents="s-degrees"/>
+  <type name="s-comparative" parents="s-degrees"/>
+  <type name="s-superlative" parents="s-degrees"/>
+  <type name="TFOCUS"/>
+  <type name="t-focus-true" parents="TFOCUS"/>
+  <type name="t-focus-false" parents="TFOCUS"/>
+  <type name="NUMBER"/>
+  <type name="sg" parents="NUMBER"/>
+  <type name="pl" parents="NUMBER"/>
+  <type name="ont-modifier"/>
+  <type name="modifier" parents="ont-modifier"/>
+  <type name="m-dynamic" parents="modifier"/>
+  <type name="m-manner" parents="modifier"/>
+  <type name="m-time" parents="modifier"/>
+  <type name="m-location" parents="modifier"/>
+  <type name="m-probability" parents="modifier"/>
+  <type name="m-frequency" parents="modifier"/>
+  <type name="m-comment" parents="modifier"/>
+  <type name="m-serial" parents="modifier"/>
+  <type name="m-accompaniment" parents="modifier"/>
+  <type name="m-instrumental" parents="modifier"/>
+  <type name="m-benefactor" parents="modifier"/>
+  <type name="m-relational" parents="modifier"/>
+  <type name="m-purpose" parents="modifier"/>
+  <type name="m-intensity" parents="modifier"/>
+  <type name="m-comparison" parents="modifier"/>
+  <type name="m-restriction" parents="modifier"/>
+  <type name="m-direction" parents="m-dynamic"/>
+  <type name="m-whereto" parents="m-dynamic"/>
+  <type name="m-wherefrom" parents="m-dynamic"/>
+  <type name="m-through" parents="m-dynamic"/>
+  <type name="m-time-point" parents="m-time"/>
+  <type name="m-time-sequence" parents="m-time"/>
+  <type name="m-time-interval" parents="m-time"/>
+  <type name="m-cause" parents="m-relational"/>
+  <type name="m-result" parents="m-relational"/>
+  <type name="m-condition" parents="m-relational"/>
+  <type name="ThOWNERSHIP"/>
+  <type name="th-speaker" parents="ThOWNERSHIP"/>
+  <type name="th-hearer" parents="ThOWNERSHIP"/>
+  <type name="ont-quality"/>
+  <type name="quality" parents="ont-quality"/>
+  <type name="q-physical" parents="quality"/>
+  <type name="q-position" parents="quality"/>
+  <type name="q-attitude" parents="quality"/>
+  <type name="q-size" parents="q-physical"/>
+  <type name="q-shape" parents="q-physical"/>
+  <type name="q-age" parents="q-physical"/>
+  <type name="q-color" parents="q-physical"/>
+  <type name="q-state" parents="q-physical"/>
+  <type name="q-material" parents="q-physical"/>
+  <type name="q-location" parents="q-position"/>
+  <type name="q-number" parents="q-position"/>
+  <type name="q-temporal" parents="q-position"/>
+  <type name="q-discourse" parents="q-position"/>
+  <type name="number-cardinal" parents="q-number"/>
+  <type name="number-ordinal" parents="q-number"/>
+  <type name="number-id" parents="q-number"/>
+  <type name="EUNCERTAINITY"/>
+  <type name="e-contentious" parents="EUNCERTAINITY"/>
+  <type name="e-uncontentious" parents="EUNCERTAINITY"/>
+  <type name="MFOCUS"/>
+  <type name="m-focus-true" parents="MFOCUS"/>
+  <type name="m-focus-false" parents="MFOCUS"/>
+  <type name="ASPECT"/>
+  <type name="continuous" parents="ASPECT"/>
+  <type name="perfect" parents="ASPECT"/>
+  <type name="MOD-TYPE"/>
+  <type name="x-dynamic" parents="MOD-TYPE"/>
+  <type name="x-manner" parents="MOD-TYPE"/>
+  <type name="x-time" parents="MOD-TYPE"/>
+  <type name="x-location" parents="MOD-TYPE"/>
+  <type name="x-probability" parents="MOD-TYPE"/>
+  <type name="x-frequency" parents="MOD-TYPE"/>
+  <type name="x-comment" parents="MOD-TYPE"/>
+  <type name="x-serial" parents="MOD-TYPE"/>
+  <type name="x-accompaniment" parents="MOD-TYPE"/>
+  <type name="x-instrumental" parents="MOD-TYPE"/>
+  <type name="x-comparison" parents="MOD-TYPE"/>
+  <type name="x-benefactor" parents="MOD-TYPE"/>
+  <type name="x-relational" parents="MOD-TYPE"/>
+  <type name="x-purpose" parents="MOD-TYPE"/>
+  <type name="x-intensity" parents="MOD-TYPE"/>
+  <type name="x-direction" parents="x-dynamic"/>
+  <type name="x-whereto" parents="x-dynamic"/>
+  <type name="x-wherefrom" parents="x-dynamic"/>
+  <type name="x-through" parents="x-dynamic"/>
+  <type name="x-time-point" parents="x-time"/>
+  <type name="x-time-sequence" parents="x-time"/>
+  <type name="x-time-interval" parents="x-time"/>
+  <type name="x-cause" parents="x-relational"/>
+  <type name="x-result" parents="x-relational"/>
+  <type name="x-condition" parents="x-relational"/>
+  <type name="VOICE"/>
+  <type name="active" parents="VOICE"/>
+  <type name="passive" parents="VOICE"/>
+  <type name="MCLASS"/>
+  <type name="s-dynamic" parents="MCLASS"/>
+  <type name="s-manner" parents="MCLASS"/>
+  <type name="s-time" parents="MCLASS"/>
+  <type name="s-location" parents="MCLASS"/>
+  <type name="s-probability" parents="MCLASS"/>
+  <type name="s-frequency" parents="MCLASS"/>
+  <type name="s-comment" parents="MCLASS"/>
+  <type name="s-serial" parents="MCLASS"/>
+  <type name="s-accompaniment" parents="MCLASS"/>
+  <type name="s-instrumental" parents="MCLASS"/>
+  <type name="s-comparison" parents="MCLASS"/>
+  <type name="s-benefactor" parents="MCLASS"/>
+  <type name="s-relational" parents="MCLASS"/>
+  <type name="s-purpose" parents="MCLASS"/>
+  <type name="s-intensity" parents="MCLASS"/>
+  <type name="s-none" parents="MCLASS"/>
+  <type name="m-class-none" parents="s-none"/>
+  <type name="m-class-5" parents="s-comment"/>
+  <type name="m-class-4" parents="s-relational s-frequency s-probability s-comment s-time"/>
+  <type name="m-class-3" parents="s-relational s-frequency s-probability s-comment s-time s-instrumental s-accompaniment s-benefactor s-comparison"/>
+  <type name="m-class-2x" parents="s-relational s-frequency s-probability s-comment s-time s-instrumental s-accompaniment s-benefactor s-comparison s-location"/>
+  <type name="m-class-2" parents="s-relational s-frequency s-probability s-comment s-time s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location"/>
+  <type name="m-class-1" parents="s-relational s-frequency s-probability s-comment s-time s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location s-manner s-serial"/>
+  <type name="m-class-1x" parents="s-relational s-frequency s-probability s-comment s-time s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-manner s-serial s-dynamic"/>
+  <type name="m-class-all" parents="s-relational s-frequency s-probability s-comment s-time s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location s-manner s-serial s-dynamic"/>
+  <type name="s-direction" parents="s-dynamic"/>
+  <type name="s-whereto" parents="s-dynamic"/>
+  <type name="s-wherefrom" parents="s-dynamic"/>
+  <type name="s-through" parents="s-dynamic"/>
+  <type name="s-time-point" parents="s-time"/>
+  <type name="s-time-sequence" parents="s-time"/>
+  <type name="s-time-interval" parents="s-time"/>
+  <type name="s-cause" parents="s-relational"/>
+  <type name="s-result" parents="s-relational"/>
+  <type name="s-condition" parents="s-relational"/>
+  <type name="POLARITY"/>
+  <type name="pos" parents="POLARITY"/>
+  <type name="neg" parents="POLARITY"/>
+  <type name="PERS"/>
+  <type name="non-3rd" parents="PERS"/>
+  <type name="3rd" parents="PERS"/>
+  <type name="1st" parents="non-3rd"/>
+  <type name="2nd" parents="non-3rd"/>
+  <type name="ont-discourse"/>
+  <type name="marker" parents="ont-discourse"/>
+  <type name="d-units" parents="marker"/>
+  <type name="alignment" parents="marker"/>
+  <type name="cue" parents="marker"/>
+  <type name="greeting" parents="marker"/>
+  <type name="closing" parents="marker"/>
+  <type name="reject" parents="marker"/>
+  <type name="acknowledge" parents="marker"/>
+  <type name="evaluate" parents="marker"/>
+  <type name="TUNCERTAINITY"/>
+  <type name="t-contentious" parents="TUNCERTAINITY"/>
+  <type name="t-uncontentious" parents="TUNCERTAINITY"/>
+  <type name="CORRECTED"/>
+  <type name="default" parents="CORRECTED"/>
+  <type name="asr-correction" parents="CORRECTED"/>
+  <type name="EFOCUS"/>
+  <type name="e-focus-true" parents="EFOCUS"/>
+  <type name="e-focus-false" parents="EFOCUS"/>
+  <type name="TOWNER"/>
+  <type name="t-hearer" parents="TOWNER"/>
+  <type name="t-speaker" parents="TOWNER"/>
+  <type name="MOWNER"/>
+  <type name="m-hearer" parents="MOWNER"/>
+  <type name="m-speaker" parents="MOWNER"/>
+  <type name="POL"/>
+  <type name="s-pos" parents="POL"/>
+  <type name="s-prov-pos" parents="POL"/>
+  <type name="s-neg" parents="POL"/>
+  <type name="NUM"/>
+  <type name="s-sg" parents="NUM"/>
+  <type name="s-pl" parents="NUM"/>
+  <type name="s-mass" parents="NUM"/>
+  <type name="s-pl-sp" parents="s-pl"/>
+  <type name="s-pl-unsp" parents="s-pl"/>
+  <type name="TENSE"/>
+  <type name="past" parents="TENSE"/>
+  <type name="pres" parents="TENSE"/>
+  <type name="fut" parents="TENSE"/>
+  <type name="E-PROXIMITY"/>
+  <type name="e-distal" parents="E-PROXIMITY"/>
+  <type name="e-proximal" parents="E-PROXIMITY"/>
+  <type name="CC-TYPE"/>
+  <type name="post-s" parents="CC-TYPE"/>
+  <type name="post-s-loose" parents="CC-TYPE"/>
+  <type name="pre-s" parents="CC-TYPE"/>
+  <type name="pre-vp" parents="CC-TYPE"/>
+  <type name="post-vp" parents="CC-TYPE"/>
+  <type name="pre-cop-comp" parents="CC-TYPE"/>
+  <type name="post-n" parents="CC-TYPE"/>
+  <type name="pre-n" parents="CC-TYPE"/>
+  <type name="cc-none" parents="CC-TYPE"/>
+  <type name="compound-1st" parents="CC-TYPE"/>
+  <type name="compound-head" parents="CC-TYPE"/>
+  <type name="no-q" parents="CC-TYPE"/>
+  <type name="adv-all" parents="pre-s pre-vp post-vp post-s pre-cop-comp"/>
+  <type name="adv-1" parents="pre-s pre-vp post-vp post-s"/>
+  <type name="adv-2" parents="pre-vp post-vp post-s"/>
+  <type name="adv-3" parents="pre-s post-vp post-s"/>
+  <type name="adv-4" parents="post-vp post-s"/>
+  <type name="adv-5" parents="pre-s pre-vp"/>
+  <type name="adv-6" parents="pre-vp post-vp"/>
+  <type name="adv-7" parents="pre-s pre-vp post-vp post-s"/>
+  <type name="prep-all" parents="post-n post-s post-vp pre-s"/>
+  <type name="prep-1" parents="post-n post-s post-vp"/>
+  <type name="prep-2" parents="post-s post-vp"/>
+  <type name="prep-3" parents="post-n"/>
+  <type name="prep-4" parents="post-s post-vp pre-s"/>
+  <type name="n-all" parents="compound-1st compound-head no-q"/>
+  <type name="n-1" parents="compound-1st no-q"/>
+  <type name="n-2" parents="compound-head no-q"/>
+  <type name="n-3" parents="compound-1st"/>
+  <type name="n-4" parents="no-q"/>
+  <type name="CASE"/>
+  <type name="nom" parents="CASE"/>
+  <type name="acc-both" parents="CASE"/>
+  <type name="acc" parents="acc-both"/>
+  <type name="acc-loc" parents="acc-both"/>
+  <type name="ont-entity"/>
+  <type name="entity" parents="ont-entity"/>
+  <type name="physical" parents="entity"/>
+  <type name="e-substance" parents="entity"/>
+  <type name="e-measure" parents="entity"/>
+  <type name="e-event" parents="entity"/>
+  <type name="e-time" parents="entity"/>
+  <type name="dummy" parents="entity"/>
+  <type name="animate" parents="physical"/>
+  <type name="thing" parents="physical"/>
+  <type name="e-location" parents="physical"/>
+  <type name="person" parents="animate"/>
+  <type name="e-region" parents="e-location"/>
+  <type name="e-place" parents="e-location"/>
+  <type name="e-material" parents="e-substance"/>
+  <type name="e-time-point" parents="e-time"/>
+  <type name="e-time-unit" parents="e-time"/>
+  <type name="ERHEME"/>
+  <type name="e-rheme-true" parents="ERHEME"/>
+  <type name="e-rheme-false" parents="ERHEME"/>
+  <type name="QUANTIFICATION"/>
+  <type name="specific" parents="QUANTIFICATION"/>
+  <type name="unspecific" parents="QUANTIFICATION"/>
+  <type name="uncountable" parents="QUANTIFICATION"/>
+  <type name="ont-event"/>
+  <type name="event" parents="ont-event"/>
+  <type name="relational" parents="event"/>
+  <type name="action" parents="event"/>
+  <type name="state" parents="event"/>
+  <type name="internal" parents="event"/>
+  <type name="modal" parents="event"/>
+  <type name="communication" parents="event"/>
+  <type name="symbolic" parents="event"/>
+  <type name="action-motion" parents="action"/>
+  <type name="action-non-motion" parents="action"/>
+  <type name="presentational" parents="state"/>
+  <type name="ascription" parents="state"/>
+  <type name="perception" parents="internal"/>
+  <type name="cognition" parents="internal"/>
+  <type name="VFORM"/>
+  <type name="fin" parents="VFORM"/>
+  <type name="vf-base" parents="VFORM"/>
+  <type name="vf-to-imp" parents="VFORM"/>
+  <type name="inf" parents="VFORM"/>
+  <type name="ing" parents="VFORM"/>
+  <type name="pp" parents="VFORM"/>
+  <type name="vf-be" parents="VFORM"/>
+  <type name="for-ing" parents="VFORM"/>
+  <type name="fin-clause" parents="fin"/>
+  <type name="fin-deictic" parents="fin"/>
+  <type name="fin-ctxt" parents="fin-clause"/>
+  <type name="fin-ell" parents="fin-clause"/>
+  <type name="fin-full" parents="fin-clause"/>
+  <type name="FIN"/>
+  <type name="be" parents="FIN"/>
+  <type name="do" parents="FIN"/>
+  <type name="can" parents="FIN"/>
+  <type name="should" parents="FIN"/>
+  <type name="will" parents="FIN"/>
+  <type name="could" parents="FIN"/>
+  <type name="would" parents="FIN"/>
+  <type name="must" parents="FIN"/>
+  <type name="have" parents="FIN"/>
+  <type name="INTOPH"/>
+  <type name="nulltn" parents="INTOPH"/>
+  <type name="pam" parents="INTOPH"/>
+  <type name="ip" parents="INTOPH"/>
+  <type name="cp" parents="INTOPH"/>
+  <type name="rhm" parents="pam"/>
+  <type name="thm" parents="pam"/>
+  <type name="RHEME"/>
+  <type name="t-rheme-true" parents="RHEME"/>
+  <type name="t-rheme-false" parents="RHEME"/>
+  <type name="MRHEME"/>
+  <type name="m-rheme-true" parents="MRHEME"/>
+  <type name="m-rheme-false" parents="MRHEME"/>
+  <type name="MOOD"/>
+  <type name="s-major" parents="MOOD"/>
+  <type name="s-minor" parents="MOOD"/>
+  <type name="s-dependent" parents="MOOD"/>
+  <type name="s-ind" parents="s-major"/>
+  <type name="s-imp" parents="s-major"/>
+  <type name="s-int" parents="s-major"/>
+  <type name="s-ind-ell" parents="s-major"/>
+  <type name="s-mood-mixed" parents="s-major"/>
+  <type name="NFORM"/>
+  <type name="nf-real" parents="NFORM"/>
+  <type name="nf-dummy" parents="NFORM"/>
+  <type name="full" parents="nf-real"/>
+  <type name="pro" parents="nf-real"/>
+  <type name="nf-ctxt" parents="nf-real"/>
+  <type name="dummy-there" parents="nf-dummy"/>
+  <type name="MUNCERTAINITY"/>
+  <type name="m-contentious" parents="MUNCERTAINITY"/>
+  <type name="m-uncontentious" parents="MUNCERTAINITY"/>
+  <type name="ACCENT"/>
+  <type name="tone" parents="ACCENT"/>
+  <type name="stressed" parents="tone"/>
+  <type name="unstressed" parents="tone"/>
+  <type name="rhthm" parents="stressed"/>
+  <type name="thmf" parents="rhthm"/>
+  <type name="lphs" parents="thmf"/>
+  <type name="lsph" parents="thmf"/>
+  <type name="rhmf" parents="rhthm"/>
+  <type name="hs" parents="rhmf"/>
+  <type name="ls" parents="rhmf"/>
+  <type name="hspl" parents="rhmf"/>
+  <type name="hpls" parents="rhmf"/>
+  <type name="RhOWNERSHIP"/>
+  <type name="rh-speaker" parents="RhOWNERSHIP"/>
+  <type name="rh-hearer" parents="RhOWNERSHIP"/>
+  <type name="M-PROXIMITY"/>
+  <type name="m-distal" parents="M-PROXIMITY"/>
+  <type name="m-proximal" parents="M-PROXIMITY"/>
+  <type name="EOWNER"/>
+  <type name="e-hearer" parents="EOWNER"/>
+  <type name="e-speaker" parents="EOWNER"/>
+  <type name="PROXIMITY"/>
+  <type name="distal" parents="PROXIMITY"/>
+  <type name="proximal" parents="PROXIMITY"/>
+</types>
