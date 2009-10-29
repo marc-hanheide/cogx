@@ -278,6 +278,8 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
       log("Did not find the node from before, have to assume that we did not start early enough to catch it, will treat it as new");
       newNavNode(objID);
 
+      processPlaceArrival(false);
+
     }
     unlockEntry(objID.address.id);
   }
