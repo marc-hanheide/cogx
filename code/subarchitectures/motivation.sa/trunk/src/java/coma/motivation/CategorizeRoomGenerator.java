@@ -152,7 +152,7 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 						} catch (CASTException e) {
 							e.printStackTrace();
 						}
-						checkMotive(newMotive);
+						scheduleCheckMotive(newMotive);
 					}
 				});
 		super.start();

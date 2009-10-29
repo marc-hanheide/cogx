@@ -75,7 +75,7 @@ public class HomingGenerator extends AbstractMotiveGenerator {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					checkMotive(newMotive);
+					scheduleCheckMotive(newMotive);
 				} else { // if we have a home base already, remove the listener, we are happy!
 					try {
 						removeChangeFilter(this);
