@@ -101,6 +101,7 @@ public class BeliefModelUtils {
 			if (FeatureValueUtils.hasValue(fv, "red")) { colorValue = Color.red; }
 			else if (FeatureValueUtils.hasValue(fv, "blue")) {colorValue = Color.blue;	}
 			else if (FeatureValueUtils.hasValue(fv, "green")) {	colorValue = Color.green;}
+			else if (FeatureValueUtils.hasValue(fv, "yellow")) {	colorValue = Color.yellow;}
 			else if (FeatureValueUtils.isUnknownValue(fv)) {	colorValue = Color.unknownColor;}
 
 			else {

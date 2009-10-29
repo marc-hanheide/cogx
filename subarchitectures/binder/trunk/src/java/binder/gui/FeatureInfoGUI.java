@@ -117,8 +117,8 @@ public class FeatureInfoGUI extends JDialog {
 
 	private void button4ActionPerformed(ActionEvent e) {
 		panel5.setVisible(false);
-		setSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(520, 280  + (25 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(520, 280  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
 		okButton.setEnabled(true);
 		cancelButton.setEnabled(true);
@@ -211,8 +211,8 @@ public class FeatureInfoGUI extends JDialog {
 		updateFeatureValuesFrame();
 		
 		panel5.setVisible(false);
-		setSize(new Dimension(520, 250 + (30 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(520, 280 + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(520, 280  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
 		okButton.setEnabled(true);
 		cancelButton.setEnabled(true);
@@ -227,8 +227,8 @@ public class FeatureInfoGUI extends JDialog {
 		updateFeatureValuesFrame();
 		
 		panel5.setVisible(false);
-		setSize(new Dimension(520, 250 + (30 * curFeature.alternativeValues.length)));
-		setPreferredSize(new Dimension(520, 250  + (25 * curFeature.alternativeValues.length)));
+		setSize(new Dimension(520, 280 + (30 * curFeature.alternativeValues.length)));
+		setPreferredSize(new Dimension(520, 280  + (25 * curFeature.alternativeValues.length)));
 		button1.setEnabled(true);
 		okButton.setEnabled(true);
 		cancelButton.setEnabled(true);
@@ -311,6 +311,15 @@ public class FeatureInfoGUI extends JDialog {
 		}
 		button3.setVisible(true);
 		button2.setText("Modify");
+		}
+	}
+
+	private void comboBox1ItemStateChanged(ItemEvent e) {
+		if (comboBox1.getSelectedItem().equals("UnknownValue")) {
+			textField2.setEnabled(false);
+		}
+		else {
+			textField2.setEnabled(true);
 		}
 	}
 
@@ -399,9 +408,9 @@ public class FeatureInfoGUI extends JDialog {
 			{
 				panel2.setLayout(new GridBagLayout());
 				((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {155, 56, 208, 0};
-				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {45, 0, 0, 0, 0};
+				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {50, 0, 0, 0, 0};
 				((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
-				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 1.0E-4};
+				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 0.0, 0.0, 0.0, 1.0E-4};
 
 				//======== scrollPane1 ========
 				{
@@ -537,6 +546,11 @@ public class FeatureInfoGUI extends JDialog {
 							"AddressValue",
 							"UnknownValue"
 						}));
+						comboBox1.addItemListener(new ItemListener() {
+							public void itemStateChanged(ItemEvent e) {
+								comboBox1ItemStateChanged(e);
+							}
+						});
 						panel5.add(comboBox1, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.BOTH,
 							new Insets(0, 0, 5, 5), 0, 0));
@@ -657,8 +671,8 @@ public class FeatureInfoGUI extends JDialog {
 		setLocationRelativeTo(getOwner());
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
-		setSize(new Dimension(520, 250));
-		setPreferredSize(new Dimension(520, 250));
+		setSize(new Dimension(520, 280));
+		setPreferredSize(new Dimension(520, 280));
 		panel5.setVisible(false);
 	}
 

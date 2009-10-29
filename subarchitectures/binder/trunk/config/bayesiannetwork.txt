@@ -117,7 +117,9 @@ edges {
 	   P(ling_label=mug|obj_label=mug)=0.9,
 	   P(ling_label=mug|obj_label=ball)=0.000001,
 	   P(ling_label=ball|obj_label=ball)=0.8,
-	   P(ling_label=ball|obj_label=mug)=0.000001
+	   P(ling_label=ball|obj_label=mug)=0.000001,
+	   	   P(ling_label=box|obj_label=box)=0.8,
+	   P(ling_label=box|obj_label=box)=0.000001
    }
    
    ling_attribute -> colour {

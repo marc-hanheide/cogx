@@ -192,7 +192,7 @@
             <string>javax.swing.JTextField</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>subarchY</string> 
+             <string>vision</string> 
             </void> 
             <void method="setProperty"> 
              <string>columns</string> 
@@ -379,7 +379,7 @@
            </void> 
            <void method="setProperty"> 
             <string>$rowSpecs</string> 
-            <string>0, 45, 0, 0</string> 
+            <string>0, 45:1.0, 0, 0</string> 
            </void> 
            <void method="setProperty"> 
             <string>$hGap</string> 

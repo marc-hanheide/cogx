@@ -375,6 +375,7 @@ public class ConfigurationFilter {
 	public static UnionConfiguration getUnionConfigurationOfRankN
 		(AlternativeUnionConfigurations configs, int rank) {
 		
+		if (configs != null && configs.alterconfigs != null) {
 		// creates a vector of unions configurations
 		Vector<UnionConfiguration> unionconfigsV = new Vector<UnionConfiguration>();
 		for (int i = 0 ; i < configs.alterconfigs.length ; i++) {
@@ -391,6 +392,10 @@ public class ConfigurationFilter {
 		Arrays.sort(nbestsArray, comparator);
 		
 		return nbestsArray[nbestsArray.length - rank];
+		}
+		else {
+			return null;
+		}
 	}
 	
 

@@ -86,11 +86,12 @@ public class BindingVisualizer {
 
 	private static Logger logger = ComponentLogger.getLogger(BindingVisualizer.class);
 
+	HashMap<String, CASTTime> proxyTimestamps;
+	
+	HashMap<String,Object> insertedCellsForProxies;
+	HashMap<String,Object> insertedCellsForUnions;
 
-	HashMap<String,Object> insertedProxies;
-	HashMap<String,Object> insertedUnions;
-
-	Vector<Object> insertedObjects ;
+	Vector<Object> insertedCells ;
 
 	Vector<RelationUnion> relationUnions;
 
@@ -114,18 +115,18 @@ public class BindingVisualizer {
 		Object selected = graph.getSelectionCell();
 		if (selected != null) {
 			log(selected.toString());
-			for (Iterator<String> ids = insertedProxies.keySet().iterator(); ids.hasNext();) {
+			for (Iterator<String> ids = insertedCellsForProxies.keySet().iterator(); ids.hasNext();) {
 				String curId = ids.next();
-				Object curObj = insertedProxies.get(curId);
+				Object curObj = insertedCellsForProxies.get(curId);
 				if (curObj.equals(selected)) {
 					curSelectedEntityId = curId;
 					curSelectedType = Proxy.class;
 				}
 			}
 
-			for (Iterator<String> ids = insertedUnions.keySet().iterator(); ids.hasNext();) {
+			for (Iterator<String> ids = insertedCellsForUnions.keySet().iterator(); ids.hasNext();) {
 				String curId = ids.next();
-				Object curObj = insertedUnions.get(curId);
+				Object curObj = insertedCellsForUnions.get(curId);
 				if (curObj.equals(selected)) {
 					curSelectedEntityId = curId;
 					curSelectedType = Union.class;
@@ -154,10 +155,12 @@ public class BindingVisualizer {
 
 		parent = graph.getDefaultParent();
 
-		insertedProxies = new HashMap<String, Object>();
-		insertedUnions = new HashMap<String, Object>();
+		proxyTimestamps = new HashMap<String, CASTTime>();
+		
+		insertedCellsForProxies = new HashMap<String, Object>();
+		insertedCellsForUnions = new HashMap<String, Object>();
 
-		insertedObjects = new Vector<Object>();
+		insertedCells = new Vector<Object>();
 
 		relationUnions = new Vector<RelationUnion>();
 	}
@@ -301,12 +304,6 @@ public class BindingVisualizer {
 	}
 
 
-	public void addNewProxy(Proxy proxy) {
-		addNewProxy(proxy, curProxyPosition_X, curProxyPosition_Y, "");
-		curProxyPosition_X += 250;
-	}
-
-
 
 	public void addNewProxy(Proxy proxy, int xpos, int ypos, String colour) {
 
@@ -325,15 +322,14 @@ public class BindingVisualizer {
 		graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", object_proxy);
 		graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "10", object_proxy);
 
-		insertedProxies.put(proxy.entityID, vertex);
-		insertedObjects.add(vertex);
+		insertedCellsForProxies.put(proxy.entityID, vertex);
+		insertedCells.add(vertex);
 
 		addNewFeatures(proxy.features, vertex, width, colour);
 
 		log("Visual representation of the proxy sucessfully inserted in the GUI");
 
 	}
-
 
 	public void addNewUnionAndIncludedProxies(Union union) {
 
@@ -344,7 +340,7 @@ public class BindingVisualizer {
 		for (int i = 0; i < union.includedProxies.length ; i++) {
 			log("included proxy: " + i);
 			Proxy proxy = union.includedProxies[i];
-			if (insertedProxies.containsKey(proxy.entityID)) {
+			if (insertedCellsForProxies.containsKey(proxy.entityID)) {
 				horizontalIncr += 250;
 			}
 		}		
@@ -352,22 +348,21 @@ public class BindingVisualizer {
 		for (int i = 0; i < union.includedProxies.length ; i++) {
 			log("included proxy: " + i);
 			Proxy proxy = union.includedProxies[i];
-			if (!insertedProxies.containsKey(proxy.entityID)) {
+			
+			if (!proxyTimestamps.containsKey(proxy.entityID)) {
 
-				if (proxy instanceof RelationProxy) {
-					addNewRelationProxy((RelationProxy) proxy, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
-				}
-				else if (proxy instanceof PhantomProxy) {
-					if (!BindingPredictor.lastPhantomProxyToDelete) {
-						addNewPhantomProxy((PhantomProxy) proxy, curUnionPosition_X + horizontalIncr);
-						horizontalIncr += 250;
-					}
-				}
-				else {
-					addNewProxy(proxy, curUnionPosition_X + horizontalIncr, curProxyPosition_Y, "");
-					horizontalIncr += 250;
-				}
+				addNewProxy(proxy, horizontalIncr);
+			}
+			else {
+				CASTTime timestamp1 = proxy.timeStamp;
+				CASTTime timestamp2 = proxyTimestamps.get(proxy.entityID);
 
+				if (GenericUtils.isMoreRecent(timestamp1, timestamp2)) {
+					
+					deleteProxy(proxy);
+					addNewProxy(proxy, horizontalIncr);
+					
+				}
 			}
 		}
 
@@ -381,14 +376,34 @@ public class BindingVisualizer {
 		curUnionPosition_X += horizontalIncr;
 	}
 
+	
+	public void addNewProxy(Proxy proxy, int horizontalIncr) {
+		if (proxy instanceof RelationProxy) {
+			addNewRelationProxy((RelationProxy) proxy, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
+		}
+		else if (proxy instanceof PhantomProxy) {
+		if (!BindingPredictor.lastPhantomProxyToDelete) {
+				addNewPhantomProxy((PhantomProxy) proxy, curUnionPosition_X + horizontalIncr);
+				horizontalIncr += 250;
+			}
+		}
+		else {
+			addNewProxy(proxy, curUnionPosition_X + horizontalIncr, curProxyPosition_Y, "");
+			horizontalIncr += 250;
+		}
+		
+		proxyTimestamps.put(proxy.entityID, proxy.timeStamp);
+	}
 
 
+	
+	
 	public void addNewRelationUnion (RelationUnion union) {
 
 		String colour = "#FFFF66";
 		log("before adding union");
 		addNewUnion(union, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)), Math.abs(curUnionPosition_Y -125), colour);
-		Object vertex = insertedUnions.get(union.entityID);
+		Object vertex = insertedCellsForUnions.get(union.entityID);
 		insertSourceAndTargetEdges(union, vertex);
 		if (!relationUnions.contains(union)) {
 			relationUnions.add(union);
@@ -402,10 +417,10 @@ public class BindingVisualizer {
 		if (proxy.source != null) {
 			for (int j = 0; j < proxy.source.alternativeValues.length ; j++) {
 				AddressValue v = (AddressValue) proxy.source.alternativeValues[j];
-				if (insertedProxies.containsKey(v.val)) {
-					Object daughter_vertex = insertedProxies.get(v.val);
+				if (insertedCellsForProxies.containsKey(v.val)) {
+					Object daughter_vertex = insertedCellsForProxies.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "source", mothervertex, daughter_vertex);
-					insertedObjects.add(edge);
+					insertedCells.add(edge);
 				}
 			}
 		}
@@ -413,10 +428,10 @@ public class BindingVisualizer {
 		if (proxy.target != null) {
 			for (int j = 0; j < proxy.target.alternativeValues.length ; j++) {
 				AddressValue v = (AddressValue) proxy.target.alternativeValues[j];
-				if (insertedProxies.containsKey(v.val)) {
-					Object daughter_vertex = insertedProxies.get(v.val);
+				if (insertedCellsForProxies.containsKey(v.val)) {
+					Object daughter_vertex = insertedCellsForProxies.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "target", mothervertex, daughter_vertex);
-					insertedObjects.add(edge);
+					insertedCells.add(edge);
 				}
 			}
 		}
@@ -429,10 +444,10 @@ public class BindingVisualizer {
 			for (int j = 0; j < union.usource.alternativeValues.length ; j++) {
 				if (union.usource.alternativeValues[j] != null) {
 					AddressValue v = (AddressValue) union.usource.alternativeValues[j];
-					if (insertedUnions.containsKey(v.val)) {
-						Object daughter_vertex = insertedUnions.get(v.val);
+					if (insertedCellsForUnions.containsKey(v.val)) {
+						Object daughter_vertex = insertedCellsForUnions.get(v.val);
 						Object edge = graph.insertEdge(parent, null, "source", mothervertex, daughter_vertex);
-						insertedObjects.add(edge);
+						insertedCells.add(edge);
 					}
 				}
 			}
@@ -442,10 +457,10 @@ public class BindingVisualizer {
 			for (int j = 0; j < union.utarget.alternativeValues.length ; j++) {
 				if (union.utarget.alternativeValues[j] != null) {
 					AddressValue v = (AddressValue) union.utarget.alternativeValues[j];
-					if (insertedUnions.containsKey(v.val)) {
-						Object daughter_vertex = insertedUnions.get(v.val);
+					if (insertedCellsForUnions.containsKey(v.val)) {
+						Object daughter_vertex = insertedCellsForUnions.get(v.val);
 						Object edge = graph.insertEdge(parent, null, "target", mothervertex, daughter_vertex);
-						insertedObjects.add(edge);
+						insertedCells.add(edge);
 					}
 				}
 			}
@@ -480,21 +495,21 @@ public class BindingVisualizer {
 		graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", object_union);
 		graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "10", object_union);
 
-		insertedUnions.put(union.entityID, union_vertex);
+		insertedCellsForUnions.put(union.entityID, union_vertex);
 
-		insertedObjects.add(union_vertex);
+		insertedCells.add(union_vertex);
 
 		addNewFeatures(union.features, union_vertex, width, colour);
 
 		for (int i = 0; i < union.includedProxies.length ; i++) {
 			Proxy p = union.includedProxies[i];
-			if (insertedProxies.containsKey(p.entityID)) {
-				Object proxy_vertex = insertedProxies.get(p.entityID);
+			if (insertedCellsForProxies.containsKey(p.entityID)) {
+				Object proxy_vertex = insertedCellsForProxies.get(p.entityID);
 				Object edge = graph.insertEdge(parent, null, "includes", union_vertex, proxy_vertex);
 				Object[] object_edges = new Object[1];
 				object_edges[0] = edge;
 				graph.setCellStyles(mxConstants.STYLE_DASHED, "true", object_edges);
-				insertedObjects.add(edge);
+				insertedCells.add(edge);
 			}
 		}
 
@@ -504,8 +519,8 @@ public class BindingVisualizer {
 
 
 	public void deleteUnion(Union union) {
-		if (insertedUnions.containsKey(union.entityID)) {
-			Object vertex = insertedUnions.get(union.entityID);
+		if (insertedCellsForUnions.containsKey(union.entityID)) {
+			Object vertex = insertedCellsForUnions.get(union.entityID);
 			Object[] cells = new Object[1];
 			cells[0] = vertex;
 			graph.getModel().beginUpdate();
@@ -514,20 +529,20 @@ public class BindingVisualizer {
 			if (curUnionPosition_X > (220 * union.includedProxies.length))
 				curUnionPosition_X -= (220 * union.includedProxies.length) ;
 		}
-		insertedUnions.remove(union.entityID);
+		insertedCellsForUnions.remove(union.entityID);
 	}
 
 
 
 	public void deleteProxy(Proxy proxy) {
-		if (insertedProxies.containsKey(proxy.entityID)) {
-			Object vertex = insertedProxies.get(proxy.entityID);
+		if (insertedCellsForProxies.containsKey(proxy.entityID)) {
+			Object vertex = insertedCellsForProxies.get(proxy.entityID);
 			Object[] cells = new Object[1];
 			cells[0] = vertex;
 			graph.getModel().beginUpdate();
 			graph.removeCells(cells);
 			graph.getModel().endUpdate();
-			insertedProxies.remove(proxy.entityID);
+			insertedCellsForProxies.remove(proxy.entityID);
 		}
 	}
 
@@ -542,7 +557,7 @@ public class BindingVisualizer {
 
 			deleteProxy(updatedProxy);
 
-			addNewProxy(updatedProxy);
+			addNewProxy(updatedProxy, 0);
 
 		}
 		finally {
@@ -595,7 +610,7 @@ public class BindingVisualizer {
 			boolean mustRegenerateRelationUnions = false;
 			for (Enumeration<Union> e = newUnions.elements(); e.hasMoreElements();) {
 				Union union = e.nextElement();
-				if (!insertedUnions.containsKey(union.entityID)) {
+				if (!insertedCellsForUnions.containsKey(union.entityID)) {
 					log("Adding new union..." + union.entityID);
 
 					addNewUnionAndIncludedProxies(union);
@@ -605,10 +620,10 @@ public class BindingVisualizer {
 			// UNSTABLE ?? TESTING!
 			for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
 				Proxy proxy = e.nextElement();
-				if (!insertedProxies.containsKey(proxy.entityID)) {
+				if (!insertedCellsForProxies.containsKey(proxy.entityID)) {
 					log("Adding new proxy..." + proxy.entityID);
 
-					addNewProxy(proxy);
+					addNewProxy(proxy, 0);
 				}
 			}
 
@@ -723,9 +738,9 @@ public class BindingVisualizer {
 
 				if (cell != null)
 				{
-					for (Iterator<String> ids = insertedProxies.keySet().iterator(); ids.hasNext();) {
+					for (Iterator<String> ids = insertedCellsForProxies.keySet().iterator(); ids.hasNext();) {
 						String curId = ids.next();
-						Object curObj = insertedProxies.get(curId);
+						Object curObj = insertedCellsForProxies.get(curId);
 						if (curObj.equals(cell)) {
 							frame.curSelectedEntityId = curId;
 							frame.curSelectedEntityClass = Proxy.class;
@@ -745,7 +760,7 @@ public class BindingVisualizer {
 		String colour = "#FFFF99";
 		addNewProxy(relationProxy, xpos, Math.abs(curProxyPosition_Y + 200), colour);
 
-		Object vertex = insertedProxies.get(relationProxy.entityID);
+		Object vertex = insertedCellsForProxies.get(relationProxy.entityID);
 		insertSourceAndTargetEdges(relationProxy, vertex);
 		log("OK FOR RELATION PROXY");
 	}
@@ -778,7 +793,7 @@ public class BindingVisualizer {
 				int featHeight= computeHeight(feat);
 				objects_feats[i] = graph.insertVertex(vertex, null, featureText, 6, curYPosition, width - 20, featHeight);
 				curYPosition += featHeight + 10;
-				insertedObjects.add(objects_feats[i]);
+				insertedCells.add(objects_feats[i]);
 				//		}
 			}
 

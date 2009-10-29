@@ -144,7 +144,7 @@
            </void> 
            <void method="setProperty"> 
             <string>$rowSpecs</string> 
-            <string>40, 0, 0, 0</string> 
+            <string>45:1.0, 0, 0, 0</string> 
            </void> 
            <void method="setProperty"> 
             <string>$hGap</string> 
@@ -372,6 +372,10 @@
               <int>5</int> 
               <int>20</int> 
              </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>vAlign</string> 
+             <int>5</int> 
             </void> 
            </object> 
           </void> 
@@ -1049,7 +1053,7 @@
        <string>size</string> 
        <object class="java.awt.Dimension"> 
         <int>490</int> 
-        <int>450</int> 
+        <int>480</int> 
        </object> 
       </void> 
      </object> 

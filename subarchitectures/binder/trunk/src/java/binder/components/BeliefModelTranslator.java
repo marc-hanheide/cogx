@@ -29,6 +29,7 @@ import binder.autogen.featvalues.AddressValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.utils.BeliefModelUtils;
 import binder.utils.BinderUtils;
+import binder.utils.GenericUtils;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -357,32 +358,11 @@ public class BeliefModelTranslator extends ManagedComponent {
 	// =================================================================
 
 	
-	private boolean isMoreRecent (CASTTime time1, CASTTime time2) {
-		
-		if (time1 != null && time2 != null) {
-			
-		if (time1.s > time2.s) {
-			return true;
-		}
-		else if (time1.s < time2.s) {
-			return false;
-		}
-		else if (time1.us > time2.us) {
-			return true;
-		}
-		}
-		else {
-			return true;
-		}
-		return false;
-	}
-
-	
 	protected boolean isUpdateNeeded (Belief belief) {
 		if (currentBeliefs.containsKey(belief.id)) {
 			Belief curBelief = currentBeliefs.get(belief.id);
 
-			if (isMoreRecent(belief.timeStamp, curBelief.timeStamp)) {
+			if (GenericUtils.isMoreRecent(belief.timeStamp, curBelief.timeStamp)) {
 				return true;
 			}
 			else {

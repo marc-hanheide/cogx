@@ -23,12 +23,14 @@ import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
+import binder.autogen.core.Feature;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.filtering.ConfigurationFilter;
 import binder.filtering.EntityFilter;
 import binder.utils.BinderUtils;
+import binder.utils.FeatureValueUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -55,7 +57,7 @@ import cast.core.CASTData;
 public class UnionDiscretizer extends ManagedComponent {
 
 	// whether to consider only maximum feature values in feature or not
-	private boolean onlyMaxFeatureValues = true;
+	private static boolean onlyMaxFeatureValues = false;
 	
 	// flag to activate error logging
 	public static boolean ERRLOGGING = true;
@@ -74,17 +76,21 @@ public class UnionDiscretizer extends ManagedComponent {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
+					if (!_wmc.src.equals("bmmonitor")) {
+						log("Source: " + _wmc.src);
 					AlternativeUnionConfigurations alterconfigs = 
 						getMemoryEntry(_wmc.address, AlternativeUnionConfigurations.class);
 
 					UnionConfiguration uc = extractBestUnionConfiguration(alterconfigs);
 
 					addBestUnionConfigurationToWM(uc);
+					} 
+
 				}
 				catch (Exception e) {
 					e.printStackTrace();
 				}
-			} 
+				}
 		});
 	}
 
@@ -204,6 +210,7 @@ public class UnionDiscretizer extends ManagedComponent {
 		for (int i = 0 ; i < rankNConfig.includedUnions.length ; i++) {
 			Union union = rankNConfig.includedUnions[i];
 			// If only maximum-probability values are allowed, compute a new union with only these
+			
 			if (onlyMaxFeatureValues) {
 				union = EntityFilter.getUnionWithMaximumProbability(union);
 			}
