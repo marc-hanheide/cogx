@@ -1316,7 +1316,7 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
     else {
       // If we were following a path and changed nodes, we've arrived at a Place
       if (curNode->nodeId != m_startNodeForCurrentPath) {
-	processPlaceArrival(false);
+	//processPlaceArrival(false);
       }
     }
   }

@@ -231,6 +231,7 @@ void LocalMapManager::runComponent()
 	}
 
 	if (m_Displaylgm1) {
+	  //m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
 	  m_Displaylgm1->setMap(m_lgm1);
 	}
 	if (m_Displaylgm2) {
