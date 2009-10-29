@@ -25,7 +25,7 @@ for i = 1 : length(model.w)
     if ~isempty(model.suffStat.B)
         model.suffStat.B{i} = H_new  ;
         model.Cov{i} = model.suffStat.B{i} + ...
-                       model.suffStat.A{i} - model.Mu(:,i)*model.Mu(:,i)' ;
+                       model.suffStat.A{i} - model.Mu(:,i)*model.Mu(:,i)' ;        
     end
     
     if isfield( model.suffStat, 'subLayer')
