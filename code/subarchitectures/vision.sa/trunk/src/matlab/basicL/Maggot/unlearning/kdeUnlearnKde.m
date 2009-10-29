@@ -162,6 +162,19 @@ kde_neg.ikdeParams.scale = output_neg.kde_scale ;
 % regularize the bandwidhts to prevent singularities
 [kde_ref, subindicator_ref] = regularizeKDEInBandwidth( kde_ref, 'practicallyZero', 1e-5 ) ;
 [kde_neg, subindicator_neg] = regularizeKDEInBandwidth( kde_neg, 'practicallyZero', 1e-5 ) ;
+
+% just to be safe revisit regularization
+for i = 1 : length(kde_ref.pdf.w)
+    [U,S,V] =  svd(kde_ref.pdf.Cov{i}) ;
+    kde_ref.pdf.Cov{i} = U*S*U' ;
+end
+
+for i = 1 : length(kde_neg.pdf.w)
+    [U,S,V] =  svd(kde_neg.pdf.Cov{i}) ;
+    kde_neg.pdf.Cov{i} = U*S*U' ;
+end
+
+
 subindicator = max([subindicator_ref, subindicator_neg]) ;
 
 % --------------------------------------------------------------------- %
