@@ -49,6 +49,16 @@ Params.FV=3;
 %Reload global variables from CONFIG FILE
 confFile='config/cogLearn.config';
 loadConfig(confFile);
+loadpredefinedorder = 1 ; 
+
+Data.allindexes = [] ;
+if loadpredefinedorder == 1
+    try
+        Data.allindexes = load([Dirs.data,'sequence1.sqc']) ;
+    catch
+        warning('Images indexes failed to load!') ;
+    end
+end
 
 Dirs.images=[Dirs.cogLearn 'files/images/']';
 Dirs.asv=[Dirs.cogLearn 'files/asv/'];

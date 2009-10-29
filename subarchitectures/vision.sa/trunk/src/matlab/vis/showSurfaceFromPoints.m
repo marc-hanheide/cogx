@@ -5,6 +5,10 @@
 %%
 function showSurfaceFromPoints( x, rgb3d, LRaxRoi )
 
+if isempty(x)
+    return ;
+end
+
 turnoffDelaunay =0;
 
 if nargin < 2
@@ -29,12 +33,17 @@ if turnoffDelaunay == 0
             set(LRaxRoi, 'NextPlot', 'replace') ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),'Parent',LRaxRoi,'EdgeAlpha', 0.3) ;  
             set(LRaxRoi, 'NextPlot', 'add') ;
-            colormap(LRaxRoi,rgb3d/255) ;
+            
+            if ~isempty(rgb3d)
+                colormap(LRaxRoi,rgb3d/255) ;
+            end
         else
             hold off ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),'EdgeAlpha', 0.3) ;
             hold on ;
-            colormap(rgb3d/255) ;
+            if ~isempty(rgb3d)
+                colormap(rgb3d/255) ;
+            end
         end        
 %         colormap bone ;
     else
@@ -42,14 +51,18 @@ if turnoffDelaunay == 0
             hold off ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]','EdgeAlpha', 0.3) ;
             hold on ;
-            colormap(rgb3d/255) ;
+            if ~isempty(rgb3d)
+                colormap(rgb3d/255) ;
+            end
         else            
             set(LRaxRoi, 'NextPlot', 'replace') ;
             trisurf(TRI,x(:,1),x(:,2),x(:,3),[1:size(x(:,3),1)]','Parent',LRaxRoi,'EdgeAlpha', 0.3) ;
             set(LRaxRoi, 'NextPlot', 'add') ;
 %             set(LRaxRoi, 'NextPlot', 'add') ;
 %             colormap(LRaxRoi,'bone') ;            
-            colormap(LRaxRoi,rgb3d/255) ;
+            if ~isempty(rgb3d)
+                colormap(LRaxRoi,rgb3d/255) ;
+            end
 
         end
         
