@@ -419,7 +419,7 @@ public class cc_TTS extends ManagedComponent {
                     // Synthesize speech locally
 					
 					//Changes for Prosodic Grammar
-					if(soi.phonString.contains("%")){
+					if(soi.phonString.contains("%") || soi.phonString.contains("@") ){
 						//do mary xml
 						String l_xmlfile = new String();
 						l_xmlfile=ProsodicTextToRawMARYXml.ToRawMaryXml(soi.phonString, m_RAWMARYXMLHeader, m_GenrtdXMLFileLoc);
