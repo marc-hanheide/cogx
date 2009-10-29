@@ -19,6 +19,7 @@ relational-attribute modifiers (type m-location) don't get any InfoStruct feat a
 
 default IS will be assigned to stuff in templates
 
+ownership should be inherited from above (or projected up?)
 -----
 
 InfoStruct defaults
@@ -208,6 +209,8 @@ Chooser call from a system: would be useful to be able to give a locus as argume
 
 
 System entry condition: would be useful to constrain on the dependency relation type under which the nominal is
+
+System entry condition: useful to check a feature at a given nominal, not just at locus
 
 Inquiry code:
  - type of a nominal
