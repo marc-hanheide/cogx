@@ -74,6 +74,7 @@ if ~isempty( LRaxRoi )
             axis(LRaxRoi,'equal') ;
             grid(LRaxRoi,'off') ;
             box(LRaxRoi,'on') ;   
+            view(LRaxRoi,[37, 42]) ;
 else
     plot3(x(:,1),x(:,2),x(:,3),'r.') ;
     axis equal ; axis tight ; grid off ;
