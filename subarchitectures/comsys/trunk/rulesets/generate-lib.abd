@@ -41,9 +41,15 @@ add_prop_value_to_protolf(Nom, UsedNom, shape, Value) <-
 		i : prop(UsedNom, NiceValue) / 1.0.
 
 add_prop_value_to_protolf(Nom, UsedNom, objecttype, Value) <-
+	Value \= objecttype,
+	i : rel_Type(Nom, UsedNom) / 1.0,
+		i : sort(UsedNom, 'entity') / 1.0,
+		i : prop(UsedNom, Value) / 1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, objecttype, objecttype) <-
 	i : rel_Type(Nom, UsedNom) / 1.0,
 		i : sort(UsedNom, 'ont-entity') / 1.0,
-		i : prop(UsedNom, Value) / 1.0.
+		i : prop(UsedNom, objecttype) / 1.0.
 
 %----------------------------------------------------------------------
 
