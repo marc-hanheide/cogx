@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <morph name="moloko.ccg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../morph.xsd">
   <entry word="LL%" macros="@spkr" pos="IntmPhr_rs" stem="r_intmphr"/>
+  <entry word="LH%" macros="@hear" pos="IntmPhr_rs" stem="r_intmphr"/>
   <entry word="HL%" macros="@spkr" pos="IntmPhr_rs" stem="r_intmphr"/>
+  <entry word="HH%" macros="@hear" pos="IntmPhr_rs" stem="r_intmphr"/>
+  <entry word="LL%" macros="@spkr" pos="IntmPhr_th" stem="t_intmphr"/>
   <entry word="LH%" macros="@hear" pos="IntmPhr_th" stem="t_intmphr"/>
+  <entry word="HL%" macros="@spkr" pos="IntmPhr_th" stem="t_intmphr"/>
   <entry word="HH%" macros="@hear" pos="IntmPhr_th" stem="t_intmphr"/>
   <entry word="I" macros="@1st @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-false" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>
   <entry word="I" macros="@1st @s-sg @nom @pro @sg @t-uncontentious @t-focus-false @t-rheme-true" pos="Bare-np" stem="I-pro-pers-sg" class="person" pred="I"/>

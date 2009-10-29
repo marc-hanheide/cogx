@@ -1865,7 +1865,7 @@
               </feat>
               <feat attr="INTOPH" val="ip"/>
               <feat attr="ACCENT" val="rhmf"/>
-              <feat attr="OWNER" val="spkr"/>
+              <feat attr="OWNER" val="owners"/>
             </fs>
           </atomcat>
           <slash/>
@@ -1920,7 +1920,7 @@
               </feat>
               <feat attr="INTOPH" val="ip"/>
               <feat attr="ACCENT" val="thmf"/>
-              <feat attr="OWNER" val="hear"/>
+              <feat attr="OWNER" val="owners"/>
             </fs>
           </atomcat>
           <slash/>
