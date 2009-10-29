@@ -88,7 +88,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 
       <action choice="accept-isee">
 <!--			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person"   dest="CONTENT"/>  -->
-			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;true ^ &lt;Actor&gt;(i1:person ^ I ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false)"   dest="CONTENT"/>
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Rheme&gt;e-rheme-true ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;true ^ &lt;Actor&gt;(i1:person ^ I ^ &lt;ProofStatus&gt;asserted ^ &lt;Kontrast&gt;false)"   dest="CONTENT"/>
       </action>      
 
       <action choice="reject-sorry">
