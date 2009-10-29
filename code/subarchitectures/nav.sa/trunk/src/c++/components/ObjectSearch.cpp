@@ -87,9 +87,13 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
   }
   else if (oobj->getData()->cmd == SpatialData::STOPAVS) {
     log("stopping AVS");
+    whereinplan = -1;
     m_command = STOP;
     m_status = STOPPED;
     whereinplan = m_plan.plan.size();
+    m_Displaykrsjlgm = 0;
+    m_Displaycoverage = 0;
+    m_samples = new int[2*m_samplesize];
   }
 }
 
@@ -557,10 +561,11 @@ void ObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap){
 }
 void ObjectSearch::GenViewPoints() {
   m_coveragetotal = -1;
-
+  whereinplan = -1;
   srand ( time(NULL) );
   log("Generating %i random samples", m_samplesize);
   ViewConePts.clear();
+  candidatePoses.clear();
   int randx,randy;
   double xW,yW;
   int i=0;
@@ -577,6 +582,7 @@ void ObjectSearch::GenViewPoints() {
   IcetoCureLGM(combined_lgm);
   
   // set total coverage
+  m_coveragetotal = -1;
   coveragemap = new Cure::LocalGridMap<unsigned char>(*m_krsjlgm);          
   fcm = new Cure::LocalGridMap<unsigned char>(*coveragemap);
   for(int x = -combined_lgm.size ; x <= combined_lgm.size; x++){
@@ -654,7 +660,7 @@ void ObjectSearch::GenViewPoints() {
     angles.push_back(rad);
   }
   log("pushed angles");
-  
+
   while (i < m_samplesize) {
     
     //      log("processing sample %i/%i", i+1, m_samplesize);
