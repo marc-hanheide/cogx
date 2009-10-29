@@ -50,11 +50,10 @@ Params.FV=3;
 confFile='config/cogLearn.config';
 loadConfig(confFile);
 loadpredefinedorder = 1 ; 
-
 Data.allindexes = [] ;
 if loadpredefinedorder == 1
     try
-        Data.allindexes = load([Dirs.data,'sequence1.sqc']) ;
+        Data.allindexes = load([Dirs.data,'sequence2.sqc']) ;
     catch
         warning('Images indexes failed to load!') ;
     end
