@@ -75,6 +75,9 @@ if ~isempty( LRaxRoi )
             grid(LRaxRoi,'off') ;
             box(LRaxRoi,'on') ;   
             view(LRaxRoi,[37, 42]) ;
+            set(LRaxRoi,'XTick',[]) ;
+            set(LRaxRoi,'YTick',[]) ;
+            set(LRaxRoi,'ZTick',[]) ;
 else
     plot3(x(:,1),x(:,2),x(:,3),'r.') ;
     axis equal ; axis tight ; grid off ;
