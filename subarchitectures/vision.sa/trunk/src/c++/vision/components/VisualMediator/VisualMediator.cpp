@@ -180,7 +180,7 @@ void VisualMediator::runComponent()
 
 			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
 
-			FeatureValuePtr value = createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
+			FeatureValuePtr value = createUnknownValue(1.00f); //createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
 			FeaturePtr label = createFeatureWithUniqueFeatureValue ("obj_label", value);
 
 			FeatureValuePtr salvalue = createStringValue ("high", 1.00f);
