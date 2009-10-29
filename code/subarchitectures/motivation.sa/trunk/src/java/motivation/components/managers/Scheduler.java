@@ -117,7 +117,7 @@ public class Scheduler extends ManagedComponent {
 			log("scheduleMotives: wait to acquire lock");
 			wmLock.lock();
 			// TODO: big hack to wait for all propagation
-			sleepComponent(1000);
+			sleepComponent(2000);
 			while(!relevantEventQueue.isEmpty())
 				try {
 					relevantEventQueue.take();

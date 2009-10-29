@@ -69,6 +69,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	private double m_spaceMeasureConstant;
 	private double m_borderMeasureConstant;
 	private double m_gatewayMeasureConstant;
+	private double m_constantGain;
 
 	public ExplorePlaceGenerator() {
 		super();
@@ -298,7 +299,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
 		_em.informationGain = (spaceMeasure * m_spaceMeasureConstant)
 				+ (borderMeasure * m_borderMeasureConstant)
-				+ (gatewayMeasure * m_gatewayMeasureConstant);
+				+ (gatewayMeasure * m_gatewayMeasureConstant) + m_constantGain;
 
 		log(CASTUtils.concatenate(_em.informationGain, " = space(",
 				spaceMeasure, " * ", m_spaceMeasureConstant, ") + border(",
@@ -308,9 +309,10 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
 	@Override
 	protected void configure(Map<String, String> _config) {
-		m_spaceMeasureConstant = 0.5;
-		m_borderMeasureConstant = 0.5;
+		m_spaceMeasureConstant = 0.4;
+		m_borderMeasureConstant = 0.4;
 		m_gatewayMeasureConstant = 0.0;
+		m_constantGain=0.2;
 
 	}
 
