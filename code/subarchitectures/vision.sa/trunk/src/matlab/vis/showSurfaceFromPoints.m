@@ -70,10 +70,10 @@ if ~isempty( LRaxRoi )
     
     plot3(x(:,1),x(:,2),x(:,3),'r.','Parent',LRaxRoi) ;
  %             colormap(LRaxRoi,'bone') ;
-%             axis(LRaxRoi,'tight') ;
-%             axis(LRaxRoi,'equal') ;
-%             grid(LRaxRoi,'off') ;
-%             box(LRaxRoi,'on') ;   
+            axis(LRaxRoi,'tight') ;
+            axis(LRaxRoi,'equal') ;
+            grid(LRaxRoi,'off') ;
+            box(LRaxRoi,'on') ;   
 else
     plot3(x(:,1),x(:,2),x(:,3),'r.') ;
     axis equal ; axis tight ; grid off ;
