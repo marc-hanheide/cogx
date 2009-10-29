@@ -150,10 +150,10 @@ public class BeliefModelChartViewer
 		private JFreeChart createChart() {
 
 			// set up the beliefs beliefs
-			String[] labels = {"","PRIVATE","ATTRIBUTED","SHARED"};
+			String[] labels = {"","PRIVATE","ATTRIBUTED"," ","SHARED"};
 			final NumberAxis beliefsAxis = new SymbolAxis("Beliefs",labels);
 			beliefsAxis.setLowerBound(0);
-			beliefsAxis.setUpperBound(3);
+			beliefsAxis.setUpperBound(4);
 			beliefsAxis
 					.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 			final StackedBarRenderer3D beliefsRender = new StackedBarRenderer3D();
@@ -204,7 +204,7 @@ public class BeliefModelChartViewer
 					if (belief.ags instanceof PrivateAgentStatus) {
 						dsBeliefs.addValue(1, "private: {robot}", wmc.address.id);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
-						dsBeliefs.addValue(1, "attributed: {robot[human]}", wmc.address.id);				
+						dsBeliefs.addValue(2, "attributed: {robot[human]}", wmc.address.id);				
 					} else if (belief.ags instanceof MutualAgentStatus) {
 						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);						
 					}
@@ -231,7 +231,7 @@ public class BeliefModelChartViewer
 					if (belief.ags instanceof PrivateAgentStatus) {
 						dsBeliefs.addValue(1, "private: {robot}", wmc.address.id);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
-						dsBeliefs.addValue(1, "attributed: {robot[human]}", wmc.address.id);						
+						dsBeliefs.addValue(2, "attributed: {robot[human]}", wmc.address.id);						
 					} else if (belief.ags instanceof MutualAgentStatus) {
 						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);
 					}
