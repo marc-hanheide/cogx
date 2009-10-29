@@ -1,0 +1,29 @@
+HOST localhost
+
+#SUBARCHITECTURE vision.sa 
+#CPP WM SubarchitectureWorkingMemory
+#CPP TM AlwaysPositiveTaskManager
+#CPP MG mediator VisualMediator -sba binder --log true
+
+
+SUBARCHITECTURE binder 
+
+JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
+JAVA WM binder.components.BindingWorkingMemory --log
+
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log false
+JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log false
+JAVA MG translator binder.components.BeliefModelTranslator --log false
+
+JAVA MG monitor binder.components.BinderMonitor --log false --gui
+JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer --log
+#JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent --log --subscribe "binder.autogen.core.Union" #"beliefmodels.adl.Belief"
+
+JAVA MG fakevisual binder.fakeproxygenerators.FakeVisualProxyGenerator --nbproxies 2  --pauses true --log false
+JAVA MG fakehaptic binder.fakeproxygenerators.FakeHapticProxyGenerator --nbproxies 2  --pauses true  --log false
+JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 2 --pauses true --deleteproxies false --log false
+
+#JAVA MG test binder.abstr.BindingWorkingMemoryReader --log
+
+
+
