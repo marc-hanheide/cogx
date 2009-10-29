@@ -58,9 +58,9 @@ generate : i_dont_know(Nom, Prop) <-
 
 %----------------------------------------------------------------------
 
-generate : intention : ask_known(h, Object, Prop) <-
+generate : intention : ask_known(h, Object, objecttype) <-
 	check_property_value(Object, Prop, Result),
-	reply_to_result(Nom, Object, Prop, Result),
+	describe(Nom, Object, Prop, Result),
 	event : produce(r, Nom) / 1.0.
 
 % what Prop is the Object
@@ -68,6 +68,29 @@ generate : intention : ask_property(h, Object, Prop) <-
 	check_property_value(Object, Prop, Result),
 	reply_to_result(Nom, Object, Prop, Result),
 	event : produce(r, Nom) / 1.0.
+
+%----------------------------------------------------------------------
+
+describe(Nom, Object, objecttype, unknown) <-
+	generate : i_dont_know(Nom, Prop).
+
+	% value known
+describe(Nom, Object, objecttype, known(Value)) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	propname_to_questiontype(Prop, QuestionType),
+	i : feat_QuestionType(Nom, QuestionType) / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	%i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			generate : it(TargetNom),
+		i : feat_ProofStatus(TargetNom, assumed) / 1.0,
+		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value).
+%		i : feat_ProofStatus(PropNom, asserted) / 1.0.
 
 %----------------------------------------------------------------------
 
@@ -168,8 +191,8 @@ generate : intention : need_get_value0(Modality, Entity, Prop) <-
 referring_expression(Nom, Union) <-
 	check_property_value(Union, objecttype, known(Type)),
 	i : sort(Nom, entity) / 1.0,
-	i : feat_InfoStatus(Nom, familiar) / 1.0,
-	i : prop(Nom, Type) / 1.0.
+	i : prop(Nom, Type) / 1.0,
+	i : feat_InfoStatus(Nom, familiar) / 1.0.
 	
 referring_expression(Nom, Union) <-
 	check_property_value(Union, objecttype, unknown),
@@ -180,24 +203,37 @@ referring_expression(Nom, Union) <-
 % is the object blue
 %d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue)))
 generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
+	Prop \= objecttype,
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	dummy_nom4(QualityNom),
-	k(now, private(r)) : objecttype(Entity, Type) / belief_model,
 	i : feat_SpeechAct(Nom, question) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
-			i : sort(TargetNom, entity) / 1.0,
-			i : prop(TargetNom, Type) / 1.0,
-			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
-			i : feat_ProofStatus(QualityNom, assumed) / 1.0,
+			referring_expression(TargetNom, Entity),
+		add_prop_value_to_protolf(ContentNom, QualityNom, Prop, Hypothesis),
 		i : rel_Color(ContentNom, QualityNom) / 1.0,
-			i : sort(QualityNom, quality) / 1.0,
-			i : prop(QualityNom, Hypothesis) / 1.0,
 			i : feat_Questioned(QualityNom, true) / 1.0,
 			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : need_verify_hypothesis(Modality, Entity, objecttype, Hypothesis) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(TypeNom),
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			generate : it(TargetNom),
+		i : rel_Type(ContentNom, TypeNom) / 1.0,
+			i : sort(TypeNom, 'entity') / 1.0,
+			i : prop(TypeNom, Hypothesis) / 1.0,
+			i : feat_Questioned(TypeNom, true) / 1.0,
+			i : feat_ProofStatus(TypeNom, asserted) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 %----------------------------------------------------------------------

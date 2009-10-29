@@ -51,7 +51,9 @@ understand : event : uttered(h, Nom) <-
 	i : 'rel_Wh-Restr'(Nom, WhNom),
 		what_which(WhNom),
 		sought_property(WhNom, Prop),
-	intention : ask_property(h, RestrRef, Prop) / 0.2.
+	sought_property_to_intention(RestrRef, Prop).
+%		Prop \= objecttype,
+%	intention : ask_property(h, RestrRef, Prop) / 0.2.
 
 sought_property(Nom, Prop) <-
 	i : rel_Scope(Nom, QueryNom),
@@ -60,6 +62,13 @@ sought_property(Nom, Prop) <-
 
 sought_property(Nom, objecttype) <-
 	seeking_type(Nom) / 4.0.
+
+sought_property_to_intention(Union, Prop) <-
+	Prop \= objecttype,
+	intention : ask_property(h, Union, Prop) / 0.2.
+
+sought_property_to_intention(Union, objecttype) <-
+	intention : ask_known(h, Union, objecttype) / 1.2.
 
 % what is this
 %understand : event : uttered(h, Nom) <-
@@ -73,7 +82,7 @@ sought_property(Nom, objecttype) <-
 %	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
 %	i : 'rel_Wh-Restr'(Nom, WhNom),
 %		i : prop(WhNom, what),
-%	intention : ask_property(h, RestrRef, objecttype) / 6.2.
+%	intention : ask_known(h, RestrRef, objecttype) / 10.2.
 
 % could you tell me what X is
 understand : event : uttered(h, Nom) <-
