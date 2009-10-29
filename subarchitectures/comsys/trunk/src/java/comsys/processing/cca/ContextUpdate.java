@@ -54,6 +54,14 @@ public class ContextUpdate {
 	
 	public static Belief[] proofToBeliefs(MarkedQuery[] proof) {
 		Belief[] asserted = ProofUtils.extractAssertedBeliefs(proof);
+		Belief[] bs = new Belief[asserted.length];
+		for (int i = 0; i < asserted.length; i++) {
+			bs[i] = asserted[i];
+			bs[i].id = counter.inc("update");
+		}
+		return bs;
+/*
+		Belief[] asserted = ProofUtils.extractAssertedBeliefs(proof);
 		Belief[] assumed = ProofUtils.extractAssumedBeliefs(proof);
 		Belief[] bs = new Belief[asserted.length + assumed.length];
 		for (int i = 0; i < asserted.length; i++) {
@@ -65,6 +73,7 @@ public class ContextUpdate {
 			bs[j+asserted.length].id = counter.inc("cu-assume");
 		}
 		return bs;
+*/
 	}
 	
 	public static Belief[] filterAssertedBeliefs(Belief[] bs) {
