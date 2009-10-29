@@ -5,27 +5,27 @@ Borland book
 
 what colour is a ball
 which colour is a ball
-what colour is a box
-which colour is a box
+what colour is a boll
+which colour is a boll
 what colour is a triangle
 which colour is a triangle
 
 what size is a ball
 which size is a ball
-what size is a box
-which size is a box
+what size is a boll
+which size is a boll
 what size is a triangle
 which size is a triangle
 
 what shape is a ball
 which shape is a ball
-what shape is a box
-which shape is a box
+what shape is a boll
+which shape is a boll
 what shape is a triangle
 which shape is a triangle
 
 this is a ball
-this is a box
+this is a boll
 this is a car
 this is a cow
 this is a triangle
@@ -36,8 +36,8 @@ the room is the kitchen
 
 I see a ball
 I see the ball
-I see a box
-I see the box
+I see a boll
+I see the boll
 I see a triangle
 I see the car
 
@@ -50,6 +50,11 @@ I am playing the shape game
 hi there
 hi you there
 
-it@L+H* was@L+H* a lup@L+H* LH%
-it@L+H* was@L+H* a boll@L+H* LH%
+it was a lup LH%
 I@L+H* don't have@L+H* it@L+H* LH%
+i LL%
+color@H* LL%
+color@H* HL%
+red LH%
+it was a boll LH%
+a boll LH%
