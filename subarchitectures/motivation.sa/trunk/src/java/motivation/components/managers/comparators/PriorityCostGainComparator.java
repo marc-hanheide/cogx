@@ -1,6 +1,5 @@
 package motivation.components.managers.comparators;
 
-
 /**
  * a cascaded comparator implementing the following sorting criteria:
  * <ol>
@@ -8,8 +7,9 @@ package motivation.components.managers.comparators;
  * <li>Motive information gain</li>
  * <li>Motive age (inverted)</li>
  * </ol>
+ * 
  * @author marc
- *
+ * 
  */
 public class PriorityCostGainComparator extends CascadedComparator {
 
@@ -20,7 +20,7 @@ public class PriorityCostGainComparator extends CascadedComparator {
 		super();
 		super.addComparator(new PriorityComparator());
 		super.addComparator(new JoinedGainCostComparator());
+		super.addComparator(new InvertAgeComparator());
 	}
-
 
 }

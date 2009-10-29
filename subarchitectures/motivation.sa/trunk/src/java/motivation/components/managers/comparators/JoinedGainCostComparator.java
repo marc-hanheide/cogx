@@ -7,7 +7,7 @@ import motivation.slice.Motive;
 public class JoinedGainCostComparator implements Comparator<Motive> {
 
 	
-	private static int COST_MULTIPLIER = 3;
+	private static int COST_MULTIPLIER = 5;
 	
 	/**
 	 * the lower the costs the "smaller" should the Comparator
