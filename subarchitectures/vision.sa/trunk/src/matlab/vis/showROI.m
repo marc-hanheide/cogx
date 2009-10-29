@@ -12,7 +12,7 @@ set(LRtxFisRec,'Visible','off');
 set(LRtxFisRoi,'Visible','off');
 set(LRaxPts3d,'Visible','off');
 
-uselocalcolorifok = 0 ; 
+uselocalcolorifok = 1 ; 
 
 if nargin>0
    x1=cutBG(x,b);
