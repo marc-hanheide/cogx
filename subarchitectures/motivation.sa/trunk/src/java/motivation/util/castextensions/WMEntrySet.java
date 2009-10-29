@@ -272,7 +272,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 			if (map.containsKey(key)) {
 				try {
 					component
-							.lockEntry(key, WorkingMemoryPermissions.LOCKEDODR);
+							.lockEntry(key, WorkingMemoryPermissions.LOCKEDO);
 					component.overwriteWorkingMemory(key, value);
 				} catch (CASTException e) {
 					e.printStackTrace();

@@ -11,6 +11,7 @@ import motivation.slice.Motive;
 import motivation.util.WMMotiveSet;
 import motivation.util.castextensions.WMEntryQueue;
 import motivation.util.castextensions.WMEventQueue;
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -39,9 +40,8 @@ import cast.core.CASTUtils;
  */
 public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
-	
 	protected WMMotiveSet motives;
-	
+
 	/**
 	 * a local MemoryReceiver that established the link between the "Supporter"
 	 * of the motive and
@@ -86,7 +86,7 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
 		public void overwritten(WorkingMemoryChange _wmc) {
 			try {
-				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
+//				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
 				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
 				scheduleCheckMotive(motive);
 			} catch (DoesNotExistOnWMException e) {
@@ -96,19 +96,19 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 				println("subarchitecture " + motiveAddress.subarchitecture
 						+ " not known...");
 				e.printStackTrace();
-			} finally {
-				try {
-					unlockEntry(motiveAddress);
-				} catch (CASTException e) {
-					log("caught a CASTException when unlocking entry: "
-							+ e.message + ". This can be safely ignored...");
-				}
+//			} finally {
+//				try {
+//					unlockEntry(motiveAddress);
+//				} catch (CASTException e) {
+//					log("caught a CASTException when unlocking entry: "
+//							+ e.message + ". This can be safely ignored...");
+//				}
 			}
 		}
 
 		public void deleted(WorkingMemoryChange _wmc) {
 			try {
-				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
+//				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
 				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
 				if (motive.referenceEntry.equals(_wmc.address)) { // if it is
 					// really
@@ -129,23 +129,23 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 							+ "::" + motive.referenceEntry.id + "/"
 							+ _wmc.address.subarchitecture
 							+ " has been deleted, need to check motive");
-					checkMotiveQueue.put(motive);
+					scheduleCheckMotive(motive);
 				}
 			} catch (DoesNotExistOnWMException e1) {
 				println("tried to remove motive from WM that didn't exist... nevermind.");
 			} catch (CASTException e1) {
 				println("CASTException...  nevermind.");
 				e1.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				try {
-					unlockEntry(motiveAddress);
-				} catch (CASTException e) {
-					log("caught a CASTException when unlocking entry: "
-							+ e.message + ". This can be safely ignored...");
-				}
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} finally {
+//				try {
+//					unlockEntry(motiveAddress);
+//				} catch (CASTException e) {
+//					log("caught a CASTException when unlocking entry: "
+//							+ e.message + ". This can be safely ignored...");
+//				}
 			}
 
 		}
@@ -162,7 +162,9 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 		this.motives = WMMotiveSet.create(this);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see cast.core.CASTComponent#start()
 	 */
 	@Override
@@ -171,7 +173,7 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 		motives.start();
 	}
 
-	protected abstract boolean checkMotive(Motive motive);
+	protected abstract boolean checkMotive(Motive motive) throws CASTException;
 
 	/**
 	 * creates a link between the underlying referenced working memory entry
@@ -189,29 +191,35 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 		new SourceChangeReceiver(motive, src);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see cast.core.CASTComponent#runComponent()
 	 */
 	@Override
 	protected final void runComponent() {
 		while (isRunning()) {
-			Motive motive=null;
+			Motive motive = null;
 			try {
 				log("runComponent: waiting for motive event");
 				motive = checkMotiveQueue.take();
-				if (motive.thisEntry!=null) {
+				if (motive.thisEntry != null) {
 					// update from WM
-					try{
-						motive=getMemoryEntry(motive.thisEntry, Motive.class);
+					try {
+						motive = getMemoryEntry(motive.thisEntry, Motive.class);
 					} catch (CASTException e) {
 						// ignore this exception
-						println("CASTExecption in runComponent while reading the motive from WM... shouldn't be a big deal: "+e.message);
+						println("CASTExecption in runComponent while reading the motive from WM... shouldn't be a big deal: "
+								+ e.message);
 					}
-					
+
 				}
 				log("runComponent: check motive");
 				checkMotive(motive);
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CASTException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -224,10 +232,10 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 	 * 
 	 * @param motive
 	 * @return the WM address of the entry
+	 * @throws CASTException 
 	 */
-	public WorkingMemoryAddress write(Motive motive) {
+	public WorkingMemoryAddress write(Motive motive) throws CASTException {
 		motive.updated = getCASTTime();
-		try {
 			if (motive.thisEntry == null) {
 				log("submit new to WM");
 				motive.thisEntry = new WorkingMemoryAddress();
@@ -241,26 +249,20 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 			} else {
 				overwriteWorkingMemory(motive.thisEntry, motive);
 			}
-		} catch (CASTException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		return motive.thisEntry;
 	}
 
-	public void remove(Motive motive) throws DoesNotExistOnWMException,
-			PermissionException, UnknownSubarchitectureException {
+	public void remove(Motive motive) throws CASTException {
 		if (motive.thisEntry != null) {
 			log("we remove the motive from WM with ID " + motive.thisEntry.id);
 			try {
 				deleteFromWorkingMemory(motive.thisEntry);
-			}
-			catch (DoesNotExistOnWMException e) {
+			} catch (DoesNotExistOnWMException e) {
 				// safely ignore if it has been deleted already
 			}
 		}
 	}
-	
+
 	protected void scheduleCheckMotive(Motive motive) {
 		try {
 			checkMotiveQueue.put(motive);

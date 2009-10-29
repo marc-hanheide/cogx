@@ -92,7 +92,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	 * , cast.cdl.WorkingMemoryAddress)
 	 */
 	@Override
-	protected boolean checkMotive(Motive motive) {
+	protected boolean checkMotive(Motive motive) throws CASTException {
 		try {
 			if (!SpatialFacade.get(this).isAlive())
 				SpatialFacade.get(this).start();
@@ -145,8 +145,6 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 						+ ((ExploreMotive) motive).placeID);
 				remove(motive);
 			}
-		} catch (CASTException e) {
-			e.printStackTrace();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

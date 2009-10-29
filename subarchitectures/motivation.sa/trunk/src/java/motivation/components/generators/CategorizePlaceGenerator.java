@@ -28,8 +28,7 @@ public class CategorizePlaceGenerator extends AbstractMotiveGenerator {
 	 * @see motivation.generators.Generator#updateMotive(cast.cdl.WorkingMemoryAddress, cast.cdl.WorkingMemoryAddress)
 	 */
 	@Override
-	protected boolean checkMotive(Motive motive) {
-		try {
+	protected boolean checkMotive(Motive motive) throws CASTException {
 			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
 			
 			// if it is a yet unexplored one...			
@@ -44,13 +43,6 @@ public class CategorizePlaceGenerator extends AbstractMotiveGenerator {
 				log("  turn out this place is not a trueplace, so it should be no motive then");
 				remove(motive);
 			}
-		} catch (DoesNotExistOnWMException e) {
-			e.printStackTrace();
-		} catch (UnknownSubarchitectureException e) {
-			e.printStackTrace();
-		} catch (PermissionException e) {
-			e.printStackTrace();
-		}
 		return false;
 	}
 
@@ -76,7 +68,7 @@ public class CategorizePlaceGenerator extends AbstractMotiveGenerator {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} 
-				checkMotive(newMotive);
+				scheduleCheckMotive(newMotive);
 				
 			}
 		};
