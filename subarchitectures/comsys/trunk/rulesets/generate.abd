@@ -217,3 +217,24 @@ generate : intention : reuse_last_intention(h, Id) <-
 	i : feat_CannedText(Nom, 'I_do_not_know_what_you_mean') / 1.0,
 	event : produce(r, Nom) / 1.0.
 
+%-------------------------------------------------------------------------
+
+% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\alreadyTrue) 
+
+% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(b:entity ^ object ^ /Salient\true))  )
+generate : intention : already_grounded(r, Union, Prop) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(ActorNom),
+	dummy_nom4(PatientNom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, cognition) / 1.0,
+		i : prop(ContentNom, know) / 1.0,
+		i : rel_Actor(ContentNom, ActorNom) / 1.0,
+			i : sort(ActorNom, person) / 1.0,
+			i : prop(ActorNom, 'I') / 1.0,
+		i : rel_Patient(ContentNom, PatientNom) / 1.0,
+			generate : this(PatientNom),
+	event : produce(r, Nom) / 1.0.
