@@ -761,7 +761,17 @@ public class cc_CCA extends BeliefModelInterface {
 		
 			Vector<Belief> vectKBeliefs = new Vector<Belief>();
 			for (int i = 0; i < model.k.length; i++) {
-				vectKBeliefs.add(getBelief(model.k[i]));
+				try {
+					if (existsOnWorkingMemory(model.k[i], Binder.BINDER_SA)) {
+						vectKBeliefs.add(getBelief(model.k[i]));
+					}
+					else {
+						log("WARNING: belief model does not seem to be up-to-date: belief " + model.k[i] + " not on Binder WM");
+					}
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		
 			BeliefModelSynchronization.sync(ccaEngine.abducer, vectKBeliefs.toArray(new Belief[] {}));
@@ -770,18 +780,28 @@ public class cc_CCA extends BeliefModelInterface {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public String[] beliefsWithNoAssertions(BeliefModel model) {
 		Vector<String> closed = new Vector<String>();
 		for (int i = 0; i < model.k.length; i++) {
-			Belief b = getBelief(model.k[i]);
-			if (!BeliefUtils.formulaHasAssertions((SuperFormula) b.phi)) {
-				closed.add(b.id);
+			try {
+				if (existsOnWorkingMemory(model.k[i], Binder.BINDER_SA)) {
+					Belief b = getBelief(model.k[i]);
+					if (!BeliefUtils.formulaHasAssertions((SuperFormula) b.phi)) {
+						closed.add(b.id);
+					}
+				}
+				else {
+					log("WARNING: belief model does not seem to be up-to-date: belief " + model.k[i] + " not on Binder WM");
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		return closed.toArray(new String[]{});
 	}
-	
+
     /**
      * Return true iff the proof assumes realisation of an utterance that can be extracted from the proof.
      * @param proof the proof
