@@ -95,7 +95,7 @@ The class <b>BeliefModelChartViewer</b> on-line charts the operations on a belie
  @started 091013
  @version 091013
  
- */ 
+ */  
 
 public class BeliefModelChartViewer 
 	extends ManagedComponent { 
@@ -212,15 +212,18 @@ public class BeliefModelChartViewer
 			case DELETE:
 				dsBeliefs.removeValue("beliefs", wmc.address.id);
 					if (belief.ags instanceof PrivateAgentStatus) {
-						System.out.println("DELETING HERE!!");
 						dsBeliefs.removeValue("private: {robot}", wmc.address.id);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
 						dsBeliefs.removeValue("attributed: {robot[human]}", wmc.address.id);						
 					} else if (belief.ags instanceof MutualAgentStatus) {
 						dsBeliefs.removeValue("shared: {robot,human}", wmc.address.id);													   
 					}
+					if (dsTruth.getColumnKeys().contains(wmc.address.id)) {
 					dsTruth.removeColumn(wmc.address.id);
+					}
+					if (dsCertainty.getColumnKeys().contains(wmc.address.id)) {
 					dsCertainty.removeColumn(wmc.address.id);
+					}
 				break;
 			case OVERWRITE:
 					if (belief.ags instanceof PrivateAgentStatus) {
