@@ -144,10 +144,19 @@
 
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="f-featval" type="string" answerset="@assertion @greeting @ thanking"> 
+         <inquiry id="f-featval" type="string" answerset="@assertion @greeting @thanking @unknown"> 
 	     <f-featval nomvar="DVP" feat="SpeechAct" val="unknown" /> 
 	     </inquiry>
   	     <choicenode answer="assertion">
+	       <result val="donothing"/>
+	     </choicenode>
+  	     <choicenode answer="question">
+	       <result val="donothing"/>
+	     </choicenode>
+  	     <choicenode answer="directive">
+	       <result val="donothing"/>
+	     </choicenode>
+  	     <choicenode answer="commitment">
 	       <result val="donothing"/>
 	     </choicenode>
 	     <choicenode answer="greeting">
@@ -162,6 +171,10 @@
 			 <choicenode answer="hithere">
 			   <result val="hithere"/>
 			 </choicenode>	
+  	     <choicenode answer="unknown">
+	       <result val="donothing"/>
+	     </choicenode>
+
 	     </choicenode>
 
 	     <choicenode answer="thanking">
