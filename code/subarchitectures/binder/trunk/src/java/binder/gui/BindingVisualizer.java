@@ -322,6 +322,10 @@ public class BindingVisualizer {
 		graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", object_proxy);
 		graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "10", object_proxy);
 
+		if (containsSaliencyFeat(proxy)) {
+			graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, "red", object_proxy);
+		}
+		
 		insertedCellsForProxies.put(proxy.entityID, vertex);
 		insertedCells.add(vertex);
 
@@ -495,6 +499,11 @@ public class BindingVisualizer {
 		graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", object_union);
 		graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "10", object_union);
 
+
+		if (containsSaliencyFeat(union)) {
+			graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, "red", object_union);
+		}
+		
 		insertedCellsForUnions.put(union.entityID, union_vertex);
 
 		insertedCells.add(union_vertex);
@@ -517,6 +526,13 @@ public class BindingVisualizer {
 	}
 
 
+	private boolean containsSaliencyFeat (PerceivedEntity entity) {
+		String feats = "";
+		for (int i = 0 ; i < entity.features.length ; i++) {
+			feats += createFeatureText(entity.features[i]);
+		}
+		return feats.contains("high");
+	}
 
 	public void deleteUnion(Union union) {
 		if (insertedCellsForUnions.containsKey(union.entityID)) {

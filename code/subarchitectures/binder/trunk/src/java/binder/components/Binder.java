@@ -277,8 +277,14 @@ public class Binder extends ManagedComponent  {
 							Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 							existingUnionConfig.includedUnions[i] = updatedUnion;
 							
-							if (!UnionConfigurationUtils.isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
+							UnionConfiguration potentialSimilarConfig = 
+								UnionConfigurationUtils.getSimilarUnionConfig(newUnionConfigs, existingUnionConfig);
+							if (potentialSimilarConfig == null) {
 								newUnionConfigs.add(existingUnionConfig);
+							}
+							else {
+								UnionConfigurationUtils.addProbsOfConfig1IntoConfig2
+									(existingUnionConfig, potentialSimilarConfig);
 							}
 						}
 					}
@@ -364,8 +370,16 @@ public class Binder extends ManagedComponent  {
 									UnionConfigurationUtils.removeUnionFromConfig(existingUnionConfig, existingUnion);
 							}
 							
-							if (!UnionConfigurationUtils.isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
+							UnionConfiguration potentialSimilarConfig = 
+								UnionConfigurationUtils.getSimilarUnionConfig(newUnionConfigs, existingUnionConfig);
+							if (potentialSimilarConfig == null) {
 								newUnionConfigs.add(existingUnionConfig);
+							}
+							else {
+								UnionConfigurationUtils.addProbsOfConfig1IntoConfig2
+									(existingUnionConfig, potentialSimilarConfig);
+						//		newUnionConfigs.add(existingUnionConfig);
+						//		log("dubout existingunionconfig: " + existingUnionConfig);
 							}
 						}
 					}

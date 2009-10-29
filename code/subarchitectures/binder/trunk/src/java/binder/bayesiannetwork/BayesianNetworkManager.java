@@ -49,6 +49,8 @@ import binder.utils.ProbabilityUtils;
  * Class for managing a bayesian network expressing feature correlations 
  * between features
  * 
+ * TODO: Reintegrate the cache functionality
+ * 
  * @author Pierre Lison
  * @version 09/09/2009 (started 01/08/2009)
  */
@@ -116,7 +118,7 @@ public class BayesianNetworkManager {
 	public DiscreteProbabilityDistribution getPriorDistribution(PerceivedEntity entity) {
 
 		// Check if the prior distribution has already been computed for the proxy
-		if (alreadyComputedDistribs.containsKey(entity)) {
+		if (false && alreadyComputedDistribs.containsKey(entity)) {
 			return alreadyComputedDistribs.get(entity);
 		}
 		else {

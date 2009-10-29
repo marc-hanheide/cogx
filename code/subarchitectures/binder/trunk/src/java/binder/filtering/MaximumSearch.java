@@ -123,7 +123,7 @@ public class MaximumSearch {
 
 		float result = 0.0f;
 		
-		if (maxForDistribs.containsKey(distrib)) {
+		if (false && maxForDistribs.containsKey(distrib)) {
 			result = maxForDistribs.get(distrib);
 		}
 		else {

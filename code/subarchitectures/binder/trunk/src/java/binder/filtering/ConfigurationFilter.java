@@ -60,7 +60,7 @@ public class ConfigurationFilter {
 	
 	private static Logger logger = ComponentLogger.getLogger(ConfigurationFilter.class);
 
-	public static float ORPHAN_PROXY_PRIOR_PROB = 0.6f;
+	public static float ORPHAN_PROXY_PRIOR_PROB = 1.0f;
 	
 	// ===================================================================
 	// METHODS FOR COMPUTATION & NORMALISATION OF CONFIG PROBABILITIES   
