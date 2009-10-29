@@ -141,26 +141,26 @@ BUT: if quality-standalone were to be generated, this system should apply.
     </actions>
 </system>
 
-<system id="rhemeAssign.size" region="infoStruct" metafunction="textual">
-   <chooser id="c-rhemeAssign.size"/> 
+<system id="rhemeAssign.shape" region="infoStruct" metafunction="textual">
+   <chooser id="c-rhemeAssign.shape"/> 
    <conditions>
-      <condition features="@type:q-size"/> 
+      <condition features="@type:q-shape"/> 
     </conditions>
    <actions>
-      <action choice="m-focus-true-assumed">
+      <action choice="m-focus-true-thematic">
         	<add-feature feature="Rheme" value="m-rheme-false" />
         	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="m-focus-false-assumed">
+      <action choice="m-focus-false-thematic">
         	<add-feature feature="Rheme" value="m-rheme-false" />
         	<add-feature feature="Focus" value="m-focus-false" />
       </action>     
 
-      <action choice="m-focus-true-asserted">
+      <action choice="m-focus-true-rhematic">
         	<add-feature feature="Rheme" value="m-rheme-true" />
         	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="m-focus-false-asserted">
+      <action choice="m-focus-false-rhematic">
         	<add-feature feature="Rheme" value="m-rheme-true" />
         	<add-feature feature="Focus" value="m-focus-false" />
       </action>     
@@ -168,26 +168,27 @@ BUT: if quality-standalone were to be generated, this system should apply.
     </actions>
 </system>
 
-<system id="rhemeAssign.shape" region="infoStruct" metafunction="textual">
-   <chooser id="c-rhemeAssign.shape"/> 
+
+<system id="rhemeAssign.size" region="infoStruct" metafunction="textual">
+   <chooser id="c-rhemeAssign.size"/> 
    <conditions>
-      <condition features="@type:q-shape"/> 
+      <condition features="@type:q-size"/> 
     </conditions>
    <actions>
-      <action choice="m-focus-true-assumed">
+      <action choice="m-focus-true-thematic">
         	<add-feature feature="Rheme" value="m-rheme-false" />
         	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="m-focus-false-assumed">
+      <action choice="m-focus-false-thematic">
         	<add-feature feature="Rheme" value="m-rheme-false" />
         	<add-feature feature="Focus" value="m-focus-false" />
       </action>     
 
-      <action choice="m-focus-true-asserted">
+      <action choice="m-focus-true-rhematic">
         	<add-feature feature="Rheme" value="m-rheme-true" />
         	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="m-focus-false-asserted">
+      <action choice="m-focus-false-rhematic">
         	<add-feature feature="Rheme" value="m-rheme-true" />
         	<add-feature feature="Focus" value="m-focus-false" />
       </action>     
@@ -201,20 +202,20 @@ BUT: if quality-standalone were to be generated, this system should apply.
       <condition features="@type:number-ordinal"/> 
     </conditions>
    <actions>
-      <action choice="m-focus-true-assumed">
+      <action choice="m-focus-true-thematic">
         	<add-feature feature="Rheme" value="m-rheme-false" />
         	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="m-focus-false-assumed">
+      <action choice="m-focus-false-thematic">
         	<add-feature feature="Rheme" value="m-rheme-false" />
         	<add-feature feature="Focus" value="m-focus-false" />
       </action>     
 
-      <action choice="m-focus-true-asserted">
+      <action choice="m-focus-true-rhematic">
         	<add-feature feature="Rheme" value="m-rheme-true" />
         	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="m-focus-false-asserted">
+      <action choice="m-focus-false-rhematic">
         	<add-feature feature="Rheme" value="m-rheme-true" />
         	<add-feature feature="Focus" value="m-focus-false" />
       </action>     
@@ -228,23 +229,23 @@ BUT: if quality-standalone were to be generated, this system should apply.
       <condition features="@type:entity"/> <!-- really, this should be constrained to only apply to entity under compound relation -->
     </conditions>
    <actions>
-      <action choice="t-focus-true-assumed">
-        	<add-feature feature="Rheme" value="t-rheme-false" />
-        	<add-feature feature="Focus" value="t-focus-true" />
+      <action choice="m-focus-true-thematic">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="t-focus-false-assumed">
-        	<add-feature feature="Rheme" value="t-rheme-false" />
-        	<add-feature feature="Focus" value="t-focus-false" />
+      <action choice="m-focus-false-thematic">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+        	<add-feature feature="Focus" value="m-focus-false" />
       </action>     
 
-      <action choice="t-focus-true-asserted">
-        	<add-feature feature="Rheme" value="t-rheme-true" />
-        	<add-feature feature="Focus" value="t-focus-true" />
+      <action choice="m-focus-true-rhematic">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-true" />
       </action>     
-      <action choice="t-focus-false-asserted">
-        	<add-feature feature="Rheme" value="t-rheme-true" />
-        	<add-feature feature="Focus" value="t-focus-false" />
-      </action>     
+      <action choice="m-focus-false-rhematic">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+        	<add-feature feature="Focus" value="m-focus-false" />
+      </action>        
       <action choice="doneRheme">
       </action>
     </actions>
