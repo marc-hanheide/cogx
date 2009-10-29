@@ -30,7 +30,7 @@ public class BeliefModelSynchronization {
 	
 	private static final String ASSUMABLE_FUNC = "belief_model";
 	
-	public static boolean logging = true;
+	public static boolean logging = false;
 	
 	public static void sync(AbducerServerPrx abducer, Belief[] kBeliefs) {
 		log("syncing abducer with the given set of beliefs");

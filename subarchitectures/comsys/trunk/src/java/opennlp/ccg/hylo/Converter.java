@@ -120,7 +120,7 @@ public class Converter {
         int ext=1;
         String name = nameBase + ext;
         if (prop!=null && prop.getWordPosition() != -1) {
-        	name = nameBase + prop.getWordPosition() + "_" + prop.getUtteranceIncrement();
+        	name = nameBase + prop.getWordPosition() + "_" + utteranceIncrement;
         }
         else { 
         	Integer baseCount = nameMap.get(nameBase);
@@ -145,4 +145,5 @@ public class Converter {
     public static void setUtteranceIncrement(int utteranceIncr) {
     	utteranceIncrement = utteranceIncr ;
     }
+ 
 }
