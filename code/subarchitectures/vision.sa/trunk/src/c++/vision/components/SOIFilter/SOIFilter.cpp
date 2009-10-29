@@ -363,8 +363,10 @@ void SOIFilter::project3DPoints(const vector<SurfacePoint> surfPoints, const ROI
 	cogx::Math::Vector2 p = projectPoint(cam, surfPoints[i].p);
 
 	/// HACK: artificially shrink cloud point
-	int x = (p.x - roi.rect.pos.x)*ratio*0.8 + roi.rect.width/2;
-	int y = (p.y - roi.rect.pos.y)*ratio*0.8 + roi.rect.height/2;
+	//int x = (p.x - roi.rect.pos.x)*ratio*0.8 + roi.rect.width/2;
+	//int y = (p.y - roi.rect.pos.y)*ratio*0.8 + roi.rect.height/2;
+	int x = (p.x - roi.rect.pos.x) + roi.rect.width/2;
+	int y = (p.y - roi.rect.pos.y) + roi.rect.height/2;
 
 	projPoints.push_back(cvPoint(x, y));
   }
@@ -383,7 +385,7 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   // draw foreground points
   for(size_t i = 0; i < projPoints.size(); i++)
   {
-	//    cvCircle(img, cvPoint(projPoints[i].x, projPoints[i].y), 3, CV_RGB(0,255,0));
+	cvCircle(img, cvPoint(projPoints[i].x, projPoints[i].y), 3, CV_RGB(0,255,0));
   }
 
   // draw convex hull
@@ -1022,9 +1024,9 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 
   float ratio = cvGetSize(iplImg).width * cvGetSize(iplImg).height;
 
-  if ( ratio > MAX_PATCH_SIZE)
-	ratio = sqrt(MAX_PATCH_SIZE / ratio);
-  else
+  //if ( ratio > MAX_PATCH_SIZE)
+  //  ratio = sqrt(MAX_PATCH_SIZE / ratio);
+  //else
 	ratio = 1;
 
   CvSize sz = cvGetSize(iplImg);
@@ -1068,6 +1070,7 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   IplImage *segPatch = cvCreateImage(sz, IPL_DEPTH_8U, 1);
   debug("4end");
 
+  // TODO: possible error: lines of IplImage are aligned to 4 bytes, while Image has no alignment!
   for(int i=0; i < segMask.data.size(); i++)
   {
 	segPatch->imageData[i] = segMask.data[i]*120;
