@@ -1164,7 +1164,6 @@ void ObjectSearch::Recognize(){
 	
 }
 void ObjectSearch::PostRecognitionCommand(){
-  if(m_status != STOPPED) {
     log("Posting Recog. Command now");	
     VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
     vector<string> obj_labels;
@@ -1175,8 +1174,8 @@ void ObjectSearch::PostRecognitionCommand(){
     cmd->labels = obj_labels;
     addToWorkingMemory(newDataID(), "vision.sa", cmd);
     log("DetectionCommand added.");
-  }
 }
+
 void ObjectSearch::newRobotPose(const cast::cdl::WorkingMemoryChange &objID) {
     shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
         getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
