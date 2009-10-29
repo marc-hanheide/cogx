@@ -100,7 +100,7 @@ module cogx {
 	
 	enum ObjectType { box, ball, cube, mug, unknownObjectType }; 
 	
-	enum Color { red, blue, yellow, green, unknownColor };
+	enum Color { red, blue, yellow, green, white, black, unknownColor };
 	
 	enum Graspable { grasp, nograsp , unknownGrasp } ;
 	
