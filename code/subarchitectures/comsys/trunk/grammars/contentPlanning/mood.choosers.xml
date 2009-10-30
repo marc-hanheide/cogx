@@ -45,6 +45,13 @@
 					<choicenode answer="commitment">
 					   <result val="indicative"/>
 					</choicenode>
+
+					<choicenode answer="greeting">
+					  <result val="no-mood"/>
+
+					<choicenode answer="thanking">
+					  <result val="no-mood"/>
+
 					<choicenode answer="unknown">
 					  <result val="no-mood"/>
 					</choicenode>
