@@ -194,7 +194,7 @@ void VisualMediator::runComponent()
 
 			addProxyToWM(proxy);
 			
-			if(existsOnWorkingMemory(m_salientObjID, m_bindingSA) && !first)
+			if(!first && existsOnWorkingMemory(m_salientObjID, m_bindingSA))
 			{
 			  
 			  ProxyPtr salProxy = getMemoryEntry<Proxy>(m_salientObjID, m_bindingSA);
