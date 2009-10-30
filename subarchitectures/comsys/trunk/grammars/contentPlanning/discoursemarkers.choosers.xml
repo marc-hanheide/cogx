@@ -14,7 +14,11 @@
          <inquiry id="f-featval" type="string" answerset="@accept @reject @alreadytrue @answer @hold @unknown"> 
 	     <f-featval nomvar="DVP" feat="Relation" val="unknown" /> 
 	     </inquiry>
-  	     <choicenode answer="accept">   <!-- ACCEPT -->
+  	     <choicenode answer="unknown"> 
+                <result val="doNothing"/>
+         </choicenode>		  
+                
+         <choicenode answer="accept">   <!-- ACCEPT -->
                 <inquiry id="ex-featval" type="string" answerset="@true @false">
                     <q-ex-fv nomvar="DVP" feat="AcknoModality" val="vision"/>
                 </inquiry>
