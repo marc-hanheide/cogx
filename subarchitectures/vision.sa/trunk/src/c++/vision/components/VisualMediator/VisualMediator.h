@@ -54,7 +54,8 @@ class VisualMediator :
   /**
    * Name of the binder subarchitecture
    */
-  std::string m_salientObjID;  
+  std::string m_salientObjID;
+  bool first; 
 
   /**
    * status of VisualObject persistency
