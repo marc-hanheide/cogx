@@ -89,7 +89,8 @@ prop_to_shape(square, cubic).
 prop_to_shape(cubic, cubic).
 prop_to_shape(cylindrical, cylindrical).
 prop_to_shape(spherical, spherical).
-
+prop_to_shape(compact, compact).
+prop_to_shape(elongated, elongated).
 %-------------------------------------------------------------------------
 
 polarity(Nom, Polarity) <-
