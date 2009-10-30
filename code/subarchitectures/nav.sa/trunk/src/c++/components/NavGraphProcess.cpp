@@ -1153,7 +1153,7 @@ void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID)
   camPw.add(rp, m_CamPoseR);
 
   // The default distance is 1m
-  double d = 1.0;
+  double d = 0.0;
   if (!oobj->getData()->dist.empty()) d = oobj->getData()->dist[0];
   
   double pan = 0, tilt = 0;
