@@ -112,6 +112,7 @@ public class cc_FakeVerificationGenerator
 		m_taskToTaskTypeMap = new Hashtable<String, String>();
 		m_dataObjects = new Vector<ProcessingData>();
 		pdIdCounter = 0;
+        m_queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
 		configureGUI();
 	} // end init
 	
