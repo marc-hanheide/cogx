@@ -96,11 +96,11 @@ module cogx {
 	// ===================================================================
 	// DOMAINMODEL: VISUAL OBJECTS 
 	
-	enum Shape { cylindrical, spherical, cubic, unknownShape };
+	enum Shape { cylindrical, spherical, cubic, compact, elongated, unknownShape };
 	
 	enum ObjectType { box, ball, cube, mug, unknownObjectType }; 
 	
-	enum Color { red, blue, yellow, green, white, black, unknownColor };
+	enum Color { red, blue, yellow, green, white, black, orange, unknownColor };
 	
 	enum Graspable { grasp, nograsp , unknownGrasp } ;
 	
