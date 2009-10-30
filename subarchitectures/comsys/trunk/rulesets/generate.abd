@@ -59,8 +59,8 @@ generate : i_dont_know(Nom, Prop) <-
 %----------------------------------------------------------------------
 
 generate : intention : ask_known(h, Object, objecttype) <-
-	check_property_value(Object, Prop, Result),
-	describe(Nom, Object, Prop, Result),
+	check_property_value(Object, objecttype, Result),
+	describe(Nom, Object, Result),
 	event : produce(r, Nom) / 1.0.
 
 % what Prop is the Object
@@ -71,26 +71,41 @@ generate : intention : ask_property(h, Object, Prop) <-
 
 %----------------------------------------------------------------------
 
-describe(Nom, Object, objecttype, unknown) <-
-	generate : i_dont_know(Nom, Prop).
+describe(Nom, Object, unknown) <-
+	generate : i_dont_know(Nom, objecttype).
+%	describe(Nom, Object, known(object)).
 
 	% value known
-describe(Nom, Object, objecttype, known(Value)) <-
+describe(Nom, Object, known(Type)) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	dummy_nom4(PropNom),
-	propname_to_questiontype(Prop, QuestionType),
+	propname_to_questiontype(objecttype, QuestionType),
 	i : feat_QuestionType(Nom, QuestionType) / 1.0,
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	%i : feat_Relation(Nom, answer) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
+		i : prop(ContentNom, be) / 1.0,
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
 			generate : it(TargetNom),
-		i : feat_ProofStatus(TargetNom, assumed) / 1.0,
-		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value).
+		add_prop_value_to_protolf(ContentNom, PropNom, objecttype, Type),
+		add_colour_if_known(PropNom, Object).
 %		i : feat_ProofStatus(PropNom, asserted) / 1.0.
+
+add_colour_if_known(Nom, Object) <-
+	check_property_value(Object, color, unknown) / 10.0.
+
+add_colour_if_known(Nom, Object) <-
+	check_property_value(Object, color, known(ColorValue)),
+	i : feat_Color(Nom, ColorValue) / 1.0.
+%	dummy_nom5(ColorNom),
+%	add_prop_value_to_protolf(Nom, ColorNom, color, ColorValue).
+
+%----------------------------------------------------------------------
+
+
 
 %----------------------------------------------------------------------
 
@@ -110,6 +125,7 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 	%i : feat_Relation(Nom, answer) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
+		i : prop(ContentNom, be) / 1.0,
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
 			generate : it(TargetNom),
 		i : feat_ProofStatus(TargetNom, assumed) / 1.0,
