@@ -106,13 +106,12 @@ void protoObjectToMwArray(const ProtoObject &Object, mwArray &image, mwArray &ma
       double *data = new double[npts * ncol];
       for (int i = 0; i < npts; i++) {
          const SurfacePoint &p = Object.points[i];
-         int irow = i * ncol;
-         data[irow + 0] = p.p.x;
-         data[irow + 1] = p.p.y;
-         data[irow + 2] = p.p.z;
-         data[irow + 3] = p.c.r;
-         data[irow + 4] = p.c.g;
-         data[irow + 5] = p.c.b;
+         data[i + npts*0] = p.p.x;
+         data[i + npts*1] = p.p.y;
+         data[i + npts*2] = p.p.z;
+         data[i + npts*3] = p.c.r;
+         data[i + npts*4] = p.c.g;
+         data[i + npts*5] = p.c.b;
       }
       points3d.SetData(data, npts*ncol);
       delete data;
