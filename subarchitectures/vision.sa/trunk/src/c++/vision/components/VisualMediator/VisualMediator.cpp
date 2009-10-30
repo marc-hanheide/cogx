@@ -193,8 +193,32 @@ void VisualMediator::runComponent()
 			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
 
 			addProxyToWM(proxy);
+			
+			if(existsOnWorkingMemory(m_salientObjID, m_bindingSA))
+			{
+			  ProxyPtr salProxy = getMemoryEntry<Proxy>(m_salientObjID, m_bindingSA);
+			  
+			  WorkingMemoryPointerPtr ovrOrigin = createWorkingMemoryPointer(getSubarchitectureID(), salProxy->origin->address.id, "VisualObject");;
+			  ProxyPtr ovrProxy = createNewProxy (ovrOrigin, 1.0f);
+			  
+			  vector<FeaturePtr>::iterator it;
+			  
+			  for(it = salProxy->features.begin(); it != salProxy->features.end(); it++)
+			   if(string((*it)->featlabel) == "saliency")
+			   {
+				  addFeatureToProxy(ovrProxy, createFeatureWithUniqueFeatureValue ("saliency", createStringValue ("low", 1.00f)));
+			   }
+			   else
+			   {
+				  addFeatureToProxy(ovrProxy, *it);
+			   }
+			  
+			  ovrProxy->entityID = salProxy->entityID;
+			  overwriteProxyInWM(ovrProxy);		 
+			}		  
 
-			data.proxyId = proxy->entityID;
+			m_salientObjID = data.proxyId = proxy->entityID;
+			
 
 			log("A visual proxy ID %s added for visual object ID %s",
 				proxy->entityID.c_str(), data.addr.id.c_str());
@@ -230,8 +254,14 @@ void VisualMediator::runComponent()
 			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
 			
 			proxy->entityID = data.proxyId;
-
-			FeaturePtr saliency = createFeatureWithUniqueFeatureValue ("saliency", createStringValue ("high", 1.0f));
+			
+			string salval;
+			if(m_salientObjID == proxy->entityID)
+			  salval = "high";
+			 else
+			  salval = "low";
+			
+			FeaturePtr saliency = createFeatureWithUniqueFeatureValue ("saliency", createStringValue (salval, 1.0f));
 			addFeatureToProxy (proxy, saliency);
 			
 			overwriteProxyInWM(proxy);
