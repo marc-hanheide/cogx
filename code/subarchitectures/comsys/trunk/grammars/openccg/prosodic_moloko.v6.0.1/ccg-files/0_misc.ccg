@@ -31,6 +31,8 @@
    def +subj(args)       { \! subj(args) } 
    def +from-subj(args)  { \! from-subj(args) }
 
+   def -subj(args)       { /! subj(args) } 
+   def -from-subj(args)  { /! from-subj(args) }
    # NOTE the ! : Verbs don't actually syntactically'take' their subjects.
    #       This is done via rule for ind, via aux or wh-word for int, etc   
  
