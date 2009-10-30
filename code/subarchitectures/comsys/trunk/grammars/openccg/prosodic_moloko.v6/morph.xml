@@ -3413,6 +3413,11 @@
   <entry word="elongated@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
   <entry word="elongated@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
   <entry word="elongated@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="compact" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="compactcompact-adj" class="q-shape" pred="compact"/>
+  <entry word="compact" macros="@s-degree-base @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="compactcompact-adj" class="q-shape" pred="compact"/>
+  <entry word="compact@H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-true @hs" pos="Adj" stem="compactcompact-adj" class="q-shape" pred="compact"/>
+  <entry word="compact@L*" macros="@s-degree-base @m-contentious @m-focus-true @m-rheme-true @ls" pos="Adj" stem="compactcompact-adj" class="q-shape" pred="compact"/>
+  <entry word="compact@L+H*" macros="@s-degree-base @m-uncontentious @m-focus-true @m-rheme-false @lphs" pos="Adj" stem="compactcompact-adj" class="q-shape" pred="compact"/>
   <entry word="big" macros="@s-degree-base @pre-n @m-uncontentious @m-focus-false @m-rheme-true" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="big" macros="@s-degree-base @pre-n @m-uncontentious @m-focus-false @m-rheme-false" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="big@H*" macros="@s-degree-base @pre-n @m-focus-true @m-uncontentious @m-rheme-true @hs" pos="Adj" stem="big-adj" class="q-size" pred="big"/>

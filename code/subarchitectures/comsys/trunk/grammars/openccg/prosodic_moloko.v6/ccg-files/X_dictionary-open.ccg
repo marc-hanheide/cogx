@@ -357,6 +357,7 @@
   adj-none(false, q-attitude,)  
   
   adj-none(elongated,q-shape,)
+  adj-none(compact,q-shape,)
 
   #-- q-size --#
   
