@@ -66,7 +66,7 @@ void VisualMediator::start()
   //must call super start to ensure that the reader sets up change
   //filters
   BindingWorkingMemoryReader::start();
-
+  first = true;
   const char *name = "mediatorSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
@@ -194,8 +194,9 @@ void VisualMediator::runComponent()
 
 			addProxyToWM(proxy);
 			
-			if(existsOnWorkingMemory(m_salientObjID, m_bindingSA))
+			if(existsOnWorkingMemory(m_salientObjID, m_bindingSA) && !first)
 			{
+			  
 			  ProxyPtr salProxy = getMemoryEntry<Proxy>(m_salientObjID, m_bindingSA);
 			  
 			  WorkingMemoryPointerPtr ovrOrigin = createWorkingMemoryPointer(getSubarchitectureID(), salProxy->origin->address.id, "VisualObject");;
@@ -215,10 +216,10 @@ void VisualMediator::runComponent()
 			  
 			  ovrProxy->entityID = salProxy->entityID;
 			  overwriteProxyInWM(ovrProxy);		 
-			}		  
-
+			}
+					
 			m_salientObjID = data.proxyId = proxy->entityID;
-			
+			first = false;
 
 			log("A visual proxy ID %s added for visual object ID %s",
 				proxy->entityID.c_str(), data.addr.id.c_str());
