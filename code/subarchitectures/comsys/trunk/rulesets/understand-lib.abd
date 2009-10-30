@@ -83,6 +83,7 @@ to_property(thing, objecttype).
 to_property(P, P) <-
 	property_sort(P, PropSort).
 
+%prop_to_shape(P, P).
 prop_to_shape(round, spherical).
 prop_to_shape(square, cubic).
 prop_to_shape(cubic, cubic).
@@ -193,7 +194,7 @@ assert_prop(Union, Polarity, Nom) <-
 	i : prop(Nom, Prop),
 	prop_to_shape(Prop, Value),
 	polarprop(Value, Polarity, PolarValue),
-	find_assert_value_intention(Union, shape, PolarProp).
+	find_assert_value_intention(Union, shape, PolarValue).
 %	?( k(now, attrib(r, h)) : shape(Union, PolarValue) ),
 %	intention : value_assertion(h, Union, shape) / 0.5.
 
