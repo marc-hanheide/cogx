@@ -48,9 +48,11 @@
 
 					<choicenode answer="greeting">
 					  <result val="no-mood"/>
+					</choicenode>
 
 					<choicenode answer="thanking">
 					  <result val="no-mood"/>
+					</choicenode>
 
 					<choicenode answer="unknown">
 					  <result val="no-mood"/>

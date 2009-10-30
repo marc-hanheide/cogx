@@ -298,6 +298,19 @@ A: (is the box)Th (blue_F)Rh
 <!-- include questios in indicative mood!! -->
 
 
+<!-- cognition  -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Polarity>neg ^ <Actor>(i:person ^ I) )  )
+-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) )  )
+</input>
+<realizations>
+<string>I know </string>
+</realizations>
+</utterance>
 
 
 
