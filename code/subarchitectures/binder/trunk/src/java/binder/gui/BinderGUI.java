@@ -3,13 +3,21 @@ package binder.gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Vector;
+
 import javax.swing.*;
 
 import org.apache.log4j.Logger;
 
+import binder.autogen.core.Feature;
+import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
+import binder.components.Binder;
 import binder.components.BinderMonitor;
+import binder.constructors.ProxyConstructor;
 import binder.utils.GenericUtils;
+
+import binder.autogen.featvalues.StringValue;
 
 import binder.gui.ProxyInfoGUI;
 
@@ -130,9 +138,11 @@ public class BinderGUI extends JFrame {
 
 	private void menuItem18ActionPerformed(ActionEvent e) {
 		try {
+			if (!curSelectedEntityId.equals("")) {
 			Proxy proxy = bm.getMemoryEntry(curSelectedEntityId, Proxy.class);
 		FeatureInfoGUI featureInfo = new FeatureInfoGUI(this, proxy);
 		featureInfo.setVisible(true);
+		}
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
@@ -141,6 +151,53 @@ public class BinderGUI extends JFrame {
 
 	private void thisMouseClicked(MouseEvent e) {
 		// TODO add your code here
+	}
+
+	private void menuItem20ActionPerformed(ActionEvent e) {
+		try {
+			if (!curSelectedEntityId.equals("")) {
+			Proxy proxy = bm.getMemoryEntry(curSelectedEntityId, Proxy.class);
+			Vector<Feature> feats = new Vector<Feature>();
+			for (int i = 0 ; i < proxy.features.length ; i++) {
+				if (!proxy.features[i].featlabel.equals("saliency"))
+				feats.add(proxy.features[i]);
+			}
+			proxy.features = new Feature[feats.size()];
+			proxy.features = feats.toArray(proxy.features);
+			
+			StringValue salient = ProxyConstructor.createStringValue("high", 1.0f);
+			Feature feat = ProxyConstructor.createFeatureWithUniqueFeatureValue("saliency", salient);
+			ProxyConstructor.addFeatureToProxy(proxy, feat);
+			bm.overwriteWorkingMemory(proxy.entityID, Binder.BINDER_SA, proxy);
+			}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private void menuItem21ActionPerformed(ActionEvent e) {
+		
+		try {
+			if (!curSelectedEntityId.equals("")) {
+			Proxy proxy = bm.getMemoryEntry(curSelectedEntityId, Proxy.class);
+			Vector<Feature> feats = new Vector<Feature>();
+			for (int i = 0 ; i < proxy.features.length ; i++) {
+				if (!proxy.features[i].featlabel.equals("saliency"))
+				feats.add(proxy.features[i]);
+			}
+			proxy.features = new Feature[feats.size()];
+			proxy.features = feats.toArray(proxy.features);
+			
+			StringValue salient = ProxyConstructor.createStringValue("low", 1.0f);
+			Feature feat = ProxyConstructor.createFeatureWithUniqueFeatureValue("saliency", salient);
+			ProxyConstructor.addFeatureToProxy(proxy, feat);
+			bm.overwriteWorkingMemory(proxy.entityID, Binder.BINDER_SA, proxy);	
+			}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	
@@ -161,6 +218,8 @@ public class BinderGUI extends JFrame {
 		menuItem18 = new JMenuItem();
 		menuItem7 = new JMenuItem();
 		menuItem8 = new JMenuItem();
+		menuItem20 = new JMenuItem();
+		menuItem21 = new JMenuItem();
 		menu7 = new JMenu();
 		menuItem19 = new JMenuItem();
 		menuItem3 = new JMenuItem();
@@ -273,6 +332,25 @@ public class BinderGUI extends JFrame {
 					}
 				});
 				menu2.add(menuItem8);
+				menu2.addSeparator();
+
+				//---- menuItem20 ----
+				menuItem20.setText("Make salient");
+				menuItem20.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						menuItem20ActionPerformed(e);
+					}
+				});
+				menu2.add(menuItem20);
+
+				//---- menuItem21 ----
+				menuItem21.setText("Make not salient");
+				menuItem21.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						menuItem21ActionPerformed(e);
+					}
+				});
+				menu2.add(menuItem21);
 			}
 			menuBar1.add(menu2);
 
@@ -390,6 +468,8 @@ public class BinderGUI extends JFrame {
 	private JMenuItem menuItem18;
 	private JMenuItem menuItem7;
 	private JMenuItem menuItem8;
+	private JMenuItem menuItem20;
+	private JMenuItem menuItem21;
 	private JMenu menu7;
 	private JMenuItem menuItem19;
 	private JMenuItem menuItem3;
