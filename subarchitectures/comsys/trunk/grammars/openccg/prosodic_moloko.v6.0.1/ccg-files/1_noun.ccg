@@ -120,8 +120,10 @@
 
   def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
     word sing.-noun-n:Noun(class, pred=prd) {
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false args;
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
       sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
       sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
       sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;

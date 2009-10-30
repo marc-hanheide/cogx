@@ -80,7 +80,8 @@
   def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
   def +cop-adj(args) { / adj<2>[X args] }
   #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
-  def +cop-adj-ip(args) { /! adj<2>[X args] }
+  #def +cop-adj-ip(args) { /! adj<2>[M args] }
+  def +cop-adj-ip(args) { /! adj(args) }
 
   # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
   def pre-cop-comp (moder, modee, arg)      { from-s(moder) arg \^ ( s(modee be) arg ) } 

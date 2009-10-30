@@ -54,7 +54,7 @@
   rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; }  
 
  #PROSG09 : Rule for allowing intonational phrase "red_H* LL%"
-  #rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
+  rule {typechange: adj(pre-n)$1 => trs() +cop-adj-ip()$1;}
 
 #######################
 ## DICTIONARY FORMS  ##
@@ -78,8 +78,10 @@
   #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 
  def _adj-deg(prd, base, comp, sup, base_hs,base_ls, base_lphs, comp_hs, comp_ls,comp_lphs, sup_hs,sup_ls, sup_lphs,class, args) {
     word base.-adj:Adj(class, pred=prd) {
-      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true args;
-      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true m-speaker spkr args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true t-hearer hear args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-speaker spkr args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false t-hearer hear args;
       base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
       base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
       base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true m-hearer hear ls args;

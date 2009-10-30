@@ -347,6 +347,7 @@
   
   wh+extrrr(what, entity, np , s-sg nf-real)
   wh+extrrr(what, event, sent, fin)
+  wh+extrrr(what, event, sent, fin e-focus-false e-uncontentious e-rheme-false e-hearer hear )
   
   wh+extrrr(which, specifier, np-spec, nf-real)
   wh+extrrr(which, specifier, np-spec-ctxt, nf-real)
