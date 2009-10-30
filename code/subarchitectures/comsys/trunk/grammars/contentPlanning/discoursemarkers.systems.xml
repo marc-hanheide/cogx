@@ -143,6 +143,10 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
        <add-proposition propositions="@aha" />
       </action>      
 
+     <action choice="doNothing">
+      </action>      
+
+
    </actions>
 </system>
 
