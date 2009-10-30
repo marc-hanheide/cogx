@@ -422,7 +422,11 @@ public class cc_FakeClarificationGenerator
 				} else if (argument.equals("spherical")) { 
 					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.spherical;
 				} else if (argument.equals("cubic")) { 
-					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.cubic;									
+					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.cubic;
+				}	 else if (argument.equals("compact")) { 
+							shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.compact;
+				} else if (argument.equals("elongated")) { 
+					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.elongated;
 				} else { 	
 					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.unknownShape;					
 				} // end if..else check for specified shape
