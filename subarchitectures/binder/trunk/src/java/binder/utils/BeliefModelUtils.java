@@ -104,6 +104,7 @@ public class BeliefModelUtils {
 			else if (FeatureValueUtils.hasValue(fv, "yellow")) {	colorValue = Color.yellow;}
 			else if (FeatureValueUtils.hasValue(fv, "white")) {	colorValue = Color.white;}
 			else if (FeatureValueUtils.hasValue(fv, "black")) {	colorValue = Color.black;}
+			else if (FeatureValueUtils.hasValue(fv, "orange")) {	colorValue = Color.orange;}
 
 			else if (FeatureValueUtils.isUnknownValue(fv)) {	colorValue = Color.unknownColor;}
 
@@ -126,6 +127,8 @@ public class BeliefModelUtils {
 			if (FeatureValueUtils.hasValue(fv, "cylindrical")) { shapeValue = Shape.cylindrical; }
 			else if (FeatureValueUtils.hasValue(fv, "spherical")) {	shapeValue = Shape.spherical; }
 			else if (FeatureValueUtils.hasValue(fv, "cubic")) { shapeValue = Shape.cubic; }
+			else if (FeatureValueUtils.hasValue(fv, "compact")) { shapeValue = Shape.compact; }
+			else if (FeatureValueUtils.hasValue(fv, "elongated")) { shapeValue = Shape.elongated; }
 			else if (FeatureValueUtils.isUnknownValue(fv)) {	shapeValue = Shape.unknownShape;}
 
 			else {

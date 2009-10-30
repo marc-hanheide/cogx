@@ -164,21 +164,22 @@ public class BindingSynchronizer extends ManagedComponent {
 			
 			try {
 				log("Overwriting proxy with ID: " + newProxy.entityID);
+			//	startVersioning(newProxy.entityID);
 				overwriteWorkingMemory(newProxy.entityID, Binder.BINDER_SA, newProxy);
 				log("Overwrite successfull!");
 			}
 			catch (Exception e) {
 				try {
-		//			e.printStackTrace();
+					e.printStackTrace();
 					log("Problem, trying again...");
-					startVersioning(newProxy.entityID);
+					Proxy updatedProxy = getMemoryEntry(newProxy.entityID, Binder.BINDER_SA, Proxy.class);
 					overwriteWorkingMemory(newProxy.entityID, Binder.BINDER_SA, newProxy);
 				}
 				catch (Exception e2) {
 					try {
 		//			e2.printStackTrace();
 					log("trying to brute force method: delete and add");
-					deleteFromWorkingMemory(modifiedProxy.entityID);
+					deleteFromWorkingMemory(newProxy.entityID);
 					addToWorkingMemory(newProxy.entityID, Binder.BINDER_SA, newProxy);
 					}
 					catch (Exception e3) {
