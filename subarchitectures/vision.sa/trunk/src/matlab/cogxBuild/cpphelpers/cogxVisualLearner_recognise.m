@@ -11,6 +11,7 @@ function [rCqnt] = cogxVisualLearner_recognise(X, B, pts3d)
    %msg = sprintf('Mask intens range: %1.2g , % 1.2g', min(B(:)), max(B(:))) ; disp(msg) ;
    %figure(667) ; 
       
+   % pts3d(1:10,:)
    B = double(B); % TODO: is it really necessary to convert the mask to double?
    % B = (B==120);
    B = (B==1);
