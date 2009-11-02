@@ -43,8 +43,10 @@ add_definitions(-Wall)
 # Include your subarchitecture projects in the following way
 # add_subdirectory (subarchitectures/hello-world)
 
-add_subdirectory (subarchitectures/PCogX)
+# add_subdirectory (subarchitectures/PCogX)
     
-add_subdirectory (subarchitectures/test_harness__PCogX)
+# add_subdirectory (subarchitectures/test_harness__PCogX)
+
+add_subdirectory (subarchitectures/test_harness__CAST_SCAT)
 
 # add_subdirectory (subarchitectures/dt-planning.sa)

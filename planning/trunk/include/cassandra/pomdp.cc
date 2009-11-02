@@ -20,12 +20,6 @@ using std::count;
 using std::cin;
 
 
-/* Function parses POMDP problem definitons expressed in the Anthony
- * R. Cassandra format.*/
-int parse_cassandra_POMDP()
-{
-    
-}
 
 int main(int argc, char** argv)
 {
@@ -47,7 +41,11 @@ int main(int argc, char** argv)
     
     POMDP::Parsing::parse_Cassandra_POMDP_problem(problem_file_name);
 
-    std::cout<<*POMDP::Parsing::problem_Data;
+    
+    VERBOSER(100, "Just parsed the following problem \n");
+    VERBOSER(100, *POMDP::Parsing::problem_Data);
+
+    
     
     return 0;
 }

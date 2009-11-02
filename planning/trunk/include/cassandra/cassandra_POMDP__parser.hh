@@ -94,8 +94,16 @@ namespace POMDP
         };
         
         std::ostream& operator<<(std::ostream&, const POMDP::Parsing::Problem_Data&);
+        
         class Problem_Data
         {
+        private:
+            
+            /* Last sequence of numbers parsed*/
+            Indexed_Strings actions;
+            Indexed_Strings states;
+            Indexed_Strings observations;
+            
         public:
             /* Do we minimise cost, or maximise rewards? */
             enum Value_Type {Reward, Cost};
@@ -108,6 +116,27 @@ namespace POMDP
             
             friend std::ostream& operator<<(std::ostream&, const POMDP::Parsing::Problem_Data&);
 
+            /******************************************************************************************************
+             ******************************************************************************************************
+             * INTERFACE TO :: PLANNER INTERFACE IMPLEMENTATION
+             ******************************************************************************************************
+             ******************************************************************************************************
+             ******************************************************************************************************/
+            
+            uint get_states_count() const;
+            uint get_actions_count() const;
+            uint get_observations_count() const;
+            const decltype(states)& get_states() const;
+            const decltype(actions)& get_actions() const;
+            const decltype(observations)& get_observations() const;
+            
+            /******************************************************************************************************
+             ******************************************************************************************************
+             * ENDING ENDING ENDING INTERFACE TO ::  PLANNER INTERFACE IMPLEMENTATION
+             ******************************************************************************************************
+             ******************************************************************************************************
+             ******************************************************************************************************/
+            
             /* Floating point.*/
             void add__number(const std::string&);
 
@@ -313,10 +342,6 @@ namespace POMDP
             /*Shared index into elements of \member{numbers}.*/
             uint numbers_index;// = 0;
 
-            /* Last sequence of numbers parsed*/
-            Indexed_Strings actions;
-            Indexed_Strings states;
-            Indexed_Strings observations;
             
             /* action -> state (starting) -> state (successor) -> observation -> reward*/
             std::map<

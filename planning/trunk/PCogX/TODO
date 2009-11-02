@@ -1,0 +1,17 @@
+Author :: Charles Gretton 2009
+
+-------- PCogX-alpha^2 -----------------------------
+----------------------------------------------------
+----------------------------------------------------
+
+
+
+First and foremost, deal with all instances of "FIX" and
+"UNIMPLEMENTED".
+
+grep FIX *.hh
+grep FIX *.cc
+grep UNIMPLEMENTED *.hh
+grep UNIMPLEMENTED *.cc
+
+

@@ -1,0 +1,48 @@
+
+INFO (13) :: Expanding :: (at hoist0 depot0-1-1)(available hoist0)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(on crate0 container-0-0)
+
+INFO (13) :: Executed action :: (go-out hoist0 depot0-1-1 loadarea)(  prec[ (connected depot0-1-1 loadarea) (at hoist0 depot0-1-1) ]  add[ (at hoist0 loadarea) (clear depot0-1-1) ]  del[ (at hoist0 depot0-1-1) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 loadarea)(available hoist0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(on crate0 container-0-0) is a new state.
+
+d
+INFO (13) :: Expanding :: (at hoist0 loadarea)(available hoist0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(on crate0 container-0-0)
+
+INFO (13) :: Executed action :: (lift hoist0 crate0 container-0-0 loadarea container0)(  prec[ (in container-0-0 container0) (on crate0 container-0-0) (available hoist0) (at hoist0 loadarea) (connected container-0-0 loadarea) ]  add[ (clear container-0-0) (lifting hoist0 crate0) ]  del[ (on crate0 container-0-0) (available hoist0) (in crate0 container0) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 loadarea)(available hoist0)(clear container-0-0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(lifting hoist0 crate0) is a new state.
+
+d
+INFO (13) :: Executed action :: (go-in hoist0 loadarea depot0-1-1)(  prec[ (clear depot0-1-1) (connected loadarea depot0-1-1) (at hoist0 loadarea) ]  add[ (at hoist0 depot0-1-1) ]  del[ (at hoist0 loadarea) (clear depot0-1-1) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 depot0-1-1)(available hoist0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(on crate0 container-0-0) is a new state.
+
+d
+INFO (13) :: Expanding :: (at hoist0 loadarea)(available hoist0)(clear container-0-0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(lifting hoist0 crate0)
+
+INFO (13) :: Executed action :: (go-in hoist0 loadarea container-0-0)(  prec[ (clear container-0-0) (connected loadarea container-0-0) (at hoist0 loadarea) ]  add[ (at hoist0 container-0-0) ]  del[ (at hoist0 loadarea) (clear container-0-0) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 container-0-0)(available hoist0)(clear container-0-0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(lifting hoist0 crate0) is a new state.
+
+d
+INFO (13) :: Executed action :: (go-in hoist0 loadarea depot0-1-1)(  prec[ (clear depot0-1-1) (connected loadarea depot0-1-1) (at hoist0 loadarea) ]  add[ (at hoist0 depot0-1-1) ]  del[ (at hoist0 loadarea) (clear depot0-1-1) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 depot0-1-1)(available hoist0)(clear container-0-0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(lifting hoist0 crate0) is a new state.
+
+d
+INFO (13) :: Executed action :: (drop hoist0 crate0 container-0-0 loadarea container0)(  prec[ (in container-0-0 container0) (clear container-0-0) (lifting hoist0 crate0) (at hoist0 loadarea) (connected container-0-0 loadarea) ]  add[ (available hoist0) (on crate0 container-0-0) (in crate0 container0) ]  del[ (lifting hoist0 crate0) (clear container-0-0) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 loadarea)(available hoist0)(clear container-0-0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(on crate0 container-0-0) is a new state.
+
+d
+INFO (13) :: Executed action :: (drop hoist0 crate0 depot0-1-1 loadarea depot0)(  prec[ (in depot0-1-1 depot0) (clear depot0-1-1) (lifting hoist0 crate0) (at hoist0 loadarea) (connected depot0-1-1 loadarea) ]  add[ (available hoist0) (on crate0 depot0-1-1) (in crate0 depot0) ]  del[ (lifting hoist0 crate0) (clear depot0-1-1) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 loadarea)(available hoist0)(clear container-0-0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 depot0)(in crate0 container0)(on crate0 depot0-1-1) is a new state.
+
+d
+INFO (13) :: Expanding :: (at hoist0 depot0-1-1)(available hoist0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(on crate0 container-0-0)
+
+INFO (13) :: Executed action :: (go-out hoist0 depot0-1-1 loadarea)(  prec[ (connected depot0-1-1 loadarea) (at hoist0 depot0-1-1) ]  add[ (at hoist0 loadarea) (clear depot0-1-1) ]  del[ (at hoist0 depot0-1-1) ]  )
+
+INFO (13) :: Testing to see if :: (at hoist0 loadarea)(available hoist0)(clear depot0-1-1)(connected loadarea container-0-0)(connected loadarea depot0-1-1)(connected container-0-0 loadarea)(connected depot0-1-1 loadarea)(in container-0-0 container0)(in depot0-1-1 depot0)(in crate0 container0)(on crate0 container-0-0) is a new state.
+
