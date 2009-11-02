@@ -16,8 +16,14 @@
 #include <Golem/PhysReacPlanner.h>
 #include <Golem/Katana.h>
 #include <Golem/Simulator.h>
-#include <metalearning/Scenario.h>
 #include <Golem/Rand.h>
+
+#include <metalearning/Scenario.h>
+#include <metalearning/ActiveRNN.h>
+#include <Ice/Ice.h>
+// #include <tools/PlotAppI.h>
+#include <PlotApp.hh>
+
 // #include <Push/Data.h>
 // #include <Push/Generator.h>
 
@@ -157,8 +163,6 @@ public:
 // 		Trial::Seq trials;
 // 		/** Trial data path */
 // 		DataPath dataPath;
-		/** Random number generator */
-		golem::RealRand rand;
 		
 		/** Constructs description object */
 		Desc() {
@@ -228,9 +232,15 @@ protected:
 	LearningData learningData;
 	/** Time */
 	golem::SecTmReal trialTime;
-	Sequence currentSeq;
+	/** Random number generator */
+	golem::RealRand randomG;
+
+	vector<Mat34> currentPredictedObjSeq;
+	golem::Bounds::SeqPtr objectLocalBounds;	
+	smlearning::Sequence currentSeq;
 	FeatureVector currentMotorCommandVector;
-	FeatureVector currentFeatureVector;
+	ActiveRNN learner;
+	Real maxRange;
 
 	/** Creator */
 	golem::Creator creator;
@@ -247,6 +257,14 @@ protected:
 	virtual void release();
 	/** Objects can be constructed only in the Scene context. */
 	ActiveLearnScenario(golem::Scene &scene);
+
+	golem::Mat34 getPfPoseFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
+
+	void calculatePfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
+	/** Renders the object. */
+        virtual void render();
+ 
+
 };
 
 /** Reads/writes ActiveLearnScenario description from/to a given context */
@@ -256,6 +274,7 @@ bool XMLData(ActiveLearnScenario::Desc &val, golem::XMLContext* context, bool cr
 
 /** MyApplication */
 class MyApplication : public golem::Application {
+	
 protected:
 	/** Runs MyApplication */
 	virtual void run(int argc, char *argv[]);

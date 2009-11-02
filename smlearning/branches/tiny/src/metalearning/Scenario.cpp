@@ -92,7 +92,36 @@ Actor* Scenario::setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 
 	pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&pose.R._m._11);	
 	
 	//-density
-	pActorDesc->nxActorDesc.density = NxReal(5.0);	
+// 	pActorDesc->nxActorDesc.density = NxReal(5.0);	
+
+	polyFlapActor = dynamic_cast<Actor*>(scene.createObject(*pActorDesc));
+
+	return polyFlapActor;
+}
+
+///
+///creates a polyflap object
+///
+Actor* Scenario::setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions) {
+	// Creator
+	Creator creator(scene);
+	Actor::Desc *pActorDesc;
+	Actor *polyFlapActor;
+	
+	// Create polyflap
+	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.002), REAL_PI_2);
+// 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1));
+// 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1), Real(0.002), Real(REAL_PI_2));
+
+	//-sets coordinates
+	pActorDesc->nxActorDesc.globalPose.t.set(NxReal(globalPose.p.v1), NxReal(globalPose.p.v2), NxReal(globalPose.p.v3));	
+
+
+	//-sets rotations	
+	pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&globalPose.R._m._11);	
+	
+	//-density
+// 	pActorDesc->nxActorDesc.density = NxReal(5.0);	
 
 	polyFlapActor = dynamic_cast<Actor*>(scene.createObject(*pActorDesc));
 

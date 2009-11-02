@@ -43,9 +43,9 @@
       <v2>0.0</v2>
       <v3>-9.81</v3>
     </gravity>
-    <restitution>0.1</restitution>
-    <static_friction>0.3</static_friction>
-    <dynamic_friction>0.3</dynamic_friction>
+    <restitution>0.2</restitution>
+    <static_friction>0.4</static_friction>
+    <dynamic_friction>0.2</dynamic_friction>
 
     <view_dir>
       <v1>-1.0</v1>
@@ -72,7 +72,7 @@
     <!--<type>gen_sim_arm</type>-->
     <kat_serial_arm>
       <path>katana6M180.cfg</path>
-      <comm_port>0</comm_port>
+      <comm_port>4</comm_port>
     </kat_serial_arm>
     <kat_sim_arm>
     </kat_sim_arm>

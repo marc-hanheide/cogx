@@ -43,6 +43,7 @@
 #include <metalearning/ScenarioIce.h>
 #include <metalearning/ActiveRNN.h>
 #include <Helpers.hpp>
+#include <PlotApp.hh>
 
 //#include <qapplication.h>
 //#include <qmainwindow.h>
