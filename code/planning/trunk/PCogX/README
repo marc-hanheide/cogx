@@ -1,0 +1,98 @@
+Author :: Charles Gretton 2009
+
+-------- PCogX-alpha^2 -----------------------------
+----------------------------------------------------
+----------------------------------------------------
+
+These are the release notes for PCogX-alpha^2.  Read them carefully,
+as they tell you what this is all about, explain how to install
+PCogX-alpha^2, and what to do if something goes wrong.
+
+
+WHAT IS PCogX-alpha^2?
+----------------------
+
+Executive :: This is a decision-theoretic planning
+subsystem/subarchitecture that is intended for use in cognitive
+systems that self-understand and self-extend. The development of this
+library was wholly supported (financially and emotionally) by by EC
+FP7-IST grant 215181-CogX (see \url{http://cogx.eu/}).
+
+HOW CAN I CONTACT THE AUTHORS?
+------------------------------
+
+You can email _Charles Gretton_ at :: charles.gretton@gmail.com
+You can email _Richard Dearden_ at :: R.W.Dearden@cs.bham.ac.uk
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        OBTAINING AND INSTALLING PCogX-alpha^2
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+WHERE CAN I GET PCogX-alpha^2:
+------------------------------
+
+ - Download the system:
+
+   http://www.cs.bham.ac.uk/~grettonc/pcogx.tar.gz
+
+ - Email Charles Gretton and ask him to send you a copy.
+
+
+ON WHAT SYSTEMS HAS NMRDPP BEEN TESTED?
+---------------------------------------
+
+	Should work on a system using the Linux 2.6.18 Kernel or
+	later. Seems to work on recent version of CentOS and Ubuntu.
+
+WHAT COMPILER IS REQUIRED?
+--------------------------
+
+We use a bunch of C++-0X features, hence a recent compiler is
+required. E.g.
+
+	gcc version 4.4.0
+
+
+What's all the "CAST" stuff?
+----------------------------
+
+Good question! Needless to say never the less needless to say, it is
+awesome goodness of the awesomely good variety. When I know, I will
+let you know...
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        Other Contents
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+HANG ON A SEC, SOME OF THIS SOFTWARE WAS WRITTEN BY PEOPLE OTHER THAN
+YOURSELF (and other members of the CogX-posse) -- PLEASE EXPLAIN?!
+----------------------------------------------------------------------
+
+I have included a bunch of other peoples software libraries for
+convenience. Saves you having to download them, and they are open
+source for non-commercial use anyway.
+
+ - Everything with a "pegtl" is from the PEGTL library by Dr. Colin
+   Hirsch. This C++-0X source code was downloaded from
+   \url{http://code.google.com/p/pegtl/}. I used the library from the
+   problem and domain parsing functionality.
+
+ - Everything withing the ayPlan subdirectory is a cost(also step if
+   you like)-optimal planner for the deterministic case. That is a
+   semi-open source software system I wrote while employed by NICTA
+   (National ICT Australia -- ICT == Information and Computer
+   Technology).
+
