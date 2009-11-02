@@ -170,6 +170,10 @@ module Abducer {
 
 	exception NoProofException extends AbducerException {};
 
+	exception ServerException extends AbducerException {
+		string message;
+	};
+
 	//-----------------------------------------------------------------
 
 
