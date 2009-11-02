@@ -69,11 +69,11 @@ namespace smlearning {
 ///
 class Scenario
 {
-	Thread thread;
+// 	Thread thread;
 	int numSequences;
 	int startingPosition;
-	int argc;
-	char **argv;
+// 	int argc;
+// 	char **argv;
 public:
 	///
 	///constructor
@@ -96,10 +96,15 @@ public:
 	void setupSimulatedObjects(Scene &scene, golem::Context &context);
 
 	///
-	///creates polyflap and puts it in the scene
+	///creates polyflap and puts it in the scene (from position and rotation)
 	///
 	Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context);
-
+	
+	///
+	///creates polyflap and puts it in the scene (from pose)
+	///
+	Actor* setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions);
+	
 	///
 	///creates a finger actor and sets bounds
 	///

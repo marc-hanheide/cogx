@@ -36,7 +36,6 @@
  */
 
 #include <metalearning/ActiveLearnScenarioIce.h>
-#include <PlotApp.hh>
 
 namespace smlearning {
 
@@ -122,7 +121,8 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	// attached a finger to the end-effector (the last joint)
 	JointPrx pEffector = pArm->getJoints().back();
 
-	createGripper(pEffector, pArm);
+// 	createGripper(pEffector, pArm);
+	createFinger(pEffector, pArm);
 
 	golem::tinyice::Mat34 armGlobalPose = pArm->getGlobalPose ();
 	armGlobalPose.p.v3 = 0.03;
@@ -170,10 +170,10 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	polyflapDimensions.v2 = 0.1;//h
 	polyflapDimensions.v3 = 0.1;//l
 
-// 	//vertical distance from the ground considering fingertip radius
-// 	Real over = 0.002 /*+ 0.015*/;
-	//vertical distance from the ground
-	Real over = 0.01;
+	//vertical distance from the ground considering fingertip radius
+	Real over = 0.002 + 0.015;
+// 	//vertical distance from the ground
+// 	Real over = 0.01;
 	//distance from the front/back of the polyflap
 	Real dist = 0.05;
 	//distance from the side of the polyflap

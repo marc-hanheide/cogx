@@ -308,4 +308,34 @@ public:
 
 };
 
+class PlotAppIFace {
+public:
+	PlotApp *w;
+	PlotAppIFace() {
+		w = new PlotApp();
+	}
+
+	void init ( int regionsNr, int size ) {
+		QApplication::postEvent(w, new InitEvent(regionsNr, size) );
+
+	}
+	
+	void resize ( int width, int height ) {
+		QApplication::postEvent(w, new ResizeEvent(width, height) );
+	}
+
+	void show ( ) {
+		QApplication::postEvent(w, new ShowEvent() );
+	}
+
+	void updateData ( int region, const vector<double>& lpData, const vector<double>& eData ) {
+		QApplication::postEvent(w, new UpdateDataEvent(region, lpData, eData) );
+
+	}
+	
+
+};
+
+
+
 }; /* namespace smlearning */

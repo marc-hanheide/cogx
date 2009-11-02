@@ -5,5 +5,7 @@
 using namespace smlearning;
 
 int main(int argc, char *argv[]) {
-	return MyApplication().main(argc, argv);
+// 	QApplication a (argc, argv);
+	MyApplication().main(argc, argv);
+// 	return a.exec ();
 }
