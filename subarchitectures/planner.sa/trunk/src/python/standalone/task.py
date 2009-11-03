@@ -13,11 +13,11 @@ class Task(object):
     """
     """
 
-    def __init__(self, taskID=0):
+    def __init__(self, taskID=0, mapltask = None):
         """Initialise public and private fields."""
         # public
         self.taskID = taskID
-        self._mapltask = None
+        self._mapltask = mapltask
         self._mapldomain = None
         self._action_blacklist = None
         self._action_whitelist = None
@@ -25,49 +25,45 @@ class Task(object):
         # private
         self._new_plan_callback = None
         self._state = None
-        self._planning_status = PlanningStatusEnum.TASK_CHANGED
-        self._change_detection_activated = False
+        self.planning_status = PlanningStatusEnum.TASK_CHANGED
+        
+        if mapltask:
+            self._mapldomain = mapltask.domain
+            self.create_initial_state()
 
-    def set_planning_status(self, status, trigger_planning=True):
-        """Mark task as changed and call planner if necessary."""
-        assert status in PlanningStatusEnum.values()
-        self._planning_status = status
-        #if status == PlanningStatusEnum.TASK_CHANGED:
-        #    print "Status of task %s was changed to %s. This may trigger planner activity." % (self.taskID, status)
-        #else:
-        #    print "Status of task %s was changed to %s." % (self.taskID, status)
-        if trigger_planning:
-            self.update_planning()
-        #if status == PlanningStatusEnum.PLAN_AVAILABLE:
-        #    print "Heureka! A plan was found:\n%s" % self._plan
 
-    def get_planning_status(self):
-        return self._planning_status
+    def __get_mapltask(self):
+        if self.is_dirty():
+            new_init = [ f.asLiteral(useEqual=True) for f in self.get_state().iterfacts() ]
+            self._mapltask = mapl.problem.Problem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain)
+        return self._mapltask
+
+    def __set_mapltask(self, mapltask):
+        self._mapltask = mapltask
+
+    mapltask = property(__get_mapltask, __set_mapltask)
+
+    def create_initial_state(self):
+        s = state.State([], self._mapltask)
+        for i in self._mapltask.init:
+            #determinise probabilistic init conditions
+            if isinstance(i, effects.ProbabilisticEffect):
+                for p, eff in i.effects:
+                    facts = s.getEffectFacts(eff)
+                    for svar, value in facts:
+                        if not isinstance(svar, mapl.predicates.Predicate) and svar.modality is None:
+                            id_var = svar.asModality(mapl.predicates.indomain, [value])
+                            s[id_var] = mapl.types.TRUE
+            else:
+                s.set(state.Fact.fromLiteral(i))
+        self._state = s
 
     def mark_changed(self):
-        self.set_planning_status(PlanningStatusEnum.TASK_CHANGED)
+        self.planning_status =  PlanningStatusEnum.TASK_CHANGED
 
     def is_dirty(self):
         """Check if task has been modified so that the plan is possibly outdated."""
-        return self.get_planning_status() == PlanningStatusEnum.TASK_CHANGED
-
-    def activate_change_dectection(self):
-        """Activated automatic change detection and calling of the planner.
-        Activation may lead to immediate updating of the plan if the task was modified
-        while change detection was suspended."""
-        self._change_detection_activated = True
-        #print "Change detection was activated for task %s. This may trigger planner activity." % self.taskID
-        self.update_planning()
-    
-    def suspend_change_dectection(self):
-        """Do not update the plan immediately upon changes.  This is useful if 
-        several changes are known to be made in a row.  Then planning will only be 
-        triggered upon calling activate_change_dectection().""" 
-        self._change_detection_activated = False
-
-    def change_detection_activated(self):
-        """Is change detection currently activated?"""
-        return self._change_detection_activated
+        return self.planning_status == PlanningStatusEnum.TASK_CHANGED
 
     def get_state(self):
         return self._state
@@ -80,7 +76,7 @@ class Task(object):
         old_val = self.__dict__[field]
         self.__dict__[field] = new_val
         if update_status and old_val != new_val:
-            self.set_planning_status(PlanningStatusEnum.TASK_CHANGED)
+            self.planning_status = PlanningStatusEnum.TASK_CHANGED
 
     def set_state(self, new_val, update_status=True):
         self._change_task("_state", new_val, update_status) 
@@ -98,17 +94,18 @@ class Task(object):
         self._plan = plan
         if update_status:
             if plan is None:
-                self.set_planning_status(PlanningStatusEnum.PLANNING_FAILURE)
+                self.planning_status = PlanningStatusEnum.PLANNING_FAILURE
             else:
-                self.set_planning_status(PlanningStatusEnum.PLAN_AVAILABLE)
+                self.planning_status = PlanningStatusEnum.PLAN_AVAILABLE
             if self._new_plan_callback:
                 self._new_plan_callback(self)
 
-    def update_planning(self):
+    def replan(self):
         """If the task is registered with a planner, the plan will be updated,
         but only if the task has been modified and  if change detection is activated."""
-        if self.change_detection_activated() and self.is_dirty() and self.planner:
+        if self.is_dirty() and self.planner:
             self.planner.continual_planning(self)
+
 
     def set_plan_callback(self, fn):
         self._new_plan_callback = fn
@@ -116,24 +113,18 @@ class Task(object):
     def pddl_domain_str(self):
         w = PDDLWriter(predicates.mapl_modal_predicates)
         return "\n".join(w.write_domain(self._mapldomain))
-        #return PDDLTask.from_MAPL_task(self).pddl_domain_str()
 
     def pddl_problem_str(self):
         w = PDDLWriter(predicates.mapl_modal_predicates)
-        return "\n".join(w.write_problem(self._mapltask))
-        
-        #return PDDLTask.from_MAPL_task(self).pddl_problem_str()
+        return "\n".join(w.write_problem(self.mapltask))
 
     def tfd_domain_str(self):
         w = TFDWriter(predicates.mapl_modal_predicates)
         return "\n".join(w.write_domain(self._mapldomain))
-        #return PDDLTask.from_MAPL_task(self).pddl_domain_str()
 
     def tfd_problem_str(self):
         w = TFDWriter(predicates.mapl_modal_predicates)
-        return "\n".join(w.write_problem(self._mapltask))
-        
-        #return PDDLTask.from_MAPL_task(self).pddl_problem_str()
+        return "\n".join(w.write_problem(self.mapltask))
     
     def load_mapl_domain(self, domain_file):
         print "Loading MAPL domain %s." % domain_file
@@ -141,20 +132,21 @@ class Task(object):
         
     def load_mapl_problem(self, task_file, agent_name=None):
         print "Loading MAPL problem %s." % task_file
-        self._mapltask = mapl.load_problem(task_file, self._mapldomain)
-        self._state = state.State.fromProblem(self._mapltask)
+        self.mapltask = mapl.load_problem(task_file, self._mapldomain)
+        self.create_initial_state()
 
         self._agent_name = agent_name
 
     def parse_mapl_problem(self, problem_str, agent_name=None):
         self._mapltask = mapl.parse_problem(problem_str, self._mapldomain)
-        self._state = state.State.fromProblem(self._mapltask)
+        self.create_initial_state()
 
         self._agent_name = agent_name
 
     def load_mapl_task(self, task_file, domain_file, agent_name=None):
         self.load_mapl_domain(domain_file)
         self.load_mapl_problem(task_file, agent_name)
+
 
                 
 class PDDLWriter(mapl.writer.MAPLWriter):
@@ -564,102 +556,3 @@ def compile_modal_args(args, functions):
         compiled.append((f, pref + f.args + suff))
         
     return func_arg, compiled
-
-
-class PDDLTask(Task):
-    @classmethod
-    def from_MAPL_task(cls, mapl_task):
-        """ compile a MAPL task into a corresponding PDDL representation. """
-        import copy
-        t = copy.deepcopy(mapl_task)  # only a shallow copy. is that enough?
-        t.__class__ = PDDLTask
-        t.add_implicit_MAPL_types(constants.MAPL_BASE_ONTOLOGY.split())
-        #t._type_tree.closure()
-        for pred in constants.MAPL_BASE_PREDICATES:
-            t.add_implicit_MAPL_predicate(pred)
-        new_objects = types.parse_typed_list(constants.MAPL_BASE_OBJECTS.split())
-        t.add_implicit_MAPL_constants(new_objects)
-        t._operators = [a.translate2pddl(t._state_variables) for a in t._operators]
-        return t
-    
-    def add_implicit_MAPL_predicate(self, pred_decl_str):
-        alist = pred_decl_str.split()
-        pred_name = alist[0]
-        if pred_name not in self._state_variables:
-            new_pred = predicates.Predicate.parse(alist)
-            self._state_variables[pred_name] = new_pred
-
-    def pddl_domain_str(self):
-        elmts = self._pddl_domain_gen()
-        #print list(elmts)
-        return "\n".join(elmts)
-
-    def pddl_problem_str(self):
-        elmts = self._pddl_problem_gen()
-        #print list(elmts)
-        return "\n".join(elmts)
-
-    def _pddl_domain_gen(self, keep_assertions=True):
-        yield ";; PDDL domain '%s' (compiled from MAPL)" % self._task_name
-        yield ""
-        yield "(define (domain %s)" % self._domain_name
-        yield self._requirements.pddl_str()
-        # types
-        yield "(:types"
-        yield self._type_tree.to_str()
-        yield ")"
-        # predicates
-        yield "(:predicates"
-        agts = [types.TypedObject("?agt0", "agent")]
-        for pred in self._state_variables.values():
-            yield "  ;; predicate: %s" % pred.name
-            declarations = []
-#             if pred.name == "=":
-#                 continue
-            declarations.append(pred.pddl_str())
-            kpred = pred.knowledge_pred(agts)
-            declarations.append(kpred.pddl_str())
-            declarations.append(kpred.pddl_str(k_axiom=True))
-            for decl in declarations:
-                yield "  (%s)" % decl
-        yield ")"
-        #constants
-        yield "(:constants"
-        for obj in self._constants:
-            yield "  %s - %s" % (obj.name, obj.type)
-        yield ")"
-        # axioms
-        for axiom in self._axioms:
-            for line in axiom.pddl_gen():
-                yield line
-        # actions
-        for action in self._operators:
-            for line in action.pddl_gen(keep_assertions):
-                yield line
-        # sensors
-        for sensor in self._sensors:
-            for line in sensor.pddl_gen(keep_assertions):
-                yield line
-        yield ")"
-
-    def _pddl_problem_gen(self):
-        yield ";; PDDL problem '%s' (compiled from MAPL)" % self._domain_name
-        yield "(define (problem %s)" % self._task_name
-        yield "(:domain %s)" % self._domain_name
-        #objects
-        yield "(:objects"
-        for obj in self._objects:
-            yield "  %s - %s" % (obj.name, obj.type)
-        yield ")"
-        #init
-
-        yield "(:init"
-        for fact in self.get_state().get_facts():
-            if fact.is_equality_constraint():
-                continue
-            factstr = fact.as_pddl_str(use_direct_k=True)
-            yield "  %s" % factstr
-        yield ")"
-        yield "(:goal"
-        yield self._goal.pddl_str()
-        yield "))"

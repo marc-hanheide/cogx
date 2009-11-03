@@ -107,24 +107,12 @@ class MapsimScenario(object):
                     problem.addObject(TypedObject(key.string, domain.types[value.string]))
 
             elif type == ":init":
-                domain.predicates.remove(predicates.equals)
-                domain.predicates.add(predicates.equalAssign)
-                if "fluents" in domain.requirements or "numeric-fluents" in domain.requirements:
-                    domain.predicates.remove(predicates.eq)
-                    domain.predicates.add(predicates.num_equalAssign)
-                    
                 for elem in j:
                     if elem.isTerminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
                         
                     init_elem = Problem.parseInitElement(iter(elem), problem)
                     problem.init.append(init_elem)
-                    
-                if "fluents" in domain.requirements or "numeric-fluents" in domain.requirements:
-                    domain.predicates.remove(predicates.num_equalAssign)
-                    domain.predicates.add(predicates.eq)
-                domain.predicates.remove(predicates.equalAssign)
-                domain.predicates.add(predicates.equals)
 
             elif type == ":goal":
                 cond = j.get(list, "goal condition")

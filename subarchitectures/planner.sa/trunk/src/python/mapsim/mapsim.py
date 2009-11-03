@@ -16,9 +16,9 @@ if __name__ == '__main__':
     else:
         print "There are %d agents: %s" % (len(scenario.agents), ", ".join(scenario.agents.iterkeys()))
 
-    print "Goals are:"
+    print "Goals are"
     for agent, prob in scenario.agents.iteritems():
-        print "%s: %s" % (agent, prob.goal.pddl_str())
+        print "  %s: %s" % (agent, prob.goal.pddl_str())
         
     sim = simulation.Simulation(scenario)
     print "Starting simulation..."

@@ -435,6 +435,10 @@ class State(defaultdict):
             for eff in effect.getRandomEffect():
                 result |= self.getEffectFacts(eff)
 
+        elif isinstance(effect, list):
+            for eff in effect:
+                result |= self.getEffectFacts(eff)
+            
         else:
             fact = Fact.fromEffect(effect)
             result.add(fact)

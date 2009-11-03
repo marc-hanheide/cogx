@@ -98,12 +98,6 @@ class Problem(domain.MAPLDomain):
                 problem = Problem(probname, objects, [], None, domain)
 
             elif type == ":init":
-                domain.predicates.remove(predicates.equals)
-                domain.predicates.add(predicates.equalAssign)
-                if "fluents" in domain.requirements or "numeric-fluents" in domain.requirements:
-                    domain.predicates.remove(predicates.eq)
-                    domain.predicates.add(predicates.num_equalAssign)
-                    
                 for elem in j:
                     if elem.isTerminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
@@ -111,12 +105,6 @@ class Problem(domain.MAPLDomain):
                     init_elem = Problem.parseInitElement(iter(elem), problem)
                     problem.init.append(init_elem)
                     
-                if "fluents" in domain.requirements or "numeric-fluents" in domain.requirements:
-                    domain.predicates.remove(predicates.num_equalAssign)
-                    domain.predicates.add(predicates.eq)
-                domain.predicates.remove(predicates.equalAssign)
-                domain.predicates.add(predicates.equals)
-
             elif type == ":goal":
                 cond = j.get(list, "goal condition")
                 problem.goal = conditions.Condition.parse(iter(cond),problem)
@@ -150,6 +138,23 @@ class Problem(domain.MAPLDomain):
         first = it.get("terminal").token
         if first.string == "probabilistic":
             #TODO: disallow nested functions in those effects.
-            return effects.ProbabilisticEffect.parse(it.reset(), scope, timedEffects=False, onlySimple=True)
+            return effects.ProbabilisticEffect.parse(it.reset(), scope, timedEffects=False, onlySimple=True)[0]
+        elif first.string == "assign-probabilistic":
+            return effects.ProbabilisticEffect.parse_assign(it.reset(), scope)[0]
         else:
-            return predicates.Literal.parse(it.reset(), scope, maxNesting=0)
+            scope.predicates.remove(predicates.equals)
+            scope.predicates.add(predicates.equalAssign)
+            if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
+                scope.predicates.remove(predicates.eq)
+                scope.predicates.add(predicates.num_equalAssign)
+
+            lit =  predicates.Literal.parse(it.reset(), scope, maxNesting=0)
+
+            if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
+                scope.predicates.remove(predicates.num_equalAssign)
+                scope.predicates.add(predicates.eq)
+            scope.predicates.remove(predicates.equalAssign)
+            scope.predicates.add(predicates.equals)
+
+            return lit
+

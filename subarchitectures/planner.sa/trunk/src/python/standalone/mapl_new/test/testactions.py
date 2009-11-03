@@ -93,9 +93,18 @@ prob_load = """
                  :agent         (?a - agent)
                  :parameters    (?p - package ?v - vehicle)
                  :precondition  (= (location-of ?p) (location-of ?v))
-                 :effect        (probabilistic 0.4 (assign (location-of ?p) ?v)
-                                               0.5 (assign (location-of ?p) (location-of ?v))
-                                ))
+                 :effect        (and (probabilistic 0.4 (assign (location-of ?p) ?v)
+                                               0.5 (assign (location-of ?p) (location-of ?v)))
+                                      (assign-probabilistic (location-of ?p) ?v (location-of ?v))))
+"""
+
+prob_assign_load = """
+        (:action load
+                 :agent         (?a - agent)
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :effect        
+                                )
 """
 
 univ_unload = """
@@ -190,12 +199,21 @@ class ActionTest(unittest.TestCase):
         self.assert_(isinstance(action.effects[0], ProbabilisticEffect))
         p1, e1 = action.effects[0].effects[0]
         p2, e2 = action.effects[0].effects[1]
+
+        ap1, ae1 = action.effects[1].effects[0]
+        ap2, ae2 = action.effects[1].effects[1]
+
         self.assertEqual(p1, 0.4)
         self.assert_(isinstance(e1[0].args[0], FunctionTerm))
         self.assert_(isinstance(e1[0].args[1], VariableTerm))
         self.assertEqual(p2, 0.5)
         self.assert_(isinstance(e2[0].args[0], FunctionTerm))
         self.assert_(isinstance(e2[0].args[1], FunctionTerm))
+
+        self.assertEqual(ae1, e1)
+        self.assertEqual(ae2, e2)
+        self.assertEqual(ap1, 0.5)
+        self.assertEqual(ap2, 0.5)
 
         self.assertEqual(action.effects[0].getRandomEffect(0), e2)
         self.assertEqual(action.effects[0].getRandomEffect(1), e1)
