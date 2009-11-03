@@ -77,11 +77,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.planner.register_task(task)
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
-    task.mark_changed()
-    task.activate_change_dectection()
+    task.replan()
     
   def getPlan(self, task):    
-    if task.get_planning_status() == PlanningStatusEnum.PLANNING_FAILURE:
+    if task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
       self.getClient().updateStatus(task.taskID, Planner.Completion.FAILED);
       return
 
@@ -146,7 +145,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task = self.tasks[task_desc.id]
     plan = task.get_plan()
 
-    task.suspend_change_dectection()
     if plan is None:
       #always replan if we don't have a plan
       task.mark_changed()
@@ -187,7 +185,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     print_state_difference(task.get_state(), state.State(facts))
 
-    newtask = mapl.problem.Problem(task._mapltask.name, objects, [f.asLiteral(useEqual=True) for f in facts], None, task._mapldomain)
+    newtask = mapl.problem.Problem(task.mapltask.name, objects, [], None, task._mapldomain)
 
     #check if the goal is still valid
     try:
@@ -195,14 +193,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     except KeyError:
       newtask.goal = mapl.conditions.Falsity()
     
-    task._mapltask = newtask
+    task.set_state(state.State(facts, newtask))
+    task.mapltask = newtask
 
     #print "\n".join(mapl.writer.MAPLWriter().write_problem(newtask))
   
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
-    task.set_state(state.State.fromProblem(task._mapltask))
-    task.activate_change_dectection()
+    task.replan()
 
 def print_state_difference(state1, state2):
   def collect_facts(state):

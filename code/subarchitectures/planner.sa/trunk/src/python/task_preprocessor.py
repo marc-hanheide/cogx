@@ -183,8 +183,7 @@ def infer_types(obj_descriptions):
 
 def generate_mapl_task(task_desc, domain_fn):
   global current_domain
-  task = Task()
-  task.taskID = task_desc.id
+  task = Task(task_desc.id)
   
   task.load_mapl_domain(domain_fn)
   current_domain = task._mapldomain
@@ -195,9 +194,8 @@ def generate_mapl_task(task_desc, domain_fn):
   task.namedict = rename_objects(objects)
 
   facts = list(tuples2facts(obj_descriptions))
-  init = [f.asLiteral(useEqual=True) for f in facts]
 
-  problem = mapl.problem.Problem("cogxtask", objects, init, None, task._mapldomain)
+  problem = mapl.problem.Problem("cogxtask", objects, [], None, task._mapldomain)
   try:
     goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
     problem.goal = mapl.parser.Parser.parseAs(goalstrings, mapl.conditions.Condition, problem)

@@ -29,8 +29,11 @@ class Effect(object):
         elif not onlySimple and first.token.string == "when":
             return ConditionalEffect.parse(it.reset(), scope, timedEffects)
         
-        elif not onlySimple and first.token.string == "probabilistic":
-            return ProbabilisticEffect.parse(it.reset(), scope, timedEffects)
+        elif first.token.string == "probabilistic":
+            return ProbabilisticEffect.parse(it.reset(), scope, timedEffects, onlySimple)
+
+        elif first.token.string == "assign-probabilistic":
+            return ProbabilisticEffect.parse_assign(it.reset(), scope)
         
         else:
             if timedEffects:
@@ -94,7 +97,7 @@ class ProbabilisticEffect(Effect):
         return fn(self, [(p, e.visit(fn)) for p,e in self.effects])
     
     def copy(self, new_scope=None):
-        return ProbabilisticEffect([(p, e.copy(new_scope)) for p,e in self.effects])
+        return ProbabilisticEffect([(p, [eff.copy(new_scope) for eff in e]) for p,e in self.effects])
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.effects == other.effects
@@ -103,28 +106,85 @@ class ProbabilisticEffect(Effect):
         return not __eq__(self, other)
         
     @staticmethod
-    def parse(it, scope, timedEffects=False, onlySimple=False):
-        first = it.get("probabilistic")
-        effects = []
+    def parse_assign(it, scope):
+        first = it.get("assign-probabilistic").token
+
+        head = it.get(list, "function")
+
+        values = []
+        remaining_values = []
         psum = 0
         while True:
             try:
-                p_elem = it.next()
+                elem = it.next()
             except StopIteration:
+                break
+            
+            if elem.isTerminal():
+                try:
+                    prob = float(elem.token.string)
+                except:
+                    remaining_values.append(elem)
+                    continue
+
+                psum += prob
+                if psum > 1:
+                    raise ParseError(elem.token, "Total probabilities exceed 1.0")
+
+                values.append((prob, it.get()))
+
+            else:
+                remaining_values.append(elem)
+
+        if remaining_values and psum < 1.0:
+            remaining_p = (1.0-psum) / len(remaining_values)
+            for elem in remaining_values:
+                values.append((remaining_p, elem))
+
+        effects = []
+        assign = parser.Element(parser.Token("assign", first.line, first.file))
+        for p, elem in values:
+            elem = parser.Element(it.element.token, [assign, head, elem])
+            effs = Effect.parse(iter(elem), scope)
+            effects.append((p, effs))
+
+        return [ProbabilisticEffect(effects)]
+
+    @staticmethod
+    def parse(it, scope, timedEffects=False, onlySimple=False):
+        first = it.get("probabilistic")
+        effects = []
+        remaining_effects = []
+        psum = 0
+        while True:
+            try:
+                elem = it.next()
+            except StopIteration:
+                if remaining_effects and psum < 1.0:
+                    remaining_p = (1.0-psum) / len(remaining_effects)
+                    for effs in remaining_effects:
+                        effects.append((remaining_p, effs))
+
                 return [ProbabilisticEffect(effects)]
             
-            if not p_elem.isTerminal():
-                raise UnexpectedTokenError(p_elem.token, "probability")
-            try:
-                prob = float(p_elem.token.string)
-            except:
-                raise UnexpectedTokenError(p_elem.token, "probability")
+            if elem.isTerminal():
+                try:
+                    prob = float(elem.token.string)
+                except:
+                    raise UnexpectedTokenError(p_elem.token, "probability or effect")
 
-            if psum + prob > 1:
-                raise ParseError(p_elem.token, "Total probabilities exceed 1.0")
+                psum += prob
+                if psum > 1:
+                    raise ParseError(elem.token, "Total probabilities exceed 1.0")
+
+                effs = Effect.parse(iter(it.get(list, "effect specification")), scope, timedEffects, onlySimple)
+                effects.append((prob, effs))
+
+            else:
+                effs = Effect.parse(iter(elem), scope, timedEffects, onlySimple)
+                remaining_effects.append(effs)
+            
                 
-            effs = Effect.parse(iter(it.get(list, "effect specification")), scope, timedEffects, onlySimple)
-            effects.append((prob, effs))
 
 class ConditionalEffect(Effect):
     def __init__(self, condition, effects):

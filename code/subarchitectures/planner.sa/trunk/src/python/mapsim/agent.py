@@ -40,23 +40,17 @@ class Agent(BaseAgent):
         self.mapltask = mapltask
         self.planner = planner
         
-        self.task = Task()
-        self.task.taskID = next_id()
-
-        self.task._mapldomain = mapltask.domain
-        self.task._mapltask = mapltask
-        self.task.set_state(state.State.fromProblem(mapltask), update_status=False)
+        self.task = Task(next_id(), mapltask)
         self.task.set_plan_callback(lambda task: self.getPlan(task))
         
         self.planner.register_task(self.task)
 
     def run(self):
         BaseAgent.run(self)
-        self.task.mark_changed()
-        self.task.activate_change_dectection()
+        self.task.replan()
         
     def getPlan(self, task):
-        if task.get_planning_status() == PlanningStatusEnum.PLANNING_FAILURE:
+        if task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
             return
             
         plan = task.get_plan()
@@ -82,17 +76,13 @@ class Agent(BaseAgent):
     def updateTask(self, new_facts, action_status=None):
         plan = self.task.get_plan()
 
-        self.task.suspend_change_dectection()
         if plan is not None:
             executable_plan = plan.topological_sort(include_depths=False)[plan.execution_position:-1]
             if action_status:
                 executable_plan[0].status = action_status
-        self.task.mark_changed()
             
         for f in new_facts:
             self.task.get_state().set(f)
             
-        new_init = [f.asLiteral(useEqual=True) for f in self.task.get_state().iterfacts() ]
-
-        self.task._mapltask = mapl.problem.Problem(self.mapltask.name, self.mapltask.objects, new_init, self.mapltask.goal, self.task._mapldomain)
-        self.task.activate_change_dectection()
+        self.task.mark_changed()
+        self.task.replan()
