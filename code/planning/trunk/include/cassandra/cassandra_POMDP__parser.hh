@@ -130,6 +130,19 @@ namespace POMDP
             const decltype(actions)& get_actions() const;
             const decltype(observations)& get_observations() const;
             
+            double get_reward(const std::string& executed_action__name,
+                              const std::string& starting_state__name,
+                              const std::string& successor_state__name,
+                              const std::string& observation__name) const;
+            
+            double get_transition_probability(const std::string& executed_action__name,
+                                              const std::string& starting_state__name,
+                                              const std::string& successor_state__name) const;
+            
+            double get_observation_probability(const std::string& executed_action__name,
+                                               const std::string& successor_state__name,
+                                               const std::string& observation__name) const;
+            
             /******************************************************************************************************
              ******************************************************************************************************
              * ENDING ENDING ENDING INTERFACE TO ::  PLANNER INTERFACE IMPLEMENTATION

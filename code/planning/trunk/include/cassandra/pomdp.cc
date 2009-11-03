@@ -15,6 +15,8 @@ Usual suspects (C++) Linear Algebra and Linear Programming
 #include "cassandra_POMDP__parser.hh"
 #include "Command_Line_Arguments.hh"
 
+#include "pomdp__finite_state_controller__evaluation.hh"
+
 using std::endl;
 using std::count;
 using std::cin;
@@ -45,7 +47,13 @@ int main(int argc, char** argv)
     VERBOSER(100, "Just parsed the following problem \n");
     VERBOSER(100, *POMDP::Parsing::problem_Data);
 
-    
+    POMDP::FSC fsc(POMDP::Parsing::problem_Data, 5);
+
+    POMDP::Solving::FSC__Randomizer fsc__Randomizer;
+    fsc__Randomizer(fsc);
+
+    POMDP::Solving::FSC__Evaluator fsc__Evaluator;
+    fsc__Evaluator(fsc);
     
     return 0;
 }
