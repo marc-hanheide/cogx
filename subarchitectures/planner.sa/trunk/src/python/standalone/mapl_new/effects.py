@@ -5,6 +5,7 @@ import parser
 from parser import ParseError, UnexpectedTokenError
 import mapltypes as types
 import scope, conditions, predicates
+import random
 
 class Effect(object):
     def visit(self, fn):
@@ -27,6 +28,9 @@ class Effect(object):
         
         elif not onlySimple and first.token.string == "when":
             return ConditionalEffect.parse(it.reset(), scope, timedEffects)
+        
+        elif not onlySimple and first.token.string == "probabilistic":
+            return ProbabilisticEffect.parse(it.reset(), scope, timedEffects)
         
         else:
             if timedEffects:
@@ -66,6 +70,61 @@ class UniversalEffect(scope.Scope, Effect):
         eff.effects = Effect.parse(iter(it.get(list, "effect specification")), eff, timedEffects)
 
         return [eff]
+
+class ProbabilisticEffect(Effect):
+    def __init__(self, effects):
+        self.effects = effects
+        self.summed_effects = []
+        psum = 0
+        for p, eff in effects:
+            self.summed_effects.append((psum, psum+p, eff))
+            psum += p
+        assert psum <= 1
+
+    def getRandomEffect(self, seed=None):       
+        if seed is not None:
+            random.seed(seed)
+        s = random.random()
+        for start, end, eff in self.summed_effects:
+            if start <= s < end:
+                return eff
+        return []
+        
+    def visit(self, fn):
+        return fn(self, [(p, e.visit(fn)) for p,e in self.effects])
+    
+    def copy(self, new_scope=None):
+        return ProbabilisticEffect([(p, e.copy(new_scope)) for p,e in self.effects])
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.effects == other.effects
+
+    def __ne__(self, other):
+        return not __eq__(self, other)
+        
+    @staticmethod
+    def parse(it, scope, timedEffects=False, onlySimple=False):
+        first = it.get("probabilistic")
+        effects = []
+        psum = 0
+        while True:
+            try:
+                p_elem = it.next()
+            except StopIteration:
+                return [ProbabilisticEffect(effects)]
+            
+            if not p_elem.isTerminal():
+                raise UnexpectedTokenError(p_elem.token, "probability")
+            try:
+                prob = float(p_elem.token.string)
+            except:
+                raise UnexpectedTokenError(p_elem.token, "probability")
+
+            if psum + prob > 1:
+                raise ParseError(p_elem.token, "Total probabilities exceed 1.0")
+                
+            effs = Effect.parse(iter(it.get(list, "effect specification")), scope, timedEffects, onlySimple)
+            effects.append((prob, effs))
 
 class ConditionalEffect(Effect):
     def __init__(self, condition, effects):

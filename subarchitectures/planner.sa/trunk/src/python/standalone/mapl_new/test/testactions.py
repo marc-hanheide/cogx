@@ -7,6 +7,7 @@ import os
 
 import parser, domain, actions
 from mapltypes import *
+from predicates import *
 from actions import *
 from effects import *
 from parser import Parser, ParseError
@@ -85,6 +86,16 @@ cond_load = """
                  :parameters    (?p - package ?v - vehicle)
                  :effect        (when (= (location-of ?p) (location-of ?v))
                                       (assign (location-of ?p) ?v)))
+"""
+
+prob_load = """
+        (:action load
+                 :agent         (?a - agent)
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :effect        (probabilistic 0.4 (assign (location-of ?p) ?v)
+                                               0.5 (assign (location-of ?p) (location-of ?v))
+                                ))
 """
 
 univ_unload = """
@@ -170,6 +181,30 @@ class ActionTest(unittest.TestCase):
         self.assert_(isinstance(action.effects[0], UniversalEffect))
         self.assertEqual(len(action.effects[0].args), 1)
         self.assert_(isinstance(action.effects[0].effects[0], ConditionalEffect))
+
+    def testProbabilisticEffects(self):
+        """Testing probabilistic effect parsing"""
+        
+        action = Parser.parseAs(prob_load.split("\n"), Action, self.domain)
+
+        self.assert_(isinstance(action.effects[0], ProbabilisticEffect))
+        p1, e1 = action.effects[0].effects[0]
+        p2, e2 = action.effects[0].effects[1]
+        self.assertEqual(p1, 0.4)
+        self.assert_(isinstance(e1[0].args[0], FunctionTerm))
+        self.assert_(isinstance(e1[0].args[1], VariableTerm))
+        self.assertEqual(p2, 0.5)
+        self.assert_(isinstance(e2[0].args[0], FunctionTerm))
+        self.assert_(isinstance(e2[0].args[1], FunctionTerm))
+
+        self.assertEqual(action.effects[0].getRandomEffect(0), e2)
+        self.assertEqual(action.effects[0].getRandomEffect(1), e1)
+        self.assertEqual(action.effects[0].getRandomEffect(2), [])
+
+        import random
+        random.seed(42)
+        for r in xrange(30):
+            self.assert_(action.effects[0].getRandomEffect() in (e1,e2,[]))
         
     def testAssertion(self):
         """Testing parsing of assertions"""

@@ -135,6 +135,9 @@ class Literal(object):
             self.args = scope.lookup(args)
         else:
             self.args = args
+            
+    def negate(self):
+        return self.__class__(self.predicate, self.args[:], None, not self.negated)
 
     def copy(self, new_scope=None):
         return self.__class__(self.predicate, self.args, new_scope, self.negated)
@@ -228,6 +231,21 @@ class Term(object):
         else:
             raise Exception("Too many arguments for Term()")
     
+    def visit(self, fn):
+        return fn(self, [])
+    
+    def pddl_str(self, instantiated=True):
+        def printVisitor(term, results=[]):
+            if isinstance(term, VariableTerm) and term.isInstantiated() and instantiated:
+                term = term.getInstance()
+                
+            if term.__class__ == FunctionTerm:
+                return "(%s %s)" % (term.function.name, " ".join(results))
+            elif isinstance(term, Term):
+                return term.object.name
+            return term.name
+        return self.visit(printVisitor)
+    
     def getType(self):
         raise NotImplementedError()
     
@@ -281,6 +299,9 @@ class FunctionTerm(Term):
     def copyInstance(self):
         return FunctionTerm(self.function, [a.copyInstance() for a in self.args])
 
+    def visit(self, fn):
+        return fn(self, [a.visit(fn) for a in self.args])
+    
     def __str__(self):
         return "FunctionTerm: %s(%s)" % (self.function.name, " ".join(str(s) for s in self.args))
 

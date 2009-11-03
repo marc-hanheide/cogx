@@ -10,15 +10,25 @@ class Sensor(actions.Action):
     def __init__(self, name, agents, args, vars, precondition, sense, domain):
         actions.Action.__init__(self, name, agents, args, vars, precondition, None, None, domain)
         self.sense = sense
+        self.effects = [self.knowledge_effect()]
 
     def knowledge_effect(self):
-        if isinstance(self.sense, predicates.Literal):
-            term = self.sense.args[0]
-        else:
-            term = self.sense
-
+        term = self.get_term()
         return effects.SimpleEffect(predicates.direct_knowledge, [predicates.VariableTerm(self.agents[0]), term])
-        
+
+    def is_boolean(self):
+        return isinstance(self.sense, predicates.Literal)
+
+    def get_term(self):
+        if self.is_boolean():
+            return self.sense.args[0]
+        return self.sense
+
+    def get_value(self):
+        if self.is_boolean():
+            return self.sense.args[1]
+        return None
+    
     def copy(self, newdomain=None):
         if not newdomain:
             newdomain = self.domain
@@ -39,9 +49,9 @@ class Sensor(actions.Action):
             a.sense = self.sense.copy(a)
         else:
             a.sense = predicates.FunctionTerm(self.sense.function, a.lookup(self.sense.args))
+        a.effects = [a.knowledge_effect()]
 
         return a
-        
         
     @staticmethod
     def parse(it, scope):
@@ -83,5 +93,6 @@ class Sensor(actions.Action):
             sensor.sense = term
         else:
             raise parser.UnexpectedTokenError(first, "predicate, function or literal")
+        sensor.effects = [sensor.knowledge_effect()]
 
         return sensor

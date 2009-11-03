@@ -11,6 +11,7 @@ import predicates, conditions, actions, effects, domain
 from mapltypes import *
 from parser import ParseError, UnexpectedTokenError
 from actions import Action
+from problem import Problem
 
 def product(*iterables):
     for el in iterables[0]:
@@ -20,72 +21,82 @@ def product(*iterables):
         else:
             yield (el,)
 
-class Problem(domain.MAPLDomain):
-    def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
-        domain.MAPLDomain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [], [])
-        self.actions = [a.copy(self) for a in _domain.actions]
-        self.sensors = [s.copy(self) for s in _domain.sensors]
-        self.axioms = [a.copy(self) for a in _domain.axioms]
-        self.stratifyAxioms()
-        self.name2action = None
-        
-        for o in objects:
-            self.add(o)
-            
-        self.domain = _domain
-        self.objects = set(o for o in objects)
-        self.init = [l.copy(self) for l in init]
-        self.goal = None
-        if goal:
-            self.goal = goal.copy(self)
-        self.optimization = optimization
-        self.opt_func = opt_func
-
-    def addObject(self, object):
-        if object.name in self:
-            self.objects.remove(self[object.name])
-        self.objects.add(object)
-        self.add(object)
-
-    def getAll(self, type):
-        if isinstance(type, FunctionType):
-            for func in self.functions:
-                if func.builtin:
-                    continue
-                #print func.name, types.FunctionType(func.type).equalOrSubtypeOf(type)
-                if FunctionType(func.type).equalOrSubtypeOf(type):
-                    combinations = product(*map(lambda a: list(self.getAll(a.type)), func.args))
-                    for c in combinations:
-                        #print FunctionTerm(func, c, self.problem)
-                        yield predicates.FunctionTerm(func, c, self)
-        else:
-            for obj in itertools.chain(self.objects, self.constants):
-                if obj.isInstanceOf(type):
-                    yield obj
-        
+class MapsimScenario(object):
+    def __init__(self, name, world, agents, domain):
+        self.name = name
+        self.domain = domain
+        self.world = world
+        self.agents = agents
 
     @staticmethod
     def parse(root, domain):
         it = iter(root)
         it.get("define")
-        j = iter(it.get(list, "(problem 'problem identifier')"))
-        j.get("problem")
-        probname = j.get(None, "problem identifier").token.string
+        j = iter(it.get(list, "(problem 'scenario identifier')"))
+        j.get("scenario")
+        scname = j.get(None, "scenario identifier").token.string
         
         j = iter(it.get(list, "domain identifier"))
         j.get(":domain")
         domname = j.get(None, "domain identifier").token
 
         if domname.string != domain.name:
-            raise ParseError(domname, "problem requires domain %s but %s is supplied." % (domname.string, domain.name))
+            raise ParseError(domname, "scenario requires domain %s but %s is supplied." % (domname.string, domain.name))
 
-        problem = None
-        objects = set()
+        scenario = None
+        common = None
+        world = None
+        agents = {}
+        
+        for elem in it:
+            section, problem, agent = MapsimScenario.parseSection(iter(elem), scname, domain, common)
+            if section == ":world":
+                if world is not None:
+                    raise ParseError(section, "Duplicate problem specification for world state.")
+                world = problem
+            elif section == ":common":
+                if common is not None:
+                    raise ParseError(section, "Duplicate specification of common state.")
+                common = problem
+            elif section == ":agent":
+                if agent in agents:
+                    raise ParseError(section, "Duplicate problem specification for agent '%s'.")
+                agents[agent] = problem
+
+        if not world:
+            if not common:
+                raise ParseError(root.token, "Neither world state nor common state are specified.")
+            world = Problem(scname+"-world", common.objects, common.init, common.goal, domain)
+
+        if not agents:
+            raise ParseError(root.token, "No agents are defined.")
+                
+        for agent in agents.iterkeys():
+            if agent not in world:
+                raise ParseError(root.token, "Agent '%s' is not defined in the world state." % agent)
+            
+        return MapsimScenario(scname, world, agents, domain)
+
+    @staticmethod
+    def parseSection(it, scenario_name, domain, common):
+        section = it.get("terminal").token
+        agent = None
+        if section == ":agent":
+            agent = it.get("terminal", "agent name").token
+            name = "%s-%s" % (scenario_name, agent.string)
+        elif section.string in (":common", ":world"):
+            name = "%s-%s" % (scenario_name, section.string[1:])
+        else:
+            raise UnexpectedTokenError(section, "':common', ':world' or ':agent'")
+
+        if not common:
+            problem = Problem(name, [], [], None, domain)
+        else:
+            problem = Problem(name, common.objects, common.init, common.goal, domain)
         
         for elem in it:
             j = iter(elem)
             type = j.get("terminal").token
-
             
             if type == ":objects":
                 olist = mapltypes.parse_typelist(j)
@@ -93,9 +104,7 @@ class Problem(domain.MAPLDomain):
                     if value.string not in domain.types:
                         raise ParseError(value, "undeclared type")
 
-                    objects.add(TypedObject(key.string, domain.types[value.string]))
-
-                problem = Problem(probname, objects, [], None, domain)
+                    problem.addObject(TypedObject(key.string, domain.types[value.string]))
 
             elif type == ":init":
                 domain.predicates.remove(predicates.equals)
@@ -143,13 +152,10 @@ class Problem(domain.MAPLDomain):
             else:
                 raise ParseError(type, "Unknown section identifier: %s" % type.string)
 
-        return problem
-
-    @staticmethod
-    def parseInitElement(it, scope):
-        first = it.get("terminal").token
-        if first.string == "probabilistic":
-            #TODO: disallow nested functions in those effects.
-            return effects.ProbabilisticEffect.parse(it.reset(), scope, timedEffects=False, onlySimple=True)
-        else:
-            return predicates.Literal.parse(it.reset(), scope, maxNesting=0)
+        if agent:
+            if agent.string not in problem:
+                raise ParseError(agent , "Agent '%s' is not defined in its problem." % agent.string)
+            agent = agent.string
+        
+        return section, problem, agent
+    

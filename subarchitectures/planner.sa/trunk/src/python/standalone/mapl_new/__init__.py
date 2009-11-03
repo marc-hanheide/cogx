@@ -1,6 +1,6 @@
 import mapltypes as types
 import parser
-import predicates, conditions, effects, actions, sensors, axioms, domain, problem, writer
+import predicates, conditions, effects, actions, sensors, axioms, domain, problem, scenario, writer
 
 def load_domain(filename):
     p = parser.Parser.parseFile(filename)
@@ -18,4 +18,8 @@ def load_problem(filename, domain):
 def parse_problem(problem_desc, domain):
     p = parser.Parser(problem_desc.split("\n"))
     return problem.Problem.parse(p.root, domain)
-    
+
+
+def load_scenario(filename, domain):
+    p = parser.Parser.parseFile(filename)
+    return scenario.MapsimScenario.parse(p.root, domain)

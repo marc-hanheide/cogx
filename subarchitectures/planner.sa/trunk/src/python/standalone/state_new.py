@@ -38,26 +38,36 @@ def instantiate_args(args, state=None):
             raise Exception("couldn't create state variable, %s is a function term and no state was supplied." % str(arg))
     return result
 
-def get_svars_in_term(args, state=None):
-    result = []
-    relVars = []
-    for arg in args:
+def get_svars_from_term(term, state=None):
+    svars = set()
+    const_args = []
+    for arg in term.args:
         if isinstance(arg, VariableTerm):
             assert arg.object.isInstantiated()
             arg = arg.copyInstance()
 
         if isinstance(arg, ConstantTerm):
-            result.append(arg.object)
+            const_args.append(arg.object)
         elif state is not None:
-            svar, total = StateVariable.svarsInTerm(arg, state)
+            svar, total = get_svars_from_term(arg, state)
             if not svar in state:
                 raise Exception("couldn't create state variable, %s is not in state." % str(arg))
             value = state[svar]
-            result.append(value)
-            relVars += total
+            const_args.append(value)
+            svars |= total
         else:
             raise Exception("couldn't create state variable, %s is a function term and no state was supplied." % str(arg))
-    return result, relVars
+    svar = StateVariable(term.function, const_args)
+    svars.add(svar)
+    return svar, svars
+
+def get_nonmodal_svars(literal, state):
+    svars = set()
+    for arg, type in zip(literal.args, literal.predicate.args):
+        if isinstance(arg, FunctionTerm) and not isinstance(type, FunctionType):
+            _, all_vars = get_svars_from_term(arg, state)
+            svars|= all_vars
+    return svars
 
 class StateVariable(object):
     def __init__(self, function, args, modality=None, modal_args=[]):
@@ -84,6 +94,12 @@ class StateVariable(object):
             return self.function
         return None
 
+    def asModality(self, modality, modal_args):
+        return StateVariable(self.function, self.args, modality, modal_args)
+
+    def nonmodal(self):
+        return StateVariable(self.function, self.args, None, [])
+    
     def getArgs(self):
         if not self.modality:
             return self.args
@@ -137,9 +153,8 @@ class StateVariable(object):
     @staticmethod
     def svarsInTerm(term, state=None):
         assert isinstance(term, FunctionTerm)
-        args, vars = get_svars_in_term(term.args, state)
-        svar = StateVariable(term.function, args)
-        vars.append(svar)
+        svar, vars = get_svars_from_term(term, state)
+        vars.add(svar)
         return svar, vars
     
     @staticmethod
@@ -270,12 +285,21 @@ class State(defaultdict):
 
     @staticmethod
     def fromProblem(problem):
-        facts = [Fact.fromLiteral(i) for i in problem.init]
-        return State(facts, problem)
-        
+        s = State([], problem)
+        for i in problem.init:
+            if isinstance(i, effects.ProbabilisticEffect):
+                s.applyEffect(i)
+            else:
+                s.set(Fact.fromLiteral(i))
+        return s
+    
     def factsFromCondition(self, cond):
         return Fact.fromCondition(cond, self)
 
+    def isExecutable(self, action):
+        extstate = self.getExtendedState(self.getRelevantVars(action.precondition))
+        return extstate.isSatisfied(action.precondition)
+            
     def isSatisfied(self, cond, relevantVars=None, universal=None):
         def instantianteAndCheck(cond, params):
             cond.instantiate(dict(zip(cond.args, params)))
@@ -309,10 +333,7 @@ class State(defaultdict):
                 relVars = []
                 if relevantVars is not None and result:
                     relVars.append(fact.svar)
-                    for arg in cond.args:
-                        if isinstance(arg, FunctionTerm):
-                            _, vars = StateVariable.svarsInTerm(arg, self)
-                            relVars += vars
+                    relVars += list(get_nonmodal_svars(cond, self))
                             
                 return result, relVars, []
 
@@ -405,9 +426,14 @@ class State(defaultdict):
                 effect.uninstantiate()
                 
         elif isinstance(effect, effects.ConditionalEffect):
-            if self.isSatisfied(effect.condition):
+            extstate = self.getExtendedState(self.getRelevantVars(effect.condition))
+            if extstate.isSatisfied(effect.condition):
                 for eff in effect.effects:
                     result |= self.getEffectFacts(eff)
+
+        elif isinstance(effect, effects.ProbabilisticEffect):
+            for eff in effect.getRandomEffect():
+                result |= self.getEffectFacts(eff)
 
         else:
             fact = Fact.fromEffect(effect)
@@ -448,8 +474,8 @@ class State(defaultdict):
                     relevant |= getDependencies(s, derived)
             if not relevant:
                 if getReasons:
-                    return self.copy(), {}, {}
-                return self.copy()
+                    return self, {}, {}
+                return self
 
 
         if getReasons:

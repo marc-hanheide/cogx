@@ -193,7 +193,7 @@ class Parser(object):
             line = line.split(";",1)[0]
             for sep in self.separators:
                 line = line.replace(sep, " "+sep+" ")
-            for token in line.split(" "):
+            for token in line.split():
                 token = token.strip(" \t\n")
                 if token != "":
                     yield Token(token.lower(), i+1, source)
