@@ -20,6 +20,10 @@ relational-attribute modifiers (type m-location) don't get any InfoStruct feat a
 default IS will be assigned to stuff in templates
 
 ownership should be inherited from above (or projected up?)
+
+for some reason, owner and commitment not getting assigned (system not entered!) for "isee" template, altough it had proofstatus. when I put explicitly rheme in there, it works; but other similar templates do work w/o explicit rheme, so i don't know what the problem is
+
+ 
 -----
 
 InfoStruct defaults
