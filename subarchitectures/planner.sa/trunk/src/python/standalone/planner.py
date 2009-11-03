@@ -83,14 +83,18 @@ class Planner(object):
             universal = pnode.replan_universal
             cond = pnode.action.replan
         else:
-            read = pnode.preconds
-            universal = pnode.preconds_universal
-            cond = pnode.action.precondition
+            read = pnode.preconds|pnode.replanconds
+            universal = pnode.preconds_universal|pnode.replan_universal
+            if pnode.action.replan:
+                cond = mapl.conditions.Conjunction([pnode.action.precondition, pnode.action.replan])
+            else:
+                cond = pnode.action.precondition
 
         if not universal:
             #no universal preconditions => quickcheck
-            return all(imap(lambda f: f in state, read))
-        
+            if all(imap(lambda f: f in state, read)):
+                return True
+
         action = pnode.action
         if cond:
             action.instantiate(pnode.full_args)
@@ -139,7 +143,7 @@ class Planner(object):
 
             if pnode.action.replan:
                 if self.check_node(pnode, state, replan=True):
-                    #print "Assertion (%s %s) is expandable, triggering replanning." % (action.name, " ".join(a.name for a in pnode.full_args))
+                    #print "Assertion (%s %s) is expandable, triggering replanning." % (pnode.action.name, " ".join(a.name for a in pnode.full_args))
                     return True
         #print "time for checking assertions:", time.time()-t0
 
@@ -175,7 +179,7 @@ class Planner(object):
         #print "checking if goal is still satisfied."
         if self.check_node(task.get_plan().goal_node, state):
             if skipped_actions > -1:
-                print "Skipped the first %d actions." % skipped_actions
+                #print "Skipped the first %d actions." % skipped_actions
                 #newplan = task.get_plan().copy()
                 for pnode in plan[0:skipped_actions]:
                    pnode.status = plans.ActionStatusEnum.EXECUTED
@@ -191,11 +195,11 @@ class Planner(object):
         #print "time for goal validation:", time.time()-t2
         #print "total time for validation:", time.time()-t0
         
-#        if first_invalid_action:
-#            #print map(lambda (k,v): "%s = %s" % (str(k), str(v)), task.get_state().iteritems())
-#            print "Preconditions of (%s %s) are not satisfied, triggering replanning." % (first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
-#        else:
-#            print "Goal isn't fulfilled by the current plan, triggering replanning."
+        #if first_invalid_action:
+        #    #print map(lambda (k,v): "%s = %s" % (str(k), str(v)), task.get_state().iteritems())
+        #    print "Preconditions of (%s %s) are not satisfied, triggering replanning." % (first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
+        #else:
+        #    print "Goal isn't fulfilled by the current plan, triggering replanning."
 
         return True  # no monitoring currently
 

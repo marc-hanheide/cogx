@@ -62,13 +62,13 @@ def getRWDescription(action, args, _state):
         extstate, reasons, universalReasons = _state.getExtendedState(rel, getReasons=True)
         extstate.isSatisfied(action.precondition, read_vars, universal_args)
         read = set(read_vars)
-        replan_universal = set(a.type for a in universal_args)
+        read_universal = set(a.type for a in universal_args)
         for v in read_vars:
             if v in reasons:
                 read.remove(v)
                 read |= reasons[v]
             if v in universalReasons:
-                replan_universal |= set(a.type for a in universalReasons[v])
+                read_universal |= set(a.type for a in universalReasons[v])
 
     #print "read:", time.time()-t0
 

@@ -63,10 +63,16 @@ def get_svars_from_term(term, state=None):
 
 def get_nonmodal_svars(literal, state):
     svars = set()
-    for arg, type in zip(literal.args, literal.predicate.args):
-        if isinstance(arg, FunctionTerm) and not isinstance(type, FunctionType):
+    for arg, parg in zip(literal.args, literal.predicate.args):
+        if isinstance(arg, FunctionTerm) and not isinstance(parg.type, FunctionType):
             _, all_vars = get_svars_from_term(arg, state)
             svars|= all_vars
+        elif isinstance(arg, FunctionTerm):
+            for arg2 in arg.args:
+                if isinstance(arg2, FunctionTerm):
+                    _, all_vars = get_svars_from_term(arg2, state)
+                    svars|= all_vars
+            
     return svars
 
 class StateVariable(object):
