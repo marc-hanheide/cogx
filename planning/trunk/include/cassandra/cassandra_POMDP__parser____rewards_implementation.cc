@@ -32,7 +32,7 @@ void Problem_Data::initialise__reward_model()
                 ; start_state++){
             
             reward_model__level1[*start_state]
-                = decltype(reward_model__level1.find(*action)->second)();
+                = decltype(reward_model__level1.find(*start_state)->second)();
         
             decltype(reward_model__level1[*start_state])& reward_model__level2
                 = reward_model__level1[*start_state];
@@ -41,11 +41,17 @@ void Problem_Data::initialise__reward_model()
                     ; successor_state != states.end()
                     ; successor_state++){
 
-                reward_model__level2[*start_state]
-                    = decltype(reward_model__level2.find(*action)->second)();
+                reward_model__level2[*successor_state]
+                    = decltype(reward_model__level2.find(*successor_state)->second)();
                 
-                decltype(reward_model__level2[*start_state])& reward_model__level3
-                    = reward_model__level2[*start_state];
+                decltype(reward_model__level2[*successor_state])& reward_model__level3
+                    = reward_model__level2[*successor_state];
+                
+//                 reward_model__level2[*start_state]
+//                     = decltype(reward_model__level2.find(*action)->second)();
+                
+//                 decltype(reward_model__level2[*start_state])& reward_model__level3
+//                     = reward_model__level2[*start_state];
             
                 for(auto observation = observations.begin()
                         ; observation != observations.end()
