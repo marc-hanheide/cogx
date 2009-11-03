@@ -33,6 +33,8 @@ class Problem(domain.MAPLDomain):
             self.add(o)
             
         self.domain = _domain
+        self.requirements = set(self.domain.requirements)
+
         self.objects = set(o for o in objects)
         self.init = [l.copy(self) for l in init]
         self.goal = None
@@ -147,7 +149,6 @@ class Problem(domain.MAPLDomain):
             if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
                 scope.predicates.remove(predicates.eq)
                 scope.predicates.add(predicates.num_equalAssign)
-
             lit =  predicates.Literal.parse(it.reset(), scope, maxNesting=0)
 
             if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
