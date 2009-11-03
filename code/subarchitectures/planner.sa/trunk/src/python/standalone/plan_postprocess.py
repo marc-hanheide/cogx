@@ -155,6 +155,6 @@ def make_po_plan(actions, task):
 #         print i, str(pnode)
 #         for to in plan.E[pnode]:
 #             print "    ", to
-    print "total time for postprocessing:", time.time()-t0
+#    print "total time for postprocessing:", time.time()-t0
     
     return plan

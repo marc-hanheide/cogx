@@ -71,7 +71,7 @@ class Planner(object):
         else:
             #if no action is executing, trigger update
             if not any(map(lambda pnode: pnode.is_inprogress(), task.get_plan().V)):
-                print "no actions are executing, reissuing plan"
+                #print "no actions are executing, reissuing plan"
                 task.set_plan(task.get_plan(), update_status=True)
             else:
                 task.set_planning_status(PlanningStatusEnum.PLAN_AVAILABLE)
@@ -127,7 +127,7 @@ class Planner(object):
 
         #check if the goal is already satisfied
         if self.check_node(task.get_plan().goal_node, state):
-            print "Goal is reached"
+            #print "Goal is reached"
             for pnode in plan:
                 pnode.status = plans.ActionStatusEnum.EXECUTED
             return False
@@ -139,11 +139,11 @@ class Planner(object):
 
             if pnode.action.replan:
                 if self.check_node(pnode, state, replan=True):
-                    print "Assertion (%s %s) is expandable, triggering replanning." % (action.name, " ".join(a.name for a in pnode.full_args))
+                    #print "Assertion (%s %s) is expandable, triggering replanning." % (action.name, " ".join(a.name for a in pnode.full_args))
                     return True
         #print "time for checking assertions:", time.time()-t0
 
-        print "checking plan validity."
+        #print "checking plan validity."
         #print "current state is:", map(str, state.iterfacts())
         #check for plan validity: test all preconditions and apply effects
         skipped_actions = -1
@@ -158,13 +158,13 @@ class Planner(object):
             if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
                 if not first_invalid_action:
                     first_invalid_action = pnode
-                print "Action (%s %s) is not executable, trying to skip it." % (action.name, " ".join(a.name for a in pnode.full_args))
+                #print "Action (%s %s) is not executable, trying to skip it." % (action.name, " ".join(a.name for a in pnode.full_args))
                 # if an action is not executable, maybe it has already been executed
                 # so we're trying if the rest of the plan is executable in the initial state
                 skipped_actions = i
                 state = task.get_state().copy()
             else:
-                print "Action (%s %s) ok." % (action.name, " ".join(a.name for a in pnode.full_args))
+                #print "Action (%s %s) ok." % (action.name, " ".join(a.name for a in pnode.full_args))
                 for f in pnode.effects:
                     state.set(f)
             #print "time for checking action (%s %s): %f" % (action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
@@ -172,7 +172,7 @@ class Planner(object):
         t2 = time.time()
         #Now check if the goal is satisfied
         #print "state after execution is:", map(str, state.iterfacts())
-        print "checking if goal is still satisfied."
+        #print "checking if goal is still satisfied."
         if self.check_node(task.get_plan().goal_node, state):
             if skipped_actions > -1:
                 print "Skipped the first %d actions." % skipped_actions
@@ -183,18 +183,19 @@ class Planner(object):
                 if skipped_actions > len(plan)-2:
                     task.get_plan().goal_node.status = plans.ActionStatusEnum.EXECUTED
                 #task.set_plan(newplan)
-            print "Plan is still valid."
-            print "time for goal validation:", time.time()-t2
-            print "total time for validation:", time.time()-t0
+            #print "Plan is still valid."
+            #print "time for goal validation:", time.time()-t2
+            #print "total time for validation:", time.time()-t0
             return False
 
-        print "time for goal validation:", time.time()-t2
-        print "total time for validation:", time.time()-t0
+        #print "time for goal validation:", time.time()-t2
+        #print "total time for validation:", time.time()-t0
         
-        if first_invalid_action:
-            print "Preconditions of (%s %s) are not satisfied, triggering replanning." % (first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
-        else:
-            print "Goal isn't fulfilled by the current plan, triggering replanning."
+#        if first_invalid_action:
+#            #print map(lambda (k,v): "%s = %s" % (str(k), str(v)), task.get_state().iteritems())
+#            print "Preconditions of (%s %s) are not satisfied, triggering replanning." % (first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
+#        else:
+#            print "Goal isn't fulfilled by the current plan, triggering replanning."
 
         return True  # no monitoring currently
 
@@ -206,7 +207,7 @@ class Planner(object):
         can return immediately.  
         """
         # TODO: currently atomic process, ie planner will wait for result
-        print "Planning was triggered for task %d." % task.taskID
+        #print "Planning was triggered for task %d." % task.taskID
         plan = self._base_planner.find_plan(task)
         task.set_plan(plan)
         
@@ -389,7 +390,7 @@ class TFD(BasePlanner):
         translate = os.path.join(self.executable, "translate/translate.py")
         preprocess = os.path.join(self.executable, "preprocess/preprocess")
         search = os.path.join(self.executable, "search/search")
-        
+        print "running..."
         cmd = "%(translate)s %(domain_path)s %(problem_path)s" % locals()
         p_tr = utils.run_process(cmd, dir=tmp_dir)
         if p_tr.returncode != 0:
@@ -397,6 +398,7 @@ class TFD(BasePlanner):
             print p_tr.stderr.read()
             print "<<<\n"
             return None
+        print "translate done"
         p_pre = utils.run_process(preprocess, input=p_tr.stdout, dir=tmp_dir)
         if p_pre.returncode != 0:
             print "Warning: Error in TFD preprocess. output was:\n\n>>>"
@@ -404,6 +406,7 @@ class TFD(BasePlanner):
             print "<<<\n"
             return None
         
+        print "preprocess done"
         cmd = "%(search)s yY t 5 -" % locals()
         p_search = utils.run_process(cmd, input=p_pre.stdout, dir=tmp_dir)
         
@@ -413,6 +416,7 @@ class TFD(BasePlanner):
             print "<<<\n"
             return None
 
+        print "all done"
         output = open(stdout_path, "w")
         output.write(p_tr.stderr.read())
         output.write(p_pre.stderr.read())

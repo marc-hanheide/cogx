@@ -4,6 +4,7 @@
 (:objects
 	place1 place2 place3 - place
 	pid1 pid2 pid3 - place_id
+    R2D2 - robot
 )
 
 (:init

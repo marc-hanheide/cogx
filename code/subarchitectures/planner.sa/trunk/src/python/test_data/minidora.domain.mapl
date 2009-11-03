@@ -13,7 +13,7 @@
 	)
 	
 	(:constants
-        R2D2 - robot
+
 	)
 
     (:predicates

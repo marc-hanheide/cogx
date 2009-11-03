@@ -32,10 +32,10 @@ class Task(object):
         """Mark task as changed and call planner if necessary."""
         assert status in PlanningStatusEnum.values()
         self._planning_status = status
-        if status == PlanningStatusEnum.TASK_CHANGED:
-            print "Status of task %s was changed to %s. This may trigger planner activity." % (self.taskID, status)
-        else:
-            print "Status of task %s was changed to %s." % (self.taskID, status)
+        #if status == PlanningStatusEnum.TASK_CHANGED:
+        #    print "Status of task %s was changed to %s. This may trigger planner activity." % (self.taskID, status)
+        #else:
+        #    print "Status of task %s was changed to %s." % (self.taskID, status)
         if trigger_planning:
             self.update_planning()
         #if status == PlanningStatusEnum.PLAN_AVAILABLE:
@@ -56,7 +56,7 @@ class Task(object):
         Activation may lead to immediate updating of the plan if the task was modified
         while change detection was suspended."""
         self._change_detection_activated = True
-        print "Change detection was activated for task %s. This may trigger planner activity." % self.taskID
+        #print "Change detection was activated for task %s. This may trigger planner activity." % self.taskID
         self.update_planning()
     
     def suspend_change_dectection(self):
@@ -340,7 +340,15 @@ class PDDLWriter(mapl.writer.MAPLWriter):
 
         strings += self.section(":effect", self.write_effect(action.knowledge_effect()), parens=False)
         return self.section(":action", strings)
-        
+
+    def write_init(self, inits):
+        strings = []
+        for i in inits:
+            if not i.negated:
+                strings.append(self.write_literal(i))
+
+        return self.section(":init", strings)
+    
     def write_domain(self, domain):
         strings = ["(define (domain %s)" % domain.name]
         strings.append("")

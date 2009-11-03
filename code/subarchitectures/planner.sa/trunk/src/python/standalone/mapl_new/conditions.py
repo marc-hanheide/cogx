@@ -21,6 +21,25 @@ class Condition(object):
 
     def __hash__(self):
         return hash(self.__class__)
+
+    def pddl_str(self, instantiated=True):
+        def printVisitor(cond, results=[]):
+            if cond.__class__ == LiteralCondition:
+                s = "(%s %s)" % (cond.predicate.name, " ".join(map(lambda a: a.pddl_str(instantiated), cond.args)))
+                if cond.negated:
+                    return "(not %s)" % s
+                return s
+            if cond.__class__ == Conjunction:
+                return "(and %s)" % " ".join(results)
+            if cond.__class__ == Disjunction:
+                return "(or %s)" % " ".join(results)
+            if cond.__class__ == UniversalCondition:
+                args = " ".join(sorted(cond.iterkeys()))
+                return "(forall (%s) %s)" % (args, " ".join(results))
+            if cond.__class__ == ExistentialCondition:
+                args = " ".join(sorted(cond.iterkeys()))
+                return "(exists (%s) %s)" % (args, " ".join(results))
+        return self.visit(printVisitor)
     
     @staticmethod
     def parse(it, scope):
@@ -137,9 +156,6 @@ class ExistentialCondition(QuantifiedCondition):
 class LiteralCondition(predicates.Literal, Condition):
     def __init__(self, predicate, args, scope=None, negated=False):
         predicates.Literal.__init__(self, predicate, args, scope, negated)
-
-    def negate(self):
-        return LiteralCondition(self.predicate, self.args[:], None, not self.negated)
     
     @staticmethod
     def parse(it, scope):
