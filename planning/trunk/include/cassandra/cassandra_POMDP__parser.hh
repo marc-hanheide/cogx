@@ -123,25 +123,27 @@ namespace POMDP
              ******************************************************************************************************
              ******************************************************************************************************/
             
-            uint get_states_count() const;
-            uint get_actions_count() const;
-            uint get_observations_count() const;
-            const decltype(states)& get_states() const;
-            const decltype(actions)& get_actions() const;
-            const decltype(observations)& get_observations() const;
+            uint get__states_count() const;
+            uint get__actions_count() const;
+            uint get__observations_count() const;
+            const decltype(states)& get__states() const;
+            const decltype(actions)& get__actions() const;
+            const decltype(observations)& get__observations() const;
             
-            double get_reward(const std::string& executed_action__name,
-                              const std::string& starting_state__name,
-                              const std::string& successor_state__name,
-                              const std::string& observation__name) const;
+            double get__reward(const std::string& executed_action__name,
+                               const std::string& starting_state__name,
+                               const std::string& successor_state__name,
+                               const std::string& observation__name) const;
             
-            double get_transition_probability(const std::string& executed_action__name,
-                                              const std::string& starting_state__name,
-                                              const std::string& successor_state__name) const;
+            double get__transition_probability(const std::string& executed_action__name,
+                                               const std::string& starting_state__name,
+                                               const std::string& successor_state__name) const;
             
-            double get_observation_probability(const std::string& executed_action__name,
-                                               const std::string& successor_state__name,
-                                               const std::string& observation__name) const;
+            double get__observation_probability(const std::string& executed_action__name,
+                                                const std::string& successor_state__name,
+                                                const std::string& observation__name) const;
+
+            double get__discount_factor() const;
             
             /******************************************************************************************************
              ******************************************************************************************************
