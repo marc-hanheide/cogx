@@ -52,8 +52,12 @@ int main(int argc, char** argv)
     POMDP::Solving::FSC__Randomizer fsc__Randomizer;
     fsc__Randomizer(fsc);
 
-    POMDP::Solving::FSC__Evaluator fsc__Evaluator;
-    fsc__Evaluator(fsc);
+    POMDP::Solving::FSC__Evaluator fsc__Evaluator(fsc);
+
+    /* Computing value function */
+    fsc__Evaluator();
+
+    VERBOSER(200, fsc__Evaluator<<std::endl);
     
     return 0;
 }
