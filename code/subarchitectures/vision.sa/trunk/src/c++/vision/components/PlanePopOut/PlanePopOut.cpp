@@ -838,7 +838,7 @@ void PlanePopOut::runComponent()
 			{
 				CurrentObjList.at(i).id = newDataID();
 				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-//cout<<" ID of this added SOI (empty) = "<<CurrentObjList.at(i).id<<endl;
+cout<<" ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
 				addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 			PreviousObjList = CurrentObjList;
@@ -872,12 +872,12 @@ void PlanePopOut::runComponent()
 				{
 					CurrentObjList.at(newObjList.at(i)).id = newDataID();
 					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI, CurrentObjList.at(newObjList.at(i)).EQInOneSOI);
-//cout<<" ID of this added SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
+cout<<" ID of this added new SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
 					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
 					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 				}
 			}
-			if (PreviousObjList.size()!=CurrentObjList.size() && m_torleration > Torleration) //need to delete the disappeared objects
+			if (PreviousObjList.size()!=CurrentObjList.size()) //need to delete the disappeared objects
 			{
 				m_torleration = 0;
 				std::vector <unsigned int> disappearedObjList; //store the serial number of disappeared objects in PreviousObjList
@@ -900,7 +900,7 @@ void PlanePopOut::runComponent()
 					for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all objects
 					{
 						deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
-//cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
+cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
 					}
 					std::vector<ObjPara> new_PreviousList;
 					new_PreviousList.reserve(PreviousObjList.size()-disappearedObjList.size());
@@ -922,11 +922,6 @@ void PlanePopOut::runComponent()
 					new_PreviousList.clear();
 				}
 			}
-			else if (PreviousObjList.size()!=CurrentObjList.size() && m_torleration < Torleration)
-				{
-					m_torleration++;
-					PreviousObjList = CurrentObjList;
-				}
 		}
 	}
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
