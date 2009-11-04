@@ -393,6 +393,15 @@ namespace POMDP
         std::ostream& operator<<(std::ostream& o
                                  , const POMDP::Parsing::Problem_Data::Value_Type& value_Type);
         
+        struct DEBUG__Action : action_base< DEBUG__Action>
+        { 
+            template<typename stack_type>
+            static void apply(const std::string& str, stack_type& s)
+            {
+                UNRECOVERABLE_ERROR("DEBUG RULE APPLIED.");
+            }
+        };
+        
         struct Number__Action : action_base< Number__Action>
         { 
             template<typename stack_type>
@@ -822,6 +831,8 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+//                 UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
+                
                 s->add__observations____action__successor_state__observation(str);
                 VERBOSER(20, str);
             }
@@ -833,6 +844,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state(str);
                 VERBOSER(20, str);
             }
@@ -844,6 +856,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action(str);
                 VERBOSER(20, str);
             }
@@ -858,6 +871,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__observation__UNIFORM(str);
                 VERBOSER(20, str);
             }
@@ -869,6 +883,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__UNIFORM(str);
                 VERBOSER(20, str);
             }
@@ -880,6 +895,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__UNIFORM(str);
                 VERBOSER(20, str);
             }
@@ -892,6 +908,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__observation__IDENTITY(str);
                 VERBOSER(20, str);
             }
@@ -903,6 +920,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__IDENTITY(str);
                 VERBOSER(20, str);
             }
@@ -914,6 +932,7 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
+                //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__IDENTITY(str);
                 VERBOSER(20, str);
             }
@@ -986,6 +1005,10 @@ namespace POMDP
         struct basic_alphanumeric : seq< alpha
                                          , star < sor< alpha
                                                        , digit > > >{};
+
+        struct basic_name : seq<basic_alphanumeric
+                                , star< sor<basic_alphanumeric
+                                            , one<'-'> > > > {};
         
         struct digits : plus<digit> {};
         
@@ -994,10 +1017,9 @@ namespace POMDP
         
         struct natural_number : ifapply <digits, Natural_Number__Action> {};
         
-        
-        struct state_name : sor<one<'*'>, basic_alphanumeric> {};
-        struct action_name : sor<one<'*'>, basic_alphanumeric> {};
-        struct observation_name : sor<one<'*'>, basic_alphanumeric> {};
+        struct state_name : sor<one<'*'>, basic_name> {}; // basic_name --> basic_alphanumeric
+        struct action_name : sor<one<'*'>, basic_name> {}; // basic_name --> basic_alphanumeric
+        struct observation_name : sor<one<'*'>, basic_name> {}; // basic_name --> basic_alphanumeric
         
         struct action_declaration :
             pad<sor< ifapply<natural_number, Add_Actions_Given_Number__Action>
@@ -1150,7 +1172,7 @@ namespace POMDP
             > {};
 
         struct observation_description__type2 :
-            seq< ifapply< pad<s_uniform, space>,
+            sor< ifapply< pad<s_uniform, space>,
                           Add_Observations__Action____action__successor_state__UNIFORM>
                  , ifapply<pad<s_identity, space> ,
                            Add_Observations__Action____action__successor_state__IDENTITY>
@@ -1161,8 +1183,8 @@ namespace POMDP
         struct observation_description__type3 :
             seq<pad<one<':'>, space>
                 , observation_name_or_number_indication<Report_Observation_As_Number__Action
-                                                        , Report_Observation__Action> 
-                , seq< ifapply<pad<s_uniform, space>,
+                                                        , Report_Observation__Action>
+                , sor< ifapply<pad<s_uniform, space>,
                                Add_Observations__Action____action__successor_state__observation__UNIFORM>
                        , ifapply<pad<s_identity, space>,
                                  Add_Observations__Action____action__successor_state__observation__IDENTITY>
