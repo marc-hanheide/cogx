@@ -1,9 +1,12 @@
 from collections import defaultdict
 import time, itertools
+import config
 
 import mapl_new as mapl
 import state_new as state
 import plans
+
+log = config.logger("planner")
 
 def MAPLAction(action, task):
     elmts = action.split()
@@ -137,7 +140,7 @@ def make_po_plan(actions, task):
                 state[svar] = val
 
         previous = pnode
-        #print "total time for action:", time.time()-t1
+        log.debug("total time for action: %f", time.time()-t1)
 
     read, universal = getGoalDescription(task.get_goal(), state)
     plan.goal_node.preconds = read
@@ -155,6 +158,6 @@ def make_po_plan(actions, task):
 #         print i, str(pnode)
 #         for to in plan.E[pnode]:
 #             print "    ", to
-#    print "total time for postprocessing:", time.time()-t0
+    log.debug("total time for postprocessing: %f", time.time()-t0)
     
     return plan

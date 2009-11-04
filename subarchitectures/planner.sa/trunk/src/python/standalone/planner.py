@@ -4,13 +4,15 @@ import re
 import itertools as itools
 from itertools import imap
 
-import utils
+import config, utils
 import globals as global_vars
 
 from task import PlanningStatusEnum, Task
 import mapl_new as mapl
 import plans
 import plan_postprocess
+
+log = config.logger("planner")
 
 class Planner(object):
     """ 
@@ -71,7 +73,7 @@ class Planner(object):
         else:
             #if no action is executing, trigger update
             if not any(map(lambda pnode: pnode.is_inprogress(), task.get_plan().V)):
-                #print "no actions are executing, reissuing plan"
+                log.info("no actions are executing, reissuing plan")
                 task.set_plan(task.get_plan(), update_status=True)
             else:
                 task.set_planning_status(PlanningStatusEnum.PLAN_AVAILABLE)
@@ -131,7 +133,7 @@ class Planner(object):
 
         #check if the goal is already satisfied
         if self.check_node(task.get_plan().goal_node, state):
-            #print "Goal is reached"
+            log.info("Goal is reached")
             for pnode in plan:
                 pnode.status = plans.ActionStatusEnum.EXECUTED
             return False
@@ -143,12 +145,12 @@ class Planner(object):
 
             if pnode.action.replan:
                 if self.check_node(pnode, state, replan=True):
-                    #print "Assertion (%s %s) is expandable, triggering replanning." % (pnode.action.name, " ".join(a.name for a in pnode.full_args))
+                    log.info("Assertion (%s %s) is expandable, triggering replanning.", pnode.action.name, " ".join(a.name for a in pnode.full_args))
                     return True
-        #print "time for checking assertions:", time.time()-t0
+        log.debug("time for checking assertions: %f", time.time()-t0)
 
-        #print "checking plan validity."
-        #print "current state is:", map(str, state.iterfacts())
+        log.debug("checking plan validity.")
+        #log.debug("current state is: %s", map(str, state.iterfacts()))
         #check for plan validity: test all preconditions and apply effects
         skipped_actions = -1
         first_invalid_action = None
@@ -162,24 +164,24 @@ class Planner(object):
             if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
                 if not first_invalid_action:
                     first_invalid_action = pnode
-                #print "Action (%s %s) is not executable, trying to skip it." % (action.name, " ".join(a.name for a in pnode.full_args))
+                log.debug("Action (%s %s) is not executable, trying to skip it.", action.name, " ".join(a.name for a in pnode.full_args))
                 # if an action is not executable, maybe it has already been executed
                 # so we're trying if the rest of the plan is executable in the initial state
                 skipped_actions = i
                 state = task.get_state().copy()
             else:
-                #print "Action (%s %s) ok." % (action.name, " ".join(a.name for a in pnode.full_args))
+                log.debug("Action (%s %s) ok.", action.name, " ".join(a.name for a in pnode.full_args))
                 for f in pnode.effects:
                     state.set(f)
-            #print "time for checking action (%s %s): %f" % (action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
+            log.debug("time for checking action (%s %s): %f", action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
 
         t2 = time.time()
         #Now check if the goal is satisfied
-        #print "state after execution is:", map(str, state.iterfacts())
-        #print "checking if goal is still satisfied."
+        log.debug("state after execution is: %s", map(str, state.iterfacts()))
+        log.debug("checking if goal is still satisfied.")
         if self.check_node(task.get_plan().goal_node, state):
             if skipped_actions > -1:
-                #print "Skipped the first %d actions." % skipped_actions
+                log.info("Skipped the first %d actions.", skipped_actions)
                 #newplan = task.get_plan().copy()
                 for pnode in plan[0:skipped_actions]:
                    pnode.status = plans.ActionStatusEnum.EXECUTED
@@ -187,19 +189,19 @@ class Planner(object):
                 if skipped_actions > len(plan)-2:
                     task.get_plan().goal_node.status = plans.ActionStatusEnum.EXECUTED
                 #task.set_plan(newplan)
-            #print "Plan is still valid."
-            #print "time for goal validation:", time.time()-t2
-            #print "total time for validation:", time.time()-t0
+            log.info("Plan is still valid.")
+            log.debug("time for goal validation: %f", time.time()-t2)
+            log.debug("total time for validation: %f", time.time()-t0)
             return False
 
-        #print "time for goal validation:", time.time()-t2
-        #print "total time for validation:", time.time()-t0
+        log.debug("time for goal validation: %f", time.time()-t2)
+        log.debug("total time for validation: %f", time.time()-t0)
         
-        #if first_invalid_action:
-        #    #print map(lambda (k,v): "%s = %s" % (str(k), str(v)), task.get_state().iteritems())
-        #    print "Preconditions of (%s %s) are not satisfied, triggering replanning." % (first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
-        #else:
-        #    print "Goal isn't fulfilled by the current plan, triggering replanning."
+        if first_invalid_action:
+            #print map(lambda (k,v): "%s = %s" % (str(k), str(v)), task.get_state().iteritems())
+            log.info("Preconditions of (%s %s) are not satisfied, triggering replanning.", first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
+        else:
+            log.info("Goal isn't fulfilled by the current plan, triggering replanning.")
 
         return True  # no monitoring currently
 
@@ -211,7 +213,7 @@ class Planner(object):
         can return immediately.  
         """
         # TODO: currently atomic process, ie planner will wait for result
-        #print "Planning was triggered for task %d." % task.taskID
+        log.info("Planning was triggered for task %d.", task.taskID)
         plan = self._base_planner.find_plan(task)
         task.set_plan(plan)
         
