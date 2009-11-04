@@ -1,4 +1,4 @@
-import constants
+import config, constants
 import state_new as state
 import mapl_new as mapl
 import mapl_new.mapltypes as types
@@ -6,6 +6,8 @@ import mapl_new.predicates as predicates
 import mapl_new.effects as effects
 #import mapl_new.writer
 from utils import Enum
+
+log = config.logger("planner")
 
 PlanningStatusEnum = Enum("TASK_CHANGED", "RUNNING", "PLAN_AVAILABLE", "PLANNING_FAILURE", "INTERRUPTED")    
 
@@ -127,11 +129,11 @@ class Task(object):
         return "\n".join(w.write_problem(self.mapltask))
     
     def load_mapl_domain(self, domain_file):
-        print "Loading MAPL domain %s." % domain_file
+        log.info("Loading MAPL domain %s.", domain_file)
         self._mapldomain = mapl.load_domain(domain_file)
         
     def load_mapl_problem(self, task_file, agent_name=None):
-        print "Loading MAPL problem %s." % task_file
+        log.info("Loading MAPL problem %s.", task_file)
         self.mapltask = mapl.load_problem(task_file, self._mapldomain)
         self.create_initial_state()
 

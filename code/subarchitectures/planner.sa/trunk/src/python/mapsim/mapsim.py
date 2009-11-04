@@ -1,11 +1,24 @@
 import simulation
 import sys
 
-from standalone import mapl_new as mapl
+import logging
 
-if __name__ == '__main__':    
+from standalone import mapl_new as mapl
+import standalone.config as config
+
+log = config.logger()
+
+if __name__ == '__main__':
     assert len(sys.argv) == 3, """Call 'mapsim.py domain.mapl scenario.mapl' for a single run"""
     domain_fn, scenario_fn = sys.argv[1:]
+
+    #sample for logging configuration:
+    #
+    #logging.getLogger().setLevel(logging.INFO)
+    #logging.getLogger("file").setLevel(logging.DEBUG)
+    #config.set_logfile("mapsim.log")
+    #config.set_logfile("planner.log", "planner")
+    #log.info("test")
 
     domain = mapl.load_domain(domain_fn)
     scenario = mapl.load_scenario(scenario_fn, domain)
