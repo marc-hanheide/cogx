@@ -5,6 +5,62 @@ korbay:[~/CogX/cogx-svn/dfki] % java comsys.processing.uttplan.UPDebugger
 To do
 -------
 
+InfoStruct assignment
+
+- Assign kontrast according to context: 
+	explicit "true" iff distinguishing from an alternative, 
+	explicit "false" iff not distinguishing; 
+	leave undefined if no suitable alternative present/salient in context
+  in the last case, default focus-assignment rules need to be applied
+  additionally: can focus mark uncertainty here?
+
+  related issue: kontrast w.r.t. most recently mentioned (alternative) object, 
+        or w.r.t. all salient-above-threshhold objects?
+
+
+- Issue Under Discussion modeling
+  intonation assignment when re-raising an issue
+	e.g., which reiteration to use when: 
+	What COLOR is the ball? vs. WHAT color is the ball? 
+	vs. What color IS the ball? vs. What color is the BALL? 
+	depending on what answer came to the first issue of the question!
+
+
+
+Responses after non-understanding or conflict:
+	Is the ball really red?
+        ...
+        WHAT color is the ball?
+  (but this seems to require that authority can be questioned)
+this relates to the expression of doubt issue
+	Is the ball not orange? -- what intonation would be right?
+	(suggesting vs. verifying)
+
+
+
+Referring expressions
+what content to include to (i) identify; (ii) describe; (iii) ground 
+-- combine these aspects/purposes
+What would be the situation for description (apart from grounding)? 
+
+
+
+Syntactic and lexical alignment
+it would require control at different levels, because sometimes the choice of "structure" (e.g., the (type of) proposition) determines the choice of words, e.g., 
+What color is it vs. What color does it have?
+whereas, presumably, we'd only have one proposition for synonymous words, e.g., "cup" vs. "mug"
+
+
+
+Content selection: when and where?
+currently, the dialogue planner basically decides from form will be used, e.g., ascription (= full sentence: it is a box) vs. just a fragment (a box) and how content is distributed (e.g., H: What color is the box? R: The box is red vs. It is a red box; but note: H: What is the red object? R: The red object is a box vs. It is a red box (bad!))
+how about when unrequested info is added: H: What color is this? R: It is a red box vs. The box is red. vs. It is a red box (not so great!)
+
+do we want to keep it this way?
+the examples seem to point to alignment again
+
+
+-------------------------
 
 InfoStruct Problems:
 
