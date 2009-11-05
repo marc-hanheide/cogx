@@ -1,6 +1,6 @@
 h: hi robot!
 r: hello
-#Act h: puts a green box in front of the robot
+#Act h: puts a red box in front of the robot
 r: what is that
 #Hypothesis: express uncertainity about sth
 h: do you know what this is ?
