@@ -3,11 +3,13 @@ import itertools
 from standalone import mapl_new as mapl
 from standalone import state_new as state
 from standalone import plans
+from standalone import config
 
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 import agent
+log = config.logger("mapsim")
 
 class Simulation(object):
     def __init__(self, scenario):
@@ -74,6 +76,7 @@ class Simulation(object):
 
         if self.state.isExecutable(action):
             print "%d: Agent %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args))) 
+            log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args)))
             new_facts = set()
             for eff in action.effects:
                 new_facts |= self.state.getEffectFacts(eff)
@@ -95,10 +98,12 @@ class Simulation(object):
                     self.state.set(f)
                 percieved_facts = list(new_facts)
 
+            log.debug("Facts sent to agent %s: %s", agent.name, ", ".join(map(str, percieved_facts)))
             action.uninstantiate()
             agent.updateTask(percieved_facts, plans.ActionStatusEnum.EXECUTED)
         else:
             print "%d: Agent %s failed to execute (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args))) 
+            log.debug("%d: Agent %s failed to execute (%s %s)", self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args)))
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
 

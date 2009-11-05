@@ -15,8 +15,9 @@ if __name__ == '__main__':
     #sample for logging configuration:
     #
     #logging.getLogger().setLevel(logging.INFO)
-    #logging.getLogger("file").setLevel(logging.DEBUG)
-    #config.set_logfile("mapsim.log")
+    logging.getLogger("file").setLevel(logging.DEBUG)
+    config.set_logfile("mapsim.log")
+    config.set_logfile("agent.log", "agent")
     #config.set_logfile("planner.log", "planner")
     #log.info("test")
 

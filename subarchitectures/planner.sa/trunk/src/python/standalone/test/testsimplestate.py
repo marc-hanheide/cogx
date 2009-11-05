@@ -159,7 +159,7 @@ class StateTest(unittest.TestCase):
         state = State([s1, s2])
 
         self.assertRaises(Exception, Fact.fromCondition, cond)
-        facts = state.factsFromCondition(cond)
+        facts = Fact.fromCondition(cond, state)
         
         f1 = Fact(StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE)
         f2 = Fact(StateVariable(self.func1, [self.c2, self.c2, self.c1]), FALSE)
@@ -172,8 +172,8 @@ class StateTest(unittest.TestCase):
         state.set(f2)
         self.assert_(state.isSatisfied(cond))
 
-        state2 = State([s1])
-        self.assertRaises(Exception, state2.factsFromCondition, cond)
+        #state2 = State([s1])
+        #self.assertRaises(Exception, Fact.fromCondition, cond, state2)
         
         
         

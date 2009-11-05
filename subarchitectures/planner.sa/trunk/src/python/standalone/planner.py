@@ -177,18 +177,17 @@ class Planner(object):
 
         t2 = time.time()
         #Now check if the goal is satisfied
-        log.debug("state after execution is: %s", map(str, state.iterfacts()))
+        #log.debug("state after execution is: %s", map(str, state.iterfacts()))
         log.debug("checking if goal is still satisfied.")
         if self.check_node(task.get_plan().goal_node, state):
             if skipped_actions > -1:
                 log.info("Skipped the first %d actions.", skipped_actions)
-                #newplan = task.get_plan().copy()
                 for pnode in plan[0:skipped_actions]:
                    pnode.status = plans.ActionStatusEnum.EXECUTED
                 #we skipped all actions and the goal ist still satisfied: done
                 if skipped_actions > len(plan)-2:
                     task.get_plan().goal_node.status = plans.ActionStatusEnum.EXECUTED
-                #task.set_plan(newplan)
+
             log.info("Plan is still valid.")
             log.debug("time for goal validation: %f", time.time()-t2)
             log.debug("total time for validation: %f", time.time()-t0)

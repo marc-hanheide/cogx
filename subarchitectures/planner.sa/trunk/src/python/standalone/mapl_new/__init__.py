@@ -2,6 +2,7 @@ import mapltypes as types
 import parser
 import predicates, conditions, effects, actions, sensors, axioms, domain, problem, scenario, writer
 
+
 def load_domain(filename):
     p = parser.Parser.parseFile(filename)
     return domain.MAPLDomain.parse(p.root)

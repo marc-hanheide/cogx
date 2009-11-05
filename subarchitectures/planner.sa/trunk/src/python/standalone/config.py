@@ -26,35 +26,38 @@ file.setLevel(level=logging.INFO)
 file.addHandler(NullHandler())
 file.propagate = 0
 
-
+logfile_scope = None
 
 class LoggerProxy(object):
     def __init__(self, name=None):
         self.console = logging.getLogger(name)
-        if name:
-            self.file = logging.getLogger("file."+name)
-        else:
-            self.file = logging.getLogger("file")
+        self.name = name
+
+    def log(self, level, msg, *args, **kwargs):
+        self.console.log(level, msg, *args, **kwargs)
+
+        elems = ["file"]
+        if logfile_scope:
+            elems.append(logfile_scope)
+        if self.name:
+            elems.append(self.name)
+
+        logging.getLogger(".".join(elems)).log(level, msg, *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
-        self.console.debug(msg, *args, **kwargs)
-        self.file.debug(msg, *args, **kwargs)
+        self.log(logging.DEBUG, msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        self.console.info(msg, *args, **kwargs)
-        self.file.info(msg, *args, **kwargs)
+        self.log(logging.INFO, msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        self.console.warning(msg, *args, **kwargs)
-        self.file.warning(msg, *args, **kwargs)
-
+        self.log(logging.WARNING, msg, *args, **kwargs)
+        
     def error(self, msg, *args, **kwargs):
-        self.console.error(msg, *args, **kwargs)
-        self.file.error(msg, *args, **kwargs)
+        self.log(logging.ERROR, msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
-        self.console.critical(msg, *args, **kwargs)
-        self.file.critical(msg, *args, **kwargs)
+        self.log(logging.CRITICAL, msg, *args, **kwargs)
 
 def logger(name=None):
     return LoggerProxy(name)

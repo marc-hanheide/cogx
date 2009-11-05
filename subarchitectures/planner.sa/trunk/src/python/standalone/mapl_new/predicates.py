@@ -216,9 +216,9 @@ class Term(object):
             elif isinstance(obj, TypedObject):
                 self.__class__ = ConstantTerm
                 ConstantTerm.__init__(self, obj)
-            elif isinstance(obj, (int, float)):
+            elif isinstance(obj, (int, float, long)):
                 self.__class__ = ConstantTerm
-                ConstantTerm.__init__(self, TypedObject(obj, numberType))
+                ConstantTerm.__init__(self, TypedNumber(obj))
             else:
                 raise Exception("Unexpected Argument for Term: %s" % str(obj))
         elif len(params) == 2:
@@ -273,7 +273,7 @@ class Term(object):
                     value = float(term.token.string)
                 except:
                     raise ParseError(term.token, "Unknown identifier: '%s'" % term.token.string)
-                obj = TypedObject(value, numberType)
+                obj = TypedNumber(value)
 
             if isinstance(obj, Parameter):
                 if isinstance(obj.type, FunctionType):
@@ -368,7 +368,7 @@ class FunctionVariableTerm(FunctionTerm, VariableTerm):
 
     def copyInstance(self):
         if self.isInstantiated():
-            return FunctionTerm(self.getInstance().function, [a.args for a in self.getInstance().args])
+            return FunctionTerm(self.getInstance().function, [a for a in self.getInstance().args])
         return FunctionVariableTerm(self.object)
     
     def __get_function(self):
@@ -399,7 +399,7 @@ class FunctionVariableTerm(FunctionTerm, VariableTerm):
     
 class ConstantTerm(Term):
     def __init__(self, obj):
-        assert obj.__class__ == TypedObject
+        assert isinstance(obj, TypedObject)
         self.object = obj
     
     def getType(self):
