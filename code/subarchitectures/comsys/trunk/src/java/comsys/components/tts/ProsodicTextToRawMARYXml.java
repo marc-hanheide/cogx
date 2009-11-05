@@ -354,6 +354,15 @@ public static void main(String[] args) {
 		l_synth.m_ttsLocal.m_voiceName=l_voicename;
 		l_synth.Utter(l_convert.GenratedXMLFileLocation.concat(l_convert.g_xmlfilename));
 		
+		if(!l_synth.m_ttsLocal.m_SaveAudio2Wav){
+			File f = new File(l_convert.GenratedXMLFileLocation.concat(l_convert.g_xmlfilename));
+			if(f.exists()){
+				System.out.println("XML file deleted:"+ l_convert.GenratedXMLFileLocation.concat(l_convert.g_xmlfilename));
+				boolean success = f.delete();
+			    if (!success)
+			     throw new IllegalArgumentException("Delete RamMaryXMl failed");
+			}
+		}
 		Thread.sleep(2500);
 		}
 	}
@@ -365,5 +374,8 @@ public static void main(String[] args) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
+	
+	//Delete the generated RAWMaryXML
+	
 	}
 }
