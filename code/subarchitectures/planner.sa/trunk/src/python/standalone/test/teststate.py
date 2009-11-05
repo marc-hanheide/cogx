@@ -16,7 +16,7 @@ domlogistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :mapl :typing :equality :object-fluents :durative-actions) 
+(:requirements :mapl :typing :equality :fluents :durative-actions) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -28,7 +28,9 @@ domlogistics = \
              (free ?l - location))
 
 (:functions  (city-of ?l - (either location vehicle)) - city
-             (location-of ?t - thing) - (either location vehicle))
+             (location-of ?t - thing) - (either location vehicle)
+             (num_packages ?v - vehicle) - number
+)
 
 ;(:derived (kval ?a - agent ?svar - (function object))
 ;          (exists (?val - object) (= ?svar ?val)))
@@ -53,8 +55,11 @@ domlogistics = \
 (:action load
          :agent         (?a - agent)
          :parameters    (?p - package ?v - vehicle)
-         :precondition  (= (location-of ?p) (location-of ?v))
-         :effect        (assign (location-of ?p) ?v))
+         :precondition  (and (= (location-of ?p) (location-of ?v))
+                             (< (num_packages ?v) 4))
+         :effect        (and (assign (location-of ?p) ?v)
+                             (increase (num_packages ?v) 1))
+)
 
 (:action a_load
          :agent         (?a - agent)
@@ -67,8 +72,10 @@ domlogistics = \
          :agent         (?a - agent)
          :parameters    (?p - package ?v - vehicle)
          :precondition  (= (location-of ?p) ?v)
-         :effect        (assign (location-of ?p) (location-of ?v)))
+         :effect        (and (assign (location-of ?p) (location-of ?v))
+                             (decrease (num_packages ?v) (- 2 1)))
 
+)
 )
 """
 
@@ -101,7 +108,11 @@ problogistics = \
         (= (city-of apt1) cit1)
         (= (city-of apt2) cit2)
         (= (city-of pos1) cit1)
-        (= (city-of pos2) cit2))
+        (= (city-of pos2) cit2)
+        (= (num_packages apn1) 0)
+        (= (num_packages tru1) 0)
+        (= (num_packages tru2) 0)
+)
 
 (:goal  (and (= (location-of obj11) apt1)
              (= (location-of obj13) apt1)
@@ -181,6 +192,24 @@ class StateTest(unittest.TestCase):
         drive.instantiate(["agent", "tru1", "apt2"])
         self.assertFalse(state.isSatisfied(drive.precondition))
         drive.uninstantiate()
+
+    def testNumericConditions(self):
+        """Testing numeric conditions"""
+
+        state = State.fromProblem(self.prob)
+        num_packages = StateVariable(self.prob.functions["num_packages"][0], [self.prob["tru2"]])
+        
+        load = self.prob.getAction("load")
+        load.instantiate(["agent", "obj21", "tru2"])
+        self.assert_(state.isSatisfied(load.precondition))
+        
+        state[num_packages] = TypedNumber(4)
+        self.assertFalse(state.isSatisfied(load.precondition))
+
+        state[num_packages] = TypedNumber(5)
+        self.assertFalse(state.isSatisfied(load.precondition))
+        
+        load.uninstantiate()
         
     def testEffects(self):
         """Testing applying of effects"""
@@ -201,6 +230,41 @@ class StateTest(unittest.TestCase):
         self.assertFalse(fold in state)
         drive.uninstantiate()
 
+    def testNumericEffects(self):
+        """Testing numeric effects"""
+
+        state = State.fromProblem(self.prob)
+        num_packages = StateVariable(self.prob.functions["num_packages"][0], [self.prob["tru2"]])
+        
+        load = self.prob.getAction("load")
+        load.instantiate(["agent", "obj21", "tru2"])
+
+        fold = Fact(num_packages, TypedNumber(0))
+        self.assert_(fold in state)
+                           
+        state.applyEffect(load.effects)
+                
+        fnew = Fact(num_packages, TypedNumber(1))
+        self.assert_(fnew in state)
+        self.assertFalse(fold in state)
+        load.uninstantiate()
+        
+        load.instantiate(["agent", "obj22", "tru2"])
+        state.applyEffect(load.effects)
+        load.uninstantiate()
+
+        fnew2 = Fact(num_packages, TypedNumber(2))
+        fnew2b = Fact(num_packages, 2)
+        self.assert_(fnew2 in state)
+        self.assert_(fnew2b in state)
+        
+        unload = self.prob.getAction("unload")
+        unload.instantiate(["agent", "obj21", "tru2"])
+        state.applyEffect(unload.effects)
+        unload.uninstantiate()
+
+        self.assert_(fnew in state)
+        
     def testConditionReasons(self):
         """Testing finding reason of satisfied conditions"""
         

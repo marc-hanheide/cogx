@@ -220,9 +220,13 @@ featureType = Type("feature")
 mapl_types = [agentType, planningAgentType, phys_objType, subgoalType, featureType]
 
 class TypedObject(object):
-    def __init__(self, name, type):
+    def __init__(self, name, _type):
+        if type(name) in (int, float, long):
+            self.__class__ = TypedNumber
+            TypedNumber.__init__(self, name)
+            return
         self.name = name
-        self.type = type
+        self.type = _type
 
     def isInstanceOf(self, type):
         return self.type.equalOrSubtypeOf(type)
@@ -244,7 +248,27 @@ class TypedObject(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-    
+
+class TypedNumber(TypedObject):
+    def __init__(self, number):
+        self.value = number
+        self.type = numberType
+
+    name = property(lambda self: self.value)
+
+    def copy(self):
+        return self.__class__(self.value)
+
+    def __str__(self):
+        return "%f" % self.value
+
+    def __eq__(self, other):
+        try:
+            return self.value == other.value and self.type == other.type
+        except:
+            return self.value == other
+        
+
 TRUE = TypedObject("true", booleanType)
 FALSE = TypedObject("false", booleanType)
 
