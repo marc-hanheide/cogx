@@ -118,6 +118,7 @@ public class cc_TTS extends ManagedComponent {
     private static String m_RAWMARYXMLHeader=null;
 	private static String m_GenrtdXMLFileLoc=null;
 	private static boolean m_DelGenrtdXMLFile=true;
+	private static boolean m_saveAudio2wav=false;
 	
 	
     // local and remote TTS
@@ -418,24 +419,35 @@ public class cc_TTS extends ManagedComponent {
 					log("Trying to say the following: ["+soi.phonString+"]");
                     // Synthesize speech locally
 					
-					//Changes for Prosodic Grammar
+					//Process the "text" string for Prosodic markers
 					if(soi.phonString.contains("%") || soi.phonString.contains("@") ){
-						//do mary xml
+						//Do prosodic to RAWMaryXML
 						String l_xmlfile = new String();
-						l_xmlfile=ProsodicTextToRawMARYXml.ToRawMaryXml(soi.phonString, m_RAWMARYXMLHeader, m_GenrtdXMLFileLoc);
+						ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(m_RAWMARYXMLHeader,m_GenrtdXMLFileLoc,"cogx",true);
 						
-						//A function that takes the prosodic text as input and returns a filename
+						//Make a user friendly filename for this RawMayXMLfile
+						l_convert.g_xmlfilename=l_convert.XmlFileName(soi.phonString);
+						
+						//A function that takes the prosodic text as input, converts it into RawMaryXML and returns the filename
+						l_xmlfile=l_convert.ConvertToRawMarxXml(soi.phonString);
+												
 						log("XML file written: ["+m_GenrtdXMLFileLoc.concat(l_xmlfile)+"]");
 						
-						//Synthesize this file
+						//Now Synthesize this file
 						try {
-								SynthesisRAWMaryXMLInput.Utter(m_GenrtdXMLFileLoc.concat(l_xmlfile),m_voiceName);
+								//Set inputs for RAWMARYXML processing
+								m_ttsLocal.m_inputType="RAWMARYXML";
+								//Save Audio to wav options
+								m_ttsLocal.m_SaveAudio2Wav=m_saveAudio2wav;
+								m_ttsLocal.m_AudioFileName=m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename);
+								SynthesisRAWMaryXMLInput l_synthsis = new SynthesisRAWMaryXMLInput(m_ttsLocal);
+								l_synthsis.Utter(m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename));
 								
 								//Delete the generated RAWMaryXML
 								if(m_DelGenrtdXMLFile){
-									File f = new File(m_GenrtdXMLFileLoc.concat(l_xmlfile));
+									File f = new File(m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename));
 									if(f.exists()){
-										log("XML file deleted: ["+m_GenrtdXMLFileLoc.concat(l_xmlfile)+"]");
+										log("XML file deleted: ["+m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename)+"]");
 										boolean success = f.delete();
 									    if (!success)
 									     throw new IllegalArgumentException("Delete RamMaryXMl failed");
@@ -544,7 +556,27 @@ public class cc_TTS extends ManagedComponent {
             m_bNoMary = true;
         }
         else {
-            // complete silence (both locally and remotely)
+            
+        	// IP address of the Mary server
+            if (_config.containsKey("--serverHost")) {
+                m_serverHost = _config.get("--serverHost");
+            }
+			
+            // port of the Mary server
+            if (_config.containsKey("--serverPort")) {
+                m_serverPort = Integer.valueOf(_config.get("--serverPort"));
+            }
+        	
+            //Initialise Mary
+            try {
+                m_mary = new MaryClient(m_serverHost, m_serverPort);
+                // speakLocal("hello !");
+            }
+            catch (Exception e) {
+                log(e);
+            }
+
+        	// complete silence (both locally and remotely)
             if (_config.containsKey("--silent")
                 || _config.containsKey("-s")) {
                 log("switching to silent mode");
@@ -571,17 +603,7 @@ public class cc_TTS extends ManagedComponent {
                 m_voiceName = _config.get("--voice");
             }
 
-            // IP address of the Mary server
-            if (_config.containsKey("--serverHost")) {
-                m_serverHost = _config.get("--serverHost");
-            }
-			
-            // port of the mary server
-            if (_config.containsKey("--serverPort")) {
-                m_serverPort = Integer.valueOf(_config.get("--serverPort"));
-            }
-
-			String startingUp = ""; 
+            String startingUp = ""; 
 			
             // Line to be said on startup
             if (_config.containsKey("--startingUp")) {
@@ -598,27 +620,23 @@ public class cc_TTS extends ManagedComponent {
                 m_GenrtdXMLFileLoc = _config.get("--writeXmlTo");
             }
             
-         // Location of temporarily storing generated MaryXMLFiles
+            // Location of temporarily storing generated MaryXMLFiles
             if (_config.containsKey("--delXml")) {
             	String tmp = _config.get("--delXml");
             	if(tmp.equals("true")) m_DelGenrtdXMLFile =true;
             	else m_DelGenrtdXMLFile =false;
             }
+            // Saving audio files to wav, location is same as that of m_GenrtdXMLFileLoc
+            if (_config.containsKey("--saveAudio2wav")) {
+            	String tmp = _config.get("--saveAudio2wav");
+            	if(tmp.equals("true")) m_saveAudio2wav =true;
+            	else m_saveAudio2wav =false;
+            }
             
-            try {
-                m_mary = new MaryClient(m_serverHost, m_serverPort);
-                // speakLocal("hello !");
-            }
-
-            catch (Exception e) {
-                log(e);
-            }
-
+            
             // create local and remote TTS
-            m_ttsLocal =
-		new TTSLocal(m_mary, "TEXT", m_voiceName, m_bSilentModeLocal, "WAVE");
-       //     m_ttsRemote =
-       //             new TTSRemote(m_mary, m_voiceName, m_bSilentModeRemote);
+            m_ttsLocal = new TTSLocal(m_mary, "TEXT_EN", m_voiceName, m_bSilentModeLocal, "WAVE");
+            // m_ttsRemote =  new TTSRemote(m_mary, m_voiceName, m_bSilentModeRemote);
 			
 			if (!startingUp.equals("")) { 
 				m_ttsLocal.speak(startingUp);
