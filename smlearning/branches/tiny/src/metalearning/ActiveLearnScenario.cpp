@@ -63,20 +63,20 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 	golem::Real fingerLength = 0.135;
 	XMLData(fingerLength, context->getContextFirst("effector finger_length"));
 	golem::Real fingerDiam = 0.02;
-	XMLData(fingerDiam, context->getContextFirst("effector finger_diameter"));
+// 	XMLData(fingerDiam, context->getContextFirst("effector finger_diameter"));
 	golem::Real tipRadius = 0.015;
 	XMLData(tipRadius, context->getContextFirst("effector tip_radius"));
 	
 	golem::BoundingBox::Desc* pFingerRodShapeDesc = new golem::BoundingBox::Desc;
 	pFingerRodShapeDesc->dimensions.set(fingerDiam/2.0, fingerLength/2.0, fingerDiam/2.0);
 	pFingerRodShapeDesc->pose.p.v2 += baseLength + fingerLength/2.0;
-	//pFingerRodShapeDesc->group = val.effectorGroup;
+	pFingerRodShapeDesc->group = val.effectorGroup;
 	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerRodShapeDesc));
-	golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
-	pFingerTipShapeDesc->radius = tipRadius;
-	pFingerTipShapeDesc->pose.p.v2 += golem::Real(baseLength + fingerLength);
-	pFingerTipShapeDesc->group = val.effectorGroup;
-	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));
+// 	golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
+// 	pFingerTipShapeDesc->radius = tipRadius;
+// 	pFingerTipShapeDesc->pose.p.v2 += golem::Real(baseLength + fingerLength);
+// 	pFingerTipShapeDesc->group = val.effectorGroup;
+// 	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));
 	
 	// end-effector reference pose
 	val.referencePose.setId();
@@ -559,11 +559,13 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		trainseq.inputs.reshape(inputShape);
 		trainseq.targetPatterns.reshape(targetShape);
 		load_sequence (trainseq.inputs.data, trainseq.targetPatterns.data, currentSeq);
+		learner.feed_forward (trainseq);
+		calculatePfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
 		learner.update (trainseq, startPosition-1);
 		vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
 		vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
 		plotApp->updateData(startPosition-1, learnProgData, errorData);
-		calculatePfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
+// 		calculatePfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
 // 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
 // 		Actor* predictedPolyflapObject = setupPolyflap(scene, predictedPfPose, polyflapDimensions);
 
@@ -571,9 +573,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		arm->setCollisionBoundsGroup(0x0);
 
 			
-		// reset collision detection - fill collision group mask with 1s to indicate shapes with all possible group masks
 		cout << "sequence size: " << currentSeq.size() << endl;
-
 
 
 		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
