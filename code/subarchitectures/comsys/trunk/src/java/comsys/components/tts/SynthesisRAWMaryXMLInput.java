@@ -9,45 +9,45 @@ import comsys.components.tts.TTSLocal;
 //import marytts.client.http.Address;
 
 public class SynthesisRAWMaryXMLInput {
-	public static MaryClient m_mary;
-	public static TTSLocal m_ttsLocal;
-
+		public  TTSLocal m_ttsLocal;
+	
+	
+public SynthesisRAWMaryXMLInput(TTSLocal i_ttslocal){
+	this.m_ttsLocal=i_ttslocal;
+}
 	/**
 	 * @param args
 	 */
-	public static void Utter(String i_filename, String i_voicename) {
-		// TODO Auto-generated method stub
-		
+	public static void main(String[] args){
 		try {
-			//m_mary = MaryClient.getMaryClient(new Address("localhost", 59125));
-			m_mary = new MaryClient("localhost", 59125);
-			}
+			MaryClient l_mary = new MaryClient("localhost", 59125);
+			TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", args[1], false, "WAVE");
+			l_ttslocal.m_AudioFileName=args[1];
+			l_ttslocal.m_SaveAudio2Wav=Boolean.valueOf(args[2]);
+			SynthesisRAWMaryXMLInput l_synth = new SynthesisRAWMaryXMLInput(l_ttslocal);
+			l_synth.Utter(args[1]);
+		}
         catch (Exception e) {
         	System.out.println(e);
         }
-         
-       //	m_ttsLocal = new TTSLocal(m_mary, "female", false, "en_US", "WAVE");
-    	m_ttsLocal = new TTSLocal(m_mary,"RAWMARYXML", i_voicename, false, "WAVE");
+     }
+	
+	public void Utter(String i_filename) {
 		
-       	//System.out.println("Synthesize RAWMARYXML file: "+ i_filename);
-       	
+       //System.out.println("Synthesize RAWMARYXML file: "+ i_filename);
        	StringBuffer output = new StringBuffer();
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(i_filename));
-			
 			String st;
 			while ((st=in.readLine()) != null) {
 			output.append(st);
 			output.append(" ");
-			
 			}
-			// System.out.println(output.toString());
 			in.close();
-			}
+		}
 		catch (Exception fx) {
 			System.out.println("IO error in Synthesis: " + fx.toString());
 		}
-		
 		m_ttsLocal.speak(output.toString());
 	}
 

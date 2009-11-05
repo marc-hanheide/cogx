@@ -5,9 +5,10 @@ import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
 
+import de.dfki.lt.mary.client.MaryClient;
+
 public class ProsodicTextToRawMARYXml {
 
-	private static boolean debug=false;
 	private static final String XMLtag_whitespace = new String(" ");
 	private static final String XMLtag_hyphen = new String("-");
 	private static final String XMLtag_ACCENT_open = new String("<t");
@@ -23,98 +24,44 @@ public class ProsodicTextToRawMARYXml {
 	private static final String XMLtag_BOUNDARY_close = new String("/>");
 	private static String XMLtag_BOUNDARY_pause = new String("6");
 	
-	private static String RAWMARYXMLHead;
-	private static String GenratedXMLFileLocation;
-	private static Integer UtteranceCount=1;
-	private static String stub;
-	private static boolean prosody=false;
-	
 	private static final String SententialPause = new String ("6");
 	private static final String IntraSententialPause = new String ("2");
-	private static final String ProsodicLex = new String ("@");
-	private static final String BoundryLex = new String ("%");
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
-		//Save some global variables
-		GenratedXMLFileLocation = new String(args[2]);
-		RAWMARYXMLHead = new String(args[1]);
-		UtteranceCount=0;
-		String l_xmlfile = new String();
-		String l_voicename = new String();
-		Integer l_substr;
-		if(debug){
-			System.out.println("RAWMARYXMLHead is in file : " + RAWMARYXMLHead);
-		}
-		//Get the prosodic utterance text from a file
-		try{
-			FileReader l_file = new FileReader(args[0]); 
-			BufferedReader l_inp= new BufferedReader(l_file);  
-			String l_utterance = new String();
-			
-			//read a line
-			while((l_utterance=l_inp.readLine())!=null){
-				if(debug){
-					System.out.println("I read: " + l_utterance);
-				}
-				if(l_utterance.startsWith("#")){
-					continue;
-				}
-				if(l_utterance.startsWith("h")){
-					l_voicename="hmm-jmk";
-					l_substr=2;
-					stub="h";
-				}else if(l_utterance.startsWith("r")){
-					l_voicename="us2";
-					l_substr=2;
-					stub="r";
-				}else {
-					l_voicename="us2"; 
-					l_substr=0;
-					stub="g";
-				}
-				
-				
-			//Keep the trace of line count
-				UtteranceCount++;
-			//Just an indicator
-				if(l_utterance.contains(BoundryLex) || l_utterance.contains(ProsodicLex)) prosody= true;
-				else prosody= false;
-			//pass this line to the conversion function
-			l_xmlfile=ConvertToRawMarxXml(l_utterance.substring(l_substr));
-				
-			//A function that takes the prosodic text as input and returns a filename
-			System.out.println("XML file written: "+ l_xmlfile);
-				
-			//Synthesize this file
-			try {
-					SynthesisRAWMaryXMLInput.Utter(GenratedXMLFileLocation.concat(l_xmlfile),l_voicename);
-					Thread.sleep(2500);
-			} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			}
-				
-			}
-		}
-		catch (IOException io_e) {
-			// TODO: handle exception
-			System.out.println(io_e);
-		}
-	}
+	private static final String ProsodicKey = new String ("@");
+	private static final String BoundryKey = new String ("%");
 	
-	public static String ConvertToRawMarxXml(String inp_prosodictxt){
+	private  String RAWMARYXMLHead;
+	public String g_xmlfilename=null;
+	private  String GenratedXMLFileLocation;
+	private  Integer UtteranceCount=1;
+	private  String g_stub;
+	private  boolean g_prosody=false;
+		
+	private boolean debug=false;
+	/**
+	 * @param i_maryXmlHdr RAWMaryXml header.
+	 * @param i_writeFile2Dir Location to keep the generated XMLFile.
+	 * @param i_stub  a prefix for XMLFilename.
+	 * @param i_prosody text is prosodic.
+	 */
+	public ProsodicTextToRawMARYXml(String i_maryXmlHdr, String i_writeFile2Dir, String i_stub, boolean i_prosody){
+		this.RAWMARYXMLHead=i_maryXmlHdr;
+		this.GenratedXMLFileLocation=i_writeFile2Dir;
+		this.g_stub=i_stub;
+		this.g_prosody=i_prosody;
+	}
+	/**	A function that takes the prosodic text as input, converts it into RawMaryXML and returns the filename 
+	 * @param inp_prosodictxt text to be spoken.
+	 */
+	//This is a function called from cc_TTS / or other Components requesting Speech Synthesis
+	// Any changes in main() should also be reflected here
+	public  String ConvertToRawMarxXml(String i_prosodictxt){
 		if(debug){
-			System.out.println("Convert to XML got: " + inp_prosodictxt);
+			System.out.println("Convert to XML got: " + i_prosodictxt);
 		}
 		
-		StringBuffer l_xmlstring =new StringBuffer();
-		String l_xmlfile_return = new String();
+		StringBuffer l_str2xml =new StringBuffer();
 		//tokenize the input string
-		StringTokenizer l_tkns = new StringTokenizer(inp_prosodictxt," ");
+		StringTokenizer l_tkns = new StringTokenizer(i_prosodictxt," ");
 		Integer l_tkncnt=l_tkns.countTokens();
 		Integer l_bndrycnt=0;
 		while (l_tkns.hasMoreTokens()){
@@ -125,8 +72,8 @@ public class ProsodicTextToRawMARYXml {
 			//token bears accent
 			if(AccentedWord(l_word)) {
 			l_returned_xml=HandleAccentedWord(l_word);
-			l_xmlstring.append(l_returned_xml);
-			l_xmlstring.append(XMLtag_whitespace);
+			l_str2xml.append(l_returned_xml);
+			l_str2xml.append(XMLtag_whitespace);
 			}
 			else if(isBoundaryTone(l_word)){
 			//token is boundary tone
@@ -136,41 +83,41 @@ public class ProsodicTextToRawMARYXml {
 			else XMLtag_BOUNDARY_pause=SententialPause;
 			
 			l_returned_xml=HandleBoundaryTone(l_word);
-			l_xmlstring.append(l_returned_xml);
-			l_xmlstring.append(XMLtag_whitespace);
+			l_str2xml.append(l_returned_xml);
+			l_str2xml.append(XMLtag_whitespace);
 			}
 			else {
 				l_returned_xml=HandleUnAccentedWord(l_word);
-				l_xmlstring.append(l_returned_xml);
-				l_xmlstring.append(XMLtag_whitespace);
+				l_str2xml.append(l_returned_xml);
+				l_str2xml.append(XMLtag_whitespace);
 			}
 		}
-		//Put this string in the XMLfile that has fixed tags
-		l_xmlfile_return=WriteToXML(l_xmlstring.toString());
-		
-		return l_xmlfile_return;
+	
+		//Put this string in the XMLfile (containing some fixed header and end tags) and return the filename.
+		return this.WriteToXML(l_str2xml.toString());
 	}
 
-	public static boolean AccentedWord(String i_word){
-		if (i_word.contains(ProsodicLex)) return true; //for the moment we only check for an "_" in accented words. e.g. red_H*, red_L+H*
+	private static boolean AccentedWord(String i_word){
+		if (i_word.contains(ProsodicKey)) return true; //for the moment we only check for an "@" in accented words. e.g. red_H*, red_L+H*
 		else return false;
 		
 	}
-	public static boolean isBoundaryTone(String i_btone){
-		if(i_btone.contains(BoundryLex)) return true; //for the moment we only check for an "%" in boundary tones. e.g. LL%, LH%, HH%, HL%.
+	private static boolean isBoundaryTone(String i_btone){
+		if(i_btone.contains(BoundryKey)) return true; //for the moment we only check for an "%" in boundary tones. e.g. LL%, LH%, HH%, HL%.
 		else return false;
 	}
-	public static String HandleAccentedWord(String i_acc_word) {
+	
+	private String HandleAccentedWord(String i_acc_word) {
 		if(debug){
 			System.out.println("Handle accented word got: " + i_acc_word);
 		}
 		
-		StringBuffer l_xmlto_return =new StringBuffer();
-		l_xmlto_return.append(XMLtag_ACCENT_open);
-		l_xmlto_return.append(XMLtag_whitespace);
-		l_xmlto_return.append(XMLtag_ACCENT_prefix);
+		StringBuffer l_xml2rtrn =new StringBuffer();
+		l_xml2rtrn.append(XMLtag_ACCENT_open);
+		l_xml2rtrn.append(XMLtag_whitespace);
+		l_xml2rtrn.append(XMLtag_ACCENT_prefix);
 		//Tokenise word and accent, i.e. red_H* into red and H*
-		StringTokenizer l_tkns = new StringTokenizer(i_acc_word,ProsodicLex);
+		StringTokenizer l_tkns = new StringTokenizer(i_acc_word,ProsodicKey);
 		String l_word =new String("");
 		String l_accent = new String("");
 		while (l_tkns.hasMoreTokens()){
@@ -178,41 +125,41 @@ public class ProsodicTextToRawMARYXml {
 			l_word=l_tkns.nextToken();
 			l_accent=l_tkns.nextToken();
 		}
-		l_xmlto_return.append(l_accent);
-		l_xmlto_return.append(XMLtag_ACCENT_suffix);
-		l_xmlto_return.append(l_word);
-		l_xmlto_return.append(XMLtag_ACCENT_close);
+		l_xml2rtrn.append(l_accent);
+		l_xml2rtrn.append(XMLtag_ACCENT_suffix);
+		l_xml2rtrn.append(l_word);
+		l_xml2rtrn.append(XMLtag_ACCENT_close);
 				
-		return l_xmlto_return.toString();
+		return l_xml2rtrn.toString();
 
 	}
-	public static String HandleUnAccentedWord(String i_acc_word) {
+	private String HandleUnAccentedWord(String i_acc_word) {
 		if(debug){
 			System.out.println("Handle accented word got: " + i_acc_word);
 		}
 		
-		StringBuffer l_xmlto_return =new StringBuffer();
-		l_xmlto_return.append(XMLtag_ACCENT_open);
-		l_xmlto_return.append(XMLtag_whitespace);
-		l_xmlto_return.append(XMLtag_ACCENT_prefix);
-		l_xmlto_return.append("none");
-		l_xmlto_return.append(XMLtag_ACCENT_suffix);
-		l_xmlto_return.append(i_acc_word);
-		l_xmlto_return.append(XMLtag_ACCENT_close);
+		StringBuffer l_xml2rtrn =new StringBuffer();
+		l_xml2rtrn.append(XMLtag_ACCENT_open);
+		l_xml2rtrn.append(XMLtag_whitespace);
+		l_xml2rtrn.append(XMLtag_ACCENT_prefix);
+		l_xml2rtrn.append("none");
+		l_xml2rtrn.append(XMLtag_ACCENT_suffix);
+		l_xml2rtrn.append(i_acc_word);
+		l_xml2rtrn.append(XMLtag_ACCENT_close);
 				
-		return l_xmlto_return.toString();
+		return l_xml2rtrn.toString();
 
 	}
-	public static String HandleBoundaryTone(String i_bndry){
+	private String HandleBoundaryTone(String i_bndry){
 		if(debug){
 			System.out.println("Handle boundary tones got: " + i_bndry);
 		}
 		String l_lhs =new String("");
 		String l_rhs = new String("");;
-		StringBuffer l_xmlto_return =new StringBuffer();
-		l_xmlto_return.append(XMLtag_BOUNDARY_open);
-		 l_xmlto_return.append(XMLtag_whitespace);
-		 l_xmlto_return.append(XMLtag_TONE_prefix);
+		StringBuffer l_xml2rtrn =new StringBuffer();
+		l_xml2rtrn.append(XMLtag_BOUNDARY_open);
+		l_xml2rtrn.append(XMLtag_whitespace);
+		l_xml2rtrn.append(XMLtag_TONE_prefix);
 		
 		 //RawMaryXML takes LL% as L-L%, !LH% as !L-H% and L as L-
 		 if(i_bndry.length()>2 && i_bndry.length() <5 ){
@@ -228,24 +175,62 @@ public class ProsodicTextToRawMARYXml {
 			l_rhs=i_bndry.substring(2);
 		 }
 				
-		 l_xmlto_return.append(l_lhs);
-		 l_xmlto_return.append(XMLtag_hyphen);
-		 l_xmlto_return.append(l_rhs);
-		 l_xmlto_return.append(XMLtag_TONE_suffix);
-		 l_xmlto_return.append(XMLtag_whitespace);
-		 l_xmlto_return.append(XMLtag_BREAKInd_prefix);
-		 l_xmlto_return.append(XMLtag_BOUNDARY_pause);
-		 l_xmlto_return.append(XMLtag_BREAKInd_suffix);
-		 l_xmlto_return.append(XMLtag_BOUNDARY_close);
+		 l_xml2rtrn.append(l_lhs);
+		 l_xml2rtrn.append(XMLtag_hyphen);
+		 l_xml2rtrn.append(l_rhs);
+		 l_xml2rtrn.append(XMLtag_TONE_suffix);
+		 l_xml2rtrn.append(XMLtag_whitespace);
+		 l_xml2rtrn.append(XMLtag_BREAKInd_prefix);
+		 l_xml2rtrn.append(XMLtag_BOUNDARY_pause);
+		 l_xml2rtrn.append(XMLtag_BREAKInd_suffix);
+		 l_xml2rtrn.append(XMLtag_BOUNDARY_close);
 		  
-		return l_xmlto_return.toString();
+		return l_xml2rtrn.toString();
 	}
 	
-	public static String WriteToXML(String i_xmlstring){
+	public String XmlFileName(final String i_prsdstr){
+		
+		//convert a prosodic string into a filename
+		String l_str2fileNm = new String(i_prsdstr);
+		l_str2fileNm=l_str2fileNm.replace(" ", "");
+		l_str2fileNm=l_str2fileNm.replace("@", "-");
+		l_str2fileNm=l_str2fileNm.replace("*", "s");
+		l_str2fileNm=l_str2fileNm.replace("+", "p");
+		l_str2fileNm=l_str2fileNm.replace("%", "b");
+		
+		
+		StringBuffer l_xmlfilename = new StringBuffer();
+		l_xmlfilename.append(UtteranceCount.toString());
+		l_xmlfilename.append(g_stub);
+		if (g_prosody) l_xmlfilename.append("_p");
+		else l_xmlfilename.append("_d");
+		
+		l_xmlfilename.append("_rwMary_");
+		
+		Date l_date = new Date();
+		Timestamp l_timestamp = new Timestamp(l_date.getTime());
+		String l_datetime = new String(l_timestamp.toString());
+		l_datetime=l_datetime.replace(":", "");
+		l_datetime=l_datetime.replace(".", "");
+		l_datetime=l_datetime.replace("-", "");
+		l_datetime=l_datetime.replace(" ", "");
+		
+		l_xmlfilename.append(l_str2fileNm);
+		l_xmlfilename.append("_");
+		l_xmlfilename.append(l_datetime);
+		l_xmlfilename.append(".xml");
+			
+		return l_xmlfilename.toString();
+	}
+	
+	private String WriteToXML(String i_xmlstring){
 		if(debug){
 			System.out.println("WriteToXML got: " + i_xmlstring);
-			System.out.println("XML Head is: " + RAWMARYXMLHead);
+			System.out.println("XML Head is: " + this.RAWMARYXMLHead);
 		}
+		
+		//XmlFile on the file system
+		String l_xmlfile=new String(GenratedXMLFileLocation.concat(g_xmlfilename));
 		
 		//Prepare the header section of MaryXML file
 		StringBuffer l_rawxml_final = new StringBuffer();
@@ -255,7 +240,6 @@ public class ProsodicTextToRawMARYXml {
 			while ((st=l_head.readLine()) != null) {
 				l_rawxml_final.append(st);
 				l_rawxml_final.append(XMLtag_whitespace);
-			
 			}
 			l_head.close();
 			}
@@ -265,30 +249,11 @@ public class ProsodicTextToRawMARYXml {
 		
 		//append our XMLstring to this header
 		l_rawxml_final.append(i_xmlstring);
-		
 		//close the header section of MaryXML file
 		l_rawxml_final.append("</maryxml>");
 		
 		//Now write this all to a XML file 
-		StringBuffer l_xmlfilename = new StringBuffer();
-		l_xmlfilename.append(UtteranceCount.toString());
-		l_xmlfilename.append(stub);
-		if (prosody) l_xmlfilename.append("_prsdy");
-		else l_xmlfilename.append("_dflt");
-		
-		l_xmlfilename.append("_maryxml");
-		
-		Date l_date = new Date();
-		Timestamp l_timestamp = new Timestamp(l_date.getTime());
-		String l_datetime = new String(l_timestamp.toString());
-		l_datetime=l_datetime.replace(':', '_');
-		l_datetime=l_datetime.replace('.', '_');
-		l_datetime=l_datetime.replace('-', '_');
-		l_datetime=l_datetime.replace(' ', '_');
-		
-		l_xmlfilename.append(l_datetime);
-		l_xmlfilename.append(".xml");
-		
+			
 		if(debug){
 			System.out.println("Writing file to location: " + GenratedXMLFileLocation);
 		}
@@ -308,23 +273,97 @@ public class ProsodicTextToRawMARYXml {
 			if(debug){
 				System.out.println("Writing file ");
 			}
-			BufferedWriter l_xml_out = new BufferedWriter(new FileWriter(GenratedXMLFileLocation.concat(l_xmlfilename.toString())));
+			
+			BufferedWriter l_xml_out = new BufferedWriter(new FileWriter(l_xmlfile));
 			l_xml_out.write(l_rawxml_final.toString());
 			l_xml_out.close();
 			}
 		catch (Exception fx) {
 			System.out.println("Error in Write2XML: " + fx.toString());
 		}
-		return l_xmlfilename.toString();
+		return l_xmlfile;
 	}
-	//This is a function called from cc_TTS (changes in main() should also be reflected here)
-	public static String ToRawMaryXml(String i_prsdyInp, String i_maryxmlheader, String i_outputLoc){
-		//Save some global variables
-		GenratedXMLFileLocation = i_outputLoc;
-		RAWMARYXMLHead = i_maryxmlheader;
-		stub="sys";
-		prosody=true;
+	/**
+	 * @param args RAWMARYXml header, location to keep the generated XMLFile 
+	 */
+	
+public static void main(String[] args) {
+	// TODO Auto-generated method stub
+	
+	String l_xmlfile = new String();
+	String l_voicename = new String();
+	Integer l_substr;
+	//Initialise an Instant of TTS Local.
+	try{
+		MaryClient l_mary = new MaryClient("localhost", 59125);
+		TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", "us2", false, "WAVE");
 		
-		return ConvertToRawMarxXml(i_prsdyInp);
+		System.out.println("RAWMARYXMLHead is in file : " + args[1]);
+		ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(args[1], args[2],"",false);
+		SynthesisRAWMaryXMLInput l_synth = new SynthesisRAWMaryXMLInput(l_ttslocal);
+		
+		
+		//Get the prosodic utterance text from a file
+		try{
+		FileReader l_file = new FileReader(args[0]); 
+		BufferedReader l_inp= new BufferedReader(l_file);  
+		String l_utterance = new String();
+		String l_stub = new String();
+		boolean l_prsdy=false;
+		//read a line
+		while((l_utterance=l_inp.readLine())!=null){
+			
+			System.out.println("I read: " + l_utterance);
+			
+			if(l_utterance.startsWith("#")){
+				continue;
+			}
+			if(l_utterance.startsWith("h")){
+				l_voicename="hmm-jmk";
+				l_substr=2;
+				l_stub="h";
+			}else if(l_utterance.startsWith("r")){
+				l_voicename="us2";
+				l_substr=2;
+				l_stub="r";
+			}else {
+				l_voicename="us2"; 
+				l_substr=0;
+				l_stub="g";
+			}
+						
+			//Just an indicator
+		if(l_utterance.contains(BoundryKey) || l_utterance.contains(ProsodicKey)) l_prsdy= true;
+		else l_prsdy= false;
+		l_convert.g_stub=l_stub;
+		l_convert.g_prosody=l_prsdy;
+		
+		//Make a user friendly filename:
+		l_convert.g_xmlfilename = new String("");
+		l_convert.g_xmlfilename= l_convert.XmlFileName(l_utterance.substring(l_substr));
+		//A function that takes the prosodic text as input, converts it into RawMaryXML and returns the filename 
+		l_xmlfile=l_convert.ConvertToRawMarxXml(l_utterance.substring(l_substr));
+		//Keep the trace of line count
+		l_convert.UtteranceCount++;
+		
+		System.out.println("XML file written: "+ l_xmlfile);
+			
+		//Synthesize this file
+		l_synth.m_ttsLocal.m_AudioFileName=l_xmlfile;
+		l_synth.m_ttsLocal.m_SaveAudio2Wav=Boolean.valueOf(args[3]);
+		l_synth.m_ttsLocal.m_voiceName=l_voicename;
+		l_synth.Utter(l_convert.GenratedXMLFileLocation.concat(l_convert.g_xmlfilename));
+		
+		Thread.sleep(2500);
+		}
+	}
+	catch (IOException io_e) {
+		// TODO: handle exception
+		System.out.println(io_e);
+	}
+	}catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
 	}
 }
