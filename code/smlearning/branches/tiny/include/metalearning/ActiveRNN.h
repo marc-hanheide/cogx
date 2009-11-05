@@ -83,6 +83,12 @@ struct ActiveRNN : RNN {
 	///
 	double update (const rnnlib::DataSequence& seq, int smregionIdx, ostream& out = cout);
 
+
+	///
+	///feedforward sequence
+	///
+	void feed_forward (const rnnlib::DataSequence& seq);
+	
 	///
 	///update the learning progress associated to region r
 	///

@@ -104,6 +104,10 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostr
 
 }
 
+void ActiveRNN::feed_forward (const rnnlib::DataSequence& seq) {
+	net->feed_forward(seq);
+}
+
 ///
 ///update the learning progress associated to region r
 ///
