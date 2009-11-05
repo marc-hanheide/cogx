@@ -75,37 +75,48 @@ class Simulation(object):
         agent = self.agents[action.agents[0].getInstance().name]
 
         if self.state.isExecutable(action):
-            print "%d: Agent %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args))) 
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args)))
-            new_facts = set()
-            for eff in action.effects:
-                new_facts |= self.state.getEffectFacts(eff)
+
             percieved_facts = []
-            
             if isinstance(action, mapl.sensors.Sensor):
-                svar = state.StateVariable.fromTerm(action.get_term())
-                if action.is_boolean():
-                    value = action.get_value().getInstance()
-                    if self.state[svar] == value:
-                        percieved_facts = [state.Fact(svar, value)]
-                    else:
-                        percieved_facts = [state.Fact(svar.asModality(mapl.predicates.indomain, [value]), mapl.types.FALSE)]
-                else:
-                    percieved_facts = [state.Fact(svar, self.state[svar])]
-                    
+                percieved_facts = self.execute_sensor_action(action, agent)
             else:
-                for f in new_facts:
-                    self.state.set(f)
-                percieved_facts = list(new_facts)
+                percieved_facts = self.execute_physical_action(action, agent)
 
             log.debug("Facts sent to agent %s: %s", agent.name, ", ".join(map(str, percieved_facts)))
             action.uninstantiate()
             agent.updateTask(percieved_facts, plans.ActionStatusEnum.EXECUTED)
         else:
-            print "%d: Agent %s failed to execute (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args))) 
+            print "%d: %s failed to execute (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args))) 
             log.debug("%d: Agent %s failed to execute (%s %s)", self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args)))
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
+
+    def execute_physical_action(self, action, agent):
+        print "%d: %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.getInstance().name, action.args)))
+        
+        new_facts = self.state.getEffectFacts(action.effects)
+        for f in new_facts:
+            self.state.set(f)
+            
+        return list(new_facts)
+
+    def execute_sensor_action(self, sensor, agent):
+        svar = state.StateVariable.fromTerm(sensor.get_term())
+        if sensor.is_boolean():
+            value = sensor.get_value().getInstance()
+            if self.state[svar] == value:
+                print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), value.name)
+                perception = state.Fact(svar, value)
+            else:
+                print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
+                perception = state.Fact(svar.asModality(mapl.predicates.indomain, [value]), mapl.types.FALSE)
+        else:
+            print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
+            perception = state.Fact(svar, self.state[svar])
+            
+        return [perception]
+                    
 
     def signal_done(self, agent):
         print "%d: Agent %s has reached its goal." % (self.time, agent.name)
