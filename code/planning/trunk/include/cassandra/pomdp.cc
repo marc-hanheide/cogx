@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
     POMDP::FSC fsc(POMDP::Parsing::problem_Data, 5);
 
-    POMDP::Solving::FSC__Randomizer fsc__Randomizer;
+    POMDP::FSC__Randomizer fsc__Randomizer;
     fsc__Randomizer(fsc);
 
     POMDP::Solving::FSC__Evaluator fsc__Evaluator(fsc);
