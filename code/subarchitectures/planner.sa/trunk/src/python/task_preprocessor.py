@@ -46,6 +46,9 @@ def feature_val_to_object(fval):
     #lookup constants
     if fval.val in current_domain:
       return current_domain[fval.val]
+    if fval.val == "unknown":
+      return mapl.types.UNKNOWN
+    
     return mapl.types.TypedObject(fval.val, mapl.types.objectType)
   
   elif fval.__class__ == featvalues.AddressValue:
