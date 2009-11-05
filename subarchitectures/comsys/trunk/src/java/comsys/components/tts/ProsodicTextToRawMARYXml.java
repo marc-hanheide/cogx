@@ -193,10 +193,10 @@ public class ProsodicTextToRawMARYXml {
 		//convert a prosodic string into a filename
 		String l_str2fileNm = new String(i_prsdstr);
 		l_str2fileNm=l_str2fileNm.replace(" ", "");
-		l_str2fileNm=l_str2fileNm.replace("@", "-");
+		l_str2fileNm=l_str2fileNm.replace("@", "");
 		l_str2fileNm=l_str2fileNm.replace("*", "s");
 		l_str2fileNm=l_str2fileNm.replace("+", "p");
-		l_str2fileNm=l_str2fileNm.replace("%", "b");
+		l_str2fileNm=l_str2fileNm.replace("%", "");
 		
 		
 		StringBuffer l_xmlfilename = new StringBuffer();
