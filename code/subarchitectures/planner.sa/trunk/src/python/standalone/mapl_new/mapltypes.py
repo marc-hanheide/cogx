@@ -18,7 +18,7 @@ class Type(object):
         
         if other in self.supertypes:
             return True
-        return any(map(lambda sup: sup.isSubtypeOf(other), self.supertypes))
+        return any(sup.isSubtypeOf(other) for sup in self.supertypes)
 
     def equalOrSubtypeOf(self, other):
         if self.__class__ != other.__class__:
@@ -26,7 +26,7 @@ class Type(object):
         
         if other in self.supertypes or self == other:
             return True
-        return any(map(lambda sup: sup.isSubtypeOf(other), self.supertypes))
+        return any(sup.isSubtypeOf(other) for sup in self.supertypes)
     
     def isSupertypeOf(self, other):
         return other.isSubtypeOf(self)
@@ -83,7 +83,7 @@ class Type(object):
 
 class CompositeType(Type):
     def __init__(self, types):
-        self.name = "-".join(map(lambda t: t.name, types))
+        self.name = "-".join(t.name for t in types)
         self.types = types
 
     def isSubtypeOf(self, other):
@@ -91,30 +91,30 @@ class CompositeType(Type):
             return other.isSupertypeOf(self)
 
 #        print self, other, all(map(lambda t: t.equalOrSubtypeOf(other), self.types))
-        return all(map(lambda t: t.equalOrSubtypeOf(other), self.types))
+        return all(t.equalOrSubtypeOf(other) for t in self.types)
 
     def equalOrSubtypeOf(self, other):
         return self == other or self.isSubtypeOf(other)
     
     def isSupertypeOf(self, other):
         if isinstance(other, CompositeType):
-            strictSupertype = any(map(lambda t: any(map(lambda t2: t.isSupertypeOf(t2), other.types)), self.types))
-            return all(map(lambda t: self.equalOrSupertypeOf(t), other.types)) and strictSupertype
+            strictSupertype = any(any(t.isSupertypeOf(t2) for t2 in other.types) for t in self.types)
+            return all(self.equalOrSupertypeOf(t) for t in other.types) and strictSupertype
         
-        return any(map(lambda t: t.equalOrSupertypeOf(other), self.types))
+        return any(t.equalOrSupertypeOf(other) for t in self.types)
 
     def equalOrSupertypeOf(self, other):
         return self == other or self.isSupertypeOf(other)
         
     def __str__(self):
-        return "(either %s)" % " ".join(map(lambda t: t.name, self.types))
+        return "(either %s)" % " ".join(t.name for t in self.types)
 
     def __hash__(self):
         return hash((self.__class__,)+tuple(self.types))
     
     def __eq__(self, other):
         try:
-            return all(map(lambda s, o: s == o, self.types, other.types))
+            return all(map(lambda s,o: s == o, self.types, other.types))
         except:
             return False;
 
