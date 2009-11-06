@@ -181,7 +181,7 @@ class Literal(object):
 
         predicate = scope.predicates.get(first.string, args)
         if not predicate:
-            type_str = " ".join(map(lambda a: str(a.getType()), args))
+            type_str = " ".join(str(a.getType()) for a in args)
             candidates = scope.predicates[first.string]
             c_str = "\n  ".join(str(p) for p in candidates)
             raise ParseError(first, "no matching predicate found for (%s %s). Candidates are:\n  %s" % (first.string, type_str, c_str))
@@ -331,7 +331,7 @@ class FunctionTerm(Term):
 
         func = scope.functions.get(name.token.string, args)
         if not func:
-            type_str = " ".join(map(lambda a: str(a.getType()), args))
+            type_str = " ".join(str(a.getType()) for a in args)
             candidates = scope.functions[name.token.string]
             c_str = "\n  ".join(str(p) for p in candidates)
             raise ParseError(name.token, "no matching function found for (%s %s). Candidates are:\n  %s" % (name.token.string, type_str, c_str))

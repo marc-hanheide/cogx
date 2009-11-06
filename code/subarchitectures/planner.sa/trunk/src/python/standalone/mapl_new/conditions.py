@@ -25,7 +25,7 @@ class Condition(object):
     def pddl_str(self, instantiated=True):
         def printVisitor(cond, results=[]):
             if cond.__class__ == LiteralCondition:
-                s = "(%s %s)" % (cond.predicate.name, " ".join(map(lambda a: a.pddl_str(instantiated), cond.args)))
+                s = "(%s %s)" % (cond.predicate.name, " ".join(a.pddl_str(instantiated) for a in cond.args))
                 if cond.negated:
                     return "(not %s)" % s
                 return s
@@ -96,12 +96,12 @@ class JunctionCondition(Condition):
     
 class Conjunction(JunctionCondition):
     def negate(self):
-        neg_parts = map(lambda c: c.negate(), self.parts)
+        neg_parts = [c.negate() for c in self.parts]
         return Disjunction(neg_parts)
 
 class Disjunction(JunctionCondition):
     def negate(self):
-        neg_parts = map(lambda c: c.negate(), self.parts)
+        neg_parts = [c.negate() for c in self.parts]
         return Conjunction(neg_parts)
 
 class QuantifiedCondition(Condition, scope.Scope):

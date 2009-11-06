@@ -94,9 +94,9 @@ class StateVariable(object):
         return Literal(self.modality, args)
         
     def __str__(self):
-        s = "%s(%s)" % (self.function.name, " ".join(map(lambda a: a.name, self.args)))
+        s = "%s(%s)" % (self.function.name, " ".join(a.name for a in self.args))
         if self.modality:
-            s = "%s(%s, %s)" % (self.modality.name, s, " ".join(map(lambda a: a.name, self.modal_args)))
+            s = "%s(%s, %s)" % (self.modality.name, s, " ".join(a.name for a in self.modal_args))
         return s
 
     def __eq__(self, other):
@@ -242,7 +242,7 @@ class State(defaultdict):
         return s
 
     def iterfacts(self):
-        return imap(lambda tup: Fact.fromTuple(tup), self.iteritems())
+        return (Fact.fromTuple(tup) for tup in self.iteritems())
 
     def set(self, fact):
         self[fact.svar] = fact.value
@@ -439,11 +439,11 @@ class State(defaultdict):
             elif isinstance(cond, conditions.QuantifiedCondition):
                 combinations = product(*map(lambda a: self.problem.getAll(a.type), cond.args))
                 if isinstance(cond, conditions.UniversalCondition):
-                    result, vars, universal = allFacts(imap(lambda c: instantianteAndCheck(cond, c), combinations))
+                    result, vars, universal = allFacts(instantianteAndCheck(cond, c) for c in combinations)
                     universal += cond.args
                     return result, vars, universal
                 elif isinstance(cond, conditions.ExistentialCondition):
-                    return anyFacts(imap(lambda c: instantianteAndCheck(cond, c), combinations))
+                    return anyFacts(instantianteAndCheck(cond, c) for c in combinations)
             elif isinstance(cond, conditions.TimedCondition):
                 #ignore times specifiers for now
                 return checkConditionVisitor(cond.condition)
@@ -579,18 +579,17 @@ class State(defaultdict):
             for a in axioms:
                 #check if the combination is actually valid, as sometimes a parameter type can depend
                 #on a previous parameter (e.g. (typeof ?f) types)
-                def filter_invalid(c):
+                def is_valid(c):
                     return self.problem.predicates.get(a.predicate.name, c)
                 
                 if relevant:
-                    gen = imap(lambda svar: svar.asLiteral(), relevant)
+                    gen = (svar.asLiteral() for svar in relevant)
                 else:
                     combinations = product(*map(lambda arg: list(self.problem.getAll(arg.type)), a.args))
 
-                    gen = imap(lambda c: Literal(a.predicate, c, self.problem), ifilter(filter_invalid, combinations))
+                    gen = (Literal(a.predicate, c, self.problem) for c in combinations if is_valid(c))
                     
                 for atom in gen:
-                    
                     if a.predicate in self.problem.nonrecursive:
                         nonrecursive_atoms.add(atom)
                     else:

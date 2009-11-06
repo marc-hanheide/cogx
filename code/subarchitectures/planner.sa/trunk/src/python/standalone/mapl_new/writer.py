@@ -34,7 +34,7 @@ class MAPLWriter(object):
 
     def write_type(self, type):
         if isinstance(type, types.CompositeType):
-            return "(either %s)" % " ".join(map(lambda t: self.write_type(t), type.types))
+            return "(either %s)" % " ".join(self.write_type(t) for t in type.types)
         if isinstance(type, types.FunctionType):
             return "(function %s)" % self.write_type(type.type)
         if isinstance(type, types.ProxyType):
@@ -47,18 +47,18 @@ class MAPLWriter(object):
                 return str(term.object.name)
             return term.object.name
 
-        args = " ".join(map(lambda t: self.write_term(t), term.args))
+        args = " ".join(self.write_term(t) for t in term.args)
         return "(%s %s)" % (term.function.name, args)
     
     def write_literal(self, literal):
-        args = " ".join(map(lambda t: self.write_term(t), literal.args))
+        args = " ".join(self.write_term(t) for t in literal.args)
         if literal.negated:
             return "(not (%s %s))" % (literal.predicate.name, args)
         return "(%s %s)" % (literal.predicate.name, args)
         
 
     def write_typelist(self, args):
-        return " ".join(map(lambda arg: "%s - %s" % (arg.name, self.write_type(arg.type)), args))
+        return " ".join("%s - %s" % (arg.name, self.write_type(arg.type)) for arg in args)
 
     def write_types(self, _types):
         strings = []
@@ -69,7 +69,7 @@ class MAPLWriter(object):
             if type.supertypes:
                 for st in type.supertypes:
                     #only write the lowest supertype(s)
-                    if not any(map(lambda t: st.isSupertypeOf(t), type.supertypes)):
+                    if not any(st.isSupertypeOf(t) for t in type.supertypes):
                         strings.append("%s - %s" % (type.name, st.name))
             elif type not in toplevel:
                 toplevel.append(type)
@@ -77,7 +77,7 @@ class MAPLWriter(object):
         toplevel.remove(types.objectType)
         toplevel.remove(types.numberType)
         
-        strings.append(" ".join(map(lambda t:t.name, toplevel)))
+        strings.append(" ".join(t.name for t in toplevel))
         return self.section(":types", strings)
 
     def write_objects(self, name, objs):
@@ -87,7 +87,7 @@ class MAPLWriter(object):
             per_type[o.type].add(o)
 
         for t, olist in per_type.iteritems():
-            ostr = " ".join(map(lambda o: o.name, olist))
+            ostr = " ".join(o.name for o in olist)
             strings.append("%s - %s" % (ostr, self.write_type(t)))
             
         return self.section(":%s" % name, strings)
@@ -232,7 +232,7 @@ class MAPLWriter(object):
     def write_domain(self, domain):
         strings = ["(define (domain %s)" % domain.name]
         strings.append("")
-        strings.append("(:requirements %s)" % " ".join(map(lambda r: ":"+r, domain.requirements)))
+        strings.append("(:requirements %s)" % " ".join(":"+r for r in domain.requirements))
         strings.append("")
         strings += self.write_types(domain.types.itervalues())
 
