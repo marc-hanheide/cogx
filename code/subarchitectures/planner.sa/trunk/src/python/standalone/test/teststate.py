@@ -30,6 +30,7 @@ domlogistics = \
 (:functions  (city-of ?l - (either location vehicle)) - city
              (location-of ?t - thing) - (either location vehicle)
              (num_packages ?v - vehicle) - number
+             (capacity ?v - vehicle) - number
 )
 
 ;(:derived (kval ?a - agent ?svar - (function object))
@@ -56,7 +57,7 @@ domlogistics = \
          :agent         (?a - agent)
          :parameters    (?p - package ?v - vehicle)
          :precondition  (and (= (location-of ?p) (location-of ?v))
-                             (< (num_packages ?v) 4))
+                             (< (num_packages ?v) (capacity ?v)))
          :effect        (and (assign (location-of ?p) ?v)
                              (increase (num_packages ?v) 1))
 )
@@ -73,7 +74,7 @@ domlogistics = \
          :parameters    (?p - package ?v - vehicle)
          :precondition  (= (location-of ?p) ?v)
          :effect        (and (assign (location-of ?p) (location-of ?v))
-                             (decrease (num_packages ?v) (- 2 1)))
+                             (decrease (num_packages ?v) (/ (+ (* 5 (- 2 1)) (- 3)) 2) ))
 
 )
 )
@@ -112,6 +113,10 @@ problogistics = \
         (= (num_packages apn1) 0)
         (= (num_packages tru1) 0)
         (= (num_packages tru2) 0)
+
+        (= (capacity apn1) 20)
+        (= (capacity tru1) 4)
+        (= (capacity tru2) 4)
 )
 
 (:goal  (and (= (location-of obj11) apt1)
