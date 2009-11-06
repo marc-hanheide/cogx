@@ -175,10 +175,10 @@
 			 <choicenode answer="hithere">
 			   <result val="hithere"/>
 			 </choicenode>	
+            </choicenode>
+
   	     <choicenode answer="unknown">
 	       <result val="donothing"/>
-	     </choicenode>
-
 	     </choicenode>
 
 	     <choicenode answer="thanking">

@@ -158,6 +158,8 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
    </conditions>
    
    <actions>
+      <action choice="donothing">
+      </action>
       <action choice="hello">
 			<assign-type type="greeting"/>
 			<add-proposition propositions="@hello" /> 
@@ -185,8 +187,10 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
    </conditions>
    
    <actions>
+      <action choice="donothing">
+        </action>
       <action choice="hello">
-			<assign-type type="greeting"/>
+            <assign-type type="greeting"/>
 			<add-proposition propositions="@hello" /> 
       </action>
       <action choice="hi">
