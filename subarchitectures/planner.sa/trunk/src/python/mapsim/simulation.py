@@ -25,7 +25,9 @@ class Simulation(object):
         self.queue = []
         self.time = 0
 
-        self.remove_knowledge()
+        self.cleanup_actions()
+        for a in self.agents.itervalues():
+            self.add_knowledge(a)
 
     def run(self):
         for a in self.agents.itervalues():
@@ -41,8 +43,26 @@ class Simulation(object):
                 return
             
         print "All agents are done."
+        
 
-    def remove_knowledge(self):
+    def add_knowledge(self, agent):
+        """
+        Translate (kval ?a ?svar) facts in the world state to actual knowledge in the agents state.
+        """
+        a = self.problem[agent.name]
+        for svar, val in self.state.iteritems():
+            if val == mapl.types.FALSE:
+                continue
+            if svar.modality == mapl.predicates.knowledge and svar.modal_args[0] == a:
+                newvar = svar.nonmodal()
+                agent.getState()[newvar] = self.state[newvar]
+        
+    def cleanup_actions(self):
+        """
+        Remove modal predicates from preconditions in the world domain.
+        Remove assertions from the world domain.
+        """
+        
         def remove_visitor(cond, results=[]):
             if cond.__class__ == mapl.conditions.LiteralCondition:
                 if cond.predicate in (mapl.predicates.mapl_modal_predicates):
@@ -62,7 +82,6 @@ class Simulation(object):
         for a in itertools.chain(self.problem.actions, self.problem.sensors):
             if a.precondition:
                 a.precondition.visit(remove_visitor)
-            
             
 
     def schedule(self, action, args):
@@ -102,7 +121,7 @@ class Simulation(object):
         return list(new_facts)
 
     def execute_sensor_action(self, sensor, agent):
-        svar = state.StateVariable.fromTerm(sensor.get_term())
+        svar = self.state.svarFromTerm(sensor.get_term())
         if sensor.is_boolean():
             value = sensor.get_value().getInstance()
             if self.state[svar] == value:
