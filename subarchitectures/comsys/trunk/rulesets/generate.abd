@@ -85,7 +85,6 @@ describe(Nom, Object, known(Type)) <-
 	i : feat_QuestionType(Nom, QuestionType) / 1.0,
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, answer) / 1.0,
-	%i : feat_Relation(Nom, answer) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
 		i : prop(ContentNom, be) / 1.0,
@@ -106,7 +105,28 @@ add_colour_if_known(Nom, Object) <-
 
 %----------------------------------------------------------------------
 
+generate : intention : find_object(h, Prop, PropValue) <-
+	check_property_value(Union, Prop, known(PropValue)),
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : prop(ContentNom, be) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			i : feat_ProofStatus(TargetNom, asserted) / 1.0,
+			referring_expression(TargetNom, Union),
+		add_prop_value_to_protolf(ContentNom, PropNom, Prop, PropValue),
+	event : produce(r, Nom) / 1.0.
 
+generate : intention : find_object(h, Prop, PropValue) <-
+	no_such_object(Prop, PropValue) / 15.0,
+	utt_head(Nom),
+	generate : i_dont_know(Nom, objecttype),  % XXX hackish
+	event : produce(r, Nom) / 1.0.
 
 %----------------------------------------------------------------------
 

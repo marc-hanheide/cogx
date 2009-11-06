@@ -128,7 +128,19 @@ understand : event : uttered(h, Nom) <-
 	att : refers_to(RestrNom, RestrRef) / ref_resolution,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom),
 	query_prop(ScopeNom, Prop, PropValue),
-	intention : value_verification_request(h, RestrRef, Prop, PropValue) / 0.2.
+	intention : value_verification_request(h, RestrRef, Prop, PropValue) / 1.2.
+
+%h: what is PROP
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	i : 'rel_Subject'(Nom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, SubjNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	query_prop(ScopeNom, Prop, PropValue),
+	intention : find_object(h, Prop, PropValue) / 0.2.
 
 %-------------------------------------------------------------------------
 
