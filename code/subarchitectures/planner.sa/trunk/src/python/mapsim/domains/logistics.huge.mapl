@@ -59,6 +59,14 @@
 )
 )
 
+(:world
+(:init
+
+;; make (pos p0) known to agent
+;;(kval agent (pos p0))
+
+))
+
 (:agent agent
 (:goal (and
        (= (pos p0) l10)

@@ -58,6 +58,9 @@ class Agent(BaseAgent):
         
         self.planner.register_task(self.task)
 
+    def getState(self):
+        return self.task.get_state()
+
     @loggingScope
     def run(self):
         BaseAgent.run(self)
