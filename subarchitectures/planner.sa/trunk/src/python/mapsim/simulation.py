@@ -33,7 +33,7 @@ class Simulation(object):
         for a in self.agents.itervalues():
             a.run()
 
-        while any(map(lambda a: a.is_running(), self.agents.itervalues())):
+        while any(a.is_running() for a in self.agents.itervalues()):
             if self.queue:
                 self.time += 1
                 action, args = self.queue.pop()
@@ -78,7 +78,7 @@ class Simulation(object):
                     return None
                 return cond
 
-        self.problem.actions = filter(lambda a: a.replan is None, self.problem.actions)
+        self.problem.actions = [a for a in self.problem.actions if a.replan is None]
         for a in itertools.chain(self.problem.actions, self.problem.sensors):
             if a.precondition:
                 a.precondition.visit(remove_visitor)
@@ -94,7 +94,7 @@ class Simulation(object):
         agent = self.agents[action.agents[0].getInstance().name]
 
         if self.state.isExecutable(action):
-            log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args)))
+            log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
 
             percieved_facts = []
             if isinstance(action, mapl.sensors.Sensor):
@@ -106,13 +106,13 @@ class Simulation(object):
             action.uninstantiate()
             agent.updateTask(percieved_facts, plans.ActionStatusEnum.EXECUTED)
         else:
-            print "%d: %s failed to execute (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args))) 
-            log.debug("%d: Agent %s failed to execute (%s %s)", self.time, agent.name, action.name, " ".join(map(lambda a: a.name, args)))
+            print "%d: %s failed to execute (%s %s)" % (self.time, agent.name, action.name, " ".join(a.name for a in args))
+            log.debug("%d: Agent %s failed to execute (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
 
     def execute_physical_action(self, action, agent):
-        print "%d: %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(map(lambda a: a.getInstance().name, action.args)))
+        print "%d: %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(a.getInstance().name for a in action.args))
         
         new_facts = self.state.getEffectFacts(action.effects)
         for f in new_facts:

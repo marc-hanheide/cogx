@@ -58,7 +58,7 @@ class Axiom(Scope):
                 break
 
         if not pred:
-            type_str = " ".join(map(lambda a: str(a.type), args))
+            type_str = " ".join(str(a.type) for a in args)
             c_str = "\n  ".join(str(p) for p in pred_candidates)
             raise ParseError(name, "no matching predicate found for (%s %s). Candidates are:\n  %s" % (name.string, type_str, c_str))
 
@@ -104,7 +104,7 @@ def stratify(axioms):
                 if min(R[i,j], R[j,k]) > 0:
                     R[i,k] = max(R[i,j], R[j,k], R[i,k])
 
-    assert all(map(lambda d: R[d,d] != 2, derived)), "Couldn't stratify axioms, negative cycle exists."
+    assert all(R[d,d] != 2 for d in derived), "Couldn't stratify axioms, negative cycle exists."
 
     #extract strata
     level = 1
@@ -115,9 +115,9 @@ def stratify(axioms):
     while remaining:
         stratum = set()
         for j in remaining:
-            if all(map(lambda i: R[i,j] != 2, remaining)):
+            if all(R[i,j] != 2 for i in remaining):
                 stratum.add(j)
-            if all(map(lambda i: R[i,j] != 1, remaining)):
+            if all(R[i,j] != 1 for i in remaining):
                 nonrecursive.add(j)
 
         stratification[level] = stratum

@@ -72,7 +72,7 @@ class Planner(object):
             self._start_planner(task)
         else:
             #if no action is executing, trigger update
-            if not any(map(lambda pnode: pnode.is_inprogress(), task.get_plan().V)):
+            if not any(pnode.is_inprogress() for pnode in task.get_plan().V):
                 log.info("no actions are executing, reissuing plan")
                 task.set_plan(task.get_plan(), update_status=True)
             else:
@@ -94,7 +94,7 @@ class Planner(object):
 
         if not universal:
             #no universal preconditions => quickcheck
-            if all(imap(lambda f: f in state, read)):
+            if all(f in state for f in read):
                 return True
 
         action = pnode.action
