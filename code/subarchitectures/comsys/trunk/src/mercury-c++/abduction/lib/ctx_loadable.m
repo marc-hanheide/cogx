@@ -113,8 +113,8 @@ find_ctx_fact(Ctx, Ms, PredSym, Fact) :-
 %find_ctx_fact(Ctx, Ms, PredSym, vs(m(Ms, p(PredSym, Args)), VS)) :-
 %	set.member(vs(m(Ms, p(PredSym, Args)), VS), Ctx^ctx_facts).
 
-find_ctx_fact(_Ctx, Ms, "=", vs(m(Ms, p("=", [v(V), v(V)])), VS)) :-
-	new_named_var(varset.init, "X", V, VS).
+%find_ctx_fact(_Ctx, Ms, "=", vs(m(Ms, p("=", [v(V), v(V)])), VS)) :-
+%	new_named_var(varset.init, "X", V, VS).
 
 :- pred find_ctx_rule(ctx::in, list(ctx_modality)::in, string::in, vscope(mrule(ctx_modality))::out) is nondet.
 
