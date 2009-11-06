@@ -34,8 +34,7 @@ public class ProsodicTextToRawMARYXml {
 	private  String GenratedXMLFileLocation;
 	private  Integer UtteranceCount=1;
 	private  String g_stub;
-	private  boolean g_prosody=false;
-		
+			
 	private boolean debug=false;
 	/**
 	 * @param i_maryXmlHdr RAWMaryXml header.
@@ -43,11 +42,10 @@ public class ProsodicTextToRawMARYXml {
 	 * @param i_stub  a prefix for XMLFilename.
 	 * @param i_prosody text is prosodic.
 	 */
-	public ProsodicTextToRawMARYXml(String i_maryXmlHdr, String i_writeFile2Dir, String i_stub, boolean i_prosody){
+	public ProsodicTextToRawMARYXml(String i_maryXmlHdr, String i_writeFile2Dir, String i_stub){
 		this.RAWMARYXMLHead=i_maryXmlHdr;
 		this.GenratedXMLFileLocation=i_writeFile2Dir;
 		this.g_stub=i_stub;
-		this.g_prosody=i_prosody;
 	}
 	/**	A function that takes the prosodic text as input, converts it into RawMaryXML and returns the filename 
 	 * @param inp_prosodictxt text to be spoken.
@@ -202,9 +200,6 @@ public class ProsodicTextToRawMARYXml {
 		StringBuffer l_xmlfilename = new StringBuffer();
 		l_xmlfilename.append(UtteranceCount.toString());
 		l_xmlfilename.append(g_stub);
-		if (g_prosody) l_xmlfilename.append("_p");
-		else l_xmlfilename.append("_d");
-		
 		l_xmlfilename.append("_rwMary_");
 		
 		Date l_date = new Date();
@@ -299,7 +294,7 @@ public static void main(String[] args) {
 		TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", "us2", false, "WAVE");
 		
 		System.out.println("RAWMARYXMLHead is in file : " + args[1]);
-		ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(args[1], args[2],"",false);
+		ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(args[1], args[2],"");
 		SynthesisRAWMaryXMLInput l_synth = new SynthesisRAWMaryXMLInput(l_ttslocal);
 		
 		
@@ -309,7 +304,7 @@ public static void main(String[] args) {
 		BufferedReader l_inp= new BufferedReader(l_file);  
 		String l_utterance = new String();
 		String l_stub = new String();
-		boolean l_prsdy=false;
+		
 		//read a line
 		while((l_utterance=l_inp.readLine())!=null){
 			
@@ -333,11 +328,8 @@ public static void main(String[] args) {
 			}
 						
 			//Just an indicator
-		if(l_utterance.contains(BoundryKey) || l_utterance.contains(ProsodicKey)) l_prsdy= true;
-		else l_prsdy= false;
 		l_convert.g_stub=l_stub;
-		l_convert.g_prosody=l_prsdy;
-		
+			
 		//Make a user friendly filename:
 		l_convert.g_xmlfilename = new String("");
 		l_convert.g_xmlfilename= l_convert.XmlFileName(l_utterance.substring(l_substr));
