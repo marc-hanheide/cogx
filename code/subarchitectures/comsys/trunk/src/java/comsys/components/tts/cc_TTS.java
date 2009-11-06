@@ -117,8 +117,8 @@ public class cc_TTS extends ManagedComponent {
 
     private static String m_RAWMARYXMLHeader=null;
 	private static String m_GenrtdXMLFileLoc=null;
-	private static boolean m_DelGenrtdXMLFile=true;
-	private static boolean m_saveAudio2wav=false;
+	private static boolean m_SaveGenrtdXMLFile=true;
+	private static boolean m_SaveAudio2wav=false;
 	
 	
     // local and remote TTS
@@ -418,33 +418,33 @@ public class cc_TTS extends ManagedComponent {
                 else {
 					log("Trying to say the following: ["+soi.phonString+"]");
                     // Synthesize speech locally
+					ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(m_RAWMARYXMLHeader,m_GenrtdXMLFileLoc,"cast");
+					//Make a user friendly filename for this RawMayXMLfile
+					l_convert.g_xmlfilename=l_convert.XmlFileName(soi.phonString);
+					m_ttsLocal.m_SaveAudio2Wav=m_SaveAudio2wav;
+					m_ttsLocal.m_AudioFileName=m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename);
 					
 					//Process the "text" string for Prosodic markers
 					if(soi.phonString.contains("%") || soi.phonString.contains("@") ){
 						//Do prosodic to RAWMaryXML
 						String l_xmlfile = new String();
-						ProsodicTextToRawMARYXml l_convert = new ProsodicTextToRawMARYXml(m_RAWMARYXMLHeader,m_GenrtdXMLFileLoc,"cogx",true);
-						
-						//Make a user friendly filename for this RawMayXMLfile
-						l_convert.g_xmlfilename=l_convert.XmlFileName(soi.phonString);
 						
 						//A function that takes the prosodic text as input, converts it into RawMaryXML and returns the filename
 						l_xmlfile=l_convert.ConvertToRawMarxXml(soi.phonString);
 												
-						log("XML file written: ["+m_GenrtdXMLFileLoc.concat(l_xmlfile)+"]");
+						log("XML file written: ["+l_xmlfile+"]");
 						
 						//Now Synthesize this file
 						try {
 								//Set inputs for RAWMARYXML processing
 								m_ttsLocal.m_inputType="RAWMARYXML";
 								//Save Audio to wav options
-								m_ttsLocal.m_SaveAudio2Wav=m_saveAudio2wav;
-								m_ttsLocal.m_AudioFileName=m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename);
+								
 								SynthesisRAWMaryXMLInput l_synthsis = new SynthesisRAWMaryXMLInput(m_ttsLocal);
 								l_synthsis.Utter(m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename));
 								
 								//Delete the generated RAWMaryXML
-								if(m_DelGenrtdXMLFile){
+								if(!m_SaveGenrtdXMLFile){
 									File f = new File(m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename));
 									if(f.exists()){
 										log("XML file deleted: ["+m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename)+"]");
@@ -459,6 +459,7 @@ public class cc_TTS extends ManagedComponent {
 							e.printStackTrace();
 						}
 					}else {
+						m_ttsLocal.m_inputType="TEXT_EN";
 						m_ttsLocal.speak(soi.phonString);
 	                    Thread.sleep(2500);	
 					}
@@ -621,16 +622,16 @@ public class cc_TTS extends ManagedComponent {
             }
             
             // Location of temporarily storing generated MaryXMLFiles
-            if (_config.containsKey("--delXml")) {
-            	String tmp = _config.get("--delXml");
-            	if(tmp.equals("true")) m_DelGenrtdXMLFile =true;
-            	else m_DelGenrtdXMLFile =false;
+            if (_config.containsKey("--saveXml2disk")) {
+            	String tmp = _config.get("--saveXml2disk");
+            	if(tmp.equals("true")) m_SaveGenrtdXMLFile =true;
+            	else m_SaveGenrtdXMLFile =false;
             }
             // Saving audio files to wav, location is same as that of m_GenrtdXMLFileLoc
             if (_config.containsKey("--saveAudio2wav")) {
             	String tmp = _config.get("--saveAudio2wav");
-            	if(tmp.equals("true")) m_saveAudio2wav =true;
-            	else m_saveAudio2wav =false;
+            	if(tmp.equals("true")) m_SaveAudio2wav =true;
+            	else m_SaveAudio2wav =false;
             }
             
             
