@@ -1,0 +1,3 @@
+#!/bin/sh
+
+subarchitectures/comsys/src/mercury-c++/abduction/abducer-server
