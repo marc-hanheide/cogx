@@ -129,8 +129,15 @@ shutdownServer(int signum)
 void
 printUsage()
 {
+	const size_t cwd_length = 512;
+	char * cwd = new char[512];
+	getcwd(cwd, cwd_length);
+
 	cerr << "* using server interface revision " << tty::white << ABDUCER_ICE_VERSION << tty::dcol << endl;
 	cerr << tty::yellow << "* path to the abducer: " << abducer_path << tty::dcol << endl;
+	cerr << tty::yellow << "* abducer working directory: " << cwd << tty::dcol << endl;
+
+	delete cwd;
 }
 
 void
