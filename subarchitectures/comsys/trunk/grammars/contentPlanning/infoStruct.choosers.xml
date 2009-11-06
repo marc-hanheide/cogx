@@ -65,7 +65,12 @@
               <choicenode answer = "true">  <!--  shape -->
 			    <result val="matchAnswer"/>			
 		      </choicenode>
-           </choicenode>  <!-- end shape question answer -->    
+           </choicenode>  <!-- end shape question answer --> 
+           
+		   <choicenode answer = "unknown">  <!-- unknown question type -->
+              <result val="doNothing"/>
+           </choicenode>              
+                    
           </choicenode>  <!-- end content is not ascription -->
           
 		 <choicenode answer = "true">       <!-- content is ascription -->  
