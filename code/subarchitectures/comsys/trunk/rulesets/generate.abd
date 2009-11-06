@@ -120,6 +120,7 @@ generate : intention : find_object(h, Prop, PropValue) <-
 			i : feat_ProofStatus(TargetNom, asserted) / 1.0,
 			referring_expression(TargetNom, Union),
 		add_prop_value_to_protolf(ContentNom, PropNom, Prop, PropValue),
+			i : feat_ProofStatus(PropNom, assumed) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 generate : intention : find_object(h, Prop, PropValue) <-
