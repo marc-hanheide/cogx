@@ -286,6 +286,17 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 	QsR = list.map(apply_subst_to_query(Uni), QsR0),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "}", !IO) ).
 
+step(use_fact(vs(m(MQ, PQ), VS), map.init),
+		{QsL0, cf(m(MQ, PQ0), _F), QsR0}, VS,
+		QsL ++ [proved(m(MQ, PQ))] ++ QsR, VS,
+		_Ctx) :-
+
+	PQ0 = p("=", [T1, T2]),
+	unify_terms(T1, T2, Uni),
+	PQ = apply_subst_to_formula(Uni, PQ0),
+	QsL = list.map(apply_subst_to_query(Uni), QsL0),
+	QsR = list.map(apply_subst_to_query(Uni), QsR0).
+
 	% built-in (isn't it actually a rule?)
 step(use_fact(vs(m(MQ, PQ), VS), map.init),
 		{QsL, cf(m(MQ, PQ), _F), QsR}, VS,
