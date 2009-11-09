@@ -244,12 +244,12 @@ class PDDLWriter(mapl.writer.MAPLWriter):
 
         read_facts = []
         
-        if action.replan:
-            read_facts += action.replan.visit(factVisitor)
-            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
         if action.precondition:
             read_facts += action.precondition.visit(factVisitor)
             strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
+        if action.replan:
+            read_facts += action.replan.visit(factVisitor)
+            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
 
         previous_values = {}
         for term, value in read_facts:
