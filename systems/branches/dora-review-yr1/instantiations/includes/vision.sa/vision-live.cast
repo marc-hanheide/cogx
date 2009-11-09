@@ -1,0 +1,2 @@
+CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "1" --devclass FIREWIRE --imgsize "1280 960"
+
