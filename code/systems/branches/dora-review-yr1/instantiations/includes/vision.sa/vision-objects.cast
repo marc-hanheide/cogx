@@ -1,0 +1,5 @@
+#CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./subarchitectures/vision.sa/config/test-ferns/tea.jpg" --mode DETECT_ONLY --displaylevel 2 --log
+CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/tea.jpg:teabox ./ferns/journal.jpg:journal ./ferns/milk.jpg:milk_carton ./ferns/bookshelf2.jpg:bookshelf ./ferns/bookshelf1.jpg:bookshelf" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
+
+#./ferns/MAGAZINE.jpg ./ferns/juice.jpg
+
