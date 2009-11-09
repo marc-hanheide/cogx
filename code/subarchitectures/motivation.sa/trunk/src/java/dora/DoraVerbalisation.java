@@ -219,7 +219,7 @@ public class DoraVerbalisation extends ManagedComponent {
 	}
 
 	public void runComponent() {
-		m_verbals.verbaliseCannedText("Is it the review yet?");
+		m_verbals.verbaliseCannedText("go dora go go go");
 	}
 
 	// verbaliseCannedTextOnStateTransition
