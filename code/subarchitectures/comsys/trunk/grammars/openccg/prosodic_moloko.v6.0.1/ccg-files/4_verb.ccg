@@ -1,4 +1,8 @@
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
 
 # This file contains everything necessary for standard verbs, and some
 # special verbs (thanks, it is made out_of metal, etc), but not for the copula
@@ -52,6 +56,8 @@
   ## COMP SLOT 1 ##
   
     def np_1(args)           { np<2>[X acc args] }            def +np_1(args)          { / np_1(args) }
+    #PROSG09
+    def +np_ip(args)          { /(trs()/! np_1(args)) }
     def +np_1-subj(args)     { \ np<~2>[X nom] }  # this is for 'object-controlled vp comps' like 'I want him to get it'
 
     def obl_1(frm, args)     { obl<2>[X acc MARK=frm args] }  def +obl_1(frm, args)    { / obl_1(frm, args) }
@@ -162,6 +168,8 @@
   
   vfam    ( iv              ,                   ,           )
   vfam    ( tv              , +np_1()           , PATIENT() ) 		
+  #PROSG09 
+  vfam    ( tv              , +np_ip()           , PATIENT() ) 		
   vfam    ( v+Rec-np        , +np_2()           , RECIPIENT() )
 
   def vfam-obl(word){ vfam( "v+".word."-np"  ,   +obl_1(word,)   ,   PATIENT() ) }
@@ -319,7 +327,8 @@ hear;
       stem_hs:   mod vf-base e-focus-true e-uncontentious e-rheme-true e-speaker spkr hs ;
       stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;
       stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;
-      stem:      mod vf-to-imp                            ;   # This entry gets turned into an imp via rule (see above)
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;   # This entry gets turned into an imp via rule (see above)
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-false e-hearer hear ;   # This entry gets turned into an imp via rule (see above)
 
     }
   }
