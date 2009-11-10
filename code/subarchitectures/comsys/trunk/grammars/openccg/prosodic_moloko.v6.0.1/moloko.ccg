@@ -40,6 +40,8 @@
    def +subj(args)       { \! subj(args) } 
    def +from-subj(args)  { \! from-subj(args) }
 
+   def -subj(args)       { /! subj(args) } 
+   def -from-subj(args)  { /! from-subj(args) }
    # NOTE the ! : Verbs don't actually syntactically'take' their subjects.
    #       This is done via rule for ind, via aux or wh-word for int, etc   
  
@@ -104,6 +106,10 @@ def markWordLpHs(word) {
   }
 
 # We will be required to enumerate the remaining other accents. That will also need changes at MACROS using them.
+
+def trs()         { s<10> [ACCENT OWNER]}
+def from-trs()    { s<~10>[args] }
+
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
@@ -631,7 +637,8 @@ feature {
   def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
   def +cop-adj(args) { / adj<2>[X args] }
   #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
-  def +cop-adj-ip(args) { /! adj<2>[X args] }
+  #def +cop-adj-ip(args) { /! adj<2>[M args] }
+  def +cop-adj-ip(args) { /! adj(args) }
 
   # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
   def pre-cop-comp (moder, modee, arg)      { from-s(moder) arg \^ ( s(modee be) arg ) } 
@@ -838,8 +845,10 @@ feature {
 
   def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
     word sing.-noun-n:Noun(class, pred=prd) {
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false args;
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
       sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
       sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
       sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
@@ -904,15 +913,19 @@ feature {
  def pronoun_ip(prd, pers, num, nom-form,nom-form_hs,nom-form_ls,nom-form_lphs, acc-form,acc-form_hs,acc-form_ls,acc-form_lphs, owner,owner_hs,owner_ls,owner_lphs, owned,owned_hs,owned_ls,owned_lphs, class,) {
     word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
       #nom-form :  pers s-.num nom pro num ;
-      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false;
-      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
       nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
       nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
       nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
       nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
       #acc-form :  pers s-.num acc pro num ;
-      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false;
-      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
       acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
       acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
       acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
@@ -1035,7 +1048,7 @@ feature {
   rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; }  
 
  #PROSG09 : Rule for allowing intonational phrase "red_H* LL%"
-  #rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
+  rule {typechange: adj(pre-n)$1 => trs() +cop-adj-ip()$1;}
 
 #######################
 ## DICTIONARY FORMS  ##
@@ -1059,8 +1072,10 @@ feature {
   #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 
  def _adj-deg(prd, base, comp, sup, base_hs,base_ls, base_lphs, comp_hs, comp_ls,comp_lphs, sup_hs,sup_ls, sup_lphs,class, args) {
     word base.-adj:Adj(class, pred=prd) {
-      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true args;
-      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true m-speaker spkr args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true t-hearer hear args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-speaker spkr args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false t-hearer hear args;
       base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
       base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
       base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true m-hearer hear ls args;
@@ -1095,6 +1110,9 @@ feature {
 
 def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
 def from-ips(args)    { s<~10>[args] }
+
+rule { typechange: np(args)$1 => trs()/! np()$1 ; }
+
 
 ##
 ##########################
@@ -1661,7 +1679,7 @@ HH%: hear;
   
   ## COMP SLOT 1 ##
   
-    def np_1(args)           { np<2>[X acc args] }            def +np_1(args)          { / np_1(args) }
+    def np_1(args)           { np<2>[X acc args] }            def +np_1(args)          { / np_1(args) }    def +np_ip(args)          { /(trs()/! np_1(args)) }
     def +np_1-subj(args)     { \ np<~2>[X nom] }  # this is for 'object-controlled vp comps' like 'I want him to get it'
 
     def obl_1(frm, args)     { obl<2>[X acc MARK=frm args] }  def +obl_1(frm, args)    { / obl_1(frm, args) }
@@ -1772,6 +1790,7 @@ HH%: hear;
   
   vfam    ( iv              ,                   ,           )
   vfam    ( tv              , +np_1()           , PATIENT() ) 		
+  vfam    ( tv              , +np_ip()           , PATIENT() ) 		
   vfam    ( v+Rec-np        , +np_2()           , RECIPIENT() )
 
   def vfam-obl(word){ vfam( "v+".word."-np"  ,   +obl_1(word,)   ,   PATIENT() ) }
@@ -1929,7 +1948,8 @@ hear;
       stem_hs:   mod vf-base e-focus-true e-uncontentious e-rheme-true e-speaker spkr hs ;
       stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;
       stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;
-      stem:      mod vf-to-imp                            ;   # This entry gets turned into an imp via rule (see above)
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;   # This entry gets turned into an imp via rule (see above)
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-false e-hearer hear ;   # This entry gets turned into an imp via rule (see above)
 
     }
   }
@@ -2060,7 +2080,7 @@ hear;
 
   #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%" 
   def cop-entry-ip(arg, sem){
-   #    entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+       entry: s(s-minor) +subj(nf-real) / (trs() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
    #    entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
   }
 
@@ -2077,13 +2097,18 @@ hear;
   
     cop-entry( +cop-adj() , <Cop-Scope>(X:quality) )  
     #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
-    cop-entry-ip( +cop-adj-ip() , <Cop-Scope>(X:quality) )  
+    cop-entry-ip( +cop-adj-ip() , <Cop-Scope>(M:quality) )  
     
     # To avoid 'what is that' or 'what is a ball' getting 2 READINGS (in <Cop-Restr> and <Cop-Scope>), 
     # we must block the subj from being questionable for entity scopes
     #
     entry: s(s-minor) +subj(nf-real Questionable=no) +cop-np()    : cop-sem(                 <Cop-Scope>(X:entity) )  ; 
+    #PROSG09 : Rule for allowing intonational phrase like "it is LH% a box_H* LL%"
+    entry: s(s-minor) +subj(nf-real Questionable=no) /^(trs()/! np())   : cop-sem(                 <Cop-Scope>(T:entity) )  ; 
+
+    #entry: s(s-minor) \( trs() +subj(nf-real Questionable=no)) +cop-np()    : cop-sem(                 <Cop-Scope>(S:entity) )  ; 
     entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+
     entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
   }
 
@@ -3096,6 +3121,7 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
   
   wh+extrrr(what, entity, np , s-sg nf-real)
   wh+extrrr(what, event, sent, fin)
+  wh+extrrr(what, event, sent, fin e-focus-false e-uncontentious e-rheme-false e-hearer hear )
   
   wh+extrrr(which, specifier, np-spec, nf-real)
   wh+extrrr(which, specifier, np-spec-ctxt, nf-real)
@@ -3763,6 +3789,8 @@ def be-forms (args) {
   adj-none(spherical,q-shape,) 
   adj-none(square,q-shape,)   
   adj-none(triangular,q-shape,)   
+  adj-none(compact,q-shape,)   
+  adj-none(elongated,q-shape,)   
 
 
   #-- q-physical --#
@@ -4313,51 +4341,111 @@ def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event}
   modifier(right, prep, pre, manner )
   modifier(up, prep, pre, manner )
 
-
-
-# NOTE: In some of the cases below, the 'expected' number of parses will be incorrect
-#       This is because as new features get added, old ones removed, these numbers fluxuate
-#       this is especially true with various 'discourse phenomena' and 'complex constructions'
-
-testbed {
-	  
 ###################
 # Prosodic Tesbed #
 ###################
+# I. Type of utterances we want to address:
+#  A. Assertions/Acknowledgements/Answers, e.g. "This is a red box." , "I see a red box."
+#  B. Clarifications/Verification, e.g. "Is the box red?"
+#  C. Disambiguation, e.g., "Is the box red or orange?"
+#  D. Information Questions, e.g. "What color is the box?"
+#
+# II. Information Structures variations that we want to address:
+#  1. Rheme only: When is an utterance theme only.
+#  2. Theme only: does a Theme only utterance makes sense?
+#  3. Theme(un/marked)-Rheme:
+#  4. Rheme-Theme(un/marked):
+#  5. Theme-Rheme-Theme:
+#
+# Below here we enumerate the possbile combinations of I. and II.
+#
+testbed {
 
-
-### Rheme or Theme only utterance###
-## assertions##
+## A.1. ## Assertions, Rheme only ##
 box: 1;
 "box@H*" LL%:1;
-red box:1;
-red "box@H*" LL%:1;
-a red box:1;
-a red "box@H*" LL%:1;
-it is a red box:1;
-it is a "red@H*" box LL%: 1 ;
-it is a "blue@H*" "mug@H*" LL%: 1 ;
-it is a red "box@H*" LL%: 1 ;
-"it@H*" "is@H*" a "red@H*" "box@H*" LL%:1;
-this is a red box:1;
-this is a "red@H*" box LL%: 1 ;
-this is a "red@H*" "box@H*" LL%: 1 ;
-this is a red "box@H*" LL%: 1 ;
+green box:1;
+green "box@H*" LL%:1;
+a green box:1;
+a green "box@H*" LL%:1;
+
+it is a green box:1;
+it is a "green@H*" box LL%: 1 ;
+it is a "green@H*" "box@H*" LL%: 1 ;
+it is a green "box@H*" LL%: 1 ;
+"it@H*" "is@H*" a "green@H*" "box@H*" LL%:1;
+
+this is a blue mug:1;
+this is a "blue@H*" mug LL%: 1 ;
+this is a "blue@H*" "mug@H*" LL%: 1 ;
+this is a blue "mug@H*" LL%: 1 ;
 this is a "blue@H*" "mug@H*" LL%: 1 ;
 
-## verification requests ## 
-"box@L*" HH%:1;
-red "box@L*" HH%:1;
-a red "box@L*" HH%:1;
-is it a red box: 1 ;
-is it a red "box@L*" HH%: 1 ;
-is it a "red@L*" box HH%: 1 ;
-is it a "red@L*" "box@L*" HH%: 1 ;
+#--in the following dark should have something more contrastive---#
+this is a "dark@H*" "blue@H*" "mug@H*" LL%: 1 ;
 
-is this a red box: 1 ;
-is this a red "box@L*" HH%: 1 ;
-is this a "red@L*" box HH%: 1 ;
-is this a "red@L*" "box@L*" HH%: 1 ;
+I see a red ball:1;
+I see a "red@H*" ball LL%: 1 ;
+I see a "red@H*" "ball@H*" LL%: 1 ;
+I see a red "ball@H*" LL%: 1 ;
+
+the "box@H*" is "blue@H*" LL%:1;
+
+## A.2 ## Assertions, Theme only ##
+the "box@L+H*" is "blue@L+H*" LL%:1;
+it is a "ball@L+H*" LL%:1;
+it is a "ball@L+H*" LH%:1;
+
+## A.3 ## Assertions, Theme(un/marked)-Rheme ##
+
+the box is green:1;
+the box LH% is "green@H*" LL%:1 ;
+the "box@L+H*" LH% is "green@H*" LL%:1 ;
+
+the "ball@L+H*" is LH% "red@H*" LL%:1;
+the ball is LH% "red@H*" LL%:1;
+
+#---what does the robot do?
+the robot LH% "moves@H*" the "box@H*" LL%:1 ;
+the "robot@L+H*" LH% "moves@H*" the "box@H*" LL%:1 ;
+
+#---what does the robot move?
+the robot moves LH% the "box@H*" LL%:1 ;
+the "robot@L+H*" "moves@L+H*" LH% the "box@H*" LL%:1 ;
+
+## A.4 ## Assertions, Rheme-Theme(un/marked) ##
+
+#--who moves the box?
+the "robot@H*" LL% moves the "box@L+H*" LH%:1 ;
+the "robot@H*" LL% moves the box LH%:1 ;
+the "robot@H*" LL% moves the box LL%:1 ;
+
+the "box@H*" LL% is "red@L+H*" LH%:1 ;
+the "box@H*" LL% is red LH%:1 ;
+the "box@H*" LL% is red LL%:1 ;
+
+## A.5 ## Assertion, Theme-Rheme-Theme ##
+
+#--what does the robot do with the box?
+the "robot@L+H*" LH% "moves@H*" LL% the "box@L+H*" LH%:1 ;
+the robot LH% "moves@H*" LL% the box LH%:1 ;
+
+the "box@L+H*" LH% "is@H*" LL% "green@L+H*" LH%:1;
+
+## B.1 ## Verification, Rheme Only ## 
+
+"box@L*" HH%:1;
+green "box@L*" HH%:1;
+a green "box@L*" HH%:1;
+is it a green box: 1 ;
+is it a green "box@L*" HH%: 1 ;
+is it a "green@L*" box HH%: 1 ;
+is it a "green@L*" "box@L*" HH%: 1 ;
+
+is this a red ball: 1 ;
+is this a red "ball@L*" HH%: 1 ;
+is this a "red@L*" ball HH%: 1 ;
+is this a "red@L*" "ball@L*" HH%: 1 ;
 
 is it a blue mug: 1 ;
 is it a blue "mug@L*" HH%:1 ;
@@ -4366,41 +4454,74 @@ is it a large blue "mug@L*" HH%:1 ;
 is it a large "blue@L*" mug HH%:1 ;
 is it a "large@L*" blue mug HH%:1 ;
 
-## disambiguation requests ##
-is the box "red@L*" or "orange@L*" HH%:1;
+#--as response to dialogue(did you mean If I see a red box?), vs. a visual initiative--
+do I see a red "box@L*" HH%:1;
+do I see a "red@L*" box HH%:1;
+is that a red "box@L*" HH%:1;
+is that a "red@L*" box HH%:1;
 
-## information requests ##
+did you say red:1;
+did "you@L*" say red HH%:1;
+did you say "red@L*" HH%:1;
+"did@L*" you say red HH%:1;
+
+## B.2 ## Verification, Theme Only ## 
+
+## B.3 ## Verification, Theme(un/marked)-Rheme ## 
+is the box LH% "green@L*" HH%: 1 ;
+is the "box@L+H*" LH% "green@L*" HH%: 1 ;
+
+is this LH%  "red@L*" HH%:1;
+is "this@L+H*" LH%  "red@L*" HH%:1;
+is "this@L+H*" LH%  "round@L*" HH%:1;
+
+is the box LH%  "compact@L*" HH%:1;
+is the "box@L+H*" LH%  "compact@L*" HH%:1;
+
+is the box LH% "compact@L*" and "red@L*" HH%:1;
+is the "box@L+H*" LH% "compact@L*" and "red@L*" HH%:1;
+
+## B.4 ## Verification, Rheme-Theme(un/marked) ## 
+is the "box@L*" LL% green HH%: 1 ;
+is the "box@L*" LL% "green@L+H*" HH%: 1 ;
+is the "box@L*" LL% "green@L+H*" LH%: 1 ;
+
+is "this@L*" LL%  red HH%:1;
+is "this@L*" LL%  "red@L+H*" HH%:1;
+is "this@L*" LL%  "red@L+H*" LH%:1;
+
+is the "box@L*" LL%  compact HH%:1;
+is the "box@L+H*" LL%  "compact@L+H*" HH%:1;
+
+is the "box@L*" LL% compact and red HH%:1;
+is the "box@L+H*" LH% "compact@L+H*" and "red@L+H*" HH%:1;
+
+## B.5 ## Verification, Theme-Rheme-Theme ## 
+
+## C.1 ## Disambiguation, Rheme only ##
+is the box "red@L*" or "orange@L*" HH%:1;
+is the box "compact@L*" or "elongated@L*" HH%:1;
+"which@L*" box is red HH%:1;
+
+
+## C.2 ## Disambiguation, Theme only ##
+
+## C.3 ## Disambiguation, Theme(un/marked)-Rheme ##
+is the box LH% "red@L*" or "orange@L*" HH%:1;
+is the "box@L+H*" LH% "red@L*" or "orange@L*" HH%:1;
+
+## C.4 ## Disambiguation, Rheme-Theme(un/marked) ##
+## C.5 ## Disambiguation, Rheme-Rheme-Theme(un/marked) ##
+
+## D.1 information requests ##
 what color is the mug:1;
-#what "color@H*" is the mug HH%:1;
+what "color@H*" is the mug HH%:1;
 what color is the "mug@H*" HH%:1;
-#what "color@H*" is "this@H*" mug HH%:1;
+what "color@H*" is "this@H*" mug HH%:1;
 what color is the bigger "mug@H*" HH%:1;
 what color is the "bigger@H*" mug HH%:1;
-#what "color@H*" is the bigger mug HH%:1;
-#"what@H*" color is the mug HH%:1;
-
-### Rheme-Theme Utterances ###
-## assertions ##
-the "box@L+H*" LH% is "red@H*" LL%:1 ;
-the "box@H*" LL% is "red@L+H*" LH%:1 ;
-the "robot@L+H*" LH% moves a "box@H*" LL%:1 ;
-the "robot@H*" LL% moves a "box@L+H*" LH%:1 ;
-
-the box is blue:1;
-the "box@L+H*" LH% is "blue@H*" LL%:1;
-the "box@L+H*" is LH% "blue@H*" LL%:1;
-the "box@H*" is "blue@H*" LL%:1;
-the "box@L+H*" is "blue@L+H*" LL%:1;
-the "box@L+H*" LH% "is@H*" LL% "blue@L+H*" LH%:1;
-
-## verifications ##
-is the box red:1;
-is the "box@L+H*" LH%  "red@L*" HH%:1 ;
-is the "box@L*" LL% "red@L+H*" HH%:1 ;
-
-##disambiguations ##
-
-##information questions ##
+what "color@H*" is the bigger mug HH%:1;
+"what@H*" color is the mug HH%:1;
 
 ### following parses need to be constrained or not allowed ###
 is it a "red@H*" "box@L+H*" LH%: 0 ;
@@ -4441,15 +4562,17 @@ I see:1;
 let me see:1;
 let "me@H*" "see@H*" LL%:1;
 it is red:1;
-"it@H*" "is@H*" "red@H*"
-"is@L+H*" the "box@L+H*" LH% "blue@H*" HH%:1;
+it "is@H*" red LL% :1;
+it is "red@H*" LL% :1;
+"itH*" is red LL% :1;
+"is@L+H*" the "box@L+H*" LH% "blue@L*" HH%:1;
 I "don't" know the color:1;
 "I@L+H*" "don't" "know@L+H*" the "color@L+H*" LH%:1;
 I "don't" know:1;
 "I@L+H*" "don't" "know@L+H*" LH%:1;
 it is a box:1;
 "it@L+H*" "is@L+H*" a "box@L+H*" LH%:1;
-
+I LL% "don't" know LH% the "color@H*" LL%:1;
 }
 
 
