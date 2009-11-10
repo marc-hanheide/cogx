@@ -1383,6 +1383,7 @@
     <member stem="sphericalspherical-adj" pred="spherical"/>
     <member stem="squaresquare-adj" pred="square"/>
     <member stem="triangulartriangular-adj" pred="triangular"/>
+    <member stem="compactcompact-adj" pred="compact"/>
     <member stem="openopen-adj" pred="open"/>
     <member stem="closedclosed-adj" pred="closed"/>
     <member stem="clutteredcluttered-adj" pred="cluttered"/>
@@ -3912,6 +3913,150 @@
             <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
+        <lf>
+          <satop nomvar="E:event">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Actor">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Patient">
+              <nomvar name="X:entity"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member stem="follow-verb-action-motionm-class-all" pred="follow"/>
+    <member stem="move-verb-action-motionm-class-all" pred="move"/>
+    <member stem="drive-verb-action-motionm-class-all" pred="drive"/>
+    <member stem="play-verb-action-non-motionm-class-1" pred="play"/>
+    <member stem="win-verb-action-non-motionm-class-2" pred="win"/>
+    <member stem="lose-verb-action-non-motionm-class-2" pred="lose"/>
+    <member stem="kill-verb-action-non-motionm-class-2" pred="kill"/>
+    <member stem="bother-verb-action-non-motionm-class-2" pred="bother"/>
+    <member stem="buy-verb-action-non-motionm-class-1" pred="buy"/>
+    <member stem="give-verb-action-non-motionm-class-1" pred="give"/>
+    <member stem="remove-verb-action-non-motionm-class-all" pred="remove"/>
+    <member stem="rotate-verb-action-motionm-class-all" pred="rotate"/>
+    <member stem="get-verb-action-non-motionm-class-all" pred="get"/>
+    <member stem="take-verb-action-non-motionm-class-all" pred="take"/>
+    <member stem="bring-verb-action-non-motionm-class-all" pred="bring"/>
+    <member stem="fetch-verb-action-non-motionm-class-all" pred="fetch"/>
+    <member stem="eat-verb-action-non-motionm-class-1" pred="eat"/>
+    <member stem="drink-verb-action-non-motionm-class-1" pred="drink"/>
+    <member stem="make-verb-action-non-motionm-class-1" pred="make"/>
+    <member stem="find-verb-action-non-motionm-class-2" pred="find"/>
+    <member stem="show-verb-action-non-motionm-class-2" pred="show"/>
+    <member stem="explore-verb-action-non-motionm-class-2" pred="explore"/>
+    <member stem="help-verb-action-non-motionm-class-2" pred="help"/>
+    <member stem="use-verb-action-non-motionm-class-2" pred="use"/>
+    <member stem="fix-verb-action-non-motionm-class-2" pred="fix"/>
+    <member stem="break-verb-action-non-motionm-class-2" pred="break"/>
+    <member stem="know-verb-cognitionm-class-3" pred="know"/>
+    <member stem="understand-verb-cognitionm-class-3" pred="understand"/>
+    <member stem="mean-verb-cognitionm-class-3" pred="mean"/>
+    <member stem="want-verb-cognitionm-class-3" pred="want"/>
+    <member stem="need-verb-cognitionm-class-3" pred="need"/>
+    <member stem="like-verb-cognitionm-class-3" pred="like"/>
+    <member stem="memorize-verb-cognitionm-class-3" pred="memorize"/>
+    <member stem="tell-verb-communicationm-class-2" pred="tell"/>
+    <member stem="ask-verb-communicationm-class-2" pred="ask"/>
+    <member stem="explain-verb-communicationm-class-2" pred="explain"/>
+    <member stem="excuse-verb-communicationm-class-2" pred="excuse"/>
+    <member stem="pardon-verb-communicationm-class-2" pred="pardon"/>
+    <member stem="see-verb-perceptionm-class-2" pred="see"/>
+    <member stem="watch-verb-perceptionm-class-2" pred="watch"/>
+    <member stem="look-verb-perceptionm-class-2" pred="look"/>
+    <member stem="observe-verb-perceptionm-class-2" pred="observe"/>
+    <member stem="hear-verb-perceptionm-class-2" pred="hear"/>
+    <member stem="touch-verb-perceptionm-class-2" pred="touch"/>
+    <member stem="feel-verb-perceptionm-class-2" pred="feel"/>
+    <member stem="call-verb-symbolicm-class-2" pred="call"/>
+    <member stem="name-verb-symbolicm-class-2" pred="name"/>
+    <member stem="have-verb-ascriptionm-class-2" pred="have"/>
+  </family>
+  <family name="tv" pos="V" closed="true">
+    <entry name="Entry-1">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
+            <feat attr="MOOD" val="s-minor"/>
+          </fs>
+        </atomcat>
+        <slash dir="\" ability="inert" mode="&lt;"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash dir="/" ability="inert" mode="&gt;"/>
+          <atomcat type="np">
+            <fs id="2">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="X"/>
+                </lf>
+              </feat>
+              <feat attr="CASE" val="acc"/>
+            </fs>
+          </atomcat>
+        </complexcat>
         <lf>
           <satop nomvar="E:event">
             <prop name="[*DEFAULT*]"/>
@@ -10474,6 +10619,108 @@
               <featvar name="PERS:PERS"/>
             </feat>
             <feat attr="NFORM" val="nf-real"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash dir="/" ability="inert" mode="&gt;"/>
+          <atomcat type="adj">
+            <fs id="25">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="M"/>
+                </lf>
+              </feat>
+              <feat attr="DEGREE">
+                <featvar name="DEGREE"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <lf>
+          <satop nomvar="E:event">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Cop-Restr">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Cop-Scope">
+              <nomvar name="M:quality"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <entry name="Entry-14">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
+            <feat attr="MOOD" val="s-minor"/>
+          </fs>
+        </atomcat>
+        <slash dir="\" ability="inert" mode="&lt;"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
             <feat attr="Questionable" val="no"/>
           </fs>
         </atomcat>
@@ -10507,7 +10754,119 @@
         </lf>
       </complexcat>
     </entry>
-    <entry name="Entry-14">
+    <entry name="Entry-15">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
+            <feat attr="MOOD" val="s-minor"/>
+          </fs>
+        </atomcat>
+        <slash dir="\" ability="inert" mode="&lt;"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
+            <feat attr="Questionable" val="no"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="^"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash dir="/" ability="inert" mode="&gt;"/>
+          <atomcat type="np">
+            <fs id="15">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="T"/>
+                </lf>
+              </feat>
+              <feat attr="CASE">
+                <featvar name="CASE"/>
+              </feat>
+              <feat attr="NUM">
+                <featvar name="NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS"/>
+              </feat>
+              <feat attr="NFORM">
+                <featvar name="NFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <lf>
+          <satop nomvar="E:event">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Cop-Restr">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Cop-Scope">
+              <nomvar name="T:entity"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <entry name="Entry-16">
       <complexcat>
         <atomcat type="s">
           <fs id="10">
@@ -10600,7 +10959,7 @@
         </lf>
       </complexcat>
     </entry>
-    <entry name="Entry-15">
+    <entry name="Entry-17">
       <complexcat>
         <atomcat type="cop">
           <fs id="10">
