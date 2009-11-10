@@ -2,17 +2,17 @@ HOST localhost
 
 
 # spatial #####################################################################
-INCLUDE includes/spatial.sa/spatial-ptz.cast
+#INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-gripper.sa
 INCLUDE includes/spatial.sa/spatial-binder.cast
-INCLUDE includes/spatial.sa/spatial-objsearch.cast
+INCLUDE includes/spatial.sa/spatial-objsearch-no-ptu.cast
 INCLUDE includes/spatial.sa/spatial-peekabot-gripper.sa
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-fake.cast
 #INCLUDE includes/vision.sa/vision-base.cast
-INCLUDE includes/vision.sa/vision-objects.cast
+#INCLUDE includes/vision.sa/vision-objects.cast
 #INCLUDE includes/vision.sa/vision-live.cast
 #CPP MG dummy.objrecog DummyDriver --labels "tea magazine juice"
 

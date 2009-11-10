@@ -2,7 +2,8 @@ ROBOT
 CogXdemo
 
 PEEKABOT_HOST
-192.168.176.52
+localhost
+#192.168.176.52
 
 PEEKABOT_ROBOT_XML_FILE
 #CogX_base.xml
