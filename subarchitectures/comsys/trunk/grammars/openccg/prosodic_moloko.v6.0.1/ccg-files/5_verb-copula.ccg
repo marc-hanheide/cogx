@@ -60,9 +60,12 @@
     # we must block the subj from being questionable for entity scopes
     #
     entry: s(s-minor) +subj(nf-real Questionable=no) +cop-np()    : cop-sem(                 <Cop-Scope>(X:entity) )  ; 
+    #PROSG09 : Rule for allowing intonational phrase like "it is LH% a box_H* LL%"
     entry: s(s-minor) +subj(nf-real Questionable=no) /^(trs()/! np())   : cop-sem(                 <Cop-Scope>(T:entity) )  ; 
+
     #entry: s(s-minor) \( trs() +subj(nf-real Questionable=no)) +cop-np()    : cop-sem(                 <Cop-Scope>(S:entity) )  ; 
     entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+
     entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
   }
 

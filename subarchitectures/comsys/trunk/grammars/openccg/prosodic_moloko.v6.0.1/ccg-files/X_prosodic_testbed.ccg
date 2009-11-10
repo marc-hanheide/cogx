@@ -85,7 +85,7 @@ the "box@H*" LL% is red LL%:1 ;
 
 #--what does the robot do with the box?
 the "robot@L+H*" LH% "moves@H*" LL% the "box@L+H*" LH%:1 ;
-the robot LH% moves@H* LL% the box LH%:1 ;
+the robot LH% "moves@H*" LL% the box LH%:1 ;
 
 the "box@L+H*" LH% "is@H*" LL% "green@L+H*" LH%:1;
 
@@ -117,6 +117,11 @@ do I see a "red@L*" box HH%:1;
 is that a red "box@L*" HH%:1;
 is that a "red@L*" box HH%:1;
 
+did you say red:1;
+did "you@L*" say red HH%:1;
+did you say "red@L*" HH%:1;
+"did@L*" you say red HH%:1;
+
 ## B.2 ## Verification, Theme Only ## 
 
 ## B.3 ## Verification, Theme(un/marked)-Rheme ## 
@@ -138,46 +143,42 @@ is the "box@L*" LL% green HH%: 1 ;
 is the "box@L*" LL% "green@L+H*" HH%: 1 ;
 is the "box@L*" LL% "green@L+H*" LH%: 1 ;
 
-is this LH%  "red@L*" HH%:1;
-is "this@L+H*" LH%  "red@L*" HH%:1;
-is "this@L+H*" LH%  "round@L*" HH%:1;
+is "this@L*" LL%  red HH%:1;
+is "this@L*" LL%  "red@L+H*" HH%:1;
+is "this@L*" LL%  "red@L+H*" LH%:1;
 
-is the box LH%  "compact@L*" HH%:1;
-is the "box@L+H*" LH%  "compact@L*" HH%:1;
+is the "box@L*" LL%  compact HH%:1;
+is the "box@L+H*" LL%  "compact@L+H*" HH%:1;
 
-is the box LH% "compact@L*" and "red@L*" HH%:1;
-is the "box@L+H*" LH% "compact@L*" and "red@L*" HH%:1;
+is the "box@L*" LL% compact and red HH%:1;
+is the "box@L+H*" LH% "compact@L+H*" and "red@L+H*" HH%:1;
 
-## B.5 ## Verification, Theme-RhemeTheme ## 
-
+## B.5 ## Verification, Theme-Rheme-Theme ## 
 
 ## C.1 ## Disambiguation, Rheme only ##
 is the box "red@L*" or "orange@L*" HH%:1;
+is the box "compact@L*" or "elongated@L*" HH%:1;
+"which@L*" box is red HH%:1;
+
 
 ## C.2 ## Disambiguation, Theme only ##
-## C.3 ## Disambiguation, Theme(un/marked)-Rheme ##
-## C.4 ## Disambiguation, Rheme-Rheme-Theme(un/marked) ##
 
-## information requests ##
+## C.3 ## Disambiguation, Theme(un/marked)-Rheme ##
+is the box LH% "red@L*" or "orange@L*" HH%:1;
+is the "box@L+H*" LH% "red@L*" or "orange@L*" HH%:1;
+
+## C.4 ## Disambiguation, Rheme-Theme(un/marked) ##
+## C.5 ## Disambiguation, Rheme-Rheme-Theme(un/marked) ##
+
+## D.1 information requests ##
 what color is the mug:1;
-#what "color@H*" is the mug HH%:1;
+what "color@H*" is the mug HH%:1;
 what color is the "mug@H*" HH%:1;
-#what "color@H*" is "this@H*" mug HH%:1;
+what "color@H*" is "this@H*" mug HH%:1;
 what color is the bigger "mug@H*" HH%:1;
 what color is the "bigger@H*" mug HH%:1;
-#what "color@H*" is the bigger mug HH%:1;
-#"what@H*" color is the mug HH%:1;
-
-### Rheme-Theme Utterances ###
-
-## verifications ##
-is the box red:1;
-is the "box@L+H*" LH%  "red@L*" HH%:0 ;
-is the "box@L*" LL% "red@L+H*" HH%:0 ;
-
-##disambiguations ##
-
-##information questions ##
+what "color@H*" is the bigger mug HH%:1;
+"what@H*" color is the mug HH%:1;
 
 ### following parses need to be constrained or not allowed ###
 is it a "red@H*" "box@L+H*" LH%: 0 ;
@@ -218,8 +219,10 @@ I see:1;
 let me see:1;
 let "me@H*" "see@H*" LL%:1;
 it is red:1;
-"it@H*" "is@H*" "red@H*"
-"is@L+H*" the "box@L+H*" LH% "blue@H*" HH%:1;
+it "is@H*" red LL% :1;
+it is "red@H*" LL% :1;
+"itH*" is red LL% :1;
+"is@L+H*" the "box@L+H*" LH% "blue@L*" HH%:1;
 I "don't" know the color:1;
 "I@L+H*" "don't" "know@L+H*" the "color@L+H*" LH%:1;
 I "don't" know:1;
