@@ -2,10 +2,10 @@
 
 # This file contains definition of family, and dictionary entries for boundary tones as per Steedman 2000.
 
-def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
-def from-ips(args)    { s<~10>[args] }
+#def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+#def from-ips(args)    { s<~10>[args] }
 
-rule { typechange: np(args)$1 => trs()/! np()$1 ; }
+#rule { typechange: np(args)$1 => trs()/! np()$1 ; }
 
 
 ##

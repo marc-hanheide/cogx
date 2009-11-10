@@ -102,6 +102,8 @@
     
   rule { typechange: n[T2 full compound-1st]     =>  from-n(cc-none) /* n(compound-head)  :  ENTITY( <Compound>(T2) ) ; } 
 
+ #PROSG09
+ rule { typechange: np(args)$1 => trs()/! np()$1 ; }
   
 #######################
 ## DICTIONARY FORMS  ##
