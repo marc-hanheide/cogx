@@ -1,5 +1,8 @@
 project(PlaceShared)
 
+find_package(Boost)
+link_directories(Boost_LIBRARY_DIRS)
+
 set(SOURCES ConfigFile.cpp DataWriter.cpp LabelFile.cpp DataReader.cpp OdomScanWidget.cpp ColorMap.cpp CastTools.cpp)  # NodePlaceInfoPullSender.cpp
 set(HEADERS ConfigFile.h DataWriter.h LabelFile.h DataReader.h OdomScanWidget.h ColorMap.h CastTools.h)  # NodePlaceInfoPullSender.h
 set(MOC_HEADERS OdomScanWidget.h)
