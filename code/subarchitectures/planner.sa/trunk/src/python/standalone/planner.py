@@ -11,8 +11,17 @@ from task import PlanningStatusEnum, Task
 import mapl_new as mapl
 import plans
 import plan_postprocess
+import statistics
 
 log = config.logger("planner")
+
+statistics_defaults = dict(
+    planning_calls=0,
+    planning_time=0.0,
+    monitoring_calls=0,
+    monitoring_time=0.0,
+    )
+
 
 class Planner(object):
     """ 
@@ -31,6 +40,7 @@ class Planner(object):
             base_planner = globals()[base_planner_name](self)
         self._base_planner = base_planner
         self._emergency_stop = False
+        self.statistics = statistics.Statistics(statistics_defaults)
 
     __call_id_counter = 0
 
@@ -38,6 +48,10 @@ class Planner(object):
     def create_unique_planner_call_id(prefix=""):
         Planner.__call_id_counter += 1
         return prefix + str(Planner.__call_id_counter).zfill(3)
+
+    def collect_statistics(self):
+        """ return all stats collected by this planner """
+        return self.statistics
 
     def register_task(self, task):
         if task not in self.tasks:
@@ -115,7 +129,8 @@ class Planner(object):
                 continue
             else:
                 pnode.action = mapltask.getAction(pnode.action.name)
-    
+
+    @statistics.time_method_for_statistics("monitoring_time")
     def _evaluate_current_plan(self, task):
         """
         Plan monitoring: checks whether a plan is still valid given
@@ -124,6 +139,8 @@ class Planner(object):
         """
         if task.get_plan() is None:
             return True
+
+        self.statistics.increase_stat("monitoring_calls")
 
         self.update_plan(task.get_plan(), task._mapltask)
                 
@@ -146,7 +163,9 @@ class Planner(object):
             if pnode.action.replan:
                 if self.check_node(pnode, state, replan=True):
                     log.info("Assertion (%s %s) is expandable, triggering replanning.", pnode.action.name, " ".join(a.name for a in pnode.full_args))
+                    task.statistics.increase_stat("deliberate_replans")
                     return True
+            
         log.debug("time for checking assertions: %f", time.time()-t0)
 
         log.debug("checking plan validity.")
@@ -205,6 +224,7 @@ class Planner(object):
         return True  # no monitoring currently
 
     
+    @statistics.time_method_for_statistics("planning_time")
     def _start_planner(self, task):
         """
         Call base planner for this task.  The base planner should
@@ -213,6 +233,7 @@ class Planner(object):
         """
         # TODO: currently atomic process, ie planner will wait for result
         log.info("Planning was triggered for task %d.", task.taskID)
+        self.statistics.increase_stat("planning_calls")
         plan = self._base_planner.find_plan(task)
         task.set_plan(plan)
         
@@ -299,6 +320,7 @@ class ContinualAxiomsFF(BasePlanner):
         
         if proc.returncode != 0:
             print "Warning: FF returned with nonzero exitcode:\n\n>>>"
+            print "Call was:", cmd
             print open(stdout_path).read()
             print "<<<\n"
             if proc.returncode > 0:
@@ -310,7 +332,9 @@ class ContinualAxiomsFF(BasePlanner):
         try:
             pddl_output = open(plan_path).read()
         except IOError:
-            print "Warning: FF did not find a plan or crashed.  FF output was:\n\n>>>"
+            print "Warning: FF did not find a plan or crashed."
+            print "Call was:", cmd
+            print "FF output was:\n\n>>>"
             print open(stdout_path).read()
             print "<<<\n"
             return None
@@ -487,6 +511,8 @@ class TFD(BasePlanner):
         action_def = actions[action]
         args = [task[a] for a in args]
         return plans.PlanNode(action_def, args, time, plans.ActionStatusEnum.EXECUTABLE)
+
+
             
 if __name__ == '__main__':    
     assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""

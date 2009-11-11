@@ -4,12 +4,18 @@ import mapl_new as mapl
 import mapl_new.mapltypes as types
 import mapl_new.predicates as predicates
 import mapl_new.effects as effects
+import statistics
 #import mapl_new.writer
 from utils import Enum
 
 log = config.logger("planner")
 
 PlanningStatusEnum = Enum("TASK_CHANGED", "RUNNING", "PLAN_AVAILABLE", "PLANNING_FAILURE", "INTERRUPTED")    
+
+statistics_defaults = dict(
+    deliberate_replans=0,
+    )
+
 
 class Task(object):
     """
@@ -19,6 +25,7 @@ class Task(object):
         """Initialise public and private fields."""
         # public
         self.taskID = taskID
+        self.statistics = statistics.Statistics(statistics_defaults)
         self._mapltask = mapltask
         self._mapldomain = None
         self._action_blacklist = None
