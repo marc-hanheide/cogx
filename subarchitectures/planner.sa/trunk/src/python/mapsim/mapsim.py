@@ -7,6 +7,7 @@ usage: %prog [options] domain scenario
   -d, --debug : print debug messages to console and logfiles [default: %default]
   -v, --verbosity=VERBOSITY : general verbosity level for console output [default: %default]
   -l, --loglevel=VERBOSITY : general verbosity level for logging output [default: %default]
+  -r, --random=SEED : random seed for the world state [default: %default]
 """
 
 from os.path import abspath, dirname

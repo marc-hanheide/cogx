@@ -10,6 +10,8 @@ from standalone import statistics
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
+import standalone.globals as global_vars
+
 import agent
 log = config.logger("mapsim")
 
@@ -22,9 +24,10 @@ class Simulation(object):
     def __init__(self, scenario):
         self.planner = StandalonePlanner()
         self.scenario = scenario
-        self.state = state.State.fromProblem(scenario.world)
+        self.state = state.State.fromProblem(scenario.world, seed=global_vars.mapsim_config.random)
         self.problem = scenario.world
         self.statistics = statistics.Statistics(defaults=statistics_defaults)
+
 
         self.agents = {}
         for a, prob in scenario.agents.iteritems():
