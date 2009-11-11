@@ -342,12 +342,10 @@
     _extr(form, form."ever", class, "Extr-".item."-", args)  # must add features!
   }
   
-  
   wh+extrrr(who, animate, np , s-sg nf-real)
   
   wh+extrrr(what, entity, np , s-sg nf-real)
   wh+extrrr(what, event, sent, fin)
-  wh+extrrr(what, event, sent, fin e-focus-false e-uncontentious e-rheme-false e-hearer hear )
   
   wh+extrrr(which, specifier, np-spec, nf-real)
   wh+extrrr(which, specifier, np-spec-ctxt, nf-real)
@@ -547,7 +545,9 @@ def be-forms (args) {
     "don't":   do pres         s-pl  s-neg      neg ;
     does:      do pres 3rd     s-sg  s-prov-pos     ;
     "doesn't": do pres 3rd     s-sg  s-neg      neg ;
-    did:       do past               s-prov-pos	    ;
+    did:       do past               s-prov-pos	;
+    #did:       do past               s-prov-pos	e-focus-false e-uncontentious e-rheme-true e-speaker spkr;
+    #did:       do past               s-prov-pos	e-focus-false e-uncontentious e-rheme-false e-hearer hear    ;
     "didn't":  do past               s-neg      neg ;
   }
   

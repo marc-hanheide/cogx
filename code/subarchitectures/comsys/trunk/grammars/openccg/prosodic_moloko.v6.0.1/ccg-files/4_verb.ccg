@@ -302,16 +302,15 @@
   # This handles irregular verbs, i.e. each form must be fully specified
   #
   #PROSG09 changes
-  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(stem, stem,markWordsINTO(stem), 3sing,markWordsINTO(3sing),ving,markWordsINTO(ving), pasttense,markWordsINTO(pasttense), pastpart,markWordsINTO(pastpart), mod, class, props) }
+  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(stem, stem,accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
 
-  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(prd, stem, markWordsINTO(stem), 3sing,markWordsINTO(3sing),ving,markWordsINTO(ving), pasttense,markWordsINTO(pasttense), pastpart,markWordsINTO(pastpart), mod, class, props) }
+  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(prd, stem, accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
 
  #PROSG09 changes
   def _verb-basic_ip(prd, stem,stem_hs,stem_ls,stem_lphs,3sing,3sing_hs,3sing_ls,3sing_lphs,ving,ving_hs,ving_ls,ving_lphs, pasttense,,pasttense_hs,pasttense_ls,pasttense_lphs, pastpart,pastpart_hs,pastpart_ls,pastpart_lpls, mod, class, props) {
     word stem.-verb-.class.mod:props(class, pred=prd) {
       stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-true e-speaker spkr;  	
-      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-false e-hearer 
-hear;  	
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-false e-hearer hear;  	
       stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-true e-hearer hear hs; 
       stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-speaker spkr e-rheme-true hs;  	
       stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;  	

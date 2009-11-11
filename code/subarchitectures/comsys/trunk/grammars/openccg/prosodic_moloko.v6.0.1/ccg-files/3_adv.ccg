@@ -78,11 +78,17 @@
 #######################
 ## DICTIONARY FORMS  ##
 #######################
-
- def adverb(base, class, cc-class, args)  { _adverb(base, base, class, cc-class, args) } 
- def _adverb(prd, base, class, cc-class, args) {
+ #PROSG09 changes
+ def adverb(base, class, cc-class, args)  { _adverb_ip(base, base,accentMark(base), class, cc-class, args) } 
+ def _adverb(base, base, class, cc-class, args) {_adverb_ip(prd, base, accentMark(base), class, cc-class, args) }
+ def _adverb_ip(prd, base, base_hs,base_ls,base_lphs, class, cc-class, args) {
     word base.-adv:Adv("m-".class, pred=prd) {
       base : s-degree-base x-.class cc-class args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs args;
+
     }
   }
 
