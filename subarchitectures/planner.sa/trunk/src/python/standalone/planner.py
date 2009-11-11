@@ -86,7 +86,7 @@ class Planner(object):
             self._start_planner(task)
         else:
             #if no action is executing, trigger update
-            if not any(pnode.is_inprogress() for pnode in task.get_plan().V):
+            if not any(pnode.is_inprogress() for pnode in task.get_plan().nodes_iter()):
                 log.info("no actions are executing, reissuing plan")
                 task.set_plan(task.get_plan(), update_status=True)
             else:
@@ -122,7 +122,7 @@ class Planner(object):
         return True
 
     def update_plan(self, plan, mapltask):
-        for pnode in plan.V:
+        for pnode in plan.nodes_iter():
             if isinstance(pnode.action, plans.GoalAction):
                 pnode.action.precondition = mapltask.goal
             elif isinstance(pnode.action, plans.DummyAction):
@@ -146,7 +146,7 @@ class Planner(object):
                 
         t0 = time.time()
         state = task.get_state().copy()
-        plan = task.get_plan().topological_sort(include_depths=False)
+        plan = task.get_plan().topological_sort()
 
         #check if the goal is already satisfied
         if self.check_node(task.get_plan().goal_node, state):

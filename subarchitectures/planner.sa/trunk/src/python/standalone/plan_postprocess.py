@@ -111,7 +111,7 @@ def make_po_plan(actions, task):
         pnode = plans.PlanNode(action, args, starttime, plans.ActionStatusEnum.EXECUTABLE)
         plan.add_node(pnode)
         #linear plan for now
-        plan.add_link(previous, pnode)
+        #plan.add_link(previous, pnode)
                  
         replan, replan_universal, read, read_universal, write = getRWDescription(action, args, state)
 
@@ -126,14 +126,14 @@ def make_po_plan(actions, task):
             if svar not in frontier:
                 relevant_init_vars.add(svar)
             readers[svar].add(pnode)
-            #plan.add_link(frontier[svar], pnode)
+            plan.add_link(frontier[svar], pnode, svar, val)
 
         for svar, val in write:
             if state[svar] != val:
                 if svar in readers:
-                    #for node in readers[svar]:
-                    #    if node != pnode:
-                    #        plan.add_link(node, pnode)
+                    for node in readers[svar]:
+                        if node != pnode:
+                            plan.add_link(node, pnode, svar, val, conflict=True)
                     del readers[svar]
                 
                 frontier[svar] = pnode
@@ -147,12 +147,12 @@ def make_po_plan(actions, task):
     plan.goal_node.preconds_universal = universal
     plan.goal_node.action = plans.GoalAction(task.get_goal())
     
-    plan.add_link(previous, plan.goal_node)
+    #plan.add_link(previous, plan.goal_node)
 
     for svar, val in read:
         if svar not in frontier:
             relevant_init_vars.add(svar)
-        #plan.add_link(frontier[svar], plan.goal_node)
+        plan.add_link(frontier[svar], plan.goal_node, svar, val)
 
 #     for i,pnode in plan.topological_sort():
 #         print i, str(pnode)

@@ -1,4 +1,6 @@
-import config, constants
+import itertools
+
+import config, constants, assertions
 import state_new as state
 import mapl_new as mapl
 import mapl_new.mapltypes as types
@@ -32,13 +34,13 @@ class Task(object):
         self._action_whitelist = None
         self._plan = None
         # private
-        self._new_plan_callback = None
         self._state = None
         self.planning_status = PlanningStatusEnum.TASK_CHANGED
         
         if mapltask:
-            self._mapldomain = mapltask.domain
+            self._mapldomain = mapltask
             self.create_initial_state()
+            self.add_assertions()
 
 
     def __get_mapltask(self):
@@ -51,6 +53,15 @@ class Task(object):
         self._mapltask = mapltask
 
     mapltask = property(__get_mapltask, __set_mapltask)
+
+    def add_assertions(self):
+        new_assertions = []
+        for a in itertools.chain(self._mapldomain.actions, self._mapldomain.sensors):
+            ast = assertions.to_assertion(a, self._mapldomain)
+            if ast:
+                new_assertions.append(ast)
+
+        self._mapldomain.actions += new_assertions
 
     def create_initial_state(self):
         s = state.State([], self._mapltask)
@@ -106,18 +117,13 @@ class Task(object):
                 self.planning_status = PlanningStatusEnum.PLANNING_FAILURE
             else:
                 self.planning_status = PlanningStatusEnum.PLAN_AVAILABLE
-            if self._new_plan_callback:
-                self._new_plan_callback(self)
 
     def replan(self):
         """If the task is registered with a planner, the plan will be updated,
         but only if the task has been modified and  if change detection is activated."""
         if self.is_dirty() and self.planner:
             self.planner.continual_planning(self)
-
-
-    def set_plan_callback(self, fn):
-        self._new_plan_callback = fn
+        return self.get_plan()
 
     def pddl_domain_str(self):
         w = PDDLWriter(predicates.mapl_modal_predicates)

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from standalone import mapl_new as mapl
 from standalone import state_new as state
 from standalone import plans
@@ -29,8 +27,9 @@ def loggingScope(f):
     def new_f(self, *args, **kwargs):
         oldscope = config.logfile_scope
         config.logfile_scope = self.name
-        f(self, *args, **kwargs)
+        rval = f(self, *args, **kwargs)
         config.logfile_scope = oldscope
+        return rval
         
     new_f.__name__ = f.__name__
     return new_f
@@ -64,7 +63,6 @@ class Agent(BaseAgent):
         self.statistics = statistics.Statistics(statistics_defaults)
         
         self.task = Task(next_id(), mapltask)
-        self.task.set_plan_callback(lambda task: self.getPlan(task))
         
         self.planner.register_task(self.task)
 
@@ -75,15 +73,16 @@ class Agent(BaseAgent):
     def run(self):
         BaseAgent.run(self)
         self.task.replan()
+        self.execute_plan(self.task)
         
     @loggingScope
-    def getPlan(self, task):
+    def execute_plan(self, task):
         if task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
             return
             
         plan = task.get_plan()
 
-        ordered_plan = plan.topological_sort(include_depths=False)
+        ordered_plan = plan.topological_sort()
         outplan = []
         first_action = -1
         for i,pnode in enumerate(ordered_plan):
@@ -108,7 +107,7 @@ class Agent(BaseAgent):
         plan = self.task.get_plan()
 
         if plan is not None:
-            executable_plan = plan.topological_sort(include_depths=False)[plan.execution_position:-1]
+            executable_plan = plan.topological_sort()[plan.execution_position:-1]
             if action_status:
                 executable_plan[0].status = action_status
             
@@ -117,6 +116,7 @@ class Agent(BaseAgent):
             
         self.task.mark_changed()
         self.task.replan()
+        self.execute_plan(self.task)
 
     def collect_statistics(self):
         """ return all stats collected by this agent (usually to the simulation) """
