@@ -89,7 +89,7 @@ class JunctionCondition(Condition):
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and all(map(lambda a,b: a==b, self.parts, other.parts))
-
+    
     def __hash__(self):
         return hash((self.__class__, ) + tuple(self.parts))
     

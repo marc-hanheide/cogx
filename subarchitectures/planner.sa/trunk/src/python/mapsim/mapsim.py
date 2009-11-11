@@ -76,6 +76,10 @@ if __name__ == '__main__':
         print "  %s: %s" % (agent, prob.goal.pddl_str())
         
     sim = simulation.Simulation(scenario)
+
     print "Starting simulation..."
     sim.run()
+        
+    stats = sim.collect_statistics()
+    print "Stats:", stats
     

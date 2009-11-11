@@ -1,9 +1,11 @@
 import itertools
+from collections import defaultdict
 
 from standalone import mapl_new as mapl
 from standalone import state_new as state
 from standalone import plans
 from standalone import config
+from standalone import statistics
 
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
@@ -11,12 +13,18 @@ from standalone.planner import Planner as StandalonePlanner
 import agent
 log = config.logger("mapsim")
 
+statistics_defaults = dict(
+    total_time=0.0,
+    )
+
+
 class Simulation(object):
     def __init__(self, scenario):
         self.planner = StandalonePlanner()
         self.scenario = scenario
         self.state = state.State.fromProblem(scenario.world)
         self.problem = scenario.world
+        self.statistics = statistics.Statistics(defaults=statistics_defaults)
 
         self.agents = {}
         for a, prob in scenario.agents.iteritems():
@@ -29,6 +37,7 @@ class Simulation(object):
         for a in self.agents.itervalues():
             self.add_knowledge(a)
 
+    @statistics.time_method_for_statistics("total_time")
     def run(self):
         for a in self.agents.itervalues():
             a.run()
@@ -43,7 +52,6 @@ class Simulation(object):
                 return
             
         print "All agents are done."
-        
 
     def add_knowledge(self, agent):
         """
@@ -96,18 +104,21 @@ class Simulation(object):
         if self.state.isExecutable(action):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
 
-            percieved_facts = []
+            perceived_facts = []
             if isinstance(action, mapl.sensors.Sensor):
-                percieved_facts = self.execute_sensor_action(action, agent)
+                perceived_facts = self.execute_sensor_action(action, agent)
+                agent.statistics.increase_stat("sensor_actions_executed")
             else:
-                percieved_facts = self.execute_physical_action(action, agent)
+                perceived_facts = self.execute_physical_action(action, agent)
+                agent.statistics.increase_stat("physical_actions_executed")
 
-            log.debug("Facts sent to agent %s: %s", agent.name, ", ".join(map(str, percieved_facts)))
+            log.debug("Facts sent to agent %s: %s", agent.name, ", ".join(map(str, perceived_facts)))
             action.uninstantiate()
-            agent.updateTask(percieved_facts, plans.ActionStatusEnum.EXECUTED)
+            agent.updateTask(perceived_facts, plans.ActionStatusEnum.EXECUTED)
         else:
             print "%d: %s failed to execute (%s %s)" % (self.time, agent.name, action.name, " ".join(a.name for a in args))
             log.debug("%d: Agent %s failed to execute (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
+            agent.statistics.increase_stat("failed_execution_attempts")
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
 
@@ -140,3 +151,24 @@ class Simulation(object):
     def signal_done(self, agent):
         print "%d: Agent %s has reached its goal." % (self.time, agent.name)
         
+    def collect_statistics(self):
+        """ Collects statistics from agents and the planners used.
+        Will aggregate most of the individual stats, e.g. sum up the
+        number of plans generated or the planning times, but can also
+        easily be extended to produce more individual statistics for
+        each agent. """
+        aggreg_funcs = defaultdict(lambda : sum)  # per default, sum up stats of the same name
+        agent_stats = [agt.collect_statistics() for agt in self.agents.itervalues()]
+        planner_stats = [self.planner.collect_statistics()]
+        all_stats = agent_stats + planner_stats
+        keys = set(k for stats in all_stats for k in stats)
+        aggreg_vals = [(k,aggreg_funcs[k](stats[k] for stats in all_stats if k in stats)) for k in keys]
+        total = self.statistics.merge(statistics.Statistics(aggreg_vals))
+        averages = ["planning", "monitoring"]           # add some average runtimes
+        for name in averages:
+            calls = total[name+"_calls"]
+            time = total[name+"_time"]
+            total[name+"_avg_time"] = time / calls
+        return total
+
+

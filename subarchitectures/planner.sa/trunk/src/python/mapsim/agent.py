@@ -3,12 +3,21 @@ from __future__ import absolute_import
 from standalone import mapl_new as mapl
 from standalone import state_new as state
 from standalone import plans
+from standalone import statistics
 
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 from standalone import config
 log = config.logger("mapsim")
+
+statistics_defaults = dict(
+    failed_execution_attempts=0,
+    physical_actions_executed=0,
+    sensor_actions_executed=0,
+    speech_acts_executed=0,
+    )
+
 
 task_id = 0
 def next_id():
@@ -52,6 +61,7 @@ class Agent(BaseAgent):
         self.name = name
         self.mapltask = mapltask
         self.planner = planner
+        self.statistics = statistics.Statistics(statistics_defaults)
         
         self.task = Task(next_id(), mapltask)
         self.task.set_plan_callback(lambda task: self.getPlan(task))
@@ -107,3 +117,7 @@ class Agent(BaseAgent):
             
         self.task.mark_changed()
         self.task.replan()
+
+    def collect_statistics(self):
+        """ return all stats collected by this agent (usually to the simulation) """
+        return self.statistics.merge(self.task.statistics)
