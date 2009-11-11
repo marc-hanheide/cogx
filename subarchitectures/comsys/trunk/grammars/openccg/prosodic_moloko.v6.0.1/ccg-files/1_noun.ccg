@@ -111,35 +111,35 @@
 
   # Basic nouns, regular and irr
   #
-  def  noun(sing, class, args)       {  noun-irr-accnt(sing, pluralize(sing), markWordHs(sing),markWordLs(sing),markWordLpHs(sing), class, args) }
-  def  noun-irr-accnt(sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(sing, sing, plur, sing_hs, sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
+  def  noun(sing, class, args)       { noun-irr-accnt(sing, pluralize(sing), accentMark(sing), class, args) }
+  def  noun-irr-accnt(sing,plur,sing_hs,sing_ls,sing_lphs, class, args) { _noun-irr(sing, sing, plur, sing_hs, sing_ls,sing_lphs,accentMark(plur),class,args) }
 
-  def _noun(prd, sing, class, args) { _noun-irr-accnt(prd, sing, pluralize(sing), markWordHs(sing), markWordLs(sing),markWordLpHs(sing), class, args) }
-  def _noun-irr-accnt(prd, sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(prd, sing, plur, sing_hs,sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
+  def _noun(prd, sing, class, args) { _noun-irr-accnt(prd, sing, pluralize(sing), accentMark(sing), class, args) }
+  def _noun-irr-accnt(prd, sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(prd, sing, plur, sing_hs,sing_ls,sing_lphs, accentMark(plur),class, args) }
   
   
-  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, markWordHs(sing),markWordLs(sing), markWordLpHs(sing),markWordHs(plur),markWordLs(plur),markWordLpHs(plur),class, args) } 
+  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, accentMark(sing),accentMark(plur),class, args) } 
 
   def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
     word sing.-noun-n:Noun(class, pred=prd) {
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
+      #sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
       sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
       sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
-      sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
+      #sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      #sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
       sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
-      sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
+      #sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
       sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
       sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs args;
-      sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
-      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false args;
-      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-true args;
-      plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
+      #sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
+      #plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
       plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
-      plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
+      #plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
       plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
       plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs args;
-      plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
+      #plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
     }
   }
   
@@ -185,28 +185,28 @@
   }
 
   #PROSG09 chnages for prosodic marking on pronouns: I_H*, me_L+H* 
-  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {pronoun_ip(prd, pers, num, nom-form, markWordHs(nom-form),markWordLs(nom-form),markWordLpHs(nom-form), acc-form,markWordHs(acc-form),markWordLs(acc-form),markWordLpHs(acc-form), owner,markWordHs(owner),markWordLs(owner),markWordLpHs(owner), owned,markWordHs(owned),markWordLs(owned),markWordLpHs(owned), class,)	}
+  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {pronoun_ip(prd, pers, num, nom-form,accentMark(nom-form),acc-form,accentMark(acc-form),owner,owned,class,)}
 
- def pronoun_ip(prd, pers, num, nom-form,nom-form_hs,nom-form_ls,nom-form_lphs, acc-form,acc-form_hs,acc-form_ls,acc-form_lphs, owner,owner_hs,owner_ls,owner_lphs, owned,owned_hs,owned_ls,owned_lphs, class,) {
+ def pronoun_ip(prd, pers, num, nom-form,nom-form_hs,nom-form_ls,nom-form_lphs, acc-form,acc-form_hs,acc-form_ls,acc-form_lphs, owner, owned,class,) {
     word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
       #nom-form :  pers s-.num nom pro num ;
       nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
-      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
-      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
+      #nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      #nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
       nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
-      nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
+      #nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
       nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
       nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
-      nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
+      #nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
       #acc-form :  pers s-.num acc pro num ;
-      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      #acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
       acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
       acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
-      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
-      acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
+      #acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
+      #acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
       acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
       acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
-      acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
+      #acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
     }
     word prd.-owner-.num:Owner-pro('entity', pred=prd) {
       owner : num ;
@@ -238,10 +238,15 @@
 
  # I don't want ONE. Given context pred
  #
- def context-np(form,class, args) {_context-np(form, form, class, args)}
- def _context-np(prd, form, class, args) {
+ def context-np(form,class, args) {_context-np-ip(form, form, accentMark(form),class, args)}
+ def _context-np(form,form, class, args) {_context-np-ip(prd, form, accentMark(form),class, args)}
+ def _context-np-ip(prd, form, form_hs,form_ls,form_lphs,class, args) {
     word form.-context-np : Bare-np (class, pred=context) {
-      form : 3rd args nf-ctxt;    
+      form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-hearer hear ;    
+      form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-speaker spkr ;    
+      form_hs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
+      form_ls : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
+      form_lphs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-false t-hearer hear;    
     }
  }
 

@@ -57,10 +57,17 @@
 	{form: args;}
   } 
   
-  def coord(form, pos, class) {_coord(form, form, pos, class) }
-  def _coord(prd, form, pos, class) {
-    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd)
-	{form ;}
+  def coord(form, pos, class) {_coord-ip(form, form,accentMark(form), pos, class) }
+  def _coord(form, form, pos, class) {_coord-ip(prd, form, accentMark(form),pos, class) }
+  def _coord-ip(prd, form,form_hs,form_ls,form_lphs, pos, class) {
+    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd) {
+	form: e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;
+	form: e-focus-false e-uncontentious e-rheme-false e-hearer hear ;
+	form_hs: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_ls: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_lphs: e-focus-true e-uncontentious e-rheme-false e-hearer hear ;
+
+	}
   } 
 
 ############
@@ -72,28 +79,3 @@
 
   def prt(args)      { prt<25>[P args] }
   family Particle    { entry:  prt(MARK= *) : P(*) ;}
-
-###########
-# PROSG09 #
-###########
-# We do not want to enumerate all possible prosodic markers on words in the dictionary.
-# It saves effort to use these proxy-lexical rules for marking words with prosodic indicatores
-
-def markWordsINTO(word) { markWordHs(word),markWordLs(word),markWordLpHs(word)}
-
-# input is 'word', output is 'word@H*'
-def markWordHs(word) {
-    ifmatch(word, word, word .'@H*', word)
-  }
-
-# input is 'word', output is 'word@L*'
-def markWordLs(word) {
-    ifmatch(word, word, word .'@L*', word)
-  }
-
-# input is 'word', output is 'word@L+H*'
-def markWordLpHs(word) {
-    ifmatch(word, word, word .'@L+H*', word)
-  }
-
-# We will be required to enumerate the remaining other accents. That will also need changes at MACROS using them.

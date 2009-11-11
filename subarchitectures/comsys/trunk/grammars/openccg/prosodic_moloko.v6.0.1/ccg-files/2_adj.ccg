@@ -71,8 +71,8 @@
       base_lphs : s-degree-base m-uncontentious m-focus-true m-rheme-false lphs args ;
     }
   }
-  def adj-none(base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
-  def _adj-none(prd, base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
+  def adj-none(base, class, args) { _adj-none_ip(base, base, accentMark(base), class, args) }
+  def _adj-none(prd, base, class, args) { _adj-none_ip(base, base, accentMark(base), class, args) }
 
   #PROSG09 : change in the number of arguments for prosodically inflected args e.g red_H*, redder_H*. 
   #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 
