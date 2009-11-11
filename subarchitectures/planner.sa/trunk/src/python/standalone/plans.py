@@ -125,8 +125,35 @@ class MAPLPlan(networkx.MultiDiGraph):
         self.add_edge(n1, n2,  svar=svar, val=val, type=type)
     
     def topological_sort(self):
+        self.compute_depths()
         return networkx.topological_sort(self)
 
+    def executable(self):
+        result = set()
+        self.compute_depths()
+        for n, ndata in self.nodes_iter(data=True):
+            if ndata['depth'] == 1:
+                result.add(n)
+        return result
+                
+    def compute_depths(self):
+        visited = set()
+        def visit(n):
+            if n not in visited:
+                visited.add(n)
+                if n.status == ActionStatusEnum.EXECUTED:
+                    self.node[n]['depth'] = 0
+                    return
+                predecessors = self.predecessors(n)
+                for pred in predecessors:
+                    visit(pred)
+                if predecessors:
+                    self.node[n]['depth'] = max(self.node[pred]['depth'] for pred in predecessors) + 1
+                else:
+                    self.node[n]['depth'] = 1
+        for n in self.nodes_iter():
+            visit(n)
+    
     def pred_closure(self, node):
         open = set([node])
         closed = set([self.init_node])
