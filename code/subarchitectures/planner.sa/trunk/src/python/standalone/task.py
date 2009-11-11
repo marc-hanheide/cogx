@@ -1,6 +1,6 @@
 import itertools
 
-import config, constants, assertions
+import config, constants#, assertions
 import state_new as state
 import mapl_new as mapl
 import mapl_new.mapltypes as types
@@ -40,7 +40,7 @@ class Task(object):
         if mapltask:
             self._mapldomain = mapltask
             self.create_initial_state()
-            self.add_assertions()
+            #self.add_assertions()
 
 
     def __get_mapltask(self):
@@ -54,14 +54,14 @@ class Task(object):
 
     mapltask = property(__get_mapltask, __set_mapltask)
 
-    def add_assertions(self):
-        new_assertions = []
-        for a in itertools.chain(self._mapldomain.actions, self._mapldomain.sensors):
-            ast = assertions.to_assertion(a, self._mapldomain)
-            if ast:
-                new_assertions.append(ast)
+    # def add_assertions(self):
+    #     new_assertions = []
+    #     for a in itertools.chain(self._mapldomain.actions, self._mapldomain.sensors):
+    #         ast = assertions.to_assertion(a, self._mapldomain)
+    #         if ast:
+    #             new_assertions.append(ast)
 
-        self._mapldomain.actions += new_assertions
+    #     self._mapldomain.actions += new_assertions
 
     def create_initial_state(self):
         s = state.State([], self._mapltask)
