@@ -1,9 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import itertools
+import itertools, time, random
 from itertools import imap, ifilter
-import time
 from collections import defaultdict
 
 import mapl_new as mapl
@@ -234,12 +233,17 @@ class State(defaultdict):
 
         self.read_svars = set()
         self.written_svars = set()
+        
+        self.random = random.Random()
 
     def copy(self):
         s = State([], self.problem)
         for svar,val in self.iteritems():
             s[svar] = val
         return s
+
+    def set_random_seed(self, seed):
+        self.random.seed(seed)
 
     def iterfacts(self):
         return (Fact.fromTuple(tup) for tup in self.iteritems())
@@ -258,8 +262,11 @@ class State(defaultdict):
         return dict.__contains__(self, key)
 
     @staticmethod
-    def fromProblem(problem):
+    def fromProblem(problem, seed=None):
         s = State([], problem)
+        if seed is not None:
+            s.set_random_seed(seed)
+            
         for i in problem.init:
             if isinstance(i, effects.ProbabilisticEffect):
                 s.applyEffect(i)
@@ -508,7 +515,7 @@ class State(defaultdict):
                     self.applyEffect(eff, trace_vars)
 
         elif isinstance(effect, effects.ProbabilisticEffect):
-            for eff in effect.getRandomEffect():
+            for eff in effect.getRandomEffect(seed=self.random.random()):
                 self.applyEffect(eff, trace_vars)
 
         elif isinstance(effect, list):
