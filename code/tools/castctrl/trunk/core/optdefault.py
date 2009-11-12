@@ -61,4 +61,7 @@ useroptions="""
 #EDITOR=xjed %s %l[-g ]
 #EDITOR=edit %l[+] %s
 #EDITOR=open -a textwrangler %s
+
+#TERMINAL=konsole --workdir '%s'
+#TERMINAL=gnome-terminal --working-directory='%s'
 """

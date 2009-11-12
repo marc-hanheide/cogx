@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Oct  6 15:53:38 2009
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Thu Nov 12 10:38:44 2009
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 from cctextedit import CCastTextEdit
@@ -348,7 +348,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 21))
         self.menubar.setObjectName("menubar")
         self.menuCast = QtGui.QMenu(self.menubar)
         self.menuCast.setObjectName("menuCast")
@@ -366,9 +366,12 @@ class Ui_MainWindow(object):
         self.actShowEnv.setObjectName("actShowEnv")
         self.actCtxShowBuildError = QtGui.QAction(MainWindow)
         self.actCtxShowBuildError.setObjectName("actCtxShowBuildError")
+        self.actStartTerminal = QtGui.QAction(MainWindow)
+        self.actStartTerminal.setObjectName("actStartTerminal")
         self.menuCast.addAction(self.actShowEnv)
         self.menuCast.addSeparator()
         self.menuCast.addAction(self.actQuit)
+        self.menuCast.addAction(self.actStartTerminal)
         self.menubar.addAction(self.menuCast.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -420,4 +423,5 @@ class Ui_MainWindow(object):
         self.actOpenPlayerConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Player Configuration", None, QtGui.QApplication.UnicodeUTF8))
         self.actShowEnv.setText(QtGui.QApplication.translate("MainWindow", "Show ENV", None, QtGui.QApplication.UnicodeUTF8))
         self.actCtxShowBuildError.setText(QtGui.QApplication.translate("MainWindow", "Show code", None, QtGui.QApplication.UnicodeUTF8))
+        self.actStartTerminal.setText(QtGui.QApplication.translate("MainWindow", "Start Terminal", None, QtGui.QApplication.UnicodeUTF8))
 

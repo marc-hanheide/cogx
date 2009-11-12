@@ -756,7 +756,7 @@
      <x>0</x>
      <y>0</y>
      <width>883</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCast">
@@ -766,6 +766,7 @@
     <addaction name="actShowEnv"/>
     <addaction name="separator"/>
     <addaction name="actQuit"/>
+    <addaction name="actStartTerminal"/>
    </widget>
    <addaction name="menuCast"/>
   </widget>
@@ -796,6 +797,11 @@
   <action name="actCtxShowBuildError">
    <property name="text">
     <string>Show code</string>
+   </property>
+  </action>
+  <action name="actStartTerminal">
+   <property name="text">
+    <string>Start Terminal</string>
    </property>
   </action>
  </widget>
