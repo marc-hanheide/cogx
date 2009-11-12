@@ -24,6 +24,7 @@ def xe(shexpr):
 class CUserOptions(object):
     def __init__(self):
         self.textEditCmd = "gvim --servername CAST --remote-silent %l[+:] %s"
+        self.terminalCmd = "gnome-terminal --working-directory='%s'" 
 
     def loadConfig(self, filename):
         if not os.path.exists(filename): return
@@ -36,7 +37,8 @@ class CUserOptions(object):
             elif l.startswith('['): section = None
             else:
                 if section == "USER":
-                    if ln.startswith("EDITOR="): self.textEditCmd = ln[7:]
+                    if ln.startswith("EDITOR="): self.textEditCmd = ln[7:].strip()
+                    if ln.startswith("TERMINAL="): self.terminalCmd = ln[9:].strip()
         f.close()
 
 class CCastOptions(object):

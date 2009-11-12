@@ -117,6 +117,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
         self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
         self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
+        self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
         self.connect(self.ui.actCtxShowBuildError, QtCore.SIGNAL("triggered()"), self.onEditBuildError)
 
@@ -265,8 +266,18 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("peekabot")
         if p != None: p.stop()
 
+    def _checkBuidDir(self):
+        workdir=options.xe("${COGX_BUILD_DIR}")
+        if not os.path.exists(workdir):
+            dlg = QtGui.QErrorMessage(self)
+            dlg.setModal(True)
+            dlg.showMessage("The build directory doesn't exist. Run 'Config...'")
+            return False
+        return True
+
     def on_btBuild_clicked(self, valid=True):
         if not valid: return
+        if not self._checkBuidDir(): return
         p = self._manager.getProcess("BUILD")
         if p != None:
             self.buildLog.clearOutput()
@@ -276,11 +287,51 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btBuildInstall_clicked(self, valid=True):
         if not valid: return
+        if not self._checkBuidDir(): return
         p = self._manager.getProcess("BUILD")
         if p != None:
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": "install"})
+
+    def _checkMakeCache(self, listsDir, cacheFile):
+        bdir = os.path.dirname(cacheFile)
+        if not os.path.exists(bdir): os.makedirs(bdir)
+        if not os.path.exists(cacheFile): return True
+
+        # build directory in: second line of cache (comment)
+        # source directory in: CMAKE_HOME_DIRECTORY:INTERNAL=
+        src = ""; dst = ""
+        cache = open(cacheFile).readlines()
+        line = cache[1]
+        if line.startswith("# For build in directory:"):
+            pos = line.find(":")
+            dst = line[pos+1:].strip()
+        for line in cache:
+            if line.startswith("CMAKE_HOME_DIRECTORY:INTERNAL="):
+                pos = line.find("=")
+                src = line[pos+1:].strip()
+                break
+        if src != "" and dst != "":
+            if src != listsDir or dst != bdir:
+                QM = QtGui.QMessageBox
+                rv = QtGui.QMessageBox.warning(self, "CAST Control",
+                    "CMakeCache.txt points to wrong directories.\n"
+                    + "Shall I fix that?", QM.Yes | QM.No)
+                if rv == QM.Yes:
+                    rv = QtGui.QMessageBox.information(self, "CAST Control", "TODO: Someday I will...")
+                    # TODO: Change directories on YES
+                pass
+        return True
+
+    def on_btCmakeGui_clicked(self, valid=True):
+        if not valid: return
+        root = options.xe("${COGX_ROOT}")
+        bdir = options.xe("${COGX_BUILD_DIR}")
+        bcmc = os.path.join(bdir, "CMakeCache.txt")
+        if not self._checkMakeCache(root, bcmc): return
+        cmd = 'cmake-gui %s' % root
+        procman.xrun_wait(cmd, bdir)
 
     def on_btLogViewControl_clicked(self, valid=True):
         if not valid: return
@@ -304,15 +355,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.clearOutput()
         self.mainLog.rereadLogs()
 
-    def on_btCmakeGui_clicked(self, valid=True):
-        if not valid: return
-        root = options.xe("${COGX_ROOT}")
-        bdir = options.xe("${COGX_BUILD_DIR}")
-        bcmc = os.path.join(bdir, "CMakeCache.txt")
-        if not os.path.exists(bdir): os.makedirs(bdir)
-        cmd = 'cmake-gui %s' % root
-        procman.xrun_wait(cmd, bdir)
-
     def editFile(self, filename, line=None):
         cmd = self._userOptions.textEditCmd
         mo = re.search("%l(\[([^\]]+)\])?", cmd)
@@ -334,6 +376,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         cmd = "bash -c env"
         # procman.runCommand(cmd, name="ENV")
         procman.xrun_wait(cmd)
+
+    def onStartTerminal(self):
+        root = options.xe("${COGX_ROOT}")
+        cmd = self._userOptions.terminalCmd
+        if cmd.find("%s") > 0: cmd = cmd % root
+        procman.xrun(cmd)
 
     def onEditBuildError(self):
         tcur = self.ui.buildLogfileTxt.textCursor()

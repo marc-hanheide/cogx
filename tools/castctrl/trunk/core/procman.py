@@ -36,6 +36,12 @@ class CProcessObserver(object):
     def notifyMessagesReady(self, process):
         pass
 
+# Remote process execution
+class CRemoteHostInfo(object):
+    def __init__(self):
+        self.host = "localhost"
+        self.cmdPrefix = ""
+
 class CProcess(object):
     STOPPED = 0     # noraml state, not running
     STARTING = 1    # starting
@@ -45,7 +51,9 @@ class CProcess(object):
     ERRTERM = -1    # terminated unexpectedly
     ERROR = -2      # Internal error
     ERRSTART = -3   # could not start
-    def  __init__(self, name, command, params=None, workdir=None):
+    def  __init__(self, name, command, params=None, workdir=None, host=None):
+        if host == None: host = CRemoteHostInfo()
+        self.host = host
         self.name = name
         self.command = command
         self.params = params   # Configurable parameters
