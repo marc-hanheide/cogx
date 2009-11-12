@@ -166,8 +166,9 @@ void OdomScanWidget::plotScan(double x, double y, double startAngle, QVector<dou
 {
   QPainter painter;
   painter.begin(_canvas);
-//  painter.setPen(QPen(QColor(0,0,0,50), 1, Qt::SolidLine));
-  painter.setPen(QPen(QColor(0,0,0), 1, Qt::SolidLine));
+  painter.setRenderHint(QPainter::Antialiasing, true);
+  painter.setPen(QPen(QColor(0,0,0,50), 1, Qt::SolidLine));
+//  painter.setPen(QPen(QColor(0,0,0), 1, Qt::SolidLine));
 
   double angle=startAngle;
   for(int i=0; i<ranges.size(); ++i)
