@@ -170,8 +170,9 @@ class Simulation(object):
         averages = ["planning", "monitoring"]           # add some average runtimes
         for name in averages:
             calls = total[name+"_calls"]
-            time = total[name+"_time"]
-            total[name+"_avg_time"] = time / calls
+            if calls:
+                time = total[name+"_time"]
+                total[name+"_avg_time"] = time / calls
         return total
 
 
