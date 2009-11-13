@@ -19,14 +19,14 @@ MCFLAGS?=--search-lib-files-dir ../lib \
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.
 
-ifeq ($(shell uname -s), Darwin)
+#ifeq ($(shell uname -s), Darwin)
 # on Darwin, Mercury doesn't support asm_fast (although it should for
 # Intel-based systems?)
 GRADE?=hlc.gc
-else
+#else
 # try asm_fast.gc otherwise
-GRADE?=asm_fast.gc
-endif
+#GRADE?=asm_fast.gc
+#endif
 
 # on BSD, without deactivating suffix rules, any "non-suffixed"
 # target would be matched by some sort of default rule (using
