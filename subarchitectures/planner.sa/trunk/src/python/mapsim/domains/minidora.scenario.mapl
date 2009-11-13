@@ -26,15 +26,6 @@
 (:world
 
 (:init
-	(= (place_id place1) pid1)
-	(= (place_id place2) pid2)
-	(= (place_id place3) pid3)
-	(= (place_category place2) kitchen)
-	(connected place1 place2)
-	(connected place2 place1)
-	(connected place2 place3)
-	(connected place3 place2)
-	(located R2D2 place1)
 )
 
 

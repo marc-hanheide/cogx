@@ -213,7 +213,7 @@ default_types = [objectType, booleanType]
 #basic mapl types
 agentType = Type("agent")
 planningAgentType = Type("planning_agent", [agentType])
-phys_objType = Type("pys_obj")
+phys_objType = Type("phys_obj")
 subgoalType = Type("subgoal")
 featureType = Type("feature")
 
