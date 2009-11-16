@@ -50,5 +50,24 @@ public SynthesisRAWMaryXMLInput(TTSLocal i_ttslocal){
 		}
 		m_ttsLocal.speak(output.toString());
 	}
+	
+	public void Save2Wave(String i_filename) {
+		
+	       //System.out.println("Synthesize RAWMARYXML file: "+ i_filename);
+	       	StringBuffer output = new StringBuffer();
+			try {
+				BufferedReader in = new BufferedReader(new FileReader(i_filename));
+				String st;
+				while ((st=in.readLine()) != null) {
+				output.append(st);
+				output.append(" ");
+				}
+				in.close();
+			}
+			catch (Exception fx) {
+				System.out.println("IO error in Synthesis: " + fx.toString());
+			}
+			m_ttsLocal.SaveToFile(output.toString());
+		}
 
 }

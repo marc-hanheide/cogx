@@ -30,7 +30,7 @@ public class ProsodicTextToRawMARYXml {
 	private static final String BoundryKey = new String ("%");
 	
 	private  String RAWMARYXMLHead;
-	public String g_xmlfilename=null;
+	public   String g_xmlfilename=null;
 	private  String GenratedXMLFileLocation;
 	private  Integer UtteranceCount=1;
 	private  String g_stub;

@@ -153,7 +153,7 @@ public class TTSLocal {
 		 * 
 		 * @param tosay the string to utter
 		 */
-		   public void  SaveToFile(String tosay, String filename)   {
+		   public void  SaveToFile(String tosay)   {
 			   if (m_bSilentMode)
 				   System.out.println("(silent mode) - \"" + tosay + "\"");
 			   
@@ -164,7 +164,10 @@ public class TTSLocal {
 			        //m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
 				   	m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
 				 				   	 
-				   	 File file = new File(filename);
+				   	m_AudioFileName=m_AudioFileName.replaceAll(".xml",".wav");
+		        	System.out.println("Wave file saved to: "+ m_AudioFileName );
+		        	
+				   	 File file = new File(m_AudioFileName);
 				     AudioInputStream ais = AudioSystem.getAudioInputStream(
 				     new ByteArrayInputStream(m_baos.toByteArray()));
 				     AudioSystem.write(ais, AudioFileFormat.Type.WAVE, file);
