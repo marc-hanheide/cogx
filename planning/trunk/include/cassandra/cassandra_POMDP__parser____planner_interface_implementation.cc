@@ -66,6 +66,54 @@ const decltype(Problem_Data::observations)& Problem_Data::get__observations() co
 }
 
 
+double Problem_Data::get__reward(int executed_action__index,
+                                 int starting_state__index,
+                                 int successor_state__index,
+                                 int observation__index) const
+{
+    assert(executed_action__index < actions.size());
+    assert(starting_state__index < states.size());
+    assert(successor_state__index < states.size());
+    assert(observation__index < observations.size());
+    
+    return get__reward(actions[executed_action__index],
+                       states[starting_state__index],
+                       states[successor_state__index],
+                       observations[observation__index]);
+}
+
+            
+double Problem_Data::get__transition_probability(int executed_action__index,
+                                                 int starting_state__index,
+                                                 int successor_state__index) const
+{
+    assert(executed_action__index < actions.size());
+    assert(starting_state__index < states.size());
+    assert(successor_state__index < states.size());
+
+    return get__transition_probability(actions[executed_action__index],
+                                       states[starting_state__index],
+                                       states[successor_state__index]);
+    
+}
+
+            
+double Problem_Data::get__observation_probability(int executed_action__index,
+                                                  int successor_state__index,
+                                                  int observation__index) const
+{
+    assert(executed_action__index < actions.size());
+    assert(successor_state__index < states.size());
+    assert(observation__index < observations.size());
+
+    return get__observation_probability(actions[executed_action__index],
+                                        states[successor_state__index],
+                                        observations[observation__index]);
+}
+
+
+
+
 double Problem_Data::get__reward(const std::string& executed_action__name,
                                  const std::string& starting_state__name,
                                  const std::string& successor_state__name,

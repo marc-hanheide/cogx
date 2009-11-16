@@ -466,4 +466,15 @@ protected:
 
 std::size_t hash_value(const HasStringRepresentation&);
 
+
+class Are_Doubles_Close
+{
+public:
+    Are_Doubles_Close(double epsilon);
+
+    bool operator()(double number1, double number2) const;
+private:
+    double epsilon;
+};
+
 #endif
