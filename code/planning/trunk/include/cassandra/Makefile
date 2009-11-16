@@ -1,7 +1,7 @@
 
 TARGET=some
 
-CXX= g++
+CXX=  g++
 
 OPTIMISE := -O1
 
@@ -25,7 +25,7 @@ $(TARGET): $(OBJECTS)
 	$(CXX) -o $@ $(OBJECTS) $(CXXFLAGS) $(LDFLAGS)
 
 %.o: %.cc
-	ccache $(CXX) $(CPPFLAGS) $< -c -o $@
+	$(CXX) $(CPPFLAGS) $< -c -o $@
 
 %.d: %.cc
 	$(CXX) $(CPPFLAGS) -MM -MT $@ $< -o $@

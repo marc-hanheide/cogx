@@ -16,6 +16,7 @@ Usual suspects (C++) Linear Algebra and Linear Programming
 #include "Command_Line_Arguments.hh"
 
 #include "pomdp__finite_state_controller__evaluation.hh"
+#include "pomdp__finite_state_controller__policy_improvement.hh"
 
 using std::endl;
 using std::count;
@@ -47,17 +48,31 @@ int main(int argc, char** argv)
     VERBOSER(100, "Just parsed the following problem \n");
     VERBOSER(100, *POMDP::Parsing::problem_Data);
 
-    POMDP::FSC fsc(POMDP::Parsing::problem_Data, 5);
+    POMDP::FSC fsc(POMDP::Parsing::problem_Data, 10);
 
     POMDP::FSC__Randomizer fsc__Randomizer;
     fsc__Randomizer(fsc);
 
     POMDP::Solving::FSC__Evaluator fsc__Evaluator(fsc);
 
-    /* Computing value function */
+    /* Evaluate the randomised controller -- i.e., compute the value
+     * of being in a state at a given controller node */
     fsc__Evaluator();
 
     VERBOSER(200, fsc__Evaluator<<std::endl);
+    
+    auto node_index = 0;
+    POMDP::Solving::FSC__Node_Improvement fsc__Node_Improvement(node_index, fsc, fsc__Evaluator);
+    auto improvement_was_possible = fsc__Node_Improvement();
+
+    if(improvement_was_possible){
+        VERBOSER(200, "Node :: "<<node_index<<" was improved."<<std::endl);
+    } else {
+        VERBOSER(200, "Node :: "<<node_index<<" could not be improved."<<std::endl);
+    }
+    
+    
+    
     
     return 0;
 }

@@ -1,8 +1,45 @@
+/* Copyright (C) 2009 Charles Gretton (charles.gretton@gmail.com)
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Dear CogX team member :: Please email (charles.gretton@gmail.com)
+ * if you make a change to this and commit that change to SVN. In that
+ * email, can you please attach the source files you changed as they
+ * appeared before you changed them (i.e., fresh out of SVN), and the
+ * diff files (*). Alternatively, you could not commit your changes,
+ * but rather post me a patch (**) which I will test and then commit
+ * if it does not cause any problems under testing.
+ *
+ * (*) see http://www.gnu.org/software/diffutils/diffutils.html --
+ * GNU-09/2009
+ *
+ * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
+ * 
+ */
+
+
 #include "pomdp__finite_state_controller__evaluation.hh"
 
 
 using namespace POMDP;
 using namespace POMDP::Solving;
+
+const boost::numeric::ublas::vector<double> Finite_State_Controller__Evaluator::get__value_vector() const
+{
+    return value_vector;
+}
+
 
  template<class T>
  bool matrix_inversion__LU_factorisation (const boost::numeric::ublas::matrix<T>& input,
@@ -23,6 +60,20 @@ using namespace POMDP::Solving;
  }
 
 
+double FSC__Evaluator::get__expected_reward(int state_index, int node_index) const
+{
+    assert(state_index < fsc.problem_Data->get__states_count() && state_index >= 0);
+    assert(node_index >= 0 && node_index < fsc.get__nodes_count());
+
+
+    /* ROW_INDEX */ auto row_index
+        = fsc.fsc__Index_Management.compute_index__state_node(
+            state_index, node_index
+            )
+        ;
+
+    return value_vector[row_index];
+}
 
 matrix<double> FSC__Evaluator::get_transition_matrix()
 {
@@ -37,24 +88,25 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                          ; starting_state != states.end()
                          ; starting_state++, starting_state_index++ /* TWO_INCREMENTS */){
 
-        auto successor_state_index = 0;
-        /* STATES */ for(auto successor_state = states.begin()
-                             ; successor_state != states.end()
-                             ; successor_state++, successor_state_index++ /* TWO_INCREMENTS */){
+        /* FSC-NODES */ for(auto starting_node = 0
+                                ; starting_node < fsc.number_of_nodes
+                                ; starting_node++){
 
-            /* FSC-NODES */ for(auto starting_node = 0
-                                   ; starting_node < fsc.number_of_nodes
-                                   ; starting_node++){
-
+            
+            /* ROW_INDEX */ auto starting_index__row_index
+                = fsc.fsc__Index_Management.compute_index__state_node(
+                    starting_state_index, starting_node
+                    )
+                ;        
+            
+            auto successor_state_index = 0;
+            /* STATES */ for(auto successor_state = states.begin()
+                                 ; successor_state != states.end()
+                                 ; successor_state++, successor_state_index++ /* TWO_INCREMENTS */){
+                
                 /* FSC-NODES */ for(auto successor_node = 0
-                                       ; successor_node < fsc.number_of_nodes
-                                       ; successor_node++){
-
-                    /* ROW_INDEX */ auto starting_index__row_index
-                        = fsc.fsc__Index_Management.compute_index__state_node(
-                            starting_state_index, starting_node
-                            )
-                        ;
+                                        ; successor_node < fsc.number_of_nodes
+                                        ; successor_node++){
                     
                     /* COLUMN_INDEX */auto successor_index__column_index
                         = fsc.fsc__Index_Management.compute_index__state_node(
@@ -72,7 +124,7 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                                                    ; observation != observations.end()
                                                    ; observation++, observation_index++){
                             
-                            auto fsc_node_transition_probability
+                             auto fsc_node_transition_probability
                                 = fsc.node_transition_probabilities
                                 [starting_node]
                                 [action_index]
@@ -96,17 +148,30 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                                  *observation);
                             
                             if(0.0 == observation_probability) continue;
+
+                            QUERY_UNRECOVERABLE_ERROR(fsc_node_transition_probability > 1.0,
+                                                      "Invalid node transition probability :: "
+                                                      <<fsc_node_transition_probability<<".");
+                            QUERY_UNRECOVERABLE_ERROR(state_transition_probability > 1.0,
+                                                      "Invalid state transition probability :: "
+                                                      <<state_transition_probability<<".");
+                            QUERY_UNRECOVERABLE_ERROR(observation_probability > 1.0,
+                                                      "Invalid observation probability :: "
+                                                      <<observation_probability<<".");
                             
                             transition_probability +=
                                 fsc_node_transition_probability *
                                 state_transition_probability *
                                 observation_probability;
-                            
-                            assert(transition_probability < 1.0);
+
+                            QUERY_WARNING(transition_probability > 1.0,
+                                          "Computed a transition probability :: "<<transition_probability
+                                          <<" that was not less than 1.0.");
+                            assert(transition_probability <= 1.0);
                         }
                     }
 
-                    assert(transition_probability < 1.0);
+                    assert(transition_probability <= 1.0);
                     
                     state_node__transition__matrix
                         (starting_index__row_index,

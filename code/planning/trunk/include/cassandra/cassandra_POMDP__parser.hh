@@ -143,6 +143,19 @@ namespace POMDP
                                                 const std::string& successor_state__name,
                                                 const std::string& observation__name) const;
 
+            double get__reward(int executed_action__index,
+                               int starting_state__index,
+                               int successor_state__index,
+                               int observation__index) const;
+            
+            double get__transition_probability(int executed_action__index,
+                                               int starting_state__index,
+                                               int successor_state__index) const;
+            
+            double get__observation_probability(int executed_action__index,
+                                                int successor_state__index,
+                                                int observation__index) const;
+
             double get__discount_factor() const;
             
             /******************************************************************************************************

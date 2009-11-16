@@ -133,3 +133,19 @@ namespace std
     }
 }
 
+Are_Doubles_Close::Are_Doubles_Close(double epsilon)
+    :epsilon(epsilon)
+{
+}
+
+#include "boost/test/floating_point_comparison.hpp"
+
+bool Are_Doubles_Close::operator()(double number1, double number2) const
+{    
+    auto diff = boost::test_tools::tt_detail::fpt_abs( number1 - number2 );
+    auto d1   = boost::test_tools::tt_detail::safe_fpt_division( diff, boost::test_tools::tt_detail::fpt_abs( number2 ) );
+    auto d2   = boost::test_tools::tt_detail::safe_fpt_division( diff, boost::test_tools::tt_detail::fpt_abs( number1 ) );
+
+    return ((d1 <= (epsilon) && d2 <= (epsilon)));
+    
+}
