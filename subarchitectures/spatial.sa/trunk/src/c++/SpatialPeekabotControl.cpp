@@ -217,17 +217,17 @@ void SpatialPeekabotControl::runComponent() {
       
       while (isRunning()) {
 	double dir;
-	peekabot::Result<peekabot::Vector3> r;
+	peekabot::Result<peekabot::Vector3ru> r;
 	
 	r = searchhere.get_position(peekabot::WORLD_COORDINATES);
 	if (r.succeeded()) {
-	  dir = atan2( (r.get_result().y - oldposy), (r.get_result().x - oldposx))*180/M_PI;
+	  dir = atan2( (r.get_result().m_c[1] - oldposy), (r.get_result().m_c[0] - oldposx))*180/M_PI;
 	  if (dir < 0)
 	    dir += 360;
 	  //log("dir of search: %.2f",dir);
 	  
-	  oldposx = r.get_result().x;
-	  oldposy = r.get_result().y;
+	  oldposx = r.get_result().m_c[0];
+	  oldposy = r.get_result().m_c[1];
 	  if (dir >= 0 and dir <= 90)
 	    dirlist[i % lsize] = 0;
 	  else if (dir >= 90 and dir <= 180)
@@ -271,8 +271,8 @@ void SpatialPeekabotControl::runComponent() {
 
 	    for (unsigned int h = 0; h < fnodeseq.size(); h++) {
 
-	      if (hypot(fnodeseq[h]->y - r.get_result().y,
-			fnodeseq[h]->x - r.get_result().x) < radius) {
+	      if (hypot(fnodeseq[h]->y - r.get_result().m_c[1],
+			fnodeseq[h]->x - r.get_result().m_c[0]) < radius) {
 		// seems we are asked to search this node
 		//log("fnodeid %i",fnodeseq[h]->nodeId);
 		SpatialData::PlacePtr place = m_placeInterface->getPlaceFromNodeID(fnodeseq[h]->nodeId);
@@ -294,8 +294,8 @@ void SpatialPeekabotControl::runComponent() {
 	  //check if we are back to start zone
 	  r = searchhere.get_position(peekabot::WORLD_COORDINATES);
 
-	  if ( r.succeeded() && hypot(searchy - r.get_result().y,
-				      searchx - r.get_result().x) < radius && !placeseq.empty()
+	  if ( r.succeeded() && hypot(searchy - r.get_result().m_c[1],
+				      searchx - r.get_result().m_c[0]) < radius && !placeseq.empty()
 	       && !sentplancommand) {
 
 	    SpatialData::AVSCommandPtr avscmd = new SpatialData::AVSCommand;
@@ -312,8 +312,8 @@ void SpatialPeekabotControl::runComponent() {
 	r = actionZone.get_position(peekabot::WORLD_COORDINATES);
 
 	if (r.succeeded()) {
-	  xNoA = r.get_result().x;
-	  yNoA = r.get_result().y;
+	  xNoA = r.get_result().m_c[0];
+	  yNoA = r.get_result().m_c[1];
 	}
 
 	// Get the position of the control marker
@@ -324,8 +324,8 @@ void SpatialPeekabotControl::runComponent() {
 	if (r.succeeded()) {
 
 	  // Check if the control marker is inside the action zone
-	  if (hypot(gadget_y - r.get_result().y,
-		    xNoA - r.get_result().x) < radius) {
+	  if (hypot(gadget_y - r.get_result().m_c[1],
+		    xNoA - r.get_result().m_c[0]) < radius) {
 
 	    // We should listen to the control marker, since it is
 	    // inside the action zone
@@ -340,13 +340,13 @@ void SpatialPeekabotControl::runComponent() {
 
 	      // Check if we already were in control
 	      if (wasInCtrl &&               
-		  (xT == r.get_result().x) &&
-		  (yT == r.get_result().y)) {
+		  (xT == r.get_result().m_c[0]) &&
+		  (yT == r.get_result().m_c[1])) {
 		sendCmd = false;
 	      }
 
-	      xT = r.get_result().x;
-	      yT = r.get_result().y;
+	      xT = r.get_result().m_c[0];
+	      yT = r.get_result().m_c[1];
 
 	      if (sendCmd) {
 		debug("sendCmd");
