@@ -91,6 +91,8 @@ void Problem_Data::initialise__transition_model()
 
 void Problem_Data::add__transitions____action__start_state__successor_state__UNIFORM(const std::string& str)
 {
+    initialise__transition_model();
+    
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
     number = static_cast<double>(1.0) / static_cast<double>(states.size());
@@ -102,6 +104,8 @@ void Problem_Data::add__transitions____action__start_state__successor_state__UNI
 
 void Problem_Data::add__transitions____action__start_state__successor_state__IDENTITY(const std::string& str)
 {
+    initialise__transition_model();
+    
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
     number = (start_state == successor_state)?1.0:0.0;
@@ -114,6 +118,7 @@ void Problem_Data::add__transitions____action__start_state__successor_state__IDE
 
 void Problem_Data::add__transitions____action__start_state__IDENTITY(const std::string& str)
 {
+    initialise__transition_model();
     
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
@@ -141,6 +146,7 @@ void Problem_Data::add__transitions____action__start_state__IDENTITY(const std::
 
 void Problem_Data::add__transitions____action__start_state__UNIFORM(const std::string& str)
 {
+    initialise__transition_model();
     
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
@@ -162,6 +168,8 @@ void Problem_Data::add__transitions____action__start_state__UNIFORM(const std::s
 
 void Problem_Data::add__transitions____action__UNIFORM(const std::string& str)
 {
+    initialise__transition_model();
+    
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
 
@@ -188,6 +196,7 @@ void Problem_Data::add__transitions____action__UNIFORM(const std::string& str)
 
 void Problem_Data::add__transitions____action__IDENTITY(const std::string& str)
 {
+    initialise__transition_model();
     
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);

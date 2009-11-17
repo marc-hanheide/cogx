@@ -59,10 +59,16 @@ namespace POMDP
     };
         
     typedef Finite_State_Controller__Index_Management FSC__Index_Management;
-        
+
+    class Finite_State_Controller;
+    
+    std::ostream& operator<<(std::ostream&, const Finite_State_Controller&);
+    
     class Finite_State_Controller
     {
     public:
+        friend std::ostream& operator<<(std::ostream&, const Finite_State_Controller&);
+        
         int get__nodes_count() const;
         
         /*\argument{problem_Data} is the
@@ -85,7 +91,6 @@ namespace POMDP
         /* starting-node -> action -> double*/
         std::vector<std::vector< double > > action_execution_probabilities;
         
-        uint count_nodes() const;
         
         /*Assigned problem*/
         shared_ptr<Problem_Data> problem_Data;
@@ -116,6 +121,10 @@ namespace POMDP
                                               int starting_node_index,
                                               int successor_node_index,
                                               double transition_probability);
+
+        
+        bool sanity__node_transition_probabilities() const;
+        bool sanity__action_execution_probabilities() const;
         
         Finite_State_Controller__Index_Management fsc__Index_Management;
     };
@@ -134,11 +143,6 @@ namespace POMDP
     private:
         void randomize__node_transition_probabilities(FSC&);
         void randomize__action_execution_probabilities(FSC&);
-
-        bool sanity__node_transition_probabilities(FSC& fsc);
-        bool sanity__action_execution_probabilities(FSC& fsc);
-
-        Are_Doubles_Close are_Doubles_Close;
     };
 
     typedef Finite_State_Controller__Randomizer FSC__Randomizer;

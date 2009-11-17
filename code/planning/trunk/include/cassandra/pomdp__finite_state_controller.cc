@@ -222,100 +222,11 @@ void FSC__Randomizer::randomize__node_transition_probabilities(FSC& fsc)
     }
 }
 
-bool FSC__Randomizer::sanity__node_transition_probabilities(FSC& fsc)
-{
-    for(auto starting_node_index = 0
-            ; starting_node_index < fsc.number_of_nodes
-            ; starting_node_index ++){
-
-        for(auto action_index = 0
-                ; action_index < fsc.problem_Data->get__actions_count()
-                ; action_index++){
-            
-            
-            for(auto observation_index = 0
-                    ; observation_index < fsc.problem_Data->get__observations_count()
-                    ; observation_index++){
-                
-                double  accumulate = 0.0;
-                
-                for(auto successor_node_index = 0
-                        ; successor_node_index < fsc.number_of_nodes
-                        ; successor_node_index ++){
-                    
-                    assert(starting_node_index < fsc.node_transition_probabilities.size());
-                    assert(action_index < fsc.node_transition_probabilities[starting_node_index].size());
-                    assert(observation_index < fsc.node_transition_probabilities[starting_node_index][action_index].size());
-                    assert(successor_node_index
-                           < fsc.node_transition_probabilities[starting_node_index][action_index][observation_index].size());
-                    
-                    
-                    accumulate += fsc.node_transition_probabilities
-                        [starting_node_index]
-                        [action_index]
-                        [observation_index]
-                        [successor_node_index];// = 1.0 / static_cast<double>(fsc.number_of_nodes);
-                }
-
-
-                assert(starting_node_index < fsc.action_execution_probabilities.size());
-                assert(action_index < fsc.action_execution_probabilities[starting_node_index].size());
-                auto tmp_limit = fsc.action_execution_probabilities[starting_node_index][action_index];
-                assert(tmp_limit <= 1.0);
-
-                if(!are_Doubles_Close(accumulate, tmp_limit)){
-                    WARNING("Invalid node transition probabilities generated for random controller.\n"
-                            <<"Limit was :: "<<std::scientific<<tmp_limit<<std::endl
-                            <<"And we got :: "<<std::scientific<<accumulate<<std::endl);
-
-                    return false;
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 
 
 FSC__Randomizer::Finite_State_Controller__Randomizer()
-    :are_Doubles_Close(1e-9)
 {
 }
-
-bool FSC__Randomizer::sanity__action_execution_probabilities(FSC& fsc)
-{
-    for(auto starting_node_index = 0
-            ; starting_node_index < fsc.number_of_nodes
-            ; starting_node_index ++){
-        double  accumulate = 0.0;
-        for(auto action_index = 0
-                ; action_index < fsc.problem_Data->get__actions_count()
-                ; action_index++){
-            
-            assert(starting_node_index < fsc.action_execution_probabilities.size());
-            assert(action_index < fsc.action_execution_probabilities[starting_node_index].size());
-            
-            accumulate += fsc.action_execution_probabilities[starting_node_index][action_index];
-        }
-
-
-        if(!are_Doubles_Close(accumulate, 1.0)){
-            WARNING("Invalid action choice probabilities ::"<<accumulate<<" generated for random controller.");
-            return false;
-        }
-        
-//         if(comparator__double_closeness(accumulate, 1.0)){//abs(accumulate - 1.0) < epsilon ){
-//             WARNING("Invalid action choice probabilities ::"<<accumulate<<" generated for random controller.");
-            
-//             return false;
-//         }
-    }
-
-    return true;
-}
-
 
 
 
@@ -342,10 +253,10 @@ void FSC__Randomizer::operator()(FSC& fsc)
     fsc.zero_initialise();
     
     randomize__action_execution_probabilities(fsc);
-    assert(sanity__action_execution_probabilities(fsc));
+    assert(fsc.sanity__action_execution_probabilities());
     
     randomize__node_transition_probabilities(fsc);
-    assert(sanity__node_transition_probabilities(fsc));
+    assert(fsc.sanity__node_transition_probabilities());
     
 }
 
@@ -355,4 +266,76 @@ int FSC__Index_Management::compute_index__state_node(int state_index, int node_i
     int node_count = fsc.number_of_nodes;
 
     return state_index + (node_index * state_count);
+}
+
+
+std::ostream& POMDP::operator<<(std::ostream& o,
+                                const POMDP::FSC& fsc)
+{
+    o<<"Node Transition Probabilities :: "<<std::endl;
+    o<<"-------------------------------- "<<std::endl;
+    
+    decltype(fsc.node_transition_probabilities)& node_transition_probabilities
+        = const_cast<decltype(fsc.node_transition_probabilities)&>(fsc.node_transition_probabilities);
+    
+    decltype(fsc.action_execution_probabilities)& action_execution_probabilities
+        = const_cast<decltype(fsc.action_execution_probabilities)&>(fsc.action_execution_probabilities);
+
+    
+    
+    for(auto starting_node = 0
+            ; starting_node < node_transition_probabilities.size()
+            ; starting_node ++){
+
+        for(auto action_index = 0
+                ; action_index < node_transition_probabilities
+                [starting_node].size()
+                ; action_index ++){
+
+            for(auto observation_index = 0
+                    ; observation_index < node_transition_probabilities
+                    [starting_node][action_index].size()
+                    ; observation_index++){
+            
+                for(auto successor_node = 0
+                        ; successor_node < node_transition_probabilities
+                        [starting_node][action_index][observation_index].size()
+                        ; successor_node++){
+
+                    o<<std::setw(4)<<starting_node<<" --> "
+                     <<std::setw(30)<<fsc.problem_Data->get__action(action_index)<<" --> "
+                     <<std::setw(30)<<fsc.problem_Data->get__observation(observation_index)<<" --> "
+                     <<std::setw(4)<<successor_node
+                     <<" = "<<node_transition_probabilities
+                        [starting_node][action_index][observation_index][successor_node]
+                     <<std::endl;
+                }   
+            }
+            
+        }
+    }
+    
+    o<<"Action Choice Probabilities :: "<<std::endl;
+    o<<"------------------------------ "<<std::endl;
+    
+    for(auto starting_node = 0
+            ; starting_node < action_execution_probabilities.size()
+            ; starting_node ++){
+        for(auto action_index = 0
+            ; action_index < action_execution_probabilities
+                [starting_node].size()
+            ; action_index++){
+
+                o<<std::setw(4)<<starting_node<<" --> "
+                 <<std::setw(4)<<action_index
+                 <<" = "<<action_execution_probabilities
+                    [starting_node][action_index]
+                 <<std::endl;
+            
+        }
+    }
+    
+    
+    
+    return o;
 }

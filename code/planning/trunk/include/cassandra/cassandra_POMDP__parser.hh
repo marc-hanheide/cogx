@@ -110,7 +110,8 @@ namespace POMDP
             
             Problem_Data()
                 :already__called__initialise__reward_model(false),
-                 already__called__initialise__transition_model(false)
+                 already__called__initialise__transition_model(false),
+                 already__called__initialise__observation_model(false)
             {}
             
             
@@ -126,9 +127,14 @@ namespace POMDP
             uint get__states_count() const;
             uint get__actions_count() const;
             uint get__observations_count() const;
+            
             const decltype(states)& get__states() const;
             const decltype(actions)& get__actions() const;
             const decltype(observations)& get__observations() const;
+            
+            const decltype(states[0])& get__state(int) const;
+            const decltype(actions[0])& get__action(int) const;
+            const decltype(observations[0])& get__observation(int) const;
             
             double get__reward(const std::string& executed_action__name,
                                const std::string& starting_state__name,
@@ -157,6 +163,22 @@ namespace POMDP
                                                 int observation__index) const;
 
             double get__discount_factor() const;
+
+            /******************************************************************************************************
+             ******************************************************************************************************
+             * SANITY OF MODELS
+             ******************************************************************************************************
+             ******************************************************************************************************
+             ******************************************************************************************************/
+
+            
+            /* Is the \member{transition_model} sane? -- i.e., For
+             * each state and action, the probability of transitions
+             * to successors adds to 1.*/
+            bool sanity__transition_model() const;
+            bool sanity__transition_model__has_non_zero_entries() const;
+            bool sanity__observation_model() const;
+            bool sanity__observation_model__has_non_zero_entries() const;
             
             /******************************************************************************************************
              ******************************************************************************************************

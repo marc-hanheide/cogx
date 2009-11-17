@@ -66,6 +66,35 @@ const decltype(Problem_Data::observations)& Problem_Data::get__observations() co
 }
 
 
+#define IMPLEMENT__GET_MEMBER_FUNCTION__WITH_ARGUMENT(FUNCTION_NAME, INDEX_TYPE, CLASS, RETURN_TYPE, DATA) \
+    RETURN_TYPE CLASS::FUNCTION_NAME(INDEX_TYPE index) const            \
+    {                                                                   \
+        assert(DATA.valid(index));                                      \
+        return DATA.get(index);                                         \
+    }                                                                   \
+    
+
+IMPLEMENT__GET_MEMBER_FUNCTION__WITH_ARGUMENT
+(get__state,
+ int,
+ Problem_Data,
+ const std::string&,
+ states)
+    
+IMPLEMENT__GET_MEMBER_FUNCTION__WITH_ARGUMENT
+(get__action,
+ int,
+ Problem_Data,
+ const std::string&,
+ actions)
+    
+IMPLEMENT__GET_MEMBER_FUNCTION__WITH_ARGUMENT
+(get__observation,
+ int,
+ Problem_Data,
+ const std::string&,
+ observations)
+
 double Problem_Data::get__reward(int executed_action__index,
                                  int starting_state__index,
                                  int successor_state__index,
@@ -191,14 +220,25 @@ double Problem_Data::get__transition_probability(const std::string& executed_act
     auto transition_model__starting_state__level =
         transition_model__action__level->second.find(starting_state__name);
     
+    QUERY_UNRECOVERABLE_ERROR(transition_model__starting_state__level == transition_model__action__level->second.end(),
+                              "Starting-State "<<starting_state__name
+                              <<" is not associated with any transition information of action :: "<<executed_action__name<<std::endl);
     assert(transition_model__starting_state__level != transition_model__action__level->second.end());
 
     auto transition_model__successor_state__level =
         transition_model__starting_state__level->second.find(successor_state__name);
 
+    QUERY_UNRECOVERABLE_ERROR(transition_model__successor_state__level == transition_model__starting_state__level->second.end(),
+                              "Successor-State "<<starting_state__name
+                              <<" is not associated with any transition information of action :: "
+                              <<executed_action__name
+                              <<" for starting-state :: "<<starting_state__name<<std::endl);
+    
     assert(transition_model__successor_state__level != transition_model__starting_state__level->second.end());
     
 
+    VERBOSER(1, "Transition probability is :: "<<transition_model__successor_state__level->second<<std::endl);
+    
     return transition_model__successor_state__level->second;
 }
 

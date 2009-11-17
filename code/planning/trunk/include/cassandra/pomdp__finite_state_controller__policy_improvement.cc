@@ -660,7 +660,97 @@ operator<<(std::ostream& o,
     return o;
 }
 
+glpk__glp_simplex__print_message::
+glpk__glp_simplex__print_message(int glp_simplex__return)
+    :glp_simplex__return(glp_simplex__return)
+{}
 
+std::ostream& POMDP::Solving::
+operator<<(std::ostream& o, const glpk__glp_simplex__print_message& error)
+{
+    auto error_number = error.glp_simplex__return;
+    switch(error_number){
+        case 0 : o<<"The LP problem instance has been successfully solved."<<std::endl
+                  <<"(This code does not necessarily mean that the solver has"<<std::endl
+                  <<"found optimal solution. It only means that the solution"<<std::endl
+                  <<"process was successful.)"<<std::endl
+                  <<std::endl;
+             break;
+        case GLP_EBADB :
+            o<<"Unable to start the search, because the initial basis speci-"<<std::endl
+                
+             <<"fied in the problem object is invalid -- the number of basic"<<std::endl
+             <<"(auxiliary and structural) variables is not the same as the"<<std::endl
+             <<"number of rows in the problem object."<<std::endl
+             <<std::endl;
+            
+             break;
+        case GLP_ESING :
+            o<<"Unable to start the search, because the basis matrix corre-"<<std::endl
+             <<"sponding to the initial basis is singular within the working precision."<<std::endl
+             <<"Unable to start the search, because the basis matrix cor-"<<std::endl
+             <<"responding to the initial basis is ill-conditioned, i.e. its"<<std::endl
+             <<"condition number is too large."<<std::endl
+             <<std::endl;
+             break;
+        case GLP_ECOND :
+            o<<"Unable to start the search, because the basis matrix cor-"<<std::endl
+             <<"responding to the initial basis is ill-conditioned, i.e. its"<<std::endl
+             <<"condition number is too large."<<std::endl
+             <<std::endl;
+             break;
+        case GLP_EBOUND :
+            o<<"Unable to start the search, because some double-bounded"<<std::endl
+             <<"(auxiliary or structural) variables have incorrect bounds."<<std::endl
+             <<std::endl;
+            break;
+        case GLP_EFAIL :
+            o<<"The search was prematurely terminated due to the solver"<<std::endl
+             <<"failure"<<std::endl
+             <<std::endl;
+            break;
+        case GLP_EOBJLL :
+            o<<"The search was prematurely terminated, because the ob-"<<std::endl
+             <<"jective function being maximized has reached its LOWER"<<std::endl
+             <<"limit and continues decreasing (the dual simplex only)."<<std::endl
+             <<std::endl;
+             break;
+        case GLP_EOBJUL :
+            o<<"The search was prematurely terminated, because the ob-"<<std::endl
+             <<"jective function being minimized has reached its UPPER"<<std::endl
+             <<"limit and continues increasing (the dual simplex only)."<<std::endl
+             <<std::endl;
+            break;
+        case GLP_EITLIM :
+            o<<"The search was prematurely terminated, because the sim-"<<std::endl
+             <<"plex iteration limit has been exceeded."<<std::endl
+             <<std::endl;
+             break;
+        case GLP_ETMLIM :
+            o<<"The search was prematurely terminated, because the time"<<std::endl
+             <<"limit has been exceeded."<<std::endl
+             <<std::endl;
+             break;
+        case GLP_ENOPFS :
+            o<<"The LP problem instance has no primal feasible solution"<<std::endl
+             <<"(only if the LP presolver is used)."<<std::endl
+             <<std::endl;
+             break;
+        case GLP_ENODFS :
+            o<<"The LP problem instance has no dual feasible solution"<<std::endl
+             <<"(only if the LP presolver is used)."<<std::endl
+             <<std::endl;
+             break;
+        default :
+            o<<"Undocumented failure mode in call to \function{glp_simplex}."<<std::endl;
+             break;
+    }
+    
+    return o;
+}
+
+
+    
 bool FSC__Node_Improvement::operator()()
 {
     configure__linear_program();
@@ -671,8 +761,35 @@ bool FSC__Node_Improvement::operator()()
 //     exit(0);
     
     /* Solve the \member{linear_programming_problem}.*/
-    glp_simplex(linear_programming_problem, NULL);
+    int glp_simplex__return = glp_simplex(linear_programming_problem, NULL);
 
+    auto message = glpk__glp_simplex__print_message(glp_simplex__return);
+    VERBOSER(200, message);
+
+    if(!glp_simplex__return){
+
+        if(0.0 == glp_get_obj_val(linear_programming_problem)){
+            VERBOSER(200, "Was not really able to improve the controller."<<std::endl);
+        } else {
+            VERBOSER(200, "Improvement of controller node (epsilon) is measured as :: "
+                     <<glp_get_obj_val(linear_programming_problem)<<std::endl);
+            
+        }
+        
+        
+        
+        update_fsc_psi_entries();
+        update_fsc_eta_entries();
+        
+        glp_delete_prob(linear_programming_problem);
+        return true;
+    } else {
+        glp_delete_prob(linear_programming_problem);
+        return false;
+    }
+    
+    
+    
     /* If we are able to improve the policy at this node.*/
     if(0.0 != glp_get_obj_val(linear_programming_problem)){
         
@@ -688,3 +805,4 @@ bool FSC__Node_Improvement::operator()()
     
     assert(0);
 }
+
