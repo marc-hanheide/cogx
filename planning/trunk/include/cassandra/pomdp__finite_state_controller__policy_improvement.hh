@@ -148,6 +148,21 @@ namespace POMDP
         };
         
         typedef Finite_State_Controller__Randomizer FSC__Improvement;
+
+        class glpk__glp_simplex__print_message;
+        
+        std::ostream& operator<<(std::ostream&, const glpk__glp_simplex__print_message&);
+
+        class glpk__glp_simplex__print_message
+        {
+        public:
+            friend std::ostream& operator<<(std::ostream&, const glpk__glp_simplex__print_message&);
+            glpk__glp_simplex__print_message(int glp_simplex__return);
+            int glp_simplex__return;
+        };
+
+    
+        
     }
 }
 

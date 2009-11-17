@@ -91,6 +91,7 @@ void Problem_Data::initialise__observation_model()
             
 void Problem_Data::add__observations____action__successor_state__observation__UNIFORM(const std::string&  str)
 {
+    initialise__observation_model();
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
     number = static_cast<double>(1.0) / static_cast<double>(observations.size());
@@ -102,6 +103,7 @@ void Problem_Data::add__observations____action__successor_state__observation__UN
 
 void Problem_Data::add__observations____action__successor_state__UNIFORM(const std::string&  str)
 {
+    initialise__observation_model();
     
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
@@ -123,6 +125,7 @@ void Problem_Data::add__observations____action__successor_state__UNIFORM(const s
 void Problem_Data::add__observations____action__UNIFORM(const std::string&  str)
 {
     
+    initialise__observation_model();
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
 
@@ -149,6 +152,7 @@ void Problem_Data::add__observations____action__UNIFORM(const std::string&  str)
 
 void Problem_Data::add__observations____action__successor_state__observation__IDENTITY(const std::string&  str)
 {
+    initialise__observation_model();
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
     number = (observation == successor_state)?1.0:0.0;
@@ -160,6 +164,7 @@ void Problem_Data::add__observations____action__successor_state__observation__ID
 
 void Problem_Data::add__observations____action__successor_state__IDENTITY(const std::string&  str)
 {
+    initialise__observation_model();
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
 
@@ -186,6 +191,7 @@ void Problem_Data::add__observations____action__successor_state__IDENTITY(const 
 
 void Problem_Data::add__observations____action__IDENTITY(const std::string&  str)
 {
+    initialise__observation_model();
     /*numbers--RESET -- The list of numbers last parsed has been used.*/
     numbers = decltype(numbers)(0);
 

@@ -244,6 +244,9 @@ boost::numeric::ublas::vector<double> FSC__Evaluator::get_reward_vector()
                              *starting_state,
                              *successor_state,
                              *observation);
+                        
+                        
+                        
 
                         if(0.0 == reward_received) continue;
                         
@@ -252,6 +255,16 @@ boost::numeric::ublas::vector<double> FSC__Evaluator::get_reward_vector()
                             (*executed_action,
                              *starting_state,
                              *successor_state);
+
+
+                         
+//                         if(0 == state_transition_probability){
+//                             VERBOSER(200, "Transition from :: "<<*starting_state
+//                                      <<" using :: "<<*executed_action
+//                                      <<" to :: "<<*successor_state<<" is ZERO"<<std::endl);
+//                             exit(0);
+//                         }
+                        
                         
                         if(0.0 == state_transition_probability) continue;
                         
@@ -260,9 +273,23 @@ boost::numeric::ublas::vector<double> FSC__Evaluator::get_reward_vector()
                             (*executed_action,
                              *successor_state,
                              *observation);
-                            
-                        if(0.0 == observation_probability) continue;
+
+                        if(0 == observation_probability){
+                            VERBOSER(1, "Transition to :: "<<*successor_state
+                                     <<" using :: "<<*executed_action
+                                     <<" getting :: "<<*observation<<" is ZERO"<<std::endl);
+                        } else {
+                            VERBOSER(1, "Transition to :: "<<*successor_state
+                                     <<" using :: "<<*executed_action
+                                     <<" getting :: "<<*observation<<" is NON-zero"<<std::endl);
+                        }
                         
+                        
+                        
+                        if(0.0 == observation_probability) continue;
+
+//                         std::cerr<<"....."<<std::endl;
+//                         exit(0);
                         
                         expected_reward____action__starting_state__successor_state__observation
                             += reward_received *
@@ -283,6 +310,13 @@ boost::numeric::ublas::vector<double> FSC__Evaluator::get_reward_vector()
                     expected_reward____action__starting_state__successor_state__observation;
             }
 
+//             if(0.0 != expected_reward){
+//                 VERBOSER(200, "Got NON-zero reward..."<<std::endl);
+//             } else {
+//                 VERBOSER(200, "Got ZERO reward..."<<std::endl);
+//             }
+            
+            
             reward_vector(starting_index__row_index) = expected_reward;
         }
     }

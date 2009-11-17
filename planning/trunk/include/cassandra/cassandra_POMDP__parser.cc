@@ -172,9 +172,6 @@ void Problem_Data::add__start_state_distribution(const std::string&)
     numbers = decltype(numbers)(0);
 }
 
-            
-
-
 void Problem_Data::add__action(const std::string& str)
 {
     actions.push_back(str);
@@ -401,7 +398,9 @@ std::ostream& POMDP::Parsing::operator<<(std::ostream& o,
             }   
         }
     }
-        
+
+    
+    assert(transition_model.size());
     for(auto p = transition_model.begin()
             ; p != transition_model.end()
             ; p++){
@@ -409,12 +408,16 @@ std::ostream& POMDP::Parsing::operator<<(std::ostream& o,
         QUERY_UNRECOVERABLE_ERROR(find(actions.begin(), actions.end(), p->first) == actions.end()
                                   , "action :: "<<p->first<<" was not found for some reason in the set of actions.\n");
         
+        assert(p->second.size());
+        
         for(auto pp = p->second.begin()
                 ; pp != p->second.end()
                 ; pp++){
             
             QUERY_UNRECOVERABLE_ERROR(find(states.begin(), states.end(), pp->first) == states.end()
                                       , "state :: "<<pp->first<<" was not found for some reason in the set of states.\n");
+
+            assert(pp->second.size());
             
             for(auto ppp = pp->second.begin()
                     ; ppp != pp->second.end()
@@ -461,6 +464,7 @@ std::ostream& POMDP::Parsing::operator<<(std::ostream& o,
         }
     }
     
+    return o;
         
 // //     return o;
 
@@ -573,7 +577,6 @@ std::ostream& POMDP::Parsing::operator<<(std::ostream& o,
 //         }
 //     }
     
-    return o;
 }
 
 
