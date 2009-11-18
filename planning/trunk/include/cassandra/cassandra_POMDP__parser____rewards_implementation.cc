@@ -175,6 +175,10 @@ void Problem_Data::add__rewards____action__start_state__successor_state__observa
 {
     initialise__reward_model();
     add__rewards____action___start_state__successor_state__observation();
+
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 
 void Problem_Data::add__rewards____action__start_state__successor_state_NUMBERS()
@@ -259,6 +263,9 @@ void Problem_Data::add__rewards____action__start_state__successor_state(const st
 {
     initialise__reward_model();
     add__rewards____action___start_state__successor_state();
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 
 void Problem_Data::add__rewards____action__start_state_NUMBERS()
@@ -338,6 +345,10 @@ void Problem_Data::add__rewards____action__start_state(const std::string& str)
 {
     initialise__reward_model();
     add__rewards____action___start_state();
+
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 
 

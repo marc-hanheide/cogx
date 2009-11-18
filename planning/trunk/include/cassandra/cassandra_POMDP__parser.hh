@@ -36,10 +36,10 @@
 
 #include <pegtl.hh>
 
-#ifdef DEBUG_LEVEL
-#undef DEBUG_LEVEL
-#endif
-#define DEBUG_LEVEL 10
+// #ifdef DEBUG_LEVEL
+// #undef DEBUG_LEVEL
+// #endif
+// #define DEBUG_LEVEL 10
 
 namespace POMDP
 {
@@ -57,8 +57,8 @@ namespace POMDP
         public:
             friend std::ostream& operator<<(std::ostream&, const POMDP::Parsing::Indexed_Strings&);
     
-            Indexed_Strings()
-                :empty_string(""){};
+            Indexed_Strings(const Indexed_Strings&);
+            Indexed_Strings();
             
             typedef std::vector<std::string> Named_Numbers;
             typedef std::map<std::string, uint> Numbered_Names;
@@ -445,7 +445,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__number(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -455,7 +455,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__natural_number(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -644,10 +644,10 @@ namespace POMDP
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
-                VERBOSER(20, " **************** Application of :: Add_Rewards__Action____action__start_state__successor_state__observation");
+                VERBOSER(1, " **************** Application of :: Add_Rewards__Action____action__start_state__successor_state__observation");
                 
                 s->add__rewards____action__start_state__successor_state__observation(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -658,7 +658,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__rewards____action__start_state__successor_state(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -669,7 +669,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__rewards____action__start_state(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 
@@ -680,10 +680,10 @@ namespace POMDP
 //             template<typename stack_type>
 //             static void apply(const std::string& str, stack_type& s)
 //             {
-//                 VERBOSER(20, " **************** Application of :: Add_Rewards__Action____action__start_state__successor_state__observation");
+//                 VERBOSER(1, " **************** Application of :: Add_Rewards__Action____action__start_state__successor_state__observation");
                 
 //                 s->add__rewards____action__start_state__successor_state__observation__IDENTITY(str);
-//                 VERBOSER(20, str);
+//                 VERBOSER(1, str);
 //             }
 //         };
         
@@ -694,7 +694,7 @@ namespace POMDP
 //             static void apply(const std::string& str, stack_type& s)
 //             {
 //                 s->add__rewards____action__start_state__successor_state__IDENTITY(str);
-//                 VERBOSER(20, str);
+//                 VERBOSER(1, str);
 //             }
 //         };
         
@@ -705,7 +705,7 @@ namespace POMDP
 //             static void apply(const std::string& str, stack_type& s)
 //             {
 //                 s->add__rewards____action__start_state__IDENTITY(str);
-//                 VERBOSER(20, str);
+//                 VERBOSER(1, str);
 //             }
 //         };
         
@@ -716,10 +716,10 @@ namespace POMDP
 //             template<typename stack_type>
 //             static void apply(const std::string& str, stack_type& s)
 //             {
-//                 VERBOSER(20, " **************** Application of :: Add_Rewards__Action____action__start_state__successor_state__observation");
+//                 VERBOSER(1, " **************** Application of :: Add_Rewards__Action____action__start_state__successor_state__observation");
                 
 //                 s->add__rewards____action__start_state__successor_state__observation__UNIFORM(str);
-//                 VERBOSER(20, str);
+//                 VERBOSER(1, str);
 //             }
 //         };
         
@@ -730,7 +730,7 @@ namespace POMDP
 //             static void apply(const std::string& str, stack_type& s)
 //             {
 //                 s->add__rewards____action__start_state__successor_state__UNIFORM(str);
-//                 VERBOSER(20, str);
+//                 VERBOSER(1, str);
 //             }
 //         };
         
@@ -741,7 +741,7 @@ namespace POMDP
 //             static void apply(const std::string& str, stack_type& s)
 //             {
 //                 s->add__rewards____action__start_state__UNIFORM(str);
-//                 VERBOSER(20, str);
+//                 VERBOSER(1, str);
 //             }
 //         };
         
@@ -761,7 +761,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__start_state__successor_state(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -772,7 +772,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__start_state(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -783,7 +783,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 
@@ -796,7 +796,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__start_state__successor_state__UNIFORM(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -807,7 +807,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__start_state__UNIFORM(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -818,7 +818,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__UNIFORM(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -829,7 +829,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__start_state__successor_state__IDENTITY(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -840,7 +840,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__start_state__IDENTITY(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -851,7 +851,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__transitions____action__IDENTITY(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -871,7 +871,7 @@ namespace POMDP
 //                 UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 
                 s->add__observations____action__successor_state__observation(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 
@@ -883,7 +883,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -895,7 +895,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 
@@ -910,7 +910,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__observation__UNIFORM(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 
@@ -922,7 +922,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__UNIFORM(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -934,7 +934,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__UNIFORM(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 
@@ -947,7 +947,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__observation__IDENTITY(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 
@@ -959,7 +959,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__successor_state__IDENTITY(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -971,7 +971,7 @@ namespace POMDP
             {
                 //UNRECOVERABLE_ERROR("ADDING OBSERVATIONS...");
                 s->add__observations____action__IDENTITY(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
         
@@ -995,7 +995,7 @@ namespace POMDP
             static void apply(const std::string& str, stack_type& s)
             {
                 s->add__start_state_distribution(str);
-                VERBOSER(20, str);
+                VERBOSER(1, str);
             }
         };
 

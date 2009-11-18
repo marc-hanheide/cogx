@@ -149,29 +149,33 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                             
                             if(0.0 == observation_probability) continue;
 
-                            QUERY_UNRECOVERABLE_ERROR(fsc_node_transition_probability > 1.0,
-                                                      "Invalid node transition probability :: "
-                                                      <<fsc_node_transition_probability<<".");
-                            QUERY_UNRECOVERABLE_ERROR(state_transition_probability > 1.0,
+
+                            
+                            
+                            QUERY_UNRECOVERABLE_ERROR( !is_admissible_probability(fsc_node_transition_probability),
+                                                       "Invalid node transition probability :: "
+                                                       <<std::scientific<<fsc_node_transition_probability);
+                            QUERY_UNRECOVERABLE_ERROR( !is_admissible_probability(state_transition_probability),
                                                       "Invalid state transition probability :: "
-                                                      <<state_transition_probability<<".");
-                            QUERY_UNRECOVERABLE_ERROR(observation_probability > 1.0,
+                                                      <<state_transition_probability);
+                            QUERY_UNRECOVERABLE_ERROR( !is_admissible_probability(observation_probability),
                                                       "Invalid observation probability :: "
-                                                      <<observation_probability<<".");
+                                                      <<observation_probability);
                             
                             transition_probability +=
                                 fsc_node_transition_probability *
                                 state_transition_probability *
                                 observation_probability;
 
-                            QUERY_WARNING(transition_probability > 1.0,
+                            QUERY_WARNING( !is_admissible_probability(transition_probability),
                                           "Computed a transition probability :: "<<transition_probability
-                                          <<" that was not less than 1.0.");
-                            assert(transition_probability <= 1.0);
+                                          <<" that was inadmissible...");
+
+                            assert(is_admissible_probability(transition_probability));
                         }
                     }
 
-                    assert(transition_probability <= 1.0);
+                    assert(is_admissible_probability(transition_probability));//transition_probability <= 1.0);
                     
                     state_node__transition__matrix
                         (starting_index__row_index,

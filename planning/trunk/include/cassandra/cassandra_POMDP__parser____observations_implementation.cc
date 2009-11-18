@@ -231,9 +231,13 @@ void Problem_Data::add__observations____action__successor_state__observation_()
                 ; _observation++){
             observation = *_observation;
             
-            if(number != 0){
-                VERBOSER(1, "Reward :: "<<action<<" "<<start_state<<" "<<successor_state<<" "<<observation<<" = "<<number<<std::endl);
-            }
+            QUERY_WARNING(number == 0,
+                          "Reward :: "
+                          <<action<<" "
+                          <<start_state
+                          <<" "<<successor_state
+                          <<" "<<observation
+                          <<" = "<<number<<std::endl);
 
             
             QUERY_UNRECOVERABLE_ERROR(find(actions.begin(), actions.end(), action) == actions.end()
@@ -253,11 +257,17 @@ void Problem_Data::add__observations____action__successor_state__observation_()
        observation = "*";
     } else {
         
-        if(number != 0){
-            VERBOSER(1, "Observation :: "<<action<<" "<<start_state<<" "<<successor_state<<" "<<observation<<" = "<<number<<std::endl);
-        }
+        QUERY_WARNING(number == 0,
+                      "Observation :: "
+                      <<action<<" "
+                      <<start_state<<" "
+                      <<successor_state<<" "
+                      <<observation<<" = "
+                      <<number<<std::endl);
+        
         observation_model[action][successor_state][observation] = number;
     }
+    
 }
 
 void Problem_Data::add__observations____action__successor_state___observation()
@@ -299,8 +309,12 @@ void Problem_Data::add__observations____action__successor_state__observation(con
     
     initialise__observation_model();
     add__observations____action___successor_state__observation();
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 
+int a_counter = 0;
 
 void Problem_Data::add__observations____action__successor_state_NUMBERS()
 {
@@ -315,7 +329,20 @@ void Problem_Data::add__observations____action__successor_state_NUMBERS()
         observation = *_observation;
         number = numbers[numbers_index];
         add__observations____action__successor_state__observation_();
-                
+
+//         std::cerr<<number<<" ";
+//         a_counter ++;
+
+//         if(!(a_counter % 3)){
+//             std::cerr<<std::endl;
+//         }
+        
+        
+//         VERBOSER(200, "Action :: "<<action
+//                  <<" successor-state :: "<<successor_state
+//                  <<" observation :: "<<observation
+//                  <<" = "<<number<<std::endl);
+        
         number = number__before;
         observation = observation__before;
     }
@@ -365,6 +392,9 @@ void Problem_Data::add__observations____action__successor_state(const std::strin
     
     initialise__observation_model();
     add__observations____action___successor_state();
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 
 
@@ -377,6 +407,7 @@ void Problem_Data::add__observations____action_NUMBERS()
         decltype(successor_state) successor_state__before = successor_state ;
         successor_state = *_state;
 
+        
         add__observations____action__successor_state_NUMBERS();
 
         successor_state = successor_state__before;
@@ -409,5 +440,8 @@ void Problem_Data::add__observations____action(const std::string& )
 {
     initialise__observation_model();
     add__observations____action_();
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 

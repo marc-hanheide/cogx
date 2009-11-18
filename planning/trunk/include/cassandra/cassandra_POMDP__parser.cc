@@ -35,6 +35,8 @@
  *
  * \c++-0x-source{cassandra_POMDP__parser____transitions_implementation.cc}
  *
+ * \c++-0x-source{cassandra_POMDP__parser____indexed_strings.cc}
+ *
  */
 
 #include "cassandra_POMDP__parser.hh"
@@ -55,62 +57,11 @@ namespace POMDP
     }
 }
 
-std::string Indexed_Strings::operator[](uint index) const
-{
-    assert(index < this->size());
-    return const_cast<Named_Numbers&>(named_Numbers)[index];
-}
-
-uint Indexed_Strings::operator[](const std::string& str) const
-{
-    assert(numbered_Names.find(str) != numbered_Names.end());
-    return const_cast<Numbered_Names&>(numbered_Names)[str];
-}
-
-bool Indexed_Strings::valid(const std::string& str) const
-{
-    auto iterator = numbered_Names.find(str);
-    
-    return (iterator != numbered_Names.end());
-}
-
-bool Indexed_Strings::valid(uint index) const
-{
-    return (index < named_Numbers.size());
-}
-
-
-void Indexed_Strings::push_back(const std::string& str)
-{
-    named_Numbers.push_back(str);
-    numbered_Names[str] = named_Numbers.size() - 1;
-}
-
-uint Indexed_Strings::get(const std::string& str) const
-{
-    auto iterator = numbered_Names.find(str);
-    
-    if(valid(str)){
-        return iterator->second;
-    } else {
-        return std::numeric_limits<uint>::max();
-    }
-}
-
-const std::string& Indexed_Strings::get(uint index) const
-{
-    if(valid(index)){
-        return named_Numbers[index];
-    } else {
-        return empty_string;
-    }
-}
-
 void Problem_Data::add__number(const std::string& str)
 {
     istringstream iss(str);
     iss>>number;
-    VERBOSER(30, "Pushing back :: "<<number);
+    VERBOSER(1, "Pushing back :: "<<number);
     numbers.push_back(number);
 }
 
@@ -291,22 +242,7 @@ void Problem_Data::report__value_Type_is_Cost(const std::string& str)
  ******************************************************************************************************
  ******************************************************************************************************
  ******************************************************************************************************/
-            
-std::ostream& POMDP::Parsing::operator<<(std::ostream& o,
-                         const POMDP::Parsing::Indexed_Strings& indexed_Strings)
-{
-    for(auto i = 0; i < indexed_Strings.named_Numbers.size(); i++){
-        o<<indexed_Strings.named_Numbers[i];
-
-        if(i == indexed_Strings.named_Numbers.size() - 1){
-        } else {
-            o<<" ";
-        }
-    }
-    
-    return o;
-}
-
+       
 std::ostream& POMDP::Parsing::operator<<(std::ostream& o
                                          , const POMDP::Parsing::Problem_Data::Value_Type& value_Type)
 {

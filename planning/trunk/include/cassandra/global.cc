@@ -141,11 +141,43 @@ Are_Doubles_Close::Are_Doubles_Close(double epsilon)
 #include "boost/test/floating_point_comparison.hpp"
 
 bool Are_Doubles_Close::operator()(double number1, double number2) const
-{    
-    auto diff = boost::test_tools::tt_detail::fpt_abs( number1 - number2 );
-    auto d1   = boost::test_tools::tt_detail::safe_fpt_division( diff, boost::test_tools::tt_detail::fpt_abs( number2 ) );
-    auto d2   = boost::test_tools::tt_detail::safe_fpt_division( diff, boost::test_tools::tt_detail::fpt_abs( number1 ) );
-
-    return ((d1 <= (epsilon) && d2 <= (epsilon)));
+{
+    assert(epsilon > 0.0);
     
+    if(number1 == 0.0 && number2 != 0.0){
+        VERBOSER(150, "number 1 :: "<<number1<<"");
+        return boost::test_tools::tt_detail::fpt_abs(number2) < epsilon;
+    }
+
+    if(number2 == 0.0 && number1 != 0.0){
+        return boost::test_tools::tt_detail::fpt_abs(number1) < epsilon;
+    }
+    
+    
+    auto diff = boost::test_tools::tt_detail::fpt_abs( number1 - number2 );
+    auto d1   = boost::test_tools::tt_detail::safe_fpt_division( diff, boost::test_tools::tt_detail::fpt_abs( number1 ) );
+    auto d2   = boost::test_tools::tt_detail::safe_fpt_division( diff, boost::test_tools::tt_detail::fpt_abs( number2 ) );
+
+    VERBOSER(150, "diff "<<diff);
+    VERBOSER(150, "d1 "<<d1);
+    VERBOSER(150, "d2 "<<d2);
+    
+    return ((d1 <= (epsilon) && d2 <= (epsilon)));
+}
+
+bool is_admissible_probability(double number)
+{
+    Are_Doubles_Close are_Doubles_Close(1e-9);
+
+    assert(are_Doubles_Close(0.0, 0.0));
+    assert(!are_Doubles_Close(1.0, 0.0));
+    assert(are_Doubles_Close(1e-200, 0.0));
+    
+    bool answer =
+        (number <= 1.0 &&
+         number >= 0.0) ||
+        are_Doubles_Close(number, 1.0) ||
+        are_Doubles_Close(number, 0.0);
+
+    return answer;
 }

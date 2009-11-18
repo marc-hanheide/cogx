@@ -806,3 +806,43 @@ bool FSC__Node_Improvement::operator()()
     assert(0);
 }
 
+
+FSC__Improvement::
+Finite_State_Controller__Improvement(FSC& fsc)
+    :fsc(fsc)
+{
+}
+
+            
+bool FSC__Improvement::operator()()
+{
+    bool nodes_could_be_improved = false;
+    
+    for(auto node_index = 0; node_index < fsc.get__nodes_count(); node_index++){
+        
+        POMDP::Solving::FSC__Evaluator fsc__Evaluator(fsc);
+        
+        /* Evaluate the randomised controller -- i.e., compute the value
+         * of being in a state at a given controller node */
+        fsc__Evaluator();
+        
+        VERBOSER(200, "Evaluation yields :: \n"<<fsc__Evaluator<<std::endl);
+    
+        POMDP::Solving::FSC__Node_Improvement fsc__Node_Improvement(node_index, fsc, fsc__Evaluator);
+        auto improvement_was_possible = fsc__Node_Improvement();
+        
+        if(improvement_was_possible){
+            nodes_could_be_improved = true;
+            
+            VERBOSER(200, "Node :: "<<node_index<<" was improved."<<std::endl);
+            
+            VERBOSER(200, "The new controller looks like :: "<<std::endl);
+            VERBOSER(200, fsc<<std::endl);
+        } else {
+            VERBOSER(200, "Node :: "<<node_index<<" could not be improved."<<std::endl);
+            VERBOSER(200, fsc<<std::endl);
+        }
+    }
+
+    return nodes_could_be_improved;
+}
