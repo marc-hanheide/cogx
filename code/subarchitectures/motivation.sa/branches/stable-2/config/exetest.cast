@@ -1,0 +1,11 @@
+HOST localhost
+
+
+SUBARCHITECTURE motivation.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+#CPP WM SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+CPP MG listen-test TestActionGenerator --log
+JAVA MG dispatcher execution.components.TestExecutionManager --log
+JAVA MG executor execution.components.TestActionExecutor  --log
+
