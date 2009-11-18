@@ -43,7 +43,7 @@ class BaseAgent(object):
         self.running = True
         
     def execute(self, action, args):
-        self.simulator.schedule(action, args)
+        self.simulator.schedule(action, args, self)
 
     def done(self):
         self.running = False
@@ -110,6 +110,7 @@ class Agent(BaseAgent):
     def updateTask(self, new_facts, action_status=None):
         plan = self.task.get_plan()
 
+        print map(str, new_facts)
         if plan is not None and action_status:
             self.last_action.status = action_status
             
