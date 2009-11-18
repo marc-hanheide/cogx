@@ -48,8 +48,8 @@ class Simulation(object):
         while any(a.is_running() for a in self.agents.itervalues()):
             if self.queue:
                 self.time += 1
-                action, args = self.queue.pop()
-                self.execute(action, args)
+                action, args, agent = self.queue.pop()
+                self.execute(action, args, agent)
             else:
                 print "No agent is acting anymore. Aborting."
                 return
@@ -95,14 +95,21 @@ class Simulation(object):
                 a.precondition.visit(remove_visitor)
             
 
-    def schedule(self, action, args):
-        self.queue.append((action, args))
+    def schedule(self, action, args, agent):
+        self.queue.append((action, args, agent))
         
-    def execute(self, action, args):
+    def execute(self, action, args, agent):
         action = self.problem.getAction(action)
         action.instantiate(args)
-        
-        agent = self.agents[action.agents[0].getInstance().name]
+
+        if agent != self.agents[action.agents[0].getInstance().name]:
+            other = action.agents[0].getInstance()
+            print "%d: %s tried to execute action for %s (%s %s)" % (self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
+            log.debug("%d: %s tried to execute action for %s (%s %s)", self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
+            agent.statistics.increase_stat("failed_execution_attempts")
+            action.uninstantiate()
+            agent.updateTask([], plans.ActionStatusEnum.FAILED)
+            return
 
         if self.state.isExecutable(action):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
