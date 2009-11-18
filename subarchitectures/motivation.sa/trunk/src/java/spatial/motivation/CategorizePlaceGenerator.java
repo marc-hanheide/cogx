@@ -1,8 +1,9 @@
 /**
  * 
  */
-package motivation.components.generators;
+package spatial.motivation;
 
+import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.Motive;

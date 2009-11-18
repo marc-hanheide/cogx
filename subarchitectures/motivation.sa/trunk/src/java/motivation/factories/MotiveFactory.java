@@ -13,6 +13,7 @@ import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
+import motivation.slice.PatrolMotive;
 import motivation.slice.TestMotive;
 
 /**
@@ -43,5 +44,9 @@ public class MotiveFactory {
 	public static CategorizeRoomMotive createCategorizeRoomMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
 		return new CategorizeRoomMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, "",-1);
+	}
+	public static PatrolMotive createPatrolMotive(WorkingMemoryAddress src) {
+		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
+		return new PatrolMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  "",0, created);
 	}
 }

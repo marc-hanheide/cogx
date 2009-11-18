@@ -14,6 +14,7 @@ import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
+import motivation.slice.PatrolMotive;
 import motivation.util.castextensions.WMEntryQueue;
 import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
 import autogen.Planner.Completion;
@@ -27,7 +28,6 @@ import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.WorkingMemoryPermissions;
 
 /**
  * @author marc
@@ -38,10 +38,13 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 	public static class GoalTranslator {
 
 		public static String motive2PlannerGoal(HomingMotive m, String placeUnion, String robotUnion) {
-			// TODO: this has to be implemented with lookup to the unions
 			return new String("(located '"+robotUnion + "' '" + placeUnion+"')");
 		}
 
+		public static String motive2PlannerGoal(PatrolMotive m, String placeUnion, String robotUnion) {
+			return new String("(located '"+robotUnion + "' '" + placeUnion+"')");
+		}
+		
 		public static String motive2PlannerGoal(CategorizeRoomMotive m,
 				String roomUnion, String robotUnion) {
 			return "(kval '" + robotUnion + "' (areaclass '" + roomUnion
@@ -145,6 +148,12 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 				conjunctiveGoal = GoalTranslator
 						.motive2PlannerGoal(crm, binderFacade
 								.getUnion(crm.correspondingUnion).entityID, getAgentUnion());
+			} else if (m instanceof PatrolMotive) {
+				PatrolMotive pm = (PatrolMotive) m;
+				pm.correspondingUnion = resolveMotive(pm);
+				conjunctiveGoal = GoalTranslator
+						.motive2PlannerGoal(pm, binderFacade
+								.getUnion(pm.correspondingUnion).entityID, getAgentUnion());
 			} else if (m instanceof CategorizePlaceMotive) {
 				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(
 						(CategorizePlaceMotive) m, binderFacade
@@ -243,13 +252,29 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 			// union ids
 			for (Entry<String, FeatureValue> entry : unionsWithPlaceID
 					.entrySet()) {
-				int roomID = Integer
+				int placeID = Integer
 						.parseInt(((StringValue) entry.getValue()).val);
-				if (roomID == 0) {
-					component.log("found a corresponding union for roomId "
+				if (placeID == 0) {
+					component.log("found a corresponding union for placeId "
 							+ 0+ ": " + entry.getKey());
 					// TODO: we hope, that there is only ONE union with this
-					// roomId, so let's break
+					// placeId, so let's break
+					return entry.getKey();
+				}
+			}
+
+		} else if (m instanceof PatrolMotive) {
+			// place_ids for
+			// union ids
+			for (Entry<String, FeatureValue> entry : unionsWithPlaceID
+					.entrySet()) {
+				int placeID = Integer
+						.parseInt(((StringValue) entry.getValue()).val);
+				if (placeID == ((PatrolMotive)m).placeID) {
+					component.log("found a corresponding union for placeID "
+							+ placeID + ": " + entry.getKey());
+					// TODO: we hope, that there is only ONE union with this
+					// placeId, so let's break
 					return entry.getKey();
 				}
 			}

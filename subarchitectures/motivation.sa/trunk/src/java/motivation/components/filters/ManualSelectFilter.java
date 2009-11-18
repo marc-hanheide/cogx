@@ -13,11 +13,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+import spatial.motivation.PatrolPlaceGenerator;
+
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
+import motivation.slice.PatrolMotive;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryChange;
 
@@ -30,7 +33,7 @@ public class ManualSelectFilter implements MotiveFilter {
 		getJFrame();
 	}
 
-	private MotiveFilterManager component;  //  @jve:decl-index=0:
+	private MotiveFilterManager component; // @jve:decl-index=0:
 
 	private JFrame jFrame = null; // @jve:decl-index=0:visual-constraint="1,21"
 	private JPanel jContentPane = null;
@@ -43,19 +46,22 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JSlider jHomePrioritySlider = null;
 
 	private JSlider jCategorizePrioritySlider = null;
-	
+
+	private JSlider jPatrolPrioritySlider = null;
+
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
-		
+
 		if (motive instanceof ExploreMotive)
 			return MotivePriority.convert(jExplorePrioritySlider.getValue());
 		else if (motive instanceof HomingMotive)
 			return MotivePriority.convert(jHomePrioritySlider.getValue());
 		else if (motive instanceof CategorizeRoomMotive)
 			return MotivePriority.convert(jCategorizePrioritySlider.getValue());
+		else if (motive instanceof PatrolMotive)
+			return MotivePriority.convert(jPatrolPrioritySlider.getValue());
 		else
 			return MotivePriority.NORMAL;
 	}
-
 
 	/**
 	 * This method initializes jFrame
@@ -85,8 +91,6 @@ public class ManualSelectFilter implements MotiveFilter {
 		}
 		return jContentPane;
 	}
-
-
 
 	/**
 	 * This method initializes jButton
@@ -134,8 +138,10 @@ public class ManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.add(getJSliderCategorize());
 			jMotivesPanel.add(new JLabel("Explore"));
 			jMotivesPanel.add(getJSliderExplore());
-//			jMotivesPanel.add(new JLabel("Test"));
-//			jMotivesPanel.add(getJSliderTest());
+			jMotivesPanel.add(new JLabel("Patrol"));
+			jMotivesPanel.add(getJSliderPatrol());
+			// jMotivesPanel.add(new JLabel("Test"));
+			// jMotivesPanel.add(getJSliderTest());
 			jMotivesPanel.add(new JLabel("Homing"));
 			jMotivesPanel.add(getJSliderHome());
 			jMotivesPanel.add(getPresetPanel());
@@ -161,9 +167,9 @@ public class ManualSelectFilter implements MotiveFilter {
 
 			}
 		});
-		
+
 		presetPanel.add(ecButton);
-	
+
 		JButton ceButton = new JButton("categorize > explore");
 		ceButton.addActionListener(new ActionListener() {
 			@Override
@@ -198,32 +204,32 @@ public class ManualSelectFilter implements MotiveFilter {
 			}
 		});
 		presetPanel.add(nullButton);
-		
-		
+
 		return presetPanel;
 	}
 
-
 	private JSlider createPrioritySlider() {
 		JSlider jSlider = new JSlider(JSlider.HORIZONTAL,
-				MotivePriority.UNSURFACE.value(), MotivePriority.HIGH.value(), MotivePriority.UNSURFACE.value());
+				MotivePriority.UNSURFACE.value(), MotivePriority.HIGH.value(),
+				MotivePriority.UNSURFACE.value());
 		Dictionary<Integer, JComponent> labels;
 		labels = new Hashtable<Integer, JComponent>();
 		labels.put(MotivePriority.UNSURFACE.value(), new JLabel(
 				MotivePriority.UNSURFACE.name()));
-		labels.put(MotivePriority.LOW.value(), new JLabel(
-				MotivePriority.LOW.name()));
+		labels.put(MotivePriority.LOW.value(), new JLabel(MotivePriority.LOW
+				.name()));
 		labels.put(MotivePriority.NORMAL.value(), new JLabel(
 				MotivePriority.NORMAL.name()));
-		labels.put(MotivePriority.HIGH.value(), new JLabel(
-				MotivePriority.HIGH.name()));
+		labels.put(MotivePriority.HIGH.value(), new JLabel(MotivePriority.HIGH
+				.name()));
 		jSlider.setLabelTable(labels);
 		jSlider.setPaintTicks(true);
 		jSlider.setPaintLabels(true);
 		jSlider.setSnapToTicks(true);
 		return jSlider;
-		
+
 	}
+
 	/**
 	 * This method initializes jExplorePrioritySlider
 	 * 
@@ -236,6 +242,17 @@ public class ManualSelectFilter implements MotiveFilter {
 		return jExplorePrioritySlider;
 	}
 
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderPatrol() {
+		if (jPatrolPrioritySlider == null) {
+			jPatrolPrioritySlider = createPrioritySlider();
+		}
+		return jPatrolPrioritySlider;
+	}
 
 	/**
 	 * This method initializes jExplorePrioritySlider
@@ -248,6 +265,7 @@ public class ManualSelectFilter implements MotiveFilter {
 		}
 		return jCategorizePrioritySlider;
 	}
+
 	/**
 	 * This method initializes jExplorePrioritySlider
 	 * 
@@ -260,7 +278,6 @@ public class ManualSelectFilter implements MotiveFilter {
 		return jHomePrioritySlider;
 	}
 
-
 	@Override
 	public void start() {
 		jFrame.setVisible(true);
@@ -268,5 +285,4 @@ public class ManualSelectFilter implements MotiveFilter {
 		jFrame.setSize(500, 500);
 	}
 
-	
 } // @jve:decl-index=0:visual-constraint="583,36"
