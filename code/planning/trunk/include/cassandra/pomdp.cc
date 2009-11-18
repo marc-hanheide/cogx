@@ -22,8 +22,6 @@ using std::endl;
 using std::count;
 using std::cin;
 
-
-
 int main(int argc, char** argv)
 {
     Command_Line_Arguments command_Line_Arguments;
@@ -44,8 +42,8 @@ int main(int argc, char** argv)
     
     POMDP::Parsing::parse_Cassandra_POMDP_problem(problem_file_name);
     
-    VERBOSER(100, "Just parsed the following problem \n");
-    VERBOSER(100, *POMDP::Parsing::problem_Data);
+    VERBOSER(200, "Just parsed the following problem \n");
+    VERBOSER(200, *POMDP::Parsing::problem_Data);
 
     
     VERBOSER(200, "Testing problem sanity \n");
@@ -66,48 +64,53 @@ int main(int argc, char** argv)
     
     VERBOSER(200, "Generated a randomised finite-state-controller :: "<<std::endl);
     VERBOSER(200, fsc<<std::endl);
-        
-    POMDP::Solving::FSC__Evaluator fsc__Evaluator(fsc);
 
-    /* Evaluate the randomised controller -- i.e., compute the value
-     * of being in a state at a given controller node */
-    fsc__Evaluator();
+    POMDP::Solving::FSC__Improvement fsc__Improvement(fsc);
 
-    VERBOSER(200, fsc__Evaluator<<std::endl);
-
-    
-    for(auto node_index = 0; node_index < fsc.get__nodes_count(); node_index++){
-        POMDP::Solving::FSC__Node_Improvement fsc__Node_Improvement(node_index, fsc, fsc__Evaluator);
-        auto improvement_was_possible = fsc__Node_Improvement();
-        
-        if(improvement_was_possible){
-            VERBOSER(200, "Node :: "<<node_index<<" was improved."<<std::endl);
-            
-            VERBOSER(200, "The new controller looks like :: "<<std::endl);
-            VERBOSER(200, fsc<<std::endl);
-            
-            
-            
-        } else {
-            VERBOSER(200, "Node :: "<<node_index<<" could not be improved."<<std::endl);
-            VERBOSER(200, fsc<<std::endl);
-        }
-        
+    while(fsc__Improvement()){
+        VERBOSER(200, "An improvement was possible."<<std::endl);
     }
     
-    POMDP::Solving::FSC__Evaluator fsc__Evaluator_2(fsc);
+    
+//     POMDP::Solving::FSC__Evaluator fsc__Evaluator(fsc);
 
-    /* Evaluate the randomised controller -- i.e., compute the value
-     * of being in a state at a given controller node */
-    fsc__Evaluator_2();
+//     /* Evaluate the randomised controller -- i.e., compute the value
+//      * of being in a state at a given controller node */
+//     fsc__Evaluator();
 
-    VERBOSER(200, "Second evaluator :: \n"<<fsc__Evaluator_2<<std::endl);
+//     VERBOSER(200, fsc__Evaluator<<std::endl);
+
+// //     exit(0);
+    
+    
+//     for(auto node_index = 0; node_index < 1/*fsc.get__nodes_count()*/; node_index++){
+//         POMDP::Solving::FSC__Node_Improvement fsc__Node_Improvement(node_index, fsc, fsc__Evaluator);
+//         auto improvement_was_possible = fsc__Node_Improvement();
+        
+//         if(improvement_was_possible){
+//             VERBOSER(200, "Node :: "<<node_index<<" was improved."<<std::endl);
+            
+//             VERBOSER(200, "The new controller looks like :: "<<std::endl);
+//             VERBOSER(200, fsc<<std::endl);
+            
+            
+            
+//         } else {
+//             VERBOSER(200, "Node :: "<<node_index<<" could not be improved."<<std::endl);
+//             VERBOSER(200, fsc<<std::endl);
+//         }
+        
+//     }
+    
+//     POMDP::Solving::FSC__Evaluator fsc__Evaluator_2(fsc);
+
+//     /* Evaluate the randomised controller -- i.e., compute the value
+//      * of being in a state at a given controller node */
+//     fsc__Evaluator_2();
+
 
 //     POMDP::Solving::FSC__Node_Improvement fsc__Node_Improvement(node_index, fsc, fsc__Evaluator);
 //     auto improvement_was_possible = fsc__Node_Improvement();
-
-    
-    
     
     return 0;
 }

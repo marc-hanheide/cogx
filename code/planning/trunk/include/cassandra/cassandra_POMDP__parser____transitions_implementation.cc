@@ -285,6 +285,9 @@ void Problem_Data::add__transitions____action__start_state__successor_state(cons
     VERBOSER(20, "Adding transition for "<<action<<" "<<start_state<<" "<<successor_state<<" = "<<number);
     initialise__transition_model();
     add__transitions____action___start_state__successor_state();
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 
 void Problem_Data::add__transitions____action__start_state_NUMBERS()
@@ -351,6 +354,10 @@ void Problem_Data::add__transitions____action__start_state(const std::string& st
     VERBOSER(20, ""<<str);
     initialise__transition_model();
     add__transitions____action___start_state();
+
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }
 
 
@@ -403,4 +410,8 @@ void Problem_Data::add__transitions____action(const std::string& str)
     
     initialise__transition_model();
     add__transitions____action_();
+
+    
+    /*numbers--RESET -- The list of numbers last parsed has been used.*/
+    numbers = decltype(numbers)(0);
 }

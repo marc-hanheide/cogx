@@ -91,7 +91,7 @@ bool Problem_Data::sanity__transition_model() const
                                                 *successor_state);
             }
 
-            Are_Doubles_Close are_Doubles_Close(1e-9);
+            Are_Doubles_Close are_Doubles_Close(1e-5);
             if(!are_Doubles_Close(sum_of_transition_probability, 1.0)){
                 WARNING("State transition model is broken. Transitions probabilities from :: "
                         <<*starting_state<<" using :: "
@@ -167,7 +167,7 @@ bool Problem_Data::sanity__observation_model() const
                                                  *observation);
             }
                 
-            Are_Doubles_Close are_Doubles_Close(1e-9);
+            Are_Doubles_Close are_Doubles_Close(1e-5);
             if(!are_Doubles_Close(sum_of_transition_probability, 1.0)){
                 WARNING("Observation model is broken. Observation probabilities to :: "
                         <<*successor_state<<" using :: "

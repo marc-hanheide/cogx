@@ -108,7 +108,7 @@ Old fashioned debugging -- ERROR STREAM
 
 ---------------------------------*/
 #ifndef DEBUG_LEVEL
-#define DEBUG_LEVEL 100
+#define DEBUG_LEVEL 150
 #endif
 
 #ifndef DEBUG_LINE_WIDTH
@@ -476,5 +476,7 @@ public:
 private:
     double epsilon;
 };
+
+bool is_admissible_probability(double);
 
 #endif

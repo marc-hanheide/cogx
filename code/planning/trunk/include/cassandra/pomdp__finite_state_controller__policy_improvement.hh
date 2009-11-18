@@ -140,14 +140,19 @@ namespace POMDP
         class Finite_State_Controller__Improvement
         {   
         public:
+            Finite_State_Controller__Improvement(FSC& fsc);
+            
             /* For each node of \argument{finite_State_Controller},
              * improve the controller at that node according to
              * \class{Finite_State_Controller__Node_Improvement}*/
-            bool operator()(){};
+            bool operator()();
         private:
+            
+            /*Controller*/
+            FSC& fsc;
         };
         
-        typedef Finite_State_Controller__Randomizer FSC__Improvement;
+        typedef Finite_State_Controller__Improvement FSC__Improvement;
 
         class glpk__glp_simplex__print_message;
         
