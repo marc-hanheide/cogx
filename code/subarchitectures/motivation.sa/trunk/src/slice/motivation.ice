@@ -71,6 +71,19 @@ module motivation {
 			long placeID;
     		
     	};
+
+    	class PatrolMotive extends Motive {
+    		/**
+	 		* The ID of the place.
+	 		*/
+			long placeID;
+			
+			/**
+			* last time we have been here
+			*/
+			cast::cdl::CASTTime lastVisisted;
+    		
+    	};
     	
     	class CategorizePlaceMotive extends Motive {
     		/**
