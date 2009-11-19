@@ -6,6 +6,7 @@ import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
+import motivation.slice.PatrolMotive;
 import motivation.util.castextensions.Accessor;
 import SpatialData.AVSCommand;
 import SpatialData.NavCommand;
@@ -60,6 +61,9 @@ public class DoraVerbalisation extends ManagedComponent {
 			} else if (_i instanceof CategorizeRoomMotive) {
 				return "Activated motive to determine category of room "
 						+ ((CategorizeRoomMotive) _i).roomId;
+			} else if (_i instanceof PatrolMotive) {
+				return "Activated motive to patrol place "
+						+ ((PatrolMotive) _i).placeID;
 			}
 			return "";
 		}
@@ -207,8 +211,8 @@ public class DoraVerbalisation extends ManagedComponent {
 
 		// when an object is recognised at all -> is this every positive
 		// recognition result
-//		m_verbals.verbaliseOnAddition(VisualObject.class,
-//				VISUAL_OBJECT_GENERATOR);
+		// m_verbals.verbaliseOnAddition(VisualObject.class,
+		// VISUAL_OBJECT_GENERATOR);
 
 		m_verbals.verbaliseOnOverwrite(ComaRoom.class,
 				new RoomCategoryTextGenerator());
