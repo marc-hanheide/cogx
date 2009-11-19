@@ -95,6 +95,10 @@ class Agent(BaseAgent):
             return 0
             
         plan = task.get_plan()
+        G = plan.to_dot()
+        G.write("plan.dot")
+        G.layout(prog='dot')
+        G.draw("plan.pdf")
 
         executable = sorted(plan.executable(), cmp=action_cmp)
         log.info("executable actions: %s", " ".join(map(str, executable)))

@@ -8,6 +8,7 @@ Main class for storing MAPL plans. Such plans
 """
 
 from string import Template
+from collections import defaultdict
 import copy
 
 import networkx
@@ -26,12 +27,15 @@ class OrderingConstraint(object):
     and can be used, e.g., for links in the transitive closure of plans using
     any of the above specialised links.
     """
-    def __init__(self, fnode, tnode):
+    def __init__(self, fnode, tnode, label=None):
         assert isinstance(fnode, PlanNode)
         assert isinstance(tnode, PlanNode)
         self.fnode = fnode
         self.tnode = tnode
+        self.label = label
     def __str__(self):
+        if self.label is not None:
+            return self.label
         return "%s -> %s" % (self.fnode, self.tnode)
 
 
@@ -176,6 +180,44 @@ class MAPLPlan(networkx.MultiDiGraph):
             result |= pred
             open |= (pred - closed)
         return result
+
+    def to_dot(self, name="plan", ranks=[]):
+        from pygraphviz import AGraph
+        def declare_rank(same_rank_list):
+            same_rank_list = ['"%s"' % r for r in same_rank_list]
+            return '{rank=same; %s}' % " ".join(same_rank_list)
+
+        self.compute_depths()
+        ranks = defaultdict(list)
+        G = AGraph(directed=True, strict=False)
+        for n, data in self.nodes_iter(data=True):
+            if n == self.init_node:
+                continue
+            ranks[data['depth']].append(n)
+            attrs = {}
+            if n.status == ActionStatusEnum.EXECUTED:
+                attrs["style"] = "filled"
+                attrs["fillcolor"] = "grey"
+                
+            G.add_node(str(n), **attrs)
+
+        for n1,n2, data in self.edges_iter(data=True):
+            if n1 == self.init_node:
+                continue
+            attrs = {}
+            if data['type'] == 'prevent_threat':
+                attrs["style"] = "dashed"
+                attrs["color"] = "darkgreen"
+                attrs["label"] = str(data['svar'])
+            else:
+                attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
+                
+            G.add_edge(n1, n2, **attrs)
+
+        for nodes in ranks.itervalues():
+            G.add_subgraph(nodes, rank='same')
+
+        return G
     
 # class MAPLPlan(graph.DAG):
 #     def __init__(self, init_state=None, goal_condition=None):
