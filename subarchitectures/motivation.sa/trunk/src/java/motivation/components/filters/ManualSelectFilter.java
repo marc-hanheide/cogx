@@ -187,6 +187,24 @@ public class ManualSelectFilter implements MotiveFilter {
 		});
 		presetPanel.add(ceButton);
 
+		JButton peButton = new JButton("patrol == explore");
+		peButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					jExplorePrioritySlider.setValue(1);
+					jPatrolPrioritySlider.setValue(1);
+					component.checkAll();
+				} catch (CASTException e1) {
+					component.println("unexpected exception in checkAll: ");
+					e1.printStackTrace();
+				}
+
+			}
+		});
+		presetPanel.add(peButton);
+		
+		
 		JButton nullButton = new JButton("unsurface all");
 		nullButton.addActionListener(new ActionListener() {
 			@Override
@@ -195,6 +213,7 @@ public class ManualSelectFilter implements MotiveFilter {
 					jExplorePrioritySlider.setValue(0);
 					jCategorizePrioritySlider.setValue(0);
 					jHomePrioritySlider.setValue(0);
+					jPatrolPrioritySlider.setValue(0);
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
