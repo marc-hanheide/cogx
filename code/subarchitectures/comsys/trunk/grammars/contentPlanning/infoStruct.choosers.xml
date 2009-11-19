@@ -25,9 +25,23 @@
 		 </inquiry>			
             <choicenode answer = "false">  <!-- content is not ascription -->
                                            <!-- check if entity answers type or quality answers shape/color -->
-           <inquiry id="f-featval" type="string" answerset="@type @color @shape @unknown"> <!-- check question type -->
+           <inquiry id="f-featval" type="string" answerset="@entity @type @color @shape @unknown"> <!-- check question type -->
 		      <f-featval feat="QuestionType"  />
 		   </inquiry>			
+
+		   <choicenode answer = "entity">     <!-- answering ENTITY question -->
+             <inquiry id="q-ex-sort" val="string" answerset="@true @false"> 
+	   	       <q-ex-sort val="entity" nomvar="CONTENT"  />  <!-- check whether sort of content is entity; strict type checking -->
+             </inquiry>			
+              <choicenode answer = "false">  <!-- something else; 
+                                                  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
+                <result val="nonmatchAnswer"/>  
+              </choicenode>
+              <choicenode answer = "true">  <!-- entity -->
+                <result val="matchAnswer" />
+		      </choicenode>  <!-- end entity answer to entity question -->
+	      </choicenode>  <!-- end type question answer -->
+
 		   <choicenode answer = "type">     <!-- answering TYPE question -->
              <inquiry id="q-ex-sort" val="string" answerset="@true @false"> 
 	   	       <q-ex-sort val="entity" nomvar="CONTENT"  />  <!-- check whether sort of content is entity; strict type checking -->
@@ -74,9 +88,14 @@
           </choicenode>  <!-- end content is not ascription -->
           
 		 <choicenode answer = "true">       <!-- content is ascription -->  
-           <inquiry id="f-featval" type="string" answerset="@type @color @shape @unknown"> <!-- check question type -->
+           <inquiry id="f-featval" type="string" answerset="@entity @type @color @shape @unknown"> <!-- check question type -->
 		      <f-featval feat="QuestionType"  />
 		   </inquiry>			
+
+		   <choicenode answer = "entity">     <!-- answering ENTITY question -->
+                <result val="targetAnswer"/>              
+ 	       </choicenode>  <!-- end entity question answer -->
+ 
 		   <choicenode answer = "type">     <!-- answering TYPE question -->
              <inquiry id="q-ex-rel" val="string" answerset="@true @false"> 
 	   	       <q-ex-rel val="Type" nomvar="CONTENT"  />  <!-- check whether ascription of type -->
@@ -174,13 +193,13 @@
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="q-deprel-type" type="string" answerset="@true @false"> 
-		    <q-deprel-type mode="Compound" />  <!-- check whether this entity is a compound-modifier; should never be -->
+		    <q-deprel-type mode="Compound" />  <!-- check whether this is a compound-modifier; should never be -->
 		 </inquiry>			
-		 <choicenode answer = "true">  <!-- this entity is a compound-modifier-->
+		 <choicenode answer = "true">  <!-- this is a compound-modifier-->
             <result val="doNothing"/>
          </choicenode>
        
-		 <choicenode answer = "false">  <!-- this entity is not a compound-modifier-->
+		 <choicenode answer = "false">  <!-- this is not a compound-modifier-->
          <!-- check whether Rheme has already been set to avoid duplication -->
          <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
 		    <q-ex-feat feat="Rheme"/>
@@ -189,40 +208,52 @@
                 <result val="doneRheme"/>
             </choicenode>
 		 <choicenode answer = "false">     <!-- Rheme not yet assigned -->    
-           <!-- need to ensure it is not an entity in target of ascription -->
-           <inquiry id="q-deprel-type" val="string" answerset="@true @false"> 
-	   	       <q-deprel-type mode="Cop-Restr"/>  <!-- check whether entity in target of ascription -->
-             </inquiry>	
 
-                  <choicenode answer = "true">   <!-- entity under Target -->    
-                    <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
-                        <f-featval feat="ProofStatus"  />
+                    <inquiry id="f-featval" type="string" answerset="@targetRheme @standardRheme @denialTheme @unknown"> 
+                       <!-- check AscriptionIS-->
+                        <f-featval feat="AscriptionIS" nomvar="CONTENT" />
                     </inquiry>			
-                    <choicenode answer = "assumed">  
-                        <result val="proof-status-assumed"/>			
-                    </choicenode>
-                    <choicenode answer = "asserted">
-                        <result val="proof-status-asserted"/>
-                    </choicenode>
-                    <choicenode answer = "unknown">
-                        <result val="proof-status-assumed"/>  <!-- Theme is the default -->     
-                    </choicenode>            
-                 </choicenode>   <!-- end entity under Target -->
-  
-                  <choicenode answer = "false">  <!-- something not under Target -->                                    
-                    <inquiry id="f-featval" type="string" answerset="@standardrheme @denialtheme @unknown"> 
-                       <!-- check AscriptionPropertyIS-->
-                        <f-featval feat="AscriptionPropertyIS" nomvar="CONTENT" />
-                    </inquiry>			
-                    <choicenode answer = "standardrheme">  
-                        <result val="assignStandardRheme"/>			
-                    </choicenode>
 
-                    <choicenode answer = "denialtheme">
-                        <result val="assignDenialTheme"/>
-                    </choicenode>
+                    <choicenode answer = "target-rheme">  
+                    <!-- check if entity in target -->
+                        <inquiry id="q-deprel-type" val="string" answerset="@true @false"> 
+                            <q-deprel-type mode="Cop-Restr"/>  <!-- check whether it is in target of ascription -->
+                        </inquiry>	
+                        <choicenode answer = "true">   <!-- it is under Target -->    
+                            <result val="assignStandardRheme"/>			
+                        </choicenode>
+                        <choicenode answer = "false">   <!-- it is not under Target -->    
+                            <result val="assignStandardTheme"/>			
+                        </choicenode>
+                    </choicenode>  <!-- end target-rheme -->
+
+                    <choicenode answer = "standard-rheme">  
+                    <!-- check if entity in target -->
+                        <inquiry id="q-deprel-type" val="string" answerset="@true @false"> 
+                            <q-deprel-type mode="Cop-Restr"/>  <!-- check whether it is in target of ascription -->
+                        </inquiry>	
+                        <choicenode answer = "true">   <!-- entity under Target -->    
+                            <result val="assignStandardTheme"/>		<!-- perhaps should check proofStatus here, too? -->	
+                        </choicenode>
+                        <choicenode answer = "false">   <!-- it is not under Target -->    
+                            <result val="assignStandardRheme"/>			
+                        </choicenode>
+                    </choicenode> <!-- end standard-rheme -->
+
+                    <choicenode answer = "denial-theme">
+                    <!-- check if entity in target -->
+                        <inquiry id="q-deprel-type" val="string" answerset="@true @false"> 
+                            <q-deprel-type mode="Cop-Restr"/>  <!-- check whether it is in target of ascription -->
+                        </inquiry>	
+                        <choicenode answer = "true">   <!-- it is under Target -->    
+                            <result val="assignStandardTheme"/>			
+                        </choicenode>
+                        <choicenode answer = "false">   <!-- it is not under Target -->    
+                            <result val="assignDenialTheme"/>			
+                        </choicenode>
+                    </choicenode> <!-- end denial-theme -->
                     
-                  <choicenode answer = "unknown">  <!-- AscriptionPropertyIS not assigned -->           
+                  <choicenode answer = "unknown">  <!-- AscriptionIS not assigned -->           
                     <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> <!-- check ProofStatus -->
                         <f-featval feat="ProofStatus"  />
                     </inquiry>			
@@ -237,7 +268,6 @@
                   <!-- check if in ascr -->          
                     </choicenode>            
                 </choicenode>  <!-- end AscriptionIS check --> 
-                </choicenode>  <!-- end something not under Target -->                                                
                </choicenode>  <!-- end Rheme check -->            
           </choicenode>  <!-- end compound check -->
 	   </choicenode>  <!-- end TOP -->

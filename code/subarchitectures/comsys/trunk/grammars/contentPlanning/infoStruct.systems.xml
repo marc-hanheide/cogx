@@ -9,7 +9,7 @@
 
 <!-- /** @system rhemeAssign.answer
 
-Assign Rheme acording to the type of question which the utterance is answering
+Assign Rheme according to the type of question which the utterance is answering
 */ -->
 
 <system id="rhemeAssign.answer" region="infoStruct" metafunction="textual">
@@ -19,12 +19,15 @@ Assign Rheme acording to the type of question which the utterance is answering
       <condition features="@type:dvp @feat:QuestionType @rel:Content @feat:Relation:answer @feat:SpeechAct:assertion"/> 
     </conditions>
    <actions>
+      <action choice="targetAnswer">  <!-- ascription target is the Rheme -->
+        	<add-feature feature="AscriptionIS" value="target-rheme" dest="CONTENT" />
+      </action>     
       <action choice="matchAnswer">  <!-- ordinary answer Rheme in ascription -->
-        	<add-feature feature="AscriptionPropertyIS" value="standardrheme" dest="CONTENT" />
+        	<add-feature feature="AscriptionIS" value="standard-rheme" dest="CONTENT" />
       </action>     
       <action choice="nonmatchAnswer">  <!--  implicates denial; needs to be hearer-owned nonagreed Theme with LHp-->
                                         <!-- but overanswering is not taken into account -->
-        	<add-feature feature="AscriptionPropertyIS" value="denialtheme" dest="CONTENT" />
+        	<add-feature feature="AscriptionIS" value="denial-theme" dest="CONTENT" />
       </action>             
       <action choice="doNothing">
       </action>          
@@ -57,6 +60,9 @@ Simple first-shot version:
        </action>     
       <action choice="assignStandardRheme">
         	<add-feature feature="Rheme" value="t-rheme-true" />
+      </action>     
+      <action choice="assignStandardTheme">
+        	<add-feature feature="Rheme" value="t-rheme-false" />
       </action>     
       <action choice="proof-status-assumed">
         	<add-feature feature="Rheme" value="t-rheme-false" />
@@ -100,6 +106,9 @@ BUT: if quality-standalone were to be generated, this system should apply.
        </action>     
       <action choice="assignStandardRheme">
         	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="assignStandardTheme">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
       </action>     
       <action choice="proof-status-assumed">
         	<add-feature feature="Rheme" value="m-rheme-false" />
