@@ -53,7 +53,20 @@ int main(int argc, char** argv)
     assert(POMDP::Parsing::problem_Data->sanity__observation_model());
     VERBOSER(200, "Tested problem sanity \n");
     
-    const int number_of_controller_nodes = 4;
+    
+    int number_of_controller_nodes = 1;
+    if(!(command_Line_Arguments.got_guard("--node-count"))){
+        WARNING("missing argument ::"<<endl
+                <<"--node-count"<<endl
+                <<"Using :: "<<number_of_controller_nodes<<endl);
+    } else {
+        number_of_controller_nodes = command_Line_Arguments.get_int();
+        VERBOSER(1, "Number of nodes :: "
+                 <<number_of_controller_nodes<<std::endl); 
+    }
+
+
+    
     POMDP::FSC fsc(POMDP::Parsing::problem_Data, number_of_controller_nodes);
 
     POMDP::FSC__Randomizer fsc__Randomizer;
