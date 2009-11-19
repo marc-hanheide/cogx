@@ -196,6 +196,11 @@ void FSC__Node_Improvement::configure__linear_program()
                      GLP_LO,
                      0.0,
                      0.0);
+//     glp_set_col_bnds(linear_programming_problem,
+//                      get<0>(epsilon_variable__range) + 1,
+//                      GLP_FR,/*free unbounded variable*/
+//                      0.0,
+//                      0.0);
     glp_set_obj_coef(linear_programming_problem,
                      get<0>(epsilon_variable__range) + 1,
                      1.0);
@@ -768,8 +773,14 @@ bool FSC__Node_Improvement::operator()()
 
     if(!glp_simplex__return){
 
-        if(0.0 == glp_get_obj_val(linear_programming_problem)){
+        Are_Doubles_Close are_Doubles_Close(1e-9);
+        
+        if(are_Doubles_Close(glp_get_obj_val(linear_programming_problem), 0.0)){
+            
+            glp_delete_prob(linear_programming_problem);
             VERBOSER(200, "Was not really able to improve the controller."<<std::endl);
+            
+            return false;
         } else {
             VERBOSER(200, "Improvement of controller node (epsilon) is measured as :: "
                      <<glp_get_obj_val(linear_programming_problem)<<std::endl);
@@ -790,18 +801,18 @@ bool FSC__Node_Improvement::operator()()
     
     
     
-    /* If we are able to improve the policy at this node.*/
-    if(0.0 != glp_get_obj_val(linear_programming_problem)){
+//     /* If we are able to improve the policy at this node.*/
+//     if(0.0 != glp_get_obj_val(linear_programming_problem)){
         
-        update_fsc_psi_entries();
-        update_fsc_eta_entries();
+//         update_fsc_psi_entries();
+//         update_fsc_eta_entries();
         
-        glp_delete_prob(linear_programming_problem);
-        return true;
-    } else {
-        glp_delete_prob(linear_programming_problem);
-        return false;
-    }
+//         glp_delete_prob(linear_programming_problem);
+//         return true;
+//     } else {
+//         glp_delete_prob(linear_programming_problem);
+//         return false;
+//     }
     
     assert(0);
 }
@@ -827,7 +838,7 @@ bool FSC__Improvement::operator()()
         fsc__Evaluator();
         
         VERBOSER(200, "Evaluation yields :: \n"<<fsc__Evaluator<<std::endl);
-    
+        
         POMDP::Solving::FSC__Node_Improvement fsc__Node_Improvement(node_index, fsc, fsc__Evaluator);
         auto improvement_was_possible = fsc__Node_Improvement();
         
@@ -839,6 +850,7 @@ bool FSC__Improvement::operator()()
             VERBOSER(200, "The new controller looks like :: "<<std::endl);
             VERBOSER(200, fsc<<std::endl);
         } else {
+//             exit(0);
             VERBOSER(200, "Node :: "<<node_index<<" could not be improved."<<std::endl);
             VERBOSER(200, fsc<<std::endl);
         }

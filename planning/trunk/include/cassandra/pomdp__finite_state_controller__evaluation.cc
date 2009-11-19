@@ -202,7 +202,6 @@ boost::numeric::ublas::vector<double> FSC__Evaluator::get_reward_vector()
     auto states = fsc.problem_Data->get__states();
     auto actions = fsc.problem_Data->get__actions();
     auto observations = fsc.problem_Data->get__observations();
-
     
     auto starting_state_index = 0;
     /* STATES */ for(auto starting_state = states.begin()
@@ -401,13 +400,18 @@ void FSC__Evaluator::operator()()
     /* INVERTING  */ if(!matrix_inversion__LU_factorisation(transition__matrix, INVERSE__transition__matrix)){
     /* INVERTING  */     UNRECOVERABLE_ERROR("Unable to take inverse of state-transition matrix.");
     /* INVERTING  */ }
+
+    VERBOSER(200, "Matrix is :: "<<transition__matrix<<std::endl);
+    VERBOSER(200, "Inverse matrix is :: "<<INVERSE__transition__matrix<<std::endl);
     
     /* INVERSE (I - A) */ //invert(tmp);
 
     /* \MEMBER{value_vector} ---- (I - A)^{-1} * R */
     value_vector.assign(prod(INVERSE__transition__matrix, instantanious_reward_vector));
 
-
+    VERBOSER(2000, "Instantanious reward vector is :: "<<instantanious_reward_vector<<std::endl);
+    
+    VERBOSER(200, "Value vector is :: "<<value_vector<<std::endl);
     
 }
 
