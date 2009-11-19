@@ -196,3 +196,33 @@ List structure
 - <First>(...)
 - <Next>(...)
 
+
+-------------------
+IS partitioning 
+-------------------
+
+There are essentially two "sources" in the proto-LF used for IS-partitioning decisions:
+
+1. <QuestionType>
+2. <ProofStatus>
+
+ad 1.
+
+The feature <QuestionType> is only used iff <Relation>answer. In this case, the utterance (an assertion) is an answer to a question, and the <QuestionType> feature encodes what question it was. This can currently have these values:
+
+type: e.g., What is this object?
+color: e.g., What color is this object?
+shape: e.g., What shape is this object?
+entity: e.g., Which object is red? 
+
+On the basis of <QuestionType>, Rheme will be assigned to that part of the assertion that constitutes an answer to the question (seen structurally). For example, if <QuestionType>color then "(the box is)th (red)rh" but if <QuestionType>entity then "(the box)rh (is red)th".  In case of a mismatch between the value of <QuestionType>  and the content of the assertion, an implicit denial is assumed, and the result is all-theme.
+
+Currently, this is only implemented for ascriptions, but I'd like to extend it to other structures.
+
+
+ad 2.
+
+<ProofStatus>asserted results in Rheme, otherwise Theme is assigned.  
+<ProofStatus> is treated as a fallback in the absence of <QuestionType>.
+
+
