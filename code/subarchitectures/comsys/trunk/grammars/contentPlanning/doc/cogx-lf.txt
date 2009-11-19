@@ -1,0 +1,198 @@
+
+Specification of utterance planner input
+
+Note: currently not fully up to date. If in doubt, cogx-testbed.xml is what counts.
+
+
+==================
+Structure elements
+==================
+ 
+<SpeechAct> adopts a classification based on Searle's general SA types, currently:
+   assertion
+   question
+   directive
+   commitment
+   greeting 
+   thanking
+   unknown
+
+<Relation> is intended as something like the DAMSL backward looking function, currently:
+   accept
+   reject
+   already-true
+   answer
+   ?clarification?
+   echo
+   filler
+   none
+
+<Modality> is inspired by the earlier version, and should specify, if relevant, from which modality some information originates, so that a corresponding verbalization can be used (e.g., a perception verb); currently: 
+   vision: I see a ball
+   discourse: I was told there is a ball
+   cognition: I know that there is a ball
+   
+<AcknoModality> reflects the type of information that is being acknowledged, e.g., an action vs. vision
+   action: I can do that
+   vision: I can see that
+
+(Note: potential interaction/overlap between <Modality> and <AcknoModality> not yet thought through)
+
+-- Content is the propositional content that should be (more or less) verbalized; either it's just one nominal, or a list (in the OpenCCG list structure)
+   For example, 
+
+    -- for a simple assertion describing an entity, e.g., as an answer to a question: 
+       @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Modality>vision ^ <Content>(b1:physical ^ ball ^ <InfoStatus>familiar) )
+
+    -- for a simple positive acknowledgment without further content:
+       @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept  ^  <Modality>none ^ <Content>(e1:event) )
+
+For further examples of content see 
+comsys-devil/subarchitectures/comsys.mk4/grammars/contentPlanning/testbed.txt
+
+
+===================================
+Input specifications within content
+===================================
+
+----------------------------------------------------
+Types of nominals recognized (& used) by the planner
+----------------------------------------------------
+entity/thing/physical 
+person
+quality
+ascription
+
+ont-entity = as an entity dummy, when we DO NOT want the usual entity-realization planning stuff to apply
+
+
+Types unknown to the grammar, but used in the planner:
+dvp
+answer
+ 
+...?
+
+----------------------------------
+Features for entity/thing/physical
+----------------------------------
+
+-- Quantity (for physical objects): specifies the count 
+   feature
+   values: 0, 1..N, multiple, unknown, -- (= feature not present)
+
+-- Unique: whether the description is assumed to uniquely determine a referent in the given context
+   feature
+   values: true (--> the N), false
+
+-- InfoStatus
+   feature
+   values: 
+      -- (=feat not present)
+      familiar (= discourse old / given / previously mentioned)
+      (this list will extend)
+
+-- Salient: whether the entity is prominent above any competitors in the context 
+            (is assumed to combine both visual and textual aspects; 
+             if not, then we need two features)
+             e.g., an object just (last) introduced or pointed to or just mentioned
+     true
+     false
+
+Realization corresponding to InfoStatus x Salient:
+
+   InfoStatus  Salient  Realization
+   familiar    true     it
+   familiar    false    the N
+   "false"     true     this/that
+   "false"     false    a(n) N 
+
+
+-- Continued
+   feature
+   values:
+	true = there is another utterance following this one within the same turn
+	false
+
+-- ProofStatus
+   feature
+   values:
+	assumed
+	asserted
+   processing: as a first stab, assigning Rheme-status to asserted, and Theme-status to assumed 
+
+-- BeliefStatus  (currently not done yet)
+   feature
+   values: 
+	private
+	attributed
+	shared
+
+-- Kontrast
+   feature
+   value:
+      true
+      focus
+
+-- unary properties/attributes:
+   Color: e.g., <Color>red
+   Size:  e.g., <Size>big
+   Shape: e.g., <Shape>round
+   Name: e.g., <Name>Borland 
+   NumberID: e.g., <NumberID>one, <NumberID>first
+
+-- relational properties:
+   Owner: e.g., <Owner>(x:entity ^  office)
+   topological inclusion:
+     TopIn: e.g., <TopIn>(x:physical ^ ball...)
+     TopOn: e.g., <TopOn>(x:physical ^ ball...)
+     TopAt: e.g., TopAt(x:physical ^ ball...)
+   spatial relations:
+     NearTo: e.g., <NearTo>(x:physical ^ ball...)
+     FarFrom: e.g., <Far-from>(x:physical ^ ball...)
+     NextTo: e.g., <NextTo>(x:physical ^ ball...)
+     LeftOf: e.g., <LeftOf>(x:physical ^ ball...)
+     RightOf: e.g, <RightOf>(x:physical ^ ball...)
+
+
+------------------------
+Relations for ascription
+------------------------
+Target
+"Property", which can be one of the following:
+  Color
+  Size
+  Shape
+  Owner
+  TopIn
+  TopOn
+  TopAt
+  NearTo
+  FarFrom
+  NextTo
+  LeftOf
+  RightOf
+(= same list as entity features, except that <Name> is not supported, because there is no realization)
+plus:
+  Location
+  Type
+  Attitude
+
+--------------------------------------
+Ascription Wh-Question Specifications
+--------------------------------------
+- <SpeechAct>question
+- <Content> as for normal ascription
+- either the target or the property can be the questioned element; this is specified by including the feature
+  <Questioned>true
+  within Target/Property
+(note that questioning the target does not yet work, due to improper LF)
+
+
+--------------
+List structure
+--------------
+- type:entity
+- <List>conjunction or <List>disjunction>
+- <First>(...)
+- <Next>(...)
+
