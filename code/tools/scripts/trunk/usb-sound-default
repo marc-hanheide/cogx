@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -h /dev/dsp ]; then
+    echo "/dev/dsp is already a link"
+else
+    echo "linking /dev/dsp1 as /dev/dsp"
+    mv /dev/dsp /dev/dsp2
+    ln -s /dev/dsp1 /dev/dsp
+fi
