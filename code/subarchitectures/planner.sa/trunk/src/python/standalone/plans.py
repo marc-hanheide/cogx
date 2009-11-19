@@ -125,7 +125,6 @@ class MAPLPlan(networkx.MultiDiGraph):
         self.add_edge(n1, n2,  svar=svar, val=val, type=type)
     
     def topological_sort(self):
-        self.compute_depths()
         return networkx.topological_sort(self)
 
     def executable(self):
@@ -157,11 +156,11 @@ class MAPLPlan(networkx.MultiDiGraph):
     def pred_closure(self, node):
         open = set([node])
         closed = set([self.init_node])
-        result = set([node])
+        result = set()
         while open:
             node = open.pop()
             closed.add(node)
-            pred = self.predecessors(node)
+            pred = set(self.predecessors_iter(node))
             result |= pred
             open |= (pred - closed)
         return result
@@ -169,11 +168,11 @@ class MAPLPlan(networkx.MultiDiGraph):
     def succ_closure(self, node):
         open = set([node])
         closed = set()
-        result = set([node])
+        result = set()
         while open:
             node = open.pop()
             closed.add(node)
-            pred = self.successors(node)
+            pred = set(self.successors_iter(node))
             result |= pred
             open |= (pred - closed)
         return result

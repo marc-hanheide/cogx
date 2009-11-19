@@ -58,17 +58,19 @@ class Agent(BaseAgent):
         BaseAgent.__init__(self, simulator)
         
         self.name = name
-        self.mapltask = mapltask
         self.planner = planner
-        self.statistics = statistics.Statistics(statistics_defaults)
+        self.statistics = statistics.Statistics(defaults = statistics_defaults)
         self.last_action = None
-        
-        self.task = Task(next_id(), mapltask)
-        
-        self.planner.register_task(self.task)
 
-    def getState(self):
+        self.new_task(mapltask)
+
+    def get_state(self):
         return self.task.get_state()
+
+    def new_task(self, mapltask):
+        self.mapltask = mapltask.copy()
+        self.task = Task(next_id(), self.mapltask)
+        self.planner.register_task(self.task)
 
     @loggingScope
     def run(self):
@@ -96,7 +98,6 @@ class Agent(BaseAgent):
 
         executable = sorted(plan.executable(), cmp=action_cmp)
         log.info("executable actions: %s", " ".join(map(str, executable)))
-        
         if executable:
             log.debug("trying to execute (%s %s)", executable[0].action.name, " ".join(map(str, executable[0].args)))
             self.last_action = executable[0]
@@ -110,7 +111,6 @@ class Agent(BaseAgent):
     def updateTask(self, new_facts, action_status=None):
         plan = self.task.get_plan()
 
-        print map(str, new_facts)
         if plan is not None and action_status:
             self.last_action.status = action_status
             

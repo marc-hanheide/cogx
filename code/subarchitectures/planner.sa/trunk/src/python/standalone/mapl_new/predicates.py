@@ -144,6 +144,9 @@ class Literal(object):
 
     def copyInstance(self):
         return Literal(self.predicate, [a.copyInstance() for a in args], negated=self.negated)
+
+    def collect_arguments(self):
+        return sum([term.visit(collect_args_visitor) for term in self.args], [])
             
     def __str__(self):
         s = "(%s %s)" % (self.predicate.name, " ".join(str(a) for a in self.args))
@@ -152,7 +155,8 @@ class Literal(object):
         return s
             
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.predicate == other.predicate and self.negated == other.negated and all(map(lambda a,b: a==b, self.args, other.args))
+#        return self.__class__ == other.__class__ and self.predicate == other.predicate and self.negated == other.negated and all(map(lambda a,b: a==b, self.args, other.args))
+        return self.predicate == other.predicate and self.negated == other.negated and all(map(lambda a,b: a==b, self.args, other.args))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -418,3 +422,10 @@ class ConstantTerm(Term):
 
     def __hash__(self):
         return hash((self.__class__, self.object))
+
+
+def collect_args_visitor(term, results):
+    if isinstance(term, (VariableTerm, ConstantTerm)):
+        return [term.object]
+    if isinstance(term, FunctionTerm):
+        return sum(results, [])

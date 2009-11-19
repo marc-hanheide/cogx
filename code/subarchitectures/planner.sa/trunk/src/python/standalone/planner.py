@@ -40,7 +40,7 @@ class Planner(object):
             base_planner = globals()[base_planner_name](self)
         self._base_planner = base_planner
         self._emergency_stop = False
-        self.statistics = statistics.Statistics(statistics_defaults)
+        self.statistics = statistics.Statistics(defaults = statistics_defaults)
 
     __call_id_counter = 0
 

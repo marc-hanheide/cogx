@@ -89,6 +89,11 @@ def getRWDescription(action, args, _state):
     read = set(state.Fact(var, _state[var]) for var in read)
     #print "stuff:", time.time()-t0
 
+    log.debug("variables from %s:", action.name)
+    log.debug("read: %s", " ".join(map(str, read)))
+    log.debug("replan: %s", " ".join(map(str, replan)))
+    log.debug("write: %s", " ".join(map(str, write)))
+    
     action.uninstantiate()
     return replan, replan_universal, read, read_universal, write
 

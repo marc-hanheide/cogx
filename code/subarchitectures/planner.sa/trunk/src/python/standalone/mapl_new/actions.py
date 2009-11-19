@@ -22,7 +22,7 @@ class Action(Scope):
 
     def instantiate(self, mapping):
         if not isinstance(mapping, dict):
-            mapping = dict([(param.name, c) for (param, c) in zip(self.agents+self.args+self.vars, mapping)])
+            mapping = dict((param.name, c) for (param, c) in zip(self.agents+self.args+self.vars, mapping))
         Scope.instantiate(self, mapping)
 
     def to_pddl(self):

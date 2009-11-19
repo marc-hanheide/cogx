@@ -19,16 +19,19 @@
  	       	   (in-domain (pos ?obj) ?loc))
  :sense (= (pos ?obj) ?loc))
 
-(:action a_LOAD_TRUCK_LOC
-  :agent (?a - agent)
-  :parameters
-   (?obj - OBJ
-    ?truck - TRUCK)
-  :replan (kval ?a (pos ?obj))
-  :effect
-   (and (assign (pos ?obj) ?truck))
+;; (:action a_LOAD_TRUCK_LOC
+;;   :agent (?a - agent)
+;;   :parameters
+;;    (?obj - OBJ
+;;     ?loc - LOCATION
+;;     ?truck - TRUCK)
+;;   :precondition(and (in-domain (pos ?obj) ?loc)
+;;                     (= (pos ?truck) ?loc))
+;;   :replan (kval ?a (pos ?obj))
+;;   :effect
+;;    (and (assign (pos ?obj) ?truck))
    
-)
+;; )
 
 
 (:action LOAD_TRUCK_LOC

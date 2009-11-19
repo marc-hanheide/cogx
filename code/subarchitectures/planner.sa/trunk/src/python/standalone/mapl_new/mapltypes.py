@@ -292,6 +292,13 @@ class Parameter(TypedObject):
 
     def getInstance(self):
         return self.instantiated
+    
+    # def __hash__(self):
+    #     return hash(id(self))
+
+    # def __eq__(self, other):
+    #     return id(self) == id(other)
+
         
     
 def parse_typelist(it):
