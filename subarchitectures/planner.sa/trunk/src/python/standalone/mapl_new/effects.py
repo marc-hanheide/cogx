@@ -13,6 +13,20 @@ class Effect(object):
     
     def copy(self, new_scope=None):
         return self.__class__()
+
+    def pddl_str(self, instantiated=True):
+        def printVisitor(eff, results=[]):
+            if eff.__class__ == SimpleEffect:
+                s = "(%s %s)" % (eff.predicate.name, " ".join(a.pddl_str(instantiated) for a in eff.args))
+                return s
+            if isinstance(eff, list):
+                return "(and %s)" % " ".join(results)
+            if eff.__class__ == UniversalEffect:
+                args = " ".join(sorted(cond.iterkeys()))
+                return "(forall (%s) %s)" % (args, " ".join(results))
+            if eff.__class__ == ConditionalEffect:
+                return "(when (%s) %s)" % (eff.condition.pddl_str(), " ".join(results))
+        return self.visit(printVisitor)
     
     @staticmethod
     def parse(it, scope, timedEffects=False, onlySimple=False):

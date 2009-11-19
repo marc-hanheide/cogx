@@ -25,7 +25,7 @@ def instantiate_args(args, state=None):
     result = []
     for arg in args:
         if arg.__class__ == VariableTerm:
-            assert arg.isInstantiated(), "%s is not instantiated" % str(arg)
+            assert arg.isInstantiated(), "%s is not instantiated" % arg.pddl_str()
             result.append(arg.getInstance())
         elif isinstance(arg, ConstantTerm):
             result.append(arg.object)
@@ -58,7 +58,7 @@ class StateVariable(object):
             return self.function
         return None
 
-    def asModality(self, modality, modal_args):
+    def asModality(self, modality, modal_args=[]):
         return StateVariable(self.function, self.args, modality, modal_args)
 
     def nonmodal(self):

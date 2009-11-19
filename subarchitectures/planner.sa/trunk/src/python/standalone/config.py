@@ -1,5 +1,25 @@
 import logging
 
+def logging_settings_from_dict(dict):
+    for k,v in dict.iteritems():
+        if not ":" in k:
+            continue
+
+        logger, key = k.split(":")
+        if logger == "root":
+            logger = None
+            
+        if key == "level":
+            logging.getLogger(logger).setLevel(logging.__dict__[v])
+        elif key == "filelevel":
+            if logger is None:
+                logger = "file"
+            else:
+                logger = "file."+logger
+            logging.getLogger(logger).setLevel(logging.__dict__[v])
+        elif key == "filename":
+            set_logfile(v, logger)
+
 def set_logfile(filename, name=None, propagate=False):
     if name:
         name = "file."+name

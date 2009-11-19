@@ -1,4 +1,4 @@
-import itertools
+import itertools, random
 from collections import defaultdict
 
 from standalone import mapl_new as mapl
@@ -13,6 +13,7 @@ from standalone.planner import Planner as StandalonePlanner
 import standalone.globals as global_vars
 
 import agent
+
 log = config.logger("mapsim")
 
 statistics_defaults = dict(
@@ -21,27 +22,61 @@ statistics_defaults = dict(
 
 
 class Simulation(object):
-    def __init__(self, scenario):
+    def __init__(self, scenario, runs=1, seed=None, agent_class = agent.Agent):
         self.planner = StandalonePlanner()
         self.scenario = scenario
-        self.state = state.State.fromProblem(scenario.world, seed=global_vars.mapsim_config.random)
+
+        #create seed vector (one seed for each run)
+        if not seed:
+            seed = global_vars.mapsim_config.random
+        if runs == 1:
+            self.seeds = [seed]
+        else:
+            random.seed(seed)
+            self.seeds = [hash(random.random()) for i in xrange(runs)]
+            
+        self.number_of_runs = runs
         self.problem = scenario.world
+        self.cleanup_actions()
+        self.stat_per_run = [None for i in xrange(runs)]
         self.statistics = statistics.Statistics(defaults=statistics_defaults)
 
-
+        self.run_index = 0
+        self.state = state.State.fromProblem(self.scenario.world, seed=self.seeds[0])
         self.agents = {}
         for a, prob in scenario.agents.iteritems():
-            self.agents[a] = agent.Agent(a, prob, self.planner, self)
+            #TODO better handling of non-strings in the configuration
+            if global_vars.mapsim_config.separate_logs.lower() == "true":
+                config.set_logfile("%s.log" % a, a)
+                    
+            self.agents[a] = agent_class(a, prob, self.planner, self)
 
-        self.queue = []
+    def reset(self, run):
         self.time = 0
+        self.queue = []
+        self.run_index = run
+        self.state = state.State.fromProblem(self.scenario.world, seed=self.seeds[run])
 
-        self.cleanup_actions()
+        self.statistics.reset()
+        self.planner.statistics.reset()
+        
         for a in self.agents.itervalues():
+            a.statistics.reset()
+            a.new_task(self.scenario.agents[a.name])
             self.add_knowledge(a)
 
-    @statistics.time_method_for_statistics("total_time")
     def run(self):
+        for i in xrange(self.number_of_runs):
+            self.single_run(i)
+            self.stat_per_run[self.run_index] = self.collect_statistics()
+            print "Stats:", self.stat_per_run[self.run_index]
+        log.info("%d simulation runs completed", self.number_of_runs)
+
+    @statistics.time_method_for_statistics("total_time")
+    def single_run(self, run=0):
+        self.reset(run)
+        
+        log.info("Starting simulation with random seed %d", self.seeds[self.run_index])
         for a in self.agents.itervalues():
             a.run()
 
@@ -66,7 +101,7 @@ class Simulation(object):
                 continue
             if svar.modality == mapl.predicates.knowledge and svar.modal_args[0] == a:
                 newvar = svar.nonmodal()
-                agent.getState()[newvar] = self.state[newvar]
+                agent.get_state()[newvar] = self.state[newvar]
         
     def cleanup_actions(self):
         """
@@ -110,7 +145,7 @@ class Simulation(object):
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
             return
-
+            
         if self.state.isExecutable(action):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
 
@@ -150,7 +185,7 @@ class Simulation(object):
                 perception = state.Fact(svar, value)
             else:
                 print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
-                perception = state.Fact(svar.asModality(mapl.predicates.indomain, [value]), mapl.types.FALSE)
+                perception = state.Fact(svar.asModality(mapl.predicates.i_indomain, [value]), mapl.types.FALSE)
         else:
             print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
             perception = state.Fact(svar, self.state[svar])
@@ -180,6 +215,7 @@ class Simulation(object):
             if calls:
                 time = total[name+"_time"]
                 total[name+"_avg_time"] = time / calls
+            
         return total
 
 

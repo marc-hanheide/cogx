@@ -8,8 +8,8 @@ import itertools
 
 class Statistics(dict):
     def __init__(self, *args, **kwargs):
-        defaults = kwargs.pop("defaults", {})
-        self.update(defaults)
+        self.defaults = kwargs.pop("defaults", {})
+        self.update(self.defaults)
         dict.__init__(self, *args, **kwargs)
 
     def merge(self, other_stat):
@@ -25,6 +25,10 @@ class Statistics(dict):
 
     def increase_stat(self, name, inc=1):
         self[name] += inc
+
+    def reset(self):
+        self.clear()
+        self.update(self.defaults)
 
 
 

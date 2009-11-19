@@ -33,6 +33,16 @@ class MAPLDomain(scope.Scope):
         self.stratifyAxioms()
         self.name2action = None
 
+    def copy(self):
+        dom = MAPLDomain(self.name, self.types.copy(), self.constants[:], self.predicates.copy(), self.functions.copy(), [], [], [])
+        dom.actions = [a.copy(self) for a in self.actions]
+        dom.sensors = [s.copy(self) for s in self.sensors]
+        dom.axioms = [a.copy(self) for a in self.axioms]
+        dom.stratifyAxioms()
+        dom.name2action = None
+            
+        dom.requirements = set(self.requirements)
+
     def getAction(self, name):
         if not self.name2action:
             self.name2action = dict((a.name, a) for a in itertools.chain(self.actions, self.sensors))

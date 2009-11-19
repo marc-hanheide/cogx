@@ -1,13 +1,14 @@
 import itertools
 
-import config, constants#, assertions
+import config, constants
+import assertions, macros
 import state_new as state
 import mapl_new as mapl
 import mapl_new.mapltypes as types
 import mapl_new.predicates as predicates
 import mapl_new.effects as effects
 import statistics
-#import mapl_new.writer
+
 from utils import Enum
 
 log = config.logger("planner")
@@ -40,7 +41,7 @@ class Task(object):
         if mapltask:
             self._mapldomain = mapltask
             self.create_initial_state()
-            #self.add_assertions()
+            self.add_assertions()
 
 
     def __get_mapltask(self):
@@ -51,17 +52,22 @@ class Task(object):
 
     def __set_mapltask(self, mapltask):
         self._mapltask = mapltask
+        self._mapldomain = mapltask
 
     mapltask = property(__get_mapltask, __set_mapltask)
 
-    # def add_assertions(self):
-    #     new_assertions = []
-    #     for a in itertools.chain(self._mapldomain.actions, self._mapldomain.sensors):
-    #         ast = assertions.to_assertion(a, self._mapldomain)
-    #         if ast:
-    #             new_assertions.append(ast)
+    @property
+    def mapldomain(self):
+        return self._mapldomain
 
-    #     self._mapldomain.actions += new_assertions
+    def add_assertions(self):
+        new_assertions = []
+        for a in itertools.chain(self._mapldomain.actions, self._mapldomain.sensors):
+            ast = assertions.to_assertion(a, self._mapldomain)
+            if ast:
+                new_assertions.append(ast)
+
+        self._mapldomain.actions += new_assertions
 
     def create_initial_state(self):
         s = state.State([], self._mapltask)
@@ -72,7 +78,7 @@ class Task(object):
                     facts = s.getEffectFacts(eff)
                     for svar, value in facts:
                         if not isinstance(svar, mapl.predicates.Predicate) and svar.modality is None:
-                            id_var = svar.asModality(mapl.predicates.indomain, [value])
+                            id_var = svar.asModality(mapl.predicates.i_indomain, [value])
                             s[id_var] = mapl.types.TRUE
             else:
                 s.set(state.Fact.fromLiteral(i))

@@ -42,6 +42,9 @@ class Problem(domain.MAPLDomain):
         self.optimization = optimization
         self.opt_func = opt_func
 
+    def copy(self):
+        return Problem(self.name, self.objects, self.init, self.goal, self.domain, self.optimization, self.opt_func)
+
     def addObject(self, object):
         if object.name in self:
             self.objects.remove(self[object.name])

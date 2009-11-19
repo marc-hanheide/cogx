@@ -8,22 +8,25 @@ usage: %prog [options] domain scenario
   -v, --verbosity=VERBOSITY : general verbosity level for console output [default: %default]
   -l, --loglevel=VERBOSITY : general verbosity level for logging output [default: %default]
   -r, --random=SEED : random seed for the world state [default: %default]
+  -n, --runs=ITERATIONS : number of different variants of the scenario [default: 1]
+  -L, --learning=(cluster|learn|test) : mode for the learning agent [default: %default]
+  -m, --macro_file=FILE : read/write macros from/to this file [default: %default]
 """
 
 from os.path import abspath, dirname
-import sys, logging
+import sys, random, logging
 
 from standalone import mapl_new as mapl
 import standalone.config as config
 import standalone.globals as global_vars
 
-import simulation
+import simulation, agent, learning_agent
 
 log = config.logger()
 
 mapsim_path = abspath(dirname(__file__))  # where this file resides
 CONFIG_FN = "config.ini"
-global_vars.mapsim_config = global_vars.load_config_file(CONFIG_FN, cfg_path=mapsim_path)
+LOG_CONFIG_FN = "logging.conf"
 
 def parse_command_line():
     # parse options and required arguments from docstring automatically
@@ -34,6 +37,15 @@ def parse_command_line():
     global_vars.mapsim_config.__dict__.update(options.__dict__)
 
 if __name__ == '__main__':
+    global_vars.mapsim_config = global_vars.load_config_file(CONFIG_FN, cfg_path=mapsim_path)
+    global_vars.logging_config = global_vars.load_config_file(LOG_CONFIG_FN, cfg_path=mapsim_path)
+    
+    config.logging_settings_from_dict(global_vars.logging_config.__dict__)
+
+    #set default verbosity and loglevel from logging.conf
+    global_vars.mapsim_config.__dict__['verbosity'] = 5-(logging.getLogger().level/10)
+    global_vars.mapsim_config.__dict__['loglevel'] = 5-(logging.getLogger("file").level/10)
+    
     parse_command_line()
     
     if global_vars.mapsim_config.verbosity is not None:
@@ -49,19 +61,9 @@ if __name__ == '__main__':
     if global_vars.mapsim_config.debug:
         logging.getLogger().setLevel(logging.DEBUG)
         logging.getLogger("file").setLevel(logging.DEBUG)
-                
-    #sample for logging configuration:
-    #
-    #logging.getLogger("file").setLevel(logging.DEBUG)
-    #logging.getLogger("file.planner").setLevel(logging.CRITICAL)
-    #logging.getLogger("file.agent.planner").setLevel(logging.CRITICAL)
-    
-    config.set_logfile("mapsim.log")
-    
-    config.set_logfile("agent.log", "agent")
-    config.set_logfile("agent2.log", "agent2")
-    #config.set_logfile("planner.log", "planner")
-    #log.info("test")
+
+    if global_vars.mapsim_config.random is None:
+        global_vars.mapsim_config.random = hash(random.random())
 
     domain = mapl.load_domain(global_vars.mapsim_config.domain)
     scenario = mapl.load_scenario(global_vars.mapsim_config.scenario, domain)
@@ -73,14 +75,17 @@ if __name__ == '__main__':
         print "There are %d agents: %s" % (len(scenario.agents), ", ".join(scenario.agents.iterkeys()))
 
     print "Goals are"
-    for agent, prob in scenario.agents.iteritems():
-        print "  %s: %s" % (agent, prob.goal.pddl_str())
-        
-    sim = simulation.Simulation(scenario)
+    for agt, prob in scenario.agents.iteritems():
+        print "  %s: %s" % (agt, prob.goal.pddl_str())
+
+    #TODO: make this more generic
+    if global_vars.mapsim_config.agent_type == 'LearningAgent':
+        agent_type = learning_agent.LearningAgent
+    else:
+        agent_type = agent.Agent
+
+    sim = simulation.Simulation(scenario, global_vars.mapsim_config.runs, agent_class=agent_type)
 
     print "Starting simulation..."
     sim.run()
         
-    stats = sim.collect_statistics()
-    print "Stats:", stats
-    
