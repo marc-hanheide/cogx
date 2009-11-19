@@ -233,7 +233,7 @@
                         <result val="proof-status-asserted"/>
                     </choicenode>
                     <choicenode answer = "unknown">
-                        <result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+                        <result val="proof-status-assumed"/>  <!-- Theme is the default --> 
                   <!-- check if in ascr -->          
                     </choicenode>            
                 </choicenode>  <!-- end AscriptionIS check --> 
