@@ -51,7 +51,9 @@ CMD_PEEKABOT=peekabot
 """
 cleanup="""
 #dc1394_reset_bus
-#rm robotpose.ccf 
+#rm robotpose.ccf
+#tools/scripts/peekabotdata ${COGX_ROOT}/instantiations/peekabot-models/data
+
 """
 useroptions="""
 #EDITOR=gvim --servername GVIM --remote-silent %l[+:] %s

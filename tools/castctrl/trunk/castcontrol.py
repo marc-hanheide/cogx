@@ -220,7 +220,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             stm = stm.split('#')[0]
             stm = stm.strip()
             if len(stm) < 1: continue
-            script.append(stm)
+            script.append(options.xe(stm))
         for i,cmd in enumerate(script):
             # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
             procman.xrun_wait(cmd)
