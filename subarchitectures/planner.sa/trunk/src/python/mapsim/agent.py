@@ -10,6 +10,7 @@ from standalone import config
 log = config.logger("mapsim")
 
 statistics_defaults = dict(
+    execution_time=0.0,
     failed_execution_attempts=0,
     physical_actions_executed=0,
     sensor_actions_executed=0,
@@ -79,6 +80,7 @@ class Agent(BaseAgent):
         self.execute_plan(self.task)
         
     @loggingScope
+    @statistics.time_method_for_statistics("execution_time")
     def execute_plan(self, task):
         if task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
             return
@@ -97,6 +99,7 @@ class Agent(BaseAgent):
         plan = task.get_plan()
         G = plan.to_dot()
         G.write("plan.dot")
+        G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
         G.layout(prog='dot')
         G.draw("plan.pdf")
 

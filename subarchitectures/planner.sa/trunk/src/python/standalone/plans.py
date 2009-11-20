@@ -14,6 +14,7 @@ import copy
 import networkx
 import graph
 import constants
+import mapl_new as mapl
 from utils import Enum
 
 ActionStatusEnum = Enum("EXECUTABLE", "IN_PROGRESS", "EXECUTED", "FAILED")    
@@ -133,10 +134,12 @@ class MAPLPlan(networkx.MultiDiGraph):
 
     def executable(self):
         result = set()
-        self.compute_depths()
-        for n, ndata in self.nodes_iter(data=True):
-            if ndata['depth'] == 1:
+        for n in self.nodes_iter():
+            if n.status != ActionStatusEnum.EXECUTABLE:
+                continue
+            if all(pred.status == ActionStatusEnum.EXECUTED for pred in self.predecessors(n)):
                 result.add(n)
+                
         return result
                 
     def compute_depths(self):
@@ -144,16 +147,14 @@ class MAPLPlan(networkx.MultiDiGraph):
         def visit(n):
             if n not in visited:
                 visited.add(n)
-                if n.status == ActionStatusEnum.EXECUTED:
-                    self.node[n]['depth'] = 0
-                    return
                 predecessors = self.predecessors(n)
                 for pred in predecessors:
                     visit(pred)
+                    
                 if predecessors:
                     self.node[n]['depth'] = max(self.node[pred]['depth'] for pred in predecessors) + 1
                 else:
-                    self.node[n]['depth'] = 1
+                    self.node[n]['depth'] = 0
         for n in self.nodes_iter():
             visit(n)
     
@@ -195,9 +196,18 @@ class MAPLPlan(networkx.MultiDiGraph):
                 continue
             ranks[data['depth']].append(n)
             attrs = {}
+            attrs["style"] = "filled"
             if n.status == ActionStatusEnum.EXECUTED:
-                attrs["style"] = "filled"
                 attrs["fillcolor"] = "grey"
+            else:
+                attrs["fillcolor"] = "white"
+                
+            if n.action.replan:
+                attrs["shape"] = "box"
+                attrs["style"] += ", rounded, dashed"
+            elif isinstance(n.action, mapl.sensors.Sensor):
+                attrs["shape"] = "box"
+                attrs["style"] += ", rounded"
                 
             G.add_node(str(n), **attrs)
 
@@ -214,73 +224,7 @@ class MAPLPlan(networkx.MultiDiGraph):
                 
             G.add_edge(n1, n2, **attrs)
 
-        for nodes in ranks.itervalues():
-            G.add_subgraph(nodes, rank='same')
+        for rank, nodes in ranks.iteritems():
+            G.add_subgraph(nodes, rank='same', label="rank %d" % rank)
 
         return G
-    
-# class MAPLPlan(graph.DAG):
-#     def __init__(self, init_state=None, goal_condition=None):
-#         graph.DAG.__init__(self)
-#         self.init_node = self.create_init_node(init_state)
-#         self.goal_node = self.create_goal_node(goal_condition)
-#         self.add_node(self.init_node)
-#         self.add_node(self.goal_node)
-#         self.execution_position = 0
-        
-#     def copy(self):
-#         p = MAPLPlan()
-#         n2n = {}
-#         for n in self.V:
-#             new_n = n2n.get(n, n.copy())
-#             for n2 in self.E[n]:
-#                 new_n2 = n2n.get(n2, n2.copy())
-#                 p.add_edge(new_n, new_n2, self.labels[n,n2])
-#                 for old, new in ((n,new_n), (n2, new_n2)):
-#                     if old == self.init_node:
-#                         p.init_node = new
-#                     if old == self.goal_node:
-#                         p.goal_node = old
-#         return p
-#     def add_link(self, node_or_link, node2=None):
-#         if node2:
-#             # create link from the two PlanNodes given.
-#             # types are checked in the OrderingConstraint constructor
-#             link = OrderingConstraint(node_or_link, node2)
-#         else:
-#             link = node_or_link
-#         self.add_edge(link.fnode, link.tnode, link)
-#     def create_init_node(self, astate):
-#         ## TODO: astate is still unused
-#         return DummyNode("init", [], 0, ActionStatusEnum.EXECUTED)
-#     def create_goal_node(self, astate):
-#         ## TODO: astate is still unused
-#         return DummyNode("goal", [], 9999, ActionStatusEnum.EXECUTABLE)
-#     def _edge_str(self, v1, v2):
-#         label = self.labels.get((v1,v2))
-#         assert isinstance(label, OrderingConstraint)
-#         return str(label)
-#     def all_actions(self):
-#         return self.V
-#     def to_dot(self, name="plan", ranks=[]):
-#         def declare_node(node_id):
-#             label = self.labels.get(node_id)
-#             if label is None: label = node_id
-#             params = ""
-#             if node_id.status == ActionStatusEnum.EXECUTED:
-#                 params += "style=filled, fillcolor=grey, "
-#             return '"%s" [%s "%s"]' % (node_id, params, label) 
-#         def declare_edge(node_id1, node_id2):
-#             label = ""
-# #             if (node_id1, node_id2) in self.labels:
-# #                 label = self.labels[node_id1, node_id2]
-#             return '"%s" -> "%s" [%s]' % (node_id1, node_id2, label)
-#         def declare_rank(same_rank_list):
-#             same_rank_list = ['"%s"' % r for r in same_rank_list]
-#             return '{rank=same; %s}' % " ".join(same_rank_list)
-#         node_decl = "\n".join(declare_node(n) for n in sorted(self.V))
-#         edge_decl = "\n".join(declare_edge(n1, n2) for (n1, n2) in self.all_edges())
-#         ranks = "\n".join(declare_rank(r) for r in ranks)
-#         setup = constants.DOT_SETUP_TMPL
-#         dot_str = Template(constants.DOT_TEMPLATE).safe_substitute(locals())
-#         return dot_str
