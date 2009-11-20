@@ -187,7 +187,7 @@
  *                   we can't start a thread in which to execute the
  *                   procedure call. Better luck next time chief!
  *    
- *    On any other other occasion, the system may simply hang, and
+ *    On any other occasion, the system may simply hang, and
  *    then glib might get upset. If you run things in valgrind the
  *    crashes are, in my experience, always graceful.
  *                 
