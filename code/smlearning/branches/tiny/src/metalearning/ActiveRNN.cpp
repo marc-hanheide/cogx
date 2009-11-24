@@ -30,10 +30,11 @@ namespace smlearning {
 ///
 ///construct RNN for active learning
 ///
-void ActiveRNN::build (string dataFile, int smregionsCount, int patternSize, ostream& out) {
+void ActiveRNN::build (/*string dataFile, */int smregionsCount, int patternSize, ostream& out) {
 
-	dataFile += ".nc";
-	header = new rnnlib::DataHeader ( dataFile, task, 1);
+// 	dataFile += ".nc";
+// 	header = new rnnlib::DataHeader ( dataFile, task, 1);
+	header = new rnnlib::DataHeader ( patternSize, patternSize );
 	net = new rnnlib::MultilayerNet(out, conf, *header);
 	//build weight container after net is created
 	rnnlib::WeightContainer::instance().build();
@@ -69,7 +70,7 @@ void ActiveRNN::build (string dataFile, int smregionsCount, int patternSize, ost
 		learnProg_errors.second = errorsHistory;
 		learnProg_errorsMap[i] = learnProg_errors;
 	}
-	normalizationFactor = patternSize /** 4*/ * 0.5;
+	//normalizationFactor = patternSize /** 4*/ * 0.5;
 
 }
 
@@ -84,11 +85,18 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostr
 	}
 	double error;
 	for (int i=0; i<10; i++) {
+// 	int i = 0;
+// 	do {
 		error = net->train(seq);
+// 		out << "\tError: " << endl;
+// 		out << "\t" << error << endl;
 		opt->update_weights();
 		rnnlib::WeightContainer::instance().reset_derivs();
+		i++;
 	}
+// 	} while (error > 10.0 || i < 10);
 	out << "Region: " << smregionIdx << endl;
+	double normalizationFactor = seq.num_timesteps() * 0.5;
 	error /= normalizationFactor;
 	out << "\tError: " << endl;
 	out << "\t" << error << endl;

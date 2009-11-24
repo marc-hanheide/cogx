@@ -227,7 +227,7 @@ public:
 			
 			
 		}
-		plot->setAxisScale(QwtPlot::yLeft, min-0.02, max+0.02);
+		plot->setAxisScale(QwtPlot::yLeft, min-fabs(min/20.0), max+fabs(max/20.0));
 
 	}
 
