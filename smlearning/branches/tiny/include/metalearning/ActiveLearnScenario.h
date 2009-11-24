@@ -21,33 +21,15 @@
 #include <metalearning/Scenario.h>
 #include <metalearning/ActiveRNN.h>
 #include <Ice/Ice.h>
-// #include <tools/PlotAppI.h>
 #include <PlotApp.hh>
 
-// #include <Push/Data.h>
-// #include <Push/Generator.h>
 
 //------------------------------------------------------------------------------
 
 namespace smlearning {
 
-/** Image index */
-class ImageIndex {
-public:
-        typedef std::vector<ImageIndex> Seq;
-
-        /** Video index */
-        int videoIndex;
-        /** Image index */
-        int imageIndex;
-        /** Image time stamp */
-        golem::SecTmReal timeStamp;
-};
-
-//------------------------------------------------------------------------------
-
 /** Learning data format */
-class LearningData : public golem::Serializable {
+class LearningData {
 public:
 	/** Data chunk */
 	class Chunk {
@@ -68,10 +50,6 @@ public:
 		/** Object GLOBAL pose */
 		golem::Mat34 objectPose;
 		
-// 		/** FT sensor data */
-// 		golem::Wrench ftsData;
-		/** Index to the camera image or video */
-		ImageIndex imageIndex;
 	};
 
 	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
@@ -82,8 +60,16 @@ public:
 	golem::Bounds::Seq obstacles;
 	
 	/** Time-dependent data */
-	Chunk::Seq data;
-
+// 	Chunk::Seq data;
+	vector<DataSet> data;
+	/** current predicted polyflap poses sequence */
+	vector<Mat34> currentPredictedObjSeq;
+	/** current polyflap poses and motor command sequence */
+	smlearning::Sequence currentSeq;
+	/** current motor command */
+	FeatureVector currentMotorCommandVector;
+	/** training sequence for the LSTM */
+	rnnlib::DataSequence* trainSeq;
 	/** Record validity */
 	//bool bArmState;
 	//bool bEffectorPose;
@@ -94,10 +80,9 @@ public:
 	//bool bObject;
 	//bool bObstacles;
 
-	/** Load from stream */
-	virtual bool load(const golem::Stream &stream);
-	/** Save to stream */
-	virtual bool store(golem::Stream &stream) const;
+	/** load training data in RNNLIB format */
+	void loadCurrentTrainSeq (int inputSize, int outputSize);
+	
 	/** Reset to default (empty)*/
 	void setToDefault() {
 		effector.clear();
@@ -159,10 +144,6 @@ public:
 		golem::SecTmReal speriod;
 		/** 2D motion constraint */
 		bool motion2D;
-// 		/** ActiveLearnScenario trials */
-// 		Trial::Seq trials;
-// 		/** Trial data path */
-// 		DataPath dataPath;
 		
 		/** Constructs description object */
 		Desc() {
@@ -188,10 +169,6 @@ public:
 			// Other stuff
 			motion2D = false;
 			speriod = 1.0;
-// 			// experimental setup
-// 			trials.clear();
-// 			// experiment data path
-// 			dataPath.setToDefault();
 		}
 		/** Checks if the description is valid. */
 		virtual bool isValid() const {
@@ -202,11 +179,6 @@ public:
 			for (golem::Bounds::Desc::Seq::const_iterator i = fingerDesc.begin(); i != fingerDesc.end(); i++)
 				if (!(*i)->isValid())
 					return false;
-// 			if (trials.empty() || !dataPath.isValid())
-// 				return false;
-// 			for (Trial::Seq::const_iterator i = trials.begin(); i != trials.end(); i++)
-// 				if (!i->isValid())
-// 					return false;
 			
 			return true;
 		}
@@ -228,6 +200,8 @@ protected:
 	golem::Actor* object;
 	/** Obstacles */
 	golem::Actor* obstacles;
+	/** default polyflap bounds */
+	golem::Bounds::SeqPtr objectLocalBounds;
 	/** Trial data */
 	LearningData learningData;
 	/** Time */
@@ -235,12 +209,16 @@ protected:
 	/** Random number generator */
 	golem::RealRand randomG;
 
-	vector<Mat34> currentPredictedObjSeq;
-	golem::Bounds::SeqPtr objectLocalBounds;	
-	smlearning::Sequence currentSeq;
-	FeatureVector currentMotorCommandVector;
+	/** LSTM active learner */
 	ActiveRNN learner;
+	/** to know if net has been already built (initialized in constructor) */
+	bool netBuilt;
+	/** assumed maximum range of polyflap X-coordinate location during the experiment */
 	Real maxRange;
+	/** iteration counter */
+	int iteration;
+	/** const number of SM regions */
+	static const int smregionsCount = 18;
 
 	/** Creator */
 	golem::Creator creator;
@@ -258,9 +236,10 @@ protected:
 	/** Objects can be constructed only in the Scene context. */
 	ActiveLearnScenario(golem::Scene &scene);
 
+	/** restore predicted last polyflap pose from neural activations */
 	golem::Mat34 getPfPoseFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
-
-	void calculatePfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
+	/** restore sequence of predicted polyflap poses from neural activations */
+	void getPfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
 	/** Renders the object. */
         virtual void render();
  

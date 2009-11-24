@@ -537,10 +537,10 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 			pTiny->releaseActor(pPolyflapObject);
 		//initialize RNN learner with a dummy dataset
 		//TODO: this is a hack!
-		string dummyDataFile = "tmp_dummy";
+		//string dummyDataFile = "tmp_dummy";
 		if (e == 0) {
-			write_nc_file_basis (dummyDataFile, data[startPosition-1]);
-			learner.build (dummyDataFile, smregionsCount, seq[0].size() );
+			//write_nc_file_basis (dummyDataFile, data[startPosition-1]);
+			learner.build (/*dummyDataFile, */smregionsCount, seq[0].size() );
 		}
 
 		//update RNN learner with current sequence

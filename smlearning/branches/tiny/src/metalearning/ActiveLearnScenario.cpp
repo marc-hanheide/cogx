@@ -63,7 +63,7 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 	golem::Real fingerLength = 0.135;
 	XMLData(fingerLength, context->getContextFirst("effector finger_length"));
 	golem::Real fingerDiam = 0.02;
-// 	XMLData(fingerDiam, context->getContextFirst("effector finger_diameter"));
+	XMLData(fingerDiam, context->getContextFirst("effector finger_diameter"));
 	golem::Real tipRadius = 0.015;
 	XMLData(tipRadius, context->getContextFirst("effector tip_radius"));
 	
@@ -72,11 +72,11 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 	pFingerRodShapeDesc->pose.p.v2 += baseLength + fingerLength/2.0;
 	pFingerRodShapeDesc->group = val.effectorGroup;
 	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerRodShapeDesc));
-// 	golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
-// 	pFingerTipShapeDesc->radius = tipRadius;
-// 	pFingerTipShapeDesc->pose.p.v2 += golem::Real(baseLength + fingerLength);
-// 	pFingerTipShapeDesc->group = val.effectorGroup;
-// 	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));
+	golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
+	pFingerTipShapeDesc->radius = tipRadius;
+	pFingerTipShapeDesc->pose.p.v2 += golem::Real(baseLength + fingerLength);
+	pFingerTipShapeDesc->group = val.effectorGroup;
+	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));
 	
 	// end-effector reference pose
 	val.referencePose.setId();
@@ -91,55 +91,21 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 
 //------------------------------------------------------------------------------
 
-bool LearningData::load(const Stream &stream) {
-//	if (stream.read(bArmState) != 1 || stream.read(bEffectorPose) != 1 || stream.read(bObjectPose) || stream.read(bFtsData) || stream.read(bImageIndex) || stream.read(bEffector) || stream.read(bObject) || stream.read(bObstacles))
-//		false;
-	effector.clear();
-	if (stream.read(effector, effector.begin()) != 1)
-		false;
-	object.clear();
-	if (stream.read(object, object.begin()) != 1)
-		false;
-	obstacles.clear();
-	if (stream.read(obstacles, obstacles.begin()) != 1)
-		false;
-	data.clear();
-	if (stream.read(data, data.begin()) != 1)
-		false;
-
-	return true;
-}
-
-bool LearningData::store(Stream &stream) const {
-//	if (stream.write(bArmState) != 1 || stream.write(bEffectorPose) != 1 || stream.write(bObjectPose) || stream.write(bFtsData) || stream.write(bImageIndex) || stream.write(bEffector) || stream.write(bObject) || stream.write(bObstacles))
-//		false;
-	if (stream.write(effector.begin(), effector.end()) != 1)
-		false;
-	if (stream.write(object.begin(), object.end()) != 1)
-		false;
-	if (stream.write(obstacles.begin(), obstacles.end()) != 1)
-		false;
-	if (stream.write(data.begin(), data.end()) != 1)
-		false;
-
-	return true;
-}
-
-//------------------------------------------------------------------------------
-
 void ActiveLearnScenario::render () {
 	CriticalSectionWrapper csw (cs);
-	if (currentPredictedObjSeq.size() == 0)
+	if (learningData.currentPredictedObjSeq.size() == 0)
 		return;
 
-	for (int i=0; i<currentPredictedObjSeq.size(); i++) {
+// 	for (int i=0; i<learningData.currentPredictedObjSeq.size(); i++) {
 		golem::BoundsRenderer boundsRenderer;
-		Mat34 currentPose = currentPredictedObjSeq[i];
+// 		Mat34 currentPose = learningData.currentPredictedObjSeq[i];
+		Mat34 currentPose = learningData.currentPredictedObjSeq[learningData.currentPredictedObjSeq.size()-1];
 		
 		boundsRenderer.setMat(currentPose);
 		boundsRenderer.setWireColour (RGBA::BLUE);
 		boundsRenderer.renderWire (objectLocalBounds->begin(), objectLocalBounds->end());
-	}
+
+// 	}
 }
 
 
@@ -209,7 +175,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		chunk.effectorPose = effector->getPose();
 		chunk.objectPose = object->getPose();
 	
-		learningData.data.push_back(chunk);
+// 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 		/////////////////////////////////////////////////
 		//storing the feature vector
@@ -226,9 +192,23 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._31, -1.0, 1.0));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._32, -1.0, 1.0));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._33, -1.0, 1.0));
+		learningData.currentSeq.push_back(currentFeatureVector);
+	
 		/////////////////////////////////////////////////
-		currentSeq.push_back(currentFeatureVector);
-		
+		//initialize RNN learner with a dummy dataset
+		//TODO: this is a hack!
+// 		string dummyDataFile = "tmp_dummy";
+		if (!netBuilt) {
+// 			write_nc_file_basis (dummyDataFile, learningData.data[startPosition-1]);
+			assert (learningData.currentMotorCommandVector.size() + currentFeatureVector.size() == 17);
+			learner.build (/*dummyDataFile, */smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
+			netBuilt = true;
+		}
+		learningData.loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
+		learner.feed_forward (*learningData.trainSeq);
+		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange);
+		learningData.currentPredictedObjSeq.push_back (predictedPfPose);
+	
 	}
 // 	if (bStop) {
 // 		CriticalSectionWrapper csw (cs);
@@ -252,16 +232,15 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	if (!plotApp)
 		throw "Invalid proxy";
-	int smregionsCount = 18;
 	plotApp->init (smregionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
-	plotApp->resize(600,400);
+	plotApp->resize(640,480);
 	
 	plotApp->show();
 
 	
 // 	// initialize random seed:
-// 	srand ((unsigned)time(NULL) );
 	randomG.setRandSeed (context.getRandSeed());
+	netBuilt = false;
 
 	//a number that slightly greater then the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
@@ -298,10 +277,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	//Arranged in a vector associated to region indices
 	//sequences and featureVectors are created
 	//in every loop run
-	vector<DataSet> data;
 	for (int i=0; i<smregionsCount; i++) {
 		DataSet currentDataset;
-		data.push_back (currentDataset);
+		learningData.data.push_back (currentDataset);
 	}
 
 
@@ -332,10 +310,10 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		numSequences = atoi(argv[2]);
 	if (argc > 3)
 		startingPosition = atoi(argv[3]);
-
+	
+	
 	//start of the experiment loop
-	int e = 0;
-	while (e<numSequences) {
+	while (iteration<numSequences) {
 		
 		// experiment main loops
 		creator.setToDefault();
@@ -343,7 +321,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		object = setupPolyflap(scene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, context);
 		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
-		if (e == 0)
+		if (iteration == 0)
 			objectLocalBounds = object->getLocalBoundsSeq();
 		
 
@@ -375,23 +353,17 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
 
 
-// 		//chose random point int the vicinity of the polyflap
-// 		srand(context.getRandSeed()._U32[0]  + e);
-
 	        int startPosition;
 
 		if (startingPosition == 0)
-			if ( e < smregionsCount ) 
-// 				startPosition = rand() % smregionsCount + 1;
+			if ( iteration < smregionsCount ) 
  				startPosition = floor(randomG.nextUniform (1.0, 18.0));
 			else {
 				//active selection of samples
-// 				double neargreedyActionRand = rand() / (double) RAND_MAX;
 				double neargreedyActionRand = randomG.nextUniform (0.0, 1.0);
 				
 				cout << "neargreedyRand: " << neargreedyActionRand << endl;
 				if (neargreedyActionRand <= learner.neargreedyActionProb)
-// 					startPosition = rand() % smregionsCount + 1;
 					startPosition = floor(randomG.nextUniform (1.0, 18.0));
 				else
 					assert ((startPosition = learner.chooseSMRegion () + 1) != -1);
@@ -424,16 +396,16 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		/////////////////////////////////////////////////
 		//create sequence for this loop run and initial (motor command) vector
-		currentSeq.clear();
-		currentMotorCommandVector.clear();
+		learningData.currentSeq.clear();
+		learningData.currentMotorCommandVector.clear();
 		/////////////////////////////////////////////////
 
 		/////////////////////////////////////////////////
 		//writing in the initial vector
 		//initial position, normalized
-		currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, maxRange));
-		currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, maxRange));
-		currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, maxRange));
 		//initial orientation, normalized
 // 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
 // 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
@@ -443,22 +415,18 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 
 		// Trajectory duration calculated from a speed constant.
-// 		int speed = rand() % 3 + 3;
 		int speed = floor (randomG.nextUniform (3.0, 5.0));
 		cout << "speed: " << speed << endl;
-		// 			int speed = 0;
-// 		SecTmReal duration = timeDelta * n*(Math::pow(Real(2.0), Real(-speed)*2));
-
 		
 		SecTmReal duration = speed;
 				
 		/////////////////////////////////////////////////
 		//writing in the initial vector
-		currentMotorCommandVector.push_back(Real(speed));
+		learningData.currentMotorCommandVector.push_back(Real(speed));
 		/////////////////////////////////////////////////
 
 		// Trajectory end pose equals begin + shift along Y axis
-		WorkspaceCoord /*begin = target.pos, */end = target.pos;
+		WorkspaceCoord end = target.pos;
 
 		//normal vector to the center of the polyflap
 		Vec3 polyflapCenterNormalVec =
@@ -473,29 +441,24 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		//the lenght of the movement
 		Real currDistance = distance;
-// 		if (speed < 0) {
-// 			currDistance *= 5.0;
-// 		}
 
 		//chose random horizontal and vertical angle
-// 		int horizontalAngle = rand() % 61 + 60;
 		int horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
 		
-		// 			int horizontalAngle = 90;
-			
 		//int verticalAngle = rand() % 7;
 
 		setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
 
 
-		currentMotorCommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
+		learningData.currentMotorCommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
 
 		/////////////////////////////////////////////////
 		//writing of the initial vector into sequence
-		currentSeq.push_back(currentMotorCommandVector);
+		learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
 		/////////////////////////////////////////////////
 
+	
 		target.pos = end;
 		target.t = context.getTimer()->elapsed() + tmDeltaAsync + duration;
 	
@@ -520,52 +483,37 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
 		bStart = false;
 			
-		// wait for completion
-// 		if (!ev.wait(60000))
-// 			context.getLogger()->post(Message::LEVEL_ERR, "ActiveLearnScenario::run(): event timeout");
-// 		ev.set(false);
-
-// 		{
-// 			CriticalSectionWrapper csw(cs);
-				
-// 			// save data
-// 			const int indices [] = { dataIndex++ };
-// 			FileWriteStream fstream(desc.dataPath.create(indices, 1).c_str());
-// 			learningData.store(fstream);
-				
-			// remove object
-			scene.releaseObject(*object);
-			object = NULL;
-// 		}
+			
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
-		data[startPosition-1].push_back(currentSeq);
+		learningData.data[startPosition-1].push_back(learningData.currentSeq);
 		/////////////////////////////////////////////////
 
+// 		/////////////////////////////////////////////////
+// 		//initialize RNN learner with a dummy dataset
+// 		//TODO: this is a hack!
+// // 		string dummyDataFile = "tmp_dummy";
+// 		if (iteration == 0) {
+// // 			write_nc_file_basis (dummyDataFile, learningData.data[startPosition-1]);
+// 			learner.build (/*dummyDataFile, */smregionsCount, 17 );
+// 		}
+// 		learningData.loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
+// 		learner.feed_forward (*learningData.trainSeq);
+// // 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange);
+// // 		learningData.currentPredictedObjSeq.push_back (predictedPfPose);
+// 		getPfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange);
 
-		//initialize RNN learner with a dummy dataset
-		//TODO: this is a hack!
-		string dummyDataFile = "tmp_dummy";
-		if (e == 0) {
-			write_nc_file_basis (dummyDataFile, data[startPosition-1]);
-			learner.build (dummyDataFile, smregionsCount, currentSeq[0].size() );
-		}
 
+		
 		//update RNN learner with current sequence
-		rnnlib::DataSequence trainseq(learner.header->inputSize, learner.header->outputSize);
-		vector<int> inputShape, targetShape;
-		inputShape.push_back (currentSeq.size() - 1);
-		targetShape.push_back (currentSeq.size() - 1);
-		trainseq.inputs.reshape(inputShape);
-		trainseq.targetPatterns.reshape(targetShape);
-		load_sequence (trainseq.inputs.data, trainseq.targetPatterns.data, currentSeq);
-		learner.feed_forward (trainseq);
-		calculatePfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
-		learner.update (trainseq, startPosition-1);
-		vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
-		vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
-		plotApp->updateData(startPosition-1, learnProgData, errorData);
-// 		calculatePfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
+		{
+			CriticalSectionWrapper csw (cs);
+			learner.update (*learningData.trainSeq, startPosition-1);
+			vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
+			vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
+			plotApp->updateData(startPosition-1, learnProgData, errorData);
+		}
+// 		getPfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
 // 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
 // 		Actor* predictedPolyflapObject = setupPolyflap(scene, predictedPfPose, polyflapDimensions);
 
@@ -573,7 +521,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		arm->setCollisionBoundsGroup(0x0);
 
 			
-		cout << "sequence size: " << currentSeq.size() << endl;
+		cout << "sequence size: " << learningData.currentSeq.size() << endl;
 
 
 		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
@@ -591,6 +539,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		// wait for completion of the action (until the arm moves to the initial pose)
 		arm->getReacPlanner().waitForEnd();
 
+		// remove object
+		scene.releaseObject(*object);
+		object = NULL;
 // 		scene.releaseObject(*predictedPolyflapObject);
 		
 		home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(3.0);
@@ -615,9 +566,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		context.getLogger()->post(Message::LEVEL_INFO, "Done");
 
-		cout << "Iteration " << e++ << " completed!" << endl;
+		cout << "Iteration " << iteration++ << " completed!" << endl;
 
-		currentPredictedObjSeq.clear();
+		learningData.currentPredictedObjSeq.clear();
 
 		
 		if (universe.interrupted())
@@ -649,7 +600,7 @@ golem::Mat34  ActiveLearnScenario::getPfPoseFromOutputActivations (rnnlib::SeqBu
 // 	cout << outputsize << endl;
 
 // 	cout << startIndex << endl;
-	assert (startIndex == outputsize);
+	assert (startIndex < outputsize);
 
 	golem::Mat34 predictedPfPose;
 
@@ -673,7 +624,7 @@ golem::Mat34  ActiveLearnScenario::getPfPoseFromOutputActivations (rnnlib::SeqBu
 }
 
 
-void ActiveLearnScenario::calculatePfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange) {
+void ActiveLearnScenario::getPfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange) {
 	
 	for (int i=0; i < outputActivations.shape[0]; i++) {
 		golem::Mat34 currentPredictedPfPose;
@@ -690,11 +641,26 @@ void ActiveLearnScenario::calculatePfSeqFromOutputActivations (rnnlib::SeqBuffer
 		currentPredictedPfPose.R._m._31 = denormalize(outputActivations[i][startIndex+9], -1.0, 1.0);
 		currentPredictedPfPose.R._m._32 = denormalize(outputActivations[i][startIndex+10], -1.0, 1.0);
 		currentPredictedPfPose.R._m._33 = denormalize(outputActivations[i][startIndex+11], -1.0, 1.0);
-		currentPredictedObjSeq.push_back (currentPredictedPfPose);
+		learningData.currentPredictedObjSeq.push_back (currentPredictedPfPose);
 	}
 }
 
 //------------------------------------------------------------------------------
+void LearningData::loadCurrentTrainSeq (int inputSize, int outputSize) {
+	//if (trainSeq)
+	//delete trainSeq;
+	trainSeq = new rnnlib::DataSequence (inputSize, outputSize);
+	vector<int> inputShape, targetShape;
+	inputShape.push_back (currentSeq.size() - 1);
+	targetShape.push_back (currentSeq.size() - 1);
+	trainSeq->inputs.reshape(inputShape);
+	trainSeq->targetPatterns.reshape(targetShape);
+	load_sequence (trainSeq->inputs.data, trainSeq->targetPatterns.data, currentSeq);
+}
+
+//------------------------------------------------------------------------------
+
+
 
 void MyApplication::run(int argc, char *argv[]) {
 
