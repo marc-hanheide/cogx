@@ -14,13 +14,14 @@ extern "C"
 {
   cast::CASTComponentPtr newComponent()
   {
-    return new cast::ObjectAnalyzer();
+    return new cogx::ObjectAnalyzer();
   }
 }
 
-namespace cast
+namespace cogx
 {
 
+using namespace cast;
 using namespace std;
 using namespace cdl;
 using namespace VisionData;
@@ -45,11 +46,13 @@ void ObjectAnalyzer::configure(const map<string,string> & _config)
   {
 	doDisplay = true;
   }
+
+  m_TypeMapper.configure(_config);
 }
 
 void ObjectAnalyzer::start()
 {
-  char *name = "analyzerSemaphore";
+  const char *name = "analyzerSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
 
@@ -135,7 +138,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
     pvobj->distribution.push_back(*pdbl);
   }
 
-	pvobj->time = getCASTTime();
+  pvobj->time = getCASTTime();
   overwriteWorkingMemory(ProtoObjectMap[ptask->protoObjectId].visualObjId, pvobj);
 }
 
@@ -155,6 +158,9 @@ void ObjectAnalyzer::onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange 
   ObjectRecognitionTaskPtr ptask = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
   log("Recieved results for ObjectRecognitionTask %s", _wmc.address.id.c_str());
   // TODO: Do sth with the labels of recognized objects
+  //	* ObjectRecognitionTask contains labels and probabilities
+  //	* transform labels to types
+  //	* select best item for each type, add to VisualObject
 }
 
 void ObjectAnalyzer::runComponent()
