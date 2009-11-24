@@ -20,13 +20,19 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <cast/architecture/ManagedComponent.hpp>
-#include <../../VisionUtils.h>
-
 #include <VisionData.hpp>
 
+#include "../../VisionUtils.h"
+#include "VTypeMapper.h"
 
-namespace cast
+
+namespace cogx
 {
+
+using namespace cast;
+typedef std::vector<std::string> TStringVector;
+typedef std::vector<double> TDoubleVector;
+typedef std::map<std::string,std::string>  TStringMap;
 
 class ObjectAnalyzer : public ManagedComponent
 {
@@ -64,6 +70,8 @@ class ObjectAnalyzer : public ManagedComponent
 	std::queue<std::string> objToDelete;
 
 	boost::interprocess::named_semaphore* queuesNotEmpty;
+
+	CVisualTypeMapper m_TypeMapper;
 
 	/**
 	 * callback function called whenever a new ProtoObject appears
