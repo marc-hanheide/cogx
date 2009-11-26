@@ -7,10 +7,20 @@ To do
 
 InfoStruct assignment
 
+- idea: how about a two-pass UP, where IS is planned in one pass, still on the proto-LF, and then the actual surface realization is planned ???!!!
+
 - CCA should tell UP that R's utterance is being re-iterated, e.g.,
   <Reiteration>yes
    the rest remains the same? 
     -- does it make a difference whether the reiteration happens right away or after an interlude?
+
+- put in continuation boundaries !! 
+
+- check what intonation "aha" should have (I think LH%)
+
+- CCA maintains positive and negative beliefs about object attributes in case of correction --> could we make use of that for verbalization? also for IS: kontrast on new value
+(at the moment not a history, so CCA does not really know it previously believed some other attribute, although it seems this could easily become available;
+currently everything taken in the same spatio-temporal interval)
 
 - Assign kontrast according to context: 
 	explicit "true" iff distinguishing from an alternative, 
