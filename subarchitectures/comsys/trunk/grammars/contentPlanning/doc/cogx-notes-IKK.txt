@@ -7,6 +7,11 @@ To do
 
 InfoStruct assignment
 
+- CCA should tell UP that R's utterance is being re-iterated, e.g.,
+  <Reiteration>yes
+   the rest remains the same? 
+    -- does it make a difference whether the reiteration happens right away or after an interlude?
+
 - Assign kontrast according to context: 
 	explicit "true" iff distinguishing from an alternative, 
 	explicit "false" iff not distinguishing; 
