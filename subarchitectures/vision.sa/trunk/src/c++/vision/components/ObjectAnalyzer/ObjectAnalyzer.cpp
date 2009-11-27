@@ -48,6 +48,7 @@ void ObjectAnalyzer::configure(const map<string,string> & _config)
   }
 
   m_TypeMapper.configure(_config);
+  m_TypeEnumerator = CVisualTypeMapper::getTypeEnumerator();
 }
 
 void ObjectAnalyzer::start()
@@ -94,28 +95,24 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto, cons
    string reqId(newDataID());
    addToWorkingMemory(reqId, ptask);
 }
-/*
-void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
-{
-  VisualLearnerRecognitionTaskPtr ptask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
-  log("Recieved results for VisualLearnerRecognitionTask %s", _wmc.address.id.c_str());
-  // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
 
-  AttrObjectPtr pAttrObject = new AttrObject();
-  pAttrObject->protoObjectID = ptask->protoObjectId;
-  vector<int>::const_iterator plabel;
-  for( plabel = ptask->labels.begin(); plabel != ptask->labels.end(); plabel++) {
-    pAttrObject->labels.push_back(str(boost::format("%d") % *plabel));
+enum {
+  NewObject, WmObject
+};
+long ObjectAnalyzer::getOrCreateVisualObject(const string &objectId, VisualObjectPtr &pobject)
+{
+  try {
+	pobject = getMemoryEntry<VisualObject>(objectId);
+	return WmObject;
   }
-  vector<double>::const_iterator pdbl;
-  for( pdbl = ptask->distribution.begin(); pdbl != ptask->distribution.end(); pdbl++) {
-    pAttrObject->distribution.push_back(*pdbl);
+  catch (DoesNotExistOnWMException e) {
+	VisualObjectPtr pvobj = new VisualObject;
+	pvobj->label = "unknown";
+	pvobj->labelConfidence = 1.0f;
+	pvobj->protoObjectID = objectId;
+	return NewObject;
   }
-  string attrId = newDataID();
-  pAttrObject->time = getCASTTime();
-  addToWorkingMemory(attrId, pAttrObject);
 }
-*/
 
 void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
@@ -145,7 +142,7 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 
 void ObjectAnalyzer::start_OR_RecognitionTask(const ProtoObjectPtr& pproto, const WorkingMemoryAddress &addr)
 {
-  ObjectRecognitionTaskPtr ptask = new  ObjectRecognitionTask();
+  ObjectRecognitionTaskPtr ptask = new ObjectRecognitionTask();
   ptask->protoObjectAddr = addr;
 
   string reqId(newDataID());
@@ -157,10 +154,45 @@ void ObjectAnalyzer::onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange 
 {
   ObjectRecognitionTaskPtr ptask = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
   log("Recieved results for ObjectRecognitionTask %s", _wmc.address.id.c_str());
-  // TODO: Do sth with the labels of recognized objects
-  //	* ObjectRecognitionTask contains labels and probabilities
-  //	* transform labels to types
-  //	* select best item for each type, add to VisualObject
+
+  VisualObjectPtr pvobj;
+  string objid = ProtoObjectMap[ptask->protoObjectAddr.id].visualObjId;
+  long mode = getOrCreateVisualObject(objid, pvobj);
+  ObjectRecognitionMatchPtr pmatch = ptask->matches[0]; // TODO: error checking, array boundaries
+
+  // Identity labels: separate fields in VisualObject
+  TStringVector::const_iterator plabel;
+  for( plabel = pmatch->objectId.begin(); plabel != pmatch->objectId.end(); plabel++) {
+    pvobj->identLabels.push_back(*plabel);
+  }
+  TDoubleVector::const_iterator pdbl;
+  for( pdbl = pmatch->probability.begin(); pdbl != pmatch->probability.end(); pdbl++) {
+    pvobj->identDistrib.push_back(*pdbl);
+  }
+
+  // Type labels: identity-labels=>type-labels, type-labels=>type-enum
+  if (m_TypeMapper.enabled()) {
+	TStringVector typeLabs;
+	TDoubleVector typeDist;
+	m_TypeMapper.mapLabels(pmatch->objectId, pmatch->probability, typeLabs, typeDist);
+	pdbl = typeDist.begin();
+	for( plabel = typeLabs.begin(); plabel != typeLabs.end(); plabel++) {
+	  long tid = m_TypeEnumerator.getEnum(*plabel);
+	  if (tid >= 0) {
+		pvobj->labels.push_back(tid);
+		pvobj->distribution.push_back(*pdbl);
+	  }
+	  pdbl++;
+	  if (pdbl == typeDist.end()) break;
+	}
+  }
+
+  if (mode == NewObject) {
+	addToWorkingMemory(objid, pvobj);
+  }
+  else if (mode == WmObject) {
+	overwriteWorkingMemory(objid, pvobj);
+  }
 }
 
 void ObjectAnalyzer::runComponent()

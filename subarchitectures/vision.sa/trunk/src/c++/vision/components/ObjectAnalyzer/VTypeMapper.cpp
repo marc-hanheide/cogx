@@ -11,6 +11,68 @@ namespace cogx {
 
 using namespace std;
 
+//################################################################# 
+CTypeEnumerator::CTypeEnumerator(bool bAllowDupNames)
+{
+   m_bAllowDupNames = bAllowDupNames;
+}
+
+void CTypeEnumerator::clear()
+{
+   m_fwdMap.clear();
+   m_revMap.clear();
+}
+
+long CTypeEnumerator::getLastEnum()
+{
+   map<string,long>::const_iterator ps;
+   long max = -1;
+   for (ps = m_fwdMap.begin(); ps != m_fwdMap.end(); ps++) {
+      if ( (*ps).second > max) max = (*ps).second;
+   }
+   return max;
+}
+
+void CTypeEnumerator::getLabels(TStringVector &labels)
+{
+   map<string,long>::const_iterator ps;
+   for (ps = m_fwdMap.begin(); ps != m_fwdMap.end(); ps++) {
+      labels.push_back( (*ps).first);
+   }
+}
+
+bool CTypeEnumerator::addMapping(string sName, long nEnum)
+{
+   if (nEnum < 0) return false;
+   if (sName.size() < 1) return false;
+   if (m_fwdMap.count(sName) > 0) {
+      if (nEnum == m_fwdMap[sName]) return true;
+      return false;
+   }
+   if (m_revMap.count(nEnum) > 0) {
+      if (! m_bAllowDupNames) return false;
+      m_fwdMap[sName] = nEnum;
+   }
+   else {
+      m_fwdMap[sName] = nEnum;
+      m_revMap[nEnum] = sName;
+   }
+   return true;
+}
+
+long CTypeEnumerator::getEnum(string sName)
+{
+   if (m_fwdMap.count(sName) > 0) return m_fwdMap[sName];
+   return -1;
+}
+
+string CTypeEnumerator::getName(long nEnum)
+{
+   if (m_revMap.count(nEnum) > 0) return m_revMap[nEnum];
+   return "";
+}
+
+//################################################################# 
 CVisualTypeMapper::CVisualTypeMapper()
 {
    m_useTypeMap = true;
@@ -72,6 +134,18 @@ void CVisualTypeMapper::mapLabels(
          distrTypes.push_back(distrLabels[i]);
       }
    }
+}
+
+CTypeEnumerator CVisualTypeMapper::getTypeEnumerator(unsigned long idStart)
+{
+   CTypeEnumerator ten;
+   ten.addMapping("box", idStart);
+   ten.addMapping("cube", ++idStart);
+   ten.addMapping("sphere", ++idStart);
+   ten.addMapping("ball", idStart);
+   ten.addMapping("ellipsoid", ++idStart);
+   ten.addMapping("cylinder", ++idStart);
+   return ten;
 }
 
 } // namespace

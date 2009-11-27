@@ -72,6 +72,7 @@ class ObjectAnalyzer : public ManagedComponent
 	boost::interprocess::named_semaphore* queuesNotEmpty;
 
 	CVisualTypeMapper m_TypeMapper;
+	CTypeEnumerator m_TypeEnumerator;
 
 	/**
 	 * callback function called whenever a new ProtoObject appears
@@ -96,6 +97,7 @@ class ObjectAnalyzer : public ManagedComponent
 
 	void start_OR_RecognitionTask(const VisionData::ProtoObjectPtr& pproto, const cdl::WorkingMemoryAddress &addr);
 	void onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange & _wmc);
+	long getOrCreateVisualObject(const std::string &objectId, VisionData::VisualObjectPtr &pobject);
 
   protected:
 	/**
