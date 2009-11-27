@@ -139,10 +139,14 @@ module VisionData {
     // a value between 0 and 1
     double salience;
     
-    // Property distribution
+    // Property "distribution" (colors, shapes, types)
     IntSeq labels;
     DoubleSeq distribution;
     
+    // Distribution of identity labels (from object recognizer)
+    StringSeq identLabels;
+    DoubleSeq identDistrib;
+
     // Source proto object
     string protoObjectID;
   };
