@@ -38,6 +38,18 @@
 
 namespace smlearning {
 
+//------------------------------------------------------------------------------
+
+///
+///configure planner parameters
+///
+void Scenario::setupPlanner(PhysReacPlanner::Desc &desc) {
+	// some planner parameter tuning
+	desc.pPlannerDesc->pHeuristicDesc->distJointcoordMax[4] = Real(1.0)*REAL_PI;// last joint
+	// Enable signal synchronization (default value)
+	//desc.pReacPlannerDesc->signalSync = true;
+}
+
 ///
 ///creates object in the scene
 ///
@@ -74,7 +86,7 @@ Actor* Scenario::setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 
 	Actor *polyFlapActor;
 	
 	// Create polyflap
-	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.002), REAL_PI_2);
+	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.002*0.5), REAL_PI_2);
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1));
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1), Real(0.002), Real(REAL_PI_2));
 
@@ -196,33 +208,27 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int nSeq, 
 	numSequences = nSeq;
 	startingPosition = startPos;
 
-// 	if (!thread.start (this)) {
-// 		cout << "Unable to launch thread!" << endl;
-// 		return 0;
-// 	}
-// 	run();
-// }
-
-
-// void Scenario::run () {
 	// Determine configuration file name
 	std::string cfg;
-	//if (argc == 1) {
+	if (argc == 1) {
 		// default configuration file name
-	cfg.assign(argv[0] );
+		cfg.assign(argv[0] );
 		size_t pos = cfg.rfind(".exe"); // Windows only
 		if (pos != std::string::npos) cfg.erase(pos);
 		cfg.append(".xml");
-	//}
-	//else
-		//cfg.assign(argv[1]);
+	}
+	else
+		cfg.assign(argv[1]);
 
 	// Create XML parser and load configuration file
 	XMLParser::Desc parserDesc;
 	XMLParser::Ptr parser = parserDesc.create();
-	if (!parser->load(FileReadStream(cfg.c_str()))) {
-		printf("unable to load configuration file: %s\n", cfg.c_str());
-		printf("%s <configuration_file>\n", argv[0]);
+	try {
+		parser->load(FileReadStream(cfg.c_str()));
+	}
+	catch (const Message& msg) {
+		std::cerr << msg << std::endl;
+		std::cout << "Usage: " << argv[0] << " <configuration_file>" << std::endl;
 		return false;
 	}
 
@@ -235,7 +241,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int nSeq, 
 
 	// Create program context
 	golem::Context::Desc contextDesc;
-	setupContext(contextDesc, xmlContext);
+	XMLData(contextDesc, xmlContext);
 	golem::Context::Ptr context = contextDesc.create();
 	if (context == NULL) {
 		printf("unable to create program context");
@@ -273,50 +279,23 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int nSeq, 
 
 	// Create Universe
 	Universe::Desc universeDesc;
-	setupUniverse(universeDesc, xmlContext->getContextFirst("universe"), *context);
-	universeDesc.name = "Golem (Pushing)";
+	universeDesc.name = "Golem";
+	XMLData(universeDesc, xmlContext->getContextFirst("universe"));
 	universeDesc.argc = argc;
 	universeDesc.argv = argv;
 	Universe::Ptr pUniverse = universeDesc.create(*context);
 
-	cout << "pasamos por aca" << endl;
-	
 	// Create scene
 	Scene::Desc sceneDesc;
-	setupScene(sceneDesc, xmlContext->getContextFirst("scene"), *context);
-	sceneDesc.name = "Robotic arm controller demo";
+	sceneDesc.name = "Offline Learning Pushing Experiment";
+	XMLData(sceneDesc, xmlContext->getContextFirst("scene"));
 	Scene *pScene = pUniverse->createScene(sceneDesc);
-	
-	// Determine arm type
-	std::string armType;
-	if (!XMLData(armType, xmlContext->getContextFirst("arm type"))) {
-		context->getLogger()->post(Message::LEVEL_CRIT, "Unspecified arm type");
-		return false;
-	}
 	
 	// Setup PhysReacPlanner controller description
 	PhysReacPlanner::Desc physReacPlannerDesc;
-	if (!armType.compare("kat_serial_arm")) {
-		KatSerialArm::Desc *pDesc = new KatSerialArm::Desc();
-		physReacPlannerDesc.pArmDesc.reset(pDesc);
-		XMLData(pDesc->cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
-		XMLData(pDesc->serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
-	}
-	else if (!armType.compare("kat_sim_arm")) {
-		KatSimArm::Desc *pDesc = new KatSimArm::Desc();
-		physReacPlannerDesc.pArmDesc.reset(pDesc);
-	}
-	else if (!armType.compare("gen_sim_arm")) {
-		GenSimArm::Desc *pDesc = new GenSimArm::Desc();
-		physReacPlannerDesc.pArmDesc.reset(pDesc);
-	}
-
-
+	XMLData(physReacPlannerDesc.pArmDesc, xmlContext->getContextFirst("arm"));
+	setupPlanner(physReacPlannerDesc);
 	
-	else {
-		context->getLogger()->post(Message::LEVEL_CRIT, "Unknown arm type");
-		return false;
-	}
 
 	// Create PhysReacPlanner
 	context->getLogger()->post(Message::LEVEL_INFO, "Initialising reactive planner...");

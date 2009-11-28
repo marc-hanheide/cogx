@@ -92,7 +92,7 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostr
 // 		out << "\t" << error << endl;
 		opt->update_weights();
 		rnnlib::WeightContainer::instance().reset_derivs();
-		i++;
+// 		i++;
 	}
 // 	} while (error > 10.0 || i < 10);
 	out << "Region: " << smregionIdx << endl;
