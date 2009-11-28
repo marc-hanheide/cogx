@@ -17,6 +17,8 @@
 #include <Golem/Katana.h>
 #include <Golem/Simulator.h>
 #include <Golem/Rand.h>
+#include <Golem/Renderer.h>
+#include <algorithm>
 
 #include <metalearning/Scenario.h>
 #include <metalearning/ActiveRNN.h>
@@ -202,12 +204,13 @@ protected:
 	golem::Actor* obstacles;
 	/** default polyflap bounds */
 	golem::Bounds::SeqPtr objectLocalBounds;
+	Actor::Appearance appearance;
 	/** Trial data */
 	LearningData learningData;
 	/** Time */
 	golem::SecTmReal trialTime;
 	/** Random number generator */
-	golem::RealRand randomG;
+	golem::Rand randomG;
 
 	/** LSTM active learner */
 	ActiveRNN learner;
@@ -239,7 +242,7 @@ protected:
 	/** restore predicted last polyflap pose from neural activations */
 	golem::Mat34 getPfPoseFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
 	/** restore sequence of predicted polyflap poses from neural activations */
-	void getPfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
+	void getPfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, vector<golem::Mat34>& currentPredictedObjSeq);
 	/** Renders the object. */
         virtual void render();
  

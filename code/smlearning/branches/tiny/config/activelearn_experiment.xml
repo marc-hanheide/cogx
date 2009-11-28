@@ -1,91 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <golem>
-  <rand_seed>0</rand_seed>
-  <parallels>0</parallels>
+  <rand seed="0"></rand>
+  <parallels threads="0"></parallels>
 
-  <universe>
-    <name>Golem</name>
-
-    <window_x>0</window_x>
-    <window_y>0</window_y>
-    <window_width>800</window_width>
-    <window_height>800</window_height>
-    <render_fps>30</render_fps>
-    <clear_color>
-      <R>51</R>
-      <G>76</G>
-      <B>76</B>
-      <A>255</A>
-    </clear_color>
-
-    <skin_width>0.005</skin_width>
-    <sleep_lin_vel_squared>0.0025</sleep_lin_vel_squared>
-    <sleep_ang_vel_squared>0.0025</sleep_ang_vel_squared>
-    <max_angular_velocity>7.0</max_angular_velocity>
-    <bounce_threshold>-2.0</bounce_threshold>
-
-    <recorder>
-      <frame_drop>1</frame_drop>
-      <file_name>screen</file_name>
-      <file_ext>.png</file_ext>
-      <leading_zeros>1</leading_zeros>
-      <encoder_str>image/png</encoder_str>
-      <buffer_len>100</buffer_len>
-    </recorder>
+  <universe name="Golem">
+    <window x="0" y="0" width="800" height="600"></window>
+    <physx fps="30" skin_width="0.005" sleep_lin_vel_squared="0.0025" sleep_ang_vel_squared="0.0025" max_angular_velocity="7.0" bounce_threshold="-2.0"></physx>
+    <recorder frame_drop="1" file_name="screen" file_ext=".png" leading_zeros="1" encoder_str="image/png" buffer_len="100"></recorder>
   </universe>
 
-  <scene>
-    <name>Active Learning Experiment</name>
-
-    <gravity>
-      <v1>0.0</v1>
-      <v2>0.0</v2>
-      <v3>-9.81</v3>
-    </gravity>
-    <restitution>0.2</restitution>
-    <static_friction>0.4</static_friction>
-    <dynamic_friction>0.2</dynamic_friction>
-
-    <view_dir>
-      <v1>-1.0</v1>
-      <v2>-1.0</v2>
-      <v3>-0.7</v3>
-    </view_dir>
-    <view_point>
-      <v1>6.0</v1>
-      <v2>6.0</v2>
-      <v3>6.0</v3>
-    </view_point>
-
-    <draw>
-      <solid>1</solid>
-      <wire>0</wire>
-      <shadow>1</shadow>
-      <debug>0</debug>
-    </draw>
+  <scene name="Active Learning Experiment">
+    <physx restitution="0.1" static_friction="0.4" dynamic_friction="0.2">
+      <gravity v1="0.0" v2="0.0" v3="-9.81"></gravity>
+    </physx>
+    <opengl>
+      <view_dir v1="-1.0" v2="-1.0" v3="-0.7"></view_dir>
+      <view_point v1="6.0" v2="6.0" v3="6.0"></view_point>
+      <clear_color R="55" G="55" B="60" A="255"></clear_color>
+      <draw solid="1" wire="0" shadow="1" debug="0"></draw>
+    </opengl>
   </scene>
 
-  <arm>
-    <!--<type>kat_serial_arm</type>-->
-    <type>kat_sim_arm</type>
-    <!--<type>gen_sim_arm</type>-->
+  <arm type="kat_sim_arm"> <!-- type="gen_sim_arm" type="kat_sim_arm" type="kat_serial_arm"-->
     <kat_serial_arm>
-      <path>katana6M180.cfg</path>
-      <comm_port>4</comm_port>
+      <config path="katana6M180.cfg"></config>
+      <comm port="4"></comm>
     </kat_serial_arm>
-    <kat_sim_arm>
-    </kat_sim_arm>
-    <gen_sim_arm>
-    </gen_sim_arm>
-    <pose>
-      <v1>0.0</v1>
-      <v2>0.0</v2>
-      <v3>0.012</v3>
-      <roll>0.0</roll>
-      <pitch>0.0</pitch>
-      <yaw>0.0</yaw>
-    </pose>
+    <kat_sim_arm></kat_sim_arm>
+    <gen_sim_arm></gen_sim_arm>
+
+    <calibration delta_offs="0.02" skew_offs="0.01"></calibration>
+    <pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></pose>
   </arm>
 
   <effector>
@@ -95,67 +41,5 @@
     <tip_radius>0.015</tip_radius>
   </effector>
 
-  <experiment>
-    <trial>
-      <n>10</n>
-      <trajectory>
-        <name>line</name>
-        <duration_min>10</duration_min>
-        <duration_max>10</duration_max>
-        <bounds>
-          <pose>
-            <v1>0.0</v1>
-            <v2>0.125</v2>
-            <v3>0.1</v3>
-            <roll>0.0</roll>
-            <pitch>0.0</pitch>
-            <yaw>0.0</yaw>
-          </pose>
-          <dimensions>
-            <v1>0.07</v1>
-            <v2>0.0</v2>
-            <v3>0.05</v3>
-          </dimensions>
-        </bounds>
-        <bounds_test>0</bounds_test>
-        <rotation>
-          <roll>-1.5707963268</roll>
-          <pitch>0.0</pitch>
-          <yaw>0.0</yaw>
-        </rotation>
-        <direction>
-          <v1>0.0</v1>
-          <v2>0.25</v2>
-          <v3>0.0</v3>
-        </direction>
-        <direction_angle>0.17453292512</direction_angle>
-        <length_range>0.0</length_range>
-      </trajectory>
-      <object>
-        <name>polyflap</name>
-        <width1_min>0.075</width1_min>
-        <width1_max>0.075</width1_max>
-        <width2_min>0.075</width2_min>
-        <width2_max>0.075</width2_max>
-        <shift_min>0.0</shift_min>
-        <shift_max>0.0</shift_max>
-        <height_min>0.075</height_min>
-        <height_max>0.075</height_max>
-        <length_min>0.075</length_min>
-        <length_max>0.075</length_max>
-        <thickness_min>0.002</thickness_min>
-        <thickness_max>0.002</thickness_max>
-        <angle_min>1.570796326795</angle_min>
-        <angle_max>1.570796326795</angle_max>
-        <pose>
-          <v1>0.0</v1>
-          <v2>0.25</v2>
-          <v3>0.0</v3>
-          <roll>0.0</roll>
-          <pitch>0.0</pitch>
-          <yaw>3.14159265359</yaw>
-        </pose>
-      </object>
-    </trial>
-  </experiment>
+
 </golem>

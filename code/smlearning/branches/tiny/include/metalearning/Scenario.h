@@ -49,6 +49,7 @@
 #include <Tools/Tools.h>
 #include <Creator.h>
 #include <Math.h>
+#include <XMLDataCtrl.h>
 #include <XMLDataPhys.h>
 #include <iostream>
 #include <tools/data_handling.h>
@@ -88,7 +89,10 @@ public:
 	///
 	bool runSimulatedOfflineExperiment (int argc, char *argv[], int numSequences = 100, int startingPosition = 0);
 
-// 	virtual void run ();
+	///
+	///configure planner parameters
+	///
+	void setupPlanner(PhysReacPlanner::Desc &desc);
 
 	///
 	///creates objects (groundplane, polyflap)
