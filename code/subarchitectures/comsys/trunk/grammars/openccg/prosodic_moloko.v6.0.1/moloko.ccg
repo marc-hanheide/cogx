@@ -66,10 +66,17 @@
 	{form: args;}
   } 
   
-  def coord(form, pos, class) {_coord(form, form, pos, class) }
-  def _coord(prd, form, pos, class) {
-    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd)
-	{form ;}
+  def coord(form, pos, class) {_coord-ip(form, form,accentMark(form), pos, class) }
+  def _coord(form, form, pos, class) {_coord-ip(prd, form, accentMark(form),pos, class) }
+  def _coord-ip(prd, form,form_hs,form_ls,form_lphs, pos, class) {
+    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd) {
+	form: e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;
+	form: e-focus-false e-uncontentious e-rheme-false e-hearer hear ;
+	form_hs: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_ls: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_lphs: e-focus-true e-uncontentious e-rheme-false e-hearer hear ;
+
+	}
   } 
 
 ############
@@ -82,13 +89,33 @@
   def prt(args)      { prt<25>[P args] }
   family Particle    { entry:  prt(MARK= *) : P(*) ;}
 
-###########
-# PROSG09 #
-###########
-# We do not want to enumerate all possible prosodic markers on words in the dictionary.
-# It saves effort to use these proxy-lexical rules for marking words with prosodic indicatores
+# Authors: Raveesh Meena (rame01@dfki.de), 2009
+# This file contains definition of Macros that are needed for prosodic grammar.
 
-def markWordsINTO(word) { markWordHs(word),markWordLs(word),markWordLpHs(word)}
+## Definition of a no-sort 's' category 
+##  This is same as 's' of sort 'E' but for syntactic phrases like np, adjuncts to become intonation phrases they need to unify with boundaries of type s$\s$ 
+##  However this definiton of boundary is of type no-sort. i.e. bpundaries can combine with anything: phrase, adjunct phrases, events
+
+def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+def from-ips(args)    { s<~10>[args] }
+
+## Definition of a no-sort 's' category 
+## a simpler definition to typechanging np or adjuncts.
+
+def trs()         { s<10> [ACCENT OWNER]}
+def from-trs()    { s<~10>[args] }
+
+
+
+########################################################
+# Inflection Rules to mark words with prosodic details #
+########################################################
+
+# We do not want to enumerate all possible prosodic markers for words in the dictionary.
+# Using the following macro a input word could be marked with the pitch accents we are handeling in our grammar.
+# see also prosodicHandles(word) 
+
+def accentMark(word) { markWordHs(word),markWordLs(word),markWordLpHs(word)}
 
 # input is 'word', output is 'word@H*'
 def markWordHs(word) {
@@ -106,10 +133,6 @@ def markWordLpHs(word) {
   }
 
 # We will be required to enumerate the remaining other accents. That will also need changes at MACROS using them.
-
-def trs()         { s<10> [ACCENT OWNER]}
-def from-trs()    { s<~10>[args] }
-
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
@@ -827,6 +850,8 @@ feature {
     
   rule { typechange: n[T2 full compound-1st]     =>  from-n(cc-none) /* n(compound-head)  :  ENTITY( <Compound>(T2) ) ; } 
 
+ #PROSG09
+ rule { typechange: np(args)$1 => trs()/! np()$1 ; }
   
 #######################
 ## DICTIONARY FORMS  ##
@@ -834,35 +859,35 @@ feature {
 
   # Basic nouns, regular and irr
   #
-  def  noun(sing, class, args)       {  noun-irr-accnt(sing, pluralize(sing), markWordHs(sing),markWordLs(sing),markWordLpHs(sing), class, args) }
-  def  noun-irr-accnt(sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(sing, sing, plur, sing_hs, sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
+  def  noun(sing, class, args)       { noun-irr-accnt(sing, pluralize(sing), accentMark(sing), class, args) }
+  def  noun-irr-accnt(sing,plur,sing_hs,sing_ls,sing_lphs, class, args) { _noun-irr(sing, sing, plur, sing_hs, sing_ls,sing_lphs,accentMark(plur),class,args) }
 
-  def _noun(prd, sing, class, args) { _noun-irr-accnt(prd, sing, pluralize(sing), markWordHs(sing), markWordLs(sing),markWordLpHs(sing), class, args) }
-  def _noun-irr-accnt(prd, sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(prd, sing, plur, sing_hs,sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
+  def _noun(prd, sing, class, args) { _noun-irr-accnt(prd, sing, pluralize(sing), accentMark(sing), class, args) }
+  def _noun-irr-accnt(prd, sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(prd, sing, plur, sing_hs,sing_ls,sing_lphs, accentMark(plur),class, args) }
   
   
-  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, markWordHs(sing),markWordLs(sing), markWordLpHs(sing),markWordHs(plur),markWordLs(plur),markWordLpHs(plur),class, args) } 
+  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, accentMark(sing),accentMark(plur),class, args) } 
 
   def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
     word sing.-noun-n:Noun(class, pred=prd) {
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
+      #sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
       sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
       sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
-      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
-      sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
+      #sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      #sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
       sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
       sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
       sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
       sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs args;
-      sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
-      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false args;
-      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-true args;
-      plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
+      #sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
+      #plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
       plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
-      plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
+      #plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
       plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
       plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs args;
-      plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
+      #plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
     }
   }
   
@@ -908,28 +933,28 @@ feature {
   }
 
   #PROSG09 chnages for prosodic marking on pronouns: I_H*, me_L+H* 
-  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {pronoun_ip(prd, pers, num, nom-form, markWordHs(nom-form),markWordLs(nom-form),markWordLpHs(nom-form), acc-form,markWordHs(acc-form),markWordLs(acc-form),markWordLpHs(acc-form), owner,markWordHs(owner),markWordLs(owner),markWordLpHs(owner), owned,markWordHs(owned),markWordLs(owned),markWordLpHs(owned), class,)	}
+  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {pronoun_ip(prd, pers, num, nom-form,accentMark(nom-form),acc-form,accentMark(acc-form),owner,owned,class,)}
 
- def pronoun_ip(prd, pers, num, nom-form,nom-form_hs,nom-form_ls,nom-form_lphs, acc-form,acc-form_hs,acc-form_ls,acc-form_lphs, owner,owner_hs,owner_ls,owner_lphs, owned,owned_hs,owned_ls,owned_lphs, class,) {
+ def pronoun_ip(prd, pers, num, nom-form,nom-form_hs,nom-form_ls,nom-form_lphs, acc-form,acc-form_hs,acc-form_ls,acc-form_lphs, owner, owned,class,) {
     word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
       #nom-form :  pers s-.num nom pro num ;
       nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
-      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
-      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
+      #nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      #nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
       nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
-      nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
+      #nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
       nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
       nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
-      nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
+      #nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
       #acc-form :  pers s-.num acc pro num ;
-      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      #acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
       acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
       acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
-      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
-      acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
+      #acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
+      #acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
       acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
       acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
-      acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
+      #acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
     }
     word prd.-owner-.num:Owner-pro('entity', pred=prd) {
       owner : num ;
@@ -961,10 +986,15 @@ feature {
 
  # I don't want ONE. Given context pred
  #
- def context-np(form,class, args) {_context-np(form, form, class, args)}
- def _context-np(prd, form, class, args) {
+ def context-np(form,class, args) {_context-np-ip(form, form, accentMark(form),class, args)}
+ def _context-np(form,form, class, args) {_context-np-ip(prd, form, accentMark(form),class, args)}
+ def _context-np-ip(prd, form, form_hs,form_ls,form_lphs,class, args) {
     word form.-context-np : Bare-np (class, pred=context) {
-      form : 3rd args nf-ctxt;    
+      form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-hearer hear ;    
+      form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-speaker spkr ;    
+      form_hs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
+      form_ls : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
+      form_lphs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-false t-hearer hear;    
     }
  }
 
@@ -1065,17 +1095,17 @@ feature {
       base_lphs : s-degree-base m-uncontentious m-focus-true m-rheme-false lphs args ;
     }
   }
-  def adj-none(base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
-  def _adj-none(prd, base, class, args) { _adj-none_ip(base, base, markWordsINTO(base), class, args) }
+  def adj-none(base, class, args) { _adj-none_ip(base, base, accentMark(base), class, args) }
+  def _adj-none(prd, base, class, args) { _adj-none_ip(base, base, accentMark(base), class, args) }
 
   #PROSG09 : change in the number of arguments for prosodically inflected args e.g red_H*, redder_H*. 
   #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 
  def _adj-deg(prd, base, comp, sup, base_hs,base_ls, base_lphs, comp_hs, comp_ls,comp_lphs, sup_hs,sup_ls, sup_lphs,class, args) {
     word base.-adj:Adj(class, pred=prd) {
       base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true m-speaker spkr args;
-      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true t-hearer hear args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true m-hearer hear args;
       base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-speaker spkr args;
-      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false t-hearer hear args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-hearer hear args;
       base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
       base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
       base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true m-hearer hear ls args;
@@ -1108,10 +1138,10 @@ feature {
 
 # This file contains definition of family, and dictionary entries for boundary tones as per Steedman 2000.
 
-def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
-def from-ips(args)    { s<~10>[args] }
+#def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+#def from-ips(args)    { s<~10>[args] }
 
-rule { typechange: np(args)$1 => trs()/! np()$1 ; }
+#rule { typechange: np(args)$1 => trs()/! np()$1 ; }
 
 
 ##
@@ -1522,11 +1552,17 @@ HH%: hear;
 #######################
 ## DICTIONARY FORMS  ##
 #######################
-
- def adverb(base, class, cc-class, args)  { _adverb(base, base, class, cc-class, args) } 
- def _adverb(prd, base, class, cc-class, args) {
+ #PROSG09 changes
+ def adverb(base, class, cc-class, args)  { _adverb_ip(base, base,accentMark(base), class, cc-class, args) } 
+ def _adverb(base, base, class, cc-class, args) {_adverb_ip(prd, base, accentMark(base), class, cc-class, args) }
+ def _adverb_ip(prd, base, base_hs,base_ls,base_lphs, class, cc-class, args) {
     word base.-adv:Adv("m-".class, pred=prd) {
       base : s-degree-base x-.class cc-class args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs args;
+
     }
   }
 
@@ -1627,6 +1663,10 @@ HH%: hear;
    #
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
 
 # This file contains everything necessary for standard verbs, and some
 # special verbs (thanks, it is made out_of metal, etc), but not for the copula
@@ -1679,7 +1719,9 @@ HH%: hear;
   
   ## COMP SLOT 1 ##
   
-    def np_1(args)           { np<2>[X acc args] }            def +np_1(args)          { / np_1(args) }    def +np_ip(args)          { /(trs()/! np_1(args)) }
+    def np_1(args)           { np<2>[X acc args] }            def +np_1(args)          { / np_1(args) }
+    #PROSG09
+    def +np_ip(args)          { /(trs()/! np_1(args)) }
     def +np_1-subj(args)     { \ np<~2>[X nom] }  # this is for 'object-controlled vp comps' like 'I want him to get it'
 
     def obl_1(frm, args)     { obl<2>[X acc MARK=frm args] }  def +obl_1(frm, args)    { / obl_1(frm, args) }
@@ -1790,6 +1832,7 @@ HH%: hear;
   
   vfam    ( iv              ,                   ,           )
   vfam    ( tv              , +np_1()           , PATIENT() ) 		
+  #PROSG09 
   vfam    ( tv              , +np_ip()           , PATIENT() ) 		
   vfam    ( v+Rec-np        , +np_2()           , RECIPIENT() )
 
@@ -1923,16 +1966,15 @@ HH%: hear;
   # This handles irregular verbs, i.e. each form must be fully specified
   #
   #PROSG09 changes
-  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(stem, stem,markWordsINTO(stem), 3sing,markWordsINTO(3sing),ving,markWordsINTO(ving), pasttense,markWordsINTO(pasttense), pastpart,markWordsINTO(pastpart), mod, class, props) }
+  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(stem, stem,accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
 
-  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(prd, stem, markWordsINTO(stem), 3sing,markWordsINTO(3sing),ving,markWordsINTO(ving), pasttense,markWordsINTO(pasttense), pastpart,markWordsINTO(pastpart), mod, class, props) }
+  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(prd, stem, accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
 
  #PROSG09 changes
   def _verb-basic_ip(prd, stem,stem_hs,stem_ls,stem_lphs,3sing,3sing_hs,3sing_ls,3sing_lphs,ving,ving_hs,ving_ls,ving_lphs, pasttense,,pasttense_hs,pasttense_ls,pasttense_lphs, pastpart,pastpart_hs,pastpart_ls,pastpart_lpls, mod, class, props) {
     word stem.-verb-.class.mod:props(class, pred=prd) {
       stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-true e-speaker spkr;  	
-      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-false e-hearer 
-hear;  	
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-false e-hearer hear;  	
       stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-true e-hearer hear hs; 
       stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-speaker spkr e-rheme-true hs;  	
       stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;  	
@@ -2480,6 +2522,8 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
 		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
       entry: from-s(s-int fin-full) / (s<13>[G] $1 item) / vp-extr(, / (s<13>[G] $1) ) /^ subj(nf-real) /  aux() syn                   
 		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
+      entry: from-s(s-int fin-full) / (s<13>[G] $1 item) / vp-extr(, / (s<13>[G] $1) ) /^ (trs()/! subj(nf-real)) /  aux() syn                   
+		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
   } 
 
 	 
@@ -2551,7 +2595,9 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
   
    # This use for special quality words used in questions 'which color/size/shape...'
    # 
-   family Quality-class            { entry: qclass<10>[C] : C(*) ; } 
+   #PROS09
+   #family Quality-class            { entry: qclass<10>[C] : C(*) ; } 
+   family Quality-class            { entry: qclass<10>[M] : C(*) ; } 
    
 
    # This is for handling the questioning of modifiers (i.e. optional adjuncts, like location, manner, etc)
@@ -2745,9 +2791,19 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
 #######################
 
   
-  def  wh-word (form, class, props) { _wh-word(form, form, class, props) } 
-  def _wh-word (prd, form, class, props) {
-    word form.-wh-word.class: props(class, pred=prd) { form ; }
+  def  wh-word (form, class, props) { _wh-word-ip(form, form, accentMark(form), class, props) } 
+  #def  _wh-word (form, class, props) { _wh-word-ip(form, form,accentMark(form), class, props) } 
+  def _wh-word-ip (prd, form, form_hs,form_ls,form_lphs, class, props) {
+    word form.-wh-word.class: props(class, pred=prd) { 
+        form;
+	#form :e-focus-false e-uncontentious e-rheme-false e-hearer hear ;
+	#form :e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;
+        #form_hs: e-focus-true e-uncontentious e-rheme-true e-hearer hear hs;
+        #form_hs: e-focus-true e-uncontentious e-rheme-true e-speaker spkr hs;
+	#form_ls: e-focus-true e-uncontentious e-rheme-true e-hearer hear ls;
+	#form_lphs: e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;
+	#form_lphs: e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;
+    }
   }
 
   def  wh-word+feat (form, class, props, args )  { _wh-word+feat(form, form, class, props, args )  } 
@@ -2766,7 +2822,7 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
   def _quality-class_ip (prd, form, prd_hs,prd_ls,prd_lphs) {
     word form.prd.-quality-class: Quality-class(quality, pred=prd) { 
 	form; 
-#        prd_hs : m-focus-true m-uncontentious m-rheme-true hs;
+        prd_hs : m-focus-true m-uncontentious m-rheme-true hs;
 	}
   }
 
@@ -3116,12 +3172,10 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
     _extr(form, form."ever", class, "Extr-".item."-", args)  # must add features!
   }
   
-  
   wh+extrrr(who, animate, np , s-sg nf-real)
   
   wh+extrrr(what, entity, np , s-sg nf-real)
   wh+extrrr(what, event, sent, fin)
-  wh+extrrr(what, event, sent, fin e-focus-false e-uncontentious e-rheme-false e-hearer hear )
   
   wh+extrrr(which, specifier, np-spec, nf-real)
   wh+extrrr(which, specifier, np-spec-ctxt, nf-real)
@@ -3321,7 +3375,9 @@ def be-forms (args) {
     "don't":   do pres         s-pl  s-neg      neg ;
     does:      do pres 3rd     s-sg  s-prov-pos     ;
     "doesn't": do pres 3rd     s-sg  s-neg      neg ;
-    did:       do past               s-prov-pos	    ;
+    did:       do past               s-prov-pos	;
+    #did:       do past               s-prov-pos	e-focus-false e-uncontentious e-rheme-true e-speaker spkr;
+    #did:       do past               s-prov-pos	e-focus-false e-uncontentious e-rheme-false e-hearer hear    ;
     "didn't":  do past               s-neg      neg ;
   }
   
