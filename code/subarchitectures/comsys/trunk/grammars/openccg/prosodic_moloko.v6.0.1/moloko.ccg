@@ -659,8 +659,7 @@ feature {
   def +cop-np(args)  { /^ np<42>[X NUM:NUM ACCENT acc args] }    # the restr & Scope must share number (*these are a ball) 
   def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
   def +cop-adj(args) { / adj<2>[X args] }
-  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
-  #def +cop-adj-ip(args) { /! adj<2>[M args] }
+  #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
   def +cop-adj-ip(args) { /! adj(args) }
 
   # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
@@ -1829,10 +1828,10 @@ HH%: hear;
   #------------------------------
   #--- The Standard Families ----
   #------------------------------
-  
+  #PROSG09: vfam is a macro for making family entries for all possible forms of a Verb. It takes verb forms like iv, tv, v+pp as 1st input argument. Too good Trevor.
   vfam    ( iv              ,                   ,           )
   vfam    ( tv              , +np_1()           , PATIENT() ) 		
-  #PROSG09 
+  #PROSG09 To handle "I don't know@L+H* LH% the color@H* LL%", we need a family entry "s\!np/(s/!np)" in the lies of current "s\!np/np" 
   vfam    ( tv              , +np_ip()           , PATIENT() ) 		
   vfam    ( v+Rec-np        , +np_2()           , RECIPIENT() )
 
@@ -2110,8 +2109,6 @@ HH%: hear;
   def pres-sem(sem) { EVENT(* <Presented>(S:entity) sem ) }
 
   def cop-entry(arg, sem){
- 
-  #PROSG09: we comment 
       entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
       entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
       entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
@@ -2120,10 +2117,13 @@ HH%: hear;
      #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
      # NOTE: this is NOT INCREMENTAL! (**sigh**)
 
-  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%" 
+  #PROSG09 : Rule for permitting intonational phrase like "the box@L+H* is LH% red@H* LL%" 
+
   def cop-entry-ip(arg, sem){
+       #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
        entry: s(s-minor) +subj(nf-real) / (trs() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
-   #    entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+       #PROSG09 : Rule for allowing intonational phrase like "is the box@L+H* LH% red@L* HH%"
+       entry: s(s-int) /(trs() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
   }
 
    #---  Families ----
@@ -2138,7 +2138,7 @@ HH%: hear;
     cop-entry( +cop-pp()  , <Cop-Scope>(X:m-comparison) )
   
     cop-entry( +cop-adj() , <Cop-Scope>(X:quality) )  
-    #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
+    #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
     cop-entry-ip( +cop-adj-ip() , <Cop-Scope>(M:quality) )  
     
     # To avoid 'what is that' or 'what is a ball' getting 2 READINGS (in <Cop-Restr> and <Cop-Scope>), 
@@ -2148,8 +2148,9 @@ HH%: hear;
     #PROSG09 : Rule for allowing intonational phrase like "it is LH% a box_H* LL%"
     entry: s(s-minor) +subj(nf-real Questionable=no) /^(trs()/! np())   : cop-sem(                 <Cop-Scope>(T:entity) )  ; 
 
-    #entry: s(s-minor) \( trs() +subj(nf-real Questionable=no)) +cop-np()    : cop-sem(                 <Cop-Scope>(S:entity) )  ; 
     entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+    #PROSG09: Rule for permitting intonational phrase like "is this@L* HH% a box@L+H* LH%"
+    entry: s(s-int) /^(trs()/! np()) /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(T:entity) )  ; 
 
     entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
   }
@@ -2361,9 +2362,7 @@ HH%: hear;
 	  }
   }
 
- 
- 
- 
+
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains various 'discourse related' families (e.g. Discourse Markers)
@@ -3252,7 +3251,7 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
 # These forms of the be verb are used by be as copular & as its various aux forms 
 # ( be + v+ing, be + passive )
 
-#PROSG09
+#PROSG09 :changes
 def be-forms (args) {
     	am:        be  pres  1st     s-sg s-prov-pos      args;
 	are:       be  pres          s-pl s-prov-pos      args;
@@ -4537,6 +4536,10 @@ is the "box@L+H*" LH%  "compact@L*" HH%:1;
 is the box LH% "compact@L*" and "red@L*" HH%:1;
 is the "box@L+H*" LH% "compact@L*" and "red@L*" HH%:1;
 
+is the ball LH% "red@L*" HH%:1;
+is the "ball@L+H*" LH% "red@L*" HH%:1;
+"is@L+H*" the "ball@L+H*" LH% "red@L*" HH%:1;
+
 ## B.4 ## Verification, Rheme-Theme(un/marked) ## 
 is the "box@L*" LL% green HH%: 1 ;
 is the "box@L*" LL% "green@L+H*" HH%: 1 ;
@@ -4551,6 +4554,9 @@ is the "box@L+H*" LL%  "compact@L+H*" HH%:1;
 
 is the "box@L*" LL% compact and red HH%:1;
 is the "box@L+H*" LH% "compact@L+H*" and "red@L+H*" HH%:1;
+
+is "this@L*" HH% a box LH%:1;
+is "this@L*" HH% a "box@L+H*" LH%:1;
 
 ## B.5 ## Verification, Theme-Rheme-Theme ## 
 

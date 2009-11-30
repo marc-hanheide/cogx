@@ -25,7 +25,6 @@
   def pres-sem(sem) { EVENT(* <Presented>(S:entity) sem ) }
 
   def cop-entry(arg, sem){
- 
       entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
       entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
       entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
@@ -37,7 +36,10 @@
   #PROSG09 : Rule for permitting intonational phrase like "the box@L+H* is LH% red@H* LL%" 
 
   def cop-entry-ip(arg, sem){
+       #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
        entry: s(s-minor) +subj(nf-real) / (trs() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+       #PROSG09 : Rule for allowing intonational phrase like "is the box@L+H* LH% red@L* HH%"
+       entry: s(s-int) /(trs() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
   }
 
    #---  Families ----
@@ -63,8 +65,8 @@
     entry: s(s-minor) +subj(nf-real Questionable=no) /^(trs()/! np())   : cop-sem(                 <Cop-Scope>(T:entity) )  ; 
 
     entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
-    #PROSG09: Rule for permitting intonational phrase like "is it a box@L* HH%"
-    #entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+    #PROSG09: Rule for permitting intonational phrase like "is this@L* HH% a box@L+H* LH%"
+    entry: s(s-int) /^(trs()/! np()) /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(T:entity) )  ; 
 
     entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
   }

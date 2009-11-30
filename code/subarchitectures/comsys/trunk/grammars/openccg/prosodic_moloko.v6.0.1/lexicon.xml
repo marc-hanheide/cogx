@@ -10702,6 +10702,114 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="MOOD" val="s-int"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash dir="/" ability="inert" mode="&gt;"/>
+          <atomcat type="adj">
+            <fs id="25">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="M"/>
+                </lf>
+              </feat>
+              <feat attr="DEGREE">
+                <featvar name="DEGREE"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E:event">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Cop-Restr">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Mood">
+              <prop name="int"/>
+            </diamond>
+            <diamond mode="Subject">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Cop-Scope">
+              <nomvar name="M:quality"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <entry name="Entry-15">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -10754,7 +10862,7 @@
         </lf>
       </complexcat>
     </entry>
-    <entry name="Entry-15">
+    <entry name="Entry-16">
       <complexcat>
         <atomcat type="s">
           <fs id="10">
@@ -10866,7 +10974,7 @@
         </lf>
       </complexcat>
     </entry>
-    <entry name="Entry-16">
+    <entry name="Entry-17">
       <complexcat>
         <atomcat type="s">
           <fs id="10">
@@ -10959,7 +11067,124 @@
         </lf>
       </complexcat>
     </entry>
-    <entry name="Entry-17">
+    <entry name="Entry-18">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
+            <feat attr="MOOD" val="s-int"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="^"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash dir="/" ability="inert" mode="&gt;"/>
+          <atomcat type="np">
+            <fs id="15">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="T"/>
+                </lf>
+              </feat>
+              <feat attr="CASE">
+                <featvar name="CASE"/>
+              </feat>
+              <feat attr="NUM">
+                <featvar name="NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS"/>
+              </feat>
+              <feat attr="NFORM">
+                <featvar name="NFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="OWNER">
+                <featvar name="OWNER"/>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <slash dir="/" mode="^"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E:event">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Cop-Restr">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Mood">
+              <prop name="int"/>
+            </diamond>
+            <diamond mode="Subject">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Cop-Scope">
+              <nomvar name="T:entity"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <entry name="Entry-19">
       <complexcat>
         <atomcat type="cop">
           <fs id="10">

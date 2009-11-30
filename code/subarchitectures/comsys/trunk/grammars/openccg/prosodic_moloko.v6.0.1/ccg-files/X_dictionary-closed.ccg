@@ -422,7 +422,7 @@
 # These forms of the be verb are used by be as copular & as its various aux forms 
 # ( be + v+ing, be + passive )
 
-#PROSG09
+#PROSG09 :changes
 def be-forms (args) {
     	am:        be  pres  1st     s-sg s-prov-pos      args;
 	are:       be  pres          s-pl s-prov-pos      args;
