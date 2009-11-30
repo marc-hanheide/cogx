@@ -122,6 +122,88 @@
   <typechanging name="typechange-3">
     <arg>
       <complexcat>
+        <atomcat type="np">
+          <fs id="15">
+            <feat attr="index">
+              <lf>
+                <nomvar name="T"/>
+              </lf>
+            </feat>
+            <feat attr="CASE">
+              <featvar name="CASE"/>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS"/>
+            </feat>
+            <feat attr="NFORM">
+              <featvar name="NFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
+            <feat attr="args">
+              <featvar name="ARGS"/>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+      </complexcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" ability="inert" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="15">
+            <feat attr="index">
+              <lf>
+                <nomvar name="T"/>
+              </lf>
+            </feat>
+            <feat attr="CASE">
+              <featvar name="CASE"/>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS"/>
+            </feat>
+            <feat attr="NFORM">
+              <featvar name="NFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="OWNER">
+              <featvar name="OWNER"/>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+      </complexcat>
+    </result>
+  </typechanging>
+  <typechanging name="typechange-4">
+    <arg>
+      <complexcat>
         <atomcat type="adj">
           <fs id="25">
             <feat attr="index">
@@ -196,7 +278,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-4">
+  <typechanging name="typechange-5">
     <arg>
       <complexcat>
         <atomcat type="adj">
@@ -244,88 +326,6 @@
             </feat>
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
-            </feat>
-            <feat attr="ACCENT">
-              <featvar name="ACCENT"/>
-            </feat>
-            <feat attr="OWNER">
-              <featvar name="OWNER"/>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash/>
-        <dollar name="1"/>
-      </complexcat>
-    </result>
-  </typechanging>
-  <typechanging name="typechange-5">
-    <arg>
-      <complexcat>
-        <atomcat type="np">
-          <fs id="15">
-            <feat attr="index">
-              <lf>
-                <nomvar name="T"/>
-              </lf>
-            </feat>
-            <feat attr="CASE">
-              <featvar name="CASE"/>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS"/>
-            </feat>
-            <feat attr="NFORM">
-              <featvar name="NFORM"/>
-            </feat>
-            <feat attr="ACCENT">
-              <featvar name="ACCENT"/>
-            </feat>
-            <feat attr="OWNER">
-              <featvar name="OWNER"/>
-            </feat>
-            <feat attr="args">
-              <featvar name="ARGS"/>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash/>
-        <dollar name="1"/>
-      </complexcat>
-    </arg>
-    <result>
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="ACCENT">
-              <featvar name="ACCENT"/>
-            </feat>
-            <feat attr="OWNER">
-              <featvar name="OWNER"/>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" ability="inert" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="15">
-            <feat attr="index">
-              <lf>
-                <nomvar name="T"/>
-              </lf>
-            </feat>
-            <feat attr="CASE">
-              <featvar name="CASE"/>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS"/>
-            </feat>
-            <feat attr="NFORM">
-              <featvar name="NFORM"/>
             </feat>
             <feat attr="ACCENT">
               <featvar name="ACCENT"/>
