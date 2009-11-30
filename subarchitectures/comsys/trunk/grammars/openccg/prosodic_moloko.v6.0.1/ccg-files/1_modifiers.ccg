@@ -79,8 +79,7 @@
   def +cop-np(args)  { /^ np<42>[X NUM:NUM ACCENT acc args] }    # the restr & Scope must share number (*these are a ball) 
   def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
   def +cop-adj(args) { / adj<2>[X args] }
-  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
-  #def +cop-adj-ip(args) { /! adj<2>[M args] }
+  #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
   def +cop-adj-ip(args) { /! adj(args) }
 
   # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
