@@ -138,6 +138,10 @@ is the "box@L+H*" LH%  "compact@L*" HH%:1;
 is the box LH% "compact@L*" and "red@L*" HH%:1;
 is the "box@L+H*" LH% "compact@L*" and "red@L*" HH%:1;
 
+is the ball LH% "red@L*" HH%:1;
+is the "ball@L+H*" LH% "red@L*" HH%:1;
+"is@L+H*" the "ball@L+H*" LH% "red@L*" HH%:1;
+
 ## B.4 ## Verification, Rheme-Theme(un/marked) ## 
 is the "box@L*" LL% green HH%: 1 ;
 is the "box@L*" LL% "green@L+H*" HH%: 1 ;
@@ -152,6 +156,9 @@ is the "box@L+H*" LL%  "compact@L+H*" HH%:1;
 
 is the "box@L*" LL% compact and red HH%:1;
 is the "box@L+H*" LH% "compact@L+H*" and "red@L+H*" HH%:1;
+
+is "this@L*" HH% a box LH%:1;
+is "this@L*" HH% a "box@L+H*" LH%:1;
 
 ## B.5 ## Verification, Theme-Rheme-Theme ## 
 

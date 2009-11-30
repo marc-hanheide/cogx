@@ -165,10 +165,10 @@
   #------------------------------
   #--- The Standard Families ----
   #------------------------------
-  
+  #PROSG09: vfam is a macro for making family entries for all possible forms of a Verb. It takes verb forms like iv, tv, v+pp as 1st input argument. Too good Trevor.
   vfam    ( iv              ,                   ,           )
   vfam    ( tv              , +np_1()           , PATIENT() ) 		
-  #PROSG09 
+  #PROSG09 To handle "I don't know@L+H* LH% the color@H* LL%", we need a family entry "s\!np/(s/!np)" in the lies of current "s\!np/np" 
   vfam    ( tv              , +np_ip()           , PATIENT() ) 		
   vfam    ( v+Rec-np        , +np_2()           , RECIPIENT() )
 
