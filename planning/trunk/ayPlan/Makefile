@@ -4,7 +4,7 @@ FLEX_LIB=-L/usr/ -lfl -lcurses
 
 RANLIB	= ranlib
 
-CXX = ccache g++ -DOLD_FLEX # ccache g++ -DOLD_FLEX -DNDEBUG -O3 -fno-strict-aliasing -fomit-frame-pointer -funroll-all-loops -fexpensive-optimizations   -mno-align-stringops  -minline-all-stringops -pipe  -mfpmath=sse -march=nocona -m64 -msse3 -falign-functions=64 -fforce-addr -ffast-math -mpush-args  -maccumulate-outgoing-args -momit-leaf-frame-pointer
+CXX =  g++ -DOLD_FLEX # ccache g++ -DOLD_FLEX -DNDEBUG -O3 -fno-strict-aliasing -fomit-frame-pointer -funroll-all-loops -fexpensive-optimizations   -mno-align-stringops  -minline-all-stringops -pipe  -mfpmath=sse -march=nocona -m64 -msse3 -falign-functions=64 -fforce-addr -ffast-math -mpush-args  -maccumulate-outgoing-args -momit-leaf-frame-pointer
 
 GENERATED=pddl+
 
