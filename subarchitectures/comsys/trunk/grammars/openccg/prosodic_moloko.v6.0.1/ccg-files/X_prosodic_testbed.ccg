@@ -49,8 +49,8 @@ I see a red "ball@H*" LL%: 1 ;
 the "box@H*" is "blue@H*" LL%:1;
 
 ## A.2 ## Assertions, Theme only ##
-the "box@L+H*" is "blue@L+H*" LL%:1;
-it is a "ball@L+H*" LL%:1;
+the "box@L+H*" is "blue@L+H*" LL%:1; ##What does it mean to have such a information/intonation structure.
+it is a "ball@L+H*" LL%:1; #compare with the next
 it is a "ball@L+H*" LH%:1;
 
 ## A.3 ## Assertions, Theme(un/marked)-Rheme ##
@@ -143,19 +143,19 @@ is the "ball@L+H*" LH% "red@L*" HH%:1;
 "is@L+H*" the "ball@L+H*" LH% "red@L*" HH%:1;
 
 ## B.4 ## Verification, Rheme-Theme(un/marked) ## 
-is the "box@L*" LL% green HH%: 1 ;
-is the "box@L*" LL% "green@L+H*" HH%: 1 ;
-is the "box@L*" LL% "green@L+H*" LH%: 1 ;
+is the "box@L*" HH% green LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
 
-is "this@L*" LL%  red HH%:1;
-is "this@L*" LL%  "red@L+H*" HH%:1;
-is "this@L*" LL%  "red@L+H*" LH%:1;
+is "this@L*" HH%  red LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
 
-is the "box@L*" LL%  compact HH%:1;
-is the "box@L+H*" LL%  "compact@L+H*" HH%:1;
+is the "box@L*" HH%  compact LH%:1;
+is the "box@L*" HH%  "compact@L+H*" LH%:1;
 
-is the "box@L*" LL% compact and red HH%:1;
-is the "box@L+H*" LH% "compact@L+H*" and "red@L+H*" HH%:1;
+is the "box@L*" HH% compact and red LH%:1;
+is the "box@L*" HH% "compact@L+H*" and "red@L+H*" LH%:1;
 
 is "this@L*" HH% a box LH%:1;
 is "this@L*" HH% a "box@L+H*" LH%:1;
@@ -178,8 +178,14 @@ is the "box@L+H*" LH% "red@L*" or "orange@L*" HH%:1;
 ## C.5 ## Disambiguation, Rheme-Rheme-Theme(un/marked) ##
 
 ## D.1 information requests ##
+"what@L*" is that HH%:1;
+"what@H*" is that HH%:1;
+what is "that@L*" HH%:1;
+what is "that@H*" HH%:1;
+
 what color is the mug:1;
-what "color@H*" is the mug HH%:1;
+what "color@H*" is the mug HH%:1; ##Information Question.
+what "color@L*" is the mug HH%:1; ##Clarification Question.
 what color is the "mug@H*" HH%:1;
 what "color@H*" is "this@H*" mug HH%:1;
 what color is the bigger "mug@H*" HH%:1;
@@ -193,7 +199,7 @@ is it a "red@L+H*" "box@H*" LH%: 0 ;
 is it a red box LL%: 0 ;        
 a red box LL%: 0 ;
 
-##### content planner ######
+##### added while content planner testing ######
 the "box@L+H*" LH% is "blue@H*" LL%:1;
 the "box@L+H*" LH% "is@H*" "blue@H*" LL%:1;
 
