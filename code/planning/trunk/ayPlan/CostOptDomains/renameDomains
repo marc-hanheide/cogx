@@ -1,0 +1,21 @@
+#!/bin/bash
+
+MAX_TIME_STEP=20
+
+tstep=1
+while [ $tstep -le $MAX_TIME_STEP ];
+do
+    
+    if [ $tstep -le 9 ]; then
+        mtstep="0"$tstep
+    else
+        mtstep=$tstep
+    fi 
+    
+    cp domain.pddl "p"$mtstep"-domain.pddl"
+    
+    mv "pfile"$mtstep "p"$mtstep".pddl"
+    
+    tstep=$(( $tstep + 1 ))
+    
+done
