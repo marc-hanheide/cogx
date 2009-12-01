@@ -1,4 +1,7 @@
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
 
 #   Wh-Words for questions ( WHO is he,  WHERE did you go, etc)
 #   Role-Defined Constituents  ( I picked up 'WHAT you wanted', I don't know 'WHO he is', etc)
@@ -106,9 +109,9 @@
   
    # This use for special quality words used in questions 'which color/size/shape...'
    # 
-   #PROS09
+   #PROSG09 : for "What color@H* HH% is the box LH%" the features in the LF have nominal type M, the presence of nominal C in qclass doesn't let m-focus-true features to generate color@H*
    #family Quality-class            { entry: qclass<10>[C] : C(*) ; } 
-   family Quality-class            { entry: qclass<10>[M] : C(*) ; } 
+   family Quality-class            { entry: qclass<10>[M] : M(*) ; } 
    
 
    # This is for handling the questioning of modifiers (i.e. optional adjuncts, like location, manner, etc)

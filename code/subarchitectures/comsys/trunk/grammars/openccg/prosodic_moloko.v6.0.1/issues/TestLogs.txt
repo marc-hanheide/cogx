@@ -101,13 +101,30 @@ also see why don't get attached to HL% ?? oh it is a verb! rules permit this! ne
 don't: s\!np/^(s\!np)
 know: s\!np/np :type change to s\!np/(s/!np) I HH% don't know HH% the color@H* LL%
 
-
+=====================================
+what color@H* is HH% the box@L+H* LH%
 ======================================================================================================
 (@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ box ^ <InfoStatus>familiar ^ <ProofStatus>assumed) ^  <Color>(dummy1_4:quality ^ color ^ <Questioned>true ^ <ProofStatus>asserted))))
-what color is the box HH%
-color is qclass. Doesn't get the semantic feature.
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ box ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ color ^ <Questioned>true ^ <ProofStatus>asserted))))
 
-We changed q-class nominal from type C to M.
+@dummy1_2:ascription(be ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Mood>int ^ <Commitment>e-uncontentious ^ <Tense>pres ^ <Cop-Restr>(dummy1_3:entity ^ box ^ <Rheme>t-rheme-false ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>unique ^ <Owner>t-hearer ^ <Focus>t-focus-false ^ <Commitment>t-uncontentious) ^ <Cop-Scope>(dummy1_4:quality ^ color ^ <Rheme>m-rheme-true ^ <Commitment>m-uncontentious ^ <Focus>m-focus-true ^ <Owner>m-hearer) ^ <Subject>dummy1_3:entity ^ <Wh-Restr>(w1:specifier ^ which ^ <Scope>dummy1_4:quality))
+
+LF expected: what color@H* HH% is the box LH% 
+Grammar result: what color is the box HH%
+	        which color is the boy LH%
+Robot Meant: what color@H* HH% is the box LH% (IQ)
+
+investigations: 
+tccg> what color@H* is HH% the box LH%     
+Unable to parse
+tccg> what@H* color is the mug HH%
+parses, however here color is qclassi, what we have in the LF is quality. Doesn't get the semantic feature.
+
+We changed q-class nominal from type C to M.: but this lead to issues
+a) the structure has nominals that are not part of discourse
+	<Cop-Scope>x1_0:quality ^ 
+	where as in moloko.v6 it is
+	<Cop-Scope>(color1_0:quality ^ color) ^
 ======================================================================================================
 
 (@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:cognition ^ know ^ <Polarity>neg ^  <Actor>(dummy1_3:person ^ I))) ^ @dummy1_4:(<ProofStatus>assumed))

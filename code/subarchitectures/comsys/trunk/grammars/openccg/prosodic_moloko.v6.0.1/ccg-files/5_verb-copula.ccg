@@ -38,8 +38,13 @@
   def cop-entry-ip(arg, sem){
        #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
        entry: s(s-minor) +subj(nf-real) / (trs() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+
        #PROSG09 : Rule for allowing intonational phrase like "is the box@L+H* LH% red@L* HH%"
        entry: s(s-int) /(trs() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+
+       #PROSG09 : for "What color@H* HH% is the box LH%". For such a  rheme-theme partitioning we need 
+       # what:- s/^(s/!(cop/^adj))/qclass besides what:- s/^(cop/^adj)/qclass, hence requires is:- s/!(cop/adj)/np 
+       entry: trs()/!(cop<10>[E] arg)/ subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
   }
 
    #---  Families ----
@@ -105,8 +110,10 @@
   # Questioning the <Cop-Scope>
   # 
   def wh-copular-entry(item, syn, sem)  {
-  	  entry: from-s(s-int)  /^ ( cop<10>[E] item  ) syn
-                 : E:state( INT() <Wh-Restr>(sem) ); 
+  	  entry: from-s(s-int)  /^ ( cop<10>[E] item  ) syn : E:state( INT() <Wh-Restr>(sem) ); 
+  	  #PROSG09 : for "What color@H* HH% is the box LH%". For such a  rheme-theme partitioning we need 
+	  # what:- s/^(s/!(cop/^adj))/qclass besides what:- s/^(cop/^adj)/qclass
+  	  entry: from-s(s-int)  /^ (trs()/!( cop<10>[E] item  )) syn : E:state( INT() <Wh-Restr>(sem) ); 
   } 
 
   # Handling Questions like 'when were you big' and 'where was there a ball',
