@@ -35,7 +35,7 @@ namespace Planning
 				       const vector<SetOfConstants>& argumentsToCheck)
 	{
 	    TripleInt cacheIndex(predicateIndex, lower, upper);
-	
+            VERBOSER(1500, "got predicate :: "<<signedPredicate<<endl);
 	    const Parameters& parameters  = signedPredicate.getParameters();
 	
 	    /*Indices to variables that \argument{signedPredicate} is
@@ -54,28 +54,36 @@ namespace Planning
 	    for(Parameters::const_iterator parameter = parameters.begin()
 		    ; parameter != parameters.end()
 		    ; parameter++){
-		assert(dynamic_cast<const Variable*>(*parameter));
+                if(dynamic_cast<const Constant*>(*parameter)){
+                    assert(dynamic_cast<const Constant*>(*parameter));
+                    continue;
+                } else if(dynamic_cast<const Variable*>(*parameter)) {
+                    assert(dynamic_cast<const Variable*>(*parameter));
 	    
-		const Variable& variable = dynamic_cast<const Variable&>(**parameter);
+                    const Variable& variable = dynamic_cast<const Variable&>(**parameter);
 
-		VERBOSER(15, "Deciding if \\predicate{"<<signedPredicate.getName()
-			 <<"} should force an assignment for variable :: "<<variable<<endl);
+                    VERBOSER(15, "Deciding if \\predicate{"<<signedPredicate.getName()
+                             <<"} should force an assignment for variable :: "<<variable<<endl);
 	    
-		VariableToConstant::const_iterator maplet = variableToConstant.find(variable);
+                    VariableToConstant::const_iterator maplet = variableToConstant.find(variable);
 	    
-		/*If an assignment has already been made to
-		 * \argument{signedPredicate} according to
-		 * \argument{variableToConstant}.*/
-		if(maplet != variableToConstant.end()){
-		    assert(parameterCount < givenIndices.size());
-		    givenIndices[parameterCount] = true;//.push_back(parameterCount);
+                    /*If an assignment has already been made to
+                     * \argument{signedPredicate} according to
+                     * \argument{variableToConstant}.*/
+                    if(maplet != variableToConstant.end()){
+                        assert(parameterCount < givenIndices.size());
+                        givenIndices[parameterCount] = true;//.push_back(parameterCount);
 
-		    VERBOSER(15, "Assignment to  :: "<<variable<<" was forced by another precondition."<<endl);
-		} else {
-		    VERBOSER(15, "Assignment to  :: "<<variable<<" was NOT forced by another precondition."<<endl);
-		}
+                        VERBOSER(15, "Assignment to  :: "<<variable<<" was forced by another precondition."<<endl);
+                    } else {
+                        VERBOSER(15, "Assignment to  :: "<<variable<<" was NOT forced by another precondition."<<endl);
+                    }
 	    
-		parameterCount++;
+                    parameterCount++;
+                } else {
+                    UNRECOVERABLE_ERROR("Got a parameter :: "<<*parameter<<" that is neither a variable or a constant."<<endl);
+                }
+                
 	    }
 	
 	
@@ -133,36 +141,46 @@ namespace Planning
 		
 		    assert(argumentIndex < predicatesParameters.size());
 		    assert(argumentIndex < propositionsParameters.size());
-		    assert(dynamic_cast<const Variable*>(predicatesParameters[argumentIndex]));
-		    assert(dynamic_cast<const Constant*>(propositionsParameters[argumentIndex]));
 
-		    const Constant& constant = dynamic_cast<const Constant&>(*propositionsParameters[argumentIndex]);
-		    const Variable& variable = dynamic_cast<const Variable&>(*predicatesParameters[argumentIndex]);
+                    if(dynamic_cast<const Constant*>(predicatesParameters[argumentIndex])){
+                        continue;
+                    } else if (dynamic_cast<const Variable*>(predicatesParameters[argumentIndex])) {
+                        
+                    
+                        assert(dynamic_cast<const Variable*>(predicatesParameters[argumentIndex]));
+                        assert(dynamic_cast<const Constant*>(propositionsParameters[argumentIndex]));
+
+                        const Constant& constant = dynamic_cast<const Constant&>(*propositionsParameters[argumentIndex]);
+                        const Variable& variable = dynamic_cast<const Variable&>(*predicatesParameters[argumentIndex]);
 		
-		    /*If we DO NOT get to decide on the value of argument \local{argumentIndex}.*/
-		    if(givenIndices[argumentIndex]){
-			indexAssignment.push_back(constant);
-		    }
-		    /*If we get to decide on the value of argument \local{argumentIndex}.*/
-		    else if(argumentsToCheck[integerCache = variableToUnsignedInt.find(variable)->second].find(constant)
-			    != argumentsToCheck[integerCache].end()) {
+                        /*If we DO NOT get to decide on the value of argument \local{argumentIndex}.*/
+                        if(givenIndices[argumentIndex]){
+                            indexAssignment.push_back(constant);
+                        }
+                        /*If we get to decide on the value of argument \local{argumentIndex}.*/
+                        else if(argumentsToCheck[integerCache = variableToUnsignedInt.find(variable)->second].find(constant)
+                                != argumentsToCheck[integerCache].end()) {
 		    
-			completedAssignment[variable] = constant;
-		    } else {
-			/*Assert that we at least tried to find the argument in a non-empty set.*/
-			assert(argumentsToCheck[variableToUnsignedInt.find(variable)->second].size() > 0);
+                            completedAssignment[variable] = constant;
+                        } else {
+                            /*Assert that we at least tried to find the argument in a non-empty set.*/
+                            assert(argumentsToCheck[variableToUnsignedInt.find(variable)->second].size() > 0);
 
-			VERBOSER(17, "*DENIED* for action -- ("<<constant<<") is not a good argument for ("<<variable<<")"<<endl);
-			VERBOSER(17, "*DENIED* This was the "<<(integerCache = variableToUnsignedInt.find(variable)->second)<<"'th argument."<<endl);
+                            VERBOSER(17, "*DENIED* for action -- ("<<constant<<") is not a good argument for ("<<variable<<")"<<endl);
+                            VERBOSER(17, "*DENIED* This was the "<<(integerCache = variableToUnsignedInt.find(variable)->second)<<"'th argument."<<endl);
 
-			const SetOfConstants& setOfConstants
-			    = argumentsToCheck[integerCache = variableToUnsignedInt.find(variable)->second];
+                            const SetOfConstants& setOfConstants
+                                = argumentsToCheck[integerCache = variableToUnsignedInt.find(variable)->second];
 
-			VERBOSER(17, "Possibilities are :: "<<argumentsToCheck<<endl);//setOfConstants<<endl);
+                            VERBOSER(17, "Possibilities are :: "<<argumentsToCheck<<endl);//setOfConstants<<endl);
 		    
-			abort = true;
-			break;
-		    }
+                            abort = true;
+                            break;
+                        }
+                    } else {
+                        UNRECOVERABLE_ERROR("Not sure what to do with symbol "<<predicatesParameters[argumentIndex]<<". It is neither a constant nor a variable..."<<endl);
+                    }
+                    
 		}
 
 		if(!abort){
