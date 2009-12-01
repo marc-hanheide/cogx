@@ -122,14 +122,14 @@
 
   def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
     word sing.-noun-n:Noun(class, pred=prd) {
-      #sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
       sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
       sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
-      #sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
-      #sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-hearer hear args;
+      sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
       sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
       sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
-      sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
+      #sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
       sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs args;
       #sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
       plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;

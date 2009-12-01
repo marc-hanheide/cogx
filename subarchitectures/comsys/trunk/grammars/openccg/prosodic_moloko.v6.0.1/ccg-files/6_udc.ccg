@@ -336,7 +336,8 @@
   def _quality-class_ip (prd, form, prd_hs,prd_ls,prd_lphs) {
     word form.prd.-quality-class: Quality-class(quality, pred=prd) { 
 	form; 
-        prd_hs : m-focus-true m-uncontentious m-rheme-true hs;
+        prd_hs : m-focus-true m-uncontentious m-rheme-true m-hearer hear hs;
+        prd_ls : m-focus-true m-contentious m-rheme-true m-hearer hear ls;
 	}
   }
 
