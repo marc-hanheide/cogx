@@ -82,32 +82,32 @@
   <entry word="someone" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="someone-context-np" class="person" pred="context"/>
   <entry word="someone" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="someone-context-np" class="person" pred="context"/>
   <entry word="someone@H*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="someone-context-np" class="person" pred="context"/>
-  <entry word="someone@L*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="someone-context-np" class="person" pred="context"/>
+  <entry word="someone@L*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="someone-context-np" class="person" pred="context"/>
   <entry word="someone@L+H*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="someone-context-np" class="person" pred="context"/>
   <entry word="somebody" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="somebody-context-np" class="person" pred="context"/>
   <entry word="somebody" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="somebody-context-np" class="person" pred="context"/>
   <entry word="somebody@H*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="somebody-context-np" class="person" pred="context"/>
-  <entry word="somebody@L*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="somebody-context-np" class="person" pred="context"/>
+  <entry word="somebody@L*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="somebody-context-np" class="person" pred="context"/>
   <entry word="somebody@L+H*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="somebody-context-np" class="person" pred="context"/>
   <entry word="anyone" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="anyone-context-np" class="person" pred="context"/>
   <entry word="anyone" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="anyone-context-np" class="person" pred="context"/>
   <entry word="anyone@H*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="anyone-context-np" class="person" pred="context"/>
-  <entry word="anyone@L*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="anyone-context-np" class="person" pred="context"/>
+  <entry word="anyone@L*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="anyone-context-np" class="person" pred="context"/>
   <entry word="anyone@L+H*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="anyone-context-np" class="person" pred="context"/>
   <entry word="anybody" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="anybody-context-np" class="person" pred="context"/>
   <entry word="anybody" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="anybody-context-np" class="person" pred="context"/>
   <entry word="anybody@H*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="anybody-context-np" class="person" pred="context"/>
-  <entry word="anybody@L*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="anybody-context-np" class="person" pred="context"/>
+  <entry word="anybody@L*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="anybody-context-np" class="person" pred="context"/>
   <entry word="anybody@L+H*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="anybody-context-np" class="person" pred="context"/>
   <entry word="something" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="something-context-np" class="thing" pred="context"/>
   <entry word="something" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="something-context-np" class="thing" pred="context"/>
   <entry word="something@H*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="something-context-np" class="thing" pred="context"/>
-  <entry word="something@L*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="something-context-np" class="thing" pred="context"/>
+  <entry word="something@L*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="something-context-np" class="thing" pred="context"/>
   <entry word="something@L+H*" macros="@3rd @s-sg @sg @existential @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="something-context-np" class="thing" pred="context"/>
   <entry word="anything" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="anything-context-np" class="thing" pred="context"/>
   <entry word="anything" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="anything-context-np" class="thing" pred="context"/>
   <entry word="anything@H*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="anything-context-np" class="thing" pred="context"/>
-  <entry word="anything@L*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="anything-context-np" class="thing" pred="context"/>
+  <entry word="anything@L*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="anything-context-np" class="thing" pred="context"/>
   <entry word="anything@L+H*" macros="@3rd @s-sg @sg @variable @specific @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="anything-context-np" class="thing" pred="context"/>
   <entry word="this" macros="@fin-deictic @m-class-none @s-dependent @proximal @specific @unique" pos="Event-np" stem="this-deictic-pro-event" class="event" pred="context"/>
   <entry word="that" macros="@fin-deictic @m-class-none @s-dependent @distal @specific @unique" pos="Event-np" stem="that-deictic-pro-event" class="event" pred="context"/>
@@ -140,12 +140,12 @@
   <entry word="here" macros="@3rd @sg @s-sg @acc-loc @proximal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="here-context-np" class="e-location" pred="context"/>
   <entry word="here" macros="@3rd @sg @s-sg @acc-loc @proximal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="here-context-np" class="e-location" pred="context"/>
   <entry word="here@H*" macros="@3rd @sg @s-sg @acc-loc @proximal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="here-context-np" class="e-location" pred="context"/>
-  <entry word="here@L*" macros="@3rd @sg @s-sg @acc-loc @proximal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="here-context-np" class="e-location" pred="context"/>
+  <entry word="here@L*" macros="@3rd @sg @s-sg @acc-loc @proximal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="here-context-np" class="e-location" pred="context"/>
   <entry word="here@L+H*" macros="@3rd @sg @s-sg @acc-loc @proximal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="here-context-np" class="e-location" pred="context"/>
   <entry word="there" macros="@3rd @sg @s-sg @acc-loc @distal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="there-context-np" class="e-location" pred="context"/>
   <entry word="there" macros="@3rd @sg @s-sg @acc-loc @distal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="there-context-np" class="e-location" pred="context"/>
   <entry word="there@H*" macros="@3rd @sg @s-sg @acc-loc @distal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="there-context-np" class="e-location" pred="context"/>
-  <entry word="there@L*" macros="@3rd @sg @s-sg @acc-loc @distal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="there-context-np" class="e-location" pred="context"/>
+  <entry word="there@L*" macros="@3rd @sg @s-sg @acc-loc @distal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="there-context-np" class="e-location" pred="context"/>
   <entry word="there@L+H*" macros="@3rd @sg @s-sg @acc-loc @distal @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="there-context-np" class="e-location" pred="context"/>
   <entry word="somewhere" macros="@x-location @prep-1" pos="Prep+no-arg-" stem="somewhere-prep+no-arg-location" class="m-location" pred="somewhere"/>
   <entry word="anywhere" macros="@x-location @prep-1" pos="Prep+no-arg-" stem="anywhere-prep+no-arg-location" class="m-location" pred="somewhere"/>
@@ -154,7 +154,7 @@
   <entry word="then" macros="@3rd @sg @s-sg @acc-loc @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="then-context-np" class="e-time" pred="context"/>
   <entry word="then" macros="@3rd @sg @s-sg @acc-loc @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="then-context-np" class="e-time" pred="context"/>
   <entry word="then@H*" macros="@3rd @sg @s-sg @acc-loc @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="then-context-np" class="e-time" pred="context"/>
-  <entry word="then@L*" macros="@3rd @sg @s-sg @acc-loc @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="then-context-np" class="e-time" pred="context"/>
+  <entry word="then@L*" macros="@3rd @sg @s-sg @acc-loc @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="then-context-np" class="e-time" pred="context"/>
   <entry word="then@L+H*" macros="@3rd @sg @s-sg @acc-loc @specific @unique @full @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="then-context-np" class="e-time" pred="context"/>
   <entry word="more" macros="@comparative" pos="More-adj" stem="more"/>
   <entry word="most" macros="@superlative" pos="Most-adj" stem="most"/>
@@ -184,46 +184,46 @@
   <entry word="some" macros="@3rd @s-pl-unsp @pl @existential @unspecific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="some-context-np" class="entity" pred="context"/>
   <entry word="some" macros="@3rd @s-pl-unsp @pl @existential @unspecific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="some-context-np" class="entity" pred="context"/>
   <entry word="some@H*" macros="@3rd @s-pl-unsp @pl @existential @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="some-context-np" class="entity" pred="context"/>
-  <entry word="some@L*" macros="@3rd @s-pl-unsp @pl @existential @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="some-context-np" class="entity" pred="context"/>
+  <entry word="some@L*" macros="@3rd @s-pl-unsp @pl @existential @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="some-context-np" class="entity" pred="context"/>
   <entry word="some@L+H*" macros="@3rd @s-pl-unsp @pl @existential @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="some-context-np" class="entity" pred="context"/>
   <entry word="some" macros="@s-pl @s-pl-unsp @pl @existential @unspecific" pos="Group-np" stem="somegroup-np"/>
   <entry word="any" macros="@s-sg @sg @variable @specific" pos="Det" stem="anydet"/>
   <entry word="any" macros="@3rd @s-sg @sg @variable @specific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any" macros="@3rd @s-sg @sg @variable @specific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any@H*" macros="@3rd @s-sg @sg @variable @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
-  <entry word="any@L*" macros="@3rd @s-sg @sg @variable @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
+  <entry word="any@L*" macros="@3rd @s-sg @sg @variable @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any@L+H*" macros="@3rd @s-sg @sg @variable @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any" macros="@s-pl-unsp @pl @variable @unspecific" pos="Det" stem="anydet"/>
   <entry word="any" macros="@3rd @s-pl-unsp @pl @variable @unspecific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any" macros="@3rd @s-pl-unsp @pl @variable @unspecific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any@H*" macros="@3rd @s-pl-unsp @pl @variable @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
-  <entry word="any@L*" macros="@3rd @s-pl-unsp @pl @variable @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
+  <entry word="any@L*" macros="@3rd @s-pl-unsp @pl @variable @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any@L+H*" macros="@3rd @s-pl-unsp @pl @variable @unspecific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="any-context-np" class="entity" pred="context"/>
   <entry word="any" macros="@s-pl @s-pl-unsp @pl @variable @unspecific" pos="Group-np" stem="anygroup-np"/>
   <entry word="this" macros="@s-sg @sg @unique @specific @proximal" pos="Det" stem="thisdet"/>
   <entry word="this" macros="@3rd @s-sg @sg @unique @specific @proximal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="this-context-np" class="entity" pred="context"/>
   <entry word="this" macros="@3rd @s-sg @sg @unique @specific @proximal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="this-context-np" class="entity" pred="context"/>
   <entry word="this@H*" macros="@3rd @s-sg @sg @unique @specific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="this-context-np" class="entity" pred="context"/>
-  <entry word="this@L*" macros="@3rd @s-sg @sg @unique @specific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="this-context-np" class="entity" pred="context"/>
+  <entry word="this@L*" macros="@3rd @s-sg @sg @unique @specific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="this-context-np" class="entity" pred="context"/>
   <entry word="this@L+H*" macros="@3rd @s-sg @sg @unique @specific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="this-context-np" class="entity" pred="context"/>
   <entry word="these" macros="@s-pl-unsp @pl @unique @unspecific @proximal" pos="Det" stem="thesedet"/>
   <entry word="these" macros="@3rd @s-pl-unsp @pl @unique @unspecific @proximal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="these-context-np" class="entity" pred="context"/>
   <entry word="these" macros="@3rd @s-pl-unsp @pl @unique @unspecific @proximal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="these-context-np" class="entity" pred="context"/>
   <entry word="these@H*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="these-context-np" class="entity" pred="context"/>
-  <entry word="these@L*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="these-context-np" class="entity" pred="context"/>
+  <entry word="these@L*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="these-context-np" class="entity" pred="context"/>
   <entry word="these@L+H*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @proximal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="these-context-np" class="entity" pred="context"/>
   <entry word="these" macros="@s-pl-sp @pl @unique @specific @proximal" pos="Det" stem="thesedet"/>
   <entry word="that" macros="@s-sg @sg @unique @specific @distal" pos="Det" stem="thatdet"/>
   <entry word="that" macros="@3rd @s-sg @sg @unique @specific @distal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="that-context-np" class="entity" pred="context"/>
   <entry word="that" macros="@3rd @s-sg @sg @unique @specific @distal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="that-context-np" class="entity" pred="context"/>
   <entry word="that@H*" macros="@3rd @s-sg @sg @unique @specific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="that-context-np" class="entity" pred="context"/>
-  <entry word="that@L*" macros="@3rd @s-sg @sg @unique @specific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="that-context-np" class="entity" pred="context"/>
+  <entry word="that@L*" macros="@3rd @s-sg @sg @unique @specific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="that-context-np" class="entity" pred="context"/>
   <entry word="that@L+H*" macros="@3rd @s-sg @sg @unique @specific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="that-context-np" class="entity" pred="context"/>
   <entry word="those" macros="@s-pl-unsp @pl @unique @unspecific @distal" pos="Det" stem="thosedet"/>
   <entry word="those" macros="@3rd @s-pl-unsp @pl @unique @unspecific @distal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="those-context-np" class="entity" pred="context"/>
   <entry word="those" macros="@3rd @s-pl-unsp @pl @unique @unspecific @distal @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="those-context-np" class="entity" pred="context"/>
   <entry word="those@H*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="those-context-np" class="entity" pred="context"/>
-  <entry word="those@L*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="those-context-np" class="entity" pred="context"/>
+  <entry word="those@L*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="those-context-np" class="entity" pred="context"/>
   <entry word="those@L+H*" macros="@3rd @s-pl-unsp @pl @unique @unspecific @distal @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="those-context-np" class="entity" pred="context"/>
   <entry word="those" macros="@s-pl-sp @pl @unique @specific @distal" pos="Det" stem="thosedet"/>
   <entry word="more" macros="@s-pl-unsp @pl @variable @unspecific" pos="SDet" stem="moremoresdet" class="comparative" pred="more"/>
@@ -316,7 +316,7 @@
   <entry word="one" macros="@3rd @s-sg @sg @existential @specific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="one-context-np" class="entity" pred="context"/>
   <entry word="one" macros="@3rd @s-sg @sg @existential @specific @nf-ctxt @t-uncontentious @t-focus-false @t-rheme-false @t-speaker @spkr" pos="Bare-np" stem="one-context-np" class="entity" pred="context"/>
   <entry word="one@H*" macros="@3rd @s-sg @sg @existential @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="one-context-np" class="entity" pred="context"/>
-  <entry word="one@L*" macros="@3rd @s-sg @sg @existential @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-speaker @spkr" pos="Bare-np" stem="one-context-np" class="entity" pred="context"/>
+  <entry word="one@L*" macros="@3rd @s-sg @sg @existential @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-true @t-hearer @hear" pos="Bare-np" stem="one-context-np" class="entity" pred="context"/>
   <entry word="one@L+H*" macros="@3rd @s-sg @sg @existential @specific @nf-ctxt @t-uncontentious @t-focus-true @t-rheme-false @t-hearer @hear" pos="Bare-np" stem="one-context-np" class="entity" pred="context"/>
   <entry word="one" macros="@s-pl @s-sg @sg @existential @specific" pos="Group-np" stem="onegroup-np"/>
   <entry word="ones" macros="@s-pl @full @nf-ctxt @n-4" pos="Noun" stem="ones-context-n" class="entity" pred="context"/>

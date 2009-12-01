@@ -245,7 +245,7 @@
       form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-hearer hear ;    
       form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-speaker spkr ;    
       form_hs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
-      form_ls : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
+      form_ls : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-hearer hear;    
       form_lphs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-false t-hearer hear;    
     }
  }

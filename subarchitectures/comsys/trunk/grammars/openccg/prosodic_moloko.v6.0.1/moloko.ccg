@@ -992,7 +992,7 @@ feature {
       form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-hearer hear ;    
       form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-speaker spkr ;    
       form_hs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
-      form_ls : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
+      form_ls : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-hearer hear;    
       form_lphs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-false t-hearer hear;    
     }
  }
@@ -2122,8 +2122,13 @@ HH%: hear;
   def cop-entry-ip(arg, sem){
        #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
        entry: s(s-minor) +subj(nf-real) / (trs() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+
        #PROSG09 : Rule for allowing intonational phrase like "is the box@L+H* LH% red@L* HH%"
        entry: s(s-int) /(trs() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+
+       #PROSG09 : for "What color@H* HH% is the box LH%". For such a  rheme-theme partitioning we need 
+       # what:- s/^(s/!(cop/^adj))/qclass besides what:- s/^(cop/^adj)/qclass, hence requires is:- s/!(cop/adj)/np 
+       entry: trs()/!(cop<10>[E] arg)/ subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
   }
 
    #---  Families ----
@@ -2189,8 +2194,10 @@ HH%: hear;
   # Questioning the <Cop-Scope>
   # 
   def wh-copular-entry(item, syn, sem)  {
-  	  entry: from-s(s-int)  /^ ( cop<10>[E] item  ) syn
-                 : E:state( INT() <Wh-Restr>(sem) ); 
+  	  entry: from-s(s-int)  /^ ( cop<10>[E] item  ) syn : E:state( INT() <Wh-Restr>(sem) ); 
+  	  #PROSG09 : for "What color@H* HH% is the box LH%". For such a  rheme-theme partitioning we need 
+	  # what:- s/^(s/!(cop/^adj))/qclass besides what:- s/^(cop/^adj)/qclass
+  	  entry: from-s(s-int)  /^ (trs()/!( cop<10>[E] item  )) syn : E:state( INT() <Wh-Restr>(sem) ); 
   } 
 
   # Handling Questions like 'when were you big' and 'where was there a ball',
@@ -2487,6 +2494,9 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
 
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
 
 #   Wh-Words for questions ( WHO is he,  WHERE did you go, etc)
 #   Role-Defined Constituents  ( I picked up 'WHAT you wanted', I don't know 'WHO he is', etc)
@@ -2594,9 +2604,9 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
   
    # This use for special quality words used in questions 'which color/size/shape...'
    # 
-   #PROS09
+   #PROSG09 : for "What color@H* HH% is the box LH%" the features in the LF have nominal type M, the presence of nominal C in qclass doesn't let m-focus-true features to generate color@H*
    #family Quality-class            { entry: qclass<10>[C] : C(*) ; } 
-   family Quality-class            { entry: qclass<10>[M] : C(*) ; } 
+   family Quality-class            { entry: qclass<10>[M] : M(*) ; } 
    
 
    # This is for handling the questioning of modifiers (i.e. optional adjuncts, like location, manner, etc)
@@ -4447,8 +4457,8 @@ I see a red "ball@H*" LL%: 1 ;
 the "box@H*" is "blue@H*" LL%:1;
 
 ## A.2 ## Assertions, Theme only ##
-the "box@L+H*" is "blue@L+H*" LL%:1;
-it is a "ball@L+H*" LL%:1;
+the "box@L+H*" is "blue@L+H*" LL%:1; ##What does it mean to have such a information/intonation structure.
+it is a "ball@L+H*" LL%:1; #compare with the next
 it is a "ball@L+H*" LH%:1;
 
 ## A.3 ## Assertions, Theme(un/marked)-Rheme ##
@@ -4541,19 +4551,19 @@ is the "ball@L+H*" LH% "red@L*" HH%:1;
 "is@L+H*" the "ball@L+H*" LH% "red@L*" HH%:1;
 
 ## B.4 ## Verification, Rheme-Theme(un/marked) ## 
-is the "box@L*" LL% green HH%: 1 ;
-is the "box@L*" LL% "green@L+H*" HH%: 1 ;
-is the "box@L*" LL% "green@L+H*" LH%: 1 ;
+is the "box@L*" HH% green LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
 
-is "this@L*" LL%  red HH%:1;
-is "this@L*" LL%  "red@L+H*" HH%:1;
-is "this@L*" LL%  "red@L+H*" LH%:1;
+is "this@L*" HH%  red LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
 
-is the "box@L*" LL%  compact HH%:1;
-is the "box@L+H*" LL%  "compact@L+H*" HH%:1;
+is the "box@L*" HH%  compact LH%:1;
+is the "box@L*" HH%  "compact@L+H*" LH%:1;
 
-is the "box@L*" LL% compact and red HH%:1;
-is the "box@L+H*" LH% "compact@L+H*" and "red@L+H*" HH%:1;
+is the "box@L*" HH% compact and red LH%:1;
+is the "box@L*" HH% "compact@L+H*" and "red@L+H*" LH%:1;
 
 is "this@L*" HH% a box LH%:1;
 is "this@L*" HH% a "box@L+H*" LH%:1;
@@ -4576,8 +4586,14 @@ is the "box@L+H*" LH% "red@L*" or "orange@L*" HH%:1;
 ## C.5 ## Disambiguation, Rheme-Rheme-Theme(un/marked) ##
 
 ## D.1 information requests ##
+"what@L*" is that HH%:1;
+"what@H*" is that HH%:1;
+what is "that@L*" HH%:1;
+what is "that@H*" HH%:1;
+
 what color is the mug:1;
-what "color@H*" is the mug HH%:1;
+what "color@H*" is the mug HH%:1; ##Information Question.
+what "color@L*" is the mug HH%:1; ##Clarification Question.
 what color is the "mug@H*" HH%:1;
 what "color@H*" is "this@H*" mug HH%:1;
 what color is the bigger "mug@H*" HH%:1;
@@ -4591,7 +4607,7 @@ is it a "red@L+H*" "box@H*" LH%: 0 ;
 is it a red box LL%: 0 ;        
 a red box LL%: 0 ;
 
-##### content planner ######
+##### added while content planner testing ######
 the "box@L+H*" LH% is "blue@H*" LL%:1;
 the "box@L+H*" LH% "is@H*" "blue@H*" LL%:1;
 

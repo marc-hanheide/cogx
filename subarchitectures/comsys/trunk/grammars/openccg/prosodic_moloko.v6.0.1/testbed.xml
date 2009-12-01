@@ -80,16 +80,16 @@
   <item string="is the ball LH% red@L* HH%" numOfParses="1"/>
   <item string="is the ball@L+H* LH% red@L* HH%" numOfParses="1"/>
   <item string="is@L+H* the ball@L+H* LH% red@L* HH%" numOfParses="1"/>
-  <item string="is the box@L* LL% green HH%" numOfParses="1"/>
-  <item string="is the box@L* LL% green@L+H* HH%" numOfParses="1"/>
-  <item string="is the box@L* LL% green@L+H* LH%" numOfParses="1"/>
-  <item string="is this@L* LL% red HH%" numOfParses="1"/>
-  <item string="is this@L* LL% red@L+H* HH%" numOfParses="1"/>
-  <item string="is this@L* LL% red@L+H* LH%" numOfParses="1"/>
-  <item string="is the box@L* LL% compact HH%" numOfParses="1"/>
-  <item string="is the box@L+H* LL% compact@L+H* HH%" numOfParses="1"/>
-  <item string="is the box@L* LL% compact and red HH%" numOfParses="1"/>
-  <item string="is the box@L+H* LH% compact@L+H* and red@L+H* HH%" numOfParses="1"/>
+  <item string="is the box@L* HH% green LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% green@L+H* LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% green@L+H* LH%" numOfParses="1"/>
+  <item string="is this@L* HH% red LH%" numOfParses="1"/>
+  <item string="is this@L* HH% red@L+H* LH%" numOfParses="1"/>
+  <item string="is this@L* HH% red@L+H* LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact@L+H* LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact and red LH%" numOfParses="1"/>
+  <item string="is the box@L* HH% compact@L+H* and red@L+H* LH%" numOfParses="1"/>
   <item string="is this@L* HH% a box LH%" numOfParses="1"/>
   <item string="is this@L* HH% a box@L+H* LH%" numOfParses="1"/>
   <item string="is the box red@L* or orange@L* HH%" numOfParses="1"/>
@@ -97,8 +97,13 @@
   <item string="which@L* box is red HH%" numOfParses="1"/>
   <item string="is the box LH% red@L* or orange@L* HH%" numOfParses="1"/>
   <item string="is the box@L+H* LH% red@L* or orange@L* HH%" numOfParses="1"/>
+  <item string="what@L* is that HH%" numOfParses="1"/>
+  <item string="what@H* is that HH%" numOfParses="1"/>
+  <item string="what is that@L* HH%" numOfParses="1"/>
+  <item string="what is that@H* HH%" numOfParses="1"/>
   <item string="what color is the mug" numOfParses="1"/>
   <item string="what color@H* is the mug HH%" numOfParses="1"/>
+  <item string="what color@L* is the mug HH%" numOfParses="1"/>
   <item string="what color is the mug@H* HH%" numOfParses="1"/>
   <item string="what color@H* is this@H* mug HH%" numOfParses="1"/>
   <item string="what color is the bigger mug@H* HH%" numOfParses="1"/>
