@@ -69,7 +69,12 @@ namespace POMDP
     public:
         friend std::ostream& operator<<(std::ostream&, const Finite_State_Controller&);
         
+        /* (see \member{number_of_nodes})*/
         int get__nodes_count() const;
+        /* (see \member{number_of_nodes})*/
+        int increment__nodes_count(int amount);
+        /* (see \member{number_of_nodes})*/
+        int decrement__nodes_count(int amount);
         
         /*\argument{problem_Data} is the
          * POMDP. \argument{number_of_nodes} gives the number of
@@ -84,19 +89,32 @@ namespace POMDP
         void zero_initialise__action_execution_probabilities();
         
         void randomize();
+
+        
+        typedef std::vector<std::vector<std::vector<std::vector< double > > > > Node_Transition_Probabilities;
+        typedef std::vector<std::vector<std::vector< double > > > Node_Transition_Probabilities__Starting_Nodes_Layer;
+        typedef std::vector<std::vector< double > > Node_Transition_Probabilities__Actions_Layer;
+        typedef std::vector< double > Node_Transition_Probabilities__Observations_Layer;
+        typedef Node_Transition_Probabilities NTP;
+        typedef Node_Transition_Probabilities__Starting_Nodes_Layer NTP__Starting_Nodes_Layer;
+        typedef Node_Transition_Probabilities__Actions_Layer NTP__Actions_Layer;
+        typedef Node_Transition_Probabilities__Observations_Layer NTP__Observations_Layer;
         
         /* starting-node -> action -> observation -> successor-node -> double*/
-        std::vector<std::vector<std::vector<std::vector< double > > > >  node_transition_probabilities;
+        Node_Transition_Probabilities  node_Transition_Probabilities;        
 
+        typedef std::vector<std::vector< double > > Action_Execution_Probabilities;
+        typedef std::vector< double > Action_Execution_Probabilities__Starting_Nodes_Layer;
+        typedef Action_Execution_Probabilities AEP;
+        typedef Action_Execution_Probabilities__Starting_Nodes_Layer AEP__Starting_Nodes_Layer;
+        
         /* starting-node -> action -> double*/
-        std::vector<std::vector< double > > action_execution_probabilities;
+        Action_Execution_Probabilities action_Execution_Probabilities;
         
         
         /*Assigned problem*/
         shared_ptr<Problem_Data> problem_Data;
 
-        /*Number of controller nodes*/
-        int number_of_nodes;
 
 
         /* Set a single entry in
@@ -127,6 +145,10 @@ namespace POMDP
         bool sanity__action_execution_probabilities() const;
         
         Finite_State_Controller__Index_Management fsc__Index_Management;
+
+    private:
+        /*Number of controller nodes*/
+        int number_of_nodes;
     };
 
     typedef Finite_State_Controller FSC;

@@ -89,7 +89,7 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                          ; starting_state++, starting_state_index++ /* TWO_INCREMENTS */){
 
         /* FSC-NODES */ for(auto starting_node = 0
-                                ; starting_node < fsc.number_of_nodes
+                                ; starting_node < fsc.get__nodes_count()
                                 ; starting_node++){
 
             
@@ -105,7 +105,7 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                                  ; successor_state++, successor_state_index++ /* TWO_INCREMENTS */){
                 
                 /* FSC-NODES */ for(auto successor_node = 0
-                                        ; successor_node < fsc.number_of_nodes
+                                        ; successor_node < fsc.get__nodes_count()
                                         ; successor_node++){
                     
                     /* COLUMN_INDEX */auto successor_index__column_index
@@ -125,7 +125,7 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                                                    ; observation++, observation_index++){
                             
                              auto fsc_node_transition_probability
-                                = fsc.node_transition_probabilities
+                                = fsc.node_Transition_Probabilities
                                 [starting_node]
                                 [action_index]
                                 [observation_index]
@@ -148,7 +148,7 @@ matrix<double> FSC__Evaluator::get_transition_matrix()
                                  *observation);
                             
                             if(0.0 == observation_probability) continue;
-
+                            
 
                             
                             
@@ -209,7 +209,7 @@ boost::numeric::ublas::vector<double> FSC__Evaluator::get_reward_vector()
                          ; starting_state++, starting_state_index++ /* TWO_INCREMENTS */){
         
         /* FSC-NODES */ for(auto starting_node = 0
-                                ; starting_node < fsc.number_of_nodes
+                                ; starting_node < fsc.get__nodes_count()
                                 ; starting_node++){
 
             
@@ -303,7 +303,7 @@ boost::numeric::ublas::vector<double> FSC__Evaluator::get_reward_vector()
                 }
                 
                 auto probability_of_executed_action
-                    = fsc.action_execution_probabilities
+                    = fsc.action_Execution_Probabilities
                     [starting_node]
                     [action_index];
                 
@@ -359,7 +359,7 @@ double FSC__Evaluator::operator()(const Belief_State& belief_State)
     double max_value = 0.0;
     double max_node = 0;
 
-    for(auto node_index = 0; node_index < fsc.number_of_nodes; node_index++){
+    for(auto node_index = 0; node_index < fsc.get__nodes_count(); node_index++){
         auto node_value = (*this)(belief_State);
 
         if(node_value > max_value){
@@ -374,7 +374,7 @@ double FSC__Evaluator::operator()(const Belief_State& belief_State)
 void FSC__Evaluator::operator()()
 {
     /*MEMBER*/ state_count = fsc.problem_Data->get__states_count();
-    /*MEMBER*/ node_count = fsc.number_of_nodes;
+    /*MEMBER*/ node_count = fsc.get__nodes_count();
     /*MEMBER*/ matrix_dimension = state_count * node_count;
 
     /* A */ matrix<double> state_node__transition__matrix
@@ -424,7 +424,7 @@ std::ostream& POMDP::Solving::operator<<(std::ostream& o, const FSC__Evaluator& 
 {
     const FSC& fsc = fsc__Evaluator.fsc;
     auto state_count = fsc.problem_Data->get__states_count();
-    auto node_count = fsc.number_of_nodes;
+    auto node_count = fsc.get__nodes_count();
     
     for(uint state_index = 0; state_index < state_count; state_index++){
         for(uint node_index = 0; node_index < node_count; node_index++){

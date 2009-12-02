@@ -48,12 +48,26 @@ uint Indexed_Strings::operator[](const std::string& str) const
 bool Indexed_Strings::valid(const std::string& str) const
 {
     auto iterator = numbered_Names.find(str);
+
+    QUERY_WARNING(iterator == numbered_Names.end(),
+                  "For indexed string structure with first element :: "
+                  <<((numbered_Names.size())?(numbered_Names.begin()->first):"")
+                  <<std::endl
+                  <<"We could not find the queried string :: "<<str<<std::endl);
     
     return (iterator != numbered_Names.end());
 }
 
 bool Indexed_Strings::valid(uint index) const
 {
+    
+    QUERY_WARNING(index >= named_Numbers.size(),
+                  "For indexed string structure with first element :: "
+                  <<((named_Numbers.size())?(*named_Numbers.begin()):"")
+                  <<std::endl
+                  <<"We could not find the queried element at index :: "<<index<<std::endl);
+    
+    
     return (index < named_Numbers.size());
 }
 
