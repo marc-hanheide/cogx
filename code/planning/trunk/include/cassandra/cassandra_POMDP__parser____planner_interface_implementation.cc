@@ -35,6 +35,24 @@
 
 using namespace POMDP::Parsing;
 
+
+// const string& Problem_Data::get__state(int index) const
+// {
+//     return states[index];
+// }
+
+// const string& Problem_Data::get__action(int index) const
+// {
+//     return actions[index];
+// }
+
+    
+// const string& Problem_Data::get__observation(int index) const
+// {
+//     return observations[index];
+// }
+
+
 uint Problem_Data::get__states_count() const
 {
     return states.size();

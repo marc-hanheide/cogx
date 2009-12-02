@@ -56,14 +56,14 @@ bool FSC::sanity__node_transition_probabilities() const
                         ; successor_node_index < (*this).number_of_nodes
                         ; successor_node_index ++){
                     
-                    assert(starting_node_index < (*this).node_transition_probabilities.size());
-                    assert(action_index < (*this).node_transition_probabilities[starting_node_index].size());
-                    assert(observation_index < (*this).node_transition_probabilities[starting_node_index][action_index].size());
+                    assert(starting_node_index < (*this).node_Transition_Probabilities.size());
+                    assert(action_index < (*this).node_Transition_Probabilities[starting_node_index].size());
+                    assert(observation_index < (*this).node_Transition_Probabilities[starting_node_index][action_index].size());
                     assert(successor_node_index
-                           < (*this).node_transition_probabilities[starting_node_index][action_index][observation_index].size());
+                           < (*this).node_Transition_Probabilities[starting_node_index][action_index][observation_index].size());
                     
                     
-                    accumulate += (*this).node_transition_probabilities
+                    accumulate += (*this).node_Transition_Probabilities
                         [starting_node_index]
                         [action_index]
                         [observation_index]
@@ -71,9 +71,9 @@ bool FSC::sanity__node_transition_probabilities() const
                 }
 
 
-                assert(starting_node_index < (*this).action_execution_probabilities.size());
-                assert(action_index < (*this).action_execution_probabilities[starting_node_index].size());
-                auto tmp_limit = (*this).action_execution_probabilities[starting_node_index][action_index];
+                assert(starting_node_index < (*this).action_Execution_Probabilities.size());
+                assert(action_index < (*this).action_Execution_Probabilities[starting_node_index].size());
+                auto tmp_limit = (*this).action_Execution_Probabilities[starting_node_index][action_index];
                 assert(tmp_limit <= 1.0);
 
                 
@@ -104,10 +104,10 @@ bool FSC::sanity__action_execution_probabilities() const
                 ; action_index < (*this).problem_Data->get__actions_count()
                 ; action_index++){
             
-            assert(starting_node_index < (*this).action_execution_probabilities.size());
-            assert(action_index < (*this).action_execution_probabilities[starting_node_index].size());
+            assert(starting_node_index < (*this).action_Execution_Probabilities.size());
+            assert(action_index < (*this).action_Execution_Probabilities[starting_node_index].size());
             
-            accumulate += (*this).action_execution_probabilities[starting_node_index][action_index];
+            accumulate += (*this).action_Execution_Probabilities[starting_node_index][action_index];
         }
 
 

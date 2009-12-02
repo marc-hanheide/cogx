@@ -18,6 +18,10 @@ Usual suspects (C++) Linear Algebra and Linear Programming
 #include "pomdp__finite_state_controller__evaluation.hh"
 #include "pomdp__finite_state_controller__policy_improvement.hh"
 
+/* Somewhat dodgy library for adding controller nodes.*/
+#include "pomdp__finite_state_controller__pump.hh"
+
+
 using std::endl;
 using std::count;
 using std::cin;
@@ -71,18 +75,79 @@ int main(int argc, char** argv)
 
     POMDP::FSC__Randomizer fsc__Randomizer;
     fsc__Randomizer(fsc);
-
-    assert(fsc.sanity__action_execution_probabilities());
-    assert(fsc.sanity__node_transition_probabilities());
     
     VERBOSER(200, "Generated a randomised finite-state-controller :: "<<std::endl);
     VERBOSER(200, fsc<<std::endl);
 
-    POMDP::Solving::FSC__Improvement fsc__Improvement(fsc);
+    while(true){
 
-    while(fsc__Improvement()){
-        VERBOSER(200, "An improvement was possible."<<std::endl);
+        assert(fsc.sanity__action_execution_probabilities());
+        assert(fsc.sanity__node_transition_probabilities());
+
+        
+        POMDP::Solving::FSC__Improvement fsc__Improvement(fsc);
+
+
+        /*Make the current controller as good as you can...*/
+        while(fsc__Improvement()){
+            assert(fsc.sanity__action_execution_probabilities());
+            assert(fsc.sanity__node_transition_probabilities());
+            VERBOSER(200, "An improvement was possible."<<std::endl);
+        }
+
+        POMDP::Solving::FSC__Pump fsc__Pump(fsc);
+        fsc__Pump();
+        
+        VERBOSER(200, "Please press a key to continue.");
+        {char ch; std::cin>>ch;};
+    
+        
     }
+
+    return 0;
+    
+    
+//     POMDP::FSC__Randomizer fsc__Randomizer;
+//     fsc__Randomizer(fsc);
+
+//     assert(fsc.sanity__action_execution_probabilities());
+//     assert(fsc.sanity__node_transition_probabilities());
+    
+//     VERBOSER(200, "Generated a randomised finite-state-controller :: "<<std::endl);
+//     VERBOSER(200, fsc<<std::endl);
+
+//     POMDP::Solving::FSC__Improvement fsc__Improvement(fsc);
+
+//     while(fsc__Improvement()){
+//         assert(fsc.sanity__action_execution_probabilities());
+//         assert(fsc.sanity__node_transition_probabilities());
+//         VERBOSER(200, "An improvement was possible."<<std::endl);
+//     }
+
+    
+//     VERBOSER(200, "Please press a key to continue.");
+//     {char ch; std::cin>>ch;};
+    
+//     POMDP::Solving::FSC__Pump fsc__Pump(fsc);
+//     fsc__Pump();
+//     assert(fsc.sanity__action_execution_probabilities());
+//     assert(fsc.sanity__node_transition_probabilities());
+    
+    
+//     POMDP::Solving::FSC__Improvement fsc__Improvement_2(fsc);
+    
+    
+//     while(fsc__Improvement_2()){
+//         assert(fsc.sanity__action_execution_probabilities());
+//         assert(fsc.sanity__node_transition_probabilities());
+//         VERBOSER(200, "An improvement was possible."<<std::endl);
+//     }
+
+    
+//     VERBOSER(200, "Done..."<<std::endl);
+    
+//     VERBOSER(200, "Please press a key to continue.");
+//     {char ch; std::cin>>ch;};
     
     
 //     POMDP::Solving::FSC__Evaluator fsc__Evaluator(fsc);
@@ -125,7 +190,7 @@ int main(int argc, char** argv)
 //     POMDP::Solving::FSC__Node_Improvement fsc__Node_Improvement(node_index, fsc, fsc__Evaluator);
 //     auto improvement_was_possible = fsc__Node_Improvement();
     
-    return 0;
+//     return 0;
 }
 
 /* apoptosis: (biology) cell death.*/
