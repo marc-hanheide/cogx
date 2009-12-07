@@ -76,7 +76,7 @@ struct ActiveRNN : RNN {
 	///
 	///construct RNN machine using config data
 	///
-	virtual void build (/*string dataFile, */int smregionsCount, int patternSize, ostream& out = cout);
+	virtual void build (int smregionsCount, int patternSize, ostream& out = cout);
 
 	///
 	///update the machine state with current sequence

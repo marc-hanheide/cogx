@@ -71,33 +71,23 @@ void ActiveLearnScenario::render () {
 	if ( learningData.currentPredictedObjSeq.size() == 0 || object == NULL)
 		return;
 
-// 	for (int i=0; i<learningData.currentPredictedObjSeq.size(); i++) {
+	for (int i=0; i<learningData.currentPredictedObjSeq.size(); i++) {
 		golem::BoundsRenderer boundsRenderer;
-// 		Mat34 currentPose = learningData.currentPredictedObjSeq[i];
-// 		currentPose.p.v1 += 0.11;
-		Mat34 currentPose = learningData.currentPredictedObjSeq[learningData.currentPredictedObjSeq.size()-1];
-//  		Mat34 objectPose = object->getPose();
-// 		currentPose.p.v1 = objectPose.p.v1;
-// 		currentPose.p.v2 = objectPose.p.v2;
-// 		currentPose.p.v3 = objectPose.p.v3;
-// 		currentPose.R._m._11 = objectPose.R._m._11;
-// 		currentPose.R._m._12 = objectPose.R._m._12;
-// 		currentPose.R._m._13 = objectPose.R._m._13;
-// 		currentPose.R._m._21 = objectPose.R._m._21;
-// 		currentPose.R._m._22 = objectPose.R._m._22;
-// 		currentPose.R._m._23 = objectPose.R._m._23;
-// 		currentPose.R._m._31 = objectPose.R._m._31;
-// 		currentPose.R._m._32 = objectPose.R._m._32;
-// 		currentPose.R._m._33 = objectPose.R._m._33;
+		if (i == 0 || i == learningData.currentPredictedObjSeq.size()-1) {
+		Mat34 currentPose = learningData.currentPredictedObjSeq[i];
+// 		Mat34 currentPose = learningData.currentPredictedObjSeq[learningData.currentPredictedObjSeq.size()-1];
 		
 		boundsRenderer.setMat(currentPose);
-		boundsRenderer.setWireColour (RGBA::RED);
-			
-		boundsRenderer.renderWire (objectLocalBounds->begin(), objectLocalBounds->end());
+		if (i == learningData.currentPredictedObjSeq.size()-1)
+			boundsRenderer.setWireColour (RGBA::RED);
+		else if (i == 0)
+			boundsRenderer.setWireColour (RGBA::BLUE);			
 
+		boundsRenderer.renderWire (objectLocalBounds->begin(), objectLocalBounds->end());
+		}
 
 		
-// 	}
+	}
 
 }
 
@@ -171,11 +161,9 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 // 		cout << "pose: ";
 // 		printf("%f %f %f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
 
-		Real angle;
-		golem::Vec3 axis;
-		chunk.objectPose.R.toAngleAxis (angle, axis);
-// 		cout << "angle: " << angle << endl;
-// 		cout << "axis:  " << axis.v1 << "," << axis.v2 << "," << axis.v3 << endl;
+		Real roll, pitch, yaw;
+		chunk.objectPose.R.toEuler (roll, pitch, yaw);
+// 		cout << "roll: " << roll << " pitch: " << pitch << " yaw: " << yaw << endl;  
 	
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
@@ -185,28 +173,16 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, maxRange));
-		currentFeatureVector.push_back(normalize(angle, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(axis.v1, -1.0, 1.0));
-		currentFeatureVector.push_back(normalize(axis.v2, -1.0, 1.0));
-		currentFeatureVector.push_back(normalize(axis.v3, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._11, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._12, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._13, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._21, -1.0, 1.0));
-//  		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._22, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._23, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._31, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._32, -1.0, 1.0));
-// 		currentFeatureVector.push_back(normalize(chunk.objectPose.R._m._33, -1.0, 1.0));
+		currentFeatureVector.push_back(normalize(roll, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(normalize(pitch, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(normalize(yaw, -REAL_PI, REAL_PI));
+
 		learningData.currentSeq.push_back(currentFeatureVector);
 	
 		/////////////////////////////////////////////////
 		//initialize RNN learner with a dummy dataset
-		//TODO: this is a hack!
-// 		string dummyDataFile = "tmp_dummy";
 		if (!netBuilt) {
-// 			write_nc_file_basis (dummyDataFile, learningData.data[startPosition-1]);
-			learner.build (/*dummyDataFile, */smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
+			learner.build (smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
 			netBuilt = true;
 		}
 		learningData.loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
@@ -319,7 +295,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	
 	
 	//start of the experiment loop
-	while (iteration<numSequences) {
+	for (iteration = 0; iteration<numSequences; iteration++) {
 		
 		// experiment main loops
 		creator.setToDefault();
@@ -495,26 +471,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		learningData.data[startPosition-1].push_back(learningData.currentSeq);
 		/////////////////////////////////////////////////
 
-// 		/////////////////////////////////////////////////
-// 		//initialize RNN learner with a dummy dataset
-// 		//TODO: this is a hack!
-// // 		string dummyDataFile = "tmp_dummy";
-// 		if (iteration == 0) {
-// // 			write_nc_file_basis (dummyDataFile, learningData.data[startPosition-1]);
-// 			learner.build (/*dummyDataFile, */smregionsCount, 17 );
-// 		}
-// 		learningData.loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
-// 		learner.feed_forward (*learningData.trainSeq);
-// // 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange);
-// // 		learningData.currentPredictedObjSeq.push_back (predictedPfPose);
-// 		getPfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange, learningData.currentPredictedObjSeq);
-
-	
-// 		cout << "pose:" << endl;
-// 		for (int i=0; i< learningData.currentPredictedObjSeq.size(); i++) {
-// 			golem::Mat34 p = learningData.currentPredictedObjSeq[i];
-// 			printf("\t%d: %f %f %f %f %f %f %f %f %f %f %f %f\n", i, p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
-// 		}
 		
 		//update RNN learner with current sequence
 		{
@@ -524,9 +480,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 			vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
 			plotApp->updateData(startPosition-1, learnProgData, errorData);
 		}
-// 		getPfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange);
-// 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, currentMotorCommandVector.size(), maxRange);
-// 		Actor* predictedPolyflapObject = setupPolyflap(scene, predictedPfPose, polyflapDimensions);
 
 		//off collision detection
 		arm->setCollisionBoundsGroup(0x0);
@@ -541,7 +494,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		golem::GenWorkspaceState preHome;
 		preHome.pos.p = positionPreH;
 		preHome.pos.R = home.pos.R;
-// 		fromCartesianPose(preHome.pos, positionPreH, orientationH);
 		preHome.vel.setId(); // it doesn't move
 
 		preHome.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(2.0); // i.e. the movement will last at least 2 sec
@@ -578,7 +530,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		context.getLogger()->post(Message::LEVEL_INFO, "Done");
 
-		cout << "Iteration " << iteration++ << " completed!" << endl;
+		cout << "Iteration " << iteration << " completed!" << endl;
 
 		learningData.currentPredictedObjSeq.clear();
 
@@ -619,16 +571,13 @@ golem::Mat34  ActiveLearnScenario::getPfPoseFromOutputActivations (rnnlib::SeqBu
 	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], /*-maxRange*/0.0, maxRange);
 	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], /*-maxRange*/0.0, maxRange);
 	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], /*-maxRange*/0.0, maxRange);
-	predictedPfPose.R._m._11 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._12 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._13 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._21 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._22 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._23 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._31 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._32 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	predictedPfPose.R._m._33 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
-	
+
+	Real roll, pitch, yaw;
+	roll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
+	pitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
+	yaw = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
+	predictedPfPose.R.fromEuler(roll, pitch, yaw);
+
 	return predictedPfPose;
 	
 
@@ -645,26 +594,12 @@ void ActiveLearnScenario::getPfSeqFromOutputActivations (rnnlib::SeqBuffer<doubl
 		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex], /*-maxRange*/0.0, maxRange);
 		currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex+1], /*-maxRange*/0.0, maxRange);
 		currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex+2], /*-maxRange*/0.0, maxRange);
-		Real angle = denormalize(outputActivations[i][startIndex+3], -REAL_PI, REAL_PI);
-		golem::Vec3 axis;
-		axis.v1 = denormalize(outputActivations[i][startIndex+4], -1.0, 1.0);
-		axis.v2 = denormalize(outputActivations[i][startIndex+5], -1.0, 1.0);
-		axis.v3 = denormalize(outputActivations[i][startIndex+6], -1.0, 1.0);
-		currentPredictedPfPose.R.fromAngleAxis(angle, axis);
-		
-// 		currentPredictedPfPose.R._m._11 = denormalize(outputActivations[i][startIndex+3], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._12 = denormalize(outputActivations[i][startIndex+4], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._13 = denormalize(outputActivations[i][startIndex+5], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._21 = denormalize(outputActivations[i][startIndex+6], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._21 = -currentPredictedPfPose.R._m._12;
-// 		currentPredictedPfPose.R._m._22 = denormalize(outputActivations[i][startIndex+6], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._23 = denormalize(outputActivations[i][startIndex+7], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._31 = denormalize(outputActivations[i][startIndex+9], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._32 = denormalize(outputActivations[i][startIndex+10], -1.0, 1.0);
-// 		currentPredictedPfPose.R._m._31 = -currentPredictedPfPose.R._m._13;
-// 		currentPredictedPfPose.R._m._32 = -currentPredictedPfPose.R._m._23;
-// 		currentPredictedPfPose.R._m._33 = denormalize(outputActivations[i][startIndex+8], -1.0, 1.0);
-		
+		Real roll, pitch, yaw;
+		roll = denormalize(outputActivations[i][startIndex+3], -REAL_PI, REAL_PI);
+		pitch = denormalize(outputActivations[i][startIndex+4], -REAL_PI, REAL_PI);
+ 		yaw = denormalize(outputActivations[i][startIndex+5], -REAL_PI, REAL_PI);
+		currentPredictedPfPose.R.fromEuler(roll, pitch, yaw);		
+
 		currentPredictedObjSeq.push_back (currentPredictedPfPose);
 	}
 }
