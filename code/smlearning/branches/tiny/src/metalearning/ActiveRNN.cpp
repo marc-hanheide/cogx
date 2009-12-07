@@ -30,10 +30,8 @@ namespace smlearning {
 ///
 ///construct RNN for active learning
 ///
-void ActiveRNN::build (/*string dataFile, */int smregionsCount, int patternSize, ostream& out) {
+void ActiveRNN::build (int smregionsCount, int patternSize, ostream& out) {
 
-// 	dataFile += ".nc";
-// 	header = new rnnlib::DataHeader ( dataFile, task, 1);
 	header = new rnnlib::DataHeader ( patternSize, patternSize );
 	net = new rnnlib::MultilayerNet(out, conf, *header);
 	//build weight container after net is created
