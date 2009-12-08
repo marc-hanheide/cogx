@@ -1,0 +1,3 @@
+- properly mention authors of canny and rosin/west
+- supply proper vector matrix classes: Marek modified, Magic software
+- replace char[] with string
