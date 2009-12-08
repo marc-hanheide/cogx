@@ -447,7 +447,6 @@ double StereoCore::MatchingScore(TmpSurf &left_surf, TmpSurf &right_surf,
   match_offs = UNDEF_ID;
   if(left_surf.pr.size() == right_surf.pr.size())
   {
-// printf("################# Gleich viele Punkte #################\n");
     for(offs = 0; offs < ncorners; offs++)
     {
       sumv = 0.;
@@ -456,32 +455,23 @@ double StereoCore::MatchingScore(TmpSurf &left_surf, TmpSurf &right_surf,
       for(i = 0; i < ncorners; i++)
       {
         j = (i + offs)%ncorners;
+
         // distance in y-dir (should be zero)
-// printf("		pr.y vs. pr.y: %4.3f / %4.3f\n", left_surf.pr[i].y - right_surf.pr[j].y);
         dv = fabs(left_surf.pr[i].y - right_surf.pr[j].y);
-// printf("		dv: %4.3f\n", dv);
         sumv += dv;
-// printf("		sumv: %4.3f\n", sumv);
         dv_max = fmax(dv_max, dv);
         // distance in x-dir = disparity, must be > 0
         du = left_surf.pr[i].x - right_surf.pr[j].x;
         du_min = fmin(du_min, du);
       }
-// if(dv_max < 20) {
-// printf("	sumv: %4.3f \n", sumv);
-// printf("	  dv_max: %4.3f < MAX_DELTA_V: %4.3f\n", dv_max, MAX_DELTA_V);
-// printf("	    du_min: %4.3f\n", du_min);
-// }
       if(dv_max < MAX_DELTA_V && du_min > MIN_DISPARITY)
         if(sumv < sumv_min)
         {
           sumv_min = sumv;
           match_offs = offs;
-// printf("############ sumv_min: %4.3f\n", sumv_min);
         }
     }
   }
-// printf("########### Return sumv_min: %4.3f\n", sumv_min);
   return sumv_min;
 }
 
@@ -559,13 +549,11 @@ double StereoCore::MatchingScore(TmpFlap &left_flap, TmpFlap &right_flap, unsign
   // _s .. straight (left flap surf 0 matches right flap surf 0)
   // _x .. crossed (left flap surf 0 matches right flap surf 1)
   unsigned off_s0, off_s1, off_x0, off_x1;
-printf("  Find Matching Score:\n");
   double sc_s = MatchingScore(left_flap.surf[0], right_flap.surf[0], off_s0) +
                 MatchingScore(left_flap.surf[1], right_flap.surf[1], off_s1);
   double sc_x = MatchingScore(left_flap.surf[0], right_flap.surf[1], off_x1) +
                 MatchingScore(left_flap.surf[1], right_flap.surf[0], off_x0);
 
-// printf("	Matching score: %4.2f - %4.2f\n", sc_s, sc_x);
   // if flaps match "straight"
   if(sc_s < sc_x)
   {
@@ -594,10 +582,8 @@ unsigned StereoCore::FindMatchingFlap(TmpFlap &left_flap, Array<TmpFlap> &right_
   for(j = l; j < right_flaps.Size(); j++)
   {
     match = MatchingScore(left_flap, right_flaps[j], off_0, off_1, cross);
-printf("      %u: match-score: %4.3f\n", j, match);
     if(match < best_match)
     {
-// printf("      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  match < best_match\n");
       best_match = match;
       j_best = j;
       cross_best = cross;
@@ -617,19 +603,16 @@ void StereoCore::MatchFlaps(Array<TmpFlap> &left_flaps, Array<TmpFlap> &right_fl
   unsigned j, l = 0, u = left_flaps.Size();
   for(; l < u && l < right_flaps.Size();)
   {
-printf("\n### Match flap Nr. %u\n", l);
     j = FindMatchingFlap(left_flaps[l], right_flaps, l);
     // found a matching right, move it to same index position as left
     if(j != UNDEF_ID)
     {
-// printf("Found matching flap: %u\n", j);
       right_flaps.Swap(l, j);
       l++;
     }
     // found no right, move left to end and decrease end
     else
     {
-// printf("No matching flap.\n");
       left_flaps.Swap(l, u-1);
       u--;
     }
@@ -682,7 +665,6 @@ void StereoCore::ClearResults()
  */
 void StereoCore::ProcessStereoImage(/*const IplImage *left_img, const IplImage *right_img,*/ int runtime_ms)
 {
-// printf("Process Stereo Image\n");
   // clear previous results
   ClearResults();
 
@@ -716,10 +698,9 @@ void StereoCore::ProcessStereoImage(/*const IplImage *left_img, const IplImage *
   // do stereo matching and depth calculation
   nmatches = 0;
   MatchFlaps(flaps[LEFT], flaps[RIGHT], nmatches);
-// printf("Machted flaps: %u\n", nmatches);
   Calculate3DFlaps(flaps[LEFT], flaps[RIGHT], nmatches, flap3ds);
 
-	PrintResults();
+// 	PrintResults();		// HACK Print corner points of the surfaces (left and right)
   printf("flaps left/right: %d %d\n", flaps[LEFT].Size(), flaps[RIGHT].Size());  // HACK
   printf("nmatches: %d\n", nmatches); // HACK
 }
@@ -743,21 +724,33 @@ void StereoCore::DrawFlaps()
 	}
 }
 
+/**
+ * @brief Draw flaps as overlay over the stereo image
+ * @param iIl left (openCV) iplImage of stereo rig
+ * @param iIr	right  (openCV) iplImage of stereo rig
+ */
 void StereoCore::SetIplImages(IplImage *iIl, IplImage *iIr)
 {
 	img_l = iIl;
 	img_r = iIr;
 }
 
+/**
+ * @brief Set the active draw area to left or right stereo image.
+ * @param side Left or right image
+ */
 void StereoCore::SetActiveDrawAreaSide(int side)
 {
 	if (side == 0) SetActiveDrawArea(img_l);
 	if (side == 1) SetActiveDrawArea(img_r);
 }
 
+/**
+ * @brief Print the corner points of the calculated flaps.
+ */
 void StereoCore::PrintResults()
 {
-printf("PRINT RESULTS:  \n");
+	printf("RESULTS:  \n");
 	for(unsigned i=0; i<flaps[LEFT].Size(); i++)
 	{
 		for(unsigned j=0; j<flaps[LEFT][i].surf[0].pr.size(); j++)

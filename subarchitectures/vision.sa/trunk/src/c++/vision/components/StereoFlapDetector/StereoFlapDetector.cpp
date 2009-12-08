@@ -30,20 +30,6 @@ extern "C"
   }
 }
 
-// void Z::DrawImageRGB24(const char *rgb24, int width, int height){}
-// void Z::DrawText2D(const char *text, double x, double y, RGBColor col){}
-// void Z::DrawPoint2D(double x, double y, RGBColor col){}
-// void Z::DrawLine2D(double x1, double y1, double x2, double y2, RGBColor col){}
-// void Z::DrawRect2D(double x1, double y1, double x2, double y2, RGBColor col){}
-// void Z::FillRect2D(double x1, double y1, double x2, double y2, RGBColor col){}
-// void Z::TransparentRect2D(double x1, double y1, double x2, double y2, RGBColor col){}
-// void Z::DrawArc2D(double x, double y, double r, double start, double span, RGBColor col){}
-// void Z::FillArc2D(double x, double y, double r, double start, double span, RGBColor col){}
-// void Z::TransparentArc2D(double x, double y, double r, double start, double span, RGBColor col){}
-// void Z::DrawEllipse2D(double x, double y, double a, double b, double phi, RGBColor col){}
-// void Z::FillEllipse2D(double x, double y, double a, double b, double phi, RGBColor col){}
-// void Z::TransparentEllipse2D(double x, double y, double a, double b, double phi, RGBColor col){}
-
 namespace cast
 {
 
@@ -55,9 +41,9 @@ void StereoFlapDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange 
 	switch(detect_cmd->cmd){
 		case VisionData::SFSTART:
 			if(cmd_detect){
-				log("stereo flap detection is allready started");
+				log("stereo flap detection is allready started.");
 			}else{
-				log("starting stereo flap detection");
+				log("starting stereo flap detection.");
         // start receiving images pushed by the video server
         videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
 				cmd_detect = true;
@@ -65,11 +51,23 @@ void StereoFlapDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange 
 			break;
 		case VisionData::SFSTOP:
 			if(cmd_detect){
-				log("stopping stereo flap detection");
+				log("stopping stereo flap detection.");
 				cmd_detect = false;
         videoServer->stopReceiveImages(getComponentID().c_str());
 			}else{
-				log("stereo flap detection is allready stopped");
+				log("stereo flap detection is allready stopped.");
+			}
+			break;
+		case VisionData::SFSINGLE:
+			if(!cmd_single){
+				log("single stereo flap detection command received.");
+				cmd_single = true;
+				videoServer->getImage(camIds[0], image_l);
+				videoServer->getImage(camIds[1], image_r);
+				processImage(image_l, image_r);
+				cmd_single = false;
+			}else{
+				log("already running single stereo flap detection, too fast triggering.");
 			}
 			break;
 		default:
@@ -100,7 +98,7 @@ void StereoFlapDetector::configure(const map<string,string> & _config)
       camIds.push_back(id);
   }
 
-	showImage = true;
+	showStereoImage = true;
 	cmd_detect = false;
 }
 
@@ -121,7 +119,7 @@ void StereoFlapDetector::start()
       new MemberFunctionChangeReceiver<StereoFlapDetector>(this, &StereoFlapDetector::receiveDetectionCommand));
 
 	// define openCV displays
-  if(showImage) 
+  if(showStereoImage) 
 	{
 		cvNamedWindow("Stereo left", /*CV_WINDOW_AUTOSIZE*/ 1);
 		cvNamedWindow("Stereo right", /*CV_WINDOW_AUTOSIZE*/ 1);
@@ -154,7 +152,7 @@ void StereoFlapDetector::processImage(const Video::Image &image_l, const Video::
 	IplImage *iplImage_l = convertImageToIpl(image_l);
 	IplImage *iplImage_r = convertImageToIpl(image_r);
 
-	int runtime = 800;
+	int runtime = 1600;
 	score->SetIplImages(iplImage_l, iplImage_r);
 	score->ProcessStereoImage(runtime/2);
 
@@ -167,6 +165,7 @@ void StereoFlapDetector::processImage(const Video::Image &image_l, const Video::
 			// write flaps as visual object to working memory
 			Z::Flap3D f = score->Flaps(i);
 
+/// print vertices
 // printf("\nVertex[0]: %4.3f / %4.3f / %4.3f\n", f.surf[0].vertices[0].p.x, f.surf[0].vertices[0].p.y, f.surf[0].vertices[0].p.z);
 // printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", f.surf[0].vertices[1].p.x, f.surf[0].vertices[1].p.y, f.surf[0].vertices[1].p.z);
 // printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", f.surf[0].vertices[2].p.x, f.surf[0].vertices[2].p.y, f.surf[0].vertices[2].p.z);
@@ -180,18 +179,17 @@ void StereoFlapDetector::processImage(const Video::Image &image_l, const Video::
 			VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
 			Flap2VisualObject(obj, f);
 
-/// print object details:
-printf("	Position: %4.3f / %4.3f / %4.3f\n", obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
-
-printf("\nVertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[0].pos.x, obj->model->vertices[0].pos.y, obj->model->vertices[0].pos.z);
-printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[1].pos.x, obj->model->vertices[1].pos.y, obj->model->vertices[1].pos.z);
-printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[2].pos.x, obj->model->vertices[2].pos.y, obj->model->vertices[2].pos.z);
-printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n\n", obj->model->vertices[3].pos.x, obj->model->vertices[3].pos.y, obj->model->vertices[3].pos.z);
-
-printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[4].pos.x, obj->model->vertices[4].pos.y, obj->model->vertices[4].pos.z);
-printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[5].pos.x, obj->model->vertices[5].pos.y, obj->model->vertices[5].pos.z);
-printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[6].pos.x, obj->model->vertices[6].pos.y, obj->model->vertices[6].pos.z);
-printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[7].pos.x, obj->model->vertices[7].pos.y, obj->model->vertices[7].pos.z);
+/// print object model details:
+// printf("	Position: %4.3f / %4.3f / %4.3f\n", obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
+// printf("\nVertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[0].pos.x, obj->model->vertices[0].pos.y, obj->model->vertices[0].pos.z);
+// printf("Vertex[1]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[1].pos.x, obj->model->vertices[1].pos.y, obj->model->vertices[1].pos.z);
+// printf("Vertex[2]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[2].pos.x, obj->model->vertices[2].pos.y, obj->model->vertices[2].pos.z);
+// printf("Vertex[3]: %4.3f / %4.3f / %4.3f\n\n", obj->model->vertices[3].pos.x, obj->model->vertices[3].pos.y, obj->model->vertices[3].pos.z);
+// 
+// printf("Vertex[4]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[4].pos.x, obj->model->vertices[4].pos.y, obj->model->vertices[4].pos.z);
+// printf("Vertex[5]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[5].pos.x, obj->model->vertices[5].pos.y, obj->model->vertices[5].pos.z);
+// printf("Vertex[6]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[6].pos.x, obj->model->vertices[6].pos.y, obj->model->vertices[6].pos.z);
+// printf("Vertex[7]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[7].pos.x, obj->model->vertices[7].pos.y, obj->model->vertices[7].pos.z);
 
 			// label object
 			char obj_label[32];
@@ -202,7 +200,6 @@ printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[7].pos.x, obj-
 			// add visual object to working memory
 			addToWorkingMemory(newDataID(), obj);
 			log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
-
 		}
 	}
 
@@ -323,7 +320,7 @@ printf("Vertex[0]: %4.3f / %4.3f / %4.3f\n", obj->model->vertices[7].pos.x, obj-
 	// ----------------------------------------------------------------
 	// Draw Gestalts to IplImage for the openCv window
 	// ----------------------------------------------------------------
-	if(showImage) 
+	if(showStereoImage) 
 	{	
 		// Convert from RGB to BGR
 		cvConvertImage( iplImage_l, iplImage_l, CV_CVTIMG_SWAP_RB);
