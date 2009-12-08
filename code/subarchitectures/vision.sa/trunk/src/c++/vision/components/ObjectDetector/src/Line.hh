@@ -84,9 +84,9 @@ private:
   void DrawVotes();
 
 public:
-  unsigned seg;        ///< the originating segment
-  unsigned idx[2];     ///< index of start and end point
-  unsigned next;       ///< next line if split
+  unsigned seg;         ///< the originating segment
+  unsigned idx[2];      ///< index of start and end point
+  unsigned next;        ///< next line if split
   unsigned defer_vote;  ///< lines created by splitting don't vote themselves
                         /// but defer votes to original line
 
