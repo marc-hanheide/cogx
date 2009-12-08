@@ -48,13 +48,18 @@ private:
    */
   Video::VideoInterfacePrx videoServer;
 
+	/**
+	 * @brief Left and right stereo image from video server
+	 */
+  Video::Image image_l, image_r;
+
   /**
    * @brief Receive a changed detection command, written to the working memory
    */
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
 
   /**
-   * Convert a flap to a visual object 
+   * @brief Convert a flap to a visual object 
    */
 	bool Flap2VisualObject(VisionData::VisualObjectPtr &obj, Z::Flap3D &f);
 
@@ -68,8 +73,9 @@ private:
    */
 	void DefineFlapCoordsys(Z::Flap3D &flap, Pose3 &pose);
 
-  bool cmd_detect;					///< detection command
-	bool showImage;						///< show openCV image
+  bool cmd_detect;						///< detection command
+	bool cmd_single;						///< single detection command
+	bool showStereoImage;				///< show openCV image
 
 protected:
   /**
