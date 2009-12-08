@@ -36,7 +36,10 @@ private:
    * our ICE proxy to the video server
    */
   Video::VideoInterfacePrx videoServer;
-  
+
+	/**
+	 *	Image from video server
+	 */
   Video::Image m_image;
 
   /**
