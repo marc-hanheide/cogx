@@ -42,51 +42,29 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 {
 	ObjectDetectionCommandPtr detect_cmd = getMemoryEntry<ObjectDetectionCommand>(_wmc.address);
 	
-// 	log("received detection command ...");
+	log("received detection command ...");
 	switch(detect_cmd->cmd){
-		case VisionData::DVSSTART:
-			if(vs_started){
-// 				log("already receiving images");
-			}else{
-// 				log("starting receiving images");
-				vs_started = true;
-        // start receiving images pushed by the video server
-        vector<int> camIds;
-        camIds.push_back(camId);
-        videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
-			}
-			break;
-		case VisionData::DVSSTOP:
-			if(!vs_started){
-// 				log("already stopped receiving images");
-			}else{
-// 				log("stop receiving images");
-				vs_started = false;
-        // stop receiving images pushed by the video server
-        videoServer->stopReceiveImages(getComponentID().c_str());
-			}
-			break;
 		case VisionData::DSTART:
 			if(cmd_detect){
-// 				log("already started detection");
+				log("already started object detection.");
 			}else{
-// 				log("starting detection");
+				log("starting object detection.");
 				cmd_detect = true;
 			}
 			break;
 		case VisionData::DSTOP:
 			if(cmd_detect){
-// 				log("stopping detection");
+				log("stopping object detection");
 				cmd_detect = false;
 			}else{
-// 				log("already stopped detection");
+				log("already stopped object detection");
 			}
 			break;
 		case VisionData::DSINGLE:
 			
 			videoServer->getImage(camId, m_image);
 			processImage(m_image);
-      
+
 			/* commented by TM
 			if(!cmd_single){
 				log("single detection");
