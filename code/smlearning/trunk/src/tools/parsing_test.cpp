@@ -1,31 +1,17 @@
-#include <tools/data_handling.h>
+#include <metalearning/RNN.h>
 
 using namespace smlearning;
 
 int main(int argc, char * argv[]) {
-	//init the xerces lib
-	try 
-	{
-		XMLPlatformUtils::Initialize();
-	}
-	catch (const XMLException& toCatch) 
-	{
-		char* message = XMLString::transcode(toCatch.getMessage());
-		cerr << "Error during xerces initialization! :" << endl << message << endl;
-		XMLString::release(&message);
-	}
 
 	OfflineRNN myRNN;
-	XercesDOMParser parser;
-	if (myRNN.parse_netfile (parser, "/usr/local/bin/SMLearning/defaultnet.xml", false)) {
-		myRNN.load_net (1, "train");
-	}
-	else {
-		cerr << "XML net file parsing not successful..." << endl;
-		return 1;
-	}
 
+	rnnlib::ConfigFile conf("/usr/local/bin/SMLearning/defaultnet.config");
+	myRNN.set_config_file (conf);
+	myRNN.set_testdatafile ("/usr/local/bin/SMLearning/valid.nc");
+	myRNN.set_traindatafile ("/usr/local/bin/SMLearning/train.nc");
+	myRNN.build ();
 	myRNN.print_net_data ();
-
+	myRNN.save_config_file (cout);
 	return 0;
 }

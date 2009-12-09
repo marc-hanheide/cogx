@@ -5,9 +5,8 @@
  *
  * @version 1.0
  *
- * Copyright 2007,2008 Alex Graves
  *           2009      Sergio Roa
-
+ 
    This is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
@@ -24,8 +23,8 @@
  
  */
 
-#ifndef TOOLS_DATAHANDLING_H_
-#define TOOLS_DATAHANDLING_H_
+#ifndef SMLEARNING_DATAHANDLING_H_
+#define SMLEARNING_DATAHANDLING_H_
 
 #include <cstdlib>
 #include <ctime>
@@ -34,28 +33,6 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-
-#include <xercesc/parsers/XercesDOMParser.hpp>
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/framework/LocalFileInputSource.hpp>
-#include <xercesc/dom/DOMException.hpp>
-#include <xercesc/dom/DOMElement.hpp>
-#include <xercesc/sax/SAXException.hpp>
-#include <xercesc/util/NameIdPool.hpp>
-#include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/framework/XMLValidator.hpp>
-#include <xercesc/validators/schema/SchemaValidator.hpp>
-#include <xercesc/validators/common/ContentSpecNode.hpp>
-#include <xercesc/validators/schema/SchemaSymbols.hpp>
-#include <xercesc/util/OutOfMemoryException.hpp>
-#include <nn/netcdf/NetcdfDataset.h>
-#include <nn/engine/NetMaker.h>
-#include <nn/engine/GradientFollowerMaker.h>
-#include <nn/engine/DataExportHandler.h>
-#include <nn/engine/GradientTest.h>
-#include <nn/random/Random.h>
-#include <nn/common/Typedefs.h>
-#include <nn/common/Helpers.h>
 
 #include <netcdf.h>
 
@@ -71,19 +48,27 @@ typedef vector<double> FeatureVector;
 typedef vector<FeatureVector> Sequence;
 typedef vector<Sequence> DataSet;
 
-// function that prints the passed argument
+///
+///function that prints the passed argument
+///
 template <typename T>
 void print_item (const T& elem) {
     cout << elem << " ";
 }
 
+///
+///print a FeatureVector struct
+///
 template <typename T>
-void print_featvector (const FeatureVector& v) {
+void print_featvector (const vector<T>& v) {
 
 	for_each (v.begin(), v.end(), print_item<T>);
 
 }
 
+///
+///print a Sequence struct
+///
 template <typename T>
 void print_sequence (const Sequence& s) {
 	typename Sequence::const_iterator i;
@@ -101,32 +86,79 @@ void print_sequence (const Sequence& s) {
 
 }
 
+///
+///print a DataSet struct
+///
 template <typename T>
 void print_dataset (const DataSet& d) {
 	for_each (d.begin(), d.end(), print_sequence<T>);
 }
 
-
+///
+///generation of random sequences (for testing purposes)
+///
 void generate_rand_sequences (DataSet& data, long numSeq, long seqSize);
 
+///
+///write DataSet struct to a file
+///
 bool write_dataset (string fileName, const DataSet& data);
 
+///
+///read DataSet struct from a file
+///
 bool read_dataset (string fileName, DataSet& data);
 
+///
+///write DataSet struct to a cdl (netcdf in text format) file using zero-padding
+///
 bool write_cdl_file_padding (string fileName, const DataSet& data);
 
+///
+///write DataSet struct to a cdl (netcdf in text format) file using basis feature vectors
+///
 bool write_cdl_file_basis (string fileName, const DataSet& data);
 
+///
+///write DataSet struct to a nc (netcdf format) file using basis feature vectors
+///
 bool write_nc_file_basis (string fileName, const DataSet& data);
 
+///
+///concatenate .seq files in one file
+///
 bool concatenate_datasets (string dir, string writeFileName);
 
+///
+///load a sequence into inputs and target vectors (for machine learning)
+///
+void load_sequence (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
+
+///
+///generation of n-fold cross-validation sets from a particular sequence file
+///and using a certain write_netcdf_file function
 template<class Function>
-bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_netcdf_file, string target_dir, bool print_data = false) {
+bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_netcdf_file, string target_dir, bool print_data = false) {
 
 	DataSet data;
-	if (!read_dataset (baseFileName, data))
+	if (n < 2)
 		return false;
+	if (!read_dataset (seqFileName, data)){
+		cout << "file " + seqFileName + " could not be read" << endl;
+		return false;
+	}
+
+	boost::regex seqfile_re (".*/(.*)$");
+	boost::cmatch match;
+	string seqBaseFileName;
+	if (boost::regex_match(seqFileName.c_str(), match, seqfile_re)) {
+		seqBaseFileName = string(match[1].first, match[1].second);
+	}
+	else
+		seqBaseFileName = seqFileName;
+	cout << "seqFileBaseName: " << seqBaseFileName << endl;
+	cout << "seqFile: " << seqFileName << endl;
+
 	
 	vector<DataSet> partitions_testing;
 	vector<DataSet> partitions_training;
@@ -180,7 +212,7 @@ bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_n
 		if (print_data)
 			print_dataset<double>(partitions_testing[i]);
 		stringstream testingFileName;
-		testingFileName << target_dir << "/" << baseFileName << "_" << n << "_foldcv_set-" << i << "_testing";
+		testingFileName << target_dir << "/" << seqBaseFileName << "_" << n << "_foldcv_set-" << i << "_testing";
 		write_netcdf_file (testingFileName.str(), partitions_testing[i]);
 		for (int j=0; j<n; j++)
 			if (i != j) {
@@ -192,118 +224,22 @@ bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_n
 		if (print_data)
 			print_dataset<double>(partitions_training[i]);
 		stringstream trainingFileName;
-		trainingFileName << target_dir << "/" << baseFileName << "_" << n << "_foldcv_set-" << i << "_training";
+		trainingFileName << target_dir << "/" << seqBaseFileName << "_" << n << "_foldcv_set-" << i << "_training";
 		write_netcdf_file (trainingFileName.str(), partitions_training[i]);
 		
 	}
 
+	return true;
 	
 }
 
-bool generate_network_files_nfoldcv_set (const string defaultnetFileName, const string baseDataFileName, int n, string target_dir );
 
-class OfflineRNN {
-	int totalEpochs;
-	int randomSeed;
-	double initWeightRange;
-	double trainDataFraction;
-	double testDataFraction;
-	double valDataFraction;
-	//string trainDataFile;
-	vector<string> trainDataFiles;
-	string testDataFile;
-	string valDataFile;
-	bool initErrorTest;
-	bool gradTest;
-	double gradTestPerturbation;
-	int gradTestSeq;
-	NetcdfDataset* trainData;
-	NetcdfDataset* testData;
-	NetcdfDataset* valData;
-	int epochsPerErrCheck;
-	int epochsSinceErrCheck;
-	bool batchLearn;
-	int maxTestsNoBest; 
-	bool overwriteSaves;
-	bool shuffleTrainData;
-	double staticNoise;	
-	//double minStopError;
-	int epoch; 
-	int saveAfterNSeqs;
-	int seqsPerWeightUpdate;
-	bool rProp;
-	string testOutputsFile;
-	bool dataCheck;
-	double bestStopError;
-	int testsSinceBest;
+///
+///write collected data in an offline experiment
+///
+void writeDownCollectedData(DataSet data);
 
-	Net* net;
-	GradientFollower* gradientFollower;
-	map<const string, pair<int,double> > netErrorMap;
-	vector<string> criteria;
-	map <const string, pair<double, int> > bestValErrors;
-	vector<string> bestValStrings;
-	map <const string, pair<double, int> > bestTestErrors;
-	vector<string> bestTestStrings;
-	map <const string, pair<double, int> > actualTestErrors;
-
-	const DOMElement* rootNode;
-	const DOMElement* consoleDataElement;
-	const DOMElement* netElement;
-	const DOMElement* exportDataElement;
-	
- public:
-
-	OfflineRNN () {
-		//data loaded in from xml file (default values below)
-		SequenceDebugOutput::instance().set (false);
-		totalEpochs = -1;
-		randomSeed = 0;
-		initWeightRange = -1;
-		trainDataFraction = 1;
-		testDataFraction = 1;
-		valDataFraction = 1;
-		//trainDataFile = "";
-		testDataFile = "";
-		valDataFile = "";
-		initErrorTest = false;
-		gradTest = false;
-		gradTestPerturbation = 1e-5;
-		gradTestSeq = -1;
-		trainData = 0;
-		testData = 0;
-		valData = 0;
-		epochsPerErrCheck = 5;
-		epochsSinceErrCheck = 0;
-		batchLearn = false;
-		maxTestsNoBest = 4; 
-		overwriteSaves = true;
-		shuffleTrainData = true;
-		staticNoise = 0;	
-		//minStopError = 0;
-		epoch = 0; 
-		saveAfterNSeqs = 0;
-		seqsPerWeightUpdate = 1;
-		rProp = false;
-		testOutputsFile = "";
-		dataCheck = false;
-	}
-
-	bool parse_netfile (XercesDOMParser& parser, const string& filename, bool display = false);
-	
-	bool load_net (int displaySeq = -1, const string& displayDataSet = "");
-	
-	void print_net_data (ostream& out = cout);
-	
-	void saveConsoleData(ostream& out = cout, bool xml = true);
-
-	void save_net (ostream& out = cout);
-
-	void setTestDataFile (string fileName);
-
-	void setTrainDataFile (string fileName);
-};
 
 }; /* smlearning namespace */
 
-#endif /* TOOLS_DATAHANDLING_H_*/
+#endif /* SMLEARNING_DATAHANDLING_H_*/

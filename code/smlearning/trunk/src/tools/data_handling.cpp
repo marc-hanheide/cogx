@@ -5,7 +5,6 @@
  *
  * @version 1.0
  *
- * Copyright 2007,2008 Alex Graves
  *           2009      Sergio Roa
 
    This is free software: you can redistribute it and/or modify
@@ -129,7 +128,9 @@ bool read_dataset (string fileName, DataSet& data) {
 	
 }
 
-//write a cdl file format with zero padding
+///
+///write a cdl file format with zero padding
+///
 bool write_cdl_file_padding (string fileName, const DataSet& data) {
 	fileName += ".cdl";
 	ofstream writeFile(fileName.c_str(), ios::out);
@@ -222,7 +223,9 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 	return true;
 }
 
-//write a cdl file format for feature vectors using basis vectors
+///
+///write a cdl file format for feature vectors using basis vectors
+///
 bool write_cdl_file_basis (string fileName, const DataSet& data) {
 	fileName += ".cdl";
 	ofstream writeFile(fileName.c_str(), ios::out);
@@ -328,7 +331,9 @@ bool check_nc_err(const int stat, const int line, const char *file) {
 	return false;
 }
 
-
+///
+///almost automatically generated netcdf function to store netcdf data files
+///
 bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize, FeatureVector& inputVector, FeatureVector& targetVector, vector<int>& seqLengthsVector, size_t& numTimesteps_len) {
 
 	//return status
@@ -437,8 +442,9 @@ bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize,
 
 }
 
-
-//write a netcdf nc file format for feature vectors using basis vectors
+///
+///write a netcdf nc file format for feature vectors using basis vectors
+///
 bool write_nc_file_basis (string fileName, const DataSet& data) {
 	fileName += ".nc";
 
@@ -501,6 +507,54 @@ bool write_nc_file_basis (string fileName, const DataSet& data) {
 	
 }
 
+///
+///load a sequence into inputs and target vectors (for machine learning)
+///
+void load_sequence (vector<float>& inputVector, vector<float>& targetVector, Sequence s) {
+
+	int initialVectorSize = s[0].size();
+	int featureVectorSize = initialVectorSize + s[1].size();
+	Sequence::const_iterator v;
+	int contInput = 0;
+	int contTarget = 0;
+	for (v=s.begin(); v!= s.end(); v++) {
+		FeatureVector::const_iterator n;
+		//put inputs and targetPatterns data
+		if (v+1 != s.end()) {
+			if (v != s.begin()) {
+				//zero padding
+				for (int i=0; i<initialVectorSize; i++)
+					inputVector[contInput++] = 0.0;
+			}
+			for (n=(*v).begin(); n!= (*v).end(); n++) {
+				inputVector[contInput++] = *n;
+			}
+			if (v == s.begin()) {
+				//zero padding
+				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
+					inputVector[contInput++] = 0.0;
+			}
+		}
+			
+		if (v != s.begin()) {
+			if (v != s.begin()) {
+				//zero padding
+				for (int i=0; i<initialVectorSize; i++)
+					targetVector[contTarget++] = 0.0;
+			}
+			for (n=(*v).begin(); n!= (*v).end(); n++) {
+				targetVector[contTarget++] = *n;
+			}
+			//zero padding
+			if (v == s.begin() ) {
+				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
+					targetVector[contTarget++] = 0.0;
+			}
+		}
+	}
+
+	
+}
 
 bool concatenate_datasets (string dir, string writeFileName) {
 	boost::regex seqfile_re ("(.*)\\.seq");
@@ -534,525 +588,31 @@ bool concatenate_datasets (string dir, string writeFileName) {
 	return true;
 }
 	
-void saveElement(ostream& out, const string& name, bool val, bool xml)
-{
-	if (xml)
-	{
-		out << "\t\t<" << name << ">" << val << "</" << name << ">" << endl;
-	}
-	else
-	{
-		out << name << " " << val << endl;
-	}
-}
-
-void saveElement(ostream& out, const string& name, int val, bool xml)
-{
-	if (xml)
-	{
-		out << "\t\t<" << name << ">" << val << "</" << name << ">" << endl;
-	}
-	else
-	{
-		out << name << " " << val << endl;
-	}
-}
-
-void saveElement(ostream& out, const string& name, const string&val, bool xml)
-{
-	if (xml)
-	{
-		out << "\t\t<" << name << ">" << val << "</" << name << ">" << endl;
-	}
-	else
-	{
-		out << name << " " << val << endl;
-	}
-}
-
-void saveElement(ostream& out, const string& name, const vector<string>&val, bool xml)
-{
-	if (xml)
-	{
-		out << "\t\t<" << name << ">";
-		copy(val.begin(), val.end(), ostream_iterator<string>(out, " "));
-		out << "</" << name << ">" << endl;
-	}
-	else
-	{
-		out << name << " ";
-		copy(val.begin(), val.end(), ostream_iterator<string>(out, " "));
-		out << endl;
-	}
-}
-
-void saveElement(ostream& out, const string& name, double val, bool xml)
-{
-	if (xml)
-	{
-		out << "\t\t<" << name << ">" << val << "</" << name << ">" << endl;
-	}
-	else
-	{
-		out << name << " " << val << endl;
-	}
-}
-
-void OfflineRNN::saveConsoleData(ostream& out, bool xml)
-{
-	saveElement (out, "trainDataFile", trainDataFiles, xml);
-	saveElement (out, "trainDataFraction", trainDataFraction, xml);
-	saveElement (out, "testDataFraction", testDataFraction, xml);
-	saveElement (out, "valDataFraction", valDataFraction, xml);
-	saveElement (out, "testDataFile", testDataFile, xml);
-	saveElement (out, "validationDataFile", valDataFile, xml);
-	saveElement (out, "randomSeed", randomSeed, xml);
-	saveElement (out, "totalEpochs", totalEpochs, xml);
-	saveElement (out, "initWeightRange", initWeightRange, xml);
-	saveElement (out, "initErrorTest", initErrorTest, xml);
-	saveElement (out, "dataCheck", dataCheck, xml);
-	saveElement (out, "gradTest", gradTest, xml);
-	saveElement (out, "gradTestPerturbation", gradTestPerturbation, xml);
-	saveElement (out, "gradTestSeq", gradTestSeq, xml);
-	saveElement (out, "overwriteSaves", overwriteSaves, xml);
-	saveElement (out, "staticNoise", staticNoise, xml );
-	saveElement (out, "epochsPerErrCheck", epochsPerErrCheck, xml);
-	saveElement (out, "epochsSinceErrCheck", epochsSinceErrCheck, xml);
-	saveElement (out, "maxTestsNoBest", maxTestsNoBest, xml);
-	saveElement (out, "epoch", epoch, xml);
-	saveElement (out, "batchLearn", batchLearn, xml);
-	saveElement (out, "shuffleTrainData", shuffleTrainData, xml);
-	saveElement (out, "saveAfterNSeqs", saveAfterNSeqs, xml);
-	saveElement (out, "seqsPerWeightUpdate", seqsPerWeightUpdate, xml);
-	saveElement (out, "sequenceDebugOutput", SequenceDebugOutput::instance().get(), xml);
-	saveElement (out, "rProp", rProp, xml);
-	saveElement (out, "testOutputsFile", testOutputsFile, xml);
-}
-
-void OfflineRNN::save_net (ostream& out)
-{
-	out << "<NeuralNet>" << endl;
-	out << "\t<ConsoleData>" << endl;
-	saveConsoleData(out);
-	out << "\t</ConsoleData>" << endl;
-	net->save("\t", out);
-	DataExportHandler::instance().save("\t", out);
-	out << "</NeuralNet>" << endl;
-}
-	
-
-void OfflineRNN::print_net_data (ostream& out)
-{
-	out << "console data:" << endl;
-	saveConsoleData(out, false);
-	out << endl;
-	out << "network:" << endl;
-	net->print(out);
-	out << "gradientFollower:" << endl;
-	gradientFollower->print(out);
-	out << endl;
-	if (trainData)
-	{
-		out << "training data:" << endl;
-		trainData->print(out);
-		out << endl;
-	}
-	if (testData)
-	{
-		out << "test data:" << endl;
-		testData->print(out);
-		out << endl;
-	}
-	if (valData)
-	{
-		out << "validation data:" << endl;
-		valData->print(out);
-		out << endl;
-	}
-}
-
-NetcdfDataset* getValidDataset(NetcdfDataset* trainData, NetcdfDataset* testData, NetcdfDataset* valData)
-{
-	if (trainData)
-	{
-		return trainData;
-	}
-	else if (testData)
-	{
-		return testData;
-	}
-	else
-	{
-		return valData;
-	}
-}
-
-const char* getDOMNodeChildText(const DOMElement* parent, const char* childName)
-{
-	const DOMNode* node = parent->getElementsByTagName(XMLString::transcode(childName))->item(0);
-	if (node && node->hasChildNodes())
-	{
-		return XMLString::transcode(node->getFirstChild()->getNodeValue());
-	}
-	return 0;
-}
 
 
-bool loadDOMElement(const DOMElement* parent, const char* name, string& target)
-{
-	const char* text = getDOMNodeChildText(parent, name);
-	if (text)
-	{
-		target = text;
-		return true;
-	}
-	return false;
-}
+///
+///write collected data in an offline experiment
+///
+void writeDownCollectedData(DataSet data) {
+	time_t rawtime;
+	struct tm * timeinfo;
+  	char buffer [12];
 
-bool loadDOMElement(const DOMElement* parent, const char* name, vector<string>& target)
-{
-	const char* text = getDOMNodeChildText(parent, name);
-	if (text)
-	{
-		stringstream temp(text);
-		string s;
-		while (temp >> s)
-		{
-			target.push_back(s);
-		}
-		return true;
-	}
-	return false;
-}
+ 	time ( &rawtime );
+  	timeinfo = localtime ( &rawtime );
 
-bool loadDOMElement(const DOMElement* parent, const char* name, int& target)
-{
-	const char* text = getDOMNodeChildText(parent, name);
-	if (text)
-	{
-		target = atoi(text);
-		return true;
-	}
-	return false;
-}
+  	strftime (buffer,12,"%y%m%d%H%M",timeinfo);
+  	puts(buffer);
 
-bool loadDOMElement(const DOMElement* parent, const char* name, double& target)
-{
-	const char* text = getDOMNodeChildText(parent, name);
-	if (text)
-	{
-		target = atof(text);
-		return true;
-	}
-	return false;
-}
-
-bool loadDOMElement(const DOMElement* parent, const char* name, bool& target)
-{
-	const char* text = getDOMNodeChildText(parent, name);
-	if (text)
-	{
-		target = (atoi(text) != 0);
-		return true;
-	}
-	return false;
-}
-
-//TODO fix xml validation
-bool OfflineRNN::parse_netfile (XercesDOMParser& parser, const string& filename, bool display) {
-	//parse in the file
-	cout << "opening file \"" << filename << "\"" << endl;
-	bool parseFailed = false;
-	//XercesDOMParser parser;
-	//parser.setValidationScheme(XercesDOMParser::Val_Always);
-	parser.setDoNamespaces(true);
-	//parser.setDoSchema(true);
-	//parser.setValidationSchemaFullChecking(true); 
-	//parser.setExternalNoNamespaceSchemaLocation("schema.xsd");
-	parser.setValidationConstraintFatal(true);
-	parser.setExitOnFirstFatalError(false);
-	parser.setIncludeIgnorableWhitespace(false);
-	try
-	{
-		ifstream f(filename.c_str());
-		if (f.is_open())
-		{
-			LocalFileInputSource source(XMLString::transcode(filename.c_str()));
-			parser.parse(source);
-			//parseFailed = parser.getErrorCount() != 0;
-			//Grammar* g = parser.getRootGrammar();
-			if (parser.getErrorCount())
-			{
-				cerr << "Parsing " << filename;
-				cerr << " error count: " << parser.getErrorCount() << endl;
-				return false;
-			}
-		}
-		else
-		{
-			cerr << "save file " << filename << " not found, exiting" << endl;
-			return false;
-		}
-	}
-	catch (const DOMException& e)
-	{
-		cerr << "DOM Exception parsing ";
-		cerr << filename;
-		cerr << " reports: ";
-		// was message provided?
-		if (e.msg)
-		{
-			// yes: display it as ascii.
-			char *strMsg = XMLString::transcode(e.msg);
-			cerr << strMsg << endl;
-			XMLString::release(&strMsg);
-		}
-		else
-		{
-			// no: just display the error code.
-			cerr << e.code << endl;
-		}
-		parseFailed = true;
-	}
-	catch (const XMLException& e)
-	{
-		cerr << "XML Exception parsing ";
-		cerr << filename;
-		cerr << " reports: ";
-		cerr << e.getMessage() << endl;
-		parseFailed = true;
-	}
-	catch (const SAXException& e)
-	{
-		cerr << "SAX Exception parsing ";
-		cerr << filename;
-		cerr << " reports: ";
-		cerr << e.getMessage() << endl;
-		parseFailed = true;
-	}
-	catch (...)
-	{
-		cerr << "An exception parsing ";
-		cerr << filename << endl;
-		parseFailed = true;
-	}
-
-	// did the input document parse okay?
-	if (!parseFailed)
-	{
-		//TODOMNode* domNode = attributes->getNamedItem\(XMLString\:\:transcodeDO search for top nodes by name instead of number (order shouldn't matter)
-		rootNode  = parser.getDocument()->getDocumentElement();
-		consoleDataElement = (DOMElement*)rootNode->getElementsByTagName(XMLString::transcode("ConsoleData"))->item(0);		
-		if (consoleDataElement)
-		{
-			bool sequenceDebugOutput = display;
-			loadDOMElement(consoleDataElement, "trainDataFile", trainDataFiles);
-			loadDOMElement(consoleDataElement, "testDataFile", testDataFile);			
-			loadDOMElement(consoleDataElement, "validationDataFile", valDataFile);
-			loadDOMElement(consoleDataElement, "randomSeed", randomSeed);
-			loadDOMElement(consoleDataElement, "totalEpochs", totalEpochs);
-			loadDOMElement(consoleDataElement, "initWeightRange", initWeightRange);
-			loadDOMElement(consoleDataElement, "initErrorTest", initErrorTest);
-			loadDOMElement(consoleDataElement, "trainDataFraction", trainDataFraction);
-			loadDOMElement(consoleDataElement, "testDataFraction", testDataFraction);
-			loadDOMElement(consoleDataElement, "valDataFraction", valDataFraction);
-			loadDOMElement(consoleDataElement, "gradTest", gradTest);
-			loadDOMElement(consoleDataElement, "gradTestPerturbation", gradTestPerturbation);
-			loadDOMElement(consoleDataElement, "gradTestSeq", gradTestSeq);
-			loadDOMElement(consoleDataElement, "epochsPerErrCheck", epochsPerErrCheck);
-			loadDOMElement(consoleDataElement, "epochsSinceErrCheck", epochsSinceErrCheck);	
-			loadDOMElement(consoleDataElement, "maxTestsNoBest", maxTestsNoBest);
-			loadDOMElement(consoleDataElement, "epoch", epoch);
-			loadDOMElement(consoleDataElement, "overwriteSaves", overwriteSaves);
-			loadDOMElement(consoleDataElement, "staticNoise", staticNoise);
-			loadDOMElement(consoleDataElement, "batchLearn", batchLearn);
-			loadDOMElement(consoleDataElement, "shuffleTrainData", shuffleTrainData);
-			loadDOMElement(consoleDataElement, "saveAfterNSeqs", saveAfterNSeqs);
-			loadDOMElement(consoleDataElement, "seqsPerWeightUpdate", seqsPerWeightUpdate);
-			loadDOMElement(consoleDataElement, "sequenceDebugOutput", sequenceDebugOutput);
-			loadDOMElement(consoleDataElement, "rProp", rProp);
-			loadDOMElement(consoleDataElement, "testOutputsFile", testOutputsFile);
-			loadDOMElement(consoleDataElement, "dataCheck", dataCheck);
-			SequenceDebugOutput::instance().set (sequenceDebugOutput);
-		}
-		else
-		{
-			cerr << "ConsoleData element not found!" << endl;
-			return false;
-		}
-
-		netElement = (DOMElement*)rootNode->getElementsByTagName(XMLString::transcode("Net"))->item(0);
-		if (!netElement)
-		{
-			cerr << "Net element not found!" << endl;
-			return false;
-		}
-		//load in the exported data
-		exportDataElement = (DOMElement*)rootNode->getElementsByTagName(XMLString::transcode("ExportedData"))->item(0);
-		return true;
-	}
-	cerr << "xml parse failed!" << endl;
-	return false;
-	
-}
+	string name;
+	name.append(buffer);
 
 	
-bool OfflineRNN::load_net (int displaySeq, const string& displayDataSet)
-{
-	if (consoleDataElement)
-	{
-		//load in the datasets
-		if (trainDataFiles.size() && trainDataFraction > 0 && (displaySeq < 0 || displayDataSet == "train"))
-		{
-			cout << "loading train data file \"" << trainDataFiles.front() << "\"" << endl;
-			int seqOffset;
-			if (displaySeq >= 0)
-			{
-				seqOffset = displaySeq;
-				trainData = new NetcdfDataset(trainDataFiles.front(), seqOffset);
-			}
-			else
-			{
-				seqOffset = 0;
-				trainData = new NetcdfDataset(trainDataFiles.front(), trainDataFraction);
-			}
-		}
-		if (testDataFile != "" && testDataFraction > 0 && (displaySeq < 0 || displayDataSet == "test"))
-		{
-			cout << "loading test data file \"" << testDataFile << "\"" << endl;
-			int seqOffset;
-			if (displaySeq >= 0)
-			{
-				seqOffset = displaySeq;
-				testData = new NetcdfDataset(testDataFile, seqOffset);
-			}
-			else
-			{
-				seqOffset = 0;
-				testData = new NetcdfDataset(testDataFile, testDataFraction);
-			}
-		}
-		if (valDataFile != "" && valDataFraction > 0 && (displaySeq < 0 || displayDataSet == "val"))
-		{
-			cout << "loading validation data file \"" << valDataFile << "\"" << endl;
-			int seqOffset;
-			if (displaySeq >= 0)
-			{
-				seqOffset = displaySeq;
-				valData = new NetcdfDataset(valDataFile, seqOffset);
-			}
-			else
-			{
-				seqOffset = 0;
-				valData = new NetcdfDataset(valDataFile, valDataFraction);
-			}
-		}
-
-		NetcdfDataset* ds = getValidDataset(trainData, testData, valData);
-
-		//if datasets loaded succesfully, load net
-		if (ds)
-		{
-			if (netElement)
-			{
-				cout << "loading net" << endl;	
-
-				//create a new net
-				criteria.clear();
-				//delete net;
-				net = NetMaker::makeNet(netElement, ds->getDimensions(), criteria);
-				for (VSCI it = criteria.begin(); it != criteria.end(); ++it)
-				{
-					bestTestErrors[*it] = bestValErrors[*it] = make_pair(numeric_limits<double>::max(), -1);
-				}
-					
-				//build the net and create the gradientFollower
-				net->build();
-				if (rProp)
-				{
-					gradientFollower = GradientFollowerMaker::makeRpropGradientFollower(!batchLearn);
-				}
-				else
-				{
-					gradientFollower = GradientFollowerMaker::makeStdGradientFollower();
-				}
-
-			}
-			else
-			{
-				cerr << "Net element not found, exiting" << endl;
-				return false;
-			}
-
-			//load in the exported data
-			if (exportDataElement)
-			{
-				cout << "loading exported data" << endl;
-				DataExportHandler::instance().load(exportDataElement);
-			}
-			return true;
-		}
-		else
-		{
-			cerr << "no data loaded!" << endl;
-			return false;
-		}
-	}
-	else
-	{
-		cerr << "ConsoleData element not found!" << endl;
-		return false;
-	}
-	cerr << "net loading failed!" << endl;
-	return false;
-}
-
-void OfflineRNN::setTestDataFile (string fileName) {
-	testDataFile = fileName;
-}
-
-void OfflineRNN::setTrainDataFile (string fileName) {
-	trainDataFiles.clear();
-	trainDataFiles.push_back (fileName);
+	write_dataset(name  , data);
+	//DataSet savedData;
+	//read_dataset(name, savedData);
+	//print_dataset<double> (savedData);
 }
 
 
-bool generate_network_files_nfoldcv_set (const string defaultnetFileName, const string baseDataFileName, int n, string target_dir ) {
-	//init the xerces lib
-	try 
-	{
-		XMLPlatformUtils::Initialize();
-	}
-	catch (const XMLException& toCatch) 
-	{
-		char* message = XMLString::transcode(toCatch.getMessage());
-		cerr << "Error during xerces initialization! :" << endl << message << endl;
-		XMLString::release(&message);
-	}
-
-	OfflineRNN myRNN;
-	XercesDOMParser parser;
-	if (!myRNN.parse_netfile (parser, defaultnetFileName)) {
-		cerr << "XML net file parsing not successful..." << endl;
-		return false;
-	}
-	for (int i=0; i<n; i++) {
-		stringstream testingFileName;
-		stringstream trainingFileName;
-		stringstream netFileName;
-		netFileName << target_dir << "/" << baseDataFileName << "_" << n << "_foldcv_set-" << i << ".xml";
-		ofstream netFile (netFileName.str().c_str());
-		testingFileName << baseDataFileName << "_" << n << "_foldcv_set-" << i << "_testing.nc";
-		trainingFileName << baseDataFileName << "_" << n << "_foldcv_set-" << i << "_training.nc";
-		myRNN.setTestDataFile (testingFileName.str());
-		myRNN.setTrainDataFile (trainingFileName.str());
-		myRNN.load_net (1, "train");
-		myRNN.print_net_data ();
-		myRNN.save_net (netFile);
-		netFile.close();
-	}
-
-	return true;
-}
-	
-}; /* smlearning namespace */
+};
