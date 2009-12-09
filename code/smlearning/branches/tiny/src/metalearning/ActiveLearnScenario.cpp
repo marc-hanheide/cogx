@@ -1,6 +1,6 @@
 /** @file ActiveLearnScenario.cpp
  * 
- * Program demonstrates conditional distribution learning.
+ * Program demonstrates affordances learning with LSTMs.
  * 
  * Program can be run in two modes:
  * - the first uses real Katana arm
