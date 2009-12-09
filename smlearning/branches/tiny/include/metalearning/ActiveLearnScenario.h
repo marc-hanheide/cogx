@@ -1,5 +1,6 @@
 /** @file ActiveLearnScenario.h
  * 
+ * @author	Sergio Roa (DFKI)
  * @author	Marek Kopicki (The University Of Birmingham)
  *
  * @version 1.0
