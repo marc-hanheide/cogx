@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arm", "arm.vcproj", "{5D9BCA50-57E6-43CB-B0EA-1469DC1D6D91}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools_test", "tools_test.vcproj", "{F133FA27-D52C-46AD-A265-7ED4016C5C1B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5D9BCA50-57E6-43CB-B0EA-1469DC1D6D91}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5D9BCA50-57E6-43CB-B0EA-1469DC1D6D91}.Debug|Win32.Build.0 = Debug|Win32
+		{5D9BCA50-57E6-43CB-B0EA-1469DC1D6D91}.Release|Win32.ActiveCfg = Release|Win32
+		{5D9BCA50-57E6-43CB-B0EA-1469DC1D6D91}.Release|Win32.Build.0 = Release|Win32
+		{F133FA27-D52C-46AD-A265-7ED4016C5C1B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F133FA27-D52C-46AD-A265-7ED4016C5C1B}.Debug|Win32.Build.0 = Debug|Win32
+		{F133FA27-D52C-46AD-A265-7ED4016C5C1B}.Release|Win32.ActiveCfg = Release|Win32
+		{F133FA27-D52C-46AD-A265-7ED4016C5C1B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
