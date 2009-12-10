@@ -173,6 +173,7 @@ void VideoServer::start()
 void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange &
     _wmc)
 {
+  lockComponent();
 	CameraParametersWrapperPtr newCam = getMemoryEntry<CameraParametersWrapper>(_wmc.address);
   // find the camera paramters that need updating and update pose and time stamp
   // Note that we don't change any other (instrinsic) parameters yet as we
@@ -189,6 +190,7 @@ void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange &
       break;
     }
   }
+  unlockComponent();
 }
 
 void VideoServer::startReceiveImages(const std::string &receiverComponentId,
@@ -260,6 +262,7 @@ void VideoServer::getScaledImages(int width, int height, std::vector<Video::Imag
 void VideoServer::runComponent()
 {
   vector<Image> frames;
+  int cnt = 100;
   while(isRunning())
   {
     // TODO: If I could have this lock after grabFrames() I could avoid the
@@ -277,10 +280,15 @@ void VideoServer::runComponent()
     }
     unlockComponent();
     // HACK: to let getImages() have chance to lockComponent()
-    sleepComponent(20);
-    int fr = getFramerateMilliSeconds();
-    debug("grabbing with %d ms per frame (%.2f frames per second)",
-        fr, (fr > 0. ? 1000./fr : 0.));
+    sleepComponent(10);
+    cnt--;
+    if(cnt == 0)
+    {
+      int fr = getFramerateMilliSeconds();
+      debug("grabbing with %d ms per frame (%.2f frames per second)",
+          fr, (fr > 0. ? 1000./fr : 0.));
+      cnt = 100;
+    }
   }
 }
 

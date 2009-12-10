@@ -22,4 +22,10 @@ add_cast_component(OpenCvLiveServer OpenCvLiveServer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
 
+option(BUILD_HAL_VIDEO_POINTGREY "Build Point Grey video server" NO)
+if(BUILD_HAL_VIDEO_POINTGREY)
+add_cast_component(PointGreyServer PointGreyServer.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
+link_cast_component(${CAST_COMPONENT_NAME} flycapture)
+endif(BUILD_HAL_VIDEO_POINTGREY)
 
