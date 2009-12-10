@@ -61,21 +61,29 @@ void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
   img.width = iplImg->width;
   img.height = iplImg->height;
   img.data.resize(iplImg->width*iplImg->height*iplImg->nChannels);
-  // note: this neat triple loop might be somewhat slower than a memcpy, but
-  // makes sure images are copied correctly irrespective of memory layout and
-  // line padding.
   if(iplImg->depth == (int)IPL_DEPTH_8U || iplImg->depth == (int)IPL_DEPTH_8S)
   {
-#ifndef FAST_DIRTY_CONVERSION
-    int x, y, c;
-    for(y = 0; y < iplImg->height; y++)
-      for(x = 0; x < iplImg->width; x++)
-        for(c = 0; c < 3; c++)
-          img.data[3*(y*img.width + x) + c] =
-            iplImg->imageData[y*iplImg->widthStep + 3*x + c];
-#else
-    memcpy(&img.data[0], iplImg->imageData, iplImg->height*iplImg->widthStep);
+#ifdef FAST_DIRTY_CONVERSION
+    if(iplImg->widthStep == iplImg->width*3)
+    {
+      assert(iplImg->imageSize == img.data.size());
+      memcpy(&img.data[0], iplImg->imageData, iplImg->height*iplImg->widthStep);
+    }
+    else
 #endif
+    {
+      // note: this neat triple loop is a lot slower than a memcpy, but
+      // works irrespective of the image memory layouts (e.g. line padding)
+      int x, y, c;
+      for(y = 0; y < iplImg->height; y++)
+        for(x = 0; x < iplImg->width; x++)
+          for(c = 0; c < 3; c++)
+          {
+            assert(3*(y*img.width + x) + c < img.data.size());
+            img.data[3*(y*img.width + x) + c] =
+              iplImg->imageData[y*iplImg->widthStep + 3*x + c];
+          }
+    }
   }
   else
     throw runtime_error(exceptionMessage(__HERE__,
