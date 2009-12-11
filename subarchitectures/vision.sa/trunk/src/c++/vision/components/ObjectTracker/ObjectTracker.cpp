@@ -145,9 +145,9 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	
 	
 	for(int id=0; id<i; id++){
-		if(id==0) printf("\n");
-		printf("  Cube %d: %.3f %.3f %.3f", id, 
-			m_modelID_list[id].trackpose.tX, m_modelID_list[id].trackpose.tY, m_modelID_list[id].trackpose.tZ);
+//	if(id==0) printf("\n");
+//		printf("  Cube %d: %.3f %.3f %.3f", id, 
+//			m_modelID_list[id].trackpose.tX, m_modelID_list[id].trackpose.tY, m_modelID_list[id].trackpose.tZ);
 		m_tracker_list[id]->drawResult(&m_modelID_list[id].trackpose, g_Resources->GetModel(m_modelID_list[id].resources_ID));
 	}
 	
