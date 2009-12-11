@@ -86,18 +86,17 @@ private:
   FlyCapture2::Camera **cameras;
   std::vector<FlyCapture2::Image> retrievedImages;
 
-  /**
-   * time stamps when Ipl images were captured.
-   */
+  /** time stamps when Ipl images were captured.  */
   std::vector<cast::cdl::CASTTime> grabTimes;
 
-  /**
-   * measured mean frame rate
-   */
+  /** measured mean frame rate */
   MeanRate framerateMillis;
   int width;
   int height;
-	
+  int fps;
+
+  FlyCapture2::VideoMode selectVideoMode(int &_width, int &_height);
+  FlyCapture2::FrameRate selectFrameRate(int &_fps);
   void init() throw(std::runtime_error);
   void LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo);
   void copyImage(const FlyCapture2::Image &flyImg,
