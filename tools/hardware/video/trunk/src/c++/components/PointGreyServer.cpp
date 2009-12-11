@@ -90,7 +90,7 @@ void PointGreyServer::LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo)
       "Sensor - %s\n"
       "Resolution - %s\n"
       "Firmware version - %s\n"
-      "Firmware build time - %s\n\n",
+      "Firmware build time - %s\n",
       pCamInfo->serialNumber,
       pCamInfo->modelName,
       pCamInfo->vendorName,
@@ -98,6 +98,66 @@ void PointGreyServer::LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo)
       pCamInfo->sensorResolution,
       pCamInfo->firmwareVersion,
       pCamInfo->firmwareBuildTime );
+}
+
+FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_height)
+{
+  // note: we use only width to elect the video mode and assume height to be 3/4
+  // of width
+  // If we have several colour formats to choose from, we always select colour
+  // over greyscale and select the one with hightest colour resolution, e.g. RGB
+  // over YUV422
+  if(_width == 160)
+  {
+    _height = 120;
+    return FlyCapture2::VIDEOMODE_160x120YUV444;
+  }
+  if(_width == 320)
+  {
+    _height = 240;
+    return FlyCapture2::VIDEOMODE_320x240YUV422;
+  }
+  if(_width == 640)
+  {
+    _height = 480;
+    return FlyCapture2::VIDEOMODE_640x480RGB;
+  }
+  if(_width == 800)
+  {
+    _height = 600;
+    return FlyCapture2::VIDEOMODE_800x600RGB;
+  }
+  if(_width == 1024)
+  {
+    _height = 768;
+    return FlyCapture2::VIDEOMODE_1024x768RGB;
+  }
+  if(_width == 1280)
+  {
+    _height = 960;
+    return FlyCapture2::VIDEOMODE_1600x1200RGB;
+  }
+  // the default
+  _width = 640;
+  _height = 480;
+  return FlyCapture2::VIDEOMODE_640x480RGB;
+}
+
+FlyCapture2::FrameRate PointGreyServer::selectFrameRate(int &_fps)
+{
+  if(_fps == 7)
+    return FlyCapture2::FRAMERATE_7_5;
+  if(_fps == 15)
+    return FlyCapture2::FRAMERATE_15;
+  if(_fps == 30)
+    return FlyCapture2::FRAMERATE_30;
+  if(_fps == 60)
+    return FlyCapture2::FRAMERATE_60;
+  if(_fps == 120)
+   return FlyCapture2::FRAMERATE_120;
+  // the default
+  _fps = 15;
+  return FlyCapture2::FRAMERATE_15;
 }
 
 void PointGreyServer::init() throw(runtime_error)
@@ -138,14 +198,9 @@ void PointGreyServer::init() throw(runtime_error)
       throw runtime_error(error.GetDescription());
     LogCameraInfo(&camInfo); 
 
-    // Set all cameras to a specific mode and frame rate so they
-    // can be synchronized
-    // HACK: make this configurable
-    error = cameras[i]->SetVideoModeAndFrameRate( 
-        FlyCapture2::VIDEOMODE_640x480RGB,
-        FlyCapture2::FRAMERATE_15);
-    width = 640;
-    height= 480;
+    FlyCapture2::VideoMode mode = selectVideoMode(width, height);
+    FlyCapture2::FrameRate rate = selectFrameRate(fps);
+    error = cameras[i]->SetVideoModeAndFrameRate(mode, rate);
     if(error != FlyCapture2::PGRERROR_OK)
       throw runtime_error(error.GetDescription());
   }
@@ -163,11 +218,16 @@ void PointGreyServer::configure(const map<string,string> & _config)
   // first let the base class configure itself
   VideoServer::configure(_config);
 
-  // HACK: size is ignored right now!
   if((it = _config.find("--imgsize")) != _config.end())
   {
     istringstream str(it->second);
     str >> width >> height;
+  }
+
+  if((it = _config.find("--framerate_fps")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> fps;
   }
 
   // do some initialisation based on configured items
@@ -205,7 +265,13 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height,
   }
   else
   {
-    throw runtime_error("PointGreyServer: can not rescale images");
+    // NOTE: this is very wasteful! And should only be a temporary solution!
+    copyImage(retrievedImages[camIdx], frame);
+    IplImage *tmp = 0; 
+    IplImage *tmp_resized = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+    convertImageToIpl(frame, &tmp);
+    cvResize(tmp, tmp_resized);
+    convertImageFromIpl(tmp_resized, frame);
   }
 
   frame.time = grabTimes[camIdx];
@@ -267,7 +333,6 @@ void PointGreyServer::copyImage(const FlyCapture2::Image &flyImg,
   img.width = flyImg.GetCols();
   img.height = flyImg.GetRows();
   img.data.resize(img.width*img.height*3);
-  // HACK: we just assume the right colour format here
   memcpy(&img.data[0], flyImg.GetData(), img.data.size());
 }
 
