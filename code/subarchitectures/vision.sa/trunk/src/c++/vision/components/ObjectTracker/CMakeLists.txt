@@ -18,10 +18,7 @@ SET(SRC
 	src/EdgeTracker.cpp
 	src/Frustum.cpp
 	src/ImageProcessor.cpp
-	src/Kalman.cpp
-	src/Lighting.cpp
 	src/Model.cpp
-	src/OpenGLControl.cpp
 	src/Particles.cpp
 	src/ply.c
 	src/PlyModel.cpp
@@ -31,6 +28,7 @@ SET(SRC
 	src/ShaderUtils.cpp
 	src/Texture.cpp
 	src/TextureTracker.cpp
+	src/tgLighting.cpp
 	src/Timer.cpp
 	src/TM_Matrix3.cpp
 	src/TM_Vector3.cpp

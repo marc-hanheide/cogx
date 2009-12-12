@@ -19,6 +19,7 @@
 #include "TextureTracker.h"
 #include "Timer.h"
 #include "ObjectTrackerUtils.hpp"
+#include "TrackingEntry.h"
 
 namespace cast
 {
@@ -26,9 +27,9 @@ namespace cast
 class ObjectTracker : public VideoClient, public ManagedComponent
 {
 private:
-  Tracker* m_tracker;
   Camera* m_camera;
   Timer m_timer;
+  Particle m_constraints;
   Video::Image m_image;
   int m_ImageWidth;
   int m_ImageHeight;
@@ -37,37 +38,35 @@ private:
   /**
    * Which camera to get images from
    */
-  int camId;
+  int m_camId;
   /**
    * component ID of the video server to connect to
    */
-  std::string videoServerName;
+  std::string m_videoServerName;
   /**
    * our ICE proxy to the video server
    */
-  Video::VideoInterfacePrx videoServer;
+  Video::VideoInterfacePrx m_videoServer;
 	int m_maxModels;
-  bool track;
-  bool running;
-  bool testmode;
-  bool bfc;						// backface culling (disable for not closed surfaces, like polyflaps)
-  bool trackTexture;	// use texture to track object (slower but more accurate [only for hi-end systems])
+  bool m_track;
+  bool m_running;
+  bool m_testmode;
+  bool m_bfc;						// backface culling (disable for not closed surfaces, like polyflaps)
+  bool m_trackTexture;	// use texture to track object (slower but more accurate [only for hi-end systems])
   
-  struct IDList{
-  	int resources_ID;
-  	cdl::WorkingMemoryAddress cast_AD;
-  	Particle trackpose, detectpose;
-  };
+  std::vector<TrackingEntry> m_trackinglist;
   
-  std::vector<IDList> m_modelID_list;
-  std::vector<Tracker*> m_tracker_list;
-  
-  
+  // Functions with GL commands allowed
   void initTracker(const Video::Image &image);
   void runTracker(const Video::Image &image);
+  void initTrackingEntry(int i);
+  
+  // Do not use GL commands in this functions (different thread with no GL context)
+  void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
   
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
-  void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
+  void changeVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void removeVisualObject(const cdl::WorkingMemoryChange & _wmc);
 
 protected:
   /**

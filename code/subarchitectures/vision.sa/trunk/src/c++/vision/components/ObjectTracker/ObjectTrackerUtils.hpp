@@ -7,10 +7,13 @@
 
 #include <VisionData.hpp>
 #include "Tracker.h"
+#include "TrackingEntry.h"
 
 using namespace cast;
 using namespace cogx;
 using namespace Math;
+
+
 
 // converts a VisionData::GeometryModel to a Tracker Model
 bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
@@ -21,7 +24,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 		printf("[GeometryModel_Converter] no geometry found\n");
 		return false;
 	}
-	
+
 	// Parse through vertices and store content in Model
 	Model::Vertex v;
 	for(i=0; i<geom->vertices.size(); i++){
@@ -44,7 +47,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 		model->m_facelist.push_back(f);
 		//printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
 	}
-	
+
 	model->computeEdges();
 	
 	/*
@@ -192,7 +195,7 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 }
 
 // SDL - Keyboard and Mouse input control
-bool inputsControl(std::vector<Tracker*> tracker_list, float fTimeTracker){
+bool inputsControl(std::vector<TrackingEntry> *trackinglist, float fTimeTracker){
  	int i=0;
  	
 	SDL_Event event;
@@ -204,33 +207,33 @@ bool inputsControl(std::vector<Tracker*> tracker_list, float fTimeTracker){
 					return false;
 					break;
 				case SDLK_e:
-					for(i=0; i<(int)tracker_list.size(); i++)
-						tracker_list[i]->showEdgesImage( !tracker_list[i]->getEdgesImage() );
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->showEdgesImage( !trackinglist->at(i).tracker->getEdgesImage() );
 					break;
 				case SDLK_l:
-					for(i=0; i<(int)tracker_list.size(); i++)
-						tracker_list[i]->lock( !tracker_list[i]->getLock() );
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->lock( !trackinglist->at(i).tracker->getLock() );
 					break;
 				case SDLK_m:
-					for(i=0; i<(int)tracker_list.size(); i++)
-						tracker_list[i]->showEdgesModel( !tracker_list[i]->getEdgesModel() );
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->showEdgesModel( !trackinglist->at(i).tracker->getEdgesModel() );
 					break;
 				case SDLK_p:
-					for(i=0; i<(int)tracker_list.size(); i++)
-						tracker_list[i]->showParticles( !tracker_list[i]->getParticlesVisible() );
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->showParticles( !trackinglist->at(i).tracker->getParticlesVisible() );
 					break;
 				case SDLK_s:
-					for(i=0; i<(int)tracker_list.size(); i++)
-						tracker_list[i]->showStatistics();
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->showStatistics();
 					printf("\nTotal tracking time: %.0f ms\n", fTimeTracker*1000);
 					break;
 				case SDLK_t:
-					for(i=0; i<(int)tracker_list.size(); i++)
-						tracker_list[i]->textureFromImage();
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->textureFromImage();
 					break;			
 				case SDLK_z:
-					for(i=0; i<(int)tracker_list.size(); i++)
-						tracker_list[i]->zeroParticles();
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->zeroParticles();
 					break;
                 default:
 					break;
