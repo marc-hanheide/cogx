@@ -50,15 +50,14 @@ vec4 thinning(){
     
     // get offset in texture coordinates for neighbouring pixel
     // in edge gradient direction
-    if(thinning_enabled){
-		offset = getOffset(vG);
-		
+  	offset = getOffset(vG);
+			
 		// get color of neighbouring pixel
 		fNm = texture2D(frame, gl_TexCoord[0].st + offset ).z;
 		//vN = (vN - 0.5) * 2.0;  // scale to  [-1 ... 1]
 		// remove this pixel if neighbouring pixel is stronger
 		f_len_1 = fNm;
-		if(length(vG)+ft < f_len_1) 
+		if(fGm+ft < f_len_1) 
 			return vNull;
 		
 		// Compare again for negative gradient direction 
@@ -67,14 +66,14 @@ vec4 thinning(){
 		
 		// remove this pixel if neighbouring pixel is stronger
 		f_len_2 = fNm;
-		if(length(vG)+ft < f_len_2) 
+		if(fGm+ft < f_len_2) 
 			return vNull;
+				
 			
-		
 		// remove this pixel if neighbouring pixels are no edges
 		if( (f_len_1 < 0.01) && (f_len_2 < 0.01) )
 			return vNull;
-    }
+	
     // set magnitude to 1
     vG = normalize(vG);
     
