@@ -14,7 +14,7 @@ class ImageProcessor;
 #define NONE 0          // No rectification
 #define BARREL 1        // Rectification using Barrel equation
 
-#define SOBEL_THRESHOLD 0.04       // high -> less noise & less edges
+#define SOBEL_THRESHOLD 0.0       // 0.04 high -> less noise & less edges
 #define THINNING_THRESHOLD 0.0     // low -> thin lines
 #define SPREADING_THRESHOLD 0.01   // low -> wider lines
 #define DISTANCE_SCALING 0.75      // distance to edge slope; low -> steep slope
@@ -44,21 +44,25 @@ private:
 
 public:
     
-    ImageProcessor();
-    ~ImageProcessor();
+	ImageProcessor();
+	~ImageProcessor();
+
+	// Set functions
+	void setSobelThreshold(float t);
+	void setCamOrtho();
     
-    // Image Processing functions
-    void flipUpsideDown(Texture* source, Texture* result);
-    void copy(Texture* source, Texture* result);
-    void rectification(Texture* source, Texture* result);
-    void gauss(Texture* source, Texture* result);
-    void sobel(Texture* source, Texture* result);
-    void thinning(Texture* source, Texture* result);
-    void spreading(Texture* source, Texture* result);
-    void render(Texture* tex);
-    
-    // Main functions
-    bool init(int w, int h);
+	// Image Processing functions
+	void flipUpsideDown(Texture* source, Texture* result);
+	void copy(Texture* source, Texture* result);
+	void rectification(Texture* source, Texture* result);
+	void gauss(Texture* source, Texture* result);
+	void sobel(Texture* source, Texture* result, float thresh=0.0, bool norm=false);
+	void thinning(Texture* source, Texture* result);
+	void spreading(Texture* source, Texture* result);
+	void render(Texture* tex);
+	
+	// Main functions
+	bool init(int w, int h);
 
 };
 
