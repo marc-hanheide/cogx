@@ -1,5 +1,5 @@
 # Author: Charles Gretton (charles.gretton@gmail.com)
-project (test_harness__CAST_SCAT)
+project (test_harness__CAST_RPC)
 
 # use cmake files packaged with CAST
 include(UseCAST)
