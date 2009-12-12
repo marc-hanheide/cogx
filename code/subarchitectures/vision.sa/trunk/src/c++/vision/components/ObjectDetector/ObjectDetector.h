@@ -1,9 +1,9 @@
 /**
  * @file ObjectDetector.h
  * @author Andreas Richtsfeld
- * @date April 2008
+ * @date April 2009
  * @version 0.1
- * @brief Management component for running simple object detector (vs3)
+ * @brief Management component for running the basic object detector (vs3)
  */
 
 #ifndef OBJECT_DETECTOR_H
