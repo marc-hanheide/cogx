@@ -1,10 +1,11 @@
 
 #include "Texture.h"
+#include "Resources.h"
 
 Texture::Texture(){
 	glGenTextures(1, &m_texture_id);
-    glBindTexture(GL_TEXTURE_2D, m_texture_id);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, m_texture_id);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
@@ -43,3 +44,8 @@ void Texture::copyTexImage2D(int width, int height){
 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, m_width, m_height, 0);	
 }
 
+void Texture::copyFromTexture(Texture* tex){
+	bind();
+	g_Resources->GetImageProcessor()->render(tex);
+	copyTexImage2D(tex->getWidth(), tex->getHeight());
+}

@@ -40,6 +40,7 @@ Tracker::Tracker(){
 	m_tracker_initialized = false;
 	m_testflag = false;
 	m_bfc = true;
+	m_spreadlvl = 0;
 	
 	
 	m_tracker_id = g_Resources->GetNumTracker();
@@ -54,52 +55,13 @@ Tracker::Tracker(){
 		exit(1);
 	m_tex_frame = g_Resources->GetTexture(id);
 	
-	sprintf(name, "m_tex_frame_ip[0]");
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_frame_ip[0] = g_Resources->GetTexture(id);
 	
-	sprintf(name, "m_tex_frame_ip[1]");
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_frame_ip[1] = g_Resources->GetTexture(id);
-	
-	sprintf(name, "m_tex_frame_ip[2]");
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_frame_ip[2] = g_Resources->GetTexture(id);
-	
-	sprintf(name, "m_tex_frame_ip[3]");
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_frame_ip[3] = g_Resources->GetTexture(id);
-	
-	/*
-	sprintf(name, "T%d:m_tex_model", m_tracker_id);
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_model = g_Resources->GetTexture(id);
-	
-	sprintf(name, "T%d:m_tex_model_ip[0]", m_tracker_id);
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_model_ip[0] = g_Resources->GetTexture(id);
-	
-	sprintf(name, "T%d:m_tex_model_ip[1]", m_tracker_id);
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_model_ip[1] = g_Resources->GetTexture(id);
-	
-	sprintf(name, "T%d:m_tex_model_ip[2]", m_tracker_id);
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_model_ip[2] = g_Resources->GetTexture(id);
-	
-	sprintf(name, "T%d:m_tex_model_ip[3]", m_tracker_id);
-	if((id = g_Resources->AddTexture(NULL, name)) == -1)
-		exit(1);
-	m_tex_model_ip[3] = g_Resources->GetTexture(id);
-	*/
+	for(int i=0; i<NUM_SPREAD_LOOPS; i++){
+		sprintf(name, "m_tex_frame_ip[%d]", i);
+		if((id = g_Resources->AddTexture(NULL, name)) == -1)
+			exit(1);
+		m_tex_frame_ip[i] = g_Resources->GetTexture(id);
+	}	
 	
 	// Cameras
 	sprintf(name, "cam_default");
@@ -109,14 +71,36 @@ Tracker::Tracker(){
 	
 }
 
+Tracker::~Tracker(){
+	printf("Tracker::~Tracker\n");
+}
 
+bool Tracker::initGL(){
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+		
+	const GLubyte *str;
+	int glOcclusionQueryAvailable;
+	
+	// Check for OpenGL and GLSL
+	
+	// Check for Extension
+	str = glGetString(GL_EXTENSIONS);
+	glOcclusionQueryAvailable = (strstr((const char *)str, "GL_ARB_occlusion_query") != NULL);
+	if(!glOcclusionQueryAvailable){ 
+		printf("[OpenGLControl] Error OpenGL extension 'GL_ARB_occlusion_query' not available. Your graphic card does not support this extension or the hardware driver for your graphic card is not installed properly!\n");
+		return false;
+	}
+		
+	return true;
+}
 
 // Initialise function (must be called before tracking)
 bool Tracker::init(	int width, int height,							// image size in pixels
 					int nop,										// maximum number of particles
 					int rec,										// recursions per image
-					float n_r_max,									// standard deviation of rotational noise in degree
-					float n_t_max,									// standard deviation of translational noise in meter
 					float et,										// edge matching tolerance in degree
 					float tt,										// goal tracking time in seconds
 					Particle zp)									// zero particle, initial pose of tracker
@@ -126,23 +110,20 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	params.height = float(height);
 	params.number_of_particles = nop;
 	params.recursions = rec;
-	params.noise_rot_max = n_r_max;
-	params.noise_trans_max = n_t_max;
-	params.noise_scale_max = n_t_max * 0.0;
 	params.edge_tolerance = et;
 	params.track_time = tt;
 	params.zP = zp;
 	
-	if(!m_opengl.Init())
-		return false;
+	// OpenGL
+	initGL();
 		
 	// Cameras
 	m_cam_default->Set(	0.2, 0.2, 0.2,
-						0.0, 0.0, 0.0,
-						0.0, 1.0, 0.0,
-						45, width, height,
-						0.1, 10.0,
-						GL_PERSPECTIVE);
+											0.0, 0.0, 0.0,
+											0.0, 1.0, 0.0,
+											45, width, height,
+											0.1, 10.0,
+											GL_PERSPECTIVE);
 	
 	m_cam_perspective = m_cam_default;
 	
@@ -166,7 +147,6 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 
 // render coordinate frame
 void Tracker::drawCoordinates(){
-	m_opengl.RenderSettings(true, false);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	m_cam_perspective->Activate();
@@ -225,9 +205,7 @@ void Tracker::drawCoordinates(){
 	
 	
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	m_opengl.RenderSettings(true, true);
-	
+	glEnable(GL_CULL_FACE);	
 }
 
 
@@ -269,7 +247,6 @@ void Tracker::drawImage(unsigned char* image){
 }*/
 
 void Tracker::drawTest(){
-	m_opengl.RenderSettings(true, true);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	
@@ -291,22 +268,59 @@ void Tracker::drawTest(){
 
 void Tracker::swap(){
 	SDL_GL_SwapBuffers();
+	SDL_Delay(1);
 }
 
 
 // Show performance and likelihood
 void Tracker::showStatistics(){
 	printf("\n\nTracker %d:\n", m_tracker_id);
-	printf("	Particles: %i\n", params.number_of_particles );
-	printf("	Tracking time: %.0f ms\n", time_tracking * 1000.0 );
-	printf("	Variance: %f \n", m_particles->getVariance(params.number_of_particles) );
-	printf("	Confidence w: %f \n", m_particles->getMaxW(params.number_of_particles));
-	//printf("	Likelihood p[%i]: %f %%\n", m_particles->getMaxID(), m_particles->getMax(params.number_of_particles)->w * 100.0 );
+	printf("	Particles: %i x %i\n", params.recursions, m_particles->getNumParticles() );
+	printf("	Tracking time: %f ms, FPS: %.0f Hz\n", time_tracking * 1000.0, 1.0/time_tracking);
+	printf("	Variance: %f \n", m_particles->getVariance() );
+	printf("	Confidence: %f \n", m_particles->getMaxC());
+	printf("	Spreading Level: %d\n", m_spreadlvl);
+}
+
+void Tracker::drawSpeedBar(float h){
+	Particle* p =  m_particles->getMax();
+	float speed = p->rp.x;
+	
+	vec2 pos = vec2(params.width*0.5-20,0.0);
+	
+	float w = 10.0;
+		
+	// Render settings
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	m_ip->setCamOrtho();
+	
+	glColor3f(1.0,0.0,0.0);
+	glBegin(GL_QUADS);
+		glVertex3f(pos.x, pos.y, 0.0);
+		glVertex3f(pos.x+w, pos.y, 0.0);
+		glVertex3f(pos.x+w, pos.y+h, 0.0);
+		glVertex3f(pos.x, pos.y+h, 0.0);	
+	glEnd();
+	
+	glLineWidth(2);
+	if(abs(speed) < 0.01)
+		glColor3f(0.0,0.0,1.0);
+	else
+		glColor3f(0.0,1.0,0.0);
+		
+	glBegin(GL_LINES);
+		glVertex3f(pos.x-2, pos.y, 0.0);
+		glVertex3f(pos.x+w+2, pos.y, 0.0);
+	glEnd();
+	
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	
 }
 	
 void Tracker::zeroParticles(){
 	m_zero_particles = true;
-	//printf("Zero particles\n");
 }
 
 

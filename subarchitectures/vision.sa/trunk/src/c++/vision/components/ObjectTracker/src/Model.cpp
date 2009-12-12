@@ -63,58 +63,50 @@ bool Model::isRedundant(Edge* e1){
 	return false;
 }
 
-// Generate OpenGL display list for edges
-void Model::genEdgeDisplayList(){
-	edgeDisplayList = glGenLists(1);
-    glNewList(edgeDisplayList, GL_COMPILE);
-    	glBegin(GL_LINES);
-        for(int i=0; i<(int)m_edgelist.size(); i++){
-        	glNormal3f( m_vertexlist[m_edgelist[i].end].pos.x - m_vertexlist[m_edgelist[i].start].pos.x,
-                        m_vertexlist[m_edgelist[i].end].pos.y - m_vertexlist[m_edgelist[i].start].pos.y,
-                        m_vertexlist[m_edgelist[i].end].pos.z - m_vertexlist[m_edgelist[i].start].pos.z );
-            glVertex3f(m_vertexlist[m_edgelist[i].start].pos.x, m_vertexlist[m_edgelist[i].start].pos.y, m_vertexlist[m_edgelist[i].start].pos.z);
-            glVertex3f(m_vertexlist[m_edgelist[i].end].pos.x, m_vertexlist[m_edgelist[i].end].pos.y, m_vertexlist[m_edgelist[i].end].pos.z);
-        }
-        glEnd();
-    glEndList();
-}
 
 // *** PUBLIC ***
 
 Model::Model(){
 	m_tex_original = 0;
-    m_texture = 0;
-    m_textured = false;
-    edgeDisplayList = -1;
+	m_texture = 0;
+	m_textured = false;
+
+	int id;
+	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
+		exit(1);
+	m_shadeTexturing = g_Resources->GetShader(id);
 }
 
-Model::Model(const Model& m){
-	m_vertexlist = m.m_vertexlist;
-	m_facelist = m.m_facelist;
-	m_edgelist = m.m_edgelist;
-	m_passlist = m.m_passlist;
+Model::Model(const Model& m2){
+	m_vertexlist = m2.m_vertexlist;
+	m_facelist = m2.m_facelist;
+	m_edgelist = m2.m_edgelist;
+	m_passlist = m2.m_passlist;
 	
-	sprintf(m_modelname, "%s", m.m_modelname);
+	sprintf(m_modelname, "%s", m2.m_modelname);
 	
-	m_tex_original = m.m_tex_original;
-	m_texture = m.m_texture;
-	m_textured = true;
+	m_tex_original = m2.m_tex_original;
+	m_texture = m2.m_texture;
+	m_textured = m2.m_textured;
 }
 
-Model::~Model(){
-	if(edgeDisplayList != -1)
-    	glDeleteLists(edgeDisplayList,1);
+Model::~Model(){	
+
 }
 
 Model& Model::operator=(const Model& m2){
 	
-    // copy content
-    m_vertexlist = m2.m_vertexlist;
-    m_facelist = m2.m_facelist;
-    m_edgelist = m2.m_edgelist;
-    
-    m_tex_original = m2.m_tex_original;
-    m_texture = m2.m_texture; 
+	m_vertexlist = m2.m_vertexlist;
+	m_facelist = m2.m_facelist;
+	m_edgelist = m2.m_edgelist;
+	m_passlist = m2.m_passlist;
+	
+	sprintf(m_modelname, "%s", m2.m_modelname);
+	
+	m_tex_original = m2.m_tex_original;
+	m_texture = m2.m_texture;
+	m_textured = m2.m_textured;
+	
 	return *this;
 }
 
@@ -158,12 +150,10 @@ void Model::computeNormals(){
 			n.cross(e1,e2);
 			n.normalize();
 			f->normal = vec3(n);
-			
 			for(j=0; j<(int)m_facelist[i].v.size(); j++){
 				m_vertexlist[f->v[j]].normal.x = n.x;
 				m_vertexlist[f->v[j]].normal.y = n.y;
 				m_vertexlist[f->v[j]].normal.z = n.z;
-				//printf("%f %f %f\n", n.x, n.y, n.z);
 			}
 		//}	
 	}
@@ -182,36 +172,63 @@ void Model::flipNormals(){
 	}
 }
 
-// draws model using rendering passes
-void Model::drawPass(Shader* shadeTexturing){
-	int p,i,j;
-	Face* f;
-	vector<int> drawnFaces;
-	
-	if(m_passlist.empty() || !m_textured){
-		//printf("[Model::drawPass] Warning no render pass defined. Rendering using Model::drawFaces()\n");
-		if(!m_texture)
-			shadeTexturing->unbind();
-		drawFaces();
-		return;
+void Model::UpdateDisplayLists(){
+
+	if(glIsList(m_dlTexturedFaces)) 	glDeleteLists(m_dlTexturedFaces, 1);
+	if(glIsList(m_dlUntexturedFaces)) glDeleteLists(m_dlUntexturedFaces, 1);
+	if(glIsList(m_dlPass)) 						glDeleteLists(m_dlPass, 1);
+	if(glIsList(m_dlFaces)) 					glDeleteLists(m_dlFaces, 1);
+	if(glIsList(m_dlEdges)) 					glDeleteLists(m_dlEdges, 1);
+	if(glIsList(m_dlNormals)) 				glDeleteLists(m_dlNormals, 1);
+
+	m_dlTexturedFaces = glGenLists(1);
+	m_dlUntexturedFaces = glGenLists(1);
+	m_dlPass = glGenLists(1);
+	m_dlFaces = glGenLists(1);
+	m_dlEdges = glGenLists(1);
+	m_dlNormals = glGenLists(1);
+
+	if(!m_passlist.empty()){
+		glNewList(m_dlTexturedFaces, GL_COMPILE);
+			genListTexturedFaces();
+		glEndList();
+		
+		glNewList(m_dlPass, GL_COMPILE);
+			genListPass();
+		glEndList();
+	}else{
+		glNewList(m_dlPass, GL_COMPILE);
+			genListFaces();
+		glEndList();
 	}
 	
-	glActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
+	glNewList(m_dlUntexturedFaces, GL_COMPILE);
+		genListUntexturedFaces();
+	glEndList();
 	
-	// Draw render passes (textured)
+	glNewList(m_dlFaces, GL_COMPILE);
+		genListFaces();
+	glEndList();
+	
+	glNewList(m_dlEdges, GL_COMPILE);
+		genListEdges();
+	glEndList();
+	
+	glNewList(m_dlNormals, GL_COMPILE);
+		genListNormals(0.01);
+	glEndList();	
+}
+
+// Display List generators
+void Model::genListTexturedFaces(){		// draw only textured faces
+		
+	int p,i,j;
+	Face* f;
+	
 	for(p=0; p<(int)m_passlist.size(); p++){
-		
-		// bind texture of pass
-		m_passlist[p]->texture->bind();
-		
-		// set modelview matrix for texture
-		shadeTexturing->setUniform("modelviewprojection", m_passlist[p]->modelviewprojection, GL_FALSE);
-		
 		// parse through faces of pass
 		for(i=0; i<(int)m_passlist[p]->f.size(); i++){
 			f = &m_facelist[m_passlist[p]->f[i]];
-			drawnFaces.push_back(m_passlist[p]->f[i]);
 			
 			if(f->v.size() == 3)
 				glBegin(GL_TRIANGLES);
@@ -220,38 +237,20 @@ void Model::drawPass(Shader* shadeTexturing){
 			else
 				printf("[Model::drawFaces] Warning unsupported face structure");
 				
-				for(j=0; j<(int)f->v.size(); j++){
-					glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
-					glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
-					glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
-				}
-				
-			glEnd();
-			
-			/*
-			// Draw Normals
-			glDisable(GL_TEXTURE_2D);
-			glBegin(GL_LINES);
-				float normal_length = 0.01;
-				for(j=0; j<m_facelist[i].v.size(); j++){
-					glColor3f(0.0, 0.0, 1.0);
-					glVertex3f( m_vertexlist[f->v[j]].pos.x,
-								m_vertexlist[f->v[j]].pos.y,
-								m_vertexlist[f->v[j]].pos.z );
-					glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
-								m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
-								m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
-				}
-			glEnd();
-			glEnable(GL_TEXTURE_2D);
-			*/
-		}
-	}
-		
-	glDisable(GL_TEXTURE_2D);
-	shadeTexturing->unbind();
+			for(j=0; j<(int)f->v.size(); j++){
+				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
+			}
+			glEnd();			
+		}//for i
+	}//for p
+}
+
+void Model::genListUntexturedFaces(){		// draw only untextured faces
+	int i,j;
+	Face* f;
 	
-	// Draw remaining faces for contours
 	for(i=0; i<(int)m_facelist.size(); i++){
 		
 		f = &m_facelist[i];
@@ -270,42 +269,89 @@ void Model::drawPass(Shader* shadeTexturing){
 				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
 			}
 			
-			glEnd();
-		}
-		/*
-		// Draw Normals
-		glDisable(GL_TEXTURE_2D);
-		glBegin(GL_LINES);
-			float normal_length = 0.01;
-			for(j=0; j<m_facelist[i].v.size(); j++){
-				glColor3f(0.0, 0.0, 1.0);
-				glVertex3f( m_vertexlist[f->v[j]].pos.x,
-							m_vertexlist[f->v[j]].pos.y,
-							m_vertexlist[f->v[j]].pos.z );
-				glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
-							m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
-							m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
-			}
-		glEnd();
-		glEnable(GL_TEXTURE_2D);
-		*/
-	}
-	
+			glEnd();			
+		}//if
+	}	//for
 }
 
-// draws only faces of model
-void Model::drawFaces(){
+void Model::genListPass(){		// draw faces using passlist and shader for texturing (modelviewmatrix)
+	int p,i,j;
+	Face* f;
+	vec2 texCoords;
+	
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	glColor3f(1.0,1.0,1.0);
+
+	m_shadeTexturing->bind();
+	
+	// Draw render passes (textured)
+	for(p=0; p<(int)m_passlist.size(); p++){
+		
+		// bind texture of pass
+		m_passlist[p]->texture->bind();
+		
+		// set modelview matrix for texture
+		m_shadeTexturing->setUniform("modelviewprojection", m_passlist[p]->modelviewprojection, GL_FALSE);
+		
+		// parse through faces of pass
+		for(i=0; i<(int)m_passlist[p]->f.size(); i++){
+			f = &m_facelist[m_passlist[p]->f[i]];
+			
+			if(f->v.size() == 3)
+				glBegin(GL_TRIANGLES);
+			else if(f->v.size() == 4)
+				glBegin(GL_QUADS);
+			else
+				printf("[Model::drawFaces] Warning unsupported face structure");
+				
+				for(j=0; j<(int)f->v.size(); j++){
+					
+					vec4 v = vec4(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z, 1.0);
+					v = m_passlist[p]->modelviewprojection * v;
+					texCoords.x = (v.x/v.w + 1.0) * 0.5;
+					texCoords.y = (v.y/v.w + 1.0) * 0.5;
+					
+					glTexCoord2f(texCoords.x, texCoords.y);
+					glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+					glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
+				}
+				
+			glEnd();
+		}//for i
+	}//for p
+		
+	glDisable(GL_TEXTURE_2D);
+	m_shadeTexturing->unbind();
+	
+	// Draw remaining faces for contours
+	for(i=0; i<(int)m_facelist.size(); i++){
+		
+		if(m_facelist[i].max_pixels == 0){
+		
+			if(m_facelist[i].v.size() == 3)
+				glBegin(GL_TRIANGLES);
+			else if(m_facelist[i].v.size() == 4)
+				glBegin(GL_QUADS);
+			else
+				printf("[Model::drawFaces] Warning unsupported face structure");
+				
+			for(j=0; j<(int)m_facelist[i].v.size(); j++){
+				glTexCoord2f(m_vertexlist[m_facelist[i].v[j]].texCoord.x, m_vertexlist[m_facelist[i].v[j]].texCoord.y);
+				glNormal3f(m_vertexlist[m_facelist[i].v[j]].normal.x, m_vertexlist[m_facelist[i].v[j]].normal.y, m_vertexlist[m_facelist[i].v[j]].normal.z);
+				glVertex3f(m_vertexlist[m_facelist[i].v[j]].pos.x, m_vertexlist[m_facelist[i].v[j]].pos.y, m_vertexlist[m_facelist[i].v[j]].pos.z);
+// 				printf("%f %f %f\n", m_vertexlist[m_facelist[i].v[j]].normal.x, m_vertexlist[m_facelist[i].v[j]].normal.y, m_vertexlist[m_facelist[i].v[j]].normal.z);
+			}
+			
+			glEnd();
+		}//if
+	}//for i
+}
+
+void Model::genListFaces(){		// draw all faces of model
 	int i,j;
 	Face* f;
-	bool drawNormals = false;
-	
-	
-	if(m_texture){
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		m_texture->bind();
-	}	
-	
+
 	for(i=0; i<(int)m_facelist.size(); i++){
 		f = &m_facelist[i];
 		
@@ -319,37 +365,114 @@ void Model::drawFaces(){
 			for(j=0; j<(int)f->v.size(); j++){
 				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
-				//glNormal3f(f->normal.x, f->normal.y, f->normal.z);
 				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
 			}
 			
 		glEnd();
-		
-		
-		//glDisable(GL_TEXTURE_2D);
-		if(drawNormals){
-			glColor3f(0.0, 0.0, 1.0);
-			glBegin(GL_LINES);
-				float normal_length = 0.01;
-				for(j=0; j<(int)m_facelist[i].v.size(); j++){
-					glVertex3f( m_vertexlist[f->v[j]].pos.x,
-								m_vertexlist[f->v[j]].pos.y,
-								m_vertexlist[f->v[j]].pos.z );
-					glVertex3f( m_vertexlist[f->v[j]].pos.x + m_facelist[i].normal.x * normal_length,
-								m_vertexlist[f->v[j]].pos.y + m_facelist[i].normal.y * normal_length,
-								m_vertexlist[f->v[j]].pos.z + m_facelist[i].normal.z * normal_length );		
-				}
-			glEnd();
-			glColor3f(1.0, 1.0, 1.0);
-		}
-		//glEnable(GL_TEXTURE_2D);
 	}
-		
+}
+
+void Model::genListEdges(){		// draw all edges of model
+	mat4 mv;
+	mat3 rot;
+	vec3 v_cam_object;
+	float s = -0.001;	// = 1mm
+	
+	glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+	
+	//printf("%f %f %f %f\n", mv[0], mv[4], mv[8], mv[12]);
+	//printf("%f %f %f %f\n", mv[1], mv[5], mv[9], mv[13]);
+	//printf("%f %f %f %f\n", mv[2], mv[6], mv[10], mv[14]);
+	//printf("%f %f %f %f\n\n", mv[3], mv[7], mv[11], mv[15]);
+	
+	rot[0] = mv[0]; rot[1] = mv[4]; rot[2] = mv[8];
+	rot[3] = mv[1]; rot[4] = mv[5]; rot[5] = mv[9];
+	rot[6] = mv[2]; rot[7] = mv[6]; rot[8] = mv[10];
+	
+	v_cam_object[0] = mv[12];
+	v_cam_object[1] = mv[13];
+	v_cam_object[2] = mv[14];
+	
+	v_cam_object = rot * v_cam_object * s;
+	
+	glPushMatrix();
+		// draw edges slightly closer to camera to avoid edge-flickering
+		glTranslatef(v_cam_object[0], v_cam_object[1], v_cam_object[2]);
+
+		glBegin(GL_LINES);
+			for(int i=0; i<(int)m_edgelist.size(); i++){
+				glNormal3f( m_vertexlist[m_edgelist[i].end].pos.x - m_vertexlist[m_edgelist[i].start].pos.x,
+										m_vertexlist[m_edgelist[i].end].pos.y - m_vertexlist[m_edgelist[i].start].pos.y,
+										m_vertexlist[m_edgelist[i].end].pos.z - m_vertexlist[m_edgelist[i].start].pos.z );
+				glVertex3f(m_vertexlist[m_edgelist[i].start].pos.x, m_vertexlist[m_edgelist[i].start].pos.y, m_vertexlist[m_edgelist[i].start].pos.z);
+				glVertex3f(m_vertexlist[m_edgelist[i].end].pos.x, m_vertexlist[m_edgelist[i].end].pos.y, m_vertexlist[m_edgelist[i].end].pos.z);
+			}
+		glEnd();
+
+    glPopMatrix();
+}
+
+void Model::genListNormals(float normal_length){	// draw normals
+	int i,j;
+	Face* f;
+	
+	glDisable(GL_TEXTURE_2D);
+	glColor3f(0.0, 0.0, 1.0);
+	
+	glBegin(GL_LINES);
+	for(i=0; i<m_facelist.size(); i++){
+		f = &m_facelist[i];
+		for(j=0; j<(int)f->v.size(); j++){
+			glVertex3f( m_vertexlist[f->v[j]].pos.x,
+						m_vertexlist[f->v[j]].pos.y,
+						m_vertexlist[f->v[j]].pos.z );
+			glVertex3f( m_vertexlist[f->v[j]].pos.x + f->normal.x * normal_length,
+						m_vertexlist[f->v[j]].pos.y + f->normal.y * normal_length,
+						m_vertexlist[f->v[j]].pos.z + f->normal.z * normal_length );		
+		}
+	}
+	glEnd();
+	
+	glColor3f(1.0, 1.0, 1.0);
+}
+
+// Drawing display lists
+void Model::drawNormals(){
+	glCallList(m_dlNormals);
+}
+
+void Model::drawTexturedFaces(){
+	if(!m_passlist.empty()){
+		glCallList(m_dlTexturedFaces);
+	}		
+}
+
+void Model::drawUntexturedFaces(){
+	glCallList(m_dlUntexturedFaces);
+}
+
+void Model::drawPass(){
+// 	genListPass();
+ 	glCallList(m_dlPass);
+}
+
+void Model::drawFaces(){
+	if(m_texture){
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		m_texture->bind();
+	}	
+	
+	glCallList(m_dlFaces);
+
 	if(m_texture)
 		glDisable(GL_TEXTURE_2D);	
 }
 
-// draws face i of model
+void Model::drawEdges(){
+	glCallList(m_dlEdges);
+}
+
 void Model::drawFace(int i){
 	int j;
 	Face* f;
@@ -376,70 +499,10 @@ void Model::drawFace(int i){
 	}
 		
 	glEnd();
-	
-	/*
-	glDisable(GL_TEXTURE_2D);
-	glBegin(GL_LINES);
-		float normal_length = 0.01;
-		for(j=0; j<m_facelist[i].v.size(); j++){
-			glColor3f(0.0, 0.0, 1.0);
-			glVertex3f( m_vertexlist[f->v[j]].pos.x,
-						m_vertexlist[f->v[j]].pos.y,
-						m_vertexlist[f->v[j]].pos.z );
-			glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
-						m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
-						m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
-		}
-	glEnd();
-	glEnable(GL_TEXTURE_2D);
-	*/
-	
+		
 	if(m_texture){
 		glDisable(GL_TEXTURE_2D);
 	}
-}
-
-// draws only edges of model
-void Model::drawEdges(){
-	mat4 mv;
-	mat3 rot;
-	vec3 v_cam_object;
-	float s = -0.001;	// = 1mm
-	
-	glGetFloatv(GL_MODELVIEW_MATRIX, mv);
-	
-	//printf("%f %f %f %f\n", mv[0], mv[4], mv[8], mv[12]);
-	//printf("%f %f %f %f\n", mv[1], mv[5], mv[9], mv[13]);
-	//printf("%f %f %f %f\n", mv[2], mv[6], mv[10], mv[14]);
-	//printf("%f %f %f %f\n\n", mv[3], mv[7], mv[11], mv[15]);
-	
-	rot[0] = mv[0]; rot[1] = mv[4]; rot[2] = mv[8];
-	rot[3] = mv[1]; rot[4] = mv[5]; rot[5] = mv[9];
-	rot[6] = mv[2]; rot[7] = mv[6]; rot[8] = mv[10];
-	
-	v_cam_object[0] = mv[12];
-	v_cam_object[1] = mv[13];
-	v_cam_object[2] = mv[14];
-	
-	v_cam_object = rot * v_cam_object * s;
-	
-	glPushMatrix();
-		// draw edges slightly closer to camera to avoid edge-flickering
-		glTranslatef(v_cam_object[0], v_cam_object[1], v_cam_object[2]);
-		if(glIsList(edgeDisplayList))
-			glCallList(edgeDisplayList);
-		else{
-			glBegin(GL_LINES);
-				for(int i=0; i<(int)m_edgelist.size(); i++){
-					glNormal3f( m_vertexlist[m_edgelist[i].end].pos.x - m_vertexlist[m_edgelist[i].start].pos.x,
-								m_vertexlist[m_edgelist[i].end].pos.y - m_vertexlist[m_edgelist[i].start].pos.y,
-								m_vertexlist[m_edgelist[i].end].pos.z - m_vertexlist[m_edgelist[i].start].pos.z );
-					glVertex3f(m_vertexlist[m_edgelist[i].start].pos.x, m_vertexlist[m_edgelist[i].start].pos.y, m_vertexlist[m_edgelist[i].start].pos.z);
-					glVertex3f(m_vertexlist[m_edgelist[i].end].pos.x, m_vertexlist[m_edgelist[i].end].pos.y, m_vertexlist[m_edgelist[i].end].pos.z);
-				}
-			glEnd();
-		}
-    glPopMatrix();
 }
 
 // set original texture as current
@@ -450,9 +513,13 @@ void Model::restoreTexture(){
 // counts pixels of each face
 // if pixels of face are > than in any previouse view
 //   set update flag = true
-vector<int> Model::getFaceUpdateList(Particle* p_max){
+vector<int> Model::getFaceUpdateList(Particle* p_max, vec3 view){
 	int i, n;
 	vector<int> faceUpdateList;
+	float alpha;
+	vec3 vT;
+	mat3 mR;
+	p_max->getPose(mR, vT);
 	
 	// generate occlusion queries
 	unsigned int* queryPixels;		// Occlussion query for counting pixels
@@ -470,8 +537,12 @@ vector<int> Model::getFaceUpdateList(Particle* p_max){
 		
 		for(i=0; i<(int)m_facelist.size(); i++){
 			glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
-			//printf("pixels[%d]: %d %d\n", i, n, m_facelist[i].max_pixels);
-			if(m_facelist[i].max_pixels < n){
+			
+			vec3 vn = mR * m_facelist[i].normal;
+			alpha = acos(vn*view);
+			
+			
+			if((m_facelist[i].max_pixels==0) && (alpha>3.0*PI/4.0)){
 				faceUpdateList.push_back(i);
 				m_facelist[i].max_pixels = n;
 			}
@@ -485,13 +556,14 @@ vector<int> Model::getFaceUpdateList(Particle* p_max){
 	return faceUpdateList;
 }
 
-void Model::textureFromImage(unsigned char* image, int width, int height, Particle* p_max){
+void Model::textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view){
 	int i,j,k;
 	vec4 texcoords_model;
 	vec4 vertex;
 	mat4 modelview, projection, modelviewprojection;
 	
-	vector<int> faceUpdateList = getFaceUpdateList(p_max);
+	// get faces to update
+	vector<int> faceUpdateList = getFaceUpdateList(p_max, view);
 	if(faceUpdateList.empty())
 		return;
 	
@@ -506,8 +578,7 @@ void Model::textureFromImage(unsigned char* image, int width, int height, Partic
 	newpass->modelviewprojection = projection * modelview;
 	
 	// store texture
-	newpass->texture->load(image, width, height);
-	g_Resources->GetImageProcessor()->flipUpsideDown(newpass->texture, newpass->texture);	
+	newpass->texture->copyFromTexture(image);
 	
 	// add faces to pass
 	newpass->f = faceUpdateList;
@@ -515,19 +586,19 @@ void Model::textureFromImage(unsigned char* image, int width, int height, Partic
 	m_passlist.push_back(newpass);
 			
 	// clean up passes
-	vector<int> usedfaces;		// holds faces which are allready in use by another pass
+	m_texturedfaces.clear();		// holds faces which are allready in use by another pass
 	for(i=(m_passlist.size()-1); i>=0; i--){		// parse through passlist topdown
 		Pass* p = m_passlist[i];					// current pass
 		bool destroy = true;
 		
 		for(j=0; j<(int)p->f.size(); j++){				// for each face of pass
 			bool face_allready_in_use = false;
-			for(k=0; k<(int)usedfaces.size(); k++){
-				if(p->f[j] == usedfaces[k])			// compare with each face in usedfaces
+			for(k=0; k<(int)m_texturedfaces.size(); k++){
+				if(p->f[j] == m_texturedfaces[k])			// compare with each face in usedfaces
 					face_allready_in_use = true;
 			}
 			if(!face_allready_in_use){
-				usedfaces.push_back(p->f[j]);
+				m_texturedfaces.push_back(p->f[j]);
 				destroy=false;
 			}
 		}
@@ -536,8 +607,14 @@ void Model::textureFromImage(unsigned char* image, int width, int height, Partic
 			delete(p);
 			m_passlist.erase(m_passlist.begin()+i);
 		}
-	}	
-		
+	}
+	
+	enableTexture(true);
+	m_shadeTexturing->bind();
+	m_shadeTexturing->setUniform("useTexCoords", false);
+	m_shadeTexturing->unbind();
+	
+	UpdateDisplayLists();
 }
 
 

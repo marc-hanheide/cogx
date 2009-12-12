@@ -163,10 +163,20 @@ IplImage* Resources::GetNewImage(){
 		printf("[Resources::GetNewImage] Error camera not initialised\n" );
 		return 0;
 	}
-	m_image = cvQueryFrame(m_capture);
-	if ( m_image == NULL ) return NULL;
-
-	cvConvertImage(m_image, m_image, CV_CVTIMG_SWAP_RB);
+	IplImage* img;
+	
+	try{
+		img = cvQueryFrame(m_capture);
+	}
+	catch(char const* e){
+		printf("[Resources::GetNewImage()] Warning: %s", e);
+	}
+	
+	if(img != NULL){
+		m_image = img;
+		cvConvertImage(m_image, m_image, CV_CVTIMG_SWAP_RB);
+	}
+	
 	//cvFlip(m_image, m_image, 1);
 	return m_image;
 }
@@ -197,7 +207,7 @@ ImageProcessor* Resources::GetImageProcessor(){
 Frustum* Resources::GetFrustum(){
 	if(!m_frustum){
 		printf("[Resources::GetFrustum] Warning Frustum not initialised\n" );
-		return 0;
+		InitFrustum();
 	}
 	return m_frustum;			
 }

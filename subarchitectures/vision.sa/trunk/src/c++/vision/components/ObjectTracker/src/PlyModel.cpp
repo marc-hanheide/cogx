@@ -241,20 +241,20 @@ bool PlyModel::load(const char* filename){
     
     // Load ply file
 	if(!read(filename)){
-    	return false;
-    }
-    
-    convertPlyModel();
+		return false;
+	}
+	
+	convertPlyModel();
     
     // Generate display lists for face and edge representation
 	if(m_edgelist.size() == 0){
 		computeEdges();
 	}
 	
-	//genEdgeDisplayList();
-    
-    // Calculate normal of each vertex from faces
-    computeNormals();
-    
-    return true;
+	// Calculate normal of each vertex from faces
+	computeNormals();
+	
+	UpdateDisplayLists();
+	
+	return true;
 }
