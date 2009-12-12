@@ -1,9 +1,9 @@
 /**
  * @file ObjectDetector.cpp
  * @author Andreas Richtsfeld
- * @date April 2008
+ * @date April 2009
  * @version 0.1
- * @brief Management component for running simple object detector (vs3)
+ * @brief Management component for running the basic object detector (vs3)
  */
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -354,54 +354,55 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		v1.pos.y = cd.corner_points3D[i][1].y - cd.cubeCenter3D.y;
 		v1.pos.z = -cd.height/2.;
 		obj->model->vertices.push_back(v0);
+		obj->model->vertices.push_back(v0);
+		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
-
-// 		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x*1000, v0.pos.y*1000, v0.pos.z*1000);
-// 		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x*1000, v1.pos.y*1000, v1.pos.z*1000);
+		obj->model->vertices.push_back(v1);
+		obj->model->vertices.push_back(v1);
 	}
 
 
 	// add faces to the vision model
 	Face f;
 	f.vertices.push_back(0);									// right
-	f.vertices.push_back(2);
-	f.vertices.push_back(3);
-	f.vertices.push_back(1);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
-
-	f.vertices.push_back(2);									// front
-	f.vertices.push_back(4);
-	f.vertices.push_back(5);
-	f.vertices.push_back(3);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
-
-	f.vertices.push_back(4);									// left
 	f.vertices.push_back(6);
-	f.vertices.push_back(7);
-	f.vertices.push_back(5);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
-
-	f.vertices.push_back(6);									// back
-	f.vertices.push_back(0);
-	f.vertices.push_back(1);
-	f.vertices.push_back(7);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
-
-	f.vertices.push_back(0);									// top
-	f.vertices.push_back(6);
-	f.vertices.push_back(4);
-	f.vertices.push_back(2);
-	obj->model->faces.push_back(f);
-	f.vertices.clear();
-
-	f.vertices.push_back(1);									// front
+	f.vertices.push_back(9);
 	f.vertices.push_back(3);
-	f.vertices.push_back(5);
-	f.vertices.push_back(7);
+	obj->model->faces.push_back(f);
+	f.vertices.clear();
+
+	f.vertices.push_back(7);									// front
+	f.vertices.push_back(12);
+	f.vertices.push_back(15);
+	f.vertices.push_back(10);
+	obj->model->faces.push_back(f);
+	f.vertices.clear();
+
+	f.vertices.push_back(13);									// left
+	f.vertices.push_back(18);
+	f.vertices.push_back(21);
+	f.vertices.push_back(16);
+	obj->model->faces.push_back(f);
+	f.vertices.clear();
+
+	f.vertices.push_back(19);									// back
+	f.vertices.push_back(1);
+	f.vertices.push_back(4);
+	f.vertices.push_back(22);
+	obj->model->faces.push_back(f);
+	f.vertices.clear();
+
+	f.vertices.push_back(2);									// top
+	f.vertices.push_back(20);
+	f.vertices.push_back(14);
+	f.vertices.push_back(8);
+	obj->model->faces.push_back(f);
+	f.vertices.clear();
+
+	f.vertices.push_back(5);									// front
+	f.vertices.push_back(11);
+	f.vertices.push_back(17);
+	f.vertices.push_back(23);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
