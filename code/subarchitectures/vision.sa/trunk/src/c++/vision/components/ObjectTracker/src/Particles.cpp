@@ -1,63 +1,82 @@
 
 #include "Particles.h"
 
-bool compare_particles(Particle first, Particle second){
-
-	return true;
-}
-
 Particle::Particle(){
 	Particle(0.0);
 }
 
 Particle::Particle(float val){
-	rX = val;
-	rY = val;
-	rZ = val;
+	r.x = val;
+	r.y = val;
+	r.z = val;
+	s.x = val;
+	s.y = val;
+	s.z = val;
+	rp.x = val;
+	rp.y = val;
+	rp.z = val;
+	sp.x = val;
+	sp.y = val;
+	sp.z = val;
 	
-	tX = val;
-	tY = val;
-	tZ = val;
-	
-	s = 1.0;
-	
-	q = Quaternion();
+	z = val;
+	zp = val;	
 	
 	w = val;
+	c = val;
+	
+	q = Quaternion();
 }
 
 Particle::Particle(const Particle& p2){
-	rX = p2.rX;
-	rY = p2.rY;
-	rZ = p2.rZ;
-	
-	tX = p2.tX;
-	tY = p2.tY;
-	tZ = p2.tZ;
-	
-	q = p2.q;
+	r.x = p2.r.x;
+	r.y = p2.r.y;
+	r.z = p2.r.z;
+	s.x = p2.s.x;
+	s.y = p2.s.y;
+	s.z = p2.s.z;
+	rp.x = p2.rp.x;
+	rp.y = p2.rp.y;
+	rp.z = p2.rp.z;
+	sp.x = p2.sp.x;
+	sp.y = p2.sp.y;
+	sp.z = p2.sp.z;
+	z = p2.z;
+	zp = p2.zp;
 	
 	w = p2.w;
+	c = p2.c;
+	
+	q = p2.q;
 }
 
 Particle& Particle::operator=(const Particle& p2){
-	rX = p2.rX;
-	rY = p2.rY;
-	rZ = p2.rZ;
+	r.x = p2.r.x;
+	r.y = p2.r.y;
+	r.z = p2.r.z;
+	s.x = p2.s.x;
+	s.y = p2.s.y;
+	s.z = p2.s.z;
+	rp.x = p2.rp.x;
+	rp.y = p2.rp.y;
+	rp.z = p2.rp.z;
+	sp.x = p2.sp.x;
+	sp.y = p2.sp.y;
+	sp.z = p2.sp.z;
+	z = p2.z;
+	zp = p2.zp;
 	
-	tX = p2.tX;
-	tY = p2.tY;
-	tZ = p2.tZ;
+	w = p2.w;
+	c = p2.c;
 	
 	q = p2.q;
 	
-	w = p2.w;
 	return *this;
 }
 
 void Particle::activate(){
 	glPushMatrix();
-		glTranslatef(tX, tY, tZ);
+		glTranslatef(s.x, s.y, s.z);
 		glMultMatrixf(q.getMatrix4());
 }
 
@@ -66,18 +85,19 @@ void Particle::deactivate(){
 }
 
 void Particle::print(){
-	printf("%f %f %f %f %f %f %f\n", rX, rY, rZ, tX, tY, tZ, w);
+	printf("%f %f %f %f %f %f %f\n", r.x, r.y, r.z, s.x, s.y, s.z, w);
 }
 
 void Particle::setPose(mat3 rot, vec3 pos){
 	// Set Pose doest not work correctly now
 	q.fromMatrix(rot);
 		
-	tX = pos.x;
-	tY = pos.y;
-	tZ = pos.z;
+	s.x = pos.x;
+	s.y = pos.y;
+	s.z = pos.z;
 	
 	w = 0.0;
+	c = 0.0;
 	
 	//printf("[Particle::setPose] Warning conversion from rotation matrix to quaternion not correct!\n");
 }
@@ -86,9 +106,9 @@ void Particle::getPose(mat3 &rot, vec3 &pos){
 	
 	rot = q.getMatrix3();
 	
-	pos[0] = tX;
-	pos[1] = tY;
-	pos[2] = tZ;
+	pos[0] = s.x;
+	pos[1] = s.y;
+	pos[2] = s.z;
 }
 
 void Particle::rotate(float x, float y, float z){
@@ -99,73 +119,109 @@ void Particle::rotate(float x, float y, float z){
 	//q.normalise();
 }
 
+void Particle::rotate(vec3 rot){
+	Quaternion q2;
+	
+	q2.fromEuler(rot.x,rot.y,rot.z);
+	q = q2 * q;
+	//q.normalise();
+}
+
 void Particle::translate(float x, float y, float z){
-	tX = tX + x;
-	tY = tY + y;
-	tZ = tZ + z;
+	s.x = s.x + x;
+	s.y = s.y + y;
+	s.z = s.z + z;
+}
+
+void Particle::translate(vec3 trans){
+	s.x = s.x + trans.x;
+	s.y = s.y + trans.y;
+	s.z = s.z + trans.z;
 }
 
 // PARTICLES
 
 // *** private ***
 
-float Particles::noise(float rMin, float rMax, unsigned int distribution){
+float Particles::noise(float sigma, unsigned int distribution){
     float random = 0.0;
-    
-    if(rMax <= rMin){
-    	float tmp = rMin;
-    	rMin = rMax;
-    	rMax = tmp;    	
-    }
-    
+        
     // Gaussian noise
     if(distribution == GAUSS){
 		for(int i=0; i<10; i++){
 			random += float(rand())/RAND_MAX;
 		}
-		random = random / 10.0;
+		random = 2.0 * (random / 10.0 - 0.5);
     }
     
     // Uniform distributed noise
     if(distribution == NORMAL){
-    	random = float(rand())/RAND_MAX;
+    	random = 2.0 * (float(rand())/RAND_MAX - 0.5);
     }
     
     // Adjusting to range
-    random = (random*(rMax-rMin) + rMin);
+    random = random * sigma;
     
     return random;
 }
 
+Particle Particles::genNoise(float sigma, Particle pConstraint, unsigned int distribution){
+	if(sigma == 0.0f)
+		printf("[Particles::genNoise] Warning standard deviation sigma is 0.0\n");
+	
+	Particle epsilon;
+	
+	epsilon.s.x = noise(sigma, distribution) * pConstraint.s.x;
+	epsilon.s.y = noise(sigma, distribution) * pConstraint.s.y;
+	epsilon.s.z = noise(sigma, distribution) * pConstraint.s.z;
+	epsilon.sp.x = noise(sigma, distribution) * pConstraint.sp.x;
+	epsilon.sp.y = noise(sigma, distribution) * pConstraint.sp.y;
+	epsilon.sp.z = noise(sigma, distribution) * pConstraint.sp.z;
+	
+	epsilon.r.x = noise(sigma, distribution) * pConstraint.r.x;
+	epsilon.r.y = noise(sigma, distribution) * pConstraint.r.y;
+	epsilon.r.z = noise(sigma, distribution) * pConstraint.r.z;
+	epsilon.rp.x = noise(sigma, distribution) * pConstraint.rp.x;
+	epsilon.rp.y = noise(sigma, distribution) * pConstraint.rp.y;
+	epsilon.rp.z = noise(sigma, distribution) * pConstraint.rp.z;
+	
+	epsilon.z   = noise(sigma, distribution) * pConstraint.z;
+	epsilon.zp  = noise(sigma, distribution) * pConstraint.zp;
+	
+	return epsilon;
+}
+
+void Particles::resizeQueries(int new_size){
+	glDeleteQueriesARB(queryMatches.size(), &queryMatches[0]);
+	glDeleteQueriesARB(queryEdges.size(), &queryEdges[0]);
+	
+	queryMatches.resize(new_size, 0);
+	queryEdges.resize(new_size, 0);
+	
+	glGenQueriesARB(new_size, &queryMatches[0]);
+	glGenQueriesARB(new_size, &queryEdges[0]);
+}
+
 // *** public ***
-Particles::Particles(int num, Particle p){
-	m_num_particles = num;
-	id_max = 0;
-	v_max = 0;
-	d_max = 0;
-	w_normalizer = 1.0;
-	m_frustum_offset = 0.0;
+Particles::Particles(int num_particles, Particle p){
+	v_max = 1.0;
+	w_sum = 0.0;
 	
-	m_particlelist = (Particle*)malloc(sizeof(Particle) * m_num_particles);
-	setAll(p);
+	m_particlelist.assign(num_particles, p);
 	
-	queryMatches = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
-	queryEdges = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
+	queryMatches.assign(num_particles,0);
+	queryEdges.assign(num_particles,0);
 	
-	glGenQueriesARB(m_num_particles, queryMatches);
-    glGenQueriesARB(m_num_particles, queryEdges);	
+	glGenQueriesARB(num_particles, &queryMatches[0]);
+	glGenQueriesARB(num_particles, &queryEdges[0]);	
 }
 
 Particles::~Particles(){
-	glDeleteQueriesARB(m_num_particles, queryMatches);
-	glDeleteQueriesARB(m_num_particles, queryEdges);
-
-	free(m_particlelist);
-	free(queryMatches);
-	free(queryEdges);
+	glDeleteQueriesARB(m_particlelist.size(), &queryMatches[0]);
+	glDeleteQueriesARB(m_particlelist.size(), &queryEdges[0]);
 }
 
-Particle* Particles::getMax(int num_particles){
+Particle* Particles::calcMax(){
 	m_maxParticle = Particle(0.0);
 	vec3 maxAxis = vec3(0.0, 0.0, 0.0);
 	double maxAngle = 0.0;
@@ -174,135 +230,107 @@ Particle* Particles::getMax(int num_particles){
 	int id;
 	
 	// Normalise particles
-	for(id=0; id<num_particles; id++)
+	for(id=0; id<m_particlelist.size(); id++)
 		w_sum += m_particlelist[id].w;
 	
-	for(id=0; id<num_particles && w_sum > 0.0; id++)
+	for(id=0; id<m_particlelist.size() && w_sum > 0.0; id++)
 		m_particlelist[id].w = m_particlelist[id].w / w_sum;
 	
 	// Weighted sum over all particles
-	for(id=0; id<num_particles; id++){
-		m_maxParticle.tX += m_particlelist[id].tX * m_particlelist[id].w;
-		m_maxParticle.tY += m_particlelist[id].tY * m_particlelist[id].w;
-		m_maxParticle.tZ += m_particlelist[id].tZ * m_particlelist[id].w;
+	for(id=0; id<m_particlelist.size(); id++){
+		m_maxParticle.s += m_particlelist[id].s * m_particlelist[id].w;
+		m_maxParticle.sp += m_particlelist[id].sp * m_particlelist[id].w;
+		m_maxParticle.rp += m_particlelist[id].rp * m_particlelist[id].w;
 		
 		m_particlelist[id].q.getAxisAngle(&axis, &angle);
 		maxAxis += axis * m_particlelist[id].w;
 		maxAngle += angle * m_particlelist[id].w;
 	}
 	m_maxParticle.q.fromAxis(maxAxis, maxAngle);
+	
+	m_maxParticle.c = c_max;
+	m_maxParticle.w = w_max;
+	
 	return &m_maxParticle;
 }
 
-float Particles::getMaxW(int num_particles){
-	float w=0.0;
+void Particles::addsamples(int num_particles, Particle p_initial, Particle p_constraints, float sigma){
+	Particle p;
+	Particle epsilon;
 	
-	for(int id=0; id<num_particles; id++){
-		if(m_particlelist[id].w > w)
-			w = m_particlelist[id].w;
-	}
-	
-	return w;
+	for(int i=0; i<num_particles; i++){
+		
+		p = p_initial;
+		
+		// Distribution function (gaussian noise)
+		epsilon = genNoise(sigma, p_constraints);
+		
+		// TODO Prediction model, Better motion model (motion estimator, physical correct)
+		
+		p.sp = p.sp + epsilon.sp;
+		p.rp = p.rp + epsilon.rp;
+		p.zp = p.zp + epsilon.zp;
+		epsilon.z = epsilon.z + epsilon.zp*m_fTime;
+		p.translate(epsilon.s + p.sp*m_fTime);
+		p.rotate(epsilon.r + p.rp*m_fTime);
+		p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
+		
+		m_particlelist.push_back(p);
+	}	
 }
 
-void Particles::resample(int num_particles, float noise_rot_max, float noise_trans_max, float noise_zoom_max){
-	Particle pNoise;
-	unsigned int distribution = GAUSS;
+void Particles::sample(int num_particles, Particle p_initial, Particle p_constraints){
+	m_particlelist.clear(); 
+	addsamples(num_particles, p_initial, p_constraints);
+	resizeQueries(num_particles);
+}
+
+void Particles::resample(int num_particles, Particle p_constraints){
+	Particle epsilon, p;
 	int n, id, i, nid=0;
-	float noiseRotX=0.0, noiseRotY=0.0, noiseRotZ=0.0;
-    float noiseTransX=0.0, noiseTransY=0.0, noiseTransZ=0.0, noiseScale=0.0;
-    
-    for(id=0; id<num_particles && id<m_num_particles; id++){
+	float sigma = 0.01;
+	float c=0.0;
+	
+	float partition = 0.9;
+	
+	m_fTime = m_timer.Update();
+	
+	if(num_particles<=0){
+		printf("[Particles::resample] Warning number of particles to low (0)\n");
+		num_particles = m_particlelist.size();
+	}
+	
+	vector<Particle> particlelist_tmp;
+	particlelist_tmp = m_particlelist;
+	m_particlelist.clear();
+	
+	// Particles with motion
+	for(id=0; id<particlelist_tmp.size() && m_particlelist.size()<(int)num_particles*partition; id++){
 		
 		// TODO wrong: sum(n) != num_particles
-		n = round(m_particlelist[id].w * num_particles);
+		n = round(particlelist_tmp[id].w * num_particles);
+		c = m_particlelist[id].c;
 		
-		// Prediction model
-		//float sigma = pow(1.0 - m_particlelist[id].w * w_sum, 3);
-		float sigma = pow(1.0 - m_particlelist[id].w * w_sum, 3);
+		// Tukey estimator
+		sigma = (1.0-pow(1.0-pow(1.0-c,2),3));
+		// ensure range of sigma
+		if(sigma==0.0) sigma = 0.001;
+		if(sigma>1.0) sigma = 1.0;
 		
-		// factor for standard deviation of noise
-		// TODO try to avoid constants (MCMC)
-		// mapping
-		pNoise.rX = noise_rot_max * sigma;
-		pNoise.rY = noise_rot_max * sigma;
-		pNoise.rZ = noise_rot_max * sigma;
-		pNoise.tX = noise_trans_max * sigma;
-		pNoise.tY = noise_trans_max * sigma;
-		pNoise.tZ = noise_trans_max * sigma;
-		noiseScale = noise_zoom_max * sigma;
-		
-		for(i=0; i<n && nid<m_num_particles; i++){
-			// Generate noise
-			noiseRotX   = noise(-pNoise.rX, pNoise.rX, distribution);
-			noiseRotY   = noise(-pNoise.rY, pNoise.rY, distribution);
-			noiseRotZ   = noise(-pNoise.rZ, pNoise.rZ, distribution);
-			noiseTransX = noise(-pNoise.tX, pNoise.tX, distribution);
-			noiseTransY = noise(-pNoise.tY, pNoise.tY, distribution);
-			noiseTransZ = noise(-pNoise.tZ, pNoise.tZ, distribution);
-			noiseScale  = noise(-noiseScale,noiseScale, distribution);
-			
-			// Apply noise to particles
-			m_particlelist[nid] = m_particlelist[id];
-			
-			m_particlelist[nid].rX = m_particlelist[nid].rX + noiseRotX;
-			m_particlelist[nid].rY = m_particlelist[nid].rY + noiseRotY;
-			m_particlelist[nid].rZ = m_particlelist[nid].rZ + noiseRotZ;
-			m_particlelist[nid].tX = m_particlelist[nid].tX + noiseTransX;
-			m_particlelist[nid].tY = m_particlelist[nid].tY + noiseTransY;
-			m_particlelist[nid].tZ = m_particlelist[nid].tZ + noiseTransZ;
-			m_particlelist[nid].s  = m_particlelist[nid].s  + noiseScale;
-			
-			m_particlelist[nid].rotate(noiseRotX, noiseRotY, noiseRotZ);
-			m_particlelist[nid].translate( m_cam_view.x * noiseScale, m_cam_view.y * noiseScale, m_cam_view.z * noiseScale);
-			
-			// index of new particle list
-			nid++;
-		}
+		addsamples(n, particlelist_tmp[id], p_constraints, sigma);
 	}
-}
-
-void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_ref, unsigned int distribution){
-	Particle* pMax;
-	Particle* pIt;
-	Quaternion q2;
 	
-	float noiseRotX=0.0, noiseRotY=0.0, noiseRotZ=0.0;
-    float noiseTransX=0.0, noiseTransY=0.0, noiseTransZ=0.0;
-        
-    if(!p_ref)
-    	pMax = &m_particlelist[id_max];
-    else
-    	pMax = p_ref;
-    	
-   	// keep pMax at id 0
-    m_particlelist[0] = *pMax;
-    
-    // for all other particles add noise
-    for(int i=1; i<num_particles; i++){
-    	pIt = &m_particlelist[i];
-        
-        // Generate noise
-        noiseRotX   = noise(-noise_particle.rX, noise_particle.rX, distribution);
-        noiseRotY   = noise(-noise_particle.rY, noise_particle.rY, distribution);
-        noiseRotZ   = noise(-noise_particle.rZ, noise_particle.rZ, distribution);
-        noiseTransX = noise(-noise_particle.tX, noise_particle.tX, distribution);
-        noiseTransY = noise(-noise_particle.tY, noise_particle.tY, distribution);
-        noiseTransZ = noise(-noise_particle.tZ, noise_particle.tZ, distribution);
-                
-        // Apply noise to particles
-        pIt->rX = noiseRotX;
-        pIt->rY = noiseRotY;
-        pIt->rZ = noiseRotZ;
-        
-        pIt->q = pMax->q;
-		pIt->rotate(noiseRotX, noiseRotY, noiseRotZ);
+	// Particles voting for no motion
+	int size=m_particlelist.size();
+	for(id=0; id<(num_particles-size); id++){
+		p = m_particlelist[id];
+		p.sp = vec3(0.0,0.0,0.0);
+		p.rp = vec3(0.0,0.0,0.0);
+		p.zp = 0.0;
+		m_particlelist.push_back(p);
+	}
 		
-       	pIt->tX = pMax->tX + noiseTransX;
-        pIt->tY = pMax->tY + noiseTransY;
-        pIt->tZ = pMax->tZ + noiseTransZ;
-        
-    }
+	resizeQueries(m_particlelist.size());
 }
 
 void Particles::activate(int id){
@@ -329,78 +357,85 @@ void Particles::endCountV(){
 	glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 }
 
-void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_particles){
-	int v, d;
-	int id;
-	id_max = 0;
+bool sortfunction(Particle p1, Particle p2){ return (p1.w>p2.w); }
+
+void Particles::calcLikelihood(int power){
+	int v, d, id;
 	int v_max_tmp = 0;
 	w_sum = 0.0;
-	float w_max = 0.0;
-	
-	if(m_num_particles<num_particles){
-		printf("[Particles::calcLikelihood] Warning to less storage for 'num_particles'. Please increase number of particles\n");
-		num_particles = m_num_particles;	
-	}
-	
-	for(id=0; id<num_particles; id++){
+	c_max = 0.0;
+	w_max = 0.0;
+		
+	for(id=0; id<m_particlelist.size(); id++){
 		// Get number of pixels from Occlusion Query
 		glGetQueryObjectivARB(queryEdges[id], GL_QUERY_RESULT_ARB, &v);
 		glGetQueryObjectivARB(queryMatches[id], GL_QUERY_RESULT_ARB, &d);
 		
+		// Get maximum edge pixels (view dependent)
 		if(v>v_max_tmp)
 			v_max_tmp = v;
 		
-		// get maximum visible pixles of edge representation
+		// avoids  (d/v_max) > 1.0
 		if(v>v_max)
 			v_max = v;
 		
 		// Likelihood calculation formula
 		if(v != 0){
-			//m_particlelist[id].w = pow((float(d)/float(v) + float(d)/float(v_max)) / w_max , 5);
-			//m_particlelist[id].w = pow((float(d)/float(v) + float(d)/float(v_max)) / w_normalizer , 5);
-			m_particlelist[id].w = pow((float(d)/float(v)),5);
-		}else
+			m_particlelist[id].c = (float(d)/float(v) + float(d)/float(v_max)) * 0.5;
+			m_particlelist[id].w = pow(m_particlelist[id].c, power*(1.0-m_particlelist[id].c));
+		}else{
+			m_particlelist[id].c = 0.0;
 			m_particlelist[id].w = 0.0;
-			
+		}
+		
+		if(m_particlelist[id].c > c_max)
+			c_max = m_particlelist[id].c;
+		
 		// sum of likelihood over all particles
 		w_sum += m_particlelist[id].w;
-		
-		// w_normalizer normalizes likelihood to range [0 ... 1]
-		if(m_particlelist[id].w>1.0)
-			w_normalizer = m_particlelist[id].w * w_normalizer;
-	}
+	}	
 	
-	//if(w_max<1.0)
-	//	w_normalizer = w_max * w_normalizer;
-	
-	// Adjust v_max to visible area of object
-	if(v_max_tmp < v_max)
-		v_max -= (v_max - v_max_tmp) / 100;
+	// Update v_max (in case of decreasing v_max_tmp)
+	v_max = v_max_tmp;
 	
 	// normalize weights
-	for(id=0; id<num_particles && w_sum > 0.0; id++){
-		m_particlelist[id].w = m_particlelist[id].w / w_sum;
+	float dw_sum = 0.0;
+	if(w_sum>0.0){
+		dw_sum = 1.0/w_sum;
+		for(id=0; id<m_particlelist.size(); id++){
+			m_particlelist[id].w = m_particlelist[id].w * dw_sum;
+			if(m_particlelist[id].w > w_max)
+				w_max = m_particlelist[id].w;
+		}
+	}else{
+		dw_sum = 1.0/m_particlelist.size();
+		for(id=0; id<m_particlelist.size(); id++){
+			m_particlelist[id].w = dw_sum;
+		}
+		w_max = dw_sum;
 	}
+	
+	// calculate maximum particle (=result)
+	calcMax();
 
 	// sort particles by likelihood and average most likely particles
-	std::sort(m_particlelist, m_particlelist+num_particles);
-	id_max = num_particles-1;
+	std::sort(m_particlelist.begin(), m_particlelist.end(), sortfunction);
 }
 
 // Evaluate Confidence Level by using variance of weight w
-float Particles::getVariance(int num_particles){
+float Particles::getVariance(){
 	int id=0;
 	float mean = 0.0;
 	float var = 0.0;
 	
 	// Evaluate mean
-	for(id=0; id<num_particles; id++)
-		mean += m_particlelist[id].w;
-	mean = mean / num_particles;
+	for(id=0; id<m_particlelist.size(); id++)
+		mean += m_particlelist[id].c;
+	mean = mean / m_particlelist.size();
 	
 	// Evaluate standard variation
-	for(id=0; id<num_particles; id++)
-		var += pow(m_particlelist[id].w - mean, 2);
+	for(id=0; id<m_particlelist.size(); id++)
+		var += pow(m_particlelist[id].c - mean, 2);
 	
 	return var;
 }
@@ -416,21 +451,20 @@ float Particles::getVariance(int num_particles){
 	// Evaluate standard variation
 	Particle var;
 	for(id=0; id<num_particles; id++){
-		var.rX += pow((m_particlelist[id].rX - mean->rX) * m_particlelist[id].w, 2);
-		var.rY += pow((m_particlelist[id].rY - mean->rY) * m_particlelist[id].w, 2);
-		var.rZ += pow((m_particlelist[id].rZ - mean->rZ) * m_particlelist[id].w, 2);
-		var.tX += pow((m_particlelist[id].tX - mean->tX) * m_particlelist[id].w, 2);
-		var.tY += pow((m_particlelist[id].tY - mean->tY) * m_particlelist[id].w, 2);
-		var.tZ += pow((m_particlelist[id].tZ - mean->tZ) * m_particlelist[id].w, 2);
+		var.r.x += pow((m_particlelist[id].r.x - mean->r.x) * m_particlelist[id].w, 2);
+		var.r.y += pow((m_particlelist[id].r.y - mean->r.y) * m_particlelist[id].w, 2);
+		var.r.z += pow((m_particlelist[id].r.z - mean->r.z) * m_particlelist[id].w, 2);
+		var.s.x += pow((m_particlelist[id].s.x - mean->s.x) * m_particlelist[id].w, 2);
+		var.s.y += pow((m_particlelist[id].s.y - mean->s.y) * m_particlelist[id].w, 2);
+		var.s.z += pow((m_particlelist[id].s.z - mean->s.z) * m_particlelist[id].w, 2);
 	}
 	
-	return (var.rX+var.rY+var.rZ+var.tX+var.tY+var.tZ);
+	return (var.r.x+var.r.y+var.r.z+var.s.x+var.s.y+var.s.z);
 }
 */
 
 void Particles::setAll(Particle p){
-	for(int i=0; i<m_num_particles; i++)
+	for(int i=0; i<m_particlelist.size(); i++)
 		m_particlelist[i] = p;
 }
-
 

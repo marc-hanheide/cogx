@@ -1,23 +1,6 @@
 
 #include "ImageProcessor.h"
 
-ImageProcessor::ImageProcessor(){
-    m_shadeSobel = 0;
-    m_shadeThinning = 0;
-    m_shadeSpreading = 0;
-    
-    int id;
-    if((id = g_Resources->AddCamera("cam_ortho")) == -1)
-		exit(1);
-	m_cam_ortho = g_Resources->GetCamera(id);
-	
-}
-
-ImageProcessor::~ImageProcessor(){
-    glDeleteLists(m_dlRect, 1);
-    glDeleteLists(m_dlImage, 1);
-    glDeleteLists(m_dlUpsideDown, 1);
-}
 
 // Load and compile shaders and set parameters
 bool ImageProcessor::initShader(){
@@ -42,8 +25,8 @@ bool ImageProcessor::initShader(){
     						5, 12, 15, 12, 5,
     						4,  9, 12,  9, 4,
     						2,  4,  5,  4, 2 };
-    hi = 10.0/32.0;
-    lo = 3.0/32.0; 
+    hi = 10.0/22; // = sqrt((3+10+3)^2 + (3+10+3)^2) = 22.6
+    lo = 3.0/22; 
     GLfloat sobelX[9] = {   -lo, 	0.0, 	lo,
                             -hi, 	0.0, 	hi,
                             -lo,  	0.0, 	lo };
@@ -69,7 +52,7 @@ bool ImageProcessor::initShader(){
     m_shadeSobel->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
     m_shadeSobel->setUniform( "mSobelX", mat3(sobelX), GL_FALSE );
     m_shadeSobel->setUniform( "mSobelY", mat3(sobelY), GL_FALSE );
-    m_shadeSobel->setUniform( "fThreshold", float(SOBEL_THRESHOLD) );
+	m_shadeSobel->setUniform( "fThreshold", float(SOBEL_THRESHOLD) );
     m_shadeSobel->unbind();
     
     // Thinning shader
@@ -99,8 +82,9 @@ bool ImageProcessor::initShader(){
 bool ImageProcessor::dlImage(){
     float x = float(m_width)/2.0;
     float y = float(m_height)/2.0;
-    
+
     glBegin(GL_QUADS);
+		glColor3f(1.0,1.0,1.0);
         glTexCoord2f(0,0); glVertex3f(-x,-y, 0.0);
         glTexCoord2f(1,0); glVertex3f( x,-y, 0.0);
         glTexCoord2f(1,1); glVertex3f( x, y, 0.0);
@@ -192,9 +176,36 @@ bool ImageProcessor::transform(int i,int j,double *ix,double *iy){
     return true;
 }
 
+ImageProcessor::ImageProcessor(){
+    m_shadeSobel = 0;
+    m_shadeThinning = 0;
+    m_shadeSpreading = 0;
+    
+    int id;
+    if((id = g_Resources->AddCamera("cam_ortho")) == -1)
+		exit(1);
+	m_cam_ortho = g_Resources->GetCamera(id);
+	
+}
+
+ImageProcessor::~ImageProcessor(){
+    glDeleteLists(m_dlRect, 1);
+    glDeleteLists(m_dlImage, 1);
+    glDeleteLists(m_dlUpsideDown, 1);
+}
+
+// Set functions
+void ImageProcessor::setSobelThreshold(float t){
+	m_shadeSobel->bind();
+		m_shadeSobel->setUniform( "fThreshold", t );
+	m_shadeSobel->unbind();
+}
+
+void ImageProcessor::setCamOrtho(){ 
+	m_cam_ortho->Activate();
+}
 
 // *** Image Processing functions ***
-
 void ImageProcessor::flipUpsideDown(Texture* source, Texture* result){
 	m_cam_ortho->Activate();
 	glEnable(GL_TEXTURE_2D);
@@ -233,15 +244,17 @@ void ImageProcessor::gauss(Texture* source, Texture* result){
     m_shadeGauss->unbind();
 }
 
-void ImageProcessor::sobel(Texture* source, Texture* result){
+void ImageProcessor::sobel(Texture* source, Texture* result, float thresh, bool norm){
 	m_cam_ortho->Activate();
 	m_shadeSobel->bind();
+	m_shadeSobel->setUniform( "fThreshold", thresh );
+	m_shadeSobel->setUniform( "norm", norm);
     glEnable(GL_TEXTURE_2D);
 		source->bind();
 		glCallList(m_dlImage);
     	result->copyTexImage2D(source->getWidth(), source->getHeight());
     glDisable(GL_TEXTURE_2D);
-    m_shadeSobel->unbind();
+  m_shadeSobel->unbind();
 }
 
 void ImageProcessor::thinning(Texture* source, Texture* result){
@@ -282,11 +295,11 @@ bool ImageProcessor::init(int w, int h){
     
     // Initialise camera
     m_cam_ortho->Set(	0.0, 0.0, 1.0,
-						0.0, 0.0, 0.0,
-						0.0, 1.0, 0.0,
-						45, w, h,
-						0.1, 10.0,
-						GL_ORTHO);
+											0.0, 0.0, 0.0,
+											0.0, 1.0, 0.0,
+											45, w, h,
+											0.1, 10.0,
+											GL_ORTHO);
     
     // Initialize shaders
     if(!initShader()){
@@ -294,7 +307,7 @@ bool ImageProcessor::init(int w, int h){
     }
     
 	// Setup display lists
-    m_dlRect = glGenLists(1);
+  m_dlRect = glGenLists(1);
 	m_lensMode = BARREL;
 	glNewList(m_dlRect, GL_COMPILE);
         dlRectification();
