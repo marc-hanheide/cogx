@@ -7,6 +7,7 @@ class Particles;
 #include "Quaternion.h"
 #include "mathlib.h"
 #include "Resources.h"
+#include "Timer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,12 +21,17 @@ const unsigned int NORMAL = 1;
 class Particle
 {
 public:
-	float rX, rY, rZ;	// rotation
-	float tX, tY, tZ;	// translation
-	float s;			// scale
-	double w;			// Likelihood
+	vec3 r;				// rotation
+	vec3 s;				// position
+	vec3 rp;			// angular speed
+	vec3 sp;			// speed
+	float z;			// scale (zoom)
+	float zp;
+	
+	float w;			// weight
+	float c;			// confidence level
 	Quaternion q;		// representing rotation with quaternions
-
+	
 	Particle();
 	Particle(float val);
 	Particle(const Particle& p2);
@@ -43,7 +49,9 @@ public:
 	void setPose(mat3 rot, vec3 pos);
 	void getPose(mat3 &rot, vec3 &pos);
 	void rotate(float x, float y, float z);
+	void rotate(vec3 rot);
 	void translate(float x, float y, float z);
+	void translate(vec3 trans);
 
 };
 
@@ -51,59 +59,56 @@ class Particles
 {
 private:
 	
+	vector<Particle> m_particlelist;
+	vector<unsigned int> queryMatches;
+	vector<unsigned int> queryEdges;
 	Particle m_maxParticle;
-	Particle* m_particlelist;
-	int m_num_particles;
-	int id_max;
-	int v_max;
-	int d_max;
-	float w_normalizer;
-	float w_sum;
-	float m_frustum_offset;
-	TM_Vector3 m_cam_view, m_cam_s, m_cam_u;
 	
-	unsigned int* queryMatches; // query for all edge pixel count with NV_Occlusion_Query
-    unsigned int* queryEdges; // query for coinciding edge pixel count with NV_Occlusion_Query
-    
-    float noise(float rMin, float rMax, unsigned int distribution=GAUSS);
+	Timer m_timer;
+	float m_fTime;
 
+	int v_max;
+	float w_sum;
+	float w_max;
+	float c_max;
+	TM_Vector3 m_cam_view;
+	
+	// Functions
+	Particle* calcMax();
+	float noise(float sigma, unsigned int distribution=GAUSS);
+	Particle genNoise(float sigma, Particle pConstraint, unsigned int distribution=GAUSS);
+	void resizeQueries(int new_size);	
+	
 public:
 	Particles(int num, Particle p);
 	~Particles();
 	
-	void set(int id, Particle p){ m_particlelist[id] = p; }
 	void setCamViewVector(TM_Vector3 v){ m_cam_view = v; }
-	void setCamS(TM_Vector3 v){ m_cam_s = v; }
-	void setCamU(TM_Vector3 v){ m_cam_s = v; }
-	
+	void resetTimer(){ m_timer.Update(); }
+
 	Particle* get(int id){ return &m_particlelist[id]; }
-	Particle* getMax(int num_particles);
-	float getMaxW(int num_particles);
-	int getMaxID(){ return id_max; }
-	int getVMax(){ return v_max; }
-	void setVMax(int val){ v_max = val; }
-	int getNumParticles(){ return m_num_particles; }
-	void printMax(){ m_particlelist[id_max].print(); }
+	Particle* getMax(){ return &m_maxParticle; }
+	float getMaxW(){ return w_max; }
+	float getMaxC(){ return c_max; }
+	int getNumParticles(){ return m_particlelist.size(); }
 	
-	void resample(int num_particles, float noise_rot_max, float noise_trans_max, float noise_zoom_max);
-	void perturb(Particle noise_particle, int num_particles, Particle* p_ref=NULL, unsigned int distribution=GAUSS);
+	void addsamples(int num_particles, Particle p_initial, Particle p_constraints, float sigma=1.0);
+	void sample(int num_particles, Particle p_initial, Particle p_constraints);
+	void resample(int num_particles, Particle p_constraints);
+	
 	void activate(int id);
 	void deactivate(int id);
-	void activateMax(){ activate(id_max); }
-	void deactivateMax(){ deactivate(id_max); }
 	
 	void startCountD(int id);
 	void startCountV(int id);
 	void endCountD();
 	void endCountV();
 	
-	void calcLikelihood(int num_particles, unsigned int num_avaraged_particles=1);
+	void calcLikelihood(int power=5);
 	
-	float getVariance(int num_particles);
+	float getVariance();
 	
 	void setAll(Particle p);
-
-
 };
 
 

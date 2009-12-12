@@ -4,7 +4,6 @@
 
 #include "headers.h"
 #include "Timer.h"
-#include "OpenGLControl.h"
 #include "Resources.h"
 #include "mathlib.h"
 
@@ -13,6 +12,7 @@
 #endif
 
 #define DISTLEN 1000
+#define NUM_SPREAD_LOOPS 5
 
 class Tracker{
 protected:
@@ -21,16 +21,9 @@ protected:
 		float height;						// height of viewport ( --"-- ) in pixels
 		int number_of_particles;			// number of particles to draw for each frame
 		int recursions;
-		
-		float	noise_rot_max;				// initial standard deviation for rotational noise of particles in degrees
-    	float 	noise_trans_max;			// initial standard deviation for translation noise of particles in meters
-    	float	noise_scale_max;			// initial standard deviation for scaling noise of particles in meters (=translation to and from cam)
-    	
-    	float edge_tolerance;				// maximal angular deviation of edges to match in degrees
-    	
-    	float track_time;					// time for one tracking pass (the less time given, the less particle will be used)
-    	
-    	Particle zP;						// zero Particle to which the tracker is reseted when pressing the zero_particles key
+		float edge_tolerance;				// maximal angular deviation of edges to match in degrees
+		float track_time;					// time for one tracking pass (the less time given, the less particle will be used)
+		Particle zP;						// zero Particle to which the tracker is reseted when pressing the zero_particles key
 	} Parameter;
 	Parameter params;
 	
@@ -41,18 +34,18 @@ protected:
 	float time_tracking;
 	
 	// Resources
+	Particle m_pose;
+	Particle m_pConstraints;
 	ImageProcessor* m_ip;
 	unsigned char* m_image;
 	Particles* m_particles;
 	Texture* m_tex_frame;
-	Texture* m_tex_frame_ip[4];
-	Texture* m_tex_model;
-	Texture* m_tex_model_ip[4];
+	Texture* m_tex_frame_ip[NUM_SPREAD_LOOPS];
 	Model* m_model;
 	Camera* m_cam_ortho;
 	Camera* m_cam_default;
 	Camera* m_cam_perspective;
-	OpenGLControl m_opengl;
+	unsigned int m_spreadlvl;
 	
 	// Matrices
 	mat4 m_modelview;
@@ -71,8 +64,6 @@ protected:
 
 	
 	// Functions (virtual)
-	virtual void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS)=0;
-	virtual void particle_processing(int num_particles, unsigned int num_avaraged_particles=1)=0;
 	virtual bool initInternal()=0;
 	
 	
@@ -81,20 +72,30 @@ protected:
 	
 public:
 	Tracker();
-		
+	~Tracker();
+	
+	bool initGL();
 	bool init(	int width, int height,								// image size in pixels
 				int nop=3000,										// maximum number of particles
 				int rec=2,											// recursions per image
-				float n_r_max=45.0,									// standard deviation of rotational noise in degree
-				float n_t_max=0.1,									// standard deviation of translational noise in meter
 				float et=20.0,										// edge matching tolerance in degree
 				float tt=0.05,										// goal tracking time in seconds
 				Particle zp=Particle(0.0));
+				
+  virtual void setKernelSize(int val){ }
+	virtual void setEdgeShader(){ }
+	virtual void setColorShader(){ }
+  
+  virtual void evaluateParticle(Particle* p){}
 	
 	virtual void image_processing(unsigned char* image)=0;
 	virtual bool track(	Model* model,
-						Camera* camera,
-						Particle& p_result)=0;
+											Camera* camera,
+											int num_recursions,
+											int num_particles,
+											Particle p_constraints, 
+											Particle& p_result,
+											float fTime)=0;
 						
 	virtual bool track(	unsigned char* image,
 						Model* model,
@@ -104,6 +105,19 @@ public:
 	virtual void textureFromImage(){}
 	
 	virtual void drawResult(Particle* p, Model* m)=0;
+	
+	virtual vector<float> getPDFxy(	Particle pose,
+																	float x_min, float y_min,
+																	float x_max, float y_max,
+																	int res,
+																	const char* filename=NULL, const char* filename2=NULL){}
+	
+	virtual void savePDF(	vector<float> vPDFMap,
+												float x_min, float y_min,
+												float x_max, float y_max,
+												int res,
+												const char* meshfile, const char* xfile){}
+	
 	void drawCoordinates();
 	void drawImage(unsigned char* image);
 	void drawPixel(float u, float v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);
@@ -112,12 +126,14 @@ public:
 	
 	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
 	void setTrackTime(float time){ params.track_time = time; }
-	void setNoise(float rot, float trans){ params.noise_rot_max=rot; params.noise_trans_max=trans; }
 	void setTestflag(bool val){ m_testflag = val; }
 	void setBFC(bool val){ m_bfc=val; }
+	void setSpreadLvl(unsigned int val){ m_spreadlvl = val; }
 	void setZeroPose(Particle zp){ params.zP = zp; m_particles->setAll(zp); }
 	
 	void lock(bool val){ m_lock=val; }
+	
+	Particle getLastPose(){ return m_pose; }
 	
 	bool getLock(){ return m_lock; }
 	bool getEdgesImage(){ return m_draw_edges; }
@@ -128,6 +144,8 @@ public:
 	void showEdgesModel(bool val){ m_showmodel = val; }
 	void showParticles(bool val){ m_showparticles = val; }
 	void showStatistics();
+	
+	void drawSpeedBar(float h);
 	
 	void zeroParticles();
 };

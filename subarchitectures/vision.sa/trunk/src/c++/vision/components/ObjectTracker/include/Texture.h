@@ -21,6 +21,7 @@ public:
 	
 	void bind(int stage=0);
 	void copyTexImage2D(int width, int height);		// copy frame buffer pixels to texture
+	void copyFromTexture(Texture* tex);
 	
 	inline GLuint getTextureID(){ return m_texture_id; }
 	inline int getWidth(){ return m_width; }

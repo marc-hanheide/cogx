@@ -12,9 +12,8 @@ private:
 	Shader* m_shadeEdgeCompare;
 
 	// Functions
-	virtual void particle_processing(int num_particles, unsigned int num_avaraged_particles=1);
-	virtual void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS);
-	void particle_filtering(Particle& p_result, int recursions=1);
+	void particle_processing();
+	void particle_filtering(Particle& p_result, Particle p_constraints, int recursions=1, float fTime=0.0);
 	
 public:
 	EdgeTracker();
@@ -23,8 +22,12 @@ public:
 	
 	virtual void image_processing(unsigned char* image);
 	virtual bool track(	Model* model,
-						Camera* camera,
-						Particle& p_result);
+											Camera* camera,
+											int num_recursions,
+											int num_particles,
+											Particle p_constraints, 
+											Particle& p_result,
+											float fTime=0.0);
 	
 	virtual bool track(	unsigned char* image,
 						Model* model,

@@ -47,64 +47,86 @@ public:
 		Pass(){ texture = new(Texture); }
 		~Pass(){ delete(texture); }
 	} Pass;
-
-	vector<Vertex> 		m_vertexlist;		// vertices in 3D space with normals and texture coordinates
+	    
+	Model();
+	Model(const Model& m);
+	~Model();
+	Model& operator=(const Model& m2);
+	
+	bool isTextured(){ return m_textured; }
+	
+	Texture* getTexture(){ return m_texture; }
+	Texture* getOriginalTexture(){ return m_tex_original; }
+	vector<Face> getFacelist(){ return m_facelist; }
+	vector<Vertex> getVertexlist(){ return m_vertexlist; }
+	vector<Pass*> getPasslist(){ return m_passlist; }
+	
+	mat4 getModelviewProjection(){ return m_modelviewprojection; }
+	int getUntexturedFaces(){return ( m_facelist.size() - m_texturedfaces.size() ); }
+	
+	void enableTexture(bool val){ m_textured = val; }
+	
+	void setTexture(Texture* tex){ m_texture = tex; }
+	void setOriginalTexture(Texture* tex){ m_tex_original = tex; }
+	void setModelviewProjection(mat4 m){ m_modelviewprojection = m; }
+	void setPasslist(vector<Pass*> p){ m_passlist = p; }
+	
+	void computeEdges();
+	void computeNormals();
+	void flipNormals();
+	
+	void UpdateDisplayLists();
+	void drawNormals();
+	void drawTexturedFaces();
+	void drawUntexturedFaces();
+	void drawPass();
+	void drawFaces();
+	void drawEdges();
+	
+	void drawFace(int i);
+	
+	void restoreTexture();
+	
+	vector<int> getFaceUpdateList(Particle* p_max, vec3 view);
+	void textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view);
+	
+// PUBLIC
+	vector<Vertex> 	m_vertexlist;		// vertices in 3D space with normals and texture coordinates
 	vector<Face> 		m_facelist;			// faces of model (indices of vertexlist)
 	vector<Edge> 		m_edgelist;			// edges of model (indices of vertexlist)
+	vector<Pass*>		m_passlist;
 	
-	vector<Pass*>		m_passlist;	
-    
-    Model();
-    Model(const Model& m);
-    ~Model();
-    Model& operator=(const Model& m2);
-    
-    bool isTextured(){ return m_textured; }
-    
-    Texture* getTexture(){ return m_texture; }
-    Texture* getOriginalTexture(){ return m_tex_original; }
-    vector<Face> getFacelist(){ return m_facelist; }
-    vector<Vertex> getVertexlist(){ return m_vertexlist; }
-    mat4 getModelviewProjection(){ return m_modelviewprojection; }
-    vector<Pass*> getPasslist(){ return m_passlist; }
-    
-    void enableTexture(bool val){ m_textured = val; }
-    
-    void setTexture(Texture* tex){ m_texture = tex; }
-    void setOriginalTexture(Texture* tex){ m_tex_original = tex; }
-    void setModelviewProjection(mat4 m){ m_modelviewprojection = m; }
-    void setPasslist(vector<Pass*> p){ m_passlist = p; }
-    
-    void computeEdges();
-    void computeNormals();
-    void flipNormals();
-    
-    void drawPass(Shader* shadeTexturing);
-    void drawFaces();
-    void drawFace(int i);
-    void drawEdges();
-    
-    void restoreTexture();
-    
-    vector<int> getFaceUpdateList(Particle* p_max);
-    void textureFromImage(unsigned char* image, int width, int height, Particle* p_max);
-
 protected:
 	char m_modelname[FN_LEN];
 	
-	bool m_textured;		
+	bool m_textured;
+	
+	GLint m_dlTexturedFaces;
+	GLint m_dlUntexturedFaces;
+	GLint m_dlPass;
+	GLint m_dlFaces;
+	GLint m_dlEdges;
+	GLint m_dlNormals;
+	
+	Shader* m_shadeTexturing;
 	
 	mat4 m_modelviewprojection;		// Transformation matrix from model to camera to image -space
 	
-	GLint edgeDisplayList;
+// 	GLint edgeDisplayList;
+	vector<int> m_texturedfaces;
 	Texture* m_tex_original;		// original texture of model (not modified by tracker)
-    Texture* m_texture;				// texture of model modified by tracker (edge-texture)
+	Texture* m_texture;				// texture of model modified by tracker (edge-texture)
+
+	// Functions
+	void print();
+	bool isRedundant(Edge* e1);
 	
-    // Functions
-    void print();
-    bool isRedundant(Edge* e1);
-    void genEdgeDisplayList();
-    
+	void genListTexturedFaces();
+	void genListUntexturedFaces();
+	void genListPass();
+	void genListFaces();
+	void genListEdges();
+	void genListNormals(float normal_length);
 };
 
 
