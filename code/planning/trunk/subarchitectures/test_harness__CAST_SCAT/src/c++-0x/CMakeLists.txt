@@ -19,9 +19,9 @@ add_definitions(-pedantic -vg -Wall -Wextra)
 set(CMAKE_VERBOSE_MAKEFILE true)
 
 
-cast_slice2cpp(GEN_CPP GEN_HPP testHarnessCASTSCAT.ice)
-add_library(testHarnessCASTSCAT SHARED ${GEN_CPP})
-install(TARGETS testHarnessCASTSCAT LIBRARY DESTINATION lib ARCHIVE DESTINATION lib) 
+cast_slice2cpp(GEN_CPP GEN_HPP testHarnessCASTRPC.ice)
+add_library(testHarnessCASTRPC SHARED ${GEN_CPP})
+install(TARGETS testHarnessCASTRPC LIBRARY DESTINATION lib ARCHIVE DESTINATION lib) 
 
     
 # add_definitions(-DPLANNER_FACTORY_DESIGNATION="Factory that produces planners")
@@ -30,24 +30,24 @@ install(TARGETS testHarnessCASTSCAT LIBRARY DESTINATION lib ARCHIVE DESTINATION 
 
 add_definitions(-DDEBUG_LEVEL=2000)
     
-add_definitions(-DSCAT_WARNINGS=0)
+add_definitions(-DRPC_WARNINGS=0)
 
-add_cast_component(test_harness__CAST_SCAT_client test_harness__CAST_SCAT_client.cc)
+add_cast_component(test_harness__CAST_RPC_client test_harness__CAST_RPC_client.cc)
 
-link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTRPC)
 
-add_cast_component(test_harness__CAST_SCAT_client_clone1 test_harness__CAST_SCAT_client_clone1.cc)
+add_cast_component(test_harness__CAST_RPC_client_clone1 test_harness__CAST_RPC_client_clone1.cc)
 
-link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTRPC)
 
-add_cast_component(test_harness__CAST_SCAT_client_clone2 test_harness__CAST_SCAT_client_clone2.cc)
+add_cast_component(test_harness__CAST_RPC_client_clone2 test_harness__CAST_RPC_client_clone2.cc)
 
-link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTRPC)
 
-add_cast_component(test_harness__CAST_SCAT_server test_harness__CAST_SCAT_server.cc)
+add_cast_component(test_harness__CAST_RPC_server test_harness__CAST_RPC_server.cc)
 
-link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTRPC)
 
-add_cast_component(test_harness__CAST_SCAT_server_clone1 test_harness__CAST_SCAT_server_clone1.cc)
+add_cast_component(test_harness__CAST_RPC_server_clone1 test_harness__CAST_RPC_server_clone1.cc)
 
-link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTRPC)
