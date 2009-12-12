@@ -21,7 +21,7 @@
  * breakage (didn't want to look, didn't want to care), so in my
  * frustration I made \macro{A_CAST_SPECIAL__THREAD_INITIALISATION}
  * and related inline factory-function
- * \function{CAST_SCAT::give_me_a_new__pthread_mutex_}.
+ * \function{CAST_RPC::give_me_a_new__pthread_mutex_}.
  * 
  *
  * NOTES :: 
@@ -62,7 +62,7 @@
         *X = a_rose_by_any_other_name;                               \
     }                                                                \
     
-namespace CAST_SCAT
+namespace CAST_RPC
 {
     
     /* FIX :: (see A_CAST_SPECIAL__THREAD_INITIALISATION)...*/
