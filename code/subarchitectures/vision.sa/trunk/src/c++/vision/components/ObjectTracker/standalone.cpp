@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   
   int mode = TEXTURE;
   
-	sprintf(modelfilename, "%s", "jasmin6.ply");
+	sprintf(modelfilename, "%s", "cylinder.ply");
 	
 	// TEXTURE
 	// Robust and accurate, low framerate
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 		// Draw result
 // 		m_tracker->drawImage(NULL);
 		m_tracker->drawResult(&p_result, model);
-		m_tracker->drawCoordinates();
+// 		m_tracker->drawCoordinates();
 // 		m_tracker->drawSpeedBar(p_result.sp.x * 100.0);
 // 		m_tracker->drawTest();
 		m_tracker->swap();	

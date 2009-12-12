@@ -192,6 +192,7 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 	camera->SetZRange(zNear, zFar);
 	camera->SetIntrinsic(intrinsic);
 	camera->SetExtrinsic(extrinsic);  
+	camera->SetPos(camPars.pose.pos.x, camPars.pose.pos.y, camPars.pose.pos.z);
 }
 
 // SDL - Keyboard and Mouse input control

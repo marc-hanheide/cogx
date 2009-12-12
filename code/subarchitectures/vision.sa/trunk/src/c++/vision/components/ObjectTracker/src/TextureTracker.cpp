@@ -273,7 +273,7 @@ bool TextureTracker::initInternal(){
 	m_shadeTexEdgeTest->setUniform("fTol", params.edge_tolerance);
 	m_shadeTexEdgeTest->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
   m_shadeTexEdgeTest->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
-  m_shadeTexEdgeTest->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
+  m_shadeTexEdgeTest->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
   m_shadeTexEdgeTest->setUniform("kernelsize", (GLint)1);
 	m_shadeTexEdgeTest->unbind();
 	
@@ -401,13 +401,13 @@ void TextureTracker::drawResult(Particle* p, Model* m){
 		m_model->restoreTexture();
 		m_model->drawPass();
 	}else if(texmodel){
-		m_tex_model_ip[m_spreadlvl]->bind(0);
-		m_tex_frame_ip[m_spreadlvl]->bind(1);
+		m_tex_model_ip[0]->bind(0);
+		m_tex_frame_ip[0]->bind(1);
 		m_tex_model->bind(2);
 		m_tex_frame->bind(3);
 		m_shadeCompare->bind();
 		m_shadeCompare->setUniform("analyze", true);
-		m_shadeCompare->setUniform("compare", true);
+		m_shadeCompare->setUniform("compare", false);
 		m_shadeCompare->setUniform("textured", true);
 		m_model->drawTexturedFaces();
 		m_shadeCompare->setUniform("textured", false);
