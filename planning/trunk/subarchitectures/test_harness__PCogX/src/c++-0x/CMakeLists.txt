@@ -40,11 +40,15 @@ link_libraries(${AYPLAN_LIBS})
 set(ZLIB_LIBS z)
 link_libraries(${ZLIB_LIBS})
 
-add_cast_component(planner_factory planner_factory.cc)
+# add_cast_component(planner_factory planner_factory.cc)
 
-link_cast_component(${CAST_COMPONENT_NAME} PCogX)
+# link_cast_component(${CAST_COMPONENT_NAME} PCogX)
 
-add_cast_component(classical_planner classical_planner.cc)
+# add_cast_component(classical_planner classical_planner.cc)
+
+# link_cast_component(${CAST_COMPONENT_NAME} PCogX)
+
+add_cast_component(planner_client planner_client.cc)
 
 link_cast_component(${CAST_COMPONENT_NAME} PCogX)
 
