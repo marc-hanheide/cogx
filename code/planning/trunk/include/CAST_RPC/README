@@ -1,0 +1,220 @@
+
+CAST::RPC -- DEVELOPMENT RELEASE
+---------------------------------
+
+Copyright (C) 2009 Charles Gretton (charles.gretton@gmail.com)
+
+These are the release notes for CAST::RPC -- pronounced
+cast-cons-cons-rpc.  Read them carefully, as they tell you what this
+is all about, explain how to use CAST::RPC, and what to do if
+something goes wrong.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+FOR CcGX FOLK :
+---------------
+
+Dear friendly CogX team member,
+
+Please email (charles.gretton@gmail.com) if you make a change to this
+and commit that change to the
+
+**/cogx/code/planning/trunk/include/CAST_RPC/
+
+SVN branch.
+
+
+
+OKAY, WHAT IS CAST_RPC?
+------------------------
+
+Inexcursively speaking, CAST::RPC is a C++-0X based wrapper of useful
+syntactic sugar for "subarchitecture" and "component" interactions via
+classical -- i.e., circa August 2009 -- CAST (The CoSy Architecture
+Schema Toolkit). It is a C++ library, which for the most part is
+defined in the namespace called CAST_RPC. CAST::RPC was written by
+Charles Gretton as the basis of the planning subarchitecture interface
+in CogX. Although other folk might not think it the case, Charles-G
+believes wrapping CAST interactions according to CAST::RPC makes
+developing, testing, and debugging significantly easier than it might
+otherwise be. Certainly there is significantly less clutter in
+CAST-based interactions via CAST::RPC than via the mechanisms that
+were demonstrated in the Spring of 2009.
+
+HOW CAN I CONTACT THE AUTHORS?
+------------------------------
+
+You can email _Charles Gretton_ at :: charles.gretton@gmail.com
+
+
+THANKS TO!
+----------
+
+We would also like to thank the following people:
+
+Nick Hawes 
+Juhan Ernits
+Marc Hanheide 
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        OBTAINING AND INSTALLING CAST::RPC
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+WHERE CAN I GET CAST::RPC:
+---------------------------
+
+svn co https://codex.cs.bham.ac.uk/svn/nah/cogx/code/planning/trunk/include/CAST_RPC/
+
+
+WHAT COMPILER IS REQUIRED?
+--------------------------
+
+ - gcc version 4.4.0 (GCC)
+
+I use a lot of C++-0X features, so you will want to compile code that
+uses CAST::RPC with the -std=c++0x switch.
+
+ON WHAT SYSTEMS HAS CAST::RPC BEEN TESTED?
+-------------------------------------------
+
+Testing is for wimps.
+
+
+WHAT SOFTWARE IS REQUIRED?
+--------------------------
+
+CAST::RPC is a wrapper around CAST -- The CoSy Architecture Schema
+Toolkit. The latter has many many dependencies and is available at:
+
+http://sourceforge.net/projects/baltcast/files/cast 2/
+
+CAST is required by CAST::RPC. 
+
+
+Using CAST::RPC:
+-----------------
+
+
+ ** In your SLICE (acronym :: the Specification Language for ICE)
+    file...
+
+module subarchitecture_name {
+
+class subarchitecture_class {
+    Type1 member1;
+    ...
+    TypeN memberN;
+}
+
+};
+
+ ** If you are a classical user of CAST you would have a C++ class
+    that inherited from cast::ManagedComponent, and implemented
+    start() and runComponent(). If you have never heard of CAST, skip
+    to the next explanation... Okay, CAST::RPC gives CAST stuff a
+    procedural semantics. If you want to call a
+    component/subarchitecture you are a caller. You inherit:
+
+
+class my_class 
+: public CAST_RPC::procedure_call<>
+{
+...
+
+void runComponent(){
+
+...
+
+
+auto result = call<subarchitecture_name::subarchitecture_class>(_member1, ..., _memberN);
+                    
+
+...
+
+}
+};
+    
+
+    Essentially, this creates a new object on the working memory of
+    type subarchitecture_class, first populating this object with the
+    arguments _member1, ..., _memberN. 
+
+    Now, lets say you want to implement a procedure call. When you
+    inherit from:
+
+class my_class 
+: public CAST_RPC::procedure_implementation<HelloReader, CAST_RPC::Locality::Local>
+{
+...
+
+void start(){
+
+...
+
+
+implement<subarchitecture_name::subarchitecture_class>(&my_class::function_name);
+                    
+
+...
+
+}
+
+
+void function_name(subarchitecture_name::subarchitecture_classPtr& c)
+{ 
+
+    ostringstream oss;
+    oss<<rand();
+    
+    c->message = std::string("nothing to do with one...");
+
+    
+    CAST__VERBOSER(18, "Implementing procedure call :: "<<c->message<<endl);
+    
+}
+
+
+};
+    
+    Please make careful note of the Ptr suffix on the end of the
+    subarchitecture_class string for the argument type of
+    function_name. Slice makes a smart-pointer wrapper for the
+    subarchitecture_class, and that will be what it is called.
+
+ ** If you are new to CAST related paraphernalia, then fear
+    not.. because hopefully I can explain. First use the following
+    header.
+
+#include "cast_rpc.hh"
+
+    Then, if you want to make a procedure call make a class that
+    inherits as follows.
+
+public CAST_RPC::procedure_call<>
+
+    To make a procedure call, you do:
+
+auto result =
+call<subarchitecture_name::subarchitecture_class>(_member1, ...,
+_memberN);
+
+I am too tired, and it is Friday afternoon, I will continue writing
+this on Tuesday...
