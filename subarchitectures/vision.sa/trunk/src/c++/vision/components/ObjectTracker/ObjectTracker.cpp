@@ -139,7 +139,7 @@ void ObjectTracker::configure(const map<string,string> & _config){
 	else
 		log("Backface culling disabled: suitable for non closed surfaces (i.e. a polyflap)");
 
-	if((it = _config.find("--trackTexture")) != _config.end()){
+	if((it = _config.find("--textured")) != _config.end()){
 		m_trackTexture = true;
 		log("Texture tracking enabled!");
 	}

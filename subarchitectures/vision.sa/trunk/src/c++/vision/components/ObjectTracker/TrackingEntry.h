@@ -30,7 +30,7 @@ public:
 	}
 	
 	void track(){ 
-		tracker->track(model, camera,	2, 100,	constraints, trackpose,	0.0);
+		tracker->track(model, camera,	4, 200,	constraints, trackpose,	0.0);
 	}
 };
 

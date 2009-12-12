@@ -4,6 +4,7 @@ Makefile
 ObjectTracker.cpp
 ObjectTracker.h
 ObjectTrackerUtils.hpp
+TrackingEntry.h
 include
 include/Camera.h
 include/EdgeTracker.h

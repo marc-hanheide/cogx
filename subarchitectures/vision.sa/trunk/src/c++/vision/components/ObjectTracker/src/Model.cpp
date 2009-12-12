@@ -542,7 +542,7 @@ vector<int> Model::getFaceUpdateList(Particle* p_max, vec3 view){
 			alpha = acos(vn*view);
 			
 			
-			if((m_facelist[i].max_pixels==0) && (alpha>3.0*PI/4.0)){
+			if((m_facelist[i].max_pixels==0) && (alpha>2.0*PI/4.0)){
 				faceUpdateList.push_back(i);
 				m_facelist[i].max_pixels = n;
 			}
