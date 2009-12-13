@@ -36,10 +36,11 @@
  
  */
 
+#pragma once
 #ifndef SMLEARNING_SCENARIO_H_
 #define SMLEARNING_SCENARIO_H_
 
-
+#include <Golem/Application.h>
 #include <XMLParser.h>
 #include <PhysReacPlanner.h>
 #include <Katana.h>
@@ -55,6 +56,7 @@
 #include <tools/data_handling.h>
 #include <tools/math_helpers.h>
 
+
 using namespace std;
 using namespace golem;
 using namespace golem::tools;
@@ -64,40 +66,217 @@ namespace smlearning {
 
 #define MAX_PLANNER_TRIALS 50
 
+/** Learning data format */
+class LearningData {
+public:
+	/** Data chunk */
+	class Chunk {
+	public:
+		typedef std::vector<Chunk> Seq;
+		
+		/** Do nothing */
+		Chunk() {
+		}
+		
+		/** Data chunk time stamp */
+		golem::SecTmReal timeStamp;
+		
+		/** Arm state - (joint) dynamic configuration */
+		golem::GenConfigspaceState armState;
+		/** End-effector GLOBAL pose */
+		golem::Mat34 effectorPose;
+		/** Object GLOBAL pose */
+		golem::Mat34 objectPose;
+		
+	};
+
+	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
+	golem::Bounds::Seq effector;
+	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::objectPose */
+	golem::Bounds::Seq object;
+	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
+	golem::Bounds::Seq obstacles;
+	
+	/** Time-dependent data */
+// 	Chunk::Seq data;
+	DataSet data;
+	/** current predicted polyflap poses sequence */
+	vector<Mat34> currentPredictedObjSeq;
+	/** current polyflap poses and motor command sequence */
+	smlearning::Sequence currentSeq;
+	/** current motor command */
+	FeatureVector currentMotorCommandVector;
+	/** Record validity */
+	//bool bArmState;
+	//bool bEffectorPose;
+	//bool bObjectPose;
+	//bool bFtsData;
+	//bool bImageIndex;
+	//bool bEffector;
+	//bool bObject;
+	//bool bObstacles;
+
+	/** Reset to default (empty)*/
+	void setToDefault() {
+		effector.clear();
+		object.clear();
+		obstacles.clear();
+		data.clear();
+		//bArmState = false;
+		//bEffectorPose = false;
+		//bObjectPose = false;
+		//bFtsData = false;
+		//bImageIndex = false;
+		//bEffector = false;
+		//bObject = false;
+		//bObstacles = false;
+	}
+	/** Check if the data is valid */
+	bool isValid() const {
+		if (!data.empty()) // must not be empty
+			return false;
+		//if (bEffector && effector.empty())
+		//	return false;
+		//if (bObject && object.empty())
+		//	return false;
+		//if (bObstacles && obstacles.empty())
+		//	return false;
+
+		return true;
+	}
+};
+
+//------------------------------------------------------------------------------
+
 ///
 ///This class encapsulates objects, agents and general configuration
 ///of the learning scenario for the robot
 ///
-class Scenario
+class Scenario : public golem::Object
 {
-// 	Thread thread;
 	int numSequences;
 	int startingPosition;
-// 	int argc;
-// 	char **argv;
 public:
-	///
-	///constructor
-	///
-	Scenario () {}
 
+
+	/** Just Interrupted */
+	class Interrupted {};
+	
+	/** Object description */
+	class Desc : public golem::Object::Desc {
+	protected:
+		/** Creates the object from the description. */
+		CREATE_FROM_OBJECT_DESC(Scenario, golem::Object::Ptr, golem::Scene)
+
+	public:
+		/** Arm */
+		golem::PhysReacPlanner::Desc armDesc;
+		/** Effector bounds group */
+		golem::U32 effectorGroup;
+		/** Finger */
+		golem::Bounds::Desc::Seq fingerDesc;
+		/** Local end-effector reference pose */
+		golem::WorkspaceCoord referencePose;
+		/** Global end-effector home pose */
+		golem::WorkspaceCoord homePose;
+		/** Motion effects stabilization time period */
+		golem::SecTmReal speriod;
+		/** 2D motion constraint */
+		bool motion2D;
+		
+		/** Constructs description object */
+		Desc() {
+			Desc::setToDefault();
+		}
+		/** Sets the parameters to the default values */
+		void setToDefault() {
+			golem::Object::Desc::setToDefault();
+			
+			// default arm description
+			armDesc.setToDefault();
+			armDesc.pArmDesc.reset(new golem::KatSimArm::Desc);
+			armDesc.pPlannerDesc->pHeuristicDesc->distJointcoordMax[4] = golem::Real(1.0)*golem::REAL_PI; // last joint of Katana
+			// Effector group
+			effectorGroup = 0x4;
+			// finger setup
+			fingerDesc.clear();
+			// end-effector reference pose
+			referencePose.setId();
+			// end-effector home pose
+			homePose.R.rotX(-0.5*golem::REAL_PI); // end-effector pointing downwards
+			homePose.p.set(golem::Real(0.0), golem::Real(0.1), golem::Real(0.1));
+			// Other stuff
+			motion2D = false;
+			speriod = 1.0;
+		}
+		/** Checks if the description is valid. */
+		virtual bool isValid() const {
+			if (!golem::Object::Desc::isValid())
+				return false;
+			if (!armDesc.isValid() || !referencePose.isFinite() || !homePose.isFinite())
+				return false;
+			for (golem::Bounds::Desc::Seq::const_iterator i = fingerDesc.begin(); i != fingerDesc.end(); i++)
+				if (!(*i)->isValid())
+					return false;
+			
+			return true;
+		}
+	};
+
+	/** Run experiment */
 	///
 	///The experiment performed in this method behaves as follows:
 	///The arm randomly selects any of the possible actions.
 	///Data are gathered and stored in a binary file for future use
 	///with learning machines running offline learning experiments.
 	///
-	bool runSimulatedOfflineExperiment (int argc, char *argv[], int numSequences = 100, int startingPosition = 0);
+	void run(int argc, char* argv[]);
 
-	///
-	///configure planner parameters
-	///
-	void setupPlanner(PhysReacPlanner::Desc &desc);
+protected:
+	/** Description */
+	Desc desc;
+	/** Arm */
+	golem::PhysReacPlanner* arm;
+	/** End-effector */
+	golem::JointActor* effector;
+	/** End-effector bounds */
+	golem::Bounds::Seq effectorBounds;
+	/** Object */
+	golem::Actor* object;
+	/** Obstacles */
+	golem::Actor* obstacles;
+	/** default polyflap bounds */
+	golem::Bounds::SeqPtr objectLocalBounds;
+	Actor::Appearance appearance;
+	/** Trial data */
+	LearningData learningData;
+	/** Time */
+	golem::SecTmReal trialTime;
+	/** Random number generator */
+	golem::Rand randomG;
 
-	///
-	///creates objects (groundplane, polyflap)
-	///
-	void setupSimulatedObjects(Scene &scene, golem::Context &context);
+	/** assumed maximum range of polyflap X-coordinate location during the experiment */
+	Real maxRange;
+	/** iteration counter */
+	int iteration;
+	/** const number of SM regions */
+	static const int smregionsCount = 18;
+
+	/** Creator */
+	golem::Creator creator;
+	/** Synchronization objects */
+	golem::CriticalSection cs;
+	golem::Event ev;
+	volatile bool bStart, bStop, bRec;
+
+	/** (Post)processing function called AFTER every physics simulation step and before randering. */
+	virtual void postprocess(golem::SecTmReal elapsedTime);
+	/** Creates Scenario from description. */
+	bool create(const Scenario::Desc& desc);
+	/** Releases resources */
+	virtual void release();
+	/** Objects can be constructed only in the Scene context. */
+	Scenario(golem::Scene &scene);
 
 	///
 	///creates polyflap and puts it in the scene (from position and rotation)
@@ -109,15 +288,6 @@ public:
 	///
 	Actor* setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions);
 	
-	///
-	///creates a finger actor and sets bounds
-	///
-	void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, Mat34 &referencePose, const Mat34 &pose, MemoryStream &buffer);
-	///
-	///Adding bounds to an actor
-	///
-	void addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, const std::vector<Bounds::Desc::Ptr> &boundsDescSeq);
-
 	///
 	///Hack to solve a collision problem (don't know if it is still there):
 	///Function that checks if arm hitted the polyflap while approaching it
@@ -138,13 +308,30 @@ public:
 	///calls setPointCoordinates for a discrete number of different actions
 	///
 	void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
-
 	
+	
+};
+
+//------------------------------------------------------------------------------
+
+/** Reads/writes ActiveLearnScenario description from/to a given context */
+bool XMLData(Scenario::Desc &val, golem::XMLContext* context, bool create = false);
+
+//------------------------------------------------------------------------------
+
+/** Application */
+class PushingApplication : public golem::Application {
+	
+protected:
+	/** Runs Application */
+	virtual void run(int argc, char *argv[]);
 };
 
 
 }; /* namespace smlearning */
 
+
+//------------------------------------------------------------------------------
 
 
 

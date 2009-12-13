@@ -13,9 +13,9 @@
  *
  * data are stored that can be used for offline training RNNs
  *
+ * @author      Sergio Roa - DFKI
  * @author	Marek Kopicki (see copyright.txt),
  * 			<A HREF="http://www.cs.bham.ac.uk/~msk">The University Of Birmingham</A>
- * @author      Sergio Roa - DFKI
  * @author      Jan Hanzelka - DFKI
  * @version 1.0
  *
@@ -27,26 +27,32 @@ using namespace smlearning;
 
 int main(int argc, char *argv[]) {
 
-	try {
-		Scenario learningScenario;
-		//if (!learningScenario.setup (argc, argv))
-		//return 1;
-		string arg = "/usr/local/bin/SMLearning/offline_experiment";
-		strcpy (argv[0], arg.c_str());
-		if (argc == 2) {
-			for (int i=1; i<=18; i++)
-				if (!learningScenario.runSimulatedOfflineExperiment (argc, argv, atoi(argv[1]), i))
-					return 1;
+	string arg1 = string("/usr/local/bin/SMLearning/offline_experiment.xml");
+	if (argc == 2) {
+		for (int i=1; i<=18; i++) {
+			vector<string> args;
+			args.push_back (string(argv[0]));
+			args.push_back (arg1);
+			args.push_back (string(argv[1]));
+			std::stringstream out;
+			out << i;
+			string s = out.str();
+			args.push_back (s);
+			char** newargv = new char*[args.size()];
+			for (int i=0; i<args.size(); i++) {
+				newargv[i] = new char[args[i].size()+1];
+				strncpy(newargv[i], args[i].c_str(), args[i].size());
+				newargv[i][args[i].size()] = '\0';
+			}
+			PushingApplication().main(argc+1, newargv);
+			// free dynamic memory
+			for (int i=0; i<args.size(); i++)
+				delete[] newargv[i];
+			delete[] newargv;
+			args.clear();
 		}
+	}
+
 			
-
-	}
-	catch (const MsgStreamFile &msg) {
-		std::cout << msg << std::endl;
-	}
-	catch (const std::exception &ex) {
-		std::cout << Message(Message::LEVEL_CRIT, "C++ exception: %s", ex.what()) << std::endl;
-	}
-
 	return 0;
 }
