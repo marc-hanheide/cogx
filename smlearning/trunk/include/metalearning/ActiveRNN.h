@@ -22,7 +22,7 @@
 
  
  */
-
+#pragma once
 #ifndef SMLEARNING_ACTIVERNN_H_
 #define SMLEARNING_ACTIVERNN_H_
 

@@ -24,44 +24,6 @@ using namespace golem;
 namespace smlearning {
 
 
-//------------------------------------------------------------------------------
-
-bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
-	if (context == NULL) {
-		ASSERT(false)
-		return false;
-	}
-        // arm setup
-        golem::XMLData(val.armDesc.pArmDesc, context->getContextFirst("arm"));
-	
-	// finger setup
-	val.fingerDesc.clear();
-	golem::Real baseLength = golem::KatArm::L3;
-	XMLData(baseLength, context->getContextFirst("effector base_length"));
-	golem::Real fingerLength = 0.135;
-	XMLData(fingerLength, context->getContextFirst("effector finger_length"));
-	golem::Real fingerDiam = 0.02;
-	XMLData(fingerDiam, context->getContextFirst("effector finger_diameter"));
-	golem::Real tipRadius = 0.015;
-	XMLData(tipRadius, context->getContextFirst("effector tip_radius"));
-	
-	golem::BoundingBox::Desc* pFingerRodShapeDesc = new golem::BoundingBox::Desc;
-	pFingerRodShapeDesc->dimensions.set(fingerDiam/2.0, fingerLength/2.0, fingerDiam/2.0);
-	pFingerRodShapeDesc->pose.p.v2 += baseLength + fingerLength/2.0;
-	pFingerRodShapeDesc->group = val.effectorGroup;
-	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerRodShapeDesc));
-	golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
-	pFingerTipShapeDesc->radius = tipRadius;
-	pFingerTipShapeDesc->pose.p.v2 += golem::Real(baseLength + fingerLength);
-	pFingerTipShapeDesc->group = val.effectorGroup;
-	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));
-	
-	// end-effector reference pose
-	val.referencePose.setId();
-	val.referencePose.p.v2 += golem::Real(baseLength + fingerLength);
-	
-	return true;
-}
 
 //------------------------------------------------------------------------------
 
@@ -94,50 +56,6 @@ void ActiveLearnScenario::render () {
 
 //------------------------------------------------------------------------------
 
-ActiveLearnScenario::ActiveLearnScenario(golem::Scene &scene) : Object(scene), creator(scene) {
-	arm = NULL;
-	object = NULL;
-	obstacles = NULL;
-	bStart = bStop = bRec = false;
-}
-
-bool ActiveLearnScenario::create(const ActiveLearnScenario::Desc& desc) {
-	if (!desc.isValid()) {
-		context.getLogger()->post(Message::LEVEL_CRIT, "ActiveLearnScenario::create(): invalid description");
-		return false;
-	}
-	this->desc = desc;
-
-	obstacles = dynamic_cast<Actor*>(scene.createObject(*creator.createGroundPlaneDesc())); // throws
-	if (obstacles == NULL)
-		return false;
-	
-	arm = dynamic_cast<PhysReacPlanner*>(scene.createObject(desc.armDesc)); // throws
-	if (arm == NULL)
-		return false;
-	effector = arm->getJointActors().back();
-	Mat34 armPose = arm->getArm().getGlobalPose();
-	armPose.p.v2 = 0.03;
-	arm->getArm().setGlobalPose (armPose);
-	
-	
-	effectorBounds.clear();
-	for (Bounds::Desc::Seq::const_iterator i = desc.fingerDesc.begin(); i != desc.fingerDesc.end(); i++) {
-		const Bounds* pBounds = effector->createBounds(*i);
-		if ((*i)->group == desc.effectorGroup)
-			effectorBounds.push_back(pBounds->clone());
-	}
-	arm->getArm().setReferencePose(desc.referencePose);
-
-	return true;
-}
-
-void ActiveLearnScenario::release() {
-	if (arm != NULL)
-		scene.releaseObject(*arm);
-	if (obstacles != NULL)
-		scene.releaseObject(*obstacles);
-}
 
 void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 	if (bStart) {
@@ -185,8 +103,8 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 			learner.build (smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
 			netBuilt = true;
 		}
-		learningData.loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
-		learner.feed_forward (*learningData.trainSeq);
+		loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
+		learner.feed_forward (*trainSeq);
 // 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange);
 // 		learningData.currentPredictedObjSeq.push_back (predictedPfPose);
 		getPfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange, learningData.currentPredictedObjSeq);
@@ -254,16 +172,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	const Real top = polyflapDimensions.v2 - 0.02;
 	//lenght of the movement		
 	const Real distance = 0.2;
-
-	//Datasets in which all sequences are stored
-	//Arranged in a vector associated to region indices
-	//sequences and featureVectors are created
-	//in every loop run
-	for (int i=0; i<smregionsCount; i++) {
-		DataSet currentDataset;
-		learningData.data.push_back (currentDataset);
-	}
-
 
 	const SecTmReal tmDeltaAsync = arm->getReacPlanner().getTimeDeltaAsync();
 
@@ -468,14 +376,14 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 			
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
-		learningData.data[startPosition-1].push_back(learningData.currentSeq);
+		learningData.data.push_back(learningData.currentSeq);
 		/////////////////////////////////////////////////
 
 		
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
-			learner.update (*learningData.trainSeq, startPosition-1);
+			learner.update (*trainSeq, startPosition-1);
 			vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
 			vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
 			plotApp->updateData(startPosition-1, learnProgData, errorData);
@@ -605,30 +513,28 @@ void ActiveLearnScenario::getPfSeqFromOutputActivations (rnnlib::SeqBuffer<doubl
 }
 
 //------------------------------------------------------------------------------
-void LearningData::loadCurrentTrainSeq (int inputSize, int outputSize) {
+void ActiveLearnScenario::loadCurrentTrainSeq (int inputSize, int outputSize) {
 	if (trainSeq)
 		delete trainSeq;
 	trainSeq = new rnnlib::DataSequence (inputSize, outputSize);
 	vector<int> inputShape, targetShape;
-	inputShape.push_back (currentSeq.size() - 1);
-	targetShape.push_back (currentSeq.size() - 1);
+	inputShape.push_back (learningData.currentSeq.size() - 1);
+	targetShape.push_back (learningData.currentSeq.size() - 1);
 	trainSeq->inputs.reshape(inputShape);
 	trainSeq->targetPatterns.reshape(targetShape);
-	load_sequence (trainSeq->inputs.data, trainSeq->targetPatterns.data, currentSeq);
+	load_sequence (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
 }
 
 //------------------------------------------------------------------------------
 
-
-
-void MyApplication::run(int argc, char *argv[]) {
+void ActivePushingApplication::run(int argc, char *argv[]) {
 
 	ActiveLearnScenario::Desc desc;
 	XMLData(desc, xmlcontext());
 
 	ActiveLearnScenario *pActiveLearnScenario = dynamic_cast<ActiveLearnScenario*>(scene()->createObject(desc)); // throws
 	if (pActiveLearnScenario == NULL) {
-		context()->getLogger()->post(Message::LEVEL_CRIT, "MyApplication::run(): unable to cast to ActiveLearnScenario");
+		context()->getLogger()->post(Message::LEVEL_CRIT, "ActivePushingApplication::run(): unable to cast to ActiveLearnScenario");
 		return;
 	}
 
