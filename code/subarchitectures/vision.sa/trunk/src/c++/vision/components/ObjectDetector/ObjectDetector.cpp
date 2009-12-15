@@ -35,6 +35,7 @@ namespace cast
 
 bool showImage = true;									///< show openCv image from image server.
 bool getCubes = true;										///< get cubes from the object detector
+bool getCylinders = true;								///< get cylinders from the object detector
 bool getFlaps = false; 									///< get flaps from the object detector
 
 
@@ -142,6 +143,7 @@ void ObjectDetector::receiveImages(const std::vector<Video::Image>& images)
 
 void ObjectDetector::processImage(const Video::Image &image)
 {
+printf("Object Detector: process new image\n");
 	frame_counter++;
 	int number = 0;
 	bool masked = true;
@@ -156,6 +158,9 @@ void ObjectDetector::processImage(const Video::Image &image)
 	
 	// Process the image and find all Gestalts
 	vs3Interface->ProcessSingleImage(iplImage);
+
+	// Get cylinders and write it to the working memory
+	if(getCylinders) GetCylinders();
 
 	// ----------------------------------------------------------------------------
 	// Get objects after processing and create visual object for working memory
@@ -317,7 +322,7 @@ void ObjectDetector::processImage(const Video::Image &image)
 		vs3Interface->DrawUnmaskedGestalts(type, detail);
 	
 		// Convert from RGB to BGR
-		cvConvertImage( iplImage, iplImage, CV_CVTIMG_SWAP_RB);
+// 		cvConvertImage( iplImage, iplImage, CV_CVTIMG_SWAP_RB);
 
 		cvShowImage(getComponentID().c_str(), iplImage);
 		cvWaitKey(10);
@@ -411,6 +416,35 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	return true;
 }
 
+
+/**
+ * HACK HACK HACK HACK HACK HACK 
+ * @brief Convert cube from object detector to working memory visual object
+ * @param obj Visual Object
+ * @param cd Cylinder properties
+ * @return True for success
+ */
+bool ObjectDetector::Cylinder2VisualObject(VisionData::VisualObjectPtr &obj, Z::CylDef &cd)
+{
+	obj->model = new VisionData::GeometryModel;
+
+	// add pose (cylinder center point) to the model
+	cogx::Math::Pose3 p;
+	p.pos.x = cd.cylinderCenter3D.x;
+	p.pos.y = cd.cylinderCenter3D.y;
+	p.pos.z = cd.height/2.;
+	obj->pose = p;
+
+	// HACK: vertex descibes properties of the cylinder (CYLINDER STEHT!!!)
+	Vertex v;
+	v.pos.x = cd.radius3D;							// bottom radius
+	v.pos.x = cd.topRadius3D;						// top radius
+	v.pos.x = cd.height;								// height of the cylinder
+	obj->model->vertices.push_back(v);
+}
+
+
+
 /**
  * @brief Extract camera parameters from video server.
  * @param image Image from the image server with the camera paramters.
@@ -480,6 +514,90 @@ bool ObjectDetector::GetCameraParameter(const Video::Image & image)
  	vs3Interface->SetCamParameters(intrinsic, dist, extrinsic);
 
 	return true;
+}
+
+
+/**
+ * @brief Get the cylinders as visual object from the object detector and write it to the working memory.
+ */
+void ObjectDetector::GetCylinders()
+{
+	Z::CylDef cd;							// cylinder properties
+	int number = 0;						// number of fetched cylinders
+	bool masked = false;			// cylinder is masked?
+
+// 	vector< vector<Z::CylDef> > cylinders;
+
+	static vector<Z::CylDef> cylinders_old;		///< remember old cylinders from the former image
+	static vector<Z::CylDef> cylinders_new;		///< new cylinders from this image
+
+	cylinders_new.clear();
+
+	while(vs3Interface->GetCylinder(number, cd, masked))
+	{
+		number++;
+
+		if(!masked) //&& cd.height > 0.04)							/// TODO HACK Threshold for height 4 cm
+		{
+			// implementiere geometry constraints (beide ellipsen gleich groß?)
+			bool niceCylinder = true;
+			
+			// save new cylinder, if constraints fulfilled
+			if(niceCylinder)
+				cylinders_new.push_back(cd);
+
+			// try to match with former cylinder
+			bool matchFound = false;
+
+			// match new cylinder with cylinders of the former image
+			for(unsigned i=0; i < cylinders_old.size(); i++)
+			{
+				printf("\n######### Try to find cylinder in the former image: nr: %u!\n", i);
+
+				// calculate center deviation:
+				double centerDeviation = (cylinders_old[i].cylinderCenter3D - cd.cylinderCenter3D).Norm();
+				printf("######### center deviation: %4.3f!\n", centerDeviation);
+
+				if(centerDeviation < 0.99) matchFound = true;
+			}
+// 				for(unsigned i=0; i<results.size(); i++)
+// 				{
+// 					read vertices and calculate cube center points and radius
+// 					vector<Vertex> vertices = results[i]->model->vertices;
+// 	
+// 					Vector3 newCubeCenter;
+// 					newCubeCenter.x = cd.cubeCenter3D.x;
+// 					newCubeCenter.y = cd.cubeCenter3D.y;
+// 					newCubeCenter.z = cd.height/2.;
+// 	
+// 					double radius = length(vertices[0].pos);
+// 	
+// 					if(length(results[i]->pose.pos - newCubeCenter) < radius)
+// 						cubeExists = true;
+// 				}
+// 
+				// Create visual object, when also found in the former image
+			if(matchFound)
+			{
+printf("		Write new cylinder to working memory!\n");
+				num_cylinders++;
+				VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+				if(Cylinder2VisualObject(obj, cd))
+				{
+					char obj_label[32];
+					sprintf(obj_label, "Cylinder %d", num_cylinders);
+					obj->label = obj_label;
+
+					// Add VisualObject to working memory
+// 					addToWorkingMemory(newDataID(), obj);
+					log("new cylinder at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+				}
+			}
+		}
+	}
+
+	// copy new cylinders to the old vector
+	cylinders_old = cylinders_new;
 }
 
 }

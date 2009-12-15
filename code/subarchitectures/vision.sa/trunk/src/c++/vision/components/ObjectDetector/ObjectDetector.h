@@ -15,7 +15,7 @@
 #include <Vs3Interface.h>
 #include <VisionUtils.h>
 #include <Pose3.h>
-
+#include <CylinderDefinition.hh>
 
 namespace cast
 {
@@ -53,7 +53,8 @@ private:
   bool cmd_detect;					///< detection command
 	bool cmd_single;					///< single detection command
 	bool vs_started;					///< vision server started
-	int num_cubes;						///< number of cubes
+	int num_cubes;						///< number of cubes, written to working memory
+	int num_cylinders;				///< number of cylinders, written to working memory
   unsigned frame_counter;		///< counter of image frames
 
   /**
@@ -67,9 +68,19 @@ private:
 	bool Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::CubeDef &cd);
 
   /**
+   * Convert a object-detector cube to a cast visual object 
+   */
+	bool Cylinder2VisualObject(VisionData::VisualObjectPtr &obj, Z::CylDef &cd);
+
+  /**
    * Extract camera parameters from video server.
    */
 	bool GetCameraParameter(const Video::Image & image);
+
+  /**
+   * Get cylinders as visual object.
+   */
+	void GetCylinders();
 
 
 protected:
