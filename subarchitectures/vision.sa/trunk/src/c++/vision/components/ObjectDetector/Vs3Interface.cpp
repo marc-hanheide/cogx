@@ -70,6 +70,20 @@ bool Vs3Interface::GetCube(unsigned number, Z::CubeDef &cd, bool &masked)
 }
 
 /**
+ * @brief Get all cylinders from the vision system (vs3).
+ * @param number Number of requested cylinder
+ * @param cd Cylinder parameter
+ * @param masked True, if cylinder is masked.
+ * @return Return true, if cylinder exists.
+ */
+bool Vs3Interface::GetCylinder(unsigned number, Z::CylDef &cd, bool &masked)
+{
+	if(vcore->GetCylinder(number, cd, masked)) return true;
+	else return false;
+}
+
+
+/**
  * @brief Get all flaps from the vision system (vs3).
  * @param number Number of requested flap
  * @param cd Flap parameter
