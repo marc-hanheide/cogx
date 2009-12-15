@@ -29,17 +29,24 @@ public:
 
 	Vector2 vertex[2][2];															// [first/second ellipse] [left/right] vertex
  	Vector2 dir;																			// direction from first to second ellipse (center)
-	bool equalVertex;																	// true if ellipse 0 and 1 are connected by the same ellipse-vertices
+	bool equalVertex;																	// true if ellipse 0 and 1 are connected by the same ellipse-vertices [left-left or right-right]
 
 	Vector2 center;																		// center point of cylinder (mean value of ellipse-center points)
 	double radius;																		// radius to the ellipse-ends (center-point + b)
 
-	Vector2 groundCenter;															// center point of ellipse
+	Vector2 groundCenter;															// center point of ellipseellipse
 	Vector2 trackedCylinderGroundCenter;							// center point of ellipse from tracked cylinder
 
 	// 3D - variables
+	Vector2 vertex3D[2][2];														// 3D vertices: [first/second ellipse] [left/right] vertex
 	Vector2 groundCenter3D;														// 3D point: center point on ground plane
-	double radius3D;																	// 3D radius of the ground plane (circle)
+	Vector2 topCenter3D;															// 3D point: top center on top plane
+ 	Vector2 cylinderCenter3D;													// 3D center point in 3D (with z = height/2.)
+	double radius3D;																	// 3D radius of the ground plane ellipse
+	double topRadius3D;																// 3D radius of the top ellipse
+	double height;																		// 3D height of the cylinder
+
+
 };
 }
 #endif
