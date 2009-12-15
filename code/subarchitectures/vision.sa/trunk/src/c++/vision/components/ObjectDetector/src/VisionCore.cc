@@ -854,6 +854,24 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 	return false;
 }
 
+
+bool VisionCore::GetCylinder(unsigned number, CylDef &cd, bool &masked)
+{
+	if(NumObjects() > number)
+	{
+		if(Objects(number)->type == Gestalt::CYLINDER && !Objects(number)->IsMasked())
+		{
+			cd = Objects(number)->cyD;
+			masked = false;
+			return true;
+		}
+		else masked = true;
+		return true;
+	}
+	return false;
+}
+
+
 /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 bool VisionCore::GetFlap(unsigned number, FlapDef &fd, bool &masked)
 {

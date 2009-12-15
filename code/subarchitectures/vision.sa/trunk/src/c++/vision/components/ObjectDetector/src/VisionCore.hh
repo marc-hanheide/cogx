@@ -33,6 +33,7 @@
 #include "GestaltPrinciple.hh"
 
 #include "CubeDefinition.hh"
+#include "CylinderDefinition.hh"
 #include "FlapDefinition.hh"
 
 #include <mxCameraModel.h>
@@ -429,6 +430,15 @@ public:
 	 * @return Returns true, if cube with parameter number exists
 	 **/
 	bool GetCube(unsigned number, CubeDef &cd, bool &masked);
+
+	/**
+	 * @brief Returns detected cylinder
+	 * @param number Number of the cylinder
+	 * @param cd cylinder definition
+	 * @param masked Returns true, if cylinder is masked
+	 * @return Returns true, if cylinder with parameter number exists
+	 **/
+	bool GetCylinder(unsigned number, CylDef &cd, bool &masked);
 
 	/**
 	 * @brief Returns detected flap
