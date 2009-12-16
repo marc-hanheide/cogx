@@ -1915,9 +1915,10 @@ void ObjectTracker::GetCylinderProperties(CylDef &cd)
  */
 void ObjectTracker::GetCylinder3DProperties(CylDef &cd)
 {
-printf("\n\n	Equal vertex: %u\n", cd.equalVertex);
-printf("	Ellipse 0: %4.2f - %4.2f - %4.2f - %4.2f - %4.2f\n", cd.x[0], cd.y[0], cd.a[0], cd.b[0], cd.phi[0]);
-printf("	Ellipse 1: %4.2f - %4.2f - %4.2f - %4.2f - %4.2f\n", cd.x[1], cd.y[1], cd.a[1], cd.b[1], cd.phi[1]);
+// printf("\n\n	Equal vertex: %u\n", cd.equalVertex);
+// printf("	Ellipse 0: %4.2f - %4.2f - %4.2f - %4.2f - %4.2f\n", cd.x[0], cd.y[0], cd.a[0], cd.b[0], cd.phi[0]);
+// printf("	Ellipse 1: %4.2f - %4.2f - %4.2f - %4.2f - %4.2f\n", cd.x[1], cd.y[1], cd.a[1], cd.b[1], cd.phi[1]);
+
 	// calculate cylinder 3D properties
 	double dAboveGround = 0.;				// 3D points are above ground plane?
 
@@ -1933,15 +1934,13 @@ printf("	Ellipse 1: %4.2f - %4.2f - %4.2f - %4.2f - %4.2f\n", cd.x[1], cd.y[1], 
 
 	// TODO ersetzen
 	// calculate radius3D
-	double radius2D = 0.;
-	if(cd.a[0] > cd.b[0]) radius2D = cd.a[0];
-	else radius2D = cd.b[0];
-	tPointImg = cvPoint2D64f (cd.groundCenter.x + radius2D, cd.groundCenter.y);
-	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
-	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.radius3D = tPointWorld3D.x - cd.groundCenter3D.x;
-
-printf("		Radius 3D: %4.3f\n", cd.radius3D);
+// 	double radius2D = 0.;
+// 	if(cd.a[0] > cd.b[0]) radius2D = cd.a[0];
+// 	else radius2D = cd.b[0];
+// 	tPointImg = cvPoint2D64f (cd.groundCenter.x + radius2D, cd.groundCenter.y);
+// 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
+// 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
+// 	cd.radius3D = tPointWorld3D.x - cd.groundCenter3D.x;
 
 	// calculate 3D vertices of both ellipses
 	tPointImg = cvPoint2D64f (cd.vertex[0][0].x, cd.vertex[0][0].y);
@@ -1971,7 +1970,7 @@ printf("		Radius 3D: %4.3f\n", cd.radius3D);
 	// TODO one calculated ellipse on the ground plane is false => normaly the one farthest away => recalculate the vertices
 	if(cd.vertex3D[1][0].y > cd.vertex3D[0][0].y)
 	{
-		printf("\n   ObjectTracker: ellipse match\n");
+// 		printf("\n   ObjectTracker: ellipse match\n");
 		cd.match = true;
 // 		printf("	vertex l,r = %4.4f - %4.4f\n", cd.vertex3D[1][0].y, cd.vertex3D[0][0].y);
 
@@ -1979,8 +1978,8 @@ printf("		Radius 3D: %4.3f\n", cd.radius3D);
 		tPointImg = cvPoint2D64f (cd.vertex[1][0].x, cd.vertex[1][0].y);
 		m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 		m_cCamModel.World2YPlane (tPointWorld3D, &tPointWorld3D, cd.vertex3D[0][0].y);
-		cd.vertex3D[1][0].x = tPointWorld3D.x;																											/// TODO TODO TODO TODO  Wieso ist das falsch???
-		cd.vertex3D[1][0].y = tPointWorld3D.y;																			/// y weiß man eigentlich => z = Höhe ist unbekannt, und x kann sich auch verändern
+		cd.vertex3D[1][0].x = tPointWorld3D.x;
+		cd.vertex3D[1][0].y = tPointWorld3D.y;
 		cd.height = tPointWorld3D.z; 
 
 		// corner point [1][0] (3D) (is above corner_ponit[1][1])
@@ -1989,7 +1988,7 @@ printf("		Radius 3D: %4.3f\n", cd.radius3D);
 		m_cCamModel.World2YPlane (tPointWorld3D, &tPointWorld3D, cd.vertex3D[0][1].y);
 		cd.vertex3D[1][1].x = tPointWorld3D.x;
 		cd.vertex3D[1][1].y = tPointWorld3D.y;
-		cd.height = (cd.height + tPointWorld3D.z)/2.;		// mean value => gerader cylinder!!! 
+		cd.height = (cd.height + tPointWorld3D.z)/2.;		// HACK: mean value => gerader cylinder!!! 
 
 		// ground and top center in 3D
 		cd.groundCenter3D = (cd.vertex3D[0][0] + cd.vertex3D[0][1])/2.;
@@ -2002,15 +2001,15 @@ printf("		Radius 3D: %4.3f\n", cd.radius3D);
 		cd.radius3D = (cd.vertex3D[0][0] - cd.vertex3D[0][1]).Norm()/2.;
 		cd.topRadius3D = (cd.vertex3D[1][0] - cd.vertex3D[1][1]).Norm()/2.;
 
-		printf("	=> ground vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[0][0].x, cd.vertex3D[0][0].y, cd.vertex3D[0][1].x, cd.vertex3D[0][1].y);
-		printf("	=>    top vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[1][0].x, cd.vertex3D[1][0].y, cd.vertex3D[1][1].x, cd.vertex3D[1][1].y);
-		printf("	=> center point 3D: %4.4f / %4.4f / %4.4f\n", cd.cylinderCenter3D.x, cd.cylinderCenter3D.y, cd.height/2.);
-		printf("	=> radius (ground/top): %4.4f - %4.4f\n", cd.radius3D, cd.topRadius3D);
-		printf("	=> height: %4.4f\n", cd.height);
+// 		printf("	=> ground vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[0][0].x, cd.vertex3D[0][0].y, cd.vertex3D[0][1].x, cd.vertex3D[0][1].y);
+// 		printf("	=>    top vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[1][0].x, cd.vertex3D[1][0].y, cd.vertex3D[1][1].x, cd.vertex3D[1][1].y);
+// 		printf("	=> center point 3D: %4.4f / %4.4f / %4.4f\n", cd.cylinderCenter3D.x, cd.cylinderCenter3D.y, cd.height/2.);
+// 		printf("	=> radius (ground/top): %4.4f - %4.4f\n", cd.radius3D, cd.topRadius3D);
+// 		printf("	=> height: %4.4f\n", cd.height);
 	}
 	else
 	{
-		printf("\n   ObjectTracker: ellipse mismatch (top / bottom!)\n");
+// 		printf("\n   ObjectTracker: ellipse mismatch (top / bottom!)\n");
 		cd.match = false;
 // 		printf("	vertex l,r = %4.4f - %4.4f\n", cd.vertex3D[1][0].y, cd.vertex3D[0][0].y);
 
@@ -2041,11 +2040,11 @@ printf("		Radius 3D: %4.3f\n", cd.radius3D);
 		cd.radius3D = (cd.vertex3D[1][0] - cd.vertex3D[1][1]).Norm()/2.;
 		cd.topRadius3D = (cd.vertex3D[0][0] - cd.vertex3D[0][1]).Norm()/2.;
 
-		printf("	=> ground vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[0][0].x, cd.vertex3D[0][0].y, cd.vertex3D[0][1].x, cd.vertex3D[0][1].y);
-		printf("	=>    top vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[1][0].x, cd.vertex3D[1][0].y, cd.vertex3D[1][1].x, cd.vertex3D[1][1].y);
-		printf("	=> center point 3D: %4.4f / %4.4f / %4.4f\n", cd.cylinderCenter3D.x, cd.cylinderCenter3D.y, cd.height/2.);
-		printf("	=> radius (ground/top): %4.4f - %4.4f\n", cd.radius3D, cd.topRadius3D);
-		printf("	=> height: %4.4f\n", cd.height);
+// 		printf("	=> ground vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[0][0].x, cd.vertex3D[0][0].y, cd.vertex3D[0][1].x, cd.vertex3D[0][1].y);
+// 		printf("	=>    top vertices: %4.4f / %4.4f - %4.4f / %4.4f\n", cd.vertex3D[1][0].x, cd.vertex3D[1][0].y, cd.vertex3D[1][1].x, cd.vertex3D[1][1].y);
+// 		printf("	=> center point 3D: %4.4f / %4.4f / %4.4f\n", cd.cylinderCenter3D.x, cd.cylinderCenter3D.y, cd.height/2.);
+// 		printf("	=> radius (ground/top): %4.4f - %4.4f\n", cd.radius3D, cd.topRadius3D);
+// 		printf("	=> height: %4.4f\n", cd.height);
 	}
 }
 
