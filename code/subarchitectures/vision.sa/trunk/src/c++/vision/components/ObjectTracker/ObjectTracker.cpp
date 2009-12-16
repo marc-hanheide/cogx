@@ -247,12 +247,13 @@ void ObjectTracker::initTracker(const Video::Image &image){
   loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
 
   // setting spatial constraints
-  float rot = 10.0 * PIOVER180;
-	float rotp = 5.0;
-	float trans = 0.005;
-	float transp = 0.3;
+	float rot = 15.0 * PIOVER180;
+	float rotp = 2.0;
+	float trans = 0.01;
+	float transp = 0.2;
 	float zoom = 0.01;
-	float zoomp = 2.0;
+	float zoomp = 0.5;
+	
 	m_constraints.r.x = rot;
 	m_constraints.r.y = rot;
 	m_constraints.r.z = rot;

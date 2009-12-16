@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   
   int mode = TEXTURE;
   
-	sprintf(modelfilename, "%s", "cylinder.ply");
+	sprintf(modelfilename, "%s", "jasmin6.ply");
 	
 	// TEXTURE
 	// Robust and accurate, low framerate
@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
 	float rotp = 2.0;
 	float trans = 0.01;
 	float transp = 0.2;
-	float zoom = 0.01;
-	float zoomp = 0.5;
+	float zoom = 0.001;
+	float zoomp = 2.0;
 	
 // 	// High framerate, not robust and not accurate
 // 	int num_recursions = 2;
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 // 	float zoom = 0.01;
 // 	float zoomp = 1.0;
 
-	p_result.translate(0.2,0.1,0.06);
+	p_result.translate(0.2,0.2,0.06);
 
 	p_constraints.r.x = rot;
 	p_constraints.r.y = rot;
