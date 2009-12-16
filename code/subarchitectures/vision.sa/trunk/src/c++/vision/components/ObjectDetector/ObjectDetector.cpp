@@ -12,6 +12,7 @@
 #include <VideoUtils.h>
 #include <ObjectDetector.h>
 #include <VisionData.hpp>
+#include "BasicShapeGeometries.hpp"
 
 
 /**
