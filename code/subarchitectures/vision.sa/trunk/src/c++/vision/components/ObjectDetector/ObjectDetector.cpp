@@ -436,11 +436,47 @@ bool ObjectDetector::Cylinder2VisualObject(VisionData::VisualObjectPtr &obj, Z::
 	obj->pose = p;
 
 	// HACK: vertex descibes properties of the cylinder (CYLINDER STEHT!!!)
+// 	Vertex v;
+// 	v.pos.x = cd.radius3D;							// bottom radius
+// 	v.pos.y = cd.topRadius3D;						// top radius
+// 	v.pos.z = cd.height;								// height of the cylinder
+// 	obj->model->vertices.push_back(v);
+
+
+	/// HACK HACK Rechteck aus den vertices!!!
 	Vertex v;
-	v.pos.x = cd.radius3D;							// bottom radius
-	v.pos.x = cd.topRadius3D;						// top radius
-	v.pos.x = cd.height;								// height of the cylinder
+	v.pos.x = cd.vertex3D[0][0].x;
+	v.pos.y = cd.vertex3D[0][0].y;
+	if (cd.match) v.pos.z = cd.height/2.;
+	else v.pos.z = -cd.height/2.;
 	obj->model->vertices.push_back(v);
+
+	v.pos.x = cd.vertex3D[0][1].x;
+	v.pos.y = cd.vertex3D[0][1].y;
+	if (cd.match) v.pos.z = cd.height/2.;
+	else v.pos.z = -cd.height/2.;
+	obj->model->vertices.push_back(v);
+
+	v.pos.x = cd.vertex3D[1][0].x;
+	v.pos.y = cd.vertex3D[1][0].y;
+	if (cd.match) v.pos.z = -cd.height/2.;
+	else v.pos.z = cd.height/2.;
+	obj->model->vertices.push_back(v);
+
+	v.pos.x = cd.vertex3D[1][1].x;
+	v.pos.y = cd.vertex3D[1][1].y;
+	if (cd.match) v.pos.z = -cd.height/2.;
+	else v.pos.z = cd.height/2.;
+	obj->model->vertices.push_back(v);
+
+	// add faces to the vision model
+	Face f;
+	f.vertices.push_back(0);
+	f.vertices.push_back(1);
+	f.vertices.push_back(2);
+	f.vertices.push_back(3);
+	obj->model->faces.push_back(f);
+	f.vertices.clear();
 }
 
 
@@ -589,7 +625,7 @@ printf("		Write new cylinder to working memory!\n");
 					obj->label = obj_label;
 
 					// Add VisualObject to working memory
-// 					addToWorkingMemory(newDataID(), obj);
+					addToWorkingMemory(newDataID(), obj);
 					log("new cylinder at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
 				}
 			}
