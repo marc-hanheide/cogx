@@ -68,11 +68,6 @@ private:
 	bool Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::CubeDef &cd);
 
   /**
-   * Convert a object-detector cube to a cast visual object 
-   */
-	bool Cylinder2VisualObject(VisionData::VisualObjectPtr &obj, Z::CylDef &cd);
-
-  /**
    * Extract camera parameters from video server.
    */
 	bool GetCameraParameter(const Video::Image & image);
