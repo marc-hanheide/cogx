@@ -38,6 +38,7 @@ public:
 	Vector2 trackedCylinderGroundCenter;							// center point of ellipse from tracked cylinder
 
 	// 3D - variables
+	bool match;																				// vertex 00-01 == bottom?
 	Vector2 vertex3D[2][2];														// 3D vertices: [first/second ellipse] [left/right] vertex
 	Vector2 groundCenter3D;														// 3D point: center point on ground plane
 	Vector2 topCenter3D;															// 3D point: top center on top plane
