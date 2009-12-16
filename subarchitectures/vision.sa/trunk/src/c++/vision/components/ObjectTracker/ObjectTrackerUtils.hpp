@@ -48,7 +48,6 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 		//printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
 	}
 
-	model->computeEdges();
 	
 	/*
 	for(i=0; i<(int)model->m_edgelist.size(); i++){
@@ -206,6 +205,21 @@ bool inputsControl(std::vector<TrackingEntry> *trackinglist, float fTimeTracker)
             switch(event.key.keysym.sym){
 				case SDLK_ESCAPE:
 					return false;
+					break;
+				case SDLK_1:
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->setKernelSize(0);
+					printf("Kernel size: %d\n", (int)0);
+					break;				
+				case SDLK_2:
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->setKernelSize(1);
+					printf("Kernel size: %d\n", (int)1);
+					break;				
+				case SDLK_3:
+					for(i=0; i<(int)trackinglist->size(); i++)
+						trackinglist->at(i).tracker->setKernelSize(2);
+					printf("Kernel size: %d\n", (int)2);
 					break;
 				case SDLK_e:
 					for(i=0; i<(int)trackinglist->size(); i++)

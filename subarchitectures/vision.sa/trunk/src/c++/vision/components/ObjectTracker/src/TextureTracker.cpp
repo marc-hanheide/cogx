@@ -407,7 +407,7 @@ void TextureTracker::drawResult(Particle* p, Model* m){
 		m_tex_frame->bind(3);
 		m_shadeCompare->bind();
 		m_shadeCompare->setUniform("analyze", true);
-		m_shadeCompare->setUniform("compare", false);
+		m_shadeCompare->setUniform("compare", true);
 		m_shadeCompare->setUniform("textured", true);
 		m_model->drawTexturedFaces();
 		m_shadeCompare->setUniform("textured", false);

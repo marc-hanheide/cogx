@@ -116,7 +116,7 @@ void Particle::rotate(float x, float y, float z){
 	
 	q2.fromEuler(x,y,z);
 	q = q2 * q;
-	//q.normalise();
+	q.normalise();
 }
 
 void Particle::rotate(vec3 rot){
@@ -124,7 +124,7 @@ void Particle::rotate(vec3 rot){
 	
 	q2.fromEuler(rot.x,rot.y,rot.z);
 	q = q2 * q;
-	//q.normalise();
+	q.normalise();
 }
 
 void Particle::translate(float x, float y, float z){
