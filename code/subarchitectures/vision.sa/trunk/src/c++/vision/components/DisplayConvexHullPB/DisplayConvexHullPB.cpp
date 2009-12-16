@@ -18,6 +18,8 @@
 #include "DisplayConvexHullPB.hpp"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VisionData.hpp>
+#include <AddressBank/ConfigFileReader.hh>
+#include <Transformation/Transformation3D.hh>
 
 using namespace std;
 using namespace cast;
@@ -36,6 +38,7 @@ extern "C" {
 
 DisplayConvexHullPB::DisplayConvexHullPB() {
   previouscenter.assign(3,0.0);
+  m_ptzInterface = 0;
 }
 
 DisplayConvexHullPB::~DisplayConvexHullPB() 
@@ -45,6 +48,29 @@ DisplayConvexHullPB::~DisplayConvexHullPB()
 void DisplayConvexHullPB::configure(const map<string,string>& _config) 
 {
   log("configure entered");
+  //CURE config (for camera position)
+  map<string,string>::const_iterator it = _config.find("-c");
+  if (it!= _config.end()) {
+    std::string configfile = it->second;
+
+    Cure::ConfigFileReader cfg;
+    if (cfg.init(configfile)) {
+      println("configure(...) Failed to open with \"%s\"\n",
+	  configfile.c_str());
+      std::abort();
+    }  
+
+    if (cfg.getSensorPose(2, m_CameraPoseR)) {
+      println("configure(...) Failed to get sensor pose");
+      std::abort();
+    } 
+    double coords[6];
+    m_CameraPoseR.getCoordinates(coords);
+    log("m_CameraPoseR = (%f, %f, %f)", coords[0], coords[1], coords[2]);
+  }
+
+
+
   if (_config.find("--fov-hor") != _config.end()) {
     std::istringstream str(_config.find("--fov-hor")->second);
     str >> m_FovH;
@@ -68,28 +94,60 @@ void DisplayConvexHullPB::configure(const map<string,string>& _config)
     str >> m_PbHost;
   }
 
+ m_PTZServer = "";
+ if(_config.find("--ptz-server") != _config.end()){
+   std::istringstream str(_config.find("--ptz-server")->second);
+   str >> m_PTZServer;
+ }
+
   connectPeekabot();  
   log("configure done");
 }
 
 void DisplayConvexHullPB::start() {
 
-addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::ADD,
-							   "",
-							   "",
-							   "vision.sa",
-							   cdl::ALLSA),
-		new MemberFunctionChangeReceiver<DisplayConvexHullPB>(this,
-								 &DisplayConvexHullPB::newConvexHull));
-addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
-							   "",
-							   "",
-							   "vision.sa",
-							   cdl::ALLSA),
-		new MemberFunctionChangeReceiver<DisplayConvexHullPB>(this,
-		&DisplayConvexHullPB::newConvexHull));
+  addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::ADD,
+	"",
+	"",
+	"vision.sa",
+	cdl::ALLSA),
+      new MemberFunctionChangeReceiver<DisplayConvexHullPB>(this,
+	&DisplayConvexHullPB::newConvexHull));
+  addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
+	"",
+	"",
+	"vision.sa",
+	cdl::ALLSA),
+      new MemberFunctionChangeReceiver<DisplayConvexHullPB>(this,
+	&DisplayConvexHullPB::newConvexHull));
 
+  addChangeFilter(createGlobalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
+      new MemberFunctionChangeReceiver<DisplayConvexHullPB>(this,
+	&DisplayConvexHullPB::robotPoseChanged));
 
+  addChangeFilter(createGlobalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DisplayConvexHullPB>(this,
+	&DisplayConvexHullPB::robotPoseChanged));  
+
+    log("connecting to PTU");
+    Ice::CommunicatorPtr ic = getCommunicator();
+    
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
+    
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+	<< ":default"
+	<< " -h localhost"
+	<< " -p " << cast::cdl::CPPSERVERPORT;
+    
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+//  if (m_PTZServer != "") {
+//    m_ptzInterface = getIceServer<ptz::PTZInterface>(m_PTZServer);
+//  }
+//  log("LocalMapManager started");
 
   log("start done");  
 }
@@ -124,8 +182,35 @@ void DisplayConvexHullPB::newConvexHull(const cdl::WorkingMemoryChange
   m_Mutex.lock();
   VisionData::ConvexHullPtr m_ConvexHull = oobj->getData();
 
-  if (previouscenter.at(0) == 0.0)
+  log("Convex hull center at %f, %f, %f", m_ConvexHull->center.x,m_ConvexHull->center.y,m_ConvexHull->center.z);
+  Cure::Transformation3D cam2WorldTrans =
+    getCameraToWorldTransform();
+  double tmp[6];
+  cam2WorldTrans.getCoordinates(tmp);
+  log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
 
+  //Convert hull to world coords
+  for (unsigned int i = 0; i < m_ConvexHull->PointsSeq.size(); i++) {
+    Cure::Vector3D from(m_ConvexHull->PointsSeq[i].x, m_ConvexHull->PointsSeq[i].y, m_ConvexHull->PointsSeq[i].z);
+    Cure::Vector3D to;
+    cam2WorldTrans.invTransform(from, to);
+    log("vertex at %f, %f, %f", m_ConvexHull->PointsSeq[i].x, m_ConvexHull->PointsSeq[i].y, m_ConvexHull->PointsSeq[i].z);
+    m_ConvexHull->PointsSeq[i].x = to.X[0];
+    m_ConvexHull->PointsSeq[i].y = to.X[1];
+    m_ConvexHull->PointsSeq[i].z = to.X[2];
+    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+  }
+  Cure::Vector3D from(m_ConvexHull->center.x, m_ConvexHull->center.y, m_ConvexHull->center.z);
+  Cure::Vector3D to;
+  cam2WorldTrans.invTransform(from, to);
+  m_ConvexHull->center.x = to.X[0];
+  m_ConvexHull->center.y = to.X[1];
+  m_ConvexHull->center.z = to.X[2];
+  cam2WorldTrans.getCoordinates(tmp);
+
+
+  if (previouscenter.at(0) == 0.0)
     {
       previouscenter.at(0) = m_ConvexHull->center.x;
       previouscenter.at(1) = m_ConvexHull->center.y;
@@ -189,3 +274,57 @@ void DisplayConvexHullPB::connectPeekabot()
   }
 }
 
+void DisplayConvexHullPB::robotPoseChanged(const cdl::WorkingMemoryChange &objID) 
+{
+  try {
+    lastRobotPose =
+      getMemoryEntry<NavData::RobotPose2d>(objID.address);
+  }
+  catch (DoesNotExistOnWMException e) {
+    log("Error! robotPose missing on WM!");
+  }
+}
+  
+Cure::Transformation3D DisplayConvexHullPB::getCameraToWorldTransform()
+{
+  //Get camera ptz from PTZServer
+  Cure::Transformation3D cameraRotation;
+  if (m_ptzInterface != 0) {
+    ptz::PTZReading reading = m_ptzInterface->getPose();
+
+    double angles[] = {reading.pose.pan, -reading.pose.tilt, 0.0};
+    cameraRotation.setAngles(angles);
+  }
+//
+//  //Get camera position on robot from Cure
+//  m_CameraPoseR;
+
+  //Additional transform of ptz base frame
+  Cure::Transformation3D ptzBaseTransform;
+//  double nR[] = {0.0, 0.0, 1.0, 
+//    1.0, 0.0, 0.0,
+//    0.0, 1.0, 0.0};
+  double camAngles[] = {-M_PI/2, 0.0, -M_PI/2};
+  ptzBaseTransform.setAngles(camAngles);
+
+  //Get robot pose
+  Cure::Transformation2D robotTransform;
+  if (lastRobotPose != 0) {
+    robotTransform.setXYTheta(lastRobotPose->x, lastRobotPose->y,
+      lastRobotPose->theta);
+  }
+  Cure::Transformation3D robotTransform3 = robotTransform;
+  double tmp[6];
+  robotTransform3.getCoordinates(tmp);
+  log("robot transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+  cameraRotation.getCoordinates(tmp);
+  log("ptz transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+  m_CameraPoseR.getCoordinates(tmp);
+  log("cam transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+
+  Cure::Transformation3D cameraOnRobot = m_CameraPoseR + cameraRotation + ptzBaseTransform ;
+  return robotTransform3 + cameraOnRobot;
+}
