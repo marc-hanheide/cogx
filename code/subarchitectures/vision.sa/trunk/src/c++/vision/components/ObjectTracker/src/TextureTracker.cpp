@@ -389,7 +389,7 @@ void TextureTracker::textureFromImage(){
 
 // Draw result of texture tracking (particle with maximum likelihood)
 void TextureTracker::drawResult(Particle* p, Model* m){
-	bool texmodel = true;
+	bool texmodel = false;
 	
 	m_cam_perspective->Activate();
 	m_lighting.Activate();
@@ -397,10 +397,10 @@ void TextureTracker::drawResult(Particle* p, Model* m){
 	
 	glDisable(GL_DEPTH_TEST);
 	
-	if(m_showmodel){
-		m_model->restoreTexture();
-		m_model->drawPass();
-	}else if(texmodel){
+	if(!m_showmodel){
+// 		m_model->restoreTexture();
+// 		m_model->drawPass();
+// 	}else if(texmodel){
 		m_tex_model_ip[0]->bind(0);
 		m_tex_frame_ip[0]->bind(1);
 		m_tex_model->bind(2);
@@ -412,6 +412,7 @@ void TextureTracker::drawResult(Particle* p, Model* m){
 		m_model->drawTexturedFaces();
 		m_shadeCompare->setUniform("textured", false);
 		m_model->drawUntexturedFaces();
+		m_shadeCompare->unbind();
 	}else{
 		glEnable(GL_DEPTH_TEST);
 		m_lighting.Deactivate();
@@ -424,11 +425,7 @@ void TextureTracker::drawResult(Particle* p, Model* m){
 		m_model->drawEdges();
 		glColor3f(1.0,1.0,1.0);
 	}
-	 
-	if(texmodel){
-		m_shadeCompare->unbind();
-	}
-	
+
 	glEnable(GL_DEPTH_TEST);
 	m_lighting.Deactivate();
 	

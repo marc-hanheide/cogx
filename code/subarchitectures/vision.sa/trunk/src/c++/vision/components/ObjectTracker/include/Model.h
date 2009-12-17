@@ -73,6 +73,7 @@ public:
 	
 	void computeEdges();
 	void computeNormals();
+	void computeFaceNormals();
 	void flipNormals();
 	
 	void UpdateDisplayLists();

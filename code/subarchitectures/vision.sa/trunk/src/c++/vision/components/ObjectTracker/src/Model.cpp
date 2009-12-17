@@ -160,6 +160,23 @@ void Model::computeNormals(){
 	
 }
 
+void Model::computeFaceNormals(){
+	int i,j;
+	Face* f;
+	vec3 n = vec3(0.0,0.0,0.0);
+	
+	for(i=0; i<(int)m_facelist.size(); i++){
+		f = &m_facelist[i];
+		n = vec3(0.0,0.0,0.0);
+		for(j=0; j<(int)f->v.size(); j++){
+			n += m_vertexlist[f->v[j]].normal;
+		}
+		n.normalize();
+		f->normal = vec3(n);
+		
+	}
+}
+
 void Model::flipNormals(){
 	int i;
 	Face* f;
@@ -424,11 +441,11 @@ void Model::genListNormals(float normal_length){	// draw normals
 		f = &m_facelist[i];
 		for(j=0; j<(int)f->v.size(); j++){
 			glVertex3f( m_vertexlist[f->v[j]].pos.x,
-						m_vertexlist[f->v[j]].pos.y,
-						m_vertexlist[f->v[j]].pos.z );
-			glVertex3f( m_vertexlist[f->v[j]].pos.x + f->normal.x * normal_length,
-						m_vertexlist[f->v[j]].pos.y + f->normal.y * normal_length,
-						m_vertexlist[f->v[j]].pos.z + f->normal.z * normal_length );		
+									m_vertexlist[f->v[j]].pos.y,
+									m_vertexlist[f->v[j]].pos.z );
+			glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
+									m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
+									m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );
 		}
 	}
 	glEnd();
