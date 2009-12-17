@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   
   int mode = TEXTURE;
   
-	sprintf(modelfilename, "%s", "jasmin6.ply");
+	sprintf(modelfilename, "%s", "cylinder.ply");
 	
 	// TEXTURE
 	// Robust and accurate, low framerate

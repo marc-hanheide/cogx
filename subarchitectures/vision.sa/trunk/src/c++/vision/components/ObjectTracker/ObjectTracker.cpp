@@ -27,6 +27,7 @@ using namespace VisionData;
 
 
 ObjectTracker::ObjectTracker(){
+	m_tracker = 0;
   m_camId = 0;
   m_track = false;
   m_running = true;
@@ -245,14 +246,31 @@ void ObjectTracker::initTracker(const Video::Image &image){
 
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
   loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
-
+	
+	if(m_trackTexture)
+		m_tracker = new TextureTracker();
+	else
+		m_tracker = new EdgeTracker();
+	
+	if(!m_tracker->init(m_ImageWidth, m_ImageHeight,	// image size in pixels
+											200,															// number of particles for each recursion (lower if tracker consumes too much power)
+											4,																// recursions of particle filter (lower if tracker consumes too much power)
+											float(45.0*PIOVER180),						// edge matching tolerance in degree
+											0.05f,														// goal tracking time in seconds (not implemented yet)
+											Particle(0.0)))										// initial pose (where to reset when pressing 'z')
+	{														
+		log("  error: initialisation of tracker failed!");
+		m_running = false;
+	}
+	m_tracker->setCamPerspective(m_camera);
+	
   // setting spatial constraints
 	float rot = 15.0 * PIOVER180;
 	float rotp = 2.0;
 	float trans = 0.01;
 	float transp = 0.2;
 	float zoom = 0.01;
-	float zoomp = 0.5;
+	float zoomp = 2.0;
 	
 	m_constraints.r.x = rot;
 	m_constraints.r.y = rot;
@@ -312,8 +330,8 @@ void ObjectTracker::initTrackingEntry(int i){
 		log("  error can not convert VisualObject to tracker model");
 		return;
 	}
+	m_trackinglist[i].model->computeFaceNormals();
 	m_trackinglist[i].model->computeEdges();
-	m_trackinglist[i].model->computeNormals();
 	m_trackinglist[i].model->UpdateDisplayLists();
 
 	m_trackinglist[i].camera = m_camera;
@@ -329,12 +347,6 @@ void ObjectTracker::initTrackingEntry(int i){
 }
 
 void ObjectTracker::runTracker(const Video::Image &image){
-
-	if(m_trackinglist.size()<=0)
-		return;
-
-	if(!m_trackinglist[0].valid)
-		initTrackingEntry(0);
 
 	// *** Tracking Loop ***
 	double dTimeStamp;
@@ -354,8 +366,8 @@ void ObjectTracker::runTracker(const Video::Image &image){
 										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	}
 
-	m_trackinglist[0].tracker->image_processing((unsigned char*)(&image.data[0]));
-	m_trackinglist[0].tracker->drawImage(NULL);
+	m_tracker->image_processing((unsigned char*)(&image.data[0]));
+	m_tracker->drawImage(NULL);
 
 	// Track all models
 	for(i=0; i<(int)m_trackinglist.size(); i++){
@@ -377,12 +389,12 @@ void ObjectTracker::runTracker(const Video::Image &image){
 		}
 	}
 
-	m_trackinglist[0].tracker->drawCoordinates();
+	m_tracker->drawCoordinates();
 	for(int id=0; id<i; id++){
 			m_trackinglist[id].tracker->drawResult(&m_trackinglist[id].trackpose, m_trackinglist[id].model);
 	}
 
-	m_trackinglist[0].tracker->swap();
+	m_tracker->swap();
 
 	fTimeTracker = m_timer.Update();
 }
