@@ -80,7 +80,16 @@ void VirtualScene::configure(const map<string,string> & _config){
   {
     istringstream istr(it->second);
     istr >> m_camId;
-  }  	
+  }
+  
+  if((it = _config.find("--maxModels")) != _config.end())
+	{
+    istringstream istr(it->second);
+    istr >> m_maxModels;
+  }else{
+		m_maxModels = 3;
+	}
+	
 }
 
 void VirtualScene::start(){
@@ -139,6 +148,9 @@ void VirtualScene::initScene(const Video::Image &image){
   m_height = image.height;
 	m_engine.Init(m_width, m_height, 1.0);
 	
+	loadCameraParameters(&m_camera, image.camPars, 0.1, 10.0);
+	m_engine.SetCamera(m_camera);
+	 
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
   //loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
 

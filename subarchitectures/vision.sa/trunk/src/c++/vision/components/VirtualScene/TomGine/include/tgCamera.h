@@ -60,6 +60,7 @@ public:
 	void SetZRange(float near, float far);
 	void SetPerspective(){m_projection=GL_PERSPECTIVE;}
 	void SetOrtho(){m_projection=GL_ORTHO;}
+	void SetPos(float x, float y, float z){ m_vPos.x=x; m_vPos.y=y; m_vPos.z=z; }
 	
 	void Activate();
 	void Print();

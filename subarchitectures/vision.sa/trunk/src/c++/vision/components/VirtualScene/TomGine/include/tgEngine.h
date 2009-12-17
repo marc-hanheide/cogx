@@ -55,6 +55,8 @@ public:
 	
 	void DrawCoordinates();
 	
+	void SetCamera(tgCamera cam){ m_camera = cam; }
+	
 	void Swap();
 	
 	tgVector3 GetCameraPosition(){ return m_camera.GetPos(); }
