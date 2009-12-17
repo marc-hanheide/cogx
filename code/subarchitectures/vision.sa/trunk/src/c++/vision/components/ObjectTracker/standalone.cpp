@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   
   int mode = TEXTURE;
   
-	sprintf(modelfilename, "%s", "cylinder.ply");
+	sprintf(modelfilename, "%s", "jasmin6.ply");
 	
 	// TEXTURE
 	// Robust and accurate, low framerate
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 // 	float zoom = 0.01;
 // 	float zoomp = 1.0;
 
-	p_result.translate(0.2,0.2,0.06);
+	p_result.translate(0.2,0.06,0.06);
 
 	p_constraints.r.x = rot;
 	p_constraints.r.y = rot;
@@ -287,7 +287,7 @@ bool control(Tracker* tracker){
 					tracker->lock( !tracker->getLock() );
 					break;
 				case SDLK_m:
-					tracker->showEdgesModel( !tracker->getEdgesModel() );
+					tracker->setShowModel( tracker->getShowModel()+1 );
 					break;
 				case SDLK_p:
 					tracker->showParticles( !tracker->getParticlesVisible() );

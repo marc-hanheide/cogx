@@ -55,7 +55,7 @@ protected:
 	// Controls
 	bool m_lock;
 	bool m_showparticles;
-	bool m_showmodel;
+	int m_showmodel;
 	bool m_zero_particles;
 	bool m_draw_edges;
 	bool m_tracker_initialized;
@@ -137,11 +137,11 @@ public:
 	
 	bool getLock(){ return m_lock; }
 	bool getEdgesImage(){ return m_draw_edges; }
-	bool getEdgesModel(){ return m_showmodel; }
+	int getShowModel(){ return m_showmodel; }
 	bool getParticlesVisible(){ return m_showparticles; }
 
 	void showEdgesImage(bool val){ m_draw_edges = val; }
-	void showEdgesModel(bool val){ m_showmodel = val; }
+	void setShowModel(int val){ m_showmodel = val; }
 	void showParticles(bool val){ m_showparticles = val; }
 	void showStatistics();
 	
