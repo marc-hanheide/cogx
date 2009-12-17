@@ -10,11 +10,11 @@
 #include <vector>
 #include <VideoUtils.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
-//#include <NavData.hpp>
+
 
 #define Shrink_SOI 1
-#define Upper_BG 1.8
-#define Lower_BG 1.2	// 1.2-1.8 radius of BoundingSphere
+#define Upper_BG 1.1
+#define Lower_BG 1.05	// 1.1-1.5 radius of BoundingSphere
 #define min_height_of_obj 0.02	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.5	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
@@ -73,6 +73,7 @@ vector< VisionData::SurfacePointSeq > EQPointsSeq; //equivocal points
 double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWire;
+bool doDisplay;
 int m_torleration;
 Vector3 v3dmax;
 Vector3 v3dmin;
@@ -239,16 +240,19 @@ void DrawPoints()
   glBegin(GL_POINTS);
   for(size_t i = 0; i < pointsN.size(); i++)
   {
-	if (points_label.at(i) == 0)   glColor3f(1.0,1.0,0.0); // plane/*DrawPlaneGrid();*/
-
+	if (points_label.at(i) == 0)   {glColor3f(1.0,1.0,0.0); // plane/*DrawPlaneGrid();*/
+/*
 	else if (points_label.at(i) < 0)  glColor3f(0.2,1.0,0.2);  // discarded points
 	else if (points_label.at(i) == 1)  glColor3f(0.2,1.0,0.2);  // 1st object
 	else if (points_label.at(i) == 2)  glColor3f(0.2,1.0,0.2);  //
 	else if (points_label.at(i) == 3)  glColor3f(0.2,1.0,0.2);  //
 	else if (points_label.at(i) == 4)  glColor3f(0.2,1.0,0.2);  //
 	else if (points_label.at(i) == 5)  glColor3f(0.2,1.0,0.2);  //
-	else glColor3f(0.0,1.0,0.2);  //rest object
-    glVertex3f(pointsN[i].p.x, pointsN[i].p.y, pointsN[i].p.z);
+	else glColor3f(0.0,1.0,0.2);  //rest object*/
+    glVertex3f(pointsN[i].p.x, pointsN[i].p.y, pointsN[i].p.z);}
+
+	else if (points_label.at(i) > 0)  {glColor3f(0.2,1.0,0.2);
+		glVertex3f(pointsN[i].p.x, pointsN[i].p.y, pointsN[i].p.z);}
   }
   glEnd();
 /*
@@ -624,32 +628,39 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			if (label > 0 && dist(Point_DP,Center_DP) < Shrink_SOI*radius_world.at(i))
 			{
 				SOIPointsSeq.at(label-1).push_back(PushStructure);
-
-				glPointSize(2);
-				glBegin(GL_POINTS);
-				glColor3b(PushStructure.c.r,PushStructure.c.g,PushStructure.c.b);  //obj points
-				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
-				glEnd();
+				if (doDisplay)
+				{
+					glPointSize(2);
+					glBegin(GL_POINTS);
+					glColor3b(PushStructure.c.r,PushStructure.c.g,PushStructure.c.b);  //obj points
+					glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
+					glEnd();
+				}
 			}
 			if (label == -1 && dist(Point_DP,Center_DP) < Lower_BG*radius_world.at(i)) // equivocal points
 			{
 				EQPointsSeq.at(i).push_back(PushStructure);
-				glPointSize(2);
-				glBegin(GL_POINTS);
-				glColor3f(0.0,1.0,0.0);  //equivocal points
-				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
-				glEnd();
+				if (doDisplay)
+				{
+					glPointSize(2);
+					glBegin(GL_POINTS);
+					glColor3f(0.0,1.0,0.0);  //equivocal points
+					glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
+					glEnd();
+				}
 			}
 			if (label == 0 && dist(Point_DP,Center_DP) < Upper_BG*radius_world.at(i) && dist(Point_DP,Center_DP) > Lower_BG*radius_world.at(i)) //BG nearby also required
 			{
 				BGPointsSeq.at(i).push_back(PushStructure);
-/*
-				glPointSize(2);
-				glBegin(GL_POINTS);
-				glColor3f(1.0,0.0,0.0);  //nearby points
-				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
-				glEnd();
-*/			}
+				if (doDisplay)
+				{
+					glPointSize(2);
+					glBegin(GL_POINTS);
+					glColor3f(1.0,0.0,0.0);  //nearby points
+					glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
+					glEnd();
+				}
+			}
 		}
 	}
 
@@ -662,42 +673,48 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 
 void DisplayWin()
 {
-  GLfloat light_position[] = {2.0, -2.0, 1.0, 1.0};
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  gluLookAt(view_point.x, view_point.y, view_point.z,
-      view_point.x + view_dir.x, view_point.y + view_dir.y,
-      view_point.z + view_dir.z,
-      view_up.x, view_up.y, view_up.z);
-  glRotated(cam_rot[0], 0., 1., 0.);
-  glRotated(-cam_rot[1], 1., 0., 0.);
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-  glDisable(GL_LIGHTING);
-  DrawOverlays();
-  glEnable(GL_LIGHTING);
-  glEnable(GL_COLOR_MATERIAL);
-  glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-  DrawPoints();
-  if (objnumber != 0)
-  {
-	DrawCuboids(pointsN,points_label);
-	BoundingSphere(pointsN,points_label);
-	ConvexHullOfPlane(pointsN,points_label);
-	//BoundingPrism(pointsN,points_label);
-  }
-  else
-  {
-	v3size.clear();
-	v3center.clear();
-	vdradius.clear();
-	ConvexHullOfPlane(pointsN,points_label);
-  }
-  glDisable(GL_COLOR_MATERIAL);
-
-  glutSwapBuffers();
+	if (doDisplay)
+	{
+		GLfloat light_position[] = {2.0, -2.0, 1.0, 1.0};
+		
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		gluLookAt(view_point.x, view_point.y, view_point.z,
+		view_point.x + view_dir.x, view_point.y + view_dir.y,
+		view_point.z + view_dir.z,
+		view_up.x, view_up.y, view_up.z);
+		glRotated(cam_rot[0], 0., 1., 0.);
+		glRotated(-cam_rot[1], 1., 0., 0.);
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+		glDisable(GL_LIGHTING);
+		DrawOverlays();
+		glEnable(GL_LIGHTING);
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+		DrawPoints();
+	}
+	if (objnumber != 0)
+	{
+		DrawCuboids(pointsN,points_label);
+		BoundingSphere(pointsN,points_label);
+		ConvexHullOfPlane(pointsN,points_label);
+		BoundingPrism(pointsN,points_label);
+	}
+	else
+	{
+		v3size.clear();
+		v3center.clear();
+		vdradius.clear();
+		ConvexHullOfPlane(pointsN,points_label);
+	}
+	if (doDisplay)
+	{
+		glDisable(GL_COLOR_MATERIAL);
+		
+		glutSwapBuffers();
+	}
 }
 
 void KeyPress(unsigned char key, int x, int y)
@@ -759,10 +776,15 @@ void PlanePopOut::configure(const map<string,string> & _config)
   map<string,string>::const_iterator it;
 
   useGlobalPoints = true;
+  doDisplay = false;
   if((it = _config.find("--globalPoints")) != _config.end())
   {
     istringstream str(it->second);
     str >> boolalpha >> useGlobalPoints;
+  }
+  if((it = _config.find("--display")) != _config.end())
+  {
+	doDisplay = true;
   }
   println("use global points: %d", (int)useGlobalPoints);
   m_torleration = 0;
@@ -776,13 +798,17 @@ void PlanePopOut::start()
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
   glutInit(&argc, argv);
+  if (doDisplay)
+  {
   win = glutCreateWindow("points");
   InitWin();
   glutKeyboardFunc(KeyPress);
   glutMouseFunc(MousePress);
   glutMotionFunc(MouseMove);
   glutReshapeFunc(ResizeWin);
+  }
   glutDisplayFunc(DisplayWin);
+
 }
 
 void PlanePopOut::runComponent()
@@ -812,6 +838,7 @@ void PlanePopOut::runComponent()
 		if (RANSAC(pointsN,points_label))
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
+			if (doDisplay)
 			glutPostRedisplay();
 			glutMainLoopEvent();
 			AddConvexHullinWM();
@@ -838,7 +865,7 @@ void PlanePopOut::runComponent()
 			{
 				CurrentObjList.at(i).id = newDataID();
 				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-cout<<" ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
+//cout<<" ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
 				addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 			PreviousObjList = CurrentObjList;
@@ -872,7 +899,7 @@ cout<<" ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl
 				{
 					CurrentObjList.at(newObjList.at(i)).id = newDataID();
 					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI, CurrentObjList.at(newObjList.at(i)).EQInOneSOI);
-cout<<" ID of this added new SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
+//cout<<" ID of this added new SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
 					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
 					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 				}
@@ -900,7 +927,7 @@ cout<<" ID of this added new SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<en
 					for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all objects
 					{
 						deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
-cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
+//cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
 					}
 					std::vector<ObjPara> new_PreviousList;
 					new_PreviousList.reserve(PreviousObjList.size()-disappearedObjList.size());
@@ -1155,6 +1182,7 @@ void PlanePopOut::AddConvexHullinWM()
 		CHPtr->center = mCenterOfHull;
 		CHPtr->radius = mConvexHullRadius;
 		CHPtr->Objects = mObjSeq;
+		CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
 		addToWorkingMemory(newDataID(),CHPtr);
 	}
 	mConvexHullPoints.clear();
