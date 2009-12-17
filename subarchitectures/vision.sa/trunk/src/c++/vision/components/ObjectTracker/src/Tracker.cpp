@@ -35,7 +35,7 @@ bool Tracker::isReady(unsigned char* image, Model* model, Camera* camera){
 Tracker::Tracker(){
 	m_lock = false;
 	m_showparticles = false;
-	m_showmodel = true;
+	m_showmodel = 0;
 	m_draw_edges = false;
 	m_tracker_initialized = false;
 	m_testflag = false;
