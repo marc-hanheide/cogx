@@ -82,6 +82,11 @@ if(BUILD_SA_VISION_VISMEDIATOR)
 add_subdirectory (src/c++/vision/components/VisualMediator)
 endif(BUILD_SA_VISION_VISMEDIATOR)
 
+option(BUILD_SA_VISION_VIRTUALSCENE "build Virtual Scene" YES)
+if(BUILD_SA_VISION_VIRTUALSCENE)
+add_subdirectory (src/c++/vision/components/VirtualScene)
+endif(BUILD_SA_VISION_VIRTUALSCENE)
+
 option(BUILD_SA_VISION_OBJRECOGNIZER "build object recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer)
