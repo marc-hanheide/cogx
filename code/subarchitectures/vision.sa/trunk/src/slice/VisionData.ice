@@ -23,6 +23,7 @@ module VisionData {
     cogx::Math::Vector3 center;
     double radius;
     ObjSeq Objects;
+    cogx::Math::Plane3 plane;
   };
 
   sequence<string> IdSeq;
