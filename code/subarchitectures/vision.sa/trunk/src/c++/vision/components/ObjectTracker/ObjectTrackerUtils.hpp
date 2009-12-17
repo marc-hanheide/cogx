@@ -231,7 +231,7 @@ bool inputsControl(std::vector<TrackingEntry> *trackinglist, float fTimeTracker)
 					break;
 				case SDLK_m:
 					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->showEdgesModel( !trackinglist->at(i).tracker->getEdgesModel() );
+						trackinglist->at(i).tracker->setShowModel( trackinglist->at(i).tracker->getShowModel()+1 );
 					break;
 				case SDLK_p:
 					for(i=0; i<(int)trackinglist->size(); i++)
