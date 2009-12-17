@@ -28,7 +28,7 @@ private:
   int m_height;
   
   tgEngine m_engine;
-  tgCamera* m_camera;
+  tgCamera m_camera;
   vector<tgModel> m_modellist;
 
   /**
