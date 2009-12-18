@@ -236,7 +236,7 @@ void DisplayConvexHullPB::newConvexHull(const cdl::WorkingMemoryChange
       double dist =
 	sqrt((previouscenter.at(0)-m_ConvexHull->center.x)*(previouscenter.at(0)-m_ConvexHull->center.x)+(previouscenter.at(1)-m_ConvexHull->center.y)*(previouscenter.at(1)-m_ConvexHull->center.y)+(previouscenter.at(2)-m_ConvexHull->center.z)*(previouscenter.at(2)-m_ConvexHull->center.z));
       
-      if (dist > m_ConvexHull->radius)
+      if (dist > 0.1*m_ConvexHull->radius)
 	
 	{
 	  

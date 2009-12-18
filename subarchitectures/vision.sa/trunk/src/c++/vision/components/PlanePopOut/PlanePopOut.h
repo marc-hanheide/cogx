@@ -40,13 +40,20 @@ private:
   /**
    * whether to use stereo points in global or left camear coord system.
    */
-  bool useGlobalPoints;
+	bool useGlobalPoints;
 	double Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std::vector <int> &label);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
 	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI);
 	bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	void AddConvexHullinWM();
+
+	vector< VisionData::SurfacePointSeq > SOIPointsSeq;
+	vector< VisionData::SurfacePointSeq > BGPointsSeq;
+	vector< VisionData::SurfacePointSeq > EQPointsSeq; //equivocal points
+	vector< Vector3 > v3center;
+	vector<double> vdradius;
+	vector< Vector3 > v3size;
 
 
 protected:
@@ -68,6 +75,17 @@ public:
 
 	bool RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
 	void SplitPoints(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
+	void DrawOneCuboid(Vector3 Max, Vector3 Min);
+	void DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
+	void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
+	void BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels);
+	void DrawOnePrism(vector <Vector3> ppSeq, double hei);
+	void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
+	inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3);
+	Vector3 GetAffineTransVec(Vector3 v3p);
+	Matrix33 GetAffineRotMatrix();
+	Vector3 ProjectOnDominantPlane(Vector3 InputP);
+	void DrawWireSphere(Vector3 center, double radius);
 
 	double para_a;
 	double para_b;
