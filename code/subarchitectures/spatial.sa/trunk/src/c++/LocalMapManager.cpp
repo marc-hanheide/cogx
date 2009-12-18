@@ -20,6 +20,8 @@
 #include <RobotbaseClientUtils.hpp>
 #include <float.h>
 #include <NavX/XDisplayLocalGridMap.hh>
+#include <VisionData.hpp>
+#include "ConvexPolRas.h"
 
 using namespace cast;
 using namespace std;
@@ -49,7 +51,7 @@ LocalMapManager::~LocalMapManager()
   delete m_Glrt1;
   delete m_Glrt2;
 
-  for (map<int, Cure::LocalGridMap<unsigned char> *>::iterator it =
+  for (map<int, CharMap *>::iterator it =
       m_nodeGridMaps.begin(); it != m_nodeGridMaps.end(); it++) {
     delete it->second;
   }
@@ -58,7 +60,7 @@ LocalMapManager::~LocalMapManager()
   if (m_isUsingSeparateGridMaps) {
     delete m_Glrt1_alt;
     delete m_Glrt2_alt;
-    for (map<int, Cure::LocalGridMap<unsigned char> *>::iterator it =
+    for (map<int, CharMap *>::iterator it =
 	m_nodeGridMapsAlt.begin(); it != m_nodeGridMapsAlt.end(); it++) {
       delete it->second;
     }
@@ -83,9 +85,22 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }  
 
   if (cfg.getSensorPose(1, m_LaserPoseR)) {
-    println("configure(...) Failed to get sensor pose");
+    println("configure(...) Failed to get sensor pose for laser");
     std::abort();
   } 
+
+  m_bNoPlanes = true;
+  
+  if (_config.find("--no-planes") == _config.end()) {
+    m_bNoPlanes = false;
+    if (cfg.getSensorPose(2, m_CameraPoseR)) {
+      println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
+      std::abort();
+    } 
+  }
+  double coords[6];
+  m_CameraPoseR.getCoordinates(coords);
+  log("m_CameraPoseR = (%f, %f, %f)", coords[0], coords[1], coords[2]);
 
   m_MaxLaserRangeForPlaceholders = 5.0;
   m_MaxLaserRangeForCombinedMaps = 5.0;
@@ -113,11 +128,11 @@ void LocalMapManager::configure(const map<string,string>& _config)
     str >> m_RobotServerHost;
   }
 
-  m_lgm1 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgm1 = new CharMap(70, 0.1, '2', CharMap::MAP1);
   m_nodeGridMaps[0] = m_lgm1;
-  m_Glrt1  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1);
-  m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
+  m_Glrt1  = new CharGridLineRayTracer(*m_lgm1);
+  m_lgm2 = new CharMap(70, 0.1, '2', CharMap::MAP1);
+  m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
 
   if (_config.find("--no-tentative-window") == _config.end()) {
     m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
@@ -136,15 +151,15 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }
 
   if (m_isUsingSeparateGridMaps) {
-    m_lgm1_alt = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+    m_lgm1_alt = new CharMap(70, 0.1, '2', CharMap::MAP1);
     m_nodeGridMapsAlt[0] = m_lgm1_alt;
-    m_Glrt1_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1_alt);
-    m_lgm2_alt = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-    m_Glrt2_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2_alt);
+    m_Glrt1_alt  = new CharGridLineRayTracer(*m_lgm1_alt);
+    m_lgm2_alt = new CharMap(70, 0.1, '2', CharMap::MAP1);
+    m_Glrt2_alt  = new CharGridLineRayTracer(*m_lgm2_alt);
   }
-  
+
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
-                                                     m_RobotServerHost);
+      m_RobotServerHost);
   FrontierInterface::HypothesisEvaluatorPtr servant = new EvaluationServer(this);
   registerIceServer<FrontierInterface::HypothesisEvaluator, FrontierInterface::HypothesisEvaluator>(servant);
 
@@ -165,7 +180,22 @@ void LocalMapManager::start()
   
   m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   log("LocalMapManager started");
-  
+
+  log("connecting to PTU");
+  Ice::CommunicatorPtr ic = getCommunicator();
+
+  Ice::Identity id;
+  id.name = "PTZServer";
+  id.category = "PTZServer";
+
+  std::ostringstream str;
+  str << ic->identityToString(id) 
+    << ":default"
+    << " -h localhost"
+    << " -p " << cast::cdl::CPPSERVERPORT;
+
+  Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+  m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
 }
 
 void LocalMapManager::runComponent() 
@@ -195,13 +225,13 @@ void LocalMapManager::runComponent()
 	  m_lgm2->moveCenterTo(curNode->x, curNode->y);
 	  m_lgm1 = m_lgm2;
 	  log("Allocatin'");
-	  m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1, curNode->x, curNode->y);
+	  m_lgm2 = new CharMap(70, 0.1, '2', CharMap::MAP1, curNode->x, curNode->y);
 
 	  if (m_isUsingSeparateGridMaps) {
 	    m_nodeGridMapsAlt[curNode->nodeId] = m_lgm2_alt;
 	    m_lgm2_alt->moveCenterTo(curNode->x, curNode->y);
 	    m_lgm1_alt = m_lgm2_alt;
-	    m_lgm2_alt = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1, curNode->x, curNode->y);
+	    m_lgm2_alt = new CharMap(70, 0.1, '2', CharMap::MAP1, curNode->x, curNode->y);
 	  }
 	}
 	else {
@@ -220,14 +250,14 @@ void LocalMapManager::runComponent()
 	}
 	delete m_Glrt1;
 	delete m_Glrt2;
-	m_Glrt1  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1);
-	m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
+	m_Glrt1  = new CharGridLineRayTracer(*m_lgm1);
+	m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
 
 	if (m_isUsingSeparateGridMaps) {
 	  delete m_Glrt1_alt;
 	  delete m_Glrt2_alt;
-	  m_Glrt1_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1_alt);
-	  m_Glrt2_alt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2_alt);
+	  m_Glrt1_alt  = new CharGridLineRayTracer(*m_lgm1_alt);
+	  m_Glrt2_alt  = new CharGridLineRayTracer(*m_lgm2_alt);
 	}
 
 	if (m_Displaylgm1) {
@@ -264,6 +294,14 @@ void LocalMapManager::runComponent()
 
 void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+  try {
+    lastRobotPose =
+      getMemoryEntry<NavData::RobotPose2d>(objID.address);
+  }
+  catch (DoesNotExistOnWMException e) {
+    log("Error! robotPose missing on WM!");
+  }
+
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
   
@@ -430,7 +468,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
     m_Mutex.lock();
     log("Checkin'");
 
-    Cure::LocalGridMap<unsigned char> *propertyLGM =
+    CharMap *propertyLGM =
       m_isUsingSeparateGridMaps ? m_lgm1_alt : m_lgm1;
 
     for (int yi = -propertyLGM->getSize(); yi < propertyLGM->getSize()+1; yi++) {
@@ -529,7 +567,7 @@ void
 LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
     const SpatialData::PlaceIDSeq &places)
 {
-  vector<const Cure::LocalGridMap<unsigned char> *>maps;
+  vector<const CharMap *>maps;
   for (SpatialData::PlaceIDSeq::const_iterator it = places.begin(); it != places.end(); it++) {
     NavData::FNodePtr node = m_placeInterface->getNodeFromPlaceID(*it);
     if (node != 0) {
@@ -557,7 +595,7 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   double maxy = -FLT_MAX;
 
   //Find bounds of the merged grid map
-  for (vector<const Cure::LocalGridMap<unsigned char> *>::iterator it = maps.begin();
+  for (vector<const CharMap *>::iterator it = maps.begin();
       it != maps.end(); it++) {
     double mapminx = (*it)->getCentXW() - (*it)->getSize() * (*it)->getCellSize();
     double mapmaxx = (*it)->getCentXW() + (*it)->getSize() * (*it)->getCellSize();
@@ -577,8 +615,8 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   if (maxy-miny > dsize) 
     dsize = maxy-miny;
   int newSize = (int)((dsize/2 + cellSize/2) / cellSize);
-  Cure::LocalGridMap<unsigned char> newMap(newSize, cellSize, '2',
-      Cure::LocalGridMap<unsigned char>::MAP1, cx, cy);
+  CharMap newMap(newSize, cellSize, '2',
+      CharMap::MAP1, cx, cy);
 
   map.xCenter = cx;
   map.yCenter = cy;
@@ -589,7 +627,7 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
 
   //Sample each of the maps into the new map
   log("Sample each of the maps into the new map");
-  for (vector<const Cure::LocalGridMap<unsigned char> *>::iterator it = maps.begin();
+  for (vector<const CharMap *>::iterator it = maps.begin();
       it != maps.end(); it++) {
     log("looping over map");
     for (int y = -(*it)->getSize(); y <= (*it)->getSize(); y++) {
@@ -620,8 +658,8 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
     }
   }
 
-  Cure::LocalGridMap<unsigned char> newMap2(newSize, cellSize, '2',
-      Cure::LocalGridMap<unsigned char>::MAP1, cx, cy);
+  CharMap newMap2(newSize, cellSize, '2',
+      CharMap::MAP1, cx, cy);
 
   int lp = 0;
   for(int x = -map.size ; x <= map.size; x++){
@@ -634,4 +672,228 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   m_Displaykrsjlgm = new Cure::XDisplayLocalGridMap<unsigned char>(newMap2);
   m_Displaykrsjlgm->updateDisplay();
 
+}
+
+void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
+				   &objID){
+  if (!m_bNoPlanes) {
+
+    debug("newConvexHull called");
+    VisionData::ConvexHullPtr oobj =
+      getMemoryEntry<VisionData::ConvexHull>(objID.address);
+
+    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
+    Cure::Transformation3D cam2WorldTrans =
+      getCameraToWorldTransform();
+    double tmp[6];
+    cam2WorldTrans.getCoordinates(tmp);
+    //  log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+    //      tmp[4], tmp[5]);
+
+    //Convert hull to world coords
+    for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
+      Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+      Cure::Vector3D to;
+      cam2WorldTrans.invTransform(from, to);
+      //    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+      oobj->PointsSeq[i].x = to.X[0];
+      oobj->PointsSeq[i].y = to.X[1];
+      oobj->PointsSeq[i].z = to.X[2];
+      //    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+    }
+    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
+    Cure::Vector3D to;
+    cam2WorldTrans.invTransform(from, to);
+    oobj->center.x = to.X[0];
+    oobj->center.y = to.X[1];
+    oobj->center.z = to.X[2];
+    cam2WorldTrans.getCoordinates(tmp);
+
+    // Filter polygons that are not horizontal planes
+
+
+    // Paint the polygon in the grid map
+
+    PaintPolygon(oobj->PointsSeq);
+
+    for (int i = -m_planeMap->getSize(); i <= m_planeMap->getSize(); i++) {
+      for (int j = -m_planeMap->getSize(); j <= m_planeMap->getSize(); j++) {
+	std::cout.width(3);
+	double maxHeight = 0.0;
+	for (PlaneList::iterator it = (*m_planeMap)(j,i).planes.begin();
+	    it != (*m_planeMap)(j, i).planes.end(); it++) {
+	  if (it->second > 10.0) {
+	    if (it->first > maxHeight) maxHeight = it->first;
+	  }
+	}
+	std::cout << maxHeight << " ";
+      }
+      std::cout << std::endl;
+    }
+  }
+}
+
+Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
+{
+  //Get camera ptz from PTZServer
+  Cure::Transformation3D cameraRotation;
+  if (m_ptzInterface != 0) {
+    ptz::PTZReading reading = m_ptzInterface->getPose();
+
+    double angles[] = {reading.pose.pan, -reading.pose.tilt, 0.0};
+    cameraRotation.setAngles(angles);
+  }
+//
+//  //Get camera position on robot from Cure
+//  m_CameraPoseR;
+
+  //Additional transform of ptz base frame
+  Cure::Transformation3D ptzBaseTransform;
+//  double nR[] = {0.0, 0.0, 1.0, 
+//    1.0, 0.0, 0.0,
+//    0.0, 1.0, 0.0};
+  double camAngles[] = {-M_PI/2, 0.0, -M_PI/2};
+  ptzBaseTransform.setAngles(camAngles);
+
+  //Get robot pose
+  Cure::Transformation2D robotTransform;
+  if (lastRobotPose != 0) {
+    robotTransform.setXYTheta(lastRobotPose->x, lastRobotPose->y,
+      lastRobotPose->theta);
+  }
+  Cure::Transformation3D robotTransform3 = robotTransform;
+  double tmp[6];
+  robotTransform3.getCoordinates(tmp);
+  log("robot transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+  cameraRotation.getCoordinates(tmp);
+  log("ptz transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+  m_CameraPoseR.getCoordinates(tmp);
+  log("cam transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+
+  Cure::Transformation3D cameraOnRobot = m_CameraPoseR + cameraRotation + ptzBaseTransform ;
+  return robotTransform3 + cameraOnRobot;
+} 
+
+struct ScanLine {
+	int small_x, large_x;
+};
+
+//This function adapted from code by Michael Y. Polyakov:
+///////////////////////////////////////////////////////////////////////////////////////
+//
+//	FileName:	ConvexPolRas.cpp
+//	Author	:	Michael Y. Polyakov
+//	email	:	myp@andrew.cmu.edu	or  mikepolyakov@hotmail.com
+//	Website	:	www.angelfire.com/linux/myp
+//	Date	:	7/29/2002
+//
+//	Rasterizes a convex polygon. x/y - arrays of vertices of size num.
+//	drawPoint - function which draws a point at (x,y). Should be provided before hand.
+//	Shceck out the tutorial on my website.
+///////////////////////////////////////////////////////////////////////////////////////
+
+void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
+{
+  const int cellfactor = 5;
+  int num = (int)points.size();
+  int *y = new int[num];
+  int *x = new int[num];
+  double cellSize = m_planeMap->getCellSize();
+  double miniCellSize = cellSize / cellfactor; //Supersampling
+  double XCentW = m_planeMap->getCentXW();
+  double YCentW = m_planeMap->getCentYW();
+  int size = m_planeMap->getSize();
+  double height = points[0].z;
+
+  for (int i = 0; i < num; i++) {
+    x[i] = (int((points[i].x - XCentW)/(miniCellSize/2.0)) + (points[i].x >= XCentW ? 1: -1)) / 2;
+    y[i] = (int((points[i].y - YCentW)/(miniCellSize/2.0)) + (points[i].y >= YCentW ? 1: -1)) / 2;
+  }
+
+  int small_y = y[0], large_y = y[0];	//small and large y's
+  int xc, yc;							//current x/y points
+  ScanLine *sl;						//array of structs - contain small/large x for each y that is drawn
+  int delta_y;						//large_y - small_y + 1 (size of the above array)
+  int i, j, ind;
+  //line information (see LineRas.cpp for details)
+  int dx, dy, shortD, longD;
+  int incXH, incXL, incYH, incYL;
+  int d, incDL, incDH;
+
+  /* Step 1: find small and large y's of all the vertices */
+  for(i=1; i < num; i++) {
+    if(y[i] < small_y) small_y = y[i];
+    else if(y[i] > large_y) large_y = y[i];
+  }
+
+  /* Step 2: array that contains small_x and large_x values for each y. */
+  delta_y = large_y - small_y + 1;	
+  sl = new ScanLine[delta_y];			//allocate enough memory to save all y values, including large/small
+
+  for(i=0; i < delta_y; i++) {		//initialize the ScanLine array
+    sl[i].small_x = INT_MAX;		//INT_MAX because all initial values are less
+    sl[i].large_x = INT_MIN;		//INT_MIN because all initial values are greater
+  }
+
+
+  /* Step 3: go through all the lines in this polygon and build min/max x array. */
+  for(i=0; i < num; i++) {
+    ind = (i+1)%num;				//last line will link last vertex with the first (index num-1 to 0)
+    if(y[ind]-y[i]) 
+    {
+      //initializing current line data (see tutorial on line rasterization for details)
+      dx = x[ind] - x[i]; dy = y[ind] - y[i];
+      if(dx >= 0) incXH = incXL = 1; else { dx = -dx; incXH = incXL = -1; }
+      if(dy >= 0) incYH = incYL = 1; else { dy = -dy; incYH = incYL = -1; }
+      if(dx >= dy) { longD = dx;  shortD = dy;  incYL = 0; }
+      else		 { longD = dy;  shortD = dx;  incXL = 0; }
+      d = 2*shortD - longD;
+      incDL = 2*shortD;
+      incDH = 2*shortD - 2*longD;
+
+      xc = x[i]; yc = y[i];		//initial current x/y values
+      for(j=0; j <= longD; j++) {	//step through the current line and remember min/max values at each y
+	ind = yc - small_y;
+	if(xc < sl[ind].small_x) sl[ind].small_x = xc;	//initial contains INT_MAX so any value is less
+	if(xc > sl[ind].large_x) sl[ind].large_x = xc;	//initial contains INT_MIN so any value is greater
+	//finding next point on the line ...
+	if(d >= 0)	{ xc += incXH; yc += incYH; d += incDH; }	//H-type
+	else		{ xc += incXL; yc += incYL; d += incDL; }	//L-type
+      }
+    } //end if
+  } //end i for loop
+
+  /* Step 4: drawing horizontal line for each y from small_x to large_x including. */
+  for(i=0; i < delta_y; i++)
+  {
+    for(j=sl[i].small_x; j <= sl[i].large_x; j++)
+    {
+      int xindex = j / cellfactor;
+      int yindex = i / cellfactor;
+
+      if (xindex >= -size && xindex <= size && yindex >= -size && yindex <= size) {
+	PlaneData &pd = (*m_planeMap)(xindex, yindex);
+	PlaneList::iterator it = pd.planes.begin();
+	for (; it != pd.planes.end(); it++) {
+	  if (abs(it->first - height) < 0.05) {
+	    //Reinforce this plane
+	    it->first = (it->first * it->second + height * 1.0)/(it->second + 1.0);
+	    it->second += 1.0;
+	    break;
+	  }
+	}
+	if (it == pd.planes.end()) {
+	  //Plane was new, add it
+	  pd.planes.push_back(std::pair<double, double>(height, 1.0));
+	}
+      }
+    }
+  }
+  delete x;
+  delete y;
+
+  delete [] sl;	//previously allocated space for ScanLine array
 }
