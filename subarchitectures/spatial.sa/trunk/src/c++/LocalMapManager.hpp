@@ -28,8 +28,21 @@
 #include <Navigation/LocalMap.hh>
 #include <SensorData/SensorPose.hh>
 #include <FrontierInterface.hpp>
+#include <Transformation/Transformation3D.hh>
+#include <PTZ.hpp>
+#include <VisionData.hpp>
 
 namespace spatial {
+  typedef std::list<std::pair<double, double> > PlaneList;
+
+struct PlaneData {
+  //first component is the Z position; the second, the confidence.
+  PlaneList planes; 
+};
+
+typedef Cure::LocalGridMap<unsigned char> CharMap ;
+typedef Cure::GridLineRayTracer<unsigned char> CharGridLineRayTracer;
+typedef Cure::LocalGridMap<PlaneData> PlaneMap;
 /**
  * This class maintains small grid maps around individual nav nodes. The maps
  * are centered on the nav node, and continually updated as long as the robot
@@ -50,6 +63,7 @@ namespace spatial {
  * @param --robot-server-host the ice server name for the robot server (default RobotbaseServer)
  * @param --no-tentative-window Do not show the window displaying the tentative map
  * @param --no-local-map-window Do not show the window displaying the current node's map
+ * @param --no-planes		Do not record stereo planes
  *
  * @author Kristoffer Sjöö
  * @see
@@ -92,37 +106,46 @@ protected:
   double m_MaxLaserRangeForPlaceholders; 
   double m_MaxLaserRangeForCombinedMaps;
 
+  bool m_bNoPlanes;
+
   IceUtil::Mutex m_Mutex;
   // This grid map represents the current Place
-  Cure::LocalGridMap<unsigned char>* m_lgm1;
-  Cure::GridLineRayTracer<unsigned char>* m_Glrt1;
+  CharMap* m_lgm1;
+  CharGridLineRayTracer* m_Glrt1;
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm1;
 
   // This grid map represents a potential new place and
   // is reset each time the robot changes Place.
-  Cure::LocalGridMap<unsigned char>* m_lgm2;
-  Cure::GridLineRayTracer<unsigned char>* m_Glrt2;
+  CharMap* m_lgm2;
+  CharGridLineRayTracer* m_Glrt2;
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm2;
 
 
   //Same as above, for use if we're using different horizons for
   //placeholder property evaluation and combined local map retrieval
-  Cure::LocalGridMap<unsigned char>* m_lgm1_alt;
-  Cure::GridLineRayTracer<unsigned char>* m_Glrt1_alt;
-  Cure::LocalGridMap<unsigned char>* m_lgm2_alt;
-  Cure::GridLineRayTracer<unsigned char>* m_Glrt2_alt;
+  CharMap* m_lgm1_alt;
+  CharGridLineRayTracer* m_Glrt1_alt;
+  CharMap* m_lgm2_alt;
+  CharGridLineRayTracer* m_Glrt2_alt;
 
-  std::map<int, Cure::LocalGridMap<unsigned char> *> m_nodeGridMaps;
+  std::map<int, CharMap *> m_nodeGridMaps;
   bool m_isUsingSeparateGridMaps;
-  std::map<int, Cure::LocalGridMap<unsigned char> *> m_nodeGridMapsAlt;
+  std::map<int, CharMap *> m_nodeGridMapsAlt;
+
+  PlaneMap* m_planeMap;
 
   Cure::TransformedOdomPoseProvider m_TOPP;
 
   bool m_firstScanReceived;
 
+  NavData::RobotPose2dPtr lastRobotPose;
+
   Cure::Pose3D m_SlamRobotPose;
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
+  Cure::SensorPose m_CameraPoseR;
+
+  ptz::PTZInterfacePrx m_ptzInterface;
 
   std::string m_RobotServerHost;
   Robotbase::RobotbaseServerPrx m_RobotServer;
@@ -136,6 +159,9 @@ private:
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
   void getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
       const SpatialData::PlaceIDSeq &places);
+  Cure::Transformation3D getCameraToWorldTransform();
+  void newConvexHull(const cast::cdl::WorkingMemoryChange &objID);
+  void PaintPolygon(const VisionData::Vector3Seq &points);
 };
 }; // namespace spatial
 
