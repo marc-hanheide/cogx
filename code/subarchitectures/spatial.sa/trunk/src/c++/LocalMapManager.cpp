@@ -21,7 +21,6 @@
 #include <float.h>
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <VisionData.hpp>
-#include "ConvexPolRas.h"
 
 using namespace cast;
 using namespace std;
@@ -92,6 +91,7 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_bNoPlanes = true;
   
   if (_config.find("--no-planes") == _config.end()) {
+    log("Trying to detect planes...");
     m_bNoPlanes = false;
     if (cfg.getSensorPose(2, m_CameraPoseR)) {
       println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
@@ -127,6 +127,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
     std::istringstream str(it->second);
     str >> m_RobotServerHost;
   }
+
+  PlaneData mpty;
+  m_planeMap = new PlaneMap(70, 0.1, mpty, PlaneMap::MAP1);
 
   m_lgm1 = new CharMap(70, 0.1, '2', CharMap::MAP1);
   m_nodeGridMaps[0] = m_lgm1;
@@ -178,6 +181,14 @@ void LocalMapManager::start()
 		  new MemberFunctionChangeReceiver<LocalMapManager>(this,
 								  &LocalMapManager::newRobotPose));  
   
+  addChangeFilter(createGlobalTypeFilter<VisionData::ConvexHull>(cdl::ADD),
+      new MemberFunctionChangeReceiver<LocalMapManager>(this,
+	&LocalMapManager::newConvexHull));
+
+  addChangeFilter(createGlobalTypeFilter<VisionData::ConvexHull>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<LocalMapManager>(this,
+	&LocalMapManager::newConvexHull));
+
   m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   log("LocalMapManager started");
 
@@ -687,8 +698,8 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
       getCameraToWorldTransform();
     double tmp[6];
     cam2WorldTrans.getCoordinates(tmp);
-    //  log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-    //      tmp[4], tmp[5]);
+    log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+	tmp[4], tmp[5]);
 
     //Convert hull to world coords
     for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
@@ -709,27 +720,16 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
     oobj->center.z = to.X[2];
     cam2WorldTrans.getCoordinates(tmp);
 
+
     // Filter polygons that are not horizontal planes
 
 
     // Paint the polygon in the grid map
 
+    log("Painting polygon");
     PaintPolygon(oobj->PointsSeq);
 
-    for (int i = -m_planeMap->getSize(); i <= m_planeMap->getSize(); i++) {
-      for (int j = -m_planeMap->getSize(); j <= m_planeMap->getSize(); j++) {
-	std::cout.width(3);
-	double maxHeight = 0.0;
-	for (PlaneList::iterator it = (*m_planeMap)(j,i).planes.begin();
-	    it != (*m_planeMap)(j, i).planes.end(); it++) {
-	  if (it->second > 10.0) {
-	    if (it->first > maxHeight) maxHeight = it->first;
-	  }
-	}
-	std::cout << maxHeight << " ";
-      }
-      std::cout << std::endl;
-    }
+    //m_planeMap->print(std::cout);
   }
 }
 
@@ -807,6 +807,7 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
   double YCentW = m_planeMap->getCentYW();
   int size = m_planeMap->getSize();
   double height = points[0].z;
+  log("Height: %f", height);
 
   for (int i = 0; i < num; i++) {
     x[i] = (int((points[i].x - XCentW)/(miniCellSize/2.0)) + (points[i].x >= XCentW ? 1: -1)) / 2;
@@ -880,8 +881,10 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
 	for (; it != pd.planes.end(); it++) {
 	  if (abs(it->first - height) < 0.05) {
 	    //Reinforce this plane
-	    it->first = (it->first * it->second + height * 1.0)/(it->second + 1.0);
-	    it->second += 1.0;
+	    double newHeight = (it->first * it->second + height * 1.0)/(it->second + 1.0);
+	    double newConfidence = it->second + 1.0;
+	    it->first = newHeight;
+	    it->second = newConfidence;
 	    break;
 	  }
 	}

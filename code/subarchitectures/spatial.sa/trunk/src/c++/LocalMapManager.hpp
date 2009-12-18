@@ -33,12 +33,45 @@
 #include <VisionData.hpp>
 
 namespace spatial {
-  typedef std::list<std::pair<double, double> > PlaneList;
+  typedef std::vector<std::pair<double, double> > PlaneList;
 
 struct PlaneData {
   //first component is the Z position; the second, the confidence.
   PlaneList planes; 
 };
+
+std::ostream &operator<<(std::ostream &os, const PlaneData &data)
+{
+  os.precision(2);
+  double maxHeight = 0.0;
+  for (PlaneList::const_iterator it = data.planes.begin();
+      it != data.planes.end(); it++) {
+    if (it->second > 10.0) {
+      if (it->first > maxHeight) 
+	maxHeight = it->first;
+    }
+  }
+  os << maxHeight;
+  return os;
+}
+
+bool operator==(const PlaneData &data, char cmp)
+{
+  if (cmp == '2') { //Unknown
+    return data.planes.empty();
+  }
+
+  double maxHeight = 0.0;
+  for (PlaneList::const_iterator it = data.planes.begin();
+      it != data.planes.end(); it++) {
+    if (it->second > 10.0) {
+      if (it->first > maxHeight) maxHeight = it->first;
+    }
+  }
+
+  if (cmp == '0') return maxHeight == 0.0;
+  return maxHeight != 0.0;
+}
 
 typedef Cure::LocalGridMap<unsigned char> CharMap ;
 typedef Cure::GridLineRayTracer<unsigned char> CharGridLineRayTracer;
