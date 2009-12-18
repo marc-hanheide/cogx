@@ -64,12 +64,9 @@ Vector3 mCenterOfHull;
 double mConvexHullRadius;
 
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
-vector< Vector3 > v3size;
-vector< Vector3 > v3center;
-vector<double> vdradius;
-vector< VisionData::SurfacePointSeq > SOIPointsSeq;
-vector< VisionData::SurfacePointSeq > BGPointsSeq;
-vector< VisionData::SurfacePointSeq > EQPointsSeq; //equivocal points
+
+
+
 double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWire;
@@ -234,6 +231,23 @@ void DrawPlaneGrid()
 	glDisable(GL_BLEND);
 }
 
+void DrawPointb(Vector3 v3p, GLbyte red, GLbyte green, GLbyte blue)
+{
+	glPointSize(2);
+	glBegin(GL_POINTS);
+	glColor3b(red,green,blue);
+	glVertex3f(v3p.x, v3p.y, v3p.z);
+	glEnd();
+}
+void DrawPointf(Vector3 v3p, GLfloat red, GLfloat green, GLfloat blue)
+{
+	glPointSize(2);
+	glBegin(GL_POINTS);
+	glColor3f(red,green,blue);
+	glVertex3f(v3p.x, v3p.y, v3p.z);
+	glEnd();
+}
+
 void DrawPoints()
 {
   glPointSize(2);
@@ -264,457 +278,31 @@ glEnd();
 */
 }
 
-
-void DrawOneCuboid(Vector3 Max, Vector3 Min)
-{
-	glLineWidth(1);
-	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//////////////////////top/////////////////////////////////////
-	glBegin(GL_LINE_LOOP);
-	glColor3f(1.0,1.0,1.0);
-	glVertex3f(Max.x, Max.y, Max.z);
-	glVertex3f(Min.x, Max.y, Max.z);
-	glVertex3f(Min.x, Min.y, Max.z);
-	glVertex3f(Max.x, Min.y, Max.z);
-	glEnd();
-/////////////////////////////bottom///////////////////////
-	glBegin(GL_LINE_LOOP);
-	glColor3f(1.0,1.0,1.0);
-	glVertex3f(Min.x, Min.y, Min.z);
-	glVertex3f(Max.x, Min.y, Min.z);
-	glVertex3f(Max.x, Max.y, Min.z);
-	glVertex3f(Min.x, Max.y, Min.z);
-	glEnd();
-//////////////////////verticle lines//////////////////////////
-	glBegin(GL_LINES);
-	glVertex3f(Min.x, Min.y, Min.z);
-	glVertex3f(Min.x, Min.y, Max.z);
-	glEnd();
-	glBegin(GL_LINES);
-	glVertex3f(Max.x, Min.y, Min.z);
-	glVertex3f(Max.x, Min.y, Max.z);
-	glEnd();
-	glBegin(GL_LINES);
-	glVertex3f(Max.x, Max.y, Min.z);
-	glVertex3f(Max.x, Max.y, Max.z);
-	glEnd();
-	glBegin(GL_LINES);
-	glVertex3f(Min.x, Max.y, Min.z);
-	glVertex3f(Min.x, Max.y, Max.z);
-	glEnd();
-
-	glDisable(GL_BLEND);
-}
-
-void DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
-{
-	VisionData::SurfacePointSeq Max;
-	VisionData::SurfacePointSeq Min;
-	Vector3 initial_vector;
-	initial_vector.x = -9999;
-	initial_vector.y = -9999;
-	initial_vector.z = -9999;
-	VisionData::SurfacePoint InitialStructure;
-	InitialStructure.p = initial_vector;
-	InitialStructure.c.r = InitialStructure.c.g = InitialStructure.c.b = 0;
-	Max.assign(objnumber, InitialStructure);
-	initial_vector.x = 9999;
-	initial_vector.y = 9999;
-	initial_vector.z = 9999;
-	InitialStructure.p = initial_vector;
-	Min.assign(objnumber, InitialStructure);
-
-	for(unsigned int i = 0; i<points.size(); i++)
-	{
-		Vector3 v3Obj = points.at(i).p;
-		int label = labels.at(i);
-		if (label > 0)
-		{
-			if (v3Obj.x>Max.at(label-1).p.x) Max.at(label-1).p.x = v3Obj.x;
-			if (v3Obj.x<Min.at(label-1).p.x) Min.at(label-1).p.x = v3Obj.x;
-
-			if (v3Obj.y>Max.at(label-1).p.y) Max.at(label-1).p.y = v3Obj.y;
-			if (v3Obj.y<Min.at(label-1).p.y) Min.at(label-1).p.y = v3Obj.y;
-
-			if (v3Obj.z>Max.at(label-1).p.z) Max.at(label-1).p.z = v3Obj.z;
-			if (v3Obj.z<Min.at(label-1).p.z) Min.at(label-1).p.z = v3Obj.z;
-		}
-	}
-	v3size.clear();
-	for (int i=0; i<objnumber; i++)
-	{
-		Vector3 s;
-		s.x = (Max.at(i).p.x-Min.at(i).p.x)/2;
-		s.y = (Max.at(i).p.y-Min.at(i).p.y)/2;
-		s.z = (Max.at(i).p.z-Min.at(i).p.z)/2;
-		v3size.push_back(s);
-	}
-/*
-	for (int i = 0; i<objnumber; i++)
-	{
-		DrawOneCuboid(Max.at(i),Min.at(i));
-	}
-*/
-	Max.clear();
-	Min.clear();
-}
-
-void DrawWireSphere(Vector3 center, double radius)
-{
-	glColor3f(1.0,1.0,1.0);
-	glTranslatef(center.x, center.y, center.z);
-	glutWireSphere(radius,10,10);
-	glTranslatef(-center.x, -center.y, -center.z);
-}
-
-Vector3 ProjectOnDominantPlane(Vector3 InputP)
-{
-	Vector3 OutputP;
-	OutputP.x = ((B*B+C*C)*InputP.x-A*(B*InputP.y+C*InputP.z+D))/(A*A+B*B+C*C);
-	OutputP.y = ((A*A+C*C)*InputP.y-B*(A*InputP.x+C*InputP.z+D))/(A*A+B*B+C*C);
-	OutputP.z = ((B*B+A*A)*InputP.z-C*(B*InputP.y+A*InputP.x+D))/(A*A+B*B+C*C);
-
-	return OutputP;
-}
-
-Matrix33 GetAffineRotMatrix()
-{
-	Vector3 vb; //translation vector
-	Vector3 v3normal;  //normal vector of dominant plane
-	v3normal.x = A;	v3normal.y = B;	v3normal.z = C;
-	normalise(v3normal);
-	if(v3normal.z < 0)
-	v3normal *= -1.0;
-
-	Matrix33 rot;
-	setIdentity(rot);
-	setColumn(rot,2,v3normal);
-	vb.x = 1;	vb.y = 0;	vb.z = 0;
-	vb = vb-(v3normal*v3normal.x);
-	normalise(vb);
-	setRow(rot,0,vb);
-	setZero(vb);
-	vb = cross(getRow(rot,2),getRow(rot,0));
-	setRow(rot,1,vb);
-	setZero(vb);
-
-	return rot;
-}
-
-Vector3 GetAffineTransVec(Vector3 v3p) // translation vector from p to original point
-{
-	Matrix33 m33 = GetAffineRotMatrix();
-	return -(m33*v3p);
-}
-
-inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3)
-{
-	return m33*v3;
-}
-
-void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
-{
-	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
-	vector<Vector3> PlanePoints3D;
-	Matrix33 AffineM33 = GetAffineRotMatrix();
-	int j = 0;
-
-	for(unsigned int i = 0; i<points.size(); i++)
-	{
-		Vector3 v3Obj = points.at(i).p;
-		int label = labels.at(i);
-		if (label == 0) // collect points seq for drawing convex hull of the dominant plane
-		{
-			CvPoint cvp;
-			Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
-			cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
-			points2D[j] = cvp;
-			j++;
-			PlanePoints3D.push_back(v3Obj);
-		}
-	}
-	// calculate convex hull
-	if (j>0)
-	{
-		//cout<<"2d points number ="<<j-1<<endl;
-		int* hull = (int*)malloc( (j-1) * sizeof(hull[0]));
-
-		CvMat pointMat = cvMat( 1, j-1, CV_32SC2, points2D);
-		CvMat hullMat = cvMat( 1, j-1, CV_32SC1, hull);
-		cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
-		//draw the hull
-		if (hullMat.cols != 0)
-		{
-			if (mbDrawWire)	glBegin(GL_LINE_LOOP); else glBegin(GL_POLYGON);
-			glColor3f(1.0,1.0,1.0);
-			Vector3 v3OnPlane;
-			for (int i = 0; i<hullMat.cols; i++)
-			{
-				v3OnPlane = ProjectOnDominantPlane(PlanePoints3D.at(hull[i]));
-				glVertex3f(v3OnPlane.x,v3OnPlane.y,v3OnPlane.z);
-				mConvexHullPoints.push_back(v3OnPlane);
-				mCenterOfHull += v3OnPlane;
-			}
-			mCenterOfHull /= hullMat.cols;
-			mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
-			glEnd();
-			free( hull );
-		}
-	}
-	free( points2D );
-}
-
-void DrawOnePrism(vector <Vector3> ppSeq, double hei)
-{
-	double dd = D - hei*sqrt(A*A+B*B+C*C);
-	vector <Vector3> pphSeq;
-	VisionData::OneObj OObj;
-	for (unsigned int i = 0; i<ppSeq.size(); i++)
-	{
-		Vector3 v;
-		v.x =((C*C+B*B)*ppSeq.at(i).x-A*(C*ppSeq.at(i).z+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
-		v.y =((A*A+C*C)*ppSeq.at(i).y-B*(A*ppSeq.at(i).x+C*ppSeq.at(i).z+dd))/(A*A+B*B+C*C);
-		v.z =((A*A+B*B)*ppSeq.at(i).z-C*(A*ppSeq.at(i).x+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
-		pphSeq.push_back(v);
-		OObj.pPlane.push_back(v); OObj.pTop.push_back(ppSeq.at(i));
-	}
-	mObjSeq.push_back(OObj);
-	glBegin(GL_POLYGON);
-	glColor3f(1.0,1.0,1.0);
-	for (unsigned int i = 0; i<ppSeq.size(); i++)
-		glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
-	glEnd();
-	glBegin(GL_POLYGON);
-	for (unsigned int i = 0; i<ppSeq.size(); i++)
-		glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
-	glEnd();
-	for (unsigned int i = 0; i<ppSeq.size(); i++)
-	{
-		glBegin(GL_LINES);
-		glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
-		glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
-		glEnd();
-	}
-}
-
-void BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels)
-{
-	CvPoint* points2D = (CvPoint*)malloc( pointsN.size() * sizeof(points2D[0]));
-
-	Matrix33 AffineM33 = GetAffineRotMatrix();
-	Matrix33 AffineM33_1;
-	inverse(AffineM33,AffineM33_1);
-	vector < CvPoint* > objSeq;
-	objSeq.assign(objnumber,points2D);
-	vector < int > index;
-	index.assign(objnumber,0);
-	vector < double > height;
-	height.assign(objnumber,0.0);
-	vector < vector<Vector3> > PlanePoints3DSeq;
-	Vector3 v3init; v3init.x = v3init.y = v3init.z =0.0;
-	vector<Vector3> vv3init; vv3init.assign(1,v3init);
-	PlanePoints3DSeq.assign(objnumber, vv3init);
-
-
-	for(unsigned int i = 0; i<pointsN.size(); i++)
-	{
-		Vector3 v3Obj = pointsN.at(i).p;
-		int label = labels.at(i);
-		if (label < 1)	continue;
-		CvPoint cvp;
-		Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
-		cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
-		objSeq.at(label-1)[index.at(label-1)] = cvp;
-		PlanePoints3DSeq.at(label-1).push_back(v3Obj);
-		index.at(label-1)++;
-		if (fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C) > height.at(label-1))
-			height.at(label-1) = fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C);
-	}
-	// calculate convex hull
-	if (index.at(0)>0)
-	{
-		int* hull = (int*)malloc( pointsN.size() * sizeof(hull[0]));
-		for (int i = 0; i < objnumber; i++)
-		{
-
-			CvMat pointMat = cvMat( 1, index.at(i)-1, CV_32SC2, objSeq.at(i));
-			CvMat hullMat = cvMat( 1, index.at(i)-1, CV_32SC1, hull);
-			cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
-			//calculate convex hull points on the plane
-			std::vector <Vector3> v3OnPlane;
-			v3OnPlane.assign(hullMat.cols, v3init);
-			for (int j = 0; j<hullMat.cols; j++)
-				v3OnPlane.at(j) =ProjectOnDominantPlane(PlanePoints3DSeq.at(i).at(hull[j]+1));
-
-			DrawOnePrism(v3OnPlane, height.at(i));
-		}
-		free( hull );
-	}
-	free( points2D );
-}
-
-void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
-{
-	VisionData::SurfacePointSeq center;
-	Vector3 initial_vector;
-	initial_vector.x = 0;
-	initial_vector.y = 0;
-	initial_vector.z = 0;
-	VisionData::SurfacePoint InitialStructure;
-	InitialStructure.p = initial_vector;
-//
-	center.assign(objnumber,InitialStructure);
-	VisionData::SurfacePointSeq pointsInOneSOI;
-	SOIPointsSeq.clear();
-	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
-	BGPointsSeq.clear();
-	BGPointsSeq.assign(objnumber, pointsInOneSOI);
-	EQPointsSeq.clear();
-	EQPointsSeq.assign(objnumber, pointsInOneSOI);
-
-	std::vector<int> amount;
-	amount.assign(objnumber,0);
-	std::vector<double> radius_world;
-	radius_world.assign(objnumber,0);
-////////////////////calculate the center of each object/////////////////////////
-
-	for(unsigned int i = 0; i<points.size(); i++)
-	{
-		Vector3 v3Obj = points.at(i).p;
-		int label = labels.at(i);
-		if (label > 0)
-		{
-			center.at(label-1).p = center.at(label-1).p + v3Obj;
-			amount.at(label-1) = amount.at(label-1) + 1;
-		}
-	}
-
-	v3center.clear();
-	if (amount.at(0) != 0)
-	{
-		for (unsigned int i=0; i<center.size(); i++)
-		{
-			center.at(i).p = center.at(i).p/amount.at(i);
-			v3center.push_back(center.at(i).p);
-		}
-	////////////////////calculte radius in the real world//////////////////
-		for(unsigned int i = 0; i<points.size(); i++)
-		{
-			Vector3 v3Obj = points.at(i).p;
-			int label = labels.at(i);
-			if (label > 0 && dist(v3Obj,center.at(label-1).p) > radius_world.at(label-1))
-				radius_world.at(label-1) = dist(v3Obj,center.at(label-1).p);
-		}
-		vdradius.clear();
-		for (int i=0; i<objnumber; i++)
-			vdradius.push_back(radius_world.at(i));
-	}
-
-
-
-	for (int i = 0; i<objnumber; i++)
-	{
-		//if (mbDrawWire)	DrawWireSphere(center.at(i).p,radius_world.at(i));
-		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i).p);//cout<<" center on DP ="<<Center_DP<<endl;
-		for (unsigned int j = 0; j<points.size(); j++)
-		{
-			VisionData::SurfacePoint PushStructure;
-			PushStructure.p = points.at(j).p;
-			PushStructure.c = points.at(j).c;	//cout<<"in BG"<<PushStructure.c.r<<PushStructure.c.g<<PushStructure.c.b<<endl;
-			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
-			int label = labels.at(j);
-			if (label > 0 && dist(Point_DP,Center_DP) < Shrink_SOI*radius_world.at(i))
-			{
-				SOIPointsSeq.at(label-1).push_back(PushStructure);
-				if (doDisplay)
-				{
-					glPointSize(2);
-					glBegin(GL_POINTS);
-					glColor3b(PushStructure.c.r,PushStructure.c.g,PushStructure.c.b);  //obj points
-					glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
-					glEnd();
-				}
-			}
-			if (label == -1 && dist(Point_DP,Center_DP) < Lower_BG*radius_world.at(i)) // equivocal points
-			{
-				EQPointsSeq.at(i).push_back(PushStructure);
-				if (doDisplay)
-				{
-					glPointSize(2);
-					glBegin(GL_POINTS);
-					glColor3f(0.0,1.0,0.0);  //equivocal points
-					glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
-					glEnd();
-				}
-			}
-			if (label == 0 && dist(Point_DP,Center_DP) < Upper_BG*radius_world.at(i) && dist(Point_DP,Center_DP) > Lower_BG*radius_world.at(i)) //BG nearby also required
-			{
-				BGPointsSeq.at(i).push_back(PushStructure);
-				if (doDisplay)
-				{
-					glPointSize(2);
-					glBegin(GL_POINTS);
-					glColor3f(1.0,0.0,0.0);  //nearby points
-					glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
-					glEnd();
-				}
-			}
-		}
-	}
-
-	center.clear();
-	amount.clear();
-	radius_world.clear();
-	pointsInOneSOI.clear();
-}
-
-
 void DisplayWin()
 {
-	if (doDisplay)
-	{
-		GLfloat light_position[] = {2.0, -2.0, 1.0, 1.0};
-		
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		gluLookAt(view_point.x, view_point.y, view_point.z,
-		view_point.x + view_dir.x, view_point.y + view_dir.y,
-		view_point.z + view_dir.z,
-		view_up.x, view_up.y, view_up.z);
-		glRotated(cam_rot[0], 0., 1., 0.);
-		glRotated(-cam_rot[1], 1., 0., 0.);
-		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-		glDisable(GL_LIGHTING);
-		DrawOverlays();
-		glEnable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-		DrawPoints();
-	}
-	if (objnumber != 0)
-	{
-		DrawCuboids(pointsN,points_label);
-		BoundingSphere(pointsN,points_label);
-		ConvexHullOfPlane(pointsN,points_label);
-		BoundingPrism(pointsN,points_label);
-	}
-	else
-	{
-		v3size.clear();
-		v3center.clear();
-		vdradius.clear();
-		ConvexHullOfPlane(pointsN,points_label);
-	}
-	if (doDisplay)
-	{
-		glDisable(GL_COLOR_MATERIAL);
-		
-		glutSwapBuffers();
-	}
+	GLfloat light_position[] = {2.0, -2.0, 1.0, 1.0};
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(view_point.x, view_point.y, view_point.z,
+	view_point.x + view_dir.x, view_point.y + view_dir.y,
+	view_point.z + view_dir.z,
+	view_up.x, view_up.y, view_up.z);
+	glRotated(cam_rot[0], 0., 1., 0.);
+	glRotated(-cam_rot[1], 1., 0., 0.);
+	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glDisable(GL_LIGHTING);
+	DrawOverlays();
+	glEnable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+	DrawPoints();
+
+	glDisable(GL_COLOR_MATERIAL);
+	glutSwapBuffers();
+
 }
 
 void KeyPress(unsigned char key, int x, int y)
@@ -806,8 +394,8 @@ void PlanePopOut::start()
   glutMouseFunc(MousePress);
   glutMotionFunc(MouseMove);
   glutReshapeFunc(ResizeWin);
-  }
   glutDisplayFunc(DisplayWin);
+  }
 
 }
 
@@ -838,9 +426,25 @@ void PlanePopOut::runComponent()
 		if (RANSAC(pointsN,points_label))
 		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
+			if (objnumber != 0)
+			{
+				DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
+ 				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
+				ConvexHullOfPlane(pointsN,points_label);
+//  				BoundingPrism(pointsN,points_label);
+			}
+			else
+			{
+				v3size.clear();
+				v3center.clear();
+				vdradius.clear();
+				ConvexHullOfPlane(pointsN,points_label);
+			}
 			if (doDisplay)
-			glutPostRedisplay();
-			glutMainLoopEvent();
+			{
+				glutPostRedisplay();
+				glutMainLoopEvent();
+			}
 			AddConvexHullinWM();
 		}
 	}
@@ -1190,4 +794,379 @@ void PlanePopOut::AddConvexHullinWM()
 	mCenterOfHull.x = mCenterOfHull.y = mCenterOfHull.z = 0.0;
 	mConvexHullRadius = 0.0;
 }
+void PlanePopOut::DrawOneCuboid(Vector3 Max, Vector3 Min)
+{
+	glLineWidth(1);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//////////////////////top/////////////////////////////////////
+	glBegin(GL_LINE_LOOP);
+	glColor3f(1.0,1.0,1.0);
+	glVertex3f(Max.x, Max.y, Max.z);
+	glVertex3f(Min.x, Max.y, Max.z);
+	glVertex3f(Min.x, Min.y, Max.z);
+	glVertex3f(Max.x, Min.y, Max.z);
+	glEnd();
+/////////////////////////////bottom///////////////////////
+	glBegin(GL_LINE_LOOP);
+	glColor3f(1.0,1.0,1.0);
+	glVertex3f(Min.x, Min.y, Min.z);
+	glVertex3f(Max.x, Min.y, Min.z);
+	glVertex3f(Max.x, Max.y, Min.z);
+	glVertex3f(Min.x, Max.y, Min.z);
+	glEnd();
+//////////////////////verticle lines//////////////////////////
+	glBegin(GL_LINES);
+	glVertex3f(Min.x, Min.y, Min.z);
+	glVertex3f(Min.x, Min.y, Max.z);
+	glEnd();
+	glBegin(GL_LINES);
+	glVertex3f(Max.x, Min.y, Min.z);
+	glVertex3f(Max.x, Min.y, Max.z);
+	glEnd();
+	glBegin(GL_LINES);
+	glVertex3f(Max.x, Max.y, Min.z);
+	glVertex3f(Max.x, Max.y, Max.z);
+	glEnd();
+	glBegin(GL_LINES);
+	glVertex3f(Min.x, Max.y, Min.z);
+	glVertex3f(Min.x, Max.y, Max.z);
+	glEnd();
+
+	glDisable(GL_BLEND);
+}
+
+void PlanePopOut::DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+{
+	VisionData::SurfacePointSeq Max;
+	VisionData::SurfacePointSeq Min;
+	Vector3 initial_vector;
+	initial_vector.x = -9999;
+	initial_vector.y = -9999;
+	initial_vector.z = -9999;
+	VisionData::SurfacePoint InitialStructure;
+	InitialStructure.p = initial_vector;
+	InitialStructure.c.r = InitialStructure.c.g = InitialStructure.c.b = 0;
+	Max.assign(objnumber, InitialStructure);
+	initial_vector.x = 9999;
+	initial_vector.y = 9999;
+	initial_vector.z = 9999;
+	InitialStructure.p = initial_vector;
+	Min.assign(objnumber, InitialStructure);
+
+	for(unsigned int i = 0; i<points.size(); i++)
+	{
+		Vector3 v3Obj = points.at(i).p;
+		int label = labels.at(i);
+		if (label > 0)
+		{
+			if (v3Obj.x>Max.at(label-1).p.x) Max.at(label-1).p.x = v3Obj.x;
+			if (v3Obj.x<Min.at(label-1).p.x) Min.at(label-1).p.x = v3Obj.x;
+
+			if (v3Obj.y>Max.at(label-1).p.y) Max.at(label-1).p.y = v3Obj.y;
+			if (v3Obj.y<Min.at(label-1).p.y) Min.at(label-1).p.y = v3Obj.y;
+
+			if (v3Obj.z>Max.at(label-1).p.z) Max.at(label-1).p.z = v3Obj.z;
+			if (v3Obj.z<Min.at(label-1).p.z) Min.at(label-1).p.z = v3Obj.z;
+		}
+	}
+	v3size.clear();
+	for (int i=0; i<objnumber; i++)
+	{
+		Vector3 s;
+		s.x = (Max.at(i).p.x-Min.at(i).p.x)/2;
+		s.y = (Max.at(i).p.y-Min.at(i).p.y)/2;
+		s.z = (Max.at(i).p.z-Min.at(i).p.z)/2;
+		v3size.push_back(s);
+	}
+/*
+	for (int i = 0; i<objnumber; i++)
+	{
+		DrawOneCuboid(Max.at(i),Min.at(i));
+	}
+*/
+	Max.clear();
+	Min.clear();
+}
+
+void PlanePopOut::DrawWireSphere(Vector3 center, double radius)
+{
+	glColor3f(1.0,1.0,1.0);
+	glTranslatef(center.x, center.y, center.z);
+	glutWireSphere(radius,10,10);
+	glTranslatef(-center.x, -center.y, -center.z);
+}
+
+Vector3 PlanePopOut::ProjectOnDominantPlane(Vector3 InputP)
+{
+	Vector3 OutputP;
+	OutputP.x = ((B*B+C*C)*InputP.x-A*(B*InputP.y+C*InputP.z+D))/(A*A+B*B+C*C);
+	OutputP.y = ((A*A+C*C)*InputP.y-B*(A*InputP.x+C*InputP.z+D))/(A*A+B*B+C*C);
+	OutputP.z = ((B*B+A*A)*InputP.z-C*(B*InputP.y+A*InputP.x+D))/(A*A+B*B+C*C);
+
+	return OutputP;
+}
+
+Matrix33 PlanePopOut::GetAffineRotMatrix()
+{
+	Vector3 vb; //translation vector
+	Vector3 v3normal;  //normal vector of dominant plane
+	v3normal.x = A;	v3normal.y = B;	v3normal.z = C;
+	normalise(v3normal);
+	if(v3normal.z < 0)
+	v3normal *= -1.0;
+
+	Matrix33 rot;
+	setIdentity(rot);
+	setColumn(rot,2,v3normal);
+	vb.x = 1;	vb.y = 0;	vb.z = 0;
+	vb = vb-(v3normal*v3normal.x);
+	normalise(vb);
+	setRow(rot,0,vb);
+	setZero(vb);
+	vb = cross(getRow(rot,2),getRow(rot,0));
+	setRow(rot,1,vb);
+	setZero(vb);
+
+	return rot;
+}
+
+Vector3 PlanePopOut::GetAffineTransVec(Vector3 v3p) // translation vector from p to original point
+{
+	Matrix33 m33 = GetAffineRotMatrix();
+	return -(m33*v3p);
+}
+
+inline Vector3 PlanePopOut::AffineTrans(Matrix33 m33, Vector3 v3)
+{
+	return m33*v3;
+}
+
+void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+{
+	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
+	vector<Vector3> PlanePoints3D;
+	Matrix33 AffineM33 = GetAffineRotMatrix();
+	int j = 0;
+
+	for(unsigned int i = 0; i<points.size(); i++)
+	{
+		Vector3 v3Obj = points.at(i).p;
+		int label = labels.at(i);
+		if (label == 0) // collect points seq for drawing convex hull of the dominant plane
+		{
+			CvPoint cvp;
+			Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
+			cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
+			points2D[j] = cvp;
+			j++;
+			PlanePoints3D.push_back(v3Obj);
+		}
+	}
+	// calculate convex hull
+	if (j>0)
+	{
+		//cout<<"2d points number ="<<j-1<<endl;
+		int* hull = (int*)malloc( (j-1) * sizeof(hull[0]));
+
+		CvMat pointMat = cvMat( 1, j-1, CV_32SC2, points2D);
+		CvMat hullMat = cvMat( 1, j-1, CV_32SC1, hull);
+		cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
+		//draw the hull
+		if (hullMat.cols != 0)
+		{
+// 			if (mbDrawWire)	glBegin(GL_LINE_LOOP); else glBegin(GL_POLYGON);
+// 			glColor3f(1.0,1.0,1.0);
+			Vector3 v3OnPlane;
+			for (int i = 0; i<hullMat.cols; i++)
+			{
+				v3OnPlane = ProjectOnDominantPlane(PlanePoints3D.at(hull[i]));
+				mConvexHullPoints.push_back(v3OnPlane);
+				mCenterOfHull += v3OnPlane;
+			}
+			mCenterOfHull /= hullMat.cols;
+			mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
+// 			glEnd();
+			free( hull );
+		}
+	}
+	free( points2D );
+}
+
+void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei)
+{
+	double dd = D - hei*sqrt(A*A+B*B+C*C);
+	vector <Vector3> pphSeq;
+	VisionData::OneObj OObj;
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+	{
+		Vector3 v;
+		v.x =((C*C+B*B)*ppSeq.at(i).x-A*(C*ppSeq.at(i).z+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
+		v.y =((A*A+C*C)*ppSeq.at(i).y-B*(A*ppSeq.at(i).x+C*ppSeq.at(i).z+dd))/(A*A+B*B+C*C);
+		v.z =((A*A+B*B)*ppSeq.at(i).z-C*(A*ppSeq.at(i).x+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
+		pphSeq.push_back(v);
+		OObj.pPlane.push_back(v); OObj.pTop.push_back(ppSeq.at(i));
+	}
+	mObjSeq.push_back(OObj);
+	glBegin(GL_POLYGON);
+	glColor3f(1.0,1.0,1.0);
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+		glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
+	glEnd();
+	glBegin(GL_POLYGON);
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+		glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
+	glEnd();
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+	{
+		glBegin(GL_LINES);
+		glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
+		glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
+		glEnd();
+	}
+}
+
+void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels)
+{
+	CvPoint* points2D = (CvPoint*)malloc( pointsN.size() * sizeof(points2D[0]));
+
+	Matrix33 AffineM33 = GetAffineRotMatrix();
+	Matrix33 AffineM33_1;
+	inverse(AffineM33,AffineM33_1);
+	vector < CvPoint* > objSeq;
+	objSeq.assign(objnumber,points2D);
+	vector < int > index;
+	index.assign(objnumber,0);
+	vector < double > height;
+	height.assign(objnumber,0.0);
+	vector < vector<Vector3> > PlanePoints3DSeq;
+	Vector3 v3init; v3init.x = v3init.y = v3init.z =0.0;
+	vector<Vector3> vv3init; vv3init.assign(1,v3init);
+	PlanePoints3DSeq.assign(objnumber, vv3init);
+
+
+	for(unsigned int i = 0; i<pointsN.size(); i++)
+	{
+		Vector3 v3Obj = pointsN.at(i).p;
+		int label = labels.at(i);
+		if (label < 1)	continue;
+		CvPoint cvp;
+		Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
+		cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
+		objSeq.at(label-1)[index.at(label-1)] = cvp;
+		PlanePoints3DSeq.at(label-1).push_back(v3Obj);
+		index.at(label-1)++;
+		if (fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C) > height.at(label-1))
+			height.at(label-1) = fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C);
+	}
+	// calculate convex hull
+	if (index.at(0)>0)
+	{
+		int* hull = (int*)malloc( pointsN.size() * sizeof(hull[0]));
+		for (int i = 0; i < objnumber; i++)
+		{
+
+			CvMat pointMat = cvMat( 1, index.at(i)-1, CV_32SC2, objSeq.at(i));
+			CvMat hullMat = cvMat( 1, index.at(i)-1, CV_32SC1, hull);
+			cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
+			//calculate convex hull points on the plane
+			std::vector <Vector3> v3OnPlane;
+			v3OnPlane.assign(hullMat.cols, v3init);
+			for (int j = 0; j<hullMat.cols; j++)
+				v3OnPlane.at(j) =ProjectOnDominantPlane(PlanePoints3DSeq.at(i).at(hull[j]+1));
+
+// 			if (doDisplay) DrawOnePrism(v3OnPlane, height.at(i));
+		}
+		free( hull );
+	}
+	free( points2D );
+}
+
+void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+{
+	VisionData::SurfacePointSeq center;
+	Vector3 initial_vector;
+	initial_vector.x = 0;
+	initial_vector.y = 0;
+	initial_vector.z = 0;
+	VisionData::SurfacePoint InitialStructure;
+	InitialStructure.p = initial_vector;
+//
+	center.assign(objnumber,InitialStructure);
+	VisionData::SurfacePointSeq pointsInOneSOI;
+	SOIPointsSeq.clear();
+	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
+	BGPointsSeq.clear();
+	BGPointsSeq.assign(objnumber, pointsInOneSOI);
+	EQPointsSeq.clear();
+	EQPointsSeq.assign(objnumber, pointsInOneSOI);
+
+	std::vector<int> amount;
+	amount.assign(objnumber,0);
+	std::vector<double> radius_world;
+	radius_world.assign(objnumber,0);
+////////////////////calculate the center of each object/////////////////////////
+	for(unsigned int i = 0; i<points.size(); i++)
+	{
+		Vector3 v3Obj = points.at(i).p;
+		int label = labels.at(i);
+		if (label > 0)
+		{
+			center.at(label-1).p = center.at(label-1).p + v3Obj;
+			amount.at(label-1) = amount.at(label-1) + 1;
+		}
+	}
+
+	v3center.clear();
+	if (amount.at(0) != 0)
+	{
+		for (unsigned int i=0; i<center.size(); i++)
+		{
+			center.at(i).p = center.at(i).p/amount.at(i);
+			v3center.push_back(center.at(i).p);
+		}
+	////////////////////calculte radius in the real world//////////////////
+		for(unsigned int i = 0; i<points.size(); i++)
+		{
+			Vector3 v3Obj = points.at(i).p;
+			int label = labels.at(i);
+			if (label > 0 && dist(v3Obj,center.at(label-1).p) > radius_world.at(label-1))
+				radius_world.at(label-1) = dist(v3Obj,center.at(label-1).p);
+		}
+		vdradius.clear();
+		for (int i=0; i<objnumber; i++)
+			vdradius.push_back(radius_world.at(i));
+	}
+
+	for (int i = 0; i<objnumber; i++)
+	{
+		//if (mbDrawWire)	DrawWireSphere(center.at(i).p,radius_world.at(i));
+		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i).p);//cout<<" center on DP ="<<Center_DP<<endl;
+		for (unsigned int j = 0; j<points.size(); j++)
+		{
+			VisionData::SurfacePoint PushStructure;
+			PushStructure.p = points.at(j).p;
+			PushStructure.c = points.at(j).c;	//cout<<"in BG"<<PushStructure.c.r<<PushStructure.c.g<<PushStructure.c.b<<endl;
+			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
+			int label = labels.at(j);
+			if (label > 0 && dist(Point_DP,Center_DP) < Shrink_SOI*radius_world.at(i))
+				SOIPointsSeq.at(label-1).push_back(PushStructure);
+
+			if (label == -1 && dist(Point_DP,Center_DP) < Lower_BG*radius_world.at(i)) // equivocal points
+				EQPointsSeq.at(i).push_back(PushStructure);
+
+			if (label == 0 && dist(Point_DP,Center_DP) < Upper_BG*radius_world.at(i) && dist(Point_DP,Center_DP) > Lower_BG*radius_world.at(i)) //BG nearby also required
+				BGPointsSeq.at(i).push_back(PushStructure);
+
+		}
+	}
+
+	center.clear();
+	amount.clear();
+	radius_world.clear();
+	pointsInOneSOI.clear();
+}
+
+
 }
