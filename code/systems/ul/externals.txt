@@ -30,6 +30,7 @@
 ^/code/tools/testing/trunk				tools/testing
 ^/code/tools/castctrl/trunk				tools/castctrl
 ^/code/tools/python/trunk				tools/python
+^/code/tools/interconnectivity-branches/stable-0        tools/interconnectivity
 
 ^/code/tools/beliefmodels/trunk     tools/beliefmodels
 
