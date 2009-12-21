@@ -28,4 +28,4 @@ LOG4_JAR=/usr/share/java/log4j-1.2.jar
 CLASSPATH=$ICE_JARS:$LOG4_JAR:$CAST_JAR:$CLASSPATH
 echo $CLASSPATH
 
-ant all
+ant $*

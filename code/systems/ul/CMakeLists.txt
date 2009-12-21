@@ -127,12 +127,15 @@ endif(BUILD_SA_FAKE_MOTIVATION)
 add_subdirectory(tools/scripts)
 add_subdirectory(tools/python)
 
+# ComSys
+add_subdirectory(subarchitectures/comsys)
+
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
-ADD_CUSTOM_TARGET( ant_build ALL )
-	ADD_CUSTOM_COMMAND(
-		TARGET  ant_build
-		COMMAND ant WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-     	)
+   ADD_CUSTOM_TARGET( ant_build ALL )
+   ADD_CUSTOM_COMMAND(
+      TARGET  ant_build
+      COMMAND ant -Dcastslice.dir=${CAST_SLICE_DIR} -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar -Dice.jar=${ICE_HOME}/share/java/Ice.jar WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+   )
 endif(DO_ANT)
 
