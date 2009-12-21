@@ -9,6 +9,8 @@
 ^/code/subarchitectures/planner.sa/branches/stable-1		 subarchitectures/planner.sa
 ^/code/subarchitectures/binder/trunk 	 		 subarchitectures/binder
 ^/code/subarchitectures/coma.sa/trunk		 	 subarchitectures/coma.sa
+^/code/subarchitectures/comsys/branches/stable-0         subarchitectures/comsys
+
 
 ^/code/tools/hardware/video/branches/stable-3			tools/hardware/video              
 ^/code/tools/hardware/stereo/branches/stable-1			tools/hardware/stereo              
