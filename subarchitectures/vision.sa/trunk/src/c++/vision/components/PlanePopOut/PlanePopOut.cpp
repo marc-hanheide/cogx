@@ -405,6 +405,12 @@ void PlanePopOut::runComponent()
   {
 	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
+
+	Video::Image leftimage;
+	getRectImage(LEFT, leftimage);
+	Video::Image disparityimage;
+	getDisparityImage(disparityimage);
+
 	getPoints(useGlobalPoints, points);
 	if (points.size() == 0)
 	{
