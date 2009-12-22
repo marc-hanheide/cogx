@@ -1,0 +1,177 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the 'basic' semantic and syntactic features 
+# used by the grammar. 'Complex' features for word classes are located
+# in types-word-classes.ccg
+
+#####################
+# SEMANTIC FEATURES #
+#####################
+
+# Note: currently a 'redundancy' for proximity. Can't re-use feature-value names
+#       so must have , e.g., distal, e-distal and m-distal corresponding to
+#       THAT ball, who said THAT, OVER on the table (or THERE)
+#
+# NOTE: This could be resolved by changing all the relevant cats to having same
+#       Index, e.g. preps and deictic events could receive, respectively:
+#                  pp[T] / np[A]  :  T:modifier( * <Anchor>A:entity )
+#                  s[T]            : T:event(context)
+#       in other words, enforcing the index variables chosen is not at all important 
+
+feature{
+
+## ENTITY ##
+
+  NUMBER<T:Num>: sg pl;      
+  PROXIMITY<T:Proximity>: distal proximal;
+  DELIMINATION<T:Delimitation>: unique existential variable;
+  QUANTIFICATION<T:Quantification>: specific unspecific uncountable;
+
+## EVENT ##
+  
+  POLARITY<E:Polarity>: pos neg;
+  MOOD<E:Mood>: ind imp int;
+  TENSE<E:Tense>: past pres fut;
+  ASPECT<E:Aspect>: continuous perfect;
+  VOICE<E:Voice>: active passive;
+  E-PROXIMITY<E:Proximity>: e-distal e-proximal;
+
+## MOD ##
+
+  DEGREE<M:Degree>: no-degrees degrees{degree-base comparative superlative};
+  M-PROXIMITY<M:Proximity>: m-distal m-proximal;
+
+##Raveesh 10 Aug##
+## PROSODY ##
+ #TINFOSTAT<T:InfoStatus>: t-contrast t-new t-given;
+ #MINFOSTAT<M:InfoStatus>: m-contrast m-new m-given;
+ #EINFOSTAT<E:InfoStatus>: e-contrast e-new e-given;
+
+ TFOCUS<T:Focus>: t-focus-true t-focus-false;
+ MFOCUS<M:Focus>: m-focus-true m-focus-false;
+ EFOCUS<E:Focus>: e-focus-true e-focus-false;
+
+ TOWNER<T:Owner>: t-hearer t-speaker;
+ MOWNER<M:Owner>: m-hearer m-speaker;
+ EOWNER<E:Owner>: e-hearer e-speaker;
+
+ ThOWNERSHIP<E:ThOwner>: th-speaker th-hearer;
+ RhOWNERSHIP<E:RhOwner>: rh-speaker rh-hearer;
+ #DIRECTION<E:Discourse>: frwd-referring finality;
+
+ TUNCERTAINITY<T:Commitment>: t-contentious t-uncontentious;
+ MUNCERTAINITY<M:Commitment>: m-contentious m-uncontentious;
+ EUNCERTAINITY<E:Commitment>: e-contentious e-uncontentious;
+
+ RHEME<T:Rheme>: t-rheme-true t-rheme-false;
+ MRHEME<M:Rheme>: m-rheme-true m-rheme-false;
+ ERHEME<E:Rheme>: e-rheme-true e-rheme-false;
+
+ #TMARKED<T:Marked>: t-unmarker t-marked;
+ #MMARKED<M:Marked>: m-unmarker m-marked;
+ #EMARKED<E:Marked>: e-unmarker e-marked;
+
+ #TBELIEF<T:BeliefState>: t-mutual t-private t-addToMB;
+ #MBELIEF<M:BeliefState>: m-mutual m-private m-addToMB;
+ #EBELIEF<E:BeliefState>: e-mutual e-private e-addToMB;
+
+ #INTMEDPH<T:PhMarker>: t-LL% t-LH% t-HL% t-HH%;
+ #CURVE<T:F0Curve>: t-low-falling t-low-rising t-high-falling t-high-rising ;
+ #OWNERSHIP<T:Owner>: t-speaker t-hearer;
+ #DIRECTION<T:Discourse>: t-frwd-refering t-finality;
+
+ #M_INTMEDPH<M:PhMarker>: m-LL% m-LH% m-HL% m-HH%;
+ #M_CURVE<M:F0Curve>: m-low-falling m-low-rising m-high-falling m-high-rising ;
+ #M_OWNERSHIP<M:Owner>: m-speaker m-hearer;
+ #M_DIRECTION<M:Discourse>: m-frwd-refering m-finality;
+} # end feature
+
+# These are the semantic features which are used inside family definitions in the grammar
+# Although syntactic features can be used syntactic categories inside the grammar, semantic
+# ones can't be (i.e only as 'macros' in dicionary entries) 
+
+  def POS()  { <Polarity>(pos) }  def NEG()  { <Polarity>(neg) }
+  def SG()   { <Num>(sg) }        def PL()   { <Num>(pl) }
+
+  def UNCOUNTABLE()             { <Quantification>(uncountable) }
+  def UNSPECIFIC()              { <Quantification>(unspecific)  }
+  def SPECIFIC()                { <Quantification>(specific)    }
+
+  def UNIQUE()      { <Delimitation>(unique) }
+  def VARIABLE()    { <Delimitation>(variable) }
+  def EXISTENTIAL() { <Delimitation>(existential) }
+  
+  def IND() { <Mood>(ind) }   def IMP() { <Mood>(imp) }   def INT() { <Mood>(int) }
+######################
+# SYNTACTIC FEATURES #
+######################
+
+  # 15 is the feature id for nouns
+  # 9 is the feature id for the syntatic subject position
+  # 10 is the feature id for sentences
+  # 11 is the feature id for finites when 'selected' for by interrogative utterance templates
+  #       the finite determines subj agreement and pol, vform & fin.
+  # 42 is used for the np compliment in 'I am a man', used to block ' these are a ball'
+  # 
+feature{
+
+## Noun features ##
+  
+  NUM<15, 9, 10, 11, 42>:  s-sg s-pl {s-pl-sp s-pl-unsp} s-mass ;  # specific plural (as in 3 balls) or unspecific (balls)
+  PERS<15, 9, 10, 11>: non-3rd {1st 2nd} 3rd;
+  
+  CASE<15, 9>: nom acc-both{acc acc-loc}; # acc-loc is for here and there in 'on there', 'up here', 'closer to there' also 'before then' etc.                              
+  NFORM<15, 9, 11>: nf-real{full pro nf-ctxt} nf-dummy{dummy-there};  # full form vs pronoun vs none (as in 'I will take the green')
+  
+ 
+## Sentence/Verbal Features ##
+  
+  # Sept 7 added mood-mixed to handle the coordinate "I am sorry but could you help me"
+  #
+  MOOD<10>:   s-major{ s-ind s-imp s-int s-ind-ell s-mood-mixed}  s-minor s-dependent;  
+  POL<10,11>: s-pos s-prov-pos s-neg;
+   
+  # vf-be (am able to)  for-ing (thanks for helping me), fin-ctxt (I did), fin-deictic (I said that) , fin-full (all other finite events)
+  # Need two layers b/c any thing which wants a finite-s can take a deictic (I said that, before that, etc.) BUT must the ind-building rule
+  # only wants fin-ctxt or full
+  #
+  # Aug 20 added ell-subj as vform... may be useful. Should eventually take out of s-mood, me thinks.
+  
+  VFORM<10,11>: fin{ fin-clause{fin-ctxt fin-ell fin-full} fin-deictic} vf-base vf-to-imp inf ing pp vf-be for-ing;  
+  
+  # this will be important if we want 1) to handle tag questions 2) to cleanly & quickly handle 'ellipse responses' I did, you shouldn't, can I, etc.
+  #
+  FIN<10,11>:   be do can should will could would must have;  
+
+
+## Adj/Adv Features ##
+  
+  DEGREE<25>: s-no-degrees s-degrees{s-degree-base s-comparative s-superlative};
+
+## OTHER FEATURES ##
+
+  # Questionable=no   -> placed on np slots which cannot be questioned via standard wh udc construction
+  # Mark=??           -> placed on obliques and also dependent clauses
+  # COM= yes or no    -> used in coordination constructions to block spurious readings
+  #                      (only the single staircase reading remains)
+
+} # end feature
+
+
+
+feature {
+
+  CORRECTED<1,10,15,25,34>: default asr-correction ;
+
+######################
+## Prosodic Feature ##
+######################
+  ##Raveesh 10 Aug##
+  ## Sytactic Feature indicating pitch accent on nouns, verbs, finites(?) and ajectives
+  !ACCENT<15,9,10,11,25,42>: tone stressed[tone] unstressed[tone] rhthm[stressed] thmf[rhthm] lphs[thmf] lsph[thmf] rhmf[rhthm] hs[rhmf] ls[rhmf] hspl[rhmf] hpls [rhmf]; 
+  ## Feature indicating intonational phrases: pitch accent marked (pam) word, intermediate phrase(ip) and intonational phrase(cp)
+  !INTOPH<15,9,10,11,25>: am nulltn[am] btone[am] ip cp; 
+  #!OWNER<15,9,10,11,25,42>: owners hear[owners] spkr[owners];
+  !OWNER<15,9,10,11,25,42>: owners hear spkr;
+
+} 
