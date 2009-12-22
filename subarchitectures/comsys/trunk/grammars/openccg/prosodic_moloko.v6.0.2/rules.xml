@@ -27,6 +27,9 @@
           <feat attr="OWNER">
             <featvar name="OWNER"/>
           </feat>
+          <feat attr="INTOPH">
+            <featvar name="INTOPH"/>
+          </feat>
           <feat attr="NUM" val="s-pl-unsp"/>
         </fs>
       </atomcat>
@@ -106,6 +109,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="CC-TYPE" val="compound-head"/>
           </fs>
         </atomcat>
@@ -146,6 +152,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="args">
               <featvar name="ARGS"/>
@@ -193,6 +202,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
           </fs>
         </atomcat>
@@ -263,6 +275,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
           </fs>
         </atomcat>
@@ -404,6 +419,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -489,6 +507,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -568,6 +589,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
           </fs>
         </atomcat>
@@ -668,6 +692,9 @@
               </feat>
               <feat attr="OWNER">
                 <featvar name="OWNER"/>
+              </feat>
+              <feat attr="INTOPH">
+                <featvar name="INTOPH"/>
               </feat>
             </fs>
           </atomcat>
@@ -789,6 +816,9 @@
               <feat attr="OWNER">
                 <featvar name="OWNER"/>
               </feat>
+              <feat attr="INTOPH">
+                <featvar name="INTOPH"/>
+              </feat>
               <feat attr="FIN" val="be"/>
             </fs>
           </atomcat>
@@ -903,6 +933,9 @@
               <feat attr="OWNER">
                 <featvar name="OWNER"/>
               </feat>
+              <feat attr="INTOPH">
+                <featvar name="INTOPH"/>
+              </feat>
               <feat attr="FIN" val="be"/>
             </fs>
           </atomcat>
@@ -1000,6 +1033,9 @@
               <feat attr="OWNER">
                 <featvar name="OWNER"/>
               </feat>
+              <feat attr="INTOPH">
+                <featvar name="INTOPH"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:fin-clause"/>
               </feat>
@@ -1075,6 +1111,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -1160,6 +1199,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -1269,6 +1311,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -1405,6 +1450,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1513,6 +1561,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -1625,6 +1676,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1735,6 +1789,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -1847,6 +1904,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1957,6 +2017,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -2069,6 +2132,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2175,6 +2241,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -2283,6 +2352,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2390,6 +2462,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2496,6 +2571,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -2626,6 +2704,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2754,6 +2835,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -2884,6 +2968,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3012,6 +3099,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -3142,6 +3232,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3270,6 +3363,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -3400,6 +3496,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3528,6 +3627,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -3659,6 +3761,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -3793,6 +3898,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3925,6 +4033,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -4059,6 +4170,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4192,6 +4306,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4300,6 +4417,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -4413,6 +4533,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -4529,6 +4652,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4637,6 +4763,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -4785,6 +4914,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4932,6 +5064,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5062,6 +5197,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -5197,6 +5335,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -5334,6 +5475,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -5492,6 +5636,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5648,6 +5795,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -5806,6 +5956,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5938,6 +6091,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -6072,6 +6228,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -6204,6 +6363,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -6338,6 +6500,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -6471,6 +6636,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -6603,6 +6771,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -6773,6 +6944,9 @@
             <feat attr="OWNER">
               <featvar name="OWNER"/>
             </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -6929,6 +7103,9 @@
             </feat>
             <feat attr="OWNER">
               <featvar name="OWNER"/>
+            </feat>
+            <feat attr="INTOPH">
+              <featvar name="INTOPH"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>

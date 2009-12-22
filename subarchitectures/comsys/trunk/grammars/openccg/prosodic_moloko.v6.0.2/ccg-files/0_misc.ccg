@@ -17,7 +17,7 @@
   
   def EVENT(args)     { E:event( args ) }
 
-  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER INTOPH args]}
   def from-s(args)    { s<~10>[E args] }
 
 ###############

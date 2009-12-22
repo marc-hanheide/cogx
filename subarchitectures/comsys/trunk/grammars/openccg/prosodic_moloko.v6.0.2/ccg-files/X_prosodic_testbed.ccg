@@ -234,7 +234,7 @@ let "me@H*" "see@H*" LL%:1;
 it is red:1;
 it "is@H*" red LL% :1;
 it is "red@H*" LL% :1;
-"itH*" is red LL% :1;
+"it@H*" is red LL% :1;
 "is@L+H*" the "box@L+H*" LH% "blue@L*" HH%:1;
 I "don't" know the color:1;
 "I@L+H*" "don't" "know@L+H*" the "color@L+H*" LH%:1;

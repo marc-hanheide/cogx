@@ -293,12 +293,11 @@
   <type name="must" parents="FIN"/>
   <type name="have" parents="FIN"/>
   <type name="INTOPH"/>
-  <type name="nulltn" parents="INTOPH"/>
-  <type name="pam" parents="INTOPH"/>
+  <type name="am" parents="INTOPH"/>
+  <type name="nulltn" parents="am"/>
+  <type name="btone" parents="am"/>
   <type name="ip" parents="INTOPH"/>
   <type name="cp" parents="INTOPH"/>
-  <type name="rhm" parents="pam"/>
-  <type name="thm" parents="pam"/>
   <type name="RHEME"/>
   <type name="t-rheme-true" parents="RHEME"/>
   <type name="t-rheme-false" parents="RHEME"/>

@@ -82,12 +82,12 @@
       base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true m-hearer hear args;
       base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-speaker spkr args;
       base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-hearer hear args;
-      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
-      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
+      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-hearer hear hs am args;
+      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs am args;
       base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true m-hearer hear ls args;
       base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true m-speaker spkr ls args;
-      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs args;
-      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs args;
+      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs am args;
+      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs am args;
 	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-true args;
 	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-false args;
 	comp_hs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
