@@ -1,0 +1,246 @@
+###################
+# Prosodic Tesbed #
+###################
+# I. Type of utterances we want to address:
+#  A. Assertions/Acknowledgements/Answers, e.g. "This is a red box." , "I see a red box."
+#  B. Clarifications/Verification, e.g. "Is the box red?"
+#  C. Disambiguation, e.g., "Is the box red or orange?"
+#  D. Information Questions, e.g. "What color is the box?"
+#
+# II. Information Structures variations that we want to address:
+#  1. Rheme only: When is an utterance theme only.
+#  2. Theme only: does a Theme only utterance makes sense?
+#  3. Theme(un/marked)-Rheme:
+#  4. Rheme-Theme(un/marked):
+#  5. Theme-Rheme-Theme:
+#
+# Below here we enumerate the possbile combinations of I. and II.
+#
+testbed {
+
+## A.1. ## Assertions, Rheme only ##
+box: 1;
+"box@H*" LL%:1;
+green box:1;
+green "box@H*" LL%:1;
+a green box:1;
+a green "box@H*" LL%:1;
+
+it is a green box:1;
+it is a "green@H*" box LL%: 1 ;
+it is a "green@H*" "box@H*" LL%: 1 ;
+it is a green "box@H*" LL%: 1 ;
+"it@H*" "is@H*" a "green@H*" "box@H*" LL%:1;
+
+this is a blue mug:1;
+this is a "blue@H*" mug LL%: 1 ;
+this is a "blue@H*" "mug@H*" LL%: 1 ;
+this is a blue "mug@H*" LL%: 1 ;
+this is a "blue@H*" "mug@H*" LL%: 1 ;
+
+#--in the following dark should have something more contrastive---#
+this is a "dark@H*" "blue@H*" "mug@H*" LL%: 1 ;
+
+I see a red ball:1;
+I see a "red@H*" ball LL%: 1 ;
+I see a "red@H*" "ball@H*" LL%: 1 ;
+I see a red "ball@H*" LL%: 1 ;
+
+the "box@H*" is "blue@H*" LL%:1;
+
+## A.2 ## Assertions, Theme only ##
+the "box@L+H*" is "blue@L+H*" LL%:1; ##What does it mean to have such a information/intonation structure.
+it is a "ball@L+H*" LL%:1; #compare with the next
+it is a "ball@L+H*" LH%:1;
+
+## A.3 ## Assertions, Theme(un/marked)-Rheme ##
+
+the box is green:1;
+the box LH% is "green@H*" LL%:1 ;
+the "box@L+H*" LH% is "green@H*" LL%:1 ;
+
+the "ball@L+H*" is LH% "red@H*" LL%:1;
+the ball is LH% "red@H*" LL%:1;
+
+#---what does the robot do?
+the robot LH% "moves@H*" the "box@H*" LL%:1 ;
+the "robot@L+H*" LH% "moves@H*" the "box@H*" LL%:1 ;
+
+#---what does the robot move?
+the robot moves LH% the "box@H*" LL%:1 ;
+the "robot@L+H*" "moves@L+H*" LH% the "box@H*" LL%:1 ;
+
+## A.4 ## Assertions, Rheme-Theme(un/marked) ##
+
+#--who moves the box?
+the "robot@H*" LL% moves the "box@L+H*" LH%:1 ;
+the "robot@H*" LL% moves the box LH%:1 ;
+the "robot@H*" LL% moves the box LL%:1 ;
+
+the "box@H*" LL% is "red@L+H*" LH%:1 ;
+the "box@H*" LL% is red LH%:1 ;
+the "box@H*" LL% is red LL%:1 ;
+
+## A.5 ## Assertion, Theme-Rheme-Theme ##
+
+#--what does the robot do with the box?
+the "robot@L+H*" LH% "moves@H*" LL% the "box@L+H*" LH%:1 ;
+the robot LH% "moves@H*" LL% the box LH%:1 ;
+
+the "box@L+H*" LH% "is@H*" LL% "green@L+H*" LH%:1;
+
+## B.1 ## Verification, Rheme Only ## 
+
+"box@L*" HH%:1;
+green "box@L*" HH%:1;
+a green "box@L*" HH%:1;
+is it a green box: 1 ;
+is it a green "box@L*" HH%: 1 ;
+is it a "green@L*" box HH%: 1 ;
+is it a "green@L*" "box@L*" HH%: 1 ;
+
+is this a red ball: 1 ;
+is this a red "ball@L*" HH%: 1 ;
+is this a "red@L*" ball HH%: 1 ;
+is this a "red@L*" "ball@L*" HH%: 1 ;
+
+is it a blue mug: 1 ;
+is it a blue "mug@L*" HH%:1 ;
+is it a "blue@L*" "mug@L*" HH%:1 ;
+is it a large blue "mug@L*" HH%:1 ;
+is it a large "blue@L*" mug HH%:1 ;
+is it a "large@L*" blue mug HH%:1 ;
+
+#--as response to dialogue(did you mean If I see a red box?), vs. a visual initiative--
+do I see a red "box@L*" HH%:1;
+do I see a "red@L*" box HH%:1;
+is that a red "box@L*" HH%:1;
+is that a "red@L*" box HH%:1;
+
+did you say red:1;
+did "you@L*" say red HH%:1;
+did you say "red@L*" HH%:1;
+"did@L*" you say red HH%:1;
+
+## B.2 ## Verification, Theme Only ## 
+
+## B.3 ## Verification, Theme(un/marked)-Rheme ## 
+is the box LH% "green@L*" HH%: 1 ;
+is the "box@L+H*" LH% "green@L*" HH%: 1 ;
+
+is this LH%  "red@L*" HH%:1;
+is "this@L+H*" LH%  "red@L*" HH%:1;
+is "this@L+H*" LH%  "round@L*" HH%:1;
+
+is the box LH%  "compact@L*" HH%:1;
+is the "box@L+H*" LH%  "compact@L*" HH%:1;
+
+is the box LH% "compact@L*" and "red@L*" HH%:1;
+is the "box@L+H*" LH% "compact@L*" and "red@L*" HH%:1;
+
+is the ball LH% "red@L*" HH%:1;
+is the "ball@L+H*" LH% "red@L*" HH%:1;
+"is@L+H*" the "ball@L+H*" LH% "red@L*" HH%:1;
+
+## B.4 ## Verification, Rheme-Theme(un/marked) ## 
+is the "box@L*" HH% green LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
+
+is "this@L*" HH%  red LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
+
+is the "box@L*" HH%  compact LH%:1;
+is the "box@L*" HH%  "compact@L+H*" LH%:1;
+
+is the "box@L*" HH% compact and red LH%:1;
+is the "box@L*" HH% "compact@L+H*" and "red@L+H*" LH%:1;
+
+is "this@L*" HH% a box LH%:1;
+is "this@L*" HH% a "box@L+H*" LH%:1;
+
+## B.5 ## Verification, Theme-Rheme-Theme ## 
+
+## C.1 ## Disambiguation, Rheme only ##
+is the box "red@L*" or "orange@L*" HH%:1;
+is the box "compact@L*" or "elongated@L*" HH%:1;
+"which@L*" box is red HH%:1;
+
+
+## C.2 ## Disambiguation, Theme only ##
+
+## C.3 ## Disambiguation, Theme(un/marked)-Rheme ##
+is the box LH% "red@L*" or "orange@L*" HH%:1;
+is the "box@L+H*" LH% "red@L*" or "orange@L*" HH%:1;
+
+## C.4 ## Disambiguation, Rheme-Theme(un/marked) ##
+## C.5 ## Disambiguation, Rheme-Rheme-Theme(un/marked) ##
+
+## D.1 information requests ##
+"what@L*" is that HH%:1;
+"what@H*" is that HH%:1;
+what is "that@L*" HH%:1;
+what is "that@H*" HH%:1;
+
+what color is the mug:1;
+what "color@H*" is the mug HH%:1; ##Information Question.
+what "color@L*" is the mug HH%:1; ##Clarification Question.
+what color is the "mug@H*" HH%:1;
+what "color@H*" is "this@H*" mug HH%:1;
+what color is the bigger "mug@H*" HH%:1;
+what color is the "bigger@H*" mug HH%:1;
+what "color@H*" is the bigger mug HH%:1;
+"what@H*" color is the mug HH%:1;
+
+### following parses need to be constrained or not allowed ###
+is it a "red@H*" "box@L+H*" LH%: 0 ;
+is it a "red@L+H*" "box@H*" LH%: 0 ;
+is it a red box LL%: 0 ;        
+a red box LL%: 0 ;
+
+##### added while content planner testing ######
+the "box@L+H*" LH% is "blue@H*" LL%:1;
+the "box@L+H*" LH% "is@H*" "blue@H*" LL%:1;
+
+the "box@L+H*" is LH% "blue@H*" LL%:1;
+the "box@L+H*" "is@L+H*" LH% "blue@H*" LL%:1;
+
+the "box@H*" LL% is "blue@L+H*" LH%:1;
+the "box@H*" LL% "is@L+H*" "blue@L+H*" LH%:1;
+
+the "box@H*" is blue LL%:1;
+the box is "blue@H*" LL%:1;
+the box "is@H*" blue LL%:1;
+the "box@H*" "is@H*" "blue@H*" LL%:1;
+
+the "box@L+H*" "is@L+H*" "blue@L+H*" LH%:1;
+the "box@L+H*" is "blue@L+H*" LH%:1;
+the "box@L+H*" is blue LH%:1;
+the box is "blue@L+H*" LH%:1;
+the box "is@L+H*" blue LH%:1;
+
+the "box@L+H*" LH% "is@H*" LL% "blue@L+H*" LH%:1;
+
+##Demo scripts
+
+"I@L+H*" "see@L+H*" LH% a "car@H*" and a "blue@H*" "thing@H*" LL%:1;
+what color "is@H*" LH% the "box@L+H*" LH%:1;
+what "color@H*" is LH% the "box@L+H*" LH%:1;
+I see:1;
+"I@H*" "see@H*" LL%:1;
+let me see:1;
+let "me@H*" "see@H*" LL%:1;
+it is red:1;
+it "is@H*" red LL% :1;
+it is "red@H*" LL% :1;
+"itH*" is red LL% :1;
+"is@L+H*" the "box@L+H*" LH% "blue@L*" HH%:1;
+I "don't" know the color:1;
+"I@L+H*" "don't" "know@L+H*" the "color@L+H*" LH%:1;
+I "don't" know:1;
+"I@L+H*" "don't" "know@L+H*" LH%:1;
+it is a box:1;
+"it@L+H*" "is@L+H*" a "box@L+H*" LH%:1;
+I LL% "don't" know LH% the "color@H*" LL%:1;
+}
