@@ -1,0 +1,111 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def adv(args)         { adv<25>[M DEGREE args] }
+  def from-adv(args)    { adv<~25>[M args] }
+
+##############
+## FAMILIES ##
+##############
+
+  ## Family Building Macros ##
+  	
+  def adv-cat(args, sem)   { adv() args  :  M(* sem) }
+  
+  ## The Families ##
+
+  family Adv                { entry:  adv-cat(,) ;}
+  family Adv+dep-clause-    { entry:  adv-cat( / s_ma(s-dependent MARK=none), E-ARG() ) ;}
+  
+  # These handle, e.g. I will watch you 'while working at my desk'.
+  # b/c typechange rules don't seem to allow a co-indexing of source and target sub-structures 
+  # (here the subject), these are not build using a basic cat, but directly.
+  #
+  family Adv+verb-ing-      { entry:  post-vp( MCLASS , / (s_ma(ing) +subj() ) )     : EVENT( <Modifier>(M * E-ARG() ))  ;}
+  family Adv+verb-base-     { entry:  post-vp( MCLASS , / (s_ma(vf-base) +subj() ) ) : EVENT( <Modifier>(M * E-ARG() ))  ;}
+
+  # Modifiers #
+  
+  family Mod-pre-adv-                { entry:  from-adv() /^ adv()   :  M( M-MOD(*) ) ;}
+  family Mod-post-adv-               { entry:  from-adv() \ adv()    :  M( M-MOD(*) ) ;}
+    
+  # Negation and Coordition #
+  
+  family Negation-adv-(indexRel=polarity)  { entry:  from-adv() \ adv() :  M( NEG()  ) ;}
+  family Coord-adv-                        { entry:  adv[R COM=yes] / adv[N] \* adv[F COM=no] : COORD(*) ;}
+
+###########
+## RULES ##
+###########
+
+ 
+  # The following rules convert the 'base-generated' atomic cat versions of advss and turns them
+  # into their complex-cat form (i.e. the form that actually attach to sentences/clauses/verbs)
+  # Remember, this combinatorial capacity is specified in the actual dictionary entry of the word
+  # by assigning it to a particular cc-class
+ 
+  # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() ) categories
+  # used in these rules  
+ 
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT: If either the dependency relation name (e.g. <Modifier>  ) or the
+  #            modifier section of the ontological hierarchy is changed, you will have to add
+  #            a new 'instance' of these rules for each.
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  # Sentential Modifying Rules #
+  #
+  # For each of the many sentential/clausal possibilities for adverbs, their is a corresponding rule.
+
+    rule { typechange: adv(pre-s2)$1           =>   pre-s2($1)         :  EVENT( MODIFIER() ) ; } 
+    rule { typechange: adv(pre-vp2)$1          =>   pre-vp2($1)        :  EVENT( MODIFIER() ) ; } 
+   
+  #  rule { typechange: adv(post-s2)$1          =>   post-s2($1)        :  EVENT( MODIFIER() ) ; } 
+  #  rule { typechange: adv(post-vp2)$1         =>   post-vp2($1)       :  EVENT( MODIFIER() ) ; } 
+  
+	# HACK (see modifier.ccg)
+  #  rule { typechange: adv(pre-vp2)$1          =>   pre-vp-in-rel-clause($1)        :  EVENT( MODIFIER() ) ; } 
+   
+	
+    mod-rule-pre-cop2 ( adv(pre-cop-comp2) , $1, EVENT( MODIFIER() )   )
+	
+    #  rule { typechange: adv(post-s-loose2)$1   =>   post-s-loose2($1)  :  EVENT( MODIFIER() ) ; } 
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+ #PROSG09 changes
+ def adverb(base, class, cc-class, args)  { _adverb_ip(base, base,accentMark(base), class, cc-class, args) } 
+ def _adverb(base, base, class, cc-class, args) {_adverb_ip(prd, base, accentMark(base), class, cc-class, args) }
+ def _adverb_ip(prd, base, base_hs,base_ls,base_lphs, class, cc-class, args) {
+    word base.-adv:Adv("m-".class, pred=prd) {
+      base : s-degree-base x-.class cc-class args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs args;
+
+    }
+  }
+
+ def adverb-deg(base, comp, sup, class, cc-class, args) { _adverb-deg(base, base, comp, sup, class, cc-class, args)}
+ def _adverb-deg(prd, base, comp, sup, class, cc-class, args) {
+    word base.-adv-deg:Adv("m-".class, pred=prd) {
+      base : s-degree-base x-.class cc-class args;
+	  comp : s-comparative x-.class cc-class comparative args;
+	  sup  : s-superlative x-.class cc-class superlative args;
+    }
+  }
+
+ # for those adverbs with arguments (now only dep-clause)
+ #
+ def adverb+(arg, form, class, cc-class, args) {_adverb+(arg, form, form, class, cc-class, args) } 
+ def _adverb+(arg, prd, form, class, cc-class, args) {
+    word form."adv+".arg : "Adv+".arg."-"("m-".class, pred=prd)
+	{form : x-.class cc-class args;}
+  } 
+
