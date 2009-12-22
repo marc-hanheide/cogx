@@ -45,6 +45,8 @@ public:
       VisionData::SurfacePointSeq& points, const Ice::Current&);
 
   virtual void getRectImage(Ice::Int side, Video::Image& image, const Ice::Current&);
+
+  virtual void getDisparityImage(Video::Image& image, const Ice::Current&);
 };
 
 class StereoServer : public CASTComponent,
@@ -137,6 +139,8 @@ public:
       std::vector<VisionData::SurfacePoint> &points);
 
   void getRectImage(int side, Video::Image& image);
+  
+  void getDisparityImage(Video::Image& image);
 
   /**
    * The callback function for images pushed by the image server.

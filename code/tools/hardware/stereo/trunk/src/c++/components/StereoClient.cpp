@@ -81,5 +81,10 @@ void StereoClient::getRectImage(int side, Video::Image& image)
   stereoServer->getRectImage(side, image);
 }
 
+void StereoClient::getDisparityImage(Video::Image& image)
+{
+  stereoServer->getDisparityImage(image);
+}
+
 }
 

@@ -51,6 +51,7 @@ public:
   void getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi, VisionData::SurfacePointSeq& points);
 
   void getRectImage(int side, Video::Image& image);
+  void getDisparityImage(Video::Image& image);
 };
 
 }
