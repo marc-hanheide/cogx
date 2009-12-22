@@ -1,0 +1,952 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains most dictionary entries, specifically, the 'open class words' 
+#     i.e. nouns, verbs, adjectives, adverbs, prepositions, 
+#          discourse-markers, mod-modifiers (VERY big, OVER on the table, etc.)
+# It also includes some higher level macros for defining larger clusters of words
+# These are marked with --MACRO-- (see documentation)
+
+
+
+# The entries have been sorted first by 'Part of Speech' then by ontological sort (person, thing, etc)
+
+# All entries are entered using one of the 'dictionary-entry' macros (defs)
+# listed in the various .ccg files in the grammar proper. 
+
+# Although, of course, you must check the apporpriate file for specifics,
+# the standard convention for these dictionary-entry macros is 
+#
+#     macro-name( various forms, 
+#                 ontological sort (i.e. class),
+#                 other arguments (including feature-macros, family listing)
+#                )
+#
+# For alternate forms/variations, i.e. different entries with the same predicate
+# (e.g. forward, forwards) for each additional form, you must add a separate entry
+# using the alternate-form macro.
+#
+#     _macro-name( predicate,
+#                  various forms,
+#                  ontological sort (i.e. class),
+#                  other arguments (including feature-macros, family listing)
+#                ) 
+#
+# This is identical to the standard macro, except, it is prefaced with an underscore _, 
+# and the first element is the predicate, then the alternate variation in all of its forms
+# 
+#  e.g. Here are the entries for the adverbs 'slow' & alternate 'slowly' 
+#           adverb(slowly, manner, adv-all,) 
+#          _adverb(slowly, slow, manner, adv-all,)
+
+# NOTE:
+# There is currently, unlike in moloko.v4, no way of handling Multi-word expressions. 
+
+
+###########
+## NOUNS ##
+###########
+
+  # ----MACRO----
+  #   This gives every relevant proper name a Discourse Marker reading, 
+  #   allowing it to function as a vocative
+  #        e.g. GJ could you come here
+  #   NOTE: NO CO-INDEXING occurs for this in the grammar
+  #
+  def name+vocative(form, class) {_name+vocative(form, form, class) }
+  def _name+vocative(prd, form, class){
+     _name(prd, form, class,)
+     _dis-marker+(prd, form, class, fin-full) # blocks from getting 'GJ has a ball'... to parse as contextualized, 'GJ, has a ball been put here recently'
+  }
+
+  #-- Person --#
+
+  noun(person, person,)
+  noun(boy, person,)
+  noun(girl, person,)
+  noun(dad, person,)
+  noun(mom, person,)  _noun(mom, mamma, person,)
+  noun-irr(man, men, person,)
+  noun-irr(woman, women, person,)
+  noun-irr(child, children, person,)
+  noun(guy, person,)
+  noun(secretary, person,)
+  noun-irr(policeman, policemen, person,)
+  noun(janitor, person,)
+  noun(student, person,)
+  noun(researcher, person,)
+  noun(pirate, person,)
+
+  name+vocative(GJ, person,)
+  name+vocative(Trevor, person,)	
+  name+vocative(Hendrik, person,)	
+  name+vocative(Henrik, person,)	
+  name+vocative(Pierre, person,)
+  name+vocative(Patric, person,)		
+  name+vocative(Nick, person,)	
+  name+vocative(Michael, person,)	
+  name+vocative(Oscar, person,)	
+  name+vocative(Daniel, person,)	
+  name+vocative(Maria, person,)	  
+  name+vocative(Jeremy, person,)	
+  name+vocative(Aaron, person,)	
+  name+vocative(Chandana, person,)	
+   name+vocative(Hans, person,)
+   name+vocative(Dennis, person,)
+   name+vocative(George, person,)
+
+  _noun(Robot, rowboat, animate, asr-correction)
+
+
+  noun(Borland, entity,) 
+  
+  #-- Animate --#
+ 
+  name+vocative(Robot, animate) _name+vocative(Robot, robot, animate)
+   
+  noun(dog, animate,) 
+  noun(cat, animate,) 
+  noun-irr(fish, fish, animate,) 
+  noun(cow, animate,) 
+  noun(mouse,animate,)
+  noun(animal, animate,) 
+  noun(robot, animate,) 
+ 
+  #-- Thing --#
+  
+  noun(thing, thing,)
+  noun(object, thing,)
+  noun(entity, thing,)
+ 
+  noun(triangle, thing,) 
+  noun(square, thing,) 
+  noun(star, thing,) 
+  noun(circle, thing,) 
+ 
+  noun(cone,thing,)
+  noun(cylinder, thing,)
+  noun(boat, thing,)
+
+  noun(cable, thing,)
+  noun(fruit, thing,)  
+  noun(bed, thing,)
+  noun(pen, thing,)
+  noun(glue, thing,)
+  noun(row, thing,)
+  noun(curtain, thing,)
+  noun(mattress, thing,)
+  noun(mountain, thing,)
+  noun(arm, thing,)
+  noun(board, thing,)
+
+  noun(flag, thing,) 
+   
+  noun(game, thing,) 
+    
+  noun(car, thing,)
+  noun(wall, thing,)
+    
+  noun(pizza, thing,) 
+  noun(thing, thing,) 
+  noun(book, thing,) 
+  noun(ball, thing,) 
+  noun(block, thing,) 
+  noun(box, thing,) 
+
+  word box2-noun-n:Noun(thing, pred=box) { blocks :  s-sg full asr-correction; }
+  word box3-noun-n:Noun(thing, pred=box) { ball :  s-sg full asr-correction; }
+  word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
+
+ 
+  noun(bucket, thing,) 
+  noun(pin, thing,) 
+  noun(cube, thing,) 
+
+  noun(trophy, thing,) 
+  noun-irr(tooth, teeth, thing,) 
+  noun(mug, thing,) 
+  noun(cup, thing,) 
+  noun(jug, thing,) 
+  noun(keyboard, thing,) 
+  noun(laptop, thing,) 
+  noun(screen, thing,) 
+  noun(computer, thing,) 
+  noun(mp3-player, thing,) 
+  noun(minidisc-recorder, thing,) 
+  noun(needle, thing,) 
+  noun(thread, thing,) 
+  noun-mass(thread, thing,) 
+  noun(flower, thing,) 
+  noun(phone, thing,) _noun(phone, telephone, thing,)
+  noun(mobile, thing,) _noun(mobile, cell, thing,) _noun(mobile, handy, thing,) _noun(mobile, cellphone, thing,)  
+  noun(letter, thing,) 
+  noun(mailbox, thing,) 
+  noun(copier, thing,) 
+  noun(fax, thing,) 
+  noun(printer, thing,) 
+  noun(column, thing,)  _noun(column, pillar, thing,)
+  noun-mass(furniture, thing,) 
+  noun(floor, thing,) 
+  noun(door, thing,) 
+  noun(couch, thing,) _noun(couch, sofa, thing,)
+  noun(tv, thing,)  _noun(tv, television, thing,)
+  noun(oven, thing,) _noun(oven, cooker, thing,) _noun(oven, stove, thing,)
+  noun(tabletop, thing,) _noun(tabletop, desktop, thing,)
+  noun(fridge, thing,)   _noun(fridge, refridgerator, thing,)
+  noun(microwave, thing,)   
+  noun-irr(shelf, shelves, thing,) 
+  noun(closet, thing,)
+  noun(desk, thing,)
+  noun(table, thing,)
+  noun(chair, thing,)   
+  noun(scenery, thing,) 
+  noun(fax, thing,)   
+  noun(machine, thing,) 
+  noun(kettle, thing,) 
+  noun-mass(scissors, thing,) 
+  noun-mass(food, thing,) 
+
+  # NOTE: How handle 'a water' and 'some water'??
+ 
+  noun(chocolate, thing,)
+  noun(tea, thing,) 
+  noun(coffee, thing,) 
+  noun(water, thing,) 
+   
+  #-- e-substance --#
+
+  noun-mass(tea, e-substance,)
+  noun-mass(coffee, e-substance,)
+  noun-mass(chocolate, e-substance,) 
+  noun-mass(water, e-substance,) 
+  
+  noun-mass(tee, e-substance,)
+  noun-mass(iron, e-substance,)
+
+  noun-mass(wood, e-material,) 
+  noun-mass(metal, e-material,) 
+  noun-mass(plastic, e-material,) 
+	  
+  #-- e-event --#
+
+  noun(event,       e-event,) 
+  noun(competition, e-event,) 
+  noun(interaction, e-event,) 
+
+  #-- e-location --#
+
+  noun(place, e-place,) 
+  noun(office, e-place,) 
+  noun(room, e-place,)   
+  noun(hall, e-place,)  _noun(hall, hallway, e-place,) _noun(hall, corridor, e-place,)
+  noun(bathroom, e-place,) _noun(bathroom, washroom, e-place,) _noun(bathroom, toilet, e-place,) _noun(bathroom, wc, e-place,)
+  noun(lab, e-place,)  _noun(lab, laboratory, e-place,) 
+  noun(kitchen, e-place,) 
+  noun(library, e-place,)
+  noun(livingroom, e-place,)
+  noun(recreationroom, e-place,)
+  noun(library, e-place,)
+  
+  noun(secretariat, e-place,)
+  noun(lobby, e-place,)
+  noun(entrance, e-place,)
+  noun(lift, e-place,) _noun(lift, elevator, e-place,)
+  noun(stairs, e-place,) _noun(stairs, starecase, e-place,)
+  noun(floor, e-place,)
+  noun(way, e-place,)
+  noun(direction, e-place,)
+  noun(university, e-place,)
+  noun(station, e-place,)   # must handle charging station
+
+  # feature values cc-none and n-1, n-2, n-3 restrict the noun's behaviour in Noun-Noun Compounds
+  #
+  noun(location, e-place,)   noun+(of-np, location, e-place, n-1)
+  noun(area, e-place,)       noun+(of-np, area, e-place, n-1)
+
+  name(DFKI, e-place,)		  noun(DFKI, e-place,)
+  name(Starbucks, e-place,) 	  noun(Starbucks, e-place,)
+
+  #-- e-region --#
+
+  noun(side, e-region,)    noun+(of-np, side, e-region, n-1)
+  noun(edge, e-region,)    noun+(of-np, edge, e-region, n-1)
+  noun(corner, e-region,)  noun+(of-np, corner, e-region, n-1)
+  noun(beginning, e-region,)  noun+(of-np, beginning, e-region, n-1)
+  noun(start, e-region,)   noun+(of-np, start, e-region, n-1)
+  noun(end, e-region,)     noun+(of-np, end, e-region, n-1)	      
+  noun(front, e-region,)   noun+(of-np, front, e-region, n-1)
+  noun(back, e-region,)    noun+(of-np, back, e-region, n-1)
+  noun(top, e-region,)     noun+(of-np, top, e-region, n-1)
+  noun(bottom, e-region,)  noun+(of-np, bottom, e-region, n-1)
+  noun(middle, e-region,)  noun+(of-np, middle, e-region, n-1)
+  noun(section, e-region,) noun+(of-np, section, e-region, n-1)
+  noun(part, e-region,)    noun+(of-np, part, e-region, n-1)
+  
+  #-- e-time --#
+  
+  noun(time, e-time,)
+  noun-mass(time, e-time,)
+  
+  noun(second, e-time-unit,)    _noun(second, sec, e-time-unit,)  
+  noun(minute, e-time-unit,)  
+  noun(hour, e-time-unit,)   
+  noun(week, e-time-unit,)   
+  noun(day, e-time-unit,)   
+  noun(month, e-time-unit,)   
+  noun(year, e-time-unit,)   
+
+  noun-mass(while, e-time-unit, cc-none)
+  noun-mass(bit, e-time-unit, cc-none)
+
+
+  #-- e-measure --#
+  
+  noun+(of-np, piece, e-measure, n-2)
+  noun+(of-np, set, e-measure, n-2)
+  noun+(of-np, pile, e-measure, n-2)
+  noun+(of-np, few, e-measure, n-2)
+  noun+(of-np, group, e-measure, n-2)
+  noun+(of-n, kind, e-measure, n-2) _noun+(of-n, kind, sort, e-measure, n-2) _noun+(of-n, kind, type, e-measure, n-2)
+
+  # ???? #   MUST BE GIVEN PROPER SORTS
+ 
+  noun(name, entity, )  noun+(of-np, name, entity, cc-none )
+  noun(case, entity, )  
+
+  noun(color, entity, n-3) noun+(of-np, color, entity, cc-none ) _noun(color, colour, entity, n-3 ) _noun+(of-np, color, colour, entity, cc-none )
+  noun(shape, entity, n-3) noun+(of-np, shape, entity, cc-none ) 
+  noun(size, entity, n-3)  noun+(of-np, size, entity, cc-none )
+
+  noun(question, entity, )    
+  noun(answer, entity, )    
+  noun(help, entity, )    
+  noun(guidance, entity, ) 
+  noun(aid, entity, ) 
+  noun(suggestion, entity, ) 
+
+  noun(look, entity, )   # used in 'take a look'
+  noun(peek, entity, )
+
+  
+
+################
+## ADJECTIVES ##
+################
+
+
+  #-- q-attitude --#
+
+  adj-deg(good, better, best, q-attitude,)
+  adj-deg(bad, worse, worst, q-attitude,)
+  adj-deg(sorry, sorrier, sorriest, q-attitude,)
+  adj-deg(cool, cooler, coolest , q-attitude,)
+  adj-deg(guilty, guiltier, guiltiest, q-attitude,)
+  adj-deg(happy, happier, happiest, q-attitude,)
+  adj-deg(sad, sadder, saddest, q-attitude,)
+  adj-deg(nice, nicer, nicest, q-attitude,)
+  adj-deg(great, greater, greatest, q-attitude,)
+  adj-deg(fine, finer, finest, q-attitude,)
+ 
+  adj-none(sure, q-attitude,)  
+  adj-none(ok, q-attitude,)  
+  adj-none(important, q-attitude,)  
+  adj-none(correct, q-attitude,)  
+  adj-none(incorrect, q-attitude,) 
+  adj-none(right, q-attitude,) 
+  adj-none(wrong, q-attitude,)  
+  adj-none(true, q-attitude,) 
+  adj-none(false, q-attitude,)  
+  
+  adj-none(elongated,q-shape,)
+
+  #-- q-size --#
+  
+  adj-deg(big, bigger, biggest, q-size,) 
+  adj-deg(small, smaller, smallest, q-size,)
+  adj-deg(tiny, tinier, tiniest, q-size,) 
+  adj-deg(huge, huger, hugest, q-size,) 
+  adj-deg(large, larger, largest, q-size,) 
+
+  #-- q-color --#
+
+  adj-deg(red, redder, reddest, q-color,)
+  adj-deg(blue, bluer, bluest, q-color,)
+  adj-deg(green, greener, greenest, q-color,)  
+  adj-deg(yellow, yellower, yellowest, q-color,)  
+  adj-deg(orange, oranger, orangest, q-color,)
+
+  adj-deg(pink, pinker, pinkest, q-color,)
+  adj-deg(black, blacker, blackest, q-color,)  
+  adj-deg(white, whiter, whitest, q-color,)
+  adj-deg(grey, greyer, greyest, q-color,)  
+  adj-deg(brown, browner, brownest, q-color,)
+  adj-deg(purple, purpler, purplest, q-color,)  
+
+  adj-deg(dark, darker, darkest, q-color,)
+  adj-deg(light, lighter, lightest, q-color,)  
+  
+  #-- q-shape --#
+  
+  adj-deg(long,longer,longest,q-shape,)
+  adj-deg(short,shorter,shortest,q-shape,)
+  adj-deg(tall,taller,tallest,q-shape,) 
+  adj-deg(narrow,narrower,narrowest,q-shape,)   
+  adj-deg(wide,wider,widest,q-shape,) 
+  adj-deg(fat,fatter,fattest,q-shape,)   
+  adj-deg(thin,thinner,thinnest,q-shape,) 
+  adj-deg(round,rounder,roundest,q-shape,)  
+  adj-none(oval,q-shape,) 
+  adj-none(cubic,q-shape,) 
+  adj-none(spherical,q-shape,) 
+  adj-none(square,q-shape,)   
+  adj-none(triangular,q-shape,)   
+  adj-none(compact,q-shape,)   
+  adj-none(elongated,q-shape,)   
+
+
+  #-- q-physical --#
+ 
+  adj-none(open,q-physical,) 
+  adj-none(closed,q-physical,) 
+  
+  adj-none(cluttered,q-physical,) 
+  adj-none(accessible,q-physical,) 
+  adj-none(inaccessible,q-physical,) 
+  adj-none(reachable,q-physical,) 
+  adj-none(unreachable,q-physical,) 
+  adj-none(visible,q-physical,) 
+  adj-none(invisible,q-physical,) 
+  adj-none(graspable,q-physical,) 
+  adj-none(ungraspable,q-physical,) 
+  
+  #-- q-location --#
+  
+  # NOTE: left & right, near & far are in directions (in prep) below
+  
+  adj-none(top,q-location,) 
+  adj-none(bottom,q-location,) 
+  adj-none(middle,q-location,) 
+ 
+  #-- q-age --#
+  
+  adj-deg(old, older, oldest, q-age,)  
+  adj-deg(young, younger, youngest, q-age,)
+   
+  #-- q-number --#
+    
+  # Numbers handled in dictionary-closed
+  
+  #-- q-position --#
+
+  adj-none(first,q-position,) 
+  adj-none(last,q-position,)
+  adj-none(next,q-position,)
+  adj-none(previous,q-position,)
+  adj-none(other,q-position,) 
+    
+  #-- q-state --#
+  
+  adj-none(empty,q-state,) 
+  adj-none(full,q-state,) 
+  adj-none(hungry,q-state,)   
+  adj-none(thirsty,q-state,)
+  adj-none(tired,q-state,) 
+  adj-none(finished,q-state,) 
+  adj-none(started,q-state,)   
+  adj-none(on,q-state,) 
+  adj-none(off,q-state,) 
+  adj-none(ready,q-state,)   
+ 	   	   
+  # ???? #   MUST BE GIVEN PROPER SORTS
+
+  adj-none(known,quality,)
+  adj-none(unknown,quality,)
+
+  adj-none(same,quality,)
+  adj-none(raw,quality,)
+
+
+############
+## VERBS  ##
+############
+  
+  # to block a verb from receiving an imperative reading, use ....-no-imp
+  # e.g. verb-no-imp or verb-reg-no-imp
+  
+  #-- action-motion --#
+  
+  verb(go, going, went, gone, m-class-all, action-motion,                iv )
+  verb(come, coming, came, come, m-class-all, action-motion,             iv )
+  verb-reg(return, m-class-all, action-motion,                           iv )
+  verb-reg(walk, m-class-all, action-motion,                             iv )
+  verb-reg(turn, m-class-all, action-motion,                             iv )
+  verb-reg(follow, m-class-all, action-motion,                           iv tv )
+  verb-reg(pass, m-class-all, action-motion,                             iv )
+  verb(move, moving, moved, moved, m-class-all, action-motion,           iv tv v+np+pp-whereto)
+  
+  verb(bring, bringing, brought, brought, m-class-all, action-motion,    iv )
+  
+ verb-reg(drive, m-class-all, action-motion,                           iv tv )
+
+    
+  #-- action-non-motion --#
+  
+  verb-reg(play, m-class-1, action-non-motion,                           iv tv) 
+     # NOTE: Changed to m-class 1, aug 20, to allow 'how did we play the colour game'. Which how was meant here???
+  verb(win, winning, won, won, m-class-2, action-non-motion,             iv tv)  
+  verb(lose, losing, lost, lost, m-class-2, action-non-motion,           iv tv) 
+  verb-reg(kill, m-class-2, action-non-motion,                           tv) 
+  verb-reg(bother, m-class-2, action-non-motion,                         tv)
+  
+  _verb-no-imp(go-loc, go, going, went, gone, m-class-3, action-non-motion,       v+pp-loc)  # they go on the table. where does this go
+  
+  verb(buy, buying, bought, bought, m-class-1, action-non-motion,        tv dtv )
+  verb(give, giving, gave, given, m-class-1, action-non-motion,          tv dtv dtv-to )
+  
+  #verb(get, getting, got, got, m-class-1, action-non-motion,             tv dtv dtv-to v+np+pp-whereto )
+  #verb(take, taking, took, taken, m-class-1, action-non-motion,          tv v+np+pp-whereto)
+  #verb(bring, bringing, brought, brought, m-class-1, action-non-motion,  tv dtv dtv-to v+np+pp-whereto )
+  #verb-reg(fetch, m-class-1, action-non-motion,  tv dtv)
+  
+     verb-reg(remove, m-class-all, action-non-motion,  tv dtv)
+     verb-reg(rotate, m-class-all, action-motion,  tv dtv)
+
+  # NOTE: Aug 20, changed to m-class-all to allow parsing 'from', i.e. get me the ball from the table
+  # 
+  verb(get, getting, got, got, m-class-all, action-non-motion,             tv dtv dtv-to v+np+pp-whereto )
+  verb(take, taking, took, taken, m-class-all, action-non-motion,          tv v+np+pp-whereto)
+  verb(bring, bringing, brought, brought, m-class-all, action-non-motion,  tv dtv dtv-to v+np+pp-whereto )
+  verb-reg(fetch, m-class-all, action-non-motion,  tv dtv)
+  
+  
+  verb(eat, eating, ate, ate, m-class-1, action-non-motion,              iv tv)
+  verb(drink, drinking, drank, drank, m-class-1, action-non-motion,      iv tv)
+  
+  verb(sleep, sleeping, slept, slept, m-class-1, action-non-motion,      iv )
+  
+  verb(stand, standing, stood, stood, m-class-1, action-non-motion,      iv )
+  verb(sit, sitting, sat, sat, m-class-1, action-non-motion,             iv )
+  verb-reg(wait, m-class-1, action-non-motion,                           iv v+for-np)
+  
+  verb(put, putting, put, put, m-class-1, action-non-motion,             v+np+pp-whereto )
+  
+  verb-reg(pick, m-class-1, action-non-motion,                           v+np+prt )
+  verb(make, making, made, made, m-class-1, action-non-motion,           tv v+np+verb-base v+np+adj v+np+of-np-result v+np+from-np-result v+np+out_of-np-result)
+  
+  verb(find, finding, found, found, m-class-2, action-non-motion,            tv dtv) 
+  verb(show, showing, shown, shown, m-class-2, action-non-motion,            tv dtv) 
+  verb(explore, exploring, explored, explored, m-class-2, action-non-motion, iv tv) 
+  verb-reg(search, m-class-2, action-non-motion,                             iv v+for-np)
+     _verb-reg(search, look, m-class-2, action-non-motion,                   iv v+for-np)
+  verb(find, finding, found, found, m-class-2, action-non-motion,            iv tv) 
+  
+  verb-reg(help, m-class-2, action-non-motion,                           tv v+np+verb-base)
+  verb(use, using, used, used, m-class-2, action-non-motion,             tv v+instrumental-np+verb-inf) 
+  verb-reg(fix, m-class-2, action-non-motion,                            tv)
+  verb(break, breaking, broke, broke, m-class-2, action-non-motion,      tv) 
+  
+  #-- cognition --#
+  
+  verb(know, knowing, knew, known, m-class-3, cognition, iv tv v+adj v+pp v+dep-clause)
+  verb(understand, understanding, understood, understood, m-class-3, cognition, iv tv v+adj v+pp v+dep-clause )
+  
+  # DO WE NEED TO SEPARATE THESE UP ON THEIR TYPE i.e. Modal vs Not
+  
+  verb(mean, meaning, meant, meant, m-class-3, cognition,         tv v+verb-inf v+dep-clause)
+  
+  verb-reg(want, m-class-3, cognition,                                    tv v+verb-inf v+np+verb-inf v+np+pp-loc v+np+adj) 
+  verb-reg(need, m-class-3, cognition,                                    tv v+verb-inf v+np+verb-inf v+np+pp-loc v+np+adj) 
+  verb(like, liking, liked, liked, m-class-3, cognition,                  tv v+verb-inf v+np+verb-inf v+np+pp-loc v+np+adj) 
+  verb(memorize, memorizing, memorized, memorized, m-class-3, cognition,  tv)
+  
+  verb(assume, assuming, assumed, assumed, m-class-3, cognition,         v+dep-clause)
+  verb(hope, hoping, hoped, hoped, m-class-3, cognition,                 v+dep-clause v+verb-inf) 
+  verb(suppose, supposing, supposed, supposed, m-class-3, cognition,     v+dep-clause v+verb-inf)
+  verb(think, thinking, thought, thought, m-class-3, cognition,          v+dep-clause)
+  verb(believe, believing, believed, believed, m-class-3, cognition,     v+dep-clause)
+  verb(imagine, imagining, imagined, imagined, m-class-3, cognition,     v+dep-clause)
+  verb(bet, betting, bet, bet, m-class-3, cognition,                     v+dep-clause)
+  verb-reg(guess, m-class-3, cognition,                                  v+dep-clause)
+  verb(figure, figuring, figured, figured, m-class-3, cognition,         v+dep-clause)
+  
+  #-- communication --#
+  
+  verb(tell, telling, told, told, m-class-2, communication,              tv v+np+verb-inf v+np+dep-clause dtv dtv-to v+np+pp-loc)
+  verb-reg(ask, m-class-2, communication,                                iv tv v+np+verb-inf v+np+dep-clause dtv dtv-to v+np+pp-loc)
+  verb(say, saying, said, said, m-class-2, communication,                iv v+dep-clause)
+  verb-reg(explain, m-class-2, communication,                            tv dtv dtv-to)
+  verb-reg(talk, m-class-2, communication,                               iv v+to-np v+with-np)
+  verb(speak, speaking, spoke, spoke, m-class-2, communication,          iv v+to-np v+with-np)
+  
+  verb (excuse, excusing, excused, excused, m-class-2, communication,    tv dtv-for v+Rec-np+for-verb-ing)
+  verb-reg(pardon, m-class-2, communication,                             tv dtv-for v+Rec-np+for-verb-ing)
+  verb(thank, thanking, thanked, thanked, m-class-2, communication,      dtv-for v+Rec-np+for-verb-ing)
+  word thanks-verb: Thanks(communication, pred=thank) { thanks: m-class-5 fin pres s-pos ; thank_you: m-class-5 fin pres s-pos;}
+     # special verb family which creates indicative with <recipient>addressee and <actor>speaker
+# m-class5 blocks all modification but comments
+
+#-- perception --#
+
+def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event} 
+  
+  verb(see, seeing, saw, seen, m-class-2, perception,                   per-fams() )
+  verb-reg(watch, m-class-2, perception,                                per-fams() )
+  verb-reg(look, m-class-2, perception,                                 per-fams() v+adj )
+  verb(observe, observing, observed, observed, m-class-2, perception,   per-fams() )
+  
+  verb-reg(listen, m-class-2, perception,          iv v+to-np)
+  verb(hear, hearing, heard, heard, m-class-2, perception,              per-fams() )
+  verb-reg(sound, m-class-2, perception,                                v+adj )
+  
+  verb-reg(touch, m-class-2, perception,                                tv)
+  verb(feel, feeling, felt, felt, m-class-2, perception,                tv v+adj)
+  
+  #-- symbolic --#
+  
+  verb-reg(call, m-class-2, symbolic,                           tv )
+  verb(name, naming, named, named, m-class-2, symbolic,         tv )
+  
+  #-- state --#
+  
+  verb-basic(have, has, having, had, had, m-class-2, ascription,           tv )
+  verb(feel, feeling, felt, felt, m-class-2, ascription,                   v+adj )
+  verb(get, getting, got, got, m-class-2, ascription,                      v+adj )
+  verb(become, becoming, became, become, m-class-2, ascription,            v+adj )
+  
+  #-- event --#
+  
+  verb-reg(happen, m-class-2x, event,   iv v+to-np )
+  
+  #-- modal/aspectual verbs --#
+  
+  # These verbs have two entries. 1 is for the case where the 'aspectualized' event is
+  # explicitly mentioned (e.g. I continued going down the hall). The second receives only
+  # an 'implicit' event, (e.g. I continued down the hall)
+  # The first is blocked to m-class-3 so that its event comp will receive the modifiers
+  # In the second case, since there is no explicit verb here, the aspect verb
+  # must be free for any kind of modification (m-class-all)
+  
+  verb(keep, keeping, kept, kept, m-class-3, modal,                    v+verb-ing v+np+verb-ing) 
+  verb(keep, keeping, kept, kept, m-class-all, modal,                  iv)
+  
+  verb(continue, continuing, continued, continued, m-class-3, modal,   v+verb-inf v+verb-ing ) 
+  verb(continue, continuing, continued, continued, m-class-all, modal, iv)
+  
+  verb(try, trying, tried, tried, m-class-3, modal,                    v+verb-inf v+verb-ing ) 
+  verb(try, trying, tried, tried, m-class-all, modal,                  iv) 
+  
+  verb-reg(start, m-class-3, modal,                                    v+verb-inf v+verb-ing v+np+verb-ing) 
+  verb-reg(start, m-class-all, modal,                                  iv)
+  
+  verb(begin, beginning, began, begun, m-class-3, modal,               v+verb-ing) 
+  verb(begin, beginning, began, begun, m-class-all, modal,             iv) 
+  
+  verb-reg(restart, m-class-3, modal,                                  v+verb-ing v+np+verb-ing) 
+  verb-reg(restart, m-class-all, modal,                                iv)
+   
+  verb-reg(finish, m-class-3, modal,                                   v+verb-ing v+deictic-event) 
+  verb-reg(finish, m-class-all, modal,                                 iv) 
+  
+  verb(stop, stopping, stopped, stopped, m-class-3, modal,             v+verb-ing v+np+verb-ing v+deictic-event) 
+  verb(stop, stopping, stopped, stopped, m-class-all, modal,           iv)
+   
+  verb(quit, quitting, quit, quit, m-class-3, modal,                   v+verb-ing v+deictic-event) 
+  verb(quit, quitting, quit, quit, m-class-all, modal,                 iv) 
+  
+  verb-reg(got, m-class-3, modal,                                      v+verb-inf)
+  verb(have, having, had, had, m-class-3, modal,                       v+verb-inf)
+  
+  verb-reg(happen, m-class-3, modal,                                   v+verb-inf)
+  verb-reg(seem, m-class-3, modal,                                     v+verb-inf)
+
+  verb(let, letting, let, let, m-class-4, modal,                       v+np+verb-base)
+  
+  adjectival-verb(able, m-class-3, modal,    v+verb-inf)
+  adjectival-verb(willing, m-class-3, modal, v+verb-inf)
+  adjectival-verb(supposd, m-class-3, modal, v+verb-inf)
+
+
+##################
+## PREPOSITIONS ##
+##################
+
+#-- Location & Dynamic --#
+
+  prp(at, location, prep-all)
+
+  prp(onto,  whereto, prep-2)
+  prp(into,  whereto, prep-2)
+  prp(toward,  whereto, prep-2) _prp(toward, towards, whereto, prep-2) 
+
+  prp(from, wherefrom, prep-2) # dynamic event reading      (I went from the office to the kitchen)
+ # prp(from, location, prep-3)  # static locational reading  (the girl from the office is nice)
+  prp(off, wherefrom, prep-2)
+  prp+(of-np, out, wherefrom, prep-2)
+
+  prp(through, through, prep-2)
+        prp+(no-arg, through, direction, prep-2)    
+  prp(across, through, prep-2)
+        prp+(no-arg, across, direction, prep-2)    
+
+  ## Restricts sort of anchor to e-region (i.e. to the right, to the corner)
+  prp--(region, to, location, prep-all)   prp(to,  whereto, prep-2)
+										      
+  prp(on, location, prep-all)        prp(on, whereto, prep-2)
+  prp(around, location, prep-all)    prp(around, whereto, prep-2)
+       prp+(no-arg, around, direction, prep-2)    
+  prp(beside, location, prep-all)    prp(beside, whereto, prep-2)
+  prp(over, location, prep-all)      prp(over, whereto, prep-2)
+  prp(above, location, prep-all)     prp(above, whereto, prep-2) 
+  prp(under, location, prep-all)     prp(under, whereto, prep-2) 
+     _prp(under, underneath, location, prep-all)             _prp(under, underneath, whereto, prep-2) 
+  prp(below, location, prep-all)     prp(below, whereto, prep-2) 
+  prp(by, location, prep-all)        prp(by, whereto, prep-2) 
+  prp(behind, location, prep-all)    prp(behind, whereto, prep-2) 
+  prp(up, location, prep-all)        prp(up, whereto, prep-2) 
+      prp+(no-arg, up, direction, prep-2)    
+  prp(down, location, prep-all)      prp(down, whereto, prep-2) 
+       prp+(no-arg, down, direction, prep-2)      
+  prp(along, location, prep-all)     prp(along, whereto, prep-2)
+     _prp(along, alongside, location, prep-all)             _prp(along, alongside, whereto, prep-2)  # alongside
+  prp(opposite, location, prep-all)  prp(opposite, whereto, prep-2) 
+  prp(between, location, prep-all)   prp(between, whereto, prep-2) 
+
+  prp+(to-np, next, location, prep-all)   prp+(to-np, next, whereto, prep-2) 
+
+  prp+(of-np, in_front, location, prep-all)   prp+(of-np, in_front, whereto, prep-2) 
+  prp+(of-np, in_back, location, prep-all)    prp+(of-np, in_back, whereto, prep-2) 
+  prp+(of-np, on_bottom, location, prep-all)    prp+(of-np, on_bottom, whereto, prep-2) 
+  
+  prp(in, location, prep-all)        prp(in, whereto, prep-2) 
+      prp+(no-arg, in, direction, prep-2) 
+      _prp(in, inside, location, prep-all)             _prp(in, inside, whereto, prep-2) 
+      _prp+(no-arg, in, inside, location, prep-all)    _prp+(no-arg, in, inside, whereto, prep-2) 
+
+  prp(out, location, prep-all)        prp(out, whereto, prep-2) 
+       prp+(no-arg, out, direction, prep-2)     
+      _prp(out, outside, location, prep-all)             _prp(out, outside, whereto, prep-2) 
+      _prp+(no-arg, out, outside, location, prep-all)    _prp+(no-arg, out, outside, whereto, prep-2) 
+
+  #----MACRO----
+  #
+  # This gives 1) right of the table  2) to the left of the table  3) to the right
+  #
+  def direction-word(loc) {
+           prp+(of-np, loc, location, prep-all)    prp+(of-np, loc, whereto, prep-2) 
+		   prp+(no-arg, loc, direction, prep-2)  
+	 	   noun+(of-np, loc, e-region, cc-none)
+		   noun(loc, e-region, cc-none)
+   	 	   adj-none(loc, q-location, )
+  }
+
+  direction-word(right)
+  direction-word(left)
+  direction-word(front)
+  direction-word(back)
+
+  prp+(no-arg, forward, direction, prep-2)  _prp+(no-arg, forward, forwards, direction, prep-2)
+  prp+(no-arg, backward, direction, prep-2) _prp+(no-arg, backward, backwards, direction, prep-2)
+  prp+(no-arg, straight, direction, prep-2) 
+  prp+(no-arg, aside, direction, prep-2) 
+  prp+(no-arg, away, direction, prep-2) 
+
+  #----MACRO----
+  #
+  # This gives 1) the near ball 2) push it nearer 3) push it nearer to you 4) I am nearest to you
+  #  
+  def prep-adj(base, er, est, obl-marker) {
+           prp-deg+(no-arg, base, er, est, location, prep-2)    prp-deg+(obl-marker."-np", base, er, est, location, prep-all) 
+		   prp-deg+(no-arg, base, er, est, whereto, prep-2)     prp-deg+(obl-marker."-np", base, er, est, whereto, prep-2) 
+		   adj-deg(base, er, est, q-location, )
+  }
+
+  prep-adj(far , farther , farthest, from) 
+  prep-adj(near, nearer, nearest, to)  
+        prp(near, location, prep-all)      prp(near, whereto, prep-2)  # near the stairs vs. near to the stairs
+  prep-adj(close , closer , closest, to)  
+
+
+  #-- time --#
+  
+  prp--(time-unit, for, time-interval, prep-4)
+  prp--(time-unit, in, time-point, prep-4)
+
+  #-- other --#
+  
+  prp(for,  benefactor, prep-1)
+  prp(with, accompaniment, prep-1)
+  prp(with, instrumental, prep-1)
+  prp(like, comparison, prep-1)
+
+  
+
+################
+## ADVERBS    ##
+################
+
+  #-- m-time --#
+
+  #---- time-point
+  
+  adverb(now, time-point, adv-1,)
+
+  word now2-adv:Adv(m-time-point, pred=now) {
+      No : x-time-point adv-1 asr-correction;
+    }
+
+  word now3-adv:Adv(m-time-point, pred=now) {
+      not : x-time-point adv-1 asr-correction;
+    }
+
+  adverb(today, time-point, adv-3,)
+  adverb(yesterday, time-point, adv-3,)
+  adverb(tomorrow, time-point, adv-3,)
+  adverb(yesterday, time-point, adv-3,)
+  adverb(tomorrow, time-point, adv-3,)
+  adverb+(dep-clause, when, time-point, adv-1,)
+  adverb+(dep-clause, until, time-point, adv-1,)
+      prp--(time-unit, until, time-sequence, prep-4)  # Time unit Preposition
+  adverb(since, time-point, adv-1,)	  
+  adverb+(dep-clause, since, time-point, adv-1,)
+      prp--(time-unit, since, time-point, prep-4,)
+	  
+  #---- time-sequence
+
+  adverb(next, time-sequence, adv-1,)
+  adverb(first, time-sequence, adv-1,)
+  adverb(then , time-sequence, adv-5,)
+
+  adverb(after , time-sequence, adv-4,) _adverb(after, afterwards, time-sequence, adv-1,)
+     adverb+(dep-clause, after, time-sequence, adv-1,)
+     adverb+(verb-ing, after, time-interval, adv-6,)   
+     prp--(time-unit, after, time-sequence, prep-4)
+  adverb(before , time-sequence, adv-4,) _adverb(before, previously, time-sequence, adv-1,)
+     adverb+(dep-clause, before, time-sequence, adv-1,)
+     adverb+(verb-ing, before, time-interval, adv-6,)
+     prp--(time-unit, before, time-sequence, prep-4)
+      
+
+  #---- time-interval
+
+  adverb+(dep-clause, while, time-interval, adv-1,)
+     adverb+(verb-ing, while, time-interval, adv-6,)
+ 
+  #---- other time
+
+  adverb-deg(soon, sooner, soonest, time, adv-all,)
+  adverb-deg(early, earlier, earliest, time, adv-3,)
+  adverb-deg(late, later, latest, time, adv-3,)
+
+  adverb(still, time, adv-all,)
+  adverb(already, time, adv-all,)
+  adverb(just, time, pre-vp,)
+  adverb(yet, time, adv-4,)
+  adverb(ever, time, adv-6,)
+
+  #-- m-manner --#
+ 
+  adverb(quickly, manner, adv-all,) _adverb(quickly, quick, manner, adv-all,) _adverb(quickly, fast, manner, adv-all,)
+  adverb(slowly, manner, adv-all,)  _adverb(slowly, slow, manner, adv-all,)
+
+  adverb(go, manner , adv-5,)
+  adverb(run, manner , adv-5,)
+  adverb(come, manner , adv-5,)  
+  
+  
+  #-- m-probability --# 
+
+  adverb(maybe, probability, adv-all,)
+  adverb(possibly, probability, adv-all,)
+  adverb(probably, probability, adv-all,)
+  adverb(perhaps, probability, adv-all,)
+  adverb(certainly, probability, adv-all,)
+  
+  #-- m-frequency --#
+  
+  adverb(normally, frequency, adv-all,)
+  adverb(usually, frequency, adv-all,)
+  adverb(occasionally, frequency, adv-all,)
+  adverb(often, frequency, adv-all,)
+  adverb(seldom, frequency, adv-all,) 
+  adverb(rarely, frequency, adv-all,)  
+  adverb(always, frequency, adv-all,)
+  adverb(never, frequency, adv-all,)
+  adverb(sometimes, frequency, adv-all,)
+  
+  adverb(again, frequency, adv-all,)
+  
+  #-- m-comment --#
+
+  adverb(please, comment, adv-7,)
+  adverb(kindly, comment, adv-7,)
+  adverb(actually, comment, adv-all,)
+  adverb(really, comment, adv-3,) 
+  adverb(also, comment, adv-all,) _adverb(also, too, comment, adv-2,)
+
+  #-- m-relational --#
+ 
+  adverb+(dep-clause, if, condition, adv-1,)
+  adverb+(dep-clause, because, cause, adv-1,)
+ # adverb+(dep-clause, so, result, adv-1,)
+      
+
+#######################
+## DISCOURSE MARKERS ##
+#######################
+
+
+  dis-marker(right, marker)
+  dis-marker(yes, marker)
+  dis-marker(ok, marker) _dis-marker(ok, okay, marker)
+  dis-marker(No, marker)
+  dis-marker(sure, marker)
+  dis-marker(alright, marker)
+  dis-marker(alrighty, marker)
+  dis-marker(okidokey, marker)
+  dis-marker(okido, marker)
+  dis-marker(well, marker)
+  dis-marker(huh, marker)
+  dis-marker(um, marker)
+  dis-marker(aha, marker)
+  dis-marker(hum, marker)
+  dis-marker(but, marker)
+  dis-marker(and, marker)
+  dis-marker(so, marker)
+
+ # dis-marker(now, marker)
+
+  _dis-marker+(and, then,marker,asr-correction)
+
+  dis-marker(fine, marker)
+
+  dis-marker(good, marker)
+  dis-marker( "," , marker)
+  dis-marker( sorry , marker)
+  dis-marker( hi , greeting)  dis-marker+np( hi , greeting)
+  dis-marker( hello , greeting)  dis-marker+np( hello , greeting)
+  dis-marker( bye , closing)  dis-marker+np( bye , closing)
+  dis-marker( ciao , closing)  dis-marker+np( ciao , closing)
+  dis-marker( good_bye , closing)  dis-marker+np( good_bye , closing)
+  dis-marker( so_long , closing)  dis-marker+np( so_long , closing)
+  
+
+###################
+## MOD-MODIFIERS ##
+###################
+
+  modifier(really, adj, pre, intensity )
+  modifier(really, adv, pre, intensity )
+  modifier(too, adj, pre, intensity )
+  modifier(too, adv, pre, intensity )
+  modifier(very, adj, pre, intensity )
+  modifier(very, adv, pre, intensity )
+
+  modifier(much, adj-comparative, pre, intensity)
+
+  modifier(over, prep, pre, direction )
+  modifier(away, prep, pre, direction )
+  modifier(up, prep, pre, direction )
+  modifier(down, prep, pre, direction )
+  modifier(straight, prep, pre, direction )
+  
+  modifier(right, prep, pre, manner )
+  modifier(up, prep, pre, manner )

@@ -1,0 +1,119 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the stuff necessary for determiners, both those
+# handled via features only (a, the, some, this, that) and those
+# with a semantic head (two balls, every ball, etc)
+# These are called Dets & SDets respectively
+
+# It also contains the stuff for handling:
+#  1) semantic groups like 'some of the balls over there' or 'the first of GJ's mugs'
+#  2) the possessive 's .
+#  3) identifying number like 'floor 3'
+
+# Possessive pronouns have been handled in the pronoun dictionary-macro
+# located in noun.ccg (this is due to ordering issues)
+  
+##########################
+## SEMANTIC DEFINITIONS ##
+##########################
+
+  def GROUP(sem)  { A( <Subgroup>(T:entity ^ subgroup ^ sem) ) }
+  # this replaces def GROUP(sem) { ENTITY(group <Set>(A) sem) }
+     
+##############
+## FAMILIES ##
+##############
+
+  family Det(indexRel=Delimitation)        { entry: from-np(3rd) /^ n()                   ;}
+  family Group-np(indexRel=Delimitation)   { entry: np<15>[A] /^ obl_ma(of, s-pl)    : GROUP  () ;}
+  
+  family SDet                              { entry: from-np(3rd) /^ n()              : ENTITY ( MODIFIER(*) ) ;}
+  
+  family SGroup-np                         { entry: np<15>[A full 3rd s-pl]    /^ obl_ma(of, s-pl) : GROUP  ( MODIFIER(*) ) ;}
+  
+  # used for 'all the balls', c.f. 'all of the balls'
+  #
+  family SGroup-np-no-of                   { entry: np<15>[A full 3rd s-pl]    /^ np_ma(s-pl)      : GROUP  ( MODIFIER(*) ) ;}
+  
+
+  # Words like ordinal numbers change plurals from unspecific to specific. For incrementality's sake, this is done
+  # only syntactically. the semantic feature is set by the "real" determiner, e.g. 'THE three balls' or rule, e.g. 
+  # the 'bare plural rule' in "I see three balls" c.f. (I see balls) defined in noun.ccg. In many senses then, these
+  # words are just a special type of adjective.
+  #
+  family Un-to-Spec-Det                    { entry: from-n(s-pl-sp) /^ n(s-pl-unsp)  : ENTITY ( MODIFIER(*) ) ;}
+  family SGroup-n                          { entry: n<15> [A full s-pl-sp]     /^ obl_ma(of, s-pl) : GROUP  ( MODIFIER(*) ) ;}
+
+  family Det-poss-s(indexRel=Owner)        { entry: from-np()    /^ n() \* np[O]     : ENTITY (<Owner>(O) )    ;}   
+
+  # cardinal numbers (one, two, three) are used in many ways (see the def macro number in closed dictionary)
+  # this is an entry used in the immediately following rule to handle, e.g. 'floor 3', 'office 101', etc.
+  # It functions as a determiner, taking a noun and turning it into an 'Id'd specific, singular np.
+  # 
+  family Number-id      { entry: nid<16>[M] : M(*) ; }
+  
+  # ****** This is NOT INCREMENTAL, i.e. 'go to floor' doesn't parse, but 'go to floor 3' does.
+  # This should be converted to a rule which turns n's into np's wanting a following number
+  # HOWEVER, b/c this rule was added mid-devil, I didn't want to add a generally applicable rule!
+  
+ # rule { typechange: nid[M]  =>  from-np(3rd) \* n(s-sg) :  ENTITY( <Modifier>(M) SPECIFIC() SG() UNIQUE() ) ; }
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  def det(form, args) {
+      word form.det: Det {
+        form : args;
+      }
+   }
+  
+  def group-np(form, args) {
+      word form.group-np: Group-np {
+        form : s-pl args;
+      }
+   }
+  
+  
+  def sdet(form, class, args) { _sdet(form, form, class, args) }
+  def _sdet(prd, form, class, args) {
+      word form.prd.sdet: SDet(class, pred=prd) {
+        form :  args;
+      }
+   }
+  
+  
+  def un-to-spec-det(form, class) { _un-to-spec-det(form, form, class) }
+  def _un-to-spec-det(prd, form, class) {
+      word form.prd."un-to-spec": Un-to-Spec-Det(class, pred=prd) {form;}
+   }
+  
+  
+  def sgroup-np(form, class, args) { _sgroup-np(form, form, class, args) }
+  def _sgroup-np(prd, form, class, args) {
+      word form.prd.sgroup-np: SGroup-np(class, pred=prd) {
+        form : s-pl args;
+      }
+   }
+
+  
+  def sgroup-np-no-of(form, class, args) { _sgroup-np-no-of(form, form, class, args) }
+  def _sgroup-np-no-of(prd, form, class, args) {
+      word form.prd.sgroup-np-no-of: SGroup-np-no-of(class, pred=prd) {
+        form : s-pl args;
+      }
+   }
+  
+  def sgroup-n(form, class, args) { _sgroup-n(form, form, class, args) }
+  def _sgroup-n(prd, form, class, args) {
+      word form.prd.sgroup-n: SGroup-n(class, pred=prd) {
+        form : args;
+      }
+   }
+  
+  def  number-id (form) { _number-id(form,form) } 
+  def _number-id(prd, form) {
+      word form."-number-id": Number-id("number-id", pred=prd) { form; }
+    }
+  
