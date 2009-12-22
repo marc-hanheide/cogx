@@ -170,7 +170,7 @@ feature {
   ## Sytactic Feature indicating pitch accent on nouns, verbs, finites(?) and ajectives
   !ACCENT<15,9,10,11,25,42>: tone stressed[tone] unstressed[tone] rhthm[stressed] thmf[rhthm] lphs[thmf] lsph[thmf] rhmf[rhthm] hs[rhmf] ls[rhmf] hspl[rhmf] hpls [rhmf]; 
   ## Feature indicating intonational phrases: pitch accent marked (pam) word, intermediate phrase(ip) and intonational phrase(cp)
-  !INTOPH<15,9,10,11,25>: nulltn pam{rhm thm} ip cp; 
+  !INTOPH<15,9,10,11,25>: am nulltn[am] btone[am] ip cp; 
   #!OWNER<15,9,10,11,25,42>: owners hear[owners] spkr[owners];
   !OWNER<15,9,10,11,25,42>: owners hear spkr;
 

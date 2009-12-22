@@ -315,7 +315,12 @@
       stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-speaker spkr e-rheme-true hs;  	
       stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;  	
       stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;  	
-      3sing:     mod fin-full pres s-pos do 3rd     s-sg  ;
+      3sing:     mod fin-full pres s-pos do 3rd s-sg e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;
+      3sing:     mod fin-full pres s-pos do 3rd s-sg e-focus-false e-uncontentious e-rheme-false e-hearer hear ;
+      3sing_hs:     mod fin-full pres s-pos do 3rd     s-sg e-focus-true e-uncontentious e-rheme-true e-hearer hear hs ;
+      3sing_hs:     mod fin-full pres s-pos do 3rd     s-sg e-focus-true e-uncontentious e-speaker spkr e-rheme-true hs ;
+      3sing_lphs:     mod fin-full pres s-pos do 3rd  s-sg e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs ;
+      3sing_lphs:     mod fin-full pres s-pos do 3rd  s-sg e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs ;
       stem:      mod fin-full pres s-pos do         s-pl  ;
       pasttense: mod fin-full past s-pos do               ;
       pastpart:  mod pp                                   ;
