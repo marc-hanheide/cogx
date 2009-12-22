@@ -44,6 +44,11 @@ void StereoServerI::getRectImage(Ice::Int side, Video::Image& image, const Ice::
   stereoSrv->getRectImage(side, image);
 }
 
+void StereoServerI::getDisparityImage(Video::Image& image, const Ice::Current&)
+{
+  stereoSrv->getDisparityImage(image);
+}
+
 StereoServer::StereoServer()
 {
   census = 0;
@@ -284,6 +289,13 @@ void StereoServer::getRectImage(int side, Video::Image& image)
   setIdentity(image.camPars.pose);
   image.camPars.time = getCASTTime();
   unlockComponent();
+}
+
+void StereoServer::getDisparityImage(Video::Image& image)
+{
+	lockComponent();
+	convertImageFromIpl(disparityImg, image);
+	unlockComponent();
 }
 
 void StereoServer::receiveImages(const vector<Video::Image>& images)
