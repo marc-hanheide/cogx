@@ -129,7 +129,7 @@ public:
 	static bool CheckFramebufferStatus();
 	//initialize Opengl parameters
 	static void InitGLParam();
-	static int  CreateWindowGLUT();
+	static int  CreateWindowGLUT(int castInited=0);
 	static void CleanupOpenGL();
 
 };

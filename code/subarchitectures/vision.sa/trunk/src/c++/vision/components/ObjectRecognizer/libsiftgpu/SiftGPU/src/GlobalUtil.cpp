@@ -151,12 +151,14 @@ void GlobalUtil::CleanupOpenGL()
 
 }
 
-int GlobalUtil::CreateWindowGLUT()
+int GlobalUtil::CreateWindowGLUT(int castInited /*=0*/)
 {
 	static int _glut_init_called = 0;
 	int glut_id = 0;
 	//see if there is an existing window
+	// mm; TODO: a window may have been created by another cast thread; are we allowed to use it?
 	if(_glut_init_called) glut_id = glutGetWindow();
+	if (castInited) _glut_init_called = 1; // don't try to reinit if inited elsewhere
 
 	//create one if no glut window exists
 	if(glut_id == 0)
