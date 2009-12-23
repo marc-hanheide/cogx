@@ -26,6 +26,7 @@
 #include "GL/glew.h"
 #include <iomanip>
 #include <iostream>
+#include <cstdio>
 #include <strstream>
 #include <vector>
 #include <algorithm>
