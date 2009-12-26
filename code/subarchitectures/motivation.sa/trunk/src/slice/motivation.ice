@@ -53,6 +53,9 @@ module motivation {
     		int rank;
     		/** the derived single goal for the planner */
     		string goal;
+    		/** planCosts */
+    		double plannedCosts;
+    		
     	};
     	
     	class TestMotive extends Motive {
