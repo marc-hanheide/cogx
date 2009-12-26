@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import comadata.ComaRoom;
+
 import motivation.util.castextensions.WMEntryQueue;
 import motivation.util.castextensions.WMEntrySet;
 import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
@@ -34,7 +36,37 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	private PlaceInterfacePrx placeInterface;
 	ManagedComponent component;
 	WMEntrySet places;
+	WMEntrySet rooms;
 
+	/** returns room a given place is in 
+	 * @return room the place is in
+	 */
+	public ComaRoom getRoom(Place p) {
+		for (ObjectImpl oi : rooms.values()) {
+			ComaRoom cr = (ComaRoom) oi;
+			for (int i=0; i<cr.containedPlaceIds.length; i++) {
+				if (cr.containedPlaceIds[i]==p.id) {
+					return cr;
+				}
+				
+			}
+		}
+		return null;
+	}
+
+	/** returns current room 
+	 * @return current room
+	 */
+	public ComaRoom getRoom() throws InterruptedException {
+		Place currentPlace = getPlace();
+		return getRoom(currentPlace);
+	}
+	
+	/** retrieves the current place
+	 * 
+	 * @return the place
+	 * @throws InterruptedException
+	 */
 	public synchronized Place getPlace() throws InterruptedException {
 		if (currentPlace==null)
 			wait();
@@ -46,6 +78,7 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 		notifyAll();
 	}
 
+	/** get a proxy to the placeInterface as a singleton */
 	synchronized PlaceInterfacePrx getPlaceInterface() {
 
 		while (placeInterface == null) {
@@ -85,6 +118,9 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	 */
 	@Override
 	public void run() {
+		places.start();
+		rooms.start();
+		
 		// initialize current place
 		while (currentPlace == null && !interrupted())
 			currentPlace = getPlaceInterface().getCurrentPlace();
@@ -111,6 +147,12 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 		}
 	}
 
+	/** get the singleton reference 
+	 * 
+	 * @param component
+	 * @return the singleton
+	 * @throws CASTException
+	 */
 	public static SpatialFacade get(ManagedComponent component)
 			throws CASTException {
 		if (singleton == null) {
@@ -132,6 +174,8 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 		super(SpatialFacade.class.getSimpleName() + "singletonThread");
 		this.component = component;
 		places = WMEntrySet.create(component, Place.class);
+		rooms = WMEntrySet.create(component, ComaRoom.class);
+		
 		placeInterface = null; // lazy init
 		placeCheckerCallables = Collections
 				.synchronizedSet(new HashSet<PlaceChangedHandler>());
