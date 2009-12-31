@@ -11,16 +11,15 @@
 
 module blobfinder {
 
-  /** RGB color
-   * NOTE: bytes in ICE are -128..127! So you will need to cast to an unsigned
-   * char in your code.
-   *
-   * TODO: this is copied from VisionData.ice and should probably be moved to somewhere more general
+  /** 
+   * RGB color
+   * 
+   * values from 0 to 255.
    */
   struct ColorRGB {
-    byte r;
-    byte g;
-    byte b;
+    int r;
+    int g;
+    int b;
   };
 
   /**
@@ -37,6 +36,8 @@ module blobfinder {
     int area;
     ///The blob bounding box
     cogx::Math::Rect2 boundingBox;
+    ///The range to the blob in some unit (player says metres, I disagree).
+    float range;    
   };
 
   
