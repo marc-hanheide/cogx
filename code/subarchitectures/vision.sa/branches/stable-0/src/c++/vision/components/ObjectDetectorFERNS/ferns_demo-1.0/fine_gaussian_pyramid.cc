@@ -25,6 +25,7 @@ using namespace std;
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "mcv.h"
 #include "mcvGaussianSmoothing.h"
