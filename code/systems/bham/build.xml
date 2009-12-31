@@ -32,7 +32,8 @@
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
 		<ant target="${target}" dir="tools/math" /> 
-		<ant target="${target}" dir="tools/hardware/video" /> 
+		<ant target="${target}" dir="tools/hardware/video" /> 		
+		<ant target="${target}" dir="tools/hardware/blobfinder" /> 
 		<ant target="${target}" dir="subarchitectures/vision.sa" /> 
 		<ant target="${target}" dir="tools/beliefmodels" /> 
 		<ant target="${target}" dir="tools/interconnectivity" />

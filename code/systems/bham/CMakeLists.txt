@@ -63,6 +63,11 @@ if(BUILD_HAL_PTZ)
 add_subdirectory (tools/hardware/ptz)
 endif(BUILD_HAL_PTZ)
 
+option(BUILD_HAL_BLOBFINDER "Build hardware blobfinder" YES)
+if(BUILD_HAL_BLOBFINDER)
+add_subdirectory (tools/hardware/blobfinder)
+endif(BUILD_HAL_BLOBFINDER)
+
 option(BUILD_HAL_UTILS "Build hardware utils" YES)
 if(BUILD_HAL_UTILS)
 add_subdirectory (tools/hardware/utils)
