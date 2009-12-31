@@ -19,6 +19,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import execution.components.AbstractExecutionManager;
 import execution.slice.TriBool;
+import experimentation.StopWatch;
 
 /**
  * A class which manages the execution of a serial plan, using the actions
@@ -75,10 +76,14 @@ public class SerialPlanExecutor extends Thread {
 
 	private WorkingMemoryChangeReceiver m_actionChangedCallback;
 
+	private StopWatch stopWatch;
+
 	public SerialPlanExecutor(AbstractExecutionManager _component,
 			WorkingMemoryAddress _planProxyAddress, ActionConverter _converter)
 			throws SubarchitectureComponentException {
 
+		stopWatch = new StopWatch("SerialPlanExecuter");
+		
 		m_component = _component;
 		m_converter = _converter;
 
@@ -212,7 +217,8 @@ public class SerialPlanExecutor extends Thread {
 			m_component.log("not executing run loop");
 			return;
 		}
-
+		stopWatch.tic();
+		
 		PlannedActionWrapper actionWrapper = null;
 		try {
 
@@ -255,7 +261,6 @@ public class SerialPlanExecutor extends Thread {
 					}
 				}
 			}
-
 		} catch (CASTException e) {
 			m_component.getLogger().warn("exception in serial executor", e);
 			if (actionWrapper != null) {
@@ -269,7 +274,7 @@ public class SerialPlanExecutor extends Thread {
 			}
 
 		}
-
+		stopWatch.toc(this.m_currentAction.fullName);
 	}
 
 	/**

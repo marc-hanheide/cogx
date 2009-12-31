@@ -3,6 +3,7 @@
  */
 package motivation.util.facades;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,11 @@ import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
+import experimentation.StopWatch;
 
 /**
  * @author marc
@@ -35,16 +40,26 @@ import cast.cdl.WorkingMemoryOperation;
  */
 public class PlannerFacade implements Callable<WMEntryQueueElement> {
 
+	/**
+	 * set to true if monitors should be registered for each PlanningTask to
+	 * measure planning time.
+	 */
+	private static final boolean MEASURE_TIMES = true;
+
 	public static class GoalTranslator {
 
-		public static String motive2PlannerGoal(HomingMotive m, String placeUnion, String robotUnion) {
-			return new String("(located '"+robotUnion + "' '" + placeUnion+"')");
+		public static String motive2PlannerGoal(HomingMotive m,
+				String placeUnion, String robotUnion) {
+			return new String("(located '" + robotUnion + "' '" + placeUnion
+					+ "')");
 		}
 
-		public static String motive2PlannerGoal(PatrolMotive m, String placeUnion, String robotUnion) {
-			return new String("(located '"+robotUnion + "' '" + placeUnion+"')");
+		public static String motive2PlannerGoal(PatrolMotive m,
+				String placeUnion, String robotUnion) {
+			return new String("(located '" + robotUnion + "' '" + placeUnion
+					+ "')");
 		}
-		
+
 		public static String motive2PlannerGoal(CategorizeRoomMotive m,
 				String roomUnion, String robotUnion) {
 			return "(kval '" + robotUnion + "' (areaclass '" + roomUnion
@@ -68,24 +83,79 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 		}
 	}
 
+
 	Map<String, FeatureValue> unionsWithPlaceID;
 	Map<String, FeatureValue> unionsWithRoomId;
+	Map<String, StopWatch> taskWatches;
 
 	private BinderFacade binderFacade;
 
 	/**
 	 * @param motives
 	 */
-	public PlannerFacade(ManagedComponent component, BinderFacade binderFacade) {
+	public PlannerFacade(final ManagedComponent component,
+			BinderFacade binderFacade) {
 		super();
 		this.component = component;
 		this.binderFacade = binderFacade;
+		watch = new StopWatch("plannerStopWatch");
+		taskWatches = new HashMap<String, StopWatch>();
 
+		// We monitor planning tasks to measure planning time
+		monitorTask = new WorkingMemoryChangeReceiver() {
+
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange wmc)
+					throws CASTException {
+				PlanningTask plan = component.getMemoryEntry(wmc.address,
+						PlanningTask.class);
+				StopWatch watch = taskWatches.get(wmc.address.id);
+				if (watch == null) {
+					watch = new StopWatch("PlanningTask." + wmc.address.id);
+					taskWatches.put(wmc.address.id, watch);
+				}
+				watch.info(CASTUtils.toString(wmc));
+				watch.info("STATUS = " + plan.planningStatus.toString());
+				switch (wmc.operation) {
+				case ADD:
+					watch.tic();
+					break;
+				case OVERWRITE:
+					switch (plan.planningStatus) {
+					case ABORTED:
+					case FAILED:
+					case SUCCEEDED:
+						if (watch.isRunning())
+							watch.toc(plan.planningStatus.toString() + " / "
+									+ plan.executionStatus.toString() + "("
+									+ plan.planningRetries + ")");
+						else
+							component.log("watch is not running");
+						break;
+					default:
+						if (!watch.isRunning())
+							watch.tic();
+					}
+					break;
+				case DELETE:
+					watch.toc("DELETE");
+					break;
+				}
+
+			}
+		};
 	}
 
 	List<Motive> motives;
 	private ManagedComponent component;
 	private String agentUnionID = null;
+	private StopWatch watch;
+
+	/**
+	 * The monitorTask is used to measure planning time
+	 * 
+	 */
+	private WorkingMemoryChangeReceiver monitorTask;
 
 	public void setGoalMotives(List<Motive> m) {
 		motives = new LinkedList<Motive>(m);
@@ -145,15 +215,15 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 			} else if (m instanceof HomingMotive) {
 				HomingMotive crm = (HomingMotive) m;
 				crm.correspondingUnion = resolveMotive(crm);
-				conjunctiveGoal = GoalTranslator
-						.motive2PlannerGoal(crm, binderFacade
-								.getUnion(crm.correspondingUnion).entityID, getAgentUnion());
+				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(crm,
+						binderFacade.getUnion(crm.correspondingUnion).entityID,
+						getAgentUnion());
 			} else if (m instanceof PatrolMotive) {
 				PatrolMotive pm = (PatrolMotive) m;
 				pm.correspondingUnion = resolveMotive(pm);
-				conjunctiveGoal = GoalTranslator
-						.motive2PlannerGoal(pm, binderFacade
-								.getUnion(pm.correspondingUnion).entityID, getAgentUnion());
+				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(pm,
+						binderFacade.getUnion(pm.correspondingUnion).entityID,
+						getAgentUnion());
 			} else if (m instanceof CategorizePlaceMotive) {
 				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(
 						(CategorizePlaceMotive) m, binderFacade
@@ -185,7 +255,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 	 * 
 	 * @throws CASTException
 	 */
-	String resolveMotive(Motive m)  {
+	String resolveMotive(Motive m) {
 		component.log("resolve references in motives");
 		// resolve place_ids for union ids
 		if (m instanceof ExploreMotive) { // resolve
@@ -256,7 +326,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 						.parseInt(((StringValue) entry.getValue()).val);
 				if (placeID == 0) {
 					component.log("found a corresponding union for placeId "
-							+ 0+ ": " + entry.getKey());
+							+ 0 + ": " + entry.getKey());
 					// TODO: we hope, that there is only ONE union with this
 					// placeId, so let's break
 					return entry.getKey();
@@ -270,7 +340,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					.entrySet()) {
 				int placeID = Integer
 						.parseInt(((StringValue) entry.getValue()).val);
-				if (placeID == ((PatrolMotive)m).placeID) {
+				if (placeID == ((PatrolMotive) m).placeID) {
 					component.log("found a corresponding union for placeID "
 							+ placeID + ": " + entry.getKey());
 					// TODO: we hope, that there is only ONE union with this
@@ -353,6 +423,15 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					WorkingMemoryOperation.OVERWRITE), planQueue);
 			component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 					WorkingMemoryOperation.DELETE), planQueue);
+			if (MEASURE_TIMES) {
+				component.addChangeFilter(ChangeFilterFactory.createIDFilter(
+						id, WorkingMemoryOperation.OVERWRITE), monitorTask);
+				component.addChangeFilter(ChangeFilterFactory.createIDFilter(
+						id, WorkingMemoryOperation.ADD), monitorTask);
+			}
+
+			// start the stop watch
+			watch.tic();
 			component.addToWorkingMemory(id, plan);
 
 			// wait for the plan to be generated
@@ -369,6 +448,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 				}
 				switch (taskEntry.planningStatus) {
 				case SUCCEEDED:
+					watch.toc("plan succeded");
 					component.log("we have a plan right now: "
 							+ ((PlanningTask) pt.getEntry()).goal);
 					// stop waiting for further changes
@@ -376,6 +456,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					break;
 				case ABORTED:
 				case FAILED:
+					watch.toc("plan failed");
 					component
 							.log("could not generate a plan... we have to abort for this time and remove the listener");
 					component.removeChangeFilter(planQueue);

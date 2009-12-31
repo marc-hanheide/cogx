@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import motivation.util.castextensions.WMEntrySet;
+import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 import Ice.ObjectImpl;
+import SpatialData.Place;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
@@ -15,11 +17,18 @@ import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.AddressValue;
+import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.RelationProxy;
+import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
 
 public class BinderFacade {
+	private static final String BINDER_SA = "binder";
+
+	static private BinderFacade singleton;
+
 	WMEntrySet unionConfigurations;
 	WMEntrySet proxies;
 	WMEntrySet relations;
@@ -36,6 +45,22 @@ public class BinderFacade {
 		this.proxies = WMEntrySet.create(component, Proxy.class);
 		this.relations = WMEntrySet.create(component, RelationProxy.class);
 	}
+	
+	/**
+	 * get the singleton reference
+	 * 
+	 * @param component
+	 * @return the singleton
+	 * @throws CASTException
+	 */
+	public static BinderFacade get(ManagedComponent component)
+			throws CASTException {
+		if (singleton == null) {
+			singleton = new BinderFacade(component);
+		}
+		return singleton;
+	}
+
 
 	public void start() {
 		unionConfigurations.start();
@@ -150,9 +175,8 @@ public class BinderFacade {
 		return null;
 	}
 
-	public Map<WorkingMemoryAddress, RelationProxy> findRelationBySrc(
-			String src) {
-		Map<WorkingMemoryAddress, RelationProxy> result=  new HashMap<WorkingMemoryAddress, RelationProxy>();
+	public Map<WorkingMemoryAddress, RelationProxy> findRelationBySrc(String src) {
+		Map<WorkingMemoryAddress, RelationProxy> result = new HashMap<WorkingMemoryAddress, RelationProxy>();
 		for (Entry<WorkingMemoryAddress, ObjectImpl> e : relations.entrySet()) {
 			RelationProxy rp = (RelationProxy) e.getValue();
 			if (((AddressValue) rp.source.alternativeValues[0]).val.equals(src))
@@ -162,16 +186,77 @@ public class BinderFacade {
 
 	}
 
-	public Map<WorkingMemoryAddress, RelationProxy> findRelationBytarget(
+	public Map<WorkingMemoryAddress, RelationProxy> findRelationByTarget(
 			String target) {
-		Map<WorkingMemoryAddress, RelationProxy> result=  new HashMap<WorkingMemoryAddress, RelationProxy>();
+		Map<WorkingMemoryAddress, RelationProxy> result = new HashMap<WorkingMemoryAddress, RelationProxy>();
 		for (Entry<WorkingMemoryAddress, ObjectImpl> e : relations.entrySet()) {
 			RelationProxy rp = (RelationProxy) e.getValue();
-			if (((AddressValue) rp.target.alternativeValues[0]).val.equals(target))
+			if (((AddressValue) rp.target.alternativeValues[0]).val
+					.equals(target))
 				result.put(e.getKey(), rp);
 		}
 		return result;
+	}
 
+	public Map<WorkingMemoryAddress, RelationProxy> findRelations(
+			String targetOrSrc, String relationType) {
+		Map<WorkingMemoryAddress, RelationProxy> result = new HashMap<WorkingMemoryAddress, RelationProxy>();
+		for (Entry<WorkingMemoryAddress, ObjectImpl> e : relations.entrySet()) {
+			RelationProxy rp = (RelationProxy) e.getValue();
+			// check if the label is the one we search for; if it's not, skip going
+			if (relationType.length()>0) {
+				if (!rp.features[0].featlabel.equals(relationType)) {
+					continue;
+				}
+			}
+			if (((AddressValue) rp.target.alternativeValues[0]).val
+					.equals(targetOrSrc))
+				result.put(e.getKey(), rp);
+			else if (((AddressValue) rp.source.alternativeValues[0]).val
+					.equals(targetOrSrc))
+				result.put(e.getKey(), rp);
+		}
+		return result;
+	}
+
+	public Map<WorkingMemoryAddress, Proxy> getRelatedProxies(
+			Proxy prx, String relationType) {
+		Map<WorkingMemoryAddress, Proxy> result = new HashMap<WorkingMemoryAddress, Proxy>();
+
+		Map<WorkingMemoryAddress, RelationProxy> selectedRelations = findRelations(prx.entityID, relationType);
+
+		for (Entry<WorkingMemoryAddress, RelationProxy> e : selectedRelations
+				.entrySet()) {
+			String sourceId = ((AddressValue) e.getValue().source.alternativeValues[0]).val;
+			String targetId = ((AddressValue) e.getValue().target.alternativeValues[0]).val;
+			WorkingMemoryAddress sourceAddr = new WorkingMemoryAddress(
+					sourceId, BINDER_SA);
+			WorkingMemoryAddress targetAddr = new WorkingMemoryAddress(
+					targetId, BINDER_SA);
+			// the respective sources and target proxies should be in the maps
+			Proxy tmpProxy = (Proxy) proxies.get(sourceAddr);
+			// if we find them and they are different from the proxy used to
+			// query, add them to the results
+			if (tmpProxy != null && !tmpProxy.equals(prx))
+				result.put(sourceAddr, tmpProxy);
+			tmpProxy = (Proxy) proxies.get(targetAddr);
+			if (tmpProxy != null && !tmpProxy.equals(prx))
+				result.put(targetAddr, tmpProxy);
+		}
+
+		return result;
+	}
+	
+	public Proxy findPlaceProxy(Place p) {
+		for (ObjectImpl oi : proxies.values()) {
+			Proxy prx = (Proxy) oi;
+			List<FeatureValue> fv = getFeatureValue(prx, "place_id");
+			StringValue placeID = (StringValue) fv;
+			if (Long.parseLong(placeID.val) == p.id) {
+				return prx;
+			}
+		}
+		return null;
 	}
 
 }
