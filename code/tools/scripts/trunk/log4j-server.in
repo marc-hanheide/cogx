@@ -3,20 +3,19 @@
 if [ "$1" ]; then
     propfile="$1"
 else
-    propfile="/tmp/log4j-server.$$.$USER.props"
+    propfile="/tmp/log4j-server.$USER.props"
     cat > $propfile <<EOF
 log4j.rootLogger=TRACE, console
 
 
 log4j.appender.console=org.apache.log4j.ConsoleAppender
-log4j.appender.console.Threshold=DEBUG
 log4j.appender.console.layout=org.apache.log4j.xml.XMLLayout
 EOF
 fi
 
 
 
-trap 'echo "</log4j:logsequence>";exit' INT TERM
+trap 'echo "</log4j:logsequence>";exit' INT TERM PIPE QUIT ABRT HUP 
 
 
 
@@ -50,7 +49,7 @@ EOF
 
 
 echo '<?xml version="1.0" encoding="UTF-8"?>'
-echo "<log4j:logsequence user=\"$USER\" time=\"`date -R`\">"
+echo "<log4j:logsequence xmlns:log4j=\"http://jakarta.apache.org/log4j/\" user=\"$USER\" time=\"`date -R`\">"
 java org.apache.log4j.net.SimpleSocketServer $PORT $propfile
 
 
