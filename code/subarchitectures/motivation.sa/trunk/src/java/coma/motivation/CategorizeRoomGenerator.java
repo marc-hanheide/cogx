@@ -4,11 +4,15 @@
 package coma.motivation;
 
 import java.util.Map;
+import java.util.Set;
+
+import binder.autogen.core.Proxy;
 
 import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.Motive;
+import motivation.util.facades.BinderFacade;
 import motivation.util.facades.SpatialFacade;
 import SpatialData.Place;
 import cast.CASTException;
@@ -17,6 +21,7 @@ import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
@@ -30,6 +35,13 @@ import comadata.ComaRoom;
  * 
  */
 public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
+
+	/**
+	 * amount of milliseconds that corresponds to information gain of 0.5. If
+	 * the place hasn't been explored for longer than this amount the gain is >
+	 * 0.5 otherwise it's smaller using an exp reciproc model.
+	 */
+	private static final long EXP_NORM = 5;
 
 	private boolean blockRooms;
 
@@ -83,20 +95,7 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 			if (source.concepts.length <= 2) {
 				CategorizeRoomMotive crm = (CategorizeRoomMotive) motive;
 				log("  nothing's known about it, so it should be considered as a motive");
-				// The more places are contained the more information we get
-				// from this room!
-				crm.informationGain = 1.0 - (1.0 / source.containedPlaceIds.length);
-				Place currentPlace = SpatialFacade.get(this).getPlace();
-				double estimated_costs = 0.0;
-				for (long p : source.containedPlaceIds) {
-					estimated_costs += SpatialFacade.get(this).queryCosts(
-							currentPlace.id, p);
-				}
-				if (source.containedPlaceIds.length > 0)
-					crm.costs = (float) (estimated_costs / source.containedPlaceIds.length);
-				else
-					crm.costs = (float) 0.0;
-
+				computeAttributes(crm, source);
 				crm.roomId = source.roomId;
 				write(crm);
 				return true;
@@ -118,6 +117,64 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	/**
+	 * compute the attributes of the motive
+	 * 
+	 * @param crm
+	 * @param source
+	 * @throws CASTException
+	 * @throws InterruptedException
+	 */
+	protected void computeAttributes(CategorizeRoomMotive crm, ComaRoom source)
+			throws CASTException, InterruptedException {
+		final SpatialFacade sf = SpatialFacade.get(this);
+//		final BinderFacade binder = BinderFacade.get(this);
+
+		Set<Place> placesInRoom = sf.getPlaces(source);
+		
+		int countRealPlaces=placesInRoom.size();
+		
+//		for (Place p : placesInRoom) {
+//			Proxy placePrx = binder.findPlaceProxy(p);
+//			Map<WorkingMemoryAddress, Proxy> related = binder.getRelatedProxies(placePrx, "connected");
+//			for (Proxy prx : related.values()) {
+//			}
+//			switch(p.status) {
+//			case TRUEPLACE:
+//				countRealPlaces++;
+//				break;
+//			}
+//		}
+
+//		log("  countRealPlaces = "+ countRealPlaces);
+		Place currentPlace = sf.getPlace();
+		// compute the mean costs to reach the places in the room 
+		double estimatedTravelCosts = 0.0;
+		for (long p : source.containedPlaceIds) {
+			estimatedTravelCosts += sf.queryCosts(currentPlace.id, p);
+		}
+		if (source.containedPlaceIds.length > 0)
+			crm.costs = (float) (estimatedTravelCosts / source.containedPlaceIds.length);
+		else
+			crm.costs = (float) 0.0;
+		log("  estimatedTravelCosts = " + crm.costs);
+		
+//		// the ratio between explored places and number of places
+//		double exploredRatio = (double) countRealPlaces / (double) placesInRoom.size();
+//		log("  exploredRatio = " + exploredRatio);
+//		// we consider not fully explored rooms to be ways more expensive...
+//		crm.costs = (float) (crm.costs / exploredRatio);
+		log("  costs = " + crm.costs);
+
+		// The more (real) places are contained the more information we get
+		// from this room!
+		crm.informationGain = 1 - (1. / Math
+				.exp((countRealPlaces / EXP_NORM) * Math.log(2)));
+
+		log("  informationGain = " + crm.informationGain);
+		
 	}
 
 	/*

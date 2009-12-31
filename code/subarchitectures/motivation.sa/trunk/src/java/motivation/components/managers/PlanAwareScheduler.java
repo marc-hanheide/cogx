@@ -3,9 +3,6 @@
  */
 package motivation.components.managers;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -16,27 +13,18 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import autogen.Planner.PlanningTask;
-
-import motivation.components.managers.comparators.AgeComparator;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveEventQueue.MotiveEvent;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
-import motivation.util.castextensions.WMLock;
 import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
 import motivation.util.facades.BinderFacade;
 import motivation.util.facades.PlannerFacade;
+import autogen.Planner.PlanningTask;
 import cast.CASTException;
-import cast.ConsistencyException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 
 /**
@@ -73,7 +61,6 @@ public class PlanAwareScheduler extends ManagedComponent {
 	 * 
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void configure(Map<String, String> arg0) {
 	}

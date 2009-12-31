@@ -17,6 +17,7 @@ import Ice.ObjectImpl;
 import SpatialData.PathQueryStatus;
 import SpatialData.PathTransitionCostRequest;
 import SpatialData.Place;
+import SpatialData.PlaceHolder;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -38,37 +39,62 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	WMEntrySet places;
 	WMEntrySet rooms;
 
-	/** returns room a given place is in 
+	/**
+	 * returns room a given place is in
+	 * 
 	 * @return room the place is in
 	 */
 	public ComaRoom getRoom(Place p) {
 		for (ObjectImpl oi : rooms.values()) {
 			ComaRoom cr = (ComaRoom) oi;
-			for (int i=0; i<cr.containedPlaceIds.length; i++) {
-				if (cr.containedPlaceIds[i]==p.id) {
+			for (int i = 0; i < cr.containedPlaceIds.length; i++) {
+				if (cr.containedPlaceIds[i] == p.id) {
 					return cr;
 				}
-				
+
 			}
 		}
 		return null;
 	}
 
-	/** returns current room 
+	/**
+	 * returns all places belonging to the room
+	 * 
+	 * @return set of places
+	 */
+	public Set<Place> getPlaces(ComaRoom cr) {
+		Set<Place> result = new HashSet<Place>();
+		for (int i = 0; i < cr.containedPlaceIds.length; i++) {
+			for (ObjectImpl oi : places.values()) {
+				Place p = (Place) oi;
+				
+				if (p.id == cr.containedPlaceIds[i]) {
+					
+					result.add(p);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * returns current room
+	 * 
 	 * @return current room
 	 */
 	public ComaRoom getRoom() throws InterruptedException {
 		Place currentPlace = getPlace();
 		return getRoom(currentPlace);
 	}
-	
-	/** retrieves the current place
+
+	/**
+	 * retrieves the current place
 	 * 
 	 * @return the place
 	 * @throws InterruptedException
 	 */
 	public synchronized Place getPlace() throws InterruptedException {
-		if (currentPlace==null)
+		if (currentPlace == null)
 			wait();
 		return currentPlace;
 	}
@@ -88,21 +114,23 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 				placeInterface = component.getIceServer("place.manager",
 						PlaceInterface.class, PlaceInterfacePrx.class);
 				component.println("PlaceInterface initialized... ");
-//				Thread.sleep(3000);
-//				component
-//						.println("placeInterface.getCurrentPlace successfully called... connection alright");
+				// Thread.sleep(3000);
+				// component
+				// .println("placeInterface.getCurrentPlace successfully called... connection alright");
 
 				break;
 			} catch (CASTException e) {
 				component
-						.println("could not yet initialize PlaceInterface... trying again in a second: " +e.message);
+						.println("could not yet initialize PlaceInterface... trying again in a second: "
+								+ e.message);
 				e.printStackTrace();
-				placeInterface=null;
+				placeInterface = null;
 			} catch (Ice.UnknownException e) {
 				component
-						.println("could not yet initialize PlaceInterface... trying again in a second: "+e.getMessage());
+						.println("could not yet initialize PlaceInterface... trying again in a second: "
+								+ e.getMessage());
 				e.printStackTrace();
-				placeInterface=null;
+				placeInterface = null;
 			}
 			try {
 				Thread.sleep(1000);
@@ -120,12 +148,12 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	public void run() {
 		places.start();
 		rooms.start();
-		
+
 		// initialize current place
 		while (currentPlace == null && !interrupted())
 			currentPlace = getPlaceInterface().getCurrentPlace();
 		setPlace(currentPlace);
-		
+
 		while (!interrupted()) {
 			try {
 				Place place = getPlaceInterface().getCurrentPlace();
@@ -147,7 +175,8 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 		}
 	}
 
-	/** get the singleton reference 
+	/**
+	 * get the singleton reference
 	 * 
 	 * @param component
 	 * @return the singleton
@@ -175,7 +204,7 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 		this.component = component;
 		places = WMEntrySet.create(component, Place.class);
 		rooms = WMEntrySet.create(component, ComaRoom.class);
-		
+
 		placeInterface = null; // lazy init
 		placeCheckerCallables = Collections
 				.synchronizedSet(new HashSet<PlaceChangedHandler>());
@@ -202,7 +231,7 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 			if (ptcr.status == PathQueryStatus.QUERYCOMPLETED) {
 				component.log("we found a path and computed costs of "
 						+ ptcr.cost);
-				if (ptcr.cost>1E99)
+				if (ptcr.cost > 1E99)
 					return Double.MAX_VALUE;
 				return ptcr.cost;
 			} else {
