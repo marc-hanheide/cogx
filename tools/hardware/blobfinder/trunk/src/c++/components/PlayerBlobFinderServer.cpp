@@ -11,6 +11,7 @@ extern "C" {
 
 
 using namespace boost;
+using namespace std;
 
 namespace blobfinder {
 
@@ -81,12 +82,20 @@ namespace blobfinder {
       BlobInfo blob;
       blob.id = playerBlob.id;
       blob.area = playerBlob.area;
+
       //0,0 is top-left of camera image
       blob.boundingBox.pos.x = playerBlob.x;
       blob.boundingBox.pos.y = playerBlob.y;
       blob.boundingBox.width = playerBlob.right - playerBlob.left;
       blob.boundingBox.height = playerBlob.bottom - playerBlob.top;
-      //TODO: colour information
+
+      //colour information is packed 32 bit, i.e., 0x00RRGGBB
+      blob.colour.r = (playerBlob.color >> 16) & 255;
+      blob.colour.g = (playerBlob.color >> 8) & 255;
+      blob.colour.b = playerBlob.color & 255;
+
+      blob.range = playerBlob.range;
+
       blobs.push_back(blob);
     }
     return blobs;
