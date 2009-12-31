@@ -42,32 +42,53 @@ namespace blobfinder {
     }
     log("Using m_playerBlobFinderDeviceID=%d", m_playerBlobFinderDeviceID);     
  
-  }
 
-  void 
-  PlayerBlobFinderServer::start() {
- 
-    m_playerClient = shared_ptr<PlayerCc::PlayerClient>(new PlayerCc::PlayerClient(m_playerHost, m_playerPort));
-    m_playerClient->SetDataMode(PLAYER_DATAMODE_PULL);
-    m_playerClient->SetReplaceRule(true, PLAYER_MSGTYPE_DATA);
 
+    //register everything in configure so the server is available during start() calls
+
+    boost::shared_ptr<PlayerCc::PlayerClient> playerClient = shared_ptr<PlayerCc::PlayerClient>(new PlayerCc::PlayerClient(m_playerHost, m_playerPort));
+    playerClient->SetDataMode(PLAYER_DATAMODE_PULL);
+    playerClient->SetReplaceRule(true, PLAYER_MSGTYPE_DATA);
     
     //instantiate the server implementation...
     BlobFinderInterfacePtr servant 
-      = new BlobFinderI(shared_ptr<PlayerCc::BlobfinderProxy>(new PlayerCc::BlobfinderProxy(m_playerClient.get(),
+      = new BlobFinderI(playerClient,
+			shared_ptr<PlayerCc::BlobfinderProxy>(new PlayerCc::BlobfinderProxy(playerClient.get(),
 											    m_playerBlobFinderDeviceID)));
     //... and register it with the runtime
     registerIceServer<BlobFinderInterface,BlobFinderInterface>(servant);
   }
 
+  void 
+  PlayerBlobFinderServer::start() {
+ 
+
+  }
+
 
   Ice::Int PlayerBlobFinderServer::BlobFinderI::getBlobCount(const Ice::Current & _crt) const {
+    m_playerClient->Read();
     return m_blobFinderProxy->GetCount();
   }
 
   blobfinder::BlobInfoSequence PlayerBlobFinderServer::BlobFinderI::getBlobs(const Ice::Current & _crt) const {
+    m_playerClient->Read();
+    int blobCount = m_blobFinderProxy->GetCount();
+    
     BlobInfoSequence blobs;
-
+    for(int i = 0; i < blobCount; i++) {
+      player_blobfinder_blob_t playerBlob(m_blobFinderProxy->GetBlob(i));
+      BlobInfo blob;
+      blob.id = playerBlob.id;
+      blob.area = playerBlob.area;
+      //0,0 is top-left of camera image
+      blob.boundingBox.pos.x = playerBlob.x;
+      blob.boundingBox.pos.y = playerBlob.y;
+      blob.boundingBox.width = playerBlob.right - playerBlob.left;
+      blob.boundingBox.height = playerBlob.bottom - playerBlob.top;
+      //TODO: colour information
+      blobs.push_back(blob);
+    }
     return blobs;
   }
 
