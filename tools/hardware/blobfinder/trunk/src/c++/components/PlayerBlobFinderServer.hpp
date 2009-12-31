@@ -14,16 +14,24 @@ namespace blobfinder {
   */
   class PlayerBlobFinderServer : public cast::CASTComponent {
   private:
+
     std::string m_playerHost;
     int m_playerPort;
     int m_playerBlobFinderDeviceID;
 
     boost::shared_ptr<PlayerCc::PlayerClient> m_playerClient;
-    boost::shared_ptr<PlayerCc::BlobfinderProxy> m_blobFinderProxy;
 
 
     class BlobFinderI : public blobfinder::BlobFinderInterface {
       
+      boost::shared_ptr<PlayerCc::BlobfinderProxy> m_blobFinderProxy;
+
+    public:
+      BlobFinderI(boost::shared_ptr<PlayerCc::BlobfinderProxy> _blobFinderProxy) :
+	m_blobFinderProxy(_blobFinderProxy) {}
+      virtual ~BlobFinderI() {}
+      virtual Ice::Int getBlobCount(const Ice::Current & _crt) const;
+      virtual blobfinder::BlobInfoSequence getBlobs(const Ice::Current & _crt) const;      
     };
 
   protected:

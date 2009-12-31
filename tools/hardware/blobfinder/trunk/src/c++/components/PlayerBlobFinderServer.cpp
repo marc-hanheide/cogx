@@ -51,14 +51,25 @@ namespace blobfinder {
     m_playerClient->SetDataMode(PLAYER_DATAMODE_PULL);
     m_playerClient->SetReplaceRule(true, PLAYER_MSGTYPE_DATA);
 
-//     m_ptzProxy = shared_ptr<PlayerCc::PtzProxy>(new PlayerCc::PtzProxy(m_playerClient.get(), 
-// 								       m_playerBlobFinderDeviceID));
-
-//     //going to work in position mode 
-//     m_ptzProxy->SelectControlMode(PLAYER_BlobFinder_POSITION_CONTROL);
-
+    
+    //instantiate the server implementation...
+    BlobFinderInterfacePtr servant 
+      = new BlobFinderI(shared_ptr<PlayerCc::BlobfinderProxy>(new PlayerCc::BlobfinderProxy(m_playerClient.get(),
+											    m_playerBlobFinderDeviceID)));
+    //... and register it with the runtime
+    registerIceServer<BlobFinderInterface,BlobFinderInterface>(servant);
   }
 
+
+  Ice::Int PlayerBlobFinderServer::BlobFinderI::getBlobCount(const Ice::Current & _crt) const {
+    return m_blobFinderProxy->GetCount();
+  }
+
+  blobfinder::BlobInfoSequence PlayerBlobFinderServer::BlobFinderI::getBlobs(const Ice::Current & _crt) const {
+    BlobInfoSequence blobs;
+
+    return blobs;
+  }
 
 //   BlobFinderReading 
 //   PlayerBlobFinderServer::getPose() const {
