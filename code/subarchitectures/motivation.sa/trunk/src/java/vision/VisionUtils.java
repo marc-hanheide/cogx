@@ -1,5 +1,6 @@
 package vision;
 
+import blobfinder.ColorRGB;
 import cast.core.CASTUtils;
 import VisionData.Face;
 import VisionData.GeometryModel;
@@ -17,7 +18,7 @@ public class VisionUtils {
 	public static Vector3 newVector3() {
 		return new Vector3(0d, 0d, 0d);
 	}
-
+	
 	/**
 	 * @return
 	 */
@@ -29,6 +30,11 @@ public class VisionUtils {
 				new VisualObjectView[0], new GeometryModel(new Vertex[0],
 						new Face[0]), "", 0d);
 		return obj;
+	}
+
+
+	public static String toString(ColorRGB _rgb) {
+		return CASTUtils.concatenate("[ColorRGB ",_rgb.r, ",",_rgb.g,",",_rgb.b,"]");
 	}
 
 }

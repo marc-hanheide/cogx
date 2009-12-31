@@ -1,13 +1,15 @@
 package vision.components;
 
+import java.util.HashMap;
 import java.util.Map;
-
-import blobfinder.BlobFinderInterface;
-import blobfinder.BlobFinderInterfacePrx;
 
 import vision.VisionUtils;
 import VisionData.DetectionCommand;
 import VisionData.VisualObject;
+import blobfinder.BlobFinderInterface;
+import blobfinder.BlobFinderInterfacePrx;
+import blobfinder.BlobInfo;
+import blobfinder.ColorRGB;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -19,6 +21,10 @@ import cast.cdl.WorkingMemoryOperation;
  * A fake object detector that uses the player blobfinder model to find objects.
  * Each object must have a unique colour.
  * 
+ * Configure option: multiple entries of the form --label-X=R,G,B where X is the
+ * label to be compared against a recognition command and RBG describes the
+ * colour to treat as that label. e.g. --label-teabox=255,0,0
+ * --label-journal=0,255,0
  * 
  * 
  * @author nah
@@ -28,9 +34,15 @@ public class BlobjectDetector extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
 
 	private BlobFinderInterfacePrx m_blobFinder;
+	private static final String LABEL_CONFIG_PREFIX = "--label-";
+	private static final int LABEL_CONFIG_PREFIX_LENGTH = LABEL_CONFIG_PREFIX
+			.length();
+
+	private final HashMap<String, ColorRGB> m_label2colour;
 
 	public BlobjectDetector() {
 		m_blobFinder = null;
+		m_label2colour = new HashMap<String, ColorRGB>();
 	}
 
 	@Override
@@ -57,30 +69,95 @@ public class BlobjectDetector extends ManagedComponent implements
 				DetectionCommand.class);
 
 		// because vision is never this quick...
-		sleepComponent(2000);
+		sleepComponent(500);
 
-		for (String label : dc.labels) {
-			// for the time being just fail
-			VisualObject obj = VisionUtils.newVisualObject();
-			obj.detectionConfidence = 0f;
-			obj.label = label;
-			addToWorkingMemory(newDataID(), obj);
+		BlobInfo[] blobs = m_blobFinder.getBlobs();
+
+		// if no blobs
+		if (blobs.length == 0) {
+			// we don't see anything
+			for (String label : dc.labels) {
+				// for the time being just fail
+				VisualObject obj = VisionUtils.newVisualObject();
+				obj.label = label;
+				obj.detectionConfidence = 0f;
+				addToWorkingMemory(newDataID(), obj);
+			}
+		} else {
+			for (String label : dc.labels) {
+				VisualObject obj = VisionUtils.newVisualObject();
+				obj.label = label;
+				//default to not seen (i.e. 0)
+				obj.detectionConfidence = 0f;
+				
+				//get expected rgb for label
+				ColorRGB rgb = m_label2colour.get(label);
+				
+				//now see if we have this one in our blobs
+				for (BlobInfo blob : blobs) {
+					println("is " + VisionUtils.toString(blob.colour) + " equal to " + VisionUtils.toString(rgb) + "?");
+					if(blob.colour.equals(rgb)) {
+						println("YES!");
+						obj.detectionConfidence = 1f;
+						break;
+					}
+				}
+				
+				addToWorkingMemory(newDataID(), obj);
+			}
 		}
 
 	}
 
 	@Override
 	protected void configure(Map<String, String> _arg0) {
+		for (String key : _arg0.keySet()) {
+			if (key.startsWith(LABEL_CONFIG_PREFIX)) {
+				// parse out label
+				String label = key.substring(LABEL_CONFIG_PREFIX_LENGTH);
+
+				String rgbJoined = _arg0.get(key);
+				String[] labels = rgbJoined.split(",");
+
+				assert (labels.length == 3);
+				int r = Integer.parseInt(labels[0]);
+				assert (r >= 0 && r <= 255);
+				int g = Integer.parseInt(labels[1]);
+				assert (g >= 0 && g <= 255);
+				int b = Integer.parseInt(labels[2]);
+				assert (b >= 0 && b <= 255);
+				log("stored: " + label + " " + r + " " + g + " " + b);
+				m_label2colour.put(label, new ColorRGB(r, g, b));
+			}
+		}
+
 	}
 
 	@Override
 	protected void runComponent() {
-		if (m_blobFinder != null) {
-			while (isRunning()) {
-				println("blobs: " + m_blobFinder.getBlobCount());
-				sleepComponent(1000);
-			}
-		}
+
+		// for testing. not all values look sane!
+
+//		if (m_blobFinder != null) {
+//			while (isRunning()) {
+//				lockComponent();
+//				BlobInfo[] blobs = m_blobFinder.getBlobs();
+//				for (BlobInfo blob : blobs) {
+//					println(blob.id);
+//					println(blob.area);
+//					println(blob.boundingBox.pos.x);
+//					println(blob.boundingBox.pos.y);
+//					println(blob.boundingBox.width);
+//					println(blob.boundingBox.height);
+//					println(blob.colour.r);
+//					println(blob.colour.g);
+//					println(blob.colour.b);
+//					println(blob.range);
+//				}
+//				unlockComponent();
+//				sleepComponent(1000);
+//			}
+//		}
 	}
 
 }
