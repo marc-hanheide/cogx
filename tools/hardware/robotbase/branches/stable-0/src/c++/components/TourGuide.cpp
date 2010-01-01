@@ -10,15 +10,15 @@ void gotoPos(double x, double y, double theta) {
   std::cout << "goto (" << x << ", " << y <<")" << std::endl;
   pp.GoTo(x, y, theta);
   double dist=1e10;
-  std::cout << "wait to reach goal" << std::endl;
   while (dist>0.5) {
     robot.Read();
     double dx=pp.GetXPos()-x;
     double dy=pp.GetYPos()-y;
     dist=sqrt(dx*dx + dy*dy);
-    std::cout << "dist = " << dist<< std::endl;
+    std::cout << "  wait to reach goal (dist = " << dist<< ")\r" <<std::flush;
     usleep(100000);
   }
+  std::cout << std::endl;
 }
 
 
@@ -29,11 +29,14 @@ int main(int argc, char** argv)
   try
     {
       std::cout << robot << std::endl;
+      std::cout << "argc = " << argc << std::endl;
 
       pp.SetMotorEnable (true);
-
-      gotoPos(1.0, 0.0, 0.0);
-      gotoPos(0.0, 0.0, 0.0);
+      for (int i=1; i<argc-1; i+=2) {
+	double x=atof(argv[i]);
+	double y=atof(argv[i+1]);
+	gotoPos(x, y, 0.0);
+      }
 
     }
 
