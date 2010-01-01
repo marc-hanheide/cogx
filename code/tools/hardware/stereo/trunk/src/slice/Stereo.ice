@@ -16,6 +16,7 @@ module Stereo {
     void getPoints(bool transformToGlobal, out VisionData::SurfacePointSeq points);
     void getPointsInSOI(bool transformToGlobal, VisionData::SOI soi, out VisionData::SurfacePointSeq points);
     void getRectImage(int side, out Video::Image img);
+    void getDisparityImage(out Video::Image img);
   };
 };
 
