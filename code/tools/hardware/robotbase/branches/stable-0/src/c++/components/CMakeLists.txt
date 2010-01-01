@@ -47,3 +47,5 @@ if(BUILD_HAL_ROBOT_TESTS)
 add_subdirectory (tests)
 endif(BUILD_HAL_ROBOT_TESTS)
 
+ADD_EXECUTABLE(TourGuide TourGuide.cpp)
+target_link_libraries(TourGuide ${PLAYER_LIBRARIES})
