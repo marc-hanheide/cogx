@@ -75,6 +75,7 @@ public class BlobjectDetector extends ManagedComponent implements
 
 		// if no blobs
 		if (blobs.length == 0) {
+			log("see no blobs around here");
 			// we don't see anything
 			for (String label : dc.labels) {
 				// for the time being just fail
@@ -84,25 +85,31 @@ public class BlobjectDetector extends ManagedComponent implements
 				addToWorkingMemory(newDataID(), obj);
 			}
 		} else {
+			log("there are some blobs around");
 			for (String label : dc.labels) {
+				log("  is it a " + label + "?");
 				VisualObject obj = VisionUtils.newVisualObject();
 				obj.label = label;
-				//default to not seen (i.e. 0)
+				// default to not seen (i.e. 0)
 				obj.detectionConfidence = 0f;
-				
-				//get expected rgb for label
+
+				// get expected rgb for label
 				ColorRGB rgb = m_label2colour.get(label);
-				
-				//now see if we have this one in our blobs
-				for (BlobInfo blob : blobs) {
-					println("is " + VisionUtils.toString(blob.colour) + " equal to " + VisionUtils.toString(rgb) + "?");
-					if(blob.colour.equals(rgb)) {
-						println("YES!");
-						obj.detectionConfidence = 1f;
-						break;
+
+				// if the colour code is not known continue with next label
+				if (rgb != null) {
+					// now see if we have this one in our blobs
+					for (BlobInfo blob : blobs) {
+						println("is " + VisionUtils.toString(blob.colour)
+								+ " equal to " + VisionUtils.toString(rgb)
+								+ "?");
+						if (blob.colour.equals(rgb)) {
+							println("  YES, found an object");
+							obj.detectionConfidence = 1f;
+							break;
+						}
 					}
 				}
-				
 				addToWorkingMemory(newDataID(), obj);
 			}
 		}
@@ -138,26 +145,26 @@ public class BlobjectDetector extends ManagedComponent implements
 
 		// for testing. not all values look sane!
 
-//		if (m_blobFinder != null) {
-//			while (isRunning()) {
-//				lockComponent();
-//				BlobInfo[] blobs = m_blobFinder.getBlobs();
-//				for (BlobInfo blob : blobs) {
-//					println(blob.id);
-//					println(blob.area);
-//					println(blob.boundingBox.pos.x);
-//					println(blob.boundingBox.pos.y);
-//					println(blob.boundingBox.width);
-//					println(blob.boundingBox.height);
-//					println(blob.colour.r);
-//					println(blob.colour.g);
-//					println(blob.colour.b);
-//					println(blob.range);
-//				}
-//				unlockComponent();
-//				sleepComponent(1000);
-//			}
-//		}
+		// if (m_blobFinder != null) {
+		// while (isRunning()) {
+		// lockComponent();
+		// BlobInfo[] blobs = m_blobFinder.getBlobs();
+		// for (BlobInfo blob : blobs) {
+		// println(blob.id);
+		// println(blob.area);
+		// println(blob.boundingBox.pos.x);
+		// println(blob.boundingBox.pos.y);
+		// println(blob.boundingBox.width);
+		// println(blob.boundingBox.height);
+		// println(blob.colour.r);
+		// println(blob.colour.g);
+		// println(blob.colour.b);
+		// println(blob.range);
+		// }
+		// unlockComponent();
+		// sleepComponent(1000);
+		// }
+		// }
 	}
 
 }
