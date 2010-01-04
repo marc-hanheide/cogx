@@ -3,10 +3,9 @@
  */
 package coma.motivation;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import binder.autogen.core.Proxy;
 
 import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
@@ -15,6 +14,7 @@ import motivation.slice.Motive;
 import motivation.util.facades.BinderFacade;
 import motivation.util.facades.SpatialFacade;
 import SpatialData.Place;
+import binder.autogen.core.Proxy;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -41,7 +41,7 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 	 * the place hasn't been explored for longer than this amount the gain is >
 	 * 0.5 otherwise it's smaller using an exp reciproc model.
 	 */
-	private static final long EXP_NORM = 5;
+	private static final double EXP_NORM = 5.0;
 
 	private boolean blockRooms;
 
@@ -130,27 +130,57 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 	protected void computeAttributes(CategorizeRoomMotive crm, ComaRoom source)
 			throws CASTException, InterruptedException {
 		final SpatialFacade sf = SpatialFacade.get(this);
-//		final BinderFacade binder = BinderFacade.get(this);
+		final BinderFacade binder = BinderFacade.get(this);
 
-		Set<Place> placesInRoom = sf.getPlaces(source);
-		
-		int countRealPlaces=placesInRoom.size();
-		
-//		for (Place p : placesInRoom) {
-//			Proxy placePrx = binder.findPlaceProxy(p);
-//			Map<WorkingMemoryAddress, Proxy> related = binder.getRelatedProxies(placePrx, "connected");
-//			for (Proxy prx : related.values()) {
-//			}
-//			switch(p.status) {
-//			case TRUEPLACE:
-//				countRealPlaces++;
-//				break;
-//			}
-//		}
+		int countRealPlaces = 0;
+		int countPlaceHolders = 0;
+		{ // find all place holders from binder
+			Set<Place> placesInRoom = sf.getPlaces(source);
+			Set<Long> placeHolderIds = new HashSet<Long>();
+			Set<Long> truePlaceIds = new HashSet<Long>();
+			log("number of places in room: " + placesInRoom.size());
+			for (Place p : placesInRoom) {
+				Proxy pp = binder.findPlaceProxy(p);
+				truePlaceIds.add(p.id);
+				if (pp != null) {
+					log("looking for related proxies");
+					Map<WorkingMemoryAddress, Proxy> related = binder
+							.getRelatedProxies(pp, "connected");
+					log("  found " + related.size()
+							+ " related proxies for place " + p.id);
+					for (Proxy prx : related.values()) {
+						Long id = new Long(binder.getPlaceIdFromProxy(prx));
+						// if this connected place is not in the list of true
+						// places add it as a placeholder
+						if (!truePlaceIds.contains(id)) {
+							placeHolderIds.add(id);
+						}
+					}
 
-//		log("  countRealPlaces = "+ countRealPlaces);
+				} else {
+					log("  could not find proxy for place_id " + p.id);
+				}
+			}
+			countRealPlaces = truePlaceIds.size();
+			countPlaceHolders = placeHolderIds.size();
+
+			{ // some debugging logs
+				log("countRealPlaces = " + countRealPlaces);
+				log("countPlaceHolders = " + countPlaceHolders);
+				String tmp = "  placesInRoom:";
+				for (Long p : truePlaceIds)
+					tmp = tmp + " " + p;
+				log(tmp);
+				tmp = "  placeHolder: ";
+				for (Long p : placeHolderIds)
+					tmp = tmp + " " + p;
+				log(tmp);
+
+			}
+		}
+		// log("  countRealPlaces = "+ countRealPlaces);
 		Place currentPlace = sf.getPlace();
-		// compute the mean costs to reach the places in the room 
+		// compute the mean costs to reach the places in the room
 		double estimatedTravelCosts = 0.0;
 		for (long p : source.containedPlaceIds) {
 			estimatedTravelCosts += sf.queryCosts(currentPlace.id, p);
@@ -160,21 +190,22 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 		else
 			crm.costs = (float) 0.0;
 		log("  estimatedTravelCosts = " + crm.costs);
-		
-//		// the ratio between explored places and number of places
-//		double exploredRatio = (double) countRealPlaces / (double) placesInRoom.size();
-//		log("  exploredRatio = " + exploredRatio);
-//		// we consider not fully explored rooms to be ways more expensive...
-//		crm.costs = (float) (crm.costs / exploredRatio);
+
+		// the ratio between explored places and number of places
+		double exploredRatio = (double) countRealPlaces
+				/ (double) (countPlaceHolders+countRealPlaces);
+		log("  exploredRatio = " + exploredRatio);
+		// we consider not fully explored rooms to be ways more expensive...
+		crm.costs = (float) (crm.costs / exploredRatio);
 		log("  costs = " + crm.costs);
 
 		// The more (real) places are contained the more information we get
 		// from this room!
 		crm.informationGain = 1 - (1. / Math
-				.exp((countRealPlaces / EXP_NORM) * Math.log(2)));
+				.exp((((double) countRealPlaces) / EXP_NORM) * Math.log(2)));
 
 		log("  informationGain = " + crm.informationGain);
-		
+
 	}
 
 	/*
