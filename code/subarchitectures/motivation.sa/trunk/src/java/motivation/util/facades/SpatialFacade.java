@@ -5,10 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import comadata.ComaRoom;
-
 import motivation.util.castextensions.WMEntryQueue;
-import motivation.util.castextensions.WMEntrySet;
+import motivation.util.castextensions.WMView;
 import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
 import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 import FrontierInterface.PlaceInterface;
@@ -17,13 +15,15 @@ import Ice.ObjectImpl;
 import SpatialData.PathQueryStatus;
 import SpatialData.PathTransitionCostRequest;
 import SpatialData.Place;
-import SpatialData.PlaceHolder;
 import cast.CASTException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+
+import comadata.ComaRoom;
 
 public class SpatialFacade extends Thread implements ChangeHandler {
 
@@ -36,8 +36,8 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	private Set<PlaceChangedHandler> placeCheckerCallables = null;
 	private PlaceInterfacePrx placeInterface;
 	ManagedComponent component;
-	WMEntrySet places;
-	WMEntrySet rooms;
+	WMView<Place> places;
+	WMView<ComaRoom> rooms;
 
 	/**
 	 * returns room a given place is in
@@ -45,8 +45,7 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	 * @return room the place is in
 	 */
 	public ComaRoom getRoom(Place p) {
-		for (ObjectImpl oi : rooms.values()) {
-			ComaRoom cr = (ComaRoom) oi;
+		for (ComaRoom cr : new HashSet<ComaRoom>(rooms.values())) {
 			for (int i = 0; i < cr.containedPlaceIds.length; i++) {
 				if (cr.containedPlaceIds[i] == p.id) {
 					return cr;
@@ -65,11 +64,8 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	public Set<Place> getPlaces(ComaRoom cr) {
 		Set<Place> result = new HashSet<Place>();
 		for (int i = 0; i < cr.containedPlaceIds.length; i++) {
-			for (ObjectImpl oi : places.values()) {
-				Place p = (Place) oi;
-				
+			for (Place p : new HashSet<Place>(places.values())) {
 				if (p.id == cr.containedPlaceIds[i]) {
-					
 					result.add(p);
 				}
 			}
@@ -113,9 +109,10 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 
 				placeInterface = component.getIceServer("place.manager",
 						PlaceInterface.class, PlaceInterfacePrx.class);
-				component.println("PlaceInterface initialized... ");
+				component.log("PlaceInterface initialized... ");
 				// Thread.sleep(3000);
 				// component
+
 				// .println("placeInterface.getCurrentPlace successfully called... connection alright");
 
 				break;
@@ -146,8 +143,13 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	 */
 	@Override
 	public void run() {
-		places.start();
-		rooms.start();
+		try {
+			places.start();
+			rooms.start();
+		} catch (UnknownSubarchitectureException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		// initialize current place
 		while (currentPlace == null && !interrupted())
@@ -202,8 +204,8 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	SpatialFacade(ManagedComponent component) throws CASTException {
 		super(SpatialFacade.class.getSimpleName() + "singletonThread");
 		this.component = component;
-		places = WMEntrySet.create(component, Place.class);
-		rooms = WMEntrySet.create(component, ComaRoom.class);
+		places = WMView.create(component, Place.class, "spatial.sa");
+		rooms = WMView.create(component, ComaRoom.class,"coma.sa");
 
 		placeInterface = null; // lazy init
 		placeCheckerCallables = Collections
