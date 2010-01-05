@@ -16,7 +16,7 @@ tgTexture::~tgTexture(){
 	glDeleteTextures(1, &m_texture_id);
 }
 
-bool tgTexture::load(unsigned char* image_data, int width, int height){
+bool tgTexture::Load(unsigned char* image_data, int width, int height){
 	m_width = width;
 	m_height = height;
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);
@@ -24,29 +24,28 @@ bool tgTexture::load(unsigned char* image_data, int width, int height){
 	return true;
 }
 
-bool tgTexture::load(const char* filename){
+bool tgTexture::Load(const char* filename){
 	IplImage* img = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
 	cvConvertImage(img, img, CV_CVTIMG_SWAP_RB);
-	bool b = load((unsigned char*)img->imageData, img->width, img->height);
+	bool b = Load((unsigned char*)img->imageData, img->width, img->height);
 	cvReleaseImage(&img);
 	return b;
 }
 
-void tgTexture::bind(int stage){
+void tgTexture::Bind(int stage){
 	glActiveTexture(GL_TEXTURE0 + stage);
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
 }
 
-void tgTexture::unbind(){
+void tgTexture::Unbind(){
 	glDisable(GL_TEXTURE_2D);
 }
 
-
-void tgTexture::copyTexImage2D(int width, int height){
+void tgTexture::CopyTexImage2D(int width, int height){
 	m_width = width;
 	m_height = height;
-	bind();
+	Bind();
 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, m_width, m_height, 0);	
 }

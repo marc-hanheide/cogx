@@ -22,14 +22,14 @@ tgEngine::tgEngine(){
 	m_button_right = false;
 	
 	m_wireframe = false;
-	m_smoothshading = true;
+	m_smoothshading = false;
 	
 	Welcome();
 	
 }
 
 tgEngine::~tgEngine(){
-	SDL_Quit();
+	delete(m_window);
 }
 
 void tgEngine::Welcome(){
@@ -39,23 +39,24 @@ void tgEngine::Welcome(){
 	printf("zoom:   mouse wheel\n");
 	printf("f:      toggle shading mode\n");
 	printf("w:      draw wireframed\n");
-	printf("q/esc:	quit\n");
+	printf("esc:	quit\n");
 	printf("\n");
 }
 
 bool tgEngine::InitWindow(int width, int height){
-	// Initialize SDL	
-	if((SDL_Init(SDL_INIT_VIDEO)==-1)) { 
-		printf("[Resources::GetScreen] Error could not initialize SDL: %s\n", SDL_GetError());
-		return false;
-	}
-	
-	// Set mode for video output (width, height, resolution)
-	if ( !SDL_SetVideoMode( width, height, 32, SDL_OPENGL )) {
-		printf( "[Resources::GetScreen] Error setting video mode: %s\n", SDL_GetError( ) );
-		SDL_Quit();
-		return false;
-	}
+// 	// Initialize SDL	
+// 	if((SDL_Init(SDL_INIT_VIDEO)==-1)) { 
+// 		printf("[Resources::GetScreen] Error could not initialize SDL: %s\n", SDL_GetError());
+// 		return false;
+// 	}
+// 	// Set mode for video output (width, height, resolution)
+// 	if ( !SDL_SetVideoMode( width, height, 32, SDL_OPENGL )) {
+// 		printf( "[Resources::GetScreen] Error setting video mode: %s\n", SDL_GetError( ) );
+// 		SDL_Quit();
+// 		return false;
+// 	}
+
+	m_window = new tgGLXWindow(width, height);
 }
 
 bool tgEngine::Init(int width, int height, float depth){
@@ -74,7 +75,9 @@ bool tgEngine::Init(int width, int height, float depth){
 								0.01, 5.0*depth,					// near clipping plane, far clipping plane
 								GL_PERSPECTIVE);						// Perspective camera
 	
-	// Setup Lighting	
+	m_camera0 = m_camera;
+	
+	// Setup lights	
 	tgLight light0;
 	light0.ambient = vec4(0.3,0.3,0.3,1.0);
 	light0.diffuse = vec4(1.0,1.0,1.0,1.0);
@@ -93,7 +96,7 @@ bool tgEngine::Init(int width, int height, float depth){
 	glEnable(GL_DEPTH_TEST);
 }
 
-bool tgEngine::Update(){
+bool tgEngine::Update(float &fTime){
 	
 	bool quit = InputControl();
 	m_camera.ApplyTransform();
@@ -104,102 +107,114 @@ bool tgEngine::Update(){
 	Swap();
 	
 	// update frametime
-	m_frametime = m_timer.Update();
+	fTime = m_frametime = m_timer.Update();
 	
 	// clear framebuffer and depth buffer
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	
-	if(m_smoothshading)
-		glShadeModel(GL_SMOOTH);
-	else
-		glShadeModel(GL_FLAT);
-	
 	
 	return quit;
 }
 
 bool tgEngine::InputControl(){
- 	SDL_Event event;
-	while(SDL_PollEvent(&event)){
+	tgEvent event;
+	while(m_window->CheckXEvent(event)){
 		switch(event.type){
-			
-			// Keyboard input
-			case SDL_KEYDOWN:
-				switch(event.key.keysym.sym){
-					case SDLK_ESCAPE:
+		
+			// *********************************************************
+			case KeyPress:
+				switch(event.key.keysym){
+					case XK_Escape:
 						return false;
 						break;
-					case SDLK_f:
+					case XK_f:
+						if(m_smoothshading)
+							glShadeModel(GL_SMOOTH);
+						else
+							glShadeModel(GL_FLAT);
 						m_smoothshading = !m_smoothshading;
 						break;
-					case SDLK_q:
-						return false;
-					case SDLK_w:
+					case XK_w:
 						if(m_wireframe)
 							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 						else
 							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 						m_wireframe = !m_wireframe;
 						break;
+					case XK_z:
+						m_camera = m_camera0;
+						break;
 					default:
 						break;
 				}
 				break;
 				
-			// Mouse motion
-			case SDL_MOUSEMOTION:
-				if(m_button_left){
-					m_camera.Orbit(tgVector3(0.0,0.0,0.0), m_camera.GetU(), -5*m_frametime * event.motion.xrel);
-					m_camera.Orbit(tgVector3(0.0,0.0,0.0), m_camera.GetS(), -5*m_frametime * event.motion.yrel);					
-				}else if(m_button_right){
-					m_camera.TranslateS(-0.2*m_depth*m_frametime*event.motion.xrel);
-					m_camera.TranslateU(0.2*m_depth*m_frametime*event.motion.yrel);
-				}
-				break;
-			
-			// Mouse button
-			case SDL_MOUSEBUTTONDOWN:
+			// *********************************************************
+			case ButtonPress:
 				switch(event.button.button){
-					case SDL_BUTTON_LEFT:
+					case Button1:
 						m_button_left = true;
 						break;
-					case SDL_BUTTON_MIDDLE:
+					case Button2:
 						m_button_middle = true;
 						break;
-					case SDL_BUTTON_RIGHT:
+					case Button3:
 						m_button_right = true;
 						break;
-					case SDL_BUTTON_WHEELUP:
+					case Button4:
 						m_camera.TranslateF(10.0*m_depth*m_frametime);
 						break;
-					case SDL_BUTTON_WHEELDOWN:
+					case Button5:
 						m_camera.TranslateF(-10.0*m_depth*m_frametime);
 						break;
 				}
 				break;
-			case SDL_MOUSEBUTTONUP:
+				
+			// *********************************************************
+			case ButtonRelease:
 				switch(event.button.button){
-					case SDL_BUTTON_LEFT:
+					case Button1:
 						m_button_left = false;
 						break;
-					case SDL_BUTTON_MIDDLE:
+					case Button2:
 						m_button_middle = false;
 						break;
-					case SDL_BUTTON_RIGHT:
+					case Button3:
 						m_button_right = false;
 						break;
 				}
 				break;
 				
-			
-			case SDL_QUIT:
-				return false;
+			// *********************************************************
+			case MotionNotify:
+				if(m_button_left){
+					m_camera.Orbit(tgVector3(0.0,0.0,0.0), m_camera.GetU(), -5*m_frametime * event.motion.x_rel);
+					m_camera.Orbit(tgVector3(0.0,0.0,0.0), m_camera.GetS(), -5*m_frametime * event.motion.y_rel);					
+				}else if(m_button_right){
+					m_camera.TranslateS(-0.2*m_depth*m_frametime*event.motion.x_rel);
+					m_camera.TranslateU(0.2*m_depth*m_frametime*event.motion.y_rel);
+				}
 				break;
-			default:
+				
+			// *********************************************************
+			case Expose:
+			/*
+				m_camera0.SetIntrinsic(m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+															m_camera.GetZNear(), m_camera.GetZFar(),
+															m_camera.GetProjection());
+				m_camera.SetIntrinsic(m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+															m_camera.GetZNear(), m_camera.GetZFar(),
+															m_camera.GetProjection());
+			*/
 				break;
-		}
-	}
-
+				
+			// *********************************************************
+			case ClientMessage:
+				if(event.clientmessage.stop)
+					return false;
+				break;
+				
+		} // switch(event.type)
+	} // while(m_window->CheckXEvent(event))
 	return true;
 }
 
@@ -226,9 +241,10 @@ void tgEngine::DrawCoordinates(){
 }
 
 void tgEngine::Swap(){
+	m_window->Swap();
 	
 	// swap OpenGL framebuffer
-	SDL_GL_SwapBuffers();
-	SDL_Delay(5);	
+// 	SDL_GL_SwapBuffers();
+// 	SDL_Delay(5);	
 }
 

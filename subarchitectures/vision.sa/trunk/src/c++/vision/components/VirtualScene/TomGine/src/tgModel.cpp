@@ -22,11 +22,13 @@ void tgModel::ApplyMaterial(Material mat){
 	glMaterialfv(GL_FRONT,GL_SHININESS,&mat.shininess);
 }
 
-void tgModel::drawFaces(){
+void tgModel::DrawFaces(){
 	ApplyMaterial(m_material);
 	int i,j;
 	Face* f;
 	int v;
+	
+	m_pose.Activate();
 	
 	for(i=0; i<(int)m_faces.size(); i++){
 		f = &m_faces[i];
@@ -48,9 +50,11 @@ void tgModel::drawFaces(){
 			
 		glEnd();
 	}
+
+	m_pose.Deactivate();
 }
 
-void tgModel::computeNormals(){
+void tgModel::ComputeNormals(){
 
 	int i,j;
 	Face* f;
@@ -80,7 +84,7 @@ void tgModel::computeNormals(){
 	}
 }
 
-void tgModel::printInfo(){
+void tgModel::PrintInfo(){
 	int i,j;
 	Face* f;
 	int v;

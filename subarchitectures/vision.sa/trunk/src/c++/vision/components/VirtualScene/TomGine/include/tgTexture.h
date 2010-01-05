@@ -17,17 +17,17 @@ public:
 	tgTexture();
 	~tgTexture();
 	
-	bool load(unsigned char* image_data, int width, int height);
-	bool load(const char* filename);
+	bool Load(unsigned char* image_data, int width, int height);
+	bool Load(const char* filename);
 	
-	void bind(int stage=0);
-	void unbind();
+	void Bind(int stage=0);
+	void Unbind();
 
-	void copyTexImage2D(int width, int height);
+	void CopyTexImage2D(int width, int height);
 	
-	inline GLuint getTextureID(){ return m_texture_id; }
-	inline int getWidth(){ return m_width; }
-	inline int getHeight(){ return m_height; }
+	inline GLuint GetTextureID(){ return m_texture_id; }
+	inline int GetWidth(){ return m_width; }
+	inline int GetHeight(){ return m_height; }
 	
 };
 

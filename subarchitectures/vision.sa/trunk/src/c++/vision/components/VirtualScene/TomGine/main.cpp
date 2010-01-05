@@ -6,6 +6,8 @@
 
 int main(int argc, char *argv[])
 {
+	float fTime;
+
 	tgEngine render;
 	render.Init(640,480,1.0);
 	
@@ -17,17 +19,16 @@ int main(int argc, char *argv[])
 	matSilver.specular = vec4(0.77,0.77,0.77,1.0);
 	matSilver.shininess = 51.2;
 		
-	tgModel cylinder = genCylinder(0.05, 0.2, 64, 1);
+	tgModel cylinder = GenCylinder(0.05, 0.2, 32, 1);
 	cylinder.m_material = matSilver;
 	
 	// Rendering loop
-	while(render.Update()){
-		cylinder.drawFaces();				
+	while(render.Update(fTime)){
+//		cylinder.DrawFaces();		
 	}
 	
 	return 0;
 }
-
 
 
 

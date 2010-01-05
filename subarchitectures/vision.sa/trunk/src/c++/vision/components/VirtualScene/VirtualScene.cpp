@@ -41,26 +41,42 @@ void VirtualScene::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	
- 	tgModel model;
-	if(!convertGeometryModel(obj->model, &model)){
+	ModelEntry newModelEntry;
+	
+	if(!convertGeometryModel(obj->model, newModelEntry.model)){
 		log("  error can not convert VisualObject to tracker model");
 		return;
 	}
-	tgModel::Material matSilver;
+	
+	 // just an example material (should be random to separate objects more easily
+	tgModel::Material matSilver; 
 	matSilver.ambient = vec4(0.19,0.19,0.19,1.0);
 	matSilver.diffuse = vec4(0.51,0.51,0.51,1.0);
 	matSilver.specular = vec4(0.77,0.77,0.77,1.0);
 	matSilver.shininess = 51.2;
-	model.m_material = matSilver;
-	model.computeNormals();
-	model.printInfo();
-	m_modellist.push_back(model);
+	
+	newModelEntry.model.m_material = matSilver;
+	newModelEntry.model.ComputeNormals();
+	newModelEntry.model.PrintInfo();
+	convertPose2tgPose(obj->pose, newModelEntry.model.m_pose);
+	newModelEntry.obj = obj;
+	newModelEntry.castWMA = _wmc.address;
+	m_modellist.push_back(newModelEntry);
 	
 	log("VisualObject added to Scene");
 }
 
 void VirtualScene::changeVisualObject(const cdl::WorkingMemoryChange & _wmc){
-	log("[VirtualScene::changeofVisualObject] WARNING: function not implemented");
+	
+	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
+	
+	for(int i=0; i<m_modellist.size(); i++){
+		if(m_modellist[i].castWMA == _wmc.address){
+			convertPose2tgPose(obj->pose, m_modellist[i].model.m_pose);
+		}			
+	}
+	
+	//log("[VirtualScene::changeofVisualObject] WARNING: function not implemented");
 }
 
 void VirtualScene::removeVisualObject(const cdl::WorkingMemoryChange & _wmc){
@@ -103,6 +119,10 @@ void VirtualScene::start(){
   addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<VirtualScene>(this,
         &VirtualScene::receiveVisualObject));
+        
+	addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<VirtualScene>(this,
+        &VirtualScene::changeVisualObject));
 }
 
 void VirtualScene::destroy(){
@@ -135,6 +155,7 @@ void VirtualScene::runComponent(){
 		}
   }
   
+  delete(m_engine);
   log("stop");
 }
 
@@ -146,25 +167,22 @@ void VirtualScene::initScene(const Video::Image &image){
   // *** Initialisation of Scene ***
   m_width = image.width;
   m_height = image.height;
-	m_engine.Init(m_width, m_height, 1.0);
+  
+  m_engine = new(tgEngine);
+	m_engine->Init(m_width, m_height, 1.0);
 	
 	loadCameraParameters(&m_camera, image.camPars, 0.1, 10.0);
-	m_engine.SetCamera(m_camera);
-	 
-  // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
-  //loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
+	m_engine->SetCamera(m_camera);
 
   log("... initialisation successfull!");
 }
 
 void VirtualScene::runScene(){
-
-	
 	
 	for(int i=0; i<m_modellist.size(); i++){
-		m_modellist[i].drawFaces();
+		m_modellist[i].model.DrawFaces();
 	}
-	m_running = m_engine.Update();
+	m_running = m_engine->Update(m_fTime);
 }
 
 
