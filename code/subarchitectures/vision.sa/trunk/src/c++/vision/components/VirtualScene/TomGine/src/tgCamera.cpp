@@ -54,6 +54,33 @@ void tgCamera::SetIntrinsic(float* M){
 	Activate();
 }
 
+void tgCamera::SetIntrinsic(	float fovy, float width, float height,
+															float zNear, float zFar,
+															unsigned short projection)
+{
+	m_fovy = fovy;
+	m_width = width;
+	m_height = height;
+	m_zNear = zNear;
+	m_zFar = zFar;
+	m_projection = projection;
+	
+	float m[16];
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	
+	if(m_projection == GL_ORTHO){
+		glOrtho(-m_width/2, m_width/2, -m_height/2, m_height/2, m_zNear, m_zFar);
+	}
+	else if(m_projection == GL_PERSPECTIVE){
+		gluPerspective( m_fovy, m_width/m_height, m_zNear, m_zFar);
+	}
+	glGetFloatv(GL_PROJECTION_MATRIX, m);
+	m_intrinsic = mat4(m);
+	
+	Activate();
+}
+
 void tgCamera::SetViewport(float w, float h){
 	m_width = w;
 	m_height = h;

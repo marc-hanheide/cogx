@@ -2,7 +2,20 @@
 
 #include "tgModel.h"
 
-tgModel genCylinder(	float radius, float height,
+tgModel GenCube( float x, float y, float z){
+	tgModel model;
+	float x2 = x * 0.5;
+	float y2 = y * 0.5;
+	float z2 = z * 0.5;
+	
+	tgModel::Vertex v;
+	tgModel::Face f;
+	
+	printf("[BasicGeometries.h - GenCube()] Generating cube not implemented yet\n");
+
+}
+
+tgModel GenCylinder(	float radius, float height,
 											int slices, int stacks, bool closed=true)
 {
 	tgModel model;

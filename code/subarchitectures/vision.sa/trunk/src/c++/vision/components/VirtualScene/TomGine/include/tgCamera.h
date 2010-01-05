@@ -55,7 +55,7 @@ public:
 						unsigned short projection=GL_PERSPECTIVE );
 	void SetExtrinsic(float* M);
 	void SetIntrinsic(float* M);
-	void SetIntrinsic(float fovy, float width, float height);
+	void SetIntrinsic(float fovy, float width, float height, float zNear, float zFar, unsigned short projection);
 	void SetViewport(float w, float h);
 	void SetZRange(float near, float far);
 	void SetPerspective(){m_projection=GL_PERSPECTIVE;}
@@ -82,6 +82,9 @@ public:
 	
 	float GetZNear(){ return m_zNear; }
 	float GetZFar(){ return m_zFar; }
+	
+	float GetFOVY(){ return m_fovy; }
+	unsigned short GetProjection(){ return m_projection; }
 
 	// Translations
 	void Translate(tgVector3 v);

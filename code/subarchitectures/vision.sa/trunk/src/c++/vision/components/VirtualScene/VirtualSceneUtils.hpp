@@ -12,10 +12,26 @@ using namespace cast;
 using namespace cogx;
 using namespace Math;
 
+// converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
+bool convertPose2tgPose(Pose3& pose, tgPose& tgpose){
+	mat3 rot;
+	vec3 pos;
+	
+	rot[0] = (float)pose.rot.m00; rot[1] = (float)pose.rot.m01; rot[2] = (float)pose.rot.m02;
+	rot[3] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[5] = (float)pose.rot.m12;
+	rot[6] = (float)pose.rot.m20; rot[7] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
+	
+	pos.x = pose.pos.x;
+	pos.y = pose.pos.y;
+	pos.z = pose.pos.z;
 
+	tgpose.SetPose(rot, pos);
+	
+	return true;
+}
 
 // converts a VisionData::GeometryModel to a Scene Model
-bool convertGeometryModel(VisionData::GeometryModelPtr geom, tgModel* model){
+bool convertGeometryModel(VisionData::GeometryModelPtr geom, tgModel& model){
 	unsigned int i;
 	
 	// Check if model structure is empty
@@ -35,14 +51,14 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, tgModel* model){
 		v.normal.z = geom->vertices[i].normal.z;
 		v.texCoord.x = geom->vertices[i].texCoord.x;
 		v.texCoord.y = geom->vertices[i].texCoord.y;
-		model->m_vertices.push_back(v);
+		model.m_vertices.push_back(v);
 	}
 	
 	// Parse through faces and store content in Model
 	tgModel::Face f;
 	for(i=0; i<geom->faces.size(); i++){	
 		f.vertices = geom->faces[i].vertices;
-		model->m_faces.push_back(f);
+		model.m_faces.push_back(f);
 // 		printf("Face: %i %i %i %i\n", f.vertices[0], f.vertices[1], f.vertices[2], f.vertices[3]);
 	}	
 	

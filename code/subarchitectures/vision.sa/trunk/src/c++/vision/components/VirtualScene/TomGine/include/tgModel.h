@@ -8,14 +8,18 @@
 //			Date:				15.12.2009
 // ----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <vector>
-#include "mathlib.h"
 
 #ifndef TG_MODEL
 #define TG_MODEL
 
+#include <stdio.h>
+#include <vector>
+#include "mathlib.h"
+#include "tgPose.h"
+
+
 using namespace std;
+
 
 class tgModel{	
 public:
@@ -41,10 +45,11 @@ public:
 	vector<Face>				m_faces;
 	
 	Material 						m_material;
+	tgPose							m_pose;
 	
-	void drawFaces();
-	void computeNormals();
-	void printInfo();
+	void DrawFaces();
+	void ComputeNormals();
+	void PrintInfo();
 private:
 	void ApplyMaterial(Material mat);
 

@@ -15,11 +15,14 @@
 #include <SDL/SDL.h>
 #include <GL/gl.h>
 
+#include "tgGLXWindow.h"
 #include "Timer.h"
 #include "tgCamera.h"
 #include "tgLighting.h"
 #include "tgTexture.h"
 #include "tgModel.h"
+#include "tgPose.h"
+#include "tgEvent.h"
 
 class tgEngine
 {
@@ -28,7 +31,9 @@ private:
 	float m_height;
 	float m_depth;
 	
+	tgGLXWindow* m_window;
 	tgCamera m_camera;
+	tgCamera m_camera0;
 	tgLighting m_lighting;
 	Timer m_timer;
 	
@@ -49,13 +54,13 @@ public:
 							int height,			// height of window in pixel
 							float depth);		// distance from object/render to camera (virtual) in units (whatever)
 	
-	bool Update();
+	bool Update(float &fTime);
 	
 	bool InputControl();
 	
 	void DrawCoordinates();
 	
-	void SetCamera(tgCamera cam){ m_camera = cam; }
+	void SetCamera(tgCamera cam){ m_camera = cam; m_camera0 = cam; }
 	
 	void Swap();
 	

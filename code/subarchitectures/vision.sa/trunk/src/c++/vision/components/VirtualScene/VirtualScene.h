@@ -16,6 +16,7 @@
 
 #include "tgEngine.h"
 #include "VirtualSceneUtils.hpp"
+#include "ModelEntry.h"
 
 namespace cast
 {
@@ -27,9 +28,10 @@ private:
   int m_width;
   int m_height;
   
-  tgEngine m_engine;
+  tgEngine* m_engine;
   tgCamera m_camera;
-  vector<tgModel> m_modellist;
+  
+  vector<ModelEntry> m_modellist;
 
   /**
    * Which camera to get images from
@@ -46,6 +48,7 @@ private:
 	int m_maxModels;
   bool m_render;
   bool m_running;
+  float m_fTime;
  
   // Functions with GL commands allowed
   void initScene(const Video::Image &image);
