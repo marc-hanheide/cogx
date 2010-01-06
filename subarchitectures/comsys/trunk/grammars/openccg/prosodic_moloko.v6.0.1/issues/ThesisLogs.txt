@@ -1,0 +1,5 @@
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar ^ <ProofStatus>assumed) ^  <Type>(dummy1_4:entity ^ box ^ <ProofStatus>asserted))))
+
+it is HH% a box@H* HL%
+HH% in the unmarked theme
+
