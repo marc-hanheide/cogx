@@ -43,7 +43,7 @@ Look up the implematation and the README of the ObjectTrackerDriver
 
 Key settings:
 -------------
-Works only if focus is on the Visualisation-Window of the tracker
+Works only if focus is on the ObjectTracker-Window of the tracker
 
 Esc:	quit tracker
 e:		draw edge map of camera image (toggle)
@@ -51,5 +51,6 @@ l:		lock tracker at current position
 m:		show matching pixels (red=match, blue=edge tolerance failed, black=no edge)
 p:		show particles
 s:		show statistics
+t:		grab texture from image
 z:		set tracker to initial position
 
