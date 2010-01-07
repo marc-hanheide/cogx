@@ -339,8 +339,8 @@ void ObjectTracker::initTrackingEntry(int i){
 	m_trackinglist[i].constraints = m_constraints;
 	convertPose2Particle(m_trackinglist[i].obj->pose, m_trackinglist[i].detectpose);
 	m_trackinglist[i].trackpose = m_trackinglist[i].detectpose;
-	m_trackinglist[i].tracker->setZeroPose(m_trackinglist[i].detectpose);
-	m_trackinglist[i].tracker->zeroParticles();
+	m_trackinglist[i].tracker->setInitialPose(m_trackinglist[i].detectpose);
+	m_trackinglist[i].tracker->reset();
 
 	m_trackinglist[i].valid = true;
 	

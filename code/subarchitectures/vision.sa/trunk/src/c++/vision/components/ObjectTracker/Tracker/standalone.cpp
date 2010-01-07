@@ -207,34 +207,7 @@ int main(int argc, char *argv[])
 //  		prinf("grab: %.0f ip: %.0f track: %f\n",fTimeGrab*1000, fTimeIP*1000, fTimeTrack*1000);
 	}
 	
-// 	int iM = 20;
-// 	int nr = 3;
-// 	for(int np=10; np<200; np+=10){
-// 		fTimeGrab = fTimeIP = fTimeTrack = 0.0;
-// 		for(int i=0; i<iM; i++){
-// 			// grab new image from camera
-// 			timer.Update();
-// 			img = g_Resources->GetNewImage();
-// 			fTimeGrab += timer.Update();
-// 			
-// 			// Image processing
-// 			m_tracker->image_processing((unsigned char*)img->imageData);
-// 			fTimeIP += timer.Update();
-// 			
-// 			// Tracking (particle filtering)
-// 			m_tracker->track(model, camera, nr, np, p_constraints, p_result, 0.0);
-// 			m_tracker->swap();
-// 			fTimeTrack += timer.Update();
-// 			
-// 			// Draw result
-// 			m_tracker->drawImage(NULL);
-// 			m_tracker->drawResult(&p_result, model);
-// 			m_tracker->drawCoordinates();
-// 			m_tracker->swap();
-// 		}
-			
-// 		printf("%d %f %f %f\n",np, fTimeGrab*1000/iM, fTimeIP*1000/iM, fTimeTrack*1000/iM);
-// 	}
+
 
 	
 
@@ -281,27 +254,25 @@ bool control(Tracker* tracker){
 					tracker->setColorShader();
 					break;
 				case SDLK_e:
-					tracker->showEdgesImage( !tracker->getEdgesImage() );
+					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
 					break;
 				case SDLK_l:
-					tracker->lock( !tracker->getLock() );
+					tracker->setLockFlag( !tracker->getLockFlag() );
 					break;
 				case SDLK_m:
-					tracker->setShowModel( tracker->getShowModel()+1 );
+					tracker->setModelModeFlag( tracker->getModelModeFlag()+1 );
 					break;
 				case SDLK_p:
-					tracker->showParticles( !tracker->getParticlesVisible() );
+					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
-					tracker->showStatistics();
+					tracker->printStatistics();
 					break;
 				case SDLK_t:
 					tracker->textureFromImage();
 					break;
-				case SDLK_u:
-					tracker->setTestflag(true);
-					break;	
 				case SDLK_w:
+					/*
 					pose = tracker->getLastPose();
 					tracker->setSpreadLvl(4);
 					s = 0.1;
@@ -318,10 +289,10 @@ bool control(Tracker* tracker){
 					tracker->setKernelSize(3);
 					pdfmap = tracker->getPDFxy(pose,-s,-s,s,s,res);
 					tracker->savePDF(pdfmap,-s,-s,s,s,res,"graphs/kernel_3.ply", "graphs/kernel_3.dat");
-					
+					*/
 					break;
 				case SDLK_z:
-					tracker->zeroParticles();
+					tracker->reset();
 					break;
                 default:
 					break;
