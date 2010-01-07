@@ -120,7 +120,9 @@ int main(int argc, char *argv[])
 	img = g_Resources->GetNewImage();
 	
 	// Initialize SDL screen
-	g_Resources->InitScreen(img->width, img->height);
+	g_Resources->InitScreen(img->width, img->height, "Standalone Tracker");
+	
+	g_Resources->ShowLog(false);
 	
 #ifdef WIN32
 	GLenum err = glewInit();
@@ -134,31 +136,24 @@ int main(int argc, char *argv[])
 	// Initialize tracker
 	Tracker* m_tracker;
 		
-	if(mode == EDGE){
-		g_Resources->ShowLog(true);
+	if(mode == EDGE)
 		m_tracker = new EdgeTracker();
-		if(!m_tracker->init(	img->width, img->height,	// image size in pixels
-								num_particles,																// number of particles for each recursion (lower if tracker consumes too much power)
-								num_recursions,													// recursions of particle filter (lower if tracker consumes too much power)
-								float(45.0*PIOVER180),							// edge matching tolerance in degree
-								0.05f,															// goal tracking time in seconds (not implemented yet)
-								p_result))													// initial pose (where to reset when pressing 'z')
-			return 0;
-	}
-	
-	if(mode == TEXTURE){
-		g_Resources->ShowLog(true);
+	else if(mode == TEXTURE)
 		m_tracker = new TextureTracker();
-		if(!m_tracker->init(	img->width, img->height,	// image size in pixels
-								num_particles,																// maximum number of particles
-								num_recursions,													// recursions of particle filter (lower if tracker consumes too much power)
-								float(45.0*PIOVER180),							// edge matching tolerance in degree
-								0.02f,															// goal tracking time in seconds
-								p_result))													// initial pose (where to reset when pressing 'z')
-			return 0;
+
+	if(!m_tracker->init(	img->width, img->height,	// image size in pixels
+												num_particles,						// maximum number of particles
+												num_recursions,						// recursions of particle filter (lower if tracker consumes too much power)
+												float(45.0*PIOVER180),		// edge matching tolerance in degree
+												0.02f,										// goal tracking time in seconds
+												p_result)){								// initial pose (where to reset when pressing 'z')
+		printf("Failed to initialise tracker!\n");
+		return 1;
 	}
+	m_tracker->setBFC(true); // Disable Backface-Culling (required for non-volumetric objects like polyflaps)
 	
-	// Load extrensic Camera
+	
+	// Load extrensic camera parameters
 	if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
 		return 0;
 	camera = g_Resources->GetCamera(id);
@@ -170,14 +165,11 @@ int main(int argc, char *argv[])
 								GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	loadCameraParameters(camera, camPar, 0.1f, 10.0f);
 		
-	// Load model with resource manager
-//  	if((id = g_Resources->AddPlyModel("box_red.ply")) == -1)
+	// Load model
 	if((id = g_Resources->AddPlyModel(modelfilename)) == -1)
 		return 0;
 	model = g_Resources->GetModel(id);
 	
-	// Disable Backface-Culling (required for non-volumetric objects like polyflaps)
-	m_tracker->setBFC(true);
 	
 	printf("\nRunning (Mode = %i)\n", mode);
 	printf("---------------------\n");
@@ -206,10 +198,6 @@ int main(int argc, char *argv[])
 		fTimeTrack = timer.Update();
 //  		prinf("grab: %.0f ip: %.0f track: %f\n",fTimeGrab*1000, fTimeIP*1000, fTimeTrack*1000);
 	}
-	
-
-
-	
 
 	printf("\nStop\n");
 	printf("---------------------\n");

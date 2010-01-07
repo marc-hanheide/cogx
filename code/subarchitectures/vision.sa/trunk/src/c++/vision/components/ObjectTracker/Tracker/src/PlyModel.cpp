@@ -66,7 +66,7 @@ bool PlyModel::read(const char* filename){
     int id; 
     obj_info = ply_get_obj_info(m_plyfile, &num_obj_info);
    	if(num_obj_info < 1){
-   		printf("[PlyModel::read] Warning no texture found in model %s\n", filename);
+//    		printf("[PlyModel::read] Warning no texture found in model %s\n", filename);
    	}else if(num_obj_info >= 1){
    		id = g_Resources->AddTexture(obj_info[0]);
    		m_tex_original = g_Resources->GetTexture(id);
