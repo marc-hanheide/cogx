@@ -5,7 +5,6 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "VirtualScene.h"
-//#include <VideoUtils.h>
 
 
 /**
@@ -47,7 +46,6 @@ void VirtualScene::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 		log("  error can not convert VisualObject to tracker model");
 		return;
 	}
-	
 	 // just an example material (should be random to separate objects more easily
 	tgModel::Material matSilver; 
 	matSilver.ambient = vec4(0.19,0.19,0.19,1.0);
@@ -56,14 +54,12 @@ void VirtualScene::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	matSilver.shininess = 51.2;
 	
 	newModelEntry.model.m_material = matSilver;
-	newModelEntry.model.ComputeNormals();
-	newModelEntry.model.PrintInfo();
 	convertPose2tgPose(obj->pose, newModelEntry.model.m_pose);
 	newModelEntry.obj = obj;
 	newModelEntry.castWMA = _wmc.address;
 	m_modellist.push_back(newModelEntry);
 	
-	log("VisualObject added to Scene");
+	log("VisualObject added to Scene: %s", obj->label.c_str());
 }
 
 void VirtualScene::changeVisualObject(const cdl::WorkingMemoryChange & _wmc){
@@ -126,7 +122,7 @@ void VirtualScene::start(){
 }
 
 void VirtualScene::destroy(){
-
+	delete(m_engine);
 }
 
 void VirtualScene::receiveImages(const std::vector<Video::Image>& images){
@@ -147,7 +143,6 @@ void VirtualScene::runComponent(){
   while(m_running)
   {
     if(m_render){
-      //m_videoServer->getImage(m_camId, m_image);
       runScene();
     }else{
 			// * Idle *
@@ -155,7 +150,7 @@ void VirtualScene::runComponent(){
 		}
   }
   
-  delete(m_engine);
+  destroy();
   log("stop");
 }
 
@@ -181,6 +176,7 @@ void VirtualScene::runScene(){
 	
 	for(int i=0; i<m_modellist.size(); i++){
 		m_modellist[i].model.DrawFaces();
+		m_modellist[i].model.DrawNormals(0.01);
 	}
 	m_running = m_engine->Update(m_fTime);
 }
