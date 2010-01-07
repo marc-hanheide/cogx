@@ -2,6 +2,7 @@ project(VirtualScene)
 
 include_directories(.)
 include_directories(TomGine/include)
+include_directories(/usr/include/opencv)
 
 add_subdirectory(TomGine)
 
