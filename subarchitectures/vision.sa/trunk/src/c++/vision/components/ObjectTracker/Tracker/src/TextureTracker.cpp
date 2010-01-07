@@ -436,7 +436,7 @@ void TextureTracker::drawResult(Particle* p, Model* m){
 	glEnable(GL_DEPTH_TEST);
 	m_lighting.Deactivate();
 	
-	m_model->drawNormals();
+// 	m_model->drawNormals();
 	p->deactivate();
 }
 

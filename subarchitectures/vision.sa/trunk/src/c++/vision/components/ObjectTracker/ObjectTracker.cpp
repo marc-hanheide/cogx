@@ -237,7 +237,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
   g_Resources->SetShaderPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/Tracker/resources/shader/");
 
   // initialize SDL screen
-  g_Resources->InitScreen(m_ImageWidth, m_ImageHeight);
+  g_Resources->InitScreen(m_ImageWidth, m_ImageHeight, "ObjectTracker");
 
   // initialize camera
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)

@@ -164,7 +164,7 @@ void VirtualScene::initScene(const Video::Image &image){
   m_height = image.height;
   
   m_engine = new(tgEngine);
-	m_engine->Init(m_width, m_height, 1.0);
+	m_engine->Init(m_width, m_height, 1.0, "VirtualScene");
 	
 	loadCameraParameters(&m_camera, image.camPars, 0.1, 10.0);
 	m_engine->SetCamera(m_camera);
@@ -176,7 +176,7 @@ void VirtualScene::runScene(){
 	
 	for(int i=0; i<m_modellist.size(); i++){
 		m_modellist[i].model.DrawFaces();
-		m_modellist[i].model.DrawNormals(0.01);
+// 		m_modellist[i].model.DrawNormals(0.01);
 	}
 	m_running = m_engine->Update(m_fTime);
 }

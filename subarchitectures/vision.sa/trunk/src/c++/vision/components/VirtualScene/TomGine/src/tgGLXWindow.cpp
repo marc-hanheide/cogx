@@ -15,7 +15,7 @@
 
 #include "tgGLXWindow.h"
 
-tgGLXWindow::tgGLXWindow(int width, int height){
+tgGLXWindow::tgGLXWindow(int width, int height, const char* name){
 	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 	dpy = XOpenDisplay(NULL);
  
@@ -44,7 +44,7 @@ tgGLXWindow::tgGLXWindow(int width, int height){
 	XSetWMProtocols(dpy, win, &wmDelete, 1);
 	
 	XMapWindow(dpy, win);
-	XStoreName(dpy, win, "TomGine Render Engine");
+	XStoreName(dpy, win, name);
 	
 	glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
 	glXMakeCurrent(dpy, win, glc);
