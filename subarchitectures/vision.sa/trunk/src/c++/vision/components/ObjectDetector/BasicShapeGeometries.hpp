@@ -7,12 +7,17 @@
 
 using namespace VisionData;
 
-void genCube(VisionData::GeometryModelPtr model, float x, float y, float z)
+void genCube(	VisionData::GeometryModelPtr model,
+							float x, float y, float z)
 {
-
+	printf("[ObjectDetector::BasicShapeGeometries.hpp::genCube] Warning not implemented yet");
+	
 }
 
-void genCylinder(	VisionData::GeometryModelPtr model, float radius, float height,	int slices, int stacks, bool closed=true)
+void genCylinder(	VisionData::GeometryModelPtr model,
+									float radius, float height,
+									int slices, int stacks,
+									bool closed=true)
 {
 	int x,z, i=0;
 	float alpha = 2*PI / slices;
