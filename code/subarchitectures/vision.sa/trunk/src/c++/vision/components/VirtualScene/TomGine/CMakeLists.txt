@@ -6,7 +6,6 @@ add_definitions(-DGL_GLEXT_PROTOTYPES)
 
 # Set the directories
 include_directories(./include)
-include_directories(/usr/local/include/opencv)
 include_directories(/usr/include/GL)
 
 link_directories(/usr/lib)
@@ -42,7 +41,7 @@ SET(HEADERS
 	include/tgGLXWindow.h
 	include/Timer.h)
 
-LINK_LIBRARIES(GL SDL cv)
+LINK_LIBRARIES(GL)
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 

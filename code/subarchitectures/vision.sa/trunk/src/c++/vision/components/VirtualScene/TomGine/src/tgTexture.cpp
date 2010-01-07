@@ -1,6 +1,5 @@
 
 #include "tgTexture.h"
-#include "GL/gl.h"
 
 tgTexture::tgTexture(){
 	glGenTextures(1, &m_texture_id);
@@ -24,13 +23,13 @@ bool tgTexture::Load(unsigned char* image_data, int width, int height){
 	return true;
 }
 
-bool tgTexture::Load(const char* filename){
+/* bool tgTexture::Load(const char* filename){
 	IplImage* img = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
 	cvConvertImage(img, img, CV_CVTIMG_SWAP_RB);
 	bool b = Load((unsigned char*)img->imageData, img->width, img->height);
 	cvReleaseImage(&img);
 	return b;
-}
+} */
 
 void tgTexture::Bind(int stage){
 	glActiveTexture(GL_TEXTURE0 + stage);

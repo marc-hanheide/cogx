@@ -21,3 +21,4 @@ clean:
 	rm -f resources/model/*~
 	rm -f resources/shader/*~
 	rm -f resources/texture/*~
+	sudo rm -f /usr/local/lib/libTomGine.so

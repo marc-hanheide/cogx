@@ -3,7 +3,7 @@
 #define TG_TEXTURE
 
 #include <GL/gl.h>
-#include <highgui.h>
+//#include <highgui.h>
 
 class tgTexture
 {
@@ -18,7 +18,7 @@ public:
 	~tgTexture();
 	
 	bool Load(unsigned char* image_data, int width, int height);
-	bool Load(const char* filename);
+	//bool Load(const char* filename);
 	
 	void Bind(int stage=0);
 	void Unbind();
