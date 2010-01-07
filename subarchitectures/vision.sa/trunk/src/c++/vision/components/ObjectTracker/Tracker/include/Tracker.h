@@ -75,7 +75,7 @@ public:
 	
 	// Main functions (init, image_processing, tracking, reset)
 	bool init(	int width, int height,					// image size in pixels
-							int nop=3000,										// maximum number of particles
+							int nop=100,										// maximum number of particles
 							int rec=2,											// recursions per image
 							float et=20.0,									// edge matching tolerance in degree
 							float tt=0.05,									// goal tracking time in seconds

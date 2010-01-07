@@ -145,56 +145,6 @@ void loadCameraParameters(Camera* camera, CameraParameters camPars, float zNear,
 	camera->SetPos(camPars.pose.pos.x, camPars.pose.pos.y, camPars.pose.pos.z);
 }
 
-// SDL - Keyboard and Mouse input control
-/*
-bool inputsControl(Tracker* tracker){
- 
-	SDL_Event event;
-	while(SDL_PollEvent(&event)){
-		switch(event.type){
-		case SDL_KEYDOWN:
-            switch(event.key.keysym.sym){
-				case SDLK_ESCAPE:
-					return false;
-					break;
-				case SDLK_e:
-					tracker->showEdgesImage( !tracker->getEdgesImage() );
-					break;
-				case SDLK_k:
-					tracker->enableKalman( !tracker->getKalmanEnabled() );
-					break;
-				case SDLK_l:
-					tracker->lock( !tracker->getLock() );
-					break;
-				case SDLK_m:
-					tracker->showEdgesModel( !tracker->getEdgesModel() );
-					break;
-				case SDLK_p:
-					tracker->showParticles( !tracker->getParticlesVisible() );
-					break;
-				case SDLK_s:
-					tracker->showStatistics();
-					break;
-				case SDLK_t:
-					tracker->textureFromImage();
-					break;			
-				case SDLK_z:
-					tracker->zeroParticles();
-					break;
-                default:
-					break;
-			}
-			break;
-		case SDL_QUIT:
-			return false;
-			break;
-		default:
-			break;
-		}
-	}
-	return true;
-}
-*/
 
 
 
