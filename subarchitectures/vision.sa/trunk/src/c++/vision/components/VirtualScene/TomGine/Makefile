@@ -13,6 +13,7 @@ main: *.cpp
 all: clean main
 
 clean:
+	make -C BUILD clean
 	rm -f *.o $(OUT)
 	rm -f *~
 	rm -f src/*~

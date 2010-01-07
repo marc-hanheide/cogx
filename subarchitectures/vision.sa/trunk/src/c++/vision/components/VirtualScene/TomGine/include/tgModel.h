@@ -48,6 +48,7 @@ public:
 	tgPose							m_pose;
 	
 	void DrawFaces();
+	void DrawNormals(float normal_length);
 	void ComputeNormals();
 	void PrintInfo();
 private:
