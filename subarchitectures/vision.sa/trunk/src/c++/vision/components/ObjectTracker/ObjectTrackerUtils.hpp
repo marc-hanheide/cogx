@@ -223,23 +223,23 @@ bool inputsControl(std::vector<TrackingEntry> *trackinglist, float fTimeTracker)
 					break;
 				case SDLK_e:
 					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->showEdgesImage( !trackinglist->at(i).tracker->getEdgesImage() );
+						trackinglist->at(i).tracker->setEdgesImageFlag( !trackinglist->at(i).tracker->getEdgesImageFlag() );
 					break;
 				case SDLK_l:
 					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->lock( !trackinglist->at(i).tracker->getLock() );
+						trackinglist->at(i).tracker->setLockFlag( !trackinglist->at(i).tracker->getLockFlag() );
 					break;
 				case SDLK_m:
 					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setShowModel( trackinglist->at(i).tracker->getShowModel()+1 );
+						trackinglist->at(i).tracker->setModelModeFlag( trackinglist->at(i).tracker->getModelModeFlag()+1 );
 					break;
 				case SDLK_p:
 					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->showParticles( !trackinglist->at(i).tracker->getParticlesVisible() );
+						trackinglist->at(i).tracker->setDrawParticlesFlag( !trackinglist->at(i).tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
 					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->showStatistics();
+						trackinglist->at(i).tracker->printStatistics();
 					printf("\nTotal tracking time: %.0f ms\n", fTimeTracker*1000);
 					break;
 				case SDLK_t:
@@ -248,7 +248,7 @@ bool inputsControl(std::vector<TrackingEntry> *trackinglist, float fTimeTracker)
 					break;			
 				case SDLK_z:
 					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->zeroParticles();
+						trackinglist->at(i).tracker->reset();
 					break;
                 default:
 					break;

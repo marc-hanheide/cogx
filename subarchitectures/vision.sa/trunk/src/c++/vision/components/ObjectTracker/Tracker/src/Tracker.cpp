@@ -38,7 +38,6 @@ Tracker::Tracker(){
 	m_showmodel = 0;
 	m_draw_edges = false;
 	m_tracker_initialized = false;
-	m_testflag = false;
 	m_bfc = true;
 	m_spreadlvl = 0;
 	
@@ -273,7 +272,7 @@ void Tracker::swap(){
 
 
 // Show performance and likelihood
-void Tracker::showStatistics(){
+void Tracker::printStatistics(){
 	printf("\n\nTracker %d:\n", m_tracker_id);
 	printf("	Particles: %i x %i\n", params.recursions, m_particles->getNumParticles() );
 	printf("	Tracking time: %f ms, FPS: %.0f Hz\n", time_tracking * 1000.0, 1.0/time_tracking);
@@ -319,7 +318,7 @@ void Tracker::drawSpeedBar(float h){
 	
 }
 	
-void Tracker::zeroParticles(){
+void Tracker::reset(){
 	m_zero_particles = true;
 }
 

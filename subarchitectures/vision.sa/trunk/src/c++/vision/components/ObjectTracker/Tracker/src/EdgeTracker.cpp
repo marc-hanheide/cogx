@@ -97,7 +97,6 @@ EdgeTracker::EdgeTracker(){
 	m_zero_particles = false;
 	m_draw_edges = false;
 	m_tracker_initialized = false;
-	m_testflag = false;
 	m_bfc = false;
 	
 	int id;

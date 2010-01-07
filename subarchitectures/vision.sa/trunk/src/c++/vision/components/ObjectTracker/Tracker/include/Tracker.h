@@ -52,43 +52,37 @@ protected:
 	mat4 m_projection;
 	mat4 m_modelviewprojection;
 	
-	// Controls
+	// Flags
 	bool m_lock;
 	bool m_showparticles;
-	int m_showmodel;
+	int  m_showmodel;
 	bool m_zero_particles;
 	bool m_draw_edges;
 	bool m_tracker_initialized;
-	bool m_testflag;
 	bool m_bfc;
 
-	
 	// Functions (virtual)
 	virtual bool initInternal()=0;
-	
+	virtual void evaluateParticle(Particle* p){}
 	
 	// Functions
 	bool isReady(unsigned char* image, Model* model, Camera* camera);
+	bool initGL();
 	
 public:
 	Tracker();
 	~Tracker();
 	
-	bool initGL();
-	bool init(	int width, int height,								// image size in pixels
-				int nop=3000,										// maximum number of particles
-				int rec=2,											// recursions per image
-				float et=20.0,										// edge matching tolerance in degree
-				float tt=0.05,										// goal tracking time in seconds
-				Particle zp=Particle(0.0));
-				
-  virtual void setKernelSize(int val){ }
-	virtual void setEdgeShader(){ }
-	virtual void setColorShader(){ }
-  
-  virtual void evaluateParticle(Particle* p){}
+	// Main functions (init, image_processing, tracking, reset)
+	bool init(	int width, int height,					// image size in pixels
+							int nop=3000,										// maximum number of particles
+							int rec=2,											// recursions per image
+							float et=20.0,									// edge matching tolerance in degree
+							float tt=0.05,									// goal tracking time in seconds
+							Particle zp=Particle(0.0));			// initial particle
 	
 	virtual void image_processing(unsigned char* image)=0;
+	
 	virtual bool track(	Model* model,
 											Camera* camera,
 											int num_recursions,
@@ -98,14 +92,56 @@ public:
 											float fTime)=0;
 						
 	virtual bool track(	unsigned char* image,
-						Model* model,
-						Camera* camera,
-						Particle& p_result)=0;
-						
-	virtual void textureFromImage(){}
+											Model* model,
+											Camera* camera,
+											Particle& p_result)=0;
 	
+	void reset();
+	
+	// Drawing to screen (result, ...)
 	virtual void drawResult(Particle* p, Model* m)=0;
+	void drawCoordinates();
+	void drawImage(unsigned char* image);
+	void drawPixel(float u, float v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);
+	void drawTest();
+	void drawSpeedBar(float h);
+	void swap();
+	void printStatistics();
 	
+	// set parameters for texture tracking
+  virtual void setKernelSize(int val){ }
+	virtual void setEdgeShader(){ }
+	virtual void setColorShader(){ }
+  virtual void textureFromImage(){}
+  	
+	// Set Parameters
+	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
+	void setTrackTime(float time){ params.track_time = time; }
+	void setBFC(bool val){ m_bfc=val; }
+	void setSpreadLvl(unsigned int val){ m_spreadlvl = val; }
+	void setInitialPose(Particle zp){ params.zP = zp; m_particles->setAll(zp); }
+	
+	// Get Parameters
+	Camera*				getCamPerspective(){ return m_cam_perspective; }
+	float					getTrackTime(){ return params.track_time; }
+	bool 					getBFC(){ return m_bfc; }
+	unsigned int 	getSpreadLvl(){ return m_spreadlvl; }
+	Particle			getInitialPose(){ return params.zP; }
+	Particle 			getLastPose(){ return m_pose; }
+	
+	// get Flags
+	bool getLockFlag(){ return m_lock; }
+	bool getEdgesImageFlag(){ return m_draw_edges; }
+	int  getModelModeFlag(){ return m_showmodel; }
+	bool getDrawParticlesFlag(){ return m_showparticles; }
+
+	// set Flags
+	void setLockFlag(bool val){ m_lock=val; }
+	void setEdgesImageFlag(bool val){ m_draw_edges = val; }
+	void setModelModeFlag(int val){ m_showmodel = val; }
+	void setDrawParticlesFlag(bool val){ m_showparticles = val; }
+	
+	// Functions for analysing PDF
 	virtual vector<float> getPDFxy(	Particle pose,
 																	float x_min, float y_min,
 																	float x_max, float y_max,
@@ -117,37 +153,6 @@ public:
 												float x_max, float y_max,
 												int res,
 												const char* meshfile, const char* xfile){}
-	
-	void drawCoordinates();
-	void drawImage(unsigned char* image);
-	void drawPixel(float u, float v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);
-	void drawTest();
-	void swap();
-	
-	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
-	void setTrackTime(float time){ params.track_time = time; }
-	void setTestflag(bool val){ m_testflag = val; }
-	void setBFC(bool val){ m_bfc=val; }
-	void setSpreadLvl(unsigned int val){ m_spreadlvl = val; }
-	void setZeroPose(Particle zp){ params.zP = zp; m_particles->setAll(zp); }
-	
-	void lock(bool val){ m_lock=val; }
-	
-	Particle getLastPose(){ return m_pose; }
-	
-	bool getLock(){ return m_lock; }
-	bool getEdgesImage(){ return m_draw_edges; }
-	int getShowModel(){ return m_showmodel; }
-	bool getParticlesVisible(){ return m_showparticles; }
-
-	void showEdgesImage(bool val){ m_draw_edges = val; }
-	void setShowModel(int val){ m_showmodel = val; }
-	void showParticles(bool val){ m_showparticles = val; }
-	void showStatistics();
-	
-	void drawSpeedBar(float h);
-	
-	void zeroParticles();
 };
 
 #endif
