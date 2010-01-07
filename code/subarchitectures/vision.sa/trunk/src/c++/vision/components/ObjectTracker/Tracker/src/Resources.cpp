@@ -86,7 +86,7 @@ IplImage* Resources::InitCapture(float width, float height, int camID){
 	return m_image;
 }
 
-SDL_Surface* Resources::InitScreen(int width, int height){
+SDL_Surface* Resources::InitScreen(int width, int height, const char* name){
 	if(!m_screen){
 		if((SDL_Init(SDL_INIT_VIDEO)==-1)) { 
 			printf("[Resources::GetScreen] Error could not initialize SDL: %s\n", SDL_GetError());
@@ -100,6 +100,7 @@ SDL_Surface* Resources::InitScreen(int width, int height){
 			SDL_Quit();
 			return 0;
 		}
+		SDL_WM_SetCaption(name, name);
 	}else{
 		printf( "[Resources::GetScreen] Warning SDL allready initialised\n" );
 	}

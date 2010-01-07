@@ -72,11 +72,11 @@ public:
     }
     
     // Initialisation
-    IplImage*		InitCapture(const char* file);
-    IplImage* 		InitCapture(float width=320.0, float height=240.0, int camID = CV_CAP_ANY);
-    SDL_Surface* 	InitScreen(int width, int height);
-    ImageProcessor*	InitImageProcessor(int width, int height);
-    Frustum*		InitFrustum();
+    IplImage*					InitCapture(const char* file);
+    IplImage* 				InitCapture(float width=320.0, float height=240.0, int camID = CV_CAP_ANY);
+    SDL_Surface* 			InitScreen(int width, int height, const char* name="SDL Window");
+    ImageProcessor*		InitImageProcessor(int width, int height);
+    Frustum*					InitFrustum();
     
     // Release-functions
 	void ReleaseScreen();

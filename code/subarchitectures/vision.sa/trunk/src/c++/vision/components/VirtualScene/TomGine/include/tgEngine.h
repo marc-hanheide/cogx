@@ -42,7 +42,7 @@ private:
 	bool m_wireframe;
 	bool m_smoothshading;
 	
-	bool InitWindow(int widht, int height);
+	bool InitWindow(int widht, int height, const char* name);
 	
 public:
 	tgEngine();
@@ -52,7 +52,8 @@ public:
 	
 	bool Init(	int width,			// width of window in pixel
 							int height,			// height of window in pixel
-							float depth);		// distance from object/render to camera (virtual) in units (whatever)
+							float depth,		// distance from object/render to camera (virtual) in units (whatever)
+							const char* name="TomGine");
 	
 	bool Update(float &fTime);
 	

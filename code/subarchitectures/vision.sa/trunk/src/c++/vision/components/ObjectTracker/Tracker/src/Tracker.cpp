@@ -72,7 +72,7 @@ Tracker::Tracker(){
 }
 
 Tracker::~Tracker(){
-	printf("Tracker::~Tracker\n");
+// 	printf("Tracker::~Tracker\n");
 }
 
 bool Tracker::initGL(){

@@ -40,7 +40,7 @@ private:
 	XMotionEvent						xmotev;
   
 public:
-	tgGLXWindow(int width, int height);
+	tgGLXWindow(int width, int height, const char* name="GLX Window");
 	~tgGLXWindow();
 	void Swap();
 	

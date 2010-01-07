@@ -24,7 +24,7 @@ tgEngine::tgEngine(){
 	m_wireframe = false;
 	m_smoothshading = false;
 	
-	Welcome();
+// 	Welcome();
 	
 }
 
@@ -43,28 +43,16 @@ void tgEngine::Welcome(){
 	printf("\n");
 }
 
-bool tgEngine::InitWindow(int width, int height){
-// 	// Initialize SDL	
-// 	if((SDL_Init(SDL_INIT_VIDEO)==-1)) { 
-// 		printf("[Resources::GetScreen] Error could not initialize SDL: %s\n", SDL_GetError());
-// 		return false;
-// 	}
-// 	// Set mode for video output (width, height, resolution)
-// 	if ( !SDL_SetVideoMode( width, height, 32, SDL_OPENGL )) {
-// 		printf( "[Resources::GetScreen] Error setting video mode: %s\n", SDL_GetError( ) );
-// 		SDL_Quit();
-// 		return false;
-// 	}
-
-	m_window = new tgGLXWindow(width, height);
+bool tgEngine::InitWindow(int width, int height, const char* name){
+	m_window = new tgGLXWindow(width, height, name);
 }
 
-bool tgEngine::Init(int width, int height, float depth){
+bool tgEngine::Init(int width, int height, float depth, const char* name){
 	m_width = width;
 	m_height = height;
 	m_depth = depth;
 	
-	InitWindow(width, height);
+	InitWindow(width, height, name);
 		
 	// Setup camera
 	float da = sqrt(pow(depth,2)/3.0);
