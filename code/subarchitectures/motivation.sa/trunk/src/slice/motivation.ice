@@ -5,6 +5,12 @@
 
 module motivation {
     module slice {
+    
+      interface RemoteFilterServer {
+    	void setPriority(string motiveType, string priority);    	
+      };
+    
+    
 		class WMMutex {
 			string name;
 			string holderName;
