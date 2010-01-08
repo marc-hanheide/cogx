@@ -4,6 +4,7 @@ CAST_DIR=/usr/local
 CAST_INSTALL_ROOT=${CAST_DIR}
 
 CUDA_ROOT=/usr/local/cuda
+CURE_LIB_DIR=TODO_FIXME/cosycure/lib/cure
 MERCURY_ROOT=/usr/local/mercury-rotd-2009-10-25
 MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/glnx86
 # MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/glnx86
@@ -31,7 +32,7 @@ ICE_JARS=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
 LOG4_JAR=/usr/share/java/log4j-1.2.jar
 
 PATH=${COGX_ROOT}/output/bin:${CUDA_ROOT}/bin:${MERCURY_ROOT}/bin:${PATH}
-LD_LIB_EXTRA=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CUDA_ROOT}/lib:${MATLAB_RUNTIME_DIR}
+LD_LIB_EXTRA=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_DIR}:${CUDA_ROOT}/lib:${MATLAB_RUNTIME_DIR}
 LD_LIBRARY_PATH=${LD_LIB_EXTRA}:${LD_LIBRARY_PATH}
 DYLD_LIBRARY_PATH=${LD_LIB_EXTRA}:${DYLD_LIBRARY_PATH}
 
