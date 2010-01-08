@@ -311,6 +311,7 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	p.pos.y = cd.cubeCenter3D.y;
 	p.pos.z = cd.height/2.;				// cube center is at height/2.
 	obj->pose = p;
+	setIdentity(obj->pose.rot);
 
 	// create vertices (relative to the 3D cube center point)
 	for(unsigned i=0; i<4; i++)
@@ -374,7 +375,8 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 	
-	//* ***** Compute Normals *****
+	//* **** Compute Normals *****
+	
 	int i,j;
 	Face* fn;
 	VisionData::VertexSeq vn;
@@ -399,7 +401,7 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 			obj->model->vertices[fn->vertices[j]].normal.z = n.z;
 		}	
 	}
-
+	
 	obj->detectionConfidence = 1.0;						// detection confidence is always 1
 
 	return true;
