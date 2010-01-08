@@ -33,7 +33,6 @@ ObjectTracker::ObjectTracker(){
   m_running = true;
   m_testmode = false;
   m_bfc = true;
-  m_trackTexture = false;
 }
 
 ObjectTracker::~ObjectTracker(){
@@ -140,11 +139,6 @@ void ObjectTracker::configure(const map<string,string> & _config){
 	else
 		log("Backface culling disabled: suitable for non closed surfaces (i.e. a polyflap)");
 
-	if((it = _config.find("--textured")) != _config.end()){
-		m_trackTexture = true;
-		log("Texture tracking enabled!");
-	}
-
 	if((it = _config.find("--maxModels")) != _config.end())
 	{
     istringstream istr(it->second);
@@ -231,10 +225,12 @@ void ObjectTracker::initTracker(const Video::Image &image){
   m_ImageWidth = image.width;
   m_ImageHeight = image.height;
   
+  m_params = LoadParametersFromINI("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/ObjectTracker.ini");
+  
   // Set pathes for resource manager
-  g_Resources->SetModelPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/Tracker/resources/model/");
-  g_Resources->SetTexturePath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/Tracker/resources/texture/");
-  g_Resources->SetShaderPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/Tracker/resources/shader/");
+	g_Resources->SetModelPath(m_params.modelPath.c_str());
+	g_Resources->SetTexturePath(m_params.texturePath.c_str());
+	g_Resources->SetShaderPath(m_params.shaderPath.c_str());
 
   // initialize SDL screen
   g_Resources->InitScreen(m_ImageWidth, m_ImageHeight, "ObjectTracker");
@@ -247,45 +243,20 @@ void ObjectTracker::initTracker(const Video::Image &image){
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
   loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
 	
-	if(m_trackTexture)
+	if(m_params.mode==1)
 		m_tracker = new TextureTracker();
 	else
 		m_tracker = new EdgeTracker();
 	
-	if(!m_tracker->init(m_ImageWidth, m_ImageHeight,	// image size in pixels
-											200,															// number of particles for each recursion (lower if tracker consumes too much power)
-											4,																// recursions of particle filter (lower if tracker consumes too much power)
-											float(45.0*PIOVER180),						// edge matching tolerance in degree
-											0.05f,														// goal tracking time in seconds (not implemented yet)
+	if(!m_tracker->init(m_ImageWidth, m_ImageHeight,			// image size in pixels
+											m_params.edgeMatchingTol,						// edge matching tolerance in degree
+											m_params.minTexGrabAngle,						// goal tracking time in seconds (not implemented yet)
 											Particle(0.0)))										// initial pose (where to reset when pressing 'z')
 	{														
 		log("  error: initialisation of tracker failed!");
 		m_running = false;
 	}
 	m_tracker->setCamPerspective(m_camera);
-	
-  // setting spatial constraints
-	float rot = 15.0 * PIOVER180;
-	float rotp = 2.0;
-	float trans = 0.01;
-	float transp = 0.2;
-	float zoom = 0.01;
-	float zoomp = 2.0;
-	
-	m_constraints.r.x = rot;
-	m_constraints.r.y = rot;
-	m_constraints.r.z = rot;
-	m_constraints.rp.x = rotp;
-	m_constraints.rp.y = rotp;
-	m_constraints.rp.z = rotp;
-	m_constraints.s.x = trans;
-	m_constraints.s.y = trans;
-	m_constraints.s.z = trans;
-	m_constraints.sp.x = transp;
-	m_constraints.sp.y = transp;
-	m_constraints.sp.z = transp;
-	m_constraints.z = zoom;	
-	m_constraints.zp = zoomp;
   
   log("... initialisation successfull!");
 }
@@ -295,19 +266,17 @@ void ObjectTracker::initTrackingEntry(int i){
 	
 	int id;
 	m_trackinglist[i].bfc = m_bfc;
-	m_trackinglist[i].textured = m_trackTexture;
+	m_trackinglist[i].textured = m_params.mode;
 	// --------------------------------
 	// init tracker
-	if(m_trackTexture)
+	if(m_params.mode==1)
 		m_trackinglist[i].tracker = new TextureTracker();
 	else
 		m_trackinglist[i].tracker = new EdgeTracker();
 	
-	if(!m_trackinglist[i].tracker->init(m_ImageWidth, m_ImageHeight,	// image size in pixels
-																			200,															// number of particles for each recursion (lower if tracker consumes too much power)
-																			4,																// recursions of particle filter (lower if tracker consumes too much power)
-																			float(45.0*PIOVER180),						// edge matching tolerance in degree
-																			0.05f,														// goal tracking time in seconds (not implemented yet)
+	if(!m_trackinglist[i].tracker->init(m_ImageWidth, m_ImageHeight,			// image size in pixels
+																			m_params.edgeMatchingTol,					// edge matching tolerance in degree
+																			m_params.minTexGrabAngle,					// goal tracking time in seconds (not implemented yet)
 																			Particle(0.0)))										// initial pose (where to reset when pressing 'z')
 	{														
 		log("  error: initialisation of tracker failed!");
@@ -336,7 +305,7 @@ void ObjectTracker::initTrackingEntry(int i){
 	//m_trackinglist[i].model->print();
 
 	m_trackinglist[i].camera = m_camera;
-	m_trackinglist[i].constraints = m_constraints;
+	m_trackinglist[i].constraints = m_params.constraints;
 	convertPose2Particle(m_trackinglist[i].obj->pose, m_trackinglist[i].detectpose);
 	m_trackinglist[i].trackpose = m_trackinglist[i].detectpose;
 	m_trackinglist[i].tracker->setInitialPose(m_trackinglist[i].detectpose);

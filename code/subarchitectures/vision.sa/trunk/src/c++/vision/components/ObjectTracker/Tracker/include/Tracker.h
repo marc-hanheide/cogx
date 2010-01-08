@@ -17,23 +17,21 @@
 class Tracker{
 protected:
 	typedef struct Parameter{
-		float width;						// width of viewport (camera image, image processor, opengl, textures) in pixels
-		float height;						// height of viewport ( --"-- ) in pixels
-		int number_of_particles;			// number of particles to draw for each frame
-		int recursions;
+		int m_tracker_id;
+		float width;								// width of viewport (camera image, image processor, opengl, textures) in pixels
+		float height;								// height of viewport ( --"-- ) in pixels
+		int number_of_particles;		// number of particles to draw for each frame
+		int recursions;							// number of recursions for each image
 		float edge_tolerance;				// maximal angular deviation of edges to match in degrees
-		float track_time;					// time for one tracking pass (the less time given, the less particle will be used)
-		Particle zP;						// zero Particle to which the tracker is reseted when pressing the zero_particles key
+		unsigned int m_spreadlvl;		// Width of edges in pixels (automatically adjusted)
+		Particle zP;								// zero Particle to which the tracker is reseted when pressing the zero_particles key
+		float minTexGrabAngle;			// Angular threshold between view vector and face normal for grabing texture
+		float time_tracking;
 	} Parameter;
 	Parameter params;
-	
-	int m_tracker_id;
-	
-	// Timer
-	Timer m_timer;
-	float time_tracking;
-	
+		
 	// Resources
+	Timer m_timer;
 	Particle m_pose;
 	Particle m_pConstraints;
 	ImageProcessor* m_ip;
@@ -45,7 +43,6 @@ protected:
 	Camera* m_cam_ortho;
 	Camera* m_cam_default;
 	Camera* m_cam_perspective;
-	unsigned int m_spreadlvl;
 	
 	// Matrices
 	mat4 m_modelview;
@@ -75,10 +72,8 @@ public:
 	
 	// Main functions (init, image_processing, tracking, reset)
 	bool init(	int width, int height,					// image size in pixels
-							int nop=100,										// maximum number of particles
-							int rec=2,											// recursions per image
-							float et=20.0,									// edge matching tolerance in degree
-							float tt=0.05,									// goal tracking time in seconds
+							float et=45.0,									// edge matching tolerance in degree
+							float mtga=3.0*PI/4.0,					// minTextureGrabAngle
 							Particle zp=Particle(0.0));			// initial particle
 	
 	virtual void image_processing(unsigned char* image)=0;
@@ -90,12 +85,7 @@ public:
 											Particle p_constraints, 
 											Particle& p_result,
 											float fTime)=0;
-						
-	virtual bool track(	unsigned char* image,
-											Model* model,
-											Camera* camera,
-											Particle& p_result)=0;
-	
+		
 	void reset();
 	
 	// Drawing to screen (result, ...)
@@ -116,18 +106,19 @@ public:
   	
 	// Set Parameters
 	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
-	void setTrackTime(float time){ params.track_time = time; }
 	void setBFC(bool val){ m_bfc=val; }
-	void setSpreadLvl(unsigned int val){ m_spreadlvl = val; }
+	void setSpreadLvl(unsigned int val){ params.m_spreadlvl = val; }
 	void setInitialPose(Particle zp){ params.zP = zp; m_particles->setAll(zp); }
+	void setEdgeTolerance(float et){ params.edge_tolerance = et; }
 	
 	// Get Parameters
 	Camera*				getCamPerspective(){ return m_cam_perspective; }
-	float					getTrackTime(){ return params.track_time; }
 	bool 					getBFC(){ return m_bfc; }
-	unsigned int 	getSpreadLvl(){ return m_spreadlvl; }
+	unsigned int 	getSpreadLvl(){ return params.m_spreadlvl; }
 	Particle			getInitialPose(){ return params.zP; }
 	Particle 			getLastPose(){ return m_pose; }
+	float					getEdgeTolerance(){ return params.edge_tolerance; }
+	int						getTrackerID(){ return params.m_tracker_id; }
 	
 	// get Flags
 	bool getLockFlag(){ return m_lock; }

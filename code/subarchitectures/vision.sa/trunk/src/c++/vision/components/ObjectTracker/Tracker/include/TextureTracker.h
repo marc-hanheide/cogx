@@ -59,11 +59,6 @@ public:
 											Particle& p_result,
 											float fTime=0.0);
 	
-	virtual bool track(	unsigned char* image,
-											Model* model,
-											Camera* camera,
-											Particle& p_result){return false;}
-	
 	virtual void textureFromImage();
 						
 	virtual void drawResult(Particle* p, Model* m);

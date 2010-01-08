@@ -39,10 +39,13 @@ Tracker::Tracker(){
 	m_draw_edges = false;
 	m_tracker_initialized = false;
 	m_bfc = true;
-	m_spreadlvl = 0;
 	
+	params.m_spreadlvl = 0;
+	params.number_of_particles = 1;
+	params.recursions = 1;
+	params.minTexGrabAngle = 3.0*PI/4.0;
 	
-	m_tracker_id = g_Resources->GetNumTracker();
+	params.m_tracker_id = g_Resources->GetNumTracker();
 	g_Resources->AddTracker();
 	
 	int id;
@@ -97,21 +100,17 @@ bool Tracker::initGL(){
 }
 
 // Initialise function (must be called before tracking)
-bool Tracker::init(	int width, int height,							// image size in pixels
-					int nop,										// maximum number of particles
-					int rec,										// recursions per image
-					float et,										// edge matching tolerance in degree
-					float tt,										// goal tracking time in seconds
-					Particle zp)									// zero particle, initial pose of tracker
+bool Tracker::init(	int width, int height,			// image size in pixels
+										float et,										// edge matching tolerance in degree
+										float mtga,
+										Particle zp)								// zero particle, initial pose of tracker
 {	
 	// Parameter:
 	params.width = float(width);
-	params.height = float(height);
-	params.number_of_particles = nop;
-	params.recursions = rec;
+	params.height = float(height);	
 	params.edge_tolerance = et;
-	params.track_time = tt;
-	params.zP = zp;
+	params.minTexGrabAngle = mtga;
+	params.zP = zp;	
 	
 	// OpenGL
 	initGL();
@@ -135,7 +134,7 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	// Particles
 	int id=0;
 	char name[FN_LEN];
-	sprintf(name, "T%d:particles", m_tracker_id);
+	sprintf(name, "T%d:particles", params.m_tracker_id);
 	if((id = g_Resources->AddParticles(params.number_of_particles, params.zP, name)) == -1)
 		exit(1);
 	m_particles = g_Resources->GetParticles(id);
@@ -273,12 +272,13 @@ void Tracker::swap(){
 
 // Show performance and likelihood
 void Tracker::printStatistics(){
-	printf("\n\nTracker %d:\n", m_tracker_id);
-	printf("	Particles: %i x %i\n", params.recursions, m_particles->getNumParticles() );
-	printf("	Tracking time: %f ms, FPS: %.0f Hz\n", time_tracking * 1000.0, 1.0/time_tracking);
+	printf("\n\nTracker %d:\n", params.m_tracker_id);
+	printf("	Particles: %i\n", m_particles->getNumParticles() );
+	printf("	Recursions: %i\n", params.recursions);
+	printf("	Tracking time: %.0f ms, FPS: %.0f Hz\n", params.time_tracking * 1000.0, 1.0/params.time_tracking);
 	printf("	Variance: %f \n", m_particles->getVariance() );
 	printf("	Confidence: %f \n", m_particles->getMaxC());
-	printf("	Spreading Level: %d\n", m_spreadlvl);
+	printf("	Spreading Level: %d\n", params.m_spreadlvl);
 }
 
 void Tracker::drawSpeedBar(float h){

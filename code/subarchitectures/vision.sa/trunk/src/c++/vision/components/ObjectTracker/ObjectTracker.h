@@ -30,8 +30,8 @@ private:
 	Tracker* m_tracker;
   Camera* m_camera;
   Timer m_timer;
-  Particle m_constraints;
   Video::Image m_image;
+  Parameters m_params;
   int m_ImageWidth;
   int m_ImageHeight;
   float fTimeTracker;
@@ -53,7 +53,6 @@ private:
   bool m_running;
   bool m_testmode;
   bool m_bfc;						// backface culling (disable for not closed surfaces, like polyflaps)
-  bool m_trackTexture;	// use texture to track object (slower but more accurate [only for hi-end systems])
   
   std::vector<TrackingEntry> m_trackinglist;
   

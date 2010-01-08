@@ -39,23 +39,23 @@ void TextureTracker::particle_filtering(int num_recursions, int num_particles){
 	for(int i=0; i<num_recursions; i++){
 		// adjusting spreading level
 		if(m_model->isTextured()){
-			m_spreadlvl = (int)floor((NUM_SPREAD_LOOPS-1)*2.0*(1.0-c_max));
-			if(m_spreadlvl>=NUM_SPREAD_LOOPS)
-				m_spreadlvl = NUM_SPREAD_LOOPS-1;
-			else if(m_spreadlvl<0)
-				m_spreadlvl = 0;
+			params.m_spreadlvl = (int)floor((NUM_SPREAD_LOOPS-1)*2.0*(1.0-c_max));
+			if(params.m_spreadlvl>=NUM_SPREAD_LOOPS)
+				params.m_spreadlvl = NUM_SPREAD_LOOPS-1;
+			else if(params.m_spreadlvl<0)
+				params.m_spreadlvl = 0;
 		}else{
-			m_spreadlvl = 0;
+			params.m_spreadlvl = 0;
 		}
-		m_tex_model_ip[m_spreadlvl]->bind(0);
-		m_tex_frame_ip[m_spreadlvl]->bind(1);	
+		m_tex_model_ip[params.m_spreadlvl]->bind(0);
+		m_tex_frame_ip[params.m_spreadlvl]->bind(1);	
 		m_tex_model->bind(2);
 		m_tex_frame->bind(3);
-		
+
 		// importance weights and confidence levels
 		particle_processing(m_particles);
 		m_particles->calcLikelihood(9);
-			
+
 		// particle selection
 		m_particles->resample(num_particles, m_pConstraints);
 	}
@@ -78,8 +78,8 @@ void TextureTracker::evaluateParticle(Particle* p){
 	glColorMask(0,0,0,0); glDepthMask(0);
 	glColor3f(1.0,1.0,1.0);
 
-	m_tex_frame_ip[m_spreadlvl]->bind(1);	
-	m_model->setTexture(m_tex_model_ip[m_spreadlvl]);
+	m_tex_frame_ip[params.m_spreadlvl]->bind(1);	
+	m_model->setTexture(m_tex_model_ip[params.m_spreadlvl]);
 		
 	// Draw particles and count pixels
 	m_shadeCompare->bind();
@@ -238,13 +238,13 @@ TextureTracker::TextureTracker(){
 		exit(1);
 	m_shadeTexColorTest = g_Resources->GetShader(id);
 	
-	sprintf(name, "T%d:m_tex_model", m_tracker_id);
+	sprintf(name, "T%d:m_tex_model", params.m_tracker_id);
 	if((id = g_Resources->AddTexture(NULL, name)) == -1)
 		exit(1);
 	m_tex_model = g_Resources->GetTexture(id);
 	
 	for(int i=0; i<NUM_SPREAD_LOOPS; i++){
-		sprintf(name, "T%d:m_tex_model_ip[%d]", m_tracker_id, i);
+		sprintf(name, "T%d:m_tex_model_ip[%d]",params. m_tracker_id, i);
 		if((id = g_Resources->AddTexture(NULL, name)) == -1)
 			exit(1);
 		m_tex_model_ip[i] = g_Resources->GetTexture(id);
@@ -321,11 +321,13 @@ bool TextureTracker::track(	Model* model,				// tracking model (textured, vertex
 														float fTime)
 {
 	m_timer.Update();
-	time_tracking = 0.0;
+	params.time_tracking = 0.0;
 	
 	m_model = model;
 	m_cam_perspective = camera;
 	m_pConstraints = p_constraints;
+	params.number_of_particles = num_particles;
+	params.recursions = num_recursions;
 	
 	// Process model (texture reprojection, edge detection)
 	model_processing();
@@ -334,7 +336,7 @@ bool TextureTracker::track(	Model* model,				// tracking model (textured, vertex
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDepthMask(0);
 	if(m_draw_edges)
-		m_ip->render(m_tex_frame_ip[m_spreadlvl]);
+		m_ip->render(m_tex_frame_ip[params.m_spreadlvl]);
 	else
 		m_ip->render(m_tex_frame);
 	glDepthMask(1);
@@ -355,7 +357,7 @@ bool TextureTracker::track(	Model* model,				// tracking model (textured, vertex
 		m_zero_particles = false;
 	}
 		
-	time_tracking += m_timer.Update();
+	params.time_tracking += m_timer.Update();
 	
 	return true;
 }
@@ -372,9 +374,9 @@ void TextureTracker::textureFromImage(){
 		vCamObj.normalize();
 		m_particles->setCamViewVector(vCamObj);
 		
-		m_spreadlvl = 0;
-		m_tex_model_ip[m_spreadlvl]->bind(0);
-		m_tex_frame_ip[m_spreadlvl]->bind(1);
+		params.m_spreadlvl = 0;
+		m_tex_model_ip[params.m_spreadlvl]->bind(0);
+		m_tex_frame_ip[params.m_spreadlvl]->bind(1);
 			
 		for(int i=0; i<4; i++){
 			particle_processing(m_particles);
@@ -382,7 +384,7 @@ void TextureTracker::textureFromImage(){
 		}								
 		m_pose = *m_particles->getMax();
 		
-		m_model->textureFromImage(m_tex_frame, params.width, params.height, &m_pose, vec3(vCamObj.x, vCamObj.y, vCamObj.z));
+		m_model->textureFromImage(m_tex_frame, params.width, params.height, &m_pose, vec3(vCamObj.x, vCamObj.y, vCamObj.z), params.minTexGrabAngle);
 
 }
 

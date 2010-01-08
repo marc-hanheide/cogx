@@ -6,6 +6,7 @@
  */
 
 #include <VisionData.hpp>
+#include <CDataFile.h>
 #include "Tracker.h"
 #include "TrackingEntry.h"
 
@@ -14,6 +15,21 @@ using namespace cogx;
 using namespace Math;
 
 
+struct Parameters{
+	Particle 						constraints;
+	
+	int									mode;
+	int 								recursions;
+	int 								particles;
+	
+	std::string 				modelPath;
+	std::string 				texturePath;
+	std::string 				shaderPath;
+	
+	float								edgeMatchingTol;
+	bool								backFaceCulling;
+	float								minTexGrabAngle;
+};
 
 // converts a VisionData::GeometryModel to a Tracker Model
 bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
@@ -192,6 +208,50 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 	camera->SetIntrinsic(intrinsic);
 	camera->SetExtrinsic(extrinsic);  
 	camera->SetPos(camPars.pose.pos.x, camPars.pose.pos.y, camPars.pose.pos.z);
+}
+
+// *************************************************************************************
+// Load INI File
+Parameters LoadParametersFromINI(const char* filename){
+	
+	Parameters params;
+	
+	CDataFile cdfParams;
+	cdfParams.Load(filename);
+	
+	// Constraints
+	params.constraints.r.x 	= cdfParams.GetFloat("r.x", "Constraints") * PIOVER180;
+	params.constraints.r.y 	= cdfParams.GetFloat("r.y", "Constraints") * PIOVER180;
+	params.constraints.r.z 	= cdfParams.GetFloat("r.z", "Constraints") * PIOVER180;
+	params.constraints.rp.x = cdfParams.GetFloat("rp.x", "Constraints");
+	params.constraints.rp.y = cdfParams.GetFloat("rp.y", "Constraints");
+	params.constraints.rp.z = cdfParams.GetFloat("rp.z", "Constraints");
+	params.constraints.s.x 	= cdfParams.GetFloat("s.x", "Constraints");
+	params.constraints.s.y 	= cdfParams.GetFloat("s.y", "Constraints");
+	params.constraints.s.z 	= cdfParams.GetFloat("s.z", "Constraints");
+	params.constraints.sp.x = cdfParams.GetFloat("sp.x", "Constraints");
+	params.constraints.sp.y = cdfParams.GetFloat("sp.y", "Constraints");
+	params.constraints.sp.z = cdfParams.GetFloat("sp.z", "Constraints");
+	params.constraints.z 		= cdfParams.GetFloat("z", "Constraints");	
+	params.constraints.zp 	= cdfParams.GetFloat("zp", "Constraints");
+	
+	// Performance
+	params.mode = cdfParams.GetInt("mode", "Performance");
+	params.recursions = cdfParams.GetInt("recursions", "Performance");
+	params.particles = cdfParams.GetInt("particles", "Performance");
+	
+	// Resource Path
+	params.modelPath = cdfParams.GetString("ModelPath", "ResourcePath");
+	params.texturePath = cdfParams.GetString("TexturePath", "ResourcePath");
+	params.shaderPath = cdfParams.GetString("ShaderPath", "ResourcePath");
+		
+	// Other
+	params.edgeMatchingTol = cdfParams.GetFloat("EdgeMatchingTolerance", "Other") * PIOVER180;
+	params.backFaceCulling = cdfParams.GetBool("BackFaceCulling", "Other");
+	params.minTexGrabAngle = cdfParams.GetFloat("MinTextureGrabAngle", "Other") * PIOVER180;
+	
+	
+	return params;
 }
 
 // SDL - Keyboard and Mouse input control

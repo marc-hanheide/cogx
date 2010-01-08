@@ -129,10 +129,12 @@ bool EdgeTracker::track(Model* model,
 												float fTime)
 {
 	m_timer.Update();
-	time_tracking = 0.0;
+	params.time_tracking = 0.0;
 		
 	m_model = model;
 	m_cam_perspective = camera;
+	params.number_of_particles = num_particles;
+	params.recursions = num_recursions;
 	
 	// Recursive particle filtering
 	if(!m_lock){
@@ -147,40 +149,7 @@ bool EdgeTracker::track(Model* model,
 		m_zero_particles = false;
 	}
 	
-	time_tracking += m_timer.Update();
-	
-	return true;
-}
-
-bool EdgeTracker::track(	unsigned char* image,
-							Model* model,
-							Camera* camera,
-							Particle& p_result)
-{	
-	// Check if input is valid
-	isReady(image, model, camera);	
-	
-	// Process image from camera (edge detection)
-	image_processing(image);
-	
-	if(m_draw_edges)
-		m_ip->render(m_tex_frame_ip[0]);
-	else
-		m_ip->render(m_tex_frame);
-	
-	// Recursive particle filtering
-	if(!m_lock)
-		particle_filtering(p_result, params.recursions);		
-
-	
-	// Copy result to output
-	if(m_zero_particles){
-		m_particles->setAll(params.zP);
-		p_result = params.zP;
-		m_zero_particles = false;
-	}
-	
-	time_tracking += m_timer.Update();
+	params.time_tracking += m_timer.Update();
 	
 	return true;
 }
