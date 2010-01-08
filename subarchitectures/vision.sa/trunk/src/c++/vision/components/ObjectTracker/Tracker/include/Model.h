@@ -89,8 +89,8 @@ public:
 	
 	void restoreTexture();
 	
-	vector<int> getFaceUpdateList(Particle* p_max, vec3 view);
-	void textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view);
+	vector<int> getFaceUpdateList(Particle* p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);
+	void textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view, float minTexGrabAngle);
 	
 // PUBLIC
 	vector<Vertex> 	m_vertexlist;		// vertices in 3D space with normals and texture coordinates

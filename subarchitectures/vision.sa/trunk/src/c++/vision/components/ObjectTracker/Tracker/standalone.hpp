@@ -8,6 +8,8 @@
 #include "Tracker.h"
 #include "mathlib.h"
 #include <math.h>
+#include <string>
+#include "CDataFile.h"
 
 static const double REAL_ONE  = ((double)1.0);
 
@@ -16,6 +18,8 @@ struct Pose3{
 	vec3 pos;
 };
 
+// *************************************************************************************
+// Parameters
 struct CameraParameters {
   // image dimension
   int width;
@@ -37,6 +41,26 @@ struct CameraParameters {
   Pose3 pose;
 };
 
+struct Parameters{
+	CameraParameters 		camParams;
+	Particle 						constraints;
+	
+	int									mode;
+	int 								recursions;
+	int 								particles;
+	
+	std::string 				modelPath;
+	std::string 				texturePath;
+	std::string 				shaderPath;
+	
+	float								edgeMatchingTol;
+	bool								backFaceCulling;
+	Particle						initialParticle;
+	float								minTexGrabAngle;
+};
+
+// *************************************************************************************
+// Vector/Matrix Conversions
 void fromAngleAxis(mat3 &m, double angle, const vec3& axis)
 {
   double s = sin(angle), c = cos(angle);
@@ -55,9 +79,7 @@ void fromAngleAxis(mat3 &m, double angle, const vec3& axis)
   m[8] = axis.z*z + c;
 }
 
-/**
- * Creates rotation matrix from rotation vector (= axis plus angle).
- */
+// creates rotation matrix from rotation vector (= axis plus angle).
 void fromRotVector(mat3 &m, const vec3& r)
 {
   vec3 axis(r);
@@ -91,11 +113,11 @@ bool convertPose2Particle(Pose3& pose, Particle& particle){
 	return true;
 }
 
-
+// *************************************************************************************
 // Converts Video::CameraParameters from Video::Image of VideoServer to 
 // Extrinsic- and Intrinsic- Matrix of OpenGL
 // zNear and zFar describe the near and far z values of the clipping plane
-void loadCameraParameters(Camera* camera, CameraParameters camPars, float zNear, float zFar){
+void loadCameraParameters(Camera& camera, CameraParameters camPars, float zNear, float zFar){
 	// intrinsic parameters
 	// transform the coordinate system of computer vision to OpenGL 
 	//   Vision: origin is in the up left corner, x-axis pointing right, y-axis pointing down
@@ -138,13 +160,170 @@ void loadCameraParameters(Camera* camera, CameraParameters camPars, float zNear,
 	extrinsic = cv2gl * extrinsic;
 	
 	// set camera parameters
-	camera->SetViewport(camPars.width,camPars.height);
-	camera->SetZRange(zNear, zFar);
-	camera->SetIntrinsic(intrinsic);
-	camera->SetExtrinsic(extrinsic);
-	camera->SetPos(camPars.pose.pos.x, camPars.pose.pos.y, camPars.pose.pos.z);
+	camera.SetViewport(camPars.width,camPars.height);
+	camera.SetZRange(zNear, zFar);
+	camera.SetIntrinsic(intrinsic);
+	camera.SetExtrinsic(extrinsic);
+	camera.SetPos(camPars.pose.pos.x, camPars.pose.pos.y, camPars.pose.pos.z);
 }
 
+// *************************************************************************************
+// Load INI File
+Parameters LoadParametersFromINI(const char* filename){
+	
+	Parameters params;
+	
+	CDataFile cdfParams;
+	cdfParams.Load(filename);
+	
+	// Camera Parameters
+	params.camParams.width = cdfParams.GetInt("width", "CameraParameters");
+	params.camParams.height = cdfParams.GetInt("height", "CameraParameters");
+	params.camParams.fx = cdfParams.GetFloat("fx", "CameraParameters");
+	params.camParams.fy = cdfParams.GetFloat("fy", "CameraParameters");
+	params.camParams.cx = cdfParams.GetFloat("cx", "CameraParameters");
+	params.camParams.cy = cdfParams.GetFloat("cy", "CameraParameters");
+	params.camParams.k1 = cdfParams.GetFloat("k1", "CameraParameters");
+	params.camParams.k2 = cdfParams.GetFloat("k2", "CameraParameters");
+	params.camParams.k3 = cdfParams.GetFloat("k3", "CameraParameters");
+	params.camParams.p1 = cdfParams.GetFloat("p1", "CameraParameters");
+	params.camParams.p2 = cdfParams.GetFloat("p2", "CameraParameters");
+	params.camParams.pose.pos.x = cdfParams.GetFloat("pose.pos.x", "CameraParameters");
+	params.camParams.pose.pos.y = cdfParams.GetFloat("pose.pos.y", "CameraParameters");
+	params.camParams.pose.pos.z = cdfParams.GetFloat("pose.pos.z", "CameraParameters");
+	vec3 vRot;
+	vRot.x = cdfParams.GetFloat("pose.rot.x", "CameraParameters");
+	vRot.y = cdfParams.GetFloat("pose.rot.y", "CameraParameters");
+	vRot.z = cdfParams.GetFloat("pose.rot.z", "CameraParameters");
+	fromRotVector(params.camParams.pose.rot, vRot);
+	
+	// Constraints
+	params.constraints.r.x 	= cdfParams.GetFloat("r.x", "Constraints") * PIOVER180;
+	params.constraints.r.y 	= cdfParams.GetFloat("r.y", "Constraints") * PIOVER180;
+	params.constraints.r.z 	= cdfParams.GetFloat("r.z", "Constraints") * PIOVER180;
+	params.constraints.rp.x = cdfParams.GetFloat("rp.x", "Constraints");
+	params.constraints.rp.y = cdfParams.GetFloat("rp.y", "Constraints");
+	params.constraints.rp.z = cdfParams.GetFloat("rp.z", "Constraints");
+	params.constraints.s.x 	= cdfParams.GetFloat("s.x", "Constraints");
+	params.constraints.s.y 	= cdfParams.GetFloat("s.y", "Constraints");
+	params.constraints.s.z 	= cdfParams.GetFloat("s.z", "Constraints");
+	params.constraints.sp.x = cdfParams.GetFloat("sp.x", "Constraints");
+	params.constraints.sp.y = cdfParams.GetFloat("sp.y", "Constraints");
+	params.constraints.sp.z = cdfParams.GetFloat("sp.z", "Constraints");
+	params.constraints.z 		= cdfParams.GetFloat("z", "Constraints");	
+	params.constraints.zp 	= cdfParams.GetFloat("zp", "Constraints");
+	
+	// Performance
+	params.mode = cdfParams.GetInt("mode", "Performance");
+	params.recursions = cdfParams.GetInt("recursions", "Performance");
+	params.particles = cdfParams.GetInt("particles", "Performance");
+	
+	// Resource Path
+	params.modelPath = cdfParams.GetString("ModelPath", "ResourcePath");
+	params.texturePath = cdfParams.GetString("TexturePath", "ResourcePath");
+	params.shaderPath = cdfParams.GetString("ShaderPath", "ResourcePath");
+		
+	// Other
+	params.edgeMatchingTol = cdfParams.GetFloat("EdgeMatchingTolerance", "Other") * PIOVER180;
+	params.backFaceCulling = cdfParams.GetBool("BackFaceCulling", "Other");
+	params.initialParticle.s.x = cdfParams.GetFloat("InitialParticle.s.x", "Other");
+	params.initialParticle.s.y = cdfParams.GetFloat("InitialParticle.s.y", "Other");
+	params.initialParticle.s.z = cdfParams.GetFloat("InitialParticle.s.z", "Other");
+	params.minTexGrabAngle = cdfParams.GetFloat("MinTextureGrabAngle", "Other") * PIOVER180;
+	
+	
+	return params;
+}
+
+// *************************************************************************************
+// Input Controls
+bool control(Tracker* tracker){
+ 	char filename[16];
+ 	vector<float> pdfmap;
+ 	Particle pose;
+ 	float s;
+ 	int res;
+ 	
+	SDL_Event event;
+	while(SDL_PollEvent(&event)){
+		switch(event.type){
+		case SDL_KEYDOWN:
+            switch(event.key.keysym.sym){
+				case SDLK_ESCAPE:
+					return false;
+					break;
+				case SDLK_1:
+					tracker->setKernelSize(0);
+					printf("Kernel size: %d\n", (int)0);
+					break;				
+				case SDLK_2:
+					tracker->setKernelSize(1);
+					printf("Kernel size: %d\n", (int)1);
+					break;				
+				case SDLK_3:
+					tracker->setKernelSize(2);
+					printf("Kernel size: %d\n", (int)2);
+					break;
+				case SDLK_4:
+					tracker->setEdgeShader();
+					break;
+				case SDLK_5:
+					tracker->setColorShader();
+					break;
+				case SDLK_e:
+					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
+					break;
+				case SDLK_l:
+					tracker->setLockFlag( !tracker->getLockFlag() );
+					break;
+				case SDLK_m:
+					tracker->setModelModeFlag( tracker->getModelModeFlag()+1 );
+					break;
+				case SDLK_p:
+					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
+					break;
+				case SDLK_s:
+					tracker->printStatistics();
+					break;
+				case SDLK_t:
+					tracker->textureFromImage();
+					break;
+				case SDLK_w:
+					/*
+					pose = tracker->getLastPose();
+					tracker->setSpreadLvl(4);
+					s = 0.1;
+					res = 256;
+					
+					tracker->setKernelSize(1);
+					pdfmap = tracker->getPDFxy(pose,-s,-s,s,s,res);
+					tracker->savePDF(pdfmap,-s,-s,s,s,res,"graphs/kernel_1.ply", "graphs/kernel_1.dat");
+					
+					tracker->setKernelSize(2);
+					pdfmap = tracker->getPDFxy(pose,-s,-s,s,s,res);
+					tracker->savePDF(pdfmap,-s,-s,s,s,res,"graphs/kernel_2.ply", "graphs/kernel_2.dat");
+					
+					tracker->setKernelSize(3);
+					pdfmap = tracker->getPDFxy(pose,-s,-s,s,s,res);
+					tracker->savePDF(pdfmap,-s,-s,s,s,res,"graphs/kernel_3.ply", "graphs/kernel_3.dat");
+					*/
+					break;
+				case SDLK_z:
+					tracker->reset();
+					break;
+                default:
+					break;
+			}
+			break;
+		case SDL_QUIT:
+			return false;
+			break;
+		default:
+			break;
+		}
+	}
+	return true;
+}
 
 
 

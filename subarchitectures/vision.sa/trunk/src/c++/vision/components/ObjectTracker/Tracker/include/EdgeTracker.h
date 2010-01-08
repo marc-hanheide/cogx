@@ -28,11 +28,6 @@ public:
 											Particle p_constraints, 
 											Particle& p_result,
 											float fTime=0.0);
-	
-	virtual bool track(	unsigned char* image,
-						Model* model,
-						Camera* camera,
-						Particle& p_result);
 						
 	virtual void drawResult(Particle* p, Model* m);
 

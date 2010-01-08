@@ -13,6 +13,7 @@ link_directories(/usr/local/lib)
 
 # Set the sources
 SET(SOURCES
+	src/CDataFile.cpp
 	src/Camera.cpp
 	src/EdgeTracker.cpp
 	src/Frustum.cpp

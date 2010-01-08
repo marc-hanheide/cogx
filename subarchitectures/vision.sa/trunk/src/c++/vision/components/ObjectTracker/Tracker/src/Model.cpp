@@ -530,7 +530,7 @@ void Model::restoreTexture(){
 // counts pixels of each face
 // if pixels of face are > than in any previouse view
 //   set update flag = true
-vector<int> Model::getFaceUpdateList(Particle* p_max, vec3 view){
+vector<int> Model::getFaceUpdateList(Particle* p_max, vec3 view, float minTexGrabAngle){
 	int i, n;
 	vector<int> faceUpdateList;
 	float alpha;
@@ -558,8 +558,7 @@ vector<int> Model::getFaceUpdateList(Particle* p_max, vec3 view){
 			vec3 vn = mR * m_facelist[i].normal;
 			alpha = acos(vn*view);
 			
-			
-			if((m_facelist[i].max_pixels==0)){ // && (alpha>3.0*PI/4.0)){
+			if((m_facelist[i].max_pixels==0) && (alpha>minTexGrabAngle)){
 				faceUpdateList.push_back(i);
 				m_facelist[i].max_pixels = n;
 			}
@@ -573,14 +572,14 @@ vector<int> Model::getFaceUpdateList(Particle* p_max, vec3 view){
 	return faceUpdateList;
 }
 
-void Model::textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view){
+void Model::textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view, float minTexGrabAngle){
 	int i,j,k;
 	vec4 texcoords_model;
 	vec4 vertex;
 	mat4 modelview, projection, modelviewprojection;
 	
 	// get faces to update
-	vector<int> faceUpdateList = getFaceUpdateList(p_max, view);
+	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
 	if(faceUpdateList.empty())
 		return;
 	
