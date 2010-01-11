@@ -45,6 +45,7 @@ class CCastOptions(object):
     def __init__(self):
         self.mruCfgPlayer = []
         self.mruCfgCast = []
+        self.mruCfgHosts = []
         self.environmentDefault = [s.lstrip() for s in optdefault.environment.split("\n")]
         self._environment = None
         self.cleanupScript = [s.lstrip() for s in optdefault.cleanup.split("\n")]
@@ -82,6 +83,7 @@ class CCastOptions(object):
             l = l.strip()
             if l == "[MRU-CAST]": section = self.mruCfgCast
             elif l == "[MRU-PLAYER]": section = self.mruCfgPlayer
+            elif l == "[MRU-HOSTS]": section = self.mruCfgHosts
             elif l.startswith('['): section = None
             elif section != None:
                 section.append(ln.rstrip())
@@ -107,6 +109,9 @@ class CCastOptions(object):
             f.write(ln); f.write("\n")
         f.write("[MRU-PLAYER]\n")
         for ln in self.mruCfgPlayer:
+            f.write(ln); f.write("\n")
+        f.write("[MRU-HOSTS]\n")
+        for ln in self.mruCfgHosts:
             f.write(ln); f.write("\n")
 
     def configEnvironment(self):
@@ -141,4 +146,8 @@ class CCastOptions(object):
 
     def addCastConfig(self, filename):
         self._storeMru(self.mruCfgCast, filename)
+        pass
+
+    def addHostsConfig(self, filename):
+        self._storeMru(self.mruCfgHosts, filename)
         pass

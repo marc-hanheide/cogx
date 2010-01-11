@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Nov 12 10:38:44 2009
+# Created: Mon Jan 11 14:24:41 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -317,6 +317,41 @@ class Ui_MainWindow(object):
         self.horizontalLayout_12.addWidget(self.btEditPlayerConfig)
         self.verticalLayout_13.addLayout(self.horizontalLayout_12)
         self.verticalLayout_2.addWidget(self.frame_10)
+        self.frame_4 = QtGui.QFrame(self.tab_2)
+        self.frame_4.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.frame_4.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_4.setObjectName("frame_4")
+        self.verticalLayout_8 = QtGui.QVBoxLayout(self.frame_4)
+        self.verticalLayout_8.setObjectName("verticalLayout_8")
+        self.label_4 = QtGui.QLabel(self.frame_4)
+        font = QtGui.QFont()
+        font.setWeight(75)
+        font.setBold(True)
+        self.label_4.setFont(font)
+        self.label_4.setObjectName("label_4")
+        self.verticalLayout_8.addWidget(self.label_4)
+        self.horizontalLayout_16 = QtGui.QHBoxLayout()
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        self.label_10 = QtGui.QLabel(self.frame_4)
+        self.label_10.setObjectName("label_10")
+        self.horizontalLayout_16.addWidget(self.label_10)
+        self.hostConfigCmbx = QtGui.QComboBox(self.frame_4)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(4)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.hostConfigCmbx.sizePolicy().hasHeightForWidth())
+        self.hostConfigCmbx.setSizePolicy(sizePolicy)
+        self.hostConfigCmbx.setMinimumSize(QtCore.QSize(200, 0))
+        self.hostConfigCmbx.setObjectName("hostConfigCmbx")
+        self.horizontalLayout_16.addWidget(self.hostConfigCmbx)
+        self.btBrowseHostFile = QtGui.QPushButton(self.frame_4)
+        self.btBrowseHostFile.setObjectName("btBrowseHostFile")
+        self.horizontalLayout_16.addWidget(self.btBrowseHostFile)
+        self.btEditHostConfig = QtGui.QPushButton(self.frame_4)
+        self.btEditHostConfig.setObjectName("btEditHostConfig")
+        self.horizontalLayout_16.addWidget(self.btEditHostConfig)
+        self.verticalLayout_8.addLayout(self.horizontalLayout_16)
+        self.verticalLayout_2.addWidget(self.frame_4)
         spacerItem10 = QtGui.QSpacerItem(20, 235, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem10)
         self.tabWidget.addTab(self.tab_2, "")
@@ -368,6 +403,8 @@ class Ui_MainWindow(object):
         self.actCtxShowBuildError.setObjectName("actCtxShowBuildError")
         self.actStartTerminal = QtGui.QAction(MainWindow)
         self.actStartTerminal.setObjectName("actStartTerminal")
+        self.actOpenHostConfig = QtGui.QAction(MainWindow)
+        self.actOpenHostConfig.setObjectName("actOpenHostConfig")
         self.menuCast.addAction(self.actShowEnv)
         self.menuCast.addSeparator()
         self.menuCast.addAction(self.actQuit)
@@ -378,6 +415,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.btBrowseCastFile, QtCore.SIGNAL("clicked()"), self.actOpenClientConfig.trigger)
         QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
+        QtCore.QObject.connect(self.btBrowseHostFile, QtCore.SIGNAL("clicked()"), self.actOpenHostConfig.trigger)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -411,6 +449,11 @@ class Ui_MainWindow(object):
         self.playerConfigCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "Player configuration file", None, QtGui.QApplication.UnicodeUTF8))
         self.btBrowsePlayerFile.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.btEditPlayerConfig.setText(QtGui.QApplication.translate("MainWindow", "Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Hosts", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_10.setText(QtGui.QApplication.translate("MainWindow", "Configuration", None, QtGui.QApplication.UnicodeUTF8))
+        self.hostConfigCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "CAST configuration file ", None, QtGui.QApplication.UnicodeUTF8))
+        self.btBrowseHostFile.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.btEditHostConfig.setText(QtGui.QApplication.translate("MainWindow", "Edit", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Configure", None, QtGui.QApplication.UnicodeUTF8))
         self.btBuild.setText(QtGui.QApplication.translate("MainWindow", "make", None, QtGui.QApplication.UnicodeUTF8))
         self.btBuildInstall.setText(QtGui.QApplication.translate("MainWindow", "make install", None, QtGui.QApplication.UnicodeUTF8))
@@ -424,4 +467,5 @@ class Ui_MainWindow(object):
         self.actShowEnv.setText(QtGui.QApplication.translate("MainWindow", "Show ENV", None, QtGui.QApplication.UnicodeUTF8))
         self.actCtxShowBuildError.setText(QtGui.QApplication.translate("MainWindow", "Show code", None, QtGui.QApplication.UnicodeUTF8))
         self.actStartTerminal.setText(QtGui.QApplication.translate("MainWindow", "Start Terminal", None, QtGui.QApplication.UnicodeUTF8))
+        self.actOpenHostConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Host Configuration", None, QtGui.QApplication.UnicodeUTF8))
 
