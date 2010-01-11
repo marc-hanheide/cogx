@@ -154,6 +154,10 @@ module SpatialProperties
   {
   };
 
+  // -----------------------------------------------------------------
+  // Path properties
+  // -----------------------------------------------------------------
+
   /** 
    * Generic, abstract class representing the distribution of values 
    * of a single property of a single path.
@@ -234,6 +238,57 @@ module SpatialProperties
   class RoomCategory extends RoomProperty
   {
   };
+
+  // -----------------------------------------------------------------
+  // Object properties
+  // -----------------------------------------------------------------
+
+  /** 
+   * Generic, abstract class representing the distribution of values 
+   * of a single property of a single object.
+   */
+  class ObjectProperty
+  {
+    /** ID of the object that has this property. */
+    long objectId;
+    
+    /** Probability distribution of values of this property. */
+    ProbabilityDistribution distribution;
+
+    /** Maximum a posteriori estimate of the property value. */
+    PropertyValue mapValue;
+
+    /** True if the MAP estimate is considered as reliable. */
+    bool mapValueReliable;
+  };
+
+  /**
+   * Class representing the property of an object being "in" a Place
+   */
+  class PlaceContainmentObjectProperty extends ObjectProperty
+  {
+    /** ID of the Place the object is supposed to be in. */
+    long placeId;
+  };
+
+  /**
+   * Class representing the property of an object being "in" another object 
+   */
+  class ObjectContainmentObjectProperty extends ObjectProperty
+  {
+    /** ID of the Object the object is supposed to be in. */
+    long placeId;
+  };
+
+  /**
+   * Class representing the property of an object being "on" another object 
+   */
+  class SupportObjectProperty extends ObjectProperty
+  {
+    /** ID of the Object the object is supposed to be on. */
+    long placeId;
+  };
+
 
 };
 

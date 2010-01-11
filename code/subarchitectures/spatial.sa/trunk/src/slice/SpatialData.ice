@@ -297,5 +297,10 @@ module SpatialData {
     AVSAction cmd;
   };
 
+  class SpatialObject {
+    int id;
+    string label;
+  };
+
 };
 #endif // SPATIALDATA_ICE

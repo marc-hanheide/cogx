@@ -65,6 +65,12 @@ module FrontierInterface {
     CellSeq data;
   };
 
+  struct PlaceMembership
+  {
+    int placeID;
+    double confidence;
+  };
+
   interface LocalMapInterface {
     LocalGridMap getCombinedGridMap(SpatialData::PlaceIDSeq places);
   };
@@ -87,6 +93,7 @@ module FrontierInterface {
     void beginPlaceTransition(int goalPlaceID);
     void endPlaceTransition(int failed);
     SpatialData::Place getCurrentPlace();
+    FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
   };
   interface PlaceInterfaceAsComponent extends cast::interfaces::CASTComponent {
     NodeHypothesis getHypFromPlaceID(int placeID);
@@ -96,6 +103,7 @@ module FrontierInterface {
     void beginPlaceTransition(int goalPlaceID);
     void endPlaceTransition(int failed);
     SpatialData::Place getCurrentPlace();
+    FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
   };
 };
 
