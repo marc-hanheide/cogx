@@ -52,6 +52,8 @@ class PlaceManager : public cast::ManagedComponent
       virtual void beginPlaceTransition(int goalPlaceID, const Ice::Current &_context);
       virtual void endPlaceTransition(int failed, const Ice::Current &_context);
       virtual SpatialData::PlacePtr getCurrentPlace(const Ice::Current &_context);
+      virtual FrontierInterface::PlaceMembership getPlaceMembership(double x, double y,
+	  const Ice::Current &_context);
 
       PlaceManager *m_pOwner;
       PlaceServer(PlaceManager *owner) : m_pOwner(owner)
@@ -110,6 +112,7 @@ class PlaceManager : public cast::ManagedComponent
     SpatialData::PlacePtr getPlaceFromHypID(int hypID);
     FrontierInterface::NodeHypothesisPtr getHypFromPlaceID(int placeID);
     NavData::FNodePtr getNodeFromPlaceID(int placeID);
+    FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
 
     // Callback function for metric movement
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);

@@ -858,6 +858,43 @@ PlaceManager::getCurrentNavNode()
   return ret;
 }
 
+FrontierInterface::PlaceMembership
+PlaceManager::getPlaceMembership(double inX, double inY)
+{
+  debug("getPlaceMembership called");
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+  double minDistance = FLT_MAX;
+  int closestNodeID = 0;
+
+  for (vector<NavData::FNodePtr>::iterator it = nodes.begin();
+      it != nodes.end(); it++) {
+    try {
+      double x = (*it)->x;
+      double y = (*it)->y;
+
+      double distance = (x - inX)*(x-inX) + (y-inY)*(y-inY);
+      if (distance < minDistance) {
+	closestNodeID = (*it)->nodeId;
+	minDistance = distance;
+      }
+    }
+    catch (IceUtil::NullHandleException e) {
+      log("Error! FNode suddenly disappeared!");
+    }
+  }
+
+  SpatialData::PlacePtr place = getPlaceFromNodeID(closestNodeID);
+
+  FrontierInterface::PlaceMembership ret;
+  ret.placeID = place->id;
+  ret.confidence = 1.0;
+
+  debug("getPlaceMembership exited");
+  return ret;
+}
+
 FrontierInterface::NodeHypothesisPtr
 PlaceManager::getHypFromPlaceID(int placeID)
 {
@@ -1425,6 +1462,15 @@ PlaceManager::PlaceServer::getCurrentPlace(const Ice::Current &_context) {
   SpatialData::PlacePtr curPlace = m_pOwner->getPlaceFromNodeID(curNode->nodeId);
   m_pOwner->unlockComponent();
   return curPlace;
+}
+
+FrontierInterface::PlaceMembership
+PlaceManager::PlaceServer::getPlaceMembership(double x, double y,
+    const Ice::Current &_context) {
+  m_pOwner->lockComponent();
+  FrontierInterface::PlaceMembership membership = m_pOwner->getPlaceMembership(x, y);
+  m_pOwner->unlockComponent();
+  return membership;
 }
 
 void
