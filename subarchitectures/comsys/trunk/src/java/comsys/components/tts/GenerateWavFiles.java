@@ -44,12 +44,12 @@ public class GenerateWavFiles {
 		BufferedReader l_xlsbfr = new BufferedReader(l_xlsreader);	
 		String l_str = null;
 		Integer l_ctr= 0;
-		while((l_str= l_xlsbfr.readLine())!= null){
-			l_ctr++;
+		while((l_str= l_xlsbfr.readLine())!= null && l_ctr<=48){
+			++l_ctr;
 			if(l_ctr==1) continue; //First line is the table header, skip it
 				
 				
-				System.out.println(l_str);
+				System.out.println(l_ctr + ":"+ l_str);
 				
 				String l_itemcode = new String("");
 				String l_uttr = new String("");
@@ -73,47 +73,77 @@ public class GenerateWavFiles {
 					l_stkn.nextToken(); //Skip the 13th column 
 				
 					//We got the important stuff we needed
-				
-					//Now convert the utterance to prosodic one with the help of Intonation contour type.
-					l_prs = Utterance2Prosodic(l_uttr, l_tune );
-					System.out.println("input:" + l_uttr + " tune: " +l_tune + " prosodic: "+ l_prs + " filename: " +l_filename);
 					
-					//Call the Prosodic2XMl utility and save this to this filename
-					l_prs2xml.g_xmlfilename=l_filename.concat("_").concat(l_itemcode).concat("_").concat(l_tune).concat(".xml");
-					String l_xmlfile = new String();
 					
-					//prosodic text as input, converts it into RawMaryXML and returns the filename
-					l_xmlfile=l_prs2xml.ConvertToRawMarxXml(l_prs);
-					System.out.println("XML file written: ["+l_xmlfile+"]");
-					
-					l_ttslocal.m_AudioFileName=l_outputloc.concat(l_prs2xml.g_xmlfilename);
-					l_ttslocal.m_SaveAudio2Wav=true;
-					l_synthsis.Save2Wave(l_outputloc.concat(l_prs2xml.g_xmlfilename));
+					//For A tune
+					//Now convert the utterance to prosodic-utterance with the help of Intonation contour type.
+					l_prs = Utterance2Prosodic(l_uttr, l_tuneA );
 										
-					//For C tune
-					//Call the Prosodic2XMl utility and save this to this filename
-					l_prs2xml.g_xmlfilename=l_filename.concat("_").concat(l_itemcode).concat("_").concat(l_tuneC).concat(".xml");
-					l_prs = Utterance2Prosodic(l_uttr, l_tuneC);
-					System.out.println("input:" + l_uttr + " tune: " +l_tuneC + " prosodic :"+ l_prs);
-					//prosodic text as input, converts it into RawMaryXML and returns the filename
+					// Specify the RAWMaryXML filename we want to use here
+					l_prs2xml.g_xmlfilename=l_itemcode.concat("_").concat(l_tuneA).concat(".xml");
+					
+					//converts prosodic-utterance into RawMaryXML with above filename
+					String l_xmlfile = new String();
 					l_xmlfile=l_prs2xml.ConvertToRawMarxXml(l_prs);
 					System.out.println("XML file written: ["+l_xmlfile+"]");
+					
+					
+					// use Mary to generate a audio file and save it to disk
+					l_ttslocal.m_AudioFileName=l_outputloc.concat(l_prs2xml.g_xmlfilename);
+					l_ttslocal.m_SaveAudio2Wav=true;
+					l_synthsis.Save2Wave(l_outputloc.concat(l_prs2xml.g_xmlfilename));
+					
+					//For B tune
+					//Now convert the utterance to prosodic-utterance with the help of Intonation contour type.
+					l_prs = Utterance2Prosodic(l_uttr, l_tuneB );
+						
+					// Specify the RAWMaryXML filename we want to use here
+					l_prs2xml.g_xmlfilename=l_itemcode.concat("_").concat(l_tuneB).concat(".xml");
+					
+					//converts prosodic-utterance into RawMaryXML
+					l_xmlfile=l_prs2xml.ConvertToRawMarxXml(l_prs);
+					System.out.println("XML file written: ["+l_xmlfile+"]");
+					
+					
+					// use Mary to generate a audio file and save it to disk
 					l_ttslocal.m_AudioFileName=l_outputloc.concat(l_prs2xml.g_xmlfilename);
 					l_ttslocal.m_SaveAudio2Wav=true;
 					l_synthsis.Save2Wave(l_outputloc.concat(l_prs2xml.g_xmlfilename));
 					
 					
 					//For C tune
-					//Call the Prosodic2XMl utility and save this to this filename
-					l_prs2xml.g_xmlfilename=l_filename.concat("_").concat(l_itemcode).concat("_").concat(l_tuneD).concat(".xml");
-					l_prs = Utterance2Prosodic(l_uttr, l_tuneD);
-					System.out.println("input:" + l_uttr + " tune: " +l_tuneD + " prosodic :"+ l_prs);
-					//prosodic text as input, converts it into RawMaryXML and returns the filename
+					//Now convert the utterance to prosodic-utterance with the help of Intonation contour type.
+					l_prs = Utterance2Prosodic(l_uttr, l_tuneC );
+										
+					// Specify the RAWMaryXML filename we want to use here
+					l_prs2xml.g_xmlfilename=l_itemcode.concat("_").concat(l_tuneC).concat(".xml");
+					
+					//converts prosodic-utterance into RawMaryXML
 					l_xmlfile=l_prs2xml.ConvertToRawMarxXml(l_prs);
 					System.out.println("XML file written: ["+l_xmlfile+"]");
+				
+					// use Mary to generate a audio file and save it to disk
 					l_ttslocal.m_AudioFileName=l_outputloc.concat(l_prs2xml.g_xmlfilename);
 					l_ttslocal.m_SaveAudio2Wav=true;
 					l_synthsis.Save2Wave(l_outputloc.concat(l_prs2xml.g_xmlfilename));
+					
+					//For B tune
+					//Now convert the utterance to prosodic-utterance with the help of Intonation contour type.
+					l_prs = Utterance2Prosodic(l_uttr, l_tuneD );
+						
+					// Specify the RAWMaryXML filename we want to use here
+					l_prs2xml.g_xmlfilename=l_itemcode.concat("_").concat(l_tuneD).concat(".xml");
+					
+					//converts prosodic-utterance into RawMaryXML
+					l_xmlfile=l_prs2xml.ConvertToRawMarxXml(l_prs);
+					System.out.println("XML file written: ["+l_xmlfile+"]");
+					
+					// use Mary to generate a audio file and save it to disk
+					l_ttslocal.m_AudioFileName=l_outputloc.concat(l_prs2xml.g_xmlfilename);
+					l_ttslocal.m_SaveAudio2Wav=true;
+					l_synthsis.Save2Wave(l_outputloc.concat(l_prs2xml.g_xmlfilename));
+					
+									
 					//if (l_ctr == 2)break;
 			}
 		}
