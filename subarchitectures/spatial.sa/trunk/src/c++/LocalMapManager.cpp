@@ -15,6 +15,7 @@
 #include "LocalMapManager.hpp"
 #include <CureHWUtils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include "GridObjectFinder.hpp"
 
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
@@ -47,8 +48,10 @@ LocalMapManager::~LocalMapManager()
 { 
   delete m_Displaylgm1;
   delete m_Displaylgm2;
+  delete m_DisplayPlaneMap;
   delete m_Glrt1;
   delete m_Glrt2;
+  delete m_planeObstacleMap;
 
   for (map<int, CharMap *>::iterator it =
       m_nodeGridMaps.begin(); it != m_nodeGridMaps.end(); it++) {
@@ -136,6 +139,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_Glrt1  = new CharGridLineRayTracer(*m_lgm1);
   m_lgm2 = new CharMap(70, 0.1, '2', CharMap::MAP1);
   m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
+
+  m_planeObstacleMap = new CharMap(70, 0.1, '2', CharMap::MAP1);
+  m_DisplayPlaneMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_planeObstacleMap);
 
   if (_config.find("--no-tentative-window") == _config.end()) {
     m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
@@ -278,6 +284,9 @@ void LocalMapManager::runComponent()
 	if (m_Displaylgm2) {
 	  m_Displaylgm2->setMap(m_lgm2);
 	}
+	if (m_DisplayPlaneMap) {
+	  m_DisplayPlaneMap->setMap(m_planeObstacleMap);
+	}
 	//log("Maps set");
 
 	m_Mutex.unlock();
@@ -295,6 +304,10 @@ void LocalMapManager::runComponent()
       }
       //log("Updated");
 
+    }
+    if (m_DisplayPlaneMap) {
+      Cure::Pose3D currentPose = m_TOPP.getPose();
+      m_DisplayPlaneMap->updateDisplay(&currentPose);
     }
     unlockComponent();
     debug("unlock in isRunning");
@@ -728,6 +741,14 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 
     log("Painting polygon");
     PaintPolygon(oobj->PointsSeq);
+
+    for (int x = -m_planeObstacleMap->getSize(); x <= m_planeObstacleMap->getSize(); x++) {
+      for (int y = -m_planeObstacleMap->getSize(); y <= m_planeObstacleMap->getSize(); y++) {
+	if ((*m_planeMap)(x,y).planes.size() > 0) {
+	  (*m_planeObstacleMap)(x,y) = '1';
+	}
+      }
+    }
 
     //m_planeMap->print(std::cout);
   }
