@@ -80,7 +80,7 @@ bool tgEngine::Init(int width, int height, float depth, const char* name){
 	light1.position = vec4(-1.0,0.0,1.0,0.0);
 	m_lighting.ApplyLight(light1,1);
 	
-	glEnable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -210,7 +210,6 @@ void tgEngine::DrawCoordinates(){
 	float l1 = 0.1*m_depth;
 	
 	m_lighting.Deactivate();
-	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 		
@@ -224,7 +223,6 @@ void tgEngine::DrawCoordinates(){
 	glEnd();
 	
 	m_lighting.Activate();
-	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);	
 }
 
