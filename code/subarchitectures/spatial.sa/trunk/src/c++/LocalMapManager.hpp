@@ -167,6 +167,9 @@ protected:
 
   PlaneMap* m_planeMap;
 
+  CharMap* m_planeObstacleMap;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
+
   Cure::TransformedOdomPoseProvider m_TOPP;
 
   bool m_firstScanReceived;
