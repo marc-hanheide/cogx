@@ -378,6 +378,9 @@ int	Resources::AddShader(	const char* shadername,
 	
 	if(!shader->getStatus()){
 		printf("[Resources::AddShader] Error failed to load shader %s\n", shadername);
+		printf("[Resources::AddShader]   Vertex shader: '%s'\n", vertex_fullname);
+		printf("[Resources::AddShader]   Fragment shader: '%s'\n", fragment_fullname);
+		printf("[Resources::AddShader]   Header shader: '%s'\n", header_fullname);
 		delete(shader);
 		return -1;
 	}
