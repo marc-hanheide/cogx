@@ -18,7 +18,7 @@
 
 #ifndef GridObjectFinder_hpp
 #define GridObjectFinder_hpp
-#include <cv.h>
+#include <opencv/cv.h>
 #include <vector>
 //#include <highgui.h>
 

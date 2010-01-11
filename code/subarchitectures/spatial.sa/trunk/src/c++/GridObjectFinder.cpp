@@ -20,7 +20,7 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
-#include <highgui.h>
+#include <opencv/highgui.h>
 
 using namespace spatial;
 using namespace std;
