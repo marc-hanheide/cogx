@@ -5,9 +5,10 @@
 
 import os, sys, time
 import re
+import tempfile
 from PyQt4 import QtCore, QtGui
 
-from core import procman, options, messages
+from core import procman, options, messages, confbuilder
 from core import legacy
 from qtui import uimainwindow, uiresources
 import processtree
@@ -95,9 +96,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.buildLog  = CLogDisplayer(self.ui.buildLogfileTxt)
         self.buildLog.showFlush = True
 
-        self.mruCfgCast = []
-        self.mruCfgPlayer = []
-
         self._processModel = processtree.CProcessTreeModel()
         self.ui.processTree.setModel(self._processModel)
 
@@ -116,6 +114,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
         self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
+        self.connect(self.ui.actOpenHostConfig, QtCore.SIGNAL("triggered()"), self.onBrowseHostConfig)
         self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
@@ -134,6 +133,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         for fn in self._options.mruCfgPlayer:
             if fn.strip() == "": continue
             self.ui.playerConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        for fn in self._options.mruCfgHosts:
+            if fn.strip() == "": continue
+            self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def makeConfigFileDisplay(self, fn):
         fn = "%s" % fn
@@ -157,6 +159,13 @@ class CCastControlWnd(QtGui.QMainWindow):
     @property
     def _playerConfig(self):
         cmb = self.ui.playerConfigCmbx
+        i = cmb.currentIndex()
+        fn = cmb.itemData(i)
+        return fn.toString()
+
+    @property
+    def _hostConfig(self):
+        cmb = self.ui.hostConfigCmbx
         i = cmb.currentIndex()
         fn = cmb.itemData(i)
         return fn.toString()
@@ -197,6 +206,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
+            self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx)
             self._options.saveHistory(open(self.fnhist, 'w'))
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
@@ -243,7 +253,19 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("client")
         if p != None:
             self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-            p.start( params = { "CAST_CONFIG": self._clientConfig } )
+            # TODO: build config file from rules in hostconfig
+            # FIXME
+            if self._hostConfig != None and self._hostConfig != "":
+                self._tmpCastFile = tempfile.NamedTemporaryFile(suffix=".cast")
+                cfg = confbuilder.CCastConfig()
+                cfg.clearRules()
+                cfg.addRules(open(self._hostConfig, "r").readlines())
+                cfg.prepareConfig("%s" % self._clientConfig, self._tmpCastFile)
+                self._tmpCastFile.flush()
+                p.start( params = { "CAST_CONFIG": self._tmpCastFile.name } )
+                # self._tmpCastFile.close()
+            else:
+                p.start( params = { "CAST_CONFIG": self._clientConfig } )
         # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
 
     def on_btClientStop_clicked(self, valid=True):
@@ -372,6 +394,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not valid: return
         self.editFile(self._playerConfig)
 
+    def on_btEditHostConfig_clicked(self, valid=True):
+        if not valid: return
+        self.editFile(self._hostConfig)
+
     def onShowEnvironment(self):
         cmd = "bash -c env"
         # procman.runCommand(cmd, name="ENV")
@@ -409,10 +435,22 @@ class CCastControlWnd(QtGui.QMainWindow):
             "", "Player Config (*.cfg)")
         if fn != None and len(fn) > 1:
             fn = self.makeConfigFileRelPath(fn)
-            self.ui.clientConfigCmbx.blockSignals(True)
+            self.ui.playerConfigCmbx.blockSignals(True)
             self.ui.playerConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
             self.ui.playerConfigCmbx.setCurrentIndex(0)
-            self.ui.clientConfigCmbx.blockSignals(False)
+            self.ui.playerConfigCmbx.blockSignals(False)
+
+    def onBrowseHostConfig(self):
+        qfd = QtGui.QFileDialog
+        fn = qfd.getOpenFileName(
+            self, self.ui.actOpenHostConfig.text(),
+            "", "Component Host Config (*.hconf)")
+        if fn != None and len(fn) > 1:
+            fn = self.makeConfigFileRelPath(fn)
+            self.ui.hostConfigCmbx.blockSignals(True)
+            self.ui.hostConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+            self.ui.hostConfigCmbx.setCurrentIndex(0)
+            self.ui.hostConfigCmbx.blockSignals(False)
 
     def onClientConfigChanged(self, index):
         if index < 1: return
