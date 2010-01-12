@@ -18,7 +18,8 @@
 #include <VisionData.hpp>
 
 #include "ObjectTrackerUtils.hpp"
-#include "PlyModel.h"
+#include "Tracker.h"
+//#include "PlyModel.h"
 #include "Timer.h"
 
 namespace cast
@@ -28,10 +29,9 @@ class ObjectTrackerTest : public ManagedComponent
 {
 private:
 
-  // trajectory file
-  FILE* pFile;
-  
   Timer m_timer;
+  Parameters m_params;
+  Model* m_model;
   
   /**
    * list of objects we want to have detected
@@ -45,7 +45,7 @@ private:
   float m_error_pos, m_error_rot;
   
   // Model to detect from ply file
-  PlyModel m_model;
+  
   
   /**
    * callback function called whenever a new object appears ore an object

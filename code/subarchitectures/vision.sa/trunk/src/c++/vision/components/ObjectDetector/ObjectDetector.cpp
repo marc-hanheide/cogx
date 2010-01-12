@@ -10,6 +10,7 @@
 
 #include <opencv/highgui.h>
 #include <VideoUtils.h>
+#include <../../VisionUtils.h>
 #include <ObjectDetector.h>
 #include <VisionData.hpp>
 #include "BasicShapeGeometries.hpp"
@@ -25,6 +26,7 @@ extern "C"
     return new cast::ObjectDetector();
   }
 }
+
 
 using namespace cogx;
 using namespace Math;
@@ -376,31 +378,7 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	f.vertices.clear();
 	
 	//* **** Compute Normals *****
-	
-	int i,j;
-	Face* fn;
-	VisionData::VertexSeq vn;
-	Vector3 v0, v1, v2, e1, e2, n;
-	
-	// calculate vertex normals using the face normal
-	for(i=0; i<(int)obj->model->faces.size(); i++){
-		fn = &obj->model->faces[i];
-		vn = obj->model->vertices;
-		
-		v0 = vector3(vn[fn->vertices[0]].pos.x, vn[fn->vertices[0]].pos.y, vn[fn->vertices[0]].pos.z);
-		v1 = vector3(vn[fn->vertices[1]].pos.x, vn[fn->vertices[1]].pos.y, vn[fn->vertices[1]].pos.z);
-		v2 = vector3(vn[fn->vertices[2]].pos.x, vn[fn->vertices[2]].pos.y, vn[fn->vertices[2]].pos.z);
-		e1 = v1 - v0;
-		e2 = v2 - v0;
-		
-		n = cross(e1,e2);
-		normalise(n);
-		for(j=0; j<(int)fn->vertices.size(); j++){
-			obj->model->vertices[fn->vertices[j]].normal.x = n.x;
-			obj->model->vertices[fn->vertices[j]].normal.y = n.y;
-			obj->model->vertices[fn->vertices[j]].normal.z = n.z;
-		}	
-	}
+	computeNormalsByFaces(obj->model);
 	
 	obj->detectionConfidence = 1.0;						// detection confidence is always 1
 
