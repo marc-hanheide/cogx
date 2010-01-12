@@ -9,7 +9,7 @@ HOST  TheOne         localhost
 HOST  Player         localhost
 
 # All subarchitectures executed on the same host
-# SA  <sa_id>  [<host_id>]//<ip>//<hostname>
+# SA  <sa_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
 SA    none           [TheOne]  # This is for the default HOST in .cast file (ie. no SA defined yet)
 SA    binder         [TheOne]
 SA    coma.sa        [TheOne]
