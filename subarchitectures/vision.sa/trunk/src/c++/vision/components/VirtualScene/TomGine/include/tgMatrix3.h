@@ -13,10 +13,10 @@
 #define PI 3.14159265358979323846f
 #endif
 
-class tgMatrix3;
-
 #include <math.h>
 #include "tgVector3.h"
+
+namespace TomGine{
 
 class tgMatrix3
 {
@@ -41,7 +41,7 @@ public:
 	void transpose();
 };
 
-// tgMatrix3 funktions
+} // namespace TomGine
 
 
 #endif

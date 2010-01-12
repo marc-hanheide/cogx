@@ -12,6 +12,8 @@
 #include <GL/gl.h>
 #include "mathlib.h"
 
+namespace TomGine{
+
 struct tgLight{
 	vec4 ambient;
 	vec4 diffuse;
@@ -26,7 +28,6 @@ private:
 	vec3 lightDir;
 
 public:
-	tgLighting();
 	void ApplyLight(tgLight light, int index=0);
 	void Activate();
 	void Deactivate();
@@ -37,5 +38,7 @@ public:
 	void SetLightPos(float x, float y, float z){ lightPos = vec3(x,y,z); }
 	void SetLightDir(float x, float y, float z){ lightDir = vec3(x,y,z); }
 };
+
+} // namespace TomGine
 
 #endif

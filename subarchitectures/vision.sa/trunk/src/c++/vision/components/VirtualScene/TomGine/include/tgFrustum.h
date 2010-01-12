@@ -12,6 +12,8 @@
 #include<GL/gl.h>
 #include<math.h>
 
+namespace TomGine{
+
 class tgFrustum{
     
 private:
@@ -19,13 +21,12 @@ private:
 
 
 public:
-    tgFrustum();
-    ~tgFrustum();
-    
     void ExtractFrustum();
     bool PointInFrustum( float x, float y, float z );
     bool SphereInFrustum( float x, float y, float z, float radius );
 
 };
+
+} // namespace TomGine
 
 #endif

@@ -17,6 +17,7 @@
 
 using namespace std;
 
+namespace TomGine{
 
 class tgModel{	
 public:
@@ -52,5 +53,7 @@ private:
 	void ApplyMaterial(Material mat);
 
 };
+
+} // namespace TomGine
 
 #endif

@@ -22,6 +22,8 @@
 
 #include "tgEvent.h"
 
+namespace TomGine{
+
 class tgGLXWindow{
 private:
   Display                 *dpy;
@@ -43,5 +45,7 @@ public:
 	
 	bool CheckXEvent(tgEvent &event);
 };
+
+} // namespace TomGine
 
 #endif

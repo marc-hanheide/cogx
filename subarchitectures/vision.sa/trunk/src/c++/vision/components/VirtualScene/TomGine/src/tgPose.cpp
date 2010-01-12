@@ -10,6 +10,8 @@
 
 #include "tgPose.h"
 
+using namespace TomGine;
+
 tgPose::tgPose(){
 	tgPose(0.0);
 }

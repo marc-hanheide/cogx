@@ -10,7 +10,8 @@
 #define TG_TEXTURE
 
 #include <GL/gl.h>
-//#include <highgui.h>
+
+namespace TomGine{
 
 class tgTexture
 {
@@ -37,5 +38,7 @@ public:
 	inline int GetHeight(){ return m_height; }
 	
 };
+
+} // namespace TomGine
 
 #endif

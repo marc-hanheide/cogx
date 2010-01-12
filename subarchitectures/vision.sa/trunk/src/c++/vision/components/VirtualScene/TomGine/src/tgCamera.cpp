@@ -10,6 +10,7 @@
 // ----------------------------------------------------------------------------
 #include "tgCamera.h"
 
+using namespace TomGine;
 
 tgCamera::tgCamera(){
 	f = tgVector3(0.0f,0.0f,-1.0f);

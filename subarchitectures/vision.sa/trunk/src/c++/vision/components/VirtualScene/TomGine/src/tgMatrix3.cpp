@@ -9,6 +9,8 @@
 // ----------------------------------------------------------------------------
 #include "tgMatrix3.h"
 
+using namespace TomGine;
+
 tgMatrix3::tgMatrix3(){
 	for(int i=0; i<9; i++)
 		m[i] = 0.0f;

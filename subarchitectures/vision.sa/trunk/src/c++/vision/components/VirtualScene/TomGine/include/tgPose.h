@@ -13,6 +13,8 @@
 #include "mathlib.h"
 #include "Quaternion.h"
 
+namespace TomGine{
+
 class tgPose{
 public:
 	vec3 pos;
@@ -33,5 +35,7 @@ public:
 	void Translate(float x, float y, float z);	
 	void Translate(vec3 t);	
 };
+
+} // namespace TomGine
 
 #endif

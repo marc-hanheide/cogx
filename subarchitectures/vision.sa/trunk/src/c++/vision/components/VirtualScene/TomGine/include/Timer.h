@@ -22,6 +22,9 @@
 // ***********************************************************************************
 
 using namespace std;
+
+namespace TomGine{
+
 class Timer
 {
 private:
@@ -48,6 +51,8 @@ public:
 	double	GetApplicationTime(){ return m_fAppTime;}
 	
 };
+
+} // namespace TomGine
 
 #endif
 

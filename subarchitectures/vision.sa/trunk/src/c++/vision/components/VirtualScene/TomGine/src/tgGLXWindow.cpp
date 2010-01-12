@@ -15,6 +15,8 @@
 
 #include "tgGLXWindow.h"
 
+using namespace TomGine;
+
 tgGLXWindow::tgGLXWindow(int width, int height, const char* name){
 	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 	dpy = XOpenDisplay(NULL);

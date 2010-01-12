@@ -1,6 +1,8 @@
 
 #include "tgTexture.h"
 
+using namespace TomGine;
+
 tgTexture::tgTexture(){
 	glGenTextures(1, &m_texture_id);
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);

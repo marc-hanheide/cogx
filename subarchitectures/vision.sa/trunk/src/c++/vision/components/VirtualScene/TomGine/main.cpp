@@ -11,6 +11,8 @@
 #include "tgEngine.h"
 #include "BasicGeometries.h"
 
+using namespace TomGine;
+
 int main(int argc, char *argv[])
 {
 	float fTime;
