@@ -27,11 +27,43 @@ inline VisionData::ROIPtr projectSOI(const Video::CameraParameters &cam, const V
    return roi;
 }
 
-
 inline bool pointInsideSOI(const VisionData::SOI &soi, const cogx::Math::Vector3 &p)
 {
   return pointInsideSphere(soi.boundingSphere, p) &&
          pointInsideBox(soi.boundingBox, p);
+}
+
+using namespace cogx;
+using namespace Math;
+/**
+* @brief Compute normal vectors of vertices by using the face normal
+*/
+inline void computeNormalsByFaces(VisionData::GeometryModelPtr model)
+{
+	int i,j;
+	VisionData::Face* f;
+	VisionData::VertexSeq v;
+	Math::Vector3 v0, v1, v2, e1, e2, n;
+	
+	// calculate vertex normals using the face normal
+	for(i=0; i<(int)model->faces.size(); i++){
+		f = &model->faces[i];
+		v = model->vertices;
+		
+		v0 = vector3(v[f->vertices[0]].pos.x, v[f->vertices[0]].pos.y, v[f->vertices[0]].pos.z);
+		v1 = vector3(v[f->vertices[1]].pos.x, v[f->vertices[1]].pos.y, v[f->vertices[1]].pos.z);
+		v2 = vector3(v[f->vertices[2]].pos.x, v[f->vertices[2]].pos.y, v[f->vertices[2]].pos.z);
+		e1 = v1 - v0;
+		e2 = v2 - v0;
+		
+		n = cross(e1,e2);
+		normalise(n);
+		for(j=0; j<(int)f->vertices.size(); j++){
+			model->vertices[f->vertices[j]].normal.x = n.x;
+			model->vertices[f->vertices[j]].normal.y = n.y;
+			model->vertices[f->vertices[j]].normal.z = n.z;
+		}	
+	}
 }
 
 #endif
