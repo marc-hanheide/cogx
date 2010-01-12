@@ -186,7 +186,6 @@ void VirtualScene::initScene(const Video::Image &image){
 }
 
 void VirtualScene::runScene(){
-	
 	for(int i=0; i<m_modellist.size(); i++){
 		m_modellist[i].model.DrawFaces();
 // 		m_modellist[i].model.DrawNormals(0.01);

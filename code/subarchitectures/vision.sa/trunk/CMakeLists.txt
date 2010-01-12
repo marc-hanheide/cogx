@@ -35,7 +35,7 @@ option(BUILD_SA_VISION_OBJTRACKER "build object tracker" NO)
 if (BUILD_SA_VISION_OBJTRACKER)
 add_subdirectory (src/c++/vision/components/ObjectTracker)
 add_subdirectory (src/c++/vision/components/ObjectTrackerDriver)
-add_subdirectory (src/c++/vision/components/ObjectTrackerTest)
+#add_subdirectory (src/c++/vision/components/ObjectTrackerTest)
 endif (BUILD_SA_VISION_OBJTRACKER)
 
 add_subdirectory (src/c++/vision/components/VisionDriver)
