@@ -1,9 +1,9 @@
-import itertools
+import itertools, time
 
 import config, constants
 import assertions, macros
-import state_new as state
 import mapl_new as mapl
+import mapl_new.state as state
 import mapl_new.mapltypes as types
 import mapl_new.predicates as predicates
 import mapl_new.effects as effects
@@ -39,7 +39,7 @@ class Task(object):
         self.planning_status = PlanningStatusEnum.TASK_CHANGED
         
         if mapltask:
-            self._mapldomain = mapltask
+            self._mapldomain = mapltask.domain
             self.create_initial_state()
             self.add_assertions()
 
@@ -47,12 +47,12 @@ class Task(object):
     def __get_mapltask(self):
         if self.is_dirty():
             new_init = [ f.asLiteral(useEqual=True) for f in self.get_state().iterfacts() ]
-            self._mapltask = mapl.problem.Problem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain)
+            self._mapltask = mapl.mapl.MAPLProblem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain, self._mapltask.optimization, self._mapltask.opt_func)
         return self._mapltask
 
     def __set_mapltask(self, mapltask):
         self._mapltask = mapltask
-        self._mapldomain = mapltask
+        self._mapldomain = mapltask.domain
 
     mapltask = property(__get_mapltask, __set_mapltask)
 
@@ -65,9 +65,13 @@ class Task(object):
         for a in itertools.chain(self._mapldomain.actions, self._mapldomain.sensors):
             ast = assertions.to_assertion(a, self._mapldomain)
             if ast:
-                new_assertions.append(ast)
+                try:
+                    self._mapldomain.getAction(ast.name)
+                except:
+                    new_assertions.append(ast)
 
         self._mapldomain.actions += new_assertions
+        self._mapldomain.name2action = None
 
     def create_initial_state(self):
         s = state.State([], self._mapltask)
@@ -131,21 +135,13 @@ class Task(object):
             self.planner.continual_planning(self)
         return self.get_plan()
 
-    def pddl_domain_str(self):
-        w = PDDLWriter(predicates.mapl_modal_predicates)
-        return "\n".join(w.write_domain(self._mapldomain))
-
-    def pddl_problem_str(self):
-        w = PDDLWriter(predicates.mapl_modal_predicates)
+    def problem_str(self, writer_class):
+        w = writer_class(predicates.mapl_modal_predicates)
         return "\n".join(w.write_problem(self.mapltask))
 
-    def tfd_domain_str(self):
-        w = TFDWriter(predicates.mapl_modal_predicates)
+    def domain_str(self, writer_class):
+        w = writer_class(predicates.mapl_modal_predicates)
         return "\n".join(w.write_domain(self._mapldomain))
-
-    def tfd_problem_str(self):
-        w = TFDWriter(predicates.mapl_modal_predicates)
-        return "\n".join(w.write_problem(self.mapltask))
     
     def load_mapl_domain(self, domain_file):
         log.info("Loading MAPL domain %s.", domain_file)
@@ -169,243 +165,36 @@ class Task(object):
         self.load_mapl_problem(task_file, agent_name)
 
 
-                
-class PDDLWriter(mapl.writer.MAPLWriter):
+class PDDLWriter(mapl.writer.Writer):
     def __init__(self, modalPredicates):
-        self.modal = modalPredicates     
-    
-    def write_type(self, type):
-        if isinstance(type, types.ProxyType):
-            return mapl.writer.MAPLWriter.write_type(self, type.effectiveType())
-        return mapl.writer.MAPLWriter.write_type(self, type)
-
-    def write_term(self, term):
-        if isinstance(term, (mapl.predicates.ConstantTerm, mapl.predicates.VariableTerm)):
-            return term.object.name
-        assert False, "No function terms in ff-pddl: %s" % str(term)
-    
-    def write_literal(self, literal):
-        args=[]
-        name_elems = []
-        if literal.predicate not in mapl.predicates.assignmentOps+[mapl.predicates.equals]:
-            name_elems.append(literal.predicate.name)
-            
-        for arg in literal.args:
-            if arg == mapl.types.UNKNOWN:
-                return ""
-            if isinstance(arg, mapl.predicates.FunctionTerm):
-                name_elems.append(arg.function.name)
-                assert not any(map(lambda a: isinstance(a, mapl.predicates.FunctionTerm), arg.args)), "no nested function allowed!"
-                args += arg.args
-            else:
-                args.append(arg)
-
-        #We probably have a equal between constants
-        if not name_elems:
-            name_elems.append("=")
-                
-        argstr = " ".join(map(lambda t: self.write_term(t), args))
-        result = "(%s %s)" % ("-".join(name_elems), argstr)
-        if literal.negated:
-            result = "(not %s)" % result
-        return result
-
-    def write_predicate(self, pred):
-        return "(%s %s)" % (pred.name, self.write_typelist(pred.args))
-    
-    def write_predicates(self, preds, functions):
-        strings = []
-        domain_modal = []
-        for pred in preds:
-            if pred.builtin:
-                continue
-            
-            if any(map(lambda arg: isinstance(arg.type, types.FunctionType), pred.args)):
-                domain_modal.append(pred)
-            else:
-                strings.append(self.write_predicate(pred))
-                
-        for func in functions:
-            if func.builtin:
-                continue
-            strings.append(";; Function %s" % func.name)
-            pred = predicates.Predicate(func.name, func.args+[predicates.Parameter("?val", func.type)])
-            strings.append(self.write_predicate(pred))
-            for mod in self.modal + domain_modal:
-                args =[]
-                for arg in mod.args:
-                    if isinstance(arg.type, types.FunctionType):
-                        args += func.args
-                    elif isinstance(arg.type, types.ProxyType):
-                        args.append(types.Parameter(arg.name, func.type))
-                    else:
-                        args.append(arg)
-
-                pred =  predicates.Predicate("%s-%s" % (mod.name, func.name), args)
-                strings.append(self.write_predicate(pred))
-
-        return self.section(":predicates", strings)
-
-    def write_functions(self, funcs):
-        return []
-
-    def write_modal_action(self, action, newname, newargs):
-        def factVisitor(cond, results):
-            if isinstance(cond, mapl.conditions.LiteralCondition):
-                if cond.predicate == predicates.equals:
-                    return [(cond.args[0], cond.args[1])]
-                return []
-            else:
-                return sum(results, [])
-                
-        strings = [newname]
-        strings += self.section(":parameters", ["(%s)" % self.write_typelist(newargs)], parens=False)
-
-        read_facts = []
+        self.compiler = mapl.translators.ADLCompiler()
+        #self.compiler = mapl.translators.ModalPredicateCompiler()
         
-        if action.precondition:
-            read_facts += action.precondition.visit(factVisitor)
-            strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
-        if action.replan:
-            read_facts += action.replan.visit(factVisitor)
-            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
+    def write_problem(self, problem):
+        t0 = time.time()
+        p2 = self.compiler.translate(problem)
+        log.debug("total time for translation: %f", time.time()-t0)
+        return mapl.writer.Writer.write_problem(self, p2)
 
-        previous_values = {}
-        for term, value in read_facts:
-            if term in previous_values:
-                previous_values[term] = None
-            else:
-                previous_values[term] = value
-        
-        def effectsVisitor(eff, results):
-            if isinstance(eff, effects.SimpleEffect):
-                if eff.predicate == predicates.assign:
-                    term = eff.args[0]
-                    if term in previous_values and previous_values[term] is not None:
-                        oldval = previous_values[term]
-                        return [effects.SimpleEffect(predicates.assign, [term, oldval], negated=True), eff]
-                    else:
-                        param = types.Parameter("?oldval", term.function.type)
-                        negeffect = effects.SimpleEffect(predicates.assign, [term, predicates.Term(param)], negated=True)
-                        return [effects.UniversalEffect([param], [negeffect], None), eff]
-                return [eff]
-            else:
-                eff.effects = sum(results, [])
-
-        new_effects = []
-        for e in action.effects:
-            new_effects += e.copy().visit(effectsVisitor)
-
-        strings += self.section(":effect", self.write_effects(new_effects), parens=False)
-
-        return self.section(":action", strings)
-    
-    def write_action(self, action, functions):
-        args = action.agents + action.args + action.vars
-        func_arg, compiled_args = compile_modal_args(args, functions)
-        
-        if func_arg is None:
-            return self.write_modal_action(action, action.name, args)
-        
-        strings=[]
-
-        for f, cargs in compiled_args:
-            action.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
-            strings += self.write_modal_action(action, "%s-%s" % (action.name, f.name), cargs)
-            action.uninstantiate()
-            strings.append("")
-
-        return strings
-        
-
-    def write_axiom_real(self, name, params, condition):
-        strings = ["(%s %s)" % (name, self.write_typelist(params))]
-        strings += self.write_condition(condition)
-        return self.section(":derived", strings)
-
-    def write_axiom(self, axiom, functions):
-        func_arg, compiled_args = compile_modal_args(axiom.args, functions)
-        
-        if func_arg is None:
-            return self.write_axiom_real(axiom.predicate.name, axiom.args, axiom.condition)
-        strings=[]
-
-        for f, cargs in compiled_args:
-            axiom.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
-            strings += self.write_axiom_real("%s-%s" % (axiom.predicate.name, f.name), cargs, axiom.condition)
-            axiom.uninstantiate()
-            strings.append("")
-
-        return strings
-    
-    def write_sensor(self, action):
-        strings = [action.name]
-        args = action.agents + action.args + action.vars
-        strings += self.section(":parameters", ["(%s)" % self.write_typelist(args)], parens=False)
-
-        if action.precondition:
-            strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
-            
-        if isinstance(action.sense, predicates.Literal):
-            term = action.sense.args[0]
-        else:
-            term = action.sense
-
-        strings += self.section(":effect", self.write_effect(action.knowledge_effect()), parens=False)
-        return self.section(":action", strings)
-
-    def write_init(self, inits):
-        strings = []
-        for i in inits:
-            if not i.negated:
-                strings.append(self.write_literal(i))
-
-        return self.section(":init", strings)
-    
     def write_domain(self, domain):
-        strings = ["(define (domain %s)" % domain.name]
-        strings.append("")
-        #strings.append("(:requirements %s)" % " ".join(map(lambda r: ":"+r, domain.requirements)))
-        strings.append("(:requirements :adl)")
-        strings.append("")
-        strings += self.write_types(domain.types.itervalues())
-        
-        if domain.constants:
-            strings.append("")
-            strings += self.write_objects("constants", domain.constants)
-
-        strings.append("")
-        strings += self.write_predicates(domain.predicates, domain.functions)
-        
-        for a in domain.axioms:
-            strings.append("")
-            strings += self.write_axiom(a, domain.functions)
-        for s in domain.sensors:
-            strings.append("")
-            strings += self.write_sensor(s)
-        for a in domain.actions:
-            strings.append("")
-            strings += self.write_action(a, domain.functions)
-
-        strings.append("")
-        strings.append(")")
-        return strings
+        dom = self.compiler.translate(domain)
+        return mapl.writer.Writer.write_domain(self, dom)
 
 
-class TFDWriter(mapl.writer.MAPLWriter):
+class TFDWriter(mapl.writer.Writer):
     def __init__(self, modalPredicates):
         self.modal = modalPredicates
 
     def write_type(self, type):
         if isinstance(type, types.ProxyType):
-            return mapl.writer.MAPLWriter.write_type(self, type.effectiveType())
-        return mapl.writer.MAPLWriter.write_type(self, type)
+            return mapl.writer.Writer.write_type(self, type.effectiveType())
+        return mapl.writer.Writer.write_type(self, type)
     
     def write_term(self, term):
         if isinstance(term, (predicates.FunctionVariableTerm)) and term.isInstantiated():
             return self.write_term(term.getInstance())
         else:
-            return mapl.writer.MAPLWriter.write_term(self, term)
+            return mapl.writer.Writer.write_term(self, term)
         
     def write_literal(self, literal):
         args = []
@@ -457,13 +246,15 @@ class TFDWriter(mapl.writer.MAPLWriter):
 
         return self.section(":predicates", strings)
 
-    def write_durative_action_real(self, name, params, duration, condition, effects):
+    def write_durative_action_real(self, name, params, duration, condition, replan, effects):
         strings = [name]
         strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
         strings += self.section(":duration", self.write_durations(duration), parens=False)
         
         if condition:
             strings += self.section(":condition", self.write_condition(condition), parens=False)
+        if replan:
+            strings += self.section(":replan", self.write_condition(replan), parens=False)
 
         strings += self.section(":effect", self.write_effects(effects), parens=False)
         return self.section(":durative-action", strings)
@@ -472,26 +263,50 @@ class TFDWriter(mapl.writer.MAPLWriter):
         args = action.agents + action.args + action.vars
         func_arg, compiled_args = compile_modal_args(args, functions)
 
-        condition = action.precondition
+        replan = None
         if action.replan:
-            replan = conditions.TimedCondition("start", action.replan)
-            if condition:
-                condition = mapl.conditions.Conjunction([replan, prec])
-            else:
-                condition = replan
+            replan = mapl.conditions.TimedCondition("start", action.replan)
                     
         if func_arg is None:
-            return self.write_durative_action_real(action.name, args, action.duration, condition, action.effects)
+            return self.write_durative_action_real(action.name, args, action.duration, action.precondition, replan, action.effects)
         strings=[]
 
         for f, cargs in compiled_args:
             action.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
-            strings += self.write_durative_action_real("%s-%s" % (action.name, f.name), cargs, action.duration, condition, action.effects)
+            strings += self.write_durative_action_real("%s-%s" % (action.name, f.name), cargs, action.duration, condition, replan, action.effects)
             action.uninstantiate()
             strings.append("")
 
         return strings
+    
+    def write_action(self, action, functions):
+        def effect_visitor(eff, results):
+            if isinstance(eff, mapl.effects.SimpleEffect):
+                if eff.predicate == mapl.predicates.assign:
+                    return mapl.effects.SimpleEffect(mapl.predicates.change, eff.args)
+                else:
+                    return mapl.effects.TimedEffect(eff.predicate, eff.args, "start", eff.negate)
+            elif isinstance(eff, list):
+                return results
+            else:
+                return eff.copy(new_parts = results)
+        
+        condition = None
+        replan = None
+        if action.precondition:
+            condition = mapl.conditions.TimedCondition("start", action.precondition)
+        if action.replan:
+            replan = mapl.conditions.TimedCondition("start", action.replan)
+            
+        effects = []
+        for eff in action.effects:
+            effects.append(eff.visit(effect_visitor))
 
+        new = mapl.actions.DurativeAction(action.name, action.agents, action.args, action.vars, None, condition, replan, effects, action.parent)
+        duration_term = mapl.predicates.FunctionTerm(mapl.predicates.eq, ["?duration", 1.0], new)
+        new.duration = [mapl.actions.DurationConstraint(duration_term, None)]
+        return self.write_durative_action(new.copy(), functions)
+    
     def write_axiom_real(self, name, params, condition):
         strings = ["(%s %s)" % (name, self.write_typelist(params))]
         strings += self.write_condition(condition)
@@ -522,7 +337,7 @@ class TFDWriter(mapl.writer.MAPLWriter):
         keff = action.knowledge_effect()
         teff = [effects.TimedEffect(keff.predicate, keff.args, "end")]
          
-        return self.write_durative_action_real(action.name, args, [duration], condition, teff)
+        return self.write_durative_action_real(action.name, args, [duration], condition, None, teff)
         
     def write_domain(self, domain):
         strings = ["(define (domain %s)" % domain.name]
@@ -547,7 +362,10 @@ class TFDWriter(mapl.writer.MAPLWriter):
             strings += self.write_sensor(s)
         for a in domain.actions:
             strings.append("")
-            strings += self.write_durative_action(a, domain.functions)
+            if isinstance(a, mapl.actions.DurativeAction):
+                strings += self.write_durative_action(a, domain.functions)
+            else:
+                strings += self.write_action(a, domain.functions)
 
         strings.append("")
         strings.append(")")

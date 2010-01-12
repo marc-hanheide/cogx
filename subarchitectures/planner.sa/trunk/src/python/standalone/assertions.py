@@ -3,7 +3,7 @@ import itertools
 import config
 
 import mapl_new as mapl
-import state_new as state
+import mapl_new.state as state
 import plans
 
 log = config.logger("assertions")
@@ -152,7 +152,7 @@ def to_assertion(action, domain):
     if not replan:
         return None
 
-    assertion = mapl.actions.Action("assertion_"+action.name, action.agents, action.args, action.vars, condition, replan, action.effects, domain)
+    assertion = mapl.mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effects, domain)
     assertion = assertion.copy()
     return assertion
 
@@ -194,8 +194,11 @@ def make_clusters(plan, domain):
     static_functions = get_static_functions(domain)
 
     for node in plan.nodes_iter():
-        if any(isinstance(pred.action, mapl.sensors.Sensor) for pred in plan.predecessors_iter(node)):
-            initial_nodes.append(node)
+        for pred in plan.predecessors_iter(node):
+            if isinstance(pred.action, mapl.sensors.Sensor):
+                if any(e['type'] == 'depends' for e in plan[pred][node].itervalues()):
+                    initial_nodes.append(node)
+                    break
 
             
     for node in initial_nodes:

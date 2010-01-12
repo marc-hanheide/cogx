@@ -113,7 +113,7 @@ class OptionParser(optparse.OptionParser):
         except (IndexError,ValueError):
             raise ParsingError("Cannot parse the option string correctly")
 
-    def set_defaults_from(self, adict):
+    def set_defaults_from(self, adict, prefix=""):
         "look for appropriate default values in adict"
         for k in self.defaults:
             v = adict.get(k)

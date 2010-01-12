@@ -4,9 +4,10 @@
 from collections import defaultdict
 
 import mapltypes as types
-import predicates, conditions, effects, actions, sensors
+import predicates, conditions, effects, actions
+import durative
 
-class MAPLWriter(object):
+class Writer(object):
     def __init__(self):
         pass
     
@@ -99,6 +100,8 @@ class MAPLWriter(object):
         return "(%s %s) - %s" % (func.name, self.write_typelist(func.args), self.write_type(func.type))
     
     def write_predicates(self, preds):
+        if not preds:
+            return []
         strings = []
         for pred in preds:
             if not pred.builtin:
@@ -106,6 +109,8 @@ class MAPLWriter(object):
         return self.section(":predicates", strings)
 
     def write_functions(self, funcs):
+        if not funcs:
+            return []
         strings = []
         for func in funcs:
             if not func.builtin:
@@ -114,20 +119,24 @@ class MAPLWriter(object):
     
     def write_action(self, action):
         strings = [action.name]
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if action.args:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
-        if action.vars:
-            strings += self.section(":variables", ["(%s)" % self.write_typelist(action.vars)], parens=False)
-        if action.replan:
-            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
         if action.precondition:
             strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
+        if action.replan:
+            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
 
         strings += self.section(":effect", self.write_effects(action.effects), parens=False)
 
         return self.section(":action", strings)
 
+    def write_axiom(self, axiom):
+        strings = ["(%s %s)" % (axiom.predicate.name, self.write_typelist(axiom.args))]
+        if axiom.condition:
+            strings += self.write_condition(axiom.condition)
+
+        return self.section(":derived", strings)
+    
     def write_durations(self, durations):
         strings = []
         for dc in durations:
@@ -143,16 +152,11 @@ class MAPLWriter(object):
     
     def write_durative_action(self, action):
         strings = [action.name]
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if action.args:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
-        if action.vars:
-            strings += self.section(":variables", ["(%s)" % self.write_typelist(action.vars)], parens=False)
             
         strings += self.section(":duration", self.write_durations(action.duration), parens=False)
         
-        if action.replan:
-            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
         if action.precondition:
             strings += self.section(":condition", self.write_condition(action.precondition), parens=False)
 
@@ -160,25 +164,7 @@ class MAPLWriter(object):
 
         return self.section(":durative-action", strings)
 
-    
-    def write_sensor(self, action):
-        strings = [action.name]
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
-        if action.args:
-            strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
-        if action.vars:
-            strings += self.section(":variables", ["(%s)" % self.write_typelist(action.vars)], parens=False)
-        if action.precondition:
-            strings += self.section(":precondition", [self.write_condition(action.precondition)], parens=False)
-
-        if isinstance(action.sense, predicates.Literal):
-            eff = [self.write_literal(action.sense)]
-        elif isinstance(action.sense, predicates.FunctionTerm):
-            eff = [self.write_term(action.sense)]
-        strings += self.section(":sense", eff, parens=False)
-        
-        return self.section(":sensor", strings)
-        
+            
     def write_effects(self, effects):
         if len(effects) == 1:
             return self.write_effect(effects[0])
@@ -187,7 +173,7 @@ class MAPLWriter(object):
         return self.section("and", strings)
 
     def write_effect(self, effect):
-        if isinstance(effect, effects.TimedEffect):
+        if isinstance(effect, durative.TimedEffect):
             return ["(at %s %s)" % (effect.time, self.write_literal(effect))]
         elif isinstance(effect, effects.SimpleEffect):
             return [self.write_literal(effect)]
@@ -216,7 +202,7 @@ class MAPLWriter(object):
                 head = "forall (%s)" % self.write_typelist(cond.values())
             elif cond.__class__ == conditions.ExistentialCondition:
                 head = "exists (%s)" % self.write_typelist(cond.values())
-            elif cond.__class__ == conditions.TimedCondition:
+            elif cond.__class__ == durative.TimedCondition:
                 if cond.time == "start":
                     head = "at start"
                 elif cond.time == "end":
@@ -236,21 +222,23 @@ class MAPLWriter(object):
         strings.append("")
         strings += self.write_types(domain.types.itervalues())
 
+        if domain.constants:
+            strings.append("")
+            strings += self.write_objects("constants", domain.constants)
+        
         strings.append("")
         strings += self.write_predicates(domain.predicates)
 
         strings.append("")
         strings += self.write_functions(domain.functions)
+
+        for a in domain.axioms:
+            strings.append("")
+            strings += self.write_axiom(a)
         
-        if domain.constants:
-            strings.append("")
-            strings += self.write_objects("constants", domain.constants)
-        for s in domain.sensors:
-            strings.append("")
-            strings += self.write_sensor(s)
         for a in domain.actions:
             strings.append("")
-            if isinstance(a, actions.DurativeAction):
+            if isinstance(a, durative.DurativeAction):
                 strings += self.write_durative_action(a)
             else:
                 strings += self.write_action(a)

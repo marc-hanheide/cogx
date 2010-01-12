@@ -6,12 +6,11 @@ import itertools
 import parser
 import mapltypes
 import scope
-import predicates, conditions, actions, effects, domain
+import predicates, conditions, actions, effects, domain, mapl
 
 from mapltypes import *
 from parser import ParseError, UnexpectedTokenError
-from actions import Action
-from problem import Problem
+from mapl import MAPLProblem
 
 def product(*iterables):
     for el in iterables[0]:
@@ -66,7 +65,7 @@ class MapsimScenario(object):
         if not world:
             if not common:
                 raise ParseError(root.token, "Neither world state nor common state are specified.")
-            world = Problem(scname+"-world", common.objects, common.init, common.goal, domain)
+            world = MAPLProblem(scname+"-world", common.objects, common.init, common.goal, domain)
 
         if not agents:
             raise ParseError(root.token, "No agents are defined.")
@@ -90,9 +89,9 @@ class MapsimScenario(object):
             raise UnexpectedTokenError(section, "':common', ':world' or ':agent'")
 
         if not common:
-            problem = Problem(name, [], [], None, domain)
+            problem = MAPLProblem(name, [], [], None, domain)
         else:
-            problem = Problem(name, common.objects, common.init, common.goal, domain)
+            problem = MAPLProblem(name, common.objects, common.init, common.goal, domain)
         
         for elem in it:
             j = iter(elem)
@@ -111,7 +110,7 @@ class MapsimScenario(object):
                     if elem.isTerminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
                         
-                    init_elem = Problem.parseInitElement(iter(elem), problem)
+                    init_elem = MAPLProblem.parseInitElement(iter(elem), problem)
                     problem.init.append(init_elem)
 
             elif type == ":goal":

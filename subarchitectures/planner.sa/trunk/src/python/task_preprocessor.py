@@ -5,7 +5,7 @@ from string import maketrans
 
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
 import standalone.mapl_new as mapl
-import standalone.state_new as state
+import standalone.mapl_new.state as state
 import binder.autogen
 import binder.autogen.specialentities as specialentities
 import binder.autogen.featvalues as featvalues

@@ -2,10 +2,10 @@ import itertools, random
 from collections import defaultdict
 
 from standalone import mapl_new as mapl
-from standalone import state_new as state
 from standalone import plans
 from standalone import config
 from standalone import statistics
+import standalone.mapl_new.state as state
 
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
@@ -218,4 +218,26 @@ class Simulation(object):
             
         return total
 
+    def collect_average_statistics(self):
+        """ Collects statistics from the different planning runs.
+        Will generate average values for interesting stats. """
 
+        def avg_func(values):
+            sum = 0
+            count = 0
+            for v in values:
+                sum += v
+                count +=1
+                
+            return float(sum)/count
+
+        aggreg_funcs = defaultdict(lambda : avg_func)  # per default, calculate average
+        aggreg_funcs["total_time"] = sum
+
+        all_stats = self.stat_per_run
+        keys = set(k for stats in all_stats for k in stats)
+        aggreg_vals = [(k,aggreg_funcs[k](stats[k] for stats in all_stats if k in stats)) for k in keys]
+        total = statistics.Statistics(aggreg_vals)
+
+        return total
+    

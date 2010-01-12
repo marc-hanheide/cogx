@@ -1,15 +1,15 @@
 import mapltypes as types
 import parser
-import predicates, conditions, effects, actions, sensors, axioms, domain, problem, scenario, writer
+import predicates, conditions, effects, actions, sensors, axioms, domain, problem, scenario, writer, translators, sas_translate, state
 
 
 def load_domain(filename):
     p = parser.Parser.parseFile(filename)
-    return domain.MAPLDomain.parse(p.root)
+    return domain.Domain.parse(p.root)
     
 def parse_domain(domain_desc):
     p = parser.Parser(domain_desc.split("\n"))
-    return domain.MAPLDomain.parse(p.root)
+    return domain.Domain.parse(p.root)
     
 
 def load_problem(filename, domain):

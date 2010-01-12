@@ -5,11 +5,14 @@ import itertools, time, random
 from itertools import imap, ifilter
 from collections import defaultdict
 
-import mapl_new as mapl
-from mapl_new.predicates import *
-from mapl_new import problem, conditions, effects, types
+import mapltypes as types
+import conditions, problem, effects
+from predicates import *
 
 def product(*iterables):
+    if not iterables:
+        yield tuple()
+        return
     for el in iterables[0]:
         if len(iterables) > 1:
             for prod in product(*iterables[1:]):
@@ -130,11 +133,12 @@ class StateVariable(object):
     @staticmethod
     def fromLiteral(literal, state=None):
         function = None
-        litargs = None
+        litargs = []
         modal_args = []
         if literal.predicate in assignmentOps + [equals]:
             function = literal.args[0].function
             litargs = literal.args[0].args
+            modal_args = None
         else:
             for arg, parg in zip(literal.args, literal.predicate.args):
                 if isinstance(parg.type, FunctionType):
@@ -152,7 +156,7 @@ class StateVariable(object):
                 modal_args = None
 
         args = instantiate_args(litargs, state)
-        if modal_args:
+        if modal_args is not None:
             modal_args = instantiate_args(modal_args, state)
             return StateVariable(function, args, literal.predicate, modal_args)
             
@@ -183,6 +187,13 @@ class Fact(tuple):
             op = assign
             
         return Literal(op, [Term(self.svar.function, [Term(a) for a in self.svar.args]), Term(self.value)])
+
+    def asCondition(self):
+        atom = self.asLiteral()
+        if atom.predicate == assign:
+            atom.predicate = equals
+        atom.__class__ = conditions.LiteralCondition
+        return atom
     
     def __str__(self):
         return "%s = %s" % (str(self.svar), str(self.value))
@@ -223,9 +234,9 @@ class Fact(tuple):
     def fromTuple(tup):
         return Fact(tup[0], tup[1])
     
-class State(defaultdict):
+class State(dict):
     def __init__(self, facts=[], prob=None):
-        defaultdict.__init__(self, lambda: mapl.types.UNKNOWN)
+        #defaultdict.__init__(self, lambda: types.UNKNOWN)
         assert prob is None or isinstance(prob, problem.Problem)
         self.problem = prob
         for f in facts:
@@ -250,7 +261,16 @@ class State(defaultdict):
 
     def set(self, fact):
         self[fact.svar] = fact.value
-    
+        
+    def __getitem__(self, key):
+        try:
+            return dict.__getitem__(self, key)
+        except:
+            if isinstance(key.function, Predicate):
+                return types.FALSE
+            return types.UNKNOWN
+            
+        
     def __setitem__(self, svar, value):
         assert isinstance(svar, StateVariable)
         assert value.isInstanceOf(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
@@ -350,7 +370,7 @@ class State(defaultdict):
                 
             if trace_vars:
                 self.read_svars.add(svar)
-            return (svar in self) ^ literal.negated
+            return (self[svar] == types.TRUE) ^ literal.negated
 
     def applyLiteral(self, literal, trace_vars=False):
         values = []
@@ -364,6 +384,9 @@ class State(defaultdict):
         pred = literal.predicate
         if pred in assignmentOps+numericOps:
             svar = svars[0]
+            #hack:
+            if svar.function == total_cost and svar not in self:
+                self[svar] = TypedNumber(0.0)
             previous = self[svar]
             val = values[0]
             if trace_vars:

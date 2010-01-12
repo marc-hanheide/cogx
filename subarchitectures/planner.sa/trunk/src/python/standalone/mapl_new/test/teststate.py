@@ -151,7 +151,7 @@ strat2 = """
 class StateTest(unittest.TestCase):
     def setUp(self):
         p = Parser(domlogistics.split("\n"))
-        self.dom = domain.MAPLDomain.parse(p.root)
+        self.dom = domain.Domain.parse(p.root)
         p = Parser(problogistics.split("\n"))
         self.prob = problem.Problem.parse(p.root, self.dom)
         

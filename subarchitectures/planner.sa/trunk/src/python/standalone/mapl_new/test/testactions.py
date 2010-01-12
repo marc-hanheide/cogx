@@ -5,11 +5,11 @@ import unittest
 import tempfile
 import os
 
-import parser, domain, actions
+import parser, domain, actions, mapl, durative
 from mapltypes import *
 from predicates import *
-from actions import *
 from effects import *
+from actions import Action
 from parser import Parser, ParseError
 
 logistics = \
@@ -18,7 +18,7 @@ logistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :mapl :typing :equality :object-fluents) 
+(:requirements :adl :object-fluents) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -56,6 +56,13 @@ logistics = \
 
 drive = """
         (:action drive
+                 :parameters    (?t - truck ?to - location)
+                 :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+                 :effect        (assign (location-of ?t) ?to))
+        """
+
+mapl_drive = """
+        (:action drive
                  :agent         (?a - agent)
                  :parameters    (?t - truck ?to - location)
                  :precondition  (= (city-of (location-of ?t)) (city-of ?to))
@@ -64,7 +71,6 @@ drive = """
 
 dur_drive = """
         (:durative-action drive
-                 :agent         (?a - agent)
                  :parameters    (?t - truck ?to - location)
                  :duration      (= ?duration 4)
                  :condition     (over all (= (city-of (location-of ?t)) (city-of ?to)))
@@ -82,7 +88,6 @@ a_load = """
 
 cond_load = """
         (:action load
-                 :agent         (?a - agent)
                  :parameters    (?p - package ?v - vehicle)
                  :effect        (when (= (location-of ?p) (location-of ?v))
                                       (assign (location-of ?p) ?v)))
@@ -90,7 +95,6 @@ cond_load = """
 
 prob_load = """
         (:action load
-                 :agent         (?a - agent)
                  :parameters    (?p - package ?v - vehicle)
                  :precondition  (= (location-of ?p) (location-of ?v))
                  :effect        (and (probabilistic 0.4 (assign (location-of ?p) ?v)
@@ -100,7 +104,6 @@ prob_load = """
 
 prob_assign_load = """
         (:action load
-                 :agent         (?a - agent)
                  :parameters    (?p - package ?v - vehicle)
                  :precondition  (= (location-of ?p) (location-of ?v))
                  :effect        
@@ -109,7 +112,6 @@ prob_assign_load = """
 
 univ_unload = """
         (:action dropall
-                 :agent         (?a - agent)
                  :parameters    (?v - vehicle)
                  :effect        (forall (?p - package)
                                       (when (= (location-of ?p) (location-of ?v))
@@ -135,7 +137,7 @@ class ActionTest(unittest.TestCase):
 
     def setUp(self):
         p = Parser(logistics.split("\n"))
-        self.domain = domain.MAPLDomain.parse(p.root)
+        self.domain = domain.Domain.parse(p.root)
         self.truck = TypedObject("truck1", self.domain.types["truck"])
         self.plane = TypedObject("plane", self.domain.types["airplane"])
         self.p = TypedObject("p1", self.domain.types["package"])
@@ -144,25 +146,27 @@ class ActionTest(unittest.TestCase):
         self.loc2 = TypedObject("loc2", self.domain.types["location"])
         self.agent = TypedObject("agent", self.domain.types["agent"])
 
+        self.domain.predicates.add(knowledge)
+
         self.domain.add([self.truck, self.plane, self.p, self.airport, self.loc1, self.loc2, self.agent])
         
 
     def testDurativeAction(self):
         """Testing durative action parsing"""
         
-        action = Parser.parseAs(dur_drive.split("\n"), DurativeAction, self.domain)
+        action = Parser.parseAs(dur_drive.split("\n"), durative.DurativeAction, self.domain)
 
-        self.assertEqual(action.precondition.__class__, conditions.TimedCondition)
+        self.assertEqual(action.precondition.__class__, durative.TimedCondition)
         self.assertEqual(action.precondition.time, "all")
-        self.assert_(isinstance(action.effects[0], TimedEffect))
+        self.assert_(isinstance(action.effects[0], durative.TimedEffect))
         self.assertEqual(action.effects[0].time, "end")
         
     def testModalAction(self):
         """Testing modal action parsing"""
         
-        action = Parser.parseAs(modal_action.split("\n"), Action, self.domain)
+        action = Parser.parseAs(modal_action.split("\n"), mapl.MAPLAction, self.domain)
 
-        self.assertEqual(action.args[1].type, FunctionType(objectType))
+        self.assertEqual(action.maplargs[1].type, FunctionType(objectType))
         term = predicates.FunctionTerm(self.domain.functions["location-of"][0], [Parameter("?c", self.domain.types["city"])])
         action.instantiate({"?var" : term})
         
@@ -173,6 +177,17 @@ class ActionTest(unittest.TestCase):
         self.assertEqual(len(action.effects), 1)
         self.assertEqual(len(action.effects), 1)
 
+    def testMAPLAction(self):
+        """Testing basic effect parsing"""
+        
+        action = Parser.parseAs(mapl_drive.split("\n"), mapl.MAPLAction, self.domain)
+        self.assertEqual(len(action.agents), 1)
+        self.assertEqual(len(action.maplargs), 2)
+        self.assertEqual(len(action.vars), 0)
+        self.assertEqual(len(action.args), 3)
+        self.assertEqual(len(action.effects), 1)
+        self.assertEqual(len(action.effects), 1)
+        
     def testConditionalEffects(self):
         """Testing conditional effect parsing"""
         
@@ -227,7 +242,7 @@ class ActionTest(unittest.TestCase):
     def testAssertion(self):
         """Testing parsing of assertions"""
         
-        action = Parser.parseAs(a_load.split("\n"), Action, self.domain)
+        action = Parser.parseAs(a_load.split("\n"), mapl.MAPLAction, self.domain)
         self.assert_(action.replan is not None)
 
         

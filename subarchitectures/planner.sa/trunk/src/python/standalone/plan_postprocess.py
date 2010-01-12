@@ -3,7 +3,7 @@ import time, itertools
 import config
 
 import mapl_new as mapl
-import state_new as state
+import mapl_new.state as state
 import plans
 
 log = config.logger("planner")
@@ -21,8 +21,10 @@ def getGoalDescription(goal, _state):
     read_vars = []
     universal_args = []
     extstate, reasons, universalReasons = _state.getExtendedState(_state.getRelevantVars(goal), getReasons=True)
-    extstate.isSatisfied(goal, read_vars, universal_args)
+        
+    assert extstate.isSatisfied(goal, read_vars, universal_args)
     read = set(read_vars)
+    orig_read = set(read_vars)
     universal = set(a.type for a in universal_args)
     for v in read_vars:          
         if v in reasons:
@@ -31,30 +33,31 @@ def getGoalDescription(goal, _state):
         if v in universalReasons:
             universal |= set(a.type for a in universalReasons[v])
 
-    return set(state.Fact(var, _state[var]) for var in read), universal
+    log.debug("variables from goal:")
+    log.debug("read: %s", " ".join(map(str, read)))
+    return set(state.Fact(var, _state[var]) for var in read), universal, set(state.Fact(var, _state[var]) for var in orig_read), reasons
 
-def getRWDescription(action, args, _state):
+def getRWDescription(action, args, _state, time):
+    pnode = plans.PlanNode(action, args, time, plans.ActionStatusEnum.EXECUTABLE)
+    
     action.instantiate(args)
-    replan=set()
-    replan_universal=set()
-    read=set()
-    read_universal=set()
-    write=set()
 
     #t0 = time.time()
     if action.replan:
         read_vars = []
         universal_args = []
         extstate, reasons, universalReasons = _state.getExtendedState(_state.getRelevantVars(action.replan), getReasons=True)
-        extstate.isSatisfied(action.replan, read_vars, universal_args)
-        replan = set(read_vars)
-        replan_universal = set(a.type for a in universal_args)
+        assert extstate.isSatisfied(action.replan, read_vars, universal_args)
+        pnode.replanconds = set(read_vars)
+        pnode.original_replan = set(state.Fact(var, extstate[var]) for var in read_vars)
+        pnode.explanations.update(reasons)
+        pnode.replan_universal = set(a.type for a in universal_args)
         for v in read_vars:
             if v in reasons:
-                replan.remove(v)
-                replan |= reasons[v]
+                pnode.replanconds.remove(v)
+                pnode.replanconds |= reasons[v]
             if v in universalReasons:
-                replan_universal |= set(a.type for a in universalReasons[v])
+                pnode.replan_universal |= set(a.type for a in universalReasons[v])
     #print "replan:", time.time()-t0
     #t0 = time.time()
 
@@ -63,15 +66,17 @@ def getRWDescription(action, args, _state):
         universal_args = []
         rel = _state.getRelevantVars(action.precondition)
         extstate, reasons, universalReasons = _state.getExtendedState(rel, getReasons=True)
-        extstate.isSatisfied(action.precondition, read_vars, universal_args)
-        read = set(read_vars)
-        read_universal = set(a.type for a in universal_args)
+        assert extstate.isSatisfied(action.precondition, read_vars, universal_args)
+        pnode.preconds = set(read_vars)
+        pnode.original_preconds = set(state.Fact(var, extstate[var]) for var in read_vars)
+        pnode.explanations.update(reasons)
+        pnode.preconds_universal = set(a.type for a in universal_args)
         for v in read_vars:
             if v in reasons:
-                read.remove(v)
-                read |= reasons[v]
+                pnode.preconds.remove(v)
+                pnode.preconds |= reasons[v]
             if v in universalReasons:
-                read_universal |= set(a.type for a in universalReasons[v])
+                pnode.preconds_universal |= set(a.type for a in universalReasons[v])
 
     #print "read:", time.time()-t0
 
@@ -81,21 +86,23 @@ def getRWDescription(action, args, _state):
     else:
         effects = action.effects
     for eff in effects:
-        write |= _state.getEffectFacts(eff)
+        pnode.effects |= _state.getEffectFacts(eff)
     #print "write:", time.time()-t0
         
     #t0 = time.time()
-    replan = set(state.Fact(var, _state[var]) for var in replan)
-    read = set(state.Fact(var, _state[var]) for var in read)
+    pnode.replanconds = set(state.Fact(var, _state[var]) for var in pnode.replanconds)
+    pnode.preconds = set(state.Fact(var, _state[var]) for var in pnode.preconds)
     #print "stuff:", time.time()-t0
 
     log.debug("variables from %s:", action.name)
-    log.debug("read: %s", " ".join(map(str, read)))
-    log.debug("replan: %s", " ".join(map(str, replan)))
-    log.debug("write: %s", " ".join(map(str, write)))
+    log.debug("read: %s", " ".join(map(str, pnode.preconds)))
+    log.debug("original read: %s", " ".join(map(str, pnode.original_preconds)))
+    log.debug("replan: %s", " ".join(map(str, pnode.replanconds)))
+    log.debug("original replan: %s", " ".join(map(str, pnode.original_replan)))
+    log.debug("write: %s", " ".join(map(str, pnode.effects)))
     
     action.uninstantiate()
-    return replan, replan_universal, read, read_universal, write
+    return pnode
 
 
 def make_po_plan(actions, task):
@@ -106,6 +113,7 @@ def make_po_plan(actions, task):
     frontier = defaultdict(lambda: plan.init_node)
     
     readers = defaultdict(set)
+    writers = defaultdict(set)
     
     state = task.get_state().copy()
     previous = plan.init_node
@@ -113,44 +121,44 @@ def make_po_plan(actions, task):
     for starttime, action in actions:
         t1 = time.time()
         action, args = MAPLAction(action, task)
-        pnode = plans.PlanNode(action, args, starttime, plans.ActionStatusEnum.EXECUTABLE)
+        pnode = getRWDescription(action, args, state, starttime)
         plan.add_node(pnode)
         #linear plan for now
         #plan.add_link(previous, pnode)
-                 
-        replan, replan_universal, read, read_universal, write = getRWDescription(action, args, state)
-
-        pnode.preconds = read
-        pnode.replanconds = replan
-        pnode.effects = write
-
-        pnode.replan_universal = replan_universal
-        pnode.preconds_universal = read_universal
-
-        for svar, val in itertools.chain(replan, read):
+                         
+        for svar, val in itertools.chain(pnode.replanconds, pnode.preconds):
             if svar not in frontier:
                 relevant_init_vars.add(svar)
             readers[svar].add(pnode)
             plan.add_link(frontier[svar], pnode, svar, val)
 
-        for svar, val in write:
+        for svar, val in pnode.effects:
             if state[svar] != val:
                 if svar in readers:
                     for node in readers[svar]:
-                        if node != pnode:
+                        if node != pnode and not node in plan.predecessors(pnode):
                             plan.add_link(node, pnode, svar, val, conflict=True)
                     del readers[svar]
-                
-                frontier[svar] = pnode
+
+                if svar in writers:
+                    for node in writers[svar]:
+                        if node != pnode and not node in plan.predecessors(pnode):
+                            plan.add_link(node, pnode, svar, val, conflict=True)
+                    del writers[svar]
+                    
                 state[svar] = val
+            frontier[svar] = pnode
+            writers[svar].add(pnode)
 
         previous = pnode
         log.debug("total time for action: %f", time.time()-t1)
 
-    read, universal = getGoalDescription(task.get_goal(), state)
+    read, universal, orig_read, explanations = getGoalDescription(task.get_goal(), state)
     plan.goal_node.preconds = read
     plan.goal_node.preconds_universal = universal
     plan.goal_node.action = plans.GoalAction(task.get_goal())
+    plan.goal_node.explanations = explanations
+    plan.goal_node.original_preconds = orig_read
     
     #plan.add_link(previous, plan.goal_node)
 

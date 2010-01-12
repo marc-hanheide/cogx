@@ -11,6 +11,12 @@ class FunctionTable(dict):
         for f in functions:
             self.add(f)
 
+    def copy(self):
+        c =  FunctionTable()
+        for f in self:
+            c.add(f)
+        return c
+
     def add(self, function):
         if isinstance(function, (list, tuple, set)):
             for f in function:
@@ -112,7 +118,6 @@ class FunctionTable(dict):
         
     def __setitem__(self, key, value):
         raise NotImplementedError
-            
 
 class Scope(dict):
     def __init__(self, objects, parent):
@@ -208,6 +213,8 @@ class Scope(dict):
     def __contains__(self, key):
         if isinstance(key, (predicates.ConstantTerm, predicates.VariableTerm)):
             key = key.object
+        if isinstance(key, (float, int)):
+            return types.TypedNumber(key)
         if isinstance(key, types.TypedObject):
             if key.type == types.numberType:
                 return True
@@ -223,6 +230,8 @@ class Scope(dict):
     def __getitem__(self, key):
         if isinstance(key, (predicates.ConstantTerm, predicates.VariableTerm)):
             key = key.object
+        if isinstance(key, (float, int)):
+            return types.TypedNumber(key)
         if isinstance(key, types.TypedObject):
             if key.type == types.numberType:
                 return key
