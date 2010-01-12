@@ -86,6 +86,9 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 	if(m_bfc) glEnable(GL_CULL_FACE);
 	else			glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+	
+	//
+	Update(m_frametime);
 }
 
 bool tgEngine::Update(float &fTime){
@@ -194,14 +197,20 @@ bool tgEngine::InputControl(){
 				
 			// *********************************************************
 			case Expose:
-			/*
-				m_camera0.SetIntrinsic(	m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+				m_camera.SetViewport((float)event.expose.width, (float)event.expose.height);
+				m_camera0.SetViewport((float)event.expose.width, (float)event.expose.height);
+				/*
+				printf("[tgEngine::InputControl Expose] %f %f %f %f %f %d\n", 
+																m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
 																m_camera.GetZNear(), m_camera.GetZFar(),
 																m_camera.GetProjection());
+				m_camera0.SetIntrinsic(	m_camera0.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+																m_camera0.GetZNear(), m_camera0.GetZFar(),
+																m_camera0.GetProjection());
 				m_camera.SetIntrinsic(	m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
 																m_camera.GetZNear(), m_camera.GetZFar(),
 																m_camera.GetProjection());
-			*/
+				*/
 				break;
 				
 			// *********************************************************

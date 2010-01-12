@@ -91,7 +91,7 @@ public:
 	/**
 	* @brief Sets Camera of rendering engine (including internal and external camera parameters)
 	*/
-	void SetCamera(tgCamera cam){ m_camera = cam; m_camera0 = cam; }
+	void SetCamera(tgCamera cam){ m_camera = tgCamera(cam); m_camera0 = tgCamera(cam); }
 	
 	/**
 	*	@brief Sets center of rotation

@@ -44,7 +44,7 @@ private:
 	
 public:
 	tgCamera();
-
+	
 	// Define tgCamera
 	void Set(	float posx,  float posy,  float posz,
 						float viewx, float viewy, float viewz,
