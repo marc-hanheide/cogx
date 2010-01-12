@@ -39,6 +39,7 @@ void VisionDriver::configure(const map<string,string> & _config)
 //      ostr << " '" << labels[i] << "'";
 //    log("detecting objects: %s", ostr.str().c_str());
 //  }
+
 	tracking = false;
 	detecting = false;
 	running = true;
@@ -62,22 +63,6 @@ void VisionDriver::runComponent()
   
 	VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
 	
-	// start pushing images from video server
-	/* commented by TM
-	detect_cmd->cmd = VisionData::DVSSTART;
-	addToWorkingMemory(newDataID(), detect_cmd);
-	pushing = true;
-	log("start-command for pushing images from vision server sent!");
-
-  sleepProcess(1000); 
-
-	// start detection
-	detect_cmd->cmd = VisionData::DSTART;
-	addToWorkingMemory(newDataID(), detect_cmd);
-	detecting = true;
-	log("detection start-command sent!");
-	*/
-	
 	if(!tracking)
 	{
 	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
@@ -91,11 +76,14 @@ void VisionDriver::runComponent()
 	{
 		sleepProcess(1000);	// detection time
 
-		// start single detection
-		detect_cmd->cmd = VisionData::DSINGLE;
-		addToWorkingMemory(newDataID(), detect_cmd);
-		log("single detection command sent!");
-  }
+		if(!detecting)
+		{
+			// start single detection
+			detect_cmd->cmd = VisionData::DSINGLE;
+			addToWorkingMemory(newDataID(), detect_cmd);
+			log("single detection command sent!");
+		}
+ 	}
 }
 
 void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
@@ -113,24 +101,13 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 		detecting = false;
 		log("detection stop-command sent!");
 	}
-
-	// Object detected send tracking command (if not already tracking)
-	/*
-	if(!tracking)
-	{
-	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
-		track_cmd->cmd = VisionData::START;
-		addToWorkingMemory(newDataID(), track_cmd);
-		log("tracking start-command sent!");
-		tracking = true;
-	}
-	*/
 }
 
 void VisionDriver::receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange & _wmc)
 {
+/*
 	VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-	/*
+
 	log("Change of pose of VisualObject '%s' detected: %f %f %f", 
 		obj->label.c_str(), 
 		obj->pose.pos.x,
