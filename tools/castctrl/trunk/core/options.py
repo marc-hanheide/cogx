@@ -46,6 +46,7 @@ class CCastOptions(object):
         self.mruCfgPlayer = []
         self.mruCfgCast = []
         self.mruCfgHosts = []
+        self.options = {}
         self.environmentDefault = [s.lstrip() for s in optdefault.environment.split("\n")]
         self._environment = None
         self.cleanupScript = [s.lstrip() for s in optdefault.cleanup.split("\n")]
@@ -77,6 +78,7 @@ class CCastOptions(object):
     def loadHistory(self, filename):
         if not os.path.exists(filename): return
         f = open(filename, "r")
+        options = []
         section = None
         for ln in f.readlines():
             l = ln.split('#')[0]
@@ -84,10 +86,20 @@ class CCastOptions(object):
             if l == "[MRU-CAST]": section = self.mruCfgCast
             elif l == "[MRU-PLAYER]": section = self.mruCfgPlayer
             elif l == "[MRU-HOSTS]": section = self.mruCfgHosts
+            elif l == "[OPTIONS]": section = options
             elif l.startswith('['): section = None
             elif section != None:
                 section.append(ln.rstrip())
+
         f.close()
+
+        for ln in options:
+            expr = ln.split("=", 2)
+            if len(expr) != 2: continue
+            expr = [ e.strip() for e in expr ]
+            if expr[0].startswith("#") or expr[0] == "": continue
+            self.options[expr[0]] = expr[1]
+            
 
     # this should be called only when the config file doesnt exist
     def saveConfig(self, afile):
@@ -113,6 +125,9 @@ class CCastOptions(object):
         f.write("[MRU-HOSTS]\n")
         for ln in self.mruCfgHosts:
             f.write(ln); f.write("\n")
+        f.write("[OPTIONS]\n")
+        for k,v in self.options.iteritems():
+            f.write("%s=%s\n" % (k,v))
 
     def configEnvironment(self):
         # unset all variables
@@ -151,3 +166,10 @@ class CCastOptions(object):
     def addHostsConfig(self, filename):
         self._storeMru(self.mruCfgHosts, filename)
         pass
+
+    def getOption(self, key):
+        if self.options.has_key(key): return self.options[key]
+        return ""
+
+    def setOption(self, key, value):
+        self.options["%s" % key] =  "%s" % value

@@ -8,7 +8,7 @@ import re
 import tempfile
 from PyQt4 import QtCore, QtGui
 
-from core import procman, options, messages, confbuilder
+from core import procman, options, messages, confbuilder, network
 from core import legacy
 from qtui import uimainwindow, uiresources
 import processtree
@@ -88,6 +88,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._options.configEnvironment()
         self._userOptions = options.CUserOptions()
         self._userOptions.loadConfig(self.fnconf) # TODO: user options should be in ~/.cast/...
+        self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
         self._manager = procman.CProcessManager()
 
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
@@ -248,24 +249,42 @@ class CCastControlWnd(QtGui.QMainWindow):
         srvs = self.getServers(self._manager)
         for p in srvs: p.stop()
 
+    # build config file from rules in hostconfig
+    def buildConfigFile(self):
+        if self._clientConfig == None: clientConfig = ""
+        else: clientConfig = "%s" % self._clientConfig
+        clientConfig = clientConfig.strip()
+        if self._hostConfig == None: hostConfig = ""
+        else: hostConfig = "%s" % self._hostConfig
+        hostConfig = hostConfig.strip()
+        lhost = "%s" % self.ui.txtLocalHost.text()
+        lhost = lhost.strip()
+        if clientConfig == "": return clientConfig
+        if lhost == "" and hostConfig == "": return clientConfig
+        LOGGER.log("LOCALHOST: %s" % lhost)
+
+        self._tmpCastFile = tempfile.NamedTemporaryFile(suffix=".cast")
+        cfg = confbuilder.CCastConfig()
+        cfg.clearRules()
+        if lhost != "": cfg.setLocalhost(lhost)
+        if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
+        cfg.prepareConfig(clientConfig, self._tmpCastFile)
+        self._tmpCastFile.flush()
+        # don't self._tmpCastFile.close()
+        return self._tmpCastFile.name
+
+
     def on_btClientStart_clicked(self, valid=True):
         if not valid: return
         p = self._manager.getProcess("client")
         if p != None:
             self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
-            # TODO: build config file from rules in hostconfig
-            # FIXME
-            if self._hostConfig != None and self._hostConfig != "":
-                self._tmpCastFile = tempfile.NamedTemporaryFile(suffix=".cast")
-                cfg = confbuilder.CCastConfig()
-                cfg.clearRules()
-                cfg.addRules(open(self._hostConfig, "r").readlines())
-                cfg.prepareConfig("%s" % self._clientConfig, self._tmpCastFile)
-                self._tmpCastFile.flush()
-                p.start( params = { "CAST_CONFIG": self._tmpCastFile.name } )
-                # self._tmpCastFile.close()
-            else:
-                p.start( params = { "CAST_CONFIG": self._clientConfig } )
+            try:
+                confname = self.buildConfigFile()
+                if confname != None and confname != "":
+                    p.start( params = { "CAST_CONFIG": confname } )
+            except Exception as e:
+                LOGGER.error("%s" % e)
         # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
 
     def on_btClientStop_clicked(self, valid=True):
@@ -397,6 +416,13 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_btEditHostConfig_clicked(self, valid=True):
         if not valid: return
         self.editFile(self._hostConfig)
+
+    def on_btDetectLocalHost_clicked(self, valid=True):
+        if not valid: return
+        ip = network.get_ip_address()
+        if ip != None:
+            self.ui.txtLocalHost.setText(ip.strip())
+            self._options.setOption("localhost", ip.strip())
 
     def onShowEnvironment(self):
         cmd = "bash -c env"
