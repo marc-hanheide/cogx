@@ -47,10 +47,11 @@ bool tgEngine::InitWindow(int width, int height, const char* name){
 	m_window = new tgGLXWindow(width, height, name);
 }
 
-bool tgEngine::Init(int width, int height, float depth, const char* name){
+bool tgEngine::Init(int width, int height, float depth, const char* name, bool bfc){
 	m_width = width;
 	m_height = height;
 	m_depth = depth;
+	m_bfc = bfc;
 	
 	InitWindow(width, height, name);
 		
@@ -80,7 +81,8 @@ bool tgEngine::Init(int width, int height, float depth, const char* name){
 	light1.position = vec4(-1.0,0.0,1.0,0.0);
 	m_lighting.ApplyLight(light1,1);
 	
-	glDisable(GL_CULL_FACE);
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else			glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -96,6 +98,11 @@ bool tgEngine::Update(float &fTime){
 	
 	// update frametime
 	fTime = m_frametime = m_timer.Update();
+	
+	// OpenGL Render settings
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else			glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 	
 	// clear framebuffer and depth buffer
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
