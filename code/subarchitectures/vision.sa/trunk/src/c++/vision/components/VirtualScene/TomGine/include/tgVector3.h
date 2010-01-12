@@ -28,6 +28,7 @@ public:
 	tgVector3(float all);
 	tgVector3(float x, float y, float z);
 
+	tgVector3 operator=(tgVector3 v);
 	tgVector3 operator+(tgVector3 v);
 	tgVector3 operator-(tgVector3 v);
 	tgVector3 operator*(tgVector3 v);
