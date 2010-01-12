@@ -172,7 +172,7 @@ module VisionData {
    * @brief Object Detector Commands
    * @author Andreas Richtsfeld
    */
-  enum ObjectDetectionCommandType{ DSTART, DSTOP, DSINGLE, DVSSTART, DVSSTOP};
+  enum ObjectDetectionCommandType{ DSTART, DSTOP, DSINGLE};
   class ObjectDetectionCommand {
     ObjectDetectionCommandType cmd;
   };
@@ -181,9 +181,18 @@ module VisionData {
    * @brief Stereo Flap Detector Commands
    * @author Andreas Richtsfeld
    */
-  enum StereoFlapDetectionCommandType{ SFSTART, SFSTOP};
+  enum StereoFlapDetectionCommandType{ SFSTART, SFSTOP, SFSINGLE};
   class StereoFlapDetectionCommand {
     StereoFlapDetectionCommandType cmd;
+  };
+
+  /** 
+   * @brief Stereo Detector Commands
+   * @author Andreas Richtsfeld
+   */
+  enum StereoDetectionCommandType{ SDSTART, SDSTOP, SDSINGLE};
+  class StereoDetectionCommand {
+    StereoDetectionCommandType cmd;
   };
 
   /**
