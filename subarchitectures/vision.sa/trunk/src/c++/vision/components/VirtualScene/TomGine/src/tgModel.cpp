@@ -37,8 +37,12 @@ void tgModel::DrawFaces(){
 			glBegin(GL_TRIANGLES);
 		else if(f->vertices.size() == 4)
 			glBegin(GL_QUADS);
-		else
+		else{
 			printf("[tgModel::printInfo()] Warning, no suitable face format\n");
+			printf("[tgModel::printInfo()] Face has %d vertices (supported: 3 or 4\n", f->vertices.size());
+			m_pose.Deactivate();
+			return;
+		}
 		
 			for(j=0; j<(int)f->vertices.size(); j++){
 				v = f->vertices[j];

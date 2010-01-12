@@ -64,5 +64,24 @@ inline void computeNormalsByFaces(VisionData::GeometryModelPtr model)
 	}
 }
 
+inline cogx::Math::Vector3 getCenterOfGeometryModel(VisionData::GeometryModelPtr model)
+{
+	int j;
+	VisionData::VertexSeq v;
+	cogx::Math::Vector3 vCenter = cogx::Math::vector3(0.0,0.0,0.0);
+	
+	for(j=0; j<(int)v.size(); j++){
+		vCenter.x += v[j].pos.x;
+		vCenter.y += v[j].pos.y;
+		vCenter.z += v[j].pos.z;
+	}
+	
+	vCenter.x /= v.size();
+	vCenter.y /= v.size();
+	vCenter.z /= v.size();
+	
+	return vCenter;
+}
+
 #endif
 
