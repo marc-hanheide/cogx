@@ -63,6 +63,14 @@ class CCastConfig:
                 continue
             LOGGER.warn("Bad rule: '%s'" % line)
 
+    def removeComment(self, line):
+        pos = line.find("#")
+        if pos < 0: return line
+        if line.find("'") > 0 or line.find('"') > 0:
+            # TODO: Handle strings while removing comments!
+            pass
+        return line.split("#")[0]
+
     def readConfig(self, filename, maxdepth=32):
         if maxdepth < 1:
             return ["# Failed to include: '%s' - maxdepth reached." % filename]
@@ -74,7 +82,9 @@ class CCastConfig:
         lines = ["# '%s'" % filename]
         for line in f.readlines():
             line = line.rstrip() # remove EOL
-            mo = CCastConfig.reInclude.match(line)
+            setting = self.removeComment(line)
+            if setting == "": continue
+            mo = CCastConfig.reInclude.match(setting)
             if mo != None:
                 fninc = os.path.join(fdir, mo.group(1))
                 lines += self.readConfig(fninc, maxdepth-1)
@@ -82,7 +92,7 @@ class CCastConfig:
             lines.append(line)
         return lines
 
-    # F = tempfile.NamedTemporaryFile(suffix=".cast")
+    #  TODO: How to support multiple HOST definitions in .cast?
     def prepareConfig(self, filename, afile):
         """
         Reads the config file and writes it to an open file-like object 'afile'
@@ -101,7 +111,12 @@ class CCastConfig:
 
             mo = CCastConfig.reHost.match(line)
             if mo != None:
-                newline = "HOST %s" % self._fixLocalhost(mo.group(1))
+                host = mo.group(1)
+                if self.subarch == "":
+                    for r in self.rules:
+                        if r[0] == "SA":
+                            if r[1].lower() == "none": host = r[2]
+                newline = "HOST %s" % self._fixLocalhost(host)
                 afile.write(newline + "\n")
                 continue
 
@@ -170,6 +185,7 @@ class CCastConfig:
                 if len(idpar) > 1 and (idpar[0].strip() == "" or idpar[0].lower() == cpid.lower()):
                     rest = self._setHostParam(rest, idpar[1], r[2])
 
+        host = self._fixLocalhost(host)
         if rest != "":
             rest = self._fixHostParam(rest, "--player-host") # spatial
             # rest = self._fixHostParam(rest, "--serverHost") # comsys tts

@@ -10,6 +10,7 @@ HOST  Player         localhost
 
 # All subarchitectures executed on the same host
 # SA  <sa_id>  [<host_id>]//<ip>//<hostname>
+SA    none           [TheOne]  # This is for the default HOST in .cast file (ie. no SA defined yet)
 SA    binder         [TheOne]
 SA    coma.sa        [TheOne]
 SA    comsys         [TheOne]
