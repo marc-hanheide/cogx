@@ -173,13 +173,21 @@ class CCastConfig:
         if rest == None: rest = ""
         rest = rest.strip()
 
+        def parsebool(val, default=0):
+            val = val.lower().strip()
+            if val == "": return default
+            if val == "no" or val == "off" or val == "false" or val == "f": return 0
+            if val == "yes" or val == "on" or val == "true" or val == "t": return 1
+            return int(val)
+
         disabled = ""
         for r in self.rules:
-            if r[0] == "SA":
-                if r[1].lower() == self.subarch.lower(): host = r[2]
-            if r[0] == "ID":
-                if r[1].lower() == cpid.lower(): host = r[2]
-                if len(r) > 3 and not r[3]: disabled = "# rule(%s) " % r
+            if r[0] == "SA" and r[1].lower() == self.subarch.lower():
+                host = r[2]
+            if r[0] == "ID" and r[1].lower() == cpid.lower():
+                host = r[2]
+                if len(r) > 3 and not parsebool(r[3], 1):
+                    disabled = "# rule(%s) " % r
             if r[0] == "HPAR" and rest != "":
                 idpar = r[1].split("|")
                 if len(idpar) > 1 and (idpar[0].strip() == "" or idpar[0].lower() == cpid.lower()):
