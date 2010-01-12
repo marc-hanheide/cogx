@@ -9,7 +9,7 @@ usage: %prog [options] domain scenario
   -l, --loglevel=VERBOSITY : general verbosity level for logging output [default: %default]
   -r, --random=SEED : random seed for the world state [default: %default]
   -n, --runs=ITERATIONS : number of different variants of the scenario [default: 1]
-  -L, --learning=(cluster|learn|test) : mode for the learning agent [default: %default]
+  -L, --learning_mode=(cluster|learn|test) : mode for the learning agent [default: %default]
   -m, --macro_file=FILE : read/write macros from/to this file [default: %default]
 """
 
@@ -88,4 +88,9 @@ if __name__ == '__main__':
 
     print "Starting simulation..."
     sim.run()
+    
+    if global_vars.mapsim_config.runs > 1:
+        print "\nAverage stats:"
+        print "Stats:", sim.collect_average_statistics()
         
+

@@ -16,7 +16,7 @@ logistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :typing :equality :object-fluents) 
+(:requirements :adl :object-fluents) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -62,7 +62,7 @@ class AxiomTest(unittest.TestCase):
 
     def setUp(self):
         p = Parser(logistics.split("\n"))
-        self.domain = domain.MAPLDomain.parse(p.root)
+        self.domain = domain.Domain.parse(p.root)
         
 
     def testAxiomParsing(self):

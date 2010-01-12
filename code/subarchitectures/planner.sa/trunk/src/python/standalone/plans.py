@@ -53,6 +53,10 @@ class PlanNode(object):
         self.preconds_universal = set()
         self.replan_universal = set()
         
+        self.original_preconds = set()
+        self.original_replan = set()
+        self.explanations = {}
+        
         if not isinstance(action, DummyAction):
             num = len(action.agents) + len(action.args)
             self.args = args[:num]
@@ -70,10 +74,10 @@ class PlanNode(object):
         def tostr(arg):
             return a.name if hasattr(a,"name") else str(a)
         args = [tostr(a) for a in self.args]
-        return " ".join([self.action.name]+args)
+        return "%d: " % self.time + " ".join([self.action.name]+args)
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.action.name == other.action.name and all(map(lambda a,b: a == b, self.full_args, other.full_args))
+        return self.__class__ == other.__class__ and self.time == other.time and self.action.name == other.action.name and all(map(lambda a,b: a == b, self.full_args, other.full_args))
     
     def copy(self):
         return self.__class__(self.action, list(self.full_args), self.time, self.status)
@@ -209,7 +213,7 @@ class MAPLPlan(networkx.MultiDiGraph):
                 attrs["shape"] = "box"
                 attrs["style"] += ", rounded"
                 
-            G.add_node(str(n), **attrs)
+            G.add_node(n, **attrs)
 
         for n1,n2, data in self.edges_iter(data=True):
             if n1 == self.init_node:

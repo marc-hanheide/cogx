@@ -12,14 +12,17 @@ import predicates, conditions, actions, axioms
 from mapltypes import *
 from predicates import *
 from parser import Parser, ParseError, UnexpectedTokenError
-from actions import Action, DurativeAction
+from actions import Action
 from axioms import Axiom
-from sensors import Sensor
 
-supported = set(["mapl", "typing", "equality", "adl", "fluents", "numeric-fluents", "object-fluents", "durative-actions"])
+supported = set(["mapl",  "modal-predicates", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions"])
 
-class MAPLDomain(scope.Scope):
-    def __init__(self, name, types, constants, predicates, functions, actions, sensors, axioms):
+support_depends = {"mapl" : ["object-fluents", "modal-predicates"],
+                   "adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
+                   "fluents" : ["numeric-fluents", "object-fluents"]}
+
+class Domain(scope.Scope):
+    def __init__(self, name, types, constants, predicates, functions, actions, axioms):
         scope.Scope.__init__(self, constants, None)
         self.name = name
         self.types = types
@@ -27,21 +30,20 @@ class MAPLDomain(scope.Scope):
         self.predicates = predicates
         self.functions = functions
         self.actions = actions
-        self.sensors = sensors
         self.axioms = axioms
 
         self.stratifyAxioms()
         self.name2action = None
 
     def copy(self):
-        dom = MAPLDomain(self.name, self.types.copy(), self.constants[:], self.predicates.copy(), self.functions.copy(), [], [], [])
+        dom = Domain(self.name, self.types.copy(), self.constants.copy(), self.predicates.copy(), self.functions.copy(), [], [])
         dom.actions = [a.copy(self) for a in self.actions]
-        dom.sensors = [s.copy(self) for s in self.sensors]
         dom.axioms = [a.copy(self) for a in self.axioms]
         dom.stratifyAxioms()
         dom.name2action = None
             
         dom.requirements = set(self.requirements)
+        return dom
 
     def getAction(self, name):
         if not self.name2action:
@@ -52,7 +54,7 @@ class MAPLDomain(scope.Scope):
         self.stratification, self.nonrecursive = axioms.stratify(self.axioms)
     
     @staticmethod
-    def parse(root):
+    def parse(root, supp = supported):
         it = iter(root)
         it.get("define")
         j = iter(it.get(list, "(domain 'domain identifier')"))
@@ -60,7 +62,7 @@ class MAPLDomain(scope.Scope):
         domname = j.get(None, "domain identifier").token.string
         
         typeDict = dict((t.name, t) for t in default_types)
-        constants = set([TRUE, FALSE]) #, UNKNOWN])
+        constants = set()
         preds = scope.FunctionTable([predicates.equals])
         functions = scope.FunctionTable()
         
@@ -71,9 +73,14 @@ class MAPLDomain(scope.Scope):
             if not r.isTerminal() or r.token.string[0] != ":":
                 raise UnexpectedTokenError(r.token, "requirement identifier")
             requirements.append(r.token.string[1:])
-            if r.token.string[1:] not in supported:
+            if r.token.string[1:] not in supp:
                 raise ParseError(r.token, "%s is not supported." % r.token.string)
+            if r.token.string[1:] in support_depends:
+                requirements += support_depends[r.token.string[1:]]
 
+        if "mapl" in requirements:
+            constants = set([TRUE, FALSE, UNKNOWN])
+                
         if "fluents" in requirements or "numeric-fluents" in requirements:
             typeDict[numberType.name] = numberType
             preds.add(predicates.numericComparators)
@@ -92,7 +99,11 @@ class MAPLDomain(scope.Scope):
 
             #If domain is not already constructed, create it now
             if type in (":action", ":durative-action", ":sensor", ":derived") and domain is None:
-                domain = MAPLDomain(domname, typeDict, constants, preds, functions, [], [], [])
+                if "mapl" in requirements:
+                    import mapl
+                    domain = mapl.MAPLDomain(domname, typeDict, constants, preds, functions, [], [], [])
+                else:
+                    domain = Domain(domname, typeDict, constants, preds, functions, [], [])
                 domain.requirements = set(requirements)
             
             if type == ":types":
@@ -134,12 +145,20 @@ class MAPLDomain(scope.Scope):
                         functions.add(predicates.Function.parse(iter(elem), type, typeDict))
 
             elif type == ":action":
-                domain.actions.append(Action.parse(j.reset(), domain))
-                
+                if "mapl" in requirements:
+                    domain.actions.append(mapl.MAPLAction.parse(j.reset(), domain))
+                else:
+                    domain.actions.append(Action.parse(j.reset(), domain))
+
             elif type == ":durative-action" and "durative-actions" in requirements :
-                domain.actions.append(DurativeAction.parse(j.reset(), domain))
+                if "mapl" in requirements:
+                    domain.actions.append(mapl.MAPLDurativeAction.parse(j.reset(), domain))
+                else:
+                    import durative
+                    domain.actions.append(durative.DurativeAction.parse(j.reset(), domain))
                 
-            elif type == ":sensor":
+            elif type == ":sensor" and "mapl" in requirements:
+                from sensors import Sensor
                 domain.sensors.append(Sensor.parse(j.reset(), domain))
                 
             elif type == ":derived":
@@ -149,11 +168,15 @@ class MAPLDomain(scope.Scope):
                 raise ParseError(type, "Unknown section identifier: '%s'." % type.string)
             
         if domain is None:
-            domain = MAPLDomain(domname, typeDict, constants, preds, functions, [], [], [])
+            if "mapl" in requirements:
+                import mapl
+                domain = mapl.MAPLDomain(domname, typeDict, constants, preds, functions, [], [], [])
+            else:
+                domain = Domain(domname, typeDict, constants, preds, functions, [], [])
 
         if "mapl" in requirements:
-            for astr in axioms.mapl_axioms:
-                axiom = Parser.parseAs(astr.split("\n"), Axiom, domain)
+            for axiom_str in axioms.mapl_axioms:
+                axiom = Parser.parseAs(axiom_str.split("\n"), Axiom, domain)
                 domain.axioms.append(axiom)
 
         return domain

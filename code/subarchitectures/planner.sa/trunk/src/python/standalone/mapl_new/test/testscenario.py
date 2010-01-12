@@ -363,7 +363,7 @@ class ScenarioTest(unittest.TestCase):
         """Testing dora scenario"""
         
         p = Parser(dora_domain.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(dora_scenario.split("\n"))
         scen = scenario.MapsimScenario.parse(p.root, dom)
 
@@ -381,7 +381,7 @@ class ScenarioTest(unittest.TestCase):
         """Testing multi agent scenario"""
         
         p = Parser(dora_domain.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(dora_multiagent.split("\n"))
         scen = scenario.MapsimScenario.parse(p.root, dom)
 
@@ -407,7 +407,7 @@ class ScenarioTest(unittest.TestCase):
         """Testing handling of empty world state"""
         
         p = Parser(dora_domain.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(emptyworld.split("\n"))
         try:
             scen = scenario.MapsimScenario.parse(p.root, dom)
@@ -421,7 +421,7 @@ class ScenarioTest(unittest.TestCase):
         """Testing handling of unknown agents"""
         
         p = Parser(dora_domain.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(unknownagent.split("\n"))
         try:
             scen = scenario.MapsimScenario.parse(p.root, dom)
@@ -435,7 +435,7 @@ class ScenarioTest(unittest.TestCase):
         """Testing handling of unknown agents to the world state"""
         
         p = Parser(dora_domain.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(unknownagent2.split("\n"))
         try:
             scen = scenario.MapsimScenario.parse(p.root, dom)
@@ -449,7 +449,7 @@ class ScenarioTest(unittest.TestCase):
         """Testing handling of duplicate agents"""
         
         p = Parser(dora_domain.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(duplicateagent.split("\n"))
         try:
             scen = scenario.MapsimScenario.parse(p.root, dom)

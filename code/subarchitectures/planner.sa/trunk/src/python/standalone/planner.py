@@ -7,11 +7,13 @@ from itertools import imap
 import config, utils
 import globals as global_vars
 
+import task
 from task import PlanningStatusEnum, Task
 import mapl_new as mapl
 import plans
 import plan_postprocess
 import statistics
+import tempfile
 
 log = config.logger("planner")
 
@@ -268,40 +270,29 @@ class BasePlanner(object):
     def _post_process(self, task):
         raise NotImplementedError
 
-def create_unique_dir(base_path, unique_dirname_fn, may_exist):
-    """creates a new subdirectory in base_path. unique_dirname_fn is a
-    function that produces a new, unique name every time it is called.
-    create_unique_dir() loops until a directory name is produced that
-    does not exist yet, creates the directory and returns its name.
-    If may_exist is True, then uniqueness is NOT required. Instead a
-    possibly existing directory is just cleaned.
+def get_planner_tempdir(base_path):
+    """creates a new subdirectory in base_path. If 'static_temp_dir' is set to True in
+    config.ini, the subdirectory "static_dir_for_debugging" will be created (or cleared
+    if it already exists). Otherwise, a random directory will be created in a race safe
+    way (using the tmpfile module).
     """
-    while True:
-        unique_id = unique_dirname_fn()
-        tmp_dir = os.path.join(base_path, unique_id)
+    if global_vars.config.static_temp_dir.lower() == "true":
+        tmp_dir = os.path.join(base_path, "static_dir_for_debugging")
         if os.path.exists(tmp_dir):
-            if may_exist:
-                utils.removeall(tmp_dir)  # remove old version
-            else:
-                continue  # create a new, unique name
-        if not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
+            utils.removeall(tmp_dir)  # remove old version
         return tmp_dir
+    return tempfile.mkdtemp(dir=base_path)
 
 class ContinualAxiomsFF(BasePlanner):
     """
     """
     PDDL_REXP = re.compile("\((.*)\)")
-    def _prepare_input(self, task):
+    def _prepare_input(self, _task):
         planning_tmp_dir =  global_vars.config.tmp_dir
-        DEBUGGING = True
-        if DEBUGGING:
-            unique_dirname_fn = lambda: "static_dir_for_debugging"
-        else:
-            unique_dirname_fn = lambda: Planner.create_unique_planner_call_id("tmp")
-        tmp_dir = create_unique_dir(planning_tmp_dir, unique_dirname_fn, may_exist=DEBUGGING)
+        tmp_dir = get_planner_tempdir(planning_tmp_dir)
+        
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "plan.pddl", "stdout.out")]
-        pddl_strs = task.pddl_domain_str(), task.pddl_problem_str()
+        pddl_strs = _task.domain_str(task.PDDLWriter), _task.problem_str(task.PDDLWriter)
         for path, content in zip(paths, pddl_strs):
             f = open(path, "w")
             f.write(content)
@@ -392,21 +383,100 @@ class ContinualAxiomsFF(BasePlanner):
         args = [task[a] for a in args]
         return plans.PlanNode(action_def, args, time, plans.ActionStatusEnum.EXECUTABLE)
         
+
+class Downward(BasePlanner):
+    """
+    """
+    PDDL_REXP = re.compile("\((.*)\)")
+    def _prepare_input(self, _task):
+        planning_tmp_dir =  global_vars.config.tmp_dir
+        tmp_dir = get_planner_tempdir(planning_tmp_dir)
+
+        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "sas_plan", "stdout.out")]
+        pddl_strs = _task.domain_str(task.PDDLWriter), _task.problem_str(task.PDDLWriter)
+        for path, content in zip(paths, pddl_strs):
+            f = open(path, "w")
+            f.write(content)
+            f.close()
+        paths.append(tmp_dir)
+        return paths
+
+    def _run(self, input_data, task):
+        domain_path, problem_path, plan_path, stdout_path, tmp_dir = input_data
+        executable = os.path.join(global_vars.src_path, self.executable)
+        cmd = "%(executable)s  %(domain_path)s %(problem_path)s" % locals()
+        proc = utils.run_process(cmd, output=stdout_path, error=stdout_path, dir=tmp_dir)
+        
+#        stdout_output = utils.run_command(cmd, output=stdout_path)
+#         print "Planner output:"
+#         print stdout_output
+        
+        if proc.returncode != 0:
+            print "Warning: Fast Downward returned with nonzero exitcode:\n\n>>>"
+            print "Call was:", cmd
+            print open(stdout_path).read()
+            print "<<<\n"
+            if proc.returncode > 0:
+                print "Exit code was %d" % proc.returncode
+            else:
+                print "Killed by signal %d" % -proc.returncode
+            return None
+
+        try:
+            pddl_output = open(plan_path).read()
+        except IOError:
+            print "Warning: Fast Downward did not find a plan or crashed."
+            print "Call was:", cmd
+            print "FD output was:\n\n>>>"
+            print open(stdout_path).read()
+            print "<<<\n"
+            return None
+        pddl_plan = self.parse_fd_output(pddl_output)
+        return pddl_plan
+
+    def parse_fd_output(self, pddl_output):
+        lines = [line for line in pddl_output.splitlines() if line]
+        actions = []
+        for line in lines:
+            result = self.PDDL_REXP.search(line)
+            action =  result.group(1).lower()
+            actions.append(action)
+                
+        return actions
+
+    def _post_process(self, action_list, task):
+        """
+        Receives a PDDL action list and produces a MAPL plan
+        Steps:
+        - create an empty MAPL plan P
+        - add dummy action for the current state of the task to P
+        - create goal action
+        - map PDDL actions to properly instantiated MAPL actions
+        - determine causal and threat-prevention links between actions
+        - add actions and links to P
+        - add goal action to P
+        TODO:
+        - derived predicates: where are they used in preconds and where have they been triggered
+        - knowledge preconditions: make them explicit?
+        - negotiation actions --> requests: when and how?
+        """
+        plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
+        times_actions = enumerate(action_list)  # keep it sequentially for now
+        plan = plan_postprocess.make_po_plan(times_actions, task)
+        return plan
+        
+
     
 class TFD(BasePlanner):
     """
     """
     TFD_REXP = re.compile("([0-9\.]*): \((.*)\) \[([0-9\.]*)\]")
-    def _prepare_input(self, task):
+    def _prepare_input(self, _task):
         planning_tmp_dir =  global_vars.config.tmp_dir
-        DEBUGGING = True
-        if DEBUGGING:
-            unique_dirname_fn = lambda: "static_dir_for_debugging"
-        else:
-            unique_dirname_fn = lambda: Planner.create_unique_planner_call_id("tmp")
-        tmp_dir = create_unique_dir(planning_tmp_dir, unique_dirname_fn, may_exist=DEBUGGING)
+        tmp_dir = get_planner_tempdir(planning_tmp_dir)
+
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "stdout.out")]
-        pddl_strs = task.tfd_domain_str(), task.tfd_problem_str()
+        pddl_strs = _task.domain_str(task.TFDWriter), _task.problem_str(task.TFDWriter)
         for path, content in zip(paths, pddl_strs):
             f = open(path, "w")
             f.write(content)

@@ -19,11 +19,10 @@ def product(*iterables):
         else:
             yield (el,)
 
-class Problem(domain.MAPLDomain):
+class Problem(domain.Domain):
     def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
-        domain.MAPLDomain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [], [])
+        domain.Domain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [])
         self.actions = [a.copy(self) for a in _domain.actions]
-        self.sensors = [s.copy(self) for s in _domain.sensors]
         self.axioms = [a.copy(self) for a in _domain.axioms]
         self.stratifyAxioms()
         self.name2action = None
@@ -32,7 +31,7 @@ class Problem(domain.MAPLDomain):
             self.add(o)
             
         self.domain = _domain
-        self.requirements = set(self.domain.requirements)
+        self.requirements = self.domain.requirements
 
         self.objects = set(o for o in objects)
         self.init = [l.copy(self) for l in init]
@@ -43,7 +42,7 @@ class Problem(domain.MAPLDomain):
         self.opt_func = opt_func
 
     def copy(self):
-        return Problem(self.name, self.objects, self.init, self.goal, self.domain, self.optimization, self.opt_func)
+        return self.__class__(self.name, self.objects, self.init, self.goal, self.domain, self.optimization, self.opt_func)
 
     def addObject(self, object):
         if object.name in self:
@@ -64,7 +63,7 @@ class Problem(domain.MAPLDomain):
                         yield predicates.FunctionTerm(func, c, self)
         else:
             for obj in itertools.chain(self.objects, self.constants):
-                if obj.isInstanceOf(type):
+                if obj.isInstanceOf(type) and obj != UNKNOWN:
                     yield obj
         
 
@@ -85,7 +84,6 @@ class Problem(domain.MAPLDomain):
 
         problem = None
         objects = set()
-        
         for elem in it:
             j = iter(elem)
             type = j.get("terminal").token
@@ -99,7 +97,11 @@ class Problem(domain.MAPLDomain):
 
                     objects.add(TypedObject(key.string, domain.types[value.string]))
 
-                problem = Problem(probname, objects, [], None, domain)
+                if "mapl" in domain.requirements:
+                    import mapl
+                    problem = mapl.MAPLProblem(probname, objects, [], None, domain)
+                else:
+                    problem = Problem(probname, objects, [], None, domain)
 
             elif type == ":init":
                 for elem in j:
@@ -120,8 +122,10 @@ class Problem(domain.MAPLDomain):
                 problem.optimization = opt.string
                 
                 problem.functions.add(predicates.total_time)
+                problem.functions.add(predicates.total_cost)
                 func = predicates.Term.parse(j,problem)
                 problem.functions.remove(predicates.total_time)
+                problem.functions.remove(predicates.total_cost)
 
                 j.noMoreTokens()
 
@@ -151,13 +155,14 @@ class Problem(domain.MAPLDomain):
             if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
                 scope.predicates.remove(predicates.eq)
                 scope.predicates.add(predicates.num_equalAssign)
-            lit =  predicates.Literal.parse(it.reset(), scope, maxNesting=0)
-
-            if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-                scope.predicates.remove(predicates.num_equalAssign)
-                scope.predicates.add(predicates.eq)
-            scope.predicates.remove(predicates.equalAssign)
-            scope.predicates.add(predicates.equals)
+            try:
+                lit=  predicates.Literal.parse(it.reset(), scope, maxNesting=0)
+            finally:
+                if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
+                    scope.predicates.remove(predicates.num_equalAssign)
+                    scope.predicates.add(predicates.eq)
+                scope.predicates.remove(predicates.equalAssign)
+                scope.predicates.add(predicates.equals)
 
             return lit
 

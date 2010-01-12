@@ -1,10 +1,11 @@
-from standalone import mapl_new as mapl
-from standalone import state_new as state
+import standalone.mapl_new as mapl
+import standalone.mapl_new.state as state
 from standalone import plans
 from standalone import statistics
 
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
+import standalone.globals as global_vars
 
 from standalone import config
 log = config.logger("mapsim")
@@ -97,11 +98,19 @@ class Agent(BaseAgent):
             return 0
             
         plan = task.get_plan()
-        G = plan.to_dot()
-        G.write("plan.dot")
-        G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
-        G.layout(prog='dot')
-        G.draw("plan.pdf")
+        if global_vars.mapsim_config.write_dotfiles.lower() == "true":
+            G = plan.to_dot()
+            G.write("plan.dot")
+        if global_vars.mapsim_config.write_pdffiles.lower() == "true":
+            G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
+            G.layout(prog='dot')
+            G.draw("plan.pdf")
+
+        all_funcs = set(self.mapltask.functions) | set(self.mapltask.predicates)
+        #print "executable:"
+        #for a in self.mapltask.actions:
+        #    for c in mapl.sas_translate.instantiate(a, task.get_state(), all_funcs):
+        #        print "(%s %s)" % (a.name, " ".join(o.name for o in c))
 
         executable = sorted(plan.executable(), cmp=action_cmp)
         log.info("executable actions: %s", " ".join(map(str, executable)))

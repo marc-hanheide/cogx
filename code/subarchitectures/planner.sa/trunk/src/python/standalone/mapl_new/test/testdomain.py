@@ -15,7 +15,7 @@ logistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :typing :equality :object-fluents) 
+(:requirements :typing :equality :object-fluents :mapl) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -68,7 +68,7 @@ blocks = \
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (domain BLOCKS-object-fluents)
-  (:requirements :typing :equality :object-fluents) 
+  (:requirements :typing :equality :mapl) 
   (:types block agent)
   
   (:constants no-block - block)
@@ -320,7 +320,7 @@ class DomainTest(unittest.TestCase):
     def testLogistics(self):
         """Testing logistics domain"""
         p = Parser(logistics.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
 
         self.assertEqual(len(dom.actions), 4)
         self.assertEqual(len(dom.sensors), 2)
@@ -328,14 +328,14 @@ class DomainTest(unittest.TestCase):
     def testBlocksworld(self):
         """Testing blocksworld domain"""
         p = Parser(blocks.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
 
         self.assertEqual(len(dom.actions), 4)
         
     def testRovers(self):
         """Testing rovers domain"""
         p = Parser(rovers.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
 
         self.assertEqual(len(dom.actions), 10)
         

@@ -104,8 +104,9 @@ neg = Function("-", [Parameter("?n", numberType)], numberType, builtin=True)
 
 numericFunctions = [minus, plus, mult, div, neg]
 
-#default minimization function
+#default minimization functions
 total_time = Function("total-time", [], numberType, builtin=True)
+total_cost = Function("total-cost", [], numberType, builtin=True)
 
 #mapl predicates
 knowledge = Predicate("kval", [Parameter("?a", agentType), Parameter("?f", FunctionType(objectType))], builtin=True)
@@ -135,15 +136,30 @@ class Literal(object):
             self.args = scope.lookup(args)
         else:
             self.args = args
-            
+
+    def pddl_str(self, instantiated=True):
+        s = "(%s %s)" % (self.predicate.name, " ".join(a.pddl_str(instantiated) for a in self.args))
+        if self.negated:
+            return "(not %s)" % s
+        return s
+
     def negate(self):
         return self.__class__(self.predicate, self.args[:], None, not self.negated)
 
-    def copy(self, new_scope=None):
+    def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        if copy_instance:
+            l = self.copy_instance()
+            if new_scope:
+                l.set_scope(new_scope)
+            return l
+        
         return self.__class__(self.predicate, self.args, new_scope, self.negated)
 
-    def copyInstance(self):
-        return Literal(self.predicate, [a.copyInstance() for a in args], negated=self.negated)
+    def set_scope(self, new_scope):
+        self.args = new_scope.lookup(self.args)
+    
+    def copy_instance(self):
+        return self.__class__(self.predicate, [a.copy_instance() for a in self.args], negated=self.negated)
 
     def collect_arguments(self):
         return sum([term.visit(collect_args_visitor) for term in self.args], [])
@@ -155,6 +171,8 @@ class Literal(object):
         return s
             
     def __eq__(self, other):
+        if not isinstance(other, Literal):
+            return False
 #        return self.__class__ == other.__class__ and self.predicate == other.predicate and self.negated == other.negated and all(map(lambda a,b: a==b, self.args, other.args))
         return self.predicate == other.predicate and self.negated == other.negated and all(map(lambda a,b: a==b, self.args, other.args))
 
@@ -261,9 +279,6 @@ class Term(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(self.__class__)
     
     @staticmethod
     def parse(it, scope, maxNesting=999):
@@ -300,8 +315,8 @@ class FunctionTerm(Term):
     def getType(self):
         return FunctionType(self.function.type)
     
-    def copyInstance(self):
-        return FunctionTerm(self.function, [a.copyInstance() for a in self.args])
+    def copy_instance(self):
+        return FunctionTerm(self.function, [a.copy_instance() for a in self.args])
 
     def visit(self, fn):
         return fn(self, [a.visit(fn) for a in self.args])
@@ -355,13 +370,21 @@ class VariableTerm(Term):
             return self.object.getInstance()
         raise Exception, "Term %s is not instantiated" % str(self.object)
 
-    def copyInstance(self):
+    def copy_instance(self):
         if self.isInstantiated():
             return ConstantTerm(self.getInstance())
         return VariableTerm(self.object)
     
     def getType(self):
         return self.object.type
+
+    def __eq__(self, other):
+        if isinstance(other, VariableTerm):
+            return self.object == other.object
+        return self.object == other
+    
+    def __hash__(self):
+        return hash((self.__class__, self.object))
     
 class FunctionVariableTerm(FunctionTerm, VariableTerm):
     def __init__(self, obj):
@@ -370,7 +393,12 @@ class FunctionVariableTerm(FunctionTerm, VariableTerm):
     def getType(self):
         return self.object.type
 
-    def copyInstance(self):
+    def visit(self, fn):
+        if self.isInstantiated():
+            return self.object.getInstance().visit(fn)
+        return fn(self, [])
+    
+    def copy_instance(self):
         if self.isInstantiated():
             return FunctionTerm(self.getInstance().function, [a for a in self.getInstance().args])
         return FunctionVariableTerm(self.object)
@@ -409,7 +437,7 @@ class ConstantTerm(Term):
     def getType(self):
         return self.object.type
 
-    def copyInstance(self):
+    def copy_instance(self):
         return ConstantTerm(self.object)
     
     def __str__(self):

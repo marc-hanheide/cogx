@@ -6,7 +6,7 @@ import autogen.Planner as Planner
 import binder.autogen.core
 import cast.core
 import standalone.mapl_new as mapl
-import standalone.state_new as state
+import standalone.mapl_new.state as state
 import standalone.plans as plans
 
 this_path = abspath(dirname(__file__))

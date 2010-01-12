@@ -4,11 +4,11 @@ import itertools
 
 import parser
 import mapltypes as types
-import predicates, conditions, effects, actions
+import predicates, conditions, effects, mapl
 
-class Sensor(actions.Action):
+class Sensor(mapl.MAPLAction):
     def __init__(self, name, agents, args, vars, precondition, sense, domain):
-        actions.Action.__init__(self, name, agents, args, vars, precondition, None, None, domain)
+        mapl.MAPLAction.__init__(self, name, agents, args, vars, precondition, None, None, domain)
         self.sense = sense
         self.effects = [self.knowledge_effect()]
 
@@ -30,25 +30,14 @@ class Sensor(actions.Action):
         return None
     
     def copy(self, newdomain=None):
-        if not newdomain:
-            newdomain = self.domain
-            
-        agents = [predicates.Parameter(p.name, p.type) for p in self.agents]
-        args = [predicates.Parameter(p.name, p.type) for p in self.args]
-        vars = [predicates.Parameter(p.name, p.type) for p in self.vars]
-        
-        a = self.__class__(self.name, agents, args, vars, None, None, newdomain)
+        a = super(type(self), self).copy(newdomain)
+        a.__class__ = self.__class__
 
-        for arg in itertools.chain(a.args, a.vars):
-            if isinstance(arg.type, types.ProxyType):
-                arg.type = types.ProxyType(a[arg.type.parameter])
-                
-        if self.precondition:
-            a.precondition = self.precondition.copy(a)
         if isinstance(self.sense, predicates.Literal):
             a.sense = self.sense.copy(a)
         else:
             a.sense = predicates.FunctionTerm(self.sense.function, a.lookup(self.sense.args))
+
         a.effects = [a.knowledge_effect()]
 
         return a

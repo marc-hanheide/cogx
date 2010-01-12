@@ -10,9 +10,29 @@ class Condition(object):
     def visit(self, fn):
         return fn(self, [])
 
-    def copy(self, new_scope=None, new_parts = None):
+    def copy(self, new_scope=None, new_parts = None, copy_instance=False):
         return self.__class__()
 
+    def set_scope(self, new_scope):
+        pass
+
+    def free(self):
+        def visitor(cond, results=[]):
+            if isinstance(cond, predicates.Term):
+                if cond.__class__ == predicates.FunctionTerm:
+                    return sum(results, [])
+                if isinstance(cond, predicates.VariableTerm):
+                    return [cond.object]
+                return []
+            if isinstance(cond, LiteralCondition):
+                return sum([t.visit(visitor) for t in cond.args], [])
+            if isinstance( cond, JunctionCondition):
+                return sum(results, [])
+            if isinstance(cond, QuantifiedCondition):
+                vars = results[0]
+                return [p for p in vars if p not in cond.args]
+        return set(self.visit(visitor))
+    
     def __eq__(self, other):
         return self.__class__ == other.__class__
 
@@ -82,10 +102,14 @@ class JunctionCondition(Condition):
     def visit(self, fn):
         return fn(self, [p.visit(fn) for p in self.parts])
 
-    def copy(self, new_scope=None, new_parts = None):
+    def copy(self, new_scope=None, new_parts = None, copy_instance=False):
         if not new_parts:
             new_parts = self.parts
-        return self.__class__([ p.copy(new_scope) for p in new_parts])
+        return self.__class__([ p.copy(new_scope, copy_instance=copy_instance) for p in new_parts])
+
+    def set_scope(self, new_scope):
+        for p in self.parts:
+            p.set_scope(new_scope)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and all(map(lambda a,b: a==b, self.parts, other.parts))
@@ -113,20 +137,27 @@ class QuantifiedCondition(Condition, scope.Scope):
     def visit(self, fn):
         return fn(self, [self.condition.visit(fn)])
     
-    def copy(self, new_scope=None, new_parts = None):
+    def copy(self, new_scope=None, new_parts = None, copy_instance=False):
         if not new_scope:
             new_scope = self.parent
             
         cp = self.__class__([predicates.Parameter(a.name, a.type) for a in self.args], None, new_scope)
         for arg in cp.args:
             if isinstance(arg.type, types.ProxyType):
-                arg.type = types.ProxyType(cp[arg.type.parameter])
+                if copy_instance and arg.type.parameter.isInstantiated():
+                    arg.type = arg.type.effectiveType()
+                else:
+                    arg.type = types.ProxyType(cp[arg.type.parameter])
 
         if new_parts:
-            cp.condition = new_parts[0].copy(cp)
+            cp.condition = new_parts[0].copy(cp, copy_instance=copy_instance)
         else:
-            cp.condition = self.condition.copy(cp)
+            cp.condition = self.condition.copy(cp, copy_instance=copy_instance)
         return cp
+    
+    def set_scope(self, new_scope):
+        self.parent = new_scope
+        self.condition.set_scope(self)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.condition == other.condition and all(map(lambda a,b: a==b, self.args, other.args))
@@ -144,13 +175,15 @@ class QuantifiedCondition(Condition, scope.Scope):
 class UniversalCondition(QuantifiedCondition):
     def negate(self):
         neg = ExistentialCondition([types.Parameter(p.name, p.type) for p in self.args], None, self.parent)
-        neg.condition = self.condition.negate().copy(neg)
+        neg.condition = self.condition.negate()
+        neg.condition.set_scope(neg)
         return neg
 
 class ExistentialCondition(QuantifiedCondition):
     def negate(self):
         neg = UniversalCondition([types.Parameter(p.name, p.type) for p in self.args], None, self.parent)
-        neg.condition = self.condition.negate().copy(neg)
+        neg.condition = self.condition.negate()
+        neg.condition.set_scope(neg)
         return neg
 
 class LiteralCondition(predicates.Literal, Condition):
@@ -161,53 +194,5 @@ class LiteralCondition(predicates.Literal, Condition):
     def parse(it, scope):
         literal = predicates.Literal.parse(it,scope)
         return LiteralCondition(literal.predicate, literal.args, literal.negated)
-
-
-class TimedCondition(Condition):
-    def __init__(self, time, condition):
-        assert time in ("start", "end", "all")
-        self.time = time
-        self.condition = condition
-
-    def visit(self, fn):
-        return fn(self, [self.condition.visit(fn)])
-
-    def copy(self, new_scope=None):
-        return TimedCondition(self.time, self.condition.copy(new_scope))
-    
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.time == other.time and self.condition == other.condition
-
-    def __hash__(self):
-        return hash((self.__class__, self.time, self.condition ))
-
-    
-    @staticmethod
-    def parse(it, scope):
-        first = it.get()
-        tag = first.token.string
-        if tag == "and":
-            parts = []
-            for part in it:
-                if part.isTerminal():
-                    raise UnexpectedTokenError(part.token, "condition")
-                parts.append(TimedCondition.parse(iter(part), scope))
-            return Conjunction(parts)
-        elif tag == "forall":
-            return QuantifiedCondition.parse(it, scope, UniversalCondition, TimedCondition.parse)
-
-        if not tag in ("at", "over"):
-            raise UnexpectedTokenError(first.token, "timed condition ('at' or 'over')")
-
-        specifier = it.get().token
-        if tag == "at" and specifier.string not in ("start", "end"):
-            raise UnexpectedTokenError(time, "'start' or 'end'")
-
-        if tag == "over" and specifier.string != "all":
-            raise UnexpectedTokenError(time, "'all'")
-
-        condition = Condition.parse(iter(it.get(list)), scope)
-        
-        return TimedCondition(specifier.string, condition)
 
 

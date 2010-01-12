@@ -7,6 +7,7 @@ import tempfile
 import os
 
 import predicates, parser, domain, problem, writer
+import mapl
 from parser import Parser, ParseError
 
 domlogistics = \
@@ -112,7 +113,7 @@ domblocks = \
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (domain BLOCKS-object-fluents)
-  (:requirements :typing :equality :object-fluents) 
+  (:requirements :typing :equality :object-fluents :mapl) 
   (:types block agent)
   
   (:constants no-block - block)
@@ -460,7 +461,7 @@ class ProblemTest(unittest.TestCase):
         """Testing logistics problem"""
         
         p = Parser(domlogistics.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(problogistics.split("\n"))
         prob = problem.Problem.parse(p.root, dom)
 
@@ -472,7 +473,7 @@ class ProblemTest(unittest.TestCase):
         """Testing blocksworld problem"""
         
         p = Parser(domblocks.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(probblocks.split("\n"))
         prob = problem.Problem.parse(p.root, dom)
 
@@ -482,7 +483,7 @@ class ProblemTest(unittest.TestCase):
         """Testing Rovers problem"""
         
         p = Parser(domrovers.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
         p = Parser(probrovers.split("\n"))
         prob = problem.Problem.parse(p.root, dom)
 
@@ -493,13 +494,13 @@ class ProblemTest(unittest.TestCase):
         """Testing MAPLWriter domain roundtrip"""
         
         p = Parser(domlogistics.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
 
-        w = writer.MAPLWriter()
+        w = mapl.MAPLWriter()
         strings = w.write_domain(dom)
         
         p = Parser(strings)
-        dom2 = domain.MAPLDomain.parse(p.root)
+        dom2 = domain.Domain.parse(p.root)
 
         self.assertEqual(dom.name, dom2.name)
         self.assertEqual(len(dom.constants), len(dom2.constants))
@@ -530,12 +531,12 @@ class ProblemTest(unittest.TestCase):
         """Testing MAPLWriter problem roundtrip"""
         
         p = Parser(domlogistics.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
 
         p = Parser(problogistics.split("\n"))
         prob = problem.Problem.parse(p.root, dom)
 
-        w = writer.MAPLWriter()
+        w = mapl.MAPLWriter()
         strings = w.write_problem(prob)
         
         p = Parser(strings)
@@ -552,13 +553,12 @@ class ProblemTest(unittest.TestCase):
         """Testing MAPLWriter domain roundtrip with numeric fluents and durative actions"""
         
         p = Parser(domrovers.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
 
-        w = writer.MAPLWriter()
+        w = mapl.MAPLWriter()
         strings = w.write_domain(dom)
-        
         p = Parser(strings)
-        dom2 = domain.MAPLDomain.parse(p.root)
+        dom2 = domain.Domain.parse(p.root)
 
         self.assertEqual(dom.name, dom2.name)
         self.assertEqual(len(dom.constants), len(dom2.constants))
@@ -581,12 +581,12 @@ class ProblemTest(unittest.TestCase):
         """Testing MAPLWriter problem roundtrip with numeric fluents and durative actions"""
         
         p = Parser(domrovers.split("\n"))
-        dom = domain.MAPLDomain.parse(p.root)
+        dom = domain.Domain.parse(p.root)
 
         p = Parser(probrovers.split("\n"))
         prob = problem.Problem.parse(p.root, dom)
 
-        w = writer.MAPLWriter()
+        w = mapl.MAPLWriter()
         strings = w.write_problem(prob)
         
         p = Parser(strings)

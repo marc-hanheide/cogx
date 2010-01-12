@@ -3,7 +3,7 @@ import itertools
 import config
 
 import mapl_new as mapl
-import state_new as state
+import mapl_new.state as state
 import plans
 import assertions
 
@@ -23,8 +23,10 @@ class MacroOp(mapl.scope.Scope):
         self.eff = eff
         self.domain = domain
 
+        self.costs = 1
         self.usecount = 0
         self.subsumption_count = 1
+        self.alpha_boost = 1
         self.init_structures()
 
     def q_total(self):
@@ -32,8 +34,30 @@ class MacroOp(mapl.scope.Scope):
         for a, q in self.Q.iteritems():
             count = self.frequencies[a]
             total += q*count
-        return total/self.usecount
-        
+        return (total/self.usecount) / (len(self.pre)+len(self.eff))
+
+    def q_expected(self):
+        """Return the expected value of this macros if this macro is used with the current
+        configuration of preconditions and effects.
+        Other than q_total, this method will set the probabilities of enabled preconditions to 1.0 and
+        those of diables effects to 0.0"""
+        total = 0.0
+        for a in self.pre:
+            if self.atom_state[a] == ATOM_ENABLED:
+                total += self.usecount * self.Q[a]
+            else:
+                for a2 in (a, a.negate()):
+                    total += self.frequencies[a2] * self.Q[a2]
+                    
+        for a in self.eff:
+            if self.atom_state[a] == ATOM_DISABLED:
+                total += self.usecount * self.Q[a.negate()]
+            else:
+                for a2 in (a, a.negate()):
+                    total += self.frequencies[a2] * self.Q[a2]
+                    
+        return (total/self.usecount) / (len(self.pre)+len(self.eff))
+    
     @staticmethod
     def parse(it, scope):
         it.get(":macro")
@@ -64,6 +88,8 @@ class MacroOp(mapl.scope.Scope):
                     macro.usecount = int(value)
                 elif first.token.string == ":subsumes":
                     macro.subsumption_count = int(value)
+                elif first.token.string == ":costs":
+                    macro.costs = int(value)
             else:
                 atom = mapl.predicates.Literal.parse(iter(first), macro)
                 if atom not in macro.Q:
@@ -138,8 +164,8 @@ class MacroOp(mapl.scope.Scope):
             for e in eff.visit(eff_visitor):
                 macro.eff.append(e.copy(macro))
             
-        macro.init_structures()
         macro.normalize_preconditions()
+        macro.init_structures()
         return macro
 
                 
@@ -321,8 +347,8 @@ class MacroOp(mapl.scope.Scope):
             macro.add(arg)
             names.add(arg.name)
 
-        macro.init_structures()
         macro.normalize_preconditions()
+        macro.init_structures()
         return macro
 
 
@@ -577,12 +603,13 @@ class MacroOp(mapl.scope.Scope):
         return mapl.actions.Action(self.name, [self.agent], list(args), [], precondition, replan, effects, self.domain).copy()
 
 
-class MacroWriter(mapl.writer.MAPLWriter):
+class MacroWriter(mapl.mapl.MAPLWriter):
     
     def write_macro(self, macro):
         strings = self.write_action(macro.to_action(filter=ATOM_ALL))
-        strings.append("(:usecount %s)" % macro.usecount)
-        strings.append("(:subsumes %s)" % macro.subsumption_count)
+        strings.append("(:usecount %f)" % macro.usecount)
+        strings.append("(:subsumes %d)" % macro.subsumption_count)
+        strings.append("(:costs %f)" % macro.costs)
         for atom in itertools.chain(macro.pre, macro.eff):
             strings.append("(%s %d %d %f)" % (self.write_literal(atom), macro.atom_state[atom], macro.frequencies[atom], macro.Q[atom]))
             natom = atom.negate()
