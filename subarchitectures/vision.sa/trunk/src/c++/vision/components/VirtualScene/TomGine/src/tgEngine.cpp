@@ -195,12 +195,12 @@ bool tgEngine::InputControl(){
 			// *********************************************************
 			case Expose:
 			/*
-				m_camera0.SetIntrinsic(m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-															m_camera.GetZNear(), m_camera.GetZFar(),
-															m_camera.GetProjection());
-				m_camera.SetIntrinsic(m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-															m_camera.GetZNear(), m_camera.GetZFar(),
-															m_camera.GetProjection());
+				m_camera0.SetIntrinsic(	m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+																m_camera.GetZNear(), m_camera.GetZFar(),
+																m_camera.GetProjection());
+				m_camera.SetIntrinsic(	m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+																m_camera.GetZNear(), m_camera.GetZFar(),
+																m_camera.GetProjection());
 			*/
 				break;
 				
