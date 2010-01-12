@@ -1,4 +1,11 @@
-
+ /**
+ * @file main.cpp
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Main file for standalone version of TomGine rendering engine.
+ */
+ 
 #include <stdio.h>
 
 #include "tgEngine.h"

@@ -1,13 +1,10 @@
-//HEADER:
-//			Title:			class tgModel
-//			File:				tgModel.h
-//
-//			Function:		Header file for geometrical representation
-//
-//			Author:			Thomas Mörwald
-//			Date:				15.12.2009
-// ----------------------------------------------------------------------------
-
+ /**
+ * @file tgModel.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Defining a model for rendering.
+ */
 
 #ifndef TG_MODEL
 #define TG_MODEL

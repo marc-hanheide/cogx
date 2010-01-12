@@ -1,12 +1,11 @@
-//HEADER:
-//			Title:			class tgMatrix3
-//			File:				tgMatrix3.cpp
-//
-//			Function:		tgMatrix3 with all necessary operations 
-//
-//			Author:			Thomas Mörwald
-//			Date:				20.09.2007
-// ---------------------------------------------------------------------------
+ /**
+ * @file tgMatrix3.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Defining a 3x3 matrix.
+ */
+ 
 #ifndef TG_MATRIX3
 #define TG_MATRIX3
 

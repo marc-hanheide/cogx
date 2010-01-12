@@ -1,4 +1,11 @@
-
+ /**
+ * @file tgTexture.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Class for managing textures (load from file, bind, copy, ...).
+ */
+ 
 #ifndef TG_TEXTURE
 #define TG_TEXTURE
 

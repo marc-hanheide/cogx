@@ -1,13 +1,10 @@
-//HEADER:
-//			Title:			class tgGLXWindow
-//			File:				tgGLXWindow.h
-//
-//			Function:		Handling GLX window
-//			Manual:			http://tronche.com/gui/x/xlib
-//
-//			Author:			Thomas Mörwald
-//			Date:				20.12.2009
-// ----------------------------------------------------------------------------
+ /**
+ * @file tgGLXWindow.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief GLX Window management for handling windows.
+ */
 
 
 

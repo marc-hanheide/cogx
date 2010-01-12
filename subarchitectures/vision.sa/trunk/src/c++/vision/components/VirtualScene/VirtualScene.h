@@ -1,8 +1,9 @@
-/**
+ /**
+ * @file VirtualScene.h
  * @author Thomas Mörwald
- * @date April 2009
- *
- * Tracks Objects using either edge or texture features
+ * @date October 2009
+ * @version 0.1
+ * @brief Component for rendering all VisualObjects in the Working Memory.
  */
 
 #ifndef VIRTUAL_SCENE_H
@@ -55,9 +56,9 @@ private:
   void runScene();
   
   // Do not use GL commands in this functions (different thread with no GL context)
-  void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
-  void changeVisualObject(const cdl::WorkingMemoryChange & _wmc);
-  void removeVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void addVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void deleteVisualObject(const cdl::WorkingMemoryChange & _wmc);
 
 protected:
   /**

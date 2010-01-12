@@ -1,6 +1,10 @@
-// Frustum Culling
-// http://robertmarkmorley.com/2008/11/16/frustum-culling-in-opengl/
-// © 2009 - Robert M. Morley
+ /**
+ * @file tgFrustum.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief View frustum of a camera.
+ */
 
 #ifndef TG_FRUSTUM
 #define TG_FRUSTUM

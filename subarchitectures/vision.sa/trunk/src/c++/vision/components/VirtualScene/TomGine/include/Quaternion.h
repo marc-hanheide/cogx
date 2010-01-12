@@ -1,14 +1,11 @@
-//HEADER:
-//			Title:			class Quaternion
-//			File:				Quaternion.h
-//
-//			Function:		Header file for Quaternions for rotations in OpenGL
-//			From:			http://gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation
-//
-//			Author:			Thomas Mörwald
-//			Date:				17.06.2009
-// ----------------------------------------------------------------------------
-
+ /**
+ * @file Quaternion.h
+ * @author Thomas Mörwald
+ * @date September 2009
+ * @version 0.1
+ * @brief Quaternion representing rotations (avoiding singularity locks)
+ */
+ 
 #ifndef QUATERNION_H
 #define QUATERNION_H
 

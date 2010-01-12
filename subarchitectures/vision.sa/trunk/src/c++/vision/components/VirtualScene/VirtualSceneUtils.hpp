@@ -1,8 +1,9 @@
-/**
+ /**
+ * @file VirtualSceneUtils.h
  * @author Thomas Mörwald
- * @date April 2009
- *
- * tools for ObjectTracker
+ * @date October 2009
+ * @version 0.1
+ * @brief Tools for the VirtualScene Component.
  */
 
 #include <VisionData.hpp>

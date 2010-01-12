@@ -1,13 +1,11 @@
-//HEADER:
-//			Title:			class tgPose
-//			File:				tgPose.h
-//
-//			Function:		Header file for pose of an object
-//
-//			Author:			Thomas Mörwald
-//			Date:				17.12.2009
-// ----------------------------------------------------------------------------
-
+ /**
+ * @file tgPose.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Defining the position and orientation of an object in 3D.
+ */
+ 
 #ifndef TG_POSE
 #define TG_POSE
 

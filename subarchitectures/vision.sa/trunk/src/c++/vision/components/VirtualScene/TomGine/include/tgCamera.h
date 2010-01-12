@@ -1,12 +1,11 @@
-//HEADER:
-//			Title:			class tgCamera
-//			File:				tgCamera.h
-//
-//			Function:		Header file for Viewing tgCamera
-//
-//			Author:			Thomas Mörwald
-//			Date:				17.06.2009
-// ----------------------------------------------------------------------------
+ /**
+ * @file tgCamera.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief OpenGL Camera for moving around in 3D space (including internal and external camera parameters).
+ */
+ 
 #ifndef TG_CAMERA
 #define TG_CAMERA
 
