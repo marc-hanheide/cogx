@@ -17,6 +17,8 @@ tgEngine::tgEngine(){
 	
 	m_frametime = 0.0;
 	
+	m_cor = tgVector3(0.0,0.0,0.0);
+	
 	m_button_left = false;
 	m_button_middle = false;
 	m_button_right = false;
@@ -182,8 +184,8 @@ bool tgEngine::InputControl(){
 			// *********************************************************
 			case MotionNotify:
 				if(m_button_left){
-					m_camera.Orbit(tgVector3(0.0,0.0,0.0), m_camera.GetU(), -5*m_frametime * event.motion.x_rel);
-					m_camera.Orbit(tgVector3(0.0,0.0,0.0), m_camera.GetS(), -5*m_frametime * event.motion.y_rel);					
+					m_camera.Orbit(m_cor, m_camera.GetU(), -5*m_frametime * event.motion.x_rel);
+					m_camera.Orbit(m_cor, m_camera.GetS(), -5*m_frametime * event.motion.y_rel);					
 				}else if(m_button_right){
 					m_camera.TranslateS(-0.2*m_depth*m_frametime*event.motion.x_rel);
 					m_camera.TranslateU(0.2*m_depth*m_frametime*event.motion.y_rel);
@@ -192,13 +194,14 @@ bool tgEngine::InputControl(){
 				
 			// *********************************************************
 			case Expose:
+			/*
 				m_camera0.SetIntrinsic(m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
 															m_camera.GetZNear(), m_camera.GetZFar(),
 															m_camera.GetProjection());
 				m_camera.SetIntrinsic(m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
 															m_camera.GetZNear(), m_camera.GetZFar(),
 															m_camera.GetProjection());
-			
+			*/
 				break;
 				
 			// *********************************************************

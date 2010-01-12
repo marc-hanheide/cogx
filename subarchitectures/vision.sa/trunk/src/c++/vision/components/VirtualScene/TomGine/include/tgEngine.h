@@ -21,6 +21,7 @@
 #include "tgModel.h"
 #include "tgPose.h"
 #include "tgEvent.h"
+#include "tgVector3.h"
 
 class tgEngine
 {
@@ -29,11 +30,12 @@ private:
 	float m_height;
 	float m_depth;
 	
-	tgGLXWindow* m_window;
-	tgCamera m_camera;
-	tgCamera m_camera0;
-	tgLighting m_lighting;
-	Timer m_timer;
+	tgGLXWindow* 	m_window;
+	tgCamera 			m_camera;
+	tgCamera 			m_camera0;
+	tgLighting 		m_lighting;
+	Timer 				m_timer;
+	tgVector3			m_cor;			///< Center of Rotation
 	
 	float m_frametime;
 	bool m_bfc;

@@ -19,11 +19,17 @@ tgVector3::tgVector3(float all)
 	tgVector3(all,all,all);
 	
 }
+
 tgVector3::tgVector3(float xn, float yn, float zn)
 {
 	x = xn; y = yn; z = zn;
 }
 
+tgVector3 tgVector3::operator=(tgVector3 v){
+	x = v.x;
+	y = v.y;
+	z = v.z;
+}
 
 tgVector3 tgVector3::operator+(tgVector3 v)
 {
