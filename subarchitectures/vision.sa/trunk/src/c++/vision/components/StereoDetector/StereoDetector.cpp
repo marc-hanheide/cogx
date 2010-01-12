@@ -268,7 +268,23 @@ void StereoDetector::processImage(const Video::Image &image_l, const Video::Imag
 // 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
 // 	}
 
-
+	/// TODO: GET STEREO ELLIPSES
+// 	printf("###################### GET STEREO ELLIPSES\n");
+// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_ELLIPSE); i++)
+// 	{
+// 		score->GetVisualObject(Z::StereoBase::STEREO_ELLIPSE, i, obj);
+// 
+// 		char obj_label[32];
+// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
+// 		obj->label = obj_label;
+// 		numStereoObjects++;
+// 	
+// 		// add visual object to working memory
+// 		std::string objectID = newDataID();
+// 		objectIDs.push_back(objectID);
+// 		addToWorkingMemory(objectID, obj);
+// 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+// 	}
 
 	// ----------------------------------------------------------------
 	// Draw Gestalts to IplImage for the openCv window
