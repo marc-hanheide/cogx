@@ -155,7 +155,8 @@ const TmpFlap &StereoFlaps::Flaps2D(int side, int i)
 }
 
 /**
- * @brief Draw flaps as overlay over the stereo image
+ * @brief Draw flaps as overlay.
+ * @param side Left or right side of the stereo images.
  */
 void StereoFlaps::Draw(int side)
 {
@@ -171,6 +172,7 @@ void StereoFlaps::Draw(int side)
 
 /**
  * @brief Draw matched flaps as overlay.
+ * @param side Left or right side of the stereo images.
  */
 void StereoFlaps::DrawMatched(int side)
 {
@@ -192,8 +194,7 @@ bool StereoFlaps::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
 	obj->model = new VisionData::GeometryModel;
 	Flap3D flap = Flaps(id);
 
-
-	// Recalculate pose of vertices (relative to the pose of the flap == cog)
+	// Recalculate pose of vertices (relative to the pose of the flap == COG)
 	Pose3 pose;
 	RecalculateCoordsystem(flap, pose);
 
@@ -207,25 +208,23 @@ bool StereoFlaps::StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, i
 	// create vertices (relative to the 3D center point)
 	for(unsigned i=0; i<=1; i++)	// LEFT/RIGHT rectangle of flap
 	{
-		for(unsigned j=0; j<=flap.surf[i].vertices.Size(); j++)
+		VisionData::Face f;
+
+		for(unsigned j=0; j<flap.surf[i].vertices.Size(); j++)
 		{
 			VisionData::Vertex v;
 			v.pos.x = flap.surf[i].vertices[j].p.x;
 			v.pos.y = flap.surf[i].vertices[j].p.y;
 			v.pos.z = flap.surf[i].vertices[j].p.z;
 			obj->model->vertices.push_back(v);
-		}
-	}
 
-	// add faces to the vision model
-	VisionData::Face f;
-	for(unsigned i=0; i<=1; i++)	// LEFT/RIGHT rectangle of flap
-	{
-		for(unsigned j=0; j<flap.surf[i].vertices.Size(); j++)
-			f.vertices.push_back(j);
+			f.vertices.push_back(j+(i*4));
+		}
+
 		obj->model->faces.push_back(f);
 		f.vertices.clear();
 	}
+
 	obj->detectionConfidence = 1.0;						// TODO detection confidence is always 1
 
 	return true;

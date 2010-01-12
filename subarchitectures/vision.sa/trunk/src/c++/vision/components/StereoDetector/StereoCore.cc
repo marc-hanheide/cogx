@@ -16,10 +16,6 @@ namespace Z
 
 extern void SetActiveDrawArea(IplImage *iI);
 
-
-//-----------------------------------------------------------------//
-//---------------------------- Surf3D -----------------------------//
-//-----------------------------------------------------------------//
 /**
  * @brief Constructor of Stereo Core
  * @param stereocal_file Stereo calibration file
@@ -139,12 +135,12 @@ void StereoCore::ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr
 
 	/// HACK draw results of the stereo image
 // 	DrawStereoResults(StereoBase::STEREO_FLAP);
-		SetActiveDrawAreaSide(LEFT);
+// 		SetActiveDrawAreaSide(LEFT);
 // 		vcore[LEFT]->DrawGestalts(Gestalt::ARC, 0);
-		vcore[LEFT]->DrawGestalts(Gestalt::ELLIPSE, 0);
-		SetActiveDrawAreaSide(RIGHT);
+// 		vcore[LEFT]->DrawGestalts(Gestalt::ELLIPSE, 0);
+// 		SetActiveDrawAreaSide(RIGHT);
 // 		vcore[RIGHT]->DrawGestalts(Gestalt::ARC, 0);
-		vcore[RIGHT]->DrawGestalts(Gestalt::ELLIPSE, 0);
+// 		vcore[RIGHT]->DrawGestalts(Gestalt::ELLIPSE, 0);
 
 	/// HACK Print results
 	PrintResults();
@@ -166,7 +162,7 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
 
 /**
  * @brief Draw the results into a iplImage
- * TODO Eigentlich sollte man die linke und rechte gematchte Gestalten in beide einzeichnen und dann anzeigen.
+ * @param type Type of stereo object.
  */
 void StereoCore::DrawStereoResults(StereoBase::Type type)
 {
@@ -196,17 +192,14 @@ void StereoCore::PrintResults()
 //   printf("StereoClosures:   clos-matches: %d\n", stereoGestalts[StereoBase::STEREO_CLOSURE]->NumStereoMatches());
 
 	// print results of vision core
-  printf("Closure: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CLOSURE),
-			vcore[RIGHT]->NumGestalts(Gestalt::CLOSURE));
+//   printf("Closure: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::CLOSURE), vcore[RIGHT]->NumGestalts(Gestalt::CLOSURE));
   printf("StereoClosures:   clos-matches: %d\n", stereoGestalts[StereoBase::STEREO_CLOSURE]->NumStereoMatches());
 
-//   printf("StereoRects: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE),
-// 			vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE));
+//   printf("StereoRects: 2D rects left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE), vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE));
 //   printf("StereoRects:   rect-matches: %d\n", stereoGestalts[StereoBase::STEREO_RECTANGLE]->NumStereoMatches());
 
-//   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), 											// HACK
-// 			vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
-//   printf("StereoFlaps:   flap-matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 																				// HACK
+//   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
+  printf("StereoFlaps:   flap-matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
 
 
 // 	for(unsigned i=0; i<flaps[LEFT].Size(); i++)
