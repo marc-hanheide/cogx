@@ -821,10 +821,13 @@ PlaceManager::getCurrentNavNode()
 {
   debug("getCurrentNavNode called");
   vector<NavData::FNodePtr> nodes;
+  debug("1");
   getMemoryEntries<NavData::FNode>(nodes, 0);
 
   vector<NavData::RobotPose2dPtr> robotPoses;
+  debug("2");
   getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+  debug("3");
 
   if (robotPoses.size() == 0) {
     log("Could not find RobotPose!");

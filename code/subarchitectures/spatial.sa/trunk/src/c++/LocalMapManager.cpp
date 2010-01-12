@@ -305,14 +305,11 @@ void LocalMapManager::runComponent()
       //log("Updated");
 
     }
-    if (m_DisplayPlaneMap) {
-      Cure::Pose3D currentPose = m_TOPP.getPose();
-      m_DisplayPlaneMap->updateDisplay(&currentPose);
-    }
     unlockComponent();
     debug("unlock in isRunning");
 
     usleep(250000);
+    //sleepComponent(250);
   }
 }
 
@@ -700,9 +697,9 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
 
 void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 				   &objID){
+  debug("newConvexHull called");
   if (!m_bNoPlanes) {
 
-    debug("newConvexHull called");
     VisionData::ConvexHullPtr oobj =
       getMemoryEntry<VisionData::ConvexHull>(objID.address);
 
@@ -735,21 +732,57 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 
 
     // Filter polygons that are not horizontal planes
+    // Find average normal
+    Cure::Vector3D avgNormal;
+    double avgZ = 0.0;
 
+    for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
+      unsigned int lasti = (i == 0 ? oobj->PointsSeq.size()-1 : i-1);
+      unsigned int nexti = (i == oobj->PointsSeq.size()-1 ? 0 : i+1);
 
-    // Paint the polygon in the grid map
+      Cure::Vector3D edge1(oobj->PointsSeq[nexti].x-oobj->PointsSeq[i].x,
+	  oobj->PointsSeq[nexti].y-oobj->PointsSeq[i].y,
+	  oobj->PointsSeq[nexti].z-oobj->PointsSeq[i].z);
+      Cure::Vector3D edge2(oobj->PointsSeq[lasti].x-oobj->PointsSeq[i].x,
+	  oobj->PointsSeq[lasti].y-oobj->PointsSeq[i].y,
+	  oobj->PointsSeq[lasti].z-oobj->PointsSeq[i].z);
+      Cure::Vector3D normal = edge1.cross(edge2);
+      normal /= normal.magnitude();
+      avgNormal += normal;
+      avgZ += oobj->PointsSeq[i].z / oobj->PointsSeq.size();
+    }
+    if (avgNormal.magnitude() != 0.0) {
+      avgNormal /= avgNormal.magnitude();
 
-    log("Painting polygon");
-    PaintPolygon(oobj->PointsSeq);
+      if (avgNormal.getZ() < 0.95 && avgNormal.getZ() > -0.95) {
+	log("Rejecting polygon: Z component of normal %f", avgNormal.getZ());
+	return;
+      }
+      
+      if (avgZ < 0.10) {
+	log("Rejecting polygon: average Z coordinate is %f < 0.10",
+	    avgZ);
+	return;
+      }
 
-    for (int x = -m_planeObstacleMap->getSize(); x <= m_planeObstacleMap->getSize(); x++) {
-      for (int y = -m_planeObstacleMap->getSize(); y <= m_planeObstacleMap->getSize(); y++) {
-	if ((*m_planeMap)(x,y).planes.size() > 0) {
-	  (*m_planeObstacleMap)(x,y) = '1';
+      // Paint the polygon in the grid map
+
+      log("Painting polygon");
+      PaintPolygon(oobj->PointsSeq);
+
+      for (int x = -m_planeObstacleMap->getSize(); x <= m_planeObstacleMap->getSize(); x++) {
+	for (int y = -m_planeObstacleMap->getSize(); y <= m_planeObstacleMap->getSize(); y++) {
+	  if ((*m_planeMap)(x,y).planes.size() > 0) {
+	    (*m_planeObstacleMap)(x,y) = '1';
+	  }
 	}
       }
     }
 
+    if (m_DisplayPlaneMap) {
+      Cure::Pose3D currentPose = m_TOPP.getPose();
+      m_DisplayPlaneMap->updateDisplay(&currentPose);
+    }
     //m_planeMap->print(std::cout);
   }
 }
