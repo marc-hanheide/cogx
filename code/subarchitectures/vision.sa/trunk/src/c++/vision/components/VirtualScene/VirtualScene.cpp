@@ -80,7 +80,12 @@ void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 }
 
 void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
-	log("[VirtualScene::removeVisualObject] WARNING: function not implemented");
+	vector<ModelEntry>::iterator it;
+	for(it=m_modellist.begin(); it<m_modellist.end(); it++){
+		if((*it).castWMA == _wmc.address){
+			m_modellist.erase(it);
+		}
+	}
 }
 
 // *** base functions *** (configure, start, runcomponent)
