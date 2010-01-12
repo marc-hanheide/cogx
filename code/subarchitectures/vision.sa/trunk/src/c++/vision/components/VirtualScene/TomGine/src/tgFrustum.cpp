@@ -1,11 +1,7 @@
 
 # include "tgFrustum.h"
 
-tgFrustum::tgFrustum(){
-}
-
-tgFrustum::~tgFrustum(){
-}
+using namespace TomGine;
 
 void tgFrustum::ExtractFrustum(){
 	float   proj[16];

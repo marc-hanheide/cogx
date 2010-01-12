@@ -4,6 +4,7 @@
  * @date October 2009
  * @version 0.1
  * @brief Main file of rendering engine 'TomGine'.
+ * @namespace TomGine
  */
 
 #ifndef TG_ENGINE
@@ -22,6 +23,8 @@
 #include "tgPose.h"
 #include "tgEvent.h"
 #include "tgVector3.h"
+
+namespace TomGine{
 
 /**
 * @brief Class tgEngine
@@ -109,5 +112,7 @@ public:
 	tgVector3 GetCameraPosition(){ return m_camera.GetPos(); }
 
 };
+
+} // namespace TomGine
 
 #endif

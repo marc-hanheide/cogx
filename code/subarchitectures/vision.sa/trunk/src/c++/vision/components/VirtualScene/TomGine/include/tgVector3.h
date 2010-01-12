@@ -13,10 +13,9 @@
 #define PI 3.14159265358979323846f
 #endif
 
-class tgVector3;
-
 #include <math.h>
-#include "tgMatrix3.h"
+
+namespace TomGine{
 
 class tgVector3
 {
@@ -54,5 +53,7 @@ public:
 
 // tgVector3 funktions
 float Angle(tgVector3 a, tgVector3 b);
+
+} // namespace TomGine
 
 #endif

@@ -24,6 +24,7 @@ extern "C"
 using namespace cast;
 using namespace std;
 using namespace VisionData;
+using namespace TomGine;
 
 
 VirtualScene::VirtualScene(){

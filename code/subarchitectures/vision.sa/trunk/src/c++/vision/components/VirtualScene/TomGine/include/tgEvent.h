@@ -11,6 +11,8 @@
 
 #include <X11/Xlib.h>
 
+namespace TomGine{
+
 struct tgKey{
 	KeySym keysym;
 };
@@ -43,5 +45,7 @@ struct tgEvent{
 	tgExpose expose;
 	tgClientMessage clientmessage;
 };
+
+} // namespace TomGine
 
 #endif

@@ -11,6 +11,8 @@
 #include "tgModel.h"
 #include <GL/gl.h>
 
+using namespace TomGine;
+
 tgModel::tgModel(){
 
 }

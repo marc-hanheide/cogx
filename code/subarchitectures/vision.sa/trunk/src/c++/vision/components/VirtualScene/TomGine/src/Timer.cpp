@@ -1,6 +1,8 @@
 
 #include "Timer.h"
 
+using namespace TomGine;
+
 // ***********************************************************************************
 
 Timer::Timer(void) {

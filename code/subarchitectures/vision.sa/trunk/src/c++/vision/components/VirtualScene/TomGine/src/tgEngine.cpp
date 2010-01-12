@@ -10,6 +10,8 @@
 
 #include "tgEngine.h"
 
+using namespace TomGine;
+
 tgEngine::tgEngine(){
 	m_width = 640;
 	m_height = 480;

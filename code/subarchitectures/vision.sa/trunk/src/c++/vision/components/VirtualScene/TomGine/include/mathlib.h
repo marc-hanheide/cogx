@@ -30,6 +30,8 @@
 #define DEG2RAD (PI / 180.0f)
 #define RAD2DEG (180.0f / PI)
 
+namespace TomGine{
+
 struct vec2;
 struct vec3;
 struct vec4;
@@ -907,5 +909,7 @@ struct quat {
         float q[4];
     };
 };
+
+} // namespace TomGine
 
 #endif /* __MATHLIB_H__ */

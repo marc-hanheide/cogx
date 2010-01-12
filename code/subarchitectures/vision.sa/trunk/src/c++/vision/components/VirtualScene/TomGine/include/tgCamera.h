@@ -9,7 +9,6 @@
 #ifndef TG_CAMERA
 #define TG_CAMERA
 
-class tgCamera;
 #include <stdio.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -21,6 +20,7 @@ class tgCamera;
 #define GL_ORTHO 0
 #define GL_PERSPECTIVE 1
 
+namespace TomGine{
 
 class tgCamera
 {
@@ -108,5 +108,7 @@ public:
 	void ApplyTransform();
 
 };
+
+} // namespace TomGine
 
 #endif

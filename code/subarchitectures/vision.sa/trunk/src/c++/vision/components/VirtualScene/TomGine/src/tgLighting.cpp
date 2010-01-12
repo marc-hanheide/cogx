@@ -1,8 +1,7 @@
 
 #include "tgLighting.h"
 
-tgLighting::tgLighting(){
-}
+using namespace TomGine;
 
 void tgLighting::ApplyLight(tgLight light, int index){
 	glLightfv(GL_LIGHT0+index, GL_AMBIENT, light.ambient);

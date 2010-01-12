@@ -12,6 +12,7 @@
 using namespace cast;
 using namespace cogx;
 using namespace Math;
+using namespace TomGine;
 
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
 bool convertPose2tgPose(Pose3& pose, tgPose& tgpose){

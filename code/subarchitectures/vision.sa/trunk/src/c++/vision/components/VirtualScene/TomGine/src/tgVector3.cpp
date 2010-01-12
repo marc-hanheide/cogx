@@ -8,6 +8,9 @@
 //			Date:				10.01.2007
 // ----------------------------------------------------------------------------
 #include "tgVector3.h"
+#include "tgMatrix3.h"
+
+using namespace TomGine;
 
 tgVector3::tgVector3()
 {

@@ -8,6 +8,8 @@
 
 #include "tgModel.h"
 
+namespace TomGine{
+
 tgModel GenCube( float x, float y, float z){
 	tgModel model;
 	float x2 = x * 0.5;
@@ -110,3 +112,4 @@ tgModel GenCylinder(	float radius, float height,
 	return model;
 }
 
+} // namespace TomGine

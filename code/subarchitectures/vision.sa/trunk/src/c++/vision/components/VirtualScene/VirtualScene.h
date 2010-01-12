@@ -29,8 +29,8 @@ private:
   int m_width;
   int m_height;
   
-  tgEngine* m_engine;
-  tgCamera m_camera;
+  TomGine::tgEngine* m_engine;
+  TomGine::tgCamera m_camera;
   
   vector<ModelEntry> m_modellist;
 
