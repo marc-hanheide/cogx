@@ -64,6 +64,7 @@ public:
 	void DrawCoordinates();
 	
 	void SetCamera(tgCamera cam){ m_camera = cam; m_camera0 = cam; }
+	void SetCenterOfRotation(float x, float y, float z){ m_cor = tgVector3(x,y,z); }
 	
 	void Swap();
 	
