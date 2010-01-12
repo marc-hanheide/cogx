@@ -35,7 +35,7 @@ VirtualScene::~VirtualScene(){
 }
 
 // *** Working Memory Listeners ***
-void VirtualScene::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
+void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	log("receiving VisualObject");
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
@@ -43,15 +43,19 @@ void VirtualScene::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	ModelEntry newModelEntry;
 	
 	if(!convertGeometryModel(obj->model, newModelEntry.model)){
-		log("  error can not convert VisualObject to tracker model");
+		log("  error can not convert VisualObject to virtual scene model");
 		return;
 	}
-	 // just an example material (should be random to separate objects more easily
+	
+	// just an example material (should be random to separate objects more easily
+	float r = 0.8 * float(rand())/RAND_MAX;
+	float g = 0.8 * float(rand())/RAND_MAX;
+	float b = 0.8 * float(rand())/RAND_MAX;
 	tgModel::Material matSilver; 
-	matSilver.ambient = vec4(0.19,0.19,0.19,1.0);
-	matSilver.diffuse = vec4(0.51,0.51,0.51,1.0);
-	matSilver.specular = vec4(0.77,0.77,0.77,1.0);
-	matSilver.shininess = 51.2;
+	matSilver.ambient = vec4(0.2,0.2,0.2,1.0);
+	matSilver.diffuse = vec4(0.2+r,0.2+g,0.2+b,1.0);
+	matSilver.specular = vec4(0.5,0.5,0.5,1.0);
+	matSilver.shininess = 60.0 * float(rand())/RAND_MAX;
 	
 	newModelEntry.model.m_material = matSilver;
 	convertPose2tgPose(obj->pose, newModelEntry.model.m_pose);
@@ -62,7 +66,7 @@ void VirtualScene::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	log("VisualObject added to Scene: %s", obj->label.c_str());
 }
 
-void VirtualScene::changeVisualObject(const cdl::WorkingMemoryChange & _wmc){
+void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	
@@ -75,7 +79,7 @@ void VirtualScene::changeVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	//log("[VirtualScene::changeofVisualObject] WARNING: function not implemented");
 }
 
-void VirtualScene::removeVisualObject(const cdl::WorkingMemoryChange & _wmc){
+void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	log("[VirtualScene::removeVisualObject] WARNING: function not implemented");
 }
 
@@ -114,11 +118,15 @@ void VirtualScene::start(){
 
   addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<VirtualScene>(this,
-        &VirtualScene::receiveVisualObject));
+        &VirtualScene::addVisualObject));
         
 	addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<VirtualScene>(this,
-        &VirtualScene::changeVisualObject));
+        &VirtualScene::overwriteVisualObject));
+  
+  addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::DELETE),
+      new MemberFunctionChangeReceiver<VirtualScene>(this,
+        &VirtualScene::deleteVisualObject));
 }
 
 void VirtualScene::destroy(){

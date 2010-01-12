@@ -1,12 +1,10 @@
-//HEADER:
-//			Title:			class tgEvent
-//			File:				tgEvent.h
-//
-//			Function:		Describing Input Events
-//
-//			Author:			Thomas Mörwald
-//			Date:				05.01.2009
-// ----------------------------------------------------------------------------
+ /**
+ * @file tgEvent.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Structure defining keyboard and mouse input events.
+ */
 
 #ifndef TG_EVENT
 #define TG_EVENT

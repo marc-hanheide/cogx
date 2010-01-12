@@ -1,12 +1,11 @@
-//HEADER:
-//			Title:			class tgVector3
-//			File:				tgVector3.h
-//
-//			Function:		3D Vector with all necessary operations 
-//
-//			Author:			Thomas Mörwald
-//			Date:				10.01.2007
-// ----------------------------------------------------------------------------
+ /**
+ * @file tgVector.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Defining a 3D vector.
+ */
+ 
 #ifndef TG_VECTOR3
 #define TG_VECTOR3
 

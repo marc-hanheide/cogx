@@ -1,4 +1,10 @@
-
+ /**
+ * @file BasicGeometries.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Geomitry factory for generating basic shapes like cubes, cylinders, etc.
+ */
 
 #include "tgModel.h"
 

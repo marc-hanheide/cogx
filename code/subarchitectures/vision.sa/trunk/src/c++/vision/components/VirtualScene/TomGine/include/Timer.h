@@ -1,11 +1,21 @@
+ /**
+ * @file Timer.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Real-time clock for MS Windows and Linux.
+ */
+
 #ifndef TIMER_H
 #define TIMER_H
 #pragma once
 
-#ifdef _WIN32
+#ifdef _WIN32
+
 	#include <windows.h>
 #else
-	#include <time.h>
+	#include <time.h>
+
 	#include <sys/time.h>
 #endif
 

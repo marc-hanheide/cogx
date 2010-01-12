@@ -1,13 +1,10 @@
-//HEADER:
-//			Title:			class tgLighting
-//			File:				tgLighting.h
-//
-//			Function:		settings for OpenGL lighting
-//
-//			Author:			Thomas Mörwald
-//			Date:				20.11.2009
-// ----------------------------------------------------------------------------
-
+ /**
+ * @file tgLighting.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Defining OpenGL lighting conditions.
+ */
 
 #ifndef TG_LIGHTING
 #define TG_LIGHTING

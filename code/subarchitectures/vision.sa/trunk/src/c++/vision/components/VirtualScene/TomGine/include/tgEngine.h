@@ -1,12 +1,10 @@
-//HEADER:
-//			Title:			class tgEngine
-//			File:				tgEngine.h
-//
-//			Function:		Main file of Engine providing interfaces
-//
-//			Author:			Thomas Mörwald
-//			Date:				20.11.2009
-// ----------------------------------------------------------------------------
+ /**
+ * @file tgEngine.h
+ * @author Thomas Mörwald
+ * @date October 2009
+ * @version 0.1
+ * @brief Main file of rendering engine 'TomGine'.
+ */
 
 #ifndef TG_ENGINE
 #define TG_ENGINE
