@@ -13,6 +13,7 @@
 #include <VideoClient.h>
 #include <VisionData.hpp>
 #include <VideoUtils.h>
+#include <vector>
 
 #include "StereoCore.hh"
 #include "Pose3.h"
@@ -33,7 +34,6 @@ private:
   /**
    * @brief Which camera to get images from
    */
-//   int camId;
   std::vector<int> camIds;
 
   /**
@@ -67,10 +67,24 @@ private:
    */
 	bool ProcessDebugOptions(Z::StereoCore *score, IplImage *iplImage_l, IplImage *iplImage_r, IplImage *iplImage_results);
 
-  bool cmd_detect;					///< detection command
-	bool cmd_single;					///< single detection commmand
-	bool showImages;					///< show openCV image
-	bool debug;								///< debug the stereo detector
+  /**
+   * @brief Read the SOIs from the working memory and display it.
+   */
+	void ReadSOIs();
+
+	/**
+	 * @brief Delete all visual objects from the working memory. 
+	 * The IDs are stored in the vector "objectIDs".
+	 */
+	void DeleteVisualObjects();
+
+  bool cmd_detect;											///< detection command
+	bool cmd_single;											///< single detection commmand
+	bool showImages;											///< show openCV image
+	bool debug;														///< debug the stereo detector
+
+	std::vector<std::string> objectIDs;		///< IDs of the currently stored visual objects
+
 
 protected:
   /**

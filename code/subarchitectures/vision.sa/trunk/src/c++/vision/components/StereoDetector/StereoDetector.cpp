@@ -31,7 +31,6 @@ extern "C"
 namespace cast
 {
 
-
 StereoDetector::~StereoDetector()
 {
 	cvDestroyWindow("Stereo left");
@@ -115,7 +114,7 @@ void StereoDetector::configure(const map<string,string> & _config)
 	}
 	if((it = _config.find("--debug")) != _config.end())
 	{
-		log("debug modus is on!");
+		log("debug modus on.");
 		debug = true;
 	}
 
@@ -124,7 +123,7 @@ void StereoDetector::configure(const map<string,string> & _config)
 
 void StereoDetector::start()
 {
-	log("StereoDetector::start: Start Component");
+	log("start component");
 
   // get connection to the video server
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
@@ -172,7 +171,9 @@ void StereoDetector::runComponent()
 
 void StereoDetector::processImage(const Video::Image &image_l, const Video::Image &image_r)
 {
-	log("process image");
+//	ReadSOIs(); 	/// HACK: Read SOIs and write it to the console
+	
+	log("process new image");
 
 	int runtime = 1200;											// processing time for detection for left AND right image
 	static unsigned frame_counter = 0;
@@ -182,46 +183,90 @@ void StereoDetector::processImage(const Video::Image &image_l, const Video::Imag
 	// Convert images (from Video::Image to iplImage)
 	IplImage *iplImage_l = convertImageToIpl(image_l);
 	IplImage *iplImage_r = convertImageToIpl(image_r);
-// 	IplImage *iplImage_results = convertImageToIpl(image_l);
-// 	IplImage *iplImage_org_l = convertImageToIpl(image_l);
-// 	IplImage *iplImage_org_r = convertImageToIpl(image_r);
 
 	// Process the stereo images at the stereo core and get visual (stereo matched) objects
 	score->ProcessStereoImage(runtime/2, iplImage_l, iplImage_r);
 	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
 
+	// Delete all visual objects from the working memory
+	DeleteVisualObjects();	
+
 	/// TODO: GET ALL STEREO GESTALTS: Es wird nicht überprüft, ob aktiv
-// 	for(int j=0; j<Z::StereoBase::MAX_TYPE; j++)
-// 		for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) j); i++)
-// 		{
-// 			score->GetVisualObject((Z::StereoBase::Type) j, i, obj);
-// 	
-// 			// HACK label object with incremtal raising number
-// 			char obj_label[32];
-// 			sprintf(obj_label, "Stereo object %d", numStereoObjects);
-// 			obj->label = obj_label;
-// 			numStereoObjects++;
-// 		
-// 			// add visual object to working memory
-// 			addToWorkingMemory(newDataID(), obj);
-// 			log("New stereo object at frame number %u: added to working memory: %s", frame_counter, obj->label.c_str());
-// 		}
-
-printf("###################### GET STEREO CLOSURES\n");
-	/// TODO: GET STEREO CLOSURES
-	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_CLOSURE); i++)
-	{
-		score->GetVisualObject(Z::StereoBase::STEREO_CLOSURE, i, obj);
-
-		char obj_label[32];
-		sprintf(obj_label, "Stereo object %d", numStereoObjects);
-		obj->label = obj_label;
-		numStereoObjects++;
+	for(int j=0; j<Z::StereoBase::MAX_TYPE; j++)
+		for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) j); i++)
+		{
+			score->GetVisualObject((Z::StereoBase::Type) j, i, obj);
 	
+			// HACK label object with incremtal raising number
+			char obj_label[32];
+			sprintf(obj_label, "Stereo object %d", numStereoObjects);
+			obj->label = obj_label;
+			numStereoObjects++;
+		
 		// add visual object to working memory
-		addToWorkingMemory(newDataID(), obj);
-		log("New closure at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
-	}
+		std::string objectID = newDataID();
+		objectIDs.push_back(objectID);
+		addToWorkingMemory(objectID, obj);
+		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+		}
+
+
+	/// TODO: GET STEREO CLOSURES
+// 	printf("###################### GET STEREO CLOSURES\n");
+// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_CLOSURE); i++)
+// 	{
+// 		score->GetVisualObject(Z::StereoBase::STEREO_CLOSURE, i, obj);
+// 
+// 		char obj_label[32];
+// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
+// 		obj->label = obj_label;
+// 		numStereoObjects++;
+// 	
+// 		// add visual object to working memory
+// 		std::string objectID = newDataID();
+// 		objectIDs.push_back(objectID);
+// 		addToWorkingMemory(objectID, obj);
+// 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+// 	}
+
+	/// TODO: GET STEREO FLAPS
+// static int once = 0;
+// 	printf("###################### GET STEREO FLAPS\n");
+// if(once == 0)
+// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_FLAP); i++)
+// 	{
+// 		once = 1;
+// 		score->GetVisualObject(Z::StereoBase::STEREO_FLAP, i, obj);
+// 
+// 		char obj_label[32];
+// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
+// 		obj->label = obj_label;
+// 		numStereoObjects++;
+// 	
+		// add visual object to working memory
+// 		std::string objectID = newDataID();
+// 		objectIDs.push_back(objectID);
+// 		addToWorkingMemory(objectID, obj);
+// 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+// 	}
+
+	/// TODO: GET STEREO RECTANGLES
+// 	printf("###################### GET STEREO RECTANGLES\n");
+// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_RECTANGLE); i++)
+// 	{
+// 		score->GetVisualObject(Z::StereoBase::STEREO_RECTANGLE, i, obj);
+// 
+// 		char obj_label[32];
+// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
+// 		obj->label = obj_label;
+// 		numStereoObjects++;
+// 	
+// 		// add visual object to working memory
+// 		std::string objectID = newDataID();
+// 		objectIDs.push_back(objectID);
+// 		addToWorkingMemory(objectID, obj);
+// 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+// 	}
 
 
 
@@ -233,37 +278,36 @@ printf("###################### GET STEREO CLOSURES\n");
 		cvWaitKey(1);		/// TODO wait key to allow openCV to show the images.
 
 // 		bool processDebug = true;
-// 		if (debug) {
-// 			while (processDebug) {
+// 		if (debug) 
+// 		{
+// 			while (processDebug) 
+// 			{
 // // 				iplImage_org_l = cvCloneImage(iplImage_l);
 // // 				iplImage_org_r = cvCloneImage(iplImage_r);
 // 				processDebug = ProcessDebugOptions(score, iplImage_l, iplImage_r, iplImage_results);
 // // 				cvWaitKey(10);
 // 			}
-// 			debug = false;
+// // 			debug = false;
 // 		}
-// 		else
+
 
 
 		/// HACK Wo sollte die Draw-Methode aufgerufen werden?
 // 		score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE);
-// 		score->DrawStereoResults(Z::StereoBase::STEREO_FLAP);
+		score->DrawStereoResults(Z::StereoBase::STEREO_FLAP);
 // 		score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE);
 // 		score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE);
 
 		cvConvertImage( iplImage_l, iplImage_l, CV_CVTIMG_SWAP_RB);
 		cvConvertImage( iplImage_r, iplImage_r, CV_CVTIMG_SWAP_RB);
-// 		cvConvertImage( iplImage_results, iplImage_results, CV_CVTIMG_SWAP_RB);
 	
 		cvShowImage("Stereo left", iplImage_l);
 		cvShowImage("Stereo right", iplImage_r);
-// 		cvShowImage("Stereo results @ left stereo image", iplImage_results);
 
 		cvWaitKey(10);	/// TODO wait key to allow openCV to show the images.
 
 		cvReleaseImage(&iplImage_l);
 		cvReleaseImage(&iplImage_r);
-// 		cvReleaseImage(&iplImage_results);
 	}
 
 	// clear results after processing
@@ -340,7 +384,7 @@ bool StereoDetector::ProcessDebugOptions(Z::StereoCore *score, IplImage *iplImag
 
 
 
-/**   					TODO TODO TODO TODO TODO TODO TODO TODO  Verschieben auf StereoBase zur Umrechnung???
+/** TODO TODO TODO TODO TODO TODO TODO TODO  Braucht man noch cam-parameter für stereo? Nur für ground-plane, oder?
  * @brief Extract camera parameters from video server.
  * @param image Image from the image server with the camera paramters.
  * @return True for success
@@ -413,4 +457,53 @@ bool StereoDetector::GetCameraParameter(const Video::Image & image)
 }
 
 
+/**
+ * @brief Read the SOIs from the working memory and display it.
+ */
+void StereoDetector::ReadSOIs()
+{
+	// read SOIs from working memory
+	std::vector <VisionData::SOIPtr> sois;
+	getMemoryEntries<VisionData::SOI>(sois);
+
+	printf("Found %u SOIs in working memory:\n", sois.size());
+
+	for(unsigned i=0; i<sois.size(); i++)
+	{
+		printf("  Sphere: pose: %4.3f - %4.3f - %4.3f\n", sois[i]->boundingSphere.pos.x, sois[i]->boundingSphere.pos.y, sois[i]->boundingSphere.pos.z);
+		printf("          radius: %4.3f\n", sois[i]->boundingSphere.rad);
+		printf("     Box: pose: %4.3f - %4.3f - %4.3f\n", sois[i]->boundingBox.pos.x, sois[i]->boundingBox.pos.y, sois[i]->boundingBox.pos.z);
+		printf("          radius: %4.3f - %4.3f - %4.3f\n", sois[i]->boundingBox.size.x, sois[i]->boundingBox.size.y, sois[i]->boundingBox.size.z);
+	}
 }
+
+//   class SOI {
+//     cogx::Math::Sphere3 boundingSphere;
+//     cogx::Math::Box3 boundingBox;
+//     // time the SOI was last changed
+//     cast::cdl::CASTTime time;
+//     // This is a temporary solution only: provide the 3D points that gave rise
+//     // to this SOI, iff the SOI was created by plane pop-out.
+//     SurfacePointSeq points;   // frontground points
+//     SurfacePointSeq BGpoints; //background points
+//     SurfacePointSeq EQpoints; //equivocal points which either belongs to fg or bg
+//   };
+
+
+
+void StereoDetector::DeleteVisualObjects()
+{
+	for(unsigned i=0; i<objectIDs.size(); i++)
+		deleteFromWorkingMemory(objectIDs[i]);
+	objectIDs.clear();
+}
+
+}
+
+
+
+
+
+
+
+
