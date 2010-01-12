@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	float fTime;
 
 	tgEngine render;
-	render.Init(640,480,1.0);
+	render.Init(640,480,1.0,"TomGine Render Engine",true);
 	
 	// Load Model
 	// for more materials visit: http://wiki.delphigl.com/index.php/Materialsammlung

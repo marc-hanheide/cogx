@@ -38,6 +38,7 @@ private:
 	Timer m_timer;
 	
 	float m_frametime;
+	bool m_bfc;
 	bool m_button_left, m_button_middle, m_button_right;
 	bool m_wireframe;
 	bool m_smoothshading;
@@ -50,10 +51,11 @@ public:
 	
 	void Welcome();
 	
-	bool Init(	int width,			// width of window in pixel
-							int height,			// height of window in pixel
-							float depth,		// distance from object/render to camera (virtual) in units (whatever)
-							const char* name="TomGine");
+	bool Init(	int width,										// width of window in pixel
+							int height,										// height of window in pixel
+							float depth,									// distance from object/render to camera (virtual) in units (whatever)
+							const char* name="TomGine",		// caption of X Window
+							bool bfc=false);							// enable/disable backface culling
 	
 	bool Update(float &fTime);
 	
