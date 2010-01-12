@@ -5,6 +5,7 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "VirtualScene.h"
+#include "../../VisionUtils.h"
 
 
 /**
@@ -52,7 +53,7 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	float g = 0.8 * float(rand())/RAND_MAX;
 	float b = 0.8 * float(rand())/RAND_MAX;
 	tgModel::Material matSilver; 
-	matSilver.ambient = vec4(0.2,0.2,0.2,1.0);
+	matSilver.ambient = vec4(0.2+r,0.2+g,0.2+b,1.0);
 	matSilver.diffuse = vec4(0.2+r,0.2+g,0.2+b,1.0);
 	matSilver.specular = vec4(0.5,0.5,0.5,1.0);
 	matSilver.shininess = 60.0 * float(rand())/RAND_MAX;
@@ -62,6 +63,10 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	newModelEntry.obj = obj;
 	newModelEntry.castWMA = _wmc.address;
 	m_modellist.push_back(newModelEntry);
+	
+	Vector3 vCenter = vector3(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
+	m_engine->SetCenterOfRotation(vCenter.x, vCenter.y, vCenter.z);
+	
 	
 	log("VisualObject added to Scene: %s", obj->label.c_str());
 }
@@ -73,7 +78,7 @@ void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	for(int i=0; i<m_modellist.size(); i++){
 		if(m_modellist[i].castWMA == _wmc.address){
 			convertPose2tgPose(obj->pose, m_modellist[i].model.m_pose);
-		}			
+		}
 	}
 	
 	//log("[VirtualScene::changeofVisualObject] WARNING: function not implemented");
