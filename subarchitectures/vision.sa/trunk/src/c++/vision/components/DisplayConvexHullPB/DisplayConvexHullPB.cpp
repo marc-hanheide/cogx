@@ -89,16 +89,16 @@ void DisplayConvexHullPB::configure(const map<string,string>& _config)
   m_PbPort = 5050;
   m_PbHost = "localhost";
 
- if(_config.find("--pb-host") != _config.end()){
+  if(_config.find("--pb-host") != _config.end()){
     std::istringstream str(_config.find("--pb-host")->second);
     str >> m_PbHost;
   }
 
- m_PTZServer = "";
- if(_config.find("--ptz-server") != _config.end()){
-   std::istringstream str(_config.find("--ptz-server")->second);
-   str >> m_PTZServer;
- }
+  m_PTZServer = "";
+  if(_config.find("--ptz-server") != _config.end()){
+    std::istringstream str(_config.find("--ptz-server")->second);
+    str >> m_PTZServer;
+  }
 
   connectPeekabot();  
   log("configure done");
