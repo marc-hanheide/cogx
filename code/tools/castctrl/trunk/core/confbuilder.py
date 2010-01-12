@@ -11,6 +11,13 @@ import messages
 
 LOGGER = messages.CInternalLogger()
 
+def parsebool(val, default=0):
+    val = val.lower().strip()
+    if val == "": return default
+    if val == "no" or val == "off" or val == "false" or val == "f": return 0
+    if val == "yes" or val == "on" or val == "true" or val == "t": return 1
+    return int(val)
+
 class CCastConfig:
     reInclude = re.compile(r"^\s*include\s+(\S+)", re.IGNORECASE)
     reSubarch = re.compile(r"^\s*subarchitecture\s+(\S+)", re.IGNORECASE)
@@ -106,7 +113,14 @@ class CCastConfig:
             mo = CCastConfig.reSubarch.match(line)
             if mo != None:
                 self.subarch = mo.group(1)
-                afile.write(line + "\n")
+                disabled = None
+                for r in self.rules:
+                    if r[0] == "SA" and r[1].lower() == self.subarch.lower():
+                        if len(r) > 3 and not parsebool(r[3], 1):
+                            disabled = r
+                            break
+                if disabled == None: afile.write(line + "\n")
+                else: afile.write("# rule(%s) %s\n" % (disabled, line))
                 continue
 
             mo = CCastConfig.reHost.match(line)
@@ -114,8 +128,8 @@ class CCastConfig:
                 host = mo.group(1)
                 if self.subarch == "":
                     for r in self.rules:
-                        if r[0] == "SA":
-                            if r[1].lower() == "none": host = r[2]
+                        if r[0] == "SA" and r[1].lower() == "none":
+                            host = r[2]
                 newline = "HOST %s" % self._fixLocalhost(host)
                 afile.write(newline + "\n")
                 continue
@@ -173,26 +187,22 @@ class CCastConfig:
         if rest == None: rest = ""
         rest = rest.strip()
 
-        def parsebool(val, default=0):
-            val = val.lower().strip()
-            if val == "": return default
-            if val == "no" or val == "off" or val == "false" or val == "f": return 0
-            if val == "yes" or val == "on" or val == "true" or val == "t": return 1
-            return int(val)
-
-        disabled = ""
+        disabled = None
         for r in self.rules:
+            if disabled != None: break
             if r[0] == "SA" and r[1].lower() == self.subarch.lower():
                 host = r[2]
-            if r[0] == "ID" and r[1].lower() == cpid.lower():
+                if len(r) > 3 and not parsebool(r[3], 1): disabled = r
+            elif r[0] == "ID" and r[1].lower() == cpid.lower():
                 host = r[2]
-                if len(r) > 3 and not parsebool(r[3], 1):
-                    disabled = "# rule(%s) " % r
-            if r[0] == "HPAR" and rest != "":
+                if len(r) > 3 and not parsebool(r[3], 1): disabled = r
+            elif r[0] == "HPAR" and rest != "":
                 idpar = r[1].split("|")
                 if len(idpar) > 1 and (idpar[0].strip() == "" or idpar[0].lower() == cpid.lower()):
                     rest = self._setHostParam(rest, idpar[1], r[2])
 
+        if disabled == None: disabled = ""
+        else: disabled = "# rule(%s) " % disabled
         host = self._fixLocalhost(host)
         if rest != "":
             rest = self._fixHostParam(rest, "--player-host") # spatial
