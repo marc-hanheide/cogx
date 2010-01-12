@@ -23,6 +23,9 @@
 #include "tgEvent.h"
 #include "tgVector3.h"
 
+/**
+* @brief Class tgEngine
+*/
 class tgEngine
 {
 private:
@@ -49,25 +52,60 @@ public:
 	tgEngine();
 	~tgEngine();
 	
+	/**
+	* @brief Welcome message
+	*/
 	void Welcome();
+
+	/**
+	* @brief Initialising render engine
+	*	@param width Width of rendering window in pixels
+	* @param height Height of rendering window in pixels
+	* @param depth Depth of object to render (Distance between camera and object to render in meter)
+	* @param name Caption of Window
+	* @param bfc Enable / Disable back face culling (render back face of polygons or not)
+	* @return Success of initialisation
+	*/
+	bool Init(	int width,
+							int height,
+							float depth,
+							const char* name="TomGine",
+							bool bfc=false);
 	
-	bool Init(	int width,										// width of window in pixel
-							int height,										// height of window in pixel
-							float depth,									// distance from object/render to camera (virtual) in units (whatever)
-							const char* name="TomGine",		// caption of X Window
-							bool bfc=false);							// enable/disable backface culling
-	
+	/**
+	* @brief Draws content to  frame screen
+	* @param time Time in seconds since last Update() call
+	*/
 	bool Update(float &fTime);
 	
+	/**
+	* @brief Handles keyboard and mouse input applied to this window
+	*/
 	bool InputControl();
 	
+	/**
+	*	@brief Draws a simple coordinate frame
+	*/
 	void DrawCoordinates();
 	
+	/**
+	* @brief Sets Camera of rendering engine (including internal and external camera parameters)
+	*/
 	void SetCamera(tgCamera cam){ m_camera = cam; m_camera0 = cam; }
+	
+	/**
+	*	@brief Sets center of rotation
+	*/
 	void SetCenterOfRotation(float x, float y, float z){ m_cor = tgVector3(x,y,z); }
 	
+	/**
+	* @brief Swaps frame buffer to screen (called by Update() aswell)
+	*/
 	void Swap();
 	
+	/**
+	*	@brief Returns the actual position of the camera with respect to the coordinate frame
+	*/
 	tgVector3 GetCameraPosition(){ return m_camera.GetPos(); }
 
 };
