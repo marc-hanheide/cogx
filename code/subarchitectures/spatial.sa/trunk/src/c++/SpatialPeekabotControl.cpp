@@ -34,7 +34,7 @@ extern "C" {
   }
 }
 
-SpatialPeekabotControl::SpatialPeekabotControl() : m_maxPlaces(0), m_pendingQueryReceiver(this), gadget_y(10), gadget_ystep(2), gadgetLineLength(10), m_maxPlaceholderID(0), m_hideGadget(false)
+SpatialPeekabotControl::SpatialPeekabotControl() : m_maxPlaces(0), m_pendingQueryReceiver(this), gadget_y(10), gadget_ystep(2), gadgetLineLength(20), m_maxPlaceholderID(0), m_hideGadget(false)
 {
   m_CtrlAction = 0;
   m_doPathQuery = false;
@@ -200,7 +200,7 @@ void SpatialPeekabotControl::runComponent() {
     startspot.set_position(searchx,searchy,0);
     startspot.set_color(1,0,0);
 
-
+    
     updatePeekabotGadget();
     
     bool wasInCtrl = false;
