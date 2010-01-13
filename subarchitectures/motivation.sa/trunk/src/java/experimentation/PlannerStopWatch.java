@@ -41,7 +41,7 @@ public class PlannerStopWatch extends ManagedComponent {
 
 				StopWatch watch = taskWatches.get(wmc.address.id);
 				if (watch == null) {
-					watch = new StopWatch("PlanningTask." + wmc.address.id);
+					watch = new StopWatch("PlanningTask");
 					taskWatches.put(wmc.address.id, watch);
 				}
 
@@ -62,9 +62,12 @@ public class PlannerStopWatch extends ManagedComponent {
 					case FAILED:
 					case SUCCEEDED:
 						if (watch.isRunning())
-							watch.toc(plan.planningStatus.toString() + " / "
-									+ plan.executionStatus.toString() + "("
-									+ plan.planningRetries + ")");
+							watch.toc(plan.id + "/"
+									+ plan.planningStatus.toString() + "/"
+									+ plan.executionStatus.toString() + "/"
+									+ plan.planningRetries + "/"
+									+ plan.goal + "/"
+									+ plan.plan.length);
 						else
 							log("watch is not running");
 						break;

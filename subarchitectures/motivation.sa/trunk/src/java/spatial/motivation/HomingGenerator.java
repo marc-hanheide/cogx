@@ -39,9 +39,6 @@ public class HomingGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected boolean checkMotive(Motive motive) {
 		try {
-			if (!SpatialFacade.get(this).isAlive())
-				SpatialFacade.get(this).start();
-
 			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
 
 			Place currentPlace = SpatialFacade.get(this).getPlace();

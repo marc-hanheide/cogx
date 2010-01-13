@@ -9,8 +9,11 @@ import java.util.Map;
 
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
+import motivation.slice.RemoteFilterServer;
 import motivation.slice._RemoteFilterServerOperations;
+import motivation.slice._RemoteFilterServerTie;
 import Ice.Current;
+import cast.CASTException;
 import cast.cdl.WorkingMemoryChange;
 
 /**
@@ -20,8 +23,9 @@ import cast.cdl.WorkingMemoryChange;
 public class RemoteFilter implements MotiveFilter,
 		_RemoteFilterServerOperations {
 
-	MotiveFilterManager component = null;
+	MotiveFilterManager filterManager = null;
 	Map<Class<?>, MotivePriority> priorities;
+	RemoteFilterServer server;
 
 	/*
 	 * (non-Javadoc)
@@ -36,7 +40,7 @@ public class RemoteFilter implements MotiveFilter,
 		if (result == null) {
 			result = MotivePriority.UNSURFACE;
 		}
-		return null;
+		return result;
 	}
 
 	/*
@@ -48,7 +52,7 @@ public class RemoteFilter implements MotiveFilter,
 	 */
 	@Override
 	public void setManager(MotiveFilterManager motiveFilterManager) {
-		component = motiveFilterManager;
+		filterManager = motiveFilterManager;
 	}
 
 	/*
@@ -58,35 +62,47 @@ public class RemoteFilter implements MotiveFilter,
 	 */
 	@Override
 	public void start() {
-		// TODO have to implement code here that uses CASTComponent.registerIceServer
-
+		filterManager.log("registering new IceServer "
+				+ RemoteFilterServer.class.getCanonicalName());
+		filterManager.registerIceServer(RemoteFilterServer.class,
+				new _RemoteFilterServerTie(this));
 	}
 
 	@Override
 	public void setPriority(String motiveType, String priority, Current current) {
-		component.log("Ice interface method setPriority called");
+		filterManager.log("Ice interface method setPriority called");
 		MotivePriority newMP = null;
 		for (MotivePriority mp : MotivePriority.values()) {
-			if (mp.name().equalsIgnoreCase(priority)) {
-				mp = newMP;
+			if (mp.toString().equalsIgnoreCase(priority)) {
+				newMP = mp;
 			}
 		}
 		if (newMP == null) {
-			component.getLogger().error("unknown priority asked for: "
-				+ priority);
+			filterManager.getLogger().error(
+					"unknown priority asked for: " + priority);
 			throw new IllegalArgumentException("unknown priority asked for: "
 					+ priority);
 		}
 		try {
-			// TODO: quite a hack to set the package name constant here
-			Class<?> motiveClass = Class.forName("motivation.slice."
+			// assume all Motive sub-classes are in the same package
+			Class<?> motiveClass = Class.forName(Motive.class.getPackage()
+					.getName()+"."
 					+ motiveType);
-			component.log("set priority for class " + motiveClass.getSimpleName() + " to " + newMP.name());
+			filterManager.log("set priority for class "
+					+ motiveClass.getSimpleName() + " to " + newMP.name());
 			priorities.put(motiveClass, newMP);
 		} catch (ClassNotFoundException e) {
-			component.getLogger().error("could not find class for motive type" + motiveType,e);
+			filterManager.getLogger().error(
+					"could not find class for motive type " + motiveType, e);
 			throw new IllegalArgumentException("unknown type asked for: "
 					+ motiveType);
+		}
+		try {
+			filterManager.checkAll();
+		} catch (CASTException e) {
+			filterManager.getLogger().error(
+					"exception while checking all motives after change " + motiveType, e);
+			
 		}
 
 	}
@@ -96,7 +112,8 @@ public class RemoteFilter implements MotiveFilter,
 	 */
 	public RemoteFilter() {
 		super();
-		this.priorities = Collections.synchronizedMap(new HashMap<Class<?>, MotivePriority> ());
+		this.priorities = Collections
+				.synchronizedMap(new HashMap<Class<?>, MotivePriority>());
 	}
 
 }

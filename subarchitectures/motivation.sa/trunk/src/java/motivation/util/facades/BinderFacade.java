@@ -185,8 +185,7 @@ public class BinderFacade extends CASTHelper {
 
 	public Map<WorkingMemoryAddress, RelationProxy> findRelationBySrc(String src) {
 		Map<WorkingMemoryAddress, RelationProxy> result = new HashMap<WorkingMemoryAddress, RelationProxy>();
-		for (Entry<WorkingMemoryAddress, RelationProxy> e : relations
-				.entrySet()) {
+		for (Entry<WorkingMemoryAddress, RelationProxy> e : new HashSet<Entry<WorkingMemoryAddress, RelationProxy>>(relations.entrySet())) {
 			RelationProxy rp = e.getValue();
 			if (((AddressValue) rp.source.alternativeValues[0]).val.equals(src))
 				result.put(e.getKey(), rp);
@@ -198,8 +197,7 @@ public class BinderFacade extends CASTHelper {
 	public Map<WorkingMemoryAddress, RelationProxy> findRelationByTarget(
 			String target) {
 		Map<WorkingMemoryAddress, RelationProxy> result = new HashMap<WorkingMemoryAddress, RelationProxy>();
-		for (Entry<WorkingMemoryAddress, RelationProxy> e : relations
-				.entrySet()) {
+		for (Entry<WorkingMemoryAddress, RelationProxy> e : new HashSet<Entry<WorkingMemoryAddress, RelationProxy>>(relations.entrySet())) {
 			RelationProxy rp = e.getValue();
 			if (((AddressValue) rp.target.alternativeValues[0]).val
 					.equals(target))
@@ -213,8 +211,7 @@ public class BinderFacade extends CASTHelper {
 		log("look for all relations having target or source equal to "
 				+ targetOrSrc + " and being of type " + relationType);
 		Map<WorkingMemoryAddress, RelationProxy> result = new HashMap<WorkingMemoryAddress, RelationProxy>();
-		for (Entry<WorkingMemoryAddress, RelationProxy> e : relations
-				.entrySet()) {
+		for (Entry<WorkingMemoryAddress, RelationProxy> e : new HashSet<Entry<WorkingMemoryAddress, RelationProxy>>(relations.entrySet())) {
 			RelationProxy rp = e.getValue();
 			// check if the label is the one we search for; if it's not, skip
 			// going
