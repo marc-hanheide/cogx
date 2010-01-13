@@ -1,110 +1,108 @@
 (define (domain cogx)
 
-	(:requirements :mapl :adl :durative-actions :object-fluents)
+  (:requirements :mapl :adl :durative-actions :object-fluents)
 	
-	(:types 
-		place - object
-		room - object
-		robot - agent
-		place_type - object
-		place_id - object  ;; make this a number at some point 
-		room_id - object  ;; make this a number at some point 
-		place_category - object
-	)
+  (:types 
+   place - object
+   room - object
+   robot - agent
+   place_type - object
+   place_id - object		 ;; make this a number at some point 
+   room_id - object		 ;; make this a number at some point 
+   place_category - object
+   )
 	
-	(:constants
-        R2D2 - robot
-	)
+  (:constants
+   R2D2 - robot
+   )
 
-    (:predicates
-		(connected ?n1 - place ?n2 - place)
-        (located ?r -  agent ?n - place)
-		(contains ?r - room ?n - place)
-		;; special
-		(has-goal ?a - agent)
-		(commited ?a - agent)
-        ;;(connects ?p1 - place_id ?p2 - place_id)
-    )	
+  (:predicates
+   (adj_explored ?p - place)
+   (connected ?n1 - place ?n2 - place)
+   (located ?r -  agent ?n - place)
+   (contains ?r - room ?n - place)
+   ;; special
+   (has-goal ?a - agent)
+   (commited ?a - agent)
+   ;;(connects ?p1 - place_id ?p2 - place_id)
+   )	
 
-	(:functions
-		(place_type ?n - place) - place_type
-		(place_id ?n - place) - place_id
-		(explored ?n - place) - boolean
-		(place_category ?n - place) - place_category
-		(areaclass ?r - room) - place_category
- 	)
-	
+  (:functions
+   (place_type ?n - place) - place_type
+   (place_id ?n - place) - place_id
+   (explored ?n - place) - boolean
+   (place_category ?n - place) - place_category
+   (areaclass ?r - room) - place_category
+   )
+
+  (:derived  (adj_explored ?p - place)
+	     (forall (?p2 - place)  (or (not (connected ?p ?p2))
+					(= (explored ?p2) true)
+					)
+		     )
+	     )
 
 ;;; actions ;;;
 
-	(:action explore_place
-	 :agent (?a - agent)
-	 :parameters (?loc - place)
-	 :precondition (and
-	 	(located ?a ?loc)
-		)
-     :effect (assign (explored ?loc) true)
-    )
+  (:action explore_place
+	   :agent (?a - agent)
+	   :parameters (?loc - place)
+	   :precondition (and
+			  (located ?a ?loc)
+			  )
+	   :effect (assign (explored ?loc) true)
+	   )
 
-	(:sensor categorize_place
-	 :agent (?a - agent)
-	 :parameters (?loc - place)
-	 :precondition (and
-	 	(located ?a ?loc))
-     :sense (place_category ?loc)
-    )
+  (:sensor categorize_place
+	   :agent (?a - agent)
+	   :parameters (?loc - place)
+	   :precondition (and
+			  (located ?a ?loc))
+	   :sense (place_category ?loc)
+	   )
 
 
-
-        (:sensor categorize_room
-		 :agent (?a - agent)
-		 :parameters (?r - room)
-		 :variables (?loc - place)
-		 :precondition (and
-				(located ?a ?loc)
-				(contains ?r ?loc)
-				(forall (?p - place)
-					(or
-					 (not (contains ?r ?p))
-					 (forall (?p2 - place)
-						 (or (not (connected ?p ?p2))
-						     (= (explored ?p2) true)
-						     )
-						 )
+  (:sensor  categorize_room
+	    :agent (?a - agent)
+	    :parameters (?r - room)
+	    :variables (?loc - place)
+	    :precondition  (and  (located ?a ?loc)
+				 (contains ?r ?loc)
+				 (forall (?p - place)  (or  (not (contains ?r ?p))
+							    (adj_explored ?p)
+							    )
 					 )
-					)
-				)
-		 :sense (areaclass ?r)
-		 )
+				 )
+	    :sense (areaclass ?r)
+	    )
 
+  ;; 	(:action move
+  ;; 	 :agent (?a - agent)
+  ;; 	 :parameters (?to - place)
+  ;; 	 :variables (?from - place)
+  ;; 	 :precondition (and
+  ;; 		(located ?a ?from)
+  ;;         (or (= (explored ?to) true)
+  ;;             (connected ?from ?to)) 
+  ;; 		)
+  ;; 	 :effect (and
+  ;; 		(not (located ?a ?from))
+  ;; 		(located ?a ?to)
+  ;; 	))
 
-;; 	(:action move
-;; 	 :agent (?a - agent)
-;; 	 :parameters (?to - place)
-;; 	 :variables (?from - place)
-;; 	 :precondition (and
-;; 		(located ?a ?from)
-;;         (or (= (explored ?to) true)
-;;             (connected ?from ?to)) 
-;; 		)
-;; 	 :effect (and
-;; 		(not (located ?a ?from))
-;; 		(located ?a ?to)
-;; 	))
-
-	(:action move
-	 :agent (?a - agent)
-	 :parameters (?to - place)
-	 :variables (?from - place)
-	 :precondition (and
-		(located ?a ?from) 
-		(connected ?from ?to)
-		)
-	 :effect (and
-		(not (located ?a ?from))
-		(located ?a ?to)
-		(connected ?to ?from)   ;; now we assume we can also move back
-	))
+  (:action move
+	   :agent (?a - agent)
+	   :parameters (?to - place)
+	   :variables (?from - place)
+	   :precondition (and
+			  (located ?a ?from) 
+			  (connected ?from ?to)
+			  )
+	   :effect (and
+		    (not (located ?a ?from))
+		    (located ?a ?to)
+		    (connected ?to ?from) ;; now we assume we can also move back
+		    ))
 	
 
-)
+  )
