@@ -1,0 +1,43 @@
+HOST localhost
+
+COMPONENT CPP laser.server LaserServerPlayer  --player-host bamboo1.sb.dfki.de #134.96.187.202 #localhost #--rand-data --log
+COMPONENT CPP robot.server RobotbaseServerPlayer --player-host bamboo1.sb.dfki.de #134.96.187.202 #localhost #--rand-data --log
+
+SUBARCHITECTURE coma.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
+JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --marshaller-name marshaller --log true #--debug true
+
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, comadata.ComaRoom, SpatialData.Place, SpatialProperties.ConnectivityPathProperty, SpatialProperties.GatewayPlaceProperty"
+
+SUBARCHITECTURE binder
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM binder.components.BindingWorkingMemory #--log
+JAVA MG monitor binder.components.BinderMonitor #--gui #--log
+JAVA MG binder binder.components.Binder #--log
+JAVA MG discretizer binder.components.UnionDiscretizer #--log
+
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation #--log #--debug
+CPP GD marshaller ProxyMarshaller -bsa binder #--log
+
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #--log #-m tmpmap.metric --debug 
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
+
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 #--log #--debug
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf #--log #--debug --no-x-window 
+
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf #--log #--debug 
+
+CPP GD path.query PathQueryProcessor #--log --no-indirect-paths #--debug
+
+CPP GD exploration.tester ExplorationTester #--log #--debug
+
+#CPP GD cure.logger CureDataLogger
+#CPP GD key.command KeyCommander --fixed-prio --auto 1 --init-sleep 15000 --no-key
+#CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query #--log #--debug
