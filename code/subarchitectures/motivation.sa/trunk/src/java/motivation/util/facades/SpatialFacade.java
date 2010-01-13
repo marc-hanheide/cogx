@@ -220,10 +220,11 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 	SpatialFacade(ManagedComponent component) throws CASTException {
 		super(component);
 		this.component = component;
-		this.spatialCheckThread = new SpatialCheckThread();
 		
 		places = WMView.create(component, Place.class, "spatial.sa");
-		rooms = WMView.create(component, ComaRoom.class,"coma.sa");
+		rooms = WMView.create(component, ComaRoom.class,"coma");
+
+		this.spatialCheckThread = new SpatialCheckThread();
 
 		placeInterface = null; // lazy init
 		placeCheckerCallables = Collections
