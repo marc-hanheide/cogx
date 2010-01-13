@@ -62,13 +62,19 @@ public class CommunicationReadings
 		LFNominal root = lf.root; 		
 		// Get to the embedded construction, under the Patient
 		LFRelation patientR = LFUtils.lfNominalGetRelation(root,"Patient");
-		assert patientR != null; 
+		
 		LFNominal patientRoot = LFUtils.lfGetNominal(lf, patientR.dep);
-		assert patientRoot != null; 
+		
+		if (patientR == null || patientRoot == null) {
+			return results;
+		}
+		
 		LFRelation pscopeR = LFUtils.lfNominalGetRelation(patientRoot,"Scope-in");
-		assert pscopeR != null; 
 		LFNominal pscopeRoot = LFUtils.lfGetNominal(lf,pscopeR.dep);
-		assert pscopeRoot != null; 
+
+		if (pscopeR == null || pscopeRoot == null) {
+			return results;
+		}
 		// Examine the embedded construction
 		if (pscopeRoot.sort.equals("ascription")) { 
 			LogicalForm scopeInLF = LFUtils.lfConstructSubtree(pscopeRoot,lf); 
