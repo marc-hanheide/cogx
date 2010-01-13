@@ -26,6 +26,6 @@ CPP GD cure.debugger CureDataLogger
 SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname video --camid 0 --models "ferns/frosties.jpg" --mode DETECT_ONLY --displaylevel 2 --log
+CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname video --camid 0 --models "./ferns/tea.jpg" --mode DETECT_ONLY --displaylevel 2 --log
 CPP MG viewer VideoViewer --videohost localhost --videoname video --camid 0
 
