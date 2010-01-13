@@ -27,7 +27,7 @@ PIDS="$PIDS $!"
 
 sleep 20
 
-build/tools/hardware/robotbase/src/c++/components/TourGuide 3.2 0
+BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 3.2 0
 #output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority ExploreMotive NORMAL
 output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority CategorizeRoomMotive LOW
 
