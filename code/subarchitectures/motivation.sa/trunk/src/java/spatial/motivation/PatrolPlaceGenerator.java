@@ -52,8 +52,6 @@ public class PatrolPlaceGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected boolean checkMotive(Motive motive) throws CASTException {
 		try {
-			if (!SpatialFacade.get(this).isAlive())
-				SpatialFacade.get(this).start();
 			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
 
 			// if it is a yet unexplored one...

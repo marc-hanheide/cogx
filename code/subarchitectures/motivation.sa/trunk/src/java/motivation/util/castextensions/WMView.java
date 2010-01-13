@@ -46,6 +46,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	private String subarchitecturId;
 
+	private boolean shouldInitialize;
+
 	public interface ChangeHandler<T2 extends Ice.ObjectImpl> {
 		void entryChanged(Map<WorkingMemoryAddress, T2> map,
 				WorkingMemoryChange wmc, T2 newEntry, T2 oldEntry)
@@ -125,7 +127,7 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	 */
 	public static <T2 extends ObjectImpl> WMView<T2> create(ManagedComponent c,
 			Class<T2> cls) {
-		WMView<T2> s = new WMView<T2>(c, cls, c.getSubarchitectureID());
+		WMView<T2> s = new WMView<T2>(c, cls);
 		return s;
 	}
 
@@ -144,8 +146,20 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	protected WMView(ManagedComponent c, Class<T> cls, String subarchitectureId) {
 		super(c);
-		log("WMView instantiated");
 		this.subarchitecturId = subarchitectureId;
+		shouldInitialize = true;
+		// specificTypes = new HashSet<Class<? extends T>>();
+		this.component = c;
+		type = cls;
+		// create a synchronized hashmap
+		map = Collections
+				.synchronizedMap(new HashMap<WorkingMemoryAddress, T>());
+	}
+
+	protected WMView(ManagedComponent c, Class<T> cls) {
+		super(c);
+		this.subarchitecturId = null;
+		shouldInitialize = false;
 		// specificTypes = new HashSet<Class<? extends T>>();
 		this.component = c;
 		type = cls;
@@ -168,15 +182,18 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	public void start() throws UnknownSubarchitectureException {
 		// register the addition
 		register();
-		log("retrieve existing entries");
-		List<CASTData<T>> entries = new LinkedList<CASTData<T>>();
-		component.getMemoryEntriesWithData(type, entries, subarchitecturId, 0);
-		log("found " + entries.size() + " of type" + type.getSimpleName()
-				+ "entries in SA " + subarchitecturId);
-		for (CASTData<T> entry : entries) {
-			WorkingMemoryAddress wma = new WorkingMemoryAddress(entry.getID(),
-					component.getSubarchitectureID());
-			map.put(wma, entry.getData());
+		if (shouldInitialize) {
+			log("retrieve existing entries");
+			List<CASTData<T>> entries = new LinkedList<CASTData<T>>();
+			component.getMemoryEntriesWithData(type, entries, subarchitecturId,
+					0);
+			log("found " + entries.size() + " of type" + type.getSimpleName()
+					+ "entries in SA " + subarchitecturId);
+			for (CASTData<T> entry : entries) {
+				WorkingMemoryAddress wma = new WorkingMemoryAddress(entry
+						.getID(), component.getSubarchitectureID());
+				map.put(wma, entry.getData());
+			}
 		}
 	}
 

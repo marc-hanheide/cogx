@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import motivation.util.castextensions.CASTHelper;
 import motivation.util.castextensions.WMEntryQueue;
 import motivation.util.castextensions.WMView;
 import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
@@ -25,12 +26,62 @@ import cast.cdl.WorkingMemoryOperation;
 
 import comadata.ComaRoom;
 
-public class SpatialFacade extends Thread implements ChangeHandler {
+public class SpatialFacade extends CASTHelper implements ChangeHandler {
 
 	public interface PlaceChangedHandler {
 		void update(Place p);
 	}
 
+	class SpatialCheckThread extends Thread {
+		/**
+		 * @param arg0
+		 */
+		SpatialCheckThread() {
+			super(SpatialFacade.class.getSimpleName() + "singletonThread");
+		}
+
+		/**
+		 * run method of the tread check for new places every second
+		 */
+		@Override
+		public void run() {
+			try {
+				places.start();
+				rooms.start();
+			} catch (UnknownSubarchitectureException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			// initialize current place
+			while (currentPlace == null && !interrupted())
+				currentPlace = getPlaceInterface().getCurrentPlace();
+			setPlace(currentPlace);
+
+			while (!interrupted()) {
+				try {
+					Place place = getPlaceInterface().getCurrentPlace();
+
+					if (place == null || place.id != currentPlace.id) {
+						setPlace(place);
+						for (PlaceChangedHandler c : placeCheckerCallables) {
+							c.update(place);
+						}
+					}
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					break;
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break;
+				}
+			}
+		}
+
+	}
+	
+	SpatialCheckThread spatialCheckThread;
 	static private SpatialFacade singleton;
 	private Place currentPlace;
 	private Set<PlaceChangedHandler> placeCheckerCallables = null;
@@ -90,6 +141,9 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	 * @throws InterruptedException
 	 */
 	public synchronized Place getPlace() throws InterruptedException {
+		if (!spatialCheckThread.isAlive())
+			spatialCheckThread.start();
+
 		if (currentPlace == null)
 			wait();
 		return currentPlace;
@@ -105,11 +159,11 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 
 		while (placeInterface == null) {
 			try {
-				component.println("trying to connect to PlaceInterface server");
+				println("trying to connect to PlaceInterface server");
 
 				placeInterface = component.getIceServer("place.manager",
 						PlaceInterface.class, PlaceInterfacePrx.class);
-				component.log("PlaceInterface initialized... ");
+				log("PlaceInterface initialized... ");
 				// Thread.sleep(3000);
 				// component
 
@@ -138,44 +192,6 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 		return placeInterface;
 	}
 
-	/**
-	 * run method of the tread check for new places every second
-	 */
-	@Override
-	public void run() {
-		try {
-			places.start();
-			rooms.start();
-		} catch (UnknownSubarchitectureException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		// initialize current place
-		while (currentPlace == null && !interrupted())
-			currentPlace = getPlaceInterface().getCurrentPlace();
-		setPlace(currentPlace);
-
-		while (!interrupted()) {
-			try {
-				Place place = getPlaceInterface().getCurrentPlace();
-
-				if (place == null || place.id != currentPlace.id) {
-					setPlace(place);
-					for (PlaceChangedHandler c : placeCheckerCallables) {
-						c.update(place);
-					}
-				}
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				break;
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				break;
-			}
-		}
-	}
 
 	/**
 	 * get the singleton reference
@@ -202,14 +218,17 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 	 * @throws CASTException
 	 */
 	SpatialFacade(ManagedComponent component) throws CASTException {
-		super(SpatialFacade.class.getSimpleName() + "singletonThread");
+		super(component);
 		this.component = component;
+		this.spatialCheckThread = new SpatialCheckThread();
+		
 		places = WMView.create(component, Place.class, "spatial.sa");
 		rooms = WMView.create(component, ComaRoom.class,"coma.sa");
 
 		placeInterface = null; // lazy init
 		placeCheckerCallables = Collections
 				.synchronizedSet(new HashSet<PlaceChangedHandler>());
+		
 	}
 
 	public synchronized double queryCosts(long from, long to) {
@@ -224,25 +243,25 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 			component.addToWorkingMemory(id, "spatial.sa", ptcr);
 			while (ptcr.status == PathQueryStatus.QUERYPENDING) {
 				WMEntryQueueElement elem = resultQueue.take();
-				component.log("PathTransitionCostRequest.status="
+				log("PathTransitionCostRequest.status="
 						+ ptcr.status.name());
 				if (elem.getEntry() == null)
 					return Double.MAX_VALUE;
 				ptcr = (PathTransitionCostRequest) elem.getEntry();
 			}
 			if (ptcr.status == PathQueryStatus.QUERYCOMPLETED) {
-				component.log("we found a path and computed costs of "
+				log("we found a path and computed costs of "
 						+ ptcr.cost);
 				if (ptcr.cost > 1E99)
 					return Double.MAX_VALUE;
 				return ptcr.cost;
 			} else {
-				component.println("could not find path from " + from + " to "
+				println("could not find path from " + from + " to "
 						+ to);
 			}
 
 		} catch (CASTException e) {
-			component.println("CASTException in SpatialFacade::queryCosts");
+			println("CASTException in SpatialFacade::queryCosts");
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			component

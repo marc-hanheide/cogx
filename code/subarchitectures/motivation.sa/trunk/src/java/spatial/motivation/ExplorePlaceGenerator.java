@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
@@ -15,8 +14,6 @@ import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.util.castextensions.WMEntrySet;
 import motivation.util.facades.SpatialFacade;
-import FrontierInterface.PlaceInterface;
-import FrontierInterface.PlaceInterfacePrx;
 import Ice.ObjectImpl;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
@@ -95,8 +92,6 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected boolean checkMotive(Motive motive) throws CASTException {
 		try {
-			if (!SpatialFacade.get(this).isAlive())
-				SpatialFacade.get(this).start();
 			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
 
 			// if it is a yet unexplored one...

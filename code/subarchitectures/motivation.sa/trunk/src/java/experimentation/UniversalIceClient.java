@@ -12,8 +12,9 @@ import cast.cdl.ComponentLanguage;
 import cast.core.CASTUtils;
 
 /**
- * universal cast client to invoke method on server example call: 
- * java -cp"/usr/share/java/log4j-1.2.jar:/usr/share/java/Ice.jar:/usr/local/share/java/cast.jar:./output/classes" experimentation.UniversalIceClient place.manager localhost FrontierInterface.PlaceInterface getCurrentPlace
+ * universal cast client to invoke method on server example call: java -cp"/usr/share/java/log4j-1.2.jar:/usr/share/java/Ice.jar:/usr/local/share/java/cast.jar:./output/classes"
+ * experimentation.UniversalIceClient place.manager localhost
+ * FrontierInterface.PlaceInterface getCurrentPlace
  * 
  * @author marc
  * 
@@ -57,8 +58,14 @@ public class UniversalIceClient {
 		}
 
 		logger.debug("creating server proxy");
-		server = CASTUtils.getCASTIceServer(serverName, serverHost,
-				ComponentLanguage.CPP, serverClass, serverPrxClass);
+		try {
+			server = CASTUtils.getCASTIceServer(serverName, serverHost,
+					ComponentLanguage.CPP, serverClass, serverPrxClass);
+		} catch (CASTException e) {
+			server = CASTUtils.getCASTIceServer(serverName, serverHost,
+					ComponentLanguage.JAVA, serverClass, serverPrxClass);
+
+		}
 
 	}
 
@@ -72,8 +79,10 @@ public class UniversalIceClient {
 				+ methodToCall.getName() + " with " + args.length
 				+ " arguments");
 		Object answer = methodToCall.invoke(server, (Object[]) args);
-		logger.info("call returned with object of type "
-				+ answer.getClass().getName() + " == " + answer.toString());
+		if (answer != null) {
+			logger.info("call returned with object of type "
+					+ answer.getClass().getName() + " == " + answer.toString());
+		}
 	}
 
 	/**

@@ -3,28 +3,19 @@
  */
 package motivation.components.filters;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
-import Ice.ObjectImpl;
-
-import motivation.slice.CategorizePlaceMotive;
-import motivation.slice.CategorizeRoomMotive;
-import motivation.slice.ExploreMotive;
-import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
-import motivation.slice.TestMotive;
 import motivation.util.WMMotiveSet;
-import motivation.util.WMMotiveSet.MotiveStateTransition;
+import Ice.ObjectImpl;
 import cast.CASTException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -100,7 +91,6 @@ public class MotiveFilterManager extends ManagedComponent {
 
 	@Override
 	protected void configure(Map<String, String> arg0) {
-		// TODO Auto-generated method stub
 		log("configure filter");
 		super.configure(arg0);
 		String subscrStr = arg0.get("--filter");
@@ -119,10 +109,8 @@ public class MotiveFilterManager extends ManagedComponent {
 					println("trying to register for a class that doesn't exist.");
 					e.printStackTrace();
 				} catch (InstantiationException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -159,7 +147,7 @@ public class MotiveFilterManager extends ManagedComponent {
 
 	public void checkAll() throws CASTException {
 
-		for (ObjectImpl obj : motives.values()) {
+		for (ObjectImpl obj : new HashSet<ObjectImpl>(motives.values())) {
 			Motive motive = (Motive) obj;
 			WorkingMemoryChange wmc = new WorkingMemoryChange();
 			wmc.address = motive.thisEntry;

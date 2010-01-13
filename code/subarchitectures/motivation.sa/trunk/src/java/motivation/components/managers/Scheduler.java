@@ -58,9 +58,6 @@ public class Scheduler extends ManagedComponent {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void configure(Map<String, String> arg0) {
-		// TODO Auto-generated method stub
-		super.configure(arg0);
-
 		String arg;
 		// parsing stuff
 		arg = arg0.get("--orderPolicy");
@@ -117,7 +114,7 @@ public class Scheduler extends ManagedComponent {
 			log("scheduleMotives: wait to acquire lock");
 			wmLock.lock();
 			// TODO: big hack to wait for all propagation
-			sleepComponent(2000);
+			sleepComponent(3000);
 			while(!relevantEventQueue.isEmpty())
 				try {
 					relevantEventQueue.take();
