@@ -26,7 +26,7 @@ private:
     typedef struct PlyFace {
         unsigned short nverts;      // number of vertices used for the face (Quad=4, Triangle=3)
         unsigned int* v;            // pointer to memory holding the vertex-index list
-        float t[3], b[3], n[3];		// Tangent space vectors
+        float t[3], b[3], n[3];			// Tangent space vectors
     } PlyFace;
 
     typedef struct PlyEdge {
