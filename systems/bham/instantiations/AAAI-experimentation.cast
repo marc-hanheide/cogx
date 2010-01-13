@@ -29,17 +29,48 @@ INCLUDE includes/coma.sa/coma.cast
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
-INCLUDE includes/motivation.sa/motivation.cast
+#INCLUDE includes/motivation.sa/motivation.cast
 
 
 
-#JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialProperties.ObjectPlaceProperty, SpatialProperties.GatewayPlaceProperty, SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom, binder.autogen.core.UnionConfiguration"
+##############################################################################
+# MOTIVATION
+##############################################################################
+# execution ###################################################################
+JAVA MG executor execution.components.PrototypePlanExecutor 
+# motivation ##################################################################
+JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator 
+JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator
+
+     #JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
+JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "RemoteFilter,LimitTriesFilter" 
 
 
+JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
+JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
+JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
+
+##############################################################################
+##############################################################################
+
+
+	#JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialProperties.ObjectPlaceProperty, SpatialProperties.GatewayPlaceProperty, SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom, binder.autogen.core.UnionConfiguration"
+
+
+##############################################################################
+# EXPERIMENTATION
+##############################################################################
 JAVA MG PlannerStopWatch experimentation.PlannerStopWatch
+JAVA MG PlaceStatistics experimentation.PlaceStatistics
+JAVA MG MotiveStatistics experimentation.MotiveStatistics
+
+
+
 
 
 # verb stuff
 #JAVA MG verbal.kint dora.DoraVerbalisation
+
+
 
 
