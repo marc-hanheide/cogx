@@ -284,9 +284,6 @@ void LocalMapManager::runComponent()
 	if (m_Displaylgm2) {
 	  m_Displaylgm2->setMap(m_lgm2);
 	}
-	if (m_DisplayPlaneMap) {
-	  m_DisplayPlaneMap->setMap(m_planeObstacleMap);
-	}
 	//log("Maps set");
 
 	m_Mutex.unlock();
@@ -758,7 +755,7 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 	log("Rejecting polygon: Z component of normal %f", avgNormal.getZ());
 	return;
       }
-      
+
       if (avgZ < 0.10) {
 	log("Rejecting polygon: average Z coordinate is %f < 0.10",
 	    avgZ);
@@ -772,8 +769,13 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 
       for (int x = -m_planeObstacleMap->getSize(); x <= m_planeObstacleMap->getSize(); x++) {
 	for (int y = -m_planeObstacleMap->getSize(); y <= m_planeObstacleMap->getSize(); y++) {
-	  if ((*m_planeMap)(x,y).planes.size() > 0) {
-	    (*m_planeObstacleMap)(x,y) = '1';
+	  PlaneList &planeList = (*m_planeMap)(x,y).planes;
+	  for (PlaneList::iterator it = planeList.begin();
+	      it != planeList.end(); it++) {
+	    if (it->second > 4.0) {
+	      (*m_planeObstacleMap)(x,y) = '1';
+	      break;
+	    }
 	  }
 	}
       }
@@ -922,9 +924,9 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
   } //end i for loop
 
   /* Step 4: drawing horizontal line for each y from small_x to large_x including. */
-  for(i=0; i < delta_y; i++)
+  for(i=small_y; i <= large_y; i++)
   {
-    for(j=sl[i].small_x; j <= sl[i].large_x; j++)
+    for(j=sl[i-small_y].small_x; j <= sl[i-small_y].large_x; j++)
     {
       int xindex = j / cellfactor;
       int yindex = i / cellfactor;
