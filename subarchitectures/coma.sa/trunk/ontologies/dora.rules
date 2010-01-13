@@ -35,7 +35,9 @@
   (?thing rdfs:subClassOf dora:Object),
   (?loc rdfs:subClassOf dora:PhysicalRoom)]
   
-[omicsCrispInferenceRule:
+
+# uncomment one of the following 2 rules according to your needs
+[omicsCrispInferenceRuleWith2Objects:
   (?objClass1 dora:typicalObjectInRoom ?areaClass),
   (?objClass2 dora:typicalObjectInRoom ?areaClass),
   (?objIns1 rdf:type ?objClass1),
@@ -45,6 +47,14 @@
   notEqual(?objIns1,?objIns2)
   ->
   (?areaIns rdf:type ?areaClass)]  
+
+#[omicsCrispInferenceRuleWith1Object:
+#  (?objClass dora:typicalObjectInRoom ?areaClass),
+#  (?objIns rdf:type ?objClass),
+#  (?areaIns dora:contains ?objIns)
+#  ->
+#  (?areaIns rdf:type ?areaClass)]  
+
 
 [sameRoomRuleDirect:
   (?a dora:adjacent ?b),
