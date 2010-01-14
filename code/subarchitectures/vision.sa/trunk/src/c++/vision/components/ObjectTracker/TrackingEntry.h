@@ -11,6 +11,8 @@ public:
 	bool valid;
 	bool bfc;
 	bool textured;
+	int recursions;
+	int particles;
 	Tracker* tracker;
 	TrackerModel* model;
 	Camera* camera;
@@ -27,10 +29,12 @@ public:
 		tracker = 0;
 		model = 0;
 		camera = 0;
+		recursions = 1;
+		particles = 20;
 	}
 	
 	void track(){ 
-		tracker->track(model, camera,	3, 100,	constraints, trackpose,	0.0);
+		tracker->track(model, camera,	recursions, particles,	constraints, trackpose,	0.0);
 	}
 };
 

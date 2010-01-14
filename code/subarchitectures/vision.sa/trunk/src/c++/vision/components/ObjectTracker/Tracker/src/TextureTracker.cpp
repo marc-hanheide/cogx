@@ -410,14 +410,14 @@ void TextureTracker::drawResult(Particle* p, TrackerModel* m){
 			glClear(GL_DEPTH_BUFFER_BIT);
 			m_model->drawFaces();
 			glColorMask(1,1,1,1);
-			glLineWidth(1);
+			glLineWidth(3);
 			glColor3f(1.0,1.0,1.0);
 			m_model->drawEdges();
 			glColor3f(1.0,1.0,1.0);
 			break;
 		case 2:
-			m_tex_model_ip[0]->bind(0);
-			m_tex_frame_ip[0]->bind(1);
+			m_tex_model_ip[params.m_spreadlvl]->bind(0);
+			m_tex_frame_ip[params.m_spreadlvl]->bind(1);	
 			m_tex_model->bind(2);
 			m_tex_frame->bind(3);
 			m_shadeCompare->bind();
