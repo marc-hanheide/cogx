@@ -15,6 +15,9 @@ namespace ptz {
     int m_playerPort;
     int m_playerPTZDeviceID;
 
+    //always used for zoom value
+    double m_defaultZoom;
+
     boost::shared_ptr<PlayerCc::PlayerClient> m_playerClient;
     boost::shared_ptr<PlayerCc::PtzProxy> m_ptzProxy;
 

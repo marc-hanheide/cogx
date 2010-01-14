@@ -16,7 +16,8 @@ namespace ptz {
 
   PlayerPTZServer::PlayerPTZServer() : m_playerHost("localhost"),
 				       m_playerPort(6665),
-				       m_playerPTZDeviceID(0) 
+				       m_playerPTZDeviceID(0),
+				       m_defaultZoom(0)
   {}
   
 
@@ -43,14 +44,9 @@ namespace ptz {
       str >> m_playerPTZDeviceID;
     }
     log("Using m_playerPTZDeviceID=%d", m_playerPTZDeviceID);     
- 
-  }
 
-  void 
-  PlayerPTZServer::start() {
-    //ensure generic server part is configured
-    PTZServer::start();
 
+    //Create player connection
     m_playerClient = shared_ptr<PlayerCc::PlayerClient>(new PlayerCc::PlayerClient(m_playerHost, m_playerPort));
     m_playerClient->SetDataMode(PLAYER_DATAMODE_PULL);
     m_playerClient->SetReplaceRule(true, PLAYER_MSGTYPE_DATA);
@@ -60,6 +56,16 @@ namespace ptz {
 
     //going to work in position mode 
     m_ptzProxy->SelectControlMode(PLAYER_PTZ_POSITION_CONTROL);
+
+    //get default value for zoom
+    m_playerClient->Read();
+    m_defaultZoom = m_ptzProxy->GetZoom();
+  }
+
+  void 
+  PlayerPTZServer::start() {
+    //ensure generic server part is configured
+    PTZServer::start();
 
   }
 
@@ -82,8 +88,9 @@ namespace ptz {
   void 
   PlayerPTZServer::setPose(const PTZPose & _pose) {
     assert(m_ptzProxy);
-    log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,_pose.zoom);
-    //m_ptzProxy->SetCam(_pose.pan * M_PI / 180, _pose.tilt * M_PI / 180, _pose.zoom * M_PI / 180);
-    m_ptzProxy->SetCam(_pose.pan, _pose.tilt, _pose.zoom);
+    //log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,_pose.zoom);    
+    //m_ptzProxy->SetCam(_pose.pan, _pose.tilt, _pose.zoom);
+    log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
+    m_ptzProxy->SetCam(_pose.pan, _pose.tilt, m_defaultZoom);
   }
 }
