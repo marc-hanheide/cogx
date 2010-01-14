@@ -52,7 +52,7 @@ void ObjectTrackerDriver::runComponent()
                        
   // Load geometry from ply-file
   log("loading model '%s'", model.c_str());
-  m_model.load(model.c_str());
+  m_modelloader.LoadPly(m_model, model.c_str());
     
   // Generate VisualObject
   VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
