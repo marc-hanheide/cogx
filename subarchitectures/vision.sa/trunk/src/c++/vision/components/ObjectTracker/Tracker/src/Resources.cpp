@@ -237,12 +237,14 @@ int Resources::AddParticles(int num, Particle p, const char* parname){
 
 int Resources::AddModel(TrackerModel* model, const char* name){
 	// check if texture allready loaded before by comparing filename
+	int modelID = -1;
+	/*
 	int modelID = SearchModelName(name);
 	if(modelID != -1){
 		printf("[Resources::AddModel] Warning model allready exists: '%s'", name);
 		return modelID;	// return existing texture ID
 	}
-	
+	*/
 	char* tmp_name = new char[FN_LEN];
 	strcpy(tmp_name, name);
 	
@@ -352,12 +354,13 @@ int	Resources::AddShader(	const char* shadername,
 							const char* header)
 {
 	
-	
-	
+	int shaderID=-1;
+	/*
 	// check if texture allready loaded before by comparing filename
 	int shaderID = SearchShaderName(shadername);
 	if(shaderID != -1)
 		return shaderID;	// return existing texture ID
+	*/
 	
 	// texture doesn't exist and needs to be loaded
 	char vertex_fullname[FN_LEN];

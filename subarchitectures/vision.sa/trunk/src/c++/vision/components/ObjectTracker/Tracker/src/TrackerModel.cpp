@@ -45,11 +45,14 @@ bool TrackerModel::isRedundant(Edge* e1){
 
 
 // *** PUBLIC ***
-
 TrackerModel::TrackerModel(){
 	m_tex_original = 0;
 	m_texture = 0;
 	m_textured = false;
+	
+	char name[FN_LEN];
+	sprintf(name, "%s:texturing", m_modelname);
+	printf("%s\n", name);
 
 	int id;
 	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)

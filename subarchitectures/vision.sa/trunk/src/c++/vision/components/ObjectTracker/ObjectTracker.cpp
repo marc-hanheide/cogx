@@ -260,6 +260,8 @@ void ObjectTracker::initTrackingEntry(int i){
 	int id;
 	m_trackinglist[i].bfc = m_bfc;
 	m_trackinglist[i].textured = m_params.mode;
+	m_trackinglist[i].recursions = m_params.recursions;
+	m_trackinglist[i].particles = m_params.particles;
 	// --------------------------------
 	// init tracker
 	if(m_params.mode==1)
@@ -292,6 +294,7 @@ void ObjectTracker::initTrackingEntry(int i){
 		log("  error can not convert VisualObject to tracker model");
 		return;
 	}
+	sprintf(m_trackinglist[i].model->m_modelname, "%s", m_trackinglist[i].obj->label.c_str());
 	m_trackinglist[i].model->computeFaceNormals();
 	m_trackinglist[i].model->computeEdges();
 	m_trackinglist[i].model->Update();
