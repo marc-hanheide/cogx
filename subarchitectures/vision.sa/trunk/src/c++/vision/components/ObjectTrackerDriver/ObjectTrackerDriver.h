@@ -18,7 +18,7 @@
 #include <VisionData.hpp>
 
 #include "ObjectTrackerUtils.hpp"
-#include "PlyModel.h"
+#include "ModelLoader.h"
 #include "Timer.h"
 
 namespace cast
@@ -46,7 +46,8 @@ private:
   
   // Model to detect from ply file
   string model;
-  PlyModel m_model;
+  ModelLoader m_modelloader;
+  TrackerModel m_model;
   
   /**
    * callback function called whenever a new object appears ore an object
