@@ -1,16 +1,17 @@
  /**
- * @file Quaternion.h
+ * @file tgQuaternion.h
  * @author Thomas Mörwald
  * @date September 2009
  * @version 0.1
- * @brief Quaternion representing rotations (avoiding singularity locks)
+ * @brief tgQuaternion representing rotations (avoiding singularity locks)
  */
  
-#ifndef QUATERNION_H
-#define QUATERNION_H
+#ifndef TG_QUATERNION
+#define TG_QUATERNION
 
 #include <math.h>
-#include "mathlib.h"
+
+#include "tgMathlib.h"
 
 #ifndef FTOL
 #define FTOL 0.0001
@@ -21,21 +22,24 @@
 
 namespace TomGine{
 
-class Quaternion
+/**
+* @brief Class tgQuaternion
+*/
+class tgQuaternion
 {
 private:
 	
 	
 public:
 	float x,y,z,w;
-	Quaternion();
-	Quaternion(float x, float y, float z, float w);
+	tgQuaternion();
+	tgQuaternion(float x, float y, float z, float w);
 	
 	void normalise();
-	Quaternion getConjugate();
-	Quaternion operator+ (const Quaternion &q2);
-	Quaternion operator* (const Quaternion &rq);
-	Quaternion operator* (const float f);
+	tgQuaternion getConjugate();
+	tgQuaternion operator+ (const tgQuaternion &q2);
+	tgQuaternion operator* (const tgQuaternion &rq);
+	tgQuaternion operator* (const float f);
 	
 	vec3 operator* (const vec3 &vec);
 	

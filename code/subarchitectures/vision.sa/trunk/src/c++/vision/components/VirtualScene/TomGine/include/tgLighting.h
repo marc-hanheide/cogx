@@ -10,17 +10,28 @@
 #define TG_LIGHTING
 
 #include <GL/gl.h>
-#include "mathlib.h"
+#include "tgMathlib.h"
 
 namespace TomGine{
 
+/**
+* @brief Struct tgLight
+*
+* Light settings
+*/
 struct tgLight{
 	vec4 ambient;
 	vec4 diffuse;
 	vec4 specular;
 	vec4 position;
+	tgLight();
 };
 
+/**
+* @brief Class tgLighting
+*
+* Handling lighting in OpenGL
+*/
 class tgLighting
 {
 private:

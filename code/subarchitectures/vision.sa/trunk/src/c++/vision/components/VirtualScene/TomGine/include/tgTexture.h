@@ -13,6 +13,9 @@
 
 namespace TomGine{
 
+/**
+* @brief Class tgTexture
+*/
 class tgTexture
 {
 private:

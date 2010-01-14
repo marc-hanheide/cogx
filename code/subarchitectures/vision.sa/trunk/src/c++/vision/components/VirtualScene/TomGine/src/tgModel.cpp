@@ -1,37 +1,14 @@
-//CPP:
-//			Title:			class tgModel
-//			File:				tgModel.h
-//
-//			Function:		Representation for geometry using vertices and faces
-//
-//			Author:			Thomas Mörwald
-//			Date:				15.12.2009
-// ----------------------------------------------------------------------------
 
 #include "tgModel.h"
 #include <GL/gl.h>
 
 using namespace TomGine;
 
-tgModel::tgModel(){
-
-}
-
-void tgModel::ApplyMaterial(Material mat){
-	glMaterialfv(GL_FRONT,GL_AMBIENT,mat.ambient);
-	glMaterialfv(GL_FRONT,GL_DIFFUSE,mat.diffuse);
-	glMaterialfv(GL_FRONT,GL_SPECULAR,mat.specular);
-	glMaterialfv(GL_FRONT,GL_SHININESS,&mat.shininess);
-}
-
 void tgModel::DrawFaces(){
-	ApplyMaterial(m_material);
 	int i,j;
 	Face* f;
 	int v;
-	
-	m_pose.Activate();
-	
+		
 	for(i=0; i<(int)m_faces.size(); i++){
 		f = &m_faces[i];
 		
@@ -41,8 +18,7 @@ void tgModel::DrawFaces(){
 			glBegin(GL_QUADS);
 		else{
 			printf("[tgModel::printInfo()] Warning, no suitable face format\n");
-			printf("[tgModel::printInfo()] Face has %d vertices (supported: 3 or 4\n", f->vertices.size());
-			m_pose.Deactivate();
+			printf("[tgModel::printInfo()] Face has %d vertices (supported: 3 or 4\n", (int)f->vertices.size());
 			return;
 		}
 		
@@ -56,15 +32,12 @@ void tgModel::DrawFaces(){
 		glEnd();
 	}
 
-	m_pose.Deactivate();
 }
 
 void tgModel::DrawNormals(float normal_length){	// draw normals
 	int i,j,v;
 	Face* f;
-	
-	m_pose.Activate();
-	
+		
 	glDisable(GL_TEXTURE_2D);
 	glColor3f(0.0, 0.0, 1.0);
 	
@@ -83,7 +56,6 @@ void tgModel::DrawNormals(float normal_length){	// draw normals
 	}
 	glEnd();
 	
-	m_pose.Deactivate();
 	glColor3f(1.0, 1.0, 1.0);
 }
 

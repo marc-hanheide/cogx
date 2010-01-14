@@ -1,16 +1,16 @@
 
-#include "Quaternion.h"
+#include "tgQuaternion.h"
 
 using namespace TomGine;
 
-Quaternion::Quaternion(){
+tgQuaternion::tgQuaternion(){
 	x=0.0;
 	y=0.0;
 	z=0.0;
 	w=1.0;
 }
 
-Quaternion::Quaternion(float x, float y, float z, float w){
+tgQuaternion::tgQuaternion(float x, float y, float z, float w){
 	this->x = x;
 	this->y = y;
 	this->z = z;
@@ -20,7 +20,7 @@ Quaternion::Quaternion(float x, float y, float z, float w){
 // normalising a quaternion works similar to a vector. This method will not do anything
 // if the quaternion is close enough to being unit-length. define TOLERANCE as something
 // small like 0.00001f to get accurate results
-void Quaternion::normalise(){
+void tgQuaternion::normalise(){
 	// Don't normalize if we don't have to
 	float mag2 = w * w + x * x + y * y + z * z;
 	if (fabs(mag2 - 1.0f) > FTOL) {
@@ -34,13 +34,13 @@ void Quaternion::normalise(){
 
 // We need to get the inverse of a quaternion to properly apply a quaternion-rotation to a vector
 // The conjugate of a quaternion is the same as the inverse, as long as the quaternion is unit-length
-Quaternion Quaternion::getConjugate(){
-	return Quaternion(-x, -y, -z, w);
+tgQuaternion tgQuaternion::getConjugate(){
+	return tgQuaternion(-x, -y, -z, w);
 }
 
 // Adding
-Quaternion Quaternion::operator+ (const Quaternion &q2){
-	Quaternion rq;
+tgQuaternion tgQuaternion::operator+ (const tgQuaternion &q2){
+	tgQuaternion rq;
 	rq.x = x+q2.x;
 	rq.y = y+q2.y;
 	rq.z = z+q2.z;
@@ -51,25 +51,25 @@ Quaternion Quaternion::operator+ (const Quaternion &q2){
 
 
 // Multiplying q1 with q2 applies the rotation q2 to q1
-Quaternion Quaternion::operator* (const Quaternion &rq){
+tgQuaternion tgQuaternion::operator* (const tgQuaternion &rq){
 	// the constructor takes its arguments as (x, y, z, w)
-	return Quaternion(w * rq.x + x * rq.w + y * rq.z - z * rq.y,
+	return tgQuaternion(w * rq.x + x * rq.w + y * rq.z - z * rq.y,
 	                  w * rq.y + y * rq.w + z * rq.x - x * rq.z,
 	                  w * rq.z + z * rq.w + x * rq.y - y * rq.x,
 	                  w * rq.w - x * rq.x - y * rq.y - z * rq.z);
 }
 
-Quaternion Quaternion::operator* (const float f){
-	return Quaternion(x*f, y*f, z*f, w*f);
+tgQuaternion tgQuaternion::operator* (const float f){
+	return tgQuaternion(x*f, y*f, z*f, w*f);
 }
 
 
 // Multiplying a quaternion q with a vector v applies the q-rotation to v
-vec3 Quaternion::operator* (const vec3 &vec){
+vec3 tgQuaternion::operator* (const vec3 &vec){
 	vec3 vn(vec);
 	vn.normalize();
  
-	Quaternion vecQuat, resQuat;
+	tgQuaternion vecQuat, resQuat;
 	vecQuat.x = vn.x;
 	vecQuat.y = vn.y;
 	vecQuat.z = vn.z;
@@ -82,7 +82,7 @@ vec3 Quaternion::operator* (const vec3 &vec){
 }
 
 // Convert from Axis Angle
-void Quaternion::fromAxis(const vec3 &v, float angle){
+void tgQuaternion::fromAxis(const vec3 &v, float angle){
 	float sinAngle;
 	angle *= 0.5f;
 	vec3 vn(v);
@@ -97,8 +97,8 @@ void Quaternion::fromAxis(const vec3 &v, float angle){
 }
 
 // Convert from Euler Angles
-void Quaternion::fromEuler(float roll, float pitch, float yaw){
-	// Basically we create 3 Quaternions, one for pitch, one for yaw, one for roll
+void tgQuaternion::fromEuler(float roll, float pitch, float yaw){
+	// Basically we create 3 tgQuaternions, one for pitch, one for yaw, one for roll
 	// and multiply those together.
 	// the calculation below does the same, just shorter
  
@@ -122,7 +122,7 @@ void Quaternion::fromEuler(float roll, float pitch, float yaw){
 }
 
 // Convert from Matrix 4x4
-void Quaternion::fromMatrix(mat4 m){
+void tgQuaternion::fromMatrix(mat4 m){
 	w = sqrt(1.0 + m[0] + m[5] + m[10]) / 2.0;
 	float w4 = (4.0 * w);
 	x = (m[9] - m[6]) / w4 ;
@@ -133,7 +133,7 @@ void Quaternion::fromMatrix(mat4 m){
 }
 
 // Convert from Matrix 3x3
-void Quaternion::fromMatrix(mat3 m){
+void tgQuaternion::fromMatrix(mat3 m){
 	w = sqrt(1.0 + m[0] + m[4] + m[8]) / 2.0;
 	float w4 = (4.0 * w);
 	x = (m[7] - m[5]) / w4 ;
@@ -144,7 +144,7 @@ void Quaternion::fromMatrix(mat3 m){
 }
 
 // Convert to Matrix 4x4
-mat4 Quaternion::getMatrix4(){
+mat4 tgQuaternion::getMatrix4(){
 	float x2 = x * x;
 	float y2 = y * y;
 	float z2 = z * z;
@@ -165,7 +165,7 @@ mat4 Quaternion::getMatrix4(){
 }
 
 // Convert to Matrix 3x3
-mat3 Quaternion::getMatrix3(){
+mat3 tgQuaternion::getMatrix3(){
 	float x2 = x * x;
 	float y2 = y * y;
 	float z2 = z * z;
@@ -186,7 +186,7 @@ mat3 Quaternion::getMatrix3(){
 
 
 // Convert to Axis/Angles
-void Quaternion::getAxisAngle(vec3 *axis, double *angle){
+void tgQuaternion::getAxisAngle(vec3 *axis, double *angle){
 	float scale = sqrt(x * x + y * y + z * z);
 	axis->x = x / scale;
 	axis->y = y / scale;

@@ -14,6 +14,9 @@
 
 namespace TomGine{
 
+/**
+* @brief Class tgFrustum
+*/
 class tgFrustum{
     
 private:

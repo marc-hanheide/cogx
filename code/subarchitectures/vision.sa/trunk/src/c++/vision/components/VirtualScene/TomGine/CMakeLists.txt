@@ -13,7 +13,7 @@ link_directories(/usr/local/lib)
 
 # Set the sources.
 SET(SOURCES
-	src/Quaternion.cpp
+	src/tgQuaternion.cpp
 	src/tgCamera.cpp
 	src/tgEngine.cpp
 	src/tgFrustum.cpp
@@ -21,10 +21,11 @@ SET(SOURCES
 	src/tgMatrix3.cpp
 	src/tgModel.cpp
 	src/tgPose.cpp
+	src/tgRenderModel.cpp
 	src/tgTexture.cpp
 	src/tgVector3.cpp
 	src/tgGLXWindow.cpp
-	src/Timer.cpp)
+	src/tgTimer.cpp)
 
 LINK_LIBRARIES(GL)
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})

@@ -14,10 +14,14 @@
 #endif
 
 #include <math.h>
+
 #include "tgVector3.h"
 
 namespace TomGine{
 
+/**
+* @brief Class tgMatrix3
+*/
 class tgMatrix3
 {
 private:
