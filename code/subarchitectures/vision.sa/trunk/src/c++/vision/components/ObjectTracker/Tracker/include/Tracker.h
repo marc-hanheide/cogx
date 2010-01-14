@@ -39,7 +39,7 @@ protected:
 	Particles* m_particles;
 	Texture* m_tex_frame;
 	Texture* m_tex_frame_ip[NUM_SPREAD_LOOPS];
-	Model* m_model;
+	TrackerModel* m_model;
 	Camera* m_cam_ortho;
 	Camera* m_cam_default;
 	Camera* m_cam_perspective;
@@ -63,7 +63,7 @@ protected:
 	virtual void evaluateParticle(Particle* p){}
 	
 	// Functions
-	bool isReady(unsigned char* image, Model* model, Camera* camera);
+	bool isReady(unsigned char* image, TrackerModel* model, Camera* camera);
 	bool initGL();
 	
 public:
@@ -78,7 +78,7 @@ public:
 	
 	virtual void image_processing(unsigned char* image)=0;
 	
-	virtual bool track(	Model* model,
+	virtual bool track(	TrackerModel* model,
 											Camera* camera,
 											int num_recursions,
 											int num_particles,
@@ -89,7 +89,7 @@ public:
 	void reset();
 	
 	// Drawing to screen (result, ...)
-	virtual void drawResult(Particle* p, Model* m)=0;
+	virtual void drawResult(Particle* p, TrackerModel* m)=0;
 	void drawCoordinates();
 	void drawImage(unsigned char* image);
 	void drawPixel(float u, float v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);

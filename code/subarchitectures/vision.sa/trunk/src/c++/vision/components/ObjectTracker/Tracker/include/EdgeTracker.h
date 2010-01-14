@@ -21,7 +21,7 @@ public:
 	virtual bool initInternal();
 	
 	virtual void image_processing(unsigned char* image);
-	virtual bool track(	Model* model,
+	virtual bool track(	TrackerModel* model,
 											Camera* camera,
 											int num_recursions,
 											int num_particles,
@@ -29,7 +29,7 @@ public:
 											Particle& p_result,
 											float fTime=0.0);
 						
-	virtual void drawResult(Particle* p, Model* m);
+	virtual void drawResult(Particle* p, TrackerModel* m);
 
 };
 

@@ -120,7 +120,7 @@ bool EdgeTracker::initInternal()
 	return (m_tracker_initialized = true);
 }
 
-bool EdgeTracker::track(Model* model,
+bool EdgeTracker::track(TrackerModel* model,
 												Camera* camera,
 												int num_recursions,
 												int num_particles,
@@ -155,7 +155,7 @@ bool EdgeTracker::track(Model* model,
 }
 
 // Draw result of edge tracking (particle with maximum likelihood)
-void EdgeTracker::drawResult(Particle* p, Model* m){
+void EdgeTracker::drawResult(Particle* p, TrackerModel* m){
 // 	float var = 0.0;
 // 	var = m_particles->getVariance(params.number_of_particles);
 // 	glColor3f(1000*var,1-1000*var,0.0);

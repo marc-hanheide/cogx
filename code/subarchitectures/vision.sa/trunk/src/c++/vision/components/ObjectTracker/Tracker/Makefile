@@ -13,6 +13,7 @@ main: standalone.cpp
 all: clean main
 
 clean:
+	sudo rm -f /usr/local/lib/libTracker.so
 	make -C BUILD clean
 	rm -f *.o $(OUT)
 	rm -f *~
@@ -23,4 +24,3 @@ clean:
 	rm -f resources/model/*~
 	rm -f resources/shader/*~
 	rm -f resources/texture/*~
-	sudo rm -f /usr/local/lib/libTracker.so

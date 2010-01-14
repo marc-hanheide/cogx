@@ -51,7 +51,7 @@ public:
 	
 	virtual void image_processing(unsigned char* image);
 	
-	virtual bool track(	Model* model,
+	virtual bool track(	TrackerModel* model,
 											Camera* camera,
 											int num_recursions,
 											int num_particles,
@@ -61,7 +61,7 @@ public:
 	
 	virtual void textureFromImage();
 						
-	virtual void drawResult(Particle* p, Model* m);
+	virtual void drawResult(Particle* p, TrackerModel* m);
 	
 	virtual vector<float> getPDFxy(	Particle pose,
 																	float x_min, float y_min,

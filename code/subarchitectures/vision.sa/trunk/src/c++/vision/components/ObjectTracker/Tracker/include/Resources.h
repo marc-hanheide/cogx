@@ -5,8 +5,8 @@
 #include "headers.h"
 #include "Singleton.h"
 #include "ImageProcessor.h"
-#include "Model.h"
-#include "PlyModel.h"
+#include "TrackerModel.h"
+#include "ModelLoader.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Camera.h"
@@ -21,7 +21,7 @@
 
 
 typedef std::vector<Particles*> ParticlesList;
-typedef std::vector<Model*> ModelList;
+typedef std::vector<TrackerModel*> ModelList;
 typedef std::vector<Texture*> TextureList;
 typedef std::vector<Shader*> ShaderList;
 typedef std::vector<Camera*> CameraList;
@@ -40,12 +40,13 @@ private:
 	CvCapture* 			m_capture;
 	IplImage* 			m_image;
 	SDL_Surface* 		m_screen;
-	ImageProcessor* 	m_ip;
-	Frustum*			m_frustum;
+	ImageProcessor* m_ip;
+	Frustum*				m_frustum;
+	ModelLoader			m_modelloader;
 	
 	// Resources lists
 	ParticlesList	m_particlesList;
-	ModelList		m_modelList;
+	ModelList			m_modelList;
 	TextureList		m_textureList;
 	ShaderList		m_shaderList;
 	CameraList		m_cameraList;
@@ -98,7 +99,7 @@ public:
     Frustum*		GetFrustum();
     
     Particles*	GetParticles(int id){ return m_particlesList[id]; }
-    Model*		GetModel(int id){ return m_modelList[id]; }
+    TrackerModel*		GetModel(int id){ return m_modelList[id]; }
     Texture*	GetTexture(int id){ return m_textureList[id]; }
     Shader*		GetShader(int id){ return m_shaderList[id]; }
     Camera*		GetCamera(int id){ return m_cameraList[id]; }
@@ -110,7 +111,7 @@ public:
 
     // Add-functions
     int		AddParticles(int num, Particle p, const char* name);
-    int		AddModel(Model* model, const char* name);
+    int		AddModel(TrackerModel* model, const char* name);
 	int		AddPlyModel(const char* filename);
 	int		AddTexture(const char* filename, const char* texturename = NULL);
 	int		AddShader(	const char* shadername,

@@ -3,7 +3,7 @@
 
 // *** PRIVATE ***
 
-bool Tracker::isReady(unsigned char* image, Model* model, Camera* camera){
+bool Tracker::isReady(unsigned char* image, TrackerModel* model, Camera* camera){
 	if(!m_tracker_initialized){
 		printf("[TextureTracker::isReady] Error tracker not initialized\n");
 		return false;

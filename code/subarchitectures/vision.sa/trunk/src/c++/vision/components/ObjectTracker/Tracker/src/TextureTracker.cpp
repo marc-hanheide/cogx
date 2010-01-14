@@ -125,7 +125,7 @@ void TextureTracker::evaluateParticle(Particle* p){
 	glDeleteQueriesARB(1, &queryEdges);
 }
 
-// Draw Model to screen, extract modelview matrix, perform image processing for model
+// Draw TrackerModel to screen, extract modelview matrix, perform image processing for model
 void TextureTracker::model_processing(){
 	
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -312,7 +312,7 @@ bool TextureTracker::initInternal(){
 	return (m_tracker_initialized = true);
 }
 
-bool TextureTracker::track(	Model* model,				// tracking model (textured, vertexlist, facelist) 
+bool TextureTracker::track(	TrackerModel* model,				// tracking model (textured, vertexlist, facelist) 
 														Camera* camera,				// extrinsic camera (defining pose and projection)
 														int num_recursions,
 														int num_particles,
@@ -389,7 +389,7 @@ void TextureTracker::textureFromImage(){
 }
 
 // Draw result of texture tracking (particle with maximum likelihood)
-void TextureTracker::drawResult(Particle* p, Model* m){
+void TextureTracker::drawResult(Particle* p, TrackerModel* m){
 	bool texmodel = false;
 	
 	m_cam_perspective->Activate();
