@@ -11,47 +11,34 @@
 
 #include <stdio.h>
 #include <vector>
-#include "mathlib.h"
-#include "tgPose.h"
 
-
-using namespace std;
+#include "tgMathlib.h"
 
 namespace TomGine{
 
+/**
+* @brief Class tgModel
+*/
 class tgModel{	
 public:
-	tgModel();
-	
+
 	struct Vertex{
-		vec3 pos;
-		vec3 normal;
-		vec2 texCoord;
+		vec3 pos;				///< 3D position of vertex
+		vec3 normal;		///< normal vector of vertex
+		vec2 texCoord;	///< texture coordinate of vertex
 	};
 	struct Face{
-		vector<int> vertices;		// vertex-indexlist
-		vec3 normal;
-	};
-	struct Material{
-	vec4 ambient;
-	vec4 diffuse;
-	vec4 specular;
-	float shininess;
+		std::vector<int> vertices;		///< list of vertex-indices
+		vec3 normal;									///< normal vector of face
 	};
 	
-	vector<Vertex>			m_vertices;
-	vector<Face>				m_faces;
+	std::vector<Vertex>		m_vertices;	///< list of vertices
+	std::vector<Face>			m_faces;		///< list of faces
 	
-	Material 						m_material;
-	tgPose							m_pose;
-	
-	void DrawFaces();
-	void DrawNormals(float normal_length);
+	virtual void DrawFaces();
+	virtual void DrawNormals(float normal_length);
 	void ComputeNormals();
 	void PrintInfo();
-private:
-	void ApplyMaterial(Material mat);
-
 };
 
 } // namespace TomGine

@@ -5,7 +5,6 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "VirtualScene.h"
-#include "../../VisionUtils.h"
 
 
 /**
@@ -18,7 +17,6 @@ extern "C"
     return new cast::VirtualScene();
   }
 }
-
 
 
 using namespace cast;
@@ -53,7 +51,7 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	float r = 0.8 * float(rand())/RAND_MAX;
 	float g = 0.8 * float(rand())/RAND_MAX;
 	float b = 0.8 * float(rand())/RAND_MAX;
-	tgModel::Material matSilver; 
+	tgRenderModel::Material matSilver; 
 	matSilver.ambient = vec4(0.2+r,0.2+g,0.2+b,1.0);
 	matSilver.diffuse = vec4(0.2+r,0.2+g,0.2+b,1.0);
 	matSilver.specular = vec4(0.5,0.5,0.5,1.0);
@@ -65,7 +63,7 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	newModelEntry.castWMA = _wmc.address;
 	m_modellist.push_back(newModelEntry);
 	
-	Vector3 vCenter = vector3(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
+	tgVector3 vCenter = tgVector3(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
 	m_engine->SetCenterOfRotation(vCenter.x, vCenter.y, vCenter.z);
 	
 	

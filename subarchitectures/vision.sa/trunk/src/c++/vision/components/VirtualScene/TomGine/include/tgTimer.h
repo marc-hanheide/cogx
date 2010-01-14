@@ -1,13 +1,13 @@
  /**
- * @file Timer.h
+ * @file tgTimer.h
  * @author Thomas Mörwald
  * @date October 2009
  * @version 0.1
  * @brief Real-time clock for MS Windows and Linux.
  */
 
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef TG_TIMER
+#define TG_TIMER
 #pragma once
 
 #ifdef _WIN32
@@ -25,7 +25,10 @@ using namespace std;
 
 namespace TomGine{
 
-class Timer
+/**
+* @brief Class tgTimer
+*/
+class tgTimer
 {
 private:
 #ifdef WIN32
@@ -41,8 +44,8 @@ private:
 
 
 public:
-	Timer(void);
-	~Timer(void);
+	tgTimer(void);
+	~tgTimer(void);
 	
 	void	Reset();
 	double	Update();

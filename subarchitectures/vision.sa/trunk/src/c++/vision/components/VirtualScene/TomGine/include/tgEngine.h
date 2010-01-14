@@ -11,17 +11,15 @@
 #define TG_ENGINE
 
 #include <stdio.h>
-#include <SDL/SDL.h>
 #include <GL/gl.h>
 
 #include "tgGLXWindow.h"
-#include "Timer.h"
 #include "tgCamera.h"
-#include "tgLighting.h"
-#include "tgTexture.h"
-#include "tgModel.h"
-#include "tgPose.h"
 #include "tgEvent.h"
+#include "tgLighting.h"
+#include "tgRenderModel.h"
+#include "tgPose.h"
+#include "tgTimer.h"
 #include "tgVector3.h"
 
 namespace TomGine{
@@ -40,7 +38,7 @@ private:
 	tgCamera 			m_camera;
 	tgCamera 			m_camera0;
 	tgLighting 		m_lighting;
-	Timer 				m_timer;
+	tgTimer 			m_timer;
 	tgVector3			m_cor;			///< Center of Rotation
 	
 	float m_frametime;

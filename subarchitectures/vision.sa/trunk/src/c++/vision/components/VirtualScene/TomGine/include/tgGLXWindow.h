@@ -24,6 +24,9 @@
 
 namespace TomGine{
 
+/**
+* @brief Class tgGLXWindow
+*/
 class tgGLXWindow{
 private:
   Display                 *dpy;

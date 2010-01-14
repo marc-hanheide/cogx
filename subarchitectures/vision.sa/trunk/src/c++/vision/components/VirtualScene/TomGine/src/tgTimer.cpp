@@ -1,11 +1,11 @@
 
-#include "Timer.h"
+#include "tgTimer.h"
 
 using namespace TomGine;
 
 // ***********************************************************************************
 
-Timer::Timer(void) {
+tgTimer::tgTimer(void) {
 #ifdef WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*) &m_Frequency);
 	QueryPerformanceCounter((LARGE_INTEGER*)(&m_StartTicks));
@@ -17,10 +17,10 @@ Timer::Timer(void) {
 	m_fAppTime = 0.0;
 }
 
-Timer::~Timer(void) {
+tgTimer::~tgTimer(void) {
 }
 
-void Timer::Reset() {
+void tgTimer::Reset() {
 #ifdef WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*) &m_Frequency);
 	QueryPerformanceCounter((LARGE_INTEGER*)(&m_StartTicks));
@@ -32,7 +32,7 @@ void Timer::Reset() {
 	m_fAppTime = 0.0;
 }
 
-double Timer::Update() {
+double tgTimer::Update() {
 #ifdef WIN32
 	QueryPerformanceCounter((LARGE_INTEGER*)(&m_EndTicks));
 	fNow = (double)(m_EndTicks - m_StartTicks) / m_Frequency;

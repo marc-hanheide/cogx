@@ -15,13 +15,16 @@
 
 #include "tgVector3.h"
 #include "tgFrustum.h"
-#include "mathlib.h"
+#include "tgMathlib.h"
 
 #define GL_ORTHO 0
 #define GL_PERSPECTIVE 1
 
 namespace TomGine{
 
+/**
+* @brief Class tgCamera
+*/
 class tgCamera
 {
 private:

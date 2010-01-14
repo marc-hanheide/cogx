@@ -18,7 +18,7 @@ public:
 	bool valid;
 	bool bfc;
 	bool textured;
-	tgModel model;
+	tgRenderModel model;
 	
 	VisionData::VisualObjectPtr obj;
 	cast::cdl::WorkingMemoryAddress castWMA;

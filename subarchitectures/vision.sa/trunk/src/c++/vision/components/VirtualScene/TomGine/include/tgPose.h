@@ -10,15 +10,19 @@
 #define TG_POSE
 
 #include <GL/gl.h>
-#include "mathlib.h"
-#include "Quaternion.h"
+
+#include "tgMathlib.h"
+#include "tgQuaternion.h"
 
 namespace TomGine{
 
+/**
+* @brief Class tgPose
+*/
 class tgPose{
 public:
 	vec3 pos;
-	Quaternion q;
+	tgQuaternion q;
 	
 public:
 	tgPose();

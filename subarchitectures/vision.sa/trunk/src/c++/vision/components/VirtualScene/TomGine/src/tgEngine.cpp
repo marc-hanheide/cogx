@@ -29,7 +29,6 @@ tgEngine::tgEngine(){
 	m_smoothshading = false;
 	
 // 	Welcome();
-	
 }
 
 tgEngine::~tgEngine(){
@@ -96,23 +95,22 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 bool tgEngine::Update(float &fTime){
 	
 	bool quit = InputControl();
-	m_camera.ApplyTransform();
-	m_camera.Activate();
-	//m_lighting.Activate();
-	
 	DrawCoordinates();
 	Swap();
 	
 	// update frametime
 	fTime = m_frametime = m_timer.Update();
+
+	// clear framebuffer and depth buffer
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	
 	// OpenGL Render settings
 	if(m_bfc) glEnable(GL_CULL_FACE);
 	else			glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	
-	// clear framebuffer and depth buffer
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	m_camera.ApplyTransform();
+	m_camera.Activate();
+	m_lighting.Activate();
 	
 	return quit;
 }
@@ -248,9 +246,5 @@ void tgEngine::DrawCoordinates(){
 
 void tgEngine::Swap(){
 	m_window->Swap();
-	
-	// swap OpenGL framebuffer
-// 	SDL_GL_SwapBuffers();
-// 	SDL_Delay(5);	
 }
 

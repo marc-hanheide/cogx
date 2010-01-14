@@ -3,7 +3,7 @@
  * @author Thomas Mörwald
  * @date October 2009
  * @version 0.1
- * @brief Defining a 3D vector.
+ * @brief Defining a 3D vector. For comfortable camera movement.
  */
  
 #ifndef TG_VECTOR3
@@ -17,6 +17,9 @@
 
 namespace TomGine{
 
+/**
+* @brief Class tgVector3
+*/
 class tgVector3
 {
 public:

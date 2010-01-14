@@ -49,7 +49,7 @@ void tgPose::GetPose(mat3 &r, vec3 &p){
 }
 
 void tgPose::Rotate(float x, float y, float z){
-	Quaternion q2;
+	tgQuaternion q2;
 	
 	q2.fromEuler(x,y,z);
 	q = q2 * q;
@@ -57,7 +57,7 @@ void tgPose::Rotate(float x, float y, float z){
 }
 
 void tgPose::Rotate(vec3 r){
-	Quaternion q2;
+	tgQuaternion q2;
 	
 	q2.fromEuler(r.x,r.y,r.z);
 	q = q2 * q;

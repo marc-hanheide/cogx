@@ -1,5 +1,5 @@
  /**
- * @file BasicGeometries.h
+ * @file tgBasicGeometries.h
  * @author Thomas Mörwald
  * @date October 2009
  * @version 0.1
@@ -10,8 +10,9 @@
 
 namespace TomGine{
 
-tgModel GenCube( float x, float y, float z){
-	tgModel model;
+void GenCube( tgModel &model,
+							float x, float y, float z)
+{
 	float x2 = x * 0.5;
 	float y2 = y * 0.5;
 	float z2 = z * 0.5;
@@ -23,10 +24,10 @@ tgModel GenCube( float x, float y, float z){
 
 }
 
-tgModel GenCylinder(	float radius, float height,
-											int slices, int stacks, bool closed=true)
+void GenCylinder(	tgModel &model,
+									float radius, float height,
+									int slices, int stacks, bool closed=true)
 {
-	tgModel model;
 	int x,z, i=0;
 	float alpha = 2*PI / slices;
 	float deltaH = height / stacks;
@@ -109,7 +110,6 @@ tgModel GenCylinder(	float radius, float height,
 			}
 		}
 	}
-	return model;
 }
 
 } // namespace TomGine

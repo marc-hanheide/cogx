@@ -1,4 +1,4 @@
-/* mathlib
+/* Mathlib
  *
  * Copyright (C) 2003-2004, Alexander Zaprjagaev <frustum@frustum.org>
  *
@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __MATHLIB_H__
-#define __MATHLIB_H__
+#ifndef TG_MATHLIB_H
+#define TG_MATHLIB_H
 
 #include <math.h>
 

@@ -36,7 +36,6 @@ bool tgTexture::Load(unsigned char* image_data, int width, int height){
 void tgTexture::Bind(int stage){
 	glActiveTexture(GL_TEXTURE0 + stage);
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);
-	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
 }
 
