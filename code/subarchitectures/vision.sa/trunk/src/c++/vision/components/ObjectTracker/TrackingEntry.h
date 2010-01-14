@@ -12,7 +12,7 @@ public:
 	bool bfc;
 	bool textured;
 	Tracker* tracker;
-	Model* model;
+	TrackerModel* model;
 	Camera* camera;
 	VisionData::VisualObjectPtr obj;
 	cast::cdl::WorkingMemoryAddress castWMA;

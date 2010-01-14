@@ -40,7 +40,7 @@ ObjectTracker::~ObjectTracker(){
 		if(m_trackinglist[i].tracker) delete(m_trackinglist[i].tracker);
 	}
 	delete(g_Resources);
-	log("Resources released");
+	log("[ObjectTracker::~ObjectTracker()]");
 }
 
 // *** Working Memory Listeners ***
@@ -108,13 +108,6 @@ void ObjectTracker::removeVisualObject(const cdl::WorkingMemoryChange & _wmc){
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
   
-/*
-  log("**    ObjectTracker by Thomas Moerwald    **");
-  log("**       moerwald@acin.tuwien.ac.at       **");
-  log("**                                        **");
-  log("** please lookup the README file in the   **");
-  log("** component directory for usage          **");
- */
   if((it = _config.find("--videoname")) != _config.end())
   {
     m_videoServerName = it->second;
@@ -290,7 +283,7 @@ void ObjectTracker::initTrackingEntry(int i){
 		log("  error: no valid model received, adding nothing");
 		return;
 	}
-	m_trackinglist[i].model = new Model();
+	m_trackinglist[i].model = new TrackerModel();
 	if((id = g_Resources->AddModel(m_trackinglist[i].model, m_trackinglist[i].obj->label.c_str())) == -1)
 		return;
 	m_trackinglist[i].model = g_Resources->GetModel(id);
@@ -301,7 +294,7 @@ void ObjectTracker::initTrackingEntry(int i){
 	}
 	m_trackinglist[i].model->computeFaceNormals();
 	m_trackinglist[i].model->computeEdges();
-	m_trackinglist[i].model->UpdateDisplayLists();
+	m_trackinglist[i].model->Update();
 	//m_trackinglist[i].model->print();
 
 	m_trackinglist[i].camera = m_camera;
