@@ -183,10 +183,12 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			GoToPlace act = newActionInstance(GoToPlace.class);
 			String placeUnionID = plannerLiteralToWMID(_plannedAction.arguments[1]);
 			Union placeUnion = m_binderFacade.getUnion(placeUnionID);
+
 			if (placeUnion == null) {
 				throw new ActionExecutionException(
 						"No union for place union id: " + placeUnionID);
 			}
+			
 			List<FeatureValue> placeIDFeatures = m_binderFacade
 					.getFeatureValue(placeUnion, "place_id");
 			if (placeIDFeatures.isEmpty()) {

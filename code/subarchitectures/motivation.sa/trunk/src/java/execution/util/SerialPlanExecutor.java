@@ -24,7 +24,7 @@ import experimentation.StopWatch;
 /**
  * A class which manages the execution of a serial plan, using the actions
  * written separately to WM. There is probably some redundancy here, but the
- * interactions with the planner are not quite the more obvious things to track
+ * interactions with the planner are not quite the most obvious things to track
  * at the moment.
  * 
  * @author nah
@@ -262,14 +262,19 @@ public class SerialPlanExecutor extends Thread {
 				}
 			}
 		} catch (CASTException e) {
-			m_component.getLogger().warn("exception in serial executor", e);
+			m_component.logException(e);
+			try {
+				planComplete(ExecutionState.COMPLETED);
+			} catch (SubarchitectureComponentException e2) {
+				m_component.logException(e2);
+			}
+
 			if (actionWrapper != null) {
 				m_component.getLogger().warn("stopping action in progress");
 				try {
 					m_component.stopExecution(actionWrapper.getActionAddress());
 				} catch (CASTException e1) {
-					// we don't
-					e1.printStackTrace();
+					m_component.logException(e1);
 				}
 			}
 

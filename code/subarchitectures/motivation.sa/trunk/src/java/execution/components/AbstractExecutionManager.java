@@ -45,10 +45,12 @@ public abstract class AbstractExecutionManager extends ManagedComponent {
 		 */
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
+
 			assert (_wmc.address.equals(m_actionAddress));
 
 			Action action = getMemoryEntry(m_actionAddress, Action.class);
 
+	
 			if (action.status == ActionStatus.COMPLETE) {
 				log(CASTUtils.concatenate("Action COMPLETE at ", CASTUtils
 						.toString(m_actionAddress), " succeeded: ",
