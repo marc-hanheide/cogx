@@ -18,10 +18,11 @@ SET(SOURCES
 	src/EdgeTracker.cpp
 	src/Frustum.cpp
 	src/ImageProcessor.cpp
+	src/TrackerModel.cpp
 	src/Model.cpp
+	src/ModelLoader.cpp
 	src/Particles.cpp
 	src/ply.c
-	src/PlyModel.cpp
 	src/Quaternion.cpp
 	src/Resources.cpp
 	src/Shader.cpp

@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	float likelihood = 0.0;
 	int id = 0;
 	IplImage* img = 0;
-	Model* model = 0;
+	TrackerModel* model = 0;
 	Camera camera;
 	Particle p_result = Particle(0.0);
 	float fTimeIP, fTimeTrack, fTimeGrab;

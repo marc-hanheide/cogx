@@ -235,7 +235,7 @@ int Resources::AddParticles(int num, Particle p, const char* parname){
 	return parID;	
 }
 
-int Resources::AddModel(Model* model, const char* name){
+int Resources::AddModel(TrackerModel* model, const char* name){
 	// check if texture allready loaded before by comparing filename
 	int modelID = SearchModelName(name);
 	if(modelID != -1){
@@ -252,7 +252,7 @@ int Resources::AddModel(Model* model, const char* name){
 	
 	modelID = m_modelList.size()-1;
 	
-	if(m_showlog) printf("Model %i loaded: %s\n", modelID, name);
+	if(m_showlog) printf("TrackerModel %i loaded: %s\n", modelID, name);
 	
 	return modelID;
 }
@@ -269,16 +269,16 @@ int	Resources::AddPlyModel(const char* filename){
 	// texture doesn't exist and needs to be loaded
 	char fullname[FN_LEN];
 	sprintf(fullname, "%s%s", m_modelPath, filename);
-	PlyModel* model = new PlyModel();
+	TrackerModel* model = new TrackerModel();
 	
-	loaded = model->load(fullname);
-	
-	
-	if(!loaded){
+	if(!m_modelloader.LoadPly(*model, fullname)){
 		printf("[Resources::AddModel] Error failed to load model %s\n", fullname);
 		delete(model);
 		return -1;
 	}
+	model->computeEdges();
+	model->Update();
+	
 	
 	char* name = new char[FN_LEN];
 	strcpy(name, filename);
@@ -289,7 +289,7 @@ int	Resources::AddPlyModel(const char* filename){
 	
 	modelID = m_modelList.size()-1;
 	
-	if(m_showlog) printf("Model %i loaded: %s\n", modelID, name);
+	if(m_showlog) printf("TrackerModel %i loaded: %s\n", modelID, name);
 	
 	return modelID;
 }
