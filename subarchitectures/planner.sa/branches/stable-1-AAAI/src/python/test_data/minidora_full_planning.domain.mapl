@@ -96,12 +96,13 @@
 	   :variables (?from - place)
 	   :precondition (and
 			  (located ?a ?from) 
-			  (connected ?from ?to)
+			  (or (connected ?from ?to)
+			      (connected ?to ?from)
+			      )
 			  )
 	   :effect (and
 		    (not (located ?a ?from))
 		    (located ?a ?to)
-		    (connected ?to ?from) ;; now we assume we can also move back
 		    ))
 	
 
