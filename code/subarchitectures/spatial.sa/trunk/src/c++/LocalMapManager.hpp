@@ -31,6 +31,7 @@
 #include <Transformation/Transformation3D.hh>
 #include <PTZ.hpp>
 #include <VisionData.hpp>
+#include "GridObjectFinder.hpp"
 
 namespace spatial {
   typedef std::vector<std::pair<double, double> > PlaneList;
@@ -166,9 +167,10 @@ protected:
   std::map<int, CharMap *> m_nodeGridMapsAlt;
 
   PlaneMap* m_planeMap;
-
   CharMap* m_planeObstacleMap;
   Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
+
+  std::vector<GridObjectFinder *> m_planeObjectFinders;
 
   Cure::TransformedOdomPoseProvider m_TOPP;
 
@@ -186,6 +188,7 @@ protected:
   std::string m_RobotServerHost;
   Robotbase::RobotbaseServerPrx m_RobotServer;
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
+
 
 private:
   void receiveScan2d(const Laser::Scan2d &castScan);

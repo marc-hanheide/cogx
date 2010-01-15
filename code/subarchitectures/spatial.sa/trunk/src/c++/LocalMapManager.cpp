@@ -68,6 +68,13 @@ LocalMapManager::~LocalMapManager()
     }
     delete m_lgm2_alt;
   }
+
+  if (!m_bNoPlanes) {
+    for (vector<GridObjectFinder*>::iterator it = m_planeObjectFinders.begin();
+	it != m_planeObjectFinders.end(); it++) {
+      delete *it;
+    }
+  }
 }
 
 void LocalMapManager::configure(const map<string,string>& _config) 
@@ -165,6 +172,11 @@ void LocalMapManager::configure(const map<string,string>& _config)
     m_Glrt1_alt  = new CharGridLineRayTracer(*m_lgm1_alt);
     m_lgm2_alt = new CharMap(70, 0.1, '2', CharMap::MAP1);
     m_Glrt2_alt  = new CharGridLineRayTracer(*m_lgm2_alt);
+  }
+
+  if (!m_bNoPlanes) {
+    // Create plane objects
+    m_planeObjectFinders.push_back(createTableFinder());
   }
 
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
@@ -785,6 +797,8 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
       Cure::Pose3D currentPose = m_TOPP.getPose();
       m_DisplayPlaneMap->updateDisplay(&currentPose);
     }
+
+
     //m_planeMap->print(std::cout);
   }
 }

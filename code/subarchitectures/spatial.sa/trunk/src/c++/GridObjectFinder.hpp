@@ -20,7 +20,7 @@
 #define GridObjectFinder_hpp
 #include <opencv/cv.h>
 #include <vector>
-//#include <highgui.h>
+#include <Navigation/LocalGridMap.hh>
 
 struct PlaneData;
 
@@ -33,15 +33,19 @@ namespace spatial {
   {
     public:
       GridObjectFinder(IplImage *objectGrid, int objectXCenter,
-	  int objectYCenter, ObjectFinderSymmetry symmetry);
+	  int objectYCenter, ObjectFinderSymmetry symmetry, double angStep = M_PI/16);
       ~GridObjectFinder();
 
-      void findObject(IplImage *image, double *outX, double *outY, double *outAngle,
+      void findObject(IplImage *image, int *outX, int *outY, double *outAngle,
 	  double *outConfidence = 0);
-
+      void findObject(Cure::LocalGridMap<unsigned int> &lgm, int *outX, int *outY, double *outAngle,
+	  double *outConfidence = 0);
 
     private:
       std::vector<IplImage *> m_aspectImages;
+      double m_angStep;
   };
+
+  GridObjectFinder *createTableFinder();
 };
 #endif //GridObjectFinder_hpp
