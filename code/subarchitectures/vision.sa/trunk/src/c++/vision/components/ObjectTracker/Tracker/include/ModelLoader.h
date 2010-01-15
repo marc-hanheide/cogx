@@ -22,7 +22,7 @@ public:
 	
 	//void write(const char* filename);
 	bool LoadPly(Model &model, const char* filename);
-   
+	   
 };
 
 
