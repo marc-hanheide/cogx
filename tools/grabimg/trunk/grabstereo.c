@@ -51,7 +51,7 @@ void SaveCurrentImages(int save_color)
     if(save_color)
     {
       snprintf(filename, 1024, "img%03d-%c.jpg", imgcnt, i == 0 ? 'L' : 'R');
-      cvSaveImage(filename, frame[i], 0);
+      cvSaveImage(filename, frame[i]);
     }
     else
     {
@@ -59,7 +59,7 @@ void SaveCurrentImages(int save_color)
           IPL_DEPTH_8U, 1);
       cvCvtColor(frame[i], grey, CV_BGR2GRAY);
       snprintf(filename, 1024, "img%03d-%c.bmp", imgcnt, i == 0 ? 'L' : 'R');
-      cvSaveImage(filename, grey, 0);
+      cvSaveImage(filename, grey);
       cvReleaseImage(&grey);
     }
     printf("written image '%s'\n", filename);
