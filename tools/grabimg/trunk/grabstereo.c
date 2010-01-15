@@ -25,6 +25,9 @@ int imgcnt = 0;
 void Usage(const char *argv0)
 {
   printf(
+    "Saves stereo image pairs img000-L.bmp, img000-R.bmp, img001-L.bmp ...\n"
+    "Dafault format is grey level BMP (as this is required for SVS calibration\n"
+    "software) but can be changed to color JPG with option -c\n"
     "usage: %s [-h] [-f | -v] [-d \"left right\"]\n"
     " -h .. this help\n"
     " -d left right .. device IDs for left and right images, e.g. \"0 1\". default is 0 and 1\n"
@@ -32,11 +35,12 @@ void Usage(const char *argv0)
     " -f .. device class firewire (IEEE1394)\n"
     "       default is ANY, whichever is found first\n"
     "       Note that in case the specified device class has no camera of the\n"
-    "       given id, the first other available camera will be selected\n",
+    "       given id, the first other available camera will be selected\n"
+    " -c .. save color .jpg images instead of grey .bmp images (the default)\n",
     argv0);
 }
 
-void SaveCurrentImages()
+void SaveCurrentImages(int save_color)
 {
   char filename[1024];
   int i;
@@ -44,14 +48,20 @@ void SaveCurrentImages()
   {
     if(!frame[i])
       return;
-    //snprintf(filename, 1024, "img%03d-%c.jpg", imgcnt, i == 0 ? 'L' : 'R');
-    //cvSaveImage(filename, frame[i], 0);
-    IplImage *grey = cvCreateImage(cvSize(frame[0]->width, frame[0]->height),
-        IPL_DEPTH_8U, 1);
-    cvCvtColor(frame[i], grey, CV_BGR2GRAY);
-    snprintf(filename, 1024, "img%03d-%c.bmp", imgcnt, i == 0 ? 'L' : 'R');
-    cvSaveImage(filename, grey, 0);
-    cvReleaseImage(&grey);
+    if(save_color)
+    {
+      snprintf(filename, 1024, "img%03d-%c.jpg", imgcnt, i == 0 ? 'L' : 'R');
+      cvSaveImage(filename, frame[i], 0);
+    }
+    else
+    {
+      IplImage *grey = cvCreateImage(cvSize(frame[0]->width, frame[0]->height),
+          IPL_DEPTH_8U, 1);
+      cvCvtColor(frame[i], grey, CV_BGR2GRAY);
+      snprintf(filename, 1024, "img%03d-%c.bmp", imgcnt, i == 0 ? 'L' : 'R');
+      cvSaveImage(filename, grey, 0);
+      cvReleaseImage(&grey);
+    }
     printf("written image '%s'\n", filename);
   }
   imgcnt++;
@@ -65,9 +75,10 @@ int main(int argc, char** argv)
   int c;
   extern char *optarg;
   int done = 0;
+  int save_color = 0;
   int i;
 
-  while((c = getopt(argc, argv, "bd:vfh")) != -1)
+  while((c = getopt(argc, argv, "bd:vfhc")) != -1)
   {
     switch(c)
     {
@@ -91,6 +102,9 @@ int main(int argc, char** argv)
           device_class = CV_CAP_IEEE1394;
         else
           printf("device class can be set to either V4L2 or IEEE1394\n");
+        break;
+      case 'c':
+        save_color = 1;
         break;
       case 'h':
       default:
@@ -170,7 +184,7 @@ int main(int argc, char** argv)
         done = 1;
         break;
       case 'g':
-          SaveCurrentImages();
+          SaveCurrentImages(save_color);
           break;
       default:
         break;
