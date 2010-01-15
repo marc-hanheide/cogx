@@ -38,7 +38,7 @@ void TextureTracker::particle_filtering(int num_recursions, int num_particles){
 
 	for(int i=0; i<num_recursions; i++){
 		// adjusting spreading level
-		if(m_model->isTextured()){
+		if(m_model->getTextured()){
 			params.m_spreadlvl = (int)floor((NUM_SPREAD_LOOPS-1)*2.0*(1.0-c_max));
 			if(params.m_spreadlvl>=NUM_SPREAD_LOOPS)
 				params.m_spreadlvl = NUM_SPREAD_LOOPS-1;
@@ -165,7 +165,7 @@ void TextureTracker::model_processing(){
 		
 	// perform image processing with reprojected image
 	glDepthMask(0);
-	if(m_model->isTextured()) m_ip->gauss(m_tex_model, m_tex_model_ip[0]);
+	if(m_model->getTextured()) m_ip->gauss(m_tex_model, m_tex_model_ip[0]);
 	else m_ip->copy(m_tex_model, m_tex_model_ip[0]);
 	m_ip->sobel(m_tex_model_ip[0], m_tex_model_ip[0], 0.03, true);
 	for(int i=1; i<NUM_SPREAD_LOOPS; i++)

@@ -2,6 +2,273 @@
 #include "TrackerModel.h"
 #include "Resources.h"
 
+// *** PUBLIC ***
+
+// Constructors
+TrackerModel::TrackerModel(){
+	m_tex_original = 0;
+	m_texture = 0;
+	m_textured = false;
+	
+	sprintf(m_modelname, "");
+
+	int id;
+	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
+		exit(1);
+	m_shadeTexturing = g_Resources->GetShader(id);
+}
+
+TrackerModel::TrackerModel(const TrackerModel& m2){
+	m_vertexlist = m2.m_vertexlist;
+	m_facelist = m2.m_facelist;
+	m_edgelist = m2.m_edgelist;
+	m_passlist = m2.m_passlist;
+	
+	sprintf(m_modelname, "%s", m2.m_modelname);
+	
+	m_tex_original = m2.m_tex_original;
+	m_texture = m2.m_texture;
+	m_textured = m2.m_textured;
+}
+
+TrackerModel::TrackerModel(const Model& m){
+	printf("Test\n");
+}
+
+TrackerModel::~TrackerModel(){	
+
+}
+
+TrackerModel& TrackerModel::operator=(const TrackerModel& m2){
+	
+	m_vertexlist = m2.m_vertexlist;
+	m_facelist = m2.m_facelist;
+	m_edgelist = m2.m_edgelist;
+	m_passlist = m2.m_passlist;
+	
+	sprintf(m_modelname, "%s", m2.m_modelname);
+	
+	m_tex_original = m2.m_tex_original;
+	m_texture = m2.m_texture;
+	m_textured = m2.m_textured;
+	
+	return *this;
+}
+
+// computes, updates
+void TrackerModel::computeEdges(){
+    int i,j;
+    
+    // Extract edges from faces
+    for(i=0; i<(int)m_facelist.size(); i++){
+        for(j=0; j<(int)m_facelist[i].v.size(); j++){
+        	Edge e;
+            e.start = m_facelist[i].v[j];
+            e.end = m_facelist[i].v[(j+1)%m_facelist[i].v.size()];
+            if(!isRedundant(&e)){
+            	//printf("Edge: %d %d\n", m_edgelist[k].start, m_edgelist[k].end);
+            	m_edgelist.push_back(e);
+            }
+        }
+    }
+}
+
+void TrackerModel::Update(){
+	if(m_facepixellist.size() != m_facelist.size())
+		m_facepixellist.assign(m_facelist.size(), 0);
+		
+	UpdateDisplayLists();
+}
+
+// draws, prints
+void TrackerModel::print(){
+	int i,j;
+	
+	printf("TrackerModel:\n");
+	for(i=0; i<(int)m_vertexlist.size(); i++){
+		Vertex v = m_vertexlist[i];
+		printf("Vertex %i: %f %f %f, %f %f %f, %f %f\n", i, v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z, v.texCoord.x, v.texCoord.y);
+	}
+	for(i=0; i<(int)m_facelist.size(); i++){
+		printf("Face %i: ",i);
+		for(j=0; j<(int)m_facelist[i].v.size(); j++){
+			printf("%i ", m_facelist[i].v[j]);
+		}
+		printf("%f %f %f\n", m_facelist[i].normal.x, m_facelist[i].normal.y, m_facelist[i].normal.z);
+	}
+	for(i=0; i<(int)m_edgelist.size(); i++){
+		printf("Edge %i: %i %i\n", i, m_edgelist[i].start, m_edgelist[i].end);
+	}
+}
+
+void TrackerModel::drawNormals(){
+	glCallList(m_dlNormals);
+}
+
+void TrackerModel::drawTexturedFaces(){
+	if(!m_passlist.empty()){
+		glCallList(m_dlTexturedFaces);
+	}		
+}
+
+void TrackerModel::drawUntexturedFaces(){
+	glCallList(m_dlUntexturedFaces);
+}
+
+void TrackerModel::drawPass(){
+ 	glCallList(m_dlPass);
+}
+
+void TrackerModel::drawFaces(){
+	if(m_texture)	m_texture->bind();
+	
+	glCallList(m_dlFaces);
+
+	if(m_texture) glDisable(GL_TEXTURE_2D);	
+}
+
+void TrackerModel::drawEdges(){
+	glCallList(m_dlEdges);
+}
+
+void TrackerModel::drawFace(int i){
+	int j;
+	Face* f;
+	
+	if(m_texture){
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		m_texture->bind();
+	}
+	
+	
+	f = &m_facelist[i];
+	if((int)f->v.size() == 3)
+		glBegin(GL_TRIANGLES);
+	else if(f->v.size() == 4)
+		glBegin(GL_QUADS);
+	else
+		printf("[TrackerModel::drawFaces] Warning unsupported face structure");
+	
+	for(j=0; j<(int)f->v.size(); j++){
+		glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+		glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+		glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
+	}
+		
+	glEnd();
+		
+	if(m_texture){
+		glDisable(GL_TEXTURE_2D);
+	}
+}
+
+// counts pixels of each face
+// if pixels of face are > than in any previouse view
+//   set update flag = true
+vector<int> TrackerModel::getFaceUpdateList(Particle* p_max, vec3 view, float minTexGrabAngle){
+	int i, n;
+	vector<int> faceUpdateList;
+	float alpha;
+	vec3 vT;
+	mat3 mR;
+	p_max->getPose(mR, vT);
+	
+	// generate occlusion queries
+	unsigned int* queryPixels;		// Occlussion query for counting pixels
+	queryPixels = (unsigned int*)malloc( sizeof(unsigned int) * m_facelist.size() );
+	glGenQueriesARB(m_facelist.size(), queryPixels);
+	
+	// count pixels for each face and choose if its texture has to be updated
+	p_max->activate();
+		
+		for(i=0; i<(int)m_facelist.size(); i++){
+			glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
+			drawFace(i);
+			glEndQueryARB(GL_SAMPLES_PASSED_ARB);			
+		}
+		
+		for(i=0; i<(int)m_facelist.size(); i++){
+			glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
+			
+			vec3 vn = mR * m_facelist[i].normal;
+			alpha = acos(vn*view);
+			
+			if((m_facepixellist[i]==0) && (alpha>minTexGrabAngle)){
+				faceUpdateList.push_back(i);
+				m_facepixellist[i] = n;
+			}
+		}
+		
+	p_max->deactivate();
+	
+	glDeleteQueriesARB(m_facelist.size(), queryPixels);
+	free(queryPixels);
+	
+	return faceUpdateList;
+}
+
+void TrackerModel::textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view, float minTexGrabAngle){
+	int i,j,k;
+	vec4 texcoords_model;
+	vec4 vertex;
+	mat4 modelview, projection, modelviewprojection;
+	
+	// get faces to update
+	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
+	if(faceUpdateList.empty())
+		return;
+	
+	// add new rendering pass
+	Pass* newpass = new Pass;
+	
+	// query modelview and projection matrix
+	p_max->activate();
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+	glGetFloatv(GL_PROJECTION_MATRIX, projection);
+	p_max->deactivate();
+	newpass->modelviewprojection = projection * modelview;
+	
+	// store texture
+	newpass->texture->copyFromTexture(image);
+	
+	// add faces to pass
+	newpass->f = faceUpdateList;
+	
+	m_passlist.push_back(newpass);
+			
+	// clean up passes
+	m_texturedfaces.clear();		// holds faces which are allready in use by another pass
+	for(i=(m_passlist.size()-1); i>=0; i--){		// parse through passlist topdown
+		Pass* p = m_passlist[i];					// current pass
+		bool destroy = true;
+		
+		for(j=0; j<(int)p->f.size(); j++){				// for each face of pass
+			bool face_allready_in_use = false;
+			for(k=0; k<(int)m_texturedfaces.size(); k++){
+				if(p->f[j] == m_texturedfaces[k])			// compare with each face in usedfaces
+					face_allready_in_use = true;
+			}
+			if(!face_allready_in_use){
+				m_texturedfaces.push_back(p->f[j]);
+				destroy=false;
+			}
+		}
+		
+		if(destroy){
+			delete(p);
+			m_passlist.erase(m_passlist.begin()+i);
+		}
+	}
+	
+	m_textured = true;
+	m_shadeTexturing->bind();
+	m_shadeTexturing->setUniform("useTexCoords", false);
+	m_shadeTexturing->unbind();
+	
+	UpdateDisplayLists();
+}
+
 
 // *** PROTECTED ***
 
@@ -43,113 +310,7 @@ bool TrackerModel::isRedundant(Edge* e1){
 	return false;
 }
 
-
-// *** PUBLIC ***
-TrackerModel::TrackerModel(){
-	m_tex_original = 0;
-	m_texture = 0;
-	m_textured = false;
-	
-	char name[FN_LEN];
-	sprintf(name, "%s:texturing", m_modelname);
-	printf("%s\n", name);
-
-	int id;
-	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
-		exit(1);
-	m_shadeTexturing = g_Resources->GetShader(id);
-}
-
-TrackerModel::TrackerModel(const TrackerModel& m2){
-	m_vertexlist = m2.m_vertexlist;
-	m_facelist = m2.m_facelist;
-	m_edgelist = m2.m_edgelist;
-	m_passlist = m2.m_passlist;
-	
-	sprintf(m_modelname, "%s", m2.m_modelname);
-	
-	m_tex_original = m2.m_tex_original;
-	m_texture = m2.m_texture;
-	m_textured = m2.m_textured;
-}
-
-TrackerModel::~TrackerModel(){	
-
-}
-
-TrackerModel& TrackerModel::operator=(const TrackerModel& m2){
-	
-	m_vertexlist = m2.m_vertexlist;
-	m_facelist = m2.m_facelist;
-	m_edgelist = m2.m_edgelist;
-	m_passlist = m2.m_passlist;
-	
-	sprintf(m_modelname, "%s", m2.m_modelname);
-	
-	m_tex_original = m2.m_tex_original;
-	m_texture = m2.m_texture;
-	m_textured = m2.m_textured;
-	
-	return *this;
-}
-
-void TrackerModel::print(){
-	int i,j;
-	
-	printf("TrackerModel:\n");
-	for(i=0; i<(int)m_vertexlist.size(); i++){
-		Vertex v = m_vertexlist[i];
-		printf("Vertex %i: %f %f %f, %f %f %f, %f %f\n", i, v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z, v.texCoord.x, v.texCoord.y);
-	}
-	for(i=0; i<(int)m_facelist.size(); i++){
-		printf("Face %i: ",i);
-		for(j=0; j<(int)m_facelist[i].v.size(); j++){
-			printf("%i ", m_facelist[i].v[j]);
-		}
-		printf("%f %f %f\n", m_facelist[i].normal.x, m_facelist[i].normal.y, m_facelist[i].normal.z);
-	}
-	for(i=0; i<(int)m_edgelist.size(); i++){
-		printf("Edge %i: %i %i\n", i, m_edgelist[i].start, m_edgelist[i].end);
-	}
-}
-
-// Generate Edges from faces
-void TrackerModel::computeEdges(){
-    int i,j;
-    
-    // Extract edges from faces
-    for(i=0; i<(int)m_facelist.size(); i++){
-        for(j=0; j<(int)m_facelist[i].v.size(); j++){
-        	Edge e;
-            e.start = m_facelist[i].v[j];
-            e.end = m_facelist[i].v[(j+1)%m_facelist[i].v.size()];
-            if(!isRedundant(&e)){
-            	//printf("Edge: %d %d\n", m_edgelist[k].start, m_edgelist[k].end);
-            	m_edgelist.push_back(e);
-            }
-        }
-    }
-}
-
-void TrackerModel::flipNormals(){
-	int i;
-	Face* f;
-	
-	for(i=0; i<(int)m_facelist.size(); i++){
-		f = &m_facelist[i];
-		f->normal.x = -f->normal.x;
-		f->normal.y = -f->normal.y;
-		f->normal.z = -f->normal.z;
-	}
-}
-
-void TrackerModel::Update(){
-	if(m_facepixellist.size() != m_facelist.size())
-		m_facepixellist.assign(m_facelist.size(), 0);
-		
-	UpdateDisplayLists();
-}
-
+// Generate all display lists
 void TrackerModel::UpdateDisplayLists(){
 
 	if(glIsList(m_dlTexturedFaces)) 	glDeleteLists(m_dlTexturedFaces, 1);
@@ -413,182 +574,6 @@ void TrackerModel::genListNormals(float normal_length){	// draw normals
 	
 	glColor3f(1.0, 1.0, 1.0);
 }
-
-// Drawing display lists
-void TrackerModel::drawNormals(){
-	glCallList(m_dlNormals);
-}
-
-void TrackerModel::drawTexturedFaces(){
-	if(!m_passlist.empty()){
-		glCallList(m_dlTexturedFaces);
-	}		
-}
-
-void TrackerModel::drawUntexturedFaces(){
-	glCallList(m_dlUntexturedFaces);
-}
-
-void TrackerModel::drawPass(){
- 	glCallList(m_dlPass);
-}
-
-void TrackerModel::drawFaces(){
-	if(m_texture)	m_texture->bind();
-	
-	glCallList(m_dlFaces);
-
-	if(m_texture) glDisable(GL_TEXTURE_2D);	
-}
-
-void TrackerModel::drawEdges(){
-	glCallList(m_dlEdges);
-}
-
-void TrackerModel::drawFace(int i){
-	int j;
-	Face* f;
-	
-	if(m_texture){
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		m_texture->bind();
-	}
-	
-	
-	f = &m_facelist[i];
-	if((int)f->v.size() == 3)
-		glBegin(GL_TRIANGLES);
-	else if(f->v.size() == 4)
-		glBegin(GL_QUADS);
-	else
-		printf("[TrackerModel::drawFaces] Warning unsupported face structure");
-	
-	for(j=0; j<(int)f->v.size(); j++){
-		glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
-		glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
-		glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
-	}
-		
-	glEnd();
-		
-	if(m_texture){
-		glDisable(GL_TEXTURE_2D);
-	}
-}
-
-// set original texture as current
-void TrackerModel::restoreTexture(){
-	m_texture = m_tex_original;
-}
-
-// counts pixels of each face
-// if pixels of face are > than in any previouse view
-//   set update flag = true
-vector<int> TrackerModel::getFaceUpdateList(Particle* p_max, vec3 view, float minTexGrabAngle){
-	int i, n;
-	vector<int> faceUpdateList;
-	float alpha;
-	vec3 vT;
-	mat3 mR;
-	p_max->getPose(mR, vT);
-	
-	// generate occlusion queries
-	unsigned int* queryPixels;		// Occlussion query for counting pixels
-	queryPixels = (unsigned int*)malloc( sizeof(unsigned int) * m_facelist.size() );
-	glGenQueriesARB(m_facelist.size(), queryPixels);
-	
-	// count pixels for each face and choose if its texture has to be updated
-	p_max->activate();
-		
-		for(i=0; i<(int)m_facelist.size(); i++){
-			glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
-			drawFace(i);
-			glEndQueryARB(GL_SAMPLES_PASSED_ARB);			
-		}
-		
-		for(i=0; i<(int)m_facelist.size(); i++){
-			glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
-			
-			vec3 vn = mR * m_facelist[i].normal;
-			alpha = acos(vn*view);
-			
-			if((m_facepixellist[i]==0) && (alpha>minTexGrabAngle)){
-				faceUpdateList.push_back(i);
-				m_facepixellist[i] = n;
-			}
-		}
-		
-	p_max->deactivate();
-	
-	glDeleteQueriesARB(m_facelist.size(), queryPixels);
-	free(queryPixels);
-	
-	return faceUpdateList;
-}
-
-void TrackerModel::textureFromImage(Texture* image, int width, int height, Particle* p_max, vec3 view, float minTexGrabAngle){
-	int i,j,k;
-	vec4 texcoords_model;
-	vec4 vertex;
-	mat4 modelview, projection, modelviewprojection;
-	
-	// get faces to update
-	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
-	if(faceUpdateList.empty())
-		return;
-	
-	// add new rendering pass
-	Pass* newpass = new Pass;
-	
-	// query modelview and projection matrix
-	p_max->activate();
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
-	glGetFloatv(GL_PROJECTION_MATRIX, projection);
-	p_max->deactivate();
-	newpass->modelviewprojection = projection * modelview;
-	
-	// store texture
-	newpass->texture->copyFromTexture(image);
-	
-	// add faces to pass
-	newpass->f = faceUpdateList;
-	
-	m_passlist.push_back(newpass);
-			
-	// clean up passes
-	m_texturedfaces.clear();		// holds faces which are allready in use by another pass
-	for(i=(m_passlist.size()-1); i>=0; i--){		// parse through passlist topdown
-		Pass* p = m_passlist[i];					// current pass
-		bool destroy = true;
-		
-		for(j=0; j<(int)p->f.size(); j++){				// for each face of pass
-			bool face_allready_in_use = false;
-			for(k=0; k<(int)m_texturedfaces.size(); k++){
-				if(p->f[j] == m_texturedfaces[k])			// compare with each face in usedfaces
-					face_allready_in_use = true;
-			}
-			if(!face_allready_in_use){
-				m_texturedfaces.push_back(p->f[j]);
-				destroy=false;
-			}
-		}
-		
-		if(destroy){
-			delete(p);
-			m_passlist.erase(m_passlist.begin()+i);
-		}
-	}
-	
-	enableTexture(true);
-	m_shadeTexturing->bind();
-	m_shadeTexturing->setUniform("useTexCoords", false);
-	m_shadeTexturing->unbind();
-	
-	UpdateDisplayLists();
-}
-
-
 
 
 

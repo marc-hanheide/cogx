@@ -46,6 +46,7 @@ Resources::~Resources(){
 	if(m_showlog) printf("Resources released\n");
 }
 
+
 // *** Initialisation ***
 IplImage* Resources::InitCapture(const char* file){
 	m_capture = cvCaptureFromFile(file);
@@ -133,6 +134,7 @@ Frustum* Resources::InitFrustum(){
 	return m_frustum;
 }
 
+
 // *** Release-functions ***
 void Resources::ReleaseCapture(){
 	if(m_capture)
@@ -156,6 +158,7 @@ void Resources::ReleaseFrustum(){
 		delete(m_frustum);
 	m_frustum = 0;
 }
+
 
 // *** Get-functions ***
 IplImage* Resources::GetNewImage(){
@@ -259,7 +262,6 @@ int Resources::AddModel(TrackerModel* model, const char* name){
 	return modelID;
 }
 
-
 int	Resources::AddPlyModel(const char* filename){
 	bool loaded = false;
 	
@@ -295,7 +297,6 @@ int	Resources::AddPlyModel(const char* filename){
 	
 	return modelID;
 }
-
 
 int	Resources::AddTexture(const char* filename, const char* texturename){
 	bool loaded = false;
@@ -423,7 +424,6 @@ int	Resources::AddCamera(const char* camname){
 }
 
 
-
 // *** Release
 void Resources::ReleaseParticles(){
 	// release Particles
@@ -499,6 +499,7 @@ void Resources::ReleaseCamera(){
 		it_name++;
 	}
 }
+
 
 // *** Search-functions ***
 int Resources::SearchParticlesName(const char* name){

@@ -69,15 +69,15 @@ private:
 public:
 	~Resources();
 	static Resources* GetInstance(){
-       return Singleton <Resources>::GetInstance ();
-    }
-    
-    // Initialisation
-    IplImage*					InitCapture(const char* file);
-    IplImage* 				InitCapture(float width=320.0, float height=240.0, int camID = CV_CAP_ANY);
-    SDL_Surface* 			InitScreen(int width, int height, const char* name="SDL Window");
-    ImageProcessor*		InitImageProcessor(int width, int height);
-    Frustum*					InitFrustum();
+			return Singleton <Resources>::GetInstance ();
+	}
+	
+	// Initialisation
+	IplImage*					InitCapture(const char* file);
+	IplImage* 				InitCapture(float width=320.0, float height=240.0, int camID = CV_CAP_ANY);
+	SDL_Surface* 			InitScreen(int width, int height, const char* name="SDL Window");
+	ImageProcessor*		InitImageProcessor(int width, int height);
+	Frustum*					InitFrustum();
     
     // Release-functions
 	void ReleaseScreen();
@@ -91,27 +91,27 @@ public:
 	void 	SetShaderPath(const char* path){ sprintf(m_shaderPath, "%s", path); }
 	void	ShowLog(bool b){ m_showlog = b; }
 
-    // Get-functions
-    IplImage* 		GetNewImage();
-    IplImage* 		GetImage();
-    SDL_Surface* 	GetScreen();
-    ImageProcessor* GetImageProcessor();
-    Frustum*		GetFrustum();
-    
-    Particles*	GetParticles(int id){ return m_particlesList[id]; }
-    TrackerModel*		GetModel(int id){ return m_modelList[id]; }
-    Texture*	GetTexture(int id){ return m_textureList[id]; }
-    Shader*		GetShader(int id){ return m_shaderList[id]; }
-    Camera*		GetCamera(int id){ return m_cameraList[id]; }
-    
-    int		GetNumTracker(){ return m_tracker_id; }
-    int		GetNumParticles(){ return m_particlesList.size(); }
-    int		GetNumModels(){ return m_modelList.size(); }
-    int		GetNumTextures(){ return m_textureList.size(); }
+	// Get-functions
+	IplImage* 			GetNewImage();
+	IplImage* 			GetImage();
+	SDL_Surface* 		GetScreen();
+	ImageProcessor* GetImageProcessor();
+	Frustum*				GetFrustum();
+	
+	Particles*			GetParticles(int id){ return m_particlesList[id]; }
+	TrackerModel*		GetModel(int id){ return m_modelList[id]; }
+	Texture*				GetTexture(int id){ return m_textureList[id]; }
+	Shader*					GetShader(int id){ return m_shaderList[id]; }
+	Camera*					GetCamera(int id){ return m_cameraList[id]; }
+	
+	int		GetNumTracker(){ return m_tracker_id; }
+	int		GetNumParticles(){ return m_particlesList.size(); }
+	int		GetNumModels(){ return m_modelList.size(); }
+	int		GetNumTextures(){ return m_textureList.size(); }
 
-    // Add-functions
-    int		AddParticles(int num, Particle p, const char* name);
-    int		AddModel(TrackerModel* model, const char* name);
+	// Add-functions
+	int		AddParticles(int num, Particle p, const char* name);
+	int		AddModel(TrackerModel* model, const char* name);
 	int		AddPlyModel(const char* filename);
 	int		AddTexture(const char* filename, const char* texturename = NULL);
 	int		AddShader(	const char* shadername,
@@ -130,7 +130,7 @@ public:
 	
 	// Search-functions
 	int	SearchParticlesName(const char* name);
-    int	SearchModelName(const char* filename);
+	int	SearchModelName(const char* filename);
 	int	SearchTextureName(const char* filename);
 	int	SearchShaderName(const char* filename);
 	int	SearchCameraName(const char* name);	
