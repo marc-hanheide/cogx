@@ -10,7 +10,7 @@ class Token(object):
     def error(self, message):
         raise ParseError(self, message)
 
-    def checkKeyword(self, keyword):
+    def check_keyword(self, keyword):
         if self.string != keyword:
             raise UnexpectedTokenError(self, "'%s'" % keyword)
 
@@ -46,7 +46,7 @@ class Element(list):
     def end(self, token):
         self.endtoken = token
 
-    def isTerminal(self):
+    def is_terminal(self):
         return self.terminal
 
     def line(self):
@@ -59,7 +59,7 @@ class Element(list):
 
 class ElementIterator(object):
     def __init__(self, element):
-        assert not element.isTerminal()
+        assert not element.is_terminal()
         self.element = element
         self.it = list.__iter__(element)
 
@@ -75,7 +75,7 @@ class ElementIterator(object):
     def reset(self):
         return ElementIterator(self.element)
 
-    def noMoreTokens(self, message=None):
+    def no_more_tokens(self, message=None):
         try:
             token =self.next().token
         except StopIteration:
@@ -90,11 +90,11 @@ class ElementIterator(object):
         try:
             elem = self.it.next()
             if expected is not None:
-                if expected == list and elem.isTerminal():
+                if expected == list and elem.is_terminal():
                     if message is None:
                         message = "'('"
                     raise UnexpectedTokenError(elem.token, message)
-                elif expected == "terminal" and not elem.isTerminal():
+                elif expected == "terminal" and not elem.is_terminal():
                     if message is None:
                         message = "identifier"
                     raise UnexpectedTokenError(elem.token, message)
@@ -153,7 +153,7 @@ class Parser(object):
         self.root = self.parse(token, tokens)
 
     @staticmethod
-    def parseFile(filename, separators=[]):
+    def parse_file(filename, separators=[]):
         f = open(filename)
         try:
             p = Parser(f, filename, separators)
@@ -165,7 +165,7 @@ class Parser(object):
         return p
 
     @staticmethod
-    def parseAs(lines, _class, *args):
+    def parse_as(lines, _class, *args):
         p = Parser(lines)
         return _class.parse(iter(p.root), *args)
 
@@ -200,7 +200,7 @@ class Parser(object):
             
 
 
-def parseTypedList(it, leftFunc, rightFunc, expectedLeft="identifiers", expectedRight="identifier", rightSideRequired = False):
+def parse_typed_list(it, leftFunc, rightFunc, expectedLeft="identifiers", expectedRight="identifier", rightSideRequired = False):
     left = []
     foundSep = False
     for elem in it:

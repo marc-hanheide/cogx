@@ -10,11 +10,11 @@ class Sensor(mapl.MAPLAction):
     def __init__(self, name, agents, args, vars, precondition, sense, domain):
         mapl.MAPLAction.__init__(self, name, agents, args, vars, precondition, None, None, domain)
         self.sense = sense
-        self.effects = [self.knowledge_effect()]
+        self.effect = self.knowledge_effect()
 
     def knowledge_effect(self):
         term = self.get_term()
-        return effects.SimpleEffect(predicates.direct_knowledge, [predicates.VariableTerm(self.agents[0]), term])
+        return effects.SimpleEffect(mapl.direct_knowledge, [predicates.VariableTerm(self.agents[0]), term])
 
     def is_boolean(self):
         return isinstance(self.sense, predicates.Literal)
@@ -38,7 +38,7 @@ class Sensor(mapl.MAPLAction):
         else:
             a.sense = predicates.FunctionTerm(self.sense.function, a.lookup(self.sense.args))
 
-        a.effects = [a.knowledge_effect()]
+        a.effect = a.knowledge_effect()
 
         return a
         
@@ -47,17 +47,17 @@ class Sensor(mapl.MAPLAction):
         it.get(":sensor")
         name = it.get().token.string
         it.get(":agent")
-        agent = predicates.parseArgList(iter(it.get(list, "agent parameter")), scope.types)
+        agent = predicates.parse_arg_list(iter(it.get(list, "agent parameter")), scope.types)
         next = it.get()
 
         if next.token.string == ":parameters":
-            params = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types)
+            params = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types)
             next = it.get()
         else:
             params = []
         
         if next.token.string == ":variables":
-            variables = predicates.parseArgList(iter(it.get(list, "variables")), scope.types)
+            variables = predicates.parse_arg_list(iter(it.get(list, "variables")), scope.types)
             next = it.get()
         else:
             variables = []
@@ -71,7 +71,7 @@ class Sensor(mapl.MAPLAction):
         else:
             precondition = None
 
-        next.token.checkKeyword(":sense")
+        next.token.check_keyword(":sense")
         j = iter(it.get(list, "function or literal"))
         first = j.get("terminal", "predicate or function").token
         
@@ -82,6 +82,6 @@ class Sensor(mapl.MAPLAction):
             sensor.sense = term
         else:
             raise parser.UnexpectedTokenError(first, "predicate, function or literal")
-        sensor.effects = [sensor.knowledge_effect()]
+        sensor.effect = sensor.knowledge_effect()
 
         return sensor

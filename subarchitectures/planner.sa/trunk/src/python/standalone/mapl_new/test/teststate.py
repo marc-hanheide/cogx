@@ -3,12 +3,11 @@
 
 import unittest
 
-import mapl_new as mapl
-from mapl_new.predicates import *
-from mapl_new.mapltypes import *
-from mapl_new import domain, problem, conditions
-from mapl_new.parser import Parser, ParseError
-from state_new import *
+import predicates, domain, problem, conditions, axioms, mapl
+from parser import Parser, ParseError
+from builtin import *
+from mapltypes import *
+from state import *
 
 domlogistics = \
 """
@@ -50,8 +49,8 @@ domlogistics = \
 
 (:action fly
          :agent         (?a - agent)
-         :parameters    (?a - airplane ?to - airport)
-         :effect        (assign (location-of ?a) ?to))
+         :parameters    (?ap - airplane ?to - airport)
+         :effect        (assign (location-of ?ap) ?to))
 
 (:action load
          :agent         (?a - agent)
@@ -158,11 +157,11 @@ class StateTest(unittest.TestCase):
     def testActionInstantiation(self):
         """Testing action instantiation"""
         
-        action = self.prob.getAction("drive")
+        action = self.prob.get_action("drive")
         action.instantiate({"?a" :self.prob["agent"], "?t" : self.prob["tru1"], "?to" : self.prob["pos1"]})
         #Can't create a fact from an assignment from one function to another.
-        self.assertRaises(Exception, Fact.fromCondition, action.precondition)
-        effect = Fact.fromEffect(action.effects[0])
+        self.assertRaises(Exception, Fact.from_condition, action.precondition)
+        effect = Fact.from_effect(action.effect)
         expected = Fact(StateVariable(self.dom.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos1"])
         unexpected = Fact(StateVariable(self.dom.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos2"])
         
@@ -172,12 +171,12 @@ class StateTest(unittest.TestCase):
         action.uninstantiate()
         
         action.instantiate([self.prob["agent"], self.prob["tru1"], self.prob["pos1"]])
-        effect2 = Fact.fromEffect(action.effects[0])
+        effect2 = Fact.from_effect(action.effect)
         self.assertEqual(effect2, expected)
         action.uninstantiate()
 
         action.instantiate(["agent", "tru1", "pos1"])
-        effect3 = Fact.fromEffect(action.effects[0])
+        effect3 = Fact.from_effect(action.effect)
         self.assertEqual(effect3, expected)
         action.uninstantiate()
                            
@@ -187,48 +186,47 @@ class StateTest(unittest.TestCase):
     def testConditionChecking(self):
         """Testing checking of conditions"""
 
-        state = State.fromProblem(self.prob)
+        state = State.from_problem(self.prob)
         
-        drive = self.prob.getAction("drive")
+        drive = self.prob.get_action("drive")
         drive.instantiate(["agent", "tru1", "apt1"])
-        self.assert_(state.isSatisfied(drive.precondition))
+        self.assert_(state.is_satisfied(drive.precondition))
         drive.uninstantiate()
 
         drive.instantiate(["agent", "tru1", "apt2"])
-        self.assertFalse(state.isSatisfied(drive.precondition))
+        self.assertFalse(state.is_satisfied(drive.precondition))
         drive.uninstantiate()
 
     def testNumericConditions(self):
         """Testing numeric conditions"""
 
-        state = State.fromProblem(self.prob)
+        state = State.from_problem(self.prob)
         num_packages = StateVariable(self.prob.functions["num_packages"][0], [self.prob["tru2"]])
         
-        load = self.prob.getAction("load")
+        load = self.prob.get_action("load")
         load.instantiate(["agent", "obj21", "tru2"])
-        self.assert_(state.isSatisfied(load.precondition))
+        self.assert_(state.is_satisfied(load.precondition))
         
         state[num_packages] = TypedNumber(4)
-        self.assertFalse(state.isSatisfied(load.precondition))
+        self.assertFalse(state.is_satisfied(load.precondition))
 
         state[num_packages] = TypedNumber(5)
-        self.assertFalse(state.isSatisfied(load.precondition))
+        self.assertFalse(state.is_satisfied(load.precondition))
         
         load.uninstantiate()
         
     def testEffects(self):
         """Testing applying of effects"""
 
-        state = State.fromProblem(self.prob)
+        state = State.from_problem(self.prob)
         
-        drive = self.prob.getAction("drive")
+        drive = self.prob.get_action("drive")
         drive.instantiate(["agent", "tru1", "apt1"])
 
         fold = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos1"])
         self.assert_(fold in state)
                            
-        for e in drive.effects:
-            state.applyEffect(e)
+        state.apply_effect(drive.effect)
                 
         fnew = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]]), self.prob["apt1"])
         self.assert_(fnew in state)
@@ -238,16 +236,16 @@ class StateTest(unittest.TestCase):
     def testNumericEffects(self):
         """Testing numeric effects"""
 
-        state = State.fromProblem(self.prob)
+        state = State.from_problem(self.prob)
         num_packages = StateVariable(self.prob.functions["num_packages"][0], [self.prob["tru2"]])
         
-        load = self.prob.getAction("load")
+        load = self.prob.get_action("load")
         load.instantiate(["agent", "obj21", "tru2"])
 
         fold = Fact(num_packages, TypedNumber(0))
         self.assert_(fold in state)
                            
-        state.applyEffect(load.effects)
+        state.apply_effect(load.effect)
                 
         fnew = Fact(num_packages, TypedNumber(1))
         self.assert_(fnew in state)
@@ -255,7 +253,7 @@ class StateTest(unittest.TestCase):
         load.uninstantiate()
         
         load.instantiate(["agent", "obj22", "tru2"])
-        state.applyEffect(load.effects)
+        state.apply_effect(load.effect)
         load.uninstantiate()
 
         fnew2 = Fact(num_packages, TypedNumber(2))
@@ -263,9 +261,9 @@ class StateTest(unittest.TestCase):
         self.assert_(fnew2 in state)
         self.assert_(fnew2b in state)
         
-        unload = self.prob.getAction("unload")
+        unload = self.prob.get_action("unload")
         unload.instantiate(["agent", "obj21", "tru2"])
-        state.applyEffect(unload.effects)
+        state.apply_effect(unload.effect)
         unload.uninstantiate()
 
         self.assert_(fnew in state)
@@ -273,12 +271,12 @@ class StateTest(unittest.TestCase):
     def testConditionReasons(self):
         """Testing finding reason of satisfied conditions"""
         
-        state = State.fromProblem(self.prob)
+        state = State.from_problem(self.prob)
 
         relevantVars = []
-        drive = self.prob.getAction("drive")
+        drive = self.prob.get_action("drive")
         drive.instantiate(["agent", "tru1", "apt1"])
-        self.assert_(state.isSatisfied(drive.precondition, relevantVars))
+        self.assert_(state.is_satisfied(drive.precondition, relevantVars))
         drive.uninstantiate()
 
         relevantVars = set(relevantVars)
@@ -294,14 +292,14 @@ class StateTest(unittest.TestCase):
 
     def testAxiomEvaluation(self):
         """Testing axiom evaluation"""
-        state = State.fromProblem(self.prob)
-        extstate = state.getExtendedState()
+        state = State.from_problem(self.prob)
+        extstate = state.get_extended_state()
 
-        kf11 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj11"]], knowledge, [self.prob["agent"]]), TRUE)
-        kf12 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj12"]], knowledge, [self.prob["agent"]]), TRUE)
-        kf13 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj13"]], knowledge, [self.prob["agent"]]), TRUE)
+        kf11 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj11"]], mapl.knowledge, [self.prob["agent"]]), TRUE)
+        kf12 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj12"]], mapl.knowledge, [self.prob["agent"]]), TRUE)
+        kf13 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj13"]], mapl.knowledge, [self.prob["agent"]]), TRUE)
 
-        id11 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj11"]], indomain, [self.prob["pos1"]]), TRUE)
+        id11 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj11"]], mapl.indomain, [self.prob["pos1"]]), TRUE)
         
         self.assert_(kf11 in extstate)
         self.assertFalse(kf12 in extstate)
@@ -310,57 +308,57 @@ class StateTest(unittest.TestCase):
 
         self.assert_(id11 in extstate)
         
-        load = self.prob.getAction("a_load")
+        load = self.prob.get_action("a_load")
         load.instantiate(["agent", "obj11", "tru1"])
-        self.assert_(extstate.isSatisfied(load.replan))
-        self.assert_(extstate.isSatisfied(load.precondition))
+        self.assert_(extstate.is_satisfied(load.replan))
+        self.assert_(extstate.is_satisfied(load.precondition))
         load.uninstantiate()
 
         load.instantiate(["agent", "obj12", "tru1"])
-        self.assertFalse(extstate.isSatisfied(load.replan))
-        self.assertFalse(extstate.isSatisfied(load.precondition))
+        self.assertFalse(extstate.is_satisfied(load.replan))
+        self.assertFalse(extstate.is_satisfied(load.precondition))
         load.uninstantiate()
 
         load.instantiate(["agent", "obj13", "tru1"])
-        self.assert_(extstate.isSatisfied(load.replan))
-        self.assert_(extstate.isSatisfied(load.precondition))
+        self.assert_(extstate.is_satisfied(load.replan))
+        self.assert_(extstate.is_satisfied(load.precondition))
         load.uninstantiate()
 
     def testPartialAxiomEvaluation(self):
         """Testing partial axiom evaluation"""
-        state = State.fromProblem(self.prob)
+        state = State.from_problem(self.prob)
 
-        load = self.prob.getAction("a_load")
+        load = self.prob.get_action("a_load")
         load.instantiate(["agent", "obj11", "tru1"])
-        extstate = state.getExtendedState(state.getRelevantVars(load.replan) | state.getRelevantVars(load.precondition))
-        self.assert_(extstate.isSatisfied(load.replan))
-        self.assert_(extstate.isSatisfied(load.precondition))
+        extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
+        self.assert_(extstate.is_satisfied(load.replan))
+        self.assert_(extstate.is_satisfied(load.precondition))
         load.uninstantiate()
 
         load.instantiate(["agent", "obj12", "tru1"])
-        extstate = state.getExtendedState(state.getRelevantVars(load.replan) | state.getRelevantVars(load.precondition))
-        self.assertFalse(extstate.isSatisfied(load.replan))
-        self.assertFalse(extstate.isSatisfied(load.precondition))
+        extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
+        self.assertFalse(extstate.is_satisfied(load.replan))
+        self.assertFalse(extstate.is_satisfied(load.precondition))
         load.uninstantiate()
 
         load.instantiate(["agent", "obj13", "tru1"])
-        extstate = state.getExtendedState(state.getRelevantVars(load.replan) | state.getRelevantVars(load.precondition))
-        self.assert_(extstate.isSatisfied(load.replan))
-        self.assert_(extstate.isSatisfied(load.precondition))
+        extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
+        self.assert_(extstate.is_satisfied(load.replan))
+        self.assert_(extstate.is_satisfied(load.precondition))
         load.uninstantiate()
         
     def testAxiomReasoning(self):
         """Testing finding reasons of derived predicates """
         
-        state = State.fromProblem(self.prob)
-        extstate, reasons, universalReasons = state.getExtendedState(getReasons=True)
+        state = State.from_problem(self.prob)
+        extstate, reasons, universalReasons = state.get_extended_state(getReasons=True)
 
         relevantVars = []
         relevantReplanVars = []
-        load = self.prob.getAction("a_load")
+        load = self.prob.get_action("a_load")
         load.instantiate(["agent", "obj11", "tru1"])
-        self.assert_(extstate.isSatisfied(load.precondition, relevantVars))
-        self.assert_(extstate.isSatisfied(load.replan, relevantReplanVars))
+        self.assert_(extstate.is_satisfied(load.precondition, relevantVars))
+        self.assert_(extstate.is_satisfied(load.replan, relevantReplanVars))
 
         all_reasons = set(relevantVars)
         for v in relevantVars:
@@ -381,13 +379,13 @@ class StateTest(unittest.TestCase):
     def testStratifiedAxioms(self):
         """Testing evaluation of stratified axioms"""
         
-        a1a = Parser.parseAs(strat1a.split("\n"), mapl.axioms.Axiom, self.prob)
-        a1b = Parser.parseAs(strat1b.split("\n"), mapl.axioms.Axiom, self.prob)
-        a2 = Parser.parseAs(strat2.split("\n"), mapl.axioms.Axiom, self.prob)
+        a1a = Parser.parse_as(strat1a.split("\n"), axioms.Axiom, self.prob)
+        a1b = Parser.parse_as(strat1b.split("\n"), axioms.Axiom, self.prob)
+        a2 = Parser.parse_as(strat2.split("\n"), axioms.Axiom, self.prob)
         
         self.prob.axioms = [a1a, a1b, a2]
-        self.prob.stratifyAxioms()
-        state = State.fromProblem(self.prob).getExtendedState()
+        self.prob.stratify_axioms()
+        state = State.from_problem(self.prob).get_extended_state()
         
 if __name__ == '__main__':
     unittest.main()    

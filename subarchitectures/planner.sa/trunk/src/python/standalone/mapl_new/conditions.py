@@ -10,7 +10,7 @@ class Condition(object):
     def visit(self, fn):
         return fn(self, [])
 
-    def copy(self, new_scope=None, new_parts = None, copy_instance=False):
+    def copy(self, new_scope=None, new_parts=None, copy_instance=False):
         return self.__class__()
 
     def set_scope(self, new_scope):
@@ -32,6 +32,13 @@ class Condition(object):
                 vars = results[0]
                 return [p for p in vars if p not in cond.args]
         return set(self.visit(visitor))
+
+    def has_class(self, _class):
+        def visitor(cond, results=[]):
+            if isinstance(cond, _class):
+                return True
+            return any(results)
+        return self.visit(visitor)
     
     def __eq__(self, other):
         return self.__class__ == other.__class__
@@ -71,7 +78,7 @@ class Condition(object):
         elif tag == "and" or tag == "or":
             parts = []
             for part in it:
-                if part.isTerminal():
+                if part.is_terminal():
                     raise UnexpectedTokenError(part.token, "condition")
                 parts.append(Condition.parse(iter(part), scope))
             if tag == "and":
@@ -144,19 +151,20 @@ class QuantifiedCondition(Condition, scope.Scope):
         cp = self.__class__([predicates.Parameter(a.name, a.type) for a in self.args], None, new_scope)
         for arg in cp.args:
             if isinstance(arg.type, types.ProxyType):
-                if copy_instance and arg.type.parameter.isInstantiated():
-                    arg.type = arg.type.effectiveType()
+                if copy_instance and arg.type.parameter.is_instantiated():
+                    arg.type = arg.type.effective_type()
                 else:
                     arg.type = types.ProxyType(cp[arg.type.parameter])
 
         if new_parts:
-            cp.condition = new_parts[0].copy(cp, copy_instance=copy_instance)
+            cp.condition = new_parts[0]
+            cp.condition.set_scope(cp)
         else:
             cp.condition = self.condition.copy(cp, copy_instance=copy_instance)
         return cp
     
     def set_scope(self, new_scope):
-        self.parent = new_scope
+        scope.Scope.set_parent(self, new_scope)
         self.condition.set_scope(self)
 
     def __eq__(self, other):
@@ -167,7 +175,7 @@ class QuantifiedCondition(Condition, scope.Scope):
     
     @staticmethod
     def parse(it, scope, _class, parseFn=Condition.parse):
-        variables = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types, scope)
+        variables = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types, scope)
         cond = _class(variables, None, scope)
         cond.condition = parseFn(iter(it.get(list, "condition")), cond)
         return cond

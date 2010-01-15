@@ -14,15 +14,15 @@ def MAPLAction(action, task):
     actions = dict((a.name,a) for a in itertools.chain(task._mapltask.actions, task._mapltask.sensors))
     assert action in actions
     action_def = actions[action]
-    args = [task._mapltask[a] for a in args]
+    args = [task._mapltask[a] for a in args[:len(action_def.args)]]
     return action_def, args
 
 def getGoalDescription(goal, _state):
     read_vars = []
     universal_args = []
-    extstate, reasons, universalReasons = _state.getExtendedState(_state.getRelevantVars(goal), getReasons=True)
+    extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(goal), getReasons=True)
         
-    assert extstate.isSatisfied(goal, read_vars, universal_args)
+    assert extstate.is_satisfied(goal, read_vars, universal_args)
     read = set(read_vars)
     orig_read = set(read_vars)
     universal = set(a.type for a in universal_args)
@@ -46,8 +46,8 @@ def getRWDescription(action, args, _state, time):
     if action.replan:
         read_vars = []
         universal_args = []
-        extstate, reasons, universalReasons = _state.getExtendedState(_state.getRelevantVars(action.replan), getReasons=True)
-        assert extstate.isSatisfied(action.replan, read_vars, universal_args)
+        extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(action.replan), getReasons=True)
+        assert extstate.is_satisfied(action.replan, read_vars, universal_args)
         pnode.replanconds = set(read_vars)
         pnode.original_replan = set(state.Fact(var, extstate[var]) for var in read_vars)
         pnode.explanations.update(reasons)
@@ -64,9 +64,9 @@ def getRWDescription(action, args, _state, time):
     if action.precondition:
         read_vars = []
         universal_args = []
-        rel = _state.getRelevantVars(action.precondition)
-        extstate, reasons, universalReasons = _state.getExtendedState(rel, getReasons=True)
-        assert extstate.isSatisfied(action.precondition, read_vars, universal_args)
+        rel = _state.get_relevant_vars(action.precondition)
+        extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
+        assert extstate.is_satisfied(action.precondition, read_vars, universal_args)
         pnode.preconds = set(read_vars)
         pnode.original_preconds = set(state.Fact(var, extstate[var]) for var in read_vars)
         pnode.explanations.update(reasons)
@@ -81,12 +81,10 @@ def getRWDescription(action, args, _state, time):
     #print "read:", time.time()-t0
 
     #t0 = time.time()
-    if isinstance(action, mapl.sensors.Sensor):
-        effects = [action.knowledge_effect()]
-    else:
-        effects = action.effects
-    for eff in effects:
-        pnode.effects |= _state.getEffectFacts(eff)
+    add_read_vars = set()
+    pnode.effects = _state.get_effect_facts(action.effect, read_vars=add_read_vars)
+    pnode.preconds |= add_read_vars
+    pnode.original_preconds |= set(state.Fact(var, extstate[var]) for var in add_read_vars)
     #print "write:", time.time()-t0
         
     #t0 = time.time()

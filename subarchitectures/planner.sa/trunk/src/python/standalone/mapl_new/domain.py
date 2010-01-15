@@ -9,13 +9,15 @@ import mapltypes
 import scope
 import predicates, conditions, actions, axioms
 
+import builtin
+
 from mapltypes import *
 from predicates import *
 from parser import Parser, ParseError, UnexpectedTokenError
 from actions import Action
 from axioms import Axiom
 
-supported = set(["mapl",  "modal-predicates", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions"])
+supported = set(["mapl",  "modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions"])
 
 support_depends = {"mapl" : ["object-fluents", "modal-predicates"],
                    "adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
@@ -32,25 +34,25 @@ class Domain(scope.Scope):
         self.actions = actions
         self.axioms = axioms
 
-        self.stratifyAxioms()
+        self.stratify_axioms()
         self.name2action = None
 
     def copy(self):
         dom = Domain(self.name, self.types.copy(), self.constants.copy(), self.predicates.copy(), self.functions.copy(), [], [])
         dom.actions = [a.copy(self) for a in self.actions]
         dom.axioms = [a.copy(self) for a in self.axioms]
-        dom.stratifyAxioms()
+        dom.stratify_axioms()
         dom.name2action = None
             
         dom.requirements = set(self.requirements)
         return dom
 
-    def getAction(self, name):
+    def get_action(self, name):
         if not self.name2action:
             self.name2action = dict((a.name, a) for a in itertools.chain(self.actions, self.sensors))
         return self.name2action[name]
 
-    def stratifyAxioms(self):
+    def stratify_axioms(self):
         self.stratification, self.nonrecursive = axioms.stratify(self.axioms)
     
     @staticmethod
@@ -61,16 +63,16 @@ class Domain(scope.Scope):
         j.get("domain")
         domname = j.get(None, "domain identifier").token.string
         
-        typeDict = dict((t.name, t) for t in default_types)
+        typeDict = dict((t.name, t) for t in builtin.default_types)
         constants = set()
-        preds = scope.FunctionTable([predicates.equals])
+        preds = scope.FunctionTable([builtin.equals])
         functions = scope.FunctionTable()
         
         req = iter(it.get(list, "requirement definition"))
         req.get(":requirements")
         requirements = []
         for r in req:
-            if not r.isTerminal() or r.token.string[0] != ":":
+            if not r.is_terminal() or r.token.string[0] != ":":
                 raise UnexpectedTokenError(r.token, "requirement identifier")
             requirements.append(r.token.string[1:])
             if r.token.string[1:] not in supp:
@@ -79,17 +81,18 @@ class Domain(scope.Scope):
                 requirements += support_depends[r.token.string[1:]]
 
         if "mapl" in requirements:
-            constants = set([TRUE, FALSE, UNKNOWN])
+            import mapl
+            constants = set([builtin.TRUE, builtin.FALSE, builtin.UNKNOWN])
                 
         if "fluents" in requirements or "numeric-fluents" in requirements:
-            typeDict[numberType.name] = numberType
-            preds.add(predicates.numericComparators)
-            functions.add(predicates.numericFunctions)
+            typeDict[t_number.name] = t_number
+            preds.add(builtin.numeric_comparators)
+            functions.add(builtin.numeric_functions)
 
         if "mapl" in requirements:
-            for t in mapl_types:
+            for t in mapl.mapl_types:
                 typeDict[t.name] = t
-            preds.add(mapl_predicates)
+            preds.add(mapl.mapl_predicates)
 
         domain = None
             
@@ -100,7 +103,6 @@ class Domain(scope.Scope):
             #If domain is not already constructed, create it now
             if type in (":action", ":durative-action", ":sensor", ":derived") and domain is None:
                 if "mapl" in requirements:
-                    import mapl
                     domain = mapl.MAPLDomain(domname, typeDict, constants, preds, functions, [], [], [])
                 else:
                     domain = Domain(domname, typeDict, constants, preds, functions, [], [])
@@ -112,9 +114,9 @@ class Domain(scope.Scope):
                     if key.string == "object":
                         continue
                     if value.string not in typeDict:
-                        typeDict[value.string] = Type(value.string, [objectType])
+                        typeDict[value.string] = Type(value.string, [t_object])
                     if key.string not in typeDict:
-                        typeDict[key.string] = Type(key.string, [objectType])
+                        typeDict[key.string] = Type(key.string, [t_object])
                         
                     typeDict[key.string].supertypes.add(typeDict[value.string])
 
@@ -128,19 +130,19 @@ class Domain(scope.Scope):
 
             elif type == ":predicates":
                 for elem in j:
-                    if elem.isTerminal():
+                    if elem.is_terminal():
                         raise UnexpectedTokenError(elem, "predicate declaration")
                     preds.add(predicates.Predicate.parse(iter(elem), typeDict))
                 
             elif type == ":functions":
                 def leftFunc(elem):
-                    if elem.isTerminal():
+                    if elem.is_terminal():
                         raise UnexpectedTokenError(elem.token, "function declaration")
                     return elem
                 def rightFunc(elem):
                     return Type.parse(elem, typeDict)
 
-                for funcs, type in parser.parseTypedList(j, leftFunc, rightFunc, "function declarations", "type specification", True):
+                for funcs, type in parser.parse_typed_list(j, leftFunc, rightFunc, "function declarations", "type specification", True):
                     for elem in funcs:
                         functions.add(predicates.Function.parse(iter(elem), type, typeDict))
 
@@ -175,8 +177,8 @@ class Domain(scope.Scope):
                 domain = Domain(domname, typeDict, constants, preds, functions, [], [])
 
         if "mapl" in requirements:
-            for axiom_str in axioms.mapl_axioms:
-                axiom = Parser.parseAs(axiom_str.split("\n"), Axiom, domain)
+            for axiom_str in mapl.mapl_axioms:
+                axiom = Parser.parse_as(axiom_str.split("\n"), Axiom, domain)
                 domain.axioms.append(axiom)
 
         return domain

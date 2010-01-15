@@ -51,7 +51,9 @@ class LearningAgent(Agent):
             self.clustering()
         elif global_vars.mapsim_config.learning_mode == "learn":
             self.restrict_domains(self.task)
-            self.macrotask = Task(agent.next_id(), self.mapltask.copy())
+            newtask = self.mapltask.copy()
+            newtask.domain = self.mapltask.domain.copy()
+            self.macrotask = Task(agent.next_id(), newtask)
             self.macrotask.set_state(self.task.get_state().copy())
             self.planner.register_task(self.macrotask)
             self.restrict_domains(self.macrotask)
@@ -155,7 +157,7 @@ class LearningAgent(Agent):
         unknown_vars = set()
         indomain = set()
         for svar in task.get_state().iterkeys():
-            if svar.modality == mapl.predicates.i_indomain:
+            if svar.modality == mapl.mapl.i_indomain:
                 indomain.add(svar)
                 unknown_vars.add(svar.nonmodal())
 
@@ -164,7 +166,7 @@ class LearningAgent(Agent):
                 
         for svar in unknown_vars:
             if svar in self.simulator.state:
-                idvar = svar.asModality(mapl.predicates.i_indomain, [self.simulator.state[svar]])
+                idvar = svar.as_modality(mapl.mapl.i_indomain, [self.simulator.state[svar]])
                 task.get_state()[idvar] = mapl.types.TRUE
 
         task.mark_changed()
@@ -186,8 +188,12 @@ class LearningAgent(Agent):
         result = []
         for m in self.macros:
             if m.usecount >= avg:
+                log.info("Use macro: %s" % m.name)
                 a = m.to_assertion()
                 result.append(a)
+            else:
+                log.info("Don't use macro: %s" % m.name)
+                
         return result
     
     @loggingScope
@@ -235,7 +241,7 @@ class LearningAgent(Agent):
 
         sensed_svars = set()
         for svar, val in itertools.chain(macro.original_replan):
-            if svar.modality == mapl.predicates.knowledge:
+            if svar.modality == mapl.mapl.knowledge:
                 sensed_svars.add(svar.nonmodal())
 
         useful_svars_full = set()
@@ -278,7 +284,7 @@ class LearningAgent(Agent):
     @statistics.time_method_for_statistics("learning_time")
     def learning_run(self):
         settings = global_vars.mapsim_config.learning
-        
+
         self.macrotask.mapldomain.actions += self.select_macros_for_learning()
         self.task.replan()
         self.macrotask.replan()
@@ -320,7 +326,8 @@ class LearningAgent(Agent):
             
             for pnode in self.expandable_macros:
                 m = self.name2macro[pnode.action.name]
-                mapping = dict((param.name, c) for (param, c) in zip(pnode.action.agents+pnode.action.args+pnode.action.vars, pnode.args))
+                m.parent = self.task.mapltask
+                mapping = dict((param.name, c) for (param, c) in zip(pnode.action.args, pnode.args))
 
                 satisfied = m.get_satisfied_conditions(pnode, s)
 
@@ -354,7 +361,7 @@ class LearningAgent(Agent):
                     if m.atom_state[e] == macros.ATOM_DISABLED:
                         e = e.negate()
                     else:
-                        facts = s.getEffectFacts(e)
+                        facts = s.get_effect_facts(e)
                         if not (facts & relevant_effects):
                             e = e.negate()
                         else:

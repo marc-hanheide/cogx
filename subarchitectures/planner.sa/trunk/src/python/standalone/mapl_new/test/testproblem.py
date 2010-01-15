@@ -53,8 +53,8 @@ domlogistics = \
 
 (:action fly
          :agent         (?a - agent)
-         :parameters    (?a - airplane ?to - airport)
-         :effect        (assign (location-of ?a) ?to))
+         :parameters    (?ap - airplane ?to - airport)
+         :effect        (assign (location-of ?ap) ?to))
 
 (:action load
          :agent         (?a - agent)
@@ -515,7 +515,7 @@ class ProblemTest(unittest.TestCase):
                 self.assertEqual(a1.vars, a2.vars)
                 self.assertEqual(a1.precondition, a2.precondition)
                 self.assertEqual(a1.replan, a2.replan)
-                self.assertEqual(a1.effects, a2.effects)
+                self.assertEqual(a1.effect, a2.effect)
 
         for s1 in dom.sensors:
             for s2 in dom2.sensors:
@@ -574,7 +574,7 @@ class ProblemTest(unittest.TestCase):
                 self.assertEqual(a1.vars, a2.vars)
                 self.assertEqual(a1.precondition, a2.precondition)
                 self.assertEqual(a1.replan, a2.replan)
-                self.assertEqual(a1.effects, a2.effects)
+                self.assertEqual(a1.effect, a2.effect)
 
             
     def testWriterProblemNumeric(self):

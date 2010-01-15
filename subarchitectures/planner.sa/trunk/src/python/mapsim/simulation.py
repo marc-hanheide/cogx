@@ -42,7 +42,7 @@ class Simulation(object):
         self.statistics = statistics.Statistics(defaults=statistics_defaults)
 
         self.run_index = 0
-        self.state = state.State.fromProblem(self.scenario.world, seed=self.seeds[0])
+        self.state = state.State.from_problem(self.scenario.world, seed=self.seeds[0])
         self.agents = {}
         for a, prob in scenario.agents.iteritems():
             #TODO better handling of non-strings in the configuration
@@ -55,7 +55,7 @@ class Simulation(object):
         self.time = 0
         self.queue = []
         self.run_index = run
-        self.state = state.State.fromProblem(self.scenario.world, seed=self.seeds[run])
+        self.state = state.State.from_problem(self.scenario.world, seed=self.seeds[run])
 
         self.statistics.reset()
         self.planner.statistics.reset()
@@ -99,7 +99,7 @@ class Simulation(object):
         for svar, val in self.state.iteritems():
             if val == mapl.types.FALSE:
                 continue
-            if svar.modality == mapl.predicates.knowledge and svar.modal_args[0] == a:
+            if svar.modality == mapl.mapl.knowledge and svar.modal_args[0] == a:
                 newvar = svar.nonmodal()
                 agent.get_state()[newvar] = self.state[newvar]
         
@@ -111,42 +111,40 @@ class Simulation(object):
         
         def remove_visitor(cond, results=[]):
             if cond.__class__ == mapl.conditions.LiteralCondition:
-                if cond.predicate in (mapl.predicates.mapl_modal_predicates):
+                if cond.predicate in (mapl.mapl.modal_predicates):
                     return None
-                return cond
             if isinstance(cond, mapl.conditions.JunctionCondition):
                 cond.parts = filter(None, results)
                 if not cond.parts:
                     return None
-                return cond
             if isinstance(cond, mapl.conditions.QuantifiedCondition):
                 if results[0] is None:
                     return None
-                return cond
+            return cond
 
         self.problem.actions = [a for a in self.problem.actions if a.replan is None]
         for a in itertools.chain(self.problem.actions, self.problem.sensors):
             if a.precondition:
-                a.precondition.visit(remove_visitor)
+                a.precondition = a.precondition.visit(remove_visitor)
             
 
     def schedule(self, action, args, agent):
         self.queue.append((action, args, agent))
         
     def execute(self, action, args, agent):
-        action = self.problem.getAction(action)
+        action = self.problem.get_action(action)
         action.instantiate(args)
 
-        if agent != self.agents[action.agents[0].getInstance().name]:
-            other = action.agents[0].getInstance()
+        if agent != self.agents[action.agents[0].get_instance().name]:
+            other = action.agents[0].get_instance()
             print "%d: %s tried to execute action for %s (%s %s)" % (self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
             log.debug("%d: %s tried to execute action for %s (%s %s)", self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
             agent.statistics.increase_stat("failed_execution_attempts")
             action.uninstantiate()
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
             return
-            
-        if self.state.isExecutable(action):
+
+        if self.state.is_executable(action):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
 
             perceived_facts = []
@@ -168,24 +166,32 @@ class Simulation(object):
             agent.updateTask([], plans.ActionStatusEnum.FAILED)
 
     def execute_physical_action(self, action, agent):
-        print "%d: %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(a.getInstance().name for a in action.args))
+        print "%d: %s executes (%s %s)" % (self.time, agent.name, action.name, " ".join(a.get_instance().name for a in action.args))
+
+        self.state.written_svars.clear()
+        self.state.apply_effect(action.effect, trace_vars=True)
         
-        new_facts = self.state.getEffectFacts(action.effects)
-        for f in new_facts:
-            self.state.set(f)
-            
-        return list(new_facts)
+        new_facts = []
+        for svar in self.state.written_svars:
+            new_facts.append(state.Fact(svar, self.state[svar]))
+
+        return new_facts
 
     def execute_sensor_action(self, sensor, agent):
-        svar = self.state.svarFromTerm(sensor.get_term())
+        svar = self.state.svar_from_term(sensor.get_term())
         if sensor.is_boolean():
-            value = sensor.get_value().getInstance()
+            if isinstance(sensor.get_value(), mapl.predicates.FunctionTerm):
+                svar2 = state.StateVariable.from_term(sensor.get_value(), self.state)
+                value = self.state[svar2]
+            else:
+                value = sensor.get_value().get_instance()
+                
             if self.state[svar] == value:
                 print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), value.name)
                 perception = state.Fact(svar, value)
             else:
                 print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
-                perception = state.Fact(svar.asModality(mapl.predicates.i_indomain, [value]), mapl.types.FALSE)
+                perception = state.Fact(svar.as_modality(mapl.mapl.i_indomain, [value]), mapl.FALSE)
         else:
             print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
             perception = state.Fact(svar, self.state[svar])

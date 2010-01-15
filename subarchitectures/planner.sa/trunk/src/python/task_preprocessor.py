@@ -172,9 +172,9 @@ def infer_types(obj_descriptions):
     def type_cmp(type1, type2):
       if type1 == type2:
         return 0
-      elif type1.isSubtypeOf(type2):
+      elif type1.is_subtype_of(type2):
         return -1
-      elif type2.isSubtypeOf(type1):
+      elif type2.is_subtype_of(type1):
         return 1
       print "%s could be of types %s or %s" % (obj.name, type1, type2)
       assert False, "Multiple inheritance not supported yet"
@@ -201,7 +201,7 @@ def generate_mapl_task(task_desc, domain_fn):
   problem = mapl.problem.Problem("cogxtask", objects, [], None, task._mapldomain)
   try:
     goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
-    problem.goal = mapl.parser.Parser.parseAs(goalstrings, mapl.conditions.Condition, problem)
+    problem.goal = mapl.parser.Parser.parse_as(goalstrings, mapl.conditions.Condition, problem)
     print "goal:",problem.goal
   except mapl.parser.ParseError:
     problem.goal = mapl.conditions.Falsity()

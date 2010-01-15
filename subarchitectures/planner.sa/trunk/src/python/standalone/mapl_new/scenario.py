@@ -103,11 +103,11 @@ class MapsimScenario(object):
                     if value.string not in domain.types:
                         raise ParseError(value, "undeclared type")
 
-                    problem.addObject(TypedObject(key.string, domain.types[value.string]))
+                    problem.add_object(TypedObject(key.string, domain.types[value.string]))
 
             elif type == ":init":
                 for elem in j:
-                    if elem.isTerminal():
+                    if elem.is_terminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
                         
                     init_elem = MAPLProblem.parseInitElement(iter(elem), problem)
@@ -127,11 +127,11 @@ class MapsimScenario(object):
                 func = predicates.Term.parse(j,problem)
                 problem.functions.remove(predicates.total_time)
 
-                j.noMoreTokens()
+                j.no_more_tokens()
 
-                if not isinstance(func.getType(), FunctionType):
+                if not isinstance(func.get_type(), FunctionType):
                     raise ParseError(elem.token, "Optimization function can't be a constant.")
-                if not func.getType().equalOrSubtypeOf(numberType):
+                if not func.get_type().equal_or_subtype_of(t_number):
                     raise ParseError(elem.token, "Optimization function must be numeric.")
                 
                 problem.opt_func = func

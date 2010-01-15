@@ -9,24 +9,22 @@ import predicates, conditions, effects
 from scope import Scope
 
 class Action(Scope):
-    def __init__(self, name, args, precondition, effects, domain, replan=None):
+    def __init__(self, name, args, precondition, effect, domain, replan=None):
+        assert effect != []
         Scope.__init__(self, args, domain)
         self.name = name
         self.args = args
 
         self.precondition = precondition
         self.replan = replan
-        self.effects = effects
-        if effects is None:
-            self.effects = []
+        self.effect = effect
 
         if self.precondition:
             self.precondition.set_scope(self)
         if self.replan:
             self.replan.set_scope(self)
-            
-        for e in self.effects:
-            e.set_scope(self)
+        if self.effect:
+            self.effect.set_scope(self)
 
     def instantiate(self, mapping):
         if not isinstance(mapping, dict):
@@ -43,7 +41,7 @@ class Action(Scope):
             
         args = [types.Parameter(p.name, p.type) for p in self.args]
         
-        a = Action(self.name, args, None, [], newdomain)
+        a = Action(self.name, args, None, None, newdomain)
 
         for arg in a.args:
             if isinstance(arg.type, types.ProxyType):
@@ -53,8 +51,8 @@ class Action(Scope):
             a.precondition = self.precondition.copy(a)
         if self.replan:
             a.replan = self.replan.copy(a)
-            
-        a.effects = [e.copy(a) for e in self.effects]
+        if self.effect:
+            a.effect = self.effect.copy(a)
 
         return a
     
@@ -65,12 +63,12 @@ class Action(Scope):
         next = it.get()
 
         if next.token.string == ":parameters":
-            params = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types)
+            params = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types)
             next = it.get()
         else:
             params = []
         
-        action = Action(name, params, None, [], scope)
+        action = Action(name, params, None, None, scope)
 
         try:
             while True:
@@ -83,9 +81,9 @@ class Action(Scope):
                         raise ParseError(next.token, "replan condition already defined.")
                     action.replan = conditions.Condition.parse(iter(it.get(list, "condition")), action)
                 elif next.token.string == ":effect":
-                    if action.effects:
+                    if action.effect:
                         raise ParseError(next.token, "effects already defined.")
-                    action.effects = effects.Effect.parse(iter(it.get(list, "effect")), action)
+                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action)
                     
                 next = it.next()
 

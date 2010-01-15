@@ -5,11 +5,14 @@ import unittest
 import tempfile
 import os
 
-import parser, mapltypes, conditions, predicates, scope
+import parser, builtin, mapl, scope
 from mapltypes import *
 from predicates import *
 from conditions import *
 from parser import Parser, ParseError
+
+from builtin import TRUE, FALSE, t_object, t_boolean
+from mapl import t_agent
 
 test = \
 """
@@ -72,9 +75,9 @@ class ConditionsTest(unittest.TestCase):
         self.c2 = TypedObject("c2", self.type2)
         args = [Parameter("?a", self.type1),
                 Parameter("?b", self.type2),
-                Parameter("?c", objectType)]
-        val = Parameter("?v", booleanType)
-        self.func1 =  predicates.Function("func1", args, booleanType)
+                Parameter("?c", t_object)]
+        val = Parameter("?v", t_boolean)
+        self.func1 =  predicates.Function("func1", args, t_boolean)
         self.func2 =  predicates.Function("func2", args[:-1], self.type1)
 
         self.pred1 =  predicates.Predicate("pred1", args)
@@ -83,22 +86,22 @@ class ConditionsTest(unittest.TestCase):
         self.scope = scope.Scope([TRUE, FALSE, self.c1, self.c2], None)
         self.scope.types["type1"] = self.type1
         self.scope.types["type2"] = self.type2
-        self.scope.types["boolean"] = booleanType
-        self.scope.types["object"] = objectType
-        self.scope.types["agent"] = agentType
-        self.scope.predicates.add(predicates.equals)
+        self.scope.types["boolean"] = t_boolean
+        self.scope.types["object"] = t_object
+        self.scope.types["agent"] = t_agent
+        self.scope.predicates.add(builtin.equals)
         self.scope.predicates.add(self.pred1)
         self.scope.predicates.add(self.pred2)
-        self.scope.predicates.add(predicates.knowledge)
-        self.scope.predicates.add(predicates.indomain)
+        self.scope.predicates.add(mapl.knowledge)
+        self.scope.predicates.add(mapl.indomain)
         self.scope.functions.add(self.func1)
         self.scope.functions.add(self.func2)
 
     def getLocalScope(self):
         params = [Parameter("?p1", self.type1),
                   Parameter("?p2", self.type2),
-                  Parameter("?p3", objectType),
-                  Parameter("?v", booleanType)]
+                  Parameter("?p3", t_object),
+                  Parameter("?v", t_boolean)]
 
         return scope.Scope(params, self.scope)
         
@@ -141,7 +144,7 @@ class ConditionsTest(unittest.TestCase):
         params = [Parameter("?p1", self.type2),
                   Parameter("?p2", self.type2),
                   Parameter("?p3", self.type1),
-                  Parameter("?v", booleanType)]
+                  Parameter("?v", t_boolean)]
 
         localScope = scope.Scope(params, self.scope)
 
@@ -241,7 +244,7 @@ class ConditionsTest(unittest.TestCase):
         """Testing copying"""
         
         localScope = self.getLocalScope()
-        cond = Parser.parseAs(mixedtest.split("\n"), Condition, localScope)
+        cond = Parser.parse_as(mixedtest.split("\n"), Condition, localScope)
         copy = cond.copy()
 
         self.assertEqual(cond, copy)
@@ -259,8 +262,8 @@ class ConditionsTest(unittest.TestCase):
 
         params = [Parameter("?p1", self.type2),
                   Parameter("?p2", self.type1),
-                  Parameter("?p3", objectType),
-                  Parameter("?v", booleanType)]
+                  Parameter("?p3", t_object),
+                  Parameter("?v", t_boolean)]
 
         localScope = scope.Scope(params, self.scope)
 
@@ -278,13 +281,13 @@ class ConditionsTest(unittest.TestCase):
         """Testing type checking when creating conditions form scratch"""
         params = [Parameter("?p1", self.type1),
                   Parameter("?p2", self.type2),
-                  Parameter("?p3", objectType),
-                  Parameter("?v", booleanType)]
+                  Parameter("?p3", t_object),
+                  Parameter("?v", t_boolean)]
 
         localScope = scope.Scope(params, self.scope)
 
-        c1 = LiteralCondition(self.pred1, [Term(params[0]), Term(Parameter("?p2", self.type2)), Term(TypedObject("test", objectType))])
-        c2 = LiteralCondition(self.pred1, [Term(Parameter("?p1", self.type1)), Term(Parameter("?p2", self.type2)), Term(Parameter("?p3", objectType))])
+        c1 = LiteralCondition(self.pred1, [Term(params[0]), Term(Parameter("?p2", self.type2)), Term(TypedObject("test", t_object))])
+        c2 = LiteralCondition(self.pred1, [Term(Parameter("?p1", self.type1)), Term(Parameter("?p2", self.type2)), Term(Parameter("?p3", t_object))])
         c3 = LiteralCondition(self.pred1, ["?p1", "?p2", "?p3"], localScope)
         self.assertRaises(KeyError, LiteralCondition, self.pred1, ["?p1", "?p2", "?p5"], localScope)
         c1copy = c1.copy()
@@ -292,9 +295,9 @@ class ConditionsTest(unittest.TestCase):
         c2copy = c2.copy(localScope)
         
         localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        self.assertFalse(c2.args[0].object.isInstantiated())
-        self.assert_(c2copy.args[0].object.isInstantiated())
-        self.assert_(c3.args[0].object.isInstantiated())
+        self.assertFalse(c2.args[0].object.is_instantiated())
+        self.assert_(c2copy.args[0].object.is_instantiated())
+        self.assert_(c3.args[0].object.is_instantiated())
         
 
     def testArityMismatch(self):
@@ -307,9 +310,9 @@ class ConditionsTest(unittest.TestCase):
 
         params = [Parameter("?p1", self.type1),
                   Parameter("?p2", self.type2),
-                  Parameter("?p3", objectType),
-                  Parameter("?p4", booleanType),
-                  Parameter("?v", booleanType)]
+                  Parameter("?p3", t_object),
+                  Parameter("?p4", t_boolean),
+                  Parameter("?v", t_boolean)]
 
         localScope = scope.Scope(params, self.scope)
 
@@ -354,8 +357,8 @@ class ConditionsTest(unittest.TestCase):
         """
         
         localScope = self.getLocalScope()
-        localScope.add(Parameter("?a", agentType))
-        cond = Parser.parseAs(test.split("\n"), Condition, localScope)
+        localScope.add(Parameter("?a", t_agent))
+        cond = Parser.parse_as(test.split("\n"), Condition, localScope)
 
     def testModalPredicatesChecks(self):
         """Testing modal predicates syntax"""
@@ -374,16 +377,16 @@ class ConditionsTest(unittest.TestCase):
         """
         
         localScope = self.getLocalScope()
-        localScope.add(Parameter("?a", agentType))
+        localScope.add(Parameter("?a", t_agent))
         try:
-            cond = Parser.parseAs(test.split("\n"), Condition, localScope)
+            cond = Parser.parse_as(test.split("\n"), Condition, localScope)
             self.fail("Modal predicate without function didn't raise exception")
         except ParseError, e:
             self.assertEqual(e.token.string, "kval")
             self.assertEqual(e.token.line, 3)
 
         try:
-            cond = Parser.parseAs(test2.split("\n"), Condition, localScope)
+            cond = Parser.parse_as(test2.split("\n"), Condition, localScope)
             self.fail("Modal predicate without function didn't raise exception")
         except ParseError, e:
             self.assertEqual(e.token.string, "in-domain")

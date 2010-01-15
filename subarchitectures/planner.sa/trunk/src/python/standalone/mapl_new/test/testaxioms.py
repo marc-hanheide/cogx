@@ -67,17 +67,17 @@ class AxiomTest(unittest.TestCase):
 
     def testAxiomParsing(self):
         """Testing axiom parsing"""
-        axiom = Parser.parseAs(testaxiom.split("\n"), Axiom, self.domain)
+        axiom = Parser.parse_as(testaxiom.split("\n"), Axiom, self.domain)
 
     def testStratification(self):
         """Testing axiom stratification"""
-        a1a = Parser.parseAs(strat1a.split("\n"), Axiom, self.domain)
-        a1b = Parser.parseAs(strat1b.split("\n"), Axiom, self.domain)
-        a2 = Parser.parseAs(strat2.split("\n"), Axiom, self.domain)
-        aerror = Parser.parseAs(strat_invalid.split("\n"), Axiom, self.domain)
+        a1a = Parser.parse_as(strat1a.split("\n"), Axiom, self.domain)
+        a1b = Parser.parse_as(strat1b.split("\n"), Axiom, self.domain)
+        a2 = Parser.parse_as(strat2.split("\n"), Axiom, self.domain)
+        aerror = Parser.parse_as(strat_invalid.split("\n"), Axiom, self.domain)
         
         self.domain.axioms += [a1a, a1b, a2]
-        self.domain.stratifyAxioms()
+        self.domain.stratify_axioms()
 
         self.assert_(a1a.predicate in self.domain.stratification[1])
         self.assert_(a1a.predicate in self.domain.nonrecursive)
@@ -87,7 +87,7 @@ class AxiomTest(unittest.TestCase):
         self.assert_(a2.predicate in self.domain.nonrecursive)
 
         self.domain.axioms.append(aerror)
-        self.assertRaises(Exception, self.domain.stratifyAxioms)
+        self.assertRaises(Exception, self.domain.stratify_axioms)
         
         
         

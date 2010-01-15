@@ -6,8 +6,10 @@ from itertools import imap, ifilter
 from collections import defaultdict
 
 import mapltypes as types
-import conditions, problem, effects
+import conditions, problem, effects, durative
+from builtin import *
 from predicates import *
+from mapltypes import TypedNumber
 
 def product(*iterables):
     if not iterables:
@@ -23,13 +25,13 @@ def product(*iterables):
 
 def instantiate_args(args, state=None):
     if state:
-        return [state.evaluateTerm(arg) for arg in args]
+        return [state.evaluate_term(arg) for arg in args]
     
     result = []
     for arg in args:
         if arg.__class__ == VariableTerm:
-            assert arg.isInstantiated(), "%s is not instantiated" % arg.pddl_str()
-            result.append(arg.getInstance())
+            assert arg.is_instantiated(), "%s is not instantiated" % arg.pddl_str()
+            result.append(arg.get_instance())
         elif isinstance(arg, ConstantTerm):
             result.append(arg.object)
         else:
@@ -41,7 +43,7 @@ class StateVariable(object):
         self.function = function
         assert len(function.args) == len(args)
         for a, fa in zip(args, function.args):
-            assert a.isInstanceOf(fa.type), "%s not of type %s" % (str(a), str(fa))
+            assert a.is_instance_of(fa.type), "%s not of type %s" % (str(a), str(fa))
         self.args = args
 
         self.modality = modality
@@ -54,20 +56,20 @@ class StateVariable(object):
         else:
             return self.function.type
 
-    def getPredicate(self):
+    def get_predicate(self):
         if self.modality:
             return self.modality
         if isinstance(self.function, Predicate):
             return self.function
         return None
 
-    def asModality(self, modality, modal_args=[]):
+    def as_modality(self, modality, modal_args=[]):
         return StateVariable(self.function, self.args, modality, modal_args)
 
     def nonmodal(self):
         return StateVariable(self.function, self.args, None, [])
     
-    def getArgs(self):
+    def get_args(self):
         if not self.modality:
             return self.args
         fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
@@ -80,7 +82,7 @@ class StateVariable(object):
                 args.append(it.next())
         return args
 
-    def asLiteral(self):
+    def as_literal(self):
         assert isinstance(self.function, Predicate) or self.modality is not None
         
         if not self.modality:
@@ -110,32 +112,26 @@ class StateVariable(object):
 
     def __hash__(self):
         return self.hash
-
-    def read_facts(self):
-        return [Fact(svar, self[svar]) for svar in self.read_svars]
-
-    def written_facts(self):
-        return [Fact(svar, self[svar]) for svar in self.written_svars]
     
     @staticmethod
-    def fromTerm(term, state=None):
+    def from_term(term, state=None):
         assert isinstance(term, FunctionTerm)
         args = instantiate_args(term.args, state)
         return StateVariable(term.function, args)
 
     @staticmethod
-    def svarsInTerm(term, state=None):
+    def get_svars_in_term(term, state=None):
         assert isinstance(term, FunctionTerm)
         svar, vars = get_svars_from_term(term, state)
         vars.add(svar)
         return svar, vars
     
     @staticmethod
-    def fromLiteral(literal, state=None):
+    def from_literal(literal, state=None):
         function = None
         litargs = []
         modal_args = []
-        if literal.predicate in assignmentOps + [equals]:
+        if literal.predicate in assignment_ops + [equals]:
             function = literal.args[0].function
             litargs = literal.args[0].args
             modal_args = None
@@ -165,15 +161,15 @@ class StateVariable(object):
 
 class Fact(tuple):
     def __new__(_class, svar, value):
-        #assert value.isInstanceOf(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
+        #assert value.is_instance_of(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
         return tuple.__new__(_class, (svar, value))
     
     svar = property(lambda self: self[0])
     value = property(lambda self: self[1])
     
-    def asLiteral(self, useEqual=False):
+    def as_literal(self, useEqual=False, _class=None):
         if isinstance(self.svar.function, Predicate) or self.svar.modality is not None:
-            lit = self.svar.asLiteral()
+            lit = self.svar.as_literal()
             if self.value == types.TRUE:
                 return lit
             elif self.value == types.FALSE:
@@ -182,26 +178,22 @@ class Fact(tuple):
             assert False
 
         if useEqual:
-            op = equalAssign
+            op = equal_assign
         else:
             op = assign
             
-        return Literal(op, [Term(self.svar.function, [Term(a) for a in self.svar.args]), Term(self.value)])
+        l = Literal(op, [Term(self.svar.function, [Term(a) for a in self.svar.args]), Term(self.value)])
+        if _class:
+            l.__class__ = _class
+        return l
 
-    def asCondition(self):
-        atom = self.asLiteral()
-        if atom.predicate == assign:
-            atom.predicate = equals
-        atom.__class__ = conditions.LiteralCondition
-        return atom
-    
     def __str__(self):
         return "%s = %s" % (str(self.svar), str(self.value))
 
     @staticmethod
-    def fromLiteral(literal, state=None):
+    def from_literal(literal, state=None):
         value = None
-        if literal.predicate in assignmentOps + [equals]:
+        if literal.predicate in assignment_ops + [equals]:
             value = instantiate_args(literal.args[-1:], state)[0]
         else:
             if literal.negated:
@@ -209,13 +201,13 @@ class Fact(tuple):
             else:
                 value = types.TRUE
 
-        return Fact(StateVariable.fromLiteral(literal, state), value)
+        return Fact(StateVariable.from_literal(literal, state), value)
         
     @staticmethod
-    def fromCondition(condition, state=None):
+    def from_condition(condition, state=None):
         def factVisitor(cond, facts):
             if isinstance(cond, conditions.LiteralCondition):
-                return [Fact.fromLiteral(cond, state)]
+                return [Fact.from_literal(cond, state)]
             elif isinstance(cond, conditions.Conjunction):
                 return sum(facts, [])
             elif isinstance(cond, conditions.Truth):
@@ -225,13 +217,13 @@ class Fact(tuple):
         return condition.visit(factVisitor)
 
     @staticmethod
-    def fromEffect(effect, state=None):
+    def from_effect(effect, state=None):
         if not isinstance(effect, effects.SimpleEffect):
             raise  Exception("can't get facts for quantified or conditional effects")
-        return Fact.fromLiteral(effect, state)
+        return Fact.from_literal(effect, state)
     
     @staticmethod
-    def fromTuple(tup):
+    def from_tuple(tup):
         return Fact(tup[0], tup[1])
     
 class State(dict):
@@ -257,7 +249,7 @@ class State(dict):
         self.random.seed(seed)
 
     def iterfacts(self):
-        return (Fact.fromTuple(tup) for tup in self.iteritems())
+        return (Fact.from_tuple(tup) for tup in self.iteritems())
 
     def set(self, fact):
         self[fact.svar] = fact.value
@@ -273,7 +265,7 @@ class State(dict):
         
     def __setitem__(self, svar, value):
         assert isinstance(svar, StateVariable)
-        assert value.isInstanceOf(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
+        assert value.is_instance_of(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
         dict.__setitem__(self, svar, value)
 
     def __contains__(self, key):
@@ -282,31 +274,31 @@ class State(dict):
         return dict.__contains__(self, key)
 
     @staticmethod
-    def fromProblem(problem, seed=None):
+    def from_problem(problem, seed=None):
         s = State([], problem)
         if seed is not None:
             s.set_random_seed(seed)
             
         for i in problem.init:
             if isinstance(i, effects.ProbabilisticEffect):
-                s.applyEffect(i)
+                s.apply_effect(i)
             else:
-                s.set(Fact.fromLiteral(i))
+                s.set(Fact.from_literal(i))
         return s
 
-    def evaluateTerm(self, term, trace_vars=False):
+    def evaluate_term(self, term, trace_vars=False):
         if term.__class__ == ConstantTerm:
             return term.object
         if term.__class__ == VariableTerm:
-            assert term.isInstantiated(), "%s is not instantiated" % str(term)
-            return term.getInstance()
+            assert term.is_instantiated(), "%s is not instantiated" % str(term)
+            return term.get_instance()
         if term.__class__ == FunctionVariableTerm:
-            assert term.isInstantiated(), "%s is not instantiated" % str(term)
-            term = term.getInstance()
+            assert term.is_instantiated(), "%s is not instantiated" % str(term)
+            term = term.get_instance()
 
         values = []
         for arg in term.args:
-            values.append(self.evaluateTerm(arg, trace_vars))
+            values.append(self.evaluate_term(arg, trace_vars))
         func = term.function
 
         if func == plus:
@@ -325,27 +317,28 @@ class State(dict):
             self.read_svars.add(svar)
         return self[svar]
 
-    def svarFromTerm(self, term, trace_vars=False):
+    def svar_from_term(self, term, trace_vars=False):
         assert isinstance(term, FunctionTerm), "%s is not a function term." % str(term)
         if isinstance(term, VariableTerm):
-            assert term.isInstantiated(), "%s is not instantiated." % str(term)
+            assert term.is_instantiated(), "%s is not instantiated." % str(term)
 
-        assert term.function not in numericFunctions, "can't create state variable form built-in function  %s." % term.function.name
+        assert term.function not in numeric_functions, "can't create state variable form built-in function  %s." % term.function.name
         
         values = []
         for arg in term.args:
-            values.append(self.evaluateTerm(arg, trace_vars))
+            values.append(self.evaluate_term(arg, trace_vars))
             
         return StateVariable(term.function, values)
 
-    def evaluateLiteral(self, literal, trace_vars=False):
+    def evaluate_literal(self, literal, trace_vars=False):
+#        print literal.pddl_str()
         values = []
         svars = []
         for arg, parg in zip(literal.args, literal.predicate.args):
             if isinstance(parg.type, FunctionType):
-                svars.append(self.svarFromTerm(arg, trace_vars))
+                svars.append(self.svar_from_term(arg, trace_vars))
             else:
-                values.append(self.evaluateTerm(arg, trace_vars))
+                values.append(self.evaluate_term(arg, trace_vars))
         
         pred = literal.predicate
         if pred in (equals, eq):
@@ -364,25 +357,26 @@ class State(dict):
                 svar = StateVariable(pred, values)
             elif len(svars) == 1:
                 #modal predicate:
-                svar = svars[0].asModality(pred, values)
+                svar = svars[0].as_modality(pred, values)
             else:
                 assert False, "A modal svar can only contain one function"
                 
             if trace_vars:
                 self.read_svars.add(svar)
+#            print svar, self[svar], (self[svar] == types.TRUE) ^ literal.negated
             return (self[svar] == types.TRUE) ^ literal.negated
 
-    def applyLiteral(self, literal, trace_vars=False):
+    def apply_literal(self, literal, trace_vars=False):
         values = []
         svars = []
         for arg, parg in zip(literal.args, literal.predicate.args):
             if isinstance(parg.type, FunctionType):
-                svars.append(self.svarFromTerm(arg, trace_vars))
+                svars.append(self.svar_from_term(arg, trace_vars))
             else:
-                values.append(self.evaluateTerm(arg, trace_vars))
+                values.append(self.evaluate_term(arg, trace_vars))
         
         pred = literal.predicate
-        if pred in assignmentOps+numericOps:
+        if pred in assignment_ops+numeric_ops:
             svar = svars[0]
             #hack:
             if svar.function == total_cost and svar not in self:
@@ -392,7 +386,7 @@ class State(dict):
             if trace_vars:
                 self.written_svars.add(svar)
         
-        if pred in (assign, change, num_assign, equalAssign, num_equalAssign):
+        if pred in (assign, change, num_assign, equal_assign, num_equal_assign):
             self[svar] = val
         elif pred == increase:
             self[svar] = TypedNumber(previous.value + val.value)
@@ -408,7 +402,7 @@ class State(dict):
                 svar = StateVariable(pred, values)
             elif len(svars) == 1:
                 #modal predicate:
-                svar = svars[0].asModality(pred, values)
+                svar = svars[0].as_modality(pred, values)
             else:
                 assert False, "A modal svar can only contain one function"
                 
@@ -419,11 +413,11 @@ class State(dict):
             else:
                 self[svar] = types.TRUE
         
-    def isExecutable(self, action):
-        extstate = self.getExtendedState(self.getRelevantVars(action.precondition))
-        return extstate.isSatisfied(action.precondition)
+    def is_executable(self, action):
+        extstate = self.get_extended_state(self.get_relevant_vars(action.precondition))
+        return extstate.is_satisfied(action.precondition)
             
-    def isSatisfied(self, cond, relevantVars=None, universal=None):
+    def is_satisfied(self, cond, relevantVars=None, universal=None):
         def instantianteAndCheck(cond, params):
             cond.instantiate(dict(zip(cond.args, params)))
             result = checkConditionVisitor(cond.condition)
@@ -450,10 +444,10 @@ class State(dict):
             if isinstance(cond, conditions.LiteralCondition):
                 if relevantVars is not None:
                     self.read_svars.clear()
-                    result = self.evaluateLiteral(cond, trace_vars=True)
+                    result = self.evaluate_literal(cond, trace_vars=True)
                     return result, list(self.read_svars), []
                 
-                return self.evaluateLiteral(cond), [], []
+                return self.evaluate_literal(cond), [], []
 
             elif isinstance(cond, conditions.Truth):
                 return True, [], []
@@ -467,14 +461,14 @@ class State(dict):
             elif isinstance(cond, conditions.Disjunction):
                 return anyFacts(imap(checkConditionVisitor, cond.parts))
             elif isinstance(cond, conditions.QuantifiedCondition):
-                combinations = product(*map(lambda a: self.problem.getAll(a.type), cond.args))
+                combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), cond.args))
                 if isinstance(cond, conditions.UniversalCondition):
                     result, vars, universal = allFacts(instantianteAndCheck(cond, c) for c in combinations)
                     universal += cond.args
                     return result, vars, universal
                 elif isinstance(cond, conditions.ExistentialCondition):
                     return anyFacts(instantianteAndCheck(cond, c) for c in combinations)
-            elif isinstance(cond, conditions.TimedCondition):
+            elif isinstance(cond, durative.TimedCondition):
                 #ignore times specifiers for now
                 return checkConditionVisitor(cond.condition)
             elif cond is None:
@@ -488,7 +482,7 @@ class State(dict):
             universal += univ
         return result
 
-    def getRelevantVars(self, cond, restrict_to=None):
+    def get_relevant_vars(self, cond, restrict_to=None):
         def restrictionVisitor(cond):
             if isinstance(cond, conditions.LiteralCondition):
                 return cond.predicate in restrict_to
@@ -501,7 +495,7 @@ class State(dict):
 
         def dependenciesVisitor(cond):
             if isinstance(cond, conditions.LiteralCondition):
-                self.evaluateLiteral(cond, trace_vars=True)
+                self.evaluate_literal(cond, trace_vars=True)
 
             elif isinstance(cond, conditions.JunctionCondition):
                 for p in cond.parts:
@@ -511,7 +505,7 @@ class State(dict):
                     if not restrictionVisitor(cond):
                         return
                     
-                combinations = product(*map(lambda a: self.problem.getAll(a.type), cond.args))
+                combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), cond.args))
                 result = []
                 for c in combinations:
                     cond.instantiate(dict(zip(cond.args, c)))
@@ -522,42 +516,44 @@ class State(dict):
         dependenciesVisitor(cond)
         return set(self.read_svars)
 
-    def applyEffect(self, effect, trace_vars=False):
+    def apply_effect(self, effect, trace_vars=False):
         if isinstance(effect, effects.UniversalEffect):
-            combinations = product(*map(lambda a: self.problem.getAll(a.type), effect.args))
+            combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), effect.args))
             for params in combinations:
                 effect.instantiate(zip(effect.args, params))
-                for eff in effect.effects:
-                    self.applyEffect(eff, trace_vars)
+                self.apply_effect(effect.effect, trace_vars)
                 effect.uninstantiate()
                 
         elif isinstance(effect, effects.ConditionalEffect):
-            extstate = self.getExtendedState(self.getRelevantVars(effect.condition))
-            if extstate.isSatisfied(effect.condition):
-                for eff in effect.effects:
-                    self.applyEffect(eff, trace_vars)
+            extstate = self.get_extended_state(self.get_relevant_vars(effect.condition))
+            if extstate.is_satisfied(effect.condition):
+                self.apply_effect(effect.effect, trace_vars)
 
         elif isinstance(effect, effects.ProbabilisticEffect):
-            for eff in effect.getRandomEffect(seed=self.random.random()):
-                self.applyEffect(eff, trace_vars)
+            rnd = effect.getRandomEffect(seed=self.random.random())
+            self.apply_effect(rnd, trace_vars)
 
-        elif isinstance(effect, list):
-            for eff in effect:
-                self.applyEffect(eff, trace_vars)
+        elif isinstance(effect, effects.ConjunctiveEffect):
+            for eff in effect.parts:
+                self.apply_effect(eff, trace_vars)
             
         else:
-            self.applyLiteral(effect, trace_vars)
+            self.apply_literal(effect, trace_vars)
         
-    def getEffectFacts(self, effect):
+    def get_effect_facts(self, effect, read_vars=None):
         s = self.copy()
-        s.applyEffect(effect, trace_vars=True)
+        s.apply_effect(effect, trace_vars=True)
 
         result = set()
         for svar in s.written_svars:
             result.add(Fact(svar, s[svar]))
+        if read_vars is not None:
+            for svar in s.read_svars:
+                read_vars.add(svar)
+            
         return result
                 
-    def getExtendedState(self, svars=None, getReasons=False):
+    def get_extended_state(self, svars=None, getReasons=False):
         """Evaluate all axioms neccessary to instantiate the variables in 'svars'."""
         t0 = time.time()
         pred_to_axioms = defaultdict(set)
@@ -572,10 +568,10 @@ class State(dict):
                 sv = open.pop()
                 closed.add(sv)
                 for ax in self.problem.axioms:
-                    if ax.predicate == sv.getPredicate():
-                        ax.instantiate(sv.getArgs())
-                        for dep in self.getRelevantVars(ax.condition, derived):
-                            if dep.getPredicate() in derived and dep not in closed:
+                    if ax.predicate == sv.get_predicate():
+                        ax.instantiate(sv.get_args())
+                        for dep in self.get_relevant_vars(ax.condition, derived):
+                            if dep.get_predicate() in derived and dep not in closed:
                                 open.add(dep)
                         ax.uninstantiate()
             return closed
@@ -583,7 +579,7 @@ class State(dict):
         relevant = set()
         if svars is not None:
             for s in svars:
-                if s.getPredicate() in derived:
+                if s.get_predicate() in derived:
                     relevant |= getDependencies(s, derived)
             if not relevant:
                 if getReasons:
@@ -613,9 +609,9 @@ class State(dict):
                     return self.problem.predicates.get(a.predicate.name, c)
                 
                 if relevant:
-                    gen = (svar.asLiteral() for svar in relevant)
+                    gen = (svar.as_literal() for svar in relevant)
                 else:
-                    combinations = product(*map(lambda arg: list(self.problem.getAll(arg.type)), a.args))
+                    combinations = product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), a.args))
 
                     gen = (Literal(a.predicate, c, self.problem) for c in combinations if is_valid(c))
                     
@@ -625,7 +621,7 @@ class State(dict):
                     else:
                         recursive_atoms.add(atom)
 
-                    svar = StateVariable.fromLiteral(atom)
+                    svar = StateVariable.from_literal(atom)
                     if svar in self and self[svar] == types.TRUE:
                         true_atoms.add(atom)
 
@@ -646,11 +642,11 @@ class State(dict):
                             else:
                                 vars = None
                                 universal = None
-                            if self.isSatisfied(ax.condition, vars, universal):
+                            if self.is_satisfied(ax.condition, vars, universal):
                                 true_atoms.add(atom)
                                 changed = True
                                 if getReasons:
-                                    this_svar = StateVariable.fromLiteral(atom)
+                                    this_svar = StateVariable.from_literal(atom)
                                     for svar in vars:
                                         reasons[this_svar].add(svar)
                                     for param in universal:
@@ -666,6 +662,6 @@ class State(dict):
         #print "total:", time.time()-t0
                 
         if getReasons:
-            return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.fromLiteral(a), types.TRUE) for a in true_atoms]), self.problem), reasons, universalReasons
+            return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.from_literal(a), types.TRUE) for a in true_atoms]), self.problem), reasons, universalReasons
         
-        return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.fromLiteral(a), types.TRUE) for a in true_atoms]), self.problem)
+        return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.from_literal(a), types.TRUE) for a in true_atoms]), self.problem)

@@ -2,7 +2,60 @@ import itertools
 
 import predicates, conditions, effects, actions, domain, problem, writer, translators
 import mapltypes as types
+import builtin
 import durative
+
+from mapltypes import Type, TypedObject, Parameter
+from predicates import Predicate, Function
+from builtin import t_object, t_boolean
+
+#basic mapl types
+t_agent = Type("agent")
+t_planning_agent = Type("planning_agent", [t_agent])
+t_subgoal = Type("subgoal")
+t_feature = Type("feature")
+
+mapl_types = [t_agent, t_planning_agent, t_subgoal, t_feature]
+
+#mapl predicates
+knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
+direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
+p = Parameter("?f", types.FunctionType(t_object))
+indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+p = Parameter("?f", types.FunctionType(t_object))
+i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+
+modal_predicates = [knowledge, indomain, direct_knowledge, i_indomain]
+
+is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", t_agent)], builtin=True)
+achieved = Predicate("achieved", [Parameter("?sg", t_subgoal)], builtin=True)
+commited_to_plan = Predicate("commited_to_plan", [Parameter("?a", t_agent)], builtin=True)
+can_talk_to = Predicate("can_talk_to", [Parameter("?a1", t_agent), Parameter("?a2", t_agent)], builtin=True)
+
+nonmodal_predicates = [is_planning_agent, achieved, commited_to_plan, can_talk_to]
+mapl_predicates = modal_predicates + nonmodal_predicates
+
+#MAPL axioms
+
+kval_axiom = """
+(:derived (kval ?a - agent ?svar - (function object))
+          (or (kd ?a ?svar)
+              (exists (?val - (typeof ?svar)) (= ?svar ?val))
+          )
+)
+"""
+
+in_domain_axiom = """
+(:derived (in-domain ?svar - (function object) ?val - (typeof ?svar))
+          (or (= ?svar ?val)
+              (and (i_in-domain ?svar ?val)
+                   (not (exists (?val2 - (typeof ?svar)) (= ?svar ?val2))))
+          )
+)
+"""
+
+mapl_axioms = [kval_axiom, in_domain_axiom]
+
 
 class MAPLDomain(domain.Domain):
     def __init__(self, name, types, constants, predicates, functions, actions, sensors, axioms):
@@ -11,10 +64,11 @@ class MAPLDomain(domain.Domain):
 
     def copy(self):
         dom = domain.Domain.copy(self)
+        dom.__class__ = MAPLDomain
         dom.sensors = [s.copy(self) for s in self.sensors]
         return dom
 
-    def getAction(self, name):
+    def get_action(self, name):
         if not self.name2action:
             self.name2action = dict((a.name, a) for a in itertools.chain(self.actions, self.sensors))
         return self.name2action[name]
@@ -29,8 +83,8 @@ class MAPLProblem(problem.Problem, MAPLDomain):
 
 
 class MAPLAction(actions.Action):
-    def __init__(self, name, agents, args, vars, precondition, replan, effects, domain):
-        actions.Action.__init__(self, name, agents+args+vars, precondition, effects, domain, replan=replan)
+    def __init__(self, name, agents, args, vars, precondition, replan, effect, domain):
+        actions.Action.__init__(self, name, agents+args+vars, precondition, effect, domain, replan=replan)
         self.agents = agents
         self.maplargs = args
         self.vars = vars
@@ -43,11 +97,11 @@ class MAPLAction(actions.Action):
         if not newdomain:
             newdomain = self.parent
             
-        agents = [types.Parameter(p.name, p.type) for p in self.agents]
-        args = [types.Parameter(p.name, p.type) for p in self.maplargs]
-        vars = [types.Parameter(p.name, p.type) for p in self.vars]
+        agents = [Parameter(p.name, p.type) for p in self.agents]
+        args = [Parameter(p.name, p.type) for p in self.maplargs]
+        vars = [Parameter(p.name, p.type) for p in self.vars]
         
-        a = MAPLAction(self.name, agents, args, vars, None, None, [], newdomain)
+        a = MAPLAction(self.name, agents, args, vars, None, None, None, newdomain)
 
         for arg in a.args:
             if isinstance(arg.type, types.ProxyType):
@@ -57,7 +111,8 @@ class MAPLAction(actions.Action):
             a.precondition = self.precondition.copy(a)
         if self.replan:
             a.replan = self.replan.copy(a)
-        a.effects = [e.copy(a) for e in self.effects]
+        if self.effect:
+            a.effect = self.effect.copy(a)
 
         return a
     
@@ -67,17 +122,17 @@ class MAPLAction(actions.Action):
         name = it.get().token.string
 
         it.get(":agent")
-        agent = predicates.parseArgList(iter(it.get(list, "agent parameter")), scope.types)
+        agent = predicates.parse_arg_list(iter(it.get(list, "agent parameter")), scope.types)
 
         next = it.get()
         if next.token.string == ":parameters":
-            params = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types)
+            params = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types, previous_params=agent)
             next = it.get()
         else:
             params = []
         
         if next.token.string == ":variables":
-            variables = predicates.parseArgList(iter(it.get(list, "variables")), scope.types)
+            variables = predicates.parse_arg_list(iter(it.get(list, "variables")), scope.types, previous_params=agent+params)
             next = it.get()
         else:
             variables = []
@@ -95,9 +150,9 @@ class MAPLAction(actions.Action):
                         raise ParseError(next.token, "replan condition already defined.")
                     action.replan = conditions.Condition.parse(iter(it.get(list, "condition")), action)
                 elif next.token.string == ":effect":
-                    if action.effects:
+                    if action.effect:
                         raise ParseError(next.token, "effects already defined.")
-                    action.effects = effects.Effect.parse(iter(it.get(list, "effect")), action)
+                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action)
                     
                 next = it.next()
 
@@ -107,9 +162,9 @@ class MAPLAction(actions.Action):
         return action
 
 class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
-    def __init__(self, name, agents, args, vars, duration, precondition, replan, effects, domain):
-        MAPLAction.__init__(self, name, agents, args, vars, precondition, replan, effects, domain)
-        self.add(types.TypedObject("?duration", types.numberType))
+    def __init__(self, name, agents, args, vars, duration, precondition, replan, effect, domain):
+        MAPLAction.__init__(self, name, agents, args, vars, precondition, replan, effect, domain)
+        self.add(TypedObject("?duration", types.t_number))
         self.duration = duration
 
     def copy(self, newdomain=None):
@@ -124,24 +179,24 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         name = it.get().token.string
 
         it.get(":agent")
-        agent = predicates.parseArgList(iter(it.get(list, "agent parameter")), scope.types)
+        agent = predicates.parse_arg_list(iter(it.get(list, "agent parameter")), scope.types)
 
         next = it.get()
         if next.token.string == ":parameters":
-            params = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types)
+            params = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types, previous_params=agent)
             next = it.get()
         else:
             params = []
         
         if next.token.string == ":variables":
-            variables = predicates.parseArgList(iter(it.get(list, "variables")), scope.types)
+            variables = predicates.parse_arg_list(iter(it.get(list, "variables")), scope.types, previous_params=agent+params)
             next = it.get()
         else:
             variables = []
             
-        action =  MAPLDurativeAction(name, agent, params, variables, None, None, None, [], scope)
+        action =  MAPLDurativeAction(name, agent, params, variables, None, None, None, None, scope)
         
-        next.token.checkKeyword(":duration")
+        next.token.check_keyword(":duration")
         action.duration = durative.DurationConstraint.parse(iter(it.get(list, "duration constraint")), action)
 
         next = it.get()
@@ -156,9 +211,9 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
                         raise ParseError(next.token, "replan condition already defined.")
                     action.replan = conditions.Condition.parse(iter(it.get(list, "condition")), action)
                 elif next.token.string == ":effect":
-                    if action.effects:
+                    if action.effect:
                         raise ParseError(next.token, "effects already defined.")
-                    action.effects = effects.Effect.parse(iter(it.get(list, "effect")), action, timedEffects=True)
+                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action, timed_effects=True)
                     
                 next = it.next()
 
@@ -171,25 +226,25 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
 class MAPLWriter(writer.Writer):
     def write_types(self, _types):
         strings = []
-        toplevel = [types.objectType, types.numberType]
+        toplevel = [types.t_object, types.t_number]
         for type in _types:
             if type.__class__ != types.Type:
                 continue
             if type.supertypes:
                 for st in type.supertypes:
                     #only write the lowest supertype(s)
-                    if not any(st.isSupertypeOf(t) for t in type.supertypes):
+                    if not any(st.is_supertype_of(t) for t in type.supertypes):
                         strings.append("%s - %s" % (type.name, st.name))
             elif type not in toplevel:
                 toplevel.append(type)
                 
-        toplevel.remove(types.objectType)
-        toplevel.remove(types.numberType)
+        toplevel.remove(types.t_object)
+        toplevel.remove(types.t_number)
         
         strings.append(" ".join(t.name for t in toplevel))
         return self.section(":types", strings)
 
-    def write_mapl_action(self, action):
+    def write_action(self, action):
         strings = [action.name]
         strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if action.maplargs:
@@ -202,11 +257,11 @@ class MAPLWriter(writer.Writer):
         if action.replan:
             strings += self.section(":replan", self.write_condition(action.replan), parens=False)
 
-        strings += self.section(":effect", self.write_effects(action.effects), parens=False)
+        strings += self.section(":effect", self.write_effect(action.effect), parens=False)
 
         return self.section(":action", strings)
         
-    def write_durative_mapl_action(self, action):
+    def write_durative_action(self, action):
         strings = [action.name]
         strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if action.maplargs:
@@ -221,7 +276,7 @@ class MAPLWriter(writer.Writer):
         if action.replan:
             strings += self.section(":replan", self.write_condition(action.replan), parens=False)
 
-        strings += self.section(":effect", self.write_effects(action.effects), parens=False)
+        strings += self.section(":effect", self.write_effect(action.effect), parens=False)
 
         return self.section(":durative-action", strings)
 
@@ -268,9 +323,9 @@ class MAPLWriter(writer.Writer):
         for a in domain.actions:
             strings.append("")
             if isinstance(a, MAPLDurativeAction):
-                strings += self.write_durative_mapl_action(a)
+                strings += self.write_durative_action(a)
             else:
-                strings += self.write_mapl_action(a)
+                strings += self.write_action(a)
 
         strings.append("")
         strings.append(")")
@@ -287,7 +342,7 @@ class MAPLTranslator(translators.Translator):
         dom.actions = [self.translate_action(a, dom) for a in domain.actions]
         dom.sensors = [self.translate_sensor(s, dom) for s in domain.sensors]
         dom.axioms = [self.translate_axiom(a, dom) for a in domain.axioms]
-        dom.stratifyAxioms()
+        dom.stratify_axioms()
         dom.name2action = None
         return dom
 
@@ -300,15 +355,9 @@ class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer, MAPLTransla
         assert domain is not None
 
         termdict = {}
-        pre = None
-        replan = None
-        effects = []
-        if action.precondition:
-            pre = self.translate_condition(action.precondition, termdict, domain)
-        if action.replan:
-            replan = self.translate_condition(action.replan, termdict, domain)
-        for e in action.effects:
-            effects.append(self.translate_effect(e, termdict, domain))
+        pre = self.translate_condition(action.precondition, termdict, domain)
+        replan = self.translate_condition(action.replan, termdict, domain)
+        effect = self.translate_effect(action.effect, termdict, domain)
 
         agents = [types.Parameter(p.name, p.type) for p in action.agents]
         args = [types.Parameter(p.name, p.type) for p in action.maplargs]
@@ -319,19 +368,17 @@ class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer, MAPLTransla
             elif not pre:
                 pre = conditions.Conjunction([])
             for term, param in termdict.iteritems():
-                pre.parts.append(conditions.LiteralCondition(predicates.equals, [term, predicates.Term(param)]))
+                pre.parts.append(conditions.LiteralCondition(builtin.equals, [term, predicates.Term(param)]))
                 vars.append(param)
 
-        return MAPLAction(action.name, agents, args, vars, pre, replan, effects, domain)
+        return MAPLAction(action.name, agents, args, vars, pre, replan, effect, domain)
 
     def translate_sensor(self, sensor, domain=None):
         import sensors
         assert domain is not None
 
         termdict = {}
-        pre = None
-        if sensor.precondition:
-            pre = self.translate_condition(sensor.precondition, termdict, domain)
+        pre = self.translate_condition(sensor.precondition, termdict, domain)
 
         sense = sensor.sense
         if isinstance(sensor.get_value(), predicates.FunctionTerm):
@@ -351,7 +398,7 @@ class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer, MAPLTransla
             elif not pre:
                 pre = conditions.Conjunction([])
             for term, param in termdict.iteritems():
-                pre.parts.append(conditions.LiteralCondition(predicates.equals, [term, predicates.Term(param)]))
+                pre.parts.append(conditions.LiteralCondition(builtin.equals, [term, predicates.Term(param)]))
                 vars.append(param)
 
         return sensors.Sensor(sensor.name, agents, args, vars, pre, sense, domain)

@@ -116,8 +116,8 @@ class Planner(object):
         action = pnode.action
         if cond:
             action.instantiate(pnode.full_args)
-            extstate = state.getExtendedState(state.getRelevantVars(cond))
-            result = extstate.isSatisfied(cond)
+            extstate = state.get_extended_state(state.get_relevant_vars(cond))
+            result = extstate.is_satisfied(cond)
             action.uninstantiate()
             return result
         
@@ -130,7 +130,7 @@ class Planner(object):
             elif isinstance(pnode.action, plans.DummyAction):
                 continue
             else:
-                pnode.action = mapltask.getAction(pnode.action.name)
+                pnode.action = mapltask.get_action(pnode.action.name)
 
     @statistics.time_method_for_statistics("monitoring_time")
     def _evaluate_current_plan(self, task):

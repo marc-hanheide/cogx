@@ -8,6 +8,7 @@ import os
 import parser, mapltypes
 from mapltypes import *
 from parser import Parser, ParseError
+from builtin import TRUE, FALSE, t_object, t_boolean
 
 typetest = \
 """
@@ -33,14 +34,14 @@ objecttest = \
 class ConditionsTest(unittest.TestCase):
     def parseTypes(self, it):
         it.get(":types")
-        typeDict = {objectType.name : objectType, booleanType.name : booleanType}
+        typeDict = {t_object.name : t_object, t_boolean.name : t_boolean}
         
         tlist = mapltypes.parse_typelist(it)
         for key, value in tlist.iteritems():
             if value.string not in typeDict:
-                typeDict[value.string] = Type(value.string, [objectType])
+                typeDict[value.string] = Type(value.string, [t_object])
             if key.string not in typeDict:
-                typeDict[key.string] = Type(key.string, [objectType])
+                typeDict[key.string] = Type(key.string, [t_object])
 
             typeDict[key.string].supertypes.add(typeDict[value.string])
 
@@ -68,16 +69,16 @@ class ConditionsTest(unittest.TestCase):
         for t in expectedTypes:
             self.assert_(t in types)
             self.assert_(isinstance(types[t], Type))
-            self.assert_(types[t].equalOrSubtypeOf(types["object"]))
-            self.assert_(types[t].equalOrSubtypeOf(types[t]))
-            self.assert_(types[t].equalOrSupertypeOf(types[t]))
-            self.assertFalse(types[t].isSubtypeOf(types[t]))
-            self.assertFalse(types[t].isSupertypeOf(types[t]))
+            self.assert_(types[t].equal_or_subtype_of(types["object"]))
+            self.assert_(types[t].equal_or_subtype_of(types[t]))
+            self.assert_(types[t].equal_or_supertype_of(types[t]))
+            self.assertFalse(types[t].is_subtype_of(types[t]))
+            self.assertFalse(types[t].is_supertype_of(types[t]))
             self.assertEqual(types[t], types[t])
 
-        self.assert_(types["truck"].isSubtypeOf(types["vehicle"]))
-        self.assert_(types["truck"].isSubtypeOf(types["thing"]))
-        self.assert_(types["location"].isSupertypeOf(types["airport"]))
+        self.assert_(types["truck"].is_subtype_of(types["vehicle"]))
+        self.assert_(types["truck"].is_subtype_of(types["thing"]))
+        self.assert_(types["location"].is_supertype_of(types["airport"]))
 
     def testObjectParsing(self):
         """Testing object parsing and type checking"""
@@ -93,28 +94,28 @@ class ConditionsTest(unittest.TestCase):
         for o in expectedObjects:
             self.assert_(o in objects)
             self.assert_(isinstance(objects[o], TypedObject))
-            self.assert_(objects[o].isInstanceOf(types["object"]))
+            self.assert_(objects[o].is_instance_of(types["object"]))
             self.assertEqual(objects[o], objects[o])
 
-        self.assert_(objects["tru1"].isInstanceOf(types["truck"]))
-        self.assert_(objects["tru1"].isInstanceOf(types["vehicle"]))
-        self.assert_(objects["tru1"].isInstanceOf(types["thing"]))
+        self.assert_(objects["tru1"].is_instance_of(types["truck"]))
+        self.assert_(objects["tru1"].is_instance_of(types["vehicle"]))
+        self.assert_(objects["tru1"].is_instance_of(types["thing"]))
 
-        self.assert_(objects["apn1"].isInstanceOf(types["airplane"]))
-        self.assert_(objects["apn1"].isInstanceOf(types["vehicle"]))
-        self.assert_(objects["apn1"].isInstanceOf(types["thing"]))
+        self.assert_(objects["apn1"].is_instance_of(types["airplane"]))
+        self.assert_(objects["apn1"].is_instance_of(types["vehicle"]))
+        self.assert_(objects["apn1"].is_instance_of(types["thing"]))
 
-        self.assert_(objects["obj13"].isInstanceOf(types["package"]))
-        self.assert_(objects["obj13"].isInstanceOf(types["thing"]))
+        self.assert_(objects["obj13"].is_instance_of(types["package"]))
+        self.assert_(objects["obj13"].is_instance_of(types["thing"]))
 
-        self.assert_(objects["apt1"].isInstanceOf(types["airport"]))
-        self.assert_(objects["apt2"].isInstanceOf(types["location"]))
+        self.assert_(objects["apt1"].is_instance_of(types["airport"]))
+        self.assert_(objects["apt2"].is_instance_of(types["location"]))
 
-        self.assert_(objects["pos1"].isInstanceOf(types["location"]))
-        self.assert_(objects["pos2"].isInstanceOf(types["location"]))
+        self.assert_(objects["pos1"].is_instance_of(types["location"]))
+        self.assert_(objects["pos2"].is_instance_of(types["location"]))
 
-        self.assert_(objects["cit1"].isInstanceOf(types["city"]))
-        self.assert_(objects["cit2"].isInstanceOf(types["city"]))
+        self.assert_(objects["cit1"].is_instance_of(types["city"]))
+        self.assert_(objects["cit2"].is_instance_of(types["city"]))
 
     def testObjects(self):
         """Testing object typing/type checking"""
@@ -129,10 +130,10 @@ class ConditionsTest(unittest.TestCase):
         self.assertEqual(o1, o2)
         self.assertNotEqual(o1, o3)
 
-        self.assert_(o1.isInstanceOf(types["thing"]))
-        self.assertFalse(o1.isInstanceOf(types["truck"]))
-        self.assertFalse(o1.isInstanceOf(types["vehicle"]))
-        self.assertFalse(o1.isInstanceOf(types["location"]))
+        self.assert_(o1.is_instance_of(types["thing"]))
+        self.assertFalse(o1.is_instance_of(types["truck"]))
+        self.assertFalse(o1.is_instance_of(types["vehicle"]))
+        self.assertFalse(o1.is_instance_of(types["location"]))
 
     def testCompositeTypes(self):            
         """Testing composite types"""
@@ -142,43 +143,43 @@ class ConditionsTest(unittest.TestCase):
         
         ctype = CompositeType([types["package"], types["truck"]])
 
-        self.assert_(types["package"].isSubtypeOf(ctype))
-        self.assertFalse(types["package"].isSupertypeOf(ctype))
-        self.assert_(types["truck"].isSubtypeOf(ctype))
-        self.assertFalse(types["truck"].isSupertypeOf(ctype))
+        self.assert_(types["package"].is_subtype_of(ctype))
+        self.assertFalse(types["package"].is_supertype_of(ctype))
+        self.assert_(types["truck"].is_subtype_of(ctype))
+        self.assertFalse(types["truck"].is_supertype_of(ctype))
 
-        self.assert_(ctype.equalOrSupertypeOf(ctype))
-        self.assert_(ctype.equalOrSubtypeOf(ctype))
-        self.assertFalse(ctype.isSupertypeOf(ctype))
-        self.assertFalse(ctype.isSubtypeOf(ctype))
+        self.assert_(ctype.equal_or_supertype_of(ctype))
+        self.assert_(ctype.equal_or_subtype_of(ctype))
+        self.assertFalse(ctype.is_supertype_of(ctype))
+        self.assertFalse(ctype.is_subtype_of(ctype))
         
-        self.assert_(types["thing"].isSupertypeOf(ctype))
-        self.assert_(types["object"].isSupertypeOf(ctype))
-        self.assertFalse(types["vehicle"].isSupertypeOf(ctype))
+        self.assert_(types["thing"].is_supertype_of(ctype))
+        self.assert_(types["object"].is_supertype_of(ctype))
+        self.assertFalse(types["vehicle"].is_supertype_of(ctype))
 
         o1 = TypedObject("o1", types["package"])
         o2 = TypedObject("o2", types["truck"])
         o3 = TypedObject("o3", types["airplane"])
         o4 = TypedObject("o3", ctype)
         
-        self.assert_(o1.isInstanceOf(ctype))
-        self.assert_(o2.isInstanceOf(ctype))
-        self.assertFalse(o3.isInstanceOf(ctype))
-        self.assert_(o4.isInstanceOf(ctype))
-        self.assertFalse(o4.isInstanceOf(types["package"]))
-        self.assertFalse(o4.isInstanceOf(types["truck"]))
-        self.assertFalse(o4.isInstanceOf(types["vehicle"]))
-        self.assert_(o4.isInstanceOf(types["thing"]))
-        self.assert_(o4.isInstanceOf(types["object"]))
+        self.assert_(o1.is_instance_of(ctype))
+        self.assert_(o2.is_instance_of(ctype))
+        self.assertFalse(o3.is_instance_of(ctype))
+        self.assert_(o4.is_instance_of(ctype))
+        self.assertFalse(o4.is_instance_of(types["package"]))
+        self.assertFalse(o4.is_instance_of(types["truck"]))
+        self.assertFalse(o4.is_instance_of(types["vehicle"]))
+        self.assert_(o4.is_instance_of(types["thing"]))
+        self.assert_(o4.is_instance_of(types["object"]))
 
         ctype2 = CompositeType([types["package"], types["vehicle"]])
-        self.assert_(ctype.isSubtypeOf(ctype2))
-        self.assert_(ctype2.isSupertypeOf(ctype))
+        self.assert_(ctype.is_subtype_of(ctype2))
+        self.assert_(ctype2.is_supertype_of(ctype))
 
         ctype3 = CompositeType([types["truck"], types["airplane"]])
-        self.assert_(ctype3.equalOrSubtypeOf(types["vehicle"]))
-        self.assert_(ctype3.isSubtypeOf(types["vehicle"]))
-        self.assertFalse(ctype3.isSupertypeOf(types["vehicle"]))
+        self.assert_(ctype3.equal_or_subtype_of(types["vehicle"]))
+        self.assert_(ctype3.is_subtype_of(types["vehicle"]))
+        self.assertFalse(ctype3.is_supertype_of(types["vehicle"]))
         
     def testFunctionTypes(self):            
         """Testing function types"""
@@ -188,17 +189,17 @@ class ConditionsTest(unittest.TestCase):
 
         fpackage = FunctionType(types["package"])
         
-        self.assert_(fpackage.equalOrSubtypeOf(types["package"]))
-        self.assert_(fpackage.isSubtypeOf(types["package"]))
-        self.assertFalse(fpackage.isSupertypeOf(types["package"]))
+        self.assert_(fpackage.equal_or_subtype_of(types["package"]))
+        self.assert_(fpackage.is_subtype_of(types["package"]))
+        self.assertFalse(fpackage.is_supertype_of(types["package"]))
 
     def testBulitinTypes(self):
         """Testing builtin types"""
 
-        self.assertFalse(numberType.equalOrSubtypeOf(objectType))
-        self.assertFalse(numberType.isSubtypeOf(objectType))
-        self.assertFalse(numberType.equalOrSupertypeOf(objectType))
-        self.assertFalse(numberType.isSupertypeOf(objectType))
+        self.assertFalse(t_number.equal_or_subtype_of(t_object))
+        self.assertFalse(t_number.is_subtype_of(t_object))
+        self.assertFalse(t_number.equal_or_supertype_of(t_object))
+        self.assertFalse(t_number.is_supertype_of(t_object))
         
         
 if __name__ == '__main__':
