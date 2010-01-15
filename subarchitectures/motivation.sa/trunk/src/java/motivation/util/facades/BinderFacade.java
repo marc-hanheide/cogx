@@ -1,6 +1,5 @@
 package motivation.util.facades;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -31,7 +30,7 @@ public class BinderFacade extends CASTHelper {
 
 	static private BinderFacade singleton;
 
-	WMEntrySet unionConfigurations;
+	WMView<UnionConfiguration> unionConfigurations;
 	WMView<Proxy> proxies;
 	WMView<RelationProxy> relations;
 	ManagedComponent component;
@@ -42,7 +41,7 @@ public class BinderFacade extends CASTHelper {
 	public BinderFacade(ManagedComponent component) {
 		super(component);
 		this.component = component;
-		this.unionConfigurations = WMEntrySet.create(component,
+		this.unionConfigurations = WMView.create(component,
 				UnionConfiguration.class);
 		this.proxies = WMView.create(component, Proxy.class, "binder");
 		this.relations = WMView
@@ -66,8 +65,8 @@ public class BinderFacade extends CASTHelper {
 	}
 
 	public void start() {
-		unionConfigurations.start();
 		try {
+			unionConfigurations.start();
 			proxies.start();
 			relations.start();
 		} catch (UnknownSubarchitectureException e) {
