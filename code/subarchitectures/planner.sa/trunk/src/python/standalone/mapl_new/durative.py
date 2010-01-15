@@ -1,6 +1,6 @@
 from parser import *
 import mapltypes as types
-import predicates, actions, conditions, effects
+import builtin, predicates, actions, conditions, effects
 from conditions import *
 
 class DurationConstraint(object):
@@ -43,18 +43,18 @@ class DurationConstraint(object):
         it.get("?duration")
         
         term = predicates.Term.parse(it, scope)
-        if not term.getType().equalOrSubtypeOf(types.numberType):
-            raise ParseError(first, "Duration must be a number, not %s." % str(term.getType()))
+        if not term.get_type().equal_or_subtype_of(types.t_number):
+            raise ParseError(first, "Duration must be a number, not %s." % str(term.get_type()))
         
-        it.noMoreTokens()
+        it.no_more_tokens()
         
         return [DurationConstraint(term, time)]
             
         
 class DurativeAction(actions.Action):
-    def __init__(self, name, args, duration, precondition, effects, domain):
-        actions.Action.__init__(self, name, args, precondition, effects, domain)
-        self.add(types.TypedObject("?duration", types.numberType))
+    def __init__(self, name, args, duration, precondition, effect, domain):
+        actions.Action.__init__(self, name, args, precondition, effect, domain)
+        self.add(types.TypedObject("?duration", types.t_number))
         self.duration = duration
         if self.duration:
             self.duration.set_scope(self)
@@ -72,14 +72,14 @@ class DurativeAction(actions.Action):
 
         next = it.get()
         if next.token.string == ":parameters":
-            params = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types)
+            params = predicates.parse_arg_list(iter(it.get(list, "parameters")), scope.types)
             next = it.get()
         else:
             params = []
             
-        action =  DurativeAction(name, params, None, None, [], scope)
+        action =  DurativeAction(name, params, None, None, None, scope)
         
-        next.token.checkKeyword(":duration")
+        next.token.check_keyword(":duration")
         action.duration = DurationConstraint.parse(iter(it.get(list, "duration constraint")), action)
 
         try:
@@ -93,9 +93,9 @@ class DurativeAction(actions.Action):
                         raise ParseError(next.token, "replan condition already defined.")
                     action.replan = conditions.Condition.parse(iter(it.get(list, "condition")), action)
                 elif next.token.string == ":effect":
-                    if action.effects:
+                    if action.effect:
                         raise ParseError(next.token, "effects already defined.")
-                    action.effects = effects.Effect.parse(iter(it.get(list, "effect")), action, timedEffects=True)
+                    action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action, timed_effects=True)
                     
                 next = it.next()
 
@@ -133,7 +133,7 @@ class TimedCondition(conditions.Condition):
         if tag == "and":
             parts = []
             for part in it:
-                if part.isTerminal():
+                if part.is_terminal():
                     raise UnexpectedTokenError(part.token, "condition")
                 parts.append(TimedCondition.parse(iter(part), scope))
             return Conjunction(parts)
@@ -161,7 +161,12 @@ class TimedEffect(effects.SimpleEffect):
         predicates.Literal.__init__(self, predicate, args, scope, negated)
         self.time = timeSpec
         
-    def copy(self, new_scope=None):
+    def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        if copy_instance:
+            l = self.copy_instance()
+            if new_scope:
+                l.set_scope(new_scope)
+            return l
         return TimedEffect(self.predicate, self.args, self.time, new_scope, self.negated)
 
     def copy_instance(self, new_scope=None):
@@ -181,9 +186,9 @@ class TimedEffect(effects.SimpleEffect):
         first = it.get(None, "effect specification").token
 
         if first.string != "at":
-            scope.predicates.add(predicates.change)
+            scope.predicates.add(builtin.change)
             eff = effects.SimpleEffect.parse(it.reset(), scope)
-            scope.predicates.remove(predicates.change)
+            scope.predicates.remove(builtin.change)
             return eff
 
         timespec = it.get().token
@@ -191,22 +196,22 @@ class TimedEffect(effects.SimpleEffect):
         if timespec.string not in ("start", "end"):
             raise UnexpectedTokenError(time, "'start' or 'end'")
         
-        ops = [predicates.assign, predicates.change]
+        ops = [builtin.assign, builtin.change]
         if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-            ops += predicates.numericOps
+            ops += builtin.numeric_ops
 
         try:
             scope.predicates.add(ops)
-            scope.predicates.remove(predicates.equals)
+            scope.predicates.remove(builtin.equals)
             literal = predicates.Literal.parse(iter(it.get(list, "effect")), scope)
         finally:
             scope.predicates.remove(ops)
-            scope.predicates.add(predicates.equals)
+            scope.predicates.add(builtin.equals)
 
         if literal.predicate in ops and literal.negated:
             raise ParseError(first, "Can't negate fluent assignments.")
 
-        if literal.predicate == predicates.equals:
+        if literal.predicate == builtin.equals:
             raise ParseError(first, "Can't use '=' in effects, please use 'assign' instead.")
 
-        return [TimedEffect(literal.predicate, literal.args, timespec.string, scope, literal.negated)]
+        return TimedEffect(literal.predicate, literal.args, timespec.string, scope, literal.negated)

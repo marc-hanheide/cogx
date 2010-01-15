@@ -107,10 +107,14 @@ class Agent(BaseAgent):
             G.draw("plan.pdf")
 
         all_funcs = set(self.mapltask.functions) | set(self.mapltask.predicates)
-        #print "executable:"
-        #for a in self.mapltask.actions:
-        #    for c in mapl.sas_translate.instantiate(a, task.get_state(), all_funcs):
-        #        print "(%s %s)" % (a.name, " ".join(o.name for o in c))
+        # print "instantiate:"
+        #mapl.sas_translate.to_sas(self.mapltask)
+        # print "executable:"
+        # for a in self.mapltask.actions:
+        #     a = mapl.mapl.MAPLObjectFluentNormalizer().translate(a, domain=self.mapltask)
+    
+        #     for c in mapl.sas_translate.instantiate_action(a, task.get_state(), all_funcs):
+        #         print "(%s %s)" % (a.name, " ".join(o.name for o in c))
 
         executable = sorted(plan.executable(), cmp=action_cmp)
         log.info("executable actions: %s", " ".join(map(str, executable)))

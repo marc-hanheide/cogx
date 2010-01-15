@@ -44,7 +44,7 @@ class Writer(object):
     
     def write_term(self, term):
         if isinstance(term, (predicates.ConstantTerm, predicates.VariableTerm)):
-            if term.getType().equalOrSubtypeOf(types.numberType):
+            if term.get_type().equal_or_subtype_of(types.t_number):
                 return str(term.object.name)
             return term.object.name
 
@@ -63,20 +63,20 @@ class Writer(object):
 
     def write_types(self, _types):
         strings = []
-        toplevel = [types.objectType, types.numberType]
+        toplevel = [types.t_object, types.t_number]
         for type in _types:
             if type.__class__ != types.Type:
                 continue
             if type.supertypes:
                 for st in type.supertypes:
                     #only write the lowest supertype(s)
-                    if not any(st.isSupertypeOf(t) for t in type.supertypes):
+                    if not any(st.is_supertype_of(t) for t in type.supertypes):
                         strings.append("%s - %s" % (type.name, st.name))
             elif type not in toplevel:
                 toplevel.append(type)
                 
-        toplevel.remove(types.objectType)
-        toplevel.remove(types.numberType)
+        toplevel.remove(types.t_object)
+        toplevel.remove(types.t_number)
         
         strings.append(" ".join(t.name for t in toplevel))
         return self.section(":types", strings)
@@ -126,7 +126,7 @@ class Writer(object):
         if action.replan:
             strings += self.section(":replan", self.write_condition(action.replan), parens=False)
 
-        strings += self.section(":effect", self.write_effects(action.effects), parens=False)
+        strings += self.section(":effect", self.write_effect(action.effect), parens=False)
 
         return self.section(":action", strings)
 
@@ -160,29 +160,25 @@ class Writer(object):
         if action.precondition:
             strings += self.section(":condition", self.write_condition(action.precondition), parens=False)
 
-        strings += self.section(":effect", self.write_effects(action.effects), parens=False)
+        strings += self.section(":effect", self.write_effect(action.effect), parens=False)
 
         return self.section(":durative-action", strings)
 
-            
-    def write_effects(self, effects):
-        if len(effects) == 1:
-            return self.write_effect(effects[0])
-        
-        strings = sum([self.write_effect(e) for e in effects], [])
-        return self.section("and", strings)
 
     def write_effect(self, effect):
         if isinstance(effect, durative.TimedEffect):
             return ["(at %s %s)" % (effect.time, self.write_literal(effect))]
         elif isinstance(effect, effects.SimpleEffect):
             return [self.write_literal(effect)]
+        elif isinstance(effect, effects.ConjunctiveEffect):
+            strings = sum([self.write_effect(e) for e in effect.parts], [])
+            return self.section("and", strings)
         elif isinstance(effect, effects.UniversalEffect):
-            strings = self.write_effects(effect.effects)
+            strings = self.write_effect(effect.effect)
             head  = "forall (%s)" % self.write_typelist(effect.args)
             return self.section(head, strings)
         elif isinstance(effect, effects.ConditionalEffect):
-            strings = self.write_effects(effect.effects)
+            strings = self.write_effect(effect.effect)
             cond = self.write_condition(effect.condition)
             return self.section("when", cond + strings)
 

@@ -146,7 +146,7 @@ class ActionTest(unittest.TestCase):
         self.loc2 = TypedObject("loc2", self.domain.types["location"])
         self.agent = TypedObject("agent", self.domain.types["agent"])
 
-        self.domain.predicates.add(knowledge)
+        self.domain.predicates.add(mapl.knowledge)
 
         self.domain.add([self.truck, self.plane, self.p, self.airport, self.loc1, self.loc2, self.agent])
         
@@ -154,95 +154,96 @@ class ActionTest(unittest.TestCase):
     def testDurativeAction(self):
         """Testing durative action parsing"""
         
-        action = Parser.parseAs(dur_drive.split("\n"), durative.DurativeAction, self.domain)
+        action = Parser.parse_as(dur_drive.split("\n"), durative.DurativeAction, self.domain)
 
         self.assertEqual(action.precondition.__class__, durative.TimedCondition)
         self.assertEqual(action.precondition.time, "all")
-        self.assert_(isinstance(action.effects[0], durative.TimedEffect))
-        self.assertEqual(action.effects[0].time, "end")
+        self.assert_(isinstance(action.effect, durative.TimedEffect))
+        self.assertEqual(action.effect.time, "end")
         
     def testModalAction(self):
         """Testing modal action parsing"""
         
-        action = Parser.parseAs(modal_action.split("\n"), mapl.MAPLAction, self.domain)
+        action = Parser.parse_as(modal_action.split("\n"), mapl.MAPLAction, self.domain)
 
-        self.assertEqual(action.maplargs[1].type, FunctionType(objectType))
+        self.assertEqual(action.maplargs[1].type, FunctionType(t_object))
         term = predicates.FunctionTerm(self.domain.functions["location-of"][0], [Parameter("?c", self.domain.types["city"])])
         action.instantiate({"?var" : term})
         
     def testEffects(self):
         """Testing basic effect parsing"""
         
-        action = Parser.parseAs(drive.split("\n"), Action, self.domain)
-        self.assertEqual(len(action.effects), 1)
-        self.assertEqual(len(action.effects), 1)
+        action = Parser.parse_as(drive.split("\n"), Action, self.domain)
+        self.assert_(isinstance(action.effect, SimpleEffect))
+
 
     def testMAPLAction(self):
         """Testing basic effect parsing"""
         
-        action = Parser.parseAs(mapl_drive.split("\n"), mapl.MAPLAction, self.domain)
+        action = Parser.parse_as(mapl_drive.split("\n"), mapl.MAPLAction, self.domain)
         self.assertEqual(len(action.agents), 1)
         self.assertEqual(len(action.maplargs), 2)
         self.assertEqual(len(action.vars), 0)
         self.assertEqual(len(action.args), 3)
-        self.assertEqual(len(action.effects), 1)
-        self.assertEqual(len(action.effects), 1)
+        self.assert_(isinstance(action.effect, SimpleEffect))
         
     def testConditionalEffects(self):
         """Testing conditional effect parsing"""
         
-        action = Parser.parseAs(cond_load.split("\n"), Action, self.domain)
+        action = Parser.parse_as(cond_load.split("\n"), Action, self.domain)
 
-        self.assert_(isinstance(action.effects[0], ConditionalEffect))
-        self.assert_(isinstance(action.effects[0].condition, conditions.LiteralCondition))
-        self.assert_(isinstance(action.effects[0].effects[0], SimpleEffect))
+        self.assert_(isinstance(action.effect, ConditionalEffect))
+        self.assert_(isinstance(action.effect.condition, conditions.LiteralCondition))
+        self.assert_(isinstance(action.effect.effect, SimpleEffect))
 
     def testUniversalEffects(self):
         """Testing conditional effect parsing"""
         
-        action = Parser.parseAs(univ_unload.split("\n"), Action, self.domain)
+        action = Parser.parse_as(univ_unload.split("\n"), Action, self.domain)
 
-        self.assert_(isinstance(action.effects[0], UniversalEffect))
-        self.assertEqual(len(action.effects[0].args), 1)
-        self.assert_(isinstance(action.effects[0].effects[0], ConditionalEffect))
+        self.assert_(isinstance(action.effect, UniversalEffect))
+        self.assertEqual(len(action.effect.args), 1)
+        self.assert_(isinstance(action.effect.effect, ConditionalEffect))
 
     def testProbabilisticEffects(self):
         """Testing probabilistic effect parsing"""
         
-        action = Parser.parseAs(prob_load.split("\n"), Action, self.domain)
+        action = Parser.parse_as(prob_load.split("\n"), Action, self.domain)
 
-        self.assert_(isinstance(action.effects[0], ProbabilisticEffect))
-        p1, e1 = action.effects[0].effects[0]
-        p2, e2 = action.effects[0].effects[1]
+        self.assert_(isinstance(action.effect, ConjunctiveEffect))
+        self.assert_(isinstance(action.effect.parts[0], ProbabilisticEffect))
+        self.assert_(isinstance(action.effect.parts[1], ProbabilisticEffect))
+        p1, e1 = action.effect.parts[0].effects[0]
+        p2, e2 = action.effect.parts[0].effects[1]
 
-        ap1, ae1 = action.effects[1].effects[0]
-        ap2, ae2 = action.effects[1].effects[1]
+        ap1, ae1 = action.effect.parts[1].effects[0]
+        ap2, ae2 = action.effect.parts[1].effects[1]
 
         self.assertEqual(p1, 0.4)
-        self.assert_(isinstance(e1[0].args[0], FunctionTerm))
-        self.assert_(isinstance(e1[0].args[1], VariableTerm))
+        self.assert_(isinstance(e1.args[0], FunctionTerm))
+        self.assert_(isinstance(e1.args[1], VariableTerm))
         self.assertEqual(p2, 0.5)
-        self.assert_(isinstance(e2[0].args[0], FunctionTerm))
-        self.assert_(isinstance(e2[0].args[1], FunctionTerm))
+        self.assert_(isinstance(e2.args[0], FunctionTerm))
+        self.assert_(isinstance(e2.args[1], FunctionTerm))
 
         self.assertEqual(ae1, e1)
         self.assertEqual(ae2, e2)
         self.assertEqual(ap1, 0.5)
         self.assertEqual(ap2, 0.5)
 
-        self.assertEqual(action.effects[0].getRandomEffect(0), e2)
-        self.assertEqual(action.effects[0].getRandomEffect(1), e1)
-        self.assertEqual(action.effects[0].getRandomEffect(2), [])
+        self.assertEqual(action.effect.parts[0].getRandomEffect(0), e2)
+        self.assertEqual(action.effect.parts[0].getRandomEffect(1), e1)
+        self.assertEqual(action.effect.parts[0].getRandomEffect(2), None)
 
         import random
         random.seed(42)
         for r in xrange(30):
-            self.assert_(action.effects[0].getRandomEffect() in (e1,e2,[]))
+            self.assert_(action.effect.parts[0].getRandomEffect() in (e1,e2,None))
         
     def testAssertion(self):
         """Testing parsing of assertions"""
         
-        action = Parser.parseAs(a_load.split("\n"), mapl.MAPLAction, self.domain)
+        action = Parser.parse_as(a_load.split("\n"), mapl.MAPLAction, self.domain)
         self.assert_(action.replan is not None)
 
         

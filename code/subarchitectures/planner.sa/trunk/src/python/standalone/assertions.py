@@ -4,6 +4,7 @@ import config
 
 import mapl_new as mapl
 import mapl_new.state as state
+import mapl_new.visitors as visitors
 import plans
 
 log = config.logger("assertions")
@@ -11,11 +12,11 @@ log = config.logger("assertions")
 def get_observable_functions(sensors):
     result=[]
     for s in sensors:
-        pred_types = [a.getType() for a in s.get_term().args]
+        pred_types = [a.get_type() for a in s.get_term().args]
         if s.is_boolean():
-            pred_types.append(s.get_value().getType())
+            pred_types.append(s.get_value().get_type())
         else:
-            pred_types.append(s.get_term.getType())
+            pred_types.append(s.get_term.get_type())
 
         #Unify predicates with same/compatible types
         exists = False
@@ -28,11 +29,11 @@ def get_observable_functions(sensors):
             is_subtype = False
             compatible = True
             for newtype, oldtype in zip(pred_types, types):
-                if newtype == arg.getType():
+                if newtype == arg.get_type():
                     continue
-                elif newtype.isSubtypeOf(oldtype):
+                elif newtype.is_subtype_of(oldtype):
                     is_subtype = True
-                elif newtype.isSupertypeOf(oldtype):
+                elif newtype.is_supertype_of(oldtype):
                     is_supertype = True
                 else:
                     compatible = False
@@ -61,22 +62,19 @@ def get_observable_functions(sensors):
     return observable
 
 def get_nonstatic_functions(domain):
+    @visitors.collect
     def effectVisitor(eff, results):
         if isinstance(eff, mapl.effects.SimpleEffect):
-            if eff.predicate in mapl.predicates.assignmentOps:
-                function = eff.args[0].function
-            elif eff.predicate in mapl.predicates.mapl_modal_predicates:
-                return []
+            if eff.predicate in mapl.assignment_ops:
+                return eff.args[0].function
+            elif eff.predicate in mapl.mapl.modal_predicates:
+                return None
             else:
-                function = eff.predicate
-            return [function]
-        else:
-            return sum(results, start=[])
+                return eff.predicate
                 
     result = set()
     for a in domain.actions:
-        for eff in a.effects:
-            result |= set(eff.visit(effectVisitor))
+        result |= set(a.effect.visit(effectVisitor))
     return result
 
 def get_static_functions(domain):
@@ -91,37 +89,42 @@ def get_static_functions(domain):
 def is_observable(observables, term, value=None):
     if term.function not in observables:
         return False
-    
-    ttypes = [a.getType() for a  in term.args]
+
+    ttypes = [a.get_type() for a  in term.args]
     if value:
-        ttypes.append(value.getType())
+        ttypes.append(value.get_type())
     else:
         ttypes.append(term.function.type)
 
     for types in observables[term.function]:
-        if all(map(lambda t1,t2: t1.equalOrSubtypeOf(t2), ttypes, types)):
+        if all(map(lambda t1,t2: t1.equal_or_subtype_of(t2) or t2.equal_or_subtype_of(t1), ttypes, types)):
             return True
     return False
-        
+
+
+tr = mapl.mapl.MAPLObjectFluentNormalizer()
+
 def to_assertion(action, domain):
     if not action.precondition:
         return None
     
     observable = get_observable_functions(domain.sensors)
+    action = tr.translate(action, domain=domain)
+    #print action.precondition.pddl_str()
     agent = action.agents[0]
 
     new_indomain = set()
 
     def assertionVisitor(cond, results=[]):
         if cond.__class__ == mapl.conditions.LiteralCondition:
-            if cond.predicate == mapl.predicates.knowledge:
+            if cond.predicate == mapl.mapl.knowledge:
                 return None, cond
-            if cond.predicate != mapl.predicates.equals or \
+            if cond.predicate != mapl.equals or \
                     not is_observable(observable, cond.args[0], cond.args[1]) :
                 return cond, None
-            
-            k_cond = mapl.conditions.LiteralCondition(mapl.predicates.knowledge, [mapl.predicates.VariableTerm(agent), cond.args[0]])
-            id_cond = mapl.conditions.LiteralCondition(mapl.predicates.indomain, cond.args[:], negated = cond.negated)
+
+            k_cond = mapl.conditions.LiteralCondition(mapl.mapl.knowledge, [mapl.predicates.VariableTerm(agent), cond.args[0]])
+            id_cond = mapl.conditions.LiteralCondition(mapl.mapl.indomain, cond.args[:], negated = cond.negated)
             #print cond.pddl_str()
 
             return id_cond, k_cond
@@ -149,10 +152,11 @@ def to_assertion(action, domain):
             assert False
 
     condition, replan = action.precondition.visit(assertionVisitor)
+
     if not replan:
         return None
 
-    assertion = mapl.mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effects, domain)
+    assertion = mapl.mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effect, domain)
     assertion = assertion.copy()
     return assertion
 
@@ -233,7 +237,7 @@ def add_to_cluster(cluster, plan, static, domain):
         return read, write, read|write
 
     def get_sensor_pres(cluster):
-        read, _, _ = get_svars(cluster, filter_func=lambda svar: svar.modality == mapl.predicates.direct_knowledge)
+        read, _, _ = get_svars(cluster, filter_func=lambda svar: svar.modality == mapl.mapl.direct_knowledge)
         return read
     
     candidates = set()

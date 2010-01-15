@@ -13,6 +13,10 @@ class Axiom(Scope):
         Scope.__init__(self, args, scope)
         self.args = args
         self.predicate = pred
+
+        self.predicate_args = self.args[:len(self.predicate.args)]
+        self.free_args = self.args[len(self.predicate.args):]
+        
         self.condition = condition
         
     def instantiate(self, mapping):
@@ -41,7 +45,7 @@ class Axiom(Scope):
         it.get(":derived")
         j = iter(it.get(list, "axiom head"))
         name = j.get("terminal", "predicate identifier").token
-        args = predicates.parseArgList(j, scope.types)
+        args = predicates.parse_arg_list(j, scope.types)
 
         if name.string not in scope.predicates:
             raise ParseError(name, "Axiom head must be declared as a predicate beforehand.")
@@ -51,7 +55,7 @@ class Axiom(Scope):
         for p in pred_candidates:
             pred = p
             for a,pa in zip(args, p.args):
-                if not a.isInstanceOf(pa.type):
+                if not a.is_instance_of(pa.type):
                     pred = None
                     break
             if pred:
@@ -126,21 +130,3 @@ def stratify(axioms):
         
     return stratification, nonrecursive
     
-kval_axiom = """
-(:derived (kval ?a - agent ?svar - (function object))
-          (or (kd ?a ?svar)
-              (exists (?val - (typeof ?svar)) (= ?svar ?val))
-          )
-)
-"""
-
-in_domain_axiom = """
-(:derived (in-domain ?svar - (function object) ?val - (typeof ?svar))
-          (or (= ?svar ?val)
-              (and (i_in-domain ?svar ?val)
-                   (not (exists (?val2 - (typeof ?svar)) (= ?svar ?val2))))
-          )
-)
-"""
-
-mapl_axioms = [kval_axiom, in_domain_axiom]

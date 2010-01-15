@@ -9,30 +9,33 @@ class Type(object):
         self.name = typename
         
         if supertypes is None:
-            supertypes = [objectType]
+            supertypes = [t_object]
         self.supertypes = set(supertypes)
 
-    def isSubtypeOf(self, other):
+    def get_supertypes(self):
+        return self.supertypes | reduce(lambda a,b: a|b, (t.get_supertypes() for t in self.supertypes), set())
+
+    def is_subtype_of(self, other):
         if self.__class__ != other.__class__:
-            return other.isSupertypeOf(self)
+            return other.is_supertype_of(self)
         
         if other in self.supertypes:
             return True
-        return any(sup.isSubtypeOf(other) for sup in self.supertypes)
+        return any(sup.is_subtype_of(other) for sup in self.supertypes)
 
-    def equalOrSubtypeOf(self, other):
+    def equal_or_subtype_of(self, other):
         if self.__class__ != other.__class__:
-            return other.equalOrSupertypeOf(self)
+            return other.equal_or_supertype_of(self)
         
         if other in self.supertypes or self == other:
             return True
-        return any(sup.isSubtypeOf(other) for sup in self.supertypes)
+        return any(sup.is_subtype_of(other) for sup in self.supertypes)
     
-    def isSupertypeOf(self, other):
-        return other.isSubtypeOf(self)
+    def is_supertype_of(self, other):
+        return other.is_subtype_of(self)
 
-    def equalOrSupertypeOf(self, other):
-        return other.equalOrSubtypeOf(self)
+    def equal_or_supertype_of(self, other):
+        return other.equal_or_subtype_of(self)
     
     def __str__(self):
         return self.name
@@ -56,7 +59,7 @@ class Type(object):
         else:
             next = it.get(None, "type specification")
             
-        if next.isTerminal():
+        if next.is_terminal():
             if next.token.string not in types:
                 raise ParseError(next.token, "Unknown type: '%s'" % next.token.string)
             return types[next.token.string]
@@ -71,11 +74,11 @@ class Type(object):
 
         elif first.string == "function":
             ftype = Type.parse(j, types)
-            j.noMoreTokens()
+            j.no_more_tokens()
             return FunctionType(ftype)
         elif first.string == "typeof" and scope:
             param = j.get("terminal", "parameter").token
-            j.noMoreTokens()
+            j.no_more_tokens()
             if param.string not in scope:
                 raise ParseError(param, "Unknown identifier: '%s'" % param.string)
             return ProxyType(scope[param.string])
@@ -86,25 +89,25 @@ class CompositeType(Type):
         self.name = "-".join(t.name for t in types)
         self.types = types
 
-    def isSubtypeOf(self, other):
+    def is_subtype_of(self, other):
         if isinstance(other, CompositeType):
-            return other.isSupertypeOf(self)
+            return other.is_supertype_of(self)
 
-#        print self, other, all(map(lambda t: t.equalOrSubtypeOf(other), self.types))
-        return all(t.equalOrSubtypeOf(other) for t in self.types)
+#        print self, other, all(map(lambda t: t.equal_or_subtype_of(other), self.types))
+        return all(t.equal_or_subtype_of(other) for t in self.types)
 
-    def equalOrSubtypeOf(self, other):
-        return self == other or self.isSubtypeOf(other)
+    def equal_or_subtype_of(self, other):
+        return self == other or self.is_subtype_of(other)
     
-    def isSupertypeOf(self, other):
+    def is_supertype_of(self, other):
         if isinstance(other, CompositeType):
-            strictSupertype = any(any(t.isSupertypeOf(t2) for t2 in other.types) for t in self.types)
-            return all(self.equalOrSupertypeOf(t) for t in other.types) and strictSupertype
+            strictSupertype = any(any(t.is_supertype_of(t2) for t2 in other.types) for t in self.types)
+            return all(self.equal_or_supertype_of(t) for t in other.types) and strictSupertype
         
-        return any(t.equalOrSupertypeOf(other) for t in self.types)
+        return any(t.equal_or_supertype_of(other) for t in self.types)
 
-    def equalOrSupertypeOf(self, other):
-        return self == other or self.isSupertypeOf(other)
+    def equal_or_supertype_of(self, other):
+        return self == other or self.is_supertype_of(other)
         
     def __str__(self):
         return "(either %s)" % " ".join(t.name for t in self.types)
@@ -123,24 +126,24 @@ class FunctionType(Type):
         self.name = "function(%s)" % str(type)
         self.type = type
 
-    def isSubtypeOf(self, other):
+    def is_subtype_of(self, other):
         if isinstance(other, FunctionType):
-            return self.type.isSubtypeOf(other.type)
-        return self.type.equalOrSubtypeOf(other)
+            return self.type.is_subtype_of(other.type)
+        return self.type.equal_or_subtype_of(other)
 
-    def equalOrSubtypeOf(self, other):
+    def equal_or_subtype_of(self, other):
         if isinstance(other, FunctionType):
-            return self.type.equalOrSubtypeOf(other.type)
-        return self.type.equalOrSubtypeOf(other)
+            return self.type.equal_or_subtype_of(other.type)
+        return self.type.equal_or_subtype_of(other)
     
-    def isSupertypeOf(self, other):
+    def is_supertype_of(self, other):
         if isinstance(other, FunctionType):
-            return self.type.isSupertypeOf(other.type)
+            return self.type.is_supertype_of(other.type)
         return False
 
-    def equalOrSupertypeOf(self, other):
+    def equal_or_supertype_of(self, other):
         if isinstance(other, FunctionType):
-            return self.type.equalOrSupertypeOf(other.type)
+            return self.type.equal_or_supertype_of(other.type)
         return False
         
     def __str__(self):
@@ -158,22 +161,22 @@ class ProxyType(Type):
         self.name = "typeof(%s)" % str(param.name)
         self.parameter = param
 
-    def effectiveType(self):
-        if self.parameter.isInstantiated():
-            return self.parameter.getInstance().function.type
+    def effective_type(self):
+        if self.parameter.is_instantiated():
+            return self.parameter.get_instance().function.type
         return self.parameter.type.type
         
-    def isSubtypeOf(self, other):
-        return self.effectiveType().isSubtypeOf(other)
+    def is_subtype_of(self, other):
+        return self.effective_type().is_subtype_of(other)
 
-    def equalOrSubtypeOf(self, other):
-        return self.effectiveType().equalOrSubtypeOf(other)
+    def equal_or_subtype_of(self, other):
+        return self.effective_type().equal_or_subtype_of(other)
     
-    def isSupertypeOf(self, other):
-        return self.effectiveType().isSupertypeOf(other)
+    def is_supertype_of(self, other):
+        return self.effective_type().is_supertype_of(other)
 
-    def equalOrSupertypeOf(self, other):
-        return self.effectiveType().equalOrSupertypeOf(other)
+    def equal_or_supertype_of(self, other):
+        return self.effective_type().equal_or_supertype_of(other)
         
     def __str__(self):
         return "(type of %s)" % self.parameter.name
@@ -188,37 +191,21 @@ class AnyType(Type):
     def __init__(self, name="any"):
         self.name = name
 
-    def isSubtypeOf(self, other):
+    def is_subtype_of(self, other):
         return True
 
-    def equalOrSubtypeOf(self, other):
+    def equal_or_subtype_of(self, other):
         return True
     
-    def isSupertypeOf(self, other):
+    def is_supertype_of(self, other):
         return True
 
-    def equalOrSupertypeOf(self, other):
+    def equal_or_supertype_of(self, other):
         return True
         
     def __eq__(self, other):
         return isinstance(other, Type)
     
-#basic types for all pddl representations
-objectType = Type("object", [])
-numberType = Type("number", [])
-booleanType = Type("boolean", [objectType])
-
-default_types = [objectType, booleanType]
-
-#basic mapl types
-agentType = Type("agent")
-planningAgentType = Type("planning_agent", [agentType])
-phys_objType = Type("phys_obj")
-subgoalType = Type("subgoal")
-featureType = Type("feature")
-
-mapl_types = [agentType, planningAgentType, phys_objType, subgoalType, featureType]
-
 class TypedObject(object):
     def __init__(self, name, _type):
         if type(name) in (int, float, long):
@@ -228,8 +215,8 @@ class TypedObject(object):
         self.name = name
         self.type = _type
 
-    def isInstanceOf(self, type):
-        return self.type.equalOrSubtypeOf(type)
+    def is_instance_of(self, type):
+        return self.type.equal_or_subtype_of(type)
 
     def copy(self):
         return self.__class__(self.name, self.type)
@@ -252,7 +239,7 @@ class TypedObject(object):
 class TypedNumber(TypedObject):
     def __init__(self, number):
         self.value = number
-        self.type = numberType
+        self.type = t_number
 
     name = property(lambda self: self.value)
 
@@ -268,13 +255,6 @@ class TypedNumber(TypedObject):
         except:
             return self.value == other
         
-
-TRUE = TypedObject("true", booleanType)
-FALSE = TypedObject("false", booleanType)
-
-UNKNOWN = TypedObject("unknown", AnyType())
-UNDEFINED = TypedObject("undefined", AnyType())
-
 class Parameter(TypedObject):
     def __init__(self, name, type):
         assert name[0] == "?"
@@ -284,13 +264,13 @@ class Parameter(TypedObject):
 
     def instantiate(self, value):
         if value is not None:
-            assert value.isInstanceOf(self.type)
+            assert value.is_instance_of(self.type)
         self.instantiated = value
 
-    def isInstantiated(self):
+    def is_instantiated(self):
         return self.instantiated is not None
 
-    def getInstance(self):
+    def get_instance(self):
         return self.instantiated
     
     # def __hash__(self):
@@ -299,17 +279,30 @@ class Parameter(TypedObject):
     # def __eq__(self, other):
     #     return id(self) == id(other)
 
-        
-    
+
+#basic types for all pddl representations
+t_object = Type("object", [])
+t_number = Type("number", [])
+t_boolean = Type("boolean", [t_object])
+
+#predefined constants
+
+TRUE = TypedObject("true", t_boolean)
+FALSE = TypedObject("false", t_boolean)
+
+UNKNOWN = TypedObject("unknown", AnyType())
+UNDEFINED = TypedObject("undefined", AnyType())
+
+   
 def parse_typelist(it):
     types = {}
 
-    def checkFunc(elem):
-        if not elem.isTerminal():
+    def check_func(elem):
+        if not elem.is_terminal():
             raise UnexpectedTokenError(elem.token, "identifier")
         return elem.token
     
-    for subtypes, super in parser.parseTypedList(it, checkFunc, checkFunc):
+    for subtypes, super in parser.parse_typed_list(it, check_func, check_func):
         if super is None:
             super = parser.Token("object", 0, None)
         for type in subtypes:

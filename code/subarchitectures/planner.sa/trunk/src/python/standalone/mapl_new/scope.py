@@ -58,7 +58,7 @@ class FunctionTable(dict):
         argtypes = []
         for arg in args:
             if isinstance(arg, predicates.Term):
-                argtypes.append(arg.getType())
+                argtypes.append(arg.get_type())
             elif isinstance(arg, types.TypedObject):
                 argtypes.append(arg.type)
             elif isinstance(arg, types.Type):
@@ -78,7 +78,7 @@ class FunctionTable(dict):
                     if isinstance(arg.type, types.ProxyType) and arg.type.parameter in funcargs:
                         argtype = funcargs[arg.type.parameter]
                         
-                    if not t.equalOrSubtypeOf(argtype):
+                    if not t.equal_or_subtype_of(argtype):
                         matches = False
                         break
                     
@@ -87,7 +87,7 @@ class FunctionTable(dict):
                 if matches:
 #            if len(argtypes) == len(f.args) and all(map(lambda t, fa: , argtypes, f.args)):
 #                print f
-#                print map(lambda t, fa: "%s <= %s: %s" %(str(t), str(fa.type),str(t.equalOrSubtypeOf(fa.type))), argtypes, f.args)
+#                print map(lambda t, fa: "%s <= %s: %s" %(str(t), str(fa.type),str(t.equal_or_subtype_of(fa.type))), argtypes, f.args)
                     result.append(f)
 
         if len(result) == 1:
@@ -121,20 +121,23 @@ class FunctionTable(dict):
 
 class Scope(dict):
     def __init__(self, objects, parent):
+        self.set_parent(parent)
+        for obj in objects:
+            dict.__setitem__(self, obj.name, obj)
+
+    def set_parent(self, parent):
         self.parent = parent
         if parent is not None:
             self.predicates = parent.predicates
             self.functions = parent.functions
             self.types = parent.types
+            assert not "false" in self.types
             self.requirements = parent.requirements
         else:
             self.predicates = FunctionTable()
             self.functions = FunctionTable()
             self.types = {}
             self.requirements = set()
-            
-        for obj in objects:
-            dict.__setitem__(self, obj.name, obj)
         
     def lookup(self, args):
         result = []
@@ -216,7 +219,7 @@ class Scope(dict):
         if isinstance(key, (float, int)):
             return types.TypedNumber(key)
         if isinstance(key, types.TypedObject):
-            if key.type == types.numberType:
+            if key.type == types.t_number:
                 return True
             key = key.name
             
@@ -233,7 +236,7 @@ class Scope(dict):
         if isinstance(key, (float, int)):
             return types.TypedNumber(key)
         if isinstance(key, types.TypedObject):
-            if key.type == types.numberType:
+            if key.type == types.t_number:
                 return key
             key = key.name
         

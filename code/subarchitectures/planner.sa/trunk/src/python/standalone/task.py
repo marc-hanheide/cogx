@@ -46,7 +46,7 @@ class Task(object):
 
     def __get_mapltask(self):
         if self.is_dirty():
-            new_init = [ f.asLiteral(useEqual=True) for f in self.get_state().iterfacts() ]
+            new_init = [ f.as_literal(useEqual=True) for f in self.get_state().iterfacts() ]
             self._mapltask = mapl.mapl.MAPLProblem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain, self._mapltask.optimization, self._mapltask.opt_func)
         return self._mapltask
 
@@ -66,7 +66,7 @@ class Task(object):
             ast = assertions.to_assertion(a, self._mapldomain)
             if ast:
                 try:
-                    self._mapldomain.getAction(ast.name)
+                    self._mapldomain.get_action(ast.name)
                 except:
                     new_assertions.append(ast)
 
@@ -79,13 +79,13 @@ class Task(object):
             #determinise probabilistic init conditions
             if isinstance(i, effects.ProbabilisticEffect):
                 for p, eff in i.effects:
-                    facts = s.getEffectFacts(eff)
+                    facts = s.get_effect_facts(eff)
                     for svar, value in facts:
                         if not isinstance(svar, mapl.predicates.Predicate) and svar.modality is None:
-                            id_var = svar.asModality(mapl.predicates.i_indomain, [value])
-                            s[id_var] = mapl.types.TRUE
+                            id_var = svar.as_modality(mapl.mapl.i_indomain, [value])
+                            s[id_var] = mapl.TRUE
             else:
-                s.set(state.Fact.fromLiteral(i))
+                s.set(state.Fact.from_literal(i))
         self._state = s
 
     def mark_changed(self):
@@ -136,11 +136,11 @@ class Task(object):
         return self.get_plan()
 
     def problem_str(self, writer_class):
-        w = writer_class(predicates.mapl_modal_predicates)
+        w = writer_class(mapl.mapl.modal_predicates)
         return "\n".join(w.write_problem(self.mapltask))
 
     def domain_str(self, writer_class):
-        w = writer_class(predicates.mapl_modal_predicates)
+        w = writer_class(mapl.mapl.modal_predicates)
         return "\n".join(w.write_domain(self._mapldomain))
     
     def load_mapl_domain(self, domain_file):
@@ -187,12 +187,12 @@ class TFDWriter(mapl.writer.Writer):
 
     def write_type(self, type):
         if isinstance(type, types.ProxyType):
-            return mapl.writer.Writer.write_type(self, type.effectiveType())
+            return mapl.writer.Writer.write_type(self, type.effective_type())
         return mapl.writer.Writer.write_type(self, type)
     
     def write_term(self, term):
-        if isinstance(term, (predicates.FunctionVariableTerm)) and term.isInstantiated():
-            return self.write_term(term.getInstance())
+        if isinstance(term, (predicates.FunctionVariableTerm)) and term.is_instantiated():
+            return self.write_term(term.get_instance())
         else:
             return mapl.writer.Writer.write_term(self, term)
         
@@ -233,7 +233,7 @@ class TFDWriter(mapl.writer.Writer):
                 args =[]
                 function_match = False
                 for arg in mod.args:
-                    if isinstance(arg.type, types.FunctionType) and func.type.equalOrSubtypeOf(arg.type.type):
+                    if isinstance(arg.type, types.FunctionType) and func.type.equal_or_subtype_of(arg.type.type):
                         function_match = True
                         args += func.args
                     elif isinstance(arg.type, types.ProxyType):
@@ -381,7 +381,7 @@ def compile_modal_args(args, functions):
         if isinstance(a.type, types.FunctionType):
             func_arg = a
             for func in functions:
-                if func.builtin or not func.type.equalOrSubtypeOf(a.type.type):
+                if func.builtin or not func.type.equal_or_subtype_of(a.type.type):
                     continue
                 funcs.append(func)
         else:

@@ -13,9 +13,9 @@ from parser import Parser, ParseError
 class TranslateTests(unittest.TestCase):
 
     def load(self, domfile, probfile):
-        p = Parser.parseFile(domfile)
+        p = Parser.parse_file(domfile)
         dom = domain.Domain.parse(p.root)
-        p = Parser.parseFile(probfile)
+        p = Parser.parse_file(probfile)
         prob = problem.Problem.parse(p.root, dom)
 
         return dom, prob
@@ -24,7 +24,7 @@ class TranslateTests(unittest.TestCase):
         w = writer.Writer()
 
         s = w.write_domain(dom)
-        print "\n".join(s)
+        #print "\n".join(s)
         p = Parser(s)
         dom2 = domain.Domain.parse(p.root)
 
@@ -102,7 +102,7 @@ class TranslateTests(unittest.TestCase):
         self.roundtrip(dom2, prob2)
 
     def testMAPLtoSAS(self):
-        """Testing compilation of MAPL to simple ADL"""
+        """Testing compilation of MAPL to simple SAS"""
         
         dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
 

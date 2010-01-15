@@ -2,26 +2,33 @@
 # -*- coding: latin-1 -*-
 
 import parser, scope
-from mapltypes import *
+from mapltypes import Type, FunctionType, TypedObject, TypedNumber, Parameter
+from mapltypes import TRUE, FALSE, t_object, t_boolean
 
 from parser import ParseError, UnexpectedTokenError
 
-def parseArgList(it, typeDict, parentScope=None):
+def parse_arg_list(it, typeDict, parentScope=None, previous_params=[], require_types=False):
     tempScope = scope.Scope([], parentScope)
     
-    def leftFunc(elem):
+    def left_func(elem):
         if elem.token.string[0] != "?":
             raise UnexpectedTokenError(elem.token, "parameter name")
         return elem
     
-    def rightFunc(elem):
+    def right_func(elem):
         return Type.parse(elem, typeDict, tempScope)
 
     args = []
-    for params, type in parser.parseTypedList(it, leftFunc, rightFunc, "parameter name", "type specification", True):
+    names = set(p.name for p in previous_params)
+    for params, type in parser.parse_typed_list(it, left_func, right_func, "parameter name", "type specification", require_types):
+        if type is None:
+            type = t_object
         for p in params:
+            if p.token.string in names:
+                raise ParseError(p.token, "Duplicate parameter name: %s" % p.token.string)
             param = Parameter(p.token.string, type)
             args.append(param)
+            names.add(p.token.string)
             tempScope.add(param)
 
     return args
@@ -40,7 +47,7 @@ class Function(object):
         name = it.get("terminal", "function identifier").token.string
         args = []
 
-        args = parseArgList(it, types)
+        args = parse_arg_list(it, types)
         return Function(name, args, type)
 
     def __eq__(self, other):
@@ -55,76 +62,18 @@ class Function(object):
     
 class Predicate(Function):
     def __init__(self, name, args, builtin=False):
-        Function.__init__(self, name, args, booleanType, builtin)
+        Function.__init__(self, name, args, t_boolean, builtin)
         
     @staticmethod
     def parse(it, types):
         name = it.get("terminal", "predicate identifier").token.string
         args = []
 
-        args = parseArgList(it, types)
+        args = parse_arg_list(it, types)
         return Predicate(name, args)
 
     def __str__(self):
         return "(%s %s)" % (self.name, " ".join(str(a) for a in self.args))
-
-#basic predicates
-equals = Predicate("=", [Parameter("?o1", objectType), Parameter("?o2", objectType)], builtin=True)
-
-assign = Predicate("assign", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
-change = Predicate("change", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
-equalAssign = Predicate("=", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
-num_equalAssign = Predicate("=", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
-
-#numeric predicates
-num_assign = Predicate("assign", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
-scale_up = Predicate("scale-up", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
-scale_down = Predicate("scale-down", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
-increase = Predicate("increase", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
-decrease = Predicate("decrease", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
-
-numericOps = [num_assign, scale_up, scale_down, increase, decrease]
-assignmentOps = [assign, change, num_assign, equalAssign, num_equalAssign]
-
-gt = Predicate(">", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
-lt = Predicate("<", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
-eq = Predicate("=", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
-ge = Predicate(">=", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
-le = Predicate("<=", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
-
-numericComparators = [gt, lt, eq, ge, le]
-
-#numeric functions
-minus = Function("-", [Parameter("?n1", numberType), Parameter("?n2", numberType)], numberType, builtin=True)
-plus = Function("+", [Parameter("?n1", numberType), Parameter("?n2", numberType)], numberType, builtin=True)
-mult = Function("*", [Parameter("?n1", numberType), Parameter("?n2", numberType)], numberType, builtin=True)
-div = Function("/", [Parameter("?n1", numberType), Parameter("?n2", numberType)], numberType, builtin=True)
-
-neg = Function("-", [Parameter("?n", numberType)], numberType, builtin=True)
-
-numericFunctions = [minus, plus, mult, div, neg]
-
-#default minimization functions
-total_time = Function("total-time", [], numberType, builtin=True)
-total_cost = Function("total-cost", [], numberType, builtin=True)
-
-#mapl predicates
-knowledge = Predicate("kval", [Parameter("?a", agentType), Parameter("?f", FunctionType(objectType))], builtin=True)
-direct_knowledge = Predicate("kd", [Parameter("?a", agentType), Parameter("?f", FunctionType(objectType))], builtin=True)
-p = Parameter("?f", FunctionType(objectType))
-indomain = Predicate("in-domain", [p, Parameter("?v", ProxyType(p)), ], builtin=True)
-p = Parameter("?f", FunctionType(objectType))
-i_indomain = Predicate("i_in-domain", [p, Parameter("?v", ProxyType(p)), ], builtin=True)
-
-mapl_modal_predicates = [knowledge, indomain, direct_knowledge, i_indomain]
-
-is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", agentType)], builtin=True)
-achieved = Predicate("achieved", [Parameter("?sg", subgoalType)], builtin=True)
-commited_to_plan = Predicate("commited_to_plan", [Parameter("?a", agentType)], builtin=True)
-can_talk_to = Predicate("can_talk_to", [Parameter("?a1", agentType), Parameter("?a2", agentType)], builtin=True)
-
-mapl_nonmodal_predicates = [is_planning_agent, achieved, commited_to_plan, can_talk_to]
-mapl_predicates = mapl_modal_predicates + mapl_nonmodal_predicates
 
 
 class Literal(object):
@@ -184,11 +133,12 @@ class Literal(object):
         
     @staticmethod
     def parse(it, scope, negate=False, maxNesting=999):
+        import builtin
         first = it.get("terminal", "predicate").token
 
         if first.string == "not":
             j = iter(it.get(list, "literal"))
-            it.noMoreTokens()
+            it.no_more_tokens()
             return Literal.parse(j, scope, not negate, maxNesting)
 
         if first.string not in scope.predicates:
@@ -203,17 +153,17 @@ class Literal(object):
 
         predicate = scope.predicates.get(first.string, args)
         if not predicate:
-            type_str = " ".join(str(a.getType()) for a in args)
+            type_str = " ".join(str(a.get_type()) for a in args)
             candidates = scope.predicates[first.string]
             c_str = "\n  ".join(str(p) for p in candidates)
             raise ParseError(first, "no matching predicate found for (%s %s). Candidates are:\n  %s" % (first.string, type_str, c_str))
 
         #check type constraints for assignments
-        if predicate in assignmentOps:
+        if predicate in builtin.assignment_ops:
             term = args[0]
             value = args[1]
-            if not value.getType().equalOrSubtypeOf(term.getType().type):
-                raise ParseError(first, "Can't assign object of type %s to %s." % (value.getType(), term.function.name))
+            if not value.get_type().equal_or_subtype_of(term.get_type().type):
+                raise ParseError(first, "Can't assign object of type %s to %s." % (value.get_type(), term.function.name))
 
         #check nesting constraints
         if maxNesting <= 0:
@@ -258,8 +208,8 @@ class Term(object):
     
     def pddl_str(self, instantiated=True):
         def printVisitor(term, results=[]):
-            if isinstance(term, VariableTerm) and term.isInstantiated() and instantiated:
-                term = term.getInstance()
+            if isinstance(term, VariableTerm) and term.is_instantiated() and instantiated:
+                term = term.get_instance()
                 
             if term.__class__ == FunctionTerm:
                 return "(%s %s)" % (term.function.name, " ".join(results))
@@ -268,11 +218,11 @@ class Term(object):
             return term.name
         return self.visit(printVisitor)
     
-    def getType(self):
+    def get_type(self):
         raise NotImplementedError()
     
-    def isInstanceOf(self, type):
-        return self.getType().equalOrSubtypeOf(type)
+    def is_instance_of(self, type):
+        return self.get_type().equal_or_subtype_of(type)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__;
@@ -284,7 +234,7 @@ class Term(object):
     def parse(it, scope, maxNesting=999):
         term = it.get(None, "function term, variable or constant")
 
-        if term.isTerminal():
+        if term.is_terminal():
             if term.token.string in scope:
                 obj = scope[term.token.string]
             else:
@@ -312,7 +262,7 @@ class FunctionTerm(Term):
         else:
             self.args = args
     
-    def getType(self):
+    def get_type(self):
         return FunctionType(self.function.type)
     
     def copy_instance(self):
@@ -350,7 +300,7 @@ class FunctionTerm(Term):
 
         func = scope.functions.get(name.token.string, args)
         if not func:
-            type_str = " ".join(str(a.getType()) for a in args)
+            type_str = " ".join(str(a.get_type()) for a in args)
             candidates = scope.functions[name.token.string]
             c_str = "\n  ".join(str(p) for p in candidates)
             raise ParseError(name.token, "no matching function found for (%s %s). Candidates are:\n  %s" % (name.token.string, type_str, c_str))
@@ -362,20 +312,20 @@ class VariableTerm(Term):
         assert isinstance(parameter, Parameter)
         self.object = parameter
         
-    def isInstantiated(self):
-        return self.object.isInstantiated()
+    def is_instantiated(self):
+        return self.object.is_instantiated()
 
-    def getInstance(self):
-        if self.isInstantiated():
-            return self.object.getInstance()
+    def get_instance(self):
+        if self.is_instantiated():
+            return self.object.get_instance()
         raise Exception, "Term %s is not instantiated" % str(self.object)
 
     def copy_instance(self):
-        if self.isInstantiated():
-            return ConstantTerm(self.getInstance())
+        if self.is_instantiated():
+            return ConstantTerm(self.get_instance())
         return VariableTerm(self.object)
     
-    def getType(self):
+    def get_type(self):
         return self.object.type
 
     def __eq__(self, other):
@@ -390,27 +340,27 @@ class FunctionVariableTerm(FunctionTerm, VariableTerm):
     def __init__(self, obj):
         self.object = obj
 
-    def getType(self):
+    def get_type(self):
         return self.object.type
 
     def visit(self, fn):
-        if self.isInstantiated():
-            return self.object.getInstance().visit(fn)
+        if self.is_instantiated():
+            return self.object.get_instance().visit(fn)
         return fn(self, [])
     
     def copy_instance(self):
-        if self.isInstantiated():
-            return FunctionTerm(self.getInstance().function, [a for a in self.getInstance().args])
+        if self.is_instantiated():
+            return FunctionTerm(self.get_instance().function, [a for a in self.get_instance().args])
         return FunctionVariableTerm(self.object)
     
     def __get_function(self):
-        if self.isInstantiated():
-            return self.object.getInstance().function
+        if self.is_instantiated():
+            return self.object.get_instance().function
         raise Exception, "Term %s is not instantiated" % str(self.object)
 
     def __get_args(self):
-        if self.isInstantiated():
-            return self.object.getInstance().args
+        if self.is_instantiated():
+            return self.object.get_instance().args
         raise Exception, "Term %s is not instantiated" % str(self.object)
         
     function = property(__get_function)
@@ -434,7 +384,7 @@ class ConstantTerm(Term):
         assert isinstance(obj, TypedObject)
         self.object = obj
     
-    def getType(self):
+    def get_type(self):
         return self.object.type
 
     def copy_instance(self):

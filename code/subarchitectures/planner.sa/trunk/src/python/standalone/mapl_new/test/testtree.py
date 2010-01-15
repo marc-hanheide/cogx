@@ -41,7 +41,7 @@ class ParseTreeTest(unittest.TestCase):
         def visit(it):
             for elem in it:
                 count[0] += 1
-                if elem.isTerminal():
+                if elem.is_terminal():
                     terminals[0] += 1
                 else:
                     visit(elem)

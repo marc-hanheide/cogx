@@ -88,7 +88,7 @@ class ParserTest(unittest.TestCase):
         """Testing reading from file"""
         
         try:
-            p = Parser.parseFile(self.filenames['emptytest'])
+            p = Parser.parse_file(self.filenames['emptytest'])
         except:
             self.fail("Exception when opening file")
 
@@ -99,7 +99,7 @@ class ParserTest(unittest.TestCase):
 #         """Testing reading a complex file"""
         
 #         try:
-#             p = Parser.parseFile("/home/goebelbe/src/cogx/planning/trunk/subarchitectures/planner.sa/test_data/cp_test.domain.mapl")
+#             p = Parser.parse_file("/home/goebelbe/src/cogx/planning/trunk/subarchitectures/planner.sa/test_data/cp_test.domain.mapl")
 #         except:
 #             self.fail("Exception when opening file")
             
@@ -110,22 +110,22 @@ class ParserTest(unittest.TestCase):
     def testFileLoadingError(self):
         """Testing file error handling"""
         
-        self.assertRaises(IOError, Parser.parseFile, "/a/filename/that/doesnt/exists")
+        self.assertRaises(IOError, Parser.parse_file, "/a/filename/that/doesnt/exists")
 
     def testParsingResult(self):
         """Testing basic parsing"""
         
-        p = Parser.parseFile(self.filenames['parse'])
+        p = Parser.parse_file(self.filenames['parse'])
         root = p.root
         
-        self.assertFalse(root.isTerminal())
+        self.assertFalse(root.is_terminal())
         self.assertEqual(len(root), 3)
         self.assertEqual(root[0].token, "element")
-        self.assert_(root[0].isTerminal())
-        self.assertFalse(root[1].isTerminal())
+        self.assert_(root[0].is_terminal())
+        self.assertFalse(root[1].is_terminal())
         self.assertEqual(len(root[1]), 3)
         self.assertEqual(len(root[1][-1]), 1)
-        self.assertFalse(root[2].isTerminal())
+        self.assertFalse(root[2].is_terminal())
 
     def testParsingAnnotations(self):
         """Testing line annotations in parse tree"""
@@ -143,7 +143,7 @@ class ParserTest(unittest.TestCase):
     def testParsingAnnotationsFromFile(self):
         """Testing line/file annotations when loading from file"""
 
-        p = Parser.parseFile(self.filenames['parse'])
+        p = Parser.parse_file(self.filenames['parse'])
         root = p.root
 
         self.assertEqual(root.line(), 1)
@@ -160,21 +160,21 @@ class ParserTest(unittest.TestCase):
         p = Parser(testfiles['parsesep'].split("\n"), "testsource", [":", "-"])
         root = p.root
         
-        self.assertFalse(root.isTerminal())
+        self.assertFalse(root.is_terminal())
         self.assertEqual(len(root), 3)
         self.assertEqual(root[0].token, "element")
-        self.assert_(root[0].isTerminal())
-        self.assertFalse(root[1].isTerminal())
+        self.assert_(root[0].is_terminal())
+        self.assertFalse(root[1].is_terminal())
         self.assertEqual(len(root[1]), 4)
         self.assertEqual(len(root[1][-1]), 3)
-        self.assertFalse(root[2].isTerminal())
+        self.assertFalse(root[2].is_terminal())
         self.assertEqual(len(root[2]), 1)
         
     def testEmptyFile(self):
         """Testing handling of empty files"""
         
         try:
-            p = Parser.parseFile(self.filenames['failempty'])
+            p = Parser.parse_file(self.filenames['failempty'])
         except ParseError, e:
             self.assertEqual(e.token.line, 0)
             self.assertEqual(e.message, "Empty File")
@@ -186,7 +186,7 @@ class ParserTest(unittest.TestCase):
         """Testing handling of invalid content"""
         
         try:
-            p = Parser.parseFile(self.filenames['failinvalid'])
+            p = Parser.parse_file(self.filenames['failinvalid'])
         except UnexpectedTokenError, e:
             self.assertEqual(e.token, "this")
             self.assertEqual(e.token.line, 1)
@@ -199,7 +199,7 @@ class ParserTest(unittest.TestCase):
         """Testing handling of premature end of file 1"""
         
         try:
-            p = Parser.parseFile(self.filenames['endoffile1'])
+            p = Parser.parse_file(self.filenames['endoffile1'])
         except ParseError, e:
             self.assertEqual(e.token.string, "(")
             self.assertEqual(e.token.line, 1)
@@ -212,7 +212,7 @@ class ParserTest(unittest.TestCase):
         """Testing handling of premature end of file 2"""
         
         try:
-            p = Parser.parseFile(self.filenames['endoffile2'])
+            p = Parser.parse_file(self.filenames['endoffile2'])
         except ParseError, e:
             self.assertEqual(e.token.string, "(")
             self.assertEqual(e.token.line, 6)
@@ -225,7 +225,7 @@ class ParserTest(unittest.TestCase):
         """Testing handling of premature end of file 3"""
 
         try:
-            p = Parser.parseFile(self.filenames['endoffile3'])
+            p = Parser.parse_file(self.filenames['endoffile3'])
         except ParseError, e:
             self.assertEqual(e.token.string, "(")
             self.assertEqual(e.token.line, 2)

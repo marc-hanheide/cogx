@@ -3,11 +3,11 @@
 import itertools
 
 import parser
-import mapltypes
+import mapltypes as types
+import builtin
 import scope
 import predicates, conditions, actions, effects, domain
 
-from mapltypes import *
 from parser import ParseError, UnexpectedTokenError
 from actions import Action
 
@@ -24,7 +24,7 @@ class Problem(domain.Domain):
         domain.Domain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [])
         self.actions = [a.copy(self) for a in _domain.actions]
         self.axioms = [a.copy(self) for a in _domain.axioms]
-        self.stratifyAxioms()
+        self.stratify_axioms()
         self.name2action = None
         
         for o in objects:
@@ -44,26 +44,26 @@ class Problem(domain.Domain):
     def copy(self):
         return self.__class__(self.name, self.objects, self.init, self.goal, self.domain, self.optimization, self.opt_func)
 
-    def addObject(self, object):
+    def add_object(self, object):
         if object.name in self:
             self.objects.remove(self[object.name])
         self.objects.add(object)
         self.add(object)
 
-    def getAll(self, type):
-        if isinstance(type, FunctionType):
+    def get_all_objects(self, type):
+        if isinstance(type, types.FunctionType):
             for func in self.functions:
                 if func.builtin:
                     continue
-                #print func.name, types.FunctionType(func.type).equalOrSubtypeOf(type)
-                if FunctionType(func.type).equalOrSubtypeOf(type):
-                    combinations = product(*map(lambda a: list(self.getAll(a.type)), func.args))
+                #print func.name, types.FunctionType(func.type).equal_or_subtype_of(type)
+                if types.FunctionType(func.type).equal_or_subtype_of(type):
+                    combinations = product(*map(lambda a: list(self.get_all_objects(a.type)), func.args))
                     for c in combinations:
                         #print FunctionTerm(func, c, self.problem)
                         yield predicates.FunctionTerm(func, c, self)
         else:
             for obj in itertools.chain(self.objects, self.constants):
-                if obj.isInstanceOf(type) and obj != UNKNOWN:
+                if obj.is_instance_of(type) and obj != builtin.UNKNOWN:
                     yield obj
         
 
@@ -90,12 +90,12 @@ class Problem(domain.Domain):
 
             
             if type == ":objects":
-                olist = mapltypes.parse_typelist(j)
+                olist = types.parse_typelist(j)
                 for key, value in olist.iteritems():
                     if value.string not in domain.types:
                         raise ParseError(value, "undeclared type")
 
-                    objects.add(TypedObject(key.string, domain.types[value.string]))
+                    objects.add(types.TypedObject(key.string, domain.types[value.string]))
 
                 if "mapl" in domain.requirements:
                     import mapl
@@ -105,7 +105,7 @@ class Problem(domain.Domain):
 
             elif type == ":init":
                 for elem in j:
-                    if elem.isTerminal():
+                    if elem.is_terminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
                         
                     init_elem = Problem.parseInitElement(iter(elem), problem)
@@ -121,17 +121,17 @@ class Problem(domain.Domain):
                     raise UnexpectedTokenError(opt, "'minimize' or 'maximize'")
                 problem.optimization = opt.string
                 
-                problem.functions.add(predicates.total_time)
-                problem.functions.add(predicates.total_cost)
+                problem.functions.add(builtin.total_time)
+                problem.functions.add(builtin.total_cost)
                 func = predicates.Term.parse(j,problem)
-                problem.functions.remove(predicates.total_time)
-                problem.functions.remove(predicates.total_cost)
+                problem.functions.remove(builtin.total_time)
+                problem.functions.remove(builtin.total_cost)
 
-                j.noMoreTokens()
+                j.no_more_tokens()
 
-                if not isinstance(func.getType(), FunctionType):
+                if not isinstance(func.get_type(), types.FunctionType):
                     raise ParseError(elem.token, "Optimization function can't be a constant.")
-                if not func.getType().equalOrSubtypeOf(numberType):
+                if not func.get_type().equal_or_subtype_of(builtin.t_number):
                     raise ParseError(elem.token, "Optimization function must be numeric.")
                 
                 problem.opt_func = func
@@ -146,23 +146,23 @@ class Problem(domain.Domain):
         first = it.get("terminal").token
         if first.string == "probabilistic":
             #TODO: disallow nested functions in those effects.
-            return effects.ProbabilisticEffect.parse(it.reset(), scope, timedEffects=False, onlySimple=True)[0]
+            return effects.ProbabilisticEffect.parse(it.reset(), scope, timedEffects=False, onlySimple=True)
         elif first.string == "assign-probabilistic":
-            return effects.ProbabilisticEffect.parse_assign(it.reset(), scope)[0]
+            return effects.ProbabilisticEffect.parse_assign(it.reset(), scope)
         else:
-            scope.predicates.remove(predicates.equals)
-            scope.predicates.add(predicates.equalAssign)
+            scope.predicates.remove(builtin.equals)
+            scope.predicates.add(builtin.equal_assign)
             if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-                scope.predicates.remove(predicates.eq)
-                scope.predicates.add(predicates.num_equalAssign)
+                scope.predicates.remove(builtin.eq)
+                scope.predicates.add(builtin.num_equal_assign)
             try:
                 lit=  predicates.Literal.parse(it.reset(), scope, maxNesting=0)
             finally:
                 if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-                    scope.predicates.remove(predicates.num_equalAssign)
-                    scope.predicates.add(predicates.eq)
-                scope.predicates.remove(predicates.equalAssign)
-                scope.predicates.add(predicates.equals)
+                    scope.predicates.remove(builtin.num_equal_assign)
+                    scope.predicates.add(builtin.eq)
+                scope.predicates.remove(builtin.equal_assign)
+                scope.predicates.add(builtin.equals)
 
             return lit
 
