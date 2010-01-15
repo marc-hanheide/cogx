@@ -1,3 +1,6 @@
+<http://dora.cogx.eu#Posterwall> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Coffee_room> .
+<http://dora.cogx.eu#Poster> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Living_room> .
+<http://dora.cogx.eu#Journal> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Living_room> .
 <http://dora.cogx.eu#Juice> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
 <http://dora.cogx.eu#AC_adapter> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Studio> .
 <http://dora.cogx.eu#AC_adapter> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Office> .
