@@ -192,6 +192,12 @@ def generate_mapl_task(task_desc, domain_fn):
   obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(task_desc.state))))
   
   objects = infer_types(obj_descriptions)
+
+  #only use unions that are actually present (and not only referred by relations, or something)
+  union_names = set(u.entityID for u in task_desc.state)
+  objects = set(o for o in objects if ":" not in o.name or o.name in union_names)
+  obj_descriptions = set(desc for desc in obj_descriptions if all(o in objects or o in current_domain for o in desc[1:]))
+  
   task.namedict = rename_objects(objects)
 
   facts = list(tuples2facts(obj_descriptions))
@@ -215,8 +221,14 @@ def generate_mapl_state(task_desc, task):
   current_domain = task._mapldomain
   
   obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(task_desc.state))))
-  
+
   objects = infer_types(obj_descriptions)
+
+  #only use unions that are actually present (and not only referred by relations, or something)
+  union_names = set(u.entityID for u in task_desc.state)
+  objects = set(o for o in objects if ":" not in o.name or o.name in union_names)
+  obj_descriptions = set(desc for desc in obj_descriptions if all(o in objects or o in current_domain for o in desc[1:]))
+  
   task.namedict = rename_objects(objects)
 
   facts = list(tuples2facts(obj_descriptions))
