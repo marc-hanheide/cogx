@@ -179,9 +179,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
             
       if requires_action_dispatch:
         task.mark_changed()
-    
+
     import task_preprocessor
     objects, facts = task_preprocessor.generate_mapl_state(task_desc, task)
+
     #print map(str, objects)
     #print map(str, facts)
 
@@ -202,13 +203,15 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
     task.set_state(state.State.fromProblem(task._mapltask))
+      
     task.activate_change_dectection()
 
 def print_state_difference(state1, state2):
   def collect_facts(state):
     facts = defaultdict(set)
     for svar,val in state.iteritems():
-      facts[svar.args[0]].add((svar, val))
+      for arg in svar.args:
+        facts[arg].add((svar, val))
     return facts
 
   f1 = collect_facts(state1)
@@ -225,6 +228,8 @@ def print_state_difference(state1, state2):
   for o in f1.iterkeys():
     if o not in f2:
       removed.append(o)
+    elif o not in changed:
+      changed.append(o)
 
   if new:
     print "\nNew objects:"
@@ -240,12 +245,12 @@ def print_state_difference(state1, state2):
       fchanged = []
       fremoved = []
       for svar,val in f2[o]:
-        if svar not in state1:
+        if svar not in state1 and svar not in fnew:
           fnew.append(svar)
-        elif state1[svar] != val:
+        elif state1[svar] != val and svar not in fchanged:
           fchanged.append(svar)
-      for svar,val in f2[0]:
-        if svar not in state2:
+      for svar,val in f1[o]:
+        if svar not in state2 and svar not in fremoved:
           fremoved.append(svar)
       if fnew or fchanged or fremoved:
         print " %s:" % o.name
@@ -263,3 +268,4 @@ def print_state_difference(state1, state2):
       for svar, val in f1[o]:
         print "    %s = %s" % (str(svar), str(val))
                              
+  return new, changed, removed
