@@ -63,6 +63,7 @@ JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
 JAVA MG PlannerStopWatch experimentation.PlannerStopWatch
 JAVA MG PlaceStatistics experimentation.PlaceStatistics
 JAVA MG MotiveStatistics experimentation.MotiveStatistics
+JAVA MG FileLogger experimentation.FileLogger -logger planner.sa.planning.stdout -files "output/python/standalone/tmp/static_dir_for_debugging/problem.pddl output/python/standalone/tmp/static_dir_for_debugging/stdout.out output/python/standalone/tmp/static_dir_for_debugging/plan.pddl"
 
 
 
