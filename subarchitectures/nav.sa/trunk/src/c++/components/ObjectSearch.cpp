@@ -337,54 +337,22 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
 	
 
 	//check that pan falls in tolerance range
-	if(actualpan < (pan + tolerance) && actualpan > (pan - tolerance)) {
+	if(actualpan < (pan + tolerance) && 
+	   actualpan > (pan - tolerance)) {
 	  run = false;
 	}
 
 	//only check tilt if pan is ok
 	if(!run) {
-	  if(actualtilt < (tilt + tolerance) && actualtilt > (tilt - tolerance)) {
+	  if(actualtilt < (tilt + tolerance) && 
+	     actualtilt > (tilt - tolerance)) {
 	    run = false;
 	  }
 	  else {
+	    //if the previous check fails, loop again
 	    run = true;
 	  }
 	}
-
-// 	if (pan > actualpan){
-// 	  if (actualpan > abs(pan) - tolerance){
-// 	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
-// 	    run = false;
-// 	  }
-// 	}
-// 	else if (actualpan > pan){
-// 	  if (actualpan < abs(pan) + tolerance) {
-// 	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
-// 	    run = false;
-// 	  }
-// 	}
-// 	else if(pan == actualpan) {
-// 	  run = false;
-// 	}
-
-
-// 	if (tilt > actualtilt){
-// 	  if (actualtilt > abs(tilt) - tolerance){
-// 	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);
-// 	    run = false;
-// 	  }
-// 	}
-// 	else if (actualtilt > tilt){
-// 	  if (actualtilt < abs(tilt) + tolerance) {
-// 	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);	   	   
-// 	    run = false;
-// 	  }
-// 	}
-// 	else if(tilt == actualtilt) {
-// 	  run = false;
-// 	}
-
-
 	
 	usleep(10000);
       }
