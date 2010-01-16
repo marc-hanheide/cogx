@@ -21,7 +21,31 @@ void gotoPos(double x, double y, double theta) {
   std::cout << std::endl;
 }
 
+void watch() {
+  robot.Read();
+  double lastX=pp.GetXPos();
+  double lastY=pp.GetYPos();
+  double dist=0.0;
 
+  while(true) {
+    robot.Read();
+    double cx=pp.GetXPos();
+    double cy=pp.GetYPos();
+    if (cx != lastX || cy != lastY) {
+      double dx=cx-lastX;
+      double dy=cy-lastY;
+      dist+=sqrt(dx*dx + dy*dy);
+      lastX=cx;
+      lastY=cy;
+      std::cout << "  pos = (" 
+		<< cx <<", " << cy << ") dist = "
+		<< dist <<"               "
+		<<"\r" <<std::flush;
+      usleep(20000);
+    }
+    
+  }
+}
 
 int main(int argc, char** argv)
 {
@@ -29,14 +53,18 @@ int main(int argc, char** argv)
   try
     {
       std::cout << robot << std::endl;
-      std::cout << "argc = " << argc << std::endl;
 
-      pp.SetMotorEnable (true);
-      for (int i=1; i<argc-1; i+=2) {
-	double x=atof(argv[i]);
-	double y=atof(argv[i+1]);
-	gotoPos(x, y, 0.0);
+      if (argc > 1) {
+	pp.SetMotorEnable (true);
+	for (int i=1; i<argc-1; i+=2) {
+	  double x=atof(argv[i]);
+	  double y=atof(argv[i+1]);
+	  gotoPos(x, y, 0.0);
+	}
+      } else {
+	watch();
       }
+
 
     }
 
