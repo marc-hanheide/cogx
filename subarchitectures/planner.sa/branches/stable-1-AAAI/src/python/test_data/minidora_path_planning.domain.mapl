@@ -67,18 +67,19 @@
 	   )
 
 
+
   (:action move
 	   :agent (?a - agent)
 	   :parameters (?to - place)
 	   :variables (?from - place)
 	   :precondition (and
-			  (located ?a ?from)
-			  (or (= (explored ?to) true)
-			      (connected ?from ?to)) 
+			  (located ?a ?from) 
+			  (or (connected ?from ?to)
+			      (connected ?to ?from)
+			      )
 			  )
 	   :effect (and
 		    (not (located ?a ?from))
 		    (located ?a ?to)
 		    ))
-
   )
