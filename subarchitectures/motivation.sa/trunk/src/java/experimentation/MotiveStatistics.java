@@ -84,32 +84,32 @@ public class MotiveStatistics extends ManagedComponent implements
 		notifyAll();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#runComponent()
-	 */
-	@Override
-	protected synchronized void runComponent() {
-		while (isRunning()) {
-			try {
-				wait();
-				if (shutdown) {
-					// wait 5 secs to make sure we really want to shut down
-					// (another motive might have turned up in between)
-					Thread.sleep(5000);
-					if (shutdown) {
-						logger
-								.error("shutting down whole CAST due to shutdown in "
-										+ MotiveStatistics.class
-												.getCanonicalName());
-						System.exit(1);
-					}
-				}
-			} catch (InterruptedException e) {
-				logger.error("exception: ", e);
-			}
-		}
-	}
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see cast.core.CASTComponent#runComponent()
+//	 */
+//	@Override
+//	protected synchronized void runComponent() {
+//		while (isRunning()) {
+//			try {
+//				wait();
+//				if (shutdown) {
+//					// wait 5 secs to make sure we really want to shut down
+//					// (another motive might have turned up in between)
+//					Thread.sleep(5000);
+//					if (shutdown) {
+//						logger
+//								.error("shutting down whole CAST due to shutdown in "
+//										+ MotiveStatistics.class
+//												.getCanonicalName());
+//						System.exit(1);
+//					}
+//				}
+//			} catch (InterruptedException e) {
+//				logger.error("exception: ", e);
+//			}
+//		}
+//	}
 
 }
