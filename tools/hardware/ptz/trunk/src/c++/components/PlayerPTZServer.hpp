@@ -1,6 +1,7 @@
 #include <PTZServer.hpp>
 
-#include <libplayerc++/playerc++.h>
+#include <libplayerc/playerc.h>
+
 #include <boost/shared_ptr.hpp>
 
 namespace ptz {
@@ -18,8 +19,8 @@ namespace ptz {
     //always used for zoom value
     double m_defaultZoom;
 
-    boost::shared_ptr<PlayerCc::PlayerClient> m_playerClient;
-    boost::shared_ptr<PlayerCc::PtzProxy> m_ptzProxy;
+    boost::shared_ptr<playerc_client_t> m_playerClient;
+    boost::shared_ptr<playerc_ptz_t> m_ptzProxy;
 
   protected:
 

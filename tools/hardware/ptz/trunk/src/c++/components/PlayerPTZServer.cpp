@@ -44,22 +44,34 @@ namespace ptz {
       str >> m_playerPTZDeviceID;
     }
     log("Using m_playerPTZDeviceID=%d", m_playerPTZDeviceID);     
+    
+    //TODO: more safety checks!
+    m_playerClient = shared_ptr<playerc_client_t>(playerc_client_create(NULL, m_playerHost.c_str(), m_playerPort));
+    
+    if(0 != playerc_client_connect(m_playerClient.get())) {
+      throw cast::CASTException("unable to connect to player");
+    }
 
+    if(0 != playerc_client_datamode(m_playerClient.get(),PLAYER_DATAMODE_PULL)) {
+      throw cast::CASTException("unable to connect to player");
+    }
 
-    //Create player connection
-    m_playerClient = shared_ptr<PlayerCc::PlayerClient>(new PlayerCc::PlayerClient(m_playerHost, m_playerPort));
-    m_playerClient->SetDataMode(PLAYER_DATAMODE_PULL);
-    m_playerClient->SetReplaceRule(true, PLAYER_MSGTYPE_DATA);
+     if(0 != playerc_client_set_replace_rule(m_playerClient.get(), -1, -1, PLAYER_MSGTYPE_DATA, -1, true)) {
+       throw cast::CASTException("unable to connect to player");
+     }
 
-    m_ptzProxy = shared_ptr<PlayerCc::PtzProxy>(new PlayerCc::PtzProxy(m_playerClient.get(), 
-								       m_playerPTZDeviceID));
+    m_ptzProxy = shared_ptr<playerc_ptz_t>(playerc_ptz_create(m_playerClient.get(), m_playerPTZDeviceID));
+    playerc_ptz_subscribe(m_ptzProxy.get(), PLAYER_OPEN_MODE);
+
 
     //going to work in position mode 
-    m_ptzProxy->SelectControlMode(PLAYER_PTZ_POSITION_CONTROL);
+    playerc_ptz_set_control_mode(m_ptzProxy.get(),PLAYER_PTZ_POSITION_CONTROL);
 
-    //get default value for zoom
-    m_playerClient->Read();
-    m_defaultZoom = m_ptzProxy->GetZoom();
+
+    //get a default value for zoom
+    playerc_client_read(m_playerClient.get());
+
+    m_defaultZoom = m_ptzProxy->zoom;
   }
 
   void 
@@ -74,23 +86,27 @@ namespace ptz {
   PlayerPTZServer::getPose() const {
     assert(m_ptzProxy);
 
-    m_playerClient->Read();
-
+    playerc_client_read(m_playerClient.get());
+    
     PTZReading reading;    
     reading.time = getCASTTime();
-    reading.pose.pan = m_ptzProxy->GetPan(); 
-    reading.pose.tilt = m_ptzProxy->GetTilt();
-    reading.pose.zoom = m_ptzProxy->GetZoom();
+    reading.pose.pan = m_ptzProxy->pan; 
+    reading.pose.tilt = m_ptzProxy->tilt;
+    reading.pose.zoom = m_ptzProxy->zoom;
     log("PlayerPTZServer::getPose %f %f %f",reading.pose.pan,reading.pose.tilt,reading.pose.zoom);
     return reading;      
   }
   
   void 
   PlayerPTZServer::setPose(const PTZPose & _pose) {
-    assert(m_ptzProxy);
-    //log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,_pose.zoom);    
-    //m_ptzProxy->SetCam(_pose.pan, _pose.tilt, _pose.zoom);
-    log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
-    m_ptzProxy->SetCam(_pose.pan, _pose.tilt, m_defaultZoom);
+     assert(m_ptzProxy);
+    
+//     //log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,_pose.zoom);    
+//     //m_ptzProxy->SetCam(_pose.pan, _pose.tilt, _pose.zoom);
+     //playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, _pose.zoom, 0.5, 0.5);
+
+     log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
+     playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, m_defaultZoom, 0.5, 0.5);
+
   }
 }
