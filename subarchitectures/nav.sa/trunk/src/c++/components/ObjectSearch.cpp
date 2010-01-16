@@ -331,37 +331,58 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
 	actualpan = ptuPose.pose.pan;
 	actualtilt = ptuPose.pose.tilt;
 
-	log("actualpan is: %f", actualpan);
-
+	log("desired pan tilt is: %f %f", pan, tilt);
+	log("actual pan tilt is: %f %f", actualpan, actualtilt);
+	log("tolerance is: %f", tolerance);
 	
-	if (pan > actualpan){
-	  if (actualpan > abs(pan) - tolerance){
-	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
-	    run = false;
-	  }
-	}
-	else if (actualpan > pan){
-	  if (actualpan < abs(pan) + tolerance)
-	    run = false;
-	}
-	else if(pan == actualpan) {
+
+	//check that pan falls in tolerance range
+	if(actualpan < (pan + tolerance) && actualpan > (pan - tolerance)) {
 	  run = false;
 	}
 
-
-	if (tilt > actualtilt){
-	  if (actualtilt > abs(tilt) - tolerance){
-	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);
+	//only check tilt if pan is ok
+	if(!run) {
+	  if(actualtilt < (tilt + tolerance) && actualtilt > (tilt - tolerance)) {
 	    run = false;
 	  }
+	  else {
+	    run = true;
+	  }
 	}
-	else if (actualtilt > tilt){
-	  if (actualtilt < abs(tilt) + tolerance)
-	    run = false;
-	}
-	else if(tilt == actualtilt) {
-	  run = false;
-	}
+
+// 	if (pan > actualpan){
+// 	  if (actualpan > abs(pan) - tolerance){
+// 	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
+// 	    run = false;
+// 	  }
+// 	}
+// 	else if (actualpan > pan){
+// 	  if (actualpan < abs(pan) + tolerance) {
+// 	    log("false actualpan is: %f, %f", actualpan, abs(pan) + tolerance);
+// 	    run = false;
+// 	  }
+// 	}
+// 	else if(pan == actualpan) {
+// 	  run = false;
+// 	}
+
+
+// 	if (tilt > actualtilt){
+// 	  if (actualtilt > abs(tilt) - tolerance){
+// 	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);
+// 	    run = false;
+// 	  }
+// 	}
+// 	else if (actualtilt > tilt){
+// 	  if (actualtilt < abs(tilt) + tolerance) {
+// 	    log("false actualtilt is: %f, %f", actualtilt, abs(tilt) + tolerance);	   	   
+// 	    run = false;
+// 	  }
+// 	}
+// 	else if(tilt == actualtilt) {
+// 	  run = false;
+// 	}
 
 
 	
