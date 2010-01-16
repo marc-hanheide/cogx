@@ -13,7 +13,7 @@ import cast.cdl.WorkingMemoryChange;
  * 
  */
 public class LimitTriesFilter implements MotiveFilter {
-	private static final long MAX_TRIES = 3;
+	private static final long MAX_TRIES = 10;
 	
 	/**
 	 * @param specificType
