@@ -37,6 +37,7 @@ import cast.core.CASTUtils;
  */
 public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
+	private static final float MULTIPLIER_OTHER_ROOM = 4;
 	/**
 	 * normalize borderproperties // normalization: Kristoffer Sjöö
 	 * (21.10.2009): the maximum border value should be around(*) 2*pi*d/s where
@@ -105,11 +106,17 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 					log("we are currently at place " + currentPlace.id);
 					double costs = SpatialFacade.get(this).queryCosts(
 							currentPlace.id, ((ExploreMotive) motive).placeID);
-					if (costs < Double.MAX_VALUE)
+					if (costs < Double.MAX_VALUE) {
 						motive.costs = (float) SpatialFacade.get(this)
 								.queryCosts(currentPlace.id,
 										((ExploreMotive) motive).placeID);
-					else {
+						if (SpatialFacade.get(this).getRoom(currentPlace) != SpatialFacade
+								.get(this).getRoom(source)) {
+							// TODO leaving a room is quite expensive
+							log("  multiplying costs by "+MULTIPLIER_OTHER_ROOM+" because it's another room: current=" + currentPlace.id + " checked=" + source.id);
+							motive.costs*=MULTIPLIER_OTHER_ROOM;
+						}
+					} else {
 						println("couldn't compute proper costs... leaving costs untouched");
 					}
 				}
@@ -307,7 +314,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		m_spaceMeasureConstant = 0.4;
 		m_borderMeasureConstant = 0.4;
 		m_gatewayMeasureConstant = 0.0;
-		m_constantGain=0.2;
+		m_constantGain = 0.2;
 
 	}
 
