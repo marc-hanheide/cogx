@@ -40,7 +40,7 @@ INCLUDE includes/planner.sa/planner.cast
 JAVA MG executor execution.components.PrototypePlanExecutor 
 # motivation ##################################################################
 JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator 
-JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator
+JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator --blockrooms
 
      #JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "RemoteFilter,LimitTriesFilter" 
