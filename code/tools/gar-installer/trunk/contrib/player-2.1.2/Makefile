@@ -1,5 +1,5 @@
 GARNAME = player
-GARVERSION = 2.1.1
+GARVERSION = 2.1.3
 CATEGORIES = bootstrap
 MAINTAINER = fsiepman
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz

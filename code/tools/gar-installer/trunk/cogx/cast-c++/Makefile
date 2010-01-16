@@ -1,4 +1,4 @@
- GARNAME = cast
+GARNAME = cast
 GARVERSION = 2.1.0
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
@@ -13,7 +13,7 @@ LIBDEPS =
 DEB_PACKAGES=\
 	liblog4cxx10-dev@ubuntu \
         libzeroc-ice33-dev@ubuntu \
-        libboost1.35-dev@ubuntu \
+        libboost-dev@ubuntu \
         python-zeroc-ice@ubuntu
 
 MFLAGS=$(MFLAGS_NUMCPU)
@@ -25,7 +25,7 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
-CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX:PATH=$(prefix) -D OUTPUT:PATH=$(prefix)
+CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX:PATH=$(prefix) -D OUTPUT:PATH=$(prefix) -D CMAKE_BUILD_TYPE=Debug
 
 checksum-$(DISTFILES):  
 	@true
