@@ -40,7 +40,7 @@ public class SerialPlanExecutor extends Thread {
 	/**
 	 * The address of the {@link PlanningTask} object on WM.
 	 */
-	private final WorkingMemoryAddress m_planningTaskAddress;
+	private WorkingMemoryAddress m_planningTaskAddress;
 
 	/**
 	 * The address of the {@link PlanProxy} on WM.
@@ -50,7 +50,7 @@ public class SerialPlanExecutor extends Thread {
 	/**
 	 * The address where actions are written on WM.
 	 */
-	private final WorkingMemoryAddress m_actionAddress;
+	private WorkingMemoryAddress m_actionAddress;
 
 	/***
 	 * The action being executed
@@ -66,7 +66,7 @@ public class SerialPlanExecutor extends Thread {
 
 	private ExecutionState m_exeState;
 
-	private final PlanningTask m_task;
+	private PlanningTask m_task;
 
 	private final ActionConverter m_converter;
 
@@ -82,42 +82,16 @@ public class SerialPlanExecutor extends Thread {
 			WorkingMemoryAddress _planProxyAddress, ActionConverter _converter)
 			throws SubarchitectureComponentException {
 
+		m_exeState = ExecutionState.PENDING;
+
 		stopWatch = new StopWatch("SerialPlanExecuter");
-		
+
 		m_component = _component;
 		m_converter = _converter;
 
 		// fetch proxy
 		m_planProxyAddress = _planProxyAddress;
-		PlanProxy planProxy = m_component.getMemoryEntry(m_planProxyAddress,
-				PlanProxy.class);
 
-		m_planningTaskAddress = planProxy.planAddress;
-
-		m_component.log("executing plan at: "
-				+ CASTUtils.toString(m_planningTaskAddress));
-		m_task = m_component.getMemoryEntry(m_planningTaskAddress,
-				PlanningTask.class);
-
-		assert m_task.planningStatus == Completion.SUCCEEDED : "can't execute a non-succeeded plan: "
-				+ m_task.executionStatus;
-
-		m_actionAddress = new WorkingMemoryAddress(m_task.firstActionID,
-				m_planningTaskAddress.subarchitecture);
-
-		if (m_task.firstActionID == null || m_task.firstActionID.isEmpty()) {
-			m_component.log("plan was empty, completing");
-			planComplete(ExecutionState.COMPLETED);
-			return;
-		}
-
-		m_currentAction = m_component.getMemoryEntry(m_actionAddress,
-				Action.class);
-
-		m_exeState = ExecutionState.PENDING;
-
-		// setup callbacks on addresses
-		initCallbacks();
 	}
 
 	private void initCallbacks() {
@@ -192,13 +166,42 @@ public class SerialPlanExecutor extends Thread {
 
 	}
 
-	public void startExecution() {
-		// if we haven't completed already (i.e. received an empty plan)
-		if (m_exeState == ExecutionState.PENDING) {
-			// m_component.log("running from state: " + m_exeState);
-			m_exeState = ExecutionState.EXECUTING;
-			start();
+	public void startExecution() throws SubarchitectureComponentException {
+
+		stopWatch.tic();
+
+		PlanProxy planProxy = m_component.getMemoryEntry(m_planProxyAddress,
+				PlanProxy.class);
+
+		m_planningTaskAddress = planProxy.planAddress;
+
+		m_component.log("executing plan at: "
+				+ CASTUtils.toString(m_planningTaskAddress));
+		m_task = m_component.getMemoryEntry(m_planningTaskAddress,
+				PlanningTask.class);
+
+		assert m_task.planningStatus == Completion.SUCCEEDED : "can't execute a non-succeeded plan: "
+				+ m_task.executionStatus;
+
+		m_actionAddress = new WorkingMemoryAddress(m_task.firstActionID,
+				m_planningTaskAddress.subarchitecture);
+
+		if (m_task.firstActionID == null || m_task.firstActionID.isEmpty()) {
+			m_component.log("plan was empty, completing");
+			planComplete(ExecutionState.COMPLETED);
+			stopWatch.toc("empty plan completed without execution");
+			return;
 		}
+
+		m_currentAction = m_component.getMemoryEntry(m_actionAddress,
+				Action.class);
+
+		// setup callbacks on addresses
+		initCallbacks();
+
+		// m_component.log("running from state: " + m_exeState);
+		m_exeState = ExecutionState.EXECUTING;
+		start();
 	}
 
 	public void stopExecution() throws SubarchitectureComponentException {
@@ -215,10 +218,10 @@ public class SerialPlanExecutor extends Thread {
 
 		if (m_exeState != ExecutionState.EXECUTING) {
 			m_component.log("not executing run loop");
+			stopWatch.toc("plan not executed");
 			return;
 		}
-		stopWatch.tic();
-		
+
 		PlannedActionWrapper actionWrapper = null;
 		try {
 
