@@ -113,8 +113,11 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 						if (SpatialFacade.get(this).getRoom(currentPlace) != SpatialFacade
 								.get(this).getRoom(source)) {
 							// TODO leaving a room is quite expensive
-							log("  multiplying costs by "+MULTIPLIER_OTHER_ROOM+" because it's another room: current=" + currentPlace.id + " checked=" + source.id);
-							motive.costs*=MULTIPLIER_OTHER_ROOM;
+							log("  multiplying costs by "
+									+ MULTIPLIER_OTHER_ROOM
+									+ " because it's another room: current="
+									+ currentPlace.id + " checked=" + source.id);
+							motive.costs *= MULTIPLIER_OTHER_ROOM;
 						}
 					} else {
 						println("couldn't compute proper costs... leaving costs untouched");
@@ -303,18 +306,19 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 				+ (borderMeasure * m_borderMeasureConstant)
 				+ (gatewayMeasure * m_gatewayMeasureConstant) + m_constantGain;
 
-		log(CASTUtils.concatenate(_em.informationGain, " = space(",
-				spaceMeasure, " * ", m_spaceMeasureConstant, ") + border(",
-				borderMeasure, " * ", m_borderMeasureConstant, ") + gateway(",
-				gatewayMeasure, " * ", m_gatewayMeasureConstant, ")"));
+		log(CASTUtils.concatenate("Place " + placeID + ": "
+				+ _em.informationGain, " = space(", spaceMeasure, " * ",
+				m_spaceMeasureConstant, ") + border(", borderMeasure, " * ",
+				m_borderMeasureConstant, ") + gateway(", gatewayMeasure, " * ",
+				m_gatewayMeasureConstant, ")"));
 	}
 
 	@Override
 	protected void configure(Map<String, String> _config) {
-		m_spaceMeasureConstant = 0.4;
-		m_borderMeasureConstant = 0.4;
+		m_spaceMeasureConstant = 0.0;
+		m_borderMeasureConstant = 1.0;
 		m_gatewayMeasureConstant = 0.0;
-		m_constantGain = 0.2;
+		m_constantGain = 0.0;
 
 	}
 
