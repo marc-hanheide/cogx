@@ -184,21 +184,27 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 		Place currentPlace = sf.getPlace();
 		// compute the mean costs to reach the places in the room
 		double estimatedTravelCosts = 0.0;
-		for (long p : source.containedPlaceIds) {
-			estimatedTravelCosts += sf.queryCosts(currentPlace.id, p);
+//		for (long p : source.containedPlaceIds) {
+//			estimatedTravelCosts += sf.queryCosts(currentPlace.id, p);
+//		}
+//		if (source.containedPlaceIds.length > 0)
+//			crm.costs = (float) (estimatedTravelCosts / source.containedPlaceIds.length);
+//		else
+//			crm.costs = (float) 0.0;
+		if (source.containedPlaceIds.length > 0) {
+			estimatedTravelCosts = sf.queryCosts(currentPlace.id, source.containedPlaceIds[0]);
+		} else {
+			estimatedTravelCosts = Double.MAX_VALUE;
 		}
-		if (source.containedPlaceIds.length > 0)
-			crm.costs = (float) (estimatedTravelCosts / source.containedPlaceIds.length);
-		else
-			crm.costs = (float) 0.0;
 		log("  estimatedTravelCosts = " + crm.costs);
-
+		crm.costs = (float) estimatedTravelCosts;
+		
 		// the ratio between explored places and number of places
 		double exploredRatio = (double) countRealPlaces
 				/ (double) (countPlaceHolders+countRealPlaces);
 		log("  exploredRatio = " + exploredRatio);
 		// we consider not fully explored rooms to be ways more expensive...
-		crm.costs = (float) (crm.costs / exploredRatio);
+		crm.costs = (float) (crm.costs / (exploredRatio*exploredRatio));
 		log("  costs = " + crm.costs);
 
 		// The more (real) places are contained the more information we get
