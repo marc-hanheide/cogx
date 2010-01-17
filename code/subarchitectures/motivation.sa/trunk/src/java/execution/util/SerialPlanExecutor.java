@@ -189,7 +189,7 @@ public class SerialPlanExecutor extends Thread {
 		if (m_task.firstActionID == null || m_task.firstActionID.isEmpty()) {
 			m_component.log("plan was empty, completing");
 			planComplete(ExecutionState.COMPLETED);
-			stopWatch.toc("empty plan completed without execution");
+			stopWatch.toc("execution complete: " + CASTUtils.toString(m_planningTaskAddress));
 			return;
 		}
 
@@ -218,7 +218,7 @@ public class SerialPlanExecutor extends Thread {
 
 		if (m_exeState != ExecutionState.EXECUTING) {
 			m_component.log("not executing run loop");
-			stopWatch.toc("plan not executed");
+			stopWatch.toc("execution complete: " + CASTUtils.toString(m_planningTaskAddress));
 			return;
 		}
 
@@ -282,7 +282,7 @@ public class SerialPlanExecutor extends Thread {
 			}
 
 		}
-		stopWatch.toc(this.m_currentAction.fullName);
+		stopWatch.toc("execution complete: " + CASTUtils.toString(m_planningTaskAddress));
 	}
 
 	/**
