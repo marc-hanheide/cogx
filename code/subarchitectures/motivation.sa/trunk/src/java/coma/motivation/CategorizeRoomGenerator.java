@@ -36,14 +36,12 @@ import comadata.ComaRoom;
  */
 public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 
-	/**
-	 * amount of milliseconds that corresponds to information gain of 0.5. If
-	 * the place hasn't been explored for longer than this amount the gain is >
-	 * 0.5 otherwise it's smaller using an exp reciproc model.
-	 */
+
 	private static final double EXP_NORM = 5.0;
 
 	private static final int MIN_PLACES_PER_ROOM = 2;
+
+	private static final float MAX_CATEGORIZE_COSTS = 5;
 
 	private boolean blockRooms;
 
@@ -200,11 +198,12 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 		crm.costs = (float) estimatedTravelCosts;
 		
 		// the ratio between explored places and number of places
-		double exploredRatio = (double) countRealPlaces
+		double exploredRatio = (double) countPlaceHolders
 				/ (double) (countPlaceHolders+countRealPlaces);
 		log("  exploredRatio = " + exploredRatio);
 		// we consider not fully explored rooms to be ways more expensive...
-		crm.costs = (float) (crm.costs / (exploredRatio*exploredRatio));
+		float categorizeCostEstimate = (float) (MAX_CATEGORIZE_COSTS * exploredRatio); 
+		crm.costs = (float) crm.costs + categorizeCostEstimate;
 		log("  costs = " + crm.costs);
 
 		// The more (real) places are contained the more information we get
