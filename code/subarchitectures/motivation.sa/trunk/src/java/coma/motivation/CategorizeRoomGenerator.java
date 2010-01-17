@@ -41,7 +41,7 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 
 	private static final int MIN_PLACES_PER_ROOM = 2;
 
-	private static final float MAX_CATEGORIZE_COSTS = 5;
+	private static final float MAX_CATEGORIZE_COSTS = 10;
 
 	private boolean blockRooms;
 
