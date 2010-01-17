@@ -226,6 +226,21 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 	 */
 	@Override
 	protected void start() {
+		WorkingMemoryChangeReceiver checkAllReceiver = new WorkingMemoryChangeReceiver() {
+			
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange wmc)
+					throws CASTException {
+				for (Ice.ObjectImpl m : motives.getMapByType(
+						CategorizeRoomMotive.class).values())
+					scheduleCheckMotive((Motive) m);
+			}
+		};
+		// let any change to places trigger check of all room motives
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				Place.class, WorkingMemoryOperation.WILDCARD),
+				checkAllReceiver);
+		
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				ComaRoom.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
