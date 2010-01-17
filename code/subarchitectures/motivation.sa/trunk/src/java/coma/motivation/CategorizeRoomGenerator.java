@@ -37,7 +37,7 @@ import comadata.ComaRoom;
 public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 
 
-	private static final double EXP_NORM = 5.0;
+	private static final double EXP_NORM = 8.0;
 
 	private static final int MIN_PLACES_PER_ROOM = 2;
 
@@ -211,9 +211,9 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 		crm.informationGain = 1 - (1. / Math
 				.exp((((double) countRealPlaces) / EXP_NORM) * Math.log(2)));
 
-		if (source.containedPlaceIds.length<MIN_PLACES_PER_ROOM) {
-			crm.informationGain=0.0;
-		}
+//		if (source.containedPlaceIds.length<MIN_PLACES_PER_ROOM) {
+//			crm.informationGain=0.0;
+//		}
 		
 		log("  informationGain = " + crm.informationGain);
 

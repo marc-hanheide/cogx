@@ -198,6 +198,7 @@ public class PlanAllManager extends ManagedComponent {
 							try {
 								executionResult.get(1, TimeUnit.SECONDS);
 								// interrupt any execution after timeout
+								Thread.sleep(1000);
 								break;
 							} catch (TimeoutException e) {
 								log("not finished execution yet... continue waiting");
