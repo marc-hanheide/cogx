@@ -46,7 +46,7 @@ JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator --blockr
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "RemoteFilter,LimitTriesFilter" 
 
 
-JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
+JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityTriesCostGain
 JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
 JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
 
