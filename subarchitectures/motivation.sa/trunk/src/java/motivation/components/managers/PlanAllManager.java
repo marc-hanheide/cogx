@@ -169,18 +169,31 @@ public class PlanAllManager extends ManagedComponent {
 							plannerFacade);
 					// generate the plan asynchronously
 					backgroundExecutor.execute(generatedPlan);
+					// in the meantime compute the maximum time to wait for the plan
+					int maxPlanningTime=0;
+					int maxExecutionTime=0;
+					for (Motive m : activeMotives) {
+						maxPlanningTime+=m.maxPlanningTime;
+						maxExecutionTime+=m.maxExecutionTime;
+					}
+					log("max planning and execution time for problem computed:\n" 
+							+ "  maxPlanningTime == " + maxPlanningTime +"\n"
+							+ "  maxExecutionTime == " + maxExecutionTime);	
+					
 					// wait for the future to be completed
 					WMEntryQueueElement pt = null;
+					int loopCount = 0;
 					while (!interrupt) {
 						try {
 							pt = generatedPlan.get(1, TimeUnit.SECONDS);
 							break;
 						} catch (TimeoutException e) {
 							log("no plan yet... continue waiting");
+							if (++loopCount > maxPlanningTime) {
+								log("timeout in execution");
+								interrupt = true;
+							}
 						}
-						// TODO we might want to interrupt planning here for a
-						// good reason
-						// generatedPlan.cancel(true);
 					}
 
 					// probably cancel the planning task
@@ -193,7 +206,8 @@ public class PlanAllManager extends ManagedComponent {
 						FutureTask<PlanProxy> executionResult = new FutureTask<PlanProxy>(
 								executorFacade);
 						backgroundExecutor.execute(executionResult);
-						int loopCount = 0;
+
+						loopCount = 0;
 						while (!interrupt) {
 							try {
 								executionResult.get(1, TimeUnit.SECONDS);
@@ -202,7 +216,7 @@ public class PlanAllManager extends ManagedComponent {
 								break;
 							} catch (TimeoutException e) {
 								log("not finished execution yet... continue waiting");
-								if (++loopCount > failsafeExectutionTimeoutSecs) {
+								if (++loopCount > maxExecutionTime) {
 									log("timeout in execution");
 									interrupt = true;
 								}
