@@ -268,16 +268,16 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	     overwriteWorkingMemory<SpatialData::Place>(m_Places[i].m_WMid, 
 	     m_Places[i].m_data);
 	   */
-	}
-	if (node->x != oobj->x || node->y != oobj->y) {
-	  // If the node has been moved, frontiers must be reevaluated
-	  // and, if necessary, moved.
-	  evaluateUnexploredPaths();
-	}
+	  if (node->x != oobj->x || node->y != oobj->y) {
+	    // If the node has been moved, frontiers must be reevaluated
+	    // and, if necessary, moved.
+	    evaluateUnexploredPaths();
+	  }
 
-	unlockEntry(objID.address.id);
-	debug("modifiedNavNode exited");
-	return;
+	  unlockEntry(objID.address.id);
+	  debug("modifiedNavNode exited");
+	  return;
+	}
       }
 
       // If the node is not in our 
