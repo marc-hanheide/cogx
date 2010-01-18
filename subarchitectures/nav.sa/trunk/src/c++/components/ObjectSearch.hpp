@@ -48,6 +48,9 @@ class ObjectSearch : public cast::ManagedComponent
     double m_CamRange;
     Cure::SensorPose m_LaserPoseR;
   private:
+
+    bool continueToRecognize() const;
+
   	int m_gridsize; 
   	float m_cellsize;
 	double m_fov;
@@ -81,7 +84,7 @@ class ObjectSearch : public cast::ManagedComponent
 	NAVCOMMANDINPROGRESS,
 	NAVCOMMANDCOMPLETED,
 	RECOGNITIONINPROGRESS,
-	RECOGNITIONINCOMPLETE,
+	RECOGNITIONCOMPLETE,
 	PAUSED,
 	STOPPED
 };
