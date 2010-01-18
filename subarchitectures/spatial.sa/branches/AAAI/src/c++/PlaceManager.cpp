@@ -268,10 +268,16 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	     overwriteWorkingMemory<SpatialData::Place>(m_Places[i].m_WMid, 
 	     m_Places[i].m_data);
 	   */
-	  unlockEntry(objID.address.id);
-	  debug("modifiedNavNode exited");
-	  return;
 	}
+	if (node->x != oobj->x || node->y != oobj->y) {
+	  // If the node has been moved, frontiers must be reevaluated
+	  // and, if necessary, moved.
+	  evaluateUnexploredPaths();
+	}
+
+	unlockEntry(objID.address.id);
+	debug("modifiedNavNode exited");
+	return;
       }
 
       // If the node is not in our 
@@ -1247,7 +1253,6 @@ PlaceManager::processPlaceArrival(bool failed)
 
 }
 
-
 FrontierInterface::NodeHypothesisPtr 
 PlaceManager::PlaceServer::getHypFromPlaceID(int placeID,
     const Ice::Current &_context) {
@@ -1318,7 +1323,7 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
     else {
       // If we were following a path and changed nodes, we've arrived at a Place
       if (curNode->nodeId != m_startNodeForCurrentPath) {
-	//processPlaceArrival(false);
+	processPlaceArrival(false);
       }
     }
   }
