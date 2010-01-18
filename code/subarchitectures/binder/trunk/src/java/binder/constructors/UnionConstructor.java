@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import cast.cdl.CASTTime;
 import cast.core.logging.ComponentLogger;
 
+import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
@@ -396,6 +397,10 @@ public class UnionConstructor  {
 		return mergedFeature;
 	}
 	
+	
+	public BayesianNetwork getBayesianNetwork () {
+		return BNManager.getBayesianNetwork();
+	}
 	
 	/**
 	public static Feature createSpecialBindingFeature (PhantomProxy phantom) {
