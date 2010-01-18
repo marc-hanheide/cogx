@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
+import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
@@ -169,6 +170,17 @@ public class Binder extends ManagedComponent  {
 		
 		BINDER_SA = this.getSubarchitectureID();
 		
+		BayesianNetwork bnetwork = constructor.getBayesianNetwork();
+		if (bnetwork != null) {
+			try {
+			addToWorkingMemory(newDataID(), Binder.BINDER_SA, bnetwork);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
 		log("Binder successfully started");
 	}
 
@@ -196,7 +208,7 @@ public class Binder extends ManagedComponent  {
 			bayesianNetworkConfigFile = _config.get("--bayesiannetworkfile");
 		} 
 		constructor = new UnionConstructor(bayesianNetworkConfigFile);
-
+		
 		if (_config.containsKey("--alpha")) {
 			constructor.setAlphaParam(Float.parseFloat(_config.get("--alpha")));
 		} 

@@ -16,6 +16,14 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
 
+/**
+ * Monitors belief models present on the binder working memory (inspection of the WM content 
+ * and print the results on screen)
+ * 
+ * @author Pierre Lison
+ * @version 15/09/2009
+ */
+
 public class BeliefModelMonitor extends ManagedComponent {
 
 	

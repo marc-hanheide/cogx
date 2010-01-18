@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import cast.core.logging.ComponentLogger;
 
+import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
@@ -634,6 +635,14 @@ public class BayesianNetworkManager {
 		}	
 
 		return distrib;
+	}
+	
+	
+	/**
+	 * Return the Bayesian network
+	 */
+	public BayesianNetwork getBayesianNetwork() {
+		return network.getBayesianNetwork();
 	}
 
 

@@ -236,6 +236,13 @@ public class BayesianNetworkWrapper {
 		return network.edges;
 	}
 	
+	/**
+	 * Return the Bayesian Network object
+	 */
+	public BayesianNetwork getBayesianNetwork() {
+		return network;
+	}
+	
 	// ================================================================= 
 	// UTILITY METHODS   
 	// ================================================================= 
