@@ -73,8 +73,8 @@
 	   :variables (?from - place)
 	   :precondition (and
 			  (located ?a ?from)
-			  (or (= (explored ?to) true)
-			      (connected ?from ?to)) 
+;;			  (or (= (explored ?to) true)
+;;			      (connected ?from ?to)) 
 			  )
 	   :effect (and
 		    (not (located ?a ?from))
