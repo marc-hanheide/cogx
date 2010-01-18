@@ -1,4 +1,4 @@
-PROJECT(SDSrc)
+PROJECT(SDvs3)
 
 include_directories(.)
 
