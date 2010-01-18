@@ -13,8 +13,8 @@ sleep 3
 xterm -e player subarchitectures/nav.sa/config/stage_models/dfki_lt_objsearch/cogxp3-AAAI.cfg &
 PIDS="$PIDS $!"
 
-xterm -e peekabot &
-PIDS="$PIDS $!"
+#xterm -e peekabot &
+#PIDS="$PIDS $!"
 
 xterm -e output/bin/cast-server-start &
 SERVERPID="$!"
