@@ -61,6 +61,10 @@ module motivation {
     		string goal;
     		/** planCosts */
     		double plannedCosts;
+    		/** maxplanningTime in sec **/
+    		int maxPlanningTime;
+    		/** max execution time in sec **/
+    		int maxExecutionTime;
     		
     	};
     	
@@ -71,6 +75,10 @@ module motivation {
 
     	class HomingMotive extends Motive {
     		long homePlaceID;
+    	};
+
+    	class GeneralGoalMotive extends Motive {
+    		string internalGoal;
     	};
 
     	class ExploreMotive extends Motive {
