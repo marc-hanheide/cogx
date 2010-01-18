@@ -338,8 +338,9 @@ public class PlaceMonitor extends ManagedComponent {
 		// the place is immediately asserted to instantiate Doorway
 		// this should be safe because Doorway Placeholders are seldom and their connectivity
 		// is not stored in the ontology anyway.
+		log("assert dora:Doorway instance dora:place"+ _gateProp.placeId);
 		m_comareasoner.addInstance("dora:place"+_gateProp.placeId, "dora:Doorway");
-
+		
 		// trigger room creation, splitting, merging, maintenance
 		maintainRooms();
 	}
@@ -366,11 +367,14 @@ public class PlaceMonitor extends ManagedComponent {
 		String placeIns = "dora:place"+_objProp.placeId;
 		String inRel = "dora:in";
 		
+		log("createObject of category " + category + " in place " + placeIns + " called.");
+		
 		// check whether the given place already contains an instance of the given category
 		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, inRel);
 		for (String obj : objsInPlace) {
 			if (obj.startsWith(":")) obj = "dora:" + obj;
 			if (m_comareasoner.isInstanceOf(obj, category)) {
+				log("object of the given category already exists in the given place - doing nothing else.");
 				return false;
 				// if such an object exists, don't create a new instance!
 			}
@@ -378,7 +382,9 @@ public class PlaceMonitor extends ManagedComponent {
 		
 		String objIns = "dora:object" + m_objectIndexCounter++; 
 		
+		log("going to add new instance " + objIns + " of category " + category);
 		m_comareasoner.addInstance(objIns, category);
+		log("going to add new relation " + objIns + " " + inRel + " " + placeIns);
 		m_comareasoner.addRelation(objIns, inRel, placeIns);
 		return true;
 	}
@@ -394,7 +400,7 @@ public class PlaceMonitor extends ManagedComponent {
 
 			// for the moment we are only interested in true places
 			if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) {
-				log("create dora:place instance " + "dora:place"+_newPlaceNode.id);
+				log("create dora:Place instance " + "dora:place"+_newPlaceNode.id);
 				m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
 				logInstances("owl:Thing");
 				logInstances("dora:Place");

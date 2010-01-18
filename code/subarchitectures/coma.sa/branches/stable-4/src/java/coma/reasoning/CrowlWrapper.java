@@ -75,12 +75,19 @@ public class CrowlWrapper {
 //			e.printStackTrace();
 //		}
 		
-// SPARQL way of doing it		
-		m_mycrowl.execute("INSERT { " +
+// SPARQL way of doing it
+		log("addInstance(" + _ins + ", " + _con + ") called.");
+		
+		String addQuery = "INSERT { " +
 				_ins +
 				" rdf:type " +
 				_con +
-		" }");
+		" }";
+		
+		log("going to execute SPARQL update query: " + addQuery);
+		
+		m_mycrowl.execute(addQuery);
+		
 		if (isABoxInconsistent()) {
 			m_mycrowl.execute("DELETE { " +
 					_ins +
