@@ -50,6 +50,8 @@ class ObjectSearch : public cast::ManagedComponent
   private:
 
     bool continueToRecognize() const;
+    void stopAVS();
+
 
   	int m_gridsize; 
   	float m_cellsize;

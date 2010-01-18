@@ -72,6 +72,25 @@ void ObjectSearch::start() {
 								 &ObjectSearch::newAVSCommand)); 
 }
 
+void ObjectSearch::stopAVS() {
+    log("stopping AVS");
+    whereinplan = -1;
+    m_command = STOP;
+    m_status = STOPPED;
+    whereinplan = m_plan.plan.size();
+    m_Displaykrsjlgm = 0;
+    m_Displaycoverage = 0;
+    m_samples = new int[2*m_samplesize];
+    
+    try {
+      deleteFromWorkingMemory(m_lastCmdAddr);
+    }	    
+    catch(const CASTException &e) {
+      println("failed to delete AVSCommand: %s", e.message.c_str());
+    }
+
+}
+
 void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
   
   shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
@@ -86,14 +105,7 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
     m_command = PLAN;
   }
   else if (oobj->getData()->cmd == SpatialData::STOPAVS) {
-    log("stopping AVS");
-    whereinplan = -1;
-    m_command = STOP;
-    m_status = STOPPED;
-    whereinplan = m_plan.plan.size();
-    m_Displaykrsjlgm = 0;
-    m_Displaycoverage = 0;
-    m_samples = new int[2*m_samplesize];
+    stopAVS();
   }
 }
 
@@ -1011,6 +1023,8 @@ void ObjectSearch::owtNavCommand(const cdl::WorkingMemoryChange & objID) {
   }
 }
 void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
+
+  if(continueToRecognize()) {
   shared_ptr<CASTData<VisionData::VisualObject> > oobj =
     getWorkingMemoryEntry<VisionData::VisualObject>(objID.address);
   
@@ -1039,6 +1053,13 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
     // FIXME Estimate the distance as well based on eg bounding box size
     
     addToWorkingMemory(newDataID(), obs);
+
+
+    //HACK stopping AVS on first detection for AAAI comparison runs
+    
+    println("HACK: stopping AVS on first detection");
+    stopAVS();
+    return;
   }
   else{
     log("nah, did not detect '%s'", obj->label.c_str());	  
@@ -1049,6 +1070,7 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
     if(m_status != STOPPED) {
       m_status = RECOGNITIONCOMPLETE;  
     }
+  }
   }
   
 }
