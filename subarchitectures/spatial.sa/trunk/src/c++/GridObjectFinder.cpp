@@ -22,8 +22,9 @@
 #include <algorithm>
 #include <opencv/highgui.h>
 
-using namespace spatial;
 using namespace std;
+
+namespace spatial {
 
 GridObjectFinder::GridObjectFinder(IplImage *objectGrid, int objectXCenter,
     int objectYCenter, ObjectFinderSymmetry symmetry, double angStep) : m_angStep(angStep)
@@ -95,7 +96,8 @@ GridObjectFinder::~GridObjectFinder()
   }
 }
 
-GridObjectFinder *createTableFinder(void)
+GridObjectFinder *
+createTableFinder(void)
 {
   CvSize size = {11, 11};
   IplImage *objIm = cvCreateImage(size, IPL_DEPTH_8U, 1);
@@ -187,3 +189,4 @@ GridObjectFinder::findObject(Cure::LocalGridMap<unsigned int> &lgm, int *outX,
   findObject(lgmImage, outX, outY, outAngle, outConfidence);
   cvReleaseImage(&lgmImage);
 }
+};
