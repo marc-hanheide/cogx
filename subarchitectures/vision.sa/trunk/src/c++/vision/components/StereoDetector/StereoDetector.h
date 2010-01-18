@@ -22,50 +22,48 @@
 namespace cast
 {
 
+/**
+	* @brief Class Stereo Detector.
+	*/
 class StereoDetector : public VideoClient, public ManagedComponent
 {
 private:
 
-	/**
-	 * @brief Stereo core
-	 */
-  Z::StereoCore *score;
+	Z::StereoCore *score;										///< Stereo core
+	std::vector<int> camIds;								///< Which cameras to get images from
+	std::string videoServerName;						///< Component ID of the video server to connect to
+	Video::VideoInterfacePrx videoServer;		///< ICE proxy to the video server
+	Video::Image image_l, image_r;					///< Left and right stereo image from video server. Original images.
+	IplImage *iplImage_l, *iplImage_r;			///< Converted left and right stereo images (openCV ipl-images)
+//	IplImage *iplImage_l_s, *iplImage_r_s;	///< Copys of iplImage_x to draw overlays and display at openCV windows.
+	bool cmd_detect;												///< detection command
+	bool cmd_single;												///< single detection commmand
+	bool showImages;												///< show openCV images
+	bool debug;															///< debug the stereo detector
+	std::vector<std::string> objectIDs;			///< IDs of the currently stored visual objects
+	int overlays;														///< Number of overlay
+																					///<     1 = all
+																					///<     2 = flaps
+																					///<     3 = rectangles
+																					///<     4 = closures
+																					///<     5 = ellipses
 
   /**
-   * @brief Which camera to get images from
+   * @brief Show both stereo images in the openCV windows.
+   * @param convertNewIpl Convert image again into iplImage to delete overlays.
    */
-  std::vector<int> camIds;
-
-  /**
-   * @brief component ID of the video server to connect to
-   */
-  std::string videoServerName;
-
-  /**
-   * @brief our ICE proxy to the video server
-   */
-  Video::VideoInterfacePrx videoServer;
-
-	/**
-	 * @brief Left and right stereo image from video server. Original images.
-	 */
-  Video::Image image_l, image_r;
-// 	IplImage *iplImage_l, *iplImage_r, *iplImage_org_l, *iplImage_org_r;
+	void ShowImages(bool convertNewIpl);
 
   /**
    * @brief Receive a changed detection command, written to the working memory
+   * @param wmc Working memory address. 
    */
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
 
   /**
-   * @brief Extract camera parameters from video server.
+   * @brief Call debug mode.
    */
-	bool GetCameraParameter(const Video::Image & image);
-
-  /**
-   * @brief If debug option is set, stop processing and wait for keybord input.
-   */
-	bool ProcessDebugOptions(Z::StereoCore *score, IplImage *iplImage_l, IplImage *iplImage_r, IplImage *iplImage_results);
+	void Debug();
 
   /**
    * @brief Read the SOIs from the working memory and display it.
@@ -78,17 +76,11 @@ private:
 	 */
 	void DeleteVisualObjects();
 
-  bool cmd_detect;											///< detection command
-	bool cmd_single;											///< single detection commmand
-	bool showImages;											///< show openCV image
-	bool debug;														///< debug the stereo detector
-
-	std::vector<std::string> objectIDs;		///< IDs of the currently stored visual objects
-
 
 protected:
   /**
    * @brief Called by the framework to configure our component
+   * @param config Config TODO
    */
   virtual void configure(const std::map<std::string,std::string> & _config);
   /**
@@ -102,8 +94,10 @@ protected:
 
   /**
    * @brief Called to start processing of one image
+   * @param image_l Left stereo image from video server.
+   * @param image_r Right stereo image from video server.
    */
-	virtual void processImage(const Video::Image &image_l, const Video::Image &image_r);
+	virtual void processImage(/*const Video::Image &image_l, const Video::Image &image_r*/);
 
 
 public:
@@ -113,6 +107,7 @@ public:
   /**
    * @brief The callback function for images pushed by the image server.
    * To be overwritten by derived classes.
+   * @param images Vector of images from video server.
    */
   virtual void receiveImages(const std::vector<Video::Image>& images);
 };
