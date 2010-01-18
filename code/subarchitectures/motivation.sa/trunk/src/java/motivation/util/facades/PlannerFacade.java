@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
+import motivation.slice.GeneralGoalMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.PatrolMotive;
@@ -66,6 +67,12 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					+ "'))";
 		}
 
+		public static String motive2PlannerGoal(GeneralGoalMotive m,
+				String robotUnion) {
+			return m.internalGoal.replace("@R", robotUnion);
+		}
+
+		
 		public static String motive2PlannerGoal(ExploreMotive m,
 				String placeUnion) {
 			// String placeStr = Long.toString(m.placeID);
@@ -217,6 +224,10 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 				crm.correspondingUnion = resolveMotive(crm);
 				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(crm,
 						binderFacade.getUnion(crm.correspondingUnion).entityID,
+						getAgentUnion());
+			} else if (m instanceof GeneralGoalMotive) {
+				GeneralGoalMotive ggm = (GeneralGoalMotive) m;
+				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(ggm,
 						getAgentUnion());
 			} else if (m instanceof PatrolMotive) {
 				PatrolMotive pm = (PatrolMotive) m;

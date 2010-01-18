@@ -316,9 +316,9 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected void configure(Map<String, String> _config) {
 		m_spaceMeasureConstant = 0.0;
-		m_borderMeasureConstant = 1.0;
+		m_borderMeasureConstant = 0.9;
 		m_gatewayMeasureConstant = 0.0;
-		m_constantGain = 0.0;
+		m_constantGain = 0.1;
 
 	}
 
