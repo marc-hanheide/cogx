@@ -9,7 +9,7 @@ import globals as global_vars
 
 import task
 from task import PlanningStatusEnum, Task
-import mapl_new as mapl
+import pddl
 import plans
 import plan_postprocess
 import statistics
@@ -79,7 +79,7 @@ class Planner(object):
         """
         if not task.is_dirty():
             return
-        if task._mapltask.goal == mapl.conditions.Falsity():
+        if task._mapltask.goal == pddl.conditions.Falsity():
             task.set_plan(None, update_status=True)
             return
 
@@ -104,7 +104,7 @@ class Planner(object):
             read = pnode.preconds|pnode.replanconds
             universal = pnode.preconds_universal|pnode.replan_universal
             if pnode.action.replan:
-                cond = mapl.conditions.Conjunction([pnode.action.precondition, pnode.action.replan])
+                cond = pddl.Conjunction([pnode.action.precondition, pnode.action.replan])
             else:
                 cond = pnode.action.precondition
 

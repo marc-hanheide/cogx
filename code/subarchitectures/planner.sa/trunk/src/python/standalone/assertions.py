@@ -2,9 +2,8 @@ from collections import defaultdict
 import itertools
 import config
 
-import mapl_new as mapl
-import mapl_new.state as state
-import mapl_new.visitors as visitors
+import pddl
+from pddl import state, visitors, mapl
 import plans
 
 log = config.logger("assertions")
@@ -64,10 +63,10 @@ def get_observable_functions(sensors):
 def get_nonstatic_functions(domain):
     @visitors.collect
     def effectVisitor(eff, results):
-        if isinstance(eff, mapl.effects.SimpleEffect):
-            if eff.predicate in mapl.assignment_ops:
+        if isinstance(eff, pddl.SimpleEffect):
+            if eff.predicate in pddl.assignment_ops:
                 return eff.args[0].function
-            elif eff.predicate in mapl.mapl.modal_predicates:
+            elif eff.predicate in mapl.modal_predicates:
                 return None
             else:
                 return eff.predicate
@@ -102,7 +101,7 @@ def is_observable(observables, term, value=None):
     return False
 
 
-tr = mapl.mapl.MAPLObjectFluentNormalizer()
+tr = mapl.MAPLObjectFluentNormalizer()
 
 def to_assertion(action, domain):
     if not action.precondition:
@@ -116,19 +115,19 @@ def to_assertion(action, domain):
     new_indomain = set()
 
     def assertionVisitor(cond, results=[]):
-        if cond.__class__ == mapl.conditions.LiteralCondition:
-            if cond.predicate == mapl.mapl.knowledge:
+        if cond.__class__ == pddl.LiteralCondition:
+            if cond.predicate == mapl.knowledge:
                 return None, cond
-            if cond.predicate != mapl.equals or \
+            if cond.predicate != pddl.equals or \
                     not is_observable(observable, cond.args[0], cond.args[1]) :
                 return cond, None
 
-            k_cond = mapl.conditions.LiteralCondition(mapl.mapl.knowledge, [mapl.predicates.VariableTerm(agent), cond.args[0]])
-            id_cond = mapl.conditions.LiteralCondition(mapl.mapl.indomain, cond.args[:], negated = cond.negated)
+            k_cond = pddl.LiteralCondition(mapl.knowledge, [pddl.predicates.VariableTerm(agent), cond.args[0]])
+            id_cond = pddl.LiteralCondition(mapl.indomain, cond.args[:], negated = cond.negated)
             #print cond.pddl_str()
 
             return id_cond, k_cond
-        elif isinstance(cond, mapl.conditions.JunctionCondition):
+        elif isinstance(cond, pddl.conditions.JunctionCondition):
             condparts = []
             replanparts = []
             newcond = newreplan = None
@@ -141,7 +140,7 @@ def to_assertion(action, domain):
                 newreplan = cond.__class__(replanparts)
                     
             return newcond, newreplan
-        elif cond.__class__ == mapl.conditions.QuantifiedCondition:
+        elif cond.__class__ == pddl.conditions.QuantifiedCondition:
             newcond = newreplan = None
             if results[0][0]:
                 newcond = cond.__class__(self.args, condparts)
@@ -156,7 +155,7 @@ def to_assertion(action, domain):
     if not replan:
         return None
 
-    assertion = mapl.mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effect, domain)
+    assertion = mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effect, domain)
     assertion = assertion.copy()
     return assertion
 
@@ -199,7 +198,7 @@ def make_clusters(plan, domain):
 
     for node in plan.nodes_iter():
         for pred in plan.predecessors_iter(node):
-            if isinstance(pred.action, mapl.sensors.Sensor):
+            if isinstance(pred.action, pddl.sensors.Sensor):
                 if any(e['type'] == 'depends' for e in plan[pred][node].itervalues()):
                     initial_nodes.append(node)
                     break
@@ -237,7 +236,7 @@ def add_to_cluster(cluster, plan, static, domain):
         return read, write, read|write
 
     def get_sensor_pres(cluster):
-        read, _, _ = get_svars(cluster, filter_func=lambda svar: svar.modality == mapl.mapl.direct_knowledge)
+        read, _, _ = get_svars(cluster, filter_func=lambda svar: svar.modality == mapl.direct_knowledge)
         return read
     
     candidates = set()

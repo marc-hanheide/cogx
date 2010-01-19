@@ -1,5 +1,5 @@
-import standalone.mapl_new as mapl
-import standalone.mapl_new.state as state
+from standalone import pddl
+from standalone.pddl import state
 from standalone import plans
 from standalone import statistics
 
@@ -87,9 +87,9 @@ class Agent(BaseAgent):
             return
 
         def action_cmp(pnode1, pnode2):
-            if isinstance(pnode1.action, mapl.sensors.Sensor) and not isinstance(pnode2.action, mapl.sensors.Sensor):
+            if isinstance(pnode1.action, pddl.sensors.Sensor) and not isinstance(pnode2.action, pddl.sensors.Sensor):
                 return -1
-            elif not isinstance(pnode1.action, mapl.sensors.Sensor) and isinstance(pnode2.action, mapl.sensors.Sensor):
+            elif not isinstance(pnode1.action, pddl.sensors.Sensor) and isinstance(pnode2.action, pddl.sensors.Sensor):
                 return 1
 
             for s1, s2 in [(pnode1.action.name, pnode2.action.name)] + zip(map(str, pnode1.args), map(str, pnode2.args)):
@@ -111,9 +111,9 @@ class Agent(BaseAgent):
         #mapl.sas_translate.to_sas(self.mapltask)
         # print "executable:"
         # for a in self.mapltask.actions:
-        #     a = mapl.mapl.MAPLObjectFluentNormalizer().translate(a, domain=self.mapltask)
+        #     a = pddl.mapl.MAPLObjectFluentNormalizer().translate(a, domain=self.mapltask)
     
-        #     for c in mapl.sas_translate.instantiate_action(a, task.get_state(), all_funcs):
+        #     for c in pddl.sas_translate.instantiate_action(a, task.get_state(), all_funcs):
         #         print "(%s %s)" % (a.name, " ".join(o.name for o in c))
 
         executable = sorted(plan.executable(), cmp=action_cmp)

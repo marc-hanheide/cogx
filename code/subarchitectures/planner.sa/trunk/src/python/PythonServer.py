@@ -5,9 +5,9 @@ from collections import defaultdict
 import autogen.Planner as Planner
 import binder.autogen.core
 import cast.core
-import standalone.mapl_new as mapl
-import standalone.mapl_new.state as state
-import standalone.plans as plans
+from standalone import pddl, plans
+import standalone.pddl import state
+
 
 this_path = abspath(dirname(__file__))
 
@@ -185,13 +185,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     print_state_difference(task.get_state(), state.State(facts))
 
-    newtask = mapl.problem.Problem(task.mapltask.name, objects, [], None, task._mapldomain)
+    newtask = pddl.mapl.MALProblem(task.mapltask.name, objects, [], None, task._mapldomain)
 
     #check if the goal is still valid
     try:
       newtask.goal = task._mapltask.goal.copy(newtask)
     except KeyError:
-      newtask.goal = mapl.conditions.Falsity()
+      newtask.goal = pddl.conditions.Falsity()
     
     task.set_state(state.State(facts, newtask))
     task.mapltask = newtask

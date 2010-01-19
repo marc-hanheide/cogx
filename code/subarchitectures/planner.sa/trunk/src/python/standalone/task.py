@@ -2,11 +2,8 @@ import itertools, time
 
 import config, constants
 import assertions, macros
-import mapl_new as mapl
-import mapl_new.state as state
-import mapl_new.mapltypes as types
-import mapl_new.predicates as predicates
-import mapl_new.effects as effects
+import pddl
+from  pddl import state, mapl
 import statistics
 
 from utils import Enum
@@ -47,7 +44,7 @@ class Task(object):
     def __get_mapltask(self):
         if self.is_dirty():
             new_init = [ f.as_literal(useEqual=True) for f in self.get_state().iterfacts() ]
-            self._mapltask = mapl.mapl.MAPLProblem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain, self._mapltask.optimization, self._mapltask.opt_func)
+            self._mapltask = mapl.MAPLProblem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain, self._mapltask.optimization, self._mapltask.opt_func)
         return self._mapltask
 
     def __set_mapltask(self, mapltask):
@@ -77,13 +74,13 @@ class Task(object):
         s = state.State([], self._mapltask)
         for i in self._mapltask.init:
             #determinise probabilistic init conditions
-            if isinstance(i, effects.ProbabilisticEffect):
+            if isinstance(i, pddl.effects.ProbabilisticEffect):
                 for p, eff in i.effects:
                     facts = s.get_effect_facts(eff)
                     for svar, value in facts:
-                        if not isinstance(svar, mapl.predicates.Predicate) and svar.modality is None:
-                            id_var = svar.as_modality(mapl.mapl.i_indomain, [value])
-                            s[id_var] = mapl.TRUE
+                        if not isinstance(svar, pddl.Predicate) and svar.modality is None:
+                            id_var = svar.as_modality(mapl.i_indomain, [value])
+                            s[id_var] = pddl.TRUE
             else:
                 s.set(state.Fact.from_literal(i))
         self._state = s
@@ -145,17 +142,17 @@ class Task(object):
     
     def load_mapl_domain(self, domain_file):
         log.info("Loading MAPL domain %s.", domain_file)
-        self._mapldomain = mapl.load_domain(domain_file)
+        self._mapldomain = pddl.load_domain(domain_file)
         
     def load_mapl_problem(self, task_file, agent_name=None):
         log.info("Loading MAPL problem %s.", task_file)
-        self.mapltask = mapl.load_problem(task_file, self._mapldomain)
+        self.mapltask = pddl.load_problem(task_file, self._mapldomain)
         self.create_initial_state()
 
         self._agent_name = agent_name
 
     def parse_mapl_problem(self, problem_str, agent_name=None):
-        self._mapltask = mapl.parse_problem(problem_str, self._mapldomain)
+        self._mapltask = pddl.parse_problem(problem_str, self._mapldomain)
         self.create_initial_state()
 
         self._agent_name = agent_name
@@ -165,20 +162,20 @@ class Task(object):
         self.load_mapl_problem(task_file, agent_name)
 
 
-class PDDLWriter(mapl.writer.Writer):
+class PDDLWriter(pddl.writer.Writer):
     def __init__(self):
-        self.compiler = mapl.translators.ADLCompiler()
+        self.compiler = pddl.translators.ADLCompiler()
         #self.compiler = mapl.translators.ModalPredicateCompiler()
         
     def write_problem(self, problem):
         t0 = time.time()
         p2 = self.compiler.translate(problem)
         log.debug("total time for translation: %f", time.time()-t0)
-        return mapl.writer.Writer.write_problem(self, p2)
+        return pddl.writer.Writer.write_problem(self, p2)
 
     def write_domain(self, domain):
         dom = self.compiler.translate(domain)
-        return mapl.writer.Writer.write_domain(self, dom)
+        return pddl.writer.Writer.write_domain(self, dom)
 
 class TFDWriter(PDDLWriter):
     def __init__(self):
@@ -191,18 +188,18 @@ class FDWriter(PDDLWriter):
         p2 = self.compiler.translate(problem)
         self.mutex_groups = self.get_mutex_groups(p2, problem)
         log.debug("total time for translation: %f", time.time()-t0)
-        return mapl.writer.Writer.write_problem(self, p2)
+        return pddl.writer.Writer.write_problem(self, p2)
 
     def get_mutex_groups(self, prob, oldprob):
         groups = []
         for function in oldprob.functions:
             pred = prob.predicates.get(function.name, function.args+[function.type])
-            fluents_combinations = mapl.state.product(*(prob.get_all_objects(a.type) for a in function.args))
+            fluents_combinations = state.product(*(prob.get_all_objects(a.type) for a in function.args))
             for c in fluents_combinations:
                 group = []
                 for v in prob.get_all_objects(function.type):
-                    #print mapl.Literal(pred, c+[v]).pddl_str()
-                    group.append(mapl.Literal(pred, itertools.chain(c, [v])))
+                    #print pddl.Literal(pred, c+[v]).pddl_str()
+                    group.append(pddl.Literal(pred, itertools.chain(c, [v])))
                 groups.append(group)
         return groups
     
@@ -216,36 +213,36 @@ class FDWriter(PDDLWriter):
         return self.section("mutex", groups)
         
 
-class TemporalTranslator(mapl.translators.Translator):
+class TemporalTranslator(pddl.translators.Translator):
     def __init__(self):
-        self.depends = [mapl.translators.ModalPredicateCompiler(remove_replan=True)]
+        self.depends = [pddl.translators.ModalPredicateCompiler(remove_replan=True)]
 
     def translate_action(self, action, domain=None):
 
-        @mapl.visitors.copy
+        @pddl.visitors.copy
         def effect_visitor(eff, results):
-            if isinstance(eff, mapl.SimpleEffect):
-                if eff.predicate == mapl.assign:
-                    return mapl.SimpleEffect(mapl.builtin.change, eff.args[:])
-                if eff.predicate == mapl.builtin.num_assign:
-                    return mapl.SimpleEffect(mapl.builtin.num_change, eff.args[:])
-                return mapl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
-            if isinstance(eff, mapl.ConditionalEffect):
-                eff2 = mapl.ConditionalEffect(None, results[0])
-                eff2.condition = mapl.durative.TimedCondition("start", eff.condition.copy())
+            if isinstance(eff, pddl.SimpleEffect):
+                if eff.predicate == pddl.assign:
+                    return pddl.SimpleEffect(pddl.builtin.change, eff.args[:])
+                if eff.predicate == pddl.builtin.num_assign:
+                    return pddl.SimpleEffect(pddl.builtin.num_change, eff.args[:])
+                return pddl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
+            if isinstance(eff, pddl.ConditionalEffect):
+                eff2 = pddl.ConditionalEffect(None, results[0])
+                eff2.condition = pddl.durative.TimedCondition("start", eff.condition.copy())
                 return eff2
         
-        if isinstance(action, mapl.durative.DurativeAction):
+        if isinstance(action, pddl.durative.DurativeAction):
             return action.copy(newdomain=domain)
         
-        dc = mapl.durative.DurationConstraint(mapl.Term(1))
-        args = [types.Parameter(p.name, p.type) for p in action.args]
-        a2 = mapl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
+        dc = pddl.durative.DurationConstraint(pddl.Term(1))
+        args = [pddl.Parameter(p.name, p.type) for p in action.args]
+        a2 = pddl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
         
         if action.replan:
             a2.replan = action.replan.copy(new_scope=a2)
         if action.precondition:
-            a2.precondition = mapl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
+            a2.precondition = pddl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
             
         a2.effect = action.effect.visit(effect_visitor)
         a2.effect.set_scope(a2)

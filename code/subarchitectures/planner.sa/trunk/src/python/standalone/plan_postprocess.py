@@ -2,8 +2,7 @@ from collections import defaultdict
 import time, itertools
 import config
 
-import mapl_new as mapl
-import mapl_new.state as state
+from pddl import state
 import plans
 
 log = config.logger("planner")

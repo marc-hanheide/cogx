@@ -1,11 +1,11 @@
 import itertools, random
 from collections import defaultdict
 
-from standalone import mapl_new as mapl
+from standalone import pddl
 from standalone import plans
 from standalone import config
 from standalone import statistics
-import standalone.mapl_new.state as state
+from standalone.pddl import state, mapl
 
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
@@ -97,9 +97,9 @@ class Simulation(object):
         """
         a = self.problem[agent.name]
         for svar, val in self.state.iteritems():
-            if val == mapl.types.FALSE:
+            if val == pddl.FALSE:
                 continue
-            if svar.modality == mapl.mapl.knowledge and svar.modal_args[0] == a:
+            if svar.modality == mapl.knowledge and svar.modal_args[0] == a:
                 newvar = svar.nonmodal()
                 agent.get_state()[newvar] = self.state[newvar]
         
@@ -110,14 +110,14 @@ class Simulation(object):
         """
         
         def remove_visitor(cond, results=[]):
-            if cond.__class__ == mapl.conditions.LiteralCondition:
-                if cond.predicate in (mapl.mapl.modal_predicates):
+            if cond.__class__ == pddl.LiteralCondition:
+                if cond.predicate in (mapl.modal_predicates):
                     return None
-            if isinstance(cond, mapl.conditions.JunctionCondition):
+            if isinstance(cond, pddl.conditions.JunctionCondition):
                 cond.parts = filter(None, results)
                 if not cond.parts:
                     return None
-            if isinstance(cond, mapl.conditions.QuantifiedCondition):
+            if isinstance(cond, pddl.conditions.QuantifiedCondition):
                 if results[0] is None:
                     return None
             return cond
@@ -148,7 +148,7 @@ class Simulation(object):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
 
             perceived_facts = []
-            if isinstance(action, mapl.sensors.Sensor):
+            if isinstance(action, pddl.sensors.Sensor):
                 perceived_facts = self.execute_sensor_action(action, agent)
                 agent.statistics.increase_stat("sensor_actions_executed")
             else:
@@ -180,7 +180,7 @@ class Simulation(object):
     def execute_sensor_action(self, sensor, agent):
         svar = self.state.svar_from_term(sensor.get_term())
         if sensor.is_boolean():
-            if isinstance(sensor.get_value(), mapl.predicates.FunctionTerm):
+            if isinstance(sensor.get_value(), pddl.predicates.FunctionTerm):
                 svar2 = state.StateVariable.from_term(sensor.get_value(), self.state)
                 value = self.state[svar2]
             else:
@@ -191,7 +191,7 @@ class Simulation(object):
                 perception = state.Fact(svar, value)
             else:
                 print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
-                perception = state.Fact(svar.as_modality(mapl.mapl.i_indomain, [value]), mapl.FALSE)
+                perception = state.Fact(svar.as_modality(mapl.i_indomain, [value]), pddl.FALSE)
         else:
             print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
             perception = state.Fact(svar, self.state[svar])
