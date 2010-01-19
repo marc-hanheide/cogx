@@ -40,14 +40,13 @@ private:
   
   // Trajectory of tracked object
   bool timerstarted;
-  std::vector<Pose3> trajectory;
   std::vector<float> timestamps;
   float m_error_pos, m_error_rot;
   
   // Model to detect from ply file
-  string model;
-  ModelLoader m_modelloader;
-  TrackerModel m_model;
+  std::string model;
+  Tracking::ModelLoader m_modelloader;
+  Tracking::TrackerModel m_model;
   
   /**
    * callback function called whenever a new object appears ore an object
