@@ -2,8 +2,8 @@
 // http://robertmarkmorley.com/2008/11/16/frustum-culling-in-opengl/
 // © 2009 - Robert M. Morley
 
-#ifndef __TMFRUSTUM__
-#define __TMFRUSTUM__
+#ifndef FRUSTUM_H
+#define FRUSTUM_H
 
 #include "headers.h"
 

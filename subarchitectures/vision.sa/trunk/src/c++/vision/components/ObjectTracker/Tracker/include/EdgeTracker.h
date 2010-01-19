@@ -6,10 +6,12 @@
  * @brief Tracker using geometry edges for matching.
  * @namespace Tracker
  */
-#ifndef __EDGE_TRACKER_H__
-#define __EDGE_TRACKER_H__
+#ifndef EDGE_TRACKER_H
+#define EDGE_TRACKER_H
 
 #include "Tracker.h"
+
+namespace Tracking{
 
 /** @brief class EdgeTracker */
 class EdgeTracker : public Tracker
@@ -40,5 +42,7 @@ public:
 	virtual void drawResult(Particle* p, TrackerModel* m);
 
 };
+
+} // namespace Tracking
 
 #endif

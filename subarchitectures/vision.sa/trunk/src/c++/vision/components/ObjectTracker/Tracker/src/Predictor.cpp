@@ -1,6 +1,8 @@
 
 #include "Predictor.h"
 
+using namespace Tracking;
+
 // *** private ***
 float Predictor::noise(float sigma, unsigned int type){
     float random = 0.0;

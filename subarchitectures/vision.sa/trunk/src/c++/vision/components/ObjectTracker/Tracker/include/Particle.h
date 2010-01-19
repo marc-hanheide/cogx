@@ -10,13 +10,15 @@
 #ifndef __PARTICLE_H__
 #define __PARTICLE_H__
 
-#include "Pose3.h"
+#include "Pose.h"
 #include "Quaternion.h"
 #include "mathlib.h"
 #include "headers.h"		// stdio.h
 
+namespace Tracking{
+
 /**	@brief class Particle */
-class Particle : public Pose3
+class Particle : public Pose
 {
 public:
 	vec3 rp;			///< angular speed
@@ -39,5 +41,6 @@ public:
 
 };
 
+} // namespace Tracking
 
 #endif

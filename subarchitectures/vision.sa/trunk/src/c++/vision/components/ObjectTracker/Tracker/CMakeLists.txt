@@ -5,7 +5,6 @@ project(Tracker)
 add_definitions(-DGL_GLEXT_PROTOTYPES)
 
 include_directories(include)
-#include_directories(../ObjectDetector/mxCvTools)
 include_directories(/usr/include/opencv)
 include_directories(/usr/include/SDL)
 
@@ -25,7 +24,7 @@ SET(SOURCES
 	src/Predictor.cpp
 	src/Distribution.cpp
 	src/ply.c
-	src/Pose3.cpp
+	src/Pose.cpp
 	src/Quaternion.cpp
 	src/Resources.cpp
 	src/Shader.cpp

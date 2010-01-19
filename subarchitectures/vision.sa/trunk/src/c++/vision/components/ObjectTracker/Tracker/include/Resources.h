@@ -16,6 +16,8 @@
 
 #define g_Resources Resources::GetInstance()
 
+namespace Tracking{
+
 typedef std::vector<TrackerModel*> ModelList;
 typedef std::vector<Texture*> TextureList;
 typedef std::vector<Shader*> ShaderList;
@@ -113,5 +115,7 @@ public:
 	int	SearchTextureName(const char* filename);
 	int	SearchShaderName(const char* filename);
 };
+
+} // namespace Tracking
 
 #endif

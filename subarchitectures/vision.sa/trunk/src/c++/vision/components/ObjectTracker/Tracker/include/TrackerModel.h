@@ -1,18 +1,22 @@
 
 #ifndef __TRACKER_MODEL_H__
 #define __TRACKER_MODEL_H__
-class TrackerModel;
 
+namespace Tracking{
+	class TrackerModel;
+}
 #include "headers.h"
 #include "Model.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "mathlib.h"
-#include "Pose3.h"
+#include "Pose.h"
 
 #ifndef FN_LEN
 #define FN_LEN 256
 #endif
+
+namespace Tracking{
 
 class TrackerModel : public Model
 {
@@ -67,8 +71,8 @@ public:
 	void drawUntexturedFaces();
 	void drawPass();
 	
-	std::vector<int> getFaceUpdateList(Pose3* p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);
-	void textureFromImage(Texture* image, int width, int height, Pose3* p_max, vec3 view, float minTexGrabAngle);
+	std::vector<int> getFaceUpdateList(Pose* p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);
+	void textureFromImage(Texture* image, int width, int height, Pose* p_max, vec3 view, float minTexGrabAngle);
 	
 		// gets
 	bool 			getTextured(){ return m_textured; }
@@ -108,5 +112,6 @@ protected:
 	void genListNormals(float normal_length);
 };
 
+} // namespace Tracking
 
 #endif

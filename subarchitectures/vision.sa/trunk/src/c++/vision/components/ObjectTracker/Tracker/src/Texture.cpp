@@ -2,6 +2,8 @@
 #include "Texture.h"
 #include "Resources.h"
 
+using namespace Tracking;
+
 Texture::Texture(){
 	glGenTextures(1, &m_texture_id);
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);

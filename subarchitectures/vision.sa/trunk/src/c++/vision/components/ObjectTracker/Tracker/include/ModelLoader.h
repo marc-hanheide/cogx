@@ -10,6 +10,8 @@
 #include "PlyStructure.h"
 #include "Model.h"
 
+namespace Tracking{
+
 class ModelLoader
 {
 private:
@@ -25,5 +27,6 @@ public:
 	   
 };
 
+} // namespace Tracking
 
 #endif

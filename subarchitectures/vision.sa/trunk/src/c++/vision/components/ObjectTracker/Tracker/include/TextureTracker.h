@@ -12,6 +12,8 @@
 #include "Tracker.h"
 #include "tgLighting.h"
 
+namespace Tracking{
+
 /** @brief class TextureTracker */
 class TextureTracker : public Tracker
 {
@@ -67,13 +69,13 @@ public:
 						
 	virtual void drawResult(Particle* p, TrackerModel* m);
 	
-	virtual vector<float> getPDFxy(	Particle pose,
-																	float x_min, float y_min,
-																	float x_max, float y_max,
-																	int res,
-																	const char* filename=NULL, const char* filename2=NULL);
+	virtual std::vector<float> getPDFxy(	Particle pose,
+																				float x_min, float y_min,
+																				float x_max, float y_max,
+																				int res,
+																				const char* filename=NULL, const char* filename2=NULL);
 																
-	virtual void savePDF(	vector<float> vPDFMap,
+	virtual void savePDF(	std::vector<float> vPDFMap,
 												float x_min, float y_min,
 												float x_max, float y_max,
 												int res,
@@ -81,5 +83,7 @@ public:
 	
 
 };
+
+} // namespace Tracking
 
 #endif

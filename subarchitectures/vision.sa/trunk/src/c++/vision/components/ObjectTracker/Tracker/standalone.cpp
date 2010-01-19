@@ -7,19 +7,12 @@
 #include "Timer.h"
 #include "standalone.hpp"
 
-
-#define EDGE 0
-#define TEXTURE 1
-
-Timer timer;
-
-bool control(Tracker* tracker);
-
 int main(int argc, char *argv[])
 {
 	char modelfilename[32];
 	float likelihood = 0.0;
 	int id = 0;
+	Timer timer;
 	IplImage* img = 0;
 	TrackerModel* model = 0;
 	Camera camera;

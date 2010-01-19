@@ -1,6 +1,8 @@
 
 #include "ModelLoader.h"
 
+using namespace Tracking;
+
 // *** PRIVATE ***
 
 // Tests if property of file is available in list (data structure)

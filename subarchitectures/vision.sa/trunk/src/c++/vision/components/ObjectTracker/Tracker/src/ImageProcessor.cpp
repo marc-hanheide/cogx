@@ -1,81 +1,83 @@
 
 #include "ImageProcessor.h"
 
+using namespace Tracking;
+
 
 // Load and compile shaders and set parameters
 bool ImageProcessor::initShader(){
 	int id;
-    float w = (float)m_width;
-    float h = (float)m_height;
-    float hi,lo;
-    float sq2 = 1.0f/sqrt(2.0f);
-    
-    // offsets of neighbouring pixels in texture coordinates
-    GLfloat offX[9] = { -1.0/w, 0.0, 1.0/w,
-                        -1.0/w, 0.0, 1.0/w,
-                        -1.0/w, 0.0, 1.0/w };
-    GLfloat offY[9] = {  1.0/h, 1.0/h,  1.0/h,
-                         0.0,   0.0,    0.0,
-                        -1.0/h,-1.0/h, -1.0/h };
-    GLfloat dist[9] = { sq2, 1.0, sq2,
-                        1.0, 0.0, 1.0,
-                        sq2, 1.0, sq2 };
-    GLfloat kernel[25] = {	2,  4,  5,  4, 2,
-    						4,  9, 12,  9, 4,
-    						5, 12, 15, 12, 5,
-    						4,  9, 12,  9, 4,
-    						2,  4,  5,  4, 2 };
-    hi = 10.0/22; // = sqrt((3+10+3)^2 + (3+10+3)^2) = 22.6
-    lo = 3.0/22; 
-    GLfloat sobelX[9] = {   -lo, 	0.0, 	lo,
-                            -hi, 	0.0, 	hi,
-                            -lo,  	0.0, 	lo };
-    // dont modify structure of sobelY -> division in sobel.frag
-    GLfloat sobelY[9] = {    lo,	hi,     lo,
-                             0.0,	0.0,	0.0,
-                            -lo,   -hi,	    -lo };
-    
-    // Gauss shader
-    id = g_Resources->AddShader("gauss", NULL, "gauss.frag");
-    m_shadeGauss = g_Resources->GetShader(id);
-    m_shadeGauss->bind();
-    m_shadeGauss->setUniform( "kernel", 25, kernel );
-    m_shadeGauss->setUniform( "width", w);
-    m_shadeGauss->setUniform( "height", h);
-    m_shadeGauss->unbind();
-    
-    // Sobel shader
-    id = g_Resources->AddShader("sobel", NULL, "sobel.frag");
-    m_shadeSobel = g_Resources->GetShader(id);
-    m_shadeSobel->bind();
-    m_shadeSobel->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
-    m_shadeSobel->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
-    m_shadeSobel->setUniform( "mSobelX", mat3(sobelX), GL_FALSE );
-    m_shadeSobel->setUniform( "mSobelY", mat3(sobelY), GL_FALSE );
+	float w = (float)m_width;
+	float h = (float)m_height;
+	float hi,lo;
+	float sq2 = 1.0f/sqrt(2.0f);
+	
+	// offsets of neighbouring pixels in texture coordinates
+	GLfloat offX[9] = { -1.0/w, 0.0, 1.0/w,
+											-1.0/w, 0.0, 1.0/w,
+											-1.0/w, 0.0, 1.0/w };
+	GLfloat offY[9] = {  1.0/h, 1.0/h,  1.0/h,
+												0.0,   0.0,    0.0,
+											-1.0/h,-1.0/h, -1.0/h };
+	GLfloat dist[9] = { sq2, 1.0, sq2,
+											1.0, 0.0, 1.0,
+											sq2, 1.0, sq2 };
+	GLfloat kernel[25] = {	2,  4,  5,  4, 2,
+							4,  9, 12,  9, 4,
+							5, 12, 15, 12, 5,
+							4,  9, 12,  9, 4,
+							2,  4,  5,  4, 2 };
+	hi = 10.0/22; // = sqrt((3+10+3)^2 + (3+10+3)^2) = 22.6
+	lo = 3.0/22; 
+	GLfloat sobelX[9] = {   -lo, 	0.0, 	lo,
+													-hi, 	0.0, 	hi,
+													-lo,  	0.0, 	lo };
+	// dont modify structure of sobelY -> division in sobel.frag
+	GLfloat sobelY[9] = {    lo,	hi,     lo,
+														0.0,	0.0,	0.0,
+													-lo,   -hi,	    -lo };
+	
+	// Gauss shader
+	id = g_Resources->AddShader("gauss", NULL, "gauss.frag");
+	m_shadeGauss = g_Resources->GetShader(id);
+	m_shadeGauss->bind();
+	m_shadeGauss->setUniform( "kernel", 25, kernel );
+	m_shadeGauss->setUniform( "width", w);
+	m_shadeGauss->setUniform( "height", h);
+	m_shadeGauss->unbind();
+	
+	// Sobel shader
+	id = g_Resources->AddShader("sobel", NULL, "sobel.frag");
+	m_shadeSobel = g_Resources->GetShader(id);
+	m_shadeSobel->bind();
+	m_shadeSobel->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
+	m_shadeSobel->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
+	m_shadeSobel->setUniform( "mSobelX", mat3(sobelX), GL_FALSE );
+	m_shadeSobel->setUniform( "mSobelY", mat3(sobelY), GL_FALSE );
 	m_shadeSobel->setUniform( "fThreshold", float(SOBEL_THRESHOLD) );
-    m_shadeSobel->unbind();
-    
-    // Thinning shader
-    id = g_Resources->AddShader("thinning", NULL, "thinning.frag");
-    m_shadeThinning = g_Resources->GetShader(id);
-    m_shadeThinning->bind();
-    m_shadeThinning->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
-    m_shadeThinning->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
-    m_shadeThinning->setUniform( "fThreshold", float(THINNING_THRESHOLD) );
-    m_shadeThinning->unbind();
-    
-    // Spreading shader
-    id = g_Resources->AddShader("spreading", NULL, "spreading.frag");
-    m_shadeSpreading = g_Resources->GetShader(id);
-    m_shadeSpreading->bind();
-    m_shadeSpreading->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
-    m_shadeSpreading->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
-    m_shadeSpreading->setUniform( "mDistance", mat3(dist), GL_FALSE );
-    m_shadeSpreading->setUniform( "fThreshold", float(SPREADING_THRESHOLD) );
-    m_shadeSpreading->setUniform( "fDistScale", float(DISTANCE_SCALING) );
-    m_shadeSpreading->unbind();
-    
-    return true;
+	m_shadeSobel->unbind();
+	
+	// Thinning shader
+	id = g_Resources->AddShader("thinning", NULL, "thinning.frag");
+	m_shadeThinning = g_Resources->GetShader(id);
+	m_shadeThinning->bind();
+	m_shadeThinning->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
+	m_shadeThinning->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
+	m_shadeThinning->setUniform( "fThreshold", float(THINNING_THRESHOLD) );
+	m_shadeThinning->unbind();
+	
+	// Spreading shader
+	id = g_Resources->AddShader("spreading", NULL, "spreading.frag");
+	m_shadeSpreading = g_Resources->GetShader(id);
+	m_shadeSpreading->bind();
+	m_shadeSpreading->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
+	m_shadeSpreading->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
+	m_shadeSpreading->setUniform( "mDistance", mat3(dist), GL_FALSE );
+	m_shadeSpreading->setUniform( "fThreshold", float(SPREADING_THRESHOLD) );
+	m_shadeSpreading->setUniform( "fDistScale", float(DISTANCE_SCALING) );
+	m_shadeSpreading->unbind();
+	
+	return true;
 }
 
 // Display list for normal images (non-rectificating TexCoords)
@@ -189,12 +191,6 @@ ImageProcessor::~ImageProcessor(){
 }
 
 // Set functions
-void ImageProcessor::setSobelThreshold(float t){
-	m_shadeSobel->bind();
-		m_shadeSobel->setUniform( "fThreshold", t );
-	m_shadeSobel->unbind();
-}
-
 void ImageProcessor::setCamOrtho(){ 
 	m_cam_ortho.Activate();
 }
@@ -238,11 +234,11 @@ void ImageProcessor::gauss(Texture* source, Texture* result){
     m_shadeGauss->unbind();
 }
 
-void ImageProcessor::sobel(Texture* source, Texture* result, float thresh, bool norm){
+void ImageProcessor::sobel(Texture* source, Texture* result, float threshold, bool normalise){
 	m_cam_ortho.Activate();
 	m_shadeSobel->bind();
-	m_shadeSobel->setUniform( "fThreshold", thresh );
-	m_shadeSobel->setUniform( "norm", norm);
+	m_shadeSobel->setUniform( "fThreshold", threshold );
+	m_shadeSobel->setUniform( "norm", normalise);
     glEnable(GL_TEXTURE_2D);
 		source->bind();
 		glCallList(m_dlImage);
@@ -284,32 +280,32 @@ void ImageProcessor::render(Texture* tex){
 // Main initialisation function
 bool ImageProcessor::init(int w, int h){
     
-    m_width = w;
-    m_height = h;
+	m_width = w;
+	m_height = h;
+	
+	// Initialise camera
+	m_cam_ortho.Set(	0.0, 0.0, 1.0,
+										0.0, 0.0, 0.0,
+										0.0, 1.0, 0.0,
+										45, w, h,
+										0.1, 10.0,
+										GL_ORTHO);
+	
+	// Initialize shaders
+	if(!initShader())
+		return false;
     
-    // Initialise camera
-    m_cam_ortho.Set(	0.0, 0.0, 1.0,
-											0.0, 0.0, 0.0,
-											0.0, 1.0, 0.0,
-											45, w, h,
-											0.1, 10.0,
-											GL_ORTHO);
-    
-    // Initialize shaders
-    if(!initShader()){
-        return false;
-    }
     
 	// Setup display lists
   m_dlRect = glGenLists(1);
 	m_lensMode = BARREL;
 	glNewList(m_dlRect, GL_COMPILE);
-        dlRectification();
+  	dlRectification();
 	glEndList();
 	
-    m_dlImage = glGenLists(1);
+  m_dlImage = glGenLists(1);
 	glNewList(m_dlImage, GL_COMPILE);
-        dlImage();
+  	dlImage();
 	glEndList();
 	
 	m_dlUpsideDown = glGenLists(1);
@@ -317,6 +313,6 @@ bool ImageProcessor::init(int w, int h){
 		dlFlipUpsideDown();
 	glEndList();
 	
-    return true;
+	return true;
 }
 

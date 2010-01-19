@@ -1,6 +1,8 @@
 
 #include "EdgeTracker.h"
 
+using namespace Tracking;
+
 // *** PRIVATE ***
 
 // Process camera image (gauss, sobel, thinning, spreading, rendering)

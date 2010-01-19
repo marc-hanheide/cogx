@@ -1,6 +1,8 @@
 
 #include "Quaternion.h"
 
+using namespace Tracking;
+
 Quaternion::Quaternion(){
 	x=0.0;
 	y=0.0;

@@ -1,9 +1,10 @@
 
-#ifndef __IMAGE_PROCESSOR_HPP__
-#define __IMAGE_PROCESSOR_HPP__
+#ifndef _IMAGE_PROCESSOR_H_
+#define _IMAGE_PROCESSOR_H_
 
-class ImageProcessor;
-
+namespace Tracking{
+	class ImageProcessor;
+}
 #include "headers.h"
 
 #include "Shader.h"
@@ -20,6 +21,9 @@ class ImageProcessor;
 #define DISTANCE_SCALING 0.75      // distance to edge slope; low -> steep slope
 #define SPREADING_LOOPS 2          // Number of pixels to spread lines
 
+namespace Tracking{
+
+/** @brief class ImageProcessor */
 class ImageProcessor{
 private:
     int m_width;        // Image width in pixels
@@ -29,7 +33,7 @@ private:
     int m_dlUpsideDown; // Display List for flipping image upside down
     int m_lensMode;     // Enumeration for lens rectification algorithm (NONE, BARREL)
     
-    Shader* m_shadeGauss;		// Fragment shader for blurring image using gaussian filter
+    Shader* m_shadeGauss;				// Fragment shader for blurring image using gaussian filter
     Shader* m_shadeSobel;       // Fragment shader for edge detection with sobel algorithm
     Shader* m_shadeThinning;    // Fragment shader for thinning edges
     Shader* m_shadeSpreading;   // Fragment shader for spreading edges
@@ -48,7 +52,6 @@ public:
 	~ImageProcessor();
 
 	// Set functions
-	void setSobelThreshold(float t);
 	void setCamOrtho();
     
 	// Image Processing functions
@@ -56,7 +59,7 @@ public:
 	void copy(Texture* source, Texture* result);
 	void rectification(Texture* source, Texture* result);
 	void gauss(Texture* source, Texture* result);
-	void sobel(Texture* source, Texture* result, float thresh=0.0, bool norm=false);
+	void sobel(Texture* source, Texture* result, float threshold=0.0, bool normalise=false);
 	void thinning(Texture* source, Texture* result);
 	void spreading(Texture* source, Texture* result);
 	void render(Texture* tex);
@@ -65,5 +68,7 @@ public:
 	bool init(int w, int h);
 
 };
+
+} // namespace Tracking
 
 #endif

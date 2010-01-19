@@ -6,8 +6,8 @@
  * @brief Likelihood distribution with GPU likelihood evaluation using comparisson shaders for object tracking.
  * @namespace Tracker
  */
-#ifndef __DISTRIBUTION_H__
-#define __DISTRIBUTION_H__
+#ifndef DISTRIBUTION_H
+#define DISTRIBUTION_H
 
 #include "Particle.h"
 #include "Quaternion.h"
@@ -16,8 +16,7 @@
 #include "Timer.h"
 #include "headers.h"  // stdio.h, stdlib.h, algorithm, gl.h, vector
 
-const unsigned int GAUSS  = 0;
-const unsigned int NORMAL = 1;
+namespace Tracking{
 
 /** @brief typedef ParticleList */
 typedef std::vector<Particle> ParticleList;
@@ -28,8 +27,8 @@ class Distribution
 private:
 	
 	ParticleList m_particlelist;				///< List of particles forming the likelihood distribution
-	vector<unsigned int> queryMatches;	///< OpenGL Occlussion Query for counting matching pixels
-	vector<unsigned int> queryEdges;		///< OpenGL Occlussion Query for counting overall edge pixels
+	std::vector<unsigned int> queryMatches;	///< OpenGL Occlussion Query for counting matching pixels
+	std::vector<unsigned int> queryEdges;		///< OpenGL Occlussion Query for counting overall edge pixels
 	Particle m_meanParticle;						///< Particle representing weighted mean of particle distribution
 	
 	int v_max;								///< Maximum number of  overall edge pixels of current view
@@ -100,6 +99,8 @@ public:
 	void		updateLikelihood(TrackerModel* model, Shader* shadeCompare, bool textured, int power=5, bool showparticles=false);
 
 };
+
+} // namespace Tracking
 
 
 #endif

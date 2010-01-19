@@ -1,6 +1,8 @@
 
 #include "Tracker.h"
 
+using namespace Tracking;
+
 // *** PRIVATE ***
 
 bool Tracker::isReady(unsigned char* image, TrackerModel* model, Camera* camera){
