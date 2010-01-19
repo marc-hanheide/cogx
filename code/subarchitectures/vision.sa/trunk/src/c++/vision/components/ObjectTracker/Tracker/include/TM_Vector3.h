@@ -15,10 +15,14 @@
 #endif
 #define FLOAT_NULL 0.01
 
-class TM_Vector3;
+namespace Tracking{
+	class TM_Vector3;
+}
 
 #include <math.h>
 #include "TM_Matrix3.h"
+
+namespace Tracking{
 
 class TM_Vector3
 {
@@ -55,5 +59,7 @@ public:
 
 // TM_Vector3 funktions
 float Angle(TM_Vector3 a, TM_Vector3 b);
+
+} // namespace Tracking
 
 #endif

@@ -9,6 +9,8 @@
 // ----------------------------------------------------------------------------
 #include "TM_Vector3.h"
 
+using namespace Tracking;
+
 TM_Vector3::TM_Vector3()
 {
 	TM_Vector3(0.0f);

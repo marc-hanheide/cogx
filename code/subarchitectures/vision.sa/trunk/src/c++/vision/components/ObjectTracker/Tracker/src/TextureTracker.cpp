@@ -1,6 +1,9 @@
 
 #include "TextureTracker.h"
 
+using namespace std;
+using namespace Tracking;
+
 // *** PRIVATE ***
 
 // Process camera image (gauss, sobel, thinning, spreading, rendering)
@@ -247,8 +250,6 @@ bool TextureTracker::initInternal(){
   m_shadeTexColorTest->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
   m_shadeTexColorTest->setUniform("kernelsize", 1);
 	m_shadeTexColorTest->unbind();
-	
-	m_ip->setSobelThreshold(0.03);
 	
 	tgMaterial matSilver;
 	matSilver.ambient = vec4(0.19,0.19,0.19,1.0);

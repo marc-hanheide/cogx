@@ -9,6 +9,8 @@
 // ----------------------------------------------------------------------------
 #include "TM_Matrix3.h"
 
+using namespace Tracking;
+
 TM_Matrix3::TM_Matrix3(){
 	for(int i=0; i<9; i++)
 		m[i] = 0.0f;

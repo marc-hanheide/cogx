@@ -1,6 +1,8 @@
 
 #include "Resources.h"
 
+using namespace Tracking;
+
 // *** PRIVATE ***
 
 int Resources::SearchName(NameList* list, const char* filename){

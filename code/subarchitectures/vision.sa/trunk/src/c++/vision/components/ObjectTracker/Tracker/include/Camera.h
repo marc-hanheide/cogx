@@ -11,9 +11,6 @@
 #define CAMERA_H
 
 #include "headers.h"
-
-class Camera;
-
 #include "TM_Vector3.h"
 #include "Frustum.h"
 #include "mathlib.h"
@@ -21,6 +18,7 @@ class Camera;
 #define GL_ORTHO 0
 #define GL_PERSPECTIVE 1
 
+namespace Tracking{
 
 class Camera
 {
@@ -107,5 +105,7 @@ public:
 	void Transform();
 
 };
+
+} // namespace Tracking
 
 #endif

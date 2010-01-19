@@ -14,10 +14,14 @@
 #define PI 3.141592
 #endif
 
-class TM_Matrix3;
+namespace Tracking{
+	class TM_Matrix3;
+}
 
 #include <math.h>
 #include "TM_Vector3.h"
+
+namespace Tracking{
 
 class TM_Matrix3
 {
@@ -42,7 +46,6 @@ public:
 	void transpose();
 };
 
-// TM_Matrix3 funktions
-
+} // namespace Tracking
 
 #endif

@@ -23,6 +23,8 @@
 #define DISTLEN 1000
 #define NUM_SPREAD_LOOPS 5
 
+namespace Tracking{
+
 /** @brief class Tracker*/
 class Tracker{
 protected:
@@ -147,17 +149,19 @@ public:
 	void setDrawParticlesFlag(bool val){ m_showparticles = val; }
 	
 	// Functions for analysing PDF
-	virtual vector<float> getPDFxy(	Particle pose,
-																	float x_min, float y_min,
-																	float x_max, float y_max,
-																	int res,
-																	const char* filename=NULL, const char* filename2=NULL){}
+	virtual std::vector<float> getPDFxy(	Particle pose,
+																				float x_min, float y_min,
+																				float x_max, float y_max,
+																				int res,
+																				const char* filename=NULL, const char* filename2=NULL){}
 	
-	virtual void savePDF(	vector<float> vPDFMap,
+	virtual void savePDF(	std::vector<float> vPDFMap,
 												float x_min, float y_min,
 												float x_max, float y_max,
 												int res,
 												const char* meshfile, const char* xfile){}
 };
+
+} // namespace Tracking
 
 #endif

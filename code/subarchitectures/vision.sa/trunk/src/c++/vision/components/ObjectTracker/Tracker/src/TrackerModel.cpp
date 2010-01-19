@@ -3,6 +3,7 @@
 #include "Resources.h"
 
 using namespace std;
+using namespace Tracking;
 
 // *** PUBLIC ***
 
@@ -168,7 +169,7 @@ void TrackerModel::drawFace(int i){
 // counts pixels of each face
 // if pixels of face are > than in any previouse view
 //   set update flag = true
-vector<int> TrackerModel::getFaceUpdateList(Pose3* p_max, vec3 view, float minTexGrabAngle){
+vector<int> TrackerModel::getFaceUpdateList(Pose* p_max, vec3 view, float minTexGrabAngle){
 	int i, n;
 	vector<int> faceUpdateList;
 	float alpha;
@@ -210,7 +211,7 @@ vector<int> TrackerModel::getFaceUpdateList(Pose3* p_max, vec3 view, float minTe
 	return faceUpdateList;
 }
 
-void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose3* p_max, vec3 view, float minTexGrabAngle){
+void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose* p_max, vec3 view, float minTexGrabAngle){
 	int i,j,k;
 	vec4 texcoords_model;
 	vec4 vertex;

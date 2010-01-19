@@ -1,10 +1,9 @@
 
 #include "Distribution.h"
 
-// PARTICLES
+using namespace Tracking;
 
 // *** private ***
-
 void Distribution::updateQueries(){
 		
 	if(queryMatches.size() == 0){

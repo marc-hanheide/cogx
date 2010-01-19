@@ -11,12 +11,10 @@
 #include <string>
 #include "CDataFile.h"
 
-static const double REAL_ONE  = ((double)1.0);
+using namespace Tracking;
+using namespace std;
 
-// struct Pose3{
-// 	mat3 rot;
-// 	vec3 pos;
-// };
+static const double REAL_ONE  = ((double)1.0);
 
 // *************************************************************************************
 // Parameters
@@ -88,32 +86,6 @@ void fromRotVector(mat3 &m, const vec3& r)
   double angle = axis.normalize();
   fromAngleAxis(m, angle, axis);
 }
-
-// // converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
-// bool convertParticle2Pose(Particle& particle, Pose3& pose){
-// 	mat3 rot;
-// 	vec3 pos;
-// 	
-// 	particle.getPose(rot, pos);
-// 	
-// 	pose.rot = rot;
-// 	pose.pos = pos;
-// 	
-// 	return true;
-// }
-// 
-// // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
-// bool convertPose2Particle(Pose3& pose, Particle& particle){
-// 	mat3 rot;
-// 	vec3 pos;
-// 	
-// 	rot = pose.rot;
-// 	pos = pose.pos;
-// 	
-// 	particle.setPose(rot, pos);
-// 	
-// 	return true;
-// }
 
 // *************************************************************************************
 // Converts Video::CameraParameters from Video::Image of VideoServer to 

@@ -19,6 +19,8 @@
 #define FTOL 0.0001
 #define PIOVER180 PI/180.0
 
+namespace Tracking{
+
 class Quaternion
 {
 private:
@@ -47,5 +49,7 @@ public:
 	void getAxisAngle(vec3 *axis, double *angle);
 
 };
+
+} // namespace Tracker
 
 #endif

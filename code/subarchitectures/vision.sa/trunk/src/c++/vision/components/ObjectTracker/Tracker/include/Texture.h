@@ -4,6 +4,8 @@
 
 #include "headers.h"
 
+namespace Tracking{
+
 class Texture
 {
 private:
@@ -29,5 +31,7 @@ public:
 	
 	
 };
+
+} // namespace Tracking
 
 #endif

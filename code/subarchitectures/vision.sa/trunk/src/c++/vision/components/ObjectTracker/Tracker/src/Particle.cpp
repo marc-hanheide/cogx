@@ -1,6 +1,8 @@
 
 #include "Particle.h"
 
+using namespace Tracking;
+
 Particle::Particle(){
 	Particle(0.0);
 }
