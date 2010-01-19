@@ -166,6 +166,8 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         MAPLAction.__init__(self, name, agents, args, vars, precondition, replan, effect, domain)
         self.add(TypedObject("?duration", types.t_number))
         self.duration = duration
+        for d in self.duration:
+            d.set_scope(self)
 
     def copy(self, newdomain=None):
         a = MAPLAction.copy(self, newdomain)
@@ -194,7 +196,7 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         else:
             variables = []
             
-        action =  MAPLDurativeAction(name, agent, params, variables, None, None, None, None, scope)
+        action =  MAPLDurativeAction(name, agent, params, variables, [], None, None, None, scope)
         
         next.token.check_keyword(":duration")
         action.duration = durative.DurationConstraint.parse(iter(it.get(list, "duration constraint")), action)

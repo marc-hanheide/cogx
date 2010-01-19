@@ -159,6 +159,8 @@ class Writer(object):
         
         if action.precondition:
             strings += self.section(":condition", self.write_condition(action.precondition), parens=False)
+        if action.replan:
+            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
 
         strings += self.section(":effect", self.write_effect(action.effect), parens=False)
 

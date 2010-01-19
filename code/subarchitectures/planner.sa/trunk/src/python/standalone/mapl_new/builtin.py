@@ -17,6 +17,7 @@ equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_object)), Paramete
 
 #numeric predicates
 num_assign = Predicate("assign", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
+num_change = Predicate("change", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
 num_equal_assign = Predicate("=", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)
 
 scale_up = Predicate("scale-up", [Parameter("?f", FunctionType(t_number)), Parameter("?v", t_number)], builtin=True)

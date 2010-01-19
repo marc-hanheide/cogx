@@ -259,7 +259,7 @@ class MacroOp(mapl.scope.Scope):
                     continue
                 
                 atom = copy_atom(find_fact(pnode, svar, val)[0], local_map)
-                print atom.pddl_str()
+                #print atom.pddl_str()
                 if svar in frontier:
                     pairs.append((atom, frontier[svar]))
                 if svar not in written:
