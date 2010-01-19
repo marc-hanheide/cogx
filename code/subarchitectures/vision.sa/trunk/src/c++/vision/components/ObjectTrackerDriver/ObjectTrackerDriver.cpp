@@ -24,8 +24,8 @@ extern "C"
 }
 
 using namespace cast;
-
 using namespace std;
+using namespace Tracking;
 
 void ObjectTrackerDriver::configure(const map<string,string> & _config)
 {
