@@ -27,8 +27,8 @@ namespace cast
 class ObjectTracker : public VideoClient, public ManagedComponent
 {
 private:
-	Tracker* m_tracker;
-  Camera* m_camera;
+	Tracking::Tracker* m_tracker;
+  Tracking::Camera m_camera;
   Timer m_timer;
   Video::Image m_image;
   Parameters m_params;
