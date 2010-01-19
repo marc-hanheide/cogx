@@ -4,7 +4,7 @@ import builtin, predicates, actions, conditions, effects
 from conditions import *
 
 class DurationConstraint(object):
-    def __init__(self, term, timeSpecifier):
+    def __init__(self, term, timeSpecifier="start"):
         self.term = term
         self.timeSpecifier = timeSpecifier
 
@@ -52,15 +52,15 @@ class DurationConstraint(object):
             
         
 class DurativeAction(actions.Action):
-    def __init__(self, name, args, duration, precondition, effect, domain):
-        actions.Action.__init__(self, name, args, precondition, effect, domain)
+    def __init__(self, name, args, duration, precondition, effect, domain, replan=None):
+        actions.Action.__init__(self, name, args, precondition, effect, domain, replan=replan)
         self.add(types.TypedObject("?duration", types.t_number))
         self.duration = duration
-        if self.duration:
-            self.duration.set_scope(self)
+        for d in self.duration:
+            d.set_scope(self)
         
     def copy(self, newdomain=None):
-        a = Action.copy(self, newdomain)
+        a = actions.Action.copy(self, newdomain)
         a.__class__ = DurativeAction
         a.duration = [DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a
@@ -77,7 +77,7 @@ class DurativeAction(actions.Action):
         else:
             params = []
             
-        action =  DurativeAction(name, params, None, None, None, scope)
+        action =  DurativeAction(name, params, [], None, None, scope)
         
         next.token.check_keyword(":duration")
         action.duration = DurationConstraint.parse(iter(it.get(list, "duration constraint")), action)
@@ -187,8 +187,10 @@ class TimedEffect(effects.SimpleEffect):
 
         if first.string != "at":
             scope.predicates.add(builtin.change)
+            scope.predicates.add(builtin.num_change)
             eff = effects.SimpleEffect.parse(it.reset(), scope)
             scope.predicates.remove(builtin.change)
+            scope.predicates.remove(builtin.num_change)
             return eff
 
         timespec = it.get().token
@@ -199,6 +201,7 @@ class TimedEffect(effects.SimpleEffect):
         ops = [builtin.assign, builtin.change]
         if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
             ops += builtin.numeric_ops
+            ops.append(builtin.num_change)
 
         try:
             scope.predicates.add(ops)

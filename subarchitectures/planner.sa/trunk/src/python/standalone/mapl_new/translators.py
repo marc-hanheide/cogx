@@ -10,7 +10,7 @@ from predicates import *
     
 
 class Translator(object):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.depends = []
     def translate(self, entity, **kwargs):
         t0 = time.time()
@@ -47,8 +47,8 @@ class Translator(object):
         return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
     
 class ADLCompiler(Translator):
-    def __init__(self):
-        self.depends = [ModalPredicateCompiler(), ObjectFluentCompiler(), CompositeTypeCompiler()]
+    def __init__(self, **kwargs):
+        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs)]
 
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
@@ -261,8 +261,8 @@ class ObjectFluentNormalizer(Translator):
         return a2
 
 class ObjectFluentCompiler(Translator):
-    def __init__(self):
-        self.depends = [MAPLCompiler(), ObjectFluentNormalizer()]
+    def __init__(self, **kwargs):
+        self.depends = [MAPLCompiler(**kwargs), ObjectFluentNormalizer(**kwargs)]
         
     def translate_condition(self, cond, scope):
         if cond is None:
@@ -382,8 +382,8 @@ class ObjectFluentCompiler(Translator):
         return p2
         
 class ModalPredicateCompiler(Translator):
-    def __init__(self):
-        self.depends = [MAPLCompiler()]
+    def __init__(self, **kwargs):
+        self.depends = [MAPLCompiler(**kwargs)]
         
     def compile_modal_args(self, args, functions):
         func_arg = None
@@ -570,7 +570,7 @@ class ModalPredicateCompiler(Translator):
     
 
 class MAPLCompiler(Translator):
-    def __init__(self, remove_replan=False):
+    def __init__(self, remove_replan=False, **kwargs):
         Translator.__init__(self)
         self.remove_replan = remove_replan
         

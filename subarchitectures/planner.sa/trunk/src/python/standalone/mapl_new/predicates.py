@@ -84,7 +84,7 @@ class Literal(object):
         if scope:
             self.args = scope.lookup(args)
         else:
-            self.args = args
+            self.args = [Term(a) for a in args]
 
     def pddl_str(self, instantiated=True):
         s = "(%s %s)" % (self.predicate.name, " ".join(a.pddl_str(instantiated) for a in self.args))
@@ -178,6 +178,13 @@ class Term(object):
     def __init__(self, *params):
         if len(params) == 1:
             obj = params[0]
+            if isinstance(obj, (ConstantTerm, VariableTerm)):
+                obj = obj.object
+            elif isinstance(obj, FunctionTerm):
+                self.__class__ = FunctionTerm
+                FunctionTerm.__init__(self, obj.function, obj.args)
+                return
+                
             if isinstance(obj, Parameter):
                 if isinstance(obj.type, FunctionType):
                     self.__class__ = FunctionVariableTerm

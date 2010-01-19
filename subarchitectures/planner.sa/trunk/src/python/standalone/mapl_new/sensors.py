@@ -14,6 +14,8 @@ class Sensor(mapl.MAPLAction):
 
     def knowledge_effect(self):
         term = self.get_term()
+        if not term:
+            return None
         return effects.SimpleEffect(mapl.direct_knowledge, [predicates.VariableTerm(self.agents[0]), term])
 
     def is_boolean(self):

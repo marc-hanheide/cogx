@@ -359,31 +359,11 @@ class ContinualAxiomsFF(BasePlanner):
         """
         # very preliminary implementation of the above!
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
-        #action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
         times_actions = enumerate(action_list)  # keep it sequentially for now
         plan = plan_postprocess.make_po_plan(times_actions, task)
-#         nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
-#         for i in xrange(0, len(nodes)-1):
-#             plan.add_node(nodes[i])
-#             link = plans.OrderingConstraint(nodes[i], nodes[i+1])
-#             plan.add_link(link)
-#         if nodes:
-#             plan.add_link(plan.init_node, nodes[0])
-#             plan.add_link(nodes[-1], plan.goal_node)
-#         else:
-#             plan.add_link(plan.init_node, plan.goal_node)
         return plan
 
-    def createPlanNode(self, action, time, task):
-        elmts = action.split()
-        action, args = elmts[0], elmts[1:]
-        actions = dict((a.name,a) for a in itools.chain(task.actions, task.sensors))
-        assert action in actions
-        action_def = actions[action]
-        args = [task[a] for a in args]
-        return plans.PlanNode(action_def, args, time, plans.ActionStatusEnum.EXECUTABLE)
-        
-
+            
 class Downward(BasePlanner):
     """
     """
@@ -392,8 +372,14 @@ class Downward(BasePlanner):
         planning_tmp_dir =  global_vars.config.tmp_dir
         tmp_dir = get_planner_tempdir(planning_tmp_dir)
 
-        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "sas_plan", "stdout.out")]
-        pddl_strs = _task.domain_str(task.PDDLWriter), _task.problem_str(task.PDDLWriter)
+        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "sas_plan", "stdout.out")]
+
+        w = task.FDWriter()
+        dom_str = "\n".join(w.write_domain(_task.mapltask.domain))
+        prob_str = "\n".join(w.write_problem(_task.mapltask))
+        mutex_str = "\n".join(w.write_mutex(w.mutex_groups))
+        pddl_strs = dom_str, prob_str, mutex_str
+        
         for path, content in zip(paths, pddl_strs):
             f = open(path, "w")
             f.write(content)
@@ -402,9 +388,9 @@ class Downward(BasePlanner):
         return paths
 
     def _run(self, input_data, task):
-        domain_path, problem_path, plan_path, stdout_path, tmp_dir = input_data
+        domain_path, problem_path, mutex_path, plan_path, stdout_path, tmp_dir = input_data
         executable = os.path.join(global_vars.src_path, self.executable)
-        cmd = "%(executable)s  %(domain_path)s %(problem_path)s" % locals()
+        cmd = "%(executable)s  %(domain_path)s %(problem_path)s %(mutex_path)s" % locals()
         proc = utils.run_process(cmd, output=stdout_path, error=stdout_path, dir=tmp_dir)
         
 #        stdout_output = utils.run_command(cmd, output=stdout_path)
@@ -557,32 +543,11 @@ class TFD(BasePlanner):
         - negotiation actions --> requests: when and how?
         """
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
-        #action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
-        times_actions = [(a[0], a[1]) for a in action_list]  # keep it sequentially for now
+        times_actions = [(a[0], a[1]) for a in action_list]
         plan = plan_postprocess.make_po_plan(times_actions, task)
-        #nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
-        #for i in xrange(0, len(nodes)-1):
-        #    plan.add_node(nodes[i])
-        #    link = plans.OrderingConstraint(nodes[i], nodes[i+1])
-        #    plan.add_link(link)
-        #if nodes:
-        #    plan.add_link(plan.init_node, nodes[0])
-        #    plan.add_link(nodes[-1], plan.goal_node)
-        #else:
-        #    plan.add_link(plan.init_node, plan.goal_node)
             
         return plan
     
-    def createPlanNode(self, action, time, task):
-        elmts = action.split()
-        action, args = elmts[0], elmts[1:]
-        actions = dict((a.name,a) for a in itools.chain(task.actions, task.sensors))
-        assert action in actions
-        action_def = actions[action]
-        args = [task[a] for a in args]
-        return plans.PlanNode(action_def, args, time, plans.ActionStatusEnum.EXECUTABLE)
-
-
             
 if __name__ == '__main__':    
     assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""

@@ -136,11 +136,11 @@ class Task(object):
         return self.get_plan()
 
     def problem_str(self, writer_class):
-        w = writer_class(mapl.mapl.modal_predicates)
+        w = writer_class()
         return "\n".join(w.write_problem(self.mapltask))
 
     def domain_str(self, writer_class):
-        w = writer_class(mapl.mapl.modal_predicates)
+        w = writer_class()
         return "\n".join(w.write_domain(self._mapldomain))
     
     def load_mapl_domain(self, domain_file):
@@ -166,7 +166,7 @@ class Task(object):
 
 
 class PDDLWriter(mapl.writer.Writer):
-    def __init__(self, modalPredicates):
+    def __init__(self):
         self.compiler = mapl.translators.ADLCompiler()
         #self.compiler = mapl.translators.ModalPredicateCompiler()
         
@@ -180,218 +180,74 @@ class PDDLWriter(mapl.writer.Writer):
         dom = self.compiler.translate(domain)
         return mapl.writer.Writer.write_domain(self, dom)
 
+class TFDWriter(PDDLWriter):
+    def __init__(self):
+        self.compiler = TemporalTranslator()
 
-class TFDWriter(mapl.writer.Writer):
-    def __init__(self, modalPredicates):
-        self.modal = modalPredicates
-
-    def write_type(self, type):
-        if isinstance(type, types.ProxyType):
-            return mapl.writer.Writer.write_type(self, type.effective_type())
-        return mapl.writer.Writer.write_type(self, type)
     
-    def write_term(self, term):
-        if isinstance(term, (predicates.FunctionVariableTerm)) and term.is_instantiated():
-            return self.write_term(term.get_instance())
-        else:
-            return mapl.writer.Writer.write_term(self, term)
+class FDWriter(PDDLWriter):
+    def write_problem(self, problem):
+        t0 = time.time()
+        p2 = self.compiler.translate(problem)
+        self.mutex_groups = self.get_mutex_groups(p2, problem)
+        log.debug("total time for translation: %f", time.time()-t0)
+        return mapl.writer.Writer.write_problem(self, p2)
+
+    def get_mutex_groups(self, prob, oldprob):
+        groups = []
+        for function in oldprob.functions:
+            pred = prob.predicates.get(function.name, function.args+[function.type])
+            fluents_combinations = mapl.state.product(*(prob.get_all_objects(a.type) for a in function.args))
+            for c in fluents_combinations:
+                group = []
+                for v in prob.get_all_objects(function.type):
+                    #print mapl.Literal(pred, c+[v]).pddl_str()
+                    group.append(mapl.Literal(pred, itertools.chain(c, [v])))
+                groups.append(group)
+        return groups
+    
+    def write_mutex(self, mutex_groups):
+        groups = []
+        for g in mutex_groups:
+            strings = []
+            for atom in g:
+                strings.append(self.write_literal(atom))
+            groups += self.section("", strings)
+        return self.section("mutex", groups)
         
-    def write_literal(self, literal):
-        args = []
-        name_elems = [literal.predicate.name]
-        if literal.predicate in self.modal:
-            for arg in literal.args:
-                if isinstance(arg, mapl.predicates.FunctionTerm):
-                    name_elems.append(arg.function.name)
-                    args += arg.args
-                else:
-                    args.append(arg)
-        else:
-            args = literal.args
 
-        argstr = " ".join(map(lambda t: self.write_term(t), args))
-        return "(%s %s)" % ("-".join(name_elems), argstr)
+class TemporalTranslator(mapl.translators.Translator):
+    def __init__(self):
+        self.depends = [mapl.translators.ModalPredicateCompiler(remove_replan=True)]
 
-    def write_predicate(self, pred):
-        return "(%s %s)" % (pred.name, self.write_typelist(pred.args))
-    
-    def write_predicates(self, preds, functions):
-        strings = []
-        for pred in preds:
-            if not pred.builtin:
-                strings.append(self.write_predicate(pred))
+    def translate_action(self, action, domain=None):
 
-        strings.append(";; MAPL-defined predicates")
-        for pred in mapl.predicates.mapl_nonmodal_predicates:
-                strings.append(self.write_predicate(pred))
-                
-        for func in functions:
-            if func.builtin:
-                continue
-            strings.append(";; Function %s" % func.name)
-            for mod in self.modal:
-                args =[]
-                function_match = False
-                for arg in mod.args:
-                    if isinstance(arg.type, types.FunctionType) and func.type.equal_or_subtype_of(arg.type.type):
-                        function_match = True
-                        args += func.args
-                    elif isinstance(arg.type, types.ProxyType):
-                        args.append(types.Parameter(arg.name, func.type))
-                    else:
-                        args.append(arg)
-                if function_match:
-                    pred =  predicates.Predicate("%s-%s" % (mod.name, func.name), args)
-                    strings.append(self.write_predicate(pred))
-
-        return self.section(":predicates", strings)
-
-    def write_durative_action_real(self, name, params, duration, condition, replan, effects):
-        strings = [name]
-        strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
-        strings += self.section(":duration", self.write_durations(duration), parens=False)
-        
-        if condition:
-            strings += self.section(":condition", self.write_condition(condition), parens=False)
-        if replan:
-            strings += self.section(":replan", self.write_condition(replan), parens=False)
-
-        strings += self.section(":effect", self.write_effects(effects), parens=False)
-        return self.section(":durative-action", strings)
-    
-    def write_durative_action(self, action, functions):
-        args = action.agents + action.args + action.vars
-        func_arg, compiled_args = compile_modal_args(args, functions)
-
-        replan = None
-        if action.replan:
-            replan = mapl.conditions.TimedCondition("start", action.replan)
-                    
-        if func_arg is None:
-            return self.write_durative_action_real(action.name, args, action.duration, action.precondition, replan, action.effects)
-        strings=[]
-
-        for f, cargs in compiled_args:
-            action.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
-            strings += self.write_durative_action_real("%s-%s" % (action.name, f.name), cargs, action.duration, condition, replan, action.effects)
-            action.uninstantiate()
-            strings.append("")
-
-        return strings
-    
-    def write_action(self, action, functions):
+        @mapl.visitors.copy
         def effect_visitor(eff, results):
-            if isinstance(eff, mapl.effects.SimpleEffect):
-                if eff.predicate == mapl.predicates.assign:
-                    return mapl.effects.SimpleEffect(mapl.predicates.change, eff.args)
-                else:
-                    return mapl.effects.TimedEffect(eff.predicate, eff.args, "start", eff.negate)
-            elif isinstance(eff, list):
-                return results
-            else:
-                return eff.copy(new_parts = results)
+            if isinstance(eff, mapl.SimpleEffect):
+                if eff.predicate == mapl.assign:
+                    return mapl.SimpleEffect(mapl.builtin.change, eff.args[:])
+                if eff.predicate == mapl.builtin.num_assign:
+                    return mapl.SimpleEffect(mapl.builtin.num_change, eff.args[:])
+                return mapl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
+            if isinstance(eff, mapl.ConditionalEffect):
+                eff2 = mapl.ConditionalEffect(None, results[0])
+                eff2.condition = mapl.durative.TimedCondition("start", eff.condition.copy())
+                return eff2
         
-        condition = None
-        replan = None
-        if action.precondition:
-            condition = mapl.conditions.TimedCondition("start", action.precondition)
+        if isinstance(action, mapl.durative.DurativeAction):
+            return action.copy(newdomain=domain)
+        
+        dc = mapl.durative.DurationConstraint(mapl.Term(1))
+        args = [types.Parameter(p.name, p.type) for p in action.args]
+        a2 = mapl.durative.DurativeAction(action.name, args, [dc], None, None, domain)
+        
         if action.replan:
-            replan = mapl.conditions.TimedCondition("start", action.replan)
-            
-        effects = []
-        for eff in action.effects:
-            effects.append(eff.visit(effect_visitor))
-
-        new = mapl.actions.DurativeAction(action.name, action.agents, action.args, action.vars, None, condition, replan, effects, action.parent)
-        duration_term = mapl.predicates.FunctionTerm(mapl.predicates.eq, ["?duration", 1.0], new)
-        new.duration = [mapl.actions.DurationConstraint(duration_term, None)]
-        return self.write_durative_action(new.copy(), functions)
-    
-    def write_axiom_real(self, name, params, condition):
-        strings = ["(%s %s)" % (name, self.write_typelist(params))]
-        strings += self.write_condition(condition)
-        return self.section(":derived", strings)
-
-    def write_axiom(self, axiom, functions):
-        func_arg, compiled_args = compile_modal_args(axiom.args, functions)
-
-        if func_arg is None:
-            return self.write_axiom_real(axiom.predicate.name, axiom.args, axiom.condition)
-        strings=[]
-
-        for f, cargs in compiled_args:
-            axiom.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
-            strings += self.write_axiom_real("%s-%s" % (axiom.predicate.name, f.name), cargs, axiom.condition)
-            axiom.uninstantiate()
-            strings.append("")
-
-        return strings
-    
-    def write_sensor(self, action):
-        args = action.agents + action.args + action.vars
-        duration = mapl.actions.DurationConstraint(predicates.Term(1.0), None)
+            a2.replan = action.replan.copy(new_scope=a2)
         if action.precondition:
-            condition = mapl.conditions.TimedCondition("all", action.precondition)
-        else:
-            condition = None
-        keff = action.knowledge_effect()
-        teff = [effects.TimedEffect(keff.predicate, keff.args, "end")]
-         
-        return self.write_durative_action_real(action.name, args, [duration], condition, None, teff)
-        
-    def write_domain(self, domain):
-        strings = ["(define (domain %s)" % domain.name]
-        strings.append("")
-        strings.append("(:requirements %s)" % " ".join(map(lambda r: ":"+r, filter(lambda r: r != "mapl", domain.requirements))))
-        strings.append("")
-        strings += self.write_types(domain.types.itervalues())
-        
-        if domain.constants:
-            strings.append("")
-            strings += self.write_objects("constants", domain.constants)
-
-        strings.append("")
-        strings += self.write_predicates(domain.predicates, domain.functions)
-        strings += self.write_functions(domain.functions)
-        
-        for a in domain.axioms:
-            strings.append("")
-            strings += self.write_axiom(a, domain.functions)
-        for s in domain.sensors:
-            strings.append("")
-            strings += self.write_sensor(s)
-        for a in domain.actions:
-            strings.append("")
-            if isinstance(a, mapl.actions.DurativeAction):
-                strings += self.write_durative_action(a, domain.functions)
-            else:
-                strings += self.write_action(a, domain.functions)
-
-        strings.append("")
-        strings.append(")")
-        return strings
-
-def compile_modal_args(args, functions):
-    func_arg = None
-    funcs = []
-    pref = []
-    suff = []
-
-    for a in args:
-        if isinstance(a.type, types.FunctionType):
-            func_arg = a
-            for func in functions:
-                if func.builtin or not func.type.equal_or_subtype_of(a.type.type):
-                    continue
-                funcs.append(func)
-        else:
-            if func_arg:
-                suff.append(a)
-            else:
-                pref.append(a)
+            a2.precondition = mapl.durative.TimedCondition("start", action.precondition.copy(new_scope=a2))
             
-    compiled = []
-    for f in funcs:
-        compiled.append((f, pref + f.args + suff))
-        
-    return func_arg, compiled
+        a2.effect = action.effect.visit(effect_visitor)
+        a2.effect.set_scope(a2)
+            
+        return a2
