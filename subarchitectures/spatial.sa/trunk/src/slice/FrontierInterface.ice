@@ -65,6 +65,15 @@ module FrontierInterface {
     CellSeq data;
   };
 
+  struct ObservedPlaneObject
+  {
+    int id;
+    double x;
+    double y;
+    double angle;
+    double height;
+  };
+
   struct PlaceMembership
   {
     int placeID;
