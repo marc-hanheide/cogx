@@ -189,6 +189,9 @@ protected:
   Robotbase::RobotbaseServerPrx m_RobotServer;
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
+  //For keeping track of when the robot is moving (to filter planes)
+  double m_standingStillThreshold;
+  cast::cdl::CASTTime m_lastTimeMoved;
 
 private:
   void receiveScan2d(const Laser::Scan2d &castScan);

@@ -41,6 +41,7 @@ extern "C" {
 
 LocalMapManager::LocalMapManager()
 {
+  m_standingStillThreshold = 0.2;
   m_RobotServerHost = "localhost";
 }
 
@@ -324,12 +325,31 @@ void LocalMapManager::runComponent()
 
 void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+  double oldX = lastRobotPose->x;
+  double oldY = lastRobotPose->y;
+  double oldTheta = lastRobotPose->theta;
+  cast::cdl::CASTTime oldTime = lastRobotPose->time;
+
   try {
     lastRobotPose =
       getMemoryEntry<NavData::RobotPose2d>(objID.address);
   }
   catch (DoesNotExistOnWMException e) {
     log("Error! robotPose missing on WM!");
+  }
+
+  double distMoved = sqrt((oldX - lastRobotPose->x)*(oldX - lastRobotPose->x) +
+    (oldY - lastRobotPose->y)*(oldY - lastRobotPose->y));
+  double angleShift = lastRobotPose->theta - oldTheta;
+  if (angleShift > M_PI) angleShift -= 2*M_PI;
+  if (angleShift < -M_PI) angleShift += 2*M_PI;
+  distMoved += abs(angleShift)*1.0;
+  double deltaT = lastRobotPose->time.s - oldTime.s +
+    (lastRobotPose->time.us - oldTime.us)*0.000001;
+  double momVel = deltaT > 0 ? distMoved/deltaT : 0.0;
+
+  if (momVel > m_standingStillThreshold || deltaT < 0) {
+    m_lastTimeMoved = lastRobotPose->time;
   }
 
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
@@ -344,6 +364,7 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
+
 }
 
 void LocalMapManager::receiveOdometry(const Robotbase::Odometry &castOdom)
@@ -712,94 +733,102 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
     VisionData::ConvexHullPtr oobj =
       getMemoryEntry<VisionData::ConvexHull>(objID.address);
 
-    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
-    Cure::Transformation3D cam2WorldTrans =
-      getCameraToWorldTransform();
-    double tmp[6];
-    cam2WorldTrans.getCoordinates(tmp);
-    log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-	tmp[4], tmp[5]);
+    // Check if the robot has been still long enough
+    double stopTime = oobj->time.s + 0.000001*oobj->time.us -
+      (m_lastTimeMoved.s + 0.000001*m_lastTimeMoved.us);
+    log ("Been stopped for %f seconds", stopTime);
 
-    //Convert hull to world coords
-    for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
-      Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
-      Cure::Vector3D to;
-      cam2WorldTrans.invTransform(from, to);
-      //    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
-      oobj->PointsSeq[i].x = to.X[0];
-      oobj->PointsSeq[i].y = to.X[1];
-      oobj->PointsSeq[i].z = to.X[2];
-      //    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
-    }
-    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
-    Cure::Vector3D to;
-    cam2WorldTrans.invTransform(from, to);
-    oobj->center.x = to.X[0];
-    oobj->center.y = to.X[1];
-    oobj->center.z = to.X[2];
-    cam2WorldTrans.getCoordinates(tmp);
+    if (stopTime > 1.0) {
 
+      //    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
+      Cure::Transformation3D cam2WorldTrans =
+	getCameraToWorldTransform();
+      double tmp[6];
+      cam2WorldTrans.getCoordinates(tmp);
+      log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+	  tmp[4], tmp[5]);
 
-    // Filter polygons that are not horizontal planes
-    // Find average normal
-    Cure::Vector3D avgNormal;
-    double avgZ = 0.0;
-
-    for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
-      unsigned int lasti = (i == 0 ? oobj->PointsSeq.size()-1 : i-1);
-      unsigned int nexti = (i == oobj->PointsSeq.size()-1 ? 0 : i+1);
-
-      Cure::Vector3D edge1(oobj->PointsSeq[nexti].x-oobj->PointsSeq[i].x,
-	  oobj->PointsSeq[nexti].y-oobj->PointsSeq[i].y,
-	  oobj->PointsSeq[nexti].z-oobj->PointsSeq[i].z);
-      Cure::Vector3D edge2(oobj->PointsSeq[lasti].x-oobj->PointsSeq[i].x,
-	  oobj->PointsSeq[lasti].y-oobj->PointsSeq[i].y,
-	  oobj->PointsSeq[lasti].z-oobj->PointsSeq[i].z);
-      Cure::Vector3D normal = edge1.cross(edge2);
-      normal /= normal.magnitude();
-      avgNormal += normal;
-      avgZ += oobj->PointsSeq[i].z / oobj->PointsSeq.size();
-    }
-    if (avgNormal.magnitude() != 0.0) {
-      avgNormal /= avgNormal.magnitude();
-
-      if (avgNormal.getZ() < 0.95 && avgNormal.getZ() > -0.95) {
-	log("Rejecting polygon: Z component of normal %f", avgNormal.getZ());
-	return;
+      //Convert hull to world coords
+      for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
+	Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+	Cure::Vector3D to;
+	cam2WorldTrans.invTransform(from, to);
+	//    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+	oobj->PointsSeq[i].x = to.X[0];
+	oobj->PointsSeq[i].y = to.X[1];
+	oobj->PointsSeq[i].z = to.X[2];
+	//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
       }
+      //    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
+      //    Cure::Vector3D to;
+      //    cam2WorldTrans.invTransform(from, to);
+      //    oobj->center.x = to.X[0];
+      //    oobj->center.y = to.X[1];
+      //    oobj->center.z = to.X[2];
+      //    cam2WorldTrans.getCoordinates(tmp);
 
-      if (avgZ < 0.10) {
-	log("Rejecting polygon: average Z coordinate is %f < 0.10",
-	    avgZ);
-	return;
+
+      // Filter polygons that are not horizontal planes
+      // Find average normal
+      Cure::Vector3D avgNormal;
+      double avgZ = 0.0;
+
+      for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
+	unsigned int lasti = (i == 0 ? oobj->PointsSeq.size()-1 : i-1);
+	unsigned int nexti = (i == oobj->PointsSeq.size()-1 ? 0 : i+1);
+
+	Cure::Vector3D edge1(oobj->PointsSeq[nexti].x-oobj->PointsSeq[i].x,
+	    oobj->PointsSeq[nexti].y-oobj->PointsSeq[i].y,
+	    oobj->PointsSeq[nexti].z-oobj->PointsSeq[i].z);
+	Cure::Vector3D edge2(oobj->PointsSeq[lasti].x-oobj->PointsSeq[i].x,
+	    oobj->PointsSeq[lasti].y-oobj->PointsSeq[i].y,
+	    oobj->PointsSeq[lasti].z-oobj->PointsSeq[i].z);
+	Cure::Vector3D normal = edge1.cross(edge2);
+	normal /= normal.magnitude();
+	avgNormal += normal;
+	avgZ += oobj->PointsSeq[i].z / oobj->PointsSeq.size();
       }
+      if (avgNormal.magnitude() != 0.0) {
+	avgNormal /= avgNormal.magnitude();
 
-      // Paint the polygon in the grid map
+	if (avgNormal.getZ() < 0.95 && avgNormal.getZ() > -0.95) {
+	  log("Rejecting polygon: Z component of normal %f", avgNormal.getZ());
+	  return;
+	}
 
-      log("Painting polygon");
-      PaintPolygon(oobj->PointsSeq);
+	if (avgZ < 0.10) {
+	  log("Rejecting polygon: average Z coordinate is %f < 0.10",
+	      avgZ);
+	  return;
+	}
 
-      for (int x = -m_planeObstacleMap->getSize(); x <= m_planeObstacleMap->getSize(); x++) {
-	for (int y = -m_planeObstacleMap->getSize(); y <= m_planeObstacleMap->getSize(); y++) {
-	  PlaneList &planeList = (*m_planeMap)(x,y).planes;
-	  for (PlaneList::iterator it = planeList.begin();
-	      it != planeList.end(); it++) {
-	    if (it->second > 4.0) {
-	      (*m_planeObstacleMap)(x,y) = '1';
-	      break;
+	// Paint the polygon in the grid map
+
+	log("Painting polygon");
+	PaintPolygon(oobj->PointsSeq);
+
+	for (int x = -m_planeObstacleMap->getSize(); x <= m_planeObstacleMap->getSize(); x++) {
+	  for (int y = -m_planeObstacleMap->getSize(); y <= m_planeObstacleMap->getSize(); y++) {
+	    PlaneList &planeList = (*m_planeMap)(x,y).planes;
+	    for (PlaneList::iterator it = planeList.begin();
+		it != planeList.end(); it++) {
+	      if (it->second > 4.0) {
+		(*m_planeObstacleMap)(x,y) = '1';
+		break;
+	      }
 	    }
 	  }
 	}
       }
+
+      if (m_DisplayPlaneMap) {
+	Cure::Pose3D currentPose = m_TOPP.getPose();
+	m_DisplayPlaneMap->updateDisplay(&currentPose);
+      }
+
+
+      //m_planeMap->print(std::cout);
     }
-
-    if (m_DisplayPlaneMap) {
-      Cure::Pose3D currentPose = m_TOPP.getPose();
-      m_DisplayPlaneMap->updateDisplay(&currentPose);
-    }
-
-
-    //m_planeMap->print(std::cout);
   }
 }
 
