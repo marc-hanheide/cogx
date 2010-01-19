@@ -24,6 +24,7 @@ extern "C"
 using namespace cast;
 using namespace std;
 using namespace VisionData;
+using namespace Tracking;
 
 
 ObjectTracker::ObjectTracker(){
@@ -228,13 +229,8 @@ void ObjectTracker::initTracker(const Video::Image &image){
   // initialize SDL screen
   g_Resources->InitScreen(m_ImageWidth, m_ImageHeight, "ObjectTracker");
 
-  // initialize camera
-  if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
-  	m_running = false;
-  m_camera = g_Resources->GetCamera(id);
-
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
-  loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
+  loadCameraParameters(&m_camera, image.camPars, 0.1, 10.0);
 	
 	if(m_params.mode==1)
 		m_tracker = new TextureTracker();
@@ -249,7 +245,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
 		log("  error: initialisation of tracker failed!");
 		m_running = false;
 	}
-	m_tracker->setCamPerspective(m_camera);
+	m_tracker->setCamPerspective(&m_camera);
   
   log("... initialisation successfull!");
 }
@@ -300,7 +296,7 @@ void ObjectTracker::initTrackingEntry(int i){
 	m_trackinglist[i].model->Update();
 	//m_trackinglist[i].model->print();
 
-	m_trackinglist[i].camera = m_camera;
+	m_trackinglist[i].camera = &m_camera;
 	m_trackinglist[i].constraints = m_params.constraints;
 	convertPose2Particle(m_trackinglist[i].obj->pose, m_trackinglist[i].detectpose);
 	m_trackinglist[i].trackpose = m_trackinglist[i].detectpose;
@@ -324,12 +320,12 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	dTimeStamp = m_timer.GetApplicationTime();
 
 	if(m_testmode){
-		m_camera->Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
-										0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
-										0.0, 1.0, 0.0,											// Up vector (y-axis)
-										45, image.width, image.height,		  // field of view angle, image width and height
-										0.1, 10.0,													// camera z-clipping planes (far, near)
-										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
+		m_camera.Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
+									0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
+									0.0, 1.0, 0.0,											// Up vector (y-axis)
+									45, image.width, image.height,		  // field of view angle, image width and height
+									0.1, 10.0,													// camera z-clipping planes (far, near)
+									GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	}
 
 	m_tracker->image_processing((unsigned char*)(&image.data[0]));

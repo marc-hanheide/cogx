@@ -13,14 +13,14 @@ public:
 	bool textured;
 	int recursions;
 	int particles;
-	Tracker* tracker;
-	TrackerModel* model;
-	Camera* camera;
+	Tracking::Tracker* tracker;
+	Tracking::TrackerModel* model;
+	Tracking::Camera* camera;
 	VisionData::VisualObjectPtr obj;
 	cast::cdl::WorkingMemoryAddress castWMA;
-	Particle constraints;
-	Particle detectpose;
-	Particle trackpose;
+	Tracking::Particle constraints;
+	Tracking::Particle detectpose;
+	Tracking::Particle trackpose;
 	
 	TrackingEntry(){
 		valid = false;

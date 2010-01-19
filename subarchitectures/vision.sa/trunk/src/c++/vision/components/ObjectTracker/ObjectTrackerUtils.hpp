@@ -16,7 +16,7 @@ using namespace Math;
 
 
 struct Parameters{
-	Particle 						constraints;
+	Tracking::Particle 						constraints;
 	
 	int									mode;
 	int 								recursions;
@@ -32,7 +32,7 @@ struct Parameters{
 };
 
 // converts a VisionData::GeometryModel to a Tracker Model
-bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
+bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerModel* model){
 	unsigned int i;
 	
 	// Check if model structure is empty
@@ -42,7 +42,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	}
 
 	// Parse through vertices and store content in Model
-	Model::Vertex v;
+	Tracking::TrackerModel::Vertex v;
 	for(i=0; i<geom->vertices.size(); i++){
 		v.pos.x = geom->vertices[i].pos.x;
 		v.pos.y = geom->vertices[i].pos.y;
@@ -57,7 +57,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	}
 	
 	// Parse through faces and store content in Model
-	Model::Face f;
+	Tracking::TrackerModel::Face f;
 	for(i=0; i<geom->faces.size(); i++){	
 		f.v = geom->faces[i].vertices;
 		model->m_facelist.push_back(f);
@@ -77,7 +77,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 }
 
 // converts a Tracker Model to a VisionData::GeometryModel
-bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
+bool convertTrackerModel(Tracking::TrackerModel* model, VisionData::GeometryModelPtr geom){
 	unsigned int i;
 	
 	if(!model){
@@ -112,11 +112,11 @@ bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
 }
 
 // converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
-bool convertParticle2Pose(Particle& particle, Pose3& pose){
+bool convertParticle2Pose(Tracking::Pose& trPose, Pose3& pose){
 	mat3 rot;
 	vec3 pos;
 	
-	particle.getPose(rot, pos);
+	trPose.getPose(rot, pos);
 	
 	pose.rot.m00 = rot[0]; pose.rot.m01 = rot[1]; pose.rot.m02 = rot[2];
 	pose.rot.m10 = rot[3]; pose.rot.m11 = rot[4]; pose.rot.m12 = rot[5];
@@ -130,7 +130,7 @@ bool convertParticle2Pose(Particle& particle, Pose3& pose){
 }
 
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
-bool convertPose2Particle(Pose3& pose, Particle& particle){
+bool convertPose2Particle(Pose3& pose, Tracking::Pose& trPose){
 	mat3 rot;
 	vec3 pos;
 	
@@ -142,7 +142,7 @@ bool convertPose2Particle(Pose3& pose, Particle& particle){
 	pos.y = pose.pos.y;
 	pos.z = pose.pos.z;
 
-	particle.setPose(rot, pos);
+	trPose.setPose(rot, pos);
 	
 	return true;
 }
@@ -160,7 +160,7 @@ cdl::CASTTime convertTime(double time_sec){
 // Converts Video::CameraParameters from Video::Image of VideoServer to 
 // Extrinsic- and Intrinsic- Matrix of OpenGL
 // zNear and zFar describe the near and far z values of the clipping plane
-void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float zNear, float zFar){
+void loadCameraParameters(Tracking::Camera* camera, Video::CameraParameters camPars, float zNear, float zFar){
 	// intrinsic parameters
 	// transform the coordinate system of computer vision to OpenGL 
 	//   Vision: origin is in the up left corner, x-axis pointing right, y-axis pointing down
@@ -220,18 +220,18 @@ Parameters LoadParametersFromINI(const char* filename){
 	cdfParams.Load(filename);
 	
 	// Constraints
-	params.constraints.r.x 	= cdfParams.GetFloat("r.x", "Constraints") * PIOVER180;
-	params.constraints.r.y 	= cdfParams.GetFloat("r.y", "Constraints") * PIOVER180;
-	params.constraints.r.z 	= cdfParams.GetFloat("r.z", "Constraints") * PIOVER180;
+// 	params.constraints.r.x 	= cdfParams.GetFloat("r.x", "Constraints") * PIOVER180;
+// 	params.constraints.r.y 	= cdfParams.GetFloat("r.y", "Constraints") * PIOVER180;
+// 	params.constraints.r.z 	= cdfParams.GetFloat("r.z", "Constraints") * PIOVER180;
 	params.constraints.rp.x = cdfParams.GetFloat("rp.x", "Constraints");
 	params.constraints.rp.y = cdfParams.GetFloat("rp.y", "Constraints");
 	params.constraints.rp.z = cdfParams.GetFloat("rp.z", "Constraints");
-	params.constraints.s.x 	= cdfParams.GetFloat("s.x", "Constraints");
-	params.constraints.s.y 	= cdfParams.GetFloat("s.y", "Constraints");
-	params.constraints.s.z 	= cdfParams.GetFloat("s.z", "Constraints");
-	params.constraints.sp.x = cdfParams.GetFloat("sp.x", "Constraints");
-	params.constraints.sp.y = cdfParams.GetFloat("sp.y", "Constraints");
-	params.constraints.sp.z = cdfParams.GetFloat("sp.z", "Constraints");
+	params.constraints.t.x 	= cdfParams.GetFloat("s.x", "Constraints");
+	params.constraints.t.y 	= cdfParams.GetFloat("s.y", "Constraints");
+	params.constraints.t.z 	= cdfParams.GetFloat("s.z", "Constraints");
+	params.constraints.tp.x = cdfParams.GetFloat("sp.x", "Constraints");
+	params.constraints.tp.y = cdfParams.GetFloat("sp.y", "Constraints");
+	params.constraints.tp.z = cdfParams.GetFloat("sp.z", "Constraints");
 	params.constraints.z 		= cdfParams.GetFloat("z", "Constraints");	
 	params.constraints.zp 	= cdfParams.GetFloat("zp", "Constraints");
 	
