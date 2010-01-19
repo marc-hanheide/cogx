@@ -356,7 +356,7 @@ class ObjectFluentCompiler(Translator):
         predicates = scope.FunctionTable(predicates)
         for p in _domain.predicates:
             predicates.add(p)
-            
+
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), predicates, scope.FunctionTable(), [], [])
         dom.requirements = _domain.requirements.copy()
         dom.requirements.discard("object-fluents")
@@ -503,7 +503,7 @@ class ModalPredicateCompiler(Translator):
             if pred not in numeric_ops + assignment_ops and any(isinstance(a.type, types.FunctionType) for a in pred.args):
                 modal.append(pred)
             else:
-                nonmodal.append
+                nonmodal.append(pred)
         if not modal:
             return _domain.copy()
 
@@ -553,7 +553,7 @@ class ModalPredicateCompiler(Translator):
 
         def cond_visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
-                return self.translate_literal(cond, scope)
+                return self.translate_literal(cond, p2)
             else:
                 return cond.copy(new_parts=results)
 
@@ -646,7 +646,7 @@ class MAPLCompiler(Translator):
                             p2.init.append(effects.SimpleEffect(i_indomain, e.args, scope=p2))
                         else:
                             p2.init.append(e.copy(new_scope=p2))
-            else:
+            elif i.args[-1] != builtin.UNKNOWN:
                 p2.init.append(i.copy(new_scope=p2))
 
         return p2

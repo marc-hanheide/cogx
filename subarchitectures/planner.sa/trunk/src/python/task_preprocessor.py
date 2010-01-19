@@ -149,7 +149,7 @@ def infer_types(obj_descriptions):
       ftypes.append(declaration.type)
 
       #only consider this function if the basic value types (object, boolean, number) match
-      if len(args) == len(ftypes) and all(map(lambda t, a: t.equalOrSubtypeOf(a.type), ftypes, args)):
+      if len(args) == len(ftypes) and all(map(lambda t, a: t.equal_or_subtype_of(a.type), ftypes, args)):
         for arg, type in zip(args, ftypes):
           constraints[arg].add(type)
         #print "Inferring: %s is instance of %s because of use in %s" % (name, nametype, declaration)
@@ -157,7 +157,7 @@ def infer_types(obj_descriptions):
         
   objects = set()
   for obj in constraints:
-    if obj in (pddl.UNKNOWN, pddl.UNDEFINED) or obj in current_domain:
+    if obj == pddl.UNKNOWN or obj in current_domain:
       #don't change any constants
       continue
       

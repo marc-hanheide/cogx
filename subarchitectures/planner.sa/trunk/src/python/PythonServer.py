@@ -6,7 +6,7 @@ import autogen.Planner as Planner
 import binder.autogen.core
 import cast.core
 from standalone import pddl, plans
-import standalone.pddl import state
+from standalone.pddl import state
 
 
 this_path = abspath(dirname(__file__))
@@ -72,14 +72,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     import task_preprocessor
     task = task_preprocessor.generate_mapl_task(task_desc, TEST_DOMAIN_FN)
     self.tasks[task_desc.id] = task
-    task.set_plan_callback(lambda task: self.getPlan(task))
 
     self.planner.register_task(task)
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
     task.replan()
+    self.deliver_plan(task)
     
-  def getPlan(self, task):    
+  def deliver_plan(self, task):    
     if task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
       self.getClient().updateStatus(task.taskID, Planner.Completion.FAILED);
       return
@@ -97,9 +97,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #plan = task_preprocessor.map2binder_rep(plan, task)
     print "The following plan was found:\n", plan
 
-    dot_str = plan.to_dot()
+    G = plan.to_dot()
     dot_fn = abspath(join(this_path, "plan%d.dot" % task.taskID))
-    open(dot_fn, "w").write(dot_str)
+    G.write(dot_fn)
     print "Dot file for plan is stored in", dot_fn
     
     if self.show_dot:
@@ -107,7 +107,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       show_dot_script = abspath(join(this_path, "show_dot.sh"))
       os.system("%s %s" % (show_dot_script, dot_fn)) 
     
-    ordered_plan = plan.topological_sort(include_depths=False)
+    ordered_plan = plan.topological_sort()
     outplan = []
     first_action = -1
     for i,pnode in enumerate(ordered_plan):
@@ -185,7 +185,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     print_state_difference(task.get_state(), state.State(facts))
 
-    newtask = pddl.mapl.MALProblem(task.mapltask.name, objects, [], None, task._mapldomain)
+    newtask = pddl.mapl.MAPLProblem(task.mapltask.name, objects, [], None, task._mapldomain)
 
     #check if the goal is still valid
     try:
@@ -201,6 +201,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
     task.replan()
+    self.deliver_plan(task)
 
 def print_state_difference(state1, state2):
   def collect_facts(state):
