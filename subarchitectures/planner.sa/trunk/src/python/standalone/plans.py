@@ -14,7 +14,7 @@ import copy
 import networkx
 import graph
 import constants
-import mapl_new as mapl
+import pddl
 from utils import Enum
 
 ActionStatusEnum = Enum("EXECUTABLE", "IN_PROGRESS", "EXECUTED", "FAILED")    
@@ -209,7 +209,7 @@ class MAPLPlan(networkx.MultiDiGraph):
             if n.action.replan:
                 attrs["shape"] = "box"
                 attrs["style"] += ", rounded, dashed"
-            elif isinstance(n.action, mapl.sensors.Sensor):
+            elif isinstance(n.action, pddl.sensors.Sensor):
                 attrs["shape"] = "box"
                 attrs["style"] += ", rounded"
                 

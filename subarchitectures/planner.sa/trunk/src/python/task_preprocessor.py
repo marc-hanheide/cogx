@@ -4,8 +4,8 @@ import re
 from string import maketrans
 
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
-import standalone.mapl_new as mapl
-import standalone.mapl_new.state as state
+from standalone import pddl
+from standalone.pddl import state
 import binder.autogen
 import binder.autogen.specialentities as specialentities
 import binder.autogen.featvalues as featvalues
@@ -47,24 +47,24 @@ def feature_val_to_object(fval):
     if fval.val in current_domain:
       return current_domain[fval.val]
     if fval.val == "unknown":
-      return mapl.types.UNKNOWN
+      return pddl.UNKNOWN
     
-    return mapl.types.TypedObject(fval.val, mapl.types.objectType)
+    return pddl.TypedObject(fval.val, pddl.t_object)
   
   elif fval.__class__ == featvalues.AddressValue:
     #todo: how to support address values sensibly?
-    return mapl.types.TypedObject(fval.val, mapl.types.objectType)
+    return pddl.TypedObject(fval.val, pddl.t_object)
   
   elif fval.__class__ == featvalues.IntegerValue:
-    return mapl.types.TypedObject(fval.val, mapl.types.numberType)
+    return pddl.TypedObject(fval.val, pddl.t_number)
   
   elif fval.__class__ == featvalues.BooleanValue:
     if fval.val:
-      return mapl.types.TRUE
-    return mapl.types.FALSE
+      return pddl.TRUE
+    return pddl.FALSE
   
   elif fval.__class__ == featvalues.UnknownValue:
-    return mapl.types.UNKNOWN
+    return pddl.UNKNOWN
 
   assert False, "Unknown feature type: %s" % fval.__class__
 
@@ -87,7 +87,7 @@ def gen_fact_tuples(unions):
         
     else:
       name = union.entityID
-      object = mapl.types.TypedObject(name, mapl.types.objectType)
+      object = pddl.TypedObject(name, pddl.t_object)
       
       for feature in union.features:
         # choose feature val with highest probability:
@@ -157,7 +157,7 @@ def infer_types(obj_descriptions):
         
   objects = set()
   for obj in constraints:
-    if obj in (mapl.types.UNKNOWN, mapl.types.UNDEFINED) or obj in current_domain:
+    if obj in (pddl.UNKNOWN, pddl.UNDEFINED) or obj in current_domain:
       #don't change any constants
       continue
       
@@ -198,13 +198,13 @@ def generate_mapl_task(task_desc, domain_fn):
 
   facts = list(tuples2facts(obj_descriptions))
 
-  problem = mapl.problem.Problem("cogxtask", objects, [], None, task._mapldomain)
+  problem = pddl.mapl.MAPLProblem("cogxtask", objects, [], None, task._mapldomain)
   try:
     goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
-    problem.goal = mapl.parser.Parser.parse_as(goalstrings, mapl.conditions.Condition, problem)
+    problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
     print "goal:",problem.goal
-  except mapl.parser.ParseError:
-    problem.goal = mapl.conditions.Falsity()
+  except pddl.parser.ParseError:
+    problem.goal = pddl.conditions.Falsity()
 
   task._mapltask = problem
   task.set_state(state.State(facts, problem))

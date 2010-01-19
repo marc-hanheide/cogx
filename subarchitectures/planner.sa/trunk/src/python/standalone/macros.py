@@ -2,9 +2,8 @@ from collections import defaultdict
 import itertools
 import config
 
-import mapl_new as mapl
-import mapl_new.state as state
-import mapl_new.visitors as visitors
+import pddl
+from pddl import state, visitors, mapl
 import plans
 import assertions
 
@@ -14,9 +13,9 @@ ATOM_DISABLED = 1
 ATOM_ENABLED = 2
 ATOM_ALL = ATOM_ENABLED | ATOM_DISABLED
 
-class MacroOp(mapl.scope.Scope):
+class MacroOp(pddl.scope.Scope):
     def __init__(self, name, agent_param, args, pre, eff, domain):
-        mapl.scope.Scope.__init__(self, args + [agent_param], domain)
+        pddl.scope.Scope.__init__(self, args + [agent_param], domain)
         self.name = name
         self.agent = agent_param
         self.args = args
@@ -62,15 +61,15 @@ class MacroOp(mapl.scope.Scope):
     @staticmethod
     def parse(it, scope):
         it.get(":macro")
-        action = mapl.mapl.MAPLAction.parse(iter(it.get(list, "action definition")), scope)
+        action = mapl.MAPLAction.parse(iter(it.get(list, "action definition")), scope)
         macro = MacroOp.from_action(action, scope)
 
         costs = -1
         freq = -1
 
-        ops = [mapl.assign]
+        ops = [pddl.assign]
         if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
-            ops += mapl.numeric_ops
+            ops += pddl.numeric_ops
 
         scope.predicates.add(ops)
         
@@ -83,7 +82,7 @@ class MacroOp(mapl.scope.Scope):
                 try:
                     value = float(val.string)
                 except:
-                    raise mapl.parser.UnexpectedTokenError(val, "number")
+                    raise pddl.parser.UnexpectedTokenError(val, "number")
 
                 if first.token.string == ":usecount":
                     macro.usecount = int(value)
@@ -92,9 +91,9 @@ class MacroOp(mapl.scope.Scope):
                 elif first.token.string == ":costs":
                     macro.costs = int(value)
             else:
-                atom = mapl.predicates.Literal.parse(iter(first), macro)
+                atom = pddl.Literal.parse(iter(first), macro)
                 if atom not in macro.Q:
-                    raise mapl.parser.ParseError(first.token, "Unknown atom: %s" % str(atom))
+                    raise pddl.parser.ParseError(first.token, "Unknown atom: %s" % str(atom))
                 state = int(j.get().token.string)
                 count = int(j.get().token.string)
                 val = float(j.get().token.string)
@@ -120,11 +119,11 @@ class MacroOp(mapl.scope.Scope):
         indomain = {}
         candidates = set()
         for pre in self.pre:
-            if pre.predicate == mapl.mapl.knowledge:
+            if pre.predicate == mapl.knowledge:
                 term = pre.args[1]
                 kval[term] = pre
                 candidates.add(term)
-            if pre.predicate == mapl.mapl.indomain:
+            if pre.predicate == mapl.indomain:
                 term = pre.args[0]
                 indomain[term] = pre
                 candidates.add(term)
@@ -134,16 +133,16 @@ class MacroOp(mapl.scope.Scope):
                 self.pre.remove(kval[term])
                 self.pre.remove(indomain[term])
                 val = indomain[term].args[1]
-                new = mapl.conditions.LiteralCondition(mapl.equals, [term, val], self)
+                new = pddl.LiteralCondition(pddl.equals, [term, val], self)
                 self.pre.append(new)
 
     @staticmethod
     def from_action(action, domain):
         @visitors.collect
         def fact_collector(elem, results):
-            if isinstance(elem,  mapl.Literal):
+            if isinstance(elem,  pddl.Literal):
                 return elem
-            if not isinstance(elem, (mapl.Conjunction, mapl.ConjunctiveEffect)):
+            if not isinstance(elem, (pddl.Conjunction, pddl.ConjunctiveEffect)):
                 assert False, "Unsupported condition: %d" % cond.pddl_str()
 
         macro = MacroOp(action.name, action.agents[0], action.maplargs+action.vars, [], [], domain)
@@ -166,21 +165,21 @@ class MacroOp(mapl.scope.Scope):
         def find_fact(node, svar, value, where='read'):
             @visitors.collect
             def visitor(elem, results):
-                if isinstance(elem, mapl.predicates.Literal):
+                if isinstance(elem, pddl.Literal):
                     svar2, val2 = state.Fact.from_literal(elem)
                     if svar == svar2 and (value == val2 or value is None):
                         return elem
-                elif not isinstance(elem, (mapl.Conjunction, mapl.ConjunctiveEffect)):
+                elif not isinstance(elem, (pddl.Conjunction, pddl.ConjunctiveEffect)):
                     assert False, "unsupported condition or effect: %s" % str(elem)
 
             if where == 'read':
-                if svar.modality == mapl.mapl.direct_knowledge:
-                    svar = svar.as_modality(mapl.mapl.knowledge, svar.modal_args)
-                elif svar.modality == mapl.mapl.i_indomain:
-                    svar = svar.as_modality(mapl.mapl.indomain, svar.modal_args)
+                if svar.modality == mapl.direct_knowledge:
+                    svar = svar.as_modality(mapl.knowledge, svar.modal_args)
+                elif svar.modality == mapl.i_indomain:
+                    svar = svar.as_modality(mapl.indomain, svar.modal_args)
             elif where == 'written':
-                if svar.modality == mapl.mapl.knowledge:
-                    svar = svar.as_modality(mapl.mapl.direct_knowledge, svar.modal_args)
+                if svar.modality == mapl.knowledge:
+                    svar = svar.as_modality(mapl.direct_knowledge, svar.modal_args)
 
             result = []
             node.action.instantiate(node.args)
@@ -194,18 +193,18 @@ class MacroOp(mapl.scope.Scope):
             #try find a modal variant
             if not result and svar.modality == None and where == 'read':
                 log.debug("couldn't find literal for %s=%s, trying in-domain modality", svar, value)
-                result = find_fact(node, svar.as_modality(mapl.mapl.indomain, [value]), mapl.types.TRUE)
+                result = find_fact(node, svar.as_modality(mapl.indomain, [value]), pddl.TRUE)
                 if not result:
                     log.debug("couldn't find literal for %s=%s, trying knowledge modality", svar, value)
-                    result = find_fact(node, svar.as_modality(mapl.mapl.knowledge, [node.args[0]]), mapl.types.TRUE)
+                    result = find_fact(node, svar.as_modality(mapl.knowledge, [node.args[0]]), pddl.TRUE)
                 
             return result
 
         def get_mapping(a1, a2):
             def collect_args(term, results):
-                if isinstance(term, (mapl.predicates.VariableTerm, mapl.predicates.ConstantTerm)):
+                if isinstance(term, (pddl.predicates.VariableTerm, pddl.predicates.ConstantTerm)):
                     return [term.object]
-                if isinstance(term, mapl.predicates.FunctionTerm):
+                if isinstance(term, pddl.predicates.FunctionTerm):
                     return sum(results, [])
                 
             for arg, arg2 in zip(a1.collect_arguments(), a2.collect_arguments()):
@@ -213,20 +212,20 @@ class MacroOp(mapl.scope.Scope):
 
         def copy_atom(atom, mapping, scope=None):
             def copyTerm(term, results):
-                if isinstance(term, mapl.predicates.VariableTerm):
-                    return mapl.predicates.VariableTerm(mapping[term.object])
-                elif isinstance(term, mapl.predicates.ConstantTerm):
-                    return mapl.predicates.ConstantTerm(term.object)
-                elif isinstance(term, mapl.predicates.FunctionTerm):
-                    return mapl.predicates.FunctionTerm(term.function, results)
-            if isinstance(atom, mapl.conditions.LiteralCondition):
-                return mapl.conditions.LiteralCondition(atom.predicate, [a.visit(copyTerm) for a in atom.args])
-            elif isinstance(atom, mapl.effects.SimpleEffect):
-                return mapl.effects.SimpleEffect(atom.predicate, [a.visit(copyTerm) for a in atom.args])
+                if isinstance(term, pddl.predicates.VariableTerm):
+                    return pddl.Term(mapping[term.object])
+                elif isinstance(term, pddl.predicates.ConstantTerm):
+                    return pddl.Term(term.object)
+                elif isinstance(term, pddl.predicates.FunctionTerm):
+                    return pddl.Term(term.function, results)
+            if isinstance(atom, pddl.LiteralCondition):
+                return pddl.LiteralCondition(atom.predicate, [a.visit(copyTerm) for a in atom.args])
+            elif isinstance(atom, pddl.SimpleEffect):
+                return pddl.SimpleEffect(atom.predicate, [a.visit(copyTerm) for a in atom.args])
                 
         log.debug("extracting operator from cluster %s", map(str,cluster))
                                 
-        agent_param = mapl.predicates.Parameter("?a", mapl.mapl.t_agent)
+        agent_param = pddl.Parameter("?a", mapl.t_agent)
         mapping = {agent_param : agent_param}
         args = set([agent_param])
 
@@ -243,7 +242,7 @@ class MacroOp(mapl.scope.Scope):
 
             local_map = {}
             for param in action.args:
-                new = mapl.predicates.Parameter(param.name+"#"+str(i), param.type)
+                new = pddl.Parameter(param.name+"#"+str(i), param.type)
                 assert new not in mapping
                 args.add(new)
                 mapping[new] = new
@@ -255,7 +254,7 @@ class MacroOp(mapl.scope.Scope):
             pairs = []
 
             for svar, val in itertools.chain(pnode.preconds, pnode.replanconds):
-                if val == mapl.types.UNKNOWN:
+                if val == pddl.UNKNOWN:
                     continue
                 
                 atom = copy_atom(find_fact(pnode, svar, val)[0], local_map)
@@ -345,8 +344,8 @@ class MacroOp(mapl.scope.Scope):
             return len([x for x in mapping.iterkeys() if x in other.args])
 
         predicate_equalities = set([
-            (mapl.equals, mapl.assign),
-            (mapl.builtin.eq, mapl.builtin.num_assign)])
+            (pddl.equals, pddl.assign),
+            (pddl.builtin.eq, pddl.builtin.num_assign)])
 
         def try_map_atoms(atom1, atom2, mapping):
             """ try to map the atoms 1 and 2 to each other (where 2 must be a
@@ -355,9 +354,9 @@ class MacroOp(mapl.scope.Scope):
             def map_term(term1, term2):
                 if term1.__class__ != term2.__class__:
                     return False
-                if term1.__class__ == mapl.predicates.ConstantTerm:
+                if term1.__class__ == pddl.predicates.ConstantTerm:
                     return term1.object == term2.object
-                if term1.__class__ == mapl.predicates.VariableTerm:
+                if term1.__class__ == pddl.predicates.VariableTerm:
                     if not term1.get_type().equal_or_subtype_of(term2.get_type()):
                         return False
                     if mapping.get(term1.object, term2.object) != term2.object:
@@ -370,7 +369,7 @@ class MacroOp(mapl.scope.Scope):
                     mapping[term1.object] = term2.object
                     mapping[term2.object] = term1.object
                     return True
-                if term1.__class__ == mapl.predicates.FunctionTerm:
+                if term1.__class__ == pddl.predicates.FunctionTerm:
                     if term1.function != term2.function:
                         return False
                     log.debug("Trying to map %s to %s", term1.pddl_str(), term2.pddl_str())
@@ -456,11 +455,11 @@ class MacroOp(mapl.scope.Scope):
 
     def get_satisfied_conditions(self, pnode, thisstate):
         def uninstantiated(term):
-            return any(arg.__class__ == mapl.types.Parameter and not arg.is_instantiated() for arg in term.visit(mapl.predicates.collect_args_visitor))
+            return any(arg.__class__ == pddl.Parameter and not arg.is_instantiated() for arg in term.visit(pddl.predicates.collect_args_visitor))
         def num_uninstantiated(atom):
             args = set()
             for arg in atom.collect_arguments():
-                if arg.__class__ == mapl.types.Parameter and not arg.is_instantiated():
+                if arg.__class__ == pddl.Parameter and not arg.is_instantiated():
                     args.add(arg)
             return len(args)
 
@@ -487,26 +486,26 @@ class MacroOp(mapl.scope.Scope):
                 if uninstantiated(term):
                     unknown.append(term)
                 else:
-                    if term.__class__ == mapl.predicates.FunctionTerm:
+                    if term.__class__ == pddl.predicates.FunctionTerm:
                         known.append(thisstate[state.StateVariable.from_term(term)])
-                    elif term.__class__ == mapl.predicates.VariableTerm:
+                    elif term.__class__ == pddl.predicates.VariableTerm:
                         known.append(term.get_instance())
-                    elif term.__class__ == mapl.predicates.ConstantTerm:
+                    elif term.__class__ == pddl.predicates.ConstantTerm:
                         known.append(term.object)
 
             mapping = {}
-            if atom.predicate in (mapl.equals, mapl.builtin.eq):
+            if atom.predicate in (pddl.equals, pddl.builtin.eq):
                 if not known or not unknown:
                     return
                 
-                if unknown[0].__class__ == mapl.predicates.VariableTerm:
+                if unknown[0].__class__ == pddl.predicates.VariableTerm:
                     yield {unknown[0].object : known[0]}
                 else:
                     for svar, mapping in get_possible_svars(unknown[0].function, unknown[0].args, known[0]):
                         yield mapping
                         
             elif not atom.predicate.builtin:
-                for svar, mapping in get_possible_svars(atom.predicate, atom.args, mapl.types.TRUE ):
+                for svar, mapping in get_possible_svars(atom.predicate, atom.args, pddl.TRUE ):
                     yield mapping
                 
 
@@ -555,42 +554,42 @@ class MacroOp(mapl.scope.Scope):
         return [p for p in self.pre if num_uninstantiated(p) == 0]
 
     def to_action(self, filter=ATOM_ENABLED):
-        precondition = mapl.Conjunction([p for p in self.pre if self.atom_state[p] & filter])
-        effect = mapl.ConjunctiveEffect([eff for eff in self.eff if self.atom_state[p] & filter])
+        precondition = pddl.Conjunction([p for p in self.pre if self.atom_state[p] & filter])
+        effect = pddl.ConjunctiveEffect([eff for eff in self.eff if self.atom_state[p] & filter])
         
-        return mapl.mapl.MAPLAction(self.name, [self.agent], self.args, [], precondition, None, effect, self.domain).copy()
+        return mapl.MAPLAction(self.name, [self.agent], self.args, [], precondition, None, effect, self.domain).copy()
 
     def to_assertion(self):
         observable = assertions.get_observable_functions(self.domain.sensors)
-        precondition = mapl.conditions.Conjunction([])
-        replan = mapl.conditions.Conjunction([])
+        precondition = pddl.Conjunction([])
+        replan = pddl.Conjunction([])
         
         for p in self.pre:
-            if p.predicate == mapl.mapl.knowledge:
+            if p.predicate == mapl.knowledge:
                 replan.parts.append(p)
-            if p.predicate != mapl.equals or \
+            if p.predicate != pddl.equals or \
                     not assertions.is_observable(observable, p.args[0], p.args[1]):
                 if self.atom_state[p] == ATOM_ENABLED:
                     precondition.parts.append(p)
             else:
                 if self.atom_state[p] == ATOM_ENABLED:
-                    id_cond = mapl.LiteralCondition(mapl.mapl.indomain, p.args[:], negated = p.negated)
+                    id_cond = pddl.LiteralCondition(mapl.indomain, p.args[:], negated = p.negated)
                     precondition.parts.append(id_cond)
-                k_cond = mapl.LiteralCondition(mapl.mapl.knowledge, [mapl.predicates.VariableTerm(self.agent), p.args[0]])
+                k_cond = pddl.LiteralCondition(mapl.knowledge, [pddl.predicates.VariableTerm(self.agent), p.args[0]])
                 replan.parts.append(k_cond)
                     
-        effect = mapl.ConjunctiveEffect([eff for eff in self.eff if self.atom_state[eff] == ATOM_ENABLED])
+        effect = pddl.ConjunctiveEffect([eff for eff in self.eff if self.atom_state[eff] == ATOM_ENABLED])
 
         args = set()
         for atom in itertools.chain(precondition.parts, replan.parts, effect.parts):
             for arg in atom.collect_arguments():
-                if arg.__class__ == mapl.types.Parameter and arg != self.agent:
+                if arg.__class__ == pddl.Parameter and arg != self.agent:
                     args.add(arg)
         
-        return mapl.mapl.MAPLAction(self.name, [self.agent], list(args), [], precondition, replan, effect, self.domain).copy()
+        return mapl.MAPLAction(self.name, [self.agent], list(args), [], precondition, replan, effect, self.domain).copy()
 
 
-class MacroWriter(mapl.mapl.MAPLWriter):
+class MacroWriter(mapl.MAPLWriter):
     
     def write_macro(self, macro):
         strings = self.write_action(macro.to_action(filter=ATOM_ALL))
@@ -613,7 +612,7 @@ class MacroWriter(mapl.mapl.MAPLWriter):
         return strings
 
 def load_macros(filename, domain):
-    p = mapl.parser.Parser.parse_file(filename)
+    p = pddl.parser.Parser.parse_file(filename)
     result = []
     for elem in iter(p.root):
         result.append(MacroOp.parse(iter(elem), domain))

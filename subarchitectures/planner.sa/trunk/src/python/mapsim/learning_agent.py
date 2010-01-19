@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import math, random, itertools
 
-import standalone.mapl_new as mapl
-import standalone.mapl_new.state as state
+from standalone import pddl
+from standalone.pddl import state, mapl
 from standalone import plans
 from standalone import statistics
 from standalone import assertions, macros
@@ -157,7 +157,7 @@ class LearningAgent(Agent):
         unknown_vars = set()
         indomain = set()
         for svar in task.get_state().iterkeys():
-            if svar.modality == mapl.mapl.i_indomain:
+            if svar.modality == mapl.i_indomain:
                 indomain.add(svar)
                 unknown_vars.add(svar.nonmodal())
 
@@ -166,8 +166,8 @@ class LearningAgent(Agent):
                 
         for svar in unknown_vars:
             if svar in self.simulator.state:
-                idvar = svar.as_modality(mapl.mapl.i_indomain, [self.simulator.state[svar]])
-                task.get_state()[idvar] = mapl.types.TRUE
+                idvar = svar.as_modality(mapl.i_indomain, [self.simulator.state[svar]])
+                task.get_state()[idvar] = pddl.TRUE
 
         task.mark_changed()
 
@@ -241,7 +241,7 @@ class LearningAgent(Agent):
 
         sensed_svars = set()
         for svar, val in itertools.chain(macro.original_replan):
-            if svar.modality == mapl.mapl.knowledge:
+            if svar.modality == mapl.knowledge:
                 sensed_svars.add(svar.nonmodal())
 
         useful_svars_full = set()

@@ -16,7 +16,7 @@ usage: %prog [options] domain scenario
 from os.path import abspath, dirname
 import sys, random, logging
 
-from standalone import mapl_new as mapl
+from standalone import pddl
 import standalone.config as config
 import standalone.globals as global_vars
 
@@ -65,8 +65,8 @@ if __name__ == '__main__':
     if global_vars.mapsim_config.random is None:
         global_vars.mapsim_config.random = hash(random.random())
 
-    domain = mapl.load_domain(global_vars.mapsim_config.domain)
-    scenario = mapl.load_scenario(global_vars.mapsim_config.scenario, domain)
+    domain = pddl.load_domain(global_vars.mapsim_config.domain)
+    scenario = pddl.load_scenario(global_vars.mapsim_config.scenario, domain)
 
     print "Loaded scenario '%s'." % scenario.name
     if len(scenario.agents) == 1:
