@@ -17,6 +17,7 @@
 #include "ObjectRelationManager.hpp"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VisionData.hpp>
+#include <AddressBank/ConfigFileReader.hh>
 
 using namespace std;
 using namespace cast;
@@ -38,6 +39,7 @@ extern "C" {
 ObjectRelationManager::ObjectRelationManager()
 {
   m_maxObjectCounter = 0;
+  m_bDisplayPlaneObjectsInPB = false;
 }
 
 ObjectRelationManager::~ObjectRelationManager() 
@@ -49,109 +51,37 @@ ObjectRelationManager::~ObjectRelationManager()
 
 void ObjectRelationManager::configure(const map<string,string>& _config) 
 {
-//  map<string,string>::const_iterator it = _config.find("-c");
-//  if (it== _config.end()) {
-//    println("configure(...) Need config file (use -c option)\n");
-//    std::abort();
-//  }
-//  std::string configfile = it->second;
-//
-//  Cure::ConfigFileReader cfg;
-//  if (cfg.init(configfile)) {
-//    println("configure(...) Failed to open with \"%s\"\n",
-//            configfile.c_str());
-//    std::abort();
-//  }  
-//
-//  if (Cure::NavController::config(configfile)) {
-//    println("configure(...) Failed to config with \"%s\", use -c option\n",
-//            configfile.c_str());
-//    std::abort();
-//  } 
-//
-//  if (cfg.getSensorPose(1, m_LaserPoseR)) {
-//    println("configure(...) Failed to get sensor pose");
-//    std::abort();
-//  } 
-//
-//  m_MaxExplorationRange = 1.5;
-//  it = _config.find("--explore-range");
-//  if (it != _config.end()) {
-//    m_MaxExplorationRange = (atof(it->second.c_str()));
-//  }
-//
-//  it = _config.find("--robot-server-host");
-//  if (it != _config.end()) {
-//    std::istringstream str(it->second);
-//    str >> m_RobotServerHost;
-//  }
-//
-//  m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-//  m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
-//  m_Explorer = new Cure::FrontierExplorer(*this,*m_lgm);
-//  //m_Explorer->setExplorationConfinedByGateways(true);
-//  m_Explorer->addEventListener(this);
-//
-//
-//  if (_config.find("--no-x-window") == _config.end()) {
-//    m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
-//    println("Will use X window to show the exploration map");
-//  } else {
-//    m_Displaylgm = 0;
-//    println("Will NOT use X window to show the exploration map");
-//  }
-//
-//  double maxGotoV = 0.5;
-//  double maxGotoW = 0.5;
-//
-//  if ((it = _config.find("--max-goto-v")) != _config.end()) {
-//    std::istringstream str(it->second);
-//    str >> maxGotoV;
-//  }
-//  if ((it = _config.find("--max-goto-w")) != _config.end()) {
-//    std::istringstream str(it->second);
-//    str >> maxGotoW;
-//  }
-//
-//  Cure::NavController::addEventListener(this);
-//  Cure::NavController::setTurnAngleIntoSpeed(true, 0.5);
-//  Cure::NavController::setMinNonzeroSpeeds(0.04, 
-//                                           Cure::HelpFunctions::deg2rad(10));
-//  Cure::NavController::setApproachTolerances(0.5, 
-//                                             Cure::HelpFunctions::deg2rad(10));
-//  Cure::NavController::setUsePathTrimming(false);
-//  Cure::NavController::setMaxPathTrimDist(3);
-//  Cure::NavController::setProgressTimeout(10);
-//  Cure::NavController::setGotoMaxSpeeds(maxGotoV, maxGotoW);
-//  Cure::NavController::setGatewayMaxSpeeds(0.3, 0.3);
-//  
-//  Cure::NavController::setFollowDistances(0.8, 0.4);
-//  Cure::NavController::setFollowTolerances(0.1, 
-//                                           Cure::HelpFunctions::deg2rad(10));
-//
-//  Cure::NavController::setPoseProvider(m_TOPP);
-//
-//  /*
-//  it = _config.find("--max-target-graph-dist");
-//  double maxDist = 5;
-//  if (it != _config.end()) {
-//    std::istringstream str(it->second);
-//    str >> maxDist;
-//  }  
-//  m_NavGraph.setMaxDistTargetFromNode(maxDist);
-//  */
-//
-//  m_taskId = 1;
-//  m_taskStatus = NothingToDo;
-//  m_ready = false;
-//  m_DefTolPos = 0.25;
-//  m_DefTolRot = Cure::HelpFunctions::deg2rad(5);
-//
-//  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
-//                                                     m_RobotServerHost);
-//
-//  FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
-//  registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
+  map<string,string>::const_iterator it = 
+    _config.find("--display-planes-in-pb");
+  if (it != _config.end()) {
+    m_bDisplayPlaneObjectsInPB = true;
+  }
+
+  m_RetryDelay = 10;
+
+  Cure::ConfigFileReader *cfg = 0;
+  it = _config.find("-c");
+  if (it != _config.end()) {
+    cfg = new Cure::ConfigFileReader;
+    log("About to try to open the config file");
+    if (cfg->init(it->second) != 0) {
+      delete cfg;
+      cfg = 0;
+      log("Could not init Cure::ConfigFileReader with -c argument");
+    } else {
+      log("Managed to open the Cure config file");
+    }
+  }
+
+  m_PbPort = 5050;
+  m_PbHost = "localhost";
+
+  if (cfg) {
+    std::string usedCfgFile, tmp;
+    if (cfg && cfg->getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
+      m_PbHost = tmp;
+    }
+  }
 } 
 
 void ObjectRelationManager::start() 
@@ -164,6 +94,16 @@ void ObjectRelationManager::start()
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::objectChanged));  
 
+  addChangeFilter(createLocalTypeFilter<FrontierInterface::ObservedPlaneObject>
+      (cdl::ADD), 
+      new MemberFunctionChangeReceiver<ObjectRelationManager>(this, 
+	&ObjectRelationManager::newPlaneObject));  
+
+  addChangeFilter(createLocalTypeFilter<FrontierInterface::ObservedPlaneObject>
+      (cdl::OVERWRITE), 
+      new MemberFunctionChangeReceiver<ObjectRelationManager>(this, 
+	&ObjectRelationManager::newPlaneObject));  
+
   m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   log("ObjectRelationManager started");
 }
@@ -171,6 +111,19 @@ void ObjectRelationManager::start()
 void ObjectRelationManager::runComponent() 
 {
   log("I am running!");
+
+  if (m_bDisplayPlaneObjectsInPB) {
+    while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+      sleep(m_RetryDelay);
+      connectPeekabot();
+    }
+
+    peekabot::GroupProxy root;
+    root.assign(m_PeekabotClient, "root");
+    m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
+  }
+
+  println("Connected to peekabot, ready to go");
   
 //  while(isRunning()){
 //    usleep(250000);
@@ -227,6 +180,35 @@ ObjectRelationManager::objectChanged(const cast::cdl::WorkingMemoryChange &wmc)
   }
 }
 
+void 
+ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
+{
+  try {
+    FrontierInterface::ObservedPlaneObjectPtr observedObject =
+      getMemoryEntry<FrontierInterface::ObservedPlaneObject>
+      (wmc.address);
+
+    log("Read object at %f, %f", observedObject->x, observedObject->y);
+    if (m_PeekabotClient.is_connected()) {
+      char identifier[100];
+      sprintf(identifier, "label%d", 0);
+      peekabot::PolygonProxy pp;
+      pp.add(m_planeProxies, identifier, peekabot::REPLACE_ON_CONFLICT);
+      pp.add_vertex(0.5, 0.5, 0);
+      pp.add_vertex(-0.5, 0.5, 0);
+      pp.add_vertex(-0.5, -0.5, 0);
+      pp.add_vertex(0.5, -0.5, 0);
+
+      pp.translate(observedObject->x, observedObject->y, 
+	  observedObject->height);
+      pp.rotate(observedObject->angle, 0.0, 0.0, 1.0);
+    }
+  }
+  catch (DoesNotExistOnWMException) {
+    log("Error! overwritten Object missing on WM!");
+  }
+}
+
 void
 ObjectRelationManager::setContainmentProperty(int objectID, int placeID, double confidence)
 {
@@ -271,3 +253,20 @@ ObjectRelationManager::setContainmentProperty(int objectID, int placeID, double 
   //string newID = newDataID();
   //addToWorkingMemory<SpatialProperties::PlaceContainmentObjectProperty>(newID, containmentProp);
 }
+
+void 
+ObjectRelationManager::connectPeekabot()
+{
+  try {
+    log("Trying to connect to Peekabot (again) on host %s and port %d",
+        m_PbHost.c_str(), m_PbPort);
+
+    m_PeekabotClient.connect(m_PbHost, m_PbPort, true);
+
+  } catch(std::exception &e) {
+    log("Caught exception when connecting to peekabot (%s)",
+        e.what());
+    return;
+  }
+}
+

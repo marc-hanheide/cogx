@@ -21,6 +21,7 @@
 #include <SpatialProperties.hpp>
 #include <FrontierInterface.hpp>
 #include <map>
+#include <peekabot.hh>
 
 using namespace SpatialProperties;
 using namespace SpatialData;
@@ -55,10 +56,21 @@ protected:
 
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
+  bool m_bDisplayPlaneObjectsInPB;
+  peekabot::PeekabotClient m_PeekabotClient;  
+  peekabot::GroupProxy m_planeProxies;
+  std::string m_PbHost;
+  int m_PbPort;
+  int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+
+  void connectPeekabot();
+
   virtual void configure(const std::map<std::string, std::string>& _config);
 
   void newObject(const cast::cdl::WorkingMemoryChange &);
   void objectChanged(const cast::cdl::WorkingMemoryChange &);
+
+  void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
 
   void setContainmentProperty(int objectID, int placeID, double confidence);
 }; 
