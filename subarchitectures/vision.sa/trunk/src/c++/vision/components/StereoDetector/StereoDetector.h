@@ -9,6 +9,8 @@
 #ifndef STEREO_DETECTOR_H
 #define STEREO_DETECTOR_H
 
+#include "DoxyMain.h"
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
@@ -23,7 +25,8 @@ namespace cast
 {
 
 /**
-	* @brief Class Stereo Detector.
+	* @class StereoDetector
+	* @brief Implementation of the stereo detector as cast component.
 	*/
 class StereoDetector : public VideoClient, public ManagedComponent
 {
@@ -35,24 +38,39 @@ private:
 	Video::VideoInterfacePrx videoServer;		///< ICE proxy to the video server
 	Video::Image image_l, image_r;					///< Left and right stereo image from video server. Original images.
 	IplImage *iplImage_l, *iplImage_r;			///< Converted left and right stereo images (openCV ipl-images)
-//	IplImage *iplImage_l_s, *iplImage_r_s;	///< Copys of iplImage_x to draw overlays and display at openCV windows.
-	bool cmd_detect;												///< detection command
-	bool cmd_single;												///< single detection commmand
-	bool showImages;												///< show openCV images
-	bool debug;															///< debug the stereo detector
+	bool cmd_detect;												///< Detection command
+	bool cmd_single;												///< Single detection commmand
+	bool debug;															///< Debug mode
+	bool single;														///< Single shot mode for the stereo detector
+	bool showImages;												///< Show stereo images in openCV window
+	bool showMatched;												///< Show matched features in stereo images
+	bool showDetected;											///< Show detected features in stereo images
 	std::vector<std::string> objectIDs;			///< IDs of the currently stored visual objects
-	int overlays;														///< Number of overlay
-																					///<     1 = all
-																					///<     2 = flaps
-																					///<     3 = rectangles
-																					///<     4 = closures
-																					///<     5 = ellipses
+	int VOtoWrite; 													///< Identifier for visual objects to write (==> same as overlays)
+	int overlays;														///< Identifier for result overlays:\n
+																					///     1 = all\n
+																					///     2 = flaps\n
+																					///     3 = rectangles\n
+																					///     4 = closures\n
+																					///     5 = ellipses
 
   /**
    * @brief Show both stereo images in the openCV windows.
    * @param convertNewIpl Convert image again into iplImage to delete overlays.
    */
 	void ShowImages(bool convertNewIpl);
+
+	/**
+	 * @brief Delete working memory and (re)write different visual objects from the stereo detector.
+	 * @param VOtoWrite Identifier to write
+	 */
+	void WriteVisualObjects(int VOtoWrite);
+
+	/**
+	 * @brief Write visual objects of different type to the working memory
+	 * @param type Type to write
+	 */
+	void WriteToWM(Z::StereoBase::Type type);
 
   /**
    * @brief Receive a changed detection command, written to the working memory
@@ -61,9 +79,9 @@ private:
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
 
   /**
-   * @brief Call debug mode.
+   * @brief Call single shot mode for debugging.
    */
-	void Debug();
+	void SingleShotMode();
 
   /**
    * @brief Read the SOIs from the working memory and display it.
@@ -74,7 +92,7 @@ private:
 	 * @brief Delete all visual objects from the working memory. 
 	 * The IDs are stored in the vector "objectIDs".
 	 */
-	void DeleteVisualObjects();
+	void DeleteVisualObjectsFromWM();
 
 
 protected:

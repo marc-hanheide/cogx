@@ -40,62 +40,21 @@ StereoDetector::~StereoDetector()
 // 	cvDestroyWindow("Stereo results @ left stereo image");
 }
 
-void StereoDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
-{
-	if(debug) return;		// return if debug mode is on
-
-	StereoDetectionCommandPtr detect_cmd = getMemoryEntry<StereoDetectionCommand>(_wmc.address);
-	
-	log("received detection command ...");
-	switch(detect_cmd->cmd){
-		case VisionData::SDSTART:
-			if(cmd_detect){
-				log("stereo detection is allready started");
-			}else{
-				log("starting stereo detection");
-        // start receiving images pushed by the video server
-        videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
-				cmd_detect = true;
-			}
-			break;
-		case VisionData::SDSTOP:
-			if(cmd_detect){
-				log("stopping stereo detection");
-				cmd_detect = false;
-        videoServer->stopReceiveImages(getComponentID().c_str());
-			}else{
-				log("stereo detection is allready stopped");
-			}
-			break;
-		case VisionData::SDSINGLE:
-			if(!cmd_single){
-				log("single stereo detection received");
-				cmd_single = true;
-				videoServer->getImage(camIds[0], image_l);
-				videoServer->getImage(camIds[1], image_r);
-				processImage();
-				cmd_single = false;
-			}else{
-				log("single stereo detection already received: too fast triggering!");
-			}
-			break;
-		default:
-			log("unknown detection command received, doing nothing");
-			break;
-	}	
-}
-
 
 void StereoDetector::configure(const map<string,string> & _config)
 {
-	// create stereo core TODO: Configure and store ini-File?
+	// create stereo core TODO TODO TODO TODO TODO TODO : Configure and store ini-File?
 	score = new Z::StereoCore("subarchitectures/vision.sa/config/tuw_stereo_new.ini");
 
 	cmd_detect = false;
 	cmd_single = false;
 	showImages = false;
+	showDetected = true;
+	showMatched = false;
 	debug = false;
+	single = false;
 	overlays = 1;
+	VOtoWrite = 1;
 
   map<string,string>::const_iterator it;
   if((it = _config.find("--videoname")) != _config.end())
@@ -117,6 +76,11 @@ void StereoDetector::configure(const map<string,string> & _config)
 	{
 		log("debug modus on.");
 		debug = true;
+	}	
+if((it = _config.find("--singleShot")) != _config.end())
+	{
+		log("single shot modus on.");
+		single = true;
 	}
 }
 
@@ -148,6 +112,52 @@ void StereoDetector::start()
 }
 
 
+void StereoDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+	if(single) return;		// return if single shot mode is on
+
+	StereoDetectionCommandPtr detect_cmd = getMemoryEntry<StereoDetectionCommand>(_wmc.address);
+	
+	log("received detection command ...");
+	switch(detect_cmd->cmd){
+		case VisionData::SDSTART:
+			if(cmd_detect){
+				log("stereo detection is allready started");
+			}else{
+				log("starting stereo detection");
+        // start receiving images pushed by the video server
+        videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);		/// TODO Hier wird videoServer->startReceiveImages aufgerufen
+				cmd_detect = true;
+			}
+			break;
+		case VisionData::SDSTOP:
+			if(cmd_detect){
+				log("stopping stereo detection");
+				cmd_detect = false;
+        videoServer->stopReceiveImages(getComponentID().c_str());
+			}else{
+				log("stereo detection is allready stopped");
+			}
+			break;
+		case VisionData::SDSINGLE:																											/// TODO Hier wird videoServer->getImage aufgerufen
+			if(!cmd_single){
+				log("single stereo detection received");
+				cmd_single = true;
+				videoServer->getImage(camIds[0], image_l);
+				videoServer->getImage(camIds[1], image_r);
+				processImage();
+				cmd_single = false;
+			}else{
+				log("single stereo detection already received: too fast triggering!");
+			}
+			break;
+		default:
+			log("unknown detection command received, doing nothing");
+			break;
+	}	
+}
+
+
 void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 {
   if(images.size() <= 1)
@@ -162,7 +172,7 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 
 void StereoDetector::runComponent()
 {
-	while(debug) Debug();
+	while(single) SingleShotMode();
 }
 
 
@@ -178,119 +188,43 @@ void StereoDetector::processImage()
 	int runtime = 1200;											// processing time for detection for left AND right image
 	static unsigned frame_counter = 0;
 	frame_counter++;
-	static unsigned numStereoObjects = 0;
 
 	// Convert images (from Video::Image to iplImage)
 	iplImage_l = convertImageToIpl(image_l);
 	iplImage_r = convertImageToIpl(image_r);
 
+	/// TODO TODO Mit try-catch ausstatten!!!!
 	// Process the stereo images at the stereo core and get visual (stereo matched) objects
 	score->ProcessStereoImage(runtime/2, iplImage_l, iplImage_r);
 
-	// Delete all visual objects from the working memory
-	DeleteVisualObjects();	
-
-	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
 
 	/// TODO: GET ALL STEREO GESTALTS: Es wird nicht überprüft, ob aktiv
-	for(int j=0; j<Z::StereoBase::MAX_TYPE; j++)
-		for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) j); i++)
-		{
-			score->GetVisualObject((Z::StereoBase::Type) j, i, obj);
-	
-			// HACK label object with incremtal raising number
-			char obj_label[32];
-			sprintf(obj_label, "Stereo object %d", numStereoObjects);
-			obj->label = obj_label;
-			numStereoObjects++;
-		
-		// add visual object to working memory
-		std::string objectID = newDataID();
-		objectIDs.push_back(objectID);
-		addToWorkingMemory(objectID, obj);
-		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
-		}
-
-
-	/// TODO: GET STEREO CLOSURES
-// 	printf("###################### GET STEREO CLOSURES\n");
-// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_CLOSURE); i++)
-// 	{
-// 		score->GetVisualObject(Z::StereoBase::STEREO_CLOSURE, i, obj);
-// 
-// 		char obj_label[32];
-// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
-// 		obj->label = obj_label;
-// 		numStereoObjects++;
+// 	for(int j=0; j<Z::StereoBase::MAX_TYPE; j++)
+// 		for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) j); i++)
+// 		{
+// 			score->GetVisualObject((Z::StereoBase::Type) j, i, obj);
 // 	
+// 			// HACK label object with incremtal raising number
+// 			char obj_label[32];
+// 			sprintf(obj_label, "Stereo object %d", numStereoObjects);
+// 			obj->label = obj_label;
+// 			numStereoObjects++;
+// 		
 // 		// add visual object to working memory
 // 		std::string objectID = newDataID();
 // 		objectIDs.push_back(objectID);
 // 		addToWorkingMemory(objectID, obj);
 // 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
-// 	}
+// 		}
 
-	/// TODO: GET STEREO FLAPS
-// static int once = 0;
-// 	printf("###################### GET STEREO FLAPS\n");
-// if(once == 0)
-// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_FLAP); i++)
-// 	{
-// 		once = 1;
-// 		score->GetVisualObject(Z::StereoBase::STEREO_FLAP, i, obj);
-// 
-// 		char obj_label[32];
-// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
-// 		obj->label = obj_label;
-// 		numStereoObjects++;
-// 	
-		// add visual object to working memory
-// 		std::string objectID = newDataID();
-// 		objectIDs.push_back(objectID);
-// 		addToWorkingMemory(objectID, obj);
-// 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
-// 	}
-
-	/// TODO: GET STEREO RECTANGLES
-// 	printf("###################### GET STEREO RECTANGLES\n");
-// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_RECTANGLE); i++)
-// 	{
-// 		score->GetVisualObject(Z::StereoBase::STEREO_RECTANGLE, i, obj);
-// 
-// 		char obj_label[32];
-// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
-// 		obj->label = obj_label;
-// 		numStereoObjects++;
-// 	
-// 		// add visual object to working memory
-// 		std::string objectID = newDataID();
-// 		objectIDs.push_back(objectID);
-// 		addToWorkingMemory(objectID, obj);
-// 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
-// 	}
-
-	/// TODO: GET STEREO ELLIPSES
-// 	printf("###################### GET STEREO ELLIPSES\n");
-// 	for(int i=0; i<score->NumStereoMatches(Z::StereoBase::STEREO_ELLIPSE); i++)
-// 	{
-// 		score->GetVisualObject(Z::StereoBase::STEREO_ELLIPSE, i, obj);
-// 
-// 		char obj_label[32];
-// 		sprintf(obj_label, "Stereo object %d", numStereoObjects);
-// 		obj->label = obj_label;
-// 		numStereoObjects++;
-// 	
-// 		// add visual object to working memory
-// 		std::string objectID = newDataID();
-// 		objectIDs.push_back(objectID);
-// 		addToWorkingMemory(objectID, obj);
-// 		log("New flap at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
-// 	}
-
+	// Write visual objects
+	WriteVisualObjects(VOtoWrite);
 
 	// Draw Gestalts to IplImage for the openCv window
-	if(showImages) ShowImages(false);
+	if(showImages) ShowImages(true);		/// TODO kann man hier false verwenden? => sonst sinnlos!
 }
+
+
 
 
 /**
@@ -299,104 +233,213 @@ void StereoDetector::processImage()
  */
 void StereoDetector::ShowImages(bool convertNewIpl)
 {
-//		cvWaitKey(1);		/// wait key to allow openCV to show the images.
-
-	// reconvert original stereo image pair
+	// reconvert original stereo image pair from image server.
 	if(convertNewIpl)
 	{
 		iplImage_l = convertImageToIpl(image_l);
 		iplImage_r = convertImageToIpl(image_r);
-
-		// swap red and blue channel from stereo ipl-images
-// 		cvConvertImage( iplImage_l, iplImage_l, CV_CVTIMG_SWAP_RB);
-// 		cvConvertImage( iplImage_r, iplImage_r, CV_CVTIMG_SWAP_RB);
 	}
 
 	switch(overlays)
 	{
 		case 1:
-			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r);
-			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r);
-			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r);
-			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r);
+			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r, showDetected, showMatched);
 			break;
 		case 2:
-			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r);
+			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r, showDetected, showMatched);
 			break;
 		case 3:
-			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r);
+			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r, showDetected, showMatched);
 			break;
 		case 4:
-			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r);
+			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r, showDetected, showMatched);
 			break;
 		case 5:
-			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r);
+			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r, showDetected, showMatched);
 			break;
 		default:
-			printf("StereoDetector::ShowImages: Unknown overlay exception\n"); 	// TODO exception handling
+			printf("StereoDetector::ShowImages: Unknown overlay exception\n");
 			break;
 	}
 
-		cvShowImage("Stereo left", iplImage_l);
-		cvShowImage("Stereo right", iplImage_r);
+	// swap red and blue channel from stereo ipl-images								/// TODO TODO Wann muss ich jetzt wirklich swapen und wann nicht?
+	cvConvertImage( iplImage_l, iplImage_l, CV_CVTIMG_SWAP_RB);
+	cvConvertImage( iplImage_r, iplImage_r, CV_CVTIMG_SWAP_RB);
 
-		cvWaitKey(10);	///< TODO wait key to allow openCV to show the images.
+	cvShowImage("Stereo left", iplImage_l);
+	cvShowImage("Stereo right", iplImage_r);
+
+	cvWaitKey(10);	///< TODO wait key to allow openCV to show the images.
 }
 
 
 /**
- * @brief Debug mode of the stereo detector. Catch keyboard events and change displayed results.
- * 		key:	s ... single shot
- * 		key:	1 ... show all
- * 		key:	2 ... show flaps
- * 		key:	3 ... show rectangles
- * 		key:	4 ... show closures
- * 		key:	x ... stop debug modus
+ * @brief Delete working memory and (re)write different visual objects from the stereo detector.
+ * @param VOtoWrite Identifier for visual objects to write
  */
-void StereoDetector::Debug()
+void StereoDetector::WriteVisualObjects(int VOtoWrite)
+{
+	// Delete former visual objects
+	DeleteVisualObjectsFromWM();	
+
+	switch(VOtoWrite)
+	{
+		case 1:
+			WriteToWM(Z::StereoBase::STEREO_FLAP);
+			WriteToWM(Z::StereoBase::STEREO_RECTANGLE);
+			WriteToWM(Z::StereoBase::STEREO_CLOSURE);
+			WriteToWM(Z::StereoBase::STEREO_ELLIPSE);
+			break;
+		case 2:
+			WriteToWM(Z::StereoBase::STEREO_FLAP);
+			break;
+		case 3:
+			WriteToWM(Z::StereoBase::STEREO_RECTANGLE);
+			break;
+		case 4:
+			WriteToWM(Z::StereoBase::STEREO_CLOSURE);
+			break;
+		case 5:
+			WriteToWM(Z::StereoBase::STEREO_ELLIPSE);
+			break;
+		default:
+			log("unknown visual object identifier.");
+			break;
+	}
+}
+
+
+/**
+ * @brief Write visual objects of different type to the working memory
+ * @param type Type to write
+ */
+void StereoDetector::WriteToWM(Z::StereoBase::Type type)
+{
+	static unsigned numStereoObjects = 0;
+
+	// define visual object to write
+	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+
+	for(int i=0; i<score->NumStereoMatches((Z::StereoBase::Type) type); i++)
+	{
+		score->GetVisualObject((Z::StereoBase::Type) type, i, obj);
+
+		// HACK label object with incremtal raising number
+		char obj_label[32];
+		sprintf(obj_label, "Stereo object %d", numStereoObjects);
+		obj->label = obj_label;
+		numStereoObjects++;
+	
+		// add visual object to working memory
+		std::string objectID = newDataID();
+		objectIDs.push_back(objectID);
+		addToWorkingMemory(objectID, obj);
+	}
+}
+
+
+/**
+ * @brief Single shot mode of the stereo detector. Catch keyboard events and change displayed results.\n
+ * 		key:	s ... single shot\n
+ * 		key:	m ... draw matched features (on/off)\n
+ * 		key:	d ... draw detected features (on/off)\n
+ * 		key:	1 ... show all\n
+ * 		key:	2 ... show flaps\n
+ * 		key:	3 ... show rectangles\n
+ * 		key:	4 ... show closures\n
+ * 		key:	5 ... show ellipses\n
+ * 		key:	x ... stop single shot modus\n
+ */
+void StereoDetector::SingleShotMode()
 {
 	int key = 0;
 	key = cvWaitKey(10);
 
-	if (key != -1) printf("StereoDetector::ProcessDebugOptions: Pressed key: %c\n", (char) key);
+	if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %c\n", (char) key);
 // 	if((char) key == 'a') return false;							// TODO return for escape
 
 	switch((char) key)
 	{
 		case 's':
-			log("Single shot: process single stereo image.");
+			log("process single stereo image.");
 			videoServer->getImage(camIds[0], image_l);
 			videoServer->getImage(camIds[1], image_r);
 			processImage();
 			break;
-		case '1':
-			log("Show all.");
-			overlays = 1;
+		case 'm':
+			if(showMatched) 
+			{
+				showMatched = false;
+				log("draw only matched features: off");
+			}
+			else
+			{ 
+				showMatched = true;
+				log("draw only matched features: on");
+			}
 			ShowImages(true);
+			break;
+		case 'd':
+			if(showDetected)
+			{
+				showDetected = false;
+				log("draw all detected features: off");
+			}
+			else
+			{
+				 showDetected = true;
+				log("draw all detected features: on");
+			}
+			ShowImages(true);
+			break;
+		case '1':
+			log("show all.");
+			overlays = VOtoWrite = 1;
+			ShowImages(true);
+			WriteVisualObjects(VOtoWrite);
 			break;
 		case '2':
-			log("Show flaps.");
-			overlays = 2;
+			log("show flaps.");
+			overlays = VOtoWrite = 2;
 			ShowImages(true);
+			WriteVisualObjects(VOtoWrite);
 			break;
 		case '3':
-			log("Show rectangles.");
-			overlays = 3;
+			log("show rectangles.");
+			overlays = VOtoWrite = 3;
 			ShowImages(true);
+			WriteVisualObjects(VOtoWrite);
 			break;
 		case '4':
-			log("Show closures.");
-			overlays = 4;
+			log("show closures.");
+			overlays = VOtoWrite = 4;
+			WriteVisualObjects(VOtoWrite);
 			ShowImages(true);
 			break;
 		case '5':
-			log("Show ellipses.");
-			overlays = 5;
+			log("show ellipses.");
+			overlays = VOtoWrite = 5;
+			WriteVisualObjects(VOtoWrite);
 			ShowImages(true);
 			break;
 		case 'x':
-			log("Stop debug mode.");
-			debug = false;
+			log("stop debug mode.");
+			single = false;
+			break;
+		case 'h':
+			printf( "Keys for single shot mode:\n"
+							"    s ... single shot\n"
+							"    m ... draw matched features (on/off)\n"
+							"    d ... draw detected features (on/off)\n"
+							"    1 ... show all\n"
+							"    2 ... show flaps\n"
+							"    3 ... show rectangles\n"
+							"    4 ... show closures\n"
+							"    5 ... show ellipses\n"
+							"    x ... stop single shot modus\n");
 			break;
 		default: break;
 	}
@@ -437,7 +480,11 @@ void StereoDetector::ReadSOIs()
 
 
 
-void StereoDetector::DeleteVisualObjects()
+/**
+ * @brief Delete all visual objects from the working memory. 
+ * The IDs are stored in the vector "objectIDs".
+ */
+void StereoDetector::DeleteVisualObjectsFromWM()
 {
 	for(unsigned i=0; i<objectIDs.size(); i++)
 		deleteFromWorkingMemory(objectIDs[i]);
