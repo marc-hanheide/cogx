@@ -92,14 +92,14 @@ void Closure::Draw(int detail)
         p = lines[i]->point[END];
         q = lines[i]->point[START];
       }
-      DrawLine2D(p.x, p.y, q.x, q.y, RGBColor::red);
+      DrawLine2D(p.x, p.y, q.x, q.y);
       r = GetVertex(j);
-      DrawLine2D(q.x, q.y, r.x, r.y, RGBColor::red);
+      DrawLine2D(q.x, q.y, r.x, r.y);
       if(senses[j] == SAME)
         s = lines[j]->point[START];
       else
         s = lines[j]->point[END];
-      DrawLine2D(r.x, r.y, s.x, s.y, RGBColor::red);
+      DrawLine2D(r.x, r.y, s.x, s.y);
     }
   }
   if(detail >= 1 && detail <= 2)

@@ -198,8 +198,7 @@ void Rectangle::Draw(int detail)
     for(unsigned i = 0; i < 4; i++)
       DrawLine2D(LJunctions(core, jcts[i])->isct.x, LJunctions(core, jcts[i])->isct.y,
           LJunctions(core, jcts[(i<3?i+1:0)])->isct.x,
-          LJunctions(core, jcts[(i<3?i+1:0)])->isct.y,
-          RGBColor::yellow);
+          LJunctions(core, jcts[(i<3?i+1:0)])->isct.y);
   }
 	if(detail == 1)
 	{
