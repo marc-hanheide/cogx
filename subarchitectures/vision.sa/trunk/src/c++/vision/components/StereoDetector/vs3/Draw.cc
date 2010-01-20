@@ -10,21 +10,23 @@
 #include "Draw.hh"
 #include <opencv/highgui.h>
 
-// #include <stdio.h>
-// #include <stdarg.h>
 #include <math.h>
-// #include <GL/glut.h>
-// #include <qstatusbar.h>
-// #include "Image.hh"
-// #include "MainWin.hh"
 
 namespace Z
 {
 
 IplImage *iplImage;
+RGBColor defColor = RGBColor::white;
 
-// // active drawing area
-// // static QGLWidget *draw_area = 0;
+
+/**
+ * @brief Set the IplImage as active draw area.
+ * @param iI OpenCv IplImage for drawings.
+ */
+void SetActiveDrawArea(IplImage *iI)
+{
+	iplImage = iI;
+}
 
 // // static bool THICK_LINES = false;
 // // static bool BLACK_WHITE = false;
@@ -34,20 +36,20 @@ IplImage *iplImage;
  * Set/unset fat lines and dots for all further drawing.
  * Note: only affects the main draw area;
  */
-void SetFatLines(bool set)
-{
+// void SetFatLines(bool set)
+// {
 // //   THICK_LINES = set;
-}
+// }
 
 /**
  * Set/unset black and white drawing of lines, dots etc. for all further
  * drawing.
  * Note: only affects the main draw area.
  */
-void SetBlackWhite(bool set)
-{
+// void SetBlackWhite(bool set)
+// {
 // //   BLACK_WHITE = set;
-}
+// }
 
 /**
  * Set where to draw to: main or info draw area.
@@ -78,37 +80,27 @@ void SetBlackWhite(bool set)
 //   }
 // }
 
-/**
- * @brief Set the IplImage as active draw area.
- * @param iI OpenCv IplImage for drawings.
- */
-void SetActiveDrawArea(IplImage *iI)
-{
-	iplImage = iI;
-}
-
-
-void SaveDrawArea(const char *filename)
-{
+// void SaveDrawArea(const char *filename)
+// {
 //   Image img(NULL, draw_area->width(), draw_area->height(), 3, RGB24, true);
 //   SetDrawImagesSolid();
 //   glReadPixels(0, 0, img.Width(), img.Height(), GL_RGB, GL_UNSIGNED_BYTE,
 //       img.Data());
 //   img.SavePPM_FlipVert(filename);
-}
+// }
 
 /**
  * Draw printf style text in the status bar.
  */
-void PrintStatus(const char *format, ...)
-{
+// void PrintStatus(const char *format, ...)
+// {
 //   static char msg[1024];
 //   va_list arg_list;
 //   va_start(arg_list, format);
 //   vsnprintf(msg, 1024, format, arg_list);
 //   va_end(arg_list);
 //   MainWin::main_win->statusBar()->message(msg);
-}
+// }
 
 /**
  * Draw an image given as RGB24 char array.
@@ -122,22 +114,22 @@ void DrawImageRGB24(const char *rgb24, int width, int height)
 /**
  * Draw images solid.
  */
-void SetDrawImagesSolid()
-{
+// void SetDrawImagesSolid()
+// {
 //   glPixelTransferf(GL_RED_SCALE, 1.);
 //   glPixelTransferf(GL_RED_BIAS, 0.);
 //   glPixelTransferf(GL_GREEN_SCALE, 1.);
 //   glPixelTransferf(GL_GREEN_BIAS, 0.);
 //   glPixelTransferf(GL_BLUE_SCALE, 1.);
 //   glPixelTransferf(GL_BLUE_BIAS, 0.);
-}
+// }
 
 /**
  * Draw images light transparent.
  * Good as background for displaying edges etc.
  */
-void SetDrawImagesLight()
-{
+// void SetDrawImagesLight()
+// {
 //   float f = 0.4;
 //   glPixelTransferf(GL_RED_SCALE, f);
 //   glPixelTransferf(GL_RED_BIAS, 1. - f);
@@ -145,14 +137,14 @@ void SetDrawImagesLight()
 //   glPixelTransferf(GL_GREEN_BIAS, 1. - f);
 //   glPixelTransferf(GL_BLUE_SCALE, f);
 //   glPixelTransferf(GL_BLUE_BIAS, 1. - f);
-}
+// }
 
 /**
  * Draw images dark transparent.
  * Good as background for displaying edges etc.
  */
-void SetDrawImagesDark()
-{
+// void SetDrawImagesDark()
+// {
 //   float f = 0.4;
 //   glPixelTransferf(GL_RED_SCALE, f);
 //   glPixelTransferf(GL_RED_BIAS, 0.);
@@ -160,21 +152,24 @@ void SetDrawImagesDark()
 //   glPixelTransferf(GL_GREEN_BIAS, 0.);
 //   glPixelTransferf(GL_BLUE_SCALE, f);
 //   glPixelTransferf(GL_BLUE_BIAS, 0.);
-}
+// }
 
-void SetClearImagesWhite()
-{
+// void SetClearImagesWhite()
+// {
 //   glClearColor(1., 1., 1., 1.);
-}
+// }
 
-void SetClearImagesBlack()
-{
+// void SetClearImagesBlack()
+// {
 //   glClearColor(0., 0., 0., 1.);
-}
+// }
 
-void SetColor(unsigned char r, unsigned char g, unsigned char b,
-    unsigned char a = 255)
-{
+
+
+
+
+// void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255)
+// {
 //   if(!draw_bw)
 //     glColor4ub(r, g, b, a);
 //   else
@@ -186,6 +181,12 @@ void SetColor(unsigned char r, unsigned char g, unsigned char b,
 //     else
 //       glColor4ub(0, 0, 0, a);
 //   }
+// }
+
+
+void SetColor(RGBColor col)
+{
+	defColor = col;
 }
 
 /**
@@ -229,7 +230,7 @@ void DrawLine2D(double x1, double y1, double x2, double y2, RGBColor col)
  * @brief Draw a 2D line.
  * @TODO Without transparency
  */
-void DrawLine2D(double x1, double y1, double x2, double y2, RGBColor col, unsigned char transparency)
+void DrawLine2D(double x1, double y1, double x2, double y2, unsigned char transparency, RGBColor col)
 {
 	DrawLine2D(x1, y1, x2, y2, col);
 }
@@ -260,7 +261,7 @@ void DrawArrow(Vector2 start, Vector2 end, RGBColor col)
  * @TODO Without transparency
  */
 static void Rect2D(double x1, double y1, double x2, double y2,
-    RGBColor col, bool fill, unsigned char transparency)
+    bool fill, unsigned char transparency, RGBColor col)
 {
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
 	int thickness = 1;
@@ -275,28 +276,25 @@ static void Rect2D(double x1, double y1, double x2, double y2,
 /**
  * @brief Draw a 2D rectangle.
  */
-void DrawRect2D(double x1, double y1, double x2, double y2,
-    RGBColor col)
+void DrawRect2D(double x1, double y1, double x2, double y2, RGBColor col)
 {
-  Rect2D(x1, y1, x2, y2, col, false, 255);
+  Rect2D(x1, y1, x2, y2, false, 255, col);
 }
 
 /**
  * @brief Draw a filled 2D rectangle.
  */
-void FillRect2D(double x1, double y1, double x2, double y2,
-    RGBColor col)
+void FillRect2D(double x1, double y1, double x2, double y2, RGBColor col)
 {
-  Rect2D(x1, y1, x2, y2, col, true, 255);
+  Rect2D(x1, y1, x2, y2, true, 255, col);
 }
 
 /**
- * @brief Draw a transparent 2D rectangle.
+ * @brief Draw a half transparent 2D rectangle.
  */
-void TransparentRect2D(double x1, double y1, double x2, double y2,
-    RGBColor col)
+void TransparentRect2D(double x1, double y1, double x2, double y2, RGBColor col)
 {
-  Rect2D(x1, y1, x2, y2, col, true, 64);
+  Rect2D(x1, y1, x2, y2, true, 64, col);
 }
 
 /**
@@ -304,7 +302,7 @@ void TransparentRect2D(double x1, double y1, double x2, double y2,
  * @TODO Without transparency
  */
 void TransparentQuadrilateral2D(double x1, double y1, double x2, double y2,		// HACK ARI
-    double x3, double y3, double x4, double y4, RGBColor col, bool fill, unsigned char transparency)
+    double x3, double y3, double x4, double y4, bool fill, unsigned char transparency, RGBColor col)
 {
 	int thickness = 1;
 	if(fill) thickness = -1; 	// negative values => filling
@@ -321,7 +319,7 @@ void TransparentQuadrilateral2D(double x1, double y1, double x2, double y2,		// 
  * @TODO Without transparency
  */
 static void Arc2D(double x, double y, double r, double start, double span,
-    RGBColor col, bool fill, unsigned char transparency)
+    bool fill, unsigned char transparency, RGBColor col)
 {
 	int thickness = 1;
 	if(fill) thickness = -1; 	// negative values => filling
@@ -337,29 +335,26 @@ static void Arc2D(double x, double y, double r, double start, double span,
 /**
  * @brief Draw an arc with center (x,y), radius r from angle start to end.
  */
-void DrawArc2D(double x, double y, double r, double start, double span,
-    RGBColor col)
+void DrawArc2D(double x, double y, double r, double start, double span, RGBColor col)
 {
-  Arc2D(x, y, r, start, span, col, false, 255);
+  Arc2D(x, y, r, start, span, false, 255, col);
 }
 
 /**
  * @brief Fill an arc with center (x,y), radius r from angle start to end.
  */
-void FillArc2D(double x, double y, double r, double start, double span,
-    RGBColor col)
+void FillArc2D(double x, double y, double r, double start, double span, RGBColor col)
 {
-  Arc2D(x, y, r, start, span, col, true, 255);
+  Arc2D(x, y, r, start, span, true, 255, col);
 }
 
 /**
  * @brief Fill an arc with center (x,y), radius r from angle start to end using
  * transparent color.
  */
-void TransparentArc2D(double x, double y, double r, double start, double span,
-    RGBColor col)
+void TransparentArc2D(double x, double y, double r, double start, double span, RGBColor col)
 {
-  Arc2D(x, y, r, start, span, col, true, 64);
+  Arc2D(x, y, r, start, span, true, 64, col);
 }
 
 /**
@@ -367,7 +362,7 @@ void TransparentArc2D(double x, double y, double r, double start, double span,
  * Note: fill and transparency ignored for now
  */
 static void Ellipse2D(double x, double y, double a, double b, double phi,
-    RGBColor col, bool fill, unsigned char transparency)
+    bool fill, unsigned char transparency, RGBColor col)
 {
 	int thickness = 1;
 	if(fill) thickness = -1; 	// negative values => filling
@@ -379,29 +374,26 @@ static void Ellipse2D(double x, double y, double a, double b, double phi,
 /**
  * @brief Draw a 2D Ellipse.
  */
-void DrawEllipse2D(double x, double y, double a, double b, double phi,
-    RGBColor col)
+void DrawEllipse2D(double x, double y, double a, double b, double phi, RGBColor col)
 {
-  Ellipse2D(x, y, a, b, phi, col, false, 255);
+  Ellipse2D(x, y, a, b, phi, false, 255, col);
 }
 
 
 /**
  * @brief Draw a 2D Ellipse.
  */
-void FillEllipse2D(double x, double y, double a, double b, double phi,
-    RGBColor col)
+void FillEllipse2D(double x, double y, double a, double b, double phi, RGBColor col)
 {
-  Ellipse2D(x, y, a, b, phi, col, true, 255);
+  Ellipse2D(x, y, a, b, phi, true, 255, col);
 }
 
 /**
  * @brief Draw a 2D Ellipse.
  */
-void TransparentEllipse2D(double x, double y, double a, double b, double phi,
-    RGBColor col)
+void TransparentEllipse2D(double x, double y, double a, double b, double phi, RGBColor col)
 {
-  Ellipse2D(x, y, a, b, phi, col, true, 64);
+  Ellipse2D(x, y, a, b, phi, true, 64, col);
 }
 
 }
