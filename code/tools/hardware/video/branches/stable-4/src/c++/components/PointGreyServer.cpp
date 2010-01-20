@@ -102,8 +102,8 @@ void PointGreyServer::LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo)
 
 FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_height)
 {
-  // note: we use only width to elect the video mode and assume height to be 3/4
-  // of width
+  // note: we use only width to select the video mode and assume height to be
+  // 3/4 of width
   // If we have several colour formats to choose from, we always select colour
   // over greyscale and select the one with hightest colour resolution, e.g. RGB
   // over YUV422
@@ -135,12 +135,15 @@ FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_heigh
   if(_width == 1280)
   {
     _height = 960;
-    return FlyCapture2::VIDEOMODE_1600x1200RGB;
+    return FlyCapture2::VIDEOMODE_1280x960RGB;
   }
-  // the default
-  _width = 640;
-  _height = 480;
-  return FlyCapture2::VIDEOMODE_640x480RGB;
+  else
+  {
+    // the default
+    _width = 640;
+    _height = 480;
+    return FlyCapture2::VIDEOMODE_640x480RGB;
+  }
 }
 
 FlyCapture2::FrameRate PointGreyServer::selectFrameRate(int &_fps)
