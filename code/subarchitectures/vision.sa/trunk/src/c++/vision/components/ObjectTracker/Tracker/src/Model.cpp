@@ -1,6 +1,7 @@
 
 #include "Model.h"
 
+using namespace Tracking;
 
 // Compute normal vectors of vertices
 void Model::computeNormals(){

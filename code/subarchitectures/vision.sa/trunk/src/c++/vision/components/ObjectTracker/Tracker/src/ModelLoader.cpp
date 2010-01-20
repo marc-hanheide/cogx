@@ -167,7 +167,7 @@ bool ModelLoader::LoadPly(Model &model, const char* filename){
 	
 	// Parse through vertex list
 	for(i=0; i<num_vertices; i++){
-		Model::Vertex v;
+		Vertex v;
 		v.pos.x = plyvertexlist[i].x;
 		v.pos.y = plyvertexlist[i].y;
 		v.pos.z = plyvertexlist[i].z;
@@ -176,16 +176,16 @@ bool ModelLoader::LoadPly(Model &model, const char* filename){
 		v.normal.z = plyvertexlist[i].nz;
 		v.texCoord.x = plyvertexlist[i].s;
 		v.texCoord.y = plyvertexlist[i].t;
-		model.m_vertexlist.push_back(v);
+		model.push_back(v);
 	}
 	
 	// Parse through face list
 	for(i=0; i<num_faces; i++){
-		Model::Face f;
+		Face f;
 		for(j=0; j<plyfacelist[i].nverts; j++){
 			f.v.push_back(plyfacelist[i].v[j]);
 		}
-		model.m_facelist.push_back(f);
+		model.push_back(f);
 	}
 	
 // 	for(i=0; i<num_edges; i++){

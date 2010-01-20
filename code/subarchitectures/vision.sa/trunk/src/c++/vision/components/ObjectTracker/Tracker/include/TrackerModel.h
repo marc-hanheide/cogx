@@ -20,8 +20,16 @@ namespace Tracking{
 
 class TrackerModel : public Model
 {
-public:
+private:
+	TrackerModel(const TrackerModel& m);
+	TrackerModel& operator=(const TrackerModel& m);
 
+public:
+	TrackerModel();
+	~TrackerModel();
+	
+	TrackerModel& operator=(const Model& m);
+	
 	struct Edge {
 		Edge(){ start=0; end=0; }
 		int start;      		 	// start vertex index
@@ -40,22 +48,11 @@ public:
 	std::vector<Edge> 		m_edgelist;			// edges of model (indices of vertexlist)
 	std::vector<Pass*>		m_passlist;
 	std::vector<int>			m_facepixellist;
-	std::vector<int> 		m_texturedfaces;
+	std::vector<int> 			m_texturedfaces;
 	
 	Texture* m_tex_original;		// original texture of model (not modified by tracker)
 	Texture* m_texture;				// texture of model modified by tracker (edge-texture)
 	bool m_textured;
-	char m_modelname[FN_LEN];
-	
-	// Constructors
-	TrackerModel();
-	TrackerModel(const TrackerModel& m);
-	TrackerModel(const Model& m);
-	~TrackerModel();
-	
-	// operators
-	TrackerModel& operator=(const TrackerModel& m2);
-	
 	
 	// computes, updates
 	void computeEdges();
