@@ -54,7 +54,7 @@ public:
   void ClearResults();
 	void ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr);
 	void GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj);
-	void DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr);
+	void DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool detected, bool matched);
 	int NumStereoMatches(StereoBase::Type type) {return stereoGestalts[type]->NumStereoMatches();}
 
 	/// TODO delete later

@@ -87,6 +87,8 @@ StereoEllipses::StereoEllipses(VisionCore *vc[2], StereoCamera *sc) : StereoBase
  */
 void StereoEllipses::Draw(int side)
 {
+	SetColor(RGBColor::magenta);
+
 /*	int nrRects = 0;
 	if(side == LEFT) nrRects = NumClosuresLeft2D();
 	else nrRects = NumClosuresRight2D();

@@ -160,6 +160,7 @@ const TmpFlap &StereoFlaps::Flaps2D(int side, int i)
  */
 void StereoFlaps::Draw(int side)
 {
+	SetColor(RGBColor::blue);
 	int nrFlaps = 0;
 	if(side == LEFT) nrFlaps = NumFlapsLeft2D();
 	else nrFlaps = NumFlapsRight2D();
@@ -181,8 +182,8 @@ void StereoFlaps::DrawMatched(int side)
 printf("StereoFlaps::DrawMatched: %u\n", flapMatches);
 	for(int i=0; i< flapMatches; i++)
 	{
-		flaps[side][i].surf[0].Draw(RGBColor::green);
-		flaps[side][i].surf[1].Draw(RGBColor::green);
+		flaps[side][i].surf[0].Draw(RGBColor::red);
+		flaps[side][i].surf[1].Draw(RGBColor::red);
 	}
 }
 
