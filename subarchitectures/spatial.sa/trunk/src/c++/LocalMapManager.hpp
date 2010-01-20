@@ -143,6 +143,19 @@ protected:
   bool m_bNoPlanes;
 
   IceUtil::Mutex m_Mutex;
+
+  //SLAM related
+  Cure::TransformedOdomPoseProvider m_TOPP;
+
+  bool m_firstScanReceived;
+
+  NavData::RobotPose2dPtr lastRobotPose;
+
+  Cure::Pose3D m_SlamRobotPose;
+  Cure::Pose3D m_CurrPose;
+  Cure::SensorPose m_LaserPoseR;
+  Cure::SensorPose m_CameraPoseR;
+
   // This grid map represents the current Place
   CharMap* m_lgm1;
   CharGridLineRayTracer* m_Glrt1;
@@ -166,23 +179,14 @@ protected:
   bool m_isUsingSeparateGridMaps;
   std::map<int, CharMap *> m_nodeGridMapsAlt;
 
+  //For plane object extraction
+  std::vector<GridObjectFinder *> m_planeObjectFinders;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
   PlaneMap* m_planeMap;
   CharMap* m_planeObstacleMap;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
+  std::string m_planeObjectWMID;
 
-  std::vector<GridObjectFinder *> m_planeObjectFinders;
-
-  Cure::TransformedOdomPoseProvider m_TOPP;
-
-  bool m_firstScanReceived;
-
-  NavData::RobotPose2dPtr lastRobotPose;
-
-  Cure::Pose3D m_SlamRobotPose;
-  Cure::Pose3D m_CurrPose;
-  Cure::SensorPose m_LaserPoseR;
-  Cure::SensorPose m_CameraPoseR;
-
+  //Interfaces
   ptz::PTZInterfacePrx m_ptzInterface;
 
   std::string m_RobotServerHost;

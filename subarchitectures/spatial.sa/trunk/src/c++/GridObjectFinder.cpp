@@ -54,6 +54,7 @@ GridObjectFinder::GridObjectFinder(IplImage *objectGrid, int objectXCenter,
   squareObjectSize.height = objRadius*2+1;
 
   IplImage *squaredObject = cvCreateImage(squareObjectSize, IPL_DEPTH_8U, 1);
+  squaredObject->origin = 1;
   cvSetZero(squaredObject);
   CvPoint offset;
   offset.x = objRadius - objectXCenter + 2;
@@ -70,6 +71,7 @@ GridObjectFinder::GridObjectFinder(IplImage *objectGrid, int objectXCenter,
 
   for (double angle = 0.0; angle <=maxAngle; angle += m_angStep) {
     IplImage *newImage = cvCreateImage(squareObjectSize, IPL_DEPTH_8U, 1);
+    newImage->origin = 1;
 
     double degAngle = 180.0/M_PI*angle;
     CvMat* rotationMatrix = cvCreateMat(2, 3, CV_32FC1);
@@ -101,7 +103,8 @@ createTableFinder(void)
 {
   CvSize size = {11, 11};
   IplImage *objIm = cvCreateImage(size, IPL_DEPTH_8U, 1);
-  cvSet(objIm, CV_RGB(0,0,0));
+  objIm->origin = 1;
+  cvSet(objIm, CV_RGB(255,255,255));
   GridObjectFinder *newFinder = new GridObjectFinder(objIm, 6, 6, QUARTER_SYMMETRY);
   cvReleaseImage(&objIm);
   return newFinder;
@@ -119,17 +122,23 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
   enlargedSize.height = image->height+borderWidth*2;
 
   IplImage *enlargedImage = cvCreateImage(enlargedSize, IPL_DEPTH_8U, 1);
+  enlargedImage->origin = 1;
   cvSetZero(enlargedImage);
   CvPoint offset;
   offset.x = borderWidth;
   offset.y = borderWidth;
   cvCopyMakeBorder(image, enlargedImage, offset, IPL_BORDER_CONSTANT);
 
+  double tmp1, tmp2;
+  cvMinMaxLoc(enlargedImage, &tmp1, &tmp2);
+  cout << tmp1 << "  " << tmp2 << "\n";
+
   CvSize outputSize;
   outputSize.width = enlargedImage->width-objectWidth+1;
   outputSize.height = enlargedImage->height-objectWidth+1;
 
   IplImage *scoreImage = cvCreateImage(outputSize, IPL_DEPTH_32F, 1);
+  scoreImage->origin = 1;
 
   double angle = 0.0;
   double bestval = FLT_MAX;
@@ -137,6 +146,8 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
   CvPoint bestPoint;
 
   cvNamedWindow( "Score", 1 );
+//  cvNamedWindow( "Template", 1 );
+  cvNamedWindow( "Enlarged", 1 );
 
   for (std::vector<IplImage *>::iterator it = m_aspectImages.begin();
       it != m_aspectImages.end(); it++) {
@@ -145,7 +156,7 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
 
     double minval, tmp;
     CvPoint minPoint;
-    cvNormalize(scoreImage, scoreImage);
+    cvNormalize(scoreImage, scoreImage, 1, 0, CV_MINMAX);
     cvMinMaxLoc(scoreImage, &minval, &tmp, &minPoint);
 
     if (minval < bestval) {
@@ -154,7 +165,9 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
       bestAngle = angle;
     }
     cvShowImage( "Score", scoreImage );
-    cvWaitKey(0);
+//    cvShowImage( "Template", *it );
+    cvShowImage( "Enlarged", enlargedImage );
+//    cvWaitKey(0);
     angle += m_angStep;
   }
 
@@ -169,7 +182,7 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
 }
 
 void 
-GridObjectFinder::findObject(Cure::LocalGridMap<unsigned int> &lgm, int *outX, 
+GridObjectFinder::findObject(Cure::LocalGridMap<unsigned char> &lgm, int *outX, 
     int *outY, double *outAngle, double *outConfidence)
 {
   int lgmSize = lgm.getSize(); 
@@ -178,15 +191,18 @@ GridObjectFinder::findObject(Cure::LocalGridMap<unsigned int> &lgm, int *outX,
   size.height = size.width;
 
   IplImage *lgmImage = cvCreateImage(size, IPL_DEPTH_8U, 1);
+  lgmImage->origin = 1;
   int lp = 0;
   for(int x = -lgmSize ; x <= lgmSize; x++){
     for(int y = -lgmSize ; y <= lgmSize; y++){ 
-      cvSet2D(lgmImage,y+lgmSize,x+lgmSize,CV_RGB(lgm[lp], 
+      cvSet2D(lgmImage,x+lgmSize,y+lgmSize,CV_RGB(lgm[lp], 
 	    lgm[lp], lgm[lp]));
       lp++;
     }
   }
   findObject(lgmImage, outX, outY, outAngle, outConfidence);
+  *outX -= lgmSize;
+  *outY -= lgmSize;
   cvReleaseImage(&lgmImage);
 }
 };

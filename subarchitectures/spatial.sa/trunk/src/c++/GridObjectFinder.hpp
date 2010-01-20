@@ -38,7 +38,7 @@ namespace spatial {
 
       void findObject(IplImage *image, int *outX, int *outY, double *outAngle,
 	  double *outConfidence = 0);
-      void findObject(Cure::LocalGridMap<unsigned int> &lgm, int *outX, int *outY, double *outAngle,
+      void findObject(Cure::LocalGridMap<unsigned char> &lgm, int *outX, int *outY, double *outAngle,
 	  double *outConfidence = 0);
 
     private:

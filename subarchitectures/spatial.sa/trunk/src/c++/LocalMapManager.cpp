@@ -148,7 +148,7 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_lgm2 = new CharMap(70, 0.1, '2', CharMap::MAP1);
   m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
 
-  m_planeObstacleMap = new CharMap(70, 0.1, '2', CharMap::MAP1);
+  m_planeObstacleMap = new CharMap(70, 0.1, 0, CharMap::MAP1);
   m_DisplayPlaneMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_planeObstacleMap);
 
   if (_config.find("--no-tentative-window") == _config.end()) {
@@ -325,10 +325,16 @@ void LocalMapManager::runComponent()
 
 void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
-  double oldX = lastRobotPose->x;
-  double oldY = lastRobotPose->y;
-  double oldTheta = lastRobotPose->theta;
-  cast::cdl::CASTTime oldTime = lastRobotPose->time;
+  double oldX = 0.0;
+  double oldY = 0.0;
+  double oldTheta = 0.0;
+  cast::cdl::CASTTime oldTime;
+  if (lastRobotPose) {
+    oldX = lastRobotPose->x;
+    oldY = lastRobotPose->y;
+    oldTheta = lastRobotPose->theta;
+    oldTime = lastRobotPose->time;
+  }
 
   try {
     lastRobotPose =
@@ -336,6 +342,7 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   }
   catch (DoesNotExistOnWMException e) {
     log("Error! robotPose missing on WM!");
+    return;
   }
 
   double distMoved = sqrt((oldX - lastRobotPose->x)*(oldX - lastRobotPose->x) +
@@ -727,7 +734,7 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
 
 void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 				   &objID){
-  debug("newConvexHull called");
+  log("newConvexHull called");
   if (!m_bNoPlanes) {
 
     VisionData::ConvexHullPtr oobj =
@@ -736,11 +743,11 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
     // Check if the robot has been still long enough
     double stopTime = oobj->time.s + 0.000001*oobj->time.us -
       (m_lastTimeMoved.s + 0.000001*m_lastTimeMoved.us);
-    log ("Been stopped for %f seconds", stopTime);
+//    log ("Been stopped for %f seconds", stopTime);
 
     if (stopTime > 1.0) {
 
-      //    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
+//    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
       Cure::Transformation3D cam2WorldTrans =
 	getCameraToWorldTransform();
       double tmp[6];
@@ -753,19 +760,19 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 	Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
 	Cure::Vector3D to;
 	cam2WorldTrans.invTransform(from, to);
-	//    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+//    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
 	oobj->PointsSeq[i].x = to.X[0];
 	oobj->PointsSeq[i].y = to.X[1];
 	oobj->PointsSeq[i].z = to.X[2];
-	//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
       }
-      //    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
-      //    Cure::Vector3D to;
-      //    cam2WorldTrans.invTransform(from, to);
-      //    oobj->center.x = to.X[0];
-      //    oobj->center.y = to.X[1];
-      //    oobj->center.z = to.X[2];
-      //    cam2WorldTrans.getCoordinates(tmp);
+//    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
+//    Cure::Vector3D to;
+//    cam2WorldTrans.invTransform(from, to);
+//    oobj->center.x = to.X[0];
+//    oobj->center.y = to.X[1];
+//    oobj->center.z = to.X[2];
+//    cam2WorldTrans.getCoordinates(tmp);
 
 
       // Filter polygons that are not horizontal planes
@@ -813,7 +820,7 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 	    for (PlaneList::iterator it = planeList.begin();
 		it != planeList.end(); it++) {
 	      if (it->second > 4.0) {
-		(*m_planeObstacleMap)(x,y) = '1';
+		(*m_planeObstacleMap)(x,y) = 255;
 		break;
 	      }
 	    }
@@ -827,7 +834,42 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
       }
 
 
-      //m_planeMap->print(std::cout);
+      // Extract best guesses for plane objects
+      for (vector<GridObjectFinder*>::iterator it = m_planeObjectFinders.begin();
+	  it != m_planeObjectFinders.end(); it++) {
+	int outX, outY;
+	double outAngle, outConfidence;
+	(*it)->findObject(*m_planeObstacleMap, &outX, &outY, &outAngle, 
+	    &outConfidence);
+	FrontierInterface::ObservedPlaneObjectPtr
+	  newPlaneObject = new FrontierInterface::ObservedPlaneObject;
+
+	double realX, realY;
+	m_planeMap->index2WorldCoords(outX, outY, realX, realY);
+
+	newPlaneObject->id = 0;
+	newPlaneObject->x = realX;
+	newPlaneObject->y = realY;
+	newPlaneObject->angle = outAngle;
+	newPlaneObject->height = 1.0;
+
+	log("X=%d, Y=%d", outX,outY);
+
+	if (m_planeObjectWMID == "") {
+	  m_planeObjectWMID = newDataID();
+	  addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
+	    (m_planeObjectWMID, newPlaneObject);
+	}
+	else {
+	  try {
+	    overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
+	      (m_planeObjectWMID, newPlaneObject);
+	  }
+	  catch (DoesNotExistOnWMException) {
+	    log("Error! Could not overwrite plane object on WM; missing!");
+	  }
+	}
+      }
     }
   }
 }
