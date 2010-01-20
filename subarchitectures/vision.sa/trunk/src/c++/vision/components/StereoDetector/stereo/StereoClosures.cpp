@@ -84,9 +84,11 @@ StereoClosures::StereoClosures(VisionCore *vc[2], StereoCamera *sc) : StereoBase
 
 /**
  * @brief Draw closures to the stereo images.
+ * @param side Left or right image from stereo rig.
  */
 void StereoClosures::Draw(int side)
 {
+	SetColor(RGBColor::green);
 	int nrRects = 0;
 	if(side == LEFT) nrRects = NumClosuresLeft2D();
 	else nrRects = NumClosuresRight2D();
@@ -100,11 +102,12 @@ void StereoClosures::Draw(int side)
 
 /**
  * @brief Draw matched closures.
+ * @param side Left or right image from stereo rig.
  */
 void StereoClosures::DrawMatched(int side)
 {
 	for(int i=0; i< closMatches; i++)
-		closures[side][i].surf.Draw(RGBColor::green);
+		closures[side][i].surf.Draw(RGBColor::red);
 }
 
 

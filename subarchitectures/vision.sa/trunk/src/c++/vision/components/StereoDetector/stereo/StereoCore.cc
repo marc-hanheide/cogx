@@ -59,6 +59,9 @@ StereoCore::~StereoCore()
 }
 
 
+/**
+ * @brief Initialisation of the stereo Gestalt classes.
+ */
 void StereoCore::InitStereoGestalts()
 {
   // Add all Gestalt principles we know
@@ -90,7 +93,7 @@ void StereoCore::ClearResults()
 
 
 /**
- * @brief Set images and set active draw area?
+ * @brief Set the stereo images.
  * @param side Left or right image
  */
 void StereoCore::SetImages(IplImage *iIl, IplImage *iIr)
@@ -101,7 +104,7 @@ void StereoCore::SetImages(IplImage *iIl, IplImage *iIr)
 
 /**
  * @brief Set the active draw area to left or right stereo image.
- * @param side Left or right image
+ * @param side Left or right image of stereo.
  */
 void StereoCore::SetActiveDrawAreaSide(int side)
 {
@@ -113,6 +116,8 @@ void StereoCore::SetActiveDrawAreaSide(int side)
 /**
  * @brief Process stereo image 
  * @param runtime_ms granted runtime in [ms] for each image
+ * @param iIl Left stereo image.
+ * @param iIr Right stereo image.
  */
 void StereoCore::ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr)
 {
@@ -173,8 +178,12 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
 /**
  * @brief Draw the results into a iplImage
  * @param type Type of stereo object.
+ * @param iIl Left stereo image.
+ * @param iIr Right stereo image.
+ * @param detected Draw the detected features.
+ * @param matched Draw the matched features.
  */
-void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr)
+void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool detected, bool matched)
 {
 	SetImages(iIl, iIr);
 
@@ -184,8 +193,8 @@ void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImag
 	for(int side = LEFT; side <= RIGHT; side++)
 	{
 		SetActiveDrawAreaSide(side);
-		stereoGestalts[type]->Draw(side);
-		stereoGestalts[type]->DrawMatched(side);
+		if(detected) stereoGestalts[type]->Draw(side);
+		if(matched) stereoGestalts[type]->DrawMatched(side);
 	}
 }
 

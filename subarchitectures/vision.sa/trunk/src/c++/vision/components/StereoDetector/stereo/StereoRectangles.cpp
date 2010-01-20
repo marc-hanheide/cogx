@@ -87,6 +87,7 @@ StereoRectangles::StereoRectangles(VisionCore *vc[2], StereoCamera *sc) : Stereo
  */
 void StereoRectangles::Draw(int side)
 {
+	SetColor(RGBColor::yellow);
 	int nrRects = 0;
 	if(side == LEFT) nrRects = NumRectanglesLeft2D();
 	else nrRects = NumRectanglesRight2D();
@@ -109,7 +110,7 @@ void StereoRectangles::DrawMatched(int side)
 printf("StereoRectangles::DrawMatched: %u\n", rectMatches);
 
 	for(int i=0; i< rectMatches; i++)
-		rectangles[side][i].surf.Draw(RGBColor::green);
+		rectangles[side][i].surf.Draw(RGBColor::red);
 }
 
 
