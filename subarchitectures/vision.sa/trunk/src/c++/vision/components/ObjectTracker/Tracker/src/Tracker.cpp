@@ -79,8 +79,6 @@ bool Tracker::initGL(){
 	const GLubyte *str;
 	int glOcclusionQueryAvailable;
 	
-	// Check for OpenGL and GLSL
-	
 	// Check for Extension
 	str = glGetString(GL_EXTENSIONS);
 	glOcclusionQueryAvailable = (strstr((const char *)str, "GL_ARB_occlusion_query") != NULL);
@@ -126,7 +124,6 @@ bool Tracker::init(	int width, int height,			// image size in pixels
 	// Particles
 	m_distribution = new Distribution();
 	m_predictor.sample(m_distribution, params.number_of_particles, params.zP, ip);
-	printf("particles: %d\n", params.number_of_particles);
 	
 	return initInternal();
 }

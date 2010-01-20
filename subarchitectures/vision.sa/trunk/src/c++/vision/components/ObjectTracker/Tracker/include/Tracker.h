@@ -25,7 +25,7 @@
 
 namespace Tracking{
 
-/** @brief class Tracker*/
+/** @brief class Tracker */
 class Tracker{
 protected:
 	typedef struct Parameter{

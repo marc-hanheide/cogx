@@ -16,7 +16,7 @@ using namespace Math;
 
 
 struct Parameters{
-	Tracking::Particle 						constraints;
+	Tracking::Particle 	constraints;
 	
 	int									mode;
 	int 								recursions;
@@ -42,7 +42,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerMo
 	}
 
 	// Parse through vertices and store content in Model
-	Tracking::TrackerModel::Vertex v;
+	Tracking::Vertex v;
 	for(i=0; i<geom->vertices.size(); i++){
 		v.pos.x = geom->vertices[i].pos.x;
 		v.pos.y = geom->vertices[i].pos.y;
@@ -52,15 +52,15 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerMo
 		v.normal.z = geom->vertices[i].normal.z;
 		v.texCoord.x = geom->vertices[i].texCoord.x;
 		v.texCoord.y = geom->vertices[i].texCoord.y;
-		model->m_vertexlist.push_back(v);
+		model->push_back(v);
 //	printf("Vertex: %f %f %f, %f %f %f \n", v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z);
 	}
 	
 	// Parse through faces and store content in Model
-	Tracking::TrackerModel::Face f;
+	Tracking::Face f;
 	for(i=0; i<geom->faces.size(); i++){	
 		f.v = geom->faces[i].vertices;
-		model->m_facelist.push_back(f);
+		model->push_back(f);
 		//printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
 	}
 
@@ -76,40 +76,40 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerMo
 	return true;
 }
 
-// converts a Tracker Model to a VisionData::GeometryModel
-bool convertTrackerModel(Tracking::TrackerModel* model, VisionData::GeometryModelPtr geom){
-	unsigned int i;
-	
-	if(!model){
-		printf("[TrackerModel_Converter] no geometry found\n");
-		return false;
-	}
-	
-	// Parse through vertices and store content in Model
-	for(i=0; i<model->m_vertexlist.size(); i++){
-		VisionData::Vertex v;
-		v.pos.x = model->m_vertexlist[i].pos.x;
-		v.pos.y = model->m_vertexlist[i].pos.y;
-		v.pos.z = model->m_vertexlist[i].pos.z;
-		v.normal.x = model->m_vertexlist[i].normal.x;
-		v.normal.y = model->m_vertexlist[i].normal.y;
-		v.normal.z = model->m_vertexlist[i].normal.z;
-		v.texCoord.x = model->m_vertexlist[i].texCoord.x;
-		v.texCoord.y = model->m_vertexlist[i].texCoord.y;
-		geom->vertices.push_back(v);
-		//printf("Vertex: %f %f %f, %f %f %f \n", v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z);
-	}
-	
-	// Parse through faces and store content in Model
-	for(i=0; i<model->m_facelist.size(); i++){
-		VisionData::Face f;
-		f.vertices = model->m_facelist[i].v;
-		geom->faces.push_back(f);	
-	}
-	
-	
-	return true;
-}
+// // converts a Tracker Model to a VisionData::GeometryModel
+// bool convertTrackerModel(Tracking::TrackerModel* model, VisionData::GeometryModelPtr geom){
+// 	unsigned int i;
+// 	
+// 	if(!model){
+// 		printf("[TrackerModel_Converter] no geometry found\n");
+// 		return false;
+// 	}
+// 	
+// 	// Parse through vertices and store content in Model
+// 	for(i=0; i<model->m_vertexlist.size(); i++){
+// 		VisionData::Vertex v;
+// 		v.pos.x = model->m_vertexlist[i].pos.x;
+// 		v.pos.y = model->m_vertexlist[i].pos.y;
+// 		v.pos.z = model->m_vertexlist[i].pos.z;
+// 		v.normal.x = model->m_vertexlist[i].normal.x;
+// 		v.normal.y = model->m_vertexlist[i].normal.y;
+// 		v.normal.z = model->m_vertexlist[i].normal.z;
+// 		v.texCoord.x = model->m_vertexlist[i].texCoord.x;
+// 		v.texCoord.y = model->m_vertexlist[i].texCoord.y;
+// 		geom->vertices.push_back(v);
+// 		//printf("Vertex: %f %f %f, %f %f %f \n", v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z);
+// 	}
+// 	
+// 	// Parse through faces and store content in Model
+// 	for(i=0; i<model->m_facelist.size(); i++){
+// 		VisionData::Face f;
+// 		f.vertices = model->m_facelist[i].v;
+// 		geom->faces.push_back(f);	
+// 	}
+// 	
+// 	
+// 	return true;
+// }
 
 // converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
 bool convertParticle2Pose(Tracking::Pose& trPose, Pose3& pose){

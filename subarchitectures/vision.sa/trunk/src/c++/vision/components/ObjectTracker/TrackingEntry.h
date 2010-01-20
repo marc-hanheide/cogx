@@ -33,7 +33,7 @@ public:
 		particles = 20;
 	}
 	
-	void track(){ 
+	void track(){
 		tracker->track(model, camera,	recursions, particles,	constraints, trackpose,	0.0);
 	}
 };

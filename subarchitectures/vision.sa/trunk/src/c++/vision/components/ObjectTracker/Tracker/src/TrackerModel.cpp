@@ -13,49 +13,28 @@ TrackerModel::TrackerModel(){
 	m_texture = 0;
 	m_textured = false;
 	
-	sprintf(m_modelname, "");
-
 	int id;
 	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
 		exit(1);
 	m_shadeTexturing = g_Resources->GetShader(id);
 }
 
-TrackerModel::TrackerModel(const TrackerModel& m2){
-	m_vertexlist = m2.m_vertexlist;
-	m_facelist = m2.m_facelist;
-	m_edgelist = m2.m_edgelist;
-	m_passlist = m2.m_passlist;
-	
-	sprintf(m_modelname, "%s", m2.m_modelname);
-	
-	m_tex_original = m2.m_tex_original;
-	m_texture = m2.m_texture;
-	m_textured = m2.m_textured;
-}
-
-TrackerModel::TrackerModel(const Model& m){
-	printf("Test\n");
-}
-
 TrackerModel::~TrackerModel(){	
 
 }
 
-TrackerModel& TrackerModel::operator=(const TrackerModel& m2){
+TrackerModel& TrackerModel::operator=(const Model& m){
+	m_vertexlist = m.m_vertexlist;
+	m_facelist = m.m_facelist;
+	m_edgelist.clear();
+	m_passlist.clear();	
+	m_facepixellist.assign(m_facelist.size(), 0);
+	m_texturedfaces.clear();
 	
-	m_vertexlist = m2.m_vertexlist;
-	m_facelist = m2.m_facelist;
-	m_edgelist = m2.m_edgelist;
-	m_passlist = m2.m_passlist;
+	computeEdges();
+	Update();
 	
-	sprintf(m_modelname, "%s", m2.m_modelname);
-	
-	m_tex_original = m2.m_tex_original;
-	m_texture = m2.m_texture;
-	m_textured = m2.m_textured;
-	
-	return *this;
+	return (*this);
 }
 
 // computes, updates

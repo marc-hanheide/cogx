@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
 		return 1;
 	model = g_Resources->GetModel(id);
 	
-	
 	// *************************************************************************************
   // Main Loop
 	printf("\nRunning (Mode = %i)\n", params.mode);

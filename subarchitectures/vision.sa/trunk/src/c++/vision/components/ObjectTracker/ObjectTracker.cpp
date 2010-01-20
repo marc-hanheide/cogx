@@ -231,7 +231,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
 
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
   loadCameraParameters(&m_camera, image.camPars, 0.1, 10.0);
-	
+  
 	if(m_params.mode==1)
 		m_tracker = new TextureTracker();
 	else
@@ -246,7 +246,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
 		m_running = false;
 	}
 	m_tracker->setCamPerspective(&m_camera);
-  
+	 
   log("... initialisation successfull!");
 }
 
@@ -268,7 +268,8 @@ void ObjectTracker::initTrackingEntry(int i){
 	if(!m_trackinglist[i].tracker->init(m_ImageWidth, m_ImageHeight,			// image size in pixels
 																			m_params.edgeMatchingTol,					// edge matching tolerance in degree
 																			m_params.minTexGrabAngle,					// goal tracking time in seconds (not implemented yet)
-																			Particle(0.0)))										// initial pose (where to reset when pressing 'z')
+																			Particle(0.0),										// initial pose (where to reset when pressing 'z')
+																			m_params.constraints));
 	{														
 		log("  error: initialisation of tracker failed!");
 		m_running = false;
@@ -290,13 +291,14 @@ void ObjectTracker::initTrackingEntry(int i){
 		log("  error can not convert VisualObject to tracker model");
 		return;
 	}
-	sprintf(m_trackinglist[i].model->m_modelname, "%s", m_trackinglist[i].obj->label.c_str());
+// 	sprintf(m_trackinglist[i].model->m_modelname, "%s", m_trackinglist[i].obj->label.c_str());
 	m_trackinglist[i].model->computeFaceNormals();
 	m_trackinglist[i].model->computeEdges();
 	m_trackinglist[i].model->Update();
 	//m_trackinglist[i].model->print();
 
 	m_trackinglist[i].camera = &m_camera;
+	
 	m_trackinglist[i].constraints = m_params.constraints;
 	convertPose2Particle(m_trackinglist[i].obj->pose, m_trackinglist[i].detectpose);
 	m_trackinglist[i].trackpose = m_trackinglist[i].detectpose;
@@ -305,7 +307,7 @@ void ObjectTracker::initTrackingEntry(int i){
 
 	m_trackinglist[i].valid = true;
 	
-	log("  initialisation successfull");
+	log("  initialisation of new tracking entry successfull");
 }
 
 void ObjectTracker::runTracker(const Video::Image &image){
@@ -315,18 +317,20 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	fTimeTracker=0.0;
 	int i;
 	
+	
+	
 	// * Tracking *
 	m_timer.Update();
 	dTimeStamp = m_timer.GetApplicationTime();
 
-	if(m_testmode){
-		m_camera.Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
-									0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
-									0.0, 1.0, 0.0,											// Up vector (y-axis)
-									45, image.width, image.height,		  // field of view angle, image width and height
-									0.1, 10.0,													// camera z-clipping planes (far, near)
-									GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
-	}
+// 	if(m_testmode){
+// 		m_camera->Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
+// 										0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
+// 										0.0, 1.0, 0.0,											// Up vector (y-axis)
+// 										45, image.width, image.height,		  // field of view angle, image width and height
+// 										0.1, 10.0,													// camera z-clipping planes (far, near)
+// 										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
+// 	}
 
 	m_tracker->image_processing((unsigned char*)(&image.data[0]));
 	m_tracker->drawImage(NULL);
@@ -338,8 +342,7 @@ void ObjectTracker::runTracker(const Video::Image &image){
 			return;
 		}else{			
 			// Track model
-			m_trackinglist[i].track();
-			
+// 			m_trackinglist[i].track();
 			
 			// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 			convertParticle2Pose(m_trackinglist[i].trackpose, m_trackinglist[i].obj->pose);
@@ -350,12 +353,12 @@ void ObjectTracker::runTracker(const Video::Image &image){
 			overwriteWorkingMemory(m_trackinglist[i].castWMA.id, m_trackinglist[i].obj);
 		}
 	}
-
+	
 	m_tracker->drawCoordinates();
 	for(int id=0; id<i; id++){
 			m_trackinglist[id].tracker->drawResult(&m_trackinglist[id].trackpose, m_trackinglist[id].model);
 	}
-
+	
 	m_tracker->swap();
 
 	fTimeTracker = m_timer.Update();
