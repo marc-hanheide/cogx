@@ -49,12 +49,12 @@ void StereoDetector::configure(const map<string,string> & _config)
 	cmd_detect = false;
 	cmd_single = false;
 	showImages = false;
-	showDetected = true;
-	showMatched = false;
+	showDetected = false;
+	showMatched = true;
 	debug = false;
 	single = false;
-	overlays = 1;
-	VOtoWrite = 1;
+	overlays = 2;
+	VOtoWrite = 2;
 
   map<string,string>::const_iterator it;
   if((it = _config.find("--videoname")) != _config.end())
@@ -186,8 +186,6 @@ void StereoDetector::processImage()
 	log("process new image");
 
 	int runtime = 1200;											// processing time for detection for left AND right image
-	static unsigned frame_counter = 0;
-	frame_counter++;
 
 	// Convert images (from Video::Image to iplImage)
 	iplImage_l = convertImageToIpl(image_l);
@@ -336,7 +334,15 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 		// add visual object to working memory
 		std::string objectID = newDataID();
 		objectIDs.push_back(objectID);
+ 		log("Add new visual object to working memory: %s", obj->label.c_str());
+
+for(unsigned i=0; i<obj->model->vertices.size(); i++)
+		printf("    Sent object vertices: %4.3f - %4.3f - %4.3f\n", obj->model->vertices[i].pos.x, obj->model->vertices[i].pos.y, obj->model->vertices[i].pos.z);
+
 		addToWorkingMemory(objectID, obj);
+
+//cvWaitKey(200);	/// TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+
 	}
 }
 
