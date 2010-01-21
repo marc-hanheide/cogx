@@ -40,6 +40,9 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	
+for(unsigned i=0; i<obj->model->vertices.size(); i++)
+		printf("    Got object vertices: %4.3f - %4.3f - %4.3f\n", obj->model->vertices[i].pos.x, obj->model->vertices[i].pos.y, obj->model->vertices[i].pos.z);
+
 	ModelEntry newModelEntry;
 	
 	if(!convertGeometryModel(obj->model, newModelEntry.model)){
