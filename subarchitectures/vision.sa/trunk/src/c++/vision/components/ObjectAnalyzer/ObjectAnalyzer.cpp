@@ -136,7 +136,10 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   }
 
   pvobj->time = getCASTTime();
-  overwriteWorkingMemory(ProtoObjectMap[ptask->protoObjectId].visualObjId, pvobj);
+  if(ProtoObjectMap.find(ptask->protoObjectId) != ProtoObjectMap.end())
+	overwriteWorkingMemory(ProtoObjectMap[ptask->protoObjectId].visualObjId, pvobj);
+  else
+	log("Proto object ID %s deleted. Visual object will not be updated", ptask->protoObjectId.c_str());
 }
 
 
