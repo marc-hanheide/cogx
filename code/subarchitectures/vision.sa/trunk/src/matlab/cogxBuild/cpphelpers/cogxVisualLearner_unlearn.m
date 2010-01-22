@@ -9,7 +9,7 @@ function cogxVisualLearner_unlearn(avw, X, B, pts3d)
    
    global Params
    B = double(B);
-   B = (B==120);
+   B = (B==1);
    X = uint8(X);
    f = extAPfeatures(X,B,Params.FV,pts3d);
 
