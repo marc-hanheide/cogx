@@ -98,7 +98,7 @@ module cogx {
 	
 	enum Shape { cylindrical, spherical, cubic, compact, elongated, unknownShape };
 	
-	enum ObjectType { box, ball, cube, mug, unknownObjectType }; 
+	enum ObjectType { box, ball, cube, mug, thing, unknownObjectType }; 
 	
 	enum Color { red, blue, yellow, green, white, black, orange, unknownColor };
 	
