@@ -30,10 +30,6 @@ numeric_settings = ("alpha", "error_threshold", "information_weight", "success_w
 
 class LearningAgent(Agent):
     def __init__(self, name, mapltask, planner, simulator):
-        #hack: convert config elements to floats
-        for key in numeric_settings:
-            global_vars.mapsim_config.learning.__dict__[key] = float(global_vars.mapsim_config.learning.__dict__[key])
-        
         self.macros = []
         self.name2macro = {}
 
@@ -304,7 +300,7 @@ class LearningAgent(Agent):
             self.task.replan()
             assert self.task.get_plan()
 
-            if global_vars.mapsim_config.write_pdffiles.lower() == "true":
+            if global_vars.mapsim_config.write_pdffiles:
                 G = plan.to_dot()
                 G.layout(prog='dot')
                 G.draw("macroplan%d.pdf" % turn)
