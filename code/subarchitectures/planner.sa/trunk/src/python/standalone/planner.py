@@ -245,7 +245,8 @@ class BasePlanner(object):
     """
     def __init__(self, main_planner):
         self.main_planner = main_planner
-        self.executable = global_vars.config.base_planner.__dict__[self.__class__.__name__].executable
+        self.config = global_vars.config.base_planner.__dict__[self.__class__.__name__]
+        self.executable = self.config.executable
         if not os.path.exists(self.executable):
             print "Executable %s does not exist!" % self.executable
             print "Please make sure it has been built and paths are set properly in config.ini."
@@ -276,7 +277,7 @@ def get_planner_tempdir(base_path):
     if it already exists). Otherwise, a random directory will be created in a race safe
     way (using the tmpfile module).
     """
-    if global_vars.config.static_temp_dir.lower() == "true":
+    if global_vars.config.static_temp_dir:
         tmp_dir = os.path.join(base_path, "static_dir_for_debugging")
         if os.path.exists(tmp_dir):
             utils.removeall(tmp_dir)  # remove old version
@@ -303,23 +304,12 @@ class ContinualAxiomsFF(BasePlanner):
         domain_path, problem_path, plan_path, stdout_path = input_data
         executable = os.path.join(global_vars.src_path, self.executable)
         cmd = "%(executable)s -o %(domain_path)s -f %(problem_path)s -O %(plan_path)s" % locals()
-        proc = utils.run_process(cmd, output=stdout_path, error=stdout_path)
-        
-#        stdout_output = utils.run_command(cmd, output=stdout_path)
-#         print "Planner output:"
-#         print stdout_output
+        proc,_,_ = utils.run_process(cmd, output=stdout_path, error=stdout_path)
         
         if proc.returncode != 0:
-            print "Warning: FF returned with nonzero exitcode:\n\n>>>"
-            print "Call was:", cmd
-            print open(stdout_path).read()
-            print "<<<\n"
-            if proc.returncode > 0:
-                print "Exit code was %d" % proc.returncode
-            else:
-                print "Killed by signal %d" % -proc.returncode
+            utils.print_errors(proc, cmd, open(stdout_path).read(), "FF")
             return None
-
+        
         try:
             pddl_output = open(plan_path).read()
         except IOError:
@@ -372,7 +362,7 @@ class Downward(BasePlanner):
         planning_tmp_dir =  global_vars.config.tmp_dir
         tmp_dir = get_planner_tempdir(planning_tmp_dir)
 
-        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "sas_plan", "stdout.out")]
+        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "output.sas", "output", "sas_plan", "stdout.out")]
 
         w = task.FDWriter()
         dom_str = "\n".join(w.write_domain(_task.mapltask.domain))
@@ -386,35 +376,51 @@ class Downward(BasePlanner):
             f.close()
         paths.append(tmp_dir)
         return paths
+            
 
     def _run(self, input_data, task):
-        domain_path, problem_path, mutex_path, plan_path, stdout_path, tmp_dir = input_data
-        executable = os.path.join(global_vars.src_path, self.executable)
-        cmd = "%(executable)s  %(domain_path)s %(problem_path)s %(mutex_path)s" % locals()
-        proc = utils.run_process(cmd, output=stdout_path, error=stdout_path, dir=tmp_dir)
+        import subprocess
+        domain_path, problem_path, mutex_path, output_sas_path, output_path, plan_path, stdout_path, tmp_dir = input_data
+        exec_path = os.path.join(global_vars.src_path, self.executable)
+        search_args = self.config.search_args
+
+        output = open(stdout_path, "w")
         
-#        stdout_output = utils.run_command(cmd, output=stdout_path)
-#         print "Planner output:"
-#         print stdout_output
+        cmd = "%(exec_path)s/translate/translate.py  %(domain_path)s %(problem_path)s -m %(mutex_path)s" % locals()
+        proc, translate_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, dir=tmp_dir, wait=True)
+        output.write(translate_out)
         
         if proc.returncode != 0:
-            print "Warning: Fast Downward returned with nonzero exitcode:\n\n>>>"
-            print "Call was:", cmd
-            print open(stdout_path).read()
-            print "<<<\n"
-            if proc.returncode > 0:
-                print "Exit code was %d" % proc.returncode
-            else:
-                print "Killed by signal %d" % -proc.returncode
+            utils.print_errors(proc, cmd, translate_out, "Fast Downward Translate")
             return None
 
+        cmd = "%(exec_path)s/preprocess/preprocess" % locals()
+        proc, prep_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_sas_path, dir=tmp_dir, wait=True)
+        output.write(prep_out)
+        
+        if proc.returncode != 0:
+            utils.print_errors(proc, cmd, prep_out, "Fast Downward Preprocess")
+            return None
+
+        cmd = "%(exec_path)s/search/search %(search_args)s" % locals()
+        proc, search_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_path, dir=tmp_dir, wait=True)
+        output.write(search_out)
+        
+        if proc.returncode != 0:
+            utils.print_errors(proc, cmd, search_out, "Fast Downward Search")
+            return None
+
+        output.close()
+        
         try:
             pddl_output = open(plan_path).read()
         except IOError:
             print "Warning: Fast Downward did not find a plan or crashed."
             print "Call was:", cmd
             print "FD output was:\n\n>>>"
-            print open(stdout_path).read()
+            print translate_out
+            print prep_out
+            print search_out
             print "<<<\n"
             return None
         pddl_plan = self.parse_fd_output(pddl_output)

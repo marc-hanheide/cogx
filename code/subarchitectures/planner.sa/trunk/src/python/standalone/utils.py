@@ -8,7 +8,7 @@ from itertools import *
 import inspect
 import time
 
-from subprocess import PIPE
+from subprocess import PIPE, STDOUT
 
 class Struct:
     """Create an instance with argument=value slots.
@@ -251,6 +251,20 @@ def load_config_file(filename, as_struct=True, base_dict={}):
                 nval = Struct()
                 add_config_items(nval, val)
                 val = nval
+            elif isinstance(val, str):
+                if val.lower() in ("true", "yes"):
+                    val = True
+                elif val.lower() in ("false", "no"):
+                    val = False
+                else:
+                    try:
+                        val = int(val)
+                    except:
+                        try:
+                            val = float(val)
+                        except:
+                            pass
+                
             obj.__dict__[key] = val
     base = ConfigObj(dict(DEFAULT=base_dict))
     config_dict = ConfigObj(filename, file_error=True, interpolation="ConfigParser")
@@ -339,18 +353,34 @@ def run_process(cmd, input=None, output=PIPE, error=PIPE, dir=None, wait=True):
         redirections["stdout"] = open(output, "w")
     else:
         redirections["stdout"] = PIPE
-    if error != PIPE:
+    if error not in (PIPE, STDOUT):
         redirections["stderr"] = open(error, "w")
     else:
-        redirections["stderr"] = PIPE
+        redirections["stderr"] = error
 
     if dir:
         redirections["cwd"] = dir
         
     process = subprocess.Popen(cmd.split(), **redirections)
     if wait:
-        process.wait()
+        out, err = process.communicate()
+        return process, out, err
     return process
+
+def print_errors(process, cmd, output, name=None):
+    if not name:
+        executable = cmd.split()[0]
+        name = os.path.basename(executable)
+
+    print "Warning: %s returned with nonzero exitcode:\n\n>>>" % name
+    print "Call was:", cmd
+    print output
+    print "<<<\n"
+    if process.returncode > 0:
+        print "Exit code was %d" % process.returncode
+    else:
+        print "Killed by signal %d" % -process.returncode
+    return None
 
 def run_unit_tests(args):
     pass

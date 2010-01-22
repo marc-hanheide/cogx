@@ -45,8 +45,7 @@ class Simulation(object):
         self.state = state.State.from_problem(self.scenario.world, seed=self.seeds[0])
         self.agents = {}
         for a, prob in scenario.agents.iteritems():
-            #TODO better handling of non-strings in the configuration
-            if global_vars.mapsim_config.separate_logs.lower() == "true":
+            if global_vars.mapsim_config.separate_logs:
                 config.set_logfile("%s.log" % a, a)
                     
             self.agents[a] = agent_class(a, prob, self.planner, self)
