@@ -32,6 +32,7 @@ using namespace binder::autogen::featvalues;
 
 using namespace beliefmodels::adl;
 using namespace beliefmodels::domainmodel::cogx;
+using namespace beliefmodels::clarification; 
 
 void VisualMediator::configure(const map<string,string> & _config)
 {
@@ -181,6 +182,7 @@ void VisualMediator::runComponent()
 			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
 
 			FeatureValuePtr value = createUnknownValue(1.00f); //createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
+			//FeatureValuePtr value = createStringValue ("thing", 1.00f);
 			FeaturePtr label = createFeatureWithUniqueFeatureValue ("obj_label", value);
 
 			FeatureValuePtr salvalue = createStringValue ("high", 1.00f);
@@ -199,7 +201,7 @@ void VisualMediator::runComponent()
 			  
 			  ProxyPtr salProxy = getMemoryEntry<Proxy>(m_salientObjID, m_bindingSA);
 			  
-			  WorkingMemoryPointerPtr ovrOrigin = createWorkingMemoryPointer(getSubarchitectureID(), salProxy->origin->address.id, "VisualObject");;
+			  WorkingMemoryPointerPtr ovrOrigin = createWorkingMemoryPointer(getSubarchitectureID(), salProxy->origin->address.id, "VisualObject");
 			  ProxyPtr ovrProxy = createNewProxy (ovrOrigin, 1.0f);
 			  
 			  vector<FeaturePtr>::iterator it;
@@ -245,8 +247,19 @@ void VisualMediator::runComponent()
 			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(data.addr);
 
 			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
-
-			FeatureValuePtr value = createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
+			
+			// check if we can reliable recognise the color
+			bool known = false;
+			for(int i=0; i<objPtr->distribution.size(); i++)
+				if(objPtr->labels[i] <= 7 && objPtr->distribution[i] > 0.7)
+				  known = true;
+			
+			FeatureValuePtr value;	  
+			if(known)
+			   value = createStringValue ("thing", 1.00f);
+			else
+			  value = createUnknownValue(1.00f);
+			
 			FeaturePtr label = createFeatureWithUniqueFeatureValue ("obj_label", value);
 
 			ProxyPtr proxy = createNewProxy (origin, 1.0f);
@@ -269,6 +282,8 @@ void VisualMediator::runComponent()
 			
 			log("A visual proxy ID %s was updated following the visual object ID %s",
 				proxy->entityID.c_str(), data.addr.id.c_str());
+				
+			checkDistribution4Clarification(proxy->entityID, objPtr->labels, objPtr->distribution);
 
 		  }
 		  catch (DoesNotExistOnWMException e)
@@ -679,11 +694,11 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 			break;
 			
 		case 5:
-			value = createStringValue ("spherical", *disti); //black
+			value = createStringValue ("black", *disti); //black
 			break;
 
 		case 6:
-			value = createStringValue ("cylindrical", *disti);	 //white
+			value = createStringValue ("white", *disti);	 //white
 			break;
 			
 		case 7:
@@ -694,11 +709,11 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 			value = createStringValue ("pink", *disti);	
 			break;
 			
-		case 11:
+		case 9:
 			value = createStringValue ("compact", *disti);
 			break;
 
-		case 12:
+		case 10:
 			value = createStringValue ("elongated", *disti);	
 			break;
 
@@ -708,12 +723,12 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 	}
 	
 	FeaturePtr label;
-	if(*labi < 5)
+	if(*labi <= 8)
 	{
 //	  value = createStringValue (colorStrEnums[*labi], *disti);
 	  colorValues.push_back(value);
 	}
-	else if(*labi < 7)
+	else if(*labi <= 10 )
 	{
 //	  value = createStringValue (shapeStrEnums[*labi], *disti);
 	  shapeValues.push_back(value);  
@@ -773,7 +788,7 @@ void VisualMediator::compileAndSendLearnTask(const string visualObjID, const str
 			debug("Adding yellow color to learning task");
 			ltask->labels.push_back(4);		
 			break;
-/*			
+			
 		case black:
 			ltask->labels.push_back(5);	
 			break;
@@ -785,7 +800,7 @@ void VisualMediator::compileAndSendLearnTask(const string visualObjID, const str
 		case orange:
 			ltask->labels.push_back(7);	
 			break;
-
+/*
 		case pink:
 			ltask->labels.push_back(8);		
 			break;
@@ -808,18 +823,18 @@ void VisualMediator::compileAndSendLearnTask(const string visualObjID, const str
 	
 	switch(*labi)
 	{ 
-		case spherical:
-			debug("Adding spherical shape to learning task");
-			ltask->labels.push_back(5); //11	
+		case compact:
+			debug("Adding compact shape to learning task");
+			ltask->labels.push_back(9); //11	
 			break;
 
-		case cylindrical:
-			debug("Adding cylindrical shape to learning task");
-			ltask->labels.push_back(6);	//12	
+		case elongated:
+			debug("Adding elongated shape to learning task");
+			ltask->labels.push_back(10);	//12	
 			break;
 			
 		default:
-			ltask->labels.push_back(10);
+			ltask->labels.push_back(0);
 			break;
 	}
 
@@ -839,6 +854,174 @@ void VisualMediator::compileAndSendLearnTask(const string visualObjID, const str
   debug("Learning task sent");
 }
 
+
+void VisualMediator::checkDistribution4Clarification(string proxyID, IntSeq labels, DoubleSeq distribution)
+{
+  // check if we have a clarification case for colour
+  DoubleSeq::iterator i;
+  
+  int nc=0;
+  int ns=0;
+  int col, sha;
+  
+  for(int i=0; i<distribution.size(); i++)
+  {
+	if(labels[i] <= 7 && distribution[i] > 0.35 && distribution[i] <= 0.7)
+	{
+	  nc++; 
+	  col = labels[i]; 
+	}
+	
+	if(labels[i] >= 9 && labels[i] <= 10 && distribution[i] > 0.35 && distribution[i] <= 0.7)
+	{
+	  ns++; 
+	  sha = labels[i]; 
+	}
+  }
+  
+  string unionID;
+  
+  if(nc > 0 || ns > 0 ) 
+  { 
+	// retrieve union ID	
+	map<string, UnionPtr>::iterator itu;
+	bool found = false;
+	
+	for(itu = m_currentUnions.begin(); itu != m_currentUnions.end(); itu++)
+	{
+	  ProxySeq proxySeq = (*itu).second->includedProxies;
+	  ProxySeq::iterator itp;
+	  
+	  for(itp = proxySeq.begin(); itp != proxySeq.end(); itp++)
+		if((*itp)->entityID == proxyID)
+		{
+		  unionID = (*itu).first;
+		  found = true;
+		  break;
+		}
+		
+	  if(found)
+		break;
+	}
+  }
+	 
+  if(nc > 0) 
+  { 
+	// Start a new complex formula
+	ComplexFormulaPtr formula = new ComplexFormula();
+	formula->id = newDataID();
+	formula->prob = 1.0f;
+	
+	ColorPropertyPtr colorProp = new ColorProperty();
+	colorProp->cstatus = proposition;
+	colorProp->prob = 1.0f;
+	
+	if(nc==1)
+	{   	  
+	  switch(col)
+	  {
+		case 1:
+			colorProp->colorValue = red;	
+			break;
+
+		case 2:
+			colorProp->colorValue = green;	
+			break;
+			
+		case 3:
+			colorProp->colorValue = blue;
+			break;
+
+		case 4:
+			colorProp->colorValue = yellow;		
+			break;
+		
+		case 5:
+			colorProp->colorValue = black;	
+			break;
+
+		case 6:
+			colorProp->colorValue = white;		
+			break;
+			
+		case 7:
+			colorProp->colorValue = orange;	
+			break;
+
+		default:
+			debug("unknown color");
+			colorProp->colorValue = unknownColor;
+			break;			
+	  }
+	}
+	else
+	  colorProp->colorValue = unknownColor;
+	
+	SuperFormulaSeq frms;
+	frms.push_back(colorProp);
+	formula->op = none;
+	formula->formulae = frms;
+	
+	ClarificationRequestPtr cr = new ClarificationRequest();
+	cr->id = newDataID();
+	cr->about = formula;
+	cr->clarificationNeed = formula;
+	cr->sourceModality = getSubarchitectureID();
+	cr->sourceEntityID = unionID;
+	
+	addToWorkingMemory(newDataID(), "comsys", cr);
+	log("Submitted clarification request for colour");
+  }
+  
+  if(ns > 0) 
+  { 
+	// Start a new complex formula
+	ComplexFormulaPtr formula = new ComplexFormula();
+	formula->id = newDataID();
+	formula->prob = 1.0f;
+	
+	ShapePropertyPtr shapProp = new ShapeProperty();
+	shapProp->cstatus = proposition;
+	shapProp->prob = 1.0f;
+	
+	if(ns==1)
+	{   	  
+	  switch(sha)
+	  {
+		case 9:
+			shapProp->shapeValue = compact;	
+			break;
+
+		case 10:
+			shapProp->shapeValue = elongated;	
+			break;
+			
+		default:
+			debug("unknown shape");
+			shapProp->shapeValue = unknownShape;
+			break;			
+	  }
+	}
+	else
+	  shapProp->shapeValue = unknownShape;
+	
+	SuperFormulaSeq frms;
+	frms.push_back(shapProp);
+	formula->op = none;
+	formula->formulae = frms;
+	
+	ClarificationRequestPtr cr = new ClarificationRequest();
+	cr->id = newDataID();
+	cr->about = formula;
+	cr->clarificationNeed = formula;
+	cr->sourceModality = getSubarchitectureID();
+	cr->sourceEntityID = unionID;
+	
+	addToWorkingMemory(newDataID(), "comsys", cr);
+	log("Submitted clarification request for shape");
+  }
+
+}
 
 }
 /* vim:set fileencoding=utf-8 sw=2 ts=4 noet:vim*/
