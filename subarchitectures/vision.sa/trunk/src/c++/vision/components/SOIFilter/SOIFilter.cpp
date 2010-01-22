@@ -34,6 +34,8 @@
 
 #define MAX_PATCH_SIZE 36000
 
+#define MAX_COLOR_SAMPLE 90
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -166,14 +168,9 @@ void SOIFilter::start()
 
   if (doDisplay)
   {
-	cvNamedWindow("Last ROI", 1);
 	cvNamedWindow("Full image", 1);
-	cvNamedWindow("Last segmentation", 1);
-	cvNamedWindow("Last object cost image", 1);
-	cvNamedWindow("Last surface cost image", 1);
-	cvNamedWindow("Object Colors", 1);
-	cvNamedWindow("Surface Colors", 1);
-	cvNamedWindow("Filtered Colors", 1);
+	cvNamedWindow("Last ROI Segmentation", 1);
+	cvNamedWindow("Color Filtering", 1);
   }
 
   // we want to receive detected SOIs
@@ -237,32 +234,40 @@ void SOIFilter::runComponent()
 			log("SOI ID: %s was removed before it could be processed", soi.addr.id);
 		  }
 		}
+		else if(soi.status == DELETED)
+		   log("SOI was removed before it could be processed");
 
 		objToAdd.pop();
 	  }
 	  else if(!objToDelete.empty())
 	  {
 		log("A delete proto-object instruction");
-		/*	      SOIData &soi = SOIMap[objToDelete.front()];
+	    SOIData &soi = SOIMap[objToDelete.front()];
 
-				  if(soi.status == DELETED)
-				  {
-				  try
-				  {
-				  deleteFromWorkingMemory(soi.objId);
-
-				  SOIMap.erase(objToDelete.front());
-
-				  log("A proto-object deleted ID: %s TIME: %u",
-				  soi.objId, soi.stableTime.s, soi.stableTime.us);
-				  }
-				  catch (DoesNotExistOnWMException e)
-				  {
-				  log("WARNING: Proto-object ID %s already removed", soi.objId);
-				  }
-				  }
-
-				  objToDelete.pop(); */
+		if(soi.status == OBJECT)
+		{
+		try
+		{
+		  deleteFromWorkingMemory(soi.objId);
+		
+		  log("A proto-object deleted ID: %s ", soi.objId.c_str());
+		
+		  SOIMap.erase(objToDelete.front());
+		  soi.status = DELETED;	
+		}
+		catch (DoesNotExistOnWMException e)
+		{
+		log("WARNING: Proto-object ID %s not in WM", soi.objId.c_str());
+		}
+		}
+		else if(soi.status == STABLE)
+		{
+		  log("Have to wait until the object is processed");
+		  objToDelete.push(soi.objId);
+		  queuesNotEmpty->post();
+		}
+		
+		objToDelete.pop(); 
 	  }
 	}
 	//    else
@@ -276,14 +281,9 @@ void SOIFilter::runComponent()
   if (doDisplay)
   {
 	log("Destroying OpenCV windows..");
-	cvDestroyWindow("Last ROI");
-	cvDestroyWindow("Last segmentation");
 	cvDestroyWindow("Full image");
-	cvDestroyWindow("Last object cost image");
-	cvDestroyWindow("Last surface cost image");
-	cvDestroyWindow("Object Colors");
-	cvDestroyWindow("Surface Colors");
-	cvDestroyWindow("Filtered Colors");
+	cvDestroyWindow("Last ROI Segmentation");
+	cvDestroyWindow("Color Filtering");
   }
 }
 
@@ -338,9 +338,8 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
   CASTTime time=getCASTTime();
   soi.deleteTime = time;
   
-  if(soi.status == OBJECT)
+  if(soi.status == OBJECT || soi.status == STABLE)
   {
-  	soi.status= DELETED;
   	objToDelete.push(soi.addr.id);
   	queuesNotEmpty->post();
   }
@@ -548,9 +547,17 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
   //		printf("\n");
   cvResize(src, srcL, CV_INTER_NN);
   //cvResize(dst, dstL, CV_INTER_NN);
-
-  const char *winame = colorImg;
-  cvShowImage(winame, srcL);
+  
+  int pos;
+  if (filterFlag)
+	pos = 0;
+  else
+	pos =10;
+	
+  cvSetImageROI(colorFiltering, cvRect( 0, pos, srcL->width, srcL->height) );
+  cvCopyImage(srcL, colorFiltering);
+  cvResetImageROI(colorFiltering);	
+  //cvShowImage("Color Filtering", srcL);
   //cvShowImage("Obj HLS Colors", dstL);
 
   cvReleaseImage(&srcL);
@@ -804,7 +811,6 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
   IplImage *distScaledPatch = cvCreateImage(size, IPL_DEPTH_8U, 1);
   IplImage *costImg = cvCreateImage(size, IPL_DEPTH_8U, 1);
   cvSet(costImg, cvScalar(255));
-  debug("1end");
 
   //cvSetImageCOI(iplPatchHLS, 1);
   hlsPatch = cvCloneImage(iplPatchHLS);
@@ -813,12 +819,12 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 
   if(filterFlag) //HACK
   {
-	if (surfPoints.size() > 90)
-	  surfPoints.resize(90);
+	if (surfPoints.size() > MAX_COLOR_SAMPLE)
+	  surfPoints.resize(MAX_COLOR_SAMPLE);
   }
   else
-	if (surfPoints.size() > 60)
-	  surfPoints.resize(60);
+	if (surfPoints.size() > MAX_COLOR_SAMPLE*2/3)
+	  surfPoints.resize(MAX_COLOR_SAMPLE*2/3);
 
 
   int colorKval = surfPoints.size()/HUE_K_RATIO + 1;
@@ -863,12 +869,11 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	log("Filtered out %i color samples", size - sortHlsList.size());
 
 	size = sortHlsList.size();
-	if (size) {
-	  debug("2, size=%d", size);
+	if (size)
+	{
 	  IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
 	  IplImage* dst = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
 	  IplImage* dstL = cvCreateImage(cvSize(size*10, 10), IPL_DEPTH_8U, 3);
-	  debug("2end");
 
 	  for(int i=0; i< size; i++)
 	  {
@@ -878,7 +883,9 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	  }
 	  cvCvtColor(src, dst, CV_HLS2RGB);
 	  cvResize(dst, dstL, CV_INTER_NN);
-	  cvShowImage("Filtered Colors", dstL);
+	  cvSetImageROI(colorFiltering, cvRect( 0, 20, dstL->width, dstL->height) );
+	  cvCopyImage(dstL, colorFiltering);
+	  cvResetImageROI(colorFiltering);	
 
 	  cvReleaseImage(&dst);
 	  cvReleaseImage(&dstL);
@@ -1032,13 +1039,12 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   CvSize sz = cvGetSize(iplImg);
   sz.width *= ratio;
   sz.height *= ratio;
-  debug("3, size(*ratio)=%dx%d", sz.width, sz.height);
+  debug("size(*ratio)=%dx%d", sz.width, sz.height);
   IplImage *iplPatch = cvCreateImage(sz, iplImg->depth, iplImg->nChannels);;
 
   cvResize(iplImg, iplPatch, CV_INTER_LINEAR );
 
   IplImage *iplPatchHLS = cvCreateImage(sz, IPL_DEPTH_8U, iplPatch->nChannels);
-  debug("3end");
 
   cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
 
@@ -1050,12 +1056,17 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
   project3DPoints(soiPtr->points, *roiPtr, ratio, image.camPars, projPoints, hullPoints);
   project3DPoints(soiPtr->BGpoints, *roiPtr, ratio, image.camPars, bgProjPoints, hullPoints);
+  
+  log("window size %i vs %i vs %i", soiPtr->BGpoints.size(), soiPtr->points.size(), MAX_COLOR_SAMPLE);
+  CvSize colSize = cvSize(min((int)max(soiPtr->BGpoints.size(), soiPtr->points.size()), MAX_COLOR_SAMPLE)*10, 30);
+  colorFiltering = cvCreateImage(colSize,  IPL_DEPTH_8U, 3);
+  cvSetZero(colorFiltering);
 
-  colorImg = "Surface Colors"; //HACK
+//  colorDest = bgColors; //HACK
   filterFlag = false;
   IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false); 
 
-  colorImg = "Object Colors"; //HACK
+//  colorDest = objColors; //HACK
   filterFlag = true;
   IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
 
@@ -1066,15 +1077,22 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   convertImageFromIpl(iplPatch, imgPatch);
 
   sz = cvGetSize(iplPatchHLS);
-  debug("4, size:%dx%d", sz.width, sz.height);
   IplImage *segPatch = cvCreateImage(sz, IPL_DEPTH_8U, 1);
-  debug("4end");
 
   // TODO: possible error: lines of IplImage are aligned to 4 bytes, while Image has no alignment!
   for(int i=0; i < segMask.data.size(); i++)
   {
 	segPatch->imageData[i] = segMask.data[i]*120;
-  }   
+  }
+  
+  int idx = 0;
+  for (int i = 0; i < segMask.height; i++) {
+	int lineoffs = i * segPatch->widthStep;
+	for (int j = 0; j < segMask.width; j++) {
+	  segPatch->imageData[lineoffs + j] = segMask.data[idx++]*120;
+	}
+  }
+  
 
   if (doDisplay)
   {
@@ -1087,11 +1105,27 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 		cvPoint(rect.x + rect.width, rect.y + rect.height),
 		CV_RGB(0,255,0));
 	cvShowImage("Full image", iplImg);
-
-	cvShowImage("Last ROI", iplPatch);
-	cvShowImage("Last segmentation",segPatch);
-	cvShowImage("Last object cost image", costPatch);
-	cvShowImage("Last surface cost image", bgCostPatch);
+	
+	cvShowImage("Color Filtering", colorFiltering);
+	
+	CvSize size = cvGetSize(iplPatch);
+	
+	IplImage *tetraPatch = cvCreateImage(cvSize(size.width*2, size.height*2), IPL_DEPTH_8U, 3);
+	
+	cvSetImageROI(tetraPatch, cvRect( 0, 0, size.width, size.height) );
+	cvCopyImage(iplPatch, tetraPatch);
+	cvSetImageROI(tetraPatch, cvRect( size.width, 0, size.width, size.height) );
+	cvCvtColor(segPatch, tetraPatch, CV_GRAY2RGB);
+	cvSetImageROI(tetraPatch, cvRect( 0, size.height, size.width, size.height) );
+	cvCvtColor(costPatch, tetraPatch, CV_GRAY2RGB);
+	cvSetImageROI(tetraPatch, cvRect( size.width, size.height, size.width, size.height) );
+	cvCvtColor(bgCostPatch, tetraPatch, CV_GRAY2RGB);
+	
+	cvResetImageROI(tetraPatch);
+	
+	cvShowImage("Last ROI Segmentation", tetraPatch);
+	
+	cvReleaseImage(&tetraPatch);
 
 
 #if 0 // Barry Code
@@ -1123,6 +1157,7 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   //	cvReleaseImage(&segPatch);
   cvReleaseImage(&costPatch);
   cvReleaseImage(&bgCostPatch);
+  cvReleaseImage(&colorFiltering);
 }
 
 }

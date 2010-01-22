@@ -70,7 +70,7 @@ private:
   int lblFixCost;
   int smoothCost;
   
-  char *colorImg; //HACK
+  IplImage *colorFiltering; //HACK
   bool filterFlag; //HACK
   std::vector<CvScalar> filterList;
   
