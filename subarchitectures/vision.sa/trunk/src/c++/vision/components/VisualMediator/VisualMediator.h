@@ -131,6 +131,9 @@ class VisualMediator :
 				std::vector<float> &colorDist, std::vector<float> &shapeDist);
 				
   void removeLearnedAssertions(beliefmodels::adl::FormulaPtr fp, VisionData::VisualLearnerLearningTaskPtr task);
+  
+  void checkDistribution4Clarification(std::string proxyID, VisionData::IntSeq labels,
+							 VisionData::DoubleSeq distribution);
 
  protected:
   /**
