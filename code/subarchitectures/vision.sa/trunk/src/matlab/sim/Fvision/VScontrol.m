@@ -22,7 +22,7 @@ function varargout = VScontrol(varargin)
 
 % Edit the above text to modify the response to help VScontrol
 
-% Last Modified by GUIDE v2.5 29-Oct-2009 15:01:54
+% Last Modified by GUIDE v2.5 30-Oct-2009 01:57:53
 
 % Begin initialization code - DO NOT EDIT
 
@@ -52,8 +52,7 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
-
-
+ 
 % --- Executes just before VScontrol is made visible.
 function VScontrol_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -98,10 +97,16 @@ function pbNext_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+global axCpts3dH ;
+
 VSnextImg;
 
-
-
+% for i = 1 :90: 170    
+%     view(axCpts3dH,[i+37, 42]) ;
+%     drawnow ;
+%     pause(0.001) ;
+% end
+ 
 function edit1_Callback(hObject, eventdata, handles)
 % hObject    handle to edit1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -133,3 +138,28 @@ function pbNext_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 
+% --- Executes on button press in pushbutton2.
+function pushbutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+
+
+% --- Executes on button press in pushbutton3.
+function pushbutton3_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global axCpts3dH;
+
+% axes(axCpts3dH) ; hold off ;
+
+for i = 1 : 220
+    view(axCpts3dH,[i, 42]) ;
+    drawnow ;
+    pause(0.01) ;
+end
