@@ -149,6 +149,9 @@ public class BeliefModelUtils {
 			ObjectType typeValue;
 			if (FeatureValueUtils.hasValue(fv, "mug")) { typeValue = ObjectType.mug; }
 			else if (FeatureValueUtils.hasValue(fv,"ball")) { typeValue = ObjectType.ball;	}
+			else if (FeatureValueUtils.hasValue(fv,"box")) { typeValue = ObjectType.box;	}
+			else if (FeatureValueUtils.hasValue(fv,"cube")) { typeValue = ObjectType.cube;	}
+			else if (FeatureValueUtils.hasValue(fv,"thing")) { typeValue = ObjectType.thing;	}
 			else if (FeatureValueUtils.isUnknownValue(fv)) {	typeValue = ObjectType.unknownObjectType; }
 
 			else {
