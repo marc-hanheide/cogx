@@ -89,8 +89,9 @@ else
     axis equal ; axis tight ; grid off ;
 end
 
-
-view([37, 42]) ; box on ; 
+view([37, 42]) ; 
+box on ; 
+% view([-50, 20]) ; 
 set(gca,'XTick',[]) 
 set(gca,'YTick',[]) 
 set(gca,'ZTick',[]) 
