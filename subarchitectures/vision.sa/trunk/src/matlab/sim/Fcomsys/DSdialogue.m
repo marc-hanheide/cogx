@@ -504,6 +504,16 @@ DSinterfaceOut(handles.data);
 handles.data=[];guidata(hObject,handles);
 
 
+global axCpts3dH;
+
+% axes(axCpts3dH) ; hold off ;
+
+for i = 1 : 170    
+    view(axCpts3dH,[i+37, 42]) ;
+    drawnow ;
+    pause(0.001) ;
+end
+
 
 % --- Executes on button press in pushbutton32.
 function pushbutton32_Callback(hObject, eventdata, handles)

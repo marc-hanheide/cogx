@@ -30,3 +30,7 @@ end
  msg = sprintf('Img %d has been read from the disk!',Data.currImg) ; disp(msg) ;
 
 ATinterface;
+ 
+rotate3d(axCpts3dH,'on') ;
+% 
+  

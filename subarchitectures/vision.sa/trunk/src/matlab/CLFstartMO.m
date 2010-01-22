@@ -77,7 +77,7 @@ dsHs=DSstart;
 vmHs=VMstart;
 vsHs=VSstart;
 [lrcH LRguiL LRguiR]=LRstart;
-%atH=ATstart;
+atH=ATstart;
 
    set(LRguiL,'Visible','On');
    set(LRguiR,'Visible','On');
