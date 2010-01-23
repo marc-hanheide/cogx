@@ -16,7 +16,7 @@
 // Segmentation costants
 
 #define SMOOTH_COST 30
-#define HUE_K_RATIO 20 // Number of nearest neighbours taken when calculating the cost for hue
+#define HUE_K_RATIO 40 // Number of nearest neighbours taken when calculating the cost for hue
 
 #define OBJ_HUE_TOLERANCE 23
 #define BG_HUE_TOLERANCE 24
@@ -34,7 +34,11 @@
 
 #define MAX_PATCH_SIZE 36000
 
-#define MAX_COLOR_SAMPLE 90
+#define MAX_COLOR_SAMPLE 150
+#define COLOR_FILTERING_THRESHOLD 10
+
+#define COLOR_SAMPLE_IMG_WIDTH 5
+#define COLOR_SAMPLE_IMG_HEIGHT 15
 
 /**
  * The function called to create a new instance of our component.
@@ -511,7 +515,7 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
   debug("0, size=%d", size);
   IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
   IplImage* dst = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
-  IplImage* srcL = cvCreateImage(cvSize(size*10, 10), IPL_DEPTH_8U, 3);
+  IplImage* srcL = cvCreateImage(cvSize(size*COLOR_SAMPLE_IMG_WIDTH , COLOR_SAMPLE_IMG_HEIGHT ), IPL_DEPTH_8U, 3);
   // IplImage* dstL = cvCreateImage(cvGetSize(srcL), IPL_DEPTH_8U, 3);
   debug("0end");
 
@@ -552,7 +556,7 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
   if (filterFlag)
 	pos = 0;
   else
-	pos =10;
+	pos =COLOR_SAMPLE_IMG_HEIGHT ;
 	
   cvSetImageROI(colorFiltering, cvRect( 0, pos, srcL->width, srcL->height) );
   cvCopyImage(srcL, colorFiltering);
@@ -787,7 +791,7 @@ vector<CvScalar> SOIFilter::colorFilter( vector<CvScalar> colors, vector<CvScala
 {
 
   vector<CvScalar> filteredList;
-  int tolerance = objHueTolerance*0.7;
+  int tolerance = COLOR_FILTERING_THRESHOLD;
   for(vector<CvScalar>::iterator it= colors.begin(); it != colors.end(); it++)
   {
 	int cost = getHlsDiff(filterColors, *it, k);
@@ -873,7 +877,7 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	{
 	  IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
 	  IplImage* dst = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
-	  IplImage* dstL = cvCreateImage(cvSize(size*10, 10), IPL_DEPTH_8U, 3);
+	  IplImage* dstL = cvCreateImage(cvSize(size*COLOR_SAMPLE_IMG_WIDTH , COLOR_SAMPLE_IMG_HEIGHT), IPL_DEPTH_8U, 3);
 
 	  for(int i=0; i< size; i++)
 	  {
@@ -883,7 +887,7 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	  }
 	  cvCvtColor(src, dst, CV_HLS2RGB);
 	  cvResize(dst, dstL, CV_INTER_NN);
-	  cvSetImageROI(colorFiltering, cvRect( 0, 20, dstL->width, dstL->height) );
+	  cvSetImageROI(colorFiltering, cvRect( 0, COLOR_SAMPLE_IMG_HEIGHT*2, dstL->width, dstL->height) );
 	  cvCopyImage(dstL, colorFiltering);
 	  cvResetImageROI(colorFiltering);	
 
@@ -1058,7 +1062,13 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   project3DPoints(soiPtr->BGpoints, *roiPtr, ratio, image.camPars, bgProjPoints, hullPoints);
   
   log("window size %i vs %i vs %i", soiPtr->BGpoints.size(), soiPtr->points.size(), MAX_COLOR_SAMPLE);
-  CvSize colSize = cvSize(min((int)max(soiPtr->BGpoints.size(), soiPtr->points.size()), MAX_COLOR_SAMPLE)*10, 30);
+  CvSize colSize = cvSize(
+	  min(
+		(int) max(soiPtr->BGpoints.size(), soiPtr->points.size()),
+		MAX_COLOR_SAMPLE)
+	 *COLOR_SAMPLE_IMG_WIDTH,
+	 COLOR_SAMPLE_IMG_HEIGHT*3);
+	 
   colorFiltering = cvCreateImage(colSize,  IPL_DEPTH_8U, 3);
   cvSetZero(colorFiltering);
 
