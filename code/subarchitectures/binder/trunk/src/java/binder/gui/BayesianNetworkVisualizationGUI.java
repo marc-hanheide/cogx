@@ -12,7 +12,8 @@ import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.view.mxGraph;
-import com.mxgraph.layout.*;
+import com.mxgraph.layout.mxGraphLayout;
+import com.mxgraph.layout.hierarchical.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -57,8 +58,8 @@ public class BayesianNetworkVisualizationGUI extends JFrame
 	private Object graph_parent;
 	
 	// parameters for the size of the nodes and edges in the graph representation
-	private final static int NODE_HEIGHT = 40;
-	private final static int NODE_WIDTH = 150;
+	private final static int NODE_HEIGHT = 20;
+	private final static int NODE_WIDTH = 80;
 	
 	// these maps keep track of the correspondence between edges and nodes in
 	// the network and their counterparts in the graphical representation 
@@ -66,14 +67,14 @@ public class BayesianNetworkVisualizationGUI extends JFrame
 	private HashMap<Object, BayesianNetworkNode> map_mxnode_node;
 	private HashMap<Object, BayesianNetworkEdge> map_mxedge_edge;
 	
-	private static Logger logger = ComponentLogger.getLogger(BayesianNetworkGUI.class);
+	private static Logger logger = ComponentLogger.getLogger(BayesianNetworkVisualizationGUI.class);
 	
 	// for now we do note need this
 	private Random randomGenerator;
 	
 	public BayesianNetworkVisualizationGUI(BinderMonitor binder_monitor) {
 		graph = new mxGraph();
-		graph_parent = graph.getCurrentRoot();
+		graph_parent = graph.getDefaultParent();
 		initComponents();
 		randomGenerator = new Random();
 		
@@ -154,13 +155,6 @@ public class BayesianNetworkVisualizationGUI extends JFrame
 		//======== panel1 ========
 		{
 
-			// JFormDesigner evaluation mark
-			panel1.setBorder(new javax.swing.border.CompoundBorder(
-				new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-					"JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-					javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-					java.awt.Color.red), panel1.getBorder())); panel1.addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
-
 			panel1.setLayout(new VerticalLayout());
 
 			//---- label1 ----
@@ -200,15 +194,15 @@ public class BayesianNetworkVisualizationGUI extends JFrame
 	public void drawBayesianNetwork() {
 		this.setVisible(false);
 		try {
-			graph.removeCells();
 			graph.getModel().beginUpdate();
+			graph.removeCells();
 			drawBayesianNodes();
 			drawBayesianEdges();
 			
 			// compute a hierarchical layout of the graph
 			// TODO: we should do a hierarchical layout here
-			mxGraphLayout layout = new mxCircleLayout(graph);
-			layout.execute(graph.getCurrentRoot());
+			mxGraphLayout layout = new mxHierarchicalLayout(graph);
+			layout.execute(graph_parent);
 		}
 		finally {
 			graph.getModel().endUpdate();
@@ -220,6 +214,7 @@ public class BayesianNetworkVisualizationGUI extends JFrame
 		
 		addListenerToGraph(graph_component);
 		
+		this.setSize(800, 600);
 		this.getContentPane().add(graph_component, BorderLayout.CENTER);
 		this.pack();
 		this.setVisible(true);
@@ -230,19 +225,30 @@ public class BayesianNetworkVisualizationGUI extends JFrame
 		graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				Object selected = graph.getSelectionCell();
-				if (map_mxedge_edge.containsKey(selected)) {
-					label1.setText("Edge selected");
-					JTable table = new JTable(new BayesianEdgeTable(map_mxedge_edge.get(selected)));
-					panel1.remove(table1);
-					table1 = table;
-					panel1.add(table1);
+				if(selected != null) {
+					if (map_mxedge_edge.containsKey(selected)) {
+						label1.setText("Edge selected");
+						JTable table = new JTable(new BayesianEdgeTable(map_mxedge_edge.get(selected)));
+						if(table1 != null) {
+							panel1.remove(table1);
+						}
+						table1 = table;
+						panel1.add(table1);
+					}
+					else if (map_mxnode_node.containsKey(selected)) {
+						label1.setText("Node selected");
+						JTable table = new JTable(new BayesianNodeTable(map_mxnode_node.get(selected)));
+						if(table1 != null) {
+							panel1.remove(table1);
+						}
+						table1 = table;
+						panel1.add(table1);
+					}
 				}
-				else if (map_mxnode_node.containsKey(selected)) {
-					label1.setText("Node selected");
-					JTable table = new JTable(new BayesianNodeTable(map_mxnode_node.get(selected)));
+				else {
+					label1.setText("Nothing selected");
 					panel1.remove(table1);
-					table1 = table;
-					panel1.add(table1);
+					table1 = null;
 				}
 			}
 		});
