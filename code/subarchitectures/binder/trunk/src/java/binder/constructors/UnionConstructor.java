@@ -319,7 +319,6 @@ public class UnionConstructor  {
 	// UTILITY METHODS   
 	// ================================================================= 
 
-
 	
 	/**
 	 * Get the complete set of features included in the entities

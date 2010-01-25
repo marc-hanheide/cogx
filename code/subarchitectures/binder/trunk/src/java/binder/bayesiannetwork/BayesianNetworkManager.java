@@ -531,7 +531,6 @@ public class BayesianNetworkManager {
 
 
 
-
 	private Vector<FeatureValuePair> getFeatureValuePairs(DiscreteProbabilityAssignment ass) {
 
 		Vector<FeatureValuePair> pairs = new Vector<FeatureValuePair>();
