@@ -121,6 +121,8 @@ void ObjectTracker::configure(const map<string,string> & _config){
 	if((it = _config.find("--inifile")) != _config.end()){
 		m_ini_file = it->second;
 		log("  INI file: '%s'", m_ini_file.c_str());
+	}else{
+		throw runtime_error(exceptionMessage(__HERE__, "No INI file given!"));
 	}
 	
 	m_textured = false;
@@ -229,7 +231,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
 
 	if(!m_tracker->init(m_ini_file.c_str(), m_ImageWidth, m_ImageHeight))										// initial pose (where to reset when pressing 'z')
 	{														
-		log("  error: initialisation of tracker failed!");
+		throw runtime_error(exceptionMessage(__HERE__, "INI file not found!"));
 		m_running = false;
 	}
 	 
