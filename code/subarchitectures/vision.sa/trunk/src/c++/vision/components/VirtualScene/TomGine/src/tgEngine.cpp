@@ -116,6 +116,7 @@ bool tgEngine::Update(float &fTime){
 }
 
 bool tgEngine::InputControl(){
+	tgVector3 vPoint;
 	tgEvent event;
 	while(m_window->CheckXEvent(event)){
 		switch(event.type){
@@ -132,6 +133,10 @@ bool tgEngine::InputControl(){
 						else
 							glShadeModel(GL_FLAT);
 						m_smoothshading = !m_smoothshading;
+						break;
+					case XK_p:
+						vPoint = Get3DPointFrom2D(m_mouse_pos[0], m_mouse_pos[1]);
+						printf("%f %f %f\n", vPoint.x, vPoint.y, vPoint.z);
 						break;
 					case XK_w:
 						if(m_wireframe)
@@ -186,6 +191,9 @@ bool tgEngine::InputControl(){
 				
 			// *********************************************************
 			case MotionNotify:
+				m_mouse_pos[0] = event.motion.x;
+				m_mouse_pos[1] = event.motion.x;
+				
 				if(m_button_left){
 					m_camera.Orbit(m_cor, m_camera.GetU(), -5*m_frametime * event.motion.x_rel);
 					m_camera.Orbit(m_cor, m_camera.GetS(), -5*m_frametime * event.motion.y_rel);					
@@ -246,5 +254,32 @@ void tgEngine::DrawCoordinates(){
 
 void tgEngine::Swap(){
 	m_window->Swap();
+}
+
+tgVector3 tgEngine::Get3DPointFrom2D(int x, int y){
+	tgVector3 vResult;
+	int viewport[4];
+	double modelview[16];
+	double projection[16];
+	double z;
+	double y_new;
+	double result[3];
+	
+	glGetDoublev(GL_MODELVIEW_MATRIX, &modelview[0] ); //Aktuelle Modelview Matrix in einer Variable ablegen
+  glGetDoublev(GL_PROJECTION_MATRIX, &projection[0] ); //Aktuelle Projection[s] Matrix in einer Variable ablegen
+  glGetIntegerv(GL_VIEWPORT, &viewport[0] ); // Aktuellen Viewport in einer Variable ablegen
+  y_new = viewport[3] - y; // In OpenGL steigt Y von unten (0) nach oben
+ 
+  // Auslesen des Tiefenpuffers an der Position (X/Y_new)
+  glReadPixels(x, y_new, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z );
+ 
+  // Errechnen des Punktes, welcher mit den beiden Matrizen multipliziert (X/Y_new/Z) ergibt:
+  gluUnProject(x, y_new, z, modelview, projection, viewport, &result[0], &result[1], &result[2]); 
+  
+  vResult.x = result[0];
+  vResult.y = result[1];
+  vResult.z = result[2];
+ 
+ 	return vResult;
 }
 
