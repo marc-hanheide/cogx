@@ -99,6 +99,7 @@ public:
 	void 		removeModel(int id);
 	void		getModelPose(int id, Pose& p);
 	void		getModelInitialPose(int id, Pose& p);
+	void		getModelConfidence(int id, int& c);
 	
 	
 	// Drawing to screen (result, ...)
