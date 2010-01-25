@@ -29,7 +29,7 @@
 #include <Navigation/NavGraphEdge.hh>
 #include <Navigation/NavGraphGateway.hh>
 #include <boost/numeric/ublas/matrix.hpp>
-//#include <VisionData.hpp>
+#include <VisionData.hpp>
 
 using namespace std;
 using namespace cast;
@@ -263,12 +263,22 @@ addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
   addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newVPlist)); 
-addChangeFilter(createLocalTypeFilter<NavData::PlanePopout>(cdl::ADD),
+  /*addChangeFilter(createLocalTypeFilter<NavData::PlanePopout>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newPointCloud));  
   addChangeFilter(createLocalTypeFilter<NavData::PlanePopout>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newPointCloud));  
+		  &DisplayNavInPB::newPointCloud));*/
+
+  addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::ADD),
+      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	&DisplayNavInPB::newPointCloud));
+
+  addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	&DisplayNavInPB::newPointCloud));
+
+
   log("start done");  
 }
 
@@ -415,7 +425,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 
 
 void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
-	//log("I got new points.");
+	log("I got new points.");
 	double color[3] = { 0.9, 0, 0};
 	
 	 numeric::ublas::matrix<double> m (3, 3);
@@ -424,21 +434,21 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
 	 m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
 	peekabot::PointCloudProxy pcloud;
 	pcloud.add(m_ProxyCam,"planepopout", peekabot::REPLACE_ON_CONFLICT);
-	shared_ptr<CASTData<NavData::PlanePopout> > oobj =
-    getWorkingMemoryEntry<NavData::PlanePopout>(objID.address);
-	NavData::PlanePopoutPtr objData = oobj->getData();
+	//	shared_ptr<CASTData<VisionData::SOI> > oobj =
+	VisionData::SOIPtr objData = getMemoryEntry<VisionData::SOI>(objID.address);
+	 //VisionData::SOIPtr objData = oobj->getData();
 
 	numeric::ublas::vector<double> v (3);
 	numeric::ublas::vector<double> t (3);
 	//add plane points
-  for (unsigned int i =0; i < objData->pcloud.size(); i++){
-	  if (objData->plabels.at(i) == 0){
-	  v(0) = objData->pcloud.at(i).x;
-	  v(1) = objData->pcloud.at(i).y;
-	  v(2) = objData->pcloud.at(i).z;
+  for (unsigned int i =0; i < objData->points.size(); i++){
+    //if (objData->plabels.at(i) == 0){
+	  v(0) = objData->points.at(i).p.x;
+	  v(1) = objData->points.at(i).p.y;
+	  v(2) = objData->points.at(i).p.z;
 	  t = prod(v,m);
 	  pcloud.add_vertex(t(0),t(1),t(2));
-	  }
+	  //  }
   }
   pcloud.set_color(color[0],color[1],color[2]);
   //add objects
@@ -447,14 +457,14 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
   color[0] = 0;
   color[1] = 0.9;
   color[2] = 0;
-  for (unsigned int i =0; i < objData->pcloud.size(); i++){
-	  if (objData->plabels.at(i) > 0){
-	  v(0) = objData->pcloud.at(i).x;
-	  v(1) = objData->pcloud.at(i).y;
-	  v(2) = objData->pcloud.at(i).z;
+  for (unsigned int i =0; i < objData->points.size(); i++){
+    // if (objData->plabels.at(i) > 0){
+	  v(0) = objData->points.at(i).p.x;
+	  v(1) = objData->points.at(i).p.y;
+	  v(2) = objData->points.at(i).p.z;
 	  t = prod(v,m);
 	  pcloudobj.add_vertex(t(0),t(1),t(2));
-	  }
+	  //  }
   }
   pcloudobj.set_color(color[0],color[1],color[2]);
 	
@@ -517,7 +527,7 @@ void DisplayNavInPB::runComponent() {
                               m_RobotPose->theta);
 
 	m_ProxyPan.set_dof(ptuPose.pose.pan);
-	m_ProxyTilt.set_dof(ptuPose.pose.tilt);
+	m_ProxyTilt.set_dof(-ptuPose.pose.tilt);
       }
 
       // Display the line map
