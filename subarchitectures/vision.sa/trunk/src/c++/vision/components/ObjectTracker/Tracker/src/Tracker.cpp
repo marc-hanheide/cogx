@@ -76,7 +76,9 @@ bool Tracker::initGL(){
 // load INI file of tracker
 bool Tracker::loadINI(const char* inifile){
 	CDataFile cdfParams;
-	cdfParams.Load(inifile);
+	
+	if(!cdfParams.Load(inifile))
+		return false;
 	
 	// Camera Parameters
 	params.camPar.zFar = cdfParams.GetFloat("zFar", "CameraParameters");
@@ -124,6 +126,8 @@ bool Tracker::loadINI(const char* inifile){
 	// Other
 	params.edge_tolerance = cdfParams.GetFloat("EdgeMatchingTolerance", "Other") * PIOVER180;
 	params.minTexGrabAngle = cdfParams.GetFloat("MinTextureGrabAngle", "Other") * PIOVER180;
+	
+	return true;
 }
 
 bool Tracker::init(const char* inifile, int width, int height){
@@ -132,8 +136,9 @@ bool Tracker::init(const char* inifile, int width, int height){
 	params.height = params.camPar.height = height;
 	
 	// Load parameter
-	loadINI(inifile);
-	
+	if(!loadINI(inifile))
+		return false;
+
 	// OpenGL
 	g_Resources->InitScreen(params.width, params.height, "Tracker");
 	initGL();
