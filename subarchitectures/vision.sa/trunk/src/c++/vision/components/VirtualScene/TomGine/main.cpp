@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	
 	// Rendering loop
 	while(render.Update(fTime)){
-		cylinder.DrawFaces();		
+		cylinder.DrawFaces();
 	}
 	
 	return 0;

@@ -21,6 +21,7 @@
 #include "tgPose.h"
 #include "tgTimer.h"
 #include "tgVector3.h"
+#include "tgMathlib.h"
 
 namespace TomGine{
 
@@ -40,6 +41,8 @@ private:
 	tgLighting 		m_lighting;
 	tgTimer 			m_timer;
 	tgVector3			m_cor;			///< Center of Rotation
+	
+	int m_mouse_pos[2];
 	
 	float m_frametime;
 	bool m_bfc;
@@ -108,6 +111,9 @@ public:
 	*	@brief Returns the actual position of the camera with respect to the coordinate frame
 	*/
 	tgVector3 GetCameraPosition(){ return m_camera.GetPos(); }
+
+	tgVector3 Get3DPointFrom2D(int x, int y);
+	tgVector3 Get3DPointFrom2D(){ Get3DPointFrom2D(m_mouse_pos[0], m_mouse_pos[1]); }
 
 };
 
