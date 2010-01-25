@@ -5,15 +5,14 @@ from collections import defaultdict
 import itertools
 
 import parser
-import mapltypes
-import scope
-import predicates, conditions, actions, axioms
+import mapltypes, builtin
+import predicates, axioms
 
 import builtin
 
-from mapltypes import *
-from predicates import *
+from mapltypes import Type, TypedObject
 from parser import Parser, ParseError, UnexpectedTokenError
+from scope import Scope, FunctionTable
 from actions import Action
 from axioms import Axiom
 
@@ -23,9 +22,9 @@ support_depends = {"mapl" : ["object-fluents", "modal-predicates"],
                    "adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
                    "fluents" : ["numeric-fluents", "object-fluents"]}
 
-class Domain(scope.Scope):
+class Domain(Scope):
     def __init__(self, name, types, constants, predicates, functions, actions, axioms):
-        scope.Scope.__init__(self, constants, None)
+        Scope.__init__(self, constants, None)
         self.name = name
         self.types = types
         self.constants = constants
@@ -34,6 +33,7 @@ class Domain(scope.Scope):
         self.actions = actions
         self.axioms = axioms
 
+        self.requirements = set()
         self.stratify_axioms()
         self.name2action = None
 
@@ -65,8 +65,8 @@ class Domain(scope.Scope):
         
         typeDict = dict((t.name, t) for t in builtin.default_types)
         constants = set()
-        preds = scope.FunctionTable([builtin.equals])
-        functions = scope.FunctionTable()
+        preds = FunctionTable([builtin.equals])
+        functions = FunctionTable()
         
         req = iter(it.get(list, "requirement definition"))
         req.get(":requirements")
@@ -85,7 +85,7 @@ class Domain(scope.Scope):
             constants = set([builtin.TRUE, builtin.FALSE, builtin.UNKNOWN])
                 
         if "fluents" in requirements or "numeric-fluents" in requirements:
-            typeDict[t_number.name] = t_number
+            typeDict[builtin.t_number.name] = builtin.t_number
             preds.add(builtin.numeric_comparators)
             functions.add(builtin.numeric_functions)
 
@@ -114,9 +114,9 @@ class Domain(scope.Scope):
                     if key.string == "object":
                         continue
                     if value.string not in typeDict:
-                        typeDict[value.string] = Type(value.string, [t_object])
+                        typeDict[value.string] = Type(value.string, [builtin.t_object])
                     if key.string not in typeDict:
-                        typeDict[key.string] = Type(key.string, [t_object])
+                        typeDict[key.string] = Type(key.string, [builtin.t_object])
                         
                     typeDict[key.string].supertypes.add(typeDict[value.string])
 
@@ -171,7 +171,6 @@ class Domain(scope.Scope):
             
         if domain is None:
             if "mapl" in requirements:
-                import mapl
                 domain = mapl.MAPLDomain(domname, typeDict, constants, preds, functions, [], [], [])
             else:
                 domain = Domain(domname, typeDict, constants, preds, functions, [], [])

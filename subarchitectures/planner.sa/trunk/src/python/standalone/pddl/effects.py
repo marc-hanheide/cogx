@@ -4,8 +4,9 @@
 import parser
 from parser import ParseError, UnexpectedTokenError
 import mapltypes as types
+from scope import Scope
 import builtin
-import scope, conditions, predicates
+import conditions, predicates
 import random
 
 class Effect(object):
@@ -23,7 +24,7 @@ class Effect(object):
                 if isinstance(eff, predicates.VariableTerm):
                     return [eff.object]
                 return []
-            if isinstance(eff, LiteralCondition):
+            if isinstance(eff, SimpleEffect):
                 return sum([t.visit(visitor) for t in eff.args], [])
             if isinstance(eff, ConjunctiveEffect):
                 return sum(results, [])
@@ -44,7 +45,7 @@ class Effect(object):
             if isinstance(eff, ConjunctiveEffect):
                 return "(and %s)" % " ".join(results)
             if eff.__class__ == UniversalEffect:
-                args = " ".join(sorted(cond.iterkeys()))
+                args = " ".join(sorted(eff.iterkeys()))
                 return "(forall (%s) %s)" % (args, results[0])
             if eff.__class__ == ConditionalEffect:
                 return "(when (%s) %s)" % (eff.condition.pddl_str(), results[0])
@@ -99,7 +100,7 @@ class ConjunctiveEffect(Effect):
 
     @staticmethod
     def parse(it, scope, timed_effects=False, only_simple=False):
-        first = it.get("and")
+        it.get("and")
 
         eff = ConjunctiveEffect([])
         for elem in it:
@@ -107,9 +108,9 @@ class ConjunctiveEffect(Effect):
             
         return eff
     
-class UniversalEffect(scope.Scope, Effect):
+class UniversalEffect(Scope, Effect):
     def __init__(self, args, effect, parentScope):
-        scope.Scope.__init__(self, args, parentScope)
+        Scope.__init__(self, args, parentScope)
         self.args = args
         self.effect = effect
 
@@ -136,7 +137,7 @@ class UniversalEffect(scope.Scope, Effect):
         return cp
 
     def set_scope(self, new_scope):
-        scope.Scope.set_parent(self, new_scope)
+        Scope.set_parent(self, new_scope)
         self.effect.set_scope(self)
     
     def __eq__(self, other):

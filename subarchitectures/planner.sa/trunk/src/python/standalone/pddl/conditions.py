@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import parser
-from parser import ParseError, UnexpectedTokenError
+from parser import UnexpectedTokenError
 import mapltypes as types
-import scope, predicates
+from scope import Scope
+import predicates
 
 class Condition(object):
     def visit(self, fn):
@@ -135,9 +135,9 @@ class Disjunction(JunctionCondition):
         neg_parts = [c.negate() for c in self.parts]
         return Conjunction(neg_parts)
 
-class QuantifiedCondition(Condition, scope.Scope):
+class QuantifiedCondition(Condition, Scope):
     def __init__(self, args, condition, parent):
-        scope.Scope.__init__(self, args, parent)
+        Scope.__init__(self, args, parent)
         self.args = args
         self.condition = condition
 
@@ -164,7 +164,7 @@ class QuantifiedCondition(Condition, scope.Scope):
         return cp
     
     def set_scope(self, new_scope):
-        scope.Scope.set_parent(self, new_scope)
+        Scope.set_parent(self, new_scope)
         self.condition.set_scope(self)
 
     def __eq__(self, other):

@@ -2,7 +2,6 @@
 # -*- coding: latin-1 -*-
 import itertools
 
-import parser
 from parser import ParseError
 import mapltypes as types
 import predicates, conditions, effects
@@ -32,8 +31,9 @@ class Action(Scope):
         Scope.instantiate(self, mapping)
 
     def to_pddl(self):
-        str = ["(:action %s" % self.name]
-        indent = len("(:action ")
+        pass
+        #str = ["(:action %s" % self.name]
+        #indent = len("(:action ")
 
     def copy(self, newdomain=None):
         if not newdomain:

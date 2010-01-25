@@ -149,12 +149,12 @@ class Scope(dict):
 
         return result
 
-    def add(self, object):
-        if isinstance(object, (tuple, list)):
-            for o in object:
+    def add(self, obj):
+        if isinstance(obj, (tuple, list)):
+            for o in obj:
                 dict.__setitem__(self, o.name, o)
         else:
-            dict.__setitem__(self, object.name, object)
+            dict.__setitem__(self, obj.name, obj)
 
     def merge(self, other):
         #assume unique variables for now
