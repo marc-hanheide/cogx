@@ -33,6 +33,7 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
+import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.filtering.ConfigurationComparator;
 import binder.gui.BindingVisualizer;
 import binder.utils.FeatureValueUtils;
@@ -54,7 +55,7 @@ import cast.core.CASTData;
  */
 
 public class BinderMonitor extends ManagedComponent {
-
+	
 	// If a GUI is used, pointer to the GUI component
 	private BindingVisualizer gui;
 	
@@ -167,7 +168,7 @@ public class BinderMonitor extends ManagedComponent {
 		if (_config.containsKey("--gui")) {
 			 gui = new BindingVisualizer(this);
 	//		 gui.LOGGING = false;
-		} 
+		}
 	}
 	
 	/**
@@ -204,6 +205,8 @@ public class BinderMonitor extends ManagedComponent {
 				proxiesV.add(pproxies[i].getData());
 			}
 			
+			
+			
 			// Create summary for the proxies in the binder WM
 			String proxytext = proxies.length + " normal";
 			if (rproxies.length > 0) {
@@ -217,7 +220,6 @@ public class BinderMonitor extends ManagedComponent {
 			}
 			
 			log("Current number of proxies: " + proxytext);
-
 			
 			// Extract the unions in the union configuration
 			int nbRelationUnions = 0;

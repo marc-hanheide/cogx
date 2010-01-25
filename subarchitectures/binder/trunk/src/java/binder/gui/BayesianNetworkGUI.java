@@ -74,7 +74,6 @@ public class BayesianNetworkGUI extends JFrame {
 		parent = graph.getDefaultParent();
 	    		
 		insertedNodes = new HashMap<String,Object>();
-		
 		setVisible(true);
 	}
 	
@@ -106,6 +105,7 @@ public class BayesianNetworkGUI extends JFrame {
 		}
 		return text;
 	}
+	
 	
 	
 	private int computeNodeHeight(BayesianNetworkNode node) {

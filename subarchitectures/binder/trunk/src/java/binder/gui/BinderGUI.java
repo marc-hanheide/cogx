@@ -9,6 +9,7 @@ import javax.swing.*;
 
 import org.apache.log4j.Logger;
 
+import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
@@ -19,9 +20,11 @@ import binder.utils.GenericUtils;
 
 import binder.autogen.featvalues.StringValue;
 
+import binder.gui.BayesianNetworkGUI;
 import binder.gui.ProxyInfoGUI;
 
 import cast.core.logging.ComponentLogger;
+import cast.core.CASTData;
 
 // import com.jgoodies.forms.layout.*;
 /*
@@ -37,14 +40,13 @@ import com.mxgraph.view.mxGraph;
  * @author Pierre Lison
  */
 public class BinderGUI extends JFrame {
-	
-	
 	public boolean LOGGING = true;
 
 	private static Logger logger = ComponentLogger.getLogger(BinderGUI.class);
 	
 	BinderMonitor bm;
-	 	
+	BayesianNetworkVisualizationGUI bn_gui;
+	
 	int config_CurrentRank = 1;
 
 	String curSelectedEntityId = "";
@@ -55,7 +57,7 @@ public class BinderGUI extends JFrame {
 		initComponents();
 		this.bm = bm;
 	} 
-
+	
 	private void menuItem15ActionPerformed(ActionEvent e) {
 
 		if (config_CurrentRank > 1) {
@@ -199,12 +201,20 @@ public class BinderGUI extends JFrame {
 			ex.printStackTrace();
 		}
 	}
-
 	
+	private void menuItem9ActionPerformed(ActionEvent e) {
+		if(this.bn_gui == null) {
+			this.bn_gui = new BayesianNetworkVisualizationGUI(bm);
+			this.bn_gui.drawBayesianNetwork();
+		}
+		if(!this.bn_gui.isVisible()) {
+			this.bn_gui.setVisible(true);
+		}
+	}
 	
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-		// Generated using JFormDesigner Evaluation license - Pierre Lison
+		// Generated using JFormDesigner Evaluation license - C E
 		menuBar1 = new JMenuBar();
 		menu1 = new JMenu();
 		menuItem4 = new JMenuItem();
@@ -345,11 +355,6 @@ public class BinderGUI extends JFrame {
 
 				//---- menuItem21 ----
 				menuItem21.setText("Make not salient");
-				menuItem21.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						menuItem21ActionPerformed(e);
-					}
-				});
 				menu2.add(menuItem21);
 			}
 			menuBar1.add(menu2);
@@ -424,7 +429,11 @@ public class BinderGUI extends JFrame {
 
 				//---- menuItem9 ----
 				menuItem9.setText("View Bayesian Network");
-				menuItem9.setEnabled(false);
+				menuItem9.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						menuItem9ActionPerformed(e);
+					}
+				});
 				menu4.add(menuItem9);
 
 				//---- menuItem10 ----
@@ -454,7 +463,7 @@ public class BinderGUI extends JFrame {
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-	// Generated using JFormDesigner Evaluation license - Pierre Lison
+	// Generated using JFormDesigner Evaluation license - C E
 	private JMenuBar menuBar1;
 	private JMenu menu1;
 	private JMenuItem menuItem4;

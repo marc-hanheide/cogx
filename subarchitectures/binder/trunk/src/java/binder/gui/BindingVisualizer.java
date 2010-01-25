@@ -32,6 +32,7 @@ import binder.autogen.featvalues.AddressValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
+import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.components.BinderMonitor;
 import binder.utils.FeatureValueUtils;
 import binder.utils.GenericUtils;
@@ -56,6 +57,7 @@ import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
 
+
 public class BindingVisualizer {
 
 
@@ -71,7 +73,7 @@ public class BindingVisualizer {
 
 	mxGraph graph;
 	Object parent;
-
+	
 	BinderGUI frame;
 
 	int curProxyPosition_X= 50;
@@ -123,7 +125,7 @@ public class BindingVisualizer {
 					curSelectedType = Proxy.class;
 				}
 			}
-
+			
 			for (Iterator<String> ids = insertedCellsForUnions.keySet().iterator(); ids.hasNext();) {
 				String curId = ids.next();
 				Object curObj = insertedCellsForUnions.get(curId);
@@ -132,7 +134,6 @@ public class BindingVisualizer {
 					curSelectedType = Union.class;
 				}
 			}
-
 		}
 
 		frame.setCurrentSelection(curSelectedEntityId, curSelectedType);
@@ -150,9 +151,8 @@ public class BindingVisualizer {
 				selection();
 			}
 		};
-
 		graph.getSelectionModel().addListener(mxEvent.CHANGE, listener);
-
+		
 		parent = graph.getDefaultParent();
 
 		proxyTimestamps = new HashMap<String, CASTTime>();
