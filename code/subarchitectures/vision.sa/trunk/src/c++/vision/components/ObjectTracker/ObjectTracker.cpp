@@ -229,8 +229,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
 		m_tracker = new EdgeTracker();
 	}
 
-	if(!m_tracker->init(m_ini_file.c_str(), m_ImageWidth, m_ImageHeight))										// initial pose (where to reset when pressing 'z')
-	{														
+	if(!m_tracker->init(m_ini_file.c_str(), m_ImageWidth, m_ImageHeight)){														
 		throw runtime_error(exceptionMessage(__HERE__, "INI file not found!"));
 		m_running = false;
 	}
@@ -251,7 +250,7 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntryList::iterator it){
 		convertGeometryModel(trackingEntry->obj->model, model);
 		trackingEntry->id = m_tracker->addModel(model, pose, true);
 		trackingEntry->cmd = TrackingEntry::TRACK;
-		log("  TrackingEntry::ADD: '%s'", trackingEntry->obj->label.c_str());
+		log("  TrackingEntry::ADD: '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
 	}	
 }
 
@@ -261,7 +260,8 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	double dTimeStamp;
 	fTimeTracker=0.0;
 	int i;
-	Model* model;
+	Pose pose;
+	int c;
 	
 	// * Tracking *
 	m_timer.Update();
@@ -274,27 +274,24 @@ void ObjectTracker::runTracker(const Video::Image &image){
 			modifyTrackingEntry(it);
 	}
 
+	// Image processing
 	m_tracker->image_processing((unsigned char*)(&image.data[0]));
 	m_tracker->drawImage(NULL);
 
 	// Track model
 	m_tracker->track();
 		
-		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
-		// TODO TODO TODO get pose of objects and convert them
-// 		convertParticle2Pose(m_trackinglist[i].trackpose, m_trackinglist[i].obj->pose);
-	
-		// TODO TODO TODO Send new data to working memory
-// 		m_trackinglist[i].obj->detectionConfidence = m_trackinglist[i].trackpose.c; 
-// 		m_trackinglist[i].obj->time = convertTime(dTimeStamp);
-// 		overwriteWorkingMemory(m_trackinglist[i].castWMA.id, m_trackinglist[i].obj);
-
+	// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
+	for(i=0; i<m_trackinglist.size(); i++){
+		m_tracker->getModelPose(m_trackinglist[i]->id, pose);
+		m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
+		convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);
+		m_trackinglist[i]->obj->time = convertTime(dTimeStamp);
+		overwriteWorkingMemory(m_trackinglist[i]->castWMA.id, m_trackinglist[i]->obj);
+	}
 	
 	m_tracker->drawCoordinates();
-	
 	m_tracker->drawResult();
-	
-	
 	m_tracker->swap();
 
 	fTimeTracker = m_timer.Update();

@@ -226,6 +226,18 @@ void Tracker::getModelInitialPose(int id, Pose& p){
 	}
 }
 
+void Tracker::getModelConfidence(int id, int& c){
+	ModelEntryList::iterator it = m_modellist.begin();
+	
+	while(it != m_modellist.end()){
+		if(id==(*it)->id){
+			c = (*it)->pose.c;
+			return;
+		}
+		it++;
+	}
+}
+
 // render coordinate frame
 void Tracker::drawCoordinates(){
 	glDisable(GL_DEPTH_TEST);
