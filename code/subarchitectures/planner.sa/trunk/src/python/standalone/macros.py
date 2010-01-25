@@ -39,7 +39,7 @@ class MacroOp(pddl.scope.Scope):
     def q_expected(self):
         """Return the expected value of this macros if this macro is used with the current
         configuration of preconditions and effects.
-        Other than q_total, this method will set the probabilities of enabled preconditions to 1.0 and
+        In contrast to q_total, this method will set the probabilities of enabled preconditions to 1.0 and
         those of diables effects to 0.0"""
         total = 0.0
         for a in self.pre:

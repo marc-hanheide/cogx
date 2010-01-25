@@ -1,10 +1,7 @@
 from standalone import pddl
-from standalone.pddl import state
-from standalone import plans
 from standalone import statistics
 
 from standalone.task import PlanningStatusEnum, Task
-from standalone.planner import Planner as StandalonePlanner
 import standalone.globals as global_vars
 
 from standalone import config
@@ -106,7 +103,7 @@ class Agent(BaseAgent):
             G.layout(prog='dot')
             G.draw("plan.pdf")
 
-        all_funcs = set(self.mapltask.functions) | set(self.mapltask.predicates)
+        #all_funcs = set(self.mapltask.functions) | set(self.mapltask.predicates)
         # print "instantiate:"
         #mapl.sas_translate.to_sas(self.mapltask)
         # print "executable:"

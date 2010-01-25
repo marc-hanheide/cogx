@@ -25,8 +25,6 @@ statistics_defaults = dict(
     )
 statistics_defaults.update(agent.statistics_defaults)
 
-numeric_settings = ("alpha", "error_threshold", "information_weight", "success_weight", "overhead_weight",
-                    "alpha_boost", "usecount_reduction")
 
 class LearningAgent(Agent):
     def __init__(self, name, mapltask, planner, simulator):
@@ -417,17 +415,17 @@ class LearningAgent(Agent):
         log.info("Adjusting %s:", m.name)
         for atom in itertools.chain(m.pre, m.eff):
             dQ = (m.Q[atom] - m.Q[atom.negate()]) / (len(m.pre)+len(m.eff))
-            s=" "
+            mark = " "
             if m.atom_state[atom] == macros.ATOM_ENABLED:
                 dQ = -dQ
-                s="x"
+                mark = "x"
 
             if m.frequencies[atom] == 0 or m.frequencies[atom] == m.usecount:
-                log.info("   %s %s with dQ=%.2f, f_rel=%.2f skipped", s, atom.pddl_str(), dQ, float(m.frequencies[atom])/m.usecount)
+                log.info("   %s %s with dQ=%.2f, f_rel=%.2f skipped", mark, atom.pddl_str(), dQ, float(m.frequencies[atom])/m.usecount)
                 continue
             threshold = settings.error_threshold * (1/math.sqrt(m.frequencies[atom]) +  1/math.sqrt(m.frequencies[atom.negate()]))
             
-            log.info("   %s %s with dQ=%.2f, threshold=%.2f, f_rel=%.2f", s, atom.pddl_str(), dQ, threshold, float(m.frequencies[atom])/m.usecount)
+            log.info("   %s %s with dQ=%.2f, threshold=%.2f, f_rel=%.2f", mark, atom.pddl_str(), dQ, threshold, float(m.frequencies[atom])/m.usecount)
             if dQ > threshold and dQ > max_gain:
                 best_atom = atom
                 max_gain = dQ

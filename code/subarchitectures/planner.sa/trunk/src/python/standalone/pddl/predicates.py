@@ -232,7 +232,7 @@ class Term(object):
         return self.get_type().equal_or_subtype_of(type)
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__;
+        return self.__class__ == other.__class__
 
     def __ne__(self, other):
         return not self.__eq__(other)

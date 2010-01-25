@@ -47,7 +47,7 @@ class Type(object):
         try:
             return self.name == other.name
         except:
-            return False;
+            return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -119,7 +119,7 @@ class CompositeType(Type):
         try:
             return all(map(lambda s,o: s == o, self.types, other.types))
         except:
-            return False;
+            return False
 
 class FunctionType(Type):
     def __init__(self, type):
@@ -231,7 +231,7 @@ class TypedObject(object):
         try:
             return self.name == other.name and self.type == other.type
         except:
-            return False;
+            return False
 
     def __ne__(self, other):
         return not self.__eq__(other)

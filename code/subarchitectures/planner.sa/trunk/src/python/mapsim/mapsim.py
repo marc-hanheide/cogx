@@ -16,8 +16,7 @@ usage: %prog [options] domain scenario
 from os.path import abspath, dirname
 import sys, random, logging
 
-from standalone import pddl
-import standalone.config as config
+from standalone import pddl, config
 import standalone.globals as global_vars
 
 import simulation, agent, learning_agent
