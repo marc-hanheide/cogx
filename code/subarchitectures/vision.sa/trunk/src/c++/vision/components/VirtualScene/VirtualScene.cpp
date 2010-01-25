@@ -37,10 +37,11 @@ VirtualScene::~VirtualScene(){
 // *** Working Memory Listeners ***
 void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	log("receiving VisualObject");
+// 	lockComponent();
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	
-for(unsigned i=0; i<obj->model->vertices.size(); i++)
+	for(unsigned i=0; i<obj->model->vertices.size(); i++)
 		printf("    Got object vertices: %4.3f - %4.3f - %4.3f\n", obj->model->vertices[i].pos.x, obj->model->vertices[i].pos.y, obj->model->vertices[i].pos.z);
 
 	ModelEntry newModelEntry;
@@ -69,7 +70,7 @@ for(unsigned i=0; i<obj->model->vertices.size(); i++)
 	tgVector3 vCenter = tgVector3(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
 	m_engine->SetCenterOfRotation(vCenter.x, vCenter.y, vCenter.z);
 	
-	
+// 	unlockComponent();
 	log("VisualObject added to Scene: %s", obj->label.c_str());
 }
 
