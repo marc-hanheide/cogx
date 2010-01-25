@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __MATHLIB_H__
-#define __MATHLIB_H__
+#ifndef _MATHLIB_H_
+#define _MATHLIB_H_
 
 #include <math.h>
 
@@ -461,6 +461,33 @@ struct mat3 {
         mat[1] = x.y; mat[4] = y.y; mat[7] = z.y;
         mat[2] = x.z; mat[5] = y.z; mat[8] = z.z;
     }
+    
+    // Vector/Matrix Conversions
+		void fromAngleAxis(double angle, const vec3& axis)
+		{
+			double s = sin(angle), c = cos(angle);
+			double v = (double)1.0 - c, x = axis.x*v, y = axis.y*v, z = axis.z*v;
+		
+			mat[0] = axis.x*x + c;
+			mat[1] = axis.x*y - axis.z*s;
+			mat[2] = axis.x*z + axis.y*s;
+		
+			mat[3] = axis.y*x + axis.z*s;
+			mat[4] = axis.y*y + c;
+			mat[5] = axis.y*z - axis.x*s;
+		
+			mat[6] = axis.z*x - axis.y*s;
+			mat[7] = axis.z*y + axis.x*s;
+			mat[8] = axis.z*z + c;
+		}
+		
+		// creates rotation matrix from rotation vector (= axis plus angle).
+		void fromRotVector(const vec3& r)
+		{
+			vec3 axis(r);
+			double angle = axis.normalize();
+			fromAngleAxis(angle, axis);
+		}
 
     float mat[9];
 };

@@ -30,9 +30,9 @@ private:
 	tgLighting m_lighting;
 	
 	// Functions
-	void model_processing();
+	void model_processing(ModelEntry* modelEntry);
 	
-	void particle_filtering(int num_recursions, int num_distribution);
+	void particle_filtering(ModelEntry* modelEntry);
 		
 public:
 	TextureTracker();
@@ -53,21 +53,15 @@ public:
 	
 	virtual bool initInternal();
 	
-	virtual void evaluateParticle(Particle* p);
+	virtual void evaluateParticle(ModelEntry* modelEntry);
 	
 	virtual void image_processing(unsigned char* image);
 	
-	virtual bool track(	TrackerModel* model,
-											Camera* camera,
-											int num_recursions,
-											int num_distribution,
-											Particle p_constraints, 
-											Particle& p_result,
-											float fTime=0.0);
+	virtual bool track();
 	
 	virtual void textureFromImage();
 						
-	virtual void drawResult(Particle* p, TrackerModel* m);
+	virtual void drawResult();
 	
 	virtual std::vector<float> getPDFxy(	Particle pose,
 																				float x_min, float y_min,

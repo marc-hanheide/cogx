@@ -46,6 +46,24 @@ Particle::Particle(const Particle& p2){
 	q = p2.q;
 }
 
+Particle::Particle(const Pose& p2){
+	t = p2.t;
+	rp.x = 0.0;
+	rp.y = 0.0;
+	rp.z = 0.0;
+	tp.x = 0.0;
+	tp.y = 0.0;
+	tp.z = 0.0;
+	
+	z = 0.0;
+	zp = 0.0;	
+	
+	w = 0.0;
+	c = 0.0;
+	
+	q = p2.q;
+}
+
 Particle& Particle::operator=(const Particle& p2){
 	t.x = p2.t.x;
 	t.y = p2.t.y;
@@ -65,5 +83,23 @@ Particle& Particle::operator=(const Particle& p2){
 	q = p2.q;
 	
 	return *this;
+}
+
+Particle& Particle::operator=(const Pose& p2){
+	t = p2.t;
+	rp.x = 0.0;
+	rp.y = 0.0;
+	rp.z = 0.0;
+	tp.x = 0.0;
+	tp.y = 0.0;
+	tp.z = 0.0;
+	
+	z = 0.0;
+	zp = 0.0;	
+	
+	w = 0.0;
+	c = 0.0;
+	
+	q = p2.q;
 }
 

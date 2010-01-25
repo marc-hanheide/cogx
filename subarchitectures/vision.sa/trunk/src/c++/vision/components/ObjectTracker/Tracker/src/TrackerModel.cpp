@@ -12,6 +12,7 @@ TrackerModel::TrackerModel(){
 	m_tex_original = 0;
 	m_texture = 0;
 	m_textured = false;
+	m_bfc = false;
 	
 	int id;
 	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
@@ -20,7 +21,11 @@ TrackerModel::TrackerModel(){
 }
 
 TrackerModel::~TrackerModel(){	
-
+	PassList::iterator it = m_passlist.begin();
+	while(it != m_passlist.end()){
+		delete(*it);
+		it++;
+	}
 }
 
 TrackerModel& TrackerModel::operator=(const Model& m){
@@ -346,6 +351,9 @@ void TrackerModel::genListTexturedFaces(){		// draw only textured faces
 	int p,i,j;
 	Face* f;
 	
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else glDisable(GL_CULL_FACE);
+	
 	for(p=0; p<(int)m_passlist.size(); p++){
 		// parse through faces of pass
 		for(i=0; i<(int)m_passlist[p]->f.size(); i++){
@@ -371,6 +379,9 @@ void TrackerModel::genListTexturedFaces(){		// draw only textured faces
 void TrackerModel::genListUntexturedFaces(){		// draw only untextured faces
 	int i,j;
 	Face* f;
+	
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else glDisable(GL_CULL_FACE);
 	
 	for(i=0; i<(int)m_facelist.size(); i++){
 		
@@ -399,6 +410,9 @@ void TrackerModel::genListPass(){		// draw faces using passlist and shader for t
 	int p,i,j;
 	Face* f;
 	vec2 texCoords;
+	
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else glDisable(GL_CULL_FACE);
 	
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
@@ -472,6 +486,9 @@ void TrackerModel::genListPass(){		// draw faces using passlist and shader for t
 void TrackerModel::genListFaces(){		// draw all faces of model
 	int i,j;
 	Face* f;
+	
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else glDisable(GL_CULL_FACE);
 
 	for(i=0; i<(int)m_facelist.size(); i++){
 		f = &m_facelist[i];

@@ -5,7 +5,7 @@ using namespace Tracking;
 
 // *** private ***
 void Distribution::updateQueries(){
-		
+	
 	if(queryMatches.size() == 0){
 		queryMatches.assign(m_particlelist.size(), 0);
 		glGenQueriesARB(m_particlelist.size(), &queryMatches[0]);
@@ -91,29 +91,29 @@ float Distribution::getVariance(){
 // Measurement
 bool sortfunction(Particle p1, Particle p2){ return (p1.w>p2.w); }
 
-void Distribution::drawParticlesEdges(TrackerModel* model, Shader* shadeCompare, bool showparticles){
-	model->setTexture(0);
+void Distribution::drawParticlesEdges(TrackerModel& model, Shader* shadeCompare, bool showparticles){
+	model.setTexture(0);
 	
 	for(int i=0; i<m_particlelist.size(); i++){
 		m_particlelist[i].activate();
 		
 		glColorMask(0,0,0,0); glDepthMask(1);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		model->drawFaces();
+		model.drawFaces();
 		
 		glDepthMask(0);
 		if(showparticles)
 			glColorMask(1,1,1,1);
 		
 		glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryEdges[i]);
-		model->drawEdges();
+		model.drawEdges();
 		glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 				
 		glColorMask(0,0,0,0);
 		shadeCompare->bind();
 		shadeCompare->setUniform("analyze", false);
 		glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryMatches[i]);
-		model->drawEdges();
+		model.drawEdges();
 		glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 		shadeCompare->unbind();
 		
@@ -123,7 +123,7 @@ void Distribution::drawParticlesEdges(TrackerModel* model, Shader* shadeCompare,
 	glColorMask(1,1,1,1); glDepthMask(1);
 }
 
-void Distribution::drawParticlesTextured(TrackerModel* model, Shader* shadeCompare, bool showparticles){
+void Distribution::drawParticlesTextured(TrackerModel& model, Shader* shadeCompare, bool showparticles){
 	m_particlelist.size();
 	
 	// Set perspective mode and smaller viewport
@@ -140,8 +140,8 @@ void Distribution::drawParticlesTextured(TrackerModel* model, Shader* shadeCompa
 		shadeCompare->setUniform("compare", false);
 		if(showparticles)
 			glColorMask(1,1,1,1);
-		model->drawTexturedFaces();
-		model->drawUntexturedFaces();
+		model.drawTexturedFaces();
+		model.drawUntexturedFaces();
 		glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 		
 		glColorMask(0,0,0,0);
@@ -150,9 +150,9 @@ void Distribution::drawParticlesTextured(TrackerModel* model, Shader* shadeCompa
 		glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryMatches[i]);
 		shadeCompare->setUniform("compare", true);
 		shadeCompare->setUniform("textured", true);
-		model->drawTexturedFaces();
+		model.drawTexturedFaces();
 		shadeCompare->setUniform("textured", false);
-		model->drawUntexturedFaces();
+		model.drawUntexturedFaces();
 		glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 
 		m_particlelist[i].deactivate();
@@ -231,15 +231,20 @@ void Distribution::calcLikelihood(int power){
 	std::sort(m_particlelist.begin(), m_particlelist.end(), sortfunction);
 }
 
-void Distribution::updateLikelihood(TrackerModel* model, Shader* shadeCompare, bool textured, int power, bool showparticles){
+void Distribution::updateLikelihood(TrackerModel& model, Shader* shadeCompare, bool textured, int power, bool showparticles){
 	
+	// no particles to update
+	if(m_particlelist.size() <= 0){
+		return;
+	}
+		
 	updateQueries();
 	
 	if(textured)
 		drawParticlesTextured(model, shadeCompare, showparticles);
 	else
 		drawParticlesEdges(model, shadeCompare, showparticles);
-		
+	
 	calcLikelihood(power);
 }
 

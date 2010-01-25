@@ -6,7 +6,7 @@ varying vec2 vEdgeDirection;           // direction of edge of geometry object
 
 uniform float width;    // fWidthDivided = 1 / width_of_image_in_pixel;
 uniform float height;   // fHeightDivided = 1 / height_of_image_in_pixel;
-uniform float fTol;             // tolerance for deviation of angle of edge
+const float fTol = 0.3;             // tolerance for deviation of angle of edge
 
 uniform bool analyze;
 
@@ -35,32 +35,42 @@ void main(){
 	vec4 vColor = texture2D(texFrame, vec2(texcoords_frame.x, texcoords_frame.y) );
 	vEdgeNormal = vColor.xy;
 	vEdgeNormal = (vEdgeNormal - 0.5) * 2.0;  // scale to range [-1 ... 1]
-	
+
 	// if pixel is not detected as edge pixel during preprocessing, drop pixel (gl_FragDepth = 1000.0)
 	if(vColor.z < 0.01){
 			gl_FragColor = black;
-			//gl_FragDepth = gl_FragCoord.z;
 			if(!analyze)
 				discard;
 			return;
 	}
-	
-	// calculate angle between edge direction of geometry object
-	// and gradient of image edge
-	float alpha = acos(vEdgeDirection.x * vEdgeNormal.x + vEdgeDirection.y * vEdgeNormal.y) * 180.0 * dpi;
-	
-	// if edges are not aligned, drop pixel (gl_FragDepth = 1000.0)
-	if( (alpha < (90.0 + fTol)) && (alpha > (90.0 - fTol)) ){
-			// this pixel alignes with an edge pixel coinciding
-	gl_FragColor = red;
-	//gl_FragDepth = gl_FragCoord.z;
-	return;
+		
+	float len = length(vEdgeDirection.xy-vEdgeNormal.xy);
+	if(len < fTol || len > (2.0-fTol)){
+		gl_FragColor = red;
+		return;
 	}else{
-			gl_FragColor = blue;
-			//gl_FragDepth = gl_FragCoord.z;
-			if(!analyze)
-				discard;
-			return;
+		gl_FragColor = blue;
+		if(!analyze)
+			discard;
+		return;
 	}
+	
+
+// 	float alpha = acos(vEdgeDirection.x * vEdgeNormal.x + vEdgeDirection.y * vEdgeNormal.y);
+// 	
+// 	// if edges are not aligned, drop pixel (gl_FragDepth = 1000.0)
+// 	if( (alpha < fTol) && (alpha > (pi - fTol)) ){
+// 		// this pixel alignes with an edge pixel coinciding
+// 		gl_FragColor = red;
+// 		return;
+// 	}else{
+// 		gl_FragColor = blue;
+// 		if(!analyze)
+// 			discard;
+// 		return;
+// 	}
+	
+	
+	
 }
 

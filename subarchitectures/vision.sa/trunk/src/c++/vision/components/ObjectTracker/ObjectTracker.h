@@ -24,6 +24,8 @@
 namespace cast
 {
 
+
+
 class ObjectTracker : public VideoClient, public ManagedComponent
 {
 private:
@@ -35,31 +37,28 @@ private:
   int m_ImageWidth;
   int m_ImageHeight;
   float fTimeTracker;
+  std::string m_ini_file;
   
-  /**
-   * Which camera to get images from
-   */
+  /** Which camera to get images from */
   int m_camId;
-  /**
-   * component ID of the video server to connect to
-   */
+  /** component ID of the video server to connect to */
   std::string m_videoServerName;
-  /**
-   * our ICE proxy to the video server
-   */
+  /** our ICE proxy to the video server */
   Video::VideoInterfacePrx m_videoServer;
 	int m_maxModels;
   bool m_track;
   bool m_running;
   bool m_testmode;
+  bool m_textured;
   bool m_bfc;						// backface culling (disable for not closed surfaces, like polyflaps)
   
-  std::vector<TrackingEntry> m_trackinglist;
+  typedef std::vector<TrackingEntry*> TrackingEntryList;
+  TrackingEntryList m_trackinglist;
   
   // Functions with GL commands allowed
   void initTracker(const Video::Image &image);
   void runTracker(const Video::Image &image);
-  void initTrackingEntry(int i);
+  void modifyTrackingEntry(TrackingEntryList::iterator it);
   
   // Do not use GL commands in this functions (different thread with no GL context)
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);

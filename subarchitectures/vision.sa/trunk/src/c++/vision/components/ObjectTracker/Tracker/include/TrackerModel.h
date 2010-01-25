@@ -18,6 +18,8 @@ namespace Tracking{
 
 namespace Tracking{
 
+
+/** @brief 3D Model with special methods for tracking and texturing */
 class TrackerModel : public Model
 {
 private:
@@ -41,12 +43,14 @@ public:
 		Texture* texture;			// Texture to use
 		std::vector<int> f;				// Faces to draw with this pass
 		Pass(){ texture = new(Texture); }
-		~Pass(){ delete(texture); }
+		~Pass(){ delete(texture);}
 	};
+	
+	typedef std::vector<Pass*>	PassList;
 	
 	// Variables
 	std::vector<Edge> 		m_edgelist;			// edges of model (indices of vertexlist)
-	std::vector<Pass*>		m_passlist;
+	PassList							m_passlist;
 	std::vector<int>			m_facepixellist;
 	std::vector<int> 			m_texturedfaces;
 	
@@ -79,6 +83,7 @@ public:
 	int 			getUntexturedFaces(){return ( m_facelist.size() - m_texturedfaces.size() ); }
 	
 	// sets
+	void setBFC(bool bfc){ m_bfc = bfc; }
 	void setTexture(Texture* tex){ m_texture = tex; }
 	void setOriginalTexture(Texture* tex){ m_tex_original = tex; }
 	void setModelviewProjection(mat4 m){ m_modelviewprojection = m; }
@@ -93,7 +98,7 @@ protected:
 	GLint m_dlNormals;
 	
 	Shader* m_shadeTexturing;
-	
+	bool m_bfc;
 	mat4 m_modelviewprojection;		// Transformation matrix from model to camera to image -space
 
 	// Functions

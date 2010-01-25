@@ -22,8 +22,8 @@ private:
 	Shader* m_shadeEdgeCompare;
 
 	// Functions
-	void particle_processing(TrackerModel* model, Shader* shadeCompare);
-	void particle_filtering(Particle& p_result, Particle p_constraints, int recursions=1, float fTime=0.0);
+// 	void particle_processing(TrackerModel* model, Shader* shadeCompare);
+	void particle_filtering(ModelEntry* modelEntry);
 	
 public:
 	EdgeTracker();
@@ -31,15 +31,10 @@ public:
 	virtual bool initInternal();
 	
 	virtual void image_processing(unsigned char* image);
-	virtual bool track(	TrackerModel* model,
-											Camera* camera,
-											int num_recursions,
-											int num_distribution,
-											Particle p_constraints, 
-											Particle& p_result,
-											float fTime=0.0);
+	
+	virtual bool track();
 						
-	virtual void drawResult(Particle* p, TrackerModel* m);
+	virtual void drawResult();
 
 };
 

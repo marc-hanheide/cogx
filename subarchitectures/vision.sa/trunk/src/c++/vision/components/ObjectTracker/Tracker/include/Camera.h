@@ -20,6 +20,31 @@
 
 namespace Tracking{
 
+struct CameraParameter{
+  // image dimension
+  int width;
+  int height;
+  // Instrinsic parameters:
+  // entries of the camera matrix
+  double fx;
+  double fy;
+  double cx;
+  double cy;
+  // radial distortion parameters
+  double k1;
+  double k2;
+  double k3;
+  // tangential distortion parameters
+  double p1;
+  double p2;
+  // extrinsic parameters: 3D pose of camera w.r.t. world
+  mat3 rot;
+  vec3 pos;
+	
+	float zNear;
+	float zFar;
+};
+
 class Camera
 {
 private:
@@ -42,14 +67,16 @@ private:
 	
 public:
 	Camera();
+	
+	void Load(CameraParameter camPar);
 
 	// Define Camera
 	void Set(	float posx,  float posy,  float posz,
-				float viewx, float viewy, float viewz,
-				float upx,   float upy,   float upz,
-				float fovy=45, float width=800, float height=600,
-				float zNear=0.1, float zFar=100,
-				unsigned short projection=GL_PERSPECTIVE );
+						float viewx, float viewy, float viewz,
+						float upx,   float upy,   float upz,
+						float fovy=45, float width=800, float height=600,
+						float zNear=0.1, float zFar=100,
+						unsigned short projection=GL_PERSPECTIVE );
 	void SetExtrinsic(float* M);
 	void SetIntrinsic(float* M);
 	void SetIntrinsic(float fovy, float width, float height);

@@ -30,7 +30,7 @@ private:
 	float noise(float sigma, unsigned int type=GAUSS);
 	Tracking::Particle genNoise(float sigma, Tracking::Particle pConstraint, unsigned int type=GAUSS);
 
-	void addsamples(Tracking::Distribution* d, int num_particles, Tracking::Particle p_initial, Tracking::Particle p_constraints, float sigma=1.0);
+	void addsamples(Tracking::Distribution& d, int num_particles, Tracking::Particle p_initial, Tracking::Particle p_constraints, float sigma=1.0);
 	
 public:
 	Predictor();
@@ -43,7 +43,7 @@ public:
 	*		@param num_particles number of particles of resampled likelihood distribution
 	*		@param variance variance of sampling in each degree of freedom (represented as particle)
 	*/
-	virtual void resample(Tracking::Distribution* d, int num_particles, Tracking::Particle variance);
+	virtual void resample(Tracking::Distribution& d, int num_particles, Tracking::Particle variance);
 	
 	/** @brief Sample new distribution 
 	*		@param d pointer to distribution
@@ -51,7 +51,7 @@ public:
 	*		@param mean mean particle of distribution
 	*		@param variance variance of sampling in each degree of freedom (represented as particle)
 	*/
-	virtual void sample(Tracking::Distribution* d, int num_particles, Tracking::Particle mean, Tracking::Particle variance);
+	virtual void sample(Tracking::Distribution& d, int num_particles, Tracking::Particle mean, Tracking::Particle variance);
 	
 };
  

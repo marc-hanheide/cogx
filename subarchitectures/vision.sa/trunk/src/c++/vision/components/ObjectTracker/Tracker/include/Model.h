@@ -52,6 +52,8 @@ public:
 	
 	/** @brief Draws the faces of the model */
 	virtual void drawFaces(){}
+	
+	virtual void print();
 
 };
 
