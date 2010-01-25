@@ -156,8 +156,8 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
 
     double minval, tmp;
     CvPoint minPoint;
-    cvNormalize(scoreImage, scoreImage, 1, 0, CV_MINMAX);
     cvMinMaxLoc(scoreImage, &minval, &tmp, &minPoint);
+    cvNormalize(scoreImage, scoreImage, 1, 0, CV_MINMAX);
 
     if (minval < bestval) {
       bestval = minval;
@@ -175,7 +175,7 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
   *outY = bestPoint.y;
   *outAngle = bestAngle;
   if (outConfidence != 0)
-    *outConfidence = log(bestval);
+    *outConfidence = -log(bestval);
 
   cvReleaseImage(&enlargedImage);
   cvReleaseImage(&scoreImage);

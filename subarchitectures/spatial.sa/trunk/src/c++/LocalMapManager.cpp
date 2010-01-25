@@ -41,18 +41,24 @@ extern "C" {
 
 LocalMapManager::LocalMapManager()
 {
+  m_currentNumberOfClusters = 0;
   m_standingStillThreshold = 0.2;
+  m_maxClusterDeviation = 0.1;
   m_RobotServerHost = "localhost";
+  m_maxNumberOfClusters = 3;
 }
 
 LocalMapManager::~LocalMapManager() 
 { 
   delete m_Displaylgm1;
   delete m_Displaylgm2;
-  delete m_DisplayPlaneMap;
+//  delete m_DisplayPlaneMap;
   delete m_Glrt1;
   delete m_Glrt2;
-  delete m_planeObstacleMap;
+  for (std::vector<CharMap *>::iterator it = m_planeObstacleMaps.begin();
+      it != m_planeObstacleMaps.end(); it++) {
+    delete *it;
+  }
 
   for (map<int, CharMap *>::iterator it =
       m_nodeGridMaps.begin(); it != m_nodeGridMaps.end(); it++) {
@@ -100,6 +106,7 @@ void LocalMapManager::configure(const map<string,string>& _config)
   } 
 
   m_bNoPlanes = true;
+  m_bNoPTZ = true;
   
   if (_config.find("--no-planes") == _config.end()) {
     log("Trying to detect planes...");
@@ -108,6 +115,10 @@ void LocalMapManager::configure(const map<string,string>& _config)
       println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
       std::abort();
     } 
+
+    if (_config.find("--no-ptz") == _config.end()) {
+      m_bNoPTZ = false;
+    }
   }
   double coords[6];
   m_CameraPoseR.getCoordinates(coords);
@@ -139,6 +150,24 @@ void LocalMapManager::configure(const map<string,string>& _config)
     str >> m_RobotServerHost;
   }
 
+  it = _config.find("--max-clusters");
+  if (it != _config.end()) {
+    std::istringstream str(it->second);
+    str >> m_maxNumberOfClusters;
+  }
+
+  it = _config.find("--max-cluster-deviation");
+  if (it != _config.end()) {
+    std::istringstream str(it->second);
+    str >> m_maxClusterDeviation;
+  }
+
+  it = _config.find("--standing-still-threshold");
+  if (it != _config.end()) {
+    std::istringstream str(it->second);
+    str >> m_standingStillThreshold;
+  }
+
   PlaneData mpty;
   m_planeMap = new PlaneMap(70, 0.1, mpty, PlaneMap::MAP1);
 
@@ -147,9 +176,6 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_Glrt1  = new CharGridLineRayTracer(*m_lgm1);
   m_lgm2 = new CharMap(70, 0.1, '2', CharMap::MAP1);
   m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
-
-  m_planeObstacleMap = new CharMap(70, 0.1, 0, CharMap::MAP1);
-  m_DisplayPlaneMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_planeObstacleMap);
 
   if (_config.find("--no-tentative-window") == _config.end()) {
     m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
@@ -178,6 +204,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
   if (!m_bNoPlanes) {
     // Create plane objects
     m_planeObjectFinders.push_back(createTableFinder());
+    for (unsigned int i = 0; i < m_maxNumberOfClusters; i++) {
+      m_planeObstacleMaps.push_back(new CharMap(70, 0.1, 0, CharMap::MAP1));
+    }
   }
 
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
@@ -211,21 +240,23 @@ void LocalMapManager::start()
   m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   log("LocalMapManager started");
 
-  log("connecting to PTU");
-  Ice::CommunicatorPtr ic = getCommunicator();
+  if (!m_bNoPTZ) {
+    log("connecting to PTU");
+    Ice::CommunicatorPtr ic = getCommunicator();
 
-  Ice::Identity id;
-  id.name = "PTZServer";
-  id.category = "PTZServer";
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
 
-  std::ostringstream str;
-  str << ic->identityToString(id) 
-    << ":default"
-    << " -h localhost"
-    << " -p " << cast::cdl::CPPSERVERPORT;
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+      << ":default"
+      << " -h localhost"
+      << " -p " << cast::cdl::CPPSERVERPORT;
 
-  Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-  m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+  }
 }
 
 void LocalMapManager::runComponent() 
@@ -317,6 +348,27 @@ void LocalMapManager::runComponent()
     }
     unlockComponent();
     debug("unlock in isRunning");
+
+
+    VisionData::ConvexHullPtr fakeHull = new
+      VisionData::ConvexHull();
+    double angle= 0*M_PI/4;
+    double radius = 0.5;
+    double xc = -3.0;
+    double yc = 0.0;
+    double dx = radius*(cos(angle)-sin(angle));
+    double dy = radius*(sin(angle)+cos(angle));
+    double height = 0.4;
+    cogx::Math::Vector3 p1 = {-yc-dy,-height,xc+dx};
+    cogx::Math::Vector3 p2 = {-yc-dy,-height,xc-dx};
+    cogx::Math::Vector3 p3 = {-yc+dy,-height,xc-dx};
+    cogx::Math::Vector3 p4 = {-yc+dy,-height,xc+dx};
+    fakeHull->PointsSeq.push_back(p1);
+    fakeHull->PointsSeq.push_back(p2);
+    fakeHull->PointsSeq.push_back(p3);
+    fakeHull->PointsSeq.push_back(p4);
+    processConvexHull(fakeHull);
+
 
     usleep(250000);
     //sleepComponent(250);
@@ -737,35 +789,47 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
   log("newConvexHull called");
   if (!m_bNoPlanes) {
 
-    VisionData::ConvexHullPtr oobj =
-      getMemoryEntry<VisionData::ConvexHull>(objID.address);
+    try {
+      VisionData::ConvexHullPtr oobj =
+	getMemoryEntry<VisionData::ConvexHull>(objID.address);
 
-    // Check if the robot has been still long enough
-    double stopTime = oobj->time.s + 0.000001*oobj->time.us -
-      (m_lastTimeMoved.s + 0.000001*m_lastTimeMoved.us);
-//    log ("Been stopped for %f seconds", stopTime);
+      // Check if the robot has been still long enough
+      double stopTime = oobj->time.s + 0.000001*oobj->time.us -
+	(m_lastTimeMoved.s + 0.000001*m_lastTimeMoved.us);
+      //    log ("Been stopped for %f seconds", stopTime);
 
-    if (stopTime > 1.0) {
-
-//    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
-      Cure::Transformation3D cam2WorldTrans =
-	getCameraToWorldTransform();
-      double tmp[6];
-      cam2WorldTrans.getCoordinates(tmp);
-      log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-	  tmp[4], tmp[5]);
-
-      //Convert hull to world coords
-      for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
-	Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
-	Cure::Vector3D to;
-	cam2WorldTrans.invTransform(from, to);
-//    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
-	oobj->PointsSeq[i].x = to.X[0];
-	oobj->PointsSeq[i].y = to.X[1];
-	oobj->PointsSeq[i].z = to.X[2];
-//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+      if (stopTime > 1.0) {
+	processConvexHull(oobj);
       }
+    }
+    catch (DoesNotExistOnWMException) {
+      log("Error! Convex hull disappeared from WM!");
+    }
+  }
+}
+
+void
+LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
+{
+//    log("Convex hull center at %f, %f, %f", oobj->center.x,oobj->center.y,oobj->center.z);
+  Cure::Transformation3D cam2WorldTrans =
+    getCameraToWorldTransform();
+  double tmp[6];
+  cam2WorldTrans.getCoordinates(tmp);
+  log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+
+  //Convert hull to world coords
+  for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
+    Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+    Cure::Vector3D to;
+    cam2WorldTrans.invTransform(from, to);
+ //    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+    oobj->PointsSeq[i].x = to.X[0];
+    oobj->PointsSeq[i].y = to.X[1];
+    oobj->PointsSeq[i].z = to.X[2];
+//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+  }
 //    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
 //    Cure::Vector3D to;
 //    cam2WorldTrans.invTransform(from, to);
@@ -775,100 +839,104 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
 //    cam2WorldTrans.getCoordinates(tmp);
 
 
-      // Filter polygons that are not horizontal planes
-      // Find average normal
-      Cure::Vector3D avgNormal;
-      double avgZ = 0.0;
+  // Filter polygons that are not horizontal planes
+  // Find average normal
+  Cure::Vector3D avgNormal;
+  double avgZ = 0.0;
 
-      for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
-	unsigned int lasti = (i == 0 ? oobj->PointsSeq.size()-1 : i-1);
-	unsigned int nexti = (i == oobj->PointsSeq.size()-1 ? 0 : i+1);
+  for (unsigned int i = 0; i < oobj->PointsSeq.size(); i++) {
+    unsigned int lasti = (i == 0 ? oobj->PointsSeq.size()-1 : i-1);
+    unsigned int nexti = (i == oobj->PointsSeq.size()-1 ? 0 : i+1);
 
-	Cure::Vector3D edge1(oobj->PointsSeq[nexti].x-oobj->PointsSeq[i].x,
-	    oobj->PointsSeq[nexti].y-oobj->PointsSeq[i].y,
-	    oobj->PointsSeq[nexti].z-oobj->PointsSeq[i].z);
-	Cure::Vector3D edge2(oobj->PointsSeq[lasti].x-oobj->PointsSeq[i].x,
-	    oobj->PointsSeq[lasti].y-oobj->PointsSeq[i].y,
-	    oobj->PointsSeq[lasti].z-oobj->PointsSeq[i].z);
-	Cure::Vector3D normal = edge1.cross(edge2);
-	normal /= normal.magnitude();
-	avgNormal += normal;
-	avgZ += oobj->PointsSeq[i].z / oobj->PointsSeq.size();
+    Cure::Vector3D edge1(oobj->PointsSeq[nexti].x-oobj->PointsSeq[i].x,
+	oobj->PointsSeq[nexti].y-oobj->PointsSeq[i].y,
+	oobj->PointsSeq[nexti].z-oobj->PointsSeq[i].z);
+    Cure::Vector3D edge2(oobj->PointsSeq[lasti].x-oobj->PointsSeq[i].x,
+	oobj->PointsSeq[lasti].y-oobj->PointsSeq[i].y,
+	oobj->PointsSeq[lasti].z-oobj->PointsSeq[i].z);
+    Cure::Vector3D normal = edge1.cross(edge2);
+    normal /= normal.magnitude();
+    avgNormal += normal;
+    avgZ += oobj->PointsSeq[i].z / oobj->PointsSeq.size();
+  }
+  if (avgNormal.magnitude() != 0.0) {
+    avgNormal /= avgNormal.magnitude();
+
+    if (avgNormal.getZ() < 0.95 && avgNormal.getZ() > -0.95) {
+      log("Rejecting polygon: Z component of normal %f", avgNormal.getZ());
+      return;
+    }
+
+    if (avgZ < 0.10) {
+      log("Rejecting polygon: average Z coordinate is %f < 0.10",
+	  avgZ);
+      return;
+    }
+
+    // Paint the polygon in the grid map
+
+    log("Painting polygon");
+    PaintPolygon(oobj->PointsSeq);
+
+    // Extract N clusters of heights in the plane data.
+    findPlaneHeightClusters();
+
+  }
+
+//  if (m_DisplayPlaneMap) {
+//    Cure::Pose3D currentPose = m_TOPP.getPose();
+//    m_DisplayPlaneMap->updateDisplay(&currentPose);
+//  }
+
+
+  // Extract best guesses for plane objects
+  for (unsigned int finderID = 0; finderID < m_planeObjectFinders.size(); finderID++) {
+    GridObjectFinder &finder = *m_planeObjectFinders[finderID];
+    int objX, objY;
+    double objAngle, objConfidence = -FLT_MAX;
+    double objHeight;
+    for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+      int outX, outY;
+      double outAngle, outConfidence;
+      finder.findObject(*m_planeObstacleMaps[i], &outX, &outY, &outAngle, 
+	  &outConfidence);
+      if (outConfidence > objConfidence) {
+	objX = outX;
+	objY = outY;
+	objAngle = outAngle;
+	objConfidence = outConfidence;
+	objHeight = m_planeHeights[i];
       }
-      if (avgNormal.magnitude() != 0.0) {
-	avgNormal /= avgNormal.magnitude();
+    }
+    FrontierInterface::ObservedPlaneObjectPtr
+      newPlaneObject = new FrontierInterface::ObservedPlaneObject;
 
-	if (avgNormal.getZ() < 0.95 && avgNormal.getZ() > -0.95) {
-	  log("Rejecting polygon: Z component of normal %f", avgNormal.getZ());
-	  return;
-	}
+    double realX, realY;
+    m_planeMap->index2WorldCoords(objX, objY, realX, realY);
 
-	if (avgZ < 0.10) {
-	  log("Rejecting polygon: average Z coordinate is %f < 0.10",
-	      avgZ);
-	  return;
-	}
+    newPlaneObject->id = finderID;
+    newPlaneObject->x = realX;
+    newPlaneObject->y = realY;
+    newPlaneObject->angle = objAngle;
+    newPlaneObject->height = objHeight;
 
-	// Paint the polygon in the grid map
+    log("id=%n, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", newPlaneObject->id,
+	realX, realY, objAngle, 
+	objHeight, objConfidence);
 
-	log("Painting polygon");
-	PaintPolygon(oobj->PointsSeq);
 
-	for (int x = -m_planeObstacleMap->getSize(); x <= m_planeObstacleMap->getSize(); x++) {
-	  for (int y = -m_planeObstacleMap->getSize(); y <= m_planeObstacleMap->getSize(); y++) {
-	    PlaneList &planeList = (*m_planeMap)(x,y).planes;
-	    for (PlaneList::iterator it = planeList.begin();
-		it != planeList.end(); it++) {
-	      if (it->second > 4.0) {
-		(*m_planeObstacleMap)(x,y) = 255;
-		break;
-	      }
-	    }
-	  }
-	}
+    if (m_planeObjectWMIDs.find(newPlaneObject->id) == m_planeObjectWMIDs.end()) {
+      m_planeObjectWMIDs[newPlaneObject->id] = newDataID();
+      addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
+	(m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
+    }
+    else {
+      try {
+	overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
+	  (m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
       }
-
-      if (m_DisplayPlaneMap) {
-	Cure::Pose3D currentPose = m_TOPP.getPose();
-	m_DisplayPlaneMap->updateDisplay(&currentPose);
-      }
-
-
-      // Extract best guesses for plane objects
-      for (vector<GridObjectFinder*>::iterator it = m_planeObjectFinders.begin();
-	  it != m_planeObjectFinders.end(); it++) {
-	int outX, outY;
-	double outAngle, outConfidence;
-	(*it)->findObject(*m_planeObstacleMap, &outX, &outY, &outAngle, 
-	    &outConfidence);
-	FrontierInterface::ObservedPlaneObjectPtr
-	  newPlaneObject = new FrontierInterface::ObservedPlaneObject;
-
-	double realX, realY;
-	m_planeMap->index2WorldCoords(outX, outY, realX, realY);
-
-	newPlaneObject->id = 0;
-	newPlaneObject->x = realX;
-	newPlaneObject->y = realY;
-	newPlaneObject->angle = outAngle;
-	newPlaneObject->height = 1.0;
-
-	log("X=%d, Y=%d", outX,outY);
-
-	if (m_planeObjectWMID == "") {
-	  m_planeObjectWMID = newDataID();
-	  addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
-	    (m_planeObjectWMID, newPlaneObject);
-	}
-	else {
-	  try {
-	    overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
-	      (m_planeObjectWMID, newPlaneObject);
-	  }
-	  catch (DoesNotExistOnWMException) {
-	    log("Error! Could not overwrite plane object on WM; missing!");
-	  }
-	}
+      catch (DoesNotExistOnWMException) {
+	log("Error! Could not overwrite plane object on WM; missing!");
       }
     }
   }
@@ -1040,4 +1108,167 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
   delete y;
 
   delete [] sl;	//previously allocated space for ScanLine array
+}
+
+void
+LocalMapManager::findPlaneHeightClusters()
+{
+  //Use K-means clustering to determine K average heights, to filter
+  //planes for plane object detection
+
+  //Gather all plane fragments into a single vector
+  //Note: must be same sequential order as loop in processConvexHull
+  vector<double> heights;
+  for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
+    for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
+      PlaneList &planeList = (*m_planeMap)(x,y).planes;
+      for (PlaneList::iterator it = planeList.begin();
+	  it != planeList.end(); it++) {
+	if (it->second > 4.0) {
+	  heights.push_back(it->first);
+	}
+      }
+    }
+  }
+
+  vector<int> memberships(heights.size(), -1); // Which cluster a segment belongs to
+
+  vector<double> probMasses; // Accumulated probability mass; for random sampling
+  probMasses.reserve(heights.size());
+  double maxDeviation = 0.0;
+
+  m_currentNumberOfClusters = 1;
+  // First, check deviation if we assume just 1 cluster
+  double sum = 0.0;
+  for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+    sum += heights[currentElement];
+  }
+  sum /= heights.size();
+  for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+    double dist = abs(heights[currentElement] - sum);
+    maxDeviation = maxDeviation > dist ? maxDeviation : dist;
+  }
+
+
+  if (maxDeviation > m_maxClusterDeviation) {
+    // Deviation is too large to allow for a single cluster
+
+    // Try more and more clusters
+    for (m_currentNumberOfClusters = 2; maxDeviation > m_maxClusterDeviation && m_currentNumberOfClusters <= m_maxNumberOfClusters; 
+	m_currentNumberOfClusters++) {
+
+      // Init centroids with K-means++
+      int *centroids = new int[m_currentNumberOfClusters];
+      centroids[0] = 0;
+
+      for (unsigned int newCentroidNo = 1; newCentroidNo < m_currentNumberOfClusters; newCentroidNo++) {
+	double massBelow = 0.0;
+	for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+	  double closestDist = FLT_MAX;
+	  for (unsigned int i = 0; i < newCentroidNo;i++) {
+	    double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
+	    closestDist = closestDist < distToThisCentroid ? closestDist : distToThisCentroid;
+	  }
+	  probMasses[currentElement] = massBelow + closestDist*closestDist;
+	  massBelow += closestDist*closestDist;
+	}
+
+	double randomMassPoint = ((double)rand())/RAND_MAX*massBelow;
+	// Find the weighted randomly chosen point by interval halving
+	int intervalMin = 0;
+	int intervalMax = heights.size()-1;
+	unsigned int i = heights.size()/2;
+	while (!(probMasses[i] < randomMassPoint && (i == heights.size() || probMasses[i+1] >= randomMassPoint))) {
+	  if (probMasses[i] >= randomMassPoint) {
+	    intervalMax = i - 1;
+	    i = (i + intervalMin) / 2;
+	  }
+	  else if (i == heights.size()) {
+	    break;
+	  }
+	  else {
+	    intervalMin = i;
+	    i = (i + intervalMax + 1) / 2;
+	  }
+	}
+	centroids[newCentroidNo] = i;
+      }
+
+
+      // Find the borderlines between clusters,
+      // and the averages and closest examples to the borders
+      int *memberCounts = new int[m_currentNumberOfClusters];
+      double *sum = new double[m_currentNumberOfClusters];
+      double *bestNextCentroidDistance = new double[m_currentNumberOfClusters];
+
+      bool finished = false;
+      while (!finished) {
+	finished = true;
+	maxDeviation = 0.0;
+	for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+	  double closestDist = FLT_MAX;
+	  int closestCluster;
+	  for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+	    double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
+	    if (distToThisCentroid < closestDist) {
+	      closestDist = distToThisCentroid;
+	      closestCluster = i;
+	    }
+	  }
+	  memberCounts[closestCluster]++;
+	  sum[closestCluster]+=heights[currentElement];
+	  if (memberships[currentElement] != closestCluster)
+	    finished = false;
+	  memberships[currentElement] = closestCluster;
+
+	  maxDeviation = maxDeviation > closestDist ? maxDeviation : closestDist;
+	}
+
+	// Reassign cluster centroids
+	for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+	  sum[i] /= memberCounts[i];
+	  bestNextCentroidDistance[i] = FLT_MAX;
+	}
+
+
+	for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+	  int cluster = memberships[currentElement];
+	  double dist = abs(heights[currentElement] - sum[cluster]);
+	  if (dist < bestNextCentroidDistance[cluster]) {
+	    bestNextCentroidDistance[cluster] = dist;
+	    centroids[cluster] = currentElement;
+	  }
+	}
+      }
+
+      for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+	m_planeHeights[i] = centroids[i];
+      }
+
+      delete[] sum;
+      delete[] bestNextCentroidDistance;
+      delete[] memberCounts;
+      delete[] centroids;
+    }
+  }
+
+  for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+    m_planeObstacleMaps[i]->clearMap();
+  }
+
+  // Note: The function of this loop depends on the order of elements
+  // being the same as the loop at the start of this method 
+  unsigned int i = 0;
+  for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
+    for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
+      PlaneList &planeList = (*m_planeMap)(x,y).planes;
+      for (PlaneList::iterator it = planeList.begin();
+	  it != planeList.end(); it++) {
+	if (it->second > 4.0) {
+	  (*m_planeObstacleMaps[memberships[i]])(x,y) = 255;
+	}
+      }
+      i++;
+    }
+  }
 }
