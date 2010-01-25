@@ -97,7 +97,11 @@ typedef Cure::LocalGridMap<PlaneData> PlaneMap;
  * @param --robot-server-host the ice server name for the robot server (default RobotbaseServer)
  * @param --no-tentative-window Do not show the window displaying the tentative map
  * @param --no-local-map-window Do not show the window displaying the current node's map
- * @param --no-planes		Do not record stereo planes
+ * @param --no-planes			Do not record stereo planes
+ * @param --max-cluster-deviation 	Largest intracluster deviation for planes
+ * @param --max-clusters	 	Largest number of plane clusters allowed
+ * @param --standing-still-threshold	Time the robot must stand still before planes
+ *					are detected
  *
  * @author Kristoffer Sjöö
  * @see
@@ -141,6 +145,7 @@ protected:
   double m_MaxLaserRangeForCombinedMaps;
 
   bool m_bNoPlanes;
+  bool m_bNoPTZ;
 
   IceUtil::Mutex m_Mutex;
 
@@ -181,10 +186,14 @@ protected:
 
   //For plane object extraction
   std::vector<GridObjectFinder *> m_planeObjectFinders;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
+//  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
   PlaneMap* m_planeMap;
-  CharMap* m_planeObstacleMap;
-  std::string m_planeObjectWMID;
+  std::vector<CharMap *> m_planeObstacleMaps;
+  std::vector<double> m_planeHeights;
+  unsigned int m_currentNumberOfClusters;
+  std::map<int, std::string> m_planeObjectWMIDs;
+  unsigned int m_maxNumberOfClusters;
+  double m_maxClusterDeviation;
 
   //Interfaces
   ptz::PTZInterfacePrx m_ptzInterface;
@@ -207,6 +216,8 @@ private:
       const SpatialData::PlaceIDSeq &places);
   Cure::Transformation3D getCameraToWorldTransform();
   void newConvexHull(const cast::cdl::WorkingMemoryChange &objID);
+  void processConvexHull(const VisionData::ConvexHullPtr hull);
+  void findPlaneHeightClusters();
   void PaintPolygon(const VisionData::Vector3Seq &points);
 };
 }; // namespace spatial
