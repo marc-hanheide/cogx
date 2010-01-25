@@ -32,7 +32,7 @@ struct Parameters{
 };
 
 // converts a VisionData::GeometryModel to a Tracker Model
-bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerModel* model){
+bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::Model& model){
 	unsigned int i;
 	
 	// Check if model structure is empty
@@ -52,7 +52,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerMo
 		v.normal.z = geom->vertices[i].normal.z;
 		v.texCoord.x = geom->vertices[i].texCoord.x;
 		v.texCoord.y = geom->vertices[i].texCoord.y;
-		model->push_back(v);
+		model.push_back(v);
 //	printf("Vertex: %f %f %f, %f %f %f \n", v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z);
 	}
 	
@@ -60,10 +60,11 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerMo
 	Tracking::Face f;
 	for(i=0; i<geom->faces.size(); i++){	
 		f.v = geom->faces[i].vertices;
-		model->push_back(f);
+		model.push_back(f);
 		//printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
 	}
 
+	model.computeFaceNormals();
 	
 	/*
 	for(i=0; i<(int)model->m_edgelist.size(); i++){
@@ -76,7 +77,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerMo
 	return true;
 }
 
-// // converts a Tracker Model to a VisionData::GeometryModel
+/* // converts a Tracker Model to a VisionData::GeometryModel
 // bool convertTrackerModel(Tracking::TrackerModel* model, VisionData::GeometryModelPtr geom){
 // 	unsigned int i;
 // 	
@@ -110,6 +111,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::TrackerMo
 // 	
 // 	return true;
 // }
+*/
 
 // converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
 bool convertParticle2Pose(Tracking::Pose& trPose, Pose3& pose){
@@ -255,60 +257,50 @@ Parameters LoadParametersFromINI(const char* filename){
 }
 
 // SDL - Keyboard and Mouse input control
-bool inputsControl(std::vector<TrackingEntry> *trackinglist, float fTimeTracker){
+bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
  	int i=0;
  	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)){
 		switch(event.type){
-		case SDL_KEYDOWN:
-            switch(event.key.keysym.sym){
+			case SDL_KEYDOWN:
+    	switch(event.key.keysym.sym){
 				case SDLK_ESCAPE:
 					return false;
 					break;
 				case SDLK_1:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setKernelSize(0);
+					tracker->setKernelSize(0);
 					printf("Kernel size: %d\n", (int)0);
 					break;				
 				case SDLK_2:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setKernelSize(1);
+					tracker->setKernelSize(1);
 					printf("Kernel size: %d\n", (int)1);
 					break;				
 				case SDLK_3:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setKernelSize(2);
+					tracker->setKernelSize(2);
 					printf("Kernel size: %d\n", (int)2);
 					break;
 				case SDLK_e:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setEdgesImageFlag( !trackinglist->at(i).tracker->getEdgesImageFlag() );
+					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
 					break;
 				case SDLK_l:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setLockFlag( !trackinglist->at(i).tracker->getLockFlag() );
+					tracker->setLockFlag( !tracker->getLockFlag() );
 					break;
 				case SDLK_m:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setModelModeFlag( trackinglist->at(i).tracker->getModelModeFlag()+1 );
+					tracker->setModelModeFlag( tracker->getModelModeFlag()+1 );
 					break;
 				case SDLK_p:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->setDrawParticlesFlag( !trackinglist->at(i).tracker->getDrawParticlesFlag() );
+					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->printStatistics();
-					printf("\nTotal tracking time: %.0f ms\n", fTimeTracker*1000);
+					tracker->printStatistics();
+					printf("\n	Total tracking time: %.0f ms\n", fTimeTracker*1000);
 					break;
 				case SDLK_t:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->textureFromImage();
+					tracker->textureFromImage();
 					break;			
 				case SDLK_z:
-					for(i=0; i<(int)trackinglist->size(); i++)
-						trackinglist->at(i).tracker->reset();
+					tracker->reset();
 					break;
                 default:
 					break;

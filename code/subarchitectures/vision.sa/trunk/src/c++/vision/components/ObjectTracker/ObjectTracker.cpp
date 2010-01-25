@@ -19,8 +19,6 @@ extern "C"
   }
 }
 
-
-
 using namespace cast;
 using namespace std;
 using namespace VisionData;
@@ -37,10 +35,7 @@ ObjectTracker::ObjectTracker(){
 }
 
 ObjectTracker::~ObjectTracker(){
-  for(int i=0; i<m_trackinglist.size(); i++){
-		if(m_trackinglist[i].tracker) delete(m_trackinglist[i].tracker);
-	}
-	delete(g_Resources);
+	destroy();
 	log("[ObjectTracker::~ObjectTracker()]");
 }
 
@@ -48,53 +43,48 @@ ObjectTracker::~ObjectTracker(){
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
 	TrackingCommandPtr track_cmd = getMemoryEntry<TrackingCommand>(_wmc.address);
 	
-	log("received tracking command ...");
+	log("Received tracking command ...");
 	switch(track_cmd->cmd){
 		case VisionData::START:
 			if(m_track){
-				log("start tracking: I'm allready tracking");
+				log("  Start tracking: I'm allready tracking");
 			}else{
-				log("start tracking: ok");
+				log("  Start tracking: ok");
 				m_track = true;
 			}
 			break;
 		case VisionData::STOP:
 			if(m_track){
-				log("stop tracking: ok");
+				log("  Stop tracking: ok");
 				m_track = false;
 			}else{
-				log("stop tracking: I'm not tracking");
+				log("  Stop tracking: I'm not tracking");
 			}
 			break;
 		case VisionData::RELEASEMODELS:
-			log("release models: releasing all models");
-			g_Resources->ReleaseModel();
+			log("  Release models: releasing all models (not implemented)");
 			break;
 		default:
-			log("unknown tracking command received, doing nothing");
+			log("  Unknown tracking command, doing nothing");
 			break;
 	}	
 }
 
 void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
-	log("receiving VisualObject");
+	log("Receiving VisualObject");
 	
 	if((int)m_trackinglist.size()>=m_maxModels){
-		log("warning: maximum trackable models set to %d", m_maxModels);
+		log("  warning: maximum trackable models set to %d", m_maxModels);
 		return;
 	}
-
-	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
-	TrackingEntry newTrackingEntry;
 	
-	newTrackingEntry.valid = false;
-	newTrackingEntry.obj = obj;
-	newTrackingEntry.castWMA = _wmc.address;
-
-	m_trackinglist.push_back(newTrackingEntry);
-
-	// Standard outputs
-	log("VisualObject received: '%s'", obj->label.c_str());
+	TrackingEntry* trackingEntry = new TrackingEntry();
+	trackingEntry->obj = getMemoryEntry<VisualObject>(_wmc.address);
+	trackingEntry->castWMA = _wmc.address;
+	trackingEntry->cmd = TrackingEntry::ADD;
+	m_trackinglist.push_back(trackingEntry);
+	
+	log("  VisualObject received: '%s'", trackingEntry->obj->label.c_str());
 }
 
 void ObjectTracker::changeVisualObject(const cdl::WorkingMemoryChange & _wmc){
@@ -109,6 +99,8 @@ void ObjectTracker::removeVisualObject(const cdl::WorkingMemoryChange & _wmc){
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
   
+  log("Configure:");
+  
   if((it = _config.find("--videoname")) != _config.end())
   {
     m_videoServerName = it->second;
@@ -118,20 +110,35 @@ void ObjectTracker::configure(const map<string,string> & _config){
   {
     istringstream istr(it->second);
     istr >> m_camId;
+    log("  Camera ID: %d", m_camId);
   }
   
-	if((it = _config.find("--testmode")) != _config.end()){
-		m_testmode = true;
-		log("test mode enabled (only for ObjectTrackerTest component)");
+// 	if((it = _config.find("--testmode")) != _config.end()){
+// 		m_testmode = true;
+// 		log("test mode enabled (only for ObjectTrackerTest component)");
+// 	}
+	
+	if((it = _config.find("--inifile")) != _config.end()){
+		m_ini_file = it->second;
+		log("  INI file: '%s'", m_ini_file.c_str());
+	}
+	
+	m_textured = false;
+	if((it = _config.find("--textured")) != _config.end()){
+		m_textured = true;
+		log("  Mode: Texture tracking");
+	}else{
+		m_textured = false;
+		log("  Mode: Edge tracking");
 	}
 	
 	if((it = _config.find("--BFC_disabled")) != _config.end()){
 		m_bfc = false;
 	}
 	if(m_bfc)
-		log("Backface culling enabled: suitable for objects with closed surface (i.e. a cube)");
+		log("  Backface culling: enabled, suitable for objects with closed surface (i.e. a cube)");
 	else
-		log("Backface culling disabled: suitable for non closed surfaces (i.e. a polyflap)");
+		log("  Backface culling: disabled, suitable for non closed surfaces (i.e. a polyflap)");
 
 	if((it = _config.find("--maxModels")) != _config.end())
 	{
@@ -141,13 +148,7 @@ void ObjectTracker::configure(const map<string,string> & _config){
 		m_maxModels = 3;
 	}
 	
-	log("Maximal number of trackable models: %d", m_maxModels);
-	
-		
- // if((it = _config.find("--log")) != _config.end())
- // 	g_Resources->ShowLog(true);
- // else
-  	g_Resources->ShowLog(true);
+	log("  Objects: %d", m_maxModels);
   	
 }
 
@@ -169,10 +170,11 @@ void ObjectTracker::start(){
 }
 
 void ObjectTracker::destroy(){
-	for(int i=0; i<m_trackinglist.size(); i++){
-		if(m_trackinglist[i].tracker) delete(m_trackinglist[i].tracker);
+	TrackingEntryList::iterator it;
+	for(it=m_trackinglist.begin(); it<m_trackinglist.end(); it++){
+		delete((*it));
 	}
-  delete(g_Resources);
+	delete(m_tracker);
 }
 
 void ObjectTracker::receiveImages(const std::vector<Video::Image>& images){
@@ -201,7 +203,7 @@ void ObjectTracker::runComponent(){
 			sleepComponent(1000);
 		}
 		// Query keyboard input
-		m_running = inputsControl(&m_trackinglist, fTimeTracker);
+		m_running = inputsControl(m_tracker, fTimeTracker);
 
   }
   
@@ -218,95 +220,37 @@ void ObjectTracker::initTracker(const Video::Image &image){
   
   m_ImageWidth = image.width;
   m_ImageHeight = image.height;
-  
-  m_params = LoadParametersFromINI("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/ObjectTracker.ini");
-  
-  // Set pathes for resource manager
-	g_Resources->SetModelPath(m_params.modelPath.c_str());
-	g_Resources->SetTexturePath(m_params.texturePath.c_str());
-	g_Resources->SetShaderPath(m_params.shaderPath.c_str());
 
-  // initialize SDL screen
-  g_Resources->InitScreen(m_ImageWidth, m_ImageHeight, "ObjectTracker");
-
-  // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
-  loadCameraParameters(&m_camera, image.camPars, 0.1, 10.0);
-  
-	if(m_params.mode==1)
+	if(m_textured){
 		m_tracker = new TextureTracker();
-	else
+	}else{
 		m_tracker = new EdgeTracker();
-	
-	if(!m_tracker->init(m_ImageWidth, m_ImageHeight,			// image size in pixels
-											m_params.edgeMatchingTol,						// edge matching tolerance in degree
-											m_params.minTexGrabAngle,						// goal tracking time in seconds (not implemented yet)
-											Particle(0.0)))										// initial pose (where to reset when pressing 'z')
+	}
+
+	if(!m_tracker->init(m_ini_file.c_str(), m_ImageWidth, m_ImageHeight))										// initial pose (where to reset when pressing 'z')
 	{														
 		log("  error: initialisation of tracker failed!");
 		m_running = false;
 	}
-	m_tracker->setCamPerspective(&m_camera);
 	 
   log("... initialisation successfull!");
 }
 
-void ObjectTracker::initTrackingEntry(int i){
-	log("initialising new tracking entry '%s'", m_trackinglist[i].obj->label.c_str());
+void ObjectTracker::modifyTrackingEntry(TrackingEntryList::iterator it){
 	
-	int id;
-	m_trackinglist[i].bfc = m_bfc;
-	m_trackinglist[i].textured = m_params.mode;
-	m_trackinglist[i].recursions = m_params.recursions;
-	m_trackinglist[i].particles = m_params.particles;
-	// --------------------------------
-	// init tracker
-	if(m_params.mode==1)
-		m_trackinglist[i].tracker = new TextureTracker();
-	else
-		m_trackinglist[i].tracker = new EdgeTracker();
+	TrackingEntry* trackingEntry = (*it);
 	
-	if(!m_trackinglist[i].tracker->init(m_ImageWidth, m_ImageHeight,			// image size in pixels
-																			m_params.edgeMatchingTol,					// edge matching tolerance in degree
-																			m_params.minTexGrabAngle,					// goal tracking time in seconds (not implemented yet)
-																			Particle(0.0),										// initial pose (where to reset when pressing 'z')
-																			m_params.constraints));
-	{														
-		log("  error: initialisation of tracker failed!");
-		m_running = false;
-	}
-
-	// --------------------------------
-	// init model
-	// Test if model is valid
-	if(!m_trackinglist[i].obj->model || m_trackinglist[i].obj->model->vertices.size()<=0){
-		log("  error: no valid model received, adding nothing");
-		return;
-	}
-	m_trackinglist[i].model = new TrackerModel();
-	if((id = g_Resources->AddModel(m_trackinglist[i].model, m_trackinglist[i].obj->label.c_str())) == -1)
-		return;
-	m_trackinglist[i].model = g_Resources->GetModel(id);
-	if(!convertGeometryModel(m_trackinglist[i].obj->model, m_trackinglist[i].model)){
-		delete(m_trackinglist[i].model);
-		log("  error can not convert VisualObject to tracker model");
-		return;
-	}
-	m_trackinglist[i].model->computeFaceNormals();
-	m_trackinglist[i].model->computeEdges();
-	m_trackinglist[i].model->Update();
-	//m_trackinglist[i].model->print();
-
-	m_trackinglist[i].camera = &m_camera;
+	log("Modifying tracking entry: '%s'", trackingEntry->obj->label.c_str());
 	
-	m_trackinglist[i].constraints = m_params.constraints;
-	convertPose2Particle(m_trackinglist[i].obj->pose, m_trackinglist[i].detectpose);
-	m_trackinglist[i].trackpose = m_trackinglist[i].detectpose;
-	m_trackinglist[i].tracker->setInitialPose(m_trackinglist[i].detectpose);
-	m_trackinglist[i].tracker->reset();
-
-	m_trackinglist[i].valid = true;
-	
-	log("  initialisation of new tracking entry successfull");
+	if(trackingEntry->cmd == TrackingEntry::ADD){
+		Tracking::Pose pose;
+		Tracking::Model model;
+		convertPose2Particle(trackingEntry->obj->pose, pose);
+		convertGeometryModel(trackingEntry->obj->model, model);
+		trackingEntry->id = m_tracker->addModel(model, pose, true);
+		trackingEntry->cmd = TrackingEntry::TRACK;
+		log("  TrackingEntry::ADD: '%s'", trackingEntry->obj->label.c_str());
+	}	
 }
 
 void ObjectTracker::runTracker(const Video::Image &image){
@@ -315,48 +259,39 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	double dTimeStamp;
 	fTimeTracker=0.0;
 	int i;
-	
-	
+	Model* model;
 	
 	// * Tracking *
 	m_timer.Update();
 	dTimeStamp = m_timer.GetApplicationTime();
 
-// 	if(m_testmode){
-// 		m_camera->Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
-// 										0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
-// 										0.0, 1.0, 0.0,											// Up vector (y-axis)
-// 										45, image.width, image.height,		  // field of view angle, image width and height
-// 										0.1, 10.0,													// camera z-clipping planes (far, near)
-// 										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
-// 	}
+	// Check if new models added to tracking list
+	TrackingEntryList::iterator it;
+	for(it=m_trackinglist.begin(); it<m_trackinglist.end(); it++){
+		if((*it)->cmd != TrackingEntry::TRACK)
+			modifyTrackingEntry(it);
+	}
 
 	m_tracker->image_processing((unsigned char*)(&image.data[0]));
 	m_tracker->drawImage(NULL);
 
-	// Track all models
-	for(i=0; i<(int)m_trackinglist.size(); i++){
-		if(!m_trackinglist[i].valid){
-			initTrackingEntry(i);
-			return;
-		}else{			
-			// Track model
-// 			m_trackinglist[i].track();
-			
-			// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
-			convertParticle2Pose(m_trackinglist[i].trackpose, m_trackinglist[i].obj->pose);
+	// Track model
+	m_tracker->track();
 		
-			// Send new data to working memory
-			m_trackinglist[i].obj->detectionConfidence = m_trackinglist[i].trackpose.c;
-			m_trackinglist[i].obj->time = convertTime(dTimeStamp);
-			overwriteWorkingMemory(m_trackinglist[i].castWMA.id, m_trackinglist[i].obj);
-		}
-	}
+		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
+		// TODO TODO TODO get pose of objects and convert them
+// 		convertParticle2Pose(m_trackinglist[i].trackpose, m_trackinglist[i].obj->pose);
+	
+		// TODO TODO TODO Send new data to working memory
+// 		m_trackinglist[i].obj->detectionConfidence = m_trackinglist[i].trackpose.c; 
+// 		m_trackinglist[i].obj->time = convertTime(dTimeStamp);
+// 		overwriteWorkingMemory(m_trackinglist[i].castWMA.id, m_trackinglist[i].obj);
+
 	
 	m_tracker->drawCoordinates();
-	for(int id=0; id<i; id++){
-			m_trackinglist[id].tracker->drawResult(&m_trackinglist[id].trackpose, m_trackinglist[id].model);
-	}
+	
+	m_tracker->drawResult();
+	
 	
 	m_tracker->swap();
 

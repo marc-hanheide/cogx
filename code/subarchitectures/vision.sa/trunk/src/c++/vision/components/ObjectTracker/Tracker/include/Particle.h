@@ -32,8 +32,10 @@ public:
 	Particle();
 	Particle(float val);
 	Particle(const Particle& p2);
+	Particle(const Pose& p2);
 	
 	Particle& operator=(const Particle& p2);
+	Particle& operator=(const Pose& p);
 	
 	/**	@brief Comparing weighted likelihood of two particles	*/
 	inline bool operator<(const Particle& p2) const { return w < p2.w; }

@@ -54,12 +54,11 @@ vec4 sobel(){
 	if(fGm < fThreshold)
 		return vNull;
 	
-	if(norm)
-		vG = normalize(vG);
+	vG = normalize(vG);
 	
 	// scale gradient to range = [0 ... 1]
 	vG = vG * 0.5 + 0.5;  
-	return vec4(vG, fGm, 0.0);
+	return vec4(vG, 0.02, 0.0);
 }
 
 void main(){

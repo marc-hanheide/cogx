@@ -49,7 +49,7 @@ Particle Predictor::genNoise(float sigma, Particle pConstraint, unsigned int typ
 	return epsilon;
 }
 
-void Predictor::addsamples(Distribution* d, int num_particles, Particle mean, Particle variance, float sigma){
+void Predictor::addsamples(Distribution& d, int num_particles, Particle mean, Particle variance, float sigma){
 	Particle p;
 	Particle epsilon;
 	
@@ -70,7 +70,7 @@ void Predictor::addsamples(Distribution* d, int num_particles, Particle mean, Pa
 		p.rotate(p.rp*m_fTime);
 		p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
 		
-		d->push_back(p);
+		d.push_back(p);
 	}	
 }
 
@@ -79,7 +79,11 @@ Predictor::Predictor(){
 	m_fTime = 0.0;
 }
 
-void Predictor::resample(Distribution *d, int num_particles, Particle variance){
+void Predictor::resample(Distribution& d, int num_particles, Particle variance){
+	
+	if(d.size() <= 0)
+		return;
+	
 	Particle epsilon, p;
 	int n, id, i, nid=0;
 	float sigma = 0.01;
@@ -91,19 +95,19 @@ void Predictor::resample(Distribution *d, int num_particles, Particle variance){
 	
 	if(num_particles<=0){
 		printf("[Distribution::resample] Warning number of particles to low (0)\n");
-		num_particles = d->size();
+		num_particles = d.size();
 	}
 	
 	ParticleList particlelist_tmp;
-	d->copy(particlelist_tmp);
-	d->clear();
+	d.copy(particlelist_tmp);
+	d.clear();
 	
 	// Particles with motion
-	for(id=0; id<particlelist_tmp.size() && d->size()<(int)num_particles*partition; id++){
+	for(id=0; id<particlelist_tmp.size() && d.size()<(int)num_particles*partition; id++){
 		
 		// resampling according to weight
 		n = round(particlelist_tmp[id].w * num_particles);
-		c = d->getC(id);
+		c = particlelist_tmp[id].c;
 		
 		// Tukey estimator
 		sigma = (1.0-pow(1.0-pow(1.0-c,2),3));
@@ -115,18 +119,18 @@ void Predictor::resample(Distribution *d, int num_particles, Particle variance){
 	}
 	
 	// Particles voting for no motion
-	int s=d->size();
+	int s=d.size();
 	for(id=0; id<(num_particles-s); id++){
-		d->copyParticle(p, id);
+		d.copyParticle(p, id);
 		p.tp = vec3(0.0,0.0,0.0);
 		p.rp = vec3(0.0,0.0,0.0);
 		p.zp = 0.0;
-		d->push_back(p);
+		d.push_back(p);
 	}
 }
 
-void Predictor::sample(Distribution* d, int num_particles, Particle mean, Particle variance){
-	d->clear(); 
+void Predictor::sample(Distribution& d, int num_particles, Particle mean, Particle variance){
+	d.clear(); 
 	addsamples(d, num_particles, mean, variance);
 }
 

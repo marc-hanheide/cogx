@@ -34,15 +34,38 @@ void Model::computeNormals(){
 void Model::computeFaceNormals(){
 	int i,j;
 	Face* f;
-	vec3 n = vec3(0.0,0.0,0.0);
+	vec3 v0, v1, v2, e1, e2, n;
 	
+	// calculate vertex normals using the face normal
 	for(i=0; i<(int)m_facelist.size(); i++){
 		f = &m_facelist[i];
-		n = vec3(0.0,0.0,0.0);
-		for(j=0; j<(int)f->v.size(); j++){
-			n += m_vertexlist[f->v[j]].normal;
-		}
+		
+		v0 = vec3(m_vertexlist[f->v[0]].pos.x, m_vertexlist[f->v[0]].pos.y, m_vertexlist[f->v[0]].pos.z);
+		v1 = vec3(m_vertexlist[f->v[1]].pos.x, m_vertexlist[f->v[1]].pos.y, m_vertexlist[f->v[1]].pos.z);
+		v2 = vec3(m_vertexlist[f->v[2]].pos.x, m_vertexlist[f->v[2]].pos.y, m_vertexlist[f->v[2]].pos.z);
+		e1 = v1 - v0;
+		e2 = v2 - v0;
+		
+		n.cross(e1,e2);
 		n.normalize();
-		f->normal = vec3(n);
+		m_facelist[i].normal = vec3(n);
 	}
 }
+
+void Model::print(){
+	int i,j;
+	
+	printf("Model:\n");
+	for(i=0; i<(int)m_vertexlist.size(); i++){
+		Vertex v = m_vertexlist[i];
+		printf("Vertex %i: %f %f %f, %f %f %f, %f %f\n", i, v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z, v.texCoord.x, v.texCoord.y);
+	}
+	for(i=0; i<(int)m_facelist.size(); i++){
+		printf("Face %i: ",i);
+		for(j=0; j<(int)m_facelist[i].v.size(); j++){
+			printf("%i ", m_facelist[i].v[j]);
+		}
+		printf("%f %f %f\n", m_facelist[i].normal.x, m_facelist[i].normal.y, m_facelist[i].normal.z);
+	}
+}
+

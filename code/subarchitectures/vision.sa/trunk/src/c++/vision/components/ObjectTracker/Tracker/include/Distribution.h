@@ -44,8 +44,8 @@ private:
 	/** @brief Calculates weighted mean and stores it in m_meanParticle */
 	void calcMean();
 	
-	void drawParticlesEdges(TrackerModel* model, Shader* shadeCompare, bool showparticles=false);
-	void drawParticlesTextured(TrackerModel* model, Shader* shadeCompare, bool showparticles=false);
+	void drawParticlesEdges(TrackerModel& model, Shader* shadeCompare, bool showparticles=false);
+	void drawParticlesTextured(TrackerModel& model, Shader* shadeCompare, bool showparticles=false);
 	void calcLikelihood(int power=5);	
 	
 public:
@@ -53,7 +53,7 @@ public:
 	~Distribution();
 	
 	/**	@brief Gets weighted mean of likelihood distribution */
-	Particle* 	getMean(){ return &m_meanParticle; }
+	Particle 		getMean(){ return m_meanParticle; }
 	
 	/** @brief Gets particle from distribution by id */
 	Particle*		getParticle(int id){ return &(m_particlelist[id]); }
@@ -81,7 +81,7 @@ public:
 	void				copy(ParticleList &list){ list = m_particlelist; }
 	
 	/** @brief Copy a particle from the distribution */
-	void				copyParticle(Particle& p, int id){ p = m_particlelist[id]; }
+	void				copyParticle(Particle& p, int id){ if(id<=m_particlelist.size()) p = m_particlelist[id]; }
 	
 	/** @brief Drops all particles of the ParticleList */
 	void				clear(){ m_particlelist.clear(); }
@@ -96,7 +96,7 @@ public:
 	*		@param power power of weight distribution
 	*		@param showparticles makes particle distribution visible on screen
 	*/
-	void		updateLikelihood(TrackerModel* model, Shader* shadeCompare, bool textured, int power=5, bool showparticles=false);
+	void		updateLikelihood(TrackerModel& model, Shader* shadeCompare, bool textured, int power=5, bool showparticles=false);
 
 };
 

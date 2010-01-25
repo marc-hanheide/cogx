@@ -9,14 +9,10 @@
 
 int main(int argc, char *argv[])
 {
-	char modelfilename[32];
 	float likelihood = 0.0;
-	int id = 0;
 	Timer timer;
 	IplImage* img = 0;
-	TrackerModel* model = 0;
-	Camera camera;
-	Particle p_result = Particle(0.0);
+	ModelLoader m_modelloader;
 	float fTimeIP, fTimeTrack, fTimeGrab;
 	
 	printf("\n\n");
@@ -30,25 +26,13 @@ int main(int argc, char *argv[])
 	printf("\nInitialising\n");
 	printf("---------------------\n");
 	
-	sprintf(modelfilename, "%s", "jasmin6.ply");
-	
-	Parameters params = LoadParametersFromINI("standalone.ini");
-	
-	p_result = params.initialParticle;
-
-	// Setup resource manager
-	g_Resources->SetModelPath(params.modelPath.c_str());
-	g_Resources->SetTexturePath(params.texturePath.c_str());
-	g_Resources->SetShaderPath(params.shaderPath.c_str());
-	g_Resources->ShowLog(false);
+	string ini_file = string("standalone.ini");	
 	
 	// Initialize camera capture using opencv
-	g_Resources->InitCapture(params.camParams.width,params.camParams.height);
+	int width = 640;
+	int height = 480;
+	g_Resources->InitCapture(width, height);
 	img = g_Resources->GetNewImage();
-	
-	// Initialize SDL screen
-	g_Resources->InitScreen(img->width, img->height, "Standalone Tracker");
-	
 
 #ifdef WIN32
 	GLenum err = glewInit();
@@ -61,57 +45,56 @@ int main(int argc, char *argv[])
 
 	// Initialize tracker
 	Tracker* m_tracker;
-		
-	if(params.mode == 0)
+	int mode = 1;
+	
+	if(mode == 0)
 		m_tracker = new EdgeTracker();
-	else if(params.mode == 1)
+	else if(mode == 1)
 		m_tracker = new TextureTracker();
 	else{
-		printf("Wrong mode given in INI-file: %d\n", params.mode);
+		printf("Wrong mode selected (only 0 or 1 possible)\n", mode);
 		return 1;
 	}
 
-	if(!m_tracker->init(	img->width, img->height,	// image size in pixels
-												params.edgeMatchingTol,		// edge matching tolerance in degree
-												params.minTexGrabAngle,
-												p_result, 								// initial pose (where to reset when pressing 'z')
-												params.constraints)){
+	if(!m_tracker->init(ini_file.c_str(), img->width, img->height)){
 		printf("Failed to initialise tracker!\n");
 		return 1;
 	}
-	m_tracker->setBFC(params.backFaceCulling); // Disable Backface-Culling (required for non-volumetric objects like polyflaps)
 	
-	// Load extrensic camera parameters
-	loadCameraParameters(camera, params.camParams, 0.1f, 10.0f);
-		
 	// Load model
-	if((id = g_Resources->AddPlyModel(modelfilename)) == -1)
-		return 1;
-	model = g_Resources->GetModel(id);
+	int id_1, id_2;
+	Pose p;
+	Model model_1, model_2;
+	
+	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
+	p.t = vec3(0.2, 0.06, 0.06);
+	id_1 = m_tracker->addModel(model_1, p, true);
+	
+	m_modelloader.LoadPly(model_2, "resources/model/jasmin6.ply");
+	p.t = vec3(0.05, 0.05, 0.05);
+	id_2 = m_tracker->addModel(model_2, p, true);
 	
 	// *************************************************************************************
   // Main Loop
-	printf("\nRunning (Mode = %i)\n", params.mode);
+	printf("\nRunning \n");
 	printf("---------------------\n");
 	while( control(m_tracker) ){
 		// grab new image from camera
 		timer.Update();
 		img = g_Resources->GetNewImage();
 		fTimeGrab = timer.Update();
-		;
+		
 		// Image processing
 		m_tracker->image_processing((unsigned char*)img->imageData);
 		m_tracker->drawImage(NULL);
 		fTimeIP = timer.Update();
 		
 		// Tracking (particle filtering)
-		m_tracker->track(model, &camera, params.recursions, params.particles, params.constraints, p_result, 0.0);
+		m_tracker->track();
 		
 		// Draw result
-		m_tracker->drawResult(&p_result, model);
-		m_tracker->drawCoordinates();
-// 		m_tracker->drawSpeedBar(p_result.sp.x * 100.0);
-// 		m_tracker->drawCalibrationPattern();
+		m_tracker->drawResult();
+// 		m_tracker->drawCoordinates();
 		m_tracker->swap();	
 			
 		fTimeTrack = timer.Update();
@@ -122,7 +105,7 @@ int main(int argc, char *argv[])
   // Stop and destroy
 	printf("\nStop\n");
 	printf("---------------------\n");
-	delete(g_Resources);
+
 	delete(m_tracker);
 	
 	printf("\n... done\n\n");
