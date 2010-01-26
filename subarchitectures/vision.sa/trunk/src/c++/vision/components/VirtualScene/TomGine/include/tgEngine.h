@@ -43,6 +43,7 @@ private:
 	tgVector3			m_cor;			///< Center of Rotation
 	
 	int m_mouse_pos[2];
+	bool p_pressed;
 	
 	float m_frametime;
 	bool m_bfc;
@@ -113,7 +114,7 @@ public:
 	tgVector3 GetCameraPosition(){ return m_camera.GetPos(); }
 
 	tgVector3 Get3DPointFrom2D(int x, int y);
-	tgVector3 Get3DPointFrom2D(){ Get3DPointFrom2D(m_mouse_pos[0], m_mouse_pos[1]); }
+	bool GetNewPoint(vec3& v);
 
 };
 

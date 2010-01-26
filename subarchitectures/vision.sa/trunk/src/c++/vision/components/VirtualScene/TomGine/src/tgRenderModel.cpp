@@ -11,6 +11,13 @@ void tgRenderModel::ApplyMaterial(Material mat){
 	glMaterialfv(GL_FRONT,GL_SHININESS,&mat.shininess);
 }
 
+void tgRenderModel::Material::Apply(){
+	glMaterialfv(GL_FRONT,GL_AMBIENT,ambient);
+	glMaterialfv(GL_FRONT,GL_DIFFUSE,diffuse);
+	glMaterialfv(GL_FRONT,GL_SPECULAR,specular);
+	glMaterialfv(GL_FRONT,GL_SHININESS,&shininess);
+}
+
 void tgRenderModel::DrawFaces(){
 	ApplyMaterial(m_material);
 	int i,j;
