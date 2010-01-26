@@ -64,7 +64,7 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 								0.0, 0.0, 0.0,							// Point where camera looks at
 								0.0, 1.0, 0.0,							// UP-Vector of Camera
 								45, width, height,					// field of view in degree in y, image width, image height
-								0.01, 5.0*depth,					// near clipping plane, far clipping plane
+								0.01, 5.0*depth,						// near clipping plane, far clipping plane
 								GL_PERSPECTIVE);						// Perspective camera
 	
 	m_camera0 = m_camera;
@@ -86,6 +86,7 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 	
 	if(m_bfc) glEnable(GL_CULL_FACE);
 	else			glDisable(GL_CULL_FACE);
+	glClearDepth(1);
 	glEnable(GL_DEPTH_TEST);
 	
 	//
@@ -135,8 +136,7 @@ bool tgEngine::InputControl(){
 						m_smoothshading = !m_smoothshading;
 						break;
 					case XK_p:
-						vPoint = Get3DPointFrom2D(m_mouse_pos[0], m_mouse_pos[1]);
-						printf("%f %f %f\n", vPoint.x, vPoint.y, vPoint.z);
+						p_pressed = true;
 						break;
 					case XK_w:
 						if(m_wireframe)
@@ -192,7 +192,7 @@ bool tgEngine::InputControl(){
 			// *********************************************************
 			case MotionNotify:
 				m_mouse_pos[0] = event.motion.x;
-				m_mouse_pos[1] = event.motion.x;
+				m_mouse_pos[1] = event.motion.y;
 				
 				if(m_button_left){
 					m_camera.Orbit(m_cor, m_camera.GetU(), -5*m_frametime * event.motion.x_rel);
@@ -261,25 +261,44 @@ tgVector3 tgEngine::Get3DPointFrom2D(int x, int y){
 	int viewport[4];
 	double modelview[16];
 	double projection[16];
-	double z;
-	double y_new;
+	float z;
+	int y_new;
 	double result[3];
+	
+	m_camera.SetZRange(0.0,1.0);
 	
 	glGetDoublev(GL_MODELVIEW_MATRIX, &modelview[0] ); //Aktuelle Modelview Matrix in einer Variable ablegen
   glGetDoublev(GL_PROJECTION_MATRIX, &projection[0] ); //Aktuelle Projection[s] Matrix in einer Variable ablegen
   glGetIntegerv(GL_VIEWPORT, &viewport[0] ); // Aktuellen Viewport in einer Variable ablegen
   y_new = viewport[3] - y; // In OpenGL steigt Y von unten (0) nach oben
  
+ 
   // Auslesen des Tiefenpuffers an der Position (X/Y_new)
   glReadPixels(x, y_new, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z );
- 
-  // Errechnen des Punktes, welcher mit den beiden Matrizen multipliziert (X/Y_new/Z) ergibt:
-  gluUnProject(x, y_new, z, modelview, projection, viewport, &result[0], &result[1], &result[2]); 
   
+  // Errechnen des Punktes, welcher mit den beiden Matrizen multipliziert (X/Y_new/Z) ergibt:
+  gluUnProject((double)x, (double)y_new, (double)z, modelview, projection, viewport, &result[0], &result[1], &result[2]); 
+  
+    
   vResult.x = result[0];
   vResult.y = result[1];
   vResult.z = result[2];
  
  	return vResult;
+}
+
+bool tgEngine::GetNewPoint(vec3& v){
+	if(!p_pressed)
+		return false;
+	
+	p_pressed = false;
+	
+	tgVector3 tgv = Get3DPointFrom2D(m_mouse_pos[0], m_mouse_pos[1]);
+	
+	v.x =tgv.x;
+	v.y =tgv.y;
+	v.z =tgv.z;
+
+	return true;
 }
 

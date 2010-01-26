@@ -30,6 +30,8 @@ public:
 		vec4 diffuse;
 		vec4 specular;
 		float shininess;
+		
+		void Apply();
 	};
 	
 	tgPose			m_pose;
