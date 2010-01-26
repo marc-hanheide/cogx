@@ -36,7 +36,7 @@ public:
 	Predictor();
 	
 	/** @brief Set vector pointing from camera to object mean, to enable zooming*/
-	void setCamViewVector(Tracking::TM_Vector3 v){ m_cam_view = v; }
+	void setCamViewVector(Tracking::TM_Vector3 v){ m_cam_view = v; m_cam_view.normalize(); }
 	
 	/**	@brief Resample particles accourding to current likelihood distribution (move particles)
 	*		@param d pointer to distribution
@@ -52,6 +52,9 @@ public:
 	*		@param variance variance of sampling in each degree of freedom (represented as particle)
 	*/
 	virtual void sample(Tracking::Distribution& d, int num_particles, Tracking::Particle mean, Tracking::Particle variance);
+	
+	/** @brief Updates time of prediction system for higher order motion model */
+	virtual void updateTime();
 	
 };
  

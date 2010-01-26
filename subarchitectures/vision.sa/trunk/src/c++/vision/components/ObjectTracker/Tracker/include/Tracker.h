@@ -17,6 +17,7 @@
 #include "mathlib.h"
 #include "CDataFile.h"
 #include "ModelEntry.h"
+#include "tgLighting.h"
 
 #ifndef PIOVER180
 #define PIOVER180 3.14159265358979323846f/180.0
@@ -56,6 +57,7 @@ protected:
 	Texture* m_tex_frame;
 	Texture* m_tex_frame_ip[NUM_SPREAD_LOOPS];
 	
+	tgLighting m_lighting;
 	ImageProcessor* m_ip;
 	
 	// ModelEntry
@@ -75,9 +77,11 @@ protected:
 	
 
 	// Functions (virtual)
+	/** @brief Load parameter of tracker with an INI file */
+	bool loadINI(const char* inifile);
+	
 	virtual bool initInternal()=0;
 	
-	// Functions
 	bool initGL();
 	
 public:
@@ -85,21 +89,38 @@ public:
 	~Tracker();
 	
 	// Main functions (init, image_processing, tracking, reset)
-	bool loadINI(const char* inifile);
+	/** @brief Initialize tracker with an INI file and image/window width and height in pixel */
 	bool init(const char* inifile, int width, int height);
 	
+	/** @brief Perform image processing with edge detection */
 	virtual void image_processing(unsigned char* image)=0;
 	
+	/** @brief Tracks all models by matching their edges against edges of images */
 	virtual bool track()=0;
-		
+	
+	/** @brief Resets the pose of the models to the initial pose */
 	void reset();
 	
 	// Model handling
+	/** @brief Adds a geometrical model to the tracker
+	*		@return id of the added model (-1 if not successfull)
+	*/
 	int 		addModel(Model& m, Pose& p, bool bfc=false);
+	
+	/** @brief Remove model from tracker */
 	void 		removeModel(int id);
+	
+	/** @brief Get current pose of a model */
 	void		getModelPose(int id, Pose& p);
+	
+	/** @brief Get the initial pose of a model */
 	void		getModelInitialPose(int id, Pose& p);
+	
+	/** @brief Get Confidence value of a model at current pose */
 	void		getModelConfidence(int id, int& c);
+	
+	/** @brief Get 3D point from 2D window coordinates */
+	bool		getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3, float& z3);
 	
 	
 	// Drawing to screen (result, ...)

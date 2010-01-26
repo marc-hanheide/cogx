@@ -60,6 +60,7 @@ public:
 	
 	// computes, updates
 	void computeEdges();
+	void computeBoundingSphere();
 	void Update();
 	
 	// draws
@@ -72,7 +73,10 @@ public:
 	void drawUntexturedFaces();
 	void drawPass();
 	
+	
 	std::vector<int> getFaceUpdateList(Pose* p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);
+	
+	/** @brief capture texture from image */
 	void textureFromImage(Texture* image, int width, int height, Pose* p_max, vec3 view, float minTexGrabAngle);
 	
 		// gets
@@ -80,6 +84,7 @@ public:
 	Texture* 	getTexture(){ return m_texture; }
 	Texture* 	getOriginalTexture(){ return m_tex_original; }
 	mat4 			getModelviewProjection(){ return m_modelviewprojection; }
+	float			getBoundingSphereRadius(){ return m_boundingSphereRadius; }
 	int 			getUntexturedFaces(){return ( m_facelist.size() - m_texturedfaces.size() ); }
 	
 	// sets
@@ -100,6 +105,7 @@ protected:
 	Shader* m_shadeTexturing;
 	bool m_bfc;
 	mat4 m_modelviewprojection;		// Transformation matrix from model to camera to image -space
+	float m_boundingSphereRadius;
 
 	// Functions
 	bool isRedundant(Edge* e1);

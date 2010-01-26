@@ -30,7 +30,6 @@ void EdgeTracker::particle_filtering(ModelEntry* modelEntry){
 	TM_Vector3 vCam = m_cam_perspective.GetPos();
 	TM_Vector3 vObj = TM_Vector3(modelEntry->pose.t.x, modelEntry->pose.t.y, modelEntry->pose.t.z);
 	modelEntry->vCam2Model = vObj - vCam;
-	modelEntry->vCam2Model.normalize();
 	modelEntry->predictor.setCamViewVector(modelEntry->vCam2Model);
 	
 	
@@ -92,6 +91,8 @@ bool EdgeTracker::track(){
 		// Recursive particle filtering
 		if(!m_lock){
 			particle_filtering(m_modellist[i]);		
+		}else{
+			m_modellist[i]->predictor.updateTime();
 		}
 	}
 

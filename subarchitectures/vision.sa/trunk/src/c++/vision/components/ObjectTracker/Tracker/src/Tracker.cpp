@@ -168,6 +168,7 @@ bool Tracker::init(const char* inifile, int width, int height){
 	return initInternal();
 }
 
+
 int Tracker::addModel(Model& m, Pose& p, bool bfc){
 	
 	if(!m_tracker_initialized){
@@ -238,6 +239,61 @@ void Tracker::getModelConfidence(int id, int& c){
 	}
 }
 
+bool Tracker::getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3, float& z3){
+	ModelEntryList::iterator it;
+	
+	for(it = m_modellist.begin(); it < m_modellist.end(); it++){
+		if(id==(*it)->id){
+			// Activate Camera
+			Camera cam = m_cam_perspective;
+			cam.SetZRange(0.0, 1.0);
+			cam.Activate();
+			
+			// Clear Depth Buffer
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_DEPTH_TEST);
+			
+			// Apply pose
+			(*it)->pose.activate();
+			
+			// Draw Model Faces
+			m_lighting.Activate();
+			(*it)->model.drawFaces();
+			m_lighting.Deactivate();
+			
+			// ************************
+			int viewport[4];
+			double modelview[16];
+			double projection[16];
+			double result[3];
+			
+			glGetDoublev(GL_MODELVIEW_MATRIX, &modelview[0] );
+			glGetDoublev(GL_PROJECTION_MATRIX, &projection[0] );
+			glGetIntegerv(GL_VIEWPORT, &viewport[0] );
+			y_win = viewport[3] - y_win;
+		
+			// Read value of depth buffer at position (x_win, y_win)
+			glReadPixels(x_win, y_win, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z3 );
+			
+			if(z3 > 0.99)
+				return false;
+			
+			// calculate intersection of camera viewing vector and model surface
+			gluUnProject((double)x_win, (double)y_win, (double)z3, modelview, projection, viewport, &result[0], &result[1], &result[2]); 
+			
+			x3 = result[0];
+			y3 = result[1];
+			z3 = result[2];
+			
+			(*it)->pose.deactivate();
+			
+			return true;			
+		}
+	}
+	return false;
+}
+
+
 // render coordinate frame
 void Tracker::drawCoordinates(){
 	glDisable(GL_DEPTH_TEST);
@@ -296,6 +352,7 @@ void Tracker::drawCoordinates(){
 		glEnd();
 	glPopMatrix();
 	
+	glColor3f(1.0,1.0,1.0);
 	
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);	
