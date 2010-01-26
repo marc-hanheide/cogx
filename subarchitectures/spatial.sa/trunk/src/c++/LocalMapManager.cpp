@@ -39,7 +39,7 @@ extern "C" {
   }
 }
 
-LocalMapManager::LocalMapManager()
+LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
 {
   m_currentNumberOfClusters = 0;
   m_standingStillThreshold = 0.2;
@@ -789,21 +789,30 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
   log("newConvexHull called");
   if (!m_bNoPlanes) {
 
-    try {
-      VisionData::ConvexHullPtr oobj =
-	getMemoryEntry<VisionData::ConvexHull>(objID.address);
+    if (m_planeProcessingCooldown.split() > 0.5) {
+      log("Accepting convex hull: Timer is %.f", m_planeProcessingCooldown.split());
+      m_planeProcessingCooldown.stop();
 
-      // Check if the robot has been still long enough
-      double stopTime = oobj->time.s + 0.000001*oobj->time.us -
-	(m_lastTimeMoved.s + 0.000001*m_lastTimeMoved.us);
-      //    log ("Been stopped for %f seconds", stopTime);
+      try {
+	VisionData::ConvexHullPtr oobj =
+	  getMemoryEntry<VisionData::ConvexHull>(objID.address);
 
-      if (stopTime > 1.0) {
-	processConvexHull(oobj);
+	// Check if the robot has been still long enough
+	double stopTime = oobj->time.s + 0.000001*oobj->time.us -
+	  (m_lastTimeMoved.s + 0.000001*m_lastTimeMoved.us);
+	//    log ("Been stopped for %f seconds", stopTime);
+
+	if (stopTime > 1.0) {
+	  processConvexHull(oobj);
+	}
       }
+      catch (DoesNotExistOnWMException) {
+	log("Error! Convex hull disappeared from WM!");
+      }
+      m_planeProcessingCooldown.restart();
     }
-    catch (DoesNotExistOnWMException) {
-      log("Error! Convex hull disappeared from WM!");
+    else {
+      log("Rejecting convex hull: Timer is %.f", m_planeProcessingCooldown.split());
     }
   }
 }

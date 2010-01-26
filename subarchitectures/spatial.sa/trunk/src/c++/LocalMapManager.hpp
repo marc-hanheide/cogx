@@ -32,6 +32,7 @@
 #include <PTZ.hpp>
 #include <VisionData.hpp>
 #include "GridObjectFinder.hpp"
+#include <cast/core/CASTTimer.hpp>
 
 namespace spatial {
   typedef std::vector<std::pair<double, double> > PlaneList;
@@ -194,6 +195,7 @@ protected:
   std::map<int, std::string> m_planeObjectWMIDs;
   unsigned int m_maxNumberOfClusters;
   double m_maxClusterDeviation;
+  cast::CASTTimer m_planeProcessingCooldown;
 
   //Interfaces
   ptz::PTZInterfacePrx m_ptzInterface;
