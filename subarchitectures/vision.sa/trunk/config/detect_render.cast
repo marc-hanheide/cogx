@@ -11,7 +11,7 @@ CPP TM AlwaysPositiveTaskManager
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/tm.calb"
 
 CPP MG ObjectDetector ObjectDetector --videoname VideoServer --camid 0 --log #--debug
-CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --maxModels 3 --log  #--debug 
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --maxModels 3 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --log  #--debug 
 CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 --log  #--debug 
 CPP MG VisionDriver VisionDriver #--log --debug
 
