@@ -230,13 +230,15 @@ void ObjectTracker::initTracker(const Video::Image &image){
   
   m_ImageWidth = image.width;
   m_ImageHeight = image.height;
-
+	
+	// Create edge or texture tracker
 	if(m_textured){
 		m_tracker = new TextureTracker();
 	}else{
 		m_tracker = new EdgeTracker();
 	}
-
+	
+	// Initialize tracker
 	if(!m_tracker->init(m_ini_file.c_str(), m_ImageWidth, m_ImageHeight)){														
 		throw runtime_error(exceptionMessage(__HERE__, "INI file not found!"));
 		m_running = false;
@@ -264,40 +266,37 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntryList::iterator it){
 
 void ObjectTracker::runTracker(const Video::Image &image){
 
-	// *** Tracking Loop ***
-	double dTimeStamp;
 	fTimeTracker=0.0;
-	int i;
+	int i,c;
 	Pose pose;
-	int c;
 	
-	// * Tracking *
-	m_timer.Update();
-	dTimeStamp = m_timer.GetApplicationTime();
-
-	// Check if new models added to tracking list
+	// check if models added/modified
 	TrackingEntryList::iterator it;
 	for(it=m_trackinglist.begin(); it<m_trackinglist.end(); it++){
 		if((*it)->cmd != TrackingEntry::TRACK)
 			modifyTrackingEntry(it);
 	}
+	
+	// *** Tracking methods ***
+	m_timer.Update();
 
-	// Image processing
+	// image processing
 	m_tracker->image_processing((unsigned char*)(&image.data[0]));
 	m_tracker->drawImage(NULL);
 
-	// Track model
+	// track models
 	m_tracker->track();
 		
-	// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
+	// update pose and confidence in WorkingMemory
 	for(i=0; i<m_trackinglist.size(); i++){
 		m_tracker->getModelPose(m_trackinglist[i]->id, pose);
 		m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
 		convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);
-		m_trackinglist[i]->obj->time = convertTime(dTimeStamp); // TODO TODO TODO TimeStamp von Image nicht von Application Time
+		m_trackinglist[i]->obj->time = image.time;
 		overwriteWorkingMemory(m_trackinglist[i]->castWMA.id, m_trackinglist[i]->obj);
 	}
 	
+	// draw results
 	m_tracker->drawCoordinates();
 	m_tracker->drawResult();
 	m_tracker->swap();
