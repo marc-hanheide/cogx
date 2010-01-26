@@ -30,7 +30,7 @@
 #include <Navigation/NavGraphGateway.hh>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <VisionData.hpp>
-
+#include <SpatialData.hpp>
 using namespace std;
 using namespace cast;
 using namespace boost;
@@ -144,6 +144,11 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     if (cfg->getString("PEEKABOT_PERSON_PBMF_FILE", true, tmp, usedCfgFile) == 0){
       m_PbPersonFile = tmp;
     }
+
+    if (cfg->getSensorPose(2, m_CameraPoseR)) {
+      println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
+      std::abort();
+    } 
   }
 
   log("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
@@ -232,22 +237,6 @@ void DisplayNavInPB::start() {
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                &DisplayNavInPB::newPersonFollowed));
 
-  /*addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::ADD,
-							   "",
-							   "",
-							   "vision.sa",
-							   cdl::ALLSA),
-		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-								 &DisplayNavInPB::newConvexHull));
-addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
-							   "",
-							   "",
-							   "vision.sa",
-							   cdl::ALLSA),
-		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-		&DisplayNavInPB::newConvexHull));*/
-
-
   // Hook up changes to the LineMap to a callback function
 
   addChangeFilter(createLocalTypeFilter<NavData::LineMap>(cdl::ADD),
@@ -262,13 +251,7 @@ addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
                                         &DisplayNavInPB::newVPlist));  
   addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newVPlist)); 
-  /*addChangeFilter(createLocalTypeFilter<NavData::PlanePopout>(cdl::ADD),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newPointCloud));  
-  addChangeFilter(createLocalTypeFilter<NavData::PlanePopout>(cdl::OVERWRITE),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-		  &DisplayNavInPB::newPointCloud));*/
+                                        &DisplayNavInPB::newVPlist));
 
   addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::ADD),
       new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -278,8 +261,54 @@ addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
       new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
 	&DisplayNavInPB::newPointCloud));
 
+  addChangeFilter(createLocalTypeFilter<SpatialData::PlanePoints>(cdl::ADD),
+      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	&DisplayNavInPB::newPlanePointCloud));
+
+  addChangeFilter(createLocalTypeFilter<SpatialData::PlanePoints>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	&DisplayNavInPB::newPlanePointCloud));
 
   log("start done");  
+}
+
+
+
+void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID) {
+  log("new PlanePointCloud received.");
+
+  SpatialData::PlanePointsPtr objData = getMemoryEntry<SpatialData::PlanePoints>(objID.address);
+  
+
+  double color[3] = { 0.9, 0, 0};
+  
+  numeric::ublas::matrix<double> m (3, 3);
+  m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
+  m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
+  m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
+  
+
+ peekabot::GroupProxy root;
+ root.assign(m_PeekabotClient, "root");
+ peekabot::PointCloudProxy pcloud;
+  pcloud.add(root,"planepoints", peekabot::REPLACE_ON_CONFLICT);
+  
+  numeric::ublas::vector<double> v (3);
+  numeric::ublas::vector<double> t (3);
+  //add plane points
+  log("points size: %d",objData->points.size());
+  for (unsigned int i =0; i < objData->points.size(); i++){
+    v(0) = objData->points.at(i).x;
+    v(1) = objData->points.at(i).y;
+    v(2) = objData->points.at(i).z;
+    //   t = prod(v,m);
+    pcloud.add_vertex(v(0),v(1),v(2));
+ 
+  }
+  pcloud.set_color(color[0],color[1],color[2]);
+ 
+  
+  
 }
 
 
@@ -425,49 +454,53 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 
 
 void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
-	log("I got new points.");
-	double color[3] = { 0.9, 0, 0};
-	
-	 numeric::ublas::matrix<double> m (3, 3);
-	 m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
-	 m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
-	 m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
-	peekabot::PointCloudProxy pcloud;
-	pcloud.add(m_ProxyCam,"planepopout", peekabot::REPLACE_ON_CONFLICT);
-	//	shared_ptr<CASTData<VisionData::SOI> > oobj =
-	VisionData::SOIPtr objData = getMemoryEntry<VisionData::SOI>(objID.address);
-	 //VisionData::SOIPtr objData = oobj->getData();
+  log("Got new SOI points.");
+  double color[3] = { 0.9, 0, 0};
 
-	numeric::ublas::vector<double> v (3);
-	numeric::ublas::vector<double> t (3);
-	//add plane points
+  VisionData::SOIPtr objData = getMemoryEntry<VisionData::SOI>(objID.address);
+
+  Cure::Transformation3D cam2WorldTrans =
+    getCameraToWorldTransform();
+  double tmp[6];
+  cam2WorldTrans.getCoordinates(tmp);
+  log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+
+  //Convert hull to world coords
+  for (unsigned int i = 0; i < objData->points.size(); i++) {
+    Cure::Vector3D from(objData->points[i].p.x, objData->points[i].p.y, objData->points[i].p.z);
+    Cure::Vector3D to;
+    cam2WorldTrans.invTransform(from, to);
+//    log("vertex at %f, %f, %f", objData->points[i].p.x, objData->points[i].p.y, objData->points[i].p.z);
+    objData->points[i].p.x = to.X[0];
+    objData->points[i].p.y = to.X[1];
+    objData->points[i].p.z = to.X[2];
+//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+  }
+  
+//  numeric::ublas::matrix<double> m (3, 3);
+//  m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
+//  m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
+//  m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
+  peekabot::PointCloudProxy pcloud;
+  peekabot::GroupProxy root;
+  root.assign(m_PeekabotClient, "root");
+  pcloud.add(root,"planepopout", peekabot::REPLACE_ON_CONFLICT);
+  
+ 
+  
+  numeric::ublas::vector<double> v (3);
+  //add plane points
   for (unsigned int i =0; i < objData->points.size(); i++){
-    //if (objData->plabels.at(i) == 0){
-	  v(0) = objData->points.at(i).p.x;
-	  v(1) = objData->points.at(i).p.y;
-	  v(2) = objData->points.at(i).p.z;
-	  t = prod(v,m);
-	  pcloud.add_vertex(t(0),t(1),t(2));
-	  //  }
+    
+    v(0) = objData->points.at(i).p.x;
+    v(1) = objData->points.at(i).p.y;
+    v(2) = objData->points.at(i).p.z;
+    pcloud.add_vertex(v(0),v(1),v(2));
+    
   }
   pcloud.set_color(color[0],color[1],color[2]);
-  //add objects
-  peekabot::PointCloudProxy pcloudobj;
-  pcloudobj.add(m_ProxyCam,"planepopoutobj", peekabot::REPLACE_ON_CONFLICT);
-  color[0] = 0;
-  color[1] = 0.9;
-  color[2] = 0;
-  for (unsigned int i =0; i < objData->points.size(); i++){
-    // if (objData->plabels.at(i) > 0){
-	  v(0) = objData->points.at(i).p.x;
-	  v(1) = objData->points.at(i).p.y;
-	  v(2) = objData->points.at(i).p.z;
-	  t = prod(v,m);
-	  pcloudobj.add_vertex(t(0),t(1),t(2));
-	  //  }
-  }
-  pcloudobj.set_color(color[0],color[1],color[2]);
-	
+  
 }
 void DisplayNavInPB::runComponent() {
 
@@ -1447,3 +1480,46 @@ void DisplayNavInPB::connectPeekabot()
   }
 }
 
+Cure::Transformation3D DisplayNavInPB::getCameraToWorldTransform()
+{
+  //Get camera ptz from PTZServer
+  Cure::Transformation3D cameraRotation;
+  if (m_PTUServer != 0) {
+    ptz::PTZReading reading = m_PTUServer->getPose();
+
+    double angles[] = {reading.pose.pan, -reading.pose.tilt, 0.0};
+    cameraRotation.setAngles(angles);
+  }
+//
+//  //Get camera position on robot from Cure
+//  m_CameraPoseR;
+
+  //Additional transform of ptz base frame
+  Cure::Transformation3D ptzBaseTransform;
+//  double nR[] = {0.0, 0.0, 1.0, 
+//    1.0, 0.0, 0.0,
+//    0.0, 1.0, 0.0};
+  double camAngles[] = {-M_PI/2, 0.0, -M_PI/2};
+  ptzBaseTransform.setAngles(camAngles);
+
+  //Get robot pose
+  Cure::Transformation2D robotTransform;
+  if (m_RobotPose != 0) {
+    robotTransform.setXYTheta(m_RobotPose->x, m_RobotPose->y,
+      m_RobotPose->theta);
+  }
+  Cure::Transformation3D robotTransform3 = robotTransform;
+  double tmp[6];
+  robotTransform3.getCoordinates(tmp);
+  log("robot transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+  cameraRotation.getCoordinates(tmp);
+  log("ptz transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+  m_CameraPoseR.getCoordinates(tmp);
+  log("cam transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+      tmp[4], tmp[5]);
+
+  Cure::Transformation3D cameraOnRobot = m_CameraPoseR + cameraRotation + ptzBaseTransform ;
+  return robotTransform3 + cameraOnRobot;
+} 
