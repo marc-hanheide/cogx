@@ -13,6 +13,7 @@ TrackerModel::TrackerModel(){
 	m_texture = 0;
 	m_textured = false;
 	m_bfc = false;
+	m_boundingSphereRadius = 0.0;
 	
 	int id;
 	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
@@ -60,10 +61,26 @@ void TrackerModel::computeEdges(){
     }
 }
 
+void TrackerModel::computeBoundingSphere(){
+	m_boundingSphereRadius = 0.0;
+	
+	float r = 0.0;
+	vec3 v;
+	
+	for(int i=0; i<m_vertexlist.size(); i++){
+		v = m_vertexlist[i].pos;
+		r = sqrt( pow(v.x,2) + pow(v.y,2) + pow(v.z,2) );
+		if(r>m_boundingSphereRadius)
+			m_boundingSphereRadius = r;
+	}
+}
+
 void TrackerModel::Update(){
 	if(m_facepixellist.size() != m_facelist.size())
 		m_facepixellist.assign(m_facelist.size(), 0);
 		
+	computeBoundingSphere();
+	
 	UpdateDisplayLists();
 }
 
@@ -202,6 +219,7 @@ void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose*
 	mat4 modelview, projection, modelviewprojection;
 	
 	// get faces to update
+	view.normalize();
 	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
 	if(faceUpdateList.empty())
 		return;

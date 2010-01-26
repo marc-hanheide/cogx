@@ -34,7 +34,6 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 	TM_Vector3 vCam = m_cam_perspective.GetPos();
 	TM_Vector3 vObj = TM_Vector3(modelEntry->pose.t.x, modelEntry->pose.t.y, modelEntry->pose.t.z);
 	modelEntry->vCam2Model = vObj - vCam;
-	modelEntry->vCam2Model.normalize();
 	modelEntry->predictor.setCamViewVector(modelEntry->vCam2Model);
 	
 	float c_max = modelEntry->distribution.getMaxC();
@@ -210,9 +209,11 @@ bool TextureTracker::initInternal(){
 	
 	// Texture
 	m_tex_model = new Texture();
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	
 	for(int i=0; i<NUM_SPREAD_LOOPS; i++){
 		m_tex_model_ip[i] = new Texture();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 	
 	// Load 
@@ -284,6 +285,7 @@ bool TextureTracker::track(){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		if(i==m_modellist.size()-1){
+			glColor3f(1.0,1.0,1.0);
 			glDepthMask(0);
 			if(m_draw_edges)
 				m_ip->render(m_tex_frame_ip[params.m_spreadlvl]);
@@ -297,6 +299,7 @@ bool TextureTracker::track(){
 			particle_filtering(m_modellist[i]);
 		}else{
 			evaluateParticle(m_modellist[i]);
+			m_modellist[i]->predictor.updateTime();
 		}
 	}
 	

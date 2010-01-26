@@ -29,11 +29,10 @@ struct tgLight{
 	vec4 position;
 };
 
+/** @brief Handling OpenGL lighting */
 class tgLighting
 {
 private:
-	vec3 lightPos;
-	vec3 lightDir;
 
 public:
 	tgLighting();
@@ -41,12 +40,6 @@ public:
 	void ApplyMaterial(tgMaterial mat);
 	void Activate();
 	void Deactivate();
-	
-	void SetLightPos(vec3 v){ lightPos = v; }
-	void SetLightDir(vec3 v){ lightDir = v; }
-	
-	void SetLightPos(float x, float y, float z){ lightPos = vec3(x,y,z); }
-	void SetLightDir(float x, float y, float z){ lightDir = vec3(x,y,z); }
 };
 
 #endif

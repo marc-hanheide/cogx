@@ -61,6 +61,14 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 				log("  Stop tracking: I'm not tracking");
 			}
 			break;
+		case VisionData::LOCK:
+			m_tracker->setLockFlag(true);
+			log("  Locking tracker: ok");
+			break;
+		case VisionData::UNLOCK:
+			m_tracker->setLockFlag(false);
+			log("  Unlocking tracker: ok");
+			break;
 		case VisionData::RELEASEMODELS:
 			log("  Release models: releasing all models (not implemented)");
 			break;
@@ -286,7 +294,7 @@ void ObjectTracker::runTracker(const Video::Image &image){
 		m_tracker->getModelPose(m_trackinglist[i]->id, pose);
 		m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
 		convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);
-		m_trackinglist[i]->obj->time = convertTime(dTimeStamp);
+		m_trackinglist[i]->obj->time = convertTime(dTimeStamp); // TODO TODO TODO TimeStamp von Image nicht von Application Time
 		overwriteWorkingMemory(m_trackinglist[i]->castWMA.id, m_trackinglist[i]->obj);
 	}
 	

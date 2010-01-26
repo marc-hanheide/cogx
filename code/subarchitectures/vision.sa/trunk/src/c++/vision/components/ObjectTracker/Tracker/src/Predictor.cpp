@@ -91,7 +91,7 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 	
 	float partition = 0.9;
 	
-	m_fTime = m_timer.Update();
+	updateTime();
 	
 	if(num_particles<=0){
 		printf("[Distribution::resample] Warning number of particles to low (0)\n");
@@ -132,5 +132,9 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 void Predictor::sample(Distribution& d, int num_particles, Particle mean, Particle variance){
 	d.clear(); 
 	addsamples(d, num_particles, mean, variance);
+}
+
+void Predictor::updateTime(){
+	m_fTime = m_timer.Update();
 }
 

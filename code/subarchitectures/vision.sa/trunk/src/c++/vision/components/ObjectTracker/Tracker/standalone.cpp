@@ -14,6 +14,9 @@ int main(int argc, char *argv[])
 	IplImage* img = 0;
 	ModelLoader m_modelloader;
 	float fTimeIP, fTimeTrack, fTimeGrab;
+	Pose p_result;
+	SDL_Event event;
+	int i;
 	
 	printf("\n\n");
 	printf("---------------------\n");
@@ -66,9 +69,11 @@ int main(int argc, char *argv[])
 	Pose p;
 	Model model_1, model_2;
 	
-	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
-	p.t = vec3(0.2, 0.06, 0.06);
-	id_1 = m_tracker->addModel(model_1, p, true);
+// 	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
+// 	p.t = vec3(0.2, 0.06, 0.06);
+// 	id_1 = m_tracker->addModel(model_1, p, true);
+
+	std::vector<vec3> m_points;
 	
 	m_modelloader.LoadPly(model_2, "resources/model/jasmin6.ply");
 	p.t = vec3(0.05, 0.05, 0.05);
@@ -78,7 +83,7 @@ int main(int argc, char *argv[])
   // Main Loop
 	printf("\nRunning \n");
 	printf("---------------------\n");
-	while( control(m_tracker) ){
+	while( control(m_tracker, event) ){
 		// grab new image from camera
 		timer.Update();
 		img = g_Resources->GetNewImage();
@@ -94,9 +99,32 @@ int main(int argc, char *argv[])
 		
 		// Draw result
 		m_tracker->drawResult();
-// 		m_tracker->drawCoordinates();
-		m_tracker->swap();	
-			
+		m_tracker->drawCoordinates();
+		
+		// Draw Points on Model
+		m_tracker->getModelPose(id_2, p_result);
+		glDisable(GL_DEPTH_TEST);
+		p_result.activate();
+			glColor3f(1.0,0.0,0.0);
+			glPointSize(2);
+			glBegin(GL_LINE_STRIP);
+			for(i=0; i<m_points.size(); i++){
+				glVertex3f(m_points[i].x, m_points[i].y, m_points[i].z);
+			}
+			glEnd();
+			glColor3f(1.0,1.0,1.0);
+		p_result.deactivate();
+		
+		m_tracker->swap();
+		
+		// Get Point on Model
+		if(event.type == SDL_MOUSEBUTTONDOWN){
+			vec3 v;
+			if(m_tracker->getModelPoint3D(id_2, event.button.x, event.button.y, v.x, v.y, v.z)){
+				m_points.push_back(v);
+			}
+		}
+
 		fTimeTrack = timer.Update();
 //  		prinf("grab: %.0f ip: %.0f track: %f\n",fTimeGrab*1000, fTimeIP*1000, fTimeTrack*1000);
 	}

@@ -10,7 +10,7 @@
 #define __TEXTURE_TRACKER_H__
 
 #include "Tracker.h"
-#include "tgLighting.h"
+
 
 namespace Tracking{
 
@@ -27,7 +27,7 @@ private:
 	Texture* m_tex_model_ip[NUM_SPREAD_LOOPS];
 	Texture* m_tex_frame_cmp;
 	Texture* m_tex_model_cmp;
-	tgLighting m_lighting;
+
 	
 	// Functions
 	void model_processing(ModelEntry* modelEntry);
