@@ -65,7 +65,7 @@ LocalMapManager::~LocalMapManager()
     delete it->second;
   }
   delete m_lgm2;
-
+  
   if (m_isUsingSeparateGridMaps) {
     delete m_Glrt1_alt;
     delete m_Glrt2_alt;
@@ -207,6 +207,7 @@ void LocalMapManager::configure(const map<string,string>& _config)
     for (unsigned int i = 0; i < m_maxNumberOfClusters; i++) {
       m_planeObstacleMaps.push_back(new CharMap(70, 0.1, 0, CharMap::MAP1));
     }
+    m_planeHeights.reserve(m_maxNumberOfClusters);
   }
 
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
@@ -350,28 +351,28 @@ void LocalMapManager::runComponent()
     debug("unlock in isRunning");
 
 
-    VisionData::ConvexHullPtr fakeHull = new
-      VisionData::ConvexHull();
-    double angle= 0*M_PI/4;
-    double radius = 0.5;
-    double xc = -3.0;
-    double yc = 0.0;
-    double dx = radius*(cos(angle)-sin(angle));
-    double dy = radius*(sin(angle)+cos(angle));
-    double height = 0.4;
-    cogx::Math::Vector3 p1 = {-yc-dy,-height,xc+dx};
-    cogx::Math::Vector3 p2 = {-yc-dy,-height,xc-dx};
-    cogx::Math::Vector3 p3 = {-yc+dy,-height,xc-dx};
-    cogx::Math::Vector3 p4 = {-yc+dy,-height,xc+dx};
-    fakeHull->PointsSeq.push_back(p1);
-    fakeHull->PointsSeq.push_back(p2);
-    fakeHull->PointsSeq.push_back(p3);
-    fakeHull->PointsSeq.push_back(p4);
-    processConvexHull(fakeHull);
+//    VisionData::ConvexHullPtr fakeHull = new
+//      VisionData::ConvexHull();
+//    double angle= 0*M_PI/4;
+//    double radius = 0.5;
+//    double xc = -3.0;
+//    double yc = 0.0;
+//    double dx = radius*(cos(angle)-sin(angle));
+//    double dy = radius*(sin(angle)+cos(angle));
+//    double height = 0.4;
+//    cogx::Math::Vector3 p1 = {-yc-dy,-height,xc+dx};
+//    cogx::Math::Vector3 p2 = {-yc-dy,-height,xc-dx};
+//    cogx::Math::Vector3 p3 = {-yc+dy,-height,xc-dx};
+//    cogx::Math::Vector3 p4 = {-yc+dy,-height,xc+dx};
+//    fakeHull->PointsSeq.push_back(p1);
+//    fakeHull->PointsSeq.push_back(p2);
+//    fakeHull->PointsSeq.push_back(p3);
+//    fakeHull->PointsSeq.push_back(p4);
+//    processConvexHull(fakeHull);
 
 
-    usleep(250000);
-    //sleepComponent(250);
+    //usleep(250000);
+    sleepComponent(250);
   }
 }
 
@@ -790,7 +791,7 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
   if (!m_bNoPlanes) {
 
     if (m_planeProcessingCooldown.split() > 0.5) {
-      log("Accepting convex hull: Timer is %.f", m_planeProcessingCooldown.split());
+      log("Accepting convex hull: Timer is %.4f", m_planeProcessingCooldown.split());
       m_planeProcessingCooldown.stop();
 
       try {
@@ -812,7 +813,7 @@ void LocalMapManager::newConvexHull(const cdl::WorkingMemoryChange
       m_planeProcessingCooldown.restart();
     }
     else {
-      log("Rejecting convex hull: Timer is %.f", m_planeProcessingCooldown.split());
+      log("Rejecting convex hull: Timer is %.4f", m_planeProcessingCooldown.split());
     }
   }
 }
@@ -833,12 +834,19 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     Cure::Vector3D from(oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
     Cure::Vector3D to;
     cam2WorldTrans.invTransform(from, to);
- //    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+    log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
     oobj->PointsSeq[i].x = to.X[0];
     oobj->PointsSeq[i].y = to.X[1];
     oobj->PointsSeq[i].z = to.X[2];
-//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+    double horizDistSq = (to.X[0] - lastRobotPose->x)*(to.X[0] - lastRobotPose->x) + (to.X[1] - lastRobotPose->y)*(to.X[1] - lastRobotPose->y);
+    if (horizDistSq > 1.5*1.5) {
+      log("Clipping polygon vertex at distance %f", sqrt(horizDistSq));
+      oobj->PointsSeq.erase(oobj->PointsSeq.begin()+i);
+      i--;
+    }
   }
+  if (oobj->PointsSeq.size() < 3) return;
 //    Cure::Vector3D from(oobj->center.x, oobj->center.y, oobj->center.z);
 //    Cure::Vector3D to;
 //    cam2WorldTrans.invTransform(from, to);
@@ -890,14 +898,43 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     // Extract N clusters of heights in the plane data.
     findPlaneHeightClusters();
 
+
+    // Publish new planes on WM for Peekabot and for AVS
+    double wX,wY;
+    for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+    SpatialData::PlanePointsPtr PlanePoints;
+    PlanePoints = new SpatialData::PlanePoints;
+    cogx::Math::Vector3 point;
+      for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
+	for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
+	  if ((*m_planeObstacleMaps[i])(x,y) == 255){
+	    log("Table Point: x: %f, y: %f",wX, wY);
+	    m_planeObstacleMaps[i]->index2WorldCoords(x, y, wX, wY);
+	    point.x = wX;
+	    point.y = wY;
+	    point.z = m_planeHeights[i];
+	    PlanePoints->points.push_back(point);
+	  }
+
+	}
+      }   
+      log("Adding PlanePoints to WM");
+      addToWorkingMemory<SpatialData::PlanePoints>
+	(newDataID(), PlanePoints); 
+      //PlanePoints->points.clear();
+    }
+
+
+
+
   }
-
-//  if (m_DisplayPlaneMap) {
-//    Cure::Pose3D currentPose = m_TOPP.getPose();
-//    m_DisplayPlaneMap->updateDisplay(&currentPose);
-//  }
-
-
+  
+  //  if (m_DisplayPlaneMap) {
+  //    Cure::Pose3D currentPose = m_TOPP.getPose();
+  //    m_DisplayPlaneMap->updateDisplay(&currentPose);
+  //  }
+  
+  
   // Extract best guesses for plane objects
   for (unsigned int finderID = 0; finderID < m_planeObjectFinders.size(); finderID++) {
     GridObjectFinder &finder = *m_planeObjectFinders[finderID];
@@ -929,7 +966,7 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     newPlaneObject->angle = objAngle;
     newPlaneObject->height = objHeight;
 
-    log("id=%n, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", newPlaneObject->id,
+    log("id=%i, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", newPlaneObject->id,
 	realX, realY, objAngle, 
 	objHeight, objConfidence);
 
@@ -1140,7 +1177,7 @@ LocalMapManager::findPlaneHeightClusters()
     }
   }
 
-  vector<int> memberships(heights.size(), -1); // Which cluster a segment belongs to
+  vector<int> memberships(heights.size(), 0); // Which cluster a segment belongs to
 
   vector<double> probMasses; // Accumulated probability mass; for random sampling
   probMasses.reserve(heights.size());
@@ -1153,6 +1190,8 @@ LocalMapManager::findPlaneHeightClusters()
     sum += heights[currentElement];
   }
   sum /= heights.size();
+  m_planeHeights[0] = sum;
+
   for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
     double dist = abs(heights[currentElement] - sum);
     maxDeviation = maxDeviation > dist ? maxDeviation : dist;
@@ -1165,6 +1204,9 @@ LocalMapManager::findPlaneHeightClusters()
     // Try more and more clusters
     for (m_currentNumberOfClusters = 2; maxDeviation > m_maxClusterDeviation && m_currentNumberOfClusters <= m_maxNumberOfClusters; 
 	m_currentNumberOfClusters++) {
+
+      // Initialize memberships
+      memberships.assign(memberships.size(),-1);
 
       // Init centroids with K-means++
       int *centroids = new int[m_currentNumberOfClusters];
@@ -1275,9 +1317,9 @@ LocalMapManager::findPlaneHeightClusters()
 	  it != planeList.end(); it++) {
 	if (it->second > 4.0) {
 	  (*m_planeObstacleMaps[memberships[i]])(x,y) = 255;
+	  i++;
 	}
       }
-      i++;
     }
   }
 }
