@@ -163,7 +163,7 @@ module VisionData {
   /** Commands for Object Tracker
    *  @author Thomas Mörwald
    */
-  enum TrackingCommandType{ START, STOP, RELEASEMODELS };
+  enum TrackingCommandType{ START, STOP, LOCK, RELEASEMODELS };
   class TrackingCommand {
     TrackingCommandType cmd;
   };
