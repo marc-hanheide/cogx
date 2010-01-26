@@ -19,7 +19,9 @@
 #include <NavData.hpp>
 #include <string>
 #include <Scan2dReceiver.hpp>
+#include <SensorData/SensorPose.hh>
 
+#include <Transformation/Transformation3D.hh>
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
 #include <PTZ.hpp>
@@ -96,6 +98,7 @@ private:
   void newArea(const cast::cdl::WorkingMemoryChange &objID);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
+  void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraphObject(const cast::cdl::WorkingMemoryChange &objID);
   void newLineMap(const cast::cdl::WorkingMemoryChange &objID);
@@ -114,6 +117,8 @@ private:
 				cogx::Math::Vector3 position, double zoffset,  bool robotfov = true,double yaw = 0);
   void createRobotFOV();
   void getColorByIndex(int id, float &r, float &g, float &b);
+
+  Cure::Transformation3D getCameraToWorldTransform();
 
   bool m_ShowWalls;
   bool m_ShowGraph;
@@ -179,6 +184,8 @@ private:
 
   bool m_ReadPTU;
   ptz::PTZInterfacePrx m_PTUServer;
+
+  Cure::SensorPose m_CameraPoseR;
 };
 
 }; // namespace navsa
