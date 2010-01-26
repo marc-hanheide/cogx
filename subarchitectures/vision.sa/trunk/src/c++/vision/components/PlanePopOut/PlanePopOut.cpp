@@ -15,7 +15,7 @@
 #define Shrink_SOI 1
 #define Upper_BG 1.1
 #define Lower_BG 1.05	// 1.1-1.5 radius of BoundingSphere
-#define min_height_of_obj 0.02	//unit cm, due to the error of stereo, >0.01 is suggested
+#define min_height_of_obj 0.05	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.5	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
 #define Torleration 2		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
@@ -406,11 +406,6 @@ void PlanePopOut::runComponent()
 	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
 
-	Video::Image leftimage;
-	getRectImage(LEFT, leftimage);
-	Video::Image disparityimage;
-	getDisparityImage(disparityimage);
-
 	getPoints(useGlobalPoints, points);
 	if (points.size() == 0)
 	{
@@ -444,6 +439,7 @@ void PlanePopOut::runComponent()
 				v3size.clear();
 				v3center.clear();
 				vdradius.clear();
+				//cout<<"there is no objects, now strating cal convex hull"<<endl;
 				ConvexHullOfPlane(pointsN,points_label);
 			}
 			if (doDisplay)
@@ -982,6 +978,7 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 		//draw the hull
 		if (hullMat.cols != 0)
 		{
+			//cout<<"points in the hull ="<<hullMat.cols<<endl;
 // 			if (mbDrawWire)	glBegin(GL_LINE_LOOP); else glBegin(GL_POLYGON);
 // 			glColor3f(1.0,1.0,1.0);
 			Vector3 v3OnPlane;
