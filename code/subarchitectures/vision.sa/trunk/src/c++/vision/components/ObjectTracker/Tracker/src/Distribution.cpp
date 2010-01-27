@@ -93,6 +93,7 @@ bool sortfunction(Particle p1, Particle p2){ return (p1.w>p2.w); }
 
 void Distribution::drawParticlesEdges(TrackerModel& model, Shader* shadeCompare, bool showparticles){
 	model.setTexture(0);
+	glEnable(GL_DEPTH_TEST);
 	
 	for(int i=0; i<m_particlelist.size(); i++){
 		m_particlelist[i].activate();
@@ -128,6 +129,7 @@ void Distribution::drawParticlesTextured(TrackerModel& model, Shader* shadeCompa
 	
 	// Set perspective mode and smaller viewport
 	glColorMask(0,0,0,0); glDepthMask(0);
+	glEnable(GL_DEPTH_TEST);
 		
 	// Draw particles and count pixels
 	shadeCompare->bind();

@@ -14,7 +14,9 @@ void TextureTracker::image_processing(unsigned char* image){
 	
 	// Preprocessing for camera image
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
 	glDepthMask(0);
+	glColor3f(1.0,1.0,1.0);
 
 	m_ip->flipUpsideDown(m_tex_frame, m_tex_frame);
 	m_ip->gauss(m_tex_frame, m_tex_frame_ip[0]);
@@ -130,12 +132,15 @@ void TextureTracker::evaluateParticle(ModelEntry* modelEntry){
 // Draw TrackerModel to screen, extract modelview matrix, perform image processing for model
 void TextureTracker::model_processing(ModelEntry* modelEntry){
 	
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
 	
 	// Render camera image as background
 	glDepthMask(0);
 	m_ip->render(m_tex_frame);
 	glDepthMask(1);
+	
+	glEnable(GL_DEPTH_TEST);
 		
 	// Setup camera, lighting and pose and rendering
 	m_cam_perspective.Activate();			// activate perspective view
@@ -166,6 +171,7 @@ void TextureTracker::model_processing(ModelEntry* modelEntry){
 	m_tex_model->copyTexImage2D(params.width, params.height);
 		
 	// perform image processing with reprojected image
+	glDisable(GL_DEPTH_TEST);
 	glDepthMask(0);
 	m_ip->gauss(m_tex_model, m_tex_model_ip[0]);
 	m_ip->sobel(m_tex_model_ip[0], m_tex_model_ip[0], 0.03, true);
@@ -277,7 +283,7 @@ bool TextureTracker::track(){
 		printf("[TextureTracker::track()] Error tracker not initialised!\n");
 		return false;
 	}
-	
+		
 	for(int i=0; i<m_modellist.size(); i++){
 	
 		// Process model (texture reprojection, edge detection)
@@ -344,7 +350,8 @@ void TextureTracker::drawResult(){
 		m_lighting.Activate();
 		m_modellist[i]->pose.activate();
 		
-		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		switch(m_showmodel){
 			case 0:
@@ -352,10 +359,8 @@ void TextureTracker::drawResult(){
 				m_modellist[i]->model.drawPass();
 				break;
 			case 1:
-				glEnable(GL_DEPTH_TEST);
 				m_lighting.Deactivate();
 				glColorMask(0,0,0,0);
-				glClear(GL_DEPTH_BUFFER_BIT);
 				m_modellist[i]->model.drawFaces();
 				glColorMask(1,1,1,1);
 				glLineWidth(3);
@@ -381,8 +386,6 @@ void TextureTracker::drawResult(){
 				m_showmodel = 0;
 				break;			
 		}
-		
-		glEnable(GL_DEPTH_TEST);
 
 // 		m_modellist[i]->model.drawNormals();
 		m_modellist[i]->pose.deactivate();

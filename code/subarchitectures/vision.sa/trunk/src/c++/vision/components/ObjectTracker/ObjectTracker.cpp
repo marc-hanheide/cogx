@@ -299,6 +299,7 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	// draw results
 	m_tracker->drawCoordinates();
 	m_tracker->drawResult();
+	m_tracker->drawCalibrationPattern();
 	m_tracker->swap();
 
 	fTimeTracker = m_timer.Update();

@@ -4,7 +4,7 @@
  * @date October 2009
  * @version 0.1
  * @brief Main file of Tracker.
- * @namespace Tracker
+ * @namespace Tracking
  */
 #ifndef __TRACKER_H__
 #define __TRACKER_H__
