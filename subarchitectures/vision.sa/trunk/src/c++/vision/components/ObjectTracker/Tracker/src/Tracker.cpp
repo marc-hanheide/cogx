@@ -351,11 +351,7 @@ void Tracker::drawCoordinates(){
 			glVertex3f(l1,		0.0,	 b1+b2);
 		glEnd();
 	glPopMatrix();
-	
-	glColor3f(1.0,1.0,1.0);
-	
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);	
+
 }
 
 void Tracker::drawImage(unsigned char* image){
@@ -382,18 +378,16 @@ void Tracker::drawCalibrationPattern(){
 	
 	m_cam_perspective.Activate();
 	glLineWidth(1.0);
+	glColor3f(1.0,0.0,0.0);
 	
 	glBegin(GL_LINE_LOOP);
-		glColor3f(1.0,0.0,0.0);
+		
 		glVertex3f(0.000, 0.000, 0.000);
 		glVertex3f(0.240, 0.000, 0.000);
 		glVertex3f(0.240, 0.120, 0.000);
 		glVertex3f(0.200, 0.160, 0.000);
 		glVertex3f(0.000, 0.160, 0.000);
 	glEnd();
-	
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
 }
 
 void Tracker::swap(){

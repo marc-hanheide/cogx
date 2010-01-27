@@ -77,6 +77,40 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Tracking::Model& mo
 	return true;
 }
 
+// converts a VisionData::GeometryModel to a Tracker Model
+bool convertModel2Geometry(Tracking::Model& model, VisionData::GeometryModelPtr geom){
+	int i;
+	
+	// Parse through vertices and store content in Model
+	VisionData::Vertex vV;
+	Tracking::Vertex tV;
+	for(i=0; i<model.getVertexSize(); i++){
+		tV = model.getVertex(i);
+		vV.pos.x = tV.pos.x;
+		vV.pos.y = tV.pos.y;
+		vV.pos.z = tV.pos.z;
+		vV.normal.x = tV.normal.x;
+		vV.normal.y = tV.normal.y;
+		vV.normal.z = tV.normal.z;
+		vV.texCoord.x = tV.texCoord.x;
+		vV.texCoord.y = tV.texCoord.y;
+		geom->vertices.push_back(vV);
+	}
+	
+	VisionData::Face vF;
+	Tracking::Face tF;
+	for(i=0; i<model.getFaceSize(); i++){
+		tF = model.getFace(i);
+		vF.vertices = tF.v;
+		geom->faces.push_back(vF);
+	}	
+
+	// Parse through faces and store content in Model
+// 	geom->faces = model.m_facelist;
+
+	return true;
+}
+
 // converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
 bool convertParticle2Pose(Tracking::Pose& trPose, Pose3& pose){
 	mat3 rot;

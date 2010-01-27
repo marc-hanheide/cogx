@@ -27,12 +27,15 @@ struct Face {
 	vec3 normal;
 };
 
+typedef std::vector<Vertex> VertexList;
+typedef std::vector<Face>  FaceList;
+
 /** @brief class Model */
 class Model
 {
 protected:
-	std::vector<Vertex>  	m_vertexlist;		///< Vector holding vertices of the model
-	std::vector<Face> 		m_facelist;			///< Vector holding faces of the model
+	VertexList  m_vertexlist;		///< Vector holding vertices of the model
+	FaceList 		m_facelist;			///< Vector holding faces of the model
 	
 public:
 
@@ -40,6 +43,11 @@ public:
 
 	void push_back(Vertex v){ m_vertexlist.push_back(v); }
 	void push_back(Face f){ m_facelist.push_back(f); }
+	
+	Vertex	getVertex(int i){ if(i<m_vertexlist.size() && i>=0) return m_vertexlist[i]; }
+	Face		getFace(int i){ if(i<m_facelist.size() && i>=0) return m_facelist[i]; }
+	int			getVertexSize(){ return m_vertexlist.size(); }
+	int			getFaceSize(){ return m_facelist.size(); }
 	
 	/** @brief Compute normals of vertices using cross product of faces */
 	virtual void computeNormals();
