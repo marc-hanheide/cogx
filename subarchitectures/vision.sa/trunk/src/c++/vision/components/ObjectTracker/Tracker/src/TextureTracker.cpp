@@ -36,7 +36,7 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 	TM_Vector3 vCam = m_cam_perspective.GetPos();
 	TM_Vector3 vObj = TM_Vector3(modelEntry->pose.t.x, modelEntry->pose.t.y, modelEntry->pose.t.z);
 	modelEntry->vCam2Model = vObj - vCam;
-	modelEntry->predictor.setCamViewVector(modelEntry->vCam2Model);
+	modelEntry->predictor->setCamViewVector(modelEntry->vCam2Model);
 	
 	float c_max = modelEntry->distribution.getMaxC();
 
@@ -58,7 +58,7 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		m_tex_frame->bind(3);
 		
 		// predict movement of object
-		modelEntry->predictor.resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
+		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
 		
 		// update importance weights and confidence levels
 		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeCompare, 1, 9, m_showparticles);	
@@ -305,7 +305,6 @@ bool TextureTracker::track(){
 			particle_filtering(m_modellist[i]);
 		}else{
 			evaluateParticle(m_modellist[i]);
-			m_modellist[i]->predictor.updateTime();
 		}
 	}
 	
@@ -326,7 +325,7 @@ void TextureTracker::textureFromImage(){
 		m_tex_frame_ip[params.m_spreadlvl]->bind(1);
 			
 		for(int j=0; j<6; j++){
-			m_modellist[i]->predictor.resample(m_modellist[i]->distribution, 1000, params.variation);
+			m_modellist[i]->predictor->resample(m_modellist[i]->distribution, 1000, params.variation);
 			m_modellist[i]->distribution.updateLikelihood(m_modellist[i]->model, m_shadeCompare, 1, 9);
 		}
 		m_modellist[i]->pose = m_modellist[i]->distribution.getMean();

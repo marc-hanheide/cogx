@@ -20,6 +20,7 @@ SET(SOURCES
 	src/TrackerModel.cpp
 	src/Model.cpp
 	src/ModelLoader.cpp
+	src/myPredictor.cpp
 	src/Particle.cpp
 	src/Predictor.cpp
 	src/Distribution.cpp

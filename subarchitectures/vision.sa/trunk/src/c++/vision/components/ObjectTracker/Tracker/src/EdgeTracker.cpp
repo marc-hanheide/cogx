@@ -30,7 +30,7 @@ void EdgeTracker::particle_filtering(ModelEntry* modelEntry){
 	TM_Vector3 vCam = m_cam_perspective.GetPos();
 	TM_Vector3 vObj = TM_Vector3(modelEntry->pose.t.x, modelEntry->pose.t.y, modelEntry->pose.t.z);
 	modelEntry->vCam2Model = vObj - vCam;
-	modelEntry->predictor.setCamViewVector(modelEntry->vCam2Model);
+	modelEntry->predictor->setCamViewVector(modelEntry->vCam2Model);
 	
 	
 	glLineWidth(5);
@@ -46,7 +46,7 @@ void EdgeTracker::particle_filtering(ModelEntry* modelEntry){
 		
 		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeEdgeCompare, 0, 5, m_showparticles);
 		
-		modelEntry->predictor.resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
+		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
 	}
 	modelEntry->pose = modelEntry->distribution.getMean();
 }
@@ -91,8 +91,6 @@ bool EdgeTracker::track(){
 		// Recursive particle filtering
 		if(!m_lock){
 			particle_filtering(m_modellist[i]);		
-		}else{
-			m_modellist[i]->predictor.updateTime();
 		}
 	}
 

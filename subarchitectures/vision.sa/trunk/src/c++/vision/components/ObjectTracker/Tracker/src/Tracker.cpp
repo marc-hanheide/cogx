@@ -102,9 +102,12 @@ bool Tracker::loadINI(const char* inifile){
 	params.camPar.rot.fromRotVector(vRot);
 	
 	// Constraints
-	params.variation.rp.x = cdfParams.GetFloat("rp.x", "Constraints");
-	params.variation.rp.y = cdfParams.GetFloat("rp.y", "Constraints");
-	params.variation.rp.z = cdfParams.GetFloat("rp.z", "Constraints");
+	params.variation.r.x = cdfParams.GetFloat("r.x", "Constraints") * PIOVER180;
+	params.variation.r.y = cdfParams.GetFloat("r.y", "Constraints") * PIOVER180;
+	params.variation.r.z = cdfParams.GetFloat("r.z", "Constraints") * PIOVER180;
+	params.variation.rp.x = cdfParams.GetFloat("rp.x", "Constraints") * PIOVER180;
+	params.variation.rp.y = cdfParams.GetFloat("rp.y", "Constraints") * PIOVER180;
+	params.variation.rp.z = cdfParams.GetFloat("rp.z", "Constraints") * PIOVER180;
 	params.variation.t.x 	= cdfParams.GetFloat("t.x", "Constraints");
 	params.variation.t.y 	= cdfParams.GetFloat("t.y", "Constraints");
 	params.variation.t.z 	= cdfParams.GetFloat("t.z", "Constraints");
@@ -180,7 +183,7 @@ int Tracker::addModel(Model& m, Pose& p, bool bfc){
 	
 	modelEntry->model.setBFC(bfc);
 	modelEntry->model = m;
-	modelEntry->predictor.sample(modelEntry->distribution, params.num_particles, p, params.variation);
+	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
 	modelEntry->pose = p;
 	modelEntry->initial_pose = p;
 	modelEntry->id = params.model_id_count++;
@@ -291,6 +294,19 @@ bool Tracker::getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3
 		}
 	}
 	return false;
+}
+
+void Tracker::setModelPredictor(int id, Predictor* predictor){
+	ModelEntryList::iterator it = m_modellist.begin();
+	
+	while(it != m_modellist.end()){
+		if(id==(*it)->id){
+			delete((*it)->predictor);
+			(*it)->predictor = predictor;			
+			return;
+		}
+		it++;
+	}
 }
 
 
@@ -447,7 +463,7 @@ void Tracker::drawSpeedBar(float h){
 	
 void Tracker::reset(){
 	for(int i=0; i<m_modellist.size(); i++){
-		m_modellist[i]->predictor.sample(m_modellist[i]->distribution, params.num_particles, m_modellist[i]->initial_pose, params.variation);
+		m_modellist[i]->predictor->sample(m_modellist[i]->distribution, params.num_particles, m_modellist[i]->initial_pose, params.variation);
 		m_modellist[i]->pose = m_modellist[i]->initial_pose;
 	}
 }

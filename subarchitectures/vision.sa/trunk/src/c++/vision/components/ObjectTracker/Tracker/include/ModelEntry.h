@@ -19,11 +19,20 @@ namespace Tracking{
 /** @brief class ModelEntry */
 struct ModelEntry
 {
-	TrackerModel 	model;					///< The model to track
-	Distribution 	distribution;		///< Likelihood distribution
-	Predictor			predictor;			///< Movement prediction
-	Particle			pose;						///< Current pose of the model
-	Particle			initial_pose;		///< Initial pose, pose where to reset model to
+	ModelEntry(){
+		predictor = new Predictor();
+	}
+	
+	~ModelEntry(){
+	
+	}
+	
+	
+	TrackerModel 		model;					///< The model to track
+	Distribution 		distribution;		///< Likelihood distribution
+	Predictor*			predictor;			///< Movement prediction
+	Particle				pose;						///< Current pose of the model
+	Particle				initial_pose;		///< Initial pose, pose where to reset model to
 	
 	int 		id;										///< ID of model (for removing)
 	int			num_particles;				///< Number of particles used for representing likelihood distribution

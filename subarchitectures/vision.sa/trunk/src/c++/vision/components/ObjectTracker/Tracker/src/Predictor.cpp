@@ -39,6 +39,9 @@ Particle Predictor::genNoise(float sigma, Particle pConstraint, unsigned int typ
 	epsilon.tp.y = noise(sigma, type) * pConstraint.tp.y;
 	epsilon.tp.z = noise(sigma, type) * pConstraint.tp.z;
 	
+	epsilon.r.x = noise(sigma, type) * pConstraint.r.x;
+	epsilon.r.y = noise(sigma, type) * pConstraint.r.y;
+	epsilon.r.z = noise(sigma, type) * pConstraint.r.z;
 	epsilon.rp.x = noise(sigma, type) * pConstraint.rp.x;
 	epsilon.rp.y = noise(sigma, type) * pConstraint.rp.y;
 	epsilon.rp.z = noise(sigma, type) * pConstraint.rp.z;
@@ -65,9 +68,9 @@ void Predictor::addsamples(Distribution& d, int num_particles, Particle mean, Pa
 		p.tp = p.tp + epsilon.tp;
 		p.rp = p.rp + epsilon.rp;
 		p.zp = p.zp + epsilon.zp;
-		epsilon.z = epsilon.z + epsilon.zp*m_fTime;
-		p.translate(epsilon.t + p.tp*m_fTime);
-		p.rotate(p.rp*m_fTime);
+		epsilon.z = epsilon.z + epsilon.zp*m_dTime;
+		p.translate(epsilon.t + p.tp*m_dTime);
+		p.rotate(epsilon.r + p.rp*m_dTime);
 		p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
 		
 		d.push_back(p);
@@ -76,7 +79,8 @@ void Predictor::addsamples(Distribution& d, int num_particles, Particle mean, Pa
 
 // *** public ***
 Predictor::Predictor(){
-	m_fTime = 0.0;
+	m_lifetime = 0.0;
+	m_dTime = 0.0;
 }
 
 void Predictor::resample(Distribution& d, int num_particles, Particle variance){
@@ -90,8 +94,6 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 	float c=0.0;
 	
 	float partition = 0.9;
-	
-	updateTime();
 	
 	if(num_particles<=0){
 		printf("[Distribution::resample] Warning number of particles to low (0)\n");
@@ -130,11 +132,13 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 }
 
 void Predictor::sample(Distribution& d, int num_particles, Particle mean, Particle variance){
+	updateTime(0.0);
 	d.clear(); 
 	addsamples(d, num_particles, mean, variance);
 }
 
-void Predictor::updateTime(){
-	m_fTime = m_timer.Update();
+void Predictor::updateTime(double dTime){
+	m_dTime = dTime;
+	m_lifetime += dTime;
 }
 
