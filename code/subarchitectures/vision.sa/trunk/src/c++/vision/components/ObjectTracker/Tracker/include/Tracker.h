@@ -122,6 +122,8 @@ public:
 	/** @brief Get 3D point from 2D window coordinates */
 	bool		getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3, float& z3);
 	
+	/** @brief Get pointer to a model predictor */
+	void		setModelPredictor(int id, Predictor* predictor);
 	
 	// Drawing to screen (result, ...)
 	virtual void drawResult()=0;

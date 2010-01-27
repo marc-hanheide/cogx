@@ -21,6 +21,7 @@ namespace Tracking{
 class Particle : public Pose
 {
 public:
+	vec3 r;
 	vec3 rp;			///< angular speed
 	vec3 tp;			///< translational speed
 	float z;			///< scaling (zoom)

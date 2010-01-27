@@ -12,7 +12,6 @@
 
 #include "headers.h"
 #include "Distribution.h"
-#include "Timer.h"
 #include "TM_Vector3.h"
 
 #define GAUSS  0
@@ -21,16 +20,16 @@
 /** @brief class Predictor */
 class Predictor
 {
-private:
-
-	Timer m_timer;
-	float m_fTime;
+protected:
+	float m_lifetime;
+	float m_dTime;
+	
 	Tracking::TM_Vector3 m_cam_view;
 	
 	float noise(float sigma, unsigned int type=GAUSS);
 	Tracking::Particle genNoise(float sigma, Tracking::Particle pConstraint, unsigned int type=GAUSS);
 
-	void addsamples(Tracking::Distribution& d, int num_particles, Tracking::Particle p_initial, Tracking::Particle p_constraints, float sigma=1.0);
+	virtual void addsamples(Tracking::Distribution& d, int num_particles, Tracking::Particle p_initial, Tracking::Particle p_constraints, float sigma=1.0);
 	
 public:
 	Predictor();
@@ -53,8 +52,10 @@ public:
 	*/
 	virtual void sample(Tracking::Distribution& d, int num_particles, Tracking::Particle mean, Tracking::Particle variance);
 	
-	/** @brief Updates time of prediction system for higher order motion model */
-	virtual void updateTime();
+	/** @brief Updates time of prediction system for higher order motion model
+	*		@param dTime Time since last frame
+	*/
+	virtual void updateTime(double dTime);
 	
 };
  
