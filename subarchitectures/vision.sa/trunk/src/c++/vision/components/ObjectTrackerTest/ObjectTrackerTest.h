@@ -1,16 +1,6 @@
-/* Dummy driver for the object tracker component
-*
-*  @author: Thomas Mörwald
-*  @date: April 2009
-*
-*  This component is an example on how to control the
-*  object tracker by loading a model from ply-file
-*  to the working memory and calling several tracking commands.
-*
-*/
 
-#ifndef OBJECT_TRACKER_DRIVER_H
-#define OBJECT_TRACKER_DRIVER_H
+#ifndef OBJECT_TRACKER_TEST_H
+#define OBJECT_TRACKER_TEST_H
 
 #include <vector>
 #include <string>
@@ -19,7 +9,7 @@
 
 #include "ObjectTrackerUtils.hpp"
 #include "Tracker.h"
-//#include "PlyModel.h"
+#include "ModelLoader.h"
 #include "Timer.h"
 
 namespace cast
@@ -29,23 +19,12 @@ class ObjectTrackerTest : public ManagedComponent
 {
 private:
 
-  Timer m_timer;
-  Parameters m_params;
-  Model* m_model;
+  std::string m_plyfile;
   
   /**
    * list of objects we want to have detected
    */
   std::vector<std::string> labels;
-  
-  // Trajectory of tracked object
-  bool timerstarted;
-  std::vector<Pose3> trajectory;
-  std::vector<float> timestamps;
-  float m_error_pos, m_error_rot;
-  
-  // Model to detect from ply file
-  
   
   /**
    * callback function called whenever a new object appears ore an object
