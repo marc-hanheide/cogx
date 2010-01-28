@@ -1,0 +1,312 @@
+;;;  DRAFT DTPDDL for Dora2.0
+;;;
+;;;  Based on the CogX MAPL description of Dora for the 2009 CogX
+;;;  demonstrations. The domain on which this is based was authored by
+;;;  Michael Brenner and Moritz Göbelbecker, 2009.
+
+;;;  Right, so initially I was not going to admit functions to
+;;;  elements expressed in ":types". Well, I just hadn't thought it
+;;;  was interesting to do so last year when I scratched up the
+;;;  grammar for DTPDDL. I think Moritz called such a thing an "object
+;;;  fluent" during the 26/01/2010 meeting. I guess it is an object
+;;;  valued fluent after all, where fluents are defined as PDDL
+;;;  "functions".
+
+
+(define (domain dora_the_explorer)
+  (:requirements 
+   ;; IPC6 elements -- Planning off the ground
+   :typing ;; Keywords :: ":types"
+   :strips 
+   :equality
+   :fluents 
+
+   ;; Uncertainty track at IPC6
+   :probabilistic-effects
+
+   ;; PDDL syntactic sugar
+   ;; Keywords :: 
+   :universal-effects  
+   :conditional-effects  
+
+   ;; DTP-ELEMENT
+   ;; Keywords :: ":percepts", ":observe", and ":execution"
+   :partial-observability 
+
+    )
+
+  (:types 
+   place room label widget feature person - object
+   model - widget feature person
+   )
+
+  (:predicates 
+   
+
+   ;; * Dynamic facts about the robot *
+   ;; * Dynamic facts about the robot *
+   ;; * Dynamic facts about the robot *
+   (located ?p - place) ;; Dora-1.0 -- 2009 [agent free]
+
+   (observing_person ?p - person)
+   (observing_widget ?w - widget)
+   (observing_feature ?f - feature)
+
+
+   
+   (foregrounded_model_1 ?m - model)
+   (occupied_model_1)
+
+   (foregrounded_model_2 ?m - model)
+   (occupied_model_2)
+
+   (foregrounded_model_3 ?m - model)
+   (occupied_model_3)
+
+
+   (explored ?p - place) ;; Dora-1.0 -- 2009
+
+   ;; * Static facts about the world * 
+   ;; * Static facts about the world * 
+   ;; * Static facts about the world * 
+   (connected ?p1 - place ?p2 - place) ;; Dora-1.0 -- 2009
+   (contains ?r - room ?p - place) ;; Dora-1.0 -- 2009
+
+   ;; Is a feature that can help in the disambiguation of room types
+   ;; observable at a particular place?
+   (observable-at ?o - feature ?p - place)
+
+   ;; The real-world label of a room
+   (labelled ?r - room ?l - label)
+
+   (observed_model_at_place ?n - place ?m - model)
+
+   (observed_place_label ?n - place ?l - label) ;; Dora-1.0 -- 2009 [was called "place_category"]
+   
+   ;; * Dynamic facts about the world * 
+   ;; * Dynamic facts about the world * 
+   ;; * Dynamic facts about the world * 
+
+   ;; A coornflakes box is a widget. These items, like the robot, can
+   ;; be located about the place.
+   (widget-location ?o - widget ?p - place)
+
+   )
+
+  (:percepts
+   
+   (observed_place_label ?n - place ?l - label) ;; Dora-1.0 -- 2009
+
+   )
+
+  (:s-functions
+   
+   ;; * Static facts about the world * 
+   (probability__observe_label_at_place ?loc - place ?new_label - label) - double
+   (probability__observe_model_at_place ?loc - place ?m - model) - double
+;;    (true_place_label ?n - place) - label ;; Dora-1.0 -- 2009 [was called "place_category"]
+
+
+   ;; (areaclass ?r - room) - label  ;; Dora-1.0 -- 2009 ;; Seems useless 
+   )
+
+  (:o-functions
+;;    (observed_place_label ?n - place) - label ;; Dora-1.0 -- 2009
+   ;; (areaclass ?r - room) - label  ;; Dora-1.0 -- 2009 ;; Seems useless 
+   )
+
+  ;; Dora-1.0 -- 2009 
+  (:action explore_place
+	   :parameters (?loc - place)
+	   :precondition (and
+			  (located ?loc)
+			  )
+	   :effect (and (explored ?loc))
+	   )
+
+  ;;  Dora-1.0 -- 2009 
+  (:action move_to_explored_place
+	   :parameters (?to - place ?from - place)
+	   :precondition 
+	   (and
+	    (located ?from)
+	    (explored ?to)
+	    )
+	   :effect 
+	   (and
+	    (not (located ?from))
+	    (located ?to)
+	    )
+	   )
+
+  ;;  Dora-1.0 -- 2009 
+  (:action move_to_connected_place
+	   :parameters (?to - place ?from - place)
+	   :precondition 
+	   (and
+	    (located ?from)
+	    (connected ?from ?to)
+	    )
+	   :effect 
+	   (and
+	    (not (located ?from))
+	    (located ?to)
+	    )
+	   )
+
+
+  ;; This action is suppose to cause vision to foreground a model, and
+  ;; perhaps the robot will also perform some useful sensing. This
+  ;; goes along with the Michael-Z idea of having vision running
+  ;; continuously in some thread/process.
+  (foreground_model_1 
+   :parameters (?m - model)
+   :precondition (and (not (occupied_model_1))
+		      (not (foregrounded_model_1 ?m)) 
+		      (not (foregrounded_model_2 ?m)) 
+		      (not (foregrounded_model_3 ?m)))
+   :effect (and (occupied_model_1) (foregrounded_model_1 ?m))
+   )
+  (foreground_model_2 
+   :parameters (?m - model)
+   :precondition (and (not (occupied_model_2))
+		      (not (foregrounded_model_1 ?m)) 
+		      (not (foregrounded_model_2 ?m)) 
+		      (not (foregrounded_model_3 ?m)))
+   :effect (and (occupied_model_2) (foregrounded_model_2 ?m))
+   )
+  (foreground_model_3 
+   :parameters (?m - model)
+   :precondition (and (not (occupied_model_3))
+		      (not (foregrounded_model_1 ?m)) 
+		      (not (foregrounded_model_2 ?m)) 
+		      (not (foregrounded_model_3 ?m)))
+   :effect (and (occupied_model_3) (foregrounded_model_3 ?m))
+   )
+  
+  (:observe reset_model_observations__on_state
+	    :parameters 
+	    (?loc - place ?m - model)
+	    
+	    :execution
+	    ()
+
+	    :precondition
+	    (and (not (foregrounded_model_1 ?m)) 
+		 (not (foregrounded_model_2 ?m)) 
+		 (not (foregrounded_model_3 ?m)))
+
+	    
+	    :effect 
+	    (and (not (observed_model_at_place ?loc ?m)))
+	    )
+
+  (:observe reset_model_observations__on_execution
+	    :parameters 
+	    (?loc - place ?m - model)
+	    
+	    :execution
+	    (not (explore_place ?loc))
+
+	    :precondition
+	    ()
+	    
+	    :effect 
+	    (and (not (observed_model_at_place ?loc ?m)))
+	    )
+
+  (:observe model_1
+	    :parameters 
+	    (?loc - place ?m - model)
+	    
+	    :execution
+	    (explore_place ?loc)
+	    
+	    :precondition 
+	    (and (occupied_model_1) (foregrounded_model_1 ?m))
+   
+	    :effect 
+	    (and 
+	     (probabilistic 
+	      (for-each () 
+			(probability__observe_model_at_place ?loc ?m) 
+			(and (observed_model_at_place ?loc ?m))))
+	     )
+	    )
+
+  (:observe model_2
+	    :parameters 
+	    (?loc - place ?m - model)
+	    
+	    :execution
+	    (explore_place ?loc)
+	    
+	    :precondition 
+	    (and (occupied_model_2) (foregrounded_model_2 ?m))
+   
+	    :effect 
+	    (and 
+	     (probabilistic 
+	      (for-each () 
+			(probability__observe_model_at_place ?loc ?m) 
+			(and (observed_model_at_place ?loc ?m))))
+	     )
+	    )
+
+  (:observe model_3
+	    :parameters 
+	    (?loc - place ?m - model)
+	    
+	    :execution
+	    (explore_place ?loc)
+	    
+	    :precondition 
+	    (and (occupied_model_3) (foregrounded_model_3 ?m))
+   
+	    :effect 
+	    (and 
+	     (probabilistic 
+	      (for-each () 
+			(probability__observe_model_at_place ?loc ?m) 
+			(and (observed_model_at_place ?loc ?m))))
+	     )
+	    )
+
+  ;; Dora-1.0 -- 2009 (:sensor categorize_place ...)  This is never
+  ;; used in the domain description from 2009. I'll assume it is key
+  ;; to the goal description or something.
+  (:observe the_label_of_a_place
+	    :parameters 
+	    (?loc - place)
+	    
+	    :execution
+	    (explore_place ?loc)
+	    
+	    :precondition 
+	    ()
+   
+	    :effect 
+	    (and 
+	     (probabilistic 
+	      (for-each (?new_label - label) 
+			(probability__observe_label_at_place ?loc ?new_label) 
+			(and (observed_place_label ?loc ?new_label))))
+	     )
+	    )
+
+
+   (:observe reset_label_of_a_place__on_execution
+	    :parameters 
+	    (?loc - place ?l - label )
+	    
+	    :execution
+	    (not (explore_place ?loc))
+	    
+	    :precondition 
+	    ()
+   
+	    :effect 
+	    (and  (not (observed_place_label ?loc ?l)))
+	    )
+
+)
