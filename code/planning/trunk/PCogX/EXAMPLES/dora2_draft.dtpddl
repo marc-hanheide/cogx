@@ -100,7 +100,7 @@
    ;; * Dynamic facts about the world * 
    ;; * Dynamic facts about the world * 
 
-   ;; A coornflakes box is a widget. These items, like the robot, can
+   ;; A cornflakes box is a widget. These items, like the robot, can
    ;; be located about the place.
    (widget-location ?o - widget ?p - place)
 
