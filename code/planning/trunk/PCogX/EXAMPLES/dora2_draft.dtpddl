@@ -57,11 +57,11 @@
 
    
 
-   (observing_person ?p - person)
-   (observing_widget ?w - widget)
-   (observing_feature ?f - feature)
+;;    (observing_person ?p - person)
+;;    (observing_widget ?w - widget)
+;;    (observing_feature ?f - feature)
 
-
+   (absolute_belief__widget_location ?w - widget ?loc - place)
    
    (foregrounded_model_1 ?m - model)
    (occupied_model_1)
@@ -78,6 +78,9 @@
    ;; * Static facts about the world * 
    ;; * Static facts about the world * 
    ;; * Static facts about the world * 
+   
+   (person_to_report_to ?p - person)
+
    (located_at ?model - widget ?location - place) ;; static for the moment
    (person_at ?model - person ?location - place) ;; static for the moment
    (featured_at ?model - feature ?location - place)
@@ -91,7 +94,7 @@
    (observable-at ?o - feature ?p - place)
 
    ;; The real-world label of a room
-   (labelled ?r - room ?l - label)
+   (labelled ?r - place ?l - label)
    
    ;; * Dynamic facts about the world * 
    ;; * Dynamic facts about the world * 
@@ -116,6 +119,9 @@
    ;; * Static facts about the world * 
    (probability__observe_label_at_place ?loc - place ?new_label - label) - double
    (probability__observe_model_at_place ?loc - place ?m - model) - double
+   
+   (reward) - double
+
 ;;    (true_place_label ?n - place) - label ;; Dora-1.0 -- 2009 [was called "place_category"]
 
 
@@ -126,6 +132,27 @@
 ;;    (observed_place_label ?n - place) - label ;; Dora-1.0 -- 2009
    ;; (areaclass ?r - room) - label  ;; Dora-1.0 -- 2009 ;; Seems useless 
    )
+
+  (:action commit__widget_location 
+	   :parameters (?w - widget ?loc - place)
+	   :precondition ()
+
+	   :effect (absolute_belief__widget_location ?w ?loc)
+	   )
+  
+  (:action report__widget_location 
+	   :parameters (?w - widget ?loc - place ?r_loc - place ?p - person)
+	   :precondition (and (person_to_report_to ?p)
+			      (located ?r_loc)
+			      (person_at ?p ?r_loc)
+			      (absolute_belief__widget_location ?w ?loc))
+	   
+	   
+	   :effect (when (located_at ?w ?loc) (increase (reward) 1000.0))
+	   )
+  
+
+
 
   ;; Dora-1.0 -- 2009 
   (:action explore_place
@@ -618,22 +645,39 @@
   ;; Dora-1.0 -- 2009 (:sensor categorize_place ...)  This is never
   ;; used in the domain description from 2009. I'll assume it is key
   ;; to the goal description or something.
-  (:observe the_label_of_a_place
+  (:observe the_label_of_a_place__if_true
 	    :parameters 
-	    (?loc - place)
+	    (?loc - place ?l - label)
 	    
 	    :execution
 	    (explore_place ?loc)
 	    
 	    :precondition 
-	    ()
+	    (labelled ?loc ?l)
    
 	    :effect 
 	    (and 
 	     (probabilistic 
-	      (for-each (?new_label - label) 
-			(probability__observe_label_at_place ?loc ?new_label) 
-			(and (observed_place_label ?loc ?new_label))))
+	      (probability__observe_label_at_place__if_true ?loc ?l) 
+	      (and (observed_place_label ?loc ?l)))
+	     )
+	    )
+
+  (:observe the_label_of_a_place__if_false
+	    :parameters 
+	    (?loc - place ?l - label)
+	    
+	    :execution
+	    (explore_place ?loc)
+	    
+	    :precondition 
+	    (not (labelled ?loc ?l))
+   
+	    :effect 
+	    (and 
+	     (probabilistic 
+	      (probability__observe_label_at_place__if_false ?loc ?l) 
+	      (and (observed_place_label ?loc ?l)))
 	     )
 	    )
 
