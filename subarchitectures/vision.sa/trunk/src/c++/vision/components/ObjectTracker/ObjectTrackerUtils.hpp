@@ -157,102 +157,87 @@ cdl::CASTTime convertTime(double time_sec){
 	return casttime;
 }
 
-// Converts Video::CameraParameters from Video::Image of VideoServer to 
-// Extrinsic- and Intrinsic- Matrix of OpenGL
-// zNear and zFar describe the near and far z values of the clipping plane
-void loadCameraParameters(Tracking::Camera* camera, Video::CameraParameters camPars, float zNear, float zFar){
-	// intrinsic parameters
-	// transform the coordinate system of computer vision to OpenGL 
-	//   Vision: origin is in the up left corner, x-axis pointing right, y-axis pointing down
-	//   OpenGL: origin is in the middle, x-axis pointing right, y-axis pointing up
-	float fx = 2.0*camPars.fx / camPars.width;					// scale range from [0 ... 640] to [0 ... 2]
-  float fy = 2.0*camPars.fy / camPars.height;					// scale range from [0 ... 480] to [0 ... 2]
-  float cx = 1.0-(2.0*camPars.cx / camPars.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1] (not negative z value at w-division)
-  float cy = (2.0*camPars.cy / camPars.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ... 2] -> [-1 ... 1] (not negative z value at w-division)
-  float z1 = (zFar+zNear)/(zNear-zFar);								// entries for clipping planes
-  float z2 = 2*zFar*zNear/(zNear-zFar);								// look up for gluPerspective
-  
-  // intrinsic matrix
-  mat4 intrinsic;
-  intrinsic[0]=fx;	intrinsic[4]=0;		intrinsic[8]=cx;	intrinsic[12]=0;
-  intrinsic[1]=0;		intrinsic[5]=fy;	intrinsic[9]=cy;	intrinsic[13]=0;
-  intrinsic[2]=0;		intrinsic[6]=0;		intrinsic[10]=z1;	intrinsic[14]=z2;  
-  intrinsic[3]=0;		intrinsic[7]=0;		intrinsic[11]=-1;	intrinsic[15]=0;	// last row assigns w=-z which inverts cx and cy at w-division
-  
-  // computer vision camera coordinates to OpenGL camera coordinates transform 
-  // rotate 180° about x-axis
-  mat4 cv2gl;
-  cv2gl[0]=1.0; cv2gl[4]=0.0; 	cv2gl[8]=0.0;   cv2gl[12]=0.0;  
-	cv2gl[1]=0.0; cv2gl[5]=-1.0;	cv2gl[9]=0.0;   cv2gl[13]=0.0;  
-	cv2gl[2]=0.0; cv2gl[6]=0.0; 	cv2gl[10]=-1.0; cv2gl[14]=0.0;  
-	cv2gl[3]=0.0; cv2gl[7]=0.0; 	cv2gl[11]=0.0;  cv2gl[15]=1.0;  
+double getFrameTime(cdl::CASTTime old_time, cdl::CASTTime new_time){
+ 	double dTime;
+ 	dTime = (new_time.s - old_time.s) + (new_time.us - old_time.us) * 1e-6;
+	return dTime;
+}
+
+void convertCameraParameter(Video::CameraParameters vidCamPars, Tracking::CameraParameter& trackCamPars){
 	
-	// extrinsic parameters
-	// look up comments in tools/hardware/video/src/slice/Video.ice
-	// p = R^T*(w - t) = (R^T, -R^T*t) * (w,1)
-	cogx::Math::Matrix33 R = camPars.pose.rot;
-	cogx::Math::Vector3 t = camPars.pose.pos;
-	mat4 extrinsic;
-	extrinsic[0]=R.m00;	extrinsic[4]=R.m01;	extrinsic[8]=R.m02;		extrinsic[12]=0.0;
-	extrinsic[1]=R.m10;	extrinsic[5]=R.m11;	extrinsic[9]=R.m12;		extrinsic[13]=0.0;	
-	extrinsic[2]=R.m20;	extrinsic[6]=R.m21;	extrinsic[10]=R.m22;	extrinsic[14]=0.0;	
-	extrinsic[3]=0.0;		extrinsic[7]=0.0;		extrinsic[11]=0.0;		extrinsic[15]=1.0;
-	extrinsic = extrinsic.transpose();											// R^T
-	vec4 tp = -(extrinsic * vec4(t.x, t.y, t.z, 1.0));			// -R^T*t
-	extrinsic[12]=tp.x; extrinsic[13]=tp.y; extrinsic[14]=tp.z;
-	extrinsic = cv2gl * extrinsic;
-	
-	// set camera parameters
-	camera->SetViewport(camPars.width,camPars.height);
-	camera->SetZRange(zNear, zFar);
-	camera->SetIntrinsic(intrinsic);
-	camera->SetExtrinsic(extrinsic);  
-	camera->SetPos(camPars.pose.pos.x, camPars.pose.pos.y, camPars.pose.pos.z);
+	trackCamPars.width	=	vidCamPars.width;
+  trackCamPars.height	=	vidCamPars.height;
+  
+  trackCamPars.fx			=	vidCamPars.fx;
+  trackCamPars.fy			=	vidCamPars.fy;
+  trackCamPars.cx			=	vidCamPars.cx;
+  trackCamPars.cy			=	vidCamPars.cy;
+  
+  trackCamPars.k1			=	vidCamPars.k1;
+  trackCamPars.k2			=	vidCamPars.k2;
+  trackCamPars.k3			=	vidCamPars.k3;
+  
+  trackCamPars.p1			=	vidCamPars.p1;
+  trackCamPars.p2			=	vidCamPars.p2;
+  
+  trackCamPars.rot[0]	=	vidCamPars.pose.rot.m00;
+  trackCamPars.rot[1]	=	vidCamPars.pose.rot.m01;
+  trackCamPars.rot[2]	=	vidCamPars.pose.rot.m02;
+  trackCamPars.rot[3]	=	vidCamPars.pose.rot.m10;
+  trackCamPars.rot[4]	=	vidCamPars.pose.rot.m11;
+  trackCamPars.rot[5]	=	vidCamPars.pose.rot.m12;
+  trackCamPars.rot[6]	=	vidCamPars.pose.rot.m20;
+  trackCamPars.rot[7]	=	vidCamPars.pose.rot.m21;
+  trackCamPars.rot[8]	=	vidCamPars.pose.rot.m22;
+  
+  trackCamPars.pos.x	=	vidCamPars.pose.pos.x;
+  trackCamPars.pos.y	=	vidCamPars.pose.pos.y;
+  trackCamPars.pos.z	=	vidCamPars.pose.pos.z;
 }
 
 // *************************************************************************************
 // Load INI File
-Parameters LoadParametersFromINI(const char* filename){
-	
-	Parameters params;
-	
-	CDataFile cdfParams;
-	cdfParams.Load(filename);
-	
-	// Constraints
+// Parameters LoadParametersFromINI(const char* filename){
+// 	
+// 	Parameters params;
+// 	
+// 	CDataFile cdfParams;
+// 	cdfParams.Load(filename);
+// 	
+// 	// Constraints
 // 	params.constraints.r.x 	= cdfParams.GetFloat("r.x", "Constraints") * PIOVER180;
 // 	params.constraints.r.y 	= cdfParams.GetFloat("r.y", "Constraints") * PIOVER180;
 // 	params.constraints.r.z 	= cdfParams.GetFloat("r.z", "Constraints") * PIOVER180;
-	params.constraints.rp.x = cdfParams.GetFloat("rp.x", "Constraints");
-	params.constraints.rp.y = cdfParams.GetFloat("rp.y", "Constraints");
-	params.constraints.rp.z = cdfParams.GetFloat("rp.z", "Constraints");
-	params.constraints.t.x 	= cdfParams.GetFloat("s.x", "Constraints");
-	params.constraints.t.y 	= cdfParams.GetFloat("s.y", "Constraints");
-	params.constraints.t.z 	= cdfParams.GetFloat("s.z", "Constraints");
-	params.constraints.tp.x = cdfParams.GetFloat("sp.x", "Constraints");
-	params.constraints.tp.y = cdfParams.GetFloat("sp.y", "Constraints");
-	params.constraints.tp.z = cdfParams.GetFloat("sp.z", "Constraints");
-	params.constraints.z 		= cdfParams.GetFloat("z", "Constraints");	
-	params.constraints.zp 	= cdfParams.GetFloat("zp", "Constraints");
-	
-	// Performance
-	params.mode = cdfParams.GetInt("mode", "Performance");
-	params.recursions = cdfParams.GetInt("recursions", "Performance");
-	params.particles = cdfParams.GetInt("particles", "Performance");
-	
-	// Resource Path
-	params.modelPath = cdfParams.GetString("ModelPath", "ResourcePath");
-	params.texturePath = cdfParams.GetString("TexturePath", "ResourcePath");
-	params.shaderPath = cdfParams.GetString("ShaderPath", "ResourcePath");
-		
-	// Other
-	params.edgeMatchingTol = cdfParams.GetFloat("EdgeMatchingTolerance", "Other") * PIOVER180;
-	params.backFaceCulling = cdfParams.GetBool("BackFaceCulling", "Other");
-	params.minTexGrabAngle = cdfParams.GetFloat("MinTextureGrabAngle", "Other") * PIOVER180;
-	
-	
-	return params;
-}
+// 	params.constraints.rp.x = cdfParams.GetFloat("rp.x", "Constraints");
+// 	params.constraints.rp.y = cdfParams.GetFloat("rp.y", "Constraints");
+// 	params.constraints.rp.z = cdfParams.GetFloat("rp.z", "Constraints");
+// 	params.constraints.t.x 	= cdfParams.GetFloat("s.x", "Constraints");
+// 	params.constraints.t.y 	= cdfParams.GetFloat("s.y", "Constraints");
+// 	params.constraints.t.z 	= cdfParams.GetFloat("s.z", "Constraints");
+// 	params.constraints.tp.x = cdfParams.GetFloat("sp.x", "Constraints");
+// 	params.constraints.tp.y = cdfParams.GetFloat("sp.y", "Constraints");
+// 	params.constraints.tp.z = cdfParams.GetFloat("sp.z", "Constraints");
+// 	params.constraints.z 		= cdfParams.GetFloat("z", "Constraints");	
+// 	params.constraints.zp 	= cdfParams.GetFloat("zp", "Constraints");
+// 	
+// 	// Performance
+// 	params.mode = cdfParams.GetInt("mode", "Performance");
+// 	params.recursions = cdfParams.GetInt("recursions", "Performance");
+// 	params.particles = cdfParams.GetInt("particles", "Performance");
+// 	
+// 	// Resource Path
+// 	params.modelPath = cdfParams.GetString("ModelPath", "ResourcePath");
+// 	params.texturePath = cdfParams.GetString("TexturePath", "ResourcePath");
+// 	params.shaderPath = cdfParams.GetString("ShaderPath", "ResourcePath");
+// 		
+// 	// Other
+// 	params.edgeMatchingTol = cdfParams.GetFloat("EdgeMatchingTolerance", "Other") * PIOVER180;
+// 	params.backFaceCulling = cdfParams.GetBool("BackFaceCulling", "Other");
+// 	params.minTexGrabAngle = cdfParams.GetFloat("MinTextureGrabAngle", "Other") * PIOVER180;
+// 	
+// 	
+// 	return params;
+// }
 
 // SDL - Keyboard and Mouse input control
 bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){

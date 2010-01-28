@@ -20,13 +20,14 @@ namespace Tracking{
 struct ModelEntry
 {
 	ModelEntry(){
-		predictor = new Predictor();
+		del_predictor = predictor = new Predictor();
+		bfc = false;
+		lock = false;		
 	}
 	
 	~ModelEntry(){
-	
+		delete(del_predictor);
 	}
-	
 	
 	TrackerModel 		model;					///< The model to track
 	Distribution 		distribution;		///< Likelihood distribution
@@ -38,8 +39,15 @@ struct ModelEntry
 	int			num_particles;				///< Number of particles used for representing likelihood distribution
 	int			num_recursions;				///< Number of recursions per image
 	
+	bool		bfc;				///< enable/disable backface culling
+	bool		lock;
+	
 	mat4 modelviewprojection;			///< Tranformation matrix from model to image coordinates
 	TM_Vector3 vCam2Model;				///< Vector from camera to model (for zooming DOF and texturing)
+	
+private:
+	Predictor* del_predictor;
+
 };
 
 } // namespace Tracking

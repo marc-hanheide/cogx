@@ -28,14 +28,6 @@ Tracker::Tracker(){
 	params.modelPath = string("resources/model/");
 	params.texturePath = string("resources/texture/");
 	params.shaderPath = string("resources/shader/");
-
-// 	m_cam_perspective.Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
-// 													0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
-// 													0.0, 1.0, 0.0,											// Up vector (y-axis)
-// 													45, params.width, params.height,		// field of view angle, image width and height
-// 													0.1, 10.0,													// camera z-clipping planes (far, near)
-// 													GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
-
 }
 
 Tracker::~Tracker(){
@@ -130,6 +122,33 @@ bool Tracker::loadINI(const char* inifile){
 	params.edge_tolerance = cdfParams.GetFloat("EdgeMatchingTolerance", "Other") * PIOVER180;
 	params.minTexGrabAngle = cdfParams.GetFloat("MinTextureGrabAngle", "Other") * PIOVER180;
 	
+	return true;
+}
+
+
+void Tracker::setFrameTime(double dTime){
+	for(int i=0; i<m_modellist.size(); i++){
+		m_modellist[i]->predictor->updateTime(dTime);
+	}
+}
+
+bool Tracker::setCameraParameters(CameraParameter cam_par){
+	
+	if(cam_par.zFar <= 0.0){
+		printf("[Tracker::setCameraParameters] Error 'Far Clipping Plane' not valid: %f", cam_par.zFar);
+		return false;
+	}
+	if(cam_par.zNear < 0.0){
+		printf("[Tracker::setCameraParameters] Error 'Near Clipping Plane' not valid: %f", cam_par.zNear);
+		return false;
+	}
+	
+	if(cam_par.zNear >= cam_par.zFar){
+		printf("[Tracker::setCameraParameters] Error 'Clipping Panes' not valid: %f > %f", cam_par.zNear, cam_par.zFar);
+		return false;
+	}
+	
+	m_cam_perspective.Load(cam_par);
 	return true;
 }
 
@@ -298,10 +317,8 @@ bool Tracker::getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3
 
 void Tracker::setModelPredictor(int id, Predictor* predictor){
 	ModelEntryList::iterator it = m_modellist.begin();
-	
 	while(it != m_modellist.end()){
 		if(id==(*it)->id){
-			delete((*it)->predictor);
 			(*it)->predictor = predictor;			
 			return;
 		}
@@ -309,6 +326,16 @@ void Tracker::setModelPredictor(int id, Predictor* predictor){
 	}
 }
 
+void Tracker::setModelLock(int id, bool lock){
+	ModelEntryList::iterator it = m_modellist.begin();
+	while(it != m_modellist.end()){
+		if(id==(*it)->id){
+			(*it)->lock = lock;
+			return;
+		}
+		it++;
+	}
+}
 
 // render coordinate frame
 void Tracker::drawCoordinates(){

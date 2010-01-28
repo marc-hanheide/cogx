@@ -42,6 +42,7 @@ ObjectTracker::~ObjectTracker(){
 // *** Working Memory Listeners ***
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
 	TrackingCommandPtr track_cmd = getMemoryEntry<TrackingCommand>(_wmc.address);
+	TrackingEntryList::iterator it;
 	
 	log("Received tracking command ...");
 	switch(track_cmd->cmd){
@@ -61,19 +62,36 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 				log("  Stop tracking: I'm not tracking");
 			}
 			break;
+		case VisionData::ADDMODEL:
+			
+			break;
+		case VisionData::REMOVEMODEL:
+			it = m_trackinglist.begin();
+			while(it != m_trackinglist.end()){
+				if((*it)->castWMA.id.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
+					(*it)->cmd = TrackingEntry::REMOVE;
+					log("  Remove model: ok");
+					return;
+				}
+			}			
+			break;
 		case VisionData::LOCK:
-			m_tracker->setLockFlag(true);
-			log("  Locking tracker: ok");
+
+			log("  Locking tracker: ok (not implemented)");
 			break;
 		case VisionData::UNLOCK:
-			m_tracker->setLockFlag(false);
-			log("  Unlocking tracker: ok");
+
+			log("  Unlocking tracker: ok (not implemented)");
+			break;
+		case VisionData::GETPOINT3D:
+			
+			log("  Get 3D point from 2D: ok (not implemented)");
 			break;
 		case VisionData::RELEASEMODELS:
-			log("  Release models: releasing all models (not implemented)");
+			log("  Release models: removing all models (not implemented)");
 			break;
 		default:
-			log("  Unknown tracking command, doing nothing");
+			log("  Unknown tracking command: doing nothing");
 			break;
 	}	
 }
@@ -197,6 +215,7 @@ void ObjectTracker::receiveImages(const std::vector<Video::Image>& images){
 
 void ObjectTracker::runComponent(){
   
+  int i=0;
   // Initialize Tracker
   // Grab one image from VideoServer for initialisation
   m_videoServer->getImage(m_camId, m_image);
@@ -206,6 +225,7 @@ void ObjectTracker::runComponent(){
   {
     if(m_track){
       m_videoServer->getImage(m_camId, m_image);
+//       printf("%d m_videoServer->getImage(m_camId, m_image)\n", i++);
       runTracker(m_image);
     }
     else if(!m_track){
@@ -230,6 +250,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
   
   m_ImageWidth = image.width;
   m_ImageHeight = image.height;
+  last_image_time = image.time;
 	
 	// Create edge or texture tracker
 	if(m_textured){
@@ -241,6 +262,15 @@ void ObjectTracker::initTracker(const Video::Image &image){
 	// Initialize tracker
 	if(!m_tracker->init(m_ini_file.c_str(), m_ImageWidth, m_ImageHeight)){														
 		throw runtime_error(exceptionMessage(__HERE__, "INI file not found!"));
+		m_running = false;
+	}
+	
+	Tracking::CameraParameter trackCamPars;
+	convertCameraParameter(image.camPars, trackCamPars);
+	trackCamPars.zFar = m_tracker->getCamZFar();
+	trackCamPars.zNear = m_tracker->getCamZNear();
+	if( !m_tracker->setCameraParameters(trackCamPars) ){
+		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
 		m_running = false;
 	}
 	 
@@ -269,6 +299,7 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	fTimeTracker=0.0;
 	int i,c;
 	Pose pose;
+	double dTime;
 	
 	// check if models added/modified
 	TrackingEntryList::iterator it;
@@ -277,8 +308,11 @@ void ObjectTracker::runTracker(const Video::Image &image){
 			modifyTrackingEntry(it);
 	}
 	
-	// *** Tracking methods ***
+	// update time
 	m_timer.Update();
+	dTime = getFrameTime(last_image_time, image.time);
+	last_image_time = image.time;
+	m_tracker->setFrameTime(dTime);
 
 	// image processing
 	m_tracker->image_processing((unsigned char*)(&image.data[0]));

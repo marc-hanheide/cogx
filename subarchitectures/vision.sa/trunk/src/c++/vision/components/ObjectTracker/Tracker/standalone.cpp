@@ -70,20 +70,15 @@ int main(int argc, char *argv[])
 	Pose p;
 	Model model_1, model_2;
 	
-// 	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
-// 	p.t = vec3(0.2, 0.06, 0.06);
-// 	id_1 = m_tracker->addModel(model_1, p, true);
+	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
+	p.t = vec3(0.2, 0.06, 0.06);
+	id_1 = m_tracker->addModel(model_1, p, true);
 
 	std::vector<vec3> m_points;
-	
-	
-	
+		
 	m_modelloader.LoadPly(model_2, "resources/model/jasmin6.ply");
 	p.t = vec3(0.05, 0.05, 0.05);
 	id_2 = m_tracker->addModel(model_2, p, true);
-	
-	myPredictor predictor;
-	m_tracker->setModelPredictor(id_2, &predictor);
 	
 	// *************************************************************************************
   // Main Loop

@@ -10,23 +10,21 @@ void myPredictor::addsamples(Distribution& d, int num_particles, Particle mean, 
 	
 	for(int i=0; i<num_particles; i++){
 		
-		
-		
 		p = mean;
 		
-		// Distribution function (gaussian noise)
 		epsilon = genNoise(sigma, variance);
-		
-		// TODO Prediction model, Better motion model (motion estimator, physical correct)
 		
 		p.tp = p.tp + epsilon.tp;
 		p.rp = p.rp + epsilon.rp;
 		p.zp = p.zp + epsilon.zp;
-		epsilon.z = epsilon.z + epsilon.zp*m_dTime;
+		p.z  = p.z + epsilon.zp*m_dTime;
+		
 		p.translate(epsilon.t + p.tp*m_dTime);
 		p.rotate(epsilon.r + p.rp*m_dTime);
-		p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
+		p.translate( m_cam_view.x * p.z, m_cam_view.y * p.z, m_cam_view.z * p.z);
 		
 		d.push_back(p);
+		
+		
 	}	
 }

@@ -21,7 +21,6 @@
 class Predictor
 {
 protected:
-	float m_lifetime;
 	float m_dTime;
 	
 	Tracking::TM_Vector3 m_cam_view;
