@@ -198,7 +198,7 @@
   ;; perhaps the robot will also perform some useful sensing. This
   ;; goes along with the Michael-Z idea of having vision running
   ;; continuously in some thread/process.
-  (foreground_model_1 
+  (:action foreground_model_1 
    :parameters (?m - model)
    :precondition (and (not (occupied_model_1))
 		      (not (foregrounded_model_1 ?m)) 
@@ -206,7 +206,7 @@
 		      (not (foregrounded_model_3 ?m)))
    :effect (and (occupied_model_1) (foregrounded_model_1 ?m))
    )
-  (foreground_model_2 
+  (:action foreground_model_2 
    :parameters (?m - model)
    :precondition (and (not (occupied_model_2))
 		      (not (foregrounded_model_1 ?m)) 
@@ -214,7 +214,7 @@
 		      (not (foregrounded_model_3 ?m)))
    :effect (and (occupied_model_2) (foregrounded_model_2 ?m))
    )
-  (foreground_model_3 
+  (:action foreground_model_3 
    :parameters (?m - model)
    :precondition (and (not (occupied_model_3))
 		      (not (foregrounded_model_1 ?m)) 
