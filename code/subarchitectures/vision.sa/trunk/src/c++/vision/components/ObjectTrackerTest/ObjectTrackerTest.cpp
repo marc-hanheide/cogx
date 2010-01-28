@@ -48,8 +48,7 @@ void ObjectTrackerTest::start()
 void ObjectTrackerTest::runComponent()
 {
   // Load geometry
-  printf("ObjectTrackerTest::runComponent()\n");
-	log("loading ply model");
+  log("Loading ply model");
 	ModelLoader modelloader;
 	Model model;
 	modelloader.LoadPly(model, m_plyfile.c_str());
@@ -63,12 +62,12 @@ void ObjectTrackerTest::runComponent()
 	tPose.translate(0.0,0.0,0.05);
 	convertParticle2Pose(tPose, obj->pose); 
 	 
-  log("add model to working memory: '%s'", obj->label.c_str());
+  log("Add model to working memory: '%s'", obj->label.c_str());
   addToWorkingMemory(newDataID(), obj);
   
   sleepProcess(1000);
   
-  log("send tracking command: START");
+  log("Send tracking command: START");
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = VisionData::START;
   addToWorkingMemory(newDataID(), track_cmd);
