@@ -120,16 +120,16 @@
    
    ;; * Static facts about the world * 
 ;;    (probability__observe_label_at_place ?loc - place ?new_label - label) - double
-   (probability__observe_person_at_place__if_true ?loc - place ?m - model) - double
-   (probability__observe_label_at_place__if_true ?loc - place ?m - model) - double
+   (probability__observe_person_model_at_place__if_true ?loc - place ?m - model) - double
+   (probability__observe_widget_model_at_place__if_true ?loc - place ?m - model) - double
 
-   (probability__observe_person_at_place__if_false ?loc - place ?m - model) - double
-   (probability__observe_label_at_place__if_false ?loc - place ?m - model) - double
+   (probability__observe_person_model_at_place__if_false ?loc - place ?m - model) - double
+   (probability__observe_widget_model_at_place__if_false ?loc - place ?m - model) - double
 
-   (probability__observe_feature_at_place_with_label__if_true ?loc - place ?m - model ?l - label) - double
-   (probability__observe_feature_at_place_with_label__if_feature_false ?loc - place ?m - model ?l - label) - double
-   (probability__observe_feature_at_place_with_label__if_label_false ?loc - place ?m - model ?l - label) - double
-   (probability__observe_feature_at_place_with_label__if_feature_and_label_false ?loc - place ?m - model ?l - label) - double
+   (probability__observe_feature_model_at_place_with_label__if_true ?loc - place ?m - model ?l - label) - double
+   (probability__observe_feature_model_at_place_with_label__if_feature_false ?loc - place ?m - model ?l - label) - double
+   (probability__observe_feature_model_at_place_with_label__if_label_false ?loc - place ?m - model ?l - label) - double
+   (probability__observe_feature_model_at_place_with_label__if_feature_and_label_false ?loc - place ?m - model ?l - label) - double
    
    (reward) - double
 
