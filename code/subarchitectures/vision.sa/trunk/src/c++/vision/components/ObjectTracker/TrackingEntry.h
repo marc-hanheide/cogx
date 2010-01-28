@@ -8,7 +8,7 @@
 
 class TrackingEntry{
 public:
-	enum Command { ADD, CHANGE, REMOVE, TRACK };
+	enum Command { TRACK, ADD, REMOVE, LOCK, UNLOCK, GETPOINT3D  };
 	
 	cast::cdl::WorkingMemoryAddress castWMA;
 	VisionData::VisualObjectPtr obj;

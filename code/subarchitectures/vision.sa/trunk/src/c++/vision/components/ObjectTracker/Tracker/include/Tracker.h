@@ -6,8 +6,8 @@
  * @brief Main file of Tracker.
  * @namespace Tracking
  */
-#ifndef __TRACKER_H__
-#define __TRACKER_H__
+#ifndef _TRACKER_H_
+#define _TRACKER_H_
 
 #include "headers.h"
 #include "Timer.h"
@@ -122,8 +122,11 @@ public:
 	/** @brief Get 3D point from 2D window coordinates */
 	bool		getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3, float& z3);
 	
-	/** @brief Get pointer to a model predictor */
+	/** @brief Set a model predictor */
 	void		setModelPredictor(int id, Predictor* predictor);
+	
+	/** @brief Locks the model with id */
+	void		setModelLock(int id, bool lock);
 	
 	// Drawing to screen (result, ...)
 	virtual void drawResult()=0;
@@ -142,11 +145,13 @@ public:
   virtual void textureFromImage(){}
   	
 	// Set Parameters
-	void setCamPerspective(Camera camera){ m_cam_perspective = camera; }
+	void setFrameTime(double dTime);
+	bool setCameraParameters(CameraParameter cam_par);
 	void setSpreadLvl(unsigned int val){ params.m_spreadlvl = val; }
 	
 	// Get Parameters
-	Camera*				getCamPerspective(){ return &m_cam_perspective; }
+	float getCamZNear(){ return m_cam_perspective.GetZNear(); }
+	float getCamZFar(){ return m_cam_perspective.GetZFar(); }
 	unsigned int 	getSpreadLvl(){ return params.m_spreadlvl; }
 	
 	// get Flags

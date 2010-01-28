@@ -301,7 +301,7 @@ bool TextureTracker::track(){
 		}
 
 		// Apply particle filtering
-		if(!m_lock){
+		if(!m_modellist[i]->lock){
 			particle_filtering(m_modellist[i]);
 		}else{
 			evaluateParticle(m_modellist[i]);

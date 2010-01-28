@@ -79,7 +79,6 @@ void Predictor::addsamples(Distribution& d, int num_particles, Particle mean, Pa
 
 // *** public ***
 Predictor::Predictor(){
-	m_lifetime = 0.0;
 	m_dTime = 0.0;
 }
 
@@ -139,6 +138,5 @@ void Predictor::sample(Distribution& d, int num_particles, Particle mean, Partic
 
 void Predictor::updateTime(double dTime){
 	m_dTime = dTime;
-	m_lifetime += dTime;
 }
 
