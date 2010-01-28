@@ -135,7 +135,7 @@
 
   (:action commit__widget_location 
 	   :parameters (?w - widget ?loc - place)
-	   :precondition ()
+	   :precondition (forall (?loc2 - place) (not (absolute_belief__widget_location ?w ?loc2)))
 
 	   :effect (absolute_belief__widget_location ?w ?loc)
 	   )
