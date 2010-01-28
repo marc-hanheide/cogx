@@ -357,7 +357,7 @@
 	    :effect 
 	    (and 
 	     (probabilistic 
-	      (probability__observe_feature_model_at_place__if_true ?location ?model) 
+	      (probability__observe_person_model_at_place__if_true ?location ?model) 
 	      (observed_model_at_place ?location ?model)
 	     )
 	    )
@@ -378,7 +378,7 @@
 	    :effect 
 	    (and 
 	     (probabilistic 
-	      (probability__observe_feature_model_at_place__if_false ?location ?model) 
+	      (probability__observe_person_model_at_place__if_false ?location ?model) 
 	      (observed_model_at_place ?location ?model)
 	     )
 	    )
@@ -485,7 +485,7 @@
 	    :effect 
 	    (and 
 	     (probabilistic 
-	      (probability__observe_feature_model_at_place__if_true ?location ?model) 
+	      (probability__observe_person_model_at_place__if_true ?location ?model) 
 	      (observed_model_at_place ?location ?model)
 	     )
 	    )
@@ -506,7 +506,7 @@
 	    :effect 
 	    (and 
 	     (probabilistic 
-	      (probability__observe_feature_model_at_place__if_false ?location ?model) 
+	      (probability__observe_person_model_at_place__if_false ?location ?model) 
 	      (observed_model_at_place ?location ?model)
 	     )
 	    )
@@ -613,7 +613,7 @@
 	    :effect 
 	    (and 
 	     (probabilistic 
-	      (probability__observe_feature_model_at_place__if_true ?location ?model) 
+	      (probability__observe_person_model_at_place__if_true ?location ?model) 
 	      (observed_model_at_place ?location ?model)
 	     )
 	    )
@@ -634,7 +634,7 @@
 	    :effect 
 	    (and 
 	     (probabilistic 
-	      (probability__observe_feature_model_at_place__if_false ?location ?model) 
+	      (probability__observe_person_model_at_place__if_false ?location ?model) 
 	      (observed_model_at_place ?location ?model)
 	     )
 	    )
