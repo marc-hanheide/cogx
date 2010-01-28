@@ -119,6 +119,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
+        self.connect(self.ui.playerConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onPlayerConfigChanged)
+        self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onHostConfigChanged)
         self.connect(self.ui.actCtxShowBuildError, QtCore.SIGNAL("triggered()"), self.onEditBuildError)
 
         # Context menu actions for QTextEdit
@@ -449,10 +451,14 @@ class CCastControlWnd(QtGui.QMainWindow):
             "", "CAST Config (*.cast)")
         if fn != None and len(fn) > 1:
             fn = self.makeConfigFileRelPath(fn)
-            self.ui.clientConfigCmbx.blockSignals(True)
-            self.ui.clientConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-            self.ui.clientConfigCmbx.setCurrentIndex(0)
-            self.ui.clientConfigCmbx.blockSignals(False)
+            self._ComboBox_AddMru(self.ui.clientConfigCmbx,
+                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+
+    def onClientConfigChanged(self, index):
+        if index < 1: return
+        fn = self._clientConfig
+        self._ComboBox_SelectMru(self.ui.clientConfigCmbx, index,
+                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def onBrowsePlayerConfig(self):
         qfd = QtGui.QFileDialog
@@ -461,10 +467,14 @@ class CCastControlWnd(QtGui.QMainWindow):
             "", "Player Config (*.cfg)")
         if fn != None and len(fn) > 1:
             fn = self.makeConfigFileRelPath(fn)
-            self.ui.playerConfigCmbx.blockSignals(True)
-            self.ui.playerConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-            self.ui.playerConfigCmbx.setCurrentIndex(0)
-            self.ui.playerConfigCmbx.blockSignals(False)
+            self._ComboBox_AddMru(self.ui.playerConfigCmbx,
+                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+
+    def onPlayerConfigChanged(self, index):
+        if index < 1: return
+        fn = self._playerConfig
+        self._ComboBox_SelectMru(self.ui.playerConfigCmbx, index,
+                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
     def onBrowseHostConfig(self):
         qfd = QtGui.QFileDialog
@@ -473,19 +483,29 @@ class CCastControlWnd(QtGui.QMainWindow):
             "", "Component Host Config (*.hconf)")
         if fn != None and len(fn) > 1:
             fn = self.makeConfigFileRelPath(fn)
-            self.ui.hostConfigCmbx.blockSignals(True)
-            self.ui.hostConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-            self.ui.hostConfigCmbx.setCurrentIndex(0)
-            self.ui.hostConfigCmbx.blockSignals(False)
+            self._ComboBox_AddMru(self.ui.hostConfigCmbx,
+                    self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
-    def onClientConfigChanged(self, index):
+    def onHostConfigChanged(self, index):
         if index < 1: return
-        fn = self._clientConfig
-        self.ui.clientConfigCmbx.blockSignals(True)
-        self.ui.clientConfigCmbx.removeItem(index)
-        self.ui.clientConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
-        self.ui.clientConfigCmbx.setCurrentIndex(0)
-        self.ui.clientConfigCmbx.blockSignals(False)
+        fn = self._hostConfig
+        self._ComboBox_SelectMru(self.ui.hostConfigCmbx, index,
+                self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+
+    def _ComboBox_AddMru(self, uiCmbx, title, varData):
+        uiCmbx.blockSignals(True)
+        uiCmbx.insertItem(0, title, varData)
+        uiCmbx.setCurrentIndex(0)
+        uiCmbx.blockSignals(False)
+
+    # Move an item that was picked (index) to the front of MRU list (index = 0)
+    def _ComboBox_SelectMru(self, uiCmbx, index, title, varData):
+        uiCmbx.blockSignals(True)
+        uiCmbx.removeItem(index)
+        uiCmbx.insertItem(0, title, varData)
+        uiCmbx.setCurrentIndex(0)
+        uiCmbx.blockSignals(False)
+
 
 def guiMain():
     app = QtGui.QApplication(sys.argv)
