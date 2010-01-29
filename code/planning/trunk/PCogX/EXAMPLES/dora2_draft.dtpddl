@@ -235,7 +235,7 @@
 
  (:action background_model
 	   :parameters (?s - model_slot)
-	   :precondition ()
+	   :precondition (and (not (unforgroundable ?s)))
 	   :effect (assign (foregrounded_model ?s) no_model)
 	   )
 
