@@ -10,8 +10,10 @@ class TrackingEntry{
 public:
 	enum Command { TRACK, ADD, REMOVE, LOCK, UNLOCK, GETPOINT3D  };
 	
-	cast::cdl::WorkingMemoryAddress castWMA;
+	std::string visualObjectID;
+	std::string trackingCommandID;
 	VisionData::VisualObjectPtr obj;
+	VisionData::TrackingCommandPtr track_cmd;
 	int id;
 	Command cmd;
 	

@@ -16,7 +16,6 @@
 #include <string>
 
 #include "tgEngine.h"
-#include "VirtualSceneUtils.hpp"
 #include "ModelEntry.h"
 
 namespace cast
@@ -32,7 +31,7 @@ private:
   TomGine::tgEngine* m_engine;
   TomGine::tgCamera m_camera;
   
-  vector<ModelEntry> m_modellist;
+  std::vector<ModelEntry> m_modellist;
 
   /**
    * Which camera to get images from
