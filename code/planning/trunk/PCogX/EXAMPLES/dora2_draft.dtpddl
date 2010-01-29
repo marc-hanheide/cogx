@@ -43,8 +43,11 @@
     )
 
   (:types 
-   place room label widget feature person - object
-   model - (either widget feature person)
+   place room label widget feature person  model_slot - object
+   model - (either widget feature person) ;; FYI either is an old PDDL
+					  ;; keyword. I think it is
+					  ;; still in use, and I did
+					  ;; use it in DTPDDL
    )
 
   (:predicates 
@@ -112,14 +115,14 @@
 
    (observed_location ?loc)
 
-;;    (observed_place_label ?n - place ?l - label) ;; Dora-1.0 -- 2009 [was called "place_category"]
-
    )
 
   (:s-functions
    
+   ;; ............
+   (foregrounded_model ?s - model_slot ) - model ;; Moritz suggested using an object valued fluent.
+   
    ;; * Static facts about the world * 
-;;    (probability__observe_label_at_place ?loc - place ?new_label - label) - double
    (probability__observe_person_model_at_place__if_true ?loc - place ?m - model) - double
    (probability__observe_widget_model_at_place__if_true ?loc - place ?m - model) - double
 
@@ -132,17 +135,8 @@
    (probability__observe_feature_model_at_place_with_label__if_feature_and_label_false ?loc - place ?m - model ?l - label) - double
    
    (reward) - double
-
-;;    (true_place_label ?n - place) - label ;; Dora-1.0 -- 2009 [was called "place_category"]
-
-
-   ;; (areaclass ?r - room) - label  ;; Dora-1.0 -- 2009 ;; Seems useless 
    )
 
-  (:o-functions
-;;    (observed_place_label ?n - place) - label ;; Dora-1.0 -- 2009
-   ;; (areaclass ?r - room) - label  ;; Dora-1.0 -- 2009 ;; Seems useless 
-   )
 
   (:observe robot_location__true
 	    :parameters (?loc - place)
@@ -230,30 +224,21 @@
   ;; perhaps the robot will also perform some useful sensing. This
   ;; goes along with the Michael-Z idea of having vision running
   ;; continuously in some thread/process.
-  (:action foreground_model_1 
-   :parameters (?m - model)
-   :precondition (and (not (occupied_model_1))
-		      (not (foregrounded_model_1 ?m)) 
-		      (not (foregrounded_model_2 ?m)) 
-		      (not (foregrounded_model_3 ?m)))
-   :effect (and (occupied_model_1) (foregrounded_model_1 ?m))
-   )
-  (:action foreground_model_2 
-   :parameters (?m - model)
-   :precondition (and (not (occupied_model_2))
-		      (not (foregrounded_model_1 ?m)) 
-		      (not (foregrounded_model_2 ?m)) 
-		      (not (foregrounded_model_3 ?m)))
-   :effect (and (occupied_model_2) (foregrounded_model_2 ?m))
-   )
-  (:action foreground_model_3 
-   :parameters (?m - model)
-   :precondition (and (not (occupied_model_3))
-		      (not (foregrounded_model_1 ?m)) 
-		      (not (foregrounded_model_2 ?m)) 
-		      (not (foregrounded_model_3 ?m)))
-   :effect (and (occupied_model_3) (foregrounded_model_3 ?m))
-   )
+  (:action foreground_model
+	   :parameters (?m - model ?s - model_slot)
+	   :precondition (and (= (foregrounded_model ?s) no_model)
+			      (forall (?s2 - model_slot) 
+				      (not (= (foregrounded_model ?s2) ?m)))
+			      )
+	   :effect (assign (foregrounded_model ?s) ?m)
+	   )
+
+ (:action background_model
+	   :parameters (?s - model_slot)
+	   :precondition ()
+	   :effect (assign (foregrounded_model ?s) no_model)
+	   )
+
   
   (:observe reset_model_observations__on_state
 	    :parameters 
@@ -263,9 +248,7 @@
 	    ()
 
 	    :precondition
-	    (and (not (foregrounded_model_1 ?m)) 
-		 (not (foregrounded_model_2 ?m)) 
-		 (not (foregrounded_model_3 ?m)))
+	    (and (forall (?s - model_slot) (not (= (foregrounded_model ?s) ?m))) )
 
 	    
 	    :effect 
@@ -286,11 +269,8 @@
 	    (and (not (observed_model_at_place ?loc ?m)))
 	    )
 
-  
-  
 
-
-  (:observe model_3_widget__if_true
+  (:observe model_widget
 	    :parameters 
 	    (?location - place ?model - widget)
 	    
@@ -298,41 +278,30 @@
 	    (explore_place ?location)
 	    
 	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (located_at ?model ?location))
+	    (and 
+		 (exists (?s - slot) (= (foregrounded_model ?s) ?model))
+		 )
    
 	    :effect 
 	    (and 
-	     (probabilistic 
-	      (probability__observe_widget_model_at_place__if_true ?location ?model) 
-	      (observed_model_at_place ?location ?model)
+	     (when (located_at ?model ?location) 
+	       (probabilistic 
+		(probability__observe_widget_model_at_place__if_true ?location ?model) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
+
+	     (when (not (located_at ?model ?location) )
+	       (probabilistic 
+		(probability__observe_widget_model_at_place__if_false ?location ?model) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
 	     )
 	    )
-	    )
 
-  (:observe model_3_widget__if_false
-	    :parameters 
-	    (?location - place ?model - widget)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (not (located_at ?model ?location)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_widget_model_at_place__if_false ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
 
-  (:observe model_3_feature__if_true
+  (:observe model_feature
 	    :parameters 
 	    (?location - place ?model - feature)
 	    
@@ -340,89 +309,52 @@
 	    (explore_place ?location)
 	    
 	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (featured_at ?model ?location)
-		 (labelled ?r - place ?l - label)
+	    (and 
+		 (exists (?s - slot) (= (foregrounded_model ?s) ?model))
+		 
 		 )
    
 	    :effect 
 	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_true ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_3_feature__if_feature_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (not (featured_at ?model ?location))
-		 (labelled ?location ?l))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_feature_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_3_feature__if_label_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (featured_at ?model ?location)
-		 (not (labelled ?location ?l)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_label_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_3_feature__if_feature_and_label_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (not (featured_at ?model ?location))
-		 (not (labelled ?location ?l)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_feature_and_label_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
+	     
+	     (when (and (featured_at ?model ?location)
+			(labelled ?r - place ?l - label))
+	       (probabilistic 
+		(probability__observe_feature_model_at_place_with_label__if_true ?location ?model ?l) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
+	     
+	     (when (and (not (featured_at ?model ?location))
+			(labelled ?r - place ?l - label))
+	       (probabilistic 
+		(probability__observe_feature_model_at_place_with_label__if_feature_false ?location ?model ?l) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
+	     
+	     (when (and (featured_at ?model ?location)
+			(not (labelled ?r - place ?l - label)))
+	       (probabilistic 
+		(probability__observe_feature_model_at_place_with_label__if_label_false ?location ?model ?l) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
+	     
+	     
+	     (when (and (not (featured_at ?model ?location))
+			(not (labelled ?r - place ?l - label)))
+	       (probabilistic 
+		(probability__observe_feature_model_at_place_with_label__if_feature_and_label_false ?location ?model ?l) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
 	    )
 	    )
 
 
-  (:observe model_3_person__if_true
+
+  (:observe model_person
 	    :parameters 
 	    (?location - place ?model - person)
 	    
@@ -430,448 +362,27 @@
 	    (explore_place ?location)
 	    
 	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (person_at ?model ?location))
-   
-	    :effect 
 	    (and 
-	     (probabilistic 
-	      (probability__observe_person_model_at_place__if_true ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_3_person__if_false
-	    :parameters 
-	    (?location - place ?model - person)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_3) 
-		 (foregrounded_model_3 ?model)
-		 (not (person_at ?model ?location)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_person_model_at_place__if_false ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_2_widget__if_true
-	    :parameters 
-	    (?location - place ?model - widget)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (located_at ?model ?location))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_widget_model_at_place__if_true ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_2_widget__if_false
-	    :parameters 
-	    (?location - place ?model - widget)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (not (located_at ?model ?location)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_widget_model_at_place__if_false ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_2_feature__if_true
-	    :parameters 
-	    (?location - place ?model - feature)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (featured_at ?model ?location)
-		 (labelled ?r - place ?l - label)
+		 (exists (?s - slot) (= (foregrounded_model ?s) ?model))
 		 )
    
 	    :effect 
 	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_true ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
+	     (when (person_at ?model ?location)
+	       (probabilistic 
+		(probability__observe_person_model_at_place__if_true ?location ?model) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
+
+	     (when (not (person_at ?model ?location))
+	       (probabilistic 
+		(probability__observe_person_model_at_place__if_false ?location ?model) 
+		(observed_model_at_place ?location ?model)
+		)
+	       )
 	     )
 	    )
-	    )
 
-  (:observe model_2_feature__if_feature_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (not (featured_at ?model ?location))
-		 (labelled ?location ?l))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_feature_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_2_feature__if_label_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (featured_at ?model ?location)
-		 (not (labelled ?location ?l)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_label_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_2_feature__if_feature_and_label_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (not (featured_at ?model ?location))
-		 (not (labelled ?location ?l)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_feature_and_label_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-
-  (:observe model_2_person__if_true
-	    :parameters 
-	    (?location - place ?model - person)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (person_at ?model ?location))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_person_model_at_place__if_true ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_2_person__if_false
-	    :parameters 
-	    (?location - place ?model - person)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_2) 
-		 (foregrounded_model_2 ?model)
-		 (not (person_at ?model ?location)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_person_model_at_place__if_false ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-
-
-
-
-  (:observe model_1_widget__if_true
-	    :parameters 
-	    (?location - place ?model - widget)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (located_at ?model ?location))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_widget_model_at_place__if_true ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_1_widget__if_false
-	    :parameters 
-	    (?location - place ?model - widget)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (not (located_at ?model ?location)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_widget_model_at_place__if_false ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_1_feature__if_true
-	    :parameters 
-	    (?location - place ?model - feature)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (featured_at ?model ?location)
-		 (labelled ?r - place ?l - label)
-		 )
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_true ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_1_feature__if_feature_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (not (featured_at ?model ?location))
-		 (labelled ?location ?l))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_feature_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_1_feature__if_label_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (featured_at ?model ?location)
-		 (not (labelled ?location ?l)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_label_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_1_feature__if_feature_and_label_false
-	    :parameters 
-	    (?location - place ?model - feature ?l - label)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (not (featured_at ?model ?location))
-		 (not (labelled ?location ?l)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_feature_model_at_place_with_label__if_feature_and_label_false ?location ?model ?l) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-
-  (:observe model_1_person__if_true
-	    :parameters 
-	    (?location - place ?model - person)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (person_at ?model ?location))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_person_model_at_place__if_true ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-  (:observe model_1_person__if_false
-	    :parameters 
-	    (?location - place ?model - person)
-	    
-	    :execution
-	    (explore_place ?location)
-	    
-	    :precondition 
-	    (and (occupied_model_1) 
-		 (foregrounded_model_1 ?model)
-		 (not (person_at ?model ?location)))
-   
-	    :effect 
-	    (and 
-	     (probabilistic 
-	      (probability__observe_person_model_at_place__if_false ?location ?model) 
-	      (observed_model_at_place ?location ?model)
-	     )
-	    )
-	    )
-
-
-
-
-
-;;   ;; Dora-1.0 -- 2009 (:sensor categorize_place ...)  This is never
-;;   ;; used in the domain description from 2009. I'll assume it is key
-;;   ;; to the goal description or something.
-;;   (:observe the_label_of_a_place__if_true
-;; 	    :parameters 
-;; 	    (?loc - place ?l - label)
-	    
-;; 	    :execution
-;; 	    (explore_place ?loc)
-	    
-;; 	    :precondition 
-;; 	    (labelled ?loc ?l)
-   
-;; 	    :effect 
-;; 	    (and 
-;; 	     (probabilistic 
-;; 	      (probability__observe_label_at_place__if_true ?loc ?l) 
-;; 	      (and (observed_place_label ?loc ?l)))
-;; 	     )
-;; 	    )
-
-;;   (:observe the_label_of_a_place__if_false
-;; 	    :parameters 
-;; 	    (?loc - place ?l - label)
-	    
-;; 	    :execution
-;; 	    (explore_place ?loc)
-	    
-;; 	    :precondition 
-;; 	    (not (labelled ?loc ?l))
-   
-;; 	    :effect 
-;; 	    (and 
-;; 	     (probabilistic 
-;; 	      (probability__observe_label_at_place__if_false ?loc ?l) 
-;; 	      (and (observed_place_label ?loc ?l)))
-;; 	     )
-;; 	    )
-
-
-;;    (:observe reset_label_of_a_place__on_execution
-;; 	    :parameters 
-;; 	    (?loc - place ?l - label )
-	    
-;; 	    :execution
-;; 	    (not (explore_place ?loc))
-	    
-;; 	    :precondition 
-;; 	    ()
-   
-;; 	    :effect 
-;; 	    (and  (not (observed_place_label ?loc ?l)))
-;; 	    )
 
 )
