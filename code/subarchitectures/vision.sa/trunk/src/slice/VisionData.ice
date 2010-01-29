@@ -81,6 +81,7 @@ module VisionData {
   sequence<VisualObjectView> VisualObjectViewSeq;
 
   sequence<int> IntSeq;
+  sequence<bool> BoolSeq;
 
   struct Vertex {
     cogx::Math::Vector3 pos;
@@ -160,12 +161,15 @@ module VisionData {
     cogx::Math::Plane3 plane;
   };
 
-  /** Commands for Object Tracker
+  /** @brief 	Commands for Object Tracker
    *  @author Thomas Mörwald
    */
-  enum TrackingCommandType{ START, STOP, LOCK, UNLOCK, RELEASEMODELS };
+  enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS };
   class TrackingCommand {
     TrackingCommandType cmd;
+    string visualObjectID;			// for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
+    VertexSeq points;						// GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
+		BoolSeq pointOnModel;				// pointOnModel[i] is true if points[i] hits the VisualObject
   };
 
   /** 

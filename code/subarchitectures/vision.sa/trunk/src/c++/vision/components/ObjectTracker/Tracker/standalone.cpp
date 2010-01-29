@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	Timer timer;
 	IplImage* img = 0;
 	ModelLoader m_modelloader;
-	float fTimeIP, fTimeTrack, fTimeGrab;
+	float fTimeIP, fTimeTrack, fTimeGrab, fTimeTotal;
 	Pose p_result;
 	SDL_Event event;
 	int i;
@@ -70,9 +70,9 @@ int main(int argc, char *argv[])
 	Pose p;
 	Model model_1, model_2;
 	
-	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
-	p.t = vec3(0.2, 0.06, 0.06);
-	id_1 = m_tracker->addModel(model_1, p, true);
+// 	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
+// 	p.t = vec3(0.2, 0.06, 0.06);
+// 	id_1 = m_tracker->addModel(model_1, p, true);
 
 	std::vector<vec3> m_points;
 		
@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
 	printf("---------------------\n");
 	while( control(m_tracker, event) ){
 		// grab new image from camera
+		fTimeTotal = 0.0;
 		timer.Update();
 		img = g_Resources->GetNewImage();
 		fTimeGrab = timer.Update();
@@ -127,6 +128,8 @@ int main(int argc, char *argv[])
 		}
 
 		fTimeTrack = timer.Update();
+		fTimeTotal = fTimeGrab + fTimeIP + fTimeTrack;
+		m_tracker->setFrameTime(fTimeTotal);
 //  		prinf("grab: %.0f ip: %.0f track: %f\n",fTimeGrab*1000, fTimeIP*1000, fTimeTrack*1000);
 	}
 	

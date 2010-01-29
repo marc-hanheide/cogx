@@ -292,7 +292,7 @@ bool Tracker::getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3
 			glGetDoublev(GL_MODELVIEW_MATRIX, &modelview[0] );
 			glGetDoublev(GL_PROJECTION_MATRIX, &projection[0] );
 			glGetIntegerv(GL_VIEWPORT, &viewport[0] );
-			y_win = viewport[3] - y_win;
+			y_win = viewport[3] - y_win;	// flip y for OpenGL
 		
 			// Read value of depth buffer at position (x_win, y_win)
 			glReadPixels(x_win, y_win, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z3 );

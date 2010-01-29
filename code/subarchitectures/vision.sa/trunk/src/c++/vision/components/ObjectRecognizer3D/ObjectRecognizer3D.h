@@ -28,8 +28,6 @@
 #include "ObjectTrackerUtils.hpp"
 #include "Tracker.h"
 #include "ModelLoader.h"
-#include "tgEngine.h"
-#include "VirtualSceneUtils.hpp"
 
 namespace cast
 {
@@ -37,10 +35,10 @@ namespace cast
 class ObjectRecognizer3D : public VideoClient, public ManagedComponent
 {
 private:
-	P::Array<P::KeypointDescriptor*> keys;
-	P::DetectGPUSIFT sift;
-	P::ModelObject3D model;
-  P::ODetect3D detect;
+	P::Array<P::KeypointDescriptor*> image_keys;
+	P::Array<P::KeypointDescriptor*> temp_keys;
+	P::ModelObject3D	sift_model_learner;
+	P::Object3D				object;
   
   Video::Image m_image;
   int m_width;
@@ -50,19 +48,21 @@ private:
   std::string videoServerName;
   Video::VideoInterfacePrx videoServer;
   
-  TomGine::tgEngine m_engine;
-  TomGine::tgCamera m_camera;
-  float m_fTime;
-    
+  std::string m_modelID;
   std::string m_plyfile;
+  std::string m_siftfile;
   
   /** @brief list of objects we want to have detected */
   std::vector<std::string> labels;
   
-  /** @brief callback function called whenever a new object appears ore an object changes */
-  void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void loadModelToWM(std::string filename, std::string& modelID);
+  void startTracker();
+  void addTrackerModel(std::string& modelID);
+  void lockTrackerModel(std::string& modelID);
+  void unlockTrackerModel(std::string& modelID);
+  void get3DPointFromTrackerModel(std::string& modelID, VisionData::VertexSeq& vertexlist);
   
-  void initSzene(const Video::Image &image);
+  void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
 
 protected:
 

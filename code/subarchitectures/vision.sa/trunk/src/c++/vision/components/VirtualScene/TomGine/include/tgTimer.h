@@ -8,20 +8,15 @@
 
 #ifndef TG_TIMER
 #define TG_TIMER
-#pragma once
 
 #ifdef _WIN32
-
 	#include <windows.h>
 #else
 	#include <time.h>
-
 	#include <sys/time.h>
 #endif
 
 // ***********************************************************************************
-
-using namespace std;
 
 namespace TomGine{
 
@@ -42,7 +37,6 @@ private:
 	double m_fAppTime;			// Time since application started
 	double m_fTime;				// Time between two Update calls
 
-
 public:
 	tgTimer(void);
 	~tgTimer(void);
@@ -52,7 +46,6 @@ public:
 	
 	double	GetFrameTime(){ return m_fTime;}
 	double	GetApplicationTime(){ return m_fAppTime;}
-	
 };
 
 } // namespace TomGine

@@ -59,15 +59,11 @@ private:
   // Functions with GL commands allowed
   void initTracker(const Video::Image &image);
   void runTracker(const Video::Image &image);
-  void modifyTrackingEntry(TrackingEntryList::iterator it);
+  void modifyTrackingEntry(TrackingEntry* trackingEntry);
   
   // Do not use GL commands in this functions (different thread with no GL context)
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
   
-  void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
-  void changeVisualObject(const cdl::WorkingMemoryChange & _wmc);
-  void removeVisualObject(const cdl::WorkingMemoryChange & _wmc);
-
 protected:
   /**
    * called by the framework to configure our component

@@ -9,13 +9,8 @@
 #include <VisionData.hpp>
 #include "tgModel.h"
 
-using namespace cast;
-using namespace cogx;
-using namespace Math;
-
-
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
-bool convertPose2tgPose(Pose3& pose, TomGine::tgPose& tgpose){
+bool convertPose2tgPose(cogx::Math::Pose3& pose, TomGine::tgPose& tgpose){
 	TomGine::mat3 rot;
 	TomGine::vec3 pos;
 	

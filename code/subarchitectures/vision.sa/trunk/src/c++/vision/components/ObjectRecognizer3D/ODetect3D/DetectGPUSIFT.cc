@@ -58,17 +58,17 @@ void DetectGPUSIFT::Operate(IplImage *img, Array<KeypointDescriptor*> &keys)
 
   if (img->depth != IPL_DEPTH_8U && img->nChannels!=1)
     throw Except(__HERE__,"Wrong image type!");
-
+  
   if(sift->RunSIFT(img->width, img->height,(unsigned char *)img->imageData,GL_LUMINANCE))
   {
     KeypointDescriptor *k;
-
+    
     int num = sift->GetFeatureNum();
+    
     if (num>0)
     {
       Array<SiftGPU::SiftKeypoint> ks(num);
       Array<SIFTDescriptor> desc(num);
-
       sift->GetFeatureVector(&ks[0], (float*)&desc[0]);
 
       //copy sift

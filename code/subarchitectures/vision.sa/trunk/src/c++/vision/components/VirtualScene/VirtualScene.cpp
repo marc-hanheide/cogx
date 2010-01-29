@@ -5,6 +5,7 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "VirtualScene.h"
+#include "VirtualSceneUtils.hpp"
 
 
 /**

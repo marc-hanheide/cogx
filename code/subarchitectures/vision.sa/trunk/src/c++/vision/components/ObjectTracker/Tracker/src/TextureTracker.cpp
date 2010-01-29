@@ -299,7 +299,7 @@ bool TextureTracker::track(){
 				m_ip->render(m_tex_frame);
 			glDepthMask(1);
 		}
-
+		
 		// Apply particle filtering
 		if(!m_modellist[i]->lock){
 			particle_filtering(m_modellist[i]);
