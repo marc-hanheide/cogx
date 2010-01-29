@@ -6,6 +6,7 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/tm.calb"
-CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log
-CPP MG Recognizer3D ObjectRecognizer3D --plyfile "subarchitectures/vision.sa/config/test-tracker/red_box.ply" --log
-#CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 --log  #--debug 
+#CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfile "subarchitectures/vision.sa/config/test-tracker/red_box.ply" --log
+CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 --log  #--debug 
+
