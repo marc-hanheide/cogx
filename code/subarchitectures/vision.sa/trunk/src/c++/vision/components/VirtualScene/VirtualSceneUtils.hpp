@@ -12,12 +12,12 @@
 using namespace cast;
 using namespace cogx;
 using namespace Math;
-using namespace TomGine;
+
 
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
-bool convertPose2tgPose(Pose3& pose, tgPose& tgpose){
-	mat3 rot;
-	vec3 pos;
+bool convertPose2tgPose(Pose3& pose, TomGine::tgPose& tgpose){
+	TomGine::mat3 rot;
+	TomGine::vec3 pos;
 	
 	rot[0] = (float)pose.rot.m00; rot[1] = (float)pose.rot.m01; rot[2] = (float)pose.rot.m02;
 	rot[3] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[5] = (float)pose.rot.m12;
@@ -33,7 +33,7 @@ bool convertPose2tgPose(Pose3& pose, tgPose& tgpose){
 }
 
 // converts a VisionData::GeometryModel to a Scene Model
-bool convertGeometryModel(VisionData::GeometryModelPtr geom, tgModel& model){
+bool convertGeometryModel(VisionData::GeometryModelPtr geom, TomGine::tgModel& model){
 	unsigned int i;
 	
 	// Check if model structure is empty
@@ -43,7 +43,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, tgModel& model){
 	}
 
 	// Parse through vertices and store content in Model
-	tgModel::Vertex v;
+	TomGine::tgModel::Vertex v;
 	for(i=0; i<geom->vertices.size(); i++){
 		v.pos.x = geom->vertices[i].pos.x;
 		v.pos.y = geom->vertices[i].pos.y;
@@ -58,7 +58,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, tgModel& model){
 	}
 	
 	// Parse through faces and store content in Model
-	tgModel::Face f;
+	TomGine::tgModel::Face f;
 	for(i=0; i<geom->faces.size(); i++){	
 		f.vertices = geom->faces[i].vertices;
 		model.m_faces.push_back(f);
@@ -72,7 +72,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, tgModel& model){
 // Converts Video::CameraParameters from Video::Image of VideoServer to 
 // Extrinsic- and Intrinsic- Matrix of OpenGL
 // zNear and zFar describe the near and far z values of the clipping plane
-void loadCameraParameters(tgCamera* camera, Video::CameraParameters camPars, float zNear, float zFar){
+void loadCameraParameters(TomGine::tgCamera* camera, Video::CameraParameters camPars, float zNear, float zFar){
 	// intrinsic parameters
 	// transform the coordinate system of computer vision to OpenGL 
 	//   Vision: origin is in the up left corner, x-axis pointing right, y-axis pointing down
@@ -85,7 +85,7 @@ void loadCameraParameters(tgCamera* camera, Video::CameraParameters camPars, flo
   float z2 = 2*zFar*zNear/(zNear-zFar);								// look up for gluPerspective
   
   // intrinsic matrix
-  mat4 intrinsic;
+  TomGine::mat4 intrinsic;
   intrinsic[0]=fx;	intrinsic[4]=0;		intrinsic[8]=cx;	intrinsic[12]=0;
   intrinsic[1]=0;		intrinsic[5]=fy;	intrinsic[9]=cy;	intrinsic[13]=0;
   intrinsic[2]=0;		intrinsic[6]=0;		intrinsic[10]=z1;	intrinsic[14]=z2;  
@@ -93,7 +93,7 @@ void loadCameraParameters(tgCamera* camera, Video::CameraParameters camPars, flo
   
   // computer vision camera coordinates to OpenGL camera coordinates transform 
   // rotate 180° about x-axis
-  mat4 cv2gl;
+  TomGine::mat4 cv2gl;
   cv2gl[0]=1.0; cv2gl[4]=0.0; 	cv2gl[8]=0.0;   cv2gl[12]=0.0;  
 	cv2gl[1]=0.0; cv2gl[5]=-1.0;	cv2gl[9]=0.0;   cv2gl[13]=0.0;  
 	cv2gl[2]=0.0; cv2gl[6]=0.0; 	cv2gl[10]=-1.0; cv2gl[14]=0.0;  
@@ -104,13 +104,13 @@ void loadCameraParameters(tgCamera* camera, Video::CameraParameters camPars, flo
 	// p = R^T*(w - t) = (R^T, -R^T*t) * (w,1)
 	cogx::Math::Matrix33 R = camPars.pose.rot;
 	cogx::Math::Vector3 t = camPars.pose.pos;
-	mat4 extrinsic;
+	TomGine::mat4 extrinsic;
 	extrinsic[0]=R.m00;	extrinsic[4]=R.m01;	extrinsic[8]=R.m02;		extrinsic[12]=0.0;
 	extrinsic[1]=R.m10;	extrinsic[5]=R.m11;	extrinsic[9]=R.m12;		extrinsic[13]=0.0;	
 	extrinsic[2]=R.m20;	extrinsic[6]=R.m21;	extrinsic[10]=R.m22;	extrinsic[14]=0.0;	
 	extrinsic[3]=0.0;		extrinsic[7]=0.0;		extrinsic[11]=0.0;		extrinsic[15]=1.0;
 	extrinsic = extrinsic.transpose();											// R^T
-	vec4 tp = -(extrinsic * vec4(t.x, t.y, t.z, 1.0));			// -R^T*t
+	TomGine::vec4 tp = -(extrinsic * TomGine::vec4(t.x, t.y, t.z, 1.0));			// -R^T*t
 	extrinsic[12]=tp.x; extrinsic[13]=tp.y; extrinsic[14]=tp.z;
 	extrinsic = cv2gl * extrinsic;
 	
