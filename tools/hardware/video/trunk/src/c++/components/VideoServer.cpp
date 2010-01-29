@@ -173,8 +173,7 @@ void VideoServer::start()
 void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange &
     _wmc)
 {
-  lockComponent();
-	CameraParametersWrapperPtr newCam = getMemoryEntry<CameraParametersWrapper>(_wmc.address);
+  CameraParametersWrapperPtr newCam = getMemoryEntry<CameraParametersWrapper>(_wmc.address);
   // find the camera paramters that need updating and update pose and time stamp
   // Note that we don't change any other (instrinsic) parameters yet as we
   // assume these fixed. At a later stage (with zoom cameras) also the intrinsic
@@ -190,7 +189,6 @@ void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange &
       break;
     }
   }
-  unlockComponent();
 }
 
 void VideoServer::startReceiveImages(const std::string &receiverComponentId,

@@ -275,6 +275,8 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height,
     convertImageToIpl(frame, &tmp);
     cvResize(tmp, tmp_resized);
     convertImageFromIpl(tmp_resized, frame);
+    cvReleaseImage(&tmp_resized);
+    cvReleaseImage(&tmp);
   }
 
   frame.time = grabTimes[camIdx];
