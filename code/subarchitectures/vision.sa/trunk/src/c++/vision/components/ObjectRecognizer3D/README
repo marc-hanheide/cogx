@@ -1,0 +1,11 @@
+
+
+Install NVIDIA CG
+http://developer.nvidia.com/object/cg_download.html
+
+Dependencies:
+-------------
+
+VirtualScene	(@compiling)
+ObjectTracker (@runtime, for Learning)
+
