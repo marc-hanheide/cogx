@@ -187,7 +187,7 @@ void VirtualScene::initScene(const Video::Image &image){
   m_engine = new(tgEngine);
 	m_engine->Init(m_width, m_height, 1.0, "VirtualScene");
 	
-	loadCameraParameters(&m_camera, image.camPars, 0.1, 10.0);
+	loadCameraParameters(&m_camera, image.camPars, 0.1, 5.0);
 	m_engine->SetCamera(m_camera);
 
   log("... initialisation successfull!");
