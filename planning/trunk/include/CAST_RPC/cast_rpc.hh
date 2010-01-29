@@ -82,9 +82,9 @@
  *   are in CAST so that we want the above procedural semantics but
  *   have that:
  *   
- *   COMPONENT 1 (you): void foo(){ do_something();}
+ *   COMPONENT 1 (Angel): void foo(){ do_something();}
  *   
- *   COMPONENT 2 (you): void bar(){foo(); do_something_else(); }
+ *   COMPONENT 2 (Buffy): void bar(){foo(); do_something_else(); }
  *
  *   I.e., the call is made in C(omponent)2 and the implementation is
  *   in C1. Moreover, you might want arbitrary components to snoop
