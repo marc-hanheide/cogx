@@ -44,7 +44,7 @@
 
   (:types 
    place room label widget feature person  model_slot - object
-   model - (either widget feature person) ;; FYI either is an old PDDL
+   model - (either widget feature person) ;; FYI "either" is an old PDDL
 					  ;; keyword. I think it is
 					  ;; still in use, and I did
 					  ;; use it in DTPDDL
@@ -58,7 +58,7 @@
    ;; * Dynamic facts about the robot *
    (located ?p - place) ;; Dora-1.0 -- 2009 [agent free]
 
-   
+   (deletable ?s - model_slot)
 
 ;;    (observing_person ?p - person)
 ;;    (observing_widget ?w - widget)
@@ -66,15 +66,6 @@
 
    (absolute_belief__widget_location ?w - widget ?loc - place)
    
-   (foregrounded_model_1 ?m - model)
-   (occupied_model_1)
-
-   (foregrounded_model_2 ?m - model)
-   (occupied_model_2)
-
-   (foregrounded_model_3 ?m - model)
-   (occupied_model_3)
-
 
    (explored ?p - place) ;; Dora-1.0 -- 2009
 
@@ -123,11 +114,19 @@
    (foregrounded_model ?s - model_slot ) - model ;; Moritz suggested using an object valued fluent.
    
    ;; * Static facts about the world * 
-   (probability__observe_person_model_at_place__if_true ?loc - place ?m - model) - double
-   (probability__observe_widget_model_at_place__if_true ?loc - place ?m - model) - double
 
-   (probability__observe_person_model_at_place__if_false ?loc - place ?m - model) - double
-   (probability__observe_widget_model_at_place__if_false ?loc - place ?m - model) - double
+   
+   (probability__observe_widget_model_at_label__if_false ?l - label ?m - model) - double
+   (probability__observe_widget_model_at_label__if_true ?l - label ?m - model) - double
+
+   (probability__observe_person_model_at_place__if_true ?l - place ?m - model) - double
+   (probability__observe_person_model_at_place__if_false ?l - place ?m - model) - double
+
+;;    (probability__observe_person_model_at_place__if_true ?loc - place ?m - model) - double
+;;    (probability__observe_widget_model_at_place__if_true ?loc - place ?m - model) - double
+
+;;    (probability__observe_person_model_at_place__if_false ?loc - place ?m - model) - double
+;;    (probability__observe_widget_model_at_place__if_false ?loc - place ?m - model) - double
 
    (probability__observe_feature_model_at_place_with_label__if_true ?loc - place ?m - model ?l - label) - double
    (probability__observe_feature_model_at_place_with_label__if_feature_false ?loc - place ?m - model ?l - label) - double
@@ -233,9 +232,13 @@
 	   :effect (assign (foregrounded_model ?s) ?m)
 	   )
 
+  ;; Sometimes a model cannot be backgrounded. This could be the case
+  ;; if the model, were, for example a face detector -- i.e., is is
+  ;; cheap to run in real-time, and there is no need to stop running
+  ;; it.
  (:action background_model
 	   :parameters (?s - model_slot)
-	   :precondition (and (not (unforgroundable ?s)))
+	   :precondition (and (deletable ?s))
 	   :effect (assign (foregrounded_model ?s) no_model)
 	   )
 
@@ -272,7 +275,7 @@
 
   (:observe model_widget
 	    :parameters 
-	    (?location - place ?model - widget)
+	    (?location - place ?l - label ?model - widget)
 	    
 	    :execution
 	    (explore_place ?location)
@@ -280,20 +283,22 @@
 	    :precondition 
 	    (and 
 		 (exists (?s - slot) (= (foregrounded_model ?s) ?model))
+
+		 (labelled ?location ?l)
 		 )
    
 	    :effect 
 	    (and 
 	     (when (located_at ?model ?location) 
 	       (probabilistic 
-		(probability__observe_widget_model_at_place__if_true ?location ?model) 
+		(probability__observe_widget_model_at_label__if_true ?l ?model) 
 		(observed_model_at_place ?location ?model)
 		)
 	       )
 
 	     (when (not (located_at ?model ?location) )
 	       (probabilistic 
-		(probability__observe_widget_model_at_place__if_false ?location ?model) 
+		(probability__observe_widget_model_at_label__if_false ?l ?model) 
 		(observed_model_at_place ?location ?model)
 		)
 	       )
@@ -303,7 +308,7 @@
 
   (:observe model_feature
 	    :parameters 
-	    (?location - place ?model - feature)
+	    (?location - place ?l - label ?model - feature)
 	    
 	    :execution
 	    (explore_place ?location)
@@ -318,7 +323,7 @@
 	    (and 
 	     
 	     (when (and (featured_at ?model ?location)
-			(labelled ?r - place ?l - label))
+			(labelled ?location ?l))
 	       (probabilistic 
 		(probability__observe_feature_model_at_place_with_label__if_true ?location ?model ?l) 
 		(observed_model_at_place ?location ?model)
@@ -326,7 +331,7 @@
 	       )
 	     
 	     (when (and (not (featured_at ?model ?location))
-			(labelled ?r - place ?l - label))
+			(labelled ?location ?l))
 	       (probabilistic 
 		(probability__observe_feature_model_at_place_with_label__if_feature_false ?location ?model ?l) 
 		(observed_model_at_place ?location ?model)
@@ -334,7 +339,7 @@
 	       )
 	     
 	     (when (and (featured_at ?model ?location)
-			(not (labelled ?r - place ?l - label)))
+			(not (labelled ?location ?l)))
 	       (probabilistic 
 		(probability__observe_feature_model_at_place_with_label__if_label_false ?location ?model ?l) 
 		(observed_model_at_place ?location ?model)
@@ -343,7 +348,7 @@
 	     
 	     
 	     (when (and (not (featured_at ?model ?location))
-			(not (labelled ?r - place ?l - label)))
+			(not (labelled ?location ?l)))
 	       (probabilistic 
 		(probability__observe_feature_model_at_place_with_label__if_feature_and_label_false ?location ?model ?l) 
 		(observed_model_at_place ?location ?model)
