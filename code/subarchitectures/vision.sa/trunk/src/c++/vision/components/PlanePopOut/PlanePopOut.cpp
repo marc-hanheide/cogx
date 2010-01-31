@@ -62,6 +62,7 @@ VisionData::ObjSeq mObjSeq;
 VisionData::Vector3Seq mConvexHullPoints;
 Vector3 mCenterOfHull;
 double mConvexHullRadius;
+double mConvexHullDensity;
 
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 
@@ -376,6 +377,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   }
   println("use global points: %d", (int)useGlobalPoints);
   m_torleration = 0;
+  mConvexHullDensity = 0.0;
 }
 
 void PlanePopOut::start()
@@ -787,6 +789,7 @@ void PlanePopOut::AddConvexHullinWM()
 		CHPtr->time = getCASTTime();
 		CHPtr->center = mCenterOfHull;
 		CHPtr->radius = mConvexHullRadius;
+		CHPtr->density = mConvexHullDensity;
 		CHPtr->Objects = mObjSeq;
 		CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
 		addToWorkingMemory(newDataID(),CHPtr);
@@ -795,6 +798,7 @@ void PlanePopOut::AddConvexHullinWM()
 	mObjSeq.clear();
 	mCenterOfHull.x = mCenterOfHull.y = mCenterOfHull.z = 0.0;
 	mConvexHullRadius = 0.0;
+	mConvexHullDensity = 0.0;
 }
 void PlanePopOut::DrawOneCuboid(Vector3 Max, Vector3 Min)
 {
@@ -952,6 +956,11 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 	Matrix33 AffineM33 = GetAffineRotMatrix();
 	int j = 0;
 
+	CvMemStorage* storage = cvCreateMemStorage();
+	CvSeq* ptseq = cvCreateSeq( CV_SEQ_KIND_GENERIC|CV_32SC2, sizeof(CvContour),
+                                     sizeof(CvPoint), storage );
+
+
 	for(unsigned int i = 0; i<points.size(); i++)
 	{
 		Vector3 v3Obj = points.at(i).p;
@@ -962,6 +971,7 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 			Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
 			cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
 			points2D[j] = cvp;
+			cvSeqPush( ptseq, &cvp );
 			j++;
 			PlanePoints3D.push_back(v3Obj);
 		}
@@ -971,10 +981,15 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 	{
 		//cout<<"2d points number ="<<j-1<<endl;
 		int* hull = (int*)malloc( (j-1) * sizeof(hull[0]));
+		CvSeq* cvhull;
+
 
 		CvMat pointMat = cvMat( 1, j-1, CV_32SC2, points2D);
 		CvMat hullMat = cvMat( 1, j-1, CV_32SC1, hull);
 		cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
+		cvhull = cvConvexHull2( ptseq, 0, CV_CLOCKWISE, 1);
+
+		
 		//draw the hull
 		if (hullMat.cols != 0)
 		{
@@ -988,12 +1003,14 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 				mConvexHullPoints.push_back(v3OnPlane);
 				mCenterOfHull += v3OnPlane;
 			}
+			mConvexHullDensity = PlanePoints3D.size() / fabs(cvContourArea(cvhull));
 			mCenterOfHull /= hullMat.cols;
 			mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
 // 			glEnd();
 			free( hull );
 		}
 	}
+	cvClearMemStorage( storage );
 	free( points2D );
 }
 
