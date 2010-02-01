@@ -102,3 +102,24 @@ class CCastSlave(threading.Thread):
             LOGGER.error(traceback.format_exc(20))
 
 
+def discoverRemoteHosts(hosts, tcpPort):
+    """
+    Tries to connect to every host in the list.
+    Returns the list of discovered hosts.
+    """
+    working = []
+    for haddr in hosts:
+        try:
+            ic = Ice.initialize(sys.argv)
+            base = ic.stringToProxy("CastAgent:tcp -h %s -p %d" % (haddr, tcpPort))
+            remote = CastAgent.AgentPrx.checkedCast(base)
+            if not remote: raise RuntimeError("Invalid proxy")
+            remote.getProcessList()
+            ic.destroy()
+            working.append(haddr)
+        except:
+            try:
+                if ic != None: ic.destroy()
+            except: pass
+
+    return working
