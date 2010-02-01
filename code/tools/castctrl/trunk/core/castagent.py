@@ -19,7 +19,7 @@ class CAgentI(CastAgent.Agent):
         self.options = options
 
     def getProcessList(self, current=None):
-        LOGGER.log("Retireveing process list")
+        # LOGGER.log("Retireveing process list")
         plist = self.manager.proclist
         procs = [CastAgent.ProcessInfo(name=p.name, status=p.status, error=p.error) for p in plist]
         return procs
@@ -41,13 +41,13 @@ class CAgentI(CastAgent.Agent):
     #    return res
 
     def startProcess(self, processName, current=None):
-        LOGGER.log("Starting %s" % processName)
+        # LOGGER.log("Starting %s" % processName)
         p = self.manager.getProcess(processName)
         if p != None: p.start()
         return 1 if p != None else 0
 
     def stopProcess(self, processName, current=None):
-        LOGGER.log("Stopping %s" % processName)
+        # LOGGER.log("Stopping %s" % processName)
         p = self.manager.getProcess(processName)
         if p != None: p.stop()
         return 1 if p != None else 0
@@ -65,9 +65,9 @@ class CCastSlave(threading.Thread):
         self._ic = None
 
     def run(self): # Thread.run
-        LOGGER.log("Starting CCastSlave")
+        # LOGGER.log("Starting CCastSlave")
         if self._ic != None:
-            LOGGER.debug("... Error: communicator already created.")
+            LOGGER.warn("... Warning: communicator already created.")
             return -1
         status = 0
         try:
@@ -101,7 +101,4 @@ class CCastSlave(threading.Thread):
         except:
             LOGGER.error(traceback.format_exc(20))
 
-#app = Server(CMonitor(name="CAST Process Monitor"))
-#status = app.main(sys.argv)
-#sys.exit(status)
 
