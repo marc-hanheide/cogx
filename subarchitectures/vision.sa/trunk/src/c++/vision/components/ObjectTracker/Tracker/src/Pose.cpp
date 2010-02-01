@@ -19,7 +19,7 @@ void Pose::print(){
 
 void Pose::setPose(mat3 rot, vec3 pos){
 	q.fromMatrix(rot);
-	q.normalise();
+// 	q.normalise();
 		
 	t.x = pos.x;
 	t.y = pos.y;

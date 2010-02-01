@@ -385,11 +385,13 @@ void TextureTracker::drawResult(){
 				m_showmodel = 0;
 				break;			
 		}
-
+		m_lighting.Deactivate();
+		
+		m_modellist[i]->model.drawCoordinates();
 // 		m_modellist[i]->model.drawNormals();
 		m_modellist[i]->pose.deactivate();
 		
-		m_lighting.Deactivate();
+		
 	}
 	
 

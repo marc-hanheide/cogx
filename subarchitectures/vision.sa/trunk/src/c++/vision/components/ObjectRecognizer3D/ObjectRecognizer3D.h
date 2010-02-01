@@ -17,6 +17,7 @@
 #include "DetectGPUSIFT.hh"
 #include "ODetect3D.hh"
 #include "Object3D.hh"
+#include "SDraw.hh"
 #include "ModelObject3D.hh"
 #include "KeypointDescriptor.hh"
 #include "matrix.h"
@@ -25,6 +26,7 @@
 #include <VideoClient.h>
 #include <VisionData.hpp>
 
+#include "ObjectRecognizer3DUtils.hpp"
 #include "ObjectTrackerUtils.hpp"
 #include "Tracker.h"
 #include "ModelLoader.h"
@@ -52,10 +54,12 @@ private:
   std::string m_plyfile;
   std::string m_siftfile;
   
+  bool m_learnmode;
+  
   /** @brief list of objects we want to have detected */
   std::vector<std::string> labels;
   
-  void loadModelToWM(std::string filename, std::string& modelID);
+  void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose);
   void startTracker();
   void addTrackerModel(std::string& modelID);
   void lockTrackerModel(std::string& modelID);
@@ -63,6 +67,9 @@ private:
   void get3DPointFromTrackerModel(std::string& modelID, VisionData::VertexSeq& vertexlist);
   
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
+  
+  void learnSiftModel();
+  void recognizeSiftModel();
 
 protected:
 

@@ -161,7 +161,7 @@ public:
 	int  getModelModeFlag(){ return m_showmodel; }
 	
 	// set Flags
-	void setLockFlag(bool val){ m_lock=val; }
+	void setLockFlag(bool val);
 	void setEdgesImageFlag(bool val){ m_draw_edges = val; }
 	void setDrawParticlesFlag(bool val){ m_showparticles = val; }
 	void setModelModeFlag(int val){ m_showmodel = val; }

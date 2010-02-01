@@ -16,6 +16,8 @@ extern "C"
 
 using namespace Tracking;
 using namespace cast;
+using namespace cogx;
+using namespace Math;
 using namespace std;
 
 void ObjectRecognizer3D::configure(const map<string,string> & _config)
@@ -48,6 +50,12 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config)
 	}else{
 		throw runtime_error(exceptionMessage(__HERE__, "No sift file given"));
 	}
+	
+	if((it = _config.find("--learnmode")) != _config.end()){
+		m_learnmode = true;
+	}else{
+		m_learnmode = false;
+	}
   
 }
 
@@ -71,7 +79,7 @@ void ObjectRecognizer3D::receiveImages(const std::vector<Video::Image>& images)
     throw runtime_error(exceptionMessage(__HERE__, "image list is empty"));
 }
 
-void ObjectRecognizer3D::loadModelToWM(std::string filename, std::string& modelID){
+void ObjectRecognizer3D::loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose){
 	// ***********************************************************
 	// Load geometry
  	log("Loading ply model");
@@ -84,9 +92,10 @@ void ObjectRecognizer3D::loadModelToWM(std::string filename, std::string& modelI
 	convertModel2Geometry(model, obj->model);
 	obj->label = filename.c_str();
 	obj->detectionConfidence = 0.0;
-	Tracking::Pose tPose;	
-	tPose.translate(0.0,0.0,0.05);
-	convertParticle2Pose(tPose, obj->pose); 
+	obj->pose = pose;
+// 	Tracking::Pose tPose;	
+// 	tPose.translate(0.0,0.0,0.05);
+// 	convertParticle2Pose(tPose, obj->pose); 
 	 
   log("Add model to working memory: '%s'", obj->label.c_str());
   modelID = newDataID();
@@ -162,14 +171,13 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 // 						track_cmd->points[i].pos.z,
 // 						b);
 	}
+	
 	sift_model_learner.AddToModel(temp_keys,object);
 	log("Add new sifts to model: %d (%d)", temp_keys.Size(), object.codebook.Size());
 }
 
-
-void ObjectRecognizer3D::runComponent()
-{
-  
+void ObjectRecognizer3D::learnSiftModel(){
+	log("learning Sift Model using ObjectTracker component");
 	P::DetectGPUSIFT 	sift;
   P::ODetect3D			detect;
   IplImage *iplImage;
@@ -179,7 +187,7 @@ void ObjectRecognizer3D::runComponent()
 
   sleepProcess(1000);  // HACK
   
-  loadModelToWM(m_plyfile, m_modelID);
+  loadVisualModelToWM(m_plyfile, m_modelID, Pose3());
   addTrackerModel(m_modelID);
   startTracker();
   
@@ -222,8 +230,10 @@ void ObjectRecognizer3D::runComponent()
 		
 		get3DPointFromTrackerModel(m_modelID, vertexlist);
 
-		for (unsigned i=0; i<image_keys.Size(); i++){
-				image_keys[i]->Draw( iplImage,*image_keys[i],CV_RGB(0,0,255) );
+		sleepProcess(3000);
+		log("drawing temp_keys");
+		for (unsigned i=0; i<temp_keys.Size(); i++){
+				temp_keys[i]->Draw( iplImage,*temp_keys[i],CV_RGB(255,0,0) );
 		}
 		cvShowImage ( "ObjectRecognizer3D", iplImage );
   }while(((char)key!='s'));
@@ -231,10 +241,10 @@ void ObjectRecognizer3D::runComponent()
   
   // ***********************************************************************
   // Quit Learning
-  sleepProcess(1000);
+  sleepProcess(2000);
   
   // Save model_keys
-  log("Saving model to file");
+  log("Saving model to file '%s'", m_siftfile.c_str());
   sift_model_learner.SaveModel(m_siftfile.c_str(),object);
     
   cvReleaseImage(&iplImage);
@@ -245,8 +255,112 @@ void ObjectRecognizer3D::runComponent()
  
  	log("Destroying cv Window");
 	cvDestroyWindow("ObjectRecognizer3D");
-	    
+	
+	log("Sift Model learned");
+}
+
+void ObjectRecognizer3D::recognizeSiftModel(){
+	log("recognizing model pose by matching sift features");
+	P::DetectGPUSIFT 	sift;
+  P::ODetect3D			detect;
+  IplImage *iplImage;
+  IplImage *iplGray;
+
+  sleepProcess(1000);  // HACK
   
+	log("loading Sift Model");
+	sift_model_learner.LoadModel(m_siftfile.c_str(),object);
+	cout<<"Codebook size: "<<object.codebook.Size()<<endl;
+  
+  cvNamedWindow("ObjectRecognizer3D", 1 );
+  
+  videoServer->getImage(camId, m_image);
+  iplImage = convertImageToIpl(m_image);
+  iplGray = cvCreateImage ( cvGetSize ( iplImage ), 8, 1 );
+  cvConvertImage( iplImage, iplGray );
+  sleepProcess(1000);
+  
+  double fx, fy, cx, cy;
+  fx = m_image.camPars.fx;
+  fy = m_image.camPars.fy;
+  cx = m_image.camPars.cx;
+  cy = m_image.camPars.cy;
+  cout << fx << ' ' << fy << ' ' <<  cx << ' ' <<  cy << endl;
+  
+  Matrix C(3,3);
+  C(1,1) = fx; C(1,2) = 0;  C(1,3) = cx ;
+  C(2,1) = 0;  C(2,2) = fy; C(2,3) = cy;
+  C(3,1) = 0;  C(3,2) = 0;  C(3,3) = 1;
+
+	detect.SetCameraParameter(C);
+  
+ 	int key;
+ 	do{
+ 	  
+		do{
+				key = cvWaitKey ( 10 );
+		}while (((char)key)!=' ' && ((char)key!='q'));
+		
+		// Grab image from VideoServer
+ 		videoServer->getImage(camId, m_image);
+		iplImage = convertImageToIpl(m_image);
+		iplGray = cvCreateImage ( cvGetSize ( iplImage ), 8, 1 );
+		cvConvertImage( iplImage, iplGray );
+		
+		// Calculate SIFTs from image
+		sift.Operate(iplGray,image_keys);
+		
+		detect.SetDebugImage(iplImage);
+		if(detect.Detect(image_keys, &object))
+		{
+			P::SDraw::DrawPoly(iplImage, object.contour.v, CV_RGB(0,255,0), 2);
+		}
+		
+		// Transform pose from Camera to world coordinates
+		Pose3 P, A, B;
+		P = m_image.camPars.pose;
+		convertRecognizerPose2VisualObjectPose(object.pose, A);
+		Math::transform(P,A,B);
+		
+		log("loading Visual Object to WM");
+		startTracker();
+		
+  	loadVisualModelToWM(m_plyfile, m_modelID, B);
+		addTrackerModel(m_modelID);
+// 		lockTrackerModel(m_modelID);
+
+
+// 		for (unsigned i=0; i<image_keys.Size(); i++){
+// 				image_keys[i]->Draw( iplImage,*image_keys[i],CV_RGB(0,0,255) );
+// 		}
+		cvShowImage ( "ObjectRecognizer3D", iplImage );
+  }while(((char)key!='q'));
+  
+  
+  // ***********************************************************************
+  // Quit Learning
+  sleepProcess(1000);
+    
+  cvReleaseImage(&iplImage);
+	cvReleaseImage(&iplGray);
+	for (unsigned i=0; i<image_keys.Size(); i++)
+	  delete(image_keys[i]);
+	image_keys.Clear();
+ 
+ 	log("Destroying cv Window");
+	cvDestroyWindow("ObjectRecognizer3D");
+	
+}
+
+void ObjectRecognizer3D::runComponent(){
+  
+  if(m_learnmode){
+		learnSiftModel();
+		
+	}else{
+		recognizeSiftModel();
+	
+	}
 //   std::string compID = getComponentID();
 //   videoServer->startReceiveImages(compID.c_str(), camIds, 0, 0);
 //   sleepProcess(1000);

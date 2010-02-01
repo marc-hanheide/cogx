@@ -72,6 +72,7 @@ public:
 	void drawTexturedFaces();
 	void drawUntexturedFaces();
 	void drawPass();
+	void drawCoordinates();
 	
 	
 	std::vector<int> getFaceUpdateList(Pose* p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);

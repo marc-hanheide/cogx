@@ -377,13 +377,18 @@ bool ODetect3D::Detect(Array<KeypointDescriptor *> &keys, Object3D *object)
     MatchKeypoints(keys, object->codebook, matches);
 
   #ifdef DEBUG
+  cout<<"ODetect::Detect(): number of matches = "<<matches.Size()<<endl;
   if (dbg!=0)
     for (unsigned i=0; i<matches.Size(); i++)
       KeypointDescriptor::Draw(dbg,*matches[i]->k,CV_RGB(255,0,0));
   clock_gettime(CLOCK_REALTIME, &start2);
   #endif
+	
+	cout<<"KeypointDescriptor::Draw"<<endl;
 
   FitModelRANSAC(matches, object->pose);    // ransac pose
+  
+  cout<<"FitModelRANSAC"<<endl;
   
   #ifdef DEBUG
   clock_gettime(CLOCK_REALTIME, &end2);

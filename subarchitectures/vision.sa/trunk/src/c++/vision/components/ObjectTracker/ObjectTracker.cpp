@@ -68,6 +68,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 			trackingEntry->visualObjectID = track_cmd->visualObjectID;
 			trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
 			trackingEntry->cmd = TrackingEntry::ADD;
+			m_tracker->reset();
 			m_trackinglist.push_back(trackingEntry);
 			log("  Add model: ok");
 			break;
@@ -278,6 +279,7 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
 	
 	log("Modifying tracking entry: '%s'", trackingEntry->obj->label.c_str());
 	
+	// *** ADD ***
 	if(trackingEntry->cmd == TrackingEntry::ADD){
 		Tracking::Pose pose;
 		Tracking::Model model;
@@ -288,14 +290,22 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
 		trackingEntry->cmd = TrackingEntry::TRACK;
 		log("  TrackingEntry::ADD: '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
 		trackingEntry->cmd = TrackingEntry::TRACK;
+	
+	// *** REMOVE ***
+	}else if(trackingEntry->cmd == TrackingEntry::REMOVE){
+	
+	// *** LOCK ***
 	}else if(trackingEntry->cmd == TrackingEntry::LOCK){
 		m_tracker->setModelLock(trackingEntry->id, true);
 		trackingEntry->cmd = TrackingEntry::TRACK;
-		
+	
+	// *** UNLOCK ***
 	}else if(trackingEntry->cmd == TrackingEntry::UNLOCK){
 		m_tracker->setModelLock(trackingEntry->id, false);
 		trackingEntry->cmd = TrackingEntry::TRACK;
 		log("  TrackingEntry::UNLOCK");
+	
+	// *** GETPOINT3D ***
 	}else if(trackingEntry->cmd == TrackingEntry::GETPOINT3D){
 		bool b;
 		float x, y, z;
@@ -310,20 +320,9 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
 																		z);
 
 			trackingEntry->track_cmd->points[i].pos.x = x;
-
 			trackingEntry->track_cmd->points[i].pos.y = y;
 			trackingEntry->track_cmd->points[i].pos.z = z;
 			trackingEntry->track_cmd->pointOnModel[i] = b;
-
-// 			printf("Sift Point: %d, %f %f, %d %d, %f %f %f\n", 
-// 					b,
-// 					trackingEntry->track_cmd->points[i].texCoord.x, 
-// 					trackingEntry->track_cmd->points[i].texCoord.y,
-// 					(int)trackingEntry->track_cmd->points[i].texCoord.x, 
-// 					(int)trackingEntry->track_cmd->points[i].texCoord.y,
-// 					trackingEntry->track_cmd->points[i].pos.x,
-// 					trackingEntry->track_cmd->points[i].pos.y,
-// 					trackingEntry->track_cmd->points[i].pos.z);
 		}
 		overwriteWorkingMemory(trackingEntry->trackingCommandID, trackingEntry->track_cmd);
 		trackingEntry->cmd = TrackingEntry::TRACK;

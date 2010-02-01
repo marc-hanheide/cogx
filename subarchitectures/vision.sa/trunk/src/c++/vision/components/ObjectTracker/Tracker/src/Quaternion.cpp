@@ -132,16 +132,37 @@ void Quaternion::fromMatrix(mat4 m){
 	normalise();
 }
 
-// Convert from Matrix 3x3
-void Quaternion::fromMatrix(mat3 m){
-	w = sqrt(1.0 + m[0] + m[4] + m[8]) / 2.0;
-	float w4 = (4.0 * w);
-	x = (m[7] - m[5]) / w4 ;
-	y = (m[2] - m[6]) / w4 ;
-	z = (m[3] - m[1]) / w4 ;
-	
-	normalise();
+void Quaternion::fromMatrix(mat3 mat){
+	float tr = mat[0] + mat[4] + mat[8];
+
+	if (tr > 0) { 
+		float S = sqrt(tr+1.0) * 2; // S=4*qw 
+		w = 0.25 * S;
+		x = (mat[7] - mat[5]) / S;
+		y = (mat[2] - mat[6]) / S; 
+		z = (mat[3] - mat[1]) / S; 
+	} else if ((mat[0] > mat[4])&(mat[0] > mat[8])) { 
+		float S = sqrt(1.0 + mat[0] - mat[4] - mat[8]) * 2; // S=4*qx 
+		w = (mat[7] - mat[5]) / S;
+		x = 0.25 * S;
+		y = (mat[1] + mat[3]) / S; 
+		z = (mat[2] + mat[6]) / S; 
+	} else if (mat[4] > mat[8]) { 
+		float S = sqrt(1.0 + mat[4] - mat[0] - mat[8]) * 2; // S=4*qy
+		w = (mat[2] - mat[6]) / S;
+		x = (mat[1] + mat[3]) / S; 
+		y = 0.25 * S;
+		z = (mat[5] + mat[7]) / S; 
+	} else { 
+		float S = sqrt(1.0 + mat[8] - mat[0] - mat[4]) * 2; // S=4*qz
+		w = (mat[3] - mat[1]) / S;
+		x = (mat[2] + mat[6]) / S;
+		y = (mat[5] + mat[7]) / S;
+		z = 0.25 * S;
+	}
+
 }
+
 
 // Convert to Matrix 4x4
 mat4 Quaternion::getMatrix4(){
@@ -164,24 +185,34 @@ mat4 Quaternion::getMatrix4(){
 	return rot;
 }
 
-// Convert to Matrix 3x3
+// // Convert to Matrix 3x3
 mat3 Quaternion::getMatrix3(){
-	float x2 = x * x;
-	float y2 = y * y;
-	float z2 = z * z;
-	float xy = x * y;
-	float xz = x * z;
-	float yz = y * z;
-	float wx = w * x;
-	float wy = w * y;
-	float wz = w * z;
+	mat3 mat;
+	double sqw = w*w;
+	double sqx = x*x;
+	double sqy = y*y;
+	double sqz = z*z;
+
+	// invs (inverse square length) is only required if quaternion is not already normalised
+	double invs = 1 / (sqx + sqy + sqz + sqw);
+	mat[0] = ( sqx - sqy - sqz + sqw)*invs ; // since sqw + sqx + sqy + sqz =1/invs*invs
+	mat[4] = (-sqx + sqy - sqz + sqw)*invs ;
+	mat[8] = (-sqx - sqy + sqz + sqw)*invs ;
 	
-	mat3 rot;
-	rot[0]=1.0f - 2.0f * (y2 + z2);	rot[1]=2.0f * (xy - wz);		rot[2]=2.0f * (xz + wy);
-	rot[3]=2.0f * (xy + wz); 		rot[4]=1.0f - 2.0f * (x2 + z2);	rot[5]=2.0f * (yz - wx);
-	rot[6]=2.0f * (xz - wy);		rot[7]=2.0f * (yz + wx);		rot[8]=1.0f - 2.0f * (x2 + y2);
+	double tmp1 = x*y;
+	double tmp2 = z*w;
+	mat[3] = 2.0 * (tmp1 + tmp2)*invs ;
+	mat[1] = 2.0 * (tmp1 - tmp2)*invs ;
 	
-	return rot;
+	tmp1 = x*z;
+	tmp2 = y*w;
+	mat[6] = 2.0 * (tmp1 - tmp2)*invs ;
+	mat[2] = 2.0 * (tmp1 + tmp2)*invs ;
+	tmp1 = y*z;
+	tmp2 = x*w;
+	mat[7] = 2.0 * (tmp1 + tmp2)*invs ;
+	mat[5] = 2.0 * (tmp1 - tmp2)*invs ;
+	return mat;
 }
 
 

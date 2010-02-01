@@ -133,16 +133,45 @@ bool convertParticle2Pose(Tracking::Pose& trPose, Pose3& pose){
 bool convertPose2Particle(Pose3& pose, Tracking::Pose& trPose){
 	mat3 rot;
 	vec3 pos;
+	vec3 tmp_x = vec3(1.0,0.0,0.0);
+	vec3 tmp_y = vec3(0.0,1.0,0.0);
+	vec3 tmp_z = vec3(0.0,0.0,1.0);
+	mat3 tmp_m;
 	
 	rot[0] = (float)pose.rot.m00; rot[1] = (float)pose.rot.m01; rot[2] = (float)pose.rot.m02;
 	rot[3] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[5] = (float)pose.rot.m12;
 	rot[6] = (float)pose.rot.m20; rot[7] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
-	
+
+	rot[0] = 1.0; rot[1] = 0.0; rot[2] = 0.0;
+	rot[3] = 0.0; rot[4] = 0.0; rot[5] = 1.0;
+	rot[6] = 0.0; rot[7] = 1.0; rot[8] = 0.0;
+
 	pos.x = pose.pos.x;
 	pos.y = pose.pos.y;
 	pos.z = pose.pos.z;
-
+	
 	trPose.setPose(rot, pos);
+	
+	// tests
+	printf("%f %f %f\n", rot[0], rot[1], rot[2]);
+	printf("%f %f %f\n", rot[3], rot[4], rot[5]);
+	printf("%f %f %f\n", rot[6], rot[7], rot[8]);
+	printf("\n");
+// 	
+// 	tmp_x = rot*tmp_x;
+// 	tmp_y = rot*tmp_y;
+// 	tmp_z = rot*tmp_z;
+// 	
+// 	printf("x: %f %f %f\n", tmp_x.x, tmp_x.y, tmp_x.z);
+// 	printf("y: %f %f %f\n", tmp_y.x, tmp_y.y, tmp_y.z);
+// 	printf("z: %f %f %f\n", tmp_z.x, tmp_z.y, tmp_z.z);
+// 	printf("q: %f %f %f %f\n", trPose.q.x, trPose.q.y, trPose.q.z, trPose.q.w);
+// 	
+	trPose.getPose(rot,pos);
+	printf("%f %f %f\n", rot[0], rot[1], rot[2]);
+	printf("%f %f %f\n", rot[3], rot[4], rot[5]);
+	printf("%f %f %f\n", rot[6], rot[7], rot[8]);
+	
 	
 	return true;
 }
