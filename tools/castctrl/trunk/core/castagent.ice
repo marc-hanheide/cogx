@@ -12,6 +12,7 @@ module castcontrol{
       struct ProcessInfo {
          string name;
          int status;
+         int error;
       };
       sequence<ProcessInfo> ProcessList;
       interface Agent {
