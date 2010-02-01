@@ -238,18 +238,24 @@ class CCastControlWnd(QtGui.QMainWindow):
             # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
             procman.xrun_wait(cmd)
 
-    # Somehow we get 2 events for a button click ... filter one out
-    def on_btServerStart_clicked(self, valid=True):
-        if not valid: return
+    def startServers(self):
         if self.ui.ckCleanupScript.isChecked():
             self.runCleanupScript()
         srvs = self.getServers(self._manager)
         for p in srvs: p.start()
 
-    def on_btServerStop_clicked(self, valid=True):
-        if not valid: return
+    def stopServers(self):
         srvs = self.getServers(self._manager)
         for p in srvs: p.stop()
+
+    # Somehow we get 2 events for a button click ... filter one out
+    def on_btServerStart_clicked(self, valid=True):
+        if not valid: return
+        self.startServers()
+
+    def on_btServerStop_clicked(self, valid=True):
+        if not valid: return
+        self.stopServers()
 
     # build config file from rules in hostconfig
     def buildConfigFile(self):

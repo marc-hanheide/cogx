@@ -164,3 +164,19 @@ class CInternalLogger(object):
         if cmsg.msgtype == CMessage.ERROR or cmsg.msgtype == CMessage.WARNING:
             self.errors.append(cmsg)
         else: self.messages.append(cmsg)
+
+class CStdoutLogger(object):
+    def __init__(self):
+        pass
+
+    def log(self, msg):
+        print msg
+
+    def warn(self, msg):
+        print "!", msg
+
+    def error(self, msg):
+        print "!!!!!", msg
+
+    def addMessage(self, cmsg):
+        pass
