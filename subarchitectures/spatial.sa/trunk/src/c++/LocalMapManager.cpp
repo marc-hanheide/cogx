@@ -168,13 +168,24 @@ void LocalMapManager::configure(const map<string,string>& _config)
     str >> m_standingStillThreshold;
   }
 
+  int MapSize = 70;
+  double CellSize = 0.1;
+  it = _config.find("--planemap-size");
+  if (it != _config.end()) {
+    MapSize= (atoi(it->second.c_str()));
+  }
+  it = _config.find("--planemap-cellsize");
+  if (it != _config.end()) {
+    CellSize = (atof(it->second.c_str()));
+  }
+  
   PlaneData mpty;
-  m_planeMap = new PlaneMap(70, 0.1, mpty, PlaneMap::MAP1);
+  m_planeMap = new PlaneMap(MapSize, CellSize, mpty, PlaneMap::MAP1);
 
-  m_lgm1 = new CharMap(70, 0.1, '2', CharMap::MAP1);
+  m_lgm1 = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
   m_nodeGridMaps[0] = m_lgm1;
   m_Glrt1  = new CharGridLineRayTracer(*m_lgm1);
-  m_lgm2 = new CharMap(70, 0.1, '2', CharMap::MAP1);
+  m_lgm2 = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
   m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
 
   if (_config.find("--no-tentative-window") == _config.end()) {
@@ -194,18 +205,18 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }
 
   if (m_isUsingSeparateGridMaps) {
-    m_lgm1_alt = new CharMap(70, 0.1, '2', CharMap::MAP1);
+    m_lgm1_alt = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
     m_nodeGridMapsAlt[0] = m_lgm1_alt;
     m_Glrt1_alt  = new CharGridLineRayTracer(*m_lgm1_alt);
-    m_lgm2_alt = new CharMap(70, 0.1, '2', CharMap::MAP1);
+    m_lgm2_alt = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
     m_Glrt2_alt  = new CharGridLineRayTracer(*m_lgm2_alt);
   }
 
   if (!m_bNoPlanes) {
     // Create plane objects
-    m_planeObjectFinders.push_back(createTableFinder());
+    m_planeObjectFinders.push_back(createTableFinder(CellSize));
     for (unsigned int i = 0; i < m_maxNumberOfClusters; i++) {
-      m_planeObstacleMaps.push_back(new CharMap(70, 0.1, 0, CharMap::MAP1));
+      m_planeObstacleMaps.push_back(new CharMap(MapSize, CellSize, 0, CharMap::MAP1));
     }
     m_planeHeights.reserve(m_maxNumberOfClusters);
   }
@@ -839,7 +850,13 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     oobj->PointsSeq[i].y = to.X[1];
     oobj->PointsSeq[i].z = to.X[2];
     log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
-    double horizDistSq = (to.X[0] - lastRobotPose->x)*(to.X[0] - lastRobotPose->x) + (to.X[1] - lastRobotPose->y)*(to.X[1] - lastRobotPose->y);
+    double horizDistSq;
+    if (lastRobotPose != 0) {
+      horizDistSq = (to.X[0] - lastRobotPose->x)*(to.X[0] - lastRobotPose->x) + (to.X[1] - lastRobotPose->y)*(to.X[1] - lastRobotPose->y);
+    }
+    else {
+      horizDistSq = to.X[0]*to.X[0] + to.X[1]*to.X[1];
+    }
     if (horizDistSq > 1.5*1.5) {
       log("Clipping polygon vertex at distance %f", sqrt(horizDistSq));
       oobj->PointsSeq.erase(oobj->PointsSeq.begin()+i);
@@ -908,7 +925,7 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
       for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
 	for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
 	  if ((*m_planeObstacleMaps[i])(x,y) == 255){
-	    log("Table Point: x: %f, y: %f",wX, wY);
+	    //log("Table Point: x: %f, y: %f",wX, wY);
 	    m_planeObstacleMaps[i]->index2WorldCoords(x, y, wX, wY);
 	    point.x = wX;
 	    point.y = wY;
@@ -996,6 +1013,7 @@ Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
     ptz::PTZReading reading = m_ptzInterface->getPose();
 
     double angles[] = {reading.pose.pan, -reading.pose.tilt, 0.0};
+//    double angles[] = {0.0, M_PI/4, 0.0};
     cameraRotation.setAngles(angles);
   }
 //
