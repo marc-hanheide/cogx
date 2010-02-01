@@ -167,6 +167,63 @@ void TrackerModel::drawFace(int i){
 	}
 }
 
+void TrackerModel::drawCoordinates(){
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	
+	float l1 = 0.06;
+	float l2 = 0.02;
+	float b1 = 0.001;
+	float b2 = 0.003;
+	
+	// X - Axis
+	glPushMatrix();
+		glColor3f(1.0,0.0,0.0);
+		//glRotatef(m_timer.GetApplicationTime() * PI * 100, 1.0,0.0,0.0);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f(l1,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1-b2);
+			glVertex3f(l1+l2,	0.0,	0.0);
+			glVertex3f(l1,		0.0,	 b1+b2);
+		glEnd();
+	glPopMatrix();
+		
+	// Y - Axis
+	glPushMatrix();
+		glColor3f(0.0,1.0,0.0);
+		glRotatef(90, 0.0, 0.0, 1.0);
+		//glRotatef(m_timer.GetApplicationTime() * PI * 100, 1.0,0.0,0.0);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f(l1,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1-b2);
+			glVertex3f(l1+l2,	0.0,	0.0);
+			glVertex3f(l1,		0.0,	 b1+b2);
+		glEnd();
+	glPopMatrix();
+	
+	// Z - Axis
+	glPushMatrix();
+		glColor3f(0.0,0.0,1.0);
+		glRotatef(-90, 0.0, 1.0, 0.0);
+		//glRotatef(m_timer.GetApplicationTime() * PI * 100, 1.0,0.0,0.0);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f(l1,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1-b2);
+			glVertex3f(l1+l2,	0.0,	0.0);
+			glVertex3f(l1,		0.0,	 b1+b2);
+		glEnd();
+	glPopMatrix();
+}
+
 // counts pixels of each face
 // if pixels of face are > than in any previouse view
 //   set update flag = true

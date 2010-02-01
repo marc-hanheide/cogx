@@ -337,6 +337,15 @@ void Tracker::setModelLock(int id, bool lock){
 	}
 }
 
+void Tracker::setLockFlag(bool val){
+	ModelEntryList::iterator it = m_modellist.begin();
+	while(it != m_modellist.end()){
+		(*it)->lock = val;
+		it++;
+	}
+	m_lock = val;
+}
+
 // render coordinate frame
 void Tracker::drawCoordinates(){
 	glDisable(GL_DEPTH_TEST);

@@ -18,7 +18,8 @@ CodebookEntry::CodebookEntry()
    good(true),
    bad(true),
    cntGood(0),
-   cntTime(0)
+   cntTime(0),
+   reliability(0.)
 {
 }
 
@@ -27,7 +28,8 @@ CodebookEntry::CodebookEntry(KeypointDescriptor *k)
    good(true),
    bad(true),
    cntGood(0),
-   cntTime(0)
+   cntTime(0),
+   reliability(0.)
 {
   model = new KeypointDescriptor(k);
   occurrences.PushBack(new KeypointDescriptor(k));
