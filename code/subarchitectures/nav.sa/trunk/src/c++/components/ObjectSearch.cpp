@@ -100,7 +100,8 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
   m_lastCmdAddr = objID.address;
   
   if (oobj->getData()->cmd == SpatialData::PLAN){    
-    log("triggering AVS");
+    log("will plan.");
+
     placestosearch = oobj->getData()->placestosearch;
     m_command = PLAN;
   }
@@ -664,6 +665,11 @@ void ObjectSearch::GenViewPoints() {
 
   while (i < m_samplesize) {
     
+
+//    for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/3) {
+//        angles.push_back(rad);
+//    }
+
     //      log("processing sample %i/%i", i+1, m_samplesize);
     
     randx = rand();
@@ -710,7 +716,6 @@ rE += combined_lgm.size;
 	      i++;
 	    }
 	    /*if reachable*/
-
 	  }
 	}
 	    

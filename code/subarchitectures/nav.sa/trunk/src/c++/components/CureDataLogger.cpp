@@ -43,19 +43,20 @@ CureDataLogger::CureDataLogger()
 
   Cure::Timestamp ct;
   ct.setToCurrentTime();
+
   char buf[32];
   sprintf(buf, "%ld", ct.Seconds);
   m_FilenameTime = buf;
 }
 
-CureDataLogger::~CureDataLogger() 
+CureDataLogger::~CureDataLogger()
 {
 }
 
-void 
+void
 CureDataLogger::configure(const std::map<std::string, std::string> &config)
 {
-  
+
 }
 
 void CureDataLogger::start()
@@ -63,11 +64,11 @@ void CureDataLogger::start()
   // Hook up changes to the robot pose to a callback function
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
                   new MemberFunctionChangeReceiver<CureDataLogger>(this,
-                                        &CureDataLogger::newRobotPose));  
+                                        &CureDataLogger::newRobotPose));
 
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<CureDataLogger>(this,
-                                        &CureDataLogger::newRobotPose));  
+                                        &CureDataLogger::newRobotPose));
 }
 
 void CureDataLogger::runComponent()
@@ -76,17 +77,17 @@ void CureDataLogger::runComponent()
   setupPushOdometry(*this);
 }
 
-void CureDataLogger::newRobotPose(const cast::cdl::WorkingMemoryChange &objID) 
+void CureDataLogger::newRobotPose(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("newRobotPose called"); 
-  
+  debug("newRobotPose called");
+
   boost::shared_ptr<cast::CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
-  
+
   double x = oobj->getData()->x;
   double y = oobj->getData()->y;
   double a = oobj->getData()->theta;
-  
+
   Cure::Pose3D cp;
   cp.setTime(Cure::Timestamp(oobj->getData()->time.s,
                              oobj->getData()->time.us));
@@ -106,19 +107,19 @@ void CureDataLogger::newRobotPose(const cast::cdl::WorkingMemoryChange &objID)
       log("Opened world pose file to write to \"%s\"", filename.c_str());
     }
   }
-  
+
   if (m_World) {
     m_World->write(cp);
     std::flush(m_World->WriteFile);
   }
 }
-  
-void 
+
+void
 CureDataLogger::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
-  
+
   if (m_Odom == 0) {
     m_Odom = new Cure::FileAddress;
     std::string filename = "odom-" + m_FilenameTime + ".tdf";
@@ -129,7 +130,7 @@ CureDataLogger::receiveOdometry(const Robotbase::Odometry &castOdom)
       log("Opened odom file to write to \"%s\"", filename.c_str());
     }
   }
-  
+
   if (m_Odom) {
     m_Odom->write(cureOdom);
     std::flush(m_Odom->WriteFile);
@@ -137,7 +138,7 @@ CureDataLogger::receiveOdometry(const Robotbase::Odometry &castOdom)
 }
 
 
-void 
+void
 CureDataLogger::receiveScan2d(const Laser::Scan2d &castScan)
 {
   Cure::LaserScan2d cureScan;
@@ -157,6 +158,6 @@ CureDataLogger::receiveScan2d(const Laser::Scan2d &castScan)
   if (m_Scan) {
     m_Scan->write(cureScan);
     std::flush(m_Scan->WriteFile);
-  }  
+  }
 }
 

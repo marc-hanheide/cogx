@@ -80,6 +80,8 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowNodeClass = (_config.find("--no-nodeclass") == _config.end());
   m_ShowAreaClass = (_config.find("--no-areaclass") == _config.end());
   m_ShowRobotViewCone = (_config.find("--no-robotviewcone") == _config.end());
+  m_ShowPlanePoints = (_config.find("--no-plane-points") == _config.end());
+  m_ShowSOIs = (_config.find("--no-sois") == _config.end());
   m_ShowPeopleId = (_config.find("--people-id") != _config.end());
   m_NonUniqueObjects = (_config.find("--non-unique") != _config.end());
   m_ReadPTU = (_config.find("--read-ptu") != _config.end());
@@ -253,21 +255,25 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newVPlist));
 
-  addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::ADD),
-      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-	&DisplayNavInPB::newPointCloud));
+  if (m_ShowSOIs) {
+    addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::ADD),
+	new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	  &DisplayNavInPB::newPointCloud));
 
-  addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-	&DisplayNavInPB::newPointCloud));
+    addChangeFilter(createGlobalTypeFilter<VisionData::SOI>(cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	  &DisplayNavInPB::newPointCloud));
+  }
 
-  addChangeFilter(createLocalTypeFilter<SpatialData::PlanePoints>(cdl::ADD),
-      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-	&DisplayNavInPB::newPlanePointCloud));
+  if (m_ShowPlanePoints) {
+    addChangeFilter(createLocalTypeFilter<SpatialData::PlanePoints>(cdl::ADD),
+	new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	  &DisplayNavInPB::newPlanePointCloud));
 
-  addChangeFilter(createLocalTypeFilter<SpatialData::PlanePoints>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-	&DisplayNavInPB::newPlanePointCloud));
+    addChangeFilter(createLocalTypeFilter<SpatialData::PlanePoints>(cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+	  &DisplayNavInPB::newPlanePointCloud));
+  }
 
   log("start done");  
 }
@@ -277,38 +283,42 @@ void DisplayNavInPB::start() {
 void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID) {
   log("new PlanePointCloud received.");
 
-  SpatialData::PlanePointsPtr objData = getMemoryEntry<SpatialData::PlanePoints>(objID.address);
-  
+  try {
 
-  double color[3] = { 0.9, 0, 0};
-  
-  numeric::ublas::matrix<double> m (3, 3);
-  m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
-  m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
-  m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
-  
+    SpatialData::PlanePointsPtr objData = getMemoryEntry<SpatialData::PlanePoints>(objID.address);
 
- peekabot::GroupProxy root;
- root.assign(m_PeekabotClient, "root");
- peekabot::PointCloudProxy pcloud;
-  pcloud.add(root,"planepoints", peekabot::REPLACE_ON_CONFLICT);
-  
-  numeric::ublas::vector<double> v (3);
-  numeric::ublas::vector<double> t (3);
-  //add plane points
-  log("points size: %d",objData->points.size());
-  for (unsigned int i =0; i < objData->points.size(); i++){
-    v(0) = objData->points.at(i).x;
-    v(1) = objData->points.at(i).y;
-    v(2) = objData->points.at(i).z;
-    //   t = prod(v,m);
-    pcloud.add_vertex(v(0),v(1),v(2));
- 
+
+    double color[3] = { 0.9, 0, 0};
+
+    numeric::ublas::matrix<double> m (3, 3);
+    m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
+    m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
+    m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
+
+
+    peekabot::GroupProxy root;
+    root.assign(m_PeekabotClient, "root");
+    peekabot::PointCloudProxy pcloud;
+    pcloud.add(root,"planepoints", peekabot::REPLACE_ON_CONFLICT);
+
+    numeric::ublas::vector<double> v (3);
+    numeric::ublas::vector<double> t (3);
+    //add plane points
+    log("points size: %d",objData->points.size());
+    for (unsigned int i =0; i < objData->points.size(); i++){
+      v(0) = objData->points.at(i).x;
+      v(1) = objData->points.at(i).y;
+      v(2) = objData->points.at(i).z;
+      //   t = prod(v,m);
+      pcloud.add_vertex(v(0),v(1),v(2));
+
+    }
+    pcloud.set_color(color[0],color[1],color[2]);
   }
-  pcloud.set_color(color[0],color[1],color[2]);
- 
-  
-  
+  catch (DoesNotExistOnWMException) {
+    log("Error! plane point cloud disappeared from WM.");
+  }
+
 }
 
 
@@ -457,49 +467,54 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
   log("Got new SOI points.");
   double color[3] = { 0.9, 0, 0};
 
-  VisionData::SOIPtr objData = getMemoryEntry<VisionData::SOI>(objID.address);
+  try {
+    VisionData::SOIPtr objData = getMemoryEntry<VisionData::SOI>(objID.address);
 
-  Cure::Transformation3D cam2WorldTrans =
-    getCameraToWorldTransform();
-  double tmp[6];
-  cam2WorldTrans.getCoordinates(tmp);
-  log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-      tmp[4], tmp[5]);
+    Cure::Transformation3D cam2WorldTrans =
+      getCameraToWorldTransform();
+    double tmp[6];
+    cam2WorldTrans.getCoordinates(tmp);
+    log("total transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+	tmp[4], tmp[5]);
 
-  //Convert hull to world coords
-  for (unsigned int i = 0; i < objData->points.size(); i++) {
-    Cure::Vector3D from(objData->points[i].p.x, objData->points[i].p.y, objData->points[i].p.z);
-    Cure::Vector3D to;
-    cam2WorldTrans.invTransform(from, to);
-//    log("vertex at %f, %f, %f", objData->points[i].p.x, objData->points[i].p.y, objData->points[i].p.z);
-    objData->points[i].p.x = to.X[0];
-    objData->points[i].p.y = to.X[1];
-    objData->points[i].p.z = to.X[2];
-//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+    //Convert hull to world coords
+    for (unsigned int i = 0; i < objData->points.size(); i++) {
+      Cure::Vector3D from(objData->points[i].p.x, objData->points[i].p.y, objData->points[i].p.z);
+      Cure::Vector3D to;
+      cam2WorldTrans.invTransform(from, to);
+      //    log("vertex at %f, %f, %f", objData->points[i].p.x, objData->points[i].p.y, objData->points[i].p.z);
+      objData->points[i].p.x = to.X[0];
+      objData->points[i].p.y = to.X[1];
+      objData->points[i].p.z = to.X[2];
+      //    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+    }
+
+    //  numeric::ublas::matrix<double> m (3, 3);
+    //  m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
+    //  m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
+    //  m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
+    peekabot::PointCloudProxy pcloud;
+    peekabot::GroupProxy root;
+    root.assign(m_PeekabotClient, "root");
+    pcloud.add(root,"planepopout", peekabot::REPLACE_ON_CONFLICT);
+
+
+
+    numeric::ublas::vector<double> v (3);
+    //add plane points
+    for (unsigned int i =0; i < objData->points.size(); i++){
+
+      v(0) = objData->points.at(i).p.x;
+      v(1) = objData->points.at(i).p.y;
+      v(2) = objData->points.at(i).p.z;
+      pcloud.add_vertex(v(0),v(1),v(2));
+
+    }
+    pcloud.set_color(color[0],color[1],color[2]);
   }
-  
-//  numeric::ublas::matrix<double> m (3, 3);
-//  m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
-//  m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
-//  m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
-  peekabot::PointCloudProxy pcloud;
-  peekabot::GroupProxy root;
-  root.assign(m_PeekabotClient, "root");
-  pcloud.add(root,"planepopout", peekabot::REPLACE_ON_CONFLICT);
-  
- 
-  
-  numeric::ublas::vector<double> v (3);
-  //add plane points
-  for (unsigned int i =0; i < objData->points.size(); i++){
-    
-    v(0) = objData->points.at(i).p.x;
-    v(1) = objData->points.at(i).p.y;
-    v(2) = objData->points.at(i).p.z;
-    pcloud.add_vertex(v(0),v(1),v(2));
-    
+  catch (DoesNotExistOnWMException) {
+    log("Error! SOI WM entry went missing!");
   }
-  pcloud.set_color(color[0],color[1],color[2]);
   
 }
 void DisplayNavInPB::runComponent() {
@@ -1488,6 +1503,7 @@ Cure::Transformation3D DisplayNavInPB::getCameraToWorldTransform()
     ptz::PTZReading reading = m_PTUServer->getPose();
 
     double angles[] = {reading.pose.pan, -reading.pose.tilt, 0.0};
+//    double angles[] = {0.0, M_PI/4, 0.0};
     cameraRotation.setAngles(angles);
   }
 //

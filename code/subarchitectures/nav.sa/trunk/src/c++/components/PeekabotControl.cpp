@@ -39,7 +39,7 @@ PeekabotControl::PeekabotControl() {
 PeekabotControl::~PeekabotControl() {}
 
 void PeekabotControl::configure(const map<string,string>& config) {
-    println("configure entered");
+    log("configure entered");
 
     m_RetryDelay = 10;
     if(config.find("--retry-interval") != config.end()) {
@@ -91,23 +91,23 @@ void PeekabotControl::configure(const map<string,string>& config) {
 
     connectPeekabot();
 
-    println("configure done");
+    log("configure done");
 }
 
 void PeekabotControl::start() {
-    println("start entered");
+    log("start entered");
 }
 
 void PeekabotControl::runComponent() {
 
-    println("runComponent");
+    log("runComponent");
 
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)) {
         sleep(m_RetryDelay);
         connectPeekabot();
     }
 
-    println("Connected to peekabot, ready to go");
+    log("Connected to peekabot, ready to go");
     bool sentplancommand = false;
     double radius = 0.75;
     double xNoA = 10, yNoA = 10;
@@ -307,7 +307,7 @@ void PeekabotControl::runComponent() {
                                 oo->time = getCASTTime();
                                 std::string id = "objobs-" + newDataID();
                                 addToWorkingMemory<NavData::ObjObs>(id, oo);
-                                println("Added object obs of objct \"%s\", task id:%s",
+                                log("Added object obs of objct \"%s\", task id:%s",
                                         oo->category.c_str(), id.c_str());
 
                                 // Second object with some values set
@@ -332,7 +332,7 @@ void PeekabotControl::runComponent() {
 
                                 id = "objobs-" + newDataID();
                                 addToWorkingMemory<NavData::ObjObs>(id, oo);
-                                println("Added object obs of objct \"%s\", task id:%s",
+                                log("Added object obs of objct \"%s\", task id:%s",
                                         oo->category.c_str(), id.c_str());
                             } else {
 

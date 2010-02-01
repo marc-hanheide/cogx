@@ -130,6 +130,8 @@ private:
   bool m_ShowNodeClass;
   bool m_ShowAreaClass;
   bool m_ShowRobotViewCone;
+  bool m_ShowPlanePoints;
+  bool m_ShowSOIs;
   bool m_NonUniqueObjects;
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
