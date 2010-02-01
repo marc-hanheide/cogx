@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+import os, sys, time
+import shutil
+import optparse
+from string import Template
+
+from core import castagent, procman, options, messages
+LOGGER = messages.CStdoutLogger()
+procman.LOGGER = LOGGER
+castagent.LOGGER = LOGGER
+
+import threading
+import Ice
+import core.modice
+import icemodule.castcontrol.CastAgent as CastAgent
+
+#TODO: message queue for processes, redirect to stdout
+
+class CConsoleAgent:
+    def __init__(self, port=7832):
+        self.manager = procman.CProcessManager("localhost")
+        self.manager.addProcess(procman.CProcess("Test 1", "python _wait.py A"))
+        self.manager.addProcess(procman.CProcess("Test 2", "python _wait.py B"))
+        self.manager.addProcess(procman.CProcess("Test 3", "python _wait.py C"))
+        self.options = options.CCastOptions()
+        self.address = "tcp -p %d" % port
+        self.agent = None
+        pass
+
+    def _shutdown(self, agent):
+        count = 10
+        agent.shutdown()
+        while agent.isAlive():
+            LOGGER.log("... waiting for shutdown")
+            time.sleep(1.0)
+            count -= 1
+            if count <= 0: break
+        if agent.isAlive():
+            LOGGER.warn("Server didn't shut down")
+        else:
+            LOGGER.log("Server stopped.")
+
+    def startServing(self):
+        if self.agent != None: self.stopServing()
+        self.agent = castagent.CCastSlave(self.manager, self.options, self.address)
+        self.agent.start()
+        time.sleep(0.2)
+
+    def stopServing(self):
+        if self.agent != None: self._shutdown(self.agent)
+        self.agent = None
+        self.manager.stopReaderThread()
+
+def parseOptions():
+    usage = "Usage: %prog [options] args"
+    parser = optparse.OptionParser(usage)
+
+    parser.add_option("-v", "--verbose", action="store", type="int", dest="verbose")
+    parser.add_option("-q", "--quiet", action="store_const", const=0, dest="verbose")
+    parser.add_option("-p", "--port", action="store", type="int", default=7832, dest="port")
+
+    (options, args) = parser.parse_args()
+    # if options.verbose > 3: print "Options parsed"
+    # if len(args) != 1: parser.error("incorrect number of arguments")
+    return (options, args)
+
+def main():
+    options, args = parseOptions()
+    print options, args
+    agent = CConsoleAgent(port = options.port)
+    agent.startServing()
+    try:
+        print "Press Ctrl-C to stop serving."
+        while True: time.sleep(1.0)
+    except KeyboardInterrupt:
+        print "\nInterrupted\n"
+        agent.stopServing()
+
+if __name__ == "__main__": main()
