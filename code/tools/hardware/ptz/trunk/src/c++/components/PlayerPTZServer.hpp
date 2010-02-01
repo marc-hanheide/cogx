@@ -27,7 +27,7 @@ namespace ptz {
     /**
      * Get the current ptz pose.
      */  
-    virtual PTZReading getPose() const;
+    virtual PTZReading getPose();
     
     /**
      * Set the desired ptz pose.

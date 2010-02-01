@@ -83,9 +83,10 @@ namespace ptz {
 
 
   PTZReading 
-  PlayerPTZServer::getPose() const {
+  PlayerPTZServer::getPose() {
     assert(m_ptzProxy);
 
+    lockComponent();
     playerc_client_read(m_playerClient.get());
     
     PTZReading reading;    
@@ -93,6 +94,7 @@ namespace ptz {
     reading.pose.pan = m_ptzProxy->pan; 
     reading.pose.tilt = m_ptzProxy->tilt;
     reading.pose.zoom = m_ptzProxy->zoom;
+    unlockComponent();
     log("PlayerPTZServer::getPose %f %f %f",reading.pose.pan,reading.pose.tilt,reading.pose.zoom);
     return reading;      
   }
@@ -106,7 +108,9 @@ namespace ptz {
      //playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, _pose.zoom, 0.5, 0.5);
 
      log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
+     lockComponent();
      playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, m_defaultZoom, 0.5, 0.5);
 
+     unlockComponent();
   }
 }
