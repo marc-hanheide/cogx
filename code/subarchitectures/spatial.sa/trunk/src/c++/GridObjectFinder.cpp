@@ -99,13 +99,13 @@ GridObjectFinder::~GridObjectFinder()
 }
 
 GridObjectFinder *
-createTableFinder(void)
+createTableFinder(double CellSize)
 {
-  CvSize size = {11, 11};
+  CvSize size = {11*(0.1/CellSize), 9*(0.1/CellSize)}; // default table is 110cm by 90 cm
   IplImage *objIm = cvCreateImage(size, IPL_DEPTH_8U, 1);
   objIm->origin = 1;
   cvSet(objIm, CV_RGB(255,255,255));
-  GridObjectFinder *newFinder = new GridObjectFinder(objIm, 6, 6, QUARTER_SYMMETRY);
+  GridObjectFinder *newFinder = new GridObjectFinder(objIm, size.width/2 +1,size.height/2 + 1, HALF_SYMMETRY);
   cvReleaseImage(&objIm);
   return newFinder;
 }

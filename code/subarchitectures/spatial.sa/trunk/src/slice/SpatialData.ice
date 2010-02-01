@@ -2,7 +2,7 @@
 #define SPATIALDATA_ICE
 
 #include <cast/slice/CDL.ice>
-
+#include <Math.ice>
 /**
  * Defines data structures pertaining to Places, for system-wide interfacing.
  *
@@ -15,6 +15,19 @@ module SpatialData {
   sequence<double> DoubleOpt;
   sequence<long> PlaceIDSeq;
   sequence<long> LongOpt;
+  sequence<cogx::Math::Vector3> PlanePointSeq;
+  
+ /**
+   * Struct for passing 3D points belonging to a plane
+   * Mainly for visualization on PB to compare against the
+   * matching plane and see how well matching works.
+   * @author Alper Aydemir
+   * @see @do
+   */
+   
+   class PlanePoints {
+     PlanePointSeq points;
+   };
 
   /**
    * Defines the possible states of the definition of a Place

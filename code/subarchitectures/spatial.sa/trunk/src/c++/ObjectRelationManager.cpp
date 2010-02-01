@@ -188,16 +188,17 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
       getMemoryEntry<FrontierInterface::ObservedPlaneObject>
       (wmc.address);
 
-    log("Read object at %f, %f", observedObject->x, observedObject->y);
+    log("Read object at %f, %f, %f", observedObject->x, observedObject->y,
+	observedObject->height);
     if (m_PeekabotClient.is_connected()) {
       char identifier[100];
       sprintf(identifier, "label%d", 0);
       peekabot::PolygonProxy pp;
       pp.add(m_planeProxies, identifier, peekabot::REPLACE_ON_CONFLICT);
-      pp.add_vertex(0.5, 0.5, 0);
-      pp.add_vertex(-0.5, 0.5, 0);
-      pp.add_vertex(-0.5, -0.5, 0);
-      pp.add_vertex(0.5, -0.5, 0);
+      pp.add_vertex(0.55, 0.45, 0);
+      pp.add_vertex(-0.55, 0.45, 0);
+      pp.add_vertex(-0.55, -0.45, 0);
+      pp.add_vertex(0.55, -0.45, 0);
 
       pp.translate(observedObject->x, observedObject->y, 
 	  observedObject->height);

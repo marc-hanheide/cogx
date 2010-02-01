@@ -46,6 +46,6 @@ namespace spatial {
       double m_angStep;
   };
 
-  GridObjectFinder *createTableFinder();
+  GridObjectFinder *createTableFinder(double CellSize);
 };
 #endif //GridObjectFinder_hpp
