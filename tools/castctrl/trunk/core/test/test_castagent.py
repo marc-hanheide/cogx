@@ -85,8 +85,8 @@ class TestCastAgentSlave(unittest.TestCase):
         print remote.getProcessList()
         time.sleep(3.0)
         remote.stopProcess("Test 1")
-        print remote.getProcessList()
         time.sleep(3.0)
+        print remote.getProcessList()
 
         # Server (slave)
         LOGGER.log("Shutdown Monitor")
