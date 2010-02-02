@@ -63,6 +63,7 @@ private:
   void startTracker();
   void stopTracker();
   void addTrackerModel(std::string& modelID);
+  void removeTrackerModel(std::string& modelID);
   void lockTrackerModel(std::string& modelID);
   void unlockTrackerModel(std::string& modelID);
   void get3DPointFromTrackerModel(std::string& modelID, VisionData::VertexSeq& vertexlist);
