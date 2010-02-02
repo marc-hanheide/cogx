@@ -216,34 +216,35 @@ void ObjectRecognizer3D::learnSiftModel(){
 				key = cvWaitKey ( 10 );
 		}while (((char)key)!=' ' && ((char)key!='s'));
 		
-		// Lock model
-		lockTrackerModel(m_modelID);
-		
-		// Grab image from VideoServer
- 		videoServer->getImage(camId, m_image);
-		iplImage = convertImageToIpl(m_image);
-		iplGray = cvCreateImage ( cvGetSize ( iplImage ), 8, 1 );
-		cvConvertImage( iplImage, iplGray );
-		
-		// Calculate SIFTs from image
-		sift.Operate(iplGray,image_keys);
-		
-		// Convert 2D image points to 3D model points
-		vertexlist.clear();
-		for(unsigned i=0; i<image_keys.Size(); i++ ){
-		  vertex.texCoord.x = image_keys[i]->p.x;
-			vertex.texCoord.y = image_keys[i]->p.y;
-			vertexlist.push_back(vertex);
+		if((char)key!='s'){
+			// Lock model
+			lockTrackerModel(m_modelID);
+			
+			// Grab image from VideoServer
+			videoServer->getImage(camId, m_image);
+			iplImage = convertImageToIpl(m_image);
+			iplGray = cvCreateImage ( cvGetSize ( iplImage ), 8, 1 );
+			cvConvertImage( iplImage, iplGray );
+			
+			// Calculate SIFTs from image
+			sift.Operate(iplGray,image_keys);
+			
+			// Convert 2D image points to 3D model points
+			vertexlist.clear();
+			for(unsigned i=0; i<image_keys.Size(); i++ ){
+				vertex.texCoord.x = image_keys[i]->p.x;
+				vertex.texCoord.y = image_keys[i]->p.y;
+				vertexlist.push_back(vertex);
+			}
+			
+			get3DPointFromTrackerModel(m_modelID, vertexlist);
+	
+			log("drawing temp_keys");
+			for (unsigned i=0; i<temp_keys.Size(); i++){
+					temp_keys[i]->Draw( iplImage,*temp_keys[i],CV_RGB(255,0,0) );
+			}
+			cvShowImage ( "ObjectRecognizer3D", iplImage );
 		}
-		
-		get3DPointFromTrackerModel(m_modelID, vertexlist);
-
-		sleepProcess(3000);
-		log("drawing temp_keys");
-		for (unsigned i=0; i<temp_keys.Size(); i++){
-				temp_keys[i]->Draw( iplImage,*temp_keys[i],CV_RGB(255,0,0) );
-		}
-		cvShowImage ( "ObjectRecognizer3D", iplImage );
   }while(((char)key!='s'));
   
   
