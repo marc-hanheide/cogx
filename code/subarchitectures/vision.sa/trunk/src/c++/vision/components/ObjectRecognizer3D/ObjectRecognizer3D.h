@@ -61,6 +61,7 @@ private:
   
   void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose);
   void startTracker();
+  void stopTracker();
   void addTrackerModel(std::string& modelID);
   void lockTrackerModel(std::string& modelID);
   void unlockTrackerModel(std::string& modelID);

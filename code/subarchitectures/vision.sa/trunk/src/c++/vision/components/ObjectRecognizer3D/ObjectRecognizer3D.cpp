@@ -109,6 +109,13 @@ void ObjectRecognizer3D::startTracker(){
   addToWorkingMemory(newDataID(), track_cmd);
 }
 
+void ObjectRecognizer3D::stopTracker(){
+	log("Send tracking command: STOP");
+  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+  track_cmd->cmd = VisionData::STOP;
+  addToWorkingMemory(newDataID(), track_cmd);
+}
+
 void ObjectRecognizer3D::addTrackerModel(std::string& modelID){
 	log("Send tracking command: ADD");
 	VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
@@ -179,7 +186,6 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 void ObjectRecognizer3D::learnSiftModel(){
 	log("learning Sift Model using ObjectTracker component");
 	P::DetectGPUSIFT 	sift;
-  P::ODetect3D			detect;
   IplImage *iplImage;
   IplImage *iplGray;
   VisionData::Vertex vertex;
@@ -187,7 +193,9 @@ void ObjectRecognizer3D::learnSiftModel(){
 
   sleepProcess(1000);  // HACK
   
-  loadVisualModelToWM(m_plyfile, m_modelID, Pose3());
+  Pose3 p;
+  p.pos.z = 0.05;
+  loadVisualModelToWM(m_plyfile, m_modelID, p);
   addTrackerModel(m_modelID);
   startTracker();
   
@@ -273,6 +281,7 @@ void ObjectRecognizer3D::recognizeSiftModel(){
 	cout<<"Codebook size: "<<object.codebook.Size()<<endl;
   
   cvNamedWindow("ObjectRecognizer3D", 1 );
+  startTracker();
   
   videoServer->getImage(camId, m_image);
   iplImage = convertImageToIpl(m_image);
@@ -321,14 +330,13 @@ void ObjectRecognizer3D::recognizeSiftModel(){
 		P = m_image.camPars.pose;
 		convertRecognizerPose2VisualObjectPose(object.pose, A);
 		Math::transform(P,A,B);
+		transpose(B.rot, B.rot);
 		
 		log("loading Visual Object to WM");
-		startTracker();
+		
 		
   	loadVisualModelToWM(m_plyfile, m_modelID, B);
 		addTrackerModel(m_modelID);
-// 		lockTrackerModel(m_modelID);
-
 
 // 		for (unsigned i=0; i<image_keys.Size(); i++){
 // 				image_keys[i]->Draw( iplImage,*image_keys[i],CV_RGB(0,0,255) );
