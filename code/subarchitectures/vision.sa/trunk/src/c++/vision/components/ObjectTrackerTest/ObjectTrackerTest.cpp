@@ -47,6 +47,8 @@ void ObjectTrackerTest::start()
 
 void ObjectTrackerTest::runComponent()
 {
+	sleepProcess(1000);
+	
   // Load geometry
   log("Loading ply model");
 	ModelLoader modelloader;
@@ -61,15 +63,20 @@ void ObjectTrackerTest::runComponent()
 	Tracking::Pose tPose;	
 	tPose.translate(0.0,0.0,0.05);
 	convertParticle2Pose(tPose, obj->pose); 
-	 
+	m_modelID = newDataID();
   log("Add model to working memory: '%s'", obj->label.c_str());
-  addToWorkingMemory(newDataID(), obj);
+  addToWorkingMemory(m_modelID, obj);
   
-  sleepProcess(1000);
-  
-  log("Send tracking command: START");
+	
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+  track_cmd->cmd = VisionData::ADDMODEL;
+  track_cmd->visualObjectID = m_modelID;
+  log("Send tracking command: ADDMODEL");
+  addToWorkingMemory(newDataID(), track_cmd);
+  
+	track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = VisionData::START;
+  log("Send tracking command: START");
   addToWorkingMemory(newDataID(), track_cmd);
 
 //   

@@ -20,6 +20,7 @@ class ObjectTrackerTest : public ManagedComponent
 private:
 
   std::string m_plyfile;
+  std::string m_modelID;
   
   /**
    * list of objects we want to have detected
