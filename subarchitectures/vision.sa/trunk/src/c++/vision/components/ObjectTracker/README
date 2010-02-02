@@ -37,9 +37,10 @@ OpenGL implementation like:
 	
 // if anything missing please inform me
 
-Usage:
+Hints:
 ------
-Look up the implematation and the README of the ObjectTrackerDriver
+
+
 
 Key settings:
 -------------
@@ -53,4 +54,7 @@ p:		show particles
 s:		show statistics
 t:		grab texture from image
 z:		set tracker to initial position
+1:		set size of pixel matching kernel to 1
+2:		set size of pixel matching kernel to 2
+3:		set size of pixel matching kernel to 3
 

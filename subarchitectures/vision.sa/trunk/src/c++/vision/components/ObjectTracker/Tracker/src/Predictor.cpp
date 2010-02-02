@@ -74,6 +74,9 @@ void Predictor::addsamples(Distribution& d, int num_particles, Particle mean, Pa
 		p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
 		
 		d.push_back(p);
+		
+// 		printf("m_dTime: %f\n", m_dTime);
+// 		usleep(500000);
 	}	
 }
 
