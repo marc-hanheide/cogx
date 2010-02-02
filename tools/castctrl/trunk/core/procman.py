@@ -38,11 +38,11 @@ class CProcessObserver(object):
 
 # Remote process execution
 class CRemoteHostInfo(object):
-    def __init__(self):
-        self.host = "localhost"
+    def __init__(self, host = "localhost"):
+        self.host = host
         self.cmdPrefix = ""
 
-class CProcess(object):
+class CProcessBase(object):
     STOPPED = 0     # noraml state, not running
     STARTING = 1    # starting
     STOPPING = 2    # stopping
@@ -51,16 +51,47 @@ class CProcess(object):
     ERRTERM = -1    # terminated unexpectedly
     ERROR = -2      # Internal error
     ERRSTART = -3   # could not start
-    def  __init__(self, name, command, params=None, workdir=None, host=None):
-        if host == None: host = CRemoteHostInfo()
+    def __init__(self, name, host=None):
         self.host = host
         self.name = name
+        self.status = CProcessBase.STOPPED # 0 stoped; > 0 pid; < 0 error state; see getStatusStr()
+        self.error = CProcessBase.OK
+        self.observers = []
+        pass
+
+    def getStatusStr(self):
+        if self.status == CProcessBase.FLUSH: return "Flushing..."
+        if self.error == CProcessBase.ERRTERM: return "Terminated unexpectedly"
+        if self.error == CProcessBase.ERROR: return "Internal error"
+        if self.error == CProcessBase.ERRSTART: return "Failed to start"
+        if self.status == CProcessBase.STARTING: return "Starting..."
+        if self.status == CProcessBase.STOPPING: return "Stopping..."
+        return None
+
+    # 0 normal; 1 running; 2 error
+    def getStatusLevel(self):
+        if self.error != CProcessBase.OK: return 2
+        if self.status != CProcessBase.STOPPED: return 1
+        return 0
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def notifyStatusChange(self, oldStatus, newStatus):
+        for ob in self.observers: # TODO separate thread?
+            ob.notifyStatusChange(self, oldStatus, newStatus)
+
+class CProcess(CProcessBase):
+    def  __init__(self, name, command, params=None, workdir=None, host=None):
+        if host == None: host = CRemoteHostInfo()
+        CProcessBase.__init__(self, name, host)
         self.command = command
         self.params = params   # Configurable parameters
         self.workdir = workdir
         self.process = None
-        self.status = CProcess.STOPPED # 0 stoped; > 0 pid; < 0 error state; see getStatusStr()
-        self.error = CProcess.OK
         self.lastPollState = 0
         self.keepalive = False
         self.allowTerminate = False # CAST apps should not autoTerm; others may
@@ -69,7 +100,6 @@ class CProcess(object):
         self.errors = legacy.deque(maxlen=200)
         self.lastLinesEmpty = 0 # suppress consecutive empty lines
         self.msgOrder = 0
-        self.observers = []
         self.willClearAt = None # Flushing
         self.pipeReader = None
 
@@ -77,21 +107,11 @@ class CProcess(object):
         self.stop()
 
     def getStatusStr(self):
-        if self.status == CProcess.FLUSH: return "Flushing..."
-        if self.error == CProcess.ERRTERM: return "Terminated unexpectedly"
-        if self.error == CProcess.ERROR: return "Internal error"
-        if self.error == CProcess.ERRSTART: return "Failed to start"
-        if self.status == CProcess.STARTING: return "Starting..."
-        if self.status == CProcess.STOPPING: return "Stopping..."
+        st = CProcessBase.getStatusStr(self)
+        if st != None: return st
         if self.process == None: return "Not started"
         if self.restarted > 0: return "%d (r%d)" % (self.process.pid, self.restarted)
         return "%d" % self.process.pid
-
-    # 0 normal; 1 running; 2 error
-    def getStatusLevel(self):
-        if self.error != CProcess.OK: return 2
-        if self.status != CProcess.STOPPED: return 1
-        return 0
 
     def isRunning(self):
         if self.process == None: return False
@@ -102,13 +122,11 @@ class CProcess(object):
     def _setStatus(self, newStatus):
         old = self.status
         self.status = newStatus
-        # if old != newStatus:
-        for ob in self.observers: # TODO separate thread?
-            ob.notifyStatusChange(self, old, newStatus)
+        self.notifyStatusChange(old, newStatus)
 
     def _beginFlush(self):
         self.willClearAt = time.time() + 1
-        self._setStatus(CProcess.FLUSH)
+        self._setStatus(CProcessBase.FLUSH)
 
     def start(self, params=None):
         if self.isRunning():
@@ -119,7 +137,7 @@ class CProcess(object):
         if self.command == None:
             error("No command for process '%s'" % self.name)
             return
-        self.error = CProcess.OK
+        self.error = CProcessBase.OK
         command = self.command
         if params != None:
             for par in params.iterkeys():
@@ -128,7 +146,7 @@ class CProcess(object):
         log("CMD=%s" % " ".join(command))
         if self.workdir != None: log("PWD=%s" % self.workdir)
         try:
-            self._setStatus(CProcess.STARTING)
+            self._setStatus(CProcessBase.STARTING)
             if self.pipeReader != None: self.pipeReader.stop()
             self.pipeReader = CPipeReader_1(self)
             self.pipeReader.start()
@@ -138,8 +156,8 @@ class CProcess(object):
             log("Process '%s' started, pid=%d" % (self.name, self.process.pid))
         except Exception, e:
             self.process = None
-            self.error = CProcess.ERRSTART
-            self._setStatus(CProcess.STOPPED)
+            self.error = CProcessBase.ERRSTART
+            self._setStatus(CProcessBase.STOPPED)
             error("Process '%s' failed to start" % (self.name))
             error("%s" % e)
         time.sleep(0.01)
@@ -147,7 +165,7 @@ class CProcess(object):
     def _clear(self, notify = True):
         self.restarted = 0
         self.process = None
-        nextStatus = CProcess.STOPPED
+        nextStatus = CProcessBase.STOPPED
         if not notify: self.status = nextStatus
         else: self._setStatus(nextStatus)
         if self.pipeReader != None:
@@ -156,11 +174,11 @@ class CProcess(object):
 
     def stop(self):
         log("Stopping process %s" % self.name)
-        self.error = CProcess.OK
+        self.error = CProcessBase.OK
         if self.process == None:
             self._clear()
             return
-        self._setStatus(CProcess.STOPPING)
+        self._setStatus(CProcessBase.STOPPING)
         try:
             # for sig in [signal.SIGQUIT, signal.SIGTERM, signal.SIGKILL]:
             for sig,tries in [(signal.SIGTERM, 100), (signal.SIGKILL, 20)]:
@@ -253,11 +271,11 @@ class CProcess(object):
             if self.isRunning(): self.status = max(1, self.process.pid)
             else:
                 self.process = None
-                self.error = CProcess.ERROR
-                self._setStatus(CProcess.STOPPED)
+                self.error = CProcessBase.ERROR
+                self._setStatus(CProcessBase.STOPPED)
             return
         if self.status == self.STOPPED or self.isRunning(): return
-        if self.status == CProcess.FLUSH:
+        if self.status == CProcessBase.FLUSH:
             if time.time() > self.willClearAt: self._clear()
         if self.status > 0:
             self._beginFlush()
@@ -269,7 +287,7 @@ class CProcess(object):
                 self.start()
                 self.restarted += 1
             else:
-                self.error = CProcess.ERRTERM
+                self.error = CProcessBase.ERRTERM
                 self._beginFlush()
 
 class CPipeReader_1(threading.Thread):

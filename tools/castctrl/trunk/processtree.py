@@ -100,6 +100,11 @@ class CRootItem(CTreeItem):
     def addHost(self, processManager):
         self.hosts.append(CHostItem(processManager, self))
 
+    def removeHost(self, processManager):
+        for item in list(self.hosts):
+            if item.host == processManager:
+                self.hosts.remove(item)
+
     def childCount(self):
         return len(self.hosts)
 
