@@ -287,7 +287,6 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
 		convertPose2Particle(trackingEntry->obj->pose, pose);
 		convertGeometryModel(trackingEntry->obj->model, model);
 		trackingEntry->id = m_tracker->addModel(model, pose, true);
-		trackingEntry->cmd = TrackingEntry::TRACK;
 		log("  TrackingEntry::ADD: '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
 		trackingEntry->cmd = TrackingEntry::TRACK;
 	
