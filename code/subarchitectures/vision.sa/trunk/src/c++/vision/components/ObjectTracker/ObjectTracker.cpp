@@ -46,6 +46,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 	TrackingEntry* trackingEntry=0;
 	
 	log("Received tracking command ...");
+	
 	switch(track_cmd->cmd){
 		case VisionData::START:
 			if(m_track){
@@ -78,7 +79,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 				if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 					(*it)->cmd = TrackingEntry::REMOVE;
 					log("  Remove model: ok");
-					return;
+					break;
 				}
 			}			
 			break;
@@ -88,7 +89,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 				if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 					(*it)->cmd = TrackingEntry::LOCK;
 					log("  Lock model: ok");
-					return;
+					break;
 				}
 			}
 			break;
@@ -98,7 +99,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 				if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 					(*it)->cmd = TrackingEntry::UNLOCK;
 					log("  Unlock model: ok");
-					return;
+					break;
 				}
 			}
 			break;
@@ -110,7 +111,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 					(*it)->trackingCommandID = _wmc.address.id;
 					(*it)->track_cmd = track_cmd;
 					log("  Get 3D point from model: ok");
-					return;
+					break;
 				}
 			}
 			break;
@@ -120,7 +121,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 		default:
 			log("  Unknown tracking command: doing nothing");
 			break;
-	}	
+	}
 }
 
 // *** base functions *** (configure, start, runcomponent)
@@ -275,7 +276,9 @@ void ObjectTracker::initTracker(const Video::Image &image){
   log("... initialisation successfull!");
 }
 
-void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
+void ObjectTracker::modifyTrackingEntry(TrackingEntryList::iterator it){
+	
+	TrackingEntry* trackingEntry = (*it);
 	
 	log("Modifying tracking entry: '%s'", trackingEntry->obj->label.c_str());
 	
@@ -292,17 +295,22 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
 	
 	// *** REMOVE ***
 	}else if(trackingEntry->cmd == TrackingEntry::REMOVE){
-	
+		m_tracker->removeModel(trackingEntry->id);
+		delete(trackingEntry);
+		m_trackinglist.erase(it);
+		log("  TrackingEntry::REMOVE");
+		
 	// *** LOCK ***
 	}else if(trackingEntry->cmd == TrackingEntry::LOCK){
 		m_tracker->setModelLock(trackingEntry->id, true);
+		log("  TrackingEntry::LOCK");
 		trackingEntry->cmd = TrackingEntry::TRACK;
 	
 	// *** UNLOCK ***
 	}else if(trackingEntry->cmd == TrackingEntry::UNLOCK){
 		m_tracker->setModelLock(trackingEntry->id, false);
-		trackingEntry->cmd = TrackingEntry::TRACK;
 		log("  TrackingEntry::UNLOCK");
+		trackingEntry->cmd = TrackingEntry::TRACK;
 	
 	// *** GETPOINT3D ***
 	}else if(trackingEntry->cmd == TrackingEntry::GETPOINT3D){
@@ -314,9 +322,7 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
 			b=m_tracker->getModelPoint3D(	trackingEntry->id,
 																		(int)trackingEntry->track_cmd->points[i].texCoord.x,
 																		(int)trackingEntry->track_cmd->points[i].texCoord.y,
-																		x,
-																		y,
-																		z);
+																		x, y, z);
 
 			trackingEntry->track_cmd->points[i].pos.x = x;
 			trackingEntry->track_cmd->points[i].pos.y = y;
@@ -324,9 +330,9 @@ void ObjectTracker::modifyTrackingEntry(TrackingEntry* trackingEntry){
 			trackingEntry->track_cmd->pointOnModel[i] = b;
 		}
 		overwriteWorkingMemory(trackingEntry->trackingCommandID, trackingEntry->track_cmd);
+		log("  TrackingEntry::GETPOINT3D");
 		trackingEntry->cmd = TrackingEntry::TRACK;
-	}
-	
+	}	
 }
 
 void ObjectTracker::runTracker(const Video::Image &image){
@@ -340,7 +346,7 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	TrackingEntryList::iterator it;
 	for(it=m_trackinglist.begin(); it<m_trackinglist.end(); it++){
 		if((*it)->cmd != TrackingEntry::TRACK)
-			modifyTrackingEntry(*it);
+			modifyTrackingEntry(it);
 	}
 	
 	// update time

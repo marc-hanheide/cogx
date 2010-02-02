@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
 	std::vector<vec3> m_points;
 		
-	m_modelloader.LoadPly(model_2, "resources/model/jasmin6.ply");
+	m_modelloader.LoadPly(model_2, "resources/model/cylinder.ply");
 	p.t = vec3(0.05, 0.05, 0.05);
 	id_2 = m_tracker->addModel(model_2, p, true);
 	
