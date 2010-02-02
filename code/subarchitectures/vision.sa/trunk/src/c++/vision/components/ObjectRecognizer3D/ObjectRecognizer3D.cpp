@@ -124,6 +124,14 @@ void ObjectRecognizer3D::addTrackerModel(std::string& modelID){
   addToWorkingMemory(newDataID(), track_cmd);
 }
 
+void ObjectRecognizer3D::removeTrackerModel(std::string& modelID){
+	log("Send tracking command: REMOVE");
+	VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+  track_cmd->cmd = VisionData::REMOVEMODEL;
+  track_cmd->visualObjectID = modelID;
+  addToWorkingMemory(newDataID(), track_cmd);
+}
+
 void ObjectRecognizer3D::lockTrackerModel(std::string& modelID){
 	log("Send tracking command: LOCK");
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
@@ -165,18 +173,17 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 	{
 		if (track_cmd->pointOnModel[i])
 		{
-			image_keys[i]->pos.create(3);
-			image_keys[i]->pos(1) = track_cmd->points[i].pos.x;
-			image_keys[i]->pos(2) = track_cmd->points[i].pos.y;
-			image_keys[i]->pos(3) = track_cmd->points[i].pos.z;
+			image_keys[i]->SetPos(track_cmd->points[i].pos.x,track_cmd->points[i].pos.y,track_cmd->points[i].pos.z);
 			temp_keys.PushBack(image_keys[i]);
+// 			printf("%f %f %f\n", image_keys[i]->pos->data.fl[0], image_keys[i]->pos->data.fl[1], image_keys[i]->pos->data.fl[2]);
+// 			b = track_cmd->pointOnModel[i];
+// 			printf(	"%f %f %f, %d\n", 
+// 							track_cmd->points[i].pos.x,
+// 							track_cmd->points[i].pos.y,
+// 							track_cmd->points[i].pos.z,
+// 							b);
 		}
-// 		b = track_cmd->pointOnModel[i];
-// 		printf(	"%f %f %f, %d\n", 
-// 						track_cmd->points[i].pos.x,
-// 						track_cmd->points[i].pos.y,
-// 						track_cmd->points[i].pos.z,
-// 						b);
+
 	}
 	
 	sift_model_learner.AddToModel(temp_keys,object);
@@ -239,6 +246,8 @@ void ObjectRecognizer3D::learnSiftModel(){
 			
 			get3DPointFromTrackerModel(m_modelID, vertexlist);
 	
+			sleepComponent(1000);
+			
 			log("drawing temp_keys");
 			for (unsigned i=0; i<temp_keys.Size(); i++){
 					temp_keys[i]->Draw( iplImage,*temp_keys[i],CV_RGB(255,0,0) );
@@ -297,12 +306,19 @@ void ObjectRecognizer3D::recognizeSiftModel(){
   cy = m_image.camPars.cy;
   cout << fx << ' ' << fy << ' ' <<  cx << ' ' <<  cy << endl;
   
-  Matrix C(3,3);
-  C(1,1) = fx; C(1,2) = 0;  C(1,3) = cx ;
-  C(2,1) = 0;  C(2,2) = fy; C(2,3) = cy;
-  C(3,1) = 0;  C(3,2) = 0;  C(3,3) = 1;
 
-	detect.SetCameraParameter(C);
+  CvMat *C = cvCreateMat(3,3, CV_32F);
+  cvmSet(C, 0, 0, fx);
+  cvmSet(C, 0, 1, 0.);
+  cvmSet(C, 0, 2, cx);
+  cvmSet(C, 1, 0, 0.);
+  cvmSet(C, 1, 1, fy);
+  cvmSet(C, 1, 2, cy);
+  cvmSet(C, 2, 0, 0.);
+  cvmSet(C, 2, 1, 0.);
+  cvmSet(C, 2, 2, 1.);
+  
+  detect.SetCameraParameter(C);
   
  	int key;
  	do{
@@ -310,6 +326,8 @@ void ObjectRecognizer3D::recognizeSiftModel(){
 		do{
 				key = cvWaitKey ( 10 );
 		}while (((char)key)!=' ' && ((char)key!='q'));
+		
+		removeTrackerModel(m_modelID);
 		
 		// Grab image from VideoServer
  		videoServer->getImage(camId, m_image);
@@ -321,7 +339,7 @@ void ObjectRecognizer3D::recognizeSiftModel(){
 		sift.Operate(iplGray,image_keys);
 		
 		detect.SetDebugImage(iplImage);
-		if(detect.Detect(image_keys, &object))
+		if(detect.Detect(image_keys, object))
 		{
 			P::SDraw::DrawPoly(iplImage, object.contour.v, CV_RGB(0,255,0), 2);
 		}
@@ -329,7 +347,7 @@ void ObjectRecognizer3D::recognizeSiftModel(){
 		// Transform pose from Camera to world coordinates
 		Pose3 P, A, B;
 		P = m_image.camPars.pose;
-		convertRecognizerPose2VisualObjectPose(object.pose, A);
+		convertPoseCv2MathPose(object.pose, A);
 		Math::transform(P,A,B);
 		transpose(B.rot, B.rot);
 		
@@ -352,6 +370,7 @@ void ObjectRecognizer3D::recognizeSiftModel(){
     
   cvReleaseImage(&iplImage);
 	cvReleaseImage(&iplGray);
+	cvReleaseMat(&C);
 	for (unsigned i=0; i<image_keys.Size(); i++)
 	  delete(image_keys[i]);
 	image_keys.Clear();

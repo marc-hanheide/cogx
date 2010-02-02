@@ -18,7 +18,7 @@ SET(SOURCES
 		ODetect3D/ODetect3D.cc
 		ODetect3D/CodebookEntry.cc
 		ODetect3D/Object3D.cc
-		ODetect3D/Pose.cc
+		ODetect3D/PoseCv.cc
 		ODetect3D/ModelObject3D.cc
 		ODetect3D/Keypoint.cc
 		ODetect3D/KeypointDescriptor.cc
