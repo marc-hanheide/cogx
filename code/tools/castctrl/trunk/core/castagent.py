@@ -105,21 +105,40 @@ class CCastSlave(threading.Thread):
 def discoverRemoteHosts(hosts, tcpPort):
     """
     Tries to connect to every host in the list.
-    Returns the list of discovered hosts.
+    Returns the list of discovered hosts that are running a Cast Agent
+    on port tcpPort.
     """
-    working = []
-    for haddr in hosts:
-        try:
-            ic = Ice.initialize(sys.argv)
-            base = ic.stringToProxy("CastAgent:tcp -h %s -p %d" % (haddr, tcpPort))
-            remote = CastAgent.AgentPrx.checkedCast(base)
-            if not remote: raise RuntimeError("Invalid proxy")
-            remote.getProcessList()
-            ic.destroy()
-            working.append(haddr)
-        except:
+    class _Checker(threading.Thread):
+        def __init__(self, iceAddress):
+            threading.Thread.__init__(self, name=iceAddress)
+            self.iceAddr = iceAddress
+            self.timeout = 5*500 # ice_timeout(seconds*500)
+            self.success = False
+
+        def run(self):
+            self.success = False
             try:
-                if ic != None: ic.destroy()
-            except: pass
+                ic = Ice.initialize([])
+                base = ic.stringToProxy(self.iceAddr).ice_timeout(self.timeout)
+                remote = CastAgent.AgentPrx.checkedCast(base)
+                if not remote: raise RuntimeError("Invalid proxy")
+                procs = remote.getProcessList()
+                self.success = True
+                ic.destroy()
+            except:
+                try:
+                    if ic != None: ic.destroy()
+                except: pass
+
+    checker = []
+    for haddr in hosts:
+        checker.append( (haddr, _Checker("CastAgent:tcp -h %s -p %d" % (haddr, tcpPort))) )
+
+    for (haddr, chkr) in checker: chkr.start()
+    for (haddr, chkr) in checker: chkr.join()
+    
+    working = []
+    for (haddr, chkr) in checker:
+        if chkr.success: working.append(haddr)
 
     return working

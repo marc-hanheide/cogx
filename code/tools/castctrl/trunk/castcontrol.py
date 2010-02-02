@@ -9,12 +9,14 @@ import tempfile
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages, confbuilder, network
+from core import castagent, remoteproc
 from core import legacy
 from qtui import uimainwindow, uiresources
 import processtree
 
 LOGGER = messages.CInternalLogger()
 procman.LOGGER = LOGGER
+castagent.LOGGER = LOGGER
 
 class CLogDisplayer:
     def __init__(self, qtext):
@@ -90,6 +92,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._userOptions.loadConfig(self.fnconf) # TODO: user options should be in ~/.cast/...
         self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
         self._manager = procman.CProcessManager()
+        self._remoteHosts = []
 
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.log.addSource(LOGGER)
@@ -173,6 +176,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         fn = cmb.itemData(i)
         return fn.toString()
 
+    @property
+    def _localhost(self):
+        lhost = "%s" % self.ui.txtLocalHost.text()
+        lhost = lhost.strip()
+        return lhost
+
     def _initLocalProcesses(self):
         self._manager.addProcess(procman.CProcess("server-java", options.xe("${CMD_JAVA_SERVER}")))
         self._manager.addProcess(procman.CProcess("server-cpp", options.xe("${CMD_CPP_SERVER}")))
@@ -192,6 +201,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.pullLogs()
         self.buildLog.pullLogs()
         # self.updateUi()
+        for rpm in self._remoteHosts: #TODO: read in background, at most 1 per second
+            rpm.updateProcessList()
 
     def closeEvent(self, event):
         self._manager.stopReaderThread()
@@ -243,10 +254,18 @@ class CCastControlWnd(QtGui.QMainWindow):
             self.runCleanupScript()
         srvs = self.getServers(self._manager)
         for p in srvs: p.start()
+        
+        for h in self._remoteHosts: # XXX Debugging
+            for p in h.proclist: p.start()
+        self.ui.processTree.expandAll()
 
     def stopServers(self):
         srvs = self.getServers(self._manager)
         for p in srvs: p.stop()
+
+        for h in self._remoteHosts: # XXX Debugging
+            for p in h.proclist: p.stop()
+        self.ui.processTree.expandAll()
 
     # Somehow we get 2 events for a button click ... filter one out
     def on_btServerStart_clicked(self, valid=True):
@@ -265,8 +284,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if self._hostConfig == None: hostConfig = ""
         else: hostConfig = "%s" % self._hostConfig
         hostConfig = hostConfig.strip()
-        lhost = "%s" % self.ui.txtLocalHost.text()
-        lhost = lhost.strip()
+        lhost = self._localhost
         if clientConfig == "": return clientConfig
         if lhost == "" and hostConfig == "": return clientConfig
         LOGGER.log("LOCALHOST: %s" % lhost)
@@ -280,6 +298,42 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._tmpCastFile.flush()
         # don't self._tmpCastFile.close()
         return self._tmpCastFile.name
+
+
+    def getConfiguredHosts(self):
+        if self._hostConfig == None: hostConfig = ""
+        else: hostConfig = "%s" % self._hostConfig
+        hostConfig = hostConfig.strip()
+        lhost = self._localhost
+        cfg = confbuilder.CCastConfig()
+        cfg.clearRules()
+        if lhost != "": cfg.setLocalhost(lhost)
+        if hostConfig == "" or not os.path.exists(hostConfig):
+            msg = "Host configuration file (.hconf) not defined or it doesn't exist."
+            LOGGER.warn(msg)
+            raise UserWarning("HCONF: " + msg)
+            return []
+            
+        cfg.addRules(open(hostConfig, "r").readlines())
+
+        hosts = []
+        for hid,haddr in cfg.hosts.iteritems():
+            if hid[:4] == "127.": continue
+            if haddr == "localhost" or haddr[:4] == "127.": continue
+            # if haddr == lhost: continue # XXX Comment this line when testing and an agent is on localhost
+            if not haddr in hosts: hosts.append(haddr)
+
+        return hosts
+
+
+    def discoverCastAgents(self):
+        hosts = self.getConfiguredHosts()
+        LOGGER.log("Hosts: %s" % (hosts))
+        port = 7832 # TODO: user setting
+        working = castagent.discoverRemoteHosts(hosts, port)
+        LOGGER.log("Cast agents: %s" % (working))
+
+        return working
 
 
     def on_btClientStart_clicked(self, valid=True):
@@ -431,6 +485,25 @@ class CCastControlWnd(QtGui.QMainWindow):
         if ip != None:
             self.ui.txtLocalHost.setText(ip.strip())
             self._options.setOption("localhost", ip.strip())
+
+    def on_btDiscoverRemote_clicked(self, valid=True):
+        if not valid: return
+        try:
+            agents = self.discoverCastAgents()
+        except UserWarning as uw:
+            rv = QtGui.QMessageBox.information(self, "Discover Agents", "%s" % uw)
+            return
+
+        for rpm in self._remoteHosts:
+            self._processModel.rootItem.removeHost(rpm)
+
+        for host in agents:
+            port = 7832 # TODO: user setting
+            rpm = remoteproc.CRemoteProcessManager(host, host, port)
+            rpm.updateProcessList()
+            self._remoteHosts.append(rpm)
+            self._processModel.rootItem.addHost(rpm)
+        self.ui.processTree.expandAll()
 
     def onShowEnvironment(self):
         cmd = "bash -c env"

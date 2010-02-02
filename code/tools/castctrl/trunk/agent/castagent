@@ -17,15 +17,31 @@ import icemodule.castcontrol.CastAgent as CastAgent
 #TODO: message queue for processes, redirect to stdout
 
 class CConsoleAgent:
-    def __init__(self, port=7832):
+    def __init__(self, appOptions):
+        port = appOptions.port
         self.manager = procman.CProcessManager("localhost")
-        self.manager.addProcess(procman.CProcess("Test 1", "python _wait.py A"))
-        self.manager.addProcess(procman.CProcess("Test 2", "python _wait.py B"))
-        self.manager.addProcess(procman.CProcess("Test 3", "python _wait.py C"))
-        self.options = options.CCastOptions()
+        #self.manager.addProcess(procman.CProcess("Test 1", "python _wait.py A"))
+        #self.manager.addProcess(procman.CProcess("Test 2", "python _wait.py B"))
+        #self.manager.addProcess(procman.CProcess("Test 3", "python _wait.py C"))
+        self._options = options.CCastOptions()
+        self._options.loadConfig(appOptions.config)
+        self._options.configEnvironment()
         self.address = "tcp -p %d" % port
         self.agent = None
-        pass
+        self._initLocalProcesses()
+
+
+    def _initLocalProcesses(self):
+        self.manager.addProcess(procman.CProcess("server-java", options.xe("${CMD_JAVA_SERVER}")))
+        self.manager.addProcess(procman.CProcess("server-cpp", options.xe("${CMD_CPP_SERVER}")))
+        self.manager.addProcess(procman.CProcess("server-python", options.xe("${CMD_PYTHON_SERVER}")))
+        #self.manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
+        #self.manager.addProcess(procman.CProcess("player", options.xe("${CMD_PLAYER}")))
+        #self.manager.addProcess(procman.CProcess("peekabot", options.xe("${CMD_PEEKABOT}")))
+        #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=options.xe("${COGX_BUILD_DIR}"))
+        #self.procBuild.allowTerminate = True
+        #self.manager.addProcess(self.procBuild)
+
 
     def _shutdown(self, agent):
         count = 10
@@ -42,7 +58,7 @@ class CConsoleAgent:
 
     def startServing(self):
         if self.agent != None: self.stopServing()
-        self.agent = castagent.CCastSlave(self.manager, self.options, self.address)
+        self.agent = castagent.CCastSlave(self.manager, self._options, self.address)
         self.agent.start()
         time.sleep(0.2)
 
@@ -58,16 +74,18 @@ def parseOptions():
     parser.add_option("-v", "--verbose", action="store", type="int", dest="verbose")
     parser.add_option("-q", "--quiet", action="store_const", const=0, dest="verbose")
     parser.add_option("-p", "--port", action="store", type="int", default=7832, dest="port")
+    parser.add_option("-c", "--config", action="store", type="string", default="castcontrol.conf", dest="config")
 
     (options, args) = parser.parse_args()
     # if options.verbose > 3: print "Options parsed"
     # if len(args) != 1: parser.error("incorrect number of arguments")
     return (options, args)
 
+
 def main():
-    options, args = parseOptions()
-    print options, args
-    agent = CConsoleAgent(port = options.port)
+    opts, args = parseOptions()
+    print opts, args
+    agent = CConsoleAgent(opts)
     agent.startServing()
     try:
         print "Press Ctrl-C to stop serving."
@@ -77,3 +95,4 @@ def main():
         agent.stopServing()
 
 if __name__ == "__main__": main()
+
