@@ -220,6 +220,7 @@ void Tracker::removeModel(int id){
 		if(id==(*it)->id){
 			delete(*it);
 			m_modellist.erase(it);
+			return;
 		}
 		it++;
 	}

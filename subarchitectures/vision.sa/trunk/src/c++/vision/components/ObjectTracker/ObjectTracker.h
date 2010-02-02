@@ -59,7 +59,7 @@ private:
   // Functions with GL commands allowed
   void initTracker(const Video::Image &image);
   void runTracker(const Video::Image &image);
-  void modifyTrackingEntry(TrackingEntry* trackingEntry);
+  void modifyTrackingEntry(TrackingEntryList::iterator it);
   
   // Do not use GL commands in this functions (different thread with no GL context)
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);

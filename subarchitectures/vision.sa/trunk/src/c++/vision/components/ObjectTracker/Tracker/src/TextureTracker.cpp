@@ -387,7 +387,7 @@ void TextureTracker::drawResult(){
 		}
 		m_lighting.Deactivate();
 		
-		m_modellist[i]->model.drawCoordinates();
+// 		m_modellist[i]->model.drawCoordinates();
 // 		m_modellist[i]->model.drawNormals();
 		m_modellist[i]->pose.deactivate();
 		
