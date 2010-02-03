@@ -351,7 +351,7 @@ class CProcessChecker(threading.Thread):
 
 class CProcessManager(object):
     def __init__(self, name="localhost"):
-        self.name = name   # maybe machine name
+        self.name = name    # maybe machine name
         self.proclist = [] # managed processes
         self.pipeReaderThread = None
         self.procCheckerThread = CProcessChecker(self) # TODO: move to main or make global!
@@ -370,6 +370,12 @@ class CProcessManager(object):
         #if self.pipeReaderThread == None:
         #    self.pipeReaderThread = CPipeReader(self)
         #    self.pipeReaderThread.start()
+
+    def getStatusStr(self): # For processtree
+        return ""
+
+    def getStatusLevel(self): # For processtree
+        return 0
 
     def getProcess(self, name):
         for p in self.proclist:

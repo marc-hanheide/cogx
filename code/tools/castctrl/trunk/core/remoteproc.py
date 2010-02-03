@@ -38,9 +38,8 @@ class CRemoteProcess(CProcessBase):
     def getStatusStr(self):
         st = CProcessBase.getStatusStr(self)
         if st != None: return st
-        if self.status > 2: return "%d" % self.status
+        if self.status > 2: return "%d" % (self.status)
         return "Not started"
-        return "Status %d, error %d" %  (self.status, self.error)
 
     def start(self):
         self.manager.agentProxy.startProcess(self.name)
@@ -60,7 +59,16 @@ class CRemoteProcessManager:
         self.proclist = []
         self._ic = None
         self._agentProxy = None
+        self.online = False
         self.observers = [] # proclist change, etc.
+
+    def getStatusStr(self): # For processtree
+        if self.online: return self.address
+        else: return "OFFLINE"
+
+    def getStatusLevel(self): # For processtree
+        if self.online: return 0 # Normal
+        else: return 2 # Error
 
     @property
     def agentProxy(self):
@@ -76,8 +84,13 @@ class CRemoteProcessManager:
         return self._agentProxy
 
     def updateProcessList(self):
-        # TODO: handle access errors
-        procs = self.agentProxy.getProcessList()
+        try:
+            procs = self.agentProxy.getProcessList()
+            self.online = True
+        except:
+            self.online = False
+            # TODO: notify process-manager observers
+            return
 
         rnew = []
         # Update and add new processes

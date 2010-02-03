@@ -78,15 +78,18 @@ class CHostItem(CTreeItem):
         return self.children
 
     def columnCount(self):
-        return 1
+        return 2
 
     def data(self, column):
         if column == 0: return self.host.name
+        elif column == 1: return self.host.getStatusStr()
         return ""
 
     def color(self):
-        if len(self.children) < 1: return ""
-        st = max( child.process.getStatusLevel() for child in self.children )
+        st = self.host.getStatusLevel()
+        if st == 0:
+            if len(self.children) < 1: return ""
+            st = max( child.process.getStatusLevel() for child in self.children )
         if st >= 2: return "red"
         if st > 0: return "blue"
         return ""
