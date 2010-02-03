@@ -27,7 +27,7 @@ class CLogDisplayer(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self, name="CLogDisplayer")
         self.log = messages.CLogMerger()
-        self.showFlush = False # option
+        self.showFlush = True # option
         self.showWarning = True # option
         self.showError = True # option
         self.reError = re.compile(r"\b(error)\b", re.IGNORECASE)
