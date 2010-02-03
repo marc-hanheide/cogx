@@ -420,8 +420,6 @@ bool ODetect3D::Detect(Array<KeypointDescriptor *> &keys, Object3D &object)
   unsigned numInl=0;
   Array<KeyClusterPair*> matches;
 
-  MatchKeypointsGPU(keys, object.codebook, matches);
-
   if (Def::DO_MATCHER==2)              // match keypoints with codebook  gpu
     MatchKeypointsGPU(keys, object.codebook, matches);
   else if (Def::DO_MATCHER==1)         // threshold matches
