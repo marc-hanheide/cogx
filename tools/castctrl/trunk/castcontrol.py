@@ -41,8 +41,7 @@ class CLogDisplayer:
         if len(self.log.messages) < 1: pass
         else:
             pntr = messages.CAnsiPainter()
-            msgs = [m for m in self.log.messages]
-            self.log.clearBuffer()
+            msgs = self.log.getNewMessages(100)
             for m in msgs:
                 if m.msgtype == messages.CMessage.CASTLOG:
                     self.qtext.append(pntr.paint(m.getText()))
@@ -112,7 +111,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.tmStatus = QtCore.QTimer()
         QtCore.QObject.connect(self.tmStatus, QtCore.SIGNAL("timeout()"), self.statusUpdate)
         self.tmStatus.start(632)
-        LOGGER.log("CAST Control initialized")
 
         # Event connections
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
@@ -131,6 +129,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         pic = uiresources.createPixmap(uiresources.icon_cogx)
         self.setWindowIcon(QtGui.QIcon(pic))
+        LOGGER.log("CAST Control initialized")
 
     def _initContent(self):
         for fn in self._options.mruCfgCast:
@@ -196,11 +195,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.processTree.expandAll()
 
     def statusUpdate(self):
-        # rv = self._manager.checkProcesses() # MOVED to separate thread
         self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
         self.mainLog.pullLogs()
         self.buildLog.pullLogs()
-        # self.updateUi()
         for rpm in self._remoteHosts: #TODO: read in background, at most 1 per second
             rpm.updateProcessList()
 
@@ -593,4 +590,5 @@ def guiMain():
     sys.exit(app.exec_())
     pass
 
-guiMain()
+if __name__ == "__main__": guiMain()
+

@@ -93,6 +93,7 @@ class CMessageSource(object):
         self.yieldErrors = True
 
     # FIXME: Iterators crash if the queue is changed from another thread.
+    # Instead of iterators, this function should probably return a list of filtered messages.
     def getIterators(self):
         its = []
         if self.tmLastSeen < self.tmLastPop: self.tmLastSeen = self.tmLastPop
@@ -119,6 +120,19 @@ class CLogMerger(object):
     def clearBuffer(self):
        self.messages = []
 
+    def getNewMessages(self, maxItems=0):
+        """
+        Return up to maxItems new messages and remove them from the queue.
+        If maxItems < 1, all messages are returned.
+        """
+        if maxItems < 1:
+            msgs = self.messages
+            self.messages = []
+        else:
+            msgs = self.messages[:maxItems]
+            self.messages = self.messages[maxItems:]
+        return msgs
+
     def addSource(self, process):
         self.removeSource(process)
         src = CMessageSource(process)
@@ -138,8 +152,14 @@ class CLogMerger(object):
         self.sources = []
 
     def merge(self):
+        """
+        Merge messages from different sources into one queue.
+        The messages in the destination queue are (mostly) sorted by timestamp.
+        """
         if len(self.sources) < 1: return
         its = []
+        # FIXME: queues that iterators iterate over may change while fnMerge is active
+        # (source queues are filled in separate threads; messages remain in queues;)
         for s in self.sources: its.extend(s.getIterators())
         if len(its) > 0:
             fnMerge = legacy.getMergeFn()
