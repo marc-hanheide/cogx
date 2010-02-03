@@ -1,7 +1,10 @@
 
 
 Install NVIDIA CG
-http://developer.nvidia.com/object/cg_download.html
+ubuntu package
+  nvidia-cg-toolkit
+or
+  http://developer.nvidia.com/object/cg_download.html
 
 Dependencies:
 -------------
