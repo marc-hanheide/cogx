@@ -9,6 +9,5 @@ or
 Dependencies:
 -------------
 
-VirtualScene	(@compiling)
-ObjectTracker (@runtime, for Learning)
+ObjectTracker
 
