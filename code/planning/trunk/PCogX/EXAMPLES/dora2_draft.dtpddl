@@ -43,7 +43,7 @@
     )
 
   (:types 
-   place room label widget feature person  model_slot - object
+   place room label widget feature person  model-slot - object
    model - (either widget feature person) ;; FYI "either" is an old PDDL
 					  ;; keyword. I think it is
 					  ;; still in use, and I did
@@ -58,7 +58,7 @@
    ;; * Dynamic facts about the robot *
    (located ?p - place) ;; Dora-1.0 -- 2009 [agent free]
 
-   (deletable ?s - model_slot)
+   (deletable ?s - model-slot)
 
 ;;    (observing_person ?p - person)
 ;;    (observing_widget ?w - widget)
@@ -111,7 +111,7 @@
   (:s-functions
    
    ;; ............
-   (foregrounded_model ?s - model_slot ) - model ;; Moritz suggested using an object valued fluent.
+   (foregrounded_model ?s - model-slot ) - model ;; Moritz suggested using an object valued fluent.
    
    ;; * Static facts about the world * 
 
@@ -224,9 +224,9 @@
   ;; goes along with the Michael-Z idea of having vision running
   ;; continuously in some thread/process.
   (:action foreground_model
-	   :parameters (?m - model ?s - model_slot)
+	   :parameters (?m - model ?s - model-slot)
 	   :precondition (and (= (foregrounded_model ?s) no_model)
-			      (forall (?s2 - model_slot) 
+			      (forall (?s2 - model-slot) 
 				      (not (= (foregrounded_model ?s2) ?m)))
 			      )
 	   :effect (assign (foregrounded_model ?s) ?m)
@@ -237,7 +237,7 @@
   ;; cheap to run in real-time, and there is no need to stop running
   ;; it.
  (:action background_model
-	   :parameters (?s - model_slot)
+	   :parameters (?s - model-slot)
 	   :precondition (and (deletable ?s))
 	   :effect (assign (foregrounded_model ?s) no_model)
 	   )
@@ -251,7 +251,7 @@
 	    ()
 
 	    :precondition
-	    (and (forall (?s - model_slot) (not (= (foregrounded_model ?s) ?m))) )
+	    (and (forall (?s - model-slot) (not (= (foregrounded_model ?s) ?m))) )
 
 	    
 	    :effect 
