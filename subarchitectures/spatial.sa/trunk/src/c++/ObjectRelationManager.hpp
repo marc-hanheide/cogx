@@ -22,14 +22,12 @@
 #include <FrontierInterface.hpp>
 #include <map>
 #include <peekabot.hh>
+#include "RelationEvaluation.hpp"
 
 using namespace SpatialProperties;
 using namespace SpatialData;
 
 namespace spatial {
-
-class Object {
-};
 
 /**
  * This class monitors the sensory layer for objects and their poses, and writes
@@ -56,9 +54,12 @@ protected:
 
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
+  bool m_bTestOnness;
+
   bool m_bDisplayPlaneObjectsInPB;
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_planeProxies;
+  peekabot::GroupProxy m_onnessTester;
   std::string m_PbHost;
   int m_PbPort;
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
@@ -74,6 +75,13 @@ protected:
 
   void setContainmentProperty(int objectID, int placeID, double confidence);
 }; 
+
+std::vector<cogx::Math::Vector3>
+findPolygonIntersection(const std::vector<cogx::Math::Vector3> &polygon1, 
+    const std::vector<cogx::Math::Vector3> &polygon2);
+
+double getPolygonArea(const std::vector<cogx::Math::Vector3> &polygon);
+
 
 }; // namespace spatial
 

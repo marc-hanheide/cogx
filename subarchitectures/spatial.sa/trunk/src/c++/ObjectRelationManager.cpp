@@ -19,11 +19,14 @@
 #include <VisionData.hpp>
 #include <AddressBank/ConfigFileReader.hh>
 
+using namespace cast;
+#include <Pose3.h>
+
 using namespace std;
 using namespace cast;
 using namespace boost;
 using namespace spatial;
-
+using namespace cogx::Math;
 
 /**
  * The function called to create a new instance of our component.
@@ -35,6 +38,22 @@ extern "C" {
     return new ObjectRelationManager();
   }
 }
+
+namespace spatial {
+double squareDistanceWeight			= 1.0;
+// Square distance at which onness drops by half
+double squareDistanceFalloff			= 0.05; 
+
+double supportCOMContainmentOffset		= 0.5;
+double supportCOMContainmentWeight		= 1.0;
+double supportCOMContainmentSteepness		= 5.0;
+
+double bottomCOMContainmentOffset		= 0.0;
+double bottomCOMContainmentWeight		= 1.0;
+double bottomCOMContainmentSteepness		= 1.0;
+
+double planeInclinationWeight			= 1.0;
+};
 
 ObjectRelationManager::ObjectRelationManager()
 {
@@ -55,6 +74,11 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     _config.find("--display-planes-in-pb");
   if (it != _config.end()) {
     m_bDisplayPlaneObjectsInPB = true;
+  }
+
+  it = _config.find("--test-onness");
+  if (it != _config.end()) {
+    m_bTestOnness = true;
   }
 
   m_RetryDelay = 10;
@@ -104,7 +128,7 @@ void ObjectRelationManager::start()
       new MemberFunctionChangeReceiver<ObjectRelationManager>(this, 
 	&ObjectRelationManager::newPlaneObject));  
 
-  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
+//  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   log("ObjectRelationManager started");
 }
 
@@ -112,22 +136,222 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
-  if (m_bDisplayPlaneObjectsInPB) {
+  peekabot::GroupProxy root;
+  if (m_bDisplayPlaneObjectsInPB || m_bTestOnness) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
       sleep(m_RetryDelay);
       connectPeekabot();
     }
 
-    peekabot::GroupProxy root;
     root.assign(m_PeekabotClient, "root");
-    m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
+    if (m_bDisplayPlaneObjectsInPB) {
+      m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
+    }
+    if (m_bTestOnness) {
+      m_onnessTester.add(root, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
+    }
+    println("Connected to peekabot, ready to go");
   }
 
-  println("Connected to peekabot, ready to go");
-  
-//  while(isRunning()){
-//    usleep(250000);
-//  }
+
+  if (m_bTestOnness) {
+
+    PlaneObject table1;
+
+    table1.type = OBJECT_PLANE;
+
+    Matrix33 rotation;
+    double rotAngle = 0.0;
+    fromAngleAxis(rotation, rotAngle, vector3(0.0, 0.0, 1.0));
+    table1.pose = pose3(vector3(0.0, 0.0, 1.0), rotation);
+
+    table1.shape = PLANE_OBJECT_RECTANGLE;
+    table1.radius1 = 0.5;
+    table1.radius2 = 0.5;
+
+    peekabot::GroupProxy sliders;
+    sliders.add(m_onnessTester, "weights", peekabot::REPLACE_ON_CONFLICT);
+
+    peekabot::SphereProxy sqdp;
+    sqdp.add(sliders, "squareDistance", peekabot::REPLACE_ON_CONFLICT);
+    sqdp.translate(-1.0, 6.0, squareDistanceWeight);
+    sqdp.set_scale(0.1);
+    peekabot::SphereProxy scwp;
+    scwp.add(sliders, "supportEdge", peekabot::REPLACE_ON_CONFLICT);
+    scwp.translate(0.0, 6.0, supportCOMContainmentWeight);
+    scwp.set_scale(0.1);
+    peekabot::SphereProxy bcwp;
+    bcwp.add(sliders, "bottomEdge", peekabot::REPLACE_ON_CONFLICT);
+    bcwp.translate(1.0, 6.0, bottomCOMContainmentWeight);
+    bcwp.set_scale(0.1);
+    peekabot::SphereProxy pip;
+    pip.add(sliders, "planeInclination", peekabot::REPLACE_ON_CONFLICT);
+    pip.translate(2.0, 6.0, planeInclinationWeight);
+    pip.set_scale(0.1);
+
+    peekabot::CubeProxy dfp;
+    dfp.add(sliders, "distanceFalloff", peekabot::REPLACE_ON_CONFLICT);
+    dfp.translate(-1.0, 6.0, squareDistanceFalloff);
+    dfp.set_scale(0.1);
+    peekabot::CubeProxy csp;
+    csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
+    csp.translate(0.0, 6.0, supportCOMContainmentSteepness);
+    csp.set_scale(0.1);
+    peekabot::CubeProxy cop;
+    cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
+    cop.translate(0.0, 6.0, supportCOMContainmentOffset);
+    cop.set_scale(0.1);
+
+    peekabot::PolygonProxy pp;
+    pp.add(m_onnessTester, "table", peekabot::REPLACE_ON_CONFLICT);
+    pp.add_vertex(table1.radius1, table1.radius2, 0);
+    pp.add_vertex(-table1.radius1, table1.radius2, 0);
+    pp.add_vertex(-table1.radius1, -table1.radius2, 0);
+    pp.add_vertex(table1.radius1, -table1.radius2, 0);
+
+    pp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
+    pp.rotate(rotAngle, 0.0, 0.0, 1.0);
+
+
+    peekabot::CubeProxy bp;
+    bp.add(m_onnessTester, "box", peekabot::REPLACE_ON_CONFLICT);
+    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.5);
+    bp.set_scale(0.4, 0.4, 0.4);
+
+    while (isRunning()) {
+      peekabot::Result<peekabot::Vector3f> vr;
+      vr = sqdp.get_position();
+      if (vr.succeeded()) squareDistanceWeight= vr.get_result()(2);
+      vr = scwp.get_position();
+      if (vr.succeeded()) supportCOMContainmentWeight = vr.get_result()(2);
+      vr = bcwp.get_position();
+      if (vr.succeeded()) bottomCOMContainmentWeight = vr.get_result()(2);
+      vr = pip.get_position();
+      if (vr.succeeded()) planeInclinationWeight = vr.get_result()(2);
+
+      vr = dfp.get_position();
+      if (vr.succeeded()) squareDistanceFalloff = vr.get_result()(2);
+      vr = csp.get_position();
+      if (vr.succeeded()) {
+	bottomCOMContainmentSteepness = 
+	  supportCOMContainmentSteepness = vr.get_result()(2);
+      }
+      vr = cop.get_position();
+      if (vr.succeeded()) {
+	bottomCOMContainmentOffset = 
+	  supportCOMContainmentOffset = vr.get_result()(2);
+      }
+	
+
+      peekabot::Result<peekabot::Matrix4f> r;
+
+      r = bp.get_transformation(peekabot::WORLD_COORDINATES);
+      if (r.succeeded()) {
+	Pose3 boxPose;
+	double m[16];
+	m[0] = r.get_result()(0,0);
+	m[1] = r.get_result()(0,1);
+	m[2] = r.get_result()(0,2);
+	m[3] = r.get_result()(0,3);
+	m[4] = r.get_result()(1,0);
+	m[5] = r.get_result()(1,1);
+	m[6] = r.get_result()(1,2);
+	m[7] = r.get_result()(1,3);
+	m[8] = r.get_result()(2,0);
+	m[9] = r.get_result()(2,1);
+	m[10] = r.get_result()(2,2);
+	m[11] = r.get_result()(2,3);
+	m[12] = r.get_result()(3,0);
+	m[13] = r.get_result()(3,1);
+	m[14] = r.get_result()(3,2);
+	m[15] = r.get_result()(3,3);
+
+	setRow44(boxPose, m);
+
+	BoxObject box1;
+
+	box1.type = OBJECT_BOX;
+	box1.pose = boxPose;
+	box1.radius1 = 0.2;
+	box1.radius2 = 0.2;
+	box1.radius3 = 0.2;
+
+	//	  peekabot::PointCloudProxy pcloud;
+	//	  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+	//	  for (double x = -1.5; x <= 1.5; x += 0.1) {
+	//	    for (double y = -1.5; y <= 1.5; y += 0.1) {
+	//	      for (double z = 0; z <= 2.5; z += 0.1) {
+	//		box1.pose.pos = vector3(x, y, z);
+	//		double onness = evaluateOnness(&table1, &box1);
+	//		cout << "(" << x << " " << y << " " << z << "):" << onness << "   ";
+	//		if (onness > 0.8) {
+	//		  pcloud.add_vertex(x,y,z);
+	//		}
+	//	      }
+	//	      cout << endl;
+	//	    }
+	//	  }
+
+
+	//	  cout << "Onness: " << evaluateOnness(&table1, &box1);
+
+	peekabot::SphereProxy sp;
+	sp.add(m_onnessTester, "Onness", peekabot::REPLACE_ON_CONFLICT);
+	sp.translate(0.0, 3.0, 1.0);
+	sp.set_scale(evaluateOnness(&table1, &box1));
+	peekabot::SphereProxy spm;
+	spm.add(m_onnessTester, "Onness-max", peekabot::REPLACE_ON_CONFLICT);
+	spm.translate(0.0, 3.0, 1.0);
+	spm.set_opacity(0.3);
+
+
+
+	//  vector<Vector3> polygon1;
+	//  polygon1.push_back(vector3(0.0, 0.0, 1.0));
+	//  polygon1.push_back(vector3(1.0, 0.0, 1.0));
+	//  polygon1.push_back(vector3(1.0, 1.0, 1.0));
+	//  polygon1.push_back(vector3(0.0, 1.0, 1.0));
+
+	//  vector<Vector3> polygon2;
+	//  polygon2.push_back(vector3(0.5, 0.5, 1.0));
+	//  polygon2.push_back(vector3(1.0, 0.5, 1.0));
+	//  polygon2.push_back(vector3(1.0, 1.5, 1.0));
+	//  polygon2.push_back(vector3(0.5, 1.5, 1.0));
+	//  polygon2.push_back(vector3(0.5, 0.5, 1.0));
+	//  polygon2.push_back(vector3(1.5, 0.5, 1.0));
+	//  polygon2.push_back(vector3(1.5, 1.5, 1.0));
+	//  polygon2.push_back(vector3(0.5, 1.5, 1.0));
+
+	//  vector<Vector3> polygon3;
+	//  polygon3.push_back(vector3(0.2, 0.2, 1.0));
+	//  polygon3.push_back(vector3(0.8, 0.2, 1.0));
+	//  polygon3.push_back(vector3(0.8, 0.8, 1.0));
+	//  polygon3.push_back(vector3(0.2, 0.8, 1.0));
+
+	//  cout << getPolygonArea(findPolygonIntersection(polygon1, polygon2)) << endl;
+	//  cout << getPolygonArea(
+	//      findPolygonIntersection(polygon1, findPolygonIntersection(polygon1, polygon2))) << endl;
+	//  cout << getPolygonArea(findPolygonIntersection(polygon1, polygon3)) << endl;
+	//  cout << getPolygonArea(findPolygonIntersection(polygon2, polygon3)) << endl;
+	//  cout << getPolygonArea(findPolygonIntersection(polygon2, polygon1)) << endl;
+	//  cout << getPolygonArea(findPolygonIntersection(polygon2, polygon3)) << endl;
+	//  cout << getPolygonArea(findPolygonIntersection(polygon3, polygon1)) << endl;
+	//  cout << getPolygonArea(findPolygonIntersection(polygon3, polygon2)) << endl;
+
+	//  cout << findOverlappingArea(polygon1, vector3(0.0, 0.0, 1.0), 0.5) << endl;
+	//  cout << findOverlappingArea(polygon1, vector3(0.0, 0.0, 1.0), 1.0) << endl;
+	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 0.2) << endl;
+	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 4.0) << endl;
+	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 0.5) << endl;
+	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), sqrt(0.5)) << endl;
+	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 0.5001) << endl;
+	//  while(isRunning()){
+	//    usleep(250000);
+	//  }
+      }
+      sleepComponent(500);
+    }
+  }
 }
 
 void
@@ -137,7 +361,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
 
-    cogx::Math::Pose3 pose = observedObject->pose;
+    Pose3 pose = observedObject->pose;
 
     SpatialData::SpatialObjectPtr newObject = new SpatialData::SpatialObject;
     newObject->label = observedObject->label;
