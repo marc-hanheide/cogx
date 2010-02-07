@@ -39,7 +39,7 @@ main(!IO) :-
 
 			vs(InitMProp, InitVarset) = det_string_to_vsmprop(Goal),
 
-			P0 = proof(vs([[unsolved(InitMProp, const(InitAssumeCost))]], InitVarset), []),
+			P0 = vs([unsolved(InitMProp, const(InitAssumeCost))], InitVarset),
 
 			format("goal:\n  %s\n\n", [s(vsmprop_to_string(vs(InitMProp, InitVarset)))], !IO),
 
@@ -49,13 +49,17 @@ main(!IO) :-
 
 %			DC0 = new_d_ctx,
 
-			Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-G)-P::out) is nondet :-
-				Costs = costs(1.0, 0.1, 0.1),
-				prove(0.0, InitAssumeCost, P0, P, Costs, !.Ctx),
-				G = last_goal(P),
-				Cost = cost(!.Ctx, P, Costs)
+			Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
+%				Costs = costs(1.0, 1.0),
+%				prove(0.0, InitAssumeCost, P0, P, Costs, !.Ctx),
+%				G = last_goal(P),
+%				Cost = cost(!.Ctx, P, Costs)
+
+				prove(0.0, 100.0, P0, P, default_costs, !.Ctx),
+				Cost = cost(!.Ctx, P, default_costs)
 					))),
 
+/*
 			% TODO: derivations
 			% deriv: map(proved_goal, set(list(steps)))
 
@@ -73,7 +77,22 @@ main(!IO) :-
 					), map.to_assoc_list(DerivsMap), DerivsSorted),
 
 			format("found %d proofs.\n", [i(length(DerivsSorted))], !IO),
+*/
 
+			list.sort((pred((CA-_)::in, (CB-_)::in, Comp::out) is det :-
+				float_compare(CA, CB, Comp)
+					), Proofs0, Proofs),
+
+			format("\n  %d proof(s) found.\n", [i(list.length(Proofs))], !IO),
+
+			list.foldl((pred((Cost-Gz)::in, !.IO::di, !:IO::uo) is det :-
+				print("---------------------------------------------------------------------\n", !IO),
+				format("proof cost = %f\n\n", [f(Cost)], !IO),
+				print("proven goal:\n  " ++ goal_to_string(Gz) ++ "\n", !IO),
+				nl(!IO)
+					), Proofs, !IO)
+
+/*
 			list.foldl((pred((Cost-G)-Ds::in, !.IO::di, !:IO::uo) is det :-
 				print("---------------------------------------------------------------------\n", !IO),
 				format("proof cost = %f\n\n", [f(Cost)], !IO),
@@ -99,11 +118,18 @@ main(!IO) :-
 						), Ds, !IO)
 
 					), DerivsSorted, !IO)
+*/
 		)
 	else
 		io.progname("?", ProgName, !IO),
 		format(stderr_stream, "Usage: %s GOAL GOAL_ASSUMPTION_COST < FILE\n", [s(ProgName)], !IO)
 	).
+
+%------------------------------------------------------------------------------%
+
+:- func default_costs = costs.
+
+default_costs = costs(1.0, 1.0).
 
 %------------------------------------------------------------------------------%
 
