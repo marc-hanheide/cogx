@@ -26,7 +26,7 @@ Vs3Interface::Vs3Interface()
   assert(vcore != 0);	
 
 	// set processing time and canny parameters
-	processingTime = 800;
+	processingTime = 600;
 	cannyAlpha = 800;
 	cannyOmega = 1;
 }
