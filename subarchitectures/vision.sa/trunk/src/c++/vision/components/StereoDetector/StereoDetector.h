@@ -20,6 +20,7 @@
 #include "StereoCore.hh"
 #include "Pose3.h"
 #include "StereoBase.h"
+#include "Except.hh"
 
 namespace cast
 {
@@ -35,9 +36,11 @@ private:
 	Z::StereoCore *score;										///< Stereo core
 	std::vector<int> camIds;								///< Which cameras to get images from
 	std::string videoServerName;						///< Component ID of the video server to connect to
+	std::string camconfig;									///< Config name of camera config file
 	Video::VideoInterfacePrx videoServer;		///< ICE proxy to the video server
 	Video::Image image_l, image_r;					///< Left and right stereo image from video server. Original images.
 	IplImage *iplImage_l, *iplImage_r;			///< Converted left and right stereo images (openCV ipl-images)
+	bool gotImage;													///< True, when image is available
 	bool cmd_detect;												///< Detection command
 	bool cmd_single;												///< Single detection commmand
 	bool debug;															///< Debug mode
@@ -53,6 +56,8 @@ private:
 																					///     3 = rectangles\n
 																					///     4 = closures\n
 																					///     5 = ellipses
+																					///     6 = flaps_ari
+																					///     7 = cubes
 
   /**
    * @brief Show both stereo images in the openCV windows.
@@ -109,13 +114,10 @@ protected:
    * @brief Called by the framework to start compnent run loop
    */
   virtual void runComponent();
-
   /**
    * @brief Called to start processing of one image
-   * @param image_l Left stereo image from video server.
-   * @param image_r Right stereo image from video server.
    */
-	virtual void processImage(/*const Video::Image &image_l, const Video::Image &image_r*/);
+	virtual void processImage();
 
 
 public:
