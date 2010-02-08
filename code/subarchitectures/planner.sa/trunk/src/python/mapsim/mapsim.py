@@ -10,7 +10,8 @@ usage: %prog [options] domain scenario
   -r, --random=SEED : random seed for the world state [default: %default]
   -n, --runs=ITERATIONS : number of different variants of the scenario [default: 1]
   -L, --learning_mode=(cluster|learn|test) : mode for the learning agent [default: %default]
-  -m, --macro_file=FILE : read/write macros from/to this file [default: %default]
+  -m, --macro_filename=FILE : set the basename of the macro file. Defaults to domain name.
+  -M, --macro_version=INDEX : read/write macros from this version of the macro file [default: %default]
 """
 
 from os.path import abspath, dirname
@@ -27,6 +28,7 @@ mapsim_path = abspath(dirname(__file__))  # where this file resides
 CONFIG_FN = "config.ini"
 LOG_CONFIG_FN = "logging.conf"
 
+    
 def parse_command_line():
     # parse options and required arguments from docstring automatically
     from myoptionparse import OptionParser
@@ -67,6 +69,8 @@ if __name__ == '__main__':
     domain = pddl.load_domain(global_vars.mapsim_config.domain)
     scenario = pddl.load_scenario(global_vars.mapsim_config.scenario, domain)
 
+    log.info("settings: %s", repr(global_vars.mapsim_config))
+
     print "Loaded scenario '%s'." % scenario.name
     if len(scenario.agents) == 1:
         print "There is one agent: %s" % "".join(scenario.agents.iterkeys())
@@ -91,5 +95,7 @@ if __name__ == '__main__':
     if global_vars.mapsim_config.runs > 1:
         print "\nAverage stats:"
         print "Stats:", sim.collect_average_statistics()
-        
+
+    log.info("runs: %d", global_vars.mapsim_config.runs)
+    log.info("stats: %s", repr(sim.collect_average_statistics()))
 

@@ -25,7 +25,8 @@ def next_id():
 def loggingScope(f):
     def new_f(self, *args, **kwargs):
         oldscope = config.logfile_scope
-        config.logfile_scope = self.name
+        if global_vars.mapsim_config.separate_logs:
+            config.logfile_scope = self.name
         rval = f(self, *args, **kwargs)
         config.logfile_scope = oldscope
         return rval
@@ -68,7 +69,11 @@ class Agent(BaseAgent):
 
     def new_task(self, mapltask):
         self.mapltask = mapltask.copy()
-        self.task = Task(next_id(), self.mapltask)
+        if global_vars.mapsim_config.add_assertions:
+            self.task = Task(next_id(), self.mapltask, add_assertions=True)
+        else:
+            self.task = Task(next_id(), self.mapltask)
+            
         self.planner.register_task(self.task)
 
     @loggingScope
@@ -102,7 +107,6 @@ class Agent(BaseAgent):
             G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
             G.layout(prog='dot')
             G.draw("plan.pdf")
-
         #all_funcs = set(self.mapltask.functions) | set(self.mapltask.predicates)
         # print "instantiate:"
         #mapl.sas_translate.to_sas(self.mapltask)

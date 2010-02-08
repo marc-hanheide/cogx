@@ -72,7 +72,7 @@ class MacroOp(pddl.scope.Scope):
             ops += pddl.numeric_ops
 
         scope.predicates.add(ops)
-        
+
         for elem in it:
             j = iter(elem)
             first = j.get()
@@ -85,17 +85,17 @@ class MacroOp(pddl.scope.Scope):
                     raise pddl.parser.UnexpectedTokenError(val, "number")
 
                 if first.token.string == ":usecount":
-                    macro.usecount = int(value)
+                    macro.usecount = float(value)
                 elif first.token.string == ":subsumes":
                     macro.subsumption_count = int(value)
                 elif first.token.string == ":costs":
-                    macro.costs = int(value)
+                    macro.costs = float(value)
             else:
                 atom = pddl.Literal.parse(iter(first), macro)
                 if atom not in macro.Q:
                     raise pddl.parser.ParseError(first.token, "Unknown atom: %s" % str(atom))
                 state = int(j.get().token.string)
-                count = int(j.get().token.string)
+                count = float(j.get().token.string)
                 val = float(j.get().token.string)
                 if atom in macro.atom_state:
                     macro.atom_state[atom] = state
@@ -106,7 +106,7 @@ class MacroOp(pddl.scope.Scope):
         return macro
 
     def init_structures(self):
-        self.atom_state = dict((a, ATOM_ENABLED) for a in itertools.chain(self.pre, self.eff))
+        self.atom_state = dict([(a, ATOM_DISABLED) for a in self.pre] + [(a, ATOM_ENABLED) for a in self.eff])
 
         self.Q = dict((a, 0) for a in itertools.chain(self.pre, self.eff))
         self.Q.update(dict((a.negate(), 0) for a in itertools.chain(self.pre, self.eff)))
@@ -202,9 +202,9 @@ class MacroOp(pddl.scope.Scope):
 
         def get_mapping(a1, a2):
             def collect_args(term, results):
-                if isinstance(term, (pddl.predicates.VariableTerm, pddl.predicates.ConstantTerm)):
+                if isinstance(term, (pddl.VariableTerm, pddl.ConstantTerm)):
                     return [term.object]
-                if isinstance(term, pddl.predicates.FunctionTerm):
+                if isinstance(term, pddl.FunctionTerm):
                     return sum(results, [])
                 
             for arg, arg2 in zip(a1.collect_arguments(), a2.collect_arguments()):
@@ -212,11 +212,11 @@ class MacroOp(pddl.scope.Scope):
 
         def copy_atom(atom, mapping, scope=None):
             def copyTerm(term, results):
-                if isinstance(term, pddl.predicates.VariableTerm):
+                if isinstance(term, pddl.VariableTerm):
                     return pddl.Term(mapping[term.object])
-                elif isinstance(term, pddl.predicates.ConstantTerm):
+                elif isinstance(term, pddl.ConstantTerm):
                     return pddl.Term(term.object)
-                elif isinstance(term, pddl.predicates.FunctionTerm):
+                elif isinstance(term, pddl.FunctionTerm):
                     return pddl.Term(term.function, results)
             if isinstance(atom, pddl.LiteralCondition):
                 return pddl.LiteralCondition(atom.predicate, [a.visit(copyTerm) for a in atom.args])
@@ -249,6 +249,12 @@ class MacroOp(pddl.scope.Scope):
                 local_map[param] = new
 
             args.remove(local_map[action.agents[0]])
+            if local_map[action.agents[0]].type.is_subtype_of(agent_param.type):
+                del mapping[agent_param]
+                args.remove(agent_param)
+                agent_param.type = local_map[action.agents[0]].type
+                mapping[agent_param] = agent_param
+                args.add(agent_param)
             mapping[local_map[action.agents[0]]] = agent_param
 
             pairs = []
@@ -301,7 +307,7 @@ class MacroOp(pddl.scope.Scope):
                             mapping[key] = new
                 
             log.debug("parameter set is now: %s", " ".join(a.name for a in args))
-                
+
         args.remove(agent_param)
         macro = MacroOp(name, agent_param, list(args), [], [], domain)
         
@@ -311,6 +317,8 @@ class MacroOp(pddl.scope.Scope):
             macro.pre.append(new)
             
         for svar, atom in written.iteritems():
+            if svar in read and read[svar] == atom:
+                continue
             new = copy_atom(atom, mapping, macro)
             log.debug("adding effect: %s => %s", atom.pddl_str(), new.pddl_str())
             macro.eff.append(new)
@@ -338,10 +346,15 @@ class MacroOp(pddl.scope.Scope):
         return macro
 
 
-    def less_than(self, other):
+    def less_than(self, other, enabled_only=False):
         """ Return 'True' if other can be always applied instead of this macro."""
         def count_mapped_vars(mapping):
             return len([x for x in mapping.iterkeys() if x in other.args])
+
+        def rel(macro, atoms):
+            if enabled_only:
+                return filter(lambda a: macro.atom_state[a] == ATOM_ENABLED, atoms)
+            return atoms
 
         predicate_equalities = set([
             (pddl.equals, pddl.assign),
@@ -354,9 +367,9 @@ class MacroOp(pddl.scope.Scope):
             def map_term(term1, term2):
                 if term1.__class__ != term2.__class__:
                     return False
-                if term1.__class__ == pddl.predicates.ConstantTerm:
+                if term1.__class__ == pddl.ConstantTerm:
                     return term1.object == term2.object
-                if term1.__class__ == pddl.predicates.VariableTerm:
+                if term1.__class__ == pddl.VariableTerm:
                     if not term1.get_type().equal_or_subtype_of(term2.get_type()):
                         return False
                     if mapping.get(term1.object, term2.object) != term2.object:
@@ -369,7 +382,7 @@ class MacroOp(pddl.scope.Scope):
                     mapping[term1.object] = term2.object
                     mapping[term2.object] = term1.object
                     return True
-                if term1.__class__ == pddl.predicates.FunctionTerm:
+                if term1.__class__ == pddl.FunctionTerm:
                     if term1.function != term2.function:
                         return False
                     log.debug("Trying to map %s to %s", term1.pddl_str(), term2.pddl_str())
@@ -388,16 +401,18 @@ class MacroOp(pddl.scope.Scope):
             #if count_mapped_vars(mapping) == len(a2.args):
             #    return True
 
-            if index >= len(a2.pre):
+            a2_pre_count = len(rel(a2, a2.pre))
+
+            if index >= a2_pre_count:
                 log.debug("Looking at effects")
                 #Atoms in eff(A2) and pre(A1) can be mapped on each other!
-                a1_atoms = a1.pre + a1.eff
-                a2_atoms = a2.eff
-                offset = len(a2.pre)
+                a1_atoms = rel(a1, a1.pre) + rel(a1, a1.eff)
+                a2_atoms = rel(a2, a2.eff)
+                offset = a2_pre_count
             else:
                 log.debug("Looking at preconditions")
-                a1_atoms = a1.pre
-                a2_atoms = a2.pre
+                a1_atoms = rel(a1, a1.pre)
+                a2_atoms = rel(a2, a2.pre)
                 offset = 0
 
             atom2 = None
@@ -411,8 +426,8 @@ class MacroOp(pddl.scope.Scope):
 
             if atom2 is None:
                 #We are already done with the preconditions (of A2). Continue with the effects
-                if index < len(a2.pre):
-                    return backtrack(a1, a2, len(a2.pre), mapping)
+                if index < a2_pre_count:
+                    return backtrack(a1, a2, a2_pre_count, mapping)
                 log.debug("No more atoms in a2 to map")
                 return True
 
@@ -446,8 +461,8 @@ class MacroOp(pddl.scope.Scope):
             return False
 
         #check if all effects of self are satisfied:
-        for eff in self.eff:
-            if not any(try_map_atoms(eff, eff2, mapping) for eff2 in other.eff):
+        for eff in rel(self, self.eff):
+            if not any(try_map_atoms(eff, eff2, mapping) for eff2 in rel(other, other.eff)):
                 log.debug("Effect %s is not in a2." % eff.pddl_str())
                 return False
             
@@ -486,11 +501,11 @@ class MacroOp(pddl.scope.Scope):
                 if uninstantiated(term):
                     unknown.append(term)
                 else:
-                    if term.__class__ == pddl.predicates.FunctionTerm:
+                    if term.__class__ == pddl.FunctionTerm:
                         known.append(thisstate[state.StateVariable.from_term(term)])
-                    elif term.__class__ == pddl.predicates.VariableTerm:
+                    elif term.__class__ == pddl.VariableTerm:
                         known.append(term.get_instance())
-                    elif term.__class__ == pddl.predicates.ConstantTerm:
+                    elif term.__class__ == pddl.ConstantTerm:
                         known.append(term.object)
 
             mapping = {}
@@ -498,7 +513,7 @@ class MacroOp(pddl.scope.Scope):
                 if not known or not unknown:
                     return
                 
-                if unknown[0].__class__ == pddl.predicates.VariableTerm:
+                if unknown[0].__class__ == pddl.VariableTerm:
                     yield {unknown[0].object : known[0]}
                 else:
                     for svar, mapping in get_possible_svars(unknown[0].function, unknown[0].args, known[0]):
@@ -551,7 +566,7 @@ class MacroOp(pddl.scope.Scope):
             if num_uninstantiated(p) == 0:
                 log.debug(p.pddl_str())
             
-        return [p for p in self.pre if num_uninstantiated(p) == 0]
+        return [p for p in self.pre if num_uninstantiated(p) == 0 and thisstate.is_satisfied(p)]
 
     def to_action(self, filter=ATOM_ENABLED):
         precondition = pddl.Conjunction([p for p in self.pre if self.atom_state[p] & filter])
@@ -575,10 +590,13 @@ class MacroOp(pddl.scope.Scope):
                 if self.atom_state[p] == ATOM_ENABLED:
                     id_cond = pddl.LiteralCondition(mapl.indomain, p.args[:], negated = p.negated)
                     precondition.parts.append(id_cond)
-                k_cond = pddl.LiteralCondition(mapl.knowledge, [pddl.predicates.VariableTerm(self.agent), p.args[0]])
+                k_cond = pddl.LiteralCondition(mapl.knowledge, [pddl.VariableTerm(self.agent), p.args[0]])
                 replan.parts.append(k_cond)
                     
         effect = pddl.ConjunctiveEffect([eff for eff in self.eff if self.atom_state[eff] == ATOM_ENABLED])
+        costs = max(1, self.costs)
+        cost_eff = pddl.SimpleEffect(pddl.builtin.increase, [pddl.Term(pddl.builtin.total_cost, []), pddl.Term(costs-1)])
+        #effect.parts.append(cost_eff)
 
         args = set()
         for atom in itertools.chain(precondition.parts, replan.parts, effect.parts):
@@ -597,9 +615,9 @@ class MacroWriter(mapl.MAPLWriter):
         strings.append("(:subsumes %d)" % macro.subsumption_count)
         strings.append("(:costs %f)" % macro.costs)
         for atom in itertools.chain(macro.pre, macro.eff):
-            strings.append("(%s %d %d %f)" % (self.write_literal(atom), macro.atom_state[atom], macro.frequencies[atom], macro.Q[atom]))
+            strings.append("(%s %d %f %f)" % (self.write_literal(atom), macro.atom_state[atom], macro.frequencies[atom], macro.Q[atom]))
             natom = atom.negate()
-            strings.append("(%s 0 %d %f)" % (self.write_literal(natom), macro.frequencies[natom], macro.Q[natom]))
+            strings.append("(%s 0 %f %f)" % (self.write_literal(natom), macro.frequencies[natom], macro.Q[natom]))
             
         return self.section(":macro", strings)
 

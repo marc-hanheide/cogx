@@ -51,6 +51,8 @@ class Simulation(object):
             self.agents[a] = agent_class(a, prob, self.planner, self)
 
     def reset(self, run):
+        log.info("--------------------------------------------------------------------------------")
+        log.info("Starting simulation run %d\n", run)
         self.time = 0
         self.queue = []
         self.run_index = run
@@ -192,8 +194,13 @@ class Simulation(object):
                 print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
                 perception = state.Fact(svar.as_modality(mapl.i_indomain, [value]), pddl.FALSE)
         else:
-            print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
-            perception = state.Fact(svar, self.state[svar])
+            if self.state[svar] == pddl.UNKNOWN and svar.function.type == pddl.t_boolean:
+                #HACK: default to FALSE for undefined boolean fluents
+                print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), pddl.FALSE)
+                perception = state.Fact(svar, pddl.FALSE)
+            else:
+                print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
+                perception = state.Fact(svar, self.state[svar])
             
         return [perception]
                     
