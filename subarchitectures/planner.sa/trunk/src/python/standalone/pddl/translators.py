@@ -307,20 +307,26 @@ class ObjectFluentCompiler(Translator):
                 if eff.predicate == assign:
                     assert isinstance(eff.args[0], FunctionTerm) and isinstance(eff.args[1], (VariableTerm, ConstantTerm))
                     term = eff.args[0]
+                    value = eff.args[1]
                     new_pred = scope.predicates.get(term.function.name, term.args + eff.args[-1:])
+                    effs = []
                     if term in previous_values:
-                        effs = []
                         for val in previous_values[term]:
                             effs.append(effects.SimpleEffect(new_pred, term.args[:] + [val], negated=True))
-                        effs.append(effects.SimpleEffect(new_pred, term.args[:] + [eff.args[1]]))
-                        return effects.ConjunctiveEffect(effs)
+                        effs.append(effects.SimpleEffect(new_pred, term.args[:] + [value]))
+                    elif term.function.type == t_boolean:
+                        if eff.args[1] == TRUE:
+                            effs.append(effects.SimpleEffect(new_pred, term.args[:] + [FALSE], negated=True))
+                        else:
+                            effs.append(effects.SimpleEffect(new_pred, term.args[:] + [TRUE], negated=True))
+                        effs.append(effects.SimpleEffect(new_pred, term.args[:] + [value]))
                     else:
                         param = types.Parameter("?oldval", term.function.type)
-                        condition = conditions.LiteralCondition(equals, [eff.args[1], Term(param)], negated=True)
+                        condition = conditions.LiteralCondition(equals, [Term(param), value], negated=True)
                         negeffect = effects.SimpleEffect(new_pred, term.args[:] + [Term(param)], negated=True)
                         ceffect = effects.ConditionalEffect(condition, negeffect)
-                        effs = [effects.UniversalEffect([param], ceffect, None), effects.SimpleEffect(new_pred, term.args[:] + [eff.args[1]])]
-                        return effects.ConjunctiveEffect(effs)
+                        effs = [effects.UniversalEffect([param], ceffect, None), effects.SimpleEffect(new_pred, term.args[:] + [value])]
+                    return effects.ConjunctiveEffect(effs)
 
         result = eff.visit(effectsVisitor)
         result.set_scope(scope)
@@ -439,6 +445,7 @@ class ModalPredicateCompiler(Translator):
             return literal
 
         pred = scope.predicates.get("-".join(name_elems), args)
+        
         result = Literal(pred, args, negated=literal.negated)
         result.__class__ = literal.__class__
         return result.copy_instance()
@@ -513,6 +520,7 @@ class ModalPredicateCompiler(Translator):
             func_arg, compiled = self.compile_modal_args(pred.args, funcs)
             for f, args in compiled:
                 new_preds.append(Predicate("%s-%s" % (pred.name, f.name), args))
+
         nonmodal += new_preds
             
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), scope.FunctionTable(nonmodal), _domain.functions.copy(), [], [])
@@ -646,7 +654,7 @@ class MAPLCompiler(Translator):
                             p2.init.append(effects.SimpleEffect(i_indomain, e.args, scope=p2))
                         else:
                             p2.init.append(e.copy(new_scope=p2))
-            elif i.args[-1] != builtin.UNKNOWN:
+            elif not i.args or i.args[-1] != builtin.UNKNOWN:
                 p2.init.append(i.copy(new_scope=p2))
 
         return p2

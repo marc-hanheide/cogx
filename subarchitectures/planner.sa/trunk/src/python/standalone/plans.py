@@ -161,29 +161,53 @@ class MAPLPlan(networkx.MultiDiGraph):
                     self.node[n]['depth'] = 0
         for n in self.nodes_iter():
             visit(n)
+
+    def predecessors_iter(self, node, link_type=None):
+        if link_type and not isinstance(link_type, (list, tuple)):
+            link_type = [link_type]
+        for p in networkx.MultiDiGraph.predecessors_iter(self, node):
+            if not link_type or any(e['type'] in link_type for e in self[p][node].itervalues()):
+                yield p
+                
+    def predecessors(self, node, link_type=None):
+        if not link_type:
+            return networkx.MultiDiGraph.predecessors(self, node)
+        return [p for p in self.predecessors_iter(node, link_type)]
+
+    def successors_iter(self, node, link_type=None):
+        if link_type and not isinstance(link_type, (list, tuple)):
+            link_type = [link_type]
+        for s in networkx.MultiDiGraph.successors_iter(self, node):
+            if not link_type or any(e['type'] in link_type for e in self[node][s].itervalues()):
+                yield s
+                
+    def successors(self, node, link_type=None):
+        if not link_type:
+            return networkx.MultiDiGraph.successors(self, node)
+        return [n for n in self.successors_iter(node, link_type)]
     
-    def pred_closure(self, node):
+    def pred_closure(self, node, link_type=None):
         open = set([node])
         closed = set([self.init_node])
         result = set()
         while open:
             node = open.pop()
             closed.add(node)
-            pred = set(self.predecessors_iter(node))
+            pred = set(self.predecessors(node, link_type))
             result |= pred
             open |= (pred - closed)
         return result
 
-    def succ_closure(self, node):
+    def succ_closure(self, node, link_type=None):
         open = set([node])
         closed = set()
         result = set()
         while open:
             node = open.pop()
             closed.add(node)
-            pred = set(self.successors_iter(node))
-            result |= pred
-            open |= (pred - closed)
+            succ = set(self.successors(node, link_type))
+            result |= succ
+            open |= (succ - closed)
         return result
 
     def to_dot(self, name="plan", ranks=[]):

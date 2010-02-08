@@ -46,12 +46,12 @@ def getRWDescription(action, args, _state, time):
         read_vars = []
         universal_args = []
         extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(action.replan), getReasons=True)
-        assert extstate.is_satisfied(action.replan, read_vars, universal_args)
+        assert extstate.is_satisfied(action.replan, read_vars, universal_args), "%s: %s" % (str(pnode), action.replan.pddl_str())
         pnode.replanconds = set(read_vars)
         pnode.original_replan = set(state.Fact(var, extstate[var]) for var in read_vars)
         pnode.explanations.update(reasons)
         pnode.replan_universal = set(a.type for a in universal_args)
-        for v in read_vars:
+        for v in set(read_vars):
             if v in reasons:
                 pnode.replanconds.remove(v)
                 pnode.replanconds |= reasons[v]
@@ -65,12 +65,12 @@ def getRWDescription(action, args, _state, time):
         universal_args = []
         rel = _state.get_relevant_vars(action.precondition)
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
-        assert extstate.is_satisfied(action.precondition, read_vars, universal_args)
+        assert extstate.is_satisfied(action.precondition, read_vars, universal_args),  "%s: %s" % (str(pnode), action.precondition.pddl_str())
         pnode.preconds = set(read_vars)
         pnode.original_preconds = set(state.Fact(var, extstate[var]) for var in read_vars)
         pnode.explanations.update(reasons)
         pnode.preconds_universal = set(a.type for a in universal_args)
-        for v in read_vars:
+        for v in set(read_vars):
             if v in reasons:
                 pnode.preconds.remove(v)
                 pnode.preconds |= reasons[v]
@@ -128,6 +128,7 @@ def make_po_plan(actions, task):
                 relevant_init_vars.add(svar)
             readers[svar].add(pnode)
             plan.add_link(frontier[svar], pnode, svar, val)
+            log.debug("%s depends on %s", pnode, frontier[svar])
 
         for svar, val in pnode.effects:
             if state[svar] != val:
@@ -135,12 +136,14 @@ def make_po_plan(actions, task):
                     for node in readers[svar]:
                         if node != pnode and not node in plan.predecessors(pnode):
                             plan.add_link(node, pnode, svar, val, conflict=True)
+                            log.debug("%s must preceed %s (read conflict)", node, pnode)
                     del readers[svar]
 
                 if svar in writers:
                     for node in writers[svar]:
                         if node != pnode and not node in plan.predecessors(pnode):
                             plan.add_link(node, pnode, svar, val, conflict=True)
+                            log.debug("%s must preceed %s (write conflict)", node, pnode)
                     del writers[svar]
                     
                 state[svar] = val

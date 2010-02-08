@@ -146,7 +146,7 @@ class Problem(domain.Domain):
         first = it.get("terminal").token
         if first.string == "probabilistic":
             #TODO: disallow nested functions in those effects.
-            return effects.ProbabilisticEffect.parse(it.reset(), scope, timedEffects=False, onlySimple=True)
+            return effects.ProbabilisticEffect.parse(it.reset(), scope, timed_effects=False, only_simple=True)
         elif first.string == "assign-probabilistic":
             return effects.ProbabilisticEffect.parse_assign(it.reset(), scope)
         else:
