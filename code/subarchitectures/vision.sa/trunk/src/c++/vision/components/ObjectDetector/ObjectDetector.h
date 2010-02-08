@@ -52,7 +52,6 @@ private:
 
   bool cmd_detect;					///< detection command
 	bool cmd_single;					///< single detection command
-	bool vs_started;					///< vision server started
 	int num_cubes;						///< number of cubes, written to working memory
 	int num_cylinders;				///< number of cylinders, written to working memory
   unsigned frame_counter;		///< counter of image frames

@@ -39,18 +39,16 @@ namespace cast
 bool showImage = true;									///< show openCv image from image server.
 bool getCubes = true;										///< get cubes from the object detector
 bool getCylinders = true;								///< get cylinders from the object detector
-bool getFlaps = false; 									///< get flaps from the object detector
-
 
 void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
 {
 	ObjectDetectionCommandPtr detect_cmd = getMemoryEntry<ObjectDetectionCommand>(_wmc.address);
 	
-	log("received detection command ...");
+	debug("received detection command ...");
 	switch(detect_cmd->cmd){
 		case VisionData::DSTART:
 			if(cmd_detect){
-				log("already started object detection.");
+				debug("already started object detection.");
 			}else{
 				log("starting object detection.");
 				cmd_detect = true;
@@ -61,11 +59,11 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 				log("stopping object detection");
 				cmd_detect = false;
 			}else{
-				log("already stopped object detection");
+				debug("already stopped object detection");
 			}
 			break;
 		case VisionData::DSINGLE:
-			
+			log("single object detection");
 			videoServer->getImage(camId, m_image);
 			processImage(m_image);
 
@@ -79,7 +77,7 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 			*/
 			break;
 		default:
-// 			log("unknown detection command received, doing nothing");
+			debug("unknown detection command received, doing nothing");
 			break;
 	}	
 }
@@ -107,7 +105,6 @@ void ObjectDetector::configure(const map<string,string> & _config)
 
   cmd_detect = false;
 	cmd_single = false;
-	vs_started = false;
 }
 
 void ObjectDetector::start()
@@ -119,6 +116,12 @@ void ObjectDetector::start()
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
+	// start receiving images pushed by the video server
+  vector<int> camIds;
+  camIds.push_back(camId);
+  videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
+
+	// add change filter for object detection commands
   addChangeFilter(createLocalTypeFilter<ObjectDetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetector>(this,
         &ObjectDetector::receiveDetectionCommand));
@@ -133,7 +136,6 @@ void ObjectDetector::receiveImages(const std::vector<Video::Image>& images)
 
 	if(cmd_detect)
 	{
-  	// process a single image
   	processImage(images[0]);
 	}
 	else if(cmd_single)
@@ -165,7 +167,6 @@ void ObjectDetector::processImage(const Video::Image &image)
 	// ----------------------------------------------------------------------------
 	// Get objects after processing and create visual object for working memory
 	// ----------------------------------------------------------------------------
-
 	if(getCylinders) GetCylinders();
 
 	if(getCubes)
@@ -175,10 +176,11 @@ void ObjectDetector::processImage(const Video::Image &image)
 		while(vs3Interface->GetCube(number, cd, masked))
 		{
 			number++;
-			if(!masked /*&& cd.height > 0.04*/)							/// HACK: Nasty threshold for cube height: 4 cm
+			if(!masked /*&& cd.height > 0.04*/)							/// HACK: Nasty threshold for cube height: >4 cm
 			{
 				bool cubeExists = false;
 	
+				// check, if the cube exists at same position in working memory
 				for(unsigned i=0; i<results.size(); i++)
 				{
 					// read vertices and calculate cube center points and radius
@@ -208,7 +210,7 @@ void ObjectDetector::processImage(const Video::Image &image)
 	
 						// Add VisualObject to working memory
 						addToWorkingMemory(newDataID(), obj);
-// 						log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+						log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
 					}
 				}
 			}
@@ -216,19 +218,8 @@ void ObjectDetector::processImage(const Video::Image &image)
 	}
 
 
-	// get all flaps and create visual object as working memory entry 
-	if(getFlaps)
-	{
-		Z::FlapDef fd;				// cube definition
-
-		while(vs3Interface->GetFlap(number, fd, masked))
-		{
-
-		}
-	}
-
 	// --------------------------------------------------------------------
-	// Get input from the openCV image
+	// Get key input from openCV
 	// -------------------------------------------------------------------
 	int key = 0;
 	key = cvWaitKey(10);
@@ -467,7 +458,7 @@ void ObjectDetector::GetCylinders()
 	Z::CylDef cd;									// cylinder properties from object detector
 	int number = 0;								// number of fetched cylinders
 	bool masked = false;					// cylinder is masked?
-	static bool single = true;		// detect only one single cylinder model?
+	static bool single = true;		/// HACK: detect only one single cylinder model, then stop immediately
 
 	static vector<Z::CylDef> cylinders_old;		// old cylinders from the former image
 	static vector<Z::CylDef> cylinders_new;		// new cylinders from this image
@@ -491,10 +482,10 @@ void ObjectDetector::GetCylinders()
 				// calculate center deviation:
 				double centerDeviation = (cylinders_old[i].cylinderCenter3D - cd.cylinderCenter3D).Norm();
 
-				if(centerDeviation < 0.005)															/// HACK: Nasty threshold: Only a deviation of 5mm is allowed
+				if(centerDeviation < 0.005)							/// HACK: Threshold: Only a deviation of 5mm between center points of cyl. from the former image is allowed
 				{
 					// calculate smoothed radius and height from both cylinders
-					radius = (cylinders_old[i].topRadius3D + cd.topRadius3D)/2.;		// top ellipse radius is more reliable
+					radius = (cylinders_old[i].topRadius3D + cd.topRadius3D)/2.;
 					height = (cylinders_old[i].height + cd.height)/2.;
 
 					matchFound = true;
