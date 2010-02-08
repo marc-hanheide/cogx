@@ -13,7 +13,7 @@
 #include "Closure.hh"
 #include "Rectangle.hh"
 #include "FormClosures.hh"
-#include "HCF.hh"
+// #include "HCF.hh"
 
 namespace Z
 {

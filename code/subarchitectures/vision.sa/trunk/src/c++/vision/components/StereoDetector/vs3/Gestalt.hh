@@ -1,19 +1,26 @@
 /**
- * $Id: Gestalt.hh,v 1.22 2007/02/18 18:02:48 mxz Exp mxz $
- * TODO: - function AssignIDs(), call whenever an element was deleted or moved
- */
+ * @file Gestalt.hh
+ * @author Michael Zillich, Richtsfeld Andreas
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt base class.
+ **/
 
 #ifndef Z_GESTALT_HH
 #define Z_GESTALT_HH
 
 #include "Namespace.hh"
 #include "Array.hh"
+// #include "VisionCore.hh"
 
 namespace Z
 {
 
 class VisionCore;
 
+/**
+ * @brief Base class for all Gestalts
+ */
 class Gestalt
 {
 public:
@@ -32,6 +39,8 @@ public:
     CLOSURE,
     RECTANGLE,
     FLAP,
+    FLAP_ARI,
+    CUBE,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };

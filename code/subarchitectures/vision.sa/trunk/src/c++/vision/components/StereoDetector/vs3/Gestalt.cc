@@ -1,6 +1,10 @@
 /**
- * $Id: Gestalt.cc,v 1.21 2007/02/18 18:02:48 mxz Exp mxz $
- */
+ * @file Gestalt.cc
+ * @author Michael Zillich, Richtsfeld Andreas
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Class file of Gestalt base class.
+ **/
 
 #include "Math.hh"
 #include "VisionCore.hh"
@@ -25,11 +29,15 @@ static const char type_names[][NAME_LENGTH] = {
   "CLOSURE",
   "RECTANGLE",
   "FLAP",
+  "FLAP_ARI",
+  "CUBE",
   "UNDEF"
   };
 
 /**
- * Returns the name of a given gestalt type.
+ * @brief Returns the name of a given gestalt type.
+ * @param t Type of Gestalt
+ * @return Name of the Gestalt as text.
  */
 const char* Gestalt::TypeName(Type t)
 {
@@ -37,7 +45,9 @@ const char* Gestalt::TypeName(Type t)
 }
 
 /**
- * Return the enum type of a given gestalt type name.
+ * @brief Return the enum type of a given gestalt type name.
+ * @param type_name Name of the Gestalt as text.
+ * @return Type of the Gestalt
  */
 Gestalt::Type Gestalt::EnumType(const char *type_name)
 {
@@ -48,9 +58,11 @@ Gestalt::Type Gestalt::EnumType(const char *type_name)
 }
 
 /**
- * Gestalt constructor.
+ * @brief Gestalt constructor.
  * A new gestalt gets assigned the next higher id, i.e. the current number of
  * gestalts of that type.
+ * @param c Vision core
+ * @param t Type of Gestalt
  */
 Gestalt::Gestalt(VisionCore *c, Type t)
 {
@@ -64,7 +76,7 @@ Gestalt::Gestalt(VisionCore *c, Type t)
 }
 
 /**
- * Return some textual information.
+ * @brief Return some textual information.
  * Note: the returned string is allocated statically and will be modified by
  * the next call to GetInfo().
  */

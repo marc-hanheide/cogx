@@ -1,5 +1,9 @@
 /**
- * $Id: FormFlaps.cc,v 1.6 2006/11/24 13:47:03 mxz Exp mxz $
+ * @file FormFlaps.cc
+ * @author Michael Zillich, Andreas Richtsfeld
+ * @date Jannuar 2010
+ * @version 0.1
+ * @brief Form flaps from closures (flap-areas from polygons)
  */
 
 #include "Array.hh"
@@ -13,6 +17,11 @@
 namespace Z
 {
 
+/**
+ * @brief Compare function for ranking.
+ * @param a Gestalt a
+ * @param b Gestalt b
+ */
 static int CmpFlaps(const void *a, const void *b)
 {
   if( (*(Flap**)a)->sig > (*(Flap**)b)->sig )
@@ -21,6 +30,13 @@ static int CmpFlaps(const void *a, const void *b)
     return 1 ;  // b is first
 }
 
+/**
+ * @brief Check if junctions coincide.
+ * TODO Unimplemented
+ * @param rect1 Index of rectangle 1
+ * @param rect2 Index of rectangle 2
+ * @param line Index of line
+ */
 static bool JunctionsCoincide(unsigned rect1, unsigned rect2, unsigned line)
 {
   /*unsigned i, i1=UNDEF_ID, i2=UNDEF_ID, j1, j2;
@@ -65,11 +81,20 @@ static bool JunctionsCoincide(unsigned rect1, unsigned rect2, unsigned line)
 }
 
 
-FormFlaps::FormFlaps(VisionCore *core)
-: GestaltPrinciple(core)
+/**
+ * @brief Constructor FormFlaps
+ * @param core Vision core
+ */
+FormFlaps::FormFlaps(VisionCore *core) : GestaltPrinciple(core)
 {
 }
 
+
+/**
+ * @brief Inform new Gestalt
+ * @param type Type of Gestalt to inform.
+ * @param idx Index of new received Gestalt.
+ */
 void FormFlaps::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
   switch(type)
@@ -83,6 +108,7 @@ void FormFlaps::InformNewGestalt(Gestalt::Type type, unsigned idx)
 }
 
 /**
+ * @brief StartOfCollinearRun:
  * pos_i is the position of a common line along closure i, pos_j the position
  * of that line along closure j.
  * We assume that the common line is traveresed in different directions along
@@ -90,8 +116,7 @@ void FormFlaps::InformNewGestalt(Gestalt::Type type, unsigned idx)
  * Then if the previous line on i is not the same as the next line on j, that
  * line is the start of a common run of lines (start as seen from closure i).
  */
-bool FormFlaps::StartOfCollinearRun(Closure *clos_i, unsigned pos_i,
-    Closure *clos_j, unsigned pos_j)
+bool FormFlaps::StartOfCollinearRun(Closure *clos_i, unsigned pos_i, Closure *clos_j, unsigned pos_j)
 {
   unsigned pos_ip = clos_i->lines.CircularPrev(pos_i);
   unsigned pos_jn = clos_j->lines.CircularNext(pos_j);
@@ -99,15 +124,19 @@ bool FormFlaps::StartOfCollinearRun(Closure *clos_i, unsigned pos_i,
 }
 
 /**
+ * @brief EndOfCollinearRun:
  * pos_i is the position of a common line along closure i, pos_j the position
  * of that line along closure j.
  * We assume that the common line is traveresed in different directions along
  * both closures, i.e. closures lie aside.
  * Then if the next line on i is not the same as the previous line on j, that
  * line is the end of a common run of lines (end as seen from closure i).
+ * @param clos_i Closure i
+ * @param pos_i Position of i
+ * @param clos_j Closure j
+ * @param pos_j Position of j
  */
-bool FormFlaps::EndOfCollinearRun(Closure *clos_i, unsigned pos_i,
-    Closure *clos_j, unsigned pos_j)
+bool FormFlaps::EndOfCollinearRun(Closure *clos_i, unsigned pos_i, Closure *clos_j, unsigned pos_j)
 {
   unsigned pos_in = clos_i->lines.CircularNext(pos_i);
   unsigned pos_jp = clos_j->lines.CircularPrev(pos_j);
@@ -115,8 +144,10 @@ bool FormFlaps::EndOfCollinearRun(Closure *clos_i, unsigned pos_i,
 }
 
 /**
+ * @brief HaveNewClosure:
  * Find all existing closures which share part of the contour, in opposite
  * senses (i.e. contours lie side by side, not one inside the other).
+ * @param i Index of new closure
  */
 void FormFlaps::HaveNewClosure(unsigned i)
 {
@@ -151,6 +182,11 @@ void FormFlaps::HaveNewClosure(unsigned i)
     }
 }
 
+/**
+ * @brief NewFlap: Create new flap from cosures i and j.
+ * @param clos_i Closure i
+ * @param clos_j Closure j
+ */
 void FormFlaps::NewFlap(Closure *clos_i, Closure *clos_j)
 {
   core->NewGestalt(new Flap(core, clos_i, clos_j));
@@ -163,6 +199,9 @@ void FormFlaps::NewFlap(Closure *clos_i, Closure *clos_j)
   Mask();
 }
 
+/**
+ * @brief Mask ranked Gestalts.
+ */
 void FormFlaps::Mask()
 {
   // array containing for each closure the ID of the highest ranking flap which

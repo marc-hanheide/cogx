@@ -1,6 +1,10 @@
 /**
- * $Id: Line.cc,v 1.27 2007/03/25 21:35:57 mxz Exp mxz $
- */
+ * @file Line.cc
+ * @author Michael Zillich, Richtsfeld Andreas
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Class file of Gestalt Line (VisibleLine).
+ **/
 
 #include "Draw.hh"
 #include "Segment.hh"
@@ -16,13 +20,21 @@
 namespace Z
 {
 
-Line::Line(VisionCore *c)
-  : Gestalt(c, LINE)
+/**
+ * @brief Constructor of class Line
+ * @param vc
+ */
+Line::Line(VisionCore *vc) : Gestalt(vc, LINE)
 {
   for(int i = START; i <= END; i++)
     t_jct[i] = 0;
 }
 
+
+/**
+ * @brief Calculate parameters
+ * TODO TODO Documentation
+ */
 void Line::CalculateParameters()
 {
   Vector2 v = point[END] - point[START];

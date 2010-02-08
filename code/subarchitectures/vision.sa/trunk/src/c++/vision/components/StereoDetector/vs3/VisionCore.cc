@@ -24,6 +24,8 @@
 #include "FormClosures.hh"
 #include "FormRectangles.hh"
 #include "FormFlaps.hh"
+#include "FormFlapsAri.hh"
+#include "FormCubes.hh"
 
 #include "Line.hh"
 #include "Collinearity.hh"
@@ -52,6 +54,10 @@ void CheckIndex(unsigned i, unsigned size)
 
 
 
+/**
+ * @brief Constructor of class VisionCore.
+ * @param config_name Name of config file.
+ */
 VisionCore::VisionCore(const string &config_name)
 {
   InitMath();
@@ -65,6 +71,9 @@ VisionCore::VisionCore(const string &config_name)
   Configure(config_name);
 }
 
+/**
+ * @brief Destructor of class VisionCore.
+ */
 VisionCore::~VisionCore()
 {
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
@@ -73,6 +82,9 @@ VisionCore::~VisionCore()
   ExitMath();
 }
 
+/**
+ * @brief Initialise all known Gestalt principles
+ */
 void VisionCore::InitGestaltPrinciples()
 {
   // Add all Gestalt principles we know
@@ -88,30 +100,52 @@ void VisionCore::InitGestaltPrinciples()
   principles[GestaltPrinciple::FORM_ARC_JUNCTIONS] = new FormArcJunctions(this);
   principles[GestaltPrinciple::FORM_CLOSURES] = new FormClosures(this);
   principles[GestaltPrinciple::FORM_RECTANGLES] = new FormRectangles(this);
-//   principles[GestaltPrinciple::FORM_RECTANGLES] = new FormRectangles(this);
   principles[GestaltPrinciple::FORM_FLAPS] = new FormFlaps(this);
+  principles[GestaltPrinciple::FORM_FLAPS_ARI] = new FormFlapsAri(this);
+  principles[GestaltPrinciple::FORM_CUBES] = new FormCubes(this);
   for(unsigned i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     config.AddItem(GestaltPrinciple::TypeName((GestaltPrinciple::Type)i), "0");
 }
 
+
+/**
+ * @brief Enable a Gestalt principle for calculation.
+ * @param p Type of Gestalt principle
+ */
 void VisionCore::EnableGestaltPrinciple(GestaltPrinciple::Type p)
 {
   string type = GestaltPrinciple::TypeName((GestaltPrinciple::Type)p);
   config.items[type] = "1";
 }
 
+
+/**
+ * @brief Disable a Gestalt principle for calculation.
+ * @param p Type of Gestalt principle
+ */
 void VisionCore::DisableGestaltPrinciple(GestaltPrinciple::Type p)
 {
   string type = GestaltPrinciple::TypeName((GestaltPrinciple::Type)p);
   config.items[type] = "0";
 }
 
+
+/**
+ * @brief Returns true if a Gestalt principle is enabled.
+ * @param p Type of Gestalt principle.
+ * @return Returns true, if Gestalt principle is enabled.
+ */
 bool VisionCore::IsEnabledGestaltPrinciple(GestaltPrinciple::Type p)
 {
   return principles[p] != 0 &&
     config.GetValueInt(GestaltPrinciple::TypeName(p)) == 1;
 }
 
+
+/**
+ * @brief Configure the Gestalt principle tree.
+ * @param config_name Name of the config file.
+ */
 void VisionCore::Configure(const string &config_name)
 {
   if(!config_name.empty())
@@ -123,6 +157,10 @@ void VisionCore::Configure(const string &config_name)
   printf("------------------------------------------\n");*/
 }
 
+
+/**
+ * @brief Clear Gestalts: Deletes and clears the Gestalt list (with ranked_gestalts).
+ */
 void VisionCore::ClearGestalts()
 {
   for(int i = 0; i < Gestalt::MAX_TYPE; i++)
@@ -134,6 +172,11 @@ void VisionCore::ClearGestalts()
   }
 }
 
+
+/**
+ * @brief Informs the vision core about a new image and prepares for new processing (clear and reset).
+ * @param new_img New openCV ipl-image.
+ */
 void VisionCore::NewImage(const IplImage *new_img)
 {
   img = new_img;
@@ -149,10 +192,10 @@ void VisionCore::NewImage(const IplImage *new_img)
 /**
  * @brief Process the current image incrementally for a given amount of time.
  * @param runtime_ms  amount of time to run, in microseconds.
+ * TODO try-catch hier weg und nur mehr exception werfen
  */
-void VisionCore::ProcessImage(int runtime_ms)
+void VisionCore::ProcessImage(int runtime_ms) //throw Except()
 {
-// printf("VisionCore::ProcessImage()\n");
   struct timespec start, cur;
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
   try
@@ -161,8 +204,7 @@ void VisionCore::ProcessImage(int runtime_ms)
     {
       for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
       {
-        if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i) &&
-           principles[i]->NeedsOperate())
+        if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i) && principles[i]->NeedsOperate())
         {
           struct timespec t1, t2;
           clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1);
@@ -207,7 +249,7 @@ void VisionCore::ProcessImage()
 }
 
 /**
- * Draw the original image and all the gestalts we have.
+ * @brief Draw the original image and all the gestalts we have.
  */
 void VisionCore::Draw(int detail)
 {
@@ -216,7 +258,7 @@ void VisionCore::Draw(int detail)
 }
 
 /**
- * Draw only the original image.
+ * @brief Draw only the original image.
  */
 void VisionCore::DrawImage()
 {
@@ -225,7 +267,7 @@ void VisionCore::DrawImage()
 }
 
 /**
- * Draw all the gestalts we have.
+ * @brief Draw all the gestalts we have.
  */
 void VisionCore::DrawAllGestalts(int detail)
 {
@@ -235,7 +277,7 @@ void VisionCore::DrawAllGestalts(int detail)
 }
 
 /**
- * Draw all gestalts of given type.
+ * @brief Draw all gestalts of given type.
  */
 void VisionCore::DrawGestalts(Gestalt::Type type, int detail)
 {
@@ -244,7 +286,7 @@ void VisionCore::DrawGestalts(Gestalt::Type type, int detail)
 }
 
 /**
- * Draw just a single gestalt.
+ * @brief Draw just a single gestalt.
  */
 void VisionCore::DrawGestalt(Gestalt::Type type, unsigned num, int detail)
 {
@@ -253,7 +295,7 @@ void VisionCore::DrawGestalt(Gestalt::Type type, unsigned num, int detail)
 }
 
 /**
- * Draw whatever pictorial info a gestalt has to offer.
+ * @brief Draw whatever pictorial info a gestalt has to offer.
  */
 void VisionCore::DrawGestaltInfo(Gestalt::Type type, unsigned num)
 {
@@ -262,7 +304,7 @@ void VisionCore::DrawGestaltInfo(Gestalt::Type type, unsigned num)
 }
 
 /**
- * Draw whatever the given gestalt principle has to draw.
+ * @brief Draw whatever the given gestalt principle has to draw.
  */
 void VisionCore::DrawPrinciple(GestaltPrinciple::Type type, int detail)
 {
@@ -271,7 +313,7 @@ void VisionCore::DrawPrinciple(GestaltPrinciple::Type type, int detail)
 }
 
 /**
- * Returns id of first gestalt at pixel position (x,y).
+ * @brief Returns id of first gestalt at pixel position (x,y).
  * start_after can be used to skip the first gestalts. So all gestalts at x,y
  * can be selected consecutively.
  * If mask is set to true, only unmasked gestalts will be returned.
@@ -288,7 +330,7 @@ unsigned VisionCore::PickGestaltAt(Gestalt::Type type, int x, int y,
 }
 
 /**
- * Accumulated runtime of active Gestalt principles.
+ * @brief Accumulated runtime of active Gestalt principles.
  */
 double VisionCore::RunTime()
 {
@@ -314,8 +356,10 @@ void VisionCore::NewGestalt(Gestalt *g, bool inform)
 }
 
 /**
+ * @brief InformNewGestalt
  * Once a new Gestalt is created, inform all those interested.
  * TODO: let Principles register themselves here.
+ * TODO: Kann man abfragen, ob initialisiert? => Funktioniert nicht, wenn man oben nicht initialisiert hat.
  */
 void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
 {
@@ -336,10 +380,14 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
     case Gestalt::L_JUNCTION:
       if(VisionCore::config.GetValueInt("FORM_CLOSURES") == 1)
         Principles(GestaltPrinciple::FORM_CLOSURES)->InformNewGestalt(type, id);
+      if(VisionCore::config.GetValueInt("FORM_CUBES") == 1)
+        Principles(GestaltPrinciple::FORM_CUBES)->InformNewGestalt(type, id);
       break;
     case Gestalt::COLLINEARITY:
       if(VisionCore::config.GetValueInt("FORM_CLOSURES") == 1)
         Principles(GestaltPrinciple::FORM_CLOSURES)->InformNewGestalt(type, id);
+      if(VisionCore::config.GetValueInt("FORM_CUBES") == 1)
+        Principles(GestaltPrinciple::FORM_CUBES)->InformNewGestalt(type, id);
       break;
     case Gestalt::CLOSURE:
       if(VisionCore::config.GetValueInt("FORM_RECTANGLES") == 1)
@@ -347,11 +395,24 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
       if(VisionCore::config.GetValueInt("FORM_FLAPS") == 1)
         Principles(GestaltPrinciple::FORM_FLAPS)->InformNewGestalt(type, id);
       break;
+    case Gestalt::RECTANGLE:
+      if(VisionCore::config.GetValueInt("FORM_FLAPS_ARI") == 1)
+        Principles(GestaltPrinciple::FORM_FLAPS_ARI)->InformNewGestalt(type, id);
+      break;
+    case Gestalt::FLAP_ARI:
+      if(VisionCore::config.GetValueInt("FORM_CUBES") == 1)
+        Principles(GestaltPrinciple::FORM_CUBES)->InformNewGestalt(type, id);
+      break;
     default:
       break;
   }
 }
 
+
+/**
+ * @brief SetROI: Set the region of interest for faster growing search lines.
+ * Growing of search lines with a gaussian function.
+ */
 void VisionCore::SetROI(const Vector2 center, double sigma)
 {
   roi_center = center;

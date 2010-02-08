@@ -8,27 +8,20 @@ SET(HEADERS
 	fitellipse.h
 	nrutil.h
 	Arc.hh
-	Array.hh
 	Ball.hh
 	BallDefinition.hh
 	BestResult.hh
-	BufferVideo.hh
 	Closure.hh
 	Collinearity.hh
-	Color.hh
 	Cone.hh
 	ConeDefinition.hh
-	Config.hh
-	ConfigFile.hh
 	ConvexArcGroup.hh
 	Corner.hh
 	Cube.hh
 	CubeDefninition.hh
-	Draw.hh
 	Edgel.hh
 	EJunction.hh
 	Ellipse.hh
-	Exept.hh
 	Exit.hh
 	ExitDefinition.hh
 	ExtClosure.hh
@@ -36,6 +29,7 @@ SET(HEADERS
 	ExtRectangle.hh
 	FileVideo.hh
 	FireVideo.hh
+	FlapAri.hh
 	Flap.hh
 	FlapDefinition.hh
 	FormArcs.hh
@@ -52,6 +46,7 @@ SET(HEADERS
 	FormExtClosures.hh
 	FormExtEllipses.hh
 	FormExtRectangles.hh
+	FormFlapsAri.hh
 	FormFlaps.hh
 	FormJunctions.hh
 	FormLines.hh
@@ -97,7 +92,6 @@ SET(HEADERS
 	TrktFlap.hh
 	TrktRectangle.hh
 	Vector2.hh
-	Video.hh
 	VisionCore.hh
 	VoteImage.hh
 	Wall.hh
@@ -105,10 +99,8 @@ SET(HEADERS
 	WallLine.hh)
 
 SET(SOURCES 
-	Array.ic
 	betacf.c
 	betai.c
-	Camera.ic
 	fitcircle.c
 	fitellipse.c
 	gammln.c
@@ -119,30 +111,22 @@ SET(SOURCES
 	Arc.cc
 #	Ball.cc
 #	BestResult.cc
-#	BufferVideo.cc
 	Closure.cc
 	Collinearity.cc
-	Color.cc
 #	Cone.cc
-	Config.cc
-	ConfigFile.cc
 	ConvexArcGroup.cc
 #	Corner.cc
-#	Cube.cc
+	Cube.cc
 #	Cylinder.cc
-
-	Draw.cc
-
-#	Draw_small.cc
 #	EJunction.cc
 	Ellipse.cc
-	Except.cc
 #	Exit.cc
 #	ExtClosure.cc
 #	ExtEllipse.cc
 #	ExtRectangle.cc
 #	FileVideo.cc
 #	FireVideo.cc
+	FlapAri.cc
 	Flap.cc
 	FormArcJunctions.cc
 	FormArcs.cc
@@ -153,13 +137,14 @@ SET(SOURCES
 	FormConvexArcGroups.cc
 	FormEllipses.cc
 #	FormCorners.cc
-#	FormCubes.cc
+	FormCubes.cc
 #	FormCylinders.cc
 #	FormEllipses.cc
 #	FormExits.cc
 #	FormExtClosures.cc
 #	FormExtEllipses.cc
 #	FormExtRectangles.cc
+	FormFlapsAri.cc
 	FormFlaps.cc
 	FormJunctions.cc
 	FormLines.cc
@@ -235,6 +220,8 @@ link_cast_component(${CAST_COMPONENT_NAME} highgui)
 link_cast_component(${CAST_COMPONENT_NAME} cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} cv)
 link_cast_component(${CAST_COMPONENT_NAME} qt-mt)
+
+link_cast_component(${CAST_COMPONENT_NAME} SDUtils)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)

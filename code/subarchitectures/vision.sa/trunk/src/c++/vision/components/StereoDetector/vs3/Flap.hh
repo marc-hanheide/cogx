@@ -1,5 +1,9 @@
 /**
- * $Id: Flap.hh,v 1.2 2006/11/24 13:47:03 mxz Exp mxz $
+ * @file Flap.hh
+ * @author Michael Zillich, Andreas Richtsfeld
+ * @date 2010
+ * @version 0.1
+ * @brief Gestalt class for flaps.
  */
 
 #ifndef Z_FLAP_HH
@@ -7,18 +11,21 @@
 
 #include "Gestalt.hh"
 #include "VisionCore.hh"
+#include "Closure.hh"
 
 namespace Z
 {
 
-class Closure;
-
+/**
+ * @class Flap Gestalt class for flaps.
+ * @brief Flaps, created from closures.
+ */
 class Flap : public Gestalt
 {
 public:
-  Closure *clos[2];
+  Closure *clos[2];			///< The two closures of the flap
 
-  Flap(VisionCore *c, Closure *c0, Closure *c1);
+  Flap(VisionCore *vc, Closure *c0, Closure *c1);
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();
   virtual bool IsAtPosition(int x, int y);

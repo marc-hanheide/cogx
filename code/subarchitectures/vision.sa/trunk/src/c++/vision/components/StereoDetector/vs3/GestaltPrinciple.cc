@@ -1,5 +1,9 @@
 /**
- * $Id: GestaltPrinciple.cc,v 1.15 2006/11/24 13:47:03 mxz Exp mxz $
+ * @file GestaltPrinciple.cc
+ * @author Michael Zillich, Anddreas Richtsfeld
+ * @date 2006, 2010
+ * @version 0.1
+ * @brief Gestalt principle class
  */
 
 #include <string.h>
@@ -22,25 +26,33 @@ static const char type_names[][NAME_LENGTH] = {
   "FORM_CLOSURES",
   "FORM_RECTANGLES",
   "FORM_FLAPS",
+  "FORM_FLAPS_ARI",
+  "FORM_CUBES",
   "UNDEF"
   };
 
-/**
- * Returns the name of a given gestalt principle type.
- */
-const char* GestaltPrinciple::TypeName(Type t)
-{
-  return type_names[t];
-}
 
+/**
+ * @brief Constructor of GestaltPrinciple
+ * @param vc Vision core
+ */
 GestaltPrinciple::GestaltPrinciple(VisionCore *vc)
 {
   core = vc;
   ResetRunTime();
 }
 
+
 /**
- * Return the enum type of a given gestalt principle type name.
+ * @brief Returns the name of a given gestalt principle type.
+ */
+const char* GestaltPrinciple::TypeName(Type t)
+{
+  return type_names[t];
+}
+
+/**
+ * @brief Return the enum type of a given gestalt principle type name.
  */
 GestaltPrinciple::Type GestaltPrinciple::EnumType(const char *type_name)
 {
@@ -50,8 +62,12 @@ GestaltPrinciple::Type GestaltPrinciple::EnumType(const char *type_name)
   return UNDEF;
 }
 
-void GestaltPrinciple::RankGestalts(Gestalt::Type type,
-    int(*compar)(const void *, const void *))
+/**
+ * @brief Rank Gestalts
+ * @param type Type of Gestalt principle
+ * @param compar Compare function
+ */
+void GestaltPrinciple::RankGestalts(Gestalt::Type type, int(*compar)(const void *, const void *))
 {
   // first rank gestalts
   core->RankedGestalts(type).Sort(compar);
