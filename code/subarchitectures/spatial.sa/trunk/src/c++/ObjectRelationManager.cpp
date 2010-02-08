@@ -53,6 +53,8 @@ double bottomCOMContainmentWeight		= 1.0;
 double bottomCOMContainmentSteepness		= 1.0;
 
 double planeInclinationWeight			= 1.0;
+
+double overlapWeight				= 1.0;
 };
 
 ObjectRelationManager::ObjectRelationManager()
@@ -188,6 +190,10 @@ void ObjectRelationManager::runComponent()
     pip.add(sliders, "planeInclination", peekabot::REPLACE_ON_CONFLICT);
     pip.translate(2.0, 6.0, planeInclinationWeight);
     pip.set_scale(0.1);
+    peekabot::SphereProxy op;
+    op.add(sliders, "overlap", peekabot::REPLACE_ON_CONFLICT);
+    op.translate(3.0, 6.0, overlapWeight);
+    op.set_scale(0.1);
 
     peekabot::CubeProxy dfp;
     dfp.add(sliders, "distanceFalloff", peekabot::REPLACE_ON_CONFLICT);
@@ -228,6 +234,8 @@ void ObjectRelationManager::runComponent()
       if (vr.succeeded()) bottomCOMContainmentWeight = vr.get_result()(2);
       vr = pip.get_position();
       if (vr.succeeded()) planeInclinationWeight = vr.get_result()(2);
+      vr = op.get_position();
+      if (vr.succeeded()) overlapWeight = vr.get_result()(2);
 
       vr = dfp.get_position();
       if (vr.succeeded()) squareDistanceFalloff = vr.get_result()(2);

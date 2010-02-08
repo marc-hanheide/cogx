@@ -21,6 +21,8 @@ extern double bottomCOMContainmentWeight;
 extern double bottomCOMContainmentSteepness;
 
 extern double planeInclinationWeight;
+
+extern double overlapWeight;
 // At this distance from COM to support edge,
 // penalty is precisely 0.5
 
@@ -57,7 +59,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
     const std::vector<Vector3> &polygon2);
 
 double
-findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius);
+findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal);
 
 double
 getPolygonArea(const std::vector<Vector3> &polygon);
