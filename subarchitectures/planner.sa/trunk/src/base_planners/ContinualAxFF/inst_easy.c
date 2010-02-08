@@ -975,6 +975,7 @@ void unify_easy_inertia_conditions( int curr_inertia )
 	int num_affected_params = 0;
 
 	if ( curr_inertia == lnum_inertia_conds ) {
+        /* printf("current inertia: %d\n", curr_inertia); */
 		multiply_easy_non_constrained_effect_parameters( 0 );
 		return;
 	}
@@ -995,16 +996,34 @@ void unify_easy_inertia_conditions( int curr_inertia )
 
 	for ( i = 0; i < gnum_initial_predicate[p]; i++ ) {
 		af = 0;
+        /* printf("arity: %d\n", garity[p]); */
 		for ( j = 0; j < garity[p]; j++ ) {
 			if ( args[j] >= 0 ) {
 				if ( args[j] != ginitial_predicate[p][i].args[j] ) {
 					break;
 				} else {
+                    /* printf("args: %d\n", args[j]); */
 					continue;
 				}
 			}
-			le->inst_table[affected_params[af++]] = ginitial_predicate[p][i].args[j];
+
+            int t = le->var_types[affected_params[af]];
+            int n = gtype_size[t];
+            int k;
+            for (k = 0; k < n; k++ ) {
+                if (ginitial_predicate[p][i].args[j] == gtype_consts[t][k]) {
+                    /*printf("affected param: %d = %d \n", affected_params[af], ginitial_predicate[p][i].args[j]);*/
+                    le->inst_table[affected_params[af]] = ginitial_predicate[p][i].args[j];
+                    break;
+                }
+            }
+            /*printf("inst_tbl: %d, init_p: %d\n", */
+            if (le->inst_table[affected_params[af]] != ginitial_predicate[p][i].args[j]) {
+                break;
+            }
+            af++;
 		}
+        /* printf("j: %d\n",j); */
 		if ( j < garity[p] ) {
 			continue;
 		}
@@ -1029,6 +1048,7 @@ void multiply_easy_non_constrained_effect_parameters( int curr_parameter )
 	Bool rem;
 
 	if ( curr_parameter == lnum_multiply_parameters ) {
+        /* printf("current parameter: %d\n", curr_parameter); */
 		/* create new effect, adjusting conds to inst, and
 		 * partially instantiating effects;
 		 *
@@ -1038,6 +1058,7 @@ void multiply_easy_non_constrained_effect_parameters( int curr_parameter )
 		/* instantiate param occurences
 		 */
 		for ( i = 0; i < le->num_vars; i++ ) {
+            /* printf("%d : %d, ", i, le->inst_table[i]); */
 			par = lo->num_vars + i;
 			for ( j = 0; j < tmp->num_conditions; j++ ) {
 				for ( k = 0; k < garity[tmp->conditions[j].predicate]; k++ ) {
@@ -1061,6 +1082,7 @@ void multiply_easy_non_constrained_effect_parameters( int curr_parameter )
 				}
 			}
 		}
+        printf("\n");
 		/* adjust conditions
 		 */
 		i = 0;
@@ -1106,11 +1128,14 @@ void multiply_easy_non_constrained_effect_parameters( int curr_parameter )
 
 	t = le->var_types[lmultiply_parameters[curr_parameter]];
 	n = gtype_size[t];
+    /* printf("type: %d\n", t); */
 
 	for ( i = 0; i < n; i++ ) {
 		le->inst_table[lmultiply_parameters[curr_parameter]] = gtype_consts[t][i];
+        /* printf("%d ", gtype_consts[t][i]); */
 		multiply_easy_non_constrained_effect_parameters( curr_parameter + 1 );
 	}
+    /* printf("\n"); */
 
 	le->inst_table[lmultiply_parameters[curr_parameter]] = -1;
 
