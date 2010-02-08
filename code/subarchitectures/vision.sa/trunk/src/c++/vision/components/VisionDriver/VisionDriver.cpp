@@ -91,6 +91,12 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
   VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
   log("object detected: '%s'", obj->label.c_str());
+  
+  // adding model to Tracker
+  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+  track_cmd->cmd = VisionData::ADDMODEL;
+  track_cmd->visualObjectID = _wmc.address.id;
+  addToWorkingMemory(newDataID(), track_cmd);
 
 	// stop detection
 	if(detecting)
