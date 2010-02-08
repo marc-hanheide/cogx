@@ -20,7 +20,7 @@ namespace Z
 {
 
 /**
- * @brief Class TmpFlap
+ * @class TmpFlap
  */
 class TmpFlap
 {
@@ -38,7 +38,7 @@ public:
 
 
 /**
- * @brief Class Flap3D
+ * @class Flap3D
  */
 class Flap3D
 {
@@ -50,7 +50,7 @@ public:
 
 
 /**
- * @brief Class StereoFlaps: Try to match flaps from the stereo images.
+ * @class StereoFlaps Try to match flaps from the stereo images.
  */
 class StereoFlaps : public StereoBase
 {

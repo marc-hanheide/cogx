@@ -19,6 +19,8 @@
 #include "Line.hh"
 #include "Ellipse.hh"
 #include "Closure.hh"
+#include "FlapAri.hh"
+#include "Cube.hh"
 #include "Draw.hh"
 
 
@@ -42,33 +44,41 @@ const double SC_MAX_LENGTH = 0.5;  // in [m]
 
 
 /**
- * @brief Class Vertex
+ * @brief Vertex
  */
 class Vertex
 {
 public:
   Vector3 p;						///< position
-  Vector3 n;						///< TODO ??? 
+  Vector3 n;						///< TODO Normale ??? 
 };
 
 //----------------------------------------------------------------//
 //-------------------------- TmpSurface --------------------------//
 //----------------------------------------------------------------//
 /**
- * @brief Class TmpSurf
+ * @class TmpSurf
+ * @brief Class for surfaces.
  */
 class TmpSurf
 {
 public:
-  unsigned id;						///< ID of the surface
+//  unsigned id;						///< ID of the surface								// TODO Which surface id???? => Es wurden clos-IDs verwendet => jetzt? Braucht man wozu?
   bool is_valid;					///< validation parameter
   vector<Vector2> p;			///< original (distorted, unrectified) points
   vector<Vector2> pr;			///< rectified points
 
-  TmpSurf() {id = UNDEF_ID; is_valid = false;}
+  TmpSurf() {/*id = UNDEF_ID; */is_valid = false;}
   TmpSurf(Closure *clos) {Init(clos);}
+	TmpSurf(Rectangle *rectangle) {Init(rectangle);}
+//	TmpSurf(Ellipse *ellipse) {Init(ellipse);}											/// TODO wird diese Funktion aufgerufen
+//	TmpSurf(Cube *cube) {Init(cube, int side);}											/// das funktioniert mit den Seiten nicht.
+
   void Init(Closure *clos);
+	void Init(Rectangle *rectangle);
 	void Init(Ellipse *ell);
+	void Init(Cube *cube, int side);
+
   void ShiftPointsLeft(unsigned offs);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
@@ -76,11 +86,13 @@ public:
 	void Draw(RGBColor col);
 };
 
+
 //----------------------------------------------------------------//
 //-------------------------- Surf3D ------------------------------//
 //----------------------------------------------------------------//
 /**
- * @brief Class Surf3D
+ * @class Surf3D
+ * @brief Class for 3D surfaces.
  */
 class Surf3D
 {
@@ -103,7 +115,8 @@ public:
 //-------------------------- StereoBase --------------------------//
 //----------------------------------------------------------------//
 /**
- * @brief Class StereoBase
+ * @class StereoBase
+ * @brief Base class for all stereo matching classes.
  */
 class StereoBase
 {
@@ -114,6 +127,8 @@ public:
 		STEREO_CLOSURE,
 		STEREO_RECTANGLE,
 		STEREO_FLAP,
+		STEREO_FLAP_ARI,
+		STEREO_CUBE,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };																	///< Type of stereo Gestalts for matching
@@ -122,6 +137,7 @@ public:
 	StereoCamera *stereo_cam;						///< Stereo camera parameters
 
 private:
+	bool enabled;												///< enabled / disabled Stereo-Gestaltg
 
 protected:
 	Type type;
@@ -137,6 +153,9 @@ public:
 //   void MatchSurfaces(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches);
   double MatchingScoreSurf(TmpSurf &left_surf, TmpSurf &right_surf, unsigned &match_offs);
 //   void Calculate3DSurfs(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &flapMatches, Array<Surf3D> &surf3ds);
+
+	void EnablePrinciple(bool status);
+	bool IsEnabled() {return enabled;}
 
 	// virtual functions for the stereo classes.
 	virtual int NumStereoMatches() = 0;

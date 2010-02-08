@@ -4,23 +4,27 @@ include_directories(.)
 
 # Set the sources.
 SET(HEADERS
-	StereoCore.hh
-	StereoCamera.hh
 	StereoBase.h
-	StereoEllipses.h
+	StereoCamera.hh
 	StereoClosures.h
-	StereoRectangles.h
+	StereoCore.hh
+	StereoCubes.h
+	StereoEllipses.h
 	StereoFlaps.h
+	StereoFlapsAri.h
+	StereoRectangles.h
 )
 
 SET(SOURCES 
-	StereoCore.cc
-	StereoCamera.cc
 	StereoBase.cpp
-	StereoEllipses.cpp
+	StereoCamera.cc
 	StereoClosures.cpp
-	StereoRectangles.cpp
+	StereoCore.cc
+	StereoCubes.cpp
+	StereoEllipses.cpp
 	StereoFlaps.cpp
+	StereoFlapsAri.cpp
+	StereoRectangles.cpp
 )
 
 
