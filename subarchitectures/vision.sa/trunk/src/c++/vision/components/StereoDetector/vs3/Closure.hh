@@ -1,6 +1,10 @@
 /**
- * $Id: Closure.hh,v 1.8 2007/03/25 21:35:57 mxz Exp mxz $
- */
+ * @file Closure.hh
+ * @author Michael Zillich
+ * @date 2007
+ * @version 0.1
+ * @brief Header file of Gestalt Closure.
+ **/
 
 #ifndef Z_CLOSURE_HH
 #define Z_CLOSURE_HH
@@ -18,14 +22,14 @@ class Collinearity;
 class LJunction;
 
 /**
- * Lines are in counter-clockwise order.
+ * @brief Lines are in counter-clockwise order.\n
  * jct i is the jct between line i-1 and line i.
  */
 class Closure : public Gestalt
 {
 public:
-  Array<LJunction*> jcts;												/// HACK ARI: Diese Liste hat Löcher (mit 0 gefüllt), daher ist Anzahl nicht = jcts-Anzahl (Abfrage über NumLJunctions();)
-  Array<Collinearity*> colls;
+  Array<LJunction*> jcts;									/// HACK ARI: Diese Liste hat Löcher (mit 0 gefüllt), daher ist ...
+  Array<Collinearity*> colls;							/// Anzahl nicht = jcts-Anzahl (Abfrage über NumLJunctions();)
   Array<Line*> lines;
   Array<int> senses;
   map<Closure*, double> neighbors_above;

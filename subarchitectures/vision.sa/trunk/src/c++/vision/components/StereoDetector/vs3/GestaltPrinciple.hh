@@ -1,5 +1,9 @@
 /**
- * $Id: GestaltPrinciple.hh,v 1.21 2007/02/18 18:02:48 mxz Exp mxz $
+ * @file GestaltPrinciple.hh
+ * @author Michael Zillich, Anddreas Richtsfeld
+ * @date 2006, 2010
+ * @version 0.1
+ * @brief Gestalt principle header
  */
 
 #ifndef Z_GESTALT_PRINCIPLE_HH
@@ -13,6 +17,9 @@ namespace Z
 
 class VisionCore;
 
+/**
+ * @class GestaltPrinciple Gestalt principle class
+ */
 class GestaltPrinciple
 {
 public:
@@ -29,20 +36,20 @@ public:
     FORM_CLOSURES,
     FORM_RECTANGLES,
     FORM_FLAPS,
+    FORM_FLAPS_ARI,
+    FORM_CUBES,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };
 
 private:
-  double runtime;   ///< runtime in [s]
+  double runtime;   												///< runtime in [s]
 
 protected:
   VisionCore *core;
-  Array<unsigned> next_principles;  ///< next principles, to be informed of new
-                                    // gestalts
+  Array<unsigned> next_principles;					///< next principles, to be informed of new gestalts
 
-  void RankGestalts(Gestalt::Type type,
-      int(*compar)(const void *, const void *));
+  void RankGestalts(Gestalt::Type type, int(*compar)(const void *, const void *));
 
 public:
   static const char* TypeName(Type t);

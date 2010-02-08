@@ -30,7 +30,8 @@ namespace Z
 {
 
 /**
- * @brief Class representing the perceptual grouping system.
+ * @class VisionCore Representing the perceptual grouping system.
+ * @brief Representing the perceptual grouping system.
  */
 class VisionCore
 {
@@ -57,11 +58,11 @@ public:
   VisionCore(const string &config_name = "");
   ~VisionCore();
   void Configure(const string &config_name);
-  Config& GetConfig() {return config;}
+  Config& GetConfig() {return config;}													///< Return configuration
   void NewImage(const IplImage *new_img);
-  bool HaveImage() {return img != 0;}
-  const IplImage* GetImage() {return img;}
-  int ImageArea() {return img->width*img->height;}
+  bool HaveImage() {return img != 0;}														///< Return true, if have image.
+  const IplImage* GetImage() {return img;}											///< Returns image (openCV ipl-image)
+  int ImageArea() {return img->width*img->height;}							///< Return image area (width*height)
   void EnableGestaltPrinciple(GestaltPrinciple::Type p);
   void DisableGestaltPrinciple(GestaltPrinciple::Type p);
   bool IsEnabledGestaltPrinciple(GestaltPrinciple::Type p);
@@ -86,26 +87,15 @@ public:
   void NewGestalt(Gestalt *g, bool inform = true);
   void InformNewGestalt(Gestalt::Type type, unsigned id);
 
-
-	/**
-	 * @brief Get width of the image.
-	 * @return Returns the width of the image in pixel (unsigned).
-	 */
-  unsigned IW() {return img->width;}
-
-	/**
-	 * @brief Get height of the image.
-	 * @return Returns the height of the image in pixel (integer).
-	 */
-  unsigned IH() {return img->height;}
-
-  Array<Gestalt*>* Gestalts() {return gestalts;}
-  Array<Gestalt*>& Gestalts(Gestalt::Type type) {return gestalts[type];}
-  Gestalt* Gestalts(Gestalt::Type type, unsigned id) {return gestalts[type][id];}
-  Array<Gestalt*>& RankedGestalts(Gestalt::Type type) {return ranked_gestalts[type];}
-  Gestalt* RankedGestalts(Gestalt::Type type, unsigned id) {return ranked_gestalts[type][id];}
-  unsigned NumGestalts(Gestalt::Type type) {return gestalts[type].Size();}
-  GestaltPrinciple* Principles(GestaltPrinciple::Type type) {return principles[type];}
+  unsigned IW() {return img->width;}																															///< Returns the width of the image in pixel (unsigned).
+  unsigned IH() {return img->height;}																															///< Returns the height of the image in pixel (integer).
+  Array<Gestalt*>* Gestalts() {return gestalts;}																									///< Return Gestalt array
+  Array<Gestalt*>& Gestalts(Gestalt::Type type) {return gestalts[type];}													///< Returns Gestalt array of "type"
+  Gestalt* Gestalts(Gestalt::Type type, unsigned id) {return gestalts[type][id];}									///< Returns Gestalt of "type" and "id"
+  Array<Gestalt*>& RankedGestalts(Gestalt::Type type) {return ranked_gestalts[type];}							///< Returns ranked Gestalt array of "type"
+  Gestalt* RankedGestalts(Gestalt::Type type, unsigned id) {return ranked_gestalts[type][id];}		///< Returns ranked Gestat of "type" and "id"
+  unsigned NumGestalts(Gestalt::Type type) {return gestalts[type].Size();}												///< Ruturns number of Gestalts of "type"
+  GestaltPrinciple* Principles(GestaltPrinciple::Type type) {return principles[type];}						///< Returns Gestalt principle of "type"
 };
 
 }

@@ -1,6 +1,10 @@
 /**
- * $Id: Closure.cc,v 1.10 2007/04/14 20:50:59 mxz Exp mxz $
- */
+ * @file Closure.hh
+ * @author Michael Zillich
+ * @date 2007
+ * @version 0.1
+ * @brief Header file of Gestalt Closure.
+ **/
 
 #include "Draw.hh"
 #include "Line.hh"
@@ -8,45 +12,49 @@
 #include "Collinearity.hh"
 #include "TJunction.hh"
 #include "Closure.hh"
-#include "HCF.hh"
+// #include "HCF.hh"
 
 namespace Z
 {
 // HACK: this belongs to HCF2.cc, which is at the moment not built
-static int min_label = -10;  // HACK: arbitrary number of labels
-static int max_label = +10;
-static const int UNCOMMITTED = INT_MAX;
-static const int DEFAULT_DEPTH = 0;
-const int UNDEF_DEPTH = UNCOMMITTED;
-const int MASKED = max_label;  // maximum depth
+// static int min_label = -10;  // arbitrary number of labels
+// static int max_label = +10;
+// static const int UNCOMMITTED = INT_MAX;
+// static const int DEFAULT_DEPTH = 0;
+// const int UNDEF_DEPTH = UNCOMMITTED;
+// const int MASKED = max_label;  // maximum depth
+
+// int MinDepth()
+// {
+//   return min_label;
+// }
+// 
+// int MaxDepth()
+// {
+//   return max_label;
+// }
+// 
+// int DefaultDepth()
+// {
+//   return DEFAULT_DEPTH;
+// }
+// 
+// int NumLabels()
+// {
+//   return max_label - min_label + 1;
+// }
+
 // HACK END
 
-int MinDepth()
-{
-  return min_label;
-}
-
-int MaxDepth()
-{
-  return max_label;
-}
-
-int DefaultDepth()
-{
-  return DEFAULT_DEPTH;
-}
-
-int NumLabels()
-{
-  return max_label - min_label + 1;
-}
-
-Closure::Closure(VisionCore *c)
-: Gestalt(c, CLOSURE)
+/**
+ * @brief Constructor of class Closure.
+ * @param c Vision core.
+ */
+Closure::Closure(VisionCore *c) : Gestalt(c, CLOSURE)
 {
   stability = 0.;
-  energy = 0;;
-  label = DefaultDepth();
+  energy = 0.;
+  label = 0;/*DefaultDepth();*/			// for HCF2
 }
 
 Vector2 Closure::GetVertex(unsigned i)

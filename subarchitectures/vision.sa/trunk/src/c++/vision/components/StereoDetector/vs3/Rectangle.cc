@@ -35,6 +35,9 @@ Rectangle::Rectangle(VisionCore *vc, Closure *c, unsigned js[4], double par, uns
   for(unsigned i = 0; i < 4; i++)
     jcts[i] = js[i];
 
+  for(unsigned i = 0; i < 4; i++)
+    ljcts.PushBack(LJunctions(core, js[i]));
+
 	/// TODO Calculate Gestalt properties
 	width = core->IW();
 	height = core->IH();

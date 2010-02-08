@@ -75,60 +75,22 @@ void FormRectangles::Rank()
 
 
 /**
- * @brief Making Rectangles																																									/// TODO Reimplement Masking
+ * @brief Making Rectangles
  */
 void FormRectangles::Mask()
 {
-//   for(unsigned i=0; i<NumRectangles(); i++)
-//   {
-// 		for(unsigned j=0; j<NumRectangles(); j++)
-// 		{
-// 			if(!Rectangles(i)->IsMasked() && !Rectangles(j)->IsMasked())
-// 			if(Rectangles(i)->sig < Rectangles(j)->sig)
-// 				{
-// 				if(Rectangles(i)->IsInside(j))
-// 				{	
-// 					Rectangles(i)->Mask(j);		 
-// 				}
-// 			}		  
-// 		}
-//   }
-}
-
-
-// Old version of masking
-/*
-void FormRectangles::Mask()
-{
-  bool survive;
-  unsigned i, j, l;false
-  Array<unsigned> used_lines[2]; // which rect used which line left/right
-  used_lines[LEFT].Resize(NumLines());
-  used_lines[LEFT].Set(UNDEF_ID);
-  used_lines[RIGHT].Resize(NumLines());
-  used_lines[RIGHT].Set(UNDEF_ID);
-  for(j = 0; j < NumRectangles(); j++)
+  for(unsigned i=0; i<NumRectangles(core); i++)
   {
-    i = RankedGestalts(Gestalt::RECTANGLE, j);
-    Rectangle *r = Rectangles(i);
-    survive = true;
-    // first check if any previous (i.e. stronger) rect uses one of my lines
-    for(l = 0; l < 4; l++)
-    {
-      if(used_lines[r->sides[l]][r->lines[l]] != UNDEF_ID)
-      {
-        survive = false;
-        r->Mask(used_lines[r->sides[l]][r->lines[l]]);
-      }
-    }
-    if(survive)
-    {
-      for(l = 0; l < 4; l++)
-        used_lines[r->sides[l]][r->lines[l]] = i;
-    }
+		for(unsigned j=0; j<NumRectangles(core); j++)
+		{
+			if(!Rectangles(core, i)->IsMasked() && !Rectangles(core, j)->IsMasked())
+				if(Rectangles(core, i)->sig < Rectangles(core, j)->sig)
+					if(Rectangles(core, i)->IsInside(j))
+						Rectangles(core, i)->Mask(j);	
+		}
   }
 }
-*/
+
 /*
 void FormRectangles::Reset(const Image *img)
 {
@@ -184,7 +146,6 @@ void FormRectangles::CreateQuadrilateral(unsigned clos)
 				{
 					Rectangle *new_r = new Rectangle(core, Closures(core, clos), ljcts, parallelity, Closures(core, clos)->NumLJunctions());
 					core->NewGestalt(new_r);
-// printf(" =4 => newRectangle\n");
 				}
 			}
 		}
@@ -195,7 +156,6 @@ void FormRectangles::CreateQuadrilateral(unsigned clos)
   // sum of the greatest 4 angles is 2Pi +- delta
   else if (Closures(core, clos)->NumLJunctions() > 4)
   {
-// printf("    >4 Junctions\n");
     const double delta = M_PI/4.;  												// threshold 
     double sum_angles = 0.;
 
@@ -209,7 +169,6 @@ void FormRectangles::CreateQuadrilateral(unsigned clos)
 		// check if closure is a convex polygon
 		if (IsConvexPolygon(ordered_ljcts))
 		{
-// printf("      IsConvexPolygon !!! \n");
 
 //       ordered_ljcts.Sort(CmpAngles);		// sort by angles
 			// TODO Search the biggest four ordered LJunctions (by hand, because sort-function don't want work.
@@ -237,61 +196,31 @@ void FormRectangles::CreateQuadrilateral(unsigned clos)
         if(ordered_ljcts[i] != 0)
           sum_angles += LJunctions(core, ordered_ljcts[i])->OpeningAngle();
 
-// printf("  sum: %4.3f < %4.3f\n", sum_angles, delta);
-
 	  	// sum of angles is within 2Pi +- delta
 			if(fabs(2*M_PI - sum_angles) <= delta)
       {
-// printf("    => summe passt: %4.3f < %4.3f\n", fabs(2*M_PI - sum_angles), delta);
-
         // note that junctions in ordered_ljcts are not in counter-clockwise order
         // -> go through original junction list and collect those which are the
         // first 4 in ordered_ljcts
         unsigned ljcts[4];
-// printf("NumLJunctions: %u\n", Closures(core, clos)->NumLJunctions());
-// printf("ordered ljcts: %u - %u - %u - %u\n", ordered_ljcts[0], ordered_ljcts[1], ordered_ljcts[2], ordered_ljcts[3]);
         for(unsigned i = 0, j = 0; i < Closures(core, clos)->jcts.Size() && j < 4; i++)		// ARI: Size bigger than NumLJunctions()
 				{
           // if junction i is among the first 4
           // TODO: note that this is a bit inefficient..
           // TODO: sometimes j can become > 3 (hence the check in for(..)
-// printf("	Fehler 1: i=%u / j=%u  =>  jcts[%u]=%u\n", i, j, i, Closures(core, clos)->jcts[i]);
 					if(Closures(core, clos)->jcts[i] != 0)					// HACK ARI: Be carefull: Zero-Holes in jcts[]
-					{
-// printf("	Fehler 2: jcts[%u]->ID: %u\n", i,  Closures(core, clos)->jcts[i]->ID());
             if(ordered_ljcts.Find(Closures(core, clos)->jcts[i]->ID()) < 4)
-						{
-// printf("	    FOUND in ordered_ljcts: ljcs[%u]=%u\n",j , Closures(core, clos)->jcts[i]->ID());
               ljcts[j++] = Closures(core, clos)->jcts[i]->ID();
-						}
-					}
         }
 
-// printf("	Fehler 3\n");
 				double parallelity = IsRectangle(ljcts);
-// printf("	parallelity: %4.3f > 5.0\n", parallelity);
         if(parallelity > 5.)   													// TODO ARI: parallelity-threshold 
 				{
-// printf("	Fehler 4\n");
 					// reject if rectangle exists	
 					if (!RectangleExists(ljcts))
 					{
-// printf("  >4 => create new rectangle");
-
 						Rectangle *new_r = new Rectangle(core, Closures(core, clos), ljcts, parallelity, Closures(core, clos)->NumLJunctions());
 						core->NewGestalt(new_r);
-
-/*
-						Rectangle *new_r = new Rectangle(core);
-						
-						// set
-						new_r->clos = clos;
-						new_r->parallelity = parallelity;
-						new_r->nrOfLJcts = Closures(core, clos)->NumLJunctions();				/// TODO NUmber of L-Junctions
-						for(unsigned k = 0; k < 4; k++)
-							new_r->jcts[k] = ljcts[k];
-	
-*/
 					}
 				}
       }

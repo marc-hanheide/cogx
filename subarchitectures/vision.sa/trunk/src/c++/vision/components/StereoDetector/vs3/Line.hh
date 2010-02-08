@@ -1,7 +1,10 @@
 /**
- * $Id: Line.hh,v 1.21 2007/04/14 20:50:59 mxz Exp mxz $
- *
- */
+ * @file Line.hh
+ * @author Michael Zillich, Richtsfeld Andreas
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Header file of Gestalt Line (VisibleLine).
+ **/
 
 #ifndef Z_LINE_HH
 #define Z_LINE_HH
@@ -12,52 +15,56 @@
 #include "VisionCore.hh"
 #include "Segment.hh"
 
+#include "LJunction.hh"
+
+
 namespace Z
 {
 
-class LJunction;
+/// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO  Wozu sind diese gut? Wieso nicht include?
+// class LJunction;
 class Collinearity;
 class TJunction;
 class Closure;
 
 /**
- * A directed straight line.
+ * @brief A directed straight line.
  */
 class Line : public Gestalt
 {
 protected:
-  RGBColor mean_col[2];  ///< mean color LEFT/RIGHT
+  RGBColor mean_col[2];  						///< mean color LEFT/RIGHT
   void CalculateParameters();
   virtual void CalculateColors() = 0;
   void DrawArrow();
   void MoveJunctions(Line *l2, int end);
 
 public:
-  Vector2 point[2];    ///< end points, START/END
-  Vector2 dir;         ///< direction of the line, normalised to 1
-  Vector2 tang[2];     ///< tangents STAR/END
-  double phi;          ///< angular direction
+	Vector2 point[2];									///< end points, START/END
+	Vector2 dir;											///< direction of the line, normalised to 1
+  Vector2 tang[2];									///< tangents STAR/END
+  double phi;												///< angular direction
   double len;
-  //double s;          ///< hessian form: distance
-  //double theta;      ///< hessian form: angle
-  Array<Collinearity*> coll[2];    ///< collinearities
-  Array<LJunction*> l_jct[2][2];   ///< L-junctions at START/END and LEFT/RIGHT
-  TJunction* t_jct[2];             ///< T-junctions at ends, START/END
-  Array<TJunction*> pt_jct[2][2];  ///< passive T-jcts, START/END and LEFT/RIGHT
-  Array<Closure*> closures; // TODO: have two lists, for both senses
-  int label; //[2];       ///< label LEFT/RIGHT
-  double energy;          ///< energy for global conistency
-  double stability;       ///< stability for global consistency
-  set<Line*> neighbors;   ///< neighbors for global consistency
-  Line* next;          ///< next line if split
-  Line* defer_vote;    ///< lines created by splitting don't vote themselves
-                       /// but defer votes to original line
+  //double s;											///< hessian form: distance
+  //double theta;									///< hessian form: angle
+  Array<Collinearity*> coll[2];			///< collinearities
+  Array<LJunction*> l_jct[2][2];		///< L-junctions at START/END and LEFT/RIGHT
+  TJunction* t_jct[2];							///< T-junctions at ends, START/END
+  Array<TJunction*> pt_jct[2][2];		///< passive T-jcts, START/END and LEFT/RIGHT
+  Array<Closure*> closures; 				// TODO: have two lists, for both senses
+  int label;												///< label LEFT/RIGHT
+  double energy;										///< energy for global conistency
+  double stability;									///< stability for global consistency
+  set<Line*> neighbors;							///< neighbors for global consistency
+  Line* next;												///< next line if split
+  Line* defer_vote;									///< lines created by splitting don't vote themselves
+																		/// but defer votes to original line
 
-  unsigned idx[2];     ///< index of start and end point 	HACK ARI: moved from VisibleLine
-  Segment* seg;        ///< the originating segment				HACK ARI: moved from VisibleLine
+  unsigned idx[2];									///< index of start and end point 	HACK ARI: moved from VisibleLine
+  Segment* seg;											///< the originating segment				HACK ARI: moved from VisibleLine
 
 protected:
-  Line(VisionCore *c);
+  Line(VisionCore *vc);
 
 public:
   virtual void Draw(int detail = 0);
@@ -75,7 +82,7 @@ public:
 };
 
 /**
- * Visible line fitted to edgels.
+ * @brief Visible line fitted to edgels.
  */
 class VisibleLine : public Line
 {
@@ -97,6 +104,7 @@ public:
 };
 
 /**
+ * @brief CotLine
  * Note: just an idea for now
  * Cotermination Line
  * Whenever a segment terminates unexplained (no T, L or C) create a
@@ -106,6 +114,7 @@ public:
 class CotLine : public Line
 {
 };
+
 
 inline Array<Gestalt*>& Lines(VisionCore *core)
 {

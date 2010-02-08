@@ -31,23 +31,24 @@ private:
 	bool CountSupport(int x, int y, unsigned id);
 
 public:
-	Closure *closure;			///< The underlying closure
+	Closure *closure;					///< The underlying closure
 
-  unsigned clos;    		///< the underlying closure																							/// TODO auf pointer ändern!
-  unsigned jcts[4]; 		///< junctions, in counter-clockwise order
-  double parallelity; 	///< parallelity of the two opposed edges
-	Vector2 direction[2];	///< TODO mean direction of the two line-pairs (1,3 and 2,4)
-	double phi[2];				///< mean angle of the two line-pairs
-  unsigned nrOfLJcts;		///< number of L-Jcts from the underlying closure
-	Vector2 centerPoint;	///< center point of the rectangle (2D mean value of corners)
-	double radius; 				///< maximum distance from center-point to a corner-point
-	double innerRadius;		///< minimum distance from center-point to middle of lines.
+  unsigned clos;    				///< the underlying closure																							/// TODO auf pointer ändern!
+  unsigned jcts[4]; 				///< junctions, in counter-clockwise order															/// entfernen => jetzt ljcts
+	Array<LJunction*> ljcts;	///< L-junctions, in counter-clockwise order
+  double parallelity; 			///< parallelity of the two opposed edges
+	Vector2 direction[2];			///< TODO mean direction of the two line-pairs (1,3 and 2,4)
+	double phi[2];						///< mean angle of the two line-pairs
+  unsigned nrOfLJcts;				///< number of L-Jcts from the underlying closure
+	Vector2 centerPoint;			///< center point of the rectangle (2D mean value of corners)
+	double radius; 						///< maximum distance from center-point to a corner-point
+	double innerRadius;				///< minimum distance from center-point to middle of lines.
 
-	unsigned width;				///< image width
-	unsigned height;			///< image height
-	unsigned pixelmass;		///<	number of pixels from lines of closure
-	unsigned *data;				///< data from CalculateSupport() (Bresenham alg.)
-	double pixelsupport; 	///< pixelsupport of the rectangle (in %) (>100 possible?)
+	unsigned width;						///< image width
+	unsigned height;					///< image height
+	unsigned pixelmass;				///<	number of pixels from lines of closure
+	unsigned *data;						///< data from CalculateSupport() (Bresenham alg.)
+	double pixelsupport; 			///< pixelsupport of the rectangle (in %) (>100 possible?)
 
   //Rectangle(unsigned c, unsigned js[4]);
 // 	Rectangle(VisionCore *c);
