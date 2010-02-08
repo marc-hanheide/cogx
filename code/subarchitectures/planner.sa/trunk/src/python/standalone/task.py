@@ -21,7 +21,7 @@ class Task(object):
     """
     """
 
-    def __init__(self, taskID=0, mapltask = None):
+    def __init__(self, taskID=0, mapltask = None, add_assertions = False):
         """Initialise public and private fields."""
         # public
         self.taskID = taskID
@@ -38,7 +38,8 @@ class Task(object):
         if mapltask:
             self._mapldomain = mapltask.domain
             self.create_initial_state()
-            self.add_assertions()
+            if add_assertions:
+                self.add_assertions()
 
 
     def __get_mapltask(self):
@@ -79,6 +80,8 @@ class Task(object):
                     facts = s.get_effect_facts(eff)
                     for svar, value in facts:
                         if not isinstance(svar, pddl.Predicate) and svar.modality is None:
+                            if svar in s:
+                                del s[svar]
                             id_var = svar.as_modality(mapl.i_indomain, [value])
                             s[id_var] = pddl.TRUE
             else:

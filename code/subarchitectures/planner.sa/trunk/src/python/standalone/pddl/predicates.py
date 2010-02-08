@@ -80,6 +80,7 @@ class Literal(object):
     def __init__(self, predicate, args, scope=None, negated=False):
         self.predicate = predicate
         self.negated = negated
+        assert isinstance(predicate, Function)
 
         if scope:
             self.args = scope.lookup(args)

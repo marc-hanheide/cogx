@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import os, sys, shutil
 import time
 import re
@@ -20,6 +22,9 @@ log = config.logger("planner")
 statistics_defaults = dict(
     planning_calls=0,
     planning_time=0.0,
+    translate_time=0.0,
+    preprocess_time=0.0,
+    search_time=0.0,
     monitoring_calls=0,
     monitoring_time=0.0,
     )
@@ -259,6 +264,13 @@ class BasePlanner(object):
         output_data = self._run(input_data, task)
         if output_data is None:
             return None
+        
+        log.debug("\nNew plan is:")
+#        log.debug("----------------------------------------------")
+        for elem in output_data:
+            log.debug(elem)
+        log.debug("")
+
         plan = self._post_process(output_data, task)
         return plan
     
@@ -387,24 +399,33 @@ class Downward(BasePlanner):
         output = open(stdout_path, "w")
         
         cmd = "%(exec_path)s/translate/translate.py  %(domain_path)s %(problem_path)s -m %(mutex_path)s" % locals()
-        proc, translate_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, dir=tmp_dir, wait=True)
+        with statistics.time_block_for_statistics(self.main_planner, "translate_time"):
+            proc, translate_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, dir=tmp_dir, wait=True)
         output.write(translate_out)
+        log.debug("translate output:")
+        log.debug(translate_out)
         
         if proc.returncode != 0:
             utils.print_errors(proc, cmd, translate_out, "Fast Downward Translate")
             return None
 
         cmd = "%(exec_path)s/preprocess/preprocess" % locals()
-        proc, prep_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_sas_path, dir=tmp_dir, wait=True)
+        with statistics.time_block_for_statistics(self.main_planner, "preprocess_time"):
+            proc, prep_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_sas_path, dir=tmp_dir, wait=True)
         output.write(prep_out)
+        log.debug("preprocess output:")
+        log.debug(prep_out)
         
         if proc.returncode != 0:
             utils.print_errors(proc, cmd, prep_out, "Fast Downward Preprocess")
             return None
 
         cmd = "%(exec_path)s/search/search %(search_args)s" % locals()
-        proc, search_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_path, dir=tmp_dir, wait=True)
+        with statistics.time_block_for_statistics(self.main_planner, "search_time"):
+             proc, search_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, input=output_path, dir=tmp_dir, wait=True)
         output.write(search_out)
+        log.debug("search output:")
+        log.debug(search_out)
         
         if proc.returncode != 0:
             utils.print_errors(proc, cmd, search_out, "Fast Downward Search")

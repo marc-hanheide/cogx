@@ -51,7 +51,24 @@ def time_method_for_statistics(stats_name):
         return decorated_method
     return decorator
 
+class time_block_for_statistics(object):
+    """context manager to time a block of statements into the
+    'statistics' field of the 'obj' parameter.
 
+    useage: with time_block_for_statistics(self, stats_name):
+                code to measure
+    """
+    def __init__(self, obj, stats_name):
+        self.obj = obj
+        self.stats_name = stats_name
+        
+    def __enter__(self):
+        self.t0 = time.time()
+
+    def __exit__(self, type, value, traceback):
+        dur = time.time() - self.t0
+        self.obj.statistics.increase_stat(self.stats_name, dur)
+            
 class StatisticsTest(unittest.TestCase):
 
     def setUp(self):
