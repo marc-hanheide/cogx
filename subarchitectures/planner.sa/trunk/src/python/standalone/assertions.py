@@ -15,7 +15,7 @@ def get_observable_functions(sensors):
         if s.is_boolean():
             pred_types.append(s.get_value().get_type())
         else:
-            pred_types.append(s.get_term.get_type())
+            pred_types.append(s.get_term().get_type())
 
         #Unify predicates with same/compatible types
         exists = False
@@ -156,6 +156,12 @@ def to_assertion(action, domain):
         return None
 
     assertion = mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effect, domain)
+    #cost_eff = pddl.SimpleEffect(pddl.builtin.increase, [pddl.Term(pddl.builtin.total_cost, []), pddl.Term(1)])
+    #if isinstance(assertion.effect, pddl.ConjunctiveEffect):
+    #    assertion.effect.parts.append(cost_eff)
+    #else:
+    #    assertion.effect = pddl.ConjunctiveEffect([assertion.effect, cost_eff])
+    
     assertion = assertion.copy()
     return assertion
 
@@ -216,9 +222,9 @@ def add_to_cluster(cluster, plan, static, domain):
     log = config.logger("assertions.clustering")
     
     def check_consistency(cluster, node):
-        if any(plan.pred_closure(n) & cluster for n in plan.pred_closure(node) - cluster):
+        if any(plan.pred_closure(n, 'depends') & cluster for n in plan.pred_closure(node, 'depends') - cluster):
             return False
-        if any(plan.succ_closure(n) & cluster for n in plan.succ_closure(node) - cluster):
+        if any(plan.succ_closure(n, 'depends') & cluster for n in plan.succ_closure(node, 'depends') - cluster):
             return False
         return True
 
@@ -241,7 +247,7 @@ def add_to_cluster(cluster, plan, static, domain):
     
     candidates = set()
     for a in cluster:
-        candidates |= set(plan.predecessors(a) + plan.successors(a)) - cluster
+        candidates |= set(plan.predecessors(a, 'depends') + plan.successors(a, 'depends')) - cluster
     
     candidates.discard(plan.init_node)
     candidates.discard(plan.goal_node)

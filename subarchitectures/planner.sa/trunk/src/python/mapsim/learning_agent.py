@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import math, random, itertools
+import os, re, glob, math, random, itertools
 
 from standalone import pddl
 from standalone.pddl import state, mapl
@@ -31,12 +31,40 @@ class LearningAgent(Agent):
         self.macros = []
         self.name2macro = {}
 
+        global_vars.mapsim_config.add_assertions = False
+        self.macro_file_index = -1
+        
+        #mapltask.optimization = "minimize"
+        #mapltask.opt_func = pddl.Term(pddl.builtin.total_cost, [])
+        newtask = mapltask.copy()
+        newtask.domain = mapltask.domain.copy()
+        self.macrotask = Task(agent.next_id(), newtask)
+        
         Agent.__init__(self, name, mapltask, planner, simulator)
         self.statistics = statistics.Statistics(defaults = statistics_defaults)
 
-        if global_vars.mapsim_config.learning_mode != "cluster":
-            self.load_macros(global_vars.mapsim_config.macro_file)
-            
+        try:
+            filename = self.get_macro_input_file()
+            log.info("Using macro db: %s", filename)
+            print filename
+            for m in macros.load_macros(filename, self.task.mapldomain):
+                if global_vars.mapsim_config.learning_mode == "learn":
+                    self.add_macro(m)
+                elif global_vars.mapsim_config.learning_mode == "test":
+                    self.add_macro(m, enabled_only=True)
+        except (pddl.parser.ParseError, IOError):
+            self.macro_file_index = -1
+
+        if global_vars.mapsim_config.learning_mode == "learn":
+            self.task.add_assertions()
+        if global_vars.mapsim_config.learning_mode == "cluster":
+            self.task.add_assertions()
+            for a in self.task.mapltask.actions:
+                if a.name.startswith("assertion_"):
+                    m = macros.MacroOp.from_action(a, self.task.mapltask)
+                    m.name = "macro_" + m.name
+                    self.add_macro(m)
+        
         
     def run(self):
         agent.BaseAgent.run(self)
@@ -45,9 +73,6 @@ class LearningAgent(Agent):
             self.clustering()
         elif global_vars.mapsim_config.learning_mode == "learn":
             self.restrict_domains(self.task)
-            newtask = self.mapltask.copy()
-            newtask.domain = self.mapltask.domain.copy()
-            self.macrotask = Task(agent.next_id(), newtask)
             self.macrotask.set_state(self.task.get_state().copy())
             self.planner.register_task(self.macrotask)
             self.restrict_domains(self.macrotask)
@@ -56,29 +81,77 @@ class LearningAgent(Agent):
                 self.adjust_macro(m)
         else:
             #testrun with macros
+            self.task.mapldomain.actions = [a for a in self.task.mapldomain.actions if a.name not in self.name2macro]
             self.task.mapldomain.actions += self.select_macros_final()
             Agent.run(self)
 
-    def load_macros(self, filename):
-        for m in macros.load_macros(filename, self.task.mapldomain):
-            self.add_macro(m)
-    
-    def add_macro(self, macro):
-        log = config.logger("assertions")
+    def get_macro_input_file(self):
+        version = global_vars.mapsim_config.macro_version
+        basename = global_vars.mapsim_config.macro_filename
+        basepath = global_vars.mapsim_config.macro_path
+
+        if basename is None:
+            basename = self.mapltask.domain.name
+
+        basefilename = os.path.join(basepath, basename + ".mapl")
         
+        if version is not None:
+            self.macro_file_index = version
+            if global_vars.mapsim_config.macro_version == 0:
+                fname = basefilename
+            else:
+                fname = basefilename + ".%d" % version
+            if os.path.exists(fname):
+                return fname
+        
+        latest = -1
+        
+        regexp = re.compile("\.([0-9]*)$")
+        for fname in glob.glob(basefilename + ".[0-9]*"):
+            index = regexp.search(fname).group(1).lower()
+            if index and int(index) > latest:
+                latest = int(index)
+
+        if latest == -1:
+            self.macro_file_index = 0
+            return basefilename
+        
+        self.macro_file_index = latest
+        return basefilename + ".%d" % latest
+
+    def get_macro_output_file(self):
+        version = self.macro_file_index
+        basename = global_vars.mapsim_config.macro_filename
+        basepath = global_vars.mapsim_config.macro_path
+
+        if basename is None:
+            basename = self.mapltask.domain.name
+        basefilename = os.path.join(basepath, basename + ".mapl")
+
+        if version == -1:
+            return basefilename
+        return basefilename + ".%d" % (version+1)
+    
+        
+    def add_macro(self, macro, enabled_only=False):
+        log = config.logger("assertions")
+
+        astate = macro.atom_state.copy()
         for p in macro.pre:
             macro.atom_state[p] = macros.ATOM_DISABLED
         
         superseded = []
         for m in self.macros:
-            if macro.less_than(m):
+            if macro.less_than(m, enabled_only):
                 assert not superseded, "macro database is inconsistent"
                 log.debug("A stronger macro than %s already exists: %s", macro.name, m.name)
                 m.subsumption_count += 1
                 return
-            elif m.less_than(macro):
+            elif m.less_than(macro, enabled_only):
                 log.debug("replacing %s with %s", m.name, macro.name)
                 superseded.append(m)
+
+        macro.atom_state = astate
         self.macros.append(macro)
         self.name2macro[macro.name] = macro
         for m in superseded:
@@ -94,13 +167,18 @@ class LearningAgent(Agent):
             a = m.to_action()
             
         self.learning_run()
-        self.write_macros(global_vars.mapsim_config.macro_file+".out")
+        self.write_macros(self.get_macro_output_file())
         
         
     def clustering(self):
         self.task.replan()
+        if global_vars.mapsim_config.write_pdffiles:
+            G = self.task.get_plan().to_dot()
+            G.layout(prog='dot')
+            G.draw("plan%d.pdf" % self.simulator.run_index)
+
         self.find_clusters()
-        self.write_macros(global_vars.mapsim_config.macro_file)
+        self.write_macros(self.get_macro_output_file())
 
     def write_macros(self, filename):
         writer = macros.MacroWriter()
@@ -124,11 +202,13 @@ class LearningAgent(Agent):
         clusters = assertions.make_clusters(self.task.get_plan(), self.task.mapldomain)
         max_index = 0
         for name in self.name2macro:
+            if "assertion" in name:
+                continue
             if name.startswith("macro") and int(name[5:]) > max_index:
                 max_index = int(name[5:])
-                
+        
         for i, c in enumerate(clusters):
-            i += max_index
+            i += max_index + 1
             
             log.info("found cluster: %s", map(str, c))
             m = macros.MacroOp.from_cluster(c, self.task.get_plan(), self.task.mapldomain, "macro%d" % i)
@@ -166,28 +246,77 @@ class LearningAgent(Agent):
         task.mark_changed()
 
     def select_macros_for_learning(self):
+        if not self.macros:
+            return []
+        
         total = sum(m.subsumption_count for m in self.macros)
         avg = float(total)/len(self.macros)
         result = []
         for m in self.macros:
-            if m.subsumption_count >= avg*2:
+            if "assertion" in m.name or \
+                    float(m.subsumption_count) / total >= global_vars.mapsim_config.learning.min_subsumption_ratio:
+                oldstate = m.atom_state.copy()
+                for a in m.pre:
+                    if m.atom_state[a] == macros.ATOM_DISABLED and random.random() > 0.7:
+                        m.atom_state[a] = macros.ATOM_ENABLED
+                
                 a = m.to_assertion()
+                m.atom_state = oldstate
                 result.append(a)
         return result
 
     def select_macros_final(self):
-        total = sum(m.usecount for m in self.macros)
-        avg = max(1, float(total)/len(self.macros))
+        if not self.macros:
+            return []
+
+        settings = global_vars.mapsim_config.learning
+        
+        total = sum(m.usecount for m in self.macros if "assertion" not in m.name)
+        usecount_threshold = int(settings.min_desired_macro_usage * total)
+        current_usecount = 0
+        current_macrocount = 0
         
         result = []
-        for m in self.macros:
-            if m.usecount >= avg:
-                log.info("Use macro: %s" % m.name)
+        for m in sorted(self.macros, key=lambda m: m.usecount):
+            if m.usecount <= 0:
+                log.info("Don't use macro: %s, never been used" % m.name)
+                continue
+            
+            if m.q_expected() < settings.q_min:
+                log.info("Don't use macro: %s, Q(%.2f) < %.2f" % (m.name, m.q_expected(), settings.q_min))
+                continue
+            
+            if "assertion" in m.name:
+                log.info("Use macro from simple assertion: %s" % m.name)
                 a = m.to_assertion()
                 result.append(a)
-            else:
-                log.info("Don't use macro: %s" % m.name)
+                continue
+
+            if current_macrocount >= settings.max_macro_count:
+                log.info("Don't use macro: %s, Maximum number is reached" % m.name)
+                continue
                 
+            if current_usecount >= usecount_threshold:
+                log.info("Don't use macro: %s, Usecount ratio of %.2f = %d is reached" % (m.name, settings.min_desired_macro, usecount_threshold))
+                continue
+                 
+            log.info("Use macro: %s" % m.name)
+            a = m.to_assertion()
+            result.append(a)
+
+        for a in itertools.chain(self.task.mapldomain.actions, self.task.mapldomain.sensors):
+            if assertions.to_assertion(a, self.task.mapldomain):
+                m = macros.MacroOp.from_action(a, self.task.mapldomain)
+                m.name = "assertion_" + m.name
+                self.name2macro[m.name] = m
+                
+                for a in m.pre:
+                    m.atom_state[a] = macros.ATOM_ENABLED
+
+                if not any(m.less_than(self.name2macro[a.name], enabled_only=True) for a in result):
+                    log.info("Add simple assertion: %s" % m.name)
+                    result.append(m.to_assertion())
+                    
         return result
     
     @loggingScope
@@ -254,23 +383,28 @@ class LearningAgent(Agent):
         return settings.success_weight*(success_ratio - 1) + settings.information_weight*(useful_ratio_full - 1) - settings.overhead_weight*overhead
 
     def find_expanded_macro(self, macro, relevant_effects, plan, compare_plan):
-        frontier = []
+        start_frontier = set()
+        end_frontier = []
         for pnode in compare_plan.nodes_iter():
             if pnode.effects & relevant_effects:
-                frontier.append(pnode)
+                end_frontier.append(pnode)
                 
-        if not frontier:
+        if not end_frontier:
             return None
 
-        expanded = set(frontier)
-        while frontier:
-            pnode = frontier.pop()
+        expanded = set(end_frontier)
+        while end_frontier:
+            pnode = end_frontier.pop()
             if pnode.original_preconds & macro.original_preconds:
+                start_frontier |= compare_plan.pred_closure(pnode, link_type='depends')
+                continue
+            if pnode in start_frontier:
                 continue
             for pred in compare_plan.predecessors(pnode):
-                if pred not in expanded and not isinstance(pred.action, plans.DummyAction):
+                if pred not in expanded and not isinstance(pred.action, plans.DummyAction) and \
+                        any(e['type'] == 'depends' for e in compare_plan[pred][pnode].itervalues()):
                     expanded.add(pred)
-                    frontier.append(pred)
+                    end_frontier.append(pred)
         return expanded
                 
     
@@ -279,6 +413,7 @@ class LearningAgent(Agent):
     def learning_run(self):
         settings = global_vars.mapsim_config.learning
 
+        self.macrotask.mapldomain.actions = [a for a in self.macrotask.mapldomain.actions if a.name not in self.name2macro]
         self.macrotask.mapldomain.actions += self.select_macros_for_learning()
         self.task.replan()
         self.macrotask.replan()
@@ -319,6 +454,7 @@ class LearningAgent(Agent):
             log.debug(map(str, self.task.get_plan().topological_sort()))
             
             for pnode in self.expandable_macros:
+                log.debug("expanded macro: %s", str(pnode))
                 m = self.name2macro[pnode.action.name]
                 m.parent = self.task.mapltask
                 mapping = dict((param.name, c) for (param, c) in zip(pnode.action.args, pnode.args))
@@ -409,6 +545,12 @@ class LearningAgent(Agent):
         
         if m.usecount == 0:
             return
+
+        threshold = settings.error_threshold * 1/math.sqrt(m.usecount)
+        if m.q_expected() > settings.q_min + threshold:
+            log.info("No need to improve %s:", m.name)
+            log.info("Expected Q: %.2f", m.q_expected())
+            return
         
         best_atom = None
         max_gain = 0
@@ -419,10 +561,13 @@ class LearningAgent(Agent):
             if m.atom_state[atom] == macros.ATOM_ENABLED:
                 dQ = -dQ
                 mark = "x"
-
+                
+            assert m.frequencies[atom] + m.frequencies[atom.negate()] > m.usecount - 1e-6, "%s: %d + %d != %d" % (atom.pddl_str(), m.frequencies[atom], m.frequencies[atom.negate()], m.usecount)
+            
             if m.frequencies[atom] == 0 or m.frequencies[atom] == m.usecount:
                 log.info("   %s %s with dQ=%.2f, f_rel=%.2f skipped", mark, atom.pddl_str(), dQ, float(m.frequencies[atom])/m.usecount)
                 continue
+            
             threshold = settings.error_threshold * (1/math.sqrt(m.frequencies[atom]) +  1/math.sqrt(m.frequencies[atom.negate()]))
             
             log.info("   %s %s with dQ=%.2f, threshold=%.2f, f_rel=%.2f", mark, atom.pddl_str(), dQ, threshold, float(m.frequencies[atom])/m.usecount)
@@ -438,7 +583,7 @@ class LearningAgent(Agent):
                 m.atom_state[best_atom] = macros.ATOM_ENABLED
                 action = "Enabled"
 
-            log.info("%s atom %s with dQ=%.2f", action, atom.pddl_str(), max_gain)
+            log.info("%s atom %s with dQ=%.2f", action, best_atom.pddl_str(), max_gain)
             m.alpha_boost = settings.alpha_boost
             
             for a,f in m.frequencies.iteritems():
@@ -447,4 +592,6 @@ class LearningAgent(Agent):
 
         else:
             log.info("No changes")
+            
+        log.info("Expected Q: %.2f", m.q_expected())
             
