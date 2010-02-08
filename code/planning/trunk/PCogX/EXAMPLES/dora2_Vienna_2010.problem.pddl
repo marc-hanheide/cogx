@@ -148,9 +148,9 @@
 
 	 
 
-	 (assign (probability__observe_widget_model_at_label__if_true Library Corn-flakes) .9)
-	 (assign (probability__observe_widget_model_at_label__if_true Kitchen Corn-flakes) .9)
-	 (assign (probability__observe_widget_model_at_label__if_true Office Corn-flakes) .9)
+	 (assign (probability__observe_widget_model_at_label__if_true Library Corn-flakes) .7)
+	 (assign (probability__observe_widget_model_at_label__if_true Kitchen Corn-flakes) .7)
+	 (assign (probability__observe_widget_model_at_label__if_true Office Corn-flakes) .7)
 
 	 (assign (probability__observe_widget_model_at_label__if_false Library Corn-flakes) .1)
 	 (assign (probability__observe_widget_model_at_label__if_false Kitchen Corn-flakes) .1)
@@ -246,100 +246,6 @@
 	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Chef Library) 0.2 )
 	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Chef Kitchen) 0.3 )
 	 (assign (probability__observe_feature_at_room_with_label__if_feature_false R3 Chef Office) 0.2 )
-
-
-
-
-
-
-
-
-
-
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Bookshelf Library) 0.2 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Bookshelf Kitchen) 0.6 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Bookshelf Office) 0.5 )
-	 
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Bookshelf Library) 0.2 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Bookshelf Kitchen) 0.6 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Bookshelf Office) 0.5 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Bookshelf Library) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Bookshelf Kitchen) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Bookshelf Office) 0.1 )
-
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Desktop Library) 0.45 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Desktop Kitchen) 0.75 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Desktop Office) 0.15 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Desktop Library) 0.45 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Desktop Kitchen) 0.75 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Desktop Office) 0.15 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Desktop Library) 0.45 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Desktop Kitchen) 0.9 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Desktop Office) 0.45 )
-
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Chef Library) 0.9 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Chef Kitchen) 0.9 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R1 Chef Office) 0.9 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Chef Library) 0.9 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Chef Kitchen) 0.9 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R2 Chef Office) 0.9 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Chef Library) 0.8 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Chef Kitchen) 0.7 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_label_false R3 Chef Office) 0.8 )
-
-
-
-
-
-
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Bookshelf Library) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Bookshelf Kitchen) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Bookshelf Office) 0.1 )
-	 
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Bookshelf Library) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Bookshelf Kitchen) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Bookshelf Office) 0.1 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Bookshelf Library) 0.2 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Bookshelf Kitchen) 0.2 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Bookshelf Office) 0.2 )
-
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Desktop Library) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Desktop Kitchen) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Desktop Office) 0.1 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Desktop Library) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Desktop Kitchen) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Desktop Office) 0.1 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Desktop Library) 0.3 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Desktop Kitchen) 0.2 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Desktop Office) 0.3 )
-
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Chef Library) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Chef Kitchen) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R1 Chef Office) 0.1 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Chef Library) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Chef Kitchen) 0.1 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R2 Chef Office) 0.1 )
-
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Chef Library) 0.2 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Chef Kitchen) 0.3 )
-;; 	 (assign (probability__observe_feature_at_room_with_label__if_feature_and_label_false R3 Chef Office) 0.2 )
-
-
 
   )
 
