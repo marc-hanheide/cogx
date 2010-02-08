@@ -2,6 +2,8 @@
  * $Id: Geometry.cc,v 1.1.1.1 2008/02/29 10:12:02 jp Exp $
  * Johann Prankl, 2010-01-27 
  * prankl@acin.tuwien.ac.at
+ * TODO:
+ * - Bug in ChainHull2D
  */
 
 
@@ -19,6 +21,8 @@ typedef struct range_bin Bin;
      int    min;    // index of min point P[] in bin (>=0 or NONE)
      int    max;    // index of max point P[] in bin (>=0 or NONE)
  };
+
+
 
 /**
  * Calculate hullpoints
@@ -62,6 +66,7 @@ void ChainHull2D( Array<Vector2> &p, Array<Vector2> &h)
                     minmax = i;
             }
         }
+
         if (cP->x >= xmax) {
              if (cP->x > xmax) {        // new xmax
                  xmax = cP->x;
@@ -75,6 +80,7 @@ void ChainHull2D( Array<Vector2> &p, Array<Vector2> &h)
              }
         }
     }
+
     if (xmin == xmax) {      // degenerate case: all x-coords == xmin
          h.PushBack(p[minmin]);             // a point, or
          top++;
@@ -82,6 +88,7 @@ void ChainHull2D( Array<Vector2> &p, Array<Vector2> &h)
              top++;
              h.PushBack(p[minmax]);
          }
+
     }else{
        // Next, get the max and min points in the k range bins
        Bin*   B = new Bin[k+2];   // first allocate the bins
@@ -90,28 +97,36 @@ void ChainHull2D( Array<Vector2> &p, Array<Vector2> &h)
        for (int b=1; b<=k; b++) { // initially nothing is in the other bins
            B[b].min = B[b].max = NONE;
        }
+
        for (int b, i=0; i<n; i++) {
           cP = &p[i];
           if (cP->x == xmin || cP->x == xmax) // already have bins 0 and k+1
               continue;
+
           // check if a lower or upper point
           if (IsLeft( p[minmin], p[maxmin], *cP) < 0) {  // below lower line
               b = (int)( k * (cP->x - xmin) / (xmax - xmin) ) + 1;  // bin #
-              if (B[b].min == NONE)       // no min point in this range
+
+              if (B[b].min == NONE){       // no min point in this range
                   B[b].min = i;           // first min
-              else if (cP->y < p[B[b].min].y)
+              }else if (cP->y < p[B[b].min].y){
                   B[b].min = i;           // new min
+              }
               continue;
           }
+
           if (IsLeft( p[minmax], p[maxmax], *cP) > 0) {  // above upper line
               b = (int)( k * (cP->x - xmin) / (xmax - xmin) ) + 1;  // bin #
-              if (B[b].max == NONE)       // no max point in this range
+
+              if (B[b].max == NONE){       // no max point in this range
                   B[b].max = i;           // first max
-              else if (cP->y > p[B[b].max].y)
+              }else if (cP->y > p[B[b].max].y){
                   B[b].max = i;           // new max
+              }
               continue;
           }
        }
+
        // Now, use the chain algorithm to get the lower and upper hulls
        // the output array H[] will be used as the stack
        // First, compute the lower hull on the stack H
@@ -137,12 +152,14 @@ void ChainHull2D( Array<Vector2> &p, Array<Vector2> &h)
 
            h.PushBack(p[idx]);        // push current point onto stack
        }
+
        // Next, compute the upper hull on the stack H above the bottom hull
        if (maxmax != maxmin){      // if distinct xmax points
            top++;
 
            h.PushBack(p[maxmax]);   // push maxmax point onto stack
        }
+
        bot = top;                 // the bottom point of the upper hull stack
        for (int i=k; i >= 0; --i)
        {
@@ -164,18 +181,44 @@ void ChainHull2D( Array<Vector2> &p, Array<Vector2> &h)
            top++;
            h.PushBack(p[idx]);      // push current point onto stack
        }
+
        if (minmax != minmin){
            top++;
            h.PushBack(p[minmin]);   // push joining endpoint onto stack
        }
        delete[] B;                  // free bins before returning
     }
+
     //ups a bug
     if (h.Size()>0)
       h.Erase(h.Size()-1);      //now it is fixed ;-)
   }
 }
 
+void ConvexHull( Array<Vector2> &p, Array<Vector2> &h)
+{
+  h.Clear();
+  CvPoint* points = (CvPoint*)malloc( p.Size() * sizeof(points[0]));
+  int* hull = (int*)malloc( p.Size() * sizeof(hull[0]));
+
+  for( unsigned i = 0; i < p.Size(); i++ )
+  {
+    points[i].x = (int)p[i].x;
+    points[i].y = (int)p[i].y;
+  }
+
+  CvMat hullMat = cvMat( 1, p.Size(), CV_32SC1, hull );
+  CvMat pointMat = cvMat( 1, p.Size(), CV_32SC2, points);
+
+  cvConvexHull2( &pointMat, &hullMat, CV_CLOCKWISE, 0 );
+  int hullcount = hullMat.cols;
+
+  for (int i=0; i<hullcount; i++)
+    h.PushBack(p[hull[i]]);
+
+  free( hull );
+  free( points);
+}
 
 /**
  * AngleHalf

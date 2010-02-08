@@ -306,7 +306,6 @@ void ObjectRecognizer3D::recognizeSiftModel(){
   cy = m_image.camPars.cy;
   cout << fx << ' ' << fy << ' ' <<  cx << ' ' <<  cy << endl;
   
-
   CvMat *C = cvCreateMat(3,3, CV_32F);
   cvmSet(C, 0, 0, fx);
   cvmSet(C, 0, 1, 0.);
@@ -327,40 +326,38 @@ void ObjectRecognizer3D::recognizeSiftModel(){
 				key = cvWaitKey ( 10 );
 		}while (((char)key)!=' ' && ((char)key!='q'));
 		
-		removeTrackerModel(m_modelID);
-		
-		// Grab image from VideoServer
- 		videoServer->getImage(camId, m_image);
-		iplImage = convertImageToIpl(m_image);
-		iplGray = cvCreateImage ( cvGetSize ( iplImage ), 8, 1 );
-		cvConvertImage( iplImage, iplGray );
-		
-		// Calculate SIFTs from image
-		sift.Operate(iplGray,image_keys);
-		
-		detect.SetDebugImage(iplImage);
-		if(detect.Detect(image_keys, object))
-		{
-			P::SDraw::DrawPoly(iplImage, object.contour.v, CV_RGB(0,255,0), 2);
+		if((char)key!='q'){
+			removeTrackerModel(m_modelID);
+			
+			// Grab image from VideoServer
+			videoServer->getImage(camId, m_image);
+			iplImage = convertImageToIpl(m_image);
+			iplGray = cvCreateImage ( cvGetSize ( iplImage ), 8, 1 );
+			cvConvertImage( iplImage, iplGray );
+			
+			// Calculate SIFTs from image
+			sift.Operate(iplGray,image_keys);
+			
+			detect.SetDebugImage(iplImage);
+			if(detect.Detect(image_keys, object))
+			{
+				P::SDraw::DrawPoly(iplImage, object.contour.v, CV_RGB(0,255,0), 2);
+			}
+			
+			// Transform pose from Camera to world coordinates
+			Pose3 P, A, B;
+			P = m_image.camPars.pose;
+			convertPoseCv2MathPose(object.pose, A);
+			Math::transform(P,A,B);
+			transpose(B.rot, B.rot);
+			
+			log("loading Visual Object to WM");
+			
+			loadVisualModelToWM(m_plyfile, m_modelID, B);
+			addTrackerModel(m_modelID);
+	
+			cvShowImage ( "ObjectRecognizer3D", iplImage );
 		}
-		
-		// Transform pose from Camera to world coordinates
-		Pose3 P, A, B;
-		P = m_image.camPars.pose;
-		convertPoseCv2MathPose(object.pose, A);
-		Math::transform(P,A,B);
-		transpose(B.rot, B.rot);
-		
-		log("loading Visual Object to WM");
-		
-		
-  	loadVisualModelToWM(m_plyfile, m_modelID, B);
-		addTrackerModel(m_modelID);
-
-// 		for (unsigned i=0; i<image_keys.Size(); i++){
-// 				image_keys[i]->Draw( iplImage,*image_keys[i],CV_RGB(0,0,255) );
-// 		}
-		cvShowImage ( "ObjectRecognizer3D", iplImage );
   }while(((char)key!='q'));
   
   

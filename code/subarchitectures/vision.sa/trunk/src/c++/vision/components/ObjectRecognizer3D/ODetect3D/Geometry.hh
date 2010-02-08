@@ -23,6 +23,7 @@ namespace P
 
 double IsLeft( Vector2 p0, Vector2 p1, Vector2 p2 );
 void ChainHull2D( Array<Vector2> &p, Array<Vector2> &h);
+void ConvexHull( Array<Vector2> &p, Array<Vector2> &h);
 int IWrap ( int ival, int ilo, int ihi );
 int IMax ( int i1, int i2 );
 int IMin ( int i1, int i2 );
