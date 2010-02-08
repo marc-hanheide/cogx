@@ -108,10 +108,6 @@
   
    (probability__observe_feature_at_room_with_label__if_true ?loc - room ?m - feature ?l - label) - double
    (probability__observe_feature_at_room_with_label__if_feature_false ?loc - room ?m - feature ?l - label) - double
-
-   ;; I made label functional.
-;;    (probability__observe_feature_at_room_with_label__if_label_false ?loc - room ?m - feature ?l - label) - double
-;;    (probability__observe_feature_at_room_with_label__if_feature_and_label_false ?loc - room ?m - feature ?l - label) - double
    
 
   
@@ -312,25 +308,6 @@
 		(observed_model_at_room ?location ?model)
 		)
 	       )
-	     
-	     ;; I made label functional
-;; 	     (when (and (featured-at ?model ?location)
-;; 			(not (= (labelled ?location) ?l)))
-;; 	       (probabilistic 
-;; 		(probability__observe_feature_at_room_with_label__if_label_false ?location ?model ?l) 
-;; 		(observed_model_at_room ?location ?model)
-;; 		)
-;; 	       )
-	     
-	     
-	     ;; I made label functional
-;; 	     (when (and (not (featured-at ?model ?location))
-;; 			(not (= (labelled ?location) ?l)))
-;; 	       (probabilistic 
-;; 		(probability__observe_feature_at_room_with_label__if_feature_and_label_false ?location ?model ?l) 
-;; 		(observed_model_at_room ?location ?model)
-;; 		)
-;; 	       )
 	    )
 	    )
 )
