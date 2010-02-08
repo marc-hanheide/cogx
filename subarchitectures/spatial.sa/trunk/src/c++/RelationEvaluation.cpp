@@ -2,6 +2,7 @@
 #include "RelationEvaluation.hpp"
 using namespace cast;
 #include <Pose3.h>
+#include <iostream>
   
 using namespace std;
 using namespace cogx::Math;
@@ -303,28 +304,28 @@ evaluateOnness(const Object *objectS, const Object *objectO)
   // of the respective normals.
 
   // Compute contact point penalties:
-  // For a circle, the point square distance integral is:
-  // 	1/4*sin^2 theta*pi*R^4 + pi*R^2*d^2
-  // For a rectangle, it is
-  //    A*(z1^2/3+z2^2/3+z0^2+z1z2/2+z1z0+z2z0),
-  //	where A is the area of the rectangle, and
-  //	z1/z2 the normal components of two edge vectors,
-  //	and z0 the normal distance to their vertex from the plane.
-  // For an edge segment it will be
-  //	L*(z1^2/3+z0^2+z1z0)
-  // For a point it's just
-  //	z0^2
+  // Find the lowest point. Penalize if it is above the support plane.
+  // Penalize more if it below the support plane.
   if (squareDistanceWeight != 0.0) {
     if (bottomSurfaceType == 3) {
-      Vector3 side1 = bottomSurfaceVertices[1] - bottomSurfaceVertices[0];
-      Vector3 side2 = bottomSurfaceVertices[3] - bottomSurfaceVertices[0];
-      double bottomArea = length(cross(side1, side2));
-      double z0 = dot(bottomSurfaceVertices[0], supportPlaneNormal) - supportPlaneOffset;
-      double z1 = dot(side1, supportPlaneNormal);
-      double z2 = dot(side2, supportPlaneNormal);
-      double integral = bottomArea * (z1*z1/3 + z2*z2/3 + z0*z0 + z1*z2/2 + z1*z0 + z2*z0);
-      integral /= length(cross(side1, side2)); // Normalize by the unprojected area
-      double onnessFactor = 1/(1+integral/(squareDistanceFalloff*squareDistanceFalloff));
+      double minNormalDistance = FLT_MAX;
+      for (std::vector<Vector3>::iterator it = bottomSurfaceVertices.begin();
+	  it != bottomSurfaceVertices.end(); it++) {
+	double z0 = dot(*it, supportPlaneNormal) - supportPlaneOffset;
+	if (z0 < minNormalDistance) {
+	  minNormalDistance = z0;
+	}
+      }
+
+      double onnessFactor;
+      if (minNormalDistance > 0.0) {
+	onnessFactor = 1/(1+minNormalDistance*minNormalDistance/(squareDistanceFalloff*squareDistanceFalloff));
+      }
+      else {
+	// TODO: differentiate above/below cases
+	onnessFactor = 1/(1+minNormalDistance*minNormalDistance/(squareDistanceFalloff*squareDistanceFalloff));
+      }
+
       if (onnessFactor == 0.0) {
 	return 0.0;
       }
@@ -549,8 +550,50 @@ evaluateOnness(const Object *objectS, const Object *objectO)
     totalOnness += log(supportPlaneDisinclination) * planeInclinationWeight;
   }
 
+  if (overlapWeight != 0.0) {
+    //Project bottom surface onto support surface plane
+    if (bottomSurfaceType == 3) {
+      std::vector<Vector3> projectedBottomVertices;
+      projectedBottomVertices.reserve(bottomSurfaceVertices.size());
+
+      //Need to reverse the winding on the bottom polygon for overlap compoutation
+      for (int i = bottomSurfaceVertices.size()-1; i >= 0; i--) {
+	projectedBottomVertices.push_back(bottomSurfaceVertices[i]
+	    -supportPlaneNormal*(dot(bottomSurfaceVertices[i],supportPlaneNormal) - supportPlaneOffset));
+      }
+      double maxArea =  getPolygonArea(projectedBottomVertices);
+
+      if (supportSurfaceType == 3) {
+	double overlapArea = getPolygonArea(
+	    findPolygonIntersection(projectedBottomVertices, supportSurfaceVertices));
+	if (overlapArea == 0.0) {
+	  return 0.0;
+	}
+	totalOnness += log(overlapArea/maxArea) * overlapWeight;
+      }
+
+      else if (supportSurfaceType == 2) {
+	double overlapArea = findOverlappingArea(projectedBottomVertices,
+	    supportSurfaceCenter, supportSurfaceRadius, supportPlaneNormal);
+	if (overlapArea == 0.0) {
+	  return 0.0;
+	}
+	totalOnness += log(overlapArea/maxArea) * overlapWeight;
+      }
+
+      else {
+	//log("Support surface type not supported yet");
+	return 0.0;
+      }
+    }
+    else {
+      //log("Bottom surface type not supported yet");
+      return 0.0;
+    }
+  }
+
   double totalWeights = squareDistanceWeight + supportCOMContainmentWeight +
-    bottomCOMContainmentWeight + planeInclinationWeight;
+    bottomCOMContainmentWeight + planeInclinationWeight + overlapWeight;
 
   return totalWeights == 0.0 ? 0.0 : exp(totalOnness / totalWeights);
 }
@@ -570,14 +613,26 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
   Vector3 nextPoint = polygon1[currentIndex+1]; // End point of current edge
   unsigned int nextIndex = 1; // Index that will be used for next start point unless
   // an intersection is found
+#ifdef DEBUG
+  Vector3 norm1 = cross(polygon1[1]-polygon1[0], polygon1.back()-polygon1[0]);
+  normalise(norm1);
+  Vector3 norm2 = cross(polygon2[1]-polygon2[0], polygon2.back()-polygon2[0]);
+  normalise(norm2);
+  if (!vequals(norm1, norm2, 0.001)) {
+    // log("Comparing non-coplanar polygons!");
+    return 0.0;
+  }
+#endif
 
-  while (outPolygon.empty() || currentPoint != outPolygon[0])
+  while (outPolygon.empty() || !vequals(currentPoint, outPolygon[0], 0.001))
   {
+//    cout << "(" << currentPoint.x << ", " << currentPoint.y << ") -> (" <<
+//      nextPoint.x << ", " << nextPoint.y << ") follwing " << currentFollowedPolygon << endl;
     Vector3 thisEdge = nextPoint - currentPoint;
     double thisEdgeLength = length(thisEdge);
     Vector3 thisEdgeDir = thisEdge / thisEdgeLength;
 
-    double smallestIntersectionParameter = 1.1;
+    double smallestIntersectionParameter = 1.0;
     int foundIntersection = 0;
     Vector3 intersectionPoint;
     int intersectionIndex;
@@ -613,7 +668,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
       double normalLength = length(normalVector);
 
       double intersectionParamThisEdge; // 0 - 1
-      if (normalLength != 0.0) {
+      if (!equals(normalLength, 0.0, 0.001)) {
 	intersectionParamThisEdge =
 	  normalLength*normalLength / (dot(normalVector, thisEdge));
       }
@@ -622,12 +677,18 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
       }
 
       if (intersectionParamThisEdge > 0.0 &&
-	  intersectionParamThisEdge < smallestIntersectionParameter) {
+	  (intersectionParamThisEdge < smallestIntersectionParameter ||
+	  equals(intersectionParamThisEdge, 1.0, 0.001))) {
 	intersectionPoint = currentPoint + thisEdge *
 	  intersectionParamThisEdge;
 
-	double intersectionParamOtherEdge =
-	  dot(otherEdgeDir, intersectionPoint - polygon2[i]) / otherEdgeLength;
+	double intersectionParamOtherEdge;
+	if (currentFollowedPolygon == 1) {
+	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon2[i]) / otherEdgeLength;
+	}
+	else {
+	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon1[i]) / otherEdgeLength;
+	}
 
 	if (intersectionParamOtherEdge >= 0.0 &&
 	    intersectionParamOtherEdge <= 1.0) {
@@ -737,7 +798,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
 }
 
 double
-findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius)
+findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal)
 {
   const Vector3 zeroVec = vector3(0,0,0);
   unsigned nextIndex = 1;
@@ -955,9 +1016,19 @@ double
 getPolygonArea(const std::vector<Vector3> &polygon)
 {
   double ret = 0.0;
+//  for (unsigned int i = 0; i < polygon.size(); i++) {
+//    unsigned int iplus = (i == polygon.size()-1) ? 0 : i + 1;
+//    ret += polygon[i].x*polygon[iplus].y - polygon[i].y*polygon[iplus].x;
+//  }
+  if (polygon.size() < 3) {
+    return 0.0;
+  }
+
+  Vector3 normal = cross(polygon[1]-polygon[0], polygon.back()-polygon[0]);
+  normalise(normal);
   for (unsigned int i = 0; i < polygon.size(); i++) {
     unsigned int iplus = (i == polygon.size()-1) ? 0 : i + 1;
-    ret += polygon[i].x*polygon[iplus].y - polygon[i].y*polygon[iplus].x;
+    ret += dot(normal, cross(polygon[i], polygon[iplus]));
   }
   return 0.5*ret;
 }
