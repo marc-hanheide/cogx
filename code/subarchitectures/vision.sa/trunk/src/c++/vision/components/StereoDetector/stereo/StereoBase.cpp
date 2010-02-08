@@ -12,6 +12,9 @@ namespace Z
 {
 
 
+//-----------------------------------------------------------------//
+//------------------------ static helpers -------------------------//
+//-----------------------------------------------------------------//
 /**
  * @brief TmpLine
  */
@@ -36,8 +39,9 @@ static void AddEdgels(CvPoint2D32f *edgels, int &num_edgels,
 
 
 /**
- * @brief Remove short lines from array of lines.
- * 																																												/// TODO
+ * @brief Remove short lines from array of lines, dependent to the longest line (10% frontier)
+ * Used to sort out the shortest lines from an array of lines (closures) 
+ * @param lines Array of lines
  */
 static void RefineLines(vector<TmpLine> &lines)
 {
@@ -84,6 +88,7 @@ static void RefineLines(vector<TmpLine> &lines)
 //-----------------------------------------------------------------//
 /**
  * @brief Init tmp. surface with data of an vs3 closure
+ * TODO Why calculation with pixels ...? Whats going on here?
  * @param clos Closure to init surface
  */
 void TmpSurf::Init(Closure *clos)
@@ -158,10 +163,29 @@ void TmpSurf::Init(Closure *clos)
     p[i] = LineIntersection(lines[i].p, lines[i].d, lines[j].p, lines[j].d);
   }
 
-  id = clos->ID();
+//   id = clos->ID();
 
   is_valid = true;
 }
+
+
+/**
+ * @brief Init tmp. surface with data of a rectangle.
+ * Set the size of the point-vectors (p, pr) and copy corner coordinates to p.
+ * @param rectangle Rectangle to init the surface.
+ */
+void TmpSurf::Init(Rectangle *rectangle)
+{
+  p.resize(4);
+  pr.resize(4);
+
+	for(unsigned i=0; i<4; i++)
+		p[i] = (rectangle->ljcts[i])->isct;
+
+//  id = UNDEF_ID;									/// TODO Wozu eine id? => wurde sonst auf clos-ID gesetzt.
+  is_valid = true;
+}
+
 
 /**
  * @brief Init tmp. surface with data of an vs3 ellipse
@@ -169,80 +193,55 @@ void TmpSurf::Init(Closure *clos)
  */
 void TmpSurf::Init(Ellipse *ell)
 {
-//   // array of edgel points, 10000 should be enough, i.e. a random segfault will
-//   // appear at some possibly distant point in the future :)
-//   CvPoint2D32f edgels[10000];
-//   int num_edgels = 0;
-//   vector<TmpLine> lines;
-//   unsigned first_l_jct = 0, i = 0;
-//   bool full_round = false;
-// 
-//   is_valid = false;
-// 
-//   // Notes:
-//   // The closure has two arrays jcts and colls of same size. If a
-//   // junction between two consecutive lines is an L-jct, jct[i] points to the
-//   // according L-jct and coll[i] == 0. Otherwise jct[i] == 0 and coll[i] points
-//   // to the respective collinearity.
-//   //
-//   // lines (and junctions) are in counter-clockwise order
-//   //
-//   // jct i is the jct between line i-1 and line i
-//   // so i-1 is the LEFT and i the RIGHT line of L-jct i
-//   
-//   // move to the first L-jct
-//   while(i < clos->jcts.Size() && clos->jcts[i] == 0)
-//     i++;
-//   // note: in case clos is a circle, we have only collinearities!
-//   if(i == clos->jcts.Size())
-//     return;
-//   first_l_jct = i;
-// 
-//   while(!full_round)
-//   {
-//     // add edgels of RIGHT line of L-jct i, i.e. line i
-//     VisibleLine *line = (VisibleLine*)clos->lines[i];
-//     AddEdgels(edgels, num_edgels, line->seg->edgels, line->idx[START],
-//         line->idx[END]);
-//     i = clos->jcts.CircularNext(i);
-// 
-//     // if we have reached the next L-jct, our "straight" line is complete
-//     // fit line to edgels
-//     if(clos->jcts[i] != 0)
-//     {
-//       float line_params[4];
-//       CvMat tmp = cvMat(num_edgels, 1, CV_32FC2, edgels);
-//       cvFitLine(&tmp, CV_DIST_L2, 0, 0.01, 0.01, line_params);
-//       lines.push_back(TmpLine(line_params[2], line_params[3],
-//                               line_params[0], line_params[1]));
-//       // and start new line
-//       num_edgels = 0;
-//     }
-// 
-//     // if we have come round
-//     if(i == first_l_jct)
-//       full_round = true;
-//   }
-//   // we can't do anything with less than 3 lines
-//   if(lines.size() < 3)
-//     return;
-// 
-//   // remove short lines
-//   RefineLines(lines);
-// 
-//   // calculate corner points
-//   p.resize(lines.size());
-//   pr.resize(lines.size());
-//   for(i = 0; i < lines.size(); i++)
-//   {
-//     unsigned j = (i < lines.size() - 1 ? i + 1 : 0);
-//     p[i] = LineIntersection(lines[i].p, lines[i].d, lines[j].p, lines[j].d);
-//   }
+	printf("StereoBase: TmpSurf::Init(Ellipse *ell): Not yet implemented!\n");
+// 	for(unsigned i=0; i<4; i++)
+// 		p[i] = (rectangle->ljcts[i])->isct;
 // 
 //   id = clos->ID();
 // 
 //   is_valid = true;
 }
+
+/**
+ * @brief Init tmp. surface with data of a cube.
+ * Set the size of the point-vectors (p, pr) and copy corner coordinates to p.
+ * @param cube Cube to init the surface.
+ * @param int Top (0), Right (1) or Left (2) side of the cube.
+ * TODO Surfaces of cubes may be ambiguous.
+ */
+void TmpSurf::Init(Cube *cube, int side)
+{
+  p.resize(4);
+  pr.resize(4);
+
+	if(side == 0)				// => Oben: 00-10-20-30
+	{
+		p[0] = cube->corner_points[0][0];
+		p[1] = cube->corner_points[1][0];
+		p[2] = cube->corner_points[2][0];
+		p[3] = cube->corner_points[3][0];
+	}
+	else if(side == 1)	// => Rechts: 00-01-11-10
+	{
+		p[0] = cube->corner_points[0][0];
+		p[1] = cube->corner_points[0][1];
+		p[2] = cube->corner_points[1][1];
+		p[3] = cube->corner_points[1][0];
+	}
+	else if(side == 2)	// => Links: 10-11-21-20
+	{
+		p[0] = cube->corner_points[1][0];
+		p[1] = cube->corner_points[1][1];
+		p[2] = cube->corner_points[2][1];
+		p[3] = cube->corner_points[2][0];
+	}
+	else
+		printf("TmpSurf::Init: False cube side.\n");
+
+//  id = UNDEF_ID;									/// TODO Wozu eine id? => wurde sonst auf clos-ID gesetzt.
+  is_valid = true;
+}
+
 
 /**
  * @brief Shift points (and rectified ones) offs to the left: p[i] <- p[i+offs]
@@ -272,9 +271,8 @@ void TmpSurf::Rectify(StereoCamera *stereo_cam, int side)
 }
 
 /**
- * // TODO
+ * // TODO No implementation yet.
  * @brief Refine tmp. surface
- * @param 
  */
 void TmpSurf::Refine()
 {
@@ -488,12 +486,14 @@ static const char type_names[][NAME_LENGTH] = {
 	"STEREO_CLOSURE",
   "STEREO_RECTANGLE",
 	"STEREO_FLAP",
+	"STEREO_FLAP_ARI",
+	"STEREO_CUBE",
   "UNDEF"
   };
 
 /**
  * @brief Returns the name of a given gestalt type.
- * @param t TODO
+ * @param t Type of the stereo principle
  */
 const char* StereoBase::TypeName(Type t)
 {
@@ -502,7 +502,7 @@ const char* StereoBase::TypeName(Type t)
 
 /**
  * @brief Return the enum type of a given gestalt type name.
- * @param type_name TODO
+ * @param type_name Name of the stereo principle.
  */
 StereoBase::Type StereoBase::EnumType(const char *type_name)
 {
@@ -518,6 +518,16 @@ StereoBase::Type StereoBase::EnumType(const char *type_name)
  */
 StereoBase::StereoBase()
 {
+	enabled = false;		// by default disabled
+}
+
+/**
+ * @brief Enables or disables the stereo principle
+ * @param status True to enable, false to disable principle.
+ */
+void StereoBase::EnablePrinciple(bool status)
+{
+	enabled = status;
 }
 
 

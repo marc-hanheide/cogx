@@ -1,7 +1,7 @@
 /**
  * @file StereoCamera.hh
- * @author ???
- * @date ???
+ * @author Michael Zillich
+ * @date 2009
  * @version 0.1
  * @brief StereoCamera calculation class
  */
@@ -81,7 +81,7 @@ public:
 
 public:
   StereoCamera();
-  void ReadSVSCalib(const string &calibfile);
+  bool ReadSVSCalib(const string &calibfile);
   void ProjectPoint(double X, double Y, double Z, double &u, double &v, int side);
   void ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z);
   void DistortPoint(double u, double d, double &ud, double &vd, int side);

@@ -6,10 +6,7 @@
  * @brief Managment of stereo object detection with two vs3 vision cores.
  */
 
-
 #include "StereoCore.hh"
-
-//#define ZSC_DEBUG
 
 namespace Z
 {
@@ -20,8 +17,7 @@ extern void SetActiveDrawArea(IplImage *iI);
  * @brief Constructor of Stereo Core
  * @param stereocal_file Stereo calibration file
  */
-StereoCore::StereoCore(const string &stereocal_file)
-    throw(Except)
+StereoCore::StereoCore(const string &stereocal_file) throw(Except)
 {
   for(int side = LEFT; side <= RIGHT; side++)
   {
@@ -38,11 +34,13 @@ StereoCore::StereoCore(const string &stereocal_file)
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CLOSURES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_RECTANGLES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS_ARI);
+    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CUBES);
   }
 
 	// init stereo camera calibration parameters
   stereo_cam = new StereoCamera();
-  stereo_cam->ReadSVSCalib(stereocal_file);
+  if(!stereo_cam->ReadSVSCalib(stereocal_file)) throw (Except(__HERE__, "cannot open calibration file for stereo camera."));
 
 	InitStereoGestalts();
 }
@@ -55,7 +53,8 @@ StereoCore::~StereoCore()
   delete vcore;
   delete stereo_cam;
   for(int i = 0; i < StereoBase::MAX_TYPE; i++)
-    delete stereoGestalts[i];
+    if(stereoGestalts[i]->IsEnabled())
+			delete stereoGestalts[i];
 }
 
 
@@ -68,15 +67,21 @@ void StereoCore::InitStereoGestalts()
   for(int i = 0; i < StereoBase::MAX_TYPE; i++)
     stereoGestalts[i] = 0;
 
+	// initialise all principles
 	stereoGestalts[StereoBase::STEREO_ELLIPSE] = new StereoEllipses(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_CLOSURE] = new StereoClosures(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_RECTANGLE] = new StereoRectangles(vcore, stereo_cam);
   stereoGestalts[StereoBase::STEREO_FLAP] = new StereoFlaps(vcore, stereo_cam);
-//   stereoGestalts[StereoBase::STEREO_FLAP2] = new StereoFlaps2(vcore, stereo_cam);
-//   stereoGestalts[StereoBase::STEREO_CUBE] = new StereoCube(vcore, stereo_cam);
+  stereoGestalts[StereoBase::STEREO_FLAP_ARI] = new StereoFlapsAri(vcore, stereo_cam);
+  stereoGestalts[StereoBase::STEREO_CUBE] = new StereoCubes(vcore, stereo_cam);
 
-//   for(unsigned i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
-//     config.AddItem(GestaltPrinciple::TypeName((GestaltPrinciple::Type)i), "0");
+	// set principles enabled or disabled
+	stereoGestalts[StereoBase::STEREO_ELLIPSE]->EnablePrinciple(false);													/// TODO Ellipses disabled
+	stereoGestalts[StereoBase::STEREO_CLOSURE]->EnablePrinciple(true);
+	stereoGestalts[StereoBase::STEREO_RECTANGLE]->EnablePrinciple(true);
+	stereoGestalts[StereoBase::STEREO_FLAP]->EnablePrinciple(true);
+	stereoGestalts[StereoBase::STEREO_FLAP_ARI]->EnablePrinciple(true);
+	stereoGestalts[StereoBase::STEREO_CUBE]->EnablePrinciple(true);
 }
 
 
@@ -88,7 +93,8 @@ void StereoCore::ClearResults()
   for(int side = LEFT; side <= RIGHT; side++)
     vcore[side]->ClearGestalts();
   for(int i = 0; i < StereoBase::MAX_TYPE; i++)
-  	stereoGestalts[i]->ClearResults();
+  	if(stereoGestalts[i]->IsEnabled())
+			stereoGestalts[i]->ClearResults();
 }
 
 
@@ -99,7 +105,8 @@ void StereoCore::ClearResults()
 void StereoCore::SetImages(IplImage *iIl, IplImage *iIr)
 {
 	img_l = iIl;
-	img_r = iIr;}
+	img_r = iIr;
+}
 
 
 /**
@@ -118,11 +125,10 @@ void StereoCore::SetActiveDrawAreaSide(int side)
  * @param runtime_ms granted runtime in [ms] for each image
  * @param iIl Left stereo image.
  * @param iIr Right stereo image.
+ * TODO Throw sollte hier implementiert werden und try-catch block weg!
  */
 void StereoCore::ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr)
 {
-// printf("\nProcess stereo image:\n");
-	// set new images
 	SetImages(iIl, iIr);
 
   // do monocular processing for each stereo image
@@ -131,22 +137,18 @@ void StereoCore::ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr
     vcore[side]->NewImage(side == LEFT ? img_l : img_r);
     vcore[side]->ProcessImage(runtime_ms);
 	}
-// printf("\nProcess stereo image 2:\n");
 
-	// do stereo processing
+	// do stereo processing for enabled stereo principles
 	try 
 	{
-// printf("\nProcess stereo image 3:\n");
 		for(int i = 0; i < StereoBase::MAX_TYPE; i++)
-			stereoGestalts[i]->Process();											/// TODO Funktioniert nur, wenn alle Gestalts initialisiert wurden!!!! VORSICHT
-// printf("\nProcess stereo image: 4\n");
+			if(stereoGestalts[i]->IsEnabled()) stereoGestalts[i]->Process();
   }
 	catch(Z::Except &e) 
 	{
+		printf("StereoCore::ProcessStereoImage: Error during stereo calculation.\n");
 		printf("%s\n", e.what());
 	}
-
-// printf("\nProcess stereo image 5:\n");
 
 	/// HACK draw results of the stereo image
 // 	DrawStereoResults(StereoBase::STEREO_FLAP);
@@ -185,6 +187,7 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
  */
 void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool detected, bool matched)
 {
+printf("StereoCore::DrawStereoResults\n");
 	SetImages(iIl, iIr);
 
 // 	cvLine(img_l, cvPoint(0, 0), cvPoint(640,480), cvScalar(255, 0, 0), 1);
@@ -200,7 +203,7 @@ void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImag
 
 
 /**
- *  HACK
+ *  HACK Wieder entfernen
  * @brief Print the corner points of the calculated flap.
  */
 void StereoCore::PrintResults()
