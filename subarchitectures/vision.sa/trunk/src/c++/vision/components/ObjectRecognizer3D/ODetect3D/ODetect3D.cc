@@ -7,7 +7,6 @@
  * TODO:
  * - now we assume undistorted images 
  * -> introduce distortion paramter
- * - HACK: Bug in CHull!!!
  */
 
 
@@ -137,8 +136,8 @@ void ODetect3D::MatchKeypointsGPU(Array<KeypointDescriptor *> &keys, Array<Codeb
   int num;
   int (*match_buf)[2] = new int[(int)keys.Size()][2];
 
-  if (matcherSize < keys.Size()) matcher->SetMaxSift((int)keys.Size());
-  if (matcherSize < cb.Size()) matcher->SetMaxSift((int)cb.Size());
+  if (matcherSize < (int)keys.Size()) matcher->SetMaxSift((int)keys.Size());
+  if (matcherSize < (int)cb.Size()) matcher->SetMaxSift((int)cb.Size());
 
   P::Array<float> desc1(cb.Size()*128);
   P::Array<float> desc2(keys.Size()*128);
@@ -153,7 +152,7 @@ void ODetect3D::MatchKeypointsGPU(Array<KeypointDescriptor *> &keys, Array<Codeb
 
   num = matcher->GetSiftMatch(keys.Size(), match_buf);
 
-  for (unsigned i=0; i<num; i++)
+  for (unsigned i=0; i<(unsigned)num; i++)
     matches.PushBack(new KeyClusterPair(keys[match_buf[i][1]], cb[match_buf[i][0]], 0));
  
   delete[] match_buf;    
@@ -375,17 +374,7 @@ void ODetect3D::ComputeConfidence(Array<KeypointDescriptor *> &keys, unsigned &n
     }
     cvReleaseMat(&pos);
 
-    try                   /// HACK: there is a bug in CHull!!!!!!
-    {
-      ChainHull2D(cs, object.contour.v);
-    }
-    catch(P::Except &e)
-    {
-      printf("%s\n", e.what());
-      object.conf = 0.;
-      object.conf = DBL_MAX;
-      return;
-    }
+    ConvexHull(cs, object.contour.v);
 
     for (unsigned i=0; i<keys.Size(); i++)
       if (object.contour.Inside(keys[i]->p))
