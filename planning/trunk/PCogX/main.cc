@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     assert(command_Line_Arguments.size() == 0);
     command_Line_Arguments = Command_Line_Arguments(argc, argv);
     
-    int seed = 2008;
+    int seed = 2010;
     srandom(seed);
     srand(seed);
 

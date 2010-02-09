@@ -31,7 +31,7 @@
   
   (:types 
    room label widget feature  model-slot - object
-   model - (either widget feature person) 
+   model - (either widget feature) 
    )
 
   (:constants 
