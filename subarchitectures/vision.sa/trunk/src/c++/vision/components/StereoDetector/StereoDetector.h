@@ -46,8 +46,9 @@ private:
 	bool debug;															///< Debug mode
 	bool single;														///< Single shot mode for the stereo detector
 	bool showImages;												///< Show stereo images in openCV window
-	bool showMatched;												///< Show matched features in stereo images
 	bool showDetected;											///< Show detected features in stereo images
+	bool showMasked;												///< Show masked features in stereo images
+	bool showMatched;												///< Show matched features in stereo images
 	std::vector<std::string> objectIDs;			///< IDs of the currently stored visual objects
 	int VOtoWrite; 													///< Identifier for visual objects to write (==> same as overlays)
 	int overlays;														///< Identifier for result overlays:\n
