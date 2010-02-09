@@ -81,7 +81,7 @@ public:
 	int NumFlapsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::FLAP);}
 
 	int NumStereoMatches() {return flapMatches;}
-	void Draw(int side);
+	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
 
 	void ClearResults();

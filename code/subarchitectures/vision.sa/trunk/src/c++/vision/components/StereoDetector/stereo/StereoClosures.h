@@ -87,7 +87,7 @@ public:
 	int NumClosuresRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CLOSURE);}
 
 	int NumStereoMatches() {return closMatches;}
-	void Draw(int side);
+	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
 	void ClearResults();
 	void Process();

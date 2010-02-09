@@ -157,8 +157,9 @@ const TmpFlap &StereoFlaps::Flaps2D(int side, int i)
 /**
  * @brief Draw flaps as overlay.
  * @param side Left or right side of the stereo images.
+ * @param masked Draw masked features.
  */
-void StereoFlaps::Draw(int side)
+void StereoFlaps::Draw(int side, bool masked)
 {
 	SetColor(RGBColor::blue);
 	int nrFlaps = 0;
@@ -168,8 +169,11 @@ void StereoFlaps::Draw(int side)
 printf("StereoFlaps::Draw: %u\n", nrFlaps);
 	for(int i=0; i<nrFlaps; i++)
 	{
-		if (vcore[side]->Gestalts(Gestalt::FLAP, i)->IsUnmasked())
+		if(masked)
 			vcore[side]->Gestalts(Gestalt::FLAP, i)->Draw();	
+		else
+			if (vcore[side]->Gestalts(Gestalt::FLAP, i)->IsUnmasked())
+				vcore[side]->Gestalts(Gestalt::FLAP, i)->Draw();	
 	}
 }
 
