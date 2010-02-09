@@ -23,6 +23,8 @@
 #include <map>
 #include <peekabot.hh>
 #include "RelationEvaluation.hpp"
+#include <PTZ.hpp>
+#include <NavData.hpp>
 
 using namespace SpatialProperties;
 using namespace SpatialData;
@@ -55,6 +57,7 @@ protected:
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
   bool m_bTestOnness;
+  bool m_bNoPTZ;
 
   bool m_bDisplayPlaneObjectsInPB;
   peekabot::PeekabotClient m_PeekabotClient;  
@@ -64,16 +67,27 @@ protected:
   int m_PbPort;
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
+  NavData::RobotPose2dPtr lastRobotPose;
+  std::map<std::string, Pose3> m_lastKnownObjectPoses;
+  std::map<std::string, cast::cdl::CASTTime> m_lastObjectPoseTimes;
+  Pose3 m_CameraPoseR;
+
   void connectPeekabot();
+
+  Pose3 getCameraToWorldTransform();
 
   virtual void configure(const std::map<std::string, std::string>& _config);
 
+  void newRobotPose(const cast::cdl::WorkingMemoryChange &);
   void newObject(const cast::cdl::WorkingMemoryChange &);
   void objectChanged(const cast::cdl::WorkingMemoryChange &);
 
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
 
   void setContainmentProperty(int objectID, int placeID, double confidence);
+  void setSupportProperty(int figureID, int groundID, double confidence);
+
+  ptz::PTZInterfacePrx m_ptzInterface;
 }; 
 
 std::vector<cogx::Math::Vector3>
