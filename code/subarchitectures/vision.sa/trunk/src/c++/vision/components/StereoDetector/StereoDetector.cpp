@@ -53,6 +53,7 @@ void StereoDetector::configure(const map<string,string> & _config)
 	cmd_single = false;
 	showImages = false;
 	showDetected = true;
+	showMasked = false;
 	showMatched = true;
 	debug = false;
 	single = false;
@@ -103,6 +104,7 @@ void StereoDetector::configure(const map<string,string> & _config)
 
 /**
  *	@brief Start managed cast component StereoDetector.
+ *	@TODO Change receiver locks the memory until 
  */
 void StereoDetector::start()
 {
@@ -201,11 +203,11 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 
 /**
  *	@brief Run component. Called on start of the component.
+ *	@TODO LOCKT DEN SPEICHERBEREICH NICHT, SOLANGE GEARBEITET WIRD
  */
 void StereoDetector::runComponent()
 {
 	while(single) SingleShotMode();
-// 	while(true) SingleShotMode();
 }
 
 
@@ -217,7 +219,7 @@ void StereoDetector::processImage()
 	log("process new image");
 	int runtime = 1200;											// processing time for detection for left AND right image (2 vision cores for stereo)
 
-	// clear results before processing new image
+	// clear results before converting and processing new image
 	score->ClearResults();
 
 //	ReadSOIs(); 	/// HACK: Read SOIs and write it to the console
@@ -262,7 +264,6 @@ void StereoDetector::ShowImages(bool convertNewIpl)
 	// reconvert original stereo image pair from image server to clear images.
 	if(convertNewIpl)
 	{
-// printf("########################## CONVERT NEW IPL #################################\n");
 		iplImage_l = convertImageToIpl(image_l);
 		iplImage_r = convertImageToIpl(image_r);
 	}
@@ -270,30 +271,30 @@ void StereoDetector::ShowImages(bool convertNewIpl)
 	switch(overlays)
 	{
 		case 1:
-			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r, showDetected, showMatched);
-			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r, showDetected, showMatched);
-			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r, showDetected, showMatched);
-			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r, showDetected, showMatched);
-			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP_ARI, iplImage_l, iplImage_r, showDetected, showMatched);
-			score->DrawStereoResults(Z::StereoBase::STEREO_CUBE, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP_ARI, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_CUBE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
 			break;
 		case 2:
-			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
 			break;
 		case 3:
-			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_RECTANGLE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
 			break;
 		case 4:
-			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_CLOSURE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
 			break;
 		case 5:
-			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_ELLIPSE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
 			break;
 		case 6:
-			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP_ARI, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_FLAP_ARI, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
 			break;
 		case 7:
-			score->DrawStereoResults(Z::StereoBase::STEREO_CUBE, iplImage_l, iplImage_r, showDetected, showMatched);
+			score->DrawStereoResults(Z::StereoBase::STEREO_CUBE, iplImage_l, iplImage_r, showDetected, showMasked, showMatched);
 			break;
 		default:
 			printf("StereoDetector::ShowImages: Unknown overlay exception\n");
@@ -391,18 +392,19 @@ cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nic
 
 /**
  * @brief Single shot mode of the stereo detector. Catch keyboard events and change displayed results.\n
- * 		key:	s ... single shot\n
+ * 		key:	s ... single shot \n
  * 		key:	m ... draw matched features (on/off)\n
  * 		key:	d ... draw detected features (on/off)\n
- * 		key:	1 ... show all\n
- * 		key:	2 ... show flaps\n
- * 		key:	3 ... show rectangles\n
- * 		key:	4 ... show closures\n
- * 		key:	5 ... show ellipses\n
- * 		key:	6 ... show flaps_ari\n
- * 		key:	7 ... show cubes\n
- * 		key:	x ... stop single shot modus\n
- * 		key:	h ... show help\n
+ * 		key:	p ... draw masked features (on/off)\n
+ * 		key:	1 ... show all \n
+ * 		key:	2 ... show flaps \n
+ * 		key:	3 ... show rectangles \n
+ * 		key:	4 ... show closures \n
+ * 		key:	5 ... show ellipses \n
+ * 		key:	6 ... show flaps_ari \n
+ * 		key:	7 ... show cubes \n
+ * 		key:	x ... stop single shot modus \n
+ * 		key:	h ... show help \n
  */
 void StereoDetector::SingleShotMode()
 {
@@ -442,6 +444,19 @@ void StereoDetector::SingleShotMode()
 			{
 				 showDetected = true;
 				log("draw all detected features: on");
+			}
+			ShowImages(true);
+			break;
+		case 'p':
+			if(showMasked)
+			{
+				showMasked = false;
+				log("draw all masked features: off");
+			}
+			else
+			{
+				 showMasked = true;
+				log("draw all masked features: on");
 			}
 			ShowImages(true);
 			break;
@@ -496,6 +511,7 @@ void StereoDetector::SingleShotMode()
 							"    s ... single shot\n"
 							"    m ... draw matched features (on/off)\n"
 							"    d ... draw detected features (on/off)\n"
+							"    p ... draw masked features (on/off)\n"
 							"    1 ... show all\n"
 							"    2 ... show flaps\n"
 							"    3 ... show rectangles\n"

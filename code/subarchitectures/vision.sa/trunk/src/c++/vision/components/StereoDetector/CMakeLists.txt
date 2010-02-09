@@ -3,11 +3,13 @@ include_directories(.)
 include_directories(matas)
 include_directories(utils)
 include_directories(vs3)
+include_directories(windowUtils)
 include_directories(stereo)
 
 add_subdirectory(matas)
 add_subdirectory(utils)
 add_subdirectory(vs3)
+add_subdirectory(windowUtils)
 add_subdirectory(stereo)
 
 # Set the sources.
