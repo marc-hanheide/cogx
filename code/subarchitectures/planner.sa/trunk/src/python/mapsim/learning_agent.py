@@ -43,12 +43,14 @@ class LearningAgent(Agent):
         Agent.__init__(self, name, mapltask, planner, simulator)
         self.statistics = statistics.Statistics(defaults = statistics_defaults)
 
+        have_macros = False
         try:
             filename = self.get_macro_input_file()
             log.info("Using macro db: %s", filename)
             print filename
             for m in macros.load_macros(filename, self.task.mapldomain):
-                if global_vars.mapsim_config.learning_mode == "learn":
+                have_macros = True
+                if global_vars.mapsim_config.learning_mode in ("learn", "cluster"):
                     self.add_macro(m)
                 elif global_vars.mapsim_config.learning_mode == "test":
                     self.add_macro(m, enabled_only=True)
@@ -59,11 +61,12 @@ class LearningAgent(Agent):
             self.task.add_assertions()
         if global_vars.mapsim_config.learning_mode == "cluster":
             self.task.add_assertions()
-            for a in self.task.mapltask.actions:
-                if a.name.startswith("assertion_"):
-                    m = macros.MacroOp.from_action(a, self.task.mapltask)
-                    m.name = "macro_" + m.name
-                    self.add_macro(m)
+            if not have_macros:
+                for a in self.task.mapltask.actions:
+                    if a.name.startswith("assertion_"):
+                        m = macros.MacroOp.from_action(a, self.task.mapltask)
+                        m.name = "macro_" + m.name
+                        self.add_macro(m)
         
         
     def run(self):
@@ -91,7 +94,7 @@ class LearningAgent(Agent):
         basepath = global_vars.mapsim_config.macro_path
 
         if basename is None:
-            basename = self.mapltask.domain.name
+            basename = self.mapltask.domain.name.lower()
 
         basefilename = os.path.join(basepath, basename + ".mapl")
         
@@ -125,7 +128,7 @@ class LearningAgent(Agent):
         basepath = global_vars.mapsim_config.macro_path
 
         if basename is None:
-            basename = self.mapltask.domain.name
+            basename = self.mapltask.domain.name.lower()
         basefilename = os.path.join(basepath, basename + ".mapl")
 
         if version == -1:
@@ -263,6 +266,7 @@ class LearningAgent(Agent):
                 a = m.to_assertion()
                 m.atom_state = oldstate
                 result.append(a)
+                log.info("Learning macro %s", m.name)
         return result
 
     def select_macros_final(self):
@@ -275,9 +279,23 @@ class LearningAgent(Agent):
         usecount_threshold = int(settings.min_desired_macro_usage * total)
         current_usecount = 0
         current_macrocount = 0
+
+        whitelist = set()
+        if global_vars.mapsim_config.enable_macros:
+            whitelist = set(global_vars.mapsim_config.enable_macros.split(","))
         
         result = []
         for m in sorted(self.macros, key=lambda m: m.usecount):
+            for eff in m.eff:
+                if m.frequencies[eff] < 0.05:
+                    m.atom_state[eff] == macros.ATOM_DISABLED
+                    
+            if m.name in whitelist:
+                log.info("Use macro in whitelist: %s" % m.name)
+                a = m.to_assertion()
+                result.append(a)
+                continue
+            
             if m.usecount <= 0:
                 log.info("Don't use macro: %s, never been used" % m.name)
                 continue

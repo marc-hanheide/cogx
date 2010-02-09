@@ -33,14 +33,14 @@ class Task(object):
         self._plan = None
         # private
         self._state = None
-        self.planning_status = PlanningStatusEnum.TASK_CHANGED
         
         if mapltask:
             self._mapldomain = mapltask.domain
             self.create_initial_state()
             if add_assertions:
                 self.add_assertions()
-
+                
+        self.planning_status = PlanningStatusEnum.TASK_CHANGED
 
     def __get_mapltask(self):
         if self.is_dirty():

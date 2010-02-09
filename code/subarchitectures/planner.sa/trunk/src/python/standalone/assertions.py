@@ -10,7 +10,7 @@ log = config.logger("assertions")
 
 def get_observable_functions(sensors):
     result=[]
-    for s in sensors:
+    for s in sum((sensor.senses for sensor in sensors), []):
         pred_types = [a.get_type() for a in s.get_term().args]
         if s.is_boolean():
             pred_types.append(s.get_value().get_type())
@@ -118,11 +118,13 @@ def to_assertion(action, domain):
         if cond.__class__ == pddl.LiteralCondition:
             if cond.predicate == mapl.knowledge:
                 return None, cond
+            if cond.predicate == pddl.equals and all(not isinstance(t, pddl.FunctionTerm) for t in cond.args):
+                return cond, None
             if cond.predicate != pddl.equals or \
                     not is_observable(observable, cond.args[0], cond.args[1]) :
                 return cond, None
 
-            k_cond = pddl.LiteralCondition(mapl.knowledge, [pddl.predicates.VariableTerm(agent), cond.args[0]])
+            k_cond = pddl.LiteralCondition(mapl.knowledge, [pddl.VariableTerm(agent), cond.args[0]])
             id_cond = pddl.LiteralCondition(mapl.indomain, cond.args[:], negated = cond.negated)
             #print cond.pddl_str()
 
@@ -202,20 +204,53 @@ def make_clusters(plan, domain):
     initial_nodes = []
     static_functions = get_static_functions(domain)
 
-    for node in plan.nodes_iter():
-        for pred in plan.predecessors_iter(node):
-            if isinstance(pred.action, pddl.sensors.Sensor):
-                if any(e['type'] == 'depends' for e in plan[pred][node].itervalues()):
-                    initial_nodes.append(node)
-                    break
+    results |= find_clusters_from_goal(plan.goal_node, plan, static_functions, domain)
+
+    # for node in plan.nodes_iter():
+    #     for pred in plan.predecessors_iter(node):
+    #         if isinstance(pred.action, pddl.sensors.Sensor):
+    #             if any(e['type'] == 'depends' for e in plan[pred][node].itervalues()):
+    #                 initial_nodes.append(node)
+    #                 break
 
             
-    for node in initial_nodes:
-        results |= add_to_cluster(set([node]), plan, static_functions, domain)
+    # for node in initial_nodes:
+    #     results |= add_to_cluster(set([node]), plan, static_functions, domain)
         
 
     log.info("Number of resulting clusters: %d", len(results))
     return results
+
+
+def find_clusters_from_goal(goal_node, plan, static, domain):
+    init = plan.predecessors(goal_node, 'depends')
+    clusters = set()
+    for start_node in init:
+        cluster = find_subcluster(start_node, plan, static, domain)
+        # open = set([start_node])
+        # while open:
+        #     pnode = open.pop()
+        #     for pred in plan.predecessors_iter(pnode, 'depends'):
+        #         if not isinstance(pred.action, pddl.sensors.Sensor):
+        #             cluster.add(pred)
+        #             open.add(pred)
+                
+        if len(cluster) > 1:
+            clusters.add(frozenset(cluster))
+    return clusters
+
+def find_subcluster(pnode, plan, static, domain):
+    subcluster = set()
+    for pred in plan.predecessors_iter(pnode, 'depends'):
+        if pred.action == plan.init_node:
+            continue
+        if isinstance(pred.action, pddl.sensors.Sensor):
+            subcluster.add(pnode)
+        subcluster |= find_subcluster(pred, plan, static, domain)
+        
+    if subcluster:
+        subcluster.add(pnode)
+    return subcluster
     
 
 def add_to_cluster(cluster, plan, static, domain):
