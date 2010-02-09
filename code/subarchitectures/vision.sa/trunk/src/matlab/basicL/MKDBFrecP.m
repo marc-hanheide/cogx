@@ -92,7 +92,7 @@ for i=1:numC
 %     delt = mC(1).Nall - sumCG(cg) ;
    % pUn = max(exp(-0.5*(sumCG(cg)/(0.5*(10+delt))).^2),minThUnk) ;
     Ncthis = length(find(CM(:,2)==cg)) ;
-    pUn = (1/(Ncthis+1))*exp(-sumCG(cg)/100) ;
+    pUn = exp(-0.5*(sumCG(cg)/20)^2) ; %1/(sumCG(cg)+1); %(1/(Ncthis+1))*exp(-sumCG(cg)/10) ;
     pKn=1-pUn;
     Ckprior(i) = pKn ;
 %      pcx(i,2:end)=pcx(i,2:end)*pKn;
@@ -113,7 +113,7 @@ for j=1:numC
       end
    end;
 end;
-  
+ 
 
 % %pcx with unknown model
 % for i=1:numC
