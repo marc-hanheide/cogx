@@ -3,7 +3,7 @@ import parser
 import predicates, conditions, effects, actions, sensors, axioms, domain, problem, scenario, writer, translators, sas_translate, state, visitors
 
 from mapltypes import Type, TypedObject, Parameter
-from predicates import Predicate, Function, Literal, Term
+from predicates import Predicate, Function, Literal, Term, FunctionTerm, VariableTerm, ConstantTerm
 from conditions import LiteralCondition, Conjunction, Disjunction, ExistentialCondition, UniversalCondition
 from effects import SimpleEffect, ConjunctiveEffect, UniversalEffect, ConditionalEffect
 
