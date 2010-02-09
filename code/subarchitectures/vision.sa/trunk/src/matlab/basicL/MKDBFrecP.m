@@ -100,9 +100,10 @@ end;
 for i=1:numC
     cg=CM(names(i),2);
 %     pUn=11/(sumCG(cg)+10);
-    delt = mC(1).Nall - sumCG(cg) ;
-    pUn = max(exp(-0.5*(sumCG(cg)/(0.5*(10+delt))).^2),minThUnk) ;
-    
+%     delt = mC(1).Nall - sumCG(cg) ;
+   % pUn = max(exp(-0.5*(sumCG(cg)/(0.5*(10+delt))).^2),minThUnk) ;
+    Ncthis = length(find(CM(:,2)==cg)) ;
+    pUn = (1/(Ncthis+1))*exp(-sumCG(cg)/100) ;
     pKn=1-pUn;
     pcx(i,2:end)=pcx(i,2:end)*pKn;
 end;    
