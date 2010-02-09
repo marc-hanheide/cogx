@@ -80,7 +80,7 @@ public:
 	int NumRectanglesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE);}
 
 	int NumStereoMatches() {return rectMatches;}
-	void Draw(int side);
+	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
 	void ClearResults();
 	void Process();

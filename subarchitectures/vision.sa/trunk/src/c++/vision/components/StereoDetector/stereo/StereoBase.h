@@ -160,7 +160,7 @@ public:
 	// virtual functions for the stereo classes.
 	virtual int NumStereoMatches() = 0;
 	virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
-	virtual void Draw(int side) {}
+	virtual void Draw(int side, bool masked = false) {}
 	virtual void DrawMatched(int side) {}
 	virtual void Process() {}
 	virtual void ClearResults() {}

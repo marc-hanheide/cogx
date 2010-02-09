@@ -84,20 +84,23 @@ StereoRectangles::StereoRectangles(VisionCore *vc[2], StereoCamera *sc) : Stereo
 
 /**
  * @brief Draw flaps as overlay over the stereo image
+ * @param side Left/right side of stereo images.
+ * @param masked Draw masked features
  */
-void StereoRectangles::Draw(int side)
+void StereoRectangles::Draw(int side, bool masked)
 {
 	SetColor(RGBColor::yellow);
 	int nrRects = 0;
 	if(side == LEFT) nrRects = NumRectanglesLeft2D();
 	else nrRects = NumRectanglesRight2D();
 
-printf("StereoRectangles::Draw: %u\n", nrRects);
-
 	for(int i=0; i<nrRects; i++)
 	{
-		if (vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->IsUnmasked())
-  		vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->Draw();	
+		if(masked)
+			vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->Draw();	
+		else
+			if (vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->IsUnmasked())
+				vcore[side]->Gestalts(Gestalt::RECTANGLE, i)->Draw();	
 	}
 }
 
@@ -107,8 +110,6 @@ printf("StereoRectangles::Draw: %u\n", nrRects);
  */
 void StereoRectangles::DrawMatched(int side)
 {
-printf("StereoRectangles::DrawMatched: %u\n", rectMatches);
-
 	for(int i=0; i< rectMatches; i++)
 		rectangles[side][i].surf.Draw(RGBColor::red);
 }

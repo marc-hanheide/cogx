@@ -78,7 +78,7 @@ public:
 	int NumEllipsesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::ELLIPSE);}
 
 	int NumStereoMatches() {return ellMatches;}
-	void Draw(int side);
+	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
 	void ClearResults();
 	void Process();

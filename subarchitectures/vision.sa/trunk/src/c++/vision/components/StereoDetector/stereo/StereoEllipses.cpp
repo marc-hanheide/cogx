@@ -84,24 +84,30 @@ StereoEllipses::StereoEllipses(VisionCore *vc[2], StereoCamera *sc) : StereoBase
 
 /**
  * @brief Draw ellipses to the stereo images.
+ * @param side Left/right side of stereo images.
+ * @param masked Draw masked features.
  */
-void StereoEllipses::Draw(int side)
+void StereoEllipses::Draw(int side, bool masked)
 {
-	SetColor(RGBColor::magenta);
+	SetColor(RGBColor::red);
 
-/*	int nrRects = 0;
-	if(side == LEFT) nrRects = NumClosuresLeft2D();
-	else nrRects = NumClosuresRight2D();
-	for(int i=0; i<nrRects; i++)
+	int nrEllipses = 0;
+	if(side == LEFT) nrEllipses = NumEllipsesLeft2D();
+	else nrEllipses = NumEllipsesRight2D();
+	for(int i=0; i<nrEllipses; i++)
 	{
-		if (vcore[side]->Gestalts(Gestalt::CLOSURE, i)->IsUnmasked())
-  		vcore[side]->Gestalts(Gestalt::CLOSURE, i)->Draw();	
-	}*/
+		if (masked)
+			vcore[side]->Gestalts(Gestalt::ELLIPSE, i)->Draw();	
+		else
+			if (vcore[side]->Gestalts(Gestalt::ELLIPSE, i)->IsUnmasked())
+				vcore[side]->Gestalts(Gestalt::ELLIPSE, i)->Draw();	
+	}
 }
 
 
 /**
  * @brief Draw matched ellipses.
+ * @param side Left/right side of stereo images.
  */
 void StereoEllipses::DrawMatched(int side)
 {

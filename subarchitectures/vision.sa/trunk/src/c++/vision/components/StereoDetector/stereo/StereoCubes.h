@@ -83,7 +83,7 @@ public:
 
 	int NumStereoMatches() {return cubeMatches;}			///< Number of matched stereo features. TODO eigentlich hier "return cube3ds.Size();"
 
-	void Draw(int side);
+	void Draw(int side, bool masked);
 	void DrawMatched(int side);
 
 	void ClearResults();

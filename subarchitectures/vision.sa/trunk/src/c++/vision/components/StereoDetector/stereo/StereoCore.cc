@@ -150,15 +150,6 @@ void StereoCore::ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr
 		printf("%s\n", e.what());
 	}
 
-	/// HACK draw results of the stereo image
-// 	DrawStereoResults(StereoBase::STEREO_FLAP);
-// 		SetActiveDrawAreaSide(LEFT);
-// 		vcore[LEFT]->DrawGestalts(Gestalt::ARC, 0);
-// 		vcore[LEFT]->DrawGestalts(Gestalt::ELLIPSE, 0);
-// 		SetActiveDrawAreaSide(RIGHT);
-// 		vcore[RIGHT]->DrawGestalts(Gestalt::ARC, 0);
-// 		vcore[RIGHT]->DrawGestalts(Gestalt::ELLIPSE, 0);
-
 	/// HACK Print results
 	PrintResults();
 }
@@ -185,18 +176,14 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
  * @param detected Draw the detected features.
  * @param matched Draw the matched features.
  */
-void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool detected, bool matched)
+void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool detected, bool masked, bool matched)
 {
-printf("StereoCore::DrawStereoResults\n");
 	SetImages(iIl, iIr);
-
-// 	cvLine(img_l, cvPoint(0, 0), cvPoint(640,480), cvScalar(255, 0, 0), 1);
-// 	cvLine(img_r, cvPoint(0, 480), cvPoint(640,0), cvScalar(255, 0, 0), 1);
 
 	for(int side = LEFT; side <= RIGHT; side++)
 	{
 		SetActiveDrawAreaSide(side);
-		if(detected) stereoGestalts[type]->Draw(side);
+		if(detected) stereoGestalts[type]->Draw(side, masked);
 		if(matched) stereoGestalts[type]->DrawMatched(side);
 	}
 }
@@ -227,36 +214,6 @@ void StereoCore::PrintResults()
 //   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
   printf("StereoFlaps:   flap-matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
 
-
-// 	for(unsigned i=0; i<flaps[LEFT].Size(); i++)
-// 	{
-// 		for(unsigned j=0; j<flaps[LEFT][i].surf[0].pr.size(); j++)
-// 			printf("Points left, flap %u, surf 0:	p: %4.2f / %4.2f	pr: %4.2f / %4.2f\n", 
-// 				i, flaps[LEFT][i].surf[0].p[j].x, flaps[LEFT][i].surf[0].p[j].y, flaps[LEFT][i].surf[0].pr[j].x, flaps[LEFT][i].surf[0].pr[j].y);
-// 		for(unsigned j=0; j<flaps[LEFT][i].surf[1].pr.size(); j++)
-// 			printf("Points left, flap %u, surf 1:	p: %4.2f / %4.2f	pr: %4.2f / %4.2f\n", 
-// 				i, flaps[LEFT][i].surf[1].p[j].x, flaps[LEFT][i].surf[1].p[j].y, flaps[LEFT][i].surf[1].pr[j].x, flaps[LEFT][i].surf[1].pr[j].y);
-// 	}
-// 	for(unsigned i=0; i<flaps[RIGHT].Size(); i++)
-// 	{
-// 		for(unsigned j=0; j<flaps[RIGHT][i].surf[0].pr.size(); j++)
-// 			printf("Points right, flap %u, surf 0:	p: %4.2f / %4.2f	pr: %4.2f / %4.2f\n", 
-// 				i, flaps[RIGHT][i].surf[0].p[j].x, flaps[RIGHT][i].surf[0].p[j].y, flaps[RIGHT][i].surf[0].pr[j].x, flaps[RIGHT][i].surf[0].pr[j].y);
-// 		for(unsigned j=0; j<flaps[RIGHT][i].surf[1].pr.size(); j++)
-// 			printf("Points right, flap %u, surf 1:	p: %4.2f / %4.2f	pr: %4.2f / %4.2f\n", 
-// 				i, flaps[RIGHT][i].surf[1].p[j].x, flaps[RIGHT][i].surf[1].p[j].y, flaps[RIGHT][i].surf[1].pr[j].x, flaps[RIGHT][i].surf[1].pr[j].y);
-// 	}
-}
-
-/**
- * @brief Print the corner points of the calculated flaps.
- */
-void StereoCore::PrintRectResults()
-{
-// 	printf("\nRECTANGLE RESULTS:  \n");
-// 	for(unsigned i=0; i<flaps[LEFT].Size(); i++)
-// 	{
-// 	}
 }
 
 

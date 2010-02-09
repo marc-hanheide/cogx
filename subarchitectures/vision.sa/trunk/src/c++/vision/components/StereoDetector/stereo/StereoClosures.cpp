@@ -85,8 +85,9 @@ StereoClosures::StereoClosures(VisionCore *vc[2], StereoCamera *sc) : StereoBase
 /**
  * @brief Draw closures to the stereo images.
  * @param side Left or right image from stereo rig.
+ * @param masked Draw also masked features.
  */
-void StereoClosures::Draw(int side)
+void StereoClosures::Draw(int side, bool masked)
 {
 	SetColor(RGBColor::green);
 	int nrRects = 0;
@@ -94,8 +95,11 @@ void StereoClosures::Draw(int side)
 	else nrRects = NumClosuresRight2D();
 	for(int i=0; i<nrRects; i++)
 	{
-		if (vcore[side]->Gestalts(Gestalt::CLOSURE, i)->IsUnmasked())
-  		vcore[side]->Gestalts(Gestalt::CLOSURE, i)->Draw();	
+		if(masked)
+			vcore[side]->Gestalts(Gestalt::CLOSURE, i)->Draw();	
+		else
+			if (vcore[side]->Gestalts(Gestalt::CLOSURE, i)->IsUnmasked())
+				vcore[side]->Gestalts(Gestalt::CLOSURE, i)->Draw();	
 	}
 }
 

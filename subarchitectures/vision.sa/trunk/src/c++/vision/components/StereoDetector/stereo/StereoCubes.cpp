@@ -146,8 +146,9 @@ const TmpCube &StereoCubes::Cubes2D(int side, int i)
 /**
  * @brief Draw detected cubes as overlay.
  * @param side Left or right side of the stereo images.
+ * @param masked Draw masked features.
  */
-void StereoCubes::Draw(int side)
+void StereoCubes::Draw(int side, bool masked)
 {
 	SetColor(RGBColor::blue);
 	int nrCubes = 0;
@@ -156,10 +157,11 @@ void StereoCubes::Draw(int side)
 
 	for(int i=0; i<nrCubes; i++)
 	{
-		if (vcore[side]->Gestalts(Gestalt::CUBE, i)->IsUnmasked())
-				vcore[side]->Gestalts(Gestalt::CUBE, i)->Draw();	
+		if(masked)
+			vcore[side]->Gestalts(Gestalt::CUBE, i)->Draw();	
 		else
-printf("StereoCubes::Draw: Cube is masked => no draw!\n");						/// TODO wieder weg
+			if (vcore[side]->Gestalts(Gestalt::CUBE, i)->IsUnmasked())
+				vcore[side]->Gestalts(Gestalt::CUBE, i)->Draw();	
 	}
 }
 

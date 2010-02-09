@@ -157,19 +157,22 @@ const TmpFlapAri &StereoFlapsAri::Flaps2D(int side, int i)
 /**
  * @brief Draw flaps as overlay.
  * @param side Left or right side of the stereo images.
+ * @param masked Draw masked features.
  */
-void StereoFlapsAri::Draw(int side)
+void StereoFlapsAri::Draw(int side, bool masked)
 {
 	SetColor(RGBColor::yellow);
 	int nrFlaps = 0;
 	if(side == LEFT) nrFlaps = NumFlapsLeft2D();
 	else nrFlaps = NumFlapsRight2D();
 
-printf("StereoFlapsAri::Draw: %u\n", nrFlaps);
 	for(int i=0; i<nrFlaps; i++)
 	{
-		if (vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->IsUnmasked())
-			vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->Draw();	
+		if(masked)
+			vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->Draw();
+		else
+			if (vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->IsUnmasked())
+				vcore[side]->Gestalts(Gestalt::FLAP_ARI, i)->Draw();
 	}
 }
 
