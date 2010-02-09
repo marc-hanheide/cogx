@@ -27,6 +27,10 @@ class MacroOp(pddl.scope.Scope):
         self.usecount = 0
         self.subsumption_count = 1
         self.alpha_boost = 1
+
+        self.atom_state = {}
+        self.Q = {}
+        self.frequencies = {}
         self.init_structures()
 
     def q_total(self):
@@ -582,7 +586,10 @@ class MacroOp(pddl.scope.Scope):
         for p in self.pre:
             if p.predicate == mapl.knowledge:
                 replan.parts.append(p)
-            if p.predicate != pddl.equals or \
+            elif p.predicate == pddl.equals and all(not isinstance(t, pddl.FunctionTerm) for t in p.args):
+                if self.atom_state[p] == ATOM_ENABLED:
+                    precondition.parts.append(p)
+            elif p.predicate != pddl.equals or \
                     not assertions.is_observable(observable, p.args[0], p.args[1]):
                 if self.atom_state[p] == ATOM_ENABLED:
                     precondition.parts.append(p)

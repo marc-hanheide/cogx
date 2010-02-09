@@ -12,6 +12,7 @@ usage: %prog [options] domain scenario
   -L, --learning_mode=(cluster|learn|test) : mode for the learning agent [default: %default]
   -m, --macro_filename=FILE : set the basename of the macro file. Defaults to domain name.
   -M, --macro_version=INDEX : read/write macros from this version of the macro file [default: %default]
+  -e, --enable-macros=MACROS : enable these macros in eevry case [default: %default]
 """
 
 from os.path import abspath, dirname
