@@ -13,7 +13,7 @@ function [pcx,pxc,pc]=MKDBFrecP(F,mC)
 
 
 
-MINCONF=3; %minimum number of previously observed objects of the particular category
+MINCONF = 3; %minimum number of previously observed objects of the particular category
 
 %CM=[1:6;1 1 1 1 2 2]'; %concept number -> concept group mapping
 %CM=[1:10;1 1 1 1 2 2 3 3 3 3]'; %concept number -> concept group mapping
@@ -74,29 +74,18 @@ for j=1:numC
 end;
 pc(:,2:N+1)=repmat(pci,1,N);
 
-
+clasInd = {} ;
 sumpxcpc=zeros(nCG,N+1);
 for i=1:nCG
    cs=find(CM(:,2)==i);
    ics=find(ismember(names,cs));
+   clasInd = horzcat(clasInd, ics) ;
    sumpxcpc(i,:)=sum(pxc(ics,:).*pc(ics,:));
 end;
 
-%pcx withouth unknown model
-for j=1:numC
-   ccg=CM(find(CM(:,1)==mC(j).name),2);
-   pcx(j,1)=mC(j).name;
-   for i=1:N
-      if mC(j).conf>=MINCONF
-         pcx(j,i+1)=pxc(j,i+1)*pc(j,i+1)/(sumpxcpc(CM(find(CM(:,1)==mC(j).name),2),i+1));%+1/1*1/Nall);
-      else  %if conf<MINCONF only a few samples has been observed => no model yet
-         pcx(j,i+1)=0;
-      end
-   end;
-end;
- 
 
 %pcx with unknown model
+Ckprior = zeros(1,numC) ;
 for i=1:numC
     cg=CM(names(i),2);
 %     pUn=11/(sumCG(cg)+10);
@@ -105,8 +94,38 @@ for i=1:numC
     Ncthis = length(find(CM(:,2)==cg)) ;
     pUn = (1/(Ncthis+1))*exp(-sumCG(cg)/100) ;
     pKn=1-pUn;
-    pcx(i,2:end)=pcx(i,2:end)*pKn;
-end;    
+    Ckprior(i) = pKn ;
+%      pcx(i,2:end)=pcx(i,2:end)*pKn;
+end; 
+
+%pcx withouth unknown model
+normcs = zeros(1,numC) ;
+for j=1:numC
+   ccg=CM(find(CM(:,1)==mC(j).name),2);
+   pcx(j,1)=mC(j).name;
+   for i=1:N
+      if mC(j).conf>= MINCONF          
+         ncon = (sumpxcpc(CM(find(CM(:,1)==mC(j).name),2),i+1))*Ckprior(j) + (1-Ckprior(j)) ;
+         normcs(j) = ncon ; 
+         pcx(j,i+1)=pxc(j,i+1)*pc(j,i+1)*Ckprior(j) / ncon;%+1/1*1/Nall);
+      else  %if conf<MINCONF only a few samples has been observed => no model yet
+         pcx(j,i+1)=0;
+      end
+   end;
+end;
+  
+
+% %pcx with unknown model
+% for i=1:numC
+%     cg=CM(names(i),2);
+% %     pUn=11/(sumCG(cg)+10);
+% %     delt = mC(1).Nall - sumCG(cg) ;
+%    % pUn = max(exp(-0.5*(sumCG(cg)/(0.5*(10+delt))).^2),minThUnk) ;
+%     Ncthis = length(find(CM(:,2)==cg)) ;
+%     pUn = (1/(Ncthis+1))*exp(-sumCG(cg)/100) ;
+%     pKn=1-pUn;
+%     pcx(i,2:end)=pcx(i,2:end)*pKn;
+% end;    
    
     
 %     
