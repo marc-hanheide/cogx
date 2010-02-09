@@ -71,6 +71,7 @@ class Simulation(object):
             self.single_run(i)
             self.stat_per_run[self.run_index] = self.collect_statistics()
             print "Stats:", self.stat_per_run[self.run_index]
+            log.info("stats: %s", repr(self.stat_per_run[self.run_index]))
         log.info("%d simulation runs completed", self.number_of_runs)
 
     @statistics.time_method_for_statistics("total_time")
@@ -179,30 +180,32 @@ class Simulation(object):
         return new_facts
 
     def execute_sensor_action(self, sensor, agent):
-        svar = self.state.svar_from_term(sensor.get_term())
-        if sensor.is_boolean():
-            if isinstance(sensor.get_value(), pddl.predicates.FunctionTerm):
-                svar2 = state.StateVariable.from_term(sensor.get_value(), self.state)
-                value = self.state[svar2]
+        perceptions = []
+        for se in sensor.senses:
+            svar = self.state.svar_from_term(se.get_term())
+            if se.is_boolean():
+                if isinstance(se.get_value(), pddl.predicates.FunctionTerm):
+                    svar2 = state.StateVariable.from_term(se.get_value(), self.state)
+                    value = self.state[svar2]
+                else:
+                    value = se.get_value().get_instance()
+
+                if self.state[svar] == value:
+                    print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), value.name)
+                    perceptions.append(state.Fact(svar, value))
+                else:
+                    print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
+                    perceptions.append(state.Fact(svar.as_modality(mapl.i_indomain, [value]), pddl.FALSE))
             else:
-                value = sensor.get_value().get_instance()
-                
-            if self.state[svar] == value:
-                print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), value.name)
-                perception = state.Fact(svar, value)
-            else:
-                print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
-                perception = state.Fact(svar.as_modality(mapl.i_indomain, [value]), pddl.FALSE)
-        else:
-            if self.state[svar] == pddl.UNKNOWN and svar.function.type == pddl.t_boolean:
-                #HACK: default to FALSE for undefined boolean fluents
-                print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), pddl.FALSE)
-                perception = state.Fact(svar, pddl.FALSE)
-            else:
-                print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
-                perception = state.Fact(svar, self.state[svar])
+                if self.state[svar] == pddl.UNKNOWN and svar.function.type == pddl.t_boolean:
+                    #HACK: default to FALSE for undefined boolean fluents
+                    print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), pddl.FALSE)
+                    perceptions.append(state.Fact(svar, pddl.FALSE))
+                else:
+                    print "%d: %s senses %s = %s" % (self.time, agent.name, str(svar), self.state[svar].name)
+                    perceptions.append(state.Fact(svar, self.state[svar]))
             
-        return [perception]
+        return perceptions
                     
 
     def signal_done(self, agent):

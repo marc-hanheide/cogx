@@ -525,7 +525,7 @@ class ProblemTest(unittest.TestCase):
                 self.assertEqual(s1.args, s2.args)
                 self.assertEqual(s1.vars, s2.vars)
                 self.assertEqual(s1.precondition, s2.precondition)
-                self.assertEqual(s1.sense, s2.sense)
+                self.assertEqual(s1.senses, s2.senses)
                 
     def testWriterProblem(self):
         """Testing MAPLWriter problem roundtrip"""

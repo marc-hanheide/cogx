@@ -6,17 +6,16 @@ import parser
 import mapltypes as types
 import predicates, conditions, effects, mapl
 
-class Sensor(mapl.MAPLAction):
-    def __init__(self, name, agents, args, vars, precondition, sense, domain):
-        mapl.MAPLAction.__init__(self, name, agents, args, vars, precondition, None, None, domain)
+class SenseEffect(object):
+    def __init__(self, sense, sensor):
+        self.sensor = sensor
         self.sense = sense
-        self.effect = self.knowledge_effect()
 
     def knowledge_effect(self):
         term = self.get_term()
         if not term:
             return None
-        return effects.SimpleEffect(mapl.direct_knowledge, [predicates.VariableTerm(self.agents[0]), term])
+        return effects.SimpleEffect(mapl.direct_knowledge, [predicates.VariableTerm(self.sensor.agents[0]), term])
 
     def is_boolean(self):
         return isinstance(self.sense, predicates.Literal)
@@ -30,15 +29,38 @@ class Sensor(mapl.MAPLAction):
         if self.is_boolean():
             return self.sense.args[1]
         return None
+
+    def copy(self, newsensor=None):
+        if not newsensor:
+            newsensor = self.sensor
+
+        if isinstance(self.sense, predicates.Literal):
+            s2 = self.sense.copy(newsensor)
+        else:
+            s2 = predicates.FunctionTerm(self.sense.function, newsensor.lookup(self.sense.args))
+        return SenseEffect(s2, newsensor)
+
+    def __eq__(self, other):
+        return self.sense == other.sense
+
+    def __neq__(self, other):
+        return self.sense != other.sense
     
+class Sensor(mapl.MAPLAction):
+    def __init__(self, name, agents, args, vars, precondition, senses, domain):
+        mapl.MAPLAction.__init__(self, name, agents, args, vars, precondition, None, None, domain)
+        self.senses = senses
+        self.effect = self.knowledge_effect()
+
+    def knowledge_effect(self):
+        effs = [s.knowledge_effect() for s in self.senses]
+        return effects.ConjunctiveEffect(effs)
+
     def copy(self, newdomain=None):
         a = super(type(self), self).copy(newdomain)
         a.__class__ = self.__class__
 
-        if isinstance(self.sense, predicates.Literal):
-            a.sense = self.sense.copy(a)
-        else:
-            a.sense = predicates.FunctionTerm(self.sense.function, a.lookup(self.sense.args))
+        a.senses = [s.copy(a) for s in self.senses]
 
         a.effect = a.knowledge_effect()
 
@@ -64,7 +86,7 @@ class Sensor(mapl.MAPLAction):
         else:
             variables = []
 
-        sensor =  Sensor(name, agent, params, variables, None, None, scope)
+        sensor =  Sensor(name, agent, params, variables, None, [], scope)
         
 
         if next.token.string == ":precondition":
@@ -74,16 +96,27 @@ class Sensor(mapl.MAPLAction):
             precondition = None
 
         next.token.check_keyword(":sense")
-        j = iter(it.get(list, "function or literal"))
-        first = j.get("terminal", "predicate or function").token
-        
-        if first.string in scope.predicates:
-            sensor.sense = predicates.Literal.parse(j.reset(), sensor)
-        elif first.string in scope.functions:
-            term = predicates.FunctionTerm.parse(j.reset(), sensor)
-            sensor.sense = term
+        j = iter(it.get(list, "function term or literal"))
+        first = j.get("terminal", "conjunction of predicate or function").token
+
+        if first.string == "and":
+            senses = []
+            for part in j:
+                if part.is_terminal():
+                    raise UnexpectedTokenError(part.token, "function term or literal")
+                senses.append(iter(part))
         else:
-            raise parser.UnexpectedTokenError(first, "predicate, function or literal")
+            senses = [j.reset()]
+
+        for s in senses:
+            first = s.get("terminal", "predicate or function").token
+            if first.string in scope.predicates:
+                sensor.senses.append(SenseEffect(predicates.Literal.parse(s.reset(), sensor), sensor))
+            elif first.string in scope.functions:
+                term = predicates.FunctionTerm.parse(s.reset(), sensor)
+                sensor.senses.append(SenseEffect(term, sensor))
+            else:
+                raise parser.UnexpectedTokenError(first, "predicate, function or literal")
         sensor.effect = sensor.knowledge_effect()
 
         return sensor

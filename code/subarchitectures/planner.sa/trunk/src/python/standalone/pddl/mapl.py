@@ -294,10 +294,14 @@ class MAPLWriter(writer.Writer):
         if action.precondition:
             strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
 
-        if isinstance(action.sense, predicates.Literal):
-            eff = [self.write_literal(action.sense)]
-        elif isinstance(action.sense, predicates.FunctionTerm):
-            eff = [self.write_term(action.sense)]
+        eff = []
+        for se in action.senses:
+            if isinstance(se.sense, predicates.Literal):
+                eff.append(self.write_literal(se.sense))
+            elif isinstance(se.sense, predicates.FunctionTerm):
+                eff.append(self.write_term(se.sense))
+        if len(eff) > 1:
+            eff = self.section("and", eff)
         strings += self.section(":sense", eff, parens=False)
         
         return self.section(":sensor", strings)
@@ -382,14 +386,19 @@ class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer, MAPLTransla
         termdict = {}
         pre = self.translate_condition(sensor.precondition, termdict, domain)
 
-        sense = sensor.sense
-        if isinstance(sensor.get_value(), predicates.FunctionTerm):
-            if sensor.get_value() in termdict:
-                param = termdict[sensor.get_value()]
+        senses = []
+        for se in sensor.senses:
+            if isinstance(se.get_value(), predicates.FunctionTerm):
+                if se.get_value() in termdict:
+                    param = termdict[se.get_value()]
+                else:
+                    param = self.create_param("?val", se.get_term().function.type, set(p.name for p in termdict.itervalues()))
+                    termdict[se.get_value()] = param
+                se2 = sensors.SenseEffect(predicates.Literal(se.sense.predicate, [se.get_term(), predicates.Term(param)]), sensor)
+                senses.append(se2)
             else:
-                param = self.create_param("?val", sensor.get_term().function.type, set(p.name for p in termdict.itervalues()))
-                termdict[sensor.get_value()] = param
-            sense = predicates.Literal(sensor.sense.predicate, [sensor.get_term(), predicates.Term(param)])
+                senses.append(se.copy(sensor))
+                
 
         agents = [types.Parameter(p.name, p.type) for p in sensor.agents]
         args = [types.Parameter(p.name, p.type) for p in sensor.maplargs]
@@ -403,6 +412,6 @@ class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer, MAPLTransla
                 pre.parts.append(conditions.LiteralCondition(builtin.equals, [term, predicates.Term(param)]))
                 vars.append(param)
 
-        return sensors.Sensor(sensor.name, agents, args, vars, pre, sense, domain)
+        return sensors.Sensor(sensor.name, agents, args, vars, pre, senses, domain)
     
 

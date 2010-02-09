@@ -37,6 +37,7 @@ class TranslateTests(unittest.TestCase):
         w = mapl.MAPLWriter()
 
         s = w.write_domain(dom)
+        #print "\n".join(s)
         p = Parser(s)
         dom2 = domain.Domain.parse(p.root)
 
