@@ -50,7 +50,7 @@ void VisionDriver::start()
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<VisionDriver>(this,
         &VisionDriver::receiveVisualObject));
-        
+
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<VisionDriver>(this,
         &VisionDriver::receiveVisualObjectPoseChange));
