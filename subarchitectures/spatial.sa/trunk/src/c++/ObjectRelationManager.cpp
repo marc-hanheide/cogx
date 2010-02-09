@@ -18,6 +18,7 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VisionData.hpp>
 #include <AddressBank/ConfigFileReader.hh>
+#include <SensorData/SensorPose.hh>
 
 using namespace cast;
 #include <Pose3.h>
@@ -42,7 +43,7 @@ extern "C" {
 namespace spatial {
 double squareDistanceWeight			= 1.0;
 // Square distance at which onness drops by half
-double squareDistanceFalloff			= 0.05; 
+double squareDistanceFalloff			= 0.03; 
 
 double supportCOMContainmentOffset		= 0.5;
 double supportCOMContainmentWeight		= 1.0;
@@ -87,6 +88,8 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
 
   Cure::ConfigFileReader *cfg = 0;
   it = _config.find("-c");
+  m_bNoPTZ = true;
+
   if (it != _config.end()) {
     cfg = new Cure::ConfigFileReader;
     log("About to try to open the config file");
@@ -96,6 +99,19 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
       log("Could not init Cure::ConfigFileReader with -c argument");
     } else {
       log("Managed to open the Cure config file");
+
+      Cure::SensorPose CameraPoseR;
+      if (cfg->getSensorPose(2, CameraPoseR)) {
+	println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
+	std::abort();
+      } 
+      double xytheta[3];
+      CameraPoseR.getXYTheta(xytheta);
+      fromRotZ(m_CameraPoseR.rot, xytheta[2]);
+      m_CameraPoseR.pos.x = xytheta[0];
+      m_CameraPoseR.pos.y = xytheta[1];
+
+      m_bNoPTZ = false;
     }
   }
 
@@ -130,8 +146,47 @@ void ObjectRelationManager::start()
       new MemberFunctionChangeReceiver<ObjectRelationManager>(this, 
 	&ObjectRelationManager::newPlaneObject));  
 
+  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
+								  &ObjectRelationManager::newRobotPose));
+
+  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
+								  &ObjectRelationManager::newRobotPose));  
+
 //  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
+  if (!m_bNoPTZ) {
+    log("connecting to PTU");
+    Ice::CommunicatorPtr ic = getCommunicator();
+
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
+
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+      << ":default"
+      << " -h localhost"
+      << " -p " << cast::cdl::CPPSERVERPORT;
+
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+  }
+
   log("ObjectRelationManager started");
+}
+
+void 
+ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
+{
+  try {
+    lastRobotPose =
+      getMemoryEntry<NavData::RobotPose2d>(objID.address);
+  }
+  catch (DoesNotExistOnWMException e) {
+    log("Error! robotPose missing on WM!");
+    return;
+  }
 }
 
 void ObjectRelationManager::runComponent() 
@@ -371,6 +426,33 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 
     Pose3 pose = observedObject->pose;
 
+    transform(m_CameraPoseR, pose, pose);
+
+    map<string, Pose3>::iterator it = m_lastKnownObjectPoses.find(observedObject->label);
+    if (it != m_lastKnownObjectPoses.end()) {
+      double diff = length(it->second.pos - pose.pos);
+      diff += length(getRow(it->second.rot - pose.rot, 1));
+      diff += length(getRow(it->second.rot - pose.rot, 2));
+      if (diff > 0.01) {
+	it->second = pose;
+	m_lastObjectPoseTimes[observedObject->label] = observedObject->time;
+      }
+    }
+    else {
+	m_lastKnownObjectPoses[observedObject->label] = pose;
+	m_lastObjectPoseTimes[observedObject->label] = observedObject->time;
+    }
+
+    peekabot::CubeProxy theobjectproxy;
+    peekabot::GroupProxy root;
+    root.assign(m_PeekabotClient, "root");
+    theobjectproxy.add(root, "theobject", peekabot::REPLACE_ON_CONFLICT);
+    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
+    double angle;
+    Vector3 axis;
+    toAngleAxis(pose.rot, angle, axis);
+    theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+
     SpatialData::SpatialObjectPtr newObject = new SpatialData::SpatialObject;
     newObject->label = observedObject->label;
     newObject->id = m_maxObjectCounter;
@@ -503,3 +585,43 @@ ObjectRelationManager::connectPeekabot()
   }
 }
 
+Pose3 ObjectRelationManager::getCameraToWorldTransform()
+{
+  //Get camera ptz from PTZServer
+  Pose3 cameraRotation;
+  if (m_ptzInterface != 0) {
+    ptz::PTZReading reading = m_ptzInterface->getPose();
+
+    Matrix33 pan;
+    fromRotZ(pan, reading.pose.pan);
+
+    Matrix33 tilt;
+    fromRotX(tilt, -reading.pose.tilt);
+
+    cameraRotation.rot = pan*tilt;
+  }
+
+  //Additional transform of ptz base frame
+  Matrix33 tmp;
+  fromRotZ(tmp, -M_PI/2);
+  cameraRotation.rot = cameraRotation.rot * tmp;
+
+  fromRotY(tmp, -M_PI/2);
+  cameraRotation.rot = cameraRotation.rot * tmp;
+
+  //Get robot pose
+  Pose3 robotTransform;
+  if (lastRobotPose != 0) {
+    fromRotZ(robotTransform.rot, lastRobotPose->theta);
+
+    robotTransform.pos.x = lastRobotPose->x;
+    robotTransform.pos.y = lastRobotPose->y;
+  }
+
+  Pose3 cameraOnRobot;
+  transform(m_CameraPoseR, cameraRotation, cameraOnRobot);
+
+  Pose3 cameraInWorld;
+  transform(robotTransform, cameraOnRobot, cameraInWorld);
+  return cameraInWorld;
+} 
