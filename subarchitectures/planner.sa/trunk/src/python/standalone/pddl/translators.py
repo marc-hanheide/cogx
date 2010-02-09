@@ -312,7 +312,13 @@ class ObjectFluentCompiler(Translator):
                     effs = []
                     if term in previous_values:
                         for val in previous_values[term]:
-                            effs.append(effects.SimpleEffect(new_pred, term.args[:] + [val], negated=True))
+                            del_eff = effects.SimpleEffect(new_pred, term.args[:] + [val], negated=True)
+                            if isinstance(val, ConstantTerm) and isinstance(value, ConstantTerm):
+                                if val != value:
+                                    effs.append(del_eff)
+                            else:
+                                del_cond = conditions.LiteralCondition(equals, [val, value], negated=True)
+                                effs.append(effects.ConditionalEffect(del_cond, del_eff))
                         effs.append(effects.SimpleEffect(new_pred, term.args[:] + [value]))
                     elif term.function.type == t_boolean:
                         if eff.args[1] == TRUE:
