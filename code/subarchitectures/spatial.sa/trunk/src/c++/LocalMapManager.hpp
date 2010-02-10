@@ -147,6 +147,7 @@ protected:
 
   bool m_bNoPlanes;
   bool m_bNoPTZ;
+  bool m_bNoPlaces;
 
   IceUtil::Mutex m_Mutex;
 

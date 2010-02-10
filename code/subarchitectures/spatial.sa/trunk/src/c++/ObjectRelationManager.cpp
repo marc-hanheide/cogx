@@ -61,7 +61,6 @@ double overlapWeight				= 1.0;
 ObjectRelationManager::ObjectRelationManager()
 {
   m_maxObjectCounter = 0;
-  m_bDisplayPlaneObjectsInPB = false;
 }
 
 ObjectRelationManager::~ObjectRelationManager() 
@@ -75,10 +74,18 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
 {
   map<string,string>::const_iterator it = 
     _config.find("--display-planes-in-pb");
+  m_bDisplayPlaneObjectsInPB = false;
   if (it != _config.end()) {
     m_bDisplayPlaneObjectsInPB = true;
   }
 
+  it = _config.find("--display-objects-in-pb");
+  m_bDisplayVisualObjectsInPB = false;
+  if (it != _config.end()) {
+    m_bDisplayVisualObjectsInPB = true;
+  }
+
+  m_bTestOnness = false;
   it = _config.find("--test-onness");
   if (it != _config.end()) {
     m_bTestOnness = true;
@@ -128,13 +135,13 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
 
 void ObjectRelationManager::start() 
 {
-  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD), 
+  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::ADD), 
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::newObject));  
 
-  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE), 
+  addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE), 
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
-								  &ObjectRelationManager::objectChanged));  
+								  &ObjectRelationManager::newObject));  
 
   addChangeFilter(createLocalTypeFilter<FrontierInterface::ObservedPlaneObject>
       (cdl::ADD), 
@@ -194,7 +201,7 @@ void ObjectRelationManager::runComponent()
   log("I am running!");
 
   peekabot::GroupProxy root;
-  if (m_bDisplayPlaneObjectsInPB || m_bTestOnness) {
+  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
       sleep(m_RetryDelay);
       connectPeekabot();
@@ -203,6 +210,9 @@ void ObjectRelationManager::runComponent()
     root.assign(m_PeekabotClient, "root");
     if (m_bDisplayPlaneObjectsInPB) {
       m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
+    }
+    if (m_bDisplayPlaneObjectsInPB) {
+      m_objectProxies.add(root, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
     }
     if (m_bTestOnness) {
       m_onnessTester.add(root, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
@@ -424,6 +434,8 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
 
+    log("Got VisualObject");
+
     Pose3 pose = observedObject->pose;
 
     transform(m_CameraPoseR, pose, pose);
@@ -443,15 +455,19 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_lastObjectPoseTimes[observedObject->label] = observedObject->time;
     }
 
-    peekabot::CubeProxy theobjectproxy;
-    peekabot::GroupProxy root;
-    root.assign(m_PeekabotClient, "root");
-    theobjectproxy.add(root, "theobject", peekabot::REPLACE_ON_CONFLICT);
-    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
-    double angle;
-    Vector3 axis;
-    toAngleAxis(pose.rot, angle, axis);
-    theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+    if (m_bDisplayVisualObjectsInPB) {
+      peekabot::CubeProxy theobjectproxy;
+      peekabot::GroupProxy root;
+      root.assign(m_PeekabotClient, "root");
+      theobjectproxy.add(m_objectProxies, "theobject", peekabot::REPLACE_ON_CONFLICT);
+      theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
+      double angle;
+      Vector3 axis;
+      toAngleAxis(pose.rot, angle, axis);
+      theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+      theobjectproxy.set_scale(0.19, 0.09, 0.29);
+    }
+    return;
 
     SpatialData::SpatialObjectPtr newObject = new SpatialData::SpatialObject;
     newObject->label = observedObject->label;

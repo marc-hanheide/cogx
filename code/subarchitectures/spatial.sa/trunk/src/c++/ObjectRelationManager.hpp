@@ -60,8 +60,10 @@ protected:
   bool m_bNoPTZ;
 
   bool m_bDisplayPlaneObjectsInPB;
+  bool m_bDisplayVisualObjectsInPB;
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_planeProxies;
+  peekabot::GroupProxy m_objectProxies;
   peekabot::GroupProxy m_onnessTester;
   std::string m_PbHost;
   int m_PbPort;
