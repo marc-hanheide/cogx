@@ -22,6 +22,7 @@ module VisionData {
     cast::cdl::CASTTime time;
     cogx::Math::Vector3 center;
     double radius;
+    double density;
     ObjSeq Objects;
     cogx::Math::Plane3 plane;
   };
