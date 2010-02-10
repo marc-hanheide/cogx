@@ -41,6 +41,7 @@ extern "C" {
 
 LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
 {
+  m_placeInterface = 0;
   m_currentNumberOfClusters = 0;
   m_standingStillThreshold = 0.2;
   m_maxClusterDeviation = 0.1;
@@ -104,10 +105,15 @@ void LocalMapManager::configure(const map<string,string>& _config)
     println("configure(...) Failed to get sensor pose for laser");
     std::abort();
   } 
+  
+  m_bNoPlaces = false;
+  if (_config.find("--no-places") != _config.end()) {
+    m_bNoPlaces = true;
+  }
 
   m_bNoPlanes = true;
   m_bNoPTZ = true;
-  
+
   if (_config.find("--no-planes") == _config.end()) {
     log("Trying to detect planes...");
     m_bNoPlanes = false;
@@ -178,7 +184,7 @@ void LocalMapManager::configure(const map<string,string>& _config)
   if (it != _config.end()) {
     CellSize = (atof(it->second.c_str()));
   }
-  
+
   PlaneData mpty;
   m_planeMap = new PlaneMap(MapSize, CellSize, mpty, PlaneMap::MAP1);
 
@@ -249,8 +255,10 @@ void LocalMapManager::start()
       new MemberFunctionChangeReceiver<LocalMapManager>(this,
 	&LocalMapManager::newConvexHull));
 
-  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
-  log("LocalMapManager started");
+  if (!m_bNoPlaces) {
+    m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
+    log("LocalMapManager started");
+  }
 
   if (!m_bNoPTZ) {
     log("connecting to PTU");
@@ -423,15 +431,12 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
     m_lastTimeMoved = lastRobotPose->time;
   }
 
-  shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
-    getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
-  
   //FIXME
 //   m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
 //                                           oobj->getData()->time.us));
-  m_SlamRobotPose.setX(oobj->getData()->x);
-  m_SlamRobotPose.setY(oobj->getData()->y);
-  m_SlamRobotPose.setTheta(oobj->getData()->theta);
+  m_SlamRobotPose.setX(lastRobotPose->x);
+  m_SlamRobotPose.setY(lastRobotPose->y);
+  m_SlamRobotPose.setTheta(lastRobotPose->theta);
   
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
@@ -690,18 +695,20 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
     const SpatialData::PlaceIDSeq &places)
 {
   vector<const CharMap *>maps;
-  for (SpatialData::PlaceIDSeq::const_iterator it = places.begin(); it != places.end(); it++) {
-    NavData::FNodePtr node = m_placeInterface->getNodeFromPlaceID(*it);
-    if (node != 0) {
-      if (m_nodeGridMaps.find(node->nodeId) != m_nodeGridMaps.end()) {
-	maps.push_back(m_nodeGridMaps[node->nodeId]);
+  if (m_placeInterface) {
+    for (SpatialData::PlaceIDSeq::const_iterator it = places.begin(); it != places.end(); it++) {
+      NavData::FNodePtr node = m_placeInterface->getNodeFromPlaceID(*it);
+      if (node != 0) {
+	if (m_nodeGridMaps.find(node->nodeId) != m_nodeGridMaps.end()) {
+	  maps.push_back(m_nodeGridMaps[node->nodeId]);
+	}
+	else {
+	  log("Couldn't find grid map for node %d", node->nodeId);
+	}
       }
       else {
-	log("Couldn't find grid map for node %d", node->nodeId);
+	log ("No grid map for Place %d; not a node!", *it);
       }
-    }
-    else {
-      log ("No grid map for Place %d; not a node!", *it);
     }
   }
 
