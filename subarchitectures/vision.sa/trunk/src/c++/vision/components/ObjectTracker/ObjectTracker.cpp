@@ -35,95 +35,17 @@ ObjectTracker::ObjectTracker(){
 }
 
 ObjectTracker::~ObjectTracker(){
-	destroy();
-	log("[ObjectTracker::~ObjectTracker()]");
+	
 }
 
 // *** Working Memory Listeners ***
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
 	TrackingCommandPtr track_cmd = getMemoryEntry<TrackingCommand>(_wmc.address);
-	TrackingEntryList::iterator it;
-	TrackingEntry* trackingEntry=0;
-	
 	log("Received tracking command ...");
-	
-	switch(track_cmd->cmd){
-		case VisionData::START:
-			if(m_track){
-				log("  Start tracking: I'm allready tracking");
-			}else{
-				log("  Start tracking: ok");
-				m_track = true;
-			}
-			break;
-		case VisionData::STOP:
-			if(m_track){
-				log("  Stop tracking: ok");
-				m_track = false;
-			}else{
-				log("  Stop tracking: I'm not tracking");
-			}
-			break;
-		case VisionData::ADDMODEL:
-			trackingEntry = new TrackingEntry();
-			trackingEntry->visualObjectID = track_cmd->visualObjectID;
-			trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
-			trackingEntry->cmd = TrackingEntry::ADD;
-			m_tracker->reset();
-			m_trackinglist.push_back(trackingEntry);
-			log("  Add model: ok");
-			break;
-		case VisionData::REMOVEMODEL:
-			it = m_trackinglist.begin();
-			while(it != m_trackinglist.end()){
-				if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
-					(*it)->cmd = TrackingEntry::REMOVE;
-					log("  Remove model: ok");
-					break;
-				}
-			}			
-			break;
-		case VisionData::LOCK:
-			it = m_trackinglist.begin();
-			while(it != m_trackinglist.end()){
-				if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
-					(*it)->cmd = TrackingEntry::LOCK;
-					log("  Lock model: ok");
-					break;
-				}
-			}
-			break;
-		case VisionData::UNLOCK:
-			it = m_trackinglist.begin();
-			while(it != m_trackinglist.end()){
-				if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
-					(*it)->cmd = TrackingEntry::UNLOCK;
-					log("  Unlock model: ok");
-					break;
-				}
-			}
-			break;
-		case VisionData::GETPOINT3D:
-			it = m_trackinglist.begin();
-			while(it != m_trackinglist.end()){
-				if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
-					(*it)->cmd = TrackingEntry::GETPOINT3D;
-					(*it)->trackingCommandID = _wmc.address.id;
-					(*it)->track_cmd = track_cmd;
-					log("  Get 3D point from model: ok");
-					break;
-				}
-			}
-			break;
-		case VisionData::RELEASEMODELS:
-			log("  Release models: removing all models (not implemented)");
-			break;
-		default:
-			log("  Unknown tracking command: doing nothing");
-			break;
-	}
+	m_trackingCommandList.push_back(track_cmd);
+	m_trackingCommandWMID.push_back(_wmc.address.id);
 }
-
+	
 // *** base functions *** (configure, start, runcomponent)
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
@@ -180,7 +102,6 @@ void ObjectTracker::configure(const map<string,string> & _config){
 	}
 	
 	log("  Objects: %d", m_maxModels);
-  	
 }
 
 void ObjectTracker::start(){
@@ -201,7 +122,6 @@ void ObjectTracker::destroy(){
 	for(it=m_trackinglist.begin(); it<m_trackinglist.end(); it++){
 		delete((*it));
 	}
-	delete(m_tracker);
 }
 
 void ObjectTracker::receiveImages(const std::vector<Video::Image>& images){
@@ -217,39 +137,41 @@ void ObjectTracker::runComponent(){
   int i=0;
   // Initialize Tracker
   // Grab one image from VideoServer for initialisation
-  m_videoServer->getImage(m_camId, m_image);
-  initTracker(m_image);
+  initTracker();
   
-  while(m_running)
+  while(isRunning() && m_running)
   {
+    while(m_trackingCommandList.size()>0)
+			applyTrackingCommand();
+		
     if(m_track){
-      m_videoServer->getImage(m_camId, m_image);
-//       printf("%d m_videoServer->getImage(m_camId, m_image)\n", i++);
-      runTracker(m_image);
+    	// * Tracking *
+      runTracker();
     }
     else if(!m_track){
 			// * Idle *
 			sleepComponent(1000);
 		}
+		
 		// Query keyboard input
 		m_running = inputsControl(m_tracker, fTimeTracker);
-
   }
   
-  destroy();
+	delete(m_tracker);	// delete tracker in this thread (OpenGL !!!)
   log("stop");
 }
 
 // Tracking
-void ObjectTracker::initTracker(const Video::Image &image){
+void ObjectTracker::initTracker(){
   
   log("Initialising Tracker");
   // *** Initialisation of Tracker ***
   int id = 0;
   
-  m_ImageWidth = image.width;
-  m_ImageHeight = image.height;
-  last_image_time = image.time;
+  m_videoServer->getImage(m_camId, m_image);
+  m_ImageWidth = m_image.width;
+  m_ImageHeight = m_image.height;
+  last_image_time = m_image.time;
 	
 	// Create edge or texture tracker
 	if(m_textured){
@@ -265,7 +187,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
 	}
 	
 	Tracking::CameraParameter trackCamPars;
-	convertCameraParameter(image.camPars, trackCamPars);
+	convertCameraParameter(m_image.camPars, trackCamPars);
 	trackCamPars.zFar = m_tracker->getCamZFar();
 	trackCamPars.zNear = m_tracker->getCamZNear();
 	if( !m_tracker->setCameraParameters(trackCamPars) ){
@@ -276,87 +198,133 @@ void ObjectTracker::initTracker(const Video::Image &image){
   log("... initialisation successfull!");
 }
 
-void ObjectTracker::modifyTrackingEntry(TrackingEntryList::iterator it){
+void ObjectTracker::applyTrackingCommand(){
+	lockComponent();
+	TrackingCommandPtr track_cmd = m_trackingCommandList.front();
+	m_trackingCommandList.erase(m_trackingCommandList.begin());
+	string track_id = m_trackingCommandWMID.front();
+	m_trackingCommandWMID.erase(m_trackingCommandWMID.begin());
+	unlockComponent();
 	
-	TrackingEntry* trackingEntry = (*it);
+	TrackingEntryList::iterator it;
+	TrackingEntry* trackingEntry=0;
 	
-	log("Modifying tracking entry: '%s'", trackingEntry->obj->label.c_str());
-	
-	// *** ADD ***
-	if(trackingEntry->cmd == TrackingEntry::ADD){
+	if(track_cmd->cmd == VisionData::START){
+		if(m_track){
+			log("  Start tracking: I'm allready tracking");
+		}else{
+			log("  Start tracking: ok");
+			m_track = true;
+		}
+	}else if(track_cmd->cmd == VisionData::STOP){
+		if(m_track){
+			log("  Stop tracking: ok");
+			m_track = false;
+		}else{
+			log("  Stop tracking: I'm not tracking");
+		}
+	}else if(track_cmd->cmd == VisionData::ADDMODEL){
 		Tracking::Pose pose;
 		Tracking::Model model;
-		// TODO TODO TODO check if trackingEntry->obj->model is valid
+		trackingEntry = new TrackingEntry();
+		trackingEntry->visualObjectID = track_cmd->visualObjectID;
+		trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
 		convertPose2Particle(trackingEntry->obj->pose, pose);
 		convertGeometryModel(trackingEntry->obj->model, model);
 		trackingEntry->id = m_tracker->addModel(model, pose, true);
-		log("  TrackingEntry::ADD: '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
-		trackingEntry->cmd = TrackingEntry::TRACK;
-	
-	// *** REMOVE ***
-	}else if(trackingEntry->cmd == TrackingEntry::REMOVE){
-		m_tracker->removeModel(trackingEntry->id);
-		delete(trackingEntry);
-		m_trackinglist.erase(it);
-		log("  TrackingEntry::REMOVE");
+		log("  VisionData::ADDMODEL: '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
+		m_trackinglist.push_back(trackingEntry);
+		log("  Add model: ok");
 		
-	// *** LOCK ***
-	}else if(trackingEntry->cmd == TrackingEntry::LOCK){
-		m_tracker->setModelLock(trackingEntry->id, true);
-		log("  TrackingEntry::LOCK");
-		trackingEntry->cmd = TrackingEntry::TRACK;
-	
-	// *** UNLOCK ***
-	}else if(trackingEntry->cmd == TrackingEntry::UNLOCK){
-		m_tracker->setModelLock(trackingEntry->id, false);
-		log("  TrackingEntry::UNLOCK");
-		trackingEntry->cmd = TrackingEntry::TRACK;
-	
-	// *** GETPOINT3D ***
-	}else if(trackingEntry->cmd == TrackingEntry::GETPOINT3D){
-		bool b;
-		float x, y, z;
-		trackingEntry->track_cmd->pointOnModel.assign(trackingEntry->track_cmd->points.size(), 0);
-		for(unsigned i=0; i<trackingEntry->track_cmd->points.size(); i++){
-
-			b=m_tracker->getModelPoint3D(	trackingEntry->id,
-																		(int)trackingEntry->track_cmd->points[i].texCoord.x,
-																		(int)trackingEntry->track_cmd->points[i].texCoord.y,
-																		x, y, z);
-
-			trackingEntry->track_cmd->points[i].pos.x = x;
-			trackingEntry->track_cmd->points[i].pos.y = y;
-			trackingEntry->track_cmd->points[i].pos.z = z;
-			trackingEntry->track_cmd->pointOnModel[i] = b;
+	}else if(track_cmd->cmd == VisionData::REMOVEMODEL){
+		it = m_trackinglist.begin();
+		while(it != m_trackinglist.end()){
+			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
+				trackingEntry = (*it);
+				m_tracker->removeModel(trackingEntry->id);
+				delete(trackingEntry);
+				m_trackinglist.erase(it);
+				log("  Remove model: ok");
+				return;
+			}
+		}			
+	}else if(track_cmd->cmd == VisionData::LOCK){
+		it = m_trackinglist.begin();
+		while(it != m_trackinglist.end()){
+			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
+				m_tracker->setModelLock((*it)->id, true);
+				log("  Lock model: ok");
+				return;
+			}
 		}
-		overwriteWorkingMemory(trackingEntry->trackingCommandID, trackingEntry->track_cmd);
-		log("  TrackingEntry::GETPOINT3D");
-		trackingEntry->cmd = TrackingEntry::TRACK;
-	}	
+	}else if(track_cmd->cmd == VisionData::UNLOCK){
+		it = m_trackinglist.begin();
+		while(it != m_trackinglist.end()){
+			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
+				m_tracker->setModelLock((*it)->id, false);
+				log("  Unlock model: ok");
+				return;
+			}
+		}
+	}else if(track_cmd->cmd == VisionData::GETPOINT3D){
+		it = m_trackinglist.begin();
+		while(it != m_trackinglist.end()){
+			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
+				bool b;
+				float x, y, z;
+				trackingEntry = (*it);
+				
+				track_cmd->pointOnModel.assign(track_cmd->points.size(), 0);
+				for(unsigned i=0; i<track_cmd->points.size(); i++){
+		
+					b=m_tracker->getModelPoint3D(	trackingEntry->id,
+																				(int)track_cmd->points[i].texCoord.x,
+																				(int)track_cmd->points[i].texCoord.y,
+																				x, y, z);
+		
+					track_cmd->points[i].pos.x = x;
+					track_cmd->points[i].pos.y = y;
+					track_cmd->points[i].pos.z = z;
+					track_cmd->pointOnModel[i] = b;
+				}
+				overwriteWorkingMemory(track_id, track_cmd);
+				
+				log("  Get 3D point from model: ok");
+				return;
+			}
+		}
+	}else if(track_cmd->cmd == VisionData::RELEASEMODELS){
+		it = m_trackinglist.begin();
+		while(it != m_trackinglist.end()){
+			trackingEntry = (*it);
+			m_tracker->removeModel(trackingEntry->id);
+			delete(trackingEntry);
+			m_trackinglist.erase(it);
+			return;
+		}
+		log("  Release all models: ok");
+	}else{
+		log("  Unknown tracking command: doing nothing");
+	}
 }
 
-void ObjectTracker::runTracker(const Video::Image &image){
+void ObjectTracker::runTracker(){
 
 	fTimeTracker=0.0;
 	int i,c;
 	Pose pose;
 	double dTime;
 	
-	// check if models added/modified
-	TrackingEntryList::iterator it;
-	for(it=m_trackinglist.begin(); it<m_trackinglist.end(); it++){
-		if((*it)->cmd != TrackingEntry::TRACK)
-			modifyTrackingEntry(it);
-	}
+	m_videoServer->getImage(m_camId, m_image);
 	
 	// update time
 	m_timer.Update();
-	dTime = getFrameTime(last_image_time, image.time);
-	last_image_time = image.time;
+	dTime = getFrameTime(last_image_time, m_image.time);
+	last_image_time = m_image.time;
 	m_tracker->setFrameTime(dTime);
 
 	// image processing
-	m_tracker->image_processing((unsigned char*)(&image.data[0]));
+	m_tracker->image_processing((unsigned char*)(&m_image.data[0]));
 	m_tracker->drawImage(NULL);
 
 	// track models
@@ -367,7 +335,7 @@ void ObjectTracker::runTracker(const Video::Image &image){
 		m_tracker->getModelPose(m_trackinglist[i]->id, pose);
 		m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
 		convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);
-		m_trackinglist[i]->obj->time = image.time;
+		m_trackinglist[i]->obj->time = m_image.time;
 		overwriteWorkingMemory(m_trackinglist[i]->visualObjectID, m_trackinglist[i]->obj);
 	}
 	

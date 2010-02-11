@@ -12,7 +12,6 @@
 
 using namespace cast;
 using namespace cogx;
-using namespace Math;
 
 
 struct Parameters{
@@ -112,7 +111,7 @@ bool convertModel2Geometry(Tracking::Model& model, VisionData::GeometryModelPtr 
 }
 
 // converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
-bool convertParticle2Pose(Tracking::Pose& trPose, Pose3& pose){
+bool convertParticle2Pose(Tracking::Pose& trPose, Math::Pose3& pose){
 	mat3 rot;
 	vec3 pos;
 	
@@ -122,15 +121,15 @@ bool convertParticle2Pose(Tracking::Pose& trPose, Pose3& pose){
 	pose.rot.m10 = rot[3]; pose.rot.m11 = rot[4]; pose.rot.m12 = rot[5];
 	pose.rot.m20 = rot[6]; pose.rot.m21 = rot[7]; pose.rot.m22 = rot[8];
 	
-	pose.pos.x = pos[0];
-	pose.pos.y = pos[1];
-	pose.pos.z = pos[2];
+	pose.pos.x = pos.x;
+	pose.pos.y = pos.y;
+	pose.pos.z = pos.z;
 	
 	return true;
 }
 
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
-bool convertPose2Particle(Pose3& pose, Tracking::Pose& trPose){
+bool convertPose2Particle(Math::Pose3& pose, Tracking::Pose& trPose){
 	mat3 rot;
 	vec3 pos;
 	
