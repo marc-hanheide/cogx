@@ -13,6 +13,7 @@
 #include <VisionData.hpp>
 #include <vector>
 #include <string>
+#include <semaphore.h>
 
 #include "Tracker.h"
 #include "EdgeTracker.h"
@@ -56,10 +57,13 @@ private:
   typedef std::vector<TrackingEntry*> TrackingEntryList;
   TrackingEntryList m_trackinglist;
   
+  std::vector<VisionData::TrackingCommandPtr> m_trackingCommandList;
+  std::vector<std::string> m_trackingCommandWMID;
+  
   // Functions with GL commands allowed
-  void initTracker(const Video::Image &image);
-  void runTracker(const Video::Image &image);
-  void modifyTrackingEntry(TrackingEntryList::iterator it);
+  void initTracker();
+  void runTracker();
+  void applyTrackingCommand();
   
   // Do not use GL commands in this functions (different thread with no GL context)
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);

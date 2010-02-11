@@ -33,15 +33,12 @@ Tracker::Tracker(){
 Tracker::~Tracker(){
 	int i;
 	delete(m_tex_frame);
-	
 	for(i=0; i<NUM_SPREAD_LOOPS; i++){
 		delete(m_tex_frame_ip[i]);
 	}
-	
 	for(i=0; i<m_modellist.size(); i++){
 		delete(m_modellist[i]);
 	}
-	
 	delete g_Resources;
 }
 
@@ -169,7 +166,7 @@ bool Tracker::init(const char* inifile, int width, int height){
 	g_Resources->SetModelPath(params.modelPath.c_str());
 	g_Resources->SetTexturePath(params.texturePath.c_str());
 	g_Resources->SetShaderPath(params.shaderPath.c_str());
-	g_Resources->ShowLog(true);
+	g_Resources->ShowLog(false);
 	
 	// Load camera parameter
 	m_cam_perspective.Load(params.camPar);
@@ -314,6 +311,18 @@ bool Tracker::getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3
 		}
 	}
 	return false;
+}
+
+void Tracker::setModelInitialPose(int id, Pose& p){
+	ModelEntryList::iterator it = m_modellist.begin();
+	
+	while(it != m_modellist.end()){
+		if(id==(*it)->id){
+			(*it)->initial_pose = p;
+			return;
+		}
+		it++;
+	}
 }
 
 void Tracker::setModelPredictor(int id, Predictor* predictor){

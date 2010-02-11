@@ -51,8 +51,6 @@ protected:
 	};
 	Parameter params;
 	
-// 	Particle m_pose;
-	
 	// Resources
 	Texture* m_tex_frame;
 	Texture* m_tex_frame_ip[NUM_SPREAD_LOOPS];
@@ -121,6 +119,9 @@ public:
 	
 	/** @brief Get 3D point from 2D window coordinates */
 	bool		getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3, float& z3);
+	
+	/** @brief Set the initial pose of a model */
+	void		setModelInitialPose(int id, Pose& p);
 	
 	/** @brief Set a model predictor */
 	void		setModelPredictor(int id, Predictor* predictor);
