@@ -1,7 +1,7 @@
 /**
  * @file VisionCore.cc
- * @author Andreas Richtsfeld
- * @date November 2009
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2006, 2010
  * @version 0.1
  * @brief Vision Core for perceptual grouping.
  */
@@ -52,8 +52,6 @@ void CheckIndex(unsigned i, unsigned size)
 #endif
 
 
-
-
 /**
  * @brief Constructor of class VisionCore.
  * @param config_name Name of config file.
@@ -83,7 +81,7 @@ VisionCore::~VisionCore()
 }
 
 /**
- * @brief Initialise all known Gestalt principles
+ * @brief Initialise all known Gestalt principles.
  */
 void VisionCore::InitGestaltPrinciples()
 {
@@ -143,18 +141,13 @@ bool VisionCore::IsEnabledGestaltPrinciple(GestaltPrinciple::Type p)
 
 
 /**
- * @brief Configure the Gestalt principle tree.
+ * @brief Configure the Gestalt principle tree, appropriate to the config-file.
  * @param config_name Name of the config file.
  */
 void VisionCore::Configure(const string &config_name)
 {
   if(!config_name.empty())
     config.Load(config_name);
-  /*printf("--- configuration: ------------------------\n");
-  for(map<string, string>::iterator i = config.items.begin();
-      i != config.items.end(); ++i)
-    printf("%s = %s\n", i->first.c_str(), i->second.c_str());
-  printf("------------------------------------------\n");*/
 }
 
 
@@ -313,13 +306,17 @@ void VisionCore::DrawPrinciple(GestaltPrinciple::Type type, int detail)
 }
 
 /**
- * @brief Returns id of first gestalt at pixel position (x,y).
- * start_after can be used to skip the first gestalts. So all gestalts at x,y
- * can be selected consecutively.
+ * @brief Returns id of first gestalt at pixel position (x,y). \n
+ * start_after can be used to skip the first gestalts. So all gestalts at x,y can be selected consecutively. \n
  * If mask is set to true, only unmasked gestalts will be returned.
+ * @param type Gestalt type
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @param start_after Deliver only return value, if id is greater than "start_after"
+ * @param reject_masked If true, only unmasked Gestalts will be returned.
+ * @return Return id of next Gestalt, or UNDEF_ID (-1), if nothing found.
  */
-unsigned VisionCore::PickGestaltAt(Gestalt::Type type, int x, int y,
-    unsigned start_after, bool reject_masked)
+unsigned VisionCore::PickGestaltAt(Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked)
 {
   unsigned start = (start_after == UNDEF_ID ? 0 : start_after + 1);
   for(unsigned j = start; j < gestalts[type].Size(); j++)
@@ -342,9 +339,9 @@ double VisionCore::RunTime()
 }
 
 /**
- * Add a new Gestalt (of any type) to the system.
+ * @brief Add a new Gestalt (of any type) to the system.
  * @param g  new Gestalt
- * @param inform  if true, inform other parts of the system of this new Gestalt,
+ * @param inform  if true, inform other parts of the system of this new Gestalt, \n
  *                otherwise add quietly. Default is true.
  */
 void VisionCore::NewGestalt(Gestalt *g, bool inform)

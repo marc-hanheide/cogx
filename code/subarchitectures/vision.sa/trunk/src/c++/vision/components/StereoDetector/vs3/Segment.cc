@@ -1,6 +1,10 @@
 /**
- * $Id: Segment.cc,v 1.10 2006/11/24 13:47:03 mxz Exp mxz $
- */
+ * @file Segment.cc
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2006, 2010
+ * @version 0.1
+ * @brief Gestalt class segment.
+ **/
 
 #include <algorithm>
 #include "Draw.hh"
@@ -12,18 +16,18 @@ namespace Z
 {
 
 /**
- * Construct a segment with a given number of edgels.
+ * @brief Construct a segment with a given number of edgels.
+ * @param vc Vision core
  */
-Segment::Segment(VisionCore *c, const Array<Edgel> &arr)
-  : Gestalt(c, SEGMENT), edgels(arr.Size())
+Segment::Segment(VisionCore *vc, const Array<Edgel> &arr) : Gestalt(vc, SEGMENT), edgels(arr.Size())
 {
   edgels = arr;
   CalculateSignificance();
 }
 
 /**
- * Draw the segment.
- * The detail has no effect here.
+ * @brief Draw the segment.
+ * @param detail The detail has no effect here.
  */
 void Segment::Draw(int detail)
 {
@@ -31,6 +35,10 @@ void Segment::Draw(int detail)
     DrawPoint2D(edgels[i].p.x, edgels[i].p.y, RGBColor::green);
 }
 
+/**
+ * @brief Get info as string.
+ * @return Returns array of characters.
+ */
 const char* Segment::GetInfo()
 {
   const unsigned info_size = 10000;
@@ -41,7 +49,8 @@ const char* Segment::GetInfo()
 }
 
 /**
- * Returns true if any part of the Gestalt is at pixel position (x,y).
+ * @brief Returns true if any part of the Gestalt is at pixel position (x,y).
+ * @return Returns true if any part of the Gestalt is at pixel position (x,y).
  */
 bool Segment::IsAtPosition(int x, int y)
 {
@@ -52,6 +61,10 @@ bool Segment::IsAtPosition(int x, int y)
   return false;
 }
 
+/**
+ * @brief Calculate significance\n
+ * The significance is proportional to the edgel size.
+ */
 void Segment::CalculateSignificance()
 {
   /*if(edgels.Size() <= 1)
@@ -67,11 +80,14 @@ void Segment::CalculateSignificance()
 }
 
 /**
- * Returns the normalised tangent direction at the specified pixel.
- * Range of points over which tangent is estimated is adapted automatically.
- * Starting with points i-1 to i+1, extends range until line through first and
- * last point no longer fits the points between.
- * Note: direction points "forward" in terms of counting pixels on the edge.
+ * @brief Returns the normalised tangent direction at the specified pixel.\n
+ * Range of points over which tangent is estimated is adapted automatically.\n
+ * Starting with points i-1 to i+1, extends range until line through first and\n
+ * last point no longer fits the points between.\n
+ * Note: direction points "forward" in terms of counting pixels on the edge.\n
+ * @param i Tangent on this place of the array.
+ * @param l TODO
+ * @param u TODO
  */
 Vector2 Segment::Tangent(int i, int l, int u)
 {

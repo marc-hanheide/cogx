@@ -1,7 +1,10 @@
 /**
- * $Id: Segment.hh,v 1.11 2006/11/24 13:47:03 mxz Exp mxz $
- *
- */
+ * @file Segment.hh
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2006, 2010
+ * @version 0.1
+ * @brief Header of Gestalt class segment.
+ **/
 
 #ifndef Z_SEGMENT_HH
 #define Z_SEGMENT_HH
@@ -13,7 +16,10 @@
 
 namespace Z
 {
-  
+
+/**
+ * @brief Gestalt class Segment
+ */
 class Segment : public Gestalt
 {
 private:

@@ -22,7 +22,7 @@ namespace Z
 
 /**
  * @brief Constructor of class Line
- * @param vc
+ * @param vc Vision core
  */
 Line::Line(VisionCore *vc) : Gestalt(vc, LINE)
 {
@@ -116,13 +116,11 @@ void Line::DrawInfo()
   char str[100];
   FillRect2D(0., 0., 0.5, 1., mean_col[LEFT]);
   DrawText2D("left", 0.1, 0.8, RGBColor::green);
-  snprintf(str, 100, "%d %d %d", mean_col[LEFT].r, mean_col[LEFT].g,
-      mean_col[LEFT].b);
+  snprintf(str, 100, "%d %d %d", mean_col[LEFT].r, mean_col[LEFT].g, mean_col[LEFT].b);
   DrawText2D(str, 0.1, 0.6, RGBColor::green);
   FillRect2D(0.5, 0., 1., 1., mean_col[RIGHT]);
   DrawText2D("right", 0.6, 0.8, RGBColor::green);
-  snprintf(str, 100, "%d %d %d", mean_col[RIGHT].r, mean_col[RIGHT].g,
-      mean_col[RIGHT].b);
+  snprintf(str, 100, "%d %d %d", mean_col[RIGHT].r, mean_col[RIGHT].g, mean_col[RIGHT].b);
   DrawText2D(str, 0.6, 0.6, RGBColor::green);
 }
 
