@@ -57,8 +57,13 @@ public:
   void ClearResults();
 	void ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr);
 	void GetVisualObject(StereoBase::Type type, int id, VisionData::VisualObjectPtr &obj);
-	void DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool detected, bool masked, bool matched);
+
+	int NumMonoGestalts(Gestalt::Type type, int side) {return vcore[side]->Gestalts(type).Size();}
+	void DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide = 0, int id = 0, int detail = 0);
 	int NumStereoMatches(StereoBase::Type type) {return stereoGestalts[type]->NumStereoMatches();}
+	void DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool matched);
+
+	unsigned PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked);
 
 	/// TODO delete later: only for debuging first results
 	void PrintResults();
