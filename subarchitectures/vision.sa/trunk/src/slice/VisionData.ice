@@ -172,6 +172,16 @@ module VisionData {
     VertexSeq points;						// GETPOINT3D (Input: vec2 texCoord; Output: vec3 pos, vec3 normal)
 		BoolSeq pointOnModel;				// pointOnModel[i] is true if points[i] hits the VisualObject
   };
+  
+  /** @brief Commands for ObjectRecognizer3D
+   *	@author Thomas Mörwald
+   */
+  enum Recognizer3DCommandType{ RECSTOP, RECLEARN, RECOGNIZE };
+  class Recognizer3DCommand{
+  	Recognizer3DCommandType cmd;
+  	string label;
+  	string visualObjectID;
+  };
 
   /** 
    * @brief Object Detector Commands
