@@ -96,6 +96,7 @@ endif (BUILD_SA_VISION_OBJRECOGNIZER)
 option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER_3D)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer3D)
+add_subdirectory (src/c++/vision/components/Driver/ObjectRecognizer3D)
 endif (BUILD_SA_VISION_OBJRECOGNIZER_3D)
 
 option(BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB "build convex hull display" YES)
