@@ -23,6 +23,6 @@ SET(SOURCES
 
 add_cast_component(StereoDetector ${SOURCES})
 
-link_cast_component(${CAST_COMPONENT_NAME} SDUtils SDStereo SDvs3 SDMatas)
+link_cast_component(${CAST_COMPONENT_NAME} SDUtils SDStereo SDMatas SDvs3)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 
