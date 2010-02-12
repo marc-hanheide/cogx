@@ -74,7 +74,7 @@ SET(HEADERS
 	Namespace.hh
 	Object.hh
 	ObjectTracker.hh
-	OpenCvVideo.hh
+#	OpenCvVideo.hh
 	ParallelLineGroup.hh
 	Rectangle.hh
 	RectangleDefinition.hh
@@ -159,7 +159,7 @@ SET(SOURCES
 #	HCF2.cc
 #	IceInterface.cc
 	IdImage.cc
-	Image.cc
+#	Image.cc
 	Line.cc
 #	LiveVideo.cc
 	LJunction.cc
@@ -173,8 +173,8 @@ SET(SOURCES
 #	Object.cc
 #	ObjectTracker.cc
 #	OpenCvBufferVideo.cc
-	OpenCvImgSeqVideo.cc
-	OpenCvLiveVideo.cc
+#	OpenCvImgSeqVideo.cc
+#	OpenCvLiveVideo.cc
 #	OpenCvVideo.cc
 #	ParallelLineGroup.cc
 	Rectangle.cc

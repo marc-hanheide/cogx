@@ -1,7 +1,7 @@
 /**
  * @file VisionCore.hh
- * @author Andreas Richtsfeld
- * @date November 2009
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2006, 2010
  * @version 0.1
  * @brief Vision Core for perceptual grouping.
  *
@@ -47,12 +47,13 @@ private:
 
 public:
 
-	double p_e;																										///< probability of an edgel TODO das sollte hier weg => für sig-Berechnung
+	double p_e;																										///< probability of an edgel 							TODO das sollte hier weg => für sig-Berechnung
 	double p_ee;																									///< probability of an edgel given another edgel
 
-  Vector2 roi_center;																						///< center of the region of interest
-  double roi_sigma;																							///< sigma of the region of interest
-  bool use_masking;																							///< use masking of gestalts?
+  bool use_masking;																							///< use masking of gestalts?							TODO überprüfen was das macht? =>StereoClosures
+  Vector2 roi_center;																						///< center of the region of interest			TODO überprüfen was das macht? Wieso public?
+  double roi_sigma;																							///< sigma of the region of interest			TODO überprüfen was das macht? Wieso public?
+
 
 public:
   VisionCore(const string &config_name = "");
@@ -66,7 +67,7 @@ public:
   void EnableGestaltPrinciple(GestaltPrinciple::Type p);
   void DisableGestaltPrinciple(GestaltPrinciple::Type p);
   bool IsEnabledGestaltPrinciple(GestaltPrinciple::Type p);
-  RGBColor Pixel(int x, int y)																						/// TODO Sollte das hier nicht zu den Draw-Sachen? geht das?
+  RGBColor Pixel(int x, int y)																	/// TODO Sollte das hier nicht zu den Draw-Sachen? geht das?
   {
     char *p = &img->imageData[y*img->widthStep + x*img->nChannels];
     return RGBColor(p[0], p[1], p[2]);

@@ -33,8 +33,7 @@ static int CmpSegments(const void *a, const void *b)
     return 1 ;  // b is first
 }
 
-FormSegments::FormSegments(VisionCore *vc)
-: GestaltPrinciple(vc)
+FormSegments::FormSegments(VisionCore *vc) : GestaltPrinciple(vc)
 {
   done = false;
   next_principles.PushBack(FORM_LINES);
@@ -160,7 +159,8 @@ void FormSegments::DrawToEdgeImage(Segment *seg)
  */
 void FormSegments::CreateSegmentsMatas()
 {
-  float alpha = 1.00;  // filter width (these are "good" values) 1.00, 1.50
+//  float alpha = 1.00;  // filter width (these are "good" values) 1.00, 1.50
+  float alpha = 0.800;  // filter width (these are "good" values) 1.00, 1.50
   float omega = 0.001; // filter parameter  0.001
   float high_thresh, low_thresh;
   const IplImage *iplimg = core->GetImage();

@@ -369,7 +369,6 @@ bool Cube::IsInside(unsigned cube)
  */
 void Cube::Draw(int detail)
 {
-printf("Cube::Draw: Draw with detail: %u\n", detail);
   if (detail == 0 || detail == 1 || detail ==3)
   {
 		DrawLine2D(corner_points[3][1].x,
