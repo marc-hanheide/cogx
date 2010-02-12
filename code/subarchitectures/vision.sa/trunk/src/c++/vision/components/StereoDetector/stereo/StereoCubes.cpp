@@ -155,6 +155,8 @@ void StereoCubes::Draw(int side, bool masked)
 	if(side == LEFT) nrCubes = NumCubesLeft2D();
 	else nrCubes = NumCubesRight2D();
 
+printf("StereoCubes::Draw: %u\n", nrCubes);														/// TODO wieder weg
+
 	for(int i=0; i<nrCubes; i++)
 	{
 		if(masked)

@@ -36,6 +36,8 @@ StereoCore::StereoCore(const string &stereocal_file) throw(Except)
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_FLAPS_ARI);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CUBES);
+
+		/// TODO Es fehlt: EXTELLIPSES, CYLINDERS, CONES, SPHERES
   }
 
 	// init stereo camera calibration parameters
@@ -169,21 +171,84 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
 
 
 /**
- * @brief Draw the results into a iplImage
+ * @brief Draw the mono results into a iplImage
  * @param type Type of stereo object.
  * @param iIl Left stereo image.
  * @param iIr Right stereo image.
- * @param detected Draw the detected features.
+ * @param masked Draw the masked features.
+ * @param single Draw only single Gestalt.
+ * @param detail Degree of detail.
+ */
+void StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide, int id, int detail)
+{
+	SetImages(iIl, iIr);
+
+printf("StereoCore::DrawMonoResults: type: %u - singleSide: %u - ID: %i\n", type, singleSide, id);
+	for(int side = LEFT; side <= RIGHT; side++)
+	{
+		SetColor(RGBColor::blue);
+		SetActiveDrawAreaSide(side);
+		int numGestalts = NumMonoGestalts(type, side);
+
+// 		// show all segments if single Gestalt will be shown
+// 		if(single)
+// 			for(int i=0; i<numGestalts; i++)
+// 				if(masked)
+// 					vcore[side]->Gestalts(Gestalt::SEGMENT, i)->Draw(detail);	
+// 				else
+// 					if (vcore[side]->Gestalts(Gestalt::SEGMENT, i)->IsUnmasked())
+// 						vcore[side]->Gestalts(Gestalt::SEGMENT, i)->Draw(detail);	
+
+		// draw all Gestalts
+		if(!single)
+			for(int i=0; i<numGestalts; i++)
+				if(masked)
+					vcore[side]->Gestalts(type, i)->Draw(detail);	
+				else
+					if (vcore[side]->Gestalts(type, i)->IsUnmasked())
+						vcore[side]->Gestalts(type, i)->Draw(detail);	
+	}
+
+	if(single)
+	{
+		SetColor(RGBColor::red);
+		SetActiveDrawAreaSide(singleSide);
+		int numGestalts = NumMonoGestalts(type, singleSide);
+
+printf("single: numGestalts: %u > id: %u\n", numGestalts, id);
+		// draw only one gestalt if id is in range of 
+		if(id<numGestalts && id > 0)
+			if(masked)
+			{
+printf("single (masked: ON)\n");
+				vcore[singleSide]->Gestalts(type, id)->Draw(detail);	
+			}
+			else
+				if (vcore[singleSide]->Gestalts(type, id)->IsUnmasked())
+				{
+printf("single (masked: OFF) => is not masked\n");
+					vcore[singleSide]->Gestalts(type, id)->Draw(detail);
+				}
+else printf("single (masked: OFF) => is masked!\n");
+	}
+}
+
+
+/**
+ * @brief Draw the stereo results into the stereo iplImages.
+ * @param type Type of stereo object.
+ * @param iIl Left stereo image.
+ * @param iIr Right stereo image.
  * @param matched Draw the matched features.
  */
-void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool detected, bool masked, bool matched)
+void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool matched)
 {
 	SetImages(iIl, iIr);
 
 	for(int side = LEFT; side <= RIGHT; side++)
 	{
 		SetActiveDrawAreaSide(side);
-		if(detected) stereoGestalts[type]->Draw(side, masked);
+// 		if(detected) stereoGestalts[type]->Draw(side, masked);
 		if(matched) stereoGestalts[type]->DrawMatched(side);
 	}
 }
@@ -214,6 +279,22 @@ void StereoCore::PrintResults()
 //   printf("StereoFlaps: flaps left/right: %d %d\n", vcore[LEFT]->NumGestalts(Gestalt::FLAP), vcore[RIGHT]->NumGestalts(Gestalt::FLAP));
   printf("StereoFlaps:   flap-matches: %d\n", stereoGestalts[StereoBase::STEREO_FLAP]->NumStereoMatches()); 
 
+}
+
+
+/**
+ * @brief Returns id of first gestalt at pixel position (x,y).
+ * @param side Left / right side of stereo image pair.
+ * @param type Gestalt type.
+ * @param x x-coordinate in image pixels.
+ * @param y y-coordinate in image pixels.
+ * @param start_after Choose only Gestalts with id higher than start_after.
+ * @param reject_masked Reject masked Gestalts. 
+ * @return Returns the ID of the next Gestalt.
+ */
+unsigned StereoCore::PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked)
+{
+	return vcore[side]->PickGestaltAt(type, x, y, start_after, reject_masked);
 }
 
 
