@@ -14,9 +14,10 @@
 
 namespace Z
 {
-
-IplImage *iplImage;
-RGBColor defColor = RGBColor::white;
+																												/// TODO TODO TODO TODO TODO iplImage ist hier global definiert!!!!!!!!!!
+IplImage *iplImage;													///< Draw image in Draw.cc
+RGBColor defColor = RGBColor::white;				///< Default draw color in Draw.cc
+int drawThickness = 2;											///< Default draw thickness in Draw.cc
 
 /**
  * @brief Set the IplImage as active draw area.
@@ -215,7 +216,7 @@ void DrawText2D(const char *text, double x, double y, RGBColor col)
 void DrawPoint2D(double x, double y, RGBColor col)
 {
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
-	cvLine(iplImage, cvPoint(x, y), cvPoint(x,y), cvCol, 1);
+	cvLine(iplImage, cvPoint(x, y), cvPoint(x,y), cvCol, 2);
 }
 
 /**
@@ -224,7 +225,7 @@ void DrawPoint2D(double x, double y, RGBColor col)
 void DrawLine2D(double x1, double y1, double x2, double y2, RGBColor col)
 {
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
-	cvLine(iplImage, cvPoint(x1, y1), cvPoint(x2,y2), cvCol, 1);
+	cvLine(iplImage, cvPoint(x1, y1), cvPoint(x2,y2), cvCol, drawThickness);
 }
 
 /**
@@ -261,11 +262,10 @@ void DrawArrow(Vector2 start, Vector2 end, RGBColor col)
  * @brief Draw a 2D rectangle.
  * @TODO Without transparency
  */
-static void Rect2D(double x1, double y1, double x2, double y2,
-    bool fill, unsigned char transparency, RGBColor col)
+static void Rect2D(double x1, double y1, double x2, double y2, bool fill, unsigned char transparency, RGBColor col)
 {
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
-	int thickness = 1;
+	int thickness = drawThickness;
 	if(fill) thickness = -1;
 
 	cvLine(iplImage, cvPoint(x1, y1), cvPoint(x2,y1), cvCol, thickness);
@@ -305,13 +305,13 @@ void TransparentRect2D(double x1, double y1, double x2, double y2, RGBColor col)
 void TransparentQuadrilateral2D(double x1, double y1, double x2, double y2,		// HACK ARI
     double x3, double y3, double x4, double y4, bool fill, unsigned char transparency, RGBColor col)
 {
-	int thickness = 1;
+	int thickness = drawThickness;
 	if(fill) thickness = -1; 	// negative values => filling
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
-	cvLine(iplImage, cvPoint(x1, y1), cvPoint(x2,y2), cvCol, thickness);
-	cvLine(iplImage, cvPoint(x2, y2), cvPoint(x3,y3), cvCol, thickness);
-	cvLine(iplImage, cvPoint(x3, y3), cvPoint(x4,y4), cvCol, thickness);
-	cvLine(iplImage, cvPoint(x4, y4), cvPoint(x1,y1), cvCol, thickness);
+	cvLine(iplImage, cvPoint(x1, y1), cvPoint(x2,y2), cvCol, thickness, CV_AA);
+	cvLine(iplImage, cvPoint(x2, y2), cvPoint(x3,y3), cvCol, thickness, CV_AA);
+	cvLine(iplImage, cvPoint(x3, y3), cvPoint(x4,y4), cvCol, thickness, CV_AA);
+	cvLine(iplImage, cvPoint(x4, y4), cvPoint(x1,y1), cvCol, thickness, CV_AA);
 }
 
 
@@ -319,10 +319,9 @@ void TransparentQuadrilateral2D(double x1, double y1, double x2, double y2,		// 
  * @brief Draw an arc with center (x,y), radius r from angle start to end.
  * @TODO Without transparency
  */
-static void Arc2D(double x, double y, double r, double start, double span,
-    bool fill, unsigned char transparency, RGBColor col)
+static void Arc2D(double x, double y, double r, double start, double span, bool fill, unsigned char transparency, RGBColor col)
 {
-	int thickness = 1;
+	int thickness = drawThickness;
 	if(fill) thickness = -1; 	// negative values => filling
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
 
@@ -362,10 +361,9 @@ void TransparentArc2D(double x, double y, double r, double start, double span, R
  * @brief Approximate ellipse with 100 lines.
  * Note: fill and transparency ignored for now
  */
-static void Ellipse2D(double x, double y, double a, double b, double phi,
-    bool fill, unsigned char transparency, RGBColor col)
+static void Ellipse2D(double x, double y, double a, double b, double phi, bool fill, unsigned char transparency, RGBColor col)
 {
-	int thickness = 1;
+	int thickness = drawThickness;
 	if(fill) thickness = -1; 	// negative values => filling
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
 

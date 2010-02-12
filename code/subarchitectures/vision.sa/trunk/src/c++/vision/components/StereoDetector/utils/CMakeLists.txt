@@ -12,7 +12,10 @@ SET(HEADERS
 	ConfigFile.hh
 	Draw.hh
 	Except.hh
-#	Video.hh
+	Namespace.hh
+	OpenCvImgSeqVideo.hh
+	OpenCvLiveVideo.hh
+	Video.hh
 )
 
 SET(SOURCES 
@@ -25,6 +28,8 @@ SET(SOURCES
 	Draw.cc
 #	Draw_small.cc
 	Except.cc
+#	OpenCvImgSeqVideo.cc
+#	OpenCvLiveVideo.cc
 )
 
 
