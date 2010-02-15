@@ -311,8 +311,9 @@ module SpatialData {
   };
 
   class SpatialObject {
-    int id;
-    string label;
+    int id;	  // This is an ID unique among SpatialObjects
+    string label; // This is the same as in VisualObject
+    cogx::Math::Pose3 pose;   // World coordinates
   };
 
 };

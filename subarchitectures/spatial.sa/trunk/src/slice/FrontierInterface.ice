@@ -68,10 +68,10 @@ module FrontierInterface {
   class ObservedPlaneObject
   {
     int id;
-    double x;
-    double y;
+    string label;
+
+    cogx::Math::Vector3 pos;
     double angle;
-    double height;
   };
 
   struct PlaceMembership

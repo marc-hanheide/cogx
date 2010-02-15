@@ -65,7 +65,10 @@ ObjectRelationManager::ObjectRelationManager()
 
 ObjectRelationManager::~ObjectRelationManager() 
 { 
-
+  for (map<int, spatial::Object*>::iterator it = m_objectModels.begin();
+      it != m_objectModels.end(); it++) {
+    delete it->second;
+  }
 }
 
 
@@ -91,11 +94,16 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     m_bTestOnness = true;
   }
 
+  m_bNoPTZ = false;
+  it = _config.find("--no-ptz");
+  if (it != _config.end()) {
+    m_bNoPTZ = true;
+  }
+
   m_RetryDelay = 10;
 
   Cure::ConfigFileReader *cfg = 0;
   it = _config.find("-c");
-  m_bNoPTZ = true;
 
   if (it != _config.end()) {
     cfg = new Cure::ConfigFileReader;
@@ -107,18 +115,19 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     } else {
       log("Managed to open the Cure config file");
 
-      Cure::SensorPose CameraPoseR;
-      if (cfg->getSensorPose(2, CameraPoseR)) {
-	println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
-	std::abort();
-      } 
-      double xytheta[3];
-      CameraPoseR.getXYTheta(xytheta);
-      fromRotZ(m_CameraPoseR.rot, xytheta[2]);
-      m_CameraPoseR.pos.x = xytheta[0];
-      m_CameraPoseR.pos.y = xytheta[1];
-
-      m_bNoPTZ = false;
+      if (!m_bNoPTZ) {
+	Cure::SensorPose CameraPoseR;
+	if (cfg->getSensorPose(2, CameraPoseR)) {
+	  println("configure(...) Failed to get sensor pose for camera. (Run with --no-planes to skip)");
+	  m_bNoPTZ = true;
+	  std::abort();
+	} 
+	double xytheta[3];
+	CameraPoseR.getXYTheta(xytheta);
+	fromRotZ(m_CameraPoseR.rot, xytheta[2]);
+	m_CameraPoseR.pos.x = xytheta[0];
+	m_CameraPoseR.pos.y = xytheta[1];
+      }
     }
   }
 
@@ -440,19 +449,63 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 
     transform(m_CameraPoseR, pose, pose);
 
-    map<string, Pose3>::iterator it = m_lastKnownObjectPoses.find(observedObject->label);
-    if (it != m_lastKnownObjectPoses.end()) {
-      double diff = length(it->second.pos - pose.pos);
-      diff += length(getRow(it->second.rot - pose.rot, 1));
-      diff += length(getRow(it->second.rot - pose.rot, 2));
-      if (diff > 0.01) {
-	it->second = pose;
-	m_lastObjectPoseTimes[observedObject->label] = observedObject->time;
+    // For now, assume each label represents a unique object
+    int objectID = -1;
+    for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+      if (it->second->label == observedObject->label) {
+	// update object
+	objectID = it->first;
+	break;
       }
     }
-    else {
-	m_lastKnownObjectPoses[observedObject->label] = pose;
-	m_lastObjectPoseTimes[observedObject->label] = observedObject->time;
+    if (objectID == -1) {
+      // New object
+      objectID = m_maxObjectCounter++;
+      m_objects[objectID] = new SpatialData::SpatialObject;
+      m_objects[objectID]->id = objectID;
+      m_objects[objectID]->label = observedObject->label;
+      m_objects[objectID]->pose = observedObject->pose;
+
+      BoxObject *newBoxObject = new BoxObject;
+      m_objectModels[objectID] = newBoxObject;
+      newBoxObject->type = OBJECT_BOX;
+      if (observedObject->label == "krispies") {
+	newBoxObject->radius1 = 0.095;
+	newBoxObject->radius2 = 0.045;
+	newBoxObject->radius3 = 0.145;
+      }
+      else if (observedObject->label == "joystick") {
+	newBoxObject->radius1 = 0.115;
+	newBoxObject->radius2 = 0.105;
+	newBoxObject->radius3 = 0.13;
+      }
+      else  {
+	newBoxObject->radius1 = 0.1;
+	newBoxObject->radius2 = 0.1;
+	newBoxObject->radius3 = 0.1;
+      }
+    }
+
+    double diff = length(m_objects[objectID]->pose.pos - pose.pos);
+    diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 1));
+    diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 2));
+    if (diff > 0.01) {
+      m_objects[objectID]->pose = pose;
+      m_lastObjectPoseTimes[objectID] = observedObject->time;
+
+      if (m_objectWMIDs.find(objectID) == m_objectWMIDs.end()) {
+	log("Error! Supposedly managed spatial object wasn't managed!");
+	return;
+      }
+
+      try {
+	overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[objectID],
+	    m_objects[objectID]);
+      }
+      catch (DoesNotExistOnWMException) {
+	log("Error! SpatialObject disappeared from memory!");
+	return;
+      }
     }
 
     if (m_bDisplayVisualObjectsInPB) {
@@ -467,20 +520,16 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
       theobjectproxy.set_scale(0.19, 0.09, 0.29);
     }
-    return;
 
-    SpatialData::SpatialObjectPtr newObject = new SpatialData::SpatialObject;
-    newObject->label = observedObject->label;
-    newObject->id = m_maxObjectCounter;
-    m_maxObjectCounter++;
+    // Check degree of onness
+    recomputeOnnessForObject(objectID);
 
-    m_objects[newObject->id] = newObject;
 
     // Check degree of containment in Places
     FrontierInterface::PlaceMembership membership = 
       m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
 
-    setContainmentProperty(newObject->id, membership.placeID, 1.0);
+    setContainmentProperty(objectID, membership.placeID, 1.0);
 
     //  Needs estimate of extent of Places, in sensory frame
     //   Add interface to PlaceManager?
@@ -518,21 +567,46 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
       getMemoryEntry<FrontierInterface::ObservedPlaneObject>
       (wmc.address);
 
-    log("Read object at %f, %f, %f", observedObject->x, observedObject->y,
-	observedObject->height);
-    if (m_PeekabotClient.is_connected()) {
-      char identifier[100];
-      sprintf(identifier, "label%d", 0);
-      peekabot::PolygonProxy pp;
-      pp.add(m_planeProxies, identifier, peekabot::REPLACE_ON_CONFLICT);
-      pp.add_vertex(0.55, 0.45, 0);
-      pp.add_vertex(-0.55, 0.45, 0);
-      pp.add_vertex(-0.55, -0.45, 0);
-      pp.add_vertex(0.55, -0.45, 0);
+    log("Read object at %f, %f, %f", observedObject->pos.x, observedObject->pos.y,
+	observedObject->pos.z);
 
-      pp.translate(observedObject->x, observedObject->y, 
-	  observedObject->height);
-      pp.rotate(observedObject->angle, 0.0, 0.0, 1.0);
+    int objectID = -1;
+    for (map<int, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
+      if (it->second->id == observedObject->id) {
+	// update object
+	objectID = it->first;
+	break;
+      }
+    }
+
+    double diff = length(m_planeObjects[objectID]->pos - observedObject->pos);
+    double angDiff = m_planeObjects[objectID]->angle - observedObject->angle;
+    if (angDiff > M_PI) angDiff -= 2*M_PI;
+    if (angDiff < -M_PI) angDiff += 2*M_PI;
+    diff += abs(angDiff*1.0);
+
+    if (diff > 0.01) {
+      m_planeObjects[objectID]->pos = observedObject->pos;
+      m_planeObjects[objectID]->angle = observedObject->angle;
+
+      recomputeOnnessForPlane(objectID);
+
+      if (m_bDisplayPlaneObjectsInPB) {
+	if (m_PeekabotClient.is_connected()) {
+	  char identifier[100];
+	  sprintf(identifier, "label%d", 0);
+	  peekabot::PolygonProxy pp;
+	  pp.add(m_planeProxies, identifier, peekabot::REPLACE_ON_CONFLICT);
+	  pp.add_vertex(0.55, 0.45, 0);
+	  pp.add_vertex(-0.55, 0.45, 0);
+	  pp.add_vertex(-0.55, -0.45, 0);
+	  pp.add_vertex(0.55, -0.45, 0);
+
+	  pp.translate(observedObject->pos.x, observedObject->pos.y, 
+	      observedObject->pos.z);
+	  pp.rotate(observedObject->angle, 0.0, 0.0, 1.0);
+	}
+      }
     }
   }
   catch (DoesNotExistOnWMException) {
@@ -641,3 +715,62 @@ Pose3 ObjectRelationManager::getCameraToWorldTransform()
   transform(robotTransform, cameraOnRobot, cameraInWorld);
   return cameraInWorld;
 } 
+
+void 
+ObjectRelationManager::recomputeOnnessForObject(int objectID)
+{
+  if (m_objectModels.find(objectID) == m_objectModels.end()) {
+    log("Error! Object model was missing!");
+  }
+
+  m_objectModels[objectID]->pose = m_objects[objectID]->pose;
+
+  for (map<int, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); 
+      it != m_planeObjects.end(); it++) {
+    PlaneObject po;
+    po.pose.pos = it->second->pos;
+    fromAngleAxis(po.pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
+    if (it->second->label == "planeObject0") {
+      po.radius1 = 0.45;
+      po.radius2 = 0.55;
+    }
+    else {
+      log("Error! Unknown plane object!");
+      return;
+    }
+    double onness = evaluateOnness(&po, m_objectModels[objectID]);
+    log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
+	it->second->label.c_str(), onness);
+  }
+}
+
+void
+ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
+{
+  PlaneObject po;
+  po.pose.pos = m_planeObjects[planeObjectID]->pos;
+  fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
+      vector3(0.0, 0.0, 1.0));
+  if (m_planeObjects[planeObjectID]->label == "planeObject0") {
+    po.radius1 = 0.45;
+    po.radius2 = 0.55;
+  }
+  else {
+    log("Error! Unknown plane object!");
+    return;
+  }
+
+  for (map<int, SpatialData::SpatialObjectPtr>::iterator it = m_objects.begin(); 
+      it != m_objects.end(); it++) {
+    int objectID = it->second->id;
+
+    if (m_objectModels.find(objectID) == m_objectModels.end()) {
+      log("Error! Object model was missing!");
+    }
+
+    m_objectModels[objectID]->pose = m_objects[objectID]->pose;
+    double onness = evaluateOnness(&po, m_objectModels[objectID]);
+    log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
+	m_planeObjects[planeObjectID]->label.c_str(), onness);
+  }
+}
