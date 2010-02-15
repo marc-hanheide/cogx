@@ -3,37 +3,25 @@
 import sys, traceback, Ice
 import threading, time
 from procman import CProcessBase, CRemoteHostInfo
+from messages import CMessageSource, CMessage
+import itertools
+import legacy
 
 import modice
 import icemodule.castcontrol.CastAgent as CastAgent
-
-# TODO: use paramiko or fabric
-#class CRemoteProcessManager(CProcessManager):
-#    def __init__(self, name):
-#        CProcessManager.__init__(self, name)
-#        # defaults; TODO: read from castcrtl.conf or ~/.castctrl/hosts.conf ... [server-<name>]
-#        self.login = "-i /home/user/.ssh/cogx_rsa mmarko@localhost"
-#        self.remoteCmd = "ssh [login] [command]"
-#        self.remoteCmdX = "ssh -Y [login] [command]"
-
-#    def composeRemoteCommand(self, command, xserver=False):
-#        if xserver: cmd = self.remoteCmdX
-#        else: cmd = self.remoteCmd
-#        cmd = cmd.replace("[login]", self.login)
-#        cmd = cmd.replace("[command]", command)
-
-#    def lockHost(self):
-#        return False # TODO
-#
 
 class CRemoteProcess(CProcessBase):
     """
     A Remote Process accessed through a CASTControl Agent.
     It implements the same (public) interface as CProcess.
+    It has only one message queue 'messages' so it doesn't work as a CMessageSource;
+    messages are therefore merged in the manager which provides the interface
+    for CLogMerger.
     """
     def __init__(self, manager, name, host):
         CProcessBase.__init__(self, name, host)
         self.manager = manager
+        self.messages = legacy.deque(maxlen=500)
 
     def getStatusStr(self):
         st = CProcessBase.getStatusStr(self)
@@ -46,6 +34,12 @@ class CRemoteProcess(CProcessBase):
 
     def stop(self):
         self.manager.agentProxy.stopProcess(self.name)
+
+    def _readMessages(self):
+        msgs = self.manager.agentProxy.readMessages(self.name)
+        for m in msgs:
+            self.messages.append(CMessage("R:"+m.message, m.msgtype, timestamp=m.time))
+
 
 class CRemoteProcessManager:
     """
@@ -61,6 +55,7 @@ class CRemoteProcessManager:
         self._agentProxy = None
         self.online = False
         self.observers = [] # proclist change, etc.
+        self.remoteInternalMessages = legacy.deque(maxlen=500)
 
     def getStatusStr(self): # For processtree
         if self.online: return self.address
@@ -92,8 +87,8 @@ class CRemoteProcessManager:
             # TODO: notify process-manager observers
             return
 
+        # remote-new; Update and add new processes
         rnew = []
-        # Update and add new processes
         for pr in procs:
             found = False
             for pl in self.proclist:
@@ -110,7 +105,7 @@ class CRemoteProcessManager:
                 np.error = pr.error
                 rnew.append(np)
 
-        # remove inexistent processes (an unlikely event)
+        # local-old; remove inexistent processes (an unlikely event)
         lold = []
         for pl in self.proclist:
             found = False
@@ -132,7 +127,38 @@ class CRemoteProcessManager:
             if p.name == name: return p
         return None
 
+
+    def pumpRemoteMessages(self):
+        for p in self.proclist: p._readMessages()
+        msgs = self.agentProxy.readMessages("LOGGER")
+        for m in msgs:
+            self.remoteInternalMessages.append(CMessage("RI:" + m.message, m.msgtype, timestamp=m.time))
+
+
     def stopAll(self):
         # self.agentProxy.stopAll()
         pass
+
+
+class CRemoteMessageSource(CMessageSource):
+    def __init__(self, remoteManager):
+        CMessageSource.__init__(self, remoteManager)
+        self.yieldErrors = False
+
+    # FIXME: Iterators crash if the queue is changed from another thread.
+    # Instead of iterators, this function should probably return a list of filtered messages.
+    def getIterators(self):
+        its = []
+        if self.tmLastSeen < self.tmLastPop: self.tmLastSeen = self.tmLastPop
+        def checkTime(msg):
+            if msg.time > self.tmLastSeen:
+                self.tmLastPop = msg.time
+                return True
+            return False
+        if self.yieldMessages:
+            # NOTE: self.process is a remoteManager
+            for proc in self.process.proclist:
+                its.append(itertools.ifilter(lambda x: checkTime(x), proc.messages))
+            its.append(itertools.ifilter(lambda x: checkTime(x), self.process.remoteInternalMessages))
+        return its
 
