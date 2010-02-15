@@ -347,10 +347,10 @@ inline istream& operator>>(istream &is, Vector3 &a)
 /**
  * Returns true if the two vectors are exactly equal.
  */
-inline bool operator == (const Vector3& a, const Vector3& b)
-{
-  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
-}
+//inline bool operator == (const Vector3& a, const Vector3& b)
+//{
+//  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+//}
 
 /**
  * Returns true if a and b's elems are within epsilon of each other.
@@ -362,13 +362,13 @@ inline bool vequals(const Vector3& a, const Vector3& b, double eps)
          equals(a.z, b.z, eps);
 }
 
-/**
- * Returns true if the two vectors are not exactly equal.
- */
-inline bool operator != (const Vector3& a, const Vector3& b)
-{
-  return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
-}
+///**
+// * Returns true if the two vectors are not exactly equal.
+// */
+//inline bool operator != (const Vector3& a, const Vector3& b)
+//{
+//  return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
+//}
 
 inline Vector3 operator - (const Vector3 &v)
 {
