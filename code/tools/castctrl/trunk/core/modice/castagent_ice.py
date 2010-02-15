@@ -24,6 +24,55 @@ __name__ = 'icemodule.castcontrol'
 _M_icemodule.castcontrol.CastAgent = Ice.openModule('icemodule.castcontrol.CastAgent')
 __name__ = 'icemodule.castcontrol.CastAgent'
 
+if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('CastMessage'):
+    _M_icemodule.castcontrol.CastAgent.CastMessage = Ice.createTempClass()
+    class CastMessage(object):
+        def __init__(self, time=0.0, msgtype=0, message=''):
+            self.time = time
+            self.msgtype = msgtype
+            self.message = message
+
+        def __hash__(self):
+            _h = 0
+            _h = 5 * _h + __builtin__.hash(self.time)
+            _h = 5 * _h + __builtin__.hash(self.msgtype)
+            _h = 5 * _h + __builtin__.hash(self.message)
+            return _h % 0x7fffffff
+
+        def __cmp__(self, other):
+            if other == None:
+                return 1
+            if self.time < other.time:
+                return -1
+            elif self.time > other.time:
+                return 1
+            if self.msgtype < other.msgtype:
+                return -1
+            elif self.msgtype > other.msgtype:
+                return 1
+            if self.message < other.message:
+                return -1
+            elif self.message > other.message:
+                return 1
+            return 0
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_icemodule.castcontrol.CastAgent._t_CastMessage)
+
+        __repr__ = __str__
+
+    _M_icemodule.castcontrol.CastAgent._t_CastMessage = IcePy.defineStruct('::castcontrol::CastAgent::CastMessage', CastMessage, (), (
+        ('time', (), IcePy._t_double),
+        ('msgtype', (), IcePy._t_int),
+        ('message', (), IcePy._t_string)
+    ))
+
+    _M_icemodule.castcontrol.CastAgent.CastMessage = CastMessage
+    del CastMessage
+
+if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('_t_CastMessageList'):
+    _M_icemodule.castcontrol.CastAgent._t_CastMessageList = IcePy.defineSequence('::castcontrol::CastAgent::CastMessageList', (), _M_icemodule.castcontrol.CastAgent._t_CastMessage)
+
 if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('ProcessInfo'):
     _M_icemodule.castcontrol.CastAgent.ProcessInfo = Ice.createTempClass()
     class ProcessInfo(object):
@@ -94,6 +143,7 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
         # Operation signatures.
         #
         # def getProcessList(self, current=None):
+        # def readMessages(self, processName, current=None):
         # def startProcess(self, name, current=None):
         # def stopProcess(self, name, current=None):
 
@@ -107,6 +157,9 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
 
         def getProcessList(self, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.Agent._op_getProcessList.invoke(self, ((), _ctx))
+
+        def readMessages(self, processName, _ctx=None):
+            return _M_icemodule.castcontrol.CastAgent.Agent._op_readMessages.invoke(self, ((processName, ), _ctx))
 
         def startProcess(self, name, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.Agent._op_startProcess.invoke(self, ((name, ), _ctx))
@@ -128,6 +181,7 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
     Agent.ice_type = _M_icemodule.castcontrol.CastAgent._t_Agent
 
     Agent._op_getProcessList = IcePy.Operation('getProcessList', Ice.OperationMode.Idempotent, Ice.OperationMode.Idempotent, False, (), (), (), _M_icemodule.castcontrol.CastAgent._t_ProcessList, ())
+    Agent._op_readMessages = IcePy.Operation('readMessages', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), _M_icemodule.castcontrol.CastAgent._t_CastMessageList, ())
     Agent._op_startProcess = IcePy.Operation('startProcess', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
     Agent._op_stopProcess = IcePy.Operation('stopProcess', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
 

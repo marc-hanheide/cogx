@@ -156,8 +156,8 @@ def parseOptions():
 
     #parser.add_option("-v", "--verbose", action="store", type="int", dest="verbose")
     #parser.add_option("-q", "--quiet", action="store_const", const=0, dest="verbose")
-    parser.add_option("-p", "--port", action="store", type="int", default=7832, dest="port",
-        help="Set the port number on which this agent will be listening. Default=7832.")
+    parser.add_option("-p", "--port", action="store", type="int", default=castagentsrv.SLAVE_PORT, dest="port",
+        help="Set the port number on which this agent will be listening. Default=%d." % castagentsrv.SLAVE_PORT)
     parser.add_option("-c", "--config", action="store", type="string", default="castcontrol.conf", dest="config",
         help="Set a configuration file. Default=castcontrol.conf.")
     parser.add_option("", "--player", action="store", type="string", default=None, dest="player_cfg",

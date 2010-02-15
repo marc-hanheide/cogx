@@ -17,9 +17,9 @@ class CMessage(object):
     ERROR=2
     FLUSHMSG=3
     CASTLOG=10
-    def __init__(self, message, msgtype=0, order=0):
+    def __init__(self, message, msgtype=0, order=0, timestamp=time.time()):
         self.order = order
-        self.time = time.time()
+        self.time = timestamp
         self.message = message.rstrip()
         self.msgtype = msgtype
 
@@ -185,18 +185,21 @@ class CInternalLogger(object):
             self.errors.append(cmsg)
         else: self.messages.append(cmsg)
 
-class CStdoutLogger(object):
+class CStdoutLogger(CInternalLogger):
     def __init__(self):
-        pass
+        CInternalLogger.__init__(self)
 
     def log(self, msg):
+        CInternalLogger.log(self, msg)
         print msg
 
     def warn(self, msg):
+        CInternalLogger.warn(self, msg)
         print "!", msg
 
     def error(self, msg):
+        CInternalLogger.error(self, msg)
         print "!!!!!", msg
 
     def addMessage(self, cmsg):
-        pass
+        CInternalLogger.addMessage(self, cmsg)

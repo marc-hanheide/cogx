@@ -6,10 +6,10 @@ import sys, os, time, random
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.abspath(os.path.join(this_dir, "../..")))
 
-from core import castagent, procman, options, messages
+from core import castagentsrv, procman, options, messages
 LOGGER = messages.CStdoutLogger()
 procman.LOGGER = LOGGER
-castagent.LOGGER = LOGGER
+castagentsrv.LOGGER = LOGGER
 
 # For the ice client
 import Ice
@@ -57,7 +57,7 @@ class TestCastAgentSlave(unittest.TestCase):
         """
         for i in xrange(3):
             LOGGER.log("Run %d" % i)
-            self.agent = castagent.CCastSlave(self.manager, self.options, self.address)
+            self.agent = castagentsrv.CCastSlave(self.manager, self.options, self.address)
             self.agent.start() # TODO: when testing, start() should rethrow errors.
             time.sleep(1.0)
             LOGGER.log("Shutdown %d" % i)
@@ -70,7 +70,7 @@ class TestCastAgentSlave(unittest.TestCase):
         """
         # Server (slave)
         LOGGER.log("Run Monitor")
-        self.agent = castagent.CCastSlave(self.manager, self.options, self.address)
+        self.agent = castagentsrv.CCastSlave(self.manager, self.options, self.address)
         self.agent.start()
         time.sleep(0.2)
 

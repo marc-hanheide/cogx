@@ -1,13 +1,13 @@
 [["python:package:icemodule"]]
 module castcontrol{
    module CastAgent {
-      //struct CastMessage {
-      //   double time;
-      //   int msgtype;
-      //   string message;
-      //};
-      // TODO: sequence<CastMessage> CastMessageList;
-      //sequence<string> CastMessageList;
+      // Message *transport format* for messages captured by agents.
+      struct CastMessage {
+         double time;
+         int msgtype;
+         string message;
+      };
+      sequence<CastMessage> CastMessageList;
 
       struct ProcessInfo {
          string name;
@@ -17,8 +17,7 @@ module castcontrol{
       sequence<ProcessInfo> ProcessList;
       interface Agent {
          idempotent ProcessList getProcessList();
-         // TODO: separate structure/class/interface: Process
-         // idempotent CastMessageList readMessages(string processName, double startTime);
+         CastMessageList readMessages(string processName);
          int startProcess(string name);
          int stopProcess(string name);
       };

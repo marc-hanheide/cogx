@@ -92,6 +92,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
         self._manager = procman.CProcessManager()
         self._remoteHosts = []
+        self._pumpRemoteMessages = True
 
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.log.addSource(LOGGER)
@@ -200,6 +201,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.buildLog.pullLogs()
         for rpm in self._remoteHosts: #TODO: read in background, at most 1 per second
             rpm.updateProcessList()
+            if self._pumpRemoteMessages: rpm.pumpRemoteMessages()
 
     def closeEvent(self, event):
         self._manager.stopReaderThread()
@@ -252,7 +254,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         srvs = self.getServers(self._manager)
         for p in srvs: p.start()
         
-        for h in self._remoteHosts: # XXX Debugging
+        # XXX Processes could be started for each host separately;  (id=remotestart)
+        # Each process on each host could be started separately;
+        # ATM we start all processes on all hosts, so the UI can remain unchanged.
+        for h in self._remoteHosts:
             for p in h.proclist: p.start()
         self.ui.processTree.expandAll()
 
@@ -260,7 +265,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         srvs = self.getServers(self._manager)
         for p in srvs: p.stop()
 
-        for h in self._remoteHosts: # XXX Debugging
+        for h in self._remoteHosts: # See <URL:#remotestart>
             for p in h.proclist: p.stop()
         self.ui.processTree.expandAll()
 
@@ -326,7 +331,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def discoverCastAgents(self):
         hosts = self.getConfiguredHosts()
         LOGGER.log("Hosts: %s" % (hosts))
-        port = 7832 # TODO: user setting
+        port = castagentsrv.SLAVE_PORT # TODO: user setting, maybe per-host setting
         working = castagentsrv.discoverRemoteHosts(hosts, port)
         LOGGER.log("Cast agents: %s" % (working))
 
@@ -419,7 +424,8 @@ class CCastControlWnd(QtGui.QMainWindow):
                     "CMakeCache.txt points to wrong directories.\n"
                     + "Shall I fix that?", QM.Yes | QM.No)
                 if rv == QM.Yes:
-                    rv = QtGui.QMessageBox.information(self, "CAST Control", "TODO: Someday I will...")
+                    rv = QtGui.QMessageBox.information(
+                        self, "CAST Control", "TODO: Maybe Someday I will be able to fix CMakeCache...")
                     # TODO: Change directories on YES
                 pass
         return True
@@ -446,6 +452,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.log.addSource(LOGGER)
         for proc in self._manager.proclist:
             if proc != self.procBuild: self.mainLog.log.addSource(proc)
+        if self._pumpRemoteMessages:
+            for h in self._remoteHosts:
+                src = remoteproc.CRemoteMessageSource(h)
+                # XXX Bad interface in CLogMerger (addSource accepts a process instead of CMessageSource)
+                self.mainLog.log.removeSource(h)
+                self.mainLog.log.sources.append(src)
 
     def on_btClearMainLog_clicked(self, valid=True):
         if not valid: return
@@ -493,14 +505,21 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         for rpm in self._remoteHosts:
             self._processModel.rootItem.removeHost(rpm)
+            self.mainLog.log.removeSource(rpm)
+        self._remoteHosts = []
 
         for host in agents:
-            port = 7832 # TODO: user setting
+            port = castagentsrv.SLAVE_PORT # TODO: user setting, maybe per-host setting
             rpm = remoteproc.CRemoteProcessManager(host, host, port)
             rpm.updateProcessList()
             self._remoteHosts.append(rpm)
             self._processModel.rootItem.addHost(rpm)
+            if self._pumpRemoteMessages:
+                src = remoteproc.CRemoteMessageSource(rpm)
+                self.mainLog.log.sources.append(src)
+
         self.ui.processTree.expandAll()
+
 
     def onShowEnvironment(self):
         cmd = "bash -c env"

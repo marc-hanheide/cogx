@@ -12,33 +12,51 @@ from core import messages, options, procman
 
 LOGGER = messages.CInternalLogger()
 
+# Default port for the Ice server of a CastAgent.
+SLAVE_PORT=7832
+
 # Ice servant
 class CAgentI(CastAgent.Agent):
     def __init__(self, processManager, options):
         self.manager = processManager
         self.options = options
+        self.logs = {}
 
     def getProcessList(self, current=None):
-        # LOGGER.log("Retireveing process list")
+        # LOGGER.log("Retrieveing process list")
         plist = self.manager.proclist
         procs = [CastAgent.ProcessInfo(name=p.name, status=p.status, error=p.error) for p in plist]
         return procs
 
-    #def readMessages(self, processName, startTime, current=None):
-    #    p = self.manager.getProcess(processName)
-    #    if p == None:
-    #        if processName == "LOGGER": p = LOGGER
-    #        else: return []
-    #    if self.logs.has_key(processName): log = self.logs[processName]
-    #    else:
-    #        log = messages.CLogMerger()
-    #        log.addSource(p)
-    #        self.logs[processName] = log
-    #    if log == None: return []
-    #    log.merge()
-    #    msgs = [m for m in log.messages]
-    #    res = [msg.getText() for msg in msgs]
-    #    return res
+    # NOTE: This procedure is implemented for a scenario with only one master castctrl.
+    # TODO: It might be expensive to handle each process separately; get messages from multiple processes
+    def readMessages(self, processName, current=None):
+        """
+        Retrieve new messages for the process. Up to 100 messages are retrieved at a time.
+        Each message can be retrieved at most once.
+        """
+        # LOGGER.log("Gathering messages")
+        p = self.manager.getProcess(processName)
+        if p == None:
+            if processName == "LOGGER": p = LOGGER
+            else: return []
+        if self.logs.has_key(processName):
+            log = self.logs[processName]
+        else:
+            log = messages.CLogMerger()
+            log.addSource(p)
+            self.logs[processName] = log
+        if log == None: return []
+        try:
+            log.merge()
+            msgs = log.getNewMessages(100)
+            # Convert messages to transport format (ice) and return them
+            res = [
+                CastAgent.CastMessage(time=msg.time, msgtype=msg.msgtype, message=msg.message)
+                for msg in msgs]
+            return res
+        except: pass
+        return []
 
     def startProcess(self, processName, current=None):
         # LOGGER.log("Starting %s" % processName)
@@ -52,12 +70,13 @@ class CAgentI(CastAgent.Agent):
         if p != None: p.stop()
         return 1 if p != None else 0
 
+
 class CCastSlave(threading.Thread):
     """
     CCastSlave runs an Agent servant in a separate thread. 
     An instance of CCastSlave can execute at most once (it's a Thread object).
     """
-    def __init__(self, processManager, options, iceAddress= "tcp -p 7832"):
+    def __init__(self, processManager, options, iceAddress= "tcp -p %d" % SLAVE_PORT):
         threading.Thread.__init__(self, name = "CastAgent")
         self.manager = processManager
         self.options = options
