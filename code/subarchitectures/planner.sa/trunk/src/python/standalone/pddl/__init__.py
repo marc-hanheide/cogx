@@ -1,6 +1,6 @@
 import mapltypes as types
 import parser
-import predicates, conditions, effects, actions, sensors, axioms, domain, problem, scenario, writer, translators, sas_translate, state, visitors
+import predicates, conditions, effects, actions, sensors, axioms, domain, problem, scenario, writer, translators, state, visitors
 
 from mapltypes import Type, TypedObject, Parameter
 from predicates import Predicate, Function, Literal, Term, FunctionTerm, VariableTerm, ConstantTerm
