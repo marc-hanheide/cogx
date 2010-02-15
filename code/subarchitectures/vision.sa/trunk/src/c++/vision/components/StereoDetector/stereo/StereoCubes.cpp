@@ -155,7 +155,7 @@ void StereoCubes::Draw(int side, bool masked)
 	if(side == LEFT) nrCubes = NumCubesLeft2D();
 	else nrCubes = NumCubesRight2D();
 
-printf("StereoCubes::Draw: %u\n", nrCubes);														/// TODO wieder weg
+//printf("StereoCubes::Draw: %u\n", nrCubes);														/// TODO wieder weg
 
 	for(int i=0; i<nrCubes; i++)
 	{
@@ -173,7 +173,7 @@ printf("StereoCubes::Draw: %u\n", nrCubes);														/// TODO wieder weg
  */
 void StereoCubes::DrawMatched(int side)
 {
-printf("StereoCubes::DrawMatched: %u\n", cubeMatches);								/// TODO wieder weg
+//printf("StereoCubes::DrawMatched: %u\n", cubeMatches);								/// TODO wieder weg
 	for(int i=0; i< cubeMatches; i++)
 	{
 		cubes[side][i].surf[0].Draw(RGBColor::red);

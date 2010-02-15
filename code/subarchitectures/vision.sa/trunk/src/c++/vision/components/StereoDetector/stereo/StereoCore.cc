@@ -183,7 +183,7 @@ void StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
 {
 	SetImages(iIl, iIr);
 
-printf("StereoCore::DrawMonoResults: type: %u - singleSide: %u - ID: %i\n", type, singleSide, id);
+// printf("StereoCore::DrawMonoResults: type: %u - singleSide: %u - ID: %i\n", type, singleSide, id);
 	for(int side = LEFT; side <= RIGHT; side++)
 	{
 		SetColor(RGBColor::blue);
@@ -215,21 +215,21 @@ printf("StereoCore::DrawMonoResults: type: %u - singleSide: %u - ID: %i\n", type
 		SetActiveDrawAreaSide(singleSide);
 		int numGestalts = NumMonoGestalts(type, singleSide);
 
-printf("single: numGestalts: %u > id: %u\n", numGestalts, id);
+// printf("single: numGestalts: %u > id: %u\n", numGestalts, id);
 		// draw only one gestalt if id is in range of 
 		if(id<numGestalts && id > 0)
 			if(masked)
 			{
-printf("single (masked: ON)\n");
+// printf("single (masked: ON)\n");
 				vcore[singleSide]->Gestalts(type, id)->Draw(detail);	
 			}
 			else
 				if (vcore[singleSide]->Gestalts(type, id)->IsUnmasked())
 				{
-printf("single (masked: OFF) => is not masked\n");
+// printf("single (masked: OFF) => is not masked\n");
 					vcore[singleSide]->Gestalts(type, id)->Draw(detail);
 				}
-else printf("single (masked: OFF) => is masked!\n");
+// else printf("single (masked: OFF) => is masked!\n");
 	}
 }
 
