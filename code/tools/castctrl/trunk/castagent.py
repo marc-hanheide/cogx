@@ -6,11 +6,11 @@ import shutil
 import optparse
 from string import Template
 
-from core import castagent, procman, options, messages
+from core import castagentsrv, procman, options, messages
 # LOGGER = messages.CStdoutLogger()
 LOGGER = messages.CInternalLogger()
 procman.LOGGER = LOGGER
-castagent.LOGGER = LOGGER
+castagentsrv.LOGGER = LOGGER
 
 import threading
 import Ice
@@ -140,7 +140,7 @@ class CConsoleAgent:
 
     def startServing(self):
         if self.agent != None: self.stopServing()
-        self.agent = castagent.CCastSlave(self.manager, self._options, self.address)
+        self.agent = castagentsrv.CCastSlave(self.manager, self._options, self.address)
         self.agent.start()
         time.sleep(0.2)
 
