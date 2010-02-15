@@ -182,7 +182,6 @@ void StereoFlapsAri::Draw(int side, bool masked)
  */
 void StereoFlapsAri::DrawMatched(int side)
 {
-printf("StereoFlapsAri::DrawMatched: %u\n", flapMatches);
 	for(int i=0; i< flapMatches; i++)
 	{
 		flaps[side][i].surf[0].Draw(RGBColor::red);
