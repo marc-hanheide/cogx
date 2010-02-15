@@ -5,7 +5,7 @@
  * @version 0.1
  * @brief Detecting objects with stereo rig for cogx project.
  * 
- * @TODO Release iplImages: Destructor? destroy() ???
+ * @TODO Release iplImages: Destructor? destroy() ??? Is there any solution for this problem?
  */
 
 
@@ -39,26 +39,20 @@ int mouseSide = 0;							///< Left / right side of stereo
 
 /**
  * @brief Mouse handler for the two stereo images.
- * @param event 
- * @param x 
- * @param y 
+ * @param event Mouse event.
+ * @param x x-coordinate
+ * @param y y-coordinate
  * @param flags 
  * @param param 
  */
 void LeftMouseHandler(int event, int x, int y, int flags, void* param)
 {
 	switch(event){
-		case CV_EVENT_LBUTTONDOWN:
-				printf("Left button down on left image at position: %u / %u\n", x, y);
-			break;
-
 		case CV_EVENT_LBUTTONUP:
-// 			printf("Left button up!\n");
 			mouseEvent = true;
 			mouseX = x;
 			mouseY = y;
 			mouseSide = 0;
-			break;
 			break;
 	}
 }
@@ -66,21 +60,16 @@ void LeftMouseHandler(int event, int x, int y, int flags, void* param)
 
 /**
  * @brief Mouse handler for the two stereo images.
- * @param event 
- * @param x 
- * @param y 
+ * @param event Mouse event.
+ * @param x x-coordinate
+ * @param y y-coordinate
  * @param flags 
  * @param param 
  */
 void RightMouseHandler(int event, int x, int y, int flags, void* param)
 {
 	switch(event){
-		case CV_EVENT_LBUTTONDOWN:
-				printf("Left button down on right image at position: %u / %u\n", x, y);
-			break;
-
 		case CV_EVENT_LBUTTONUP:
-// 			printf("Left button up!\n");
 			mouseEvent = true;
 			mouseX = x;
 			mouseY = y;
@@ -167,12 +156,9 @@ void StereoDetector::configure(const map<string,string> & _config)
 
 /**
  *	@brief Called by the framework after configuration, before run loop.
- *	TODO Change receiver locks the memory until 
  */
 void StereoDetector::start()
 {
-	log("start component");
-
   // get connection to the video server
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
@@ -202,7 +188,7 @@ void StereoDetector::start()
 
 /**
  *	@brief Called by the framework to start component run loop.
- *	@TODO LOCKT DEN SPEICHERBEREICH NICHT, SOLANGE GEARBEITET WIRD
+ *	@TODO LOCKT DEN SPEICHERBEREICH IM WM NICHT, SOLANGE GEARBEITET WIRD
  */
 void StereoDetector::runComponent()
 {
@@ -268,6 +254,8 @@ void StereoDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
  */
 void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 {
+/// HACK TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO: probieren von lockComponent: wird nichts bringen, denke ich
+	lockComponent();
   if(images.size() <= 1)
     throw runtime_error(exceptionMessage(__HERE__, "image list too short: stereo image expected."));
 
@@ -276,6 +264,7 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 	image_r = images[1];
 	gotImage = true;
 	if (cmd_detect) processImage();
+	unlockComponent();
 }
 
 
@@ -285,12 +274,12 @@ void StereoDetector::receiveImages(const std::vector<Video::Image>& images)
 void StereoDetector::processImage()
 {
 	log("process new image");
-	int runtime = 1200;											// processing time for detection for left AND right image (2 vision cores for stereo)
+	int runtime = 1200;							// processing time for left AND right image
 
 	// clear results before converting and processing new image
 	score->ClearResults();
 
-//	ReadSOIs(); 	/// HACK: Read SOIs and write it to the console
+//	ReadSOIs(); 	/// TODO: Read SOIs and write it to the console
 
 	// Convert images (from Video::Image to iplImage)
 	iplImage_l = convertImageToIpl(image_l);
@@ -312,10 +301,7 @@ void StereoDetector::processImage()
     cout << e.what() << endl;
   }
 
-	// Write visual objects to working memory
 	WriteVisualObjects();
-
-	// Draw Gestalts to IplImage for the openCv window
 	ShowImages(false);
 }
 
@@ -326,10 +312,8 @@ void StereoDetector::processImage()
  */
 void StereoDetector::ShowImages(bool convertNewIpl)
 {
-	// return, if never got an image or not activated in cast-file
 	if(!gotImage || !showImages) return;
 
-	// reconvert original stereo image pair from image server to clear images.
 	if(convertNewIpl)
 	{
 		iplImage_l = convertImageToIpl(image_l);
@@ -407,7 +391,7 @@ void StereoDetector::ShowImages(bool convertNewIpl)
 			break;
 	}
 
-	// swap red and blue channel from stereo ipl-images							/// TODO TODO Warum muss ich jetzt swapen und wann nicht?
+	// swap red and blue channel from stereo ipl-images							/// TODO TODO Wann muss ich jetzt swapen und wann nicht? USB/Firewire/ImageServer?
 // 	cvConvertImage( iplImage_l, iplImage_l, CV_CVTIMG_SWAP_RB);
 // 	cvConvertImage( iplImage_r, iplImage_r, CV_CVTIMG_SWAP_RB);
 
@@ -459,7 +443,7 @@ void StereoDetector::WriteVisualObjects()
 				break;
 
 			default:
-				log("unknown visual object identifier.");
+				log("unknown overlay identifier: %u", overlays);
 				break;
 		}
 	}
@@ -488,18 +472,16 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 		// add visual object to working memory
 		std::string objectID = newDataID();
 		objectIDs.push_back(objectID);
- 		log("Add new visual object to working memory: %s", obj->label.c_str());
+ 		log("Add new visual object to working memory: %s - %s", obj->label.c_str(), objectID.c_str());
 
 		addToWorkingMemory(objectID, obj);
 
-cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+//cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
 	}
 }
 
 
-  /**
-   * @brief Call single shot mode for debugging.
-   */
+
 /**
  * @brief Single shot mode of the stereo detector for debugging.\n
  * Catch keyboard events and change displayed results:\n
@@ -509,11 +491,11 @@ cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nic
  *   key:	2 ... Stereo: Show matched Gestalts \n
  *   key:	3 ... Mono: Show detected Gestalts \n
  *   key:	4 ... Mono: Show also masked Gestalts \n
- *   key: 5 ... Mono: Show single Gestalts \n
+ *   key:	5 ... Mono: Show single Gestalts \n
  *   key:	+ ... Mono: Increase degree of detail \n
  *   key:	- ... Mono: Decrease degree of detail \n
- *   key: . ... Mono: Increase ID of single showed Gestalt \n
- *   key: , ... Mono: Decrease ID of single showed Gestalt \n
+ *   key:	. ... Mono: Increase ID of single showed Gestalt \n
+ *   key:	, ... Mono: Decrease ID of single showed Gestalt \n
  *   key:	x ... Mono: Stop single-shot processing mode.\n\n
  *
  *   key:	q ... Show SEGMENTS \n
@@ -819,13 +801,9 @@ void StereoDetector::SingleShotMode()
  */
 void StereoDetector::MouseEvent()
 {
-	/// Stereo core (left /right) => ask for id?
-// 	unsigned start_after = 0;
-// 	bool reject_masked = showMasked;
 	showID = score->PickGestaltAt(mouseSide, showType, mouseX, mouseY, 0, false);
 	if (showID < 0) return;
-	// set id
-	printf("StereoDetector::MouseEvent: showID: %u   (%u/%u), type: %u\n", showID, mouseX, mouseY, showType);
+// 	printf("StereoDetector::MouseEvent: showID: %u   (%u/%u), type: %u\n", showID, mouseX, mouseY, showType);
 	ShowImages(true);
 }
 
@@ -873,18 +851,6 @@ void StereoDetector::DeleteVisualObjectsFromWM()
 		deleteFromWorkingMemory(objectIDs[i]);
 	objectIDs.clear();
 }
-
-
-
-//   x,y:   pixel coordinates with respect to the UL corner
-// 
-//   event: CV_EVENT_LBUTTONDOWN,   CV_EVENT_RBUTTONDOWN,   CV_EVENT_MBUTTONDOWN,
-//          CV_EVENT_LBUTTONUP,     CV_EVENT_RBUTTONUP,     CV_EVENT_MBUTTONUP,
-//          CV_EVENT_LBUTTONDBLCLK, CV_EVENT_RBUTTONDBLCLK, CV_EVENT_MBUTTONDBLCLK,
-//          CV_EVENT_MOUSEMOVE:
-// 
-//   flags: CV_EVENT_FLAG_CTRLKEY, CV_EVENT_FLAG_SHIFTKEY, CV_EVENT_FLAG_ALTKEY,
-//          CV_EVENT_FLAG_LBUTTON, CV_EVENT_FLAG_RBUTTON,  CV_EVENT_FLAG_MBUTTON
 
 }
 
