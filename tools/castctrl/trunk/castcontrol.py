@@ -9,14 +9,14 @@ import tempfile
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages, confbuilder, network
-from core import castagent, remoteproc
+from core import castagentsrv, remoteproc
 from core import legacy
 from qtui import uimainwindow, uiresources
 import processtree
 
 LOGGER = messages.CInternalLogger()
 procman.LOGGER = LOGGER
-castagent.LOGGER = LOGGER
+castagentsrv.LOGGER = LOGGER
 
 class CLogDisplayer:
     def __init__(self, qtext):
@@ -327,7 +327,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         hosts = self.getConfiguredHosts()
         LOGGER.log("Hosts: %s" % (hosts))
         port = 7832 # TODO: user setting
-        working = castagent.discoverRemoteHosts(hosts, port)
+        working = castagentsrv.discoverRemoteHosts(hosts, port)
         LOGGER.log("Cast agents: %s" % (working))
 
         return working
