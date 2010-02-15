@@ -93,23 +93,30 @@ class CConsoleAgent:
         self._options.configEnvironment()
         self.address = "tcp -p %d" % port
         self.agent = None
-        self._initLocalProcesses()
-        self._initMessagePump()
+        self._initLocalProcesses(appOptions)
+        self._initMessagePump(appOptions)
 
 
-    def _initLocalProcesses(self):
+    def _initLocalProcesses(self, appOptions):
         self.manager.addProcess(procman.CProcess("server-java", options.xe("${CMD_JAVA_SERVER}")))
         self.manager.addProcess(procman.CProcess("server-cpp", options.xe("${CMD_CPP_SERVER}")))
         self.manager.addProcess(procman.CProcess("server-python", options.xe("${CMD_PYTHON_SERVER}")))
         #self.manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
-        #self.manager.addProcess(procman.CProcess("player", options.xe("${CMD_PLAYER}")))
+        if appOptions.player_cfg != None:
+            # TODO: Player configuration (file contents) could also be sent from the remote machine
+            if not os.path.exists(appOptions.player_cfg):
+                LOGGER.warn("Player configuration file '%s' not found." % appOptions.player_cfg)
+            else:
+                cmd = options.xe("${CMD_PLAYER}")
+                cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
+                self.manager.addProcess(procman.CProcess("player", cmd))
         #self.manager.addProcess(procman.CProcess("peekabot", options.xe("${CMD_PEEKABOT}")))
         #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=options.xe("${COGX_BUILD_DIR}"))
         #self.procBuild.allowTerminate = True
         #self.manager.addProcess(self.procBuild)
 
 
-    def _initMessagePump(self):
+    def _initMessagePump(self, appOptions):
         self.mainLog = CLogDisplayer()
         for proc in self.manager.proclist:
             self.mainLog.log.addSource(proc)
@@ -147,10 +154,14 @@ def parseOptions():
     usage = "Usage: %prog [options] args"
     parser = optparse.OptionParser(usage)
 
-    parser.add_option("-v", "--verbose", action="store", type="int", dest="verbose")
-    parser.add_option("-q", "--quiet", action="store_const", const=0, dest="verbose")
-    parser.add_option("-p", "--port", action="store", type="int", default=7832, dest="port")
-    parser.add_option("-c", "--config", action="store", type="string", default="castcontrol.conf", dest="config")
+    #parser.add_option("-v", "--verbose", action="store", type="int", dest="verbose")
+    #parser.add_option("-q", "--quiet", action="store_const", const=0, dest="verbose")
+    parser.add_option("-p", "--port", action="store", type="int", default=7832, dest="port",
+        help="Set the port number on which this agent will be listening. Default=7832.")
+    parser.add_option("-c", "--config", action="store", type="string", default="castcontrol.conf", dest="config",
+        help="Set a configuration file. Default=castcontrol.conf.")
+    parser.add_option("", "--player", action="store", type="string", default=None, dest="player_cfg",
+        help="Set the Player configuration file. If not set, Player won't be started by this agent.")
 
     (options, args) = parser.parse_args()
     # if options.verbose > 3: print "Options parsed"
