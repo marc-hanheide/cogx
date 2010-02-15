@@ -1,0 +1,101 @@
+= CAST Control =
+
+Version 0.1
+
+In Vision branch: https://codex.cs.bham.ac.uk/svn/nah/cogx/code/vision/trunk
+
+Functions of CAST Control GUI:
+
+   * manage CAST processes: start and stop CAST servers, CAST client, player
+
+   * monitor the status of CAST processes
+
+   * capture output from processes and display in a single window
+
+   * build and install CAST components
+
+   * select CAST client and Player configuration from a list
+
+   * all CAST settings are stored in a single configuration file (PATH, 
+   LD_LIBRARY_PATH, CLASSPATH, PYTHON_PATH, etc.). Nothing needs to be set in 
+   bash startup files, etc.
+
+Eventually CAST Control will manage processes on multiple machines. When 
+building the components it will dispatch the new code to all listed machines 
+and run the build process on each.
+
+== Installation ==
+
+The code of the application is in tools/castctrl. The configuration file 
+castcontrol.conf is in the same directory and should be copied to the root of 
+the trunk (where the top-level CMakeLists.txt is).
+
+The application UI is built with Qt. The package {{{python-qt4}}} must be 
+installed along with all the dependencies.
+
+== Usage ==
+
+Open a console and cd to the root of the develpoment trunk. Run the application 
+with:
+
+{{{
+python tools/castctrl/castcontrol.py
+}}}
+
+On statup the application will read the file castcontrol.conf if it is present 
+in the current directory, otherwise it will use the builtin defaults. You can 
+copy {{{tools/castctrl/castcontrol.conf}}} to the current directory.
+
+On the left side of the application window there is a list of all available 
+machines (currently only localhost is supported) and the available processes on 
+each machine. On top there are the buttons to start and stop the processes 
+(player buttons are inactive). Below the buttons there are three tabs: the 
+first one displays the outputs from the selected processes. The second one is 
+used for client and player configuration.  The third one is used for building 
+and installing CAST components.
+
+=== Starting and stopping processes ===
+
+Use start and stop buttons.
+
+If the process fails to start its name will be colored red. Check the output 
+log when something goes wrong.
+
+Some CAST server components do not behave well and remain active even after the 
+CAST client terminates. In this case it is necessary to restart the servers.
+
+=== The output window ===
+
+The output window merges the outputs of selected running processes. Currently 
+you can select to view the output of all processes (All) or the internal 
+messages of the CAST Control application (Control). On startup the output is 
+set to Control.
+
+The messages are merged by their timestamp. At most 500 last messages are 
+displayed in the output window.
+
+The messages from the error streams are 
+displayed in red.  The ANSI color codes from the log() messages from CAST 
+components are parsed and the messages are displayed in color.
+
+The build page has its own output window which is cleared before every build.
+
+You can select and copy parts of text from the output windows.
+
+=== CAST client configuration ===
+
+The list of available configuration files is stored in castcontrol.conf. At the 
+moment it is a read-only list and has to be created manually. You can produce a 
+list of all cast files with:
+
+{{{
+find . -name "*.cast" > list.out
+}}}
+
+and replace the list under {{{[MRU-CAST]}}} in the file castcontrol.conf with 
+the contents of the generated file {{{list.out}}}.
+
+You can edit the selected cast file with an external editor. Currently the 
+editor is set to gvim (in core/options.py, if you want to change it).
+
+
