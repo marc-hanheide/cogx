@@ -72,7 +72,7 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	m_engine->SetCenterOfRotation(vCenter.x, vCenter.y, vCenter.z);
 	
 // 	unlockComponent();
-	log("VisualObject added to Scene: %s", obj->label.c_str());
+	log("VisualObject added to Scene: %s - %s", obj->label.c_str(), _wmc.address.id.c_str());
 }
 
 void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
