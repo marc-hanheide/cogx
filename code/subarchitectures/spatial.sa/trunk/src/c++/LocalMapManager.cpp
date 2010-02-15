@@ -22,6 +22,7 @@
 #include <float.h>
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <VisionData.hpp>
+#include <stdlib.h>
 
 using namespace cast;
 using namespace std;
@@ -985,10 +986,13 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     m_planeMap->index2WorldCoords(objX, objY, realX, realY);
 
     newPlaneObject->id = finderID;
-    newPlaneObject->x = realX;
-    newPlaneObject->y = realY;
+    char buf[256];
+    sprintf(buf, "planeObject%i", finderID);
+    newPlaneObject->label = buf;
+    newPlaneObject->pos.x = realX;
+    newPlaneObject->pos.y = realY;
     newPlaneObject->angle = objAngle;
-    newPlaneObject->height = objHeight;
+    newPlaneObject->pos.z = objHeight;
 
     log("id=%i, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", newPlaneObject->id,
 	realX, realY, objAngle, 

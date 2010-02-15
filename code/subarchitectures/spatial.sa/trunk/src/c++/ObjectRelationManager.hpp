@@ -51,8 +51,21 @@ public:
 protected:
   int m_maxObjectCounter;
 
-  std::map<int, SpatialObjectPtr> m_objects;
+  //Map from SpatialObject::id to spatial objects managed by this component
+  std::map<int, SpatialObjectPtr> m_objects; 
+  std::map<int, spatial::Object*> m_objectModels;
+  std::map<int, std::string> m_objectWMIDs; 
+
+  NavData::RobotPose2dPtr lastRobotPose;
+//  std::map<int, Pose3> m_lastKnownObjectPoses;
+  std::map<int, cast::cdl::CASTTime> m_lastObjectPoseTimes;
+  Pose3 m_CameraPoseR;
+
+  std::map<int, FrontierInterface::ObservedPlaneObjectPtr> m_planeObjects;
+  std::map<int, cast::cdl::CASTTime> m_lastPlaneObjectPoseTimes;
+
   std::map<int, PlaceContainmentObjectPropertyPtr> m_containmentProperties;
+  std::map<int, std::string> m_containmentPropWMIDs; 
 
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
@@ -69,10 +82,6 @@ protected:
   int m_PbPort;
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
-  NavData::RobotPose2dPtr lastRobotPose;
-  std::map<std::string, Pose3> m_lastKnownObjectPoses;
-  std::map<std::string, cast::cdl::CASTTime> m_lastObjectPoseTimes;
-  Pose3 m_CameraPoseR;
 
   void connectPeekabot();
 
@@ -85,6 +94,9 @@ protected:
   void objectChanged(const cast::cdl::WorkingMemoryChange &);
 
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
+
+  void recomputeOnnessForObject(int objectID);
+  void recomputeOnnessForPlane(int planeObjectID);
 
   void setContainmentProperty(int objectID, int placeID, double confidence);
   void setSupportProperty(int figureID, int groundID, double confidence);
