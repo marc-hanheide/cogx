@@ -125,12 +125,12 @@ void ObjectRecognizer3D::runComponent(){
   			m_task = m_rec_cmd->cmd;
   			m_label = m_rec_cmd->label;
   			if(m_rec_cmd->visualObjectID.empty()){
-  				log("Warning no VisualObject given");
+  				log("%s: Warning no VisualObject given", m_label.c_str());
   				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, Math::Pose3());
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
 				if(m_rec_cmd->cmd == RECOGNIZE && m_recEntries[m_label].learn){
-					log("Warning no Sift file available: starting to learn");
+					log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
 					m_rec_cmd->cmd == RECLEARN;
 					m_task = RECLEARN;
 				}
@@ -407,7 +407,7 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 }
 
 void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
-	log("Recognizing model pose");
+	log("%s: Recognizing model pose", m_label.c_str());
 
   int key;
 
@@ -428,15 +428,16 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	sift.Operate(m_iplGray,m_image_keys);
 	
 	if(m_image_keys.Size() < 10){
-		log("Too less keypoints detected, no pose estimation possible");
+		log("%s: Too less keypoints detected, no pose estimation possible",m_label.c_str());
 	}else{
 	
 		m_detect->SetDebugImage(m_iplImage);
 		if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object))){
-			log("No object detected");
+			log("%s: No object detected", m_label.c_str());
 		}else{
 		
 			if(m_recEntries[m_label].object->conf < 0.1){
+				log("%s: Confidence of detected object to low: %f", m_label.c_str(), m_recEntries[m_label].object->conf);
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
 			}else{
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
@@ -449,7 +450,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				transpose(B.rot, B.rot);
 				
 				// if(first time recognition)
-				log("Found object at (%.3f %.3f %.3f)", B.pos.x, B.pos.y, B.pos.z);
+				log("%s: Found object at (%.3f %.3f %.3f)", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z);
 				loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B);
 				addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
 			}
@@ -469,7 +470,6 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	m_image_keys.Clear();
 
 	m_task = RECSTOP;
-	log("Object recognized");
 }
 
 
