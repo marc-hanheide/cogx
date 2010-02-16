@@ -81,16 +81,20 @@ namespace spatial
     }
 
 
-
     m_table_phase = (_config.find("--table-phase") == _config.end());
     m_usePTZ = (_config.find("--ctrl-ptu") == _config.end());
+    if (m_table_phase)
+      log("Plane phase");
+    if (m_usePTZ)
+      log("Will use PTZ");
+
     int gridsize = 400;
     float cellsize = 0.1;
     it = _config.find("--gridsize");
     if (it != _config.end()) {
 
       gridsize = (atoi(it->second.c_str()));
-      log("Gridsize set to: %f", gridsize);
+      log("Gridsize set to: %d", gridsize);
     }
     it = _config.find("--cellsize");
     if (it != _config.end()) {
