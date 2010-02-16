@@ -14,15 +14,17 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <SpatialData.hpp>
 #include <NavData.hpp>
-
+#include <vector>
 #include <Navigation/LocalMap.hh>
 #include <Navigation/GridLineRayTracer.hh>
 #include <SensorData/SensorPose.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <SensorData/LaserScan2d.hh>
 #include <Navigation/GridLineRayTracer.hh>
-
+#include "ObjGridLineRayTracer.hh"
+#include "XVector3D.h"
 #include <PTZ.hpp>
+#include "X11DispLocalGridMap.hh"
 
 namespace spatial
 {
@@ -34,7 +36,6 @@ namespace spatial
   public:
     AdvObjectSearch();
     virtual ~AdvObjectSearch();
-
     virtual void runComponent();
     virtual void start();
   protected:
@@ -42,21 +43,50 @@ namespace spatial
     void receiveScan2d(const Laser::Scan2d &castScan);
     void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
     void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
+    void newObjectDetected(const cast::cdl::WorkingMemoryChange &objID);
     void SavePlaneMap();
+    void BuildPrior();
+    void PostRecognitionCommand();
+    void SampleGrid();
+    int* NextBestView();
+    void SetPrior();
+    std::vector<std::vector<int> > GetViewCones();
+    std::vector<int> GetInsideViewCone(XVector3D &a, bool addall);
+    void CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c);
+            std::vector<double> ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm );
+
+
+    bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
+    bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
+    void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
+
   private:
 
+    // 1. phase is table detection and then looking for objects.
+    bool m_table_phase;
     bool m_usePTZ;
+    int m_samplesize;
+    int* m_samples;
+    double m_CamRange;
+    double m_fov;
+
+    std::vector<std::string> m_objectlist;
+
+    IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;
+    NavData::RobotPose2dPtr lastRobotPose;
+
+    Cure::LocalGridMap<char>* m_lgm;
+    Cure::LocalGridMap<double>* m_lgm_prior;
+    Cure::LocalGridMap<double>* m_lgm_posterior;
+    Cure::LocalGridMap<bool>* m_lgm_seen;
+    Cure::X11DispLocalGridMap<char>* m_Dlgm;
     Cure::SensorPose m_LaserPoseR;
     Cure::SensorPose m_CamPoseR;
     Cure::TransformedOdomPoseProvider m_TOPP;
-    IceUtil::Mutex m_Mutex;
-    Cure::GridLineRayTracer<unsigned int>* m_Glrt;
+    Cure::ObjGridLineRayTracer<char>* m_Glrt;
     Cure::Pose3D m_SlamRobotPose;
-    NavData::RobotPose2dPtr lastRobotPose;
-    Cure::LocalGridMap<unsigned int>* m_lgm;
-    // 1. phase is table detection and then looking for objects.
-    bool m_table_phase;
+
   };
 
 }
