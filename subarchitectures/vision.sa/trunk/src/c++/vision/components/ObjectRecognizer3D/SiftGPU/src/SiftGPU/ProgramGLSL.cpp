@@ -31,6 +31,7 @@
 #include <vector>
 #include <algorithm>
 #include <math.h>
+#include <fstream>
 using namespace std;
 
 #include "GlobalUtil.h"
