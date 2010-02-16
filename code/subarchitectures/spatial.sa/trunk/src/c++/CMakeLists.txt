@@ -43,9 +43,9 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
-add_cast_component(LocalMapManager LocalMapManager.cpp GridObjectFinder.cpp) 
+add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp) 
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ highgui cv)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(ObjectRelationManager ObjectRelationManager.cpp RelationEvaluation.cpp) 
@@ -92,5 +92,10 @@ link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 # add_cast_component(Pusher Pusher.cpp)
 # link_cast_component(${CAST_COMPONENT_NAME} NavData)
+
+add_cast_component(AdvObjectSearch AdvObjectSearch.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData SpatialData Laser Scan2dReceiver PTZ)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 
 
