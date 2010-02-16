@@ -7,6 +7,7 @@
 #include <opencv/highgui.h>
 #include "OpenCvImgSeqVideo.hh"
 #include <limits.h>
+#include <stdio.h>
 
 namespace Z
 {
