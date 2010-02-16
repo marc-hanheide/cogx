@@ -1,0 +1,27 @@
+HOST localhost
+
+# live images
+#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname VideoServer --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/kthimcal.ini #--display 
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 #--log
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.000 0.060 0.150][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.080 0.000 1.300][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0.0" --tilt "-0.75"
+CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
+#CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --log --globalPoints 0 --display
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfile "subarchitectures/vision.sa/config/test-recognizer3D/krispies.ply" --siftfile "subarchitectures/vision.sa/config/test-recognizer3D/krispies.sift" --log
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 --no-file-output
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --read-ptu --no-sois --log
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-tentative-window --no-local-map-window --planemap-size 100 --planemap-cellsize 0.05 #--log --debug
+CPP GD objsearch.adv AdvObjectSearc -c instantiations/cureconfig/cogxp3.ccf --log --table-phase
