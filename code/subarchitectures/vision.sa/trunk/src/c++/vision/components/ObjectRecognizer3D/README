@@ -11,3 +11,11 @@ Dependencies:
 
 ObjectTracker
 
+
+Keyboard settings:
+------------------
+
+space bar:	Learn next view
+s:					Save sift model to file and stop learning
+q:					Stop learning without saving the sift file
+
