@@ -123,6 +123,12 @@ namespace spatial
       m_fov = (atof(it->second.c_str())) * M_PI / 180;
     }
 
+    m_MaxExplorationRange = 1.5;
+    it = _config.find("--explore-range");
+    if (it != _config.end()) {
+      m_MaxExplorationRange = (atof(it->second.c_str()));
+    }
+
     m_CamRange = 1;
     it = _config.find("--cam-range");
     if (it != _config.end()) {
@@ -141,9 +147,9 @@ namespace spatial
 
     m_lgm = new Cure::LocalGridMap<char>(gridsize / 2, cellsize, 2,
         Cure::LocalGridMap<char>::MAP1);
-    m_lgm_prior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 2,
+    m_lgm_prior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
         Cure::LocalGridMap<double>::MAP1);
-    m_lgm_posterior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 2,
+    m_lgm_posterior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
         Cure::LocalGridMap<double>::MAP1);
 
     m_lgm_seen = new Cure::LocalGridMap<bool>(gridsize / 2, cellsize, false,
@@ -289,8 +295,7 @@ namespace spatial
           Cure::Pose3D lpW;
           lpW.add(scanPose, m_LaserPoseR);
           m_Mutex.lock();
-          log("adding scan to glrt");
-          m_Glrt->addScan(cureScan, lpW, 5.0);
+          m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);
           m_Mutex.unlock();
         }
       }

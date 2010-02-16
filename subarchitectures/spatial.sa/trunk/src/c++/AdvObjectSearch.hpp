@@ -72,6 +72,7 @@ namespace spatial
     int* m_samples;
     double m_CamRange;
     double m_fov;
+    double m_MaxExplorationRange;
 
     std::vector<std::string> m_objectlist;
 
