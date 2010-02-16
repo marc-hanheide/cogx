@@ -240,6 +240,7 @@ namespace spatial
   void
   AdvObjectSearch::runComponent() {
     setupPushScan2d(*this, 0.1);
+    setupPushOdometry(*this);
 
     log("hey I'm running.");
      while (isRunning()) {
@@ -250,6 +251,25 @@ namespace spatial
      }
 
   }
+
+
+  void AdvObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom)
+  {
+    lockComponent(); //Don't allow any interface calls while processing a callback
+   // Cure::Pose3D CurrPose;
+    Cure::Pose3D cureOdom;
+    CureHWUtils::convOdomToCure(castOdom, cureOdom);
+
+    debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+          cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
+          cureOdom.getTime().getDouble());
+
+    m_TOPP.addOdometry(cureOdom);
+
+  //  m_CurrPose = m_TOPP.getPose();
+    unlockComponent();
+  }
+
 
   void
   AdvObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
