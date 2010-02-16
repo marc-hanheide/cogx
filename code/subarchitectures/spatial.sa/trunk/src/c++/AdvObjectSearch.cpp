@@ -26,6 +26,12 @@ using namespace boost;
 namespace spatial
 {
 
+  extern "C" {
+    FrameworkProcess* newComponent(const string &_id) {
+      return new NavTester(_id);
+    }
+  }
+
   AdvObjectSearch::AdvObjectSearch() {
     // TODO Auto-generated constructor stub
     // If we're not building the map it means we're using an already built one. Hence, read it.
@@ -34,7 +40,7 @@ namespace spatial
 
   AdvObjectSearch::~AdvObjectSearch() {
     // TODO Auto-generated destructor stub
-
+    log("Destructor called.");
     if (m_table_phase) {
       log("Saving map with planes to planemap.txt");
       SavePlaneMap();
@@ -71,7 +77,11 @@ namespace spatial
       log("configure(...) Failed to open with %s\n", configfile.c_str());
       std::abort();
     }
+
+
+
     m_table_phase = (_config.find("--table-phase") == _config.end());
+    m_usePTZ = (_config.find("--ctrl-ptu") == _config.end());
     int gridsize = 400;
     float cellsize = 0.1;
     it = _config.find("--gridsize");
@@ -110,10 +120,34 @@ namespace spatial
     catch (std::exception e) {
       log("Could not initialize planemap.txt");
     }
-
-
     if (m_table_phase)
       m_Glrt = new Cure::GridLineRayTracer<unsigned int>(*m_lgm);
+
+    if (m_usePTZ) {
+        log("connecting to PTU");
+        Ice::CommunicatorPtr ic = getCommunicator();
+
+        Ice::Identity id;
+        id.name = "PTZServer";
+        id.category = "PTZServer";
+
+        std::ostringstream str;
+        str << ic->identityToString(id)
+          << ":default"
+          << " -h localhost"
+          << " -p " << cast::cdl::CPPSERVERPORT;
+
+        Ice::ObjectPrx base = ic->stringToProxy(str.str());
+        m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+
+        ptz::PTZPose p;
+         p.pan = 20*3.141562/180;
+         p.tilt = 0;
+         p.zoom = 0;
+         m_ptzInterface->setPose(p);
+      }
+
+
 
   }
   void
