@@ -18,7 +18,7 @@ logistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :adl :object-fluents) 
+(:requirements :adl :object-fluents :numeric-fluents) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -26,7 +26,10 @@ logistics = \
          city location thing agent - object)
   
 (:functions  (city-of ?l - (either location vehicle)) - city
-             (location-of ?t - thing) - (either location vehicle))
+             (location-of ?t - thing) - (either location vehicle)
+             (load_succ_prob) - number
+)
+
 )"""
 # (:action drive
 #          :agent         (?a - agent)
@@ -97,9 +100,9 @@ prob_load = """
         (:action load
                  :parameters    (?p - package ?v - vehicle)
                  :precondition  (= (location-of ?p) (location-of ?v))
-                 :effect        (and (probabilistic 0.4 (assign (location-of ?p) ?v)
+                 :effect        (and (probabilistic (load_succ_prob) (assign (location-of ?p) ?v)
                                                0.5 (assign (location-of ?p) (location-of ?v)))
-                                      (assign-probabilistic (location-of ?p) ?v (location-of ?v))))
+                                      (assign-probabilistic (location-of ?p) 0.5 ?v (location-of ?v))))
 """
 
 prob_assign_load = """
@@ -207,7 +210,7 @@ class ActionTest(unittest.TestCase):
 
     def testProbabilisticEffects(self):
         """Testing probabilistic effect parsing"""
-        
+
         action = Parser.parse_as(prob_load.split("\n"), Action, self.domain)
 
         self.assert_(isinstance(action.effect, ConjunctiveEffect))
@@ -219,7 +222,8 @@ class ActionTest(unittest.TestCase):
         ap1, ae1 = action.effect.parts[1].effects[0]
         ap2, ae2 = action.effect.parts[1].effects[1]
 
-        self.assertEqual(p1, 0.4)
+        self.assert_(isinstance(p1, FunctionTerm))
+        self.assertEqual(p1.function, self.domain.functions["load_succ_prob"][0])
         self.assert_(isinstance(e1.args[0], FunctionTerm))
         self.assert_(isinstance(e1.args[1], VariableTerm))
         self.assertEqual(p2, 0.5)
@@ -229,16 +233,16 @@ class ActionTest(unittest.TestCase):
         self.assertEqual(ae1, e1)
         self.assertEqual(ae2, e2)
         self.assertEqual(ap1, 0.5)
-        self.assertEqual(ap2, 0.5)
+        self.assertEqual(ap2, None)
 
-        self.assertEqual(action.effect.parts[0].getRandomEffect(0), e2)
-        self.assertEqual(action.effect.parts[0].getRandomEffect(1), e1)
-        self.assertEqual(action.effect.parts[0].getRandomEffect(2), None)
+        # self.assertEqual(action.effect.parts[0].getRandomEffect(0), e2)
+        # self.assertEqual(action.effect.parts[0].getRandomEffect(1), e1)
+        # self.assertEqual(action.effect.parts[0].getRandomEffect(2), None)
 
-        import random
-        random.seed(42)
-        for r in xrange(30):
-            self.assert_(action.effect.parts[0].getRandomEffect() in (e1,e2,None))
+        # import random
+        # random.seed(42)
+        # for r in xrange(30):
+        #     self.assert_(action.effect.parts[0].getRandomEffect() in (e1,e2,None))
         
     def testAssertion(self):
         """Testing parsing of assertions"""

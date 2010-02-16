@@ -366,7 +366,16 @@ class State(dict):
 #            print svar, self[svar], (self[svar] == types.TRUE) ^ literal.negated
             return (self[svar] == types.TRUE) ^ literal.negated
 
+
     def apply_literal(self, literal, trace_vars=False):
+        fact = get_literal_effect(self, literal, trace_vars)
+        if trace_vars:
+            self.written_svars.add(fact.svar)
+        self.set(fact)
+        
+    def get_literal_effect(self, literal, trace_vars=False):
+        eff_svar = None
+        eff_value = None
         values = []
         svars = []
         for arg, parg in zip(literal.args, literal.predicate.args):
@@ -383,19 +392,18 @@ class State(dict):
                 self[svar] = TypedNumber(0.0)
             previous = self[svar]
             val = values[0]
-            if trace_vars:
-                self.written_svars.add(svar)
+            eff_svar = svar
         
         if pred in (assign, change, num_assign, equal_assign, num_equal_assign):
-            self[svar] = val
+            eff_value = val
         elif pred == increase:
-            self[svar] = TypedNumber(previous.value + val.value)
+            eff_value = TypedNumber(previous.value + val.value)
         elif pred == decrease:
-            self[svar] = TypedNumber(previous.value - val.value)
+            eff_value = TypedNumber(previous.value - val.value)
         elif pred == scale_up:
-            self[svar] = TypedNumber(previous.value * val.value)
+            eff_value = TypedNumber(previous.value * val.value)
         elif pred == scale_down:
-            self[svar] = TypedNumber(previous.value / val.value)
+            eff_value = TypedNumber(previous.value / val.value)
         else:
             if not svars:
                 #no modal predicate:
@@ -406,12 +414,12 @@ class State(dict):
             else:
                 assert False, "A modal svar can only contain one function"
                 
-            if trace_vars:
-                self.written_svars.add(svar)
+            eff_svar = svar
             if literal.negated:
-                self[svar] = types.FALSE
+                eff_value = types.FALSE
             else:
-                self[svar] = types.TRUE
+                eff_value = types.TRUE
+        return Fact(eff_svar, eff_value)
         
     def is_executable(self, action):
         extstate = self.get_extended_state(self.get_relevant_vars(action.precondition))
@@ -516,43 +524,59 @@ class State(dict):
         dependenciesVisitor(cond)
         return set(self.read_svars)
 
-    def apply_effect(self, effect, trace_vars=False):
+    def get_effect_facts(self, effect, trace_vars=False):
+        facts = {}
         if isinstance(effect, effects.UniversalEffect):
             combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), effect.args))
             for params in combinations:
                 effect.instantiate(zip(effect.args, params))
-                self.apply_effect(effect.effect, trace_vars)
+                facts.update(self.get_effect_facts(effect.effect, trace_vars))
                 effect.uninstantiate()
                 
         elif isinstance(effect, effects.ConditionalEffect):
             extstate = self.get_extended_state(self.get_relevant_vars(effect.condition))
             if extstate.is_satisfied(effect.condition):
-                self.apply_effect(effect.effect, trace_vars)
+                facts.update(self.get_effect_facts(effect.effect, trace_vars))
 
         elif isinstance(effect, effects.ProbabilisticEffect):
-            rnd = effect.getRandomEffect(seed=self.random.random())
-            self.apply_effect(rnd, trace_vars)
+            remaining_effects = []
+            p_total = 0.0
+            s = self.random.random()
+            
+            for p, eff in effect.effects:
+                assert p_total <= 1.0
+                if p is None:
+                    remaining_effects.append(eff)
+                else:
+                    p = self.evaluate_term(p, trace_vars=trace_vars)
+                    if p_total <= s <= p_total + p.value:
+                        return self.get_effect_facts(eff, trace_vars)
+                    p_total += p.value
 
+            if remaining_effects:
+                p = (1.0-p_total) / len(remaining_effects)
+                for eff in remaining_effects:
+                    if p_total <= s <= p_total + p:
+                        return self.get_effect_facts(eff, trace_vars)
+                    p_total += p
+            
         elif isinstance(effect, effects.ConjunctiveEffect):
             for eff in effect.parts:
-                self.apply_effect(eff, trace_vars)
+                facts.update(self.get_effect_facts(eff, trace_vars))
             
         else:
-            self.apply_literal(effect, trace_vars)
+            svar, val = self.get_literal_effect(effect, trace_vars)
+            facts[svar] = val
+        return facts
         
-    def get_effect_facts(self, effect, read_vars=None):
-        s = self.copy()
-        s.apply_effect(effect, trace_vars=True)
+    def apply_effect(self, effect, trace_vars=False):
+        facts = self.get_effect_facts(effect, trace_vars=trace_vars)
 
-        result = set()
-        for svar in s.written_svars:
-            result.add(Fact(svar, s[svar]))
-        if read_vars is not None:
-            for svar in s.read_svars:
-                read_vars.add(svar)
+        for svar, val in facts.iteritems():
+            if trace_vars:
+                self.written_svars.add(svar)
+            self[svar] = val
             
-        return result
-                
     def get_extended_state(self, svars=None, getReasons=False):
         """Evaluate all axioms neccessary to instantiate the variables in 'svars'."""
         t0 = time.time()

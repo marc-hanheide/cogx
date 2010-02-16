@@ -3,50 +3,13 @@
 #from __future__ import absolute_import
 
 import unittest
-import tempfile
-import os
+import common
 
 import parser, domain, problem, writer, translators, sas_translate
 import mapl
-from parser import Parser, ParseError
 
-class TranslateTests(unittest.TestCase):
+class TranslateTests(common.PddlTest):
 
-    def load(self, domfile, probfile):
-        p = Parser.parse_file(domfile)
-        dom = domain.Domain.parse(p.root)
-        p = Parser.parse_file(probfile)
-        prob = problem.Problem.parse(p.root, dom)
-
-        return dom, prob
-        
-    def roundtrip(self, dom, prob):
-        w = writer.Writer()
-
-        s = w.write_domain(dom)
-        #print "\n".join(s)
-        p = Parser(s)
-        dom2 = domain.Domain.parse(p.root)
-
-        s = w.write_problem(prob)
-        p = Parser(s)
-        prob2 = problem.Problem.parse(p.root, dom2)
-        return dom2, prob2
-
-    def mapl_roundtrip(self, dom, prob):
-        w = mapl.MAPLWriter()
-
-        s = w.write_domain(dom)
-        #print "\n".join(s)
-        p = Parser(s)
-        dom2 = domain.Domain.parse(p.root)
-
-        s = w.write_problem(prob)
-        p = Parser(s)
-        prob2 = problem.Problem.parse(p.root, dom2)
-        return dom2, prob2
-    
-    
     def testMAPLFluentNormalisation(self):
         """Testing nomalisation of object fluents"""
 
@@ -56,7 +19,7 @@ class TranslateTests(unittest.TestCase):
         dom2 = t.translate(dom)
         prob2 = t.translate(prob)
 
-        self.mapl_roundtrip(dom2, prob2)
+        self.roundtrip(dom2, prob2)
         
     def testMAPLtoPDDL(self):
         """Testing basic mapl to pddl translation"""

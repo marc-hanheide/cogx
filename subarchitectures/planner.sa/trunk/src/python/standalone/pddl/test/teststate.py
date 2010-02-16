@@ -2,129 +2,13 @@
 # -*- coding: latin-1 -*-
 
 import unittest
+import common
 
 import predicates, domain, problem, conditions, axioms, mapl
 from parser import Parser, ParseError
 from builtin import *
 from mapltypes import *
 from state import *
-
-domlogistics = \
-"""
-;; Logistics domain, PDDL 3.1 version.
-
-(define (domain logistics-object-fluents)
-
-(:requirements :mapl :typing :equality :fluents :durative-actions) 
-
-(:types  truck airplane - vehicle
-         package vehicle - thing
-         airport - location
-         city location thing agent - object)
-
-(:predicates (occupied ?l - location)
-             (interesting ?l - location)
-             (free ?l - location))
-
-(:functions  (city-of ?l - (either location vehicle)) - city
-             (location-of ?t - thing) - (either location vehicle)
-             (num_packages ?v - vehicle) - number
-             (capacity ?v - vehicle) - number
-)
-
-;(:derived (kval ?a - agent ?svar - (function object))
-;          (exists (?val - object) (= ?svar ?val)))
-;
-;(:derived (in-domain ?svar - (function object) ?val - object)
-;          (or (= ?svar ?val)
-;              (and (i_in-domain ?svar ?val)
-;                   (not (exists (?val - object) (= ?svar ?val))))
-;          ))
-
-(:action drive
-         :agent         (?a - agent)
-         :parameters    (?t - truck ?to - location)
-         :precondition  (= (city-of (location-of ?t)) (city-of ?to))
-         :effect        (assign (location-of ?t) ?to))
-
-(:action fly
-         :agent         (?a - agent)
-         :parameters    (?ap - airplane ?to - airport)
-         :effect        (assign (location-of ?ap) ?to))
-
-(:action load
-         :agent         (?a - agent)
-         :parameters    (?p - package ?v - vehicle)
-         :precondition  (and (= (location-of ?p) (location-of ?v))
-                             (< (num_packages ?v) (capacity ?v)))
-         :effect        (and (assign (location-of ?p) ?v)
-                             (increase (num_packages ?v) 1))
-)
-
-(:action a_load
-         :agent         (?a - agent)
-         :parameters    (?p - package ?v - vehicle)
-         :precondition  (in-domain (location-of ?p) (location-of ?v))
-         :replan        (kval ?a (location-of ?p))
-         :effect        (assign (location-of ?p) ?v))
-
-(:action unload
-         :agent         (?a - agent)
-         :parameters    (?p - package ?v - vehicle)
-         :precondition  (= (location-of ?p) ?v)
-         :effect        (and (assign (location-of ?p) (location-of ?v))
-                             (decrease (num_packages ?v) (/ (+ (* 5 (- 2 1)) (- 3)) 2) ))
-
-)
-)
-"""
-
-problogistics = \
-"""
-(define (problem logistics-4-0)
-
-(:domain logistics-object-fluents)
-
-(:objects  agent - agent
-           apn1 - airplane
-           tru1 tru2 - truck
-           obj11 obj12 obj13 obj21 obj22 obj23 - package
-           apt1 apt2 - airport
-           pos1 pos2 - location
-           cit1 cit2 - city)
-
-(:init  (= (location-of apn1) apt2)
-        (= (location-of tru1) pos1)
-        (= (location-of tru2) pos2)
-        (= (location-of obj11) pos1)
-;;        (= (location-of obj12) pos1)
-;;        (= (location-of obj13) pos1)
-        (kval agent (location-of obj13))
-        (i_in-domain (location-of obj13) pos1)
-        (i_in-domain (location-of obj13) pos2)
-        (= (location-of obj21) pos2)
-        (= (location-of obj22) pos2)
-        (= (location-of obj23) pos2)
-        (= (city-of apt1) cit1)
-        (= (city-of apt2) cit2)
-        (= (city-of pos1) cit1)
-        (= (city-of pos2) cit2)
-        (= (num_packages apn1) 0)
-        (= (num_packages tru1) 0)
-        (= (num_packages tru2) 0)
-
-        (= (capacity apn1) 20)
-        (= (capacity tru1) 4)
-        (= (capacity tru2) 4)
-)
-
-(:goal  (and (= (location-of obj11) apt1)
-             (= (location-of obj13) apt1)
-             (= (location-of obj21) pos1)
-             (= (location-of obj23) pos1)))
-
-)
-"""
 
 strat1a = """
         (:derived (occupied ?loc - location)
@@ -147,12 +31,9 @@ strat2 = """
         
 
 
-class StateTest(unittest.TestCase):
+class StateTest(common.PddlTest):
     def setUp(self):
-        p = Parser(domlogistics.split("\n"))
-        self.dom = domain.Domain.parse(p.root)
-        p = Parser(problogistics.split("\n"))
-        self.prob = problem.Problem.parse(p.root, self.dom)
+        self.dom, self.prob = self.load("testdata/logistics-ext.domain.mapl", "testdata/logistics-ext.problem.mapl")
         
     def testActionInstantiation(self):
         """Testing action instantiation"""
