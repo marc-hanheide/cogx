@@ -5,7 +5,7 @@ Find_package(X11)
 
 Find_package(Cure)
 include_directories(${CURE_INSTALLROOT}/include/cure)
-include_directories(/usr/include/opencv)
+include_directories(/usr/local/include/opencv)
 link_directories(${CURE_INSTALLROOT}/lib/cure)
 
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/components/)
@@ -97,5 +97,5 @@ add_cast_component(AdvObjectSearch AdvObjectSearch.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} NavData SpatialData VisionData Laser Scan2dReceiver OdometryReceiver PTZ)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
 
