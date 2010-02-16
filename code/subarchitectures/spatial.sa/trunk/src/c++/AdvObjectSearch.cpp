@@ -51,9 +51,9 @@ namespace spatial
     ofstream fout("planemap.txt");
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        fout << (*m_lgm)(x, y) << " ";
+        fout << (*m_lgm)(x, y);
       }
-      fout << endl;
+      //fout << endl;
     }
     fout.close();
   }
@@ -235,11 +235,12 @@ namespace spatial
          int key = cvWaitKey(100);
 
          if (key == 115){
+	   m_table_phase = true;
            log("Saving plane map!");
            SavePlaneMap();
            cvReleaseImage(&img );
          }
-         else if (key == 69){
+         else if (key == 116){
            log("Table mode!");
            m_table_phase = true;
          }
@@ -247,21 +248,28 @@ namespace spatial
            m_table_phase = false;
            log("Reading plane map!");
            m_Mutex.lock();
-           ifstream file;
-           file.open("planemap.txt");
+           ifstream file("planemap.txt");
+           if (file.is_open()){
            char c;
            for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
              for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-               if (file.good()) {
+	       // if (file.good()) {
                  c = file.get();
-                 if (c != ' ')
-                   (*m_lgm)(x, y) = c;
-               }
+		 if (c == 3)
+		   log("file is good got char %c",c);
+		 // if (c != ' ')
+                 (*m_lgm)(x, y) = c;
+		   // }
              }
              file.close();
            }
+	   }
+	   else {
+	     log("Could not open file.");
+	   }
            m_Mutex.unlock();
          }
+	 
        unlockComponent();
        sleepComponent(100);
 
@@ -364,7 +372,7 @@ namespace spatial
   void
   AdvObjectSearch::newPlanePointCloud(
       const cast::cdl::WorkingMemoryChange &objID) {
-    log("new PlanePointCloud received.");
+    debug("new PlanePointCloud received.");
     if (!m_table_phase)
         return;
     try {
