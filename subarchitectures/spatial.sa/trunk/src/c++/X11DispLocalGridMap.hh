@@ -92,7 +92,7 @@ public:
                        int highestVCindex = 0, 
                        std::vector<Cure::Pose3D> plan = 0, 
                        std::vector<int> planindex = 0);
-    void updatePlaneDisplay();
+    void updatePlaneDisplay(Pose3D *robPose = 0);
 
     void updateCoverageDisplay();
 
@@ -364,7 +364,7 @@ X11DispLocalGridMap<MAPDATA>::updateCoverageDisplay() {
 
 template <class MAPDATA>
 void
-X11DispLocalGridMap<MAPDATA>::updatePlaneDisplay() {
+X11DispLocalGridMap<MAPDATA>::updatePlaneDisplay(Pose3D *robPose) {
     //printf("Updating coverage display");
     XFillRectangle(disp,pixmap,gcWhite,0,0,hint.width,hint.height);
     XPoint gridPt;
@@ -415,6 +415,11 @@ X11DispLocalGridMap<MAPDATA>::updatePlaneDisplay() {
         }
       }
 
+    }
+
+    if (robPose) {
+      setRobotPose(*robPose);
+      XDrawPoints(disp,pixmap, gcBlack, m_RobPts, 50, CoordModeOrigin);
     }
 
     XCopyArea(disp,pixmap,win,gcBlack,0,0,hint.width,hint.height,0,0);
