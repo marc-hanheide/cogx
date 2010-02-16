@@ -251,14 +251,17 @@ namespace spatial
            ifstream file("planemap.txt");
            if (file.is_open()){
            char c;
+	   int geti;
            for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
              for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
 	       // if (file.good()) {
                  c = file.get();
-		 if (c == 3)
+		 log("got char %c",c);
+		 geti = atoi(&c);
+		 log("int is: %d",geti);
+		 if (geti == 3)
 		   log("file is good got char %c",c);
-		 // if (c != ' ')
-                 (*m_lgm)(x, y) = c;
+                 (*m_lgm)(x, y) = geti;
 		   // }
              }
              file.close();
