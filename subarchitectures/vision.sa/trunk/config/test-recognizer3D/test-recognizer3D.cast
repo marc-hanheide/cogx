@@ -14,4 +14,4 @@ CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inif
 
 CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.ply subarchitectures/vision.sa/config/test-recognizer3D/GuteLaune.ply" --siftfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.sift subarchitectures/vision.sa/config/test-recognizer3D/GuteLaune.sift" --labels "jasmin GuteLaune" --log
 
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "jasmin GuteLaune" --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "jasmin" --log
