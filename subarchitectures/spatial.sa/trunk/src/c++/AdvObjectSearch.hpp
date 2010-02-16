@@ -26,7 +26,7 @@
 #include "XVector3D.h"
 #include <PTZ.hpp>
 #include "X11DispLocalGridMap.hh"
-
+#include <highgui.h>
 namespace spatial
 {
 
@@ -73,6 +73,7 @@ namespace spatial
     double m_CamRange;
     double m_fov;
     double m_MaxExplorationRange;
+    IplImage* img;
 
     std::vector<std::string> m_objectlist;
 

@@ -18,7 +18,7 @@
 #include <iostream>
 #include <fstream>
 #include "XVector3D.h"
-#include <highgui.h>
+
 
 namespace spatial
 {
@@ -205,7 +205,10 @@ namespace spatial
       m_ptzInterface->setPose(p);
     }
 
-    cvNamedWindow(getComponentID().c_str(), 1);
+    img = 0;
+    cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
+    img=cvLoadImage("lolcat.jpg");
+    cvShowImage("test", img );
 
   }
   void
@@ -261,6 +264,7 @@ namespace spatial
          if (key != 0){
            log("Saving plane map!");
            SavePlaneMap();
+           cvReleaseImage(&img );
          }
        }
        unlockComponent();
