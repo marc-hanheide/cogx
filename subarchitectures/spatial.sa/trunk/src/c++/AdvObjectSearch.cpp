@@ -251,7 +251,7 @@ namespace spatial
     log("hey I'm running.");
      while (isRunning()) {
        lockComponent();
-       m_Dlgm->updatePlaneDisplay();
+       m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
        unlockComponent();
        sleepComponent(1000);
      }
