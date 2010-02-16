@@ -238,6 +238,7 @@ namespace spatial
 
   void
   AdvObjectSearch::runComponent() {
+    setupPushScan2d(*this, 0.1);
 
     log("hey I'm running.");
      while (isRunning()) {
