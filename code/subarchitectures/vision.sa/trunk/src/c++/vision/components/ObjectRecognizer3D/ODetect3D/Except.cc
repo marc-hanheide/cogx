@@ -4,6 +4,7 @@
 
 #include <stdarg.h>
 #include "Except.hh"
+#include <stdio.h>
 
 namespace P 
 {
