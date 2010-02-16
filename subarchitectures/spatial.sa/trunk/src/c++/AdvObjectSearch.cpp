@@ -262,7 +262,7 @@ namespace spatial
        m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
        if (m_table_phase){
          int key = cvWaitKey(100);
-         if (key != 0){
+         if (key == 27){
            log("Saving plane map!");
            SavePlaneMap();
            cvReleaseImage(&img );
