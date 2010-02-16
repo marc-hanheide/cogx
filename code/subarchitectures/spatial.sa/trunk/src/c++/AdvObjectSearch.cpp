@@ -17,18 +17,20 @@
 #include <iostream>
 #include <fstream>
 
-using namespace cast;
-using namespace Cure;
-using namespace spatial;
-using namespace std;
-using namespace boost;
+
 
 namespace spatial
 {
+  using namespace cast;
+  using namespace Cure;
+  using namespace spatial;
+  using namespace std;
+  using namespace boost;
 
   extern "C" {
-    FrameworkProcess* newComponent(const string &_id) {
-      return new NavTester(_id);
+    cast::CASTComponentPtr
+    newComponent() {
+      return new AdvObjectSearch();
     }
   }
 
