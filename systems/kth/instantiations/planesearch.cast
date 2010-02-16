@@ -24,4 +24,4 @@ CPP TM AlwaysPositiveTaskManager
 CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 --no-file-output
 CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --read-ptu --no-sois --log
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-tentative-window --no-local-map-window --planemap-size 100 --planemap-cellsize 0.05 #--log --debug
-CPP GD objsearch.adv AdvObjectSearc -c instantiations/cureconfig/cogxp3.ccf --log --table-phase
+CPP GD objsearch.adv AdvObjectSearch -c instantiations/cureconfig/cogxp3.ccf --cellsize 0.5 --gridsize 300 --log --table-phase --ctrl-ptu 
