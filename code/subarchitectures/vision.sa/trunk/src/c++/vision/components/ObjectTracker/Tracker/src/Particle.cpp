@@ -3,10 +3,6 @@
 
 using namespace Tracking;
 
-Particle::Particle(){
-	Particle(0.0);
-}
-
 Particle::Particle(float val){
 	t.x = val;
 	t.y = val;
