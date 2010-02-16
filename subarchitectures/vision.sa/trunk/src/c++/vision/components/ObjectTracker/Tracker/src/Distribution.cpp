@@ -6,12 +6,12 @@ using namespace Tracking;
 // *** private ***
 void Distribution::updateQueries(){
 	
-	if(queryMatches.size() == 0){
+	if(queryMatches.empty()){
 		queryMatches.assign(m_particlelist.size(), 0);
 		glGenQueriesARB(m_particlelist.size(), &queryMatches[0]);
 	}
 		
-	if(queryEdges.size() == 0){
+	if(queryEdges.empty()){
 		queryEdges.assign(m_particlelist.size(), 0);
 		glGenQueriesARB(m_particlelist.size(), &queryEdges[0]);
 	}
@@ -67,8 +67,10 @@ Distribution::Distribution(){
 }
 
 Distribution::~Distribution(){
-	glDeleteQueriesARB(m_particlelist.size(), &queryMatches[0]);
-	glDeleteQueriesARB(m_particlelist.size(), &queryEdges[0]);
+	if(!queryMatches.empty())
+		glDeleteQueriesARB(m_particlelist.size(), &queryMatches[0]);
+	if(!queryEdges.empty())
+		glDeleteQueriesARB(m_particlelist.size(), &queryEdges[0]);
 }
 
 float Distribution::getVariance(){

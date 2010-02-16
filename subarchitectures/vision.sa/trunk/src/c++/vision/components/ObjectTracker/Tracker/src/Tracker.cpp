@@ -212,7 +212,6 @@ int Tracker::addModel(Model& m, Pose& p, bool bfc){
 
 void Tracker::removeModel(int id){
 	ModelEntryList::iterator it = m_modellist.begin();
-	
 	while(it != m_modellist.end()){
 		if(id==(*it)->id){
 			delete(*it);
