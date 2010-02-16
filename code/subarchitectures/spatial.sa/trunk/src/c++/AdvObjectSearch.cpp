@@ -79,10 +79,10 @@ namespace spatial
     }
 
     m_table_phase = false;
-    if (_config.find("--table-phase") != _config.end()) {
+   /* if (_config.find("--table-phase") != _config.end()) {
       m_table_phase = true;
       log("Plane phase");
-    }
+    }*/
 
     m_usePTZ = false;
     if (_config.find("--ctrl-ptu") != _config.end()) {
@@ -231,14 +231,20 @@ namespace spatial
      while (isRunning()) {
        lockComponent();
        m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
-       if (m_table_phase){
+
          int key = cvWaitKey(100);
+
          if (key == 115){
            log("Saving plane map!");
            SavePlaneMap();
            cvReleaseImage(&img );
          }
+         else if (key == 69){
+           log("Table mode!");
+           m_table_phase = true;
+         }
          else if (key == 114){
+           m_table_phase = false;
            log("Reading plane map!");
            m_Mutex.lock();
            ifstream file;
@@ -256,7 +262,6 @@ namespace spatial
            }
            m_Mutex.unlock();
          }
-       }
        unlockComponent();
        sleepComponent(100);
 
@@ -360,7 +365,8 @@ namespace spatial
   AdvObjectSearch::newPlanePointCloud(
       const cast::cdl::WorkingMemoryChange &objID) {
     log("new PlanePointCloud received.");
-
+    if (!m_table_phase)
+        return;
     try {
 
       SpatialData::PlanePointsPtr objData = getMemoryEntry<
