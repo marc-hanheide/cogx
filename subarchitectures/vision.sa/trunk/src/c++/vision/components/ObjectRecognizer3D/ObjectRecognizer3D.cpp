@@ -441,13 +441,17 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
 			}else{
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
-			
+				
 				// Transform pose from Camera to world coordinates
 				Pose3 P, A, B;
 				P = m_image.camPars.pose;
 				convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
+				
+				printf("Pose: %f %f %f\n", A.pos.x, A.pos.y, A.pos.z);
+				
 				Math::transform(P,A,B);
 				transpose(B.rot, B.rot);
+				
 				
 				// if(first time recognition)
 				log("%s: Found object at (%.3f %.3f %.3f)", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z);
