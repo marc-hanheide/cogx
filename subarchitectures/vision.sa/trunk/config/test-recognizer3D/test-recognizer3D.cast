@@ -10,6 +10,6 @@ CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "sub
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --learnmode --plyfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.ply" --siftfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.sift" --labels "jasmin" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.ply subarchitectures/vision.sa/config/test-recognizer3D/GuteLaune.ply" --siftfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.sift subarchitectures/vision.sa/config/test-recognizer3D/GuteLaune.sift" --labels "jasmin GuteLaune" --log
 
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --plyfile "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.ply" --labels "jasmin" --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --plyfile --labels "jasmin GuteLaune" --log
