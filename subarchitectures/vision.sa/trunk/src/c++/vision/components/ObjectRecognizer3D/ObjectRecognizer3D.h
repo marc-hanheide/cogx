@@ -43,7 +43,6 @@ private:
 	P::Array<P::KeypointDescriptor*> m_temp_keys;
 	P::ModelObject3D	sift_model_learner;
 	P::ODetect3D*			m_detect;
-// 	P::ODetect3D			m_funny_detect;
   
   IplImage *m_iplImage;
   IplImage *m_iplGray;
@@ -73,6 +72,7 @@ private:
 	
   bool m_starttask;
   bool m_wait4data;
+  bool m_showCV;
   
   void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose);
   void addTrackerCommand(VisionData::TrackingCommandType cmd, std::string& modelID);

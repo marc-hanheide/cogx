@@ -24,6 +24,7 @@ using namespace std;
 ObjectRecognizer3D::ObjectRecognizer3D(){
 	camId = 0;
 	m_detect = 0;
+	m_showCV = true;
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D(){
@@ -39,17 +40,21 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
   istringstream siftiss;
   istringstream labeliss;
   
-  if((it = _config.find("--videoname")) != _config.end())
-  {
+  if((it = _config.find("--videoname")) != _config.end()){
     videoServerName = it->second;
   }
 
-  if((it = _config.find("--camid")) != _config.end())
-  {
+  if((it = _config.find("--camid")) != _config.end())  {
     istringstream str(it->second);
     int id;
     while(str >> id)
       camIds.push_back(id);
+  }
+  
+  if((it = _config.find("--display")) != _config.end()){
+    m_showCV = true;
+  }else{
+  	m_showCV = false;
   }
   
   if((it = _config.find("--labels")) != _config.end()){
@@ -99,7 +104,7 @@ void ObjectRecognizer3D::runComponent(){
   
   // Initialisation
   init();
-  
+    
   // Running Loop
   while(isRunning()){
     
@@ -111,29 +116,34 @@ void ObjectRecognizer3D::runComponent(){
   		
   	}else if(m_task == RECSTOP){
   		m_starttask = false;
-  		lockComponent();
+  		
   		if(m_recCommandList.empty())
   			sleepComponent(500);
   		else{
+  			lockComponent();
   			m_rec_cmd = m_recCommandList.front();
   			m_task = m_rec_cmd->cmd;
   			m_label = m_rec_cmd->label;
   			if(m_rec_cmd->visualObjectID.empty()){
   				log("Warning no VisualObject given");
   				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, Math::Pose3());
+  				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
   			m_recCommandList.erase(m_recCommandList.begin());
   			m_starttask = true;
+  			unlockComponent();
   		}
-			unlockComponent();
+			
   	}  
   }
   
   // Clean up
   if(m_detect)
 		delete(m_detect);
-		
-  cvDestroyWindow("ObjectRecognizer3D");
+	
+	if(m_showCV)
+  	cvDestroyWindow("ObjectRecognizer3D");
+  
   log("stop");  
 }
 
@@ -196,13 +206,14 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 	}
 	sift_model_learner.AddToModel(m_temp_keys, (*m_recEntries[m_label].object));
 	
-	for (unsigned i=0; i<m_temp_keys.Size(); i++){
-			m_temp_keys[i]->Draw( m_iplImage,*m_temp_keys[i],CV_RGB(255,0,0) );
+	if(m_showCV){
+		for (unsigned i=0; i<m_temp_keys.Size(); i++){
+				m_temp_keys[i]->Draw( m_iplImage,*m_temp_keys[i],CV_RGB(255,0,0) );
+		}
+		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
 	}
 	
 	m_wait4data = false;
-	
-	cvShowImage ( "ObjectRecognizer3D", m_iplImage );
 	log("  New sifts added to model: %d (%d)", m_temp_keys.Size(), m_recEntries[m_label].object->codebook.Size());
 }
 
@@ -248,9 +259,9 @@ void ObjectRecognizer3D::loadVisualModelToWM(std::string filename, std::string& 
 // 	tPose.translate(0.0,0.0,0.05);
 // 	convertParticle2Pose(tPose, obj->pose); 
 	 
-  log("Add model to working memory: '%s'", obj->label.c_str());
   modelID = newDataID();
   addToWorkingMemory(modelID, obj);
+  log("Add model to working memory: '%s' id: %s", obj->label.c_str(), modelID.c_str());
 }
 
 // *** Recognizer3D functions ***
@@ -259,8 +270,12 @@ void ObjectRecognizer3D::init(){
 	
 	m_task = RECSTOP;
   m_wait4data = false;
-	cvNamedWindow("ObjectRecognizer3D", 1 );
-	
+  
+  if(m_showCV){
+		cvNamedWindow("ObjectRecognizer3D", 1 );
+		cvWaitKey(10);
+	}
+		
 	m_detect = new(P::ODetect3D);
 	
 	log("Loading Sift Model");
@@ -299,7 +314,7 @@ void ObjectRecognizer3D::init(){
 }
 
 void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
-	log("Learning sift model: hit space bar");
+	log("Learning sift model '%s': hit space bar", m_rec_cmd->label.c_str());
 	VisionData::Vertex vertex;
   VisionData::VertexSeq vertexlist;
   
@@ -316,7 +331,7 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 	int key;
 	do{
 			key = cvWaitKey ( 10 );
-	}while( isRunning() && (m_wait4data || ((char)key)!=' ' && ((char)key!='s')) );
+	}while( isRunning() && (m_wait4data || ((char)key)!=' ' && ((char)key!='s') && ((char)key!='q')) );
 	
 	if((char)key==' '){
 		// 	Lock model
@@ -342,7 +357,7 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 		get3DPointFromTrackerModel(m_rec_cmd->visualObjectID, vertexlist);
 		
 		while( isRunning() && m_wait4data ){
-			sleepComponent(20);
+			sleepComponent(10);
 		}
 		
 	}else if((char)key=='s'){
@@ -352,6 +367,7 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 		sift_model_learner.SaveModel(m_recEntries[m_label].siftfile.c_str(),(*m_recEntries[m_label].object));
 		
 		// Clean up
+		addTrackerCommand(VisionData::REMOVEMODEL, m_rec_cmd->visualObjectID);
 		cvReleaseImage(&m_iplImage);
 		cvReleaseImage(&m_iplGray);
 		for (unsigned i=0; i<m_image_keys.Size(); i++)
@@ -363,6 +379,21 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
 		// Quit learning
 		m_task = RECSTOP;
 		log("Sift Model learned");
+ 	}else if((char)key=='q'){
+ 		
+ 		// Clean up
+ 		addTrackerCommand(VisionData::REMOVEMODEL, m_rec_cmd->visualObjectID);
+		cvReleaseImage(&m_iplImage);
+		cvReleaseImage(&m_iplGray);
+		for (unsigned i=0; i<m_image_keys.Size(); i++)
+			delete(m_image_keys[i]);
+		m_image_keys.Clear();
+		
+		vertexlist.clear();
+	
+		// Quit learning
+		m_task = RECSTOP;
+		log("Learning Sift Model canceled");
  	}
 }
 
@@ -400,11 +431,14 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	transpose(B.rot, B.rot);
 	
 	// if(first time recognition)
+	log("Found object at (%.3f %.3f %.3f)", B.pos.x, B.pos.y, B.pos.z);
 	loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B);
 	addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
-
-	cvShowImage ( "ObjectRecognizer3D", m_iplImage );
- 
+	
+	if(m_showCV){
+		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
+	}
+	
 	// Clean up   
   cvReleaseImage(&m_iplImage);
 	cvReleaseImage(&m_iplGray);
