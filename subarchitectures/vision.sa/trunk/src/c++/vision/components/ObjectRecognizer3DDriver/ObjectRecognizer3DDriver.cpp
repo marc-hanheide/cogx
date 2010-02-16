@@ -56,13 +56,6 @@ void ObjectRecognizer3DDriver::addRecognizer3DCommand(VisionData::Recognizer3DCo
 void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
 	map<string,string>::const_iterator it;
 	
-	if((it = _config.find("--plyfile")) != _config.end()){
-		m_plyfile = it->second;
-		log("ply file: '%s'", m_plyfile.c_str());
-	}else{
-		throw runtime_error(exceptionMessage(__HERE__, "No model file given"));
-	}
-	
 	if((it = _config.find("--labels")) != _config.end())
   {
     istringstream istr(it->second);
@@ -96,8 +89,8 @@ void ObjectRecognizer3DDriver::runComponent(){
   
   // trigger Recognizer3D
   for(int i=0; i<m_labels.size(); i++){
-//   	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
-  	addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+  	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
+//   	addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
 	}
 
 }
