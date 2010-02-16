@@ -149,7 +149,9 @@ namespace spatial
     m_lgm_seen = new Cure::LocalGridMap<bool>(gridsize / 2, cellsize, false,
         Cure::LocalGridMap<char>::MAP1);
 
-    m_Dlgm = new Cure::X11DispLocalGridMap<char>(*m_lgm,3);
+    m_Dlgm = new Cure::X11DispLocalGridMap<char>(*m_lgm);
+    m_Glrt = new Cure::ObjGridLineRayTracer<char>(*m_lgm);
+
     try {
       if (!m_table_phase) {
         log("Restoring plane map");
@@ -171,8 +173,7 @@ namespace spatial
     catch (std::exception e) {
       log("Could not initialize planemap.txt");
     }
-    if (m_table_phase)
-      m_Glrt = new Cure::ObjGridLineRayTracer<char>(*m_lgm);
+
 
     if (m_usePTZ) {
       log("connecting to PTU");
@@ -252,10 +253,9 @@ namespace spatial
 
   void
   AdvObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
-    // only add scans if we are in the map construction phase
+
     debug("Got scan with n=%d and t=%ld.%06ld", castScan.ranges.size(),
               (long) castScan.time.s, (long) castScan.time.us);
-    if (m_table_phase) {
       lockComponent(); //Don't allow any interface calls while processing a callback
 
 
@@ -269,12 +269,12 @@ namespace spatial
           Cure::Pose3D lpW;
           lpW.add(scanPose, m_LaserPoseR);
           m_Mutex.lock();
+          log("adding scan to glrt");
           m_Glrt->addScan(cureScan, lpW, 5.0);
           m_Mutex.unlock();
         }
       }
       unlockComponent();
-    }
   }
 
   void
