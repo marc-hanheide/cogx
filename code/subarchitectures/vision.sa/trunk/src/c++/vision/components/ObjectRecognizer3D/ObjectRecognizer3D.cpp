@@ -284,9 +284,10 @@ void ObjectRecognizer3D::init(){
 		
 	m_detect = new(P::ODetect3D);
 	
-	log("Loading Sift Model");
+	
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
+		log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
 		(*it).second.object = new(P::Object3D);
 		(*it).second.learn = !sift_model_learner.LoadModel((*it).second.siftfile.c_str(),(*(*it).second.object));
 	}
@@ -328,11 +329,13 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
   addTrackerCommand(VisionData::START, m_rec_cmd->visualObjectID);
   
   if(m_starttask){
+  	addTrackerCommand(VisionData::RELEASEMODELS, m_rec_cmd->visualObjectID);
   	addTrackerCommand(VisionData::ADDMODEL, m_rec_cmd->visualObjectID);
+  	addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
   	m_starttask = false;
-  }
-	
-	addTrackerCommand(VisionData::UNLOCK, m_rec_cmd->visualObjectID);
+  }else{
+		addTrackerCommand(VisionData::UNLOCK, m_rec_cmd->visualObjectID);
+	}
 	
 	int key;
 	do{
@@ -443,6 +446,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	
 	if(m_showCV){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
+		cvWaitKey(10);
 	}
 	
 	// Clean up   

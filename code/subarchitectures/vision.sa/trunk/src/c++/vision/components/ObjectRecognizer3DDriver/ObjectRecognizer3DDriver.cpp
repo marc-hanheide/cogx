@@ -89,8 +89,8 @@ void ObjectRecognizer3DDriver::runComponent(){
   
   // trigger Recognizer3D
   for(int i=0; i<m_labels.size(); i++){
-  	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
-//   	addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+//   	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
+  	addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
 	}
 
 }
