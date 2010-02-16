@@ -9,6 +9,7 @@
 #include <assert.h>
 #include "VoteImage.hh"
 #include <string.h>
+#include <stdio.h>
 
 namespace Z
 {

@@ -3,6 +3,7 @@
  */
 
 #include "OpenCvLiveVideo.hh"
+#include <stdio.h>
 
 namespace Z
 {

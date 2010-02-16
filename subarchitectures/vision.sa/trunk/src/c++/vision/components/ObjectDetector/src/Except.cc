@@ -7,6 +7,7 @@
  **/
 
 #include <stdarg.h>
+#include <stdio.h>
 #include "Except.hh"
 
 namespace Z
