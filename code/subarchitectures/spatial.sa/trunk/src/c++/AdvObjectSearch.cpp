@@ -205,10 +205,7 @@ namespace spatial
       m_ptzInterface->setPose(p);
     }
 
-    img = 0;
-    cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
-    img=cvLoadImage("lolcat.jpg");
-    cvShowImage("test", img );
+
 
   }
   void
@@ -255,6 +252,10 @@ namespace spatial
     setupPushScan2d(*this, 0.1);
     setupPushOdometry(*this);
 
+    img = 0;
+    cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
+    img=cvLoadImage("lolcat.jpg");
+    cvShowImage("test", img );
     log("hey I'm running.");
      while (isRunning()) {
        lockComponent();
