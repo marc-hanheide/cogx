@@ -253,10 +253,11 @@ namespace spatial
   void
   AdvObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
     // only add scans if we are in the map construction phase
+    debug("Got scan with n=%d and t=%ld.%06ld", castScan.ranges.size(),
+              (long) castScan.time.s, (long) castScan.time.us);
     if (m_table_phase) {
       lockComponent(); //Don't allow any interface calls while processing a callback
-      debug("Got scan with n=%d and t=%ld.%06ld", castScan.ranges.size(),
-          (long) castScan.time.s, (long) castScan.time.us);
+
 
       Cure::LaserScan2d cureScan;
       CureHWUtils::convScan2dToCure(castScan, cureScan);
