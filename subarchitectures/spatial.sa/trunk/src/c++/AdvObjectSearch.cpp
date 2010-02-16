@@ -18,6 +18,8 @@
 #include <iostream>
 #include <fstream>
 #include "XVector3D.h"
+#include <highgui.h>
+
 namespace spatial
 {
   using namespace cast;
@@ -203,6 +205,8 @@ namespace spatial
       m_ptzInterface->setPose(p);
     }
 
+    cvNamedWindow(getComponentID().c_str(), 1);
+
   }
   void
   AdvObjectSearch::start() {
@@ -252,8 +256,16 @@ namespace spatial
      while (isRunning()) {
        lockComponent();
        m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
+       if (m_table_phase){
+         int key = cvWaitKey(100);
+         if (key != 0){
+           log("Saving plane map!");
+           SavePlaneMap();
+         }
+       }
        unlockComponent();
-       sleepComponent(1000);
+       sleepComponent(100);
+
      }
 
   }
