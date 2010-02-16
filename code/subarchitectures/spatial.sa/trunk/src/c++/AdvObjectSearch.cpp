@@ -81,12 +81,17 @@ namespace spatial
     }
 
 
-    m_table_phase = (_config.find("--table-phase") == _config.end());
-    m_usePTZ = (_config.find("--ctrl-ptu") == _config.end());
-    if (m_table_phase)
+    m_table_phase = false;
+    if (_config.find("--table-phase") != _config.end()) {
+      m_table_phase = true;
       log("Plane phase");
-    if (m_usePTZ)
-      log("Will use PTZ");
+    }
+
+    m_usePTZ = false;
+    if (_config.find("--ctrl-ptu") != _config.end()) {
+      m_usePTZ = true;
+      log("will use ptu");
+    }
 
     int gridsize = 400;
     float cellsize = 0.1;
@@ -104,7 +109,6 @@ namespace spatial
 
     m_lgm = new Cure::LocalGridMap<unsigned int>(gridsize / 2, cellsize, 255,
         Cure::LocalGridMap<unsigned int>::MAP1);
-    log("Used gridsize=%d cellsize=%d", gridsize, cellsize);
     try {
       if (!m_table_phase) {
         log("Restoring plane map");
