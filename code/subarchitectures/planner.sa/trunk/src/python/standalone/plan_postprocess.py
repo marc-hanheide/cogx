@@ -80,10 +80,10 @@ def getRWDescription(action, args, _state, time):
     #print "read:", time.time()-t0
 
     #t0 = time.time()
-    add_read_vars = set()
-    pnode.effects = _state.get_effect_facts(action.effect, read_vars=add_read_vars)
-    pnode.preconds |= add_read_vars
-    pnode.original_preconds |= set(state.Fact(var, extstate[var]) for var in add_read_vars)
+    _state.read_svars.clear()
+    pnode.effects = set(state.Fact(k,v) for k,v in _state.get_effect_facts(action.effect, trace_vars=True).iteritems())
+    pnode.preconds |= _state.read_svars
+    pnode.original_preconds |= set(state.Fact(var, extstate[var]) for var in _state.read_svars)
     #print "write:", time.time()-t0
         
     #t0 = time.time()

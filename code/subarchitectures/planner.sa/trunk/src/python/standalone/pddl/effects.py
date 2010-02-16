@@ -156,21 +156,21 @@ class UniversalEffect(Scope, Effect):
 class ProbabilisticEffect(Effect):
     def __init__(self, effects):
         self.effects = effects
-        self.summed_effects = []
-        psum = 0
-        for p, eff in effects:
-            self.summed_effects.append((psum, psum+p, eff))
-            psum += p
-        assert psum <= 1
+        # self.summed_effects = []
+        # psum = 0
+        # for p, eff in effects:
+        #     self.summed_effects.append((psum, psum+p, eff))
+        #     psum += p
+        # assert psum <= 1
 
-    def getRandomEffect(self, seed=None):
-        if seed is not None:
-            random.seed(seed)
-        s = random.random()
-        for start, end, eff in self.summed_effects:
-            if start <= s < end:
-                return eff
-        return None
+    # def getRandomEffect(self, seed=None):
+    #     if seed is not None:
+    #         random.seed(seed)
+    #     s = random.random()
+    #     for start, end, eff in self.summed_effects:
+    #         if start <= s < end:
+    #             return eff
+    #     return None
         
     def visit(self, fn):
         return fn(self, [(p, e.visit(fn)) for p,e in self.effects])
@@ -192,81 +192,54 @@ class ProbabilisticEffect(Effect):
     def parse_assign(it, scope):
         first = it.get("assign-probabilistic").token
 
+        assign = parser.Element(parser.Token("assign", first.line, first.file))
         head = it.get(list, "function")
 
-        values = []
-        remaining_values = []
-        psum = 0
-        while True:
-            try:
-                elem = it.next()
-            except StopIteration:
-                break
-            
-            if elem.is_terminal():
-                try:
-                    prob = float(elem.token.string)
-                except:
-                    remaining_values.append(elem)
-                    continue
-
-                psum += prob
-                if psum > 1:
-                    raise ParseError(elem.token, "Total probabilities exceed 1.0")
-
-                values.append((prob, it.get()))
-
-            else:
-                remaining_values.append(elem)
-
-        if remaining_values and psum < 1.0:
-            remaining_p = (1.0-psum) / len(remaining_values)
-            for elem in remaining_values:
-                values.append((remaining_p, elem))
-
         effects = []
-        assign = parser.Element(parser.Token("assign", first.line, first.file))
-        for p, elem in values:
-            elem = parser.Element(it.element.token, [assign, head, elem])
-            effs = Effect.parse(iter(elem), scope)
-            effects.append((p, effs))
+
+        next_prob = None
+        for elem in it:
+            term = predicates.Term.parse(elem, scope)
+            if not next_prob and term.get_type().equal_or_subtype_of(builtin.t_number):
+                next_prob = term
+            else:
+                el2 = parser.Element(elem.token, [assign, head, elem])
+                eff = Effect.parse(iter(el2), scope)
+                effects.append((next_prob, eff))
+                next_prob = None
 
         return ProbabilisticEffect(effects)
 
     @staticmethod
     def parse(it, scope, timed_effects=False, only_simple=False):
         first = it.get("probabilistic")
-        effects = []
-        remaining_effects = []
-        psum = 0
-        while True:
+        token_dict = {}
+        parsed_elements = []
+
+        for elem in it:
             try:
-                elem = it.next()
-            except StopIteration:
-                if remaining_effects and psum < 1.0:
-                    remaining_p = (1.0-psum) / len(remaining_effects)
-                    for eff in remaining_effects:
-                        effects.append((remaining_p, eff))
+                pddl_elem = predicates.Term.parse(elem, scope)
+            except:
+                pddl_elem = Effect.parse(iter(elem), scope, timed_effects, only_simple)
+                
+            parsed_elements.append(pddl_elem)
+            token_dict[pddl_elem] = elem.token
 
-                return ProbabilisticEffect(effects)
-            
-            if elem.is_terminal():
-                try:
-                    prob = float(elem.token.string)
-                except:
-                    raise UnexpectedTokenError(p_elem.token, "probability or effect")
+        effects = []
 
-                psum += prob
-                if psum > 1:
-                    raise ParseError(elem.token, "Total probabilities exceed 1.0")
-
-                eff = Effect.parse(iter(it.get(list, "effect specification")), scope, timed_effects, only_simple)
-                effects.append((prob, eff))
-
+        next_prob = None
+        for elem in parsed_elements:
+            if isinstance(elem, predicates.Term) and elem.get_type().equal_or_subtype_of(builtin.t_number):
+                if next_prob:
+                    raise UnexpectedTokenError(token_dict[elem], "effect")
+                next_prob = elem
+            elif isinstance(elem, Effect):
+                effects.append((next_prob, elem))
+                next_prob = None
             else:
-                eff = Effect.parse(iter(elem), scope, timed_effects, only_simple)
-                remaining_effects.append(eff)
+                raise UnexpectedTokenError(token_dict[elem], "probability or effect")
             
+        return ProbabilisticEffect(effects)
                 
 
 class ConditionalEffect(Effect):

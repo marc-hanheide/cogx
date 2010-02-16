@@ -59,6 +59,9 @@ class Function(object):
 
     def __str__(self):
         return "(%s %s) - %s" % (self.name, " ".join(str(a) for a in self.args), self.type)
+
+    def __hash__(self):
+        return hash((self.name, self.type)+tuple(self.args))
     
 class Predicate(Function):
     def __init__(self, name, args, builtin=False):
@@ -240,7 +243,10 @@ class Term(object):
     
     @staticmethod
     def parse(it, scope, maxNesting=999):
-        term = it.get(None, "function term, variable or constant")
+        if isinstance(it, parser.ElementIterator):
+            term = it.get(None, "function term, variable or constant")
+        else:
+            term = it
 
         if term.is_terminal():
             if term.token.string in scope:

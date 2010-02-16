@@ -78,7 +78,7 @@ class Task(object):
             if isinstance(i, pddl.effects.ProbabilisticEffect):
                 for p, eff in i.effects:
                     facts = s.get_effect_facts(eff)
-                    for svar, value in facts:
+                    for svar, value in facts.iteritems():
                         if not isinstance(svar, pddl.Predicate) and svar.modality is None:
                             if svar in s:
                                 del s[svar]
