@@ -81,15 +81,15 @@ namespace spatial
     ptz::PTZInterfacePrx m_ptzInterface;
     NavData::RobotPose2dPtr lastRobotPose;
 
-    Cure::LocalGridMap<char>* m_lgm;
+    Cure::LocalGridMap<unsigned int>* m_lgm;
     Cure::LocalGridMap<double>* m_lgm_prior;
     Cure::LocalGridMap<double>* m_lgm_posterior;
     Cure::LocalGridMap<bool>* m_lgm_seen;
-    Cure::X11DispLocalGridMap<char>* m_Dlgm;
+    Cure::X11DispLocalGridMap<unsigned int>* m_Dlgm;
     Cure::SensorPose m_LaserPoseR;
     Cure::SensorPose m_CamPoseR;
     Cure::TransformedOdomPoseProvider m_TOPP;
-    Cure::ObjGridLineRayTracer<char>* m_Glrt;
+    Cure::ObjGridLineRayTracer<unsigned int>* m_Glrt;
     Cure::Pose3D m_SlamRobotPose;
 
   };

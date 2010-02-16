@@ -140,18 +140,18 @@ namespace spatial
     }
     log("Loaded objects.");
 
-    m_lgm = new Cure::LocalGridMap<char>(gridsize / 2, cellsize, 2,
-        Cure::LocalGridMap<char>::MAP1);
+    m_lgm = new Cure::LocalGridMap<unsigned int>(gridsize / 2, cellsize, 2,
+        Cure::LocalGridMap<unsigned int>::MAP1);
     m_lgm_prior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
         Cure::LocalGridMap<double>::MAP1);
     m_lgm_posterior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
         Cure::LocalGridMap<double>::MAP1);
 
     m_lgm_seen = new Cure::LocalGridMap<bool>(gridsize / 2, cellsize, false,
-        Cure::LocalGridMap<char>::MAP1);
+        Cure::LocalGridMap<unsigned int>::MAP1);
 
-    m_Dlgm = new Cure::X11DispLocalGridMap<char>(*m_lgm);
-    m_Glrt = new Cure::ObjGridLineRayTracer<char>(*m_lgm);
+    m_Dlgm = new Cure::X11DispLocalGridMap<unsigned int>(*m_lgm);
+    m_Glrt = new Cure::ObjGridLineRayTracer<unsigned int>(*m_lgm);
 
 
     if (m_usePTZ) {
