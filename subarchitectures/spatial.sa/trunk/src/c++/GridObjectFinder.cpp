@@ -120,7 +120,6 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
   CvSize enlargedSize;
   enlargedSize.width = image->width+borderWidth*2;
   enlargedSize.height = image->height+borderWidth*2;
-
   IplImage *enlargedImage = cvCreateImage(enlargedSize, IPL_DEPTH_8U, 1);
   enlargedImage->origin = 1;
   cvSetZero(enlargedImage);
@@ -164,9 +163,9 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
       bestPoint = minPoint;
       bestAngle = angle;
     }
-    cvShowImage( "Score", scoreImage );
+    //cvShowImage( "Score", scoreImage );
 //    cvShowImage( "Template", *it );
-    cvShowImage( "Enlarged", enlargedImage );
+    //cvShowImage( "Enlarged", enlargedImage );
 //    cvWaitKey(0);
     angle += m_angStep;
   }
