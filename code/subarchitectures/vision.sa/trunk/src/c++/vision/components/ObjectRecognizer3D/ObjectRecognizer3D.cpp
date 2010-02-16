@@ -129,6 +129,12 @@ void ObjectRecognizer3D::runComponent(){
   				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, Math::Pose3());
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
+				if(m_rec_cmd->cmd == RECOGNIZE && m_recEntries[m_label].learn){
+					log("Warning no Sift file available: starting to learn");
+					m_rec_cmd->cmd == RECLEARN;
+					m_task = RECLEARN;
+				}
+				
   			m_recCommandList.erase(m_recCommandList.begin());
   			m_starttask = true;
   			unlockComponent();
@@ -282,7 +288,7 @@ void ObjectRecognizer3D::init(){
 	std::map<std::string,RecEntry>::iterator it;
 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
 		(*it).second.object = new(P::Object3D);
-		sift_model_learner.LoadModel((*it).second.siftfile.c_str(),(*(*it).second.object));
+		(*it).second.learn = !sift_model_learner.LoadModel((*it).second.siftfile.c_str(),(*(*it).second.object));
 	}
 	
   videoServer->getImage(camId, m_image);

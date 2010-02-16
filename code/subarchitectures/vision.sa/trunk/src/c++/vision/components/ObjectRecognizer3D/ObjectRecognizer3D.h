@@ -63,8 +63,10 @@ private:
   	std::string plyfile;
   	P::Object3D* object;  	
   	std::string visualObjectID;
+  	bool learn;
   	RecEntry(){
   		object = 0;
+  		learn = false;
   	}
   };
 	std::map<std::string,RecEntry> m_recEntries;

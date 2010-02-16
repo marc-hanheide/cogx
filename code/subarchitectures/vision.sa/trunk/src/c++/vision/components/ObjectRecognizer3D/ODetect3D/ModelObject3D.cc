@@ -147,7 +147,7 @@ void ModelObject3D::SaveModel(const char *filename, Object3D &obj)
 /**
  * Load 3d object model
  */
-void ModelObject3D::LoadModel(const char *filename, Object3D &obj)
+bool ModelObject3D::LoadModel(const char *filename, Object3D &obj)
 {
   unsigned cbSize, ocSize;
   KeypointDescriptor *oc;
@@ -158,7 +158,7 @@ void ModelObject3D::LoadModel(const char *filename, Object3D &obj)
   ifstream in(filename);
 
   if(!in)
-    throw Except(__HERE__,"File does not exist!");
+    return false;
 
   in>>obj.id;
 
@@ -188,6 +188,7 @@ void ModelObject3D::LoadModel(const char *filename, Object3D &obj)
   }
 
   in.close();
+  return true;
 }
 
 
