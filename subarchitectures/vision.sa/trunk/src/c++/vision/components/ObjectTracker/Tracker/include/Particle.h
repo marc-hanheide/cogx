@@ -30,8 +30,7 @@ public:
 	float w;			///< weighted likelihood (sum of w of distribution = 1)
 	float c;			///< confidence level (matching pixels divided by overall pixels)
 
-	Particle();
-	Particle(float val);
+	Particle(float val=0.0);
 	Particle(const Particle& p2);
 	Particle(const Pose& p2);
 	
