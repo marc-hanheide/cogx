@@ -153,28 +153,6 @@ namespace spatial
     m_Dlgm = new Cure::X11DispLocalGridMap<char>(*m_lgm);
     m_Glrt = new Cure::ObjGridLineRayTracer<char>(*m_lgm);
 
-    try {
-      if (!m_table_phase) {
-        log("Restoring plane map");
-        ifstream file;
-        file.open("planemap.txt");
-        char c;
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if (file.good()) {
-              c = file.get();
-              if (c != ' ')
-                (*m_lgm)(x, y) = c;
-            }
-          }
-          file.close();
-        }
-      }
-    }
-    catch (std::exception e) {
-      log("Could not initialize planemap.txt");
-    }
-
 
     if (m_usePTZ) {
       log("connecting to PTU");
@@ -255,10 +233,28 @@ namespace spatial
        m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
        if (m_table_phase){
          int key = cvWaitKey(100);
-         if (key == 27){
+         if (key == 115){
            log("Saving plane map!");
            SavePlaneMap();
            cvReleaseImage(&img );
+         }
+         else if (key == 114){
+           log("Reading plane map!");
+           m_Mutex.lock();
+           ifstream file;
+           file.open("planemap.txt");
+           char c;
+           for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+             for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+               if (file.good()) {
+                 c = file.get();
+                 if (c != ' ')
+                   (*m_lgm)(x, y) = c;
+               }
+             }
+             file.close();
+           }
+           m_Mutex.unlock();
          }
        }
        unlockComponent();
