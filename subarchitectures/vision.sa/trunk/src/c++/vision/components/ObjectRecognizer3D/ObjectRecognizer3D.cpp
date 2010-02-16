@@ -427,28 +427,40 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	// Calculate SIFTs from image
 	sift.Operate(m_iplGray,m_image_keys);
 	
-	m_detect->SetDebugImage(m_iplImage);
-	if(m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object))){
-		P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
+	if(m_image_keys.Size() < 10){
+		log("Too less keypoints detected, no pose estimation possible");
+	}else{
+	
+		m_detect->SetDebugImage(m_iplImage);
+		if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object))){
+			log("No object detected");
+		}else{
+		
+			if(m_recEntries[m_label].object->conf < 0.1){
+				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
+			}else{
+				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
+			
+				// Transform pose from Camera to world coordinates
+				Pose3 P, A, B;
+				P = m_image.camPars.pose;
+				convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
+				Math::transform(P,A,B);
+				transpose(B.rot, B.rot);
+				
+				// if(first time recognition)
+				log("Found object at (%.3f %.3f %.3f)", B.pos.x, B.pos.y, B.pos.z);
+				loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B);
+				addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
+			}
+		}
 	}
-	
-	// Transform pose from Camera to world coordinates
-	Pose3 P, A, B;
-	P = m_image.camPars.pose;
-	convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
-	Math::transform(P,A,B);
-	transpose(B.rot, B.rot);
-	
-	// if(first time recognition)
-	log("Found object at (%.3f %.3f %.3f)", B.pos.x, B.pos.y, B.pos.z);
-	loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B);
-	addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
 	
 	if(m_showCV){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
-		cvWaitKey(10);
+		cvWaitKey(50);
 	}
-	
+
 	// Clean up   
   cvReleaseImage(&m_iplImage);
 	cvReleaseImage(&m_iplGray);
