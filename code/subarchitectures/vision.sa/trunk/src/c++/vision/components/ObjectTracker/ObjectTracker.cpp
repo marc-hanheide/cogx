@@ -41,7 +41,7 @@ ObjectTracker::~ObjectTracker(){
 // *** Working Memory Listeners ***
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
 	TrackingCommandPtr track_cmd = getMemoryEntry<TrackingCommand>(_wmc.address);
-	log("Received tracking command ...");
+	log("Received tracking command: %d, VisualObject: %s", track_cmd->cmd, track_cmd->visualObjectID.c_str());
 	m_trackingCommandList.push_back(track_cmd);
 	m_trackingCommandWMID.push_back(_wmc.address.id);
 }
@@ -141,10 +141,11 @@ void ObjectTracker::runComponent(){
   
   while(isRunning() && m_running)
   {
-    while(m_trackingCommandList.size()>0)
+    while(m_trackingCommandList.size()>0){
 			applyTrackingCommand();
+		}
 		
-    if(m_track){
+		if(m_track){
     	// * Tracking *
       runTracker();
     }
@@ -205,25 +206,29 @@ void ObjectTracker::applyTrackingCommand(){
 	string track_id = m_trackingCommandWMID.front();
 	m_trackingCommandWMID.erase(m_trackingCommandWMID.begin());
 	unlockComponent();
+
 	
 	TrackingEntryList::iterator it;
 	TrackingEntry* trackingEntry=0;
 	
 	if(track_cmd->cmd == VisionData::START){
+		log("  VisionData::START");
 		if(m_track){
-			log("  Start tracking: I'm allready tracking");
+			log("  VisionData::START: I'm allready tracking");
 		}else{
-			log("  Start tracking: ok");
+			log("  VisionData::START: ok");
 			m_track = true;
 		}
 	}else if(track_cmd->cmd == VisionData::STOP){
+		log("  VisionData::STOP");
 		if(m_track){
-			log("  Stop tracking: ok");
+			log("  VisionData::STOP: ok");
 			m_track = false;
 		}else{
-			log("  Stop tracking: I'm not tracking");
+			log("  VisionData::STOP: I'm not tracking");
 		}
 	}else if(track_cmd->cmd == VisionData::ADDMODEL){
+		log("  VisionData::ADDMODEL");
 		Tracking::Pose pose;
 		Tracking::Model model;
 		trackingEntry = new TrackingEntry();
@@ -232,43 +237,43 @@ void ObjectTracker::applyTrackingCommand(){
 		convertPose2Particle(trackingEntry->obj->pose, pose);
 		convertGeometryModel(trackingEntry->obj->model, model);
 		trackingEntry->id = m_tracker->addModel(model, pose, true);
-		log("  VisionData::ADDMODEL: '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
+		log("  VisionData::ADDMODEL '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
 		m_trackinglist.push_back(trackingEntry);
-		log("  Add model: ok");
+		log("  VisionData::ADDMODEL: ok");
 		
 	}else if(track_cmd->cmd == VisionData::REMOVEMODEL){
-		it = m_trackinglist.begin();
-		while(it != m_trackinglist.end()){
+		log("  VisionData::REMOVEMODEL");
+		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				trackingEntry = (*it);
 				m_tracker->removeModel(trackingEntry->id);
 				delete(trackingEntry);
 				m_trackinglist.erase(it);
-				log("  Remove model: ok");
+				log("  VisionData::REMOVEMODEL: ok");
 				return;
 			}
 		}			
 	}else if(track_cmd->cmd == VisionData::LOCK){
-		it = m_trackinglist.begin();
-		while(it != m_trackinglist.end()){
+		log("  VisionData::LOCK");
+		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				m_tracker->setModelLock((*it)->id, true);
-				log("  Lock model: ok");
+				log("  VisionData::LOCK: ok");
 				return;
 			}
 		}
 	}else if(track_cmd->cmd == VisionData::UNLOCK){
-		it = m_trackinglist.begin();
-		while(it != m_trackinglist.end()){
+		log("  VisionData::UNLOCK");
+		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				m_tracker->setModelLock((*it)->id, false);
-				log("  Unlock model: ok");
+				log("  VisionData::UNLOCK: ok");
 				return;
 			}
 		}
 	}else if(track_cmd->cmd == VisionData::GETPOINT3D){
-		it = m_trackinglist.begin();
-		while(it != m_trackinglist.end()){
+		log("  VisionData::GETPOINT3D");
+		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				bool b;
 				float x, y, z;
@@ -289,22 +294,22 @@ void ObjectTracker::applyTrackingCommand(){
 				}
 				overwriteWorkingMemory(track_id, track_cmd);
 				
-				log("  Get 3D point from model: ok");
+				log("  VisionData::GETPOINT3D: ok");
 				return;
 			}
 		}
 	}else if(track_cmd->cmd == VisionData::RELEASEMODELS){
-		it = m_trackinglist.begin();
-		while(it != m_trackinglist.end()){
+		log("  VisionData::RELEASEMODELS");
+		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			trackingEntry = (*it);
 			m_tracker->removeModel(trackingEntry->id);
 			delete(trackingEntry);
 			m_trackinglist.erase(it);
 			return;
 		}
-		log("  Release all models: ok");
+		log("  VisionData::RELEASEMODELS: ok");
 	}else{
-		log("  Unknown tracking command: doing nothing");
+		log("  VisionData::???UNKNOWN???: doing nothing");
 	}
 }
 
@@ -340,9 +345,9 @@ void ObjectTracker::runTracker(){
 	}
 	
 	// draw results
-	m_tracker->drawCoordinates();
 	m_tracker->drawResult();
 	m_tracker->drawCalibrationPattern();
+	m_tracker->drawCoordinates();
 	m_tracker->swap();
 
 	fTimeTracker = m_timer.Update();

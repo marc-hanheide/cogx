@@ -95,11 +95,11 @@ void ObjectRecognizer3DDriver::runComponent(){
 //   m_visualObjectIDs.push_back(modelID);
   
   // trigger Recognizer3D
-//   addRecognizer3DCommand(RECLEARN, m_labels[0], modelID);
-
-	for(int i=0; i<m_labels.size(); i++){
-		addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
+  for(int i=0; i<m_labels.size(); i++){
+//   	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);
+  	addRecognizer3DCommand(RECOGNIZE, m_labels[i], modelID);
 	}
+
 }
 
 
