@@ -11,6 +11,7 @@
 
 #include "Laser.hpp"
 #include <Scan2dReceiver.hpp>
+#include <OdometryReceiver.hpp>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <SpatialData.hpp>
 #include <NavData.hpp>
@@ -30,7 +31,8 @@ namespace spatial
 {
 
   class AdvObjectSearch :public Scan2dReceiver,
-                         public cast::ManagedComponent
+                         public cast::ManagedComponent,
+                         public OdometryReceiver
 
   {
   public:
@@ -41,6 +43,7 @@ namespace spatial
   protected:
     virtual void configure(const std::map<std::string, std::string>& _config);
     void receiveScan2d(const Laser::Scan2d &castScan);
+    void receiveOdometry(const Robotbase::Odometry &castOdom);
     void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
     void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
     void newObjectDetected(const cast::cdl::WorkingMemoryChange &objID);
