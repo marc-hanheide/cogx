@@ -44,18 +44,11 @@ namespace spatial
   AdvObjectSearch::~AdvObjectSearch() {
     // TODO Auto-generated destructor stub
     log("Destructor called.");
-    if (m_table_phase) {
-      log("Saving map with planes to planemap.txt");
-      SavePlaneMap();
-    }
 
   }
   void
   AdvObjectSearch::SavePlaneMap() {
-    char buf[32];
-    sprintf(buf, "planemap.txt");
-    ofstream fout(buf);
-
+    ofstream fout("planemap.txt");
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         fout << (*m_lgm)(x, y) << " ";
