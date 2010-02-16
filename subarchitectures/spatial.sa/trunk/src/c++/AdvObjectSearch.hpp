@@ -7,19 +7,22 @@
 
 #ifndef ADVOBJECTSEARCH_HPP_
 #define ADVOBJECTSEARCH_HPP_
+#include "AdvObjectSearch.hpp"
 
 #include "Laser.hpp"
 #include <Scan2dReceiver.hpp>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <SpatialData.hpp>
-#include "AdvObjectSearch.hpp"
+#include <NavData.hpp>
+
 #include <Navigation/LocalMap.hh>
 #include <Navigation/GridLineRayTracer.hh>
 #include <SensorData/SensorPose.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <SensorData/LaserScan2d.hh>
 #include <Navigation/GridLineRayTracer.hh>
-#include <NavData.hpp>
+
+#include <PTZ.hpp>
 
 namespace spatial
 {
@@ -42,7 +45,8 @@ namespace spatial
     void SavePlaneMap();
   private:
 
-
+    bool m_usePTZ;
+    ptz::PTZInterfacePrx m_ptzInterface;
     Cure::SensorPose m_LaserPoseR;
     Cure::SensorPose m_CamPoseR;
     Cure::TransformedOdomPoseProvider m_TOPP;
