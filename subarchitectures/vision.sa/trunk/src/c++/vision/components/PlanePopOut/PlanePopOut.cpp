@@ -282,7 +282,7 @@ glEnd();
 void DisplayWin()
 {
 	GLfloat light_position[] = {2.0, -2.0, 1.0, 1.0};
-	
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(view_point.x, view_point.y, view_point.z,
@@ -291,7 +291,7 @@ void DisplayWin()
 	view_up.x, view_up.y, view_up.z);
 	glRotated(cam_rot[0], 0., 1., 0.);
 	glRotated(-cam_rot[1], 1., 0., 0.);
-	
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	glDisable(GL_LIGHTING);
@@ -387,9 +387,10 @@ void PlanePopOut::start()
   int argc = 1;
   char argv0[] = "PlanePopOut";
   char *argv[1] = {argv0};
-  glutInit(&argc, argv);
+
   if (doDisplay)
   {
+  glutInit(&argc, argv);
   win = glutCreateWindow("points");
   InitWin();
   glutKeyboardFunc(KeyPress);
@@ -989,7 +990,7 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 		cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
 		cvhull = cvConvexHull2( ptseq, 0, CV_CLOCKWISE, 1);
 
-		
+
 		//draw the hull
 		if (hullMat.cols != 0)
 		{
