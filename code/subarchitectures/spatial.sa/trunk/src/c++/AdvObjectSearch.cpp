@@ -435,7 +435,7 @@ namespace spatial
 
   int
   AdvObjectSearch::NextBestView() {
-    // TODO: Get the highest scoring cone mutha_uckas!
+
     std::vector<std::vector<int> > VCones;
     SampleGrid();
     VCones = GetViewCones();
@@ -465,7 +465,6 @@ namespace spatial
     /* Display SeenMap in PB BEGIN */
     double color[3] =
       { 0.5, 0.5, 0.5 };
-    double multiplier = 100.0;
     double xW, yW;
     m_ProxySeenMap.set_color(color[0], color[1], color[2]);
 
@@ -680,7 +679,7 @@ namespace spatial
     }
 
     /* Display Samples in PB BEGIN */
-    double color[3] = { 0.2, 0.2, 0.2 };
+    double color[3] = { 1.0, 0, 0 };
     double xW1, yW1;
     peekabot::PointCloudProxy samples;
     samples.add(m_PeekabotClient, "root.samples",peekabot::REPLACE_ON_CONFLICT);
@@ -691,7 +690,7 @@ namespace spatial
 
         m_lgm->index2WorldCoords(m_samples[i*2], m_samples[i*2 + 1], xW1, yW1);
         //log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
-        samples.add_vertex(xW1, yW1, -2);
+        samples.add_vertex(xW1, yW1, 2);
       }
     /* Display Samples in PB END */
 
