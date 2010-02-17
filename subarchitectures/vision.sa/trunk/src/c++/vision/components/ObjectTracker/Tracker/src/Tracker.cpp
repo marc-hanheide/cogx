@@ -21,6 +21,7 @@ Tracker::Tracker(){
 	params.model_id_count = 0;
 	params.num_particles = 100;
 	params.num_recursions = 2;
+	params.convergence = 5;
 	params.edge_tolerance = 45.0 * PIOVER180;
 	params.m_spreadlvl = 1;
 	params.variation =Particle(0.1);
@@ -109,6 +110,7 @@ bool Tracker::loadINI(const char* inifile){
 	// Performance
 	params.num_recursions = cdfParams.GetInt("recursions", "Performance");
 	params.num_particles = cdfParams.GetInt("particles", "Performance");
+	params.convergence = cdfParams.GetInt("convergence", "Performance");
 	
 	// Resource Path
 	params.modelPath = cdfParams.GetString("ModelPath", "ResourcePath");

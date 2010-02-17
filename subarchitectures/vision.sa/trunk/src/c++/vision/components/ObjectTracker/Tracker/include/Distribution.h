@@ -46,7 +46,7 @@ private:
 	
 	void drawParticlesEdges(TrackerModel& model, Shader* shadeCompare, bool showparticles=false);
 	void drawParticlesTextured(TrackerModel& model, Shader* shadeCompare, bool showparticles=false);
-	void calcLikelihood(int power=5);	
+	void calcLikelihood(int convergence=5);	
 	
 public:
 	Distribution();
@@ -93,10 +93,10 @@ public:
 	*		@param TrackerModel 3D model to be rendered and compared to camera image
 	*		@param Shader comparisson shader which draws only pixels matching with the corresponding pixel of the camera image
 	*		@param textured flag wether to use textured models or edge models (TextureTracker / EdgeTracker)
-	*		@param power power of weight distribution
+	*		@param convergence convergence of weight distribution
 	*		@param showparticles makes particle distribution visible on screen
 	*/
-	void		updateLikelihood(TrackerModel& model, Shader* shadeCompare, bool textured, int power=5, bool showparticles=false);
+	void		updateLikelihood(TrackerModel& model, Shader* shadeCompare, bool textured, int convergence=5, bool showparticles=false);
 
 };
 

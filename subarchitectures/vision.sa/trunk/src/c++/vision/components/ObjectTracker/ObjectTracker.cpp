@@ -187,11 +187,10 @@ void ObjectTracker::initTracker(){
 		m_running = false;
 	}
 	
-	Tracking::CameraParameter trackCamPars;
-	convertCameraParameter(m_image.camPars, trackCamPars);
-	trackCamPars.zFar = m_tracker->getCamZFar();
-	trackCamPars.zNear = m_tracker->getCamZNear();
-	if( !m_tracker->setCameraParameters(trackCamPars) ){
+	convertCameraParameter(m_image.camPars, m_trackCamPars);
+	m_trackCamPars.zFar = m_tracker->getCamZFar();
+	m_trackCamPars.zNear = m_tracker->getCamZNear();
+	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
 		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
 		m_running = false;
 	}
@@ -321,6 +320,11 @@ void ObjectTracker::runTracker(){
 	double dTime;
 	
 	m_videoServer->getImage(m_camId, m_image);
+	convertCameraParameter(m_image.camPars, m_trackCamPars);
+	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
+		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
+		m_running = false;
+	}
 	
 	// update time
 	m_timer.Update();

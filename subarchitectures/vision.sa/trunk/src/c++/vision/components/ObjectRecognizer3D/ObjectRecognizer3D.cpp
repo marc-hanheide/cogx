@@ -452,9 +452,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				Math::transform(P,A,B);
 				transpose(B.rot, B.rot);
 				
-				
 				// if(first time recognition)
-				log("%s: Found object at (%.3f %.3f %.3f)", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z);
+				log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
 				loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B);
 				addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
 			}

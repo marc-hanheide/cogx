@@ -165,7 +165,7 @@ void Distribution::drawParticlesTextured(TrackerModel& model, Shader* shadeCompa
 	glColorMask(1,1,1,1); glDepthMask(1);	
 }
 
-void Distribution::calcLikelihood(int power){
+void Distribution::calcLikelihood(int convergence){
 	int v, d, id;
 	int v_max_tmp = 0;
 	w_sum = 0.0;
@@ -188,7 +188,7 @@ void Distribution::calcLikelihood(int power){
 		// Likelihood calculation formula
 		if(v != 0){
 			m_particlelist[id].c = (float(d)/float(v) + float(d)/float(v_max)) * 0.5;
-			m_particlelist[id].w = pow(m_particlelist[id].c, power*(1.0-m_particlelist[id].c));
+			m_particlelist[id].w = pow(m_particlelist[id].c, convergence*(1.0-m_particlelist[id].c));
 		}else{
 			m_particlelist[id].c = 0.0;
 			m_particlelist[id].w = 0.0;
@@ -235,7 +235,7 @@ void Distribution::calcLikelihood(int power){
 	std::sort(m_particlelist.begin(), m_particlelist.end(), sortfunction);
 }
 
-void Distribution::updateLikelihood(TrackerModel& model, Shader* shadeCompare, bool textured, int power, bool showparticles){
+void Distribution::updateLikelihood(TrackerModel& model, Shader* shadeCompare, bool textured, int convergence, bool showparticles){
 	
 	// no particles to update
 	if(m_particlelist.size() <= 0){
@@ -249,7 +249,7 @@ void Distribution::updateLikelihood(TrackerModel& model, Shader* shadeCompare, b
 	else
 		drawParticlesEdges(model, shadeCompare, showparticles);
 	
-	calcLikelihood(power);
+	calcLikelihood(convergence);
 }
 
 

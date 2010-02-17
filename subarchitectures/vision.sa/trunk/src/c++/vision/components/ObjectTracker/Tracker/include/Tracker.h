@@ -39,8 +39,9 @@ protected:
 		float width;								// width of viewport (camera image, image processor, opengl, textures) in pixels
 		float height;								// height of viewport ( --"-- ) in pixels
 		int model_id_count;
-		int num_particles;		// number of particles to draw for each frame
-		int num_recursions;							// number of recursions for each image
+		int num_particles;					// number of particles to draw for each frame
+		int num_recursions;					// number of recursions for each image
+		int convergence;						// convergence factor
 		float edge_tolerance;				// maximal angular deviation of edges to match in degrees
 		unsigned int m_spreadlvl;		// Width of edges in pixels (automatically adjusted)
 		Particle variation;					// standard deviation of particle distribution in meter

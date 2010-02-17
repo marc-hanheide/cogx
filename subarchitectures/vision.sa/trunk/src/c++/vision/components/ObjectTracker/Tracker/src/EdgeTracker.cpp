@@ -44,7 +44,7 @@ void EdgeTracker::particle_filtering(ModelEntry* modelEntry){
 		
 		glColor3f(0.0,1.0-ns,1.0-ns);
 		
-		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeEdgeCompare, 0, 5, m_showparticles);
+		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeEdgeCompare, 0, params.convergence, m_showparticles);
 		
 		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
 	}
