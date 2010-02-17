@@ -334,7 +334,7 @@ namespace spatial
             if ((*m_lgm)(x,y) == 2)
               continue;
             m_lgm->index2WorldCoords(x, y, xW, yW);
-            m_ProxyPrior.add_vertex(xW, yW, 1 + (*m_lgm_prior)(x, y)
+            m_ProxyPrior.add_vertex(xW, yW, -2 + (*m_lgm_prior)(x, y)
                 * multiplier);
           }
         }
@@ -462,7 +462,7 @@ namespace spatial
     }
    // m_firstview = false;
 
-    /* Display Prior in PB BEGIN */
+    /* Display SeenMap in PB BEGIN */
     double color[3] =
       { 0.5, 0.5, 0.5 };
     double multiplier = 100.0;
@@ -477,7 +477,7 @@ namespace spatial
         m_ProxySeenMap.add_vertex(xW, yW, 2);
       }
     }
-    /* Display Prior in PB END */
+    /* Display SeenMap in PB END */
 
 
     return highest_VC_index;
@@ -679,7 +679,7 @@ namespace spatial
       }
     }
 
-    /* Display Prior in PB BEGIN */
+    /* Display Samples in PB BEGIN */
     double color[3] = { 0.2, 0.2, 0.2 };
     double xW1, yW1;
     peekabot::PointCloudProxy samples;
@@ -693,7 +693,7 @@ namespace spatial
         //log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
         samples.add_vertex(xW1, yW1, -2);
       }
-    /* Display Prior in PB END */
+    /* Display Samples in PB END */
 
 
     /*Sampling free space END*/
