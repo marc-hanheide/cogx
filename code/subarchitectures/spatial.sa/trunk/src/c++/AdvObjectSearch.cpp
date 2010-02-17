@@ -244,51 +244,46 @@ namespace spatial
            log("Table mode!");
            m_table_phase = true;
          }
-         else if (key == 114){
-           m_table_phase = false;
-           log("Reading plane map!");
-           int length;
-             char * buffer;
-           m_Mutex.lock();
-           ifstream file("planemap.txt");
+         else if (key == 114) {
+        m_table_phase = false;
+        log("Reading plane map!");
+        int length;
+        char * buffer;
+        m_Mutex.lock();
+        ifstream file("planemap.txt");
 
-           file.seekg (0, ios::end);
-           length = file.tellg();
-           file.seekg (0, ios::beg);
-           buffer = new char [length];
-           file.read (buffer,length);
-           int index = 0;
-           for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-                        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                          char c = buffer[index];
-                          int ii = atoi(&c);
-                          (*m_lgm)(x, y) = ii;
-			  index ++;
-                        }
-                        }
-
-           /*if (file.is_open()){
-           char c;
-	   int geti;
-           for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-             for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	       // if (file.good()) {
-                 c = file.get();
-		 log("got char %c",c);
-		 geti = atoi(&c);
-		 log("int is: %d",geti);
-		 if (geti == 3)
-		   log("file is good got char %c",c);
-                 (*m_lgm)(x, y) = geti;
-		   // }
-             }
-             file.close();
-           }
-	   }
-	   else {
-	     log("Could not open file.");
-	   }*/
-           m_Mutex.unlock();
+        file.seekg(0, ios::end);
+        length = file.tellg();
+        file.seekg(0, ios::beg);
+        buffer = new char[length];
+        file.read(buffer, length);
+        int index = 0;
+        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            char c = buffer[index];
+            int ii = atoi(&c);
+            (*m_lgm)(x, y) = ii;
+            index++;
+          }
+          SpatialData::PlanePointsPtr PlanePoints;
+          PlanePoints = new SpatialData::PlanePoints;
+          cogx::Math::Vector3 point;
+          double wX,wY;
+          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+              if ((*m_lgm)(x,y) == 3){
+                m_lgm->index2WorldCoords(x, y, wX, wY);
+                point.x = wX;
+                point.y = wY;
+                point.z = 0.5; // FIXME: Z information is lost so we're making this up
+                PlanePoints->points.push_back(point);
+              }
+            }
+            }
+          addToWorkingMemory<SpatialData::PlanePoints>
+                  (newDataID(), PlanePoints);
+          }
+          m_Mutex.unlock();
          }
 	 
        unlockComponent();
