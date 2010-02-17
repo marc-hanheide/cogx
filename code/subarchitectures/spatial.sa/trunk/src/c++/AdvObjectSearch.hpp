@@ -95,7 +95,7 @@ namespace spatial
     NavData::RobotPose2dPtr lastRobotPose;
 
     peekabot::PeekabotClient m_PeekabotClient;
-    peekabot::PointCloudProxy m_ProxyPrior,m_ProxyPosterior;
+    peekabot::PointCloudProxy m_ProxyPrior,m_ProxyPosterior,m_ProxySeenMap;
 
     Cure::LocalGridMap<unsigned int>* m_lgm;
     Cure::LocalGridMap<double>* m_lgm_prior;
