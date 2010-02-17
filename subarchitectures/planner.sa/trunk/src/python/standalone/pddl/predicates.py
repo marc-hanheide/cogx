@@ -210,7 +210,7 @@ class Term(object):
             assert isinstance(func, Function)
             assert isinstance(args, list)
             self.__class__ = FunctionTerm
-            FunctionTerm.__init__(self, func, args)
+            FunctionTerm.__init__(self, func, [Term(a) for a in args])
         else:
             raise Exception("Too many arguments for Term()")
     

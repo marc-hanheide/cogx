@@ -52,6 +52,10 @@ junctiontest = \
 )
 """
 
+implicationtest = \
+"""(imply (= (func1 ?p1 ?p2 ?p3)  true) (pred1 ?p1 ?p2 ?p3) )
+"""
+
 quanttest = \
 """(and
 (forall (?a - type1 ?b - type2) (= (func2 ?a ?b) ?p1))
@@ -185,6 +189,20 @@ class ConditionsTest(unittest.TestCase):
         self.assert_(isinstance(cond.parts[1].parts[0], LiteralCondition))
         self.assert_(isinstance(cond.parts[1].parts[1], LiteralCondition))
 
+    def testImplicationParsing(self):
+        """Testing parsing of imply"""
+        
+        p = Parser(implicationtest.split("\n"))
+        localScope = self.getLocalScope()
+
+        cond = Condition.parse(iter(p.root), localScope)
+
+        self.assert_(isinstance(cond, Disjunction))
+        self.assert_(isinstance(cond.parts[0], LiteralCondition))
+        self.assert_(isinstance(cond.parts[1], LiteralCondition))
+        self.assert_(cond.parts[0].negated)
+        self.assertFalse(cond.parts[1].negated)
+        
     def testQuantifierParsing(self):
         """Testing parsing of quantified conditions"""
         

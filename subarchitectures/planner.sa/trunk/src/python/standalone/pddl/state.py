@@ -367,12 +367,6 @@ class State(dict):
             return (self[svar] == types.TRUE) ^ literal.negated
 
 
-    def apply_literal(self, literal, trace_vars=False):
-        fact = get_literal_effect(self, literal, trace_vars)
-        if trace_vars:
-            self.written_svars.add(fact.svar)
-        self.set(fact)
-        
     def get_literal_effect(self, literal, trace_vars=False):
         eff_svar = None
         eff_value = None

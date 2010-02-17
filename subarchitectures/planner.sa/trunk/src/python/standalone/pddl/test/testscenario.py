@@ -135,8 +135,10 @@ dora_scenario = \
 )
 
 (:goal (and
-	   (forall (?p - place) (= (explored ?p) true))
-))
+	   (forall (?p - place) (= (explored ?p) true)))
+)
+
+(:metric minimize (total-cost))
 
 )
 
@@ -377,6 +379,8 @@ class ScenarioTest(unittest.TestCase):
         self.assertEqual(len(worldprob.objects), 7)
         self.assertEqual(len(agentprob.objects), 9)
 
+        self.assertEqual(agentprob.optimization, "minimize")
+        
     def testMultiagent(self):
         """Testing multi agent scenario"""
         

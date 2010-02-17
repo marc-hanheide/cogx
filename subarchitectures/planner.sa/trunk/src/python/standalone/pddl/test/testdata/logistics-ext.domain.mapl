@@ -54,4 +54,19 @@
                              (decrease (num_packages ?v) (/ (+ (* 5 (- 2 1)) (- 3)) 2) ))
 
 )
+
+(:action double_capacity
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle)
+         :effect        (scale-up (capacity ?v) 2)
+
+)
+
+(:action halve_capacity
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle)
+         :effect        (scale-down (capacity ?v) 2)
+
+)
+
 )

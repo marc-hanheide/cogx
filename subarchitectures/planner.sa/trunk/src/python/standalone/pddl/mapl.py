@@ -5,6 +5,7 @@ import mapltypes as types
 import builtin
 import durative
 
+from parser import ParseError
 from mapltypes import Type, TypedObject, Parameter
 from predicates import Predicate, Function
 from builtin import t_object, t_boolean
