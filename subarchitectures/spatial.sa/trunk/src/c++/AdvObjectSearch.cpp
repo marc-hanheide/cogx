@@ -248,6 +248,8 @@ namespace spatial
           peekabot::REPLACE_ON_CONFLICT);
       m_ProxyPosterior.add(m_PeekabotClient, "root.Posterior",
           peekabot::REPLACE_ON_CONFLICT);
+      m_ProxySeenMap.add(m_PeekabotClient, "root.SeenMap",
+          peekabot::REPLACE_ON_CONFLICT);
     }
     catch (std::exception e) {
       log("Could not connect to PB, %s", e.what());
@@ -367,6 +369,7 @@ namespace spatial
     obs->planlist.push_back(a);
     addToWorkingMemory(newDataID(), obs);
     /* Add plan to PB END */
+
     //PostNavCommand(pos);
 
   }
@@ -458,6 +461,25 @@ namespace spatial
       }
     }
    // m_firstview = false;
+
+    /* Display Prior in PB BEGIN */
+    double color[3] =
+      { 0.5, 0.5, 0.5 };
+    double multiplier = 100.0;
+    double xW, yW;
+    m_ProxySeenMap.set_color(color[0], color[1], color[2]);
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm_seen)(x, y) == true)
+          continue;
+        m_lgm->index2WorldCoords(x, y, xW, yW);
+        m_ProxySeenMap.add_vertex(xW, yW, 2);
+      }
+    }
+    /* Display Prior in PB END */
+
+
     return highest_VC_index;
   }
 
@@ -658,7 +680,7 @@ namespace spatial
     }
 
     /* Display Prior in PB BEGIN */
-    double color[3] = { 0.2, 0.9, 0.9 };
+    double color[3] = { 0.2, 0.2, 0.2 };
     double xW1, yW1;
     peekabot::PointCloudProxy samples;
     samples.add(m_PeekabotClient, "root.samples",peekabot::REPLACE_ON_CONFLICT);
@@ -669,7 +691,7 @@ namespace spatial
 
         m_lgm->index2WorldCoords(m_samples[i*2], m_samples[i*2 + 1], xW1, yW1);
         //log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
-        samples.add_vertex(xW1, yW1, 2);
+        samples.add_vertex(xW1, yW1, -2);
       }
     /* Display Prior in PB END */
 
