@@ -19,7 +19,6 @@
 #include <fstream>
 #include "XVector3D.h"
 
-
 namespace spatial
 {
   using namespace cast;
@@ -79,10 +78,10 @@ namespace spatial
     }
 
     m_table_phase = false;
-   /* if (_config.find("--table-phase") != _config.end()) {
-      m_table_phase = true;
-      log("Plane phase");
-    }*/
+    /* if (_config.find("--table-phase") != _config.end()) {
+     m_table_phase = true;
+     log("Plane phase");
+     }*/
 
     m_usePTZ = false;
     if (_config.find("--ctrl-ptu") != _config.end()) {
@@ -131,28 +130,25 @@ namespace spatial
     }
     log("Camera range set to: %f", m_CamRange);
 
-
     if ((it = _config.find("--probs")) != _config.end()) {
-        istringstream istr(it->second);
-        string tmp;
-        istr >> tmp;
-        pFree = atof(tmp.c_str());
+      istringstream istr(it->second);
+      string tmp;
+      istr >> tmp;
+      pFree = atof(tmp.c_str());
 
-        istr >> tmp;
-        pObs = atof(tmp.c_str());
+      istr >> tmp;
+      pObs = atof(tmp.c_str());
 
-        istr >> tmp;
-        pPlanar = atof(tmp.c_str());
+      istr >> tmp;
+      pPlanar = atof(tmp.c_str());
 
-        istr >> tmp;
-        pIn = atof(tmp.c_str());
+      istr >> tmp;
+      pIn = atof(tmp.c_str());
 
-        istr >> tmp;
-        pOut = atof(tmp.c_str());
-      }
-      log("Loaded objects.");
-
-
+      istr >> tmp;
+      pOut = atof(tmp.c_str());
+    }
+    log("Loaded probs %f,%f,%f,%f,%f", pFree, pObs, pPlanar,pIn,pOut);
 
     if ((it = _config.find("--objects")) != _config.end()) {
       istringstream istr(it->second);
@@ -166,7 +162,7 @@ namespace spatial
     m_lgm = new Cure::LocalGridMap<unsigned int>(gridsize / 2, cellsize, 2,
         Cure::LocalGridMap<unsigned int>::MAP1);
     m_lgm_prior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
-             Cure::LocalGridMap<double>::MAP1);
+        Cure::LocalGridMap<double>::MAP1);
 
     m_lgm_posterior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
         Cure::LocalGridMap<double>::MAP1);
@@ -176,7 +172,6 @@ namespace spatial
 
     m_Dlgm = new Cure::X11DispLocalGridMap<unsigned int>(*m_lgm);
     m_Glrt = new Cure::ObjGridLineRayTracer<unsigned int>(*m_lgm);
-
 
     if (m_usePTZ) {
       log("connecting to PTU");
@@ -199,8 +194,6 @@ namespace spatial
       p.zoom = 0;
       m_ptzInterface->setPose(p);
     }
-
-
 
   }
   void
@@ -247,38 +240,39 @@ namespace spatial
     setupPushScan2d(*this, 0.1);
     setupPushOdometry(*this);
 
-    try{
+    try {
       m_PeekabotClient.connect("localhost", 5050, true);
-      m_ProxyPrior.add(m_PeekabotClient,"root.Prior",peekabot::REPLACE_ON_CONFLICT);
-      m_ProxyPosterior.add(m_PeekabotClient,"root.Posterior",peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyPrior.add(m_PeekabotClient, "root.Prior",
+          peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyPosterior.add(m_PeekabotClient, "root.Posterior",
+          peekabot::REPLACE_ON_CONFLICT);
     }
-    catch (std::exception e)
-    {
-      log("Could not connect to PB, %s",e.what());
+    catch (std::exception e) {
+      log("Could not connect to PB, %s", e.what());
     }
 
     img = 0;
     cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
-    img=cvLoadImage("lolcat.jpg");
-    cvShowImage("test", img );
+    img = cvLoadImage("lolcat.jpg");
+    cvShowImage("test", img);
     log("hey I'm running.");
-     while (isRunning()) {
-       lockComponent();
-       m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
+    while (isRunning()) {
+      //lockComponent();
+      m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
 
-         int key = cvWaitKey(100);
+      int key = cvWaitKey(100);
 
-         if (key == 115){
-	   m_table_phase = true;
-           log("Saving plane map!");
-           SavePlaneMap();
-           cvReleaseImage(&img );
-         }
-         else if (key == 116){
-           log("Table mode!");
-           m_table_phase = true;
-         }
-         else if (key == 114) {
+      if (key == 115) {
+        m_table_phase = true;
+        log("Saving plane map!");
+        SavePlaneMap();
+        cvReleaseImage(&img);
+      }
+      else if (key == 116) {
+        log("Table mode!");
+        m_table_phase = true;
+      }
+      else if (key == 114) {
         m_table_phase = false;
         log("Reading plane map!");
         int length;
@@ -300,91 +294,89 @@ namespace spatial
             index++;
           }
         }
-          /* Post to WM so that it's visible in PB BEGIN */
-          SpatialData::PlanePointsPtr PlanePoints;
-          PlanePoints = new SpatialData::PlanePoints;
-          cogx::Math::Vector3 point;
-          double wX,wY;
-          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-              if ((*m_lgm)(x,y) == 3){
-                m_lgm->index2WorldCoords(x, y, wX, wY);
-                point.x = wX;
-                point.y = wY;
-                point.z = 0.5; // FIXME: Z information is lost so we're making this up
-                PlanePoints->points.push_back(point);
-              }
+        /* Post to WM so that it's visible in PB BEGIN */
+        SpatialData::PlanePointsPtr PlanePoints;
+        PlanePoints = new SpatialData::PlanePoints;
+        cogx::Math::Vector3 point;
+        double wX, wY;
+        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            if ((*m_lgm)(x, y) == 3) {
+              m_lgm->index2WorldCoords(x, y, wX, wY);
+              point.x = wX;
+              point.y = wY;
+              point.z = 0.5; // FIXME: Z information is lost so we're making this up
+              PlanePoints->points.push_back(point);
             }
-            }
-          addToWorkingMemory<SpatialData::PlanePoints>
-                  (newDataID(), PlanePoints);
-          /* Post to WM so that it's visible in PB END*/
-
-          SetPrior();
-          double color[3] = { 0.9, 0, 0};
-          //DisplayMapinPB(m_lgm_prior,color,m_ProxyPrior,1);
-
-          double multiplier = 10.0;
-          double xW,yW;
-          m_ProxyPrior.set_color(color[0],color[1],color[2]);
-
-          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-               for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                 m_lgm->index2WorldCoords(x, y, xW, yW);
-                 m_ProxyPrior.add_vertex(xW,yW,1 + (*m_lgm_prior)(x,y)*multiplier);
-               }
-               }
-
-
           }
-          m_Mutex.unlock();
-         }
-	 
-       unlockComponent();
-       sleepComponent(100);
+        }
+        addToWorkingMemory<SpatialData::PlanePoints> (newDataID(), PlanePoints);
+        /* Post to WM so that it's visible in PB END*/
 
-     }
-  void AdvObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom)
-  {
+        SetPrior();
+        double color[3] =
+          { 0.9, 0, 0 };
+        //DisplayMapinPB(m_lgm_prior,color,m_ProxyPrior,1);
+
+        double multiplier = 10.0;
+        double xW, yW;
+        m_ProxyPrior.set_color(color[0], color[1], color[2]);
+
+        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            m_lgm->index2WorldCoords(x, y, xW, yW);
+            m_ProxyPrior.add_vertex(xW, yW, 1 + (*m_lgm_prior)(x, y)
+                * multiplier);
+          }
+        }
+
+      }
+    //  m_Mutex.unlock();
+    }
+
+    unlockComponent();
+    sleepComponent(100);
+
+  }
+  void
+  AdvObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom) {
     lockComponent(); //Don't allow any interface calls while processing a callback
-   // Cure::Pose3D CurrPose;
+    // Cure::Pose3D CurrPose;
     Cure::Pose3D cureOdom;
     CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
-    debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
-          cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
-          cureOdom.getTime().getDouble());
+    debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f", cureOdom.getX(),
+        cureOdom.getY(), cureOdom.getTheta(), cureOdom.getTime().getDouble());
 
     m_TOPP.addOdometry(cureOdom);
 
-  //  m_CurrPose = m_TOPP.getPose();
+    //  m_CurrPose = m_TOPP.getPose();
     unlockComponent();
   }
-
 
   void
   AdvObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
 
     debug("Got scan with n=%d and t=%ld.%06ld", castScan.ranges.size(),
-              (long) castScan.time.s, (long) castScan.time.us);
-      lockComponent(); //Don't allow any interface calls while processing a callback
+        (long) castScan.time.s, (long) castScan.time.us);
+    lockComponent(); //Don't allow any interface calls while processing a callback
 
 
-      Cure::LaserScan2d cureScan;
-      CureHWUtils::convScan2dToCure(castScan, cureScan);
+    Cure::LaserScan2d cureScan;
+    CureHWUtils::convScan2dToCure(castScan, cureScan);
 
-      if (m_TOPP.isTransformDefined()) {
+    if (m_TOPP.isTransformDefined()) {
 
-        Cure::Pose3D scanPose;
-        if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-          Cure::Pose3D lpW;
-          lpW.add(scanPose, m_LaserPoseR);
-          m_Mutex.lock();
-          m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);
-          m_Mutex.unlock();
-        }
+      Cure::Pose3D scanPose;
+      if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
+        Cure::Pose3D lpW;
+        lpW.add(scanPose, m_LaserPoseR);
+        m_Mutex.lock();
+        m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);
+        m_Mutex.unlock();
       }
-      unlockComponent();
+    }
+    unlockComponent();
   }
 
   void
@@ -430,8 +422,8 @@ namespace spatial
         highest_VC_index = i;
       }
     }
-    nbv[0] = m_samples[2*highest_VC_index];
-    nbv[1] = m_samples[2*highest_VC_index + 1];
+    nbv[0] = m_samples[2 * highest_VC_index];
+    nbv[1] = m_samples[2 * highest_VC_index + 1];
     return nbv;
   }
 
@@ -440,7 +432,7 @@ namespace spatial
       const cast::cdl::WorkingMemoryChange &objID) {
     debug("new PlanePointCloud received.");
     if (!m_table_phase)
-        return;
+      return;
     try {
 
       SpatialData::PlanePointsPtr objData = getMemoryEntry<
@@ -463,10 +455,10 @@ namespace spatial
     }
   }
 
-
   void
   AdvObjectSearch::SetPrior() {
-    int TypeCount[3] = { 0 };
+    int TypeCount[3] =
+      { 0 };
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
