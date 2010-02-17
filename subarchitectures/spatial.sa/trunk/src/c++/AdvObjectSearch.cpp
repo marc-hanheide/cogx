@@ -275,7 +275,8 @@ namespace spatial
         m_table_phase = true;
       }
       else if (key == 112){
-        GoToNBV();
+        log("Getting next view");
+        SampleGrid();
       }
       else if (key == 114) {
         m_table_phase = false;
@@ -346,20 +347,22 @@ namespace spatial
 
   void
   AdvObjectSearch::GoToNBV(){
-    int* nbv;
+    int nbv;
     nbv = NextBestView();
     double Wx,Wy;
-    m_lgm->index2WorldCoords(nbv[0],nbv[1],Wx,Wy);
+
+    m_lgm->index2WorldCoords(m_samples[2*nbv],m_samples[2*nbv + 1],Wx,Wy);
+    log("Best view coords: %f, %f, %f", Wx, Wy,m_samplestheta[nbv] );
     Cure::Pose3D pos;
     pos.setX(Wx);
     pos.setY(Wy);
-    pos.setTheta(nbv[2]);
+    pos.setTheta(m_samplestheta[nbv]);
    /* Add plan to PB BEGIN */
     NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
     cogx::Math::Vector3 a;
     a.x = Wx;
     a.y = Wy;
-    a.z = nbv[2];
+    a.z = m_samplestheta[nbv];
     obs->planlist.push_back(a);
     addToWorkingMemory(newDataID(), obs);
     /* Add plan to PB END */
@@ -426,10 +429,9 @@ namespace spatial
     m_TOPP.defineTransform(cp);
   }
 
-  int*
+  int
   AdvObjectSearch::NextBestView() {
     // TODO: Get the highest scoring cone mutha_uckas!
-    int* nbv = new int[3];
     std::vector<std::vector<int> > VCones;
     SampleGrid();
     VCones = GetViewCones();
@@ -454,11 +456,8 @@ namespace spatial
         highest_VC_index = i;
       }
     }
-    nbv[0] = m_samples[2 * highest_VC_index];
-    nbv[1] = m_samples[2 * highest_VC_index + 1];
-    nbv[2] = m_samplestheta[highest_VC_index];
     m_firstview = false;
-    return nbv;
+    return highest_VC_index;
   }
 
   void
@@ -640,6 +639,22 @@ namespace spatial
 
       }
     }
+
+    /* Display Prior in PB BEGIN */
+    double color[3] = { 0.9, 0.9, 0.9 };
+    double multiplier = 100.0;
+    double xW1, yW1;
+    peekabot::PointCloudProxy samples;
+    samples.add(m_PeekabotClient, "root.samples",peekabot::REPLACE_ON_CONFLICT);
+    samples.set_color(color[0], color[1], color[2]);
+    samples.set_opacity(0.8);
+
+    for (int i = 0; i < m_samplesize; i++){
+        m_lgm->index2WorldCoords(m_samples[i*2], m_samples[i*2 + 1], xW1, yW1);
+        samples.add_vertex(xW1, yW1, 2);
+      }
+    /* Display Prior in PB END */
+
 
     /*Sampling free space END*/
   }
