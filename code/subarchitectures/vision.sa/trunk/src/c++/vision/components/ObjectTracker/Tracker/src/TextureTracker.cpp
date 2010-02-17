@@ -64,7 +64,7 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		modelEntry->predictor->updateTime(0.0);
 		
 		// update importance weights and confidence levels
-		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeCompare, 1, 9, m_showparticles);
+		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeCompare, 1, params.convergence, m_showparticles);
 		
 		
 	}

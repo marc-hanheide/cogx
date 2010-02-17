@@ -35,6 +35,7 @@ private:
   Timer m_timer;
   Video::Image m_image;
   Parameters m_params;
+  Tracking::CameraParameter m_trackCamPars;
   int m_ImageWidth;
   int m_ImageHeight;
   float fTimeTracker;
