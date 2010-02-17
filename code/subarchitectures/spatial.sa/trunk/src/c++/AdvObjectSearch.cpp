@@ -96,7 +96,7 @@ namespace spatial
       log("Samplesize set to: %d", m_samplesize);
     }
     m_samples = new int[2 * m_samplesize];
-
+    m_samplestheta = new double[m_samplesize];
     int gridsize = 400;
     float cellsize = 0.1;
     it = _config.find("--gridsize");
@@ -193,6 +193,8 @@ namespace spatial
       p.tilt = 0;
       p.zoom = 0;
       m_ptzInterface->setPose(p);
+
+      m_firstview = false;
     }
 
   }
@@ -272,6 +274,9 @@ namespace spatial
         log("Table mode!");
         m_table_phase = true;
       }
+      else if (key == 112){
+        GoToNBV();
+      }
       else if (key == 114) {
         m_table_phase = false;
         log("Reading plane map!");
@@ -314,10 +319,8 @@ namespace spatial
         /* Post to WM so that it's visible in PB END*/
 
         SetPrior();
-        double color[3] =
-          { 0.9, 0.9, 0 };
-        //DisplayMapinPB(m_lgm_prior,color,m_ProxyPrior,1);
-
+        /* Display Prior in PB BEGIN */
+        double color[3] = { 0.9, 0.9, 0 };
         double multiplier = 100.0;
         double xW, yW;
         m_ProxyPrior.set_color(color[0], color[1], color[2]);
@@ -331,12 +334,36 @@ namespace spatial
                 * multiplier);
           }
         }
+        /* Display Prior in PB END */
 
       }
     }
 
     unlockComponent();
     sleepComponent(100);
+
+  }
+
+  void
+  AdvObjectSearch::GoToNBV(){
+    int* nbv;
+    nbv = NextBestView();
+    double Wx,Wy;
+    m_lgm->index2WorldCoords(nbv[0],nbv[1],Wx,Wy);
+    Cure::Pose3D pos;
+    pos.setX(Wx);
+    pos.setY(Wy);
+    pos.setTheta(nbv[2]);
+   /* Add plan to PB BEGIN */
+    NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
+    cogx::Math::Vector3 a;
+    a.x = Wx;
+    a.y = Wy;
+    a.z = nbv[2];
+    obs->planlist.push_back(a);
+    addToWorkingMemory(newDataID(), obs);
+    /* Add plan to PB END */
+    //PostNavCommand(pos);
 
   }
   void
@@ -402,7 +429,7 @@ namespace spatial
   int*
   AdvObjectSearch::NextBestView() {
     // TODO: Get the highest scoring cone mutha_uckas!
-    int* nbv = new int[2];
+    int* nbv = new int[3];
     std::vector<std::vector<int> > VCones;
     SampleGrid();
     VCones = GetViewCones();
@@ -416,6 +443,10 @@ namespace spatial
         x = VCones[i][2 * j];
         y = VCones[i][2 * j + 1];
         if (!(*m_lgm_seen)(x, y))
+          (*m_lgm_seen)(x, y) = true;
+        if (m_firstview)
+          sum += (*m_lgm_prior)(x, y);
+        else
           sum += (*m_lgm_posterior)(x, y);
       }
       if (sum > highest_sum) {
@@ -425,6 +456,8 @@ namespace spatial
     }
     nbv[0] = m_samples[2 * highest_VC_index];
     nbv[1] = m_samples[2 * highest_VC_index + 1];
+    nbv[2] = m_samplestheta[highest_VC_index];
+    m_firstview = false;
     return nbv;
   }
 
@@ -510,8 +543,8 @@ namespace spatial
 
   void
   AdvObjectSearch::SampleGrid() {
-    srand (
-    time(NULL));
+    srand (time(NULL));
+    std::vector<double> angles;
 
     /*Sampling free space BEGIN*/
     /*Checking if a point in x,y is reachable */
@@ -566,6 +599,11 @@ namespace spatial
     }
 
     /*Checking if a point in x,y is reachable */
+
+    for (double rad = 0; rad < M_PI * 2; rad = rad + M_PI / 3) {
+      angles.push_back(rad);
+    }
+
     int i = 0;
     int randx, randy;
     double xW, yW;
@@ -593,6 +631,8 @@ namespace spatial
             // There is a path to this destination
             m_samples[2 * i] = randx;
             m_samples[2 * i + 1] = randy;
+            int the = (int) (rand() % angles.size());
+            m_samplestheta[i] = angles[the];
             i++;
           }
           /*if reachable*/
@@ -615,10 +655,12 @@ namespace spatial
     for (int y = 0; y < m_samplesize; y++) { //calc. view cone for each sample
 
       m_lgm->index2WorldCoords(m_samples[y * 2], m_samples[2 * y + 1], a.x, a.y);
+      a.theta = m_samplestheta[y];
       tpoints = GetInsideViewCone(a, true);
       ViewConePts.push_back(tpoints);
       candidatePose.setX(a.x);
       candidatePose.setY(a.y);
+      candidatePose.setTheta(m_samplestheta[y]);
       //log("CurrentPose.Theta : %f", candidatePose.getTheta());
       //candidatePoses.push_back(candidatePose);
     }
@@ -734,5 +776,33 @@ namespace spatial
     addToWorkingMemory(newDataID(), "vision.sa", cmd);
     log("DetectionCommand added.");
   }
+
+  void
+  AdvObjectSearch::PostNavCommand(Cure::Pose3D position) {
+    SpatialData::NavCommandPtr cmd = newNavCommand();
+    cmd->prio = SpatialData::URGENT;
+    cmd->cmd = SpatialData::GOTOPOSITION;
+    cmd->pose.resize(3);
+    cmd->pose[0] = position.getX();
+    cmd->pose[1] = position.getY();
+    cmd->pose[2] = position.getTheta();
+    cmd->tolerance.resize(1);
+    cmd->tolerance[0] = 0.1;
+    cmd->status = SpatialData::NONE;
+    cmd->comp = SpatialData::COMMANDPENDING;
+
+    addToWorkingMemory(newDataID(),cmd);
+  }
+
+  SpatialData::NavCommandPtr
+  AdvObjectSearch::newNavCommand() {
+    SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
+    cmd->prio = SpatialData::NORMAL;
+    cmd->cmd = SpatialData::STOP;
+    cmd->status = SpatialData::NONE;
+    cmd->comp = SpatialData::COMMANDPENDING;
+    return cmd;
+  }
+
 
 }
