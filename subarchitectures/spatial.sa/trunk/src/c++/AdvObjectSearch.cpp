@@ -615,8 +615,10 @@ namespace spatial
       //if we have that point already, skip.
       for (int j=0; j < i; j++){
               if (m_samples[2*j] == randx && m_samples[2*j + 1] == randy &&
-                  m_samplestheta[j] == angle)
+                  m_samplestheta[j] == angle){
+               log("we already have this point.");
                 continue;
+              }
       }
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
 
@@ -643,9 +645,15 @@ namespace spatial
             m_samplestheta[i] = angle;
             i++;
           }
+          else{
+            log("there's no path to here.");
+          }
           /*if reachable*/
         }
 
+      }
+      else{
+        log("point either non free space or seen.");
       }
     }
 
