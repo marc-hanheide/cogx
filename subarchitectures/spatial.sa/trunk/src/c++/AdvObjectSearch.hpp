@@ -57,9 +57,12 @@ namespace spatial
     void SavePlaneMap();
     void BuildPrior();
     void PostRecognitionCommand();
+    void PostNavCommand(Cure::Pose3D position);
+
     void SampleGrid();
     int* NextBestView();
     void SetPrior();
+    void GoToNBV();
     std::vector<std::vector<int> > GetViewCones();
     std::vector<int> GetInsideViewCone(XVector3D &a, bool addall);
     void CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c);
@@ -75,8 +78,10 @@ namespace spatial
     // 1. phase is table detection and then looking for objects.
     bool m_table_phase;
     bool m_usePTZ;
+    bool m_firstview;
     int m_samplesize;
     int* m_samples;
+    double* m_samplestheta;
     double m_CamRange;
     double m_fov;
     double m_MaxExplorationRange;
@@ -103,6 +108,8 @@ namespace spatial
     Cure::ObjGridLineRayTracer<unsigned int>* m_Glrt;
     Cure::Pose3D m_SlamRobotPose;
 
+
+   static SpatialData::NavCommandPtr newNavCommand();
   };
 
 }
