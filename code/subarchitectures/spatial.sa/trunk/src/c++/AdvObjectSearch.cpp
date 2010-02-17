@@ -277,6 +277,7 @@ namespace spatial
       else if (key == 112){
         log("Getting next view");
         SampleGrid();
+        GoToNBV();
       }
       else if (key == 114) {
         m_table_phase = false;
@@ -654,7 +655,7 @@ namespace spatial
     peekabot::PointCloudProxy samples;
     samples.add(m_PeekabotClient, "root.samples",peekabot::REPLACE_ON_CONFLICT);
     samples.set_color(color[0], color[1], color[2]);
-    samples.set_opacity(0.2);
+    //samples.set_opacity(0.2);
 
     for (int i = 0; i < m_samplesize; i++){
 
