@@ -278,7 +278,6 @@ namespace spatial
       }
       else if (key == 112){
         log("Getting next view");
-        SampleGrid();
         GoToNBV();
       }
       else if (key == 114) {
@@ -448,8 +447,7 @@ namespace spatial
       for (unsigned int j = 0; j < VCones[i].size() / 2; j++) {
         x = VCones[i][2 * j];
         y = VCones[i][2 * j + 1];
-        if (!(*m_lgm_seen)(x, y))
-          (*m_lgm_seen)(x, y) = true;
+
         if (m_firstview)
           sum += (*m_lgm_prior)(x, y);
         else
@@ -462,6 +460,12 @@ namespace spatial
     }
    // m_firstview = false;
 
+    for (unsigned int j = 0; j < VCones[highest_VC_index].size() / 2; j++) {
+      x = VCones[highest_VC_index][2 * j];
+      y = VCones[highest_VC_index][2 * j + 1];
+      if (!(*m_lgm_seen)(x, y))
+        (*m_lgm_seen)(x, y) = true;
+    }
     /* Display SeenMap in PB BEGIN */
     double color[3] =
       { 0.5, 0.5, 0.5 };
