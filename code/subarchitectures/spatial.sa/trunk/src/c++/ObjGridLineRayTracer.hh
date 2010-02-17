@@ -322,11 +322,6 @@ void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan,
       if ((scan.getRange(i) - scan.getRange(i-1) > maxDiff) &&
 	  (scan.getRange(i) - scan.getRange(i+1) > maxDiff)) continue;
     }
-
-  	/*if (scan.getRange(i) > maxRange - 0.5){
-		data() = 120;
-  		continue;
-  	}*/
     setStart(sp.getX(),
              sp.getY(),
              sp.getTheta() + 
