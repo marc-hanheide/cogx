@@ -607,8 +607,8 @@ namespace spatial
     int randx, randy;
     double xW, yW;
     while (i < m_samplesize) {
-      randx = (randx % (2 * m_lgm->getSize())) - m_lgm->getSize();
-      randy = (randy % (2 * m_lgm->getSize())) - m_lgm->getSize();
+      randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
+      randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
       if ((*m_lgm)(randx, randy) == 0 && !(*m_lgm_seen)(randx, randy)) {
         /*if reachable*/
