@@ -319,6 +319,7 @@ void ObjectTracker::runTracker(){
 	Pose pose;
 	double dTime;
 	
+	// Get image and update it
 	m_videoServer->getImage(m_camId, m_image);
 	convertCameraParameter(m_image.camPars, m_trackCamPars);
 	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
