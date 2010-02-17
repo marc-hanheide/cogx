@@ -318,7 +318,7 @@ namespace spatial
           { 0.9, 0, 0 };
         //DisplayMapinPB(m_lgm_prior,color,m_ProxyPrior,1);
 
-        double multiplier = 10.0;
+        double multiplier = 100.0;
         double xW, yW;
         m_ProxyPrior.set_color(color[0], color[1], color[2]);
 
@@ -472,11 +472,11 @@ namespace spatial
       }
     }
 
-    double total = pFree + pObs + pPlanar;
     double uFree, uObs, uPlanar;
-    uFree = pIn / total * pFree;
-    uObs = pIn / total * uObs;
-    uPlanar = pIn / total * uPlanar;
+    uFree = pFree / TypeCount[0];
+    uObs = pObs / TypeCount[1];
+    uPlanar = pPlanar / TypeCount[2];
+
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 0)
