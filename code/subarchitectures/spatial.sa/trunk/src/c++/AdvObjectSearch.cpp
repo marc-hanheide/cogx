@@ -131,6 +131,29 @@ namespace spatial
     }
     log("Camera range set to: %f", m_CamRange);
 
+
+    if ((it = _config.find("--probs")) != _config.end()) {
+        istringstream istr(it->second);
+        string tmp;
+        istr >> tmp;
+        pFree = atof(tmp.c_str());
+
+        istr >> tmp;
+        pObs = atof(tmp.c_str());
+
+        istr >> tmp;
+        pPlanar = atof(tmp.c_str());
+
+        istr >> tmp;
+        pIn = atof(tmp.c_str());
+
+        istr >> tmp;
+        pOut = atof(tmp.c_str());
+      }
+      log("Loaded objects.");
+
+
+
     if ((it = _config.find("--objects")) != _config.end()) {
       istringstream istr(it->second);
       string label;
@@ -143,7 +166,8 @@ namespace spatial
     m_lgm = new Cure::LocalGridMap<unsigned int>(gridsize / 2, cellsize, 2,
         Cure::LocalGridMap<unsigned int>::MAP1);
     m_lgm_prior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
-        Cure::LocalGridMap<double>::MAP1);
+             Cure::LocalGridMap<double>::MAP1);
+
     m_lgm_posterior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
         Cure::LocalGridMap<double>::MAP1);
 
@@ -223,6 +247,16 @@ namespace spatial
     setupPushScan2d(*this, 0.1);
     setupPushOdometry(*this);
 
+  /*  try{
+      m_PeekabotClient.connect("localhost", 5050, true);
+      m_ProxyPrior.add(m_PeekabotClient,"root.Prior",peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyPosterior.add(m_PeekabotClient,"root.Posterior",peekabot::REPLACE_ON_CONFLICT);
+    }
+    catch (std::exception e)
+    {
+      log("Could not connect to PB, %s",e.what());
+    }*/
+
     img = 0;
     cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
     img=cvLoadImage("lolcat.jpg");
@@ -265,6 +299,8 @@ namespace spatial
             (*m_lgm)(x, y) = ii;
             index++;
           }
+        }
+          /* Post to WM so that it's visible in PB BEGIN */
           SpatialData::PlanePointsPtr PlanePoints;
           PlanePoints = new SpatialData::PlanePoints;
           cogx::Math::Vector3 point;
@@ -282,6 +318,9 @@ namespace spatial
             }
           addToWorkingMemory<SpatialData::PlanePoints>
                   (newDataID(), PlanePoints);
+          /* Post to WM so that it's visible in PB END*/
+
+          SetPrior();
           }
           m_Mutex.unlock();
          }
@@ -290,10 +329,6 @@ namespace spatial
        sleepComponent(100);
 
      }
-
-  }
-
-
   void AdvObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom)
   {
     lockComponent(); //Don't allow any interface calls while processing a callback
@@ -414,9 +449,40 @@ namespace spatial
   }
 
 
-  void AdvObjectSearch::SetPrior(){
+  void
+  AdvObjectSearch::SetPrior() {
+    int TypeCount[3] = { 0 };
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == '0')
+          TypeCount[0]++;
+        else if ((*m_lgm)(x, y) == '1')
+          TypeCount[1]++;
+        else if ((*m_lgm)(x, y) == '3')
+          TypeCount[2]++;
+      }
+    }
+
+    double total = pFree + pObs + pPlanar;
+    double uFree, uObs, uPlanar;
+    uFree = pIn / total * pFree;
+    uObs = pIn / total * uObs;
+    uPlanar = pIn / total * uPlanar;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == '0')
+          (*m_lgm_prior)(x, y) = uFree;
+        else if ((*m_lgm)(x, y) == '1')
+          (*m_lgm_prior)(x, y) = uObs;
+        else if ((*m_lgm)(x, y) == '3')
+          (*m_lgm_prior)(x, y) = uPlanar;
+
+      }
+    }
 
   }
+
   void
   AdvObjectSearch::newObjectDetected(
       const cast::cdl::WorkingMemoryChange &objID) {
