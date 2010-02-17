@@ -60,7 +60,7 @@ namespace spatial
     void PostNavCommand(Cure::Pose3D position);
 
     void SampleGrid();
-    int* NextBestView();
+    int NextBestView();
     void SetPrior();
     void GoToNBV();
     std::vector<std::vector<int> > GetViewCones();
