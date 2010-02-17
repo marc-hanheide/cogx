@@ -324,6 +324,8 @@ namespace spatial
 
         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            if ((*m_lgm)(x,y) == '2')
+              continue;
             m_lgm->index2WorldCoords(x, y, xW, yW);
             m_ProxyPrior.add_vertex(xW, yW, 1 + (*m_lgm_prior)(x, y)
                 * multiplier);
