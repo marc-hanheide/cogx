@@ -605,11 +605,20 @@ namespace spatial
 
     int i = 0;
     int randx, randy;
-    double xW, yW;
+    double xW, yW,angle;
     while (i < m_samplesize) {
       randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
+      int the = (int) (rand() % angles.size());
+      angle = angles[the];
+      //if we have that point already, skip.
+      for (int j=0; j < i; j++){
+              if (m_samples[2*j] == randx && m_samples[2*j + 1] == randy &&
+                  m_samplestheta[j] == angle)
+                continue;
+      }
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
+
       if ((*m_lgm)(randx, randy) == 0 && !(*m_lgm_seen)(randx, randy)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
@@ -630,8 +639,7 @@ namespace spatial
             // There is a path to this destination
             m_samples[2 * i] = randx;
             m_samples[2 * i + 1] = randy;
-            int the = (int) (rand() % angles.size());
-            m_samplestheta[i] = angles[the];
+            m_samplestheta[i] = angle;
             i++;
           }
           /*if reachable*/
@@ -642,7 +650,6 @@ namespace spatial
 
     /* Display Prior in PB BEGIN */
     double color[3] = { 0.9, 0.9, 0.9 };
-    double multiplier = 100.0;
     double xW1, yW1;
     peekabot::PointCloudProxy samples;
     samples.add(m_PeekabotClient, "root.samples",peekabot::REPLACE_ON_CONFLICT);
