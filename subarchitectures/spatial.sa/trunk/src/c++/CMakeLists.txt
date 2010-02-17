@@ -3,6 +3,12 @@ include_directories(../autogen)
 Find_package(Player)
 Find_package(X11)
 
+
+find_package(Peekabot)
+include_directories(${PEEKABOT_INSTALLROOT}/include)
+link_directories(${PEEKABOT_INSTALLROOT}/lib)
+
+
 Find_package(Cure)
 include_directories(${CURE_INSTALLROOT}/include/cure)
 include_directories(/usr/local/include/opencv)

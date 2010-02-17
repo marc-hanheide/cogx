@@ -9,6 +9,9 @@
 #define ADVOBJECTSEARCH_HPP_
 #include "AdvObjectSearch.hpp"
 
+#include <peekabot.hh>
+#include <peekabot/Types.hh>
+
 #include "Laser.hpp"
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
@@ -28,8 +31,7 @@
 #include "X11DispLocalGridMap.hh"
 #include <highgui.h>
 
-#include <peekabot.hh>
-#include <peekabot/Types.hh>
+
 
 
 namespace spatial
@@ -67,6 +69,7 @@ namespace spatial
     bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
     bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
     void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
+
   private:
 
     // 1. phase is table detection and then looking for objects.
@@ -86,8 +89,8 @@ namespace spatial
     ptz::PTZInterfacePrx m_ptzInterface;
     NavData::RobotPose2dPtr lastRobotPose;
 
-  //  peekabot::PeekabotClient m_PeekabotClient;
-  //  peekabot::PointCloudProxy m_ProxyPrior,m_ProxyPosterior;
+    peekabot::PeekabotClient m_PeekabotClient;
+    peekabot::PointCloudProxy m_ProxyPrior,m_ProxyPosterior;
 
     Cure::LocalGridMap<unsigned int>* m_lgm;
     Cure::LocalGridMap<double>* m_lgm_prior;

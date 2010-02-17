@@ -247,7 +247,7 @@ namespace spatial
     setupPushScan2d(*this, 0.1);
     setupPushOdometry(*this);
 
-  /*  try{
+    try{
       m_PeekabotClient.connect("localhost", 5050, true);
       m_ProxyPrior.add(m_PeekabotClient,"root.Prior",peekabot::REPLACE_ON_CONFLICT);
       m_ProxyPosterior.add(m_PeekabotClient,"root.Posterior",peekabot::REPLACE_ON_CONFLICT);
@@ -255,7 +255,7 @@ namespace spatial
     catch (std::exception e)
     {
       log("Could not connect to PB, %s",e.what());
-    }*/
+    }
 
     img = 0;
     cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
@@ -321,6 +321,21 @@ namespace spatial
           /* Post to WM so that it's visible in PB END*/
 
           SetPrior();
+          double color[3] = { 0.9, 0, 0};
+          //DisplayMapinPB(m_lgm_prior,color,m_ProxyPrior,1);
+
+          double multiplier = 10.0;
+          double xW,yW;
+          m_ProxyPrior.set_color(color[0],color[1],color[2]);
+
+          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+               for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                 m_lgm->index2WorldCoords(x, y, xW, yW);
+                 m_ProxyPrior.add_vertex(xW,yW,1 + (*m_lgm_prior)(x,y)*multiplier);
+               }
+               }
+
+
           }
           m_Mutex.unlock();
          }
