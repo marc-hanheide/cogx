@@ -650,7 +650,9 @@ namespace spatial
     samples.set_opacity(0.8);
 
     for (int i = 0; i < m_samplesize; i++){
+
         m_lgm->index2WorldCoords(m_samples[i*2], m_samples[i*2 + 1], xW1, yW1);
+        log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
         samples.add_vertex(xW1, yW1, 2);
       }
     /* Display Prior in PB END */
