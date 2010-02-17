@@ -331,7 +331,6 @@ namespace spatial
         }
 
       }
-    //  m_Mutex.unlock();
     }
 
     unlockComponent();
