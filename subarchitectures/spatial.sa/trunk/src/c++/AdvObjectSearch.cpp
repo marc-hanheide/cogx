@@ -457,7 +457,7 @@ namespace spatial
         highest_VC_index = i;
       }
     }
-    m_firstview = false;
+   // m_firstview = false;
     return highest_VC_index;
   }
 
