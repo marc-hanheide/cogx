@@ -263,6 +263,7 @@ namespace spatial
                           char c = buffer[index];
                           int ii = atoi(&c);
                           (*m_lgm)(x, y) = ii;
+			  index ++;
                         }
                         }
 
