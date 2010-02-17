@@ -650,7 +650,7 @@ namespace spatial
     }
 
     /* Display Prior in PB BEGIN */
-    double color[3] = { 0.9, 0.9, 0.9 };
+    double color[3] = { 0.2, 0.9, 0.9 };
     double xW1, yW1;
     peekabot::PointCloudProxy samples;
     samples.add(m_PeekabotClient, "root.samples",peekabot::REPLACE_ON_CONFLICT);
@@ -660,7 +660,7 @@ namespace spatial
     for (int i = 0; i < m_samplesize; i++){
 
         m_lgm->index2WorldCoords(m_samples[i*2], m_samples[i*2 + 1], xW1, yW1);
-        log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
+        //log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
         samples.add_vertex(xW1, yW1, 2);
       }
     /* Display Prior in PB END */
