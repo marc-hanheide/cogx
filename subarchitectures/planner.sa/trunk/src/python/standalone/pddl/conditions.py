@@ -85,6 +85,13 @@ class Condition(object):
                 return Conjunction(parts)
             else:
                 return Disjunction(parts)
+        elif tag == "imply":
+            part1 = it.get(list, "condition")
+            part2 = it.get(list, "condition")
+            it.no_more_tokens()
+            condition = Condition.parse(iter(part1), scope)
+            implication = Condition.parse(iter(part1), scope)
+            return Disjunction([condition.negate(), implication])
         elif tag == "forall":
             return QuantifiedCondition.parse(it, scope, UniversalCondition)
         elif tag == "exists":
