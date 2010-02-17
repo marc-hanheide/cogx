@@ -327,7 +327,7 @@ namespace spatial
         double multiplier = 100.0;
         double xW, yW;
         m_ProxyPrior.set_color(color[0], color[1], color[2]);
-        m_ProxyPrior.set_opacity(0.3);
+        //m_ProxyPrior.set_opacity(0.3);
         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
             if ((*m_lgm)(x,y) == 2)
