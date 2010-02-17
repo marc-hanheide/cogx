@@ -470,6 +470,7 @@ namespace spatial
     double color[3] =
       { 0.5, 0.5, 0.5 };
     double xW, yW;
+    m_ProxySeenMap.clear_vertices();
     m_ProxySeenMap.set_color(color[0], color[1], color[2]);
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
