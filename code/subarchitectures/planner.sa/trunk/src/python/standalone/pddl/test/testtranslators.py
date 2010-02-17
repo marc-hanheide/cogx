@@ -5,7 +5,7 @@
 import unittest
 import common
 
-import parser, domain, problem, writer, translators, sas_translate
+import parser, domain, problem, writer, translators #, sas_translate
 import mapl
 
 class TranslateTests(common.PddlTest):
@@ -65,16 +65,16 @@ class TranslateTests(common.PddlTest):
         
         self.roundtrip(dom2, prob2)
 
-    def testMAPLtoSAS(self):
-        """Testing compilation of MAPL to simple SAS"""
+    # def testMAPLtoSAS(self):
+    #     """Testing compilation of MAPL to simple SAS"""
         
-        dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
+    #     dom, prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
 
-        t = sas_translate.SASTranslator()
-        dom2 = t.translate(dom)
-        prob2 = t.translate(prob)
+    #     t = sas_translate.SASTranslator()
+    #     dom2 = t.translate(dom)
+    #     prob2 = t.translate(prob)
         
-        self.roundtrip(dom2, prob2)
+    #     self.roundtrip(dom2, prob2)
         
         
 if __name__ == '__main__':

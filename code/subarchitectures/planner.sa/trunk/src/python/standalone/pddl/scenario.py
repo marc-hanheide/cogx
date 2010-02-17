@@ -4,21 +4,13 @@
 import itertools
 
 import parser
-import mapltypes
+import mapltypes as types
+import builtin
 import scope
 import predicates, conditions, actions, effects, domain, mapl
 
-from mapltypes import *
 from parser import ParseError, UnexpectedTokenError
 from mapl import MAPLProblem
-
-def product(*iterables):
-    for el in iterables[0]:
-        if len(iterables) > 1:
-            for prod in product(*iterables[1:]):
-                yield (el,)+prod
-        else:
-            yield (el,)
 
 class MapsimScenario(object):
     def __init__(self, name, world, agents, domain):
@@ -96,14 +88,14 @@ class MapsimScenario(object):
         for elem in it:
             j = iter(elem)
             type = j.get("terminal").token
-            
+
             if type == ":objects":
-                olist = mapltypes.parse_typelist(j)
+                olist = types.parse_typelist(j)
                 for key, value in olist.iteritems():
                     if value.string not in domain.types:
                         raise ParseError(value, "undeclared type")
 
-                    problem.add_object(TypedObject(key.string, domain.types[value.string]))
+                    problem.add_object(types.TypedObject(key.string, domain.types[value.string]))
 
             elif type == ":init":
                 for elem in j:
@@ -116,6 +108,7 @@ class MapsimScenario(object):
             elif type == ":goal":
                 cond = j.get(list, "goal condition")
                 problem.goal = conditions.Condition.parse(iter(cond),problem)
+                j.no_more_tokens()
 
             elif type == ":metric":
                 opt = j.get("terminal", "optimization").token
@@ -123,15 +116,17 @@ class MapsimScenario(object):
                     raise UnexpectedTokenError(opt, "'minimize' or 'maximize'")
                 problem.optimization = opt.string
                 
-                problem.functions.add(predicates.total_time)
+                problem.functions.add(builtin.total_time)
+                problem.functions.add(builtin.total_cost)
                 func = predicates.Term.parse(j,problem)
-                problem.functions.remove(predicates.total_time)
+                problem.functions.remove(builtin.total_time)
+                problem.functions.remove(builtin.total_cost)
 
                 j.no_more_tokens()
 
-                if not isinstance(func.get_type(), FunctionType):
+                if not isinstance(func.get_type(), types.FunctionType):
                     raise ParseError(elem.token, "Optimization function can't be a constant.")
-                if not func.get_type().equal_or_subtype_of(t_number):
+                if not func.get_type().equal_or_subtype_of(builtin.t_number):
                     raise ParseError(elem.token, "Optimization function must be numeric.")
                 
                 problem.opt_func = func

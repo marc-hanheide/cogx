@@ -82,6 +82,14 @@ dur_drive = """
 
 a_load = """
         (:action load
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :replan        (= (location-of ?p) (location-of ?v))
+                 :effect        (assign (location-of ?p) ?v))
+"""
+
+a_load_mapl = """
+        (:action load
                  :agent         (?a - agent)
                  :parameters    (?p - package ?v - vehicle)
                  :precondition  (= (location-of ?p) (location-of ?v))
@@ -134,6 +142,43 @@ modal_action = """
  		(KVAL ?hearer ?var)
  	))
 
+"""
+
+error_load1 = """
+        (:action load
+                 :agent         (?a - agent)
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :effect        (assign (location-of ?p) ?v))
+"""
+
+error_load2 = """
+        (:action load
+                 :agent         (?a - agent)
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :replan        (= (location-of ?p) (location-of ?v))
+                 :replan        (= (location-of ?p) (location-of ?v))
+                 :effect        (assign (location-of ?p) ?v))
+"""
+
+error_load3 = """
+        (:action load
+                 :agent         (?a - agent)
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :replan        (= (location-of ?p) (location-of ?v))
+                 :effect        (assign (location-of ?p) ?v)
+                 :effect        (assign (location-of ?p) ?v))
+"""
+
+error_load4 = """
+        (:action load
+                 :agent         (?p - agent)
+                 :parameters    (?p - package ?v - vehicle)
+                 :precondition  (= (location-of ?p) (location-of ?v))
+                 :effect        (assign (location-of ?p) ?v))
 """
 
 class ActionTest(unittest.TestCase):
@@ -247,9 +292,42 @@ class ActionTest(unittest.TestCase):
     def testAssertion(self):
         """Testing parsing of assertions"""
         
-        action = Parser.parse_as(a_load.split("\n"), mapl.MAPLAction, self.domain)
+        action = Parser.parse_as(a_load_mapl.split("\n"), mapl.MAPLAction, self.domain)
         self.assert_(action.replan is not None)
 
+        action = Parser.parse_as(a_load.split("\n"), Action, self.domain)
+        self.assert_(action.replan is not None)
+        
+    def testMaplErrorHandling(self):
+        """Testing error handling of MaplAction"""
+        try:
+            action = Parser.parse_as(error_load1.split("\n"), mapl.MAPLAction, self.domain)
+            self.fail("Action with duplicate precondition didn't raise exception")
+        except ParseError, e:
+            self.assertEqual(e.token.string, ":precondition")
+            self.assertEqual(e.token.line, 6)
+
+        try:
+            action = Parser.parse_as(error_load2.split("\n"), mapl.MAPLAction, self.domain)
+            self.fail("Action with duplicate replan condition didn't raise exception")
+        except ParseError, e:
+            self.assertEqual(e.token.string, ":replan")
+            self.assertEqual(e.token.line, 7)
+
+        try:
+            action = Parser.parse_as(error_load3.split("\n"), mapl.MAPLAction, self.domain)
+            self.fail("Action with duplicate effect statement didn't raise exception")
+        except ParseError, e:
+            self.assertEqual(e.token.string, ":effect")
+            self.assertEqual(e.token.line, 8)
+
+        try:
+            action = Parser.parse_as(error_load4.split("\n"), mapl.MAPLAction, self.domain)
+            self.fail("Action with duplicate parameters didn't raise exception")
+        except ParseError, e:
+            self.assertEqual(e.token.string, "?p")
+            self.assertEqual(e.token.line, 4)
+            
         
 if __name__ == '__main__':
     unittest.main()    

@@ -3,8 +3,9 @@
 
 import unittest
 
-import conditions, mapl, scope
+import builtin, conditions, mapl, scope
 from parser import Parser, ParseError
+from predicates import Term, Literal
 from mapltypes import *
 from state import *
 
@@ -50,6 +51,96 @@ class StateTest(unittest.TestCase):
         return scope.Scope(params, self.scope)
         
 
+    def testStateVariables(self):
+        """Testing basic StateVariable functions"""
+        
+        svar1 = StateVariable(self.func1, [self.c1, self.c2, self.c1])
+        svar2 = StateVariable(self.func2, [self.c1, self.c2])
+        term2 = Term(self.func2, [self.c1, self.c2])
+        svar3 = StateVariable(self.pred1, [self.c1, self.c2, self.c1])
+        kvar2 = StateVariable(self.func2, [self.c1, self.c2], mapl.knowledge, [self.agent])    
+        ivar2 = StateVariable(self.func2, [self.c1, self.c2], mapl.indomain, [self.c1])
+
+        self.assertEqual(svar1.get_type(), t_boolean)
+        self.assertEqual(svar2.get_type(), self.type1)
+        self.assertEqual(svar3.get_type(), t_boolean)
+        self.assertEqual(kvar2.get_type(), t_boolean)
+        self.assertEqual(ivar2.get_type(), t_boolean)
+
+        self.assertEqual(svar1.get_predicate(), None)
+        self.assertEqual(svar2.get_predicate(), None)
+        self.assertEqual(svar3.get_predicate(), self.pred1)
+        self.assertEqual(kvar2.get_predicate(), mapl.knowledge)
+        self.assertEqual(ivar2.get_predicate(), mapl.indomain)
+
+        self.assertEqual(kvar2.nonmodal(), svar2)
+        self.assertEqual(ivar2.nonmodal(), svar2)
+
+        self.assertEqual(svar2.as_modality(mapl.knowledge, [self.agent]), kvar2)
+        self.assertEqual(svar2.as_modality(mapl.indomain, [self.c1]), ivar2)
+
+        self.assertEqual(svar1.get_args(), [self.c1, self.c2, self.c1])
+        self.assertEqual(kvar2.get_args(), [self.agent, term2])
+        self.assertEqual(ivar2.get_args(), [Term(self.func2, [self.c1, self.c2]), self.c1])
+
+        self.assertEqual(svar1, StateVariable.from_term(Term(self.func1, [self.c1, self.c2, self.c1])))
+        self.assertEqual(svar2, StateVariable.from_term(term2))
+        self.assertEqual(svar3, StateVariable.from_literal(Literal(self.pred1, [self.c1, self.c2, self.c1])))
+        self.assertEqual(kvar2, StateVariable.from_literal(Literal(mapl.knowledge, [self.agent, term2])))
+        self.assertEqual(ivar2, StateVariable.from_literal(Literal(mapl.indomain, [term2, self.c1])))
+
+        try:
+            lit1 = svar1.as_literal()
+            self.fail("No exception when trying to create a literal from a fluent variable")
+        except AssertionError, e:
+            pass
+            
+        lit3 = svar3.as_literal()
+        klit2 = kvar2.as_literal()
+        
+        self.assertEqual(lit3.predicate, self.pred1)
+        self.assertEqual(klit2.predicate, mapl.knowledge)
+        
+        self.assertEqual(lit3.args, [Term(self.c1), Term(self.c2), Term(self.c1)])
+        self.assertEqual(klit2.args, [Term(self.agent), Term(self.func2, [self.c1, self.c2])])
+
+        self.assertEqual(str(svar1), "func1(c1 c2 c1)")
+        self.assertEqual(str(svar3), "pred1(c1 c2 c1)")
+        self.assertEqual(str(kvar2), "kval(func2(c1 c2), agent)")
+        self.assertEqual(str(ivar2), "in-domain(func2(c1 c2), c1)")
+        
+        
+    def testFacts(self):
+        """Testing basic Fact functions"""
+
+        svar1 = StateVariable(self.func1, [self.c1, self.c2, self.c1])
+        term1 = Term(self.func1, [self.c1, self.c2, self.c1])
+        svar2 = StateVariable(self.func2, [self.c1, self.c2])
+        term2 = Term(self.func2, [self.c1, self.c2])
+        svar3 = StateVariable(self.pred1, [self.c1, self.c2, self.c1])
+        kvar2 = StateVariable(self.func2, [self.c1, self.c2], mapl.knowledge, [self.agent])    
+
+        fact1 = Fact(svar1, TRUE)
+        fact2 = Fact(svar2, self.c1)
+        fact3 = Fact(svar3, FALSE)
+
+        kfact2 = Fact(kvar2, TRUE)
+        
+        self.assertEqual(fact1.as_literal(), Literal(builtin.assign, [term1, TRUE]))
+        self.assertEqual(fact2.as_literal(useEqual=True), Literal(builtin.equal_assign, [term2, self.c1]))
+        self.assertEqual(fact3.as_literal(), Literal(self.pred1, [self.c1, self.c2, self.c1], negated=True))
+        self.assertEqual(kfact2.as_literal(), Literal(mapl.knowledge, [self.agent, term2]))
+
+        self.assertEqual(fact1, Fact.from_literal(Literal(builtin.assign, [term1, TRUE])))
+        self.assertEqual(fact2, Fact.from_literal(Literal(builtin.equals, [term2, self.c1])))
+        self.assertEqual(fact3, Fact.from_literal(Literal(self.pred1, [self.c1, self.c2, self.c1], negated=True)))
+        self.assertEqual(kfact2, Fact.from_literal(Literal(mapl.knowledge, [self.agent, term2])))
+        
+        self.assertEqual(str(fact1), "func1(c1 c2 c1) = true - boolean")
+        self.assertEqual(str(fact2), "func2(c1 c2) = c1 - type1")
+        self.assertEqual(str(fact3), "pred1(c1 c2 c1) = false - boolean")
+        self.assertEqual(str(kfact2), "kval(func2(c1 c2), agent) = true - boolean")
+        
     def testLiteralInstantiation(self):
         """Testing instantiation of literals"""
         

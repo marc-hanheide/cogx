@@ -148,6 +148,30 @@ class StateTest(common.PddlTest):
         unload.uninstantiate()
 
         self.assert_(fnew in state)
+
+        capacity = StateVariable(self.prob.functions["capacity"][0], [self.prob["tru1"]])
+        fold = Fact(capacity, TypedNumber(4))
+        fnew = Fact(capacity, TypedNumber(8))
+        self.assert_(fold in state)
+        
+        double = self.prob.get_action("double_capacity")
+        double.instantiate(["agent", "tru1"])
+        
+        state.apply_effect(double.effect)
+        
+        self.assertFalse(fold in state)
+        self.assert_(fnew in state)
+        double.uninstantiate()
+
+        halve = self.prob.get_action("halve_capacity")
+        halve.instantiate(["agent", "tru1"])
+
+        state.apply_effect(halve.effect)
+
+        self.assertFalse(fnew in state)
+        self.assert_(fold in state)
+        halve.uninstantiate()
+        
         
     def testConditionReasons(self):
         """Testing finding reason of satisfied conditions"""

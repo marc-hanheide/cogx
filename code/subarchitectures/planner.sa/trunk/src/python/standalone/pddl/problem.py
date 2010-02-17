@@ -114,6 +114,7 @@ class Problem(domain.Domain):
             elif type == ":goal":
                 cond = j.get(list, "goal condition")
                 problem.goal = conditions.Condition.parse(iter(cond),problem)
+                j.no_more_tokens()
 
             elif type == ":metric":
                 opt = j.get("terminal", "optimization").token

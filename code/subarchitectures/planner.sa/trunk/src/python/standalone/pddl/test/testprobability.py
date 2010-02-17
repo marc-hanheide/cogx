@@ -98,6 +98,13 @@ class ProbStateTest(common.PddlTest):
         self.assertAlmostEqual(s2[svar_loc11][prob["pos2"]], 0.4*0.2)
         self.assertAlmostEqual(s2[svar_loc11][prob["apt2"]], 0.3*0.2)
 
+        s2.apply_effect(action.effect)
+
+        self.assertAlmostEqual(s2[svar_loc11][prob["apn1"]], 0.8+(0.2*0.8))
+        self.assertAlmostEqual(s2[svar_loc11][prob["pos1"]], 0.3*0.2**2)
+        self.assertAlmostEqual(s2[svar_loc11][prob["pos2"]], 0.4*0.2**2)
+        self.assertAlmostEqual(s2[svar_loc11][prob["apt2"]], 0.3*0.2**2)
+        
         action.uninstantiate()
         
         s2 = state.copy()
@@ -138,6 +145,7 @@ class ProbStateTest(common.PddlTest):
         dstate.apply_effect(action.effect)
         self.assertEqual(dstate[svar_loc11], UNKNOWN)
         
+        action.uninstantiate()
         
 if __name__ == '__main__':
     unittest.main()    
