@@ -316,26 +316,26 @@ bool TextureTracker::track(){
 
 // grabs texture from camera image and attaches it to faces of model
 void TextureTracker::textureFromImage(bool use_num_pixels){
-	m_cam_perspective.Activate();
+	
 
-	glDisable(GL_DEPTH_TEST);
 	for(int i=0; i<m_modellist.size(); i++){
 
-
+		m_cam_perspective.Activate();
+		
 		vector<int> faceUpdateList = m_modellist[i]->model.getFaceUpdateList(m_modellist[i]->pose, 
 					vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
 					params.minTexGrabAngle,
 					use_num_pixels);
 
 		if(!faceUpdateList.empty()){
-					
 			m_modellist[i]->model.textureFromImage(	m_tex_frame,
-																	params.width, params.height,
-																	m_modellist[i]->pose,
-																	vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
-																	params.minTexGrabAngle,
-																	faceUpdateList);
+																							params.width, params.height,
+																							m_modellist[i]->pose,
+																							vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
+																							params.minTexGrabAngle,
+																							faceUpdateList);
 		}
+		faceUpdateList.clear();
 	}
 }
 
