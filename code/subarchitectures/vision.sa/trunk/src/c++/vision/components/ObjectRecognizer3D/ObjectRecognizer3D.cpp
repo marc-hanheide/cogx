@@ -429,8 +429,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 			log("%s: No object detected", m_label.c_str());
 		}else{
 		
-			if(m_recEntries[m_label].object->conf < 0.1){
-				log("%s: Confidence of detected object to low: %f", m_label.c_str(), m_recEntries[m_label].object->conf);
+			if(m_recEntries[m_label].object->conf < 0.07){
+				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,0.07);
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
 			}else{
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);

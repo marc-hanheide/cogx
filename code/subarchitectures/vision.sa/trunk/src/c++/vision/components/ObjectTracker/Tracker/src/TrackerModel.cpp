@@ -247,6 +247,8 @@ vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTex
 	p_max.getPose(mR, vT);
 	view.normalize();
 	
+	use_num_pixels = true;
+	
 	p_max.activate();
 	
 	// count pixels for each face and choose if its texture has to be updated
@@ -294,7 +296,7 @@ void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose&
 	vec4 texcoords_model;
 	vec4 vertex;
 	mat4 modelview, projection, modelviewprojection;
-	
+
 	// get faces to update
 // 	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
 // 	if(faceUpdateList.empty())

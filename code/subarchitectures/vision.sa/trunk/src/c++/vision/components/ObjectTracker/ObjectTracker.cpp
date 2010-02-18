@@ -82,18 +82,18 @@ void ObjectTracker::configure(const map<string,string> & _config){
 	m_textured = false;
 	if((it = _config.find("--textured")) != _config.end()){
 		m_textured = true;
-		log("  Mode: Texture tracking");
+		log("  Mode: texture tracking");
 	}else{
 		m_textured = false;
-		log("  Mode: Edge tracking");
+		log("  Mode: edge tracking");
 	}
 	
 	if((it = _config.find("--automatictexturing")) != _config.end()){
 		m_automatictexturing = true;
-		log("  Texturing: Automatic");
+		log("  Texturing: automatic");
 	}else{
 		m_automatictexturing = false;
-		log("  Texturing: Manual");
+		log("  Texturing: manual");
 	}
 	
 	if((it = _config.find("--BFC_disabled")) != _config.end()){
@@ -112,7 +112,7 @@ void ObjectTracker::configure(const map<string,string> & _config){
 		m_maxModels = 3;
 	}
 	
-	log("  Objects: %d", m_maxModels);
+	log("  max. models: %d", m_maxModels);
 }
 
 void ObjectTracker::start(){
@@ -242,17 +242,21 @@ void ObjectTracker::applyTrackingCommand(){
 		}
 	}else if(track_cmd->cmd == VisionData::ADDMODEL){
 		log("  VisionData::ADDMODEL");
-		Tracking::Pose pose;
-		Tracking::Model model;
-		trackingEntry = new TrackingEntry();
-		trackingEntry->visualObjectID = track_cmd->visualObjectID;
-		trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
-		convertPose2Particle(trackingEntry->obj->pose, pose);
-		convertGeometryModel(trackingEntry->obj->model, model);
-		trackingEntry->id = m_tracker->addModel(model, pose, trackingEntry->obj->label, true);
-		log("  VisionData::ADDMODEL '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
-		m_trackinglist.push_back(trackingEntry);
-		log("  VisionData::ADDMODEL: ok");
+		if(m_trackinglist.size()<m_maxModels){
+			Tracking::Pose pose;
+			Tracking::Model model;
+			trackingEntry = new TrackingEntry();
+			trackingEntry->visualObjectID = track_cmd->visualObjectID;
+			trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
+			convertPose2Particle(trackingEntry->obj->pose, pose);
+			convertGeometryModel(trackingEntry->obj->model, model);
+			trackingEntry->id = m_tracker->addModel(model, pose, trackingEntry->obj->label, true);
+			log("  VisionData::ADDMODEL '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
+			m_trackinglist.push_back(trackingEntry);
+			log("  VisionData::ADDMODEL: ok");
+		}else{
+			log("  VisionData::ADDMODEL: number of max. trackable models reached: %d", m_maxModels);
+		}
 		
 	}else if(track_cmd->cmd == VisionData::REMOVEMODEL){
 		log("  VisionData::REMOVEMODEL");
@@ -366,7 +370,7 @@ void ObjectTracker::runTracker(){
 	
 	// draw results
 	m_tracker->drawResult();
-	m_tracker->drawCalibrationPattern();
+// 	m_tracker->drawCalibrationPattern();
 	m_tracker->drawCoordinates();
 	m_tracker->swap();
 	
