@@ -54,6 +54,7 @@ private:
   bool m_running;
   bool m_testmode;
   bool m_textured;
+  bool m_automatictexturing;
   bool m_bfc;						// backface culling (disable for not closed surfaces, like polyflaps)
   
   typedef std::vector<TrackingEntry*> TrackingEntryList;

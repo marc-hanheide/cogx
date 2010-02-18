@@ -144,7 +144,7 @@ public:
   virtual void setKernelSize(int val){ }
 	virtual void setEdgeShader(){ }
 	virtual void setColorShader(){ }
-  virtual void textureFromImage(){}
+  virtual void textureFromImage(bool force=false){}
   virtual void untextureModels(){}
   	
 	// Set Parameters
