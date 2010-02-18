@@ -443,7 +443,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
 
-    log("Got VisualObject");
+    log("Got VisualObject: %s", observedObject->label.c_str());
 
     Pose3 pose = observedObject->pose;
 
@@ -455,11 +455,15 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       if (it->second->label == observedObject->label) {
 	// update object
 	objectID = it->first;
+	log("Updating object %i(%s)", objectID, observedObject->label.c_str());
 	break;
       }
     }
+    bool bNewObject = false;
     if (objectID == -1) {
       // New object
+      bNewObject = true;
+      log("New SpatialObject: %s", observedObject->label.c_str());
       objectID = m_maxObjectCounter++;
       m_objects[objectID] = new SpatialData::SpatialObject;
       m_objects[objectID]->id = objectID;
@@ -490,8 +494,8 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     double diff = length(m_objects[objectID]->pose.pos - pose.pos);
     diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 1));
     diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 2));
-    if (diff > 0.01) {
-//      log("3");
+    if (diff > 0.01 || bNewObject) {
+      //      log("3");
       m_objects[objectID]->pose = pose;
       m_lastObjectPoseTimes[objectID] = observedObject->time;
 
@@ -512,48 +516,54 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  return;
 	}
       }
+      //    log("4");
+
+      if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
+	if (m_objectModels[objectID]->type == OBJECT_BOX) {
+	  BoxObject *box = (BoxObject*)m_objectModels[objectID];
+	  peekabot::CubeProxy theobjectproxy;
+	  peekabot::GroupProxy root;
+	  root.assign(m_PeekabotClient, "root");
+	  theobjectproxy.add(m_objectProxies, m_objects[objectID]->label, peekabot::REPLACE_ON_CONFLICT);
+	  theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
+	  double angle;
+	  Vector3 axis;
+	  toAngleAxis(pose.rot, angle, axis);
+	  log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
+	      pose.pos.x, pose.pos.y, pose.pos.z, angle, 
+	      axis.x, axis.y, axis.z);
+	  theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+	  theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
+	      box->radius3*2);
+	}
+	else {
+	}
+      }
+      //    log("5");
+
+      // Check degree of onness
+      recomputeOnnessForObject(objectID);
+
+
+      if (m_placeInterface != 0) {
+	// Check degree of containment in Places
+	FrontierInterface::PlaceMembership membership = 
+	  m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
+
+	setContainmentProperty(objectID, membership.placeID, 1.0);
+      }
+
+      //  Needs estimate of extent of Places, in sensory frame
+      //   Add interface to PlaceManager?
+      // Post one or more Place containment structs on WM
+      // Find and remove/update extant property structs
+
+      // Check degree of support between Objects
+      //  Need a list of tracked Object
+      //  Check contact points and estimated centers of gravity
+      //   Need access to representation of object models
+      //   
     }
-//    log("4");
-
-    if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
-      peekabot::CubeProxy theobjectproxy;
-      peekabot::GroupProxy root;
-      root.assign(m_PeekabotClient, "root");
-      theobjectproxy.add(m_objectProxies, "theobject", peekabot::REPLACE_ON_CONFLICT);
-      theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
-      double angle;
-      Vector3 axis;
-      toAngleAxis(pose.rot, angle, axis);
-      log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
-	  pose.pos.x, pose.pos.y, pose.pos.z, angle, 
-	  axis.x, axis.y, axis.z);
-      theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
-      theobjectproxy.set_scale(0.19, 0.07, 0.31);
-    }
-//    log("5");
-
-    // Check degree of onness
-    recomputeOnnessForObject(objectID);
-
-
-    if (m_placeInterface != 0) {
-      // Check degree of containment in Places
-      FrontierInterface::PlaceMembership membership = 
-	m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
-
-      setContainmentProperty(objectID, membership.placeID, 1.0);
-    }
-
-    //  Needs estimate of extent of Places, in sensory frame
-    //   Add interface to PlaceManager?
-    // Post one or more Place containment structs on WM
-    // Find and remove/update extant property structs
-
-    // Check degree of support between Objects
-    //  Need a list of tracked Object
-    //  Check contact points and estimated centers of gravity
-    //   Need access to representation of object models
-    //   
   }
   catch (DoesNotExistOnWMException) {
     log("Error! new Object missing on WM!");

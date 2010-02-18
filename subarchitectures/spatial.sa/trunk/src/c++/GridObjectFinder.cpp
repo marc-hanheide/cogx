@@ -130,7 +130,7 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
 
   double tmp1, tmp2;
   cvMinMaxLoc(enlargedImage, &tmp1, &tmp2);
-  cout << tmp1 << "  " << tmp2 << "\n";
+//  cout << tmp1 << "  " << tmp2 << "\n";
 
   CvSize outputSize;
   outputSize.width = enlargedImage->width-objectWidth+1;
