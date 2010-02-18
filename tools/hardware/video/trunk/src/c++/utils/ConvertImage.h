@@ -1,6 +1,8 @@
 /**
  * @author Michael Zillich
  * @date Februrary 2009
+ * 
+ * TODO convert image size!
  */
 
 #ifndef CONVERT_IMAGE_H
