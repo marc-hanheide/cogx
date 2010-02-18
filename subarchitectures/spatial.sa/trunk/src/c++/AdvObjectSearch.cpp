@@ -195,6 +195,7 @@ namespace spatial
       m_ptzInterface->setPose(p);
 
       m_firstview = false;
+      m_ProbGivenObjectIsPresent = 0.7;
     }
 
   }
@@ -333,11 +334,28 @@ namespace spatial
             if ((*m_lgm)(x,y) == 2)
               continue;
             m_lgm->index2WorldCoords(x, y, xW, yW);
-            m_ProxyPrior.add_vertex(xW, yW, -2 + (*m_lgm_prior)(x, y)
+            m_ProxyPrior.add_vertex(xW, yW, -4 + (*m_lgm_prior)(x, y)
                 * multiplier);
           }
         }
         /* Display Prior in PB END */
+
+        /* Display Posterior in PB BEGIN */
+        double color1[3] = { 0.9, 0, 0.9 };
+
+        double xW1, yW1;
+        m_ProxyPosterior.set_color(color1[0], color1[1], color1[2]);
+        //m_ProxyPrior.set_opacity(0.3);
+        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            if ((*m_lgm)(x,y) == 2)
+              continue;
+            m_lgm->index2WorldCoords(x, y, xW1, yW1);
+            m_ProxyPosterior.add_vertex(xW1, yW1, -2 + (*m_lgm_posterior)(x, y)
+                * multiplier);
+          }
+        }
+        /* Display Posterior in PB END */
 
       }
     }
@@ -346,7 +364,6 @@ namespace spatial
     sleepComponent(100);
 
   }
-
   void
   AdvObjectSearch::GoToNBV(){
     int nbv;
@@ -359,6 +376,7 @@ namespace spatial
     pos.setX(Wx);
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
+    m_currentViewPoint = pos;
    /* Add plan to PB BEGIN */
     NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
     cogx::Math::Vector3 a;
@@ -369,7 +387,15 @@ namespace spatial
     addToWorkingMemory(newDataID(), obs);
     /* Add plan to PB END */
 
+    // Assume:
+    // 1. posted nav comamnd
+    // 2. reached position
+    // 3. sent recognize command
+    // 4. received visualobject
+    // 5. ????
+    // 6. PROFIT!
     //PostNavCommand(pos);
+    MeasurementUpdate(false);
 
   }
   void
@@ -466,6 +492,8 @@ namespace spatial
       if (!(*m_lgm_seen)(x, y))
         (*m_lgm_seen)(x, y) = true;
     }
+    m_CurrentViewPoint_Points = VCones[highest_VC_index];
+
     /* Display SeenMap in PB BEGIN */
     double color[3] =
       { 0.5, 0.5, 0.5 };
@@ -538,12 +566,18 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 0)
+        if ((*m_lgm)(x, y) == 0){
           (*m_lgm_prior)(x, y) = uFree;
-        else if ((*m_lgm)(x, y) == 1)
+          (*m_lgm_posterior)(x, y) = uFree;
+        }
+        else if ((*m_lgm)(x, y) == 1){
           (*m_lgm_prior)(x, y) = uObs;
-        else if ((*m_lgm)(x, y) == 3)
+          (*m_lgm_posterior)(x, y) = uObs;
+        }
+        else if ((*m_lgm)(x, y) == 3){
           (*m_lgm_prior)(x, y) = uPlanar;
+          (*m_lgm_posterior)(x, y) = uPlanar;
+        }
 
       }
     }
@@ -559,14 +593,73 @@ namespace spatial
     VisionData::VisualObjectPtr obj = oobj->getData();
     if (obj->detectionConfidence >= 0.5) {
       // TODO: measurement update
-
+      MeasurementUpdate(true);
     }
     else {
       // TODO: measurement update
+      MeasurementUpdate(false);
     }
 
   }
 
+  double AdvObjectSearch::ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints){
+    /* This is the probability that for a cell in the map, given object is in field of view,
+     * what are the chances that the recognition algorithm will spot it.
+     * If the cell in question is out of FOV then this is zero. If not
+     * then it's a constant (yeah, it's lame) because we don't have a model for
+     * FERNS. */
+
+    for (unsigned int i=0; i < ViewConePoints.size(); i++){
+      if (ViewConePoints[2*i] == x && ViewConePoints[2*i + 1] == y)
+        return m_ProbGivenObjectIsPresent;
+    }
+    return 0;
+
+  }
+
+void AdvObjectSearch::MeasurementUpdate(bool result){
+  if (result){
+    log("you're done go play outside.");
+    return;
+  }
+  double denomsum = 0.0;
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+          if ((*m_lgm)(x,y) == 2)
+            return;
+          denomsum += (*m_lgm_posterior)(x,y)*(1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points));
+        }
+  }
+  denomsum += pOut;
+  // For everything inside meaning: pIn
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x,y) == 2)
+          return;
+        (*m_lgm_posterior)(x,y) = ((*m_lgm_posterior)(x,y)* ( 1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points)))/
+            denomsum;
+      }
+    }
+
+
+  /* Display Posterior in PB BEGIN */
+  double color[3] = { 0.9, 0, 0.9 };
+  double multiplier = 100.0;
+  double xW, yW;
+  m_ProxyPosterior.set_color(color[0], color[1], color[2]);
+  //m_ProxyPrior.set_opacity(0.3);
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      if ((*m_lgm)(x,y) == 2)
+        continue;
+      m_lgm->index2WorldCoords(x, y, xW, yW);
+      m_ProxyPosterior.add_vertex(xW, yW, -2 + (*m_lgm_posterior)(x, y)
+          * multiplier);
+    }
+  }
+  /* Display Posterior in PB END */
+
+}
   void
   AdvObjectSearch::SampleGrid() {
     srand (time(NULL));
