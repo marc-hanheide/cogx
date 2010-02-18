@@ -238,7 +238,7 @@ void TrackerModel::drawCoordinates(){
 // counts pixels of each face
 // if pixels of face are > than in any previouse view
 //   set update flag = true
-vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTexGrabAngle){
+vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTexGrabAngle, bool use_num_pixels){
 	int i, n;
 	vector<int> faceUpdateList;
 	float alpha;
@@ -247,42 +247,45 @@ vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTex
 	p_max.getPose(mR, vT);
 	view.normalize();
 	
-	// generate occlusion queries
+	p_max.activate();
+	
+	// count pixels for each face and choose if its texture has to be updated
+
 	unsigned int* queryPixels;		// Occlussion query for counting pixels
 	queryPixels = (unsigned int*)malloc( sizeof(unsigned int) * m_facelist.size() );
 	glGenQueriesARB(m_facelist.size(), queryPixels);
+	for(i=0; i<(int)m_facelist.size(); i++){
+		glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
+		drawFace(i);
+		glEndQueryARB(GL_SAMPLES_PASSED_ARB);			
+	}
 	
-	// count pixels for each face and choose if its texture has to be updated
-	p_max.activate();
+	for(i=0; i<(int)m_facelist.size(); i++){
+
+		glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
+	
+		vec3 vn = mR * m_facelist[i].normal;
+		alpha = acos(vn*view);
 		
-		for(i=0; i<(int)m_facelist.size(); i++){
-			glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
-			drawFace(i);
-			glEndQueryARB(GL_SAMPLES_PASSED_ARB);			
-		}
-		
-		for(i=0; i<(int)m_facelist.size(); i++){
-			glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
-			
-			vec3 vn = mR * m_facelist[i].normal;
-			alpha = acos(vn*view);
-			
-			
-			
-			
-			if((m_facepixellist[i]==0) && (alpha>minTexGrabAngle)){
+		if(alpha>minTexGrabAngle){
+			if(use_num_pixels){
+				if(m_facepixellist[i]==0){
+					faceUpdateList.push_back(i);
+					m_facepixellist[i] = n;
+				}
+			}else{
 				faceUpdateList.push_back(i);
 				m_facepixellist[i] = n;
 			}
-			
-// 			printf("m_facepixellist: %d, apha: %f > %f, size: %d\n", m_facepixellist[i], alpha,  minTexGrabAngle, faceUpdateList.size());
 		}
+
+	}
 		
 	p_max.deactivate();
 	
 	glDeleteQueriesARB(m_facelist.size(), queryPixels);
 	free(queryPixels);
-	
+
 	return faceUpdateList;
 }
 

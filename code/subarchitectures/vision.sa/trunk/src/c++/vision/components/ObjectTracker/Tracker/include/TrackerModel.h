@@ -77,7 +77,7 @@ public:
 	void drawCoordinates();
 	
 	
-	std::vector<int> getFaceUpdateList(Pose& p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);
+	std::vector<int> getFaceUpdateList(Pose& p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0, bool use_num_pixels=true);
 	
 	/** @brief capture texture from image */
 	void textureFromImage(Texture* image, int width, int height, Pose& p_max, vec3 view, float minTexGrabAngle, std::vector<int> faceUpdateList);

@@ -241,6 +241,9 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					printf("\n	Total tracking time: %.0f ms\n", fTimeTracker*1000);
 					break;
 				case SDLK_t:
+					tracker->textureFromImage(false);
+					break;
+				case SDLK_u:
 					tracker->untextureModels();
 					break;			
 				case SDLK_z:

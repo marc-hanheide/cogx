@@ -59,7 +59,7 @@ public:
 	
 	virtual bool track();
 	
-	virtual void textureFromImage();
+	virtual void textureFromImage(bool use_num_pixels=true);
 	
 	virtual void untextureModels();
 						

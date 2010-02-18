@@ -30,6 +30,8 @@ ObjectTracker::ObjectTracker(){
   m_track = false;
   m_running = true;
   m_testmode = false;
+  m_textured = true;
+  m_automatictexturing = true;
   m_bfc = true;
 }
 
@@ -84,6 +86,14 @@ void ObjectTracker::configure(const map<string,string> & _config){
 	}else{
 		m_textured = false;
 		log("  Mode: Edge tracking");
+	}
+	
+	if((it = _config.find("--automatictexturing")) != _config.end()){
+		m_automatictexturing = true;
+		log("  Texturing: Automatic");
+	}else{
+		m_automatictexturing = false;
+		log("  Texturing: Manual");
 	}
 	
 	if((it = _config.find("--BFC_disabled")) != _config.end()){
@@ -344,8 +354,7 @@ void ObjectTracker::runTracker(){
 
 	// track models
 	m_tracker->track();
-	m_tracker->textureFromImage();
-		
+			
 	// update pose and confidence in WorkingMemory
 	for(i=0; i<m_trackinglist.size(); i++){
 		m_tracker->getModelPose(m_trackinglist[i]->id, pose);
@@ -360,6 +369,9 @@ void ObjectTracker::runTracker(){
 	m_tracker->drawCalibrationPattern();
 	m_tracker->drawCoordinates();
 	m_tracker->swap();
+	
+	if(m_automatictexturing)
+		m_tracker->textureFromImage(true);
 
 	fTimeTracker = m_timer.Update();
 }
