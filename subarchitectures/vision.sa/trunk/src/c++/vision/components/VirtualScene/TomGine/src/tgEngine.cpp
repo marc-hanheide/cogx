@@ -32,7 +32,6 @@ tgEngine::tgEngine(){
 }
 
 tgEngine::~tgEngine(){
-	printf("tgEngine::~tgEngine()\n");
 	delete(m_window);
 }
 
