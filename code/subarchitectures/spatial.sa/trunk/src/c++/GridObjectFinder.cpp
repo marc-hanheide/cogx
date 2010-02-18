@@ -144,9 +144,9 @@ GridObjectFinder::findObject(IplImage *image, int *outX, int *outY,
   double bestAngle;
   CvPoint bestPoint;
 
-  cvNamedWindow( "Score", 1 );
+  // cvNamedWindow( "Score", 1 );
 //  cvNamedWindow( "Template", 1 );
-  cvNamedWindow( "Enlarged", 1 );
+  // cvNamedWindow( "Enlarged", 1 );
 
   for (std::vector<IplImage *>::iterator it = m_aspectImages.begin();
       it != m_aspectImages.end(); it++) {

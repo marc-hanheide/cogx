@@ -198,6 +198,9 @@ protected:
   double m_maxClusterDeviation;
   cast::CASTTimer m_planeProcessingCooldown;
 
+  // Map from cluster numbers to WM IDs
+  std::map<int, std::string> m_planeClusterWMIDs;
+
   //Interfaces
   ptz::PTZInterfacePrx m_ptzInterface;
 
