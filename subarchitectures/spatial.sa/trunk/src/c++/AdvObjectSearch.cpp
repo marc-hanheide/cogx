@@ -322,8 +322,10 @@ namespace spatial
         /* Post to WM so that it's visible in PB END*/
 
         SetPrior();
+
+
         /* Display Prior in PB BEGIN */
-        double color[3] = { 0.9, 0.9, 0 };
+	/*  double color[3] = { 0.9, 0.9, 0 };
         double multiplier = 100.0;
         double xW, yW;
         m_ProxyPrior.set_color(color[0], color[1], color[2]);
@@ -340,8 +342,8 @@ namespace spatial
         /* Display Prior in PB END */
 
         /* Display Posterior in PB BEGIN */
-        double color1[3] = { 0.9, 0, 0.9 };
-
+        /*double color1[3] = { 0.9, 0, 0.9 };
+	multiplier = 1000.0;
         double xW1, yW1;
         m_ProxyPosterior.set_color(color1[0], color1[1], color1[2]);
         //m_ProxyPrior.set_opacity(0.3);
@@ -350,10 +352,10 @@ namespace spatial
             if ((*m_lgm)(x,y) == 2)
               continue;
             m_lgm->index2WorldCoords(x, y, xW1, yW1);
-            m_ProxyPosterior.add_vertex(xW1, yW1, -2 + (*m_lgm_posterior)(x, y)
+            m_ProxyPosterior.add_vertex(xW1, yW1+8,(*m_lgm_posterior)(x, y)
                 * multiplier);
           }
-        }
+	  }*/
         /* Display Posterior in PB END */
 
       }
@@ -394,6 +396,7 @@ namespace spatial
     // 5. ????
     // 6. PROFIT!
     //PostNavCommand(pos);
+    log("calling measurement update");
     MeasurementUpdate(false);
 
   }
@@ -499,7 +502,7 @@ namespace spatial
         if ((*m_lgm_seen)(x, y) == true || (*m_lgm)(x, y) == 2)
           continue;
         m_lgm->index2WorldCoords(x, y, xW, yW);
-        m_ProxySeenMap.add_vertex(xW, yW, 2);
+        m_ProxySeenMap.add_vertex(xW+6, yW, 0);
       }
     }
     /* Display SeenMap in PB END */
@@ -575,6 +578,40 @@ namespace spatial
       }
     }
 
+
+ /* Display Posterior in PB as Line Cloud BEGIN */
+  
+  double multiplier1 = 500.0;
+  double xW2, yW2,xW3,yW3;
+  peekabot::LineCloudProxy linecloudp;
+
+  linecloudp.add(m_PeekabotClient,"root.LC_BEFORE",peekabot::REPLACE_ON_CONFLICT);
+  linecloudp.clear_vertices();
+  linecloudp.set_line_width(2);
+  linecloudp.set_color(0.9,0,0);
+
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      if ((*m_lgm)(x,y) == 2 || y == m_lgm->getSize())
+        continue;
+      m_lgm->index2WorldCoords(x, y, xW2, yW2);
+      m_lgm->index2WorldCoords(x,y+1,xW3,yW3);
+      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    }
+  }
+
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      if ((*m_lgm)(x,y) == 2 || x == m_lgm->getSize())
+        continue;
+      m_lgm->index2WorldCoords(x+1, y, xW2, yW2);
+      m_lgm->index2WorldCoords(x,y,xW3,yW3);
+      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    }
+  }
+  /* Display Posterior in as line cloud PB END */
+
+
   }
 
   void
@@ -604,8 +641,8 @@ namespace spatial
 
     for (unsigned int i=0; i < ViewConePoints.size(); i++){
       if (ViewConePoints[2*i] == x && ViewConePoints[2*i + 1] == y){
-        log("ActionProbcell returned %f", m_ProbGivenObjectIsPresent);
-        return m_ProbGivenObjectIsPresent;
+        log("ActionProbcell returned %f", 0.7);
+        return 0.7; // FIXME: hack...
       }
     }
     return 0;
@@ -613,15 +650,51 @@ namespace spatial
   }
 
 void AdvObjectSearch::MeasurementUpdate(bool result){
-  if (result){
+  log("in here..");  
+if (result){
     log("you're done. go play outside.");
     return;
   }
+
+
+ /* Display Posterior in PB as Line Cloud BEGIN */
+  
+  double multiplier1 = 200.0;
+  double xW2, yW2,xW3,yW3;
+  peekabot::LineCloudProxy linecloudp;
+
+  linecloudp.add(m_PeekabotClient,"root.LC_BEFORE",peekabot::REPLACE_ON_CONFLICT);
+  linecloudp.clear_vertices();
+  linecloudp.set_line_width(2);
+  linecloudp.set_color(0.9,0,0);
+
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      if ((*m_lgm)(x,y) == 2 || y == m_lgm->getSize())
+        continue;
+      m_lgm->index2WorldCoords(x, y, xW2, yW2);
+      m_lgm->index2WorldCoords(x,y+1,xW3,yW3);
+      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    }
+  }
+
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      if ((*m_lgm)(x,y) == 2 || x == m_lgm->getSize())
+        continue;
+      m_lgm->index2WorldCoords(x+1, y, xW2, yW2);
+      m_lgm->index2WorldCoords(x,y,xW3,yW3);
+      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    }
+  }
+  /* Display Posterior in as line cloud PB END */
+
+
   double denomsum = 0.0;
   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
           if ((*m_lgm)(x,y) == 2)
-            return;
+            continue;
           denomsum += (*m_lgm_posterior)(x,y)*(1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points));
         }
   }
@@ -631,21 +704,23 @@ void AdvObjectSearch::MeasurementUpdate(bool result){
   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x,y) == 2)
-          return;
-        if ((*m_lgm)(x,y) == 3)
-           log("old prob for table:", (*m_lgm_posterior)(x,y));
+          continue;
+        if ((*m_lgm)(x,y) == 0)
+	  log("old prob for fs: %f", (*m_lgm_posterior)(x,y));
         (*m_lgm_posterior)(x,y) = ((*m_lgm_posterior)(x,y)* ( 1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points)))/
             denomsum;
-        if ((*m_lgm)(x,y) == 3)
-          log("new prob for table:", (*m_lgm_posterior)(x,y));
+        if ((*m_lgm)(x,y) == 0)
+          log("new prob for fs: %f", (*m_lgm_posterior)(x,y));
       }
     }
 
+  pOut = pOut / denomsum;
 
   /* Display Posterior in PB BEGIN */
-  double color[3] = { 0.9, 0, 0.9 };
-  double multiplier = 100.0;
+  /* double color[3] = { 0.9, 0, 0.9 };
+  double multiplier = 1000.0;
   double xW, yW;
+  m_ProxyPosterior.clear_vertices();
   m_ProxyPosterior.set_color(color[0], color[1], color[2]);
   //m_ProxyPrior.set_opacity(0.3);
   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
@@ -653,11 +728,43 @@ void AdvObjectSearch::MeasurementUpdate(bool result){
       if ((*m_lgm)(x,y) == 2)
         continue;
       m_lgm->index2WorldCoords(x, y, xW, yW);
-      m_ProxyPosterior.add_vertex(xW, yW, -2 + (*m_lgm_posterior)(x, y)
+      m_ProxyPosterior.add_vertex(xW, yW+8,(*m_lgm_posterior)(x, y)
           * multiplier);
     }
-  }
+    }*/
   /* Display Posterior in PB END */
+
+  /* Display Posterior in PB as Line Cloud BEGIN */
+  
+  //double multiplier1 = 500.0;
+  //double xW2, yW2,xW3,yW3;
+  peekabot::LineCloudProxy linecloudp1;
+
+  linecloudp1.add(m_PeekabotClient,"root.LC_AFTER",peekabot::REPLACE_ON_CONFLICT);
+  linecloudp1.clear_vertices();
+  linecloudp1.set_line_width(2);
+
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      if ((*m_lgm)(x,y) == 2 || y == m_lgm->getSize())
+        continue;
+      m_lgm->index2WorldCoords(x, y, xW2, yW2);
+      m_lgm->index2WorldCoords(x,y+1,xW3,yW3);
+      linecloudp1.add_line(xW2,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    }
+  }
+
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      if ((*m_lgm)(x,y) == 2 || x == m_lgm->getSize())
+        continue;
+      m_lgm->index2WorldCoords(x+1, y, xW2, yW2);
+      m_lgm->index2WorldCoords(x,y,xW3,yW3);
+      linecloudp1.add_line(xW2,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    }
+  }
+  /* Display Posterior in as line cloud PB END */
+
 
 }
   void
@@ -765,14 +872,14 @@ void AdvObjectSearch::MeasurementUpdate(bool result){
             i++;
           }
           else{
-            log("there's no path to here.");
+	    //  log("there's no path to here.");
           }
           /*if reachable*/
         }
 
       }
       else{
-        log("point either non free space or seen.");
+        //log("point either non free space or seen.");
       }
     }
 
