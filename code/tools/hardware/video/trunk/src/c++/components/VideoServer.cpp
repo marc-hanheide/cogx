@@ -200,8 +200,7 @@ void VideoServer::startReceiveImages(const std::string &receiverComponentId,
   rcv.imgHeight = height;
   rcv.camIds = camIds;
   rcv.receiverComponentId = receiverComponentId;
-  rcv.videoClient =
-    getIceServer<VideoClientInterface>(rcv.receiverComponentId);
+  rcv.videoClient = getIceServer<VideoClientInterface>(rcv.receiverComponentId);
   imageReceivers.push_back(rcv);
   unlockComponent();
 }

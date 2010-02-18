@@ -1,6 +1,9 @@
 /**
- * @author Michael Zillich
- * @date February 2009
+ * @file PointGrayServer.cpp
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date Februrary 2010, Februar 2009
+ * @version 0.1
+ * @brief Video server for the PointGray stereo cameras.
  */
 
 #include <cmath>
@@ -11,28 +14,68 @@
 /**
  * The function called to create a new instance of our component.
  */
-extern "C"
-{
-  cast::CASTComponentPtr newComponent()
-  {
+extern "C" {
+  cast::CASTComponentPtr newComponent() {
     return new cast::PointGreyServer();
   }
 }
+
 
 namespace cast
 {
 
 using namespace std;
 
-PointGreyServer::MeanRate::MeanRate(int size)
-  : mean(size)
+
+/**
+ * @brief Property type names from the PointGrey cameras.
+ */
+static const char propTypeNames [][30] =
+{
+	"BRIGHTNESS",									// Is per default (10010) manual and (valueA = 0)
+	"AUTO_EXPOSURE",							/// Is per default (10011) (valueA)
+	"SHARPNESS",									/// Is per default (10011) (valueA)
+	"WHITE_BALANCE",							/// Is per default (10011) (valueA-valueB)
+	"HUE",												// Is per default (10000) off and manual(valueA=2048)
+	"SATURATION",									/// Is per default (10011) (valueA-absValue)
+	"GAMMA",											// Is per default (10000) off and manual (valueA=1024-absValue=1.0)
+	"IRIS",												// Not available
+	"FOCUS",											// Not available
+	"ZOOM",												// Not available
+	"PAN",												// Not available
+	"TILT",												// Not available
+	"SHUTTER",										/// Is per default (10011) (valueA-absValue)
+	"GAIN",												/// Is per default (10011) (valueA)
+	"TRIGGER_MODE",								// Is per default (10000) off and manual (valueA=0-absValue=0)
+	"TRIGGER_DELAY",							// Is per default (10000) off and manual (valueA=1024-absValue=1.0)
+	"FRAME_RATE",									// Is per default (10011) (valueA=480-absValue=30.0)
+	"TEMPERATURE",								// Not available
+	"UNSPECIFIED_PROPERTY_TYPE"
+};
+
+/**
+ * @brief Active properties (0 ... inactive, 1 ... active).
+ */
+static int propActive[sizeof(propTypeNames)/30] = { 0, 1, 1, 1, 0, 1, 0, 0 ,0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
+
+static const char bools [][10] =
+{
+	"FALSE",
+	"TRUE"
+};
+
+/**
+ * @brief Constructor of class MeanRate.
+ */
+PointGreyServer::MeanRate::MeanRate(int size) : mean(size)
 {
   gettimeofday(&prev, 0);
 }
 
 /**
- * returns the current rate as 1/(current time - last time) or 0 if current time
+ * @brief Returns the current rate as 1/(current time - last time) or 0 if current time
  * == last time
+ * @return Returns the current calculated (frame-) rate.
  */
 float PointGreyServer::MeanRate::calculateCurrentRate()
 {
@@ -64,12 +107,20 @@ float PointGreyServer::MeanRate::calculateCurrentRate()
 }
 
 
+/**
+ * @brief Constructor of class PointGreyServer.
+ */
 PointGreyServer::PointGreyServer()
 {
   width = height = 0;
   cameras = 0;
+	setSamePropertiesActiveFlag = false;
 }
 
+
+/**
+ * @brief Destructor of class PointGreyServer.
+ */
 PointGreyServer::~PointGreyServer()
 {
   for(size_t i = 0; i < (size_t)getNumCameras(); i++)
@@ -81,9 +132,14 @@ PointGreyServer::~PointGreyServer()
   delete[] cameras;
 }
 
+
+/**
+ * @brief Log camera information to the console.
+ * @param pCamInfo FlyCapture camera info.
+ */
 void PointGreyServer::LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo)
 {
-  log("\n*** CAMERA INFORMATION ***\n"
+  log("\n\n*** CAMERA INFORMATION ***\n"
       "Serial number - %u\n"
       "Camera model - %s\n"
       "Camera vendor - %s\n"
@@ -100,13 +156,234 @@ void PointGreyServer::LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo)
       pCamInfo->firmwareBuildTime );
 }
 
+
+/**
+ * @brief Log camera property information to the console.
+ * @param pPropInfo FlyCapture property info.
+ */
+void PointGreyServer::LogPropertyInfo(FlyCapture2::PropertyInfo* pPropInfo)
+{
+	
+  log(" CAMERA PROPERTY INFORMATION\n"
+      "Property Type:		%s\n"
+      "Present:		%s\n"
+      "Auto supported:		%s\n"
+      "Manual supported:	%s\n"
+      "On-Off supported:	%s\n"
+      "Abs-Val supported:	%s\n"
+      "ReadOut supported:	%s\n"
+      "Minimum value:		%u\n"
+      "Maximum value:		%u\n"
+      "Absolut minimum:	%4.3f\n"
+      "Absolut maximum:	%4.3f\n"
+      "Units [abr.]:		%s [%s]\n",
+      propTypeNames[pPropInfo->type],
+      bools[pPropInfo->present],
+      bools[pPropInfo->autoSupported],
+      bools[pPropInfo->manualSupported],
+      bools[pPropInfo->onOffSupported],
+      bools[pPropInfo->absValSupported],
+      bools[pPropInfo->readOutSupported],
+      pPropInfo->min,
+      pPropInfo->max,
+      pPropInfo->absMin,
+      pPropInfo->absMax,
+      pPropInfo->pUnits,
+      pPropInfo->pUnitAbbr);
+}
+
+/**
+ * @brief Get property from camera.
+ * @param propType Proporty type
+ */
+void PointGreyServer::GetPropertyInfo(int camId, FlyCapture2::PropertyType propType, FlyCapture2::PropertyInfo* pPropInfo)
+{
+	pPropInfo->type = propType;
+
+	FlyCapture2::Error error;
+	error = cameras[camId]->GetPropertyInfo(pPropInfo);
+	if(error != FlyCapture2::PGRERROR_OK)
+		throw runtime_error(error.GetDescription());
+}
+
+/**
+ * @brief Log camera property information to the console.
+ * @param pPropInfo FlyCapture property info.
+ */
+void PointGreyServer::LogProperty(FlyCapture2::Property* pProp)
+{
+  log("CAMERA PROPERTY:\n"
+      "Property Type:		%s\n"
+      "Present:		%s\n"
+      "Absolut control:	%s\n"
+      "One push:		%s\n"
+      "On/Off:			%s\n"
+      "Auto / Manual:		%s\n"
+      "Value A:		%u\n"
+      "Value B:		%u\n"
+      "Abs. value:		%4.3f\n",
+      propTypeNames[pProp->type],
+      bools[pProp->present],
+      bools[pProp->absControl],
+      bools[pProp->onePush],
+      bools[pProp->onOff],
+      bools[pProp->autoManualMode],
+      pProp->valueA,
+      pProp->valueB,
+      pProp->absValue);
+}
+
+/**
+ * @brief Log camera property values to the console.
+ * @param pPropInfo FlyCapture property info.
+ */
+void PointGreyServer::LogPropertyValues(FlyCapture2::Property* pProp)
+{
+  log("CAMERA PROPERTY:\n"
+      "Property Type:		%s\n"
+      "Value A:		%u\n"
+      "Value B:		%u\n"
+      "Abs. value:		%4.3f\n",
+      propTypeNames[pProp->type],
+      pProp->valueA,
+      pProp->valueB,
+      pProp->absValue);
+}
+
+/**
+ * @brief Get property from camera.
+ * @param propType Proporty type
+ */
+void PointGreyServer::GetProperty(int camId, FlyCapture2::PropertyType propType, FlyCapture2::Property* pProp)
+{
+	pProp->type = propType;
+
+	FlyCapture2::Error error;
+	error = cameras[camId]->GetProperty(pProp);
+	if(error != FlyCapture2::PGRERROR_OK)
+		throw runtime_error(error.GetDescription());
+}
+
+/**
+ * @brief Set property control of camera manual/auto.
+ * @param camId Camera ID
+ * @param propType Proporty type
+ * @param manual Property control manual.
+ */
+void PointGreyServer::SetPropertyManual(int camId, FlyCapture2::PropertyType propType, bool manual)
+{
+	FlyCapture2::Property pProp;
+	GetProperty(camId, propType, &pProp);
+	pProp.autoManualMode = !manual;
+
+	FlyCapture2::Error error;
+	error = cameras[camId]->SetProperty(&pProp);
+	if(error != FlyCapture2::PGRERROR_OK)
+		throw runtime_error(error.GetDescription());
+}
+
+
+/**
+ * @brief Set property value for camera.
+ * @param camId Camera ID
+ * @param propType Proporty type
+ * @param value Integer value of the property
+ */
+void PointGreyServer::SetPropertyValue(int camId, FlyCapture2::PropertyType propType, int valueA, int valueB, float absValue)
+{
+	FlyCapture2::Property pProp;
+	GetProperty(camId, propType, &pProp);
+	pProp.valueA = valueA;
+	pProp.valueB = valueB;
+	pProp.absValue = absValue;
+
+	FlyCapture2::Error error;
+	error = cameras[camId]->SetProperty(&pProp);
+	if(error != FlyCapture2::PGRERROR_OK)
+		throw runtime_error(error.GetDescription());
+}
+
+
+/**
+ * @brief Set the properties for all cameras except the first one to manual mode. \n
+ * The first camera will become the "property master".
+ */
+void PointGreyServer::SetAllPropertiesManual()
+{
+	for(size_t i = 0; i < (size_t)getNumCameras(); i++)
+	{
+		if (i == 0) // set the first camera properties auto.
+			for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
+				if(propActive[j] == 1)
+					SetPropertyManual(i, (FlyCapture2::PropertyType) j, false);
+		if (i > 0) // set all other camera properties manual
+			for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
+				if(propActive[j] == 1)
+					SetPropertyManual(i, (FlyCapture2::PropertyType) j, true);
+	}
+}
+
+/**
+ * @brief Copy all property values from the first camera to all others. \n
+ * The first camera is then the "property master".
+ */
+void PointGreyServer::CopyAllPropertyValues()
+{
+	static int counter = 0;
+	counter++;
+	if (counter > 15)										/// TODO add framerate
+	{
+		counter = 0;
+		FlyCapture2::Property pProp;
+		for(unsigned j=0; j< sizeof(propTypeNames)/30; j++)
+		{
+			if(propActive[j] == 1)
+			{
+				for(size_t i = 0; i < (size_t)getNumCameras(); i++)
+				{
+					if (i == 0) GetProperty(0, (FlyCapture2::PropertyType) j, &pProp);
+					if (i > 0) SetPropertyValue(i, (FlyCapture2::PropertyType) j, pProp.valueA, pProp.valueB, pProp.absValue);
+				}
+			}
+		}
+	}	
+}
+
+
+/**
+ * @brief Set for all camares the same properties. \n
+ * The first camera is then the "property master". All other cams will get the same properties.
+ */
+void PointGreyServer::SetSamePropertiesActive()
+{
+printf("SetSamePropertiesActive!\n");
+	setSamePropertiesActiveFlag = true;
+
+	SetAllPropertiesManual();
+	CopyAllPropertyValues();
+}
+
+
+/**
+ * @brief Select the video mode in respect to the image width.\n
+ * The heigt will be set automatically to get a 4:3 image. We choose the highest \n
+ * colour resolution.
+ * @param width Image width
+ * @param heigt Image height
+ */
 FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_height)
 {
-  // note: we use only width to select the video mode and assume height to be
-  // 3/4 of width
+  // note: we use only width to select the video mode and assume height to be 3/4 of width
   // If we have several colour formats to choose from, we always select colour
   // over greyscale and select the one with hightest colour resolution, e.g. RGB
   // over YUV422
+
+//   if(_width == 0)			// TODO ADD CUSTOM VIDEO MODE7 ?
+//   {
+// 		_width = 1280;
+//     _height = 960;
+//     return FlyCapture2::VIDEOMODE_FORMAT7;
+//   }
   if(_width == 160)
   {
     _height = 120;
@@ -139,30 +416,55 @@ FlyCapture2::VideoMode PointGreyServer::selectVideoMode(int &_width, int &_heigh
   }
   else
   {
-    // the default
+    // the default value
+		log("unknown video mode: video mode set to default value: 640x480RGB");
     _width = 640;
     _height = 480;
     return FlyCapture2::VIDEOMODE_640x480RGB;
   }
 }
 
+
+/**
+ * @brief Select the frame rate. Default value is 30fps.
+ * @param _fps Frames per second
+ */
 FlyCapture2::FrameRate PointGreyServer::selectFrameRate(int &_fps)
 {
-  if(_fps == 7)
-    return FlyCapture2::FRAMERATE_7_5;
-  if(_fps == 15)
-    return FlyCapture2::FRAMERATE_15;
-  if(_fps == 30)
-    return FlyCapture2::FRAMERATE_30;
-  if(_fps == 60)
-    return FlyCapture2::FRAMERATE_60;
-  if(_fps == 120)
-   return FlyCapture2::FRAMERATE_120;
-  // the default
-  _fps = 15;
-  return FlyCapture2::FRAMERATE_15;
+	switch(_fps)
+	{
+		case 1: 
+			return FlyCapture2::FRAMERATE_1_875;
+		break;
+		case 3: 
+			return FlyCapture2::FRAMERATE_3_75;
+		break;
+		case 7: 
+			return FlyCapture2::FRAMERATE_7_5;
+		break;
+		case 15: 
+			return FlyCapture2::FRAMERATE_15;
+		break;
+		case 30: 
+			return FlyCapture2::FRAMERATE_30;
+		break;
+		case 60: 
+			return FlyCapture2::FRAMERATE_60;
+		break;
+		case 120: 
+			return FlyCapture2::FRAMERATE_120;
+		break;
+		default:
+		  log("unknown framerate: set to default value: 30fps\n");
+			return FlyCapture2::FRAMERATE_30;
+		break;
+	}
 }
 
+
+/**
+ * @brief Initialise the PointGreyServer.
+ */
 void PointGreyServer::init() throw(runtime_error)
 {
   unsigned int numAvailableCameras;
@@ -194,27 +496,33 @@ void PointGreyServer::init() throw(runtime_error)
     if(error != FlyCapture2::PGRERROR_OK)
       throw runtime_error(error.GetDescription());
 
-    // Get the camera information
+    // Get the camera information and log it
     FlyCapture2::CameraInfo camInfo;
     error = cameras[i]->GetCameraInfo(&camInfo);
     if(error != FlyCapture2::PGRERROR_OK)
       throw runtime_error(error.GetDescription());
-    LogCameraInfo(&camInfo); 
+    LogCameraInfo(&camInfo);
 
+		// set video mode and frame rate
     FlyCapture2::VideoMode mode = selectVideoMode(width, height);
     FlyCapture2::FrameRate rate = selectFrameRate(fps);
     error = cameras[i]->SetVideoModeAndFrameRate(mode, rate);
     if(error != FlyCapture2::PGRERROR_OK)
       throw runtime_error(error.GetDescription());
   }
-  error = FlyCapture2::Camera::StartSyncCapture(getNumCameras(),
-      (const FlyCapture2::Camera**)cameras);
+
+	// start syncronized capturing of images from all cameras
+  error = FlyCapture2::Camera::StartSyncCapture(getNumCameras(), (const FlyCapture2::Camera**)cameras);
   if(error != FlyCapture2::PGRERROR_OK)
     throw runtime_error(error.GetDescription());
 }
 
-void PointGreyServer::configure(const map<string,string> & _config)
-  throw(runtime_error)
+
+/**
+ * @brief Configure the PointGreyServer component for cast.
+ * @param width Configuration
+ */
+void PointGreyServer::configure(const map<string,string> & _config) throw(runtime_error)
 {
   map<string,string>::const_iterator it;
 
@@ -235,8 +543,20 @@ void PointGreyServer::configure(const map<string,string> & _config)
 
   // do some initialisation based on configured items
   init();
+
+  // set same properties AFTER initialisation
+  if((it = _config.find("--setSameProp")) != _config.end())
+  {
+    SetSamePropertiesActive();
+    istringstream str(it->second);
+    str >> propActive[1] >> propActive[2] >> propActive[3] >> propActive[5] >> propActive[12] >> propActive[13];
+  }
 }
 
+
+/**
+ * @brief Grab frames internal
+ */
 void PointGreyServer::grabFramesInternal()
 {
   for(size_t i = 0; i < (size_t)getNumCameras(); i++)
@@ -253,13 +573,27 @@ void PointGreyServer::grabFramesInternal()
   framerateMillis.insert();
 }
 
+
+/**
+ * @brief Grab frames. Before grabing frames set properties of the cameras to equal values.
+ */
 void PointGreyServer::grabFrames()
 {
+	// If automatic adjustment of properties is active
+	if(setSamePropertiesActiveFlag) CopyAllPropertyValues();
+
   grabFramesInternal();
 }
 
-void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height,
-    Video::Image &frame)
+
+/**
+ * @brief Retrieve frames internal
+ * @param camIdx Camera id
+ * @param width Image width
+ * @param height Image height
+ * @param frame Video frame
+ */
+void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, Video::Image &frame)
 {
   // no size given, use native size
   if((width == 0 || height == 0) || (width == this->width && height == this->height))
@@ -268,7 +602,9 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height,
   }
   else
   {
+		/// TODO TODO TODO TODO We should find another solution!
     // NOTE: this is very wasteful! And should only be a temporary solution!
+		// convert to iplImage, resize and convert back to Video::Image
     copyImage(retrievedImages[camIdx], frame);
     IplImage *tmp = 0; 
     IplImage *tmp_resized = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
@@ -284,8 +620,14 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height,
   frame.camPars = camPars[camIdx];
 }
 
-void PointGreyServer::retrieveFrames(const std::vector<int> &camIds,
-    int width, int height, std::vector<Video::Image> &frames)
+/**
+ * @brief Retrieve frames internal
+ * @param camIds Camera ids
+ * @param width Image width
+ * @param height Image height
+ * @param frame Video frame
+ */
+void PointGreyServer::retrieveFrames(const std::vector<int> &camIds, int width, int height, std::vector<Video::Image> &frames)
 {
   frames.resize(camIds.size());
   for(size_t j = 0; j < camIds.size(); j++)
@@ -295,38 +637,60 @@ void PointGreyServer::retrieveFrames(const std::vector<int> &camIds,
   }
 }
 
-void PointGreyServer::retrieveFrames(int width, int height,
-    std::vector<Video::Image> &frames)
+/**
+ * @brief Retrieve frames.
+ * @param width Image width
+ * @param height Image height
+ * @param frame Video frame
+ */
+void PointGreyServer::retrieveFrames(int width, int height, std::vector<Video::Image> &frames)
 {
   frames.resize((size_t)getNumCameras());
   for(size_t i = 0; i < (size_t)getNumCameras(); i++)
     retrieveFrameInternal(i, width, height, frames[i]);
 }
 
-void PointGreyServer::retrieveFrame(int camId, int width, int height,
-    Video::Image &frame)
+/**
+ * @brief Retrieve frame
+ * @param camId Camera id
+ * @param width Image width
+ * @param height Image height
+ * @param frame Video frame
+ */
+void PointGreyServer::retrieveFrame(int camId, int width, int height, Video::Image &frame)
 {
   size_t i = getCamIndex(camIds[camId]);
   retrieveFrameInternal(i, width, height, frame);
 }
 
+/**
+ * @brief Get image size.
+ * @param width Image width
+ * @param height Image height
+ */
 void PointGreyServer::getImageSize(int &width, int &height)
 {
   width = this->width;
   height = this->height;
 }
 
+/**
+ * @brief Get frame rate in milliseconds.
+ * @return Returns the frame rate in milliseconds.
+ */
 int PointGreyServer::getFramerateMilliSeconds()
 {
   return framerateMillis.getRate();
 }
 
 /**
+ * @brief Copy image. \n
  * note: If img is of appropriate size already, no memory allocation takes
  * place.
+ * @param flyImg FlyCapture2 image
+ * @param img Video image
  */
-void PointGreyServer::copyImage(const FlyCapture2::Image &flyImg,
-    Video::Image &img) throw(runtime_error)
+void PointGreyServer::copyImage(const FlyCapture2::Image &flyImg, Video::Image &img) throw(runtime_error)
 {
   if(flyImg.GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8)
     throw runtime_error("PointGreyServer: can only handle RGB8 image format");
