@@ -190,7 +190,7 @@ bool Tracker::init(const char* inifile, int width, int height){
 }
 
 
-int Tracker::addModel(Model& m, Pose& p, bool bfc){
+int Tracker::addModel(Model& m, Pose& p, std::string label, bool bfc){
 	
 	if(!m_tracker_initialized){
 		printf("[Tracker::addModel()] Error tracker not initialised!\n");
@@ -199,6 +199,7 @@ int Tracker::addModel(Model& m, Pose& p, bool bfc){
 	
 	ModelEntry* modelEntry = new ModelEntry();
 	
+	modelEntry->label = label;
 	modelEntry->model.setBFC(bfc);
 	modelEntry->model = m;
 	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
@@ -462,13 +463,15 @@ void Tracker::swap(){
 // Show performance and likelihood
 void Tracker::printStatistics(){
 	printf("\n\nStatistics:\n");
-// 	printf("	Particles: %i\n", m_distribution.size() );
-	printf("	Recursions: %i\n", params.num_recursions);
-// 	printf("	Tracking time: %.0f ms, FPS: %.0f Hz\n", params.time_tracking * 1000.0, 1.0/params.time_tracking);
-// 	printf("	Variance: %f \n", m_distribution.getVariance() );
-// 	printf("	Confidence: %f \n", m_distribution.getMaxC());
-// 	printf("	Weight: %f \n", m_distribution.getMaxW());
-	printf("	Spreading Level: %d\n", params.m_spreadlvl);
+
+	for(int i=0; i<m_modellist.size(); i++){
+		printf("	Object %d '%s'\n", i, m_modellist[i]->label.c_str());
+		printf("		Recursions: %i\n", m_modellist[i]->num_recursions );
+		printf("		Particles: %i\n", m_modellist[i]->distribution.size() );
+		printf("		Variance: %f \n", m_modellist[i]->distribution.getVariance() );
+		printf("		Confidence: %f \n", m_modellist[i]->distribution.getMaxC());
+		printf("		Weight: %f \n", m_modellist[i]->distribution.getMaxW());
+	}
 }
 
 void Tracker::drawSpeedBar(float h){

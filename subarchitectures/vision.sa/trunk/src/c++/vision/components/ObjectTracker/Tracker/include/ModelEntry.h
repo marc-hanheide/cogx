@@ -29,6 +29,8 @@ struct ModelEntry
 		delete(del_predictor);
 	}
 	
+	std::string label;
+	
 	TrackerModel 		model;					///< The model to track
 	Distribution 		distribution;		///< Likelihood distribution
 	Predictor*			predictor;			///< Movement prediction

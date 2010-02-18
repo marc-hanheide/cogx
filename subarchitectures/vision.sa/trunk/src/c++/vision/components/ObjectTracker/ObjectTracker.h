@@ -43,7 +43,8 @@ private:
   std::string m_ini_file;
   
   /** Which camera to get images from */
-  int m_camId;
+  std::vector<int> m_camIds;
+  
   /** component ID of the video server to connect to */
   std::string m_videoServerName;
   /** our ICE proxy to the video server */

@@ -124,9 +124,9 @@ void ObjectRecognizer3D::runComponent(){
   			m_rec_cmd = m_recCommandList.front();
   			m_task = m_rec_cmd->cmd;
   			m_label = m_rec_cmd->label;
-  			if(m_rec_cmd->visualObjectID.empty()){
+  			if(m_rec_cmd->cmd == RECLEARN && m_rec_cmd->visualObjectID.empty()){
   				log("%s: Warning no VisualObject given", m_label.c_str());
-  				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, Math::Pose3());
+  				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, Math::Pose3(), m_label);
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
 				if(m_rec_cmd->cmd == RECOGNIZE && m_recEntries[m_label].learn){
@@ -154,14 +154,7 @@ void ObjectRecognizer3D::runComponent(){
 }
 
 void ObjectRecognizer3D::destroy(){
-	log("ObjectRecognizer3D::destroy()");
 
-// 	
-// 	std::map<std::string,RecEntry>::iterator it;
-// 	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
-// 		if((*it).second.object)
-// 			delete((*it).second.object);
-// 	}
 }
 
 // *** Working Memory Listeners ***
@@ -247,7 +240,7 @@ void ObjectRecognizer3D::get3DPointFromTrackerModel(std::string& modelID, Vision
 	addToWorkingMemory(newDataID(), track_cmd);
 }
 
-void ObjectRecognizer3D::loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose){
+void ObjectRecognizer3D::loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose, std::string label){
 	// ***********************************************************
 	// Load geometry
  	log("Loading ply model");
@@ -258,7 +251,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(std::string filename, std::string& 
 	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
   obj->model = new VisionData::GeometryModel;
 	convertModel2Geometry(model, obj->model);
-	obj->label = filename.c_str();
+	obj->label = label;
 	obj->detectionConfidence = 0.0;
 	obj->pose = pose;
 // 	Tracking::Pose tPose;	
@@ -454,7 +447,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				
 				// if(first time recognition)
 				log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
-				loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B);
+				loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B, m_label);
 				addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
 			}
 		}

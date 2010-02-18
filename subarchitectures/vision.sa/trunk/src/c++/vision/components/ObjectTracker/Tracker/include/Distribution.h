@@ -35,6 +35,7 @@ private:
 	float w_sum;							///< Sum of all weights, before normalisation (afterwards its 1)
 	float w_max;							///< Maximum weighted likelihood in one likelihood measure
 	float c_max;							///< Maximum confidence level in one likelihood measure
+	float c_mean;
 	TM_Vector3 m_cam_view;
 	
 	// Functions

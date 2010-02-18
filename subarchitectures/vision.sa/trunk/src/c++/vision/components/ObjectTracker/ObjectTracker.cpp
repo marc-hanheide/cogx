@@ -27,7 +27,6 @@ using namespace Tracking;
 
 ObjectTracker::ObjectTracker(){
 	m_tracker = 0;
-  m_camId = 0;
   m_track = false;
   m_running = true;
   m_testmode = false;
@@ -59,9 +58,11 @@ void ObjectTracker::configure(const map<string,string> & _config){
 
   if((it = _config.find("--camid")) != _config.end())
   {
+    int camId;
     istringstream istr(it->second);
-    istr >> m_camId;
-    log("  Camera ID: %d", m_camId);
+    istr >> camId;
+    m_camIds.push_back(camId);
+    log("  Camera ID: %d", camId);
   }
   
 // 	if((it = _config.find("--testmode")) != _config.end()){
@@ -125,11 +126,11 @@ void ObjectTracker::destroy(){
 }
 
 void ObjectTracker::receiveImages(const std::vector<Video::Image>& images){
-/*
-  assert(images.size() > 0);
-  m_image = images[0];
-  runTracker(m_image);
-  */
+  lockComponent();
+		assert(images.size() > 0);
+		m_image = images[0];
+		convertCameraParameter(m_image.camPars, m_trackCamPars);
+	unlockComponent();
 }
 
 void ObjectTracker::runComponent(){
@@ -138,6 +139,7 @@ void ObjectTracker::runComponent(){
   // Initialize Tracker
   // Grab one image from VideoServer for initialisation
   initTracker();
+  m_videoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
   
   while(isRunning() && m_running)
   {
@@ -169,10 +171,12 @@ void ObjectTracker::initTracker(){
   // *** Initialisation of Tracker ***
   int id = 0;
   
-  m_videoServer->getImage(m_camId, m_image);
-  m_ImageWidth = m_image.width;
-  m_ImageHeight = m_image.height;
-  last_image_time = m_image.time;
+	m_videoServer->getImage(m_camIds[0], m_image);
+	m_ImageWidth = m_image.width;
+	m_ImageHeight = m_image.height;
+	last_image_time = m_image.time;
+	convertCameraParameter(m_image.camPars, m_trackCamPars);
+
 	
 	// Create edge or texture tracker
 	if(m_textured){
@@ -187,7 +191,7 @@ void ObjectTracker::initTracker(){
 		m_running = false;
 	}
 	
-	convertCameraParameter(m_image.camPars, m_trackCamPars);
+	
 	m_trackCamPars.zFar = m_tracker->getCamZFar();
 	m_trackCamPars.zNear = m_tracker->getCamZNear();
 	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
@@ -235,7 +239,7 @@ void ObjectTracker::applyTrackingCommand(){
 		trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
 		convertPose2Particle(trackingEntry->obj->pose, pose);
 		convertGeometryModel(trackingEntry->obj->model, model);
-		trackingEntry->id = m_tracker->addModel(model, pose, true);
+		trackingEntry->id = m_tracker->addModel(model, pose, trackingEntry->obj->label, true);
 		log("  VisionData::ADDMODEL '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
 		m_trackinglist.push_back(trackingEntry);
 		log("  VisionData::ADDMODEL: ok");
@@ -320,8 +324,6 @@ void ObjectTracker::runTracker(){
 	double dTime;
 	
 	// Get image and update it
-	m_videoServer->getImage(m_camId, m_image);
-	convertCameraParameter(m_image.camPars, m_trackCamPars);
 	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
 		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
 		m_running = false;
@@ -329,16 +331,20 @@ void ObjectTracker::runTracker(){
 	
 	// update time
 	m_timer.Update();
-	dTime = getFrameTime(last_image_time, m_image.time);
+	
+	lockComponent();
+		dTime = getFrameTime(last_image_time, m_image.time);
+		// image processing
+		m_tracker->image_processing((unsigned char*)(&m_image.data[0]));
+	unlockComponent();
+	
 	last_image_time = m_image.time;
 	m_tracker->setFrameTime(dTime);
-
-	// image processing
-	m_tracker->image_processing((unsigned char*)(&m_image.data[0]));
 	m_tracker->drawImage(NULL);
 
 	// track models
 	m_tracker->track();
+	m_tracker->textureFromImage();
 		
 	// update pose and confidence in WorkingMemory
 	for(i=0; i<m_trackinglist.size(); i++){

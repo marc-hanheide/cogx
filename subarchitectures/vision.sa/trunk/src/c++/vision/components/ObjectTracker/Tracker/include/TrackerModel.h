@@ -30,6 +30,8 @@ public:
 	TrackerModel();
 	~TrackerModel();
 	
+	void releasePassList();
+	
 	TrackerModel& operator=(const Model& m);
 	
 	struct Edge {
@@ -75,10 +77,10 @@ public:
 	void drawCoordinates();
 	
 	
-	std::vector<int> getFaceUpdateList(Pose* p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);
+	std::vector<int> getFaceUpdateList(Pose& p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0);
 	
 	/** @brief capture texture from image */
-	void textureFromImage(Texture* image, int width, int height, Pose* p_max, vec3 view, float minTexGrabAngle);
+	void textureFromImage(Texture* image, int width, int height, Pose& p_max, vec3 view, float minTexGrabAngle, std::vector<int> faceUpdateList);
 	
 		// gets
 	bool 			getTextured(){ return m_textured; }
