@@ -194,7 +194,6 @@ namespace spatial
       p.zoom = 0;
       m_ptzInterface->setPose(p);
 
-      m_firstview = false;
       m_ProbGivenObjectIsPresent = 0.7;
     }
 
@@ -473,19 +472,13 @@ namespace spatial
       for (unsigned int j = 0; j < VCones[i].size() / 2; j++) {
         x = VCones[i][2 * j];
         y = VCones[i][2 * j + 1];
-
-        if (m_firstview)
-          sum += (*m_lgm_prior)(x, y);
-        else
-          sum += (*m_lgm_posterior)(x, y);
+        sum += (*m_lgm_posterior)(x, y);
       }
       if (sum > highest_sum) {
         highest_sum = sum;
         highest_VC_index = i;
       }
     }
-   // m_firstview = false;
-
     for (unsigned int j = 0; j < VCones[highest_VC_index].size() / 2; j++) {
       x = VCones[highest_VC_index][2 * j];
       y = VCones[highest_VC_index][2 * j + 1];
@@ -610,8 +603,10 @@ namespace spatial
      * FERNS. */
 
     for (unsigned int i=0; i < ViewConePoints.size(); i++){
-      if (ViewConePoints[2*i] == x && ViewConePoints[2*i + 1] == y)
+      if (ViewConePoints[2*i] == x && ViewConePoints[2*i + 1] == y){
+        log("ActionProbcell returned %f", m_ProbGivenObjectIsPresent);
         return m_ProbGivenObjectIsPresent;
+      }
     }
     return 0;
 
@@ -619,7 +614,7 @@ namespace spatial
 
 void AdvObjectSearch::MeasurementUpdate(bool result){
   if (result){
-    log("you're done go play outside.");
+    log("you're done. go play outside.");
     return;
   }
   double denomsum = 0.0;
@@ -631,13 +626,18 @@ void AdvObjectSearch::MeasurementUpdate(bool result){
         }
   }
   denomsum += pOut;
+  log("denomsum is: %f", denomsum);
   // For everything inside meaning: pIn
   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x,y) == 2)
           return;
+        if ((*m_lgm)(x,y) == 3)
+           log("old prob for table:", (*m_lgm_posterior)(x,y));
         (*m_lgm_posterior)(x,y) = ((*m_lgm_posterior)(x,y)* ( 1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points)))/
             denomsum;
+        if ((*m_lgm)(x,y) == 3)
+          log("new prob for table:", (*m_lgm_posterior)(x,y));
       }
     }
 

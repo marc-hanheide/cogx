@@ -80,7 +80,6 @@ namespace spatial
     // 1. phase is table detection and then looking for objects.
     bool m_table_phase;
     bool m_usePTZ;
-    bool m_firstview;
     int m_samplesize;
     int* m_samples;
     double* m_samplestheta;
