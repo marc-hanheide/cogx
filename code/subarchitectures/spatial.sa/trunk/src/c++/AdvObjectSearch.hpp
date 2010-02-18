@@ -72,6 +72,8 @@ namespace spatial
     bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
     bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
     void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
+    void MeasurementUpdate(bool result);
+    double ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints);
 
   private:
 
@@ -87,8 +89,9 @@ namespace spatial
     double m_MaxExplorationRange;
     IplImage* img;
     double pFree,pObs,pPlanar,pIn,pOut;
-
+    double m_ProbGivenObjectIsPresent;
     std::vector<std::string> m_objectlist;
+
 
     IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;
@@ -107,6 +110,8 @@ namespace spatial
     Cure::TransformedOdomPoseProvider m_TOPP;
     Cure::ObjGridLineRayTracer<unsigned int>* m_Glrt;
     Cure::Pose3D m_SlamRobotPose;
+    Cure::Pose3D m_currentViewPoint;
+    std::vector<int>  m_CurrentViewPoint_Points;
 
 
    static SpatialData::NavCommandPtr newNavCommand();
