@@ -65,8 +65,6 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		
 		// update importance weights and confidence levels
 		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeCompare, 1, params.convergence, m_showparticles);
-		
-		
 	}
 	// weighted mean	
 	modelEntry->pose = modelEntry->distribution.getMean();
@@ -318,28 +316,46 @@ bool TextureTracker::track(){
 
 // grabs texture from camera image and attaches it to faces of model
 void TextureTracker::textureFromImage(){
+	m_cam_perspective.Activate();
 	
+	glColorMask(0,0,0,0);
 	for(int i=0; i<m_modellist.size(); i++){
+
 		
-		model_processing(m_modellist[i]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		m_cam_perspective.Activate();
-		
-		params.m_spreadlvl = 0;
-		m_tex_model_ip[params.m_spreadlvl]->bind(0);
-		m_tex_frame_ip[params.m_spreadlvl]->bind(1);
+		vector<int> faceUpdateList = m_modellist[i]->model.getFaceUpdateList(m_modellist[i]->pose, 
+					vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
+					params.minTexGrabAngle);
+
+		if(!faceUpdateList.empty()){
 			
-		for(int j=0; j<6; j++){
-			m_modellist[i]->predictor->resample(m_modellist[i]->distribution, 1000, params.variation);
-			m_modellist[i]->distribution.updateLikelihood(m_modellist[i]->model, m_shadeCompare, 1, 9);
+			
+// 			model_processing(m_modellist[i]);
+// 			m_cam_perspective.Activate();
+// 			
+// 			params.m_spreadlvl = 0;
+// 			m_tex_model_ip[params.m_spreadlvl]->bind(0);
+// 			m_tex_frame_ip[params.m_spreadlvl]->bind(1);
+// 				
+// 			for(int j=0; j<6; j++){
+// 				m_modellist[i]->predictor->resample(m_modellist[i]->distribution, 1000, params.variation);
+// 				m_modellist[i]->distribution.updateLikelihood(m_modellist[i]->model, m_shadeCompare, 1, params.convergence);
+// 			}
+// 			m_modellist[i]->pose = m_modellist[i]->distribution.getMean();
+			
+			m_modellist[i]->model.textureFromImage(	m_tex_frame,
+																	params.width, params.height,
+																	m_modellist[i]->pose,
+																	vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
+																	params.minTexGrabAngle,
+																	faceUpdateList);
 		}
-		m_modellist[i]->pose = m_modellist[i]->distribution.getMean();
-		
-		m_modellist[i]->model.textureFromImage(	m_tex_frame,
-																params.width, params.height,
-																&m_modellist[i]->pose,
-																vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
-																params.minTexGrabAngle);
+	}
+	glColorMask(1,1,1,1);
+}
+
+void TextureTracker::untextureModels(){
+	for(int i=0; i<m_modellist.size(); i++){
+		m_modellist[i]->model.releasePassList();	
 	}
 }
 

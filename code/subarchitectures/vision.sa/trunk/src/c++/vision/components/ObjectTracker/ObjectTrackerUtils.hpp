@@ -199,49 +199,6 @@ void convertCameraParameter(Video::CameraParameters vidCamPars, Tracking::Camera
   trackCamPars.pos.z	=	vidCamPars.pose.pos.z;
 }
 
-// *************************************************************************************
-// Load INI File
-// Parameters LoadParametersFromINI(const char* filename){
-// 	
-// 	Parameters params;
-// 	
-// 	CDataFile cdfParams;
-// 	cdfParams.Load(filename);
-// 	
-// 	// Constraints
-// 	params.constraints.r.x 	= cdfParams.GetFloat("r.x", "Constraints") * PIOVER180;
-// 	params.constraints.r.y 	= cdfParams.GetFloat("r.y", "Constraints") * PIOVER180;
-// 	params.constraints.r.z 	= cdfParams.GetFloat("r.z", "Constraints") * PIOVER180;
-// 	params.constraints.rp.x = cdfParams.GetFloat("rp.x", "Constraints");
-// 	params.constraints.rp.y = cdfParams.GetFloat("rp.y", "Constraints");
-// 	params.constraints.rp.z = cdfParams.GetFloat("rp.z", "Constraints");
-// 	params.constraints.t.x 	= cdfParams.GetFloat("s.x", "Constraints");
-// 	params.constraints.t.y 	= cdfParams.GetFloat("s.y", "Constraints");
-// 	params.constraints.t.z 	= cdfParams.GetFloat("s.z", "Constraints");
-// 	params.constraints.tp.x = cdfParams.GetFloat("sp.x", "Constraints");
-// 	params.constraints.tp.y = cdfParams.GetFloat("sp.y", "Constraints");
-// 	params.constraints.tp.z = cdfParams.GetFloat("sp.z", "Constraints");
-// 	params.constraints.z 		= cdfParams.GetFloat("z", "Constraints");	
-// 	params.constraints.zp 	= cdfParams.GetFloat("zp", "Constraints");
-// 	
-// 	// Performance
-// 	params.mode = cdfParams.GetInt("mode", "Performance");
-// 	params.recursions = cdfParams.GetInt("recursions", "Performance");
-// 	params.particles = cdfParams.GetInt("particles", "Performance");
-// 	
-// 	// Resource Path
-// 	params.modelPath = cdfParams.GetString("ModelPath", "ResourcePath");
-// 	params.texturePath = cdfParams.GetString("TexturePath", "ResourcePath");
-// 	params.shaderPath = cdfParams.GetString("ShaderPath", "ResourcePath");
-// 		
-// 	// Other
-// 	params.edgeMatchingTol = cdfParams.GetFloat("EdgeMatchingTolerance", "Other") * PIOVER180;
-// 	params.backFaceCulling = cdfParams.GetBool("BackFaceCulling", "Other");
-// 	params.minTexGrabAngle = cdfParams.GetFloat("MinTextureGrabAngle", "Other") * PIOVER180;
-// 	
-// 	
-// 	return params;
-// }
 
 // SDL - Keyboard and Mouse input control
 bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
@@ -284,7 +241,7 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					printf("\n	Total tracking time: %.0f ms\n", fTimeTracker*1000);
 					break;
 				case SDLK_t:
-					tracker->textureFromImage();
+					tracker->untextureModels();
 					break;			
 				case SDLK_z:
 					tracker->reset();

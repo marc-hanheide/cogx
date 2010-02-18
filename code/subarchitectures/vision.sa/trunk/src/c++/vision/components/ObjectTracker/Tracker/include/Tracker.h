@@ -104,7 +104,7 @@ public:
 	/** @brief Adds a geometrical model to the tracker
 	*		@return id of the added model (-1 if not successfull)
 	*/
-	int 		addModel(Model& m, Pose& p, bool bfc=false);
+	int 		addModel(Model& m, Pose& p,  std::string label, bool bfc=false);
 	
 	/** @brief Remove model from tracker */
 	void 		removeModel(int id);
@@ -145,6 +145,7 @@ public:
 	virtual void setEdgeShader(){ }
 	virtual void setColorShader(){ }
   virtual void textureFromImage(){}
+  virtual void untextureModels(){}
   	
 	// Set Parameters
 	void setFrameTime(double dTime);

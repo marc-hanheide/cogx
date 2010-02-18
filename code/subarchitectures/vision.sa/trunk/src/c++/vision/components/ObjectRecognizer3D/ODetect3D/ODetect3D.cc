@@ -388,7 +388,6 @@ void ODetect3D::ComputeConfidence(Array<KeypointDescriptor *> &keys, unsigned &n
   }
 
   object.conf = 0.;
-  object.conf = DBL_MAX;
 }
 
 

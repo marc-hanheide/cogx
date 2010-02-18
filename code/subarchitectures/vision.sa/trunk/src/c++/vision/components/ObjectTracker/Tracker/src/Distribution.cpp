@@ -46,9 +46,10 @@ void Distribution::calcMean(){
 	
 	// Weighted sum over all particles
 	for(id=0; id<m_particlelist.size(); id++){
-		m_meanParticle.t += m_particlelist[id].t * m_particlelist[id].w;
+		m_meanParticle.t 	+= m_particlelist[id].t * m_particlelist[id].w;
 		m_meanParticle.tp += m_particlelist[id].tp * m_particlelist[id].w;
 		m_meanParticle.rp += m_particlelist[id].rp * m_particlelist[id].w;
+		c_mean 	+= m_particlelist[id].c;
 		
 		m_particlelist[id].q.getAxisAngle(&axis, &angle);
 		maxAxis += axis * m_particlelist[id].w;
@@ -56,7 +57,10 @@ void Distribution::calcMean(){
 	}
 	m_meanParticle.q.fromAxis(maxAxis, maxAngle);
 	
-	m_meanParticle.c = c_max;
+	if(!m_particlelist.empty())
+		c_mean = m_meanParticle.c / m_particlelist.size();
+	
+	m_meanParticle.c = c_mean;
 	m_meanParticle.w = w_max;
 }
 

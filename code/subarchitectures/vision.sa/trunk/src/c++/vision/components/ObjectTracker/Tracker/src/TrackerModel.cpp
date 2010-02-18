@@ -29,6 +29,17 @@ TrackerModel::~TrackerModel(){
 	}
 }
 
+void TrackerModel::releasePassList(){
+	PassList::iterator it = m_passlist.begin();
+	while(it != m_passlist.end()){
+		delete(*it);
+		it++;
+	}
+	m_passlist.clear();
+	m_facepixellist.assign(m_facelist.size(), 0);
+	UpdateDisplayLists();
+}
+
 TrackerModel& TrackerModel::operator=(const Model& m){
 	m_vertexlist = m.m_vertexlist;
 	m_facelist = m.m_facelist;
@@ -227,13 +238,14 @@ void TrackerModel::drawCoordinates(){
 // counts pixels of each face
 // if pixels of face are > than in any previouse view
 //   set update flag = true
-vector<int> TrackerModel::getFaceUpdateList(Pose* p_max, vec3 view, float minTexGrabAngle){
+vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTexGrabAngle){
 	int i, n;
 	vector<int> faceUpdateList;
 	float alpha;
 	vec3 vT;
 	mat3 mR;
-	p_max->getPose(mR, vT);
+	p_max.getPose(mR, vT);
+	view.normalize();
 	
 	// generate occlusion queries
 	unsigned int* queryPixels;		// Occlussion query for counting pixels
@@ -241,7 +253,7 @@ vector<int> TrackerModel::getFaceUpdateList(Pose* p_max, vec3 view, float minTex
 	glGenQueriesARB(m_facelist.size(), queryPixels);
 	
 	// count pixels for each face and choose if its texture has to be updated
-	p_max->activate();
+	p_max.activate();
 		
 		for(i=0; i<(int)m_facelist.size(); i++){
 			glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
@@ -255,13 +267,18 @@ vector<int> TrackerModel::getFaceUpdateList(Pose* p_max, vec3 view, float minTex
 			vec3 vn = mR * m_facelist[i].normal;
 			alpha = acos(vn*view);
 			
+			
+			
+			
 			if((m_facepixellist[i]==0) && (alpha>minTexGrabAngle)){
 				faceUpdateList.push_back(i);
 				m_facepixellist[i] = n;
 			}
+			
+// 			printf("m_facepixellist: %d, apha: %f > %f, size: %d\n", m_facepixellist[i], alpha,  minTexGrabAngle, faceUpdateList.size());
 		}
 		
-	p_max->deactivate();
+	p_max.deactivate();
 	
 	glDeleteQueriesARB(m_facelist.size(), queryPixels);
 	free(queryPixels);
@@ -269,26 +286,25 @@ vector<int> TrackerModel::getFaceUpdateList(Pose* p_max, vec3 view, float minTex
 	return faceUpdateList;
 }
 
-void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose* p_max, vec3 view, float minTexGrabAngle){
+void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose& p_max, vec3 view, float minTexGrabAngle, vector<int> faceUpdateList){
 	int i,j,k;
 	vec4 texcoords_model;
 	vec4 vertex;
 	mat4 modelview, projection, modelviewprojection;
 	
 	// get faces to update
-	view.normalize();
-	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
-	if(faceUpdateList.empty())
-		return;
+// 	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
+// 	if(faceUpdateList.empty())
+// 		return;
 	
 	// add new rendering pass
 	Pass* newpass = new Pass;
 	
 	// query modelview and projection matrix
-	p_max->activate();
+	p_max.activate();
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 	glGetFloatv(GL_PROJECTION_MATRIX, projection);
-	p_max->deactivate();
+	p_max.deactivate();
 	newpass->modelviewprojection = projection * modelview;
 	
 	// store texture

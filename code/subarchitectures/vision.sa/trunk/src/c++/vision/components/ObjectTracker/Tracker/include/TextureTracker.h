@@ -60,6 +60,8 @@ public:
 	virtual bool track();
 	
 	virtual void textureFromImage();
+	
+	virtual void untextureModels();
 						
 	virtual void drawResult();
 	

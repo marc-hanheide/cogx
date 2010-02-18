@@ -144,7 +144,7 @@ void VirtualScene::start(){
 }
 
 void VirtualScene::destroy(){
-	delete(m_engine);
+	
 }
 
 void VirtualScene::receiveImages(const std::vector<Video::Image>& images){
@@ -162,7 +162,7 @@ void VirtualScene::runComponent(){
   m_videoServer->getImage(m_camId, m_image);
   initScene(m_image);
   
-  while(m_running)
+  while(m_running && isRunning())
   {
     if(m_render){
       runScene();
@@ -172,11 +172,10 @@ void VirtualScene::runComponent(){
 		}
   }
   
-  destroy();
+  delete(m_engine);
   log("stop");
 }
 
-// Tracking
 void VirtualScene::initScene(const Video::Image &image){
   
   log("Initialising Scene");

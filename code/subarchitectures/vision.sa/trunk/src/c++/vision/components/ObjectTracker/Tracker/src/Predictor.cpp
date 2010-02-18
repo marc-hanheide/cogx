@@ -107,13 +107,15 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 	for(id=0; id<particlelist_tmp.size() && d.size()<(int)num_particles*partition; id++){
 		
 		// resampling according to weight
-		n = round(particlelist_tmp[id].w * num_particles);
 		c = particlelist_tmp[id].c;
+		n = round(particlelist_tmp[id].w * num_particles);
+		
 		
 		// Tukey estimator
-		sigma = (1.0-pow(1.0-pow(1.0-c,2),3));
+		sigma = (1.0-pow(1.0-pow(1.0-c,2),2));
+		
 		// ensure range of sigma
-		if(sigma==0.0) sigma = 0.001;
+		if(sigma<=0.0) sigma = 0.001;
 		if(sigma>1.0) sigma = 1.0;
 		
 		addsamples(d, n, particlelist_tmp[id], variance, sigma);
