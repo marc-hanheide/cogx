@@ -44,25 +44,12 @@ int main(int argc, char *argv[])
 		
 	tgRenderModel cylinder;
 	GenCylinder(cylinder, 0.05, 0.2, 32, 1);
-	cylinder.m_material = matSilver;
-	
-	glLineWidth(2);
+	cylinder.m_material = matRed;
 	
 	// Rendering loop
 	while(render.Update(fTime)){
 		cylinder.DrawFaces();
 		
-		if(render.GetNewPoint(v))
-			m_points.push_back(v);
-		
-		matRed.Apply();
-		glDisable(GL_DEPTH_TEST);
-		glBegin(GL_LINE_STRIP);
-		for(i=0; i<m_points.size(); i++){
-			glVertex3f(m_points[i].x, m_points[i].y, m_points[i].z);
-		}
-		glEnd();
-		glEnable(GL_DEPTH_TEST);
 	}
 	
 	return 0;

@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/gl.h>
@@ -34,7 +35,8 @@ private:
 	XVisualInfo             *vi;
 	Colormap                cmap;
 	XSetWindowAttributes    swa;
-	Window                  win;
+	Window                  glWin;
+	Window									btWin;
 	Atom										wmDelete;
 	GLXContext              glc;
 	XWindowAttributes       gwa;
