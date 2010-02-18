@@ -446,8 +446,15 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     log("Got VisualObject: %s", observedObject->label.c_str());
 
     Pose3 pose = observedObject->pose;
+    //Get robot pose
+    Pose3 robotTransform;
+    if (lastRobotPose != 0) {
+      fromRotZ(robotTransform.rot, lastRobotPose->theta);
 
-//    transform(m_CameraPoseR, pose, pose);
+      robotTransform.pos.x = lastRobotPose->x;
+      robotTransform.pos.y = lastRobotPose->y;
+    }
+    transform(robotTransform, pose, pose);
 
     // For now, assume each label represents a unique object
     int objectID = -1;
