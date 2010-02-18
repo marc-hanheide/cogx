@@ -14,7 +14,7 @@ COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-dat
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.000 0.060 0.150][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.080 0.000 1.300][0 0 0]"
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[-0.060 -0.050 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
 CPP MG cameramounttest CameraMountTest --pan "0.0" --tilt "-0.75"
 CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
 #CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --log --globalPoints 0 --display
