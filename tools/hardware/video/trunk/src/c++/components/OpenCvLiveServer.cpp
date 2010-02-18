@@ -168,61 +168,59 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
       cvSetCaptureProperty(captures[i], CV_CAP_PROP_CONVERT_RGB, 0.0);
     }
   }
+
+
   // HACK
 	int w=0, h=0;
-
   for(size_t i = 0; i < dev_nums.size(); i++)
-    {
-      println("[OpenCvLiveServer::init] setting width x height  %d x %d\n", width, height);
+	{
+		println("[OpenCvLiveServer::init] setting width x height  %d x %d\n", width, height);
 
-      cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH, width);
-      cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT, height);
+		cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH, width);
+		cvSetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT, height);
 
-      w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
-      h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
+		w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
+		h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
 
-      if(w!=width || h!=height) {
+		if(w!=width || h!=height) 
+		{
+			println("[OpenCvLiveServer::init] cvSetCaptureProperty(WIDTH, HEIGHT) didn't work, trying cvSetCaptureProperty(MODE)");
+		
+			if(width == 320) {
+				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_320x240_YUV422);
+			}
+			if(width == 640)
+				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_640x480_YUV411);
+			if(width == 800)
+				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_800x600_MONO8);
+			if(width == 1024)
+				printf("[OpenCvLiveServer::init] Warning: setting video resolution to %d is not supported by this OpenCV implementation!\n", width);
+			if(width == 1280)
+				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1280x960_RGB8);
+			if(width == 1600)
+				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1600x1200_RGB8);
+			
+			w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
+			h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
+		
+			if(w!=width)
+				printf("[OpenCvLiveServer::init] Warning: setting video resolution not supported by this OpenCV implementation!\n");
+		}
+		// HACK END
 
-	println("[OpenCvLiveServer::init] cvSetCaptureProperty(WIDTH, HEIGHT) didn't work, trying cvSetCaptureProperty(MODE)");
+		width = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
+		height = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
+		// frames per second
+		double fps = cvGetCaptureProperty(captures[i], CV_CAP_PROP_FPS);
 
-	if(width == 320) {
-	  cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_320x240_YUV422);
+		if(fps > 0.)
+			// milliseconds per frame
+			framerateMillis = (int)(1000./fps);
+		else
+			// just some huge value (better than 0. as that might result in divides by
+			// zero somewhere)
+			framerateMillis = 1000000;
 	}
-	if(width == 640)
-	  cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_640x480_YUV411);
-	if(width == 800)
-	  cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_800x600_MONO8);
-	if(width == 1024)
-	  printf("[OpenCvLiveServer::init] Warning: setting video resolution to %d is not supported by this OpenCV implementation!\n", width);
-	if(width == 1280)
-	  cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1280x960_RGB8);
-	if(width == 1600)
-	  cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1600x1200_RGB8);
-	
-	w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
-	h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
-	
-	if(w!=width)
-	  printf("[OpenCvLiveServer::init] Warning: setting video resolution not supported by this OpenCV implementation!\n");
-      }
-      
-      // HACK END
-      
-      width = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
-      height = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
-      // frames per second
-      double fps = cvGetCaptureProperty(captures[i], CV_CAP_PROP_FPS);
-
-      if(fps > 0.)
-	// milliseconds per frame
-	framerateMillis = (int)(1000./fps);
-      else
-	// just some huge value (better than 0. as that might result in divides by
-	// zero somewhere)
-	framerateMillis = 1000000;      
-    }
-
-
 
   // to make sure we have images in the capture's buffer
   grabFramesInternal();
