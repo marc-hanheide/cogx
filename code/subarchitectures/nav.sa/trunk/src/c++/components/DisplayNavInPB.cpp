@@ -299,7 +299,9 @@ void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &ob
     peekabot::GroupProxy root;
     root.assign(m_PeekabotClient, "root");
     peekabot::PointCloudProxy pcloud;
-    pcloud.add(root,"planepoints", peekabot::REPLACE_ON_CONFLICT);
+    char tmp[256];
+    sprintf(tmp, "planepoints%s", objID.address.id.c_str());
+    pcloud.add(root,tmp, peekabot::REPLACE_ON_CONFLICT);
 
     numeric::ublas::vector<double> v (3);
     numeric::ublas::vector<double> t (3);
