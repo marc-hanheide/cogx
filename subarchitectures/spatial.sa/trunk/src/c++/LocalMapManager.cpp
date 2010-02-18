@@ -922,18 +922,18 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
 
     // Extract N clusters of heights in the plane data.
     findPlaneHeightClusters();
-
+    log("here.4");
 
     // Publish new planes on WM for Peekabot and for AVS
     double wX,wY;
     for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-    SpatialData::PlanePointsPtr PlanePoints;
-    PlanePoints = new SpatialData::PlanePoints;
-    cogx::Math::Vector3 point;
+      SpatialData::PlanePointsPtr PlanePoints;
+      PlanePoints = new SpatialData::PlanePoints;
+      cogx::Math::Vector3 point;
       for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
 	for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
 	  if ((*m_planeObstacleMaps[i])(x,y) == 255){
-	    //log("Table Point: x: %f, y: %f",wX, wY);
+	    log("Table Point: x: %f, y: %f",wX, wY);
 	    m_planeObstacleMaps[i]->index2WorldCoords(x, y, wX, wY);
 	    point.x = wX;
 	    point.y = wY;
@@ -944,73 +944,77 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
 	}
       }   
       log("Adding PlanePoints to WM");
-      addToWorkingMemory<SpatialData::PlanePoints>
-	(newDataID(), PlanePoints); 
+      if (m_planeClusterWMIDs.find(i) == m_planeClusterWMIDs.end()) {
+	// New PlanePoints struct
+	m_planeClusterWMIDs[i] = newDataID();
+	addToWorkingMemory<SpatialData::PlanePoints>
+	  (m_planeClusterWMIDs[i], PlanePoints); 
+      }
+      else {
+	overwriteWorkingMemory<SpatialData::PlanePoints>
+	  (m_planeClusterWMIDs[i], PlanePoints);
+      }
       //PlanePoints->points.clear();
     }
 
+    //  if (m_DisplayPlaneMap) {
+    //    Cure::Pose3D currentPose = m_TOPP.getPose();
+    //    m_DisplayPlaneMap->updateDisplay(&currentPose);
+    //  }
 
 
-
-  }
-  
-  //  if (m_DisplayPlaneMap) {
-  //    Cure::Pose3D currentPose = m_TOPP.getPose();
-  //    m_DisplayPlaneMap->updateDisplay(&currentPose);
-  //  }
-  
-  
-  // Extract best guesses for plane objects
-  for (unsigned int finderID = 0; finderID < m_planeObjectFinders.size(); finderID++) {
-    GridObjectFinder &finder = *m_planeObjectFinders[finderID];
-    int objX, objY;
-    double objAngle, objConfidence = -FLT_MAX;
-    double objHeight;
-    for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-      int outX, outY;
-      double outAngle, outConfidence;
-      finder.findObject(*m_planeObstacleMaps[i], &outX, &outY, &outAngle, 
-	  &outConfidence);
-      if (outConfidence > objConfidence) {
-	objX = outX;
-	objY = outY;
-	objAngle = outAngle;
-	objConfidence = outConfidence;
-	objHeight = m_planeHeights[i];
+    // Extract best guesses for plane objects
+    for (unsigned int finderID = 0; finderID < m_planeObjectFinders.size(); finderID++) {
+      GridObjectFinder &finder = *m_planeObjectFinders[finderID];
+      int objX, objY;
+      double objAngle, objConfidence = -FLT_MAX;
+      double objHeight;
+      for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+	int outX, outY;
+	double outAngle, outConfidence;
+	finder.findObject(*m_planeObstacleMaps[i], &outX, &outY, &outAngle, 
+	    &outConfidence);
+	if (outConfidence > objConfidence) {
+	  objX = outX;
+	  objY = outY;
+	  objAngle = outAngle;
+	  objConfidence = outConfidence;
+	  objHeight = m_planeHeights[i];
+	}
       }
-    }
-    FrontierInterface::ObservedPlaneObjectPtr
-      newPlaneObject = new FrontierInterface::ObservedPlaneObject;
+      FrontierInterface::ObservedPlaneObjectPtr
+	newPlaneObject = new FrontierInterface::ObservedPlaneObject;
 
-    double realX, realY;
-    m_planeMap->index2WorldCoords(objX, objY, realX, realY);
+      double realX, realY;
+      m_planeMap->index2WorldCoords(objX, objY, realX, realY);
 
-    newPlaneObject->id = finderID;
-    char buf[256];
-    sprintf(buf, "planeObject%i", finderID);
-    newPlaneObject->label = buf;
-    newPlaneObject->pos.x = realX;
-    newPlaneObject->pos.y = realY;
-    newPlaneObject->angle = objAngle;
-    newPlaneObject->pos.z = objHeight;
+      newPlaneObject->id = finderID;
+      char buf[256];
+      sprintf(buf, "planeObject%i", finderID);
+      newPlaneObject->label = buf;
+      newPlaneObject->pos.x = realX;
+      newPlaneObject->pos.y = realY;
+      newPlaneObject->angle = objAngle;
+      newPlaneObject->pos.z = objHeight;
 
-    log("id=%i, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", newPlaneObject->id,
-	realX, realY, objAngle, 
-	objHeight, objConfidence);
+      log("id=%i, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", newPlaneObject->id,
+	  realX, realY, objAngle, 
+	  objHeight, objConfidence);
 
 
-    if (m_planeObjectWMIDs.find(newPlaneObject->id) == m_planeObjectWMIDs.end()) {
-      m_planeObjectWMIDs[newPlaneObject->id] = newDataID();
-      addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
-	(m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
-    }
-    else {
-      try {
-	overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
+      if (m_planeObjectWMIDs.find(newPlaneObject->id) == m_planeObjectWMIDs.end()) {
+	m_planeObjectWMIDs[newPlaneObject->id] = newDataID();
+	addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
 	  (m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
       }
-      catch (DoesNotExistOnWMException) {
-	log("Error! Could not overwrite plane object on WM; missing!");
+      else {
+	try {
+	  overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
+	    (m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
+	}
+	catch (DoesNotExistOnWMException) {
+	  log("Error! Could not overwrite plane object on WM; missing!");
+	}
       }
     }
   }
@@ -1097,7 +1101,7 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
     x[i] = (int((points[i].x - XCentW)/(miniCellSize/2.0)) + (points[i].x >= XCentW ? 1: -1)) / 2;
     y[i] = (int((points[i].y - YCentW)/(miniCellSize/2.0)) + (points[i].y >= YCentW ? 1: -1)) / 2;
   }
-
+  log("here.1");
   int small_y = y[0], large_y = y[0];	//small and large y's
   int xc, yc;							//current x/y points
   ScanLine *sl;						//array of structs - contain small/large x for each y that is drawn
@@ -1179,16 +1183,18 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
       }
     }
   }
+  log("here.2");
   delete x;
   delete y;
 
   delete [] sl;	//previously allocated space for ScanLine array
+  log("here.3");
 }
 
 void
 LocalMapManager::findPlaneHeightClusters()
 {
-  //Use K-means clustering to determine K average heights, to filter
+  //Use K-means++ clustering to determine K average heights, to filter
   //planes for plane object detection
 
   //Gather all plane fragments into a single vector
@@ -1205,7 +1211,7 @@ LocalMapManager::findPlaneHeightClusters()
       }
     }
   }
-
+  log("here.5");
   vector<int> memberships(heights.size(), 0); // Which cluster a segment belongs to
 
   vector<double> probMasses; // Accumulated probability mass; for random sampling
@@ -1227,115 +1233,117 @@ LocalMapManager::findPlaneHeightClusters()
   }
 
 
-  if (maxDeviation > m_maxClusterDeviation) {
-    // Deviation is too large to allow for a single cluster
+  // If deviation too large, try more and more clusters
+  for (m_currentNumberOfClusters = 1; maxDeviation > m_maxClusterDeviation && m_currentNumberOfClusters < m_maxNumberOfClusters;) {
+    m_currentNumberOfClusters++;
 
-    // Try more and more clusters
-    for (m_currentNumberOfClusters = 2; maxDeviation > m_maxClusterDeviation && m_currentNumberOfClusters <= m_maxNumberOfClusters; 
-	m_currentNumberOfClusters++) {
+    // Initialize memberships
+    memberships.assign(memberships.size(),-1);
 
-      // Initialize memberships
-      memberships.assign(memberships.size(),-1);
+    // Init centroids with K-means++
+    int *centroids = new int[m_currentNumberOfClusters];
+    centroids[0] = 0;
 
-      // Init centroids with K-means++
-      int *centroids = new int[m_currentNumberOfClusters];
-      centroids[0] = 0;
-
-      for (unsigned int newCentroidNo = 1; newCentroidNo < m_currentNumberOfClusters; newCentroidNo++) {
-	double massBelow = 0.0;
-	for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-	  double closestDist = FLT_MAX;
-	  for (unsigned int i = 0; i < newCentroidNo;i++) {
-	    double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
-	    closestDist = closestDist < distToThisCentroid ? closestDist : distToThisCentroid;
-	  }
-	  probMasses[currentElement] = massBelow + closestDist*closestDist;
-	  massBelow += closestDist*closestDist;
+    for (unsigned int newCentroidNo = 1; newCentroidNo < m_currentNumberOfClusters; newCentroidNo++) {
+      double massBelow = 0.0;
+      for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+	double closestDist = FLT_MAX;
+	for (unsigned int i = 0; i < newCentroidNo;i++) {
+	  double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
+	  closestDist = closestDist < distToThisCentroid ? closestDist : distToThisCentroid;
 	}
-
-	double randomMassPoint = ((double)rand())/RAND_MAX*massBelow;
-	// Find the weighted randomly chosen point by interval halving
-	int intervalMin = 0;
-	int intervalMax = heights.size()-1;
-	unsigned int i = heights.size()/2;
-	while (!(probMasses[i] < randomMassPoint && (i == heights.size() || probMasses[i+1] >= randomMassPoint))) {
-	  if (probMasses[i] >= randomMassPoint) {
-	    intervalMax = i - 1;
-	    i = (i + intervalMin) / 2;
-	  }
-	  else if (i == heights.size()) {
-	    break;
-	  }
-	  else {
-	    intervalMin = i;
-	    i = (i + intervalMax + 1) / 2;
-	  }
-	}
-	centroids[newCentroidNo] = i;
+	probMasses[currentElement] = massBelow + closestDist*closestDist;
+	massBelow += closestDist*closestDist;
       }
 
-
-      // Find the borderlines between clusters,
-      // and the averages and closest examples to the borders
-      int *memberCounts = new int[m_currentNumberOfClusters];
-      double *sum = new double[m_currentNumberOfClusters];
-      double *bestNextCentroidDistance = new double[m_currentNumberOfClusters];
-
-      bool finished = false;
-      while (!finished) {
-	finished = true;
-	maxDeviation = 0.0;
-	for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-	  double closestDist = FLT_MAX;
-	  int closestCluster;
-	  for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-	    double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
-	    if (distToThisCentroid < closestDist) {
-	      closestDist = distToThisCentroid;
-	      closestCluster = i;
-	    }
-	  }
-	  memberCounts[closestCluster]++;
-	  sum[closestCluster]+=heights[currentElement];
-	  if (memberships[currentElement] != closestCluster)
-	    finished = false;
-	  memberships[currentElement] = closestCluster;
-
-	  maxDeviation = maxDeviation > closestDist ? maxDeviation : closestDist;
+      double randomMassPoint = ((double)rand())/RAND_MAX*massBelow;
+      // Find the weighted randomly chosen point by interval halving
+      int intervalMin = 0;
+      int intervalMax = heights.size()-1;
+      unsigned int i = heights.size()/2;
+      while (!(probMasses[i] < randomMassPoint && (i == heights.size() || probMasses[i+1] >= randomMassPoint))) {
+	if (probMasses[i] >= randomMassPoint) {
+	  intervalMax = i - 1;
+	  i = (i + intervalMin) / 2;
 	}
-
-	// Reassign cluster centroids
-	for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-	  sum[i] /= memberCounts[i];
-	  bestNextCentroidDistance[i] = FLT_MAX;
+	else if (i == heights.size()) {
+	  break;
 	}
-
-
-	for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
-	  int cluster = memberships[currentElement];
-	  double dist = abs(heights[currentElement] - sum[cluster]);
-	  if (dist < bestNextCentroidDistance[cluster]) {
-	    bestNextCentroidDistance[cluster] = dist;
-	    centroids[cluster] = currentElement;
-	  }
+	else {
+	  intervalMin = i;
+	  i = (i + intervalMax + 1) / 2;
 	}
       }
-
-      for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-	m_planeHeights[i] = centroids[i];
-      }
-
-      delete[] sum;
-      delete[] bestNextCentroidDistance;
-      delete[] memberCounts;
-      delete[] centroids;
+      centroids[newCentroidNo] = i;
     }
-  }
 
+    log("here.6");
+    // Find the borderlines between clusters,
+    // and the averages and closest examples to the borders
+    int *memberCounts = new int[m_currentNumberOfClusters];
+    double *sum = new double[m_currentNumberOfClusters];
+    double *bestNextCentroidDistance = new double[m_currentNumberOfClusters];
+    for (unsigned int i= 0; i < m_currentNumberOfClusters;i++){
+      sum[i]=0.0;
+      memberCounts[i]= 0;
+    }
+    bool finished = false;
+    while (!finished) {
+      finished = true;
+      maxDeviation = 0.0;
+      for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+	double closestDist = FLT_MAX;
+	int closestCluster;
+	for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+	  double distToThisCentroid = abs(heights[currentElement] - heights[centroids[i]]);
+	  if (distToThisCentroid < closestDist) {
+	    closestDist = distToThisCentroid;
+	    closestCluster = i;
+	  }
+	}
+	memberCounts[closestCluster]++;
+	sum[closestCluster]+=heights[currentElement];
+	if (memberships[currentElement] != closestCluster)
+	  finished = false;
+	memberships[currentElement] = closestCluster;
+
+	maxDeviation = maxDeviation > closestDist ? maxDeviation : closestDist;
+      }
+      log("here.7");
+      // Reassign cluster centroids
+      for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+	sum[i] /= memberCounts[i];
+	bestNextCentroidDistance[i] = FLT_MAX;
+      }
+
+
+      for (unsigned int currentElement = 0; currentElement < heights.size(); currentElement++) {
+	int cluster = memberships[currentElement];
+	double dist = abs(heights[currentElement] - sum[cluster]);
+	if (dist < bestNextCentroidDistance[cluster]) {
+	  bestNextCentroidDistance[cluster] = dist;
+	  centroids[cluster] = currentElement;
+	}
+      }
+    }
+
+    for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+      m_planeHeights[i] = heights[centroids[i]];
+    }
+
+    delete[] sum;
+    delete[] bestNextCentroidDistance;
+    delete[] memberCounts;
+    delete[] centroids;
+  }
+  log("8");
   for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
+    log("i is: %d",i);
+    log("size %d",m_planeObstacleMaps.size());
     m_planeObstacleMaps[i]->clearMap();
+    log("m_planeHeights[%d] is %f", i, m_planeHeights[i]);
   }
-
+  log("9");
   // Note: The function of this loop depends on the order of elements
   // being the same as the loop at the start of this method 
   unsigned int i = 0;
@@ -1345,10 +1353,13 @@ LocalMapManager::findPlaneHeightClusters()
       for (PlaneList::iterator it = planeList.begin();
 	  it != planeList.end(); it++) {
 	if (it->second > 4.0) {
+	 
 	  (*m_planeObstacleMaps[memberships[i]])(x,y) = 255;
 	  i++;
 	}
+	
       }
     }
+    
   }
 }
