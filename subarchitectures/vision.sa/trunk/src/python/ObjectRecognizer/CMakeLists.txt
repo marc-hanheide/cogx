@@ -42,3 +42,4 @@ macro(add_pylib_module _name)
 endmacro(add_pylib_module _name)
 
 add_subdirectory(dist-packages/ObjectRecognizer)
+add_subdirectory(apps/castmodule)
