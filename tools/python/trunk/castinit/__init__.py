@@ -26,8 +26,8 @@ class _Initializer:
             self.addSysPath(os.path.join(fp, name))
 
     def addDistPackages(self):
-        fp = castPythonDir
-        self.addSysPath(os.path.join(fp, "dist-packages"))
+        fp = os.path.join(castPythonDir, "dist-packages")
+        if os.path.exists(fp): self.addSysPath(fp)
 
 if __INITIALIZER == None:
     __INITIALIZER = _Initializer()
