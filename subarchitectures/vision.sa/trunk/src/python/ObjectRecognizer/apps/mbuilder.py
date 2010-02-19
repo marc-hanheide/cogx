@@ -5,6 +5,7 @@
 
 import os, sys, time
 import os.path
+import math
 from PyQt4 import QtCore, QtGui
 
 import opencv.cv as cv
@@ -173,6 +174,7 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         self.modelDir = os.getcwd()
         self.modelName = None
         self.model = None
+        self.matchModelSifts = True # For testing the models
         
         # Parameters for naming views
         self.paramCapture = CCaptureParams()
@@ -198,6 +200,7 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         self.connect(self.ui.txtLambda, QtCore.SIGNAL("textChanged(QString)"), self.ui.wwCameraPlacement, QtCore.SLOT("setLongitude(QString)"))
         # currentIndexChanged(QString)
         self.connect(self.ui.cbElevation, QtCore.SIGNAL("currentIndexChanged(QString)"), self.ui.wwCameraPlacement, QtCore.SLOT("setLatitude(QString)"))
+        self.connect(self.ui.ckSwapRedBlue, QtCore.SIGNAL("clicked()"), self.onSwapRbClicked)
 
     @property
     def siftSetup(self):
@@ -225,9 +228,25 @@ class CModelBuilderWnd(QtGui.QMainWindow):
 
     def drawSiftPoints(self, painter):
         dc = painter
+        dc.setPen(QtGui.QColor("cyan"))
+        for p in self.siftPoints.keypoints:
+            x, y, scale, orient = p[0], p[1], p[2], p[3]
+            size = (8.0 * scale)
+            if size < 48:
+                # dc.drawRect(x-size, y-size, 2*size, 2*size)
+                #dc.setPen(QtGui.QColor("cyan"))
+                #dc.drawArc(x-size, y-size, 2*size, 2*size, 0, 360*16)
+                pass
+            dc.setPen(QtGui.QColor("yellow"))
+            dc.drawLine(x, y, x+size*math.cos(orient), y-size*math.sin(orient))
         dc.setPen(QtGui.QColor("magenta"))
         for p in self.siftPoints.keypoints:
-            dc.drawLine(p[0], p[1], p[0]+2, p[1])
+            x, y = p[0], p[1]
+            dc.drawLine(x, y, x+2, y)
+
+    def drawSiftMatches(self, painter):
+        # TODO: use ObjectRecognizer to process self.model on self.siftPoints
+        pass
 
     def onUpdateCamera(self):
         if self.devCapture == None: return
@@ -241,7 +260,10 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         dc = QtGui.QPainter(self.canvas)
         dc.drawImage(0, 0, qimg)
         try:
-            if self.isSiftEnabled() and self.siftPoints != None: self.drawSiftPoints(dc)
+            if self.isSiftEnabled() and self.siftPoints != None:
+                self.drawSiftPoints(dc)
+                if self.matchModelSifts and self.model != None:
+                    self.drawSiftMatches(dc)
         except: pass
         dc.end()
         self.ui.cameraView.setPixmap(self.canvas)
@@ -272,12 +294,18 @@ class CModelBuilderWnd(QtGui.QMainWindow):
     def onStartCamera(self):
         if self.devCapture == None: return
         if self.devCapture.isRunning(): self.devCapture.stop()
+        self.devCapture.convertRbgBgr = self.ui.ckSwapRedBlue.isChecked()
         self.devCapture.start()
         self.tmCamera.start(1000.0 / self.devCapture.fps)
 
     def onStopCamera(self):
         self.tmCamera.stop()
         if self.devCapture != None: self.devCapture.stop()
+
+    def onSwapRbClicked(self):
+        if self.devCapture != None:
+            self.devCapture.convertRbgBgr = self.ui.ckSwapRedBlue.isChecked()
+        pass
 
     def onOpenModel(self):
         qfd = QtGui.QFileDialog
