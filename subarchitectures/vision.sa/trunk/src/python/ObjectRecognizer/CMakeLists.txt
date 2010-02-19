@@ -41,5 +41,4 @@ macro(add_pylib_module _name)
       )
 endmacro(add_pylib_module _name)
 
-# This is the top level of the module ObjectRecognizer
-add_pylib_module(ObjectRecognizer)
+add_subdirectory(dist-packages/ObjectRecognizer)

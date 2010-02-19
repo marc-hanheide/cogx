@@ -4,24 +4,28 @@
 # Created: jun 2009 
 
 import os, sys, traceback, time
-import mods.cameraview as camview
-import mods.comparator as comparator
-import mods.timing
-import objectmodel
-import objectmatcher
 import numpy as np
-
 import logging
-LOG = logging.getLogger("ObjectRecognizer")
+
+try: import castinit
+except: pass
+
+import ObjectRecognizer.mods.cameraview as camview
+import ObjectRecognizer.mods.comparator as comparator
+import ObjectRecognizer.mods.timing as timing
+import ObjectRecognizer.objectmodel as objectmodel
+import ObjectRecognizer.objectmatcher as objectmatcher
+
+from ObjectRecognizer.featuresetup import CSiftSetup
+# NOTE: Because of OpenGL, siftgpu should only be used in one thread.
+
+LOG = logging.getLogger("mod_ObjectRecognizer")
 LOG.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 LOG.addHandler(ch)
 
-from featuresetup import CSiftSetup
-# Because of OpenGL, siftgpu should only be used in one thread.
-
-T = mods.timing.TimerOn()
+T = timing.TimerOn()
 
 class CModelManager:
     def __init__(self):
