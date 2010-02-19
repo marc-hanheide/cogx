@@ -120,6 +120,7 @@ def _findMatchingObject(features):
         # printMatches(Matcher)
 
     def getProbs1(matches):
+        LOG.info("Matching with estimation of parameter consistency (sift scale, rotaion)")
         probs = []
         sp = 0
         for m in matches:
@@ -138,6 +139,7 @@ def _findMatchingObject(features):
 
     def getProbs2(matches, nBestViews = 3):
         # H: PDF from rotation confidence
+        LOG.info("Matching with estimation of homographies(ransac)")
         confs = []
         confmax = 0
         for m in matches:
@@ -158,7 +160,10 @@ def _findMatchingObject(features):
         confs = [ c / sumconfs * confmax for c in confs ]
         return confs
 
-    probs = getProbs2(matches)
+    gpmode = 2
+    if gpmode == 1: probs = getProbs1(matches)
+    elif gpmode == 2: probs = getProbs2(matches)
+    else: probs = [0]
     sp = sum(probs)
     if (sp < 1.0):
         names.append("*unknown*")
@@ -172,19 +177,30 @@ def _findMatchingObject(features):
 
     return (names, probs, poses)
 
+def saveImage(ndarr, fname):
+    from PIL import Image
+    pilImage = Image.fromarray(ndarr, 'RGB') # RGB, RGBA, G ?
+    pilImage.save(fname)
+
+SaveImages = False
+imid=0
 # image: ndarray (h, w, 1 or 3)
 # region: (x0, y0, x1, y1)
 def findMatchingObject(image, region=None):
-    global Setup, Matcher, Manager
+    global Setup, Matcher, Manager, SaveImages, imid
     try:
-        LOG.debug("Image shape: %s" % [image.shape])
+        print region
         if len(Manager.modelNames) < 1:
             LOG.warnring("No model loaded")
             return ( ["*unknown*"], [1.0], [None] )
         if region != None:
             x0, x1, y0, y1 = region
-            image = np.copy(image[x0:x1, y0:y1])
+            w = x1-x0; h = y1-y0
+            if w > 0 and h > 0: image = np.copy(image[y0:y1, x0:x1])
 
+        if SaveImages:
+            imid += 1
+            saveImage(image, "xdata/cast_objrecog_%04d.png" % imid)
         features = Setup.extractor.extractFeatures(image)
         matches = _findMatchingObject(features)
         return matches

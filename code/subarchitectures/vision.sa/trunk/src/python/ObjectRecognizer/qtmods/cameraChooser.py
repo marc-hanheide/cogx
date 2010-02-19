@@ -16,6 +16,7 @@ class CCameraInfo:
         self.id = id
         self.descr = descr
         self.preview = imgPreview
+        # self.modes = [] # (w, h, fmt)
 
 class CCameraList:
     def __init__(self):
@@ -25,7 +26,7 @@ class CCameraList:
     def itemCount(self):
         return len(self.items)
 
-    def refreshList(self):
+    def refreshList(self): # OPENCV only
         subs = [hg.CV_CAP_V4L2, hg.CV_CAP_IEEE1394]
         devnames = [("/dev/video%d",), ("/dev/video1394/%d", "/dev/video1394-%d")]
         subnames = ["V4L2", "IEEE1394"]
