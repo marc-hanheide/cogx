@@ -25,6 +25,13 @@ class _Initializer:
             if not name.endswith(".pylib"): continue
             self.addSysPath(os.path.join(fp, name))
 
+    def addDistPackages(self):
+        fp = castPythonDir
+        self.addSysPath(os.path.join(fp, "dist-packages"))
+
 if __INITIALIZER == None:
     __INITIALIZER = _Initializer()
+    # packages installed as .pylib or in dist-packages will have precedence over
+    # packages installed in PYTHON_PATH
     __INITIALIZER.addPythonZipLibs()
+    __INITIALIZER.addDistPackages()
