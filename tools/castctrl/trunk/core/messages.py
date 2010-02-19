@@ -17,8 +17,9 @@ class CMessage(object):
     ERROR=2
     FLUSHMSG=3
     CASTLOG=10
-    def __init__(self, message, msgtype=0, order=0, timestamp=time.time()):
+    def __init__(self, message, msgtype=0, order=0, timestamp=None):
         self.order = order
+        if timestamp == None: timestamp = time.time()
         self.time = timestamp
         self.message = message.rstrip()
         self.msgtype = msgtype
