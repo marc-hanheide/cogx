@@ -107,6 +107,7 @@ protected:
 
   void recomputeOnnessForObject(int objectID);
   void recomputeOnnessForPlane(int planeObjectID);
+  void sampleOnnessForPlane(int planeObjectID, int objectModelID);
 
   void setContainmentProperty(int objectID, int placeID, double confidence);
   void setSupportProperty(int figureID, int groundID, double confidence);

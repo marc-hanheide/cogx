@@ -1277,7 +1277,6 @@ LocalMapManager::findPlaneHeightClusters()
       centroids[newCentroidNo] = i;
     }
 
-    log("here.6");
     // Find the borderlines between clusters,
     // and the averages and closest examples to the borders
     int *memberCounts = new int[m_currentNumberOfClusters];
@@ -1309,7 +1308,6 @@ LocalMapManager::findPlaneHeightClusters()
 
 	maxDeviation = maxDeviation > closestDist ? maxDeviation : closestDist;
       }
-      log("here.7");
       // Reassign cluster centroids
       for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
 	sum[i] /= memberCounts[i];
