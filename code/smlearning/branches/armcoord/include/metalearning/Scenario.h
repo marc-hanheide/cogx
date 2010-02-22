@@ -273,6 +273,8 @@ protected:
 	golem::Event ev;
 	volatile bool bStart, bStop, bRec;
 
+
+
 	/** (Post)processing function called AFTER every physics simulation step and before randering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** Creates Scenario from description. */
