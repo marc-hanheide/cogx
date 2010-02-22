@@ -226,6 +226,12 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
 
 		learningData.currentSeq.push_back(currentFeatureVector);
+
+		if (valuesSet) {
+			if (polUpperPart.p.v3 < reachedDist) {
+				reachedDist = polUpperPart.p.v3;
+			}
+		}
 	
 		/////////////////////////////////////////////////
 		//initialize RNN learner
@@ -332,6 +338,14 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 			curPolPos1 = curPol->back()->getPose();
 			curPolPos2 = curPol->front()->getPose();
 		}
+
+		//reference to (at the beginning) standig part of the polyflap
+		polUpperPart = curPolPos1;
+		//original vertical distace of the center of the standing part of the polyflap from ground
+		originalDist = polUpperPart.p.v3;
+		reachedDist = originalDist;
+		valuesSet = true;
+
 
 		Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
 
@@ -466,7 +480,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		learningData.effector = effectorBounds;
 		learningData.object = *object->getLocalBoundsSeq();
 		learningData.obstacles = *obstacles->getGlobalBoundsSeq();
+		
 
+		
 
 		
 		// wait for the movement to start, but no longer than 60 seconds
@@ -478,7 +494,24 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		(void)arm->getReacPlanner().waitForEnd(60000);
 		context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
 		bStart = false;
-			
+		
+		valuesSet = false;
+				
+		Real polState = -1; //polyflap was smoothly moved
+		if (sin(reachedDist) < (sin(10/18) * originalDist)) { //polyflap was tilted more than 10 degrees
+			polState = 0;
+		}
+		if (sin(reachedDist) < sin((17/18) * originalDist)) {//polyflap was flipped
+			polState = 1;
+		}
+
+		FeatureVector polyflapEndState;
+		polyflapEndState.push_back(polState);
+		/////////////////////////////////////////////////
+		//writing the polyflap end state into the sequence
+		learningData.currentSeq.push_back(polyflapEndState);
+		/////////////////////////////////////////////////
+	
 			
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
