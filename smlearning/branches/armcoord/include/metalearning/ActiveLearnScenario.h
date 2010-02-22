@@ -96,8 +96,14 @@ public:
 	//lenght of the movement		
 	Real distance; 
 
-
-
+	//original vertical distace of the center of the standing part of the polyflap from ground
+	Real originalDist;
+	//reference to (at the beginning) standig part of the polyflap
+	Mat34 polUpperPart;
+	//reached vertical distace of the center of the standing part of the polyflap from ground
+	Real reachedDist;
+	//
+	bool valuesSet = false;
 
 
 
