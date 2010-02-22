@@ -1089,4 +1089,51 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
   }
   return maxDistance;
 }
+
+void
+sampleOnnessDistribution(const Object *objectS, Object *objectO,
+    std::vector<Vector3> &outPoints) {
+  double xmin = -1.0;
+  double xmax = 1.0;
+  double xstep = 0.02;
+  double ymin = -1.0;
+  double ymax = 1.0;
+  double ystep = 0.02;
+  double zmin = 0.0;
+  double zmax = 2.0;
+  double zstep = 0.02;
+  double threshold = 0.5;
+  std::set<Vector3> cloudPoints;
+
+  for (double x = xmin; x <= xmax; x += xstep) {
+    for (double y = ymin; y <= ymax; y += ystep) {
+      for (double z = zmin; z <= zmax; z += zstep) {
+	objectO->pose.pos = vector3(x, y, z);
+	if (evaluateOnness(objectS, objectO) > threshold) {
+	  cloudPoints.insert(objectO->pose.pos);
+	}
+      }
+    }
+  }
+
+  outPoints.clear();
+
+  for (std::set<Vector3>::iterator it = cloudPoints.begin();
+      it != cloudPoints.end(); it++) {
+    Vector3 neigh1 = vector3(it->x-1, it->y, it->z); 
+    Vector3 neigh2 = vector3(it->x+1, it->y, it->z); 
+    Vector3 neigh3 = vector3(it->x, it->y-1, it->z); 
+    Vector3 neigh4 = vector3(it->x, it->y+1, it->z); 
+    Vector3 neigh5 = vector3(it->x, it->y, it->z-1); 
+    Vector3 neigh6 = vector3(it->x, it->y, it->z+1); 
+    if (cloudPoints.find(neigh1) != cloudPoints.end() ||
+	cloudPoints.find(neigh2) != cloudPoints.end() ||
+	cloudPoints.find(neigh3) != cloudPoints.end() ||
+	cloudPoints.find(neigh4) != cloudPoints.end() ||
+	cloudPoints.find(neigh5) != cloudPoints.end() ||
+	cloudPoints.find(neigh6) != cloudPoints.end()) {
+      outPoints.push_back(*it);
+    }
+  }
+}
 };

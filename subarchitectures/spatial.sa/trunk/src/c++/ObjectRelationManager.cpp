@@ -419,23 +419,6 @@ void ObjectRelationManager::runComponent()
 	box1.radius2 = 0.2;
 	box1.radius3 = 0.2;
 
-	//	  peekabot::PointCloudProxy pcloud;
-	//	  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
-	//	  for (double x = -1.5; x <= 1.5; x += 0.1) {
-	//	    for (double y = -1.5; y <= 1.5; y += 0.1) {
-	//	      for (double z = 0; z <= 2.5; z += 0.1) {
-	//		box1.pose.pos = vector3(x, y, z);
-	//		double onness = evaluateOnness(&table1, &box1);
-	//		cout << "(" << x << " " << y << " " << z << "):" << onness << "   ";
-	//		if (onness > 0.8) {
-	//		  pcloud.add_vertex(x,y,z);
-	//		}
-	//	      }
-	//	      cout << endl;
-	//	    }
-	//	  }
-
-
 	//	  cout << "Onness: " << evaluateOnness(&table1, &box1);
 
 	peekabot::SphereProxy sp;
@@ -900,6 +883,48 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
     double onness = evaluateOnness(&po, m_objectModels[objectID]);
     log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
 	m_planeObjects[planeObjectID]->label.c_str(), onness);
+  }
+}
+
+void
+ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID) 
+{
+  if (m_planeObjects.find(planeObjectID) == m_planeObjects.end()) {
+    log("Error! Plane object missing!");
+    return;
+  }
+
+  PlaneObject po;
+  po.pose.pos = m_planeObjects[planeObjectID]->pos;
+  fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
+      vector3(0.0, 0.0, 1.0));
+  if (m_planeObjects[planeObjectID]->label == "planeObject0") {
+    po.radius1 = 0.45;
+    po.radius2 = 0.55;
+  }
+  else {
+    log("Error! Unknown plane object!");
+    return;
+  }
+
+  if (m_objectModels.find(objectModelID) == m_objectModels.end()) {
+    log("Error! Object model missing!");
+    return;
+  }
+
+  Object *objectO = m_objectModels[objectModelID];
+
+  Pose3 oldPose = objectO->pose;
+  vector<Vector3> points;
+  sampleOnnessDistribution(&po, objectO, points);
+  objectO->pose = oldPose;
+
+  peekabot::PointCloudProxy pcloud;
+  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+
+  for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+      it++) {
+    pcloud.add_vertex(it->x,it->y,it->z);
   }
 }
 

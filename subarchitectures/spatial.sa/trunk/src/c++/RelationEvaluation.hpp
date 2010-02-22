@@ -54,6 +54,10 @@ struct BoxObject : public Object {
 double
 evaluateOnness(const Object *objectS, const Object *objectO);
 
+void
+sampleOnnessDistribution(const Object *objectS, Object *objectO, 
+    std::vector<Vector3> &outPoints) {
+
 std::vector<Vector3>
 findPolygonIntersection(const std::vector<Vector3> &polygon1, 
     const std::vector<Vector3> &polygon2);

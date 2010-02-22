@@ -7,7 +7,6 @@
 
 #ifndef ADVOBJECTSEARCH_HPP_
 #define ADVOBJECTSEARCH_HPP_
-#include "AdvObjectSearch.hpp"
 
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
@@ -29,6 +28,7 @@
 #include "XVector3D.h"
 #include <PTZ.hpp>
 #include "X11DispLocalGridMap.hh"
+#include <peekabot.hh>
 #include <highgui.h>
 
 
