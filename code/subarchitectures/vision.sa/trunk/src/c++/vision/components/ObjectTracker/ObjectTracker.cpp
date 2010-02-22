@@ -363,7 +363,7 @@ void ObjectTracker::runTracker(){
 	for(i=0; i<m_trackinglist.size(); i++){
 		m_tracker->getModelPose(m_trackinglist[i]->id, pose);
 		m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
-		convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);
+		convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);		
 		m_trackinglist[i]->obj->time = m_image.time;
 		overwriteWorkingMemory(m_trackinglist[i]->visualObjectID, m_trackinglist[i]->obj);
 	}
