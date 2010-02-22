@@ -19,6 +19,7 @@
 #include <VisionData.hpp>
 #include <AddressBank/ConfigFileReader.hh>
 #include <SensorData/SensorPose.hh>
+#include <VideoUtils.h>
 
 using namespace cast;
 #include <Pose3.h>
@@ -60,7 +61,12 @@ double overlapWeight				= 1.0;
 
 ObjectRelationManager::ObjectRelationManager()
 {
+  m_bRecognitionIssuedThisStop = false;
   m_maxObjectCounter = 0;
+  m_standingStillThreshold = 0.2;
+  m_recognitionTimeThreshold = 1.0;
+  m_trackerTimeThreshold = 3.0;
+  m_timeSinceLastMoved = 0.0;
 }
 
 ObjectRelationManager::~ObjectRelationManager() 
@@ -195,6 +201,17 @@ void ObjectRelationManager::start()
 void 
 ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+  double oldX = 0.0;
+  double oldY = 0.0;
+  double oldTheta = 0.0;
+  double oldTime;
+  if (lastRobotPose) {
+    oldX = lastRobotPose->x;
+    oldY = lastRobotPose->y;
+    oldTheta = lastRobotPose->theta;
+    oldTime = lastRobotPose->time.s + 0.000001*lastRobotPose->time.us;
+  }
+
   try {
     lastRobotPose =
       getMemoryEntry<NavData::RobotPose2d>(objID.address);
@@ -202,6 +219,32 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   catch (DoesNotExistOnWMException e) {
     log("Error! robotPose missing on WM!");
     return;
+  }
+
+  double distMoved = sqrt((oldX - lastRobotPose->x)*(oldX - lastRobotPose->x) +
+    (oldY - lastRobotPose->y)*(oldY - lastRobotPose->y));
+  double angleShift = lastRobotPose->theta - oldTheta;
+  if (angleShift > M_PI) angleShift -= 2*M_PI;
+  if (angleShift < -M_PI) angleShift += 2*M_PI;
+  distMoved += abs(angleShift)*1.0;
+  double deltaT = lastRobotPose->time.s +
+    lastRobotPose->time.us*0.000001 - oldTime;
+  double momVel = deltaT > 0 ? distMoved/deltaT : 0.0;
+  log("momVel = %f, deltaT = %f", momVel, deltaT);
+
+  if (momVel > m_standingStillThreshold) {
+    m_timeSinceLastMoved = 0.0;
+    if (m_bRecognitionIssuedThisStop) {
+      // Signal tracking stop
+      addTrackerCommand(VisionData::REMOVEMODEL, "joystick");
+      addTrackerCommand(VisionData::REMOVEMODEL, "krispies");
+    }
+    m_bRecognitionIssuedThisStop = false;
+  }
+  else if (deltaT > 0.0) {
+    double diff = lastRobotPose->time.s + lastRobotPose->time.us*0.000001 - oldTime;
+    m_timeSinceLastMoved += diff;
+//    log("time %f %f %f", diff, oldTime, m_timeSinceLastMoved);
   }
 }
 
@@ -230,9 +273,20 @@ void ObjectRelationManager::runComponent()
   }
 
 
+  peekabot::SphereProxy sqdp;
+  peekabot::SphereProxy scwp;
+  peekabot::SphereProxy bcwp;
+  peekabot::SphereProxy pip;
+  peekabot::SphereProxy op;
+  peekabot::CubeProxy dfp;
+  peekabot::CubeProxy csp;
+  peekabot::CubeProxy cop;
+  peekabot::PolygonProxy pp;
+  peekabot::CubeProxy bp;
+  PlaneObject table1;
+
   if (m_bTestOnness) {
 
-    PlaneObject table1;
 
     table1.type = OBJECT_PLANE;
 
@@ -248,41 +302,32 @@ void ObjectRelationManager::runComponent()
     peekabot::GroupProxy sliders;
     sliders.add(m_onnessTester, "weights", peekabot::REPLACE_ON_CONFLICT);
 
-    peekabot::SphereProxy sqdp;
     sqdp.add(sliders, "squareDistance", peekabot::REPLACE_ON_CONFLICT);
     sqdp.translate(-1.0, 6.0, squareDistanceWeight);
     sqdp.set_scale(0.1);
-    peekabot::SphereProxy scwp;
     scwp.add(sliders, "supportEdge", peekabot::REPLACE_ON_CONFLICT);
     scwp.translate(0.0, 6.0, supportCOMContainmentWeight);
     scwp.set_scale(0.1);
-    peekabot::SphereProxy bcwp;
     bcwp.add(sliders, "bottomEdge", peekabot::REPLACE_ON_CONFLICT);
     bcwp.translate(1.0, 6.0, bottomCOMContainmentWeight);
     bcwp.set_scale(0.1);
-    peekabot::SphereProxy pip;
     pip.add(sliders, "planeInclination", peekabot::REPLACE_ON_CONFLICT);
     pip.translate(2.0, 6.0, planeInclinationWeight);
     pip.set_scale(0.1);
-    peekabot::SphereProxy op;
     op.add(sliders, "overlap", peekabot::REPLACE_ON_CONFLICT);
     op.translate(3.0, 6.0, overlapWeight);
     op.set_scale(0.1);
 
-    peekabot::CubeProxy dfp;
     dfp.add(sliders, "distanceFalloff", peekabot::REPLACE_ON_CONFLICT);
     dfp.translate(-1.0, 6.0, squareDistanceFalloff);
     dfp.set_scale(0.1);
-    peekabot::CubeProxy csp;
     csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
     csp.translate(0.0, 6.0, supportCOMContainmentSteepness);
     csp.set_scale(0.1);
-    peekabot::CubeProxy cop;
     cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
     cop.translate(0.0, 6.0, supportCOMContainmentOffset);
     cop.set_scale(0.1);
 
-    peekabot::PolygonProxy pp;
     pp.add(m_onnessTester, "table", peekabot::REPLACE_ON_CONFLICT);
     pp.add_vertex(table1.radius1, table1.radius2, 0);
     pp.add_vertex(-table1.radius1, table1.radius2, 0);
@@ -293,12 +338,28 @@ void ObjectRelationManager::runComponent()
     pp.rotate(rotAngle, 0.0, 0.0, 1.0);
 
 
-    peekabot::CubeProxy bp;
     bp.add(m_onnessTester, "box", peekabot::REPLACE_ON_CONFLICT);
     bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.5);
     bp.set_scale(0.4, 0.4, 0.4);
+  }
 
-    while (isRunning()) {
+  while (isRunning()) {
+    // Dispatch recognition commands if the robot has been standing still
+    // long enough
+
+    lockComponent();
+
+    if (!m_bRecognitionIssuedThisStop &&
+	m_timeSinceLastMoved > m_recognitionTimeThreshold) {
+      log("Issuing recognition commands");
+      addRecognizer3DCommand(VisionData::RECOGNIZE, "joystick", "");
+      addRecognizer3DCommand(VisionData::RECOGNIZE, "krispies", "");
+      m_bRecognitionIssuedThisStop = true;
+    }
+
+    unlockComponent();
+
+    if (m_bTestOnness) {
       peekabot::Result<peekabot::Vector3f> vr;
       vr = sqdp.get_position();
       if (vr.succeeded()) squareDistanceWeight= vr.get_result()(2);
@@ -431,8 +492,9 @@ void ObjectRelationManager::runComponent()
 	//    usleep(250000);
 	//  }
       }
-      sleepComponent(500);
-    }
+    } // if (m_bTestOnness)
+
+    sleepComponent(500);
   }
 }
 
@@ -443,133 +505,145 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
     VisionData::VisualObjectPtr observedObject =
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
 
-    log("Got VisualObject: %s", observedObject->label.c_str());
+    if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
+      log("Got VisualObject: %s", observedObject->label.c_str());
 
-    Pose3 pose = observedObject->pose;
-    //Get robot pose
-    Pose3 robotTransform;
-    if (lastRobotPose != 0) {
-      fromRotZ(robotTransform.rot, lastRobotPose->theta);
+      Pose3 pose = observedObject->pose;
+      //Get robot pose
+//      Pose3 robotTransform;
+//      if (lastRobotPose != 0) {
+//	fromRotZ(robotTransform.rot, lastRobotPose->theta);
+//
+//	robotTransform.pos.x = lastRobotPose->x;
+//	robotTransform.pos.y = lastRobotPose->y;
+//      }
+//      transform(robotTransform, pose, pose);
 
-      robotTransform.pos.x = lastRobotPose->x;
-      robotTransform.pos.y = lastRobotPose->y;
-    }
-    transform(robotTransform, pose, pose);
-
-    // For now, assume each label represents a unique object
-    int objectID = -1;
-    for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-      if (it->second->label == observedObject->label) {
-	// update object
-	objectID = it->first;
-	log("Updating object %i(%s)", objectID, observedObject->label.c_str());
-	break;
-      }
-    }
-    bool bNewObject = false;
-    if (objectID == -1) {
-      // New object
-      bNewObject = true;
-      log("New SpatialObject: %s", observedObject->label.c_str());
-      objectID = m_maxObjectCounter++;
-      m_objects[objectID] = new SpatialData::SpatialObject;
-      m_objects[objectID]->id = objectID;
-      m_objects[objectID]->label = observedObject->label;
-      m_objects[objectID]->pose = observedObject->pose;
-
-      BoxObject *newBoxObject = new BoxObject;
-      m_objectModels[objectID] = newBoxObject;
-      newBoxObject->type = OBJECT_BOX;
-      if (observedObject->label == "krispies") {
-	newBoxObject->radius1 = 0.095;
-	newBoxObject->radius2 = 0.045;
-	newBoxObject->radius3 = 0.145;
-      }
-      else if (observedObject->label == "joystick") {
-	newBoxObject->radius1 = 0.115;
-	newBoxObject->radius2 = 0.105;
-	newBoxObject->radius3 = 0.13;
-      }
-      else  {
-	newBoxObject->radius1 = 0.1;
-	newBoxObject->radius2 = 0.1;
-	newBoxObject->radius3 = 0.1;
-      }
-    }
-//    log("2");
-
-    double diff = length(m_objects[objectID]->pose.pos - pose.pos);
-    diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 1));
-    diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 2));
-    if (diff > 0.01 || bNewObject) {
-      //      log("3");
-      m_objects[objectID]->pose = pose;
-      m_lastObjectPoseTimes[objectID] = observedObject->time;
-
-      if (m_objectWMIDs.find(objectID) == m_objectWMIDs.end()) {
-	string newID = newDataID();
-
-	addToWorkingMemory<SpatialData::SpatialObject>(newID, m_objects[objectID]);
-	m_objectWMIDs[objectID]=newID;
-      }
-      else {
-
-	try {
-	  overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[objectID],
-	      m_objects[objectID]);
-	}
-	catch (DoesNotExistOnWMException) {
-	  log("Error! SpatialObject disappeared from memory!");
-	  return;
+      // For now, assume each label represents a unique object
+      int objectID = -1;
+      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	if (it->second->label == observedObject->label) {
+	  // update object
+	  objectID = it->first;
+	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
+	  m_visualObjectIDs[objectID] = wmc.address.id;
+	  break;
 	}
       }
-      //    log("4");
+      bool bNewObject = false;
+      if (objectID == -1) {
+	// New object
+	bNewObject = true;
+	log("New SpatialObject: %s", observedObject->label.c_str());
+	objectID = m_maxObjectCounter++;
+	m_objects[objectID] = new SpatialData::SpatialObject;
+	m_objects[objectID]->id = objectID;
+	m_objects[objectID]->label = observedObject->label;
+	m_objects[objectID]->pose = observedObject->pose;
 
-      if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
-	if (m_objectModels[objectID]->type == OBJECT_BOX) {
-	  BoxObject *box = (BoxObject*)m_objectModels[objectID];
-	  peekabot::CubeProxy theobjectproxy;
-	  peekabot::GroupProxy root;
-	  root.assign(m_PeekabotClient, "root");
-	  theobjectproxy.add(m_objectProxies, m_objects[objectID]->label, peekabot::REPLACE_ON_CONFLICT);
-	  theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
-	  double angle;
-	  Vector3 axis;
-	  toAngleAxis(pose.rot, angle, axis);
-	  log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
-	      pose.pos.x, pose.pos.y, pose.pos.z, angle, 
-	      axis.x, axis.y, axis.z);
-	  theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
-	  theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
-	      box->radius3*2);
+	BoxObject *newBoxObject = new BoxObject;
+	m_objectModels[objectID] = newBoxObject;
+	newBoxObject->type = OBJECT_BOX;
+	if (observedObject->label == "krispies") {
+	  newBoxObject->radius1 = 0.095;
+	  newBoxObject->radius2 = 0.045;
+	  newBoxObject->radius3 = 0.145;
+	}
+	else if (observedObject->label == "joystick") {
+	  newBoxObject->radius1 = 0.115;
+	  newBoxObject->radius2 = 0.105;
+	  newBoxObject->radius3 = 0.13;
+	}
+	else  {
+	  newBoxObject->radius1 = 0.1;
+	  newBoxObject->radius2 = 0.1;
+	  newBoxObject->radius3 = 0.1;
+	}
+      }
+      //    log("2");
+
+      double diff = length(m_objects[objectID]->pose.pos - pose.pos);
+      diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 1));
+      diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 2));
+      if (diff > 0.01 || bNewObject) {
+	//      log("3");
+	m_objects[objectID]->pose = pose;
+	m_lastObjectPoseTimes[objectID] = observedObject->time;
+
+	if (m_objectWMIDs.find(objectID) == m_objectWMIDs.end()) {
+	  string newID = newDataID();
+
+	  addToWorkingMemory<SpatialData::SpatialObject>(newID, m_objects[objectID]);
+	  m_objectWMIDs[objectID]=newID;
 	}
 	else {
+
+	  try {
+	    overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[objectID],
+		m_objects[objectID]);
+	  }
+	  catch (DoesNotExistOnWMException) {
+	    log("Error! SpatialObject disappeared from memory!");
+	    return;
+	  }
 	}
+	//    log("4");
+
+	if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
+	  if (m_objectModels[objectID]->type == OBJECT_BOX) {
+	    BoxObject *box = (BoxObject*)m_objectModels[objectID];
+	    peekabot::CubeProxy theobjectproxy;
+	    peekabot::GroupProxy root;
+	    root.assign(m_PeekabotClient, "root");
+	    theobjectproxy.add(m_objectProxies, m_objects[objectID]->label, peekabot::REPLACE_ON_CONFLICT);
+	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
+	    double angle;
+	    Vector3 axis;
+	    Vector3 laala;
+	    laala.x = 0.5;
+	    laala.y = 0.0;
+	    laala.z = 0.0;
+	    laala = transform(pose, laala);
+	    peekabot::SphereProxy laalap;
+	    laalap.add(root, "finman", peekabot::REPLACE_ON_CONFLICT);
+	    laalap.translate(laala.x, laala.y, laala.z);
+	    laalap.set_scale(0.05);
+	    toAngleAxis(pose.rot, angle, axis);
+	    log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
+		pose.pos.x, pose.pos.y, pose.pos.z, angle, 
+		axis.x, axis.y, axis.z);
+	    theobjectproxy.rotate(angle, axis.x, axis.y, axis.z);
+	    theobjectproxy.set_scale(box->radius1*2, box->radius2*2,
+		box->radius3*2);
+	  }
+	  else {
+	  }
+	}
+	//    log("5");
+
+	// Check degree of onness
+	recomputeOnnessForObject(objectID);
+
+
+	if (m_placeInterface != 0) {
+	  // Check degree of containment in Places
+	  FrontierInterface::PlaceMembership membership = 
+	    m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
+
+	  setContainmentProperty(objectID, membership.placeID, 1.0);
+	}
+
+	//  Needs estimate of extent of Places, in sensory frame
+	//   Add interface to PlaceManager?
+	// Post one or more Place containment structs on WM
+	// Find and remove/update extant property structs
+
+	// Check degree of support between Objects
+	//  Need a list of tracked Object
+	//  Check contact points and estimated centers of gravity
+	//   Need access to representation of object models
+	//   
       }
-      //    log("5");
-
-      // Check degree of onness
-      recomputeOnnessForObject(objectID);
-
-
-      if (m_placeInterface != 0) {
-	// Check degree of containment in Places
-	FrontierInterface::PlaceMembership membership = 
-	  m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
-
-	setContainmentProperty(objectID, membership.placeID, 1.0);
-      }
-
-      //  Needs estimate of extent of Places, in sensory frame
-      //   Add interface to PlaceManager?
-      // Post one or more Place containment structs on WM
-      // Find and remove/update extant property structs
-
-      // Check degree of support between Objects
-      //  Need a list of tracked Object
-      //  Check contact points and estimated centers of gravity
-      //   Need access to representation of object models
-      //   
     }
   }
   catch (DoesNotExistOnWMException) {
@@ -773,6 +847,8 @@ ObjectRelationManager::recomputeOnnessForObject(int objectID)
   for (map<int, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); 
       it != m_planeObjects.end(); it++) {
     PlaneObject po;
+    po.type = OBJECT_PLANE;
+    po.shape = PLANE_OBJECT_RECTANGLE;
     po.pose.pos = it->second->pos;
     fromAngleAxis(po.pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
     if (it->second->label == "planeObject0") {
@@ -825,4 +901,31 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
     log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
 	m_planeObjects[planeObjectID]->label.c_str(), onness);
   }
+}
+
+void 
+ObjectRelationManager::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID){
+	VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+  rec_cmd->cmd = cmd;
+  rec_cmd->label = label;
+  rec_cmd->visualObjectID = visualObjectID;
+  addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+}
+
+void 
+ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, std::string label){
+  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+  track_cmd->cmd = cmd;
+  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+    if (it->second->label == label) {
+      // update object
+      int objectID = it->first;
+      if (m_visualObjectIDs.find(objectID) == m_visualObjectIDs.end()) {
+	log ("Error! Visual object WM ID was unknown!");
+	return;
+      }
+      track_cmd->visualObjectID = m_visualObjectIDs[objectID];;
+    }
+  }
+  addToWorkingMemory(newDataID(), "vision.sa", track_cmd);
 }

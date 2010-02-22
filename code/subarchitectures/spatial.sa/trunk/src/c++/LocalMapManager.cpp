@@ -865,7 +865,7 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     else {
       horizDistSq = to.X[0]*to.X[0] + to.X[1]*to.X[1];
     }
-    if (horizDistSq > 1.5*1.5) {
+    if (horizDistSq > 1.2*1.2) {
       log("Clipping polygon vertex at distance %f", sqrt(horizDistSq));
       oobj->PointsSeq.erase(oobj->PointsSeq.begin()+i);
       i--;
