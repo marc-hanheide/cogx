@@ -111,37 +111,12 @@ class CViewer:
             if k == 0: k = hg.cvWaitKey(10)
             if k == '\x1b': break
 
-    def sift2png(self, featurepack):
-        # 128x1 -> 12x12; batchsize=8
-        from PIL import Image
-        # coords: old->new; 0 on right, positive direction
-        coords = [(1,2), (0,2), (0,1), (0,0), (1,0), (2,0), (2,1), (2,2)]
-        def siftreshape(sift):
-            png = np.ndarray(shape=(12,12), dtype=np.ubyte)
-            for batch in xrange(16):
-                ss = batch * 8
-                py0 = (batch / 4) * 3
-                px0 = (batch % 4) * 3
-                for ic in xrange(8):
-                    (dy, dx) = coords[ic]
-                    png[py0+dy, px0+dx] = sift[ss+ic]
-                png[py0+1, px0+1] = sum(sift[ss:ss+8]) / 8 # ave in center
-            return png
-
-        for i,sift in enumerate(featurepack.descriptors):
-            sift *= 512;
-            img = siftreshape(sift)
-            pilImage = Image.fromarray(img, 'L') # RGB, RGBA, L ?
-            pilImage.save("xdata/sift/x%04d.png" % i)
-        pass
-
 def mymain():
     App = CViewer()
     App.loadModels()
     App.processImages()
     # App.captureImages()
     # App.interactive()
-    # App.sift2png(main.Manager.getModel("SwGreenTea").viewPoints[0].featurePacks[0])
 
 if __name__ == "__main__": mymain()
 
