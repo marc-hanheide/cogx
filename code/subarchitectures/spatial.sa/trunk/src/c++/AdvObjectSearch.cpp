@@ -541,8 +541,7 @@ namespace spatial
 
   void
   AdvObjectSearch::SetPrior() {
-    int TypeCount[3] =
-      { 0 };
+    int TypeCount[3] = { 0 };
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
@@ -578,6 +577,19 @@ namespace spatial
       }
     }
 
+    /* DEBUG */
+    double sumin = 0.0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            if ((*m_lgm)(x,y) == 2)
+                    continue;
+            sumin += (*m_lgm_posterior)(x, y);
+          }
+    }
+    log("posterior sums to: %f", sumin);
+    log("posterior + Cout sums to: %f", sumin + pOut);
+
+    /* DEBUG */
 
  /* Display Posterior in PB as Line Cloud BEGIN */
   
@@ -632,7 +644,7 @@ namespace spatial
 
   }
 
-  double AdvObjectSearch::ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints){
+ double AdvObjectSearch::ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints){
     /* This is the probability that for a cell in the map, given object is in field of view,
      * what are the chances that the recognition algorithm will spot it.
      * If the cell in question is out of FOV then this is zero. If not
@@ -689,6 +701,20 @@ if (result){
   }
   /* Display Posterior in as line cloud PB END */
 
+  /* DEBUG */
+    double sumin = 0.0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            if ((*m_lgm)(x,y) == 2)
+                    continue;
+            sumin += (*m_lgm_posterior)(x, y);
+          }
+    }
+    log("posterior sums to: %f", sumin);
+    log("posterior + Cout sums to: %f", sumin + pOut);
+
+    /* DEBUG */
+
 
   double denomsum = 0.0;
   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
@@ -699,22 +725,43 @@ if (result){
         }
   }
   denomsum += pOut;
+
+  log("pOut is: %f",pOut);
   log("denomsum is: %f", denomsum);
   // For everything inside meaning: pIn
   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x,y) == 2)
           continue;
-        if ((*m_lgm)(x,y) == 0)
-	  log("old prob for fs: %f", (*m_lgm_posterior)(x,y));
+        //if ((*m_lgm)(x,y) == 0)
+	  //log("old prob for fs: %f", (*m_lgm_posterior)(x,y));
         (*m_lgm_posterior)(x,y) = ((*m_lgm_posterior)(x,y)* ( 1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points)))/
             denomsum;
-        if ((*m_lgm)(x,y) == 0)
-          log("new prob for fs: %f", (*m_lgm_posterior)(x,y));
+        //if ((*m_lgm)(x,y) == 0)
+          //log("new prob for fs: %f", (*m_lgm_posterior)(x,y));
       }
     }
 
   pOut = pOut / denomsum;
+  log("pOut has become: %f",pOut);
+
+
+  /* DEBUG */
+    sumin = 0.0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            if ((*m_lgm)(x,y) == 2)
+                    continue;
+            sumin += (*m_lgm_posterior)(x, y);
+          }
+    }
+    log("posterior sums to: %f", sumin);
+    log("posterior + Cout sums to: %f", sumin + pOut);
+
+    /* DEBUG */
+
+
+
 
   /* Display Posterior in PB BEGIN */
   /* double color[3] = { 0.9, 0, 0.9 };
