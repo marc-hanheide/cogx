@@ -57,9 +57,79 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 	// end-effector reference pose
 	val.referencePose.setId();
 	val.referencePose.p.v2 += golem::Real(baseLength + fingerLength);
+
+
+	
+
 	
 	return true;
 }
+
+
+bool XMLData2(ActiveLearnScenario* p, XMLContext* context) {
+
+
+
+	//a number that slightly greater then the maximal reachable space of the arm
+	//    - used for workspace position normalization and later as a position upper bound
+	//      for random polyflap position
+	//maxRange = 0.4;
+	XMLData(p->maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+
+	//minimal duration of a movement (by normal speed)
+	XMLData(p->minDuration, context->getContextFirst("polyflapInteraction minDuration"));
+
+
+	Real x;
+	Real y;
+	Real z;
+	
+	//Polyflap Position and orientation
+	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapPosition x"));
+	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapPosition y"));
+	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapPosition z"));
+	p->startPolyflapPosition.set(x, y, z);
+
+	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapRotation x"));
+	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapRotation y"));
+	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapRotation z"));
+	p->startPolyflapRotation.set(y, x, z);
+
+	//Polyflap dimensions		
+	XMLData(x, context->getContextFirst("polyflapInteraction polyflapDimensions x"));
+	XMLData(y, context->getContextFirst("polyflapInteraction polyflapDimensions y"));
+	XMLData(z, context->getContextFirst("polyflapInteraction polyflapDimensions z"));
+	p->polyflapDimensions.set(x, y, z);
+
+	//vertical distance from the ground
+	//const Real over = 0.01;
+	//vertical distance from the ground considering fingertip radius
+	XMLData(p->over, context->getContextFirst("polyflapInteraction over"));
+	//distance from the front/back of the polyflap
+	XMLData(p->dist, context->getContextFirst("polyflapInteraction dist"));
+
+	Real r;
+
+	//distance from the side of the polyflap
+	XMLData(r, context->getContextFirst("polyflapInteraction side"));
+	p->side = p->polyflapDimensions.v1*r;
+	//center of the polyflap
+	XMLData(r, context->getContextFirst("polyflapInteraction center"));
+	p->center = p->polyflapDimensions.v2*r;
+	//distance from the top of the polyflap
+	//const Real top = polyflapDimensions.v2* 1.2;
+	XMLData(p->top, context->getContextFirst("polyflapInteraction top"));
+	p->top = p->polyflapDimensions.v2 - r;
+	//lenght of the movement		
+	XMLData(p->distance, context->getContextFirst("polyflapInteraction distance"));
+
+
+
+
+
+return true;
+}
+
 
 
 //------------------------------------------------------------------------------
@@ -202,36 +272,12 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	randomG.setRandSeed (context.getRandSeed());
 	netBuilt = false;
 
-	//a number that slightly greater then the maximal reachable space of the arm
-	//    - used for workspace position normalization and later as a position upper bound
-	//      for random polyflap position
-	maxRange = 0.4;
 
-	//minimal duration of a movement (by normal speed)
-	const SecTmReal minDuration = SecTmReal(5.0);
-	
-	//Polyflap Position and orientation
-	const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
-	const Vec3 startPolyflapRotation(Real(0.0*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));//Y,X,Z
-	//Polyflap dimensions		
-	const Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
-		
 
-// 	//vertical distance from the ground
-// 	const Real over = 0.01;
-	//vertical distance from the ground considering fingertip radius
-	Real over = 0.002 + 0.015;
-	//distance from the front/back of the polyflap
-	const Real dist = 0.05;
-	//distance from the side of the polyflap
-	const Real side = polyflapDimensions.v1*0.6;
-	//center of the polyflap
-	const Real center = polyflapDimensions.v2*0.6;
-	//distance from the top of the polyflap
-	//const Real top = polyflapDimensions.v2* 1.2;
-	const Real top = polyflapDimensions.v2 - 0.02;
-	//lenght of the movement		
-	const Real distance = 0.2;
+
+
+
+
 
 	const SecTmReal tmDeltaAsync = arm->getReacPlanner().getTimeDeltaAsync();
 
@@ -618,11 +664,17 @@ void ActivePushingApplication::run(int argc, char *argv[]) {
 	ActiveLearnScenario::Desc desc;
 	XMLData(desc, xmlcontext());
 
+
+
+
 	ActiveLearnScenario *pActiveLearnScenario = dynamic_cast<ActiveLearnScenario*>(scene()->createObject(desc)); // throws
 	if (pActiveLearnScenario == NULL) {
 		context()->getLogger()->post(Message::LEVEL_CRIT, "ActivePushingApplication::run(): unable to cast to ActiveLearnScenario");
 		return;
 	}
+
+XMLData2(pActiveLearnScenario, xmlcontext());
+
 
 	// Random number generator seed
 	context()->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);

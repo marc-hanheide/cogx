@@ -62,6 +62,46 @@ public:
 		}
 	};
 
+
+public:
+	
+
+
+	//a number that slightly greater then the maximal reachable space of the arm
+	//    - used for workspace position normalization and later as a position upper bound
+	//      for random polyflap position
+	Real maxRange;
+
+	//minimal duration of a movement (by normal speed)
+	SecTmReal minDuration;
+	//Polyflap Position and orientation
+	Vec3 startPolyflapPosition; 
+	Vec3 startPolyflapRotation; 
+	//Polyflap dimensions		
+	Vec3 polyflapDimensions; 
+
+// 	//vertical distance from the ground
+// 	const Real over = 0.01;
+	//vertical distance from the ground considering fingertip radius
+	Real over;
+	//distance from the front/back of the polyflap
+	Real dist; 
+	//distance from the side of the polyflap
+	Real side; 
+	//center of the polyflap
+	Real center; 
+	//distance from the top of the polyflap
+	//const Real top = polyflapDimensions.v2* 1.2;
+	Real top; 
+	//lenght of the movement		
+	Real distance; 
+
+
+
+
+
+
+
 		
 protected:
 	/** LSTM active learner */
