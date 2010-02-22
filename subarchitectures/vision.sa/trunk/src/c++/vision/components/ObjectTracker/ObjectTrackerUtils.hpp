@@ -117,9 +117,14 @@ bool convertParticle2Pose(Tracking::Pose& trPose, Math::Pose3& pose){
 	
 	trPose.getPose(rot, pos);
 	
-	pose.rot.m00 = rot[0]; pose.rot.m01 = rot[1]; pose.rot.m02 = rot[2];
-	pose.rot.m10 = rot[3]; pose.rot.m11 = rot[4]; pose.rot.m12 = rot[5];
-	pose.rot.m20 = rot[6]; pose.rot.m21 = rot[7]; pose.rot.m22 = rot[8];
+// 	pose.rot.m00 = rot[0]; pose.rot.m01 = rot[1]; pose.rot.m02 = rot[2];
+// 	pose.rot.m10 = rot[3]; pose.rot.m11 = rot[4]; pose.rot.m12 = rot[5];
+// 	pose.rot.m20 = rot[6]; pose.rot.m21 = rot[7]; pose.rot.m22 = rot[8];
+// 	
+	//	TODO Transposed (Michi?) (evtl. auch Fehler beim Laden der Matrix auf die GPU)
+	pose.rot.m00 = rot[0]; pose.rot.m01 = rot[3]; pose.rot.m02 = rot[6];
+	pose.rot.m10 = rot[1]; pose.rot.m11 = rot[4]; pose.rot.m12 = rot[7];
+	pose.rot.m20 = rot[2]; pose.rot.m21 = rot[5]; pose.rot.m22 = rot[8];
 	
 	pose.pos.x = pos.x;
 	pose.pos.y = pos.y;
@@ -133,14 +138,14 @@ bool convertPose2Particle(Math::Pose3& pose, Tracking::Pose& trPose){
 	mat3 rot;
 	vec3 pos;
 	
-	rot[0] = (float)pose.rot.m00; rot[1] = (float)pose.rot.m01; rot[2] = (float)pose.rot.m02;
-	rot[3] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[5] = (float)pose.rot.m12;
-	rot[6] = (float)pose.rot.m20; rot[7] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
+// 	rot[0] = (float)pose.rot.m00; rot[1] = (float)pose.rot.m01; rot[2] = (float)pose.rot.m02;
+// 	rot[3] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[5] = (float)pose.rot.m12;
+// 	rot[6] = (float)pose.rot.m20; rot[7] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
 	
 //	TODO Transposed (Michi?) (evtl. auch Fehler beim Laden der Matrix auf die GPU)
-// 	rot[0] = (float)pose.rot.m00; rot[3] = (float)pose.rot.m01; rot[6] = (float)pose.rot.m02;
-// 	rot[1] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[7] = (float)pose.rot.m12;
-// 	rot[2] = (float)pose.rot.m20; rot[5] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
+	rot[0] = (float)pose.rot.m00; rot[3] = (float)pose.rot.m01; rot[6] = (float)pose.rot.m02;
+	rot[1] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[7] = (float)pose.rot.m12;
+	rot[2] = (float)pose.rot.m20; rot[5] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
 
 	pos.x = pose.pos.x;
 	pos.y = pose.pos.y;
