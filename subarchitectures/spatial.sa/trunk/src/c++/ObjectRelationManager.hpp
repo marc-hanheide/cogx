@@ -25,6 +25,7 @@
 #include "RelationEvaluation.hpp"
 #include <PTZ.hpp>
 #include <NavData.hpp>
+#include <VisionData.hpp>
 
 using namespace SpatialProperties;
 using namespace SpatialData;
@@ -55,11 +56,19 @@ protected:
   std::map<int, SpatialObjectPtr> m_objects; 
   std::map<int, spatial::Object*> m_objectModels;
   std::map<int, std::string> m_objectWMIDs; 
+  std::map<int, std::string> m_visualObjectIDs;
 
   NavData::RobotPose2dPtr lastRobotPose;
 //  std::map<int, Pose3> m_lastKnownObjectPoses;
   std::map<int, cast::cdl::CASTTime> m_lastObjectPoseTimes;
   Pose3 m_CameraPoseR;
+
+  //For keeping track of when the robot is moving (to init the tracker)
+  double m_standingStillThreshold;
+  double m_timeSinceLastMoved;
+  double m_trackerTimeThreshold;
+  double m_recognitionTimeThreshold;
+  bool m_bRecognitionIssuedThisStop;
 
   std::map<int, FrontierInterface::ObservedPlaneObjectPtr> m_planeObjects;
   std::map<int, cast::cdl::CASTTime> m_lastPlaneObjectPoseTimes;
@@ -74,6 +83,7 @@ protected:
 
   bool m_bDisplayPlaneObjectsInPB;
   bool m_bDisplayVisualObjectsInPB;
+
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_planeProxies;
   peekabot::GroupProxy m_objectProxies;
@@ -100,6 +110,11 @@ protected:
 
   void setContainmentProperty(int objectID, int placeID, double confidence);
   void setSupportProperty(int figureID, int groundID, double confidence);
+
+  void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd,
+      std::string label, std::string visualObjectID);
+  void addTrackerCommand(VisionData::TrackingCommandType cmd, 
+      std::string label);
 
   ptz::PTZInterfacePrx m_ptzInterface;
 }; 
