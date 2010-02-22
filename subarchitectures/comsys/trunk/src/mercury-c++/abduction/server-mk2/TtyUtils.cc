@@ -1,6 +1,7 @@
 #include "TtyUtils.h"
 
 extern "C" {
+#include <stdio.h>
 #include <unistd.h>
 }
 
@@ -23,7 +24,8 @@ const char * FG_WHITE   = "\033[37m";
 
 ostream & tty_print(ostream & out, const char * seq)
 {
-	// FIXME: nasty hack
+	// FIXME: This is a nasty hack. There is no guarantee that
+	// the output stream is actually stderr.
 	if (isatty(fileno(stderr)))
 		return out << seq;
 	else
