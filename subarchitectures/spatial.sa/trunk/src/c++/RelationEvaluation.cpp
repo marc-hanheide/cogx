@@ -706,6 +706,9 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
     }
   }
 
+  if (newInterestPoints.size() < 4)
+    return newInterestPoints;
+
   //Compute convex hull
   //Find rightmost point
   double maxX = -FLT_MAX;

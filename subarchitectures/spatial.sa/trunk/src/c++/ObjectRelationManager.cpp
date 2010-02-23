@@ -958,11 +958,6 @@ ObjectRelationManager::sampleOnnessForObject(int supportObjectModelID,
 void
 ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID) 
 {
-
-  peekabot::GroupProxy root;
-  root.assign(m_PeekabotClient, "root");
-
-
   if (m_planeObjects.find(planeObjectID) == m_planeObjects.end()) {
     log("Error! Plane object missing!");
     return;
