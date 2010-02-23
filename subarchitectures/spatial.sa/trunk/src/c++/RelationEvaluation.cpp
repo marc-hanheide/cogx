@@ -1092,24 +1092,22 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
 
 void
 sampleOnnessDistribution(const Object *objectS, Object *objectO,
-    std::vector<Vector3> &outPoints) {
-  double xmin = -1.0;
-  double xmax = 1.0;
-  double xstep = 0.02;
-  double ymin = -1.0;
-  double ymax = 1.0;
-  double ystep = 0.02;
-  double zmin = 0.0;
-  double zmax = 2.0;
-  double zstep = 0.02;
+    std::vector<Vector3> &outPoints, double xmin, double xmax, 
+    double ymin, double ymax,  
+    double zmin, double zmax,
+    double startStep, double minStep) {
   double threshold = 0.5;
   std::set<Vector3> cloudPoints;
+  fromAngleAxis(objectO->pose.rot, 0.0, vector3(0.0, 0.0, 1.0));
 
-  for (double x = xmin; x <= xmax; x += xstep) {
-    for (double y = ymin; y <= ymax; y += ystep) {
-      for (double z = zmin; z <= zmax; z += zstep) {
+  double step = startStep;
+
+  for (double x = xmin; x <= xmax; x += step) {
+    for (double y = ymin; y <= ymax; y += step) {
+      for (double z = zmin; z <= zmax; z += step) {
 	objectO->pose.pos = vector3(x, y, z);
-	if (evaluateOnness(objectS, objectO) > threshold) {
+	double onness = evaluateOnness(objectS, objectO);
+	if (onness > threshold) {
 	  cloudPoints.insert(objectO->pose.pos);
 	}
       }
@@ -1118,22 +1116,74 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
 
   outPoints.clear();
 
+  std::set<Vector3> shellPoints;
   for (std::set<Vector3>::iterator it = cloudPoints.begin();
       it != cloudPoints.end(); it++) {
-    Vector3 neigh1 = vector3(it->x-1, it->y, it->z); 
-    Vector3 neigh2 = vector3(it->x+1, it->y, it->z); 
-    Vector3 neigh3 = vector3(it->x, it->y-1, it->z); 
-    Vector3 neigh4 = vector3(it->x, it->y+1, it->z); 
-    Vector3 neigh5 = vector3(it->x, it->y, it->z-1); 
-    Vector3 neigh6 = vector3(it->x, it->y, it->z+1); 
-    if (cloudPoints.find(neigh1) != cloudPoints.end() ||
-	cloudPoints.find(neigh2) != cloudPoints.end() ||
-	cloudPoints.find(neigh3) != cloudPoints.end() ||
-	cloudPoints.find(neigh4) != cloudPoints.end() ||
-	cloudPoints.find(neigh5) != cloudPoints.end() ||
-	cloudPoints.find(neigh6) != cloudPoints.end()) {
-      outPoints.push_back(*it);
+    Vector3 neigh1 = vector3(it->x-step, it->y, it->z); 
+    Vector3 neigh2 = vector3(it->x+step, it->y, it->z); 
+    Vector3 neigh3 = vector3(it->x, it->y-step, it->z); 
+    Vector3 neigh4 = vector3(it->x, it->y+step, it->z); 
+    Vector3 neigh5 = vector3(it->x, it->y, it->z-step); 
+    Vector3 neigh6 = vector3(it->x, it->y, it->z+step); 
+    if (cloudPoints.find(neigh1) == cloudPoints.end() ||
+	cloudPoints.find(neigh2) == cloudPoints.end() ||
+	cloudPoints.find(neigh3) == cloudPoints.end() ||
+	cloudPoints.find(neigh4) == cloudPoints.end() ||
+	cloudPoints.find(neigh5) == cloudPoints.end() ||
+	cloudPoints.find(neigh6) == cloudPoints.end()) {
+      shellPoints.insert(*it);
     }
   }
+  while (step >= minStep * 2.0) {
+    step /= 2.0;
+    std::set<Vector3> tmpPoints = shellPoints;
+    for (std::set<Vector3>::iterator it = shellPoints.begin();
+	it != shellPoints.end(); it++) {
+      for (double x = it->x-step; x <= it->x+step; x+=step) {
+	for (double y = it->y-step; y <= it->y+step; y+=step) {
+	  for (double z = it->z-step; z <= it->z+step; z+=step) {
+	    Vector3 candidate = vector3(x, y, z);
+	    if (cloudPoints.find(candidate) == cloudPoints.end()) {
+	      objectO->pose.pos = candidate;
+	      double onness = evaluateOnness(objectS, objectO);
+	      if (onness > threshold) {
+		cloudPoints.insert(candidate);
+		tmpPoints.insert(candidate);
+	      }	      
+	    }
+	    else {
+	      tmpPoints.insert(candidate);
+	    }
+	  }
+	}
+      }
+    }
+
+    shellPoints.clear();
+    for (std::set<Vector3>::iterator it = tmpPoints.begin();
+	it != tmpPoints.end(); it++) {
+      Vector3 neigh[6] = {vector3(it->x-step, it->y, it->z), 
+	vector3(it->x+step, it->y, it->z), 
+	vector3(it->x, it->y-step, it->z), 
+	vector3(it->x, it->y+step, it->z), 
+	vector3(it->x, it->y, it->z-step), 
+	vector3(it->x, it->y, it->z+step)}; 
+      bool isShell = false;
+      for (int i = 0; i < 6; i++) {
+	if (cloudPoints.find(neigh[i]) == cloudPoints.end()) {
+	  objectO->pose.pos = neigh[i];
+	  double onness = evaluateOnness(objectS, objectO);
+	  if (onness < threshold) {
+	    isShell = true;
+	  }
+	}
+      }
+      if (isShell) {
+	shellPoints.insert(*it);
+      }
+    }
+  };
+
+  outPoints.insert(outPoints.end(), shellPoints.begin(), shellPoints.end());
 }
 };
