@@ -3,8 +3,8 @@ INCDIR = include/
 LIBDIR = -Llib/
 
 CC = g++
-CFLAGS = `pkg-config --cflags opencv sdl` -I$(INCDIR)
-LIBS = $(LIBDIR) -lGL -lglut `pkg-config --libs opencv sdl` -lTomGine
+CFLAGS = `pkg-config --cflags opencv sdl freetype2` -I$(INCDIR)
+LIBS = $(LIBDIR) -lGL -lglut `pkg-config --libs opencv sdl ftgl` -lTomGine
 OUT = TomGine
 
 main: *.cpp

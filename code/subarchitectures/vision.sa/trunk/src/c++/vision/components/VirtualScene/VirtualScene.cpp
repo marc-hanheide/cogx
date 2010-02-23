@@ -29,6 +29,8 @@ using namespace TomGine;
 VirtualScene::VirtualScene(){
 	m_running = true;
 	m_render = true;
+	m_font = 0;
+	m_engine = 0;
 }
 
 VirtualScene::~VirtualScene(){
@@ -65,7 +67,7 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	newModelEntry.model.m_material = matSilver;
 	convertPose2tgPose(obj->pose, newModelEntry.model.m_pose);
 	newModelEntry.obj = obj;
-	newModelEntry.castWMA = _wmc.address;
+	newModelEntry.WMID = _wmc.address.id;
 	m_modellist.push_back(newModelEntry);
 	
 	tgVector3 vCenter = tgVector3(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
@@ -80,7 +82,7 @@ void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	
 	for(int i=0; i<m_modellist.size(); i++){
-		if(m_modellist[i].castWMA == _wmc.address){
+		if(m_modellist[i].WMID.compare(_wmc.address.id)){
 			convertPose2tgPose(obj->pose, m_modellist[i].model.m_pose);
 		}
 	}
@@ -91,7 +93,7 @@ void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	vector<ModelEntry>::iterator it;
 	for(it=m_modellist.begin(); it<m_modellist.end(); it++){
-		if((*it).castWMA == _wmc.address){
+		if((*it).WMID.compare(_wmc.address.id)){
 			m_modellist.erase(it);
 		}
 	}
@@ -172,6 +174,7 @@ void VirtualScene::runComponent(){
 		}
   }
   
+  delete(m_font);
   delete(m_engine);
   log("stop");
 }
@@ -185,19 +188,26 @@ void VirtualScene::initScene(const Video::Image &image){
   m_height = image.height;
   
   m_engine = new(tgEngine);
-	m_engine->Init(m_width, m_height, 1.0, "VirtualScene");
+	m_engine->Init("VirtualScene", m_width, m_height);
 	
 	loadCameraParameters(&m_camera, image.camPars, 0.1, 5.0);
-	m_engine->SetCamera(m_camera);
-
+	m_engine->SetCamera3D(m_camera);
+	
+	m_font = new tgFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf");
+	
   log("... initialisation successfull!");
 }
 
 void VirtualScene::runScene(){
+	
 	for(int i=0; i<m_modellist.size(); i++){
 		m_modellist[i].model.DrawFaces();
 // 		m_modellist[i].model.DrawNormals(0.01);
 	}
+	
+	m_engine->Activate2D();
+	m_font->print("VirtualSzene Component", 16, 5, 7);
+	
 	m_running = m_engine->Update(m_fTime);
 }
 

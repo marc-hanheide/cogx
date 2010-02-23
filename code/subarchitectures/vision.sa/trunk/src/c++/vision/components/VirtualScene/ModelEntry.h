@@ -21,7 +21,7 @@ public:
 	TomGine::tgRenderModel model;
 	
 	VisionData::VisualObjectPtr obj;
-	cast::cdl::WorkingMemoryAddress castWMA;
+	std::string WMID;		// Working Memory ID
 		
 	ModelEntry(){
 		valid = false;

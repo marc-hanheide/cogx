@@ -16,6 +16,8 @@ tgCamera::tgCamera(){
 	f = tgVector3(0.0f,0.0f,-1.0f);
 	s = tgVector3(1.0f,0.0f,0.0f);
 	u = tgVector3(0.0f,1.0f,0.0f);
+	m_x = 0.0;
+	m_y = 0.0;
 }
 
 void tgCamera::Set(	float posx,  float posy,  float posz,
@@ -87,6 +89,13 @@ void tgCamera::SetViewport(float w, float h){
 	m_height = h;
 }
 
+void tgCamera::SetViewport(float x, float y, float w, float h){
+	m_x = x;
+	m_y = y;
+	m_width = w;
+	m_height = h;
+}
+
 void tgCamera::SetZRange(float _near, float _far){
 	m_zNear = _near;
 	m_zFar = _far;
@@ -101,7 +110,8 @@ void tgCamera::Activate(){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(m_extrinsic);
 	
-	glViewport(0,0,m_width,m_height);
+	glViewport(m_x,m_y,m_width,m_height);
+	
 	glDepthRange(m_zNear,m_zFar);
 	
 	// Extract frustum planes

@@ -14,6 +14,7 @@
 // ----------------------------------------------------------------------------
 
 #include "tgGLXWindow.h"
+#include <stdexcept>
 
 using namespace TomGine;
 
@@ -21,20 +22,15 @@ tgGLXWindow::tgGLXWindow(int width, int height, const char* name){
 	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 	dpy = XOpenDisplay(NULL);
  
-	if(dpy == NULL){
-		printf("[tgGLXWindow::tgGLXWindow] Error cannot connect to X server\n");
-		exit(0);
-	}
-					
+	if(dpy == NULL)
+		throw std::runtime_error("[tgGLXWindow::tgGLXWindow] XOpenDisplay(): Cannot connect to X server");		
+			
 	root = DefaultRootWindow(dpy);
 	vi = glXChooseVisual(dpy, 0, att);
 	
-	if(vi == NULL){
-		printf("[tgGLXWindow::tgGLXWindow] no appropriate visual found\n");
-		exit(0);
-	}else{
-// 		printf("[tgGLXWindow::tgGLXWindow] visual %p selected\n", (void*)vi->visualid); // %p creates hexadecimal output like in glxinfo
-	}
+	if(vi == NULL)
+		throw std::runtime_error("[tgGLXWindow::tgGLXWindow] glXChooseVisual(): No appropriate visual found");
+
 	
 	cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 	
@@ -100,4 +96,5 @@ bool tgGLXWindow::CheckXEvent(tgEvent &event){
 	}
 	return false;
 }
+
 

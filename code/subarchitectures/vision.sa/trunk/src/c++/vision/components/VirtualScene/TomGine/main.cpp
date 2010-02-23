@@ -7,8 +7,12 @@
  */
  
 #include <stdio.h>
+#include <opencv/highgui.h>
+
 
 #include "tgEngine.h"
+#include "tgFont.h"
+#include "tgImageProcessor.h"
 #include "tgRenderModel.h"
 #include "tgBasicGeometries.h"
 
@@ -22,11 +26,20 @@ int main(int argc, char *argv[])
 	float fTime;
 	
 	int i;
+	int w=640, h=480;
 	PointList m_points;
 	vec3 v;
-
+	
+// 	CvCapture*	m_capture = cvCreateCameraCapture(CV_CAP_ANY);
+// 	IplImage*		m_image = cvQueryFrame(m_capture);
+	
 	tgEngine render;
-	render.Init(640,480,1.0,"TomGine Render Engine",true);
+	render.Init("TomGine Render Engine");
+	
+// 	tgImageProcessor m_ip;
+// 	m_ip.init(w,h);
+// 	tgTexture m_tex;
+// 	m_tex.Load((unsigned char*)m_image->imageData, m_image->width, m_image->height);
 
 	// Load Model
 	// for more materials visit: http://wiki.delphigl.com/index.php/Materialsammlung
@@ -46,11 +59,20 @@ int main(int argc, char *argv[])
 	GenCylinder(cylinder, 0.05, 0.2, 32, 1);
 	cylinder.m_material = matRed;
 	
+	tgFont myFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf");
+	
+	
 	// Rendering loop
 	while(render.Update(fTime)){
+		
 		cylinder.DrawFaces();
 		
+		render.Activate2D();
+		myFont.print("TomGine Render Engine", 16, 5, 7);
+		
 	}
+	
+// 	cvReleaseCapture(&m_capture);
 	
 	return 0;
 }
