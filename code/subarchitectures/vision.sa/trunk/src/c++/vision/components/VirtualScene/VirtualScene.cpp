@@ -172,6 +172,7 @@ void VirtualScene::runComponent(){
 		}
   }
   
+  delete(m_font);
   delete(m_engine);
   log("stop");
 }
@@ -189,6 +190,8 @@ void VirtualScene::initScene(const Video::Image &image){
 	
 	loadCameraParameters(&m_camera, image.camPars, 0.1, 5.0);
 	m_engine->SetCamera(m_camera);
+	
+	m_font = new tgFont("/usr/share/fonts/truetype/freefont/FreeSansBold.ttf");
 
   log("... initialisation successfull!");
 }
@@ -198,6 +201,10 @@ void VirtualScene::runScene(){
 		m_modellist[i].model.DrawFaces();
 // 		m_modellist[i].model.DrawNormals(0.01);
 	}
+	
+	m_engine->Activate2D();
+	m_font->Print("VirtualSzene", 16, 5, 5);
+	
 	m_running = m_engine->Update(m_fTime);
 }
 

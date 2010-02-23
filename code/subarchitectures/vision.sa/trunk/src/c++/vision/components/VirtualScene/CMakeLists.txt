@@ -2,6 +2,8 @@ project(VirtualScene)
 
 include_directories(.)
 include_directories(TomGine/include)
+include_directories(/usr/include/freetype2)
+
 
 add_subdirectory(TomGine)
 
@@ -15,4 +17,4 @@ SET(HEADERS ModelEntry.h VirtualScene.h)
 add_cast_component(VirtualScene ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} TomGine)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} GLU)
+link_cast_component(${CAST_COMPONENT_NAME} GLU ftgl)
