@@ -74,6 +74,7 @@ namespace spatial
     void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
     void MeasurementUpdate(bool result);
     double ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints);
+    void PlaneObservationUpdate() ;
 
   private:
 
@@ -111,7 +112,11 @@ namespace spatial
     Cure::Pose3D m_SlamRobotPose;
     Cure::Pose3D m_currentViewPoint;
     std::vector<int>  m_CurrentViewPoint_Points;
+    std::set<std::pair<int,int> >  m_NewPlanePoints;
 
+    double m_pPlane;
+    double m_pPlaneGivenObj, m_pFreeGivenObj,m_pObsGivenObj;
+    double m_pPlaneGivenNotObj, m_pFreeGivenNotObj,m_pObsGivenNotObj ;
 
    static SpatialData::NavCommandPtr newNavCommand();
   };
