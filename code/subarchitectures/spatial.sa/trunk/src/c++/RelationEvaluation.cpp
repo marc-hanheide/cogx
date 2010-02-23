@@ -602,58 +602,57 @@ std::vector<Vector3>
 findPolygonIntersection(const std::vector<Vector3> &polygon1, 
     const std::vector<Vector3> &polygon2)
 {
-  std::vector<Vector3> outPolygon;
+  // Find all vertices of either polygon that is strictly inside the other,
+  // and all intersection points. Then find the convex hull around these
+  // interest points.
+  std::vector<Vector3> interestPoints;
 
-  bool someIntersectionFound = false;
+  double epsilon = 0.0001;
 
-  int currentFollowedPolygon = 1;
+  // Points of polygon 1 inside polygon 2
+  for (unsigned int i = 0; i < polygon1.size(); i++) {
+    bool vertex_i_inside_polygon_2 = true;
+    for (unsigned int j = 0; j < polygon2.size(); j++) {
+      unsigned int jplus = (j == polygon2.size()-1 ? 0 : j + 1);
 
-  int currentIndex = 0;
-  Vector3 currentPoint = polygon1[currentIndex]; // Start point of current edge
-  Vector3 nextPoint = polygon1[currentIndex+1]; // End point of current edge
-  unsigned int nextIndex = 1; // Index that will be used for next start point unless
-  // an intersection is found
-#ifdef DEBUG
-  Vector3 norm1 = cross(polygon1[1]-polygon1[0], polygon1.back()-polygon1[0]);
-  normalise(norm1);
-  Vector3 norm2 = cross(polygon2[1]-polygon2[0], polygon2.back()-polygon2[0]);
-  normalise(norm2);
-  if (!vequals(norm1, norm2, 0.001)) {
-    // log("Comparing non-coplanar polygons!");
-    return 0.0;
+      if (cross(polygon2[jplus]-polygon2[j], polygon1[i]-polygon2[j]).z < 0.0) {
+	vertex_i_inside_polygon_2 = false;
+	break;
+      }
+    }
+    if (vertex_i_inside_polygon_2) {
+      interestPoints.push_back(polygon1[i]);
+    }
   }
-#endif
+  // Points of polygon 2 inside polygon 1
+  for (unsigned int i = 0; i < polygon2.size(); i++) {
+    bool vertex_i_inside_polygon_1 = true;
+    for (unsigned int j = 0; j < polygon1.size(); j++) {
+      unsigned int jplus = (j == polygon1.size()-1 ? 0 : j + 1);
 
-  while (outPolygon.empty() || !vequals(currentPoint, outPolygon[0], 0.001))
-  {
-//    cout << "(" << currentPoint.x << ", " << currentPoint.y << ") -> (" <<
-//      nextPoint.x << ", " << nextPoint.y << ") follwing " << currentFollowedPolygon << endl;
-    Vector3 thisEdge = nextPoint - currentPoint;
-    double thisEdgeLength = length(thisEdge);
-    Vector3 thisEdgeDir = thisEdge / thisEdgeLength;
+      if (cross(polygon1[jplus]-polygon1[j], polygon2[i]-polygon1[j]).z < 0.0) {
+	vertex_i_inside_polygon_1 = false;
+	break;
+      }
+    }
+    if (vertex_i_inside_polygon_1) {
+      interestPoints.push_back(polygon2[i]);
+    }
+  }
 
-    double smallestIntersectionParameter = 1.0;
-    int foundIntersection = 0;
-    Vector3 intersectionPoint;
-    int intersectionIndex;
+  for (unsigned int i = 0; i < polygon1.size(); i++)  {
+    unsigned int iplus = (i == polygon1.size()-1 ? 0 : i + 1);
+    Vector3 currentPoint = polygon1[i];
+    Vector3 thisEdge = polygon1[iplus] - currentPoint;
 
-    unsigned int otherPolygonSize =
-      currentFollowedPolygon == 1 ? polygon2.size() : polygon1.size();
-
-    for (unsigned int i = 0; i < otherPolygonSize; i++) {
-      unsigned int iplus = (i == otherPolygonSize-1 ? 0 : i + 1);
+    for (unsigned int j = 0; j < polygon2.size(); j++) {
+      unsigned int jplus = (j == polygon2.size()-1 ? 0 : j + 1);
 
       Vector3 difference;
       Vector3 otherEdgeDir;
       double otherEdgeLength;
-      if (currentFollowedPolygon == 1) {
-	difference = polygon2[i] - currentPoint;
-	otherEdgeDir = polygon2[iplus] - polygon2[i];
-      } 
-      else {
-	difference = polygon1[i] - currentPoint;
-	otherEdgeDir = polygon1[iplus] - polygon1[i];
-      }
+      difference = polygon2[j] - currentPoint;
+      otherEdgeDir = polygon2[jplus] - polygon2[j];
 
       if (abs(dot(thisEdge, otherEdgeDir)) == 1.0) {
 	continue;
@@ -668,7 +667,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
       double normalLength = length(normalVector);
 
       double intersectionParamThisEdge; // 0 - 1
-      if (!equals(normalLength, 0.0, 0.001)) {
+      if (!equals(normalLength, 0.0, epsilon)) {
 	intersectionParamThisEdge =
 	  normalLength*normalLength / (dot(normalVector, thisEdge));
       }
@@ -676,126 +675,274 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
 	intersectionParamThisEdge = 0.0;
       }
 
-      if (intersectionParamThisEdge > 0.0 &&
-	  (intersectionParamThisEdge < smallestIntersectionParameter ||
-	  equals(intersectionParamThisEdge, 1.0, 0.001))) {
-	intersectionPoint = currentPoint + thisEdge *
+      if (intersectionParamThisEdge > -epsilon &&
+	  (intersectionParamThisEdge < 1.0 + epsilon)) {
+	Vector3 intersectionPoint = currentPoint + thisEdge *
 	  intersectionParamThisEdge;
 
 	double intersectionParamOtherEdge;
-	if (currentFollowedPolygon == 1) {
-	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon2[i]) / otherEdgeLength;
+	intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon2[j]) / otherEdgeLength;
+
+	if (intersectionParamOtherEdge > -epsilon &&
+	    intersectionParamOtherEdge < 1.0 + epsilon) {
+	  interestPoints.push_back(intersectionPoint);
 	}
-	else {
-	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon1[i]) / otherEdgeLength;
-	}
+      }
+    }
+  }
 
-	if (intersectionParamOtherEdge >= 0.0 &&
-	    intersectionParamOtherEdge <= 1.0) {
+  std::vector<Vector3> newInterestPoints;
+  // Eliminate redundant interest points
+  for (unsigned int i = 0; i < interestPoints.size(); i++) {
+    bool keepThis = true;
+    for (unsigned int j = i+1; j < interestPoints.size(); j++) {
+      if (vequals(interestPoints[i], interestPoints[j], epsilon)) {
+	keepThis = false;
+	break;
+      }
+    }
+    if (keepThis) {
+      newInterestPoints.push_back(interestPoints[i]);
+    }
+  }
 
-	  // It's an intersection in fact!
-	  smallestIntersectionParameter = intersectionParamThisEdge;
+  //Compute convex hull
+  //Find rightmost point
+  double maxX = -FLT_MAX;
+  unsigned int startPoint;
+  for (unsigned int i = 0; i < newInterestPoints.size(); i++) {
+    if (newInterestPoints[i].x > maxX) {
+      startPoint = i;
+      maxX = newInterestPoints[i].x;
+    }
+  }
 
-	  // Check winding of intersection.
-	  if (cross(thisEdgeDir, otherEdgeDir).z > 0.0) {
-	    // We're passing an edge that is going left
-	    // meaning we're leaving the polygon.
+  unsigned int currentPoint = startPoint;
 
-	    foundIntersection = 1;
-	    intersectionIndex = iplus;
-	  }
-	  else {
-	    // We're passing an edge that is going right
-	    // meaning we are entering the other polgyon,
-	    // meaning we were outside the other polygon.
-
-	    foundIntersection = 2;
-	  }
+  std::vector<Vector3> outPolygon;
+  do {
+    outPolygon.push_back(newInterestPoints[currentPoint]);
+    unsigned int nextPoint = (currentPoint == newInterestPoints.size()-1 ?
+	0 : currentPoint + 1);
+    
+    Vector3 edge = newInterestPoints[nextPoint] - 
+      newInterestPoints[currentPoint];
+    for (unsigned int otherPoint = 0; otherPoint < newInterestPoints.size(); otherPoint++) {
+      if (otherPoint != currentPoint && otherPoint != nextPoint) {
+	double leftness = cross(edge, newInterestPoints[otherPoint] -
+	    newInterestPoints[currentPoint]).z;
+	if (leftness < 0.0) {
+	  nextPoint = otherPoint;
+	  edge = newInterestPoints[otherPoint] - newInterestPoints[currentPoint];
 	}
       }
     }
 
-    if (foundIntersection == 0) {
-      outPolygon.push_back(currentPoint);
-      currentPoint = nextPoint;
-      nextIndex++;
+    currentPoint = nextPoint;
+  } while (currentPoint != startPoint);
 
-      if (currentFollowedPolygon == 1) {
-	if (nextIndex == polygon1.size())
-	  nextIndex = 0;
-	nextPoint = polygon1[nextIndex];
-      }
-      else {
-	if (nextIndex == polygon2.size())
-	  nextIndex = 0;
-	nextPoint = polygon2[nextIndex];
-      }
-    }
-    else if (foundIntersection == 1) {
-      // Store the point, and start following the other polygon instead
-
-      outPolygon.push_back(currentPoint);
-      currentFollowedPolygon = 3 - currentFollowedPolygon;
-
-      currentPoint = intersectionPoint;
-      nextIndex = intersectionIndex;
-      nextPoint = currentFollowedPolygon == 1 ?
-	polygon1[nextIndex] :
-	polygon2[nextIndex];
-
-      someIntersectionFound = true;
-    }
-    else {
-      // Clear all stored points, but keep following the
-      // current polygon (since the other polygon edge is
-      // leaving the current polygon at this point!)
-
-      outPolygon.clear();
-      currentPoint = intersectionPoint;
-      //	      nextIndex = nextIndex;
-      //	      nextPoint = nextPoint;
-
-      someIntersectionFound = true;
-    }
-  }
-
-  if (someIntersectionFound) {
-    return outPolygon;
-  }
-
-  // The polygons don't intersect! Find out if either is
-  // entirely enclosed by the other
-  bool polygon2Inside1 = true;
-  for (unsigned int i = 0; i < polygon1.size(); i++) {
-    unsigned int iplus = (i == polygon1.size()-1 ? 0 : i + 1);
-
-    if (cross(polygon1[iplus]-polygon1[i], polygon2[0]-polygon1[i]).z < 0.0) {
-      polygon2Inside1 = false;
-      break;
-    }
-  }
-
-  if (polygon2Inside1) {
-    return polygon2;
-  }
-
-  bool polygon1Inside2 = true;
-  for (unsigned int i = 0; i < polygon2.size(); i++) {
-    unsigned int iplus = (i == polygon2.size()-1 ? 0 : i + 1);
-
-    if (cross(polygon2[iplus]-polygon2[i], polygon1[0]-polygon2[i]).z < 0.0) {
-      polygon1Inside2 = false;
-      break;
-    }
-  }
-
-  if (polygon1Inside2) {
-    return polygon1;
-  }
-
-  outPolygon.clear();
   return outPolygon;
 }
+
+
+//std::vector<Vector3>
+//findPolygonIntersection(const std::vector<Vector3> &polygon1, 
+//    const std::vector<Vector3> &polygon2)
+//{
+//  std::vector<Vector3> outPolygon;
+//
+//  bool someIntersectionFound = false;
+//
+//  int currentFollowedPolygon = 1;
+//
+//  int currentIndex = 0;
+//  Vector3 currentPoint = polygon1[currentIndex]; // Start point of current edge
+//  Vector3 nextPoint = polygon1[currentIndex+1]; // End point of current edge
+//  unsigned int nextIndex = 1; // Index that will be used for next start point unless
+//  // an intersection is found
+//#ifdef DEBUG
+//  Vector3 norm1 = cross(polygon1[1]-polygon1[0], polygon1.back()-polygon1[0]);
+//  normalise(norm1);
+//  Vector3 norm2 = cross(polygon2[1]-polygon2[0], polygon2.back()-polygon2[0]);
+//  normalise(norm2);
+//  if (!vequals(norm1, norm2, 0.001)) {
+//    // log("Comparing non-coplanar polygons!");
+//    return 0.0;
+//  }
+//#endif
+//
+//  while (outPolygon.empty() || !vequals(currentPoint, outPolygon[0], 0.001))
+//  {
+////    cout << "(" << currentPoint.x << ", " << currentPoint.y << ") -> (" <<
+////      nextPoint.x << ", " << nextPoint.y << ") follwing " << currentFollowedPolygon << endl;
+//    Vector3 thisEdge = nextPoint - currentPoint;
+//    double thisEdgeLength = length(thisEdge);
+//    Vector3 thisEdgeDir = thisEdge / thisEdgeLength;
+//
+//    double smallestIntersectionParameter = 1.0;
+//    int foundIntersection = 0;
+//    Vector3 intersectionPoint;
+//    int intersectionIndex;
+//
+//    unsigned int otherPolygonSize =
+//      currentFollowedPolygon == 1 ? polygon2.size() : polygon1.size();
+//
+//    for (unsigned int i = 0; i < otherPolygonSize; i++) {
+//      unsigned int iplus = (i == otherPolygonSize-1 ? 0 : i + 1);
+//
+//      Vector3 difference;
+//      Vector3 otherEdgeDir;
+//      double otherEdgeLength;
+//      if (currentFollowedPolygon == 1) {
+//	difference = polygon2[i] - currentPoint;
+//	otherEdgeDir = polygon2[iplus] - polygon2[i];
+//      } 
+//      else {
+//	difference = polygon1[i] - currentPoint;
+//	otherEdgeDir = polygon1[iplus] - polygon1[i];
+//      }
+//
+//      if (abs(dot(thisEdge, otherEdgeDir)) == 1.0) {
+//	continue;
+//      }
+//
+//      otherEdgeLength = length(otherEdgeDir);
+//      otherEdgeDir /= otherEdgeLength;
+//
+//      // The normal vector from currentPoint to the other edge's line
+//      Vector3 normalVector =
+//	difference - otherEdgeDir * dot(difference, otherEdgeDir);
+//      double normalLength = length(normalVector);
+//
+//      double intersectionParamThisEdge; // 0 - 1
+//      if (!equals(normalLength, 0.0, 0.001)) {
+//	intersectionParamThisEdge =
+//	  normalLength*normalLength / (dot(normalVector, thisEdge));
+//      }
+//      else {
+//	intersectionParamThisEdge = 0.0;
+//      }
+//
+//      if (intersectionParamThisEdge > 0.0 &&
+//	  (intersectionParamThisEdge < smallestIntersectionParameter ||
+//	  equals(intersectionParamThisEdge, 1.0, 0.001))) {
+//	intersectionPoint = currentPoint + thisEdge *
+//	  intersectionParamThisEdge;
+//
+//	double intersectionParamOtherEdge;
+//	if (currentFollowedPolygon == 1) {
+//	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon2[i]) / otherEdgeLength;
+//	}
+//	else {
+//	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon1[i]) / otherEdgeLength;
+//	}
+//
+//	if (intersectionParamOtherEdge >= 0.0 &&
+//	    intersectionParamOtherEdge <= 1.0) {
+//
+//	  // It's an intersection in fact!
+//	  smallestIntersectionParameter = intersectionParamThisEdge;
+//
+//	  // Check winding of intersection.
+//	  if (cross(thisEdgeDir, otherEdgeDir).z > 0.0) {
+//	    // We're passing an edge that is going left
+//	    // meaning we're leaving the polygon.
+//
+//	    foundIntersection = 1;
+//	    intersectionIndex = iplus;
+//	  }
+//	  else {
+//	    // We're passing an edge that is going right
+//	    // meaning we are entering the other polgyon,
+//	    // meaning we were outside the other polygon.
+//
+//	    foundIntersection = 2;
+//	  }
+//	}
+//      }
+//    }
+//
+//    if (foundIntersection == 0) {
+//      outPolygon.push_back(currentPoint);
+//      currentPoint = nextPoint;
+//      nextIndex++;
+//
+//      if (currentFollowedPolygon == 1) {
+//	if (nextIndex == polygon1.size())
+//	  nextIndex = 0;
+//	nextPoint = polygon1[nextIndex];
+//      }
+//      else {
+//	if (nextIndex == polygon2.size())
+//	  nextIndex = 0;
+//	nextPoint = polygon2[nextIndex];
+//      }
+//    }
+//    else if (foundIntersection == 1) {
+//      // Store the point, and start following the other polygon instead
+//
+//      outPolygon.push_back(currentPoint);
+//      currentFollowedPolygon = 3 - currentFollowedPolygon;
+//
+//      currentPoint = intersectionPoint;
+//      nextIndex = intersectionIndex;
+//      nextPoint = currentFollowedPolygon == 1 ?
+//	polygon1[nextIndex] :
+//	polygon2[nextIndex];
+//
+//      someIntersectionFound = true;
+//    }
+//    else {
+//      // Clear all stored points, but keep following the
+//      // current polygon (since the other polygon edge is
+//      // leaving the current polygon at this point!)
+//
+//      outPolygon.clear();
+//      currentPoint = intersectionPoint;
+//      //	      nextIndex = nextIndex;
+//      //	      nextPoint = nextPoint;
+//
+//      someIntersectionFound = true;
+//    }
+//  }
+//
+//  if (someIntersectionFound) {
+//    return outPolygon;
+//  }
+//
+//  // The polygons don't intersect! Find out if either is
+//  // entirely enclosed by the other
+//  bool polygon2Inside1 = true;
+//  for (unsigned int i = 0; i < polygon1.size(); i++) {
+//    unsigned int iplus = (i == polygon1.size()-1 ? 0 : i + 1);
+//
+//    if (cross(polygon1[iplus]-polygon1[i], polygon2[0]-polygon1[i]).z < 0.0) {
+//      polygon2Inside1 = false;
+//      break;
+//    }
+//  }
+//
+//  if (polygon2Inside1) {
+//    return polygon2;
+//  }
+//
+//  bool polygon1Inside2 = true;
+//  for (unsigned int i = 0; i < polygon2.size(); i++) {
+//    unsigned int iplus = (i == polygon2.size()-1 ? 0 : i + 1);
+//
+//    if (cross(polygon2[iplus]-polygon2[i], polygon1[0]-polygon2[i]).z < 0.0) {
+//      polygon1Inside2 = false;
+//      break;
+//    }
+//  }
+//
+//  if (polygon1Inside2) {
+//    return polygon1;
+//  }
+//
+//  outPolygon.clear();
+//  return outPolygon;
+//}
 
 double
 findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal)
