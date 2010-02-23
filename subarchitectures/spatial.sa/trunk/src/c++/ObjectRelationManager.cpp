@@ -106,6 +106,12 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     m_bNoPTZ = true;
   }
 
+  m_bNoVision = false;
+  it = _config.find("--no-vision");
+  if (it != _config.end()) {
+    m_bNoVision = true;
+  }
+
   m_RetryDelay = 10;
 
   Cure::ConfigFileReader *cfg = 0;
@@ -283,6 +289,7 @@ void ObjectRelationManager::runComponent()
   peekabot::CubeProxy cop;
   peekabot::PolygonProxy pp;
   peekabot::CubeProxy bp;
+  peekabot::CubeProxy bp2;
   PlaneObject table1;
 
   if (m_bTestOnness) {
@@ -338,26 +345,32 @@ void ObjectRelationManager::runComponent()
     pp.rotate(rotAngle, 0.0, 0.0, 1.0);
 
 
-    bp.add(m_onnessTester, "box", peekabot::REPLACE_ON_CONFLICT);
-    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.5);
-    bp.set_scale(0.4, 0.4, 0.4);
+    bp.add(m_onnessTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
+    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
+    bp.set_scale(0.19, 0.09, 0.29);
+
+    bp2.add(m_onnessTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
+    bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
+    bp2.set_scale(0.23, 0.21, 0.26);
   }
 
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
     // long enough
 
-    lockComponent();
+    if (!m_bNoVision) {
+      lockComponent();
 
-    if (!m_bRecognitionIssuedThisStop &&
-	m_timeSinceLastMoved > m_recognitionTimeThreshold) {
-      log("Issuing recognition commands");
-      addRecognizer3DCommand(VisionData::RECOGNIZE, "joystick", "");
-      addRecognizer3DCommand(VisionData::RECOGNIZE, "krispies", "");
-      m_bRecognitionIssuedThisStop = true;
+      if (!m_bRecognitionIssuedThisStop &&
+	  m_timeSinceLastMoved > m_recognitionTimeThreshold) {
+	log("Issuing recognition commands");
+	addRecognizer3DCommand(VisionData::RECOGNIZE, "joystick", "");
+	addRecognizer3DCommand(VisionData::RECOGNIZE, "krispies", "");
+	m_bRecognitionIssuedThisStop = true;
+      }
+
+      unlockComponent();
     }
-
-    unlockComponent();
 
     if (m_bTestOnness) {
       peekabot::Result<peekabot::Vector3f> vr;
@@ -415,11 +428,9 @@ void ObjectRelationManager::runComponent()
 
 	box1.type = OBJECT_BOX;
 	box1.pose = boxPose;
-	box1.radius1 = 0.2;
-	box1.radius2 = 0.2;
-	box1.radius3 = 0.2;
-
-	//	  cout << "Onness: " << evaluateOnness(&table1, &box1);
+	box1.radius1 = 0.095;
+	box1.radius2 = 0.045;
+	box1.radius3 = 0.145;
 
 	peekabot::SphereProxy sp;
 	sp.add(m_onnessTester, "Onness", peekabot::REPLACE_ON_CONFLICT);
@@ -430,50 +441,47 @@ void ObjectRelationManager::runComponent()
 	spm.translate(0.0, 3.0, 1.0);
 	spm.set_opacity(0.3);
 
+	r = bp2.get_transformation(peekabot::WORLD_COORDINATES);
+	if (r.succeeded()) {
+	  Pose3 boxPose;
+	  double m[16];
+	  m[0] = r.get_result()(0,0);
+	  m[1] = r.get_result()(0,1);
+	  m[2] = r.get_result()(0,2);
+	  m[3] = r.get_result()(0,3);
+	  m[4] = r.get_result()(1,0);
+	  m[5] = r.get_result()(1,1);
+	  m[6] = r.get_result()(1,2);
+	  m[7] = r.get_result()(1,3);
+	  m[8] = r.get_result()(2,0);
+	  m[9] = r.get_result()(2,1);
+	  m[10] = r.get_result()(2,2);
+	  m[11] = r.get_result()(2,3);
+	  m[12] = r.get_result()(3,0);
+	  m[13] = r.get_result()(3,1);
+	  m[14] = r.get_result()(3,2);
+	  m[15] = r.get_result()(3,3);
 
+	  setRow44(boxPose, m);
 
-	//  vector<Vector3> polygon1;
-	//  polygon1.push_back(vector3(0.0, 0.0, 1.0));
-	//  polygon1.push_back(vector3(1.0, 0.0, 1.0));
-	//  polygon1.push_back(vector3(1.0, 1.0, 1.0));
-	//  polygon1.push_back(vector3(0.0, 1.0, 1.0));
+	  BoxObject box2;
 
-	//  vector<Vector3> polygon2;
-	//  polygon2.push_back(vector3(0.5, 0.5, 1.0));
-	//  polygon2.push_back(vector3(1.0, 0.5, 1.0));
-	//  polygon2.push_back(vector3(1.0, 1.5, 1.0));
-	//  polygon2.push_back(vector3(0.5, 1.5, 1.0));
-	//  polygon2.push_back(vector3(0.5, 0.5, 1.0));
-	//  polygon2.push_back(vector3(1.5, 0.5, 1.0));
-	//  polygon2.push_back(vector3(1.5, 1.5, 1.0));
-	//  polygon2.push_back(vector3(0.5, 1.5, 1.0));
+	  box2.type = OBJECT_BOX;
+	  box2.pose = boxPose;
+	  box2.radius1 = 0.115;
+	  box2.radius2 = 0.105;
+	  box2.radius3 = 0.13;
 
-	//  vector<Vector3> polygon3;
-	//  polygon3.push_back(vector3(0.2, 0.2, 1.0));
-	//  polygon3.push_back(vector3(0.8, 0.2, 1.0));
-	//  polygon3.push_back(vector3(0.8, 0.8, 1.0));
-	//  polygon3.push_back(vector3(0.2, 0.8, 1.0));
+	  peekabot::SphereProxy sp2;
+	  sp2.add(m_onnessTester, "Onness2", peekabot::REPLACE_ON_CONFLICT);
+	  sp2.translate(2.0, 3.0, 1.0);
+	  sp2.set_scale(evaluateOnness(&box2, &box1));
+	  peekabot::SphereProxy spm2;
+	  spm2.add(m_onnessTester, "Onness-max2", peekabot::REPLACE_ON_CONFLICT);
+	  spm2.translate(2.0, 3.0, 1.0);
+	  spm2.set_opacity(0.3);
 
-	//  cout << getPolygonArea(findPolygonIntersection(polygon1, polygon2)) << endl;
-	//  cout << getPolygonArea(
-	//      findPolygonIntersection(polygon1, findPolygonIntersection(polygon1, polygon2))) << endl;
-	//  cout << getPolygonArea(findPolygonIntersection(polygon1, polygon3)) << endl;
-	//  cout << getPolygonArea(findPolygonIntersection(polygon2, polygon3)) << endl;
-	//  cout << getPolygonArea(findPolygonIntersection(polygon2, polygon1)) << endl;
-	//  cout << getPolygonArea(findPolygonIntersection(polygon2, polygon3)) << endl;
-	//  cout << getPolygonArea(findPolygonIntersection(polygon3, polygon1)) << endl;
-	//  cout << getPolygonArea(findPolygonIntersection(polygon3, polygon2)) << endl;
-
-	//  cout << findOverlappingArea(polygon1, vector3(0.0, 0.0, 1.0), 0.5) << endl;
-	//  cout << findOverlappingArea(polygon1, vector3(0.0, 0.0, 1.0), 1.0) << endl;
-	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 0.2) << endl;
-	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 4.0) << endl;
-	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 0.5) << endl;
-	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), sqrt(0.5)) << endl;
-	//  cout << findOverlappingArea(polygon1, vector3(0.5, 0.5, 1.0), 0.5001) << endl;
-	//  while(isRunning()){
-	//    usleep(250000);
-	//  }
+	}
       }
     } // if (m_bTestOnness)
 
@@ -524,26 +532,39 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objects[objectID]->label = observedObject->label;
 	m_objects[objectID]->pose = observedObject->pose;
 
-	BoxObject *newBoxObject = new BoxObject;
-	m_objectModels[objectID] = newBoxObject;
-	newBoxObject->type = OBJECT_BOX;
-	if (observedObject->label == "krispies") {
-	  newBoxObject->radius1 = 0.095;
-	  newBoxObject->radius2 = 0.045;
-	  newBoxObject->radius3 = 0.145;
-	}
-	else if (observedObject->label == "joystick") {
-	  newBoxObject->radius1 = 0.115;
-	  newBoxObject->radius2 = 0.105;
-	  newBoxObject->radius3 = 0.13;
-	}
-	else  {
-	  newBoxObject->radius1 = 0.1;
-	  newBoxObject->radius2 = 0.1;
-	  newBoxObject->radius3 = 0.1;
-	}
+	generateNewObjectModel(objectID, observedObject->label);
       }
       //    log("2");
+      if (true) {
+	int onObjectID = -1;
+	if (observedObject->label == "krispies") {
+	  // Evaluate onness for joystick object
+	  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	    if (it->second->label == "joystick") {
+	      onObjectID = it->first;
+	    }
+	  }
+	  if (onObjectID == -1) {
+	    onObjectID = m_maxObjectCounter++;
+	    generateNewObjectModel(onObjectID, "joystick");
+	  }
+	  sampleOnnessForObject(objectID, onObjectID);
+	}
+	if (observedObject->label == "joystick") {
+	  // Evaluate onness for joystick object
+	  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	    if (it->second->label == "krispies") {
+	      onObjectID = it->first;
+	    }
+	  }
+	  if (onObjectID == -1) {
+	    onObjectID = m_maxObjectCounter++;
+	    generateNewObjectModel(onObjectID, "krispies");
+	  }
+	  sampleOnnessForObject(objectID, onObjectID);
+	}
+      }
+
 
       double diff = length(m_objects[objectID]->pose.pos - pose.pos);
       diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 1));
@@ -582,15 +603,6 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
 	    double angle;
 	    Vector3 axis;
-	    Vector3 laala;
-	    laala.x = 0.5;
-	    laala.y = 0.0;
-	    laala.z = 0.0;
-	    laala = transform(pose, laala);
-	    peekabot::SphereProxy laalap;
-	    laalap.add(root, "finman", peekabot::REPLACE_ON_CONFLICT);
-	    laalap.translate(laala.x, laala.y, laala.z);
-	    laalap.set_scale(0.05);
 	    toAngleAxis(pose.rot, angle, axis);
 	    log("x = %f y = %f z = %f   angle = %f axis=(%f,%f,%f)",
 		pose.pos.x, pose.pos.y, pose.pos.z, angle, 
@@ -682,7 +694,15 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
       m_planeObjects[objectID]->pos = observedObject->pos;
       m_planeObjects[objectID]->angle = observedObject->angle;
 
+      if (false) {
+	if (m_objectModels.find(0) == m_objectModels.end()) {
+	  generateNewObjectModel(0, "krispies");
+	}
+	sampleOnnessForPlane(objectID, 0);
+      }
+      else {
       recomputeOnnessForPlane(objectID);
+      }
 
       if (m_bDisplayPlaneObjectsInPB) {
 	if (m_PeekabotClient.is_connected()) {
@@ -887,6 +907,55 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
 }
 
 void
+ObjectRelationManager::sampleOnnessForObject(int supportObjectModelID, 
+    int onObjectModelID) 
+{
+  if (m_objectModels.find(supportObjectModelID) == m_objectModels.end() ||
+      m_objects.find(supportObjectModelID) == m_objects.end()) {
+    log("Error! Support object model missing!");
+    return;
+  }
+  m_objectModels[supportObjectModelID]->pose = 
+    m_objects[supportObjectModelID]->pose;
+
+  spatial::Object *objectS = m_objectModels[supportObjectModelID];
+
+  if (m_objectModels.find(onObjectModelID) == m_objectModels.end()) {
+    log("Error! Supported object model missing!");
+    return;
+  }
+
+  spatial::Object *objectO = m_objectModels[onObjectModelID];
+
+  Pose3 oldPose = objectO->pose;
+  vector<Vector3> points;
+
+  BoxObject *supportBox = (BoxObject *)objectS;
+
+  double frameRadius = supportBox->radius1 > supportBox->radius2 ?
+    supportBox->radius1 : supportBox->radius2;
+  frameRadius = frameRadius > supportBox->radius3 ? 
+    frameRadius : supportBox->radius3;
+  sampleOnnessDistribution(objectS, objectO, points, 
+      objectS->pose.pos.x - frameRadius, objectS->pose.pos.x + frameRadius,
+      objectS->pose.pos.y - frameRadius, objectS->pose.pos.y + frameRadius,
+      objectS->pose.pos.z - frameRadius, objectS->pose.pos.z + frameRadius,
+      0.1, 0.05);
+  objectO->pose = oldPose;
+
+  peekabot::GroupProxy root;
+  root.assign(m_PeekabotClient, "root");
+
+  peekabot::PointCloudProxy pcloud;
+  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+
+  for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+      it++) {
+    pcloud.add_vertex(it->x,it->y,it->z);
+  }
+}
+
+void
 ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID) 
 {
 
@@ -900,10 +969,12 @@ ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID
   }
 
   PlaneObject po;
+  po.type = OBJECT_PLANE;
   po.pose.pos = m_planeObjects[planeObjectID]->pos;
   fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
       vector3(0.0, 0.0, 1.0));
   if (m_planeObjects[planeObjectID]->label == "planeObject0") {
+    po.shape = PLANE_OBJECT_RECTANGLE;
     po.radius1 = 0.45;
     po.radius2 = 0.55;
   }
@@ -921,8 +992,17 @@ ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID
 
   Pose3 oldPose = objectO->pose;
   vector<Vector3> points;
-  //sampleOnnessDistribution(&po, objectO, points);
+  double frameRadius = 1.5 * 
+    (po.radius1 > po.radius2 ? po.radius1 : po.radius2);
+  sampleOnnessDistribution(&po, objectO, points, 
+      po.pose.pos.x - frameRadius, po.pose.pos.x + frameRadius,
+      po.pose.pos.y - frameRadius, po.pose.pos.y + frameRadius,
+      0, 1.5, 
+      0.1, 0.025);
   objectO->pose = oldPose;
+
+  peekabot::GroupProxy root;
+  root.assign(m_PeekabotClient, "root");
 
   peekabot::PointCloudProxy pcloud;
   pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
@@ -959,3 +1039,27 @@ ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, st
   }
   addToWorkingMemory(newDataID(), "vision.sa", track_cmd);
 }
+
+void
+ObjectRelationManager::generateNewObjectModel(int objectID,
+    const std::string &label) {
+  BoxObject *newBoxObject = new BoxObject;
+  m_objectModels[objectID] = newBoxObject;
+  newBoxObject->type = OBJECT_BOX;
+  if (label == "krispies") {
+    newBoxObject->radius1 = 0.095;
+    newBoxObject->radius2 = 0.045;
+    newBoxObject->radius3 = 0.145;
+  }
+  else if (label == "joystick") {
+    newBoxObject->radius1 = 0.115;
+    newBoxObject->radius2 = 0.105;
+    newBoxObject->radius3 = 0.13;
+  }
+  else  {
+    newBoxObject->radius1 = 0.1;
+    newBoxObject->radius2 = 0.1;
+    newBoxObject->radius3 = 0.1;
+  }
+}
+

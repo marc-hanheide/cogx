@@ -80,6 +80,7 @@ protected:
 
   bool m_bTestOnness;
   bool m_bNoPTZ;
+  bool m_bNoVision;
 
   bool m_bDisplayPlaneObjectsInPB;
   bool m_bDisplayVisualObjectsInPB;
@@ -105,9 +106,12 @@ protected:
 
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
 
+  void generateNewObjectModel(int objectID, const std::string &label);
+
   void recomputeOnnessForObject(int objectID);
   void recomputeOnnessForPlane(int planeObjectID);
   void sampleOnnessForPlane(int planeObjectID, int objectModelID);
+  void sampleOnnessForObject(int supportObjectModelID, int onObjectModelID);
 
   void setContainmentProperty(int objectID, int placeID, double confidence);
   void setSupportProperty(int figureID, int groundID, double confidence);

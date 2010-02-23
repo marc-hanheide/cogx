@@ -857,7 +857,7 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     oobj->PointsSeq[i].x = to.X[0];
     oobj->PointsSeq[i].y = to.X[1];
     oobj->PointsSeq[i].z = to.X[2];
-    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
+//    log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
     double horizDistSq;
     if (lastRobotPose != 0) {
       horizDistSq = (to.X[0] - lastRobotPose->x)*(to.X[0] - lastRobotPose->x) + (to.X[1] - lastRobotPose->y)*(to.X[1] - lastRobotPose->y);
@@ -922,7 +922,6 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
 
     // Extract N clusters of heights in the plane data.
     findPlaneHeightClusters();
-    log("here.4");
 
     // Publish new planes on WM for Peekabot and for AVS
     double wX,wY;
@@ -933,7 +932,6 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
       for (int x = -m_planeMap->getSize(); x <= m_planeMap->getSize(); x++) {
 	for (int y = -m_planeMap->getSize(); y <= m_planeMap->getSize(); y++) {
 	  if ((*m_planeObstacleMaps[i])(x,y) == 255){
-	    log("Table Point: x: %f, y: %f",wX, wY);
 	    m_planeObstacleMaps[i]->index2WorldCoords(x, y, wX, wY);
 	    point.x = wX;
 	    point.y = wY;
@@ -1050,16 +1048,16 @@ Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
       lastRobotPose->theta);
   }
   Cure::Transformation3D robotTransform3 = robotTransform;
-  double tmp[6];
-  robotTransform3.getCoordinates(tmp);
-  log("robot transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-      tmp[4], tmp[5]);
-  cameraRotation.getCoordinates(tmp);
-  log("ptz transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-      tmp[4], tmp[5]);
-  m_CameraPoseR.getCoordinates(tmp);
-  log("cam transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
-      tmp[4], tmp[5]);
+//  double tmp[6];
+//  robotTransform3.getCoordinates(tmp);
+//  log("robot transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+//      tmp[4], tmp[5]);
+//  cameraRotation.getCoordinates(tmp);
+//  log("ptz transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+//      tmp[4], tmp[5]);
+//  m_CameraPoseR.getCoordinates(tmp);
+//  log("cam transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],
+//      tmp[4], tmp[5]);
 
   Cure::Transformation3D cameraOnRobot = m_CameraPoseR + cameraRotation + ptzBaseTransform ;
   return robotTransform3 + cameraOnRobot;
@@ -1101,7 +1099,6 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
     x[i] = (int((points[i].x - XCentW)/(miniCellSize/2.0)) + (points[i].x >= XCentW ? 1: -1)) / 2;
     y[i] = (int((points[i].y - YCentW)/(miniCellSize/2.0)) + (points[i].y >= YCentW ? 1: -1)) / 2;
   }
-  log("here.1");
   int small_y = y[0], large_y = y[0];	//small and large y's
   int xc, yc;							//current x/y points
   ScanLine *sl;						//array of structs - contain small/large x for each y that is drawn
@@ -1183,12 +1180,10 @@ void LocalMapManager::PaintPolygon(const VisionData::Vector3Seq &points)
       }
     }
   }
-  log("here.2");
   delete x;
   delete y;
 
   delete [] sl;	//previously allocated space for ScanLine array
-  log("here.3");
 }
 
 void
@@ -1211,7 +1206,6 @@ LocalMapManager::findPlaneHeightClusters()
       }
     }
   }
-  log("here.5");
   vector<int> memberships(heights.size(), 0); // Which cluster a segment belongs to
 
   vector<double> probMasses; // Accumulated probability mass; for random sampling
@@ -1334,14 +1328,10 @@ LocalMapManager::findPlaneHeightClusters()
     delete[] memberCounts;
     delete[] centroids;
   }
-  log("8");
   for (unsigned int i = 0; i < m_currentNumberOfClusters; i++) {
-    log("i is: %d",i);
-    log("size %d",m_planeObstacleMaps.size());
     m_planeObstacleMaps[i]->clearMap();
-    log("m_planeHeights[%d] is %f", i, m_planeHeights[i]);
+//    log("m_planeHeights[%d] is %f", i, m_planeHeights[i]);
   }
-  log("9");
   // Note: The function of this loop depends on the order of elements
   // being the same as the loop at the start of this method 
   unsigned int i = 0;
