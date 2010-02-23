@@ -148,7 +148,7 @@ namespace spatial
       istr >> tmp;
       pOut = atof(tmp.c_str());
     }
-    log("Loaded probs %f,%f,%f,%f,%f", pFree, pObs, pPlanar,pIn,pOut);
+    log("Loaded probs %f,%f,%f,%f,%f", pFree, pObs, pPlanar, pIn, pOut);
 
     if ((it = _config.find("--objects")) != _config.end()) {
       istringstream istr(it->second);
@@ -276,7 +276,7 @@ namespace spatial
         log("Table mode!");
         m_table_phase = true;
       }
-      else if (key == 112){
+      else if (key == 112) {
         log("Getting next view");
         GoToNBV();
       }
@@ -323,39 +323,38 @@ namespace spatial
 
         SetPrior();
 
-
         /* Display Prior in PB BEGIN */
-	/*  double color[3] = { 0.9, 0.9, 0 };
-        double multiplier = 100.0;
-        double xW, yW;
-        m_ProxyPrior.set_color(color[0], color[1], color[2]);
-        //m_ProxyPrior.set_opacity(0.3);
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((*m_lgm)(x,y) == 2)
-              continue;
-            m_lgm->index2WorldCoords(x, y, xW, yW);
-            m_ProxyPrior.add_vertex(xW, yW, -4 + (*m_lgm_prior)(x, y)
-                * multiplier);
-          }
-        }
-        /* Display Prior in PB END */
+        /*  double color[3] = { 0.9, 0.9, 0 };
+         double multiplier = 100.0;
+         double xW, yW;
+         m_ProxyPrior.set_color(color[0], color[1], color[2]);
+         //m_ProxyPrior.set_opacity(0.3);
+         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+         if ((*m_lgm)(x,y) == 2)
+         continue;
+         m_lgm->index2WorldCoords(x, y, xW, yW);
+         m_ProxyPrior.add_vertex(xW, yW, -4 + (*m_lgm_prior)(x, y)
+         * multiplier);
+         }
+         }
+         /* Display Prior in PB END */
 
         /* Display Posterior in PB BEGIN */
         /*double color1[3] = { 0.9, 0, 0.9 };
-	multiplier = 1000.0;
-        double xW1, yW1;
-        m_ProxyPosterior.set_color(color1[0], color1[1], color1[2]);
-        //m_ProxyPrior.set_opacity(0.3);
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((*m_lgm)(x,y) == 2)
-              continue;
-            m_lgm->index2WorldCoords(x, y, xW1, yW1);
-            m_ProxyPosterior.add_vertex(xW1, yW1+8,(*m_lgm_posterior)(x, y)
-                * multiplier);
-          }
-	  }*/
+         multiplier = 1000.0;
+         double xW1, yW1;
+         m_ProxyPosterior.set_color(color1[0], color1[1], color1[2]);
+         //m_ProxyPrior.set_opacity(0.3);
+         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+         if ((*m_lgm)(x,y) == 2)
+         continue;
+         m_lgm->index2WorldCoords(x, y, xW1, yW1);
+         m_ProxyPosterior.add_vertex(xW1, yW1+8,(*m_lgm_posterior)(x, y)
+         * multiplier);
+         }
+         }*/
         /* Display Posterior in PB END */
 
       }
@@ -366,19 +365,19 @@ namespace spatial
 
   }
   void
-  AdvObjectSearch::GoToNBV(){
+  AdvObjectSearch::GoToNBV() {
     int nbv;
     nbv = NextBestView();
-    double Wx,Wy;
+    double Wx, Wy;
 
-    m_lgm->index2WorldCoords(m_samples[2*nbv],m_samples[2*nbv + 1],Wx,Wy);
-    log("Best view coords: %f, %f, %f", Wx, Wy,m_samplestheta[nbv] );
+    m_lgm->index2WorldCoords(m_samples[2 * nbv], m_samples[2 * nbv + 1], Wx, Wy);
+    log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
     Cure::Pose3D pos;
     pos.setX(Wx);
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
     m_currentViewPoint = pos;
-   /* Add plan to PB BEGIN */
+    /* Add plan to PB BEGIN */
     NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
     cogx::Math::Vector3 a;
     a.x = Wx;
@@ -502,11 +501,10 @@ namespace spatial
         if ((*m_lgm_seen)(x, y) == true || (*m_lgm)(x, y) == 2)
           continue;
         m_lgm->index2WorldCoords(x, y, xW, yW);
-        m_ProxySeenMap.add_vertex(xW+6, yW, 0);
+        m_ProxySeenMap.add_vertex(xW + 6, yW, 0);
       }
     }
     /* Display SeenMap in PB END */
-
 
     return highest_VC_index;
   }
@@ -526,13 +524,19 @@ namespace spatial
       //add plane points
       int xG, yG; //grid coordinates
       float x, y;
+      std::pair<int, int> CoordPair;
       log("points size: %d", objData->points.size());
       for (unsigned int i = 0; i < objData->points.size(); i++) {
         x = objData->points.at(i).x;
         y = objData->points.at(i).y;
         m_lgm->worldCoords2Index(x, y, xG, yG);
         (*m_lgm)(xG, yG) = 3;
+        CoordPair.first = xG;
+        CoordPair.second = yG;
+        m_NewPlanePoints.insert(CoordPair);
+        // TODO: do not initialize PDF with fixed value if on the fly adding of planes is on.
       }
+      PlaneObservationUpdate();
     }
     catch (DoesNotExistOnWMException) {
       log("Error! plane point cloud disappeared from WM.");
@@ -541,7 +545,8 @@ namespace spatial
 
   void
   AdvObjectSearch::SetPrior() {
-    int TypeCount[3] = { 0 };
+    int TypeCount[3] =
+      { 0 };
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
@@ -561,15 +566,15 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 0){
+        if ((*m_lgm)(x, y) == 0) {
           (*m_lgm_prior)(x, y) = uFree;
           (*m_lgm_posterior)(x, y) = uFree;
         }
-        else if ((*m_lgm)(x, y) == 1){
+        else if ((*m_lgm)(x, y) == 1) {
           (*m_lgm_prior)(x, y) = uObs;
           (*m_lgm_posterior)(x, y) = uObs;
         }
-        else if ((*m_lgm)(x, y) == 3){
+        else if ((*m_lgm)(x, y) == 3) {
           (*m_lgm_prior)(x, y) = uPlanar;
           (*m_lgm_posterior)(x, y) = uPlanar;
         }
@@ -580,49 +585,53 @@ namespace spatial
     /* DEBUG */
     double sumin = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((*m_lgm)(x,y) == 2)
-                    continue;
-            sumin += (*m_lgm_posterior)(x, y);
-          }
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2)
+          continue;
+        sumin += (*m_lgm_posterior)(x, y);
+      }
     }
     log("posterior sums to: %f", sumin);
     log("posterior + Cout sums to: %f", sumin + pOut);
 
     /* DEBUG */
 
- /* Display Posterior in PB as Line Cloud BEGIN */
-  
-  double multiplier1 = 500.0;
-  double xW2, yW2,xW3,yW3;
-  peekabot::LineCloudProxy linecloudp;
+    /* Display Posterior in PB as Line Cloud BEGIN */
 
-  linecloudp.add(m_PeekabotClient,"root.LC_BEFORE",peekabot::REPLACE_ON_CONFLICT);
-  linecloudp.clear_vertices();
-  linecloudp.set_line_width(2);
-  linecloudp.set_color(0.9,0,0);
+    double multiplier1 = 500.0;
+    double xW2, yW2, xW3, yW3;
+    peekabot::LineCloudProxy linecloudp;
 
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-      if ((*m_lgm)(x,y) == 2 || y == m_lgm->getSize())
-        continue;
-      m_lgm->index2WorldCoords(x, y, xW2, yW2);
-      m_lgm->index2WorldCoords(x,y+1,xW3,yW3);
-      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
+        peekabot::REPLACE_ON_CONFLICT);
+    linecloudp.clear_vertices();
+    linecloudp.set_line_width(2);
+    linecloudp.set_color(0.9, 0, 0);
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
+          continue;
+        m_lgm->index2WorldCoords(x, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
+        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
+            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+            * multiplier1);
+      }
     }
-  }
 
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-      if ((*m_lgm)(x,y) == 2 || x == m_lgm->getSize())
-        continue;
-      m_lgm->index2WorldCoords(x+1, y, xW2, yW2);
-      m_lgm->index2WorldCoords(x,y,xW3,yW3);
-      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+          continue;
+        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y, xW3, yW3);
+        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
+            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+            * multiplier1);
+      }
     }
-  }
-  /* Display Posterior in as line cloud PB END */
-
+    /* Display Posterior in as line cloud PB END */
 
   }
 
@@ -644,116 +653,226 @@ namespace spatial
 
   }
 
- double AdvObjectSearch::ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints){
-    /* This is the probability that for a cell in the map, given object is in field of view,
+  double
+  AdvObjectSearch::ActionProbabilityPerCell(int x, int y,
+      std::vector<int> ViewConePoints) {
+    /* This is the probability that for a cell in the map
      * what are the chances that the recognition algorithm will spot it.
      * If the cell in question is out of FOV then this is zero. If not
-     * then it's a constant (yeah, it's lame) because we don't have a model for
-     * FERNS. */
+     * then it's a constant. */
 
-    for (unsigned int i=0; i < ViewConePoints.size(); i++){
-      if (ViewConePoints[2*i] == x && ViewConePoints[2*i + 1] == y){
+    for (unsigned int i = 0; i < ViewConePoints.size(); i++) {
+      if (ViewConePoints[2 * i] == x && ViewConePoints[2 * i + 1] == y) {
         log("ActionProbcell returned %f", 0.7);
-        return 0.7; // FIXME: hack...
+        return 0.7; // FIXME: this is lame.
       }
     }
     return 0;
 
   }
 
-void AdvObjectSearch::MeasurementUpdate(bool result){
-  log("in here..");  
-if (result){
-    log("you're done. go play outside.");
-    return;
-  }
-
-
- /* Display Posterior in PB as Line Cloud BEGIN */
-  
-  double multiplier1 = 200.0;
-  double xW2, yW2,xW3,yW3;
-  peekabot::LineCloudProxy linecloudp;
-
-  linecloudp.add(m_PeekabotClient,"root.LC_BEFORE",peekabot::REPLACE_ON_CONFLICT);
-  linecloudp.clear_vertices();
-  linecloudp.set_line_width(2);
-  linecloudp.set_color(0.9,0,0);
-
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-      if ((*m_lgm)(x,y) == 2 || y == m_lgm->getSize())
-        continue;
-      m_lgm->index2WorldCoords(x, y, xW2, yW2);
-      m_lgm->index2WorldCoords(x,y+1,xW3,yW3);
-      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+  void
+  AdvObjectSearch::MeasurementUpdate(bool result) {
+    log("in here..");
+    if (result) {
+      log("you're done. go play outside.");
+      return;
     }
-  }
 
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-      if ((*m_lgm)(x,y) == 2 || x == m_lgm->getSize())
-        continue;
-      m_lgm->index2WorldCoords(x+1, y, xW2, yW2);
-      m_lgm->index2WorldCoords(x,y,xW3,yW3);
-      linecloudp.add_line(xW2+6,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3+6,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
-    }
-  }
-  /* Display Posterior in as line cloud PB END */
+    /* Display Posterior in PB as Line Cloud BEGIN */
 
-  /* DEBUG */
-    double sumin = 0.0;
+    double multiplier1 = 200.0;
+    double xW2, yW2, xW3, yW3;
+    peekabot::LineCloudProxy linecloudp;
+
+    linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
+        peekabot::REPLACE_ON_CONFLICT);
+    linecloudp.clear_vertices();
+    linecloudp.set_line_width(2);
+    linecloudp.set_color(0.9, 0, 0);
+
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((*m_lgm)(x,y) == 2)
-                    continue;
-            sumin += (*m_lgm_posterior)(x, y);
-          }
-    }
-    log("posterior sums to: %f", sumin);
-    log("posterior + Cout sums to: %f", sumin + pOut);
-
-    /* DEBUG */
-
-
-  double denomsum = 0.0;
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-          if ((*m_lgm)(x,y) == 2)
-            continue;
-          denomsum += (*m_lgm_posterior)(x,y)*(1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points));
-        }
-  }
-  denomsum += pOut;
-
-  log("pOut is: %f",pOut);
-  log("denomsum is: %f", denomsum);
-  // For everything inside meaning: pIn
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x,y) == 2)
+        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
           continue;
-        //if ((*m_lgm)(x,y) == 0)
-	  //log("old prob for fs: %f", (*m_lgm_posterior)(x,y));
-        (*m_lgm_posterior)(x,y) = ((*m_lgm_posterior)(x,y)* ( 1 - ActionProbabilityPerCell(x,y,m_CurrentViewPoint_Points)))/
-            denomsum;
-        //if ((*m_lgm)(x,y) == 0)
-          //log("new prob for fs: %f", (*m_lgm_posterior)(x,y));
+        m_lgm->index2WorldCoords(x, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
+        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
+            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+            * multiplier1);
       }
     }
 
-  pOut = pOut / denomsum;
-  log("pOut has become: %f",pOut);
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+          continue;
+        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y, xW3, yW3);
+        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
+            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+            * multiplier1);
+      }
+    }
+    /* Display Posterior in as line cloud PB END */
 
+    /* DEBUG */
+    double sumin = 0.0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2)
+          continue;
+        sumin += (*m_lgm_posterior)(x, y);
+      }
+    }
+    log("posterior sums to: %f", sumin);
+    log("posterior + Cout sums to: %f", sumin + pOut);
 
-  /* DEBUG */
+    /* DEBUG */
+
+    double denomsum = 0.0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2)
+          continue;
+        denomsum += (*m_lgm_posterior)(x, y) * (1 - ActionProbabilityPerCell(x,
+            y, m_CurrentViewPoint_Points));
+      }
+    }
+    denomsum += pOut;
+
+    log("pOut is: %f", pOut);
+    log("denomsum is: %f", denomsum);
+    // For everything inside meaning: pIn
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2)
+          continue;
+        //if ((*m_lgm)(x,y) == 0)
+        //log("old prob for fs: %f", (*m_lgm_posterior)(x,y));
+        (*m_lgm_posterior)(x, y) = ((*m_lgm_posterior)(x, y) * (1
+            - ActionProbabilityPerCell(x, y, m_CurrentViewPoint_Points)))
+            / denomsum;
+        //if ((*m_lgm)(x,y) == 0)
+        //log("new prob for fs: %f", (*m_lgm_posterior)(x,y));
+      }
+    }
+
+    pOut = pOut / denomsum;
+    log("pOut has become: %f", pOut);
+
+    /* DEBUG */
     sumin = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2)
+          continue;
+        sumin += (*m_lgm_posterior)(x, y);
+      }
+    }
+    log("posterior sums to: %f", sumin);
+    log("posterior + Cout sums to: %f", sumin + pOut);
+
+    /* DEBUG */
+
+    /* Display Posterior in PB BEGIN */
+    /* double color[3] = { 0.9, 0, 0.9 };
+     double multiplier = 1000.0;
+     double xW, yW;
+     m_ProxyPosterior.clear_vertices();
+     m_ProxyPosterior.set_color(color[0], color[1], color[2]);
+     //m_ProxyPrior.set_opacity(0.3);
+     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+     for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+     if ((*m_lgm)(x,y) == 2)
+     continue;
+     m_lgm->index2WorldCoords(x, y, xW, yW);
+     m_ProxyPosterior.add_vertex(xW, yW+8,(*m_lgm_posterior)(x, y)
+     * multiplier);
+     }
+     }*/
+    /* Display Posterior in PB END */
+
+    /* Display Posterior in PB as Line Cloud BEGIN */
+
+    //double multiplier1 = 500.0;
+    //double xW2, yW2,xW3,yW3;
+    peekabot::LineCloudProxy linecloudp1;
+
+    linecloudp1.add(m_PeekabotClient, "root.LC_AFTER",
+        peekabot::REPLACE_ON_CONFLICT);
+    linecloudp1.clear_vertices();
+    linecloudp1.set_line_width(2);
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
+          continue;
+        m_lgm->index2WorldCoords(x, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
+        linecloudp1.add_line(xW2, yW2 - 8, (*m_lgm_posterior)(x, y)
+            * multiplier1, xW3, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+            * multiplier1);
+      }
+    }
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+          continue;
+        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y, xW3, yW3);
+        linecloudp1.add_line(xW2, yW2 - 8, (*m_lgm_posterior)(x, y)
+            * multiplier1, xW3, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+            * multiplier1);
+      }
+    }
+    /* Display Posterior in as line cloud PB END */
+
+  }
+
+  void
+  AdvObjectSearch::PlaneObservationUpdate() {
+    // say plane probability is .8
+
+
+    /* there are two terms which are now constants
+     * one is p(plane|z,c_i)  given an object is at c_i probability
+     * of there being a plane. and p(plane|z,c_i^-1) given there isn't
+     * any object at c_i probability of there being a table. Plus another term
+     * for the probability of there being a plane only from plane observations (pPlane).
+     * so this is
+     * p(c_i | z,plane) = p(c_i|z)p(plane|ci)
+     *                 ---------------------
+     *                 p(plane|c_i)p(c_i|z) + p(plane |z, not(c_i))p(not(c_i) | z) for i = 0...N
+     */
+    log("Plane observation update called!");
+    m_pPlaneGivenObj = 0.7;
+    m_pFreeGivenObj = 0.05;
+    m_pObsGivenObj = 0.25;
+
+    m_pPlaneGivenNotObj = 0.05;
+    m_pFreeGivenNotObj = 0.8;
+    m_pObsGivenNotObj = 0.15;
+
+    double initsum, aftersum;
+    initsum = pOut;
+    aftersum = pOut;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((*m_lgm)(x,y) == 2)
-                    continue;
-            sumin += (*m_lgm_posterior)(x, y);
+            initsum += (*m_lgm_posterior)(x,y);
           }
+    }
+
+
+    /* DEBUG */
+    double sumin = 0.0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2)
+          continue;
+        sumin += (*m_lgm_posterior)(x, y);
+      }
     }
     log("posterior sums to: %f", sumin);
     log("posterior + Cout sums to: %f", sumin + pOut);
@@ -762,61 +881,78 @@ if (result){
 
 
 
-
-  /* Display Posterior in PB BEGIN */
-  /* double color[3] = { 0.9, 0, 0.9 };
-  double multiplier = 1000.0;
-  double xW, yW;
-  m_ProxyPosterior.clear_vertices();
-  m_ProxyPosterior.set_color(color[0], color[1], color[2]);
-  //m_ProxyPrior.set_opacity(0.3);
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-      if ((*m_lgm)(x,y) == 2)
-        continue;
-      m_lgm->index2WorldCoords(x, y, xW, yW);
-      m_ProxyPosterior.add_vertex(xW, yW+8,(*m_lgm_posterior)(x, y)
-          * multiplier);
+    // For a new plane observation shift probabilities accordingly
+    std::pair<int, int> tmp;
+    std::set<pair<int, int> >::iterator end = m_NewPlanePoints.end();
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        tmp.first = x;
+        tmp.second = y;
+        if (m_NewPlanePoints.find(tmp) != end) { // this is a new plane point
+          (*m_lgm_posterior)(x, y) = m_pPlaneGivenObj
+              * (*m_lgm_posterior)(x, y) / (m_pPlaneGivenObj
+              * (*m_lgm_posterior)(x, y) + m_pPlaneGivenNotObj
+              * (*m_lgm_posterior)(x, y));
+        }
+        else {
+          if ((*m_lgm_posterior)(x, y) == 0) {
+            (*m_lgm_posterior)(x, y) = m_pFreeGivenObj * (*m_lgm_posterior)(x,
+                y) / (m_pFreeGivenObj * (*m_lgm_posterior)(x, y)
+                + m_pFreeGivenNotObj * (*m_lgm_posterior)(x, y));
+          }
+          else if ((*m_lgm_posterior)(x, y) == 1) {
+            (*m_lgm_posterior)(x, y) = m_pObsGivenObj
+                * (*m_lgm_posterior)(x, y) / (m_pObsGivenObj
+                * (*m_lgm_posterior)(x, y) + m_pObsGivenNotObj
+                * (*m_lgm_posterior)(x, y));
+          }
+        }
+      }
     }
-    }*/
-  /* Display Posterior in PB END */
+    // And for pOut..I'm not completely sure about this..
+    pOut = m_pFreeGivenObj
+        * pOut / (m_pFreeGivenObj
+        * pOut + m_pFreeGivenNotObj
+        * pOut);
 
-  /* Display Posterior in PB as Line Cloud BEGIN */
-  
-  //double multiplier1 = 500.0;
-  //double xW2, yW2,xW3,yW3;
-  peekabot::LineCloudProxy linecloudp1;
 
-  linecloudp1.add(m_PeekabotClient,"root.LC_AFTER",peekabot::REPLACE_ON_CONFLICT);
-  linecloudp1.clear_vertices();
-  linecloudp1.set_line_width(2);
-
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-      if ((*m_lgm)(x,y) == 2 || y == m_lgm->getSize())
-        continue;
-      m_lgm->index2WorldCoords(x, y, xW2, yW2);
-      m_lgm->index2WorldCoords(x,y+1,xW3,yW3);
-      linecloudp1.add_line(xW2,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
+    // Normalize
+    // Get Sum after update
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            aftersum += (*m_lgm_posterior)(x,y);
+          }
     }
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+              for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                (*m_lgm_posterior)(x,y) = (*m_lgm_posterior)(x,y)*initsum / aftersum;
+              }
+        }
+    pOut = pOut*initsum/aftersum;
+
+    /* DEBUG */
+       sumin = 0.0;
+       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+           if ((*m_lgm)(x, y) == 2)
+             continue;
+           sumin += (*m_lgm_posterior)(x, y);
+         }
+       }
+       log("posterior sums to: %f", sumin);
+       log("posterior + Cout sums to: %f", sumin + pOut);
+
+       /* DEBUG */
+
+
+    m_NewPlanePoints.clear();
+
   }
-
-  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-      if ((*m_lgm)(x,y) == 2 || x == m_lgm->getSize())
-        continue;
-      m_lgm->index2WorldCoords(x+1, y, xW2, yW2);
-      m_lgm->index2WorldCoords(x,y,xW3,yW3);
-      linecloudp1.add_line(xW2,yW2-8,(*m_lgm_posterior)(x, y)*multiplier1,xW3,yW3-8,(*m_lgm_posterior)(x, y+1)*multiplier1);      
-    }
-  }
-  /* Display Posterior in as line cloud PB END */
-
-
-}
   void
   AdvObjectSearch::SampleGrid() {
-    srand (time(NULL));
+    srand (
+    time(NULL));
     std::vector<double> angles;
 
     /*Sampling free space BEGIN*/
@@ -879,19 +1015,19 @@ if (result){
 
     int i = 0;
     int randx, randy;
-    double xW, yW,angle;
+    double xW, yW, angle;
     while (i < m_samplesize) {
       randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       int the = (int) (rand() % angles.size());
       angle = angles[the];
       //if we have that point already, skip.
-      for (int j=0; j < i; j++){
-              if (m_samples[2*j] == randx && m_samples[2*j + 1] == randy &&
-                  m_samplestheta[j] == angle){
-               log("we already have this point.");
-                continue;
-              }
+      for (int j = 0; j < i; j++) {
+        if (m_samples[2 * j] == randx && m_samples[2 * j + 1] == randy
+            && m_samplestheta[j] == angle) {
+          log("we already have this point.");
+          continue;
+        }
       }
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
 
@@ -918,34 +1054,34 @@ if (result){
             m_samplestheta[i] = angle;
             i++;
           }
-          else{
-	    //  log("there's no path to here.");
+          else {
+            //  log("there's no path to here.");
           }
           /*if reachable*/
         }
 
       }
-      else{
+      else {
         //log("point either non free space or seen.");
       }
     }
 
     /* Display Samples in PB BEGIN */
-    double color[3] = { 1.0, 0, 0 };
+    double color[3] =
+      { 1.0, 0, 0 };
     double xW1, yW1;
     peekabot::PointCloudProxy samples;
-    samples.add(m_PeekabotClient, "root.samples",peekabot::REPLACE_ON_CONFLICT);
+    samples.add(m_PeekabotClient, "root.samples", peekabot::REPLACE_ON_CONFLICT);
     samples.set_color(color[0], color[1], color[2]);
     //samples.set_opacity(0.2);
 
-    for (int i = 0; i < m_samplesize; i++){
+    for (int i = 0; i < m_samplesize; i++) {
 
-        m_lgm->index2WorldCoords(m_samples[i*2], m_samples[i*2 + 1], xW1, yW1);
-        //log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
-        samples.add_vertex(xW1, yW1, 2);
-      }
+      m_lgm->index2WorldCoords(m_samples[i * 2], m_samples[i * 2 + 1], xW1, yW1);
+      //log("sample coord: %f, %f, %f", xW1,yW1,m_samplestheta[i]);
+      samples.add_vertex(xW1, yW1, 2);
+    }
     /* Display Samples in PB END */
-
 
     /*Sampling free space END*/
   }
@@ -1097,7 +1233,7 @@ if (result){
     cmd->status = SpatialData::NONE;
     cmd->comp = SpatialData::COMMANDPENDING;
 
-    addToWorkingMemory(newDataID(),cmd);
+    addToWorkingMemory(newDataID(), cmd);
   }
 
   SpatialData::NavCommandPtr
@@ -1109,6 +1245,5 @@ if (result){
     cmd->comp = SpatialData::COMMANDPENDING;
     return cmd;
   }
-
 
 }
