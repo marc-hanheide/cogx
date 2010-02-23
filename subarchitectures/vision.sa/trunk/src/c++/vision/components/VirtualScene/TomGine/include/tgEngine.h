@@ -38,6 +38,7 @@ private:
 	tgGLXWindow* 	m_window;
 	tgCamera 			m_camera;
 	tgCamera 			m_camera0;
+	tgCamera			m_cam_ortho;
 	tgLighting 		m_lighting;
 	tgTimer 			m_timer;
 	tgVector3			m_cor;			///< Center of Rotation
@@ -97,6 +98,9 @@ public:
 	* @brief Sets Camera of rendering engine (including internal and external camera parameters)
 	*/
 	void SetCamera(tgCamera cam){ m_camera = tgCamera(cam); m_camera0 = tgCamera(cam); }
+	
+	void Activate3D();
+	void Activate2D();
 	
 	/**
 	*	@brief Sets center of rotation

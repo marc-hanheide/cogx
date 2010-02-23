@@ -66,8 +66,14 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 								45, width, height,					// field of view in degree in y, image width, image height
 								0.01, 5.0*depth,						// near clipping plane, far clipping plane
 								GL_PERSPECTIVE);						// Perspective camera
-	
 	m_camera0 = m_camera;
+	
+	m_cam_ortho.Set(	0.0, 0.0, 1.0,
+										0.0, 0.0, 0.0,
+										0.0, 1.0, 0.0,
+										45, width, height,
+										0.1, 2.0,
+										GL_ORTHO);
 	
 	// Setup lights	
 	tgLight light0;
@@ -96,7 +102,10 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 bool tgEngine::Update(float &fTime){
 	
 	bool quit = InputControl();
+	
+	Activate3D();
 	DrawCoordinates();
+	
 	Swap();
 	
 	// update frametime
@@ -105,13 +114,6 @@ bool tgEngine::Update(float &fTime){
 	// clear framebuffer and depth buffer
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	
-	// OpenGL Render settings
-	if(m_bfc) glEnable(GL_CULL_FACE);
-	else			glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	m_camera.ApplyTransform();
-	m_camera.Activate();
-	m_lighting.Activate();
 	
 	return quit;
 }
@@ -250,6 +252,22 @@ void tgEngine::DrawCoordinates(){
 	
 	m_lighting.Activate();
 	glEnable(GL_DEPTH_TEST);	
+}
+
+void tgEngine::Activate3D(){
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else			glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	m_camera.ApplyTransform();
+	m_camera.Activate();
+	m_lighting.Activate();
+}
+
+void tgEngine::Activate2D(){
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	m_cam_ortho.Activate();
+	m_lighting.Deactivate();
 }
 
 void tgEngine::Swap(){

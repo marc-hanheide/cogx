@@ -16,6 +16,7 @@
 #include <string>
 
 #include "tgEngine.h"
+#include "tgFont.h"
 #include "ModelEntry.h"
 
 namespace cast
@@ -30,6 +31,7 @@ private:
   
   TomGine::tgEngine* m_engine;
   TomGine::tgCamera m_camera;
+  TomGine::tgFont* m_font;
   
   std::vector<ModelEntry> m_modellist;
 
