@@ -127,6 +127,6 @@ def stratify(axioms):
         stratification[level] = stratum
         remaining -= stratum
         level += 1
-        
+
     return stratification, nonrecursive
     

@@ -170,9 +170,9 @@ class Fact(tuple):
     def as_literal(self, useEqual=False, _class=None):
         if isinstance(self.svar.function, Predicate) or self.svar.modality is not None:
             lit = self.svar.as_literal()
-            if self.value == types.TRUE:
+            if self.value == TRUE:
                 return lit
-            elif self.value == types.FALSE:
+            elif self.value == FALSE:
                 return lit.negate()
             
             assert False
@@ -197,9 +197,9 @@ class Fact(tuple):
             value = instantiate_args(literal.args[-1:], state)[0]
         else:
             if literal.negated:
-                value = types.FALSE
+                value = FALSE
             else:
-                value = types.TRUE
+                value = TRUE
 
         return Fact(StateVariable.from_literal(literal, state), value)
         
@@ -228,7 +228,7 @@ class Fact(tuple):
     
 class State(dict):
     def __init__(self, facts=[], prob=None):
-        #defaultdict.__init__(self, lambda: types.UNKNOWN)
+        #defaultdict.__init__(self, lambda: UNKNOWN)
         assert prob is None or isinstance(prob, problem.Problem)
         self.problem = prob
         for f in facts:
@@ -259,8 +259,8 @@ class State(dict):
             return dict.__getitem__(self, key)
         except:
             if isinstance(key.function, Predicate):
-                return types.FALSE
-            return types.UNKNOWN
+                return FALSE
+            return UNKNOWN
             
         
     def __setitem__(self, svar, value):
@@ -272,6 +272,10 @@ class State(dict):
         if isinstance(key, Fact):
             return dict.__contains__(self, key.svar) and self[key.svar] == key.value
         return dict.__contains__(self, key)
+
+    def __str__(self):
+        elems = sorted("%s = %s" % (str(k), v.name) for k,v in self.iteritems())
+        return "\n".join(elems)
 
     @staticmethod
     def from_problem(problem, seed=None):
@@ -363,8 +367,8 @@ class State(dict):
                 
             if trace_vars:
                 self.read_svars.add(svar)
-#            print svar, self[svar], (self[svar] == types.TRUE) ^ literal.negated
-            return (self[svar] == types.TRUE) ^ literal.negated
+#            print svar, self[svar], (self[svar] == TRUE) ^ literal.negated
+            return (self[svar] == TRUE) ^ literal.negated
 
 
     def get_literal_effect(self, literal, trace_vars=False):
@@ -410,9 +414,9 @@ class State(dict):
                 
             eff_svar = svar
             if literal.negated:
-                eff_value = types.FALSE
+                eff_value = FALSE
             else:
-                eff_value = types.TRUE
+                eff_value = TRUE
         return Fact(eff_svar, eff_value)
         
     def is_executable(self, action):
@@ -610,6 +614,9 @@ class State(dict):
             universalReasons = defaultdict(set)
 
         #print "finding releveant:", time.time()-t0
+
+        ex_state = State(self.iterfacts(), self.problem)
+            
         t0 = time.time()
         for level, preds in sorted(self.problem.stratification.iteritems()):
             t1 = time.time()
@@ -640,7 +647,7 @@ class State(dict):
                         recursive_atoms.add(atom)
 
                     svar = StateVariable.from_literal(atom)
-                    if svar in self and self[svar] == types.TRUE:
+                    if svar in self and self[svar] == TRUE:
                         true_atoms.add(atom)
 
             #print "collecting level %d (%d atoms):" % (level, len(recursive_atoms)+len(nonrecursive_atoms)), time.time()-t1
@@ -660,8 +667,10 @@ class State(dict):
                             else:
                                 vars = None
                                 universal = None
-                            if self.is_satisfied(ax.condition, vars, universal):
+                                
+                            if ex_state.is_satisfied(ax.condition, vars, universal):
                                 true_atoms.add(atom)
+                                ex_state[StateVariable.from_literal(atom)] = TRUE
                                 changed = True
                                 if getReasons:
                                     this_svar = StateVariable.from_literal(atom)
@@ -678,8 +687,7 @@ class State(dict):
             #print "layer:", time.time()-t1
         
         #print "total:", time.time()-t0
-                
         if getReasons:
-            return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.from_literal(a), types.TRUE) for a in true_atoms]), self.problem), reasons, universalReasons
+            return ex_state, reasons, universalReasons
         
-        return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.from_literal(a), types.TRUE) for a in true_atoms]), self.problem)
+        return ex_state

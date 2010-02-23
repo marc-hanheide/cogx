@@ -290,7 +290,43 @@ class StateTest(common.PddlTest):
         
         self.prob.axioms = [a1a, a1b, a2]
         self.prob.stratify_axioms()
+
+        self.assert_(a1a.predicate in self.prob.stratification[1])
+        self.assert_(a1b.predicate in self.prob.stratification[1])
+        self.assert_(a2.predicate in self.prob.stratification[2])
+        
         state = State.from_problem(self.prob).get_extended_state()
+
+        oc1 = StateVariable(self.prob.predicates["occupied"][0], [self.prob["pos1"]])
+        oc2 = StateVariable(self.prob.predicates["occupied"][0], [self.prob["pos2"]])
+        oc3 = StateVariable(self.prob.predicates["occupied"][0], [self.prob["apt1"]])
+        oc4 = StateVariable(self.prob.predicates["occupied"][0], [self.prob["apt2"]])
+
+        self.assertEqual(state[oc1], TRUE)
+        self.assertEqual(state[oc2], TRUE)
+        self.assertEqual(state[oc3], FALSE)
+        self.assertEqual(state[oc4], TRUE)
+
+        int1 = StateVariable(self.prob.predicates["interesting"][0], [self.prob["pos1"]])
+        int2 = StateVariable(self.prob.predicates["interesting"][0], [self.prob["pos2"]])
+        int3 = StateVariable(self.prob.predicates["interesting"][0], [self.prob["apt1"]])
+        int4 = StateVariable(self.prob.predicates["interesting"][0], [self.prob["apt2"]])
+        
+        self.assertEqual(state[int1], TRUE)
+        self.assertEqual(state[int2], TRUE)
+        self.assertEqual(state[int3], FALSE)
+        self.assertEqual(state[int4], TRUE)
+        
+        free1 = StateVariable(self.prob.predicates["free"][0], [self.prob["pos1"]])
+        free2 = StateVariable(self.prob.predicates["free"][0], [self.prob["pos2"]])
+        free3 = StateVariable(self.prob.predicates["free"][0], [self.prob["apt1"]])
+        free4 = StateVariable(self.prob.predicates["free"][0], [self.prob["apt2"]])
+
+        self.assertEqual(state[free1], FALSE)
+        self.assertEqual(state[free2], FALSE)
+        self.assertEqual(state[free3], TRUE)
+        self.assertEqual(state[free4], FALSE)
+
         
 if __name__ == '__main__':
     unittest.main()    
