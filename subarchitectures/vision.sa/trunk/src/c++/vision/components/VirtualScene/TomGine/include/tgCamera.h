@@ -37,6 +37,7 @@ private:
 	tgVector3 s;		// Vector of camera pointing sidewards (right)
 	tgVector3 u;		// Vector of camera pointing up
 	
+	float m_x, m_y;
 	float m_fovy, m_width, m_height;
 	float m_zNear, m_zFar;
 	unsigned short m_projection;	
@@ -59,6 +60,7 @@ public:
 	void SetIntrinsic(float* M);
 	void SetIntrinsic(float fovy, float width, float height, float zNear, float zFar, unsigned short projection);
 	void SetViewport(float w, float h);
+	void SetViewport(float x, float y, float w, float h);
 	void SetZRange(float near, float far);
 	void SetPerspective(){m_projection=GL_PERSPECTIVE;}
 	void SetOrtho(){m_projection=GL_ORTHO;}
@@ -86,6 +88,8 @@ public:
 	float GetZFar(){ return m_zFar; }
 	
 	float GetFOVY(){ return m_fovy; }
+	float GetWidth(){ return m_width; }
+	float GetHeight(){ return m_height; }
 	unsigned short GetProjection(){ return m_projection; }
 
 	// Translations

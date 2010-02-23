@@ -13,15 +13,11 @@
 #include <stdio.h>
 #include <GL/gl.h>
 
-#include "tgGLXWindow.h"
-#include "tgCamera.h"
 #include "tgEvent.h"
-#include "tgLighting.h"
-#include "tgRenderModel.h"
-#include "tgPose.h"
+#include "tgGLXWindow.h"
+#include "tgSubWindow2D.h"
+#include "tgSubWindow3D.h"
 #include "tgTimer.h"
-#include "tgVector3.h"
-#include "tgMathlib.h"
 
 namespace TomGine{
 
@@ -34,22 +30,19 @@ private:
 	float m_width;
 	float m_height;
 	float m_depth;
+	float m_height2D;
 	
-	tgGLXWindow* 	m_window;
-	tgCamera 			m_camera;
-	tgCamera 			m_camera0;
-	tgLighting 		m_lighting;
-	tgTimer 			m_timer;
-	tgVector3			m_cor;			///< Center of Rotation
+	tgGLXWindow* 			m_window;
+	tgSubWindow3D*		m_window3D;
+	tgSubWindow2D*		m_window2D;
+	tgTimer 					m_timer;
 	
 	int m_mouse_pos[2];
 	bool p_pressed;
 	
 	float m_frametime;
-	bool m_bfc;
+
 	bool m_button_left, m_button_middle, m_button_right;
-	bool m_wireframe;
-	bool m_smoothshading;
 	
 	bool InitWindow(int widht, int height, const char* name);
 	
@@ -57,11 +50,6 @@ public:
 	tgEngine();
 	~tgEngine();
 	
-	/**
-	* @brief Welcome message
-	*/
-	void Welcome();
-
 	/**
 	* @brief Initialising render engine
 	*	@param width Width of rendering window in pixels
@@ -71,11 +59,8 @@ public:
 	* @param bfc Enable / Disable back face culling (render back face of polygons or not)
 	* @return Success of initialisation
 	*/
-	bool Init(	int width,
-							int height,
-							float depth,
-							const char* name="TomGine",
-							bool bfc=false);
+	bool Init(const char* name="TomGine", int width=640, int height=480);
+	
 	
 	/**
 	* @brief Draws content to  frame screen
@@ -83,38 +68,19 @@ public:
 	*/
 	bool Update(float &fTime);
 	
-	/**
-	* @brief Handles keyboard and mouse input applied to this window
-	*/
+	/** @brief Handles keyboard and mouse input applied to this window */
 	bool InputControl();
 	
-	/**
-	*	@brief Draws a simple coordinate frame
-	*/
-	void DrawCoordinates();
+	void Activate2D(){ m_window2D->Activate(); }
+	void Activate3D(){ m_window3D->Activate(); }
 	
-	/**
-	* @brief Sets Camera of rendering engine (including internal and external camera parameters)
-	*/
-	void SetCamera(tgCamera cam){ m_camera = tgCamera(cam); m_camera0 = tgCamera(cam); }
+	void SetCenterOfRotation(float x, float y, float z){ m_window3D->SetCenterOfRotation(x,y,z); }
 	
-	/**
-	*	@brief Sets center of rotation
-	*/
-	void SetCenterOfRotation(float x, float y, float z){ m_cor = tgVector3(x,y,z); }
+	void SetCamera3D(tgCamera cam){ m_window3D->SetCamera(cam); }
 	
-	/**
-	* @brief Swaps frame buffer to screen (called by Update() aswell)
-	*/
+	/** @brief Swaps frame buffer to screen (called by Update() aswell) */
 	void Swap();
 	
-	/**
-	*	@brief Returns the actual position of the camera with respect to the coordinate frame
-	*/
-	tgVector3 GetCameraPosition(){ return m_camera.GetPos(); }
-
-	tgVector3 Get3DPointFrom2D(int x, int y);
-	bool GetNewPoint(vec3& v);
 
 };
 

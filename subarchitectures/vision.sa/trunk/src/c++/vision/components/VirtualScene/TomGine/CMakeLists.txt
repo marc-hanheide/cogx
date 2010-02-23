@@ -7,27 +7,34 @@ add_definitions(-DGL_GLEXT_PROTOTYPES)
 # Set the directories
 include_directories(./include)
 include_directories(/usr/include/GL)
+include_directories(/usr/include/freetype2)
 
 #link_directories(/usr/lib)
 link_directories(/usr/local/lib)
 
 # Set the sources.
 SET(SOURCES
-	src/tgQuaternion.cpp
+	src/ShaderUtils.cpp
 	src/tgCamera.cpp
 	src/tgEngine.cpp
+	src/tgFont.cpp
 	src/tgFrustum.cpp
+	src/tgGLXWindow.cpp
+	src/tgImageProcessor.cpp
 	src/tgLighting.cpp
 	src/tgMatrix3.cpp
 	src/tgModel.cpp
 	src/tgPose.cpp
+	src/tgQuaternion.cpp
 	src/tgRenderModel.cpp
+	src/tgShader.cpp
+	src/tgSubWindow2D.cpp
+	src/tgSubWindow3D.cpp
 	src/tgTexture.cpp
 	src/tgVector3.cpp
-	src/tgGLXWindow.cpp
 	src/tgTimer.cpp)
 
-LINK_LIBRARIES(GL)
+LINK_LIBRARIES(GL ftgl)
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
