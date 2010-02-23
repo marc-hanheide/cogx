@@ -889,6 +889,11 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
 void
 ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID) 
 {
+
+  peekabot::GroupProxy root;
+  root.assign(m_PeekabotClient, "root");
+
+
   if (m_planeObjects.find(planeObjectID) == m_planeObjects.end()) {
     log("Error! Plane object missing!");
     return;
@@ -912,11 +917,11 @@ ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID
     return;
   }
 
-  Object *objectO = m_objectModels[objectModelID];
+  spatial::Object *objectO = m_objectModels[objectModelID];
 
   Pose3 oldPose = objectO->pose;
   vector<Vector3> points;
-  sampleOnnessDistribution(&po, objectO, points);
+  //sampleOnnessDistribution(&po, objectO, points);
   objectO->pose = oldPose;
 
   peekabot::PointCloudProxy pcloud;

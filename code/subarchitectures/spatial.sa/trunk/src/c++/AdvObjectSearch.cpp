@@ -513,8 +513,8 @@ namespace spatial
   AdvObjectSearch::newPlanePointCloud(
       const cast::cdl::WorkingMemoryChange &objID) {
     debug("new PlanePointCloud received.");
-    if (!m_table_phase)
-      return;
+    //if (!m_table_phase)
+    //  return;
     try {
 
       SpatialData::PlanePointsPtr objData = getMemoryEntry<
@@ -574,10 +574,10 @@ namespace spatial
           (*m_lgm_prior)(x, y) = uObs;
           (*m_lgm_posterior)(x, y) = uObs;
         }
-        else if ((*m_lgm)(x, y) == 3) {
-          (*m_lgm_prior)(x, y) = uPlanar;
-          (*m_lgm_posterior)(x, y) = uPlanar;
-        }
+        //else if ((*m_lgm)(x, y) == 3) {
+        //  (*m_lgm_prior)(x, y) = uPlanar;
+       //   (*m_lgm_posterior)(x, y) = uPlanar;
+       // }
 
       }
     }
