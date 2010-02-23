@@ -939,8 +939,8 @@ ObjectRelationManager::sampleOnnessForObject(int supportObjectModelID,
   sampleOnnessDistribution(objectS, objectO, points, 
       objectS->pose.pos.x - frameRadius, objectS->pose.pos.x + frameRadius,
       objectS->pose.pos.y - frameRadius, objectS->pose.pos.y + frameRadius,
-      objectS->pose.pos.z - frameRadius, objectS->pose.pos.z + frameRadius,
-      0.1, 0.05);
+      objectS->pose.pos.z - frameRadius, objectS->pose.pos.z + frameRadius*4,
+      0.04, 0.02);
   objectO->pose = oldPose;
 
   peekabot::GroupProxy root;
@@ -958,6 +958,8 @@ ObjectRelationManager::sampleOnnessForObject(int supportObjectModelID,
 void
 ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID) 
 {
+
+
   if (m_planeObjects.find(planeObjectID) == m_planeObjects.end()) {
     log("Error! Plane object missing!");
     return;
