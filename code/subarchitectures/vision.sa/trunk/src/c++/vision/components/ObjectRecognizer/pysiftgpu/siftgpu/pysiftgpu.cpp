@@ -40,8 +40,11 @@ public:
          _extract = new SiftGPU();
 
          // TODO: parameters
+         // -d 3: best value for the number of scales per octave (lowe04ijcv)
+         // -no 8: limit the number of octaves processed (default: unlimited)
+         // -fo 0: first octave; -1 to upscale initial image
          // char * argv[] = {"-fo", "-1",  "-v", "1"};// "-cg"
-         char * argv[] = {"-fo", "0",  "-v", "1"};//
+         char * argv[] = {"-fo", "-1",  "-v", "1",  "-d", "3", "-no", "8"}; //
          int argc = sizeof(argv)/sizeof(char*);
          _extract->ParseParam(argc, argv);
 

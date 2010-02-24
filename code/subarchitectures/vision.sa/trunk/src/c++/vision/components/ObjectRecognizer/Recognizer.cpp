@@ -100,6 +100,8 @@ extern "C" {
 CRecognizer::CRecognizer()
 {
    testmode = 0; // Set manually for debugging
+   videoServerName = "";
+   videoHostName = "localhost";
 }
 
 void CRecognizer::configure(const map<string,string> & _config)
@@ -108,9 +110,12 @@ void CRecognizer::configure(const map<string,string> & _config)
    vector<string> models;
    map<string,string>::const_iterator it;
 
-   if((it = _config.find("--videoname")) != _config.end())
-   {
+   if((it = _config.find("--videoname")) != _config.end()) {
       videoServerName = it->second;
+   }
+
+   if((it = _config.find("--videohost")) != _config.end()) {
+      videoHostName = it->second;
    }
 
    //if((it = _config.find("--testmode")) != _config.end())
@@ -146,7 +151,8 @@ void CRecognizer::configure(const map<string,string> & _config)
    ostringstream pycode;
    pycode
       << "import castinit, numpy" << endl
-      << "from ObjectRecognizer import main, objectmodel, objectmatcher" << endl
+      << "from castmodule import mod_recognizer as main" << endl
+      << "from ObjectRecognizer import objectmodel, objectmatcher" << endl
       << "from ObjectRecognizer.featuresetup import CSiftSetup" << endl;
 
    if (models.size() > 0) {
@@ -287,7 +293,7 @@ PyObject* CRecognizer::pyProcessImage(Video::Image &image, const int *region)
    else if (nchn == 1) ndims = 2;
 
    // matches = ObjectRecognizer.main.findMatchingObject(image)
-   PyObject *pName = PyString_FromString("ObjectRecognizer.main");
+   PyObject *pName = PyString_FromString("castmodule.mod_recognizer");
    PyObject *pModule = PyImport_Import(pName);
    Py_DECREF(pName);
    if (pModule) {
