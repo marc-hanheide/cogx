@@ -73,6 +73,67 @@ bool XMLData(Scenario::Desc &val, XMLContext* context, bool create) {
 	// end-effector reference pose
 	val.referencePose.setId();
 	val.referencePose.p.v2 += golem::Real(baseLength + fingerLength);
+
+
+
+	
+	//polyflap interaction settings
+
+	//a number that slightly greater then the maximal reachable space of the arm
+	//    - used for workspace position normalization and later as a position upper bound
+	//      for random polyflap position
+	//maxRange = 0.4;
+	XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+
+	//minimal duration of a movement (by normal speed)
+	XMLData(val.minDuration, context->getContextFirst("polyflapInteraction minDuration"));
+
+
+	Real x;
+	Real y;
+	Real z;
+	
+	//Polyflap Position and orientation
+	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapPosition x"));
+	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapPosition y"));
+	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapPosition z"));
+	val.startPolyflapPosition.set(x, y, z);
+
+	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapRotation x"));
+	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapRotation y"));
+	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapRotation z"));
+	val.startPolyflapRotation.set(y, x, z);
+
+	//Polyflap dimensions		
+	XMLData(x, context->getContextFirst("polyflapInteraction polyflapDimensions x"));
+	XMLData(y, context->getContextFirst("polyflapInteraction polyflapDimensions y"));
+	XMLData(z, context->getContextFirst("polyflapInteraction polyflapDimensions z"));
+	val.polyflapDimensions.set(x, y, z);
+
+	//vertical distance from the ground
+	//const Real over = 0.01;
+	//vertical distance from the ground considering fingertip radius
+	XMLData(val.over, context->getContextFirst("polyflapInteraction over"));
+	//distance from the front/back of the polyflap
+	XMLData(val.dist, context->getContextFirst("polyflapInteraction dist"));
+
+	Real r;
+
+	//distance from the side of the polyflap
+	XMLData(r, context->getContextFirst("polyflapInteraction side"));
+	val.side = val.polyflapDimensions.v1*r;
+	//center of the polyflap
+	XMLData(r, context->getContextFirst("polyflapInteraction center"));
+	val.center = val.polyflapDimensions.v2*r;
+	//distance from the top of the polyflap
+	//const Real top = polyflapDimensions.v2* 1.2;
+	XMLData(val.top, context->getContextFirst("polyflapInteraction top"));
+	val.top = val.polyflapDimensions.v2 - r;
+	//lenght of the movement		
+	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
+	
+
+	
 	
 	return true;
 }
@@ -240,6 +301,17 @@ void Scenario::run(int argc, char* argv[]) {
 // 	// initialize random seed:
 	randomG.setRandSeed (context.getRandSeed());
 
+
+
+
+
+
+
+
+
+
+
+/*
 	//a number that slightly greater then the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
@@ -270,6 +342,9 @@ void Scenario::run(int argc, char* argv[]) {
 	const Real top = polyflapDimensions.v2 - 0.02;
 	//lenght of the movement		
 	const Real distance = 0.2;
+
+
+*/
 
 	const SecTmReal tmDeltaAsync = arm->getReacPlanner().getTimeDeltaAsync();
 
@@ -307,7 +382,7 @@ void Scenario::run(int argc, char* argv[]) {
 		creator.setToDefault();
 		//polyflap actor
 
-		object = setupPolyflap(scene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, context);
+		object = setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context);
 		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
 		
 
@@ -348,7 +423,7 @@ void Scenario::run(int argc, char* argv[]) {
 
 
 		//arm target update
-		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 		cout << "Position " << startPosition-1 << endl;
 
 		// and set target waypoint
@@ -356,7 +431,7 @@ void Scenario::run(int argc, char* argv[]) {
 		fromCartesianPose(target.pos, positionT, orientationT);
 		target.vel.setId(); // it doesn't mov
 
-		target.t = context.getTimer()->elapsed() + tmDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+		target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
 
 		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 			if (arm->getReacPlanner().send(target , ReacPlanner::ACTION_GLOBAL)) {
@@ -406,7 +481,7 @@ void Scenario::run(int argc, char* argv[]) {
 		Vec3 polyflapCenterNormalVec =
 			computeNormalVector(
 					    Vec3 (positionT.v1, positionT.v2, positionT.v3),
-					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, polyflapDimensions.v2*0.5)
+					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5)
 					    );
 		//and it's orthogonal
 		Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
@@ -414,7 +489,7 @@ void Scenario::run(int argc, char* argv[]) {
 
 
 		//the lenght of the movement
-		Real currDistance = distance;
+		Real currDistance = desc.distance;
 
 		//chose random horizontal and vertical angle
 		int horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
@@ -470,7 +545,7 @@ void Scenario::run(int argc, char* argv[]) {
 			
 		cout << "sequence size: " << learningData.currentSeq.size() << endl;
 
-		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
+		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (desc.polyflapDimensions.v2*1.1));
 		// and set target waypoint
 		golem::GenWorkspaceState preHome;
 		preHome.pos.p = positionPreH;
