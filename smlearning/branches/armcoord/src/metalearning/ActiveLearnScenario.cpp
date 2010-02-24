@@ -60,24 +60,16 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 
 
 	
-
-	
-	return true;
-}
-
-
-bool XMLData2(ActiveLearnScenario* p, XMLContext* context) {
-
-
+	//polyflap interaction settings
 
 	//a number that slightly greater then the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
 	//maxRange = 0.4;
-	XMLData(p->maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+	XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
 
 	//minimal duration of a movement (by normal speed)
-	XMLData(p->minDuration, context->getContextFirst("polyflapInteraction minDuration"));
+	XMLData(val.minDuration, context->getContextFirst("polyflapInteraction minDuration"));
 
 
 	Real x;
@@ -88,49 +80,45 @@ bool XMLData2(ActiveLearnScenario* p, XMLContext* context) {
 	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapPosition x"));
 	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapPosition y"));
 	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapPosition z"));
-	p->startPolyflapPosition.set(x, y, z);
+	val.startPolyflapPosition.set(x, y, z);
 
 	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapRotation x"));
 	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapRotation y"));
 	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapRotation z"));
-	p->startPolyflapRotation.set(y, x, z);
+	val.startPolyflapRotation.set(y, x, z);
 
 	//Polyflap dimensions		
 	XMLData(x, context->getContextFirst("polyflapInteraction polyflapDimensions x"));
 	XMLData(y, context->getContextFirst("polyflapInteraction polyflapDimensions y"));
 	XMLData(z, context->getContextFirst("polyflapInteraction polyflapDimensions z"));
-	p->polyflapDimensions.set(x, y, z);
+	val.polyflapDimensions.set(x, y, z);
 
 	//vertical distance from the ground
 	//const Real over = 0.01;
 	//vertical distance from the ground considering fingertip radius
-	XMLData(p->over, context->getContextFirst("polyflapInteraction over"));
+	XMLData(val.over, context->getContextFirst("polyflapInteraction over"));
 	//distance from the front/back of the polyflap
-	XMLData(p->dist, context->getContextFirst("polyflapInteraction dist"));
+	XMLData(val.dist, context->getContextFirst("polyflapInteraction dist"));
 
 	Real r;
 
 	//distance from the side of the polyflap
 	XMLData(r, context->getContextFirst("polyflapInteraction side"));
-	p->side = p->polyflapDimensions.v1*r;
+	val.side = val.polyflapDimensions.v1*r;
 	//center of the polyflap
 	XMLData(r, context->getContextFirst("polyflapInteraction center"));
-	p->center = p->polyflapDimensions.v2*r;
+	val.center = val.polyflapDimensions.v2*r;
 	//distance from the top of the polyflap
 	//const Real top = polyflapDimensions.v2* 1.2;
-	XMLData(p->top, context->getContextFirst("polyflapInteraction top"));
-	p->top = p->polyflapDimensions.v2 - r;
+	XMLData(val.top, context->getContextFirst("polyflapInteraction top"));
+	val.top = val.polyflapDimensions.v2 - r;
 	//lenght of the movement		
-	XMLData(p->distance, context->getContextFirst("polyflapInteraction distance"));
+	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
+	
 
-
-
-
-
-return true;
+	
+	return true;
 }
-
-
 
 //------------------------------------------------------------------------------
 
@@ -227,10 +215,8 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 
 		learningData.currentSeq.push_back(currentFeatureVector);
 
-		if (valuesSet) {
-			if (polUpperPart.p.v3 < reachedDist) {
-				reachedDist = polUpperPart.p.v3;
-			}
+		if (obRoll > desc.reachedNum) {
+			desc.reachedNum = obRoll;
 		}
 	
 		/////////////////////////////////////////////////
@@ -321,7 +307,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		creator.setToDefault();
 		//polyflap actor
 
-		object = setupPolyflap(scene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, context);
+		object = setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context);
 		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
 		if (iteration == 0)
 			objectLocalBounds = object->getLocalBoundsSeq();
@@ -339,12 +325,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 			curPolPos2 = curPol->front()->getPose();
 		}
 
-		//reference to (at the beginning) standig part of the polyflap
-		polUpperPart = curPolPos1;
-		//original vertical distace of the center of the standing part of the polyflap from ground
-		originalDist = polUpperPart.p.v3;
-		reachedDist = originalDist;
-		valuesSet = true;
+		desc.reachedNum = 0.0;
 
 
 		Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
@@ -367,7 +348,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		if (startingPosition == 0)
 			if ( iteration < smregionsCount ) 
- 				startPosition = floor(randomG.nextUniform (1.0, 18.0));
+				startPosition = floor(randomG.nextUniform (1.0, 18.0));
 			else {
 				//active selection of samples
 				double neargreedyActionRand = randomG.nextUniform (0.0, 1.0);
@@ -375,6 +356,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 				cout << "neargreedyRand: " << neargreedyActionRand << endl;
 				if (neargreedyActionRand <= learner.neargreedyActionProb)
 					startPosition = floor(randomG.nextUniform (1.0, 18.0));
+
 				else
 					assert ((startPosition = learner.chooseSMRegion () + 1) != -1);
 			}
@@ -384,7 +366,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 
 		//arm target position update
-		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 		cout << "Position " << startPosition-1 << endl;
 
 		// and set target waypoint
@@ -392,7 +374,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		fromCartesianPose(target.pos, positionT, orientationT);
 		target.vel.setId(); // it doesn't mov
 
-		target.t = context.getTimer()->elapsed() + tmDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+		target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
 
 		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 			if (arm->getReacPlanner().send(target , ReacPlanner::ACTION_GLOBAL)) {
@@ -442,7 +424,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		Vec3 polyflapCenterNormalVec =
 			computeNormalVector(
 					    Vec3 (positionT.v1, positionT.v2, positionT.v3),
-					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, polyflapDimensions.v2*0.5)
+					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5)
 					    );
 		//and it's orthogonal
 		Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
@@ -450,7 +432,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 
 		//the lenght of the movement
-		Real currDistance = distance;
+		Real currDistance = desc.distance;
 
 		//chose random horizontal and vertical angle
 		int horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
@@ -495,13 +477,13 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
 		bStart = false;
 		
-		valuesSet = false;
+		
 				
 		Real polState = -1; //polyflap was smoothly moved
-		if (sin(reachedDist) < (sin(10/18) * originalDist)) { //polyflap was tilted more than 10 degrees
+		if (desc.reachedNum > 0.1) { //polyflap was tilted more than treshold
 			polState = 0;
 		}
-		if (sin(reachedDist) < sin((17/18) * originalDist)) {//polyflap was flipped
+		if (desc.reachedNum > 1.5) {//polyflap was flipped
 			polState = 1;
 		}
 
@@ -536,7 +518,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		cout << "predicted poses 1 size: " << learningData.currentPredictedPfSeq.size() << endl;
 
 
-		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
+		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (desc.polyflapDimensions.v2*1.1));
 		// and set target waypoint
 		golem::GenWorkspaceState preHome;
 		preHome.pos.p = positionPreH;
@@ -706,7 +688,6 @@ void ActivePushingApplication::run(int argc, char *argv[]) {
 		return;
 	}
 
-XMLData2(pActiveLearnScenario, xmlcontext());
 
 
 	// Random number generator seed
