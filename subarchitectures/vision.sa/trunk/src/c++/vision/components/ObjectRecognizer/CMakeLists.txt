@@ -12,6 +12,11 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisionData Video VideoUtils
    ${PYTHON_LIBRARY})
 
+add_cast_component(ObjectRecognizerSrv RecognizerSrv.cpp pythonproxy.cpp)
+link_cast_component(${CAST_COMPONENT_NAME}
+   VisionData Video VideoUtils
+   )
+
 add_subdirectory(pysiftgpu/siftgpu)
 add_subdirectory(pysiftgpu/siftcuda)
 add_subdirectory(test)
