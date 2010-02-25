@@ -9,30 +9,37 @@
 #include <VideoClient.h>
 #include <VisionData.hpp>
 
+class CTestRecognizer;
+
+class CTestCase
+{
+public:
+   std::string m_name;
+   CTestRecognizer *m_pOwner;
+   CTestCase(std::string name, CTestRecognizer *pOwner) {
+      m_pOwner = pOwner;
+   }
+   virtual void runOneStep() { }
+   virtual void onStart() { }
+   virtual void onExitComponent() { }
+};
+
 class CTestRecognizer: public cast::ManagedComponent, public cast::VideoClient
 {
 private:
-   int testmode;
-   int nTasks;
+   CTestCase *m_pTestCase;
 
 public:
    CTestRecognizer();
+   ~CTestRecognizer();
 
 protected:
    virtual void start();
    virtual void runComponent();
    void configure(const std::map<std::string,std::string> & _config);
 
-   // Capture Recognition Task events
-   void onAdd_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onDelete_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onChange_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-
-   // Trigger recognition on some events
-   void onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
-
-   // Some helpers for testing
-   void _test_addRecognitionTask();
+public:
+   using cast::ManagedComponent::sleepComponent;
 };
 
 //class CommandListener: public cast::WorkingMemoryChangeReceiver 

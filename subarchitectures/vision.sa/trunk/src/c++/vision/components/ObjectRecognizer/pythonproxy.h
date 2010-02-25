@@ -6,13 +6,14 @@
 #ifndef _PYTHON_PROXY_H_
 #define _PYTHON_PROXY_H_
 
+#include <Python.h>
 #include <string>
 #include <vector>
 #include <map>
-#include <Python.h>
 
 #include <VideoClient.h>
 #include <VisionData.hpp>
+#include <ObjectRecognizerSrv.hpp>
 
 class CPyProxy
 {
@@ -26,8 +27,9 @@ public:
    CPyProxy();
    void configureRecognizer(const std::map<std::string,std::string> & _config);
    void initModule();
-   PyObject* processImage(Video::Image &image, const int *region);
-   void parseMatches(PyObject *pMatches, VisionData::ObjectRecognitionMatchPtr &imatch);
+   PyObject* processImage(const Video::Image &image, const int *region);
+   void parseMatches(PyObject *pMatches, VisionData::ObjectRecognitionMatchPtr &result);
+   void parseMatches(PyObject *pMatches, ObjectRecognizerIce::RecognitionResultSeq& result);
 };
 
 #endif

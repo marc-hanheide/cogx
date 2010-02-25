@@ -12,9 +12,9 @@
 #include <stdexcept>
 #include <cast/core/CASTComponent.hpp>
 
-#include "ObjectRecognizerSrv.hpp" // generated from ice
+#include <ObjectRecognizerSrv.hpp> // generated from ice
 
-namespace cogx_vision_or {
+namespace cogx { namespace vision {
 
 // Client and server must implement the abstract interface ObjectRecognizerMethods.
 // Methods are the ones implemented in ObjectRecognizerInterface,
@@ -22,8 +22,12 @@ namespace cogx_vision_or {
 class ObjectRecognizerMethods 
 {
 public:
-   virtual long GetSifts(const Video::Image&, ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&) = 0;
-   virtual void FindMatchingObjects(const Video::Image&, const cogx::Math::Rect2&, ObjectRecognizerIce::RecognitionResultSeq&) = 0;
+   virtual long GetSifts(const Video::Image&,
+         const int x0, const int y0, const int width, const int height,
+         ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&) = 0;
+   virtual void FindMatchingObjects(const Video::Image&,
+         const int x0, const int y0, const int width, const int height,
+         ObjectRecognizerIce::RecognitionResultSeq&) = 0;
 };
 
 
@@ -43,11 +47,24 @@ public:
 
 public:
    // ObjectRecognizerMethods
-   virtual long GetSifts(const Video::Image&, ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&);
-   virtual void FindMatchingObjects(const Video::Image&, const cogx::Math::Rect2&, ObjectRecognizerIce::RecognitionResultSeq&);
+   virtual long GetSifts(const Video::Image&,
+         const int left, const int top, const int width, const int height,
+         ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&) = 0;
+   virtual void FindMatchingObjects(const Video::Image&,
+         const int left, const int top, const int width, const int height,
+         ObjectRecognizerIce::RecognitionResultSeq&) = 0;
+   long GetSifts(const Video::Image& image,
+         ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors)
+   {
+      return GetSifts(image, 0, 0, 0, 0, features, descriptors);
+   }
+   void FindMatchingObjects(const Video::Image& image, ObjectRecognizerIce::RecognitionResultSeq& result)
+   {
+      FindMatchingObjects(image, 0, 0, 0, 0, result);
+   }
 
 
 };
 
-}; // namespace
+}; }; // namespace
 #endif

@@ -3,14 +3,13 @@
  * @created: feb 2010 
  */
 
-#include <Python.h>
+#include "pythonproxy.h"
+
 #include <numpy/arrayobject.h>
 #include <dlfcn.h>
 #ifndef PYTHON_LIB_NAME
 #define PYTHON_LIB_NAME "libpython2.6.so"
 #endif
-
-#include "pythonproxy.h"
 
 #define log printf
 #define println printf
@@ -146,8 +145,9 @@ void CPyProxy::initModule()
    PyGILState_Release(state);
 }
 
+
 // @returns pMatches: matches found with pose estimation
-PyObject* CPyProxy::processImage(Video::Image &image, const int *region)
+PyObject* CPyProxy::processImage(const Video::Image &image, const int *region)
 {
    PyObject *pMatches = NULL;
    int nchn = 3; // This should be a field in Image...
@@ -181,7 +181,8 @@ PyObject* CPyProxy::processImage(Video::Image &image, const int *region)
          PyObject* pimarray = NULL;
 
          // HACK: no need to copy: vision::image byte order is the same as numpy-array byte order (tested 20090608)
-         pimarray = PyArray_SimpleNewFromData(ndims, dims, NPY_UBYTE, &(image.data[0]));
+         void *pdata = const_cast<unsigned char*>(&(image.data[0]));
+         pimarray = PyArray_SimpleNewFromData(ndims, dims, NPY_UBYTE, pdata);
          PyTuple_SetItem(pArgs, 0, pimarray);
 
          if (region[2] > 0 && region[3] > 0) {
@@ -205,10 +206,9 @@ PyObject* CPyProxy::processImage(Video::Image &image, const int *region)
    return pMatches;
 }
 
+
 // parse the result and update the RecogntionTask
-// Format: ( [name, ...], [prob, ...] [pose, ...] )
-//    where pose = ndarray(n, 4), line = [ %, phi, lambda, theta ]
-//    the last pose may be None (for unknown object)
+// pMatches: see <url:#r=MatchesFormat>
 void CPyProxy::parseMatches(PyObject *pMatches, ObjectRecognitionMatchPtr &imatch)
 {
    if (PyTuple_Check(pMatches)) {
@@ -219,7 +219,7 @@ void CPyProxy::parseMatches(PyObject *pMatches, ObjectRecognitionMatchPtr &imatc
       }
       else {
          // if (testmode) ostr << "Result (" << len << ":";
-         for (int i = 0; i < len; i++) {
+         for (int i = 0; i < 3; i++) {
             PyObject *pList = PyTuple_GetItem(pMatches, i);
             //if (testmode)
             //   ostr << (PyList_Check(pList) ? " list " : " NOT-A-LIST ");
@@ -244,6 +244,51 @@ void CPyProxy::parseMatches(PyObject *pMatches, ObjectRecognitionMatchPtr &imatc
          //   ostr << ")";
          //   println(ostr.str());
          //}
+      }
+   }
+}
+
+
+// pMatches format: ( [name, ...], [prob, ...] [pose, ...] )     id=MatchesFormat
+//    where pose = ndarray(n, 4, float), line = [ %, phi, lambda, theta ]
+//    the last pose may be None (for unknown object)
+//    TODO: pose = list_[%, rotation_matrix] instead of array_[[ %, phi, lambda, theta ]]
+void CPyProxy::parseMatches(PyObject *pMatches, ObjectRecognizerIce::RecognitionResultSeq& results)
+{
+   if (PyTuple_Check(pMatches)) {
+      int len = PyTuple_Size(pMatches);
+      ostringstream ostr;
+      if (len != 3) {
+         println("Tuple of wrong size. Something went wrong.");
+      }
+      else {
+         PyObject *pNames = PyTuple_GetItem(pMatches, 0);
+         PyObject *pProbs = PyTuple_GetItem(pMatches, 1);
+         PyObject *pPoses = PyTuple_GetItem(pMatches, 2);
+         results.resize(len);
+         for (int i = 0; i < len; i++) {
+            ObjectRecognizerIce::RecognitionResult &res = results.at(i);
+
+            PyObject *label = PyList_GetItem(pNames, i);
+            res.label = string(PyString_AsString(label));
+
+            PyObject *prob = PyList_GetItem(pProbs, i);
+            res.probability = PyFloat_AsDouble(prob);
+            
+            PyObject *posearray = PyList_GetItem(pPoses, i);
+            if (posearray != Py_None) {
+               int nposes = PyArray_DIM(posearray, 0);
+               int nattrs = PyArray_DIM(posearray, 1); // nattrs should be 4
+               res.poses.resize(nposes);
+               res.posePd.resize(nposes);
+               for (int ip = 0; ip < nposes; ip++) {
+                  res.posePd[ip] = *(float*)PyArray_GETPTR2(posearray, ip, 0);
+                  res.poses[ip].phi = *(float*)PyArray_GETPTR2(posearray, ip, 1);
+                  res.poses[ip].lambda = *(float*)PyArray_GETPTR2(posearray, ip, 2);
+                  res.poses[ip].theta = *(float*)PyArray_GETPTR2(posearray, ip, 3);
+               }
+            }
+         }
       }
    }
 }

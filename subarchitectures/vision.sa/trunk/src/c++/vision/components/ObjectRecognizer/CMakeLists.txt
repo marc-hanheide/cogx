@@ -12,7 +12,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisionData Video VideoUtils
    ${PYTHON_LIBRARY})
 
-add_cast_component(ObjectRecognizerSrv RecognizerSrv.cpp pythonproxy.cpp)
+add_cast_component(ObjectRecognizerSrv RecognizerSrv.cpp RecognizerClient.cpp pythonproxy.cpp)
 link_cast_component(${CAST_COMPONENT_NAME}
    VisionData Video VideoUtils
    )
