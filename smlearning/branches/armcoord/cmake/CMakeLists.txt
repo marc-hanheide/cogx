@@ -163,6 +163,14 @@ SET(DATA_PLOT_TEST_SOURCE
         ${SMLEARNING_ROOT}/src/tools/data_plot_test.cpp
 )
 
+SET(CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/canonical_input_output_enumerator_test.cpp
+)
+
+SET(PRINT_DATASET_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/print_dataset.cpp
+)
+
 SET(N_FOLD_CVSETS_NETS_SOURCE
         ${SMLEARNING_ROOT}/src/tools/n_fold_cvsets_nets.cpp
 )
@@ -252,6 +260,8 @@ ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
+ADD_EXECUTABLE(canonical_input_output_enumerator_test ${CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE})
+ADD_EXECUTABLE(print_dataset ${PRINT_DATASET_SOURCE})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
 ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
@@ -267,6 +277,8 @@ INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS canonical_input_output_enumerator_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)

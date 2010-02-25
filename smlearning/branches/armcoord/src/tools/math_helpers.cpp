@@ -36,7 +36,4 @@ double fRand(double min, double max) {
 	return min + (max - min)*::rand()/RAND_MAX;
 }
 
-
-
-
 }; /* namespace smlearning */

@@ -188,11 +188,9 @@ public:
 		/** 2D motion constraint */
 		bool motion2D;
 
-		//a number that slightly greater then the maximal reachable space of the arm
-		//    - used for workspace position normalization and later as a position upper bound
-		//      for random polyflap position
+		/** assumed maximum range of polyflap X-coordinate location during the experiment */
 		Real maxRange;
-
+		
 		//minimal duration of a movement (by normal speed)
 		SecTmReal minDuration;
 		//Polyflap Position and orientation
@@ -271,6 +269,7 @@ public:
 	///
 	void run(int argc, char* argv[]);
 
+	friend DataSet canonical_input_output_enumerator (DataSet data);
 protected:
 	/** Description */
 	Desc desc;
@@ -294,8 +293,6 @@ protected:
 	/** Random number generator */
 	golem::Rand randomG;
 
-	/** assumed maximum range of polyflap X-coordinate location during the experiment */
-	Real maxRange;
 	/** iteration counter */
 	int iteration;
 	/** const number of SM regions */
@@ -343,12 +340,12 @@ protected:
 	///
 	///calculate position to direct the arm given parameters set in the learning scenario
 	///
-	void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
+	static void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
 
 	///
-	///calls setPointCoordinates for a discrete number of different actions
+	///calls setPointCoordinates for a discrete canonical number of different actions
 	///
-	void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+	static void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
 	
 	
 };

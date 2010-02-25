@@ -127,7 +127,7 @@ bool XMLData(Scenario::Desc &val, XMLContext* context, bool create) {
 	val.center = val.polyflapDimensions.v2*r;
 	//distance from the top of the polyflap
 	//const Real top = polyflapDimensions.v2* 1.2;
-	XMLData(val.top, context->getContextFirst("polyflapInteraction top"));
+	XMLData(r, context->getContextFirst("polyflapInteraction top"));
 	val.top = val.polyflapDimensions.v2 - r;
 	//lenght of the movement		
 	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
@@ -276,9 +276,9 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		/////////////////////////////////////////////////
 		//storing the feature vector
 
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(roll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(pitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(yaw, -REAL_PI, REAL_PI));
@@ -452,9 +452,9 @@ void Scenario::run(int argc, char* argv[]) {
 		/////////////////////////////////////////////////
 		//writing in the initial vector
 		//initial position, normalized
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
 		//initial orientation, normalized
 // 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
 // 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
@@ -471,7 +471,7 @@ void Scenario::run(int argc, char* argv[]) {
 				
 		/////////////////////////////////////////////////
 		//writing in the initial vector
-		learningData.currentMotorCommandVector.push_back(Real(speed));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(speed, 3.0, 5.0));
 		/////////////////////////////////////////////////
 
 		// Trajectory end pose equals begin + shift along Y axis
@@ -637,7 +637,7 @@ void Scenario::setPointCoordinates(Vec3& position, const Vec3& normalVec, const 
 }
 
 ///
-///calls setPointCoordinates for a discrete number of different actions
+///calls setPointCoordinates for a discrete canonical number of different actions
 ///
 void Scenario::setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
 

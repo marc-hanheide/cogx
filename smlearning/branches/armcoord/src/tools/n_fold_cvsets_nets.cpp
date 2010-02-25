@@ -6,7 +6,7 @@ using namespace smlearning;
 int main(int argc, char * argv[]) {
 	if (argc < 5) {
 		cerr << argv[0] << " sequence_file (without extension) target_dir basis/padding nr_cv_sets" << endl;
-		exit (0);
+		return 1;
 	}
 
 	DataSet savedData;
@@ -22,17 +22,7 @@ int main(int argc, char * argv[]) {
 		return 1;
 	}
 
-	boost::regex seqfile_re (".*/(.*)$");
-	boost::cmatch match;
-	string seqBaseFileName;
-	if (boost::regex_match(seqFile.c_str(), match, seqfile_re)) {
-		seqBaseFileName = string(match[1].first, match[1].second);
-	}
-	else
-		seqBaseFileName = seqFile;
-	cout << "seqBaseFileName: " << seqBaseFileName << endl;
-	cout << "seqFile: " << seqFile << endl;
-
+	string seqBaseFileName = get_seqBaseFileName (seqFile);
 
 	//print_dataset<double> (savedData);
 	//writing to nc file

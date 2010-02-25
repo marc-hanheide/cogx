@@ -110,7 +110,7 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 	val.center = val.polyflapDimensions.v2*r;
 	//distance from the top of the polyflap
 	//const Real top = polyflapDimensions.v2* 1.2;
-	XMLData(val.top, context->getContextFirst("polyflapInteraction top"));
+	XMLData(r, context->getContextFirst("polyflapInteraction top"));
 	val.top = val.polyflapDimensions.v2 - r;
 	//lenght of the movement		
 	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
@@ -199,16 +199,16 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		/////////////////////////////////////////////////
 		//storing the feature vector
 
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, maxRange));
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, maxRange));
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, maxRange));
+		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(efRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(efPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(efYaw, -REAL_PI, REAL_PI));
 
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
@@ -227,9 +227,9 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		}
 		loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
 		learner.feed_forward (*trainSeq);
-// 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange);
+// 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange);
 // 		learningData.currentPredictedPfSeq.push_back (predictedPfPose);
-		getPfEfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), maxRange, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+		getPfEfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
 	
 	}
 // 	if (bStop) {
@@ -395,9 +395,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		/////////////////////////////////////////////////
 		//writing in the initial vector
 		//initial position, normalized
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
 		//initial orientation, normalized
 // 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
 // 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
@@ -414,7 +414,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 				
 		/////////////////////////////////////////////////
 		//writing in the initial vector
-		learningData.currentMotorCommandVector.push_back(Real(speed));
+		learningData.currentMotorCommandVector.push_back(normalize<double>(speed, 3.0, 5.0));
 		/////////////////////////////////////////////////
 
 		// Trajectory end pose equals begin + shift along Y axis
