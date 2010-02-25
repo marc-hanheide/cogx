@@ -3,15 +3,18 @@
  * @created: feb 2010 
  */
 
+#include "RecognizerClient.h"
+
 #include <sstream>
 #include <Ice/Ice.h>
 #include <cast/core/CASTUtils.hpp>
 
-#include "RecognizerClient.h"
-
 using namespace std;
+using namespace cast;
 
-ObjectRecognizerClient::ObjectRecognizerClient()
+namespace cogx { namespace vision {
+
+ObjectRecognizerClient::ObjectRecognizerClient(	)
 {
    m_serverHost = "localhost";
    m_serverName = "";
@@ -37,7 +40,7 @@ void ObjectRecognizerClient::connectIceClient(cast::CASTComponent& owner)
 {
    if (m_Server)
       throw runtime_error(exceptionMessage(__HERE__,
-               "ObjectRecognizerClient already connected to server."));
+            "ObjectRecognizerClient already connected to server."));
 
    if (m_serverHost.empty())
       throw runtime_error(exceptionMessage(__HERE__, "no --recognizerhost given"));
@@ -50,12 +53,12 @@ void ObjectRecognizerClient::connectIceClient(cast::CASTComponent& owner)
    id.name = m_serverName;
    id.category = "ObjectRecognizer"; // same as in <URL:RecognizerSrv.cpp#::startIceServer>
    serverAddr << owner.getCommunicator()->identityToString(id)
-     << ":default -h " << m_serverHost << " -p " << m_serverPort;
+         << ":default -h " << m_serverHost << " -p " << m_serverPort;
  
    Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(serverAddr.str());
    // mz: doing a checkedCast here freezes the server
    // stereoServer = Stereo::StereoInterfacePrx::checkedCast(base);
-   m_Server = ObjectRecognizerIce::ObjectRecognizerInterfacePrx(base);
+   m_Server = ObjectRecognizerIce::ObjectRecognizerInterfacePrx::uncheckedCast(base);
    if (!m_Server)
       throw runtime_error(exceptionMessage(__HERE__,
             "failed to connect to ObjectRecognizer server: %s",
@@ -64,16 +67,18 @@ void ObjectRecognizerClient::connectIceClient(cast::CASTComponent& owner)
 
 
 long ObjectRecognizerClient::GetSifts(const Video::Image& image,
-      ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq&, descriptors)
+      const int x0, const int y0, const int width, const int height,
+      ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors)
 {
-   return m_Server->GetSifts(image, features, descriptors);
+   return m_Server->GetSifts(image, x0, y0, width, height, features, descriptors);
 }
 
 
 void ObjectRecognizerClient::FindMatchingObjects(const Video::Image& image,
-      const cogx::Math::Rect2& region,
-      ObjectRecognizerIce::RecognitionResultSeq&, result)
+      const int x0, const int y0, const int width, const int height,
+      ObjectRecognizerIce::RecognitionResultSeq& result)
 {
-   m_Server->FindMatchingObjects(image, region, result);
+   m_Server->FindMatchingObjects(image, x0, y0, width, height, result);
 }
 
+};}; // namespace
