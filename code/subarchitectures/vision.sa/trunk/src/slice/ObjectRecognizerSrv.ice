@@ -11,9 +11,9 @@ module ObjectRecognizerIce {
 
    // simple object pose
    struct ObjectPose {
-      double omega;
       double phi;
-      double rotation;
+      double lambda;
+      double theta;
    };
    sequence<ObjectPose> ObjectPoseSeq;
 
@@ -31,10 +31,11 @@ module ObjectRecognizerIce {
       //    out features: array with 4*n elements (order: X, Y, Scale, Rotation)
       //    out descriptors: array with 128*n elements (values in range: 0-0.5)
       long GetSifts(Video::Image image,
+            int left, int top, int width, int height,
             out FloatSeq features, out FloatSeq descriptors);
 
-      void FindMatchingObjects(
-            Video::Image image, cogx::Math::Rect2 region,
+      void FindMatchingObjects(Video::Image image,
+            int left, int top, int width, int height,
             out RecognitionResultSeq recognized);
    };
 };
