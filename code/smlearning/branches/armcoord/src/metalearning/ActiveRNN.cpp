@@ -82,7 +82,7 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostr
 		out << seq;
 	}
 	double error;
-	for (int i=0; i<10; i++) {
+	for (int i=0; i<1000; i++) {
 // 	int i = 0;
 // 	do {
 		error = net->train(seq);

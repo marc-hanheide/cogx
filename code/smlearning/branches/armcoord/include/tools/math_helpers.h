@@ -31,6 +31,7 @@
 #include <math.h>
 #include <Math.h>
 #include <stdlib.h>
+#include <Vec3.h>
 
 using namespace golem;
 
@@ -58,7 +59,7 @@ R normalize(R const& value, R const& min, R const& max) {
 
 template <typename R>
 R denormalize (R const& value, R const& min, R const& max) {
-	return (value + 1.0)/2*(max-min)+min;
+	return (value + 1.0)/2.0*(max-min)+min;
 }
 
 ///
@@ -74,7 +75,7 @@ V computeOrthogonalVec(V const& normalVec) {
 }
 
 ///
-///compute the normal vector for vector1 with respect to vector2
+///compute a difference vector
 ///
 template <typename V>
 V computeNormalVector(V const& vector1, V const& vector2) {
@@ -117,6 +118,23 @@ void rotZ(M& m, R angle) {
 ///generate random double nr. between min and max
 ///
 double fRand(double min = 0., double max = 1.);
+
+///
+///function that serves as a comparator for 2 vectors
+///
+class compare_Vec3 { // simple comparison function
+public:
+	bool operator()(const Vec3& v1, const Vec3& v2) {
+		Real epsilon = 1e-8;
+		if (((v1.v1 - epsilon) < v2.v1) && (v2.v1 < (v1.v1 + epsilon)) &&
+		    ((v1.v2 - epsilon) < v2.v2) && (v2.v2 < (v1.v2 + epsilon)) &&
+		    ((v1.v3 - epsilon) < v2.v3) && (v2.v3 < (v1.v3 + epsilon)))
+			return false;
+		
+		return v1.magnitude() < v2.magnitude();
+	}
+};
+
 
 }; /* smlearning namespace */
 

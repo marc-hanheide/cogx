@@ -23,6 +23,8 @@
 */
 
 #include <tools/data_handling.h>
+#include <metalearning/Scenario.h>
+
 
 namespace smlearning {
 
@@ -191,7 +193,7 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 					targetPatternsStr << *n;
 				}
 				//zero padding
-				for (int i=0; i<paddingSize; i++)
+  				for (int i=0; i<paddingSize; i++)
 					targetPatternsStr << ", 0";
 				if (v+1 == (*s).end() && s+1 == data.end())
 					targetPatternsStr << ";";
@@ -608,13 +610,187 @@ string writeDownCollectedData(DataSet data) {
 	name.append(buffer);
 
 	
-	write_dataset(name  , data);
+	write_dataset(name, data);
 
 	return name;
 	//DataSet savedData;
 	//read_dataset(name, savedData);
 	//print_dataset<double> (savedData);
 }
+
+///
+///a utility function to obtain the file name from a possibly large path/file pattern
+///
+string get_seqBaseFileName (string seqFile) {
+	boost::regex seqfile_re (".*/(.*)$");
+	boost::cmatch match;
+	string seqBaseFileName;
+	if (boost::regex_match(seqFile.c_str(), match, seqfile_re)) {
+		seqBaseFileName = string(match[1].first, match[1].second);
+	}
+	else
+		seqBaseFileName = seqFile;
+	cout << "seqBaseFileName: " << seqBaseFileName << endl;
+	cout << "seqFile: " << seqFile << endl;
+	return seqBaseFileName;
+}
+
+///
+///enumerate a dataset
+///
+DataSet canonical_input_output_enumerator (DataSet data) {
+
+	//generate all possible polyflap poses
+	//TODO: the following data should be obtained from an xml file
+
+	//a number that slightly greater then the maximal reachable space of the arm
+	//    - used for workspace position normalization and later as a position upper bound
+	//      for random polyflap position
+	Real maxRange = 0.4;
+
+	//Polyflap Position and orientation
+	const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
+	const Vec3 startPolyflapRotation(Real(0.0*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));//Y,X,Z
+	//Polyflap dimensions		
+	const Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
+		
+
+// 	//vertical distance from the ground
+// 	const Real over = 0.01;
+	//vertical distance from the ground considering fingertip radius
+	Real over = 0.002 + 0.015;
+	//distance from the front/back of the polyflap
+	const Real dist = 0.05;
+	//distance from the side of the polyflap
+	const Real side = polyflapDimensions.v1*0.6;
+	//center of the polyflap
+	const Real center = polyflapDimensions.v2*0.6;
+	//distance from the top of the polyflap
+	//const Real top = polyflapDimensions.v2* 1.2;
+	const Real top = polyflapDimensions.v2 - 0.02;
+	//lenght of the movement		
+	const Real distance = 0.2;
+
+	//initialization of arm target: the center of the polyflap
+	Vec3 positionT (0.2, 0.2, 0.001);
+	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
+	Vec3 polyflapNormalVec = computeNormalVector(Vec3 (0.2, 0.2, 0.0),Vec3 (0.2, 0.25, 0.0));			
+	Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);
+
+	map<Vec3, int, compare_Vec3> positionsT;
+	
+
+	int smRegionsCount = 18;
+	for (int i=1; i <= smRegionsCount; i++) {
+		//arm target update
+		
+		Vec3 pos (positionT);
+		Scenario::setCoordinatesIntoTarget(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		positionsT[pos] = i;
+		
+	}
+
+	map<Vec3, int>::const_iterator it;
+	cout << "map size: " << positionsT.size() << endl;
+	for (it = positionsT.begin(); it != positionsT.end(); it++) {
+		cout << "can. pos.: "  << it->second  << ": stored start. pos.: "  << it->first.v1 << " " << it->first.v2 << " " << it->first.v3 << endl;
+	}
+
+
+	//Construct a new data set using a simple artificial discretization
+	//A canonical set of starting positions are obtained (i.e. the 18)
+	//Only polyflap poses are extracted
+	DataSet newdata;
+	DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		Sequence::const_iterator v;
+		Sequence newsequence;
+
+		for (v=(*s).begin(); v!= (*s).end(); v++) {
+			FeatureVector newfeaturevector;
+			long featvectorSize = (*v).size();
+			if (v == (*s).begin() ) {
+				assert (featvectorSize == 5);
+				golem::Vec3 startingPosition;
+				startingPosition.v1 = denormalize((*v)[0],0.0,maxRange);
+				startingPosition.v2 = denormalize((*v)[1],0.0,maxRange);
+				startingPosition.v3 = denormalize((*v)[2],0.0,maxRange);
+// 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
+				
+				int canonical_start_pos = positionsT.find (startingPosition)->second;
+				cout << canonical_start_pos << " ";
+				Vec3 sp = positionsT.find (startingPosition)->first;
+				newfeaturevector.push_back (canonical_start_pos);
+				newfeaturevector.push_back ((*v)[3]);
+				newfeaturevector.push_back ((*v)[4]);				
+			}
+			else if (v != (*s).begin() ) {
+				assert ((v+1 == (*s).end() && featvectorSize == 1) || featvectorSize == 12 || featvectorSize == 6 );
+				if (featvectorSize == 6)
+					newfeaturevector = *v;
+				else if (featvectorSize == 12)
+					for (int i=6; i<12; i++)
+						newfeaturevector.push_back((*v)[i]);
+				else if (featvectorSize == 1)
+					newfeaturevector = *v;
+
+					
+			}
+			newsequence.push_back (newfeaturevector);
+		}
+		newdata.push_back (newsequence);
+	}
+	cout << endl;
+
+	return newdata;
+	
+}
+
+
+
+///
+///write a dataset in cryssmex format
+///
+void write_dataset_cryssmex_fmt (string writeFileName, DataSet data, bool input_on_vector_format, bool output_on_vector_format) {
+
+	//assuming an input(output) vector be symbolic, then its dimensionality should be 0
+	//according to CrySSMEx format
+	//The following code assumes that an output is stored in the last vector of a sequence
+	int inputVectorSize = 0;
+	int outputVectorSize = 0;
+	if (input_on_vector_format) //not symbolic
+		inputVectorSize = data[0][0].size();
+	int stateVectorSize = data[0][1].size();
+	if (output_on_vector_format) //not symbolic
+		int outputVectorSize = data[0][data[0].size()-1].size();
+
+	ofstream writeFile(writeFileName.c_str(), ios::out);
+
+	writeFile << inputVectorSize << endl;
+	writeFile << stateVectorSize << endl;
+	writeFile << outputVectorSize << endl;
+	
+	DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		Sequence::const_iterator v;
+
+		for (v=(*s).begin(); v!= (*s).end(); v++) {
+			FeatureVector::const_iterator n;
+			long featvectorSize = (*v).size();
+			if (v == (*s).begin() )
+				assert (!input_on_vector_format == (featvectorSize == 1));
+
+			for (n=(*v).begin(); n!= (*v).end(); n++) {
+				writeFile << *n << "  ";
+			}
+		}
+		writeFile << endl;
+	}
+
+	
+}
+
+
 
 
 };

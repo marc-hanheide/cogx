@@ -60,7 +60,7 @@
 		<y>0.1</y>
 		<z>0.1</z>
 	</polyflapDimensions>
-	<over>0.002 + 0.015</over>
+	<over>0.017</over>
 	<dist>0.05</dist>
 	<side>0.6</side>
 	<center>0.6</center>

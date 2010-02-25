@@ -39,11 +39,20 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 
+#include <Vec3.h>
+
+#include <tools/math_helpers.h>
+
 using namespace std;
 using namespace boost::filesystem;
+using namespace golem;
 
 namespace smlearning {
 
+///
+///this representation should also allow for labels, i.e., a vector of size 1
+///properly discretized
+///
 typedef vector<double> FeatureVector;
 typedef vector<FeatureVector> Sequence;
 typedef vector<Sequence> DataSet;
@@ -238,6 +247,22 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 ///write collected data in an experiment and returns file name
 ///
 string writeDownCollectedData(DataSet data);
+
+///
+///a utility function to obtain the file name from a possibly large path/file pattern
+///
+string get_seqBaseFileName (string seqFile);
+
+///
+///artificially discretize (enumerate) a dataset using a simple representation
+///
+DataSet canonical_input_output_enumerator (DataSet data);
+
+///
+///write a dataset in cryssmex format
+///
+void write_dataset_cryssmex_fmt (string writeFileName, DataSet data, bool input_on_vector_format = true, bool output_on_vector_format = true);
+
 
 
 }; /* smlearning namespace */
