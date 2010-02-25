@@ -128,7 +128,8 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
       }
       log("TEST MODE: %s", testmode.c_str());
    }
-   else if((it = _config.find("--delay")) != _config.end()) {
+
+   if((it = _config.find("--delay")) != _config.end()) {
       string delay;
       istringstream istr(it->second);
       istr >> delay;
