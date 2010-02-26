@@ -91,7 +91,7 @@ namespace spatial
     double pFree,pObs,pPlanar,pIn,pOut;
     double m_ProbGivenObjectIsPresent;
     std::vector<std::string> m_objectlist;
-
+    std::set<std::pair<int,int> >  m_AllPlanePoints;
 
     IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;
