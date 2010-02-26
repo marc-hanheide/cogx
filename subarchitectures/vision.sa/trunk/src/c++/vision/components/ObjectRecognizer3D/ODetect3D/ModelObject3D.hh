@@ -36,7 +36,7 @@ public:
 
   void AddToModel(Array<KeypointDescriptor *> &keys, Object3D &obj);
   void SaveModel(const char *filename, Object3D &obj);
-  void LoadModel(const char *filename, Object3D &obj);
+  bool LoadModel(const char *filename, Object3D &obj);
 };
 
 /*********************** INLINE METHODES **************************/
