@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "tgEngine.h"
+#include "tgFont.h"
 #include "tgRenderModel.h"
 #include "tgBasicGeometries.h"
 
@@ -27,6 +28,8 @@ int main(int argc, char *argv[])
 
 	tgEngine render;
 	render.Init(640,480,1.0,"TomGine Render Engine",true);
+
+	tgFont m_font("/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf");
 
 	// Load Model
 	// for more materials visit: http://wiki.delphigl.com/index.php/Materialsammlung
@@ -49,7 +52,9 @@ int main(int argc, char *argv[])
 	// Rendering loop
 	while(render.Update(fTime)){
 		cylinder.DrawFaces();
-		
+
+		render.Activate2D();
+		m_font.Print("TomGine Render Engine", 18, 5, 5);
 	}
 	
 	return 0;

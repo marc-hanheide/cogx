@@ -46,7 +46,7 @@ void tgEngine::Welcome(){
 	printf("\n");
 }
 
-bool tgEngine::InitWindow(int width, int height, const char* name){
+bool tgEngine::InitWindow(int width, int height, const char* name){	
 	m_window = new tgGLXWindow(width, height, name);
 }
 
@@ -56,9 +56,10 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 	m_depth = depth;
 	m_bfc = bfc;
 	
+	// Create render context
 	InitWindow(width, height, name);
 		
-	// Setup camera
+	// Setup 3D camera
 	float da = sqrt(pow(depth,2)/3.0);
 	m_camera.Set(	da, da, da,									// Position of camera
 								0.0, 0.0, 0.0,							// Point where camera looks at
@@ -68,6 +69,7 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 								GL_PERSPECTIVE);						// Perspective camera
 	m_camera0 = m_camera;
 	
+	// Setup 2D camera
 	m_cam_ortho.Set(	0.0, 0.0, 1.0,
 										0.0, 0.0, 0.0,
 										0.0, 1.0, 0.0,
@@ -89,14 +91,7 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 	light1.specular = vec4(0.2,0.2,0.2,1.0);
 	light1.position = vec4(-1.0,0.0,1.0,0.0);
 	m_lighting.ApplyLight(light1,1);
-	
-	if(m_bfc) glEnable(GL_CULL_FACE);
-	else			glDisable(GL_CULL_FACE);
-	glClearDepth(1);
-	glEnable(GL_DEPTH_TEST);
-	
-	//
-	Update(m_frametime);
+
 }
 
 bool tgEngine::Update(float &fTime){
@@ -168,10 +163,10 @@ bool tgEngine::InputControl(){
 						m_button_right = true;
 						break;
 					case Button4:
-						m_camera.TranslateF(10.0*m_depth*m_frametime);
+						m_camera.TranslateF(0.02*m_depth);
 						break;
 					case Button5:
-						m_camera.TranslateF(-10.0*m_depth*m_frametime);
+						m_camera.TranslateF(-0.02*m_depth);
 						break;
 				}
 				break;
@@ -197,11 +192,11 @@ bool tgEngine::InputControl(){
 				m_mouse_pos[1] = event.motion.y;
 				
 				if(m_button_left){
-					m_camera.Orbit(m_cor, m_camera.GetU(), -5*m_frametime * event.motion.x_rel);
-					m_camera.Orbit(m_cor, m_camera.GetS(), -5*m_frametime * event.motion.y_rel);					
+					m_camera.Orbit(m_cor, m_camera.GetU(), -0.05 * event.motion.x_rel);
+					m_camera.Orbit(m_cor, m_camera.GetS(), -0.05 * event.motion.y_rel);					
 				}else if(m_button_right){
-					m_camera.TranslateS(-0.2*m_depth*m_frametime*event.motion.x_rel);
-					m_camera.TranslateU(0.2*m_depth*m_frametime*event.motion.y_rel);
+					m_camera.TranslateS(-0.002*m_depth*event.motion.x_rel);
+					m_camera.TranslateU(0.002*m_depth*event.motion.y_rel);
 				}
 				break;
 				
@@ -257,7 +252,6 @@ void tgEngine::DrawCoordinates(){
 void tgEngine::Activate3D(){
 	if(m_bfc) glEnable(GL_CULL_FACE);
 	else			glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
 	m_camera.ApplyTransform();
 	m_camera.Activate();
 	m_lighting.Activate();
@@ -265,7 +259,6 @@ void tgEngine::Activate3D(){
 
 void tgEngine::Activate2D(){
 	glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
 	m_cam_ortho.Activate();
 	m_lighting.Deactivate();
 }
