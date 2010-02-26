@@ -917,7 +917,7 @@ namespace spatial
             aftersum += (*m_lgm_posterior)(x,y);
           }
     }
-
+    aftersum += pOut;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
               for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
                 (*m_lgm_posterior)(x,y) = (*m_lgm_posterior)(x,y)*initsum / aftersum;
