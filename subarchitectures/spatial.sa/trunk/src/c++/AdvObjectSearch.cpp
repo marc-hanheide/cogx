@@ -285,7 +285,7 @@ namespace spatial
         log("Reading plane map!");
         int length;
         char * buffer;
-        m_Mutex.lock();
+	// m_Mutex.lock();
         ifstream file("planemap.txt");
 
         file.seekg(0, ios::end);
@@ -323,11 +323,9 @@ namespace spatial
             }
           }
         }
-        PlaneObservationUpdate(NewPlanePoints);
-       // addToWorkingMemory<SpatialData::PlanePoints> (newDataID(), PlanePoints);
-        /* Post to WM so that it's visible in PB END*/
-
+    
         SetPrior();
+	PlaneObservationUpdate(NewPlanePoints);
 
         /* Display Prior in PB BEGIN */
         /*  double color[3] = { 0.9, 0.9, 0 };
@@ -525,7 +523,7 @@ namespace spatial
 
       SpatialData::PlanePointsPtr objData = getMemoryEntry<
           SpatialData::PlanePoints> (objID.address);
-
+      log("Got new plane points");
       //TODO: Add plane points to m_lgm
       //add plane points
       int xG, yG; //grid coordinates
@@ -566,27 +564,16 @@ namespace spatial
       }
     }
 
-    double uFree, uObs, uPlanar;
+    double uFree, uObs, uPlanar,uUnit;
     uFree = pFree / TypeCount[0];
     uObs = pObs / TypeCount[1];
     uPlanar = pPlanar / TypeCount[2];
-
+    uUnit = pIn / (TypeCount[0] + TypeCount[1] +TypeCount[2]);
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 0) {
-          (*m_lgm_prior)(x, y) = uFree;
-          (*m_lgm_posterior)(x, y) = uFree;
+	if ((*m_lgm_posterior)(x,y) != 2)
+	  (*m_lgm_posterior)(x,y) = uUnit;
         }
-        else if ((*m_lgm)(x, y) == 1) {
-          (*m_lgm_prior)(x, y) = uObs;
-          (*m_lgm_posterior)(x, y) = uObs;
-        }
-        //else if ((*m_lgm)(x, y) == 3) {
-        //  (*m_lgm_prior)(x, y) = uPlanar;
-       //   (*m_lgm_posterior)(x, y) = uPlanar;
-       // }
-
-      }
     }
 
     /* DEBUG */
