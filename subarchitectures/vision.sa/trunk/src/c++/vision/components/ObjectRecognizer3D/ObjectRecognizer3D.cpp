@@ -124,16 +124,17 @@ void ObjectRecognizer3D::runComponent(){
   			m_rec_cmd = m_recCommandList.front();
   			m_task = m_rec_cmd->cmd;
   			m_label = m_rec_cmd->label;
-  			if(m_rec_cmd->cmd == RECLEARN && m_rec_cmd->visualObjectID.empty()){
+  			
+				if(m_rec_cmd->cmd == RECOGNIZE && m_recEntries[m_label].learn){
+					log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
+					m_rec_cmd->cmd = RECLEARN;
+					m_task = RECLEARN;
+				}
+				if(m_rec_cmd->cmd == RECLEARN && m_rec_cmd->visualObjectID.empty()){
   				log("%s: Warning no VisualObject given", m_label.c_str());
   				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, Math::Pose3(), m_label);
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
-				if(m_rec_cmd->cmd == RECOGNIZE && m_recEntries[m_label].learn){
-					log("%s: Warning no Sift file available: starting to learn", m_label.c_str());
-					m_rec_cmd->cmd == RECLEARN;
-					m_task = RECLEARN;
-				}
 				
   			m_recCommandList.erase(m_recCommandList.begin());
   			m_starttask = true;
