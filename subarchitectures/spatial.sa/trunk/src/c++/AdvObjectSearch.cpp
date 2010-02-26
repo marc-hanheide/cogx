@@ -939,6 +939,45 @@ namespace spatial
 
        /* DEBUG */
 
+
+       /* Display Posterior in PB as Line Cloud BEGIN */
+
+       double multiplier1 = 200.0;
+       double xW2, yW2, xW3, yW3;
+       peekabot::LineCloudProxy linecloudp;
+
+       linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
+           peekabot::REPLACE_ON_CONFLICT);
+       linecloudp.clear_vertices();
+       linecloudp.set_line_width(2);
+       linecloudp.set_color(0.9, 0, 0);
+
+       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+           if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
+             continue;
+           m_lgm->index2WorldCoords(x, y, xW2, yW2);
+           m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
+           linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
+               * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+               * multiplier1);
+         }
+       }
+
+       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+           if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+             continue;
+           m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
+           m_lgm->index2WorldCoords(x, y, xW3, yW3);
+           linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
+               * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
+               * multiplier1);
+         }
+       }
+       /* Display Posterior in as line cloud PB END */
+
+
   }
   void
   AdvObjectSearch::SampleGrid() {
