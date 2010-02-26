@@ -307,9 +307,14 @@ namespace spatial
         PlanePoints = new SpatialData::PlanePoints;
         cogx::Math::Vector3 point;
         double wX, wY;
+              std::pair<int, int> CoordPair;
+              std::set<std::pair<int,int> >  NewPlanePoints;
         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
             if ((*m_lgm)(x, y) == 3) {
+              CoordPair.first = x;
+              CoordPair.second = y;
+              NewPlanePoints.insert(CoordPair);
               m_lgm->index2WorldCoords(x, y, wX, wY);
               point.x = wX;
               point.y = wY;
@@ -318,7 +323,8 @@ namespace spatial
             }
           }
         }
-        addToWorkingMemory<SpatialData::PlanePoints> (newDataID(), PlanePoints);
+        PlaneObservationUpdate(NewPlanePoints);
+       // addToWorkingMemory<SpatialData::PlanePoints> (newDataID(), PlanePoints);
         /* Post to WM so that it's visible in PB END*/
 
         SetPrior();
@@ -525,6 +531,7 @@ namespace spatial
       int xG, yG; //grid coordinates
       float x, y;
       std::pair<int, int> CoordPair;
+      std::set<std::pair<int,int> >  NewPlanePoints;
       log("points size: %d", objData->points.size());
       for (unsigned int i = 0; i < objData->points.size(); i++) {
         x = objData->points.at(i).x;
@@ -533,10 +540,10 @@ namespace spatial
         (*m_lgm)(xG, yG) = 3;
         CoordPair.first = xG;
         CoordPair.second = yG;
-        m_NewPlanePoints.insert(CoordPair);
+        NewPlanePoints.insert(CoordPair);
         // TODO: do not initialize PDF with fixed value if on the fly adding of planes is on.
       }
-      PlaneObservationUpdate();
+      PlaneObservationUpdate(NewPlanePoints);
     }
     catch (DoesNotExistOnWMException) {
       log("Error! plane point cloud disappeared from WM.");
@@ -832,7 +839,7 @@ namespace spatial
   }
 
   void
-  AdvObjectSearch::PlaneObservationUpdate() {
+  AdvObjectSearch::PlaneObservationUpdate(std::set<std::pair<int,int> >  NewPlanePoints) {
     // say plane probability is .8
 
 
@@ -883,12 +890,12 @@ namespace spatial
 
     // For a new plane observation shift probabilities accordingly
     std::pair<int, int> tmp;
-    std::set<pair<int, int> >::iterator end = m_NewPlanePoints.end();
+    std::set<pair<int, int> >::iterator end = NewPlanePoints.end();
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         tmp.first = x;
         tmp.second = y;
-        if (m_NewPlanePoints.find(tmp) != end) { // this is a new plane point
+        if (NewPlanePoints.find(tmp) != end) { // this is a new plane point
           (*m_lgm_posterior)(x, y) = m_pPlaneGivenObj
               * (*m_lgm_posterior)(x, y) / (m_pPlaneGivenObj
               * (*m_lgm_posterior)(x, y) + m_pPlaneGivenNotObj
@@ -944,9 +951,6 @@ namespace spatial
        log("posterior + Cout sums to: %f", sumin + pOut);
 
        /* DEBUG */
-
-
-    m_NewPlanePoints.clear();
 
   }
   void
