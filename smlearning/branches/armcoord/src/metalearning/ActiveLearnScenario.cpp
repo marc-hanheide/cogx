@@ -489,6 +489,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		FeatureVector polyflapEndState;
 		polyflapEndState.push_back(polState);
+		cout << "Polyflap end state: " << polState << endl;
 		/////////////////////////////////////////////////
 		//writing the polyflap end state into the sequence
 		learningData.currentSeq.push_back(polyflapEndState);
