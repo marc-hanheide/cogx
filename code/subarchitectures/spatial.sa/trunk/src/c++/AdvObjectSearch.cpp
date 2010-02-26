@@ -366,7 +366,7 @@ namespace spatial
       }
     }
 
-    unlockComponent();
+    //unlockComponent();
     sleepComponent(100);
 
   }
