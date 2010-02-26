@@ -25,9 +25,7 @@
 
 namespace TomGine{
 
-/**
-* @brief Class tgGLXWindow
-*/
+/** @brief Class tgGLXWindow */
 class tgGLXWindow{
 private:
   Display                 *dpy;
@@ -46,8 +44,14 @@ private:
 public:
 	tgGLXWindow(int width, int height, const char* name="GLX Window");
 	~tgGLXWindow();
+	
+	/** @brief Activate window for usage */
+	void Activate();
+
+	/** @brief Swap OpenGL Buffer */
 	void Swap();
 	
+	/** @brief Query event from GLX */
 	bool CheckXEvent(tgEvent &event);
 };
 

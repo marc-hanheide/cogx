@@ -59,6 +59,10 @@ tgGLXWindow::~tgGLXWindow(){
 	XCloseDisplay(dpy);
 }
 
+void tgGLXWindow::Activate(){
+	glXMakeCurrent(dpy, glWin, glc);
+}
+
 void tgGLXWindow::Swap(){
 	glXSwapBuffers(dpy, glWin);
 	usleep(10000);
