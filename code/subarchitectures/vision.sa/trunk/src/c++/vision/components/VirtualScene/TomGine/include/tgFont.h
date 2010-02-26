@@ -3,6 +3,7 @@
  * @author Thomas Mörwald
  * @date October 2009
  * @version 0.1
+ * @link file:///usr/share/doc/libftgl-dev/html/index.html FTGL User Guide
  * @brief Main file of rendering engine 'TomGine'.
  * @namespace TomGine
  */
