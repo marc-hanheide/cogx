@@ -539,10 +539,14 @@ namespace spatial
         (*m_lgm)(xG, yG) = 3;
         CoordPair.first = xG;
         CoordPair.second = yG;
-        NewPlanePoints.insert(CoordPair);
+        if (m_AllPlanePoints.find(CoordPair) != m_AllPlanePoints.end()){
+          m_AllPlanePoints.insert(CoordPair);
+          NewPlanePoints.insert(CoordPair);
+        }
         // TODO: do not initialize PDF with fixed value if on the fly adding of planes is on.
       }
-      PlaneObservationUpdate(NewPlanePoints);
+      if (NewPlanePoints.size() > 0)
+        PlaneObservationUpdate(NewPlanePoints);
     }
     catch (DoesNotExistOnWMException) {
       log("Error! plane point cloud disappeared from WM.");
