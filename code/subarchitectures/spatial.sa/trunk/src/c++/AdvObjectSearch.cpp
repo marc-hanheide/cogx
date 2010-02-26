@@ -275,6 +275,7 @@ namespace spatial
       else if (key == 116) {
         log("Table mode!");
         m_table_phase = true;
+	SetPrior();
       }
       else if (key == 112) {
         log("Getting next view");
@@ -517,8 +518,8 @@ namespace spatial
   AdvObjectSearch::newPlanePointCloud(
       const cast::cdl::WorkingMemoryChange &objID) {
     debug("new PlanePointCloud received.");
-    //if (!m_table_phase)
-    //  return;
+    if (!m_table_phase)
+      return;
     try {
 
       SpatialData::PlanePointsPtr objData = getMemoryEntry<
@@ -850,14 +851,18 @@ namespace spatial
     m_pObsGivenNotObj = 0.15;
 
     double initsum, aftersum;
-    initsum = pOut;
-    aftersum = pOut;
+    initsum = 0.0;
+    aftersum = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            initsum += (*m_lgm_posterior)(x,y);
+	    if ((*m_lgm)(x,y) == 2)
+	      continue;
+	    initsum += (*m_lgm_posterior)(x,y);
+	    
           }
     }
-
+    initsum += pOut;
+    log("initsum: %f",initsum);
 
     /* DEBUG */
     double sumin = 0.0;
@@ -914,16 +919,18 @@ namespace spatial
     // Get Sum after update
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            aftersum += (*m_lgm_posterior)(x,y);
+	    if((*m_lgm)(x,y) != 2)
+	      aftersum += (*m_lgm_posterior)(x,y);
           }
     }
     aftersum += pOut;
+    log("aftersum is: %f",aftersum);
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
               for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                (*m_lgm_posterior)(x,y) = (*m_lgm_posterior)(x,y)*initsum / aftersum;
+                (*m_lgm_posterior)(x,y) = (*m_lgm_posterior)(x,y)/ aftersum;
               }
         }
-    pOut = pOut*initsum/aftersum;
+    pOut = pOut/aftersum;
 
     /* DEBUG */
        sumin = 0.0;
