@@ -25,6 +25,7 @@
 
 #define DISTLEN 1000
 #define NUM_SPREAD_LOOPS 5
+#define MAX_KERNEL_SIZE 5
 
 /** @brief namespace Tracking */
 namespace Tracking{
@@ -46,6 +47,7 @@ protected:
 		unsigned int m_spreadlvl;		// Width of edges in pixels (automatically adjusted)
 		Particle variation;					// standard deviation of particle distribution in meter
 		float minTexGrabAngle;			// Angular threshold between view vector and face normal for grabing texture
+		int kernel_size;
 		std::string modelPath;
 		std::string texturePath;
 		std::string shaderPath;

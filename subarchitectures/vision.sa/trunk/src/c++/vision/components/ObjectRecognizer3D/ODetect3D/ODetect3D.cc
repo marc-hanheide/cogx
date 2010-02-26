@@ -280,7 +280,6 @@ void ODetect3D::FitModelRANSAC(Array<KeyClusterPair*> &matches, PoseCv &pose, un
 /**
  * Get best supporting corner of a matching codebook entry
  */
-static int numboutl=0;
 bool ODetect3D::GetBestCorner(PoseCv &pose, KeypointDescriptor *k, CodebookEntry *cbe, Point3D &pos, double &minDist)
 {
   Vector2 p;
@@ -305,16 +304,10 @@ bool ODetect3D::GetBestCorner(PoseCv &pose, KeypointDescriptor *k, CodebookEntry
     }
   }
 
-  //cvReleaseMat(&tempPos);
+  cvReleaseMat(&tempPos);
 
   if (minDist < Def::DO_RANSAC_INL_DIST)
-  {
-if (tempPos->data.fl[2]<0) numboutl++;
-cvReleaseMat(&tempPos);
-
     return true;
-  }
-cvReleaseMat(&tempPos);
 
   return false;
 }

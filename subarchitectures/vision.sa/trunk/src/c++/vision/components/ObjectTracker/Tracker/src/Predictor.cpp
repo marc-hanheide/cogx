@@ -91,6 +91,7 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 	int n, id, i, nid=0;
 	float sigma = 0.01;
 	float c=0.0;
+	float cn=0.0;
 	
 	float partition = 0.9;
 	
@@ -108,6 +109,10 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 		
 		// resampling according to weight
 		c = particlelist_tmp[id].c;
+		if(d.getMaxC()>0.1){
+			cn = c / d.getMaxC();
+			c = c*(1.0-c) + cn*c;
+		}
 		n = round(particlelist_tmp[id].w * num_particles);
 		
 		
