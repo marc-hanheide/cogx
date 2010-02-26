@@ -14,9 +14,9 @@ bool convertPose2tgPose(cogx::Math::Pose3& pose, TomGine::tgPose& tgpose){
 	TomGine::mat3 rot;
 	TomGine::vec3 pos;
 	
-	rot[0] = (float)pose.rot.m00; rot[1] = (float)pose.rot.m01; rot[2] = (float)pose.rot.m02;
-	rot[3] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[5] = (float)pose.rot.m12;
-	rot[6] = (float)pose.rot.m20; rot[7] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
+	rot[0] = (float)pose.rot.m00; rot[3] = (float)pose.rot.m01; rot[6] = (float)pose.rot.m02;
+	rot[1] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[7] = (float)pose.rot.m12;
+	rot[2] = (float)pose.rot.m20; rot[5] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
 	
 	pos.x = pose.pos.x;
 	pos.y = pose.pos.y;

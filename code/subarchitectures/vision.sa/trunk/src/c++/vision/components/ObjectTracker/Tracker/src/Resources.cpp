@@ -161,7 +161,7 @@ IplImage* Resources::GetNewImage(){
 	
 	if(img != NULL){
 		m_image = img;
-		cvConvertImage(m_image, m_image, CV_CVTIMG_SWAP_RB);
+// 		cvConvertImage(m_image, m_image, CV_CVTIMG_SWAP_RB);
 	}
 	
 	//cvFlip(m_image, m_image, 1);

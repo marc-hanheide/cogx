@@ -51,6 +51,10 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		}else{
 			params.m_spreadlvl = 0;
 		}
+		params.kernel_size = (int)floor(0.5*(MAX_KERNEL_SIZE)*(1.0-c_max));
+		m_shadeCompare->bind();
+		m_shadeCompare->setUniform("kernelsize", params.kernel_size);
+		m_shadeCompare->unbind();
 		
 		m_tex_model_ip[params.m_spreadlvl]->bind(0);
 		m_tex_frame_ip[params.m_spreadlvl]->bind(1);	

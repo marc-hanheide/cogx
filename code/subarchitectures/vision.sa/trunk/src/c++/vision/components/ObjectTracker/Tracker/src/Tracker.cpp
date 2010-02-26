@@ -471,6 +471,8 @@ void Tracker::printStatistics(){
 		printf("		Variance: %f \n", m_modellist[i]->distribution.getVariance() );
 		printf("		Confidence: %f \n", m_modellist[i]->distribution.getMaxC());
 		printf("		Weight: %f \n", m_modellist[i]->distribution.getMaxW());
+		printf("		Spread: %d\n", params.m_spreadlvl);
+		printf("		Kernel: %d \n", params.kernel_size);
 	}
 }
 
