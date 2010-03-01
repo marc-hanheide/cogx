@@ -37,6 +37,24 @@
 namespace spatial
 {
 
+  struct PDFData{
+      double prob;
+      bool isChecked;
+      bool isSeen;
+
+    };
+
+  std::ostream &operator<<(std::ostream &os, const PDFData &data)
+  {
+    return os;
+  }
+
+  bool operator==(const PDFData &data, char cmp)
+  {
+    return false;
+  }
+
+
   class AdvObjectSearch :public Scan2dReceiver,
                          public cast::ManagedComponent,
                          public OdometryReceiver
@@ -91,8 +109,6 @@ namespace spatial
     double pFree,pObs,pPlanar,pIn,pOut;
     double m_ProbGivenObjectIsPresent;
     std::vector<std::string> m_objectlist;
-    std::set<std::pair<int,int> >  m_AllPlanePoints;
-
     IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;
     NavData::RobotPose2dPtr lastRobotPose;
@@ -100,10 +116,10 @@ namespace spatial
     peekabot::PeekabotClient m_PeekabotClient;
     peekabot::PointCloudProxy m_ProxyPrior,m_ProxyPosterior,m_ProxySeenMap;
 
+
+
     Cure::LocalGridMap<unsigned int>* m_lgm;
-    Cure::LocalGridMap<double>* m_lgm_prior;
-    Cure::LocalGridMap<double>* m_lgm_posterior;
-    Cure::LocalGridMap<bool>* m_lgm_seen;
+    Cure::LocalGridMap<PDFData>* m_pdf;
     Cure::X11DispLocalGridMap<unsigned int>* m_Dlgm;
     Cure::SensorPose m_LaserPoseR;
     Cure::SensorPose m_CamPoseR;
@@ -119,6 +135,10 @@ namespace spatial
     double m_pPlaneGivenNotObj, m_pFreeGivenNotObj,m_pObsGivenNotObj ;
 
    static SpatialData::NavCommandPtr newNavCommand();
+
+
+
+
   };
 
 }
