@@ -828,19 +828,6 @@ namespace spatial
       }
     }
 
-    /* DEBUG */
-    double sumin = 0.0;
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2)
-          continue;
-        sumin += (*m_pdf)(x, y).prob;
-      }
-    }
-    log("pdfIn sums to: %f", sumin);
-    log("pdfIn + Cout sums to: %f", sumin + pOut);
-
-    /* DEBUG */
 
     /* Display pdfIn in PB as Line Cloud BEGIN */
 
@@ -856,7 +843,8 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
+        //if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
+        if (y == m_lgm->getSize())
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
@@ -868,7 +856,8 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+        //if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+        if (x == m_lgm->getSize())
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
@@ -877,6 +866,7 @@ namespace spatial
                 + 1).prob * multiplier1);
       }
     }
+    linecloudp.set_scale(0.1);
     /* Display pdfIn in as line cloud PB END */
 
   }
