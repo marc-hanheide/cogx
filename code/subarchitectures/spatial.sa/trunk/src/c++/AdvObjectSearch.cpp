@@ -160,7 +160,7 @@ namespace spatial
     log("Loaded objects.");
 
     PDFData def;
-    def.prob = pIn / pow(double((2*gridsize+1)),2);
+    def.prob = pIn / pow(double((2 * gridsize + 1)), 2);
     def.isSeen = false;
     def.isChecked = false;
 
@@ -171,6 +171,16 @@ namespace spatial
         Cure::LocalGridMap<unsigned int>::MAP1);
     m_Dlgm = new Cure::X11DispLocalGridMap<unsigned int>(*m_lgm);
     m_Glrt = new Cure::ObjGridLineRayTracer<unsigned int>(*m_lgm);
+
+    m_ProbGivenObjectIsPresent = 0.7;
+
+    m_pPlaneGivenObj = 0.7;
+    m_pFreeGivenObj = 0.05;
+    m_pObsGivenObj = 0.25;
+
+    m_pPlaneGivenNotObj = 0.05;
+    m_pFreeGivenNotObj = 0.8;
+    m_pObsGivenNotObj = 0.15;
 
     if (m_usePTZ) {
       log("connecting to PTU");
@@ -192,16 +202,6 @@ namespace spatial
       p.tilt = 0;
       p.zoom = 0;
       m_ptzInterface->setPose(p);
-
-      m_ProbGivenObjectIsPresent = 0.7;
-
-      m_pPlaneGivenObj = 0.7;
-      m_pFreeGivenObj = 0.05;
-      m_pObsGivenObj = 0.25;
-
-      m_pPlaneGivenNotObj = 0.05;
-      m_pFreeGivenNotObj = 0.8;
-      m_pObsGivenNotObj = 0.15;
 
     }
 
@@ -523,7 +523,7 @@ namespace spatial
   void
   AdvObjectSearch::DisplayPriorinPB() {
 
-    double uUnit = pIn / pow(double((2*m_lgm->getSize()+1)),2);
+    double uUnit = pIn / pow(double((2 * m_lgm->getSize() + 1)), 2);
 
     /* DEBUG */
     double sumin = 0.0;
@@ -773,12 +773,12 @@ namespace spatial
     InsideAfterSum = 0;
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            InsideBeforeSum += (*m_pdf)(x, y).prob;
-            if ((*m_lgm)(x, y) == 3)
-              log("plane before: %f", (*m_pdf)(x, y).prob);
-          }
-        }
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        InsideBeforeSum += (*m_pdf)(x, y).prob;
+        if ((*m_lgm)(x, y) == 3)
+          log("plane before: %f", (*m_pdf)(x, y).prob);
+      }
+    }
     log("posterior sums to: %f", InsideBeforeSum);
     log("posterior + Cout sums to: %f", InsideBeforeSum + pOut);
 
@@ -787,33 +787,34 @@ namespace spatial
     std::set<pair<int, int> >::iterator end = NewPlanePoints.end();
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-          tmp.first = x;
-          tmp.second = y;
-          if (!(*m_pdf)(x, y).isChecked && (*m_lgm)(x, y) == 3 ) { // this is a new plane point
-            (*m_pdf)(x, y).isChecked = true;
-            (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
-                / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
-                    * (*m_pdf)(x, y).prob);
-            log("%f %f %f", m_pPlaneGivenObj, (*m_pdf)(x, y).prob, m_pPlaneGivenNotObj);
-            log("denom: %f",(m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
-                    * (*m_pdf)(x, y).prob));
+        tmp.first = x;
+        tmp.second = y;
+        if (!(*m_pdf)(x, y).isChecked && (*m_lgm)(x, y) == 3) { // this is a new plane point
+          (*m_pdf)(x, y).isChecked = true;
+          (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
+              / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
+                  * (*m_pdf)(x, y).prob);
+          log("%f %f %f", m_pPlaneGivenObj, (*m_pdf)(x, y).prob,
+              m_pPlaneGivenNotObj);
+          log("denom: %f", (m_pPlaneGivenObj * (*m_pdf)(x, y).prob
+              + m_pPlaneGivenNotObj * (*m_pdf)(x, y).prob));
 
+        }
+        else {
+          if ((*m_lgm)(x, y) == 0 && !(*m_pdf)(x, y).isChecked) {
+            (*m_pdf)(x, y).isChecked = true;
+            (*m_pdf)(x, y).prob = m_pFreeGivenObj * (*m_pdf)(x, y).prob
+                / (m_pFreeGivenObj * (*m_pdf)(x, y).prob + m_pFreeGivenNotObj
+                    * (*m_pdf)(x, y).prob);
           }
-          else {
-            if ((*m_lgm)(x, y) == 0 &&  !(*m_pdf)(x, y).isChecked) {
-              (*m_pdf)(x, y).isChecked = true;
-              (*m_pdf)(x, y).prob = m_pFreeGivenObj * (*m_pdf)(x, y).prob
-                  / (m_pFreeGivenObj * (*m_pdf)(x, y).prob + m_pFreeGivenNotObj
-                      * (*m_pdf)(x, y).prob);
-            }
-            else if ((*m_lgm)(x, y) == 1 &&  !(*m_pdf)(x, y).isChecked) {
-              (*m_pdf)(x, y).isChecked = true;
-              (*m_pdf)(x, y).prob = m_pObsGivenObj * (*m_pdf)(x, y).prob
-                  / (m_pObsGivenObj * (*m_pdf)(x, y).prob + m_pObsGivenNotObj
-                      * (*m_pdf)(x, y).prob);
-            }
+          else if ((*m_lgm)(x, y) == 1 && !(*m_pdf)(x, y).isChecked) {
+            (*m_pdf)(x, y).isChecked = true;
+            (*m_pdf)(x, y).prob = m_pObsGivenObj * (*m_pdf)(x, y).prob
+                / (m_pObsGivenObj * (*m_pdf)(x, y).prob + m_pObsGivenNotObj
+                    * (*m_pdf)(x, y).prob);
           }
         }
+      }
     }
 
     // Normalize
@@ -828,7 +829,8 @@ namespace spatial
     log("aftersum is: %f", InsideAfterSum);
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob * InsideBeforeSum/ InsideAfterSum;
+        (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob * InsideBeforeSum
+            / InsideAfterSum;
       }
     }
 
