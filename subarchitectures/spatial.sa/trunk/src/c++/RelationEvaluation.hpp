@@ -2,6 +2,7 @@
 #define RelationEvaluation_hpp
 
 #include <SpatialData.hpp>
+#include <vector>
 //#include <Math.hpp>
 
 using namespace SpatialData;
@@ -50,6 +51,11 @@ struct BoxObject : public Object {
   double radius3;
 };
 
+struct Witness {
+  Vector3 point1;
+  Vector3 point2;
+  double distance;
+};
 
 double
 evaluateOnness(const Object *objectS, const Object *objectO);
@@ -74,5 +80,20 @@ getPolygonArea(const std::vector<Vector3> &polygon);
 
 double
 getMaxPolygonClearance(const std::vector<Vector3> &polygon);
+
+double
+findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
+    Vector3 &outWitnessPoint1, Vector3 &outWitnessPoint2);
+
+bool
+isIntersecting(double wr, double dr, double hr, const Vector3[]);
+
+void
+getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
+    const std::vector<Vector3> & BEdges, std::vector<Witness> &cornerWitnesses);
+
+void
+getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
+    const std::vector<Vector3> & BEdges, std::vector<Witness> &edgeWitnesses);
 };
 #endif //RelationEvaluation_hpp

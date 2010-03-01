@@ -36,6 +36,13 @@ evaluateOnness(const Object *objectS, const Object *objectO)
   //		exceeds sqrt(0.5), else it is a line segment, namely
   //		the projection of the central axis on O's bottom surface
 
+  Vector3 tmp1, tmp2;
+  if (objectS->type == OBJECT_BOX &&
+      objectO->type == OBJECT_BOX) {
+    return findContactPatch(*((BoxObject*)objectS), *((BoxObject*)objectO),
+	tmp1, tmp2);
+  }
+
   if (objectS->type == OBJECT_PLANE) {
     PlaneObject *plane = (PlaneObject *)objectS;
     supportPlaneNormal.z = 1.0;
@@ -720,6 +727,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
     }
   }
 
+  // Compute convex hull of newInterestPoints
   unsigned int currentPoint = startPoint;
 
   std::vector<Vector3> outPolygon;
@@ -746,206 +754,6 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
 
   return outPolygon;
 }
-
-
-//std::vector<Vector3>
-//findPolygonIntersection(const std::vector<Vector3> &polygon1, 
-//    const std::vector<Vector3> &polygon2)
-//{
-//  std::vector<Vector3> outPolygon;
-//
-//  bool someIntersectionFound = false;
-//
-//  int currentFollowedPolygon = 1;
-//
-//  int currentIndex = 0;
-//  Vector3 currentPoint = polygon1[currentIndex]; // Start point of current edge
-//  Vector3 nextPoint = polygon1[currentIndex+1]; // End point of current edge
-//  unsigned int nextIndex = 1; // Index that will be used for next start point unless
-//  // an intersection is found
-//#ifdef DEBUG
-//  Vector3 norm1 = cross(polygon1[1]-polygon1[0], polygon1.back()-polygon1[0]);
-//  normalise(norm1);
-//  Vector3 norm2 = cross(polygon2[1]-polygon2[0], polygon2.back()-polygon2[0]);
-//  normalise(norm2);
-//  if (!vequals(norm1, norm2, 0.001)) {
-//    // log("Comparing non-coplanar polygons!");
-//    return 0.0;
-//  }
-//#endif
-//
-//  while (outPolygon.empty() || !vequals(currentPoint, outPolygon[0], 0.001))
-//  {
-////    cout << "(" << currentPoint.x << ", " << currentPoint.y << ") -> (" <<
-////      nextPoint.x << ", " << nextPoint.y << ") follwing " << currentFollowedPolygon << endl;
-//    Vector3 thisEdge = nextPoint - currentPoint;
-//    double thisEdgeLength = length(thisEdge);
-//    Vector3 thisEdgeDir = thisEdge / thisEdgeLength;
-//
-//    double smallestIntersectionParameter = 1.0;
-//    int foundIntersection = 0;
-//    Vector3 intersectionPoint;
-//    int intersectionIndex;
-//
-//    unsigned int otherPolygonSize =
-//      currentFollowedPolygon == 1 ? polygon2.size() : polygon1.size();
-//
-//    for (unsigned int i = 0; i < otherPolygonSize; i++) {
-//      unsigned int iplus = (i == otherPolygonSize-1 ? 0 : i + 1);
-//
-//      Vector3 difference;
-//      Vector3 otherEdgeDir;
-//      double otherEdgeLength;
-//      if (currentFollowedPolygon == 1) {
-//	difference = polygon2[i] - currentPoint;
-//	otherEdgeDir = polygon2[iplus] - polygon2[i];
-//      } 
-//      else {
-//	difference = polygon1[i] - currentPoint;
-//	otherEdgeDir = polygon1[iplus] - polygon1[i];
-//      }
-//
-//      if (abs(dot(thisEdge, otherEdgeDir)) == 1.0) {
-//	continue;
-//      }
-//
-//      otherEdgeLength = length(otherEdgeDir);
-//      otherEdgeDir /= otherEdgeLength;
-//
-//      // The normal vector from currentPoint to the other edge's line
-//      Vector3 normalVector =
-//	difference - otherEdgeDir * dot(difference, otherEdgeDir);
-//      double normalLength = length(normalVector);
-//
-//      double intersectionParamThisEdge; // 0 - 1
-//      if (!equals(normalLength, 0.0, 0.001)) {
-//	intersectionParamThisEdge =
-//	  normalLength*normalLength / (dot(normalVector, thisEdge));
-//      }
-//      else {
-//	intersectionParamThisEdge = 0.0;
-//      }
-//
-//      if (intersectionParamThisEdge > 0.0 &&
-//	  (intersectionParamThisEdge < smallestIntersectionParameter ||
-//	  equals(intersectionParamThisEdge, 1.0, 0.001))) {
-//	intersectionPoint = currentPoint + thisEdge *
-//	  intersectionParamThisEdge;
-//
-//	double intersectionParamOtherEdge;
-//	if (currentFollowedPolygon == 1) {
-//	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon2[i]) / otherEdgeLength;
-//	}
-//	else {
-//	  intersectionParamOtherEdge = dot(otherEdgeDir, intersectionPoint - polygon1[i]) / otherEdgeLength;
-//	}
-//
-//	if (intersectionParamOtherEdge >= 0.0 &&
-//	    intersectionParamOtherEdge <= 1.0) {
-//
-//	  // It's an intersection in fact!
-//	  smallestIntersectionParameter = intersectionParamThisEdge;
-//
-//	  // Check winding of intersection.
-//	  if (cross(thisEdgeDir, otherEdgeDir).z > 0.0) {
-//	    // We're passing an edge that is going left
-//	    // meaning we're leaving the polygon.
-//
-//	    foundIntersection = 1;
-//	    intersectionIndex = iplus;
-//	  }
-//	  else {
-//	    // We're passing an edge that is going right
-//	    // meaning we are entering the other polgyon,
-//	    // meaning we were outside the other polygon.
-//
-//	    foundIntersection = 2;
-//	  }
-//	}
-//      }
-//    }
-//
-//    if (foundIntersection == 0) {
-//      outPolygon.push_back(currentPoint);
-//      currentPoint = nextPoint;
-//      nextIndex++;
-//
-//      if (currentFollowedPolygon == 1) {
-//	if (nextIndex == polygon1.size())
-//	  nextIndex = 0;
-//	nextPoint = polygon1[nextIndex];
-//      }
-//      else {
-//	if (nextIndex == polygon2.size())
-//	  nextIndex = 0;
-//	nextPoint = polygon2[nextIndex];
-//      }
-//    }
-//    else if (foundIntersection == 1) {
-//      // Store the point, and start following the other polygon instead
-//
-//      outPolygon.push_back(currentPoint);
-//      currentFollowedPolygon = 3 - currentFollowedPolygon;
-//
-//      currentPoint = intersectionPoint;
-//      nextIndex = intersectionIndex;
-//      nextPoint = currentFollowedPolygon == 1 ?
-//	polygon1[nextIndex] :
-//	polygon2[nextIndex];
-//
-//      someIntersectionFound = true;
-//    }
-//    else {
-//      // Clear all stored points, but keep following the
-//      // current polygon (since the other polygon edge is
-//      // leaving the current polygon at this point!)
-//
-//      outPolygon.clear();
-//      currentPoint = intersectionPoint;
-//      //	      nextIndex = nextIndex;
-//      //	      nextPoint = nextPoint;
-//
-//      someIntersectionFound = true;
-//    }
-//  }
-//
-//  if (someIntersectionFound) {
-//    return outPolygon;
-//  }
-//
-//  // The polygons don't intersect! Find out if either is
-//  // entirely enclosed by the other
-//  bool polygon2Inside1 = true;
-//  for (unsigned int i = 0; i < polygon1.size(); i++) {
-//    unsigned int iplus = (i == polygon1.size()-1 ? 0 : i + 1);
-//
-//    if (cross(polygon1[iplus]-polygon1[i], polygon2[0]-polygon1[i]).z < 0.0) {
-//      polygon2Inside1 = false;
-//      break;
-//    }
-//  }
-//
-//  if (polygon2Inside1) {
-//    return polygon2;
-//  }
-//
-//  bool polygon1Inside2 = true;
-//  for (unsigned int i = 0; i < polygon2.size(); i++) {
-//    unsigned int iplus = (i == polygon2.size()-1 ? 0 : i + 1);
-//
-//    if (cross(polygon2[iplus]-polygon2[i], polygon1[0]-polygon2[i]).z < 0.0) {
-//      polygon1Inside2 = false;
-//      break;
-//    }
-//  }
-//
-//  if (polygon1Inside2) {
-//    return polygon1;
-//  }
-//
-//  outPolygon.clear();
-//  return outPolygon;
-//}
 
 double
 findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal)
@@ -1335,5 +1143,415 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
   };
 
   outPoints.insert(outPoints.end(), shellPoints.begin(), shellPoints.end());
+}
+
+double
+findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
+    Vector3 &outWitnessPoint1, Vector3 &outWitnessPoint2)
+{
+  const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
+    6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
+  //Transform B into local coordinate system of A for ease of conceptualization
+  Pose3 BposeInA;
+  transformInverse(boxA.pose, boxB.pose, BposeInA); 
+  Pose3 AposeInB;
+  transformInverse(boxB.pose, boxA.pose, AposeInB); 
+
+  Vector3 BVertices[] = {{boxB.radius1, boxB.radius2, boxB.radius3},
+    {-boxB.radius1, boxB.radius2, boxB.radius3},
+    {-boxB.radius1, -boxB.radius2, boxB.radius3},
+    {boxB.radius1, -boxB.radius2, boxB.radius3},
+    {boxB.radius1, boxB.radius2, -boxB.radius3},
+    {-boxB.radius1, boxB.radius2, -boxB.radius3},
+    {-boxB.radius1, -boxB.radius2, -boxB.radius3},
+    {boxB.radius1, -boxB.radius2, -boxB.radius3}};
+  Vector3 AVertices[] = {{boxA.radius1, boxA.radius2, boxA.radius3},
+    {-boxA.radius1, boxA.radius2, boxA.radius3},
+    {-boxA.radius1, -boxA.radius2, boxA.radius3},
+    {boxA.radius1, -boxA.radius2, boxA.radius3},
+    {boxA.radius1, boxA.radius2, -boxA.radius3},
+    {-boxA.radius1, boxA.radius2, -boxA.radius3},
+    {-boxA.radius1, -boxA.radius2, -boxA.radius3},
+    {boxA.radius1, -boxA.radius2, -boxA.radius3}};
+  for (int i = 0; i < 8; i++) {
+    BVertices[i] = transform(BposeInA, BVertices[i]);
+    AVertices[i] = transform(AposeInB, AVertices[i]);
+  }
+
+  double wr = boxA.radius1;
+  double dr = boxA.radius2;
+  double hr = boxA.radius3;
+
+  bool intersecting = isIntersecting(wr, dr, hr, BVertices);
+
+  vector<Vector3> BEdges;
+  BEdges.reserve(12);
+  vector<Vector3> AEdges;
+  AEdges.reserve(12);
+  for (int edgeNo = 0; edgeNo < 12; edgeNo++) {
+    Vector3 &point1 = BVertices[edges[edgeNo*2]];
+    Vector3 &point2 = BVertices[edges[edgeNo*2+1]];
+    Vector3 edge = point2 - point1; 
+    BEdges.push_back(edge);
+
+    Vector3 &point3 = AVertices[edges[edgeNo*2]];
+    Vector3 &point4 = AVertices[edges[edgeNo*2+1]];
+    edge = point4 - point3; 
+    AEdges.push_back(edge);
+  }
+
+  vector<Witness> cornerWitnessesBInA;
+  getCornerWitnesses(wr, dr, hr, BVertices, BEdges, cornerWitnessesBInA);
+
+  vector<Witness> edgeWitnesses;
+  getEdgeWitnesses(wr, dr, hr, BVertices, BEdges, edgeWitnesses);
+
+  wr = boxB.radius1;
+  dr = boxB.radius2;
+  hr = boxB.radius3;
+
+  vector<Witness> cornerWitnessesAInB;
+  getCornerWitnesses(wr, dr, hr, AVertices, AEdges, cornerWitnessesAInB);
+
+  if (intersecting) {
+    double minDistance = -FLT_MAX;
+    bool found = false;
+    for(unsigned int i = 0; i < cornerWitnessesBInA.size(); i++) {
+      if (cornerWitnessesBInA[i].distance > minDistance) {
+	minDistance = cornerWitnessesBInA[i].distance;
+	outWitnessPoint1 = transform(boxA.pose, cornerWitnessesBInA[i].point1);
+	outWitnessPoint2 = transform(boxA.pose, cornerWitnessesBInA[i].point2);
+
+	found = true;
+      }
+    }
+    for(unsigned int i = 0; i < cornerWitnessesAInB.size(); i++) {
+      if (cornerWitnessesAInB[i].distance > minDistance) {
+	minDistance = cornerWitnessesAInB[i].distance;
+	outWitnessPoint1 = transform(boxB.pose, cornerWitnessesAInB[i].point1);
+	outWitnessPoint2 = transform(boxB.pose, cornerWitnessesAInB[i].point2);
+
+	found = true;
+      }
+    }
+    for(unsigned int i = 0; i < edgeWitnesses.size(); i++) {
+      if (edgeWitnesses[i].distance > minDistance) {
+	minDistance = edgeWitnesses[i].distance;
+	outWitnessPoint1 = transform(boxA.pose, edgeWitnesses[i].point1);
+	outWitnessPoint2 = transform(boxA.pose, edgeWitnesses[i].point2);
+
+	found = true;
+      }
+    }
+    if (!found || minDistance > 0) 
+      minDistance = 0;
+    return minDistance;
+  }
+  else {
+    double minDistance = FLT_MAX;
+    bool found=false;
+    for(unsigned int i = 0; i < cornerWitnessesBInA.size(); i++) {
+      if (cornerWitnessesBInA[i].distance < minDistance) {
+	minDistance = cornerWitnessesBInA[i].distance;
+	outWitnessPoint1 = transform(boxA.pose, cornerWitnessesBInA[i].point1);
+	outWitnessPoint2 = transform(boxA.pose, cornerWitnessesBInA[i].point2);
+
+	found = true;
+      }
+    }
+    for(unsigned int i = 0; i < cornerWitnessesAInB.size(); i++) {
+      if (cornerWitnessesAInB[i].distance < minDistance) {
+	minDistance = cornerWitnessesAInB[i].distance;
+	outWitnessPoint1 = transform(boxB.pose, cornerWitnessesAInB[i].point1);
+	outWitnessPoint2 = transform(boxB.pose, cornerWitnessesAInB[i].point2);
+
+	found = true;
+      }
+    }
+  }
+  //If there is a collision:
+
+  //NOTE: I don't *think* that it's necessary to check whether the corner is
+  //actually *inside* A; I believe it won't matter as long as collision has been
+  //already determined.
+
+  //If there is no collision:
+}
+
+bool
+isIntersecting(double wr, double dr, double hr, const Vector3 BVertices[])
+{
+  const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
+    6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
+
+  //Check for intersection: 
+  //Check each edge of B against each face of A
+  for (int edgeNo = 0; edgeNo < 12; edgeNo++) {
+    const Vector3 &point1 = BVertices[edges[edgeNo*2]];
+    const Vector3 &point2 = BVertices[edges[edgeNo*2+1]];
+    Vector3 edge = point2 - point1; 
+    //Check the faces of A
+    if ((point1.x > wr) != (point2.x > wr)) {
+      //Check right face of A
+      double intersectionParam = (wr - point1.x)/(point2.x - point1.x);
+      Vector3 intersectionPoint = intersectionParam * edge + point1;
+      if (intersectionPoint.y < dr && intersectionPoint.y > -dr &&
+	  intersectionPoint.z < hr && intersectionPoint.z > -hr) {
+	return true;
+      }
+    }
+    if ((point1.x > -wr) != (point2.x > -wr)) {
+      //Check left face of A
+      double intersectionParam = (-wr - point1.x)/(point2.x - point1.x);
+      Vector3 intersectionPoint = intersectionParam * edge + point1;
+      if (intersectionPoint.y < dr && intersectionPoint.y > -dr &&
+	  intersectionPoint.z < hr && intersectionPoint.z > -hr) {
+	return true;
+      }
+    }
+
+    if ((point1.y > dr) != (point2.y > dr)) {
+      //Check rear face of A
+      double intersectionParam = (dr - point1.y)/(point2.y - point1.y);
+      Vector3 intersectionPoint = intersectionParam * edge + point1;
+      if (intersectionPoint.x < wr && intersectionPoint.x > -wr &&
+	  intersectionPoint.z < hr && intersectionPoint.z > -hr) {
+	return true;
+      }
+    }
+    if ((point1.y > -dr) != (point2.y > -dr)) {
+      //Check front face of A
+      double intersectionParam = (-dr - point1.y)/(point2.y - point1.y);
+      Vector3 intersectionPoint = intersectionParam * edge + point1;
+      if (intersectionPoint.x < wr && intersectionPoint.x > -wr &&
+	  intersectionPoint.z < hr && intersectionPoint.z > -hr) {
+	return true;
+      }
+    }
+
+    if ((point1.z > hr) != (point2.z > hr)) {
+      //Check top face of A
+      double intersectionParam = (hr - point1.z)/(point2.z - point1.z);
+      Vector3 intersectionPoint = intersectionParam * edge + point1;
+      if (intersectionPoint.x < wr && intersectionPoint.x > -wr &&
+	  intersectionPoint.y < dr && intersectionPoint.y > -dr) {
+	return true;
+      }
+    }
+    if ((point1.z > -hr) != (point2.z > -hr)) {
+      //Check top face of A
+      double intersectionParam = (-hr - point1.z)/(point2.z - point1.z);
+      Vector3 intersectionPoint = intersectionParam * edge + point1;
+      if (intersectionPoint.x < wr && intersectionPoint.x > -wr &&
+	  intersectionPoint.y < dr && intersectionPoint.y > -dr) {
+	return true;
+      }
+    }
+  }
+  return false;
+}
+
+void
+getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
+    const vector<Vector3> &BEdges, vector<Witness> &cornerWitnesses)
+{
+  const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
+    6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
+  //For each face in A, find the corner(s) of B at which the normal of the face
+  //points into B. 
+  Witness newWitness;
+  // Loop over vertices in B
+  for (int i = 0; i < 8; i++) {
+    Vector3 outgoingEdges[3];
+    int edgeNo = 0;
+    for (int j = 0; edgeNo < 3 && j < 12; j++) {
+      if (edges[j*2] == i) {
+	outgoingEdges[edgeNo] = BEdges[j];
+	edgeNo++;
+      }
+      else if (edges[j*2+1] == i) {
+	outgoingEdges[edgeNo] = -BEdges[j];
+	edgeNo++;
+      }
+    }
+    if (edgeNo != 3) {
+      exit(1);
+    }
+
+    const double epsilon = 0.0001;
+
+    const double x = BVertices[i].x;
+    const double y = BVertices[i].y;
+    const double z = BVertices[i].z;
+    if (y <= dr && y >= -dr && z <= hr && z >= -hr) {
+      if ( outgoingEdges[0].x >= -epsilon && outgoingEdges[1].x >= -epsilon && outgoingEdges[2].x >= -epsilon) {
+	newWitness.point1 = BVertices[i];
+	newWitness.point2 = BVertices[i];
+	newWitness.point2.x = wr;
+	newWitness.distance = x - wr;
+	cornerWitnesses.push_back(newWitness);
+      }
+      if (outgoingEdges[0].x <= epsilon && outgoingEdges[1].x <= epsilon && outgoingEdges[2].x <= epsilon) {
+	newWitness.point1 = BVertices[i];
+	newWitness.point2 = BVertices[i];
+	newWitness.point2.x = -wr;
+	newWitness.distance = -x - wr;
+	cornerWitnesses.push_back(newWitness);
+      }
+    }
+
+
+    if (x <= wr && x >= -wr && z <= hr && z >= -hr) {
+      if (outgoingEdges[0].y >= -epsilon && outgoingEdges[1].y >= -epsilon && outgoingEdges[2].y >= -epsilon) {
+	newWitness.point1 = BVertices[i];
+	newWitness.point2 = BVertices[i];
+	newWitness.point2.y = dr;
+	newWitness.distance = y - dr;
+	cornerWitnesses.push_back(newWitness);
+      }
+      if (outgoingEdges[0].y <= epsilon && outgoingEdges[1].y <= epsilon && outgoingEdges[2].y <= epsilon) {
+	newWitness.point1 = BVertices[i];
+	newWitness.point2 = BVertices[i];
+	newWitness.point2.y = -dr;
+	newWitness.distance = -y - dr;
+	cornerWitnesses.push_back(newWitness);
+      }
+    }
+
+    if (y <= dr && y >= -dr && x <= wr && x >= -wr) {
+      if (outgoingEdges[0].z >= -epsilon && outgoingEdges[1].z >= -epsilon && outgoingEdges[2].z >= -epsilon) {
+	newWitness.point1 = BVertices[i];
+	newWitness.point2 = BVertices[i];
+	newWitness.point2.z = hr;
+	newWitness.distance = z - hr;
+	cornerWitnesses.push_back(newWitness);
+      }
+      if (outgoingEdges[0].z <= epsilon && outgoingEdges[1].z <= epsilon && outgoingEdges[2].z <= epsilon) {
+	newWitness.point1 = BVertices[i];
+	newWitness.point2 = BVertices[i];
+	newWitness.point2.z = -hr;
+	newWitness.distance = -z - hr;
+	cornerWitnesses.push_back(newWitness);
+      }
+    }
+  }
+}
+
+void
+getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
+    const vector<Vector3> &BEdges, vector<Witness> &edgeWitnesses)
+{
+  const Vector3 zeroVec = vector3(0,0,0);
+  const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
+    6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
+  
+  const double axisDirections[] = {0,-1,-1, 1,0,-1, 0,1,-1, -1,0,-1,
+  -1,-1,0, 0,-1,1, 1,-1,0, 1,0,1, 1,1,0, 0,1,1, -1,1,0, -1,0,1}; // Triples of doubles, telling you for each
+  // vertex which direction the axis vectors are pointing into the box
+
+  // Loop over edges in B. For a point p1 on edge E1 on A to be of interest as a witness point 
+  // vis-a-vis point p2 on edge E2 on B,
+  // the normal between p1 and p2 must lie in the solid manifold around p2.
+  const Vector3 axis1 = BEdges[2];
+  const Vector3 axis2 = BEdges[3];
+  const Vector3 axis3 = BEdges[6];
+
+    const double edgeManifoldComponentsX[] = {0,1,0,-1, -1,0,1, 1,1, 0,-1, -1};
+    const double edgeManifoldComponentsY[] = {-1,0,1,0, -1,-1,-1, 0,1, 1,1, 0};
+    const double edgeManifoldComponentsZ[] = {-1,-1,-1,-1, 0,1,0, 1,0, 1,0, 1};
+    const Vector3 AVerts[] = {vector3(wr,dr,hr),
+      vector3(-wr,dr,hr),
+      vector3(-wr,-dr,hr),
+      vector3(wr,-dr,hr),
+      vector3(wr,dr,-hr),
+      vector3(-wr,dr,-hr),
+      vector3(-wr,-dr,-hr),
+      vector3(wr,-dr,-hr)};
+    const Vector3 AEdges[] = {vector3(-2*wr,0,0),
+      vector3(0,-2*dr,0),
+      vector3(2*wr,0,0),
+      vector3(0,2*dr,0),
+      vector3(0,0,-2*hr),
+      vector3(-2*wr,0,0),
+      vector3(0,0,2*hr),
+      vector3(0,-2*dr,0),
+      vector3(0,0,2*hr),
+      vector3(2*wr,0,0),
+      vector3(0,0,2*hr),
+      vector3(0,2*dr,0)};
+  double epsilon = 0.00001;
+  for (unsigned int i = 0; i < BEdges.size(); i++) {
+    // Computing the normal between E1 and E2:
+    // Vector3 crossVec = cross(BEdges[i], vector3(1, 0, 0));
+    // normalise(crossVec);
+    // Vector3 offset = BVertices[startIndices[i]] - vector3(-wr, dr, hr);
+    // Vector3 normal = dot(offset, crossVec) * crossVec;
+    // ...but with A axis-aligned we can get rid of some math
+    Vector3 edgeDir = BEdges[i];
+    normalise(edgeDir);
+    double axisDir1 = axisDirections[i*3];
+    double axisDir2 = axisDirections[i*3+1];
+    double axisDir3 = axisDirections[i*3+2];
+
+    const Vector3 crossVecs[] = {vector3(0, -edgeDir.z, edgeDir.y),
+      vector3(edgeDir.z, 0, -edgeDir.x),
+      vector3(0, edgeDir.z, -edgeDir.y),
+      vector3(-edgeDir.z, 0, edgeDir.x),
+
+      vector3(-edgeDir.y, edgeDir.x, 0),
+      vector3(0, -edgeDir.z, edgeDir.y),
+      vector3(edgeDir.y, -edgeDir.x, 0),
+      vector3(edgeDir.z, 0, -edgeDir.x),
+      vector3(edgeDir.y, -edgeDir.x, 0),
+      vector3(0, edgeDir.z, -edgeDir.y),
+      vector3(edgeDir.y, -edgeDir.x, 0),
+      vector3(-edgeDir.z, 0, edgeDir.x)};
+
+    // Loop over edges in A
+    for (int j = 0; j < 12; j++) {
+    Vector3 offset = BVertices[edges[i*2]] - AVerts[edges[j*2]];
+    if (!vequals(offset, zeroVec, epsilon)) {
+
+      //Vector3 crossVec = vector3(0, edgeDir.z, -edgeDir.y);
+      Vector3 normal = crossVecs[j] * dot(offset, crossVecs[j]); 
+      if (!vequals(normal, zeroVec, epsilon)) {
+	// Check that normal points into A
+	if (normal.x * edgeManifoldComponentsX[j] >= 0 &&
+	    normal.y * edgeManifoldComponentsY[j] >= 0 && 
+	    normal.z * edgeManifoldComponentsZ[j] >= 0 &&
+//	if (normal.y <= 0 && normal.z <= 0 &&
+	    // Check that normal points out of B
+	    axisDir1*dot(normal, axis1) <= 0 && 
+	    axisDir2*dot(normal, axis2) <= 0 &&
+	    axisDir3*dot(normal, axis3) <= 0) {
+	  normalise(normal);
+	  double distance = dot(offset, normal);
+	  Vector3 projectedOffset = offset - normal * distance;
+
+	  Vector3 normalVector =
+	    projectedOffset - edgeDir * dot(projectedOffset, edgeDir);
+	  double normalLength = length(normalVector);
+
+	  double intersectionParamThisEdge; // 0 - 1
+	  if (!equals(normalLength, 0.0, epsilon)) {
+	    intersectionParamThisEdge =
+	      normalLength*normalLength / dot(normalVector, AEdges[j]);
+	  }
+	  else {
+	    intersectionParamThisEdge = 0.0;
+	  }
+	  Witness newWitness;
+	  newWitness.point2 = AVerts[edges[j*2]] + AEdges[j]*intersectionParamThisEdge;
+	  newWitness.point1 = newWitness.point2 + normal*distance;
+	  newWitness.distance = -distance;
+	  edgeWitnesses.push_back(newWitness);
+	}
+      }
+    }
+    else {
+      // Two vertices essentially intersecting
+    }
+  }
+  }
 }
 };
