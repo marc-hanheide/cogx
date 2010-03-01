@@ -51,10 +51,17 @@ struct BoxObject : public Object {
   double radius3;
 };
 
+enum WitnessType {WITNESS_VERTEX, WITNESS_EDGE, WITNESS_FACE};
 struct Witness {
   Vector3 point1;
   Vector3 point2;
   double distance;
+  WitnessType typeOnA;
+  WitnessType typeOnB;
+  int idOnA; //Vertex, edge or face number 
+  int idOnB; //Vertex, edge or face number 
+  double paramOnA; //Parameter along edge
+  double paramOnB;
 };
 
 double
@@ -94,6 +101,7 @@ getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 
 void
 getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
-    const std::vector<Vector3> & BEdges, std::vector<Witness> &edgeWitnesses);
+    const std::vector<Vector3> & BEdges, std::vector<Witness> &edgeWitnesses,
+    bool intersecting);
 };
 #endif //RelationEvaluation_hpp
