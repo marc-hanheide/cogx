@@ -864,7 +864,6 @@ namespace spatial
                 + 1).prob * multiplier1);
       }
     }
-    linecloudp.set_scale(0.1);
     /* Display pdfIn in as line cloud PB END */
 
   }
