@@ -845,7 +845,7 @@ namespace spatial
 
     /* Display pdfIn in PB as Line Cloud BEGIN */
 
-    double multiplier1 = 3.0;
+    double multiplier1 = 100.0;
     double xW2, yW2, xW3, yW3;
     peekabot::LineCloudProxy linecloudp;
 
