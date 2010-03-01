@@ -254,7 +254,7 @@ namespace spatial
       m_PeekabotClient.connect("localhost", 5050, true);
       m_ProxyPrior.add(m_PeekabotClient, "root.Prior",
           peekabot::REPLACE_ON_CONFLICT);
-      m_ProxyPosterior.add(m_PeekabotClient, "root.Posterior",
+      m_ProxyPDFIn.add(m_PeekabotClient, "root.PDFIn",
           peekabot::REPLACE_ON_CONFLICT);
       m_ProxySeenMap.add(m_PeekabotClient, "root.SeenMap",
           peekabot::REPLACE_ON_CONFLICT);
@@ -572,7 +572,7 @@ namespace spatial
                 + 1).prob * multiplier1);
       }
     }
-    /* Display Posterior in as line cloud PB END */
+    /* Display pdfIn in as line cloud PB END */
 
   }
 
@@ -620,7 +620,7 @@ namespace spatial
       return;
     }
 
-    /* Display Posterior in PB as Line Cloud BEGIN */
+    /* Display pdfIn in PB as Line Cloud BEGIN */
 
     double multiplier1 = 50.0;
     double xW2, yW2, xW3, yW3;
@@ -655,7 +655,7 @@ namespace spatial
                 + 1).prob * multiplier1);
       }
     }
-    /* Display Posterior in as line cloud PB END */
+    /* Display pdfIn in as line cloud PB END */
 
     /* DEBUG */
     double sumin = 0.0;
@@ -666,8 +666,8 @@ namespace spatial
         sumin += (*m_pdf)(x, y).prob;
       }
     }
-    log("posterior sums to: %f", sumin);
-    log("posterior + Cout sums to: %f", sumin + pOut);
+    log("pdfIn sums to: %f", sumin);
+    log("pdfIn + Cout sums to: %f", sumin + pOut);
 
     /* DEBUG */
 
@@ -711,10 +711,10 @@ namespace spatial
         sumin += (*m_pdf)(x, y).prob;
       }
     }
-    log("posterior sums to: %f", sumin);
-    log("posterior + Cout sums to: %f", sumin + pOut);
+    log("pdfIn sums to: %f", sumin);
+    log("pdfIn + Cout sums to: %f", sumin + pOut);
 
-    /* Display Posterior in PB as Line Cloud BEGIN */
+    /* Display pdfIn in PB as Line Cloud BEGIN */
 
     //double multiplier1 = 500.0;
     //double xW2, yW2,xW3,yW3;
@@ -746,7 +746,7 @@ namespace spatial
             xW3, yW3 - 8, (*m_pdf)(x, y + 1).prob * multiplier1);
       }
     }
-    /* Display Posterior in as line cloud PB END */
+    /* Display pdfIn in as line cloud PB END */
 
   }
 
@@ -775,12 +775,10 @@ namespace spatial
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         InsideBeforeSum += (*m_pdf)(x, y).prob;
-        if ((*m_lgm)(x, y) == 3)
-          log("plane before: %f", (*m_pdf)(x, y).prob);
       }
     }
-    log("posterior sums to: %f", InsideBeforeSum);
-    log("posterior + Cout sums to: %f", InsideBeforeSum + pOut);
+    log("pdf sums to: %f", InsideBeforeSum);
+    log("pdf + Cout sums to: %f", InsideBeforeSum + pOut);
 
     // For a new plane observation shift probabilities accordingly
     std::pair<int, int> tmp;
@@ -794,11 +792,6 @@ namespace spatial
           (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
               / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
                   * (*m_pdf)(x, y).prob);
-          log("%f %f %f", m_pPlaneGivenObj, (*m_pdf)(x, y).prob,
-              m_pPlaneGivenNotObj);
-          log("denom: %f", (m_pPlaneGivenObj * (*m_pdf)(x, y).prob
-              + m_pPlaneGivenNotObj * (*m_pdf)(x, y).prob));
-
         }
         else {
           if ((*m_lgm)(x, y) == 0 && !(*m_pdf)(x, y).isChecked) {
@@ -843,12 +836,12 @@ namespace spatial
         sumin += (*m_pdf)(x, y).prob;
       }
     }
-    log("posterior sums to: %f", sumin);
-    log("posterior + Cout sums to: %f", sumin + pOut);
+    log("pdfIn sums to: %f", sumin);
+    log("pdfIn + Cout sums to: %f", sumin + pOut);
 
     /* DEBUG */
 
-    /* Display Posterior in PB as Line Cloud BEGIN */
+    /* Display pdfIn in PB as Line Cloud BEGIN */
 
     double multiplier1 = 3.0;
     double xW2, yW2, xW3, yW3;
@@ -883,7 +876,7 @@ namespace spatial
                 + 1).prob * multiplier1);
       }
     }
-    /* Display Posterior in as line cloud PB END */
+    /* Display pdfIn in as line cloud PB END */
 
   }
   void

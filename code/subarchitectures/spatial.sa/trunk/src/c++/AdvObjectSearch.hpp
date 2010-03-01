@@ -114,7 +114,7 @@ namespace spatial
     NavData::RobotPose2dPtr lastRobotPose;
 
     peekabot::PeekabotClient m_PeekabotClient;
-    peekabot::PointCloudProxy m_ProxyPrior,m_ProxyPosterior,m_ProxySeenMap;
+    peekabot::PointCloudProxy m_ProxyPrior,m_ProxyPDFIn,m_ProxySeenMap;
 
 
 
