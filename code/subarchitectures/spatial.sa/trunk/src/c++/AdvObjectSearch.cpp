@@ -160,7 +160,7 @@ namespace spatial
     log("Loaded objects.");
 
     PDFData def;
-    def.prob = 0;
+    def.prob = pIn / pow(double((2*gridsize+1)),2);
     def.isSeen = false;
     def.isChecked = false;
 
@@ -282,7 +282,7 @@ namespace spatial
       }
       else if (key == 116) {
         log("Table mode!");
-        SetPrior();
+        //SetPrior();
         m_table_phase = true;
 
       }
@@ -334,7 +334,7 @@ namespace spatial
           }
         }
 
-        SetPrior();
+        //SetPrior();
         PlaneObservationUpdate(NewPlanePoints);
 
       }
@@ -521,15 +521,9 @@ namespace spatial
   }
 
   void
-  AdvObjectSearch::SetPrior() {
+  AdvObjectSearch::DisplayPriorinPB() {
 
     double uUnit = pIn / pow(double((2*m_lgm->getSize()+1)),2);
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-           (*m_pdf)(x, y).prob = uUnit;
-          }
-    }
 
     /* DEBUG */
     double sumin = 0.0;
@@ -800,9 +794,10 @@ namespace spatial
             (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
                 / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
                     * (*m_pdf)(x, y).prob);
+            log("%f %f %f", m_pPlaneGivenObj, (*m_pdf)(x, y).prob, m_pPlaneGivenNotObj);
             log("denom: %f",(m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
                     * (*m_pdf)(x, y).prob));
-            log("plane point %f", (*m_pdf)(x, y).prob);
+
           }
           else {
             if ((*m_lgm)(x, y) == 0 &&  !(*m_pdf)(x, y).isChecked) {
