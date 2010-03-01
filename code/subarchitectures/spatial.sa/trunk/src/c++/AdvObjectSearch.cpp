@@ -780,8 +780,6 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((*m_lgm)(x, y) == 2)
-              continue;
             InsideBeforeSum += (*m_pdf)(x, y).prob;
             if ((*m_lgm)(x, y) == 3)
               log("plane before: %f", (*m_pdf)(x, y).prob);
@@ -802,6 +800,8 @@ namespace spatial
             (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
                 / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
                     * (*m_pdf)(x, y).prob);
+            log("denom: %f",(m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
+                    * (*m_pdf)(x, y).prob));
             log("plane point %f", (*m_pdf)(x, y).prob);
           }
           else {
