@@ -395,8 +395,8 @@ namespace spatial
 
   void
   AdvObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
-    log("Ignoring laser scans!!");
-    return;
+    //log("Ignoring laser scans!!");
+    //return;
 
     debug("Got scan with n=%d and t=%ld.%06ld", castScan.ranges.size(),
         (long) castScan.time.s, (long) castScan.time.us);
@@ -796,7 +796,7 @@ namespace spatial
                   * (*m_pdf)(x, y).prob);
         }
         else {
-          if ((*m_lgm)(x, y) == 0 && !(*m_pdf)(x, y).isChecked) {
+          if (((*m_lgm)(x, y) == 0 ||(*m_lgm)(x, y) == 2) && !(*m_pdf)(x, y).isChecked) {
             (*m_pdf)(x, y).isChecked = true;
             (*m_pdf)(x, y).prob = m_pFreeGivenObj * (*m_pdf)(x, y).prob
                 / (m_pFreeGivenObj * (*m_pdf)(x, y).prob + m_pFreeGivenNotObj
@@ -843,8 +843,7 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        //if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
-        if (y == m_lgm->getSize())
+        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
@@ -856,8 +855,7 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        //if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
-        if (x == m_lgm->getSize())
+        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
