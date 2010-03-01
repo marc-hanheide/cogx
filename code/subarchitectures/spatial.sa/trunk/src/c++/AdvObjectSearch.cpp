@@ -333,8 +333,6 @@ namespace spatial
             }
           }
         }
-
-        //SetPrior();
         PlaneObservationUpdate(NewPlanePoints);
 
       }
@@ -506,7 +504,7 @@ namespace spatial
       for (unsigned int i = 0; i < objData->points.size(); i++) {
         m_lgm->worldCoords2Index(objData->points.at(i).x,
             objData->points.at(i).y, CoordPair.first, CoordPair.second);
-        if ((*m_lgm)(CoordPair.first, CoordPair.second) != 3) {
+        if ((*m_lgm)(CoordPair.first, CoordPair.second) != 3 && !(*m_pdf)(CoordPair.first, CoordPair.second).isChecked) {
             NewPlanePoints.insert(CoordPair);
         }
 
