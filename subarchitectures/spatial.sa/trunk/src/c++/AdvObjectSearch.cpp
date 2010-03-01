@@ -395,6 +395,8 @@ namespace spatial
 
   void
   AdvObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
+    log("Ignoring laser scans!!");
+    return;
 
     debug("Got scan with n=%d and t=%ld.%06ld", castScan.ranges.size(),
         (long) castScan.time.s, (long) castScan.time.us);
