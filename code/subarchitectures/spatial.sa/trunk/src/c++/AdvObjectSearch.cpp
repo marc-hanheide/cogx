@@ -802,6 +802,8 @@ namespace spatial
             if ((*m_lgm)(x, y) == 2)
               continue;
             InsideBeforeSum += (*m_pdf)(x, y).prob;
+            if ((*m_lgm)(x, y) == 3)
+              log("plane before: %f", (*m_pdf)(x, y).prob);
           }
         }
     log("posterior sums to: %f", InsideBeforeSum);
@@ -814,7 +816,7 @@ namespace spatial
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
           tmp.first = x;
           tmp.second = y;
-          if (!(*m_pdf)(x, y).isChecked && NewPlanePoints.find(tmp) != end ) { // this is a new plane point
+          if (!(*m_pdf)(x, y).isChecked && (*m_lgm)(x, y) == 3 ) { // this is a new plane point
             (*m_pdf)(x, y).isChecked = true;
             (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
                 / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
