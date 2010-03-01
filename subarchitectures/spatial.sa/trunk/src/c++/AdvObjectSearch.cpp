@@ -816,7 +816,6 @@ namespace spatial
     // Get Sum after update
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) != 2)
           InsideAfterSum += (*m_pdf)(x, y).prob;
       }
     }
