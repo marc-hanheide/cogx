@@ -274,8 +274,9 @@ namespace spatial
       }
       else if (key == 116) {
         log("Table mode!");
-        m_table_phase = true;
-	SetPrior();
+        SetPrior();
+	m_table_phase = true;
+	
       }
       else if (key == 112) {
         log("Getting next view");
@@ -539,7 +540,7 @@ namespace spatial
         (*m_lgm)(xG, yG) = 3;
         CoordPair.first = xG;
         CoordPair.second = yG;
-        if (m_AllPlanePoints.find(CoordPair) != m_AllPlanePoints.end()){
+        if (m_AllPlanePoints.find(CoordPair) == m_AllPlanePoints.end()){
           m_AllPlanePoints.insert(CoordPair);
           NewPlanePoints.insert(CoordPair);
         }
@@ -680,7 +681,7 @@ namespace spatial
 
     /* Display Posterior in PB as Line Cloud BEGIN */
 
-    double multiplier1 = 200.0;
+    double multiplier1 = 50.0;
     double xW2, yW2, xW3, yW3;
     peekabot::LineCloudProxy linecloudp;
 
@@ -845,7 +846,7 @@ namespace spatial
      *                 ---------------------
      *                 p(plane|c_i)p(c_i|z) + p(plane |z, not(c_i))p(not(c_i) | z) for i = 0...N
      */
-    log("Plane observation update called!");
+    log("Plane observation update called! size: %d",NewPlanePoints.size());
     m_pPlaneGivenObj = 0.7;
     m_pFreeGivenObj = 0.05;
     m_pObsGivenObj = 0.25;
@@ -896,6 +897,7 @@ namespace spatial
               * (*m_lgm_posterior)(x, y) / (m_pPlaneGivenObj
               * (*m_lgm_posterior)(x, y) + m_pPlaneGivenNotObj
               * (*m_lgm_posterior)(x, y));
+	  log("plane point %f", (*m_lgm_posterior)(x,y));
         }
         else {
           if ((*m_lgm_posterior)(x, y) == 0) {
@@ -953,7 +955,7 @@ namespace spatial
 
        /* Display Posterior in PB as Line Cloud BEGIN */
 
-       double multiplier1 = 200.0;
+       double multiplier1 = 3.0;
        double xW2, yW2, xW3, yW3;
        peekabot::LineCloudProxy linecloudp;
 
