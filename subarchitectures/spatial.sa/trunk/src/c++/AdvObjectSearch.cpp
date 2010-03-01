@@ -506,10 +506,12 @@ namespace spatial
       for (unsigned int i = 0; i < objData->points.size(); i++) {
         m_lgm->worldCoords2Index(objData->points.at(i).x,
             objData->points.at(i).y, CoordPair.first, CoordPair.second);
-        (*m_lgm)(CoordPair.first, CoordPair.second) = 3;
-        if (!(*m_pdf)(CoordPair.first, CoordPair.second).isChecked) {
-          NewPlanePoints.insert(CoordPair);
+        if ((*m_lgm)(CoordPair.first, CoordPair.second) != 3) {
+            NewPlanePoints.insert(CoordPair);
         }
+
+        (*m_lgm)(CoordPair.first, CoordPair.second) = 3;
+
         // TODO: do not initialize PDF with fixed value if on the fly adding of planes is on.
       }
       if (NewPlanePoints.size() > 0)
@@ -787,7 +789,7 @@ namespace spatial
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         tmp.first = x;
         tmp.second = y;
-        if (!(*m_pdf)(x, y).isChecked && (*m_lgm)(x, y) == 3) { // this is a new plane point
+        if (NewPlanePoints.find(tmp) != end) { // this is a new plane point
           (*m_pdf)(x, y).isChecked = true;
           (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
               / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
