@@ -79,7 +79,7 @@ namespace spatial
 
     void SampleGrid();
     int NextBestView();
-    void SetPrior();
+    void DisplayPriorinPB();
     void GoToNBV();
     std::vector<std::vector<int> > GetViewCones();
     std::vector<int> GetInsideViewCone(XVector3D &a, bool addall);
