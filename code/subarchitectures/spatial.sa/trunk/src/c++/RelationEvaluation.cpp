@@ -1173,45 +1173,47 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
     {-boxA.radius1, boxA.radius2, -boxA.radius3},
     {-boxA.radius1, -boxA.radius2, -boxA.radius3},
     {boxA.radius1, -boxA.radius2, -boxA.radius3}};
+  Vector3 AVerticesInB[8];
+  Vector3 BVerticesInA[8];
   for (int i = 0; i < 8; i++) {
-    BVertices[i] = transform(BposeInA, BVertices[i]);
-    AVertices[i] = transform(AposeInB, AVertices[i]);
+    BVerticesInA[i] = transform(BposeInA, BVertices[i]);
+    AVerticesInB[i] = transform(AposeInB, AVertices[i]);
   }
 
   double wr = boxA.radius1;
   double dr = boxA.radius2;
   double hr = boxA.radius3;
 
-  bool intersecting = isIntersecting(wr, dr, hr, BVertices);
+  bool intersecting = isIntersecting(wr, dr, hr, BVerticesInA);
 
   vector<Vector3> BEdges;
   BEdges.reserve(12);
   vector<Vector3> AEdges;
   AEdges.reserve(12);
   for (int edgeNo = 0; edgeNo < 12; edgeNo++) {
-    Vector3 &point1 = BVertices[edges[edgeNo*2]];
-    Vector3 &point2 = BVertices[edges[edgeNo*2+1]];
+    Vector3 &point1 = BVerticesInA[edges[edgeNo*2]];
+    Vector3 &point2 = BVerticesInA[edges[edgeNo*2+1]];
     Vector3 edge = point2 - point1; 
     BEdges.push_back(edge);
 
-    Vector3 &point3 = AVertices[edges[edgeNo*2]];
-    Vector3 &point4 = AVertices[edges[edgeNo*2+1]];
+    Vector3 &point3 = AVerticesInB[edges[edgeNo*2]];
+    Vector3 &point4 = AVerticesInB[edges[edgeNo*2+1]];
     edge = point4 - point3; 
     AEdges.push_back(edge);
   }
 
   vector<Witness> cornerWitnessesBInA;
-  getCornerWitnesses(wr, dr, hr, BVertices, BEdges, cornerWitnessesBInA);
+  getCornerWitnesses(wr, dr, hr, BVerticesInA, BEdges, cornerWitnessesBInA);
 
   vector<Witness> edgeWitnesses;
-  getEdgeWitnesses(wr, dr, hr, BVertices, BEdges, edgeWitnesses);
+  getEdgeWitnesses(wr, dr, hr, BVerticesInA, BEdges, edgeWitnesses, intersecting);
 
   wr = boxB.radius1;
   dr = boxB.radius2;
   hr = boxB.radius3;
 
   vector<Witness> cornerWitnessesAInB;
-  getCornerWitnesses(wr, dr, hr, AVertices, AEdges, cornerWitnessesAInB);
+  getCornerWitnesses(wr, dr, hr, AVerticesInB, AEdges, cornerWitnessesAInB);
 
   if (intersecting) {
     double minDistance = -FLT_MAX;
@@ -1235,6 +1237,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
       }
     }
     for(unsigned int i = 0; i < edgeWitnesses.size(); i++) {
+      edgeWitnesses[i].distance = -edgeWitnesses[i].distance;
       if (edgeWitnesses[i].distance > minDistance) {
 	minDistance = edgeWitnesses[i].distance;
 	outWitnessPoint1 = transform(boxA.pose, edgeWitnesses[i].point1);
@@ -1248,26 +1251,322 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
     return minDistance;
   }
   else {
-    double minDistance = FLT_MAX;
-    bool found=false;
+    //Find the witness points that are closest.
+    //If the closest witness point is vertex-face, and the face point is not actually
+    //on the face, the closest distance is a vertex-edge or a vertex-vertex case.
+    //If an edge-edge witness pair, and one of the witness points isn't on the edge,
+    //it's a vertex-edge case; if neither is, it's a vertex-vertex case.
+    Witness bestWitness;
+    bestWitness.distance = FLT_MAX;
+    wr = boxA.radius1;
+    dr = boxA.radius2;
+    hr = boxA.radius3;
+
+    const int edgeOverflowX[] = {3,1, 4,6, -1,-1, 10,8, -1,-1, 11,7};
+    const int edgeOverflowY[] = {0,2, -1,-1, 6,8, -1,-1, 4,10, 5,9};
+    const int edgeOverflowZ[] = {-1,-1, 0,5, 1,7, 2,9, 3,11, -1,-1};
+
+    vector<Witness> cornerEdgeWitnessesBInA;
+    vector<Witness> cornerEdgeWitnessesAInB;
+
     for(unsigned int i = 0; i < cornerWitnessesBInA.size(); i++) {
-      if (cornerWitnessesBInA[i].distance < minDistance) {
-	minDistance = cornerWitnessesBInA[i].distance;
-	outWitnessPoint1 = transform(boxA.pose, cornerWitnessesBInA[i].point1);
-	outWitnessPoint2 = transform(boxA.pose, cornerWitnessesBInA[i].point2);
+      if (cornerWitnessesBInA[i].distance < bestWitness.distance &&
+	  cornerWitnessesBInA[i].distance >= 0) {
+	Witness nextBestWitness = cornerWitnessesBInA[i];
 
-	found = true;
+	// Check whether the vertex' projection is on the face
+
+	// Indices of the edges that a face borders on in posivite/negative
+	// direction of X, Y, Z
+	int faceID = nextBestWitness.idOnA;
+	if (nextBestWitness.point1.x >= wr &&
+	    edgeOverflowX[faceID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowX[faceID*2];
+	  nextBestWitness.point1.x = wr;
+	}
+	else if (nextBestWitness.point1.x <= -wr &&
+	    edgeOverflowX[faceID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowX[faceID*2+1];
+	  nextBestWitness.point1.x = -wr;
+	}
+	else if (nextBestWitness.point1.y >= dr &&
+	    edgeOverflowY[faceID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowY[faceID*2];
+	  nextBestWitness.point1.y = dr;
+	}
+	else if (nextBestWitness.point1.y <= -dr &&
+	    edgeOverflowY[faceID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowY[faceID*2+1];
+	  nextBestWitness.point1.y = -dr;
+	}
+	else if (nextBestWitness.point1.z >= hr &&
+	    edgeOverflowZ[faceID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowZ[faceID*2];
+	  nextBestWitness.point1.z = hr;
+	}
+	else if (nextBestWitness.point1.z <= -hr &&
+	    edgeOverflowZ[faceID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowZ[faceID*2+1];
+	  nextBestWitness.point1.z = -hr;
+	}
+	else {
+	  bestWitness = nextBestWitness; 
+	  // Transform the points into global coordinates
+	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
+	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	  continue;
+	}
+
+	nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
+	cornerEdgeWitnessesBInA.push_back(nextBestWitness);
       }
     }
+
+    for(unsigned int i = 0; i < edgeWitnesses.size(); i++) {
+      if (edgeWitnesses[i].distance < bestWitness.distance) {
+	Witness nextBestWitness = edgeWitnesses[i];
+
+	bool newDistance = false;
+	if (nextBestWitness.paramOnA > 1.0) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = edges[nextBestWitness.idOnA*2+1];
+	  nextBestWitness.point1 = AVertices[nextBestWitness.idOnA];
+	  newDistance = true;
+	}
+	if (nextBestWitness.paramOnA < 0.0) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = edges[nextBestWitness.idOnA*2];
+	  nextBestWitness.point1 = AVertices[nextBestWitness.idOnA];
+	  newDistance = true;
+	}
+	if (nextBestWitness.paramOnB > 1.0) {
+	  nextBestWitness.typeOnB = WITNESS_VERTEX;
+	  nextBestWitness.idOnB = edges[nextBestWitness.idOnB*2+1];
+	  nextBestWitness.point2 = BVerticesInA[nextBestWitness.idOnB];
+	  newDistance = true;
+	}
+	if (nextBestWitness.paramOnB < 0.0) {
+	  nextBestWitness.typeOnB = WITNESS_VERTEX;
+	  nextBestWitness.idOnB = edges[nextBestWitness.idOnB*2];
+	  nextBestWitness.point2 = BVerticesInA[nextBestWitness.idOnB];
+	  newDistance = true;
+	}
+
+	if (newDistance) {
+	  nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
+	}
+
+	if (!newDistance || nextBestWitness.distance < bestWitness.distance) {
+	  bestWitness = nextBestWitness;
+	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
+	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	}
+
+      }
+    }
+    
+    const int vertexOverflowX[]={0,1, -1,-1, 3,2, -1,-1, -1,-1, 4,5, -1,-1, -1,-1,
+      -1,-1, 7,6, -1,-1, -1,-1};
+    const int vertexOverflowY[]={-1,-1, 1,2, -1,-1, 0,3, -1,-1, -1,-1, -1,-1, 5,6,
+      -1,-1, -1,-1, -1,-1, 4,7};
+    const int vertexOverflowZ[]={-1,-1, -1,-1, -1,-1, -1,-1, 0,4, -1,-1, 1,5, -1,-1,
+      2,6, -1,-1, 3,7, -1,-1};
+
+    for (unsigned int i = 0; i < cornerEdgeWitnessesBInA.size(); i++) {
+      if (cornerEdgeWitnessesBInA[i].distance < bestWitness.distance) {
+	Witness nextBestWitness = cornerEdgeWitnessesBInA[i];
+
+	int edgeID = nextBestWitness.idOnA;
+
+	if (nextBestWitness.point1.x > wr &&
+	    vertexOverflowX[edgeID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowX[edgeID*2];
+	  nextBestWitness.point1.x = wr;
+	}
+	else if (nextBestWitness.point1.x < -wr &&
+	    vertexOverflowX[edgeID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowX[edgeID*2+1];
+	  nextBestWitness.point1.x = -wr;
+	}
+	else if (nextBestWitness.point1.y > dr &&
+	    vertexOverflowY[edgeID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowY[edgeID*2];
+	  nextBestWitness.point1.y = dr;
+	}
+	else if (nextBestWitness.point1.y < -dr &&
+	    vertexOverflowY[edgeID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowY[edgeID*2+1];
+	  nextBestWitness.point1.y = -dr;
+	}
+	else if (nextBestWitness.point1.z > hr &&
+	    vertexOverflowZ[edgeID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowZ[edgeID*2];
+	  nextBestWitness.point1.z = hr;
+	}
+	else if (nextBestWitness.point1.z < -hr &&
+	    vertexOverflowZ[edgeID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowZ[edgeID*2+1];
+	  nextBestWitness.point1.y = -hr;
+	}
+	else {
+	  bestWitness = nextBestWitness;
+	  // Transform the points into global coordinates
+	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
+	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	  continue;
+	}
+
+	nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
+	if (nextBestWitness.distance < bestWitness.distance)
+	{
+	  bestWitness = nextBestWitness;
+	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
+	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	}
+      }
+    }
+
+    wr = boxB.radius1;
+    dr = boxB.radius2;
+    hr = boxB.radius3;
     for(unsigned int i = 0; i < cornerWitnessesAInB.size(); i++) {
-      if (cornerWitnessesAInB[i].distance < minDistance) {
-	minDistance = cornerWitnessesAInB[i].distance;
-	outWitnessPoint1 = transform(boxB.pose, cornerWitnessesAInB[i].point1);
-	outWitnessPoint2 = transform(boxB.pose, cornerWitnessesAInB[i].point2);
+      if (cornerWitnessesAInB[i].distance < bestWitness.distance &&
+	  cornerWitnessesAInB[i].distance >= 0) {
+	Witness nextBestWitness = cornerWitnessesAInB[i];
 
-	found = true;
+	// Check whether the vertex' projection is on the face
+
+	// Indices of the edges that a face borders on in posivite/negative
+	// direction of X, Y, Z
+	int faceID = nextBestWitness.idOnA;
+	if (nextBestWitness.point1.x >= wr &&
+	    edgeOverflowX[faceID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowX[faceID*2];
+	  nextBestWitness.point1.x = wr;
+	}
+	else if (nextBestWitness.point1.x <= -wr &&
+	    edgeOverflowX[faceID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowX[faceID*2+1];
+	  nextBestWitness.point1.x = -wr;
+	}
+	else if (nextBestWitness.point1.y >= dr &&
+	    edgeOverflowY[faceID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowY[faceID*2];
+	  nextBestWitness.point1.y = dr;
+	}
+	else if (nextBestWitness.point1.y <= -dr &&
+	    edgeOverflowY[faceID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowY[faceID*2+1];
+	  nextBestWitness.point1.y = -dr;
+	}
+	else if (nextBestWitness.point1.z >= hr &&
+	    edgeOverflowZ[faceID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowZ[faceID*2];
+	  nextBestWitness.point1.z = hr;
+	}
+	else if (nextBestWitness.point1.z <= -hr &&
+	    edgeOverflowZ[faceID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_EDGE;
+	  nextBestWitness.idOnA = edgeOverflowZ[faceID*2+1];
+	  nextBestWitness.point1.z = -hr;
+	}
+	else {
+	  bestWitness = nextBestWitness; 
+	  // Transform the points into global coordinates
+	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
+	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	  continue;
+	}
+
+	nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
+	cornerEdgeWitnessesAInB.push_back(nextBestWitness);
       }
     }
+
+    for (unsigned int i = 0; i < cornerEdgeWitnessesAInB.size(); i++) {
+      if (cornerEdgeWitnessesAInB[i].distance < bestWitness.distance) {
+	Witness nextBestWitness = cornerEdgeWitnessesAInB[i];
+
+	int edgeID = nextBestWitness.idOnA;
+
+	if (nextBestWitness.point1.x > wr &&
+	    vertexOverflowX[edgeID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowX[edgeID*2];
+	  nextBestWitness.point1.x = wr;
+	}
+	else if (nextBestWitness.point1.x < -wr &&
+	    vertexOverflowX[edgeID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowX[edgeID*2+1];
+	  nextBestWitness.point1.x = -wr;
+	}
+	else if (nextBestWitness.point1.y > dr &&
+	    vertexOverflowY[edgeID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowY[edgeID*2];
+	  nextBestWitness.point1.y = dr;
+	}
+	else if (nextBestWitness.point1.y < -dr &&
+	    vertexOverflowY[edgeID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowY[edgeID*2+1];
+	  nextBestWitness.point1.y = -dr;
+	}
+	else if (nextBestWitness.point1.z > hr &&
+	    vertexOverflowZ[edgeID*2] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowZ[edgeID*2];
+	  nextBestWitness.point1.z = hr;
+	}
+	else if (nextBestWitness.point1.z < -hr &&
+	    vertexOverflowZ[edgeID*2+1] != -1) {
+	  nextBestWitness.typeOnA = WITNESS_VERTEX;
+	  nextBestWitness.idOnA = vertexOverflowZ[edgeID*2+1];
+	  nextBestWitness.point1.y = -hr;
+	}
+	else {
+	  bestWitness = nextBestWitness;
+	  // Transform the points into global coordinates
+	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
+	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	  continue;
+	}
+
+	nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
+	if (nextBestWitness.distance < bestWitness.distance)
+	{
+	  bestWitness = nextBestWitness;
+	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
+	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	}
+      }
+    }
+
+
+    outWitnessPoint1 = bestWitness.point1;
+    outWitnessPoint2 = bestWitness.point2;
+
+    if (bestWitness.distance > 1e3)
+      bestWitness.distance = 1e3;
+    return bestWitness.distance;
   }
   //If there is a collision:
 
@@ -1360,8 +1659,11 @@ getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
   //For each face in A, find the corner(s) of B at which the normal of the face
   //points into B. 
   Witness newWitness;
+  newWitness.typeOnA = WITNESS_FACE;
+  newWitness.typeOnB = WITNESS_VERTEX;
   // Loop over vertices in B
   for (int i = 0; i < 8; i++) {
+    newWitness.idOnB = i;
     Vector3 outgoingEdges[3];
     int edgeNo = 0;
     for (int j = 0; edgeNo < 3 && j < 12; j++) {
@@ -1383,63 +1685,69 @@ getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
     const double x = BVertices[i].x;
     const double y = BVertices[i].y;
     const double z = BVertices[i].z;
-    if (y <= dr && y >= -dr && z <= hr && z >= -hr) {
+//    if (y <= dr && y >= -dr && z <= hr && z >= -hr) {
       if ( outgoingEdges[0].x >= -epsilon && outgoingEdges[1].x >= -epsilon && outgoingEdges[2].x >= -epsilon) {
-	newWitness.point1 = BVertices[i];
 	newWitness.point2 = BVertices[i];
-	newWitness.point2.x = wr;
+	newWitness.point1 = BVertices[i];
+	newWitness.point1.x = wr;
 	newWitness.distance = x - wr;
+	newWitness.idOnA = 4;
 	cornerWitnesses.push_back(newWitness);
       }
       if (outgoingEdges[0].x <= epsilon && outgoingEdges[1].x <= epsilon && outgoingEdges[2].x <= epsilon) {
-	newWitness.point1 = BVertices[i];
 	newWitness.point2 = BVertices[i];
-	newWitness.point2.x = -wr;
+	newWitness.point1 = BVertices[i];
+	newWitness.point1.x = -wr;
 	newWitness.distance = -x - wr;
+	newWitness.idOnA = 2;
 	cornerWitnesses.push_back(newWitness);
       }
-    }
+//    }
 
 
-    if (x <= wr && x >= -wr && z <= hr && z >= -hr) {
+//    if (x <= wr && x >= -wr && z <= hr && z >= -hr) {
       if (outgoingEdges[0].y >= -epsilon && outgoingEdges[1].y >= -epsilon && outgoingEdges[2].y >= -epsilon) {
-	newWitness.point1 = BVertices[i];
 	newWitness.point2 = BVertices[i];
-	newWitness.point2.y = dr;
+	newWitness.point1 = BVertices[i];
+	newWitness.point1.y = dr;
 	newWitness.distance = y - dr;
+	newWitness.idOnA = 1;
 	cornerWitnesses.push_back(newWitness);
       }
       if (outgoingEdges[0].y <= epsilon && outgoingEdges[1].y <= epsilon && outgoingEdges[2].y <= epsilon) {
-	newWitness.point1 = BVertices[i];
 	newWitness.point2 = BVertices[i];
-	newWitness.point2.y = -dr;
+	newWitness.point1 = BVertices[i];
+	newWitness.point1.y = -dr;
 	newWitness.distance = -y - dr;
+	newWitness.idOnA = 3;
 	cornerWitnesses.push_back(newWitness);
       }
-    }
+//    }
 
-    if (y <= dr && y >= -dr && x <= wr && x >= -wr) {
+//    if (y <= dr && y >= -dr && x <= wr && x >= -wr) {
       if (outgoingEdges[0].z >= -epsilon && outgoingEdges[1].z >= -epsilon && outgoingEdges[2].z >= -epsilon) {
-	newWitness.point1 = BVertices[i];
 	newWitness.point2 = BVertices[i];
-	newWitness.point2.z = hr;
+	newWitness.point1 = BVertices[i];
+	newWitness.point1.z = hr;
 	newWitness.distance = z - hr;
+	newWitness.idOnA = 0;
 	cornerWitnesses.push_back(newWitness);
       }
       if (outgoingEdges[0].z <= epsilon && outgoingEdges[1].z <= epsilon && outgoingEdges[2].z <= epsilon) {
-	newWitness.point1 = BVertices[i];
 	newWitness.point2 = BVertices[i];
-	newWitness.point2.z = -hr;
+	newWitness.point1 = BVertices[i];
+	newWitness.point1.z = -hr;
 	newWitness.distance = -z - hr;
+	newWitness.idOnA = 5;
 	cornerWitnesses.push_back(newWitness);
       }
-    }
+//    }
   }
 }
 
 void
 getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
-    const vector<Vector3> &BEdges, vector<Witness> &edgeWitnesses)
+    const vector<Vector3> &BEdges, vector<Witness> &edgeWitnesses, bool intersecting)
 {
   const Vector3 zeroVec = vector3(0,0,0);
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
@@ -1488,7 +1796,8 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
     // Vector3 normal = dot(offset, crossVec) * crossVec;
     // ...but with A axis-aligned we can get rid of some math
     Vector3 edgeDir = BEdges[i];
-    normalise(edgeDir);
+    double edgeLength = length(edgeDir);
+    edgeDir = edgeDir/edgeLength;
     double axisDir1 = axisDirections[i*3];
     double axisDir2 = axisDirections[i*3+1];
     double axisDir3 = axisDirections[i*3+2];
@@ -1515,15 +1824,30 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
       //Vector3 crossVec = vector3(0, edgeDir.z, -edgeDir.y);
       Vector3 normal = crossVecs[j] * dot(offset, crossVecs[j]); 
       if (!vequals(normal, zeroVec, epsilon)) {
-	// Check that normal points into A
-	if (normal.x * edgeManifoldComponentsX[j] >= 0 &&
+	bool acceptableNormal;
+	if (intersecting) {
+	  // Check that normal points into A (for intersection)
+	  // or out of A (for non-intersection)
+	  acceptableNormal = 
+	    normal.x * edgeManifoldComponentsX[j] >= 0 &&
 	    normal.y * edgeManifoldComponentsY[j] >= 0 && 
 	    normal.z * edgeManifoldComponentsZ[j] >= 0 &&
-//	if (normal.y <= 0 && normal.z <= 0 &&
-	    // Check that normal points out of B
+	    // Check that normal points out of B (for intersection)
+	    // or into B (for non-intersection)
 	    axisDir1*dot(normal, axis1) <= 0 && 
 	    axisDir2*dot(normal, axis2) <= 0 &&
-	    axisDir3*dot(normal, axis3) <= 0) {
+	    axisDir3*dot(normal, axis3) <= 0;
+	}
+	else {
+	  acceptableNormal = 
+	    normal.x * edgeManifoldComponentsX[j] <= 0 &&
+	    normal.y * edgeManifoldComponentsY[j] <= 0 && 
+	    normal.z * edgeManifoldComponentsZ[j] <= 0 &&
+	    axisDir1*dot(normal, axis1) >= 0 && 
+	    axisDir2*dot(normal, axis2) >= 0 &&
+	    axisDir3*dot(normal, axis3) >= 0;
+	}
+	if (acceptableNormal) {
 	  normalise(normal);
 	  double distance = dot(offset, normal);
 	  Vector3 projectedOffset = offset - normal * distance;
@@ -1541,9 +1865,17 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 	    intersectionParamThisEdge = 0.0;
 	  }
 	  Witness newWitness;
-	  newWitness.point2 = AVerts[edges[j*2]] + AEdges[j]*intersectionParamThisEdge;
-	  newWitness.point1 = newWitness.point2 + normal*distance;
-	  newWitness.distance = -distance;
+	  newWitness.point1 = AVerts[edges[j*2]] + AEdges[j]*intersectionParamThisEdge;
+	  newWitness.point2 = newWitness.point1 + normal*distance;
+	  newWitness.typeOnA = WITNESS_EDGE;
+	  newWitness.typeOnB = WITNESS_EDGE;
+	  newWitness.idOnA = j;
+	  newWitness.idOnB = i;
+	  newWitness.paramOnA = intersectionParamThisEdge;
+	  newWitness.paramOnB = dot(edgeDir, 
+	      newWitness.point2 - BVertices[edges[i*2]]) / edgeLength;
+
+	  newWitness.distance = distance;
 	  edgeWitnesses.push_back(newWitness);
 	}
       }
