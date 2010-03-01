@@ -522,30 +522,13 @@ namespace spatial
 
   void
   AdvObjectSearch::SetPrior() {
-    int TypeCount[3] =
-      { 0 };
+
+    double uUnit = pIn / pow(double((2*m_lgm->getSize()+1)),2);
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 0)
-          TypeCount[0]++;
-        else if ((*m_lgm)(x, y) == 1)
-          TypeCount[1]++;
-        else if ((*m_lgm)(x, y) == 3)
-          TypeCount[2]++;
-      }
-    }
-
-    double uFree, uObs, uPlanar, uUnit;
-    uFree = pFree / TypeCount[0];
-    uObs = pObs / TypeCount[1];
-    uPlanar = pPlanar / TypeCount[2];
-    uUnit = pIn / (TypeCount[0] + TypeCount[1] + TypeCount[2]);
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) != 2)
-          (*m_pdf)(x, y).prob = uUnit;
-      }
+          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+           (*m_pdf)(x, y).prob = uUnit;
+          }
     }
 
     /* DEBUG */
