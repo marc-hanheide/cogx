@@ -292,6 +292,9 @@ void ObjectRelationManager::runComponent()
   peekabot::CubeProxy bp2;
   PlaneObject table1;
 
+  peekabot::SphereProxy sp2;
+  peekabot::SphereProxy spm2;
+
   if (m_bTestOnness) {
 
 
@@ -348,10 +351,18 @@ void ObjectRelationManager::runComponent()
     bp.add(m_onnessTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
     bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
     bp.set_scale(0.19, 0.09, 0.29);
+    bp.set_opacity(0.5);
 
     bp2.add(m_onnessTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
     bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
     bp2.set_scale(0.23, 0.21, 0.26);
+    bp2.set_opacity(0.5);
+
+    sp2.add(m_onnessTester, "Onness2", peekabot::REPLACE_ON_CONFLICT);
+    sp2.translate(2.0, 3.0, 1.0);
+    spm2.add(m_onnessTester, "Onness-max2", peekabot::REPLACE_ON_CONFLICT);
+    spm2.translate(2.0, 3.0, 1.0);
+    spm2.set_opacity(0.3);
   }
 
   while (isRunning()) {
@@ -397,7 +408,7 @@ void ObjectRelationManager::runComponent()
 	bottomCOMContainmentOffset = 
 	  supportCOMContainmentOffset = vr.get_result()(2);
       }
-	
+
 
       peekabot::Result<peekabot::Matrix4f> r;
 
@@ -472,16 +483,24 @@ void ObjectRelationManager::runComponent()
 	  box2.radius2 = 0.105;
 	  box2.radius3 = 0.13;
 
-	  peekabot::SphereProxy sp2;
-	  sp2.add(m_onnessTester, "Onness2", peekabot::REPLACE_ON_CONFLICT);
-	  sp2.translate(2.0, 3.0, 1.0);
-	  sp2.set_scale(evaluateOnness(&box2, &box1));
-	  peekabot::SphereProxy spm2;
-	  spm2.add(m_onnessTester, "Onness-max2", peekabot::REPLACE_ON_CONFLICT);
-	  spm2.translate(2.0, 3.0, 1.0);
-	  spm2.set_opacity(0.3);
+	  if (0) {
+	    sp2.set_scale(evaluateOnness(&box2, &box1));
+	  }
 
+	  Vector3 witness1, witness2;
+	  double dist = findContactPatch(box2, box1, witness1, witness2);
+	  sp2.set_scale(dist);
+	  peekabot::SphereProxy witp1;
+	  witp1.add(m_onnessTester, "Witness 1", peekabot::REPLACE_ON_CONFLICT);
+	  witp1.translate(witness1.x, witness1.y, witness1.z);
+	  witp1.set_scale(0.01);
+	  peekabot::SphereProxy witp2;
+	  witp2.add(m_onnessTester, "Witness 2", peekabot::REPLACE_ON_CONFLICT);
+	  witp2.translate(witness2.x, witness2.y, witness2.z);
+	  witp2.set_scale(0.01);
 	}
+
+
       }
     } // if (m_bTestOnness)
 
