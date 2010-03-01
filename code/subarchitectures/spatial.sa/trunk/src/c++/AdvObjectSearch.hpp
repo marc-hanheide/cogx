@@ -92,7 +92,8 @@ namespace spatial
     void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
     void MeasurementUpdate(bool result);
     double ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints);
-    void PlaneObservationUpdate(std::set<std::pair<int,int> >  NewPlanePoints) ;
+    //void PlaneObservationUpdate(std::set<std::pair<int,int> >  NewPlanePoints) ;
+    void GetTotalPDF();
 
   private:
 
@@ -119,7 +120,8 @@ namespace spatial
 
 
     Cure::LocalGridMap<unsigned int>* m_lgm;
-    Cure::LocalGridMap<PDFData>* m_pdf;
+    Cure::LocalGridMap<double>* m_pdf_obj;
+    Cure::LocalGridMap<PDFData>* m_pdf_total;
     Cure::X11DispLocalGridMap<unsigned int>* m_Dlgm;
     Cure::SensorPose m_LaserPoseR;
     Cure::SensorPose m_CamPoseR;
