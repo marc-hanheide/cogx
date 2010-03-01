@@ -159,17 +159,16 @@ namespace spatial
     }
     log("Loaded objects.");
 
-    m_lgm = new Cure::LocalGridMap<unsigned int>(gridsize / 2, cellsize, 2,
-        Cure::LocalGridMap<unsigned int>::MAP1);
-    m_lgm_prior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
-        Cure::LocalGridMap<double>::MAP1);
+    PDFData def;
+    def.prob = 0;
+    def.isSeen = false;
+    def.isChecked = false;
 
-    m_lgm_posterior = new Cure::LocalGridMap<double>(gridsize / 2, cellsize, 0,
-        Cure::LocalGridMap<double>::MAP1);
-
-    m_lgm_seen = new Cure::LocalGridMap<bool>(gridsize / 2, cellsize, false,
+    m_lgm = new Cure::LocalGridMap<unsigned int>(gridsize, cellsize, 2,
         Cure::LocalGridMap<unsigned int>::MAP1);
 
+    m_pdf = new Cure::LocalGridMap<PDFData>(gridsize, cellsize, def,
+        Cure::LocalGridMap<unsigned int>::MAP1);
     m_Dlgm = new Cure::X11DispLocalGridMap<unsigned int>(*m_lgm);
     m_Glrt = new Cure::ObjGridLineRayTracer<unsigned int>(*m_lgm);
 
@@ -195,6 +194,15 @@ namespace spatial
       m_ptzInterface->setPose(p);
 
       m_ProbGivenObjectIsPresent = 0.7;
+
+      m_pPlaneGivenObj = 0.7;
+      m_pFreeGivenObj = 0.05;
+      m_pObsGivenObj = 0.25;
+
+      m_pPlaneGivenNotObj = 0.05;
+      m_pFreeGivenNotObj = 0.8;
+      m_pObsGivenNotObj = 0.15;
+
     }
 
   }
@@ -275,8 +283,8 @@ namespace spatial
       else if (key == 116) {
         log("Table mode!");
         SetPrior();
-	m_table_phase = true;
-	
+        m_table_phase = true;
+
       }
       else if (key == 112) {
         log("Getting next view");
@@ -287,7 +295,7 @@ namespace spatial
         log("Reading plane map!");
         int length;
         char * buffer;
-	// m_Mutex.lock();
+        // m_Mutex.lock();
         ifstream file("planemap.txt");
 
         file.seekg(0, ios::end);
@@ -304,13 +312,13 @@ namespace spatial
             index++;
           }
         }
-        /* Post to WM so that it's visible in PB BEGIN */
+
         SpatialData::PlanePointsPtr PlanePoints;
         PlanePoints = new SpatialData::PlanePoints;
         cogx::Math::Vector3 point;
         double wX, wY;
-              std::pair<int, int> CoordPair;
-              std::set<std::pair<int,int> >  NewPlanePoints;
+        std::pair<int, int> CoordPair;
+        std::set<std::pair<int, int> > NewPlanePoints;
         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
             if ((*m_lgm)(x, y) == 3) {
@@ -325,43 +333,9 @@ namespace spatial
             }
           }
         }
-    
+
         SetPrior();
-	PlaneObservationUpdate(NewPlanePoints);
-
-        /* Display Prior in PB BEGIN */
-        /*  double color[3] = { 0.9, 0.9, 0 };
-         double multiplier = 100.0;
-         double xW, yW;
-         m_ProxyPrior.set_color(color[0], color[1], color[2]);
-         //m_ProxyPrior.set_opacity(0.3);
-         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-         if ((*m_lgm)(x,y) == 2)
-         continue;
-         m_lgm->index2WorldCoords(x, y, xW, yW);
-         m_ProxyPrior.add_vertex(xW, yW, -4 + (*m_lgm_prior)(x, y)
-         * multiplier);
-         }
-         }
-         /* Display Prior in PB END */
-
-        /* Display Posterior in PB BEGIN */
-        /*double color1[3] = { 0.9, 0, 0.9 };
-         multiplier = 1000.0;
-         double xW1, yW1;
-         m_ProxyPosterior.set_color(color1[0], color1[1], color1[2]);
-         //m_ProxyPrior.set_opacity(0.3);
-         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-         if ((*m_lgm)(x,y) == 2)
-         continue;
-         m_lgm->index2WorldCoords(x, y, xW1, yW1);
-         m_ProxyPosterior.add_vertex(xW1, yW1+8,(*m_lgm_posterior)(x, y)
-         * multiplier);
-         }
-         }*/
-        /* Display Posterior in PB END */
+        PlaneObservationUpdate(NewPlanePoints);
 
       }
     }
@@ -480,7 +454,7 @@ namespace spatial
       for (unsigned int j = 0; j < VCones[i].size() / 2; j++) {
         x = VCones[i][2 * j];
         y = VCones[i][2 * j + 1];
-        sum += (*m_lgm_posterior)(x, y);
+        sum += (*m_pdf)(x, y).prob;
       }
       if (sum > highest_sum) {
         highest_sum = sum;
@@ -490,8 +464,8 @@ namespace spatial
     for (unsigned int j = 0; j < VCones[highest_VC_index].size() / 2; j++) {
       x = VCones[highest_VC_index][2 * j];
       y = VCones[highest_VC_index][2 * j + 1];
-      if (!(*m_lgm_seen)(x, y))
-        (*m_lgm_seen)(x, y) = true;
+      if (!(*m_pdf)(x, y).isSeen)
+        (*m_pdf)(x, y).isSeen = true;
     }
     m_CurrentViewPoint_Points = VCones[highest_VC_index];
 
@@ -504,7 +478,7 @@ namespace spatial
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm_seen)(x, y) == true || (*m_lgm)(x, y) == 2)
+        if ((*m_pdf)(x, y).isSeen == true || (*m_lgm)(x, y) == 2)
           continue;
         m_lgm->index2WorldCoords(x, y, xW, yW);
         m_ProxySeenMap.add_vertex(xW + 6, yW, 0);
@@ -518,30 +492,22 @@ namespace spatial
   void
   AdvObjectSearch::newPlanePointCloud(
       const cast::cdl::WorkingMemoryChange &objID) {
-    debug("new PlanePointCloud received.");
+    debug("Got new plane points");
     if (!m_table_phase)
       return;
     try {
 
       SpatialData::PlanePointsPtr objData = getMemoryEntry<
           SpatialData::PlanePoints> (objID.address);
-      log("Got new plane points");
-      //TODO: Add plane points to m_lgm
+      debug("points size: %d", objData->points.size());
       //add plane points
-      int xG, yG; //grid coordinates
-      float x, y;
+      std::set<std::pair<int, int> > NewPlanePoints;
       std::pair<int, int> CoordPair;
-      std::set<std::pair<int,int> >  NewPlanePoints;
-      log("points size: %d", objData->points.size());
       for (unsigned int i = 0; i < objData->points.size(); i++) {
-        x = objData->points.at(i).x;
-        y = objData->points.at(i).y;
-        m_lgm->worldCoords2Index(x, y, xG, yG);
-        (*m_lgm)(xG, yG) = 3;
-        CoordPair.first = xG;
-        CoordPair.second = yG;
-        if (m_AllPlanePoints.find(CoordPair) == m_AllPlanePoints.end()){
-          m_AllPlanePoints.insert(CoordPair);
+        m_lgm->worldCoords2Index(objData->points.at(i).x,
+            objData->points.at(i).y, CoordPair.first, CoordPair.second);
+        (*m_lgm)(CoordPair.first, CoordPair.second) = 3;
+        if (!(*m_pdf)(CoordPair.first, CoordPair.second).isChecked) {
           NewPlanePoints.insert(CoordPair);
         }
         // TODO: do not initialize PDF with fixed value if on the fly adding of planes is on.
@@ -570,16 +536,16 @@ namespace spatial
       }
     }
 
-    double uFree, uObs, uPlanar,uUnit;
+    double uFree, uObs, uPlanar, uUnit;
     uFree = pFree / TypeCount[0];
     uObs = pObs / TypeCount[1];
     uPlanar = pPlanar / TypeCount[2];
-    uUnit = pIn / (TypeCount[0] + TypeCount[1] +TypeCount[2]);
+    uUnit = pIn / (TypeCount[0] + TypeCount[1] + TypeCount[2]);
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	if ((*m_lgm_posterior)(x,y) != 2)
-	  (*m_lgm_posterior)(x,y) = uUnit;
-        }
+        if ((*m_lgm)(x, y) != 2)
+          (*m_pdf)(x, y).prob = uUnit;
+      }
     }
 
     /* DEBUG */
@@ -588,15 +554,15 @@ namespace spatial
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2)
           continue;
-        sumin += (*m_lgm_posterior)(x, y);
+        sumin += (*m_pdf)(x, y).prob;
       }
     }
-    log("posterior sums to: %f", sumin);
-    log("posterior + Cout sums to: %f", sumin + pOut);
+    log("P(c_i) sums to: %f", sumin);
+    log("P(c_i) + Cout sums to: %f", sumin + pOut);
 
     /* DEBUG */
 
-    /* Display Posterior in PB as Line Cloud BEGIN */
+    /* Display PDF in PB as Line Cloud BEGIN */
 
     double multiplier1 = 500.0;
     double xW2, yW2, xW3, yW3;
@@ -614,9 +580,9 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
-            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-            * multiplier1);
+        linecloudp.add_line(xW2 + 6, yW2 - 8,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+                + 1).prob * multiplier1);
       }
     }
 
@@ -626,9 +592,9 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
-            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-            * multiplier1);
+        linecloudp.add_line(xW2 + 6, yW2 - 8,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+                + 1).prob * multiplier1);
       }
     }
     /* Display Posterior in as line cloud PB END */
@@ -697,9 +663,9 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
-            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-            * multiplier1);
+        linecloudp.add_line(xW2 + 6, yW2 - 8,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+                + 1).prob * multiplier1);
       }
     }
 
@@ -709,9 +675,9 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
-            * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-            * multiplier1);
+        linecloudp.add_line(xW2 + 6, yW2 - 8,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+                + 1).prob * multiplier1);
       }
     }
     /* Display Posterior in as line cloud PB END */
@@ -722,7 +688,7 @@ namespace spatial
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2)
           continue;
-        sumin += (*m_lgm_posterior)(x, y);
+        sumin += (*m_pdf)(x, y).prob;
       }
     }
     log("posterior sums to: %f", sumin);
@@ -735,8 +701,8 @@ namespace spatial
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2)
           continue;
-        denomsum += (*m_lgm_posterior)(x, y) * (1 - ActionProbabilityPerCell(x,
-            y, m_CurrentViewPoint_Points));
+        denomsum += (*m_pdf)(x, y).prob * (1 - ActionProbabilityPerCell(x, y,
+            m_CurrentViewPoint_Points));
       }
     }
     denomsum += pOut;
@@ -749,12 +715,12 @@ namespace spatial
         if ((*m_lgm)(x, y) == 2)
           continue;
         //if ((*m_lgm)(x,y) == 0)
-        //log("old prob for fs: %f", (*m_lgm_posterior)(x,y));
-        (*m_lgm_posterior)(x, y) = ((*m_lgm_posterior)(x, y) * (1
+        //log("old prob for fs: %f", (*m_pdf)(x,y).prob);
+        (*m_pdf)(x, y).prob = ((*m_pdf)(x, y).prob * (1
             - ActionProbabilityPerCell(x, y, m_CurrentViewPoint_Points)))
             / denomsum;
         //if ((*m_lgm)(x,y) == 0)
-        //log("new prob for fs: %f", (*m_lgm_posterior)(x,y));
+        //log("new prob for fs: %f", (*m_pdf)(x,y).prob);
       }
     }
 
@@ -767,31 +733,11 @@ namespace spatial
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2)
           continue;
-        sumin += (*m_lgm_posterior)(x, y);
+        sumin += (*m_pdf)(x, y).prob;
       }
     }
     log("posterior sums to: %f", sumin);
     log("posterior + Cout sums to: %f", sumin + pOut);
-
-    /* DEBUG */
-
-    /* Display Posterior in PB BEGIN */
-    /* double color[3] = { 0.9, 0, 0.9 };
-     double multiplier = 1000.0;
-     double xW, yW;
-     m_ProxyPosterior.clear_vertices();
-     m_ProxyPosterior.set_color(color[0], color[1], color[2]);
-     //m_ProxyPrior.set_opacity(0.3);
-     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-     for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-     if ((*m_lgm)(x,y) == 2)
-     continue;
-     m_lgm->index2WorldCoords(x, y, xW, yW);
-     m_ProxyPosterior.add_vertex(xW, yW+8,(*m_lgm_posterior)(x, y)
-     * multiplier);
-     }
-     }*/
-    /* Display Posterior in PB END */
 
     /* Display Posterior in PB as Line Cloud BEGIN */
 
@@ -810,9 +756,8 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp1.add_line(xW2, yW2 - 8, (*m_lgm_posterior)(x, y)
-            * multiplier1, xW3, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-            * multiplier1);
+        linecloudp1.add_line(xW2, yW2 - 8, (*m_pdf)(x, y).prob * multiplier1,
+            xW3, yW3 - 8, (*m_pdf)(x, y + 1).prob * multiplier1);
       }
     }
 
@@ -822,9 +767,8 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp1.add_line(xW2, yW2 - 8, (*m_lgm_posterior)(x, y)
-            * multiplier1, xW3, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-            * multiplier1);
+        linecloudp1.add_line(xW2, yW2 - 8, (*m_pdf)(x, y).prob * multiplier1,
+            xW3, yW3 - 8, (*m_pdf)(x, y + 1).prob * multiplier1);
       }
     }
     /* Display Posterior in as line cloud PB END */
@@ -832,7 +776,8 @@ namespace spatial
   }
 
   void
-  AdvObjectSearch::PlaneObservationUpdate(std::set<std::pair<int,int> >  NewPlanePoints) {
+  AdvObjectSearch::PlaneObservationUpdate(
+      std::set<std::pair<int, int> > NewPlanePoints) {
     // say plane probability is .8
 
 
@@ -846,28 +791,68 @@ namespace spatial
      *                 ---------------------
      *                 p(plane|c_i)p(c_i|z) + p(plane |z, not(c_i))p(not(c_i) | z) for i = 0...N
      */
-    log("Plane observation update called! size: %d",NewPlanePoints.size());
-    m_pPlaneGivenObj = 0.7;
-    m_pFreeGivenObj = 0.05;
-    m_pObsGivenObj = 0.25;
+    log("Plane observation update called! size: %d", NewPlanePoints.size());
 
-    m_pPlaneGivenNotObj = 0.05;
-    m_pFreeGivenNotObj = 0.8;
-    m_pObsGivenNotObj = 0.15;
+    double InsideBeforeSum, InsideAfterSum;
+    InsideBeforeSum = 0;
+    InsideAfterSum = 0;
 
-    double initsum, aftersum;
-    initsum = 0.0;
-    aftersum = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	    if ((*m_lgm)(x,y) == 2)
-	      continue;
-	    initsum += (*m_lgm_posterior)(x,y);
-	    
+            if ((*m_lgm)(x, y) == 2)
+              continue;
+            InsideBeforeSum += (*m_pdf)(x, y).prob;
           }
+        }
+    log("posterior sums to: %f", InsideBeforeSum);
+    log("posterior + Cout sums to: %f", InsideBeforeSum + pOut);
+
+    // For a new plane observation shift probabilities accordingly
+    std::pair<int, int> tmp;
+    std::set<pair<int, int> >::iterator end = NewPlanePoints.end();
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+          tmp.first = x;
+          tmp.second = y;
+          if (!(*m_pdf)(x, y).isChecked && NewPlanePoints.find(tmp) != end ) { // this is a new plane point
+            (*m_pdf)(x, y).isChecked = true;
+            (*m_pdf)(x, y).prob = m_pPlaneGivenObj * (*m_pdf)(x, y).prob
+                / (m_pPlaneGivenObj * (*m_pdf)(x, y).prob + m_pPlaneGivenNotObj
+                    * (*m_pdf)(x, y).prob);
+            log("plane point %f", (*m_pdf)(x, y).prob);
+          }
+          else {
+            if ((*m_lgm)(x, y) == 0 &&  !(*m_pdf)(x, y).isChecked) {
+              (*m_pdf)(x, y).isChecked = true;
+              (*m_pdf)(x, y).prob = m_pFreeGivenObj * (*m_pdf)(x, y).prob
+                  / (m_pFreeGivenObj * (*m_pdf)(x, y).prob + m_pFreeGivenNotObj
+                      * (*m_pdf)(x, y).prob);
+            }
+            else if ((*m_lgm)(x, y) == 1 &&  !(*m_pdf)(x, y).isChecked) {
+              (*m_pdf)(x, y).isChecked = true;
+              (*m_pdf)(x, y).prob = m_pObsGivenObj * (*m_pdf)(x, y).prob
+                  / (m_pObsGivenObj * (*m_pdf)(x, y).prob + m_pObsGivenNotObj
+                      * (*m_pdf)(x, y).prob);
+            }
+          }
+        }
     }
-    initsum += pOut;
-    log("initsum: %f",initsum);
+
+    // Normalize
+    // Get Sum after update
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) != 2)
+          InsideAfterSum += (*m_pdf)(x, y).prob;
+      }
+    }
+
+    log("aftersum is: %f", InsideAfterSum);
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob * InsideBeforeSum/ InsideAfterSum;
+      }
+    }
 
     /* DEBUG */
     double sumin = 0.0;
@@ -875,7 +860,7 @@ namespace spatial
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2)
           continue;
-        sumin += (*m_lgm_posterior)(x, y);
+        sumin += (*m_pdf)(x, y).prob;
       }
     }
     log("posterior sums to: %f", sumin);
@@ -883,113 +868,42 @@ namespace spatial
 
     /* DEBUG */
 
+    /* Display Posterior in PB as Line Cloud BEGIN */
 
+    double multiplier1 = 3.0;
+    double xW2, yW2, xW3, yW3;
+    peekabot::LineCloudProxy linecloudp;
 
-    // For a new plane observation shift probabilities accordingly
-    std::pair<int, int> tmp;
-    std::set<pair<int, int> >::iterator end = NewPlanePoints.end();
+    linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
+        peekabot::REPLACE_ON_CONFLICT);
+    linecloudp.clear_vertices();
+    linecloudp.set_line_width(2);
+    linecloudp.set_color(0.9, 0, 0);
+
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        tmp.first = x;
-        tmp.second = y;
-        if (NewPlanePoints.find(tmp) != end) { // this is a new plane point
-          (*m_lgm_posterior)(x, y) = m_pPlaneGivenObj
-              * (*m_lgm_posterior)(x, y) / (m_pPlaneGivenObj
-              * (*m_lgm_posterior)(x, y) + m_pPlaneGivenNotObj
-              * (*m_lgm_posterior)(x, y));
-	  log("plane point %f", (*m_lgm_posterior)(x,y));
-        }
-        else {
-          if ((*m_lgm_posterior)(x, y) == 0) {
-            (*m_lgm_posterior)(x, y) = m_pFreeGivenObj * (*m_lgm_posterior)(x,
-                y) / (m_pFreeGivenObj * (*m_lgm_posterior)(x, y)
-                + m_pFreeGivenNotObj * (*m_lgm_posterior)(x, y));
-          }
-          else if ((*m_lgm_posterior)(x, y) == 1) {
-            (*m_lgm_posterior)(x, y) = m_pObsGivenObj
-                * (*m_lgm_posterior)(x, y) / (m_pObsGivenObj
-                * (*m_lgm_posterior)(x, y) + m_pObsGivenNotObj
-                * (*m_lgm_posterior)(x, y));
-          }
-        }
+        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
+          continue;
+        m_lgm->index2WorldCoords(x, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
+        linecloudp.add_line(xW2 + 6, yW2 - 8,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+                + 1).prob * multiplier1);
       }
     }
-    // And for pOut..I'm not completely sure about this..
-    pOut = m_pFreeGivenObj
-        * pOut / (m_pFreeGivenObj
-        * pOut + m_pFreeGivenNotObj
-        * pOut);
 
-
-    // Normalize
-    // Get Sum after update
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	    if((*m_lgm)(x,y) != 2)
-	      aftersum += (*m_lgm_posterior)(x,y);
-          }
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+          continue;
+        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y, xW3, yW3);
+        linecloudp.add_line(xW2 + 6, yW2 - 8,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+                + 1).prob * multiplier1);
+      }
     }
-    aftersum += pOut;
-    log("aftersum is: %f",aftersum);
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-              for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                (*m_lgm_posterior)(x,y) = (*m_lgm_posterior)(x,y)/ aftersum;
-              }
-        }
-    pOut = pOut/aftersum;
-
-    /* DEBUG */
-       sumin = 0.0;
-       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-           if ((*m_lgm)(x, y) == 2)
-             continue;
-           sumin += (*m_lgm_posterior)(x, y);
-         }
-       }
-       log("posterior sums to: %f", sumin);
-       log("posterior + Cout sums to: %f", sumin + pOut);
-
-       /* DEBUG */
-
-
-       /* Display Posterior in PB as Line Cloud BEGIN */
-
-       double multiplier1 = 3.0;
-       double xW2, yW2, xW3, yW3;
-       peekabot::LineCloudProxy linecloudp;
-
-       linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
-           peekabot::REPLACE_ON_CONFLICT);
-       linecloudp.clear_vertices();
-       linecloudp.set_line_width(2);
-       linecloudp.set_color(0.9, 0, 0);
-
-       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-           if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
-             continue;
-           m_lgm->index2WorldCoords(x, y, xW2, yW2);
-           m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-           linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
-               * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-               * multiplier1);
-         }
-       }
-
-       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-           if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
-             continue;
-           m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
-           m_lgm->index2WorldCoords(x, y, xW3, yW3);
-           linecloudp.add_line(xW2 + 6, yW2 - 8, (*m_lgm_posterior)(x, y)
-               * multiplier1, xW3 + 6, yW3 - 8, (*m_lgm_posterior)(x, y + 1)
-               * multiplier1);
-         }
-       }
-       /* Display Posterior in as line cloud PB END */
-
+    /* Display Posterior in as line cloud PB END */
 
   }
   void
@@ -1074,7 +988,7 @@ namespace spatial
       }
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
 
-      if ((*m_lgm)(randx, randy) == 0 && !(*m_lgm_seen)(randx, randy)) {
+      if ((*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         int rS, cS, rE, cE;
