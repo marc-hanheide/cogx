@@ -291,6 +291,9 @@ namespace spatial
         m_table_phase = true;
 
       }
+      else if (key == 117){
+        GetTotalPDF();
+      }
       else if (key == 112) {
         log("Getting next view");
         GoToNBV();
@@ -655,6 +658,7 @@ namespace spatial
 
 
   void AdvObjectSearch::GetTotalPDF(){
+
     // TODO: Do shit.
 
     double InsideBeforeSum, InsideAfterSum;
