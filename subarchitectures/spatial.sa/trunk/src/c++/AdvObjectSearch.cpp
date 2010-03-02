@@ -653,6 +653,8 @@ namespace spatial
     log("pOut has become: %f", pOut);
 
 
+    GetTotalPDF();
+
 
   }
 
