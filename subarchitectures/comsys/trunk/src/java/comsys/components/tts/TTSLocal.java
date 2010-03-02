@@ -26,10 +26,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import javax.sound.sampled.*;
-import de.dfki.lt.mary.client.MaryClient;
 
-import de.dfki.lt.signalproc.util.AudioPlayer;
-
+import marytts.client.MaryClient;
+import marytts.util.data.audio.AudioPlayer;
 
 import java.io.File;
 import java.sql.Timestamp;
@@ -42,7 +41,7 @@ public class TTSLocal {
 	// mary client
 	private  MaryClient m_mary ;
 	// basic TTS parameters
-	public  String m_inputType = "TEXT_EN";
+	public  String m_inputType = "TEXT";
 	//private  String m_inputType = "RAWMARYXML";
 	private  String m_outputType = "AUDIO";
 	private  String m_audioType = "WAVE";
@@ -105,8 +104,10 @@ public class TTSLocal {
 			   try {
 			   		m_baos = new ByteArrayOutputStream();
 			   		//m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
-			   		m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
-		        
+			   		//m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
+			        
+			   		m_mary.process(tosay, m_inputType, "AUDIO",
+			   			    "en-US", m_audioType, m_voiceName, "", "", null, m_baos);
 			    	   
 			   		AudioInputStream ais = AudioSystem.getAudioInputStream(
 			   								new ByteArrayInputStream(m_baos.toByteArray()));
@@ -130,7 +131,7 @@ public class TTSLocal {
 			        
 			        if(m_SaveAudio2Wav){
 			        	 
-			        	 //File name
+			        	//File name
 			        	m_AudioFileName=m_AudioFileName.replaceAll(".xml",".wav");
 			        	System.out.println("Wave file saved to: "+ m_AudioFileName );
 			        	File file = new File(m_AudioFileName);
@@ -162,16 +163,18 @@ public class TTSLocal {
 			         
 					m_baos = new ByteArrayOutputStream();
 			        //m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
-				   	m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
-				 				   	 
-				   	m_AudioFileName=m_AudioFileName.replaceAll(".xml",".wav");
+				   	//m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
+				   	m_mary.process(tosay, m_inputType, "AUDIO",
+			   			    "en-US", m_audioType, m_voiceName, "", "", null, m_baos);
+			    	 		   	 
+				   	m_AudioFileName = m_AudioFileName.replaceAll(".xml",".wav");
 		        	System.out.println("Wave file saved to: "+ m_AudioFileName );
 		        	
-				   	 File file = new File(m_AudioFileName);
-				     AudioInputStream ais = AudioSystem.getAudioInputStream(
+				   	File file = new File(m_AudioFileName);
+				    AudioInputStream ais = AudioSystem.getAudioInputStream(
 				     new ByteArrayInputStream(m_baos.toByteArray()));
-				     AudioSystem.write(ais, AudioFileFormat.Type.WAVE, file);
-				   
+				    AudioSystem.write(ais, AudioFileFormat.Type.WAVE, file);
+				    
 			   }
 			   catch (Exception e) {e.printStackTrace() ; } 
 			   }

@@ -8,7 +8,8 @@ import java.io.IOException;
 
 import java.util.*;
 
-import de.dfki.lt.mary.client.MaryClient;
+import marytts.client.MaryClient;
+
 
 public class GenerateWavFiles {
 
@@ -83,7 +84,8 @@ public class GenerateWavFiles {
 		ProsodicTextToRawMARYXml l_prs2xml = new ProsodicTextToRawMARYXml(l_rawmary,l_outputloc_mary,"misc");
 		
 		
-		MaryClient l_mary = new MaryClient("localhost", 59125);
+		//MaryClient l_mary = new MaryClient("localhost", 59125);
+		MaryClient l_mary = MaryClient.getMaryClient();
 		TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", "us2", false, "WAVE");
 		SynthesisRAWMaryXMLInput l_synthsis = new SynthesisRAWMaryXMLInput(l_ttslocal);
 		
