@@ -39,7 +39,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 
-#include <Vec3.h>
+#include <Tools/Tools.h>
 
 #include <tools/math_helpers.h>
 
@@ -56,6 +56,101 @@ namespace smlearning {
 typedef vector<double> FeatureVector;
 typedef vector<FeatureVector> Sequence;
 typedef vector<Sequence> DataSet;
+
+struct CanonicalData {
+	struct FeatureVector {
+		smlearning::FeatureVector rawVector;
+		string motorCommand;
+		string label;
+	};
+	typedef vector<FeatureVector> Sequence;
+	typedef vector<Sequence> DataSet;
+
+	DataSet data;
+};
+
+
+/** Learning data format */
+class LearningData {
+public:
+	/** Data chunk */
+	class Chunk {
+	public:
+		typedef std::vector<Chunk> Seq;
+		
+		/** Do nothing */
+		Chunk() {
+		}
+		
+		/** Data chunk time stamp */
+		golem::SecTmReal timeStamp;
+		
+		/** Arm state - (joint) dynamic configuration */
+		golem::GenConfigspaceState armState;
+		/** End-effector GLOBAL pose */
+		golem::Mat34 effectorPose;
+		/** Object GLOBAL pose */
+		golem::Mat34 objectPose;
+		
+	};
+
+	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
+	golem::Bounds::Seq effector;
+	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::objectPose */
+	golem::Bounds::Seq object;
+	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
+	golem::Bounds::Seq obstacles;
+	
+	/** Time-dependent data */
+// 	Chunk::Seq data;
+	DataSet data;
+	/** current predicted polyflap poses sequence */
+	vector<Mat34> currentPredictedPfSeq;
+	/** current predicted effector poses sequence */
+	vector<Mat34> currentPredictedEfSeq;
+	/** current polyflap poses and motor command sequence */
+	smlearning::Sequence currentSeq;
+	/** current motor command */
+	FeatureVector currentMotorCommandVector;
+	/** Record validity */
+	//bool bArmState;
+	//bool bEffectorPose;
+	//bool bObjectPose;
+	//bool bFtsData;
+	//bool bImageIndex;
+	//bool bEffector;
+	//bool bObject;
+	//bool bObstacles;
+
+	/** Reset to default (empty)*/
+	void setToDefault() {
+		effector.clear();
+		object.clear();
+		obstacles.clear();
+		data.clear();
+		//bArmState = false;
+		//bEffectorPose = false;
+		//bObjectPose = false;
+		//bFtsData = false;
+		//bImageIndex = false;
+		//bEffector = false;
+		//bObject = false;
+		//bObstacles = false;
+	}
+	/** Check if the data is valid */
+	bool isValid() const {
+		if (!data.empty()) // must not be empty
+			return false;
+		//if (bEffector && effector.empty())
+		//	return false;
+		//if (bObject && object.empty())
+		//	return false;
+		//if (bObstacles && obstacles.empty())
+		//	return false;
+
+		return true;
+	}
+};
 
 ///
 ///function that prints the passed argument
@@ -100,6 +195,7 @@ void print_sequence (const Sequence& s) {
 ///
 template <typename T>
 void print_dataset (const DataSet& d) {
+	cout << "Dataset size: " << d.size() << endl;
 	for_each (d.begin(), d.end(), print_sequence<T>);
 }
 
@@ -256,7 +352,12 @@ string get_seqBaseFileName (string seqFile);
 ///
 ///artificially discretize (enumerate) a dataset using a simple representation
 ///
-DataSet canonical_input_output_enumerator (DataSet data);
+CanonicalData::DataSet canonical_input_output_enumerator (DataSet data);
+
+///
+///write a dataset in cryssmex format
+///
+void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::DataSet data);
 
 ///
 ///write a dataset in cryssmex format

@@ -20,9 +20,10 @@ int main (int argc, char* argv[]) {
 
 	string seqBaseFileName = get_seqBaseFileName (seqFile);
 
-	DataSet newData = canonical_input_output_enumerator (savedData);
+	CanonicalData::DataSet newData = canonical_input_output_enumerator (savedData);
 
-	write_dataset (target_dir + "/" + seqBaseFileName + "-disc", newData);
+// 	write_canonical_dataset (target_dir + "/" + seqBaseFileName + "-disc", newData);
+	write_canonical_dataset_cryssmex_fmt (target_dir + "/" + seqBaseFileName, newData);
 
 	return 0;
 }

@@ -297,54 +297,8 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 ///
 void Scenario::run(int argc, char* argv[]) {
 
-	
 // 	// initialize random seed:
 	randomG.setRandSeed (context.getRandSeed());
-
-
-
-
-
-
-
-
-
-
-
-/*
-	//a number that slightly greater then the maximal reachable space of the arm
-	//    - used for workspace position normalization and later as a position upper bound
-	//      for random polyflap position
-	maxRange = 0.4;
-
-	//minimal duration of a movement (by normal speed)
-	const SecTmReal minDuration = SecTmReal(5.0);
-	
-	//Polyflap Position and orientation
-	const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
-	const Vec3 startPolyflapRotation(Real(0.0*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));//Y,X,Z
-	//Polyflap dimensions		
-	const Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
-		
-
-// 	//vertical distance from the ground
-// 	const Real over = 0.01;
-	//vertical distance from the ground considering fingertip radius
-	Real over = 0.002 + 0.015;
-	//distance from the front/back of the polyflap
-	const Real dist = 0.05;
-	//distance from the side of the polyflap
-	const Real side = polyflapDimensions.v1*0.6;
-	//center of the polyflap
-	const Real center = polyflapDimensions.v2*0.6;
-	//distance from the top of the polyflap
-	//const Real top = polyflapDimensions.v2* 1.2;
-	const Real top = polyflapDimensions.v2 - 0.02;
-	//lenght of the movement		
-	const Real distance = 0.2;
-
-
-*/
 
 	const SecTmReal tmDeltaAsync = arm->getReacPlanner().getTimeDeltaAsync();
 
@@ -504,6 +458,7 @@ void Scenario::run(int argc, char* argv[]) {
 
 		/////////////////////////////////////////////////
 		//writing of the initial vector into sequence
+		LearningData::Chunk chunk;
 		learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
 		/////////////////////////////////////////////////
 
@@ -535,7 +490,7 @@ void Scenario::run(int argc, char* argv[]) {
 			
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
-		learningData.data.push_back(learningData.currentSeq);
+		data.push_back(learningData.currentSeq);
 		/////////////////////////////////////////////////
 
 		
@@ -599,7 +554,7 @@ void Scenario::run(int argc, char* argv[]) {
 	
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	writeDownCollectedData(learningData.data);
+	writeDownCollectedData(data);
 	/////////////////////////////////////////////////
 	
 }

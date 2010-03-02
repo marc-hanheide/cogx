@@ -299,7 +299,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	if (argc > 3)
 		startingPosition = atoi(argv[3]);
 	
-	
 	//start of the experiment loop
 	for (iteration = 0; iteration<numSequences; iteration++) {
 		
@@ -450,7 +449,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
 		/////////////////////////////////////////////////
 
-	
 		target.pos = end;
 		target.t = context.getTimer()->elapsed() + tmDeltaAsync + duration;
 	
@@ -495,11 +493,13 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		learningData.currentSeq.push_back(polyflapEndState);
 		/////////////////////////////////////////////////
 	
-			
+		cout << "dataset size 1: " << data.size() << endl;
+		
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
-		learningData.data.push_back(learningData.currentSeq);
+		data.push_back(learningData.currentSeq);
 		/////////////////////////////////////////////////
+		cout << "dataset size 2: " << data.size() << endl;
 
 		
 		//update RNN learner with current sequence
@@ -577,7 +577,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	learner.save_net_data (writeDownCollectedData(learningData.data));
+	learner.save_net_data (writeDownCollectedData(data));
 	
 	/////////////////////////////////////////////////
 	
