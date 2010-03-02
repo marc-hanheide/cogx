@@ -493,14 +493,10 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		learningData.currentSeq.push_back(polyflapEndState);
 		/////////////////////////////////////////////////
 	
-		cout << "dataset size 1: " << data.size() << endl;
-		
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
 		data.push_back(learningData.currentSeq);
 		/////////////////////////////////////////////////
-		cout << "dataset size 2: " << data.size() << endl;
-
 		
 		//update RNN learner with current sequence
 		{
