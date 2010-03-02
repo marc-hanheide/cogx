@@ -611,7 +611,7 @@ namespace spatial
 
     for (unsigned int i = 0; i < ViewConePoints.size(); i++) {
       if (ViewConePoints[2 * i] == x && ViewConePoints[2 * i + 1] == y) {
-        log("ActionProbcell returned %f", 0.7);
+        //log("ActionProbcell returned %f", 0.7);
         return 0.7; // FIXME: this is lame.
       }
     }
@@ -725,8 +725,8 @@ namespace spatial
          linecloudp.set_line_width(2);
          linecloudp.set_color(0.9, 0, 0);
 
-         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x = x + 2) {
+           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y = y + 2) {
              if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
                continue;
              m_pdf_total->index2WorldCoords(x, y, xW2, yW2);
