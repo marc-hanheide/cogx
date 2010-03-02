@@ -109,8 +109,8 @@ SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
-	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
-	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenario.cpp
 )
 
@@ -118,17 +118,17 @@ SET(OFFLINE_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/offline_experiment.cpp
 )
 
-SET(OFFLINE_EXPERIMENT_ICE_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/offline_experiment_ice.cpp
-)
+#SET(OFFLINE_EXPERIMENT_ICE_SOURCE
+#	${SMLEARNING_ROOT}/src/metalearning/offline_experiment_ice.cpp
+#)
 
 SET(ENSEMBLE_OFF_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/ensemble_off_experiment.cpp
 )
 
-SET(ACTIVELEARN_EXPERIMENT_ICE_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
-)
+#SET(ACTIVELEARN_EXPERIMENT_ICE_SOURCE
+#	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
+#)
 
 SET(ACTIVELEARN_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment.cpp
@@ -139,8 +139,8 @@ SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
 	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
-	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
-	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
+#	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
+#	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenario.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
@@ -253,8 +253,8 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${PL
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
-ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
-ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
+#ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
+#ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
@@ -270,8 +270,8 @@ ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
 
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
+#INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
+#INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)

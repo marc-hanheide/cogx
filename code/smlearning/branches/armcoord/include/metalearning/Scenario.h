@@ -66,89 +66,6 @@ namespace smlearning {
 
 #define MAX_PLANNER_TRIALS 50
 
-/** Learning data format */
-class LearningData {
-public:
-	/** Data chunk */
-	class Chunk {
-	public:
-		typedef std::vector<Chunk> Seq;
-		
-		/** Do nothing */
-		Chunk() {
-		}
-		
-		/** Data chunk time stamp */
-		golem::SecTmReal timeStamp;
-		
-		/** Arm state - (joint) dynamic configuration */
-		golem::GenConfigspaceState armState;
-		/** End-effector GLOBAL pose */
-		golem::Mat34 effectorPose;
-		/** Object GLOBAL pose */
-		golem::Mat34 objectPose;
-		/** Object pose in EFFECTOR coordinates */
-		golem::Mat34 objectEffectorPose;
-		
-	};
-
-	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
-	golem::Bounds::Seq effector;
-	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::objectPose */
-	golem::Bounds::Seq object;
-	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
-	golem::Bounds::Seq obstacles;
-	
-	/** Time-dependent data */
-// 	Chunk::Seq data;
-	DataSet data;
-	/** current predicted polyflap poses sequence */
-	vector<Mat34> currentPredictedPfSeq;
-	/** current predicted effector poses sequence */
-	vector<Mat34> currentPredictedEfSeq;
-	/** current polyflap poses and motor command sequence */
-	smlearning::Sequence currentSeq;
-	/** current motor command */
-	FeatureVector currentMotorCommandVector;
-	/** Record validity */
-	//bool bArmState;
-	//bool bEffectorPose;
-	//bool bObjectPose;
-	//bool bFtsData;
-	//bool bImageIndex;
-	//bool bEffector;
-	//bool bObject;
-	//bool bObstacles;
-
-	/** Reset to default (empty)*/
-	void setToDefault() {
-		effector.clear();
-		object.clear();
-		obstacles.clear();
-		data.clear();
-		//bArmState = false;
-		//bEffectorPose = false;
-		//bObjectPose = false;
-		//bFtsData = false;
-		//bImageIndex = false;
-		//bEffector = false;
-		//bObject = false;
-		//bObstacles = false;
-	}
-	/** Check if the data is valid */
-	bool isValid() const {
-		if (!data.empty()) // must not be empty
-			return false;
-		//if (bEffector && effector.empty())
-		//	return false;
-		//if (bObject && object.empty())
-		//	return false;
-		//if (bObstacles && obstacles.empty())
-		//	return false;
-
-		return true;
-	}
-};
 
 //------------------------------------------------------------------------------
 
@@ -269,7 +186,7 @@ public:
 	///
 	void run(int argc, char* argv[]);
 
-	friend DataSet canonical_input_output_enumerator (DataSet data);
+	friend CanonicalData::DataSet canonical_input_output_enumerator (DataSet data);
 protected:
 	/** Description */
 	Desc desc;
@@ -288,6 +205,8 @@ protected:
 	Actor::Appearance appearance;
 	/** Trial data */
 	LearningData learningData;
+	/** Dataset */
+ 	DataSet data;
 	/** Time */
 	golem::SecTmReal trialTime;
 	/** Random number generator */

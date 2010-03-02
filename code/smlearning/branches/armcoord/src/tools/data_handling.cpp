@@ -25,7 +25,6 @@
 #include <tools/data_handling.h>
 #include <metalearning/Scenario.h>
 
-
 namespace smlearning {
 
 #define FEATUREVECTOR_SIZE1 8
@@ -638,7 +637,7 @@ string get_seqBaseFileName (string seqFile) {
 ///
 ///enumerate a dataset
 ///
-DataSet canonical_input_output_enumerator (DataSet data) {
+CanonicalData::DataSet canonical_input_output_enumerator (DataSet data) {
 
 	//generate all possible polyflap poses
 	//TODO: the following data should be obtained from an xml file
@@ -700,14 +699,14 @@ DataSet canonical_input_output_enumerator (DataSet data) {
 	//Construct a new data set using a simple artificial discretization
 	//A canonical set of starting positions are obtained (i.e. the 18)
 	//Only polyflap poses are extracted
-	DataSet newdata;
+	CanonicalData::DataSet newdata;
 	DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
 		Sequence::const_iterator v;
-		Sequence newsequence;
+		CanonicalData::Sequence newsequence;
 
 		for (v=(*s).begin(); v!= (*s).end(); v++) {
-			FeatureVector newfeaturevector;
+			CanonicalData::FeatureVector newfeaturevector;
 			long featvectorSize = (*v).size();
 			if (v == (*s).begin() ) {
 				assert (featvectorSize == 5);
@@ -718,21 +717,27 @@ DataSet canonical_input_output_enumerator (DataSet data) {
 // 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
 				
 				int canonical_start_pos = positionsT.find (startingPosition)->second;
-				cout << canonical_start_pos << " ";
-				Vec3 sp = positionsT.find (startingPosition)->first;
-				newfeaturevector.push_back (canonical_start_pos);
-				newfeaturevector.push_back ((*v)[3]);
-				newfeaturevector.push_back ((*v)[4]);				
+				newfeaturevector.rawVector.push_back (canonical_start_pos);
+				newfeaturevector.rawVector.push_back ((*v)[3]);
+				newfeaturevector.rawVector.push_back ((*v)[4]);
+				stringstream motorCommandStr;
+				motorCommandStr << canonical_start_pos << "_" << (*v)[3] << "_" << (*v)[4];
+				newfeaturevector.motorCommand = motorCommandStr.str();
+// 				cout << "motor command: " << newfeaturevector.motorCommand << endl;
 			}
 			else if (v != (*s).begin() ) {
 				assert ((v+1 == (*s).end() && featvectorSize == 1) || featvectorSize == 12 || featvectorSize == 6 );
 				if (featvectorSize == 6)
-					newfeaturevector = *v;
+					newfeaturevector.rawVector = *v;
 				else if (featvectorSize == 12)
 					for (int i=6; i<12; i++)
-						newfeaturevector.push_back((*v)[i]);
-				else if (featvectorSize == 1)
-					newfeaturevector = *v;
+						newfeaturevector.rawVector.push_back((*v)[i]);
+				else if (featvectorSize == 1) {
+					newfeaturevector.rawVector = *v;
+					stringstream labelStr;
+					labelStr << (*v)[0];
+					newfeaturevector.label = labelStr.str();
+				}
 
 					
 			}
@@ -742,15 +747,74 @@ DataSet canonical_input_output_enumerator (DataSet data) {
 	}
 	cout << endl;
 
+	
+
 	return newdata;
 	
 }
 
-
-
 ///
 ///write a dataset in cryssmex format
 ///
+void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::DataSet data) {
+	//assuming an input(output) vector be symbolic
+	writeFileName += ".cry";
+	
+	int inputVectorSize = 0;
+	int outputVectorSize = 0;
+	int stateVectorSize = data[0][1].rawVector.size();
+	
+	ofstream writeFile(writeFileName.c_str(), ios::out);
+
+	writeFile << inputVectorSize << endl;
+	writeFile << stateVectorSize << endl;
+	writeFile << outputVectorSize << endl;
+
+	set<string> motorCommandsSet;
+	set<string> outputsSet;
+	CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		CanonicalData::Sequence::const_iterator v;
+		string currentMotorCommand = s->begin()->motorCommand;
+		string currentOutput = (s->end()-1)->label;
+		if (motorCommandsSet.find (currentMotorCommand) == motorCommandsSet.end())
+			motorCommandsSet.insert (currentMotorCommand);
+		if (outputsSet.find (currentOutput) == outputsSet.end())
+			outputsSet.insert (currentOutput);
+	}
+	set<string>::iterator it;
+	for (it=motorCommandsSet.begin(); it!=motorCommandsSet.end(); it++)
+		cout << " " << *it;
+	cout << endl;
+	for (it=outputsSet.begin(); it!=outputsSet.end(); it++)
+		cout << " " << *it;
+	cout << endl;
+
+
+	//CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		CanonicalData::Sequence::const_iterator v;
+		string currentMotorCommand = s->begin()->motorCommand;
+		string currentOutput = (s->end()-1)->label;
+
+		for (v=s->begin(); v!= s->end(); v++) {
+			
+			if (v != s->begin() && v+1 != s->end()) {
+				FeatureVector::const_iterator n;
+				writeFile << currentMotorCommand << "\t";
+				for (n=v->rawVector.begin(); n!= v->rawVector.end(); n++)
+					writeFile << *n << " ";
+				writeFile << currentOutput << endl;
+			}
+		}
+	}
+
+
+}
+
+///
+///write a dataset in cryssmex format
+///TO DO!!!
 void write_dataset_cryssmex_fmt (string writeFileName, DataSet data, bool input_on_vector_format, bool output_on_vector_format) {
 
 	//assuming an input(output) vector be symbolic, then its dimensionality should be 0
