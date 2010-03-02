@@ -284,6 +284,10 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		currentFeatureVector.push_back(normalize(yaw, -REAL_PI, REAL_PI));
 
 		learningData.currentSeq.push_back(currentFeatureVector);
+
+		if (roll > desc.reachedNum) {
+			desc.reachedNum = roll;
+		}
 	
 	
 	}
@@ -351,6 +355,8 @@ void Scenario::run(int argc, char* argv[]) {
 			curPolPos1 = curPol->back()->getPose();
 			curPolPos2 = curPol->front()->getPose();
 		}
+
+		desc.reachedNum = 0.0;
 
 		Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
 
@@ -486,6 +492,23 @@ void Scenario::run(int argc, char* argv[]) {
 		(void)arm->getReacPlanner().waitForEnd(60000);
 		context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
 		bStart = false;
+
+
+		Real polState = -1; //polyflap was smoothly moved
+		if (desc.reachedNum > 0.1) { //polyflap was tilted more than treshold
+			polState = 0;
+		}
+		if (desc.reachedNum > 1.5) {//polyflap was flipped
+			polState = 1;
+		}
+
+		FeatureVector polyflapEndState;
+		polyflapEndState.push_back(polState);
+		cout << "Polyflap end state: " << polState << endl;
+		/////////////////////////////////////////////////
+		//writing the polyflap end state into the sequence
+		learningData.currentSeq.push_back(polyflapEndState);
+		/////////////////////////////////////////////////
 			
 			
 		/////////////////////////////////////////////////
