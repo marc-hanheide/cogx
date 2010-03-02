@@ -19,40 +19,44 @@ namespace cogx { namespace vision {
 // Client and server must implement the abstract interface ObjectRecognizerMethods.
 // Methods are the ones implemented in ObjectRecognizerInterface,
 // but without ice::context.
-class ObjectRecognizerMethods 
+class CObjectRecognizerMethods 
 {
 public:
+   virtual long LoadObjectModel(const std::string& modelPath) = 0;
    virtual long GetSifts(const Video::Image&,
-         const int x0, const int y0, const int width, const int height,
+         const int left, const int top, const int width, const int height,
          ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&) = 0;
    virtual void FindMatchingObjects(const Video::Image&,
-         const int x0, const int y0, const int width, const int height,
+         const int left, const int top, const int width, const int height,
          ObjectRecognizerIce::RecognitionResultSeq&) = 0;
 };
 
 
-class ObjectRecognizerClient: public ObjectRecognizerMethods
+class CObjectRecognizerClient: public CObjectRecognizerMethods
 {
 private:
-   std::string m_serverHost;
    std::string m_serverName;
-   int m_serverPort;
    ObjectRecognizerIce::ObjectRecognizerInterfacePrx m_Server;
 
+   // models loaded with options parsed by configureRecognizer
+   std::string m_modelDir;
+   std::vector<std::string> m_modelLabels;
+
 public:
-   ObjectRecognizerClient();
+   CObjectRecognizerClient();
    void configureRecognizer(const std::map<std::string,std::string> & _config);
    void connectIceClient(cast::CASTComponent& owner)
          throw(std::runtime_error);
 
 public:
    // ObjectRecognizerMethods
+   virtual long LoadObjectModel(const std::string& modelPath);
    virtual long GetSifts(const Video::Image&,
          const int left, const int top, const int width, const int height,
-         ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&) = 0;
+         ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&);
    virtual void FindMatchingObjects(const Video::Image&,
          const int left, const int top, const int width, const int height,
-         ObjectRecognizerIce::RecognitionResultSeq&) = 0;
+         ObjectRecognizerIce::RecognitionResultSeq&);
    long GetSifts(const Video::Image& image,
          ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors)
    {
@@ -62,8 +66,6 @@ public:
    {
       FindMatchingObjects(image, 0, 0, 0, 0, result);
    }
-
-
 };
 
 }; }; // namespace

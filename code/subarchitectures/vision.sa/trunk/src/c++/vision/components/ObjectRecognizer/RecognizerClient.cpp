@@ -11,62 +11,78 @@
 
 using namespace std;
 using namespace cast;
+namespace orice = ObjectRecognizerIce;
 
 namespace cogx { namespace vision {
 
-ObjectRecognizerClient::ObjectRecognizerClient(	)
+CObjectRecognizerClient::CObjectRecognizerClient(	)
 {
-   m_serverHost = "localhost";
    m_serverName = "";
-   m_serverPort = cdl::CPPSERVERPORT;
 }
 
-void ObjectRecognizerClient::configureRecognizer(const map<string,string> & _config)
+void CObjectRecognizerClient::configureRecognizer(const map<string,string> & _config)
 {
    map<string,string>::const_iterator it;
-
-   if((it = _config.find("--recognizerhost")) != _config.end()) {
-      m_serverHost = it->second;
-   }
 
    if((it = _config.find("--recognizerid")) != _config.end()) {
       m_serverName = it->second;
    }
 
+   /* XXX: #r=models_from_client_cast
+   if((it = _config.find("--modeldir")) != _config.end())
+   {
+      istringstream istr(it->second);
+      istr >> m_modelDir;
+   }
+
+   if((it = _config.find("--models")) != _config.end())
+   {
+      istringstream istr(it->second);
+      string label;
+      while(istr >> label) m_modelLabels.push_back(label);
+   }
+   */
+
 }
 
-void ObjectRecognizerClient::connectIceClient(cast::CASTComponent& owner)
+void CObjectRecognizerClient::connectIceClient(cast::CASTComponent& owner)
       throw(runtime_error)
 {
+   owner.debug("CObjectRecognizerClient connecting to CObjectRecognizerSrv.");
    if (m_Server)
       throw runtime_error(exceptionMessage(__HERE__,
-            "ObjectRecognizerClient already connected to server."));
+            "CObjectRecognizerClient already connected to server."));
 
-   if (m_serverHost.empty())
-      throw runtime_error(exceptionMessage(__HERE__, "no --recognizerhost given"));
    if (m_serverName.empty())
       throw runtime_error(exceptionMessage(__HERE__, "no --recognizerid given"));
 
-   ostringstream serverAddr;
-   Ice::Identity id;
- 
-   id.name = m_serverName;
-   id.category = "ObjectRecognizer"; // same as in <URL:RecognizerSrv.cpp#::startIceServer>
-   serverAddr << owner.getCommunicator()->identityToString(id)
-         << ":default -h " << m_serverHost << " -p " << m_serverPort;
- 
-   Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(serverAddr.str());
-   // mz: doing a checkedCast here freezes the server
-   // stereoServer = Stereo::StereoInterfacePrx::checkedCast(base);
-   m_Server = ObjectRecognizerIce::ObjectRecognizerInterfacePrx::uncheckedCast(base);
-   if (!m_Server)
-      throw runtime_error(exceptionMessage(__HERE__,
-            "failed to connect to ObjectRecognizer server: %s",
-            serverAddr.str().c_str()));
+   m_Server = owner.getIceServer<orice::ObjectRecognizerInterface>(m_serverName);
+
+   /* XXX: Models are currently loaded at the server; LoadObjectModel not implemented on server.
+    * id=models_from_client_cast
+   if (m_modelLabels.size() > 0) {
+      ostringstream ostr;
+      for(size_t i = 0; i < m_modelLabels.size(); i++)
+         ostr << " '" << m_modelLabels[i] << "'";
+      owner.log("Detecting objects: %s", ostr.str().c_str());
+
+      owner.debug("Loading models");
+      vector<string>::const_iterator it;
+      for( it = m_modelLabels.begin(); it != m_modelLabels.end(); it++) {
+         string modelpath = m_modelDir + "/" + *it;
+         owner.debug(string("  *") + modelpath);
+         LoadObjectModel(modelpath);
+      }
+   }
+   */ 
 }
 
+long CObjectRecognizerClient::LoadObjectModel(const std::string& modelPath)
+{
+   return m_Server->LoadObjectModel(modelPath);
+}
 
-long ObjectRecognizerClient::GetSifts(const Video::Image& image,
+long CObjectRecognizerClient::GetSifts(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors)
 {
@@ -74,7 +90,7 @@ long ObjectRecognizerClient::GetSifts(const Video::Image& image,
 }
 
 
-void ObjectRecognizerClient::FindMatchingObjects(const Video::Image& image,
+void CObjectRecognizerClient::FindMatchingObjects(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::RecognitionResultSeq& result)
 {
