@@ -21,7 +21,8 @@ JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar .
 #JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --ngrams ./subarchitectures/comsys/grammars/contentPlanning/ngram-corpus.txt #--log
 JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/prosodic_moloko.v6/grammar.xml --ngrams ./subarchitectures/comsys/grammars/contentPlanning/ngram-corpus.txt #--log
 #JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice us1 --log true --startserver #--debug true
-JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice us1 --log true --rawMaryXmlHeader ./subarchitectures/comsys/src/java/comsys/components/tts/RAWMARYXMLhead.xml --writeXmlTo ./subarchitectures/comsys/maryXML/ --delXml true #--debug true
+JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice cmu-slt-hsmm --log true --rawMaryXmlHeader ./subarchitectures/comsys/src/java/comsys/components/tts/RAWMARYXMLhead.xml --writeXmlTo ./subarchitectures/comsys/maryXML/ --delXml true #--debug true
+
 
 SUBARCHITECTURE binder 
 
