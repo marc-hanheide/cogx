@@ -36,22 +36,28 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Vector;
 
-import comsys.datastructs.comsysEssentials.*;
-import comsys.arch.ProcessingData;
+import marytts.client.MaryClient;
+import cast.SubarchitectureComponentException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.TaskOutcome;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryChangeQueueBehaviour;
+import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTData;
+import cast.core.CASTUtils;
+
 import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
-import comsys.components.tts.*;
-
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.architecture.ManagedComponent;
-import cast.SubarchitectureComponentException;
-import cast.cdl.*;
-import cast.core.CASTData;
-import de.dfki.lt.mary.client.MaryClient;
-import cast.core.CASTUtils;
+import comsys.arch.ProcessingData;
+//import comsys.datastructs.comsysEssentials.SpokenOutputItem;
+import comsys.datastructs.comsysEssentials.SpokenOutputItem;
 
 // =================================================================
 // JAVADOC CLASS DOCUMENTATION
@@ -423,7 +429,7 @@ public class cc_TTS extends ManagedComponent {
 					l_convert.g_xmlfilename=l_convert.XmlFileName(soi.phonString);
 					m_ttsLocal.m_SaveAudio2Wav=m_SaveAudio2wav;
 					m_ttsLocal.m_AudioFileName=m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename);
-					
+					log("Trying to say the following: ["+soi.phonString+"]");
 					//Process the "text" string for Prosodic markers
 					if(soi.phonString.contains("%") || soi.phonString.contains("@") ){
 						//Do prosodic to RAWMaryXML
@@ -459,7 +465,7 @@ public class cc_TTS extends ManagedComponent {
 							e.printStackTrace();
 						}
 					}else {
-						m_ttsLocal.m_inputType="TEXT_EN";
+						m_ttsLocal.m_inputType="TEXT";
 						m_ttsLocal.speak(soi.phonString);
 	                    Thread.sleep(2500);	
 					}
@@ -570,7 +576,8 @@ public class cc_TTS extends ManagedComponent {
         	
             //Initialise Mary
             try {
-                m_mary = new MaryClient(m_serverHost, m_serverPort);
+                m_mary =  MaryClient.getMaryClient();	
+                //m_mary =  new MaryClient(m_serverHost, m_serverPort);
                 // speakLocal("hello !");
             }
             catch (Exception e) {
@@ -636,7 +643,7 @@ public class cc_TTS extends ManagedComponent {
             
             
             // create local and remote TTS
-            m_ttsLocal = new TTSLocal(m_mary, "TEXT_EN", m_voiceName, m_bSilentModeLocal, "WAVE");
+            m_ttsLocal = new TTSLocal(m_mary, "TEXT", m_voiceName, m_bSilentModeLocal, "WAVE");
             // m_ttsRemote =  new TTSRemote(m_mary, m_voiceName, m_bSilentModeRemote);
 			
 			if (!startingUp.equals("")) { 

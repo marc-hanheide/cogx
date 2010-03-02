@@ -5,7 +5,8 @@ import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
 
-import de.dfki.lt.mary.client.MaryClient;
+import marytts.client.MaryClient;
+
 
 public class ProsodicTextToRawMARYXml {
 
@@ -290,7 +291,7 @@ public static void main(String[] args) {
 	Integer l_substr;
 	//Initialise an Instant of TTS Local.
 	try{
-		MaryClient l_mary = new MaryClient("localhost", 59125);
+		MaryClient l_mary = MaryClient.getMaryClient();
 		TTSLocal l_ttslocal = new TTSLocal(l_mary,"RAWMARYXML", "us2", false, "WAVE");
 		
 		System.out.println("RAWMARYXMLHead is in file : " + args[1]);
