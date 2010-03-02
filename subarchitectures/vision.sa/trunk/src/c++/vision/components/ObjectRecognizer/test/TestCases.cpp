@@ -7,45 +7,79 @@
 #include "TestCases.h"
 
 #include <string>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <Ice/LocalException.h>
+
+#include <VideoUtils.h>
+#include <Video.hpp>
 #include <VisionData.hpp>
+#include <ObjectRecognizerSrv.hpp>
 
 using namespace std;
 using namespace VisionData;
+using namespace cogx::vision;
+namespace orice = ObjectRecognizerIce;
 
 //------------------------------------------------------- 
-// VERIFY IF the Recognizer Server works
+// VERIFY if the Recognizer Server works
 //------------------------------------------------------- 
 CTestCase_Server::CTestCase_Server(string name, CTestRecognizer *pOwner)
       : CTestCase(name, pOwner)
 {
 }
 
+void CTestCase_Server::configure(const map<string,string> & _config)
+{
+   m_OrClient.configureRecognizer(_config);
+}
+
 void CTestCase_Server::onStart()
 {
+   m_OrClient.connectIceClient(*m_pOwner);
+
    // Example:
    //m_pOwner->addChangeFilter(
-   //   createLocalTypeFilter<VisualLearnerRecognitionTask>(cdl::OVERWRITE),
-   //   new MemberFunctionChangeReceiver<CTestCase_Standalone>(
-   //      this, &CTestCase_Standalone::onChange_RecognitionTask)
+   //   createLocalTypeFilter<ObjectRecognitionTask>(cdl::OVERWRITE),
+   //   new MemberFunctionChangeReceiver<CTestCase_Server>(
+   //      this, &CTestCase_Server::onChange_RecognitionTask)
    //   );
 }
 
+//void CTestCase_Server::onExitComponent()
+//{
+//   m_pOwner->removeChangeFilter(...);
+//}
+
+// The test will run 5 times, after that it will only log.
+// The tests can be repeated only after the servers are restarted.
+int ccount = 5;
 void CTestCase_Server::runOneStep()
 {
-   // Example:
-   //if (m_pOwner->m_ProtoObjects < 1) {
-   //   if (m_nCallsLeft > 0) {
-   //      issueRequest();
-   //      m_nCallsLeft--;
-   //   }
-   //   m_pOwner->sleepComponent(500);
-   //}
+   m_pOwner->log("FindMatchingObjects, const image; attempts left: %d", ccount);
+
+   IplImage *pimg = cvLoadImage("subarchitectures/vision.sa/config/test-vislearner/image.png");
+   Video::Image image;
+   Video::convertImageFromIpl(pimg, image);
+   cvReleaseImage(&pimg);
+   orice::RecognitionResultSeq results;
+
+   try {
+      if (ccount > 0) m_OrClient.FindMatchingObjects(image, results);
+   }
+   catch (const Ice::ObjectNotExistException &e) {
+      m_pOwner->log("Server does not exist. %s", e.what());
+      m_pOwner->sleepComponent(2000);
+   }
+   if (ccount > 0) ccount--;
+
+   m_pOwner->sleepComponent(500);
 }
 
 
 
 //------------------------------------------------------- 
-// VERIFY IF the Recognizer responds to WM event
+// VERIFY if the Recognizer responds to WM event
 //------------------------------------------------------- 
 CTestCase_WmResponder::CTestCase_WmResponder(string name, CTestRecognizer *pOwner)
       : CTestCase(name, pOwner)

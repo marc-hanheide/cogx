@@ -10,24 +10,13 @@
 #include <VisionData.hpp>
 
 class CTestRecognizer;
-
-class CTestCase
-{
-public:
-   std::string m_name;
-   CTestRecognizer *m_pOwner;
-   CTestCase(std::string name, CTestRecognizer *pOwner) {
-      m_pOwner = pOwner;
-   }
-   virtual void runOneStep() { }
-   virtual void onStart() { }
-   virtual void onExitComponent() { }
-};
+class CTestCase;
 
 class CTestRecognizer: public cast::ManagedComponent, public cast::VideoClient
 {
 private:
    CTestCase *m_pTestCase;
+   std::vector<CTestCase*> m_KnownTests;
 
 public:
    CTestRecognizer();
@@ -40,6 +29,22 @@ protected:
 
 public:
    using cast::ManagedComponent::sleepComponent;
+};
+
+class CTestCase
+{
+public:
+   std::string m_name;
+   CTestRecognizer *m_pOwner;
+   CTestCase(std::string name, CTestRecognizer *pOwner) {
+      m_name = name;
+      m_pOwner = pOwner;
+   }
+   virtual void configure(const std::map<std::string,std::string> & _config) {}
+   virtual void onStart() {}
+   virtual void onRunComponent() {}
+   virtual void runOneStep() { m_pOwner->log("."); }
+   virtual void onExitComponent() {}
 };
 
 //class CommandListener: public cast::WorkingMemoryChangeReceiver 

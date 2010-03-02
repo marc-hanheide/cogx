@@ -112,7 +112,7 @@ void CPyProxy::configureRecognizer(const map<string,string> & _config)
       ostringstream ostr;
       for(size_t i = 0; i < m_ModelNames.size(); i++)
          ostr << " '" << m_ModelNames[i] << "'";
-      log("detecting objects: %s", ostr.str().c_str());
+      log("Detecting objects: %s", ostr.str().c_str());
    }
 
    if((it = _config.find("--matcher-cuda")) != _config.end()) m_SiftMatcher = "CUDA";

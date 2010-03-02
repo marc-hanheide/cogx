@@ -10,7 +10,8 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
-#include <cast/core/CASTComponent.hpp>
+// #include <cast/core/CASTComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 
 #include "ObjectRecognizerSrv.hpp" // generated from ice
 
@@ -19,27 +20,30 @@
 
 namespace cogx { namespace vision {
 
-// ObjectRecognizer is the component that will be created when CAST starts.
+// CObjectRecognizer is the component that will be created when CAST starts.
 // The ICE server interface (ObjectRecognizerI) will be created in start().
-class ObjectRecognizer: public cast::CASTComponent, public ObjectRecognizerMethods
+class CObjectRecognizer: public cast::ManagedComponent, public CObjectRecognizerMethods
 {
 public:
+   CObjectRecognizer();
+   ~CObjectRecognizer();
+
    // CASTComponent methods
    virtual void configure(const std::map<std::string,std::string> & _config)
          throw(std::runtime_error);
    virtual void start();
    virtual void runComponent();
 
-   // ObjectRecognizerMethods
+   // CObjectRecognizerMethods
    virtual long GetSifts(const Video::Image&,
          const int x0, const int y0, const int width, const int height,
          ObjectRecognizerIce::FloatSeq&, ObjectRecognizerIce::FloatSeq&);
+   virtual long LoadObjectModel(const std::string& modelPath);
    virtual void FindMatchingObjects(const Video::Image&,
          const int x0, const int y0, const int width, const int height,
          ObjectRecognizerIce::RecognitionResultSeq&);
 
 private:
-   std::string m_iceServerName;
    CPyProxy m_pyRecognizer;
 
 private:
@@ -52,11 +56,16 @@ private:
 class ObjectRecognizerI: public ObjectRecognizerIce::ObjectRecognizerInterface
 {
 private:
-   ObjectRecognizer *m_pRecognizer; // could also be ObjectRecognizerMethods
+   CObjectRecognizer *m_pRecognizer; // could also be CObjectRecognizerMethods
 
 public:
-   ObjectRecognizerI(ObjectRecognizer *pRecognizer) {
+   ObjectRecognizerI(CObjectRecognizer *pRecognizer) {
       m_pRecognizer = pRecognizer;
+   }
+
+   virtual long LoadObjectModel(const std::string& modelPath, const Ice::Current&)
+   {
+      return m_pRecognizer->LoadObjectModel(modelPath);
    }
 
    virtual long GetSifts(const Video::Image& image,

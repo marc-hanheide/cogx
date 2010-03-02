@@ -10,48 +10,65 @@ extern "C"
 {
    cast::CASTComponentPtr newComponent()
    {
-      return new cogx::vision::ObjectRecognizer();
+      return new cogx::vision::CObjectRecognizer();
    }
 }
 
 using namespace std;
+namespace orice = ObjectRecognizerIce;
 
 namespace cogx { namespace vision {
 
-void ObjectRecognizer::startIceServer()
+CObjectRecognizer::CObjectRecognizer()
 {
-   Ice::Identity id;
-   id.name = m_iceServerName;
-   id.category = "ObjectRecognizer";
-   getObjectAdapter()->add(new ObjectRecognizerI(this), id);
 }
 
-void ObjectRecognizer::configure(const map<string,string> & _config)
+CObjectRecognizer::~CObjectRecognizer()
+{
+}
+
+void CObjectRecognizer::startIceServer()
+{
+   orice::ObjectRecognizerInterfacePtr servant = new ObjectRecognizerI(this);
+   registerIceServer<orice::ObjectRecognizerInterface, ObjectRecognizerI>(servant);
+}
+
+void CObjectRecognizer::configure(const map<string,string> & _config)
       throw(runtime_error)
 {
-   map<string,string>::const_iterator it;
-   if((it = _config.find("--recognizerid")) != _config.end())
-   {
-      m_iceServerName = it->second;
-   }
+   debug("CObjectRecognizer Server: configuring");
+   CASTComponent::configure(_config);
 
    m_pyRecognizer.configureRecognizer(_config);
 }
 
-void ObjectRecognizer::start()
+void CObjectRecognizer::start()
 {
+   debug("CObjectRecognizer Server: starting");
    m_pyRecognizer.initModule();
    startIceServer();
 }
 
-void ObjectRecognizer::runComponent()
+void CObjectRecognizer::runComponent()
 {
-   //while(isRunning()) {
-   //   sleepComponent(1000);
-   //}
+   // TODO: crash here or in startIceServer?:
+   // vis.recognizer.srv: Aborting after catching an Ice::Exception from runComponent()
+   // IllegalIdentityException: illegal identity: `ObjectRecognizer/'
+
+   sleepComponent(1000);
+   debug("CObjectRecognizer Server: running");
+   while(isRunning()) {
+     sleepComponent(1000);
+   }
+   debug("CObjectRecognizer Server: Done.");
 }
 
-long ObjectRecognizer::GetSifts(const Video::Image& image,
+long CObjectRecognizer::LoadObjectModel(const std::string& modelPath)
+{
+   return 0;
+}
+
+long CObjectRecognizer::GetSifts(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors)
 {
@@ -63,7 +80,7 @@ long ObjectRecognizer::GetSifts(const Video::Image& image,
    return 0;
 }
 
-void ObjectRecognizer::FindMatchingObjects(const Video::Image& image,
+void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::RecognitionResultSeq& results)
 {

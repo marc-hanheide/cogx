@@ -28,63 +28,93 @@ extern "C" {
 CTestRecognizer::CTestRecognizer()
 {
    m_pTestCase = NULL;
+   m_KnownTests.push_back(new CTestCase_Server("server", this));
+   m_KnownTests.push_back(new CTestCase_WmResponder("wmcall", this));
 }
 
 CTestRecognizer::~CTestRecognizer()
 {
    if (m_pTestCase != NULL) {
-      delete m_pTestCase;
-      m_pTestCase = NULL;
+     m_pTestCase = NULL;
    }
+   vector<CTestCase*>::iterator itest;
+   for (itest = m_KnownTests.begin(); itest != m_KnownTests.end(); itest++) {
+      CTestCase* ptest = *itest;
+      *itest = NULL;
+      delete ptest;
+   }
+   m_KnownTests.clear();
 }
 
 void CTestRecognizer::start()
 {
-   log("Recognizer TEST starting");
+   log("TEST starting");
+   if (m_pTestCase != NULL) {
+      m_pTestCase->onStart();
+   }
 }
 
 void CTestRecognizer::configure(const std::map<std::string,std::string> & _config)
 {
+   log("TEST configuring");
    map<string,string>::const_iterator it;
+   vector<CTestCase*>::iterator itest;
+   if (1) {
+      ostringstream msg;
+      for (itest = m_KnownTests.begin(); itest != m_KnownTests.end(); itest++) {
+         msg << " '" << (*itest)->m_name << "' ";
+      }
+      println("Known tests: %s", msg.str().c_str());
+   }
 
    if (m_pTestCase) {
-      log("configure: Deleting an existing Test Case.");
+      debug("configure: Terminating an existing Test Case.");
       m_pTestCase->onExitComponent();
-      delete m_pTestCase;
       m_pTestCase = NULL;
    }
 
+   string mode;
    if((it = _config.find("--testmode")) != _config.end())
    {
-      string mode;
       istringstream istr(it->second);
       istr >> mode;
-      if (mode == "server") m_pTestCase = new CTestCase_Server(mode, this);
-      else if (mode == "wmcall") m_pTestCase = new CTestCase_WmResponder(mode, this);
-      log("TEST MODE: %s", mode.c_str());
+      for (itest = m_KnownTests.begin(); itest != m_KnownTests.end(); itest++) {
+         if (mode == (*itest)->m_name) m_pTestCase = *itest;
+         break;
+      }
    }
 
    if (m_pTestCase != NULL) {
-      m_pTestCase->onStart();
+      m_pTestCase->configure(_config);
+      log("TEST MODE: '%s'", m_pTestCase->m_name.c_str());
+   }
+   else {
+      log("WARNING: UNKNOWN TEST MODE '%s'", mode);
    }
 }
 
 void CTestRecognizer::runComponent()
 {
    sleepComponent(2000);
+   log("TEST running.");
 
    if (m_pTestCase != NULL) {
+      m_pTestCase->onRunComponent();
+
       while(isRunning()) {
+         // debug("runOneStep %s", m_pTestCase->m_name.c_str());
          m_pTestCase->runOneStep();
          sleepComponent(10);
       }
-   }
-   if (m_pTestCase) {
+
       log("runComponent: Test Case Cleanup.");
       m_pTestCase->onExitComponent();
-      delete m_pTestCase;
       m_pTestCase = NULL;
    }
-   log("runComponent Done.");   
+   else {
+      log("No test case.");
+   }
+ 
+   log("TEST runComponent Done.");   
 }
 
