@@ -737,7 +737,7 @@ namespace spatial
            }
          }
 
-         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+        /* for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
              if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
                continue;
@@ -747,7 +747,7 @@ namespace spatial
                  (*m_pdf_total)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf_total)(x, y
                      + 1).prob * multiplier1);
            }
-         }
+         }*/
          /* Display pdfIn in as line cloud PB END */
 
 
