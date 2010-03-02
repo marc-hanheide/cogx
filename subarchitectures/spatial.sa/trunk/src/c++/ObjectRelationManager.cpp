@@ -488,7 +488,18 @@ void ObjectRelationManager::runComponent()
 	  }
 
 	  Vector3 witness1, witness2;
-	  double dist = findContactPatch(box2, box1, witness1, witness2);
+
+	  vector<Vector3> patch;
+	  double dist = findContactPatch(box2, box1, witness1, witness2, &patch);
+	  if (patch.size() > 2) {
+	    peekabot::PolygonProxy patchp;
+	    patchp.add(m_onnessTester, "Patch", peekabot::REPLACE_ON_CONFLICT);
+	    patchp.set_color(1,0,0);
+	    for (vector<Vector3>::iterator it = patch.begin(); it != patch.end();it++){
+	      patchp.add_vertex(it->x, it->y, it->z);
+	    }
+	  }
+
 	  sp2.set_scale(dist);
 	  peekabot::SphereProxy witp1;
 	  witp1.add(m_onnessTester, "Witness 1", peekabot::REPLACE_ON_CONFLICT);

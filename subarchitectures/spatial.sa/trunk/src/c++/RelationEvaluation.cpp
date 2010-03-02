@@ -615,6 +615,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
   std::vector<Vector3> interestPoints;
 
   double epsilon = 0.0001;
+  Vector3 polygonNormal = cross(polygon2[2]-polygon2[1], polygon2[0]-polygon2[1]);
 
   // Points of polygon 1 inside polygon 2
   for (unsigned int i = 0; i < polygon1.size(); i++) {
@@ -622,7 +623,9 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
     for (unsigned int j = 0; j < polygon2.size(); j++) {
       unsigned int jplus = (j == polygon2.size()-1 ? 0 : j + 1);
 
-      if (cross(polygon2[jplus]-polygon2[j], polygon1[i]-polygon2[j]).z < 0.0) {
+      if (dot(polygonNormal,
+	    cross(polygon2[jplus]-polygon2[j], polygon1[i]-polygon2[j]))
+	  < 0.0) {
 	vertex_i_inside_polygon_2 = false;
 	break;
       }
@@ -637,7 +640,9 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
     for (unsigned int j = 0; j < polygon1.size(); j++) {
       unsigned int jplus = (j == polygon1.size()-1 ? 0 : j + 1);
 
-      if (cross(polygon1[jplus]-polygon1[j], polygon2[i]-polygon1[j]).z < 0.0) {
+      if (dot(polygonNormal,
+	    cross(polygon1[jplus]-polygon1[j], polygon2[i]-polygon1[j]))
+	  < 0.0) {
 	vertex_i_inside_polygon_1 = false;
 	break;
       }
@@ -740,8 +745,8 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
       newInterestPoints[currentPoint];
     for (unsigned int otherPoint = 0; otherPoint < newInterestPoints.size(); otherPoint++) {
       if (otherPoint != currentPoint && otherPoint != nextPoint) {
-	double leftness = cross(edge, newInterestPoints[otherPoint] -
-	    newInterestPoints[currentPoint]).z;
+	double leftness = dot(polygonNormal,
+	    cross(edge, newInterestPoints[otherPoint]-newInterestPoints[currentPoint]));
 	if (leftness < 0.0) {
 	  nextPoint = otherPoint;
 	  edge = newInterestPoints[otherPoint] - newInterestPoints[currentPoint];
@@ -1147,8 +1152,10 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
 
 double
 findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
-    Vector3 &outWitnessPoint1, Vector3 &outWitnessPoint2)
+    Vector3 &outWitnessPoint1, Vector3 &outWitnessPoint2, vector<Vector3> *outPatch)
 {
+  const double patchThreshold = 0.02;
+
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
     6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
   //Transform B into local coordinate system of A for ease of conceptualization
@@ -1157,7 +1164,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
   Pose3 AposeInB;
   transformInverse(boxB.pose, boxA.pose, AposeInB); 
 
-  Vector3 BVertices[] = {{boxB.radius1, boxB.radius2, boxB.radius3},
+  const Vector3 BVertices[] = {{boxB.radius1, boxB.radius2, boxB.radius3},
     {-boxB.radius1, boxB.radius2, boxB.radius3},
     {-boxB.radius1, -boxB.radius2, boxB.radius3},
     {boxB.radius1, -boxB.radius2, boxB.radius3},
@@ -1165,7 +1172,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
     {-boxB.radius1, boxB.radius2, -boxB.radius3},
     {-boxB.radius1, -boxB.radius2, -boxB.radius3},
     {boxB.radius1, -boxB.radius2, -boxB.radius3}};
-  Vector3 AVertices[] = {{boxA.radius1, boxA.radius2, boxA.radius3},
+  const Vector3 AVertices[] = {{boxA.radius1, boxA.radius2, boxA.radius3},
     {-boxA.radius1, boxA.radius2, boxA.radius3},
     {-boxA.radius1, -boxA.radius2, boxA.radius3},
     {boxA.radius1, -boxA.radius2, boxA.radius3},
@@ -1186,77 +1193,102 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 
   bool intersecting = isIntersecting(wr, dr, hr, BVerticesInA);
 
-  vector<Vector3> BEdges;
-  BEdges.reserve(12);
-  vector<Vector3> AEdges;
-  AEdges.reserve(12);
+  vector<Vector3> BEdgesInA;
+  BEdgesInA.reserve(12);
+  vector<Vector3> AEdgesInB;
+  AEdgesInB.reserve(12);
   for (int edgeNo = 0; edgeNo < 12; edgeNo++) {
     Vector3 &point1 = BVerticesInA[edges[edgeNo*2]];
     Vector3 &point2 = BVerticesInA[edges[edgeNo*2+1]];
     Vector3 edge = point2 - point1; 
-    BEdges.push_back(edge);
+    BEdgesInA.push_back(edge);
 
     Vector3 &point3 = AVerticesInB[edges[edgeNo*2]];
     Vector3 &point4 = AVerticesInB[edges[edgeNo*2+1]];
     edge = point4 - point3; 
-    AEdges.push_back(edge);
+    AEdgesInB.push_back(edge);
   }
 
   vector<Witness> cornerWitnessesBInA;
-  getCornerWitnesses(wr, dr, hr, BVerticesInA, BEdges, cornerWitnessesBInA);
+  getCornerWitnesses(wr, dr, hr, BVerticesInA, BEdgesInA, cornerWitnessesBInA);
 
   vector<Witness> edgeWitnesses;
-  getEdgeWitnesses(wr, dr, hr, BVerticesInA, BEdges, edgeWitnesses, intersecting);
+  getEdgeWitnesses(wr, dr, hr, BVerticesInA, BEdgesInA, edgeWitnesses, intersecting);
 
   wr = boxB.radius1;
   dr = boxB.radius2;
   hr = boxB.radius3;
 
   vector<Witness> cornerWitnessesAInB;
-  getCornerWitnesses(wr, dr, hr, AVerticesInB, AEdges, cornerWitnessesAInB);
+  getCornerWitnesses(wr, dr, hr, AVerticesInB, AEdgesInB, cornerWitnessesAInB);
+
+  Witness bestWitness;
+
+  //True iff point2 and idOnB and typeOnB in bestWitness
+  //actually refer to A
+  bool AisB = false; 
 
   if (intersecting) {
-    double minDistance = -FLT_MAX;
+    bestWitness.distance = -FLT_MAX;
     bool found = false;
+    wr = boxA.radius1;
+    dr = boxA.radius2;
+    hr = boxA.radius3;
     for(unsigned int i = 0; i < cornerWitnessesBInA.size(); i++) {
-      if (cornerWitnessesBInA[i].distance > minDistance) {
-	minDistance = cornerWitnessesBInA[i].distance;
-	outWitnessPoint1 = transform(boxA.pose, cornerWitnessesBInA[i].point1);
-	outWitnessPoint2 = transform(boxA.pose, cornerWitnessesBInA[i].point2);
+      if (cornerWitnessesBInA[i].distance > bestWitness.distance &&
+	  cornerWitnessesBInA[i].point1.x <= wr &&
+	  cornerWitnessesBInA[i].point1.x >= -wr &&
+	  cornerWitnessesBInA[i].point1.y <= dr &&
+	  cornerWitnessesBInA[i].point1.y >= -dr &&
+	  cornerWitnessesBInA[i].point1.z <= hr &&
+	  cornerWitnessesBInA[i].point1.z >= -hr) {
+	AisB = false;
+	bestWitness = cornerWitnessesBInA[i];
+	bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
+	bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
 
 	found = true;
       }
     }
+    wr = boxB.radius1;
+    dr = boxB.radius2;
+    hr = boxB.radius3;
     for(unsigned int i = 0; i < cornerWitnessesAInB.size(); i++) {
-      if (cornerWitnessesAInB[i].distance > minDistance) {
-	minDistance = cornerWitnessesAInB[i].distance;
-	outWitnessPoint1 = transform(boxB.pose, cornerWitnessesAInB[i].point1);
-	outWitnessPoint2 = transform(boxB.pose, cornerWitnessesAInB[i].point2);
+      if (cornerWitnessesAInB[i].distance > bestWitness.distance &&
+	  cornerWitnessesAInB[i].point1.x <= wr &&
+	  cornerWitnessesAInB[i].point1.x >= -wr &&
+	  cornerWitnessesAInB[i].point1.y <= dr &&
+	  cornerWitnessesAInB[i].point1.y >= -dr &&
+	  cornerWitnessesAInB[i].point1.z <= hr &&
+	  cornerWitnessesAInB[i].point1.z >= -hr) {
+	AisB = true;
+	bestWitness = cornerWitnessesAInB[i];
+	bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
+	bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
 
 	found = true;
       }
     }
     for(unsigned int i = 0; i < edgeWitnesses.size(); i++) {
       edgeWitnesses[i].distance = -edgeWitnesses[i].distance;
-      if (edgeWitnesses[i].distance > minDistance) {
-	minDistance = edgeWitnesses[i].distance;
-	outWitnessPoint1 = transform(boxA.pose, edgeWitnesses[i].point1);
-	outWitnessPoint2 = transform(boxA.pose, edgeWitnesses[i].point2);
+      if (edgeWitnesses[i].distance > bestWitness.distance) {
+	AisB = false;
+	bestWitness = edgeWitnesses[i];
+	bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
+	bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
 
 	found = true;
       }
     }
-    if (!found || minDistance > 0) 
-      minDistance = 0;
-    return minDistance;
   }
+
+
   else {
     //Find the witness points that are closest.
     //If the closest witness point is vertex-face, and the face point is not actually
     //on the face, the closest distance is a vertex-edge or a vertex-vertex case.
     //If an edge-edge witness pair, and one of the witness points isn't on the edge,
     //it's a vertex-edge case; if neither is, it's a vertex-vertex case.
-    Witness bestWitness;
     bestWitness.distance = FLT_MAX;
     wr = boxA.radius1;
     dr = boxA.radius2;
@@ -1316,6 +1348,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  nextBestWitness.point1.z = -hr;
 	}
 	else {
+	  AisB = false;
 	  bestWitness = nextBestWitness; 
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
@@ -1363,6 +1396,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	}
 
 	if (!newDistance || nextBestWitness.distance < bestWitness.distance) {
+	  AisB = false;
 	  bestWitness = nextBestWitness;
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
@@ -1370,7 +1404,9 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 
       }
     }
-    
+
+    // Along each edge, tells you which vertex the witness should snap to if it
+    // exceeds the positive and negative extent of the box, respectively
     const int vertexOverflowX[]={0,1, -1,-1, 3,2, -1,-1, -1,-1, 4,5, -1,-1, -1,-1,
       -1,-1, 7,6, -1,-1, -1,-1};
     const int vertexOverflowY[]={-1,-1, 1,2, -1,-1, 0,3, -1,-1, -1,-1, -1,-1, 5,6,
@@ -1418,9 +1454,10 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	    vertexOverflowZ[edgeID*2+1] != -1) {
 	  nextBestWitness.typeOnA = WITNESS_VERTEX;
 	  nextBestWitness.idOnA = vertexOverflowZ[edgeID*2+1];
-	  nextBestWitness.point1.y = -hr;
+	  nextBestWitness.point1.z = -hr;
 	}
 	else {
+	  AisB = false;
 	  bestWitness = nextBestWitness;
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
@@ -1431,6 +1468,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
 	if (nextBestWitness.distance < bestWitness.distance)
 	{
+	  AisB = false;
 	  bestWitness = nextBestWitness;
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
@@ -1488,6 +1526,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  nextBestWitness.point1.z = -hr;
 	}
 	else {
+	  AisB = true;
 	  bestWitness = nextBestWitness; 
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
@@ -1540,9 +1579,10 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	    vertexOverflowZ[edgeID*2+1] != -1) {
 	  nextBestWitness.typeOnA = WITNESS_VERTEX;
 	  nextBestWitness.idOnA = vertexOverflowZ[edgeID*2+1];
-	  nextBestWitness.point1.y = -hr;
+	  nextBestWitness.point1.z = -hr;
 	}
 	else {
+	  AisB = true;
 	  bestWitness = nextBestWitness;
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
@@ -1559,22 +1599,159 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	}
       }
     }
-
-
-    outWitnessPoint1 = bestWitness.point1;
-    outWitnessPoint2 = bestWitness.point2;
-
-    if (bestWitness.distance > 1e3)
-      bestWitness.distance = 1e3;
-    return bestWitness.distance;
   }
-  //If there is a collision:
 
-  //NOTE: I don't *think* that it's necessary to check whether the corner is
-  //actually *inside* A; I believe it won't matter as long as collision has been
-  //already determined.
+  if (AisB) {
+    Witness tmpWitness = bestWitness;
+    bestWitness.typeOnA = bestWitness.typeOnB;
+    bestWitness.idOnA = bestWitness.idOnB;
+    bestWitness.point1 = bestWitness.point2;
+    bestWitness.paramOnA = bestWitness.paramOnB;
+    bestWitness.typeOnB = tmpWitness.typeOnA;
+    bestWitness.idOnB = tmpWitness.idOnA;
+    bestWitness.point2 = tmpWitness.point1;
+    bestWitness.paramOnB = tmpWitness.paramOnA;
+  }
 
-  //If there is no collision:
+  if (outPatch != 0) {
+    const int VertexFaceNeigbors[] = {0,4,1, 0,1,2, 0,2,3, 0,3,4, 1,4,5, 2,1,5, 3,2,5, 4,3,5};
+    const int EdgeFaceNeighbors[] = {0,1, 0,2, 0,3, 0,4, 1,4, 1,5, 1,2, 2,5, 2,3, 3,5, 3,4, 4,5};
+    // Find the face on A and the face on B which 
+    vector<int> facesOnA;
+    vector<int> facesOnB;
+    if (bestWitness.typeOnA == WITNESS_VERTEX) {
+      facesOnA.push_back(VertexFaceNeigbors[bestWitness.idOnA*3]);
+      facesOnA.push_back(VertexFaceNeigbors[bestWitness.idOnA*3+1]);
+      facesOnA.push_back(VertexFaceNeigbors[bestWitness.idOnA*3+2]);
+    }
+    else if (bestWitness.typeOnA == WITNESS_EDGE) {
+      facesOnA.push_back(EdgeFaceNeighbors[bestWitness.idOnA*2]);
+      facesOnA.push_back(EdgeFaceNeighbors[bestWitness.idOnA*2+1]);
+    }
+    else {
+      facesOnA.push_back(bestWitness.idOnA);
+    }
+    if (bestWitness.typeOnB == WITNESS_VERTEX) {
+      facesOnB.push_back(VertexFaceNeigbors[bestWitness.idOnB*3]);
+      facesOnB.push_back(VertexFaceNeigbors[bestWitness.idOnB*3+1]);
+      facesOnB.push_back(VertexFaceNeigbors[bestWitness.idOnB*3+2]);
+    }
+    else if (bestWitness.typeOnB == WITNESS_EDGE) {
+      facesOnB.push_back(EdgeFaceNeighbors[bestWitness.idOnB*2]);
+      facesOnB.push_back(EdgeFaceNeighbors[bestWitness.idOnB*2+1]);
+    }
+    else {
+      facesOnB.push_back(bestWitness.idOnB);
+    }
+
+    const Vector3 faceNormals[] = {vector3(0,0,1),
+      vector3(0,1,0),
+      vector3(-1,0,0),
+      vector3(0,-1,0),
+      vector3(1,0,0),
+      vector3(0,0,-1)};
+
+    double lowestDot = FLT_MAX;
+    int bestFaceOnA;
+    int bestFaceOnB;
+    for (unsigned int i = 0; i < facesOnA.size(); i++) {
+      for (unsigned int j = 0; j < facesOnB.size(); j++) {
+	double normalDotProduct = dot(boxA.pose.rot * faceNormals[facesOnA[i]],
+	    boxB.pose.rot * faceNormals[facesOnB[j]]);
+	if (normalDotProduct < lowestDot) {
+	  lowestDot = normalDotProduct;
+	  bestFaceOnA = facesOnA[i];
+	  bestFaceOnB = facesOnB[j];
+	}
+      }
+    }
+
+    const int FaceVertexNeighbors[] = {0,1,2,3, 0,4,5,1, 1,5,6,2, 2,6,7,3, 0,3,7,4, 4,7,6,5};
+    //Enumerate all vertices on B around the selected face.
+    //If a vertex is within a threshold of A's face's plane,
+    //add it to the patch. Otherwise, if it has a neighbor that is 
+    //within the threshold, compute the interpolated point where 
+    //the edge passes the threshold and add that point to the
+    //patch.
+    double BFaceVertexDistances[4];
+    Vector3 AFaceCorner = AVertices[FaceVertexNeighbors[bestFaceOnA*4]];
+    Vector3 AFaceNormal = boxA.pose.rot * faceNormals[bestFaceOnA];
+    int lowestAcceptedVertex = -1;
+    for (int i = 0; i < 4; i++) {
+      BFaceVertexDistances[i] = dot(AFaceNormal,
+	  BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] - AFaceCorner);
+      if (BFaceVertexDistances[i] <= patchThreshold) {
+	if (lowestAcceptedVertex == -1) {
+	  lowestAcceptedVertex = i;
+	}
+      }
+    }
+    vector<Vector3> patchOnB;
+    if (lowestAcceptedVertex != -1) {
+      int i = lowestAcceptedVertex;
+      int nexti = (i == 3 ? 0 : i+1);
+      do  {
+	if (BFaceVertexDistances[i] <= patchThreshold) {
+	  // Add vertex to patch
+	  patchOnB.push_back(BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]]);
+
+	  // If next vertex is too far away, find the point in between that crosses the threshold:
+	  if (BFaceVertexDistances[nexti] > patchThreshold) {
+	    double interpolationFactor = (patchThreshold - BFaceVertexDistances[i]) / (BFaceVertexDistances[nexti]-BFaceVertexDistances[i]);
+	    Vector3 interpolatedPoint = 
+	      (1-interpolationFactor)*BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] + 
+	      interpolationFactor * BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+nexti]];
+	    patchOnB.push_back(interpolatedPoint);
+	  }
+	}
+	else {
+	  // If this vertex is too far away but the next one isn't, find the point in between that
+	  // crosses the threshold:
+	  if (BFaceVertexDistances[nexti] <= patchThreshold) {
+	    double interpolationFactor = (patchThreshold - BFaceVertexDistances[i]) / (BFaceVertexDistances[nexti]-BFaceVertexDistances[i]);
+	    Vector3 interpolatedPoint = 
+	      (1-interpolationFactor)*BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] + 
+	      interpolationFactor * BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+nexti]];
+	    patchOnB.push_back(interpolatedPoint);
+	  }
+	}
+	i = nexti;
+	nexti = (i == 3 ? 0 : i+1);
+      } 
+      while (i != lowestAcceptedVertex);
+
+
+      vector<Vector3>AFacePolygon;
+      //Now, project the points onto the A face,
+      //Need to reverse the winding on the bottom polygon for overlap compoutation
+      vector<Vector3> patchOnA;
+      for(int i = patchOnB.size()-1; i >= 0; i--) {
+	patchOnA.push_back(patchOnB[i] - AFaceNormal * dot(AFaceNormal, patchOnB[i]-AFaceCorner));
+      }
+      for(unsigned int i = 0; i < 4; i++) {
+	AFacePolygon.push_back(AVertices[FaceVertexNeighbors[bestFaceOnA*4+i]]);
+      }
+
+      //and find the overlap between it and the face. That's the contact patch!!1
+      *outPatch = findPolygonIntersection(AFacePolygon, patchOnA);
+
+      for (unsigned int i = 0; i < outPatch->size(); i++) {
+	(*outPatch)[i] = transform(boxA.pose, (*outPatch)[i]);
+      }
+    }
+    else {
+      // No point is close enough! Just return the distance
+    }
+  }
+
+  outWitnessPoint1 = bestWitness.point1;
+  outWitnessPoint2 = bestWitness.point2;
+
+  if (bestWitness.distance > 1e3)
+    bestWitness.distance = 1e3;
+  if (bestWitness.distance < -1e3)
+    bestWitness.distance = -1e3;
+  return bestWitness.distance;
 }
 
 bool
