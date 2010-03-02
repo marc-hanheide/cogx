@@ -170,8 +170,7 @@ namespace spatial
     m_pdf_total = new Cure::LocalGridMap<PDFData>(gridsize, cellsize, def,
         Cure::LocalGridMap<unsigned int>::MAP1);
 
-    m_pdf_obj = new Cure::LocalGridMap<double>(gridsize, cellsize, def.prob,
-            Cure::LocalGridMap<unsigned int>::MAP1);
+    m_pdf_obj = new Cure::LocalGridMap<double>(gridsize, cellsize,  pIn / pow(double((2 * gridsize + 1)), 2), Cure::LocalGridMap<unsigned int>::MAP1);
 
 
     m_Dlgm = new Cure::X11DispLocalGridMap<unsigned int>(*m_lgm);
@@ -274,11 +273,13 @@ namespace spatial
     cvShowImage("test", img);
     log("hey I'm running.");
     while (isRunning()) {
-      //lockComponent();
+      lockComponent();
+      
       m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
-
+      unlockComponent();
+      //log("update plane display");
       int key = cvWaitKey(100);
-
+      
       if (key == 115) {
         m_table_phase = true;
         log("Saving plane map!");
@@ -342,10 +343,8 @@ namespace spatial
           }
         }
       }
+      //unlockComponent();
     }
-
-    //unlockComponent();
-    sleepComponent(100);
 
   }
   void
@@ -515,7 +514,7 @@ namespace spatial
         if ((*m_lgm)(CoordPair.first, CoordPair.second) != 3) {
             NewPlanePoints.insert(CoordPair);
         }
-
+	
         (*m_lgm)(CoordPair.first, CoordPair.second) = 3;
 
         // TODO: do not initialize PDF with fixed value if on the fly adding of planes is on.
@@ -611,7 +610,7 @@ namespace spatial
 
     for (unsigned int i = 0; i < ViewConePoints.size(); i++) {
       if (ViewConePoints[2 * i] == x && ViewConePoints[2 * i + 1] == y) {
-        //log("ActionProbcell returned %f", 0.7);
+        log("ActionProbcell returned %f", 0.7);
         return 0.7; // FIXME: this is lame.
       }
     }
@@ -630,9 +629,7 @@ namespace spatial
     double denomsum = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2)
-          continue;
-        denomsum += (*m_pdf_obj)(x, y) * (1 - ActionProbabilityPerCell(x, y,
+	denomsum += (*m_pdf_obj)(x, y) * (1 - ActionProbabilityPerCell(x, y,
             m_CurrentViewPoint_Points));
       }
     }
@@ -653,7 +650,46 @@ namespace spatial
     log("pOut has become: %f", pOut);
 
 
-    GetTotalPDF();
+
+
+    //GetTotalPDF();
+
+
+       /* Display pdfIn in PB as Line Cloud BEGIN */
+
+         double multiplier1 = 10000.0;
+         double xW2, yW2, xW3, yW3;
+         peekabot::LineCloudProxy linecloudp;
+
+         linecloudp.add(m_PeekabotClient, "root.LC_OBJ",
+             peekabot::REPLACE_ON_CONFLICT);
+         linecloudp.clear_vertices();
+         linecloudp.set_line_width(2);
+         linecloudp.set_color(0.2, 0.9, 0.2);
+
+         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+             if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
+               continue;
+             m_pdf_total->index2WorldCoords(x, y, xW2, yW2);
+             m_pdf_total->index2WorldCoords(x, y + 1, xW3, yW3);
+             linecloudp.add_line(xW2 -6, yW2,
+                 (*m_pdf_obj)(x, y) * multiplier1, xW3 -6, yW3, (*m_pdf_obj)(x, y + 1) * multiplier1);
+           }
+         }
+
+        /* for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+             if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
+               continue;
+             m_pdf_total->index2WorldCoords(x + 1, y, xW2, yW2);
+             m_pdf_total->index2WorldCoords(x, y, xW3, yW3);
+             linecloudp.add_line(xW2 + 6, yW2 - 8,
+                 (*m_pdf_total)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf_total)(x, y
+                     + 1).prob * multiplier1);
+           }
+         }*/
+         /* Display pdfIn in as line cloud PB END */
 
 
   }
@@ -703,8 +739,6 @@ namespace spatial
          }
        }
 
-       log("aftersum is: %f", InsideAfterSum);
-
        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
            (*m_pdf_total)(x, y).prob = (*m_pdf_total)(x, y).prob * InsideBeforeSum
@@ -712,6 +746,7 @@ namespace spatial
          }
        }
 
+       
 
        /* Display pdfIn in PB as Line Cloud BEGIN */
 
@@ -719,14 +754,14 @@ namespace spatial
          double xW2, yW2, xW3, yW3;
          peekabot::LineCloudProxy linecloudp;
 
-         linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
+         linecloudp.add(m_PeekabotClient, "root.LC_TOTAL",
              peekabot::REPLACE_ON_CONFLICT);
          linecloudp.clear_vertices();
          linecloudp.set_line_width(2);
          linecloudp.set_color(0.9, 0, 0);
 
-         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x = x + 2) {
-           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y = y + 2) {
+         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
              if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
                continue;
              m_pdf_total->index2WorldCoords(x, y, xW2, yW2);
