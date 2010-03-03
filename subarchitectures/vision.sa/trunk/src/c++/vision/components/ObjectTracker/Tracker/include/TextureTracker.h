@@ -39,8 +39,9 @@ public:
 	~TextureTracker();
 	
 	virtual void setKernelSize(int val){
+		params.kernel_size = val;
 		m_shadeCompare->bind();
-		m_shadeCompare->setUniform("kernelsize", val);
+		m_shadeCompare->setUniform("kernelsize", params.kernel_size);
 		m_shadeCompare->unbind();
 	}
 	

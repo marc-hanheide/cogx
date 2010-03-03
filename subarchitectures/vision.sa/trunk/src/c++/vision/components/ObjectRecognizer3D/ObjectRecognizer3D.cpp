@@ -132,7 +132,9 @@ void ObjectRecognizer3D::runComponent(){
 				}
 				if(m_rec_cmd->cmd == RECLEARN && m_rec_cmd->visualObjectID.empty()){
   				log("%s: Warning no VisualObject given", m_label.c_str());
-  				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, Math::Pose3(), m_label);
+  				Math::Pose3 pose;
+  				pose.pos.x = 0.1; pose.pos.y = 0.2; pose.pos.z = 0.0;
+  				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, pose, m_label);
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
 				
@@ -431,7 +433,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 		}else{
 		
 			if(m_recEntries[m_label].object->conf < 0.05){
-				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,0.07);
+				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,0.03);
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
 			}else{
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);

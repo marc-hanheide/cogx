@@ -22,6 +22,8 @@ class Predictor
 {
 protected:
 	float m_dTime;
+	float m_powTime;
+	float m_powTimeSteps;
 	
 	Tracking::TM_Vector3 m_cam_view;
 	

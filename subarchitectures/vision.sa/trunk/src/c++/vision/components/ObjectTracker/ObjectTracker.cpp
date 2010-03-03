@@ -33,6 +33,8 @@ ObjectTracker::ObjectTracker(){
   m_textured = true;
   m_automatictexturing = true;
   m_bfc = true;
+  
+  fTimeTotal = 0.0;
 }
 
 ObjectTracker::~ObjectTracker(){
@@ -367,6 +369,8 @@ void ObjectTracker::runTracker(){
 		m_trackinglist[i]->obj->time = m_image.time;
 		overwriteWorkingMemory(m_trackinglist[i]->visualObjectID, m_trackinglist[i]->obj);
 	}
+	double time = m_image.time.s + m_image.time.us * 1e-6;
+// 	printf("%e %f %f %f %f\n", time, fTimeTotal, pose.t.x, pose.t.y, pose.t.z);
 	
 	// draw results
 	m_tracker->drawResult();
@@ -378,6 +382,7 @@ void ObjectTracker::runTracker(){
 		m_tracker->textureFromImage(true);
 
 	fTimeTracker = m_timer.Update();
+	fTimeTotal += fTimeTracker;
 }
 
 

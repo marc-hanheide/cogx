@@ -88,6 +88,9 @@ bool control(Tracker* tracker, SDL_Event &event){
 				case SDLK_t:
 					tracker->textureFromImage();
 					break;
+				case SDLK_u:
+					tracker->untextureModels();
+					break;
 				case SDLK_w:
 					/*
 					pose = tracker->getLastPose();
