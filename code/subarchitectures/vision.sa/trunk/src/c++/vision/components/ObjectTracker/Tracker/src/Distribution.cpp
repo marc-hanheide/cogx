@@ -37,15 +37,17 @@ void Distribution::calcMean(){
 	w_sum = 0.0;
 	int id;
 	
-	// Normalise particles
-	for(id=0; id<m_particlelist.size(); id++)
-		w_sum += m_particlelist[id].w;
+	int num_particles = m_particlelist.size()*0.8;
 	
-	for(id=0; id<m_particlelist.size() && w_sum > 0.0; id++)
+	// Normalise particles
+	for(id=0; id<num_particles; id++)
+		w_sum += m_particlelist[id].w;
+
+	for(id=0; id<num_particles && w_sum > 0.0; id++)
 		m_particlelist[id].w = m_particlelist[id].w / w_sum;
 	
 	// Weighted sum over all particles
-	for(id=0; id<m_particlelist.size(); id++){
+	for(id=0; id<num_particles; id++){
 		m_meanParticle.t 	+= m_particlelist[id].t * m_particlelist[id].w;
 		m_meanParticle.tp += m_particlelist[id].tp * m_particlelist[id].w;
 		m_meanParticle.rp += m_particlelist[id].rp * m_particlelist[id].w;
@@ -58,7 +60,7 @@ void Distribution::calcMean(){
 	m_meanParticle.q.fromAxis(maxAxis, maxAngle);
 	
 	if(!m_particlelist.empty())
-		c_mean = m_meanParticle.c / m_particlelist.size();
+		c_mean = c_mean / num_particles;
 	
 	m_meanParticle.c = c_mean;
 	m_meanParticle.w = w_max;
@@ -232,11 +234,11 @@ void Distribution::calcLikelihood(int convergence){
 		c_max=0.01;
 	}
 
-	// calculate mean of distribution
-	calcMean();
-
 	// sort particles by likelihood and average most likely particles
 	std::sort(m_particlelist.begin(), m_particlelist.end(), sortfunction);
+	
+	// calculate mean of distribution
+	calcMean();
 }
 
 void Distribution::updateLikelihood(TrackerModel& model, Shader* shadeCompare, bool textured, int convergence, bool showparticles){

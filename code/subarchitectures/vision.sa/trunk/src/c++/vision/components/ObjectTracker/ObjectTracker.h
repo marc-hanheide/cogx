@@ -39,6 +39,7 @@ private:
   int m_ImageWidth;
   int m_ImageHeight;
   float fTimeTracker;
+  float fTimeTotal;
   cdl::CASTTime last_image_time;
   std::string m_ini_file;
   

@@ -23,7 +23,8 @@ Tracker::Tracker(){
 	params.num_recursions = 2;
 	params.convergence = 5;
 	params.edge_tolerance = 45.0 * PIOVER180;
-	params.m_spreadlvl = 1;
+	params.m_spreadlvl = 0;
+	params.kernel_size = 0;
 	params.variation =Particle(0.1);
 	params.minTexGrabAngle = 3.0*PI/4.0;
 	params.modelPath = string("resources/model/");

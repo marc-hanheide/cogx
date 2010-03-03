@@ -108,6 +108,7 @@ void main(){
 				gl_FragColor = blue;
 				if(!analyze)
 					discard;
+				return;
 			}
 		}
 	}else{
@@ -129,6 +130,7 @@ void main(){
 			gl_FragColor = blue;
 			if(!analyze)
 				discard;
+			return;
 		}
 	}
 }
