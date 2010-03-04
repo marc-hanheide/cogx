@@ -91,7 +91,7 @@ SET(HEADERS
 	TrktCube.hh
 	TrktFlap.hh
 	TrktRectangle.hh
-	Vector2.hh
+#	Vector2.hh
 	VisionCore.hh
 	VoteImage.hh
 	Wall.hh
@@ -106,7 +106,7 @@ SET(SOURCES
 	gammln.c
 	Math.ic
 	nrutil.c
-	Vector2.ic
+#	Vector2.ic
 	AJunction.cc
 	Arc.cc
 #	Ball.cc
@@ -190,7 +190,7 @@ SET(SOURCES
 #	TrktCube.cc
 #	TrktFlap.cc
 #	TrktRectangle.cc
-	Vector2.cc
+#	Vector2.cc
 	VisionCore.cc
 	VoteImage.cc
 #	Wall.cc
