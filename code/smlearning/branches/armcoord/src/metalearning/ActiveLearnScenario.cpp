@@ -183,17 +183,34 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		arm->getArm().lookupInp(chunk.armState, context.getTimer()->elapsed());
 		chunk.effectorPose = effector->getPose();
 		chunk.objectPose = object->getPose();
-// 		golem::Mat34 p = chunk./*object*/effectorPose; 
+// 		golem::Mat34 p = chunk.objectPose; 
 // 		cout << "pose: ";
-// 		printf("%f %f %f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
+// 		printf("%.20f %.20f %.20f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
 
 		Real efRoll, efPitch, efYaw;
 		chunk.effectorPose.R.toEuler (efRoll, efPitch, efYaw);
 // 		cout << "Effector roll: " << efRoll << " pitch: " << efPitch << " yaw: " << efYaw << endl;
 		Real obRoll, obPitch, obYaw;
 		chunk.objectPose.R.toEuler (obRoll, obPitch, obYaw);
-// 		cout << "Object roll: " << obRoll << " pitch: " << obPitch << " yaw: " << obYaw << endl;  
-	
+		cout << "Object roll: " << obRoll << " pitch: " << obPitch << " yaw: " << obYaw << endl;
+
+		Real polStateOutput = 0; //polyflap moves with the same Y angle
+		Real epsilonAngle = 0.005;
+		if (currentPfRoll < (obRoll - epsilonAngle) ) //polyflap Y angle increases
+			polStateOutput = 1;
+		if (currentPfRoll > (obRoll + epsilonAngle) ) //polyflap Y angle decreases
+			polStateOutput = -1;
+
+		if (polStateOutput == 0 && currentPfY < chunk.objectPose.p.v2) // polyflap Y position increases
+			polStateOutput = 0.5;
+		if (polStateOutput == 0 && currentPfY > chunk.objectPose.p.v2) //polyflap Y position decreases
+			polStateOutput = -0.5;
+		
+		cout << "polStateOutput: " << polStateOutput << endl;
+		currentPfRoll = obRoll;
+		currentPfY = chunk.objectPose.p.v2;
+
+		
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 		/////////////////////////////////////////////////
@@ -212,13 +229,10 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(polStateOutput);
 
 		learningData.currentSeq.push_back(currentFeatureVector);
 
-		if (obRoll > desc.reachedNum) {
-			desc.reachedNum = obRoll;
-		}
-	
 		/////////////////////////////////////////////////
 		//initialize RNN learner
 		if (!netBuilt) {
@@ -311,6 +325,8 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		if (iteration == 0)
 			objectLocalBounds = object->getLocalBoundsSeq();
 		
+		object->getPose().R.toEuler (currentPfRoll, currentPfPitch, currentPfYaw);
+		currentPfY = object->getPose().p.v2;
 
 		Mat34 curPolPos1;
 		Mat34 curPolPos2;
@@ -323,8 +339,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 			curPolPos1 = curPol->back()->getPose();
 			curPolPos2 = curPol->front()->getPose();
 		}
-
-		desc.reachedNum = 0.0;
 
 
 		Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
@@ -476,23 +490,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		bStart = false;
 		
 		
-				
-		Real polState = -1; //polyflap was smoothly moved
-		if (desc.reachedNum > 0.1) { //polyflap was tilted more than treshold
-			polState = 0;
-		}
-		if (desc.reachedNum > 1.5) {//polyflap was flipped
-			polState = 1;
-		}
-
-		FeatureVector polyflapEndState;
-		polyflapEndState.push_back(polState);
-		cout << "Polyflap end state: " << polState << endl;
-		/////////////////////////////////////////////////
-		//writing the polyflap end state into the sequence
-		learningData.currentSeq.push_back(polyflapEndState);
-		/////////////////////////////////////////////////
-	
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
 		data.push_back(learningData.currentSeq);
