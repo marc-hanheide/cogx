@@ -173,7 +173,7 @@ void StereoDetector::start()
 	// initialize openCV windows
   if(showImages) 
 	{
-		cvNamedWindow("Stereo left", /*CV_WINDOW_AUTOSIZE*/ 1);
+		cvNamedWindow("Stereo left", CV_WINDOW_AUTOSIZE);
 		cvNamedWindow("Stereo right", 1);
 
 		cvMoveWindow("Stereo left", 1920, 10);
@@ -476,7 +476,7 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 
 		addToWorkingMemory(objectID, obj);
 
-//cvWaitKey(200);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
+cvWaitKey(50);	/// TODO HACK TODO HACK TODO HACK TODO HACK => Warten, damit nicht WM zu schnell beschrieben wird.
 	}
 }
 
@@ -485,13 +485,16 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
 /**
  * @brief Single shot mode of the stereo detector for debugging.\n
  * Catch keyboard events and change displayed results:\n
+ *   F1 ... Show this help
+ *   F2 ... Print information about the visual feature (show single gestalts == on)
+ * 
  *   key:	p ... Process single shot \n
  *   key:	^ ... Show this help \n
- *   key:	1 ... Szene: Show all stereo features on virtual szene \n
- *   key:	2 ... Stereo: Show matched Gestalts \n
- *   key:	3 ... Mono: Show detected Gestalts \n
- *   key:	4 ... Mono: Show also masked Gestalts \n
- *   key:	5 ... Mono: Show single Gestalts \n
+ *   key:	1 ... Szene: Show all stereo features on virtual szene (on/off) \n
+ *   key:	2 ... Stereo: Show matched Gestalts (on/off) \n
+ *   key:	3 ... Mono: Show detected Gestalts (on/off) \n
+ *   key:	4 ... Mono: Show also masked Gestalts (on/off) \n
+ *   key:	5 ... Mono: Show single Gestalts (on/off) \n
  *   key:	+ ... Mono: Increase degree of detail \n
  *   key:	- ... Mono: Decrease degree of detail \n
  *   key:	. ... Mono: Increase ID of single showed Gestalt \n
@@ -519,16 +522,59 @@ void StereoDetector::WriteToWM(Z::StereoBase::Type type)
  */
 void StereoDetector::SingleShotMode()
 {
-
 	if(mouseEvent) MouseEvent();
 	mouseEvent = false;
-
-
 
 	int key = 0;
 	key = cvWaitKey(10);
 
-	if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %c", (char) key);
+// 	if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %c", (char) key);
+	if (key == 1114046)	// F1
+		printf("Keyboard commands for single shot mode:\n"
+						"    F1 ... Show this help \n"
+						"    F2 ... Print information (show single gestalts (5) = on)\n\n"
+
+						"    p ... Process single shot \n"
+						"    1 ... Szene: show all stereo features on virtual szene\n"
+						"    2 ... Stereo: show matched Gestalts \n"
+						"    3 ... Mono: show detected Gestalts \n"
+						"    4 ... Mono: show also masked Gestalts \n"
+						"    5 ... Mono: Show single Gestalts \n"
+						"    + ... Mono: Increase degree of detail \n"
+						"    - ... Mono: Decrease degree of detail \n"
+						"    . ... Mono: Increase ID of single showed Gestalt \n"
+						"    , ... Mono: Decrease ID of single showed Gestalt \n"
+						"    x ... Mono: Stop single-shot processing mode.\n\n"
+
+						"    q ... Show SEGMENTS\n"
+						"    w ... Show LINES\n"
+						"    e ... Show COLLINEARITIES\n"
+						"    r ... Show L-JUNCTIONS\n"
+						"    t ... Show CLOSURES\n"
+						"    z ... Show RECTANGLES\n"
+						"    u ... Show FLAPS\n"
+						"    i ... Show FLAPS_ARI\n"
+						"    o ... Show CUBES\n\n"
+
+						"    a ... Show ARCS\n"
+						"    s ... Show ARC-GROUPS\n"
+						"    d ... Show A-JUNCTIONS\n"
+						"    f ... Show ELLIPSES\n"
+						"    g ... Show EXT-ELLIPSES: not yet implemented\n"
+						"    h ... Show CYLINDERS: not yet implemented\n"
+						"    j ... Show CONES: not yet implemented\n"
+						"    k ... Show SPHERES: not yet implemented\n");
+
+	if (key == 1114047)	// F2
+	{
+		if(showSingleGestalt && showID != -1 && (mouseSide == 0 || mouseSide == 1)) 
+		{
+			const char* text = (score->GetMonoCore(mouseSide))->GetInfo(showType, showID);
+			log("Gestalt infos:\n%s\n", text);
+		}
+	}
+
+// 	if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
 	switch((char) key)
 	{
 		case 'p':
@@ -537,40 +583,6 @@ void StereoDetector::SingleShotMode()
 			videoServer->getImage(camIds[1], image_r);
 			gotImage = true;
 			processImage();
-			break;
-		case '^':
-			printf( "Keyboard commands for single shot mode:\n"
-							"    key:	p ... Process single shot \n"
-							"    key:	^ ... Show this help \n"
-							"    key:	1 ... Szene: show all stereo features on virtual szene\n"
-							"    key:	2 ... Stereo: show matched Gestalts \n"
-							"    key:	3 ... Mono: show detected Gestalts \n"
-							"    key:	4 ... Mono: show also masked Gestalts \n"
- 							"    key: 5 ... Mono: Show single Gestalts \n"
-							"    key:	+ ... Mono: Increase degree of detail \n"
-							"    key:	- ... Mono: Decrease degree of detail \n"
-							"    key: . ... Mono: Increase ID of single showed Gestalt \n"
-							"    key: , ... Mono: Decrease ID of single showed Gestalt \n"
-							"    key:	x ... Mono: Stop single-shot processing mode.\n\n"
-
-							"    key:	q ... Show SEGMENTS\n"
-							"    key:	w ... Show LINES\n"
-							"    key:	e ... Show COLLINEARITIES\n"
-							"    key:	r ... Show L-JUNCTIONS\n"
-							"    key:	t ... Show CLOSURES\n"
-							"    key:	z ... Show RECTANGLES\n"
-							"    key:	u ... Show FLAPS\n"
-							"    key:	i ... Show FLAPS_ARI\n"
-							"    key:	o ... Show CUBES\n\n"
-
-							"    key:	a ... Show ARCS\n"
-							"    key:	s ... Show ARC-GROUPS\n"
-							"    key:	d ... Show A-JUNCTIONS\n"
-							"    key:	f ... Show ELLIPSES\n"
-							"    key:	g ... Show EXT-ELLIPSES: not yet implemented\n"
-							"    key:	h ... Show CYLINDERS: not yet implemented\n"
-							"    key:	j ... Show CONES: not yet implemented\n"
-							"    key:	k ... Show SPHERES: not yet implemented\n");
 			break;
 		case '1':
 			if(showAllStereo) 
@@ -798,12 +810,47 @@ void StereoDetector::SingleShotMode()
 
 /**
  * @brief Processes the mouse event.
+ * Stores found ID of Gestalt in showID. If more than one Gestalt found,
+ * take with next pressed button the next Gestalt and so on.
  */
 void StereoDetector::MouseEvent()
 {
-	showID = score->PickGestaltAt(mouseSide, showType, mouseX, mouseY, 0, false);
+	static int prev_picked = -1, prev_mouseSide = 0;
+	static int prev_x = INT_MAX, prev_y = INT_MAX;
+
+	if(mouseX != prev_x || mouseY != prev_y || mouseSide != prev_mouseSide)
+		prev_picked = -1;
+
+	showID = score->PickGestaltAt(mouseSide, showType, mouseX, mouseY, prev_picked, false);
+	if(showID != -1)
+	{
+		prev_picked = showID;
+		prev_mouseSide = mouseSide;
+		prev_x = mouseX;
+		prev_y = mouseY;
+	}
+	else // check again in small surrounding area
+	{
+		bool found = false;
+		int a_end = min((int) ((score->GetMonoCore(mouseSide))->IW())-1, mouseX+1);
+		int b_end = min((int) ((score->GetMonoCore(mouseSide))->IH())-1, mouseY+1);
+		for(int a = max(0, mouseX-1); a <= a_end && !found; a++)
+			for(int b = max(0, mouseY-1); b <= b_end && !found; b++)
+			{
+				showID = score->PickGestaltAt(mouseSide, showType, a, b, prev_picked, false);
+				if(showID != -1)
+				{
+					found = true;
+					prev_picked = showID;
+					prev_mouseSide = mouseSide;
+					prev_x = mouseX;
+					prev_y = mouseY;
+				}
+			}
+	}
+
 	if (showID < 0) return;
-// 	printf("StereoDetector::MouseEvent: showID: %u   (%u/%u), type: %u\n", showID, mouseX, mouseY, showType);
+	log("show feature with id=%u at position (%u/%u).", showID, mouseX, mouseY);
 	ShowImages(true);
 }
 
