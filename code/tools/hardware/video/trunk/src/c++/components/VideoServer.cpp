@@ -1,7 +1,11 @@
 /**
- * @author Michael Zillich
- * @date February 2009
+ * @file VideoServer.cpp
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date Februrary 2010, Februar 2009
+ * @version 0.1
+ * @brief Video server: Manage capturing of videos from different sources (PointGrey, OpenCV, ImgSequences).
  */
+
 
 #include <sstream>
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -60,6 +64,12 @@ void VideoServerI::stopReceiveImages(const std::string& receiverComponentId,
     const Ice::Current&)
 {
   vidSrv->stopReceiveImages(receiverComponentId);
+}
+
+void VideoServerI::changeFormat7Properties(Ice::Int width, Ice::Int height, Ice::Int offsetX,															/// TODO changeFormat7Properties
+    Ice::Int offsetY, Ice::Int mode, Ice::Int fps, const Ice::Current&)
+{
+	vidSrv->changeFormat7Properties(width, height, offsetX, offsetY, mode, fps);
 }
 
 
@@ -256,10 +266,14 @@ void VideoServer::getScaledImages(int width, int height, std::vector<Video::Imag
   unlockComponent();
 }
 
+void VideoServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
+{
+}
+
 void VideoServer::runComponent()
 {
   vector<Image> frames;
-  int cnt = 100;
+  int cnt = 10;
   while(isRunning())
   {
     // TODO: If I could have this lock after grabFrames() I could avoid the
@@ -268,8 +282,7 @@ void VideoServer::runComponent()
     grabFrames();
     for(size_t i = 0; i < imageReceivers.size(); i++)
     {
-      retrieveFrames(imageReceivers[i].camIds,
-        imageReceivers[i].imgWidth, imageReceivers[i].imgHeight, frames);
+      retrieveFrames(imageReceivers[i].camIds, imageReceivers[i].imgWidth, imageReceivers[i].imgHeight, frames);
       if(swapRB)
         for(size_t i = 0; i < frames.size(); i++)
           SwapRedBlueChannel(frames[i]);
@@ -284,7 +297,9 @@ void VideoServer::runComponent()
       int fr = getFramerateMilliSeconds();
       debug("grabbing with %d ms per frame (%.2f frames per second)",
           fr, (fr > 0. ? 1000./fr : 0.));
-      cnt = 100;
+			if(fr > 0.) realFps = 1000./fr;
+			else realFps = 0.;
+      cnt = 10;
     }
   }
 }

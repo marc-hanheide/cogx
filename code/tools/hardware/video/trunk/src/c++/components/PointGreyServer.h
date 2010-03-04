@@ -33,9 +33,9 @@ private:
   {
   private:
     size_t window_size;												///< window size
-    size_t i1, i2;														///< 
-    std::vector<float> values;								///<
-    float mean;																///< 
+    size_t i1, i2;														///< TODO 
+    std::vector<float> values;								///< TODO
+    float mean;																///< TODO
 
     size_t inc(size_t i) const
     {
@@ -81,8 +81,8 @@ private:
   class MeanRate
   {
   private:
-    SlidingMean mean;																	///< 
-    timeval prev;																			///< 
+    SlidingMean mean;																	///< TODO
+    timeval prev;																			///< TODO
 
     float calculateCurrentRate();
 
@@ -95,19 +95,25 @@ private:
 
   FlyCapture2::BusManager busMgr;											///< FlyCapture2 bus manager
   FlyCapture2::Camera **cameras;											///< FlyCapture2 cameras
-  std::vector<FlyCapture2::Image> retrievedImages;		///< FlyCapture2 retrieved images from cameras
+  std::vector<FlyCapture2::Image> retrievedImages;		///< FlyCapture2 retrieved images from different cameras
   std::vector<cast::cdl::CASTTime> grabTimes;					///< Time stamps when Ipl images were captured.
   MeanRate framerateMillis;														///< Measured mean frame rate
   int width;																					///< Image width
   int height;																					///< Image height
+	int offsetX;																				///< Offset for VideoMode7
+	int offsetY; 																				///< Offset for VideoMode7
   int fps;																						///< Frames per second
-  bool setSamePropertiesActiveFlag;										///< Automatic property adjustment between different cameras.
+  int videoMode;																			///< Mode 0/1: pruned/resized
+  int paketSize;																			///< Paket size for VideoMode7
+	bool useVideoMode7;																	///< Use VideoMode7
+  bool setAutomaticPropertyAdjustment;								///< Automatic property adjustment between different cameras.
 
   FlyCapture2::VideoMode selectVideoMode(int &_width, int &_height);
   FlyCapture2::FrameRate selectFrameRate(int &_fps);
   void init() throw(std::runtime_error);
 
   void LogCameraInfo(FlyCapture2::CameraInfo* pCamInfo);
+	void LogCameraConfig();
 	void LogPropertyInfo(FlyCapture2::PropertyInfo* pPropInfo);
 	void GetPropertyInfo(int camId, FlyCapture2::PropertyType propType, FlyCapture2::PropertyInfo* pPropInfo);
 	void LogProperty(FlyCapture2::Property* pProp);
@@ -115,9 +121,14 @@ private:
 	void GetProperty(int camId, FlyCapture2::PropertyType propType, FlyCapture2::Property* pProp);
 	void SetPropertyManual(int camId, FlyCapture2::PropertyType propType, bool manual);
 	void SetPropertyValue(int camId, FlyCapture2::PropertyType propType, int valueA, int valueB, float absValue);
-	void SetSamePropertiesActive();
+	void SetAutomaticPropertyAdjustment();
 	void SetAllPropertiesManual();
 	void CopyAllPropertyValues();
+
+	void SetFormat7Properties(int w, int h, int offX, int offY, int vMode, int pSize);
+	bool IsCurrentlyInFormat7(int camId);
+	bool GetFormat7ImageParametersFromCamera(FlyCapture2::Mode mode, unsigned int* pLeft, unsigned int* pTop, unsigned int* pWidth, unsigned int* pHeight);
+	void SetVideoMode7(int camId);
 
   void copyImage(const FlyCapture2::Image &flyImg, Video::Image &img) throw(std::runtime_error);
   void grabFramesInternal();
@@ -133,6 +144,7 @@ public:
   virtual void grabFrames();
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
+	virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize);
 };
 
 }
