@@ -137,10 +137,10 @@ public:
 	StereoCamera *stereo_cam;						///< Stereo camera parameters
 
 private:
-	bool enabled;												///< enabled / disabled Stereo-Gestaltg
+	bool enabled;												///< Enabled / disabled Stereo-Gestalt
 
 protected:
-	Type type;
+	Type type;													///< StereoBase Type
 
 public:
   static const char* TypeName(Type t);

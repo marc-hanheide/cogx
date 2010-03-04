@@ -178,6 +178,7 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
  * @param masked Draw the masked features.
  * @param single Draw only single Gestalt.
  * @param detail Degree of detail.
+ * TODO clean up
  */
 void StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide, int id, int detail)
 {
@@ -217,7 +218,7 @@ void StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
 
 // printf("single: numGestalts: %u > id: %u\n", numGestalts, id);
 		// draw only one gestalt if id is in range of 
-		if(id<numGestalts && id > 0)
+		if(id<numGestalts && id >= 0)
 			if(masked)
 			{
 // printf("single (masked: ON)\n");
