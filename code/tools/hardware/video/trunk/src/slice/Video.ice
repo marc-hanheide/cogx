@@ -145,6 +145,7 @@ module Video {
     void startReceiveImages(string receiverComponentId, IntSeq camIds,
         int width, int height);
     void stopReceiveImages(string receiverComponentId);
+    void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int fps);
   };
   
   interface VideoClientInterface {
