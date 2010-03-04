@@ -6,7 +6,7 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "1" --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
 
 #CPP MG VideoServer OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-recognizer3D/img%03d.jpg" --start 0 --end 0 --framerate_ms 100 --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
 
