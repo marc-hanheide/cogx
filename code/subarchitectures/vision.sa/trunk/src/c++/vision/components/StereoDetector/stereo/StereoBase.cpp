@@ -30,8 +30,7 @@ struct TmpLine
  * @brief Add edgels from a segment edgel list to an OpenCV point array.
  * @																																												/// TODO
  */
-static void AddEdgels(CvPoint2D32f *edgels, int &num_edgels,
-    const Array<Edgel> &new_edgels, unsigned start_idx, unsigned end_idx)
+static void AddEdgels(CvPoint2D32f *edgels, int &num_edgels, const Array<Edgel> &new_edgels, unsigned start_idx, unsigned end_idx)
 {
   for(unsigned i = start_idx; i <= end_idx; i++)
     edgels[num_edgels++] = cvPoint2D32f(new_edgels[i].p.x, new_edgels[i].p.y);
@@ -88,7 +87,7 @@ static void RefineLines(vector<TmpLine> &lines)
 //-----------------------------------------------------------------//
 /**
  * @brief Init tmp. surface with data of an vs3 closure
- * TODO Why calculation with pixels ...? Whats going on here?
+ * 																																														TODO Why calculation with pixels ...? Whats going on here?
  * @param clos Closure to init surface
  */
 void TmpSurf::Init(Closure *clos)
@@ -126,8 +125,7 @@ void TmpSurf::Init(Closure *clos)
   {
     // add edgels of RIGHT line of L-jct i, i.e. line i
     VisibleLine *line = (VisibleLine*)clos->lines[i];
-    AddEdgels(edgels, num_edgels, line->seg->edgels, line->idx[START],
-        line->idx[END]);
+    AddEdgels(edgels, num_edgels, line->seg->edgels, line->idx[START], line->idx[END]);
     i = clos->jcts.CircularNext(i);
 
     // if we have reached the next L-jct, our "straight" line is complete
@@ -163,7 +161,7 @@ void TmpSurf::Init(Closure *clos)
     p[i] = LineIntersection(lines[i].p, lines[i].d, lines[j].p, lines[j].d);
   }
 
-//   id = clos->ID();
+//   id = clos->ID();									/// TODO Wozu eine id? => wurde sonst auf clos-ID gesetzt.
 
   is_valid = true;
 }
@@ -180,14 +178,15 @@ void TmpSurf::Init(Rectangle *rectangle)
   pr.resize(4);
 
 	for(unsigned i=0; i<4; i++)
-		p[i] = (rectangle->ljcts[i])->isct;
+// 		p[i] = (rectangle->ljcts[i])->isct;
+		p[i] = rectangle->isct[i];
 
 //  id = UNDEF_ID;									/// TODO Wozu eine id? => wurde sonst auf clos-ID gesetzt.
   is_valid = true;
 }
 
 
-/**
+/** TODO
  * @brief Init tmp. surface with data of an vs3 ellipse
  * @param ell Ellipse to init surface
  */
@@ -211,6 +210,8 @@ void TmpSurf::Init(Ellipse *ell)
  */
 void TmpSurf::Init(Cube *cube, int side)
 {
+	printf("StereoBase: TmpSurf::Init(Cube *cube, int side): Implemented, but not proved!\n");
+
   p.resize(4);
   pr.resize(4);
 
@@ -271,7 +272,7 @@ void TmpSurf::Rectify(StereoCamera *stereo_cam, int side)
 }
 
 /**
- * // TODO No implementation yet.
+ * // TODO Not implementation yet.
  * @brief Refine tmp. surface
  */
 void TmpSurf::Refine()
@@ -282,6 +283,7 @@ void TmpSurf::Refine()
  * @brief Returns true, if the surface is at this position in the image.
  * @param x X-coordinate in the image
  * @param y Y-coordinate in the image
+ * @return Returns true if surface is at this position in the image.
  */
 bool TmpSurf::IsAtPosition(int x, int y) const
 {
@@ -300,7 +302,8 @@ bool TmpSurf::IsAtPosition(int x, int y) const
   }
   catch(Except &e)
   {
-    // normalise might divide by zero, ignore and later return false
+    // normalise might divide by zero, ignore and later return false TODO
+		printf("StereoBase:TmpSurf::IsAtPosition: Exception: Normalise-Problem?\n");
   }
   return false;
 }
@@ -308,10 +311,11 @@ bool TmpSurf::IsAtPosition(int x, int y) const
 
 /**
  * @brief Draw the surface unrectified.
+ * @param col RGB color
  */
 void TmpSurf::Draw(RGBColor col)
 {
-	int m, s = p.size();
+	unsigned m, s = p.size();
 	for(unsigned i = 0; i < s; i++)
 	{
 		m = i+1; 
