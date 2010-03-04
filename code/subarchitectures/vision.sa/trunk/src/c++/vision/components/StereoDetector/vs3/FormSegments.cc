@@ -1,6 +1,10 @@
 /**
- * $Id: FormSegments.cc,v 1.25 2007/02/04 23:53:03 mxz Exp mxz $
- */
+ * @file FormSegments.cc
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Gestalt principle class for forming segments.
+ **/
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -33,19 +37,30 @@ static int CmpSegments(const void *a, const void *b)
     return 1 ;  // b is first
 }
 
+/**
+ * @brief Constructor of class FormSegments.
+ * @param vc Vision core.
+ */
 FormSegments::FormSegments(VisionCore *vc) : GestaltPrinciple(vc)
 {
   done = false;
-  next_principles.PushBack(FORM_LINES);
+
+  next_principles.PushBack(FORM_LINES);																							/// TODO TODO Was machen diese Sachen hier?
   next_principles.PushBack(FORM_ARCS);
 }
 
+/**
+ * @brief Destructor of class FormSegments.
+ */
 FormSegments::~FormSegments()
 {
   delete edge_img;
   delete[] dir_img;
 }
 
+/**
+ * @brief Reset class FormSegments.
+ */
 void FormSegments::Reset()
 {
   done = false;
@@ -76,8 +91,9 @@ void FormSegments::Reset()
 }
 
 /**
- * The first step after acquiring an image is to calculate Canny edges and save
+ * @brief The first step after acquiring an image is to calculate Canny edges and save \n
  * all edge segments in a segment array.
+ * @param incremental Calculate the segments incremental.
  */
 void FormSegments::Operate(bool incremental)
 {
@@ -93,12 +109,20 @@ void FormSegments::Operate(bool incremental)
   }
 }
 
+/**
+ * @brief Create new segments
+ */
 void FormSegments::Create()
 {
   CreateSegmentsMatas();
   //SegmentArcsLines();
 }
 
+
+/**
+ * @brief Segment arc lines
+ * TODO depricated
+ */
 void FormSegments::SegmentArcsLines()
 {
   /* HACK: comment until Line.hh is changed
@@ -140,8 +164,9 @@ void FormSegments::SegmentArcsLines()
 }
 
 /**
- * Create an image where each edge is drawn with its ID.
+ * @brief Create an image where each edge is drawn with its ID. \n
  * This image is later used for determining the colours left/right of lines.
+ * @param seg Segment to draw.
  */
 void FormSegments::DrawToEdgeImage(Segment *seg)
 {
@@ -155,7 +180,7 @@ void FormSegments::DrawToEdgeImage(Segment *seg)
 }
 
 /**
- * Canny edge detection using code by Matas et al.
+ * @brief Canny edge detection using code by Matas et al.
  */
 void FormSegments::CreateSegmentsMatas()
 {
@@ -238,6 +263,9 @@ void FormSegments::CreateSegmentsMatas()
   DestGR(edge_graph);
 }
 
+/**
+ * @brief Rank the estimated segments.
+ */
 void FormSegments::Rank()
 {
   RankGestalts(Gestalt::SEGMENT, CmpSegments);

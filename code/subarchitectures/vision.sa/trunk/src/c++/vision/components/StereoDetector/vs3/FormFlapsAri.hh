@@ -23,14 +23,16 @@ private:
 	void Mask();
   void Rank();
   void CreateFlapFromRectangles(unsigned idx);
-//   void CreateFlapFromExtRectangles(unsigned idx);
+
   bool IsExistingFlap(unsigned r0, unsigned r1);
   bool RectanglesSuperposed(unsigned r0, unsigned r1);
   bool SharedLines(unsigned r0, unsigned r1);
+
   double MeanGap(unsigned *rect, unsigned *innerJcts, unsigned *outerJcts);
+  double MeanGap(unsigned *rect, Vector2 *orderedIsctR0, Vector2 *orderedIsctR1);
+
   void SortJunctions(unsigned *rect, unsigned *innerJcts, unsigned *outerJcts);
   Array<unsigned> GetSharedLines(unsigned r0, unsigned r1);
-//  Array<unsigned> ExtLines(unsigned r0);
   void CloseFlap(unsigned f0, unsigned r0, unsigned r1, unsigned *outerJcts);
 
 public:

@@ -105,10 +105,10 @@ void FormCubes::InformNewGestalt(Gestalt::Type type, unsigned idx)
 			Create(idx);		
 			break;
 		case Gestalt::COLLINEARITY:
-// 			NewCollinearity(idx);
+// 			NewCollinearity(idx);																												/// TODO War das implementiert?
 			break;
 		case Gestalt::L_JUNCTION:
-// 			NewLJunction(idx);
+// 			NewLJunction(idx);																													/// TODO War das implementiert?
 			break;
     default:
 			printf("FormCubes::InformNewGestalt: Received unknown Gestalt.\n");
@@ -152,20 +152,20 @@ void FormCubes::Create(unsigned flap)
 bool FormCubes::CreateFromFlaps(unsigned flap)
 {
   unsigned rects[2];
-  rects[0] = FlapsAri(core, flap)->rects[0];
-  rects[1] = FlapsAri(core, flap)->rects[1];
+  rects[0] = FlapsAri(core, flap)->rectangles[0]->ID();
+  rects[1] = FlapsAri(core, flap)->rectangles[1]->ID();
 						
   // get every flap
   for (unsigned i=0; i<(NumFlapsAri(core)-1); i++)
   {	  
 		unsigned openRects[2];
 		unsigned r[2];
-		r[0] = FlapsAri(core, i)->rects[0];
-		r[1] = FlapsAri(core, i)->rects[1];
+		r[0] = FlapsAri(core, i)->rectangles[0]->ID();
+		r[1] = FlapsAri(core, i)->rectangles[1]->ID();
 
 		// one rectangle of the flap is equal
 		bool found = false;
-		if (r[0] == rects[0] && r[1] != rects[1]) 
+		if (r[0] == rects[0] && r[1] != rects[1])
 		{
 			found = true;
 			openRects[0] = rects[1];
@@ -196,16 +196,16 @@ bool FormCubes::CreateFromFlaps(unsigned flap)
 			for (unsigned j=0; j<(NumFlapsAri(core)-1); j++)
 			{
 				unsigned rof[2];
-				rof[0] = FlapsAri(core, j)->rects[0];
-				rof[1] = FlapsAri(core, j)->rects[1];
+				rof[0] = FlapsAri(core, j)->rectangles[0]->ID();
+				rof[1] = FlapsAri(core, j)->rectangles[1]->ID();
 					
 				if ((rof[0] == openRects[0] && rof[1] == openRects[1]) ||
 					(rof[0] == openRects[1] && rof[1] == openRects[0]))
 				{
 					// the 3 flaps have to be ordered counter-clockwise
-					if (FlapsAri(core, flap)->rects[0] == FlapsAri(core, i)->rects[1])
+					if (FlapsAri(core, flap)->rectangles[0]->ID() == FlapsAri(core, i)->rectangles[1]->ID())
 						core->NewGestalt(new Cube(core, flap, i, j));	
-					if (FlapsAri(core, flap)->rects[0] == FlapsAri(core, j)->rects[1])
+					if (FlapsAri(core, flap)->rectangles[0]->ID() == FlapsAri(core, j)->rectangles[1]->ID())
 						core->NewGestalt(new Cube(core, flap, j, i));	
 					
 					return true;
