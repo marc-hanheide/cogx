@@ -16,6 +16,7 @@ SET(HEADERS
 	OpenCvImgSeqVideo.hh
 	OpenCvLiveVideo.hh
 	Video.hh
+	Vector2.hh
 )
 
 SET(SOURCES 
@@ -30,6 +31,8 @@ SET(SOURCES
 	Except.cc
 #	OpenCvImgSeqVideo.cc
 #	OpenCvLiveVideo.cc
+	Vector2.ic
+	Vector2.cc
 )
 
 
