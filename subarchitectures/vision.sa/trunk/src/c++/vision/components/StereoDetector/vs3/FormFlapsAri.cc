@@ -14,7 +14,6 @@
 #include "Collinearity.hh"
 #include "Closure.hh"
 #include "Rectangle.hh" 
-// #include "ExtRectangle.hh"
 #include "FlapAri.hh"
 #include "FormFlapsAri.hh"
 
@@ -88,7 +87,7 @@ void FormFlapsAri::Operate(bool incremental)
  */
 void FormFlapsAri::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
-//   StartRunTime();
+//   StartRunTime();																																				/// TODO Wieder implementieren!
   switch(type)
   {
     case Gestalt::RECTANGLE:
@@ -105,45 +104,56 @@ void FormFlapsAri::InformNewGestalt(Gestalt::Type type, unsigned idx)
 
 
 /**
- * @brief Build flaps from new informed rectangle
+ * @brief Build flaps from new informed rectangle.
+ * Search line-array of rectangles for shared lines
  * @param idx Index of new informed rectangle
  */
 void FormFlapsAri::CreateFlapFromRectangles(unsigned idx)
 {
-  Array<Line*> newRectLines = Closures(core, Rectangles(core, idx)->clos)->lines;
+  Array<Line*> newRectLines = Rectangles(core, idx)->lines;
 
   // search all rectangles, except new one
   for (unsigned i=0; i<NumRectangles(core)-1; i++)
   {
-		// get all lines of new and old rectangles
-		Array<Line*> oldRectLines = Closures(core, Rectangles(core, i)->clos)->lines;
+		bool alreadyFound = false;
+
+		// get all lines of old rectangles
+		Array<Line*> oldRectLines = Rectangles(core, i)->lines;
 		for(unsigned j=0;j<newRectLines.Size();j++)
 		{
 			// get every line from the closure of the old rectangle
 			for(unsigned k=0;k<oldRectLines.Size();k++)
 			{
-				if (newRectLines[j]->ID() == oldRectLines[k]->ID())
-				{	
+				// Build new flap when shared line found an if not already a combnation found.
+				if (newRectLines[j]->ID() == oldRectLines[k]->ID() && !alreadyFound)
+				{
+
 					// check existing combinations
-					if (!IsExistingFlap(idx, i))
+					if (!IsExistingFlap(idx, i))																	/// TODO Sollte man jetzt nicht mehr brauchen!!! (Kommt die Meldung, dass gefunden? => Sonst löschen!)
 					{
-						// the two rectangles are superposed?
+						// check if the two rectangles are superposed
 						bool superposed = RectanglesSuperposed(idx, i);
 	
-						// get the shared lines
-						Array<unsigned> sharedLines;
+						Array<unsigned> sharedLines;																									/// TODO Shared lines sollten als Array<Line*> weitergegeben werden
 						if (!superposed) 
 						{
 							sharedLines = GetSharedLines(idx, i);
-				
+
+							// TODO old meanGap function => alles das hier weg (mit Unterfunktionen!)
 							unsigned innerJcts[4];
 							unsigned outerJcts[4];
 							unsigned rect[2];
 							rect[0] = idx;
 							rect[1] = i;
-							double meanGap = MeanGap(rect, innerJcts, outerJcts);
-	
-							core->NewGestalt(new FlapAri(core, rect[0], rect[1], meanGap, sharedLines, innerJcts, outerJcts));
+							double meanGap = MeanGap(rect, innerJcts, outerJcts);												/// TODO Gibt rects weiter und bekommt sortierte inner und outerJunctions
+
+							// TODO new meanGap function
+							Vector2 orderedIsctR0[4];
+							Vector2 orderedIsctR1[4];
+							double meanGap2 = MeanGap(rect, orderedIsctR0, orderedIsctR1);
+
+							alreadyFound = true;
+							core->NewGestalt(new FlapAri(core, rect[0], rect[1], meanGap2, sharedLines, innerJcts, outerJcts, orderedIsctR0, orderedIsctR1));			/// TODO inner, outerJcts weg!
 						}
 					}
 				}
@@ -153,106 +163,10 @@ void FormFlapsAri::CreateFlapFromRectangles(unsigned idx)
 }
 
 
-/*
-**	TODO ARI: fertig stellen und bereinigen
-**	TODO ARI: Array<unsigned> sharedLines; einbauen!!!
-**
-**	ARI: build new flaps from extended rectangles
-**	
-**	1: (neues ExtRectangle->extLines) == (altes ExtRectangle->Rectangle->Closures->Lines)
-**	2: (neues ExtRectangle->Rectangle->Closures->Lines) == (altes ExtRectangle->extLines)
-**	
-
-void FormFlaps::CreateFlapFromExtRectangles(unsigned idx)
-{
-  // 1: get every ExtRectangle i 
-  for (unsigned i=0; i<NumExtRectangles()-1; i++){
-    int nrOfSameLines = 0;
-	  
-	// get every Line from ExtRectangle30
-	int nrOfLines = Closures(Rectangles(ExtRectangles(i)->rect)->clos)->lines.Size();
-	for (int j=0; j<nrOfLines; j++){
-	  
-	  // ExtRectangle->Rectangle->Closure->line
-	  unsigned line = Closures(Rectangles(ExtRectangles(i)->rect)->clos)->lines[j];
-		
-	  // get every extLine of new ExtRectangle
-	  int nrOfExtLines = ExtRectangles(idx)->extLines.Size();
-	  for (int k=0; k<nrOfExtLines; k++){
-	  
-		// ExtRectangle->extLines
-	  	unsigned extLine = ExtRectangles(idx)->extLines[k];
-
-		// compare lines
-		if (line == extLine) nrOfSameLines++; 
-	  }
-	}
-
-	// make new flap if nrOfSameLines > 1
-	if (nrOfSameLines > 1){
-		unsigned rect0 = ExtRectangles(idx)->rect;
-		unsigned rect1 = ExtRectangles(i)->rect;
-
-		// reject if flap with both rectangles already exists		
-		bool exComb = IsExistingFlap(rect0, rect1);		
-		// reject if rectangles have shared lines
-		bool sharedLines = SharedLines(rect0, rect1);
-		// reject if rectangles superposed
-//		bool rectanglesSuperposed = RectanglesSuperposed(rect0, rect1);
-
-// ARI: ÜBERLEGEN
-		if (!exComb && !sharedLines){
-//			NewGestalt(new Flap(rect0, rect1, 2));								// TODO ARI: Type
-		}
-	}	
-  }
-	
-  // 2: get every ExtRectangle i
-  for (unsigned i=0; i<NumExtRectangles()-1; i++){
-    int nrOfSameLines = 0;		
-
-	// get every old ExtRectangle
-	int nrOfExtLines = ExtRectangles(i)->extLines.Size();
-	for (int j=0; j<nrOfExtLines; j++){
-
-	  // get every extLine of old ExtRectangle
-	  unsigned extLine = ExtRectangles(i)->extLines[j];
-		
-	  // get every line from new ExtRectangle
-	  int nrOfLines = Closures(Rectangles(ExtRectangles(idx)->rect)->clos)->lines.Size();
-	  for (int k=0; k<nrOfLines; k++){
-
-		// ExtRectangle->Rectangle->Closure->lines
-		unsigned line = Closures(Rectangles(ExtRectangles(idx)->rect)->clos)->lines[k];
-
-		// compare lines
-		if (line == extLine) nrOfSameLines++;
-	  }
-    }
-
-	// make new Flap if nrOfSameLines > 1
-	if (nrOfSameLines > 1){
-		unsigned rect0 = ExtRectangles(idx)->rect;
-		unsigned rect1 = ExtRectangles(i)->rect;
-
-		// reject if flap with both rectangles already exists		
-		bool exComb = IsExistingFlap(rect0, rect1);	
-		// reject if rectangles have shared lines
-		bool sharedLines = SharedLines(rect0, rect1);
-		// reject if rectangles superposed
-//		bool rectanglesSuperposed = RectanglesSuperposed(rect0, rect1);
-
-// ARI ÜBERLEGEN
-		if (!exComb && !sharedLines){
-//			NewGestalt(new Flap(rect0, rect1, 2));								// TODO ARI: Type
-		}
-	}	
-  }
-}
-*/
 
 /**
- * @brief Return true, if the two rectangles are superposed.
+ * @brief Return true, if the two rectangles are superposed. \n
+ * Use the lines of the underlying closures to check if they are superposed.
  * @param r0 Rectangle index 1
  * @param r1 Rectangle index 2
  */
@@ -262,8 +176,8 @@ bool FormFlapsAri::RectanglesSuperposed(unsigned r0, unsigned r1)
 	int nonEqualSense = 0;		// number of lines without same sense
 	
 	// get lines from closures
-	Array<Line*> closLines0 = Closures(core, Rectangles(core, r0)->clos)->lines;
-	Array<Line*> closLines1 = Closures(core, Rectangles(core, r1)->clos)->lines;
+	Array<Line*> closLines0 = Closures(core, Rectangles(core, r0)->closure->ID())->lines;
+	Array<Line*> closLines1 = Closures(core, Rectangles(core, r1)->closure->ID())->lines;
 	
 	// compare lines
  	for(unsigned i=0;i<closLines0.Size();i++)
@@ -275,8 +189,8 @@ bool FormFlapsAri::RectanglesSuperposed(unsigned r0, unsigned r1)
 
 			if (l0 == l1){
 				// get sign of line
-				unsigned sense0 = Closures(core, Rectangles(core, r0)->clos)->senses[i];
-				unsigned sense1 = Closures(core, Rectangles(core, r1)->clos)->senses[j];
+				unsigned sense0 = Closures(core, Rectangles(core, r0)->closure->ID())->senses[i];
+				unsigned sense1 = Closures(core, Rectangles(core, r1)->closure->ID())->senses[j];
 				
 				// line is equal
 				if(sense0 == sense1) equalSense++;
@@ -291,7 +205,7 @@ bool FormFlapsAri::RectanglesSuperposed(unsigned r0, unsigned r1)
 }
 
 
-/**
+/**																																					/// TODO Ändern auf return: Array<Line*>
  * @brief Returns all shared lines from two rectangles.
  * @param r0 Rectangle index 1
  * @param r1 Rectangle index 2
@@ -300,61 +214,25 @@ Array<unsigned> FormFlapsAri::GetSharedLines(unsigned r0, unsigned r1)
 {
   Array<unsigned> sharedLines;	// shared lines
 	
-  // get lines from closures
-  Array<Line*> closLines0 = Closures(core, Rectangles(core, r0)->clos)->lines;
-  Array<Line*> closLines1 = Closures(core, Rectangles(core, r1)->clos)->lines;
+  // get lines from rectangles
+  Array<Line*> closLines0 = Rectangles(core, r0)->lines;
+  Array<Line*> closLines1 = Rectangles(core, r1)->lines;
 	
   // compare lines
   for(unsigned i=0;i<closLines0.Size();i++)
 	{
-		unsigned l0 = closLines0[i]->ID();
-
-		for(unsigned j=0;j<closLines1.Size();j++){
-			unsigned l1 = closLines1[j]->ID();
-
-			if (l0 == l1)
-				if(!sharedLines.Contains(l0)) 
-					sharedLines.PushBack(l0);
+		for(unsigned j=0;j<closLines1.Size();j++)
+		{
+			if (closLines0[i]->ID() == closLines1[j]->ID())
+				if(!sharedLines.Contains(closLines0[i]->ID())) 
+					sharedLines.PushBack(closLines0[i]->ID());
 		}
   }
   return sharedLines;
 }
 
-/*
-**
-**	Find shared lines in ExtRectangles
-**	(for neighboring rectangles)
-**
 
-bool FormFlaps::SharedLines(unsigned r0, unsigned r1)
-{
-  int sharedLines = 0;
-
-  // get every line from ExtRectangle r0
-  unsigned nrOfLinesR0 = Closures(Rectangles(ExtRectangles(r0)->rect)->clos)->lines.Size();
-  for(unsigned i=0; i<nrOfLinesR0; i++)
-  {
-	unsigned line0 = Closures(Rectangles(ExtRectangles(r0)->rect)->clos)->lines[i];
-	  
-	// get every line from ExtRectangle r1
-	unsigned nrOfLinesR1 = Closures(Rectangles(ExtRectangles(r1)->rect)->clos)->lines.Size();
-    for(unsigned j=0; j<nrOfLinesR1; j++)
-    {
-	  unsigned line1 = Closures(Rectangles(ExtRectangles(r1)->rect)->clos)->lines[j];
-
-	  // compare line1 and line2
-	  if(line0 == line1) sharedLines++;
-    }
-  }
-
-  // shared lines found?
-  if (sharedLines > 0) return true;
-  else return false;
-}
-*/
-
-
-/**
+/**																																						/// TODO Diese Funktion kann nicht mehr verwendet werden, da auf L-Junctions beruht!
  * @brief Checks if the combination of rects exists already as flap.
  * @param r0 Rectangle index 0
  * @param r1 Rectangle index 1
@@ -366,22 +244,125 @@ bool FormFlapsAri::IsExistingFlap(unsigned r0, unsigned r1)
   // get rectangles of every existing flap
   for (unsigned i=0; i<NumFlapsAri(core); i++)
 	{
-    unsigned rect0 = FlapsAri(core, i)->rects[0];
-		unsigned rect1 = FlapsAri(core, i)->rects[1];
+    unsigned rect0 = FlapsAri(core, i)->rectangles[0]->ID();
+		unsigned rect1 = FlapsAri(core, i)->rectangles[1]->ID();
 
 		// compare the two rectangle-pairs
 		if ((rect0==r0 && rect1==r1) || (rect0==r1 && rect1==r0)) 
 			isExistingFlap = true;
   }
+  
+if (isExistingFlap) printf("FormFlapsAri::IsExistingFlap: Das kann hier eigentlich gar nicht auftreten: Bitte sofort diese Funktion löschen!\n");
 
   if (isExistingFlap) return true;
   else return false;
 }
 
+
+
+/**																																															/// TODO NEUE MeanGap-Funktion!
+ * @brief Calculate the mean gap between the best combination of the intersections.
+ * We know that the ractangles are sharing at least one line. We know the intersection points \n
+ * at the corners of the rectangle. Now we are searching for the best combination between
+ * these points. We order them counter clockwise, beginning with the first two intersection
+ * points to the other rectangle.
+ * @param rect The two rectangle ids
+ * @param orderedIsctR0 First, second intersection point with R1, then => counter clockwise
+ * @param orderedIsctR1 First, second intersection point with R0, then => counter clockwise
+ * The assigned intersections are now: orderedIsctR0[0]-orderedIsctR0[1] and orderedIsctR0[1]-orderedIsctR0[0]
+ */
+double FormFlapsAri::MeanGap(unsigned *rect, Vector2 *orderedIsctR0, Vector2 *orderedIsctR1)
+{
+	double meanGap;
+  Vector2 isctR0[4];					// intersection points of first rectangele
+  Vector2 isctR1[4];					// intersection points of second rectangle
+  double dist[4][4];					// calculated distance from corner of r0 to each corner of r1
+
+  // get the 4 intersections of each rectangle
+  for (int i=0; i<4; i++)
+  {
+		isctR0[i] = Rectangles(core, rect[0])->isct[i];
+		isctR1[i] = Rectangles(core, rect[1])->isct[i];
+  }
+
+  // calculate distance between all intersections
+  for (int i=0; i<4; i++)
+		for (int j=0; j<4; j++)
+			dist[i][j] = Distance(isctR0[i], isctR1[j]);
+
+
+// printf("Distances of Rectangles: %u-%u\n", rect[0], rect[1]);
+// for (int j=0; j<4; j++)
+// {		
+// // 	printf("  %4.2f - %4.2f - %4.2f - %4.2f\n", dist[0][j], dist[1][j], dist[2][j], dist[3][j]);
+// }
+
+  // find the smallest gap from dist[4][4]
+  int saveI = UNDEF_ID;
+  int saveJ = UNDEF_ID;
+  double minDistance = HUGE;
+  for (int i=0; i<4; i++)
+  {
+		for (int j=0; j<4; j++)
+		{
+			if (dist[i][j] < minDistance)
+			{
+				minDistance = dist[i][j];
+				saveI = i;
+				saveJ = j;
+			}
+		}
+  }
+
+	// find the second intersection between the rectangles:
+	// 2 possibilities: dist[i-1][j+1] or dist[i+1][j-1]
+// printf("Smallest: %u-%u\n", saveI, saveJ);
+
+	double secDist[2];
+	int save2I = saveI - 1;
+	int save2J = saveJ + 1;
+	if(save2I < 0) save2I = 3;
+	if(save2J > 3) save2J = 0;
+// printf("=> 2nd: %u-%u\n", save2I, save2J);
+	secDist[0] = dist[save2I][save2J];
+	save2I = saveI + 1;
+	save2J = saveJ - 1;
+	if(save2I > 3) save2I = 0;
+	if(save2J < 0) save2J = 3;
+// printf("=> 2nd: %u-%u\n", save2I, save2J);
+	secDist[1] = dist[save2I][save2J];
+
+
+	// change start point of one rectangle
+	if(secDist[1] < secDist[0]) 
+		saveJ = save2J;
+	else
+		saveI = save2I;
+// printf("Save: %u- %u\n", saveI, saveJ);
+
+	for(unsigned i = 0; i<4; i++)
+	{
+		saveI++;
+		saveJ++;
+		if(saveI > 3) saveI = 0;
+		if(saveJ > 3) saveJ = 0;
+// printf("    => I, J: %u-%u\n", saveI, saveJ);
+		orderedIsctR0[i] = isctR0[saveI];
+		orderedIsctR1[i] = isctR1[saveJ];
+	}
+// printf("    => second: %4.2f - %4.2f\n", secDist[0], secDist[1]);
+
+	meanGap = ((Distance(orderedIsctR0[0], orderedIsctR1[1]) + Distance(orderedIsctR0[1], orderedIsctR1[0]))/2.);
+	return meanGap;
+}
+
+
 /**
  * @brief Calculate the mean gap of the two best superposed corners.
- * @param rect 
- *	
+ * We know that the ractangles are sharing at least one line.
+ * @param rect The two rectangle ids
+ * @param innerJcts The four inner junctions of the flap.
+ * @param outerJcts The four outer junctions of the flap.
  */
 double FormFlapsAri::MeanGap(unsigned *rect, unsigned *innerJcts, unsigned *outerJcts)
 {
@@ -393,16 +374,16 @@ double FormFlapsAri::MeanGap(unsigned *rect, unsigned *innerJcts, unsigned *oute
   double dist[4][4];				// calculated distance from corner of r0 to each corner of r1
 
   double minDistance[2];		// the 2 minimum corner gaps
-  minDistance[0] = 2000.;		// start values of 2000 mm						// TODO ARI: Bildrand!
+  minDistance[0] = 2000.;		// start values of 2000px																					// TODO ARI: Bildrand!
   minDistance[1] = 2000.;
 
   // get the 4 corners and intersections of each rectangle
   for (int i=0; i<4; i++)
   {
-		cornersR0[i] = Rectangles(core, rect[0])->jcts[i];
-		cornersR1[i] = Rectangles(core, rect[1])->jcts[i];
-		isctR0[i] = LJunctions(core, Rectangles(core, rect[0])->jcts[i])->isct; 
-		isctR1[i] = LJunctions(core, Rectangles(core, rect[1])->jcts[i])->isct; 
+		cornersR0[i] = Rectangles(core, rect[0])->ljcts[i]->ID();																	/// TODO Hier wird mit L-Junctions gearbeitet: Die sollte
+		cornersR1[i] = Rectangles(core, rect[1])->ljcts[i]->ID();																	/// es bei Rectangles nicht geben!	
+		isctR0[i] = LJunctions(core, Rectangles(core, rect[0])->ljcts[i]->ID())->isct; 
+		isctR1[i] = LJunctions(core, Rectangles(core, rect[1])->ljcts[i]->ID())->isct; 
   }
 
   // find the nearest corner of r1 to each corner of r0
@@ -419,7 +400,7 @@ double FormFlapsAri::MeanGap(unsigned *rect, unsigned *innerJcts, unsigned *oute
 		}
   }
 
-  // find the smallest gap from dist[4][4] without i=j
+  // find the smallest gap from dist[4][4]
   int saveI = UNDEF_ID;
   int saveJ = UNDEF_ID;
   for (int i=0; i<4; i++)
@@ -446,7 +427,7 @@ double FormFlapsAri::MeanGap(unsigned *rect, unsigned *innerJcts, unsigned *oute
 		dist[saveI][i] = 2000.;
   }
   
-  // find the 2nd smallest gap from dist[4][4] without i=j
+  // find the 2nd smallest gap from dist[4][4]
   saveI = UNDEF_ID;
   saveJ = UNDEF_ID;
   for (int i=0; i<4; i++)
@@ -495,7 +476,7 @@ double FormFlapsAri::MeanGap(unsigned *rect, unsigned *innerJcts, unsigned *oute
   }
  
   // order (inner and) outer junctions
-  SortJunctions(rect, innerJcts, outerJcts);
+  SortJunctions(rect, innerJcts, outerJcts);																		/// TODO Sort junctions macht mit Intersections keinen Sinn mehr!
   
   // calculate the mean value of the two smallest gaps
   double meanGap = (minDistance[0] + minDistance[1])/2;
@@ -517,9 +498,9 @@ void FormFlapsAri::SortJunctions(unsigned *rect, unsigned *innerJcts, unsigned *
   // order outer junctions of r0 (outerJunctions[0/1])
   for(unsigned i=0; i<4; i++)
   {
-		if (outerJcts[0] == Rectangles(core, rect[0])->jcts[i])
+		if (outerJcts[0] == Rectangles(core, rect[0])->ljcts[i]->ID())
 			first = i;
-		if (outerJcts[1] == Rectangles(core, rect[0])->jcts[i])
+		if (outerJcts[1] == Rectangles(core, rect[0])->ljcts[i]->ID())
 			second = i;
   }
   if ((second-first) != 1)
@@ -532,9 +513,9 @@ void FormFlapsAri::SortJunctions(unsigned *rect, unsigned *innerJcts, unsigned *
   // order outer junctions of r1 (outerJunctions[2/3])  
   for(unsigned i=0; i<4; i++)
   {
-		if (outerJcts[2] == Rectangles(core, rect[1])->jcts[i])
+		if (outerJcts[2] == Rectangles(core, rect[1])->ljcts[i]->ID())
 	  	first = i;
-		if (outerJcts[3] == Rectangles(core, rect[1])->jcts[i])
+		if (outerJcts[3] == Rectangles(core, rect[1])->ljcts[i]->ID())
 	  	second = i;
   }
   if ((first-second)!=1 && (second-first)!=3) 
@@ -548,7 +529,7 @@ void FormFlapsAri::SortJunctions(unsigned *rect, unsigned *innerJcts, unsigned *
   // junctions of r0 in clockwise order
   unsigned jctsR0[4];
   for(unsigned i=0; i<4; i++)
-	jctsR0[i] = Rectangles(core, rect[0])->jcts[i];
+	jctsR0[i] = Rectangles(core, rect[0])->ljcts[i]->ID();
   
   unsigned next=0; 
   unsigned i=0;
@@ -564,7 +545,7 @@ void FormFlapsAri::SortJunctions(unsigned *rect, unsigned *innerJcts, unsigned *
   // junctions of r1 in counterclockwise order
   unsigned jctsR1[4];
   for(unsigned i=0; i<4; i++)
-	jctsR1[i] = Rectangles(core, rect[1])->jcts[i];
+	jctsR1[i] = Rectangles(core, rect[1])->ljcts[i]->ID();
   
   next=0; i=0;
   while (jctsR1[i] != outerJcts[3]) i++;

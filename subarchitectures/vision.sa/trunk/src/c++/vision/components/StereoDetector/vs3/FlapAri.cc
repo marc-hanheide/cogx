@@ -25,11 +25,8 @@ namespace Z
  * @param oJ Outer Junctions [0/1 = rect0] [2/3 = rect1]
  */
 FlapAri::FlapAri(VisionCore *c, unsigned r0, unsigned r1, double mG, Array<unsigned> sL, 
-		unsigned iJ[4], unsigned oJ[4]) : Gestalt(c, FLAP_ARI)
+		unsigned iJ[4], unsigned oJ[4], Vector2 oIsctR0[4], Vector2 oIsctR1[4]) : Gestalt(c, FLAP_ARI)
 {
-  rects[0] = r0;
-  rects[1] = r1;
-
 	rectangles.PushBack(Rectangles(core, r0));
 	rectangles.PushBack(Rectangles(core, r1));
 
@@ -37,33 +34,35 @@ FlapAri::FlapAri(VisionCore *c, unsigned r0, unsigned r1, double mG, Array<unsig
   sharedLines = sL;
   for (int i=0; i<4; i++)
   {
-		innerJcts[i] = iJ[i];
+		innerJcts[i] = iJ[i];													/// TODO weg damit
 		outerJcts[i] = oJ[i];
+
+		orderedIsctR0[i] = oIsctR0[i];
+		orderedIsctR1[i] = oIsctR1[i];
   }
 
 	// calculate center and radius
-	center = 	(	LJunctions(core, innerJcts[0])->isct + LJunctions(core, innerJcts[1])->isct + 
-							LJunctions(core, innerJcts[2])->isct + LJunctions(core, innerJcts[3])->isct)/4.;
+	center = 	(orderedIsctR0[0] + orderedIsctR0[1] + orderedIsctR1[0] + orderedIsctR1[1])/4.;
 
-	double rad0 = (LJunctions(core, outerJcts[0])->isct - center).Length();
-  double rad1 = (LJunctions(core, outerJcts[1])->isct - center).Length();
-  double rad2 = (LJunctions(core, outerJcts[2])->isct - center).Length();
-  double rad3 = (LJunctions(core, outerJcts[3])->isct - center).Length();
+	double rad0 = (orderedIsctR0[2] - center).Length();
+  double rad1 = (orderedIsctR0[3] - center).Length();
+  double rad2 = (orderedIsctR1[2] - center).Length();
+  double rad3 = (orderedIsctR1[3] - center).Length();
   
   radius = Max(rad0, rad1);
   radius = Max(radius, rad2);
   radius = Max(radius, rad3);  
 
 	// calculate rectCenter and rectRadius
-	rectCenter[0] = (	LJunctions(core, innerJcts[0])->isct + LJunctions(core, innerJcts[1])->isct + 
-										LJunctions(core, outerJcts[0])->isct + LJunctions(core, outerJcts[1])->isct)/4.;
+	rectCenter[0] = (orderedIsctR0[0] + orderedIsctR0[1] + orderedIsctR0[2] + orderedIsctR0[3])/4.;
+// 	LJunctions(core, innerJcts[0])->isct + LJunctions(core, innerJcts[1])->isct + 
+// 										LJunctions(core, outerJcts[0])->isct + LJunctions(core, outerJcts[1])->isct)/4.;
 
-	rectCenter[1] = (	LJunctions(core, innerJcts[2])->isct + LJunctions(core, innerJcts[3])->isct + 
-										LJunctions(core, outerJcts[2])->isct + LJunctions(core, outerJcts[3])->isct)/4.;
+	rectCenter[1] = (orderedIsctR1[0] + orderedIsctR1[1] + orderedIsctR1[2] + orderedIsctR1[3])/4.;
 
 	// radius = length between center and middle of shared line.
-	rectRadius[0] = Length(rectCenter[0] - (LJunctions(core, innerJcts[0])->isct + LJunctions(core, innerJcts[1])->isct)/2.);
-	rectRadius[1] = Length(rectCenter[1] - (LJunctions(core, innerJcts[2])->isct + LJunctions(core, innerJcts[3])->isct)/2.);
+	rectRadius[0] = Length(rectCenter[0] - (orderedIsctR0[0] + orderedIsctR0[1])/2.);
+	rectRadius[1] = Length(rectCenter[1] - (orderedIsctR1[0] + orderedIsctR1[1])/2.);
 
 	CalcOrientation();
   CalculateSignificance();
@@ -135,18 +134,33 @@ void FlapAri::Draw(int detail)
 {
   if(detail <= 1 || detail == 2)
   {
+//     for(unsigned i = 0; i < 4; i++)
+// 		{
+//       DrawLine2D(
+// 				rectangles[0]->isct[i].x,
+// 				rectangles[0]->isct[i].y,
+// 				rectangles[0]->isct[(i<3?i+1:0)].x,
+// 				rectangles[0]->isct[(i<3?i+1:0)].y);
+//       DrawLine2D(
+// 				rectangles[0]->isct[i].x,
+// 				rectangles[0]->isct[i].y,
+// 				rectangles[0]->isct[(i<3?i+1:0)].x,
+// 				rectangles[0]->isct[(i<3?i+1:0)].y);
+//     }
+
+		// draw with the intersection points
     for(unsigned i = 0; i < 4; i++)
 		{
       DrawLine2D(
-				LJunctions(core, Rectangles(core, rects[0])->jcts[i])->isct.x,
-				LJunctions(core, Rectangles(core, rects[0])->jcts[i])->isct.y,
-				LJunctions(core, Rectangles(core, rects[0])->jcts[(i<3?i+1:0)])->isct.x,
-				LJunctions(core, Rectangles(core, rects[0])->jcts[(i<3?i+1:0)])->isct.y);
+				orderedIsctR0[i].x,
+				orderedIsctR0[i].y,
+				orderedIsctR0[(i<3?i+1:0)].x,
+				orderedIsctR0[(i<3?i+1:0)].y, RGBColor::yellow);
       DrawLine2D(
-				LJunctions(core, Rectangles(core, rects[1])->jcts[i])->isct.x,
-				LJunctions(core, Rectangles(core, rects[1])->jcts[i])->isct.y,
-				LJunctions(core, Rectangles(core, rects[1])->jcts[(i<3?i+1:0)])->isct.x,
-				LJunctions(core, Rectangles(core, rects[1])->jcts[(i<3?i+1:0)])->isct.y);
+				orderedIsctR1[i].x,
+				orderedIsctR1[i].y,
+				orderedIsctR1[(i<3?i+1:0)].x,
+				orderedIsctR1[(i<3?i+1:0)].y, RGBColor::yellow);
     }
   }
 
@@ -167,26 +181,26 @@ void FlapAri::Draw(int detail)
 	}
   if(detail > 2)
   {
-  	Rectangles(core, rects[0])->Draw(detail-3);
-		Rectangles(core, rects[1])->Draw(detail-3);
+  	rectangles[0]->Draw(detail-3);
+		rectangles[0]->Draw(detail-3);
   }
 }
 
-/**
+/**																																													/// TODO Überarbeiten!
  * @brief Returns all information about the Gestalt.
- * TODO Unimplemented
+ * @return Returns all information about the Gestalt.
  */
 const char* FlapAri::GetInfo()
 {
-//   const unsigned info_size = 10000;
-//   static char info_text[info_size] = "";
-//   int n = 0;
-// 	
-//   n += snprintf(info_text, info_size, "%srects: %u - %u\nshared lines: %u\n",
-//       Gestalt::GetInfo(), rects[0], rects[1], sharedLines.Size());
-// 
-//   n += snprintf(info_text + n, info_size - n,"mean gap: %f\n", meanGap);
-// 
+  const unsigned info_size = 10000;
+  static char info_text[info_size] = "";
+  int n = 0;
+	
+  n += snprintf(info_text, info_size, "%srects: %u - %u\nshared lines: %u\n",
+      Gestalt::GetInfo(), rectangles[0]->ID(), rectangles[1]->ID(), sharedLines.Size());
+
+  n += snprintf(info_text + n, info_size - n,"mean gap: %f\n", meanGap);
+
 //   n += snprintf(info_text + n, info_size - n,"outerJcts: ");
 //   for(unsigned i=0; i<4; i++)
 // 	n += snprintf(info_text + n, info_size - n, "L(%i) ", outerJcts[i]);
@@ -194,7 +208,7 @@ const char* FlapAri::GetInfo()
 //   n += snprintf(info_text + n, info_size - n,"\ninnerJcts: ");
 //   for(unsigned i=0; i<4; i++)
 // 	n += snprintf(info_text + n, info_size - n, "L(%i) ", innerJcts[i]);
-//  
+ 
 //   n += snprintf(info_text + n, info_size - n,"\noCase: ");
 //   switch (oCase)
 // 	{
@@ -206,20 +220,19 @@ const char* FlapAri::GetInfo()
 // 		case 6: n += snprintf(info_text + n, info_size - n, "top - right"); break;
 // 		default: break;
 // 	}
-// 
-//   return info_text;
+
+  return info_text;
 }
 
 /**
  * @brief Checks if Gestalt is at position x,y
  * @param x x-coordinate
  * @param y y-coordinate
- * TODO Unimplemented
+ * @return Returns true if feature is at this position.
  */
 bool FlapAri::IsAtPosition(int x, int y)
 {
-//   return Rectangles(rects[0])->IsAtPosition(x, y) ||
-//     Rectangles(rects[1])->IsAtPosition(x, y);
+  return rectangles[0]->IsAtPosition(x, y) || rectangles[1]->IsAtPosition(x, y);
 }
 
 /**
@@ -228,7 +241,7 @@ bool FlapAri::IsAtPosition(int x, int y)
 void FlapAri::CalculateSignificance()
 {
 //	if (meanGap!=0) sig = 100*(1/meanGap);
-	sig = Rectangles(core, rects[0])->sig + Rectangles(core, rects[1])->sig;
+	sig = rectangles[0]->sig + rectangles[1]->sig;
 	if (meanGap!=0) sig -= meanGap*5.;
 	if (sig < 0) sig = 0.;
 }

@@ -1,7 +1,7 @@
 /**
  * @file Closure.hh
- * @author Michael Zillich
- * @date 2007
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2007, 2010
  * @version 0.1
  * @brief Header file of Gestalt Closure.
  **/
@@ -17,7 +17,7 @@
 namespace Z
 {
 
-class Line;
+class Line;																	/// TODO Braucht man die hier?
 class Collinearity;
 class LJunction;
 
@@ -28,8 +28,15 @@ class LJunction;
 class Closure : public Gestalt
 {
 public:
-  Array<LJunction*> jcts;									/// HACK ARI: Diese Liste hat Löcher (mit 0 gefüllt), daher ist ...
-  Array<Collinearity*> colls;							/// Anzahl nicht = jcts-Anzahl (Abfrage über NumLJunctions();)
+
+  // Notes:
+  // The closure has two arrays jcts and colls of same size. If a
+  // junction between two consecutive lines is an L-jct, jct[i] points to the
+  // according L-jct and coll[i] == 0. Otherwise jct[i] == 0 and coll[i] points
+  // to the respective collinearity.
+
+  Array<LJunction*> jcts;
+  Array<Collinearity*> colls;
   Array<Line*> lines;
   Array<int> senses;
   map<Closure*, double> neighbors_above;

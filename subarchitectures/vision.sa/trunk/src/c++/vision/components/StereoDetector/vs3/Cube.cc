@@ -26,7 +26,7 @@ namespace Z
  */
 Cube::Cube(VisionCore *vc, unsigned f, unsigned f2, unsigned f3) : Gestalt(vc, CUBE)
 {
-	maxRatio = 5.;					/// TODO Was ist maxRatio? Threshold in CheckW2HRatio!
+	maxRatio = 5.;					/// TODO Was ist maxRatio? Threshold in CheckW2HRatio! THRESHOLD
 
   flap = f;
   oFlaps[0] = f2;
@@ -34,9 +34,9 @@ Cube::Cube(VisionCore *vc, unsigned f, unsigned f2, unsigned f3) : Gestalt(vc, C
   closingLJct = UNDEF_ID;
   closingColl = UNDEF_ID;
 	
-  // get the corner_points
-  corner_points[1][0] = (LJunctions(core, FlapsAri(core, f)->innerJcts[1])->isct +
-												 LJunctions(core, FlapsAri(core, f)->innerJcts[3])->isct +	
+  // get the corner_points																																	/// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+  corner_points[1][0] = (LJunctions(core, FlapsAri(core, f)->innerJcts[1])->isct +						/// corner points müssen jetzt aus rectangle od. flap intersection points
+												 LJunctions(core, FlapsAri(core, f)->innerJcts[3])->isct +						/// bestimmt werden!
 												 LJunctions(core, FlapsAri(core, f2)->innerJcts[1])->isct +
 												 LJunctions(core, FlapsAri(core, f2)->innerJcts[3])->isct +
 												 LJunctions(core, FlapsAri(core, f3)->innerJcts[1])->isct +
@@ -350,6 +350,7 @@ printf("Cube::CheckW2HRatio: Not yet implemented\n");
 // 	printf("	ratio: %4.2f - %4.2f - %4.2f\n", wdRatio, dhRatio, hwRatio);
 // }
 // 	return ratio;
+return 0.;
 }
 
 
@@ -361,6 +362,7 @@ bool Cube::IsInside(unsigned cube)
 {
 //   if((Cubes(cube)->center - center).Length() < radius) return true;
 //   else return false; 
+return false;
 }
 
 /**
@@ -542,9 +544,9 @@ void Cube::Draw(int detail)
 const char* Cube::GetInfo()
 {
 printf("Cube::GetInfo: Not yet implemented\n");
-//   const unsigned info_size = 10000;
-//   static char info_text[info_size] = "";
-//   int n=0;
+  const unsigned info_size = 10000;
+  static char info_text[info_size] = "";
+  int n=0;
 // 	
 //   if (closingLJct != UNDEF_ID || closingColl != UNDEF_ID)
 //   {
@@ -566,7 +568,7 @@ printf("Cube::GetInfo: Not yet implemented\n");
 // 	n += snprintf(info_text + n, info_size -n , 
 // 	"\ni-p: %4.2f - %4.2f\ni-p1: %4.2f - %4.2f\ni-p2: %4.2f - %4.2f", intersection_points[0].x, intersection_points[0].y, intersection_points[1].x, intersection_points[1].y, intersection_points[2].x, intersection_points[2].y);
 // 
-//   return info_text;
+  return info_text;
 }
 
 
@@ -579,7 +581,7 @@ printf("Cube::GetInfo: Not yet implemented\n");
  */
 bool Cube::IsAtPosition(int x, int y)
 {
-//   return Flaps(core, flap)->IsAtPosition(x, y);
+  return FlapsAri(core, flap)->IsAtPosition(x, y);
 }
 
 

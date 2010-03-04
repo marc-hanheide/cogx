@@ -82,6 +82,7 @@ public:
   void DrawGestalt(Gestalt::Type type, unsigned num, int detail = 0);
   void DrawGestaltInfo(Gestalt::Type type, unsigned num);
   void DrawPrinciple(GestaltPrinciple::Type type, int detail = 0);
+	const char* GetInfo(Gestalt::Type type, int id);
   unsigned PickGestaltAt(Gestalt::Type type, int x, int y, unsigned start_at, bool reject_masked = false);
   double RunTime();
   void SetROI(const Vector2 center, double sigma);

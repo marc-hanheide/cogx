@@ -70,6 +70,10 @@ void Line::CalculateParameters()
   }*/
 }
 
+/**
+ * @brief Draw an arrow.
+ * TODO Should be in Draw.cc
+ */
 void Line::DrawArrow()
 {
   double len_2 = 4.; // length/2
@@ -83,10 +87,13 @@ void Line::DrawArrow()
   DrawLine2D(right.x, right.y, tip.x, tip.y, RGBColor::red);
 }
 
+/**
+ * @brief Draw line. 
+ * @param detail Degree of detail for drawing.
+ */
 void Line::Draw(int detail)
 {
-  DrawLine2D(point[START].x, point[START].y, point[END].x, point[END].y,
-      RGBColor::red);
+  DrawLine2D(point[START].x, point[START].y, point[END].x, point[END].y, RGBColor::red);
   if(detail >= 1)
   {
     char id_str[20];
@@ -124,19 +131,30 @@ void Line::DrawInfo()
   DrawText2D(str, 0.6, 0.6, RGBColor::green);
 }
 
+/**
+ * @brief Get information about the Gestalt as string.
+ * @return Returns information about the Gestalt as string.
+ */
 const char* Line::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size,
-      "%s(%.0f %.0f)-(%.0f %.0f) length: %f\nphi: %f\nneighbours: %d\n",
+      "%s  (%.0f %.0f)-(%.0f %.0f) length: %f\n"
+      "  phi: %f\n"
+      "  neighbours: %d\n"
+      "  --------------------\n",
       Gestalt::GetInfo(),
-      point[START].x, point[START].y, point[END].x, point[END].y, Length(),
-      phi, (int)neighbors.size());
+     point[START].x, point[START].y, point[END].x, point[END].y, Length(), phi, (int)neighbors.size());
   return info_text;
 }
 
-double Line::MinEndpointDistance(const Line*l)
+/**
+ * @brief Minimum endpoint distance:
+ * @param l 
+ * @return Returns the 
+ */
+double Line::MinEndpointDistance(const Line* l)
 {
   double dist = HUGE;
   for(int i = START; i <= END; i++)
@@ -145,6 +163,11 @@ double Line::MinEndpointDistance(const Line*l)
   return dist;
 }
 
+/**
+ * 
+ * @param q 
+ * @return 
+ */
 double Line::DistanceToPoint(const Vector2 &q)
 {
   Vector2 start_to_q = q - point[START];
@@ -155,8 +178,12 @@ double Line::DistanceToPoint(const Vector2 &q)
     return Distance(q, point[(s<0. ? START : END)]);
 }
 
+
 /**
- * Add an L-junction.
+ * @brief Add a L-junction to the line.
+ * @param end Line end (start/end)
+ * @param side Line side (left/right)
+ * @param jct L-junction
  */
 void Line::AddLJunction(int end, int side, LJunction* jct)
 {
@@ -177,6 +204,11 @@ void Line::AddLJunction(int end, int side, LJunction* jct)
   neighbors.insert(jct->line[Other(side)]);
 }
 
+/**
+ * @brief Add a Collinearity to the line.
+ * @param end Line end (start/end)
+ * @param co Collinearity
+ */
 void Line::AddCollinearity(int end, Collinearity* co)
 {
   // TODO: this insertion has bad O(n^2) complexity, but n is typically never
@@ -197,7 +229,10 @@ void Line::AddCollinearity(int end, Collinearity* co)
 }
 
 /**
- * Add a passive T-junction.
+ * @brief Add a passive T-junction.
+ * @param end Line end (start/end)
+ * @param side Line side (left/right)
+ * @param jct T-junction
  */
 void Line::AddPassiveTJunction(int end, int side, TJunction* jct)
 {
@@ -220,6 +255,12 @@ void Line::AddPassiveTJunction(int end, int side, TJunction* jct)
   // and C.
 }
 
+/**
+ * TODO TODO Was macht diese Funktion genau?
+ * @brief Move junction
+ * @param l2 Line
+ * @param end Line end (start/end)
+ */
 void Line::MoveJunctions(Line *l2, int end)
 {
   // T-junctions
@@ -272,8 +313,14 @@ void Line::MoveJunctions(Line *l2, int end)
 }
 
 
-VisibleLine::VisibleLine(VisionCore *c, Segment* s, unsigned i, unsigned j)
-  : Line(c)
+/**
+ * @brief Constructor of class VisibleLine.
+ * @param c Vision core
+ * @param s Segment
+ * @param i Start index
+ * @param j End index
+ */
+VisibleLine::VisibleLine(VisionCore *c, Segment* s, unsigned i, unsigned j) : Line(c)
 {
   defer_vote = this;
   next = 0;
@@ -284,6 +331,10 @@ VisibleLine::VisibleLine(VisionCore *c, Segment* s, unsigned i, unsigned j)
   Recalc();
 }
 
+/**
+ * @brief Recalculate visible line. \n
+ * Calculate parameters, colors, significance
+ */
 void VisibleLine::Recalc()
 {
   point[START] = seg->edgels[idx[START]].p;
@@ -293,24 +344,37 @@ void VisibleLine::Recalc()
   CalculateSignificance();
 }
 
+/**
+ * @brief Get info about the visible line.
+ * @return Returns information about the visible line as string.
+ */
 const char* VisibleLine::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   int n = 0;
-  n += snprintf(info_text + n, info_size, "%svisible line\nseg: %u\n"
-      "label: %d energy: %f stability: %f\n"
-      "Ts %d %d\n",
+  n += snprintf(info_text + n, info_size, 
+  				"%s"
+					"  Visible line\n"
+					"  seg: %u\n"
+					"  label: %d\n"
+					"  energy: %f \n"
+					"  stability: %f\n"
+					"  Ts %d %d\n",
       Line::GetInfo(), seg->ID(), label, energy, stability,
       (t_jct[START] ? t_jct[START]->ID() : UNDEF_ID),
       (t_jct[END] ? t_jct[END]->ID() : UNDEF_ID));
-  n += snprintf(info_text + n, info_size - n, "%u closures:", closures.Size());
+  n += snprintf(info_text + n, info_size - n, "  %u closures:", closures.Size());
   for(unsigned i = 0; i < closures.Size(); i++)
     n += snprintf(info_text + n, info_size - n, " %u", closures[i]->ID());
   n += snprintf(info_text + n, info_size - n, "\n");
   return info_text;
 }
 
+/**
+ * 																																									TODO Wo passiert der Fehler mit dem vertauschen der Vote images
+ * @brief Draw vote lines of a visible line.
+ */
 void VisibleLine::DrawVotes()
 {
   VoteImage *vi = FormJunctions::vote_img;
@@ -347,6 +411,10 @@ void VisibleLine::DrawVotes()
     }
 }
 
+/**
+ * @brief Draw Gestalt visible line.
+ * @param detail Degree of detail
+ */
 void VisibleLine::Draw(int detail)
 {
   if(detail <= 1)
@@ -400,6 +468,12 @@ void VisibleLine::Draw(int detail)
   }
 }
 
+/**
+ * @brief Checks if Gestalt is at this position.
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @return Returns true, if the Gestalt is at this position.
+ */
 bool VisibleLine::IsAtPosition(int x, int y)
 {
   double xd = (double)x, yd = (double)y;
@@ -409,6 +483,9 @@ bool VisibleLine::IsAtPosition(int x, int y)
   return false;
 }
 
+/**
+ * @brief Calculate the significance for the visible line.
+ */
 void VisibleLine::CalculateSignificance()
 {
 	sig = -log(pow(core->p_ee, (double)NumEdgels()));
@@ -424,7 +501,7 @@ void VisibleLine::CalculateSignificance()
 }
 
 /**
- * Sample some points at either side and calculate mean colors.
+ * @brief Sample some points at either side and calculate mean colors.
  */
 void VisibleLine::CalculateColors()
 {
@@ -477,8 +554,9 @@ void VisibleLine::CalculateColors()
 }
 
 /**
- * Find index of edgel of line l which is closes to point p.
+ * @brief Find index of edgel of line l which is closes to point p.
  * Is used to find split point for lines.
+ * @param p Point p
  */
 unsigned VisibleLine::FindSplitIdx(const Vector2 &p)
 {
@@ -496,6 +574,11 @@ unsigned VisibleLine::FindSplitIdx(const Vector2 &p)
   return imin;
 }
 
+/**
+ * @brief Split visible line and create new line.
+ * @param p Point p
+ * @return  Returns the rest of the line, as a new line.
+ */
 Line* VisibleLine::Split(const Vector2 &p)
 {
   unsigned idx_split = FindSplitIdx(p);

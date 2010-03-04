@@ -296,14 +296,28 @@ void VisionCore::DrawGestaltInfo(Gestalt::Type type, unsigned num)
     gestalts[type][num]->DrawInfo();
 }
 
+
 /**
  * @brief Draw whatever the given gestalt principle has to draw.
+ * @param type Type of Gestalt principle
+ * @param detail Degree of detail
  */
 void VisionCore::DrawPrinciple(GestaltPrinciple::Type type, int detail)
 {
   if(IsEnabledGestaltPrinciple(type))
     principles[type]->Draw(detail);
 }
+
+/**
+ * @brief Draw whatever the given gestalt principle has to draw.
+ * @param type Gestalt type.
+ */
+const char* VisionCore::GetInfo(Gestalt::Type type, int id)
+{
+	const char* text = (Gestalts(type, id))->GetInfo(); //gestalts[type]->GetInfo();
+	return text;
+}
+
 
 /**
  * @brief Returns id of first gestalt at pixel position (x,y). \n
@@ -321,7 +335,7 @@ unsigned VisionCore::PickGestaltAt(Gestalt::Type type, int x, int y, unsigned st
   unsigned start = (start_after == UNDEF_ID ? 0 : start_after + 1);
   for(unsigned j = start; j < gestalts[type].Size(); j++)
     if( gestalts[type][j]->IsAtPosition(x, y) &&
-        (!reject_masked || !gestalts[type][j]->IsMasked()) )
+        (!reject_masked /*|| !gestalts[type][j]->IsMasked()*/) )
       return j;
   return UNDEF_ID;
 }

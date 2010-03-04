@@ -22,39 +22,32 @@ class FormRectangles : public GestaltPrinciple
 {
 private:
 
-//   class RectCand
-//   {
-//   public:
-//     unsigned base, right, jct[2];
-//     RectCand() {}
-//     RectCand(unsigned b, unsigned r, unsigned left_jct, unsigned right_jct)
-//     {
-//       base = b;
-//       right = r;
-//       jct[LEFT] = left_jct;
-//       jct[RIGHT] = right_jct;
-//     }
-//     RectCand(unsigned r) : right(r) {}
-//     bool operator==(const RectCand &rc) {return right == rc.right;}
-//   };
-// 
-//   static const int HASH_SIZE = 29989;  // TODO: this is quite arbitrary
-//   unsigned hashtable[HASH_SIZE];
-// 
-//   // TODO: replace array of arrays by some efficient linked list.
-//   Array< Array<RectCand> > u_left;
+	/**
+	* @brief TempLine
+	*/
+	struct TempLine
+	{
+		Vector2 p;  ///< some point on the line
+		Vector2 d;  ///< direction of the line
+		TempLine(float px, float py, float dx, float dy) : p(px, py), d(dx, dy) {}
+	};
 
   void Rank();
   void Mask();
-//  unsigned Hash(unsigned lines[4]);
-//  void ClearHashTable();
+
+  void CreateWithFourLJ(unsigned clos);
+  void CreateWithMoreLJLine(unsigned clos);
+  void CreateWithMoreLJAngle(unsigned clos);
   void CreateQuadrilateral(unsigned clos);
+
+
   bool RectangleExists(unsigned jcts[4]);
   bool IsConvexPolygon(unsigned jcts[4]);
   bool IsConvexPolygon(Array<unsigned> jcts);
+  bool IsConvexPolygon(Vector2 isct[4]);
   double IsRectangle(unsigned jcts[4]);
-//  void HaveNewLJunction(unsigned idx);
-//  void StepOperate();
+  double IsRectangle(Vector2 isct[4]);
+
 
 public:
   FormRectangles(VisionCore *vc);

@@ -183,7 +183,7 @@ void FormFlaps::HaveNewClosure(unsigned i)
 }
 
 /**
- * @brief NewFlap: Create new flap from cosures i and j.
+ * @brief NewFlap: Create new flap from closures i and j.
  * @param clos_i Closure i
  * @param clos_j Closure j
  */

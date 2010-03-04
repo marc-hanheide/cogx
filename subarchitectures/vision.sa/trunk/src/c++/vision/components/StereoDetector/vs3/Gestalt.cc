@@ -85,8 +85,14 @@ const char* Gestalt::GetInfo()
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size,
-      "ID: %u rank: %u masked: %u\nnon-acc: %f significance: %f\n",
-      id, rank, masked, 1. - acc, sig);
+      "  Gestalt Type: %s \n"
+      "  ID: %u \n"
+      "  rank: %u \n"
+      "  masked: %u\n"
+			"  non-acc: %f\n"
+			"  significance: %5.2f\n"
+      "  --------------------\n",
+      TypeName(type), id, rank, masked, 1. - acc, sig);
   return info_text;
 }
 

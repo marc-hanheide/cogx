@@ -1,9 +1,9 @@
 /**
  * @file Rectangle.cc
  * @author Richtsfeld Andreas
- * @date Februar 2008
+ * @date Februar 2008, 2010
  * @version 0.1
- * @brief This class stores rectangles
+ * @brief Gestalt class of rectangles (quadrilaterals).
  **/
 
 #include "Rectangle.hh"
@@ -19,57 +19,68 @@
 namespace Z
 {
 
-Rectangle::Rectangle(VisionCore *vc, Closure *c, unsigned js[4], double par, unsigned ljct)
-: Gestalt(vc, RECTANGLE)
+/**
+ * Constructor of Gestalt class rectangle.
+ * @param vc Vision core
+ * @param c Closure
+ * @param js[] The four junction id's. When not available, then UNDEF_ID
+ * @param is[] The four intersection points in counter clockwise order.
+ * @param l Lines of the closure
+ * @param par Parallelity significance
+ */
+Rectangle::Rectangle(VisionCore *vc, Closure *c, unsigned js[4], Vector2 is[4], Array<Line*> l, double par) : Gestalt(vc, RECTANGLE)
 {
-	/// TODO Same properties as in Closures
-//   stability = 0.;
-//   energy = 0;;
-//   label = DefaultDepth();
-
 	closure = c;
-	clos = closure->ID();
-
 	parallelity = par;
-	nrOfLJcts = ljct;
+	lines = l;
+
   for(unsigned i = 0; i < 4; i++)
-    jcts[i] = js[i];
+		isct[i] = is[i];
 
   for(unsigned i = 0; i < 4; i++)
     ljcts.PushBack(LJunctions(core, js[i]));
 
-	/// TODO Calculate Gestalt properties
-	width = core->IW();
-	height = core->IH();
-  data = new unsigned[width*height];
+	Init();
+}
+
+
+/**
+ * @brief Initialise the rectangle and calculate property values.
+ */
+void Rectangle::Init()
+{
+	// Calculate pixelsupport
+  data = new unsigned[core->IW()*core->IH()];
 	pixelmass = 0;
-
-	/// init data
-	for (unsigned i=0; i<(width*height); i++)
+	for (unsigned i=0; i<(core->IW()*core->IH()); i++)
 		data[i] = UNDEF_ID;
+	pixelsupport = CalculateSupport();
 
+	// calculate center point of rectangle
 	centerPoint.x = 0;
 	centerPoint.y = 0;
 	for(unsigned i=0; i<4; i++)
 	{
-		centerPoint.x += LJunctions(core, jcts[i])->isct.x;
-		centerPoint.y += LJunctions(core, jcts[i])->isct.y;
+		centerPoint.x += isct[i].x;
+		centerPoint.y += isct[i].y;
 	}
 	centerPoint.x = centerPoint.x/4.;
 	centerPoint.y = centerPoint.y/4.;
 
-	// get direction (PI) of the two line-pairs
+	// get direction (PI) and angle of the two line-pairs
 	unsigned j;
-	Vector2 v[4];
-	//double phi[4];
-	//double norm[4];
+	Vector2 isctLine[4];
 	for(unsigned i=0; i<4; i++)
 	{
 		if((i+1) > 3) j=0;
 		else j=i+1;
 
-		v[i] = LJunctions(core, jcts[i])->isct - LJunctions(core, jcts[j])->isct;
+		isctLine[i] = isct[i] - isct[j];
 	}
+
+	Vector2 v[2];
+	v[0] = isctLine[0]-isctLine[2];
+	v[1] = isctLine[1]-isctLine[3];
 
 	direction[0] = Normalise(v[0]-v[2]);
 	direction[1] = Normalise(v[1]-v[3]);
@@ -78,117 +89,20 @@ Rectangle::Rectangle(VisionCore *vc, Closure *c, unsigned js[4], double par, uns
 	phi[1] = ScaleAngle_0_pi(PolarAngle(direction[1]));
 
 	// calculate maximum distance from centerPoint to one of the corner of the rectangle
-	radius = (LJunctions(core, jcts[0])->isct - centerPoint).Norm();
-	radius = max(radius, (LJunctions(core, jcts[1])->isct - centerPoint).Norm());
-	radius = max(radius, (LJunctions(core, jcts[2])->isct - centerPoint).Norm());
-	radius = max(radius, (LJunctions(core, jcts[3])->isct - centerPoint).Norm());
+	radius = (isct[0] - centerPoint).Norm();
+	radius = max(radius, (isct[1] - centerPoint).Norm());
+	radius = max(radius, (isct[2] - centerPoint).Norm());
+	radius = max(radius, (isct[3] - centerPoint).Norm());
 
 	// calculate inner radius from centerPoint to one of the mid points of the rectangle lines
-	innerRadius = (((LJunctions(core, jcts[0])->isct + (LJunctions(core, jcts[1]))->isct)/2.) - centerPoint).Norm();
-	innerRadius = min(innerRadius,((((LJunctions(core, jcts[1])->isct + (LJunctions(core, jcts[2])->isct))/2.) - centerPoint).Norm()));
-	innerRadius = min(innerRadius,((((LJunctions(core, jcts[2])->isct + (LJunctions(core, jcts[3])->isct))/2.) - centerPoint).Norm()));
-	innerRadius = min(innerRadius,((((LJunctions(core, jcts[3])->isct + (LJunctions(core, jcts[0])->isct))/2.) - centerPoint).Norm()));
-
-	pixelsupport = CalculateSupport();
+	innerRadius = ((isct[0] + isct[1]/2.) - centerPoint).Norm();
+	innerRadius = min(innerRadius,((((isct[1] + isct[2])/2.) - centerPoint).Norm()));
+	innerRadius = min(innerRadius,((((isct[2] + isct[3])/2.) - centerPoint).Norm()));
+	innerRadius = min(innerRadius,((((isct[3] + isct[0])/2.) - centerPoint).Norm()));
 
   CalculateSignificance();
 }
 
-// Rectangle::Rectangle(unsigned c/*, unsigned js[4]*/, double par, unsigned ljct)
-//   : Gestalt(RECTANGLE)
-// {
-// 	width = VisionCore::IW();
-// 	height = VisionCore::IH();
-//   data = new unsigned[width*height];
-// 	pixelmass = 0;
-// 
-// 	/// init data
-// 	for (unsigned i=0; i<(width*height); i++)
-// 		data[i] = UNDEF_ID;
-// 
-//   clos = c;
-//   for(unsigned i = 0; i < 4; i++)
-//     jcts[i] = Closures(core, clos)->jcts[i]->ID()/*js[i]*/;
-//   parallelity = par;
-//   nrOfLJcts = ljct;
-// 
-// 	centerPoint.x = 0;
-// 	centerPoint.y = 0;
-// 	for(unsigned i=0; i<4; i++)
-// 	{
-// 		centerPoint.x += LJunctions(jcts[i])->isct.x;
-// 		centerPoint.y += LJunctions(jcts[i])->isct.y;
-// 	}
-// 	centerPoint.x = centerPoint.x/4.;
-// 	centerPoint.y = centerPoint.y/4.;
-// 
-// 	// get direction (PI) of the two line-pairs
-// 	unsigned j;
-// 	Vector2 v[4];
-// 	//double phi[4];
-// 	//double norm[4];
-// 	for(unsigned i=0; i<4; i++)
-// 	{
-// 		if((i+1) > 3) j=0;
-// 		else j=i+1;
-// 
-// 		v[i] = LJunctions(jcts[i])->isct - LJunctions(jcts[j])->isct;
-// //		phi[i] = PolarAngle(v[i]);
-// 
-// //		norm[i] = v[i].Norm();
-// 	}
-// 
-// //   double diff[2];
-// //   diff[0] = fabs(fabs(phi[0]-phi[2])-M_PI);
-// //   diff[1] = fabs(fabs(phi[1]-phi[3])-M_PI);
-// /*
-// 
-// 	double phi0 = (v[0].x*v[2].x + v[0].y*v[2].y)/(norm[0]*norm[2]);
-// 	double phi1 = (v[1].x*v[3].x + v[1].y*v[3].y)/(norm[1]*norm[3]);
-// 
-// 	phi0 = acos(phi0);
-// 	phi1 = acos(phi1);
-// 
-// 	printf("Rect: %u: dir[0-4]: %4.2f - %4.2f - %4.2f - %4.2f\n", id, phi[0], phi[1], phi[2], phi[3]);
-// 	printf("phi0-1: %4.2f - %4.2f\n", phi0, phi1);
-// 
-// 	if(phi0 > M_PI/2.) phi0 = M_PI - phi0;
-// 	if(phi1 > M_PI/2.) phi1 = M_PI - phi1;
-// 
-// //	direction[0] = (dir[0] + dir[2])/2.;
-// //	direction[1] = (dir[1] + dir[3])/2.;
-// 
-// 	printf("phi0-1: %4.2f - %4.2f\n\n", phi0, phi1);
-//   																				// TODO ARI: Eintragen der rects bei den Linien
-//   																				// schwierig, weil nur ljcts bekannt!!!
-//   																				// TODO Lösung => Unterlagertes Closure ist mit allen Linien bekannt =>
-// 																					// Damit kann man aber über das Closere alle anderen Linien bestimmen =>
-// 																					// eintragen ist daher nicht zwingend notwendig!
-// */
-// 
-// 	
-// 	direction[0] = Normalise(v[0]-v[2]);
-// 	direction[1] = Normalise(v[1]-v[3]);
-// 
-// 	phi[0] = ScaleAngle_0_pi(PolarAngle(direction[0]));
-// 	phi[1] = ScaleAngle_0_pi(PolarAngle(direction[1]));
-// 
-// 	// calculate maximum distance from centerPoint to one of the corner of the rectangle
-// 	radius = (LJunctions(jcts[0])->isct - centerPoint).Norm();
-// 	radius = max(radius, (LJunctions(jcts[1])->isct - centerPoint).Norm());
-// 	radius = max(radius, (LJunctions(jcts[2])->isct - centerPoint).Norm());
-// 	radius = max(radius, (LJunctions(jcts[3])->isct - centerPoint).Norm());
-// 
-// 	// calculate inner radius from centerPoint to one of the mid points of the rectangle lines
-// 	innerRadius = (((LJunctions(jcts[0])->isct + (LJunctions(jcts[1]))->isct)/2.) - centerPoint).Norm();
-// 	innerRadius = min(innerRadius,((((LJunctions(jcts[1])->isct + (LJunctions(jcts[2])->isct))/2.) - centerPoint).Norm()));
-// 	innerRadius = min(innerRadius,((((LJunctions(jcts[2])->isct + (LJunctions(jcts[3])->isct))/2.) - centerPoint).Norm()));
-// 	innerRadius = min(innerRadius,((((LJunctions(jcts[3])->isct + (LJunctions(jcts[0])->isct))/2.) - centerPoint).Norm()));
-// 
-// 	pixelsupport = CalculateSupport();
-// 
-//   CalculateSignificance();
-// }
 
 /**
  *	@brief Draw rectangles.
@@ -199,9 +113,7 @@ void Rectangle::Draw(int detail)
   if(detail == 0)
   {
     for(unsigned i = 0; i < 4; i++)
-      DrawLine2D(LJunctions(core, jcts[i])->isct.x, LJunctions(core, jcts[i])->isct.y,
-          LJunctions(core, jcts[(i<3?i+1:0)])->isct.x,
-          LJunctions(core, jcts[(i<3?i+1:0)])->isct.y);
+      DrawLine2D(isct[i].x, isct[i].y, isct[(i<3?i+1:0)].x, isct[(i<3?i+1:0)].y);
   }
 	if(detail == 1)
 	{
@@ -210,15 +122,21 @@ void Rectangle::Draw(int detail)
 		DrawEllipse2D(centerPoint.x, centerPoint.y, innerRadius, innerRadius, 0, RGBColor::white);
 	}
   if(detail >= 2)
-    Closures(core, clos)->Draw(detail - 2);
+    closure->Draw(detail - 2);
 }
 
+/**
+ * @brief Get info about the feature.
+ * @return Returns string with all informations about this feature.
+ */
 const char* Rectangle::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
-  snprintf(info_text, info_size, "%sclosure: %u\njunctions: %u %u %u %u\n",
-      Gestalt::GetInfo(), clos, jcts[0], jcts[1], jcts[2], jcts[3]);
+  snprintf(info_text, info_size, "%s"
+                                 "  closure: %u\n"
+                                 "  junctions: %u %u %u %u\n",
+      Gestalt::GetInfo(), closure->ID(), ljcts[0]->ID(), ljcts[1]->ID(), ljcts[2]->ID(), ljcts[3]->ID());
   return info_text;
 }
 
@@ -232,11 +150,20 @@ bool Rectangle::IsInside(unsigned rectangle)
 	else return false;
 }
 
+/**
+ * @brief Shows if feature is at this position in the image
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @return Returns true, if feature is at this position.
+ */
 bool Rectangle::IsAtPosition(int x, int y)
 {
-  return Closures(core, clos)->IsAtPosition(x, y);
+  return closure->IsAtPosition(x, y);
 }
 
+/**
+ * @brief Calculate significance value of the feature.
+ */
 void Rectangle::CalculateSignificance()
 {
   //sig = -log(fmax(1., SumGaps())/fmax(1., Area()));
@@ -251,9 +178,9 @@ void Rectangle::CalculateSignificance()
 
 
 /**
-***	Calculate pixel-support: Get the line pixels from the constructed rectangle with bresenham
-***	line drawing algorithm and compare them with the underlying line pixels.
-**/
+ * @brief Calculate pixel-support: Get the line pixels from the constructed rectangle with bresenham \n
+ * line drawing algorithm and compare them with the underlying line pixels.
+ */
 double Rectangle::CalculateSupport()
 {
 	double support = 0;
@@ -263,29 +190,32 @@ double Rectangle::CalculateSupport()
 	// Catch Pixel from rect->clos->line=>idx[start/end] from
 	// Segment->edgels(idx[Start/End]) for all lines from the closure
 	Array<unsigned> lines;
-	for(unsigned i=0; i<Closures(core, clos)->lines.Size(); i++)
-		lines.PushBack (Closures(core, clos)->lines[i]->ID());
+	for(unsigned i=0; i<closure->lines.Size(); i++)
+		lines.PushBack (closure->lines[i]->ID());
 
 	for(unsigned i=0; i<lines.Size(); i++)
 	{
 		for(unsigned j=Lines(core, lines[i])->idx[0]; j<Lines(core, lines[i])->idx[1]; j++)
 		{
 			Vector2 p = Segments(core, Lines(core, lines[i])->seg->ID())->edgels[j].p;		// pixel from segment
-
-			// count the supported pixels from the rectangle
 			if (CountSupport((int)p.x, (int)p.y, 100)) support += 1;
 		}
 	}
+
 //printf("support - pixelmass: %4.2f, %u\n", support, pixelmass);
 	return support*10/((double)pixelmass);	
 }
 
+/**																																								/// TODO Sollte innerhalb der isct-points zeichnen!
+ *  @brief GetRectPixels:
+ *  Draws the rectangle between the estimated four L-Junctions.
+ */
 void Rectangle::GetRectPixels()
 {
-	// Get all corner points of rect
-	Vector2 isct[4];
-	for (unsigned i=0; i<4; i++)
-		isct[i] = LJunctions(core, jcts[i])->isct;
+	// Get all corner points of rect																								/// TODO dieser Teil weg!!!
+// 	Vector2 isct[4];
+// 	for (unsigned i=0; i<4; i++)
+// 		isct[i] = LJunctions(core, ljcts[i]->ID())->isct;
 
 	// Calculate all line pixels
 	int j = 0;
@@ -298,18 +228,18 @@ void Rectangle::GetRectPixels()
 }
 
 /**
- * @brief LineDrawing Algorithm? Bresnham?
- * @param x1 
- * @param y1 
- * @param x2 
- * @param y2 
- * @param id 
+ * @brief LineDrawing Algorithm from Bresnham. Draw a line from x1/y1 to x2/y2.
+ * @param x1 x-Coordinate
+ * @param y1 y-Coordinate
+ * @param x2 x-Coordinate
+ * @param y2 y-Coordinate
+ * @param id ID of the line to draw.
  */
 void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
 {
   int dx, dy, err, incr, x, y;
 
-  if(!ClipLine(width-1, height-1, &x1, &y1, &x2, &y2))
+  if(!ClipLine(core->IW()-1, core->IH()-1, &x1, &y1, &x2, &y2))
     return;
   dx = x2 - x1;
   dy = y2 - y1;
@@ -393,7 +323,7 @@ void Rectangle::GetLinePixels(int x1, int y1, int x2, int y2, unsigned id)
  */
 void Rectangle::SetPixel(int x, int y, unsigned id)
 {
-  data[y*width + x] = id;
+  data[y*core->IW() + x] = id;
 	pixelmass ++;
 }
 
@@ -406,10 +336,8 @@ void Rectangle::SetPixel(int x, int y, unsigned id)
  */
 bool Rectangle::CountSupport(int x, int y, unsigned id)
 {
-	if (data[y*width + x] != UNDEF_ID) return true;
+	if (data[y*core->IW() + x] != UNDEF_ID) return true;
 	return false;
-
-  //return data[y*width + x] != UNDEF_ID && data[y*width + x] != id;
 }
 
 }

@@ -1,7 +1,7 @@
 /**
  * @file Closure.hh
- * @author Michael Zillich
- * @date 2007
+ * @author Andreas Richtsfeld, Michael Zillich
+ * @date 2007, 2010
  * @version 0.1
  * @brief Header file of Gestalt Closure.
  **/
@@ -57,6 +57,11 @@ Closure::Closure(VisionCore *c) : Gestalt(c, CLOSURE)
   label = 0;/*DefaultDepth();*/			// for HCF2
 }
 
+/**
+ * @brief Get vertex: Returns the intersection point of a junction or a collinearity.
+ * @param i ID of the junction (wheter l-junction or collinearity)
+ * @return Returns the intersection point of a junction.
+ */
 Vector2 Closure::GetVertex(unsigned i)
 {
   if(jcts[i] != 0 && colls[i] != 0)
@@ -69,6 +74,11 @@ Vector2 Closure::GetVertex(unsigned i)
     throw Except(__HERE__, "need one of L-jct or collinearity");
 }
 
+/**
+ * @param Get Signifacance value, calculated from the junctions.
+ * @param i ID of the junction
+ * @return Returns the significance value of a junction.
+ */
 double Closure::GetJunctionSig(unsigned i)
 {
   if(jcts[i] != 0 && colls[i] != 0)
@@ -81,6 +91,10 @@ double Closure::GetJunctionSig(unsigned i)
     throw Except(__HERE__, "need one of L-jct or collinearity");
 }
 
+/**
+ * @brief Draw closures and additional information into an image.
+ * @param detail Degree of detail
+ */
 void Closure::Draw(int detail)
 {
   if(detail == 0)
@@ -127,20 +141,24 @@ void Closure::Draw(int detail)
   }
 }
 
-extern void PrintStabilityCommitted(int i);  // HACK
+//extern void PrintStabilityCommitted(int i);  // HACK 
 
+/**
+ * @brief Return information about feature as string.
+ * @return Returns a string with all information about the Gestalt
+ */
 const char* Closure::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   int n = 0;
 
-  n += snprintf(info_text + n, info_size - n, "%s%u lines:",
+  n += snprintf(info_text + n, info_size - n, "%s  %u lines:",
       Gestalt::GetInfo(), lines.Size());
   for(unsigned i = 0; i < lines.Size(); i++)
     n += snprintf(info_text + n, info_size - n, " %c%u",
       (senses[i] == SAME ? '+' : '-'), lines[i]->ID());
-  n += snprintf(info_text + n, info_size - n, "\n");
+  n += snprintf(info_text + n, info_size - n, "\n ");
 
   for(unsigned i = 0; i < lines.Size(); i++)
     if(jcts[i] != 0)
@@ -149,13 +167,13 @@ const char* Closure::GetInfo()
       n += snprintf(info_text + n, info_size - n, " C(%d)", colls[i]->ID());
   n += snprintf(info_text + n, info_size - n, "\n");
 
-  n += snprintf(info_text + n, info_size - n, "neighbors:");
+  n += snprintf(info_text + n, info_size - n, "  neighbors:");
   for(set<Closure*>::iterator it = neighbors.begin();
       it != neighbors.end(); ++it)
     n += snprintf(info_text + n, info_size - n, " %d", (*it)->ID());
   n += snprintf(info_text + n, info_size - n, "\n");
 
-  n += snprintf(info_text + n, info_size - n, "aside:");
+  n += snprintf(info_text + n, info_size - n, "  aside:");
   for(map<Closure*, double>::iterator it = neighbors_aside.begin();
       it != neighbors_aside.end(); ++it)
     n += snprintf(info_text + n, info_size - n, " %d/%.2f", it->first->ID(),
@@ -183,11 +201,17 @@ const char* Closure::GetInfo()
   n += snprintf(info_text + n, info_size - n, "\n");
 
   n += snprintf(info_text + n, info_size - n,
-      "label: %d energy: %f stability: %f\n", label, energy, stability);
+      "  label: %d energy: %f stability: %f\n", label, energy, stability);
   //PrintStabilityCommitted(id);  // HACK
   return info_text;
 }
 
+/**
+ * 
+ * @param x 
+ * @param y 
+ * @return 
+ */
 bool Closure::IsAtPosition(int x, int y)
 {
   for(unsigned i = 0; i < lines.Size(); i++)
@@ -196,6 +220,11 @@ bool Closure::IsAtPosition(int x, int y)
   return false;
 }
 
+/**
+ * @brief Calculate significance of closures.
+ * Significance is equal to the area of the closure
+ * TODO Other implementation?
+ */
 void Closure::CalculateSignificance()
 {
   /*double l = SumLines();
@@ -211,6 +240,10 @@ void Closure::CalculateSignificance()
   sig = Area();
 }
 
+/**
+ * @brief Returns the number of L-Junctions.
+ * @return Returns the number of L-Junctions.
+ */
 unsigned Closure::NumLJunctions()
 {
   unsigned cnt = 0;
@@ -222,6 +255,10 @@ unsigned Closure::NumLJunctions()
   return cnt;
 }
 
+/**
+ * @brief Returns the number of Collinearities.
+ * @return Returns the number of Collinearities.
+ */
 unsigned Closure::NumCollinearities()
 {
   unsigned cnt = 0;
@@ -231,6 +268,10 @@ unsigned Closure::NumCollinearities()
   return cnt;
 }
 
+/**
+ * @brief Calculate the sum of all gaps between the single lines.
+ * @return Returns the sum of all geps between the single lines in pixels.
+ */
 double Closure::SumGaps()
 {
   double sum = 0.;
@@ -245,6 +286,10 @@ double Closure::SumGaps()
   return sum;
 }
 
+/**
+ * @brief Returns the sum of the length of all lines.
+ * @return Returns the sum of the length of all lines.
+ */
 double Closure::SumLines()
 {
   double sum = 0.;
@@ -253,6 +298,10 @@ double Closure::SumLines()
   return sum;
 }
 
+/**
+ * @brief Circumference
+ * @return Returns the calculated circumference 
+ */
 double Closure::Circumference()
 {
   double circ = 0.;
@@ -267,6 +316,9 @@ double Closure::Circumference()
   return circ;
 }
 
+/**
+ * @brief Find the neighbors of the closure.
+ */
 void Closure::FindTNeighbors()
 {
   for(unsigned l = 0; l < lines.Size(); l++)
@@ -318,9 +370,8 @@ void Closure::FindTNeighbors()
 }
 
 /**
- * Checks whether point p is inside closure.
- * Uses the Jordan curve theorem.
- * Note that points on the boundary are undefined.
+ * @brief Checks whether point p is inside closure. \n
+ * Uses the Jordan curve theorem. Note that points on the boundary are undefined.
  * Code thanks to
  *  W Randolph Franklin (WRF)
  *  http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -335,7 +386,8 @@ void Closure::FindTNeighbors()
  *        c = !c;
  *    }
  *    return c;
- *  } 
+ *  }
+ * @param p Point to be checkt.
  */
 bool Closure::Inside(Vector2 p)
 {
@@ -355,6 +407,10 @@ bool Closure::Inside(Vector2 p)
   return c;
 }
 
+/**
+ * @brief Returns the area of the closure.
+ * @return Returns the area of the closure.
+ */
 double Closure::Area()
 {
   double area = 0.;
@@ -370,62 +426,6 @@ double Closure::Area()
   return area/2.;
 }
 
-/*
-double Rectangle::SumGaps()
-{
-  double sum_gaps = 0.;
-  for(unsigned i = 0; i < 4; i++)
-  {
-    sum_gaps += jcts[i]->Gap(LEFT) + jcts[i]->Gap(RIGHT);
-  }
-  return sum_gaps;
-}
-
-double Rectangle::Circumference()
-{
-  double sum = 0.;
-  for(unsigned i = 0; i < 4; i++)
-  {
-    unsigned j = (i < 3 ? i + 1 : 0);
-    sum += Length(jcts[j]->isct - jcts[i]->isct);
-  }
-  return sum;
-}
-
-double Rectangle::Area()
-{
-  double area = 0.;
-  Vector2 p1, p2;
-  unsigned i, j;
-  for(i = 0; i < 4; i++)
-  {
-    j = (i < 3 ? i + 1 : 0);
-    p1 = jcts[i]->isct;
-    p2 = jcts[j]->isct;
-    area += p1.x*p2.y - p1.y*p2.x;
-  }
-  return area/2.;
-}
-
-// junction i has line i as left, line i+1 as right arm
-Rectangle::Rectangle(unsigned ls[4], unsigned js[4])
-  : Gestalt(RECTANGLE)
-{
-  unsigned i;
-  for(i = 0; i < 4; i++)
-    lines[i] = ls[i];
-  for(i = 0; i < 4; i++)
-  {
-    jcts[i] = js[i];
-    if(jcts[i]->near_point[LEFT] == START)
-      sides[i] = RIGHT;
-    else
-      sides[i] = LEFT;
-  }
-  CalculateSignificance();
-}
-
-*/
 
 }
 
