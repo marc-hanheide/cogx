@@ -132,11 +132,6 @@ public:
 		//lenght of the movement		
 		Real distance; 
 
-		//reached vertical distace of the center of the standing part of the polyflap from ground
-		Real reachedNum;
-		
-		
-
 		
 		/** Constructs description object */
 		Desc() {
@@ -211,6 +206,14 @@ protected:
 	golem::SecTmReal trialTime;
 	/** Random number generator */
 	golem::Rand randomG;
+	/** Y (roll) angle of polyflap */
+	Real currentPfRoll;
+	/** X (pitch) angle of polyflap */
+	Real currentPfPitch;
+	/** Z (yaw) angle of polyflap */
+	Real currentPfYaw;
+	/** Y position of polyflap */
+	Real currentPfY;
 
 	/** iteration counter */
 	int iteration;

@@ -705,40 +705,38 @@ CanonicalData::DataSet canonical_input_output_enumerator (DataSet data) {
 		Sequence::const_iterator v;
 		CanonicalData::Sequence newsequence;
 
-		for (v=(*s).begin(); v!= (*s).end(); v++) {
+		for (v=s->begin(); v!= s->end(); v++) {
 			CanonicalData::FeatureVector newfeaturevector;
-			long featvectorSize = (*v).size();
-			if (v == (*s).begin() ) {
+			long featvectorSize = v->size();
+			if (v == s->begin() ) {
 				assert (featvectorSize == 5);
 				golem::Vec3 startingPosition;
-				startingPosition.v1 = denormalize((*v)[0],0.0,maxRange);
-				startingPosition.v2 = denormalize((*v)[1],0.0,maxRange);
-				startingPosition.v3 = denormalize((*v)[2],0.0,maxRange);
+				startingPosition.v1 = denormalize(v->at(0),0.0,maxRange);
+				startingPosition.v2 = denormalize(v->at(1),0.0,maxRange);
+				startingPosition.v3 = denormalize(v->at(2),0.0,maxRange);
 // 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
 				
 				int canonical_start_pos = positionsT.find (startingPosition)->second;
 				newfeaturevector.rawVector.push_back (canonical_start_pos);
-				newfeaturevector.rawVector.push_back ((*v)[3]);
-				newfeaturevector.rawVector.push_back ((*v)[4]);
+				newfeaturevector.rawVector.push_back (v->at(3));
+				newfeaturevector.rawVector.push_back (v->at(4));
 				stringstream motorCommandStr;
 				motorCommandStr << canonical_start_pos << "_" << (*v)[3] << "_" << (*v)[4];
 				newfeaturevector.motorCommand = motorCommandStr.str();
 // 				cout << "motor command: " << newfeaturevector.motorCommand << endl;
 			}
-			else if (v != (*s).begin() ) {
-				assert ((v+1 == (*s).end() && featvectorSize == 1) || featvectorSize == 12 || featvectorSize == 6 );
-				if (featvectorSize == 6)
-					newfeaturevector.rawVector = *v;
-				else if (featvectorSize == 12)
+			else if (v != s->begin() ) {
+				assert (featvectorSize == 13 || featvectorSize == 7 );
+				if (featvectorSize == 7)
+					for (int i=0; i<6; i++)
+						newfeaturevector.rawVector.push_back(v->at(i));
+				else if (featvectorSize == 13)
 					for (int i=6; i<12; i++)
-						newfeaturevector.rawVector.push_back((*v)[i]);
-				else if (featvectorSize == 1) {
-					newfeaturevector.rawVector = *v;
-					stringstream labelStr;
-					labelStr << (*v)[0];
-					newfeaturevector.label = labelStr.str();
-				}
-
+						newfeaturevector.rawVector.push_back(v->at(i));
+				stringstream labelStr;
+				labelStr << v->at(featvectorSize-1);
+				newfeaturevector.label = labelStr.str();
+				
 					
 			}
 			newsequence.push_back (newfeaturevector);
@@ -766,49 +764,61 @@ void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::
 	
 	ofstream writeFile(writeFileName.c_str(), ios::out);
 
+	writeFile << "# input dim" << endl;
 	writeFile << inputVectorSize << endl;
+	writeFile << "# state dim" << endl;
 	writeFile << stateVectorSize << endl;
+	writeFile << "# output dim" << endl;
 	writeFile << outputVectorSize << endl;
 
 	set<string> motorCommandsSet;
 	set<string> outputsSet;
 	CanonicalData::DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
-		CanonicalData::Sequence::const_iterator v;
 		string currentMotorCommand = s->begin()->motorCommand;
-		string currentOutput = (s->end()-1)->label;
 		if (motorCommandsSet.find (currentMotorCommand) == motorCommandsSet.end())
 			motorCommandsSet.insert (currentMotorCommand);
-		if (outputsSet.find (currentOutput) == outputsSet.end())
-			outputsSet.insert (currentOutput);
+
+		CanonicalData::Sequence::const_iterator v;
+		for (v=s->begin(); v!= s->end(); v++) {
+			if (v != s->begin()) {
+				string currentOutput = v->label;
+				
+				if (outputsSet.find (currentOutput) == outputsSet.end())
+					outputsSet.insert (currentOutput);
+			}
+		}
 	}
+	writeFile << "# nr input symbols" << endl;
+	writeFile << motorCommandsSet.size() << endl;
+	writeFile << "# examples" << endl;
 	set<string>::iterator it;
 	for (it=motorCommandsSet.begin(); it!=motorCommandsSet.end(); it++)
-		cout << " " << *it;
-	cout << endl;
+		writeFile << *it << " ";
+	writeFile << endl;
+	writeFile << "# nr output symbols" << endl;
+	writeFile << outputsSet.size() << endl;
+	writeFile << "# examples" << endl;
 	for (it=outputsSet.begin(); it!=outputsSet.end(); it++)
-		cout << " " << *it;
-	cout << endl;
-
+		writeFile << *it << " ";
+	writeFile << endl;
 
 	//CanonicalData::DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
 		CanonicalData::Sequence::const_iterator v;
 		string currentMotorCommand = s->begin()->motorCommand;
-		string currentOutput = (s->end()-1)->label;
 
 		for (v=s->begin(); v!= s->end(); v++) {
 			
-			if (v != s->begin() && v+1 != s->end()) {
+			if (v != s->begin()) {
 				FeatureVector::const_iterator n;
-				writeFile << currentMotorCommand << "\t";
+				writeFile << currentMotorCommand << "   ";
 				for (n=v->rawVector.begin(); n!= v->rawVector.end(); n++)
 					writeFile << *n << " ";
-				writeFile << currentOutput << endl;
+				writeFile << "  " << v->label << endl;
 			}
 		}
 	}
-
 
 }
 

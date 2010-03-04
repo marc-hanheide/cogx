@@ -270,7 +270,25 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		Real roll, pitch, yaw;
 		chunk.objectPose.R.toEuler (roll, pitch, yaw);
 // 		cout << "roll: " << roll << " pitch: " << pitch << " yaw: " << yaw << endl;  
-	
+
+		Real polStateOutput = 0; //polyflap moves with the same Y angle
+		Real epsilonAngle = 0.005;
+		if (currentPfRoll < (roll - epsilonAngle) ) //polyflap Y angle increases
+			polStateOutput = 1;
+		if (currentPfRoll > (roll + epsilonAngle) ) //polyflap Y angle decreases
+			polStateOutput = -1;
+
+		if (polStateOutput == 0 && currentPfY < chunk.objectPose.p.v2) // polyflap Y position increases
+			polStateOutput = 0.5;
+		if (polStateOutput == 0 && currentPfY > chunk.objectPose.p.v2) //polyflap Y position decreases
+			polStateOutput = -0.5;
+		
+		cout << "polStateOutput: " << polStateOutput << endl;
+		currentPfRoll = roll;
+		currentPfY = chunk.objectPose.p.v2;
+
+
+		
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 		/////////////////////////////////////////////////
@@ -283,11 +301,9 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		currentFeatureVector.push_back(normalize(pitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(yaw, -REAL_PI, REAL_PI));
 
+		currentFeatureVector.push_back(polStateOutput);
+		
 		learningData.currentSeq.push_back(currentFeatureVector);
-
-		if (roll > desc.reachedNum) {
-			desc.reachedNum = roll;
-		}
 	
 	
 	}
@@ -342,7 +358,8 @@ void Scenario::run(int argc, char* argv[]) {
 
 		object = setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context);
 		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
-		
+
+		object->getPose().R.toEuler (currentPfRoll, currentPfPitch, currentPfYaw);
 
 		Mat34 curPolPos1;
 		Mat34 curPolPos2;
@@ -356,7 +373,7 @@ void Scenario::run(int argc, char* argv[]) {
 			curPolPos2 = curPol->front()->getPose();
 		}
 
-		desc.reachedNum = 0.0;
+		
 
 		Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
 
@@ -493,23 +510,6 @@ void Scenario::run(int argc, char* argv[]) {
 		context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
 		bStart = false;
 
-
-		Real polState = -1; //polyflap was smoothly moved
-		if (desc.reachedNum > 0.1) { //polyflap was tilted more than treshold
-			polState = 0;
-		}
-		if (desc.reachedNum > 1.5) {//polyflap was flipped
-			polState = 1;
-		}
-
-		FeatureVector polyflapEndState;
-		polyflapEndState.push_back(polState);
-		cout << "Polyflap end state: " << polState << endl;
-		/////////////////////////////////////////////////
-		//writing the polyflap end state into the sequence
-		learningData.currentSeq.push_back(polyflapEndState);
-		/////////////////////////////////////////////////
-			
 			
 		/////////////////////////////////////////////////
 		//writing the sequence into the dataset
