@@ -10,6 +10,11 @@ using namespace cogx::Math;
 
 namespace spatial {
 
+extern double patchThreshold;
+extern double outsideDistanceFalloff;
+extern double insideDistanceFalloff;
+extern double COMDistanceFalloff;
+// Old parameters
 extern double squareDistanceWeight;
 extern double squareDistanceFalloff;
 
@@ -62,6 +67,7 @@ struct Witness {
   int idOnB; //Vertex, edge or face number 
   double paramOnA; //Parameter along edge
   double paramOnB;
+  Vector3 normal; //Normal direction from A to B
 };
 
 double
@@ -86,11 +92,13 @@ double
 getPolygonArea(const std::vector<Vector3> &polygon);
 
 double
-getMaxPolygonClearance(const std::vector<Vector3> &polygon);
+getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon);
 
 double
+getMaxPolygonClearance(const std::vector<Vector3> &polygon);
+
+Witness
 findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
-    Vector3 &outWitnessPoint1, Vector3 &outWitnessPoint2, 
     std::vector<Vector3> *outPatch = 0);
 
 bool

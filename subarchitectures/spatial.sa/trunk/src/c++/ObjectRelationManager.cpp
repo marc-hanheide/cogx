@@ -483,14 +483,10 @@ void ObjectRelationManager::runComponent()
 	  box2.radius2 = 0.105;
 	  box2.radius3 = 0.13;
 
-	  if (0) {
-	    sp2.set_scale(evaluateOnness(&box2, &box1));
-	  }
-
-	  Vector3 witness1, witness2;
+	  sp2.set_scale(evaluateOnness(&box2, &box1));
 
 	  vector<Vector3> patch;
-	  double dist = findContactPatch(box2, box1, witness1, witness2, &patch);
+	  Witness witness = findContactPatch(box2, box1, &patch);
 	  if (patch.size() > 2) {
 	    peekabot::PolygonProxy patchp;
 	    patchp.add(m_onnessTester, "Patch", peekabot::REPLACE_ON_CONFLICT);
@@ -499,15 +495,24 @@ void ObjectRelationManager::runComponent()
 	      patchp.add_vertex(it->x, it->y, it->z);
 	    }
 	  }
+	  peekabot::CylinderProxy normp;
+	  normp.add(m_onnessTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
+	  normp.set_color(0,0,1);
+	  normp.set_scale(0.005, 0.005, 0.1);
+	  normp.translate(0.05,0,0);
+	  normp.set_orientation(witness.normal.x, witness.normal.y, witness.normal.z);
+	  normp.rotate(M_PI/2, 0, 1, 0);
+	  normp.translate(witness.point1.x, witness.point1.y, witness.point1.z,
+	      peekabot::PARENT_COORDINATES);
 
-	  sp2.set_scale(dist);
+
 	  peekabot::SphereProxy witp1;
 	  witp1.add(m_onnessTester, "Witness 1", peekabot::REPLACE_ON_CONFLICT);
-	  witp1.translate(witness1.x, witness1.y, witness1.z);
+	  witp1.translate(witness.point1.x, witness.point1.y, witness.point1.z);
 	  witp1.set_scale(0.01);
 	  peekabot::SphereProxy witp2;
 	  witp2.add(m_onnessTester, "Witness 2", peekabot::REPLACE_ON_CONFLICT);
-	  witp2.translate(witness2.x, witness2.y, witness2.z);
+	  witp2.translate(witness.point2.x, witness.point2.y, witness.point2.z);
 	  witp2.set_scale(0.01);
 	}
 

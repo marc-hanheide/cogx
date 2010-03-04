@@ -7,7 +7,13 @@ using namespace cast;
 using namespace std;
 using namespace cogx::Math;
 
+
 namespace spatial {
+
+double patchThreshold = 0.020;
+double outsideDistanceFalloff = 0.04;
+double insideDistanceFalloff = 0.02;
+double COMDistanceFalloff = 0.1;
 
 double
 evaluateOnness(const Object *objectS, const Object *objectO)
@@ -36,12 +42,82 @@ evaluateOnness(const Object *objectS, const Object *objectO)
   //		exceeds sqrt(0.5), else it is a line segment, namely
   //		the projection of the central axis on O's bottom surface
 
-  Vector3 tmp1, tmp2;
+
+  Witness witness;
+  vector<Vector3> patch;
+
   if (objectS->type == OBJECT_BOX &&
       objectO->type == OBJECT_BOX) {
-    return findContactPatch(*((BoxObject*)objectS), *((BoxObject*)objectO),
-	tmp1, tmp2);
+    witness = findContactPatch(*((BoxObject*)objectS), *((BoxObject*)objectO),
+	&patch);
   }
+
+  else if (objectS->type == OBJECT_PLANE &&
+      objectO->type == OBJECT_BOX) {
+    const double plane_thickness = 0.05;
+
+    BoxObject *Obox = (BoxObject*)objectO;
+    PlaneObject *Splane = (PlaneObject*)objectS;
+    if (Splane->shape == PLANE_OBJECT_RECTANGLE) {
+      BoxObject Sbox;
+      Sbox.type = OBJECT_BOX;
+      Sbox.radius1 = Splane->radius1;
+      Sbox.radius2 = Splane->radius2;
+      Sbox.radius3 = plane_thickness*0.5;
+      Sbox.pose = Splane->pose;
+      Sbox.pose.pos.z -= plane_thickness*0.5;
+      witness = findContactPatch(Sbox, *Obox, &patch);
+    }
+  }
+
+  normalise(witness.normal);
+
+  double distanceProportion = abs(witness.distance)/patchThreshold;
+  if (distanceProportion > 1.0) {
+    distanceProportion = 1.0;
+  }
+
+  double contactOnness = 0.0;
+  if (distanceProportion < 1.0)  {
+    // Put patch and pose in one plane
+    if (witness.normal.z > 0) {
+      contactOnness = witness.normal.z;
+      for (unsigned int i = 0; i < patch.size(); i++) {
+	patch[i].z = objectO->pose.pos.z;
+      }
+    }
+    //	else {
+    //	  vector<Vector3> tmpPatch(patch.size());
+    //	  for (unsigned int i = 0; i < patch.size(); i++) {
+    //	    tmpPatch[patch.size()-i-1].z = Obox->pose.pos.z;
+    //	  }
+    //	  std::copy(tmpPatch.begin(), tmpPatch.end(), patch.begin());
+    //	}
+
+    // TODO: Weigh inclination influence based on patch size
+    if (contactOnness > 0.0) {
+      double COMDistance = getDistanceToPolygon(objectO->pose.pos, 
+	  patch);
+      if (COMDistance > 0.0) {
+	contactOnness /= (1+COMDistance/COMDistanceFalloff);
+      }
+    }
+  }
+
+  double distanceOnness;
+  if (witness.distance > 0.0) {
+    distanceOnness = witness.distance/outsideDistanceFalloff;
+  }
+  else {
+    distanceOnness = witness.distance/insideDistanceFalloff;
+  }
+  distanceOnness = 1/(1+distanceOnness*distanceOnness);
+
+  return distanceProportion * distanceOnness + 
+    (1-distanceProportion) * contactOnness;
+
+
+  // Old version onness below here!
 
   if (objectS->type == OBJECT_PLANE) {
     PlaneObject *plane = (PlaneObject *)objectS;
@@ -1150,12 +1226,9 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
   outPoints.insert(outPoints.end(), shellPoints.begin(), shellPoints.end());
 }
 
-double
-findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
-    Vector3 &outWitnessPoint1, Vector3 &outWitnessPoint2, vector<Vector3> *outPatch)
+Witness
+findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *outPatch)
 {
-  const double patchThreshold = 0.02;
-
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
     6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
   //Transform B into local coordinate system of A for ease of conceptualization
@@ -1246,6 +1319,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	bestWitness = cornerWitnessesBInA[i];
 	bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 
 	found = true;
       }
@@ -1265,6 +1339,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	bestWitness = cornerWitnessesAInB[i];
 	bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
 	bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	bestWitness.normal = boxB.pose.rot * bestWitness.normal;
 
 	found = true;
       }
@@ -1276,6 +1351,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	bestWitness = edgeWitnesses[i];
 	bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 
 	found = true;
       }
@@ -1353,6 +1429,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	  bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 	  continue;
 	}
 
@@ -1400,6 +1477,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  bestWitness = nextBestWitness;
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	  bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 	}
 
       }
@@ -1462,6 +1540,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	  bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 	  continue;
 	}
 
@@ -1472,6 +1551,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  bestWitness = nextBestWitness;
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
+	  bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 	}
       }
     }
@@ -1531,6 +1611,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	  bestWitness.normal = boxB.pose.rot * bestWitness.normal;
 	  continue;
 	}
 
@@ -1587,6 +1668,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  // Transform the points into global coordinates
 	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	  bestWitness.normal = boxB.pose.rot * bestWitness.normal;
 	  continue;
 	}
 
@@ -1596,6 +1678,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
 	  bestWitness = nextBestWitness;
 	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
 	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	  bestWitness.normal = boxB.pose.rot * bestWitness.normal;
 	}
       }
     }
@@ -1611,6 +1694,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
     bestWitness.idOnB = tmpWitness.idOnA;
     bestWitness.point2 = tmpWitness.point1;
     bestWitness.paramOnB = tmpWitness.paramOnA;
+    bestWitness.normal = -bestWitness.normal;
   }
 
   if (outPatch != 0) {
@@ -1744,14 +1828,11 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB,
     }
   }
 
-  outWitnessPoint1 = bestWitness.point1;
-  outWitnessPoint2 = bestWitness.point2;
-
   if (bestWitness.distance > 1e3)
     bestWitness.distance = 1e3;
   if (bestWitness.distance < -1e3)
     bestWitness.distance = -1e3;
-  return bestWitness.distance;
+  return bestWitness;
 }
 
 bool
@@ -1833,6 +1914,13 @@ getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 {
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
     6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
+  const Vector3 faceNormals[] = {vector3(0,0,1),
+    vector3(0,1,0),
+    vector3(-1,0,0),
+    vector3(0,-1,0),
+    vector3(1,0,0),
+    vector3(0,0,-1)};
+
   //For each face in A, find the corner(s) of B at which the normal of the face
   //points into B. 
   Witness newWitness;
@@ -1862,63 +1950,69 @@ getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
     const double x = BVertices[i].x;
     const double y = BVertices[i].y;
     const double z = BVertices[i].z;
-//    if (y <= dr && y >= -dr && z <= hr && z >= -hr) {
-      if ( outgoingEdges[0].x >= -epsilon && outgoingEdges[1].x >= -epsilon && outgoingEdges[2].x >= -epsilon) {
-	newWitness.point2 = BVertices[i];
-	newWitness.point1 = BVertices[i];
-	newWitness.point1.x = wr;
-	newWitness.distance = x - wr;
-	newWitness.idOnA = 4;
+    //    if (y <= dr && y >= -dr && z <= hr && z >= -hr) {
+    if ( outgoingEdges[0].x >= -epsilon && outgoingEdges[1].x >= -epsilon && outgoingEdges[2].x >= -epsilon) {
+      newWitness.point2 = BVertices[i];
+      newWitness.point1 = BVertices[i];
+      newWitness.point1.x = wr;
+      newWitness.distance = x - wr;
+      newWitness.idOnA = 4;
+      newWitness.normal = faceNormals[4];
 	cornerWitnesses.push_back(newWitness);
-      }
-      if (outgoingEdges[0].x <= epsilon && outgoingEdges[1].x <= epsilon && outgoingEdges[2].x <= epsilon) {
-	newWitness.point2 = BVertices[i];
-	newWitness.point1 = BVertices[i];
-	newWitness.point1.x = -wr;
-	newWitness.distance = -x - wr;
-	newWitness.idOnA = 2;
-	cornerWitnesses.push_back(newWitness);
-      }
-//    }
+    }
+    if (outgoingEdges[0].x <= epsilon && outgoingEdges[1].x <= epsilon && outgoingEdges[2].x <= epsilon) {
+      newWitness.point2 = BVertices[i];
+      newWitness.point1 = BVertices[i];
+      newWitness.point1.x = -wr;
+      newWitness.distance = -x - wr;
+      newWitness.idOnA = 2;
+      newWitness.normal = faceNormals[2];
+      cornerWitnesses.push_back(newWitness);
+    }
+    //    }
 
 
-//    if (x <= wr && x >= -wr && z <= hr && z >= -hr) {
-      if (outgoingEdges[0].y >= -epsilon && outgoingEdges[1].y >= -epsilon && outgoingEdges[2].y >= -epsilon) {
-	newWitness.point2 = BVertices[i];
-	newWitness.point1 = BVertices[i];
-	newWitness.point1.y = dr;
-	newWitness.distance = y - dr;
-	newWitness.idOnA = 1;
-	cornerWitnesses.push_back(newWitness);
-      }
-      if (outgoingEdges[0].y <= epsilon && outgoingEdges[1].y <= epsilon && outgoingEdges[2].y <= epsilon) {
-	newWitness.point2 = BVertices[i];
-	newWitness.point1 = BVertices[i];
-	newWitness.point1.y = -dr;
-	newWitness.distance = -y - dr;
-	newWitness.idOnA = 3;
-	cornerWitnesses.push_back(newWitness);
-      }
-//    }
+    //    if (x <= wr && x >= -wr && z <= hr && z >= -hr) {
+    if (outgoingEdges[0].y >= -epsilon && outgoingEdges[1].y >= -epsilon && outgoingEdges[2].y >= -epsilon) {
+      newWitness.point2 = BVertices[i];
+      newWitness.point1 = BVertices[i];
+      newWitness.point1.y = dr;
+      newWitness.distance = y - dr;
+      newWitness.idOnA = 1;
+      newWitness.normal = faceNormals[1];
+      cornerWitnesses.push_back(newWitness);
+    }
+    if (outgoingEdges[0].y <= epsilon && outgoingEdges[1].y <= epsilon && outgoingEdges[2].y <= epsilon) {
+      newWitness.point2 = BVertices[i];
+      newWitness.point1 = BVertices[i];
+      newWitness.point1.y = -dr;
+      newWitness.distance = -y - dr;
+      newWitness.idOnA = 3;
+      newWitness.normal = faceNormals[3];
+      cornerWitnesses.push_back(newWitness);
+    }
+    //    }
 
-//    if (y <= dr && y >= -dr && x <= wr && x >= -wr) {
-      if (outgoingEdges[0].z >= -epsilon && outgoingEdges[1].z >= -epsilon && outgoingEdges[2].z >= -epsilon) {
-	newWitness.point2 = BVertices[i];
-	newWitness.point1 = BVertices[i];
-	newWitness.point1.z = hr;
-	newWitness.distance = z - hr;
-	newWitness.idOnA = 0;
-	cornerWitnesses.push_back(newWitness);
-      }
-      if (outgoingEdges[0].z <= epsilon && outgoingEdges[1].z <= epsilon && outgoingEdges[2].z <= epsilon) {
-	newWitness.point2 = BVertices[i];
-	newWitness.point1 = BVertices[i];
-	newWitness.point1.z = -hr;
-	newWitness.distance = -z - hr;
-	newWitness.idOnA = 5;
-	cornerWitnesses.push_back(newWitness);
-      }
-//    }
+    //    if (y <= dr && y >= -dr && x <= wr && x >= -wr) {
+    if (outgoingEdges[0].z >= -epsilon && outgoingEdges[1].z >= -epsilon && outgoingEdges[2].z >= -epsilon) {
+      newWitness.point2 = BVertices[i];
+      newWitness.point1 = BVertices[i];
+      newWitness.point1.z = hr;
+      newWitness.distance = z - hr;
+      newWitness.idOnA = 0;
+      newWitness.normal = faceNormals[0];
+      cornerWitnesses.push_back(newWitness);
+    }
+    if (outgoingEdges[0].z <= epsilon && outgoingEdges[1].z <= epsilon && outgoingEdges[2].z <= epsilon) {
+      newWitness.point2 = BVertices[i];
+      newWitness.point1 = BVertices[i];
+      newWitness.point1.z = -hr;
+      newWitness.distance = -z - hr;
+      newWitness.idOnA = 5;
+      newWitness.normal = faceNormals[5];
+      cornerWitnesses.push_back(newWitness);
+    }
+    //    }
   }
 }
 
@@ -2052,6 +2146,18 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 	  newWitness.paramOnB = dot(edgeDir, 
 	      newWitness.point2 - BVertices[edges[i*2]]) / edgeLength;
 
+	  // Set witness normal direction. Can't use "normal", because
+	  // it may be zero.
+	  // If cross product of edges points into A, reverse it
+	  if (crossVecs[j].x * edgeManifoldComponentsX[j] <= 0 &&
+	      crossVecs[j].y * edgeManifoldComponentsY[j] <= 0 && 
+	      crossVecs[j].z * edgeManifoldComponentsZ[j] <= 0) {
+	    newWitness.normal = crossVecs[j];
+	  }
+	  else {
+	    newWitness.normal = -crossVecs[j];
+	  }
+
 	  newWitness.distance = distance;
 	  edgeWitnesses.push_back(newWitness);
 	}
@@ -2061,6 +2167,45 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
       // Two vertices essentially intersecting
     }
   }
+  }
+}
+
+double
+getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon) 
+{
+  // Note: assumes the polygon is in the xy-plane, positive w.r.t. z
+  double bestDistSq = FLT_MAX;
+  for (unsigned int i = 0; i < polygon.size(); i++) {
+    unsigned int iplus = (i == polygon.size()-1 ? 0 : i + 1);
+    Vector3 edge = polygon[iplus]-polygon[i];
+    Vector3 offset = ref - polygon[i];
+    double distance = cross(offset, edge).z;
+    if (distance > 0.0) {
+      double edgeLength = length(edge);
+      distance /= edgeLength;
+      double distanceSq = distance * distance;
+      if (dot(offset,edge)/edgeLength > edgeLength) {
+	distanceSq = (ref.x-polygon[iplus].x)*(ref.x-polygon[iplus].x) +
+	  (ref.y-polygon[iplus].y)*(ref.y-polygon[iplus].y)  +
+	  (ref.z-polygon[iplus].z)*(ref.z-polygon[iplus].z);
+      }
+      else if (dot(offset,edge) < 0) {
+	distanceSq = (ref.x-polygon[i].x)*(ref.x-polygon[i].x) +
+	  (ref.y-polygon[i].y)*(ref.y-polygon[i].y)  +
+	  (ref.z-polygon[i].z)*(ref.z-polygon[i].z);
+      }
+
+      if (distanceSq < bestDistSq) {
+	bestDistSq = distanceSq;
+      }
+    }
+  }
+
+  if (bestDistSq != FLT_MAX) {
+    return sqrt(bestDistSq);
+  }
+  else {
+    return 0.0;
   }
 }
 };
