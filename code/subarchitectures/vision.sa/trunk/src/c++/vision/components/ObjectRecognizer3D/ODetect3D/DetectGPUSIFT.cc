@@ -17,7 +17,7 @@ DetectGPUSIFT::DetectGPUSIFT()
 
   //init sift
   //char * argv[] = {"-m", "-s", "-v", "1"};
-  char * argv[] = {"-m", "-fo","-1", "-s", "-v", "1", "-pack"};
+  char * argv[] = {"-m", "-fo","-1", "-s", "-v", "0", "-pack"};
   //char * argv[] = {"-m", "-s", "-w", "3", "-fo", "-1", "-loweo"};
   //char * argv[] = {"-fo","-1","-v", "1"};
 

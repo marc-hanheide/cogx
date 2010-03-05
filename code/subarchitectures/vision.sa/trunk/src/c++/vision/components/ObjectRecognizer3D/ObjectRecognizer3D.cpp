@@ -25,6 +25,7 @@ ObjectRecognizer3D::ObjectRecognizer3D(){
 	camId = 0;
 	m_detect = 0;
 	m_showCV = true;
+	m_confidence = 0.03;
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D(){
@@ -104,7 +105,7 @@ void ObjectRecognizer3D::runComponent(){
   
   // Initialisation
   init();
-    
+  
   // Running Loop
   while(isRunning()){
     
@@ -122,6 +123,10 @@ void ObjectRecognizer3D::runComponent(){
   		else{
   			lockComponent();
   			m_rec_cmd = m_recCommandList.front();
+  			m_recCommandList.erase(m_recCommandList.begin());
+  			m_rec_cmd_id = m_recCommandID.front();
+  			m_recCommandID.erase(m_recCommandID.begin());
+  			
   			m_task = m_rec_cmd->cmd;
   			m_label = m_rec_cmd->label;
   			
@@ -138,7 +143,6 @@ void ObjectRecognizer3D::runComponent(){
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
 				
-  			m_recCommandList.erase(m_recCommandList.begin());
   			m_starttask = true;
   			unlockComponent();
   		}
@@ -174,6 +178,7 @@ void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChan
 		return;
 	
 	m_recCommandList.push_back(rec_cmd);
+	m_recCommandID.push_back(_wmc.address.id);
 }
 
 void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -298,7 +303,6 @@ void ObjectRecognizer3D::init(){
   fy = m_image.camPars.fy;
   cx = m_image.camPars.cx;
   cy = m_image.camPars.cy;
-  cout << fx << ' ' << fy << ' ' <<  cx << ' ' <<  cy << endl;
   
   CvMat *C = cvCreateMat(3,3, CV_32F);
   cvmSet(C, 0, 0, fx);
@@ -406,6 +410,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	log("%s: Recognizing model pose", m_label.c_str());
 
   int key;
+  m_rec_cmd->confidence = 0.0;
 
 	if(m_starttask){
 		addTrackerCommand(VisionData::START, m_rec_cmd->visualObjectID);
@@ -426,14 +431,13 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 	if(m_image_keys.Size() < 10){
 		log("%s: Too less keypoints detected, no pose estimation possible",m_label.c_str());
 	}else{
-	
 		m_detect->SetDebugImage(m_iplImage);
 		if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object))){
 			log("%s: No object detected", m_label.c_str());
 		}else{
-		
-			if(m_recEntries[m_label].object->conf < 0.03){
-				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,0.03);
+			m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
+			if(m_recEntries[m_label].object->conf < m_confidence){
+				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,m_confidence);
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
 			}else{
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
@@ -443,7 +447,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				P = m_image.camPars.pose;
 				convertPoseCv2MathPose(m_recEntries[m_label].object->pose, A);
 				
-				printf("Pose: %f %f %f\n", A.pos.x, A.pos.y, A.pos.z);
+				//printf("Pose: %f %f %f\n", A.pos.x, A.pos.y, A.pos.z);
 				
 				Math::transform(P,A,B);
 // 				transpose(B.rot, B.rot);
@@ -451,6 +455,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				// if(first time recognition)
 				log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
 				loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B, m_label);
+				m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
 				addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
 			}
 		}
@@ -460,6 +465,9 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
 		cvWaitKey(50);
 	}
+	
+	// Send result to WM
+	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
 
 	// Clean up   
   cvReleaseImage(&m_iplImage);

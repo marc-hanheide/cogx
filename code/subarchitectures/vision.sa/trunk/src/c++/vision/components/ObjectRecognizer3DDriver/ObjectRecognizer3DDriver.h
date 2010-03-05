@@ -15,6 +15,7 @@
 
 #include "ObjectTrackerUtils.hpp"
 #include "ModelLoader.h"
+#include "Timer.h"
 
 
 namespace cast
@@ -26,15 +27,26 @@ private:
 	std::string m_plyfile;
 	std::vector<std::string> m_labels;
 	std::vector<std::string> m_visualObjectIDs;
+	std::map<std::string,int> m_sumDetections;
+	std::map<std::string,float> m_sumConfidence;
+	
+	bool m_halt;
+	Timer m_timer;
   
 	/** @brief receiving visual objects */
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
   
+  /** @brief read result of a recognition command */
+  void overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
+  
   /** @brief loads ply from file and adds it into working memory */
   void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose);
 	
-	/** @brief constructs a Recognizer3DCommand and adds it into wokring memory */
+	/** @brief constructs a Recognizer3DCommand and adds it into working memory */
 	void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label, std::string visualObjectID);
+	
+	/** @brief constructs a TrackingCommand and adds it into working memory */
+	void addTrackingCommand(VisionData::TrackingCommandType cmd);
 	
 protected:
   /**

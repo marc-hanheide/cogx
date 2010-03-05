@@ -230,6 +230,12 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					tracker->setKernelSize(2);
 					printf("Kernel size: %d\n", (int)2);
 					break;
+				case SDLK_4:
+					tracker->setEdgeShader();
+					break;
+				case SDLK_5:
+					tracker->setColorShader();
+					break;
 				case SDLK_e:
 					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
 					break;

@@ -251,13 +251,13 @@ bool TextureTracker::initInternal(){
 	m_shadeTexEdgeTest->unbind();
 	
 	m_shadeTexColorTest->bind();
-	m_shadeTexColorTest->setUniform("tex_model", 2);
-	m_shadeTexColorTest->setUniform("tex_frame", 3);
+	m_shadeTexColorTest->setUniform("tex_model_color", 2);
+	m_shadeTexColorTest->setUniform("tex_frame_color", 3);
 	m_shadeTexColorTest->setUniform("fTol", params.edge_tolerance);
 	m_shadeTexColorTest->setUniform( "mOffsetX", mat3(offX), GL_FALSE );
   m_shadeTexColorTest->setUniform( "mOffsetY", mat3(offY), GL_FALSE );
   m_shadeTexColorTest->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
-  m_shadeTexColorTest->setUniform("kernelsize", 1);
+  m_shadeTexColorTest->setUniform("kernelsize", (GLint)1);
 	m_shadeTexColorTest->unbind();
 	
 	tgMaterial matSilver;
@@ -354,14 +354,15 @@ void TextureTracker::drawResult(){
 	bool texmodel = false;
 	glColor3f(1.0,1.0,1.0);
 	
+	m_cam_perspective.Activate();
+	m_lighting.Activate();
+
+	glEnable(GL_DEPTH_TEST);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	
 	for(int i=0; i<m_modellist.size(); i++){
 		
-		m_cam_perspective.Activate();
-		m_lighting.Activate();
 		m_modellist[i]->pose.activate();
-		
-		glEnable(GL_DEPTH_TEST);
-		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		switch(m_showmodel){
 			case 0:
@@ -396,7 +397,6 @@ void TextureTracker::drawResult(){
 				m_showmodel = 0;
 				break;			
 		}
-		m_lighting.Deactivate();
 		
 // 		m_modellist[i]->model.drawCoordinates();
 // 		m_modellist[i]->model.drawNormals();
@@ -405,9 +405,7 @@ void TextureTracker::drawResult(){
 		
 	}
 	
-
-	
-	
+	m_lighting.Deactivate();
 }
 
 // Plots pdf in x-y plane (with z and rotational DOF locked)

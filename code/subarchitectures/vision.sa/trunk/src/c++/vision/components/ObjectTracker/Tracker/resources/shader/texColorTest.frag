@@ -1,7 +1,7 @@
 varying vec4 vertex_model;
 
-uniform sampler2D tex_frame;
-uniform sampler2D tex_model;
+uniform sampler2D tex_frame_color;
+uniform sampler2D tex_model_color;
 
 uniform mat3 mOffsetX;
 uniform mat3 mOffsetY;
@@ -78,7 +78,7 @@ bool compareNeighbourPixels(vec4 color_model, vec4 texcoords_frame){
 		for(int i=0; i<3; i++){
 			for(int j=0; j<3; j++){
 				if(i!=1 && j!=1){
-					color_frame = texture2D(tex_frame, texcoords_frame.xy + vec2(mOffsetX[i][j]*float(r), mOffsetY[i][j]*float(r)));
+					color_frame = texture2D(tex_frame_color, texcoords_frame.xy + vec2(mOffsetX[i][j]*float(r), mOffsetY[i][j]*float(r)));
 					return compareColor(color_model, color_frame);
 				}
 			}
@@ -101,13 +101,13 @@ void main(){
 	texcoords_model = modelviewprojection * vertex_model;
 	texcoords_model.x = (texcoords_model.x / texcoords_model.w + 1.0) * 0.5;
 	texcoords_model.y = (texcoords_model.y / texcoords_model.w + 1.0) * 0.5;
-	color_model = texture2D(tex_model, texcoords_model.xy);
+	color_model = texture2D(tex_model_color, texcoords_model.xy);
 		
 	// get color of frame
 	texcoords_frame = gl_ModelViewProjectionMatrix * vertex_model;
 	texcoords_frame.x = (texcoords_frame.x / texcoords_frame.w + 1.0) * 0.5;
 	texcoords_frame.y = (texcoords_frame.y / texcoords_frame.w + 1.0) * 0.5;	
-	color_frame = texture2D(tex_frame, texcoords_frame.xy);
+	color_frame = texture2D(tex_frame_color, texcoords_frame.xy);
 	
 	if(compareColor(color_model, color_frame)){
 		gl_FragColor = red;

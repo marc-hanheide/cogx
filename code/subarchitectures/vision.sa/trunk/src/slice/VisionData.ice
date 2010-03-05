@@ -165,7 +165,7 @@ module VisionData {
   /** @brief 	Commands for Object Tracker
    *  @author Thomas Mörwald
    */
-  enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS };
+  enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
   class TrackingCommand {
     TrackingCommandType cmd;
     string visualObjectID;			// for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D
@@ -181,6 +181,7 @@ module VisionData {
   	Recognizer3DCommandType cmd;
   	string label;
   	string visualObjectID;
+  	double confidence;
   };
 
   /** 

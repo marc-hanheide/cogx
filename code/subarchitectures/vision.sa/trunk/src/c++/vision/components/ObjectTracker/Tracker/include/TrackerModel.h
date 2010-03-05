@@ -97,6 +97,14 @@ public:
 	void setModelviewProjection(mat4 m){ m_modelviewprojection = m; }
 	void restoreTexture(){ m_texture=m_tex_original; }
 	
+		// generate display lists
+	void genListTexturedFaces();
+	void genListUntexturedFaces();
+	void genListPass();
+	void genListFaces();
+	void genListEdges();
+	void genListNormals(float normal_length);
+	
 protected:
 	GLint m_dlTexturedFaces;
 	GLint m_dlUntexturedFaces;
@@ -114,13 +122,7 @@ protected:
 	bool isRedundant(Edge* e1);
 	void UpdateDisplayLists();
 	
-	// generate display lists
-	void genListTexturedFaces();
-	void genListUntexturedFaces();
-	void genListPass();
-	void genListFaces();
-	void genListEdges();
-	void genListNormals(float normal_length);
+
 };
 
 } // namespace Tracking
