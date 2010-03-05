@@ -11,13 +11,14 @@ firstStartPosition=$1;
 lastStartPosition=$2;
 numberOfIterations=$3;
 
-# program="test"
 if [ "$4" = "offline" ]
 then
 	program="/usr/local/bin/SMLearning/offline_experiment"
+	xml="/usr/local/bin/SMLearning/offline_experiment.xml"
 elif [ "$4" = "active" ]
 then
 	program="/usr/local/bin/SMLearning/activelearn_experiment"
+	xml="/usr/local/bin/SMLearning/activelearn_experiment.xml"
 fi
 
 echo "Starting experiments for positions $firstStartPosition to $lastStartPosition.";
@@ -30,7 +31,7 @@ do
 	echo "Starting experiment sequence from position $i.";
 	echo $program
 
-	$program /usr/local/bin/SMLearning/activelearn_experiment.xml $numberOfIterations $i;	
+	$program $xml $numberOfIterations $i;	
 
 	if (($? !=0 )); 
 	then
