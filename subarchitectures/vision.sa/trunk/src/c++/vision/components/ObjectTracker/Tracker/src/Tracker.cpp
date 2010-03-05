@@ -10,7 +10,7 @@ Tracker::Tracker(){
 	// Default flags
 	m_lock = false;
 	m_showparticles = false;
-	m_showmodel = 0;
+	m_showmodel = 1;
 	m_draw_edges = false;
 	m_tracker_initialized = false;
 	
@@ -348,6 +348,14 @@ void Tracker::setModelLock(int id, bool lock){
 		}
 		it++;
 	}
+}
+
+void Tracker::saveScreenshot(const char* filename){
+	IplImage* img = cvCreateImage ( cvSize ( params.width, params.height ), IPL_DEPTH_8U, 3 );
+	glReadPixels(0,0,params.width,params.height,GL_RGB,GL_UNSIGNED_BYTE, img->imageData);
+	cvConvertImage(img, img, CV_CVTIMG_FLIP | CV_CVTIMG_SWAP_RB);
+	cvSaveImage(filename, img);
+	cvReleaseImage(&img);
 }
 
 void Tracker::setLockFlag(bool val){

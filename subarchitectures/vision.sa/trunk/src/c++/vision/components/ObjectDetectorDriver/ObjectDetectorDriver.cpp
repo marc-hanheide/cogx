@@ -53,7 +53,7 @@ void ObjectDetectorDriver::runComponent()
   sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
                     
-  while(1)
+  while(isRunning())
   {   
     // Send start detection command
     VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;

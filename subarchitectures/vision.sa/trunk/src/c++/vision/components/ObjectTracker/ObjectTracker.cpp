@@ -35,6 +35,7 @@ ObjectTracker::ObjectTracker(){
   m_bfc = true;
   
   fTimeTotal = 0.0;
+  m_screenID = 0;
 }
 
 ObjectTracker::~ObjectTracker(){
@@ -323,10 +324,15 @@ void ObjectTracker::applyTrackingCommand(){
 			trackingEntry = (*it);
 			m_tracker->removeModel(trackingEntry->id);
 			delete(trackingEntry);
-			m_trackinglist.erase(it);
-			return;
+// 			m_trackinglist.erase(it);
 		}
+		m_trackinglist.clear();
 		log("  VisionData::RELEASEMODELS: ok");
+	}else if(track_cmd->cmd == VisionData::SCREENSHOT){
+		log("  VisionData::SCREENSHOT");
+		char filename[16];
+		sprintf(filename, "img_%d.jpg", m_screenID++);
+		m_tracker->saveScreenshot(filename);
 	}else{
 		log("  VisionData::???UNKNOWN???: doing nothing");
 	}

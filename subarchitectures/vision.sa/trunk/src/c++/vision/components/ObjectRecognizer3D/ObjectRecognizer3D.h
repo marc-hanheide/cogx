@@ -48,7 +48,9 @@ private:
   IplImage *m_iplGray;
   
   std::vector<VisionData::Recognizer3DCommandPtr> m_recCommandList;
+  std::vector<std::string> m_recCommandID;
   VisionData::Recognizer3DCommandPtr m_rec_cmd;
+  std::string m_rec_cmd_id;
   
   Video::Image m_image;
   int m_width;
@@ -71,6 +73,8 @@ private:
   };
 	std::map<std::string,RecEntry> m_recEntries;
 	std::string m_label;
+	
+	float m_confidence;
 	
   bool m_starttask;
   bool m_wait4data;

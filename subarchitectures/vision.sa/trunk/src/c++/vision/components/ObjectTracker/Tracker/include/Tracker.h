@@ -132,6 +132,9 @@ public:
 	/** @brief Locks the model with id */
 	void		setModelLock(int id, bool lock);
 	
+	/** @brief Takes screenshot and saves it to file */
+	void		saveScreenshot(const char* filename);
+	
 	// Drawing to screen (result, ...)
 	virtual void drawResult()=0;
 	void drawCoordinates();

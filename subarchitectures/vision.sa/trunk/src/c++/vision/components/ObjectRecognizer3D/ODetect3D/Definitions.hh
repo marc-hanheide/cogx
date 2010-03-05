@@ -8,7 +8,7 @@
 #include "PNamespace.hh"
 
 //for debugging
-#define DEBUG
+//#define DEBUG
 
 #define NUM_THREADS 2
 

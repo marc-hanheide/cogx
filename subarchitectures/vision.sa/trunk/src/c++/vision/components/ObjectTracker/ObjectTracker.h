@@ -43,6 +43,8 @@ private:
   cdl::CASTTime last_image_time;
   std::string m_ini_file;
   
+  int m_screenID;
+  
   /** Which camera to get images from */
   std::vector<int> m_camIds;
   

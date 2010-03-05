@@ -7,6 +7,7 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "VisionDriver.h"
+#include <opencv/highgui.h>
 
 /**
  * The function called to create a new instance of our component.
@@ -72,7 +73,7 @@ void VisionDriver::runComponent()
 		tracking = true;
 	}
 	
-	while(running)
+	while(isRunning())
 	{
 		sleepProcess(1000);	// detection time
 

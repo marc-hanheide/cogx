@@ -22,7 +22,7 @@ struct ModelEntry
 	ModelEntry(){
 		del_predictor = predictor = new Predictor();
 		bfc = false;
-		lock = true;		
+		lock = false;		
 	}
 	
 	~ModelEntry(){
