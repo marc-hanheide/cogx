@@ -459,7 +459,8 @@ void ObjectDetector::GetCylinders()
 	int number = 0;								// number of fetched cylinders
 	bool masked = false;					// cylinder is masked?
 	static bool single = true;		/// HACK: detect only one single cylinder model, then stop immediately
-
+	single = true;
+	
 	static vector<Z::CylDef> cylinders_old;		// old cylinders from the former image
 	static vector<Z::CylDef> cylinders_new;		// new cylinders from this image
 
