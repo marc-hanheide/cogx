@@ -48,10 +48,10 @@ double patchThreshold = 0.020;
 double distanceFalloffOutside			= 0.015; 
 double distanceFalloffInside			= 0.01; 
 
-double supportCOMContainmentSteepness		= 0.02;
+double supportCOMContainmentSteepness		= 1;
+double supportCOMContainmentOffset		= 0.5;
 
 //Old params;unused
-double supportCOMContainmentOffset		= 0.5;
 double squareDistanceWeight			= 1.0;
 double supportCOMContainmentWeight		= 1.0;
 double bottomCOMContainmentOffset		= 0.0;
@@ -288,7 +288,7 @@ void ObjectRelationManager::runComponent()
   peekabot::SphereProxy op;
 //  peekabot::CubeProxy dfp;
   peekabot::CubeProxy csp;
-//  peekabot::CubeProxy cop;
+  peekabot::CubeProxy cop;
   peekabot::PolygonProxy pp;
   peekabot::CubeProxy bp;
   peekabot::CubeProxy bp2;
@@ -336,9 +336,9 @@ void ObjectRelationManager::runComponent()
     csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
     csp.translate(0.0, 6.0, 10*supportCOMContainmentSteepness);
     csp.set_scale(0.1);
-//    cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
-//    cop.translate(0.0, 6.0, supportCOMContainmentOffset);
-//    cop.set_scale(0.1);
+    cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
+    cop.translate(0.0, 6.0, supportCOMContainmentOffset);
+    cop.set_scale(0.1);
 
     pp.add(m_onnessTester, "table", peekabot::REPLACE_ON_CONFLICT);
     pp.add_vertex(table1.radius1, table1.radius2, 0);
@@ -410,11 +410,11 @@ void ObjectRelationManager::runComponent()
 //	bottomCOMContainmentSteepness = 
 	  supportCOMContainmentSteepness = 0.1*vr.get_result()(2);
       }
-//      vr = cop.get_position();
-//      if (vr.succeeded()) {
+      vr = cop.get_position();
+      if (vr.succeeded()) {
 //	bottomCOMContainmentOffset = 
-//	  supportCOMContainmentOffset = vr.get_result()(2);
-//      }
+	  supportCOMContainmentOffset = vr.get_result()(2);
+      }
 
 
       peekabot::Result<peekabot::Matrix4f> r;
@@ -525,7 +525,7 @@ void ObjectRelationManager::runComponent()
 	  witp2.set_scale(0.01);
 
 
-
+/*
 	  if (nPoints > maxPoints) {
 	    pcloud.clear_vertices();
 	    nPoints = 0;
@@ -549,6 +549,7 @@ void ObjectRelationManager::runComponent()
   }
 	  }
     box1.pose = oldPose;
+    */
 
       }
       }

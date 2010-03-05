@@ -40,11 +40,12 @@ evaluateOnness(const Object *objectS, const Object *objectO)
 
   Witness witness;
   vector<Vector3> patch;
+  double maxPatchClearance;
 
   if (objectS->type == OBJECT_BOX &&
       objectO->type == OBJECT_BOX) {
     witness = findContactPatch(*((BoxObject*)objectS), *((BoxObject*)objectO),
-	&patch);
+	&patch, &maxPatchClearance);
   }
 
   else if (objectS->type == OBJECT_PLANE &&
@@ -61,7 +62,7 @@ evaluateOnness(const Object *objectS, const Object *objectO)
       Sbox.radius3 = plane_thickness*0.5;
       Sbox.pose = Splane->pose;
       Sbox.pose.pos.z -= plane_thickness*0.5;
-      witness = findContactPatch(Sbox, *Obox, &patch);
+      witness = findContactPatch(Sbox, *Obox, &patch, &maxPatchClearance);
     }
   }
 
@@ -102,9 +103,16 @@ evaluateOnness(const Object *objectS, const Object *objectO)
       tmp.z = 0;
       COMDistance = length(tmp);
     }
-    if (COMDistance > 0.0) {
-      contactOnness /= (1+COMDistance/supportCOMContainmentSteepness);
-    }
+    
+    double distanceFactor = COMDistance / maxPatchClearance;
+
+    contactOnness *= 
+      (1 + exp(-supportCOMContainmentSteepness*(1 - supportCOMContainmentOffset)))
+      		/ (1 + exp(-supportCOMContainmentSteepness*
+		(-distanceFactor - supportCOMContainmentOffset)));
+//    if (COMDistance > 0.0) {
+//      contactOnness /= (1+COMDistance/supportCOMContainmentSteepness);
+//    }
   }
 
   double distanceOnness;
@@ -693,7 +701,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
   // interest points.
   std::vector<Vector3> interestPoints;
 
-  double epsilon = 0.0001;
+  double epsilon = 1e-6;
   Vector3 polygonNormal = cross(polygon2[2]-polygon2[1], polygon2[0]-polygon2[1]);
 
   // Points of polygon 1 inside polygon 2
@@ -1104,6 +1112,8 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
 
   double maxDistance = 0.0;
   //Find all intersections between bisectors
+  vector<double> minPositiveDistanceThisBisector(polygon.size(), FLT_MAX);
+
   for (unsigned int i = 0; i < polygon.size(); i++) {
     for (unsigned int j = i+1; j < polygon.size(); j++) {
       Vector3 difference = polygon[j] - polygon[i];
@@ -1115,8 +1125,13 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
 	normalLength*normalLength / (dot(normalVector, bisectors[i]));
       double intersectionNormalDistance = 
 	intersectionParam * dot(edgeNormals[i], bisectors[i]);
-      if (intersectionNormalDistance > 0.0 &&
-	  intersectionNormalDistance > maxDistance) {
+      if (intersectionNormalDistance > 0.0) {
+	if (intersectionNormalDistance < minPositiveDistanceThisBisector[j]) {
+	  minPositiveDistanceThisBisector[j] = intersectionNormalDistance;
+	}
+	if (intersectionNormalDistance < minPositiveDistanceThisBisector[i]) {
+	  minPositiveDistanceThisBisector[i] = intersectionNormalDistance;
+	}
 	Vector3 intersectionPoint = polygon[i] + bisectors[i]*intersectionParam;
 	double otherParameter = dot(intersectionPoint - polygon[j], bisectors[j]);
 	if (otherParameter > 0.0) {
@@ -1124,9 +1139,14 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
 	    cout << "Error! Something not right!";
 	    return 0.0;
 	  }
-	  maxDistance = intersectionNormalDistance;
 	}
       }
+    }
+  }
+  for (unsigned int i = 0; i < polygon.size(); i++) {
+    if (minPositiveDistanceThisBisector[i] < FLT_MAX &&
+	minPositiveDistanceThisBisector[i] > maxDistance) {
+      maxDistance = minPositiveDistanceThisBisector[i];
     }
   }
   return maxDistance;
@@ -1230,7 +1250,7 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
 }
 
 Witness
-findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *outPatch)
+findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *outPatch, double *maxPatchClearance)
 {
   const int edges[] = {0,1, 1,2, 2,3, 3,0, 0,4, 4,5, 5,1, 5,6,
     6,2, 6,7, 7,3, 7,4}; //pairs of ints, indexing into BVertices
@@ -1348,7 +1368,6 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
       }
     }
     for(unsigned int i = 0; i < edgeWitnesses.size(); i++) {
-      edgeWitnesses[i].distance = -edgeWitnesses[i].distance;
       if (edgeWitnesses[i].distance > bestWitness.distance) {
 	AisB = false;
 	bestWitness = edgeWitnesses[i];
@@ -1475,7 +1494,8 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
 	  nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
 	}
 
-	if (!newDistance || nextBestWitness.distance < bestWitness.distance) {
+	if (nextBestWitness.distance >= 0.0 && (
+	      !newDistance || nextBestWitness.distance < bestWitness.distance)) {
 	  AisB = false;
 	  bestWitness = nextBestWitness;
 	  bestWitness.point1 = transform(boxA.pose, bestWitness.point1);
@@ -1610,11 +1630,13 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
 	}
 	else {
 	  AisB = true;
-	  bestWitness = nextBestWitness; 
-	  // Transform the points into global coordinates
-	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
-	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
-	  bestWitness.normal = boxB.pose.rot * bestWitness.normal;
+	  if (nextBestWitness.distance >= 0) {
+	    bestWitness = nextBestWitness; 
+	    // Transform the points into global coordinates
+	    bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
+	    bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	    bestWitness.normal = boxB.pose.rot * bestWitness.normal;
+	  }
 	  continue;
 	}
 
@@ -1667,16 +1689,19 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
 	}
 	else {
 	  AisB = true;
-	  bestWitness = nextBestWitness;
-	  // Transform the points into global coordinates
-	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
-	  bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
-	  bestWitness.normal = boxB.pose.rot * bestWitness.normal;
+	  if (nextBestWitness.distance >= 0) {
+	    bestWitness = nextBestWitness;
+	    // Transform the points into global coordinates
+	    bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
+	    bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
+	    bestWitness.normal = boxB.pose.rot * bestWitness.normal;
+	  }
 	  continue;
 	}
 
 	nextBestWitness.distance = length(nextBestWitness.point1 - nextBestWitness.point2);
-	if (nextBestWitness.distance < bestWitness.distance)
+	if (nextBestWitness.distance < bestWitness.distance && 
+	    nextBestWitness.distance >= 0.0)
 	{
 	  bestWitness = nextBestWitness;
 	  bestWitness.point1 = transform(boxB.pose, bestWitness.point1);
@@ -1700,7 +1725,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
     bestWitness.normal = -bestWitness.normal;
   }
 
-  if (outPatch != 0) {
+  if (outPatch != 0 || maxPatchClearance != 0) {
     const int VertexFaceNeigbors[] = {0,4,1, 0,1,2, 0,2,3, 0,3,4, 1,4,5, 2,1,5, 3,2,5, 4,3,5};
     const int EdgeFaceNeighbors[] = {0,1, 0,2, 0,3, 0,4, 1,4, 1,5, 1,2, 2,5, 2,3, 3,5, 3,4, 4,5};
     // Find the face on A and the face on B which 
@@ -1753,82 +1778,94 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
       }
     }
 
+
     const int FaceVertexNeighbors[] = {0,1,2,3, 0,4,5,1, 1,5,6,2, 2,6,7,3, 0,3,7,4, 4,7,6,5};
-    //Enumerate all vertices on B around the selected face.
-    //If a vertex is within a threshold of A's face's plane,
-    //add it to the patch. Otherwise, if it has a neighbor that is 
-    //within the threshold, compute the interpolated point where 
-    //the edge passes the threshold and add that point to the
-    //patch.
-    double BFaceVertexDistances[4];
-    Vector3 AFaceCorner = AVertices[FaceVertexNeighbors[bestFaceOnA*4]];
-//    Vector3 AFaceNormal = boxA.pose.rot * faceNormals[bestFaceOnA];
-    Vector3 AFaceNormal = faceNormals[bestFaceOnA];
-    int lowestAcceptedVertex = -1;
-    for (int i = 0; i < 4; i++) {
-      BFaceVertexDistances[i] = dot(AFaceNormal,
-	  BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] - AFaceCorner);
-      if (BFaceVertexDistances[i] <= patchThreshold) {
-	if (lowestAcceptedVertex == -1) {
-	  lowestAcceptedVertex = i;
-	}
+
+    if (maxPatchClearance != 0) {
+      vector<Vector3> face;
+      for (int i = 0; i < 4; i++) {
+	face.push_back(BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]]);
       }
+      *maxPatchClearance = getMaxPolygonClearance(face);
     }
-    vector<Vector3> patchOnB;
-    if (lowestAcceptedVertex != -1) {
-      int i = lowestAcceptedVertex;
-      int nexti = (i == 3 ? 0 : i+1);
-      do  {
+
+    if (outPatch != 0) {
+      //Enumerate all vertices on B around the selected face.
+      //If a vertex is within a threshold of A's face's plane,
+      //add it to the patch. Otherwise, if it has a neighbor that is 
+      //within the threshold, compute the interpolated point where 
+      //the edge passes the threshold and add that point to the
+      //patch.
+      double BFaceVertexDistances[4];
+      Vector3 AFaceCorner = AVertices[FaceVertexNeighbors[bestFaceOnA*4]];
+      //    Vector3 AFaceNormal = boxA.pose.rot * faceNormals[bestFaceOnA];
+      Vector3 AFaceNormal = faceNormals[bestFaceOnA];
+      int lowestAcceptedVertex = -1;
+      for (int i = 0; i < 4; i++) {
+	BFaceVertexDistances[i] = dot(AFaceNormal,
+	    BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] - AFaceCorner);
 	if (BFaceVertexDistances[i] <= patchThreshold) {
-	  // Add vertex to patch
-	  patchOnB.push_back(BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]]);
-
-	  // If next vertex is too far away, find the point in between that crosses the threshold:
-	  if (BFaceVertexDistances[nexti] > patchThreshold) {
-	    double interpolationFactor = (patchThreshold - BFaceVertexDistances[i]) / (BFaceVertexDistances[nexti]-BFaceVertexDistances[i]);
-	    Vector3 interpolatedPoint = 
-	      (1-interpolationFactor)*BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] + 
-	      interpolationFactor * BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+nexti]];
-	    patchOnB.push_back(interpolatedPoint);
+	  if (lowestAcceptedVertex == -1) {
+	    lowestAcceptedVertex = i;
 	  }
 	}
-	else {
-	  // If this vertex is too far away but the next one isn't, find the point in between that
-	  // crosses the threshold:
-	  if (BFaceVertexDistances[nexti] <= patchThreshold) {
-	    double interpolationFactor = (patchThreshold - BFaceVertexDistances[i]) / (BFaceVertexDistances[nexti]-BFaceVertexDistances[i]);
-	    Vector3 interpolatedPoint = 
-	      (1-interpolationFactor)*BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] + 
-	      interpolationFactor * BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+nexti]];
-	    patchOnB.push_back(interpolatedPoint);
+      }
+      vector<Vector3> patchOnB;
+      if (lowestAcceptedVertex != -1) {
+	int i = lowestAcceptedVertex;
+	int nexti = (i == 3 ? 0 : i+1);
+	do  {
+	  if (BFaceVertexDistances[i] <= patchThreshold) {
+	    // Add vertex to patch
+	    patchOnB.push_back(BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]]);
+
+	    // If next vertex is too far away, find the point in between that crosses the threshold:
+	    if (BFaceVertexDistances[nexti] > patchThreshold) {
+	      double interpolationFactor = (patchThreshold - BFaceVertexDistances[i]) / (BFaceVertexDistances[nexti]-BFaceVertexDistances[i]);
+	      Vector3 interpolatedPoint = 
+		(1-interpolationFactor)*BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] + 
+		interpolationFactor * BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+nexti]];
+	      patchOnB.push_back(interpolatedPoint);
+	    }
 	  }
+	  else {
+	    // If this vertex is too far away but the next one isn't, find the point in between that
+	    // crosses the threshold:
+	    if (BFaceVertexDistances[nexti] <= patchThreshold) {
+	      double interpolationFactor = (patchThreshold - BFaceVertexDistances[i]) / (BFaceVertexDistances[nexti]-BFaceVertexDistances[i]);
+	      Vector3 interpolatedPoint = 
+		(1-interpolationFactor)*BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+i]] + 
+		interpolationFactor * BVerticesInA[FaceVertexNeighbors[bestFaceOnB*4+nexti]];
+	      patchOnB.push_back(interpolatedPoint);
+	    }
+	  }
+	  i = nexti;
+	  nexti = (i == 3 ? 0 : i+1);
+	} 
+	while (i != lowestAcceptedVertex);
+
+
+	vector<Vector3>AFacePolygon;
+	//Now, project the points onto the A face,
+	//Need to reverse the winding on the bottom polygon for overlap compoutation
+	vector<Vector3> patchOnA;
+	for(int i = patchOnB.size()-1; i >= 0; i--) {
+	  patchOnA.push_back(patchOnB[i] - AFaceNormal * dot(AFaceNormal, patchOnB[i]-AFaceCorner));
 	}
-	i = nexti;
-	nexti = (i == 3 ? 0 : i+1);
-      } 
-      while (i != lowestAcceptedVertex);
+	for(unsigned int i = 0; i < 4; i++) {
+	  AFacePolygon.push_back(AVertices[FaceVertexNeighbors[bestFaceOnA*4+i]]);
+	}
 
+	//and find the overlap between it and the face. That's the contact patch!!1
+	*outPatch = findPolygonIntersection(AFacePolygon, patchOnA);
 
-      vector<Vector3>AFacePolygon;
-      //Now, project the points onto the A face,
-      //Need to reverse the winding on the bottom polygon for overlap compoutation
-      vector<Vector3> patchOnA;
-      for(int i = patchOnB.size()-1; i >= 0; i--) {
-	patchOnA.push_back(patchOnB[i] - AFaceNormal * dot(AFaceNormal, patchOnB[i]-AFaceCorner));
+	for (unsigned int i = 0; i < outPatch->size(); i++) {
+	  (*outPatch)[i] = transform(boxA.pose, (*outPatch)[i]);
+	}
       }
-      for(unsigned int i = 0; i < 4; i++) {
-	AFacePolygon.push_back(AVertices[FaceVertexNeighbors[bestFaceOnA*4+i]]);
+      else {
+	// No point is close enough! Just return the distance
       }
-
-      //and find the overlap between it and the face. That's the contact patch!!1
-      *outPatch = findPolygonIntersection(AFacePolygon, patchOnA);
-
-      for (unsigned int i = 0; i < outPatch->size(); i++) {
-	(*outPatch)[i] = transform(boxA.pose, (*outPatch)[i]);
-      }
-    }
-    else {
-      // No point is close enough! Just return the distance
     }
   }
 
@@ -1949,7 +1986,7 @@ getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
       exit(1);
     }
 
-    const double epsilon = 0.0001;
+    const double epsilon = 1e-6;
 
     const double x = BVertices[i].x;
     const double y = BVertices[i].y;
@@ -2077,6 +2114,7 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
     double axisDir2 = axisDirections[i*3+1];
     double axisDir3 = axisDirections[i*3+2];
 
+    //Cross product of B edge and A edge 
     const Vector3 crossVecs[] = {vector3(0, -edgeDir.z, edgeDir.y),
       vector3(edgeDir.z, 0, -edgeDir.x),
       vector3(0, edgeDir.z, -edgeDir.y),
@@ -2093,84 +2131,83 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 
     // Loop over edges in A
     for (int j = 0; j < 12; j++) {
+      if (!vequals(crossVecs[j], zeroVec, epsilon)) {
     Vector3 offset = BVertices[edges[i*2]] - AVerts[edges[j*2]];
     if (!vequals(offset, zeroVec, epsilon)) {
 
       //Vector3 crossVec = vector3(0, edgeDir.z, -edgeDir.y);
-      Vector3 normal = crossVecs[j] * dot(offset, crossVecs[j]); 
-      if (!vequals(normal, zeroVec, epsilon)) {
-	bool acceptableNormal;
-	if (intersecting) {
-	  // Check that normal points into A (for intersection)
-	  // or out of A (for non-intersection)
-	  acceptableNormal = 
-	    normal.x * edgeManifoldComponentsX[j] >= 0 &&
-	    normal.y * edgeManifoldComponentsY[j] >= 0 && 
-	    normal.z * edgeManifoldComponentsZ[j] >= 0 &&
-	    // Check that normal points out of B (for intersection)
-	    // or into B (for non-intersection)
-	    axisDir1*dot(normal, axis1) <= 0 && 
-	    axisDir2*dot(normal, axis2) <= 0 &&
-	    axisDir3*dot(normal, axis3) <= 0;
+
+      //Normalised cross vector
+      Vector3 normCrossVec = crossVecs[j];
+      normalise(normCrossVec);
+
+      //Distance from A to B, if this witness is true, taken with sign.
+      //Positive if outside,negative if inside.
+      Vector3 directionOutOfA; //Vector actually leading out of a, whether
+      				// there's intersection or not
+
+      if (normCrossVec.x * edgeManifoldComponentsX[j] <= epsilon &&
+	  normCrossVec.y * edgeManifoldComponentsY[j] <= epsilon && 
+	  normCrossVec.z * edgeManifoldComponentsZ[j] <= epsilon) {
+	// normCrossVec points out of A
+	directionOutOfA = normCrossVec;
+      }
+      else if (normCrossVec.x * edgeManifoldComponentsX[j] > -epsilon &&
+	  normCrossVec.y * edgeManifoldComponentsY[j] > -epsilon && 
+	  normCrossVec.z * edgeManifoldComponentsZ[j] > -epsilon) {
+	// normCrossVec points into A
+	directionOutOfA = -normCrossVec;
+      }
+      else {
+	// neither normCrossVec or -normCrossVec are in the right manifold.
+	// This can be skipped
+	continue;
+      }
+
+      // Check that the vector out of A also points into B
+      if (axisDir1*dot(directionOutOfA, axis1) >= -epsilon && 
+	  axisDir2*dot(directionOutOfA, axis2) >= -epsilon &&
+	  axisDir3*dot(directionOutOfA, axis3) >= -epsilon) {
+
+	double distance; //Distance A to B with sign
+	distance = dot(offset, directionOutOfA);
+
+	// Find intersection point in the plane perpendicular to 
+	// directionOutOfA
+	Vector3 projectedOffset = offset - directionOutOfA * distance;
+	Vector3 normalVector =
+	    projectedOffset - edgeDir * dot(projectedOffset, edgeDir);
+	double normalLength = length(normalVector);
+
+	double intersectionParamThisEdge; // 0 - 1
+	if (!equals(normalLength, 0.0, epsilon)) {
+	  intersectionParamThisEdge =
+	    normalLength*normalLength / dot(normalVector, AEdges[j]);
 	}
 	else {
-	  acceptableNormal = 
-	    normal.x * edgeManifoldComponentsX[j] <= 0 &&
-	    normal.y * edgeManifoldComponentsY[j] <= 0 && 
-	    normal.z * edgeManifoldComponentsZ[j] <= 0 &&
-	    axisDir1*dot(normal, axis1) >= 0 && 
-	    axisDir2*dot(normal, axis2) >= 0 &&
-	    axisDir3*dot(normal, axis3) >= 0;
+	  intersectionParamThisEdge = 0.0;
 	}
-	if (acceptableNormal) {
-	  normalise(normal);
-	  double distance = dot(offset, normal);
-	  Vector3 projectedOffset = offset - normal * distance;
-
-	  Vector3 normalVector =
-	    projectedOffset - edgeDir * dot(projectedOffset, edgeDir);
-	  double normalLength = length(normalVector);
-
-	  double intersectionParamThisEdge; // 0 - 1
-	  if (!equals(normalLength, 0.0, epsilon)) {
-	    intersectionParamThisEdge =
-	      normalLength*normalLength / dot(normalVector, AEdges[j]);
-	  }
-	  else {
-	    intersectionParamThisEdge = 0.0;
-	  }
-	  Witness newWitness;
-	  newWitness.point1 = AVerts[edges[j*2]] + AEdges[j]*intersectionParamThisEdge;
-	  newWitness.point2 = newWitness.point1 + normal*distance;
-	  newWitness.typeOnA = WITNESS_EDGE;
-	  newWitness.typeOnB = WITNESS_EDGE;
-	  newWitness.idOnA = j;
-	  newWitness.idOnB = i;
-	  newWitness.paramOnA = intersectionParamThisEdge;
-	  newWitness.paramOnB = dot(edgeDir, 
-	      newWitness.point2 - BVertices[edges[i*2]]) / edgeLength;
-
-	  // Set witness normal direction. Can't use "normal", because
-	  // it may be zero.
-	  // If cross product of edges points into A, reverse it
-	  if (crossVecs[j].x * edgeManifoldComponentsX[j] <= 0 &&
-	      crossVecs[j].y * edgeManifoldComponentsY[j] <= 0 && 
-	      crossVecs[j].z * edgeManifoldComponentsZ[j] <= 0) {
-	    newWitness.normal = crossVecs[j];
-	  }
-	  else {
-	    newWitness.normal = -crossVecs[j];
-	  }
-
-	  newWitness.distance = distance;
-	  edgeWitnesses.push_back(newWitness);
-	}
+	Witness newWitness;
+	newWitness.point1 = AVerts[edges[j*2]] + AEdges[j]*intersectionParamThisEdge;
+	newWitness.point2 = newWitness.point1 + directionOutOfA*distance;
+	newWitness.typeOnA = WITNESS_EDGE;
+	newWitness.typeOnB = WITNESS_EDGE;
+	newWitness.idOnA = j;
+	newWitness.idOnB = i;
+	newWitness.paramOnA = intersectionParamThisEdge;
+	newWitness.paramOnB = dot(edgeDir, 
+	    newWitness.point2 - BVertices[edges[i*2]]) / edgeLength;
+	newWitness.normal = directionOutOfA;
+	newWitness.distance = distance;
+	edgeWitnesses.push_back(newWitness);
       }
     }
     else {
       // Two vertices essentially intersecting
+      // Should be handled by face-vertex case
     }
   }
+    }
   }
 }
 
@@ -2179,14 +2216,15 @@ getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon)
 {
   // Note: assumes the polygon is in the xy-plane, positive w.r.t. z
   double bestDistSq = FLT_MAX;
+  double closestInside = -FLT_MAX;
   for (unsigned int i = 0; i < polygon.size(); i++) {
     unsigned int iplus = (i == polygon.size()-1 ? 0 : i + 1);
     Vector3 edge = polygon[iplus]-polygon[i];
+    double edgeLength = length(edge);
     Vector3 offset = ref - polygon[i];
     double distance = cross(offset, edge).z;
+    distance /= edgeLength;
     if (distance > 0.0) {
-      double edgeLength = length(edge);
-      distance /= edgeLength;
       double distanceSq = distance * distance;
       if (dot(offset,edge)/edgeLength > edgeLength) {
 	distanceSq = (ref.x-polygon[iplus].x)*(ref.x-polygon[iplus].x) +
@@ -2203,13 +2241,18 @@ getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon)
 	bestDistSq = distanceSq;
       }
     }
+    else {
+      if (distance > closestInside) {
+	closestInside = distance;
+      }
+    }
   }
 
   if (bestDistSq != FLT_MAX) {
     return sqrt(bestDistSq);
   }
   else {
-    return 0.0;
+    return closestInside;
   }
 }
 
