@@ -30,7 +30,7 @@
 
   
   (:types 
-   room label widget feature  model-slot - object
+   place label widget feature  model-slot - object
    model - (either widget feature) 
    )
 
@@ -45,8 +45,8 @@
   
   (:predicates 
 
-   ;; Has a room been explored?
-   (explored ?p - room) ;; Dora-1.0 -- 2009
+   ;; Has a place been explored?
+   (explored ?p - place) ;; Dora-1.0 -- 2009
 
 
    ;; (see also function symbol "foregrounded_mode", and action
@@ -65,14 +65,14 @@
    (deletable ?s - model-slot)
    
 
-   (connected ?p1 - room ?p2 - room) ;; Dora-1.0 -- 2009
+   (connected ?p1 - place ?p2 - place) ;; Dora-1.0 -- 2009
 
 
    ;; The location at which a widget is located.
-   (widget-location ?o - widget ?p - room) ;; Dora-2.0
+   (widget-location ?o - widget ?p - place) ;; Dora-2.0
 
    ;; The location at which a feature (shelf/poster/etc) is located.
-   (featured-at ?model - feature ?location - room) ;; Dora-2.0
+   (featured-at ?model - feature ?location - place) ;; Dora-2.0
    )
 
 
@@ -81,11 +81,11 @@
   ;; characterise aspects of the robots observation status.
   (:s-functions
    
-   ;; The natural langauge lable of a room.
-   (labelled ?r - room) - label ;; Dora-2.0
+   ;; The natural langauge lable of a place.
+   (labelled ?r - place) - label ;; Dora-2.0
 
    ;; Location of the robot
-   (located) - room ;; Dora-1.0 -- 2009 [agent free]
+   (located) - place ;; Dora-1.0 -- 2009 [agent free]
    
    ;; Reward that has been received so far...
    (reward) - double
@@ -106,14 +106,14 @@
    )
 
   
-   (probability__observe_feature_at_room_with_label__if_true ?loc - room ?m - feature ?l - label) - double
-   (probability__observe_feature_at_room_with_label__if_feature_false ?loc - room ?m - feature ?l - label) - double
+   (probability__observe_feature_at_place_with_label__if_true ?loc - place ?m - feature ?l - label) - double
+   (probability__observe_feature_at_place_with_label__if_feature_false ?loc - place ?m - feature ?l - label) - double
    
 
   
   (:percepts
    
-   (observed_model_at_room ?n - room ?m - model)
+   (observed_model_at_place ?n - place ?m - model)
 
    )
 
@@ -160,9 +160,9 @@
   ;; because reward is impossible to achieve if this action fails even
   ;; once.
   (:action commit__widget_location 
-	   :parameters (?w - widget ?loc - room)
+	   :parameters (?w - widget ?loc - place)
 
-	   :precondition (forall (?loc2 - room) 
+	   :precondition (forall (?loc2 - place) 
 				 (not (absolute_belief__widget_location ?w ?loc2)))
 
 	   :effect (and (absolute_belief__widget_location ?w ?loc)
@@ -172,8 +172,8 @@
   
   
   ;; Dora-1.0 -- 2009 
-  (:action explore-room
-	   :parameters (?loc - room)
+  (:action explore-place
+	   :parameters (?loc - place)
 	   :precondition (and
 			  (= (located) ?loc)
 			  )
@@ -181,8 +181,8 @@
 	   )
 
   ;;  Dora-1.0 -- 2009 
-  (:action move-to-explored-room
-	   :parameters (?to - room ?from - room)
+  (:action move-to-explored-place
+	   :parameters (?to - place ?from - place)
 	   :precondition 
 	   (and
 	    (= (located) ?from)
@@ -195,8 +195,8 @@
 	   )
 
   ;;  Dora-1.0 -- 2009 
-  (:action move-to-connected-room
-	   :parameters (?to - room ?from - room)
+  (:action move-to-connected-place
+	   :parameters (?to - place ?from - place)
 	   :precondition 
 	   (and
 	    (= (located) ?from)
@@ -213,42 +213,42 @@
   
   (:observe reset_model_observations__on_state
 	    :parameters 
-	    (?loc - room ?m - model)
+	    (?loc - place ?m - model)
 	    
 	    :execution
 	    ()
 
 	    :precondition
-	    (and (observed_model_at_room ?loc ?m)
+	    (and (observed_model_at_place ?loc ?m)
 		 (forall (?s - model-slot) (not (= (foregrounded-model ?s) ?m))) )
 
 	    
 	    :effect 
-	    (and (not (observed_model_at_room ?loc ?m)))
+	    (and (not (observed_model_at_place ?loc ?m)))
 	    )
 
   
   (:observe reset_model_observations__on_execution
 	    :parameters 
-	    (?loc - room ?m - model)
+	    (?loc - place ?m - model)
 	    
 	    :execution
-	    (not (explore-room ?loc))
+	    (not (explore-place ?loc))
 
 	    :precondition
-	    (and (observed_model_at_room ?loc ?m))
+	    (and (observed_model_at_place ?loc ?m))
 	    
 	    :effect 
-	    (and (not (observed_model_at_room ?loc ?m)))
+	    (and (not (observed_model_at_place ?loc ?m)))
 	    )
 
 
   (:observe model_widget
 	    :parameters 
-	    (?location - room ?l - label ?model - widget)
+	    (?location - place ?l - label ?model - widget)
 	    
 	    :execution
-	    (explore-room ?location)
+	    (explore-place ?location)
 	    
 	    :precondition 
 	    (and 
@@ -262,14 +262,14 @@
 	     (when (widget-location ?model ?location) 
 	       (probabilistic 
 		(probability__observe_widget_model_at_label__if_true ?l ?model) 
-		(observed_model_at_room ?location ?model)
+		(observed_model_at_place ?location ?model)
 		)
 	       )
 
 	     (when (not (widget-location ?model ?location) )
 	       (probabilistic 
 		(probability__observe_widget_model_at_label__if_false ?l ?model) 
-		(observed_model_at_room ?location ?model)
+		(observed_model_at_place ?location ?model)
 		)
 	       )
 	     )
@@ -279,10 +279,10 @@
   
   (:observe model_feature
 	    :parameters 
-	    (?location - room ?l - label ?model - feature)
+	    (?location - place ?l - label ?model - feature)
 	    
 	    :execution
-	    (explore_room ?location)
+	    (explore_place ?location)
 	    
 	    :precondition 
 	    (and 
@@ -296,16 +296,16 @@
 	     (when (and (featured-at ?model ?location)
 			(= (labelled ?location) ?l))
 	       (probabilistic 
-		(probability__observe_feature_at_room_with_label__if_true ?location ?model ?l) 
-		(observed_model_at_room ?location ?model)
+		(probability__observe_feature_at_place_with_label__if_true ?location ?model ?l) 
+		(observed_model_at_place ?location ?model)
 		)
 	       )
 	     
 	     (when (and (not (featured-at ?model ?location))
 			(= (labelled ?location) ?l))
 	       (probabilistic 
-		(probability__observe_feature_at_room_with_label__if_feature_false ?location ?model ?l) 
-		(observed_model_at_room ?location ?model)
+		(probability__observe_feature_at_place_with_label__if_feature_false ?location ?model ?l) 
+		(observed_model_at_place ?location ?model)
 		)
 	       )
 	    )
