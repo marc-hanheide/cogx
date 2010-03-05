@@ -206,7 +206,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		if (polStateOutput == 0 && currentPfY > chunk.objectPose.p.v2) //polyflap Y position decreases
 			polStateOutput = -0.5;
 		
-		cout << "polStateOutput: " << polStateOutput << endl;
+// 		cout << "polStateOutput: " << polStateOutput << endl;
 		currentPfRoll = obRoll;
 		currentPfY = chunk.objectPose.p.v2;
 
