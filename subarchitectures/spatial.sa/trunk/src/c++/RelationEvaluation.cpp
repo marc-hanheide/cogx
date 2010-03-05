@@ -10,11 +10,6 @@ using namespace cogx::Math;
 
 namespace spatial {
 
-double patchThreshold = 0.020;
-double outsideDistanceFalloff = 0.04;
-double insideDistanceFalloff = 0.02;
-double COMDistanceFalloff = 0.1;
-
 double
 evaluateOnness(const Object *objectS, const Object *objectO)
 {
@@ -72,50 +67,58 @@ evaluateOnness(const Object *objectS, const Object *objectO)
 
   normalise(witness.normal);
 
-  double distanceProportion = abs(witness.distance)/patchThreshold;
-  if (distanceProportion > 1.0) {
-    distanceProportion = 1.0;
-  }
-
   double contactOnness = 0.0;
-  if (distanceProportion < 1.0)  {
-    // Put patch and pose in one plane
-    if (witness.normal.z > 0) {
-      contactOnness = witness.normal.z;
-      for (unsigned int i = 0; i < patch.size(); i++) {
-	patch[i].z = objectO->pose.pos.z;
-      }
-    }
-    //	else {
-    //	  vector<Vector3> tmpPatch(patch.size());
-    //	  for (unsigned int i = 0; i < patch.size(); i++) {
-    //	    tmpPatch[patch.size()-i-1].z = Obox->pose.pos.z;
-    //	  }
-    //	  std::copy(tmpPatch.begin(), tmpPatch.end(), patch.begin());
-    //	}
+  // Put patch and pose in one plane
+  if (witness.normal.z > 0) {
+    contactOnness = witness.normal.z;
+//    contactOnness = contactOnness*contactOnness;
+  }
+  //	else {
+  //	  vector<Vector3> tmpPatch(patch.size());
+  //	  for (unsigned int i = 0; i < patch.size(); i++) {
+  //	    tmpPatch[patch.size()-i-1].z = Obox->pose.pos.z;
+  //	  }
+  //	  std::copy(tmpPatch.begin(), tmpPatch.end(), patch.begin());
+  //	}
 
-    // TODO: Weigh inclination influence based on patch size
-    if (contactOnness > 0.0) {
-      double COMDistance = getDistanceToPolygon(objectO->pose.pos, 
-	  patch);
-      if (COMDistance > 0.0) {
-	contactOnness /= (1+COMDistance/COMDistanceFalloff);
-      }
+  if (contactOnness > 0.0) {
+    double COMDistance;
+    if (patch.size() > 2) {
+    for (unsigned int i = 0; i < patch.size(); i++) {
+      patch[i].z = objectO->pose.pos.z;
+    }
+    COMDistance = getDistanceToPolygon(objectO->pose.pos, 
+	patch);
+    }
+    else {
+      //No patch; just take the horizontal distance to the
+      //closest point
+      //NOTE: this is not really the shortest distance from the
+      //COM to an "almost-patch" - but the distance penalty
+      //should hopefully make sure any discontinuity isn't too
+      //jarring.
+
+      Vector3 tmp = objectO->pose.pos - witness.point1;
+      tmp.z = 0;
+      COMDistance = length(tmp);
+    }
+    if (COMDistance > 0.0) {
+      contactOnness /= (1+COMDistance/supportCOMContainmentSteepness);
     }
   }
 
   double distanceOnness;
   if (witness.distance > 0.0) {
-    distanceOnness = witness.distance/outsideDistanceFalloff;
+//    distanceOnness = witness.distance/distanceFalloffOutside;
+    distanceOnness = exp(-witness.distance/distanceFalloffOutside)*1.3591;
   }
   else {
-    distanceOnness = witness.distance/insideDistanceFalloff;
+//    distanceOnness = witness.distance/distanceFalloffInside;
+    distanceOnness = exp(witness.distance/distanceFalloffInside)*1.3591;
   }
-  distanceOnness = 1/(1+distanceOnness*distanceOnness);
+//  distanceOnness = 1/(1+distanceOnness*distanceOnness);
 
-  return distanceProportion * distanceOnness + 
-    (1-distanceProportion) * contactOnness;
-
+  return min(distanceOnness, contactOnness);
 
   // Old version onness below here!
 
@@ -1759,7 +1762,8 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
     //patch.
     double BFaceVertexDistances[4];
     Vector3 AFaceCorner = AVertices[FaceVertexNeighbors[bestFaceOnA*4]];
-    Vector3 AFaceNormal = boxA.pose.rot * faceNormals[bestFaceOnA];
+//    Vector3 AFaceNormal = boxA.pose.rot * faceNormals[bestFaceOnA];
+    Vector3 AFaceNormal = faceNormals[bestFaceOnA];
     int lowestAcceptedVertex = -1;
     for (int i = 0; i < 4; i++) {
       BFaceVertexDistances[i] = dot(AFaceNormal,
@@ -2207,5 +2211,71 @@ getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon)
   else {
     return 0.0;
   }
+}
+
+void
+randomizeOrientation(Pose3 &pose)
+{
+/*======================================================================*
+ *  R A N D _ R O T A T I O N      Author: Jim Arvo, 1991               *
+ *                                                                      *
+ *  This routine maps three values (x[0], x[1], x[2]) in the range      *
+ *  [0,1] into a 3x3 rotation matrix M.  Uniformly distributed random   *
+ *  variables x0, x1, and x2 create uniformly distributed random        *
+ *  rotation matrices.  To create small uniformly distributed           *
+ *  "perturbations", supply samples in the following ranges             *
+ *                                                                      *
+ *      x[0] in [ 0, d ]                                                *
+ *      x[1] in [ 0, 1 ]                                                *
+ *      x[2] in [ 0, d ]                                                *
+ *                                                                      *
+ * where 0 < d < 1 controls the size of the perturbation.  Any of the   *
+ * random variables may be stratified (or "jittered") for a slightly    *
+ * more even distribution.                                              *
+ *                                                                      *
+ *======================================================================*/
+      // Adapted by Kristoffer Sjöö
+  float x[] = {((float)rand())/RAND_MAX, ((float)rand())/RAND_MAX, 
+    ((float)rand())/RAND_MAX};
+    float theta = x[0] * M_PI*2; /* Rotation about the pole (Z).      */
+    float phi   = x[1] * M_PI*2; /* For direction of pole deflection. */
+    float z     = x[2] * 2.0;      /* For magnitude of pole deflection. */
+
+    /* Compute a vector V used for distributing points over the sphere  */
+    /* via the reflection I - V Transpose(V).  This formulation of V    */
+    /* will guarantee that if x[1] and x[2] are uniformly distributed,  */
+    /* the reflected points will be uniform on the sphere.  Note that V */
+    /* has length sqrt(2) to eliminate the 2 in the Householder matrix. */
+
+    float r  = sqrt( z );
+    float Vx = sin( phi ) * r;
+    float Vy = cos( phi ) * r;
+    float Vz = sqrt( 2.0 - z );    
+
+    /* Compute the row vector S = Transpose(V) * R, where R is a simple */
+    /* rotation by theta about the z-axis.  No need to compute Sz since */
+    /* it's just Vz.                                                    */
+
+    float st = sin( theta );
+    float ct = cos( theta );
+    float Sx = Vx * ct - Vy * st;
+    float Sy = Vx * st + Vy * ct;
+
+    /* Construct the rotation matrix  ( V Transpose(V) - I ) R, which   */
+    /* is equivalent to V S - R.                                        */
+
+    float rowMajor[] = {Vx * Sx - ct,
+     Vx * Sy - st,
+     Vx * Vz,
+
+     Vy * Sx + st,
+     Vy * Sy - ct,
+     Vy * Vz,
+
+     Vz * Sx,
+     Vz * Sy,
+     1.0 - z};   /* This equals Vz * Vz - 1.0 */
+
+    setRow33(pose.rot, rowMajor);
 }
 };
