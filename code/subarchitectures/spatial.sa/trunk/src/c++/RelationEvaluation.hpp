@@ -11,16 +11,16 @@ using namespace cogx::Math;
 namespace spatial {
 
 extern double patchThreshold;
-extern double outsideDistanceFalloff;
-extern double insideDistanceFalloff;
-extern double COMDistanceFalloff;
+extern double distanceFalloffOutside;
+extern double distanceFalloffInside;
+extern double supportCOMContainmentOffset;
+extern double supportCOMContainmentSteepness;
+
 // Old parameters
 extern double squareDistanceWeight;
 extern double squareDistanceFalloff;
 
-extern double supportCOMContainmentOffset;
 extern double supportCOMContainmentWeight;
-extern double supportCOMContainmentSteepness;
 
 extern double bottomCOMContainmentOffset;
 extern double bottomCOMContainmentWeight;
@@ -112,5 +112,8 @@ void
 getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
     const std::vector<Vector3> & BEdges, std::vector<Witness> &edgeWitnesses,
     bool intersecting);
+
+void
+randomizeOrientation(Pose3 &pose);
 };
 #endif //RelationEvaluation_hpp

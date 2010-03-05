@@ -42,20 +42,22 @@ extern "C" {
 }
 
 namespace spatial {
-double squareDistanceWeight			= 1.0;
-// Square distance at which onness drops by half
-double squareDistanceFalloff			= 0.03; 
+double patchThreshold = 0.020;
 
+// Distance at which onness drops by half
+double distanceFalloffOutside			= 0.015; 
+double distanceFalloffInside			= 0.01; 
+
+double supportCOMContainmentSteepness		= 0.02;
+
+//Old params;unused
 double supportCOMContainmentOffset		= 0.5;
+double squareDistanceWeight			= 1.0;
 double supportCOMContainmentWeight		= 1.0;
-double supportCOMContainmentSteepness		= 5.0;
-
 double bottomCOMContainmentOffset		= 0.0;
 double bottomCOMContainmentWeight		= 1.0;
 double bottomCOMContainmentSteepness		= 1.0;
-
 double planeInclinationWeight			= 1.0;
-
 double overlapWeight				= 1.0;
 };
 
@@ -282,11 +284,11 @@ void ObjectRelationManager::runComponent()
   peekabot::SphereProxy sqdp;
   peekabot::SphereProxy scwp;
   peekabot::SphereProxy bcwp;
-  peekabot::SphereProxy pip;
+//  peekabot::SphereProxy pip;
   peekabot::SphereProxy op;
-  peekabot::CubeProxy dfp;
+//  peekabot::CubeProxy dfp;
   peekabot::CubeProxy csp;
-  peekabot::CubeProxy cop;
+//  peekabot::CubeProxy cop;
   peekabot::PolygonProxy pp;
   peekabot::CubeProxy bp;
   peekabot::CubeProxy bp2;
@@ -312,31 +314,31 @@ void ObjectRelationManager::runComponent()
     peekabot::GroupProxy sliders;
     sliders.add(m_onnessTester, "weights", peekabot::REPLACE_ON_CONFLICT);
 
-    sqdp.add(sliders, "squareDistance", peekabot::REPLACE_ON_CONFLICT);
-    sqdp.translate(-1.0, 6.0, squareDistanceWeight);
+    sqdp.add(sliders, "squareDistanceOutside", peekabot::REPLACE_ON_CONFLICT);
+    sqdp.translate(-1.0, 6.0, 10*distanceFalloffOutside);
     sqdp.set_scale(0.1);
-    scwp.add(sliders, "supportEdge", peekabot::REPLACE_ON_CONFLICT);
-    scwp.translate(0.0, 6.0, supportCOMContainmentWeight);
+    scwp.add(sliders, "squareDistanceInside", peekabot::REPLACE_ON_CONFLICT);
+    scwp.translate(0.0, 6.0, 10*distanceFalloffInside);
     scwp.set_scale(0.1);
-    bcwp.add(sliders, "bottomEdge", peekabot::REPLACE_ON_CONFLICT);
-    bcwp.translate(1.0, 6.0, bottomCOMContainmentWeight);
+    bcwp.add(sliders, "patchThreshold", peekabot::REPLACE_ON_CONFLICT);
+    bcwp.translate(1.0, 6.0, 10*patchThreshold);
     bcwp.set_scale(0.1);
-    pip.add(sliders, "planeInclination", peekabot::REPLACE_ON_CONFLICT);
-    pip.translate(2.0, 6.0, planeInclinationWeight);
-    pip.set_scale(0.1);
-    op.add(sliders, "overlap", peekabot::REPLACE_ON_CONFLICT);
-    op.translate(3.0, 6.0, overlapWeight);
-    op.set_scale(0.1);
+//    pip.add(sliders, "COMDistanceFalloff", peekabot::REPLACE_ON_CONFLICT);
+//    pip.translate(2.0, 6.0, COMDistanceFalloff);
+//    pip.set_scale(0.1);
+//    op.add(sliders, "overlap", peekabot::REPLACE_ON_CONFLICT);
+//    op.translate(3.0, 6.0, overlapWeight);
+//    op.set_scale(0.1);
 
-    dfp.add(sliders, "distanceFalloff", peekabot::REPLACE_ON_CONFLICT);
-    dfp.translate(-1.0, 6.0, squareDistanceFalloff);
-    dfp.set_scale(0.1);
+//    dfp.add(sliders, "distanceFalloff", peekabot::REPLACE_ON_CONFLICT);
+//    dfp.translate(-1.0, 6.0, squareDistanceFalloff);
+//    dfp.set_scale(0.1);
     csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
-    csp.translate(0.0, 6.0, supportCOMContainmentSteepness);
+    csp.translate(0.0, 6.0, 10*supportCOMContainmentSteepness);
     csp.set_scale(0.1);
-    cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
-    cop.translate(0.0, 6.0, supportCOMContainmentOffset);
-    cop.set_scale(0.1);
+//    cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
+//    cop.translate(0.0, 6.0, supportCOMContainmentOffset);
+//    cop.set_scale(0.1);
 
     pp.add(m_onnessTester, "table", peekabot::REPLACE_ON_CONFLICT);
     pp.add_vertex(table1.radius1, table1.radius2, 0);
@@ -365,6 +367,11 @@ void ObjectRelationManager::runComponent()
     spm2.set_opacity(0.3);
   }
 
+  peekabot::PointCloudProxy pcloud;
+  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+  int nPoints = 0;
+  int maxPoints = 1000;
+
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
     // long enough
@@ -386,28 +393,28 @@ void ObjectRelationManager::runComponent()
     if (m_bTestOnness) {
       peekabot::Result<peekabot::Vector3f> vr;
       vr = sqdp.get_position();
-      if (vr.succeeded()) squareDistanceWeight= vr.get_result()(2);
+      if (vr.succeeded()) distanceFalloffOutside= 0.1*vr.get_result()(2);
       vr = scwp.get_position();
-      if (vr.succeeded()) supportCOMContainmentWeight = vr.get_result()(2);
+      if (vr.succeeded()) distanceFalloffInside = 0.1*vr.get_result()(2);
       vr = bcwp.get_position();
-      if (vr.succeeded()) bottomCOMContainmentWeight = vr.get_result()(2);
-      vr = pip.get_position();
-      if (vr.succeeded()) planeInclinationWeight = vr.get_result()(2);
-      vr = op.get_position();
-      if (vr.succeeded()) overlapWeight = vr.get_result()(2);
+      if (vr.succeeded()) patchThreshold = 0.1*vr.get_result()(2);
+//      vr = pip.get_position();
+//      if (vr.succeeded()) COMDistanceFalloff = vr.get_result()(2);
+//      vr = op.get_position();
+//      if (vr.succeeded()) overlapWeight = vr.get_result()(2);
 
-      vr = dfp.get_position();
-      if (vr.succeeded()) squareDistanceFalloff = vr.get_result()(2);
+//      vr = dfp.get_position();
+//      if (vr.succeeded()) squareDistanceFalloff = vr.get_result()(2);
       vr = csp.get_position();
       if (vr.succeeded()) {
-	bottomCOMContainmentSteepness = 
-	  supportCOMContainmentSteepness = vr.get_result()(2);
+//	bottomCOMContainmentSteepness = 
+	  supportCOMContainmentSteepness = 0.1*vr.get_result()(2);
       }
-      vr = cop.get_position();
-      if (vr.succeeded()) {
-	bottomCOMContainmentOffset = 
-	  supportCOMContainmentOffset = vr.get_result()(2);
-      }
+//      vr = cop.get_position();
+//      if (vr.succeeded()) {
+//	bottomCOMContainmentOffset = 
+//	  supportCOMContainmentOffset = vr.get_result()(2);
+//      }
 
 
       peekabot::Result<peekabot::Matrix4f> r;
@@ -452,6 +459,8 @@ void ObjectRelationManager::runComponent()
 	spm.translate(0.0, 3.0, 1.0);
 	spm.set_opacity(0.3);
 
+	
+
 	r = bp2.get_transformation(peekabot::WORLD_COORDINATES);
 	if (r.succeeded()) {
 	  Pose3 boxPose;
@@ -495,15 +504,15 @@ void ObjectRelationManager::runComponent()
 	      patchp.add_vertex(it->x, it->y, it->z);
 	    }
 	  }
-	  peekabot::CylinderProxy normp;
-	  normp.add(m_onnessTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
-	  normp.set_color(0,0,1);
-	  normp.set_scale(0.005, 0.005, 0.1);
-	  normp.translate(0.05,0,0);
-	  normp.set_orientation(witness.normal.x, witness.normal.y, witness.normal.z);
-	  normp.rotate(M_PI/2, 0, 1, 0);
-	  normp.translate(witness.point1.x, witness.point1.y, witness.point1.z,
-	      peekabot::PARENT_COORDINATES);
+//	  peekabot::CylinderProxy normp;
+//	  normp.add(m_onnessTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
+//	  normp.set_color(0,0,1);
+//	  normp.set_scale(0.005, 0.005, 0.1);
+//	  normp.translate(0.05,0,0);
+//	  normp.set_orientation(witness.normal.x, witness.normal.y, witness.normal.z);
+//	  normp.rotate(M_PI/2, 0, 1, 0);
+//	  normp.translate(witness.point1.x, witness.point1.y, witness.point1.z,
+//	      peekabot::PARENT_COORDINATES);
 
 
 	  peekabot::SphereProxy witp1;
@@ -514,9 +523,34 @@ void ObjectRelationManager::runComponent()
 	  witp2.add(m_onnessTester, "Witness 2", peekabot::REPLACE_ON_CONFLICT);
 	  witp2.translate(witness.point2.x, witness.point2.y, witness.point2.z);
 	  witp2.set_scale(0.01);
-	}
 
 
+
+	  if (nPoints > maxPoints) {
+	    pcloud.clear_vertices();
+	    nPoints = 0;
+	  }
+  Pose3 oldPose = box1.pose;
+	  for (int i = 0; i < 500; i++) {
+  double frameRadius = box2.radius1 > box2.radius2 ?
+    box2.radius1 : box2.radius2;
+  frameRadius = frameRadius > box2.radius3 ? 
+    frameRadius : box2.radius3;
+  vector<Vector3> points;
+  box1.pose.pos.x = (((double)rand())/RAND_MAX - 0.5) * frameRadius * 1.5 * 2 + box2.pose.pos.x;
+  box1.pose.pos.y = (((double)rand())/RAND_MAX - 0.5) * frameRadius * 1.5 * 2 + box2.pose.pos.y;
+  box1.pose.pos.z = (((double)rand())/RAND_MAX - 0.5) * frameRadius * 2 * 2 + box2.pose.pos.z + frameRadius;
+
+  randomizeOrientation(box1.pose);
+
+  if (evaluateOnness(&box2, &box1) > 0.5) { //((double)rand())/RAND_MAX)   
+    pcloud.add_vertex(box1.pose.pos.x, box1.pose.pos.y, box1.pose.pos.z);
+    nPoints++;
+  }
+	  }
+    box1.pose = oldPose;
+
+      }
       }
     } // if (m_bTestOnness)
 
