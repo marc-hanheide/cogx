@@ -99,7 +99,7 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon);
 
 Witness
 findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
-    std::vector<Vector3> *outPatch = 0);
+    std::vector<Vector3> *outPatch = 0, double *maxPatchClearance = 0);
 
 bool
 isIntersecting(double wr, double dr, double hr, const Vector3[]);
