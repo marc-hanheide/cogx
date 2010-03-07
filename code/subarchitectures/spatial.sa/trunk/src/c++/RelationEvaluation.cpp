@@ -118,11 +118,11 @@ evaluateOnness(const Object *objectS, const Object *objectO)
   double distanceOnness;
   if (witness.distance > 0.0) {
 //    distanceOnness = witness.distance/distanceFalloffOutside;
-    distanceOnness = exp(-witness.distance/distanceFalloffOutside)*1.3591;
+    distanceOnness = exp(-witness.distance/distanceFalloffOutside * 0.301029996);
   }
   else {
 //    distanceOnness = witness.distance/distanceFalloffInside;
-    distanceOnness = exp(witness.distance/distanceFalloffInside)*1.3591;
+    distanceOnness = exp(witness.distance/distanceFalloffInside * 0.3010129996);
   }
 //  distanceOnness = 1/(1+distanceOnness*distanceOnness);
 
