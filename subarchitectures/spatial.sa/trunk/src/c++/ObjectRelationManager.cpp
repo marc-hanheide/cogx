@@ -45,8 +45,8 @@ namespace spatial {
 double patchThreshold = 0.020;
 
 // Distance at which onness drops by half
-double distanceFalloffOutside			= 0.015; 
-double distanceFalloffInside			= 0.01; 
+double distanceFalloffOutside			= 0.01; 
+double distanceFalloffInside			= 0.007; 
 
 double supportCOMContainmentSteepness		= 1;
 double supportCOMContainmentOffset		= 0.5;
@@ -260,6 +260,8 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
+  fstream outfile("samples.csv", ios::out); 
+
   peekabot::GroupProxy root;
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
@@ -370,7 +372,9 @@ void ObjectRelationManager::runComponent()
   peekabot::PointCloudProxy pcloud;
   pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
   int nPoints = 0;
-  int maxPoints = 1000;
+  vector<Vector3> points;
+  int maxPoints = 5500;
+  points.reserve(maxPoints);
 
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
@@ -398,22 +402,22 @@ void ObjectRelationManager::runComponent()
       if (vr.succeeded()) distanceFalloffInside = 0.1*vr.get_result()(2);
       vr = bcwp.get_position();
       if (vr.succeeded()) patchThreshold = 0.1*vr.get_result()(2);
-//      vr = pip.get_position();
-//      if (vr.succeeded()) COMDistanceFalloff = vr.get_result()(2);
-//      vr = op.get_position();
-//      if (vr.succeeded()) overlapWeight = vr.get_result()(2);
+      //      vr = pip.get_position();
+      //      if (vr.succeeded()) COMDistanceFalloff = vr.get_result()(2);
+      //      vr = op.get_position();
+      //      if (vr.succeeded()) overlapWeight = vr.get_result()(2);
 
-//      vr = dfp.get_position();
-//      if (vr.succeeded()) squareDistanceFalloff = vr.get_result()(2);
+      //      vr = dfp.get_position();
+      //      if (vr.succeeded()) squareDistanceFalloff = vr.get_result()(2);
       vr = csp.get_position();
       if (vr.succeeded()) {
-//	bottomCOMContainmentSteepness = 
-	  supportCOMContainmentSteepness = 0.1*vr.get_result()(2);
+	//	bottomCOMContainmentSteepness = 
+	supportCOMContainmentSteepness = 0.1*vr.get_result()(2);
       }
       vr = cop.get_position();
       if (vr.succeeded()) {
-//	bottomCOMContainmentOffset = 
-	  supportCOMContainmentOffset = vr.get_result()(2);
+	//	bottomCOMContainmentOffset = 
+	supportCOMContainmentOffset = vr.get_result()(2);
       }
 
 
@@ -459,7 +463,7 @@ void ObjectRelationManager::runComponent()
 	spm.translate(0.0, 3.0, 1.0);
 	spm.set_opacity(0.3);
 
-	
+
 
 	r = bp2.get_transformation(peekabot::WORLD_COORDINATES);
 	if (r.succeeded()) {
@@ -504,15 +508,15 @@ void ObjectRelationManager::runComponent()
 	      patchp.add_vertex(it->x, it->y, it->z);
 	    }
 	  }
-//	  peekabot::CylinderProxy normp;
-//	  normp.add(m_onnessTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
-//	  normp.set_color(0,0,1);
-//	  normp.set_scale(0.005, 0.005, 0.1);
-//	  normp.translate(0.05,0,0);
-//	  normp.set_orientation(witness.normal.x, witness.normal.y, witness.normal.z);
-//	  normp.rotate(M_PI/2, 0, 1, 0);
-//	  normp.translate(witness.point1.x, witness.point1.y, witness.point1.z,
-//	      peekabot::PARENT_COORDINATES);
+	  //	  peekabot::CylinderProxy normp;
+	  //	  normp.add(m_onnessTester, "Normal", peekabot::REPLACE_ON_CONFLICT);
+	  //	  normp.set_color(0,0,1);
+	  //	  normp.set_scale(0.005, 0.005, 0.1);
+	  //	  normp.translate(0.05,0,0);
+	  //	  normp.set_orientation(witness.normal.x, witness.normal.y, witness.normal.z);
+	  //	  normp.rotate(M_PI/2, 0, 1, 0);
+	  //	  normp.translate(witness.point1.x, witness.point1.y, witness.point1.z,
+	  //	      peekabot::PARENT_COORDINATES);
 
 
 	  peekabot::SphereProxy witp1;
@@ -525,37 +529,73 @@ void ObjectRelationManager::runComponent()
 	  witp2.set_scale(0.01);
 
 
-/*
-	  if (nPoints > maxPoints) {
-	    pcloud.clear_vertices();
-	    nPoints = 0;
+
+	  //	  if (nPoints > maxPoints) {
+	  //	    pcloud.clear_vertices();
+	  //	    for (vector<Vector3>::iterator it = points.begin(); it !=points.end(); it++) {
+	  //	      outfile << it->x << "," << it->y << "," << it->z << endl;
+	  //	    }
+	  //	    points.clear();
+	  //	    nPoints = 0;
+	  //	  }
+	  Pose3 oldPose = box1.pose;
+	  if (nPoints < maxPoints) {
+	    //  double frameRadius = box2.radius1 > box2.radius2 ?
+	    //    box2.radius1 : box2.radius2;
+	    //  frameRadius = frameRadius > box2.radius3 ? 
+	    //    frameRadius : box2.radius3;
+	    //  Object *supportObject = &box2;
+	    //  double maxLateral = -frameRadius*1.5;
+	    //  double minVertical = -frameRadius*1.5;
+	    //  double maxVertical = frameRadius*3;
+	    double frameRadius = table1.radius1 > table1.radius2 ?
+	      table1.radius1 : table1.radius2;
+	    spatial::Object *supportObject = &table1;
+	    double maxLateral = -frameRadius*1.5;
+	    double minVertical = -0.5;
+	    double maxVertical = 1.0;
+
+	    //	  for (int i = 0; i < 500; i++) {
+	    //  box2.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
+	    //  box2.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+	    //  box2.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+	    //  randomizeOrientation(box2.pose);
+	    //  if (evaluateOnness(supportObject, &box2) > 0.5) { 
+	    //  double frameRadius = box2.radius1 > box2.radius2 ?
+	    //    box2.radius1 : box2.radius2;
+	    //  frameRadius = frameRadius > box2.radius3 ? 
+	    //    frameRadius : box2.radius3;
+	    //  spatial::Object *supportObject = &box2;
+	    //  double maxLateral = -frameRadius*1.5;
+	    //  double minVertical = -frameRadius*1.5;
+	    //  double maxVertical = frameRadius*3;
+	    for (int j = 0; j < 500; j++) {
+
+	      box1.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
+	      box1.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+	      box1.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+
+	      randomizeOrientation(box1.pose);
+
+	      if (evaluateOnness(supportObject, &box1) > 0.5) { 
+		//  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
+		//    if (nPoints > 500) 
+		pcloud.add_vertex(box1.pose.pos.x, box1.pose.pos.y, box1.pose.pos.z);
+		//    points.push_back(box1.pose.pos);
+		nPoints++;
+	      }
+	    }
 	  }
-  Pose3 oldPose = box1.pose;
-	  for (int i = 0; i < 500; i++) {
-  double frameRadius = box2.radius1 > box2.radius2 ?
-    box2.radius1 : box2.radius2;
-  frameRadius = frameRadius > box2.radius3 ? 
-    frameRadius : box2.radius3;
-  vector<Vector3> points;
-  box1.pose.pos.x = (((double)rand())/RAND_MAX - 0.5) * frameRadius * 1.5 * 2 + box2.pose.pos.x;
-  box1.pose.pos.y = (((double)rand())/RAND_MAX - 0.5) * frameRadius * 1.5 * 2 + box2.pose.pos.y;
-  box1.pose.pos.z = (((double)rand())/RAND_MAX - 0.5) * frameRadius * 2 * 2 + box2.pose.pos.z + frameRadius;
+	  box1.pose = oldPose;
+	  //  }
 
-  randomizeOrientation(box1.pose);
 
-  if (evaluateOnness(&box2, &box1) > 0.5) { //((double)rand())/RAND_MAX)   
-    pcloud.add_vertex(box1.pose.pos.x, box1.pose.pos.y, box1.pose.pos.z);
-    nPoints++;
-  }
-	  }
-    box1.pose = oldPose;
-    */
-
-      }
+	  //      }
+	}
       }
     } // if (m_bTestOnness)
 
-    sleepComponent(500);
+      //    sleepComponent(100);
   }
 }
 
