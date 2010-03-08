@@ -9,9 +9,9 @@ CPP TM AlwaysPositiveTaskManager
 
 CPP MG trans.process TranslationProcess --log
 
-CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/mrchips.ccf --log 
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --log 
 
-CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/mrchips.ccf --log 
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --log 
 
-CPP GD navgraph.process NavGraphProcess -c subarchitectures/nav.sa/config/mrchips.ccf --log 
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf --log 
 
