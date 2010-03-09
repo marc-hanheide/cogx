@@ -1004,7 +1004,7 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 				mConvexHullPoints.push_back(v3OnPlane);
 				mCenterOfHull += v3OnPlane;
 			}
-			mConvexHullDensity = PlanePoints3D.size() / fabs(cvContourArea(cvhull));
+			mConvexHullDensity = PlanePoints3D.size() / fabs(cvContourArea(cvhull));//cout<<"mConvexHullDensity = "<<mConvexHullDensity<<endl;
 			mCenterOfHull /= hullMat.cols;
 			mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
 // 			glEnd();
