@@ -42,11 +42,11 @@ extern "C" {
 }
 
 namespace spatial {
-double patchThreshold = 0.020;
+double patchThreshold = 0.030;
 
 // Distance at which onness drops by half
-double distanceFalloffOutside			= 0.01; 
-double distanceFalloffInside			= 0.007; 
+double distanceFalloffOutside			= 0.02; 
+double distanceFalloffInside			= 0.014; 
 
 double supportCOMContainmentSteepness		= 1;
 double supportCOMContainmentOffset		= 0.5;
@@ -66,7 +66,7 @@ ObjectRelationManager::ObjectRelationManager()
   m_bRecognitionIssuedThisStop = false;
   m_maxObjectCounter = 0;
   m_standingStillThreshold = 0.2;
-  m_recognitionTimeThreshold = 1.0;
+  m_recognitionTimeThreshold = 5.0;
   m_trackerTimeThreshold = 3.0;
   m_timeSinceLastMoved = 0.0;
 }
@@ -100,6 +100,12 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
   it = _config.find("--test-onness");
   if (it != _config.end()) {
     m_bTestOnness = true;
+  }
+
+  m_bDemoSampling = false;
+  it = _config.find("--demo-sampling");
+  if (it != _config.end()) {
+    m_bDemoSampling = true;
   }
 
   m_bNoPTZ = false;
@@ -238,7 +244,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   double deltaT = lastRobotPose->time.s +
     lastRobotPose->time.us*0.000001 - oldTime;
   double momVel = deltaT > 0 ? distMoved/deltaT : 0.0;
-  log("momVel = %f, deltaT = %f", momVel, deltaT);
+//  log("momVel = %f, deltaT = %f", momVel, deltaT);
 
   if (momVel > m_standingStillThreshold) {
     m_timeSinceLastMoved = 0.0;
@@ -246,6 +252,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
       // Signal tracking stop
       addTrackerCommand(VisionData::REMOVEMODEL, "joystick");
       addTrackerCommand(VisionData::REMOVEMODEL, "krispies");
+      addTrackerCommand(VisionData::REMOVEMODEL, "rice");
     }
     m_bRecognitionIssuedThisStop = false;
   }
@@ -388,6 +395,7 @@ void ObjectRelationManager::runComponent()
 	log("Issuing recognition commands");
 	addRecognizer3DCommand(VisionData::RECOGNIZE, "joystick", "");
 	addRecognizer3DCommand(VisionData::RECOGNIZE, "krispies", "");
+	addRecognizer3DCommand(VisionData::RECOGNIZE, "rice", "");
 	m_bRecognitionIssuedThisStop = true;
       }
 
@@ -607,18 +615,18 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
 
     if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
-      log("Got VisualObject: %s", observedObject->label.c_str());
+//      log("Got VisualObject: %s", observedObject->label.c_str());
 
       Pose3 pose = observedObject->pose;
       //Get robot pose
-//      Pose3 robotTransform;
-//      if (lastRobotPose != 0) {
-//	fromRotZ(robotTransform.rot, lastRobotPose->theta);
-//
-//	robotTransform.pos.x = lastRobotPose->x;
-//	robotTransform.pos.y = lastRobotPose->y;
-//      }
-//      transform(robotTransform, pose, pose);
+      Pose3 robotTransform;
+      if (lastRobotPose != 0) {
+	fromRotZ(robotTransform.rot, lastRobotPose->theta);
+
+	robotTransform.pos.x = lastRobotPose->x;
+	robotTransform.pos.y = lastRobotPose->y;
+      }
+      transform(robotTransform, pose, pose);
 
       // For now, assume each label represents a unique object
       int objectID = -1;
@@ -626,7 +634,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	if (it->second->label == observedObject->label) {
 	  // update object
 	  objectID = it->first;
-	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
+//	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
 	  m_visualObjectIDs[objectID] = wmc.address.id;
 	  break;
 	}
@@ -640,12 +648,12 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	m_objects[objectID] = new SpatialData::SpatialObject;
 	m_objects[objectID]->id = objectID;
 	m_objects[objectID]->label = observedObject->label;
-	m_objects[objectID]->pose = observedObject->pose;
+	m_objects[objectID]->pose = pose;
 
 	generateNewObjectModel(objectID, observedObject->label);
       }
       //    log("2");
-      if (true) {
+      if (m_bDemoSampling) {
 	int onObjectID = -1;
 	if (observedObject->label == "krispies") {
 	  // Evaluate onness for joystick object
@@ -978,6 +986,26 @@ ObjectRelationManager::recomputeOnnessForObject(int objectID)
     log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
 	it->second->label.c_str(), onness);
   }
+
+  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin();
+      it != m_objects.end(); it++) {
+    int supportObjectID = it->first;
+    if (supportObjectID != objectID) {
+
+      if (m_objectModels.find(supportObjectID) == m_objectModels.end()) {
+	log("Error! Support object model was missing!");
+	return;
+      }
+      m_objectModels[supportObjectID]->pose = 
+	m_objects[supportObjectID]->pose;
+
+      double onness = evaluateOnness(m_objectModels[supportObjectID],
+	  m_objectModels[objectID]);
+
+      log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
+	  it->second->label.c_str(), onness);
+    }
+  }
 }
 
 void
@@ -989,6 +1017,8 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
   }
 
   PlaneObject po;
+  po.type = OBJECT_PLANE;
+  po.shape = PLANE_OBJECT_RECTANGLE;
   po.pose.pos = m_planeObjects[planeObjectID]->pos;
   fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
       vector3(0.0, 0.0, 1.0));
@@ -1010,6 +1040,8 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
     }
 
     m_objectModels[objectID]->pose = m_objects[objectID]->pose;
+    log("Evaluating object %s on object %s",m_objects[objectID]->label.c_str(), 
+	m_planeObjects[planeObjectID]->label.c_str());
     double onness = evaluateOnness(&po, m_objectModels[objectID]);
     log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
 	m_planeObjects[planeObjectID]->label.c_str(), onness);
@@ -1162,6 +1194,11 @@ ObjectRelationManager::generateNewObjectModel(int objectID,
     newBoxObject->radius1 = 0.115;
     newBoxObject->radius2 = 0.105;
     newBoxObject->radius3 = 0.13;
+  }
+  else if (label == "rice") {
+    newBoxObject->radius1 = 0.075;
+    newBoxObject->radius2 = 0.023;
+    newBoxObject->radius3 = 0.095;
   }
   else  {
     newBoxObject->radius1 = 0.1;
