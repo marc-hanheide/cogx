@@ -98,20 +98,20 @@ class CConsoleAgent:
 
 
     def _initLocalProcesses(self, appOptions):
-        self.manager.addProcess(procman.CProcess("server-java", options.xe("${CMD_JAVA_SERVER}")))
-        self.manager.addProcess(procman.CProcess("server-cpp", options.xe("${CMD_CPP_SERVER}")))
-        self.manager.addProcess(procman.CProcess("server-python", options.xe("${CMD_PYTHON_SERVER}")))
-        #self.manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
+        self.manager.addProcess(procman.CProcess("server-java", self._options.xe("${CMD_JAVA_SERVER}")))
+        self.manager.addProcess(procman.CProcess("server-cpp", self._options.xe("${CMD_CPP_SERVER}")))
+        self.manager.addProcess(procman.CProcess("server-python", self._options.xe("${CMD_PYTHON_SERVER}")))
+        #self.manager.addProcess(procman.CProcess("client", self._options.xe("${CMD_CAST_CLIENT}")))
         if appOptions.player_cfg != None:
             # TODO: Player configuration (file contents) could also be sent from the remote machine
             if not os.path.exists(appOptions.player_cfg):
                 LOGGER.warn("Player configuration file '%s' not found." % appOptions.player_cfg)
             else:
-                cmd = options.xe("${CMD_PLAYER}")
+                cmd = self._options.xe("${CMD_PLAYER}")
                 cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
                 self.manager.addProcess(procman.CProcess("player", cmd))
-        #self.manager.addProcess(procman.CProcess("peekabot", options.xe("${CMD_PEEKABOT}")))
-        #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=options.xe("${COGX_BUILD_DIR}"))
+        #self.manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
+        #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
         #self.procBuild.allowTerminate = True
         #self.manager.addProcess(self.procBuild)
 
