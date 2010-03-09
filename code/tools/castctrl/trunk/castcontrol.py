@@ -149,7 +149,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     # If the file is under the COGX_ROOT directory, make it relative
     def makeConfigFileRelPath(self, fn):
-        wd = options.xe("${COGX_ROOT}")
+        wd = self._options.xe("${COGX_ROOT}")
         if wd.strip() == "": return fn
         rp = legacy.os_path_relpath("%s" % fn, wd)
         if rp.startswith(".."): return fn
@@ -183,13 +183,13 @@ class CCastControlWnd(QtGui.QMainWindow):
         return lhost
 
     def _initLocalProcesses(self):
-        self._manager.addProcess(procman.CProcess("server-java", options.xe("${CMD_JAVA_SERVER}")))
-        self._manager.addProcess(procman.CProcess("server-cpp", options.xe("${CMD_CPP_SERVER}")))
-        self._manager.addProcess(procman.CProcess("server-python", options.xe("${CMD_PYTHON_SERVER}")))
-        self._manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
-        self._manager.addProcess(procman.CProcess("player", options.xe("${CMD_PLAYER}")))
-        self._manager.addProcess(procman.CProcess("peekabot", options.xe("${CMD_PEEKABOT}")))
-        self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=options.xe("${COGX_BUILD_DIR}"))
+        self._manager.addProcess(procman.CProcess("server-java", self._options.xe("${CMD_JAVA_SERVER}")))
+        self._manager.addProcess(procman.CProcess("server-cpp", self._options.xe("${CMD_CPP_SERVER}")))
+        self._manager.addProcess(procman.CProcess("server-python", self._options.xe("${CMD_PYTHON_SERVER}")))
+        self._manager.addProcess(procman.CProcess("client", self._options.xe("${CMD_CAST_CLIENT}")))
+        self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
+        self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
+        self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
         self.procBuild.allowTerminate = True
         self._manager.addProcess(self.procBuild)
         self._processModel.rootItem.addHost(self._manager)
@@ -243,7 +243,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             stm = stm.split('#')[0]
             stm = stm.strip()
             if len(stm) < 1: continue
-            script.append(options.xe(stm))
+            script.append(self._options.xe(stm))
         for i,cmd in enumerate(script):
             # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
             procman.xrun_wait(cmd)
@@ -372,7 +372,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if p != None: p.stop()
 
     def _checkBuidDir(self):
-        workdir=options.xe("${COGX_BUILD_DIR}")
+        workdir=self._options.xe("${COGX_BUILD_DIR}")
         if not os.path.exists(workdir):
             dlg = QtGui.QErrorMessage(self)
             dlg.setModal(True)
@@ -432,8 +432,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btCmakeGui_clicked(self, valid=True):
         if not valid: return
-        root = options.xe("${COGX_ROOT}")
-        bdir = options.xe("${COGX_BUILD_DIR}")
+        root = self._options.xe("${COGX_ROOT}")
+        bdir = self._options.xe("${COGX_BUILD_DIR}")
         bcmc = os.path.join(bdir, "CMakeCache.txt")
         if not self._checkMakeCache(root, bcmc): return
         cmd = 'cmake-gui %s' % root
@@ -527,10 +527,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         procman.xrun_wait(cmd)
 
     def onStartTerminal(self):
-        root = options.xe("${COGX_ROOT}")
+        root = self._options.xe("${COGX_ROOT}")
         cmd = self._userOptions.terminalCmd
         if cmd.find("%s") > 0: cmd = cmd % root
-        procman.xrun(cmd)
+        procman.xrun(cmd, env=self._options.environ)
 
     def onEditBuildError(self):
         tcur = self.ui.buildLogfileTxt.textCursor()

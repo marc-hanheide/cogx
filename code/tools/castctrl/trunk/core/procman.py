@@ -460,12 +460,12 @@ class CProcessManager(object):
 #    finally:
 #        if p != None: p.stop()
 
-def xrun(cmdline, workdir=None):
+def xrun(cmdline, workdir=None, env=None):
     # XRUN may create zombies.
     cmds = cmdline.split()
     cwd = os.getcwd()
     try:
-        pid = subp.Popen(cmds).pid
+        pid = subp.Popen(cmds, cwd=workdir, env=env).pid
         log("CMD pid=%d: %s" % (pid, cmdline))
     except Exception, e:
         error("xrun Internal: %s" % e)

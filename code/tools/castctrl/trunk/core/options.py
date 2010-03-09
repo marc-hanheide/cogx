@@ -11,15 +11,20 @@ regSimple = re.compile (r"\$([a-z_0-9]+)", re.IGNORECASE)
 regSimpleBrace = re.compile (r"\${([a-z_0-9]+)}", re.IGNORECASE)
 regVarSet = re.compile (r"^\s*([a-z_0-9]+)\s*=(.*)$", re.IGNORECASE)
 
-def xe(shexpr):
-    for x in [regSimple, regSimpleBrace]:
-        mos = [mo for mo in x.finditer(shexpr)]
+startup_environ = os.environ.copy()
+
+def _xe(shexpr, env=None):
+    if env == None: env = startup_environ
+    for rx in [regSimple, regSimpleBrace]:
+        mos = [mo for mo in rx.finditer(shexpr)]
         mos.reverse()
         for m in mos:
-            v = ""
-            if os.environ.has_key(m.group(1)): v = os.environ[m.group(1)]
+            if env.has_key(m.group(1)): v = env[m.group(1)]
+            else: v = ""
             shexpr = shexpr.replace(m.group(0), v)
+
     return shexpr
+
 
 class CUserOptions(object):
     def __init__(self):
@@ -48,25 +53,37 @@ class CCastOptions(object):
         self.mruCfgHosts = []
         self.options = {}
         self.environmentDefault = [s.lstrip() for s in optdefault.environment.split("\n")]
-        self._environment = None
+        self._environscript = None
+        self._xenviron = None
         self.cleanupScript = [s.lstrip() for s in optdefault.cleanup.split("\n")]
+        self.codeRootDir = os.path.abspath('.')
 
     @property
-    def environment(self):
-        if self._environment == None:
-            self._environment = [ln for ln in self.environmentDefault]
-        return self._environment
+    def environscript(self):
+        if self._environscript == None:
+            self._environscript = [ln for ln in self.environmentDefault]
+        return self._environscript
+
+    @property
+    def environ(self):
+        if self._xenviron == None:
+            self._xenviron = self._mergeEnvironment(startup_environ, self.environscript)
+        return self._xenviron
+
+    def xe(self, shexpr):
+        return _xe(shexpr, self.environ)
 
     def loadConfig(self, filename):
         if not os.path.exists(filename): return
+        self._xenviron = None
         f = open(filename, "r")
         section = None
         for ln in f.readlines():
             l = ln.split('#')[0]
             l = l.strip()
             if l == "[ENVIRONMENT]":
-                self._environment = []
-                section = self._environment
+                self._environscript = []
+                section = self._environscript
             elif l == "[CLEANUP-SCRIPT]":
                 self.cleanupScript = []
                 section = self.cleanupScript
@@ -105,7 +122,7 @@ class CCastOptions(object):
     def saveConfig(self, afile):
         f = afile
         f.write("[ENVIRONMENT]\n")
-        for ln in self.environment:
+        for ln in self.environscript:
             f.write(ln); f.write("\n")
         f.write("[CLEANUP-SCRIPT]\n")
         for ln in self.cleanupScript:
@@ -129,27 +146,26 @@ class CCastOptions(object):
         for k,v in self.options.iteritems():
             f.write("%s=%s\n" % (k,v))
 
-    def configEnvironment(self):
-        # unset all variables
-        # THIS IS WRONG!
-        #for stm in self.environment:
-        #    stm = stm.split('#')[0]
-        #    stm = stm.strip()
-        #    if len(stm) < 1: continue
-        #    mo = regVarSet.match(stm)
-        #    if mo != None: os.environ[mo.group(1)] = ""
-
-        curdir = os.path.abspath('.')
-        for stm in self.environment:
+    def _mergeEnvironment(self, env, expressionList):
+        newenv = env.copy()
+        for stm in expressionList:
             stm = stm.split('#')[0]
             stm = stm.strip()
             if len(stm) < 1: continue
             mo = regVarSet.match(stm)
             if mo != None:
-                rhs = xe(mo.group(2))
-                rhs = rhs.replace("[PWD]", curdir)
-                os.environ[mo.group(1)] = rhs
+                rhs = _xe(mo.group(2), newenv)
+                rhs = rhs.replace("[PWD]", self.codeRootDir)
+                newenv[mo.group(1)] = rhs
             else: print "Invalid ENV expression:", stm
+
+        return newenv
+
+    def configEnvironment(self):
+        newenv = self.environ
+        for k,v in newenv.iteritems():
+            os.environ[k] = v
+        return
 
     def _storeMru(self, list, item):
         if item in list: list.remove(item)
