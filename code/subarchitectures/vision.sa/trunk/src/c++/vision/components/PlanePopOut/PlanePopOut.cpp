@@ -64,6 +64,10 @@ Vector3 mCenterOfHull;
 double mConvexHullRadius;
 double mConvexHullDensity;
 
+Vector3 pre_mCenterOfHull;
+double pre_mConvexHullRadius;
+std::string pre_id;
+
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 
 
@@ -378,6 +382,9 @@ void PlanePopOut::configure(const map<string,string> & _config)
   println("use global points: %d", (int)useGlobalPoints);
   m_torleration = 0;
   mConvexHullDensity = 0.0;
+  pre_mCenterOfHull.x = pre_mCenterOfHull.y = pre_mCenterOfHull.z = 0.0;
+  pre_mConvexHullRadius = 0.0;
+  pre_id = "";
 }
 
 void PlanePopOut::start()
@@ -783,18 +790,37 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 
 void PlanePopOut::AddConvexHullinWM()
 {
-	if (mConvexHullPoints.size()>0)
-	{	debug("There are %u points in the convex hull", mConvexHullPoints.size());
-		VisionData::ConvexHullPtr CHPtr = new VisionData::ConvexHull;
-		CHPtr->PointsSeq = mConvexHullPoints;
-		CHPtr->time = getCASTTime();
-		CHPtr->center = mCenterOfHull;
-		CHPtr->radius = mConvexHullRadius;
-		CHPtr->density = mConvexHullDensity;
-		CHPtr->Objects = mObjSeq;
-		CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
-		addToWorkingMemory(newDataID(),CHPtr);
+	
+	if (pre_mConvexHullRadius == 0.0) { pre_mConvexHullRadius = mConvexHullRadius; pre_mCenterOfHull = mCenterOfHull;}
+	else
+	{
+	    double T_CenterHull = 1/5 * mConvexHullRadius;
+	    VisionData::ConvexHullPtr CHPtr = new VisionData::ConvexHull;
+	    
+	    if (mConvexHullPoints.size()>0)
+	    {	debug("There are %u points in the convex hull", mConvexHullPoints.size());
+		    CHPtr->PointsSeq = mConvexHullPoints;
+		    CHPtr->time = getCASTTime();
+		    CHPtr->center = mCenterOfHull;
+		    CHPtr->radius = mConvexHullRadius;
+		    CHPtr->density = mConvexHullDensity;
+		    CHPtr->Objects = mObjSeq;
+		    CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
+	    }
+	    
+	    if (dist(pre_mCenterOfHull, mCenterOfHull) > T_CenterHull)
+	    {
+		  pre_id = newDataID();
+		  addToWorkingMemory(pre_id,CHPtr);
+		  pre_mConvexHullRadius = mConvexHullRadius;
+		  pre_mCenterOfHull = mCenterOfHull;  
+	    }
+	    else
+	    {
+		  overwriteWorkingMemory(pre_id, CHPtr);
+	    }
 	}
+
 	mConvexHullPoints.clear();
 	mObjSeq.clear();
 	mCenterOfHull.x = mCenterOfHull.y = mCenterOfHull.z = 0.0;
