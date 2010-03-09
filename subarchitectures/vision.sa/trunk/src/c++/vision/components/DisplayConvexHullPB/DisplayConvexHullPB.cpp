@@ -182,7 +182,7 @@ void DisplayConvexHullPB::newConvexHull(const cdl::WorkingMemoryChange
   m_Mutex.lock();
   VisionData::ConvexHullPtr m_ConvexHull = oobj->getData();
 
-  log("Convex hull center at %f, %f, %f", m_ConvexHull->center.x,m_ConvexHull->center.y,m_ConvexHull->center.z);
+  log("Convex hull center at %f, %f, %f", m_ConvexHull->center.pos.x,m_ConvexHull->center.pos.y,m_ConvexHull->center.pos.z);
   Cure::Transformation3D cam2WorldTrans =
     getCameraToWorldTransform();
   double tmp[6];
@@ -201,20 +201,20 @@ void DisplayConvexHullPB::newConvexHull(const cdl::WorkingMemoryChange
     m_ConvexHull->PointsSeq[i].z = to.X[2];
     log("Transformed vertex at %f, %f, %f", to.X[0], to.X[1], to.X[2]);
   }
-  Cure::Vector3D from(m_ConvexHull->center.x, m_ConvexHull->center.y, m_ConvexHull->center.z);
+  Cure::Vector3D from(m_ConvexHull->center.pos.x, m_ConvexHull->center.pos.y, m_ConvexHull->center.pos.z);
   Cure::Vector3D to;
   cam2WorldTrans.invTransform(from, to);
-  m_ConvexHull->center.x = to.X[0];
-  m_ConvexHull->center.y = to.X[1];
-  m_ConvexHull->center.z = to.X[2];
+  m_ConvexHull->center.pos.x = to.X[0];
+  m_ConvexHull->center.pos.y = to.X[1];
+  m_ConvexHull->center.pos.z = to.X[2];
   cam2WorldTrans.getCoordinates(tmp);
 
 
   if (previouscenter.at(0) == 0.0)
     {
-      previouscenter.at(0) = m_ConvexHull->center.x;
-      previouscenter.at(1) = m_ConvexHull->center.y;
-      previouscenter.at(2) = m_ConvexHull->center.z;
+      previouscenter.at(0) = m_ConvexHull->center.pos.x;
+      previouscenter.at(1) = m_ConvexHull->center.pos.y;
+      previouscenter.at(2) = m_ConvexHull->center.pos.z;
       
       peekabot::GroupProxy planes;
       planes.add(m_PeekabotClient,
@@ -234,7 +234,7 @@ void DisplayConvexHullPB::newConvexHull(const cdl::WorkingMemoryChange
     {
       
       double dist =
-	sqrt((previouscenter.at(0)-m_ConvexHull->center.x)*(previouscenter.at(0)-m_ConvexHull->center.x)+(previouscenter.at(1)-m_ConvexHull->center.y)*(previouscenter.at(1)-m_ConvexHull->center.y)+(previouscenter.at(2)-m_ConvexHull->center.z)*(previouscenter.at(2)-m_ConvexHull->center.z));
+	sqrt((previouscenter.at(0)-m_ConvexHull->center.pos.x)*(previouscenter.at(0)-m_ConvexHull->center.pos.x)+(previouscenter.at(1)-m_ConvexHull->center.pos.y)*(previouscenter.at(1)-m_ConvexHull->center.pos.y)+(previouscenter.at(2)-m_ConvexHull->center.pos.z)*(previouscenter.at(2)-m_ConvexHull->center.pos.z));
       
       if (dist > 0.1*m_ConvexHull->radius)
 	

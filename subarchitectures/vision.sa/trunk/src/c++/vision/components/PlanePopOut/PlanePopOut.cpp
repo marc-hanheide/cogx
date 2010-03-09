@@ -442,7 +442,7 @@ void PlanePopOut::runComponent()
 				DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
  				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
 				ConvexHullOfPlane(pointsN,points_label);
-//  				BoundingPrism(pointsN,points_label);
+  				BoundingPrism(pointsN,points_label);
 			}
 			else
 			{
@@ -796,12 +796,23 @@ void PlanePopOut::AddConvexHullinWM()
 	{
 	    double T_CenterHull = 1/5 * mConvexHullRadius;
 	    VisionData::ConvexHullPtr CHPtr = new VisionData::ConvexHull;
+	    Pose3 p3;
+	    setIdentity(p3);
+	    Vector3 v3;
+	    setZero(v3);
 	    
 	    if (mConvexHullPoints.size()>0)
 	    {	debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		    CHPtr->PointsSeq = mConvexHullPoints;
 		    CHPtr->time = getCASTTime();
-		    CHPtr->center = mCenterOfHull;
+		    p3.pos = mCenterOfHull;
+		    v3.x = A; v3.y = B; v3.z = C; normalise(v3);
+		    Vector3 tmpV3; setZero(tmpV3);
+		    tmpV3.x = v3.x; setRow(p3.rot, 0, tmpV3);  setZero(tmpV3);
+		    tmpV3.y = v3.y; setRow(p3.rot, 1, tmpV3);  setZero(tmpV3); 
+		    tmpV3.z = v3.z; setRow(p3.rot, 2, tmpV3);  setZero(tmpV3);
+		    
+		    CHPtr->center = p3;
 		    CHPtr->radius = mConvexHullRadius;
 		    CHPtr->density = mConvexHullDensity;
 		    CHPtr->Objects = mObjSeq;
@@ -1053,9 +1064,11 @@ void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei)
 		v.y =((A*A+C*C)*ppSeq.at(i).y-B*(A*ppSeq.at(i).x+C*ppSeq.at(i).z+dd))/(A*A+B*B+C*C);
 		v.z =((A*A+B*B)*ppSeq.at(i).z-C*(A*ppSeq.at(i).x+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
 		pphSeq.push_back(v);
-		OObj.pPlane.push_back(v); OObj.pTop.push_back(ppSeq.at(i));
+		OObj.pPlane.push_back(ppSeq.at(i)); OObj.pTop.push_back(v);
 	}
 	mObjSeq.push_back(OObj);
+	
+/*
 	glBegin(GL_POLYGON);
 	glColor3f(1.0,1.0,1.0);
 	for (unsigned int i = 0; i<ppSeq.size(); i++)
@@ -1072,6 +1085,7 @@ void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei)
 		glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
 		glEnd();
 	}
+*/
 }
 
 void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels)
@@ -1123,7 +1137,7 @@ void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vecto
 			for (int j = 0; j<hullMat.cols; j++)
 				v3OnPlane.at(j) =ProjectOnDominantPlane(PlanePoints3DSeq.at(i).at(hull[j]+1));
 
-// 			if (doDisplay) DrawOnePrism(v3OnPlane, height.at(i));
+ 			DrawOnePrism(v3OnPlane, height.at(i));
 		}
 		free( hull );
 	}
