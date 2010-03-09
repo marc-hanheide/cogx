@@ -73,11 +73,16 @@ public:
 							bool bfc=false);
 	
 	/** @brief Draws content to  frame screen
-	* @param time Time in seconds since last Update() call */
+	* @param time Time in seconds since last Update() call 
+	* @param event GLX event */
+	bool Update();
 	bool Update(float &fTime);
+	bool Update(std::vector<tgEvent> &eventlist);
+	bool Update(float &fTime, std::vector<tgEvent> &eventlist);
+	
 	
 	/** @brief Handles keyboard and mouse input applied to this window */
-	bool InputControl();
+	bool InputControl(tgEvent &event);
 	
 	/**	@brief Draws a simple coordinate frame */
 	void DrawCoordinates();

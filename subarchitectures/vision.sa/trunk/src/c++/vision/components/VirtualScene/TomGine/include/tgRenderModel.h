@@ -36,12 +36,14 @@ public:
 	
 	tgPose			m_pose;
 	Material 		m_material;
+	vec3				m_color;
 	
 	virtual void DrawFaces();
+	virtual void DrawPolygons();
 	virtual void DrawNormals(float normal_length);
 
-private:
-	void ApplyMaterial(Material mat);
+	void ApplyMaterial();
+	void ApplyColor();
 
 };
 

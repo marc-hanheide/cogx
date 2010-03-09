@@ -29,6 +29,8 @@ using namespace TomGine;
 VirtualScene::VirtualScene(){
 	m_running = true;
 	m_render = true;
+	m_lock = false;
+	m_objectType = 0;
 }
 
 VirtualScene::~VirtualScene(){
@@ -47,26 +49,17 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 
 	ModelEntry newModelEntry;
 	
-	if(!convertGeometryModel(obj->model, newModelEntry.model)){
+	if(!convertGeometry2Model(obj->model, newModelEntry.model)){
 		log("  error can not convert VisualObject to virtual scene model");
 		return;
 	}
 	
 	// just an example material (should be random to separate objects more easily
-	float r = 0.8 * float(rand())/RAND_MAX;
-	float g = 0.8 * float(rand())/RAND_MAX;
-	float b = 0.8 * float(rand())/RAND_MAX;
-	tgRenderModel::Material matSilver; 
-	matSilver.ambient = vec4(0.2+r,0.2+g,0.2+b,1.0);
-	matSilver.diffuse = vec4(0.2+r,0.2+g,0.2+b,1.0);
-	matSilver.specular = vec4(0.5,0.5,0.5,1.0);
-	matSilver.shininess = 60.0 * float(rand())/RAND_MAX;
-	
-	newModelEntry.model.m_material = matSilver;
+	newModelEntry.model.m_material = getRandomMaterial();
 	convertPose2tgPose(obj->pose, newModelEntry.model.m_pose);
-	newModelEntry.obj = obj;
+// 	newModelEntry.obj = obj;
 	newModelEntry.castWMA = _wmc.address;
-	m_modellist.push_back(newModelEntry);
+	m_VisualObjectList.push_back(newModelEntry);
 	
 	tgVector3 vCenter = tgVector3(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
 	m_engine->SetCenterOfRotation(vCenter.x, vCenter.y, vCenter.z);
@@ -79,9 +72,9 @@ void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	
-	for(int i=0; i<m_modellist.size(); i++){
-		if(m_modellist[i].castWMA == _wmc.address){
-			convertPose2tgPose(obj->pose, m_modellist[i].model.m_pose);
+	for(int i=0; i<m_VisualObjectList.size(); i++){
+		if(m_VisualObjectList[i].castWMA == _wmc.address){
+			convertPose2tgPose(obj->pose, m_VisualObjectList[i].model.m_pose);
 		}
 	}
 	
@@ -90,11 +83,44 @@ void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 
 void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	vector<ModelEntry>::iterator it;
-	for(it=m_modellist.begin(); it<m_modellist.end(); it++){
+	for(it=m_VisualObjectList.begin(); it<m_VisualObjectList.end(); it++){
 		if((*it).castWMA == _wmc.address){
-			m_modellist.erase(it);
+			m_VisualObjectList.erase(it);
 		}
 	}
+}
+
+void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
+	if(!m_lock){
+	
+	
+		log("receiving ConvexHull: %s", _wmc.address.id.c_str());
+		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
+		
+		ModelEntry newModelEntry;
+		
+		if(!convertConvexHull2Model(obj, newModelEntry.model)){
+			log("  error can not convert ConvexHull to virtual scene model");
+			return;
+		}
+		
+// 		newModelEntry.obj = obj;
+		newModelEntry.model.m_material = getRandomMaterial();
+		newModelEntry.model.m_color = getRandomColor();
+		newModelEntry.castWMA = _wmc.address;
+		
+		m_ConvexHullList.push_back(newModelEntry);
+		
+		m_lock = true;
+	}
+}
+
+void VirtualScene::overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc){
+
+}
+
+void VirtualScene::deleteConvexHull(const cdl::WorkingMemoryChange & _wmc){
+
 }
 
 // *** base functions *** (configure, start, runcomponent)
@@ -130,6 +156,8 @@ void VirtualScene::start(){
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
+	// ******************************************************************
+	// Visual Objects
   addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<VirtualScene>(this,
         &VirtualScene::addVisualObject));
@@ -141,6 +169,20 @@ void VirtualScene::start(){
   addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::DELETE),
       new MemberFunctionChangeReceiver<VirtualScene>(this,
         &VirtualScene::deleteVisualObject));
+  
+  // ******************************************************************
+	// Convex Hulls
+	addChangeFilter(createLocalTypeFilter<ConvexHull>(cdl::ADD),
+      new MemberFunctionChangeReceiver<VirtualScene>(this,
+        &VirtualScene::addConvexHull));
+
+// 	addChangeFilter(createLocalTypeFilter<ConvexHull>(cdl::OVERWRITE),
+//       new MemberFunctionChangeReceiver<VirtualScene>(this,
+//         &VirtualScene::overwriteVisualObject));
+//   
+//   addChangeFilter(createLocalTypeFilter<ConvexHull>(cdl::DELETE),
+//       new MemberFunctionChangeReceiver<VirtualScene>(this,
+//         &VirtualScene::deleteVisualObject));
 }
 
 void VirtualScene::destroy(){
@@ -165,11 +207,29 @@ void VirtualScene::runComponent(){
   while(m_running && isRunning())
   {
     if(m_render){
-      runScene();
+    	switch(m_objectType){
+      	case 1:
+      		drawVisualObjects();
+      		break;
+      	case 2:
+      		drawConvexHulls();
+      		break;
+      	case 3:
+      		break;
+      	default:
+      		drawVisualObjects();
+      		drawConvexHulls();
+      		break;
+      }
+      m_engine->Activate2D();
+			m_font->Print("VirtualSzene", 16, 5, 5);
+      m_running = m_engine->Update(m_fTime, m_eventlist);
+      sleepComponent(5);
     }else{
 			// * Idle *
 			sleepComponent(1000);
 		}
+		inputControl();
   }
   
   delete(m_font);
@@ -177,6 +237,7 @@ void VirtualScene::runComponent(){
   log("stop");
 }
 
+// *** GL functions ***
 void VirtualScene::initScene(const Video::Image &image){
   
   log("Initialising Scene");
@@ -196,17 +257,76 @@ void VirtualScene::initScene(const Video::Image &image){
   log("... initialisation successfull!");
 }
 
-void VirtualScene::runScene(){
-	for(int i=0; i<m_modellist.size(); i++){
-		m_modellist[i].model.DrawFaces();
-// 		m_modellist[i].model.DrawNormals(0.01);
+void VirtualScene::drawVisualObjects(){
+	for(int i=0; i<m_VisualObjectList.size(); i++){
+		m_VisualObjectList[i].model.DrawFaces();
+// 		m_VisualObjectList[i].model.DrawNormals(0.01);
 	}
-	
-	m_engine->Activate2D();
-	m_font->Print("VirtualSzene", 16, 5, 5);
-	
-	m_running = m_engine->Update(m_fTime);
 }
 
+void VirtualScene::drawConvexHulls(){
+	for(int i=0; i<m_ConvexHullList.size(); i++){
+		glDisable(GL_LIGHTING);
+		glPointSize(2);
+		m_ConvexHullList[i].model.ApplyColor();
+		m_ConvexHullList[i].model.DrawPoints();
+		glPointSize(1);
+		
+		m_ConvexHullList[i].model.DrawPolygons();
+// 		m_VisualObjectList[i].model.DrawNormals(0.01);
+	}
+}
 
+void VirtualScene::inputControl(){
+	tgEvent event;
+	for(int i=0; i<m_eventlist.size(); i++){
+		event = m_eventlist[i];
+		switch(event.type){
+		
+			// *********************************************************
+			case KeyPress:
+				switch(event.key.keysym){
+					case XK_1:
+						log("[1] Showing 'VisualObject'");
+						m_objectType = 1;
+						break;
+					case XK_2:
+						log("[2] Showing 'ConvexHull'");
+						m_objectType = 2;
+						break;
+					case XK_3:
+						log("[3] Showing 'na'");
+						m_objectType = 3;
+						break;
+					case XK_0:
+						log("[0] Showing all");
+						m_objectType = 0;
+						break;
+					default:
+						break;
+				}
+			default:
+				break;
+		}
+	}
+	m_eventlist.clear();
+}
+
+TomGine::vec3 VirtualScene::getRandomColor(){
+	TomGine::vec3 col;
+	col.x = float(rand())/RAND_MAX;
+	col.y = float(rand())/RAND_MAX;
+	col.z = float(rand())/RAND_MAX;
+	return col;
+}
+
+TomGine::tgRenderModel::Material VirtualScene::getRandomMaterial(){
+	TomGine::vec3 c = getRandomColor();
+	tgRenderModel::Material material; 
+	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.3;
+	material.diffuse = vec4(c.x,c.y,c.z,1.0) * 1.0;
+	material.specular = vec4(0.5,0.5,0.5,1.0);
+	material.shininess = 50.0 * float(rand())/RAND_MAX;
+	return material;
+}
 

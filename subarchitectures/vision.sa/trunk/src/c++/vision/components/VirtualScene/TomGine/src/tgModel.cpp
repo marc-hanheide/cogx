@@ -28,10 +28,66 @@ void tgModel::DrawFaces(){
 				glNormal3f(m_vertices[v].normal.x, m_vertices[v].normal.y, m_vertices[v].normal.z);
 				glVertex3f(m_vertices[v].pos.x, m_vertices[v].pos.y, m_vertices[v].pos.z);
 			}
-			
 		glEnd();
 	}
+}
 
+void tgModel::DrawPolygons(){
+	int i,j,v;
+	for(i=0; i<(int)m_polygons.size(); i++){
+		glBegin(GL_TRIANGLE_FAN);		
+			for(j=0; j<(int)m_polygons[i].vertices.size(); j++){
+				v = m_polygons[i].vertices[j];
+				glTexCoord2f(m_vertices[v].texCoord.x, m_vertices[v].texCoord.y);
+				glNormal3f(m_vertices[v].normal.x, m_vertices[v].normal.y, m_vertices[v].normal.z);
+				glVertex3f(m_vertices[v].pos.x, m_vertices[v].pos.y, m_vertices[v].pos.z);
+			}
+		glEnd();
+	}
+}
+
+void tgModel::DrawQuadstrips(){
+	int i,j,v;
+	for(i=0; i<(int)m_quadstrips.size(); i++){
+		glBegin(GL_QUAD_STRIP);		
+			for(j=0; j<(int)m_quadstrips[i].vertices.size(); j++){
+				v = m_quadstrips[i].vertices[j];
+				glTexCoord2f(m_vertices[v].texCoord.x, m_vertices[v].texCoord.y);
+				glNormal3f(m_vertices[v].normal.x, m_vertices[v].normal.y, m_vertices[v].normal.z);
+				glVertex3f(m_vertices[v].pos.x, m_vertices[v].pos.y, m_vertices[v].pos.z);
+			}
+		glEnd();
+	}
+}
+
+void tgModel::DrawLines(){
+	for(int i=0; i<(int)m_lines.size(); i++){
+		glBegin(GL_LINES);
+			glVertex3f(m_lines[i].start.x, m_lines[i].start.y, m_lines[i].start.z);
+			glVertex3f(m_lines[i].end.x, m_lines[i].end.y, m_lines[i].end.z);
+		glEnd();
+	}
+}
+
+void tgModel::DrawLineLoops(){
+	int i,j;
+	vec3 p;
+	for(i=0; i<(int)m_lineloop.size(); i++){
+		glBegin(GL_LINE_LOOP);
+		for(j=0; j<(int)m_lineloop[i].points.size(); j++){
+				p = m_lineloop[i].points[j];
+				glVertex3f(p.x, p.y, p.z);
+		}
+		glEnd();
+	}
+}
+
+void tgModel::DrawPoints(){
+	for(int i=0; i<(int)m_points.size(); i++){
+		glBegin(GL_POINTS);
+			glVertex3f(m_points[i].x, m_points[i].y, m_points[i].z);
+		glEnd();
+	}
 }
 
 void tgModel::DrawNormals(float normal_length){	// draw normals

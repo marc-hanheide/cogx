@@ -32,60 +32,62 @@ private:
   TomGine::tgEngine* m_engine;
   TomGine::tgCamera m_camera;
   TomGine::tgFont* m_font;
+  std::vector<TomGine::tgEvent> m_eventlist;
   
-  std::vector<ModelEntry> m_modellist;
+  std::vector<ModelEntry> m_VisualObjectList;
+  std::vector<ModelEntry> m_ConvexHullList;
 
-  /**
-   * Which camera to get images from
-   */
+  /** Which camera to get images from */
   int m_camId;
-  /**
-   * component ID of the video server to connect to
-   */
+  
+  /** component ID of the video server to connect to */
   std::string m_videoServerName;
-  /**
-   * our ICE proxy to the video server
-   */
+  
+  /** our ICE proxy to the video server */
   Video::VideoInterfacePrx m_videoServer;
 	int m_maxModels;
+	int m_objectType;
   bool m_render;
   bool m_running;
+  bool m_lock;
   float m_fTime;
  
   // Functions with GL commands allowed
   void initScene(const Video::Image &image);
-  void runScene();
+  void drawVisualObjects();
+  void drawConvexHulls();
+  void inputControl();
+  TomGine::tgRenderModel::Material getRandomMaterial();
+  TomGine::vec3 getRandomColor();
   
   // Do not use GL commands in this functions (different thread with no GL context)
   void addVisualObject(const cdl::WorkingMemoryChange & _wmc);
   void overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc);
   void deleteVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  
+  void addConvexHull(const cdl::WorkingMemoryChange & _wmc);
+  void overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc);
+  void deleteConvexHull(const cdl::WorkingMemoryChange & _wmc);
 
 protected:
-  /**
-   * called by the framework to configure our component
-   */
+  /** called by the framework to configure our component */
   virtual void configure(const std::map<std::string,std::string> & _config);
-  /**
-   * called by the framework after configuration, before run loop
-   */
+  
+  /** called by the framework after configuration, before run loop */
   virtual void start();
-  /**
-   * called by the framework upon deletion of the component
-   */
+  
+  /** called by the framework upon deletion of the component */
   virtual void destroy();
-  /**
-   * called by the framework to start compnent run loop
-   */
+  
+  /** called by the framework to start compnent run loop */
   virtual void runComponent();
 
 public:
   VirtualScene();
   virtual ~VirtualScene();
-  /**
-   * The callback function for images pushed by the image server.
-   * To be overwritten by derived classes.
-   */
+  
+  /** The callback function for images pushed by the image server.
+   * To be overwritten by derived classes. */
   virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 

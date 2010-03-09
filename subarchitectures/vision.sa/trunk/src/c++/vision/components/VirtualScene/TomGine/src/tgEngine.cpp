@@ -94,9 +94,33 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 
 }
 
+bool tgEngine::Update(){
+	float fTime;
+	std::vector<tgEvent> eventlist;
+	return Update(fTime, eventlist);
+}
+
 bool tgEngine::Update(float &fTime){
+	std::vector<tgEvent> eventlist;
+	return Update(fTime, eventlist);
+}
+
+bool tgEngine::Update(std::vector<tgEvent> &eventlist){
+	float fTime;
+	return Update(fTime, eventlist);
+}
 	
-	bool quit = InputControl();
+bool tgEngine::Update(float &fTime, std::vector<tgEvent> &eventlist){
+	
+	// User input handling (keyboard, mouse)
+	bool quit = true;
+	tgEvent event;
+	while(m_window->CheckXEvent(event)){
+		quit = InputControl(event);
+		if(quit==false)
+			return false;
+		eventlist.push_back(event);
+	}
 	
 	Activate3D();
 	DrawCoordinates();
@@ -113,120 +137,116 @@ bool tgEngine::Update(float &fTime){
 	return quit;
 }
 
-bool tgEngine::InputControl(){
-	tgVector3 vPoint;
-	tgEvent event;
-	while(m_window->CheckXEvent(event)){
-		switch(event.type){
-		
-			// *********************************************************
-			case KeyPress:
-				switch(event.key.keysym){
-					case XK_Escape:
-						return false;
-						break;
-					case XK_f:
-						if(m_smoothshading)
-							glShadeModel(GL_SMOOTH);
-						else
-							glShadeModel(GL_FLAT);
-						m_smoothshading = !m_smoothshading;
-						break;
-					case XK_p:
-						p_pressed = true;
-						break;
-					case XK_w:
-						if(m_wireframe)
-							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-						else
-							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-						m_wireframe = !m_wireframe;
-						break;
-					case XK_z:
-						m_camera = m_camera0;
-						break;
-					default:
-						break;
-				}
-				break;
-				
-			// *********************************************************
-			case ButtonPress:
-				switch(event.button.button){
-					case Button1:
-						m_button_left = true;
-						break;
-					case Button2:
-						m_button_middle = true;
-						break;
-					case Button3:
-						m_button_right = true;
-						break;
-					case Button4:
-						m_camera.TranslateF(0.02*m_depth);
-						break;
-					case Button5:
-						m_camera.TranslateF(-0.02*m_depth);
-						break;
-				}
-				break;
-				
-			// *********************************************************
-			case ButtonRelease:
-				switch(event.button.button){
-					case Button1:
-						m_button_left = false;
-						break;
-					case Button2:
-						m_button_middle = false;
-						break;
-					case Button3:
-						m_button_right = false;
-						break;
-				}
-				break;
-				
-			// *********************************************************
-			case MotionNotify:
-				m_mouse_pos[0] = event.motion.x;
-				m_mouse_pos[1] = event.motion.y;
-				
-				if(m_button_left){
-					m_camera.Orbit(m_cor, m_camera.GetU(), -0.05 * event.motion.x_rel);
-					m_camera.Orbit(m_cor, m_camera.GetS(), -0.05 * event.motion.y_rel);					
-				}else if(m_button_right){
-					m_camera.TranslateS(-0.002*m_depth*event.motion.x_rel);
-					m_camera.TranslateU(0.002*m_depth*event.motion.y_rel);
-				}
-				break;
-				
-			// *********************************************************
-			case Expose:
-				m_camera.SetViewport((float)event.expose.width, (float)event.expose.height);
-				m_camera0.SetViewport((float)event.expose.width, (float)event.expose.height);
-				/*
-				printf("[tgEngine::InputControl Expose] %f %f %f %f %f %d\n", 
-																m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-																m_camera.GetZNear(), m_camera.GetZFar(),
-																m_camera.GetProjection());
-				m_camera0.SetIntrinsic(	m_camera0.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-																m_camera0.GetZNear(), m_camera0.GetZFar(),
-																m_camera0.GetProjection());
-				m_camera.SetIntrinsic(	m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-																m_camera.GetZNear(), m_camera.GetZFar(),
-																m_camera.GetProjection());
-				*/
-				break;
-				
-			// *********************************************************
-			case ClientMessage:
-				if(event.clientmessage.stop)
+bool tgEngine::InputControl(tgEvent &event){
+	switch(event.type){
+	
+		// *********************************************************
+		case KeyPress:
+			switch(event.key.keysym){
+				case XK_Escape:
 					return false;
-				break;
-				
-		} // switch(event.type)
-	} // while(m_window->CheckXEvent(event))
-	return true;
+					break;
+				case XK_f:
+					if(m_smoothshading)
+						glShadeModel(GL_SMOOTH);
+					else
+						glShadeModel(GL_FLAT);
+					m_smoothshading = !m_smoothshading;
+					break;
+				case XK_p:
+					p_pressed = true;
+					break;
+				case XK_w:
+					if(m_wireframe)
+						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					else
+						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					m_wireframe = !m_wireframe;
+					break;
+				case XK_z:
+					m_camera = m_camera0;
+					break;
+				default:
+					break;
+			}
+			break;
+			
+		// *********************************************************
+		case ButtonPress:
+			switch(event.button.button){
+				case Button1:
+					m_button_left = true;
+					break;
+				case Button2:
+					m_button_middle = true;
+					break;
+				case Button3:
+					m_button_right = true;
+					break;
+				case Button4:
+					m_camera.TranslateF(0.02*m_depth);
+					break;
+				case Button5:
+					m_camera.TranslateF(-0.02*m_depth);
+					break;
+			}
+			break;
+			
+		// *********************************************************
+		case ButtonRelease:
+			switch(event.button.button){
+				case Button1:
+					m_button_left = false;
+					break;
+				case Button2:
+					m_button_middle = false;
+					break;
+				case Button3:
+					m_button_right = false;
+					break;
+			}
+			break;
+			
+		// *********************************************************
+		case MotionNotify:
+			m_mouse_pos[0] = event.motion.x;
+			m_mouse_pos[1] = event.motion.y;
+			
+			if(m_button_left){
+				m_camera.Orbit(m_cor, m_camera.GetU(), -0.05 * event.motion.x_rel);
+				m_camera.Orbit(m_cor, m_camera.GetS(), -0.05 * event.motion.y_rel);					
+			}else if(m_button_right){
+				m_camera.TranslateS(-0.002*m_depth*event.motion.x_rel);
+				m_camera.TranslateU(0.002*m_depth*event.motion.y_rel);
+			}
+			break;
+			
+		// *********************************************************
+		case Expose:
+			m_camera.SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_camera0.SetViewport((float)event.expose.width, (float)event.expose.height);
+			/*
+			printf("[tgEngine::InputControl Expose] %f %f %f %f %f %d\n", 
+															m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+															m_camera.GetZNear(), m_camera.GetZFar(),
+															m_camera.GetProjection());
+			m_camera0.SetIntrinsic(	m_camera0.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+															m_camera0.GetZNear(), m_camera0.GetZFar(),
+															m_camera0.GetProjection());
+			m_camera.SetIntrinsic(	m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
+															m_camera.GetZNear(), m_camera.GetZFar(),
+															m_camera.GetProjection());
+			*/
+			break;
+			
+		// *********************************************************
+		case ClientMessage:
+			if(event.clientmessage.stop)
+				return false;
+			break;
+			
+	} // switch(event.type)
+return true;
 }
 
 void tgEngine::DrawCoordinates(){
