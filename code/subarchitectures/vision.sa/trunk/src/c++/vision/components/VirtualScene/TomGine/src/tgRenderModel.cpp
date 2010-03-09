@@ -4,14 +4,20 @@
 
 using namespace TomGine;
 
-void tgRenderModel::ApplyMaterial(Material mat){
-	glMaterialfv(GL_FRONT,GL_AMBIENT,mat.ambient);
-	glMaterialfv(GL_FRONT,GL_DIFFUSE,mat.diffuse);
-	glMaterialfv(GL_FRONT,GL_SPECULAR,mat.specular);
-	glMaterialfv(GL_FRONT,GL_SHININESS,&mat.shininess);
+void tgRenderModel::ApplyMaterial(){
+	glEnable(GL_LIGHTING);
+	glMaterialfv(GL_FRONT,GL_AMBIENT,m_material.ambient);
+	glMaterialfv(GL_FRONT,GL_DIFFUSE,m_material.diffuse);
+	glMaterialfv(GL_FRONT,GL_SPECULAR,m_material.specular);
+	glMaterialfv(GL_FRONT,GL_SHININESS,&m_material.shininess);
+}
+
+void tgRenderModel::ApplyColor(){
+	glColor3f(m_color.x, m_color.y, m_color.z);
 }
 
 void tgRenderModel::Material::Apply(){
+	glEnable(GL_LIGHTING);
 	glMaterialfv(GL_FRONT,GL_AMBIENT,ambient);
 	glMaterialfv(GL_FRONT,GL_DIFFUSE,diffuse);
 	glMaterialfv(GL_FRONT,GL_SPECULAR,specular);
@@ -19,7 +25,7 @@ void tgRenderModel::Material::Apply(){
 }
 
 void tgRenderModel::DrawFaces(){
-	ApplyMaterial(m_material);
+	ApplyMaterial();
 	int i,j;
 	Face* f;
 	int v;
@@ -53,6 +59,21 @@ void tgRenderModel::DrawFaces(){
 	m_pose.Deactivate();
 }
 
+void tgRenderModel::DrawPolygons(){
+	ApplyMaterial();
+	int i,j,v;
+	for(i=0; i<(int)m_polygons.size(); i++){
+		glBegin(GL_TRIANGLE_FAN);		
+			for(j=0; j<(int)m_polygons[i].vertices.size(); j++){
+				v = m_polygons[i].vertices[j];
+				glTexCoord2f(m_vertices[v].texCoord.x, m_vertices[v].texCoord.y);
+				glNormal3f(m_vertices[v].normal.x, m_vertices[v].normal.y, m_vertices[v].normal.z);
+				glVertex3f(m_vertices[v].pos.x, m_vertices[v].pos.y, m_vertices[v].pos.z);
+			}
+		glEnd();
+	}
+}
+
 void tgRenderModel::DrawNormals(float normal_length){	// draw normals
 	int i,j,v;
 	Face* f;
@@ -60,7 +81,7 @@ void tgRenderModel::DrawNormals(float normal_length){	// draw normals
 	m_pose.Activate();
 	
 	glDisable(GL_TEXTURE_2D);
-	glColor3f(0.0, 0.0, 1.0);
+	glDisable(GL_LIGHTING);
 	
 	glBegin(GL_LINES);
 	for(i=0; i<m_faces.size(); i++){

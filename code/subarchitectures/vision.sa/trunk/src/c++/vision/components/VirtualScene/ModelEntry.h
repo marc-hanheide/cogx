@@ -18,9 +18,9 @@ public:
 	bool valid;
 	bool bfc;
 	bool textured;
+	
 	TomGine::tgRenderModel model;
 	
-	VisionData::VisualObjectPtr obj;
 	cast::cdl::WorkingMemoryAddress castWMA;
 		
 	ModelEntry(){

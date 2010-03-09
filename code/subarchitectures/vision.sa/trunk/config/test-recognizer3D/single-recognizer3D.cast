@@ -12,9 +12,9 @@ CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "sub
 
 CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 10 --log
 
-CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/TUM.ply instantiations/ply-models/JodSalz.ply" --siftfiles "instantiations/sift-models/TUM.sift instantiations/sift-models/JodSalz.sift" --labels "TUM JodSalz" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/JodSalz.ply" --siftfiles "instantiations/sift-models/JodSalz.sift" --labels "JodSalz" --log
 
-CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "TUM JodSalz" --log
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "JodSalz" --log
 
 CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 --log  #--debug 
 

@@ -28,12 +28,17 @@ bool convertPose2tgPose(cogx::Math::Pose3& pose, TomGine::tgPose& tgpose){
 }
 
 // converts a VisionData::GeometryModel to a Scene Model
-bool convertGeometryModel(VisionData::GeometryModelPtr geom, TomGine::tgModel& model){
+bool convertGeometry2Model(VisionData::GeometryModelPtr geom, TomGine::tgModel& model){
 	unsigned int i;
 	
 	// Check if model structure is empty
 	if(!geom){
-		printf("[GeometryModel_Converter] no geometry found\n");
+		printf("[VirtualSceneUtils::convertGeometry2Model] Warning: no geometry found\n");
+		return false;
+	}
+	
+	if(geom->vertices.empty()){
+		printf("[VirtualSceneUtils::convertGeometry2Model] Warning: no vertices found\n");
 		return false;
 	}
 
@@ -59,6 +64,100 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, TomGine::tgModel& m
 		model.m_faces.push_back(f);
 // 		printf("Face: %i %i %i %i\n", f.vertices[0], f.vertices[1], f.vertices[2], f.vertices[3]);
 	}	
+	
+	return true;
+}
+
+bool convertConvexHull2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel& model){
+	int i,j,vidx=0;
+	
+	if(!cvhull){
+		printf("[VirtualSceneUtils::convertConvexHull2Model] Warning: no geometry found\n");
+		return false;
+	}
+	
+	// Parse through points
+	TomGine::vec3 p;
+	TomGine::tgModel::Vertex v;
+	TomGine::tgModel::Face f;
+	for(i=0; i<cvhull->PointsSeq.size(); i++){
+		p.x = cvhull->PointsSeq[i].x;
+		p.y = cvhull->PointsSeq[i].y;
+		p.z = cvhull->PointsSeq[i].z;
+		v.pos = p;
+		v.normal.x = cvhull->plane.a;
+		v.normal.y = cvhull->plane.b;
+		v.normal.z = cvhull->plane.c;
+		
+		model.m_points.push_back(p);
+		model.m_vertices.push_back(v);
+		f.vertices.push_back(vidx++);
+// 		printf("%f %f %f\n", p.x, p.y, p.z);
+	}
+	model.m_polygons.push_back(f);
+	
+	// Parse through objects
+	VisionData::OneObj object;
+	printf("objects size: %d\n", cvhull->Objects.size());
+	for(i=0; i<cvhull->Objects.size(); i++){
+		object = cvhull->Objects[i];
+		
+		// Bottom plane
+		f.vertices.clear();
+		for(j=0; j<object.pPlane.size(); j++){
+			v.pos.x = object.pPlane[j].x;
+			v.pos.y = object.pPlane[j].y;
+			v.pos.z = object.pPlane[j].z;
+			v.normal.x = cvhull->plane.a;
+			v.normal.y = cvhull->plane.b;
+			v.normal.z = cvhull->plane.c;
+			v.normal = v.normal * (-1.0);
+			model.m_vertices.push_back(v);
+			f.vertices.push_back(vidx++);
+// 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
+		}
+		model.m_polygons.push_back(f);
+		
+		// Top plane
+		f.vertices.clear();
+		for(j=0; j<object.pTop.size(); j++){
+			v.pos.x = object.pTop[j].x;
+			v.pos.y = object.pTop[j].y;
+			v.pos.z = object.pTop[j].z;
+			v.normal.x = cvhull->plane.a;
+			v.normal.y = cvhull->plane.b;
+			v.normal.z = cvhull->plane.c;
+			model.m_vertices.push_back(v);
+			f.vertices.push_back(vidx++);
+// 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
+		}
+		model.m_polygons.push_back(f);
+		
+		// side planes
+		f.vertices.clear();
+		for(j=0; j<object.pTop.size(); j++){
+			v.pos.x = object.pTop[j].x;
+			v.pos.y = object.pTop[j].y;
+			v.pos.z = object.pTop[j].z;
+			v.normal.x = cvhull->plane.a;
+			v.normal.y = cvhull->plane.b;
+			v.normal.z = cvhull->plane.c;
+			model.m_vertices.push_back(v);
+			f.vertices.push_back(vidx++);
+			
+			v.pos.x = object.pPlane[j].x;
+			v.pos.y = object.pPlane[j].y;
+			v.pos.z = object.pPlane[j].z;
+			v.normal.x = cvhull->plane.a;
+			v.normal.y = cvhull->plane.b;
+			v.normal.z = cvhull->plane.c;
+			v.normal = v.normal * (-1.0);
+			model.m_vertices.push_back(v);
+			f.vertices.push_back(vidx++);
+// 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
+		}
+		model.m_polygons.push_back(f);
+	}
 	
 	return true;
 }
