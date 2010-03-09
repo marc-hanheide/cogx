@@ -79,6 +79,7 @@ protected:
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
   bool m_bTestOnness;
+  bool m_bDemoSampling;
   bool m_bNoPTZ;
   bool m_bNoVision;
 
