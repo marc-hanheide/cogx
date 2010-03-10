@@ -18,14 +18,17 @@ module VisionData {
   sequence<OneObj> ObjSeq;
 
   class ConvexHull {
+
+    cogx::Math::Pose3 center;
+   
     Vector3Seq PointsSeq;				// points forming convex hull (stereo based) in camera coordinates
     cast::cdl::CASTTime time;	
-    cogx::Math::Vector3 center;	// mean of PointsSeq
+    
     double radius;							// distance between center and farthest point from center
     double density;							// ~ number of points in volume
     ObjSeq Objects;							// Objects on this plane
     cogx::Math::Plane3 plane;		// The estimated plane
-  };
+ };
 
   sequence<string> IdSeq;
 
