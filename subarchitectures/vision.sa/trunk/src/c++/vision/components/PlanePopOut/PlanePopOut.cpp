@@ -806,11 +806,6 @@ void PlanePopOut::AddConvexHullinWM()
 		    CHPtr->PointsSeq = mConvexHullPoints;
 		    CHPtr->time = getCASTTime();
 		    p3.pos = mCenterOfHull;
-		    v3.x = A; v3.y = B; v3.z = C; normalise(v3);
-		    Vector3 tmpV3; setZero(tmpV3);
-		    tmpV3.x = v3.x; setRow(p3.rot, 0, tmpV3);  setZero(tmpV3);
-		    tmpV3.y = v3.y; setRow(p3.rot, 1, tmpV3);  setZero(tmpV3); 
-		    tmpV3.z = v3.z; setRow(p3.rot, 2, tmpV3);  setZero(tmpV3);
 		    
 		    CHPtr->center = p3;
 		    CHPtr->radius = mConvexHullRadius;
