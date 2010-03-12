@@ -790,7 +790,7 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 
 void PlanePopOut::AddConvexHullinWM()
 {
-	double T_CenterHull = 1/5 * mConvexHullRadius;
+	double T_CenterHull = 0.5 * mConvexHullRadius;
 	VisionData::ConvexHullPtr CHPtr = new VisionData::ConvexHull;
 	Pose3 p3;
 	setIdentity(p3);
@@ -801,7 +801,7 @@ void PlanePopOut::AddConvexHullinWM()
 	{ 
 	    if (mConvexHullPoints.size()>0)
 	    {
-		log("There are %u points in the convex hull", mConvexHullPoints.size());
+		debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		CHPtr->PointsSeq = mConvexHullPoints;
 		CHPtr->time = getCASTTime();
 		p3.pos = mCenterOfHull;
@@ -822,7 +822,7 @@ void PlanePopOut::AddConvexHullinWM()
 	{
 	    if (mConvexHullPoints.size()>0)
 	    {
-		    log("There are %u points in the convex hull", mConvexHullPoints.size());
+		    debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		    CHPtr->PointsSeq = mConvexHullPoints;
 		    CHPtr->time = getCASTTime();
 		    p3.pos = mCenterOfHull;
@@ -834,6 +834,8 @@ void PlanePopOut::AddConvexHullinWM()
 		    CHPtr->plane.a = A; CHPtr->plane.b = B; CHPtr->plane.c = C; CHPtr->plane.d = D;
 		    if (dist(pre_mCenterOfHull, mCenterOfHull) > T_CenterHull)
 		    {
+			  //cout<<"dist = "<<dist(pre_mCenterOfHull, mCenterOfHull)<<"  T = "<<T_CenterHull<<endl;
+			  debug("add sth into WM");
 			  pre_id = newDataID();
 			  addToWorkingMemory(pre_id,CHPtr);
 			  pre_mConvexHullRadius = mConvexHullRadius;
@@ -1058,7 +1060,8 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 			mConvexHullDensity = PlanePoints3D.size() / fabs(cvContourArea(cvhull));//cout<<"mConvexHullDensity = "<<mConvexHullDensity<<endl;
 			mCenterOfHull /= hullMat.cols;
 			mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
-// 			glEnd();
+			//cout<<"mConvexHullRadius = "<<mConvexHullRadius<<endl;
+			// 			glEnd();
 			free( hull );
 		}
 	}
