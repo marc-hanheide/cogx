@@ -31,7 +31,7 @@ struct ModelEntry
 	
 	std::string label;
 	
-	TrackerModel 		model;					///< The model to track
+	TrackerModel		model;					///< The model to track
 	Distribution 		distribution;		///< Likelihood distribution
 	Predictor*			predictor;			///< Movement prediction
 	Particle				pose;						///< Current pose of the model

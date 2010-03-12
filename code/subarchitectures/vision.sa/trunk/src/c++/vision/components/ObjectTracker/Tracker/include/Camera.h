@@ -107,6 +107,9 @@ public:
 	float GetZNear(){ return m_zNear; }
 	float GetZFar(){ return m_zFar; }
 	
+	mat4 GetIntrinsic(){ return m_intrinsic; }
+	mat4 GetExtrinsic(){ return m_extrinsic; }
+	
 	Frustum* GetFrustum(){ return &m_frustum; }
 
 	// Translations

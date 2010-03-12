@@ -20,4 +20,15 @@ struct PlyEdge {
 	unsigned short end;         // end vertex index
 };
 
+struct PlyPass {
+	unsigned short nfaces;			// Number of faces using this pass
+	unsigned int* f;						// pointer to memory holding the face-index list
+	float m0,m1,m2,m3;					// matrix entries
+	float m4,m5,m6,m7;					// matrix entries
+	float m8,m9,m10,m11;					// matrix entries
+	float m12,m13,m14,m15;					// matrix entries	
+	float x,y,w,h;							// bounding box of texture with respect to modelview-projection-matrix
+	unsigned short tex;					// index of texture
+};
+
 #endif

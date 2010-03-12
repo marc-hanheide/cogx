@@ -1,6 +1,7 @@
 
 #include "TextureTracker.h"
 
+
 using namespace std;
 using namespace Tracking;
 
@@ -320,24 +321,28 @@ bool TextureTracker::track(){
 
 // grabs texture from camera image and attaches it to faces of model
 void TextureTracker::textureFromImage(bool use_num_pixels){
-	
+	std::vector<Vertex> vertices;
 
 	for(int i=0; i<m_modellist.size(); i++){
 
 		m_cam_perspective.Activate();
-		
+
 		vector<int> faceUpdateList = m_modellist[i]->model.getFaceUpdateList(m_modellist[i]->pose, 
 					vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
 					params.minTexGrabAngle,
 					use_num_pixels);
 
 		if(!faceUpdateList.empty()){
+			vertices.clear();
 			m_modellist[i]->model.textureFromImage(	m_tex_frame,
 																							params.width, params.height,
 																							m_modellist[i]->pose,
 																							vec3(m_modellist[i]->vCam2Model.x, m_modellist[i]->vCam2Model.y, m_modellist[i]->vCam2Model.z),
 																							params.minTexGrabAngle,
-																							faceUpdateList);
+																							faceUpdateList,
+																							vertices, 
+																							&m_cam_perspective);
+
 		}
 		faceUpdateList.clear();
 	}
@@ -392,6 +397,8 @@ void TextureTracker::drawResult(){
 				m_shadeCompare->setUniform("textured", false);
 				m_modellist[i]->model.drawUntexturedFaces();
 				m_shadeCompare->unbind();
+				break;
+			case 3:
 				break;
 			default:
 				m_showmodel = 0;

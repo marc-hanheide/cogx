@@ -13,9 +13,12 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <ply.h>
+#include <string>
 
 #include "PlyStructure.h"
 #include "Model.h"
+#include "TrackerModel.h"
+
 
 namespace Tracking{
 
@@ -36,6 +39,10 @@ public:
 	*		@return true on success, false on failure
 	*/
 	bool LoadPly(Model &model, const char* filename);
+	bool LoadPly(TrackerModel &model, const char* filename);
+	
+	bool SavePly(Model &model, const char* filename);
+	bool SavePly(TrackerModel &model, const char* filename);
 	   
 };
 
