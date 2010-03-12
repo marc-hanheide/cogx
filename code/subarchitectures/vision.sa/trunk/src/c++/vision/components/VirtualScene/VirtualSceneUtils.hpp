@@ -70,38 +70,42 @@ bool convertGeometry2Model(VisionData::GeometryModelPtr geom, TomGine::tgModel& 
 
 bool convertConvexHull2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel& model){
 	int i,j,vidx=0;
-	
+
+printf("convertConvexHull2Model A\n");
 	if(!cvhull){
 		printf("[VirtualSceneUtils::convertConvexHull2Model] Warning: no geometry found\n");
 		return false;
 	}
-	
+printf("convertConvexHull2Model B\n");	
 	// Parse through points
 	TomGine::vec3 p;
 	TomGine::tgModel::Vertex v;
 	TomGine::tgModel::Face f;
 	for(i=0; i<cvhull->PointsSeq.size(); i++){
+	printf("a: %d\n", cvhull->PointsSeq.size());
 		p.x = cvhull->PointsSeq[i].x;
 		p.y = cvhull->PointsSeq[i].y;
 		p.z = cvhull->PointsSeq[i].z;
+	printf("b\n");
 		v.pos = p;
 		v.normal.x = cvhull->plane.a;
 		v.normal.y = cvhull->plane.b;
 		v.normal.z = cvhull->plane.c;
-		
+	printf("c\n");
 		model.m_points.push_back(p);
 		model.m_vertices.push_back(v);
 		f.vertices.push_back(vidx++);
+	printf("d\n");
 // 		printf("%f %f %f\n", p.x, p.y, p.z);
 	}
 	model.m_polygons.push_back(f);
-	
+printf("convertConvexHull2Model C\n");	
 	// Parse through objects
 	VisionData::OneObj object;
 	printf("objects size: %d\n", cvhull->Objects.size());
 	for(i=0; i<cvhull->Objects.size(); i++){
 		object = cvhull->Objects[i];
-		
+printf("convertConvexHull2Model D\n");		
 		// Bottom plane
 		f.vertices.clear();
 		for(j=0; j<object.pPlane.size(); j++){
@@ -117,7 +121,7 @@ bool convertConvexHull2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel&
 // 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
 		}
 		model.m_polygons.push_back(f);
-		
+printf("convertConvexHull2Model E\n");		
 		// Top plane
 		f.vertices.clear();
 		for(j=0; j<object.pTop.size(); j++){
@@ -132,7 +136,7 @@ bool convertConvexHull2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel&
 // 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
 		}
 		model.m_polygons.push_back(f);
-		
+printf("convertConvexHull2Model F\n");		
 		// side planes
 		f.vertices.clear();
 		for(j=0; j<object.pTop.size(); j++){
@@ -158,7 +162,7 @@ bool convertConvexHull2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel&
 		}
 		model.m_polygons.push_back(f);
 	}
-	
+printf("convertConvexHull2Model G\n");	
 	return true;
 }
 
