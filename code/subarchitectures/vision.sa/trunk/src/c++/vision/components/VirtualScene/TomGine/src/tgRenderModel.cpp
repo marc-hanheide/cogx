@@ -28,17 +28,17 @@ void tgRenderModel::DrawFaces(){
 	DrawFaces(false);
 }
 
-void tgRenderModel::DrawFaces(bool wireframe){
+void tgRenderModel::DrawFaces(bool lighting){
+	int i,j;
+	Face* f;
+	int v;
 	
-	if(!wireframe){
+	if(!lighting){
 		ApplyMaterial();
 	}else{
 		glDisable(GL_LIGHTING);
 		glColor3f(m_material.color.x, m_material.color.y, m_material.color.z);
-	}
-	int i,j;
-	Face* f;
-	int v;
+	}	
 	
 	m_pose.Activate();
 	
