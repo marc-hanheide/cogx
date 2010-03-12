@@ -323,8 +323,8 @@ TomGine::vec3 VirtualScene::getRandomColor(){
 TomGine::tgRenderModel::Material VirtualScene::getRandomMaterial(){
 	TomGine::vec3 c = getRandomColor();
 	tgRenderModel::Material material; 
-	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.3;
-	material.diffuse = vec4(c.x,c.y,c.z,1.0) * 1.0;
+	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.4;
+	material.diffuse = vec4(0.2,0.2,0.2,1.0) + vec4(c.x,c.y,c.z,1.0) * 0.8;
 	material.specular = vec4(0.5,0.5,0.5,1.0);
 	material.shininess = 50.0 * float(rand())/RAND_MAX;
 	return material;
