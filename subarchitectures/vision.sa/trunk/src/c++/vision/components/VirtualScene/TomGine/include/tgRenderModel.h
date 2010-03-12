@@ -39,7 +39,7 @@ public:
 	Material 		m_material;
 	
 	virtual void DrawFaces();
-	void DrawFaces(bool wireframe);
+	void DrawFaces(bool lighting);
 	virtual void DrawPolygons();
 	virtual void DrawNormals(float normal_length);
 
