@@ -37,6 +37,7 @@ private:
 	tgCamera 			m_camera;
 	tgCamera 			m_camera0;
 	tgCamera			m_cam_ortho;
+
 	tgLighting 		m_lighting;
 	tgTimer 			m_timer;
 	tgVector3			m_cor;			///< Center of Rotation

@@ -68,104 +68,96 @@ bool convertGeometry2Model(VisionData::GeometryModelPtr geom, TomGine::tgModel& 
 	return true;
 }
 
-bool convertConvexHull2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel& model){
+bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel& model){
 	int i,j,vidx=0;
 
-printf("convertConvexHull2Model A\n");
 	if(!cvhull){
 		printf("[VirtualSceneUtils::convertConvexHull2Model] Warning: no geometry found\n");
 		return false;
 	}
-printf("convertConvexHull2Model B\n");	
+
 	// Parse through points
 	TomGine::vec3 p;
 	TomGine::tgModel::Vertex v;
 	TomGine::tgModel::Face f;
+	
 	for(i=0; i<cvhull->PointsSeq.size(); i++){
-	printf("a: %d\n", cvhull->PointsSeq.size());
 		p.x = cvhull->PointsSeq[i].x;
 		p.y = cvhull->PointsSeq[i].y;
 		p.z = cvhull->PointsSeq[i].z;
-	printf("b\n");
 		v.pos = p;
-		v.normal.x = cvhull->plane.a;
-		v.normal.y = cvhull->plane.b;
-		v.normal.z = cvhull->plane.c;
-	printf("c\n");
-		model.m_points.push_back(p);
+// 		model.m_points.push_back(p);
 		model.m_vertices.push_back(v);
 		f.vertices.push_back(vidx++);
-	printf("d\n");
-// 		printf("%f %f %f\n", p.x, p.y, p.z);
 	}
+	
 	model.m_polygons.push_back(f);
-printf("convertConvexHull2Model C\n");	
-	// Parse through objects
-	VisionData::OneObj object;
-	printf("objects size: %d\n", cvhull->Objects.size());
-	for(i=0; i<cvhull->Objects.size(); i++){
-		object = cvhull->Objects[i];
-printf("convertConvexHull2Model D\n");		
-		// Bottom plane
-		f.vertices.clear();
-		for(j=0; j<object.pPlane.size(); j++){
-			v.pos.x = object.pPlane[j].x;
-			v.pos.y = object.pPlane[j].y;
-			v.pos.z = object.pPlane[j].z;
-			v.normal.x = cvhull->plane.a;
-			v.normal.y = cvhull->plane.b;
-			v.normal.z = cvhull->plane.c;
-			v.normal = v.normal * (-1.0);
-			model.m_vertices.push_back(v);
-			f.vertices.push_back(vidx++);
-// 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
-		}
-		model.m_polygons.push_back(f);
-printf("convertConvexHull2Model E\n");		
-		// Top plane
-		f.vertices.clear();
-		for(j=0; j<object.pTop.size(); j++){
-			v.pos.x = object.pTop[j].x;
-			v.pos.y = object.pTop[j].y;
-			v.pos.z = object.pTop[j].z;
-			v.normal.x = cvhull->plane.a;
-			v.normal.y = cvhull->plane.b;
-			v.normal.z = cvhull->plane.c;
-			model.m_vertices.push_back(v);
-			f.vertices.push_back(vidx++);
-// 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
-		}
-		model.m_polygons.push_back(f);
-printf("convertConvexHull2Model F\n");		
-		// side planes
-		f.vertices.clear();
-		for(j=0; j<object.pTop.size(); j++){
-			v.pos.x = object.pTop[j].x;
-			v.pos.y = object.pTop[j].y;
-			v.pos.z = object.pTop[j].z;
-			v.normal.x = cvhull->plane.a;
-			v.normal.y = cvhull->plane.b;
-			v.normal.z = cvhull->plane.c;
-			model.m_vertices.push_back(v);
-			f.vertices.push_back(vidx++);
-			
-			v.pos.x = object.pPlane[j].x;
-			v.pos.y = object.pPlane[j].y;
-			v.pos.z = object.pPlane[j].z;
-			v.normal.x = cvhull->plane.a;
-			v.normal.y = cvhull->plane.b;
-			v.normal.z = cvhull->plane.c;
-			v.normal = v.normal * (-1.0);
-			model.m_vertices.push_back(v);
-			f.vertices.push_back(vidx++);
-// 			printf("%f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
-		}
-		model.m_polygons.push_back(f);
-	}
-printf("convertConvexHull2Model G\n");	
+	model.ComputeNormals();
+	
 	return true;
 }
 
+bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& model){
+	int i,j,vidx=0;
+	TomGine::tgModel::Vertex v;
+	TomGine::tgModel::Face f;
+		
+	// Bottom plane
+	f.vertices.clear();
+	for(j=object.pPlane.size()-1; j>=0; j--){
+		v.pos.x = object.pPlane[j].x;
+		v.pos.y = object.pPlane[j].y;
+		v.pos.z = object.pPlane[j].z;
+		v.normal = v.normal * (-1.0);
+		model.m_vertices.push_back(v);
+		f.vertices.push_back(vidx++);
+	}
+	model.m_polygons.push_back(f);
+
+	// Top plane
+	f.vertices.clear();
+	for(j=0; j<object.pTop.size(); j++){
+		v.pos.x = object.pTop[j].x;
+		v.pos.y = object.pTop[j].y;
+		v.pos.z = object.pTop[j].z;
+		model.m_vertices.push_back(v);
+		f.vertices.push_back(vidx++);
+	}
+	model.m_polygons.push_back(f);
+	
+	// side planes
+	f.vertices.clear();
+	for(j=0; j<object.pTop.size(); j++){
+		v.pos.x = object.pTop[j].x;
+		v.pos.y = object.pTop[j].y;
+		v.pos.z = object.pTop[j].z;
+		model.m_vertices.push_back(v);
+		f.vertices.push_back(vidx++);
+		
+		v.pos.x = object.pPlane[j].x;
+		v.pos.y = object.pPlane[j].y;
+		v.pos.z = object.pPlane[j].z;
+		model.m_vertices.push_back(v);
+		f.vertices.push_back(vidx++);
+	}
+	if(object.pTop.size()>0){
+		v.pos.x = object.pTop[0].x;
+		v.pos.y = object.pTop[0].y;
+		v.pos.z = object.pTop[0].z;
+		model.m_vertices.push_back(v);
+		f.vertices.push_back(vidx++);
+		
+		v.pos.x = object.pPlane[0].x;
+		v.pos.y = object.pPlane[0].y;
+		v.pos.z = object.pPlane[0].z;
+		model.m_vertices.push_back(v);
+		f.vertices.push_back(vidx++);
+	}
+	model.m_quadstrips.push_back(f);
+	model.ComputeNormals();
+		
+	return true;
+}
 
 // Converts Video::CameraParameters from Video::Image of VideoServer to 
 // Extrinsic- and Intrinsic- Matrix of OpenGL

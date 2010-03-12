@@ -84,30 +84,30 @@ void tgRenderModel::DrawPolygons(){
 	}
 }
 
-void tgRenderModel::DrawNormals(float normal_length){	// draw normals
-	int i,j,v;
-	Face* f;
-	
-	m_pose.Activate();
-	
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
-	
-	glBegin(GL_LINES);
-	for(i=0; i<m_faces.size(); i++){
-		f = &m_faces[i];
-		for(j=0; j<(int)f->vertices.size(); j++){
-			v = f->vertices[j];
-			glVertex3f( m_vertices[v].pos.x,
-									m_vertices[v].pos.y,
-									m_vertices[v].pos.z );
-			glVertex3f( m_vertices[v].pos.x + m_vertices[v].normal.x * normal_length,
-									m_vertices[v].pos.y + m_vertices[v].normal.y * normal_length,
-									m_vertices[v].pos.z + m_vertices[v].normal.z * normal_length );
-		}
-	}
-	glEnd();
-	
-	m_pose.Deactivate();
-	glColor3f(1.0, 1.0, 1.0);
-}
+// void tgRenderModel::DrawNormals(float normal_length){	// draw normals
+// 	int i,j,v;
+// 	Face* f;
+// 	
+// 	m_pose.Activate();
+// 	
+// 	glDisable(GL_TEXTURE_2D);
+// 	glDisable(GL_LIGHTING);
+// 	
+// 	glBegin(GL_LINES);
+// 	for(i=0; i<m_faces.size(); i++){
+// 		f = &m_faces[i];
+// 		for(j=0; j<(int)f->vertices.size(); j++){
+// 			v = f->vertices[j];
+// 			glVertex3f( m_vertices[v].pos.x,
+// 									m_vertices[v].pos.y,
+// 									m_vertices[v].pos.z );
+// 			glVertex3f( m_vertices[v].pos.x + m_vertices[v].normal.x * normal_length,
+// 									m_vertices[v].pos.y + m_vertices[v].normal.y * normal_length,
+// 									m_vertices[v].pos.z + m_vertices[v].normal.z * normal_length );
+// 		}
+// 	}
+// 	glEnd();
+// 	
+// 	m_pose.Deactivate();
+// 	glColor3f(1.0, 1.0, 1.0);
+// }

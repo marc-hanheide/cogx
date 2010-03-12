@@ -91,25 +91,27 @@ void tgModel::DrawPoints(){
 }
 
 void tgModel::DrawNormals(float normal_length){	// draw normals
+	m_vertices.size();
 	int i,j,v;
 	Face* f;
 		
 	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
 	glColor3f(0.0, 0.0, 1.0);
 	
 	glBegin(GL_LINES);
-	for(i=0; i<m_faces.size(); i++){
-		f = &m_faces[i];
-		for(j=0; j<(int)f->vertices.size(); j++){
-			v = f->vertices[j];
-			glVertex3f( m_vertices[v].pos.x,
-									m_vertices[v].pos.y,
-									m_vertices[v].pos.z );
-			glVertex3f( m_vertices[v].pos.x + m_vertices[v].normal.x * normal_length,
-									m_vertices[v].pos.y + m_vertices[v].normal.y * normal_length,
-									m_vertices[v].pos.z + m_vertices[v].normal.z * normal_length );
+// 	for(i=0; i<m_faces.size(); i++){
+// 		f = &m_faces[i];
+	
+		for(j=0; j<(int)m_vertices.size(); j++){
+			glVertex3f( m_vertices[j].pos.x,
+									m_vertices[j].pos.y,
+									m_vertices[j].pos.z );
+			glVertex3f( m_vertices[j].pos.x + m_vertices[j].normal.x * normal_length,
+									m_vertices[j].pos.y + m_vertices[j].normal.y * normal_length,
+									m_vertices[j].pos.z + m_vertices[j].normal.z * normal_length );
 		}
-	}
+// 	}
 	glEnd();
 	
 	glColor3f(1.0, 1.0, 1.0);
@@ -117,32 +119,93 @@ void tgModel::DrawNormals(float normal_length){	// draw normals
 
 void tgModel::ComputeNormals(){
 
-	int i,j;
+	int i,j,s;
 	Face* f;
-	vec3 v0, v1, v2, e1, e2, n;
+	vec3 v0, v1, v2, e1, e2, n, n1, n2;
 	
 	// calculate vertex normals using the face normal
 	for(i=0; i<(int)m_faces.size(); i++){
 		f = &m_faces[i];
 		
-		//if(f->v.size() == 3){ // this is because of some bug in Blender flipping normals of triangles
+		v0 = vec3(m_vertices[f->vertices[0]].pos.x, m_vertices[f->vertices[0]].pos.y, m_vertices[f->vertices[0]].pos.z);
+		v1 = vec3(m_vertices[f->vertices[1]].pos.x, m_vertices[f->vertices[1]].pos.y, m_vertices[f->vertices[1]].pos.z);
+		v2 = vec3(m_vertices[f->vertices[2]].pos.x, m_vertices[f->vertices[2]].pos.y, m_vertices[f->vertices[2]].pos.z);
+		e1 = v1 - v0;
+		e2 = v2 - v0;
 		
-			v0 = vec3(m_vertices[f->vertices[0]].pos.x, m_vertices[f->vertices[0]].pos.y, m_vertices[f->vertices[0]].pos.z);
-			v1 = vec3(m_vertices[f->vertices[1]].pos.x, m_vertices[f->vertices[1]].pos.y, m_vertices[f->vertices[1]].pos.z);
-			v2 = vec3(m_vertices[f->vertices[2]].pos.x, m_vertices[f->vertices[2]].pos.y, m_vertices[f->vertices[2]].pos.z);
+		n.cross(e1,e2);
+		n.normalize();
+		f->normal = vec3(n);
+		for(j=0; j<(int)f->vertices.size(); j++){
+			m_vertices[f->vertices[j]].normal.x = n.x;
+			m_vertices[f->vertices[j]].normal.y = n.y;
+			m_vertices[f->vertices[j]].normal.z = n.z;
+		}
+	}
+	
+	for(i=0; i<(int)m_polygons.size(); i++){
+		f = &m_polygons[i];
+		for(j=0; j<(int)f->vertices.size()-2; j++){
+			v0 = vec3(m_vertices[f->vertices[j+0]].pos.x, m_vertices[f->vertices[j+0]].pos.y, m_vertices[f->vertices[j+0]].pos.z);
+			v1 = vec3(m_vertices[f->vertices[j+1]].pos.x, m_vertices[f->vertices[j+1]].pos.y, m_vertices[f->vertices[j+1]].pos.z);
+			v2 = vec3(m_vertices[f->vertices[j+2]].pos.x, m_vertices[f->vertices[j+2]].pos.y, m_vertices[f->vertices[j+2]].pos.z);
 			e1 = v1 - v0;
 			e2 = v2 - v0;
 			
 			n.cross(e1,e2);
 			n.normalize();
-			f->normal = vec3(n);
-			for(j=0; j<(int)f->vertices.size(); j++){
-				m_vertices[f->vertices[j]].normal.x = n.x;
-				m_vertices[f->vertices[j]].normal.y = n.y;
-				m_vertices[f->vertices[j]].normal.z = n.z;
-			}
-		//}	
+			
+			m_vertices[f->vertices[j+0]].normal.x = n.x;
+			m_vertices[f->vertices[j+0]].normal.y = n.y;
+			m_vertices[f->vertices[j+0]].normal.z = n.z;
+			m_vertices[f->vertices[j+1]].normal.x = n.x;
+			m_vertices[f->vertices[j+1]].normal.y = n.y;
+			m_vertices[f->vertices[j+1]].normal.z = n.z;
+			m_vertices[f->vertices[j+2]].normal.x = n.x;
+			m_vertices[f->vertices[j+2]].normal.y = n.y;
+			m_vertices[f->vertices[j+2]].normal.z = n.z;
+		}
 	}
+	for(i=0; i<(int)m_quadstrips.size(); i++){
+		f = &m_quadstrips[i];
+		s = (int)f->vertices.size();
+		for(j=0; j<(int)s; j++){
+				
+			v0 = vec3(m_vertices[f->vertices[(j+0)%s]].pos.x, m_vertices[f->vertices[(j+0)%s]].pos.y, m_vertices[f->vertices[(j+0)%s]].pos.z);
+			v1 = vec3(m_vertices[f->vertices[(j+1)%s]].pos.x, m_vertices[f->vertices[(j+1)%s]].pos.y, m_vertices[f->vertices[(j+1)%s]].pos.z);
+			v2 = vec3(m_vertices[f->vertices[(j+2)%s]].pos.x, m_vertices[f->vertices[(j+2)%s]].pos.y, m_vertices[f->vertices[(j+2)%s]].pos.z);
+			e1 = v1 - v0;
+			e2 = v2 - v0;
+			n1.cross(e1,e2);
+			n1.normalize();
+			
+			v0 = vec3(m_vertices[f->vertices[(j+0)%s]].pos.x, m_vertices[f->vertices[(j+0)%s]].pos.y, m_vertices[f->vertices[(j+0)%s]].pos.z);
+			v1 = vec3(m_vertices[f->vertices[(j-1)%s]].pos.x, m_vertices[f->vertices[(j+s-1)%s]].pos.y, m_vertices[f->vertices[(j+s-1)%s]].pos.z);
+			v2 = vec3(m_vertices[f->vertices[(j-2)%s]].pos.x, m_vertices[f->vertices[(j+s-2)%s]].pos.y, m_vertices[f->vertices[(j+s-2)%s]].pos.z);
+			e1 = v1 - v0;
+			e2 = v2 - v0;
+			n2.cross(e2,e1);
+			n2.normalize();
+			
+			n = (n1 + n2) * 0.5;
+			
+			if(j%2) n = n * -1.0;
+			
+			m_vertices[f->vertices[j]].normal.x = n.x;
+			m_vertices[f->vertices[j]].normal.y = n.y;
+			m_vertices[f->vertices[j]].normal.z = n.z;
+		}
+	}
+}
+
+void tgModel::Clear(){
+	m_vertices.clear();
+	m_faces.clear();
+	m_polygons.clear();
+	m_quadstrips.clear();
+	m_lines.clear();
+	m_lineloop.clear();
+	m_points.clear();
 }
 
 void tgModel::PrintInfo(){

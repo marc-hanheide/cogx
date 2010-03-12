@@ -70,6 +70,8 @@ public:
 	/** @brief computes normals of vertices of m_faces */
 	void ComputeNormals();
 	
+	virtual void Clear();
+	
 	void PrintInfo();
 };
 
