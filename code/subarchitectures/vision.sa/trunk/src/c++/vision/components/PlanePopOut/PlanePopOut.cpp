@@ -801,6 +801,7 @@ void PlanePopOut::AddConvexHullinWM()
 	{ 
 	    if (mConvexHullPoints.size()>0)
 	    {
+		log("There are %u points in the convex hull", mConvexHullPoints.size());
 		CHPtr->PointsSeq = mConvexHullPoints;
 		CHPtr->time = getCASTTime();
 		p3.pos = mCenterOfHull;
@@ -820,7 +821,8 @@ void PlanePopOut::AddConvexHullinWM()
 	else
 	{
 	    if (mConvexHullPoints.size()>0)
-	    {	debug("There are %u points in the convex hull", mConvexHullPoints.size());
+	    {
+		    log("There are %u points in the convex hull", mConvexHullPoints.size());
 		    CHPtr->PointsSeq = mConvexHullPoints;
 		    CHPtr->time = getCASTTime();
 		    p3.pos = mCenterOfHull;
