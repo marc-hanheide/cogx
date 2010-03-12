@@ -104,6 +104,8 @@ public:
 	
 	/**	@brief Returns the actual position of the camera with respect to the coordinate frame */
 	tgVector3 GetCameraPosition(){ return m_camera.GetPos(); }
+	
+	bool	GetWireframeMode(){ return m_wireframe; }
 
 	tgVector3 Get3DPointFrom2D(int x, int y);
 	bool GetNewPoint(vec3& v);

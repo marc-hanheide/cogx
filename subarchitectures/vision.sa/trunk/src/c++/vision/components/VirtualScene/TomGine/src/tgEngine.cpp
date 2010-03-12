@@ -92,6 +92,7 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 	light1.position = vec4(-1.0,0.0,1.0,0.0);
 	m_lighting.ApplyLight(light1,1);
 
+	glLineWidth(2);
 }
 
 bool tgEngine::Update(){

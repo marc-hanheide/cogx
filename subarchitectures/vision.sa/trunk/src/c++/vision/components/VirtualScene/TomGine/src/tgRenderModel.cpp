@@ -13,7 +13,7 @@ void tgRenderModel::ApplyMaterial(){
 }
 
 void tgRenderModel::ApplyColor(){
-	glColor3f(m_color.x, m_color.y, m_color.z);
+	glColor3f(m_material.color.x, m_material.color.y, m_material.color.z);
 }
 
 void tgRenderModel::Material::Apply(){
@@ -25,7 +25,17 @@ void tgRenderModel::Material::Apply(){
 }
 
 void tgRenderModel::DrawFaces(){
-	ApplyMaterial();
+	DrawFaces(false);
+}
+
+void tgRenderModel::DrawFaces(bool wireframe){
+	
+	if(!wireframe){
+		ApplyMaterial();
+	}else{
+		glDisable(GL_LIGHTING);
+		glColor3f(m_material.color.x, m_material.color.y, m_material.color.z);
+	}
 	int i,j;
 	Face* f;
 	int v;

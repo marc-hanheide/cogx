@@ -50,10 +50,12 @@ private:
   bool m_render;
   bool m_running;
   bool m_lock;
+  bool m_wireframe;
   float m_fTime;
  
   // Functions with GL commands allowed
   void initScene(const Video::Image &image);
+  void drawCamera();
   void drawVisualObjects();
   void drawConvexHulls();
   void inputControl();
