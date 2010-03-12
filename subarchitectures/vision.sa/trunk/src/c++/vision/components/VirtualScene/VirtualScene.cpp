@@ -92,7 +92,7 @@ void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 
 void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 	log("receiving ConvexHull: %s", _wmc.address.id.c_str());
-	if(!m_lock){
+
 		
 		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
 		
@@ -118,9 +118,7 @@ void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 			newModelEntry.model.m_material = getRandomMaterial();
 			m_ConvexHullList.push_back(newModelEntry);
 		}		
-		
-		m_lock = true;
-	}
+
 }
 
 void VirtualScene::overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc){
