@@ -87,6 +87,8 @@ public:
 	
 	float GetFOVY(){ return m_fovy; }
 	unsigned short GetProjection(){ return m_projection; }
+	mat4 GetIntrinsic(){ return m_intrinsic; }
+	mat4 GetExtrinsic(){ return m_extrinsic; }
 
 	// Translations
 	void Translate(tgVector3 v);

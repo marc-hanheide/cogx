@@ -224,6 +224,7 @@ void VirtualScene::runComponent(){
       m_engine->Activate2D();
 			m_font->Print("VirtualSzene", 16, 5, 5);
       m_running = m_engine->Update(m_fTime, m_eventlist);
+      m_wireframe = m_engine->GetWireframeMode();
       sleepComponent(5);
     }else{
 			// * Idle *
@@ -257,9 +258,16 @@ void VirtualScene::initScene(const Video::Image &image){
   log("... initialisation successfull!");
 }
 
+void VirtualScene::drawCamera(){
+// 	glMatrixMode(GL_MODELVIEW);
+// 	glPushMatrix();
+// 		glMultMatrix(m_camera.GetExtrinsic());
+// 		
+}
+
 void VirtualScene::drawVisualObjects(){
 	for(int i=0; i<m_VisualObjectList.size(); i++){
-		m_VisualObjectList[i].model.DrawFaces();
+		m_VisualObjectList[i].model.DrawFaces(m_wireframe);
 // 		m_VisualObjectList[i].model.DrawNormals(0.01);
 	}
 }
@@ -321,8 +329,9 @@ TomGine::vec3 VirtualScene::getRandomColor(){
 }
 
 TomGine::tgRenderModel::Material VirtualScene::getRandomMaterial(){
-	TomGine::vec3 c = getRandomColor();
+	TomGine::vec3 c;
 	tgRenderModel::Material material; 
+	material.color = c = getRandomColor();
 	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.4;
 	material.diffuse = vec4(0.2,0.2,0.2,1.0) + vec4(c.x,c.y,c.z,1.0) * 0.8;
 	material.specular = vec4(0.5,0.5,0.5,1.0);

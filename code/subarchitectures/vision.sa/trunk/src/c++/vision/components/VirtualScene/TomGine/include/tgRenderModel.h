@@ -29,6 +29,7 @@ public:
 		vec4 ambient;
 		vec4 diffuse;
 		vec4 specular;
+		vec3 color;
 		float shininess;
 		
 		void Apply();
@@ -36,9 +37,9 @@ public:
 	
 	tgPose			m_pose;
 	Material 		m_material;
-	vec3				m_color;
 	
 	virtual void DrawFaces();
+	void DrawFaces(bool wireframe);
 	virtual void DrawPolygons();
 	virtual void DrawNormals(float normal_length);
 
