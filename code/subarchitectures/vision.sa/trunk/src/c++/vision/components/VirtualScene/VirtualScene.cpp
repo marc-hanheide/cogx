@@ -91,24 +91,33 @@ void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 }
 
 void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
+	log("receiving ConvexHull: %s", _wmc.address.id.c_str());
 	if(!m_lock){
-	
-	
-		log("receiving ConvexHull: %s", _wmc.address.id.c_str());
+		
 		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
 		
 		ModelEntry newModelEntry;
 		
-		if(!convertConvexHull2Model(obj, newModelEntry.model)){
-			log("  error can not convert ConvexHull to virtual scene model");
+		// Convert plane to geometry
+		if(!convertConvexHullPlane2Model(obj, newModelEntry.model)){
+			log("  error can not convert ConvexHullPlane to virtual scene model");
 			return;
 		}
-		
-// 		newModelEntry.obj = obj;
 		newModelEntry.model.m_material = getRandomMaterial();
 		newModelEntry.castWMA = _wmc.address;
-		
+		m_engine->SetCenterOfRotation(obj->center.pos.x,obj->center.pos.y,obj->center.pos.z);
 		m_ConvexHullList.push_back(newModelEntry);
+		
+		// Convert each object to geometry
+		for(int i=0; i<obj->Objects.size(); i++){
+			newModelEntry.model.Clear();
+			if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry.model)){
+				log("  error can not convert ConvexHullObject to virtual scene model");
+				return;
+			}
+			newModelEntry.model.m_material = getRandomMaterial();
+			m_ConvexHullList.push_back(newModelEntry);
+		}		
 		
 		m_lock = true;
 	}
@@ -273,14 +282,11 @@ void VirtualScene::drawVisualObjects(){
 
 void VirtualScene::drawConvexHulls(){
 	for(int i=0; i<m_ConvexHullList.size(); i++){
-		glDisable(GL_LIGHTING);
-		glPointSize(2);
-		m_ConvexHullList[i].model.ApplyColor();
-		m_ConvexHullList[i].model.DrawPoints();
-		glPointSize(1);
-		
+
 		m_ConvexHullList[i].model.DrawPolygons();
-// 		m_VisualObjectList[i].model.DrawNormals(0.01);
+		m_ConvexHullList[i].model.DrawQuadstrips();
+		
+// 		m_ConvexHullList[i].model.DrawNormals(0.01);
 	}
 }
 
@@ -331,7 +337,7 @@ TomGine::tgRenderModel::Material VirtualScene::getRandomMaterial(){
 	TomGine::vec3 c;
 	tgRenderModel::Material material; 
 	material.color = c = getRandomColor();
-	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.4;
+	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.6;
 	material.diffuse = vec4(0.2,0.2,0.2,1.0) + vec4(c.x,c.y,c.z,1.0) * 0.8;
 	material.specular = vec4(0.5,0.5,0.5,1.0);
 	material.shininess = 50.0 * float(rand())/RAND_MAX;

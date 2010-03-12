@@ -41,7 +41,7 @@ public:
 	virtual void DrawFaces();
 	void DrawFaces(bool lighting);
 	virtual void DrawPolygons();
-	virtual void DrawNormals(float normal_length);
+// 	virtual void DrawNormals(float normal_length);
 
 	void ApplyMaterial();
 	void ApplyColor();

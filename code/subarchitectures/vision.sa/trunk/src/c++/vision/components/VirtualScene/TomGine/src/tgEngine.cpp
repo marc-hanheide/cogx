@@ -77,21 +77,6 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 										0.1, 2.0,
 										GL_ORTHO);
 	
-	// Setup lights	
-	tgLight light0;
-	light0.ambient = vec4(0.3,0.3,0.3,1.0);
-	light0.diffuse = vec4(1.0,1.0,1.0,1.0);
-	light0.specular = vec4(0.2,0.2,0.2,1.0);
-	light0.position = vec4(1.0,1.0,1.0,0.0);
-	m_lighting.ApplyLight(light0,0);
-	
-	tgLight light1;
-	light1.ambient = vec4(0.3,0.3,0.3,1.0);
-	light1.diffuse = vec4(0.7,0.9,1.0,1.0);
-	light1.specular = vec4(0.2,0.2,0.2,1.0);
-	light1.position = vec4(-1.0,0.0,1.0,0.0);
-	m_lighting.ApplyLight(light1,1);
-
 	glLineWidth(2);
 }
 
@@ -134,6 +119,14 @@ bool tgEngine::Update(float &fTime, std::vector<tgEvent> &eventlist){
 	// clear framebuffer and depth buffer
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	
+	// Light pointing along camera viewing axis
+	tgLight light;
+	tgVector3 cam_f = m_camera.GetF();
+	light.ambient = vec4(0.4,0.4,0.4,1.0);
+	light.diffuse = vec4(1.0,1.0,1.0,1.0);
+	light.specular = vec4(1.0,1.0,1.0,1.0);
+	light.position = vec4(-cam_f.x, -cam_f.y, -cam_f.z,1.0);
+	m_lighting.ApplyLight(light,0);
 	
 	return quit;
 }
