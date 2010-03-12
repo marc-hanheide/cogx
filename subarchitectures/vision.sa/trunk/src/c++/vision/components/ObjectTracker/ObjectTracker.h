@@ -13,7 +13,6 @@
 #include <VisionData.hpp>
 #include <vector>
 #include <string>
-#include <semaphore.h>
 
 #include "Tracker.h"
 #include "EdgeTracker.h"

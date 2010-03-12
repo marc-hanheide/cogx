@@ -46,7 +46,6 @@ TrackerModel& TrackerModel::operator=(const Model& m){
 	m_edgelist.clear();
 	m_passlist.clear();	
 	m_facepixellist.assign(m_facelist.size(), 0);
-	m_texturedfaces.clear();
 	
 	computeEdges();
 	Update();
@@ -87,9 +86,16 @@ void TrackerModel::computeBoundingSphere(){
 }
 
 void TrackerModel::Update(){
+	int i,j;
 	if(m_facepixellist.size() != m_facelist.size())
 		m_facepixellist.assign(m_facelist.size(), 0);
-		
+				
+	for(i=0; i<m_passlist.size(); i++){
+		for(j=0; j<m_passlist[i]->f.size(); j++){
+			m_facepixellist[m_passlist[i]->f[j]] = 1;
+		}
+	}
+	
 	computeBoundingSphere();
 	
 	UpdateDisplayLists();
@@ -155,8 +161,7 @@ void TrackerModel::drawFace(int i){
 		glEnable(GL_TEXTURE_2D);
 		m_texture->bind();
 	}
-	
-	
+
 	f = &m_facelist[i];
 	if((int)f->v.size() == 3)
 		glBegin(GL_TRIANGLES);
@@ -172,7 +177,7 @@ void TrackerModel::drawFace(int i){
 	}
 		
 	glEnd();
-		
+	
 	if(m_texture){
 		glDisable(GL_TEXTURE_2D);
 	}
@@ -258,10 +263,12 @@ vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTex
 	glGenQueriesARB(m_facelist.size(), queryPixels);
 	for(i=0; i<(int)m_facelist.size(); i++){
 		glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
+
 		drawFace(i);
+
 		glEndQueryARB(GL_SAMPLES_PASSED_ARB);			
 	}
-	
+
 	for(i=0; i<(int)m_facelist.size(); i++){
 
 		glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
@@ -282,7 +289,6 @@ vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTex
 		}
 
 	}
-		
 	p_max.deactivate();
 	
 	glDeleteQueriesARB(m_facelist.size(), queryPixels);
@@ -291,29 +297,99 @@ vector<int> TrackerModel::getFaceUpdateList(Pose& p_max, vec3 view, float minTex
 	return faceUpdateList;
 }
 
-void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose& p_max, vec3 view, float minTexGrabAngle, vector<int> faceUpdateList){
+void TrackerModel::textureFromImage(Texture* image,
+																		int width, int height,
+																		Pose& p_max,
+																		vec3 view,
+																		float minTexGrabAngle,
+																		std::vector<int> faceUpdateList,
+																		std::vector<Vertex> &vertices,
+																		Camera* m_cam)
+{
 	int i,j,k;
 	vec4 texcoords_model;
 	vec4 vertex;
+	double mv[16];
+	double pj[16];
 	mat4 modelview, projection, modelviewprojection;
 
-	// get faces to update
-// 	vector<int> faceUpdateList = getFaceUpdateList(p_max, view, minTexGrabAngle);
-// 	if(faceUpdateList.empty())
-// 		return;
-	
 	// add new rendering pass
 	Pass* newpass = new Pass;
 	
 	// query modelview and projection matrix
-	p_max.activate();
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
-	glGetFloatv(GL_PROJECTION_MATRIX, projection);
-	p_max.deactivate();
-	newpass->modelviewprojection = projection * modelview;
+// 	p_max.activate();
+// 	glGetDoublev(GL_MODELVIEW_MATRIX, mv);		// TODO to inaccurate, replace with modelview of p_max and projection of camera
+// 	glGetDoublev(GL_PROJECTION_MATRIX, pj);
+// 	p_max.deactivate();
+// 	for(i=0; i<16; i++){
+// 		modelview.mat[i] = (float)mv[i];
+// 		projection.mat[i] = (float)pj[i];
+// 	}
+// 	newpass->modelviewprojection = projection * modelview;
+	mat3 rot;
+	vec3 pos;
+	p_max.getPose(rot,pos);
+	mat4 matModel = mat4(rot);
+	matModel[12]=pos.x; matModel[13]=pos.y; matModel[14]=pos.z;
+	mat4 matView = m_cam->GetExtrinsic();
+	projection = m_cam->GetIntrinsic();
+	modelview = matView * matModel;
+	modelviewprojection = projection * modelview;
+	newpass->modelviewprojection = modelviewprojection;
+	
+	
+	// calculate bounding rectangle
+	vec4 texCoords;
+	vec3 p;
+	Vertex v;
+	double x_min=(double)width;
+	double y_min=(double)height;
+	double x_max=0.0;
+	double y_max=0.0;
+	double x,y;
+	for(i=0; i<faceUpdateList.size(); i++){
+		k = faceUpdateList[i];
+		for(j=0; j<m_facelist[k].v.size(); j++){
+			p = m_vertexlist[m_facelist[k].v[j]].pos;
+			texCoords = modelviewprojection * vec4(p.x, p.y, p.z, 1.0);
+			x = (texCoords.x / texCoords.w + 1.0) * 0.5;
+			y = (texCoords.y / texCoords.w + 1.0) * 0.5;
+			m_vertexlist[m_facelist[k].v[j]].texCoord.x = x;
+			m_vertexlist[m_facelist[k].v[j]].texCoord.y = y;
+			if(x<x_min)	x_min = x;
+			if(y<y_min)	y_min = y;
+			if(x>x_max) x_max = x;
+			if(y>y_max)	y_max = y;
+		}
+	}
+	
+	// Store bounding box
+	newpass->x 	= x_min;
+	newpass->w 	= x_max-x_min;
+	newpass->y 	= y_min;
+	newpass->h 	= y_max-y_min;
+	
+	// Calculate bounding rectangle in pixels
+	x_min = (x_min * width);
+	x_max = (x_max * width);
+	y_min = (y_min * height);
+	y_max = (y_max * height);
+
+	v.pos.x = x_min - width*0.5;
+	v.pos.y = y_min - height*0.5;
+	vertices.push_back(v);
+	v.pos.x = x_max - width*0.5;
+	v.pos.y = y_min - height*0.5;
+	vertices.push_back(v);
+	v.pos.x = x_max - width*0.5;
+	v.pos.y = y_max - height*0.5;
+	vertices.push_back(v);
+	v.pos.x = x_min - width*0.5;
+	v.pos.y = y_max - height*0.5;
+	vertices.push_back(v);
 	
 	// store texture
-	newpass->texture->copyFromTexture(image);
+	newpass->texture->copyFromTexture(image, x_min, y_min, x_max-x_min, y_max-y_min);
 	
 	// add faces to pass
 	newpass->f = faceUpdateList;
@@ -321,19 +397,19 @@ void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose&
 	m_passlist.push_back(newpass);
 			
 	// clean up passes
-	m_texturedfaces.clear();		// holds faces which are allready in use by another pass
+	std::vector<int> texturedfaces;
 	for(i=(m_passlist.size()-1); i>=0; i--){		// parse through passlist topdown
 		Pass* p = m_passlist[i];					// current pass
 		bool destroy = true;
 		
 		for(j=0; j<(int)p->f.size(); j++){				// for each face of pass
 			bool face_allready_in_use = false;
-			for(k=0; k<(int)m_texturedfaces.size(); k++){
-				if(p->f[j] == m_texturedfaces[k])			// compare with each face in usedfaces
+			for(k=0; k<(int)texturedfaces.size(); k++){
+				if(p->f[j] == texturedfaces[k])			// compare with each face in usedfaces
 					face_allready_in_use = true;
 			}
 			if(!face_allready_in_use){
-				m_texturedfaces.push_back(p->f[j]);
+				texturedfaces.push_back(p->f[j]);
 				destroy=false;
 			}
 		}
@@ -343,11 +419,6 @@ void TrackerModel::textureFromImage(Texture* image, int width, int height, Pose&
 			m_passlist.erase(m_passlist.begin()+i);
 		}
 	}
-	
-	m_textured = true;
-	m_shadeTexturing->bind();
-	m_shadeTexturing->setUniform("useTexCoords", false);
-	m_shadeTexturing->unbind();
 	
 	UpdateDisplayLists();
 }
@@ -523,7 +594,19 @@ void TrackerModel::genListPass(){		// draw faces using passlist and shader for t
 		m_passlist[p]->texture->bind();
 		
 		// set modelview matrix for texture
+// 		printf("x,y,w,h: %f %f %f %f\n", m_passlist[p]->x, m_passlist[p]->y, m_passlist[p]->w, m_passlist[p]->h);
+// 		printf("face %d: %d %d %d %d\n", m_passlist[p]->f[0], 
+// 				m_facelist[m_passlist[p]->f[0]].v[0], 
+// 				m_facelist[m_passlist[p]->f[0]].v[1],
+// 				m_facelist[m_passlist[p]->f[0]].v[2], 
+// 				m_facelist[m_passlist[p]->f[0]].v[3]);
+// 		printf("modelview: %f %f %f %f\n", m_passlist[p]->modelviewprojection.mat[0], m_passlist[p]->modelviewprojection.mat[1], m_passlist[p]->modelviewprojection.mat[2], m_passlist[p]->modelviewprojection.mat[3]);
+
 		m_shadeTexturing->setUniform("modelviewprojection", m_passlist[p]->modelviewprojection, GL_FALSE);
+		m_shadeTexturing->setUniform("x", m_passlist[p]->x);
+		m_shadeTexturing->setUniform("y", m_passlist[p]->y);
+		m_shadeTexturing->setUniform("w", m_passlist[p]->w);
+		m_shadeTexturing->setUniform("h", m_passlist[p]->h);
 		
 		// parse through faces of pass
 		for(i=0; i<(int)m_passlist[p]->f.size(); i++){
@@ -538,12 +621,13 @@ void TrackerModel::genListPass(){		// draw faces using passlist and shader for t
 				
 				for(j=0; j<(int)f->v.size(); j++){
 					
-					vec4 v = vec4(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z, 1.0);
-					v = m_passlist[p]->modelviewprojection * v;
-					texCoords.x = (v.x/v.w + 1.0) * 0.5;
-					texCoords.y = (v.y/v.w + 1.0) * 0.5;
-					
-					glTexCoord2f(texCoords.x, texCoords.y);
+// 					vec4 v = vec4(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z, 1.0);
+// 					v = m_passlist[p]->modelviewprojection * v;
+// 					texCoords.x = (v.x/v.w + 1.0) * 0.5;
+// 					texCoords.y = (v.y/v.w + 1.0) * 0.5;
+// 					glTexCoord2f(texCoords.x, texCoords.y);
+
+					glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 					glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 					glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
 				}

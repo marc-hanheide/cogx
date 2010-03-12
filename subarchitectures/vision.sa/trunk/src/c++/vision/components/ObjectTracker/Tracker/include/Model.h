@@ -18,7 +18,7 @@ namespace Tracking{
 struct Vertex {
 	vec3 pos;					// vertex position
 	vec3 normal;				// vertex normal
-	vec2 texCoord;				// texture coordinates u,v
+	vec4 texCoord;				// texture coordinates u,v
 };
 
 /** @brief struct Face */

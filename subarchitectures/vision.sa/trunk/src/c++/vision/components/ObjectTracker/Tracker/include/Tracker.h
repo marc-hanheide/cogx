@@ -108,6 +108,8 @@ public:
 	*/
 	int 		addModel(Model& m, Pose& p,  std::string label, bool bfc=false);
 	
+	int			addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc=false);
+	
 	/** @brief Remove model from tracker */
 	void 		removeModel(int id);
 	
@@ -131,6 +133,10 @@ public:
 	
 	/** @brief Locks the model with id */
 	void		setModelLock(int id, bool lock);
+	
+	/** @brief Save model to file */
+	void		saveModel(int id, const char* pathname);
+	void		saveModels(const char* pathname);
 	
 	/** @brief Takes screenshot and saves it to file */
 	void		saveScreenshot(const char* filename);

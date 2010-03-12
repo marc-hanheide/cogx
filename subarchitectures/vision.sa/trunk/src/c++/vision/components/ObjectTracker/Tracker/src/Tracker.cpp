@@ -192,7 +192,27 @@ bool Tracker::init(const char* inifile, int width, int height){
 
 
 int Tracker::addModel(Model& m, Pose& p, std::string label, bool bfc){
+	if(!m_tracker_initialized){
+		printf("[Tracker::addModel()] Error tracker not initialised!\n");
+		return -1;
+	}
+	ModelEntry* modelEntry = new ModelEntry();
+	modelEntry->label = label;
+	modelEntry->model.setBFC(bfc);
+	modelEntry->model = m;
 	
+	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
+	modelEntry->pose = p;
+	modelEntry->initial_pose = p;
+	modelEntry->id = params.model_id_count++;
+	modelEntry->num_particles = params.num_particles;
+	modelEntry->num_recursions = params.num_recursions;
+	m_modellist.push_back(modelEntry);
+	
+	return modelEntry->id;
+}
+
+int Tracker::addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc){
 	if(!m_tracker_initialized){
 		printf("[Tracker::addModel()] Error tracker not initialised!\n");
 		return -1;
@@ -200,9 +220,11 @@ int Tracker::addModel(Model& m, Pose& p, std::string label, bool bfc){
 	
 	ModelEntry* modelEntry = new ModelEntry();
 	
+	ModelLoader modelloader;
+	modelloader.LoadPly(modelEntry->model, filename);
+	
 	modelEntry->label = label;
 	modelEntry->model.setBFC(bfc);
-	modelEntry->model = m;
 	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
 	modelEntry->pose = p;
 	modelEntry->initial_pose = p;
@@ -350,6 +372,35 @@ void Tracker::setModelLock(int id, bool lock){
 	}
 }
 
+void Tracker::saveModel(int id, const char* pathname){
+	ModelLoader modelloader;
+	ModelEntryList::iterator it = m_modellist.begin();
+	string name;
+	while(it != m_modellist.end()){
+		if(id==(*it)->id){
+			name = string(pathname);
+			name.append((*it)->label);
+			modelloader.SavePly((*it)->model, name.c_str());
+			return;
+		}
+		it++;
+	}
+}
+
+void Tracker::saveModels(const char* pathname){
+	ModelLoader modelloader;
+	ModelEntryList::iterator it = m_modellist.begin();
+	string name;
+	while(it != m_modellist.end()){
+		name = string(pathname);
+		name.append((*it)->label);
+		modelloader.SavePly((*it)->model, name.c_str());
+		it++;
+	}
+}
+
+
+
 void Tracker::saveScreenshot(const char* filename){
 	IplImage* img = cvCreateImage ( cvSize ( params.width, params.height ), IPL_DEPTH_8U, 3 );
 	glReadPixels(0,0,params.width,params.height,GL_RGB,GL_UNSIGNED_BYTE, img->imageData);
@@ -460,6 +511,19 @@ void Tracker::drawCalibrationPattern(){
 		glVertex3f(0.240, 0.120, 0.000);
 		glVertex3f(0.200, 0.160, 0.000);
 		glVertex3f(0.000, 0.160, 0.000);
+	glEnd();
+}
+
+void Tracker::drawPixel(float u, float v, vec3 color, float size){
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	m_ip->setCamOrtho();
+	
+	glPointSize(size);
+	glColor3f(color.x, color.y, color.z);
+	
+	glBegin(GL_POINTS);
+		glVertex3f(u,v,0.0);
 	glEnd();
 }
 

@@ -73,6 +73,9 @@ bool control(Tracker* tracker, SDL_Event &event){
 				case SDLK_e:
 					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
 					break;
+				case SDLK_i:
+					tracker->printStatistics();
+					break;
 				case SDLK_l:
 					tracker->setLockFlag( !tracker->getLockFlag() );
 					break;
@@ -83,8 +86,8 @@ bool control(Tracker* tracker, SDL_Event &event){
 					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
-					tracker->printStatistics();
-					break;
+					tracker->saveModels("resources/model/");
+					break;				
 				case SDLK_t:
 					tracker->textureFromImage();
 					break;

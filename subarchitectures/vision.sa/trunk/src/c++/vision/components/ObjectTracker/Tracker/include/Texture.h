@@ -20,10 +20,13 @@ public:
 	
 	bool load(unsigned char* image_data, int width, int height);
 	bool load(const char* filename);
+	bool save(const char* filename);
 	
 	void bind(int stage=0);
 	void copyTexImage2D(int width, int height);		// copy frame buffer pixels to texture
+	void copyTexImage2D(int x, int y, int width, int height);
 	void copyFromTexture(Texture* tex);
+	void copyFromTexture(Texture* tex, int x, int y, int w, int h);
 	
 	inline GLuint getTextureID(){ return m_texture_id; }
 	inline int getWidth(){ return m_width; }

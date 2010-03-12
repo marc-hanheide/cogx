@@ -239,6 +239,10 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 				case SDLK_e:
 					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
 					break;
+				case SDLK_i:
+					tracker->printStatistics();
+					printf("\n	Total tracking time: %.0f ms\n", fTimeTracker*1000);
+					break;
 				case SDLK_l:
 					tracker->setLockFlag( !tracker->getLockFlag() );
 					break;
@@ -249,8 +253,7 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
-					tracker->printStatistics();
-					printf("\n	Total tracking time: %.0f ms\n", fTimeTracker*1000);
+					tracker->saveModels("instantiations/ply-models/");
 					break;
 				case SDLK_t:
 					tracker->textureFromImage(false);

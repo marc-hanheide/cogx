@@ -42,6 +42,7 @@ private:
     
     bool initShader();
     bool dlImage();
+    bool dlImage(int x, int y, int w, int h);
     bool dlFlipUpsideDown();
     bool dlRectification();
     bool transform(int i,int j,double *ix,double *iy);
@@ -63,6 +64,7 @@ public:
 	void thinning(Texture* source, Texture* result);
 	void spreading(Texture* source, Texture* result);
 	void render(Texture* tex);
+	void render(Texture*tex, int x, int y, int w, int h);
 	
 	// Main functions
 	bool init(int w, int h);

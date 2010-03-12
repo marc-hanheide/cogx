@@ -96,6 +96,19 @@ bool ImageProcessor::dlImage(){
     return true;
 }
 
+bool ImageProcessor::dlImage(int x, int y, int w, int h){
+
+	glBegin(GL_QUADS);
+	glColor3f(1.0,1.0,1.0);
+			glTexCoord2f(0,0); glVertex3f(x,   y, 0.0);
+			glTexCoord2f(1,0); glVertex3f(x+w, y, 0.0);
+			glTexCoord2f(1,1); glVertex3f(x+w, y+h, 0.0);
+			glTexCoord2f(0,1); glVertex3f(x,   y+h, 0.0);
+	glEnd();
+	
+	return true;
+}
+
 // Display list for flipping image upside down
 bool ImageProcessor::dlFlipUpsideDown(){
     float x = float(m_width)/2.0;
@@ -274,6 +287,14 @@ void ImageProcessor::render(Texture* tex){
 	glEnable(GL_TEXTURE_2D);
 		tex->bind();
 		glCallList(m_dlImage);
+	glDisable(GL_TEXTURE_2D);
+}
+
+void ImageProcessor::render(Texture* tex, int x, int y, int w, int h){
+	m_cam_ortho.Activate();
+	glEnable(GL_TEXTURE_2D);
+		tex->bind();
+		dlImage(x, y, w, h);
 	glDisable(GL_TEXTURE_2D);
 }
 

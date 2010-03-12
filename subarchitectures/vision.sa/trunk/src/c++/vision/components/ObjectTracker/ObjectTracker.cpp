@@ -190,7 +190,6 @@ void ObjectTracker::initTracker(){
 	last_image_time = m_image.time;
 	convertCameraParameter(m_image.camPars, m_trackCamPars);
 
-	
 	// Create edge or texture tracker
 	if(m_textured){
 		m_tracker = new TextureTracker();
@@ -203,7 +202,6 @@ void ObjectTracker::initTracker(){
 		throw runtime_error(exceptionMessage(__HERE__, "INI file not found!"));
 		m_running = false;
 	}
-	
 	
 	m_trackCamPars.zFar = m_tracker->getCamZFar();
 	m_trackCamPars.zNear = m_tracker->getCamZNear();

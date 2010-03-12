@@ -192,67 +192,7 @@ ImageProcessor* Resources::GetImageProcessor(){
 }
 
 
-// *** Add-functions ***
-int Resources::AddModel(TrackerModel* model, const char* name){
-	// check if texture allready loaded before by comparing filename
-	int modelID = -1;
-	/*
-	int modelID = SearchModelName(name);
-	if(modelID != -1){
-		printf("[Resources::AddModel] Warning model allready exists: '%s'", name);
-		return modelID;	// return existing texture ID
-	}
-	*/
-	char* tmp_name = new char[FN_LEN];
-	strcpy(tmp_name, name);
-	
-	// put model into texture list
-	m_modelNameList.push_back(tmp_name);
-	m_modelList.push_back(model);
-	
-	modelID = m_modelList.size()-1;
-	
-	if(m_showlog) printf("TrackerModel %i loaded: %s\n", modelID, name);
-	
-	return modelID;
-}
-
-int	Resources::AddPlyModel(const char* filename){
-	bool loaded = false;
-	
-	// check if texture allready loaded before by comparing filename
-	int modelID = SearchModelName(filename);
-	if(modelID != -1)
-		return modelID;	// return existing texture ID
-	
-	// texture doesn't exist and needs to be loaded
-	char fullname[FN_LEN];
-	sprintf(fullname, "%s%s", m_modelPath, filename);
-	TrackerModel* model = new TrackerModel();
-	
-	if(!m_modelloader.LoadPly(*model, fullname)){
-		printf("[Resources::AddModel] Error failed to load model %s\n", fullname);
-		delete(model);
-		return -1;
-	}
-	model->computeEdges();
-	model->Update();
-	
-	
-	char* name = new char[FN_LEN];
-	strcpy(name, filename);
-	
-	// put model into texture list
-	m_modelNameList.push_back(name);
-	m_modelList.push_back(model);
-	
-	modelID = m_modelList.size()-1;
-	
-	if(m_showlog) printf("TrackerModel %i loaded: %s\n", modelID, name);
-	
-	return modelID;
-}
-
+// *** Add-functions **
 int	Resources::AddTexture(const char* filename, const char* texturename){
 	bool loaded = false;
 	int texID;
@@ -309,7 +249,6 @@ int	Resources::AddShader(	const char* shadername,
 							const char* fragment_file,
 							const char* header)
 {
-	
 	int shaderID=-1;
 	/*
 	// check if texture allready loaded before by comparing filename
@@ -332,9 +271,9 @@ int	Resources::AddShader(	const char* shadername,
 		fragment_file = &fragment_fullname[0];
 	if(header)
 		header = &header_fullname[0];
-	
+
 	Shader* shader = new Shader(vertex_file, fragment_file, header);
-	
+
 	if(!shader->getStatus()){
 		printf("[Resources::AddShader] Error failed to load shader %s\n", shadername);
 		printf("[Resources::AddShader]   Vertex shader: '%s'\n", vertex_fullname);

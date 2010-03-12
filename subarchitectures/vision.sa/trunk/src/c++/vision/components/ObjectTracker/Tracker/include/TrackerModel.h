@@ -11,6 +11,7 @@ namespace Tracking{
 #include "Shader.h"
 #include "mathlib.h"
 #include "Pose.h"
+#include "Camera.h"
 
 #ifndef FN_LEN
 #define FN_LEN 256
@@ -40,11 +41,12 @@ public:
 		int end;         			// end vertex index
 	};
 	
-	struct Pass {			// Renderpass
-		mat4 modelviewprojection;	// Modelview and projection matrix for texCoords
-		Texture* texture;			// Texture to use
-		std::vector<int> f;				// Faces to draw with this pass
-		Pass(){ texture = new(Texture); }
+	struct Pass {												// Renderpass
+		std::vector<int> f;								// Faces to draw with this pass
+		mat4 modelviewprojection;					// Modelview and projection matrix for texCoords
+		float x,y,w,h;										// Bounding box of SubTexture
+		Texture* texture;									// Texture to use
+		Pass(){ texture = new(Texture); glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); }
 		~Pass(){ delete(texture);}
 	};
 	
@@ -54,7 +56,6 @@ public:
 	std::vector<Edge> 		m_edgelist;			// edges of model (indices of vertexlist)
 	PassList							m_passlist;
 	std::vector<int>			m_facepixellist;
-	std::vector<int> 			m_texturedfaces;
 	
 	Texture* m_tex_original;		// original texture of model (not modified by tracker)
 	Texture* m_texture;				// texture of model modified by tracker (edge-texture)
@@ -80,7 +81,14 @@ public:
 	std::vector<int> getFaceUpdateList(Pose& p_max, vec3 view, float minTexGrabAngle=3.0*PI/4.0, bool use_num_pixels=true);
 	
 	/** @brief capture texture from image */
-	void textureFromImage(Texture* image, int width, int height, Pose& p_max, vec3 view, float minTexGrabAngle, std::vector<int> faceUpdateList);
+	void textureFromImage(	Texture* image,
+													int width, int height,
+													Pose& p_max,
+													vec3 view,
+													float minTexGrabAngle,
+													std::vector<int> faceUpdateList,
+													std::vector<Vertex> &vertices,
+													Camera* m_cam);
 	
 		// gets
 	bool 			getTextured(){ return m_textured; }
@@ -88,7 +96,6 @@ public:
 	Texture* 	getOriginalTexture(){ return m_tex_original; }
 	mat4 			getModelviewProjection(){ return m_modelviewprojection; }
 	float			getBoundingSphereRadius(){ return m_boundingSphereRadius; }
-	int 			getUntexturedFaces(){return ( m_facelist.size() - m_texturedfaces.size() ); }
 	
 	// sets
 	void setBFC(bool bfc){ m_bfc = bfc; }

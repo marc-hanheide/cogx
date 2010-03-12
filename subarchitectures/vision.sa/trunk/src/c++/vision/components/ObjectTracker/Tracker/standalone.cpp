@@ -68,19 +68,22 @@ int main(int argc, char *argv[])
 	// Load model
 	int id_1, id_2;
 	Pose p;
-	Model model_1, model_2;
-	
+// 	Model model_1, model_2;
+// 	TrackerModel model_3;
 // 	m_modelloader.LoadPly(model_1, "resources/model/red_box.ply");
 // 	p.t = vec3(0.2, 0.06, 0.06);
 // 	id_1 = m_tracker->addModel(model_1, p, true);
 
 	std::vector<vec3> m_points;
 		
-	m_modelloader.LoadPly(model_2, "resources/model/GuteLaune.ply");
+// 	m_modelloader.LoadPly(model_2, "resources/model/GuteLaune.ply");
+// 	m_modelloader.LoadPly(&model_3, "resources/model/Object-1.ply");
+	
 // 	model_2.print();
 	p.t = vec3(0.05, 0.1, 0.05);
-	id_2 = m_tracker->addModel(model_2, p, "Object 1", true);
-	
+// 	id_2 = m_tracker->addModel(model_2, p, "Object-1", true);
+	id_2 = m_tracker->addModelFromFile("resources/model/HappyDay.ply", p, "HappyDay", true);
+
 	// *************************************************************************************
   // Main Loop
 	printf("\nRunning \n");

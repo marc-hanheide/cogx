@@ -31,6 +31,15 @@ bool Texture::load(const char* filename){
 	return load((unsigned char*)img->imageData, img->width, img->height);
 }
 
+bool Texture::save(const char* filename){
+	bind();
+	IplImage* img = cvCreateImage ( cvSize ( m_width, m_height ), IPL_DEPTH_8U, 3 );
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, img->imageData);
+	cvConvertImage(img, img, CV_CVTIMG_SWAP_RB);
+	cvSaveImage(filename, img);
+	cvReleaseImage(&img);
+}
+
 void Texture::bind(int stage){
 	glActiveTexture(GL_TEXTURE0 + stage);
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);
@@ -39,14 +48,23 @@ void Texture::bind(int stage){
 
 
 void Texture::copyTexImage2D(int width, int height){
+	copyTexImage2D(0, 0, width, height);	
+}
+
+void Texture::copyTexImage2D(int x, int y, int width, int height){
 	m_width = width;
 	m_height = height;
 	bind();
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, m_width, m_height, 0);	
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, m_width, m_height, 0);	
 }
 
 void Texture::copyFromTexture(Texture* tex){
-	bind();
 	g_Resources->GetImageProcessor()->render(tex);
 	copyTexImage2D(tex->getWidth(), tex->getHeight());
 }
+
+void Texture::copyFromTexture(Texture* tex, int x, int y, int w, int h){
+	g_Resources->GetImageProcessor()->render(tex);
+	copyTexImage2D(x, y, w, h);
+}
+
