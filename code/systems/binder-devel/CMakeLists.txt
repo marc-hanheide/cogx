@@ -31,7 +31,12 @@ if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
 endif(BUILD_SA_BINDING)
 
-#add_subdirectory(tools/scripts)
+option(BUILD_ALCHEMY "Build Alchemy package" YES)
+if(BUILD_ALCHEMY)
+add_subdirectory (tools/alchemy)
+endif(BUILD_ALCHEMY)
+
+
 
 option(DO_ANT "automatically compile the ant stuff" NO)
 if(DO_ANT)
