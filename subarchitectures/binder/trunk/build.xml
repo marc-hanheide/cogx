@@ -6,6 +6,7 @@
         <path id="build.classpath">
             <pathelement path="${ice.jar}"/>
             <pathelement path="${cast.jar}"/>
+        	<pathelement path="${antice.jar}"/>
         </path>
 
 
@@ -20,7 +21,7 @@
 
 	
 	<property name="slice.dir" value="./src/slice" />
-
+	 
 	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
 	<taskdef name="slice2java" classname="Slice2JavaTask">
 	</taskdef>
@@ -48,20 +49,19 @@
 	<!-- Source generation                                                   -->
 	<!-- =================================================== -->
 
-	<!--
-	<target name="slice-BinderEssentials" depends="prepare" description="generates source from slice">
+	
+	<target name="slice-beliefmodels" depends="prepare" description="generates source from slice">
 	  <slice2java tie="true" outputdir="${src.dir}"> 
-	    <fileset dir="${slice.dir}" includes="BinderEssentials.ice"/>
+	    <fileset dir="${slice.dir}" includes="beliefmodels.ice"/>
 	    <includepath>
              <pathelement path="${slice.dir}"/>
  	    	 <pathelement path="${castslice.dir}"/>	    	
  	    	 <pathelement path="${castslice.dir}/cast/slice/"/>	    	
-              <pathelement path="../../tools/beliefmodels/src/slice"/> 
 	    </includepath> 
 	  </slice2java> 
-	</target> -->
+	</target> 
 
-	<target name="slice" depends = "" description="generates source from slice">
+	<target name="slice" depends = "slice-beliefmodels" description="generates source from slice">
 
 	</target>
 	
