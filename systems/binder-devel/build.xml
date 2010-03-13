@@ -3,10 +3,11 @@
 
 	<property name="castslice.dir" value="/usr/local/share" />
 	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
-	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
+	<property name="ice.jar" value="/opt/Ice-3.3.1/lib/Ice.jar" />
+	<property name="antice.jar" value="/opt/Ice-3.3.1/lib/ant-ice.jar" />
 	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
 	<property name="binderslice.dir" value="${basedir}/subarchitectures/binder/src/slice" />
-
+ 
 
 
 	<!-- =================================================================== -->
