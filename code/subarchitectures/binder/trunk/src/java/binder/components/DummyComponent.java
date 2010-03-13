@@ -28,20 +28,18 @@ package binder.components;
  * @author Pierre Lison
  * @version 13/03/2010
  * @started 13/03/2010
- */
-
+ */ 
+        
 import cast.architecture.ManagedComponent;
-
+  
 public class DummyComponent extends ManagedComponent {
 
 	public boolean LOGGING = true;
-	
-	
+	   
+	  
 	public void start() {
 		log("OK, dummy is working !");
 	}
-	
-	
 	
 	 
 	private void log(String s) {
