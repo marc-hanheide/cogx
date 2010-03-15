@@ -111,6 +111,10 @@ class Domain(Scope):
                 typeDict[t.name] = t
             preds.add(mapl.mapl_predicates)
 
+        if "partial-observability" in requirements:
+            import dtpddl
+            preds.add(dtpddl.modal_predicates)
+            
         domain = None
             
         for elem in it:

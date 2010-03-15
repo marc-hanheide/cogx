@@ -5,7 +5,7 @@ import mapltypes as types
 import builtin
 import durative
 
-from parser import ParseError
+from parser import ParseError, UnexpectedTokenError
 from mapltypes import Type, TypedObject, Parameter
 from predicates import Predicate, Function
 from builtin import t_object, t_boolean
@@ -26,7 +26,9 @@ indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], bu
 p = Parameter("?f", types.FunctionType(t_object))
 i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
-modal_predicates = [knowledge, indomain, direct_knowledge, i_indomain]
+shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
+
+modal_predicates = [knowledge, shared_knowledge, indomain, direct_knowledge, i_indomain]
 
 is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", t_agent)], builtin=True)
 achieved = Predicate("achieved", [Parameter("?sg", t_subgoal)], builtin=True)
@@ -177,13 +179,14 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         next.token.check_keyword(":duration")
         action.duration = durative.DurationConstraint.parse(iter(it.get(list, "duration constraint")), action)
 
-        next = it.get()
         try:
             while True:
-                if next.token.string == ":precondition":
+                next = it.next()
+                
+                if next.token.string == ":condition":
                     if action.precondition:
                         raise ParseError(next.token, "precondition already defined.")
-                    action.precondition = TimedCondition.parse(iter(it.get(list, "condition")), action)
+                    action.precondition = durative.TimedCondition.parse(iter(it.get(list, "condition")), action)
                 elif next.token.string == ":replan":
                     if action.replan:
                         raise ParseError(next.token, "replan condition already defined.")
@@ -192,8 +195,8 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
                     if action.effect:
                         raise ParseError(next.token, "effects already defined.")
                     action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action, timed_effects=True)
-                    
-                next = it.next()
+                else:
+                    raise UnexpectedTokenError(next.token)
 
         except StopIteration, e:
             pass
