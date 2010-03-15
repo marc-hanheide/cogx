@@ -84,6 +84,8 @@ class Action(Scope):
                     if action.effect:
                         raise ParseError(next.token, "effects already defined.")
                     action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action)
+                else:
+                    raise UnexpectedTokenError(next.token)
                     
                 next = it.next()
 

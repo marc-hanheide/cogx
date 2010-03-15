@@ -84,6 +84,7 @@ class DurativeAction(actions.Action):
 
         try:
             while True:
+                next = it.next()
                 if next.token.string == ":condition":
                     if action.precondition:
                         raise ParseError(next.token, "precondition already defined.")
@@ -96,9 +97,9 @@ class DurativeAction(actions.Action):
                     if action.effect:
                         raise ParseError(next.token, "effects already defined.")
                     action.effect = effects.Effect.parse(iter(it.get(list, "effect")), action, timed_effects=True)
+                else:
+                    raise UnexpectedTokenError(next.token)
                     
-                next = it.next()
-
         except StopIteration, e:
             pass
             
