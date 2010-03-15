@@ -45,7 +45,7 @@ class Task(object):
     def __get_mapltask(self):
         if self.is_dirty():
             new_init = [ f.as_literal(useEqual=True) for f in self.get_state().iterfacts() ]
-            self._mapltask = mapl.MAPLProblem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain, self._mapltask.optimization, self._mapltask.opt_func)
+            self._mapltask = pddl.Problem(self._mapltask.name, self._mapltask.objects, new_init, self._mapltask.goal, self._mapldomain, self._mapltask.optimization, self._mapltask.opt_func)
         return self._mapltask
 
     def __set_mapltask(self, mapltask):

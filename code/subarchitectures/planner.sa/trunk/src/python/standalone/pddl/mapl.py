@@ -58,31 +58,6 @@ in_domain_axiom = """
 mapl_axioms = [kval_axiom, in_domain_axiom]
 
 
-class MAPLDomain(domain.Domain):
-    def __init__(self, name, types, constants, predicates, functions, actions, sensors, axioms):
-        domain.Domain.__init__(self, name, types, constants, predicates, functions, actions, axioms)
-        self.sensors = sensors
-
-    def copy(self):
-        dom = domain.Domain.copy(self)
-        dom.__class__ = MAPLDomain
-        dom.sensors = [s.copy(self) for s in self.sensors]
-        return dom
-
-    def get_action(self, name):
-        if not self.name2action:
-            self.name2action = dict((a.name, a) for a in itertools.chain(self.actions, self.sensors))
-        return self.name2action[name]
-
-class MAPLProblem(problem.Problem, MAPLDomain):
-    def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
-        MAPLDomain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [], [])
-        problem.Problem.__init__(self, name, objects, init, goal, _domain, optimization, opt_func)
-        
-        self.sensors = [s.copy(self) for s in _domain.sensors]
-        self.name2action = None
-
-
 class MAPLAction(actions.Action):
     def __init__(self, name, agents, args, vars, precondition, replan, effect, domain):
         actions.Action.__init__(self, name, agents+args+vars, precondition, effect, domain, replan=replan)
@@ -343,19 +318,19 @@ class MAPLTranslator(translators.Translator):
     def translate_sensor(self, sensor, domain=None):
         return sensor.copy(newdomain=domain)
     
-    def translate_domain(self, domain):
-        dom = MAPLDomain(domain.name, domain.types.copy(), domain.constants.copy(), domain.predicates.copy(), domain.functions.copy(), [], [], [])
-        dom.requirements = domain.requirements.copy()
-        dom.actions = [self.translate_action(a, dom) for a in domain.actions]
-        dom.sensors = [self.translate_sensor(s, dom) for s in domain.sensors]
-        dom.axioms = [self.translate_axiom(a, dom) for a in domain.axioms]
+    def translate_domain(self, _domain):
+        dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [], [])
+        dom.requirements = set(_domain.requirements)
+        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
+        dom.sensors = [self.translate_sensor(s, dom) for s in _domain.sensors]
+        dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
         return dom
 
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
-        return MAPLProblem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
     
 class MAPLObjectFluentNormalizer(translators.ObjectFluentNormalizer, MAPLTranslator):
     def translate_action(self, action, domain=None):

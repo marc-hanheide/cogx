@@ -10,7 +10,7 @@ import scope
 import predicates, conditions, actions, effects, domain, mapl
 
 from parser import ParseError, UnexpectedTokenError
-from mapl import MAPLProblem
+from problem import Problem
 
 class MapsimScenario(object):
     def __init__(self, name, world, agents, domain):
@@ -57,7 +57,7 @@ class MapsimScenario(object):
         if not world:
             if not common:
                 raise ParseError(root.token, "Neither world state nor common state are specified.")
-            world = MAPLProblem(scname+"-world", common.objects, common.init, common.goal, domain)
+            world = Problem(scname+"-world", common.objects, common.init, common.goal, domain)
 
         if not agents:
             raise ParseError(root.token, "No agents are defined.")
@@ -81,9 +81,9 @@ class MapsimScenario(object):
             raise UnexpectedTokenError(section, "':common', ':world' or ':agent'")
 
         if not common:
-            problem = MAPLProblem(name, [], [], None, domain)
+            problem = Problem(name, [], [], None, domain)
         else:
-            problem = MAPLProblem(name, common.objects, common.init, common.goal, domain)
+            problem = Problem(name, common.objects, common.init, common.goal, domain)
         
         for elem in it:
             j = iter(elem)
@@ -102,7 +102,7 @@ class MapsimScenario(object):
                     if elem.is_terminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
                         
-                    init_elem = MAPLProblem.parseInitElement(iter(elem), problem)
+                    init_elem = Problem.parseInitElement(iter(elem), problem)
                     problem.init.append(init_elem)
 
             elif type == ":goal":

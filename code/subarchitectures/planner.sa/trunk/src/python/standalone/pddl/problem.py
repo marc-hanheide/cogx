@@ -24,6 +24,11 @@ class Problem(domain.Domain):
         domain.Domain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [])
         self.actions = [a.copy(self) for a in _domain.actions]
         self.axioms = [a.copy(self) for a in _domain.axioms]
+        if _domain.sensors:
+            self.sensors = [s.copy(self) for s in _domain.sensors]
+        if _domain.observe:
+            self.observe = [o.copy(self) for o in _domain.observe]
+            
         self.stratify_axioms()
         self.name2action = None
         
@@ -96,12 +101,7 @@ class Problem(domain.Domain):
                         raise ParseError(value, "undeclared type")
 
                     objects.add(types.TypedObject(key.string, domain.types[value.string]))
-
-                if "mapl" in domain.requirements:
-                    import mapl
-                    problem = mapl.MAPLProblem(probname, objects, [], None, domain)
-                else:
-                    problem = Problem(probname, objects, [], None, domain)
+                problem = Problem(probname, objects, [], None, domain)
 
             elif type == ":init":
                 for elem in j:
