@@ -21,7 +21,9 @@ def getGoalDescription(goal, _state):
     universal_args = []
     extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(goal), getReasons=True)
         
-    assert extstate.is_satisfied(goal, read_vars, universal_args)
+    sat = extstate.is_satisfied(goal, read_vars, universal_args)
+    assert sat
+    
     read = set(read_vars)
     orig_read = set(read_vars)
     universal = set(a.type for a in universal_args)
@@ -46,7 +48,9 @@ def getRWDescription(action, args, _state, time):
         read_vars = []
         universal_args = []
         extstate, reasons, universalReasons = _state.get_extended_state(_state.get_relevant_vars(action.replan), getReasons=True)
-        assert extstate.is_satisfied(action.replan, read_vars, universal_args), "%s: %s" % (str(pnode), action.replan.pddl_str())
+        sat = extstate.is_satisfied(action.replan, read_vars, universal_args), "%s: %s" % (str(pnode), action.replan.pddl_str())
+        assert sat
+        
         pnode.replanconds = set(read_vars)
         pnode.original_replan = set(state.Fact(var, extstate[var]) for var in read_vars)
         pnode.explanations.update(reasons)
@@ -65,7 +69,8 @@ def getRWDescription(action, args, _state, time):
         universal_args = []
         rel = _state.get_relevant_vars(action.precondition)
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
-        assert extstate.is_satisfied(action.precondition, read_vars, universal_args),  "%s: %s" % (str(pnode), action.precondition.pddl_str())
+        sat = extstate.is_satisfied(action.precondition, read_vars, universal_args),  "%s: %s" % (str(pnode), action.precondition.pddl_str())
+        assert sat
         pnode.preconds = set(read_vars)
         pnode.original_preconds = set(state.Fact(var, extstate[var]) for var in read_vars)
         pnode.explanations.update(reasons)

@@ -617,7 +617,7 @@ class MAPLCompiler(Translator):
     
     def translate_domain(self, _domain):
         import mapl
-        if not isinstance(_domain, mapl.MAPLDomain):
+        if "mapl" not in _domain.requirements:
             return _domain
         
         dom = domain.Domain(_domain.name, _domain.types.copy(), _domain.constants.copy(), _domain.predicates.copy(), _domain.functions.copy(), [], [])

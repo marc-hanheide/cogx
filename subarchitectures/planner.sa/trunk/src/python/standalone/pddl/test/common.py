@@ -23,7 +23,7 @@ class PddlTest(unittest.TestCase):
 
     def roundtrip(self, dom, prob=None, print_result=False):
         import mapl
-        if isinstance(dom, mapl.MAPLDomain):
+        if "mapl" in dom.requirements:
             w = mapl.MAPLWriter()
         else:
             w = writer.Writer()
