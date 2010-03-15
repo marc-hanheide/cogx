@@ -122,6 +122,7 @@ class FunctionTable(dict):
 class Scope(dict):
     def __init__(self, objects, parent):
         self.set_parent(parent)
+        self.termcache = {}
         for obj in objects:
             dict.__setitem__(self, obj.name, obj)
 
@@ -138,14 +139,19 @@ class Scope(dict):
             self.functions = FunctionTable()
             self.types = {}
             self.requirements = set()
-        
+
+    
     def lookup(self, args):
         result = []
         for arg in args:
             if arg.__class__ == predicates.FunctionTerm:
                 result.append(predicates.FunctionTerm(arg.function, self.lookup(arg.args)))
             else:
-                result.append(predicates.Term(self[arg]))
+                res = self[arg]
+                if res not in self.termcache:
+                    self.termcache[res] = predicates.Term(res)
+                result.append(self.termcache[res])
+                #result.append(predicates.Term(self[arg]))
 
         return result
 
@@ -231,14 +237,25 @@ class Scope(dict):
             return key in self.parent
         
     def __getitem__(self, key):
-        if isinstance(key, (predicates.ConstantTerm, predicates.VariableTerm)):
-            key = key.object
-        if isinstance(key, (float, int)):
-            return types.TypedNumber(key)
-        if isinstance(key, types.TypedObject):
+        #print type(key)
+        if isinstance(key, predicates.VariableTerm):
+            key = key.object.name
+        elif isinstance(key, str):
+            pass
+        elif isinstance(key, predicates.ConstantTerm):
+            if key.object.type == types.t_number:
+                return key.object
+            key = key.object.name
+        elif isinstance(key, types.TypedObject):
             if key.type == types.t_number:
                 return key
             key = key.name
+        elif isinstance(key, (float, int)):
+            return types.TypedNumber(key)
+        # if isinstance(key, types.TypedObject):
+        #     if key.type == types.t_number:
+        #         return key
+        #     key = key.name
         
         key = key.lower()
 
