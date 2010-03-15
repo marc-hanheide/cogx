@@ -50,12 +50,14 @@ class StateTest(common.PddlTest):
         self.assertEqual(effect, expected)
         self.assertNotEqual(effect, unexpected)
         action.uninstantiate()
-        
+
+        #Test alternative instantiation syntax
         action.instantiate([self.prob["agent"], self.prob["tru1"], self.prob["pos1"]])
         effect2 = Fact.from_effect(action.effect)
         self.assertEqual(effect2, expected)
         action.uninstantiate()
 
+        #Test name only instantiation
         action.instantiate(["agent", "tru1", "pos1"])
         effect3 = Fact.from_effect(action.effect)
         self.assertEqual(effect3, expected)

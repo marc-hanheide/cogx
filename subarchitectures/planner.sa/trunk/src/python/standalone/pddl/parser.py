@@ -121,9 +121,12 @@ class ParseError(Exception):
         return "Error in line %d of %s: %s" % (self.token.line, self.token.file, self._message)
 
 class UnexpectedTokenError(ParseError):
-    def __init__(self, token, expected):
+    def __init__(self, token, expected=None):
         self.token = token
-        self._message = "Expected %s, found '%s'" % (expected, token.string)
+        if expected:
+            self._message = "Expected %s, found '%s'" % (expected, token.string)
+        else:
+            self._message = "Unexpected token: %s" % token.string
 
 class EndOfListError(ParseError):
     def __init__(self, token):

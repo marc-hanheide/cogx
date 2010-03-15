@@ -214,6 +214,7 @@ class TypedObject(object):
             return
         self.name = name
         self.type = _type
+        self.hash = hash((self.__class__, self.name, self.type))
 
     def is_instance_of(self, type):
         return self.type.equal_or_subtype_of(type)
@@ -225,7 +226,7 @@ class TypedObject(object):
         return "%s - %s" % (self.name, self.type)
 
     def __hash__(self):
-        return hash((self.__class__, self.name, self.type))
+        return self.hash
 
     def __eq__(self, other):
         try:
@@ -240,6 +241,7 @@ class TypedNumber(TypedObject):
     def __init__(self, number):
         self.value = number
         self.type = t_number
+        self.hash = hash((self.__class__, self.name, self.type))
 
     name = property(lambda self: self.value)
 
@@ -261,6 +263,7 @@ class Parameter(TypedObject):
         self.name = name
         self.type = type
         self.instantiated = None
+        self.hash = hash((self.__class__, self.name, self.type))
 
     def instantiate(self, value):
         if value is not None:

@@ -41,6 +41,7 @@ class Function(object):
         self.builtin=builtin
 
         self.arity = len(args)
+        self.hash = hash((self.name, self.type)+tuple(self.args))
         
     @staticmethod
     def parse(it, type, types):
@@ -51,7 +52,7 @@ class Function(object):
         return Function(name, args, type)
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.name == other.name \
+        return self.__class__ == other.__class__ and self.hash == other.hash and self.name == other.name \
             and self.type == other.type and all(map(lambda a,b: a == b, self.args, other.args))
 
     def __ne__(self, other):
@@ -61,7 +62,7 @@ class Function(object):
         return "(%s %s) - %s" % (self.name, " ".join(str(a) for a in self.args), self.type)
 
     def __hash__(self):
-        return hash((self.name, self.type)+tuple(self.args))
+        return self.hash
     
 class Predicate(Function):
     def __init__(self, name, args, builtin=False):
