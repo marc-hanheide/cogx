@@ -24,6 +24,14 @@ void tgRenderModel::Material::Apply(){
 	glMaterialfv(GL_FRONT,GL_SHININESS,&shininess);
 }
 
+tgRenderModel::Material::Material(){
+	ambient = vec4(0.5, 0.5, 0.5, 1.0);
+	diffuse = vec4(0.5, 0.5, 0.5, 1.0);
+	specular = vec4(0.5, 0.5, 0.5, 1.0);
+	color = vec4(0.5, 0.5, 0.5, 1.0);
+	shininess = 50.0;
+}
+
 void tgRenderModel::DrawFaces(){
 	DrawFaces(false);
 }

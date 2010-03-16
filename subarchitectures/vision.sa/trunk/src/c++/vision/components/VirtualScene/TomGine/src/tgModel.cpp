@@ -117,11 +117,11 @@ void tgModel::DrawNormals(float normal_length){	// draw normals
 	glColor3f(1.0, 1.0, 1.0);
 }
 
-void tgModel::ComputeNormals(){
+void tgModel::ComputeFaceNormals(){
 
-	int i,j,s;
+	int i,j;
 	Face* f;
-	vec3 v0, v1, v2, e1, e2, n, n1, n2;
+	vec3 v0, v1, v2, e1, e2, n;
 	
 	// calculate vertex normals using the face normal
 	for(i=0; i<(int)m_faces.size(); i++){
@@ -142,6 +142,12 @@ void tgModel::ComputeNormals(){
 			m_vertices[f->vertices[j]].normal.z = n.z;
 		}
 	}
+}
+
+void tgModel::ComputePolygonNormals(){
+	int i,j;
+	Face* f;
+	vec3 v0, v1, v2, e1, e2, n;
 	
 	for(i=0; i<(int)m_polygons.size(); i++){
 		f = &m_polygons[i];
@@ -166,6 +172,13 @@ void tgModel::ComputeNormals(){
 			m_vertices[f->vertices[j+2]].normal.z = n.z;
 		}
 	}
+}
+
+void tgModel::ComputeQuadstripNormals(){
+	int i,j,s;
+	Face* f;
+	vec3 v0, v1, v2, e1, e2, n, n1, n2;
+	
 	for(i=0; i<(int)m_quadstrips.size(); i++){
 		f = &m_quadstrips[i];
 		s = (int)f->vertices.size();
