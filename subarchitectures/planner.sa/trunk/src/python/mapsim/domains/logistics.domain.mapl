@@ -12,7 +12,7 @@
       (in_city ?loc - OBJ_LOCATION) - CITY
 )
 
-(:sensor sense_package_loc
+(:action sense_package_loc
  :agent (?a - agent)
  :parameters (?obj - OBJ ?loc - LOCATION ?vehicle - VEHICLE)
  :precondition (and (= (pos ?vehicle) ?loc)

@@ -604,6 +604,11 @@ class MAPLCompiler(Translator):
                 
         if action.effect:
             a2.effect = action.effect.copy(new_scope=a2)
+        if action.sensors:
+            keff = action.knowledge_effect().copy(a2)
+            if a2.effect:
+                keff.parts.insert(0, a2.effect)
+            a2.effect = keff
         return a2
 
     def translate_sensor(self, sensor, domain=None):
@@ -641,7 +646,6 @@ class MAPLCompiler(Translator):
         dom.predicates.add(i_indomain)
         
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.actions += [self.translate_sensor(s, dom) for s in _domain.sensors]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None

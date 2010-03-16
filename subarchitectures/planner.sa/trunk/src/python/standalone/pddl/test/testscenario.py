@@ -58,7 +58,7 @@ dora_domain = \
      :effect (assign (explored ?loc) true)
     )
 
-	(:sensor categorize_place
+	(:action categorize_place
 	 :agent (?a - agent)
 	 :parameters (?loc - place)
 	 :precondition (and
@@ -67,7 +67,7 @@ dora_domain = \
     )
 
 
-	(:sensor categorize_room
+	(:action categorize_room
 	 :agent (?a - agent)
 	 :parameters (?r - room)
 	 :variables (?loc - place)
@@ -155,94 +155,6 @@ emptyworld = \
 ))
 
 )
-)
-"""
-
-dora_domain = \
-"""
-(define (domain cogx)
-
-        (:requirements :mapl :adl :durative-actions :object-fluents)
-	
-	(:types 
-		place - object
-		room - object
-		robot - agent
-		place_id - object  ;; make this a number at some point 
-		room_id - object  ;; make this a number at some point 
-		place_category - object
-	)
-	
-	(:constants
-        default_place - place_category
-        R2D2 - robot
-	)
-
-    (:predicates
-		(connected ?n1 - place ?n2 - place)
-                (located ?r -  agent ?n - place)
-		(contains ?r - room ?n - place)
-		;; special
-		(has-goal ?a - agent)
-		(commited ?a - agent)
-    )	
-
-	(:functions
-		(place_id ?n - place) - place_id
-		(explored ?n - place) - boolean
-		(place_category ?n - place) - place_category
-		(areaclass ?r - room) - place_category
- 	)
-	
-
-;;; actions ;;;
-
-
-	(:action explore_place
-	 :agent (?a - agent)
-	 :parameters (?loc - place)
-	 :precondition (and
-	 	(located ?a ?loc)
-		)
-     :effect (assign (explored ?loc) true)
-    )
-
-	(:sensor categorize_place
-	 :agent (?a - agent)
-	 :parameters (?loc - place)
-	 :precondition (and
-	 	(located ?a ?loc))
-     :sense (place_category ?loc)
-    )
-
-
-	(:sensor categorize_room
-	 :agent (?a - agent)
-	 :parameters (?r - room)
-	 :variables (?loc - place)
-	 :precondition (and
-	 	(located ?a ?loc)
-		(contains ?r ?loc)
-		)
-     :sense (areaclass ?r)
-    )
-
-
-	(:action move
-	 :agent (?a - agent)
-	 :parameters (?to - place)
-	 :variables (?from - place)
-	 :precondition (and
-		(located ?a ?from) 
-		(connected ?from ?to)
-		)
-	 :effect (and
-		(not (located ?a ?from))
-		(located ?a ?to)
-		(connected ?to ?from)   ;; now we assume we can also move back
-	))
-	
-
 )
 """
 

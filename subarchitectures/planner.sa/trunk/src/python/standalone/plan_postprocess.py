@@ -10,7 +10,7 @@ log = config.logger("planner")
 def MAPLAction(action, task):
     elmts = action.split()
     action, args = elmts[0], elmts[1:]
-    actions = dict((a.name,a) for a in itertools.chain(task._mapltask.actions, task._mapltask.sensors))
+    actions = dict((a.name,a) for a in task._mapltask.actions)
     assert action in actions
     action_def = actions[action]
     args = [task._mapltask[a] for a in args[:len(action_def.args)]]
@@ -86,7 +86,12 @@ def getRWDescription(action, args, _state, time):
 
     #t0 = time.time()
     _state.read_svars.clear()
-    pnode.effects = set(state.Fact(k,v) for k,v in _state.get_effect_facts(action.effect, trace_vars=True).iteritems())
+    pnode.effects = set()
+    if action.effect:
+        pnode.effects = set(state.Fact(k,v) for k,v in _state.get_effect_facts(action.effect, trace_vars=True).iteritems())
+    if action.sensors:
+        pnode.effects |= set(state.Fact(k,v) for k,v in _state.get_effect_facts(action.knowledge_effect() , trace_vars=True).iteritems())
+
     pnode.preconds |= _state.read_svars
     pnode.original_preconds |= set(state.Fact(var, extstate[var]) for var in _state.read_svars)
     #print "write:", time.time()-t0

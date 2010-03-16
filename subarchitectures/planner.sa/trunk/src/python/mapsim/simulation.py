@@ -125,7 +125,7 @@ class Simulation(object):
             return cond
 
         self.problem.actions = [a for a in self.problem.actions if a.replan is None]
-        for a in itertools.chain(self.problem.actions, self.problem.sensors):
+        for a in self.problem.actions:
             if a.precondition:
                 a.precondition = a.precondition.visit(remove_visitor)
             
@@ -150,12 +150,12 @@ class Simulation(object):
             log.debug("%d: Agent %s executes (%s %s)", self.time, agent.name, action.name, " ".join(a.name for a in args))
 
             perceived_facts = []
-            if isinstance(action, pddl.sensors.Sensor):
-                perceived_facts = self.execute_sensor_action(action, agent)
-                agent.statistics.increase_stat("sensor_actions_executed")
-            else:
+            if action.effect:
                 perceived_facts = self.execute_physical_action(action, agent)
                 agent.statistics.increase_stat("physical_actions_executed")
+            if action.sensors:
+                perceived_facts += self.execute_sensor_action(action, agent)
+                agent.statistics.increase_stat("sensor_actions_executed")
 
             log.debug("Facts sent to agent %s: %s", agent.name, ", ".join(map(str, perceived_facts)))
             action.uninstantiate()
@@ -179,9 +179,9 @@ class Simulation(object):
 
         return new_facts
 
-    def execute_sensor_action(self, sensor, agent):
+    def execute_sensor_action(self, action, agent):
         perceptions = []
-        for se in sensor.senses:
+        for se in action.sensors:
             svar = self.state.svar_from_term(se.get_term())
             if se.is_boolean():
                 if isinstance(se.get_value(), pddl.predicates.FunctionTerm):

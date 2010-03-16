@@ -22,6 +22,7 @@ log = config.logger("planner")
 statistics_defaults = dict(
     planning_calls=0,
     planning_time=0.0,
+    postprocess_time=0.0,
     translate_time=0.0,
     preprocess_time=0.0,
     search_time=0.0,
@@ -271,7 +272,8 @@ class BasePlanner(object):
             log.debug(elem)
         log.debug("")
 
-        plan = self._post_process(output_data, task)
+        with statistics.time_block_for_statistics(self.main_planner, "postprocess_time"):
+            plan = self._post_process(output_data, task)
         return plan
     
     def _prepare_input(self, task):
