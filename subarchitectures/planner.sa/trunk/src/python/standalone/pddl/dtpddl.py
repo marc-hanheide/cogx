@@ -1,6 +1,6 @@
 import itertools
 
-import predicates, conditions, effects, actions, domain, problem, scope
+import predicates, conditions, effects, actions, scope, visitors, translators, mapl
 import mapltypes as types
 import builtin
 
@@ -28,11 +28,7 @@ class ExecutionCondition(object):
 
         action = self.action
         if newdomain:
-            action = None
-            for a in newdomain.actions:
-                if a.name == self.action.name:
-                    action = a
-            assert action is not None, "Action %s not found in new domain" % self.action.name
+            action = newdomain.get_action(self.action.name)
         return ExecutionCondition(action, args, self.negated)
                 
     @staticmethod
@@ -76,6 +72,7 @@ class ExecutionCondition(object):
 class Observation(scope.Scope):
     def __init__(self, name, agents, args, execution, precondition, effect, domain):
         scope.Scope.__init__(self, args+agents, domain)
+        self.name = name
         self.agents = agents
         self.args = args
         self.execution = execution
@@ -102,7 +99,7 @@ class Observation(scope.Scope):
         if self.precondition:
             o.precondition = self.precondition.copy(o)
         if self.execution is not None:
-            o.execution = [ex.copy(o, newdomain=domain) for ex in self.execution]
+            o.execution = [ex.copy(o, newdomain) for ex in self.execution]
         if self.effect:
             o.effect = self.effect.copy(o)
 
@@ -148,3 +145,77 @@ class Observation(scope.Scope):
         
         return observe
 
+
+class DT2MAPLCompiler(translators.Translator):
+    def translate_observable(self, observe, domain=None):
+        assert domain is not None
+
+        def can_observe(action):
+            if not observe.execution:
+                return True
+            for ex in observe.execution:
+                if ex.negated:
+                    return ex.action != action
+                if ex.action == action:
+                    return ex
+            return False
+
+        @visitors.collect
+        def atom_visitor(elem, results):
+            if isinstance(elem, conditions.LiteralCondition):
+                if elem.predicate != observed:
+                    return [elem]
+            
+        sensable_atoms = []
+        if observe.precondition:
+            sensable_atoms += observe.precondition.visit(atom_visitor)
+        if isinstance(observe.effect, effects.ConditionalEffect):
+            sensable_atoms += observe.effect.condition.visit(atom_visitor)
+        
+        for a in domain.actions:
+            match = can_observe(a)
+            if not match:
+                continue
+            if match == True:
+                #sensor with no relation to a concrete action
+                #not yet supported
+                continue
+            mapping = dict(zip(match.args, a.args))
+            observe.instantiate(mapping)
+            for atom in sensable_atoms:
+                if atom.predicate not in (builtin.equals, builtin.eq):
+                    s_atom = atom.copy_instance()
+                    s_atom.set_scope(a)
+                    a.sensors.append(mapl.SenseEffect(s_atom, a))
+                else:
+                    #Free parameter on rhs => fully observable
+                    if isinstance(atom.args[1], predicates.VariableTerm) and not atom.args[1].is_instantiated():
+                        s_term = a.lookup([atom.args[0].copy_instance()])[0]
+                        a.sensors.append(mapl.SenseEffect(s_term, a))
+                    else:
+                        s_atom = atom.copy_instance()
+                        s_atom.set_scope(a)
+                        a.sensors.append(mapl.SenseEffect(s_atom, a))
+                        
+            observe.uninstantiate()
+                
+    
+    def translate_domain(self, _domain):
+        if "partial-observability" not in _domain.requirements:
+            return _domain
+        
+        dom = _domain.copy()
+        dom.requirements.discard("partial-observability")
+
+        for o in dom.observe:
+            self.translate_observable(o, dom)
+
+        dom.observe = None
+        return dom
+
+    def translate_problem(self, _problem):
+        domain = self.translate_domain(_problem.domain)
+        if domain == _problem.domain:
+            return _problem
+        p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+        return p2

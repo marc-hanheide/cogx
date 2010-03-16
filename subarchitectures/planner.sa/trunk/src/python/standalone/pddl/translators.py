@@ -653,6 +653,8 @@ class MAPLCompiler(Translator):
 
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
+        if domain == _problem.domain:
+            return _problem
         p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
         
         for i in _problem.init:
@@ -660,7 +662,7 @@ class MAPLCompiler(Translator):
             if isinstance(i, effects.ProbabilisticEffect):
                 for p, eff in i.effects:
                     for e in eff.visit(visitors.to_list):
-                        if e.predicate in assignmentOps:
+                        if e.predicate in assignment_ops:
                             p2.init.append(effects.SimpleEffect(i_indomain, e.args, scope=p2))
                         else:
                             p2.init.append(e.copy(new_scope=p2))
@@ -668,3 +670,4 @@ class MAPLCompiler(Translator):
                 p2.init.append(i.copy(new_scope=p2))
 
         return p2
+

@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
+assert False
 import itertools
 
 import parser
 import mapltypes as types
 import predicates, conditions, effects, mapl
 
-aadasjippiguvkl    
 class Sensor(mapl.MAPLAction):
     def __init__(self, name, agents, args, vars, precondition, senses, domain):
         mapl.MAPLAction.__init__(self, name, agents, args, vars, precondition, None, None, domain)
