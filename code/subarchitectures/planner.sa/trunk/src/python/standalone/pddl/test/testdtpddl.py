@@ -4,11 +4,9 @@
 import unittest
 import common
 
-import parser, domain, effects, conditions, actions, mapl, dtpddl
-from mapltypes import *
-from predicates import *
-from dtpddl import Observation, ExecutionCondition
+import parser, domain, effects, conditions, translators
 from parser import Parser, ParseError
+from dtpddl import *
 
 obs1 = """
 (:observe package
@@ -70,7 +68,7 @@ class DTTest(common.PddlTest):
 
     def setUp(self):
         self.dom, self.prob = self.load("testdata/logistics.domain.mapl", "testdata/logistics.p1.mapl")
-        self.dom.predicates.add(dtpddl.modal_predicates)
+        self.dom.predicates.add(modal_predicates)
 
     def testObserveParsing(self):
         """Testing parsing of observation models"""
@@ -95,6 +93,13 @@ class DTTest(common.PddlTest):
         self.dom = self.load("testdata/logistics.dtpddl")
 
         self.assert_(len(self.dom.observe), 2)
+
+    def testMAPLTranslation(self):
+        """Testing parsing of domain with observation models"""
+        self.dom = self.load("testdata/logistics.dtpddl")
+        dom2 = DT2MAPLCompiler().translate_domain(self.dom)
+        self.roundtrip(dom2, print_result=True)
+
         
     def testDtErrorHandling(self):
         """Testing error handling of observation models"""
