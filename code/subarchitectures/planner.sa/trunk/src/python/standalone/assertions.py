@@ -10,7 +10,7 @@ log = config.logger("assertions")
 
 def get_observable_functions(sensors):
     result=[]
-    for s in sum((sensor.senses for sensor in sensors), []):
+    for s in sum((sensor.sensors for sensor in sensors), []):
         pred_types = [a.get_type() for a in s.get_term().args]
         if s.is_boolean():
             pred_types.append(s.get_value().get_type())
@@ -107,7 +107,7 @@ def to_assertion(action, domain):
     if not action.precondition:
         return None
     
-    observable = get_observable_functions(domain.sensors)
+    observable = get_observable_functions(domain.actions)
     action = tr.translate(action, domain=domain)
     #print action.precondition.pddl_str()
     agent = action.agents[0]
@@ -157,7 +157,14 @@ def to_assertion(action, domain):
     if not replan:
         return None
 
-    assertion = mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effect, domain)
+    # eff = action.effect
+    # if action.sensors:
+    #     keff = action.knowledge_effect()
+    #     if eff:
+    #         keff.parts.insert(0, eff)
+    #     eff = keff
+
+    assertion = mapl.MAPLAction("assertion_"+action.name, action.agents, action.maplargs, action.vars, condition, replan, action.effect, action.sensors, domain)
     #cost_eff = pddl.SimpleEffect(pddl.builtin.increase, [pddl.Term(pddl.builtin.total_cost, []), pddl.Term(1)])
     #if isinstance(assertion.effect, pddl.ConjunctiveEffect):
     #    assertion.effect.parts.append(cost_eff)

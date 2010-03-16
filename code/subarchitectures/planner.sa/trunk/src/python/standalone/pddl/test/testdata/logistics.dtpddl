@@ -2,29 +2,45 @@
 
 (define (domain logistics-object-fluents)
 
-(:requirements :mapl :typing :equality :object-fluents :numeric-fluents) 
+(:requirements :mapl :partial-observability :typing :equality :object-fluents) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
          airport - location
          city location thing agent - object)
 
-(:predicates (X ?f - (function object) ?v - (typeof ?f)))
-
 (:functions  (city-of ?l - (either location vehicle)) - city
              (location-of ?t - thing) - (either location vehicle)
-             (p_load_success ?v - vehicle) - number
 )
 
 (:action sense_package
          :agent         (?a - agent)
-         :parameters    (?t - truck ?p - package)
-         :sense         (= (location-of ?p) (location-of ?t)))
+         :parameters    (?v - vehicle ?p - package)
+         :precondition  (and )
+)
+
+(:observe package_location
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle ?p - package)
+         :execution     (sense_package ?a ?v ?p)
+         :effect        (when (= (location-of ?p) (location-of ?v)) 
+                          (observed (location-of ?p) (location-of ?v)))
+         )
+         
 
 (:action sense_position
          :agent         (?a - agent)
-         :parameters    (?t - truck)
-         :sense         (location-of ?t))
+         :parameters    (?v - vehicle)
+         :precondition  (and )
+)
+
+(:observe vehicle_location
+         :agent         (?a - agent)
+         :parameters    (?v - vehicle ?p - location)
+         :execution     (sense_position ?a ?v)
+         :effect        (when (= (location-of ?v) ?p) 
+                          (observed (location-of ?v) ?p))
+         )
 
 (:action drive
          :agent         (?a - agent)

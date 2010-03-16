@@ -89,9 +89,9 @@ class Agent(BaseAgent):
             return
 
         def action_cmp(pnode1, pnode2):
-            if isinstance(pnode1.action, pddl.sensors.Sensor) and not isinstance(pnode2.action, pddl.sensors.Sensor):
+            if pnode1.action.is_pure_sensor() and not pnode2.action.is_pure_sensor():
                 return -1
-            elif not isinstance(pnode1.action, pddl.sensors.Sensor) and isinstance(pnode2.action, pddl.sensors.Sensor):
+            elif not pnode1.action.is_pure_sensor() and pnode2.action.is_pure_sensor():
                 return 1
 
             for s1, s2 in [(pnode1.action.name, pnode2.action.name)] + zip(map(str, pnode1.args), map(str, pnode2.args)):

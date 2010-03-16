@@ -39,7 +39,6 @@ class ProblemTest(common.PddlTest):
         self.assertEqual(dom.name, dom2.name)
         self.assertEqual(len(dom.constants), len(dom2.constants))
         self.assertEqual(len(dom.actions), len(dom2.actions))
-        self.assertEqual(len(dom.sensors), len(dom2.sensors))
         for a1 in dom.actions:
             for a2 in dom2.actions:
                 if a1.name != a2.name:
@@ -50,16 +49,8 @@ class ProblemTest(common.PddlTest):
                 self.assertEqual(a1.precondition, a2.precondition)
                 self.assertEqual(a1.replan, a2.replan)
                 self.assertEqual(a1.effect, a2.effect)
+                self.assertEqual(a1.sensors, a2.sensors)
 
-        for s1 in dom.sensors:
-            for s2 in dom2.sensors:
-                if s1.name != s2.name:
-                    continue
-                self.assertEqual(s1.agents, s2.agents)
-                self.assertEqual(s1.args, s2.args)
-                self.assertEqual(s1.vars, s2.vars)
-                self.assertEqual(s1.precondition, s2.precondition)
-                self.assertEqual(s1.senses, s2.senses)
                 
     def testWriterProblem(self):
         """Testing MAPLWriter problem roundtrip"""
@@ -83,7 +74,6 @@ class ProblemTest(common.PddlTest):
         self.assertEqual(dom.name, dom2.name)
         self.assertEqual(len(dom.constants), len(dom2.constants))
         self.assertEqual(len(dom.actions), len(dom2.actions))
-        self.assertEqual(len(dom.sensors), len(dom2.sensors))
         for a1 in dom.actions:
             for a2 in dom2.actions:
                 if a1.name != a2.name:

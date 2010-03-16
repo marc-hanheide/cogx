@@ -23,7 +23,7 @@ support_depends = {"mapl" : ["object-fluents", "modal-predicates"],
                    "fluents" : ["numeric-fluents", "object-fluents"]}
 
 class Domain(Scope):
-    def __init__(self, name, types, constants, predicates, functions, actions, axioms, sensors=None, observe=None):
+    def __init__(self, name, types, constants, predicates, functions, actions, axioms, observe=None):
         Scope.__init__(self, constants, None)
         self.name = name
         self.types = types
@@ -33,10 +33,6 @@ class Domain(Scope):
         self.actions = actions
         self.axioms = axioms
 
-        if sensors is None:
-            self.sensors = []
-        else:
-            self.sensors = sensors
         if observe is None:
             self.observe = []
         else:
@@ -50,8 +46,6 @@ class Domain(Scope):
         dom = Domain(self.name, self.types.copy(), self.constants.copy(), self.predicates.copy(), self.functions.copy(), [], [])
         dom.actions = [a.copy(dom) for a in self.actions]
         dom.axioms = [a.copy(dom) for a in self.axioms]
-        if self.sensors:
-            dom.sensors = [s.copy(dom) for s in self.sensors]
         if self.observe:
             dom.observe = [s.copy(dom) for s in self.observe]
             
@@ -63,10 +57,7 @@ class Domain(Scope):
 
     def get_action(self, name):
         if not self.name2action:
-            if "mapl" in self.requirements:
-                self.name2action = dict((a.name, a) for a in itertools.chain(self.actions, self.sensors))
-            else:
-                self.name2action = dict((a.name, a) for a in self.actions)
+            self.name2action = dict((a.name, a) for a in self.actions)
         return self.name2action[name]
 
     def stratify_axioms(self):
@@ -176,10 +167,6 @@ class Domain(Scope):
                 else:
                     import durative
                     domain.actions.append(durative.DurativeAction.parse(j.reset(), domain))
-                
-            elif type == ":sensor" and "mapl" in requirements:
-                from sensors import Sensor
-                domain.sensors.append(Sensor.parse(j.reset(), domain))
                 
             elif type == ":derived":
                 domain.axioms.append(Axiom.parse(j.reset(), domain))

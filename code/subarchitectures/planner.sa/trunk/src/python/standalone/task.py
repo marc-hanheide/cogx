@@ -60,7 +60,7 @@ class Task(object):
 
     def add_assertions(self):
         new_assertions = []
-        for a in itertools.chain(self._mapldomain.actions, self._mapldomain.sensors):
+        for a in self._mapldomain.actions:
             ast = assertions.to_assertion(a, self._mapldomain)
             if ast:
                 try:

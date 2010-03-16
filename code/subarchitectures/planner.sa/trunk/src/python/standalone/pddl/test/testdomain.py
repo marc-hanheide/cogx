@@ -10,8 +10,7 @@ class DomainTest(common.PddlTest):
         """Testing logistics domain"""
         dom = self.load("testdata/logistics.domain.mapl")
 
-        self.assertEqual(len(dom.actions), 4)
-        self.assertEqual(len(dom.sensors), 2)
+        self.assertEqual(len(dom.actions), 6)
 
     def testBlocksworld(self):
         """Testing blocksworld domain"""

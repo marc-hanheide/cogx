@@ -6,46 +6,7 @@ import parser
 import mapltypes as types
 import predicates, conditions, effects, mapl
 
-class SenseEffect(object):
-    def __init__(self, sense, sensor):
-        self.sensor = sensor
-        self.sense = sense
-
-    def knowledge_effect(self):
-        term = self.get_term()
-        if not term:
-            return None
-        return effects.SimpleEffect(mapl.direct_knowledge, [predicates.VariableTerm(self.sensor.agents[0]), term])
-
-    def is_boolean(self):
-        return isinstance(self.sense, predicates.Literal)
-
-    def get_term(self):
-        if self.is_boolean():
-            return self.sense.args[0]
-        return self.sense
-
-    def get_value(self):
-        if self.is_boolean():
-            return self.sense.args[1]
-        return None
-
-    def copy(self, newsensor=None):
-        if not newsensor:
-            newsensor = self.sensor
-
-        if isinstance(self.sense, predicates.Literal):
-            s2 = self.sense.copy(newsensor)
-        else:
-            s2 = predicates.FunctionTerm(self.sense.function, newsensor.lookup(self.sense.args))
-        return SenseEffect(s2, newsensor)
-
-    def __eq__(self, other):
-        return self.sense == other.sense
-
-    def __neq__(self, other):
-        return self.sense != other.sense
-    
+aadasjippiguvkl    
 class Sensor(mapl.MAPLAction):
     def __init__(self, name, agents, args, vars, precondition, senses, domain):
         mapl.MAPLAction.__init__(self, name, agents, args, vars, precondition, None, None, domain)
