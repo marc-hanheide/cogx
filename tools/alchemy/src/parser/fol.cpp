@@ -1,23 +1,22 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton implementation for Bison GLR parsers in C
-
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -28,7 +27,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -38,7 +37,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.3"
+#define YYBISON_VERSION "2.4.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "glr.c"
@@ -50,6 +49,19 @@
 #define YYLSP_NEEDED 0
 
 
+
+
+/* Copy the first part of user declarations.  */
+
+/* Line 172 of glr.c  */
+#line 67 "../src/parser/fol.y"
+
+#define YYSTYPE int
+#define YYDEBUG 1
+
+
+/* Line 172 of glr.c  */
+#line 65 "fol.cpp"
 
 
 
@@ -77,25 +89,8 @@
 #endif
 
 
-/* Copy the first part of user declarations.  */
-#line 67 "../src/parser/fol.y"
-
-#define YYSTYPE int
-#define YYDEBUG 1
-#line 104 "../src/parser/fol.y"
- //bisonopencode
-#include "fol.h"
-#include "follex.cpp"
-
-  // 0: no output; 1,2: increasing order of verbosity
-int folDbg = 0;
-//int folDbg = 1;
-//int folDbg = 2;
-
-
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+#ifndef YYSTYPE
 typedef int YYSTYPE;
-# define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
 
@@ -109,6 +104,7 @@ typedef struct YYLTYPE
 # define YYLTYPE_IS_DECLARED 1
 # define YYLTYPE_IS_TRIVIAL 1
 #endif
+
 
 
 /* Enabling traces.  */
@@ -139,13 +135,29 @@ static YYSTYPE yyval_default;
 /* Copy the second part of user declarations.  */
 
 
-/* Line 234 of glr.c.  */
-#line 144 "fol.cpp"
+/* Line 243 of glr.c  */
+#line 140 "fol.cpp"
+/* Unqualified %code blocks.  */
+
+/* Line 244 of glr.c  */
+#line 104 "../src/parser/fol.y"
+ //bisonopencode
+#include "fol.h"
+#include "follex.cpp"
+
+  // 0: no output; 1,2: increasing order of verbosity
+int folDbg = 0;
+//int folDbg = 1;
+//int folDbg = 2;
+
+
+
+/* Line 244 of glr.c  */
+#line 157 "fol.cpp"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 
 #ifndef YY_
 # if YYENABLE_NLS
@@ -258,8 +270,7 @@ YYID (i)
 #define YYMAXUTOK   270
 
 #define YYTRANSLATE(YYX)						\
-  ((YYX <= 0) ? YYEOF :							\
-   (unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+  ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[YYLEX] -- Bison symbol number corresponding to YYLEX.  */
 static const unsigned char yytranslate[] =
@@ -412,28 +423,28 @@ static const char *const yytname[] =
   "ZZ_VARIABLE", "ZZ_TYPE", "'-'", "'+'", "ZZ_FORALL", "ZZ_EXIST",
   "ZZ_EQUIV", "ZZ_IMPLY", "'v'", "'^'", "'!'", "'*'", "'/'", "'%'",
   "'\\n'", "'@'", "'.'", "'\\r'", "'='", "'{'", "'}'", "','", "'('", "')'",
-  "'?'", "':'", "'['", "']'", "'>'", "'<'", "'x^2 + x + 3'", "$accept",
-  "input", "@1", "@2", "@3", "@4", "continuous_part", "@5", "at",
-  "fullstop", "newline", "optnewline", "include", "nnewline",
-  "type_declaration", "@6", "is_variable_type", "constant_declarations",
-  "@7", "variable_or_string_or_constant", "constant_sep",
-  "numeric_type_declaration", "@8", "@9", "@10", "numeric_types",
-  "single_numeric_types", "@11", "single_numeric_type",
-  "predicate_declaration", "@12", "@13", "@14", "function_declaration",
-  "@15", "@16", "@17", "function_return_type", "types", "@18", "@19",
-  "type_code", "@20", "variable_code", "@21", "exist_unique", "pd_not_qs",
-  "predicate_definition", "@22", "nothing_or_constants", "@23", "@24",
-  "real_value", "function_definition", "@25", "@26", "@27",
-  "constants_in_groundings", "is_constant_string_num_variable",
-  "function_return_constant", "weight", "@28", "weight_fullstop",
-  "utility", "@29", "sentence", "@30", "@31", "@32", "@33", "@34", "@35",
-  "@36", "@37", "@38", "@39", "@40", "quantifier", "variables", "@41",
-  "@42", "quant_variable", "atomic_sentence", "@43", "@44", "@45",
-  "nothing_or_terms", "@46", "internal_predicate_sign", "asterisk",
-  "terms", "@47", "term", "function_term", "@48", "@49", "@50",
-  "internal_function_sign", "numeric_term", "@51", "@52",
-  "gaussian_shorthand", "@53", "@54", "@55", "@56", "@57", "@58", "@59",
-  "@60", "@61", "polynomial", 0
+  "'?'", "':'", "'['", "']'", "'>'", "'<'", "'x'", "$accept", "input",
+  "$@1", "$@2", "$@3", "$@4", "continuous_part", "$@5", "at", "fullstop",
+  "newline", "optnewline", "include", "nnewline", "type_declaration",
+  "$@6", "is_variable_type", "constant_declarations", "$@7",
+  "variable_or_string_or_constant", "constant_sep",
+  "numeric_type_declaration", "$@8", "$@9", "$@10", "numeric_types",
+  "single_numeric_types", "$@11", "single_numeric_type",
+  "predicate_declaration", "$@12", "$@13", "$@14", "function_declaration",
+  "$@15", "$@16", "$@17", "function_return_type", "types", "$@18", "$@19",
+  "type_code", "$@20", "variable_code", "$@21", "exist_unique",
+  "pd_not_qs", "predicate_definition", "$@22", "nothing_or_constants",
+  "$@23", "$@24", "real_value", "function_definition", "$@25", "$@26",
+  "$@27", "constants_in_groundings", "is_constant_string_num_variable",
+  "function_return_constant", "weight", "$@28", "weight_fullstop",
+  "utility", "$@29", "sentence", "$@30", "$@31", "$@32", "$@33", "$@34",
+  "$@35", "$@36", "$@37", "$@38", "$@39", "$@40", "quantifier",
+  "variables", "$@41", "$@42", "quant_variable", "atomic_sentence", "$@43",
+  "$@44", "$@45", "nothing_or_terms", "$@46", "internal_predicate_sign",
+  "asterisk", "terms", "$@47", "term", "function_term", "$@48", "$@49",
+  "$@50", "internal_function_sign", "numeric_term", "$@51", "$@52",
+  "gaussian_shorthand", "$@53", "$@54", "$@55", "$@56", "$@57", "$@58",
+  "$@59", "$@60", "$@61", "polynomial", 0
 };
 #endif
 
@@ -1209,11 +1220,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   switch (yyn)
     {
         case 2:
+
+/* Line 936 of glr.c  */
 #line 119 "../src/parser/fol.y"
     { if (folDbg >= 2) printf("input: empty\n"); ;}
     break;
 
   case 3:
+
+/* Line 936 of glr.c  */
 #line 122 "../src/parser/fol.y"
     { 
     yyerrok; // tell Bison not to suppress any errors
@@ -1228,6 +1243,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 13:
+
+/* Line 936 of glr.c  */
 #line 146 "../src/parser/fol.y"
     { 
     if (folDbg >= 2) printf("input: weight\n"); 
@@ -1236,6 +1253,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 14:
+
+/* Line 936 of glr.c  */
 #line 151 "../src/parser/fol.y"
     {
     if (folDbg >= 2) printf("input: utility\n"); 
@@ -1243,6 +1262,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 15:
+
+/* Line 936 of glr.c  */
 #line 155 "../src/parser/fol.y"
     {  
     if (folDbg >= 2) printf("input: sentence\n");
@@ -1251,6 +1272,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 16:
+
+/* Line 936 of glr.c  */
 #line 162 "../src/parser/fol.y"
     {
     ListObj* formula;
@@ -1299,6 +1322,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 19:
+
+/* Line 936 of glr.c  */
 #line 214 "../src/parser/fol.y"
     {
     // Indicator
@@ -1311,6 +1336,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 20:
+
+/* Line 936 of glr.c  */
 #line 223 "../src/parser/fol.y"
     {
   	// Real-valued
@@ -1319,16 +1346,22 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 21:
+
+/* Line 936 of glr.c  */
 #line 230 "../src/parser/fol.y"
     { zzconsumeToken(zztokenList,"@"); ;}
     break;
 
   case 22:
+
+/* Line 936 of glr.c  */
 #line 231 "../src/parser/fol.y"
     { zzconsumeToken(zztokenList,"@"); ;}
     break;
 
   case 24:
+
+/* Line 936 of glr.c  */
 #line 238 "../src/parser/fol.y"
     { 
   if (folDbg >= 1) printf(".\n"); zzconsumeToken(zztokenList,"."); 
@@ -1339,26 +1372,36 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 25:
+
+/* Line 936 of glr.c  */
 #line 247 "../src/parser/fol.y"
     { if (folDbg >= 1) printf("\\n\n"); zzconsumeToken(zztokenList,"\n"); ;}
     break;
 
   case 26:
+
+/* Line 936 of glr.c  */
 #line 249 "../src/parser/fol.y"
     { if (folDbg >= 1) printf("\\r\n"); zzconsumeToken(zztokenList,"\r"); ;}
     break;
 
   case 28:
+
+/* Line 936 of glr.c  */
 #line 255 "../src/parser/fol.y"
     { if (folDbg >= 1) printf("\\n\n"); zzconsumeToken(zztokenList,"\n"); ;}
     break;
 
   case 29:
+
+/* Line 936 of glr.c  */
 #line 257 "../src/parser/fol.y"
     { if (folDbg >= 1) printf("\\r\n"); zzconsumeToken(zztokenList,"\r"); ;}
     break;
 
   case 30:
+
+/* Line 936 of glr.c  */
 #line 264 "../src/parser/fol.y"
     {
   const char* inc = zztokenList.removeLast();
@@ -1419,16 +1462,22 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 31:
+
+/* Line 936 of glr.c  */
 #line 323 "../src/parser/fol.y"
     { if (folDbg >= 1) printf("\\n\n"); ;}
     break;
 
   case 32:
+
+/* Line 936 of glr.c  */
 #line 325 "../src/parser/fol.y"
     { if (folDbg >= 1) printf("\\r\n"); ;}
     break;
 
   case 33:
+
+/* Line 936 of glr.c  */
 #line 336 "../src/parser/fol.y"
     { 
   zzconsumeToken(zztokenList,"=");
@@ -1439,6 +1488,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 34:
+
+/* Line 936 of glr.c  */
 #line 344 "../src/parser/fol.y"
     {
   if (folDbg >= 1) printf("} ");           
@@ -1449,6 +1500,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 35:
+
+/* Line 936 of glr.c  */
 #line 355 "../src/parser/fol.y"
     {
   const char* idf = zztokenList.removeLast();
@@ -1464,6 +1517,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 36:
+
+/* Line 936 of glr.c  */
 #line 368 "../src/parser/fol.y"
     {
   const char* idf = zztokenList.removeLast();
@@ -1478,11 +1533,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 38:
+
+/* Line 936 of glr.c  */
 #line 387 "../src/parser/fol.y"
     { if (folDbg >= 2) printf("constant_declarations: ZZ_VARIABLE\n"); ;}
     break;
 
   case 39:
+
+/* Line 936 of glr.c  */
 #line 389 "../src/parser/fol.y"
     {
     const char* vsc = zztokenList.removeLast();
@@ -1493,11 +1552,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 44:
+
+/* Line 936 of glr.c  */
 #line 406 "../src/parser/fol.y"
     { zzconsumeToken(zztokenList, ","); ;}
     break;
 
   case 45:
+
+/* Line 936 of glr.c  */
 #line 409 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"\n");
@@ -1507,6 +1570,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 46:
+
+/* Line 936 of glr.c  */
 #line 416 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"\n");
@@ -1515,6 +1580,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 47:
+
+/* Line 936 of glr.c  */
 #line 422 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,",");
@@ -1523,6 +1590,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 48:
+
+/* Line 936 of glr.c  */
 #line 432 "../src/parser/fol.y"
     {
   if (folDbg >= 2) printf("numeric_type_declarations: \n");
@@ -1532,6 +1601,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 49:
+
+/* Line 936 of glr.c  */
 #line 438 "../src/parser/fol.y"
     {
   const char* numStr = zztokenList.removeLast();
@@ -1550,6 +1621,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 50:
+
+/* Line 936 of glr.c  */
 #line 453 "../src/parser/fol.y"
     {
   zzconsumeToken(zztokenList, ",");
@@ -1557,6 +1630,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 51:
+
+/* Line 936 of glr.c  */
 #line 458 "../src/parser/fol.y"
     {
   zzconsumeToken(zztokenList, "}");
@@ -1564,6 +1639,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 52:
+
+/* Line 936 of glr.c  */
 #line 465 "../src/parser/fol.y"
     {
   //const char* numStr1 = zztokenList.removeLast();
@@ -1591,6 +1668,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 53:
+
+/* Line 936 of glr.c  */
 #line 490 "../src/parser/fol.y"
     {
   delete [] zztypeName;
@@ -1599,6 +1678,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 54:
+
+/* Line 936 of glr.c  */
 #line 500 "../src/parser/fol.y"
     {  
     zzconsumeToken(zztokenList, ",");
@@ -1608,6 +1689,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 57:
+
+/* Line 936 of glr.c  */
 #line 511 "../src/parser/fol.y"
     {
   const char* numStr = zztokenList.removeLast();
@@ -1626,6 +1709,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 58:
+
+/* Line 936 of glr.c  */
 #line 535 "../src/parser/fol.y"
     {
   const char* predName = zztokenList.removeLast();
@@ -1642,16 +1727,22 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 59:
+
+/* Line 936 of glr.c  */
 #line 547 "../src/parser/fol.y"
     { if (folDbg >= 1) printf("( "); zzconsumeToken(zztokenList,"("); ;}
     break;
 
   case 60:
+
+/* Line 936 of glr.c  */
 #line 548 "../src/parser/fol.y"
     { if (folDbg >= 2) printf("predicate_declaration: types\n"); ;}
     break;
 
   case 61:
+
+/* Line 936 of glr.c  */
 #line 550 "../src/parser/fol.y"
     {  
   if (folDbg >= 1) printf(") "); 
@@ -1667,6 +1758,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 62:
+
+/* Line 936 of glr.c  */
 #line 563 "../src/parser/fol.y"
     {
   const char* predName = zztokenList.removeLast();
@@ -1699,6 +1792,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 63:
+
+/* Line 936 of glr.c  */
 #line 599 "../src/parser/fol.y"
     { 
   const char* retTypeName = zztokenList.removeLast();
@@ -1725,6 +1820,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 64:
+
+/* Line 936 of glr.c  */
 #line 622 "../src/parser/fol.y"
     {
   const char* funcName = zztokenList.removeLast();
@@ -1753,6 +1850,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 65:
+
+/* Line 936 of glr.c  */
 #line 647 "../src/parser/fol.y"
     {
   zzconsumeToken(zztokenList,"(");
@@ -1762,6 +1861,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 66:
+
+/* Line 936 of glr.c  */
 #line 653 "../src/parser/fol.y"
     {  
   zzconsumeToken(zztokenList,")");
@@ -1786,16 +1887,22 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 69:
+
+/* Line 936 of glr.c  */
 #line 682 "../src/parser/fol.y"
     { if (folDbg >= 1) printf(", "); zzconsumeToken(zztokenList,","); ;}
     break;
 
   case 71:
+
+/* Line 936 of glr.c  */
 #line 686 "../src/parser/fol.y"
     { if (folDbg >= 1) printf(", "); zzconsumeToken(zztokenList,","); ;}
     break;
 
   case 75:
+
+/* Line 936 of glr.c  */
 #line 694 "../src/parser/fol.y"
     {  
   const char* ttype = zztokenList.removeLast();
@@ -1809,6 +1916,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 77:
+
+/* Line 936 of glr.c  */
 #line 706 "../src/parser/fol.y"
     {
   const char* varName = zztokenList.removeLast();
@@ -1825,12 +1934,16 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 79:
+
+/* Line 936 of glr.c  */
 #line 722 "../src/parser/fol.y"
     {
   ;}
     break;
 
   case 80:
+
+/* Line 936 of glr.c  */
 #line 725 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList, "!");
@@ -1845,6 +1958,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 81:
+
+/* Line 936 of glr.c  */
 #line 741 "../src/parser/fol.y"
     { 
     zztrueFalseUnknown = 't';
@@ -1852,6 +1967,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 82:
+
+/* Line 936 of glr.c  */
 #line 745 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"!"); 
@@ -1861,6 +1978,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 83:
+
+/* Line 936 of glr.c  */
 #line 751 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"?"); 
@@ -1870,6 +1989,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 84:
+
+/* Line 936 of glr.c  */
 #line 762 "../src/parser/fol.y"
     {
   const char* predName = zztokenList.removeLast();
@@ -1886,6 +2007,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 85:
+
+/* Line 936 of glr.c  */
 #line 775 "../src/parser/fol.y"
     {
   zzcheckPredNumTerm(zzpred);
@@ -1923,6 +2046,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 86:
+
+/* Line 936 of glr.c  */
 #line 812 "../src/parser/fol.y"
     {
   // Add the one constant for propositional case
@@ -1933,6 +2058,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 87:
+
+/* Line 936 of glr.c  */
 #line 820 "../src/parser/fol.y"
     { 
   zzconsumeToken(zztokenList,"("); 
@@ -1942,6 +2069,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 88:
+
+/* Line 936 of glr.c  */
 #line 826 "../src/parser/fol.y"
     { 
   zzconsumeToken(zztokenList,")"); 
@@ -1950,6 +2079,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 90:
+
+/* Line 936 of glr.c  */
 #line 836 "../src/parser/fol.y"
     {
   const char* value = zztokenList.removeLast();
@@ -1961,6 +2092,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 92:
+
+/* Line 936 of glr.c  */
 #line 851 "../src/parser/fol.y"
     { 
   zzconsumeToken(zztokenList,"="); 
@@ -1970,6 +2103,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 93:
+
+/* Line 936 of glr.c  */
 #line 857 "../src/parser/fol.y"
     {
   // Predicate name is PredicateTemplate::ZZ_RETURN_PREFIX + function name
@@ -2018,6 +2153,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 94:
+
+/* Line 936 of glr.c  */
 #line 902 "../src/parser/fol.y"
     { 
   zzconsumeToken(zztokenList,"("); 
@@ -2027,6 +2164,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 95:
+
+/* Line 936 of glr.c  */
 #line 908 "../src/parser/fol.y"
     { 
   zzconsumeToken(zztokenList,")"); 
@@ -2067,6 +2206,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 96:
+
+/* Line 936 of glr.c  */
 #line 948 "../src/parser/fol.y"
     {     
     const char* constName = zztokenList.removeLast();
@@ -2077,6 +2218,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 97:
+
+/* Line 936 of glr.c  */
 #line 956 "../src/parser/fol.y"
     {     
     const char* constName = zztokenList.removeLast();
@@ -2087,6 +2230,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 99:
+
+/* Line 936 of glr.c  */
 #line 967 "../src/parser/fol.y"
     {
     if (zzconstantMustBeDeclared)
@@ -2096,6 +2241,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 100:
+
+/* Line 936 of glr.c  */
 #line 973 "../src/parser/fol.y"
     {
     const char* intStr = zztokenList.removeLast();
@@ -2108,6 +2255,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 101:
+
+/* Line 936 of glr.c  */
 #line 982 "../src/parser/fol.y"
     {
     if (zzconstantMustBeDeclared)
@@ -2117,6 +2266,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 102:
+
+/* Line 936 of glr.c  */
 #line 990 "../src/parser/fol.y"
     {
     const char* tmp = zztokenList.removeLast();
@@ -2129,6 +2280,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 103:
+
+/* Line 936 of glr.c  */
 #line 999 "../src/parser/fol.y"
     {
     if (zzconstantMustBeDeclared)
@@ -2144,6 +2297,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 104:
+
+/* Line 936 of glr.c  */
 #line 1011 "../src/parser/fol.y"
     {
   	const char* tmp = zztokenList.removeLast();
@@ -2156,6 +2311,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 105:
+
+/* Line 936 of glr.c  */
 #line 1020 "../src/parser/fol.y"
     {
     if (zzconstantMustBeDeclared)
@@ -2171,6 +2328,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 107:
+
+/* Line 936 of glr.c  */
 #line 1038 "../src/parser/fol.y"
     {
     const char* wt = zztokenList.removeLast();
@@ -2182,6 +2341,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 110:
+
+/* Line 936 of glr.c  */
 #line 1052 "../src/parser/fol.y"
     { 
   if (folDbg >= 1) printf("."); zzconsumeToken(zztokenList,"."); 
@@ -2192,6 +2353,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 112:
+
+/* Line 936 of glr.c  */
 #line 1063 "../src/parser/fol.y"
     {
   if (folDbg >= 1) printf(":"); zzconsumeToken(zztokenList,":"); 
@@ -2202,6 +2365,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 113:
+
+/* Line 936 of glr.c  */
 #line 1070 "../src/parser/fol.y"
     {
     const char* util = zztokenList.removeLast();
@@ -2213,6 +2378,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 114:
+
+/* Line 936 of glr.c  */
 #line 1082 "../src/parser/fol.y"
     { 
       // Square Brackets
@@ -2225,6 +2392,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 115:
+
+/* Line 936 of glr.c  */
 #line 1092 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"]"); 
@@ -2235,6 +2404,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 116:
+
+/* Line 936 of glr.c  */
 #line 1100 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"("); 
@@ -2245,6 +2416,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 117:
+
+/* Line 936 of glr.c  */
 #line 1108 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,")"); 
@@ -2254,11 +2427,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 118:
+
+/* Line 936 of glr.c  */
 #line 1114 "../src/parser/fol.y"
     { if (folDbg >= 2) printf("sentence: atomic_sentence\n"); ;}
     break;
 
   case 120:
+
+/* Line 936 of glr.c  */
 #line 1118 "../src/parser/fol.y"
     {
     const char* imp = zztokenList.removeLast(); 
@@ -2269,11 +2446,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 121:
+
+/* Line 936 of glr.c  */
 #line 1126 "../src/parser/fol.y"
     { zzcreateListObjFromTopTwo(zzformulaListObjs, "=>"); ;}
     break;
 
   case 122:
+
+/* Line 936 of glr.c  */
 #line 1130 "../src/parser/fol.y"
     { 
     const char* eq = zztokenList.removeLast(); 
@@ -2284,11 +2465,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 123:
+
+/* Line 936 of glr.c  */
 #line 1138 "../src/parser/fol.y"
     { zzcreateListObjFromTopTwo(zzformulaListObjs, "<=>"); ;}
     break;
 
   case 124:
+
+/* Line 936 of glr.c  */
 #line 1142 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"v"); 
@@ -2298,11 +2483,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 125:
+
+/* Line 936 of glr.c  */
 #line 1149 "../src/parser/fol.y"
     { zzcreateListObjFromTopTwo(zzformulaListObjs, "v"); ;}
     break;
 
   case 126:
+
+/* Line 936 of glr.c  */
 #line 1153 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"^"); 
@@ -2312,16 +2501,22 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 127:
+
+/* Line 936 of glr.c  */
 #line 1160 "../src/parser/fol.y"
     { zzcreateListObjFromTopTwo(zzformulaListObjs, "^"); ;}
     break;
 
   case 128:
+
+/* Line 936 of glr.c  */
 #line 1164 "../src/parser/fol.y"
     { if (folDbg >= 2) printf("sentence: quantifier\n"); ;}
     break;
 
   case 129:
+
+/* Line 936 of glr.c  */
 #line 1166 "../src/parser/fol.y"
     { 
     if (folDbg >= 2) printf("sentence: variables\n"); 
@@ -2332,11 +2527,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 130:
+
+/* Line 936 of glr.c  */
 #line 1172 "../src/parser/fol.y"
     { if (folDbg >= 2) printf("sentence: sentence\n"); ;}
     break;
 
   case 131:
+
+/* Line 936 of glr.c  */
 #line 1174 "../src/parser/fol.y"
     { 
     zzcreateListObjFromTopThree(zzformulaListObjs);
@@ -2347,6 +2546,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 132:
+
+/* Line 936 of glr.c  */
 #line 1183 "../src/parser/fol.y"
     { 
     zzassert(!zzisNegated,"expecting !zzisNegated");
@@ -2360,11 +2561,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 133:
+
+/* Line 936 of glr.c  */
 #line 1193 "../src/parser/fol.y"
     { zzcreateListObjFromTop(zzformulaListObjs, "!"); ;}
     break;
 
   case 134:
+
+/* Line 936 of glr.c  */
 #line 1199 "../src/parser/fol.y"
     { 
     const char* fa = zztokenList.removeLast();
@@ -2376,6 +2581,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 135:
+
+/* Line 936 of glr.c  */
 #line 1207 "../src/parser/fol.y"
     { 
     const char* ex = zztokenList.removeLast();
@@ -2387,11 +2594,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 136:
+
+/* Line 936 of glr.c  */
 #line 1219 "../src/parser/fol.y"
     { if (folDbg >= 2) printf("variables: variables\n"); ;}
     break;
 
   case 137:
+
+/* Line 936 of glr.c  */
 #line 1221 "../src/parser/fol.y"
     {  
     zzconsumeToken(zztokenList,",");
@@ -2401,11 +2612,15 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 139:
+
+/* Line 936 of glr.c  */
 #line 1228 "../src/parser/fol.y"
     { zzformulaStr.append(" "); ;}
     break;
 
   case 140:
+
+/* Line 936 of glr.c  */
 #line 1233 "../src/parser/fol.y"
     {
   const char* varName = zztokenList.removeLast();  
@@ -2431,6 +2646,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 141:
+
+/* Line 936 of glr.c  */
 #line 1259 "../src/parser/fol.y"
     {
     const char* predName = zztokenList.removeLast();
@@ -2464,6 +2681,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 143:
+
+/* Line 936 of glr.c  */
 #line 1291 "../src/parser/fol.y"
     {
     ++zzfdnumPreds;
@@ -2485,6 +2704,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 144:
+
+/* Line 936 of glr.c  */
 #line 1310 "../src/parser/fol.y"
     {
   	ListObj* predlo = zzpredFuncListObjs.top();
@@ -2507,6 +2728,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 145:
+
+/* Line 936 of glr.c  */
 #line 1329 "../src/parser/fol.y"
     {  
     ListObj* predlo = zzpredFuncListObjs.top();
@@ -2654,6 +2877,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 146:
+
+/* Line 936 of glr.c  */
 #line 1476 "../src/parser/fol.y"
     {
 	// Add the one constant for propositional case
@@ -2676,6 +2901,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 147:
+
+/* Line 936 of glr.c  */
 #line 1496 "../src/parser/fol.y"
     {  
     zzconsumeToken(zztokenList, "(");
@@ -2687,6 +2914,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 148:
+
+/* Line 936 of glr.c  */
 #line 1505 "../src/parser/fol.y"
     {  
     zzconsumeToken(zztokenList, ")");
@@ -2846,6 +3075,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 149:
+
+/* Line 936 of glr.c  */
 #line 1664 "../src/parser/fol.y"
     {
   	zzconsumeToken(zztokenList, ">");
@@ -2862,6 +3093,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 150:
+
+/* Line 936 of glr.c  */
 #line 1678 "../src/parser/fol.y"
     {
    	zzconsumeToken(zztokenList, "<");
@@ -2878,6 +3111,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 151:
+
+/* Line 936 of glr.c  */
 #line 1692 "../src/parser/fol.y"
     {
   	zzconsumeToken(zztokenList, ">");
@@ -2897,6 +3132,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 152:
+
+/* Line 936 of glr.c  */
 #line 1709 "../src/parser/fol.y"
     {
 	zzconsumeToken(zztokenList, "<");
@@ -2916,6 +3153,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 153:
+
+/* Line 936 of glr.c  */
 #line 1726 "../src/parser/fol.y"
     {
   	zzconsumeToken(zztokenList, "=");
@@ -2931,6 +3170,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 154:
+
+/* Line 936 of glr.c  */
 #line 1739 "../src/parser/fol.y"
     {
   	zzconsumeToken(zztokenList, "!");
@@ -2954,6 +3195,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 156:
+
+/* Line 936 of glr.c  */
 #line 1764 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList, "*");
@@ -2967,6 +3210,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 157:
+
+/* Line 936 of glr.c  */
 #line 1780 "../src/parser/fol.y"
     {  
     zzconsumeToken(zztokenList, ",");
@@ -2978,6 +3223,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 159:
+
+/* Line 936 of glr.c  */
 #line 1790 "../src/parser/fol.y"
     {
   	// After the first term in an internal pred., check if we can determine type
@@ -3005,6 +3252,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 160:
+
+/* Line 936 of glr.c  */
 #line 1818 "../src/parser/fol.y"
     {
     const char* constName = zztokenList.removeLast();
@@ -3017,6 +3266,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 161:
+
+/* Line 936 of glr.c  */
 #line 1828 "../src/parser/fol.y"
     {
     const char* constName = zztokenList.removeLast();
@@ -3031,6 +3282,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 162:
+
+/* Line 936 of glr.c  */
 #line 1840 "../src/parser/fol.y"
     {
     const char* intStr = zztokenList.removeLast();
@@ -3048,6 +3301,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 163:
+
+/* Line 936 of glr.c  */
 #line 1855 "../src/parser/fol.y"
     {
     zztermIsVariable(folDbg);
@@ -3056,6 +3311,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 164:
+
+/* Line 936 of glr.c  */
 #line 1861 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList, "+");
@@ -3069,6 +3326,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 165:
+
+/* Line 936 of glr.c  */
 #line 1872 "../src/parser/fol.y"
     {
     zzassert(zzfunc != NULL,"expecting zzfunc != NULL");
@@ -3264,6 +3523,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 166:
+
+/* Line 936 of glr.c  */
 #line 2068 "../src/parser/fol.y"
     {
     const char* funcName = zztokenList.removeLast();
@@ -3303,6 +3564,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 167:
+
+/* Line 936 of glr.c  */
 #line 2104 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList, "(");
@@ -3312,6 +3575,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 168:
+
+/* Line 936 of glr.c  */
 #line 2110 "../src/parser/fol.y"
     {
   	  //If an internal func., then need to determine type
@@ -3392,6 +3657,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 169:
+
+/* Line 936 of glr.c  */
 #line 2188 "../src/parser/fol.y"
     {
       // Create a function corresponding to the infix sign
@@ -3418,6 +3685,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 170:
+
+/* Line 936 of glr.c  */
 #line 2211 "../src/parser/fol.y"
     {
     ListObj* funclo = zzpredFuncListObjs.top();
@@ -3480,6 +3749,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 171:
+
+/* Line 936 of glr.c  */
 #line 2273 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList, "+");
@@ -3491,6 +3762,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 172:
+
+/* Line 936 of glr.c  */
 #line 2282 "../src/parser/fol.y"
     {
    	zzconsumeToken(zztokenList, "-");
@@ -3502,6 +3775,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 173:
+
+/* Line 936 of glr.c  */
 #line 2291 "../src/parser/fol.y"
     {
   	zzconsumeToken(zztokenList, "*");
@@ -3513,6 +3788,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 174:
+
+/* Line 936 of glr.c  */
 #line 2300 "../src/parser/fol.y"
     {
 	zzconsumeToken(zztokenList, "/");
@@ -3524,6 +3801,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 175:
+
+/* Line 936 of glr.c  */
 #line 2309 "../src/parser/fol.y"
     {
   	zzconsumeToken(zztokenList, "%");
@@ -3535,6 +3814,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 176:
+
+/* Line 936 of glr.c  */
 #line 2320 "../src/parser/fol.y"
     { 
       // Square Brackets
@@ -3546,6 +3827,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 177:
+
+/* Line 936 of glr.c  */
 #line 2329 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"]"); 
@@ -3555,6 +3838,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 178:
+
+/* Line 936 of glr.c  */
 #line 2336 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"("); 
@@ -3565,6 +3850,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 179:
+
+/* Line 936 of glr.c  */
 #line 2344 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,")"); 
@@ -3574,6 +3861,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 182:
+
+/* Line 936 of glr.c  */
 #line 2357 "../src/parser/fol.y"
     {
     const char* predName = zztokenList.removeLast();
@@ -3606,6 +3895,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 183:
+
+/* Line 936 of glr.c  */
 #line 2387 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList,"="); 
@@ -3616,6 +3907,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 184:
+
+/* Line 936 of glr.c  */
 #line 2394 "../src/parser/fol.y"
     {
   	const char* tmp = zztokenList.removeLast();
@@ -3630,6 +3923,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 185:
+
+/* Line 936 of glr.c  */
 #line 2406 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList,"-");
@@ -3639,6 +3934,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 186:
+
+/* Line 936 of glr.c  */
 #line 2412 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList,"("); 
@@ -3648,6 +3945,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 187:
+
+/* Line 936 of glr.c  */
 #line 2418 "../src/parser/fol.y"
     {
     const char* predName = zztokenList.removeLast();
@@ -3680,6 +3979,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 188:
+
+/* Line 936 of glr.c  */
 #line 2448 "../src/parser/fol.y"
     { 
     zzconsumeToken(zztokenList,"-"); 
@@ -3689,6 +3990,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 189:
+
+/* Line 936 of glr.c  */
 #line 2454 "../src/parser/fol.y"
     {
   	const char* tmp = zztokenList.removeLast();
@@ -3703,6 +4006,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 190:
+
+/* Line 936 of glr.c  */
 #line 2465 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList,")");
@@ -3712,6 +4017,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 191:
+
+/* Line 936 of glr.c  */
 #line 2471 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList,"^"); 
@@ -3721,6 +4028,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 192:
+
+/* Line 936 of glr.c  */
 #line 2477 "../src/parser/fol.y"
     {
     zzconsumeToken(zztokenList,"2"); 
@@ -3730,14 +4039,17 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
     break;
 
   case 193:
+
+/* Line 936 of glr.c  */
 #line 2486 "../src/parser/fol.y"
     {
   ;}
     break;
 
 
-/* Line 930 of glr.c.  */
-#line 3741 "fol.cpp"
+
+/* Line 936 of glr.c  */
+#line 4053 "fol.cpp"
       default: break;
     }
 
@@ -4260,11 +4572,11 @@ yy_reduce_print (yyGLRStack* yystackp, size_t yyk, yyRuleNum yyrule,
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
-      fprintf (stderr, "   $%d = ", yyi + 1);
+      YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr, yyrhs[yyprhs[yyrule] + yyi],
 		       &(((yyGLRStackItem const *)yyvsp)[YYFILL ((yyi + 1) - (yynrhs))].yystate.yysemantics.yysval)
 		       		       );
-      fprintf (stderr, "\n");
+      YYFPRINTF (stderr, "\n");
     }
 }
 #endif
@@ -4855,11 +5167,19 @@ yyprocessOneStack (yyGLRStack* yystackp, size_t yyk,
 	    {
 	      YYDPRINTF ((stderr, "Reading a token: "));
 	      yychar = YYLEX;
+	    }
+
+	  if (yychar <= YYEOF)
+	    {
+	      yychar = yytoken = YYEOF;
+	      YYDPRINTF ((stderr, "Now at end of input.\n"));
+	    }
+	  else
+	    {
 	      yytoken = YYTRANSLATE (yychar);
 	      YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
 	    }
-	  else
-	    yytoken = YYTRANSLATE (yychar);
+
 	  yygetLRActions (yystate, yytoken, &yyaction, &yyconflicts);
 
 	  while (*yyconflicts != 0)
@@ -4995,7 +5315,7 @@ yyreportSyntaxError (yyGLRStack* yystackp)
 
 /* Recover from a parse error on *YYSTACKP, assuming that *YYSTACKP->YYTOKENP,
    yylval, and yylloc are the syntactic category, semantic value, and location
-   of the look-ahead.  */
+   of the lookahead.  */
 /*ARGSUSED*/ static void
 yyrecoverSyntaxError (yyGLRStack* yystackp)
 {
@@ -5018,8 +5338,16 @@ yyrecoverSyntaxError (yyGLRStack* yystackp)
 	  }
 	YYDPRINTF ((stderr, "Reading a token: "));
 	yychar = YYLEX;
-	yytoken = YYTRANSLATE (yychar);
-	YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
+	if (yychar <= YYEOF)
+	  {
+	    yychar = yytoken = YYEOF;
+	    YYDPRINTF ((stderr, "Now at end of input.\n"));
+	  }
+	else
+	  {
+	    yytoken = YYTRANSLATE (yychar);
+	    YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
+	  }
 	yyj = yypact[yystackp->yytops.yystates[0]->yylrState];
 	if (yyis_pact_ninf (yyj))
 	  return;
@@ -5067,7 +5395,8 @@ yyrecoverSyntaxError (yyGLRStack* yystackp)
 	    }
 	}
 
-      yydestroyGLRState ("Error: popping", yys);
+      if (yys->yypred != NULL)
+	yydestroyGLRState ("Error: popping", yys);
       yystackp->yytops.yystates[0] = yys->yypred;
       yystackp->yynextFree -= 1;
       yystackp->yyspaceLeft += 1;
@@ -5157,19 +5486,26 @@ yyparse (void)
 		{
 		  YYDPRINTF ((stderr, "Reading a token: "));
 		  yychar = YYLEX;
+		}
+
+	      if (yychar <= YYEOF)
+		{
+		  yychar = yytoken = YYEOF;
+		  YYDPRINTF ((stderr, "Now at end of input.\n"));
+		}
+	      else
+		{
 		  yytoken = YYTRANSLATE (yychar);
 		  YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
 		}
-	      else
-		yytoken = YYTRANSLATE (yychar);
+
 	      yygetLRActions (yystate, yytoken, &yyaction, &yyconflicts);
 	      if (*yyconflicts != 0)
 		break;
 	      if (yyisShiftAction (yyaction))
 		{
 		  YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
-		  if (yychar != YYEOF)
-		    yychar = YYEMPTY;
+		  yychar = YYEMPTY;
 		  yyposn += 1;
 		  yyglrShift (&yystack, 0, yyaction, yyposn, &yylval, &yylloc);
 		  if (0 < yystack.yyerrState)
@@ -5285,7 +5621,7 @@ yyparse (void)
   goto yyreturn;
 
  yyreturn:
-  if (yychar != YYEOF && yychar != YYEMPTY)
+  if (yychar != YYEMPTY)
     yydestruct ("Cleanup: discarding lookahead",
 		YYTRANSLATE (yychar),
 		&yylval);
@@ -5306,7 +5642,8 @@ yyparse (void)
 		while (yystates[yyk])
 		  {
 		    yyGLRState *yys = yystates[yyk];
-		    yydestroyGLRState ("Cleanup: popping", yys);
+		    if (yys->yypred != NULL)
+		      yydestroyGLRState ("Cleanup: popping", yys);
 		    yystates[yyk] = yys->yypred;
 		    yystack.yynextFree -= 1;
 		    yystack.yyspaceLeft += 1;
@@ -5322,7 +5659,7 @@ yyparse (void)
 }
 
 /* DEBUGGING ONLY */
-#ifdef YYDEBUG
+#if YYDEBUG
 static void yypstack (yyGLRStack* yystackp, size_t yyk)
   __attribute__ ((__unused__));
 static void yypdumpstack (yyGLRStack* yystackp) __attribute__ ((__unused__));
@@ -5333,19 +5670,20 @@ yy_yypstack (yyGLRState* yys)
   if (yys->yypred)
     {
       yy_yypstack (yys->yypred);
-      fprintf (stderr, " -> ");
+      YYFPRINTF (stderr, " -> ");
     }
-  fprintf (stderr, "%d@%lu", yys->yylrState, (unsigned long int) yys->yyposn);
+  YYFPRINTF (stderr, "%d@%lu", yys->yylrState,
+             (unsigned long int) yys->yyposn);
 }
 
 static void
 yypstates (yyGLRState* yyst)
 {
   if (yyst == NULL)
-    fprintf (stderr, "<null>");
+    YYFPRINTF (stderr, "<null>");
   else
     yy_yypstack (yyst);
-  fprintf (stderr, "\n");
+  YYFPRINTF (stderr, "\n");
 }
 
 static void
@@ -5365,35 +5703,39 @@ yypdumpstack (yyGLRStack* yystackp)
   size_t yyi;
   for (yyp = yystackp->yyitems; yyp < yystackp->yynextFree; yyp += 1)
     {
-      fprintf (stderr, "%3lu. ", (unsigned long int) (yyp - yystackp->yyitems));
+      YYFPRINTF (stderr, "%3lu. ",
+                 (unsigned long int) (yyp - yystackp->yyitems));
       if (*(yybool *) yyp)
 	{
-	  fprintf (stderr, "Res: %d, LR State: %d, posn: %lu, pred: %ld",
-		   yyp->yystate.yyresolved, yyp->yystate.yylrState,
-		   (unsigned long int) yyp->yystate.yyposn,
-		   (long int) YYINDEX (yyp->yystate.yypred));
+	  YYFPRINTF (stderr, "Res: %d, LR State: %d, posn: %lu, pred: %ld",
+		     yyp->yystate.yyresolved, yyp->yystate.yylrState,
+		     (unsigned long int) yyp->yystate.yyposn,
+		     (long int) YYINDEX (yyp->yystate.yypred));
 	  if (! yyp->yystate.yyresolved)
-	    fprintf (stderr, ", firstVal: %ld",
-		     (long int) YYINDEX (yyp->yystate.yysemantics.yyfirstVal));
+	    YYFPRINTF (stderr, ", firstVal: %ld",
+		       (long int) YYINDEX (yyp->yystate
+                                             .yysemantics.yyfirstVal));
 	}
       else
 	{
-	  fprintf (stderr, "Option. rule: %d, state: %ld, next: %ld",
-		   yyp->yyoption.yyrule - 1,
-		   (long int) YYINDEX (yyp->yyoption.yystate),
-		   (long int) YYINDEX (yyp->yyoption.yynext));
+	  YYFPRINTF (stderr, "Option. rule: %d, state: %ld, next: %ld",
+		     yyp->yyoption.yyrule - 1,
+		     (long int) YYINDEX (yyp->yyoption.yystate),
+		     (long int) YYINDEX (yyp->yyoption.yynext));
 	}
-      fprintf (stderr, "\n");
+      YYFPRINTF (stderr, "\n");
     }
-  fprintf (stderr, "Tops:");
+  YYFPRINTF (stderr, "Tops:");
   for (yyi = 0; yyi < yystackp->yytops.yysize; yyi += 1)
-    fprintf (stderr, "%lu: %ld; ", (unsigned long int) yyi,
-	     (long int) YYINDEX (yystackp->yytops.yystates[yyi]));
-  fprintf (stderr, "\n");
+    YYFPRINTF (stderr, "%lu: %ld; ", (unsigned long int) yyi,
+	       (long int) YYINDEX (yystackp->yytops.yystates[yyi]));
+  YYFPRINTF (stderr, "\n");
 }
 #endif
 
 
+
+/* Line 2634 of glr.c  */
 #line 2490 "../src/parser/fol.y"
 
 
