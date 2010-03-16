@@ -9,6 +9,16 @@
 #include <VisionData.hpp>
 #include "tgModel.h"
 
+
+bool convertPose2tgPose(cogx::Math::Pose3& pose, TomGine::tgPose& tgpose);
+bool convertGeometry2Model(VisionData::GeometryModelPtr geom, TomGine::tgModel& model);
+bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel& model);
+bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& model);
+bool convertSOI2Model(VisionData::SOIPtr soi, TomGine::tgModel& model, cogx::Math::Vector3& pos);
+void genBox(TomGine::tgModel& model, float x, float y, float z);
+void genSphere(TomGine::tgModel& model, float r);
+void loadCameraParameters(TomGine::tgCamera* camera, Video::CameraParameters camPars, float zNear, float zFar);
+
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
 bool convertPose2tgPose(cogx::Math::Pose3& pose, TomGine::tgPose& tgpose){
 	TomGine::mat3 rot;
@@ -69,7 +79,8 @@ bool convertGeometry2Model(VisionData::GeometryModelPtr geom, TomGine::tgModel& 
 }
 
 bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel& model){
-	int i,j,vidx=0;
+	int i,j;
+	int vidx = model.GetVerticesSize();
 
 	if(!cvhull){
 		printf("[VirtualSceneUtils::convertConvexHull2Model] Warning: no geometry found\n");
@@ -92,15 +103,16 @@ bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgM
 	}
 	
 	model.m_polygons.push_back(f);
-	model.ComputeNormals();
+	model.ComputePolygonNormals();
 	
 	return true;
 }
 
 bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& model){
-	int i,j,vidx=0;
+	int i,j;
 	TomGine::tgModel::Vertex v;
 	TomGine::tgModel::Face f;
+	int vidx = model.GetVerticesSize();
 		
 	// Bottom plane
 	f.vertices.clear();
@@ -154,9 +166,82 @@ bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& mod
 		f.vertices.push_back(vidx++);
 	}
 	model.m_quadstrips.push_back(f);
-	model.ComputeNormals();
+	model.ComputePolygonNormals();
+	model.ComputeQuadstripNormals();
 		
 	return true;
+}
+
+bool convertSOI2Model(VisionData::SOIPtr soi, TomGine::tgModel& model, cogx::Math::Vector3& pos){
+	int i;
+	bool exists = false;
+	
+	if( soi->boundingBox.size.x>0.0 && soi->boundingBox.size.y>0.0 && soi->boundingBox.size.z>0.0){
+		genBox(model, soi->boundingBox.size.x, soi->boundingBox.size.y, soi->boundingBox.size.z);
+		pos = soi->boundingBox.pos;
+	}
+	
+	if( soi->boundingSphere.rad > 0.0){
+		genSphere(model, soi->boundingSphere.rad);
+		pos = soi->boundingSphere.pos;
+	}
+
+	return true;
+}
+
+void genBox(TomGine::tgModel& model, float x, float y, float z){
+	TomGine::tgModel::Vertex v;
+	TomGine::tgModel::Face f;
+	x = x*0.5;
+	y = y*0.5;
+	z = z*0.5;
+	int vidx = model.GetVerticesSize();
+	
+	// Front
+	v.pos = TomGine::vec3(-x,-y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x,-y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x, y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x, y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	model.m_faces.push_back(f); f.vertices.clear();
+	
+	// Back
+	v.pos = TomGine::vec3( x,-y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x,-y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x, y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x, y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	model.m_faces.push_back(f); f.vertices.clear();
+	
+	// Right
+	v.pos = TomGine::vec3( x,-y, z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x,-y,-z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x, y,-z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x, y, z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	model.m_faces.push_back(f); f.vertices.clear();
+	
+	// Left
+	v.pos = TomGine::vec3(-x,-y,-z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x,-y, z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x, y, z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x, y,-z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	model.m_faces.push_back(f); f.vertices.clear();
+	
+	// Top
+	v.pos = TomGine::vec3(-x, y, z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x, y, z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x, y,-z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x, y,-z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	model.m_faces.push_back(f); f.vertices.clear();
+	
+	// Bottom
+	v.pos = TomGine::vec3( x,-y, z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x,-y, z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3(-x,-y,-z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	v.pos = TomGine::vec3( x,-y,-z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
+	model.m_faces.push_back(f); f.vertices.clear();
+}
+
+void genSphere(TomGine::tgModel& model, float r){
+	printf("[VirtualSceneUtils::genSphere] not implemented\n");
 }
 
 // Converts Video::CameraParameters from Video::Image of VideoServer to 
@@ -212,7 +297,12 @@ void loadCameraParameters(TomGine::tgCamera* camera, Video::CameraParameters cam
 	camera->SetPos(camPars.pose.pos.x, camPars.pose.pos.y, camPars.pose.pos.z);
 }
 
-
+void addVectorToCenterOfRotation(cogx::Math::Vector3& cor, int& n, cogx::Math::Vector3& vector){
+	cor = cor * (float)n;
+	cor = cor + vector;
+	n++;
+	cor = cor / (float)n;
+}
 
 
 

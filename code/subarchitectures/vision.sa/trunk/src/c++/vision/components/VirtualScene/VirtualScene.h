@@ -14,10 +14,12 @@
 #include <VisionData.hpp>
 #include <vector>
 #include <string>
+#include <cogxmath.h>
 
 #include "tgEngine.h"
 #include "tgFont.h"
 #include "ModelEntry.h"
+#include "tgModelLoader.h"
 
 namespace cast
 {
@@ -30,12 +32,19 @@ private:
   int m_height;
   
   TomGine::tgEngine* m_engine;
-  TomGine::tgCamera m_camera;
+  TomGine::tgCamera m_camera0, m_camera;
+  cogx::Math::Pose3 m_cam_pose;
   TomGine::tgFont* m_font;
   std::vector<TomGine::tgEvent> m_eventlist;
   
+  // Models
+  ModelEntry m_camModel;
   std::vector<ModelEntry> m_VisualObjectList;
   std::vector<ModelEntry> m_ConvexHullList;
+  std::vector<ModelEntry> m_SOIList;
+  
+  cogx::Math::Vector3 m_cor;	///< center of rotation of the scene
+  int	m_cor_num;
 
   /** Which camera to get images from */
   int m_camId;
@@ -55,9 +64,11 @@ private:
  
   // Functions with GL commands allowed
   void initScene(const Video::Image &image);
+  void updateCamera();
   void drawCamera();
   void drawVisualObjects();
   void drawConvexHulls();
+  void drawSOIs();
   void inputControl();
   TomGine::tgRenderModel::Material getRandomMaterial();
   TomGine::vec3 getRandomColor();
@@ -70,6 +81,10 @@ private:
   void addConvexHull(const cdl::WorkingMemoryChange & _wmc);
   void overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc);
   void deleteConvexHull(const cdl::WorkingMemoryChange & _wmc);
+  
+  void addSOI(const cdl::WorkingMemoryChange & _wmc);
+  void overwriteSOI(const cdl::WorkingMemoryChange & _wmc);
+  void deleteSOI(const cdl::WorkingMemoryChange & _wmc);
 
 protected:
   /** called by the framework to configure our component */

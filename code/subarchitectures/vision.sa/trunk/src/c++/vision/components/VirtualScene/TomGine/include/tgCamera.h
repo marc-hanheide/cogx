@@ -111,6 +111,8 @@ public:
 	
 	// Movement
 	void ApplyTransform();
+	
+	void DrawFrustum(){ m_frustum.DrawFrustum(); }
 
 };
 

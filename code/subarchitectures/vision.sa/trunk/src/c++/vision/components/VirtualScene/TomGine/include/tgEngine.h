@@ -34,8 +34,8 @@ private:
 	float m_depth;
 	
 	tgGLXWindow* 	m_window;
-	tgCamera 			m_camera;
-	tgCamera 			m_camera0;
+	tgCamera 			m_cam[6];
+	tgCamera			m_camera;
 	tgCamera			m_cam_ortho;
 
 	tgLighting 		m_lighting;
@@ -89,16 +89,16 @@ public:
 	void DrawCoordinates();
 	
 	/** @brief Sets Camera of rendering engine (including internal and external camera parameters) */
-	void SetCamera(tgCamera cam){ m_camera = tgCamera(cam); m_camera0 = tgCamera(cam); }
+	void SetCamera(tgCamera cam);
+	
+	/**	@brief Sets center of rotation */
+	void SetCenterOfRotation(float x, float y, float z);
 	
 	/** @brief Activates 3D rendering mode; standard after Update() */
 	void Activate3D();
 
 	/** @brief Activates 2D rendering moder */
 	void Activate2D();
-	
-	/**	@brief Sets center of rotation */
-	void SetCenterOfRotation(float x, float y, float z){ m_cor = tgVector3(x,y,z); }
 	
 	/** @brief Swaps frame buffer to screen (called by Update() aswell)*/
 	void Swap();

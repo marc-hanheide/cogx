@@ -187,7 +187,6 @@ void tgCamera::fwh2intrinsic(){
 	m_intrinsic = mat4(m);		
 }
 
-
 //****************************************************************************
 // Translations
 void tgCamera::Translate(tgVector3 v){

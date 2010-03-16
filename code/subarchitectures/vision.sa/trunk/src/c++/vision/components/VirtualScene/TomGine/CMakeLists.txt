@@ -14,6 +14,7 @@ link_directories(/usr/local/lib)
 
 # Set the sources.
 SET(SOURCES
+	src/ply.c
 	src/tgQuaternion.cpp
 	src/tgCamera.cpp
 	src/tgEngine.cpp
@@ -22,6 +23,7 @@ SET(SOURCES
 	src/tgLighting.cpp
 	src/tgMatrix3.cpp
 	src/tgModel.cpp
+	src/tgModelLoader.cpp
 	src/tgPose.cpp
 	src/tgRenderModel.cpp
 	src/tgTexture.cpp

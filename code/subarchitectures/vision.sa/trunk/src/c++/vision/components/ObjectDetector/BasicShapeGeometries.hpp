@@ -7,10 +7,13 @@
 
 using namespace VisionData;
 
-void genCube(	VisionData::GeometryModelPtr model,
+void genBox(	VisionData::GeometryModelPtr model,
 							float x, float y, float z)
 {
 	printf("[ObjectDetector::BasicShapeGeometries.hpp::genCube] Warning not implemented yet");
+	
+	
+	
 	
 }
 

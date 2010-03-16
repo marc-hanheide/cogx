@@ -67,8 +67,13 @@ public:
 	/** @brief draws normals of vertices in m_faces */
 	virtual void DrawNormals(float normal_length);
 	
-	/** @brief computes normals of vertices of m_faces */
-	void ComputeNormals();
+	/** @brief computes normals of vertices of m_faces, m_polygons, m_quadstrips */
+	void ComputeFaceNormals();
+	void ComputePolygonNormals();
+	void ComputeQuadstripNormals();
+	
+	int GetVerticesSize(){ return m_vertices.size(); }
+	
 	
 	virtual void Clear();
 	

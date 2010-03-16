@@ -67,7 +67,15 @@ bool tgEngine::Init(int width, int height, float depth, const char* name, bool b
 								45, width, height,					// field of view in degree in y, image width, image height
 								0.01, 5.0*depth,						// near clipping plane, far clipping plane
 								GL_PERSPECTIVE);						// Perspective camera
-	m_camera0 = m_camera;
+	m_cam[5] = m_cam[4] = m_cam[3] = m_cam[2] = m_cam[1] = m_cam[0] = m_camera;
+	
+	m_cam[1].Orbit(m_cor, m_cam[1].GetU(), PI);
+	m_cam[2].Orbit(m_cor, m_cam[2].GetU(), PI*0.5);
+	m_cam[3].Orbit(m_cor, m_cam[3].GetU(),-PI*0.5);
+	m_cam[4].Orbit(m_cor, m_cam[4].GetS(), PI*0.5);
+	m_cam[5].Orbit(m_cor, m_cam[5].GetS(),-PI*0.5);
+	
+	
 	
 	// Setup 2D camera
 	m_cam_ortho.Set(	0.0, 0.0, 1.0,
@@ -135,7 +143,9 @@ bool tgEngine::InputControl(tgEvent &event){
 	switch(event.type){
 	
 		// *********************************************************
+		//			KeyCode:		/usr/include/X11/keysymdef.h
 		case KeyPress:
+// 			printf("event.key.keysym: %x\n", event.key.keysym);
 			switch(event.key.keysym){
 				case XK_Escape:
 					return false;
@@ -157,8 +167,23 @@ bool tgEngine::InputControl(tgEvent &event){
 						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 					m_wireframe = !m_wireframe;
 					break;
-				case XK_z:
-					m_camera = m_camera0;
+				case XK_KP_Insert:
+					m_camera = m_cam[0];
+					break;
+				case XK_KP_Begin:
+					m_camera = m_cam[1];
+					break;
+				case XK_KP_Right:
+					m_camera = m_cam[2];
+					break;
+				case XK_KP_Left:
+					m_camera = m_cam[3];
+					break;
+				case XK_KP_Down:
+					m_camera = m_cam[4];
+					break;
+				case XK_KP_Up:
+					m_camera = m_cam[5];
 					break;
 				default:
 					break;
@@ -217,9 +242,9 @@ bool tgEngine::InputControl(tgEvent &event){
 			
 		// *********************************************************
 		case Expose:
-			m_camera.SetViewport((float)event.expose.width, (float)event.expose.height);
+			/*m_camera.SetViewport((float)event.expose.width, (float)event.expose.height);
 			m_camera0.SetViewport((float)event.expose.width, (float)event.expose.height);
-			/*
+			*//*
 			printf("[tgEngine::InputControl Expose] %f %f %f %f %f %d\n", 
 															m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
 															m_camera.GetZNear(), m_camera.GetZFar(),
@@ -261,6 +286,20 @@ void tgEngine::DrawCoordinates(){
 	
 	m_lighting.Activate();
 	glEnable(GL_DEPTH_TEST);	
+}
+
+void tgEngine::SetCamera(tgCamera cam){
+	m_cam[5] = m_cam[4] = m_cam[3] = m_cam[2] = m_cam[1] = m_cam[0] = m_camera = cam;
+	m_cam[1].Orbit(m_cor, m_cam[1].GetU(), PI);
+	m_cam[2].Orbit(m_cor, m_cam[2].GetU(), PI*0.5);
+	m_cam[3].Orbit(m_cor, m_cam[3].GetU(),-PI*0.5);
+	m_cam[4].Orbit(m_cor, m_cam[4].GetS(), PI*0.5);
+	m_cam[5].Orbit(m_cor, m_cam[5].GetS(),-PI*0.5);
+
+}
+
+void tgEngine::SetCenterOfRotation(float x, float y, float z){
+	m_cor = tgVector3(x,y,z);
 }
 
 void tgEngine::Activate3D(){

@@ -20,13 +20,16 @@ namespace TomGine{
 class tgFrustum{
     
 private:
-    float frustum[6][4];
+	float frustum[6][4];
+	float m_proj[16];
+	float m_modl[16];
 
 
 public:
-    void ExtractFrustum();
-    bool PointInFrustum( float x, float y, float z );
-    bool SphereInFrustum( float x, float y, float z, float radius );
+	void ExtractFrustum();
+	bool PointInFrustum( float x, float y, float z );
+	bool SphereInFrustum( float x, float y, float z, float radius );
+	void DrawFrustum();
 
 };
 

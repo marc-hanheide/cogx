@@ -31,8 +31,8 @@ public:
 		vec4 specular;
 		vec3 color;
 		float shininess;
-		
 		void Apply();
+		Material();
 	};
 	
 	tgPose			m_pose;

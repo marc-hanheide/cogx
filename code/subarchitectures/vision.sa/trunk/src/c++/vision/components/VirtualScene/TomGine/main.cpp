@@ -11,6 +11,7 @@
 #include "tgEngine.h"
 #include "tgFont.h"
 #include "tgRenderModel.h"
+#include "tgModelLoader.h"
 #include "tgBasicGeometries.h"
 
 using namespace TomGine;
@@ -49,9 +50,14 @@ int main(int argc, char *argv[])
 	GenCylinder(cylinder, 0.05, 0.2, 32, 1);
 	cylinder.m_material = matRed;
 	
+	tgRenderModel camera;
+	tgModelLoader loader;
+	loader.LoadPly(camera, "model/camera.ply");
+	camera.m_material = matRed;
+	
 	// Rendering loop
 	while(render.Update(fTime)){
-		cylinder.DrawFaces();
+		camera.DrawFaces();
 
 		render.Activate2D();
 		m_font.Print("TomGine Render Engine", 18, 5, 5);
