@@ -1,0 +1,14 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois #--log
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-tentative-window --no-local-map-window --planemap-size 100 --planemap-cellsize 0.05 --plane-model-file instantiations/tables.plm --plane-object-file instantiations/tables.pln --no-places #--log --debug
+CPP GD relation.manager ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --display-planes-in-pb --test-onness --plane-model-file instantiations/tables.plm --log --no-ptz --no-vision #--debug
