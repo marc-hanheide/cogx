@@ -1,0 +1,16 @@
+log4j.rootLogger=TRACE, console, FileLog
+
+# console is set to be a ConsoleAppender. 
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.Threshold=DEBUG
+log4j.appender.console.layout=cast.core.logging.ComponentLayout
+log4j.appender.console.layout.ConversionPattern=%S %25c [ %05p ] - %m %n%E
+
+log4j.appender.FileLog=org.apache.log4j.FileAppender
+log4j.appender.FileLog.Threshold=TRACE
+log4j.appender.FileLog.File=/tmp/cast.log
+log4j.appender.FileLog.Append=false
+log4j.appender.FileLog.layout=org.apache.log4j.PatternLayout
+log4j.appender.FileLog.layout.ConversionPattern=%8r %25c [ %05p ] - %m %n
+
+
