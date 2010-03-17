@@ -120,6 +120,9 @@ protected:
   void sampleOnnessForPlane(int planeObjectID, int objectModelID);
   void sampleOnnessForObject(int supportObjectModelID, int onObjectModelID);
 
+  void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
+  void newPriorRequest(const cast::cdl::WorkingMemoryChange &);
+
   void setContainmentProperty(int objectID, int placeID, double confidence);
   void setSupportProperty(int figureID, int groundID, double confidence);
 
