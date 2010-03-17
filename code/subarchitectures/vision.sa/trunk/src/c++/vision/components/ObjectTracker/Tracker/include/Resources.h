@@ -87,9 +87,9 @@ public:
 	SDL_Surface* 		GetScreen();
 	ImageProcessor* GetImageProcessor();
 	
-	TrackerModel*		GetModel(int id){ return m_modelList[id]; }
-	Texture*				GetTexture(int id){ return m_textureList[id]; }
-	Shader*					GetShader(int id){ return m_shaderList[id]; }
+	TrackerModel*		GetModel(int id);
+	Texture*				GetTexture(int id);
+	Shader*					GetShader(int id);
 	
 	int		GetNumTracker(){ return m_tracker_id; }
 	int		GetNumModels(){ return m_modelList.size(); }
@@ -109,6 +109,7 @@ public:
 	void ReleaseModel();
 	void ReleaseTexture();
 	void ReleaseShader();
+	void ReleaseShader(int id);
 	
 	// Search-functions
 	int	SearchModelName(const char* filename);

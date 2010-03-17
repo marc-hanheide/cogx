@@ -253,7 +253,8 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
-					tracker->saveModels("instantiations/ply-models/");
+// 					tracker->saveModels("instantiations/ply-models/");
+					tracker->saveScreenshot("screenshot.jpg");
 					break;
 				case SDLK_t:
 					tracker->textureFromImage(false);
