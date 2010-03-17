@@ -97,9 +97,14 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
   }
 
   m_bTestOnness = false;
+  m_bSampleOnness = false;
   it = _config.find("--test-onness");
   if (it != _config.end()) {
     m_bTestOnness = true;
+    it = _config.find("--sample-onness");
+    if (it != _config.end()) {
+      m_bSampleOnness = true;
+    }
   }
 
   m_bDemoSampling = false;
@@ -118,6 +123,12 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
   it = _config.find("--no-vision");
   if (it != _config.end()) {
     m_bNoVision = true;
+  }
+
+  m_planeModelFilename = "";
+  it = _config.find("--plane-model-file");
+  if (it != _config.end()) {
+    m_planeModelFilename = it->second;
   }
 
   m_RetryDelay = 10;
@@ -209,10 +220,36 @@ void ObjectRelationManager::start()
     m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
   }
 
+  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness) {
+    while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+      sleep(m_RetryDelay);
+      connectPeekabot();
+    }
+
+    peekabot::GroupProxy root;
+    root.assign(m_PeekabotClient, "root");
+    if (m_bDisplayPlaneObjectsInPB) {
+      m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
+    }
+    if (m_bDisplayPlaneObjectsInPB || m_bTestOnness) {
+      m_objectProxies.add(root, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
+    }
+    if (m_bTestOnness) {
+      m_onnessTester.add(root, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
+    }
+    println("Connected to peekabot, ready to go");
+  }
+
+  if (m_planeModelFilename != "") {
+    log("Loading plane models from file '%s'", m_planeModelFilename.c_str());
+    readPlaneModelsFromFile();
+  }
+
+
   log("ObjectRelationManager started");
 }
 
-void 
+  void 
 ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
   double oldX = 0.0;
@@ -236,7 +273,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   }
 
   double distMoved = sqrt((oldX - lastRobotPose->x)*(oldX - lastRobotPose->x) +
-    (oldY - lastRobotPose->y)*(oldY - lastRobotPose->y));
+      (oldY - lastRobotPose->y)*(oldY - lastRobotPose->y));
   double angleShift = lastRobotPose->theta - oldTheta;
   if (angleShift > M_PI) angleShift -= 2*M_PI;
   if (angleShift < -M_PI) angleShift += 2*M_PI;
@@ -244,7 +281,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   double deltaT = lastRobotPose->time.s +
     lastRobotPose->time.us*0.000001 - oldTime;
   double momVel = deltaT > 0 ? distMoved/deltaT : 0.0;
-//  log("momVel = %f, deltaT = %f", momVel, deltaT);
+  //  log("momVel = %f, deltaT = %f", momVel, deltaT);
 
   if (momVel > m_standingStillThreshold) {
     m_timeSinceLastMoved = 0.0;
@@ -259,7 +296,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   else if (deltaT > 0.0) {
     double diff = lastRobotPose->time.s + lastRobotPose->time.us*0.000001 - oldTime;
     m_timeSinceLastMoved += diff;
-//    log("time %f %f %f", diff, oldTime, m_timeSinceLastMoved);
+    //    log("time %f %f %f", diff, oldTime, m_timeSinceLastMoved);
   }
 }
 
@@ -267,26 +304,9 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
-  fstream outfile("samples.csv", ios::out); 
-
   peekabot::GroupProxy root;
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness) {
-    while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-      sleep(m_RetryDelay);
-      connectPeekabot();
-    }
-
     root.assign(m_PeekabotClient, "root");
-    if (m_bDisplayPlaneObjectsInPB) {
-      m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
-    }
-    if (m_bDisplayPlaneObjectsInPB || m_bTestOnness) {
-      m_objectProxies.add(root, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
-    }
-    if (m_bTestOnness) {
-      m_onnessTester.add(root, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
-    }
-    println("Connected to peekabot, ready to go");
   }
 
 
@@ -376,11 +396,13 @@ void ObjectRelationManager::runComponent()
     spm2.set_opacity(0.3);
   }
 
+  sleepComponent(10000);
+
   peekabot::PointCloudProxy pcloud;
   pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
   int nPoints = 0;
   vector<Vector3> points;
-  int maxPoints = 5500;
+  int maxPoints = 2500;
   points.reserve(maxPoints);
 
   while (isRunning()) {
@@ -537,70 +559,62 @@ void ObjectRelationManager::runComponent()
 	  witp2.set_scale(0.01);
 
 
+	  if (m_bSampleOnness) {
+	    Pose3 oldPose = box1.pose;
+	    if (nPoints < maxPoints) {
+	      double frameRadius = box2.radius1 > box2.radius2 ?
+		box2.radius1 : box2.radius2;
+	      frameRadius = frameRadius > box2.radius3 ? 
+		frameRadius : box2.radius3;
+	      spatial::Object *supportObject = &box2;
+	      double maxLateral = -frameRadius*1.5;
+	      double minVertical = -frameRadius*1.5;
+	      double maxVertical = frameRadius*3;
+	      //	    double frameRadius = table1.radius1 > table1.radius2 ?
+	      //	      table1.radius1 : table1.radius2;
+	      //	    spatial::Object *supportObject = &table1;
+	      //	    double maxLateral = -frameRadius*1.5;
+	      //	    double minVertical = -0.5;
+	      //	    double maxVertical = 1.0;
 
-	  //	  if (nPoints > maxPoints) {
-	  //	    pcloud.clear_vertices();
-	  //	    for (vector<Vector3>::iterator it = points.begin(); it !=points.end(); it++) {
-	  //	      outfile << it->x << "," << it->y << "," << it->z << endl;
-	  //	    }
-	  //	    points.clear();
-	  //	    nPoints = 0;
-	  //	  }
-	  Pose3 oldPose = box1.pose;
-	  if (nPoints < maxPoints) {
-	    //  double frameRadius = box2.radius1 > box2.radius2 ?
-	    //    box2.radius1 : box2.radius2;
-	    //  frameRadius = frameRadius > box2.radius3 ? 
-	    //    frameRadius : box2.radius3;
-	    //  Object *supportObject = &box2;
-	    //  double maxLateral = -frameRadius*1.5;
-	    //  double minVertical = -frameRadius*1.5;
-	    //  double maxVertical = frameRadius*3;
-	    double frameRadius = table1.radius1 > table1.radius2 ?
-	      table1.radius1 : table1.radius2;
-	    spatial::Object *supportObject = &table1;
-	    double maxLateral = -frameRadius*1.5;
-	    double minVertical = -0.5;
-	    double maxVertical = 1.0;
+	      //	  for (int i = 0; i < 500; i++) {
+	      //  box2.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
+	      //  box2.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+	      //  box2.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+	      //  randomizeOrientation(box2.pose);
+	      //  if (evaluateOnness(supportObject, &box2) > 0.5) { 
+	      //  double frameRadius = box2.radius1 > box2.radius2 ?
+	      //    box2.radius1 : box2.radius2;
+	      //  frameRadius = frameRadius > box2.radius3 ? 
+	      //    frameRadius : box2.radius3;
+	      //  spatial::Object *supportObject = &box2;
+	      //  double maxLateral = -frameRadius*1.5;
+	      //  double minVertical = -frameRadius*1.5;
+	      //  double maxVertical = frameRadius*3;
+	      for (int j = 0; j < 500; j++) {
 
-	    //	  for (int i = 0; i < 500; i++) {
-	    //  box2.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
-	    //  box2.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
-	    //  box2.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
-	    //  randomizeOrientation(box2.pose);
-	    //  if (evaluateOnness(supportObject, &box2) > 0.5) { 
-	    //  double frameRadius = box2.radius1 > box2.radius2 ?
-	    //    box2.radius1 : box2.radius2;
-	    //  frameRadius = frameRadius > box2.radius3 ? 
-	    //    frameRadius : box2.radius3;
-	    //  spatial::Object *supportObject = &box2;
-	    //  double maxLateral = -frameRadius*1.5;
-	    //  double minVertical = -frameRadius*1.5;
-	    //  double maxVertical = frameRadius*3;
-	    for (int j = 0; j < 500; j++) {
+		box1.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
+		box1.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+		box1.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
 
-	      box1.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
-	      box1.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
-	      box1.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+		randomizeOrientation(box1.pose);
 
-	      randomizeOrientation(box1.pose);
-
-	      if (evaluateOnness(supportObject, &box1) > 0.5) { 
-		//  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
-		//    if (nPoints > 500) 
-		pcloud.add_vertex(box1.pose.pos.x, box1.pose.pos.y, box1.pose.pos.z);
-		//    points.push_back(box1.pose.pos);
-		nPoints++;
+		if (evaluateOnness(supportObject, &box1) > 0.5) { 
+		  //  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
+		  //    if (nPoints > 500) 
+		  pcloud.add_vertex(box1.pose.pos.x, box1.pose.pos.y, box1.pose.pos.z);
+		  //points.push_back(box1.pose.pos);
+		  nPoints++;
+		}
 	      }
 	    }
+	    box1.pose = oldPose;
+	    //  }
+
+	    }
+
 	  }
-	  box1.pose = oldPose;
-	  //  }
-
-
-	  //      }
 	}
-      }
     } // if (m_bTestOnness)
 
       //    sleepComponent(100);
@@ -796,10 +810,12 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
       }
     }
 
+    bool isNew = false;
     if (objectID == -1)  {
       // New plane object
       objectID = observedObject->id;
       m_planeObjects[objectID] = observedObject;
+      isNew = true;
     }
 
     double diff = length(m_planeObjects[objectID]->pos - observedObject->pos);
@@ -808,7 +824,7 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
     if (angDiff < -M_PI) angDiff += 2*M_PI;
     diff += abs(angDiff*1.0);
 
-    if (diff > 0.01) {
+    if (diff > 0.01 || isNew) {
       m_planeObjects[objectID]->pos = observedObject->pos;
       m_planeObjects[objectID]->angle = observedObject->angle;
 
@@ -819,19 +835,26 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
 	sampleOnnessForPlane(objectID, 0);
       }
       else {
-      recomputeOnnessForPlane(objectID);
+	recomputeOnnessForPlane(objectID);
       }
 
+      string label = m_planeObjects[objectID]->label;
       if (m_bDisplayPlaneObjectsInPB) {
 	if (m_PeekabotClient.is_connected()) {
+	  if (m_planeObjectModels.find(label) ==
+	      m_planeObjectModels.end()) {
+	    log("Error! Plane model for %s was missing!", label.c_str());
+	  }
+	  PlaneObject &planeObject = 
+	    m_planeObjectModels[label];
 	  char identifier[100];
 	  sprintf(identifier, "label%d", 0);
 	  peekabot::PolygonProxy pp;
 	  pp.add(m_planeProxies, identifier, peekabot::REPLACE_ON_CONFLICT);
-	  pp.add_vertex(0.55, 0.45, 0);
-	  pp.add_vertex(-0.55, 0.45, 0);
-	  pp.add_vertex(-0.55, -0.45, 0);
-	  pp.add_vertex(0.55, -0.45, 0);
+	  pp.add_vertex(planeObject.radius1, planeObject.radius2, 0);
+	  pp.add_vertex(-planeObject.radius1, planeObject.radius2, 0);
+	  pp.add_vertex(-planeObject.radius1, -planeObject.radius2, 0);
+	  pp.add_vertex(planeObject.radius1, -planeObject.radius2, 0);
 
 	  pp.translate(observedObject->pos.x, observedObject->pos.y, 
 	      observedObject->pos.z);
@@ -972,9 +995,9 @@ ObjectRelationManager::recomputeOnnessForObject(int objectID)
     po.shape = PLANE_OBJECT_RECTANGLE;
     po.pose.pos = it->second->pos;
     fromAngleAxis(po.pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
-    if (it->second->label == "planeObject0") {
-      po.radius1 = 0.45;
-      po.radius2 = 0.55;
+    if (m_planeObjectModels.find(it->second->label) != m_planeObjectModels.end()) {
+      po.radius1 = m_planeObjectModels[it->second->label].radius1;
+      po.radius2 = m_planeObjectModels[it->second->label].radius2;
     }
     else {
       log("Error! Unknown plane object!");
@@ -1022,9 +1045,9 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
   po.pose.pos = m_planeObjects[planeObjectID]->pos;
   fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
       vector3(0.0, 0.0, 1.0));
-  if (m_planeObjects[planeObjectID]->label == "planeObject0") {
-    po.radius1 = 0.45;
-    po.radius2 = 0.55;
+    if (m_planeObjectModels.find(m_planeObjects[planeObjectID]->label) != m_planeObjectModels.end()) {
+    po.radius1 = m_planeObjectModels[m_planeObjects[planeObjectID]->label].radius1;
+    po.radius2 = m_planeObjectModels[m_planeObjects[planeObjectID]->label].radius2;
   }
   else {
     log("Error! Unknown plane object!");
@@ -1112,10 +1135,11 @@ ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID
   po.pose.pos = m_planeObjects[planeObjectID]->pos;
   fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
       vector3(0.0, 0.0, 1.0));
-  if (m_planeObjects[planeObjectID]->label == "planeObject0") {
-    po.shape = PLANE_OBJECT_RECTANGLE;
-    po.radius1 = 0.45;
-    po.radius2 = 0.55;
+  string label = m_planeObjects[planeObjectID]->label;
+
+  if (m_planeObjectModels.find(label) != m_planeObjectModels.end()) {
+    po.radius1 = m_planeObjectModels[label].radius1;
+    po.radius2 = m_planeObjectModels[label].radius2;
   }
   else {
     log("Error! Unknown plane object!");
@@ -1164,6 +1188,7 @@ ObjectRelationManager::addRecognizer3DCommand(VisionData::Recognizer3DCommandTyp
 void 
 ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, std::string label){
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+  log("addTrackerCommand");
   track_cmd->cmd = cmd;
   for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
     if (it->second->label == label) {
@@ -1182,6 +1207,7 @@ ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, st
 void
 ObjectRelationManager::generateNewObjectModel(int objectID,
     const std::string &label) {
+  log("generateNewObjectModel %s", label.c_str());
   BoxObject *newBoxObject = new BoxObject;
   m_objectModels[objectID] = newBoxObject;
   newBoxObject->type = OBJECT_BOX;
@@ -1207,3 +1233,39 @@ ObjectRelationManager::generateNewObjectModel(int objectID,
   }
 }
 
+void
+ObjectRelationManager::readPlaneModelsFromFile()
+{
+  ifstream infile(m_planeModelFilename.c_str());
+  if (!infile.good()) {
+    log("Error opening file");
+    return;
+  }
+
+  char buf[256];
+  infile.getline(buf, 255);
+  while (!infile.eof() && strlen(buf) > 0) {
+    if (buf[0] == '#') {
+      //Comment
+      infile.getline(buf, 255);
+      continue;
+    }
+
+    istringstream ss(buf);
+    string label;
+    double width, depth;
+    ss >> label >> width >> depth;
+    if (label == "" || width == 0.0 || depth == 0.0) {
+      infile.getline(buf, 255);
+      continue;
+    }
+    PlaneObject obj;
+    obj.type = OBJECT_PLANE;
+    obj.shape = PLANE_OBJECT_RECTANGLE;
+    obj.radius1 = width;
+    obj.radius2 = depth;
+
+    m_planeObjectModels[label] = obj;
+    infile.getline(buf, 255);
+  }
+}

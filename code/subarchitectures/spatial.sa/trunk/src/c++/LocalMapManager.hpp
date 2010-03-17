@@ -148,6 +148,8 @@ protected:
   bool m_bNoPlanes;
   bool m_bNoPTZ;
   bool m_bNoPlaces;
+  std::string m_planeObjectFilename;
+  std::string m_planeModelFilename;
 
   IceUtil::Mutex m_Mutex;
 
@@ -223,8 +225,12 @@ private:
   Cure::Transformation3D getCameraToWorldTransform();
   void newConvexHull(const cast::cdl::WorkingMemoryChange &objID);
   void processConvexHull(const VisionData::ConvexHullPtr hull);
+  void addObservedPlaneObject(const std::string &label, 
+      double x, double y, double height, double angle, int id);
   void findPlaneHeightClusters();
   void PaintPolygon(const VisionData::Vector3Seq &points);
+  void readPlaneObjectsFromFile();
+  void readPlaneModelsFromFile(double CellSize);
 };
 }; // namespace spatial
 

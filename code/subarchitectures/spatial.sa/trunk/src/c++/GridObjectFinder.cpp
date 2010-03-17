@@ -99,9 +99,9 @@ GridObjectFinder::~GridObjectFinder()
 }
 
 GridObjectFinder *
-createTableFinder(double CellSize)
+createTableFinder(double width, double height, double cellSize)
 {
-  CvSize size = {11*(0.1/CellSize), 9*(0.1/CellSize)}; // default table is 110cm by 90 cm
+  CvSize size = {width/cellSize, height/cellSize}; // default table is 110cm by 90 cm
   IplImage *objIm = cvCreateImage(size, IPL_DEPTH_8U, 1);
   objIm->origin = 1;
   cvSet(objIm, CV_RGB(255,255,255));

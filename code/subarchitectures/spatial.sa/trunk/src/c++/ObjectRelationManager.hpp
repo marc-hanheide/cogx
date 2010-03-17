@@ -58,6 +58,8 @@ protected:
   std::map<int, std::string> m_objectWMIDs; 
   std::map<int, std::string> m_visualObjectIDs;
 
+  std::map<std::string, PlaneObject> m_planeObjectModels;
+
   NavData::RobotPose2dPtr lastRobotPose;
 //  std::map<int, Pose3> m_lastKnownObjectPoses;
   std::map<int, cast::cdl::CASTTime> m_lastObjectPoseTimes;
@@ -79,12 +81,15 @@ protected:
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
   bool m_bTestOnness;
+  bool m_bSampleOnness;
   bool m_bDemoSampling;
   bool m_bNoPTZ;
   bool m_bNoVision;
 
   bool m_bDisplayPlaneObjectsInPB;
   bool m_bDisplayVisualObjectsInPB;
+
+  std::string m_planeModelFilename;
 
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_planeProxies;
@@ -106,6 +111,7 @@ protected:
   void objectChanged(const cast::cdl::WorkingMemoryChange &);
 
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
+  void readPlaneModelsFromFile();
 
   void generateNewObjectModel(int objectID, const std::string &label);
 

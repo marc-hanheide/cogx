@@ -175,6 +175,18 @@ void LocalMapManager::configure(const map<string,string>& _config)
     str >> m_standingStillThreshold;
   }
 
+  m_planeObjectFilename = "";
+  it = _config.find("--plane-object-file");
+  if (it != _config.end()) {
+    m_planeObjectFilename = it->second;
+  }
+
+  m_planeModelFilename = "";
+  it = _config.find("--plane-model-file");
+  if (it != _config.end()) {
+    m_planeModelFilename = it->second;
+  }
+
   int MapSize = 70;
   double CellSize = 0.1;
   it = _config.find("--planemap-size");
@@ -220,13 +232,16 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }
 
   if (!m_bNoPlanes) {
-    // Create plane objects
-    m_planeObjectFinders.push_back(createTableFinder(CellSize));
+    if (m_planeObjectFilename == "") {
+      // Create plane objects
+      m_planeObjectFinders.push_back(createTableFinder(1.1, 0.9, CellSize));
+    }
     for (unsigned int i = 0; i < m_maxNumberOfClusters; i++) {
       m_planeObstacleMaps.push_back(new CharMap(MapSize, CellSize, 0, CharMap::MAP1));
     }
     m_planeHeights.reserve(m_maxNumberOfClusters);
   }
+
 
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
       m_RobotServerHost);
@@ -286,6 +301,15 @@ void LocalMapManager::runComponent()
   setupPushOdometry(*this);
 
   log("I am running!");
+
+  if (m_planeModelFilename != "") {
+    log("Loading plane models from file '%s'", m_planeModelFilename.c_str());
+    readPlaneModelsFromFile(m_planeObstacleMaps[0]->getCellSize());
+  }
+  if (m_planeObjectFilename != "") {
+    log("Loading plane objects from file '%s'", m_planeObjectFilename.c_str());
+    readPlaneObjectsFromFile();
+  }
 
   NavData::FNodePtr curNode = getCurrentNavNode();
   int prevNode = -1;
@@ -980,40 +1004,15 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
 	  objHeight = m_planeHeights[i];
 	}
       }
-      FrontierInterface::ObservedPlaneObjectPtr
-	newPlaneObject = new FrontierInterface::ObservedPlaneObject;
-
       double realX, realY;
       m_planeMap->index2WorldCoords(objX, objY, realX, realY);
 
-      newPlaneObject->id = finderID;
       char buf[256];
       sprintf(buf, "planeObject%i", finderID);
-      newPlaneObject->label = buf;
-      newPlaneObject->pos.x = realX;
-      newPlaneObject->pos.y = realY;
-      newPlaneObject->angle = objAngle;
-      newPlaneObject->pos.z = objHeight;
-
-      log("id=%i, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", newPlaneObject->id,
+      addObservedPlaneObject(buf, realX, realY, objHeight, objAngle, finderID);
+      log("id=%i, X=%f, Y=%f, angle=%f, height=%f, confidence=%f", finderID,
 	  realX, realY, objAngle, 
 	  objHeight, objConfidence);
-
-
-      if (m_planeObjectWMIDs.find(newPlaneObject->id) == m_planeObjectWMIDs.end()) {
-	m_planeObjectWMIDs[newPlaneObject->id] = newDataID();
-	addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
-	  (m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
-      }
-      else {
-	try {
-	  overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
-	    (m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
-	}
-	catch (DoesNotExistOnWMException) {
-	  log("Error! Could not overwrite plane object on WM; missing!");
-	}
-      }
     }
   }
 }
@@ -1349,5 +1348,101 @@ LocalMapManager::findPlaneHeightClusters()
       }
     }
     
+  }
+}
+
+void 
+LocalMapManager::readPlaneObjectsFromFile()
+{
+  ifstream infile(m_planeObjectFilename.c_str());
+  if (!infile.good()) {
+    log("Error opening file");
+    return;
+  }
+
+  int id = 0;
+  char buf[256];
+  infile.getline(buf, 255);
+  while (!infile.eof() && strlen(buf) > 0) {
+    if (buf[0] == '#') {
+      //Comment
+      infile.getline(buf, 255);
+      continue;
+    }
+
+    istringstream ss(buf);
+    string label;
+    double x,y,height,theta;
+    ss >> label >> x >> y >> height >> theta;
+    if (label == "") {
+      infile.getline(buf, 255);
+      continue;
+    }
+
+    addObservedPlaneObject(label, x, y, height, theta, id++);
+    infile.getline(buf, 255);
+  }
+}
+
+void
+LocalMapManager::readPlaneModelsFromFile(double CellSize)
+{
+  ifstream infile(m_planeModelFilename.c_str());
+  if (!infile.good()) {
+    log("Error opening file");
+    return;
+  }
+
+  char buf[256];
+  infile.getline(buf, 255);
+  while (!infile.eof() && strlen(buf) > 0) {
+    if (buf[0] == '#') {
+      //Comment
+      infile.getline(buf, 255);
+      continue;
+    }
+
+    istringstream ss(buf);
+    string label;
+    double width, depth;
+    ss >> label >> width >> depth;
+    if (label == "" || width == 0.0 || depth == 0.0) {
+      infile.getline(buf, 255);
+      continue;
+    }
+
+    m_planeObjectFinders.push_back(createTableFinder(width, depth, CellSize));
+    infile.getline(buf, 255);
+  }
+}
+
+void
+LocalMapManager::addObservedPlaneObject(const string &label, double x, double y, double height,
+    double angle, int id) 
+{
+  FrontierInterface::ObservedPlaneObjectPtr
+    newPlaneObject = new FrontierInterface::ObservedPlaneObject;
+
+  newPlaneObject->id = id;
+  newPlaneObject->label = label;
+  newPlaneObject->pos.x = x;
+  newPlaneObject->pos.y = y;
+  newPlaneObject->angle = angle;
+  newPlaneObject->pos.z = height;
+
+
+  if (m_planeObjectWMIDs.find(newPlaneObject->id) == m_planeObjectWMIDs.end()) {
+    m_planeObjectWMIDs[newPlaneObject->id] = newDataID();
+    addToWorkingMemory<FrontierInterface::ObservedPlaneObject>
+      (m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
+  }
+  else {
+    try {
+      overwriteWorkingMemory<FrontierInterface::ObservedPlaneObject>
+	(m_planeObjectWMIDs[newPlaneObject->id], newPlaneObject);
+    }
+    catch (DoesNotExistOnWMException) {
+      log("Error! Could not overwrite plane object on WM; missing!");
+    }
   }
 }

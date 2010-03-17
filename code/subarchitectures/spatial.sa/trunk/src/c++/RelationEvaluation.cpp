@@ -811,20 +811,41 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
   //Compute convex hull
   //Find rightmost point
   double maxX = -FLT_MAX;
-  unsigned int startPoint;
+  double maxY = -FLT_MAX;
+  double minX = FLT_MAX;
+  double minY = FLT_MAX;
+  unsigned int highestXPoint;
+  unsigned int highestYPoint;
   for (unsigned int i = 0; i < newInterestPoints.size(); i++) {
     if (newInterestPoints[i].x > maxX) {
-      startPoint = i;
+      highestXPoint = i;
       maxX = newInterestPoints[i].x;
     }
+    if (newInterestPoints[i].y > maxY) {
+      highestYPoint = i;
+      maxY = newInterestPoints[i].y;
+    }
+
+    if (newInterestPoints[i].x < minX) {
+      minX = newInterestPoints[i].x;
+    }
+    if (newInterestPoints[i].y < minY) {
+      minY = newInterestPoints[i].y;
+    }
   }
+  // Avoid case where all points have the same X (or Y)
+  unsigned int startPoint = (maxX-minX > maxY-minY) ?
+    highestXPoint :
+    highestYPoint;
 
   // Compute convex hull of newInterestPoints
   unsigned int currentPoint = startPoint;
 
-  std::vector<Vector3> outPolygon;
+  std::deque<int> outPoints;
+  std::set<int> donePoints;
   do {
-    outPolygon.push_back(newInterestPoints[currentPoint]);
+    outPoints.push_back(currentPoint);
+    donePoints.insert(currentPoint);
     unsigned int nextPoint = (currentPoint == newInterestPoints.size()-1 ?
 	0 : currentPoint + 1);
     
@@ -834,7 +855,7 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
       if (otherPoint != currentPoint && otherPoint != nextPoint) {
 	double leftness = dot(polygonNormal,
 	    cross(edge, newInterestPoints[otherPoint]-newInterestPoints[currentPoint]));
-	if (leftness < 0.0) {
+	if (leftness < -epsilon) {
 	  nextPoint = otherPoint;
 	  edge = newInterestPoints[otherPoint] - newInterestPoints[currentPoint];
 	}
@@ -842,7 +863,17 @@ findPolygonIntersection(const std::vector<Vector3> &polygon1,
     }
 
     currentPoint = nextPoint;
-  } while (currentPoint != startPoint);
+  } while (donePoints.find(currentPoint) == donePoints.end());
+  //Shear off any false starts
+  while (startPoint != currentPoint) {
+    outPoints.pop_front();
+    startPoint = outPoints.front();
+  }
+  std::vector<Vector3> outPolygon;
+  while (!outPoints.empty()) {
+    outPolygon.push_back(newInterestPoints[outPoints.front()]);
+    outPoints.pop_front();
+  }
 
   return outPolygon;
 }
