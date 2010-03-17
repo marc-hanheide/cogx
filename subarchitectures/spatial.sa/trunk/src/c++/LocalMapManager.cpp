@@ -878,6 +878,8 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
     Cure::Vector3D to;
     cam2WorldTrans.invTransform(from, to);
     log("vertex at %f, %f, %f", oobj->PointsSeq[i].x, oobj->PointsSeq[i].y, oobj->PointsSeq[i].z);
+
+//    to.X[2] = 0.45; //FIXME!
     oobj->PointsSeq[i].x = to.X[0];
     oobj->PointsSeq[i].y = to.X[1];
     oobj->PointsSeq[i].z = to.X[2];
@@ -1019,6 +1021,22 @@ LocalMapManager::processConvexHull(const VisionData::ConvexHullPtr oobj)
 
 Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
 {
+  // Assuming useGlobalPoints is on in PlanePopOut, only need to
+  // add the robot transform
+  //Get robot pose
+  Cure::Transformation2D robotTransform;
+  if (lastRobotPose != 0) {
+    robotTransform.setXYTheta(lastRobotPose->x, lastRobotPose->y,
+      lastRobotPose->theta);
+  }
+  Cure::Transformation3D robotTransform3 = robotTransform;
+  return robotTransform3;
+
+
+
+
+
+
   //Get camera ptz from PTZServer
   Cure::Transformation3D cameraRotation;
   if (m_ptzInterface != 0) {
@@ -1041,12 +1059,12 @@ Cure::Transformation3D LocalMapManager::getCameraToWorldTransform()
   ptzBaseTransform.setAngles(camAngles);
 
   //Get robot pose
-  Cure::Transformation2D robotTransform;
+  //Cure::Transformation2D robotTransform;
   if (lastRobotPose != 0) {
     robotTransform.setXYTheta(lastRobotPose->x, lastRobotPose->y,
       lastRobotPose->theta);
   }
-  Cure::Transformation3D robotTransform3 = robotTransform;
+  //Cure::Transformation3D robotTransform3 = robotTransform;
 //  double tmp[6];
 //  robotTransform3.getCoordinates(tmp);
 //  log("robot transform: %f %f %f %f %f %f", tmp[0], tmp[1], tmp[2], tmp[3],

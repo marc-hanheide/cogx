@@ -629,7 +629,10 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       getMemoryEntry<VisionData::VisualObject>(wmc.address);
 
     if (m_timeSinceLastMoved > m_trackerTimeThreshold) {
-//      log("Got VisualObject: %s", observedObject->label.c_str());
+//      log("Got VisualObject: %s (%f,%f,%f)", observedObject->label.c_str(),
+//	  observedObject->pose.pos.x,
+//	  observedObject->pose.pos.y,
+//	  observedObject->pose.pos.z);
 
       Pose3 pose = observedObject->pose;
       //Get robot pose

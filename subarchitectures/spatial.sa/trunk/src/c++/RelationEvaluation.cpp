@@ -65,8 +65,10 @@ evaluateOnness(const Object *objectS, const Object *objectO)
       witness = findContactPatch(Sbox, *Obox, &patch, &maxPatchClearance);
     }
   }
+  cout << "a";
 
   normalise(witness.normal);
+  cout << "b";
 
   double contactOnness = 0.0;
   // Put patch and pose in one plane
@@ -1314,11 +1316,13 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
     AVerticesInB[i] = transform(AposeInB, AVertices[i]);
   }
 
+  cout << "1";
   double wr = boxA.radius1;
   double dr = boxA.radius2;
   double hr = boxA.radius3;
 
   bool intersecting = isIntersecting(wr, dr, hr, BVerticesInA);
+  cout <<("2");
 
   vector<Vector3> BEdgesInA;
   BEdgesInA.reserve(12);
@@ -1336,11 +1340,14 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
     AEdgesInB.push_back(edge);
   }
 
+  cout <<("3");
   vector<Witness> cornerWitnessesBInA;
   getCornerWitnesses(wr, dr, hr, BVerticesInA, BEdgesInA, cornerWitnessesBInA);
 
+  cout <<("4");
   vector<Witness> edgeWitnesses;
   getEdgeWitnesses(wr, dr, hr, BVerticesInA, BEdgesInA, edgeWitnesses, intersecting);
+  cout <<("5");
 
   wr = boxB.radius1;
   dr = boxB.radius2;
@@ -1348,6 +1355,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
 
   vector<Witness> cornerWitnessesAInB;
   getCornerWitnesses(wr, dr, hr, AVerticesInB, AEdgesInB, cornerWitnessesAInB);
+  cout <<("6");
 
   Witness bestWitness;
 
@@ -1742,6 +1750,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
       }
     }
   }
+  cout <<("7");
 
   if (AisB) {
     Witness tmpWitness = bestWitness;
@@ -1756,6 +1765,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
     bestWitness.normal = -bestWitness.normal;
   }
 
+  cout <<("8");
   if (outPatch != 0 || maxPatchClearance != 0) {
     const int VertexFaceNeigbors[] = {0,4,1, 0,1,2, 0,2,3, 0,3,4, 1,4,5, 2,1,5, 3,2,5, 4,3,5};
     const int EdgeFaceNeighbors[] = {0,1, 0,2, 0,3, 0,4, 1,4, 1,5, 1,2, 2,5, 2,3, 3,5, 3,4, 4,5};
