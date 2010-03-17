@@ -525,7 +525,7 @@ namespace spatial
   void
   AdvObjectSearch::DisplayPriorinPB() {
 
-    double uUnit = pIn / pow(double((2 * m_lgm->getSize() + 1)), 2);
+//    double uUnit = pIn / pow(double((2 * m_lgm->getSize() + 1)), 2);
 
     /* DEBUG */
     double sumin = 0.0;
