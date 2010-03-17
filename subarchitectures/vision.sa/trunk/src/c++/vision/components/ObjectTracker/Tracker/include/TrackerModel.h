@@ -121,6 +121,7 @@ protected:
 	GLint m_dlNormals;
 	
 	Shader* m_shadeTexturing;
+	int m_shadeTexturingID;
 	bool m_bfc;
 	mat4 m_modelviewprojection;		// Transformation matrix from model to camera to image -space
 	float m_boundingSphereRadius;

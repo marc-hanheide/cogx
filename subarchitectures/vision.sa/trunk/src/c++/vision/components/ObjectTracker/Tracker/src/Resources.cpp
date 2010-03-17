@@ -191,6 +191,17 @@ ImageProcessor* Resources::GetImageProcessor(){
 	return m_ip;	
 }
 
+TrackerModel* Resources::GetModel(int id){ 
+	return m_modelList[id]; 
+}
+
+Texture* Resources::GetTexture(int id){ 
+		return m_textureList[id]; 
+}
+
+Shader* Resources::GetShader(int id){
+	return m_shaderList[id];
+}
 
 // *** Add-functions **
 int	Resources::AddTexture(const char* filename, const char* texturename){
@@ -341,6 +352,12 @@ void Resources::ReleaseShader(){
 		delete(*it_name);
 		it_name++;
 	}
+}
+
+void Resources::ReleaseShader(int id){
+	delete(m_shaderList[id]);
+	m_shaderList[id] = 0;
+	if(m_showlog) printf("Shader %i released\n", id);
 }
 
 

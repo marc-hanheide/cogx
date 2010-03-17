@@ -9,6 +9,7 @@ using namespace Tracking;
 
 // Process camera image (gauss, sobel, thinning, spreading, rendering)
 void TextureTracker::image_processing(unsigned char* image){
+	
 	// Load camera image to texture
 	m_image = image;
 	m_tex_frame->load(image, params.width, params.height);

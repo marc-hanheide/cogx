@@ -19,10 +19,11 @@ Texture::~Texture(){
 }
 
 bool Texture::load(unsigned char* image_data, int width, int height){
+// 	int err;
 	m_width = width;
 	m_height = height;
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, m_width, m_height, 0, GL_BGR, GL_UNSIGNED_BYTE, image_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, m_width, m_height, 0, GL_BGR, GL_UNSIGNED_BYTE, image_data);	
 	return true;
 }
 

@@ -318,14 +318,13 @@ void ObjectTracker::applyTrackingCommand(){
 		}
 	}else if(track_cmd->cmd == VisionData::RELEASEMODELS){
 		log("  VisionData::RELEASEMODELS");
-		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
-			trackingEntry = (*it);
-			m_tracker->removeModel(trackingEntry->id);
+		it = m_trackinglist.begin();
+		while(it != m_trackinglist.end()){
+			m_tracker->removeModel((*it)->id);
 			delete(trackingEntry);
-// 			m_trackinglist.erase(it);
+			m_trackinglist.erase(it);
 		}
-		m_trackinglist.clear();
-		log("  VisionData::RELEASEMODELS: ok");
+		log("  VisionData::RELEASEMODELS: ok %d", m_trackinglist.size());
 	}else if(track_cmd->cmd == VisionData::SCREENSHOT){
 		log("  VisionData::SCREENSHOT");
 		char filename[16];
@@ -355,6 +354,7 @@ void ObjectTracker::runTracker(){
 	lockComponent();
 		dTime = getFrameTime(last_image_time, m_image.time);
 		// image processing
+// 		m_videoServer->getImage(m_camIds[0], m_image);
 		m_tracker->image_processing((unsigned char*)(&m_image.data[0]));
 	unlockComponent();
 	

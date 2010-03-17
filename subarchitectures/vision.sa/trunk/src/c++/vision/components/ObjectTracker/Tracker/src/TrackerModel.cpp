@@ -14,19 +14,32 @@ TrackerModel::TrackerModel(){
 	m_textured = false;
 	m_bfc = false;
 	m_boundingSphereRadius = 0.0;
+	m_shadeTexturingID = 0;
+	m_dlTexturedFaces = 0;
+	m_dlUntexturedFaces = 0;
+	m_dlPass = 0;
+	m_dlFaces = 0;
+	m_dlEdges = 0;
+	m_dlNormals = 0;
 	
-	int id;
-	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
+	if((m_shadeTexturingID = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
 		exit(1);
-	m_shadeTexturing = g_Resources->GetShader(id);
+	m_shadeTexturing = g_Resources->GetShader(m_shadeTexturingID);
 }
 
 TrackerModel::~TrackerModel(){	
-	PassList::iterator it = m_passlist.begin();
-	while(it != m_passlist.end()){
-		delete(*it);
-		it++;
-	}
+	releasePassList();
+	g_Resources->ReleaseShader(m_shadeTexturingID);
+	
+	if(m_texture) delete(m_texture);
+	if(m_tex_original) delete(m_tex_original);
+	
+	if(glIsList(m_dlTexturedFaces)) 	glDeleteLists(m_dlTexturedFaces, 1);
+	if(glIsList(m_dlUntexturedFaces)) glDeleteLists(m_dlUntexturedFaces, 1);
+	if(glIsList(m_dlPass)) 						glDeleteLists(m_dlPass, 1);
+	if(glIsList(m_dlFaces)) 					glDeleteLists(m_dlFaces, 1);
+	if(glIsList(m_dlEdges)) 					glDeleteLists(m_dlEdges, 1);
+	if(glIsList(m_dlNormals)) 				glDeleteLists(m_dlNormals, 1);
 }
 
 void TrackerModel::releasePassList(){
@@ -37,7 +50,7 @@ void TrackerModel::releasePassList(){
 	}
 	m_passlist.clear();
 	m_facepixellist.assign(m_facelist.size(), 0);
-	UpdateDisplayLists();
+// 	UpdateDisplayLists();
 }
 
 TrackerModel& TrackerModel::operator=(const Model& m){
@@ -47,7 +60,7 @@ TrackerModel& TrackerModel::operator=(const Model& m){
 	m_passlist.clear();	
 	m_facepixellist.assign(m_facelist.size(), 0);
 	
-	computeEdges();
+// 	computeEdges();
 	Update();
 	
 	return (*this);
@@ -98,7 +111,7 @@ void TrackerModel::Update(){
 	
 	computeBoundingSphere();
 	
-	UpdateDisplayLists();
+// 	UpdateDisplayLists();
 }
 
 // draws, prints
@@ -123,33 +136,39 @@ void TrackerModel::print(){
 }
 
 void TrackerModel::drawNormals(){
-	glCallList(m_dlNormals);
+	genListNormals(0.01);
+// 	glCallList(m_dlNormals);
 }
 
 void TrackerModel::drawTexturedFaces(){
 	if(!m_passlist.empty()){
-		glCallList(m_dlTexturedFaces);
+		genListTexturedFaces();
+// 		glCallList(m_dlTexturedFaces);
 	}		
 }
 
 void TrackerModel::drawUntexturedFaces(){
-	glCallList(m_dlUntexturedFaces);
+	genListUntexturedFaces();
+// 	glCallList(m_dlUntexturedFaces);
 }
 
 void TrackerModel::drawPass(){
- 	glCallList(m_dlPass);
+ 	genListPass();
+//  	glCallList(m_dlPass);
 }
 
 void TrackerModel::drawFaces(){
 	if(m_texture)	m_texture->bind();
 	
-	glCallList(m_dlFaces);
+	genListFaces();
+// 	glCallList(m_dlFaces);
 
 	if(m_texture) glDisable(GL_TEXTURE_2D);	
 }
 
 void TrackerModel::drawEdges(){
-	glCallList(m_dlEdges);
+	genListEdges();
+// 	glCallList(m_dlEdges);
 }
 
 void TrackerModel::drawFace(int i){
@@ -420,7 +439,7 @@ void TrackerModel::textureFromImage(Texture* image,
 		}
 	}
 	
-	UpdateDisplayLists();
+// 	UpdateDisplayLists();
 }
 
 

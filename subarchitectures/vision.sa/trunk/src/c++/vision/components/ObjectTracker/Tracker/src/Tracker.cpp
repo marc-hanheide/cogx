@@ -196,10 +196,15 @@ int Tracker::addModel(Model& m, Pose& p, std::string label, bool bfc){
 		printf("[Tracker::addModel()] Error tracker not initialised!\n");
 		return -1;
 	}
+// 	static int idx = 0;
+	
 	ModelEntry* modelEntry = new ModelEntry();
 	modelEntry->label = label;
 	modelEntry->model.setBFC(bfc);
+	
 	modelEntry->model = m;
+	
+// 	printf("%d\n", idx);
 	
 	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
 	modelEntry->pose = p;
@@ -528,6 +533,33 @@ void Tracker::drawPixel(float u, float v, vec3 color, float size){
 }
 
 void Tracker::swap(){
+	int err = glGetError();
+	switch(err){
+		case GL_NO_ERROR:
+			break;
+		case GL_INVALID_ENUM:
+			printf("glGetError: GL_INVALID_ENUM\n");
+			break;
+		case GL_INVALID_VALUE:
+			printf("glGetError: GL_INVALID_VALUE\n");
+			break;
+		case GL_INVALID_OPERATION:
+			printf("glGetError: GL_INVALID_OPERATION\n");
+			break;
+		case GL_STACK_OVERFLOW:
+			printf("glGetError: GL_STACK_OVERFLOW\n");
+			break;
+		case GL_STACK_UNDERFLOW:
+			printf("glGetError: GL_STACK_UNDERFLOW\n");
+			break;
+		case GL_OUT_OF_MEMORY:
+			printf("glGetError: GL_OUT_OF_MEMORY\n");
+			break;
+		default:
+			printf("glGetError: no known error\n");
+			break;
+	}
+	
 	SDL_GL_SwapBuffers();
 	SDL_Delay(1);
 }

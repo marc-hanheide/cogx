@@ -62,6 +62,8 @@ public:
 	virtual void drawFaces(){}
 	
 	virtual void print();
+	
+	virtual void clear();
 
 };
 

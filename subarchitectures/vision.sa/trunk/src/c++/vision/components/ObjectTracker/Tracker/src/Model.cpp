@@ -69,3 +69,7 @@ void Model::print(){
 	}
 }
 
+void Model::clear(){
+	m_vertexlist.clear();
+	m_facelist.clear();
+}

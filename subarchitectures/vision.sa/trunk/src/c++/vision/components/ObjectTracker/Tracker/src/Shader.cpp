@@ -230,8 +230,9 @@ Shader::Shader(const char *vertex_file, const char *fragment_file, const char *h
 
 Shader::~Shader()
 {
-    if(program!=0)
+    if(program!=0){
         glDeleteObjectARB(program);
+    }
 }
 
 void Shader::bind()
