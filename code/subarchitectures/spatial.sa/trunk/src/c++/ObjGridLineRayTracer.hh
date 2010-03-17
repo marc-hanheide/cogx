@@ -330,7 +330,8 @@ void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan,
     while (!isOutside() && 
            getDistToStart() < scan.getRange(i) &&
            getDistToStart() < maxRange) {
-      data() = 0;
+      if (data() != 3)
+	data() = 0;
       stepRay();
     }
     if (!isOutside() && getDistToStart() < maxRange && data() != 3) {
