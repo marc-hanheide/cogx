@@ -79,7 +79,7 @@ namespace spatial
     void PlaneObservationUpdate(std::set<std::pair<int, int> > NewPlanePoints);
     void SampleGrid();
     int NextBestView();
-    void DisplayPriorinPB();
+    void DisplayPDFinPB(double xoffset, double yoffset,std::string name);
     void GoToNBV();
     std::vector<std::vector<int> > GetViewCones();
     std::vector<int> GetInsideViewCone(XVector3D &a, bool addall);
@@ -94,14 +94,18 @@ namespace spatial
     double ActionProbabilityPerCell(int x, int y, std::vector<int> ViewConePoints);
     //void PlaneObservationUpdate(std::set<std::pair<int,int> >  NewPlanePoints) ;
     void GetTotalPDF();
+    void owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID);
 
   private:
 
     // 1. phase is table detection and then looking for objects.
     bool m_table_phase;
     bool m_usePTZ;
+    bool gotDistribution;
     int m_samplesize;
     int* m_samples;
+    int m_gridsize;
+    float m_cellsize;
     double* m_samplestheta;
     double m_CamRange;
     double m_fov;
@@ -109,6 +113,7 @@ namespace spatial
     IplImage* img;
     double pFree,pObs,pPlanar,pIn,pOut;
     double m_ProbGivenObjectIsPresent;
+
     std::vector<std::string> m_objectlist;
     IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;
