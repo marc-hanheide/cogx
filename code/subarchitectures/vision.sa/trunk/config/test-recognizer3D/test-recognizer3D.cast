@@ -16,6 +16,6 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --dis
 
 CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "can GuteLaune HappyDay jasmin JodSalz koala peanuts" --log
 
-CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--debug 
+#CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log  #--debug 
 
 
