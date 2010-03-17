@@ -136,6 +136,9 @@ bool tgFrustum::SphereInFrustum( float x, float y, float z, float radius ){
 
 void tgFrustum::DrawFrustum(){
  
+ 	glDisable(GL_LIGHTING);
+ 	glDisable(GL_TEXTURE_2D);
+ 	
 	// Get near and far from the Projection matrix.
 	const double near = m_proj[11] / (m_proj[10] - 1.0);
 	const double far = m_proj[11] / (1.0 + m_proj[10]);
@@ -169,7 +172,7 @@ void tgFrustum::DrawFrustum(){
 		
 					// TODO - Update: You need to invert the mv before multiplying it with the current mv!
 	
-		glMultMatrixf(m_modl);
+// 		glMultMatrixf(m_modl);
 	
 		glLineWidth(2);
 		glBegin(GL_LINES);

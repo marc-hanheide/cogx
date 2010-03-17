@@ -118,7 +118,7 @@ void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 		newModelEntry.model.m_material = getRandomMaterial();
 		m_ConvexHullList.push_back(newModelEntry);
 	}
-	
+	updateCamera();
 	m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);	
 }
 
@@ -329,9 +329,9 @@ void VirtualScene::updateCamera(){
 }
 
 void VirtualScene::drawCamera(){
-	m_camera0.DrawFrustum();
+	m_engine->Activate3D();
 	m_camModel.model.DrawFaces(m_wireframe);
-	
+	m_camera0.DrawFrustum();
 }
 
 void VirtualScene::drawVisualObjects(){
