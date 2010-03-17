@@ -76,7 +76,7 @@ namespace spatial
     void BuildPrior();
     void PostRecognitionCommand();
     void PostNavCommand(Cure::Pose3D position);
-
+    void PlaneObservationUpdate(std::set<std::pair<int, int> > NewPlanePoints);
     void SampleGrid();
     int NextBestView();
     void DisplayPriorinPB();
@@ -120,8 +120,7 @@ namespace spatial
 
 
     Cure::LocalGridMap<unsigned int>* m_lgm;
-    Cure::LocalGridMap<double>* m_pdf_obj;
-    Cure::LocalGridMap<PDFData>* m_pdf_total;
+    Cure::LocalGridMap<PDFData>* m_pdf;
     Cure::X11DispLocalGridMap<unsigned int>* m_Dlgm;
     Cure::SensorPose m_LaserPoseR;
     Cure::SensorPose m_CamPoseR;
