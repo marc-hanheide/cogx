@@ -20,6 +20,9 @@
 #include <AddressBank/ConfigFileReader.hh>
 #include <SensorData/SensorPose.hh>
 #include <VideoUtils.h>
+#include <SpatialData.hpp>
+#include <Navigation/LocalGridMap.hh>
+#include "CureMapConversion.hpp"
 
 using namespace cast;
 #include <Pose3.h>
@@ -179,6 +182,7 @@ void ObjectRelationManager::start()
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::newObject));  
 
+
   addChangeFilter(createGlobalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE), 
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::newObject));  
@@ -200,6 +204,13 @@ void ObjectRelationManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::newRobotPose));  
+
+  addChangeFilter(createGlobalTypeFilter<SpatialData::ObjectPriorRequest>(cdl::ADD), 
+		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
+								  &ObjectRelationManager::newPriorRequest));  
+  addChangeFilter(createGlobalTypeFilter<SpatialData::ObjectTiltAngleRequest>(cdl::ADD), 
+		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
+								  &ObjectRelationManager::newTiltAngleRequest));  
 
 //  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   if (!m_bNoPTZ) {
@@ -1270,5 +1281,26 @@ ObjectRelationManager::readPlaneModelsFromFile()
 
     m_planeObjectModels[label] = obj;
     infile.getline(buf, 255);
+  }
+}
+
+void
+ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
+  try {
+    SpatialData::ObjectPriorRequestPtr request =
+      getMemoryEntry<SpatialData::ObjectPriorRequest>(wmc.address);
+
+    SpatialData::GridMapDoublePtr inMap = request->outMap;
+    Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0, 
+	Cure::LocalGridMap<double>::MAP1,
+	inMap->x, inMap->y);
+    //Fill it
+
+    request->outMap = convertFromCureMap(outMap);
+    overwriteWorkingMemory<SpatialData::ObjectPriorRequest>(wmc.address, request);
+  }
+
+  catch (DoesNotExistOnWMException) {
+    log("Error! Prior request disappeared from WM!");
   }
 }

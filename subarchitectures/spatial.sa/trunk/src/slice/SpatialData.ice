@@ -349,7 +349,7 @@ module SpatialData {
    * Command to compute tilt angles from a relation
    * @author Kristoffer Sjöö
    */
-  class ObjectTiltAngle {
+  class ObjectTiltAngleRequest {
     ObjectRelation relationType;
     StringSeq objects; //Starts with the query object's label
     Vec2Seq triangle; //Describes the 3D triangle in which to sample for points
