@@ -8,7 +8,7 @@
 #include "AdvObjectSearch.hpp"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <stdlib.h>
-
+#include "CureMapConversion.hpp"
 #include <CureHWUtils.hpp>
 #include <AddressBank/ConfigFileReader.hh>
 
@@ -97,18 +97,18 @@ namespace spatial
     }
     m_samples = new int[2 * m_samplesize];
     m_samplestheta = new double[m_samplesize];
-    int gridsize = 400;
-    float cellsize = 0.1;
+    m_gridsize = 400;
+    m_cellsize = 0.1;
     it = _config.find("--gridsize");
     if (it != _config.end()) {
 
-      gridsize = (atoi(it->second.c_str()));
-      log("Gridsize set to: %d", gridsize);
+      m_gridsize = (atoi(it->second.c_str()));
+      log("Gridsize set to: %d", m_gridsize);
     }
     it = _config.find("--cellsize");
     if (it != _config.end()) {
-      cellsize = (atof(it->second.c_str()));
-      log("Cellsize set to: %f", cellsize);
+      m_cellsize = (atof(it->second.c_str()));
+      log("Cellsize set to: %f", m_cellsize);
     }
 
     m_fov = M_PI / 4;
@@ -159,16 +159,18 @@ namespace spatial
     }
     log("Loaded objects.");
 
+    gotDistribution = false;
     PDFData def;
-    def.prob = pIn / pow(double((2 * gridsize + 1)), 2);
+    def.prob = 0;
     def.isSeen = false;
     def.isChecked = false;
 
-    m_lgm = new Cure::LocalGridMap<unsigned int>(gridsize, cellsize, 2,
+    m_lgm = new Cure::LocalGridMap<unsigned int>(m_gridsize, m_cellsize, 2,
         Cure::LocalGridMap<unsigned int>::MAP1);
 
-    m_pdf = new Cure::LocalGridMap<PDFData>(gridsize, cellsize, def,
+    m_pdf = new Cure::LocalGridMap<PDFData>(m_gridsize, m_cellsize, def,
         Cure::LocalGridMap<unsigned int>::MAP1);
+
     m_Dlgm = new Cure::X11DispLocalGridMap<unsigned int>(*m_lgm);
     m_Glrt = new Cure::ObjGridLineRayTracer<unsigned int>(*m_lgm);
 
@@ -243,6 +245,33 @@ namespace spatial
         new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
             &AdvObjectSearch::newObjectDetected));
 
+    addChangeFilter(createLocalTypeFilter<SpatialData::ObjectPriorRequest> (
+            cdl::OVERWRITE), new MemberFunctionChangeReceiver<AdvObjectSearch> (
+            this, &AdvObjectSearch::owtGridMapDouble));
+
+  }
+
+  void AdvObjectSearch::owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID){
+    try{
+      Cure::LocalGridMap<double>* distribution = new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
+                    Cure::LocalGridMap<unsigned int>::MAP1);
+     SpatialData::ObjectPriorRequestPtr objreq = getMemoryEntry<SpatialData::ObjectPriorRequest> (objID.address);
+     convertToCureMap(objreq->outMap, distribution);
+
+     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+             (*m_pdf)(x,y).prob =  (*m_pdf)(x,y).prob + (*distribution)(x,y);
+           }
+      }
+     gotDistribution = true;
+     DisplayPDFinPB(6,8,"distribution");
+
+    }
+    catch(DoesNotExistOnWMException excp){
+      log("Error!  GridMapDouble does not exist on WM!");
+          return;
+    }
+
   }
 
   void
@@ -287,8 +316,14 @@ namespace spatial
 
       }
       else if (key == 112) {
+        if (gotDistribution){
         log("Getting next view");
         GoToNBV();
+        }
+        else{
+          log("spatial relation distribution not yet acquired.");
+
+        }
       }
       else if (key == 114) {
         m_table_phase = false;
@@ -313,6 +348,22 @@ namespace spatial
           }
         }
 
+        // make call to get distribution and change pdf accordingly
+        Cure::LocalGridMap<double>* tobefilled = new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
+               Cure::LocalGridMap<unsigned int>::MAP1);
+        //write lgm to WM
+        SpatialData::ObjectPriorRequestPtr objreq = new SpatialData::ObjectPriorRequest;
+        vector<std::string> objects;
+        objects.push_back("squaretable");
+        objects.push_back("joystick");
+        //objects.push_back("krispies");
+        objects.push_back("rice");
+
+        objreq->relationType = SpatialData::ON;
+        objreq->objects = objects;
+        objreq->probSum = pIn/2;
+        objreq->outMap = convertFromCureMap(*tobefilled);
+        addToWorkingMemory(newDataID(), objreq);
      /*   SpatialData::PlanePointsPtr PlanePoints;
         PlanePoints = new SpatialData::PlanePoints;
         cogx::Math::Vector3 point;
@@ -334,7 +385,6 @@ namespace spatial
           }
         }
         PlaneObservationUpdate(NewPlanePoints);*/
-
       }
     }
 
@@ -523,7 +573,7 @@ namespace spatial
   }
 
   void
-  AdvObjectSearch::DisplayPriorinPB() {
+  AdvObjectSearch::DisplayPDFinPB(double xoffset, double yoffset, std::string name) {
 
 //    double uUnit = pIn / pow(double((2 * m_lgm->getSize() + 1)), 2);
 
@@ -545,7 +595,7 @@ namespace spatial
     double xW2, yW2, xW3, yW3;
     peekabot::LineCloudProxy linecloudp;
 
-    linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
+    linecloudp.add(m_PeekabotClient, name,
         peekabot::REPLACE_ON_CONFLICT);
     linecloudp.clear_vertices();
     linecloudp.set_line_width(2);
@@ -557,8 +607,8 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+        linecloudp.add_line(xW2 + xoffset, yW2 - yoffset,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 - yoffset, (*m_pdf)(x, y
                 + 1).prob * multiplier1);
       }
     }
@@ -569,8 +619,8 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
+        linecloudp.add_line(xW2 + xoffset, yW2 - yoffset,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 - yoffset, (*m_pdf)(x, y
                 + 1).prob * multiplier1);
       }
     }
@@ -622,42 +672,7 @@ namespace spatial
       return;
     }
 
-    /* Display pdfIn in PB as Line Cloud BEGIN */
-
-    double multiplier1 = 50.0;
-    double xW2, yW2, xW3, yW3;
-    peekabot::LineCloudProxy linecloudp;
-
-    linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
-        peekabot::REPLACE_ON_CONFLICT);
-    linecloudp.clear_vertices();
-    linecloudp.set_line_width(2);
-    linecloudp.set_color(0.9, 0, 0);
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
-          continue;
-        m_lgm->index2WorldCoords(x, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
-                + 1).prob * multiplier1);
-      }
-    }
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
-          continue;
-        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
-                + 1).prob * multiplier1);
-      }
-    }
-    /* Display pdfIn in as line cloud PB END */
+    DisplayPDFinPB(6, 0,"before");
 
     /* DEBUG */
     double sumin = 0.0;
@@ -715,40 +730,9 @@ namespace spatial
     }
     log("pdfIn sums to: %f", sumin);
     log("pdfIn + Cout sums to: %f", sumin + pOut);
+    /* DEBUG */
+    DisplayPDFinPB(0, -8,"after");
 
-    /* Display pdfIn in PB as Line Cloud BEGIN */
-
-    //double multiplier1 = 500.0;
-    //double xW2, yW2,xW3,yW3;
-    peekabot::LineCloudProxy linecloudp1;
-
-    linecloudp1.add(m_PeekabotClient, "root.LC_AFTER",
-        peekabot::REPLACE_ON_CONFLICT);
-    linecloudp1.clear_vertices();
-    linecloudp1.set_line_width(2);
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
-          continue;
-        m_lgm->index2WorldCoords(x, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp1.add_line(xW2, yW2 - 8, (*m_pdf)(x, y).prob * multiplier1,
-            xW3, yW3 - 8, (*m_pdf)(x, y + 1).prob * multiplier1);
-      }
-    }
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
-          continue;
-        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp1.add_line(xW2, yW2 - 8, (*m_pdf)(x, y).prob * multiplier1,
-            xW3, yW3 - 8, (*m_pdf)(x, y + 1).prob * multiplier1);
-      }
-    }
-    /* Display pdfIn in as line cloud PB END */
 
   }
 
