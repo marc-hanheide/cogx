@@ -45,11 +45,11 @@ extern "C" {
 }
 
 namespace spatial {
-double patchThreshold = 0.020;
+double patchThreshold = 0.030;
 
 // Distance at which onness drops by half
-double distanceFalloffOutside			= 0.007; 
-double distanceFalloffInside			= 0.004; 
+double distanceFalloffOutside			= 0.015; 
+double distanceFalloffInside			= 0.010; 
 
 double supportCOMContainmentSteepness		= 1;
 double supportCOMContainmentOffset		= 0.5;
@@ -581,6 +581,7 @@ void ObjectRelationManager::runComponent()
 	      testObjects.push_back("squaretable");
 
 	      sampleRecursively(testObjects, 0, 25, 500, points, &table1);
+//	      log("Found %i points", points.size());
 
 	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
 		  it++) {
@@ -781,7 +782,8 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
       getMemoryEntry<FrontierInterface::ObservedPlaneObject>
       (wmc.address);
 
-    log("Read object at %f, %f, %f", observedObject->pos.x, observedObject->pos.y,
+    log("Read object %s at %f, %f, %f", observedObject->label.c_str(),
+	observedObject->pos.x, observedObject->pos.y,
 	observedObject->pos.z);
 
     int objectID = -1;
@@ -1214,6 +1216,9 @@ ObjectRelationManager::generateNewObjectModel(int objectID,
     newBoxObject->radius2 = 0.1;
     newBoxObject->radius3 = 0.1;
   }
+  newBoxObject->pose.pos.x = -FLT_MAX;
+  newBoxObject->pose.pos.y = -FLT_MAX;
+  newBoxObject->pose.pos.z = -FLT_MAX;
 }
 
 void
@@ -1247,6 +1252,10 @@ ObjectRelationManager::readPlaneModelsFromFile()
     obj.shape = PLANE_OBJECT_RECTANGLE;
     obj.radius1 = width;
     obj.radius2 = depth;
+    setIdentity(obj.pose.rot);
+    obj.pose.pos.x = -FLT_MAX;
+    obj.pose.pos.y = -FLT_MAX;
+    obj.pose.pos.z = -FLT_MAX;
 
     m_planeObjectModels[label] = obj;
     infile.getline(buf, 255);
@@ -1276,6 +1285,12 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     spatial::Object *supportObject;
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
       supportObject = &m_planeObjectModels[supportObjectLabel];
+      for (map<int, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
+	if (it->second->label == supportObjectLabel) {
+	  // update object
+	  supportObject->pose.pos = it->second->pos;
+	}
+      }
     }
     else {
       // For now, assume each label represents a unique object
@@ -1303,21 +1318,33 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 
     int nSamplesPerStep = request->objects.size() == 2 ? 500 : 25;
 
-    sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
-	    outPoints, supportObject);
+    int iterations = 0;
+    while (iterations < 10000 && outPoints.size() < 500) {
+      iterations++;
+      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
+	  outPoints, supportObject);
+    }
 
     //Paint it into outMap
+    log("outpoint size: %d", outPoints.size());
     if (outPoints.size() > 0) {
-      double weight = 1.0/outPoints.size();
+      double weight = request->probSum/outPoints.size();
       for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
 	int i, j;
 	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
 	  outMap(i,j) += weight;
+	  log("outmap: (%f,%f)[%i,%i]=%f",it->x, it->y, i,j,outMap(i,j));
 	}
       }
     }
 
     request->outMap = convertFromCureMap(outMap);
+    double total = 0.0;
+    for (long i = 0; i < request->outMap->contents.size(); i++) {
+      total+=request->outMap->contents[i];
+      log("%i: %f", i, request->outMap->contents[i]);
+    }
+    log("%f", total);
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
   }
 
@@ -1345,6 +1372,12 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
     spatial::Object *supportObject;
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
       supportObject = &m_planeObjectModels[supportObjectLabel];
+      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	if (it->second->label == supportObjectLabel) {
+	  // update object
+	  supportObject->pose = it->second->pose;
+	}
+      }
     }
     else {
       // For now, assume each label represents a unique object
@@ -1409,6 +1442,10 @@ ObjectRelationManager::sampleRecursively(const vector<string> &objects,
     vector<Vector3> &outPoints, spatial::Object *supportObject,
     const vector<Vector3> &triangle)
 {
+  if (supportObject->pose.pos.x == -FLT_MAX) {
+    log("Error! Support object pose uninitialized!");
+    return;
+  }
   string currentObjectLabel = objects[currentLevel];
 
   spatial::Object *onObject;
@@ -1469,7 +1506,11 @@ ObjectRelationManager::sampleRecursively(const vector<string> &objects,
   double minVertical = -frameRadius*1.5;
   double maxVertical = frameRadius*3;
 
-  for (unsigned int j = 0; j < nSamplesPerStep && outPoints.size() < nMaxSamples; j++) {
+  unsigned int pointsFound = 0;
+  unsigned int iterations = 0;
+  while (pointsFound < nSamplesPerStep && outPoints.size() < nMaxSamples &&
+      iterations < 10000) {
+    iterations++;
     onObject->pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
     onObject->pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
 
@@ -1480,8 +1521,8 @@ ObjectRelationManager::sampleRecursively(const vector<string> &objects,
     onObject->pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
 
     randomizeOrientation(onObject->pose);
-
-    if (evaluateOnness(supportObject, onObject) > 0.5) { 
+    if (evaluateOnness(supportObject, onObject) > 0.5) {
+      pointsFound++;
       if (currentLevel == 0) {
 	// This is the trajector itself
 	outPoints.push_back(onObject->pose.pos);
@@ -1492,6 +1533,9 @@ ObjectRelationManager::sampleRecursively(const vector<string> &objects,
 	    outPoints, onObject);
       }
     }
+//    if (iterations % 100 == 0) {
+//      log("iterations: %i, points: %i", iterations, pointsFound);
+//    }
   }
   onObject->pose = oldPose;
 }
