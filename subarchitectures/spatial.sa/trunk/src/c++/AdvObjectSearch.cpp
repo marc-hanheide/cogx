@@ -253,6 +253,7 @@ namespace spatial
 
   void AdvObjectSearch::owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID){
     try{
+      log("GridMapDouble overwrite!");
       Cure::LocalGridMap<double>* distribution = new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
                     Cure::LocalGridMap<unsigned int>::MAP1);
      FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<FrontierInterface::ObjectPriorRequest> (objID.address);
@@ -263,8 +264,10 @@ namespace spatial
              (*m_pdf)(x,y).prob =  (*m_pdf)(x,y).prob + (*distribution)(x,y);
            }
       }
+     log("Summed.");
      gotDistribution = true;
      DisplayPDFinPB(6,8,"distribution");
+     log("Displayed PDF");
 
     }
     catch(DoesNotExistOnWMException excp){
@@ -311,7 +314,7 @@ namespace spatial
       }
       else if (key == 116) {
         log("Table mode!");
-        //SetPrior();
+
         m_table_phase = true;
 
       }
