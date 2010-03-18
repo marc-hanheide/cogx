@@ -187,26 +187,26 @@ void Scenario::release() {
 
 ///
 ///creates a polyflap object
-///
-Actor* Scenario::setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context) {
+///setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context)
+Actor* Scenario::setupPolyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context*/) {
 	// Creator
 	Creator creator(scene);
 	Actor::Desc *pActorDesc;
 	Actor *polyFlapActor;
 	
 	// Create polyflap
-	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.002*0.5), REAL_PI_2);
-// 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1));
-// 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1), Real(0.002), Real(REAL_PI_2));
+	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(0.002*0.5), REAL_PI_2);
+// 	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1));
+// 	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(0.002), Real(REAL_PI_2));
 
 	//-sets coordinates
-	pActorDesc->nxActorDesc.globalPose.t.set(NxReal(position.v1), NxReal(position.v2), NxReal(position.v3));	
+	pActorDesc->nxActorDesc.globalPose.t.set(NxReal(desc.startPolyflapPosition.v1), NxReal(desc.startPolyflapPosition.v2), NxReal(desc.startPolyflapPosition.v3));	
 
 	Mat34 pose;
 	pose.R.fromEuler(
-		rotation.v1, 
-		rotation.v2, 
-		rotation.v3 
+		desc.startPolyflapRotation.v1, 
+		desc.startPolyflapRotation.v2, 
+		desc.startPolyflapRotation.v3 
 	);
 
 	//-sets rotations	
@@ -248,6 +248,121 @@ Actor* Scenario::setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions)
 
 	return polyFlapActor;
 }
+
+
+void Scenario::initializePolyflap(){
+
+	object = setupPolyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
+	golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
+
+	object->getPose().R.toEuler (currentPfRoll, currentPfPitch, currentPfYaw);
+
+	Mat34 curPolPos1;
+	Mat34 curPolPos2;
+	//find out bounds of polyflap and compute the position of the polyflap
+	if (curPol->front()->getPose().p.v3 > curPol->back()->getPose().p.v3) {
+		curPolPos1 = curPol->front()->getPose();
+		curPolPos2 = curPol->back()->getPose();
+	}
+	else {
+		curPolPos1 = curPol->back()->getPose();
+		curPolPos2 = curPol->front()->getPose();
+	}
+		
+	polyflapPosition.set(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
+
+	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
+	polyflapNormalVec =
+		computeNormalVector(
+			    Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)),
+			    Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0))
+			    );
+		
+	polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);	
+
+}
+
+
+
+
+
+
+void  Scenario::initializeMovement(const SecTmReal tmDeltaAsync){
+
+		//initialization of arm target: the center of the polyflap
+		//Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
+		positionT.set(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
+
+
+	        //int startPosition;
+
+		if (startingPosition == 0)
+			startPosition = floor(randomG.nextUniform (1.0, 18.0));
+		else
+			startPosition = startingPosition;
+
+
+		//arm target update
+		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+		cout << "Position " << startPosition-1 << endl;
+
+		// and set target waypoint
+		//golem::GenWorkspaceState target;
+		fromCartesianPose(target.pos, positionT, orientationT);
+		target.vel.setId(); // it doesn't mov
+
+		target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
+
+		//tuple<golem::GenWorkspaceState, Vec3, int> t = make_tuple(target, positionT, startPosition);
+		//return t;
+		//return startPosition;
+}
+
+
+
+
+
+void Scenario::setUpMovement(){
+
+		
+		// Trajectory duration calculated from a speed constant.
+		speed = floor (randomG.nextUniform (3.0, 5.0));
+		cout << "speed: " << speed << endl;
+		
+		duration = speed;
+
+
+		// Trajectory end pose equals begin + shift along Y axis
+		end = target.pos;
+
+		//normal vector to the center of the polyflap
+		Vec3 polyflapCenterNormalVec =
+			computeNormalVector(
+					    Vec3 (positionT.v1, positionT.v2, positionT.v3),
+					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5)
+					    );
+		//and it's orthogonal
+		Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
+// 		context.getLogger()->post(Message::LEVEL_INFO, "centernormalvec: %f, %1f, %f", polyflapCenterNormalVec.v1, polyflapCenterNormalVec.v2, polyflapCenterNormalVec.v3);
+
+
+		//the lenght of the movement
+		Real currDistance = desc.distance;
+
+		//chose random horizontal and vertical angle
+		int horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
+		
+		//int verticalAngle = rand() % 7;
+
+		setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
+		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
+
+		//return horizontalAngle;
+
+
+}
+
+
 
 
 void Scenario::postprocess(SecTmReal elapsedTime) {
@@ -309,6 +424,22 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 	}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///
 ///The experiment performed in this method behaves as follows:
 ///The arm randomly selects any of the possible actions.
@@ -339,7 +470,8 @@ void Scenario::run(int argc, char* argv[]) {
 	
 	
 	// Define the initial pose in the Cartesian workspace
-	Vec3 orientationT(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
+	//Vec3 orientationT(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
+	orientationT.set(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 
 	int numSequences = 10000;
 	int startingPosition = 0;
@@ -356,59 +488,11 @@ void Scenario::run(int argc, char* argv[]) {
 		creator.setToDefault();
 		//polyflap actor
 
-		object = setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context);
-		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
 
-		object->getPose().R.toEuler (currentPfRoll, currentPfPitch, currentPfYaw);
-
-		Mat34 curPolPos1;
-		Mat34 curPolPos2;
-		//find out bounds of polyflap and compute the position of the polyflap
-		if (curPol->front()->getPose().p.v3 > curPol->back()->getPose().p.v3) {
-			curPolPos1 = curPol->front()->getPose();
-			curPolPos2 = curPol->back()->getPose();
-		}
-		else {
-			curPolPos1 = curPol->back()->getPose();
-			curPolPos2 = curPol->front()->getPose();
-		}
-
+		initializePolyflap();
 		
+		initializeMovement(tmDeltaAsync);
 
-		Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
-
-		//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-		Vec3 polyflapNormalVec =
-			computeNormalVector(
-					    Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)),
-					    Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0))
-					    );
-			
-		Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);	
-
-
-		//initialization of arm target: the center of the polyflap
-		Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
-
-
-	        int startPosition;
-
-		if (startingPosition == 0)
-			startPosition = floor(randomG.nextUniform (1.0, 18.0));
-		else
-			startPosition = startingPosition;
-
-
-		//arm target update
-		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
-		cout << "Position " << startPosition-1 << endl;
-
-		// and set target waypoint
-		golem::GenWorkspaceState target;
-		fromCartesianPose(target.pos, positionT, orientationT);
-		target.vel.setId(); // it doesn't mov
-
-		target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
 
 		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 			if (arm->getReacPlanner().send(target , ReacPlanner::ACTION_GLOBAL)) {
@@ -420,70 +504,48 @@ void Scenario::run(int argc, char* argv[]) {
 		// wait for completion of the action (until the arm moves to the initial pose)
 		arm->getReacPlanner().waitForEnd(60000);
 
-		/////////////////////////////////////////////////
-		//create sequence for this loop run and initial (motor command) vector
-		learningData.currentSeq.clear();
-		learningData.currentMotorCommandVector.clear();
-		/////////////////////////////////////////////////
+			/////////////////////////////////////////////////
+			//create sequence for this loop run and initial (motor command) vector
+			learningData.currentSeq.clear();
+			learningData.currentMotorCommandVector.clear();
+			/////////////////////////////////////////////////	
 
-		/////////////////////////////////////////////////
-		//writing in the initial vector
-		//initial position, normalized
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
-		//initial orientation, normalized
-// 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
-// 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
-// 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v3, -REAL_PI, REAL_PI));
-		//end pose info missing (must be added later 
-		/////////////////////////////////////////////////
-
-
-		// Trajectory duration calculated from a speed constant.
-		int speed = floor (randomG.nextUniform (3.0, 5.0));
-		cout << "speed: " << speed << endl;
-		
-		SecTmReal duration = speed;
-				
-		/////////////////////////////////////////////////
-		//writing in the initial vector
-		learningData.currentMotorCommandVector.push_back(normalize<double>(speed, 3.0, 5.0));
-		/////////////////////////////////////////////////
-
-		// Trajectory end pose equals begin + shift along Y axis
-		WorkspaceCoord end = target.pos;
-
-		//normal vector to the center of the polyflap
-		Vec3 polyflapCenterNormalVec =
-			computeNormalVector(
-					    Vec3 (positionT.v1, positionT.v2, positionT.v3),
-					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5)
-					    );
-		//and it's orthogonal
-		Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
-// 		context.getLogger()->post(Message::LEVEL_INFO, "centernormalvec: %f, %1f, %f", polyflapCenterNormalVec.v1, polyflapCenterNormalVec.v2, polyflapCenterNormalVec.v3);
+			/////////////////////////////////////////////////
+			//writing in the initial vector	
+			//initial position, normalized
+			learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
+			learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
+			learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
+			//initial orientation, normalized
+//	 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
+//	 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
+//	 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v3, -REAL_PI, REAL_PI));
+			//end pose info missing (must be added later 
+			/////////////////////////////////////////////////
 
 
-		//the lenght of the movement
-		Real currDistance = desc.distance;
-
-		//chose random horizontal and vertical angle
-		int horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
-		
-		//int verticalAngle = rand() % 7;
-
-		setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
-		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
+		setUpMovement();
 
 
-		learningData.currentMotorCommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
 
-		/////////////////////////////////////////////////
-		//writing of the initial vector into sequence
-		LearningData::Chunk chunk;
-		learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
-		/////////////////////////////////////////////////
+			/////////////////////////////////////////////////
+			//writing in the initial vector
+			learningData.currentMotorCommandVector.push_back(normalize<double>(speed, 3.0, 5.0));
+			/////////////////////////////////////////////////
+
+
+
+
+			/////////////////////////////////////////////////
+			//writing in the initial vector
+			learningData.currentMotorCommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
+			/////////////////////////////////////////////////
+
+			/////////////////////////////////////////////////
+			//writing of the initial vector into sequence
+			LearningData::Chunk chunk;
+			learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
+			/////////////////////////////////////////////////
 
 	
 		target.pos = end;
@@ -511,10 +573,10 @@ void Scenario::run(int argc, char* argv[]) {
 		bStart = false;
 
 			
-		/////////////////////////////////////////////////
-		//writing the sequence into the dataset
-		data.push_back(learningData.currentSeq);
-		/////////////////////////////////////////////////
+			/////////////////////////////////////////////////
+			//writing the sequence into the dataset
+			data.push_back(learningData.currentSeq);
+			/////////////////////////////////////////////////
 
 		
 		//off collision detection
@@ -575,10 +637,10 @@ void Scenario::run(int argc, char* argv[]) {
 	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
 	(void)arm->getReacPlanner().waitForEnd(60000);
 	
-	/////////////////////////////////////////////////
-	//writing the dataset into binary file
-	writeDownCollectedData(data);
-	/////////////////////////////////////////////////
+		/////////////////////////////////////////////////
+		//writing the dataset into binary file
+		writeDownCollectedData(data);
+		/////////////////////////////////////////////////
 	
 }
 
@@ -616,7 +678,7 @@ void Scenario::setPointCoordinates(Vec3& position, const Vec3& normalVec, const 
 
 ///
 ///calls setPointCoordinates for a discrete canonical number of different actions
-///
+///setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 void Scenario::setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
 
 
