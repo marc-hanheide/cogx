@@ -271,7 +271,9 @@ void VirtualScene::runComponent(){
       }
       
       m_engine->Activate2D();
-			m_font->Print("VirtualSzene", 16, 5, 5);
+			char text[32];
+			sprintf(text,"FPS: %.1f", 1.0 / m_timer.Update());
+			m_font->Print(text, 16, 5, 5);
       m_running = m_engine->Update(m_fTime, m_eventlist);
       m_wireframe = m_engine->GetWireframeMode();
       sleepComponent(5);
@@ -338,6 +340,7 @@ void VirtualScene::updateCamera(){
 void VirtualScene::drawCamera(){
 	m_camModel.model.DrawFaces(m_wireframe);
 	m_camModel.model.m_pose.Activate();
+	glColor3f(0.5,0.5,0.5);
 	m_camera0.DrawFrustum();
 	m_camModel.model.m_pose.Deactivate();
 }

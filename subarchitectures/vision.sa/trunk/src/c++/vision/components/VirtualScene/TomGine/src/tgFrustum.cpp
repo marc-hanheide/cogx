@@ -170,11 +170,13 @@ void tgFrustum::DrawFrustum(){
 	 7	glVertex3f(fRight, fTop, -far);
 	 8	glVertex3f(fLeft, fTop, -far);
 	 */
- 
+ 	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+
+
 	glMatrixMode(GL_MODELVIEW);
 
 	glPushMatrix();
-	glLineWidth(2);
 	glBegin(GL_LINES);
  
 		glVertex3f(nLeft, nBottom, -near);
@@ -216,7 +218,6 @@ void tgFrustum::DrawFrustum(){
 		glVertex3f(nRight, nBottom, -near);
 	
 	glEnd();
-	glLineWidth(1);
 	glPopMatrix();
 }
 

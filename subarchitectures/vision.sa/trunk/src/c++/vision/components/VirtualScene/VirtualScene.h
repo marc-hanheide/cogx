@@ -33,6 +33,7 @@ private:
   
   TomGine::tgEngine* m_engine;
   TomGine::tgCamera m_camera0, m_camera;
+	TomGine::tgTimer m_timer;
   cogx::Math::Pose3 m_cam_pose;
   TomGine::tgFont* m_font;
   std::vector<TomGine::tgEvent> m_eventlist;
