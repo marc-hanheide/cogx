@@ -1327,9 +1327,9 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 }
 
 void 
-ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &)
+ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &wmc)
 {
-/*  try {
+  try {
     FrontierInterface::ObjectTiltAngleRequestPtr request =
       getMemoryEntry<FrontierInterface::ObjectTiltAngleRequest>(wmc.address);
 
@@ -1370,36 +1370,44 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
       supportObject = m_objectModels[objectID];
     }
 
-    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 25;
+    int nSamplesPerStep = request->objects.size() == 2 ? 100 : 5;
+
+    vector<Vector3> triangle;
+    triangle.push_back(vector3(request->triangle[0].x,request->triangle[0].y, 0));
+    triangle.push_back(vector3(request->triangle[1].x,request->triangle[1].y, 0));
+    triangle.push_back(vector3(request->triangle[2].x,request->triangle[2].y, 0));
 
     sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
 	    outPoints, supportObject);
-
-    //Paint it into outMap
-    if (outPoints.size() > 0) {
-      double weight = 1.0/outPoints.size();
-      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
-	int i, j;
-	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
-	  outMap(i,j) += weight;
-	}
-      }
+    for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
+      request->tiltAngles.push_back(it->z);
     }
 
-    request->outMap = convertFromCureMap(outMap);
-    overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
+    overwriteWorkingMemory<FrontierInterface::ObjectTiltAngleRequest>(wmc.address, request);
   }
 
   catch (DoesNotExistOnWMException) {
-    log("Error! Prior request disappeared from WM!");
+    log("Error! Height request disappeared from WM!");
   }
-  */
+}
+
+inline bool
+isInTriangle(double x, double y, const vector<Vector3> &triangle) {
+  for (int i = 0; i < 3; i++) {
+    int iplus = i == 2 ? 0 : i+1;
+    Vector3 side = triangle[iplus] - triangle[i];
+    Vector3 diff = vector3(x,y,0) - triangle[i];
+    if (cross(side,diff).z < 0)
+      return false;
+  }
+  return true;
 }
 
 void
 ObjectRelationManager::sampleRecursively(const vector<string> &objects, 
     int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
-    vector<Vector3> &outPoints, spatial::Object *supportObject)
+    vector<Vector3> &outPoints, spatial::Object *supportObject,
+    const vector<Vector3> &triangle)
 {
   string currentObjectLabel = objects[currentLevel];
 
@@ -1464,6 +1472,11 @@ ObjectRelationManager::sampleRecursively(const vector<string> &objects,
   for (unsigned int j = 0; j < nSamplesPerStep && outPoints.size() < nMaxSamples; j++) {
     onObject->pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
     onObject->pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+
+    if (triangle.size() > 0 && currentLevel == 0 &&
+	!isInTriangle(onObject->pose.pos.x, onObject->pose.pos.y, triangle))
+	continue;
+
     onObject->pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
 
     randomizeOrientation(onObject->pose);
