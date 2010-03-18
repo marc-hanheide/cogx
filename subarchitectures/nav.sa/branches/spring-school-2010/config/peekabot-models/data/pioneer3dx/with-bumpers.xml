@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!-- This is a MobileRobotics Pioneer 3DX, with bumpers but no sonars 
+     defined -->
+
+<!-- Copyright 2009 Staffan Gimåker.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+  <include file="pioneer3dx/pioneer3dx-sans-bumpers.xml"/>
+  <include file="pioneer3dx/front-bumpers.xml"/>
+  <include file="pioneer3dx/rear-bumpers.xml"/>
+</scene>
