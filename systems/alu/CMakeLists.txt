@@ -28,6 +28,7 @@ add_subdirectory (tools/d-lib)
 option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
 if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
+add_subdirectory (tools/beliefmodels)
 endif(BUILD_SA_BINDING)
 
 option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" YES)
