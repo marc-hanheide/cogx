@@ -187,6 +187,10 @@ void tgCamera::fwh2intrinsic(){
 	m_intrinsic = mat4(m);		
 }
 
+tgPose tgCamera::GetPose(){
+	printf("[tgCamera::GetPose()] Not implemented yet\n");
+	return tgPose();
+}
 //****************************************************************************
 // Translations
 void tgCamera::Translate(tgVector3 v){

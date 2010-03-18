@@ -300,6 +300,7 @@ void VirtualScene::initScene(const Video::Image &image){
   m_engine = new(tgEngine);
 	m_engine->Init(m_width, m_height, 10.0, 0.01, "VirtualScene");
 	
+	m_engine->GetCamera0(m_camera0);
 	loadCameraParameters(&m_camera0, image.camPars, 0.1, 10.0);
 	m_camera = m_camera0;
 	m_engine->SetCamera(m_camera);
@@ -311,26 +312,27 @@ void VirtualScene::initScene(const Video::Image &image){
 	cogx::Math::Pose3 pose = image.camPars.pose;
 	convertPose2tgPose( pose, m_camModel.model.m_pose);
 // 	m_camModel.model.m_material = getRandomMaterial();
-	
+
+
 	m_font = new tgFont("/usr/share/fonts/truetype/freefont/FreeSansBold.ttf");
 
   log("... initialisation successfull!");
 }
 
 void VirtualScene::updateCamera(){
-// 	TomGine::tgVector3 cor_cam;
-// 	TomGine::tgVector3 new_cam_pos;
-// 	
-// 	
-// 	cor_cam = TomGine::tgVector3(m_camera0.GetPos().x-m_cor.x, m_camera0.GetPos().y-m_cor.y, m_camera0.GetPos().z-m_cor.z);
-// 	m_engine->SetCenterOfRotation(0.5*(m_camera0.GetPos().x+m_cor.x),0.5*(m_camera0.GetPos().y+m_cor.y),0.5*(m_camera0.GetPos().z+m_cor.z));
-// 	
-// 	float l = cor_cam.length();
-// 	new_cam_pos = m_camera0.GetPos() - m_camera0.GetF() * l;
-// 	m_camera.SetPos( new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
-// 	m_camera.ApplyTransform();
+	TomGine::tgVector3 cor_cam;
+	TomGine::tgVector3 new_cam_pos;
 	
-// 	m_engine->SetCamera(m_camera);
+	
+	cor_cam = TomGine::tgVector3(m_camera0.GetPos().x-m_cor.x, m_camera0.GetPos().y-m_cor.y, m_camera0.GetPos().z-m_cor.z);
+	m_engine->SetCenterOfRotation(0.5*(m_camera0.GetPos().x+m_cor.x),0.5*(m_camera0.GetPos().y+m_cor.y),0.5*(m_camera0.GetPos().z+m_cor.z));
+	
+	float l = 0.0;//cor_cam.length();
+	new_cam_pos = m_camera0.GetPos() - m_camera0.GetF() * l;
+	m_camera.SetPos( new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
+	m_camera.ApplyTransform();
+	
+	m_engine->SetCamera(m_camera);
 }
 
 void VirtualScene::drawCamera(){

@@ -142,8 +142,10 @@ bool tgFrustum::SphereInFrustum( float x, float y, float z, float radius ){
 void tgFrustum::DrawFrustum(){
  
 // Get near and far from the Projection matrix.
-	const double near = m_intrinsic[11] / (m_intrinsic[10] - 1.0);
-	const double far = m_intrinsic[11] / (1.0 + m_intrinsic[10]);
+	double depthRange[2];
+	glGetDoublev(GL_DEPTH_RANGE, &depthRange[0]);
+	double near = -depthRange[0]; //1.0 * m_intrinsic[11] / (m_intrinsic[10] - 1.0);
+	double far = -depthRange[1]; //-1.0 * m_intrinsic[11] / (1.0 + m_intrinsic[10]);
  
 	// Get the sides of the near plane.
 	const double nLeft = near * (m_intrinsic[2] - 1.0) / m_intrinsic[0];
@@ -156,8 +158,6 @@ void tgFrustum::DrawFrustum(){
 	const double fRight = far * (1.0 + m_intrinsic[2]) / m_intrinsic[0];
 	const double fTop = far * (1.0 + m_intrinsic[6]) / m_intrinsic[5];
 	const double fBottom = far * (m_intrinsic[6] - 1.0) / m_intrinsic[5];
- 
- 	printf("l,r,t,b: %f %f %f %f\n", fLeft, fRight, fTop, fBottom);
  
 	/*
 	 0	glVertex3f(0.0f, 0.0f, 0.0f);
@@ -172,57 +172,51 @@ void tgFrustum::DrawFrustum(){
 	 */
  
 	glMatrixMode(GL_MODELVIEW);
+
 	glPushMatrix();
-// 	glLoadIdentity ();
- 
-        // TODO - Update: You need to invert the mv before multiplying it with the current mv!
- 
-// 	glMultMatrixf(ext_inv);
- 
 	glLineWidth(2);
 	glBegin(GL_LINES);
  
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(fLeft, fBottom, -far);
- 
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(fRight, fBottom, -far);
- 
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(fRight, fTop, -far);
- 
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(fLeft, fTop, -far);
- 
-	//far
-	glVertex3f(fLeft, fBottom, -far);
-	glVertex3f(fRight, fBottom, -far);
- 
-	glVertex3f(fRight, fTop, -far);
-	glVertex3f(fLeft, fTop, -far);
- 
-	glVertex3f(fRight, fTop, -far);
-	glVertex3f(fRight, fBottom, -far);
- 
-	glVertex3f(fLeft, fTop, -far);
-	glVertex3f(fLeft, fBottom, -far);
- 
-	//near
-	glVertex3f(nLeft, nBottom, -near);
-	glVertex3f(nRight, nBottom, -near);
- 
-	glVertex3f(nRight, nTop, -near);
-	glVertex3f(nLeft, nTop, -near);
- 
-	glVertex3f(nLeft, nTop, -near);
-	glVertex3f(nLeft, nBottom, -near);
- 
-	glVertex3f(nRight, nTop, -near);
-	glVertex3f(nRight, nBottom, -near);
- 
+		glVertex3f(nLeft, nBottom, -near);
+		glVertex3f(fLeft, fBottom, -far);
+	
+		glVertex3f(nRight, nBottom, -near);
+		glVertex3f(fRight, fBottom, -far);
+	
+		glVertex3f(nRight, nTop, -near);
+		glVertex3f(fRight, fTop, -far);
+	
+		glVertex3f(nLeft, nTop, -near);
+		glVertex3f(fLeft, fTop, -far);
+	
+		//far
+		glVertex3f(fLeft, fBottom, -far);
+		glVertex3f(fRight, fBottom, -far);
+	
+		glVertex3f(fRight, fTop, -far);
+		glVertex3f(fLeft, fTop, -far);
+	
+		glVertex3f(fRight, fTop, -far);
+		glVertex3f(fRight, fBottom, -far);
+	
+		glVertex3f(fLeft, fTop, -far);
+		glVertex3f(fLeft, fBottom, -far);
+	
+		//near
+		glVertex3f(nLeft, nBottom, -near);
+		glVertex3f(nRight, nBottom, -near);
+	
+		glVertex3f(nRight, nTop, -near);
+		glVertex3f(nLeft, nTop, -near);
+	
+		glVertex3f(nLeft, nTop, -near);
+		glVertex3f(nLeft, nBottom, -near);
+	
+		glVertex3f(nRight, nTop, -near);
+		glVertex3f(nRight, nBottom, -near);
+	
 	glEnd();
 	glLineWidth(1);
 	glPopMatrix();
-
-
 }
+
