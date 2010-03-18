@@ -101,7 +101,7 @@ module FrontierInterface {
   class ObjectTiltAngleRequest {
     ObjectRelation relationType;
     StringSeq objects; //Starts with the query object's label
-    Vec2Seq triangle; //Describes the 3D triangle in which to sample for points
+    Vec2Seq triangle; //Describes the 2D triangle in which to sample for points
     DoubleData tiltAngles; 
   };
 
