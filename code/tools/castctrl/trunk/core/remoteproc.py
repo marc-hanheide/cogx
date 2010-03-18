@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
+# Author:  Marko Mahnič
+# Created: jan 2010 
+
 import sys, traceback, Ice
 import threading, time
 from procman import CProcessBase, CRemoteHostInfo

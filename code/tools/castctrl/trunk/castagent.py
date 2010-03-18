@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
+# Author:  Marko Mahnič
+# Created: jan 2010 
 
 import os, sys, time, re
 import shutil
