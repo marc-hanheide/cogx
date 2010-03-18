@@ -56,10 +56,13 @@
 #include <tools/data_handling.h>
 #include <tools/math_helpers.h>
 
+//#include <tr1/tuple>
+
 
 using namespace std;
 using namespace golem;
 using namespace golem::tools;
+//using namespace std::tr1;
 
 
 namespace smlearning {
@@ -214,6 +217,19 @@ protected:
 	Real currentPfYaw;
 	/** Y position of polyflap */
 	Real currentPfY;
+///
+	Vec3 polyflapPosition;
+	Vec3 polyflapNormalVec;
+	Vec3 polyflapOrthogonalVec;
+	Vec3 positionT;
+	golem::GenWorkspaceState target;
+	Vec3 orientationT;
+	int startPosition;
+	int speed;
+	SecTmReal duration;
+	WorkspaceCoord end;
+	int horizontalAngle;
+
 
 	/** iteration counter */
 	int iteration;
@@ -241,7 +257,7 @@ protected:
 	///
 	///creates polyflap and puts it in the scene (from position and rotation)
 	///
-	Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context);
+	Actor* setupPolyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context*/);
 	
 	///
 	///creates polyflap and puts it in the scene (from pose)
@@ -268,8 +284,19 @@ protected:
 	///calls setPointCoordinates for a discrete canonical number of different actions
 	///
 	static void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+
+
+
+
+
+	void initializePolyflap();
+
+	void  initializeMovement(const SecTmReal tmDeltaAsync);
+
 	
-	
+	void setUpMovement();
+
+
 };
 
 //------------------------------------------------------------------------------
