@@ -24,6 +24,8 @@
 #include <Navigation/LocalGridMap.hh>
 #include "CureMapConversion.hpp"
 
+#define USE_KDE
+
 using namespace cast;
 #include <Pose3.h>
 
@@ -580,8 +582,8 @@ void ObjectRelationManager::runComponent()
 	      testObjects.push_back("krispies");
 	      testObjects.push_back("squaretable");
 
-	      sampleRecursively(testObjects, 0, 25, 500, points, &table1);
-//	      log("Found %i points", points.size());
+	      sampleRecursively(testObjects, 0, 5, 500, points, &table1);
+	      log("Found %i points", points.size());
 
 	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
 		  it++) {
@@ -598,7 +600,7 @@ void ObjectRelationManager::runComponent()
 	}
     } // if (m_bTestOnness)
 
-      //    sleepComponent(100);
+    sleepComponent(500);
   }
 }
 
@@ -1316,7 +1318,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       supportObject = m_objectModels[objectID];
     }
 
-    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 25;
+    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 5;
 
     int iterations = 0;
     while (iterations < 10000 && outPoints.size() < 500) {
@@ -1328,6 +1330,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     //Paint it into outMap
     log("outpoint size: %d", outPoints.size());
     if (outPoints.size() > 0) {
+#ifndef USE_KDE
       double weight = request->probSum/outPoints.size();
       for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
 	int i, j;
@@ -1336,11 +1339,54 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	  log("outmap: (%f,%f)[%i,%i]=%f",it->x, it->y, i,j,outMap(i,j));
 	}
       }
+#else
+      double total = 0.0;
+      unsigned long cellCount = outMap.getNumCells();
+      double kernelRadius = 0.2;
+      int kernelWidth = (int)(ceil(kernelRadius/outMap.getCellSize())+0.1);
+      //How many kernelRadiuses per cell
+      double kernelStep = outMap.getCellSize()/kernelRadius; 
+
+      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
+	int i, j;
+	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
+	  int minxi = i-kernelWidth < -outMap.getSize() ? -outMap.getSize() : i-kernelWidth;
+	  int minyi = j-kernelWidth < -outMap.getSize() ? -outMap.getSize() : j-kernelWidth;
+	  int maxxi = i+kernelWidth > outMap.getSize() ? outMap.getSize() : i+kernelWidth;
+	  int maxyi = j+kernelWidth > outMap.getSize() ? outMap.getSize() : j+kernelWidth;
+	  double minx,miny;
+	  outMap.index2WorldCoords(minxi,minyi,minx,miny);
+	  minx -= it->x; //Relative coords of minxi, minyi in meters
+	  miny -= it->y;
+	  minx /= kernelRadius; //Relative coords of minxi, minyi in kernel radii
+	  miny /= kernelRadius;
+
+	  double x = minx;
+	  for (int xi = minxi; xi <= maxxi; xi++, x+=kernelStep) {
+	    double y = miny;
+	    for (int yi = minyi; yi <= maxyi; yi++, y+=kernelStep) {
+	      double sqsum = 1 - (x*x+y*y);
+	      if (sqsum > 0) {
+		outMap(xi,yi)+=sqsum;
+		total+=sqsum;
+	      }
+	    }
+	  }
+	}
+      }
+      double weight = request->probSum/total;
+      for (unsigned long i = 0; i < cellCount; i++) {
+	if (outMap[i] != 0.0) {
+	  outMap[i] *= weight;
+	  log("outmap: [%ii]=%f", i,outMap[i]);
+	}
+      }
+#endif
     }
 
     request->outMap = convertFromCureMap(outMap);
     double total = 0.0;
-    for (long i = 0; i < request->outMap->contents.size(); i++) {
+    for (unsigned long i = 0; i < request->outMap->contents.size(); i++) {
       total+=request->outMap->contents[i];
       log("%i: %f", i, request->outMap->contents[i]);
     }

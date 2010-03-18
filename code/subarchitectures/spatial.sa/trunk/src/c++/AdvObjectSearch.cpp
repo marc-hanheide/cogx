@@ -262,8 +262,6 @@ namespace spatial
      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
              (*m_pdf)(x,y).prob =  (*m_pdf)(x,y).prob + (*distribution)(x,y);
-	     if ( (*distribution)(x,y) != 0 )
-	       log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
            }
       }
      log("Summed.");
