@@ -320,7 +320,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		creator.setToDefault();
 		//polyflap actor
 
-		object = setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context);
+		object = setupPolyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
 		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
 		if (iteration == 0)
 			objectLocalBounds = object->getLocalBoundsSeq();
