@@ -54,31 +54,33 @@ void VirtualSceneTest::runComponent(){
   sleepComponent(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
   
-  for(int i=0; i<m_modelfile.size(); i++){
-		VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
-		obj->model = new VisionData::GeometryModel;
-		Tracking::Model model;
-		
-		// Load geometry from ply-file
-		log("Loading model '%s'", m_modelfile[i].c_str());
-		m_modelloader.LoadPly(model, m_modelfile[i].c_str());
-  	
-  	// Convert Model
-  	log("Converting model to geometry");
-  	convertModel2Geometry(model, obj->model);
-  	
-  	// 
-  	obj->label = m_modelfile[i].c_str();
-		obj->detectionConfidence = 0.0;
-		Tracking::Pose p;
-		p.translate(0.1+0.5*rand()/RAND_MAX, 0.1+0.5*rand()/RAND_MAX, 0.0);
-		p.rotate(0.0,0.0,2*PI*rand()/RAND_MAX);
-		convertParticle2Pose(p, obj->pose); 
-		
-		log("Add model to working memory: '%s'", obj->label.c_str());
-  	addToWorkingMemory(newDataID(), obj);
+	int loops = 1;
+	for(int j=0; j<loops; j++){
+		for(int i=0; i<m_modelfile.size(); i++){
+			VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+			obj->model = new VisionData::GeometryModel;
+			Tracking::Model model;
+			
+			// Load geometry from ply-file
+			log("Loading model '%s'", m_modelfile[i].c_str());
+			m_modelloader.LoadPly(model, m_modelfile[i].c_str());
+			
+			// Convert Model
+			log("Converting model to geometry");
+			convertModel2Geometry(model, obj->model);
+			
+			// 
+			obj->label = m_modelfile[i].c_str();
+			obj->detectionConfidence = 0.0;
+			Tracking::Pose p;
+			p.translate(0.1+0.5*rand()/RAND_MAX, 0.1+0.5*rand()/RAND_MAX, 0.0);
+			p.rotate(0.0,0.0,2*PI*rand()/RAND_MAX);
+			convertParticle2Pose(p, obj->pose); 
+			
+			log("Add model to working memory: '%s'", obj->label.c_str());
+			addToWorkingMemory(newDataID(), obj);
+		}
   }
-  
 	log("Stop");
 }
 
