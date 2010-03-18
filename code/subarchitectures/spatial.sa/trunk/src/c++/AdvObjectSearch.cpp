@@ -245,7 +245,7 @@ namespace spatial
         new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
             &AdvObjectSearch::newObjectDetected));
 
-    addChangeFilter(createLocalTypeFilter<SpatialData::ObjectPriorRequest> (
+    addChangeFilter(createLocalTypeFilter<FrontierInterface::ObjectPriorRequest> (
             cdl::OVERWRITE), new MemberFunctionChangeReceiver<AdvObjectSearch> (
             this, &AdvObjectSearch::owtGridMapDouble));
 
@@ -255,8 +255,8 @@ namespace spatial
     try{
       Cure::LocalGridMap<double>* distribution = new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
                     Cure::LocalGridMap<unsigned int>::MAP1);
-     SpatialData::ObjectPriorRequestPtr objreq = getMemoryEntry<SpatialData::ObjectPriorRequest> (objID.address);
-     convertToCureMap(objreq->outMap, distribution);
+     FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<FrontierInterface::ObjectPriorRequest> (objID.address);
+     convertToCureMap(objreq->outMap, *distribution);
 
      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
@@ -352,14 +352,14 @@ namespace spatial
         Cure::LocalGridMap<double>* tobefilled = new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
                Cure::LocalGridMap<unsigned int>::MAP1);
         //write lgm to WM
-        SpatialData::ObjectPriorRequestPtr objreq = new SpatialData::ObjectPriorRequest;
+        FrontierInterface::ObjectPriorRequestPtr objreq = new FrontierInterface::ObjectPriorRequest;
         vector<std::string> objects;
         objects.push_back("squaretable");
         objects.push_back("joystick");
         //objects.push_back("krispies");
         objects.push_back("rice");
 
-        objreq->relationType = SpatialData::ON;
+        objreq->relationType = FrontierInterface::ON;
         objreq->objects = objects;
         objreq->probSum = pIn/2;
         objreq->outMap = convertFromCureMap(*tobefilled);

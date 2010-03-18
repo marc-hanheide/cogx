@@ -45,11 +45,11 @@ extern "C" {
 }
 
 namespace spatial {
-double patchThreshold = 0.030;
+double patchThreshold = 0.020;
 
 // Distance at which onness drops by half
-double distanceFalloffOutside			= 0.02; 
-double distanceFalloffInside			= 0.014; 
+double distanceFalloffOutside			= 0.007; 
+double distanceFalloffInside			= 0.004; 
 
 double supportCOMContainmentSteepness		= 1;
 double supportCOMContainmentOffset		= 0.5;
@@ -205,10 +205,10 @@ void ObjectRelationManager::start()
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::newRobotPose));  
 
-  addChangeFilter(createGlobalTypeFilter<SpatialData::ObjectPriorRequest>(cdl::ADD), 
+  addChangeFilter(createGlobalTypeFilter<FrontierInterface::ObjectPriorRequest>(cdl::ADD), 
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::newPriorRequest));  
-  addChangeFilter(createGlobalTypeFilter<SpatialData::ObjectTiltAngleRequest>(cdl::ADD), 
+  addChangeFilter(createGlobalTypeFilter<FrontierInterface::ObjectTiltAngleRequest>(cdl::ADD), 
 		  new MemberFunctionChangeReceiver<ObjectRelationManager>(this,
 								  &ObjectRelationManager::newTiltAngleRequest));  
 
@@ -572,56 +572,25 @@ void ObjectRelationManager::runComponent()
 
 	  if (m_bSampleOnness) {
 	    Pose3 oldPose = box1.pose;
+
 	    if (nPoints < maxPoints) {
-	      double frameRadius = box2.radius1 > box2.radius2 ?
-		box2.radius1 : box2.radius2;
-	      frameRadius = frameRadius > box2.radius3 ? 
-		frameRadius : box2.radius3;
-	      spatial::Object *supportObject = &box2;
-	      double maxLateral = -frameRadius*1.5;
-	      double minVertical = -frameRadius*1.5;
-	      double maxVertical = frameRadius*3;
-	      //	    double frameRadius = table1.radius1 > table1.radius2 ?
-	      //	      table1.radius1 : table1.radius2;
-	      //	    spatial::Object *supportObject = &table1;
-	      //	    double maxLateral = -frameRadius*1.5;
-	      //	    double minVertical = -0.5;
-	      //	    double maxVertical = 1.0;
+	      vector<string> testObjects;
+	      vector<Vector3> points;
+	      points.reserve(500);
+	      testObjects.push_back("krispies");
+	      testObjects.push_back("squaretable");
 
-	      //	  for (int i = 0; i < 500; i++) {
-	      //  box2.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
-	      //  box2.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
-	      //  box2.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
-	      //  randomizeOrientation(box2.pose);
-	      //  if (evaluateOnness(supportObject, &box2) > 0.5) { 
-	      //  double frameRadius = box2.radius1 > box2.radius2 ?
-	      //    box2.radius1 : box2.radius2;
-	      //  frameRadius = frameRadius > box2.radius3 ? 
-	      //    frameRadius : box2.radius3;
-	      //  spatial::Object *supportObject = &box2;
-	      //  double maxLateral = -frameRadius*1.5;
-	      //  double minVertical = -frameRadius*1.5;
-	      //  double maxVertical = frameRadius*3;
-	      for (int j = 0; j < 500; j++) {
+	      sampleRecursively(testObjects, 0, 25, 500, points, &table1);
 
-		box1.pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
-		box1.pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
-		box1.pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
-
-		randomizeOrientation(box1.pose);
-
-		if (evaluateOnness(supportObject, &box1) > 0.5) { 
+	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+		  it++) {
 		  //  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
 		  //    if (nPoints > 500) 
-		  pcloud.add_vertex(box1.pose.pos.x, box1.pose.pos.y, box1.pose.pos.z);
+		  pcloud.add_vertex(it->x, it->y, it->z);
 		  //points.push_back(box1.pose.pos);
 		  nPoints++;
 		}
 	      }
-	    }
-	    box1.pose = oldPose;
-	    //  }
-
 	    }
 
 	  }
@@ -1287,20 +1256,229 @@ ObjectRelationManager::readPlaneModelsFromFile()
 void
 ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
   try {
-    SpatialData::ObjectPriorRequestPtr request =
-      getMemoryEntry<SpatialData::ObjectPriorRequest>(wmc.address);
+    FrontierInterface::ObjectPriorRequestPtr request =
+      getMemoryEntry<FrontierInterface::ObjectPriorRequest>(wmc.address);
 
-    SpatialData::GridMapDoublePtr inMap = request->outMap;
+    if (request->objects.size() < 2) {
+      log("Error! Can't compute onness for less than 2 objects!");
+      return;
+    }
+
+    FrontierInterface::GridMapDoublePtr inMap = request->outMap;
     Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0, 
 	Cure::LocalGridMap<double>::MAP1,
 	inMap->x, inMap->y);
     //Fill it
+    vector<Vector3> outPoints;
+    outPoints.reserve(500);
+
+    string supportObjectLabel = request->objects.back();
+    spatial::Object *supportObject;
+    if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
+      supportObject = &m_planeObjectModels[supportObjectLabel];
+    }
+    else {
+      // For now, assume each label represents a unique object
+      int objectID = -1;
+      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	if (it->second->label == supportObjectLabel) {
+	  // update object
+	  objectID = it->first;
+	}
+      }
+      bool bNewObject = false;
+      if (objectID == -1) {
+	// New object
+	bNewObject = true;
+	log("New SpatialObject: %s", supportObjectLabel.c_str());
+	objectID = m_maxObjectCounter++;
+	m_objects[objectID] = new SpatialData::SpatialObject;
+	m_objects[objectID]->id = objectID;
+	m_objects[objectID]->label = supportObjectLabel;
+
+	generateNewObjectModel(objectID, supportObjectLabel);
+      }
+      supportObject = m_objectModels[objectID];
+    }
+
+    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 25;
+
+    sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
+	    outPoints, supportObject);
+
+    //Paint it into outMap
+    if (outPoints.size() > 0) {
+      double weight = 1.0/outPoints.size();
+      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
+	int i, j;
+	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
+	  outMap(i,j) += weight;
+	}
+      }
+    }
 
     request->outMap = convertFromCureMap(outMap);
-    overwriteWorkingMemory<SpatialData::ObjectPriorRequest>(wmc.address, request);
+    overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
   }
 
   catch (DoesNotExistOnWMException) {
     log("Error! Prior request disappeared from WM!");
   }
+}
+
+void 
+ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &)
+{
+/*  try {
+    FrontierInterface::ObjectTiltAngleRequestPtr request =
+      getMemoryEntry<FrontierInterface::ObjectTiltAngleRequest>(wmc.address);
+
+    if (request->objects.size() < 2) {
+      log("Error! Can't compute onness for less than 2 objects!");
+      return;
+    }
+
+    vector<Vector3> outPoints;
+    outPoints.reserve(100);
+
+    string supportObjectLabel = request->objects.back();
+    spatial::Object *supportObject;
+    if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
+      supportObject = &m_planeObjectModels[supportObjectLabel];
+    }
+    else {
+      // For now, assume each label represents a unique object
+      int objectID = -1;
+      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	if (it->second->label == supportObjectLabel) {
+	  // update object
+	  objectID = it->first;
+	}
+      }
+      bool bNewObject = false;
+      if (objectID == -1) {
+	// New object
+	bNewObject = true;
+	log("New SpatialObject: %s", supportObjectLabel.c_str());
+	objectID = m_maxObjectCounter++;
+	m_objects[objectID] = new SpatialData::SpatialObject;
+	m_objects[objectID]->id = objectID;
+	m_objects[objectID]->label = supportObjectLabel;
+
+	generateNewObjectModel(objectID, supportObjectLabel);
+      }
+      supportObject = m_objectModels[objectID];
+    }
+
+    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 25;
+
+    sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
+	    outPoints, supportObject);
+
+    //Paint it into outMap
+    if (outPoints.size() > 0) {
+      double weight = 1.0/outPoints.size();
+      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
+	int i, j;
+	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
+	  outMap(i,j) += weight;
+	}
+      }
+    }
+
+    request->outMap = convertFromCureMap(outMap);
+    overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
+  }
+
+  catch (DoesNotExistOnWMException) {
+    log("Error! Prior request disappeared from WM!");
+  }
+  */
+}
+
+void
+ObjectRelationManager::sampleRecursively(const vector<string> &objects, 
+    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
+    vector<Vector3> &outPoints, spatial::Object *supportObject)
+{
+  string currentObjectLabel = objects[currentLevel];
+
+  spatial::Object *onObject;
+  if (m_planeObjectModels.find(currentObjectLabel) != m_planeObjectModels.end()) {
+    log("Can't compute ON for table on sth else!");
+    return;
+  }
+  else {
+      // For now, assume each label represents a unique object
+      int objectID = -1;
+      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	if (it->second->label == currentObjectLabel) {
+	  // update object
+	  objectID = it->first;
+	}
+      }
+      bool bNewObject = false;
+      if (objectID == -1) {
+	// New object
+	bNewObject = true;
+	log("New SpatialObject: %s", currentObjectLabel.c_str());
+	objectID = m_maxObjectCounter++;
+	m_objects[objectID] = new SpatialData::SpatialObject;
+	m_objects[objectID]->id = objectID;
+	m_objects[objectID]->label = currentObjectLabel;
+
+	generateNewObjectModel(objectID, currentObjectLabel);
+      }
+      onObject = m_objectModels[objectID];
+  }
+
+  Pose3 oldPose = onObject->pose;
+
+  double frameRadius;
+  if (supportObject->type == spatial::OBJECT_PLANE) {
+    spatial::PlaneObject &table1 = (spatial::PlaneObject &)(*supportObject);
+    if (table1.shape == spatial::PLANE_OBJECT_RECTANGLE) {
+      frameRadius = table1.radius1 > table1.radius2 ?
+	table1.radius1 : table1.radius2;
+    }
+    else {
+      log ("Unsupported object type!");
+      return;
+    }
+  }
+  else if (supportObject->type == spatial::OBJECT_BOX) {
+    spatial::BoxObject &box1 = (spatial::BoxObject &)(*supportObject);
+    frameRadius = box1.radius1 > box1.radius2 ?
+		box1.radius1 : box1.radius2;
+	      frameRadius = frameRadius > box1.radius3 ? 
+		frameRadius : box1.radius3;
+  }
+  else {
+    log("Unsupported object type!");
+  }
+
+  double maxLateral = -frameRadius*1.5;
+  double minVertical = -frameRadius*1.5;
+  double maxVertical = frameRadius*3;
+
+  for (unsigned int j = 0; j < nSamplesPerStep && outPoints.size() < nMaxSamples; j++) {
+    onObject->pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
+    onObject->pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+    onObject->pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+
+    randomizeOrientation(onObject->pose);
+
+    if (evaluateOnness(supportObject, onObject) > 0.5) { 
+      if (currentLevel == 0) {
+	// This is the trajector itself
+	outPoints.push_back(onObject->pose.pos);
+      }
+      else {
+	// Sample and recurse
+	sampleRecursively(objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
+	    outPoints, onObject);
+      }
+    }
+  }
+  onObject->pose = oldPose;
 }
