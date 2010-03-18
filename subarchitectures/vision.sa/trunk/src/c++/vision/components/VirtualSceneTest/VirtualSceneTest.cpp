@@ -74,7 +74,7 @@ void VirtualSceneTest::runComponent(){
 			obj->detectionConfidence = 0.0;
 			Tracking::Pose p;
 			p.translate(0.1+0.5*rand()/RAND_MAX, 0.1+0.5*rand()/RAND_MAX, 0.0);
-			p.rotate(0.0,0.0,2*PI*rand()/RAND_MAX);
+			p.rotate(0.0,0.0,2.0*PI*rand()/RAND_MAX);
 			convertParticle2Pose(p, obj->pose); 
 			
 			log("Add model to working memory: '%s'", obj->label.c_str());
