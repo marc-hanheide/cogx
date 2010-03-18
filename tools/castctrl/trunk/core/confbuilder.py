@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
+# Author:  Marko Mahnič
+# Created: oct 2009 
 
 # Build configuration files before running various processes.
 # Configuration files are copied to a temporary file which
