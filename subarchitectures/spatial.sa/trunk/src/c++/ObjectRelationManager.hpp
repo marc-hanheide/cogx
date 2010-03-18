@@ -121,7 +121,8 @@ protected:
   void sampleOnnessForObject(int supportObjectModelID, int onObjectModelID);
   void sampleRecursively(const std::vector<std::string> &objects, 
     int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
-    std::vector<cogx::Math::Vector3> &outPoints, spatial::Object *supportObject);
+    std::vector<cogx::Math::Vector3> &outPoints, spatial::Object *supportObject,
+    const std::vector<Vector3> &triangle = std::vector<Vector3>());
 
   void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);
