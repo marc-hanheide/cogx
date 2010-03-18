@@ -119,6 +119,9 @@ protected:
   void recomputeOnnessForPlane(int planeObjectID);
   void sampleOnnessForPlane(int planeObjectID, int objectModelID);
   void sampleOnnessForObject(int supportObjectModelID, int onObjectModelID);
+  void sampleRecursively(const std::vector<std::string> &objects, 
+    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
+    std::vector<cogx::Math::Vector3> &outPoints, spatial::Object *supportObject);
 
   void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);

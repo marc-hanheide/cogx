@@ -17,9 +17,6 @@ module SpatialData {
   sequence<long> PlaceIDSeq;
   sequence<long> LongOpt;
   sequence<cogx::Math::Vector3> PlanePointSeq;
-  sequence<double> DoubleData;
-  sequence<string> StringSeq;
-  sequence<cogx::Math::Vector2> Vec2Seq;
   
  /**
    * Struct for passing 3D points belonging to a plane
@@ -319,42 +316,5 @@ module SpatialData {
     string label; // This is the same as in VisualObject
     cogx::Math::Pose3 pose;   // World coordinates
   };
-
-  /**
-   * Container for data in a GridMap<double>
-   * @author Kristoffer Sjöö
-   */
-  class GridMapDouble {
-    double x;
-    double y;
-    double cellSize;
-    int size;
-    DoubleData contents;
-  };
-
-  enum ObjectRelation { ON };
-
-  /**
-   * Command to compute probability distributions
-   * @author Kristoffer Sjöö
-   */
-  class ObjectPriorRequest {
-    ObjectRelation relationType;
-    StringSeq objects; //Starts with the query object's label
-    double probSum; //Sum probability to normalise to
-    GridMapDouble outMap;
-  };
-
-  /**
-   * Command to compute tilt angles from a relation
-   * @author Kristoffer Sjöö
-   */
-  class ObjectTiltAngleRequest {
-    ObjectRelation relationType;
-    StringSeq objects; //Starts with the query object's label
-    Vec2Seq triangle; //Describes the 3D triangle in which to sample for points
-    DoubleData tiltAngles; 
-  };
-
 };
 #endif // SPATIALDATA_ICE
