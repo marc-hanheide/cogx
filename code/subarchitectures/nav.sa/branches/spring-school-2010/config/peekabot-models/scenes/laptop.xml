@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<scene>
+  <model>
+    <name>laptop_base</name>
+    <file>laptop_bottom.pbmf</file>
+    <children>
+      <joint>
+	<axis>-1 0 0</axis>
+	<pivot>0 0 0.023</pivot>
+	<min><degrees>0</degrees></min>
+	<max><degrees>120</degrees></max>
+	<children>
+	  <model>
+	    <name>laptop_top</name>
+	    <file>laptop_top.pbmf</file>
+	  </model>	  
+	</children>
+      </joint>
+    </children>
+  </model>
+</scene>

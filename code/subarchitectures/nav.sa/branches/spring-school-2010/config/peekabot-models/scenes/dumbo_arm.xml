@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<scene>
+  <model><file>powercube_6dof/part1.pbmf</file></model>
+
+  <!-- DOF 1 -->
+  <joint>
+    <name>dof1</name>
+    <transform>
+      <translate>0 0 0.09</translate>
+    </transform>
+
+    <initial><degrees>160.43</degrees></initial>
+    <offset><degrees>180</degrees></offset>
+    <axis system="parent">0 0 1</axis>
+
+    <children>
+      <model><file>powercube_6dof/part2.pbmf</file></model>
+
+      <!-- DOF 2 -->
+      <joint>
+	<name>dof2</name>
+	<transform>
+	  <translate>0 0 0.167</translate>
+	</transform>
+
+	<offset><degrees>90</degrees></offset>
+	<!--<initial><degrees>0</degrees></initial>-->
+	<axis system="parent">0 -1 0</axis>
+
+	<children>
+	  <model><file>powercube_6dof/part3.pbmf</file></model>
+
+	  <!-- DOF 3 -->
+	  <joint>
+	    <name>dof3</name>
+	    <transform>
+	      <translate>0 0 0.3005</translate>
+	    </transform>
+
+	    <initial><degrees>-90</degrees></initial>
+	    <axis system="parent">0 0 1</axis>
+
+	    <children>
+	      <model><file>powercube_6dof/part4.pbmf</file></model>
+
+	      <!-- DOF 4 -->
+	      <joint>
+		<name>dof4</name>
+		<transform>
+		  <translate>0 0 0.133</translate>
+		</transform>
+
+		<initial><degrees>90</degrees></initial>
+		<axis system="parent">0 1 0</axis>
+
+		<children>
+		  <model><file>powercube_6dof/part5.pbmf</file></model>
+
+		  <!-- DOF 5 -->
+		  <joint>
+		    <name>dof5</name>
+		    <transform>
+		      <translate>0 0 0.2555</translate>
+		    </transform>
+
+		    <initial><degrees>90</degrees></initial>
+		    <axis system="parent">0 1 0</axis>
+
+		    <children>
+		      <model><file>powercube_6dof/part6.pbmf</file></model>
+
+		      <!-- DOF 6 -->
+		      <joint>
+			<name>dof6</name>
+			<transform>
+			  <translate>0 0 0.095</translate>
+			</transform>
+
+			<initial><degrees>0</degrees></initial>
+			<axis system="parent">0 0 1</axis>
+
+			<children>
+			  <model><file>powercube_6dof/part7.pbmf</file></model>
+
+			  <!-- The gripper, DOF 7 and 8 -->
+			  <track>
+			    <name>dof7</name>
+			    <transform>
+			      <translate>0 0 0.13145</translate>
+			    </transform>
+
+			    <initial>.01</initial>
+			    <axis system="parent">0 -1 0</axis>
+
+			    <children>
+			      <model><file>powercube_6dof/part8.pbmf</file></model>
+			    </children>
+			  </track>
+
+			  <track>
+			    <name>dof8</name>
+			    <transform>
+			      <translate>0 0 0.13145</translate>
+			    </transform>
+
+			    <initial>0.01</initial>
+			    <axis system="parent">0 1 0</axis>
+
+			    <children>
+			      <model><file>powercube_6dof/part9.pbmf</file></model>
+			    </children>
+			  </track>
+			</children>
+		      </joint>
+		    </children>
+		  </joint>
+		</children>
+	      </joint>
+	    </children>
+	  </joint>
+	</children>
+      </joint>
+    </children>
+  </joint>
+</scene>
