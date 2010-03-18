@@ -79,7 +79,7 @@ public:
 	void DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
 	void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
 	void BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels);
-	void DrawOnePrism(vector <Vector3> ppSeq, double hei);
+	void DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c);
 	void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &labels);
 	inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3);
 	Vector3 GetAffineTransVec(Vector3 v3p);
