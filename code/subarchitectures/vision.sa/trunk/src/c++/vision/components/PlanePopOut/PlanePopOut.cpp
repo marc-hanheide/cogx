@@ -12,9 +12,9 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 
-#define Shrink_SOI 1
-#define Upper_BG 1.1
-#define Lower_BG 1.05	// 1.1-1.5 radius of BoundingSphere
+#define Shrink_SOI 0.5
+#define Upper_BG 1.2
+#define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
 #define min_height_of_obj 0.05	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.5	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
@@ -439,10 +439,10 @@ void PlanePopOut::runComponent()
 			SplitPoints(pointsN,points_label);
 			if (objnumber != 0)
 			{
-				DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
- 				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs
 				ConvexHullOfPlane(pointsN,points_label);
   				BoundingPrism(pointsN,points_label);
+				DrawCuboids(pointsN,points_label); //cal bounding Cuboids and centers of the points cloud
+ 				BoundingSphere(pointsN,points_label); // get bounding spheres, SOIs and ROIs				
 			}
 			else
 			{
@@ -764,6 +764,7 @@ double PlanePopOut::Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std
 
 SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI)
 {
+	debug("create an object at (%f, %f, %f) now", center.x, center.y, center.z);
 	VisionData::SOIPtr obs = new VisionData::SOI;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
 	obs->boundingBox.pos.y = obs->boundingSphere.pos.y = center.y;
@@ -1069,9 +1070,15 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 	free( points2D );
 }
 
-void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei)
+void PlanePopOut::DrawOnePrism(vector <Vector3> ppSeq, double hei, Vector3& v3c)
 {
 	double dd = D - hei*sqrt(A*A+B*B+C*C);
+	double half_dd = D- 0.5*hei*sqrt(A*A+B*B+C*C);
+	Vector3 v3core;
+	v3core.x =((C*C+B*B)*v3c.x-A*(C*v3c.z+B*v3c.y+half_dd))/(A*A+B*B+C*C);
+	v3core.y =((A*A+C*C)*v3c.y-B*(A*v3c.x+C*v3c.z+half_dd))/(A*A+B*B+C*C);
+	v3core.z =((A*A+B*B)*v3c.z-C*(A*v3c.x+B*v3c.y+half_dd))/(A*A+B*B+C*C);
+	v3c = v3core;
 	vector <Vector3> pphSeq;
 	VisionData::OneObj OObj;
 	for (unsigned int i = 0; i<ppSeq.size(); i++)
@@ -1142,6 +1149,8 @@ void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vecto
 	if (index.at(0)>0)
 	{
 		int* hull = (int*)malloc( pointsN.size() * sizeof(hull[0]));
+		Vector3 temp_v; temp_v.x = temp_v.y = temp_v.z = 0.0;
+		v3center.assign(objnumber, temp_v);
 		for (int i = 0; i < objnumber; i++)
 		{
 
@@ -1154,7 +1163,16 @@ void PlanePopOut::BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vecto
 			for (int j = 0; j<hullMat.cols; j++)
 				v3OnPlane.at(j) =ProjectOnDominantPlane(PlanePoints3DSeq.at(i).at(hull[j]+1));
 
- 			DrawOnePrism(v3OnPlane, height.at(i));
+			for (int k = 0; k<v3OnPlane.size(); k++)
+			{
+			    v3center.at(i) = v3center.at(i) + v3OnPlane.at(k);
+			}
+			v3center.at(i) = v3center.at(i)/ v3OnPlane.size();			
+			
+ 			DrawOnePrism(v3OnPlane, height.at(i), v3center.at(i));
+
+
+			v3OnPlane.clear();
 		}
 		free( hull );
 	}
@@ -1170,8 +1188,15 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 	initial_vector.z = 0;
 	VisionData::SurfacePoint InitialStructure;
 	InitialStructure.p = initial_vector;
-//
 	center.assign(objnumber,InitialStructure);
+	
+	for (int i = 0 ; i<v3center.size() ; i++)
+	{
+	    center.at(i).p = v3center.at(i);
+	}
+
+	std::vector<double> radius_world;
+	radius_world.assign(objnumber,0);
 	VisionData::SurfacePointSeq pointsInOneSOI;
 	SOIPointsSeq.clear();
 	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
@@ -1180,30 +1205,6 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 	EQPointsSeq.clear();
 	EQPointsSeq.assign(objnumber, pointsInOneSOI);
 
-	std::vector<int> amount;
-	amount.assign(objnumber,0);
-	std::vector<double> radius_world;
-	radius_world.assign(objnumber,0);
-////////////////////calculate the center of each object/////////////////////////
-	for(unsigned int i = 0; i<points.size(); i++)
-	{
-		Vector3 v3Obj = points.at(i).p;
-		int label = labels.at(i);
-		if (label > 0)
-		{
-			center.at(label-1).p = center.at(label-1).p + v3Obj;
-			amount.at(label-1) = amount.at(label-1) + 1;
-		}
-	}
-
-	v3center.clear();
-	if (amount.at(0) != 0)
-	{
-		for (unsigned int i=0; i<center.size(); i++)
-		{
-			center.at(i).p = center.at(i).p/amount.at(i);
-			v3center.push_back(center.at(i).p);
-		}
 	////////////////////calculte radius in the real world//////////////////
 		for(unsigned int i = 0; i<points.size(); i++)
 		{
@@ -1215,7 +1216,7 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 		vdradius.clear();
 		for (int i=0; i<objnumber; i++)
 			vdradius.push_back(radius_world.at(i));
-	}
+	
 
 	for (int i = 0; i<objnumber; i++)
 	{
@@ -1241,7 +1242,6 @@ void PlanePopOut::BoundingSphere(VisionData::SurfacePointSeq &points, std::vecto
 	}
 
 	center.clear();
-	amount.clear();
 	radius_world.clear();
 	pointsInOneSOI.clear();
 }
