@@ -357,10 +357,12 @@ namespace spatial
         //write lgm to WM
         FrontierInterface::ObjectPriorRequestPtr objreq = new FrontierInterface::ObjectPriorRequest;
         vector<std::string> objects;
-        objects.push_back("squaretable");
-        objects.push_back("joystick");
-        //objects.push_back("krispies");
         objects.push_back("rice");
+        objects.push_back("joystick");
+        objects.push_back("squaretable");
+
+        //objects.push_back("krispies");
+        //objects.push_back("rice");
 
         objreq->relationType = FrontierInterface::ON;
         objreq->objects = objects;
