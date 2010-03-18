@@ -10,7 +10,8 @@
 #define TG_FRUSTUM
 
 #include<GL/gl.h>
-#include<math.h>
+#include <stdio.h>
+#include<tgMathlib.h>
 
 namespace TomGine{
 
@@ -21,8 +22,8 @@ class tgFrustum{
     
 private:
 	float frustum[6][4];
-	float m_proj[16];
-	float m_modl[16];
+	mat4 m_intrinsic;
+	mat4 m_extrinsic;
 
 
 public:

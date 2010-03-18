@@ -15,7 +15,8 @@ using namespace TomGine;
 tgEngine::tgEngine(){
 	m_width = 640;
 	m_height = 480;
-	m_depth = 1.0;
+	m_near = 0.1;
+	m_far = 10.0;
 	
 	m_frametime = 0.0;
 	
@@ -50,22 +51,24 @@ bool tgEngine::InitWindow(int width, int height, const char* name){
 	m_window = new tgGLXWindow(width, height, name);
 }
 
-bool tgEngine::Init(int width, int height, float depth, const char* name, bool bfc){
+bool tgEngine::Init(int width, int height, float far, float near, const char* name, bool bfc){
 	m_width = width;
 	m_height = height;
-	m_depth = depth;
+	m_far = far;
+	m_near = near;
 	m_bfc = bfc;
 	
 	// Create render context
 	InitWindow(width, height, name);
-		
+	
+	float da = 0.25*(m_far-m_near);
+	
 	// Setup 3D camera
-	float da = sqrt(pow(depth,2)/3.0);
 	m_camera.Set(	da, da, da,									// Position of camera
 								0.0, 0.0, 0.0,							// Point where camera looks at
 								0.0, 1.0, 0.0,							// UP-Vector of Camera
 								45, width, height,					// field of view in degree in y, image width, image height
-								0.01, 5.0*depth,						// near clipping plane, far clipping plane
+								near, far,									// near clipping plane, far clipping plane
 								GL_PERSPECTIVE);						// Perspective camera
 	m_cam[5] = m_cam[4] = m_cam[3] = m_cam[2] = m_cam[1] = m_cam[0] = m_camera;
 	
@@ -203,10 +206,10 @@ bool tgEngine::InputControl(tgEvent &event){
 					m_button_right = true;
 					break;
 				case Button4:
-					m_camera.TranslateF(0.02*m_depth);
+					m_camera.TranslateF(0.02*(m_far-m_near));
 					break;
 				case Button5:
-					m_camera.TranslateF(-0.02*m_depth);
+					m_camera.TranslateF(-0.02*(m_far-m_near));
 					break;
 			}
 			break;
@@ -235,8 +238,8 @@ bool tgEngine::InputControl(tgEvent &event){
 				m_camera.Orbit(m_cor, m_camera.GetU(), -0.05 * event.motion.x_rel);
 				m_camera.Orbit(m_cor, m_camera.GetS(), -0.05 * event.motion.y_rel);					
 			}else if(m_button_right){
-				m_camera.TranslateS(-0.002*m_depth*event.motion.x_rel);
-				m_camera.TranslateU(0.002*m_depth*event.motion.y_rel);
+				m_camera.TranslateS(-0.0003*(m_far-m_near)*event.motion.x_rel);
+				m_camera.TranslateU(0.0003*(m_far-m_near)*event.motion.y_rel);
 			}
 			break;
 			
@@ -269,7 +272,7 @@ return true;
 }
 
 void tgEngine::DrawCoordinates(){
-	float l1 = 0.1*m_depth;
+	float l1 = 0.1*(m_far-m_near);
 	
 	m_lighting.Deactivate();
 	glDisable(GL_DEPTH_TEST);
@@ -295,7 +298,6 @@ void tgEngine::SetCamera(tgCamera cam){
 	m_cam[3].Orbit(m_cor, m_cam[3].GetU(),-PI*0.5);
 	m_cam[4].Orbit(m_cor, m_cam[4].GetS(), PI*0.5);
 	m_cam[5].Orbit(m_cor, m_cam[5].GetS(),-PI*0.5);
-
 }
 
 void tgEngine::SetCenterOfRotation(float x, float y, float z){

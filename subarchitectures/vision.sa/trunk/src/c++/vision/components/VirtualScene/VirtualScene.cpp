@@ -250,6 +250,8 @@ void VirtualScene::runComponent(){
   while(m_running && isRunning())
   {
     if(m_render){
+    	
+    	m_engine->Activate3D();
     	drawCamera();
     	switch(m_objectType){
       	case 1:
@@ -267,11 +269,13 @@ void VirtualScene::runComponent(){
       		drawSOIs();
       		break;
       }
+      
       m_engine->Activate2D();
 			m_font->Print("VirtualSzene", 16, 5, 5);
       m_running = m_engine->Update(m_fTime, m_eventlist);
       m_wireframe = m_engine->GetWireframeMode();
       sleepComponent(5);
+    
     }else{
 			// * Idle *
 			sleepComponent(1000);
@@ -294,11 +298,12 @@ void VirtualScene::initScene(const Video::Image &image){
   m_height = image.height;
   
   m_engine = new(tgEngine);
-	m_engine->Init(m_width, m_height, 1.0, "VirtualScene");
+	m_engine->Init(m_width, m_height, 10.0, 0.01, "VirtualScene");
 	
-	loadCameraParameters(&m_camera0, image.camPars, 0.1, 5.0);
-	m_engine->SetCamera(m_camera0);
+	loadCameraParameters(&m_camera0, image.camPars, 0.1, 10.0);
 	m_camera = m_camera0;
+	m_engine->SetCamera(m_camera);
+	
 	
 	tgModelLoader loader;
 	loader.LoadPly(m_camModel.model, "instantiations/ply-models/logitech.ply");
@@ -313,25 +318,26 @@ void VirtualScene::initScene(const Video::Image &image){
 }
 
 void VirtualScene::updateCamera(){
-	TomGine::tgVector3 cor_cam;
-	TomGine::tgVector3 new_cam_pos;
+// 	TomGine::tgVector3 cor_cam;
+// 	TomGine::tgVector3 new_cam_pos;
+// 	
+// 	
+// 	cor_cam = TomGine::tgVector3(m_camera0.GetPos().x-m_cor.x, m_camera0.GetPos().y-m_cor.y, m_camera0.GetPos().z-m_cor.z);
+// 	m_engine->SetCenterOfRotation(0.5*(m_camera0.GetPos().x+m_cor.x),0.5*(m_camera0.GetPos().y+m_cor.y),0.5*(m_camera0.GetPos().z+m_cor.z));
+// 	
+// 	float l = cor_cam.length();
+// 	new_cam_pos = m_camera0.GetPos() - m_camera0.GetF() * l;
+// 	m_camera.SetPos( new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
+// 	m_camera.ApplyTransform();
 	
-	
-	cor_cam = TomGine::tgVector3(m_camera0.GetPos().x-m_cor.x, m_camera0.GetPos().y-m_cor.y, m_camera0.GetPos().z-m_cor.z);
-	m_engine->SetCenterOfRotation(0.5*(m_camera0.GetPos().x+m_cor.x),0.5*(m_camera0.GetPos().y+m_cor.y),0.5*(m_camera0.GetPos().z+m_cor.z));
-	
-	float l = cor_cam.length();
-	new_cam_pos = m_camera0.GetPos() - m_camera0.GetF() * l;
-	m_camera.SetPos( new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
-	m_camera.ApplyTransform();
-	
-	m_engine->SetCamera(m_camera);
+// 	m_engine->SetCamera(m_camera);
 }
 
 void VirtualScene::drawCamera(){
-	m_engine->Activate3D();
 	m_camModel.model.DrawFaces(m_wireframe);
+	m_camModel.model.m_pose.Activate();
 	m_camera0.DrawFrustum();
+	m_camModel.model.m_pose.Deactivate();
 }
 
 void VirtualScene::drawVisualObjects(){
