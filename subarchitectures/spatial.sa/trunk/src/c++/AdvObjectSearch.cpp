@@ -262,11 +262,13 @@ namespace spatial
      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
              (*m_pdf)(x,y).prob =  (*m_pdf)(x,y).prob + (*distribution)(x,y);
+	     if ( (*distribution)(x,y) != 0 )
+	       log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
            }
       }
      log("Summed.");
      gotDistribution = true;
-     DisplayPDFinPB(6,8,"distribution");
+     DisplayPDFinPB(6,8,"root.distribution");
      log("Displayed PDF");
 
     }
@@ -284,11 +286,7 @@ namespace spatial
 
     try {
       m_PeekabotClient.connect("localhost", 5050, true);
-      m_ProxyPrior.add(m_PeekabotClient, "root.Prior",
-          peekabot::REPLACE_ON_CONFLICT);
-      m_ProxyPDFIn.add(m_PeekabotClient, "root.PDFIn",
-          peekabot::REPLACE_ON_CONFLICT);
-      m_ProxySeenMap.add(m_PeekabotClient, "root.SeenMap",
+               m_ProxySeenMap.add(m_PeekabotClient, "root.SeenMap",
           peekabot::REPLACE_ON_CONFLICT);
     }
     catch (std::exception e) {
@@ -586,6 +584,9 @@ namespace spatial
     double sumin = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	//	log("pdf:%f",(*m_pdf)(x,y).prob)
+	  if ((*m_lgm)(x, y) == 2)
+	    continue;
         sumin += (*m_pdf)(x, y).prob;
       }
     }
@@ -612,8 +613,8 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp.add_line(xW2 + xoffset, yW2 - yoffset,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 - yoffset, (*m_pdf)(x, y
+        linecloudp.add_line(xW2 + xoffset, yW2 + yoffset,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 + yoffset, (*m_pdf)(x, y
                 + 1).prob * multiplier1);
       }
     }
@@ -624,8 +625,8 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp.add_line(xW2 + xoffset, yW2 - yoffset,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 - yoffset, (*m_pdf)(x, y
+        linecloudp.add_line(xW2 + xoffset, yW2 + yoffset,
+            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 + yoffset, (*m_pdf)(x, y
                 + 1).prob * multiplier1);
       }
     }
