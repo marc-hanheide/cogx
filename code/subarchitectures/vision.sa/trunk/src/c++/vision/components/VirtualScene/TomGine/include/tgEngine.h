@@ -31,7 +31,8 @@ class tgEngine
 private:
 	float m_width;
 	float m_height;
-	float m_depth;
+	float m_far;
+	float m_near;
 	
 	tgGLXWindow* 	m_window;
 	tgCamera 			m_cam[6];
@@ -69,7 +70,8 @@ public:
 	* @return Success of initialisation */
 	bool Init(	int width,
 							int height,
-							float depth,
+							float far,
+							float near,
 							const char* name="TomGine",
 							bool bfc=false);
 	

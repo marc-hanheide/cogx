@@ -6,33 +6,38 @@ using namespace TomGine;
 void tgFrustum::ExtractFrustum(){
 	float   clip[16];
 	float   t;
+	float mv[16];
+	float pj[16];
  
 	/* Get the current PROJECTION matrix from OpenGL */
-	glGetFloatv( GL_PROJECTION_MATRIX, m_proj );
+	glGetFloatv( GL_PROJECTION_MATRIX, pj );
  
 	/* Get the current MODELVIEW matrix from OpenGL */
-	glGetFloatv( GL_MODELVIEW_MATRIX, m_modl );
+	glGetFloatv( GL_MODELVIEW_MATRIX, mv );
+	
+	m_intrinsic = mat4(pj);
+	m_extrinsic = mat4(mv);
  
 	/* Combine the two matrices (multiply projection by modelview) */
-	clip[ 0] = m_modl[ 0] * m_proj[ 0] + m_modl[ 1] * m_proj[ 4] + m_modl[ 2] * m_proj[ 8] + m_modl[ 3] * m_proj[12];
-	clip[ 1] = m_modl[ 0] * m_proj[ 1] + m_modl[ 1] * m_proj[ 5] + m_modl[ 2] * m_proj[ 9] + m_modl[ 3] * m_proj[13];
-	clip[ 2] = m_modl[ 0] * m_proj[ 2] + m_modl[ 1] * m_proj[ 6] + m_modl[ 2] * m_proj[10] + m_modl[ 3] * m_proj[14];
-	clip[ 3] = m_modl[ 0] * m_proj[ 3] + m_modl[ 1] * m_proj[ 7] + m_modl[ 2] * m_proj[11] + m_modl[ 3] * m_proj[15];
+	clip[ 0] = mv[ 0] * pj[ 0] + mv[ 1] * pj[ 4] + mv[ 2] * pj[ 8] + mv[ 3] * pj[12];
+	clip[ 1] = mv[ 0] * pj[ 1] + mv[ 1] * pj[ 5] + mv[ 2] * pj[ 9] + mv[ 3] * pj[13];
+	clip[ 2] = mv[ 0] * pj[ 2] + mv[ 1] * pj[ 6] + mv[ 2] * pj[10] + mv[ 3] * pj[14];
+	clip[ 3] = mv[ 0] * pj[ 3] + mv[ 1] * pj[ 7] + mv[ 2] * pj[11] + mv[ 3] * pj[15];
  
-	clip[ 4] = m_modl[ 4] * m_proj[ 0] + m_modl[ 5] * m_proj[ 4] + m_modl[ 6] * m_proj[ 8] + m_modl[ 7] * m_proj[12];
-	clip[ 5] = m_modl[ 4] * m_proj[ 1] + m_modl[ 5] * m_proj[ 5] + m_modl[ 6] * m_proj[ 9] + m_modl[ 7] * m_proj[13];
-	clip[ 6] = m_modl[ 4] * m_proj[ 2] + m_modl[ 5] * m_proj[ 6] + m_modl[ 6] * m_proj[10] + m_modl[ 7] * m_proj[14];
-	clip[ 7] = m_modl[ 4] * m_proj[ 3] + m_modl[ 5] * m_proj[ 7] + m_modl[ 6] * m_proj[11] + m_modl[ 7] * m_proj[15];
+	clip[ 4] = mv[ 4] * pj[ 0] + mv[ 5] * pj[ 4] + mv[ 6] * pj[ 8] + mv[ 7] * pj[12];
+	clip[ 5] = mv[ 4] * pj[ 1] + mv[ 5] * pj[ 5] + mv[ 6] * pj[ 9] + mv[ 7] * pj[13];
+	clip[ 6] = mv[ 4] * pj[ 2] + mv[ 5] * pj[ 6] + mv[ 6] * pj[10] + mv[ 7] * pj[14];
+	clip[ 7] = mv[ 4] * pj[ 3] + mv[ 5] * pj[ 7] + mv[ 6] * pj[11] + mv[ 7] * pj[15];
  
-	clip[ 8] = m_modl[ 8] * m_proj[ 0] + m_modl[ 9] * m_proj[ 4] + m_modl[10] * m_proj[ 8] + m_modl[11] * m_proj[12];
-	clip[ 9] = m_modl[ 8] * m_proj[ 1] + m_modl[ 9] * m_proj[ 5] + m_modl[10] * m_proj[ 9] + m_modl[11] * m_proj[13];
-	clip[10] = m_modl[ 8] * m_proj[ 2] + m_modl[ 9] * m_proj[ 6] + m_modl[10] * m_proj[10] + m_modl[11] * m_proj[14];
-	clip[11] = m_modl[ 8] * m_proj[ 3] + m_modl[ 9] * m_proj[ 7] + m_modl[10] * m_proj[11] + m_modl[11] * m_proj[15];
+	clip[ 8] = mv[ 8] * pj[ 0] + mv[ 9] * pj[ 4] + mv[10] * pj[ 8] + mv[11] * pj[12];
+	clip[ 9] = mv[ 8] * pj[ 1] + mv[ 9] * pj[ 5] + mv[10] * pj[ 9] + mv[11] * pj[13];
+	clip[10] = mv[ 8] * pj[ 2] + mv[ 9] * pj[ 6] + mv[10] * pj[10] + mv[11] * pj[14];
+	clip[11] = mv[ 8] * pj[ 3] + mv[ 9] * pj[ 7] + mv[10] * pj[11] + mv[11] * pj[15];
  
-	clip[12] = m_modl[12] * m_proj[ 0] + m_modl[13] * m_proj[ 4] + m_modl[14] * m_proj[ 8] + m_modl[15] * m_proj[12];
-	clip[13] = m_modl[12] * m_proj[ 1] + m_modl[13] * m_proj[ 5] + m_modl[14] * m_proj[ 9] + m_modl[15] * m_proj[13];
-	clip[14] = m_modl[12] * m_proj[ 2] + m_modl[13] * m_proj[ 6] + m_modl[14] * m_proj[10] + m_modl[15] * m_proj[14];
-	clip[15] = m_modl[12] * m_proj[ 3] + m_modl[13] * m_proj[ 7] + m_modl[14] * m_proj[11] + m_modl[15] * m_proj[15];
+	clip[12] = mv[12] * pj[ 0] + mv[13] * pj[ 4] + mv[14] * pj[ 8] + mv[15] * pj[12];
+	clip[13] = mv[12] * pj[ 1] + mv[13] * pj[ 5] + mv[14] * pj[ 9] + mv[15] * pj[13];
+	clip[14] = mv[12] * pj[ 2] + mv[13] * pj[ 6] + mv[14] * pj[10] + mv[15] * pj[14];
+	clip[15] = mv[12] * pj[ 3] + mv[13] * pj[ 7] + mv[14] * pj[11] + mv[15] * pj[15];
  
 	/* Extract the numbers for the RIGHT plane */
 	frustum[0][0] = clip[ 3] - clip[ 0];
@@ -136,24 +141,23 @@ bool tgFrustum::SphereInFrustum( float x, float y, float z, float radius ){
 
 void tgFrustum::DrawFrustum(){
  
- 	glDisable(GL_LIGHTING);
- 	glDisable(GL_TEXTURE_2D);
- 	
-	// Get near and far from the Projection matrix.
-	const double near = m_proj[11] / (m_proj[10] - 1.0);
-	const double far = m_proj[11] / (1.0 + m_proj[10]);
+// Get near and far from the Projection matrix.
+	const double near = m_intrinsic[11] / (m_intrinsic[10] - 1.0);
+	const double far = m_intrinsic[11] / (1.0 + m_intrinsic[10]);
  
 	// Get the sides of the near plane.
-	const double nLeft = near * (m_proj[2] - 1.0) / m_proj[0];
-	const double nRight = near * (1.0 + m_proj[2]) / m_proj[0];
-	const double nTop = near * (1.0 + m_proj[6]) / m_proj[5];
-	const double nBottom = near * (m_proj[6] - 1.0) / m_proj[5];
+	const double nLeft = near * (m_intrinsic[2] - 1.0) / m_intrinsic[0];
+	const double nRight = near * (1.0 + m_intrinsic[2]) / m_intrinsic[0];
+	const double nTop = near * (1.0 + m_intrinsic[6]) / m_intrinsic[5];
+	const double nBottom = near * (m_intrinsic[6] - 1.0) / m_intrinsic[5];
  
 	// Get the sides of the far plane.
-	const double fLeft = far * (m_proj[2] - 1.0) / m_proj[0];
-	const double fRight = far * (1.0 + m_proj[2]) / m_proj[0];
-	const double fTop = far * (1.0 + m_proj[6]) / m_proj[5];
-	const double fBottom = far * (m_proj[6] - 1.0) / m_proj[5];
+	const double fLeft = far * (m_intrinsic[2] - 1.0) / m_intrinsic[0];
+	const double fRight = far * (1.0 + m_intrinsic[2]) / m_intrinsic[0];
+	const double fTop = far * (1.0 + m_intrinsic[6]) / m_intrinsic[5];
+	const double fBottom = far * (m_intrinsic[6] - 1.0) / m_intrinsic[5];
+ 
+ 	printf("l,r,t,b: %f %f %f %f\n", fLeft, fRight, fTop, fBottom);
  
 	/*
 	 0	glVertex3f(0.0f, 0.0f, 0.0f);
@@ -169,54 +173,56 @@ void tgFrustum::DrawFrustum(){
  
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-		
-					// TODO - Update: You need to invert the mv before multiplying it with the current mv!
-	
-// 		glMultMatrixf(m_modl);
-	
-		glLineWidth(2);
-		glBegin(GL_LINES);
-	
-			glVertex3f(0.0f, 0.0f, 0.0f);
-			glVertex3f(fLeft, fBottom, -far);
-		
-			glVertex3f(0.0f, 0.0f, 0.0f);
-			glVertex3f(fRight, fBottom, -far);
-		
-			glVertex3f(0.0f, 0.0f, 0.0f);
-			glVertex3f(fRight, fTop, -far);
-		
-			glVertex3f(0.0f, 0.0f, 0.0f);
-			glVertex3f(fLeft, fTop, -far);
-		
-			//far
-			glVertex3f(fLeft, fBottom, -far);
-			glVertex3f(fRight, fBottom, -far);
-		
-			glVertex3f(fRight, fTop, -far);
-			glVertex3f(fLeft, fTop, -far);
-		
-			glVertex3f(fRight, fTop, -far);
-			glVertex3f(fRight, fBottom, -far);
-		
-			glVertex3f(fLeft, fTop, -far);
-			glVertex3f(fLeft, fBottom, -far);
-		
-			//near
-			glVertex3f(nLeft, nBottom, -near);
-			glVertex3f(nRight, nBottom, -near);
-		
-			glVertex3f(nRight, nTop, -near);
-			glVertex3f(nLeft, nTop, -near);
-		
-			glVertex3f(nLeft, nTop, -near);
-			glVertex3f(nLeft, nBottom, -near);
-		
-			glVertex3f(nRight, nTop, -near);
-			glVertex3f(nRight, nBottom, -near);
-	
-		glEnd();
-		glLineWidth(1);
+// 	glLoadIdentity ();
+ 
+        // TODO - Update: You need to invert the mv before multiplying it with the current mv!
+ 
+// 	glMultMatrixf(ext_inv);
+ 
+	glLineWidth(2);
+	glBegin(GL_LINES);
+ 
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(fLeft, fBottom, -far);
+ 
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(fRight, fBottom, -far);
+ 
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(fRight, fTop, -far);
+ 
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(fLeft, fTop, -far);
+ 
+	//far
+	glVertex3f(fLeft, fBottom, -far);
+	glVertex3f(fRight, fBottom, -far);
+ 
+	glVertex3f(fRight, fTop, -far);
+	glVertex3f(fLeft, fTop, -far);
+ 
+	glVertex3f(fRight, fTop, -far);
+	glVertex3f(fRight, fBottom, -far);
+ 
+	glVertex3f(fLeft, fTop, -far);
+	glVertex3f(fLeft, fBottom, -far);
+ 
+	//near
+	glVertex3f(nLeft, nBottom, -near);
+	glVertex3f(nRight, nBottom, -near);
+ 
+	glVertex3f(nRight, nTop, -near);
+	glVertex3f(nLeft, nTop, -near);
+ 
+	glVertex3f(nLeft, nTop, -near);
+	glVertex3f(nLeft, nBottom, -near);
+ 
+	glVertex3f(nRight, nTop, -near);
+	glVertex3f(nRight, nBottom, -near);
+ 
+	glEnd();
+	glLineWidth(1);
 	glPopMatrix();
+
 
 }
