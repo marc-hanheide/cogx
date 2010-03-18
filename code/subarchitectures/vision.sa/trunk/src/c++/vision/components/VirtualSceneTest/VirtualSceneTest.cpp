@@ -79,31 +79,7 @@ void VirtualSceneTest::runComponent(){
   	addToWorkingMemory(newDataID(), obj);
   }
   
-  
-//     
-//   // Generate VisualObject
-//   VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
-//   obj->model = new VisionData::GeometryModel;
-//   if(!convertTrackerModel(&m_model, obj->model))
-// 		log("no geometry model in Visual Object");
-//   obj->label = model.c_str();
-//   obj->detectionConfidence = 0.0;
-//   Particle p = Particle(0.0);
-//   p.translate(0.1, 0.1, 0.0);
-// 	p.rotate(0.0,0.0,0.78);
-//   convertParticle2Pose(p, obj->pose);  
-//   	
-//   // Add VisualObject to working memoryabs(trajectory[i].rot.m00 - obj->pose.rot.m00) +
-
-//   
-//   sleepComponent(1000);
-//   
-//   // Send start tracking command
-//   log("send tracking command: START");
-//   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
-//   track_cmd->cmd = VisionData::START;
-//   addToWorkingMemory(newDataID(), track_cmd);
-  
+	log("Stop");
 }
 
 void VirtualSceneTest::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){

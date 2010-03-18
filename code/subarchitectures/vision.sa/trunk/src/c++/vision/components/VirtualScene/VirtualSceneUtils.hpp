@@ -254,8 +254,8 @@ void loadCameraParameters(TomGine::tgCamera* camera, Video::CameraParameters cam
 	//   OpenGL: origin is in the middle, x-axis pointing right, y-axis pointing up
 	float fx = 2.0*camPars.fx / camPars.width;					// scale range from [0 ... 640] to [0 ... 2]
   float fy = 2.0*camPars.fy / camPars.height;					// scale range from [0 ... 480] to [0 ... 2]
-  float cx = 1.0-(2.0*camPars.cx / camPars.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1] (not negative z value at w-division)
-  float cy = (2.0*camPars.cy / camPars.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ... 2] -> [-1 ... 1] (not negative z value at w-division)
+  float cx = 0.0; // TODO 1.0-(2.0*camPars.cx / camPars.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1] (not negative z value at w-division)
+  float cy = 0.0; // TODO (2.0*camPars.cy / camPars.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ... 2] -> [-1 ... 1] (not negative z value at w-division)
   float z1 = (zFar+zNear)/(zNear-zFar);								// entries for clipping planes
   float z2 = 2*zFar*zNear/(zNear-zFar);								// look up for gluPerspective
   

@@ -16,6 +16,7 @@
 #include "tgVector3.h"
 #include "tgFrustum.h"
 #include "tgMathlib.h"
+#include "tgPose.h"
 
 #define GL_ORTHO 0
 #define GL_PERSPECTIVE 1
@@ -74,6 +75,8 @@ public:
 	void fwh2intrinsic();
 	
 	// Gets
+	tgPose GetPose();
+
 	tgVector3 GetF(){return f;}
 	tgVector3 GetS(){return s;}
 	tgVector3 GetU(){return u;}

@@ -171,6 +171,7 @@ bool tgEngine::InputControl(tgEvent &event){
 					m_wireframe = !m_wireframe;
 					break;
 				case XK_KP_Insert:
+				case XK_z:
 					m_camera = m_cam[0];
 					break;
 				case XK_KP_Begin:
@@ -206,10 +207,10 @@ bool tgEngine::InputControl(tgEvent &event){
 					m_button_right = true;
 					break;
 				case Button4:
-					m_camera.TranslateF(0.02*(m_far-m_near));
+					m_camera.TranslateF(0.001*(m_far-m_near));
 					break;
 				case Button5:
-					m_camera.TranslateF(-0.02*(m_far-m_near));
+					m_camera.TranslateF(-0.001*(m_far-m_near));
 					break;
 			}
 			break;
@@ -245,20 +246,16 @@ bool tgEngine::InputControl(tgEvent &event){
 			
 		// *********************************************************
 		case Expose:
-			/*m_camera.SetViewport((float)event.expose.width, (float)event.expose.height);
-			m_camera0.SetViewport((float)event.expose.width, (float)event.expose.height);
-			*//*
-			printf("[tgEngine::InputControl Expose] %f %f %f %f %f %d\n", 
-															m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-															m_camera.GetZNear(), m_camera.GetZFar(),
-															m_camera.GetProjection());
-			m_camera0.SetIntrinsic(	m_camera0.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-															m_camera0.GetZNear(), m_camera0.GetZFar(),
-															m_camera0.GetProjection());
-			m_camera.SetIntrinsic(	m_camera.GetFOVY(), (float)event.expose.width, (float)event.expose.height,
-															m_camera.GetZNear(), m_camera.GetZFar(),
-															m_camera.GetProjection());
-			*/
+			m_camera.SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[0].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[1].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[2].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[3].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[4].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[5].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[6].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[7].SetViewport((float)event.expose.width, (float)event.expose.height);
+			m_cam[8].SetViewport((float)event.expose.width, (float)event.expose.height);
 			break;
 			
 		// *********************************************************
@@ -272,7 +269,7 @@ return true;
 }
 
 void tgEngine::DrawCoordinates(){
-	float l1 = 0.1*(m_far-m_near);
+	float l1 = 0.01*(m_far-m_near);
 	
 	m_lighting.Deactivate();
 	glDisable(GL_DEPTH_TEST);
@@ -292,7 +289,7 @@ void tgEngine::DrawCoordinates(){
 }
 
 void tgEngine::SetCamera(tgCamera cam){
-	m_cam[5] = m_cam[4] = m_cam[3] = m_cam[2] = m_cam[1] = m_cam[0] = m_camera = cam;
+	m_cam[5] = m_cam[4] = m_cam[3] = m_cam[2] = m_cam[1] = m_cam[0] = m_camera = cam;	
 	m_cam[1].Orbit(m_cor, m_cam[1].GetU(), PI);
 	m_cam[2].Orbit(m_cor, m_cam[2].GetU(), PI*0.5);
 	m_cam[3].Orbit(m_cor, m_cam[3].GetU(),-PI*0.5);
