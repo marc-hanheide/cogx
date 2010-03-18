@@ -19,7 +19,7 @@ convertFromCureMap(const Cure::LocalGridMap<double> &map) {
   ret->x = map.getCentXW();
   ret->y = map.getCentYW();
   for (long i = 0; i < map.getNumCells(); i++) {
-    ret->contents[i] = map[i];
+    ret->contents.push_back(map[i]);
   }
   return ret;
 }
