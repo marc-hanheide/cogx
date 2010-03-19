@@ -86,7 +86,7 @@ namespace spatial
     void CalculateViewCone(XVector3D a, double direction, double range, double fov, XVector3D &b,XVector3D &c);
             std::vector<double> ScorebyCoverage(Cure::LocalGridMap<unsigned char> fcm );
 
-
+    
     bool isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector3D b);
     bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
     void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
@@ -96,6 +96,7 @@ namespace spatial
     void GetTotalPDF();
     void owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID);
 
+    void owtTiltAngleRequest(const cast::cdl::WorkingMemoryChange &objID);
   private:
 
     // 1. phase is table detection and then looking for objects.
@@ -113,7 +114,7 @@ namespace spatial
     IplImage* img;
     double pFree,pObs,pPlanar,pIn,pOut;
     double m_ProbGivenObjectIsPresent;
-
+    std::vector<double> tiltangles;
     std::vector<std::string> m_objectlist;
     IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;

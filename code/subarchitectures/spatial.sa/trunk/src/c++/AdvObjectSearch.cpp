@@ -249,7 +249,31 @@ namespace spatial
             cdl::OVERWRITE), new MemberFunctionChangeReceiver<AdvObjectSearch> (
             this, &AdvObjectSearch::owtGridMapDouble));
 
+    addChangeFilter(createLocalTypeFilter<FrontierInterface::ObjectTiltAngleRequest> (
+										      cdl::OVERWRITE), new MemberFunctionChangeReceiver<AdvObjectSearch> (
+																			  this, &AdvObjectSearch::owtTiltAngleRequest));
+    
   }
+
+    void AdvObjectSearch::owtTiltAngleRequest(const cast::cdl::WorkingMemoryChange &objID){
+      try{
+	log("got tilt angle request");
+	FrontierInterface::ObjectTiltAngleRequestPtr tiltreq = getMemoryEntry<FrontierInterface::ObjectTiltAngleRequest> (objID.address);
+	log("size: %d", tiltreq->tiltAngles.size());
+	tiltangles.clear();
+	for (unsigned int i =0; i < tiltreq->tiltAngles.size(); i++){
+	  log("tilt angle: %f", tiltreq->tiltAngles[i]); 
+	  tiltangles.push_back(tiltreq->tiltAngles[i]);
+	}
+      }
+      catch(DoesNotExistOnWMException excp){
+	log("Error!  GridMapDouble does not exist on WM!");
+	return;
+      }
+      
+      
+      
+    }
 
   void AdvObjectSearch::owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID){
     try{
@@ -262,11 +286,34 @@ namespace spatial
      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
              (*m_pdf)(x,y).prob =  (*m_pdf)(x,y).prob + (*distribution)(x,y);
+	     // if ( (*distribution)(x,y) != 0 )
+	       //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
            }
       }
      log("Summed.");
      gotDistribution = true;
-     DisplayPDFinPB(6,8,"root.distribution");
+ /* Display PDF in PB as Line Cloud BEGIN */
+
+  
+    double xW2, yW2;
+    peekabot::PointCloudProxy linecloudp;
+
+    linecloudp.add(m_PeekabotClient, "root.distribution",
+        peekabot::REPLACE_ON_CONFLICT);
+    linecloudp.clear_vertices();
+    linecloudp.set_color(0.5, 0, 0.5);
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if ((*distribution)(x, y) == 0)
+          continue;
+        m_lgm->index2WorldCoords(x, y, xW2, yW2);
+        linecloudp.add_vertex(xW2,yW2,1);
+      }
+    }
+    /* Display pdfIn in as line cloud PB END */
+
+    //     DisplayPDFinPB(0,0,"root.distribution");
      log("Displayed PDF");
 
     }
@@ -396,23 +443,54 @@ namespace spatial
   void
   AdvObjectSearch::GoToNBV() {
     int nbv;
+    log("Fore NextBestView");
     nbv = NextBestView();
     double Wx, Wy;
 
     m_lgm->index2WorldCoords(m_samples[2 * nbv], m_samples[2 * nbv + 1], Wx, Wy);
     log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
-    Cure::Pose3D pos;
+    /* Get tilt angles */
+    XVector3D a, b, c;
+    a.x = Wx;
+    a.y = Wy;
+    CalculateViewCone(a, a.theta, m_CamRange, m_fov, b, c);
+    
+    cogx::Math::Vector2 point;
+    vector<std::string> objects;
+    objects.push_back("rice");
+    objects.push_back("joystick");
+    objects.push_back("squaretable");
+    vector<cogx::Math::Vector2> triangle;
+    point.x = a.x;
+    point.y = a.y;
+    triangle.push_back(point);
+    point.x = b.x;
+    point.y = b.y;
+    triangle.push_back(point);
+    point.x = c.x;
+    point.y = c.y;
+    triangle.push_back(point);
+
+    FrontierInterface::ObjectTiltAngleRequestPtr req = new FrontierInterface::ObjectTiltAngleRequest;
+    req->relationType = FrontierInterface::ON;
+    req->objects = objects;
+    req->triangle = triangle;
+    addToWorkingMemory(newDataID(),req);
+
+    //////////////////////////////////////
+
+  Cure::Pose3D pos;
     pos.setX(Wx);
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
     m_currentViewPoint = pos;
     /* Add plan to PB BEGIN */
     NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
-    cogx::Math::Vector3 a;
-    a.x = Wx;
-    a.y = Wy;
-    a.z = m_samplestheta[nbv];
-    obs->planlist.push_back(a);
+    cogx::Math::Vector3 viewpoint;
+    viewpoint.x = Wx;
+    viewpoint.y = Wy;
+    viewpoint.z = m_samplestheta[nbv];
+    obs->planlist.push_back(viewpoint);
     addToWorkingMemory(newDataID(), obs);
     /* Add plan to PB END */
 
@@ -475,6 +553,7 @@ namespace spatial
   AdvObjectSearch::newRobotPose(const cast::cdl::WorkingMemoryChange &objID) {
 
     try {
+      //log("got new robotpose");
       lastRobotPose = getMemoryEntry<NavData::RobotPose2d> (objID.address);
     }
     catch (DoesNotExistOnWMException e) {
@@ -492,9 +571,12 @@ namespace spatial
 
   int
   AdvObjectSearch::NextBestView() {
-
+    
+    
     std::vector<std::vector<int> > VCones;
+    log("sampling grid");
     SampleGrid();
+    log("getting view cones");
     VCones = GetViewCones();
     double highest_sum = -10000.0;
     double sum;
@@ -660,7 +742,7 @@ namespace spatial
 
     for (unsigned int i = 0; i < ViewConePoints.size(); i++) {
       if (ViewConePoints[2 * i] == x && ViewConePoints[2 * i + 1] == y) {
-        log("ActionProbcell returned %f", 0.7);
+        //log("ActionProbcell returned %f", 0.7);
         return 0.7; // FIXME: this is lame.
       }
     }
@@ -861,6 +943,7 @@ namespace spatial
     time(NULL));
     std::vector<double> angles;
 
+    log("Sampling Grid");
     /*Sampling free space BEGIN*/
     /*Checking if a point in x,y is reachable */
 
@@ -922,6 +1005,7 @@ namespace spatial
     int i = 0;
     int randx, randy;
     double xW, yW, angle;
+    //log("for sample size");
     while (i < m_samplesize) {
       randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
@@ -940,9 +1024,13 @@ namespace spatial
       if ((*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen) {
         /*if reachable*/
         // Get the indices of the destination coordinates
+	//	log("point reachable");
         int rS, cS, rE, cE;
+	//log("robotpose: %f,%f", lastRobotPose->x,lastRobotPose->y);
+	//log("1");
         if (m_lgm->worldCoords2Index(lastRobotPose->x, lastRobotPose->y, rS, cS)
             == 0 && m_lgm->worldCoords2Index(xW, yW, rE, cE) == 0) {
+	  //log("check if point is reachable");
           // Compensate for the fact that the PathGrid is just a normal matrix where the cells are numbers from the corner
           cS += m_lgm->getSize();
           rS += m_lgm->getSize();
@@ -953,8 +1041,10 @@ namespace spatial
           Cure::ShortMatrix path;
           double d = (m_PathGrid.path(rS, cS, rE, cE, path, 20
               * m_lgm->getSize()) * m_lgm->getCellSize());
+	  
           if (d > 0 && d < 2) {
             // There is a path to this destination
+	    //log("there's a path to this destination");
             m_samples[2 * i] = randx;
             m_samples[2 * i + 1] = randy;
             m_samplestheta[i] = angle;
@@ -971,6 +1061,7 @@ namespace spatial
         //log("point either non free space or seen.");
       }
     }
+    //log("Displaying VP samples in PB");
 
     /* Display Samples in PB BEGIN */
     double color[3] =
