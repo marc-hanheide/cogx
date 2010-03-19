@@ -339,6 +339,7 @@ namespace spatial
 
 
       // TODO: Once we get a distribution initiate search.
+      GoToNBV();
 
     }
     catch (DoesNotExistOnWMException excp) {
@@ -428,7 +429,6 @@ namespace spatial
         log("Reading plane map!");
         ReadPlaneMap();
         AskForDistribution(m_objectlist,1.0);
-        GoToNBV();
       }
       else if (key == 105) { // i
         log("Indirect search");
