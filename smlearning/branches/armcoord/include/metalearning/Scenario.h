@@ -184,7 +184,7 @@ public:
 	///
 	void run(int argc, char* argv[]);
 
-	friend CanonicalData::DataSet canonical_input_output_enumerator (DataSet data);
+	friend map<Vec3, int, compare_Vec3> get_canonical_positions ();
 protected:
 	/** Description */
 	Desc desc;

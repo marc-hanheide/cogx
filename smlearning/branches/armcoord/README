@@ -1,8 +1,12 @@
 These are instructions to install SMLearning on a Ubuntu machine.
 Please let us know if you want a version for Windows.
 
-Install following packages (Ubuntu 8.10):
+Install following packages (Ubuntu 8.10 and higher):
 libnetcdf-dev
+qt4-qmake
+libqt4-core
+libqt4-dev
+libqwt5-qt4-dev
 
 Download boost (http://www.boost.org) and install it (e.g. v1.39):
 $ cd <path of boost sources>
@@ -11,6 +15,12 @@ $ sudo tools/jam/src/bin.linuxx86/bjam --prefix=/usr/local --libdir=/usr/local/l
 
 In Ubuntu 9.04 you can install the boost package v1.37:
 libboost1.37-dev
+
+In Ubuntu 9.10 you can install libboost1.40-dev
+
+Probably you will also have to install libboost-date-time1.xx-dev,
+libboost-iostreams1.xx-dev and libboost-filesystem1.xx-dev
+for Ubuntu 9.04 or higher
 
 Check out the library rnnlib from a git repository. First go
 to a desired directory and type:

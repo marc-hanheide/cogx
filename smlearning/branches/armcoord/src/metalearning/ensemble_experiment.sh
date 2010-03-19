@@ -25,7 +25,8 @@ echo "Starting experiments for positions $firstStartPosition to $lastStartPositi
 
 for ((i=$firstStartPosition;i<=$lastStartPosition;i++));
 do
-	nextDir="$(date +%m)$(date +%d)_${numberOfIterations}samples$4L_${i}";
+	nextDir="$(date +%m)$(date +%d)_${numberOfIterations}samples_$4L_${i}";
+	echo "Creating directory ${nextDir}..."
 	mkdir $nextDir;
 	cd $nextDir;
 	echo "Starting experiment sequence from position $i.";
