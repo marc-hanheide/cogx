@@ -31,7 +31,8 @@
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
 	  <slice2java tie="true" outputdir="${src.dir}">
-	    <fileset dir="${slice.dir}" includes="FrontierInterface.ice  Marshalling.ice  SpatialData.ice  SpatialProperties.ice"/>
+	    <fileset dir="${slice.dir}" includes="FrontierInterface.ice    SpatialData.ice  SpatialProperties.ice"/>
+<!-- 	    <fileset dir="${slice.dir}" includes="FrontierInterface.ice  Marshalling.ice  SpatialData.ice  SpatialProperties.ice"/> -->
 	    <includepath> 
 	  	<pathelement path="${basedir}/../../tools/math/src/slice"/>
 	  	<pathelement path="${basedir}/../nav.sa/src/slice"/>
