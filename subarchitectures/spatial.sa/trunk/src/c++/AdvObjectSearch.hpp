@@ -97,9 +97,12 @@ namespace spatial
     void owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID);
 
     void owtTiltAngleRequest(const cast::cdl::WorkingMemoryChange &objID);
+    void ReadPlaneMap();
+    void AskForDistribution(std::vector<std::string> objectlist);
   private:
 
     // 1. phase is table detection and then looking for objects.
+    int key;
     bool m_table_phase;
     bool m_usePTZ;
     bool gotDistribution;

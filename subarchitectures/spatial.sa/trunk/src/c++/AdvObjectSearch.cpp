@@ -58,10 +58,6 @@ namespace spatial
   }
 
   void
-  AdvObjectSearch::BuildPrior() {
-
-  }
-  void
   AdvObjectSearch::configure(const std::map<std::string, std::string>& _config) {
 
     map<string, string>::const_iterator it = _config.find("-c");
@@ -150,14 +146,18 @@ namespace spatial
     }
     log("Loaded probs %f,%f,%f,%f,%f", pFree, pObs, pPlanar, pIn, pOut);
 
-    if ((it = _config.find("--objects")) != _config.end()) {
-      istringstream istr(it->second);
-      string label;
-      while (istr >> label) {
-        m_objectlist.push_back(label);
-      }
-    }
-    log("Loaded objects.");
+    /* if ((it = _config.find("--objects")) != _config.end()) {
+     istringstream istr(it->second);
+     string label;
+     while (istr >> label) {
+     m_objectlist.push_back(label);
+     }
+     }
+     log("Loaded objects.");*/
+
+    m_objectlist.push_back("rice");
+    m_objectlist.push_back("joystick");
+    m_objectlist.push_back("squaretable");
 
     gotDistribution = false;
     PDFData def;
@@ -245,81 +245,91 @@ namespace spatial
         new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
             &AdvObjectSearch::newObjectDetected));
 
-    addChangeFilter(createLocalTypeFilter<FrontierInterface::ObjectPriorRequest> (
-            cdl::OVERWRITE), new MemberFunctionChangeReceiver<AdvObjectSearch> (
-            this, &AdvObjectSearch::owtGridMapDouble));
+    addChangeFilter(
+        createLocalTypeFilter<FrontierInterface::ObjectPriorRequest> (
+            cdl::OVERWRITE),
+        new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
+            &AdvObjectSearch::owtGridMapDouble));
 
-    addChangeFilter(createLocalTypeFilter<FrontierInterface::ObjectTiltAngleRequest> (
-										      cdl::OVERWRITE), new MemberFunctionChangeReceiver<AdvObjectSearch> (
-																			  this, &AdvObjectSearch::owtTiltAngleRequest));
-    
+    addChangeFilter(createLocalTypeFilter<
+        FrontierInterface::ObjectTiltAngleRequest> (cdl::OVERWRITE),
+        new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
+            &AdvObjectSearch::owtTiltAngleRequest));
+
   }
 
-    void AdvObjectSearch::owtTiltAngleRequest(const cast::cdl::WorkingMemoryChange &objID){
-      try{
-	log("got tilt angle request");
-	FrontierInterface::ObjectTiltAngleRequestPtr tiltreq = getMemoryEntry<FrontierInterface::ObjectTiltAngleRequest> (objID.address);
-	log("size: %d", tiltreq->tiltAngles.size());
-	tiltangles.clear();
-	for (unsigned int i =0; i < tiltreq->tiltAngles.size(); i++){
-	  log("tilt angle: %f", tiltreq->tiltAngles[i]); 
-	  tiltangles.push_back(tiltreq->tiltAngles[i]);
-	}
-      }
-      catch(DoesNotExistOnWMException excp){
-	log("Error!  GridMapDouble does not exist on WM!");
-	return;
-      }
-      
-      
-      
-    }
-
-  void AdvObjectSearch::owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID){
-    try{
-      log("GridMapDouble overwrite!");
-      Cure::LocalGridMap<double>* distribution = new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
-                    Cure::LocalGridMap<unsigned int>::MAP1);
-     FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<FrontierInterface::ObjectPriorRequest> (objID.address);
-     convertToCureMap(objreq->outMap, *distribution);
-
-     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-             (*m_pdf)(x,y).prob =  (*m_pdf)(x,y).prob + (*distribution)(x,y);
-	     // if ( (*distribution)(x,y) != 0 )
-	       //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
-           }
-      }
-     log("Summed.");
-     gotDistribution = true;
- /* Display PDF in PB as Line Cloud BEGIN */
-
-  
-    double xW2, yW2;
-    peekabot::PointCloudProxy linecloudp;
-
-    linecloudp.add(m_PeekabotClient, "root.distribution",
-        peekabot::REPLACE_ON_CONFLICT);
-    linecloudp.clear_vertices();
-    linecloudp.set_color(0.5, 0, 0.5);
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*distribution)(x, y) == 0)
-          continue;
-        m_lgm->index2WorldCoords(x, y, xW2, yW2);
-        linecloudp.add_vertex(xW2,yW2,1);
+  void
+  AdvObjectSearch::owtTiltAngleRequest(
+      const cast::cdl::WorkingMemoryChange &objID) {
+    try {
+      log("got tilt angle request");
+      FrontierInterface::ObjectTiltAngleRequestPtr tiltreq = getMemoryEntry<
+          FrontierInterface::ObjectTiltAngleRequest> (objID.address);
+      log("size: %d", tiltreq->tiltAngles.size());
+      tiltangles.clear();
+      for (unsigned int i = 0; i < tiltreq->tiltAngles.size(); i++) {
+        log("tilt angle: %f", tiltreq->tiltAngles[i]);
+        tiltangles.push_back(tiltreq->tiltAngles[i]);
       }
     }
-    /* Display pdfIn in as line cloud PB END */
-
-    //     DisplayPDFinPB(0,0,"root.distribution");
-     log("Displayed PDF");
-
-    }
-    catch(DoesNotExistOnWMException excp){
+    catch (DoesNotExistOnWMException excp) {
       log("Error!  GridMapDouble does not exist on WM!");
-          return;
+      return;
+    }
+
+  }
+
+  void
+  AdvObjectSearch::owtGridMapDouble(const cast::cdl::WorkingMemoryChange &objID) {
+    try {
+      log("GridMapDouble overwrite!");
+      Cure::LocalGridMap<double>* distribution =
+          new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
+              Cure::LocalGridMap<unsigned int>::MAP1);
+      FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<
+          FrontierInterface::ObjectPriorRequest> (objID.address);
+      convertToCureMap(objreq->outMap, *distribution);
+
+      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+          (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + (*distribution)(x, y);
+          // if ( (*distribution)(x,y) != 0 )
+          //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
+        }
+      }
+      log("Summed.");
+      gotDistribution = true;
+
+      // TODO: Once we get a distribution initiate search.
+
+
+      /* Display PDF in PB as Line Cloud BEGIN */
+
+      double xW2, yW2;
+      peekabot::PointCloudProxy linecloudp;
+
+      linecloudp.add(m_PeekabotClient, "root.distribution",
+          peekabot::REPLACE_ON_CONFLICT);
+      linecloudp.clear_vertices();
+      linecloudp.set_color(0.5, 0, 0.5);
+
+      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+          if ((*distribution)(x, y) == 0)
+            continue;
+          m_lgm->index2WorldCoords(x, y, xW2, yW2);
+          linecloudp.add_vertex(xW2, yW2, 1);
+        }
+      }
+      /* Display pdfIn in as line cloud PB END */
+
+      //     DisplayPDFinPB(0,0,"root.distribution");
+      log("Displayed PDF");
+
+    }
+    catch (DoesNotExistOnWMException excp) {
+      log("Error!  GridMapDouble does not exist on WM!");
+      return;
     }
 
   }
@@ -331,7 +341,7 @@ namespace spatial
 
     try {
       m_PeekabotClient.connect("localhost", 5050, true);
-               m_ProxySeenMap.add(m_PeekabotClient, "root.SeenMap",
+      m_ProxySeenMap.add(m_PeekabotClient, "root.SeenMap",
           peekabot::REPLACE_ON_CONFLICT);
     }
     catch (std::exception e) {
@@ -347,98 +357,118 @@ namespace spatial
       //lockComponent();
       m_Dlgm->updatePlaneDisplay(&m_SlamRobotPose);
 
-      int key = cvWaitKey(100);
-
+      key = cvWaitKey(100);
       if (key == 115) {
         m_table_phase = true;
         log("Saving plane map!");
         SavePlaneMap();
         cvReleaseImage(&img);
       }
-      else if (key == 116) {
+      else if (key == 116) { // t
         log("Table mode!");
 
         m_table_phase = true;
 
       }
-      else if (key == 112) {
-        if (gotDistribution){
-        log("Getting next view");
-        GoToNBV();
+      else if (key == 112) { // p
+        if (gotDistribution) {
+          log("Getting next view");
+          GoToNBV();
         }
-        else{
+        else {
           log("spatial relation distribution not yet acquired.");
 
         }
       }
-      else if (key == 114) {
+      else if (key == 117) { // u
         m_table_phase = false;
+        log("Uniform search!");
         log("Reading plane map!");
-        int length;
-        char * buffer;
-        // m_Mutex.lock();
-        ifstream file("planemap.txt");
+        ReadPlaneMap();
+        // TODO: Init m_lgm and search.
 
-        file.seekg(0, ios::end);
-        length = file.tellg();
-        file.seekg(0, ios::beg);
-        buffer = new char[length];
-        file.read(buffer, length);
-        int index = 0;
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            char c = buffer[index];
-            int ii = atoi(&c);
-            (*m_lgm)(x, y) = ii;
-            index++;
-          }
-        }
-
-        // make call to get distribution and change pdf accordingly
-        Cure::LocalGridMap<double>* tobefilled = new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
-               Cure::LocalGridMap<unsigned int>::MAP1);
-        //write lgm to WM
-        FrontierInterface::ObjectPriorRequestPtr objreq = new FrontierInterface::ObjectPriorRequest;
-        vector<std::string> objects;
-        objects.push_back("rice");
+        /*   SpatialData::PlanePointsPtr PlanePoints;
+         PlanePoints = new SpatialData::PlanePoints;
+         cogx::Math::Vector3 point;
+         double wX, wY;
+         std::pair<int, int> CoordPair;
+         std::set<std::pair<int, int> > NewPlanePoints;
+         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+         if ((*m_lgm)(x, y) == 3) {
+         CoordPair.first = x;
+         CoordPair.second = y;
+         NewPlanePoints.insert(CoordPair);
+         m_lgm->index2WorldCoords(x, y, wX, wY);
+         point.x = wX;
+         point.y = wY;
+         point.z = 0.5; // FIXME: Z information is lost so we're making this up
+         PlanePoints->points.push_back(point);
+         }
+         }
+         }
+         PlaneObservationUpdate(NewPlanePoints);*/
+      }
+      else if (key == 100) { // d
+        log("Direct search");
+        log("Reading plane map!");
+        ReadPlaneMap();
+        //AskForDistribution(m_objectlist);
+      }
+      else if (key == 105) { // i
+        log("Indirect search");
+        log("Reading plane map!");
+        ReadPlaneMap();
+        std::vector<std::string> objects;
         objects.push_back("joystick");
         objects.push_back("squaretable");
+        // AskForDistribution(objects);
 
-        //objects.push_back("krispies");
-        //objects.push_back("rice");
+      }
 
-        objreq->relationType = FrontierInterface::ON;
-        objreq->objects = objects;
-        objreq->probSum = pIn/2;
-        objreq->outMap = convertFromCureMap(*tobefilled);
-        addToWorkingMemory(newDataID(), objreq);
-     /*   SpatialData::PlanePointsPtr PlanePoints;
-        PlanePoints = new SpatialData::PlanePoints;
-        cogx::Math::Vector3 point;
-        double wX, wY;
-        std::pair<int, int> CoordPair;
-        std::set<std::pair<int, int> > NewPlanePoints;
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((*m_lgm)(x, y) == 3) {
-              CoordPair.first = x;
-              CoordPair.second = y;
-              NewPlanePoints.insert(CoordPair);
-              m_lgm->index2WorldCoords(x, y, wX, wY);
-              point.x = wX;
-              point.y = wY;
-              point.z = 0.5; // FIXME: Z information is lost so we're making this up
-              PlanePoints->points.push_back(point);
-            }
-          }
-        }
-        PlaneObservationUpdate(NewPlanePoints);*/
+      //unlockComponent();
+      sleepComponent(100);
+
+    }
+  }
+  void
+  AdvObjectSearch::AskForDistribution(std::vector<std::string> objectlist) {
+
+    // make call to get distribution and change pdf accordingly
+    Cure::LocalGridMap<double>* tobefilled = new Cure::LocalGridMap<double>(
+        m_gridsize, m_cellsize, 0.0, Cure::LocalGridMap<unsigned int>::MAP1);
+    //write lgm to WM
+    FrontierInterface::ObjectPriorRequestPtr objreq =
+        new FrontierInterface::ObjectPriorRequest;
+    objreq->relationType = FrontierInterface::ON;
+    objreq->objects = objectlist;
+    objreq->probSum = pIn / 2;
+    objreq->outMap = convertFromCureMap(*tobefilled);
+    addToWorkingMemory(newDataID(), objreq);
+    delete tobefilled;
+
+  }
+  void
+  AdvObjectSearch::ReadPlaneMap() {
+    int length;
+    char * buffer;
+    // m_Mutex.lock();
+    ifstream file("planemap.txt");
+
+    file.seekg(0, ios::end);
+    length = file.tellg();
+    file.seekg(0, ios::beg);
+    buffer = new char[length];
+    file.read(buffer, length);
+    int index = 0;
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        char c = buffer[index];
+        int ii = atoi(&c);
+        (*m_lgm)(x, y) = ii;
+        index++;
       }
     }
-
-    //unlockComponent();
-    sleepComponent(100);
-
   }
   void
   AdvObjectSearch::GoToNBV() {
@@ -454,12 +484,8 @@ namespace spatial
     a.x = Wx;
     a.y = Wy;
     CalculateViewCone(a, a.theta, m_CamRange, m_fov, b, c);
-    
+
     cogx::Math::Vector2 point;
-    vector<std::string> objects;
-    objects.push_back("rice");
-    objects.push_back("joystick");
-    objects.push_back("squaretable");
     vector<cogx::Math::Vector2> triangle;
     point.x = a.x;
     point.y = a.y;
@@ -471,15 +497,16 @@ namespace spatial
     point.y = c.y;
     triangle.push_back(point);
 
-    FrontierInterface::ObjectTiltAngleRequestPtr req = new FrontierInterface::ObjectTiltAngleRequest;
+    FrontierInterface::ObjectTiltAngleRequestPtr req =
+        new FrontierInterface::ObjectTiltAngleRequest;
     req->relationType = FrontierInterface::ON;
-    req->objects = objects;
+    req->objects = m_objectlist;
     req->triangle = triangle;
-    addToWorkingMemory(newDataID(),req);
+    addToWorkingMemory(newDataID(), req);
 
     //////////////////////////////////////
 
-  Cure::Pose3D pos;
+    Cure::Pose3D pos;
     pos.setX(Wx);
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
@@ -571,8 +598,7 @@ namespace spatial
 
   int
   AdvObjectSearch::NextBestView() {
-    
-    
+
     std::vector<std::vector<int> > VCones;
     log("sampling grid");
     SampleGrid();
@@ -639,8 +665,9 @@ namespace spatial
       for (unsigned int i = 0; i < objData->points.size(); i++) {
         m_lgm->worldCoords2Index(objData->points.at(i).x,
             objData->points.at(i).y, CoordPair.first, CoordPair.second);
-        if ((*m_lgm)(CoordPair.first, CoordPair.second) != 3 && !(*m_pdf)(CoordPair.first, CoordPair.second).isChecked) {
-            NewPlanePoints.insert(CoordPair);
+        if ((*m_lgm)(CoordPair.first, CoordPair.second) != 3 && !(*m_pdf)(
+            CoordPair.first, CoordPair.second).isChecked) {
+          NewPlanePoints.insert(CoordPair);
         }
 
         (*m_lgm)(CoordPair.first, CoordPair.second) = 3;
@@ -656,17 +683,18 @@ namespace spatial
   }
 
   void
-  AdvObjectSearch::DisplayPDFinPB(double xoffset, double yoffset, std::string name) {
+  AdvObjectSearch::DisplayPDFinPB(double xoffset, double yoffset,
+      std::string name) {
 
-//    double uUnit = pIn / pow(double((2 * m_lgm->getSize() + 1)), 2);
+    //    double uUnit = pIn / pow(double((2 * m_lgm->getSize() + 1)), 2);
 
     /* DEBUG */
     double sumin = 0.0;
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-	//	log("pdf:%f",(*m_pdf)(x,y).prob)
-	  if ((*m_lgm)(x, y) == 2)
-	    continue;
+        //	log("pdf:%f",(*m_pdf)(x,y).prob)
+        if ((*m_lgm)(x, y) == 2)
+          continue;
         sumin += (*m_pdf)(x, y).prob;
       }
     }
@@ -681,8 +709,7 @@ namespace spatial
     double xW2, yW2, xW3, yW3;
     peekabot::LineCloudProxy linecloudp;
 
-    linecloudp.add(m_PeekabotClient, name,
-        peekabot::REPLACE_ON_CONFLICT);
+    linecloudp.add(m_PeekabotClient, name, peekabot::REPLACE_ON_CONFLICT);
     linecloudp.clear_vertices();
     linecloudp.set_line_width(2);
     linecloudp.set_color(0.9, 0, 0);
@@ -693,9 +720,9 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp.add_line(xW2 + xoffset, yW2 + yoffset,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 + yoffset, (*m_pdf)(x, y
-                + 1).prob * multiplier1);
+        linecloudp.add_line(xW2 + xoffset, yW2 + yoffset, (*m_pdf)(x, y).prob
+            * multiplier1, xW3 + xoffset, yW3 + yoffset,
+            (*m_pdf)(x, y + 1).prob * multiplier1);
       }
     }
 
@@ -705,9 +732,9 @@ namespace spatial
           continue;
         m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
         m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp.add_line(xW2 + xoffset, yW2 + yoffset,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + xoffset, yW3 + yoffset, (*m_pdf)(x, y
-                + 1).prob * multiplier1);
+        linecloudp.add_line(xW2 + xoffset, yW2 + yoffset, (*m_pdf)(x, y).prob
+            * multiplier1, xW3 + xoffset, yW3 + yoffset,
+            (*m_pdf)(x, y + 1).prob * multiplier1);
       }
     }
     /* Display pdfIn in as line cloud PB END */
@@ -758,7 +785,7 @@ namespace spatial
       return;
     }
 
-    DisplayPDFinPB(6, 0,"before");
+    DisplayPDFinPB(6, 0, "before");
 
     /* DEBUG */
     double sumin = 0.0;
@@ -817,16 +844,13 @@ namespace spatial
     log("pdfIn sums to: %f", sumin);
     log("pdfIn + Cout sums to: %f", sumin + pOut);
     /* DEBUG */
-    DisplayPDFinPB(0, -8,"after");
-
+    DisplayPDFinPB(0, -8, "after");
 
   }
 
   void
   AdvObjectSearch::PlaneObservationUpdate(
       std::set<std::pair<int, int> > NewPlanePoints) {
-    // say plane probability is .8
-
 
     /* there are two terms which are now constants
      * one is p(plane|z,c_i)  given an object is at c_i probability
@@ -857,6 +881,9 @@ namespace spatial
     std::set<pair<int, int> >::iterator end = NewPlanePoints.end();
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        if (((*m_lgm)(x, y) == 2))
+          continue;
+
         tmp.first = x;
         tmp.second = y;
         if (NewPlanePoints.find(tmp) != end) { // this is a new plane point
@@ -866,7 +893,7 @@ namespace spatial
                   * (*m_pdf)(x, y).prob);
         }
         else {
-          if (((*m_lgm)(x, y) == 0 ||(*m_lgm)(x, y) == 2) && !(*m_pdf)(x, y).isChecked) {
+          if ((*m_lgm)(x, y) == 0 && !(*m_pdf)(x, y).isChecked) {
             (*m_pdf)(x, y).isChecked = true;
             (*m_pdf)(x, y).prob = m_pFreeGivenObj * (*m_pdf)(x, y).prob
                 / (m_pFreeGivenObj * (*m_pdf)(x, y).prob + m_pFreeGivenNotObj
@@ -886,7 +913,7 @@ namespace spatial
     // Get Sum after update
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-          InsideAfterSum += (*m_pdf)(x, y).prob;
+        InsideAfterSum += (*m_pdf)(x, y).prob;
       }
     }
 
@@ -897,44 +924,6 @@ namespace spatial
             / InsideAfterSum;
       }
     }
-
-
-    /* Display pdfIn in PB as Line Cloud BEGIN */
-
-    double multiplier1 = 100.0;
-    double xW2, yW2, xW3, yW3;
-    peekabot::LineCloudProxy linecloudp;
-
-    linecloudp.add(m_PeekabotClient, "root.LC_BEFORE",
-        peekabot::REPLACE_ON_CONFLICT);
-    linecloudp.clear_vertices();
-    linecloudp.set_line_width(2);
-    linecloudp.set_color(0.9, 0, 0);
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
-          continue;
-        m_lgm->index2WorldCoords(x, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y + 1, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
-                + 1).prob * multiplier1);
-      }
-    }
-
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
-          continue;
-        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y, xW3, yW3);
-        linecloudp.add_line(xW2 + 6, yW2 - 8,
-            (*m_pdf)(x, y).prob * multiplier1, xW3 + 6, yW3 - 8, (*m_pdf)(x, y
-                + 1).prob * multiplier1);
-      }
-    }
-    /* Display pdfIn in as line cloud PB END */
 
   }
   void
@@ -1024,13 +1013,13 @@ namespace spatial
       if ((*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen) {
         /*if reachable*/
         // Get the indices of the destination coordinates
-	//	log("point reachable");
+        //	log("point reachable");
         int rS, cS, rE, cE;
-	//log("robotpose: %f,%f", lastRobotPose->x,lastRobotPose->y);
-	//log("1");
+        //log("robotpose: %f,%f", lastRobotPose->x,lastRobotPose->y);
+        //log("1");
         if (m_lgm->worldCoords2Index(lastRobotPose->x, lastRobotPose->y, rS, cS)
             == 0 && m_lgm->worldCoords2Index(xW, yW, rE, cE) == 0) {
-	  //log("check if point is reachable");
+          //log("check if point is reachable");
           // Compensate for the fact that the PathGrid is just a normal matrix where the cells are numbers from the corner
           cS += m_lgm->getSize();
           rS += m_lgm->getSize();
@@ -1041,10 +1030,10 @@ namespace spatial
           Cure::ShortMatrix path;
           double d = (m_PathGrid.path(rS, cS, rE, cE, path, 20
               * m_lgm->getSize()) * m_lgm->getCellSize());
-	  
+
           if (d > 0 && d < 2) {
             // There is a path to this destination
-	    //log("there's a path to this destination");
+            //log("there's a path to this destination");
             m_samples[2 * i] = randx;
             m_samples[2 * i + 1] = randy;
             m_samplestheta[i] = angle;
