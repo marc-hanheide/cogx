@@ -74,11 +74,13 @@ namespace spatial
     void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
     void newObjectDetected(const cast::cdl::WorkingMemoryChange &objID);
     void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
+    void newVisualObject(const cast::cdl::WorkingMemoryChange &objID);
+    void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
     void SavePlaneMap();
     void BuildPrior();
     void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
       std::string label, std::string visualObjectID);
-    void PostNavCommand(Cure::Pose3D position);
+    void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
     void PlaneObservationUpdate(std::set<std::pair<int, int> > NewPlanePoints);
     void SampleGrid();
     int NextBestView();
@@ -103,10 +105,34 @@ namespace spatial
     void ReadPlaneMap();
     void AskForDistribution(std::vector<std::string> objectlist,double probSum);
     bool isStopSearch(double threshold);
+    void DetectionComplete(bool isDetected);
+    void InterpretCommand();
   private:
+
+    enum ObjSearchStatus {
+         PLANNING,
+         EXECUTINGPLAN,
+         NAVCOMMANDINPROGRESS,
+         NAVCOMMANDCOMPLETED,
+         RECOGNITIONINPROGRESS,
+         RECOGNITIONCOMPLETE,
+         PAUSED,
+         STOPPED
+ };
+    enum ObjSearchCommand {
+            EXECUTENEXT,
+            ASK_FOR_DISTRIBUTION,
+            STOP,
+            //TURN,
+            RECOGNIZE,
+            IDLE
+      };
+    ObjSearchStatus m_status;
+    ObjSearchCommand m_command;
 
     // 1. phase is table detection and then looking for objects.
     int key;
+    bool isWaitingForDetection;
     bool m_table_phase;
     bool m_usePTZ;
     bool gotDistribution;
@@ -124,6 +150,7 @@ namespace spatial
     std::vector<double> tiltangles;
     std::vector<std::string> m_objectlist;
     std::string m_CurrentTarget;
+    std::string m_SearchMode;
     IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;
     NavData::RobotPose2dPtr lastRobotPose;

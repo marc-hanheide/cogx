@@ -184,6 +184,8 @@ namespace spatial
     m_pFreeGivenNotObj = 0.8;
     m_pObsGivenNotObj = 0.15;
 
+    isWaitingForDetection = false;
+
     if (m_usePTZ) {
       log("connecting to PTU");
       Ice::CommunicatorPtr ic = getCommunicator();
@@ -261,7 +263,80 @@ namespace spatial
             new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
                 &AdvObjectSearch::owtNavCommand));
 
+    addChangeFilter(createGlobalTypeFilter<
+               VisionData::Recognizer3DCommand> (cdl::OVERWRITE),
+               new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
+                   &AdvObjectSearch::owtRecognizer3DCommand));
+
+    addChangeFilter(createGlobalTypeFilter<
+               VisionData::VisualObject> (cdl::OVERWRITE),
+               new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
+                   &AdvObjectSearch::newVisualObject));
+
+    addChangeFilter(createGlobalTypeFilter<
+               VisionData::VisualObject> (cdl::ADD),
+               new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
+                   &AdvObjectSearch::newVisualObject));
+
   }
+
+
+  void
+   AdvObjectSearch::newVisualObject(const cast::cdl::WorkingMemoryChange &objID) {
+
+    if (isWaitingForDetection){
+    try{
+       VisionData::VisualObjectPtr visualobject(getMemoryEntry<
+           VisionData::VisualObject> (objID.address));
+
+       if (visualobject->label == m_CurrentTarget){
+         isWaitingForDetection = false;
+         DetectionComplete(true);
+       }
+
+    }
+    catch (const CASTException &e) {
+          //      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+        }
+    }
+  }
+
+
+  void
+   AdvObjectSearch::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID) {
+    if(isWaitingForDetection){
+      try{
+        VisionData::Recognizer3DCommandPtr cmd(getMemoryEntry<
+            VisionData::Recognizer3DCommand> (objID.address));
+        if (cmd->label == m_CurrentTarget){
+          isWaitingForDetection = false;
+          DetectionComplete(false);
+        }
+
+    }
+      catch (const CASTException &e) {
+        //      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+          }
+    }
+  }
+
+void AdvObjectSearch::DetectionComplete(bool isDetected){
+  if (isDetected){
+    // if we are doing indirect search then ask & initialize next object
+    if (m_SearchMode == "direct" || m_SearchMode == "uniform")
+      log("Object Detected, Mission Completed.");
+    else if (m_SearchMode == "indirect"){
+      log("detected, changing current target to rice, asking for distribution.");
+      m_CurrentTarget = "rice";
+      m_command = ASK_FOR_DISTRIBUTION;
+    }
+    }
+  else{
+    // if we are not yet finished Go to NBV
+    MeasurementUpdate(false);
+    m_command = EXECUTENEXT;
+  }
+}
 
   void
    AdvObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID) {
@@ -271,10 +346,7 @@ namespace spatial
         SpatialData::NavCommand> (objID.address));
     if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
          log("receiver cleaning up on success");
-         VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
-
-         addRecognizer3DCommand();
-
+         m_command = RECOGNIZE;
        }
     }
     catch (const CASTException &e) {
@@ -313,10 +385,13 @@ namespace spatial
       Cure::LocalGridMap<double>* distribution =
           new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
               Cure::LocalGridMap<unsigned int>::MAP1);
+
+      // get the computed distribution.
       FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<
           FrontierInterface::ObjectPriorRequest> (objID.address);
       convertToCureMap(objreq->outMap, *distribution);
 
+      //sum with m_pdf
       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
           (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + (*distribution)(x, y);
@@ -324,6 +399,7 @@ namespace spatial
           //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
         }
       }
+
       log("Summed.");
       gotDistribution = true;
 
@@ -363,11 +439,8 @@ namespace spatial
 
       //     DisplayPDFinPB(0,0,"root.distribution");
       log("Displayed PDF");
-
-
-      // TODO: Once we get a distribution initiate search.
-      GoToNBV();
-
+      // Once we get a distribution initiate search.
+      m_command = EXECUTENEXT;
     }
     catch (DoesNotExistOnWMException excp) {
       log("Error!  GridMapDouble does not exist on WM!");
@@ -380,6 +453,7 @@ namespace spatial
   AdvObjectSearch::runComponent() {
     setupPushScan2d(*this, 0.1);
     setupPushOdometry(*this);
+    m_command = IDLE;
 
     try {
       m_PeekabotClient.connect("localhost", 5050, true);
@@ -427,6 +501,7 @@ namespace spatial
         }
       }
       else if (key == 117) { // u
+        m_SearchMode = "uniform";
         m_table_phase = false;
         log("Uniform search!");
         log("Reading plane map!");
@@ -456,28 +531,72 @@ namespace spatial
          PlaneObservationUpdate(NewPlanePoints);*/
       }
       else if (key == 100) { // d
+        m_SearchMode = "direct";
         log("Direct search");
         log("Reading plane map!");
         m_CurrentTarget = "rice";
         ReadPlaneMap();
-        AskForDistribution(m_objectlist,1.0);
+        m_command = ASK_FOR_DISTRIBUTION;
       }
       else if (key == 105) { // i
+        m_SearchMode = "indirect";
         log("Indirect search");
         log("Reading plane map!");
         m_CurrentTarget = "joystick";
         ReadPlaneMap();
-        std::vector<std::string> objects;
-        objects.push_back("joystick");
-        objects.push_back("squaretable");
-        AskForDistribution(objects,1.0);
-
+        m_command = ASK_FOR_DISTRIBUTION;
       }
 
-      //unlockComponent();
+      InterpretCommand();
       sleepComponent(100);
 
     }
+  }
+
+  void AdvObjectSearch::InterpretCommand(){
+    switch (m_command)
+        {
+      case STOP: {
+        log("Stopped.");
+        m_command = IDLE;
+        m_status = STOPPED;
+        log("Command: STOP");
+        PostNavCommand(m_currentViewPoint, SpatialData::STOP);
+        break;
+      }
+      case RECOGNIZE:{
+        m_command=IDLE;
+        addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
+      }
+      case EXECUTENEXT:{
+        m_command=IDLE;
+        if (isStopSearch(0.4)){
+          log("Search failed.");
+        }
+        else{
+          GoToNBV();
+
+        }
+      }
+      case ASK_FOR_DISTRIBUTION: {
+        m_command=IDLE;
+        if (m_SearchMode =="direct")
+          AskForDistribution(m_objectlist,pIn);
+        else if (m_SearchMode =="indirect" && m_CurrentTarget == "rice"){
+          AskForDistribution(m_objectlist,pIn);
+        }
+        else if (m_SearchMode == "indirect" && m_CurrentTarget == "joystick"){
+          std::vector<std::string> objects;
+          objects.push_back("joystick");
+          objects.push_back("squaretable");
+          AskForDistribution(objects,pIn);
+        }
+      }
+      case IDLE: {
+        log("Idling");
+      }
+
+  }
   }
   bool AdvObjectSearch::isStopSearch(double threshold){
     log("pOut: %f", pOut);
@@ -488,6 +607,13 @@ namespace spatial
   }
   void
   AdvObjectSearch::AskForDistribution(std::vector<std::string> objectlist, double probSum) {
+
+    // initialize m_lgm to zero
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+             (*m_pdf)(x, y).prob = 0;
+           }
+    }
 
     // make call to get distribution and change pdf accordingly
     Cure::LocalGridMap<double>* tobefilled = new Cure::LocalGridMap<double>(
@@ -527,6 +653,7 @@ namespace spatial
   }
   void
   AdvObjectSearch::GoToNBV() {
+    gotDistribution = false;
     int nbv;
     log("Getting NextBestView");
     nbv = NextBestView();
@@ -534,7 +661,9 @@ namespace spatial
 
     m_lgm->index2WorldCoords(m_samples[2 * nbv], m_samples[2 * nbv + 1], Wx, Wy);
     log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
-    /* Get tilt angles */
+
+
+    /******* Get tilt angles  to calculate desired tilt value*/
     XVector3D a, b, c;
     a.x = Wx;
     a.y = Wy;
@@ -566,19 +695,7 @@ namespace spatial
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
     m_currentViewPoint = pos;
-
-
-    // Assume:
-    // 1. posted nav comamnd
-    // 2. reached position
-    // 3. sent recognize command
-    // 4. received visualobject
-    // 5. ????
-    // 6. PROFIT!
-    //PostNavCommand(pos);
-    log("calling measurement update");
-    MeasurementUpdate(false);
-
+    PostNavCommand(m_currentViewPoint, SpatialData::GOTOPOSITION);
 
     /* Add plan to PB BEGIN */
         NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
@@ -589,14 +706,6 @@ namespace spatial
         obs->planlist.push_back(viewpoint);
         addToWorkingMemory(newDataID(), obs);
      /* Add plan to PB END */
-     sleepComponent(1000);
-
-        if (isStopSearch(0.5)){
-          GoToNBV();
-        }
-        else{
-          log("search stopped.");
-        }
 
   }
   void
@@ -1248,10 +1357,10 @@ namespace spatial
   }
 
   void
-  AdvObjectSearch::PostNavCommand(Cure::Pose3D position) {
-    SpatialData::NavCommandPtr cmd = newNavCommand();
+  AdvObjectSearch::PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype) {
+    SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
     cmd->prio = SpatialData::URGENT;
-    cmd->cmd = SpatialData::GOTOPOSITION;
+    cmd->cmd = cmdtype;
     cmd->pose.resize(3);
     cmd->pose[0] = position.getX();
     cmd->pose[1] = position.getY();
@@ -1262,16 +1371,6 @@ namespace spatial
     cmd->comp = SpatialData::COMMANDPENDING;
 
     addToWorkingMemory(newDataID(), cmd);
-  }
-
-  SpatialData::NavCommandPtr
-  AdvObjectSearch::newNavCommand() {
-    SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
-    cmd->prio = SpatialData::NORMAL;
-    cmd->cmd = SpatialData::STOP;
-    cmd->status = SpatialData::NONE;
-    cmd->comp = SpatialData::COMMANDPENDING;
-    return cmd;
   }
 
   void 
