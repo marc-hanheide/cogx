@@ -72,6 +72,8 @@ public:
 	void ComputePolygonNormals();
 	void ComputeQuadstripNormals();
 	
+	void TriangulatePolygon(std::vector<vec3> p);
+	
 	int GetVerticesSize(){ return m_vertices.size(); }
 	
 	

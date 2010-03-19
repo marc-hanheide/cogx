@@ -145,31 +145,34 @@ void tgModel::ComputeFaceNormals(){
 }
 
 void tgModel::ComputePolygonNormals(){
-	int i,j;
+	int i,j,s;
 	Face* f;
 	vec3 v0, v1, v2, e1, e2, n;
 	
+// 	printf("m_polygons.size: %d\n", (int)m_polygons.size());
+// 	printf("m_vertices.size: %d\n", (int)m_vertices.size());
+	
 	for(i=0; i<(int)m_polygons.size(); i++){
 		f = &m_polygons[i];
-		for(j=0; j<(int)f->vertices.size()-2; j++){
-			v0 = vec3(m_vertices[f->vertices[j+0]].pos.x, m_vertices[f->vertices[j+0]].pos.y, m_vertices[f->vertices[j+0]].pos.z);
-			v1 = vec3(m_vertices[f->vertices[j+1]].pos.x, m_vertices[f->vertices[j+1]].pos.y, m_vertices[f->vertices[j+1]].pos.z);
-			v2 = vec3(m_vertices[f->vertices[j+2]].pos.x, m_vertices[f->vertices[j+2]].pos.y, m_vertices[f->vertices[j+2]].pos.z);
+		s = (int)f->vertices.size();
+// 		printf("p: %d\n", i);
+		for(j=0; j<(int)f->vertices.size(); j++){
+// 			printf("vi: %d\n", f->vertices[j+0]);
+// 			printf("vi: %d\n", f->vertices[j+1]);
+// 			printf("vi: %d\n", f->vertices[j+2]);
+			
+			v0 = vec3(m_vertices[f->vertices[j]].pos.x, m_vertices[f->vertices[j+0]].pos.y, m_vertices[f->vertices[j]].pos.z);
+			v1 = vec3(m_vertices[f->vertices[(j+1)%s]].pos.x, m_vertices[f->vertices[(j+1)%s]].pos.y, m_vertices[f->vertices[(j+1)%s]].pos.z);
+			v2 = vec3(m_vertices[f->vertices[(j+s-1)%s]].pos.x, m_vertices[f->vertices[(j+s-1)%s]].pos.y, m_vertices[f->vertices[(j+s-1)%s]].pos.z);
 			e1 = v1 - v0;
 			e2 = v2 - v0;
 			
 			n.cross(e1,e2);
 			n.normalize();
 			
-			m_vertices[f->vertices[j+0]].normal.x = n.x;
-			m_vertices[f->vertices[j+0]].normal.y = n.y;
-			m_vertices[f->vertices[j+0]].normal.z = n.z;
-			m_vertices[f->vertices[j+1]].normal.x = n.x;
-			m_vertices[f->vertices[j+1]].normal.y = n.y;
-			m_vertices[f->vertices[j+1]].normal.z = n.z;
-			m_vertices[f->vertices[j+2]].normal.x = n.x;
-			m_vertices[f->vertices[j+2]].normal.y = n.y;
-			m_vertices[f->vertices[j+2]].normal.z = n.z;
+			m_vertices[f->vertices[j]].normal.x = n.x;
+			m_vertices[f->vertices[j]].normal.y = n.y;
+			m_vertices[f->vertices[j]].normal.z = n.z;
 		}
 	}
 }
@@ -193,8 +196,8 @@ void tgModel::ComputeQuadstripNormals(){
 			n1.normalize();
 			
 			v0 = vec3(m_vertices[f->vertices[(j+0)%s]].pos.x, m_vertices[f->vertices[(j+0)%s]].pos.y, m_vertices[f->vertices[(j+0)%s]].pos.z);
-			v1 = vec3(m_vertices[f->vertices[(j-1)%s]].pos.x, m_vertices[f->vertices[(j+s-1)%s]].pos.y, m_vertices[f->vertices[(j+s-1)%s]].pos.z);
-			v2 = vec3(m_vertices[f->vertices[(j-2)%s]].pos.x, m_vertices[f->vertices[(j+s-2)%s]].pos.y, m_vertices[f->vertices[(j+s-2)%s]].pos.z);
+			v1 = vec3(m_vertices[f->vertices[(j+s-1)%s]].pos.x, m_vertices[f->vertices[(j+s-1)%s]].pos.y, m_vertices[f->vertices[(j+s-1)%s]].pos.z);
+			v2 = vec3(m_vertices[f->vertices[(j+s-2)%s]].pos.x, m_vertices[f->vertices[(j+s-2)%s]].pos.y, m_vertices[f->vertices[(j+s-2)%s]].pos.z);
 			e1 = v1 - v0;
 			e2 = v2 - v0;
 			n2.cross(e2,e1);
@@ -237,3 +240,42 @@ void tgModel::PrintInfo(){
 		}
 	}
 }
+
+void tgModel::TriangulatePolygon(std::vector<vec3> p){
+	int i,s;
+	vec3 e1, e2, n, pn;
+	vec3 v0, v1, v2;
+	Vertex v;
+	std::vector<Vertex> vList;
+	std::vector<Vertex>::iterator vIt;
+	
+	s=p.size();
+	
+	for(i=0; i<s; i++){
+		// Calculate normal
+		v0 = p[i];
+		v1 = p[(i+1)%s];
+		v2 = p[(i+s-1)%s];
+		e1 = v1-v0;
+		e2 = v2-v0;
+		n.cross(e1,e2);
+		pn = pn + n;
+		v.pos = v0;
+		v.normal = n;
+		v.normal.normalize();
+		m_vertices.push_back(v);
+		vList.push_back(v);
+	}
+	pn.normalize();
+	
+	vIt = vList.begin();
+	while(vIt<vList.end()){
+		if(vList[i].pos * pn > 0.0){
+			
+		
+		}
+	}
+	
+	
+}
+
