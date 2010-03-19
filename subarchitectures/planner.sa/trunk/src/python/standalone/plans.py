@@ -58,7 +58,7 @@ class PlanNode(object):
         self.explanations = {}
         
         if not isinstance(action, DummyAction):
-            num = len(action.agents) + len(action.args)
+            num = len(action.agents) + len(action.maplargs)
             self.args = args[:num]
         else:
             self.args = args
@@ -233,7 +233,7 @@ class MAPLPlan(networkx.MultiDiGraph):
             if n.action.replan:
                 attrs["shape"] = "box"
                 attrs["style"] += ", rounded, dashed"
-            elif isinstance(n.action, pddl.sensors.Sensor):
+            elif isinstance(n.action, pddl.mapl.MAPLAction) and n.action.sensors:
                 attrs["shape"] = "box"
                 attrs["style"] += ", rounded"
                 

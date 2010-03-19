@@ -46,7 +46,7 @@
      :effect (assign (explored ?loc) true)
     )
 
-	(:sensor categorize_place
+	(:action categorize_place
 	 :agent (?a - agent)
 	 :parameters (?loc - place)
 	 :precondition (and
@@ -55,7 +55,7 @@
     )
 
 
-	(:sensor categorize_room
+	(:action categorize_room
 	 :agent (?a - agent)
 	 :parameters (?r - room)
 	 :variables (?loc - place)

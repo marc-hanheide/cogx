@@ -198,7 +198,7 @@ def generate_mapl_task(task_desc, domain_fn):
 
   facts = list(tuples2facts(obj_descriptions))
 
-  problem = pddl.mapl.MAPLProblem("cogxtask", objects, [], None, task._mapldomain)
+  problem = pddl.Problem("cogxtask", objects, [], None, task._mapldomain)
   try:
     goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
     problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
