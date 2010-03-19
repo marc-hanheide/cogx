@@ -39,7 +39,7 @@
 		<ant target="${target}" dir="tools/interconnectivity" />
 		<ant target="${target}" dir="subarchitectures/binder" /> 
 		<ant target="${target}" dir="subarchitectures/nav.sa" />
-<!-- 		<ant target="${target}" dir="subarchitectures/spatial.sa" /> -->
+ 		<ant target="${target}" dir="subarchitectures/spatial.sa" /> 
 <!-- 		<ant target="${target}" dir="subarchitectures/planner.sa" />  -->
 <!-- 		<ant target="${target}" dir="subarchitectures/comsys" /> -->
 <!-- 		<ant target="${target}" dir="subarchitectures/coma.sa" /> -->
