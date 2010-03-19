@@ -30,6 +30,7 @@
 #include "X11DispLocalGridMap.hh"
 #include <peekabot.hh>
 #include <highgui.h>
+#include <VisionData.hpp>
 
 
 
@@ -75,6 +76,8 @@ namespace spatial
     void SavePlaneMap();
     void BuildPrior();
     void PostRecognitionCommand();
+    void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
+      std::string label, std::string visualObjectID);
     void PostNavCommand(Cure::Pose3D position);
     void PlaneObservationUpdate(std::set<std::pair<int, int> > NewPlanePoints);
     void SampleGrid();

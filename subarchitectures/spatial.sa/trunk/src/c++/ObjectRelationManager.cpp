@@ -1336,7 +1336,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	int i, j;
 	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
 	  outMap(i,j) += weight;
-	  log("outmap: (%f,%f)[%i,%i]=%f",it->x, it->y, i,j,outMap(i,j));
+//	  log("outmap: (%f,%f)[%i,%i]=%f",it->x, it->y, i,j,outMap(i,j));
 	}
       }
 #else
@@ -1388,7 +1388,6 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     double total = 0.0;
     for (unsigned long i = 0; i < request->outMap->contents.size(); i++) {
       total+=request->outMap->contents[i];
-      log("%i: %f", i, request->outMap->contents[i]);
     }
     log("%f", total);
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
