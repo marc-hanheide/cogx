@@ -7,14 +7,17 @@ project (SPATIALSA)
 # You can prepare verbose Makefile to see what's going.
 set(CMAKE_VERBOSE_MAKEFILE true)
 
+option(BUILD_SPATIAL4BINDING "Build spatial monitors for binder" NO)
+
+
 # Include dirs
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/robotbase/src/c++/autogen)
-if(BUILD_SA_BINDING)
+if(BUILD_SPATIAL4BINDING)
   include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
-endif(BUILD_SA_BINDING)
+endif(BUILD_SPATIAL4BINDING)
 include_directories(${COGX_ROOT}/tools/d-lib/src/c++/d)
 include_directories(src/c++)
 include_directories(src/c++/autogen)

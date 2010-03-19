@@ -25,12 +25,12 @@ target_link_libraries(FrontierInterface CDL NavData SpatialData)
 install(TARGETS FrontierInterface LIBRARY DESTINATION lib)
 
 
-if(BUILD_SA_BINDING)
+if(BUILD_SPATIAL4BINDING)
   cast_slice2cpp(GEN_CPP_BE GEN_HPP_BE Marshalling.ice ${CAST_SLICE_DIR}
     ${COGX_ROOT}/subarchitectures/binder/src/slice)
   add_library(Marshalling SHARED ${GEN_CPP_BE})
   target_link_libraries(Marshalling CDL NavData BinderEssentials)
   install(TARGETS Marshalling LIBRARY DESTINATION lib)
-endif(BUILD_SA_BINDING)
+endif(BUILD_SPATIAL4BINDING)
 
 
