@@ -382,24 +382,28 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 // 		cout << "pose: ";
 // 		printf("%f %f %f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
 
-		Real roll, pitch, yaw;
-		chunk.objectPose.R.toEuler (roll, pitch, yaw);
-// 		cout << "roll: " << roll << " pitch: " << pitch << " yaw: " << yaw << endl;  
+		Real efRoll, efPitch, efYaw;
+		chunk.effectorPose.R.toEuler (efRoll, efPitch, efYaw);
+		Real obRoll, obPitch, obYaw;
+		chunk.objectPose.R.toEuler (obRoll, obPitch, obYaw);
 
 		Real polStateOutput = 0; //polyflap moves with the same Y angle
 		Real epsilonAngle = 0.005;
-		if (currentPfRoll < (roll - epsilonAngle) ) //polyflap Y angle increases
-			polStateOutput = 1;
-		if (currentPfRoll > (roll + epsilonAngle) ) //polyflap Y angle decreases
-			polStateOutput = -1;
-
-		if (polStateOutput == 0 && currentPfY < chunk.objectPose.p.v2) // polyflap Y position increases
-			polStateOutput = 0.5;
-		if (polStateOutput == 0 && currentPfY > chunk.objectPose.p.v2) //polyflap Y position decreases
-			polStateOutput = -0.5;
+		if (learningData.currentSeq.size() > 1) {
+			if (currentPfRoll < (obRoll - epsilonAngle) ) //polyflap Y angle increases
+				polStateOutput = 1;
+			if (currentPfRoll > (obRoll + epsilonAngle) ) //polyflap Y angle decreases
+				polStateOutput = -1;
+			
+			Real epsilonPfY = 0.000001;
+			if (polStateOutput == 0 && currentPfY < (chunk.objectPose.p.v2 - epsilonPfY) ) // polyflap Y position increases
+				polStateOutput = 0.5;
+			if (polStateOutput == 0 && currentPfY > (chunk.objectPose.p.v2 + epsilonPfY) ) //polyflap Y position decreases
+				polStateOutput = -0.5;
+		}
 		
 // 		cout << "polStateOutput: " << polStateOutput << endl;
-		currentPfRoll = roll;
+		currentPfRoll = obRoll;
 		currentPfY = chunk.objectPose.p.v2;
 
 
@@ -409,12 +413,19 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		/////////////////////////////////////////////////
 		//storing the feature vector
 
+		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(efRoll, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(normalize(efPitch, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(normalize(efYaw, -REAL_PI, REAL_PI));
+
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(roll, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(pitch, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(yaw, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
+		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
 
 		currentFeatureVector.push_back(polStateOutput);
 		

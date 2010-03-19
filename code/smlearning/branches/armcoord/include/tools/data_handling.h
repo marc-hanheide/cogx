@@ -350,9 +350,19 @@ string writeDownCollectedData(DataSet data);
 string get_seqBaseFileName (string seqFile);
 
 ///
+///obtain a discretization of starting finger poses from a canonical set of actions
+///
+map<Vec3, int, compare_Vec3> get_canonical_positions ();
+
+///
 ///artificially discretize (enumerate) a dataset using a simple representation
 ///
 CanonicalData::DataSet canonical_input_output_enumerator (DataSet data);
+
+///
+///enumerate a dataset taking into account time steps
+///
+CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data);
 
 ///
 ///write a dataset in cryssmex format
