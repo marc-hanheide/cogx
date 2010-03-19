@@ -30,7 +30,7 @@ if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
 endif(BUILD_SA_BINDING)
 
-option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" YES)
+option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" NO)
 if(BUILD_SA_MOTIVATION)
 add_subdirectory (subarchitectures/motivation.sa)
 endif(BUILD_SA_MOTIVATION)
@@ -53,7 +53,7 @@ add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
 
 
-option(BUILD_HAL_TTS "Build hardware tts" YES)
+option(BUILD_HAL_TTS "Build hardware tts" NO)
 if(BUILD_HAL_TTS)
 add_subdirectory (tools/hardware/tts)
 endif(BUILD_HAL_TTS)
@@ -101,7 +101,7 @@ endif(BUILD_SA_VISION)
 
 
 # Spatial
-option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
+option(BUILD_SA_SPATIAL "Build spatial subarchitecure" NO)
 if(BUILD_SA_SPATIAL)
     add_subdirectory (subarchitectures/spatial.sa)
 endif(BUILD_SA_SPATIAL)
@@ -112,7 +112,7 @@ if(BUILD_MULTI_TESTER)
 endif(BUILD_MULTI_TESTER)
 
 # Planner
-option(BUILD_SA_PLANNER "Build planner subarchitecure" YES)
+option(BUILD_SA_PLANNER "Build planner subarchitecure" NO)
 if(BUILD_SA_PLANNER)
     add_subdirectory (subarchitectures/planner.sa)
 endif(BUILD_SA_PLANNER)
