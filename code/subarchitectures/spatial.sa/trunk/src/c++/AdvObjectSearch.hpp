@@ -98,7 +98,8 @@ namespace spatial
 
     void owtTiltAngleRequest(const cast::cdl::WorkingMemoryChange &objID);
     void ReadPlaneMap();
-    void AskForDistribution(std::vector<std::string> objectlist);
+    void AskForDistribution(std::vector<std::string> objectlist,double probSum);
+    bool isStopSearch(double threshold);
   private:
 
     // 1. phase is table detection and then looking for objects.

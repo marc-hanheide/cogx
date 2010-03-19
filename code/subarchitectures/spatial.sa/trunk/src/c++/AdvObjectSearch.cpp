@@ -300,7 +300,18 @@ namespace spatial
       log("Summed.");
       gotDistribution = true;
 
-      // TODO: Once we get a distribution initiate search.
+      /* DEBUG */
+      double sumin = 0.0;
+      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+          if ((*m_lgm)(x, y) == 2)
+            continue;
+          sumin += (*distribution)(x, y);
+        }
+      }
+      log("Distribution sums to: %f", sumin);
+      /* DEBUG */
+
 
 
       /* Display PDF in PB as Line Cloud BEGIN */
@@ -325,6 +336,9 @@ namespace spatial
 
       //     DisplayPDFinPB(0,0,"root.distribution");
       log("Displayed PDF");
+
+
+      // TODO: Once we get a distribution initiate search.
 
     }
     catch (DoesNotExistOnWMException excp) {
@@ -413,7 +427,8 @@ namespace spatial
         log("Direct search");
         log("Reading plane map!");
         ReadPlaneMap();
-        //AskForDistribution(m_objectlist);
+        AskForDistribution(m_objectlist,1.0);
+        GoToNBV();
       }
       else if (key == 105) { // i
         log("Indirect search");
@@ -422,7 +437,7 @@ namespace spatial
         std::vector<std::string> objects;
         objects.push_back("joystick");
         objects.push_back("squaretable");
-        // AskForDistribution(objects);
+        AskForDistribution(objects,1.0);
 
       }
 
@@ -431,8 +446,15 @@ namespace spatial
 
     }
   }
+  bool AdvObjectSearch::isStopSearch(double threshold){
+    log("pOut: %f", pOut);
+    if (pOut > threshold)
+      return true;
+    else
+      return false;
+  }
   void
-  AdvObjectSearch::AskForDistribution(std::vector<std::string> objectlist) {
+  AdvObjectSearch::AskForDistribution(std::vector<std::string> objectlist, double probSum) {
 
     // make call to get distribution and change pdf accordingly
     Cure::LocalGridMap<double>* tobefilled = new Cure::LocalGridMap<double>(
@@ -442,7 +464,7 @@ namespace spatial
         new FrontierInterface::ObjectPriorRequest;
     objreq->relationType = FrontierInterface::ON;
     objreq->objects = objectlist;
-    objreq->probSum = pIn / 2;
+    objreq->probSum = probSum;
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
     delete tobefilled;
@@ -473,7 +495,7 @@ namespace spatial
   void
   AdvObjectSearch::GoToNBV() {
     int nbv;
-    log("Fore NextBestView");
+    log("Getting NextBestView");
     nbv = NextBestView();
     double Wx, Wy;
 
@@ -511,15 +533,7 @@ namespace spatial
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
     m_currentViewPoint = pos;
-    /* Add plan to PB BEGIN */
-    NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
-    cogx::Math::Vector3 viewpoint;
-    viewpoint.x = Wx;
-    viewpoint.y = Wy;
-    viewpoint.z = m_samplestheta[nbv];
-    obs->planlist.push_back(viewpoint);
-    addToWorkingMemory(newDataID(), obs);
-    /* Add plan to PB END */
+
 
     // Assume:
     // 1. posted nav comamnd
@@ -531,6 +545,25 @@ namespace spatial
     //PostNavCommand(pos);
     log("calling measurement update");
     MeasurementUpdate(false);
+
+
+    /* Add plan to PB BEGIN */
+        NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
+        cogx::Math::Vector3 viewpoint;
+        viewpoint.x = Wx;
+        viewpoint.y = Wy;
+        viewpoint.z = m_samplestheta[nbv];
+        obs->planlist.push_back(viewpoint);
+        addToWorkingMemory(newDataID(), obs);
+     /* Add plan to PB END */
+     sleepComponent(1000);
+
+        if (isStopSearch(0.5)){
+          GoToNBV();
+        }
+        else{
+          log("search stopped.");
+        }
 
   }
   void
@@ -687,21 +720,6 @@ namespace spatial
       std::string name) {
 
     //    double uUnit = pIn / pow(double((2 * m_lgm->getSize() + 1)), 2);
-
-    /* DEBUG */
-    double sumin = 0.0;
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-        //	log("pdf:%f",(*m_pdf)(x,y).prob)
-        if ((*m_lgm)(x, y) == 2)
-          continue;
-        sumin += (*m_pdf)(x, y).prob;
-      }
-    }
-    log("P(c_i) sums to: %f", sumin);
-    log("P(c_i) + Cout sums to: %f", sumin + pOut);
-
-    /* DEBUG */
 
     /* Display PDF in PB as Line Cloud BEGIN */
 
