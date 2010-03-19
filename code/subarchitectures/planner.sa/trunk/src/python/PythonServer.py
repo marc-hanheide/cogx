@@ -150,12 +150,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       task.mark_changed()
     else:
       print "checking execution state"
-      executable_plan = plan.topological_sort(include_depths=False)[plan.execution_position:-1]
+      executable_plan = plan.topological_sort()[plan.execution_position:-1]
         
       if len(task_desc.plan) != len(executable_plan):
         for action in task_desc.plan:
           print "%s, status: %s" % (action.fullName, str(action.status))
-        for pnode in plan.topological_sort(include_depths=False):
+        for pnode in plan.topological_sort():
           print "%s, status: %s" % (str(pnode), pnode.status)
         raise Exception("Plans from WMControl and Planner don't match!")
           
@@ -185,7 +185,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     print_state_difference(task.get_state(), state.State(facts))
 
-    newtask = pddl.mapl.MAPLProblem(task.mapltask.name, objects, [], None, task._mapldomain)
+    newtask = pddl.Problem(task.mapltask.name, objects, [], None, task._mapldomain)
 
     #check if the goal is still valid
     try:
