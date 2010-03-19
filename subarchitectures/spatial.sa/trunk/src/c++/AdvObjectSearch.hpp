@@ -73,9 +73,9 @@ namespace spatial
     void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
     void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
     void newObjectDetected(const cast::cdl::WorkingMemoryChange &objID);
+    void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
     void SavePlaneMap();
     void BuildPrior();
-    void PostRecognitionCommand();
     void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
       std::string label, std::string visualObjectID);
     void PostNavCommand(Cure::Pose3D position);
@@ -123,6 +123,7 @@ namespace spatial
     double m_ProbGivenObjectIsPresent;
     std::vector<double> tiltangles;
     std::vector<std::string> m_objectlist;
+    std::string m_CurrentTarget;
     IceUtil::Mutex m_Mutex;
     ptz::PTZInterfacePrx m_ptzInterface;
     NavData::RobotPose2dPtr lastRobotPose;

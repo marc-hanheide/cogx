@@ -256,6 +256,33 @@ namespace spatial
         new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
             &AdvObjectSearch::owtTiltAngleRequest));
 
+    addChangeFilter(createLocalTypeFilter<
+            SpatialData::NavCommand> (cdl::OVERWRITE),
+            new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
+                &AdvObjectSearch::owtNavCommand));
+
+  }
+
+  void
+   AdvObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID) {
+
+    try{
+    SpatialData::NavCommandPtr cmd(getMemoryEntry<
+        SpatialData::NavCommand> (objID.address));
+    if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
+         log("receiver cleaning up on success");
+         VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+
+         addRecognizer3DCommand();
+
+       }
+    }
+    catch (const CASTException &e) {
+       //      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+     }
+
+
+
   }
 
   void
@@ -385,6 +412,10 @@ namespace spatial
         m_table_phase = true;
 
       }
+      else if (key == 103){ // g
+        log("Table mode!");
+
+      }
       else if (key == 112) { // p
         if (gotDistribution) {
           log("Getting next view");
@@ -427,12 +458,14 @@ namespace spatial
       else if (key == 100) { // d
         log("Direct search");
         log("Reading plane map!");
+        m_CurrentTarget = "rice";
         ReadPlaneMap();
         AskForDistribution(m_objectlist,1.0);
       }
       else if (key == 105) { // i
         log("Indirect search");
         log("Reading plane map!");
+        m_CurrentTarget = "joystick";
         ReadPlaneMap();
         std::vector<std::string> objects;
         objects.push_back("joystick");
@@ -1212,15 +1245,6 @@ namespace spatial
       return false;
     }
 
-  }
-
-  void
-  AdvObjectSearch::PostRecognitionCommand() {
-    log("Posting Recog. Command now");
-    VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
-    cmd->labels = m_objectlist;
-    addToWorkingMemory(newDataID(), "vision.sa", cmd);
-    log("DetectionCommand added.");
   }
 
   void
