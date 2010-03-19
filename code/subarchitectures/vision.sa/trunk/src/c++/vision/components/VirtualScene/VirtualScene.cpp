@@ -41,6 +41,7 @@ VirtualScene::~VirtualScene(){
 // *** Working Memory Listeners ***
 void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	log("receiving VisualObject");
+	
 // 	lockComponent();
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
@@ -63,7 +64,7 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	m_VisualObjectList.push_back(newModelEntry);
 	
 	addVectorToCenterOfRotation(m_cor, m_cor_num, obj->pose.pos);
-	updateCamera();
+	updateCameraViews();
 	
 // 	unlockComponent();
 	log("VisualObject added to Scene: %s - %s", obj->label.c_str(), _wmc.address.id.c_str());
@@ -92,34 +93,39 @@ void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 
 void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 	log("receiving ConvexHull: %s", _wmc.address.id.c_str());
+	
+	if(!m_lock){
 		
-	ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
-	
-	ModelEntry newModelEntry;
-	
-	// Convert plane to geometry
-	if(!convertConvexHullPlane2Model(obj, newModelEntry.model)){
-		log("  error can not convert ConvexHullPlane to virtual scene model");
-		return;
-	}
-	newModelEntry.model.m_material = getRandomMaterial();
-	newModelEntry.castWMA = _wmc.address;
-	
-	m_ConvexHullList.push_back(newModelEntry);
-	addVectorToCenterOfRotation(m_cor, m_cor_num, obj->center.pos);
-	
-	// Convert each object to geometry
-	for(int i=0; i<obj->Objects.size(); i++){
-		newModelEntry.model.Clear();
-		if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry.model)){
-			log("  error can not convert ConvexHullObject to virtual scene model");
+		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
+		
+		ModelEntry newModelEntry;
+		
+		// Convert plane to geometry
+		if(!convertConvexHullPlane2Model(obj, newModelEntry.model)){
+			log("  error can not convert ConvexHullPlane to virtual scene model");
 			return;
 		}
 		newModelEntry.model.m_material = getRandomMaterial();
+		newModelEntry.castWMA = _wmc.address;
+		
 		m_ConvexHullList.push_back(newModelEntry);
+		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->center.pos);
+		
+		// Convert each object to geometry
+		for(int i=0; i<obj->Objects.size(); i++){
+			newModelEntry.model.Clear();
+			if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry.model)){
+				log("  error can not convert ConvexHullObject to virtual scene model");
+				return;
+			}
+			newModelEntry.model.m_material = getRandomMaterial();
+			m_ConvexHullList.push_back(newModelEntry);
+		}
+		
+		m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
+		updateCameraViews();
+		m_lock=true;
 	}
-	updateCamera();
-	m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);	
 }
 
 void VirtualScene::overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc){
@@ -306,7 +312,7 @@ void VirtualScene::initScene(const Video::Image &image){
 	loadCameraParameters(&m_camera0, image.camPars, 0.1, 10.0);
 	m_camera = m_camera0;
 	m_engine->SetCamera(m_camera);
-	
+	m_engine->UpdateCameraViews(m_camera);
 	
 	tgModelLoader loader;
 	loader.LoadPly(m_camModel.model, "instantiations/ply-models/logitech.ply");
@@ -321,20 +327,20 @@ void VirtualScene::initScene(const Video::Image &image){
   log("... initialisation successfull!");
 }
 
-void VirtualScene::updateCamera(){
+void VirtualScene::updateCameraViews(){
 	TomGine::tgVector3 cor_cam;
 	TomGine::tgVector3 new_cam_pos;
-	
+	tgCamera cam = m_camera0;
 	
 	cor_cam = TomGine::tgVector3(m_camera0.GetPos().x-m_cor.x, m_camera0.GetPos().y-m_cor.y, m_camera0.GetPos().z-m_cor.z);
 	m_engine->SetCenterOfRotation(0.5*(m_camera0.GetPos().x+m_cor.x),0.5*(m_camera0.GetPos().y+m_cor.y),0.5*(m_camera0.GetPos().z+m_cor.z));
 	
-	float l = 0.0;//cor_cam.length();
+	float l = cor_cam.length();
 	new_cam_pos = m_camera0.GetPos() - m_camera0.GetF() * l;
-	m_camera.SetPos( new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
-	m_camera.ApplyTransform();
+	cam.SetPos( new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
+	cam.ApplyTransform();
 	
-	m_engine->SetCamera(m_camera);
+	m_engine->UpdateCameraViews(cam);
 }
 
 void VirtualScene::drawCamera(){

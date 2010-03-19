@@ -289,7 +289,11 @@ void tgEngine::DrawCoordinates(){
 }
 
 void tgEngine::SetCamera(tgCamera cam){
-	m_cam[5] = m_cam[4] = m_cam[3] = m_cam[2] = m_cam[1] = m_cam[0] = m_camera = cam;	
+	m_camera = cam;	
+}
+
+void tgEngine::UpdateCameraViews(tgCamera cam){
+	m_cam[5] = m_cam[4] = m_cam[3] = m_cam[2] = m_cam[1] = m_cam[0] = cam;	
 	m_cam[1].Orbit(m_cor, m_cam[1].GetU(), PI);
 	m_cam[2].Orbit(m_cor, m_cam[2].GetU(), PI*0.5);
 	m_cam[3].Orbit(m_cor, m_cam[3].GetU(),-PI*0.5);

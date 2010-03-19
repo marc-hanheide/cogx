@@ -65,7 +65,7 @@ private:
  
   // Functions with GL commands allowed
   void initScene(const Video::Image &image);
-  void updateCamera();
+  void updateCameraViews();
   void drawCamera();
   void drawVisualObjects();
   void drawConvexHulls();

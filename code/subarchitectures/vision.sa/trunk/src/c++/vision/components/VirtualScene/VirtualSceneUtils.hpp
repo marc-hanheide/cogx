@@ -92,6 +92,7 @@ bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgM
 	TomGine::tgModel::Vertex v;
 	TomGine::tgModel::Face f;
 	
+	printf("Copying PointsSeq\n");
 	for(i=0; i<cvhull->PointsSeq.size(); i++){
 		p.x = cvhull->PointsSeq[i].x;
 		p.y = cvhull->PointsSeq[i].y;
@@ -99,10 +100,13 @@ bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgM
 		v.pos = p;
 // 		model.m_points.push_back(p);
 		model.m_vertices.push_back(v);
+// 		printf("v: %d\n", vidx);
 		f.vertices.push_back(vidx++);
 	}
-	
+	printf("Add face to polygon list\n");
 	model.m_polygons.push_back(f);
+	
+	printf("Compute polygon normals\n");
 	model.ComputePolygonNormals();
 	
 	return true;
