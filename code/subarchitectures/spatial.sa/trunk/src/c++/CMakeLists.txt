@@ -56,7 +56,7 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(ObjectRelationManager ObjectRelationManager.cpp RelationEvaluation.cpp) 
-link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface VisionData SpatialProperties peekabot PTZ)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 
