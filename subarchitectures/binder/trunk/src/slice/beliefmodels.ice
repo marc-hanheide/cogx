@@ -1,23 +1,23 @@
  
-// =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// =================================================================
+// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de) 
 //                                                                                                                          
-// This library is free software; you can redistribute it and/or                                                            
-// modify it under the terms of the GNU Lesser General Public License                                                       
-// as published by the Free Software Foundation; either version 2.1 of                                                      
-// the License, or (at your option) any later version.                                                                      
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License 
+// as published by the Free Software Foundation; either version 2.1 of
+// the License, or (at your option) any later version.
 //                                                                                                                          
-// This library is distributed in the hope that it will be useful, but                                                      
-// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
-// Lesser General Public License for more details.                                                                          
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
 //                                                                                                                          
-// You should have received a copy of the GNU Lesser General Public                                                         
-// License along with this program; if not, write to the Free Software                                                      
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
-// 02111-1307, USA.                                                                                                         
-// =================================================================                                                        
- 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+// 02111-1307, USA.
+// =================================================================
+  
 
 
 #ifndef BELIEF_ICE
@@ -30,7 +30,15 @@
 /**
  * Slice definition of the belief models formed and maintained by the binder
  *
- * TODO: check gj and union specs for comparison
+ * The specification is currently divided into 7 modules:
+ * - framing: representations for spatio-temporal framing
+ * - epstatus: representations for epistemic status
+ * - history: representations for epistemic objects
+ * - formulae: representations for (hybrid logic) formulae
+ * - distribs: representations for probability distributions
+ * - history: representations for belief histories
+ * - beliefs: representations for beliefs
+ *
  *
  * @author 	Pierre Lison (plison@dfki.de)
  * @version	19.03.2010
@@ -63,7 +71,7 @@ enum Feature {
 // ================================
 
 
-module spatiotemporalframing {
+module framing {
 
 /**
  * Abstract class for a spatio-temporal frame
@@ -141,6 +149,32 @@ class SharedEpistemicStatus extends EpistemicStatus{
 };
 
 };  // end epstatus
+
+
+
+
+
+// ================================
+// EPISTEMIC OBJECTS
+// ================================
+
+
+module epobject {
+
+/**
+ * Abstract class for epistemic objects 
+ */
+class EpistemicObject {
+	framing::SpatioTemporalFrame frame;
+	epstatus::EpistemicStatus estatus;
+} ;
+
+
+// EPISTEMIC OBJECTS WILL BE EXTENDED LATER ON TO INCLUDE NOT
+// ONLY BELIEFS, BUT ALSO INTENTIONS, PLANS, ETC
+
+};
+
 
 
 // ================================
@@ -304,13 +338,12 @@ class DiscreteDistribution extends ProbDistribution {
 // BELIEF DEVELOPMENT HISTORY
 // ================================
 
-module beliefhistory {
-
+module history {
 
 /**
  * Abstract class specifying the history of a given belief
  */
-class History { };
+class BeliefHistory { };
 
 
 /** 
@@ -318,7 +351,7 @@ class History { };
  * a subarchitecture perceptual input, link to the working
  * memory pointer (including the subarchitecture ID)
  */
-class PerceptHistory {
+class PerceptHistory extends BeliefHistory {
 	cast::cdl::WorkingMemoryPointer origin;
 };
 
@@ -332,15 +365,13 @@ sequence<string> BeliefIds;
  * If the belief is not a percept, the history is expressed 
  * as a set of pointers to the belief's ancestors and offspring
  */
-class BinderHistory {
+class BinderHistory extends BeliefHistory {
 	BeliefIds ancestors;
 	BeliefIds offspring;
 };	
 
 
-}; // end beliefhistory
-
-
+}; // end history
 
 
 // ================================
@@ -348,7 +379,6 @@ class BinderHistory {
 // ================================
 
 module beliefs {
-
 
 /**
  * Enumeration of possible ontological types for a given belief
@@ -368,13 +398,11 @@ enum OntologicalType {
  * frame, an epistemic status, an ontological type, a belief development
  * history, and a probabilistic content
  */
-class Belief {
+class Belief extends epobject::EpistemicObject {
 	string id;
 	OntologicalType ontType;
-	binder::autogen::spatiotemporalframing::SpatioTemporalFrame frame;
-	binder::autogen::epstatus::EpistemicStatus estatus;
-	binder::autogen::distribs::ProbDistribution content;
-	binder::autogen::beliefhistory::History hist; 
+	distribs::ProbDistribution content;
+	history::BeliefHistory hist; 
 };	
 
 }; // end beliefs
