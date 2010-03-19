@@ -1250,4 +1250,13 @@ namespace spatial
     return cmd;
   }
 
+  void 
+  AdvObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
+      std::string label, std::string visualObjectID){
+    VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
+    rec_cmd->cmd = cmd;
+    rec_cmd->label = label;
+    rec_cmd->visualObjectID = visualObjectID;
+    addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+  }
 }
