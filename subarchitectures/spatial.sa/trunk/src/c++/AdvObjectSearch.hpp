@@ -72,7 +72,6 @@ namespace spatial
     void receiveOdometry(const Robotbase::Odometry &castOdom);
     void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
     void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
-    void newObjectDetected(const cast::cdl::WorkingMemoryChange &objID);
     void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
     void newVisualObject(const cast::cdl::WorkingMemoryChange &objID);
     void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);

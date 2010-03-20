@@ -238,15 +238,6 @@ namespace spatial
         cdl::OVERWRITE), new MemberFunctionChangeReceiver<AdvObjectSearch> (
         this, &AdvObjectSearch::newPlanePointCloud));
 
-    addChangeFilter(createChangeFilter<VisionData::VisualObject> (cdl::ADD, "",
-        "", "vision.sa", cdl::ALLSA), new MemberFunctionChangeReceiver<
-        AdvObjectSearch> (this, &AdvObjectSearch::newObjectDetected));
-
-    addChangeFilter(createChangeFilter<VisionData::VisualObject> (
-        cdl::OVERWRITE, "", "", "vision.sa", cdl::ALLSA),
-        new MemberFunctionChangeReceiver<AdvObjectSearch> (this,
-            &AdvObjectSearch::newObjectDetected));
-
     addChangeFilter(
         createLocalTypeFilter<FrontierInterface::ObjectPriorRequest> (
             cdl::OVERWRITE),
@@ -306,6 +297,7 @@ namespace spatial
    AdvObjectSearch::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID) {
     if(isWaitingForDetection){
       try{
+        log("got recognizer3D overwrite command");
         VisionData::Recognizer3DCommandPtr cmd(getMemoryEntry<
             VisionData::Recognizer3DCommand> (objID.address));
         if (cmd->label == m_CurrentTarget){
@@ -333,6 +325,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     }
   else{
     // if we are not yet finished Go to NBV
+    log("object not detected");
     MeasurementUpdate(false);
     m_command = EXECUTENEXT;
   }
@@ -901,24 +894,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
   }
 
-  void
-  AdvObjectSearch::newObjectDetected(
-      const cast::cdl::WorkingMemoryChange &objID) {
-    shared_ptr<CASTData<VisionData::VisualObject> > oobj =
-        getWorkingMemoryEntry<VisionData::VisualObject> (objID.address);
-
-    VisionData::VisualObjectPtr obj = oobj->getData();
-    if (obj->detectionConfidence >= 0.5) {
-      // TODO: measurement update
-      MeasurementUpdate(true);
-    }
-    else {
-      // TODO: measurement update
-      MeasurementUpdate(false);
-    }
-
-  }
-
   double
   AdvObjectSearch::ActionProbabilityPerCell(int x, int y,
       std::vector<int> ViewConePoints) {
@@ -945,7 +920,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       return;
     }
 
-    DisplayPDFinPB(6, 0, "before");
+    DisplayPDFinPB(6, 0, "root.before");
 
     /* DEBUG */
     double sumin = 0.0;
@@ -1004,7 +979,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     log("pdfIn sums to: %f", sumin);
     log("pdfIn + Cout sums to: %f", sumin + pOut);
     /* DEBUG */
-    DisplayPDFinPB(0, -8, "after");
+    DisplayPDFinPB(0, -8, "root.after");
 
   }
 
