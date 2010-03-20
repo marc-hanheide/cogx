@@ -201,11 +201,11 @@ namespace spatial
       Ice::ObjectPrx base = ic->stringToProxy(str.str());
       m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
 
-/*      ptz::PTZPose p;
-      p.pan = 20 * 3.141562 / 180;
+     ptz::PTZPose p;
+      p.pan = 0;
       p.tilt = 0;
       p.zoom = 0;
-      m_ptzInterface->setPose(p);*/
+      m_ptzInterface->setPose(p);
 
     }
 
@@ -739,9 +739,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     nbv = NextBestView();
     double Wx, Wy;
 
+    std::pair<int, int> vp;
+    vp.first = m_samples[2 * nbv];
+    vp.second = m_samples[2 * nbv + 1];
+    VisitedVPs.insert(vp);
     m_lgm->index2WorldCoords(m_samples[2 * nbv], m_samples[2 * nbv + 1], Wx, Wy);
     log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
-
 
     /******* Get tilt angles  to calculate desired tilt value*/
     gotTiltAngles = false;
@@ -1237,6 +1240,14 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         }
       }
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
+      std::pair<int,int> sample;
+      sample.first = randx;
+      sample.second = randy;
+
+      if (VisitedVPs.find(sample) == VisitedVPs.end()){
+        log("we already checked this viewpoint");
+        continue;
+      }
 
       if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isRectangleObstacleFree(xW, yW - 0.2, xW, yW + 0.2, 1)) {
         /*if reachable*/
