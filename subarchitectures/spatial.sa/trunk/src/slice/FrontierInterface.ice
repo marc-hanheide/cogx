@@ -14,6 +14,7 @@
 module FrontierInterface {
   sequence<double> DoubleData;
   sequence<string> StringSeq;
+  sequence<cogx::Math::Vector3> Vec3Seq;
   sequence<cogx::Math::Vector2> Vec2Seq;
   class NodeHypothesis {
     double x;
@@ -102,7 +103,7 @@ module FrontierInterface {
     ObjectRelation relationType;
     StringSeq objects; //Starts with the query object's label
     Vec2Seq triangle; //Describes the 2D triangle in which to sample for points
-    DoubleData tiltAngles; 
+    Vec3Seq tiltAngles; 
   };
 
 
