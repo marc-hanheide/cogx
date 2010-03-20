@@ -338,12 +338,17 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     SpatialData::NavCommandPtr cmd(getMemoryEntry<
         SpatialData::NavCommand> (objID.address));
     if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
-         log("receiver cleaning up on success");
+         log("NavCommand succeeded.");
          m_command = RECOGNIZE;
        }
+    else{
+      log("NavCommand failed.Getting next view.");
+      m_command=EXECUTENEXT;
+    }
     }
     catch (const CASTException &e) {
        //      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
+
      }
 
 
@@ -1351,6 +1356,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   void 
   AdvObjectSearch::addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, 
       std::string label, std::string visualObjectID){
+    log("posting recognizer command.");
     VisionData::Recognizer3DCommandPtr rec_cmd = new VisionData::Recognizer3DCommand;
     rec_cmd->cmd = cmd;
     rec_cmd->label = label;
