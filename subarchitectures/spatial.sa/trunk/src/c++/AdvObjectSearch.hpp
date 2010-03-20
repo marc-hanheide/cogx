@@ -106,6 +106,8 @@ namespace spatial
     bool isStopSearch(double threshold);
     void DetectionComplete(bool isDetected);
     void InterpretCommand();
+    void MovePanTilt(double pan, double tilt, double tolerance);
+    void Recognize();
   private:
 
     enum ObjSearchStatus {
@@ -134,6 +136,7 @@ namespace spatial
     bool isWaitingForDetection;
     bool m_table_phase;
     bool m_usePTZ;
+    bool gotTiltAngles;
     bool gotDistribution;
     int m_samplesize;
     int* m_samples;
@@ -146,7 +149,7 @@ namespace spatial
     IplImage* img;
     double pFree,pObs,pPlanar,pIn,pOut;
     double m_ProbGivenObjectIsPresent;
-    std::vector<double> tiltangles;
+    std::vector<cogx::Math::Vector3> VPDistribution;
     std::vector<std::string> m_objectlist;
     std::string m_CurrentTarget;
     std::string m_SearchMode;

@@ -201,11 +201,11 @@ namespace spatial
       Ice::ObjectPrx base = ic->stringToProxy(str.str());
       m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
 
-      ptz::PTZPose p;
+/*      ptz::PTZPose p;
       p.pan = 20 * 3.141562 / 180;
       p.tilt = 0;
       p.zoom = 0;
-      m_ptzInterface->setPose(p);
+      m_ptzInterface->setPose(p);*/
 
     }
 
@@ -360,11 +360,11 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       FrontierInterface::ObjectTiltAngleRequestPtr tiltreq = getMemoryEntry<
           FrontierInterface::ObjectTiltAngleRequest> (objID.address);
       log("size: %d", tiltreq->tiltAngles.size());
-      tiltangles.clear();
       for (unsigned int i = 0; i < tiltreq->tiltAngles.size(); i++) {
         log("tilt angle: %f", tiltreq->tiltAngles[i]);
-        tiltangles.push_back(tiltreq->tiltAngles[i]);
+        VPDistribution.push_back(tiltreq->tiltAngles[i]);
       }
+      gotTiltAngles = true;
     }
     catch (DoesNotExistOnWMException excp) {
       log("Error!  GridMapDouble does not exist on WM!");
@@ -562,7 +562,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
       case RECOGNIZE:{
         m_command=IDLE;
-        addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
+        Recognize();
       }
       case EXECUTENEXT:{
         m_command=IDLE;
@@ -594,6 +594,80 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
   }
   }
+
+  void AdvObjectSearch::Recognize(){
+    log("waiting for tiltAngles");
+    while(!gotTiltAngles){
+      sleep(500);
+    }
+
+    //Calculate necessary tilt angle
+    double tolerance = 0.08; // 5 degrees in rad.
+    double d1,d2,tilt;
+    cogx::Math::Vector3 p1;
+    p1.x = lastRobotPose->x;
+    p1.y = lastRobotPose->y;
+    p1.z = 1.4; //camera is 1.4 high
+    tilt = 0;
+    for (unsigned int i=0; i < VPDistribution.size();i++){
+      d1 = p1.z  - VPDistribution[i].z;
+      d2 = sqrt(pow(p1.x - VPDistribution[i].x,2) + pow(p1.y - VPDistribution[i].y,2));
+      tilt += atan(d1/d2);
+    }
+    tilt = tilt / VPDistribution.size();
+    log("tilt angle is: %f",tilt);
+    //MovePanTilt(0, tilt, tolerance);
+    addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
+  }
+
+  void
+  AdvObjectSearch::MovePanTilt(double pan, double tilt, double tolerance) {
+    if (m_usePTZ) {
+      log(" Moving pantilt to: %f %f with %f tolerance", pan, tilt, tolerance);
+      ptz::PTZPose p;
+      ptz::PTZReading ptuPose;
+      p.pan = pan;
+      p.tilt = tilt;
+      p.zoom = 0;
+      m_ptzInterface->setPose(p);
+      bool run = true;
+      ptuPose = m_ptzInterface->getPose();
+      double actualpan = ptuPose.pose.pan;
+      double actualtilt = ptuPose.pose.tilt;
+
+      while (run) {
+        //m_PTUServer->setPose(p);
+        ptuPose = m_ptzInterface->getPose();
+        actualpan = ptuPose.pose.pan;
+        actualtilt = ptuPose.pose.tilt;
+
+        log("desired pan tilt is: %f %f", pan, tilt);
+        log("actual pan tilt is: %f %f", actualpan, actualtilt);
+        log("tolerance is: %f", tolerance);
+
+        //check that pan falls in tolerance range
+        if (actualpan < (pan + tolerance) && actualpan > (pan - tolerance)) {
+          run = false;
+        }
+
+        //only check tilt if pan is ok
+        if (!run) {
+          if (actualtilt < (tilt + tolerance) && actualtilt > (tilt - tolerance)) {
+            run = false;
+          }
+          else {
+            //if the previous check fails, loop again
+            run = true;
+          }
+        }
+
+        usleep(10000);
+      }
+      log("Moved.");
+      sleep(1);
+    }
+  }
+
   bool AdvObjectSearch::isStopSearch(double threshold){
     log("pOut: %f", pOut);
     if (pOut > threshold)
@@ -660,6 +734,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
 
     /******* Get tilt angles  to calculate desired tilt value*/
+    gotTiltAngles = false;
+    VPDistribution.clear();
     XVector3D a, b, c;
     a.x = Wx;
     a.y = Wy;
