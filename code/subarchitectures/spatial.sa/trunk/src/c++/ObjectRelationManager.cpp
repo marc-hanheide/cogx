@@ -1457,8 +1457,12 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
 
     sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
 	    outPoints, supportObject);
+    cogx::Math::Vector3 tiltAngle;
     for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
-      request->tiltAngles.push_back(it->z);
+      tiltAngle.x = it->x;
+      tiltAngle.y = it->y;
+      tiltAngle.z = it->z;
+      request->tiltAngles.push_back(tiltAngle);
     }
 
     overwriteWorkingMemory<FrontierInterface::ObjectTiltAngleRequest>(wmc.address, request);
