@@ -78,7 +78,7 @@ ObjectRelationManager::ObjectRelationManager()
 
 ObjectRelationManager::~ObjectRelationManager() 
 { 
-  for (map<int, spatial::Object*>::iterator it = m_objectModels.begin();
+  for (map<string, spatial::Object*>::iterator it = m_objectModels.begin();
       it != m_objectModels.end(); it++) {
     delete it->second;
   }
@@ -628,49 +628,40 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
       }
       transform(robotTransform, pose, pose);
 
+      string obsLabel = observedObject->label;
+
       // For now, assume each label represents a unique object
-      int objectID = -1;
-      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-	if (it->second->label == observedObject->label) {
-	  // update object
-	  objectID = it->first;
-//	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
-	  m_visualObjectIDs[objectID] = wmc.address.id;
-	  break;
-	}
-      }
+      map<std::string, SpatialObjectPtr>::iterator it = m_objects.find(obsLabel);
       bool bNewObject = false;
-      if (objectID == -1) {
+      if (it != m_objects.end()) {
+	// update object
+	//	  log("Updating object %i(%s)", objectID, observedObject->label.c_str());
+	m_visualObjectIDs[obsLabel] = wmc.address.id;
+      }
+      else {
 	// New object
 	bNewObject = true;
-	log("New SpatialObject: %s", observedObject->label.c_str());
-	objectID = m_maxObjectCounter++;
-	m_objects[objectID] = new SpatialData::SpatialObject;
-	m_objects[objectID]->id = objectID;
-	m_objects[objectID]->label = observedObject->label;
-	m_objects[objectID]->pose = pose;
+	log("New SpatialObject: %s", obsLabel.c_str());
+	m_objects[obsLabel] = new SpatialData::SpatialObject;
+	m_objects[obsLabel]->label = obsLabel;
+	m_objects[obsLabel]->pose = pose;
 
-	generateNewObjectModel(objectID, observedObject->label);
+	generateNewObjectModel(obsLabel);
       }
       //    log("2");
-      if (m_bDemoSampling) {
-	int onObjectID = -1;
-	if (observedObject->label == "krispies") {
+/*      if (m_bDemoSampling) {
+	string supObjectLabel = "squaretable";
+	if (observedObject->label == "krispies" ||
+	    observedObject->label == "joystick" ||
+	    observedObject->label == "rice") {
 	  // Evaluate onness for joystick object
-	  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-	    if (it->second->label == "joystick") {
-	      onObjectID = it->first;
-	    }
-	  }
-	  if (onObjectID == -1) {
-	    onObjectID = m_maxObjectCounter++;
-	    generateNewObjectModel(onObjectID, "joystick");
+      map<std::string, SpatialObjectPtr>::iterator it = m_objects.find(observedObject->label);
+      if (it != m_objects.end()) {
+	    generateNewObjectModel(observedObject->label);
 	  }
 	  sampleOnnessForObject(objectID, onObjectID);
 	}
-	if (observedObject->label == "joystick") {
-	  // Evaluate onness for joystick object
-	  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+	  for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
 	    if (it->second->label == "krispies") {
 	      onObjectID = it->first;
 	    }
@@ -680,29 +671,27 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	    generateNewObjectModel(onObjectID, "krispies");
 	  }
 	  sampleOnnessForObject(objectID, onObjectID);
-	}
-      }
+	}*/
 
-
-      double diff = length(m_objects[objectID]->pose.pos - pose.pos);
-      diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 1));
-      diff += length(getRow(m_objects[objectID]->pose.rot - pose.rot, 2));
+      double diff = length(m_objects[obsLabel]->pose.pos - pose.pos);
+      diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 1));
+      diff += length(getRow(m_objects[obsLabel]->pose.rot - pose.rot, 2));
       if (diff > 0.01 || bNewObject) {
 	//      log("3");
-	m_objects[objectID]->pose = pose;
-	m_lastObjectPoseTimes[objectID] = observedObject->time;
+	m_objects[obsLabel]->pose = pose;
+	m_lastObjectPoseTimes[obsLabel] = observedObject->time;
 
-	if (m_objectWMIDs.find(objectID) == m_objectWMIDs.end()) {
+	if (m_objectWMIDs.find(obsLabel) == m_objectWMIDs.end()) {
 	  string newID = newDataID();
 
-	  addToWorkingMemory<SpatialData::SpatialObject>(newID, m_objects[objectID]);
-	  m_objectWMIDs[objectID]=newID;
+	  addToWorkingMemory<SpatialData::SpatialObject>(newID, m_objects[obsLabel]);
+	  m_objectWMIDs[obsLabel]=newID;
 	}
 	else {
 
 	  try {
-	    overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[objectID],
-		m_objects[objectID]);
+	    overwriteWorkingMemory<SpatialData::SpatialObject>(m_objectWMIDs[obsLabel],
+		m_objects[obsLabel]);
 	  }
 	  catch (DoesNotExistOnWMException) {
 	    log("Error! SpatialObject disappeared from memory!");
@@ -712,12 +701,12 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//    log("4");
 
 	if (m_bDisplayVisualObjectsInPB && m_objectProxies.is_assigned()) {
-	  if (m_objectModels[objectID]->type == OBJECT_BOX) {
-	    BoxObject *box = (BoxObject*)m_objectModels[objectID];
+	  if (m_objectModels[obsLabel]->type == OBJECT_BOX) {
+	    BoxObject *box = (BoxObject*)m_objectModels[obsLabel];
 	    peekabot::CubeProxy theobjectproxy;
 	    peekabot::GroupProxy root;
 	    root.assign(m_PeekabotClient, "root");
-	    theobjectproxy.add(m_objectProxies, m_objects[objectID]->label, peekabot::REPLACE_ON_CONFLICT);
+	    theobjectproxy.add(m_objectProxies, m_objects[obsLabel]->label, peekabot::REPLACE_ON_CONFLICT);
 	    theobjectproxy.translate(pose.pos.x, pose.pos.y, pose.pos.z);
 	    double angle;
 	    Vector3 axis;
@@ -735,7 +724,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	//    log("5");
 
 	// Check degree of onness
-	recomputeOnnessForObject(objectID);
+	recomputeOnnessForObject(obsLabel);
 
 
 	if (m_placeInterface != 0) {
@@ -743,7 +732,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 	  FrontierInterface::PlaceMembership membership = 
 	    m_placeInterface->getPlaceMembership(pose.pos.x, pose.pos.y);
 
-	  setContainmentProperty(objectID, membership.placeID, 1.0);
+	  setContainmentProperty(obsLabel, membership.placeID, 1.0);
 	}
 
 	//  Needs estimate of extent of Places, in sensory frame
@@ -788,52 +777,35 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
 	observedObject->pos.x, observedObject->pos.y,
 	observedObject->pos.z);
 
-    int objectID = -1;
-    for (map<int, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
-      if (it->second->id == observedObject->id) {
-	// update object
-	objectID = it->first;
-	break;
-      }
-    }
+    string obsPlaneLabel = observedObject->label;
 
     bool isNew = false;
-    if (objectID == -1)  {
+    if (m_planeObjects.find(obsPlaneLabel) == m_planeObjects.end()) {
       // New plane object
-      objectID = observedObject->id;
-      m_planeObjects[objectID] = observedObject;
+      m_planeObjects[obsPlaneLabel] = observedObject;
       isNew = true;
     }
 
-    double diff = length(m_planeObjects[objectID]->pos - observedObject->pos);
-    double angDiff = m_planeObjects[objectID]->angle - observedObject->angle;
+    double diff = length(m_planeObjects[obsPlaneLabel]->pos - observedObject->pos);
+    double angDiff = m_planeObjects[obsPlaneLabel]->angle - observedObject->angle;
     if (angDiff > M_PI) angDiff -= 2*M_PI;
     if (angDiff < -M_PI) angDiff += 2*M_PI;
     diff += abs(angDiff*1.0);
 
     if (diff > 0.01 || isNew) {
-      m_planeObjects[objectID]->pos = observedObject->pos;
-      m_planeObjects[objectID]->angle = observedObject->angle;
+      m_planeObjects[obsPlaneLabel]->pos = observedObject->pos;
+      m_planeObjects[obsPlaneLabel]->angle = observedObject->angle;
 
-      if (false) {
-	if (m_objectModels.find(0) == m_objectModels.end()) {
-	  generateNewObjectModel(0, "krispies");
-	}
-	sampleOnnessForPlane(objectID, 0);
-      }
-      else {
-	recomputeOnnessForPlane(objectID);
-      }
+      recomputeOnnessForPlane(obsPlaneLabel);
 
-      string label = m_planeObjects[objectID]->label;
       if (m_bDisplayPlaneObjectsInPB) {
 	if (m_PeekabotClient.is_connected()) {
-	  if (m_planeObjectModels.find(label) ==
+	  if (m_planeObjectModels.find(obsPlaneLabel) ==
 	      m_planeObjectModels.end()) {
-	    log("Error! Plane model for %s was missing!", label.c_str());
+	    log("Error! Plane model for %s was missing!", obsPlaneLabel.c_str());
 	  }
 	  PlaneObject &planeObject = 
-	    m_planeObjectModels[label];
+	    m_planeObjectModels[obsPlaneLabel];
 	  char identifier[100];
 	  sprintf(identifier, "label%d", 0);
 	  peekabot::PolygonProxy pp;
@@ -856,17 +828,17 @@ ObjectRelationManager::newPlaneObject(const cast::cdl::WorkingMemoryChange &wmc)
 }
 
 void
-ObjectRelationManager::setContainmentProperty(int objectID, int placeID, double confidence)
+ObjectRelationManager::setContainmentProperty(const string &label, int placeID, double confidence)
 {
-  map<int, PlaceContainmentObjectPropertyPtr>::iterator it =
-    m_containmentProperties.find(objectID);
+  map<string, PlaceContainmentObjectPropertyPtr>::iterator it =
+    m_containmentProperties.find(label);
   SpatialProperties::PlaceContainmentObjectPropertyPtr containmentProp;
   if (it == m_containmentProperties.end()) {
     //New containment property for this Object
 
     containmentProp =
       new SpatialProperties::PlaceContainmentObjectProperty;
-    m_containmentProperties[objectID] = containmentProp;
+    m_containmentProperties[label] = containmentProp;
   }
   else {
     containmentProp = it->second;
@@ -891,7 +863,7 @@ ObjectRelationManager::setContainmentProperty(int objectID, int placeID, double 
     new SpatialProperties::DiscreteProbabilityDistribution;
   discDistr->data = pairs;
   containmentProp->placeId = placeID;
-  containmentProp->objectId = objectID;
+//  containmentProp->objectId = objectID;
   containmentProp->distribution = discDistr;
   containmentProp->mapValue = confidence > 0.5 ? placeValue1 : placeValue2;
   containmentProp->mapValueReliable = confidence > 0.8 || confidence < 0.2;
@@ -958,24 +930,24 @@ Pose3 ObjectRelationManager::getCameraToWorldTransform()
 } 
 
 void 
-ObjectRelationManager::recomputeOnnessForObject(int objectID)
+ObjectRelationManager::recomputeOnnessForObject(const string &label)
 {
-  if (m_objectModels.find(objectID) == m_objectModels.end()) {
+  if (m_objectModels.find(label) == m_objectModels.end()) {
     log("Error! Object model was missing!");
     return;
   }
-  if (m_objects.find(objectID) == m_objects.end()) {
+  if (m_objects.find(label) == m_objects.end()) {
     log("Error! Object was missing!");
     return;
   }
 
 //  log("1");
 
-  m_objectModels[objectID]->pose = m_objects[objectID]->pose;
+  m_objectModels[label]->pose = m_objects[label]->pose;
 
 //  log("2");
 
-  for (map<int, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); 
+  for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); 
       it != m_planeObjects.end(); it++) {
     PlaneObject po;
     po.type = OBJECT_PLANE;
@@ -991,37 +963,37 @@ ObjectRelationManager::recomputeOnnessForObject(int objectID)
       return;
     }
 //    log("3");
-    double onness = evaluateOnness(&po, m_objectModels[objectID]);
+    double onness = evaluateOnness(&po, m_objectModels[label]);
 //    log("4");
-    log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
+    log("Object %s on object %s is %f", label.c_str(), 
 	it->second->label.c_str(), onness);
   }
 
-  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin();
+  for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin();
       it != m_objects.end(); it++) {
-    int supportObjectID = it->first;
-    if (supportObjectID != objectID) {
+    string supportObjectLabel = it->first;
+    if (supportObjectLabel != label) {
 
-      if (m_objectModels.find(supportObjectID) == m_objectModels.end()) {
+      if (m_objectModels.find(supportObjectLabel) == m_objectModels.end()) {
 	log("Error! Support object model was missing!");
 	return;
       }
-      m_objectModels[supportObjectID]->pose = 
-	m_objects[supportObjectID]->pose;
+      m_objectModels[supportObjectLabel]->pose = 
+	m_objects[supportObjectLabel]->pose;
 
-      double onness = evaluateOnness(m_objectModels[supportObjectID],
-	  m_objectModels[objectID]);
+      double onness = evaluateOnness(m_objectModels[supportObjectLabel],
+	  m_objectModels[label]);
 
-      log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
+      log("Object %s on object %s is %f", label.c_str(), 
 	  it->second->label.c_str(), onness);
     }
   }
 }
 
 void
-ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
+ObjectRelationManager::recomputeOnnessForPlane(const string &planeLabel)
 {
-  if (m_planeObjects.find(planeObjectID) == m_planeObjects.end()) {
+  if (m_planeObjects.find(planeLabel) == m_planeObjects.end()) {
     log("Error! Plane object missing!");
     return;
   }
@@ -1029,55 +1001,55 @@ ObjectRelationManager::recomputeOnnessForPlane(int planeObjectID)
   PlaneObject po;
   po.type = OBJECT_PLANE;
   po.shape = PLANE_OBJECT_RECTANGLE;
-  po.pose.pos = m_planeObjects[planeObjectID]->pos;
-  fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
+  po.pose.pos = m_planeObjects[planeLabel]->pos;
+  fromAngleAxis(po.pose.rot, m_planeObjects[planeLabel]->angle, 
       vector3(0.0, 0.0, 1.0));
-    if (m_planeObjectModels.find(m_planeObjects[planeObjectID]->label) != m_planeObjectModels.end()) {
-    po.radius1 = m_planeObjectModels[m_planeObjects[planeObjectID]->label].radius1;
-    po.radius2 = m_planeObjectModels[m_planeObjects[planeObjectID]->label].radius2;
+    if (m_planeObjectModels.find(planeLabel) != m_planeObjectModels.end()) {
+    po.radius1 = m_planeObjectModels[planeLabel].radius1;
+    po.radius2 = m_planeObjectModels[planeLabel].radius2;
   }
   else {
     log("Error! Unknown plane object!");
     return;
   }
 
-  for (map<int, SpatialData::SpatialObjectPtr>::iterator it = m_objects.begin(); 
+  for (map<string, SpatialData::SpatialObjectPtr>::iterator it = m_objects.begin(); 
       it != m_objects.end(); it++) {
-    int objectID = it->second->id;
+    string objectLabel = it->first;
 
-    if (m_objectModels.find(objectID) == m_objectModels.end()) {
+    if (m_objectModels.find(objectLabel) == m_objectModels.end()) {
       log("Error! Object model was missing!");
     }
 
-    m_objectModels[objectID]->pose = m_objects[objectID]->pose;
-    log("Evaluating object %s on object %s",m_objects[objectID]->label.c_str(), 
-	m_planeObjects[planeObjectID]->label.c_str());
-    double onness = evaluateOnness(&po, m_objectModels[objectID]);
-    log("Object %s on object %s is %f", m_objects[objectID]->label.c_str(), 
-	m_planeObjects[planeObjectID]->label.c_str(), onness);
+    m_objectModels[objectLabel]->pose = m_objects[objectLabel]->pose;
+    log("Evaluating object %s on object %s",objectLabel.c_str(), 
+	planeLabel.c_str());
+    double onness = evaluateOnness(&po, m_objectModels[objectLabel]);
+    log("Object %s on object %s is %f", objectLabel.c_str(), 
+	planeLabel.c_str(), onness);
   }
 }
 
 void
-ObjectRelationManager::sampleOnnessForObject(int supportObjectModelID, 
-    int onObjectModelID) 
+ObjectRelationManager::sampleOnnessForObject(const string &supLabel, 
+    const string &onLabel) 
 {
-  if (m_objectModels.find(supportObjectModelID) == m_objectModels.end() ||
-      m_objects.find(supportObjectModelID) == m_objects.end()) {
+  if (m_objectModels.find(supLabel) == m_objectModels.end() ||
+      m_objects.find(supLabel) == m_objects.end()) {
     log("Error! Support object model missing!");
     return;
   }
-  m_objectModels[supportObjectModelID]->pose = 
-    m_objects[supportObjectModelID]->pose;
+  m_objectModels[supLabel]->pose = 
+    m_objects[supLabel]->pose;
 
-  spatial::Object *objectS = m_objectModels[supportObjectModelID];
+  spatial::Object *objectS = m_objectModels[supLabel];
 
-  if (m_objectModels.find(onObjectModelID) == m_objectModels.end()) {
+  if (m_objectModels.find(onLabel) == m_objectModels.end()) {
     log("Error! Supported object model missing!");
     return;
   }
 
-  spatial::Object *objectO = m_objectModels[onObjectModelID];
+  spatial::Object *objectO = m_objectModels[onLabel];
 
   Pose3 oldPose = objectO->pose;
   vector<Vector3> points;
@@ -1108,37 +1080,36 @@ ObjectRelationManager::sampleOnnessForObject(int supportObjectModelID,
 }
 
 void
-ObjectRelationManager::sampleOnnessForPlane(int planeObjectID, int objectModelID) 
+ObjectRelationManager::sampleOnnessForPlane(const string &planeLabel, const string &objectLabel) 
 {
 
 
-  if (m_planeObjects.find(planeObjectID) == m_planeObjects.end()) {
+  if (m_planeObjects.find(planeLabel) == m_planeObjects.end()) {
     log("Error! Plane object missing!");
     return;
   }
 
   PlaneObject po;
   po.type = OBJECT_PLANE;
-  po.pose.pos = m_planeObjects[planeObjectID]->pos;
-  fromAngleAxis(po.pose.rot, m_planeObjects[planeObjectID]->angle, 
+  po.pose.pos = m_planeObjects[planeLabel]->pos;
+  fromAngleAxis(po.pose.rot, m_planeObjects[planeLabel]->angle, 
       vector3(0.0, 0.0, 1.0));
-  string label = m_planeObjects[planeObjectID]->label;
 
-  if (m_planeObjectModels.find(label) != m_planeObjectModels.end()) {
-    po.radius1 = m_planeObjectModels[label].radius1;
-    po.radius2 = m_planeObjectModels[label].radius2;
+  if (m_planeObjectModels.find(planeLabel) != m_planeObjectModels.end()) {
+    po.radius1 = m_planeObjectModels[planeLabel].radius1;
+    po.radius2 = m_planeObjectModels[planeLabel].radius2;
   }
   else {
     log("Error! Unknown plane object!");
     return;
   }
 
-  if (m_objectModels.find(objectModelID) == m_objectModels.end()) {
+  if (m_objectModels.find(objectLabel) == m_objectModels.end()) {
     log("Error! Object model missing!");
     return;
   }
 
-  spatial::Object *objectO = m_objectModels[objectModelID];
+  spatial::Object *objectO = m_objectModels[objectLabel];
 
   Pose3 oldPose = objectO->pose;
   vector<Vector3> points;
@@ -1177,26 +1148,25 @@ ObjectRelationManager::addTrackerCommand(VisionData::TrackingCommandType cmd, st
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   log("addTrackerCommand");
   track_cmd->cmd = cmd;
-  for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-    if (it->second->label == label) {
-      // update object
-      int objectID = it->first;
-      if (m_visualObjectIDs.find(objectID) == m_visualObjectIDs.end()) {
-	log ("Error! Visual object WM ID was unknown!");
-	return;
-      }
-      track_cmd->visualObjectID = m_visualObjectIDs[objectID];;
-    }
+  if (m_objects.find(label) == m_objects.end()) {
+    log("Error! Can't issue tracking command; object uknown!");
+    return;
   }
+
+  if (m_visualObjectIDs.find(label) == m_visualObjectIDs.end()) {
+    log ("Error! Visual object WM ID was unknown!");
+    return;
+  }
+  track_cmd->visualObjectID = m_visualObjectIDs[label];;
+
   addToWorkingMemory(newDataID(), "vision.sa", track_cmd);
 }
 
 void
-ObjectRelationManager::generateNewObjectModel(int objectID,
-    const std::string &label) {
+ObjectRelationManager::generateNewObjectModel(const std::string &label) {
   log("generateNewObjectModel %s", label.c_str());
   BoxObject *newBoxObject = new BoxObject;
-  m_objectModels[objectID] = newBoxObject;
+  m_objectModels[label] = newBoxObject;
   newBoxObject->type = OBJECT_BOX;
   if (label == "krispies") {
     newBoxObject->radius1 = 0.095;
@@ -1252,8 +1222,8 @@ ObjectRelationManager::readPlaneModelsFromFile()
     PlaneObject obj;
     obj.type = OBJECT_PLANE;
     obj.shape = PLANE_OBJECT_RECTANGLE;
-    obj.radius1 = width;
-    obj.radius2 = depth;
+    obj.radius1 = width/2;
+    obj.radius2 = depth/2;
     setIdentity(obj.pose.rot);
     obj.pose.pos.x = -FLT_MAX;
     obj.pose.pos.y = -FLT_MAX;
@@ -1287,7 +1257,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     spatial::Object *supportObject;
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
       supportObject = &m_planeObjectModels[supportObjectLabel];
-      for (map<int, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
+      for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
 	if (it->second->label == supportObjectLabel) {
 	  // update object
 	  supportObject->pose.pos = it->second->pos;
@@ -1296,26 +1266,12 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     }
     else {
       // For now, assume each label represents a unique object
-      int objectID = -1;
-      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-	if (it->second->label == supportObjectLabel) {
-	  // update object
-	  objectID = it->first;
-	}
+      if (m_objects.find(supportObjectLabel) == m_objects.end()) {
+	// The pose of this object is not known. Cannot compute onness
+	// for this hierarchy.
+	return;
       }
-      bool bNewObject = false;
-      if (objectID == -1) {
-	// New object
-	bNewObject = true;
-	log("New SpatialObject: %s", supportObjectLabel.c_str());
-	objectID = m_maxObjectCounter++;
-	m_objects[objectID] = new SpatialData::SpatialObject;
-	m_objects[objectID]->id = objectID;
-	m_objects[objectID]->label = supportObjectLabel;
-
-	generateNewObjectModel(objectID, supportObjectLabel);
-      }
-      supportObject = m_objectModels[objectID];
+      supportObject = m_objectModels[supportObjectLabel];
     }
 
     int nSamplesPerStep = request->objects.size() == 2 ? 500 : 5;
@@ -1378,7 +1334,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       for (unsigned long i = 0; i < cellCount; i++) {
 	if (outMap[i] != 0.0) {
 	  outMap[i] *= weight;
-	  log("outmap: [%ii]=%f", i,outMap[i]);
+	  //log("outmap: [%ii]=%f", i,outMap[i]);
 	}
       }
 #endif
@@ -1417,7 +1373,7 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
     spatial::Object *supportObject;
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
       supportObject = &m_planeObjectModels[supportObjectLabel];
-      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+      for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
 	if (it->second->label == supportObjectLabel) {
 	  // update object
 	  supportObject->pose = it->second->pose;
@@ -1426,43 +1382,33 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
     }
     else {
       // For now, assume each label represents a unique object
-      int objectID = -1;
-      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-	if (it->second->label == supportObjectLabel) {
-	  // update object
-	  objectID = it->first;
-	}
+      if (m_objects.find(supportObjectLabel) == m_objects.end()) {
+	// This object's pose is not known. Cannot compute
+	// onness for this hierarchy.
+	supportObject = 0;
       }
-      bool bNewObject = false;
-      if (objectID == -1) {
-	// New object
-	bNewObject = true;
-	log("New SpatialObject: %s", supportObjectLabel.c_str());
-	objectID = m_maxObjectCounter++;
-	m_objects[objectID] = new SpatialData::SpatialObject;
-	m_objects[objectID]->id = objectID;
-	m_objects[objectID]->label = supportObjectLabel;
-
-	generateNewObjectModel(objectID, supportObjectLabel);
+      else {
+	supportObject = m_objectModels[supportObjectLabel];
       }
-      supportObject = m_objectModels[objectID];
     }
 
-    int nSamplesPerStep = request->objects.size() == 2 ? 100 : 5;
+    if (supportObject != 0) {
+      int nSamplesPerStep = request->objects.size() == 2 ? 100 : 5;
 
-    vector<Vector3> triangle;
-    triangle.push_back(vector3(request->triangle[0].x,request->triangle[0].y, 0));
-    triangle.push_back(vector3(request->triangle[1].x,request->triangle[1].y, 0));
-    triangle.push_back(vector3(request->triangle[2].x,request->triangle[2].y, 0));
+      vector<Vector3> triangle;
+      triangle.push_back(vector3(request->triangle[0].x,request->triangle[0].y, 0));
+      triangle.push_back(vector3(request->triangle[1].x,request->triangle[1].y, 0));
+      triangle.push_back(vector3(request->triangle[2].x,request->triangle[2].y, 0));
 
-    sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
-	    outPoints, supportObject);
-    cogx::Math::Vector3 tiltAngle;
-    for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
-      tiltAngle.x = it->x;
-      tiltAngle.y = it->y;
-      tiltAngle.z = it->z;
-      request->tiltAngles.push_back(tiltAngle);
+      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
+	  outPoints, supportObject);
+      cogx::Math::Vector3 tiltAngle;
+      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
+	tiltAngle.x = it->x;
+	tiltAngle.y = it->y;
+	tiltAngle.z = it->z;
+	request->tiltAngles.push_back(tiltAngle);
+      }
     }
 
     overwriteWorkingMemory<FrontierInterface::ObjectTiltAngleRequest>(wmc.address, request);
@@ -1503,27 +1449,16 @@ ObjectRelationManager::sampleRecursively(const vector<string> &objects,
     return;
   }
   else {
-      // For now, assume each label represents a unique object
-      int objectID = -1;
-      for (map<int, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
-	if (it->second->label == currentObjectLabel) {
-	  // update object
-	  objectID = it->first;
-	}
-      }
-      bool bNewObject = false;
-      if (objectID == -1) {
-	// New object
-	bNewObject = true;
-	log("New SpatialObject: %s", currentObjectLabel.c_str());
-	objectID = m_maxObjectCounter++;
-	m_objects[objectID] = new SpatialData::SpatialObject;
-	m_objects[objectID]->id = objectID;
-	m_objects[objectID]->label = currentObjectLabel;
+    // For now, assume each label represents a unique object
+    if (m_objects.find(currentObjectLabel) == m_objects.end()) {
+      // New object
+      log("New SpatialObject: %s", currentObjectLabel.c_str());
+      m_objects[currentObjectLabel] = new SpatialData::SpatialObject;
+      m_objects[currentObjectLabel]->label = currentObjectLabel;
 
-	generateNewObjectModel(objectID, currentObjectLabel);
-      }
-      onObject = m_objectModels[objectID];
+      generateNewObjectModel(currentObjectLabel);
+    }
+    onObject = m_objectModels[currentObjectLabel];
   }
 
   Pose3 oldPose = onObject->pose;

@@ -671,6 +671,11 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 	      //Check if it borders on unknown space
 	      for (int yi2 = yi - 1; yi2 <= yi + 1; yi2++) {
 		for (int xi2 = xi - 1; xi2 <= xi + 1; xi2++) {
+		  if (xi2 < -propertyLGM->getSize() ||
+		      xi2 > propertyLGM->getSize() ||
+		      yi2 < -propertyLGM->getSize() ||
+		      yi2 > propertyLGM->getSize())
+		    continue;
 		  if ((*propertyLGM)(xi2, yi2) == '2') {
 		    ret.unexploredBorderValue += 1.0;
 		    yi2 = yi + 2;

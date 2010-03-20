@@ -200,13 +200,6 @@ namespace spatial
 
       Ice::ObjectPrx base = ic->stringToProxy(str.str());
       m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
-
-     ptz::PTZPose p;
-      p.pan = 0;
-      p.tilt = 0;
-      p.zoom = 0;
-      m_ptzInterface->setPose(p);
-
     }
 
   }
@@ -482,6 +475,9 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_table_phase = true;
 
       }
+      else if (key == 117) { // u
+	addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
+      }
       else if (key == 103){ // g
         log("sampling grid!");
         SampleGrid();
@@ -626,7 +622,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     }
     tilt = tilt / VPDistribution.size();
     log("tilt angle is: %f",tilt);
-    MovePanTilt(0, tilt, tolerance);
+    MovePanTilt(0, -tilt, tolerance);
     addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
   }
 
@@ -961,7 +957,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     linecloudp.set_color(0.9, 0, 0);
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      for (int y = -m_lgm->getSize(); y < m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
@@ -972,15 +968,15 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
     }
 
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
           continue;
-        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y, xW3, yW3);
+        m_lgm->index2WorldCoords(x, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x + 1, y, xW3, yW3);
         linecloudp.add_line(xW2 + xoffset, yW2 + yoffset, (*m_pdf)(x, y).prob
             * multiplier1, xW3 + xoffset, yW3 + yoffset,
-            (*m_pdf)(x, y + 1).prob * multiplier1);
+            (*m_pdf)(x + 1, y).prob * multiplier1);
       }
     }
     /* Display pdfIn in as line cloud PB END */
@@ -1226,8 +1222,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     bool haspoint;
     while (i < m_samplesize) {
       haspoint = false;
-      randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
-      randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
+      randx = (rand() % (2 * m_lgm->getSize()+1)) - m_lgm->getSize();
+      randy = (rand() % (2 * m_lgm->getSize()+1)) - m_lgm->getSize();
       int the = (int) (rand() % angles.size());
       angle = angles[the];
       //if we have that point already, skip.
@@ -1244,12 +1240,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       sample.first = randx;
       sample.second = randy;
 
-      if (VisitedVPs.find(sample) == VisitedVPs.end()){
+      if (VisitedVPs.find(sample) != VisitedVPs.end() && VisitedVPs.size() != 0){
         log("we already checked this viewpoint");
         continue;
       }
 
-      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isRectangleObstacleFree(xW, yW - 0.2, xW, yW + 0.2, 1)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isCircleObstacleFree(xW, yW, 0.5)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");

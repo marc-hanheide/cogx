@@ -106,6 +106,7 @@ protected:
 
   Cure::LocalMap m_LMap;
   Cure::NavGraph m_NavGraph;
+  bool m_bNoNavGraph;
 
   Cure::GridLineRayTracer<unsigned char>* m_Glrt;
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;

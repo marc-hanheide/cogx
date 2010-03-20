@@ -87,6 +87,11 @@ void SpatialControl::configure(const map<string,string>& _config)
     std::abort();
   }  
 
+  m_bNoNavGraph = false;
+  if(_config.find("--no-graph") != _config.end()){
+    m_bNoNavGraph = true;
+  }
+
   if (Cure::NavController::config(configfile)) {
     println("configure(...) Failed to config with \"%s\", use -c option\n",
             configfile.c_str());
@@ -603,7 +608,7 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
   
   m_CurrPose = m_TOPP.getPose();
 	
-  if (m_ready) { // have to get a first nav graph 
+  if (m_ready || m_bNoNavGraph) { // have to get a first nav graph 
                  // to be ready
     
     m_taskStatusMutex.lock(); // acquire mutex!
