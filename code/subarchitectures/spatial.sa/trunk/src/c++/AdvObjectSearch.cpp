@@ -335,13 +335,14 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
    AdvObjectSearch::owtNavCommand(const cast::cdl::WorkingMemoryChange &objID) {
 
     try{
+      log("nav command overwritten");
     SpatialData::NavCommandPtr cmd(getMemoryEntry<
         SpatialData::NavCommand> (objID.address));
     if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
          log("NavCommand succeeded.");
          m_command = RECOGNIZE;
        }
-    else{
+    else if (cmd->comp == SpatialData::COMMANDFAILED){
       log("NavCommand failed.Getting next view.");
       m_command=EXECUTENEXT;
     }
@@ -356,12 +357,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   AdvObjectSearch::owtTiltAngleRequest(
       const cast::cdl::WorkingMemoryChange &objID) {
     try {
-      log("got tilt angle request");
+      log("got tilt angles");
       FrontierInterface::ObjectTiltAngleRequestPtr tiltreq = getMemoryEntry<
           FrontierInterface::ObjectTiltAngleRequest> (objID.address);
       log("size: %d", tiltreq->tiltAngles.size());
       for (unsigned int i = 0; i < tiltreq->tiltAngles.size(); i++) {
-        log("tilt angle: %f", tiltreq->tiltAngles[i]);
+        //log("tilt angle: %f", tiltreq->tiltAngles[i]);
         VPDistribution.push_back(tiltreq->tiltAngles[i]);
       }
       gotTiltAngles = true;
@@ -563,6 +564,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       case RECOGNIZE:{
         m_command=IDLE;
         Recognize();
+	break;
       }
       case EXECUTENEXT:{
         m_command=IDLE;
@@ -573,23 +575,31 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           GoToNBV();
 
         }
+	break;
       }
       case ASK_FOR_DISTRIBUTION: {
-        m_command=IDLE;
-        if (m_SearchMode =="direct")
+        log("asking for distribution");
+	m_command=IDLE;
+        if (m_SearchMode =="direct"){
+	  log("asking prior: direct");
           AskForDistribution(m_objectlist,pIn);
+	}
         else if (m_SearchMode =="indirect" && m_CurrentTarget == "rice"){
-          AskForDistribution(m_objectlist,pIn);
+          log("asking prior: indirect, rice");
+	  AskForDistribution(m_objectlist,pIn);
         }
         else if (m_SearchMode == "indirect" && m_CurrentTarget == "joystick"){
-          std::vector<std::string> objects;
+          log("asking prior: indirect,joystick");
+	  std::vector<std::string> objects;
           objects.push_back("joystick");
           objects.push_back("squaretable");
           AskForDistribution(objects,pIn);
         }
+	break;
       }
       case IDLE: {
-        log("Idling");
+        //log("Idling");
+	break;
       }
 
   }
@@ -616,7 +626,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     }
     tilt = tilt / VPDistribution.size();
     log("tilt angle is: %f",tilt);
-    //MovePanTilt(0, tilt, tolerance);
+    MovePanTilt(0, tilt, tolerance);
     addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
   }
 
@@ -767,6 +777,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
     m_currentViewPoint = pos;
+    log("posting nav command");
     PostNavCommand(m_currentViewPoint, SpatialData::GOTOPOSITION);
 
     /* Add plan to PB BEGIN */
@@ -1428,6 +1439,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     cmd->comp = SpatialData::COMMANDPENDING;
 
     addToWorkingMemory(newDataID(), cmd);
+    log("posted nav command");
   }
 
   void 
@@ -1439,5 +1451,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     rec_cmd->label = label;
     rec_cmd->visualObjectID = visualObjectID;
     addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+    isWaitingForDetection = true;
   }
 }
