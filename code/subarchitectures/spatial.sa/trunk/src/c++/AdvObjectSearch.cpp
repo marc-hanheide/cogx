@@ -485,7 +485,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
       }
       else if (key == 103){ // g
-        log("Table mode!");
+        log("sampling grid!");
+        SampleGrid();
 
       }
       else if (key == 112) { // p
@@ -1135,7 +1136,9 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     int randx, randy;
     double xW, yW, angle;
     //log("for sample size");
+    bool haspoint;
     while (i < m_samplesize) {
+      haspoint = false;
       randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       int the = (int) (rand() % angles.size());
@@ -1145,12 +1148,13 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         if (m_samples[2 * j] == randx && m_samples[2 * j + 1] == randy
             && m_samplestheta[j] == angle) {
           log("we already have this point.");
-          continue;
+          haspoint = true;
+          break;
         }
       }
       m_lgm->index2WorldCoords(randx, randy, xW, yW);
 
-      if ((*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen) {
+      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isRectangleObstacleFree(xW, yW - 0.2, xW, yW + 0.2, 1)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
