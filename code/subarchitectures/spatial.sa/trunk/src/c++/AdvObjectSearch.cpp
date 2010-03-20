@@ -350,9 +350,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
        //      log("failed to delete SpatialDataCommand: %s", e.message.c_str());
 
      }
-
-
-
   }
 
   void
@@ -430,7 +427,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           if ((*distribution)(x, y) == 0)
             continue;
           m_lgm->index2WorldCoords(x, y, xW2, yW2);
-          linecloudp.add_vertex(xW2, yW2, 1);
+          linecloudp.add_vertex(xW2, yW2, (*distribution)(x, y)*2);
         }
       }
       /* Display pdfIn in as line cloud PB END */
