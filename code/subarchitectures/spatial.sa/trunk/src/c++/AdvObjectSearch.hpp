@@ -149,6 +149,7 @@ namespace spatial
     IplImage* img;
     double pFree,pObs,pPlanar,pIn,pOut;
     double m_ProbGivenObjectIsPresent;
+    std::set<std::pair<int, int> > VisitedVPs;
     std::vector<cogx::Math::Vector3> VPDistribution;
     std::vector<std::string> m_objectlist;
     std::string m_CurrentTarget;
