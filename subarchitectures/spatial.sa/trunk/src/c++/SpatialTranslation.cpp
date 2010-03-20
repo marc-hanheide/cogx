@@ -62,6 +62,16 @@ SpatialTranslation::~SpatialTranslation() {
 
 // ----------------------------------------------------------------------------
 
+void SpatialTranslation::configure(const map<string,string>& config) 
+{
+  println("configure entered");
+
+  m_bNoNavGraph = false;
+  if(config.find("--no-graph") != config.end()){
+    m_bNoNavGraph = true;
+  }
+}
+
 void SpatialTranslation::start() {
   ManagedComponent::start();
 
@@ -69,13 +79,15 @@ void SpatialTranslation::start() {
 		  new MemberFunctionChangeReceiver<SpatialTranslation>(this,
 								       &SpatialTranslation::newNavCommand));
 	        
-  addChangeFilter(createLocalTypeFilter<NavData::NavGraph>(cdl::ADD),
-		  new MemberFunctionChangeReceiver<SpatialTranslation>(this,
-								       &SpatialTranslation::newNavGraph));
-	        
-  addChangeFilter(createLocalTypeFilter<NavData::NavGraph>(cdl::OVERWRITE),
-		  new MemberFunctionChangeReceiver<SpatialTranslation>(this,
-								       &SpatialTranslation::owtNavGraph));
+  if (!m_bNoNavGraph) {
+    addChangeFilter(createLocalTypeFilter<NavData::NavGraph>(cdl::ADD),
+	new MemberFunctionChangeReceiver<SpatialTranslation>(this,
+	  &SpatialTranslation::newNavGraph));
+
+    addChangeFilter(createLocalTypeFilter<NavData::NavGraph>(cdl::OVERWRITE),
+	new MemberFunctionChangeReceiver<SpatialTranslation>(this,
+	  &SpatialTranslation::owtNavGraph));
+  }
 
   m_placeInterface = FrontierInterface::PlaceInterfacePrx
     (getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
@@ -104,12 +116,14 @@ void SpatialTranslation::runComponent() {
       unlockComponent();
       sleepComponent(200); // wait a little...
     }
-    std::vector< boost::shared_ptr<CASTData<NavData::NavGraph> > > graphVector;
-    while (graphVector.empty()) {
-      lockComponent();
-      getWorkingMemoryEntries<NavData::NavGraph>(0, graphVector);	
-      unlockComponent();
-      sleepComponent(200); // wait a little...
+    if (!m_bNoNavGraph) {
+      std::vector< boost::shared_ptr<CASTData<NavData::NavGraph> > > graphVector;
+      while (graphVector.empty()) {
+	lockComponent();
+	getWorkingMemoryEntries<NavData::NavGraph>(0, graphVector);	
+	unlockComponent();
+	sleepComponent(200); // wait a little...
+      }
     }
 
     log("Got the data needed to start, now wating for task");
@@ -592,37 +606,39 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
   }else if (nav->cmd == SpatialData::GOTOPLACE){
 
     log("read navcommand: GOTOPLACE");
-	
-    if (nav->destId.size() < 1) {
-      println("cmd syntax error, need NavCommand.destId (size 1)");
-      status = SpatialData::CMDMALFORMATTED;
-      return false;
-    } else {
-      //TODO: make component name a config parameter
-      NavData::FNodePtr destNode = m_placeInterface->getNodeFromPlaceID(nav->destId[0]);
+    if (!m_bNoNavGraph)  {
 
-      if (destNode != 0) {
-	ctrl.cmd = NavData::lGOTONODE;
-	ctrl.nodeId = destNode->nodeId;
-	ctrl.tolerance = nav->tolerance;
-      }
-      else {
-	FrontierInterface::NodeHypothesisPtr destHyp = m_placeInterface->getHypFromPlaceID(nav->destId[0]);
-	if (destHyp != 0) {
+      if (nav->destId.size() < 1) {
+	println("cmd syntax error, need NavCommand.destId (size 1)");
+	status = SpatialData::CMDMALFORMATTED;
+	return false;
+      } else {
+	//TODO: make component name a config parameter
+	NavData::FNodePtr destNode = m_placeInterface->getNodeFromPlaceID(nav->destId[0]);
 
-	  ctrl.cmd = NavData::lGOTOXY;
-	  ctrl.x = destHyp->x;
-	  ctrl.y = destHyp->y;
+	if (destNode != 0) {
+	  ctrl.cmd = NavData::lGOTONODE;
+	  ctrl.nodeId = destNode->nodeId;
 	  ctrl.tolerance = nav->tolerance;
 	}
-	else {//destNode == 0 && destHyp == 0
-	  log("cmd error; could not find destination Place");
-	  status = SpatialData::CMDMALFORMATTED;
-	  return false;
+	else {
+	  FrontierInterface::NodeHypothesisPtr destHyp = m_placeInterface->getHypFromPlaceID(nav->destId[0]);
+	  if (destHyp != 0) {
+
+	    ctrl.cmd = NavData::lGOTOXY;
+	    ctrl.x = destHyp->x;
+	    ctrl.y = destHyp->y;
+	    ctrl.tolerance = nav->tolerance;
+	  }
+	  else {//destNode == 0 && destHyp == 0
+	    log("cmd error; could not find destination Place");
+	    status = SpatialData::CMDMALFORMATTED;
+	    return false;
+	  }
 	}
+	m_placeInterface->beginPlaceTransition((int)nav->destId[0]);
+	log("Sending transition start signal (place ID=%i)",(int)nav->destId[0]);
       }
-      m_placeInterface->beginPlaceTransition((int)nav->destId[0]);
-      log("Sending transition start signal (place ID=%i)",(int)nav->destId[0]);
     }
   }else if (nav->cmd == SpatialData::GOFORWARD) {
 

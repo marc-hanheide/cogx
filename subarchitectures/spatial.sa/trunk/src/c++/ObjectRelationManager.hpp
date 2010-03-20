@@ -53,16 +53,18 @@ protected:
   int m_maxObjectCounter;
 
   //Map from SpatialObject::id to spatial objects managed by this component
-  std::map<int, SpatialObjectPtr> m_objects; 
-  std::map<int, spatial::Object*> m_objectModels;
-  std::map<int, std::string> m_objectWMIDs; 
-  std::map<int, std::string> m_visualObjectIDs;
+  std::map<std::string, SpatialObjectPtr> m_objects; 
+  std::map<std::string, spatial::Object*> m_objectModels;
+  std::map<std::string, std::string> m_objectWMIDs; 
+  std::map<std::string, std::string> m_visualObjectIDs;
 
   std::map<std::string, PlaneObject> m_planeObjectModels;
+  std::map<std::string, FrontierInterface::ObservedPlaneObjectPtr> m_planeObjects;
+  std::map<std::string, cast::cdl::CASTTime> m_lastPlaneObjectPoseTimes;
 
   NavData::RobotPose2dPtr lastRobotPose;
 //  std::map<int, Pose3> m_lastKnownObjectPoses;
-  std::map<int, cast::cdl::CASTTime> m_lastObjectPoseTimes;
+  std::map<std::string, cast::cdl::CASTTime> m_lastObjectPoseTimes;
   Pose3 m_CameraPoseR;
 
   //For keeping track of when the robot is moving (to init the tracker)
@@ -72,11 +74,9 @@ protected:
   double m_recognitionTimeThreshold;
   bool m_bRecognitionIssuedThisStop;
 
-  std::map<int, FrontierInterface::ObservedPlaneObjectPtr> m_planeObjects;
-  std::map<int, cast::cdl::CASTTime> m_lastPlaneObjectPoseTimes;
 
-  std::map<int, PlaceContainmentObjectPropertyPtr> m_containmentProperties;
-  std::map<int, std::string> m_containmentPropWMIDs; 
+  std::map<std::string, PlaceContainmentObjectPropertyPtr> m_containmentProperties;
+  std::map<std::string, std::string> m_containmentPropWMIDs; 
 
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
@@ -113,12 +113,14 @@ protected:
   void newPlaneObject(const cast::cdl::WorkingMemoryChange &);
   void readPlaneModelsFromFile();
 
-  void generateNewObjectModel(int objectID, const std::string &label);
+  void generateNewObjectModel(const std::string &label);
 
-  void recomputeOnnessForObject(int objectID);
-  void recomputeOnnessForPlane(int planeObjectID);
-  void sampleOnnessForPlane(int planeObjectID, int objectModelID);
-  void sampleOnnessForObject(int supportObjectModelID, int onObjectModelID);
+  void recomputeOnnessForObject(const std::string &label);
+  void recomputeOnnessForPlane(const std::string &label);
+  void sampleOnnessForPlane(const std::string &planeLabel, 
+      const std::string &objectLabel);
+  void sampleOnnessForObject(const std::string &supLabel, 
+      const std::string &onLabel);
   void sampleRecursively(const std::vector<std::string> &objects, 
     int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
     std::vector<cogx::Math::Vector3> &outPoints, spatial::Object *supportObject,
@@ -127,7 +129,7 @@ protected:
   void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);
 
-  void setContainmentProperty(int objectID, int placeID, double confidence);
+  void setContainmentProperty(const std::string &objectLabel, int placeID, double confidence);
   void setSupportProperty(int figureID, int groundID, double confidence);
 
   void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd,

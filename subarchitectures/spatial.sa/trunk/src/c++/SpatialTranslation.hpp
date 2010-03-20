@@ -26,6 +26,7 @@
 #include <NavData.hpp>
 #include <string>
 #include <list>
+#include <map>
 #include <Utils/MutexWrapper.hh>
 #include <FrontierInterface.hpp>
 
@@ -45,6 +46,7 @@ public:
   SpatialTranslation();
   virtual ~SpatialTranslation();
   virtual void start();
+  virtual void configure(const std::map<std::string,std::string>& config);
   virtual void stop();
   virtual void runComponent();
 
@@ -68,6 +70,7 @@ private:
   Cure::MutexWrapper m_NavGraphMutex;
   // This says if have been there changes on the nav graph since then
   bool m_navGraphChanged;
+  bool m_bNoNavGraph;
 
   // NavCommand with its id on WM
   typedef std::pair<std::string, SpatialData::NavCommandPtr> tpNavCommandWithId;
