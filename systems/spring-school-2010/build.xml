@@ -31,15 +31,15 @@
 	     ========================================= -->
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
-		<ant target="${target}" dir="tools/math" /> 
-		<ant target="${target}" dir="tools/hardware/video" /> 		
-		<ant target="${target}" dir="tools/hardware/blobfinder" /> 
-		<ant target="${target}" dir="subarchitectures/vision.sa" /> 
+<!-- 		<ant target="${target}" dir="tools/math" /> -->
+<!-- 		<ant target="${target}" dir="tools/hardware/video" /> --> 		
+<!-- 		<ant target="${target}" dir="tools/hardware/blobfinder" /> --> 
+<!-- 		<ant target="${target}" dir="subarchitectures/vision.sa" />  -->
 <!-- 		<ant target="${target}" dir="tools/beliefmodels" />  -->
-		<ant target="${target}" dir="tools/interconnectivity" />
+<!-- 		<ant target="${target}" dir="tools/interconnectivity" /> -->
 		<ant target="${target}" dir="subarchitectures/binder" /> 
-		<ant target="${target}" dir="subarchitectures/nav.sa" />
- 		<ant target="${target}" dir="subarchitectures/spatial.sa" /> 
+<!-- 		<ant target="${target}" dir="subarchitectures/nav.sa" /> -->
+<!--  		<ant target="${target}" dir="subarchitectures/spatial.sa" /> -->
 <!-- 		<ant target="${target}" dir="subarchitectures/planner.sa" />  -->
 <!-- 		<ant target="${target}" dir="subarchitectures/comsys" /> -->
 <!-- 		<ant target="${target}" dir="subarchitectures/coma.sa" /> -->
