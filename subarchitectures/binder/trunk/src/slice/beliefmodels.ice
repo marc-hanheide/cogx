@@ -33,7 +33,7 @@
  * The specification is currently divided into 7 modules:
  * - framing: representations for spatio-temporal framing
  * - epstatus: representations for epistemic status
- * - history: representations for epistemic objects
+ * - epobject: representations for epistemic objects
  * - formulae: representations for (hybrid logic) formulae
  * - distribs: representations for probability distributions
  * - history: representations for belief histories
@@ -382,15 +382,18 @@ module beliefs {
 
 /**
  * Enumeration of possible ontological types for a given belief
+ * 
+ * NOTE: ontological types now specified as distinct classes, to be able
+ * to apply change filters directly on them
  */
-enum OntologicalType {
-	percept, 
-	perceptualunion, 
-	multimodalbelief, 
-	temporalunion, 
-	stablebelief, 
-	attributedbelief, 
-	sharedbelief};
+// enum OntologicalType {
+//	percept, 
+//	perceptualunion, 
+//	multimodalbelief, 
+//	temporalunion, 
+//	stablebelief, 
+//	attributedbelief, 
+//	sharedbelief}; 
 
 
 /**
@@ -400,10 +403,53 @@ enum OntologicalType {
  */
 class Belief extends epobject::EpistemicObject {
 	string id;
-	OntologicalType ontType;
 	distribs::ProbDistribution content;
 	history::BeliefHistory hist; 
-};	
+};
+
+
+/**
+ * Low-level perceptual belief (uni-modal, current spatio-temporal frame)
+ */
+class PerceptBelief extends Belief { };
+
+
+/**
+ * Belief constituted of the combination of one or more perceptual beliefs
+ */
+class PerceptUnionBelief extends Belief { };
+
+
+/**
+ * Multi-modal belief constrained to the current spatio-temporal frame.  
+ * Constructed by refining the values in a percept union
+ */
+class MultiModalBelief extends Belief { };
+
+
+/**
+ * Belief constituted of the combination of one or more multi-modal beliefs
+ * over time
+ */
+class TemporalUnionBelief extends Belief { } ;
+
+
+/**
+ * High-level belief refining and abstracting over temporal unions.  Stable
+ * beliefs are thus multi-modal and span an extended spatio-temporal frame
+ */
+class StableBelief extends Belief { } ;
+
+/**
+ * Attributed belief
+ */
+class AttributedBelief extends Belief { };
+
+/**
+ * Shared belief
+ */
+class SharedBelief extends Belief { } ;
+	
 
 }; // end beliefs
 
@@ -417,3 +463,6 @@ class Belief extends epobject::EpistemicObject {
 #endif
 
 
+
+// NOTES PLISON:
+// 21.03.2010: the ontological types now specified as separate classes, for efficiency reasons regarding the CAST change filters
