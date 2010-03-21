@@ -16,6 +16,11 @@ find_package(CAST REQUIRED)
 include(UseCAST)
 include(CASTBuild)
 
+
+#Adding alchemy to the compilation
+include("${COGX_ROOT}/tools/alchemy/alchemy.cmake")
+
+
 # use cmake files packaged with CAST as well
 set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 
@@ -29,6 +34,12 @@ option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
 if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
 endif(BUILD_SA_BINDING)
+
+option(BUILD_ALCHEMY "Build Alchemy package" ON)
+if(BUILD_ALCHEMY)
+	BUILD_ALCHEMY_MACRO()
+endif(BUILD_ALCHEMY)
+
 
 option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" NO)
 if(BUILD_SA_MOTIVATION)
