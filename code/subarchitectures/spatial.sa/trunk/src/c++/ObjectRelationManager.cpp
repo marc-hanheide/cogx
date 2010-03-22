@@ -1269,6 +1269,8 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       if (m_objects.find(supportObjectLabel) == m_objects.end()) {
 	// The pose of this object is not known. Cannot compute onness
 	// for this hierarchy.
+	log("Error! Support object was unknown; can't compute PDF for hierarchy!");
+	overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
 	return;
       }
       supportObject = m_objectModels[supportObjectLabel];
@@ -1414,6 +1416,9 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
 	  request->tiltAngles.push_back(tiltAngle);
 	}
       }
+    }
+    else {
+      log("Error! Support object was unknown; cannot compute PDF for this hierarchy!");
     }
 
     overwriteWorkingMemory<FrontierInterface::ObjectTiltAngleRequest>(wmc.address, request);

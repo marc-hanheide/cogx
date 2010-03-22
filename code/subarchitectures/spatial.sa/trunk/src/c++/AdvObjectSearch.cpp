@@ -376,68 +376,77 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     try {
       log("GridMapDouble overwrite!");
       Cure::LocalGridMap<double>* distribution =
-          new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
-              Cure::LocalGridMap<unsigned int>::MAP1);
+	new Cure::LocalGridMap<double>(m_gridsize, m_cellsize, 0.0,
+	    Cure::LocalGridMap<unsigned int>::MAP1);
 
       // get the computed distribution.
       FrontierInterface::ObjectPriorRequestPtr objreq = getMemoryEntry<
-          FrontierInterface::ObjectPriorRequest> (objID.address);
+	FrontierInterface::ObjectPriorRequest> (objID.address);
       convertToCureMap(objreq->outMap, *distribution);
 
-      //sum with m_pdf
-      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-          (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + (*distribution)(x, y);
-          //if ( (*distribution)(x,y) != 0 )
-          //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
-        }
-      }
-
-      log("Summed.");
-      gotDistribution = true;
-
-      /* DEBUG */
+      // Normalise over the cells which we are keeping (explored)
       double sumin = 0.0;
       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-          if ((*m_lgm)(x, y) == 2)
-            continue;
-          sumin += (*distribution)(x, y);
-        }
+	for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	  if ((*m_lgm)(x, y) == 2)
+	    continue;
+	  sumin += (*distribution)(x, y);
+	}
       }
+
       log("Distribution sums to: %f", sumin);
-      /* DEBUG */
+      if (sumin != 0.0) {
+	double normFactor = pIn/sumin;
+	double normalizedSum = 0.0;
+	//sum with m_pdf
+	for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+	  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	    (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + 
+	      normFactor*(*distribution)(x, y);
+	    normalizedSum += 
+	      normFactor*(*distribution)(x, y);
+	    //if ( (*distribution)(x,y) != 0 )
+	    //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
+	  }
+	}
+
+	log("Summed. Total added is %f", normalizedSum);
+	gotDistribution = true;
+
+	/* DEBUG */
+	/* DEBUG */
 
 
 
-      /* Display PDF in PB as Line Cloud BEGIN */
+	/* Display PDF in PB as Line Cloud BEGIN */
 
-      double xW2, yW2;
-      peekabot::PointCloudProxy linecloudp;
+	double xW2, yW2;
+	peekabot::PointCloudProxy linecloudp;
 
-      linecloudp.add(m_PeekabotClient, "root.distribution",
-          peekabot::REPLACE_ON_CONFLICT);
-      linecloudp.clear_vertices();
-      linecloudp.set_color(0.5, 0, 0.5);
+	linecloudp.add(m_PeekabotClient, "root.distribution",
+	    peekabot::REPLACE_ON_CONFLICT);
+	linecloudp.clear_vertices();
+	linecloudp.set_color(0.5, 0, 0.5);
 
-      for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-          if ((*distribution)(x, y) == 0)
-            continue;
-          m_lgm->index2WorldCoords(x, y, xW2, yW2);
-          linecloudp.add_vertex(xW2, yW2, (*distribution)(x, y)*2);
-        }
-      }
-      /* Display pdfIn in as line cloud PB END */
+	for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+	  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	    if ((*distribution)(x, y) == 0)
+	      continue;
+	    m_lgm->index2WorldCoords(x, y, xW2, yW2);
+	    linecloudp.add_vertex(xW2, yW2, (*distribution)(x, y)*2);
+	  }
+	}
+	/* Display pdfIn in as line cloud PB END */
 
-      //     DisplayPDFinPB(0,0,"root.distribution");
-      log("Displayed PDF");
-      // Once we get a distribution initiate search.
-      if (objreq->objects.back() == "squaretable"){
-        gotSquareTable = true;
-      }
-      if (objreq->objects.back() == "desk"){
-        m_command = EXECUTENEXT;
+	//     DisplayPDFinPB(0,0,"root.distribution");
+	log("Displayed PDF");
+	// Once we get a distribution initiate search.
+	if (objreq->objects.back() == "squaretable"){
+	  gotSquareTable = true;
+	}
+	if (objreq->objects.back() == "desk"){
+	  m_command = EXECUTENEXT;
+	}
       }
 
     }
