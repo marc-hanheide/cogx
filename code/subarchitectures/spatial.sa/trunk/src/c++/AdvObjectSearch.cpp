@@ -433,7 +433,13 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       //     DisplayPDFinPB(0,0,"root.distribution");
       log("Displayed PDF");
       // Once we get a distribution initiate search.
-      m_command = EXECUTENEXT;
+      if (objreq->objects.back() == "squaretable"){
+        gotSquareTable = true;
+      }
+      if (objreq->objects.back() == "desk"){
+        m_command = EXECUTENEXT;
+      }
+
     }
     catch (DoesNotExistOnWMException excp) {
       log("Error!  GridMapDouble does not exist on WM!");
@@ -689,6 +695,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   void
   AdvObjectSearch::AskForDistribution(std::vector<std::string> objectlist, double probSum) {
 
+    gotSquareTable = false;
     // initialize m_lgm to zero
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
@@ -704,11 +711,23 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         new FrontierInterface::ObjectPriorRequest;
     objreq->relationType = FrontierInterface::ON;
     objreq->objects = objectlist;
-    objreq->probSum = probSum;
+    objreq->probSum = probSum/2;
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
-    delete tobefilled;
 
+    while(!gotSquareTable)
+      sleep(300);
+
+    log("got squaretable distrib, not switching to desk");
+    objectlist.back() = "desk";
+    objreq->relationType = FrontierInterface::ON;
+    objreq->objects = objectlist;
+    objreq->probSum = probSum/2;
+    objreq->outMap = convertFromCureMap(*tobefilled);
+    addToWorkingMemory(newDataID(), objreq);
+
+
+    delete tobefilled;
   }
   void
   AdvObjectSearch::ReadPlaneMap() {
