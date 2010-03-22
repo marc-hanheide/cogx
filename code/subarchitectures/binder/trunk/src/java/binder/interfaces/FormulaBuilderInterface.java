@@ -1,4 +1,5 @@
 
+
 // =================================================================                                                        
 // Copyright (C) 2010-2012 Pierre Lison (plison@dfki.de)                                                                
 //                                                                                                                          
@@ -19,32 +20,82 @@
 // =================================================================                                                        
  
 
-package binder.components;
+package binder.interfaces;
 
-/**
- * Dummy CAST component, to verify all compilation operations
- * work correctly
- * 
- * @author Pierre Lison
- * @version 13/03/2010
- * @started 13/03/2010
- */ 
-        
-import cast.architecture.ManagedComponent;
-  
-public class DummyComponent extends ManagedComponent {
+import binder.autogen.Feature;
+import binder.autogen.formulae.BinaryOp;
+import binder.autogen.formulae.ComplexFormula;
+import binder.autogen.formulae.ElementaryFormula;
+import binder.autogen.formulae.Formula;
+import binder.autogen.formulae.ModalFormula;
+import binder.autogen.formulae.NegatedFormula;
+import binder.autogen.formulae.PointerFormula;
 
-	public boolean LOGGING = true;
-	   
-	  
-	public void start() {
-		log("OK, dummy is working !");
-	}
+
+public interface FormulaBuilderInterface {
+
 	
-	 
-	private void log(String s) {
-		if (LOGGING) {
-		System.out.println("[Dummy] " + s);
-		}
-	}
+	/**
+	 * Create a new, empty complex formula connected with the operator op
+	 * 
+	 * @param op
+	 * 			the binary operator connecting the subformulae
+	 * @return a new, empty complex formula
+	 */
+	public ComplexFormula createNewComplexformula(BinaryOp op);
+	
+	
+	/**
+	 * Add a new subformula to an existing complex formula
+	 * @param cform
+	 * 			the existing complex formula
+	 * @param newForm
+	 * 			the new formula to add
+	 * @post cform now contains newForm
+	 */
+	public void addSubformulaToComplexFormula (ComplexFormula cform, Formula newForm);
+
+
+	/**
+	 * Create a new elementary formula with proposition prop
+	 * @param prop
+	 * 			the logical proposition
+	 * @return the new elementary formula
+	 */
+	public ElementaryFormula createNewElementaryFormula (String prop) ;
+	
+	
+	/**
+	 * Create a new pointer formula, i.e. a formula whose proposition is a pointer
+	 * to another belief
+	 * 
+	 * @param pointer 
+	 * 			a pointer to another belief identifier, which must currently exist 
+	 * 			onto the binder working memory	
+	 * @return a new pointer formula
+	 */
+	public PointerFormula createNewPointerFormula (String pointer);
+	
+	
+	/**
+	 * Create a new negated formula
+	 * 
+	 * @param negForm
+	 * 			the formula to negate
+	 * @return a new negated formula
+	 */
+	public NegatedFormula createNewNegatedFormula (Formula negForm);
+
+	
+	/**
+	 * Create a new modal formula, the modal operator being one possible feature, and 
+	 * which points to another formula
+	 * 
+	 * @param feat
+	 * 			the modal operator describing the feature
+	 * @param form
+	 * 			the formula pointed to
+	 * @return a new modal formula
+	 */
+	public ModalFormula createNewModalFormula (Feature feat, Formula form);
 }

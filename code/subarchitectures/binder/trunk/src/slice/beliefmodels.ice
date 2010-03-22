@@ -22,7 +22,7 @@
 
 #ifndef BELIEF_ICE
 #define BELIEF_ICE 
-
+ 
 
 #include <cast/slice/CDL.ice>
 
@@ -311,7 +311,7 @@ class NormalDistribution extends ProbDistribution {
  * probability value
  */
 struct FormulaProbPair {
-	binder::autogen::formulae::Formula form;
+	formulae::Formula form;
 	float prob;
 };
 
