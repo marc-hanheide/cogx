@@ -410,14 +410,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 	  }
 	}
 
-	log("Summed. Total added is %f", normalizedSum);
-	gotDistribution = true;
-
-	/* DEBUG */
-	/* DEBUG */
-
-
-
 	/* Display PDF in PB as Line Cloud BEGIN */
 
 	double xW2, yW2;
@@ -601,7 +593,10 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 	}
         else if (m_SearchMode =="indirect" && m_CurrentTarget == "rice"){
           log("asking prior: indirect, rice");
-	  AskForDistribution(m_objectlist,pIn);
+          std::vector<std::string> objects;
+          objects.push_back("rice");
+          objects.push_back("printer");
+          AskForDistribution(m_objectlist,pIn);
         }
         else if (m_SearchMode == "indirect" && m_CurrentTarget == "printer"){
           log("asking prior: indirect,printer");
@@ -724,6 +719,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
 
+    if (objectlist.back() = "squaretable"){
     while(!gotSquareTable)
       sleep(300);
 
@@ -734,7 +730,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     objreq->probSum = probSum/2;
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
-
+}
 
     delete tobefilled;
   }
