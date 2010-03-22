@@ -1,4 +1,4 @@
-/*
+vv/*
  * AdvObjectSearch.cpp
  *
  *  Created on: Feb 15, 2010
@@ -200,12 +200,6 @@ namespace spatial
 
       Ice::ObjectPrx base = ic->stringToProxy(str.str());
       m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
-     ptz::PTZPose p;
-      p.pan = 0;
-      p.tilt = 0;
-      p.zoom = 0;
-      m_ptzInterface->setPose(p);
-
     }
 
   }
