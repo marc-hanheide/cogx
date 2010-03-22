@@ -156,7 +156,7 @@ namespace spatial
      log("Loaded objects.");*/
 
     m_objectlist.push_back("rice");
-    m_objectlist.push_back("joystick");
+    m_objectlist.push_back("printer");
     m_objectlist.push_back("squaretable");
 
     gotDistribution = false;
@@ -200,6 +200,12 @@ namespace spatial
 
       Ice::ObjectPrx base = ic->stringToProxy(str.str());
       m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+     ptz::PTZPose p;
+      p.pan = 0;
+      p.tilt = 0;
+      p.zoom = 0;
+      m_ptzInterface->setPose(p);
+
     }
 
   }
@@ -308,13 +314,14 @@ namespace spatial
 void AdvObjectSearch::DetectionComplete(bool isDetected){
   if (isDetected){
     // if we are doing indirect search then ask & initialize next object
-    if (m_SearchMode == "direct" || m_SearchMode == "uniform")
+    if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget != "rice"))
       log("Object Detected, Mission Completed.");
-    else if (m_SearchMode == "indirect"){
+    else if (m_SearchMode == "indirect" && m_CurrentTarget != "rice"){
       log("detected, changing current target to rice, asking for distribution.");
       m_CurrentTarget = "rice";
       m_command = ASK_FOR_DISTRIBUTION;
     }
+
     }
   else{
     // if we are not yet finished Go to NBV
@@ -475,9 +482,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_table_phase = true;
 
       }
-      else if (key == 117) { // u
-	addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
-      }
       else if (key == 103){ // g
         log("sampling grid!");
         SampleGrid();
@@ -535,7 +539,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_SearchMode = "indirect";
         log("Indirect search");
         log("Reading plane map!");
-        m_CurrentTarget = "joystick";
+        m_CurrentTarget = "printer";
         ReadPlaneMap();
         m_command = ASK_FOR_DISTRIBUTION;
       }
@@ -584,10 +588,10 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           log("asking prior: indirect, rice");
 	  AskForDistribution(m_objectlist,pIn);
         }
-        else if (m_SearchMode == "indirect" && m_CurrentTarget == "joystick"){
-          log("asking prior: indirect,joystick");
+        else if (m_SearchMode == "indirect" && m_CurrentTarget == "printer"){
+          log("asking prior: indirect,printer");
 	  std::vector<std::string> objects;
-          objects.push_back("joystick");
+          objects.push_back("printer");
           objects.push_back("squaretable");
           AskForDistribution(objects,pIn);
         }
@@ -622,7 +626,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     }
     tilt = tilt / VPDistribution.size();
     log("tilt angle is: %f",tilt);
-    MovePanTilt(0, -tilt, tolerance);
+    MovePanTilt(0, tilt, tolerance);
     addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
   }
 
@@ -957,7 +961,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     linecloudp.set_color(0.9, 0, 0);
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y < m_lgm->getSize(); y++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
@@ -968,15 +972,15 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
     }
 
-    for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++) {
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
           continue;
-        m_lgm->index2WorldCoords(x, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x + 1, y, xW3, yW3);
+        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x, y, xW3, yW3);
         linecloudp.add_line(xW2 + xoffset, yW2 + yoffset, (*m_pdf)(x, y).prob
             * multiplier1, xW3 + xoffset, yW3 + yoffset,
-            (*m_pdf)(x + 1, y).prob * multiplier1);
+            (*m_pdf)(x, y + 1).prob * multiplier1);
       }
     }
     /* Display pdfIn in as line cloud PB END */
@@ -1222,8 +1226,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     bool haspoint;
     while (i < m_samplesize) {
       haspoint = false;
-      randx = (rand() % (2 * m_lgm->getSize()+1)) - m_lgm->getSize();
-      randy = (rand() % (2 * m_lgm->getSize()+1)) - m_lgm->getSize();
+      randx = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
+      randy = (rand() % (2 * m_lgm->getSize())) - m_lgm->getSize();
       int the = (int) (rand() % angles.size());
       angle = angles[the];
       //if we have that point already, skip.
@@ -1240,12 +1244,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       sample.first = randx;
       sample.second = randy;
 
-      if (VisitedVPs.find(sample) != VisitedVPs.end() && VisitedVPs.size() != 0){
+      if (VisitedVPs.find(sample) == VisitedVPs.end()){
         log("we already checked this viewpoint");
         continue;
       }
 
-      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isCircleObstacleFree(xW, yW, 0.5)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isRectangleObstacleFree(xW, yW - 0.2, xW, yW + 0.2, 1)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
