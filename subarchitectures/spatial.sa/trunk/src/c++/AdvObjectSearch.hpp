@@ -138,6 +138,7 @@ namespace spatial
     bool m_usePTZ;
     bool gotTiltAngles;
     bool gotDistribution;
+    bool gotSquareTable;
     int m_samplesize;
     int* m_samples;
     int m_gridsize;
