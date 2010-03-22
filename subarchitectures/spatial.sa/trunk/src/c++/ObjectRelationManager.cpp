@@ -1401,17 +1401,18 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
       triangle.push_back(vector3(request->triangle[1].x,request->triangle[1].y, 0));
       triangle.push_back(vector3(request->triangle[2].x,request->triangle[2].y, 0));
 
-    int iterations = 0;
-    while (iterations < 1000 && outPoints.size() < pointCount) {
-      iterations++;
-      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 
-	  pointCount, outPoints, supportObject);
-      cogx::Math::Vector3 tiltAngle;
-      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
-	tiltAngle.x = it->x;
-	tiltAngle.y = it->y;
-	tiltAngle.z = it->z;
-	request->tiltAngles.push_back(tiltAngle);
+      int iterations = 0;
+      while (iterations < 1000 && outPoints.size() < pointCount) {
+	iterations++;
+	sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 
+	    pointCount, outPoints, supportObject);
+	cogx::Math::Vector3 tiltAngle;
+	for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
+	  tiltAngle.x = it->x;
+	  tiltAngle.y = it->y;
+	  tiltAngle.z = it->z;
+	  request->tiltAngles.push_back(tiltAngle);
+	}
       }
     }
 
