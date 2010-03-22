@@ -1,4 +1,4 @@
-vv/*
+/*
  * AdvObjectSearch.cpp
  *
  *  Created on: Feb 15, 2010
@@ -308,7 +308,7 @@ namespace spatial
 void AdvObjectSearch::DetectionComplete(bool isDetected){
   if (isDetected){
     // if we are doing indirect search then ask & initialize next object
-    if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget != "rice"))
+    if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice"))
       log("Object Detected, Mission Completed.");
     else if (m_SearchMode == "indirect" && m_CurrentTarget != "rice"){
       log("detected, changing current target to rice, asking for distribution.");
@@ -385,7 +385,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
           (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + (*distribution)(x, y);
-          // if ( (*distribution)(x,y) != 0 )
+          //if ( (*distribution)(x,y) != 0 )
           //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
         }
       }
@@ -617,13 +617,14 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     p1.z = 1.4; //camera is 1.4 high
     tilt = 0;
     for (unsigned int i=0; i < VPDistribution.size();i++){
+      log("tilt dist: %f,%f,%f",VPDistribution[i].x,VPDistribution[i].y,VPDistribution[i].z); 
       d1 = p1.z  - VPDistribution[i].z;
       d2 = sqrt(pow(p1.x - VPDistribution[i].x,2) + pow(p1.y - VPDistribution[i].y,2));
       tilt += atan(d1/d2);
     }
     tilt = tilt / VPDistribution.size();
     log("tilt angle is: %f",tilt);
-    MovePanTilt(0, tilt, tolerance);
+    MovePanTilt(0, -tilt, tolerance);
     addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
   }
 
@@ -744,6 +745,21 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
 
     /******* Get tilt angles  to calculate desired tilt value*/
+    std::vector<std::string> objects;
+    if (m_SearchMode =="direct"){
+      log("asking prior: direct");
+      objects = m_objectlist;
+    }
+    else if (m_SearchMode =="indirect" && m_CurrentTarget == "rice"){
+      log("asking prior: indirect, rice");
+      objects = m_objectlist;
+    }
+    else if (m_SearchMode == "indirect" && m_CurrentTarget == "printer"){
+      log("asking prior: indirect,printer");
+      objects.push_back("printer");
+      objects.push_back("squaretable");
+    }
+
     gotTiltAngles = false;
     VPDistribution.clear();
     XVector3D a, b, c;
@@ -765,8 +781,9 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
     FrontierInterface::ObjectTiltAngleRequestPtr req =
         new FrontierInterface::ObjectTiltAngleRequest;
+
     req->relationType = FrontierInterface::ON;
-    req->objects = m_objectlist;
+    req->objects = objects;
     req->triangle = triangle;
     addToWorkingMemory(newDataID(), req);
 
@@ -1241,12 +1258,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       sample.first = randx;
       sample.second = randy;
 
-      if (VisitedVPs.find(sample) == VisitedVPs.end()){
+      if (VisitedVPs.find(sample) != VisitedVPs.end() && VisitedVPs.size() != 0){
         log("we already checked this viewpoint");
         continue;
       }
 
-      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isRectangleObstacleFree(xW, yW - 0.2, xW, yW + 0.2, 1)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isCircleObstacleFree(xW, yW, 0.3)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
