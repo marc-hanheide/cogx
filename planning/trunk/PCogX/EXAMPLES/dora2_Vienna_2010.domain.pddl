@@ -45,6 +45,8 @@
   
   (:predicates 
 
+   (absolute_belief__widget_location ?w - widget ?loc - place)
+
    ;; Has a place been explored?
    (explored ?p - place) ;; Dora-1.0 -- 2009
 
