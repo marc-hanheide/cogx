@@ -126,6 +126,8 @@ namespace spatial
     }
     log("Camera range set to: %f", m_CamRange);
 
+
+
     if ((it = _config.find("--probs")) != _config.end()) {
       istringstream istr(it->second);
       string tmp;
@@ -200,6 +202,7 @@ namespace spatial
 
       Ice::ObjectPrx base = ic->stringToProxy(str.str());
       m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+
     }
 
   }
@@ -873,6 +876,11 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
   int
   AdvObjectSearch::NextBestView() {
+
+    if (m_CurrentTarget == "rice")
+        m_CamRange = 1.0;
+      else
+        m_CamRange = 4.0;
 
     std::vector<std::vector<int> > VCones;
     log("sampling grid");
