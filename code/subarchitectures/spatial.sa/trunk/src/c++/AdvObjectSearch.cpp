@@ -521,6 +521,9 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
          }
          PlaneObservationUpdate(NewPlanePoints);*/
       }
+      else if (key == 118) { // v
+	addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
+      }
       else if (key == 100) { // d
         m_SearchMode = "direct";
         log("Direct search");
@@ -955,7 +958,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     linecloudp.set_color(0.9, 0, 0);
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      for (int y = -m_lgm->getSize(); y < m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2 || y == m_lgm->getSize())
           continue;
         m_lgm->index2WorldCoords(x, y, xW2, yW2);
@@ -966,15 +969,15 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
     }
 
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int x = -m_lgm->getSize(); x < m_lgm->getSize(); x++) {
       for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
         if ((*m_lgm)(x, y) == 2 || x == m_lgm->getSize())
           continue;
-        m_lgm->index2WorldCoords(x + 1, y, xW2, yW2);
-        m_lgm->index2WorldCoords(x, y, xW3, yW3);
+        m_lgm->index2WorldCoords(x, y, xW2, yW2);
+        m_lgm->index2WorldCoords(x + 1, y, xW3, yW3);
         linecloudp.add_line(xW2 + xoffset, yW2 + yoffset, (*m_pdf)(x, y).prob
             * multiplier1, xW3 + xoffset, yW3 + yoffset,
-            (*m_pdf)(x, y + 1).prob * multiplier1);
+            (*m_pdf)(x + 1, y).prob * multiplier1);
       }
     }
     /* Display pdfIn in as line cloud PB END */

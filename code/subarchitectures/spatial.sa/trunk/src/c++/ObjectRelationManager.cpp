@@ -1274,7 +1274,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       supportObject = m_objectModels[supportObjectLabel];
     }
 
-    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 5;
+    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 1;
 
     int iterations = 0;
     while (iterations < 10000 && outPoints.size() < 500) {
@@ -1357,6 +1357,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 void 
 ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &wmc)
 {
+  const unsigned int pointCount = 25;
   try {
     FrontierInterface::ObjectTiltAngleRequestPtr request =
       getMemoryEntry<FrontierInterface::ObjectTiltAngleRequest>(wmc.address);
@@ -1367,7 +1368,7 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
     }
 
     vector<Vector3> outPoints;
-    outPoints.reserve(100);
+    outPoints.reserve(pointCount);
 
     string supportObjectLabel = request->objects.back();
     spatial::Object *supportObject;
@@ -1393,15 +1394,18 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
     }
 
     if (supportObject != 0) {
-      int nSamplesPerStep = request->objects.size() == 2 ? 100 : 5;
+      int nSamplesPerStep = request->objects.size() == 2 ? pointCount : pointCount>>2;
 
       vector<Vector3> triangle;
       triangle.push_back(vector3(request->triangle[0].x,request->triangle[0].y, 0));
       triangle.push_back(vector3(request->triangle[1].x,request->triangle[1].y, 0));
       triangle.push_back(vector3(request->triangle[2].x,request->triangle[2].y, 0));
 
-      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
-	  outPoints, supportObject);
+    int iterations = 0;
+    while (iterations < 1000 && outPoints.size() < pointCount) {
+      iterations++;
+      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 
+	  pointCount, outPoints, supportObject);
       cogx::Math::Vector3 tiltAngle;
       for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
 	tiltAngle.x = it->x;
