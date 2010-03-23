@@ -73,17 +73,24 @@ namespace spatial
       std::abort();
     }
 
+    if (cfg.getSensorPose(1, m_LaserPoseR)) {
+      println("configure(...) Failed to get sensor pose");
+      std::abort();
+    } 
+
+
     m_table_phase = false;
     /* if (_config.find("--table-phase") != _config.end()) {
-     m_table_phase = true;
-     log("Plane phase");
-     }*/
+       m_table_phase = true;
+       log("Plane phase");
+       }*/
 
     m_usePTZ = false;
     if (_config.find("--ctrl-ptu") != _config.end()) {
       m_usePTZ = true;
       log("will use ptu");
     }
+
 
     m_samplesize = 100;
     it = _config.find("--samplesize");
@@ -149,13 +156,13 @@ namespace spatial
     log("Loaded probs %f,%f,%f,%f,%f", pFree, pObs, pPlanar, pIn, pOut);
 
     /* if ((it = _config.find("--objects")) != _config.end()) {
-     istringstream istr(it->second);
-     string label;
-     while (istr >> label) {
-     m_objectlist.push_back(label);
-     }
-     }
-     log("Loaded objects.");*/
+       istringstream istr(it->second);
+       string label;
+       while (istr >> label) {
+       m_objectlist.push_back(label);
+       }
+       }
+       log("Loaded objects.");*/
 
     m_objectlist.push_back("rice");
     m_objectlist.push_back("printer");
@@ -168,10 +175,10 @@ namespace spatial
     def.isChecked = false;
 
     m_lgm = new Cure::LocalGridMap<unsigned int>(m_gridsize, m_cellsize, 2,
-        Cure::LocalGridMap<unsigned int>::MAP1);
+	Cure::LocalGridMap<unsigned int>::MAP1);
 
     m_pdf = new Cure::LocalGridMap<PDFData>(m_gridsize, m_cellsize, def,
-        Cure::LocalGridMap<unsigned int>::MAP1);
+	Cure::LocalGridMap<unsigned int>::MAP1);
 
     m_Dlgm = new Cure::X11DispLocalGridMap<unsigned int>(*m_lgm);
     m_Glrt = new Cure::ObjGridLineRayTracer<unsigned int>(*m_lgm);
@@ -198,7 +205,7 @@ namespace spatial
 
       std::ostringstream str;
       str << ic->identityToString(id) << ":default" << " -h localhost"
-          << " -p " << cast::cdl::CPPSERVERPORT;
+	<< " -p " << cast::cdl::CPPSERVERPORT;
 
       Ice::ObjectPrx base = ic->stringToProxy(str.str());
       m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
