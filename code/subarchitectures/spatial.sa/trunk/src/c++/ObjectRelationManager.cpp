@@ -303,6 +303,7 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
       addTrackerCommand(VisionData::REMOVEMODEL, "joystick");
       addTrackerCommand(VisionData::REMOVEMODEL, "krispies");
       addTrackerCommand(VisionData::REMOVEMODEL, "rice");
+      addTrackerCommand(VisionData::REMOVEMODEL, "printer");
     }
     m_bRecognitionIssuedThisStop = false;
   }
@@ -431,6 +432,7 @@ void ObjectRelationManager::runComponent()
 	addRecognizer3DCommand(VisionData::RECOGNIZE, "joystick", "");
 	addRecognizer3DCommand(VisionData::RECOGNIZE, "krispies", "");
 	addRecognizer3DCommand(VisionData::RECOGNIZE, "rice", "");
+	addRecognizer3DCommand(VisionData::RECOGNIZE, "printer", "");
 	m_bRecognitionIssuedThisStop = true;
       }
 
@@ -625,6 +627,11 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 
 	robotTransform.pos.x = lastRobotPose->x;
 	robotTransform.pos.y = lastRobotPose->y;
+      }
+      else {
+	fromRotZ(robotTransform.rot, 0);
+	robotTransform.pos.x = 0.0;
+	robotTransform.pos.y = 0.0;
       }
       transform(robotTransform, pose, pose);
 
@@ -1183,6 +1190,11 @@ ObjectRelationManager::generateNewObjectModel(const std::string &label) {
     newBoxObject->radius2 = 0.023;
     newBoxObject->radius3 = 0.095;
   }
+  else if (label == "printer") {
+    newBoxObject->radius1 = 0.300;
+    newBoxObject->radius2 = 0.160;
+    newBoxObject->radius3 = 0.260;
+  }
   else  {
     newBoxObject->radius1 = 0.1;
     newBoxObject->radius2 = 0.1;
@@ -1245,13 +1257,15 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       return;
     }
 
+    const unsigned int pdfPoints = 150;
+
     FrontierInterface::GridMapDoublePtr inMap = request->outMap;
     Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0, 
 	Cure::LocalGridMap<double>::MAP1,
 	inMap->x, inMap->y);
     //Fill it
     vector<Vector3> outPoints;
-    outPoints.reserve(500);
+    outPoints.reserve(pdfPoints);
 
     string supportObjectLabel = request->objects.back();
     spatial::Object *supportObject;
@@ -1277,12 +1291,12 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       supportObject = m_objectModels[supportObjectLabel];
     }
 
-    int nSamplesPerStep = request->objects.size() == 2 ? 500 : 1;
+    int nSamplesPerStep = request->objects.size() == 2 ? pdfPoints : 1;
 
     int iterations = 0;
-    while (iterations < 10000 && outPoints.size() < 500) {
+    while (iterations < 10000 && outPoints.size() < pdfPoints) {
       iterations++;
-      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 500,
+      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, pdfPoints,
 	  outPoints, supportObject);
     }
 
@@ -1295,7 +1309,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	int i, j;
 	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
 	  outMap(i,j) += weight;
-//	  log("outmap: (%f,%f)[%i,%i]=%f",it->x, it->y, i,j,outMap(i,j));
+	  //	  log("outmap: (%f,%f)[%i,%i]=%f",it->x, it->y, i,j,outMap(i,j));
 	}
       }
 #else
@@ -1357,7 +1371,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
   }
 }
 
-void 
+  void 
 ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &wmc)
 {
   const unsigned int pointCount = 25;

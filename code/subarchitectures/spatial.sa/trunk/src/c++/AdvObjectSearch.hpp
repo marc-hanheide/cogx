@@ -135,6 +135,7 @@ namespace spatial
     int m_CurrentViewPointIndex;
     // 1. phase is table detection and then looking for objects.
     int key;
+    int m_totalViewPoints;
     bool isWaitingForDetection;
     bool m_table_phase;
     bool m_usePTZ;
