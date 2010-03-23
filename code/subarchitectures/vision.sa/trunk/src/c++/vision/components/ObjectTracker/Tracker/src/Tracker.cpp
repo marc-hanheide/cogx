@@ -241,6 +241,19 @@ int Tracker::addModelFromFile(const char* filename, Pose& p, std::string label, 
 	return modelEntry->id;
 }
 
+void Tracker::addPoseHypothesis(int id, Pose &p){
+	ModelEntryList::iterator it = m_modellist.begin();
+	while(it != m_modellist.end()){
+		if(id==(*it)->id){
+			for(int i=0; i<params.num_hypothesis; i++){
+				(*it)->distribution.push_back(p);
+			}			
+			return;
+		}
+		it++;
+	}
+}
+
 void Tracker::removeModel(int id){
 	ModelEntryList::iterator it = m_modellist.begin();
 	while(it != m_modellist.end()){

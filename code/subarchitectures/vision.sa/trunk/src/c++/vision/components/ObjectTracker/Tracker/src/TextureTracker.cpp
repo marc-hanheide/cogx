@@ -63,14 +63,13 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		m_tex_model->bind(2);
 		m_tex_frame->bind(3);
 		
-		// predict movement of object
-		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
-		
-		// set timestep to 0.0 for further recursion (within same image)
-		modelEntry->predictor->updateTime(0.0);
-		
 		// update importance weights and confidence levels
 		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeCompare, 1, params.convergence, m_showparticles);
+		
+		// predict movement of object
+		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
+		// set timestep to 0.0 for further recursion (within same image)
+		modelEntry->predictor->updateTime(0.0);
 	}
 	// weighted mean	
 	modelEntry->pose = modelEntry->distribution.getMean();

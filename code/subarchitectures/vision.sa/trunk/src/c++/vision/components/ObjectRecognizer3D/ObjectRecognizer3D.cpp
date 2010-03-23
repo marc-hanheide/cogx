@@ -275,11 +275,11 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Po
 		log("Overwriting VisualObject '%s'", getComponentID().c_str());
 		VisionData::VisualObjectPtr obj = getMemoryEntry<VisualObject>(rec_entry.visualObjectID);
 		obj->label = label;
-		printf("C: Tracker: %f Recognizer: %f\n", obj->detectionConfidence, rec_entry.object->conf);
+// 		printf("C: Tracker: %f Recognizer: %f\n", obj->detectionConfidence, rec_entry.object->conf);
 		obj->detectionConfidence = rec_entry.object->conf;
 		obj->pose = pose;
 		obj->componentID = getComponentID();
-// 		overwriteWorkingMemory(rec_entry.visualObjectID, obj);
+		overwriteWorkingMemory(rec_entry.visualObjectID, obj);
 		addTrackerCommand(OVERWRITE, rec_entry.visualObjectID);
 	}
 }
@@ -432,7 +432,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 // 		addTrackerCommand(REMOVEMODEL, m_recEntries[m_label].visualObjectID);
 // 	}
 	
-	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
+// 	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
 	
 	// Grab image from VideoServer
 	videoServer->getImage(camId, m_image);
@@ -480,7 +480,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 		cvWaitKey(50);
 	}
 	
-	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
+// 	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
 	
 	// Send result to WM
 	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
