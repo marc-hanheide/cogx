@@ -396,11 +396,13 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
       log("Distribution sums to: %f", sumin);
       if (sumin != 0.0) {
-	double normFactor = pIn/sumin;
+	double normFactor = 0.5*pIn/sumin;
 	double normalizedSum = 0.0;
 	//sum with m_pdf
 	for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
 	  for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	    if ((*m_lgm)(x, y) == 2)
+	      continue;
 	    (*m_pdf)(x, y).prob = (*m_pdf)(x, y).prob + 
 	      normFactor*(*distribution)(x, y);
 	    normalizedSum += 
@@ -409,6 +411,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 	    //    log("pdf:%f dist:%f",(*m_pdf)(x,y).prob, (*distribution)(x,y));
 	  }
 	}
+	log("Normalised probability sum added: %f", normalizedSum);
 
 	/* Display PDF in PB as Line Cloud BEGIN */
 
@@ -436,7 +439,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 	if (objreq->objects.back() == "squaretable"){
 	  gotSquareTable = true;
 	}
-	if (objreq->objects.back() == "desk"){
+	if (objreq->objects.back() == "desk" || objreq->objects.back() == "printer"){
 	  m_command = EXECUTENEXT;
 	}
       }
@@ -534,6 +537,9 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       else if (key == 118) { // v
 	addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
       }
+      else if (key == 119){ // w
+	addRecognizer3DCommand(VisionData::RECOGNIZE,"printer","");
+      }
       else if (key == 100) { // d
         m_SearchMode = "direct";
         log("Direct search");
@@ -575,7 +581,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
       case EXECUTENEXT:{
         m_command=IDLE;
-        if (isStopSearch(0.4)){
+        if (isStopSearch(0.7)){
           log("Search failed.");
         }
         else{
@@ -596,7 +602,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           std::vector<std::string> objects;
           objects.push_back("rice");
           objects.push_back("printer");
-          AskForDistribution(m_objectlist,pIn);
+          AskForDistribution(objects,pIn);
         }
         else if (m_SearchMode == "indirect" && m_CurrentTarget == "printer"){
           log("asking prior: indirect,printer");
@@ -719,11 +725,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
 
-    if (objectlist.back() == "squaretable"){
-      while(!gotSquareTable)
-	sleep(300);
+    log("waiting for squaretable");
+    if (!(m_SearchMode == "indirect" && m_CurrentTarget == "rice")){
+    while(!gotSquareTable)
+      sleepComponent(300);
 
-      log("got squaretable distrib, not switching to desk");
+      log("got squaretable distrib, now switching to desk");
       objectlist.back() = "desk";
       objreq->relationType = FrontierInterface::ON;
       objreq->objects = objectlist;
@@ -1059,7 +1066,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       return;
     }
 
-    DisplayPDFinPB(6, 0, "root.before");
+    //DisplayPDFinPB(6, 0, "root.before");
 
     /* DEBUG */
     double sumin = 0.0;
@@ -1219,7 +1226,7 @@ isCircleFree(const Cure::LocalGridMap<unsigned int> &map, double xW, double yW, 
     for (int y = yiC-wi; y <= yiC+wi; y++) {
       if (x >= -size && x <= size && y >= -size && y <= size) {
         if (hypot(x-xiC,y-yiC) < w) {
-          if (map(x,y) != '0') return false;
+          if (map(x,y) != 0) return false;
         }
       }
     }
