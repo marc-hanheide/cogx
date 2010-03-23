@@ -526,6 +526,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
       else if (key == 117) { // u
         m_SearchMode = "uniform";
+	m_CurrentTarget = "rice";
         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
                 for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
                     (*m_pdf)(x, y).isSeen = false;
@@ -680,12 +681,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   }
 
   void AdvObjectSearch::Recognize(){
-    log("waiting for tiltAngles");
-    if (m_SearchMode != "uniform"){
+   
+    if (m_SearchMode == "uniform"){
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
       return;
     }
-
+    log("waiting for tilt angles");
     while(!gotTiltAngles){
       sleep(500);
     }
