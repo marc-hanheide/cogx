@@ -316,6 +316,7 @@ namespace spatial
   }
 
 void AdvObjectSearch::DetectionComplete(bool isDetected){
+  m_totalViewPoints++;
   if (isDetected){
     // if we are doing indirect search then ask & initialize next object
     if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice"))
@@ -654,20 +655,37 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           AskForDistribution(objects,pIn);
         }
         else if (m_SearchMode == "uniform"){
-          int i = 0;
+          int numberoffree = 0;
+          int numberofobs = 0;
           for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
                     for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                      if ((*m_lgm)(x,y) != 2)
-                        i++;
+                      if ((*m_lgm)(x,y) == 2)
+                        continue;
+                      if ((*m_lgm)(x,y) == 0){
+                        numberoffree++;
+                      }
+                      else  if ((*m_lgm)(x,y) == 1){
+                        numberofobs++;
+                      }
+
+
+
                     }
           }
-          double pUniform = pIn/i;
+          double pFree = pIn*0.3/numberoffree;
+          double pObs  = pIn*0.7/numberofobs;
           for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
                            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                             if ((*m_lgm)(x,y) != 2)
-                               (*m_pdf)(x,y).prob = pUniform;
-                           }
+                               if ((*m_pdf)(x,y).prob == 2)
+                                 continue;
+                               if ((*m_lgm)(x,y) == 0){
+                                 (*m_pdf)(x,y).prob = pFree;
+                               }
+                               else  if ((*m_lgm)(x,y) == 1){
+                                 (*m_pdf)(x,y).prob = pObs;
+                                                }
                  }
+          }
           m_command=EXECUTENEXT;
         }
 	break;
