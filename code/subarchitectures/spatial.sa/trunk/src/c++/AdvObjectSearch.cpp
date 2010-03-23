@@ -719,18 +719,18 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
 
-    if (objectlist.back() = "squaretable"){
-    while(!gotSquareTable)
-      sleep(300);
+    if (objectlist.back() == "squaretable"){
+      while(!gotSquareTable)
+	sleep(300);
 
-    log("got squaretable distrib, not switching to desk");
-    objectlist.back() = "desk";
-    objreq->relationType = FrontierInterface::ON;
-    objreq->objects = objectlist;
-    objreq->probSum = probSum/2;
-    objreq->outMap = convertFromCureMap(*tobefilled);
-    addToWorkingMemory(newDataID(), objreq);
-}
+      log("got squaretable distrib, not switching to desk");
+      objectlist.back() = "desk";
+      objreq->relationType = FrontierInterface::ON;
+      objreq->objects = objectlist;
+      objreq->probSum = probSum/2;
+      objreq->outMap = convertFromCureMap(*tobefilled);
+      addToWorkingMemory(newDataID(), objreq);
+    }
 
     delete tobefilled;
   }
