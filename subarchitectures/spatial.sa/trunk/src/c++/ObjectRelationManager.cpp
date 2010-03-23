@@ -1261,6 +1261,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
 	if (it->second->label == supportObjectLabel) {
 	  // update object
 	  supportObject->pose.pos = it->second->pos;
+	  fromAngleAxis(supportObject->pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
 	}
       }
     }
@@ -1376,10 +1377,11 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
     spatial::Object *supportObject;
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
       supportObject = &m_planeObjectModels[supportObjectLabel];
-      for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin(); it != m_objects.end(); it++) {
+      for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
 	if (it->second->label == supportObjectLabel) {
 	  // update object
-	  supportObject->pose = it->second->pose;
+	  supportObject->pose.pos = it->second->pos;
+	  fromAngleAxis(supportObject->pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
 	}
       }
     }
