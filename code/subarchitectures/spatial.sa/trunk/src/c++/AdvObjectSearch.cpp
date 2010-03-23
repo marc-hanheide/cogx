@@ -316,6 +316,7 @@ namespace spatial
   }
 
 void AdvObjectSearch::DetectionComplete(bool isDetected){
+  m_gotDetectionResult = true;
   if (isDetected){
     // if we are doing indirect search then ask & initialize next object
     if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice"))
@@ -700,11 +701,23 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   }
 
   void AdvObjectSearch::Recognize(){
-   
+    m_gotDetectionResult = false;
     if (m_SearchMode == "uniform"){
+      MovePanTilt(0, -0.5236, 0.08);
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
-      return;
+      while(!m_gotDetectionResult)
+        sleepComponent(500);
+      m_gotDetectionResult = false;
+      MovePanTilt(0, 0, 0.08);
+      addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
+      while(!m_gotDetectionResult)
+         sleepComponent(500);
+      m_gotDetectionResult = false;
+      MovePanTilt(0,0.5236, 0.08);
+      addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
+     return;
     }
+
     log("waiting for tilt angles");
     while(!gotTiltAngles){
       sleep(500);
