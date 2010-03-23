@@ -194,7 +194,7 @@ module VisionData {
    * @brief Object Detector Commands
    * @author Andreas Richtsfeld
    */
-  enum ObjectDetectionCommandType{ DSTART, DSTOP, DSINGLE};
+  enum ObjectDetectionCommandType{ DSTART, DSTOP, DSINGLE };
   class ObjectDetectionCommand {
     ObjectDetectionCommandType cmd;
   };
@@ -203,7 +203,7 @@ module VisionData {
    * @brief Stereo Flap Detector Commands
    * @author Andreas Richtsfeld
    */
-  enum StereoFlapDetectionCommandType{ SFSTART, SFSTOP, SFSINGLE};
+  enum StereoFlapDetectionCommandType{ SFSTART, SFSTOP, SFSINGLE };
   class StereoFlapDetectionCommand {
     StereoFlapDetectionCommandType cmd;
   };
@@ -212,7 +212,7 @@ module VisionData {
    * @brief Stereo Detector Commands
    * @author Andreas Richtsfeld
    */
-  enum StereoDetectionCommandType{ SDSTART, SDSTOP, SDSINGLE};
+  enum StereoDetectionCommandType{ SDSTART, SDSTOP, SDSINGLE, SDSINGLEHR };
   class StereoDetectionCommand {
     StereoDetectionCommandType cmd;
   };
@@ -232,8 +232,8 @@ module VisionData {
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
     SurfacePointSeq points;   // frontground points
-    SurfacePointSeq BGpoints; //background points
-    SurfacePointSeq EQpoints; //equivocal points which either belongs to fg or bg
+    SurfacePointSeq BGpoints; // background points
+    SurfacePointSeq EQpoints; // equivocal points which either belongs to fg or bg
   };
 
   /**
