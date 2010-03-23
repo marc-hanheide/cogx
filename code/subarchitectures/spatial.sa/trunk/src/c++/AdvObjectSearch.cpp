@@ -1200,6 +1200,33 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     }
 
   }
+
+bool 
+isCircleFree(const Cure::LocalGridMap<unsigned int> &map, double xW, double yW, double rad)
+{
+  int xiC, yiC;
+  if (map.worldCoords2Index(xW, yW, xiC, yiC) != 0) {
+    CureCERR(30) << "Querying area outside the map (xW="
+                 << xW << ", yW=" << yW << ")\n";
+    return true;
+  }
+
+  double w = rad / map.getCellSize();
+  int wi = int(w + 0.5);
+  int size = map.getSize();
+
+  for (int x = xiC-wi; x <= xiC+wi; x++) {
+    for (int y = yiC-wi; y <= yiC+wi; y++) {
+      if (x >= -size && x <= size && y >= -size && y <= size) {
+        if (hypot(x-xiC,y-yiC) < w) {
+          if (map(x,y) != '0') return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
   void
   AdvObjectSearch::SampleGrid() {
     srand (
@@ -1280,7 +1307,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       for (int j = 0; j < i; j++) {
         if (m_samples[2 * j] == randx && m_samples[2 * j + 1] == randy
             && m_samplestheta[j] == angle) {
-          log("we already have this point.");
+//          log("we already have this point.");
           haspoint = true;
           break;
         }
@@ -1291,11 +1318,11 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       sample.second = randy;
 
       if (VisitedVPs.find(sample) != VisitedVPs.end() && VisitedVPs.size() != 0){
-        log("we already checked this viewpoint");
+//        log("we already checked this viewpoint");
         continue;
       }
 
-      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && m_lgm->isCircleObstacleFree(xW, yW, 0.3)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && isCircleFree(*m_lgm, xW, yW, 0.3)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
