@@ -131,6 +131,8 @@ namespace spatial
     ObjSearchStatus m_status;
     ObjSearchCommand m_command;
 
+    std::vector<std::vector<int> > m_VCones;
+    int m_CurrentViewPointIndex;
     // 1. phase is table detection and then looking for objects.
     int key;
     bool isWaitingForDetection;
@@ -172,8 +174,6 @@ namespace spatial
     Cure::TransformedOdomPoseProvider m_TOPP;
     Cure::ObjGridLineRayTracer<unsigned int>* m_Glrt;
     Cure::Pose3D m_SlamRobotPose;
-    Cure::Pose3D m_currentViewPoint;
-    std::vector<int>  m_CurrentViewPoint_Points;
 
 
     double m_pPlane;

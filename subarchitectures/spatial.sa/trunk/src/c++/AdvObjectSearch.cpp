@@ -344,6 +344,19 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         SpatialData::NavCommand> (objID.address));
     if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
          log("NavCommand succeeded.");
+         log("Modifying seen map");
+         std::pair<int, int> vp;
+         vp.first = m_samples[2 * m_CurrentViewPointIndex];
+         vp.second = m_samples[2 * m_CurrentViewPointIndex + 1];
+         VisitedVPs.insert(vp);
+         int x,y;
+         for (unsigned int j = 0; j < m_VCones[m_CurrentViewPointIndex].size() / 2; j++) {
+           x = m_VCones[m_CurrentViewPointIndex][2 * j];
+           y = m_VCones[m_CurrentViewPointIndex][2 * j + 1];
+           if (!(*m_pdf)(x, y).isSeen)
+             (*m_pdf)(x, y).isSeen = true;
+         }
+
          m_command = RECOGNIZE;
        }
     else if (cmd->comp == SpatialData::COMMANDFAILED){
@@ -513,10 +526,18 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
       else if (key == 117) { // u
         m_SearchMode = "uniform";
+        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+                for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                    (*m_pdf)(x, y).isSeen = false;
+                }
+                }
+        VisitedVPs.clear();
         m_table_phase = false;
         log("Uniform search!");
         log("Reading plane map!");
         ReadPlaneMap();
+
+        m_command = ASK_FOR_DISTRIBUTION;
         // TODO: Init m_lgm and search.
 
         /*   SpatialData::PlanePointsPtr PlanePoints;
@@ -549,6 +570,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
       else if (key == 100) { // d
         m_SearchMode = "direct";
+        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+                for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                    (*m_pdf)(x, y).isSeen = false;
+                }
+                }
+        VisitedVPs.clear();
         log("Direct search");
         log("Reading plane map!");
         m_CurrentTarget = "rice";
@@ -556,6 +583,12 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_command = ASK_FOR_DISTRIBUTION;
       }
       else if (key == 105) { // i
+        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+                for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                    (*m_pdf)(x, y).isSeen = false;
+                }
+                }
+        VisitedVPs.clear();
         m_SearchMode = "indirect";
         log("Indirect search");
         log("Reading plane map!");
@@ -578,7 +611,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_command = IDLE;
         m_status = STOPPED;
         log("Command: STOP");
-        PostNavCommand(m_currentViewPoint, SpatialData::STOP);
+        Cure::Pose3D pos;
+        PostNavCommand(pos, SpatialData::STOP);
         break;
       }
       case RECOGNIZE:{
@@ -617,6 +651,23 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           objects.push_back("printer");
           objects.push_back("squaretable");
           AskForDistribution(objects,pIn);
+        }
+        else if (m_SearchMode == "uniform"){
+          int i = 0;
+          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+                    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                      if ((*m_lgm)(x,y) != 2)
+                        i++;
+                    }
+          }
+          double pUniform = pIn/i;
+          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+                           for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                             if ((*m_lgm)(x,y) != 2)
+                               (*m_pdf)(x,y).prob = pUniform;
+                           }
+                 }
+          m_command=EXECUTENEXT;
         }
 	break;
       }
@@ -776,12 +827,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     int nbv;
     log("Getting NextBestView");
     nbv = NextBestView();
+    m_CurrentViewPointIndex = nbv;
     double Wx, Wy;
-
-    std::pair<int, int> vp;
-    vp.first = m_samples[2 * nbv];
-    vp.second = m_samples[2 * nbv + 1];
-    VisitedVPs.insert(vp);
     m_lgm->index2WorldCoords(m_samples[2 * nbv], m_samples[2 * nbv + 1], Wx, Wy);
     log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
 
@@ -834,9 +881,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     pos.setX(Wx);
     pos.setY(Wy);
     pos.setTheta(m_samplestheta[nbv]);
-    m_currentViewPoint = pos;
     log("posting nav command");
-    PostNavCommand(m_currentViewPoint, SpatialData::GOTOPOSITION);
+    PostNavCommand(pos, SpatialData::GOTOPOSITION);
 
     /* Add plan to PB BEGIN */
         NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
@@ -920,20 +966,21 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       else
         m_CamRange = 4.0;
 
-    std::vector<std::vector<int> > VCones;
+   // std::vector<std::vector<int> > VCones;
+    m_VCones.clear();
     log("sampling grid");
     SampleGrid();
     log("getting view cones");
-    VCones = GetViewCones();
+    m_VCones = GetViewCones();
     double highest_sum = -10000.0;
     double sum;
     int highest_VC_index = 0;
     int x, y;
-    for (unsigned int i = 0; i < VCones.size(); i++) {
+    for (unsigned int i = 0; i < m_VCones.size(); i++) {
       sum = 0;
-      for (unsigned int j = 0; j < VCones[i].size() / 2; j++) {
-        x = VCones[i][2 * j];
-        y = VCones[i][2 * j + 1];
+      for (unsigned int j = 0; j < m_VCones[i].size() / 2; j++) {
+        x = m_VCones[i][2 * j];
+        y = m_VCones[i][2 * j + 1];
         sum += (*m_pdf)(x, y).prob;
       }
       if (sum > highest_sum) {
@@ -941,13 +988,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         highest_VC_index = i;
       }
     }
-    for (unsigned int j = 0; j < VCones[highest_VC_index].size() / 2; j++) {
-      x = VCones[highest_VC_index][2 * j];
-      y = VCones[highest_VC_index][2 * j + 1];
-      if (!(*m_pdf)(x, y).isSeen)
-        (*m_pdf)(x, y).isSeen = true;
-    }
-    m_CurrentViewPoint_Points = VCones[highest_VC_index];
+
 
     /* Display SeenMap in PB BEGIN */
     double color[3] =
@@ -1095,7 +1136,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         if ((*m_lgm)(x, y) == 2)
           continue;
         denomsum += (*m_pdf)(x, y).prob * (1 - ActionProbabilityPerCell(x, y,
-            m_CurrentViewPoint_Points));
+            m_VCones[m_CurrentViewPointIndex]));
       }
     }
     denomsum += pOut;
@@ -1110,7 +1151,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         //if ((*m_lgm)(x,y) == 0)
         //log("old prob for fs: %f", (*m_pdf)(x,y).prob);
         (*m_pdf)(x, y).prob = ((*m_pdf)(x, y).prob * (1
-            - ActionProbabilityPerCell(x, y, m_CurrentViewPoint_Points)))
+            - ActionProbabilityPerCell(x, y, m_VCones[m_CurrentViewPointIndex])))
             / denomsum;
         //if ((*m_lgm)(x,y) == 0)
         //log("new prob for fs: %f", (*m_pdf)(x,y).prob);
