@@ -136,3 +136,14 @@ if (BUILD_SA_VISION_CAMERA_MOUNT)
 add_subdirectory (src/c++/vision/components/CameraMount)
 endif (BUILD_SA_VISION_CAMERA_MOUNT)
 
+option(BUILD_SA_VISION_PG_VIEWER "build PointGrey Viewer" YES)
+if(BUILD_SA_VISION_PG_VIEWER)
+add_subdirectory (src/c++/vision/components/PointGreyViewer)
+endif(BUILD_SA_VISION_PG_VIEWER)
+
+option(BUILD_SA_VISION_TEST_COMP "build test component" YES)
+if(BUILD_SA_VISION_TEST_COMP)
+add_subdirectory (src/c++/vision/components/TestComponent)
+add_subdirectory (src/c++/vision/components/TestComponentReceiver)
+endif(BUILD_SA_VISION_TEST_COMP)
+
