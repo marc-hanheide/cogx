@@ -101,6 +101,7 @@ public:
 	
 	/** @brief Resets the pose of the models to the initial pose */
 	void reset();
+	void reset(int id);
 	
 	// Model handling
 	/** @brief Adds a geometrical model to the tracker
@@ -120,7 +121,7 @@ public:
 	void		getModelInitialPose(int id, Pose& p);
 	
 	/** @brief Get Confidence value of a model at current pose */
-	void		getModelConfidence(int id, int& c);
+	void		getModelConfidence(int id, float& c);
 	
 	/** @brief Get 3D point from 2D window coordinates */
 	bool		getModelPoint3D(int id, int x_win, int y_win, float& x3, float& y3, float& z3);

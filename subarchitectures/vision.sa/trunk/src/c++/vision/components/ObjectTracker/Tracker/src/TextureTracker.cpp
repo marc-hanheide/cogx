@@ -312,6 +312,8 @@ bool TextureTracker::track(){
 		// Apply particle filtering
 		if(!m_modellist[i]->lock){
 			particle_filtering(m_modellist[i]);
+			if(!m_cam_perspective.GetFrustum()->PointInFrustum(m_modellist[i]->pose.t.x, m_modellist[i]->pose.t.y, m_modellist[i]->pose.t.z))
+				reset();
 		}else{
 			evaluateParticle(m_modellist[i]);
 		}

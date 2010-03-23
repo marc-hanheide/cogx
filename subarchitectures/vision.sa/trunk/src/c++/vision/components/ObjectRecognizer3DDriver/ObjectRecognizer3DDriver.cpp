@@ -111,7 +111,7 @@ void ObjectRecognizer3DDriver::runComponent(){
   for(int j=0; j<loops && isRunning(); j++){
   	
   	log("*** Loop %d/%d ***", j, loops);
-  	addTrackingCommand(RELEASEMODELS);
+//   	addTrackingCommand(RELEASEMODELS);
   	
 		for(int i=0; i<m_labels.size(); i++){
 	//   	addRecognizer3DCommand(RECLEARN, m_labels[i], modelID);			

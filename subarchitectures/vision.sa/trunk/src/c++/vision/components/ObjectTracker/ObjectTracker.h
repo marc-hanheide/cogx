@@ -73,6 +73,8 @@ private:
   // Do not use GL commands in this functions (different thread with no GL context)
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
   
+  void overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  
 protected:
   /**
    * called by the framework to configure our component

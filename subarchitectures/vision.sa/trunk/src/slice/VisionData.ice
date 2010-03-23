@@ -128,6 +128,9 @@ module VisionData {
 
     // The time when the object was last observed, in any view
     cast::cdl::CASTTime time;
+    
+    // ID of component with latest access to this WM entry
+    string componentID;
 
     // List of views of the object from different cameras
     VisualObjectViewSeq views;
@@ -168,7 +171,7 @@ module VisionData {
   /** @brief 	Commands for Object Tracker
    *  @author Thomas Mörwald
    */
-  enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
+  enum TrackingCommandType{ START, STOP, ADDMODEL, REMOVEMODEL, OVERWRITE, LOCK, UNLOCK, GETPOINT3D, RELEASEMODELS, SCREENSHOT };
   class TrackingCommand {
     TrackingCommandType cmd;
     string visualObjectID;			// for ADDMODEL, REMOVEMODEL, LOCK, UNLOCK, GETPOINT3D

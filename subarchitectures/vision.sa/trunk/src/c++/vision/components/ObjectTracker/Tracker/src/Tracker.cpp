@@ -206,9 +206,9 @@ int Tracker::addModel(Model& m, Pose& p, std::string label, bool bfc){
 	
 // 	printf("%d\n", idx);
 	
-	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
 	modelEntry->pose = p;
 	modelEntry->initial_pose = p;
+	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
 	modelEntry->id = params.model_id_count++;
 	modelEntry->num_particles = params.num_particles;
 	modelEntry->num_recursions = params.num_recursions;
@@ -277,7 +277,7 @@ void Tracker::getModelInitialPose(int id, Pose& p){
 	}
 }
 
-void Tracker::getModelConfidence(int id, int& c){
+void Tracker::getModelConfidence(int id, float& c){
 	ModelEntryList::iterator it = m_modellist.begin();
 	
 	while(it != m_modellist.end()){
@@ -570,9 +570,11 @@ void Tracker::printStatistics(){
 	printf("\n\nStatistics:\n");
 
 	for(int i=0; i<m_modellist.size(); i++){
+		Pose pMean =  m_modellist[i]->distribution.getMean();
 		printf("	Object %d '%s'\n", i, m_modellist[i]->label.c_str());
 		printf("		Recursions: %i\n", m_modellist[i]->num_recursions );
 		printf("		Particles: %i\n", m_modellist[i]->distribution.size() );
+		printf("		Mean Pose: %f %f %f\n", pMean.t.x, pMean.t.y, pMean.t.z);
 		printf("		Variance: %f \n", m_modellist[i]->distribution.getVariance() );
 		printf("		Confidence: %f \n", m_modellist[i]->distribution.getMaxC());
 		printf("		Weight: %f \n", m_modellist[i]->distribution.getMaxW());
@@ -622,6 +624,13 @@ void Tracker::reset(){
 	for(int i=0; i<m_modellist.size(); i++){
 		m_modellist[i]->predictor->sample(m_modellist[i]->distribution, params.num_particles, m_modellist[i]->initial_pose, params.variation);
 		m_modellist[i]->pose = m_modellist[i]->initial_pose;
+	}
+}
+
+void Tracker::reset(int id){
+	if(id >= 0 && id<m_modellist.size()){
+		m_modellist[id]->predictor->sample(m_modellist[id]->distribution, params.num_particles, m_modellist[id]->initial_pose, params.variation);
+		m_modellist[id]->pose = m_modellist[id]->initial_pose;
 	}
 }
 

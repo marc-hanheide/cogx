@@ -6,12 +6,14 @@
 
 class TrackingEntry{
 public:
+	bool lock;
 	std::string visualObjectID;
 	VisionData::VisualObjectPtr obj;
 	int id;
 	
 	TrackingEntry(){
 		id = -1;
+		lock=false;
 	}
 };
 
