@@ -51,7 +51,9 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 }
 
 void ObjectTracker::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
+	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
+	printf("overwriteVisualObject: '%s'\n", obj->componentID.c_str());
 	TrackingEntryList::iterator it;
 	if(obj->componentID.compare(getComponentID())!=0){
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
@@ -303,7 +305,7 @@ void ObjectTracker::applyTrackingCommand(){
 // 				m_tracker->removeModel(trackingEntry->id);
 // 				trackingEntry->id = m_tracker->addModel(model, pose, trackingEntry->obj->label, true);
 				m_tracker->setModelInitialPose(trackingEntry->id, pose);
-				m_tracker->reset(trackingEntry->id);
+				m_tracker->addPoseHypothesis(trackingEntry->id, pose);
 				trackingEntry->lock = false;
 				log("  VisionData::OVERWRITE: ok");
 				return;

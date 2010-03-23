@@ -42,6 +42,7 @@ protected:
 		int model_id_count;
 		int num_particles;					// number of particles to draw for each frame
 		int num_recursions;					// number of recursions for each image
+		int num_hypothesis;					// number of particles used when a new hypothesis is added
 		int convergence;						// convergence factor
 		float edge_tolerance;				// maximal angular deviation of edges to match in degrees
 		unsigned int m_spreadlvl;		// Width of edges in pixels (automatically adjusted)
@@ -110,6 +111,8 @@ public:
 	int 		addModel(Model& m, Pose& p,  std::string label, bool bfc=false);
 	
 	int			addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc=false);
+	
+	void		addPoseHypothesis(int id, Pose &p);
 	
 	/** @brief Remove model from tracker */
 	void 		removeModel(int id);
