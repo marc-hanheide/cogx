@@ -316,7 +316,6 @@ namespace spatial
   }
 
 void AdvObjectSearch::DetectionComplete(bool isDetected){
-  m_totalViewPoints++;
   if (isDetected){
     // if we are doing indirect search then ask & initialize next object
     if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice"))
@@ -345,6 +344,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         SpatialData::NavCommand> (objID.address));
     if (cmd->comp == SpatialData::COMMANDSUCCEEDED) {
          log("NavCommand succeeded.");
+	 m_totalViewPoints++;
+	 log("reached %i th viewpoint", m_totalViewPoints);
          log("Modifying seen map");
          std::pair<int, int> vp;
          vp.first = m_samples[2 * m_CurrentViewPointIndex];
@@ -856,6 +857,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     m_lgm->index2WorldCoords(m_samples[2 * nbv], m_samples[2 * nbv + 1], Wx, Wy);
     log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
 
+    if(m_SearchMode != "uniform"){
     /******* Get tilt angles  to calculate desired tilt value*/
     std::vector<std::string> objects;
     if (m_SearchMode =="direct"){
@@ -898,7 +900,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     req->objects = objects;
     req->triangle = triangle;
     addToWorkingMemory(newDataID(), req);
-
+    }
     //////////////////////////////////////
 
     Cure::Pose3D pos;
@@ -1401,7 +1403,7 @@ isCircleFree(const Cure::LocalGridMap<unsigned int> &map, double xW, double yW, 
         continue;
       }
 
-      if (!haspoint && (*m_lgm)(randx, randy) == 0 && !(*m_pdf)(randx, randy).isSeen && isCircleFree(*m_lgm, xW, yW, 0.3)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == 0 && isCircleFree(*m_lgm, xW, yW, 0.3)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
