@@ -49,7 +49,20 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 	m_trackingCommandList.push_back(track_cmd);
 	m_trackingCommandWMID.push_back(_wmc.address.id);
 }
-	
+
+void ObjectTracker::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
+	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
+	TrackingEntryList::iterator it;
+	if(obj->componentID.compare(getComponentID())!=0){
+		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
+			if((*it)->visualObjectID.compare(_wmc.address.id) == 0){
+				log("Locking VisualObject '%s' for tracking", _wmc.address.id.c_str());
+				(*it)->lock = true;
+			}
+		}
+	}
+}
+
 // *** base functions *** (configure, start, runcomponent)
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
@@ -129,6 +142,9 @@ void ObjectTracker::start(){
   addChangeFilter(createLocalTypeFilter<TrackingCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectTracker>(this,
         &ObjectTracker::receiveTrackingCommand));
+  addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<ObjectTracker>(this,
+        &ObjectTracker::overwriteVisualObject));
 }
 
 void ObjectTracker::destroy(){
@@ -242,8 +258,12 @@ void ObjectTracker::applyTrackingCommand(){
 			log("  VisionData::STOP: I'm not tracking");
 		}
 	}else if(track_cmd->cmd == VisionData::ADDMODEL){
-		log("  VisionData::ADDMODEL");
+		log("  VisionData::ADDMODEL '%s'",track_cmd->visualObjectID.c_str());
 		if(m_trackinglist.size()<m_maxModels){
+			if(track_cmd->visualObjectID.empty()){
+				log("  VisionData::ADDMODEL: Warning, no valid ID for VisualObject. (empty)");
+				return;
+			}
 			Tracking::Pose pose;
 			Tracking::Model model;
 			trackingEntry = new TrackingEntry();
@@ -252,15 +272,14 @@ void ObjectTracker::applyTrackingCommand(){
 			convertPose2Particle(trackingEntry->obj->pose, pose);
 			convertGeometryModel(trackingEntry->obj->model, model);
 			trackingEntry->id = m_tracker->addModel(model, pose, trackingEntry->obj->label, true);
-			log("  VisionData::ADDMODEL '%s' at (%.3f, %.3f, %.3f)", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
 			m_trackinglist.push_back(trackingEntry);
-			log("  VisionData::ADDMODEL: ok");
+			log("  VisionData::ADDMODEL '%s' at (%.3f, %.3f, %.3f): ok", trackingEntry->obj->label.c_str(), pose.t.x, pose.t.y, pose.t.z);
 		}else{
 			log("  VisionData::ADDMODEL: number of max. trackable models reached: %d", m_maxModels);
 		}
 		
 	}else if(track_cmd->cmd == VisionData::REMOVEMODEL){
-		log("  VisionData::REMOVEMODEL");
+		log("  VisionData::REMOVEMODEL '%s'", track_cmd->visualObjectID.c_str());
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				trackingEntry = (*it);
@@ -271,26 +290,48 @@ void ObjectTracker::applyTrackingCommand(){
 				return;
 			}
 		}			
+	}else if(track_cmd->cmd == VisionData::OVERWRITE){
+		log("  VisionData::OVERWRITE '%s'", track_cmd->visualObjectID.c_str());
+		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
+			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
+				Tracking::Pose pose;
+// 				Tracking::Model model;
+				trackingEntry = (*it);
+				trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
+				convertPose2Particle(trackingEntry->obj->pose, pose);
+// 				convertGeometryModel(trackingEntry->obj->model, model);
+// 				m_tracker->removeModel(trackingEntry->id);
+// 				trackingEntry->id = m_tracker->addModel(model, pose, trackingEntry->obj->label, true);
+				m_tracker->setModelInitialPose(trackingEntry->id, pose);
+				m_tracker->reset(trackingEntry->id);
+				trackingEntry->lock = false;
+				log("  VisionData::OVERWRITE: ok");
+				return;
+			}
+		}
+		
 	}else if(track_cmd->cmd == VisionData::LOCK){
-		log("  VisionData::LOCK");
+		log("  VisionData::LOCK '%s'",track_cmd->visualObjectID.c_str());
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				m_tracker->setModelLock((*it)->id, true);
+				(*it)->lock = true;
 				log("  VisionData::LOCK: ok");
 				return;
 			}
 		}
 	}else if(track_cmd->cmd == VisionData::UNLOCK){
-		log("  VisionData::UNLOCK");
+		log("  VisionData::UNLOCK '%s'",track_cmd->visualObjectID.c_str());
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				m_tracker->setModelLock((*it)->id, false);
+				(*it)->lock = false;
 				log("  VisionData::UNLOCK: ok");
 				return;
 			}
 		}
 	}else if(track_cmd->cmd == VisionData::GETPOINT3D){
-		log("  VisionData::GETPOINT3D");
+		log("  VisionData::GETPOINT3D 's'",track_cmd->visualObjectID.c_str());
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				bool b;
@@ -338,7 +379,8 @@ void ObjectTracker::applyTrackingCommand(){
 void ObjectTracker::runTracker(){
 
 	fTimeTracker=0.0;
-	int i,c;
+	int i;
+	float c;
 	Pose pose;
 	double dTime;
 	
@@ -367,11 +409,16 @@ void ObjectTracker::runTracker(){
 			
 	// update pose and confidence in WorkingMemory
 	for(i=0; i<m_trackinglist.size(); i++){
-		m_tracker->getModelPose(m_trackinglist[i]->id, pose);
-		m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
-		convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);		
-		m_trackinglist[i]->obj->time = m_image.time;
-		overwriteWorkingMemory(m_trackinglist[i]->visualObjectID, m_trackinglist[i]->obj);
+		if(!m_trackinglist[i]->lock){
+			m_tracker->getModelPose(m_trackinglist[i]->id, pose);
+			m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
+			convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);		
+			m_trackinglist[i]->obj->time = m_image.time;
+			m_trackinglist[i]->obj->detectionConfidence = c;
+			m_trackinglist[i]->obj->componentID = getComponentID();
+			overwriteWorkingMemory(m_trackinglist[i]->visualObjectID, m_trackinglist[i]->obj);
+			m_trackinglist[i]->obj = getMemoryEntry<VisualObject>(m_trackinglist[i]->visualObjectID);
+		}
 	}
 	double time = m_image.time.s + m_image.time.us * 1e-6;
 // 	printf("%e %f %f %f %f\n", time, fTimeTotal, pose.t.x, pose.t.y, pose.t.z);

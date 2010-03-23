@@ -80,7 +80,7 @@ private:
   bool m_wait4data;
   bool m_showCV;
   
-  void loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose, std::string label);
+  void loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 pose, std::string label);
   void addTrackerCommand(VisionData::TrackingCommandType cmd, std::string& modelID);
   void get3DPointFromTrackerModel(std::string& modelID, VisionData::VertexSeq& vertexlist);
   

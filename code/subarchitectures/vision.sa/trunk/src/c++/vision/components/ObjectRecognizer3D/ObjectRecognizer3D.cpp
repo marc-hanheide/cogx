@@ -139,7 +139,7 @@ void ObjectRecognizer3D::runComponent(){
   				log("%s: Warning no VisualObject given", m_label.c_str());
   				Math::Pose3 pose;
   				pose.pos.x = 0.1; pose.pos.y = 0.2; pose.pos.z = 0.0;
-  				loadVisualModelToWM(m_recEntries[m_label].plyfile, m_recEntries[m_label].visualObjectID, pose, m_label);
+  				loadVisualModelToWM(m_recEntries[m_label], pose, m_label);
   				m_rec_cmd->visualObjectID =  m_recEntries[m_label].visualObjectID;
   			}
 				
@@ -226,7 +226,7 @@ void ObjectRecognizer3D::receiveTrackingCommand(const cdl::WorkingMemoryChange &
 
 // *** Tracking Commands ***
 void ObjectRecognizer3D::addTrackerCommand(VisionData::TrackingCommandType cmd, std::string& modelID){
-	log("Send tracking command: %d", cmd);
+	log("Send tracking command: %d '%s'", cmd, modelID.c_str());
 	VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = cmd;
   track_cmd->visualObjectID = modelID;
@@ -248,27 +248,40 @@ void ObjectRecognizer3D::get3DPointFromTrackerModel(std::string& modelID, Vision
 	addToWorkingMemory(newDataID(), track_cmd);
 }
 
-void ObjectRecognizer3D::loadVisualModelToWM(std::string filename, std::string& modelID, cogx::Math::Pose3 pose, std::string label){
+void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 pose, std::string label){
 	// ***********************************************************
-	// Load geometry
- 	log("Loading ply model");
-	ModelLoader modelloader;
-	Model model;
-	modelloader.LoadPly(model, filename.c_str());
 	
-	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
-  obj->model = new VisionData::GeometryModel;
-	convertModel2Geometry(model, obj->model);
-	obj->label = label;
-	obj->detectionConfidence = 0.0;
-	obj->pose = pose;
-// 	Tracking::Pose tPose;	
-// 	tPose.translate(0.0,0.0,0.05);
-// 	convertParticle2Pose(tPose, obj->pose); 
-	 
-  modelID = newDataID();
-  addToWorkingMemory(modelID, obj);
-  log("Add model to working memory: '%s' id: %s", obj->label.c_str(), modelID.c_str());
+	// Removing old model from WM
+	if(rec_entry.visualObjectID.empty()){
+		// Load geometry
+		log("Loading ply model");
+		ModelLoader modelloader;
+		Model model;
+		modelloader.LoadPly(model, rec_entry.plyfile.c_str());
+		
+		VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+		obj->model = new VisionData::GeometryModel;
+		convertModel2Geometry(model, obj->model);
+		obj->label = label;
+		obj->detectionConfidence = rec_entry.object->conf;
+		obj->pose = pose;
+		obj->componentID = getComponentID();
+		
+		rec_entry.visualObjectID = newDataID();
+		addToWorkingMemory(rec_entry.visualObjectID, obj);
+		addTrackerCommand(ADDMODEL, rec_entry.visualObjectID);
+		log("Add model to working memory: '%s' id: %s", obj->label.c_str(), rec_entry.visualObjectID.c_str());
+	}else{
+		log("Overwriting VisualObject '%s'", getComponentID().c_str());
+		VisionData::VisualObjectPtr obj = getMemoryEntry<VisualObject>(rec_entry.visualObjectID);
+		obj->label = label;
+		printf("C: Tracker: %f Recognizer: %f\n", obj->detectionConfidence, rec_entry.object->conf);
+		obj->detectionConfidence = rec_entry.object->conf;
+		obj->pose = pose;
+		obj->componentID = getComponentID();
+// 		overwriteWorkingMemory(rec_entry.visualObjectID, obj);
+		addTrackerCommand(OVERWRITE, rec_entry.visualObjectID);
+	}
 }
 
 // *** Recognizer3D functions ***
@@ -317,6 +330,9 @@ void ObjectRecognizer3D::init(){
   
   m_detect->SetCameraParameter(C);
   
+  string empty;
+  addTrackerCommand(VisionData::START, empty);
+  
   cvReleaseMat(&C);
 }
 
@@ -329,8 +345,6 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
   addTrackerCommand(VisionData::START, m_rec_cmd->visualObjectID);
   
   if(m_starttask){
-  	addTrackerCommand(VisionData::RELEASEMODELS, m_rec_cmd->visualObjectID);
-  	addTrackerCommand(VisionData::ADDMODEL, m_rec_cmd->visualObjectID);
   	addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
   	m_starttask = false;
   }else{
@@ -412,12 +426,13 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
   int key;
   m_rec_cmd->confidence = 0.0;
 
-	if(m_starttask){
-		addTrackerCommand(VisionData::START, m_rec_cmd->visualObjectID);
-		m_starttask = false;
-	}else{
-		addTrackerCommand(REMOVEMODEL, m_recEntries[m_label].visualObjectID);
-	}
+// 	if(m_starttask){
+// 		m_starttask = false;
+// 	}else{
+// 		addTrackerCommand(REMOVEMODEL, m_recEntries[m_label].visualObjectID);
+// 	}
+	
+	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
 	
 	// Grab image from VideoServer
 	videoServer->getImage(camId, m_image);
@@ -454,9 +469,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 				
 				// if(first time recognition)
 				log("%s: Found object at: (%.3f %.3f %.3f), Confidence: %f", m_label.c_str(), B.pos.x, B.pos.y, B.pos.z, m_recEntries[m_label].object->conf);
-				loadVisualModelToWM(m_recEntries[m_label].plyfile,  m_recEntries[m_label].visualObjectID, B, m_label);
+				loadVisualModelToWM(m_recEntries[m_label], B, m_label);
 				m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
-				addTrackerCommand(ADDMODEL, m_recEntries[m_label].visualObjectID);
 			}
 		}
 	}
@@ -465,6 +479,8 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 		cvShowImage ( "ObjectRecognizer3D", m_iplImage );
 		cvWaitKey(50);
 	}
+	
+	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
 	
 	// Send result to WM
 	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
