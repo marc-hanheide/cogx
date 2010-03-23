@@ -23,6 +23,7 @@ package binder.interfaces;
 
 
 import cast.cdl.WorkingMemoryPointer;
+import binder.autogen.beliefs.Belief;
 import binder.autogen.beliefs.PerceptBelief;
 import binder.autogen.distribs.ProbDistribution;
 
@@ -87,11 +88,35 @@ public interface PerceptWriterInterface {
 	
 	
 	/**
-	 * Insert the percept to the binder working memory
+	 * Insert a new belief to the binder working memory
 	 * 
-	 * @param percept
-	 * 			the percept to insert into the working memory
-	 * @post percept now included into the WM
+	 * @param belief
+	 * 			the belief to insert into the working memory
+	 * @pre  the WM cannot include any belief with the same identifier
+	 * @post belief now included into the WM
 	 */
-	public void insertBeliefIntoWM (PerceptBelief percept);
+	public void insertBeliefIntoWM (Belief belief);
+	
+	
+	
+	/**
+	 * Update the belief already existing on the WM with a new object
+	 *
+	 * @param belief 
+	 * 			the new belief, which must have the same identifier as the one to replace on the WM
+	 * @pre the WM must include an existing belief with the same identifier
+	 * @post belief on the WM is replaced
+	 */ 
+	public void updateBeliefOnWM (Belief belief);
+	
+	
+	/**
+	 * Remove a belief from the WM
+	 * 
+	 * @param beliefID 
+	 * 			the identifier of the belief to remove from the WM
+	 * @pre the WM must include a belief with the given identifier
+	 * @post the belief is removed
+	 */
+	public void deleteBeliefONWM(String beliefID);
 }
