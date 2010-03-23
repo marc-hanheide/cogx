@@ -21,6 +21,7 @@
 
 package binder.interfaces;
 
+import binder.arch.BinderException;
 import binder.autogen.Feature;
 import binder.autogen.distribs.CondIndependentDistribs;
 import binder.autogen.distribs.DiscreteDistribution;
@@ -38,7 +39,7 @@ public interface BeliefContentBuilderInterface {
 	 * 
 	 * @return an empty probability distribution
 	 */
-	public ProbDistribution createBeliefContent ();
+	public ProbDistribution createNewDistribution ();
 	
 	
 	/**
@@ -50,8 +51,10 @@ public interface BeliefContentBuilderInterface {
 	 * 			the distribution on the rest
 	 * 
 	 * @return a probability distribution with exist dependency
+	 * @throws BinderException 
+	 * 			exception thrown if one distribution is a null pointer
 	 */
-	public DistributionWithExistDep createBeliefContentWithExistDep (ProbDistribution existDistrib, ProbDistribution contentDistrib);
+	public DistributionWithExistDep createBeliefContentWithExistDep (ProbDistribution existDistrib, ProbDistribution contentDistrib) throws BinderException;
 
 	
 	
@@ -64,8 +67,10 @@ public interface BeliefContentBuilderInterface {
 	 * 			the distribution on the rest
 	 * 
 	 * @return a probability distribution with exist dependency
+	 * @throws BinderException 
+	 * 			exception thrown is probExist=0 or contentDistrib is a null pointer
 	 */
-	public DistributionWithExistDep createBeliefContentWithExistDep (float probExist, ProbDistribution contentDistrib);
+	public DistributionWithExistDep createBeliefContentWithExistDep (float probExist, ProbDistribution contentDistrib) throws BinderException;
 
 	
 	/**
@@ -82,9 +87,11 @@ public interface BeliefContentBuilderInterface {
 	 * 			the existing set of conditionally independent distributions
 	 * @param newDistrib 
 	 * 			the next distribution to add
+	 * @throws BinderException 
+	 * 			exception thrown if distribs or newDistrib is a null pointer
 	 * @post distribs now contains newDistrib
 	 */
-	public void addCondIndependentDistrib (CondIndependentDistribs distribs, ProbDistribution newDistrib);
+	public void addCondIndependentDistrib (CondIndependentDistribs distribs, ProbDistribution newDistrib) throws BinderException;
 
 	
 	/**
