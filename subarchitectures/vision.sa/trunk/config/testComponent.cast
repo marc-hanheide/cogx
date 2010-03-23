@@ -1,0 +1,16 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory #--debug
+CPP TM AlwaysPositiveTaskManager
+
+# reading stored images
+#######################
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw-okt-09/img%03d-L.bmp instantiations/tuw-okt-09/img%03d-R.bmp" --start 0 --end 8 --framerate_ms 2000 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+# start cast-components
+#######################
+CPP MG TestComponent TestComponent --log
+CPP MG TestComponentReceiver TestComponentReceiver --log
+#CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 --log  #--debug 
+
