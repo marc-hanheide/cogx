@@ -681,6 +681,11 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
   void AdvObjectSearch::Recognize(){
     log("waiting for tiltAngles");
+    if (m_SearchMode != "uniform"){
+      addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
+      return;
+    }
+
     while(!gotTiltAngles){
       sleep(500);
     }
