@@ -701,11 +701,11 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         }
         else if (m_SearchMode == "uniform" && m_CurrentTarget == "rice"){
           for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-                          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                              (*m_pdf)(x, y).isSeen = false;
-                          }
-                          }
-
+	    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+	      (*m_pdf)(x, y).isSeen = false;
+	    }
+	  }
+	  
           std::vector<std::string> objects;
           objects.push_back("rice");
           objects.push_back("printer");
@@ -731,24 +731,26 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       while(!m_gotDetectionResult)
         sleepComponent(500);
       if(m_isDetected){
-	m_command = IDLE;
+	if (m_CurrentTarget == "printer")
+	  m_command = IDLE;
 	return;
       }
       m_gotDetectionResult = false;
       MovePanTilt(0, 0, 0.08);
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
       while(!m_gotDetectionResult)
-         sleepComponent(500);
+	sleepComponent(500);
       if(m_isDetected){
-	m_command = IDLE;
+	if (m_CurrentTarget == "printer")
+	  m_command = IDLE;
 	return;
-	    }
+      }
       m_gotDetectionResult = false;
       MovePanTilt(0,0.5236, 0.08);
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
-     return;
+      return;
     }
-
+    
     log("waiting for tilt angles");
     while(!gotTiltAngles){
       sleep(500);
@@ -831,7 +833,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   }
   void
   AdvObjectSearch::AskForDistribution(std::vector<std::string> objectlist, double probSum) {
-    log("asking for distribution: %s , %s",m_SearchMode, m_CurrentTarget);
+    log("asking for distribution: %s , %s",m_SearchMode.c_str(), m_CurrentTarget.c_str());
     gotSquareTable = false;
     // initialize m_lgm to zero
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
@@ -853,7 +855,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     addToWorkingMemory(newDataID(), objreq);
 
 
-    if (!(m_SearchMode == "indirect" && m_CurrentTarget == "rice")){
+    if (!(m_SearchMode == "indirect" && m_CurrentTarget == "rice") && m_SearchMode != "uniform"){
       log("waiting for squaretable");
       while(!gotSquareTable)
       sleepComponent(300);
@@ -1448,7 +1450,7 @@ isCircleFree(const Cure::LocalGridMap<unsigned int> &map, double xW, double yW, 
         continue;
       }
 
-      if (!haspoint && (*m_lgm)(randx, randy) == 0 && isCircleFree(*m_lgm, xW, yW, 0.3)) {
+      if (!haspoint && (*m_lgm)(randx, randy) == 0 && isCircleFree(*m_lgm, xW, yW, 0.4)) {
         /*if reachable*/
         // Get the indices of the destination coordinates
         //	log("point reachable");
@@ -1469,7 +1471,7 @@ isCircleFree(const Cure::LocalGridMap<unsigned int> &map, double xW, double yW, 
           double d = (m_PathGrid.path(rS, cS, rE, cE, path, 20
               * m_lgm->getSize()) * m_lgm->getCellSize());
 
-          if (d > 0 && d < 2) {
+          if (d > 0) {
             // There is a path to this destination
             //log("there's a path to this destination");
             m_samples[2 * i] = randx;
