@@ -57,7 +57,7 @@ public class BeliefContentBuilder {
 	 * @throws BinderException 
 	 * 			exception thrown if one distribution is a null pointer
 	 */
-	public DistributionWithExistDep createBeliefContentWithExistDep(
+	public static DistributionWithExistDep createBeliefContentWithExistDep(
 			ProbDistribution existDistrib, ProbDistribution contentDistrib) throws BinderException {
 	
 		if (existDistrib == null || contentDistrib == null) {
@@ -83,7 +83,7 @@ public class BeliefContentBuilder {
 	 * @throws BinderException 
 	 * 			exception thrown is probExist=0 or contentDistrib is a null pointer
 	 */
-	public DistributionWithExistDep createBeliefContentWithExistDep(
+	public static DistributionWithExistDep createBeliefContentWithExistDep(
 			float probExist, ProbDistribution contentDistrib) throws BinderException {
 
 		if (contentDistrib == null) {
@@ -104,7 +104,7 @@ public class BeliefContentBuilder {
 	 * @return the discrete distrbution
 	 * @throws BinderException
 	 */
-	private DiscreteDistribution createExistDistribution (float probExist) throws BinderException {
+	private static DiscreteDistribution createExistDistribution (float probExist) throws BinderException {
 		
 		if (probExist < 0.0 || probExist > 1) {
 			throw new BinderException("error, probExist is < 0 or > 1");
@@ -128,11 +128,19 @@ public class BeliefContentBuilder {
 	 * 
 	 * @return a new set of conditionally independent distributions
 	 */
-	public ProbDistribution createNewDistribution() {
+	public static ProbDistribution createNewDistribution() {
 		return new ProbDistribution();
 	}
 
 
+	/**
+	 * Create a new set of conditionally independent distributions
+	 * 
+	 * @return a new CondIndependentDistribs object
+	 */
+	public static CondIndependentDistribs createNewCondIndependentDistribs () {
+		return new CondIndependentDistribs(new ProbDistribution[0]);
+	}
 	
 	
 	/**
@@ -146,7 +154,7 @@ public class BeliefContentBuilder {
 	 * 			exception thrown if distribs or newDistrib is a null pointer
 	 * @post distribs now contains newDistrib
 	 */
-	public void addCondIndependentDistrib(CondIndependentDistribs distribs,
+	public static void addCondIndependentDistrib(CondIndependentDistribs distribs,
 			ProbDistribution newDistrib) throws BinderException {
 		
 		if (distribs == null || newDistrib == null) {
@@ -306,7 +314,7 @@ public class BeliefContentBuilder {
 	 * @throws BinderException 
 	 * 			if 
 	 */
-	public DiscreteDistribution createNewDiscreteDistributionWithUniquePair (Formula form, float probForm) throws BinderException {
+	public static DiscreteDistribution createNewDiscreteDistributionWithUniquePair (Formula form, float probForm) throws BinderException {
 		
 		FormulaProbPair[] pairs = new FormulaProbPair[1];
 		pairs[0] = new FormulaProbPair(form, probForm);
@@ -327,7 +335,7 @@ public class BeliefContentBuilder {
 	 * @return a new, well-formed normal distribution
 	 * @throws BinderException 
 	 */
-	public NormalDistribution createNewNormalDistribution (Feature feat, double mean, double variance) throws BinderException {
+	public static NormalDistribution createNewNormalDistribution (Feature feat, double mean, double variance) throws BinderException {
 		
 		if (feat == null) {
 			throw new BinderException("error, feat == null");
