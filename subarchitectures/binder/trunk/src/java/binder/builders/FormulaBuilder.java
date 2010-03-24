@@ -170,7 +170,14 @@ public class FormulaBuilder {
 	}
 
 	
-	
+	/**
+	 * Create a Modal formula which points to an elementary formula with proposition "unknown"
+	 * 
+	 * @param feat the feature, described as a modal operator
+	 * @return the modal formula
+	 * @throws BinderException
+	 * 			if feat is null
+	 */
 	public static ModalFormula createModalFormulaWithUnknownValue (Feature feat) throws BinderException {
 		
 		if (feat == null) {
@@ -181,6 +188,11 @@ public class FormulaBuilder {
 	}
 
 	
+	/**
+	 * Forge a new nominal
+	 * 
+	 * @return a new nominal
+	 */
 	private static int getNewNominal() {
 		increment++;
 		return increment;
