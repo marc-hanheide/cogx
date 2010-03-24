@@ -318,9 +318,12 @@ namespace spatial
 void AdvObjectSearch::DetectionComplete(bool isDetected){
   m_gotDetectionResult = true;
   if (isDetected){
+    m_isDetected = true;
     // if we are doing indirect search then ask & initialize next object
-    if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice"))
+    if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice")){
       log("Object Detected, Mission Completed.");
+      m_command = IDLE;
+    }
     else if (m_SearchMode == "indirect" && m_CurrentTarget != "rice"){
       log("detected, changing current target to rice, asking for distribution.");
       m_CurrentTarget = "rice";
@@ -529,7 +532,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
       }
       else if (key == 117) { // u
         m_SearchMode = "uniform";
-	m_CurrentTarget = "rice";
+	m_CurrentTarget = "printer";
         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
                 for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
                     (*m_pdf)(x, y).isSeen = false;
@@ -702,16 +705,25 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
   void AdvObjectSearch::Recognize(){
     m_gotDetectionResult = false;
+    m_isDetected = false;
     if (m_SearchMode == "uniform"){
       MovePanTilt(0, -0.5236, 0.08);
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
       while(!m_gotDetectionResult)
         sleepComponent(500);
+      if(m_isDetected){
+	m_command = IDLE;
+	return;
+      }
       m_gotDetectionResult = false;
       MovePanTilt(0, 0, 0.08);
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
       while(!m_gotDetectionResult)
          sleepComponent(500);
+      if(m_isDetected){
+	m_command = IDLE;
+	return;
+	    }
       m_gotDetectionResult = false;
       MovePanTilt(0,0.5236, 0.08);
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
