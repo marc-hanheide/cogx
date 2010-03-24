@@ -831,7 +831,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   }
   void
   AdvObjectSearch::AskForDistribution(std::vector<std::string> objectlist, double probSum) {
-
+    log("asking for distribution: %s , %s",m_SearchMode, m_CurrentTarget);
     gotSquareTable = false;
     // initialize m_lgm to zero
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
@@ -852,9 +852,10 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
 
-    log("waiting for squaretable");
+
     if (!(m_SearchMode == "indirect" && m_CurrentTarget == "rice")){
-    while(!gotSquareTable)
+      log("waiting for squaretable");
+      while(!gotSquareTable)
       sleepComponent(300);
 
       log("got squaretable distrib, now switching to desk");
