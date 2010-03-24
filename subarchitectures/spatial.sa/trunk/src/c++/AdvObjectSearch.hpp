@@ -108,6 +108,7 @@ namespace spatial
     void InterpretCommand();
     void MovePanTilt(double pan, double tilt, double tolerance);
     void Recognize();
+    void ResetSeenMap();
   private:
 
     enum ObjSearchStatus {

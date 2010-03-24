@@ -484,6 +484,13 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
   }
 
+  void AdvObjectSearch::ResetSeenMap(){
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+            for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                (*m_pdf)(x, y).isSeen = false;
+            }
+            }
+  }
   void
   AdvObjectSearch::runComponent() {
     setupPushScan2d(*this, 0.1);
@@ -536,58 +543,26 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 
         }
       }
+      else if (key == 118) { // v
+        addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
+      }
+      else if (key == 119){ // w
+        addRecognizer3DCommand(VisionData::RECOGNIZE,"printer","");
+      }
       else if (key == 117) { // u
+        ResetSeenMap();
         m_SearchMode = "uniform";
 	m_CurrentTarget = "printer";
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-                for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                    (*m_pdf)(x, y).isSeen = false;
-                }
-                }
         VisitedVPs.clear();
         m_table_phase = false;
         log("Uniform search!");
         log("Reading plane map!");
         ReadPlaneMap();
-
         m_command = ASK_FOR_DISTRIBUTION;
-        // TODO: Init m_lgm and search.
-
-        /*   SpatialData::PlanePointsPtr PlanePoints;
-         PlanePoints = new SpatialData::PlanePoints;
-         cogx::Math::Vector3 point;
-         double wX, wY;
-         std::pair<int, int> CoordPair;
-         std::set<std::pair<int, int> > NewPlanePoints;
-         for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-         if ((*m_lgm)(x, y) == 3) {
-         CoordPair.first = x;
-         CoordPair.second = y;
-         NewPlanePoints.insert(CoordPair);
-         m_lgm->index2WorldCoords(x, y, wX, wY);
-         point.x = wX;
-         point.y = wY;
-         point.z = 0.5; // FIXME: Z information is lost so we're making this up
-         PlanePoints->points.push_back(point);
-         }
-         }
-         }
-         PlaneObservationUpdate(NewPlanePoints);*/
-      }
-      else if (key == 118) { // v
-	addRecognizer3DCommand(VisionData::RECOGNIZE,"rice","");
-      }
-      else if (key == 119){ // w
-	addRecognizer3DCommand(VisionData::RECOGNIZE,"printer","");
       }
       else if (key == 100) { // d
         m_SearchMode = "direct";
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-                for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                    (*m_pdf)(x, y).isSeen = false;
-                }
-                }
+        ResetSeenMap();
         VisitedVPs.clear();
         log("Direct search");
         log("Reading plane map!");
@@ -596,11 +571,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         m_command = ASK_FOR_DISTRIBUTION;
       }
       else if (key == 105) { // i
-        for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-                for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-                    (*m_pdf)(x, y).isSeen = false;
-                }
-                }
+        ResetSeenMap();
         VisitedVPs.clear();
         m_SearchMode = "indirect";
         log("Indirect search");
@@ -640,7 +611,6 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         }
         else{
           GoToNBV();
-
         }
 	break;
       }
@@ -725,7 +695,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   void AdvObjectSearch::Recognize(){
     m_gotDetectionResult = false;
     m_isDetected = false;
-    if (m_SearchMode == "uniform"){
+    if (m_SearchMode == "uniform" && m_CurrentTarget == "printer"){
       MovePanTilt(0, -0.5236, 0.08);
       addRecognizer3DCommand(VisionData::RECOGNIZE,m_CurrentTarget,"");
       while(!m_gotDetectionResult)
@@ -904,7 +874,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     m_lgm->index2WorldCoords(m_samples[2 * nbv], m_samples[2 * nbv + 1], Wx, Wy);
     log("Best view coords: %f, %f, %f", Wx, Wy, m_samplestheta[nbv]);
 
-    if(m_SearchMode != "uniform"){
+if (!(m_SearchMode == "uniform" && m_CurrentTarget == "printer")){
     /******* Get tilt angles  to calculate desired tilt value*/
     std::vector<std::string> objects;
     if (m_SearchMode =="direct"){
@@ -913,12 +883,17 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     }
     else if (m_SearchMode =="indirect" && m_CurrentTarget == "rice"){
       log("asking prior: indirect, rice");
-      objects = m_objectlist;
+      objects.push_back("rice");
+      objects.push_back("printer");
     }
     else if (m_SearchMode == "indirect" && m_CurrentTarget == "printer"){
       log("asking prior: indirect,printer");
       objects.push_back("printer");
       objects.push_back("squaretable");
+    }
+    else if (m_SearchMode=="uniform" && m_CurrentTarget == "rice"){
+      objects.push_back("rice");
+      objects.push_back("printer");
     }
 
     gotTiltAngles = false;
@@ -947,9 +922,8 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
     req->objects = objects;
     req->triangle = triangle;
     addToWorkingMemory(newDataID(), req);
-    }
     //////////////////////////////////////
-
+}
     Cure::Pose3D pos;
     pos.setX(Wx);
     pos.setY(Wy);
