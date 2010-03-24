@@ -22,7 +22,7 @@ struct ModelEntry
 	ModelEntry(){
 		del_predictor = predictor = new Predictor();
 		bfc = false;
-		lock = false;		
+		lock = false;
 	}
 	
 	~ModelEntry(){
@@ -37,9 +37,11 @@ struct ModelEntry
 	Particle				pose;						///< Current pose of the model
 	Particle				initial_pose;		///< Initial pose, pose where to reset model to
 	
-	int 		id;										///< ID of model (for removing)
-	int			num_particles;				///< Number of particles used for representing likelihood distribution
-	int			num_recursions;				///< Number of recursions per image
+	int 		id;											///< ID of model (for removing)
+	int			hypothesis_id;					///< ID of model to compare with (if this ModelEntry is a hypothesis)
+	std::vector<float> past_confidences;				///< vector of the past confidences
+	int			num_particles;					///< Number of particles used for representing likelihood distribution
+	int			num_recursions;					///< Number of recursions per image
 	
 	bool		bfc;				///< enable/disable backface culling
 	bool		lock;

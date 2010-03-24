@@ -38,6 +38,8 @@ private:
 	float c_mean;
 	TM_Vector3 m_cam_view;
 	
+	bool tmp_appended;
+	
 	// Functions
 	/** @brief Resize Occlusion Queries on GPU */
 	void updateQueries();
@@ -57,10 +59,13 @@ public:
 	Particle 		getMean(){ return m_meanParticle; }
 	
 	/** @brief Gets particle from distribution by id */
-	Particle*		getParticle(int id){ return &(m_particlelist[id]); }
+	Particle		getParticle(int id){ return (m_particlelist[id]); }
 	
 	/** @brief Calculates variance confidence level of likelihood distribution */
 	float 			getVariance();
+	
+	/**	@brief Recalculates weights of particlelist to sum up to 1 */
+	void				normalizeW();
 	
 	/** @brief Gets maximum weighted likelihood of last likelihood measure */
 	float 			getMaxW(){ return w_max; }

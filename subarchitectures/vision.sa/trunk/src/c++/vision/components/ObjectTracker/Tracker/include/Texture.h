@@ -16,6 +16,7 @@ private:
 
 public:
 	Texture();
+	Texture(Texture &tex);
 	~Texture();
 	
 	bool load(unsigned char* image_data, int width, int height);

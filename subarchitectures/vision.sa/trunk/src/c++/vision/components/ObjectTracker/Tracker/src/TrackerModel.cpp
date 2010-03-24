@@ -5,6 +5,19 @@
 using namespace std;
 using namespace Tracking;
 
+// PASS
+TrackerModel::Pass::Pass(Pass &pass){
+	f = pass.f;
+	modelviewprojection = pass.modelviewprojection;
+	x=pass.x;
+	y=pass.y;
+	w=pass.w;
+	h=pass.h;
+	printf("TrackerModel::Pass::Pass(Pass &pass) A\n");
+	Texture* texture = new Texture(*pass.texture);
+	printf("TrackerModel::Pass::Pass(Pass &pass) B\n");
+}
+
 // *** PUBLIC ***
 
 // Constructors
@@ -27,12 +40,31 @@ TrackerModel::TrackerModel(){
 	m_shadeTexturing = g_Resources->GetShader(m_shadeTexturingID);
 }
 
+TrackerModel::TrackerModel(const TrackerModel& m){
+	m_vertexlist = m.m_vertexlist;
+	m_facelist = m.m_facelist;
+	m_edgelist.clear();
+	releasePassList();
+	m_facepixellist.assign(m_facelist.size(), 0);
+	
+	for(int i=0; i<m.m_passlist.size(); i++){
+		Pass* p = new Pass(*m.m_passlist[i]);
+		m_passlist.push_back(p);
+	}
+	computeFaceNormals();
+	Update();
+}
+
 TrackerModel::~TrackerModel(){	
 	releasePassList();
 	g_Resources->ReleaseShader(m_shadeTexturingID);
 	
+	printf("TrackerModel::~TrackerModel() A\n");
+	
 	if(m_texture) delete(m_texture);
 	if(m_tex_original) delete(m_tex_original);
+	
+	printf("TrackerModel::~TrackerModel() B\n");
 	
 	if(glIsList(m_dlTexturedFaces)) 	glDeleteLists(m_dlTexturedFaces, 1);
 	if(glIsList(m_dlUntexturedFaces)) glDeleteLists(m_dlUntexturedFaces, 1);
@@ -40,17 +72,25 @@ TrackerModel::~TrackerModel(){
 	if(glIsList(m_dlFaces)) 					glDeleteLists(m_dlFaces, 1);
 	if(glIsList(m_dlEdges)) 					glDeleteLists(m_dlEdges, 1);
 	if(glIsList(m_dlNormals)) 				glDeleteLists(m_dlNormals, 1);
+	printf("TrackerModel::~TrackerModel() C\n");
 }
 
-void TrackerModel::releasePassList(){
-	PassList::iterator it = m_passlist.begin();
-	while(it != m_passlist.end()){
-		delete(*it);
-		it++;
-	}
-	m_passlist.clear();
+TrackerModel& TrackerModel::operator=(const TrackerModel& m){
+	m_vertexlist = m.m_vertexlist;
+	m_facelist = m.m_facelist;
+	m_edgelist.clear();
+	releasePassList();
 	m_facepixellist.assign(m_facelist.size(), 0);
-// 	UpdateDisplayLists();
+	
+	printf("TrackerModel& TrackerModel::operator=(const TrackerModel& m) A\n");
+	for(int i=0; i<m.m_passlist.size(); i++){
+		Pass* p = new Pass(*m.m_passlist[i]);
+		m_passlist.push_back(p);
+	}
+	printf("TrackerModel& TrackerModel::operator=(const TrackerModel& m) B\n");
+	Update();
+	printf("TrackerModel& TrackerModel::operator=(const TrackerModel& m) C\n");
+	return (*this);
 }
 
 TrackerModel& TrackerModel::operator=(const Model& m){
@@ -64,6 +104,17 @@ TrackerModel& TrackerModel::operator=(const Model& m){
 	Update();
 	
 	return (*this);
+}
+
+void TrackerModel::releasePassList(){
+	PassList::iterator it = m_passlist.begin();
+	while(it != m_passlist.end()){
+		delete(*it);
+		it++;
+	}
+	m_passlist.clear();
+	m_facepixellist.assign(m_facelist.size(), 0);
+// 	UpdateDisplayLists();
 }
 
 // computes, updates

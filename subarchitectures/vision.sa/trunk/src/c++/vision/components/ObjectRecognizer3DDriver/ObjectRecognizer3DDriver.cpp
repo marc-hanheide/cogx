@@ -103,7 +103,7 @@ void ObjectRecognizer3DDriver::runComponent(){
   std::string modelID;
 //   loadVisualModelToWM(m_plyfile, modelID, Math::Pose3());
 //   m_visualObjectIDs.push_back(modelID);
-  int loops = 20;
+  int loops = 100;
   
   m_timer.Update();
   

@@ -58,6 +58,8 @@ public:
 	
 	virtual void image_processing(unsigned char* image);
 	
+	bool track(ModelEntry *modelEntry);
+	
 	virtual bool track();
 	
 	virtual void textureFromImage(bool use_num_pixels=true);
@@ -65,6 +67,8 @@ public:
 	virtual void untextureModels();
 						
 	virtual void drawResult();
+	
+	virtual void drawModelEntry(ModelEntry* modelEntry);
 	
 	virtual std::vector<float> getPDFxy(	Particle pose,
 																				float x_min, float y_min,
