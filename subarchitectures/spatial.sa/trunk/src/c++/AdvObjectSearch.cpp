@@ -320,11 +320,17 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
   if (isDetected){
     m_isDetected = true;
     // if we are doing indirect search then ask & initialize next object
-    if (m_SearchMode == "direct" || m_SearchMode == "uniform" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice")){
+    if (m_SearchMode == "direct" || (m_SearchMode == "indirect" && m_CurrentTarget == "rice") ||
+        (m_SearchMode == "indirect" && m_CurrentTarget == "rice")){
       log("Object Detected, Mission Completed.");
       m_command = IDLE;
     }
     else if (m_SearchMode == "indirect" && m_CurrentTarget != "rice"){
+      log("detected, changing current target to rice, asking for distribution.");
+      m_CurrentTarget = "rice";
+      m_command = ASK_FOR_DISTRIBUTION;
+    }
+    else if (m_SearchMode == "uniform" && m_CurrentTarget == "printer"){
       log("detected, changing current target to rice, asking for distribution.");
       m_CurrentTarget = "rice";
       m_command = ASK_FOR_DISTRIBUTION;
@@ -465,7 +471,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
 	if (objreq->objects.back() == "squaretable"){
 	  gotSquareTable = true;
 	}
-	if (objreq->objects.back() == "desk" || objreq->objects.back() == "printer"){
+	if (objreq->objects.back() == "desk" || objreq->objects.back() == "printer" || (m_SearchMode == "uniform" && m_CurrentTarget == "rice")){
 	  m_command = EXECUTENEXT;
 	}
       }
@@ -659,7 +665,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
           objects.push_back("squaretable");
           AskForDistribution(objects,pIn);
         }
-        else if (m_SearchMode == "uniform"){
+        else if (m_SearchMode == "uniform" && m_CurrentTarget == "printer"){
           int numberoffree = 0;
           int numberofobs = 0;
           for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
@@ -692,6 +698,19 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
                  }
           }
           m_command=EXECUTENEXT;
+        }
+        else if (m_SearchMode == "uniform" && m_CurrentTarget == "rice"){
+          for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+                          for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+                              (*m_pdf)(x, y).isSeen = false;
+                          }
+                          }
+
+          std::vector<std::string> objects;
+          objects.push_back("rice");
+          objects.push_back("printer");
+          AskForDistribution(objects,pIn);
+
         }
 	break;
       }
@@ -829,7 +848,7 @@ void AdvObjectSearch::DetectionComplete(bool isDetected){
         new FrontierInterface::ObjectPriorRequest;
     objreq->relationType = FrontierInterface::ON;
     objreq->objects = objectlist;
-    objreq->probSum = probSum/2;
+    objreq->probSum = probSum/2; // FIXME
     objreq->outMap = convertFromCureMap(*tobefilled);
     addToWorkingMemory(newDataID(), objreq);
 
