@@ -96,6 +96,25 @@ float Distribution::getVariance(){
 	return var;
 }
 
+void Distribution::normalizeW(){
+	int id;
+	float dw_sum = 0.0;
+	if(w_sum>0.0){
+		dw_sum = 1.0/w_sum;
+		for(id=0; id<m_particlelist.size(); id++){
+			m_particlelist[id].w = m_particlelist[id].w * dw_sum;
+			if(m_particlelist[id].w > w_max)
+				w_max = m_particlelist[id].w;
+		}
+	}else{
+		dw_sum = 1.0/m_particlelist.size();
+		for(id=0; id<m_particlelist.size(); id++){
+			m_particlelist[id].w = dw_sum;
+		}
+		w_max = dw_sum;
+	}
+}
+
 // Measurement
 bool sortfunction(Particle p1, Particle p2){ return (p1.w>p2.w); }
 
@@ -211,25 +230,13 @@ void Distribution::calcLikelihood(int convergence){
 	v_max = v_max_tmp;
 	
 	// normalize weights
-	float dw_sum = 0.0;
-	if(w_sum>0.0){
-		dw_sum = 1.0/w_sum;
-		for(id=0; id<m_particlelist.size(); id++){
-			m_particlelist[id].w = m_particlelist[id].w * dw_sum;
-			if(m_particlelist[id].w > w_max)
-				w_max = m_particlelist[id].w;
-		}
-	}else{
-		dw_sum = 1.0/m_particlelist.size();
-		for(id=0; id<m_particlelist.size(); id++){
-			m_particlelist[id].w = dw_sum;
-		}
-		w_max = dw_sum;
-	}
+	normalizeW();
 	
 	if(c_max==0.0){
 		for(id=0; id<m_particlelist.size(); id++){
-			m_particlelist[id].c = 0.01;
+			m_particlelist[id].c = 0.01; //*rand()/RAND_MAX;
+// 			if(c_max<m_particlelist[id].c)
+// 				c_max = m_particlelist[id].c;
 		}
 		c_max=0.01;
 	}
@@ -256,6 +263,13 @@ void Distribution::updateLikelihood(TrackerModel& model, Shader* shadeCompare, b
 		drawParticlesEdges(model, shadeCompare, showparticles);
 	
 	calcLikelihood(convergence);
+	
+	if(tmp_appended){
+		SDL_GL_SwapBuffers();
+		printf("SIZE: %d\n", m_particlelist.size());
+		SDL_Delay(200);
+		tmp_appended = false;
+	}
 }
 
 

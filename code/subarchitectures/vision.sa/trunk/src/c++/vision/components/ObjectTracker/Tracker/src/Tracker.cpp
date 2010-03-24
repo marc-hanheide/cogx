@@ -19,6 +19,7 @@ Tracker::Tracker(){
 	params.height = 480.0;
 	params.m_spreadlvl = 0;
 	params.model_id_count = 0;
+	params.hypotheses_id_count = 0;
 	params.num_particles = 100;
 	params.num_recursions = 2;
 	params.convergence = 5;
@@ -111,6 +112,7 @@ bool Tracker::loadINI(const char* inifile){
 	// Performance
 	params.num_recursions = cdfParams.GetInt("recursions", "Performance");
 	params.num_particles = cdfParams.GetInt("particles", "Performance");
+	params.hypotheses_trials = cdfParams.GetInt("hypotheses", "Performance");
 	params.convergence = cdfParams.GetInt("convergence", "Performance");
 	
 	// Resource Path
@@ -241,17 +243,32 @@ int Tracker::addModelFromFile(const char* filename, Pose& p, std::string label, 
 	return modelEntry->id;
 }
 
-void Tracker::addPoseHypothesis(int id, Pose &p){
+void Tracker::addHypothesis(int id, Model& m, Pose &p, std::string label, bool bfc){
+	if(!m_tracker_initialized){
+		printf("[Tracker::addHypothesis()] Error tracker not initialised!\n");
+		return;
+	}
 	ModelEntryList::iterator it = m_modellist.begin();
 	while(it != m_modellist.end()){
 		if(id==(*it)->id){
-			for(int i=0; i<params.num_hypothesis; i++){
-				(*it)->distribution.push_back(p);
-			}			
+			ModelEntry* modelEntry = new ModelEntry();
+			modelEntry->label = label;
+			modelEntry->model.setBFC(bfc);
+			modelEntry->model = m_modellist[id]->model;  // TODO maybe buggy
+			modelEntry->pose = p;
+			modelEntry->initial_pose = p;
+			modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
+			modelEntry->id = params.hypotheses_id_count++;
+			modelEntry->num_particles = params.num_particles;
+			modelEntry->num_recursions = params.num_recursions;
+			modelEntry->hypothesis_id = id;
+			m_hypotheses.push_back(modelEntry);
+			printf("Tracker::addHypothesis(int id, Model& m, Pose &p, std::string label, bool bfc)\n");
 			return;
 		}
 		it++;
 	}
+	printf("[Tracker::addHypothesis()] Warning model for hypothesis not found: %d - %d \n", id, m_modellist.size());
 }
 
 void Tracker::removeModel(int id){

@@ -40,9 +40,10 @@ protected:
 		float width;								// width of viewport (camera image, image processor, opengl, textures) in pixels
 		float height;								// height of viewport ( --"-- ) in pixels
 		int model_id_count;
+		int hypotheses_id_count;		
 		int num_particles;					// number of particles to draw for each frame
 		int num_recursions;					// number of recursions for each image
-		int num_hypothesis;					// number of particles used when a new hypothesis is added
+		int hypotheses_trials;			// number of trials a hypothesis gets for convergence, until comparisson to original
 		int convergence;						// convergence factor
 		float edge_tolerance;				// maximal angular deviation of edges to match in degrees
 		unsigned int m_spreadlvl;		// Width of edges in pixels (automatically adjusted)
@@ -64,6 +65,7 @@ protected:
 	
 	// ModelEntry
 	ModelEntryList m_modellist;
+	ModelEntryList m_hypotheses;
 	
 	unsigned char* m_image;
 	
@@ -112,10 +114,10 @@ public:
 	
 	int			addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc=false);
 	
-	void		addPoseHypothesis(int id, Pose &p);
-	
 	/** @brief Remove model from tracker */
 	void 		removeModel(int id);
+	
+	void		addHypothesis(int id, Model& m, Pose &p, std::string label, bool bfc);
 	
 	/** @brief Get current pose of a model */
 	void		getModelPose(int id, Pose& p);

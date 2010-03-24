@@ -286,36 +286,87 @@ bool TextureTracker::initInternal(){
 }
 
 bool TextureTracker::track(){
-	
 	if(!m_tracker_initialized){
 		printf("[TextureTracker::track()] Error tracker not initialised!\n");
 		return false;
 	}
-		
-	for(int i=0; i<m_modellist.size(); i++){
 	
-		// Process model (texture reprojection, edge detection)
-		model_processing(m_modellist[i]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// Track models
+	for(int i=0; i<m_modellist.size(); i++){
+		track(m_modellist[i]);
+	}
+	
+	// Track hypothesis
+	ModelEntryList::iterator m1 = m_hypotheses.begin();
+	while(m1 < m_hypotheses.end()){
+		track((*m1));
 		
-		if(i==m_modellist.size()-1){
-			glColor3f(1.0,1.0,1.0);
-			glDepthMask(0);
-			if(m_draw_edges)
-				m_ip->render(m_tex_frame_ip[params.m_spreadlvl]);
-			else
-				m_ip->render(m_tex_frame);
-			glDepthMask(1);
-		}
-		
-		// Apply particle filtering
-		if(!m_modellist[i]->lock){
-			particle_filtering(m_modellist[i]);
-			if(!m_cam_perspective.GetFrustum()->PointInFrustum(m_modellist[i]->pose.t.x, m_modellist[i]->pose.t.y, m_modellist[i]->pose.t.z))
-				reset();
+		if((*m1)->past_confidences.size() < params.hypotheses_trials){
+			
+			(*m1)->past_confidences.push_back((*m1)->distribution.getMaxC());
+			m_modellist[(*m1)->hypothesis_id]->past_confidences.push_back(m_modellist[(*m1)->hypothesis_id]->distribution.getMaxC());
 		}else{
-			evaluateParticle(m_modellist[i]);
+			
+			// Evaluate mean confidence of hypothesis
+			float c_hyp = 0.0;
+			int s = (*m1)->past_confidences.size();
+			for(int j=0; j<s; j++){
+				c_hyp += (*m1)->past_confidences[j];
+			}
+			if(s>0)
+				c_hyp = c_hyp / (float)s;
+			
+			// Evaluate mean confidence of model, the hypothesis belongs to
+			float c_model = 0.0;
+			s = m_modellist[(*m1)->hypothesis_id]->past_confidences.size();
+			for(int j=0; j<s; j++){
+				c_model += m_modellist[(*m1)->hypothesis_id]->past_confidences[j];
+			}
+			if(s>0)
+				c_model = c_model / (float)s;
+			
+			// Compare confidence of model to the hypothesis
+			if(c_model >= c_hyp){
+				// if model is more confident, delete hypothesis
+				delete(*m1);
+				m_hypotheses.erase(m1);
+			}else{
+				// if hypothesis is more confident, delete model and replace modellist-entry with hypothesis
+				delete(m_modellist[(*m1)->hypothesis_id]);
+				(*m1)->id = (*m1)->hypothesis_id;
+				m_modellist[(*m1)->hypothesis_id] = (*m1);
+				m_hypotheses.erase(m1);
+			}
 		}
+		m1++;
+	}
+	
+	return true;
+}
+
+bool TextureTracker::track(ModelEntry *modelEntry){
+
+	// Process model (texture reprojection, edge detection)
+	model_processing(modelEntry);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+// 	if(modelEntry->id==m_modellist.size()-1){
+		glColor3f(1.0,1.0,1.0);
+		glDepthMask(0);
+		if(m_draw_edges)
+			m_ip->render(m_tex_frame_ip[params.m_spreadlvl]);
+		else
+			m_ip->render(m_tex_frame);
+		glDepthMask(1);
+// 	}
+	
+	// Apply particle filtering
+	if(!modelEntry->lock){
+		particle_filtering(modelEntry);
+		if(!m_cam_perspective.GetFrustum()->PointInFrustum(modelEntry->pose.t.x, modelEntry->pose.t.y, modelEntry->pose.t.z))
+			reset();
+	}else{
+		evaluateParticle(modelEntry);
 	}
 	
 	return true;
@@ -368,22 +419,33 @@ void TextureTracker::drawResult(){
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
 	for(int i=0; i<m_modellist.size(); i++){
-		
-		m_modellist[i]->pose.activate();
+		drawModelEntry(m_modellist[i]);
+	}
+	
+	for(int i=0; i<m_hypotheses.size(); i++){
+		drawModelEntry(m_hypotheses[i]);
+	}
+	
+	m_lighting.Deactivate();
+}
+
+void TextureTracker::drawModelEntry(ModelEntry* modelEntry){
+
+		modelEntry->pose.activate();
 		
 		switch(m_showmodel){
 			case 0:
-				m_modellist[i]->model.restoreTexture();
-				m_modellist[i]->model.drawPass();
+				modelEntry->model.restoreTexture();
+				modelEntry->model.drawPass();
 				break;
 			case 1:
 				m_lighting.Deactivate();
 				glColorMask(0,0,0,0);
-				m_modellist[i]->model.drawFaces();
+				modelEntry->model.drawFaces();
 				glColorMask(1,1,1,1);
 				glLineWidth(3);
 				glColor3f(1.0,1.0,1.0);
-				m_modellist[i]->model.drawEdges();
+				modelEntry->model.drawEdges();
 				glColor3f(1.0,1.0,1.0);
 				break;
 			case 2:
@@ -395,9 +457,9 @@ void TextureTracker::drawResult(){
 				m_shadeCompare->setUniform("analyze", true);
 				m_shadeCompare->setUniform("compare", true);
 				m_shadeCompare->setUniform("textured", true);
-				m_modellist[i]->model.drawTexturedFaces();
+				modelEntry->model.drawTexturedFaces();
 				m_shadeCompare->setUniform("textured", false);
-				m_modellist[i]->model.drawUntexturedFaces();
+				modelEntry->model.drawUntexturedFaces();
 				m_shadeCompare->unbind();
 				break;
 			case 3:
@@ -409,12 +471,7 @@ void TextureTracker::drawResult(){
 		
 // 		m_modellist[i]->model.drawCoordinates();
 // 		m_modellist[i]->model.drawNormals();
-		m_modellist[i]->pose.deactivate();
-		
-		
-	}
-	
-	m_lighting.Deactivate();
+		modelEntry->pose.deactivate();
 }
 
 // Plots pdf in x-y plane (with z and rotational DOF locked)

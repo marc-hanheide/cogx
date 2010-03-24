@@ -53,13 +53,15 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 void ObjectTracker::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
-	printf("overwriteVisualObject: '%s'\n", obj->componentID.c_str());
 	TrackingEntryList::iterator it;
 	if(obj->componentID.compare(getComponentID())!=0){
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(_wmc.address.id) == 0){
-				log("Locking VisualObject '%s' for tracking", _wmc.address.id.c_str());
-				(*it)->lock = true;
+				log("Locking VisualObject '%s' for tracking called by '%s'", _wmc.address.id.c_str(), obj->componentID.c_str());
+				(*it)->pose = obj->pose;
+				(*it)->model = obj->model;
+				log("VisualObject pose: %f %f %f", (*it)->pose.pos.x, (*it)->pose.pos.y, (*it)->pose.pos.z);
+// 				(*it)->lock = true;
 			}
 		}
 	}
@@ -297,17 +299,13 @@ void ObjectTracker::applyTrackingCommand(){
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				Tracking::Pose pose;
-// 				Tracking::Model model;
+				Tracking::Model model;
 				trackingEntry = (*it);
 				trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
-				convertPose2Particle(trackingEntry->obj->pose, pose);
-// 				convertGeometryModel(trackingEntry->obj->model, model);
-// 				m_tracker->removeModel(trackingEntry->id);
-// 				trackingEntry->id = m_tracker->addModel(model, pose, trackingEntry->obj->label, true);
-				m_tracker->setModelInitialPose(trackingEntry->id, pose);
-				m_tracker->addPoseHypothesis(trackingEntry->id, pose);
-				trackingEntry->lock = false;
-				log("  VisionData::OVERWRITE: ok");
+				convertPose2Particle(trackingEntry->pose, pose);
+				convertGeometryModel(trackingEntry->model, model);
+				m_tracker->addHypothesis(trackingEntry->id, model, pose, trackingEntry->obj->label, true);
+				log("  VisionData::OVERWRITE: ok, id: %d", trackingEntry->id);
 				return;
 			}
 		}
@@ -412,6 +410,7 @@ void ObjectTracker::runTracker(){
 	// update pose and confidence in WorkingMemory
 	for(i=0; i<m_trackinglist.size(); i++){
 		if(!m_trackinglist[i]->lock){
+			m_trackinglist[i]->obj = getMemoryEntry<VisualObject>(m_trackinglist[i]->visualObjectID);
 			m_tracker->getModelPose(m_trackinglist[i]->id, pose);
 			m_tracker->getModelConfidence(m_trackinglist[i]->id, c);
 			convertParticle2Pose(pose, m_trackinglist[i]->obj->pose);		
@@ -419,7 +418,6 @@ void ObjectTracker::runTracker(){
 			m_trackinglist[i]->obj->detectionConfidence = c;
 			m_trackinglist[i]->obj->componentID = getComponentID();
 			overwriteWorkingMemory(m_trackinglist[i]->visualObjectID, m_trackinglist[i]->obj);
-			m_trackinglist[i]->obj = getMemoryEntry<VisualObject>(m_trackinglist[i]->visualObjectID);
 		}
 	}
 	double time = m_image.time.s + m_image.time.us * 1e-6;

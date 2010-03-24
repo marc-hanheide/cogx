@@ -10,6 +10,8 @@ public:
 	std::string visualObjectID;
 	VisionData::VisualObjectPtr obj;
 	int id;
+	VisionData::GeometryModelPtr model;
+	cogx::Math::Pose3 pose;
 	
 	TrackingEntry(){
 		id = -1;
