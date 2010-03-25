@@ -1,7 +1,7 @@
 /**
  * 
  */
-package motivation.util.viewer;
+package castutils.viewer;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -24,8 +24,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import motivation.util.castextensions.WMEntrySet.ChangeHandler;
-import motivation.util.viewer.plugins.Plugin;
+import castutils.castextensions.WMEntrySet.ChangeHandler;
+import castutils.viewer.plugins.Plugin;
 
 import org.apache.log4j.Logger;
 

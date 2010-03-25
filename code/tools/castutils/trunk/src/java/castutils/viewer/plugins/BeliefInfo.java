@@ -1,10 +1,10 @@
-package motivation.util.viewer.plugins;
+package castutils.viewer.plugins;
 
 import java.util.Vector;
 
 import cast.core.CASTUtils;
 
-import binder.utils.BeliefModelUtils;
+//import binder.utils.BeliefModelUtils;
 
 import beliefmodels.adl.*;
 import beliefmodels.domainmodel.cogx.*;
@@ -37,7 +37,7 @@ public class  BeliefInfo implements Plugin {
 				extraInfo.add("ST frame: [continue active]");
 			} 
 			if (belief.phi instanceof UncertainSuperFormula) { 
-				extraInfo.add("Phi: "+BeliefModelUtils.getFormulaPrettyPrint(((UncertainSuperFormula)belief.phi)));			
+				//extraInfo.add("Phi: "+BeliefModelUtils.getFormulaPrettyPrint(((UncertainSuperFormula)belief.phi)));			
 				extraInfo.add("Prob: "+((UncertainSuperFormula)belief.phi).prob);
 			} 
 		}

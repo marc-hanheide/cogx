@@ -73,7 +73,7 @@
 	<!-- =================================================================== -->
 	<target name="clean">
                 <delete file="${src.dir}/.depend"/>
-                <delete dir="${generated.dir}"/>
+                <delete dir="${src.dir}"/>
 	</target>
 
 

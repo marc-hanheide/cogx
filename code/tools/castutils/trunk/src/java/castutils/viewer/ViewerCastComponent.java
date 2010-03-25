@@ -1,12 +1,12 @@
 /**
  * 
  */
-package motivation.util.viewer;
+package castutils.viewer;
 
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import motivation.util.castextensions.WMEntrySet;
+import castutils.castextensions.WMEntrySet;
 import Ice.ObjectImpl;
 import cast.architecture.ManagedComponent;
 
