@@ -43,6 +43,14 @@
 	  </slice2java>
 	</target>
 
+
+        <!-- =================================================================== -->
+        <!-- slice file compilation                                              -->
+        <!-- =================================================================== -->
+        <target name="compile-slice" depends="slice" description="compiles the source code">
+                <javac srcdir="${src.dir}/NavData" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
+                <classpath refid="build.classpath"/> </javac>
+        </target>
 	
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
