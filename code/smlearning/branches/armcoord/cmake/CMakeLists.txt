@@ -122,10 +122,6 @@ SET(OFFLINE_EXPERIMENT_SOURCE
 #	${SMLEARNING_ROOT}/src/metalearning/offline_experiment_ice.cpp
 #)
 
-SET(ENSEMBLE_OFF_EXPERIMENT_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/ensemble_off_experiment.cpp
-)
-
 #SET(ACTIVELEARN_EXPERIMENT_ICE_SOURCE
 #	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
 #)
@@ -177,6 +173,10 @@ SET(N_FOLD_CVSETS_NETS_SOURCE
 
 SET(CONCATENATE_SEQUENCEDATASETS_SOURCE
         ${SMLEARNING_ROOT}/src/tools/concatenate_sequencedatasets.cpp
+)
+
+SET(WRITE_DATA_CRYSSMEX_FMT_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/write_data_cryssmex_fmt.cpp
 )
 
 SET(TOOLS_HEADERS
@@ -263,6 +263,7 @@ ADD_EXECUTABLE(canonical_input_output_enumerator_test ${CANONICAL_INPUT_OUTPUT_E
 ADD_EXECUTABLE(print_dataset ${PRINT_DATASET_SOURCE})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
+ADD_EXECUTABLE(write_data_cryssmex_fmt ${WRITE_DATA_CRYSSMEX_FMT_SOURCE})
 ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
@@ -280,6 +281,7 @@ INSTALL(TARGETS canonical_input_output_enumerator_test RUNTIME DESTINATION bin/S
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS write_data_cryssmex_fmt RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test_server RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test_client RUNTIME DESTINATION bin/SMLearning)

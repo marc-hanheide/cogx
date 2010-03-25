@@ -362,7 +362,7 @@ CanonicalData::DataSet canonical_input_output_enumerator (DataSet data);
 ///
 ///enumerate a dataset taking into account time steps
 ///
-CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data);
+CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data, int modulo = 1);
 
 ///
 ///write a dataset in cryssmex format
@@ -372,8 +372,7 @@ void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::
 ///
 ///write a dataset in cryssmex format
 ///
-void write_dataset_cryssmex_fmt (string writeFileName, DataSet data, bool input_on_vector_format = true, bool output_on_vector_format = true);
-
+void write_dataset_cryssmex_fmt (string writeFileName, DataSet data);
 
 
 }; /* smlearning namespace */

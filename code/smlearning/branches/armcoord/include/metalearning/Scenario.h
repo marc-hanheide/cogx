@@ -78,8 +78,6 @@ namespace smlearning {
 ///
 class Scenario : public golem::Object
 {
-	int numSequences;
-	int startingPosition;
 public:
 
 
@@ -229,8 +227,10 @@ protected:
 	SecTmReal duration;
 	WorkspaceCoord end;
 	int horizontalAngle;
+	int numSequences;
 
-
+	Real reachedAngle;
+	
 	/** iteration counter */
 	int iteration;
 	/** const number of SM regions */
@@ -291,7 +291,7 @@ protected:
 
 	void initializePolyflap();
 
-	void  initializeMovement(const SecTmReal tmDeltaAsync);
+	void  initializeMovement(const SecTmReal tmDeltaAsync, int startingPosition);
 
 	
 	void setUpMovement();
