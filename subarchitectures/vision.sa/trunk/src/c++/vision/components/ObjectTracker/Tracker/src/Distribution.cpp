@@ -263,13 +263,6 @@ void Distribution::updateLikelihood(TrackerModel& model, Shader* shadeCompare, b
 		drawParticlesEdges(model, shadeCompare, showparticles);
 	
 	calcLikelihood(convergence);
-	
-	if(tmp_appended){
-		SDL_GL_SwapBuffers();
-		printf("SIZE: %d\n", m_particlelist.size());
-		SDL_Delay(200);
-		tmp_appended = false;
-	}
 }
 
 

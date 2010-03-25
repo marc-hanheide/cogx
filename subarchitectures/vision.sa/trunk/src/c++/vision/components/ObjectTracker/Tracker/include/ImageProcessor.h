@@ -54,6 +54,8 @@ public:
 
 	// Set functions
 	void setCamOrtho();
+	int getWidth(){ return m_width; }
+	int getHeight(){ return m_height; }
     
 	// Image Processing functions
 	void flipUpsideDown(Texture* source, Texture* result);

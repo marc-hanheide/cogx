@@ -300,42 +300,43 @@ bool TextureTracker::track(){
 	ModelEntryList::iterator m1 = m_hypotheses.begin();
 	while(m1 < m_hypotheses.end()){
 		track((*m1));
-		
-		if((*m1)->past_confidences.size() < params.hypotheses_trials){
-			
-			(*m1)->past_confidences.push_back((*m1)->distribution.getMaxC());
-			m_modellist[(*m1)->hypothesis_id]->past_confidences.push_back(m_modellist[(*m1)->hypothesis_id]->distribution.getMaxC());
-		}else{
-			
-			// Evaluate mean confidence of hypothesis
-			float c_hyp = 0.0;
-			int s = (*m1)->past_confidences.size();
-			for(int j=0; j<s; j++){
-				c_hyp += (*m1)->past_confidences[j];
-			}
-			if(s>0)
-				c_hyp = c_hyp / (float)s;
-			
-			// Evaluate mean confidence of model, the hypothesis belongs to
-			float c_model = 0.0;
-			s = m_modellist[(*m1)->hypothesis_id]->past_confidences.size();
-			for(int j=0; j<s; j++){
-				c_model += m_modellist[(*m1)->hypothesis_id]->past_confidences[j];
-			}
-			if(s>0)
-				c_model = c_model / (float)s;
-			
-			// Compare confidence of model to the hypothesis
-			if(c_model >= c_hyp){
-				// if model is more confident, delete hypothesis
-				delete(*m1);
-				m_hypotheses.erase(m1);
+		if((*m1)->num_convergence++>params.hypotheses_trials){
+			if((*m1)->past_confidences.size() < params.hypotheses_trials){
+				
+				(*m1)->past_confidences.push_back((*m1)->distribution.getMaxC());
+				m_modellist[(*m1)->hypothesis_id]->past_confidences.push_back(m_modellist[(*m1)->hypothesis_id]->distribution.getMaxC());
 			}else{
-				// if hypothesis is more confident, delete model and replace modellist-entry with hypothesis
-				delete(m_modellist[(*m1)->hypothesis_id]);
-				(*m1)->id = (*m1)->hypothesis_id;
-				m_modellist[(*m1)->hypothesis_id] = (*m1);
-				m_hypotheses.erase(m1);
+				
+				// Evaluate mean confidence of hypothesis
+				float c_hyp = 0.0;
+				int s = (*m1)->past_confidences.size();
+				for(int j=0; j<s; j++){
+					c_hyp += (*m1)->past_confidences[j];
+				}
+				if(s>0)
+					c_hyp = c_hyp / (float)s;
+				
+				// Evaluate mean confidence of model, the hypothesis belongs to
+				float c_model = 0.0;
+				s = m_modellist[(*m1)->hypothesis_id]->past_confidences.size();
+				for(int j=0; j<s; j++){
+					c_model += m_modellist[(*m1)->hypothesis_id]->past_confidences[j];
+				}
+				if(s>0)
+					c_model = c_model / (float)s;
+				
+				// Compare confidence of model to the hypothesis
+				if(c_model >= c_hyp){
+					// if model is more confident, delete hypothesis
+					delete(*m1);
+					m_hypotheses.erase(m1);
+				}else{
+					// if hypothesis is more confident, delete model and replace modellist-entry with hypothesis
+					delete(m_modellist[(*m1)->hypothesis_id]);
+					(*m1)->id = (*m1)->hypothesis_id;
+					m_modellist[(*m1)->hypothesis_id] = (*m1);
+					m_hypotheses.erase(m1);
+				}
 			}
 		}
 		m1++;
@@ -349,16 +350,6 @@ bool TextureTracker::track(ModelEntry *modelEntry){
 	// Process model (texture reprojection, edge detection)
 	model_processing(modelEntry);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-// 	if(modelEntry->id==m_modellist.size()-1){
-		glColor3f(1.0,1.0,1.0);
-		glDepthMask(0);
-		if(m_draw_edges)
-			m_ip->render(m_tex_frame_ip[params.m_spreadlvl]);
-		else
-			m_ip->render(m_tex_frame);
-		glDepthMask(1);
-// 	}
 	
 	// Apply particle filtering
 	if(!modelEntry->lock){
@@ -422,9 +413,9 @@ void TextureTracker::drawResult(){
 		drawModelEntry(m_modellist[i]);
 	}
 	
-	for(int i=0; i<m_hypotheses.size(); i++){
-		drawModelEntry(m_hypotheses[i]);
-	}
+// 	for(int i=0; i<m_hypotheses.size(); i++){
+// 		drawModelEntry(m_hypotheses[i]);
+// 	}
 	
 	m_lighting.Deactivate();
 }

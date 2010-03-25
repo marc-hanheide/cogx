@@ -61,7 +61,6 @@ void ObjectTracker::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc)
 				(*it)->pose = obj->pose;
 				(*it)->model = obj->model;
 				log("VisualObject pose: %f %f %f", (*it)->pose.pos.x, (*it)->pose.pos.y, (*it)->pose.pos.z);
-// 				(*it)->lock = true;
 			}
 		}
 	}
@@ -299,12 +298,10 @@ void ObjectTracker::applyTrackingCommand(){
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
 			if((*it)->visualObjectID.compare(track_cmd->visualObjectID) == 0){ // if (m_trackinglist[i].id == track_cmd.visualObjectID)
 				Tracking::Pose pose;
-				Tracking::Model model;
 				trackingEntry = (*it);
-				trackingEntry->obj = getMemoryEntry<VisualObject>(trackingEntry->visualObjectID);
 				convertPose2Particle(trackingEntry->pose, pose);
-				convertGeometryModel(trackingEntry->model, model);
-				m_tracker->addHypothesis(trackingEntry->id, model, pose, trackingEntry->obj->label, true);
+// 				convertGeometryModel(trackingEntry->model, model);
+				m_tracker->addPoseHypothesis(trackingEntry->id, pose, trackingEntry->obj->label, true);
 				log("  VisionData::OVERWRITE: ok, id: %d", trackingEntry->id);
 				return;
 			}
@@ -378,11 +375,12 @@ void ObjectTracker::applyTrackingCommand(){
 
 void ObjectTracker::runTracker(){
 
-	fTimeTracker=0.0;
 	int i;
 	float c;
 	Pose pose;
 	double dTime;
+	
+// 	m_timer.Update();
 	
 	// Get image and update it
 	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
@@ -390,22 +388,24 @@ void ObjectTracker::runTracker(){
 		m_running = false;
 	}
 	
-	// update time
-	m_timer.Update();
 	
 	lockComponent();
 		dTime = getFrameTime(last_image_time, m_image.time);
+// 		fTimeGrab = m_timer.Update();
 		// image processing
 // 		m_videoServer->getImage(m_camIds[0], m_image);
 		m_tracker->image_processing((unsigned char*)(&m_image.data[0]));
+// 		fTimeIP = m_timer.Update();
 	unlockComponent();
 	
 	last_image_time = m_image.time;
 	m_tracker->setFrameTime(dTime);
-	m_tracker->drawImage(NULL);
+	
 
 	// track models
 	m_tracker->track();
+	
+	fTimeTracker = m_timer.Update();
 			
 	// update pose and confidence in WorkingMemory
 	for(i=0; i<m_trackinglist.size(); i++){
@@ -421,18 +421,23 @@ void ObjectTracker::runTracker(){
 		}
 	}
 	double time = m_image.time.s + m_image.time.us * 1e-6;
-// 	printf("%e %f %f %f %f\n", time, fTimeTotal, pose.t.x, pose.t.y, pose.t.z);
 	
+// 	fTimeCvt = m_timer.Update();
+		
 	// draw results
+	m_tracker->drawImage(NULL);
 	m_tracker->drawResult();
 // 	m_tracker->drawCalibrationPattern();
 	m_tracker->drawCoordinates();
 	m_tracker->swap();
 	
+// 	fTimeDraw = m_timer.Update();
+	
+// 	printf("%f %f %f %f %f %f\n", fTimeGrab, fTimeIP, fTimeTracker, fTimeCvt, fTimeDraw, fTimeGrab+fTimeIP+fTimeTracker+fTimeCvt+fTimeDraw);
+	
 	if(m_automatictexturing)
 		m_tracker->textureFromImage(true);
 
-	fTimeTracker = m_timer.Update();
 	fTimeTotal += fTimeTracker;
 }
 

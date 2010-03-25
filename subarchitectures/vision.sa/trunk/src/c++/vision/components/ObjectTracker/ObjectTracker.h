@@ -39,6 +39,11 @@ private:
   int m_ImageHeight;
   float fTimeTracker;
   float fTimeTotal;
+  float fTimeGrab;
+  float fTimeIP;
+  float fTimeCvt;
+  float fTimeDraw;
+  
   cdl::CASTTime last_image_time;
   std::string m_ini_file;
   

@@ -255,6 +255,16 @@ int	Resources::AddTexture(const char* filename, const char* texturename){
 	return texID;	
 }
 
+int Resources::AddTexture(Texture* texture){
+	int id = m_textureList.size();
+	texture->setResID(id);
+	char name[16];
+	sprintf(name, "%d", id);
+	m_textureList.push_back(texture);
+	m_textureNameList.push_back(name);
+	return id;
+}
+
 int	Resources::AddShader(	const char* shadername,
 							const char* vertex_file,
 							const char* fragment_file,

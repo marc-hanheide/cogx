@@ -99,6 +99,7 @@ public:
 	int		AddModel(TrackerModel* model, const char* name);
 	int		AddPlyModel(const char* filename);
 	int		AddTexture(const char* filename, const char* texturename = NULL);
+	int		AddTexture(Texture* texture);
 	int		AddShader(	const char* shadername,
 						const char* vertex_file = NULL,
 						const char* fragment_file = NULL,

@@ -78,7 +78,15 @@ void ObjectRecognizer3DDriver::configure(const map<string,string> & _config){
     for(size_t i = 0; i < m_labels.size(); i++)
       ostr << " '" << m_labels[i] << "'";
     log("Recognizing objects: %s", ostr.str().c_str());
-  }	
+  }
+  
+  if((it = _config.find("--Loops")) != _config.end())
+	{
+    istringstream istr(it->second);
+    istr >> m_loops;
+	}else{
+		m_loops = 1;
+	}
 }
 
 void ObjectRecognizer3DDriver::start(){
@@ -103,14 +111,13 @@ void ObjectRecognizer3DDriver::runComponent(){
   std::string modelID;
 //   loadVisualModelToWM(m_plyfile, modelID, Math::Pose3());
 //   m_visualObjectIDs.push_back(modelID);
-  int loops = 100;
   
   m_timer.Update();
   
   // trigger Recognizer3D
-  for(int j=0; j<loops && isRunning(); j++){
+  for(int j=0; j<m_loops && isRunning(); j++){
   	
-  	log("*** Loop %d/%d ***", j, loops);
+  	log("*** Loop %d/%d ***", j, m_loops);
 //   	addTrackingCommand(RELEASEMODELS);
   	
 		for(int i=0; i<m_labels.size(); i++){
@@ -126,9 +133,9 @@ void ObjectRecognizer3DDriver::runComponent(){
 		m_halt = true;
 	}
 	
-	printf("Results: %f\n", m_timer.Update()/(loops*m_labels.size()));
+	printf("Results: %f\n", m_timer.Update()/(m_loops*m_labels.size()));
 	for(int i=0; i<m_labels.size(); i++){
-		printf("  %s %f %f\n", m_labels[i].c_str(), 100*float(m_sumDetections[m_labels[i]])/loops, 100*m_sumConfidence[m_labels[i]]/loops);
+		printf("  %s %f %f\n", m_labels[i].c_str(), 100*float(m_sumDetections[m_labels[i]])/m_loops, 100*m_sumConfidence[m_labels[i]]/m_loops);
 	}
 	
 	log("Stop");

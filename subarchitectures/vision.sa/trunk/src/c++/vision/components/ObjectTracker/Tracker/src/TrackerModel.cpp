@@ -5,19 +5,6 @@
 using namespace std;
 using namespace Tracking;
 
-// PASS
-TrackerModel::Pass::Pass(Pass &pass){
-	f = pass.f;
-	modelviewprojection = pass.modelviewprojection;
-	x=pass.x;
-	y=pass.y;
-	w=pass.w;
-	h=pass.h;
-	printf("TrackerModel::Pass::Pass(Pass &pass) A\n");
-	Texture* texture = new Texture(*pass.texture);
-	printf("TrackerModel::Pass::Pass(Pass &pass) B\n");
-}
-
 // *** PUBLIC ***
 
 // Constructors
@@ -40,31 +27,12 @@ TrackerModel::TrackerModel(){
 	m_shadeTexturing = g_Resources->GetShader(m_shadeTexturingID);
 }
 
-TrackerModel::TrackerModel(const TrackerModel& m){
-	m_vertexlist = m.m_vertexlist;
-	m_facelist = m.m_facelist;
-	m_edgelist.clear();
-	releasePassList();
-	m_facepixellist.assign(m_facelist.size(), 0);
-	
-	for(int i=0; i<m.m_passlist.size(); i++){
-		Pass* p = new Pass(*m.m_passlist[i]);
-		m_passlist.push_back(p);
-	}
-	computeFaceNormals();
-	Update();
-}
-
 TrackerModel::~TrackerModel(){	
 	releasePassList();
 	g_Resources->ReleaseShader(m_shadeTexturingID);
 	
-	printf("TrackerModel::~TrackerModel() A\n");
-	
 	if(m_texture) delete(m_texture);
 	if(m_tex_original) delete(m_tex_original);
-	
-	printf("TrackerModel::~TrackerModel() B\n");
 	
 	if(glIsList(m_dlTexturedFaces)) 	glDeleteLists(m_dlTexturedFaces, 1);
 	if(glIsList(m_dlUntexturedFaces)) glDeleteLists(m_dlUntexturedFaces, 1);
@@ -72,24 +40,37 @@ TrackerModel::~TrackerModel(){
 	if(glIsList(m_dlFaces)) 					glDeleteLists(m_dlFaces, 1);
 	if(glIsList(m_dlEdges)) 					glDeleteLists(m_dlEdges, 1);
 	if(glIsList(m_dlNormals)) 				glDeleteLists(m_dlNormals, 1);
-	printf("TrackerModel::~TrackerModel() C\n");
+
 }
 
 TrackerModel& TrackerModel::operator=(const TrackerModel& m){
 	m_vertexlist = m.m_vertexlist;
 	m_facelist = m.m_facelist;
-	m_edgelist.clear();
-	releasePassList();
-	m_facepixellist.assign(m_facelist.size(), 0);
+	m_edgelist = m.m_edgelist;
+	m_facepixellist = m.m_facepixellist;
 	
-	printf("TrackerModel& TrackerModel::operator=(const TrackerModel& m) A\n");
 	for(int i=0; i<m.m_passlist.size(); i++){
-		Pass* p = new Pass(*m.m_passlist[i]);
+		Pass* p = new(Pass);
+		p->f = m.m_passlist[i]->f;
+		p->modelviewprojection = m.m_passlist[i]->modelviewprojection;
+		p->x = m.m_passlist[i]->x;
+		p->y = m.m_passlist[i]->y;
+		p->w = m.m_passlist[i]->w;
+		p->h = m.m_passlist[i]->h;
+		
+		// Copy Texture
+		if(m.m_passlist[i]->texture){
+			int w = m.m_passlist[i]->texture->getWidth();
+			int h = m.m_passlist[i]->texture->getHeight();
+			int ipw = 0.5 * g_Resources->GetImageProcessor()->getWidth();
+			int iph = 0.5 * g_Resources->GetImageProcessor()->getHeight();
+			g_Resources->GetImageProcessor()->render(m.m_passlist[i]->texture, -w*0.5,-h*0.5,w,h);
+			p->texture->copyTexImage2D(ipw-w*0.5,iph-h*0.5,w,h);
+		}
 		m_passlist.push_back(p);
 	}
-	printf("TrackerModel& TrackerModel::operator=(const TrackerModel& m) B\n");
+	
 	Update();
-	printf("TrackerModel& TrackerModel::operator=(const TrackerModel& m) C\n");
 	return (*this);
 }
 
@@ -107,10 +88,8 @@ TrackerModel& TrackerModel::operator=(const Model& m){
 }
 
 void TrackerModel::releasePassList(){
-	PassList::iterator it = m_passlist.begin();
-	while(it != m_passlist.end()){
-		delete(*it);
-		it++;
+	for(int i=0; i<m_passlist.size(); i++){
+		delete(m_passlist[i]);
 	}
 	m_passlist.clear();
 	m_facepixellist.assign(m_facelist.size(), 0);
@@ -662,7 +641,6 @@ void TrackerModel::genListPass(){		// draw faces using passlist and shader for t
 		
 		// bind texture of pass
 		m_passlist[p]->texture->bind();
-		
 		// set modelview matrix for texture
 // 		printf("x,y,w,h: %f %f %f %f\n", m_passlist[p]->x, m_passlist[p]->y, m_passlist[p]->w, m_passlist[p]->h);
 // 		printf("face %d: %d %d %d %d\n", m_passlist[p]->f[0], 

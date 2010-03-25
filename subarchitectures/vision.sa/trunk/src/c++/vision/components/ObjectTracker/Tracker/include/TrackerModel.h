@@ -24,12 +24,12 @@ namespace Tracking{
 class TrackerModel : public Model
 {
 private:
-	
+	TrackerModel(const TrackerModel& m);
 
 public:
 	TrackerModel();
 	~TrackerModel();
-	TrackerModel(const TrackerModel& m);
+	
 	
 	TrackerModel& operator=(const TrackerModel& m);
 	TrackerModel& operator=(const Model& m);
@@ -48,8 +48,7 @@ public:
 		float x,y,w,h;										// Bounding box of SubTexture
 		Texture* texture;									// Texture to use
 		Pass(){ texture = new(Texture); glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); }
-		Pass(Pass &pass);
-		~Pass(){ delete(texture); printf("~Pass()\n");}
+		~Pass(){ delete(texture);}
 	};
 	
 	typedef std::vector<Pass*>	PassList;
