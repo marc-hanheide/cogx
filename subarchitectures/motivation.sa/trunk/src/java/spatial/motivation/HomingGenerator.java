@@ -7,18 +7,16 @@ import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
-import motivation.slice.PatrolMotive;
-import motivation.util.facades.SpatialFacade;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import castutils.facades.SpatialFacade;
 
 /**
  * @author marc

@@ -3,10 +3,10 @@ package dora;
 import java.util.Hashtable;
 import java.util.Map;
 
-import motivation.util.castextensions.Accessor;
-import motivation.util.castextensions.StateChangeReceiver;
-import motivation.util.castextensions.WMEntrySet;
-import motivation.util.castextensions.WMEntrySet.ChangeHandler;
+import castutils.castextensions.Accessor;
+import castutils.castextensions.StateChangeReceiver;
+import castutils.castextensions.WMEntrySet;
+import castutils.castextensions.WMEntrySet.ChangeHandler;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;

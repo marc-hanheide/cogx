@@ -1,8 +1,8 @@
 package motivation.tests;
 
 import motivation.util.PlaceUnionEventRelation;
-import motivation.util.castextensions.CausalEventMonitor;
-import motivation.util.castextensions.WMEventQueue;
+import castutils.castextensions.CausalEventMonitor;
+import castutils.castextensions.WMEventQueue;
 import SpatialData.Place;
 import binder.autogen.core.UnionConfiguration;
 import cast.architecture.ChangeFilterFactory;

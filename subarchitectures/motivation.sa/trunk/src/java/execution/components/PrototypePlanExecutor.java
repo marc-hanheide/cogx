@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import motivation.slice.PlanProxy;
-import motivation.util.facades.BinderFacade;
+import castutils.facades.BinderFacade;
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;

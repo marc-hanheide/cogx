@@ -3,7 +3,7 @@
  */
 package motivation.util;
 
-import motivation.util.castextensions.CausalEventMonitor;
+import castutils.castextensions.CausalEventMonitor;
 import binder.autogen.core.Feature;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;

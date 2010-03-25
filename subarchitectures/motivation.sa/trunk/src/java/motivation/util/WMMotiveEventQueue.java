@@ -3,10 +3,10 @@ package motivation.util;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import motivation.util.castextensions.WMEntrySet;
 import Ice.ObjectImpl;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import castutils.castextensions.WMEntrySet;
 
 public class WMMotiveEventQueue extends LinkedBlockingQueue<WMMotiveEventQueue.MotiveEvent> implements WMEntrySet.ChangeHandler{
 

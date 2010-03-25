@@ -10,13 +10,13 @@ import java.util.Map;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveSet;
-import motivation.util.castextensions.WMEntrySet;
 import Ice.ObjectImpl;
 import binder.autogen.core.OriginMap;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import castutils.castextensions.WMEntrySet;
 
 /**
  * @author marc

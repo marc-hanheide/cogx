@@ -9,7 +9,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
-import motivation.util.CASTTimeUtil;
+import castutils.CASTTimeUtil;
 import motivation.components.filters.MotiveFilterManager;
 
 /**

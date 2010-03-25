@@ -7,7 +7,7 @@ import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PatrolMotive;
-import motivation.util.castextensions.Accessor;
+import castutils.castextensions.Accessor;
 import SpatialData.AVSCommand;
 import SpatialData.NavCommand;
 import SpatialData.Place;
@@ -200,7 +200,7 @@ public class DoraVerbalisation extends ManagedComponent {
 		m_verbals.verbaliseCannedTextOnAddition(AVSCommand.class,
 				"Having a look around");
 
-		// when a recognition command is triggeredÕ
+		// when a recognition command is triggeredï¿½
 		m_verbals.verbaliseOnAddition(DetectionCommand.class,
 				DETECTION_COMMAND_GENERATOR);
 

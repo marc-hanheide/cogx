@@ -10,8 +10,8 @@ import java.util.Map.Entry;
 import NavData.NavGraph;
 
 import motivation.slice.Motive;
-import motivation.util.castextensions.WMView;
-import motivation.util.castextensions.WMView.ChangeHandler;
+import castutils.castextensions.WMView;
+import castutils.castextensions.WMView.ChangeHandler;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
