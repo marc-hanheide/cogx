@@ -23,6 +23,7 @@ struct ModelEntry
 		del_predictor = predictor = new Predictor();
 		bfc = false;
 		lock = false;
+		num_convergence = 0;
 	}
 	
 	~ModelEntry(){
@@ -38,6 +39,7 @@ struct ModelEntry
 	Particle				initial_pose;		///< Initial pose, pose where to reset model to
 	
 	int 		id;											///< ID of model (for removing)
+	int			num_convergence;				///< number of steps until convergence (static object);
 	int			hypothesis_id;					///< ID of model to compare with (if this ModelEntry is a hypothesis)
 	std::vector<float> past_confidences;				///< vector of the past confidences
 	int			num_particles;					///< Number of particles used for representing likelihood distribution

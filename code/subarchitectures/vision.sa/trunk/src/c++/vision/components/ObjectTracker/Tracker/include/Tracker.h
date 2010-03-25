@@ -62,6 +62,7 @@ protected:
 	
 	tgLighting m_lighting;
 	ImageProcessor* m_ip;
+	Timer m_timer;
 	
 	// ModelEntry
 	ModelEntryList m_modellist;
@@ -117,7 +118,7 @@ public:
 	/** @brief Remove model from tracker */
 	void 		removeModel(int id);
 	
-	void		addHypothesis(int id, Model& m, Pose &p, std::string label, bool bfc);
+	void		addPoseHypothesis(int id, Pose &p, std::string label, bool bfc);
 	
 	/** @brief Get current pose of a model */
 	void		getModelPose(int id, Pose& p);

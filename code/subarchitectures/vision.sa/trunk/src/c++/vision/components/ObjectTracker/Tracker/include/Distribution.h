@@ -38,8 +38,6 @@ private:
 	float c_mean;
 	TM_Vector3 m_cam_view;
 	
-	bool tmp_appended;
-	
 	// Functions
 	/** @brief Resize Occlusion Queries on GPU */
 	void updateQueries();

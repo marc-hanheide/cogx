@@ -14,37 +14,16 @@ Texture::Texture(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-Texture::Texture(Texture &tex){
-	glGenTextures(1, &m_texture_id);
-	glBindTexture(GL_TEXTURE_2D, m_texture_id);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	m_width = tex.getWidth();
-	m_height = tex.getHeight();
-	
-	IplImage* img = cvCreateImage ( cvSize ( m_width, m_height ), IPL_DEPTH_8U, 3 );
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, img->imageData);
-
-	load((unsigned char*)img->imageData, m_width, m_height);
-	cvReleaseImage(&img);
-printf("Texture::Texture(Texture &tex) E\n");
-}
-
 Texture::~Texture(){
-	glDeleteTextures(1, &m_texture_id);
-	printf("Texture::~Texture()\n");
+	if(glIsTexture(m_texture_id))
+		glDeleteTextures(1, &m_texture_id);
 }
 
 bool Texture::load(unsigned char* image_data, int width, int height){
-// 	int err;
 	m_width = width;
 	m_height = height;
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, m_width, m_height, 0, GL_BGR, GL_UNSIGNED_BYTE, image_data);	
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, m_width, m_height, 0, GL_BGR, GL_UNSIGNED_BYTE, image_data);
 	return true;
 }
 
@@ -60,6 +39,11 @@ bool Texture::save(const char* filename){
 	cvConvertImage(img, img, CV_CVTIMG_SWAP_RB);
 	cvSaveImage(filename, img);
 	cvReleaseImage(&img);
+}
+
+bool Texture::getImageData(unsigned char* image_data){
+	bind();
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data);
 }
 
 void Texture::bind(int stage){

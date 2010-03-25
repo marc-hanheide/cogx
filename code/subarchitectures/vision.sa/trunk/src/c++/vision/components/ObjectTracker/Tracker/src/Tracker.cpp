@@ -243,7 +243,7 @@ int Tracker::addModelFromFile(const char* filename, Pose& p, std::string label, 
 	return modelEntry->id;
 }
 
-void Tracker::addHypothesis(int id, Model& m, Pose &p, std::string label, bool bfc){
+void Tracker::addPoseHypothesis(int id, Pose &p, std::string label, bool bfc){
 	if(!m_tracker_initialized){
 		printf("[Tracker::addHypothesis()] Error tracker not initialised!\n");
 		return;
@@ -263,7 +263,6 @@ void Tracker::addHypothesis(int id, Model& m, Pose &p, std::string label, bool b
 			modelEntry->num_recursions = params.num_recursions;
 			modelEntry->hypothesis_id = id;
 			m_hypotheses.push_back(modelEntry);
-			printf("Tracker::addHypothesis(int id, Model& m, Pose &p, std::string label, bool bfc)\n");
 			return;
 		}
 		it++;

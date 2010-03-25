@@ -30,6 +30,7 @@ private:
 	std::map<std::string,int> m_sumDetections;
 	std::map<std::string,float> m_sumConfidence;
 	
+	int m_loops;
 	bool m_halt;
 	Timer m_timer;
   
