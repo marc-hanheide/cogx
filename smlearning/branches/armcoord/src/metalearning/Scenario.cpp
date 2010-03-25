@@ -350,7 +350,7 @@ void Scenario::setUpMovement(){
 		Real currDistance = desc.distance;
 
 		//chose random horizontal and vertical angle
-		int horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
+		horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
 		
 		//int verticalAngle = rand() % 7;
 
@@ -389,12 +389,18 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 
 		Real polStateOutput = 0; //polyflap moves with the same Y angle
 		Real epsilonAngle = 0.005;
+		Real pfFlipThreshold = REAL_PI / 4.0;
+
 		if (learningData.currentSeq.size() > 1) {
-			if (currentPfRoll < (obRoll - epsilonAngle) ) //polyflap Y angle increases
-				polStateOutput = 1;
-			if (currentPfRoll > (obRoll + epsilonAngle) ) //polyflap Y angle decreases
+			if (currentPfRoll < (obRoll - epsilonAngle) ) {//polyflap Y angle increases
+				// polStateOutput = 1;
+				if (obRoll > pfFlipThreshold)
+					polStateOutput = 1;
+				else
+					polStateOutput = 0.75;
+			}
+			if (currentPfRoll > (obRoll + epsilonAngle) )//polyflap Y angle decreases
 				polStateOutput = -1;
-			
 			Real epsilonPfY = 0.000001;
 			if (polStateOutput == 0 && currentPfY < (chunk.objectPose.p.v2 - epsilonPfY) ) // polyflap Y position increases
 				polStateOutput = 0.5;
@@ -406,9 +412,9 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		currentPfRoll = obRoll;
 		currentPfY = chunk.objectPose.p.v2;
 
-		if (obRoll > reachedAngle) {
-			reachedAngle = obRoll;
-		}
+		// if (obRoll > reachedAngle) {
+		// 	reachedAngle = obRoll;
+		// }
 
 		
 // 		learningData.data.push_back(chunk);
@@ -508,7 +514,7 @@ void Scenario::run(int argc, char* argv[]) {
 		initializeMovement(tmDeltaAsync, startingPosition);
 
 
-		reachedAngle = 0.0;
+		// reachedAngle = 0.0;
 		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 			if (arm->getReacPlanner().send(target , ReacPlanner::ACTION_GLOBAL)) {
 				break;
@@ -539,8 +545,8 @@ void Scenario::run(int argc, char* argv[]) {
 			/////////////////////////////////////////////////
 
 
-		setUpMovement();
 
+		setUpMovement();
 
 
 			/////////////////////////////////////////////////
@@ -587,17 +593,17 @@ void Scenario::run(int argc, char* argv[]) {
 		context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
 		bStart = false;
 
-		Real polState = -1; //polyflap was smoothly moved
-		if (reachedAngle > 0.1) { //polyflap was tilted more than threshold
-			polState = 0;
-		}
-		if (reachedAngle > 1.5) {//polyflap was flipped
-			polState = 1;
-		}
+		// Real polState = -1; //polyflap was smoothly moved
+		// if (reachedAngle > 0.1) { //polyflap was tilted more than threshold
+		// 	polState = 0;
+		// }
+		// if (reachedAngle > 1.5) {//polyflap was flipped
+		// 	polState = 1;
+		// }
 
-		Sequence::iterator n;
-		for (n=learningData.currentSeq.begin()+1; n!=learningData.currentSeq.end();n++)
-			n->at(n->size()-1) = polState;
+		// Sequence::iterator n;
+		// for (n=learningData.currentSeq.begin()+1; n!=learningData.currentSeq.end();n++)
+		// 	n->at(n->size()-1) = polState;
 				
 			/////////////////////////////////////////////////
 			//writing the sequence into the dataset
