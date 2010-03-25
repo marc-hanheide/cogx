@@ -1,9 +1,9 @@
-package motivation.util.viewer.plugins;
+package castutils.viewer.plugins;
 
 import java.util.Vector;
 
 import motivation.slice.Motive;
-import motivation.util.CASTTimeUtil;
+import castutils.CASTTimeUtil;
 
 
 public class MotiveInfo implements Plugin {
