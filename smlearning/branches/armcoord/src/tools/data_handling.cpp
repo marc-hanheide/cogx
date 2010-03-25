@@ -17,8 +17,8 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with nnl.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License.
+   If not, see <http://www.gnu.org/licenses/>.
  
 */
 
@@ -765,8 +765,9 @@ CanonicalData::DataSet canonical_input_output_enumerator (DataSet data) {
 
 ///
 ///enumerate a dataset taking into account time steps
+///and a  of the complete dataset
 ///
-CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data) {
+CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data, int modulo) {
 	
 	//a number that slightly greater then the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
@@ -813,8 +814,9 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data
 				motorCommandBaseStr << canonical_start_pos << "_" << (*v)[3] << "_" << (*v)[4];
 				newfeaturevector.motorCommand = motorCommandBaseStr.str();
 // 				cout << "motor command: " << newfeaturevector.motorCommand << endl;
+				newsequence.push_back (newfeaturevector);
 			}
-			else if (v != s->begin() ) {
+			else if (v != s->begin() && time_step % modulo == 0) {
 				assert (featvectorSize == 13 || featvectorSize == 7 );
 				if (featvectorSize == 7)
 					for (int i=0; i<6; i++)
@@ -827,9 +829,10 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data
 				newfeaturevector.label = labelStr.str();
 				motorCommandStr << motorCommandBaseStr.str() << "_" << time_step;
 				newfeaturevector.motorCommand = motorCommandStr.str();
-					
+				newsequence.push_back (newfeaturevector);
+			
 			}
-			newsequence.push_back (newfeaturevector);
+			// newsequence.push_back (newfeaturevector);
 			time_step++;
 		}
 		newdata.push_back (newsequence);
@@ -846,7 +849,7 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data
 ///write a dataset in cryssmex format
 ///
 void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::DataSet data) {
-	//assuming an input(output) vector be symbolic
+	//assuming an input(output) vector be symbolic (dimensionality 0 in cryssmex)
 	writeFileName += ".cry";
 	
 	int inputVectorSize = 0;
@@ -912,49 +915,58 @@ void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::
 			}
 		}
 	}
-
+	writeFile.close();
 }
 
 ///
-///write a dataset in cryssmex format
-///TO DO!!!
-void write_dataset_cryssmex_fmt (string writeFileName, DataSet data, bool input_on_vector_format, bool output_on_vector_format) {
+///write a dataset in cryssmex format. This code assumes vectorial data format
+///
+void write_dataset_cryssmex_fmt (string writeFileName, DataSet data) {
 
-	//assuming an input(output) vector be symbolic, then its dimensionality should be 0
-	//according to CrySSMEx format
-	//The following code assumes that an output is stored in the last vector of a sequence
-	int inputVectorSize = 0;
-	int outputVectorSize = 0;
-	if (input_on_vector_format) //not symbolic
-		inputVectorSize = data[0][0].size();
-	int stateVectorSize = data[0][1].size();
-	if (output_on_vector_format) //not symbolic
-		int outputVectorSize = data[0][data[0].size()-1].size();
+	//this function assumes data coming from feature vectors in dataset
+	//the first vector has the motor command information (of size 5 is for now assumed)
+	//the rest of vectors contain a 6D finger effector pose,
+	//a 6D polyflap pose and a final output value in that order
+	int inputVectorSize;
+	assert ((inputVectorSize = data[0][0].size() + (data[0][1].size()-1)/2) == 11);
+	int stateVectorSize;
+	assert ((stateVectorSize = (data[0][1].size() - 1) /2) == 6);
+	int outputVectorSize = 1;
 
+	writeFileName += ".cry";
 	ofstream writeFile(writeFileName.c_str(), ios::out);
 
+	writeFile << "# input dim" << endl;
 	writeFile << inputVectorSize << endl;
+	writeFile << "# state dim" << endl;
 	writeFile << stateVectorSize << endl;
+	writeFile << "# output dim" << endl;
 	writeFile << outputVectorSize << endl;
+	writeFile << "# input examples" << endl << "0.0" << endl;
+	writeFile << "# output examples" << endl << "0.0" << endl;
+	writeFile.precision(20);
 	
 	DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
 		Sequence::const_iterator v;
 
-		for (v=(*s).begin(); v!= (*s).end(); v++) {
+		FeatureVector motorCommandVector;
+		for (v=s->begin(); v!= s->end(); v++) {
 			FeatureVector::const_iterator n;
-			long featvectorSize = (*v).size();
-			if (v == (*s).begin() )
-				assert (!input_on_vector_format == (featvectorSize == 1));
-
-			for (n=(*v).begin(); n!= (*v).end(); n++) {
-				writeFile << *n << "  ";
+			long featvectorSize = v->size();
+			if (v == s->begin() )
+				for (n=v->begin(); n!= v->end(); n++)
+					motorCommandVector.push_back (*n);
+			else if (v != s->begin()) {
+				for (n=motorCommandVector.begin(); n!=motorCommandVector.end(); n++)
+					writeFile << *n << "  ";
+				for (n=v->begin(); n!= v->end()-1; n++)
+					writeFile << *n << "  ";
+				writeFile << *(v->end()-1) << endl;
 			}
 		}
-		writeFile << endl;
 	}
-
-	
+	writeFile.close();
 }
 
 

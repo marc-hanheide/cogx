@@ -306,7 +306,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	// Define the initial pose in the Cartesian workspace
 	Vec3 orientationT(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 
-	int numSequences = 10000;
+	numSequences = 10000;
 	int startingPosition = 0;
 	if (argc > 2)
 		numSequences = atoi(argv[2]);
