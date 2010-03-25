@@ -1,3 +1,4 @@
+
 // =================================================================                                                        
 // Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
 //                                                                                                                          
@@ -18,18 +19,28 @@
 // =================================================================                                                        
 
 
-package binder.components;
+package binder.builders;
 
-import cast.architecture.SubarchitectureWorkingMemory;
+import binder.autogen.framing.SimpleSpatioTemporalFrame;
+import binder.autogen.framing.TemporalInterval;
+import cast.cdl.CASTTime;
 
-/** 
- * The binder working memory (currently just an empty wrapper around
- * SubarchitectureWorkingMemory)
- * 
- * @author Pierre Lison
- * @version 31/08/2009
- */
+public class SpatioTemporalFrameBuilder {
 
-public class BindingWorkingMemory extends SubarchitectureWorkingMemory {
 
+	/**
+	 * Create a new spatio-temporal frame with a place, a start time and a end time
+	 * 
+	 * @param place a string describing the place
+	 * @param startTime a starting time
+	 * @param endTime an ending time
+	 * @return the constructed spatio-temporal frame
+	 */
+	public static SimpleSpatioTemporalFrame createSimpleSpatioTemporalFrame 
+		(String place, CASTTime startTime, CASTTime endTime) {
+		
+		TemporalInterval interval = new TemporalInterval(startTime, endTime);
+		return new SimpleSpatioTemporalFrame(place, interval);
+	}
+	
 }

@@ -18,64 +18,77 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
+
 package binder.builders;
 
-import cast.cdl.CASTTime;
-import cast.cdl.WorkingMemoryPointer;
 import binder.arch.BinderException;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.distribs.ProbDistribution;
-import binder.autogen.epstatus.EpistemicStatus;
-import binder.autogen.framing.SpatioTemporalFrame;
-import binder.autogen.history.PerceptHistory;
+import binder.autogen.epstatus.AttributedEpistemicStatus;
+import binder.autogen.epstatus.PrivateEpistemicStatus;
+import binder.autogen.epstatus.SharedEpistemicStatus;
 
-public class PerceptBuilder {
-
-	private static int increment = 0;
+public class EpistemicStatusBuilder {
 
 	
 	
+	public static final String ROBOT_AGENT = "robot";
+	
+	
+
 	/**
-	 * Construct a new perceptual belief
+	 * Create a private epistemic status for an agent
 	 * 
-	 * @param curPlace the current place
-	 * @param curTime the curernt time
-	 * @param content the belief content
-	 * @param hist the percept history
-	 * @return the resulting belief
+	 * @param agent id of the agent
+	 * @return the new private epistemic status
 	 * @throws BinderException 
+	 * 			null arguments
 	 */
-	public static PerceptBelief createNewPerceptBelief (String id, String curPlace, CASTTime curTime, ProbDistribution content, PerceptHistory hist) 
-		throws BinderException {
-		
-		if (curPlace == null || curTime == null || content == null || hist == null) {
-			throw new BinderException("error, one of the belief component is null");
+	public static PrivateEpistemicStatus createNewPrivateEpistemicStatus (String agent) throws BinderException {
+		if (agent == null || agent.equals("")) {
+			throw new BinderException("error, agent is null or empty");
 		}
-		
-		// constructing the spatio-temporal frame
-		SpatioTemporalFrame frame = 
-			SpatioTemporalFrameBuilder.createSimpleSpatioTemporalFrame(curPlace, curTime, curTime);
-		
-		// constructing the epistemic status
-		EpistemicStatus status = 
-			EpistemicStatusBuilder.createNewPrivateEpistemicStatus(EpistemicStatusBuilder.ROBOT_AGENT);
-	
-		// and creating the belief
-		return new PerceptBelief(frame,status,id, content,hist);
+		return new PrivateEpistemicStatus(agent);
 	}
 	
-	
-	public static PerceptHistory createNewPerceptHistory (WorkingMemoryPointer origin) {
-		return new PerceptHistory(origin);
-	}
 	
 	/**
-	 * Forge a new, unique belief identifier
+	 * Create a new attributed epistemic status for an agent to a set of external agents
 	 * 
-	 * @return the new id
+	 * @param agent
+	 * @param agents
+	 * @return the new attributed epistemic status
+	 * @throws BinderException 
+	 * 			null arguments
 	 */
-	private static String getNewBeliefId() {
-		increment++;
-		return "b" + increment;
+	public static AttributedEpistemicStatus createNewAttributedEpistemicStatus (String agent, String[] agents) throws BinderException {
+		if (agent == null || agent.equals("")) {
+			throw new BinderException("error, agent is null or empty");
+		}
+		if (agents == null) {
+			throw new BinderException("error, agents is null");
+		}
+		else if (agents.length == 0) {
+			throw new BinderException("error, agents length is 0");
+		}
+		return new AttributedEpistemicStatus(agent, agents);
 	}
+	
+	
+	/**
+	 * Return a shared epistemic status (common ground) for a group of agents
+	 * 
+	 * @param agents for the group
+	 * @return the new shared epistemic status
+	 * @throws BinderException 
+	 * 			null argument
+	 */
+	public static SharedEpistemicStatus createNewSharedEpistemicStatus (String[] agents) throws BinderException {
+		if (agents == null) {
+			throw new BinderException("error, agents is null");
+		}
+		else if (agents.length == 0) {
+			throw new BinderException("error, agents length is 0");
+		}
+		return new SharedEpistemicStatus (agents);
+	}
+	
 }

@@ -22,14 +22,13 @@
 package binder.builders;
 
 import binder.arch.BinderException;
-import binder.autogen.Feature;
-import binder.autogen.formulae.BinaryOp;
-import binder.autogen.formulae.ComplexFormula;
-import binder.autogen.formulae.ElementaryFormula;
-import binder.autogen.formulae.Formula;
-import binder.autogen.formulae.ModalFormula;
-import binder.autogen.formulae.NegatedFormula;
-import binder.autogen.formulae.PointerFormula;
+import binder.autogen.logicalcontent.BinaryOp;
+import binder.autogen.logicalcontent.ComplexFormula;
+import binder.autogen.logicalcontent.ElementaryFormula;
+import binder.autogen.logicalcontent.Formula;
+import binder.autogen.logicalcontent.ModalFormula;
+import binder.autogen.logicalcontent.NegatedFormula;
+import binder.autogen.logicalcontent.PointerFormula;
 
 public class FormulaBuilder {
 	
@@ -37,8 +36,24 @@ public class FormulaBuilder {
 	private static int increment = 0;
 	
 	public static final String EXIST_PROP = "Exists";
+	
+	
+	// ============================================
+	// GENERAL FORMULA CONSTRUCTION METHODS
+	// ============================================
 
-	public static final String UNKNOWN_PROP = "unknown";
+
+	/**
+	 * Create a new elementary formula with proposition prop
+	 * @param prop
+	 * 			the logical proposition
+	 * @return the new elementary formula
+	 */
+	public static ElementaryFormula createNewElFormula (String prop) {	
+		
+		return new ElementaryFormula(getNewNominal(), prop);
+	}
+	
 	
 	
 	/**
@@ -91,28 +106,6 @@ public class FormulaBuilder {
 		cform.forms = newForms;
 	}
 
-
-	/**
-	 * Create a new elementary formula with proposition prop
-	 * @param prop
-	 * 			the logical proposition
-	 * @return the new elementary formula
-	 */
-	public static ElementaryFormula createNewElementaryFormula (String prop) {	
-		
-		return new ElementaryFormula(getNewNominal(), prop);
-	}
-	
-	
-	/**
-	 * Create a new elementary formula for entity existence
-	 * @return the new elementary formula
-	 */
-	public static ElementaryFormula createNewElementaryFormulaForExist () {	
-		
-		return new ElementaryFormula(getNewNominal(), EXIST_PROP);
-	}
-	
 	
 	/**
 	 * Create a new pointer formula, i.e. a formula whose proposition is a pointer
@@ -160,33 +153,39 @@ public class FormulaBuilder {
 	 * @throws BinderException 
 	 * 			if feat or form is null
 	 */
-	public static ModalFormula createNewModalFormula (Feature feat, Formula form) throws BinderException {
+	public static ModalFormula createNewModalFormula (String op, Formula form) throws BinderException {
 		
-		if (feat == null || form == null) {
+		if (op == null || form == null) {
 			throw new BinderException("error, feat or form is null");
 		}
 		
-		return new ModalFormula(getNewNominal(), feat, form);
+		return new ModalFormula(getNewNominal(), op, form);
 	}
 
 	
-	/**
-	 * Create a Modal formula which points to an elementary formula with proposition "unknown"
-	 * 
-	 * @param feat the feature, described as a modal operator
-	 * @return the modal formula
-	 * @throws BinderException
-	 * 			if feat is null
-	 */
-	public static ModalFormula createModalFormulaWithUnknownValue (Feature feat) throws BinderException {
-		
-		if (feat == null) {
-			throw new BinderException("error, feat is null");
-		}
-		
-		return new ModalFormula(getNewNominal(), feat, createNewElementaryFormula(UNKNOWN_PROP));
-	}
+	// ============================================
+	// FACILITY METHODS FOR FREQUENT FORMULAE
+	// ============================================
 
+	
+	
+	/**
+	 * Create a new elementary formula for entity existence
+	 * @return the new elementary formula
+	 */
+	public static ElementaryFormula createNewExistFormula () {	
+		
+		return new ElementaryFormula(getNewNominal(), EXIST_PROP);
+	}
+	
+
+	
+	
+	// ============================================
+	// UTILITIES
+	// ============================================
+
+	
 	
 	/**
 	 * Forge a new nominal
