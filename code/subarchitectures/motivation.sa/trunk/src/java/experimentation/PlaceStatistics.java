@@ -5,8 +5,8 @@ package experimentation;
 
 import java.util.Map;
 
-import motivation.util.castextensions.WMView;
-import motivation.util.castextensions.WMView.ChangeHandler;
+import castutils.castextensions.WMView;
+import castutils.castextensions.WMView.ChangeHandler;
 import NavData.NavGraph;
 import SpatialData.Place;
 import cast.CASTException;

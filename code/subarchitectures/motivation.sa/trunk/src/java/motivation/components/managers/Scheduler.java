@@ -17,12 +17,12 @@ import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
-import motivation.util.castextensions.WMLock;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPermissions;
+import castutils.castextensions.WMLock;
 
 /**
  * @author marc

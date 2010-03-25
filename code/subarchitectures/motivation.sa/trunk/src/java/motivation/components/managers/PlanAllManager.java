@@ -21,12 +21,6 @@ import motivation.util.RoomUnionEventRelation;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
-import motivation.util.castextensions.WMLock;
-import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
-import motivation.util.castextensions.WMEntrySet.ChangeHandler;
-import motivation.util.facades.BinderFacade;
-import motivation.util.facades.ExecutorFacade;
-import motivation.util.facades.PlannerFacade;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -34,6 +28,12 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPermissions;
+import castutils.castextensions.WMLock;
+import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
+import castutils.castextensions.WMEntrySet.ChangeHandler;
+import castutils.facades.BinderFacade;
+import castutils.facades.ExecutorFacade;
+import castutils.facades.PlannerFacade;
 
 /**
  * @author marc

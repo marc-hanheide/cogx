@@ -5,7 +5,7 @@ package motivation.util;
 
 import comadata.ComaRoom;
 
-import motivation.util.castextensions.CausalEventMonitor;
+import castutils.castextensions.CausalEventMonitor;
 import SpatialData.Place;
 import binder.autogen.core.Feature;
 import binder.autogen.core.Union;

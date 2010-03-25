@@ -10,12 +10,6 @@ module motivation {
     	void setPriority(string motiveType, string priority);    	
       };
     
-    
-		class WMMutex {
-			string name;
-			string holderName;
-			cast::cdl::WorkingMemoryAddress addr;
-		};
 
     	class TestSource {
     		string name;

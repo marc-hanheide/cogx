@@ -4,18 +4,12 @@
  */
 package motivation.components.generators;
 
-import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import motivation.slice.Motive;
 import motivation.util.WMMotiveSet;
-import motivation.util.castextensions.WMEntryQueue;
-import motivation.util.castextensions.WMEventQueue;
-import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -23,7 +17,6 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 
 /**
