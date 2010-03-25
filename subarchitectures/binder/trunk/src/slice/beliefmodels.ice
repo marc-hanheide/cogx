@@ -48,22 +48,6 @@
 module binder {
 module autogen {
 
-
-
-/**
- * Enumeration of possible features ("modal operators" in the modal 
- * logic terminology) which can be defined on a formula
- *
- * TO BE COMPLETED!!
- */
-enum Feature {
-	Colour, 
-	Shape, 
-	ObjectLabel, 
-	Size, 
-	Position };
-	
-	
 	
 
 // ================================
@@ -176,12 +160,46 @@ class EpistemicObject {
 };
 
 
+module featurecontent {
+
+/**
+ * Enumeration of possible features ("modal operators" in the modal 
+ * logic terminology) which can be defined on a formula
+ *
+ * TO BE COMPLETED!!
+ */
+enum Feature {
+	Colour, 
+	Shape, 
+	ObjectLabel, 
+	Size, 
+	Position };
+	
+	
+class FeatureValue { };
+
+
+class StringValue extends FeatureValue {
+	string val;
+};
+
+class IntegerValue extends FeatureValue {
+	int val;
+};
+
+class BooleanValue extends FeatureValue {
+	bool val;
+};
+
+class UnknownValue extends FeatureValue { } ;
+};
+
 
 // ================================
 // FORMULAE
 // ================================
 
-module formulae {
+module logicalcontent {
 
 /**
  * Abstract class for a formula
@@ -219,11 +237,11 @@ class NegatedFormula extends Formula {
 
 
 /**
- * Formula consisting in a modal operator <feat>
+ * Formula consisting in a modal operator <op>
  * applied on another formula
  */
 class ModalFormula extends Formula {
-	Feature feat;
+	string op;
 	Formula form;
 };
 
@@ -295,13 +313,28 @@ class CondIndependentDistribs extends ProbDistribution {
 	Distributions distribs;
 };
 
+
+struct FeatureValueProbPair {
+	featurecontent::FeatureValue val;
+	float prob;
+};
+
+sequence<FeatureValueProbPair> FeatureValueProbPairs;
+
+
+class FeatureValueDistribution extends ProbDistribution {
+	featurecontent::Feature feat;
+	FeatureValueProbPairs values;
+};
+	
+
 /**
  * Continuous probability distribution P(X) defined on the value
  * of a particular feature.  The distribution P(X) is a normal
  * distribution with mean and variance as parameters
  */
 class NormalDistribution extends ProbDistribution {
-	Feature feat;
+	featurecontent::Feature feat;
 	double mean;
 	double variance;
 };
@@ -311,7 +344,7 @@ class NormalDistribution extends ProbDistribution {
  * probability value
  */
 struct FormulaProbPair {
-	formulae::Formula form;
+	logicalcontent::Formula form;
 	float prob;
 };
 

@@ -1,3 +1,4 @@
+
 // =================================================================                                                        
 // Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
 //                                                                                                                          
@@ -24,26 +25,67 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import binder.arch.BinderException;
-import binder.autogen.Feature;
 import binder.autogen.distribs.CondIndependentDistribs;
 import binder.autogen.distribs.DiscreteDistribution;
 import binder.autogen.distribs.DistributionWithExistDep;
+import binder.autogen.distribs.FeatureValueDistribution;
+import binder.autogen.distribs.FeatureValueProbPair;
 import binder.autogen.distribs.FormulaProbPair;
 import binder.autogen.distribs.NormalDistribution;
 import binder.autogen.distribs.ProbDistribution;
-import binder.autogen.formulae.ElementaryFormula;
-import binder.autogen.formulae.Formula;
-import binder.autogen.formulae.ModalFormula;
-import binder.autogen.formulae.NegatedFormula;
+import binder.autogen.featurecontent.Feature;
+import binder.autogen.featurecontent.UnknownValue;
+import binder.autogen.logicalcontent.ElementaryFormula;
+import binder.autogen.logicalcontent.Formula;
+import binder.autogen.logicalcontent.ModalFormula;
+import binder.autogen.logicalcontent.NegatedFormula;
 
 
 public class BeliefContentBuilder {
 
 	
-	public static boolean LOGGING_HIGHPRIORITY = true;
-	
-	public static boolean LOGGING_LOWPRIORITY = true;
+	public static boolean LOGGING = true;
+	public static boolean DEBUG = false;
 		
+	 
+	
+	
+	// =================================================
+	// GENERAL METHODS FOR BELIEF CONTENT CONSTRUCTION
+	// =================================================
+
+	
+	
+
+	/**
+	 * Create a belief content defined as a distribution with "exist" dependency (cf. slice specs)
+	 * 
+	 * @param probExist 
+	 * 			the probability of existence of the belief
+	 * @param contentDistrib 
+	 * 			the distribution on the rest
+	 * 
+	 * @return a probability distribution with exist dependency
+	 * @throws BinderException 
+	 * 			exception thrown is probExist=0 or contentDistrib is a null pointer
+	 */
+	public static DistributionWithExistDep createNewDistributionWithExistDep(
+			float probExist, ProbDistribution contentDistrib) throws BinderException {
+
+		// checking the distribution is not null
+		if (contentDistrib == null) {
+			throw new BinderException("error, distribution is a null pointer");
+		}
+		
+		// building the existence distribution
+		DiscreteDistribution existDistrib = createExistDistribution(probExist);
+		
+		// constructing the full distribution
+		return createNewDistributionWithExistDep (existDistrib, contentDistrib);
+	}
+
+	
+	
 	
 	/**
 	 * Create a belief content defined as a distribution with "exist" dependency (cf. slice specs)
@@ -57,81 +99,22 @@ public class BeliefContentBuilder {
 	 * @throws BinderException 
 	 * 			exception thrown if one distribution is a null pointer
 	 */
-	public static DistributionWithExistDep createBeliefContentWithExistDep(
+	public static DistributionWithExistDep createNewDistributionWithExistDep (
 			ProbDistribution existDistrib, ProbDistribution contentDistrib) throws BinderException {
 	
+		// checking the distributions are not null
 		if (existDistrib == null || contentDistrib == null) {
 			throw new BinderException("error, distribution is a null pointer");
 		}
 		
-			DistributionWithExistDep newDistrib = new DistributionWithExistDep(existDistrib, contentDistrib);
+		// creating the new distribution
+		DistributionWithExistDep newDistrib = 
+			new DistributionWithExistDep(existDistrib, contentDistrib);
 		
 		return newDistrib;
 	}
 
 	
-	
-	/**
-	 * Create a belief content defined as a distribution with "exist" dependency (cf. slice specs)
-	 * 
-	 * @param probExist 
-	 * 			the probability of existence of the belief
-	 * @param contentDistrib 
-	 * 			the distribution on the rest
-	 * 
-	 * @return a probability distribution with exist dependency
-	 * @throws BinderException 
-	 * 			exception thrown is probExist=0 or contentDistrib is a null pointer
-	 */
-	public static DistributionWithExistDep createBeliefContentWithExistDep(
-			float probExist, ProbDistribution contentDistrib) throws BinderException {
-
-		if (contentDistrib == null) {
-			throw new BinderException("error, distribution is a null pointer");
-		}
-		
-		DiscreteDistribution existDistrib = createExistDistribution(probExist);
-		
-		return createBeliefContentWithExistDep (existDistrib, contentDistrib);
-	}
-
-	
-	/**
-	 * Create a distribution over existence property, based on the probability that it exists
-	 * 
-	 * @param probExist 
-	 * 			probability >= 0 and <= 1
-	 * @return the discrete distrbution
-	 * @throws BinderException
-	 */
-	private static DiscreteDistribution createExistDistribution (float probExist) throws BinderException {
-		
-		if (probExist < 0.0 || probExist > 1) {
-			throw new BinderException("error, probExist is < 0 or > 1");
-		}
-		
-		FormulaProbPair[] existPairs = new FormulaProbPair[2];
-		
-		ElementaryFormula existForm = FormulaBuilder.createNewElementaryFormulaForExist();
-		existPairs[0] = createNewFormulaProbPair(existForm, probExist);
-		
-		NegatedFormula notExistForm = FormulaBuilder.createNewNegatedFormula(existForm);
-		existPairs[1] = createNewFormulaProbPair(notExistForm, 1- probExist);
-		
-		return createNewDiscreteDistribution(existPairs);
-	}
-	
-	
-	
-	/**
-	 * Create a new (empty) set of conditionally independent distributions
-	 * 
-	 * @return a new set of conditionally independent distributions
-	 */
-	public static ProbDistribution createNewDistribution() {
-		return new ProbDistribution();
-	}
-
 
 	/**
 	 * Create a new set of conditionally independent distributions
@@ -142,6 +125,8 @@ public class BeliefContentBuilder {
 		return new CondIndependentDistribs(new ProbDistribution[0]);
 	}
 	
+	
+		
 	
 	/**
 	 * Add a new distribution to a set of conditionally independent distributions
@@ -207,7 +192,7 @@ public class BeliefContentBuilder {
 				throw new BinderException("error, probabilities of discrete distribution sum up to: " + total);
 			}
 			else if (total < 0.99) {
-				log_high("warning, probabilities sum up to: " + total);
+				log("warning, probabilities sum up to: " + total);
 			}
 		}
 		
@@ -215,82 +200,49 @@ public class BeliefContentBuilder {
 	}
 	
 	
-	public static Vector<FormulaProbPair> createModalFormulaPairs (Feature feat, FormulaProbPair[] elpairs) throws BinderException {
+	
+	public static FeatureValueDistribution createNewFeatureValueDistribution 
+			(Feature feat, FeatureValueProbPair[] values, boolean addUnknownValue) throws BinderException {
+		
+		
+		// Vector<FormulaProbPair> modalPairs = createModalFormulaPairs(feat, values);
+		 
 		if (feat == null) {
 			throw new BinderException("error, feat is null");
 		}
-		if (elpairs == null) {
-			throw new BinderException("error, elpairs is null");
+		if (values == null) {
+			throw new BinderException("error, values is null");
 		}
-		if (elpairs.length == 0) {
-			throw new BinderException("error, elpairs.lengh == 0");
-		}
-		
-		Vector<FormulaProbPair> modalPairs = new Vector<FormulaProbPair>();
-		
-		for (int i = 0; i < elpairs.length; i++) {
-			FormulaProbPair pair = elpairs[i];
-			
-			if (pair == null) {
-				throw new BinderException ("error, form is null");
-			}
-			if (pair.form == null) {
-				throw new BinderException("error, pair.form is null");
-			}
-			if (pair.prob < 0 || pair.prob > 1) {
-				throw new BinderException("error, probability of pair < 0 or > 1");
-			}
-			
-			ModalFormula newMForm = FormulaBuilder.createNewModalFormula(feat, pair.form);
-			FormulaProbPair newPair = createNewFormulaProbPair(newMForm, pair.prob);
-			modalPairs.add(newPair);
+		if (values.length == 0) {
+			throw new BinderException("error, values.lengh == 0");
 		}
 		
-		return modalPairs;
-	}
-	
-	public static DiscreteDistribution createNewDiscreteDistributionOverFeature 
-			(Feature feat, FormulaProbPair[] elpairs, boolean addUnknownValue) throws BinderException {
-		
-		
-		Vector<FormulaProbPair> modalPairs = createModalFormulaPairs(feat, elpairs);
-	
 		float total = 0.0f;
 
-		for (Enumeration<FormulaProbPair> e = modalPairs.elements(); e.hasMoreElements() ;) {
-			FormulaProbPair pair = e.nextElement();
-			total += pair.prob;
+		for (int i = 0 ; i < values.length ; i++) {
+			total += values[i].prob;
 		}
 		
 		if (total > 1.01) {
-			throw new BinderException("error, probabilities of discrete distribution sum up to: " + total);
+			throw new BinderException("error, probabilities of feature distribution sum up to: " + total);
 		}
 		
 		else if (total < 0.99) {
 			if (addUnknownValue) {
-				log_low("sum of probs is: " + total +", adding unknown value");
-				FormulaProbPair uPair = createNewFormulaProbPairForUnknownValue (feat, 1- total);
-				modalPairs.add(uPair);
+				debug("sum of probs is: " + total +", adding unknown value");
+				FeatureValueProbPair uval = new FeatureValueProbPair(new UnknownValue(), 1- total);
+				values = addNewPairToArray(values, uval);
+				
 			}
 			else {
-				log_high("warning, probabilities sum up to: " + total);
+				log("warning, probabilities sum up to: " + total);
 			}
 		}
 		
-		return createNewDiscreteDistribution(convertVectorToArray(modalPairs));
+		return new FeatureValueDistribution (feat, values);
 	}
 	
 	
-	public static FormulaProbPair createNewFormulaProbPairForUnknownValue(Feature feat, float prob) throws BinderException {
-		ModalFormula uForm = FormulaBuilder.createModalFormulaWithUnknownValue(feat);
-		return createNewFormulaProbPair(uForm, prob);
-	}
-	
-	
-	private static FormulaProbPair[] convertVectorToArray (Vector<FormulaProbPair> pairsV) {
-		FormulaProbPair[] pairsA = new FormulaProbPair[pairsV.size()]; 
-		return pairsV.toArray(pairsA);
-	}
 	
 	public static FormulaProbPair createNewFormulaProbPair(Formula form, float prob) throws BinderException {
 		if (form == null) {
@@ -346,14 +298,103 @@ public class BeliefContentBuilder {
 	
 	
 	
-	public static void log_low(String s) {
-		if (LOGGING_LOWPRIORITY) {
+	// =================================================
+	// PRIVATE METHODS
+	// =================================================
+
+	
+	
+	
+	/**
+	 * Create a distribution over existence property, based on the probability that it exists
+	 * 
+	 * @param probExist 
+	 * 			probability >= 0 and <= 1
+	 * @return the discrete distrbution
+	 * @throws BinderException
+	 */
+	private static DiscreteDistribution createExistDistribution (float probExist) throws BinderException {
+		
+		if (probExist < 0.0 || probExist > 1) {
+			throw new BinderException("error, probExist is < 0 or > 1");
+		}
+		
+		FormulaProbPair[] existPairs = new FormulaProbPair[2];
+		
+		ElementaryFormula existForm = FormulaBuilder.createNewExistFormula();
+		existPairs[0] = createNewFormulaProbPair(existForm, probExist);
+		
+		NegatedFormula notExistForm = FormulaBuilder.createNewNegatedFormula(existForm);
+		existPairs[1] = createNewFormulaProbPair(notExistForm, 1- probExist);
+		
+		return createNewDiscreteDistribution(existPairs);
+	}
+	
+	
+/**
+	private static Vector<FormulaProbPair> createModalFormulaPairs (Feature feat, FormulaProbPair[] elpairs) throws BinderException {
+		if (feat == null) {
+			throw new BinderException("error, feat is null");
+		}
+		if (elpairs == null) {
+			throw new BinderException("error, elpairs is null");
+		}
+		if (elpairs.length == 0) {
+			throw new BinderException("error, elpairs.lengh == 0");
+		}
+		
+		Vector<FormulaProbPair> modalPairs = new Vector<FormulaProbPair>();
+		
+		for (int i = 0; i < elpairs.length; i++) {
+			FormulaProbPair pair = elpairs[i];
+			
+			if (pair == null) {
+				throw new BinderException ("error, form is null");
+			}
+			if (pair.form == null) {
+				throw new BinderException("error, pair.form is null");
+			}
+			if (pair.prob < 0 || pair.prob > 1) {
+				throw new BinderException("error, probability of pair < 0 or > 1");
+			}
+			
+			ModalFormula newMForm = FormulaBuilder.createNewModalFormula(feat, pair.form);
+			FormulaProbPair newPair = createNewFormulaProbPair(newMForm, pair.prob);
+			modalPairs.add(newPair);
+		}
+		
+		return modalPairs;
+	}
+	*/
+
+	
+	
+	/**
+	 * Add a new pair to the array
+	 * 
+	 * @param array the existing array
+	 * @param newEl the new element to add
+	 * @return the next, extended array
+	 */
+	private static FeatureValueProbPair[] addNewPairToArray (FeatureValueProbPair[] array, FeatureValueProbPair newEl) {
+		FeatureValueProbPair[] newArray = new FeatureValueProbPair[array.length + 1];
+		for (int i = 0 ; i < array.length ; i++) {
+			newArray[i] = array[i];
+		}
+		newArray[array.length] = newEl;
+		return newArray;
+	}
+	
+	
+	
+	public static void log(String s) {
+		if (LOGGING) {
 			System.out.println("[BeliefContentBuilder] " + s);
 		}
 	}
 	
-	public static void log_high(String s) {
-		if (LOGGING_HIGHPRIORITY) {
+	public static void debug(String s) {
+		if (DEBUG) {
 			System.out.println("[BeliefContentBuilder] " + s);
 		}
 	}

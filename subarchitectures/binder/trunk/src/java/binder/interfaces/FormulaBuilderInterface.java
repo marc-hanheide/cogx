@@ -22,14 +22,14 @@
 
 package binder.interfaces;
 
-import binder.autogen.Feature;
-import binder.autogen.formulae.BinaryOp;
-import binder.autogen.formulae.ComplexFormula;
-import binder.autogen.formulae.ElementaryFormula;
-import binder.autogen.formulae.Formula;
-import binder.autogen.formulae.ModalFormula;
-import binder.autogen.formulae.NegatedFormula;
-import binder.autogen.formulae.PointerFormula;
+import binder.autogen.featurecontent.Feature;
+import binder.autogen.logicalcontent.BinaryOp;
+import binder.autogen.logicalcontent.ComplexFormula;
+import binder.autogen.logicalcontent.ElementaryFormula;
+import binder.autogen.logicalcontent.Formula;
+import binder.autogen.logicalcontent.ModalFormula;
+import binder.autogen.logicalcontent.NegatedFormula;
+import binder.autogen.logicalcontent.PointerFormula;
 
 
 public interface FormulaBuilderInterface {
