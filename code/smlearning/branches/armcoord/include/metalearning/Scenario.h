@@ -229,12 +229,13 @@ protected:
 	int horizontalAngle;
 	int numSequences;
 
-	Real reachedAngle;
+	// Real reachedAngle;
 	
 	/** iteration counter */
 	int iteration;
 	/** const number of SM regions */
 	static const int smregionsCount = 18;
+	/** threshold angle when polyflap is flipping over */
 
 	/** Creator */
 	golem::Creator creator;
