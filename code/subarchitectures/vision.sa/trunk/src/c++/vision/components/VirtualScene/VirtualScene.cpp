@@ -30,6 +30,7 @@ VirtualScene::VirtualScene(){
 	m_running = true;
 	m_render = true;
 	m_lock = false;
+	m_normals = false;
 	m_objectType = 0;
 	m_cor_num = 0;
 }
@@ -93,10 +94,10 @@ void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 
 void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 	log("receiving ConvexHull: %s", _wmc.address.id.c_str());
-	
+
 	if(!m_lock){
-		
 		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
+		m_ConvexHullList.clear();
 		
 		ModelEntry newModelEntry;
 		
@@ -124,7 +125,7 @@ void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 		
 		m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
 		updateCameraViews();
-		m_lock=true;
+		m_lock = true;
 	}
 }
 
@@ -344,35 +345,32 @@ void VirtualScene::updateCameraViews(){
 }
 
 void VirtualScene::drawCamera(){
-	m_camModel.model.DrawFaces(m_wireframe);
+// 	m_camModel.model.DrawFaces(m_wireframe);
 	m_camModel.model.m_pose.Activate();
 	glColor3f(0.5,0.5,0.5);
-	m_camera0.DrawFrustum();
+// 	m_camera0.DrawFrustum();
 	m_camModel.model.m_pose.Deactivate();
 }
 
 void VirtualScene::drawVisualObjects(){
 	for(int i=0; i<m_VisualObjectList.size(); i++){
 		m_VisualObjectList[i].model.DrawFaces(m_wireframe);
-// 		m_VisualObjectList[i].model.DrawNormals(0.01);
+		if(m_normals) m_VisualObjectList[i].model.DrawNormals(0.01);
 	}
 }
 
 void VirtualScene::drawConvexHulls(){
 	for(int i=0; i<m_ConvexHullList.size(); i++){
-
-		m_ConvexHullList[i].model.DrawPolygons();
+		m_ConvexHullList[i].model.DrawFaces(m_wireframe);
 		m_ConvexHullList[i].model.DrawQuadstrips();
-		m_ConvexHullList[i].model.DrawNormals(0.01);
-		
-// 		m_ConvexHullList[i].model.DrawNormals(0.01);
+		if(m_normals) m_ConvexHullList[i].model.DrawNormals(0.01);
 	}
 }
 
 void VirtualScene::drawSOIs(){
 	for(int i=0; i<m_SOIList.size(); i++){
 		m_SOIList[i].model.DrawFaces();
-		m_SOIList[i].model.DrawNormals(0.01);
+		if(m_normals) m_SOIList[i].model.DrawNormals(0.01);
 	}
 }
 

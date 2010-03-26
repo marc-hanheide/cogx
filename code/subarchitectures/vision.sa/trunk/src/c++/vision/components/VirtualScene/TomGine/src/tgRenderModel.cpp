@@ -80,10 +80,10 @@ void tgRenderModel::DrawFaces(bool lighting){
 void tgRenderModel::DrawPolygons(){
 	ApplyMaterial();
 	int i,j,v;
-	for(i=0; i<(int)m_polygons.size(); i++){
+	for(i=0; i<(int)m_trianglefans.size(); i++){
 		glBegin(GL_TRIANGLE_FAN);		
-			for(j=0; j<(int)m_polygons[i].vertices.size(); j++){
-				v = m_polygons[i].vertices[j];
+			for(j=0; j<(int)m_trianglefans[i].vertices.size(); j++){
+				v = m_trianglefans[i].vertices[j];
 				glTexCoord2f(m_vertices[v].texCoord.x, m_vertices[v].texCoord.y);
 				glNormal3f(m_vertices[v].normal.x, m_vertices[v].normal.y, m_vertices[v].normal.z);
 				glVertex3f(m_vertices[v].pos.x, m_vertices[v].pos.y, m_vertices[v].pos.z);

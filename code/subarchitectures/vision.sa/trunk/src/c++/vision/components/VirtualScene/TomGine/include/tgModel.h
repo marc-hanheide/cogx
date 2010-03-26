@@ -39,20 +39,21 @@ public:
 		std::vector<vec3> points;
 	};
 
-	std::vector<Vertex>			m_vertices;		///< list of vertices
-	std::vector<Face>				m_faces;			///< list of faces
-	std::vector<Face>				m_polygons;		///< list of triangle fans (=polygons)
-	std::vector<Face>				m_quadstrips;	///< list of quad strips (e.g. for cylinders)
-	std::vector<Line>				m_lines;			///< list of lines
-	std::vector<LineLoop>		m_lineloop;		///< list of line strip (=polygon contours)
-	std::vector<vec3>				m_points;			///< list of points
+	std::vector<Vertex>			m_vertices;			///< list of vertices
+	std::vector<Face>				m_faces;				///< list of faces
+	std::vector<Face>				m_quadstrips;		///< list of quad strips (e.g. for cylinders)
+	std::vector<Face>				m_trianglefans;	///< list of triangle fans (e.g. for convex polygons)
+	std::vector<Line>				m_lines;				///< list of lines
+	std::vector<LineLoop>		m_lineloops;		///< list of line strip (=polygon contours)
+	std::vector<vec3>				m_points;				///< list of points
 	
 	/** @brief draws triangles and quadrangles given by m_faces */
 	virtual void DrawFaces();
 	
-	/** @brief draws triangulated polygons given by m_polygon where the vector of vertices defines the contour */
-	virtual void DrawPolygons();
+	/** @brief draws triangle fans given by m_trianglefans */
+	virtual void DrawTriangleFan();
 	
+	/** @brief draws quad strips */
 	virtual void DrawQuadstrips();
 	
 	/** @brief draws single lines given by start and end points in m_lines */
@@ -69,7 +70,6 @@ public:
 	
 	/** @brief computes normals of vertices of m_faces, m_polygons, m_quadstrips */
 	void ComputeFaceNormals();
-	void ComputePolygonNormals();
 	void ComputeQuadstripNormals();
 	
 	void TriangulatePolygon(std::vector<vec3> p);
