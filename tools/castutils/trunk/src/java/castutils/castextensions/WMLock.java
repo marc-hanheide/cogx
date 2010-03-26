@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-import motivation.slice.WMMutex;
+import castutils.slice.WMMutex;
 
 import Ice.Object;
 
