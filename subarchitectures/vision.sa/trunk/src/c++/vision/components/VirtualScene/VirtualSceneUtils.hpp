@@ -16,7 +16,7 @@ bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgM
 bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& model);
 bool convertSOI2Model(VisionData::SOIPtr soi, TomGine::tgModel& model, cogx::Math::Vector3& pos);
 void genBox(TomGine::tgModel& model, float x, float y, float z);
-void genSphere(TomGine::tgModel& model, float r);
+void genSphere(TomGine::tgModel& model, float r, int segments);
 void loadCameraParameters(TomGine::tgCamera* camera, Video::CameraParameters camPars, float zNear, float zFar);
 
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
@@ -86,28 +86,17 @@ bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgM
 		printf("[VirtualSceneUtils::convertConvexHull2Model] Warning: no geometry found\n");
 		return false;
 	}
-
-	// Parse through points
-	TomGine::vec3 p;
-	TomGine::tgModel::Vertex v;
-	TomGine::tgModel::Face f;
 	
-	printf("Copying PointsSeq\n");
+	TomGine::vec3 p;
+	std::vector<TomGine::vec3> points;
+	TomGine::tgModel::LineLoop ll;
 	for(i=0; i<cvhull->PointsSeq.size(); i++){
 		p.x = cvhull->PointsSeq[i].x;
 		p.y = cvhull->PointsSeq[i].y;
 		p.z = cvhull->PointsSeq[i].z;
-		v.pos = p;
-// 		model.m_points.push_back(p);
-		model.m_vertices.push_back(v);
-// 		printf("v: %d\n", vidx);
-		f.vertices.push_back(vidx++);
+		points.push_back(p);	
 	}
-	printf("Add face to polygon list\n");
-	model.m_polygons.push_back(f);
-	
-	printf("Compute polygon normals\n");
-	model.ComputePolygonNormals();
+	model.TriangulatePolygon(points);
 	
 	return true;
 }
@@ -116,32 +105,32 @@ bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& mod
 	int i,j;
 	TomGine::tgModel::Vertex v;
 	TomGine::tgModel::Face f;
+	TomGine::vec3 p;
+	std::vector<TomGine::vec3> points;
 	int vidx = model.GetVerticesSize();
 		
 	// Bottom plane
-	f.vertices.clear();
+	points.clear();
 	for(j=object.pPlane.size()-1; j>=0; j--){
-		v.pos.x = object.pPlane[j].x;
-		v.pos.y = object.pPlane[j].y;
-		v.pos.z = object.pPlane[j].z;
-		v.normal = v.normal * (-1.0);
-		model.m_vertices.push_back(v);
-		f.vertices.push_back(vidx++);
+		p.x = object.pPlane[j].x;
+		p.y = object.pPlane[j].y;
+		p.z = object.pPlane[j].z;
+		points.push_back(p);
 	}
-	model.m_polygons.push_back(f);
+	model.TriangulatePolygon(points);
 
 	// Top plane
-	f.vertices.clear();
-	for(j=0; j<object.pTop.size(); j++){
-		v.pos.x = object.pTop[j].x;
-		v.pos.y = object.pTop[j].y;
-		v.pos.z = object.pTop[j].z;
-		model.m_vertices.push_back(v);
-		f.vertices.push_back(vidx++);
+	points.clear();
+	for(j=object.pTop.size()-1; j>=0; j--){
+		p.x = object.pTop[j].x;
+		p.y = object.pTop[j].y;
+		p.z = object.pTop[j].z;
+		points.push_back(p);
 	}
-	model.m_polygons.push_back(f);
+	model.TriangulatePolygon(points);
 	
 	// side planes
+	vidx = model.GetVerticesSize();
 	f.vertices.clear();
 	for(j=0; j<object.pTop.size(); j++){
 		v.pos.x = object.pTop[j].x;
@@ -170,7 +159,6 @@ bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& mod
 		f.vertices.push_back(vidx++);
 	}
 	model.m_quadstrips.push_back(f);
-	model.ComputePolygonNormals();
 	model.ComputeQuadstripNormals();
 		
 	return true;
@@ -186,7 +174,7 @@ bool convertSOI2Model(VisionData::SOIPtr soi, TomGine::tgModel& model, cogx::Mat
 	}
 	
 	if( soi->boundingSphere.rad > 0.0){
-		genSphere(model, soi->boundingSphere.rad);
+		genSphere(model, soi->boundingSphere.rad, 16);
 		pos = soi->boundingSphere.pos;
 	}
 
@@ -244,7 +232,7 @@ void genBox(TomGine::tgModel& model, float x, float y, float z){
 	model.m_faces.push_back(f); f.vertices.clear();
 }
 
-void genSphere(TomGine::tgModel& model, float r){
+void genSphere(TomGine::tgModel& model, float r, int segments){
 	printf("[VirtualSceneUtils::genSphere] not implemented\n");
 }
 

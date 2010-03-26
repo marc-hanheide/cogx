@@ -46,6 +46,7 @@ private:
   
   cogx::Math::Vector3 m_cor;	///< center of rotation of the scene
   int	m_cor_num;
+  
 
   /** Which camera to get images from */
   int m_camId;
@@ -61,6 +62,7 @@ private:
   bool m_running;
   bool m_lock;
   bool m_wireframe;
+  bool m_normals;
   float m_fTime;
  
   // Functions with GL commands allowed
