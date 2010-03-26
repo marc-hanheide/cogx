@@ -345,10 +345,10 @@ void VirtualScene::updateCameraViews(){
 }
 
 void VirtualScene::drawCamera(){
-// 	m_camModel.model.DrawFaces(m_wireframe);
+	m_camModel.model.DrawFaces(m_wireframe);
 	m_camModel.model.m_pose.Activate();
 	glColor3f(0.5,0.5,0.5);
-// 	m_camera0.DrawFrustum();
+	m_camera0.DrawFrustum();
 	m_camModel.model.m_pose.Deactivate();
 }
 
