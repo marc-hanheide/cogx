@@ -14,6 +14,10 @@
 
 #include "tgModel.h"
 
+#define TETRAHEDRON 0
+#define OCTAHEDRON 1
+#define ICOSAHEDRON 2
+
 namespace TomGine{
 
 class tgSphere{
@@ -21,13 +25,12 @@ private:
 	int n_vertices;
 	int n_faces;
 	int n_edges;
-	std::vector<float> vertices;
-	std::vector<int> faces; 
-	
 	int edge_walk; 
-	std::vector<int> start; 
-	std::vector<int> end; 
-	std::vector<int> midpoint; 
+	float *vertices;
+	int *faces; 
+	int *start; 
+	int *end; 
+	int *midpoint; 
 	
  	void init_tetrahedron();
  	void init_octahedron();
@@ -37,8 +40,9 @@ private:
 	void subdivide();
 
 public:
+	tgSphere();
  	
- 	void CreateSphere(tgModel& model, float radius, int subdevisions);
+ 	void CreateSphere(tgModel& model, float radius, int subdevisions, int method=0);
  	
  	
 };

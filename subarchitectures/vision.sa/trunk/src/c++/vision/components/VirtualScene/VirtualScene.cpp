@@ -149,7 +149,7 @@ void VirtualScene::addSOI(const cdl::WorkingMemoryChange & _wmc){
 	}
 	
 	cogx::Math::setIdentity(pose.rot);
-	
+	convertPose2tgPose(pose, newModelEntry.model.m_pose);
 	newModelEntry.model.m_material = getRandomMaterial();
 	newModelEntry.castWMA = _wmc.address;
 	m_SOIList.push_back(newModelEntry);
@@ -345,7 +345,7 @@ void VirtualScene::updateCameraViews(){
 }
 
 void VirtualScene::drawCamera(){
-	m_camModel.model.DrawFaces(m_wireframe);
+// 	m_camModel.model.DrawFaces(m_wireframe);
 	m_camModel.model.m_pose.Activate();
 	glColor3f(0.5,0.5,0.5);
 	m_camera0.DrawFrustum();
