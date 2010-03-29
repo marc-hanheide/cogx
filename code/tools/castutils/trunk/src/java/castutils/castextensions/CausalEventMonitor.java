@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import SpatialData.Place;
-import binder.autogen.core.UnionConfiguration;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
