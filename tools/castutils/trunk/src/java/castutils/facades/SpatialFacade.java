@@ -5,11 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import castutils.castextensions.CASTHelper;
-import castutils.castextensions.WMEntryQueue;
-import castutils.castextensions.WMView;
-import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
-import castutils.castextensions.WMEntrySet.ChangeHandler;
+import comadata.ComaRoom;
+
 import FrontierInterface.PlaceInterface;
 import FrontierInterface.PlaceInterfacePrx;
 import Ice.ObjectImpl;
@@ -23,8 +20,11 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-
-import comadata.ComaRoom;
+import castutils.castextensions.CASTHelper;
+import castutils.castextensions.WMEntryQueue;
+import castutils.castextensions.WMView;
+import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
+import castutils.castextensions.WMEntrySet.ChangeHandler;
 
 public class SpatialFacade extends CASTHelper implements ChangeHandler {
 

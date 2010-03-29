@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import Ice.ObjectImpl;
-import SpatialData.Place;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -379,21 +378,5 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		return map.values();
 	}
 
-	public static void main(String[] args) {
-		ManagedComponent c = null;
-		WMView<?> set = WMView.create(c, Place.class);
-		WMView.ChangeHandler<Place> ch = new WMView.ChangeHandler<Place>() {
-
-			@Override
-			public void entryChanged(Map<WorkingMemoryAddress, Place> map,
-					WorkingMemoryChange wmc, Place newEntry, Place oldEntry)
-					throws CASTException {
-				// TODO Auto-generated method stub
-
-			}
-
-		};
-
-	}
 
 }

@@ -2,7 +2,6 @@ package castutils.viewer.plugins;
 
 import java.util.Vector;
 
-import Ice.ObjectImpl;
 import SpatialProperties.GatewayPlaceProperty;
 
 public class GatewayPlacePropertyInfo implements Plugin {
