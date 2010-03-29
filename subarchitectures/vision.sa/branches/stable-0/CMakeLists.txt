@@ -115,3 +115,10 @@ if (BUILD_SA_VISION_CAMERA_MOUNT)
 add_subdirectory (src/c++/vision/components/CameraMount)
 endif (BUILD_SA_VISION_CAMERA_MOUNT)
 
+
+option(BUILD_SA_VISION_PERSON_TRACKER "build person track" NO)
+if (BUILD_SA_VISION_PERSON_TRACKER)
+add_subdirectory (src/c++/vision/components/PeopleDetector)
+add_subdirectory (src/c++/vision/components/PeopleDetectorTest)
+endif (BUILD_SA_VISION_PERSON_TRACKER)
+

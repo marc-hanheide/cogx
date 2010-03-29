@@ -252,6 +252,24 @@ module VisionData {
     // time the object was last changed
     cast::cdl::CASTTime time;
   };
+
+
+  /**
+  * Person detected in camera a laser.
+  */
+  class Person {        
+    // angle and distance from robot
+    double angle;
+    double distance;
+    // 3d position of person relative to the robot
+    double locX;
+    double locZ;
+    // possible direction of movement in last update
+    double deltaX;
+    double deltaZ;
+  };
+
+
 };
 
 #endif
