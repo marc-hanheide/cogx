@@ -30,7 +30,7 @@ public:
 		vec4 ambient;
 		vec4 diffuse;
 		vec4 specular;
-		vec3 color;
+		vec4 color;
 		float shininess;
 		void Apply();
 		Material();

@@ -74,7 +74,7 @@ private:
   void drawSOIs();
   void inputControl();
   TomGine::tgRenderModel::Material getRandomMaterial();
-  TomGine::vec3 getRandomColor();
+  TomGine::vec4 getRandomColor();
   
   // Do not use GL commands in this functions (different thread with no GL context)
   void addVisualObject(const cdl::WorkingMemoryChange & _wmc);
