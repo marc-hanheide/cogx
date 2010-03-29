@@ -13,6 +13,7 @@
 #include "tgRenderModel.h"
 #include "tgModelLoader.h"
 #include "tgBasicGeometries.h"
+#include "tgSphere.h"
 
 using namespace TomGine;
 using namespace std;
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
 	vec3 v;
 
 	tgEngine render;
-	render.Init(640,480,1.0,"TomGine Render Engine",true);
+	render.Init(640,480, 1.0, 0.01, "TomGine Render Engine", true);
 
 	tgFont m_font("/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf");
 
@@ -55,10 +56,15 @@ int main(int argc, char *argv[])
 	loader.LoadPly(camera, "model/camera.ply");
 	camera.m_material = matRed;
 	
+	tgRenderModel spheremodel;
+	tgSphere sphere;
+	sphere.CreateSphere(spheremodel, 0.1, 2, ICOSAHEDRON);
+	spheremodel.m_material = matRed;
+	
 	// Rendering loop
 	while(render.Update(fTime)){
-		camera.DrawFaces();
-
+		spheremodel.DrawFaces();
+		
 		render.Activate2D();
 		m_font.Print("TomGine Render Engine", 18, 5, 5);
 	}
