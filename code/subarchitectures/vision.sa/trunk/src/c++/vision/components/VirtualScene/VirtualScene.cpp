@@ -150,7 +150,11 @@ void VirtualScene::addSOI(const cdl::WorkingMemoryChange & _wmc){
 	
 	cogx::Math::setIdentity(pose.rot);
 	convertPose2tgPose(pose, newModelEntry.model.m_pose);
-	newModelEntry.model.m_material = getRandomMaterial();
+	
+	TomGine::vec4 c = getRandomColor();
+	c.w = 0.5;
+	newModelEntry.model.m_material.color = c;
+	
 	newModelEntry.castWMA = _wmc.address;
 	m_SOIList.push_back(newModelEntry);
 	
@@ -273,6 +277,7 @@ void VirtualScene::runComponent(){
       	default:
       		drawVisualObjects();
       		drawConvexHulls();
+      		// Blending object zum Schluss
       		drawSOIs();
       		break;
       }
@@ -354,24 +359,31 @@ void VirtualScene::drawCamera(){
 
 void VirtualScene::drawVisualObjects(){
 	for(int i=0; i<m_VisualObjectList.size(); i++){
-		m_VisualObjectList[i].model.DrawFaces(m_wireframe);
+		m_VisualObjectList[i].model.DrawFaces(!m_wireframe);
 		if(m_normals) m_VisualObjectList[i].model.DrawNormals(0.01);
 	}
 }
 
 void VirtualScene::drawConvexHulls(){
 	for(int i=0; i<m_ConvexHullList.size(); i++){
-		m_ConvexHullList[i].model.DrawFaces(m_wireframe);
+		m_ConvexHullList[i].model.DrawFaces(!m_wireframe);
 		m_ConvexHullList[i].model.DrawQuadstrips();
 		if(m_normals) m_ConvexHullList[i].model.DrawNormals(0.01);
 	}
 }
 
 void VirtualScene::drawSOIs(){
+	glEnable(GL_BLEND);
+	glEnable(GL_CULL_FACE);
+	glDisable(GL_LIGHTING);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	for(int i=0; i<m_SOIList.size(); i++){
-		m_SOIList[i].model.DrawFaces();
-		if(m_normals) m_SOIList[i].model.DrawNormals(0.01);
+		m_SOIList[i].model.DrawFaces(false);
+// 		if(m_normals) m_SOIList[i].model.DrawNormals(0.01);
 	}
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glEnable(GL_LIGHTING);
 }
 
 void VirtualScene::inputControl(){
@@ -409,11 +421,12 @@ void VirtualScene::inputControl(){
 	m_eventlist.clear();
 }
 
-TomGine::vec3 VirtualScene::getRandomColor(){
-	TomGine::vec3 col;
+TomGine::vec4 VirtualScene::getRandomColor(){
+	TomGine::vec4 col;
 	col.x = float(rand())/RAND_MAX;
 	col.y = float(rand())/RAND_MAX;
 	col.z = float(rand())/RAND_MAX;
+	col.w = 1.0;
 	return col;
 }
 
@@ -423,8 +436,8 @@ TomGine::tgRenderModel::Material VirtualScene::getRandomMaterial(){
 	material.color = c = getRandomColor();
 	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.6;
 	material.diffuse = vec4(0.2,0.2,0.2,1.0) + vec4(c.x,c.y,c.z,1.0) * 0.8;
-	material.specular = vec4(0.5,0.5,0.5,1.0);
-	material.shininess = 50.0 * float(rand())/RAND_MAX;
+	material.specular = vec4(0.3,0.3,0.3,1.0);
+	material.shininess = 20.0 * float(rand())/RAND_MAX;
 	return material;
 }
 

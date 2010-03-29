@@ -13,7 +13,7 @@ void tgRenderModel::ApplyMaterial(){
 }
 
 void tgRenderModel::ApplyColor(){
-	glColor3f(m_material.color.x, m_material.color.y, m_material.color.z);
+	glColor4f(m_material.color.x, m_material.color.y, m_material.color.z, m_material.color.w);
 }
 
 void tgRenderModel::Material::Apply(){
@@ -33,7 +33,7 @@ tgRenderModel::Material::Material(){
 }
 
 void tgRenderModel::DrawFaces(){
-	DrawFaces(false);
+	DrawFaces(true);
 }
 
 void tgRenderModel::DrawFaces(bool lighting){
@@ -41,7 +41,7 @@ void tgRenderModel::DrawFaces(bool lighting){
 	Face* f;
 	int v;
 	
-	if(!lighting){
+	if(lighting){
 		ApplyMaterial();
 	}else{
 		glDisable(GL_LIGHTING);
