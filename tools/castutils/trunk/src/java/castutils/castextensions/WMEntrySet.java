@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import motivation.slice.Motive;
-
 import Ice.ObjectImpl;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
