@@ -6,17 +6,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-import castutils.slice.WMMutex;
-
-import Ice.Object;
-
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
+import castutils.slice.WMMutex;
 
 public class WMLock implements Lock {
 
