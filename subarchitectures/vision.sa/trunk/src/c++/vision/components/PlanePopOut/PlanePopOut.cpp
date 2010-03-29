@@ -470,6 +470,7 @@ void PlanePopOut::runComponent()
 			OP.s = v3size.at(i);
 			OP.r = vdradius.at(i);
 			OP.id = "";
+			OP.bComCurrentPre = false;
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
@@ -481,92 +482,50 @@ void PlanePopOut::runComponent()
 			{
 				CurrentObjList.at(i).id = newDataID();
 				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-//cout<<" ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
+cout<<"Initial!! ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
 				addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 			PreviousObjList = CurrentObjList;
 		}
 		else
 		{
-			std::vector <int> newObjList; //store the serial number of new objects in CurrentObjList
+		    for (unsigned int j=0; j<PreviousObjList.size(); j++)
+		    {
+			bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
 			for(unsigned int i=0; i<CurrentObjList.size(); i++)
 			{
-				bool flag = false;
-				for(unsigned int j=0; j<PreviousObjList.size(); j++)
-				{
-					if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
-					{
-						flag = true;
-
-						CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
-						CurrentObjList.at(i).id = PreviousObjList.at(j).id;
-						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-//cout<<" ID of this overwrite SOI = "<<PreviousObjList.at(j).id<<endl;
-						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
-						break;
-					}
-				}
-				if (!flag) //there might be some new objects
-					newObjList.push_back(i);
+			    if(CurrentObjList.at(i).bComCurrentPre == false && Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))
+			    {
+				deleteObjFlag = false;
+				CurrentObjList.at(i).bComCurrentPre = true;
+				CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
+				CurrentObjList.at(i).id = PreviousObjList.at(j).id;
+				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+cout<<"Overwrite!! ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
+cout<<"X center of overwrited SOI"<<PreviousObjList.at(j).c.x<<endl;
+				overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
+				break;
+			    }
 			}
-			if(!newObjList.empty())
+			if (deleteObjFlag == true)
+			  deleteFromWorkingMemory(PreviousObjList.at(j).id);
+		    }
+//now let's add some new objects into the WM
+		    for (unsigned int i=0; i<CurrentObjList.size(); i++)
+		    {
+			if (CurrentObjList.at(i).bComCurrentPre == false)
 			{
-				for(unsigned int i=0; i<newObjList.size(); i++)// add all new objects
-				{
-					CurrentObjList.at(newObjList.at(i)).id = newDataID();
-					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI, CurrentObjList.at(newObjList.at(i)).EQInOneSOI);
-//cout<<" ID of this added new SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
-					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
-					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
-				}
+			    CurrentObjList.at(i).id = newDataID();
+			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+			    addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
-			if (PreviousObjList.size()!=CurrentObjList.size()) //need to delete the disappeared objects
-			{
-				m_torleration = 0;
-				std::vector <unsigned int> disappearedObjList; //store the serial number of disappeared objects in PreviousObjList
-				for(unsigned int i=0; i<PreviousObjList.size(); i++)
-				{
-					bool flag = false;
-					for(unsigned int j=0; j<CurrentObjList.size(); j++)
-					{
-						if(Compare2SOI(CurrentObjList.at(j), PreviousObjList.at(i)))// if these two objects were the same
-						{
-							flag = true;
-							break;
-						}
-					}
-					if (!flag) //this is a disappeared object
-						disappearedObjList.push_back(i);
-				}
-				if(!disappearedObjList.empty())
-				{
-					for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all objects
-					{
-						deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
-//cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
-					}
-					std::vector<ObjPara> new_PreviousList;
-					new_PreviousList.reserve(PreviousObjList.size()-disappearedObjList.size());
-					for(unsigned int i=0; i<PreviousObjList.size(); i++)
-					{
-						bool temp_flag = false;
-						for (unsigned int j=0; j<disappearedObjList.size(); j++)
-						{
-							if (i == disappearedObjList.at(j))
-							{
-								temp_flag = true;
-								break;
-							}
-						}
-						if (!temp_flag)
-							new_PreviousList.push_back( PreviousObjList.at(i) );
-					}
-					PreviousObjList = new_PreviousList;
-					new_PreviousList.clear();
-				}
-			}
+		    }
+//now let's update the previois objects list
+		    PreviousObjList = CurrentObjList;
 		}
 	}
+
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
