@@ -27,6 +27,7 @@ typedef struct ObjP
 	Vector3 s;
 	double r;
 	std::string id;
+	bool bComCurrentPre;
 	VisionData::SurfacePointSeq pointsInOneSOI;
 	VisionData::SurfacePointSeq BGInOneSOI;
 	VisionData::SurfacePointSeq EQInOneSOI;
