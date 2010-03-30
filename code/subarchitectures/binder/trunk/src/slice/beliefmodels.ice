@@ -192,7 +192,12 @@ class BooleanValue extends FeatureValue {
 };
 
 class UnknownValue extends FeatureValue { } ;
+
+class PointerValue extends FeatureValue {
+	string beliefId;
 };
+
+}; 
 
 
 // ================================

@@ -84,21 +84,21 @@ public abstract class AbstractBinderTest extends PerceptWriter {
 				endTimer();
 				finished = true;
 			}
-			
+	
 			// if we are still below the time out value
-			else if (getCurrentTime() < getTimeoutValue() * 1000) {
-				debug("Test not finished yet, waiting");
+			else if (getCurrentTime() < getTimeoutValue() * 1000.0) {
+				debug("Test not finished yet, waiting " + (getTimeoutValue() - (getCurrentTime()/1000.0)) + " more seconds");
 				sleepComponent(50);		
 			}
 			
 			// if we reached the timeout
 			else {
-				log("Test still not finished after timeout (" + (getTimeoutValue()*1000) + " ms), aborting");	
+				log("Test still not finished after timeout (" + (getTimeoutValue()/1000.0) + " ms), aborting");	
 				endTimer();
 				finished = true;
 			}
 		}
-		
+	
 		log("Total running time: "+ getTotalTimeInSeconds());
 	}
 	
@@ -122,7 +122,7 @@ public abstract class AbstractBinderTest extends PerceptWriter {
 	 * @return current running time (in milliseconds)
 	 */
 	public long getCurrentTime() {
-		return initTime - System.currentTimeMillis();
+		return System.currentTimeMillis() - initTime;
 	}
 	
 
