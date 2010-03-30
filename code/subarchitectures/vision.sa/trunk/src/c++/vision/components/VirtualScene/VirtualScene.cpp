@@ -151,16 +151,13 @@ void VirtualScene::addSOI(const cdl::WorkingMemoryChange & _wmc){
 	cogx::Math::setIdentity(pose.rot);
 	convertPose2tgPose(pose, newModelEntry.model.m_pose);
 	
-	TomGine::vec4 c = getRandomColor();
-	c.w = 0.5;
-	newModelEntry.model.m_material.color = c;
+	newModelEntry.model.m_material = getRandomMaterial(0.5);
 	
 	newModelEntry.castWMA = _wmc.address;
 	m_SOIList.push_back(newModelEntry);
 	
 	addVectorToCenterOfRotation(m_cor, m_cor_num, pose.pos);
 	m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
-	
 }
 
 void VirtualScene::overwriteSOI(const cdl::WorkingMemoryChange & _wmc){
@@ -375,15 +372,13 @@ void VirtualScene::drawConvexHulls(){
 void VirtualScene::drawSOIs(){
 	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for(int i=0; i<m_SOIList.size(); i++){
-		m_SOIList[i].model.DrawFaces(false);
-// 		if(m_normals) m_SOIList[i].model.DrawNormals(0.01);
+		m_SOIList[i].model.DrawFaces();
+		if(m_normals) m_SOIList[i].model.DrawNormals(0.01);
 	}
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
-	glEnable(GL_LIGHTING);
 }
 
 void VirtualScene::inputControl(){
@@ -421,22 +416,22 @@ void VirtualScene::inputControl(){
 	m_eventlist.clear();
 }
 
-TomGine::vec4 VirtualScene::getRandomColor(){
+TomGine::vec4 VirtualScene::getRandomColor(float alpha){
 	TomGine::vec4 col;
 	col.x = float(rand())/RAND_MAX;
 	col.y = float(rand())/RAND_MAX;
 	col.z = float(rand())/RAND_MAX;
-	col.w = 1.0;
+	col.w = 0.5;
 	return col;
 }
 
-TomGine::tgRenderModel::Material VirtualScene::getRandomMaterial(){
-	TomGine::vec3 c;
+TomGine::tgRenderModel::Material VirtualScene::getRandomMaterial(float alpha){
+	TomGine::vec4 c;
 	tgRenderModel::Material material; 
-	material.color = c = getRandomColor();
-	material.ambient = vec4(c.x,c.y,c.z,1.0) * 0.6;
-	material.diffuse = vec4(0.2,0.2,0.2,1.0) + vec4(c.x,c.y,c.z,1.0) * 0.8;
-	material.specular = vec4(0.3,0.3,0.3,1.0);
+	material.color = c = getRandomColor(alpha);
+	material.ambient = vec4(c.x,c.y,c.z,alpha) * 0.6;
+	material.diffuse = vec4(0.2,0.2,0.2,alpha) + vec4(c.x,c.y,c.z,0.0) * 0.8;
+	material.specular = vec4(0.3,0.3,0.3,alpha);
 	material.shininess = 20.0 * float(rand())/RAND_MAX;
 	return material;
 }

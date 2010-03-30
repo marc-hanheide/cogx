@@ -46,6 +46,14 @@ int main(int argc, char *argv[])
 	matRed.diffuse = vec4(1.0,0.0,0.0,1.0);
 	matRed.specular = vec4(0.5,0.5,0.5,1.0);
 	matRed.shininess = 10.0;
+	matRed.color = vec4(1.0,0.0,0.0,1.0);
+	
+	tgRenderModel::Material matBlueBlend;
+	matBlueBlend.ambient = vec4(0.3,0.3,0.3,0.5);
+	matBlueBlend.diffuse = vec4(0.0,0.0,1.0,0.5);
+	matBlueBlend.specular = vec4(0.5,0.5,0.5,0.5);
+	matBlueBlend.shininess = 10.0;
+	matBlueBlend.color = vec4(0.0,0.0,1.0,0.5);
 		
 	tgRenderModel cylinder;
 	GenCylinder(cylinder, 0.05, 0.2, 32, 1);
@@ -59,11 +67,18 @@ int main(int argc, char *argv[])
 	tgRenderModel spheremodel;
 	tgSphere sphere;
 	sphere.CreateSphere(spheremodel, 0.1, 2, ICOSAHEDRON);
-	spheremodel.m_material = matRed;
+	spheremodel.m_material = matBlueBlend;
+	
 	
 	// Rendering loop
 	while(render.Update(fTime)){
-		spheremodel.DrawFaces();
+		
+		camera.DrawFaces();
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		spheremodel.DrawFaces(false);
+		glDisable(GL_BLEND);
 		
 		render.Activate2D();
 		m_font.Print("TomGine Render Engine", 18, 5, 5);

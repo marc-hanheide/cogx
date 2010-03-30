@@ -73,8 +73,8 @@ private:
   void drawConvexHulls();
   void drawSOIs();
   void inputControl();
-  TomGine::tgRenderModel::Material getRandomMaterial();
-  TomGine::vec4 getRandomColor();
+  TomGine::tgRenderModel::Material getRandomMaterial(float alpha=1.0);
+  TomGine::vec4 getRandomColor(float alpha=1.0);
   
   // Do not use GL commands in this functions (different thread with no GL context)
   void addVisualObject(const cdl::WorkingMemoryChange & _wmc);

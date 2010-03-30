@@ -482,7 +482,7 @@ void PlanePopOut::runComponent()
 			{
 				CurrentObjList.at(i).id = newDataID();
 				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-cout<<"Initial!! ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
+// cout<<"Initial!! ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
 				addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 			PreviousObjList = CurrentObjList;
@@ -501,8 +501,8 @@ cout<<"Initial!! ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i)
 				CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
 				CurrentObjList.at(i).id = PreviousObjList.at(j).id;
 				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-cout<<"Overwrite!! ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
-cout<<"X center of overwrited SOI"<<PreviousObjList.at(j).c.x<<endl;
+// cout<<"Overwrite!! ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
+// cout<<"X center of overwrited SOI"<<PreviousObjList.at(j).c.x<<endl;
 				overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
 				break;
 			    }
@@ -517,7 +517,7 @@ cout<<"X center of overwrited SOI"<<PreviousObjList.at(j).c.x<<endl;
 			{
 			    CurrentObjList.at(i).id = newDataID();
 			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+// cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 			    addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 		    }
