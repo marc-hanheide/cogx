@@ -68,14 +68,5 @@ public class PerceptBuilder {
 	public static PerceptHistory createNewPerceptHistory (WorkingMemoryPointer origin) {
 		return new PerceptHistory(origin);
 	}
-	
-	/**
-	 * Forge a new, unique belief identifier
-	 * 
-	 * @return the new id
-	 */
-	private static String getNewBeliefId() {
-		increment++;
-		return "b" + increment;
-	}
+
 }
