@@ -10,6 +10,7 @@ void tgRenderModel::ApplyMaterial(){
 	glMaterialfv(GL_FRONT,GL_DIFFUSE,m_material.diffuse);
 	glMaterialfv(GL_FRONT,GL_SPECULAR,m_material.specular);
 	glMaterialfv(GL_FRONT,GL_SHININESS,&m_material.shininess);
+	glColor4f(m_material.color.x, m_material.color.y, m_material.color.z, m_material.color.w);
 }
 
 void tgRenderModel::ApplyColor(){
@@ -45,7 +46,7 @@ void tgRenderModel::DrawFaces(bool lighting){
 		ApplyMaterial();
 	}else{
 		glDisable(GL_LIGHTING);
-		glColor3f(m_material.color.x, m_material.color.y, m_material.color.z);
+		glColor4f(m_material.color.x, m_material.color.y, m_material.color.z, m_material.color.w);
 	}	
 	
 	m_pose.Activate();
