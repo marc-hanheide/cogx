@@ -8,7 +8,7 @@
 
 #include <VisionData.hpp>
 #include "tgModel.h"
-#include "tgSphere.h"
+#include "tgShapeCreator.h"
 
 #ifndef PI
 #define PI 3.14159265358979323846f
@@ -20,8 +20,6 @@ bool convertGeometry2Model(VisionData::GeometryModelPtr geom, TomGine::tgModel& 
 bool convertConvexHullPlane2Model(VisionData::ConvexHullPtr cvhull, TomGine::tgModel& model);
 bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& model);
 bool convertSOI2Model(VisionData::SOIPtr soi, TomGine::tgModel& model, cogx::Math::Vector3& pos);
-void genBox(TomGine::tgModel& model, float x, float y, float z);
-void genSphere(TomGine::tgModel& model, float r, int segments);
 void loadCameraParameters(TomGine::tgCamera* camera, Video::CameraParameters camPars, float zNear, float zFar);
 
 // converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
@@ -170,77 +168,23 @@ bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& mod
 }
 
 bool convertSOI2Model(VisionData::SOIPtr soi, TomGine::tgModel& model, cogx::Math::Vector3& pos){
+	TomGine::tgShapeCreator shapeCreator;
 	int i;
 	bool exists = false;
 	
 	if( soi->boundingBox.size.x>0.0 && soi->boundingBox.size.y>0.0 && soi->boundingBox.size.z>0.0){
-		genBox(model, soi->boundingBox.size.x, soi->boundingBox.size.y, soi->boundingBox.size.z);
+		shapeCreator.CreateBox(model, soi->boundingBox.size.x, soi->boundingBox.size.y, soi->boundingBox.size.z);
 		pos = soi->boundingBox.pos;
 	}
 	
 	if( soi->boundingSphere.rad > 0.0){
-		genSphere(model, soi->boundingSphere.rad, 16);
+		shapeCreator.CreateSphere(model, soi->boundingSphere.rad, 2, ICOSAHEDRON);
 		pos = soi->boundingSphere.pos;
 	}
 
 	return true;
 }
 
-void genBox(TomGine::tgModel& model, float x, float y, float z){
-	TomGine::tgModel::Vertex v;
-	TomGine::tgModel::Face f;
-	x = x*0.5;
-	y = y*0.5;
-	z = z*0.5;
-	int vidx = model.GetVerticesSize();
-	
-	// Front
-	v.pos = TomGine::vec3(-x,-y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x,-y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x, y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x, y, z); v.normal = TomGine::vec3( 0.0, 0.0, 1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	model.m_faces.push_back(f); f.vertices.clear();
-	
-	// Back
-	v.pos = TomGine::vec3( x,-y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x,-y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x, y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x, y,-z); v.normal = TomGine::vec3( 0.0, 0.0,-1.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	model.m_faces.push_back(f); f.vertices.clear();
-	
-	// Right
-	v.pos = TomGine::vec3( x,-y, z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x,-y,-z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x, y,-z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x, y, z); v.normal = TomGine::vec3( 1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	model.m_faces.push_back(f); f.vertices.clear();
-	
-	// Left
-	v.pos = TomGine::vec3(-x,-y,-z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x,-y, z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x, y, z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x, y,-z); v.normal = TomGine::vec3(-1.0, 0.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	model.m_faces.push_back(f); f.vertices.clear();
-	
-	// Top
-	v.pos = TomGine::vec3(-x, y, z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x, y, z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x, y,-z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x, y,-z); v.normal = TomGine::vec3( 0.0, 1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	model.m_faces.push_back(f); f.vertices.clear();
-	
-	// Bottom
-	v.pos = TomGine::vec3( x,-y, z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x,-y, z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3(-x,-y,-z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	v.pos = TomGine::vec3( x,-y,-z); v.normal = TomGine::vec3( 0.0,-1.0, 0.0); model.m_vertices.push_back(v); f.vertices.push_back(vidx++);
-	model.m_faces.push_back(f); f.vertices.clear();
-}
-
-void genSphere(TomGine::tgModel& model, float r, int segments){
-	TomGine::tgSphere sphere;
-	sphere.CreateSphere(model, r, 2, ICOSAHEDRON);
-}
 
 // Converts Video::CameraParameters from Video::Image of VideoServer to 
 // Extrinsic- and Intrinsic- Matrix of OpenGL

@@ -97,8 +97,6 @@ void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 
 	if(!m_lock){
 		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
-		m_ConvexHullList.clear();
-		
 		ModelEntry newModelEntry;
 		
 		// Convert plane to geometry
@@ -106,25 +104,22 @@ void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
 			log("  error can not convert ConvexHullPlane to virtual scene model");
 			return;
 		}
-		newModelEntry.model.m_material = getRandomMaterial();
-		newModelEntry.castWMA = _wmc.address;
-		
-		m_ConvexHullList.push_back(newModelEntry);
-		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->center.pos);
-		
 		// Convert each object to geometry
 		for(int i=0; i<obj->Objects.size(); i++){
-			newModelEntry.model.Clear();
 			if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry.model)){
 				log("  error can not convert ConvexHullObject to virtual scene model");
 				return;
 			}
-			newModelEntry.model.m_material = getRandomMaterial();
-			m_ConvexHullList.push_back(newModelEntry);
 		}
 		
+		newModelEntry.model.m_material = getRandomMaterial();
+		newModelEntry.castWMA = _wmc.address;
+		m_ConvexHullList.push_back(newModelEntry);
+		
+		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->center.pos);
 		m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
 		updateCameraViews();
+		
 		m_lock = true;
 	}
 }
@@ -134,7 +129,12 @@ void VirtualScene::overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc){
 }
 
 void VirtualScene::deleteConvexHull(const cdl::WorkingMemoryChange & _wmc){
-
+	vector<ModelEntry>::iterator it;
+	for(it=m_ConvexHullList.begin(); it<m_ConvexHullList.end(); it++){
+		if((*it).castWMA == _wmc.address){
+			m_ConvexHullList.erase(it);
+		}
+	}
 }
 
 void VirtualScene::addSOI(const cdl::WorkingMemoryChange & _wmc){
@@ -165,7 +165,12 @@ void VirtualScene::overwriteSOI(const cdl::WorkingMemoryChange & _wmc){
 }
 
 void VirtualScene::deleteSOI(const cdl::WorkingMemoryChange & _wmc){
-
+	vector<ModelEntry>::iterator it;
+	for(it=m_SOIList.begin(); it<m_SOIList.end(); it++){
+		if((*it).castWMA == _wmc.address){
+			m_SOIList.erase(it);
+		}
+	}
 }
 
 // *** base functions *** (configure, start, runcomponent)
