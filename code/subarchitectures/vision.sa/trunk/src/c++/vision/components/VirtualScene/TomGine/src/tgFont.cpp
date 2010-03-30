@@ -6,7 +6,6 @@
 using namespace TomGine;
 
 tgFont::tgFont(const char* ttf_filename){
-	m_font = 0;
 	m_font = new FTGLPixmapFont(ttf_filename);
 	if(m_font->Error())
 		throw std::runtime_error("[tgFont::tgFont()] Cannot create Font");

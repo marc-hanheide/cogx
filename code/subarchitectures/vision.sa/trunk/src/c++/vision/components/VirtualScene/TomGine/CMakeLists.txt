@@ -20,6 +20,7 @@ SET(SOURCES
 	src/tgEngine.cpp
 	src/tgFont.cpp
 	src/tgFrustum.cpp
+	src/tgLabel.cpp
 	src/tgLighting.cpp
 	src/tgMatrix3.cpp
 	src/tgModel.cpp

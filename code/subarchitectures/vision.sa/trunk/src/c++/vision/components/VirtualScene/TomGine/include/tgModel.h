@@ -41,8 +41,8 @@ public:
 
 	std::vector<Vertex>			m_vertices;			///< list of vertices
 	std::vector<Face>				m_faces;				///< list of faces
-	std::vector<Face>				m_quadstrips;		///< list of quad strips (e.g. for cylinders)
 	std::vector<Face>				m_trianglefans;	///< list of triangle fans (e.g. for convex polygons)
+	std::vector<Face>				m_quadstrips;		///< list of quad strips (e.g. for cylinders)
 	std::vector<Line>				m_lines;				///< list of lines
 	std::vector<LineLoop>		m_lineloops;		///< list of line strip (=polygon contours)
 	std::vector<vec3>				m_points;				///< list of points
