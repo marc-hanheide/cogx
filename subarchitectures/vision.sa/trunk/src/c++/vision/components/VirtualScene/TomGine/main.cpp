@@ -10,9 +10,9 @@
 
 #include "tgEngine.h"
 #include "tgFont.h"
+#include "tgLabel.h"
 #include "tgRenderModel.h"
 #include "tgModelLoader.h"
-#include "tgBasicGeometries.h"
 #include "tgShapeCreator.h"
 
 using namespace TomGine;
@@ -55,10 +55,6 @@ int main(int argc, char *argv[])
 	matBlueBlend.shininess = 10.0;
 	matBlueBlend.color = vec4(0.0,0.0,1.0,0.5);
 		
-	tgRenderModel cylinder;
-	GenCylinder(cylinder, 0.05, 0.2, 32, 1);
-	cylinder.m_material = matRed;
-	
 	tgRenderModel camera;
 	tgModelLoader loader;
 	loader.LoadPly(camera, "model/camera.ply");
@@ -71,19 +67,25 @@ int main(int argc, char *argv[])
 // 	shape_creator.CreateCylinder(shape, 0.1, 0.2, 16, 2, true);
 	shape.m_material = matBlueBlend;
 	
+	tgLabel label(0.3, 0.1, "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf");
+	label.Create("Testing");
 	
 	// Rendering loop
 	while(render.Update(fTime)){
 		
-		camera.DrawFaces();
+// 		camera.DrawFaces();
+// 		
+// 		glEnable(GL_BLEND);
+// 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+// 		shape.DrawFaces();
+// 		glDisable(GL_BLEND);
 		
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		shape.DrawFaces();
-		glDisable(GL_BLEND);
+		label.Draw();
 		
-		render.Activate2D();
-		m_font.Print("TomGine Render Engine", 18, 5, 5);
+// 		render.Activate2D();
+// 		m_font.Print("TomGine Render Engine", 18, 5, 5);
+		
+		
 	}
 	
 	return 0;

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <vector>
-#include <GL/glu.h>
+// #include <GL/glu.h>
 
 #include "tgMathlib.h"
 #include "tgPose.h"
