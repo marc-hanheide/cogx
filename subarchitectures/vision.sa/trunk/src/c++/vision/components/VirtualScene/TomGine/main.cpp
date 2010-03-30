@@ -73,19 +73,17 @@ int main(int argc, char *argv[])
 	// Rendering loop
 	while(render.Update(fTime)){
 		
-// 		camera.DrawFaces();
-// 		
-// 		glEnable(GL_BLEND);
-// 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-// 		shape.DrawFaces();
-// 		glDisable(GL_BLEND);
+		camera.DrawFaces();
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		shape.DrawFaces();
+		glDisable(GL_BLEND);
 		
 		label.Draw();
 		
 // 		render.Activate2D();
 // 		m_font.Print("TomGine Render Engine", 18, 5, 5);
-		
-		
 	}
 	
 	return 0;

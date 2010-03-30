@@ -22,9 +22,9 @@ void tgLabel::Create(const char* text){
 	
 // 	glClear(GL_COLOR_BUFFER_BIT);
 	
-	m_font->Print(text, 16, 2, 5);
+	m_font->Print(text, 40, 2, 10);
 	
-	m_texture.CopyTexImage2D(64, 20);
+	m_texture.CopyTexImage2D(256, 50);
 	
 	glDepthMask(1);
 	glEnable(GL_DEPTH_TEST);
@@ -34,10 +34,14 @@ void tgLabel::Draw(){
 	float w=m_width;
 	float h=m_height;
 	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_COLOR, GL_ONE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
 	m_texture.Bind();
 	
-	glColor3f(1.0,0.0,0.0);
+	glColor3f(1.0,1.0,1.0);
 	glBegin(GL_QUADS);
 		glTexCoord2f(0.0,0.0); glNormal3f(0.0, 0.0, 1.0); glVertex3f(0.0, 0.0, 0.0);
 		glTexCoord2f(1.0,0.0); glNormal3f(0.0, 0.0, 1.0); glVertex3f(  w, 0.0, 0.0);
@@ -46,5 +50,8 @@ void tgLabel::Draw(){
 	glEnd();
 	
 	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 }
 
