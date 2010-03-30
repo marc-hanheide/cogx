@@ -13,7 +13,7 @@
 #include "tgRenderModel.h"
 #include "tgModelLoader.h"
 #include "tgBasicGeometries.h"
-#include "tgSphere.h"
+#include "tgShapeCreator.h"
 
 using namespace TomGine;
 using namespace std;
@@ -64,10 +64,12 @@ int main(int argc, char *argv[])
 	loader.LoadPly(camera, "model/camera.ply");
 	camera.m_material = matRed;
 	
-	tgRenderModel spheremodel;
-	tgSphere sphere;
-	sphere.CreateSphere(spheremodel, 0.1, 2, ICOSAHEDRON);
-	spheremodel.m_material = matBlueBlend;
+	tgRenderModel shape;
+	tgShapeCreator shape_creator;
+	shape_creator.CreateSphere(shape, 0.1, 3, ICOSAHEDRON);
+// 	shape_creator.CreateBox(shape, 0.1,0.1,0.1);
+// 	shape_creator.CreateCylinder(shape, 0.1, 0.2, 16, 2, true);
+	shape.m_material = matBlueBlend;
 	
 	
 	// Rendering loop
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
 		
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		spheremodel.DrawFaces(false);
+		shape.DrawFaces();
 		glDisable(GL_BLEND);
 		
 		render.Activate2D();

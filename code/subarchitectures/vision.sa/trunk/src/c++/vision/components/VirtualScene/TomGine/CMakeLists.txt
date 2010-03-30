@@ -26,7 +26,7 @@ SET(SOURCES
 	src/tgModelLoader.cpp
 	src/tgPose.cpp
 	src/tgRenderModel.cpp
-	src/tgSphere.cpp
+	src/tgShapeCreator.cpp
 	src/tgTexture.cpp
 	src/tgVector3.cpp
 	src/tgGLXWindow.cpp
