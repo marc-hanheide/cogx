@@ -15,10 +15,10 @@
 #define Shrink_SOI 0.5
 #define Upper_BG 1.2
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
-#define min_height_of_obj 0.05	//unit cm, due to the error of stereo, >0.01 is suggested
+#define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.5	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 2		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 
 /**
@@ -463,6 +463,7 @@ void PlanePopOut::runComponent()
 	if (para_a!=0.0 || para_b!=0.0 || para_c!=0.0 || para_d!=0.0)
 	{
 		CurrentObjList.clear();
+		Pre2CurrentList.clear();
 		for(unsigned int i=0; i<v3center.size(); i++)  //create objects
 		{
 			ObjPara OP;
@@ -471,6 +472,8 @@ void PlanePopOut::runComponent()
 			OP.r = vdradius.at(i);
 			OP.id = "";
 			OP.bComCurrentPre = false;
+			OP.bInWM = false;
+			OP.count = 0;
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
 			OP.EQInOneSOI = EQPointsSeq.at(i);
@@ -479,13 +482,10 @@ void PlanePopOut::runComponent()
 		if (PreviousObjList.empty())
 		{
 			for(unsigned int i=0; i<CurrentObjList.size(); i++)
-			{
-				CurrentObjList.at(i).id = newDataID();
-				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-// cout<<"Initial!! ID of this added SOI (to empty plane) = "<<CurrentObjList.at(i).id<<endl;
-				addToWorkingMemory(CurrentObjList.at(i).id, obj);
+			{	
+			  CurrentObjList.at(i).count++;
+			  PreviousObjList.push_back(CurrentObjList.at(i));
 			}
-			PreviousObjList = CurrentObjList;
 		}
 		else
 		{
@@ -494,35 +494,70 @@ void PlanePopOut::runComponent()
 			bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
 			for(unsigned int i=0; i<CurrentObjList.size(); i++)
 			{
-			    if(CurrentObjList.at(i).bComCurrentPre == false && Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))
+			    if (CurrentObjList.at(i).bComCurrentPre == false)
 			    {
-				deleteObjFlag = false;
-				CurrentObjList.at(i).bComCurrentPre = true;
-				CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
-				CurrentObjList.at(i).id = PreviousObjList.at(j).id;
-				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-// cout<<"Overwrite!! ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
-// cout<<"X center of overwrited SOI"<<PreviousObjList.at(j).c.x<<endl;
-				overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
-				break;
+				if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)) == true)
+				{
+				    deleteObjFlag = false;
+				    CurrentObjList.at(i).bComCurrentPre = true;
+				    if(PreviousObjList.at(j).bInWM == true)
+				    {
+					CurrentObjList.at(i).bInWM = true;
+					CurrentObjList.at(i).id = PreviousObjList.at(j).id;
+					CurrentObjList.at(i).count = PreviousObjList.at(j).count;
+					if (abs((CurrentObjList.at(i).c.y-PreviousObjList.at(j).c.y)/CurrentObjList.at(i).c.y)>0.1)
+					{
+					    //cout<<"Current = "<<CurrentObjList.at(i).c.y<<"  Previous = "<<PreviousObjList.at(j).c.y<<endl;
+					    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;					
+					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+					    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
+					    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+					}
+					else
+					{
+					    CurrentObjList.at(i).c = PreviousObjList.at(j).c;
+					}
+				    }
+				    else
+				    {
+					CurrentObjList.at(i).count = PreviousObjList.at(j).count+1;
+					if (CurrentObjList.at(i).count >= Torleration)
+					{
+					    CurrentObjList.at(i).bInWM =true;
+					    CurrentObjList.at(i).id = newDataID();
+					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+					    addToWorkingMemory(CurrentObjList.at(i).id, obj);
+					    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+					}
+				    }
+				    break;
+				}
 			    }
 			}
 			if (deleteObjFlag == true)
-			  deleteFromWorkingMemory(PreviousObjList.at(j).id);
-		    }
-//now let's add some new objects into the WM
-		    for (unsigned int i=0; i<CurrentObjList.size(); i++)
-		    {
-			if (CurrentObjList.at(i).bComCurrentPre == false)
 			{
-			    CurrentObjList.at(i).id = newDataID();
-			    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-// cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
-			    addToWorkingMemory(CurrentObjList.at(i).id, obj);
+			    if (PreviousObjList.at(j).bInWM == true)
+			    {
+				PreviousObjList.at(j).count = PreviousObjList.at(j).count-1;
+				if(PreviousObjList.at(j).count > 0) Pre2CurrentList.push_back(PreviousObjList.at(j));
+				else 
+				{
+				  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
+				  deleteFromWorkingMemory(PreviousObjList.at(j).id);
+				  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+				}
+			    }
 			}
 		    }
-//now let's update the previois objects list
-		    PreviousObjList = CurrentObjList;
+		    PreviousObjList.clear();
+		    for (unsigned int i=0; i<CurrentObjList.size(); i++)
+		    {
+			if (CurrentObjList.at(i).bComCurrentPre == false)  CurrentObjList.at(i).count ++;
+			PreviousObjList.push_back(CurrentObjList.at(i));
+		    }
+		    if (Pre2CurrentList.size()>0)
+			for (unsigned int i=0; i<Pre2CurrentList.size(); i++)
+			    PreviousObjList.push_back(Pre2CurrentList.at(i));
 		}
 	}
 
@@ -1022,10 +1057,14 @@ void PlanePopOut::ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::ve
 			mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
 			//cout<<"mConvexHullRadius = "<<mConvexHullRadius<<endl;
 			// 			glEnd();
-			free( hull );
 		}
+		free( hull );
+		cvClearSeq(cvhull);
 	}
 	cvClearMemStorage( storage );
+	cvReleaseMemStorage(&storage);
+	cvClearSeq(ptseq);
+	PlanePoints3D.clear();
 	free( points2D );
 }
 

@@ -28,6 +28,8 @@ typedef struct ObjP
 	double r;
 	std::string id;
 	bool bComCurrentPre;
+	bool bInWM;
+	int count;
 	VisionData::SurfacePointSeq pointsInOneSOI;
 	VisionData::SurfacePointSeq BGInOneSOI;
 	VisionData::SurfacePointSeq EQInOneSOI;
@@ -45,6 +47,7 @@ private:
 	double Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std::vector <int> &label);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
+	std::vector<ObjPara> Pre2CurrentList;
 	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI);
 	bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 	void AddConvexHullinWM();
