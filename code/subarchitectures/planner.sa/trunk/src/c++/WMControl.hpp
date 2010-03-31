@@ -1,6 +1,7 @@
 #ifndef WM_CONTROL_HPP_
 #define WM_CONTROL_HPP_
 
+#include <tr1/unordered_map>
 #include <cast/architecture.hpp>
 #include <Ice/Ice.h>
 #include "Planner.hpp"
@@ -23,7 +24,7 @@ protected:
     virtual void runComponent();
 
     void connectToPythonServer();
-    void generateInitialState(PlanningTaskPtr& task);
+    void generateState(PlanningTaskPtr& task);
     //void deliverPlan(const autogen::Planner::PlanningTaskPtr& task);
     void deliverPlan(int id, const ActionSeq& plan);
     void updateStatus(int id, Completion status);
@@ -46,11 +47,12 @@ protected:
     };
 
 private:
-  void sendStateChange(int id, std::vector<binder::autogen::core::UnionPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter);
+    void sendStateChange(int id, std::vector<binder::autogen::beliefs::BeliefPtr>& changedBeliefs, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter);
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
     void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
 
-    std::vector<binder::autogen::core::UnionPtr> m_currentState;
+    typedef std::tr1::unordered_map<std::string, binder::autogen::beliefs::BeliefPtr> BeliefMap;
+    BeliefMap m_currentState;
     std::map<int, StateChangeFilterPtr> m_stateFilters;
     cast::cdl::CASTTime m_lastUpdate;
 

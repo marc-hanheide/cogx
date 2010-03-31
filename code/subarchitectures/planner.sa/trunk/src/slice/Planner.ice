@@ -2,7 +2,7 @@
 #define PLANNER_ICE
 
 #include <cast/slice/CDL.ice>
-#include <BinderEssentials.ice>
+#include <beliefmodels.ice>
 
 module autogen {
   module Planner {
@@ -17,10 +17,10 @@ module autogen {
 
     sequence<string> stringSeq;
 
-    sequence<binder::autogen::core::Union> unionSeq;
+    sequence<binder::autogen::beliefs::Belief> BeliefSeq;
 
     class StateChangeFilter {
-      unionSeq removeFilter;
+      BeliefSeq removeFilter;
       stringSeq featureFilter;
     };
 
@@ -40,7 +40,7 @@ module autogen {
       string goal;
       ActionSeq plan;
       string firstActionID;
-      unionSeq state;
+      BeliefSeq state;
       Completion executionStatus;
       int executionRetries;
       Completion planningStatus;

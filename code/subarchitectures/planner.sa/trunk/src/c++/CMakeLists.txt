@@ -7,7 +7,7 @@ include(Slice2Cpp)
 cast_slice2cpp(GEN_CPP GEN_HPP Planner.ice ${CAST_SLICE_DIR} ${COGX_ROOT}/subarchitectures/binder/src/slice )
 
 add_library(Planner SHARED ${GEN_CPP})
-target_link_libraries(Planner BinderEssentials)
+target_link_libraries(Planner beliefmodels)
 target_link_libraries(Planner CDL)
 
 find_package(Boost 1.35.0 REQUIRED)
