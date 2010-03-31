@@ -1,12 +1,11 @@
 #include "WMControl.hpp"
-#include "BinderEssentials.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <cassert>
 
 using namespace std;
-using namespace binder::autogen::core;
+using namespace binder::autogen::beliefs;
 using namespace cast::cdl;
 
 extern "C" {
@@ -42,7 +41,7 @@ void WMControl::start() {
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
-    addChangeFilter(cast::createGlobalTypeFilter<UnionConfiguration>(),
+    addChangeFilter(cast::createGlobalTypeFilter<Belief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
     connectToPythonServer();
@@ -91,7 +90,7 @@ void WMControl::runComponent() {
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 lockComponent();
                 PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it].address);
-                task->state = vector<UnionPtr>(m_currentState);
+                generateState(task);
                 unlockComponent();
                 pyServer->updateTask(task);
                 log("returning..:");
@@ -111,7 +110,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     autogen::Planner::PlanningTaskPtr task = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
     log(task->goal);
 
-    generateInitialState(task);
+    generateState(task);
 
     task->id = TASK_ID;
     task->plan = vector<ActionPtr>();
@@ -128,9 +127,15 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     //TODO: Store the PlanningTaskPtr with it's taskID till deliverPlan(taskID) is called.
 }
 
-void WMControl::generateInitialState(autogen::Planner::PlanningTaskPtr& task) {
-    log("Planner WMControl:: generating Initial State");
-    task->state = vector<UnionPtr>(m_currentState);
+void WMControl::generateState(autogen::Planner::PlanningTaskPtr& task) {
+    log("Planner WMControl:: generating state");
+    
+    task->state.clear();
+    task->state.reserve(m_currentState.size());
+    for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
+        task->state.push_back(i->second);
+    }
+    //task->state = vector<BeliefPtr>(m_currentState);
 }
 
 void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
@@ -159,7 +164,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         else {
         log("Action %s failed, replanning.", action->name.c_str());
              task->executionStatus = PENDING;
-             task->state = m_currentState;
+             generateState(task);
              task->executionRetries++;
         }
         overwriteWorkingMemory(activeTasks[task->id].address, task);
@@ -177,7 +182,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
             task->status = SUCCEEDED;
         }*/
         task->executionRetries = 0;
-        task->state = m_currentState;
+        generateState(task);
         overwriteWorkingMemory(activeTasks[task->id].address, task);
         //pyServer->updateTask(task);
         dispatchPlanning(task, 0);
@@ -185,46 +190,53 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 }
 
 void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
-    UnionConfigurationPtr config = getMemoryEntry<UnionConfiguration>(wmc.address);
-    log("Recevied state change...");
-
-    CASTTime timestamp;
-    bool first = true;
-    m_currentState.clear();
-    vector<UnionPtr> changed;
-    for (UnionSequence::iterator i = config->includedUnions.begin(); 
-         i < config->includedUnions.end() ; ++i) {
-        m_currentState.push_back(*i);
-        if ((*i)->timeStamp > m_lastUpdate) {
-            changed.push_back(*i);
-        }
-        if(first) {
-            timestamp =  (*i)->timeStamp;
-            first = false;
-        }
-        else if ((*i)->timeStamp > timestamp) {
-            timestamp = (*i)->timeStamp;
-        }
+    if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
+        BeliefPtr changedBelief = getMemoryEntry<Belief>(wmc.address);
+        m_currentState.insert(std::pair<std::string, BeliefPtr>(wmc.address.id, changedBelief));
+    }
+    else {
+        m_currentState.erase(wmc.address.id);
     }
 
-    if (m_continual_state_updates) {
-        for (std::map<int,cast::cdl::WorkingMemoryChange>::iterator it=activeTasks.begin(); it != activeTasks.end(); ++it) {
-            int id = it->first;
-            StateChangeFilterPtr* filter = 0;
-            std::map<int, StateChangeFilterPtr>::iterator f_iter = m_stateFilters.find(id);
-            if (f_iter != m_stateFilters.end()) {
-                filter = &(f_iter->second);
-            }
-            sendStateChange(id, changed, timestamp, filter);
-        }
-    }
+    // log("Recevied state change...");
 
-    m_lastUpdate = timestamp;
+    // CASTTime timestamp;
+    // bool first = true;
+    // m_currentState.clear();
+    // vector<Belief> changed;
+    // for (UnionSequence::iterator i = config->includedUnions.begin(); 
+    //      i < config->includedUnions.end() ; ++i) {
+    //     m_currentState.push_back(*i);
+    //     if ((*i)->timeStamp > m_lastUpdate) {
+    //         changed.push_back(*i);
+    //     }
+    //     if(first) {
+    //         timestamp =  (*i)->timeStamp;
+    //         first = false;
+    //     }
+    //     else if ((*i)->timeStamp > timestamp) {
+    //         timestamp = (*i)->timeStamp;
+    //     }
+    // }
+
+    // if (m_continual_state_updates) {
+    //     for (std::map<int,cast::cdl::WorkingMemoryChange>::iterator it=activeTasks.begin(); it != activeTasks.end(); ++it) {
+    //         int id = it->first;
+    //         StateChangeFilterPtr* filter = 0;
+    //         std::map<int, StateChangeFilterPtr>::iterator f_iter = m_stateFilters.find(id);
+    //         if (f_iter != m_stateFilters.end()) {
+    //             filter = &(f_iter->second);
+    //         }
+    //         sendStateChange(id, changed, timestamp, filter);
+    //     }
+    // }
+
+    m_lastUpdate = wmc.timestamp;
 
 }
 
 
-void WMControl::sendStateChange(int id, std::vector<UnionPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter) {
+void WMControl::sendStateChange(int id, std::vector<BeliefPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter) {
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
     /*if (task->planningStatus == INPROGRESS) {
@@ -237,7 +249,7 @@ void WMControl::sendStateChange(int id, std::vector<UnionPtr>& changedUnions, co
     }
 
     log("Sending state update for task %d", id);
-    task->state = m_currentState;
+    generateState(task);
     overwriteWorkingMemory(activeTasks[id].address, task);
     //pyServer->updateTask(task);
     dispatchPlanning(task, 0);
