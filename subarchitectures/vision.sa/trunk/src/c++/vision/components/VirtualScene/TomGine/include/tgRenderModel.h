@@ -16,6 +16,7 @@
 #include "tgMathlib.h"
 #include "tgPose.h"
 #include "tgModel.h"
+#include "tgLabel.h"
 
 namespace TomGine{
 

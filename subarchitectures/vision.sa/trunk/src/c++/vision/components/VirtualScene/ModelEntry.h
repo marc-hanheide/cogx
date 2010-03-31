@@ -9,6 +9,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 #include "tgEngine.h"
+#include "tgLabel.h"
 
 #ifndef _MODEL_ENTRY_
 #define _MODEL_ENTRY_
@@ -20,6 +21,7 @@ public:
 	bool textured;
 	
 	TomGine::tgRenderModel model;
+	TomGine::tgLabel label;
 	
 	cast::cdl::WorkingMemoryAddress castWMA;
 		
@@ -28,6 +30,14 @@ public:
 		bfc = true;
 		textured = false;
 	}
+	
+	ModelEntry(const char* fontfilename){
+		valid = false;
+		bfc = true;
+		textured = false;
+		label = TomGine::tgLabel(fontfilename);
+	}
+
 };
 
 #endif

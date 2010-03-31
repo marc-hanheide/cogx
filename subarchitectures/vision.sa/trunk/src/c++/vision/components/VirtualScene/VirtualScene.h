@@ -36,6 +36,7 @@ private:
 	TomGine::tgTimer m_timer;
   cogx::Math::Pose3 m_cam_pose;
   TomGine::tgFont* m_font;
+  std::string m_fontfilename;
   std::vector<TomGine::tgEvent> m_eventlist;
   
   // Models
