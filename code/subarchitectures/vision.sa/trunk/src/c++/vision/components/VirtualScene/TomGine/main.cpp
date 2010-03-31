@@ -57,18 +57,19 @@ int main(int argc, char *argv[])
 		
 	tgRenderModel camera;
 	tgModelLoader loader;
-	loader.LoadPly(camera, "model/camera.ply");
+	loader.LoadPly(camera, "resources/camera.ply");
 	camera.m_material = matRed;
 	
 	tgRenderModel shape;
 	tgShapeCreator shape_creator;
-	shape_creator.CreateSphere(shape, 0.1, 3, ICOSAHEDRON);
+	shape_creator.CreateSphere(shape, 0.05, 3, ICOSAHEDRON);
 // 	shape_creator.CreateBox(shape, 0.1,0.1,0.1);
 // 	shape_creator.CreateCylinder(shape, 0.1, 0.2, 16, 2, true);
 	shape.m_material = matBlueBlend;
 	
-	tgLabel label(0.3, 0.1, "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf");
-	label.Create("Testing");
+	tgLabel label("resources/FreeSansBold.ttf");
+	label.AddText("Camera");
+	label.AddText("Logitech");
 	
 	// Rendering loop
 	while(render.Update(fTime)){

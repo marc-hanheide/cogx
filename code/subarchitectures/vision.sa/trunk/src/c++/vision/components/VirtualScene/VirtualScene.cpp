@@ -50,23 +50,30 @@ void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
 //	for(unsigned i=0; i<obj->model->vertices.size(); i++)
 //		printf("    Got object vertices: %4.3f - %4.3f - %4.3f\n", obj->model->vertices[i].pos.x, obj->model->vertices[i].pos.y, obj->model->vertices[i].pos.z);
 
-	ModelEntry newModelEntry;
-	
+// printf("VirtualScene::addVisualObject A\n");
+	ModelEntry newModelEntry(m_fontfilename.c_str());
+// 	newModelEntry.label.AddText(obj->label.c_str());
+
+// printf("VirtualScene::addVisualObject B\n");	
 	if(!convertGeometry2Model(obj->model, newModelEntry.model)){
 		log("  error can not convert VisualObject to virtual scene model");
 		return;
 	}
-	
+// printf("VirtualScene::addVisualObject C\n");
 	// just an example material (should be random to separate objects more easily
 	newModelEntry.model.m_material = getRandomMaterial();
+// printf("VirtualScene::addVisualObject D\n");
 	convertPose2tgPose(obj->pose, newModelEntry.model.m_pose);
+// 	newModelEntry.label.m_pose = newModelEntry.model.m_pose;
 // 	newModelEntry.obj = obj;
+// printf("VirtualScene::addVisualObject E\n");
 	newModelEntry.castWMA = _wmc.address;
+// printf("VirtualScene::addVisualObject F\n");
 	m_VisualObjectList.push_back(newModelEntry);
-	
+// printf("VirtualScene::addVisualObject G\n");
 	addVectorToCenterOfRotation(m_cor, m_cor_num, obj->pose.pos);
 	updateCameraViews();
-	
+// printf("VirtualScene::addVisualObject H\n");	
 // 	unlockComponent();
 	log("VisualObject added to Scene: %s - %s", obj->label.c_str(), _wmc.address.id.c_str());
 }
@@ -329,8 +336,8 @@ void VirtualScene::initScene(const Video::Image &image){
 	convertPose2tgPose( pose, m_camModel.model.m_pose);
 // 	m_camModel.model.m_material = getRandomMaterial();
 
-
-	m_font = new tgFont("/usr/share/fonts/truetype/freefont/FreeSansBold.ttf");
+	m_fontfilename = string("/usr/share/fonts/truetype/freefont/FreeSansBold.ttf");
+	m_font = new tgFont(m_fontfilename.c_str());
 
   log("... initialisation successfull!");
 }
@@ -362,6 +369,7 @@ void VirtualScene::drawCamera(){
 void VirtualScene::drawVisualObjects(){
 	for(int i=0; i<m_VisualObjectList.size(); i++){
 		m_VisualObjectList[i].model.DrawFaces(!m_wireframe);
+// 		m_VisualObjectList[i].label.Draw();
 		if(m_normals) m_VisualObjectList[i].model.DrawNormals(0.01);
 	}
 }
