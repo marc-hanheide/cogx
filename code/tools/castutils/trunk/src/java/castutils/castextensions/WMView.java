@@ -39,7 +39,7 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	private Class<T> type;
 
-	protected ChangeHandler<T> updateHandler;
+	protected Set<ChangeHandler<T>> updateHandler;
 
 	private Map<WorkingMemoryAddress, T> map;
 
@@ -52,6 +52,14 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 				WorkingMemoryChange wmc, T2 newEntry, T2 oldEntry)
 				throws CASTException;
 
+	}
+
+	synchronized void dispatchChangeEvent(Map<WorkingMemoryAddress, T> map,
+			WorkingMemoryChange wmc, T newEntry, T oldEntry)
+			throws CASTException {
+		for (ChangeHandler<T> ch : updateHandler) {
+			ch.entryChanged(map, wmc, newEntry, oldEntry);
+		}
 	}
 
 	public class WMChangeReceiver implements WorkingMemoryChangeReceiver {
@@ -76,9 +84,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 					map.put(_wmc.address, (T) m.clone());
 					if (oldEntry != null)
 						newWmc.operation = WorkingMemoryOperation.OVERWRITE;
-					if (updateHandler != null)
-						updateHandler.entryChanged(map, newWmc, map
-								.get(newWmc.address), oldEntry);
+					dispatchChangeEvent(map, newWmc, map.get(newWmc.address),
+							oldEntry);
 				} catch (DoesNotExistOnWMException e) {
 					// it's fine... if it's been deleted already, we have
 					// nothing to do here
@@ -89,9 +96,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 				try {
 					map.put(newWmc.address, (T) component.getMemoryEntry(
 							newWmc.address, specClass).clone());
-					if (updateHandler != null)
-						updateHandler.entryChanged(map, newWmc, map
-								.get(newWmc.address), oldEntry);
+					dispatchChangeEvent(map, newWmc, map.get(newWmc.address),
+							oldEntry);
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
 					log("we expected to overwrite, but actually it has gone...");
@@ -99,17 +105,14 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 					T o = map.remove(newWmc.address);
 					map.remove(newWmc.address);
 					if (o != null)
-						if (updateHandler != null)
-							updateHandler
-									.entryChanged(map, newWmc, o, oldEntry);
+						dispatchChangeEvent(map, newWmc, o, oldEntry);
 				}
 
 				break;
 			case DELETE:
 				T o = map.remove(newWmc.address);
 				if (o != null)
-					if (updateHandler != null)
-						updateHandler.entryChanged(map, newWmc, o, o);
+					dispatchChangeEvent(map, newWmc, o, o);
 
 				break;
 			}
@@ -197,11 +200,28 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	}
 
 	/**
+	 * @param handler
+	 *            the only handler to set
+	 */
+	@Deprecated
+	public synchronized void setHandler(ChangeHandler<T> handler) {
+		this.registerHandler(handler);
+	}
+
+	/**
+	 * @param handler
+	 *            the handler to add
+	 */
+	public synchronized void registerHandler(ChangeHandler<T> handler) {
+		this.updateHandler.add(handler);
+	}
+
+	/**
 	 * @param addReceiver
 	 *            the addReceiver to set
 	 */
-	public void setHandler(ChangeHandler<T> handler) {
-		this.updateHandler = handler;
+	public synchronized void unregisterHandler(ChangeHandler<T> handler) {
+		this.updateHandler.remove(handler);
 	}
 
 	/*
@@ -377,6 +397,5 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	public Collection<T> values() {
 		return map.values();
 	}
-
 
 }
