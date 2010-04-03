@@ -7,8 +7,6 @@ import binder.autogen.distribs.CondIndependentDistribs;
 import binder.autogen.distribs.FeatureValueDistribution;
 import binder.autogen.distribs.ProbDistribution;
 
-import cast.core.CASTUtils;
-
 //import binder.utils.BeliefModelUtils;
 
 /**
