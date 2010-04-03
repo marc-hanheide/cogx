@@ -2,44 +2,42 @@ package castutils.viewer.plugins;
 
 import java.util.Vector;
 
+import binder.autogen.beliefs.Belief;
+import binder.autogen.distribs.CondIndependentDistribs;
+import binder.autogen.distribs.FeatureValueDistribution;
+import binder.autogen.distribs.ProbDistribution;
+
 import cast.core.CASTUtils;
 
 //import binder.utils.BeliefModelUtils;
 
-import beliefmodels.adl.*;
-import beliefmodels.domainmodel.cogx.*;
-
-
 /**
- @author	Geert-Jan Kruijff
- @version	091016
- */ 
+ * @author Geert-Jan Kruijff
+ * @version 091016
+ */
 
-public class  BeliefInfo implements Plugin {
-
+public class BeliefInfo implements Plugin {
 
 	@Override
 	public Vector<Object> toVector(Ice.ObjectImpl iceObject) {
-		Vector<Object> extraInfo=new Vector<Object>();
+		Vector<Object> extraInfo = new Vector<Object>();
 		Belief belief = (Belief) iceObject;
-		if (belief != null) { 
-			String agentStatus = "{robot}";
-			if (belief.ags instanceof AttributedAgentStatus) {
-				agentStatus = "{robot[human]}";
+		if (belief != null) {
+			String agentStatus = belief.estatus.getClass().getSimpleName();
+			extraInfo.add("Status: " + agentStatus);
+//			if (belief.frame != null) {
+//				extraInfo.add("ST frame:" + belief.frame.getClass().getSimpleName());
+//			}
+			extraInfo.add("Type: " + belief.getClass().getSimpleName());
+			if (belief.content instanceof CondIndependentDistribs) {
+				CondIndependentDistribs dist = (CondIndependentDistribs) belief.content;
+				for (ProbDistribution pd : dist.distribs) {
+					if (pd instanceof FeatureValueDistribution) {
+						FeatureValueDistribution fvd = (FeatureValueDistribution) pd;
+						extraInfo.add(fvd.feat.toString());
+					}
+				}
 			}
-			else if (belief.ags instanceof MutualAgentStatus) {
-				agentStatus = "{robot,human}";
-			} // end if..else for agent status
-			extraInfo.add("Status:"+agentStatus);
-			if (belief.sigma != null) { 
-				extraInfo.add("ST frame:"+belief.sigma.id);
-			} else { 
-				extraInfo.add("ST frame: [continue active]");
-			} 
-			if (belief.phi instanceof UncertainSuperFormula) { 
-				//extraInfo.add("Phi: "+BeliefModelUtils.getFormulaPrettyPrint(((UncertainSuperFormula)belief.phi)));			
-				extraInfo.add("Prob: "+((UncertainSuperFormula)belief.phi).prob);
-			} 
 		}
 		return extraInfo;
 	}

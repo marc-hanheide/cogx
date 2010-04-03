@@ -66,4 +66,14 @@ public class ViewerCastComponent extends ManagedComponent {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see cast.core.CASTComponent#stop()
+	 */
+	@Override
+	protected void stop() {
+		gui.setVisible(false);
+		gui.dispose();
+	
+	}
+
 }
