@@ -172,7 +172,11 @@ enum Feature {
 	Colour, 
 	Shape, 
 	ObjectLabel, 
-	Size, 
+	Size,
+	PlaceId,
+	PlaceStatus,
+	ConnectedTo1,
+	ConnectedTo2,
 	Position };
 	
 	
