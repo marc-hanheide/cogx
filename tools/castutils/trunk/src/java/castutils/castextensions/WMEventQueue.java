@@ -24,14 +24,12 @@ public class WMEventQueue extends LinkedBlockingQueue<WorkingMemoryChange>
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange wmc)
 			throws CASTException {
-		System.out.println("WMEventQueue: received change");
 		try {
 			this.put(wmc);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("WMEventQueue: received change");
 	}
 
 }

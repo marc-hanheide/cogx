@@ -6,6 +6,7 @@ package castutils.castextensions;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -148,6 +149,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	protected WMView(ManagedComponent c, Class<T> cls, String subarchitectureId) {
 		super(c);
+		this.updateHandler = Collections.synchronizedSet(new HashSet<ChangeHandler<T>>());
+		
 		this.subarchitecturId = subarchitectureId;
 		shouldInitialize = true;
 		// specificTypes = new HashSet<Class<? extends T>>();
@@ -160,6 +163,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	protected WMView(ManagedComponent c, Class<T> cls) {
 		super(c);
+		this.updateHandler = Collections.synchronizedSet(new HashSet<ChangeHandler<T>>());
+
 		this.subarchitecturId = null;
 		shouldInitialize = false;
 		// specificTypes = new HashSet<Class<? extends T>>();
