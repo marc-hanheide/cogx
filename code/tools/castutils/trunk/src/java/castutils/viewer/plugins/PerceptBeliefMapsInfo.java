@@ -2,10 +2,8 @@ package castutils.viewer.plugins;
 
 import java.util.Vector;
 
-import binder.autogen.beliefs.Belief;
-import binder.autogen.perceptmanagement.PerceptBeliefMaps;
-
 import Ice.ObjectImpl;
+import binder.autogen.perceptmanagement.PerceptBeliefMaps;
 
 public class PerceptBeliefMapsInfo implements Plugin {
 
