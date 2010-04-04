@@ -1,9 +1,8 @@
 package vision.components;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import VisionData.Person;
 import blobfinder.BlobFinderInterface;
@@ -11,9 +10,16 @@ import blobfinder.BlobFinderInterfacePrx;
 import blobfinder.BlobInfo;
 import blobfinder.ColorRGB;
 import cast.CASTException;
+import cast.UnknownSubarchitectureException;
+import cast.WMException;
 import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
+import castutils.castextensions.Condition;
+import castutils.castextensions.Converter;
+import castutils.castextensions.HashCoder;
+import castutils.castextensions.WMTypeAlignment;
+import castutils.meta.OperationPerformer;
+import castutils.slice.WMOperation;
 
 /**
  * A fake people detector that uses the player blobfinder model to find people.
@@ -40,13 +46,73 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	private ColorRGB m_personColour;
 	private double m_personWidth;
 	private int m_imageXCentre;
-	private HashMap<Integer, WorkingMemoryAddress> m_blobID2People;
+	private OperationPerformer m_performer;
+	private WMTypeAlignment<BlobInfo, Person> m_aligner;
+
+	private final class BlobInfo2PersonConverter implements
+			Converter<BlobInfo, Person> {
+
+		/**
+		 * Generates a new person struct. Does the maths by assuming that the
+		 * whole person is in view and the ratio between person width in metres
+		 * and pixels is the same for image width.
+		 * 
+		 * @param _blobInfo
+		 * @return
+		 */
+		public Person convert(BlobInfo _blobInfo) {
+			// get range in metre
+			double rangeMetres = _blobInfo.range / 1000;
+
+			// convert image coords to real world info
+			double pixelsPerMetre = _blobInfo.boundingBox.width / m_personWidth;
+
+			// println("p/m " + pixelsPerMetre);
+
+			// offset of bounding box, assumes camera is in the middle of the
+			// robot
+			double pixelOffsetOfPerson = _blobInfo.boundingBox.pos.x
+					- m_imageXCentre;
+
+			// println("offset " + pixelOffsetOfPerson);
+
+			double deltaXMetres = pixelOffsetOfPerson / pixelsPerMetre;
+
+			// println("deltaX " + deltaXMetres);
+
+			double angleRadians = Math.asin(deltaXMetres / rangeMetres);
+
+			// println("rads " + angleRadians);
+
+			double angleDegrees = Math.toDegrees(angleRadians);
+
+			return new Person(angleDegrees, rangeMetres, deltaXMetres,
+					rangeMetres * Math.cos(angleRadians), 0, 0);
+		}
+	}
+
+	private final class BlobInfoHasher implements HashCoder<BlobInfo> {
+		public int hashCode(BlobInfo _t) {
+			return _t.id;
+		}
+	}
+
+	private final class PersonColourTester implements Condition<BlobInfo> {
+		public boolean test(BlobInfo _t) {
+			return _t.colour.equals(m_personColour);
+		}
+	}
 
 	public BlobbyPeopleDetector() {
 		m_blobFinder = null;
 		m_personColour = new ColorRGB(255, 255, 0);
 		m_personWidth = 0.4d;
 		m_imageXCentre = 40;
+
+		m_performer = new OperationPerformer(this);
+		m_aligner = new WMTypeAlignment<BlobInfo, Person>(this,
+				new BlobInfo2PersonConverter(), new PersonColourTester(),
+				new BlobInfoHasher());
 	}
 
 	@Override
@@ -62,76 +128,22 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	}
 
 	public void detectPeople() {
-
-		BlobInfo[] blobs = m_blobFinder.getBlobs();
-
-		// empty previous set if blob map is null
-		Set<Integer> previousBlobs = m_blobID2People != null ? new HashSet<Integer>(
-				m_blobID2People.keySet())
-				: new HashSet<Integer>();
-
-		for (BlobInfo blobInfo : blobs) {
-			// if we have a blob that looks like a human
-			if (blobInfo.colour.equals(m_personColour)) {
-
-				// lazy creation
-				if (m_blobID2People == null) {
-					m_blobID2People = new HashMap<Integer, WorkingMemoryAddress>();
-				}
-
-				// println(blobInfo.colour.r);
-				// println(blobInfo.colour.g);
-				// println(blobInfo.colour.b);
-
-				Person person = createPersonFromBlob(blobInfo);
-				println(toString(person));
-
-			}
+		try {
+			BlobInfo[] blobs = m_blobFinder.getBlobs();
+			List<WMOperation> operations = m_aligner.sync(Arrays.asList(blobs));
+			// println(operations.size() + " operations");
+			m_performer.performOperations(operations);
+		} catch (WMException e) {
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			e.printStackTrace();
 		}
-
 	}
 
+	@SuppressWarnings("unused")
 	private static String toString(Person _person) {
 		return CASTUtils.concatenate("Person ", _person.angle, " degrees ",
 				_person.distance, " distance");
-	}
-
-	/**
-	 * Generates a new person struct. Does the maths by assuming that the whole
-	 * person is in view and the ratio between person width in metres and pixels
-	 * is the same for image width.
-	 * 
-	 * @param _blobInfo
-	 * @return
-	 */
-	private Person createPersonFromBlob(BlobInfo _blobInfo) {
-
-		// get range in metre
-		double rangeMetres = _blobInfo.range / 1000;
-
-		// convert image coords to real world info
-		double pixelsPerMetre = _blobInfo.boundingBox.width / m_personWidth;
-
-//		println("p/m " + pixelsPerMetre);
-
-		// offset of bounding box, assumes camera is in the middle of the robot
-		double pixelOffsetOfPerson = _blobInfo.boundingBox.pos.x
-				- m_imageXCentre;
-
-//		println("offset " + pixelOffsetOfPerson);
-
-		double deltaXMetres = pixelOffsetOfPerson / pixelsPerMetre;
-
-//		println("deltaX " + deltaXMetres);
-
-		double angleRadians = Math.asin(deltaXMetres / rangeMetres);
-
-		println("rads " + angleRadians);
-
-		double angleDegrees = Math.toDegrees(angleRadians);
-
-		return new Person(angleDegrees, rangeMetres, deltaXMetres, rangeMetres
-				* Math.cos(angleRadians), 0, 0);
 	}
 
 	/**

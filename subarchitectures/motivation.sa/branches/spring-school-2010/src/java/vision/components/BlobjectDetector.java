@@ -60,7 +60,6 @@ public class BlobjectDetector extends ManagedComponent implements
 
 	}
 
-	@Override
 	public void workingMemoryChanged(WorkingMemoryChange _arg0)
 			throws CASTException {
 
