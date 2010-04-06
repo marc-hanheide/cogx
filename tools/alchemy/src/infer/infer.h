@@ -558,26 +558,6 @@ bool extractPredNames(string preds, const string* queryFile,
 }
 
 /**
- * Get the ids of the predicates represented by the string
- */
-IntHashArray *getPredicateIds(string & predsStr, Domain * const & domain)
-{
-  IntHashArray *predIds = new IntHashArray();
-  StringHashArray predNames;
-  extractPredNames(predsStr,NULL,predNames);
-  for(int i=0;i<predNames.size();i++)
-  {
-    string predName = predNames[i];
-    int predId = domain->getPredicateId(predName.c_str());
-    if(predId < 0)
-      continue;
-    predIds->append(predId);
-  }
-  return predIds;
-}
-
-
-/**
  * Returns the first character of the truth value
  * TRUE, FALSE or UKNOWN
  */
@@ -1039,13 +1019,8 @@ int buildInference(Inference*& inference, Domain*& domain,
          << endl; return -1;
   }
 
-  if (adecisionInfer && !abpInfer && !aefbpInfer)
-  {
-    aefbpInfer = true;
-  }
-  else if (!asimtpInfer && !amapPos && !amapAll && !agibbsInfer &&
-           !amcsatInfer && !aHybrid && !aSA && !abpInfer && !aefbpInfer &&
-           !aoutputNetwork)
+  if (!asimtpInfer && !amapPos && !amapAll && !agibbsInfer && !amcsatInfer &&
+      !aHybrid && !aSA && !abpInfer && !aoutputNetwork)
   {
       // If nothing specified, use MC-SAT
     amcsatInfer = true;
@@ -1158,19 +1133,10 @@ int buildInference(Inference*& inference, Domain*& domain,
   bpparams->maxSteps               = amcmcMaxSteps;
   bpparams->maxSeconds             = amcmcMaxSeconds;
   bpparams->lifted                 = aliftedInfer;
-  bpparams->useHC                  = auseHC;
-  bpparams->useCT                  = auseCT;
   bpparams->convergenceThresh      = abpConvergenceThresh;
   bpparams->convergeRequiredItrCnt = abpConvergeRequiredItrCnt;
   bpparams->implicitRep            = !aexplicitRep;
-  bpparams->hcCreateType           = (HyperCubeCreateType)ahcCreateType;
-  bpparams->hcCreateNoise          = ahcCreateNoise;
-  bpparams->lncIter                = alncIter;
-  bpparams->outputNetwork          = aoutputNetwork;  
-  if (anoHCPredsStr)
-  {
-  	(bpparams->noHCPredsStr).append(anoHCPredsStr);
-  }
+  bpparams->outputNetwork          = aoutputNetwork;
 
   //////////////////// read in clauses & evidence predicates //////////////////
 
@@ -1278,14 +1244,9 @@ int buildInference(Inference*& inference, Domain*& domain,
   HVariableState* hstate = NULL;
   FactorGraph* factorGraph = NULL;
   
-  if (abpInfer || aefbpInfer || aoutputNetwork)
+  if (abpInfer || aoutputNetwork)
   {
-    factorGraph = new FactorGraph(bpparams->lifted, bpparams->useHC,
-                                  bpparams->useCT, bpparams->implicitRep,
-                                  bpparams->hcCreateType,
-                                  bpparams->hcCreateNoise, bpparams->lncIter,
-                                  bpparams->noHCPredsStr,mln, domain,
-                                  queryFormulas);
+    factorGraph = new FactorGraph(bpparams->lifted, mln, domain, queryFormulas);
     inference = new BP(factorGraph, bpparams, queryFormulas);
   }
   else

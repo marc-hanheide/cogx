@@ -1197,15 +1197,6 @@ class Domain
     return pred;
   }
 
-    //get the predicate corresponding to the predId
-    //Note: caller is responsible for deleting it
-  Predicate * getPredicate(const int& predId)
-  {
-    const PredicateTemplate *pt = getPredicateTemplate(predId);
-    Predicate *pred = new Predicate(pt);
-    return pred;
-  }
-
  private:
  
   void changePredTermsToNewIds(Predicate* const & p,

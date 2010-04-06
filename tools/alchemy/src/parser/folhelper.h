@@ -160,7 +160,6 @@ Function* zzfunc;
 stack<Function*> zzfuncStack;
 stack<ListObj*> zzfuncConjStack;
 double* zzwt;
-double* zzutil;
 double* zzrealValue;
 bool zzisNegated;
 bool zzisAsterisk;
@@ -349,7 +348,7 @@ struct ZZFormulaInfo
                 const bool& mmustHaveWtOrFullStop,
                 const bool& iisIndivisible, const bool& iisHybrid,
                 const ListObj* const & ccontPred, const double& mmean,
-                const bool& hhasWeightFullStop, const double* const & uutil)
+                const bool& hhasWeightFullStop)
     : formula(fformula), formulaStr(fformulaStr), numPreds(nnumPreds), 
       defaultWt(ddefaultWt), domain(ddomain), mln(mmln), 
       numAsterisk(nnumAsterisk), hasFullStop(hhasFullStop), 
@@ -359,7 +358,6 @@ struct ZZFormulaInfo
       contPred(ccontPred), mean(mmean), hasWeightFullStop(hhasWeightFullStop)
   {
     wt = (wwt) ? new double(*wwt) : NULL;
-    util = (uutil) ? new double(*uutil) : NULL;
     
     ZZVarNameToIdMap::const_iterator it = vvarNameToIdMap.begin();
     for (; it != vvarNameToIdMap.end(); it++)
@@ -370,7 +368,7 @@ struct ZZFormulaInfo
       plusVarMap[(*itt).first] = (*itt).second;
   }
 
-  ~ZZFormulaInfo() { if (wt) delete wt; if (util) delete util; }
+  ~ZZFormulaInfo() { if (wt) delete wt; }
 
   const ListObj* formula;
   const string formulaStr;
@@ -390,7 +388,6 @@ struct ZZFormulaInfo
   const ListObj* contPred;
   const double mean;
   const bool hasWeightFullStop;
-  const double* util;
 };
 
 Array<ZZFormulaInfo*> zzformulaInfos;
@@ -572,6 +569,7 @@ int zzgetVarId(const char* const& varName, const int& varTypeId,
 //  }
   return varIdType.id_;  
 }
+
 
 int zzgetVarTypeId(const char* const& varName)
 {
@@ -1493,17 +1491,12 @@ Predicate* zzcreatePred(const ListObj* const & lo)
 } 
 
 
-void zzcreateClause(const ListObj* const & lo, Clause* const & clause,
-                    const bool& isIndivisible)
+void zzcreateClause(const ListObj* const & lo, Clause* const & clause)
 {
-  if (!isIndivisible)
-  {
-    zzvarCounter = 0;
-    zzvarNameToIdMap.clear();
-  }
+  zzvarCounter = 0;
+  zzvarNameToIdMap.clear();
 
   const Array<ListObj*>& clauselo = lo->getList();
-    // Non-unit clause
   if (strcmp(clauselo[0]->getStr(), "v")==0)
   {
     for (int i = 1; i < clauselo.size(); i++)
@@ -1522,7 +1515,6 @@ void zzcreateClause(const ListObj* const & lo, Clause* const & clause,
       clause->appendPredicate(pred);
     }
   }
-    // Unit clause
   else
   {
     Predicate* pred;
@@ -1543,10 +1535,8 @@ void zzcreateClause(const ListObj* const & lo, Clause* const & clause,
 
   // clauses are those that occur together in CNF
 void zzcreateClauses(const ListObj* const & lo, Array<Clause*>& clauses,
-                     Clause*& flippedClause, const bool& isIndivisible)
+                     Clause*& flippedClause)
 {
-  zzvarCounter = 0;
-  zzvarNameToIdMap.clear();
   flippedClause = NULL;
     // clauseOfUnitPreds contains the predicates of unit clauses
     // e.g if the cnf formula is P(x) ^ Q(x) ^ (P(y) v Q(y))
@@ -1558,7 +1548,7 @@ void zzcreateClauses(const ListObj* const & lo, Array<Clause*>& clauses,
   for (int i = 0; i < disjunctions.size(); i++)
   {
     Clause* clause = new Clause();
-    zzcreateClause(disjunctions[i], clause, isIndivisible);
+    zzcreateClause(disjunctions[i], clause);
     if (clause->getNumPredicates() > 1)
       clauses.append(clause);
     else
@@ -1568,8 +1558,7 @@ void zzcreateClauses(const ListObj* const & lo, Array<Clause*>& clauses,
     }
   }
 
-  if (unitPreds->size() > 1) zzcreateClause(unitPreds, clauseOfUnitPreds,
-                                            isIndivisible);
+  if (unitPreds->size() > 1) zzcreateClause(unitPreds, clauseOfUnitPreds);
   unitPreds->clear();
   delete unitPreds;
 
@@ -2427,7 +2416,6 @@ void zzreset()
   while (!zzfuncStack.empty()) zzfuncStack.pop();
   while (!zzfuncConjStack.empty()) zzfuncConjStack.pop();
   if (zzwt) { delete zzwt; zzwt = NULL; }
-  if (zzutil) { delete zzutil; zzutil = NULL; }
   if (zzrealValue) { delete zzrealValue; zzrealValue = NULL; }
   zzisNegated = false;
   zzisAsterisk = false;
@@ -2610,7 +2598,7 @@ void zzappendUnitClausesToMLN(const Domain* const & domain, MLN* const & mln,
     ostringstream oss;
     clause->getPredicate(0)->getTemplate()->printWithStrVar(oss);
     bool app = mln->appendClause(oss.str(), false, clause, defaultWt, false,
-                                 idx, false, false, false, 0.0);
+                                 idx, false, false, false);
     if (app)
     {
       mln->setFormulaNumPreds(oss.str(), 1);
@@ -2639,7 +2627,6 @@ void zzappendFormulaClausesToMLN(const ListObj* const & formula,
                                  const ListObj* const & contPred,
                                  const double mean,
                                  const bool& hasWeightFullStop,
-                                 const double* const & util,
                                  Array<int>& hardClauseIdxs,
                                  Array<string>& hardFormulas,
                                  Clause*& flippedClause,
@@ -2687,7 +2674,7 @@ void zzappendFormulaClausesToMLN(const ListObj* const & formula,
       //cout << "cnf (removed redundant preds) = " <<endl<<"\t: "<<*cnf<<endl;
 
       Array<Clause*> clauses;
-      zzcreateClauses(cnf, clauses, flippedClause, isIndivisible);
+      zzcreateClauses(cnf, clauses, flippedClause);
 
         // Output message of cnf size only if more than one
       if (clauses.size() > 1)
@@ -2725,8 +2712,7 @@ void zzappendFormulaClausesToMLN(const ListObj* const & formula,
       { perClauseWt = (*wt)/clauses.size(); formulaWt = *wt; }
       else
       {
-          // It's ok to have no weight if there is a utility
-        if (mustHaveWtOrFullStop && !util)
+        if (mustHaveWtOrFullStop)
           zzerr("a weight or full stop must be specified for:\n%s",
                 formStr.c_str());
         perClauseWt = defaultWt/clauses.size();
@@ -2743,8 +2729,6 @@ void zzappendFormulaClausesToMLN(const ListObj* const & formula,
         ////// the sign because it's a real wt. This flag would have to 
         ////// be passed in via runYYParser
         double clauseWt = perClauseWt;
-        double clauseUtil = 0.0;
-        if (util) clauseUtil = *util;
         bool conjunction = false;
         if (flippedClause && flippedClause == clauses[i])
         {
@@ -2767,8 +2751,7 @@ void zzappendFormulaClausesToMLN(const ListObj* const & formula,
         {
           ok = mln->appendClause(formStr, hasExist, clauses[i], 
                                  clauseWt, hasFullStop, prevIdx,
-                                 isIndivisible, hasWeightFullStop, conjunction,
-                                 clauseUtil);
+                                 isIndivisible, hasWeightFullStop, conjunction);
         }
         
         if (!ok)
@@ -2829,7 +2812,7 @@ void zzappendFormulasToMLN(Array<ZZFormulaInfo*>& formulaInfos,
                                 epfi->mustHaveWtOrFullStop,
                                 epfi->isIndivisible, epfi->isHybrid,
                                 epfi->contPred, epfi->mean,
-                                epfi->hasWeightFullStop, epfi->util,
+                                epfi->hasWeightFullStop,
                                 hardClauseIdxs, hardFormulas, 
                                 flippedClause, domain0);
     delete epfi;

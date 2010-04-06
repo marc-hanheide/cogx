@@ -136,6 +136,17 @@ class Database
 	assert(closedWorld.size() == domain_->getNumPredicates());
     int numFOPreds = domain_->getNumPredicates();
 
+    int numTypes = domain_->getNumTypes();
+    firstConstIdByType_.growToSize(numTypes);
+    for (int i = 0; i < numTypes; i++)
+    {
+      assert(domain_->isType(i));
+      const Array<int>* constIds = domain_->getConstantsByTypeWithExt(i);
+      if (constIds->empty()) firstConstIdByType_[i] = (unsigned int)0;
+      else                   firstConstIdByType_[i] = (*constIds)[0];
+      delete constIds;
+    }
+
     closedWorld_.growToSize(numFOPreds);
     memcpy((void*)closedWorld_.getItems(), closedWorld.getItems(),
            closedWorld.size()*sizeof(bool));
@@ -205,6 +216,7 @@ class Database
     //closedWorld_ = db.closedWorld_;
     lazyFlag_ = db.lazyFlag_;
     performingInference_ = db.performingInference_;
+    firstConstIdByType_ = db.firstConstIdByType_;
     numberOfGroundings_ = db.numberOfGroundings_;
     
     oppEqGndPreds_ = db.oppEqGndPreds_;
@@ -360,6 +372,8 @@ class Database
     for (int i = 0; i < termMultByPred_.size(); i++) 
       if (termMultByPred_[i]) termMultByPred_[i]->compress();
     termMultByPred_.compress();
+
+    firstConstIdByType_.compress();
   }
 
   void printInfo()
@@ -1031,10 +1045,8 @@ class Database
   {
       // True gndings from truePredIdxSet_
     LongLongHashSet::const_iterator it = (*truePredIdxSet_)[predId].begin();
-    for (; it != (*truePredIdxSet_)[predId].end(); it++)
-    {
-      Predicate* p =
-        getPredFromIdx((*it), domain_->getPredicateTemplate(predId));
+    for (; it != (*truePredIdxSet_)[predId].end(); it++) {
+      Predicate* p = getPredFromIdx((*it), domain_->getPredicateTemplate(predId));
       indexedGndings->append(p);
     }
   }
@@ -1084,8 +1096,7 @@ class Database
         for (; it != (*truePredIdxSet_)[predId].end(); it++)
         {
           Predicate* p = getPredFromIdx((*it), pred->getTemplate());
-          if (pred->canBeGroundedAs(p))
-            indexedGndings->append(p);
+          indexedGndings->append(p);
         }
       }
       else
@@ -1105,7 +1116,7 @@ class Database
             if ((it = (*truePredIdxSet_)[predId].find(i)) !=
                 (*truePredIdxSet_)[predId].end())
               delete newPred;
-            else if (pred->canBeGroundedAs(newPred))
+            else
               indexedGndings->append(newPred);
           }
         }
@@ -1116,8 +1127,7 @@ class Database
           for (; it != (*falsePredIdxSet_)[predId].end(); it++)
           {
             Predicate* p = getPredFromIdx((*it), pred->getTemplate());
-            if (pred->canBeGroundedAs(p))
-              indexedGndings->append(p);
+            indexedGndings->append(p);
           }
         }        
       }
@@ -1177,7 +1187,7 @@ class Database
                            inserter(tmpTrueOrFalseIntersection,
                                     tmpTrueOrFalseIntersection.begin()));
         trueOrFalseIntersection = tmpTrueOrFalseIntersection;
-	//cout << "db size " << trueOrFalseIntersection.size() << endl;
+//cout << "db size " << trueOrFalseIntersection.size() << endl;
       }
         // Active index
       if (!ignoreActivePreds)
@@ -1238,6 +1248,19 @@ class Database
       //   . compute new hashcode w. new first-const/multi
       //   . update hashcode
       // - update first-const/multi
+
+      // compute new first-const
+    int numTypes = domain_->getNumTypes();
+    Array<unsigned int> newfirstConstIdByType;
+    newfirstConstIdByType.growToSize(numTypes);
+    for (int i = 0; i < numTypes; i++)
+    {
+      assert(domain_->isType(i));
+      const Array<int>* constIds = domain_->getConstantsByTypeWithExt(i);
+      //const Array<int>* constIds = domain_->getConstantsByType(i);
+      if (constIds->empty()) newfirstConstIdByType[i] = (unsigned int)0;
+      else                   newfirstConstIdByType[i] = (*constIds)[0];
+    }
       
     // compute new termMultByPred_
     int numFOPreds = domain_->getNumPredicates();
@@ -1264,26 +1287,27 @@ class Database
       //delete termMultByPred_[i];
       newtermMultByPred[i] = matArr;
     }
-/*
+
       // update predIdSet: retrieve w. old DS, compute hashcode w. new DS
     changeConstantsToNewIds(truePredIdxSet_, oldToNewConstIds,
-                            newtermMultByPred);
+                            newfirstConstIdByType, newtermMultByPred);
     changeConstantsToNewIds(falsePredIdxSet_, oldToNewConstIds,
-                            newtermMultByPred);
+                            newfirstConstIdByType, newtermMultByPred);
     changeConstantsToNewIds(activePredIdxSet_, oldToNewConstIds,
-                            newtermMultByPred);
+                            newfirstConstIdByType, newtermMultByPred);
     changeConstantsToNewIds(evidencePredIdxSet_, oldToNewConstIds,
-                            newtermMultByPred);
+                            newfirstConstIdByType, newtermMultByPred);
     changeConstantsToNewIds(deactivatedPredIdxSet_, oldToNewConstIds,
-                            newtermMultByPred);
+                            newfirstConstIdByType, newtermMultByPred);
     changeConstantsToNewIds(trueEvIndex_, oldToNewConstIds,
-                            newtermMultByPred);
+                            newfirstConstIdByType, newtermMultByPred);
     changeConstantsToNewIds(falseEvIndex_, oldToNewConstIds,
-                            newtermMultByPred);
+                            newfirstConstIdByType, newtermMultByPred);
     changeConstantsToNewIds(activeIndex_, oldToNewConstIds,
-                            newtermMultByPred);
-*/
+                            newfirstConstIdByType, newtermMultByPred);
+
       // update first-const/multi
+    firstConstIdByType_ = newfirstConstIdByType;
     for (int i = 0; i < numFOPreds; i++)
     {
       delete termMultByPred_[i];
@@ -1342,8 +1366,9 @@ class Database
    * @param pred Predicate for which the index is computed.
    * 
    * @return Index of the Predicate.
-   */
+   */  
   unsigned long long getIdxOfGndPredValues(const Predicate* const & pred,
+                            const Array<unsigned int> & currfirstConstIdByType,
                     const Array<Array<MultAndType>*> & currtermMultByPred) const
   {
     int numTerms = pred->getNumTerms();
@@ -1353,11 +1378,11 @@ class Database
     {
       int constId = pred->getTerm(i)->getId();
       assert(constId >= 0);
-      int constIdx =
-        domain_->getConstantIndexInType(constId, (*multAndTypes)[i].second);
-      assert(constIdx >= 0);
         // idx += mutliplier * num of constants belonging to type d]);
-      idx += (*multAndTypes)[i].first * constIdx;
+//      idx += (*multAndTypes)[i].first 
+//        * (constId - currfirstConstIdByType[(*multAndTypes)[i].second]);
+      idx += (*multAndTypes)[i].first 
+        * domain_->getConstantIndexInType(constId, (*multAndTypes)[i].second);
     }
     return idx;
   }
@@ -1365,7 +1390,7 @@ class Database
     // default: use member vars
   unsigned long long getIdxOfGndPredValues(const Predicate* const & pred) const
   {
-    return getIdxOfGndPredValues(pred, termMultByPred_);
+    return getIdxOfGndPredValues(pred, firstConstIdByType_, termMultByPred_);
   }
 
   /**
@@ -1382,6 +1407,7 @@ class Database
    * @return Index of the GroundPredicate.
    */  
   unsigned long long getIdxOfGndPredValues(const GroundPredicate* const & pred,
+                            const Array<unsigned int> & currfirstConstIdByType,
                     const Array<Array<MultAndType>*> & currtermMultByPred) const
   {
     int numTerms = pred->getNumTerms();
@@ -1392,6 +1418,8 @@ class Database
       int constId = pred->getTermId(i);
       assert(constId >= 0);
         // idx += mutliplier * num of constants belonging to type d]);
+//      idx += (*multAndTypes)[i].first 
+//        * (constId - currfirstConstIdByType[(*multAndTypes)[i].second]);
       idx += (*multAndTypes)[i].first 
         * domain_->getConstantIndexInType(constId, (*multAndTypes)[i].second);
     }
@@ -1402,7 +1430,7 @@ class Database
   unsigned long long getIdxOfGndPredValues(const GroundPredicate* const & pred)
   const
   {
-    return getIdxOfGndPredValues(pred, termMultByPred_);
+    return getIdxOfGndPredValues(pred, firstConstIdByType_, termMultByPred_);
   }
 
   /**
@@ -1415,6 +1443,7 @@ class Database
    */
   Predicate* getPredFromIdx(unsigned long long idx,
                             const PredicateTemplate* const & predTemplate,
+                            const Array<unsigned int> & currfirstConstIdByType,
                     const Array<Array<MultAndType>*> & currtermMultByPred) const
   {
     Predicate* p = new Predicate(predTemplate);
@@ -1455,7 +1484,8 @@ class Database
   Predicate* getPredFromIdx(unsigned long long idx,
                             const PredicateTemplate* const & predTemplate) const
   {
-    return getPredFromIdx(idx, predTemplate, termMultByPred_);
+    return getPredFromIdx(idx, predTemplate, firstConstIdByType_,
+                          termMultByPred_);
   }
 
   /**
@@ -1467,6 +1497,7 @@ class Database
    */
   void changeConstantsToNewIds(Array<LongLongHashSet >* predIdxSets,
                                hash_map<int,int>& oldToNewConstIds,
+                             const Array<unsigned int> & currfirstConstIdByType,
                           const Array<Array<MultAndType>*> & currtermMultByPred)
   {
     for (int i = 0; i < predIdxSets->size(); i++)
@@ -1489,7 +1520,8 @@ class Database
           }
         }
 
-        unsigned long long d = getIdxOfGndPredValues(p, currtermMultByPred);
+        unsigned long long d = getIdxOfGndPredValues(p, currfirstConstIdByType,
+                                                     currtermMultByPred);
         newHashSet.insert(d);
         delete p;
       }
@@ -1507,6 +1539,7 @@ class Database
    */
   void changeConstantsToNewIds(Array<LongLongHashMap>* predIdxMaps,
                                hash_map<int,int>& oldToNewConstIds,
+                             const Array<unsigned int> & currfirstConstIdByType,
                           const Array<Array<MultAndType>*> & currtermMultByPred)
   {
     for (int i = 0; i < predIdxMaps->size(); i++)
@@ -1537,7 +1570,8 @@ class Database
             }
           }
 
-          unsigned long long d = getIdxOfGndPredValues(p, currtermMultByPred);
+          unsigned long long d = getIdxOfGndPredValues(p, currfirstConstIdByType,
+                                                       currtermMultByPred);
           delete p;
           newSet.insert(d);
         }
@@ -1661,6 +1695,7 @@ class Database
     if (dbdebug >= 1) cout << "Returning false" << endl;        
     return false;
   }
+
 
   /**
    * Sets the value of a predicate in this database.
@@ -2109,6 +2144,9 @@ class Database
     // atoms is not used (all atoms are true or false).
   bool performingInference_;
   
+    // firstConstId_[c] is the id of the first constant of class c
+  Array<unsigned int> firstConstIdByType_;
+
     //Suppose a predicate with id i has three terms, and the number of 
     //groundings of the first, second and third terms are 
     //4, 3, 2 respectively. Then termMultByPred_[i][0].first = 3x2,

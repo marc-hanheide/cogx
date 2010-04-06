@@ -618,7 +618,7 @@ double Clause::getConstantTuples(const Domain* const & domain,
             assert(varIds.size() == v);
           }
 
-          //removeRedundantPredicates();
+          removeRedundantPredicates();
 
           if (clausedebug)
           {
@@ -658,10 +658,7 @@ double Clause::getConstantTuples(const Domain* const & domain,
               //At this point all the literals are grounded, and they are
               //either unknown or false (have truth values opposite of their
               //senses).
-
-              //- this so that it matches the hypercube representation.
-              //There is no real need to simplify the clause!
-            if (false) 
+            if (hasTwoLiteralsWithOppSense(db)) 
             {
               ++numTrueGndings;
             }
@@ -735,8 +732,6 @@ inline void Clause::addConstantTuple(const Domain* const & domain,
   {
     predicate = (*predicates_)[i];
     assert(predicate->isGrounded());
-	
-	/*
     if (db->getValue(predicate) == UNKNOWN)
     {
       clause->appendPredicate(varClause->getPredicate(i));
@@ -754,13 +749,6 @@ inline void Clause::addConstantTuple(const Domain* const & domain,
       }
       else
         predSet.insert(predicate);
-    } */
-    
-    //- this so that it matches the hypercube representation.
-    //There is no real need to simplify the clause!
-	if (db->getValue(predicate) == UNKNOWN)
-    {
-      clause->appendPredicate(varClause->getPredicate(i));
     }
   }
   
@@ -771,16 +759,14 @@ inline void Clause::addConstantTuple(const Domain* const & domain,
   Array<int> * canonicalConstants;
   Array<Variable *> * canonicalEqVars;
 
-  //Slightly different Imeplementation for SuperClause
-  bool useCT = false;
-  IntArrayHashArray *neqConstraints = NULL;
-
     //nothing to do if the clause has no predicate
   if (clause->getNumPredicates() == 0)
   {
     delete clause;
     return;
   }
+    // MS: weight stored in clause
+  //clause->setWt(wt_);
 
   itr = clauseToSuperClause->find(clause);
   if (itr == clauseToSuperClause->end())
@@ -788,27 +774,25 @@ inline void Clause::addConstantTuple(const Domain* const & domain,
       //it is best to create a completely new copy of the clause
       //at this point
     keyClause = new Clause(*clause);
-    keyClause->setWt(this->getWt());
-    keyClause->setUtil(this->getUtil());
-    keyClause->setAction(this->isActionFactor());
-    //keyClause->setWt(1);
+    keyClause->setWt(1);
+    //keyClause->setWt(this->getWt());
 
     int varCnt = constants->size();
     varIdToCanonicalVarId = new Array<int>(varCnt, -1);
     keyClause->canonicalize(varIdToCanonicalVarId);
     canonicalEqVars = getCanonicalArray(eqVars, varIdToCanonicalVarId);
-      //Slightly different Imeplementation for SuperClause
-    superClause = new SuperClause(keyClause, neqConstraints,
-                                  varIdToCanonicalVarId, useCT, wt_);
-   
+    superClause = new SuperClause(keyClause, canonicalEqVars,
+                                  varIdToCanonicalVarId, useImplicit, wt_);
     (*clauseToSuperClause)[clause] = superClause;
     delete canonicalEqVars;
-    //delete varIdToCanonicalVarId;
+    delete varIdToCanonicalVarId;
   }
   else
   {
     superClause = itr->second;
-
+      // MS: weight added to clause
+    //superClause->getClause()->addWt(clause->getWt());
+    //superClause->addOutputWt(clause->getWt());
       //sort of a hack, but it works: 
       //may need to increase the size of varIdToCanonicalVarId map
     int varCnt = constants->size();
@@ -822,9 +806,10 @@ inline void Clause::addConstantTuple(const Domain* const & domain,
   
   varIdToCanonicalVarId = superClause->getVarIdToCanonicalVarId();
   canonicalConstants = getCanonicalArray(constants, varIdToCanonicalVarId);
-   //superClause->addNewConstantsAndIncrementCount(canonicalConstants,this->getWt());
-  superClause->addNewConstantsAndIncrementCount(canonicalConstants,1);
-    
+  superClause->addNewConstantsAndIncrementCount(canonicalConstants,
+// MS: Changed to increment by 1, not the weight
+                                                this->getWt());
+//                                                1.0);
     //clean up
   delete canonicalConstants;
 }

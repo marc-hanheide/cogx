@@ -106,13 +106,6 @@ class Node
     msgsArr_ = new Array<double *>();
     nextMsgsArr_ = new Array<double *>();
     msgProds_[0] = msgProds_[1] = 0;
-    prevProb_ = 0.5;
-    util_ = 0.0;
-
-    taggedSend_ = false;
-    taggedReceive_ = false;
-    
-    gndNodeCnt_ = NULL;
   }
 
   /**
@@ -133,8 +126,6 @@ class Node
     delete auxLinks_;
     delete msgsArr_;
     delete nextMsgsArr_;
-    if (gndNodeCnt_)
-      delete gndNodeCnt_;
   }
 
   int getPredId() { return predId_;}
@@ -160,15 +151,12 @@ class Node
 
   int getGroundNodeCount()
   {
-    if (gndNodeCnt_ == NULL)
+    if (superPred_)
     {
-      gndNodeCnt_ = new int;
-      if (superPred_)
-        *gndNodeCnt_ = superPred_->getApproxNumTuples();
-      else
-        *gndNodeCnt_ = 1;
+      return superPred_->getNumTuples();
     }
-    return *gndNodeCnt_;
+    else
+      return 1;
   }
 
   /**
@@ -301,57 +289,15 @@ class Node
    * Updates the stored msgs and update the msgProduct
    */
   void moveToNextStep();
-  
+
   ostream& print(ostream& out)
-  { 
+  {
+    out << predId_ << ": ";
     if (superPred_ != NULL)
-      (superPred_->getHyperCube(0))->print(out);
+      printArray(*(superPred_->getConstantTuple(0)),out);
     else
       printArray(*constants_,out);
     return out;
-  }
-
-  double getProb()
-  {
-    double probs[2];
-    getProbs(probs);
-    return probs[1];
-  }
-
-  double getPrevUtil() { return prevProb_ * util_; }
-
-  void updateProb() { prevProb_ = getProb(); }
-
-  double getUtil() { return getProb() * util_; }
-
-  double isUtil() { return (util_ != 0.0); }
-
-  void setUtil(double util) { util_ = util; }
-
-    // Add neighboring factors to send set.
-  void tagNeighborsSend(set<Factor*> &sendFactors,
-                        set<Factor*> &receiveFactors,
-                        set<Node*> &receiveNodes);
-  void tagNeighborsSend(list<Factor*> &sendFactors,
-                        list<Factor*> &receiveFactors,
-                        list<Node*> &receiveNodes);
-
-    // Add neighboring factors to receive set, and their neighboring nodes to
-    // send and receive sets. (And the neighbors' neighbors' neighbors to send
-    // set.)
-  void tagNeighborsReceive(set<Factor*> &sendFactors,
-                           set<Factor*> &receiveFactors,
-                           set<Node*> &sendNodes,
-                           set<Node*> &receiveNodes);
-  void tagNeighborsReceive(list<Factor*> &sendFactors,
-                           list<Factor*> &receiveFactors,
-                           list<Node*> &sendNodes,
-                           list<Node*> &receiveNodes);
-
-  void resetTags()
-  {
-    taggedSend_ = false;
-    taggedReceive_ = false;
   }
 
  private:
@@ -377,13 +323,6 @@ class Node
     //just divide (subtract in the log domain) by the message from the 
     //factor node to which it is being sent
   double msgProds_[2];
-  
-  double util_;
-  double prevProb_;
-
-  bool taggedSend_, taggedReceive_;
-  
-  int *gndNodeCnt_;
 };
 
 #endif

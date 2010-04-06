@@ -122,7 +122,6 @@ bool useVP = false;
 int  discMethod = DiscriminativeLearner::CG;
 double cg_lambda = 100;
 double cg_max_lambda = DBL_MAX;
-double min_ll_change = 0.00001;
 bool   cg_noprecond = false;
 int amwsMaxSubsequentSteps = -1;
 char* ainDBListFile = NULL;
@@ -405,14 +404,11 @@ ARGS ARGS::Args[] =
        "Use rescaled conjugate gradient to learn the weights."),
 
   ARGS("cgLambda", ARGS::Opt, cg_lambda,
-       "[100] (For CG only) Starting value of parameter to limit "
+       "[100] (For CG only) (For CG only) Starting value of parameter to limit "
        "step size"),
 
   ARGS("cgMaxLambda", ARGS::Opt, cg_max_lambda,
        "[no limit] (For CG only) Maximum value of parameter to limit step size"),
-
-  ARGS("cgMinLLChange", ARGS::Opt, min_ll_change,
-       "[0.00001] (For CG only) Minimum change in likelihood to keep iterating"),
 
   ARGS("cgNoPrecond", ARGS::Tog, cg_noprecond,
        "[false] (For CG only) precondition without the diagonal Hessian"),
@@ -697,21 +693,6 @@ int main(int argc, char* argv[])
   cout << "Parsing MLN and creating domains took "; 
   Timer::printTime(cout, timer.time() - begSec); cout << endl;
 
-
-  const FormulaAndClausesArray* fca = mlns[0]->getFormulaAndClausesArray();
-  for (int i = 0; i < fca->size(); i++)  
-  {
-    IndexClauseHashArray* indexClauses = (*fca)[i]->indexClauses;
-    for (int j = 0; j < indexClauses->size(); j++)
-    {
-      int idx = (*indexClauses)[j]->index;
-      Clause* c = (*indexClauses)[j]->clause;
-      cout << "idx " << idx << ": ";
-      c->printWithWtAndStrVar(cout, domains[0]);
-      cout << endl;
-    }
-  }
-
   /*
   cout << "Clause prior means:" << endl;
   cout << "_________________________________" << endl;
@@ -857,13 +838,9 @@ int main(int argc, char* argv[])
 
     Array<VariableState*> states;
     Array<Inference*> inferences;
-    Array<VariableState*> emStates;
-    Array<Inference*> emInferences;
 
     states.growToSize(domains.size());
     inferences.growToSize(domains.size());
-    emStates.growToSize(domains.size());
-    emInferences.growToSize(domains.size());
 
       // Build the state for inference in each domain
     Array<int> allPredGndingsAreNonEvid;
@@ -924,11 +901,6 @@ int main(int argc, char* argv[])
         }
       }
 
-      bool markHardGndClauses = false;
-      bool trackParentClauseWts = true;
-
-      VariableState*& emState = emStates[i];
-
       Array<Predicate*> gpreds;
       Array<TruthValue> gpredValues;
         // Eager version: Build query preds from command line and set known
@@ -944,13 +916,6 @@ int main(int argc, char* argv[])
         createComLineQueryPreds(nePredsStr, domain, domain->getDB(), 
                                 unePreds, knePreds, 
                                 &allPredGndingsAreNonEvid, NULL);
-
-        if (withEM)
-        {
-          emState = new VariableState(unePreds, NULL, NULL,
-                                  &allPredGndingsAreNonEvid, markHardGndClauses,
-                                  trackParentClauseWts, mln, domain, aLazy);
-        }
 
           // Pred values not set to unknown in DB: unePreds contains
           // unknown, knePreds contains known non-evidence
@@ -1008,6 +973,8 @@ int main(int argc, char* argv[])
         // Create state for inferred counts using unknown and known (set to
         // unknown in the DB) non-evidence preds
       cout << endl << "constructing state for domain " << i << "..." << endl;
+      bool markHardGndClauses = false;
+      bool trackParentClauseWts = true;
 
       VariableState*& state = states[i];
       state = new VariableState(unePreds, knePreds, knePredValues,
@@ -1015,7 +982,6 @@ int main(int argc, char* argv[])
                                 trackParentClauseWts, mln, domain, aLazy);
 
       Inference*& inference = inferences[i];
-      Inference*& emInference = emInferences[i];      
       bool trackClauseTrueCnts = true;
         // Different inference algorithms
       if (amapPos || amapAll)
@@ -1025,16 +991,10 @@ int main(int argc, char* argv[])
         mwsparams->numSolutions = 1;
         inference = new MaxWalkSat(state, aSeed, trackClauseTrueCnts,
                                    mwsparams);
-        if (withEM)
-          emInference = new MaxWalkSat(emState, aSeed, trackClauseTrueCnts,
-                                       mwsparams);
       }
       else if (amcsatInfer)
       { // MC-SAT
         inference = new MCSAT(state, aSeed, trackClauseTrueCnts, msparams);
-        if (withEM)
-          emInference = new MCSAT(emState, aSeed, trackClauseTrueCnts,
-                                  msparams);
       }
       else if (asimtpInfer)
       { // Simulated Tempering
@@ -1043,9 +1003,6 @@ int main(int argc, char* argv[])
         mwsparams->numSolutions = 1;
         inference = new SimulatedTempering(state, aSeed, trackClauseTrueCnts,
                                            stparams);
-        if (withEM)
-          emInference = new SimulatedTempering(emState, aSeed,
-                                               trackClauseTrueCnts, stparams);
       }
       else if (agibbsInfer)
       { // Gibbs sampling
@@ -1054,9 +1011,6 @@ int main(int argc, char* argv[])
         mwsparams->numSolutions = 1;
         inference = new GibbsSampler(state, aSeed, trackClauseTrueCnts,
                                      gibbsparams);
-        if (withEM)
-          emInference = new GibbsSampler(emState, aSeed, trackClauseTrueCnts,
-                                       gibbsparams);
       }
 
       if (!aLazy)
@@ -1096,9 +1050,8 @@ int main(int argc, char* argv[])
       discMethod = DiscriminativeLearner::CG;
 
     DiscriminativeLearner dl(inferences, nonEvidPredNames, indexTrans, aLazy,
-                             withEM, emInferences, !noUsePerWeight, discMethod,
-                             cg_lambda, !cg_noprecond, cg_max_lambda,
-                             min_ll_change);
+                             withEM, !noUsePerWeight, discMethod, cg_lambda,
+                             !cg_noprecond, cg_max_lambda);
 
     if (!noPrior) 
       dl.setMeansStdDevs(numClausesFormulas, priorMeans.getItems(),
@@ -1181,9 +1134,6 @@ int main(int argc, char* argv[])
     ////////////// compute the counts for the clauses
 
     begSec = timer.time();
-    Array<bool> wtsWithTiedClauses;
-    wtsWithTiedClauses.growToSize(numClausesFormulas + 1, false);
-    int numWts = 0;
     for (int m = 0; m < mlns.size(); m++)
     {
       cout << "Computing counts for clauses in domain " << m << "..." << endl;
@@ -1217,37 +1167,20 @@ int main(int argc, char* argv[])
         
         Array<FormulaClauseIndexes*>& fciArr = ci->formulaClauseIndexes;
         int fidx = *(fciArr[0]->formulaIndex);
-        int cidx = *(fciArr[0]->clauseIndex);
+        //int remIdx = *(fciArr[0]->clauseIndex);
         FormulaAndClauses* fac = (*facs)[fidx];
 
           // If clauses are tied together, compute counts for the conjunction
           // of clauses
         if (fac->tiedClauses)
         {
-          if (cidx == 0)
-          {
-            if (m == 0)
-            {
-              numWts++;
-              wtsWithTiedClauses[i+1] = true;
-            }
-            Array<Clause*>* tiedClauses = new Array<Clause*>;
-            IndexClauseHashArray* indexClauses = fac->indexClauses;
-            for (int c = 1; c < indexClauses->size(); c++)
-              tiedClauses->append((*indexClauses)[c]->clause);
-            pll.computeCountsForNewAppendedClause((*clauses)[i], &(ci->index),
-                                                   m, NULL, false, NULL,
-                                                   tiedClauses);
-            delete tiedClauses;
-          }
+          Array<Clause*>* tiedClauses = new Array<Clause*>;
+          pll.computeCountsForNewAppendedClause((*clauses)[i], &(ci->index), m, 
+                                                NULL, false, NULL, tiedClauses);
+          delete tiedClauses;
         }
         else
         {
-          if (m == 0)
-          {
-            numWts++;
-            wtsWithTiedClauses[i+1] = true;
-          }
           pll.computeCountsForNewAppendedClause((*clauses)[i], &(ci->index), m, 
                                                 NULL, false, NULL, NULL);
         }
@@ -1262,32 +1195,17 @@ int main(int argc, char* argv[])
     ////////////// learn clause wts
 
       // initialize the clause weights
-    wts.growToSize(1);
-    wts.append(0.0);
-    int numNonLockedWts = numWts;
-    for (int i = 0; i < numWts; i++)
+    wts.growToSize(numClausesFormulas + 1);
+    for (int i = 0; i < numClausesFormulas; i++)
     {
-      if (noPrior)
-      {
-        wts.growToSize(wts.size() + 1);
-        wts[i+1] = 0;
-      }
-      else
-      {
-        if (lockedWts[i]) numNonLockedWts--;
-        else
-        {
-          wts.growToSize(wts.size() + 1);
-          wts[i+1] = 0;
-        }
-      }
+      if (lockedWts[i]) wts[i+1] = priorMeans[i];
+      else wts[i+1] = 0;
     }
 
       // optimize the clause weights
     cout << "L-BFGS-B is finding optimal weights......" << endl;
     begSec = timer.time();
-    //LBFGSB lbfgsb(maxIter, convThresh, &pll, numClausesFormulas);
-    LBFGSB lbfgsb(maxIter, convThresh, &pll, numNonLockedWts);
+    LBFGSB lbfgsb(maxIter, convThresh, &pll, numClausesFormulas);
     int iter;
     bool error;
     double pllValue = lbfgsb.minimize((double*)wts.getItems(), iter, error);
@@ -1299,28 +1217,6 @@ int main(int argc, char* argv[])
     cout << endl;
     cout << "pseudo-log-likelihood = " << -pllValue << endl;
 
-      // If tied clauses, then fill out the wts array with zeros
-    wts.growToSize(numClausesFormulas + 1);
-    Array<double> wtsAfterTiedClauses;
-    wtsAfterTiedClauses.growToSize(numClausesFormulas + 1);
-    int idxOffset = 0;
-    for (int w = 1; w < wtsAfterTiedClauses.size(); w++)
-    {
-      if (wtsWithTiedClauses[w])
-      {
-        wtsAfterTiedClauses[w] = wts[w - idxOffset];
-        idxOffset = 0;
-      }
-      else
-      {
-        wtsAfterTiedClauses[w] = 0.0;
-        idxOffset++;
-      }
-    }
-    for (int w = 1; w < wtsAfterTiedClauses.size(); w++)
-    {
-      wts[w] = wtsAfterTiedClauses[w];
-    }
   } // else using generative learning
 
   //////////////////////////// output results ////////////////////////////////

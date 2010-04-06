@@ -385,35 +385,17 @@ class PseudoLogLikelihood
   }
 
 
-  double getValueAndGradient(double* gradient, double* wt,
+  double getValueAndGradient(double* const & gradient, const double* const & wt,
                              const int& arrSize)
   {
-    double wpll = 0.0;
+    double wpll = 0;
+    memset(gradient, 0, arrSize*sizeof(double));
 
-    Array<double> newWts;
-    newWts.growToSize(numMeans_);
-      // If locked wts, then fill the wt and gradient array
-    int offset1 = 0;
-    for (int i = 0; i < numMeans_; i++)
-    {
-      if (lockedWts_[i])
-      {
-        newWts[i] = priorMeans_[i];
-        offset1++;
-      }
-      else newWts[i] = wt[i - offset1];
-    }
-
-    Array<double> newGradient;
-    newGradient.growToSize(numMeans_, 0.0);
-
-      //if there is one database, or the clauses for all databases line up
+        //if there is one database, or the clauses for all databases line up
     if (idxTrans_ == NULL)
     {
       for (int i = 0; i < domains_->size(); i++)
-        wpll += getValueAndGradientForDomain((double*)newGradient.getItems(),
-                                             (double*)newWts.getItems(),
-                                             numMeans_, i);
+        wpll += getValueAndGradientForDomain(gradient, wt, arrSize, i);
     }
     else
     {   //the clauses for multiple databases do not line up
@@ -440,8 +422,8 @@ class PseudoLogLikelihood
         {
           Array<IdxDiv>* idxDivs =(*cIdxToCFIdxsPerDomain)[i][j];          
           for (int k = 0; k < idxDivs->size(); k++)
-            if ((*idxDivs)[k].idx < numMeans_)
-              wts[j] += newWts[ (*idxDivs)[k].idx ] / (*idxDivs)[k].div;
+            if ((*idxDivs)[k].idx < arrSize)
+              wts[j] += wt[ (*idxDivs)[k].idx ] / (*idxDivs)[k].div;
         }
                 
         wpll += getValueAndGradientForDomain((double*)grads.getItems(), 
@@ -453,15 +435,13 @@ class PseudoLogLikelihood
         {
           Array<IdxDiv>* idxDivs =(*cIdxToCFIdxsPerDomain)[i][j];          
           for (int k = 0; k < idxDivs->size(); k++)
-            if ((*idxDivs)[k].idx < numMeans_)            
-              newGradient[ (*idxDivs)[k].idx ] += grads[j] / (*idxDivs)[k].div;
+            if ((*idxDivs)[k].idx < arrSize)            
+              gradient[ (*idxDivs)[k].idx ] += grads[j] / (*idxDivs)[k].div;
         }
       } // for each domain
     }
 
-//    printWtsGradsWPLL((double*)newWts.getItems(),
-//                      (double*)newGradient.getItems(),
-//                      numMeans_, wpll); //for testing
+    //printWtsGradsWPLL(wt, gradient, arrSize, wpll); //for testing
 
       // if there are prior penalties
     if (numMeans_ > 0)
@@ -471,38 +451,19 @@ class PseudoLogLikelihood
       //assert(numMeans_ == arrSize);
         
         // subtract the gaussian priors
-      for (int i = 0; i < numMeans_; i++)
+      for (int i = 0; i < arrSize; i++)
       {
         //since at this point the value and gradient have been negated,
         //add the priors
-        wpll += (newWts[i]-priorMeans_[i])*(newWts[i]-priorMeans_[i])/
+        wpll += (wt[i]-priorMeans_[i])*(wt[i]-priorMeans_[i])/
           (2*priorStdDevs_[i]*priorStdDevs_[i]);         
-
-        newGradient[i] += (newWts[i]-priorMeans_[i])/
+        
+        gradient[i] += (wt[i]-priorMeans_[i])/
           (priorStdDevs_[i]*priorStdDevs_[i]);
       }
     }
     
-//    printWtsGradsWPLL((double*)newWts.getItems(),
-//                      (double*)newGradient.getItems(),
-//                      numMeans_, wpll); //for testing
-
-      // If locked wts, then take out the filled locked weights
-    int offset2 = 0;
-    for (int i = 0; i < numMeans_; i++)
-    {
-      if (!lockedWts_[i])
-      {
-        wt[i - offset2] = newWts[i];
-        gradient[i - offset2] = newGradient[i];
-      }
-      else
-      {
-        offset2++;
-      }
-    }
-
-//    printWtsGradsWPLL(wt, gradient, arrSize, wpll); //for testing
+    //printWtsGradsWPLL(wt, gradient, arrSize, wpll); //for testing
     
     return wpll;
   } 
@@ -1141,31 +1102,8 @@ class PseudoLogLikelihood
         ((Clause*)clause)->countDiffNumTrueGroundings(&gndPred, domain, db,
                                                       DB_HAS_UNKNOWN_PREDS,
                                                       sampleClauses, c,
-                                                      //tiedClauses);
-                                                      NULL);
-      if (tiedClauses)
-      {
-        for (int tc = 0; tc < tiedClauses->size(); tc++)
-        {
-          bool noPred = true;
-          Clause* tiedClause = (*tiedClauses)[tc];
-          const Array<Predicate*>* preds = tiedClause->getPredicates();
-          for (int p = 0; p < preds->size(); p++)
-          {
-            if ((*preds)[p]->canBeGroundedAs(&gndPred))
-            {
-              noPred = false;
-              break;
-            }
-          }
-            // If no pred in tied clause can be grounded, then diff is 0
-          if (noPred) continue;
-          cnt += tiedClause->countDiffNumTrueGroundings(&gndPred, domain, db,
-                                                        DB_HAS_UNKNOWN_PREDS,
-                                                        sampleClauses, c, NULL);
-        }
-      }
-      
+                                                      tiedClauses);
+//cout << "Count " << cnt << endl;
         //ignore clauses if the difference in counts is zero
       if (cnt != 0)
       {

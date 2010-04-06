@@ -67,8 +67,6 @@
 #ifndef INFERENCEARGS_H_
 #define INFERENCEARGS_H_
 
-#include "inferutil.h"
-
 /**
  * This file contains the command line arguments for performing inference and
  * the data structures to store them. The default values are declared here with
@@ -100,10 +98,6 @@ bool  amcsatInfer = false;
 bool  asimtpInfer = false;
   // Belief propagation
 bool  abpInfer = false;
-  // Expanding Frontier Belief Propagation
-bool  aefbpInfer = false;
-  // Decision network: output total utility and assignment of action predicates
-bool  adecisionInfer = false;
   // No inference, just output network
 bool  aoutputNetwork = false;
 
@@ -168,16 +162,9 @@ int asimtpNumSwap     = 10;
 
   // Belief Propagation params
 bool aliftedInfer = false;
-bool auseHC = false;
-bool auseCT = false;
 double abpConvergenceThresh = 1e-4;
 int abpConvergeRequiredItrCnt = 20;
 bool aexplicitRep = false;
-int ahcCreateType = Basic;
-double ahcCreateNoise = 0.0;
-int alncIter = 0;
-//predicates for which hypercubes should not be created
-char *anoHCPredsStr = NULL;
 
   // Produce clause counts
 bool aclauseCounts = false;

@@ -64,7 +64,6 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  */
-
 #include <unistd.h>
 #include <fstream>
 #include <climits>
@@ -118,14 +117,6 @@ ARGS ARGS::Args[] =
   ARGS("bp", ARGS::Tog, abpInfer,
        "Run inference using belief propagation and return probabilities "
        "for all query atoms"),
-
-  ARGS("efbp", ARGS::Tog, aefbpInfer,
-       "Run inference using expanding frontier belief propagation and return "
-       "probabilities for all query atoms"),
-
-  ARGS("decision", ARGS::Tog, adecisionInfer,
-       "Run decision inference using BP (or EFBP) and return "
-       "max. utility assignment of action atoms"),
 
   ARGS("simtp", ARGS::Tog, asimtpInfer,
        "Run inference using simulated tempering and return probabilities "
@@ -238,13 +229,6 @@ ARGS ARGS::Args[] =
     // BEGIN: BP args
   ARGS("lifted", ARGS::Tog, aliftedInfer, 
        "[false] If true, lifted inference is run"),
-  
-  ARGS("useHC", ARGS::Tog, auseHC, 
-       "[false] If true (and lifted is also true), use the hypercube representation"),
-  
-  ARGS("useCT", ARGS::Tog, auseCT, 
-       "[false] If true (and lifted and hc is also true), use the constraints for hypercube " 
-	   "representation"),
 
   ARGS("convThresh", ARGS::Opt, abpConvergenceThresh,
         "[1e-4] (BP) Max difference in probabilities to determine convergence"),
@@ -255,22 +239,7 @@ ARGS ARGS::Args[] =
   ARGS("explicitRep", ARGS::Tog, aexplicitRep, 
        "[false] If true, explicit representation type is used in lifted "
        "inference; otherwise, implicit representation type is used"), 
-  
-  ARGS("hcCreateType", ARGS::Opt, ahcCreateType, 
-       "[Basic] Type of method used for creating hypercubes. DT/BAsic"),
-  
-  ARGS("hcCreateNoise", ARGS::Opt, ahcCreateNoise, 
-       "[0.0] Amount of noise while creating hypercubes"),
-  
-  ARGS("lncIter", ARGS::Opt, alncIter, 
-       "[0] Number of LNC Iterations (0 means run till end)"),
-  
-  ARGS("noHC", ARGS::Opt, anoHCPredsStr,
-       "Comma separated list of predicates, for which hyperCubes should not be created i.e. "
-	   " HyperCubes are not created for the specified predicates i.e. each ground tuple "
-	   " is a hypercube"),
-  
-  // END: BP args
+    // END: BP args
 
     // BEGIN: SampleSat args
   ARGS("numSolutions", ARGS::Opt, amwsNumSolutions,
@@ -574,18 +543,11 @@ void printResults(const string& queryFile, const string& queryPredsStr,
     else
     {
       inference->printQFProbs(out, domain);
-      if (abpInfer || aefbpInfer)
+      for (int i = 0; i < queries->size(); i++)
       {
-        inference->printProbabilities(out);
-      }
-      else
-      {
-        for (int i = 0; i < queries->size(); i++)
-        {
-            // Prob is smoothed in inference->getProbability
-          double prob = inference->getProbability((*queries)[i]);
-          (*queries)[i]->print(out, domain); out << " " << prob << endl;
-        }
+          // Prob is smoothed in inference->getProbability
+        double prob = inference->getProbability((*queries)[i]);
+        (*queries)[i]->print(out, domain); out << " " << prob << endl;
       }
     }
   }
@@ -619,16 +581,8 @@ int main(int argc, char* argv[])
   if (buildInference(inference, domain, aisQueryEvidence, queryPreds,
                      queryPredValues) > -1)
   {
-    double initTime, runTime;
-	Timer timer1;
-	
-	timer1.reset();
-	inference->init();
-    initTime = timer1.time();
-	
-	timer1.reset();
-	
-	  // No inference, just output network
+    inference->init();
+      // No inference, just output network
     if (aoutputNetwork)
     {
       cout << "Writing network to file ..." << endl;
@@ -637,37 +591,16 @@ int main(int argc, char* argv[])
       // Perform inference
     else
     {
-      if (adecisionInfer)
-      {
-        BP* bp = dynamic_cast<BP*>(inference);
-        if (bp) bp->runDecisionBP();
-      }
-      else
-      {
-        inference->infer();
-      }
-
-      runTime = timer1.time();
-      cout<<"Time-Results: Init "<<initTime<<" Run "<<runTime<<" Total "<<(initTime+runTime)<<endl;
-	
-	
+      inference->infer();
       if (aHybrid)
 	  { 
-        printResults(queryFile, queryPredsStr, domain, resultsOut, &queries,
+	    printResults(queryFile, queryPredsStr, domain, resultsOut, &queries,
                      inference, inference->getHState());	
 	  }
       else
       {
-        if (adecisionInfer)
-        {
-          BP* bp = dynamic_cast<BP*>(inference);
-          if (bp) bp->printDecisionResults(resultsOut);          
-        }
-        else
-        {
-	      printResults(queryFile, queryPredsStr, domain, resultsOut, &queries,
-                       inference, inference->getState());
-        }
+	    printResults(queryFile, queryPredsStr, domain, resultsOut, &queries,
+                     inference, inference->getState());
       }
     }
   }

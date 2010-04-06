@@ -69,14 +69,6 @@
 /*****************************************************************************/
 // Functions for class Factor
 /*****************************************************************************/
- 
-bool Factor::isApproxNetwork__ = false;
-     
-void Factor::setIsApproxNetwork(bool val)
-{
-  isApproxNetwork__ = val;
-}
-
 
 //the contribution of the factor itself
 void Factor::initFactorMesssages()
@@ -113,132 +105,104 @@ void Factor::initFactorMesssages()
   }
 }
 
-   
-    //find the outgoing message for the given inpPredIndex
-    double* Factor::multiplyMessagesAndSumOut(int inpPredIndex) {
-             //cout<<"Doing for pred "<<inpPredIndex<<endl;
-             int numPreds = clause_->getNumPredicates();
-             int stateCnt = (int)pow(2.0,numPreds);
-             double * prodMsgs = new double[stateCnt];
+  //find the outgoing message for the given inpPredIndex
+double* Factor::multiplyMessagesAndSumOut(int inpPredIndex)
+{
+  int numPreds = clause_->getNumPredicates();
+  int stateCnt = (int)pow(2.0, numPreds);
+  double * prodMsgs = new double[stateCnt];
              
-             Node *node;
+  Node *node;
+  double *gndNodeCnts = new double[numPreds];
 
-			 double *gndNodeCnts = NULL;
-
-			 /* This is done to handle the case when BP is run
-             * on supernodes/superfeatures which have not yet
-             * reached an equilibrium state */
-             isApproxNetwork__ = false;
-			 if(isApproxNetwork__) {
-			  gndNodeCnts = new double[numPreds];
-              for(int predno=0;predno<numPreds;predno++)
-                  gndNodeCnts[predno] = 0;
+  // This is done to handle the case when BP is run
+  // on supernodes/superfeatures which have not yet
+  // reached an equilibrium state
+  for (int predno = 0; predno < numPreds; predno++)
+    gndNodeCnts[predno] = 0;
              
-              for(int lno=0;lno<links_->size();lno++) {
-                  int predIndex = (*links_)[lno]->getPredIndex();
-                  node = (*links_)[lno]->getNode();
-                  gndNodeCnts[predIndex] += node->getGroundNodeCount();
-              }
-			 }
+  for (int lno = 0; lno < links_->size(); lno++)
+  {
+    int predIndex = (*links_)[lno]->getPredIndex();
+    node = (*links_)[lno]->getNode();
+    gndNodeCnts[predIndex] += node->getGroundNodeCount();
+  }
 
-             //initialize the product
-             for(int state=0;state<stateCnt;state++)
-                  prodMsgs[state] = factorMsgs_[state];
+    //initialize the product
+  for (int state = 0; state < stateCnt; state++)
+    prodMsgs[state] = factorMsgs_[state];
 
-             if(!action_)
-             {
-             for(int lno=0;lno<links_->size();lno++) {
-                  int predIndex = (*links_)[lno]->getPredIndex();
-                  if(predIndex == inpPredIndex)
-                       continue;
-                  
-                  node = (*links_)[lno]->getNode();
-                  double wt;
+  for (int lno = 0; lno < links_->size(); lno++)
+  {
+    int predIndex = (*links_)[lno]->getPredIndex();
+    if (predIndex == inpPredIndex)
+      continue;
 
-				  //wt must be equal to 1 in equilibrium. This step 
-                  //averages (weighted) out the messages from various 
-                  //supernodes (at this predIndex position).
-				  
-				  if(isApproxNetwork__) {
-				   assert(gndNodeCnts[predIndex] != 0);
-                   wt = node->getGroundNodeCount()/gndNodeCnts[predIndex];
-				  } else { 
-				   wt = 1; 
-				  }
-                  
-				  for(int state=0;state<stateCnt;state++) {
-                      bool predBit = state & (1<<predIndex);
-                      if(predBit) {
-                            prodMsgs[state] += (*msgsArr_)[lno][1]*wt;
-                      } else
-                            prodMsgs[state] += (*msgsArr_)[lno][0]*wt;
-                 }
-             }
-             }
+    node = (*links_)[lno]->getNode();
+      //wt must be equal to 1 in equilibrium. This step 
+      //averages (weighted) out the messages from various 
+      //supernodes (at this predIndex position).
+    assert(gndNodeCnts[predIndex] != 0);
+      //MS: Ground: should be 1, super: should be # of ground clauses in super clause
+    double cnt = node->getGroundNodeCount()/gndNodeCnts[predIndex];
+    //double cnt = 1;
+    //if (superClause_)
+    //  cnt = superClause_->getNumTuplesIncludingImplicit();
+
+    for (int state = 0; state < stateCnt; state++)
+    {
+      bool predBit = state & (1<<predIndex);
+      if (predBit)
+        prodMsgs[state] += (*msgsArr_)[lno][1]*cnt;
+      else
+        prodMsgs[state] += (*msgsArr_)[lno][0]*cnt;
+//cout << state << " state " << predBit << " " << prodMsgs[state] << endl;
+    }
+  }
+
+    //caller is responsible for deleting it
+  double *outMsgs = new double[2];    
+  double maxMsgs[2];
+  maxMsgs[0] = maxMsgs[1] = 0;
+  bool firstTime[2];
+  firstTime[0] = firstTime[1] = true;
              
-             /*
-             for(int state=0;state<stateCnt;state++) {
-                  cout<<"ProdMsgs["<<state<<"] = "<<prodMsgs[state]<<endl;
-             }*/
-
-             //caller is responsible for deleting it
-             double *outMsgs = new double[2];    
-             double maxMsgs[2];
-             maxMsgs[0] = maxMsgs[1] = 0;
-             bool firstTime[2];
-             firstTime[0] = firstTime[1] = true;
-             
-             //now find the max messages
-             /*
-             for(int state=0;state<stateCnt;state++) {
-                 if(maxMsg < prodMsgs[state]) {
-                          maxMsg = prodMsgs[state];
-                 }
-             }*/
-
-             //now find the max messages 
-             for(int state=0;state<stateCnt;state++) {
-                 bool predBit = state & (1<<inpPredIndex);
-                 if(predBit && (maxMsgs[1] < prodMsgs[state] || firstTime[1])) {
-                           firstTime[1] = false;
-                           maxMsgs[1] = prodMsgs[state];
-                 }
-
-                 if(!predBit && (maxMsgs[0] < prodMsgs[state] || firstTime[0])) {
-                           firstTime[0] = false;
-                           maxMsgs[0] = prodMsgs[state];
-                 }
-             }
-
-             outMsgs[0] = outMsgs[1] = 0;
-             for(int state=0;state<stateCnt;state++) {
-                 bool predBit = state & (1<<inpPredIndex);
-                 /*
-                 double msgDiff = prodMsgs[state] - maxMsg;
-                 if(msgDiff < MINEXP)
-                      msgDiff = MINEXP;
-                  */
-                 if(predBit) 
-                      outMsgs[1] += expl(prodMsgs[state] - maxMsgs[1]);
-                 else
-                      outMsgs[0] += expl(prodMsgs[state] - maxMsgs[0]);
-             }
-             //outMsgs[1] = maxMsgs[1] + logl(outMsgs[1]);
-             //outMsgs[0] = maxMsgs[0] + logl(outMsgs[0]);
-             outMsgs[1] = maxMsgs[1] + logl(outMsgs[1]);
-             outMsgs[0] = maxMsgs[0] + logl(outMsgs[0]);
-             outMsgs[1] = outMsgs[1] - outMsgs[0];
-             outMsgs[0] = 0;
-             //cout<<"maxMsgs[0] = "<<maxMsgs[0]<<", maxMsgs[1] = "<<maxMsgs[1]<<endl;
-             //cout<<"outMsgs[0] = "<<outMsgs[0]<<", outMsgs[1] = "<<outMsgs[1]<<endl;
-             delete [] prodMsgs;
-             if(isApproxNetwork__)
-			  delete [] gndNodeCnts;
-             
-			 return outMsgs;
+    //now find the max messages 
+  for (int state = 0; state < stateCnt; state++)
+  {
+    bool predBit = state & (1<<inpPredIndex);
+    if (predBit && (maxMsgs[1] < prodMsgs[state] || firstTime[1]))
+    {
+      firstTime[1] = false;
+      maxMsgs[1] = prodMsgs[state];
     }
 
-   //send Message on all the links
+    if (!predBit && (maxMsgs[0] < prodMsgs[state] || firstTime[0]))
+    {
+      firstTime[0] = false;
+      maxMsgs[0] = prodMsgs[state];
+    }
+  }
+
+  outMsgs[0] = outMsgs[1] = 0;
+  for (int state = 0; state < stateCnt; state++)
+  {
+    bool predBit = state & (1<<inpPredIndex);
+    if (predBit) 
+      outMsgs[1] += expl(prodMsgs[state] - maxMsgs[1]);
+    else
+      outMsgs[0] += expl(prodMsgs[state] - maxMsgs[0]);
+  }
+  outMsgs[1] = maxMsgs[1] + logl(outMsgs[1]);
+  outMsgs[0] = maxMsgs[0] + logl(outMsgs[0]);
+  outMsgs[1] = outMsgs[1] - outMsgs[0];
+  outMsgs[0] = 0;
+  delete [] prodMsgs;
+  delete [] gndNodeCnts;
+  return outMsgs;
+}
+
+  //send Message on all the links
 void Factor::sendMessage()
 {
   double *outMsgs = NULL;
@@ -273,79 +237,10 @@ void Factor::moveToNextStep()
     for (int i = 0; i < 2; i++)
     {
       msgs[i] = nextMsgs[i];
-        // CHECK: commented out in dt
       nextMsgs[i] = 0;
     }
   }
 }
-
-void Factor::tagNeighborsSendReceive(set<Factor*> &sendFactors,
-                                     set<Factor*> &receiveFactors,
-                                     set<Node*> &sendNodes,
-                                     set<Node*> &receiveNodes)
-{
-  //if(taggedSend_)
-  //  return;
-  //taggedSend_ = true;
-
-  Node* node;
-  for (int lindex = 0; lindex < links_->size(); lindex++)
-  {
-    node = (*links_)[lindex]->getNode();
-    sendNodes.insert(node);
-    receiveNodes.insert(node);
-    node->tagNeighborsSend(sendFactors, receiveFactors, receiveNodes);
-  }
-}
-
-void Factor::tagNeighborsSendReceive(list<Factor*> &sendFactors,
-                                     list<Factor*> &receiveFactors,
-                                     list<Node*> &sendNodes,
-                                     list<Node*> &receiveNodes)
-{
-  //if(taggedSend_)
-  //  return;
-  //taggedSend_ = true;
-
-  Node* node;
-  for (int lindex = 0; lindex < links_->size(); lindex++)
-  {
-    node = (*links_)[lindex]->getNode();
-    sendNodes.push_back(node);
-    receiveNodes.push_back(node);
-    node->tagNeighborsSend(sendFactors, receiveFactors, receiveNodes);
-  }
-}
-
-void Factor::tagNeighborsReceive(set<Node*> &receiveNodes)
-{
-  //if(taggedReceive_)
-  //  return;
-  //taggedReceive_ = true;
-
-  Node* node;
-  for (int lindex = 0; lindex < links_->size(); lindex++)
-  {
-    node = (*links_)[lindex]->getNode();
-    receiveNodes.insert(node);
-  }
-}
-
-void Factor::tagNeighborsReceive(list<Node*> &receiveNodes)
-{
-  //if(taggedReceive_)
-  //  return;
-  //taggedReceive_ = true;
-
-  Node* node;
-  for (int lindex = 0; lindex < links_->size(); lindex++)
-  {
-    node = (*links_)[lindex]->getNode();
-    receiveNodes.push_back(node);
-  }
-}
-
-
 
 /**
  * Prints the factor as its variables separated by "/".

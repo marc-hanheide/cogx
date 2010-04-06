@@ -449,8 +449,7 @@ class LBFGSB
 
 	 return pl.ComputePlValue();
   }
-
-  double getValueAndGradient(double* g, double* wts)
+  double getValueAndGradient(double* const & g, const double* const & wts)
   {
     return (pll_->getValueAndGradient(g+1, wts+1, numWts_));
   }

@@ -2,11 +2,11 @@
  * All of the documentation and software included in the
  * Alchemy Software is copyrighted by Stanley Kok, Parag
  * Singla, Matthew Richardson, Pedro Domingos, Marc
- * Sumner, Hoifung Poon, Daniel Lowd, and Jue Wang.
+ * Sumner, Hoifung Poon, and Daniel Lowd.
  * 
- * Copyright [2004-09] Stanley Kok, Parag Singla, Matthew
+ * Copyright [2004-08] Stanley Kok, Parag Singla, Matthew
  * Richardson, Pedro Domingos, Marc Sumner, Hoifung
- * Poon, Daniel Lowd, and Jue Wang. All rights reserved.
+ * Poon, and Daniel Lowd. All rights reserved.
  * 
  * Contact: Pedro Domingos, University of Washington
  * (pedrod@cs.washington.edu).
@@ -29,9 +29,8 @@
  * acknowledgment: "This product includes software
  * developed by Stanley Kok, Parag Singla, Matthew
  * Richardson, Pedro Domingos, Marc Sumner, Hoifung
- * Poon, Daniel Lowd, and Jue Wang in the Department of
- * Computer Science and Engineering at the University of
- * Washington".
+ * Poon, and Daniel Lowd in the Department of Computer Science and
+ * Engineering at the University of Washington".
  * 
  * 4. Your publications acknowledge the use or
  * contribution made by the Software to your research
@@ -41,7 +40,7 @@
  * Statistical Relational AI", Technical Report,
  * Department of Computer Science and Engineering,
  * University of Washington, Seattle, WA.
- * http://alchemy.cs.washington.edu.
+ * http://www.cs.washington.edu/ai/alchemy.
  * 
  * 5. Neither the name of the University of Washington nor
  * the names of its contributors may be used to endorse or
@@ -67,8 +66,6 @@
 #ifndef BPPARAMS_H_
 #define BPPARAMS_H_
 
-#include "inferutil.h"
-
 /**
  * This struct holds parameters for the belief propagation algorithm.
  */
@@ -80,10 +77,6 @@ struct BPParams
   int maxSeconds;
     // Indicates if lifted inference will be run
   bool lifted;
-    //use the hypercube representation
-  bool useHC;
-    //use the constrained hypercube representation
-  bool useCT;
     // Maximum difference between probabilities must be less than this
     // in order to converge
   double convergenceThresh;
@@ -93,14 +86,7 @@ struct BPParams
   bool implicitRep;
     // No inference is run, rather the factor graph is built
   bool outputNetwork;
-    //how should hypercubes be created
-  HyperCubeCreateType hcCreateType;
-    //amount of noise tolerated during hypercube creation
-  double hcCreateNoise;
-    //number of iterations of LNC to be performed
-  int lncIter;
-    //list of predicates for which hypercubes should not be created
-  string noHCPredsStr;
+  
 };
 
-#endif /*BPPARAMS_H_*/
+#endif /*MCMCPARAMS_H_*/
