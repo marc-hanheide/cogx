@@ -16,7 +16,7 @@ import java.util.Vector;
 import NavData.*;
 
 import celmarchitecture.global.GlobalSettings;
-import celm.autogen.CELM_EventLocation;
+import celm.autogen.CELEventLocation;
 import locationConversion.autogen.*;
 
 import elm.event.EventLocation;
@@ -37,7 +37,7 @@ public class LocationConverter extends PrivilegedManagedProcess {
 
     // more specific initialisation?
     protected EventLocationFactory elFactory      = new EventLocationFactory();
-    protected RobotPose            lastPose       = null;
+    protected RobotPose2d            lastPose       = null;
     protected NavGraph             lastNavGraph   = null;
 
 
@@ -74,11 +74,11 @@ public class LocationConverter extends PrivilegedManagedProcess {
 
 	    
 	    addChangeFilter(ChangeFilterFactory.
-			    createGlobalTypeFilter(RobotPose.class, 
+			    createGlobalTypeFilter(RobotPose2d.class, 
 						   WorkingMemoryOperation.ADD), 
 			    wmcrProcessAddOverwriteEvent);
 	    addChangeFilter(ChangeFilterFactory.
-			    createGlobalTypeFilter(RobotPose.class, 
+			    createGlobalTypeFilter(RobotPose2d.class, 
 						   WorkingMemoryOperation.OVERWRITE), 
 			    wmcrProcessAddOverwriteEvent);
 
@@ -129,26 +129,26 @@ public class LocationConverter extends PrivilegedManagedProcess {
 
         try {
 
-	    CASTData<?> wme = getWorkingMemoryEntry(_wmc.m_address);
+	    CASTData<?> wme = getWorkingMemoryEntry(_wmc.address);
 	    
 	    Object data = wme.getData();
 	    
-	    if (data instanceof RobotPose) {
-		lastPose = (RobotPose) data;
+	    if (data instanceof RobotPose2d) {
+		lastPose = (RobotPose2d) data;
 	    }
 	    else if (data instanceof NavGraph) {
 		lastNavGraph = (NavGraph) data;
 	    }
 	    else if (data instanceof ConvertPosition) {
 		ConvertPosition cp = (ConvertPosition) data;
-		String bufPosString = bufferPositionString(cp.m_x,
-							   cp.m_y,
-							   cp.m_bufferDistance);
-		CELM_EventLocation location = new CELM_EventLocation(bufPosString);
-		overwriteWorkingMemory(_wmc.m_address, 
-				       new ConvertPosition(cp.m_x,
-							   cp.m_y,
-							   cp.m_bufferDistance,
+		String bufPosString = bufferPositionString(cp.x,
+							   cp.y,
+							   cp.bufferDistance);
+		CELEventLocation location = new CELEventLocation(bufPosString);
+		overwriteWorkingMemory(_wmc.address, 
+				       new ConvertPosition(cp.x,
+							   cp.y,
+							   cp.bufferDistance,
 							   location));
 	    }
 	    else if (data instanceof ConvertHere) {
@@ -156,19 +156,19 @@ public class LocationConverter extends PrivilegedManagedProcess {
 		
 		String bufPosString;
 		if (lastPose != null)
-		    bufPosString = bufferPositionString(lastPose.m_x,
-							lastPose.m_y,
-							ch.m_bufferDistance);
+		    bufPosString = bufferPositionString(lastPose.x,
+							lastPose.y,
+							ch.bufferDistance);
 		else {
-		    log("warning: did not receive any RobotPose yet, " + 
+		    log("warning: did not receive any RobotPose2d yet, " + 
 			"so I assume we are still at (0, 0)"); 
 		    bufPosString = bufferPositionString(0.0,
 							0.0,
-							ch.m_bufferDistance);
+							ch.bufferDistance);
 		}
-		CELM_EventLocation location = new CELM_EventLocation(bufPosString);
-		overwriteWorkingMemory(_wmc.m_address, 
-				       new ConvertHere(ch.m_bufferDistance,
+		CELEventLocation location = new CELEventLocation(bufPosString);
+		overwriteWorkingMemory(_wmc.address, 
+				       new ConvertHere(ch.bufferDistance,
 						       location));
 	    }
 	    else if (data instanceof ConvertArea) {
@@ -177,11 +177,11 @@ public class LocationConverter extends PrivilegedManagedProcess {
 		// System.err.println("\n\n\nSorry, ConvertArea is not implemented yet!!!\n\n\n");
 		ConvertArea ca = (ConvertArea) data;
 		
-		CELM_EventLocation location = 
-		    new CELM_EventLocation(approximateArea(ca.m_areaID));
+		CELEventLocation location = 
+		    new CELEventLocation(approximateArea(ca.areaID));
 
-		overwriteWorkingMemory(_wmc.m_address, 
-				       new ConvertArea(ca.m_areaID,
+		overwriteWorkingMemory(_wmc.address, 
+				       new ConvertArea(ca.areaID,
 						       location));
 		
 	    }
@@ -212,35 +212,35 @@ public class LocationConverter extends PrivilegedManagedProcess {
 	// FOR NOW THIS CODE IGNORES GATEWAY NODES WHICH ARE NOT MARKED AS
 	// BELONGING TO THAT AREA!!!
 
-	for (FNode n : lastNavGraph.m_FNodes)
-	    if (n.m_areaID == areaID) {
-		if (n.m_gateway == 1) {
+	for (FNode n : lastNavGraph.FNodes)
+	    if (n.areaID == areaID) {
+		if (n.gateway == 1) {
 
 		    // WARNING: THIS CODE IS UNTESTED!!!
 
 		    double coordinates[] = new double[2];
 
 		    // add one side of the doorframe
-		    coordinates[0] = n.m_x + n.m_width * 0.5 * Math.sin(n.m_theta);
-		    coordinates[1] = n.m_y + n.m_width * 0.5 * Math.cos(n.m_theta);
+		    coordinates[0] = n.x + n.width * 0.5 * Math.sin(n.theta);
+		    coordinates[1] = n.y + n.width * 0.5 * Math.cos(n.theta);
 		    locations.add(elFactory.fromPoint(coordinates, gatewayBuffer));
 
 		    // add the other side of the doorframe
-		    coordinates[0] = n.m_x - n.m_width * 0.5 * Math.sin(n.m_theta);
-		    coordinates[1] = n.m_y - n.m_width * 0.5 * Math.cos(n.m_theta);
+		    coordinates[0] = n.x - n.width * 0.5 * Math.sin(n.theta);
+		    coordinates[1] = n.y - n.width * 0.5 * Math.cos(n.theta);
 		    locations.add(elFactory.fromPoint(coordinates, gatewayBuffer));
 
 		    // add the gateway node position itself 
 		    // but only with the usual atomic buffer
-		    coordinates[0] = n.m_x;
-		    coordinates[1] = n.m_y;
+		    coordinates[0] = n.x;
+		    coordinates[1] = n.y;
 		    locations.add(elFactory.fromPoint(coordinates, 
 						      GlobalSettings.defaultAtomicBuffer));
 		}
 		else {
 		    double coordinates[] = new double[2];
-		    coordinates[0] = n.m_x;
-		    coordinates[1] = n.m_y;
+		    coordinates[0] = n.x;
+		    coordinates[1] = n.y;
 		    locations.add(elFactory.fromPoint(coordinates, fNodeBuffer));
 		}
 	    }

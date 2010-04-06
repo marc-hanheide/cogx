@@ -19,7 +19,7 @@ import elm.event.EventLocationFactory;
 import elm.event.EventSpecificFeatures;
 import elm.event.EventTemplate;
 import elm.event.EventType;
-import elm.event.PhysicalEntityID;
+// import elm.event.PhysicalEntityID;
 import elm.event.WKTParseException;
 
 /**
@@ -40,7 +40,7 @@ public class EventConverter {
 				.toCEventTime(e.getTime()), new CELMEventLocation(e
 				.getLocation().getWKTString()), e.isApexEvent(), e.getDegree(),
 				eventIDVectorToLongArray(e.getSubEventIDs()),
-				physicalEntityIDVectorToStringArray(e.getPhysicalEntityIDs()),
+				// physicalEntityIDVectorToStringArray(e.getPhysicalEntityIDs()),
 				toCEventSpecificFeatures(e.getEventSpecificFeatures()),
 				data == null ? new byte[0] : data);
 
@@ -64,8 +64,9 @@ public class EventConverter {
 			CELMEventLocation location) {
 
 		return new CELMCoreEvent(e.eventType, e.eventTime, location, true,
-				Event.degreeAtomic, new long[0], e.physicalEntities,
-				e.eventSpecificFeatures, e.eventSpecificBinaryData);
+					 Event.degreeAtomic, new long[0], 
+					 // e.physicalEntities,
+					 e.eventSpecificFeatures, e.eventSpecificBinaryData);
 	}
 
 	public Event getEvent(CELMCoreEvent cevent) throws WKTParseException {
@@ -78,7 +79,7 @@ public class EventConverter {
 				eventType, EventTimeConverter.toEventTime(cevent.eventTime),
 				location, cevent.eventSpecificBinaryData,
 				longArrayToEventIDVector(cevent.subevents),
-				stringArrayToPhysicalEntityIDVector(cevent.physicalEntities),
+				// stringArrayToPhysicalEntityIDVector(cevent.physicalEntities),
 				toEventSpecificFeatures(cevent.eventSpecificFeatures));
 	}
 
@@ -102,7 +103,7 @@ public class EventConverter {
 				location,
 				cevent.event.eventSpecificBinaryData,
 				longArrayToEventIDVector(cevent.event.subevents),
-				stringArrayToPhysicalEntityIDVector(cevent.event.physicalEntities),
+				// stringArrayToPhysicalEntityIDVector(cevent.event.physicalEntities),
 				toEventSpecificFeatures(cevent.event.eventSpecificFeatures));
 	}
 
@@ -143,8 +144,8 @@ public class EventConverter {
 		cue.supereventMatchMode = getMatchMode(template.superEventMatchMode);
 		cue.superevents = eventIDVectorToLongArray(template.superEventIDs);
 
-		cue.physicalEntityMatchMode = getMatchMode(template.physicalEntityMatchMode);
-		cue.physicalEntities = physicalEntityIDVectorToStringArray(template.physicalEntityIDs);
+		// cue.physicalEntityMatchMode = getMatchMode(template.physicalEntityMatchMode);
+		// cue.physicalEntities = physicalEntityIDVectorToStringArray(template.physicalEntityIDs);
 
 		cue.timeMatchMode = getMatchMode(template.timeMatchMode);
 		cue.eventTime = EventTimeConverter.toCEventTime(template.time);
@@ -200,8 +201,8 @@ public class EventConverter {
 		template.superEventIDs = longArrayToEventIDVector(cue.superevents);
 		template.superEventMatchMode = getMatchMode(cue.supereventMatchMode);
 
-		template.physicalEntityIDs = stringArrayToPhysicalEntityIDVector(cue.physicalEntities);
-		template.physicalEntityMatchMode = getMatchMode(cue.supereventMatchMode);
+		// template.physicalEntityIDs = stringArrayToPhysicalEntityIDVector(cue.physicalEntities);
+		// template.physicalEntityMatchMode = getMatchMode(cue.supereventMatchMode);
 
 		template.time = EventTimeConverter.toEventTime(cue.eventTime);
 		template.timeMatchMode = getMatchMode(cue.timeMatchMode);
@@ -273,6 +274,7 @@ public class EventConverter {
 		return ev;
 	}
 
+	/*
 	public static Vector<PhysicalEntityID> stringArrayToPhysicalEntityIDVector(
 			String[] s) {
 
@@ -286,6 +288,7 @@ public class EventConverter {
 
 		return ov;
 	}
+	*/
 
 	public static long[] eventIDVectorToLongArray(Vector<EventID> ev) {
 
@@ -299,6 +302,7 @@ public class EventConverter {
 		return l;
 	}
 
+	/*
 	public static String[] physicalEntityIDVectorToStringArray(
 			Vector<PhysicalEntityID> ev) {
 
@@ -311,6 +315,7 @@ public class EventConverter {
 
 		return s;
 	}
+	*/
 
 	public static CELMEventSpecificFeaturesEntry[] toCEventSpecificFeatures(
 			EventSpecificFeatures data) {

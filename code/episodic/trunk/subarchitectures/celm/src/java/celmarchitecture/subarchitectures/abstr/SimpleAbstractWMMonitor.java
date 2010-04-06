@@ -1,7 +1,7 @@
 package celmarchitecture.subarchitectures.abstr;
 
 import java.util.Date;
-import java.util.Properties;
+import java.util.Map;
 
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -37,7 +37,7 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 		super();
 	}
 
-	public void configure(Properties config) {
+	protected void configure(Map<String, String> config) {
 		saNames.configure(config);
 	}
 
@@ -105,9 +105,12 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 	 */
 	protected void addPartialEvent(String eventType,
 			byte[] eventSpecificBinaryData, Date startTime, Date endTime,
-			String[] physicalEntityIDs, EventSpecificFeatures data)
+			// String[] physicalEntityIDs, 
+			EventSpecificFeatures data)
 			throws SubarchitectureComponentException {
-
+			
+		// String[] physicalEntityIDs = null; // deactivated for now, to be removed with the next refactoring	
+			
 		CELMEventTime eventTime;
 		if (startTime == null || endTime == null) {
 			long curTime = System.currentTimeMillis();
@@ -118,7 +121,7 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 		CELMPartialEventToStore partialCEvent = new CELMPartialEventToStore(
 				eventType,
 				eventTime,
-				(physicalEntityIDs == null ? new String[0] : physicalEntityIDs),
+				// (physicalEntityIDs == null ? new String[0] : physicalEntityIDs),
 				EventConverter.toCEventSpecificFeatures(data),
 				(eventSpecificBinaryData == null ? new byte[0]
 						: eventSpecificBinaryData));

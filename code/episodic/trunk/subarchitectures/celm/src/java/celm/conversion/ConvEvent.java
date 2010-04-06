@@ -26,9 +26,18 @@ class ConvEvent extends Event {
 			EventLocation location,
 			byte[] data,
 			Vector<EventID> subEventIDs,
-			Vector<PhysicalEntityID> physicalEntityIDs,
+			// Vector<PhysicalEntityID> physicalEntityIDs,
 			EventSpecificFeatures eventSpecificFeatures) {
-	super(eventID, apex, degree, eventType, time, location, data, subEventIDs, physicalEntityIDs, eventSpecificFeatures);
+	super(eventID, 
+	      apex, 
+	      degree, 
+	      eventType, 
+	      time, 
+	      location, 
+	      data, 
+	      subEventIDs, 
+	      null, // physicalEntityIDs, 
+	      eventSpecificFeatures);
 	
     }
 

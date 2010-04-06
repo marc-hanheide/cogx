@@ -14,13 +14,13 @@ SUBARCHITECTURE celm.sa
 #JAVA WM celmarchitecture.subarchitectures.elmwriter.ElmWriterWorkingMemory
 JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
-JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --server localhost --db elm --user elm --passwd somepw
+JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --server localhost --db elm --user elm --passwd lF8AxP4
 JAVA MG LocationMonitor celmarchitecture.subarchitectures.elmwriter.LocationMonitor
 JAVA MG EventMonitor celmarchitecture.subarchitectures.elmwriter.EventMonitor
 #
 JAVA MG EventRecognizer celmarchitecture.subarchitectures.recognition.Recognizer
 #
-JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --server localhost --db elm --user elm --passwd somepw
+JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --server localhost --db elm --user elm --passwd lF8AxP4
 #
 # 
 #JAVA MG EventSimulator celmarchitecture.subarchitectures.simulator.Simulator

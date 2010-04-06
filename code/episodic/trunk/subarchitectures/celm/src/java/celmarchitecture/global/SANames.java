@@ -1,6 +1,6 @@
 package celmarchitecture.global;
 
-import java.util.Properties;
+import java.util.Map;
 
 /**
  *  If C-ELM processes are run across several subarchitectures they need
@@ -23,22 +23,22 @@ public class SANames {
     public String simulationSA                         = "celm.sa"; // "simulator.sa";
     public String locationConvSA                       = "celm.sa"; // "locationConversion.sa";
     
-    public void configure(Properties config) {
+    public void configure(Map<String, String> config) {
 	
 	if (config.containsKey(configKeyWriterSA)) 
-	    writerSA = config.getProperty(configKeyWriterSA);
+	    writerSA = config.get(configKeyWriterSA);
 	
 	if (config.containsKey(configKeyRecognitionSA)) 
-	    recognitionSA = config.getProperty(configKeyRecognitionSA);
+	    recognitionSA = config.get(configKeyRecognitionSA);
 	
 	if (config.containsKey(configKeyRecollectionSA)) 
-	    recollectionSA = config.getProperty(configKeyRecollectionSA);
+	    recollectionSA = config.get(configKeyRecollectionSA);
 	
 	if (config.containsKey(configKeySimulationSA)) 
-	    simulationSA = config.getProperty(configKeySimulationSA);
+	    simulationSA = config.get(configKeySimulationSA);
 	
 	if (config.containsKey(configKeyLocationConvSA)) 
-	    locationConvSA = config.getProperty(configKeyLocationConvSA);    
+	    locationConvSA = config.get(configKeyLocationConvSA);    
 	
     }
 }

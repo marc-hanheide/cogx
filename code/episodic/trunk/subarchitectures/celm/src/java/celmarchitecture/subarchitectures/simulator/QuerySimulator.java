@@ -1,6 +1,6 @@
 package celmarchitecture.subarchitectures.simulator;
 
-import java.util.Properties;
+import java.util.Map;
 
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -40,7 +40,7 @@ public class QuerySimulator extends ManagedComponent {
 		super();
 	}
 
-	public void configure(Properties config) {
+	protected void configure(Map<String, String> config) {
 		saNames.configure(config);
 	}
 

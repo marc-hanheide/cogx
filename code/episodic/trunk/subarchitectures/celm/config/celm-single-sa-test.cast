@@ -14,7 +14,7 @@ SUBARCHITECTURE celm.sa
 #JAVA WM celmarchitecture.subarchitectures.elmwriter.ElmWriterWorkingMemory
 JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
-JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --server localhost --db elm --user elm --passwd elmpw
+JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --server localhost --db elm --user elm --passwd lF8AxP4
 JAVA MG LocationMonitor celmarchitecture.subarchitectures.elmwriter.LocationMonitor
 #JAVA MG EventMonitor celmarchitecture.subarchitectures.elmwriter.EventMonitor
 #
