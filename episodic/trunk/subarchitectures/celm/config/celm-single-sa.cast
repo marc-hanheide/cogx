@@ -26,12 +26,8 @@ JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollec
 #JAVA MG EventSimulator celmarchitecture.subarchitectures.simulator.Simulator
 #JAVA MG QuerySimulator celmarchitecture.subarchitectures.simulator.QuerySimulator
 #
-JAVA MG NavMonitor celmarchitecture.subarchitectures.monitors.NavMonitor 
-JAVA MG ComaMonitor celmarchitecture.subarchitectures.monitors.ComaMonitor 
-JAVA MG ComsysMonitor celmarchitecture.subarchitectures.monitors.ComsysMonitor 
-JAVA MG PlanningMonitor celmarchitecture.subarchitectures.monitors.PlanningMonitor
-JAVA MG VisionMonitor celmarchitecture.subarchitectures.monitors.VisionMonitor 
-JAVA MG ObjectMonitor celmarchitecture.subarchitectures.monitors.ObjectMonitor 
+#JAVA MG NavMonitor celmarchitecture.subarchitectures.monitors.NavMonitor 
+JAVA MG PBMonitor celmarchitecture.subarchitectures.monitors.PBMonitor --subscribe autogen.Planner.Action,beliefmodels.adl.Belief,comadata.ComaRoom,SpatialProperties.ConnectivityPathProperty,motivation.slice.ExploreMotive,SpatialProperties.GatewayPlaceProperty,motivation.slice.Motive,binder.autogen.core.PerceivedEntity,SpatialData.Place,SpatialProperties.PlaceProperty,autogen.Planner.PlanningTask,binder.autogen.core.Proxy,binder.autogen.specialentities.RelationProxy #,motivation.util.castextensions.WMLock # Unlike the others, WMLock does not seem to be derived from IceObject. This causes problems if used here.
 #
-JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter
+#JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter
 
