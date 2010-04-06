@@ -26,16 +26,17 @@ private:
 	float m_width;
 	float m_height;
 	int m_txtSize;
+	int m_txtHeight;
 	int m_maxStrLen;
 	
-	
+	tgPose m_pose;
 	tgFont* m_font;
 	tgTexture* m_texture;
 	std::vector<std::string> m_text;
 	std::string m_fontfilename;
 
 public:
-	tgPose m_pose;
+	
 	
 	/** @brief Constructor of tgLabel
 	*	@param w width of label in pixels
@@ -46,7 +47,8 @@ public:
 	~tgLabel();
 	
 	void SetFont(const char* ttf_filename){ m_fontfilename = std::string(ttf_filename); }
-	void AddText(const char* text);
+	void SetPose(tgPose pose){ m_pose = pose; }
+	void AddText(const char* text, int size=20);
 	void CreateLabel();
 	void Clear();
 	void Draw();

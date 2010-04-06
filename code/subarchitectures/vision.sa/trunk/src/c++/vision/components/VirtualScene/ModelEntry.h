@@ -31,11 +31,11 @@ public:
 		textured = false;
 	}
 	
-	ModelEntry(const char* fontfilename){
+	ModelEntry(const char* fontfile){
 		valid = false;
 		bfc = true;
 		textured = false;
-		label = TomGine::tgLabel(fontfilename);
+		label = TomGine::tgLabel(fontfile);
 	}
 
 };

@@ -24,6 +24,18 @@
 namespace cast
 {
 
+enum VirtualSceneCmd{ 
+	ADDVISUALOBJECT, OVERWRITEVISUALOBJECT, DELETEVISUALOBJECT,
+	ADDCONVEXHULL, OVERWRITECONVEXHULL, DELETECONVEXHULL,
+	ADDSOI, OVERWRITESOI, DELETESOI
+};
+
+struct VirtualSceneChange{
+	cdl::WorkingMemoryChange wmc;
+	VirtualSceneCmd cmd;
+};
+
+
 class VirtualScene : public VideoClient, public ManagedComponent
 {
 private:
@@ -38,10 +50,11 @@ private:
   TomGine::tgFont* m_font;
   std::string m_fontfilename;
   std::vector<TomGine::tgEvent> m_eventlist;
+  std::vector<VirtualSceneChange> m_vsc;
   
   // Models
   ModelEntry m_camModel;
-  std::vector<ModelEntry> m_VisualObjectList;
+  std::vector<ModelEntry*> m_VisualObjectList;
   std::vector<ModelEntry> m_ConvexHullList;
   std::vector<ModelEntry> m_SOIList;
   
@@ -69,6 +82,9 @@ private:
   // Functions with GL commands allowed
   void initScene(const Video::Image &image);
   void updateCameraViews();
+  void updateGL();
+  void applyVirtualSceneCmd();
+  
   void drawCamera();
   void drawVisualObjects();
   void drawConvexHulls();

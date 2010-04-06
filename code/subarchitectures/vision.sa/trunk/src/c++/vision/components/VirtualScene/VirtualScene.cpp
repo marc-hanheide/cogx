@@ -41,59 +41,23 @@ VirtualScene::~VirtualScene(){
 
 // *** Working Memory Listeners ***
 void VirtualScene::addVisualObject(const cdl::WorkingMemoryChange & _wmc){
-	log("receiving VisualObject");
-	
-// 	lockComponent();
-	
-	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
-	
-//	for(unsigned i=0; i<obj->model->vertices.size(); i++)
-//		printf("    Got object vertices: %4.3f - %4.3f - %4.3f\n", obj->model->vertices[i].pos.x, obj->model->vertices[i].pos.y, obj->model->vertices[i].pos.z);
-
-// printf("VirtualScene::addVisualObject A\n");
-	ModelEntry newModelEntry(m_fontfilename.c_str());
-// 	newModelEntry.label.AddText(obj->label.c_str());
-
-// printf("VirtualScene::addVisualObject B\n");	
-	if(!convertGeometry2Model(obj->model, newModelEntry.model)){
-		log("  error can not convert VisualObject to virtual scene model");
-		return;
-	}
-// printf("VirtualScene::addVisualObject C\n");
-	// just an example material (should be random to separate objects more easily
-	newModelEntry.model.m_material = getRandomMaterial();
-// printf("VirtualScene::addVisualObject D\n");
-	convertPose2tgPose(obj->pose, newModelEntry.model.m_pose);
-// 	newModelEntry.label.m_pose = newModelEntry.model.m_pose;
-// 	newModelEntry.obj = obj;
-// printf("VirtualScene::addVisualObject E\n");
-	newModelEntry.castWMA = _wmc.address;
-// printf("VirtualScene::addVisualObject F\n");
-	m_VisualObjectList.push_back(newModelEntry);
-// printf("VirtualScene::addVisualObject G\n");
-	addVectorToCenterOfRotation(m_cor, m_cor_num, obj->pose.pos);
-	updateCameraViews();
-// printf("VirtualScene::addVisualObject H\n");	
-// 	unlockComponent();
-	log("VisualObject added to Scene: %s - %s", obj->label.c_str(), _wmc.address.id.c_str());
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = ADDVISUALOBJECT;
+	m_vsc.push_back(vsc);
 }
 
 void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
-	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
-	
-	for(int i=0; i<m_VisualObjectList.size(); i++){
-		if(m_VisualObjectList[i].castWMA == _wmc.address){
-			convertPose2tgPose(obj->pose, m_VisualObjectList[i].model.m_pose);
-		}
-	}
-	
-	//log("[VirtualScene::changeofVisualObject] WARNING: function not implemented");
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = OVERWRITEVISUALOBJECT;
+	m_vsc.push_back(vsc);
 }
 
 void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
-	vector<ModelEntry>::iterator it;
+	vector<ModelEntry*>::iterator it;
 	for(it=m_VisualObjectList.begin(); it<m_VisualObjectList.end(); it++){
-		if((*it).castWMA == _wmc.address){
+		if((*it)->castWMA == _wmc.address){
 			m_VisualObjectList.erase(it);
 		}
 	}
@@ -270,6 +234,11 @@ void VirtualScene::runComponent(){
   while(m_running && isRunning())
   {
     if(m_render){
+    
+    	while(m_vsc.size() > 0)
+    		applyVirtualSceneCmd();
+    
+    	updateGL();
     	
     	m_engine->Activate3D();
     	drawCamera();
@@ -286,18 +255,12 @@ void VirtualScene::runComponent(){
       	default:
       		drawVisualObjects();
       		drawConvexHulls();
-      		// Blending object zum Schluss
+      		// Blending objects at the end
       		drawSOIs();
       		break;
       }
       
-      m_engine->Activate2D();
-			char text[32];
-			sprintf(text,"FPS: %.1f", 1.0 / m_timer.Update());
-			m_font->Print(text, 16, 5, 5);
-      m_running = m_engine->Update(m_fTime, m_eventlist);
-      m_wireframe = m_engine->GetWireframeMode();
-      sleepComponent(5);
+			
     
     }else{
 			// * Idle *
@@ -358,6 +321,147 @@ void VirtualScene::updateCameraViews(){
 	m_engine->UpdateCameraViews(cam);
 }
 
+void VirtualScene::updateGL(){
+	
+	m_engine->Activate2D();
+	
+	// Print FPS
+	char text[32];
+	sprintf(text,"FPS: %.1f", 1.0 / m_timer.Update());
+	m_font->Print(text, 16, 5, 5);
+	
+	// Query events from engine
+	m_running = m_engine->Update(m_fTime, m_eventlist);
+	
+	// Get drawing mode from engine
+	m_wireframe = m_engine->GetWireframeMode();
+		
+	sleepComponent(5);
+}
+
+void VirtualScene::applyVirtualSceneCmd(){
+	vector<ModelEntry*>::iterator it;
+	VirtualSceneChange vsc = m_vsc.front();
+	m_vsc.erase(m_vsc.begin());
+	
+	// ADD VISUAL OBJECT
+	if(vsc.cmd == ADDVISUALOBJECT){
+		log("ADDVISUALOBJECT:");
+		VisualObjectPtr obj = getMemoryEntry<VisualObject>(vsc.wmc.address);
+		ModelEntry* newModelEntry = new ModelEntry(m_fontfilename.c_str());
+		convertGeometry2Model(obj->model, newModelEntry->model);
+		newModelEntry->model.m_material = getRandomMaterial();
+		convertPose2tgPose(obj->pose, newModelEntry->model.m_pose);
+		newModelEntry->castWMA = vsc.wmc.address;
+		newModelEntry->label.AddText(obj->label.c_str(), 30);
+		newModelEntry->label.SetPose(newModelEntry->model.m_pose);
+		m_VisualObjectList.push_back(newModelEntry);
+		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->pose.pos);
+		updateCameraViews();
+		log("ADDVISUALOBJECT: ok %s - %s", obj->label.c_str(), vsc.wmc.address.id.c_str());
+
+	// OVERWRITE VISUAL OBJECT
+	}else if(vsc.cmd == OVERWRITEVISUALOBJECT){
+		VisualObjectPtr obj = getMemoryEntry<VisualObject>(vsc.wmc.address);
+		for(int i=0; i<m_VisualObjectList.size(); i++){
+			if(m_VisualObjectList[i]->castWMA == vsc.wmc.address){
+				convertPose2tgPose(obj->pose, m_VisualObjectList[i]->model.m_pose);
+				m_VisualObjectList[i]->label.SetPose(m_VisualObjectList[i]->model.m_pose);
+			}
+		}
+	
+	// DELETE VISUAL OBJECT
+	}else if(vsc.cmd == DELETEVISUALOBJECT){
+		for(it=m_VisualObjectList.begin(); it<m_VisualObjectList.end(); it++){
+			if((*it)->castWMA == vsc.wmc.address){
+				m_VisualObjectList.erase(it);
+			}
+		}
+	}
+
+// // void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
+// 	log("receiving ConvexHull: %s", _wmc.address.id.c_str());
+// 
+// 	if(!m_lock){
+// 		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
+// 		ModelEntry newModelEntry;
+// 		
+// 		// Convert plane to geometry
+// 		if(!convertConvexHullPlane2Model(obj, newModelEntry.model)){
+// 			log("  error can not convert ConvexHullPlane to virtual scene model");
+// 			return;
+// 		}
+// 		// Convert each object to geometry
+// 		for(int i=0; i<obj->Objects.size(); i++){
+// 			if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry.model)){
+// 				log("  error can not convert ConvexHullObject to virtual scene model");
+// 				return;
+// 			}
+// 		}
+// 		
+// 		newModelEntry.model.m_material = getRandomMaterial();
+// 		newModelEntry.castWMA = _wmc.address;
+// 		m_ConvexHullList.push_back(newModelEntry);
+// 		
+// 		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->center.pos);
+// 		m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
+// 		updateCameraViews();
+// 		
+// 		m_lock = true;
+// 	}
+// 
+// 
+// // void VirtualScene::overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc){
+// 
+// 
+// 
+// // void VirtualScene::deleteConvexHull(const cdl::WorkingMemoryChange & _wmc){
+// 	vector<ModelEntry>::iterator it;
+// 	for(it=m_ConvexHullList.begin(); it<m_ConvexHullList.end(); it++){
+// 		if((*it).castWMA == _wmc.address){
+// 			m_ConvexHullList.erase(it);
+// 		}
+// 	}
+// 
+// 
+// // void VirtualScene::addSOI(const cdl::WorkingMemoryChange & _wmc){
+// 	log("receiving SOI: %s", _wmc.address.id.c_str());
+// 	SOIPtr soi = getMemoryEntry<SOI>(_wmc.address);
+// 	cogx::Math::Pose3 pose;
+// 	
+// 	ModelEntry newModelEntry;
+// 	if(!convertSOI2Model(soi, newModelEntry.model, pose.pos)){
+// 		log("  error can not convert ConvexHullObject to virtual scene model");
+// 		return;
+// 	}
+// 	
+// 	cogx::Math::setIdentity(pose.rot);
+// 	convertPose2tgPose(pose, newModelEntry.model.m_pose);
+// 	
+// 	newModelEntry.model.m_material = getRandomMaterial(0.5);
+// 	
+// 	newModelEntry.castWMA = _wmc.address;
+// 	m_SOIList.push_back(newModelEntry);
+// 	
+// 	addVectorToCenterOfRotation(m_cor, m_cor_num, pose.pos);
+// 	m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
+// 
+// 
+// // void VirtualScene::overwriteSOI(const cdl::WorkingMemoryChange & _wmc){
+// 
+// 
+// 
+// // void VirtualScene::deleteSOI(const cdl::WorkingMemoryChange & _wmc){
+// 	vector<ModelEntry>::iterator it;
+// 	for(it=m_SOIList.begin(); it<m_SOIList.end(); it++){
+// 		if((*it).castWMA == _wmc.address){
+// 			m_SOIList.erase(it);
+// 		}
+// 	}
+
+}
+
+// *** Draw functions ***
 void VirtualScene::drawCamera(){
 // 	m_camModel.model.DrawFaces(m_wireframe);
 	m_camModel.model.m_pose.Activate();
@@ -368,9 +472,9 @@ void VirtualScene::drawCamera(){
 
 void VirtualScene::drawVisualObjects(){
 	for(int i=0; i<m_VisualObjectList.size(); i++){
-		m_VisualObjectList[i].model.DrawFaces(!m_wireframe);
-// 		m_VisualObjectList[i].label.Draw();
-		if(m_normals) m_VisualObjectList[i].model.DrawNormals(0.01);
+		m_VisualObjectList[i]->model.DrawFaces(!m_wireframe);
+		m_VisualObjectList[i]->label.Draw();
+		if(m_normals) m_VisualObjectList[i]->model.DrawNormals(0.01);
 	}
 }
 
@@ -393,6 +497,7 @@ void VirtualScene::drawSOIs(){
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 }
+
 
 void VirtualScene::inputControl(){
 	tgEvent event;
