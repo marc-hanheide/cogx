@@ -1436,9 +1436,6 @@ class VariableState
   
     occurence_.growToSize(2*numAtoms + 1);
 
-    IntBoolPairItr itr;
-    IntBoolPair *clauseFrequencies;
-
     for (int i = oldNumClauses; i < numClauses; i++)
     {
       GroundClause* gndClause = (*gndClauses_)[i];
@@ -1447,17 +1444,7 @@ class VariableState
       {
         cout << "New clause " << i << ": ";
         gndClause->print(cout, domain_, &gndPredHashArray_);
-        clauseFrequencies = gndClause->getClauseFrequencies();
-        cout << " from fo clauses" << endl;
-        for (itr = clauseFrequencies->begin();
-             itr != clauseFrequencies->end(); itr++)
-        {
-          int clauseno = itr->first;
-          int frequency = itr->second.first;
-          bool invertWt = itr->second.second;
-          cout << clauseno << " " << frequency << " invertWt " << invertWt
-               << endl;
-        }
+        cout << endl;
       }
 
         // Set thresholds for clause selection
@@ -2835,10 +2822,7 @@ class VariableState
             (*gndClauses_)[gndClauseIndexes[i]]->getNumGroundPredicates() == 1)
         {          
           if (vsdebug)
-          {
-            cout << "Deleting ground clause " << gndClauseIndexes[i] << " ";
-            cout << endl;
-          }
+            cout << "Deleting ground clause " << gndClauseIndexes[i] << endl;
             // Real index is old index adjusted one lower for every element
             // deleted up until now
           delete (*gndClauses_)[gndClauseIndexes[i] - deleted];
@@ -2870,10 +2854,7 @@ class VariableState
             (*gndClauses_)[gndClauseIndexes[i]]->getNumGroundPredicates() == 1)
         {
           if (vsdebug)
-          {
-            cout << "Deleting ground clause " << gndClauseIndexes[i] << " ";
-            cout << endl;
-          }
+            cout << "Deleting ground clause " << gndClauseIndexes[i] << endl;
             // Real index is old index adjusted one lower for every element
             // deleted up until now
           delete (*gndClauses_)[gndClauseIndexes[i] - deleted];

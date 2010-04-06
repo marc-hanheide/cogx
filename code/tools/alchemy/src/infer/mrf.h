@@ -75,6 +75,8 @@
 #include "mln.h"
 #include "groundpredicate.h"
 
+#define MAX_LINE 1000
+
 const bool mrfdebug = false;
 
 ///////////////////////////////////////////////////////////////////////////

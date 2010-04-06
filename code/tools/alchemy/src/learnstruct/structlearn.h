@@ -1126,7 +1126,7 @@ class StructLearn
       {
         Clause* c = (j == 0) ? unitClauses[i] : new Clause(*unitClauses[i]);
         (*mlns_)[j]->appendClause(oss.str(), false, c, priorMean_, false, idx,
-                                  false, false, false, 0.0);
+                                  false, false, false);
         ((MLNClauseInfo*)(*mlns_)[j]->getMLNClauseInfo(idx))->priorMean 
           = priorMean_;
       }
@@ -1260,7 +1260,7 @@ class StructLearn
     c->printWithoutWtWithStrVar(oss, (*domains_)[domainIdx]);
     MLN* mln = (*mlns_)[domainIdx];
     bool ok = mln->appendClause(oss.str(), false, c, c->getWt(), false, idx,
-                                false, false, false, 0.0);
+                                false, false, false);
     if (!ok) { cout << "ERROR: failed to insert " << oss.str() <<" into MLN"
                     << endl; exit(-1); }
     ((MLNClauseInfo*)mln->getMLNClauseInfo(idx))->priorMean = priorMean_;
@@ -2373,7 +2373,7 @@ class StructLearn
           //if cnfClauses[i] is already in MLN, its weights will be correctly set
           //in updateWts() later
         mln->appendClause(ef->formula, true, new Clause(*cnfClauses[i]),
-                          wt, false, idx, false, false, false, 0.0);
+                          wt, false, idx, false, false, false);
         mln->setFormulaPriorMean(ef->formula, priorMean_);
         ((MLNClauseInfo*)mln->getMLNClauseInfo(idx))->priorMean 
           += priorMean_/cnfClauses.size();

@@ -2,11 +2,11 @@
  * All of the documentation and software included in the
  * Alchemy Software is copyrighted by Stanley Kok, Parag
  * Singla, Matthew Richardson, Pedro Domingos, Marc
- * Sumner, Hoifung Poon, Daniel Lowd, and Jue Wang.
+ * Sumner, Hoifung Poon, and Daniel Lowd.
  * 
- * Copyright [2004-09] Stanley Kok, Parag Singla, Matthew
+ * Copyright [2004-07] Stanley Kok, Parag Singla, Matthew
  * Richardson, Pedro Domingos, Marc Sumner, Hoifung
- * Poon, Daniel Lowd, and Jue Wang. All rights reserved.
+ * Poon, and Daniel Lowd. All rights reserved.
  * 
  * Contact: Pedro Domingos, University of Washington
  * (pedrod@cs.washington.edu).
@@ -29,9 +29,8 @@
  * acknowledgment: "This product includes software
  * developed by Stanley Kok, Parag Singla, Matthew
  * Richardson, Pedro Domingos, Marc Sumner, Hoifung
- * Poon, Daniel Lowd, and Jue Wang in the Department of
- * Computer Science and Engineering at the University of
- * Washington".
+ * Poon, and Daniel Lowd in the Department of Computer Science and
+ * Engineering at the University of Washington".
  * 
  * 4. Your publications acknowledge the use or
  * contribution made by the Software to your research
@@ -41,7 +40,7 @@
  * Statistical Relational AI", Technical Report,
  * Department of Computer Science and Engineering,
  * University of Washington, Seattle, WA.
- * http://alchemy.cs.washington.edu.
+ * http://www.cs.washington.edu/ai/alchemy.
  * 
  * 5. Neither the name of the University of Washington nor
  * the names of its contributors may be used to endorse or
@@ -72,7 +71,6 @@
 #include "timer.h"
 #include "indextranslator.h"
 #include "maxwalksat.h"
-#include "bp.h"
 
 const bool dldebug = false;
 const double EPSILON = .00001;
@@ -152,17 +150,14 @@ class DiscriminativeLearner
    * @param preconditionCG Whether or not to use a preconditioner with
    * scaled conjugate gradient
    * @param maxLambda Maximum value of lambda for CG
-   * @param min_ll_change Minimum change in likelihood neede to continue
-   * iterations
    */
   DiscriminativeLearner(const Array<Inference*>& inferences,
                         const StringHashArray& nonEvidPredNames,
                         IndexTranslator* const & idxTrans,
                         const bool& lazyInference, const bool& withEM,
-                        const Array<Inference*>& emInferences,
                         const bool& rescaleGradient, const int& method,
                         const double& lambda, const bool& preconditionCG,
-                        const double& maxLambda, const double& min_ll_change)
+                        const double& maxLambda)
     : domainCnt_(inferences.size()), idxTrans_(idxTrans),
       lazyInference_(lazyInference), rescaleGradient_(rescaleGradient),
       method_(method),
@@ -170,28 +165,18 @@ class DiscriminativeLearner
       // though the two represent *very* different things!
       cg_lambda_(lambda), preconditionCG_(preconditionCG),
       maxBacktracks_(1000), backtrackCount_(0),
-      cg_max_lambda_(maxLambda), min_ll_change_(min_ll_change), withEM_(withEM) 
+      cg_max_lambda_(maxLambda), withEM_(withEM) 
   { 
     cout << endl << "Constructing discriminative learner..." << endl << endl;
 
     inferences_.append(inferences);
-    emInferences_.append(emInferences);
     logOddsPerDomain_.growToSize(domainCnt_);
     clauseCntPerDomain_.growToSize(domainCnt_);
     
     for (int i = 0; i < domainCnt_; i++)
     {
-        // Check if using BP
-      if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-      {
-        clauseCntPerDomain_[i] =
-          bp_->getFactorGraph()->getMLN()->getNumClauses();
-      }
-      else
-      {
-        clauseCntPerDomain_[i] =
-          inferences_[i]->getState()->getMLN()->getNumClauses();
-      }
+      clauseCntPerDomain_[i] =
+        inferences_[i]->getState()->getMLN()->getNumClauses();
       logOddsPerDomain_[i].growToSize(clauseCntPerDomain_[i], 0);
     }
 
@@ -210,39 +195,7 @@ class DiscriminativeLearner
     
       // Initialize the inference / state
     for (int i = 0; i < inferences_.size(); i++)
-    {
-        // Check if using BP
-      if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-      {
-        continue;
-      }
-      else
-      {
-        inferences_[i]->init();
-      }
-    }
-        
-    if (withEM_)
-    {
-        // Initialize the inference / state
-      for (int i = 0; i < emInferences_.size(); i++)
-      {
-        VariableState* state = inferences_[i]->getState();
-        const Domain* domain = state->getDomain();
-        const GroundPredicateHashArray* knePreds = state->getKnePreds();
-        const Array<TruthValue>* knePredValues = state->getKnePredValues();
-
-          // Mark known non-evidence preds as evidence
-        domain->getDB()->setValuesToGivenValues(knePreds, knePredValues);
-        
-        emInferences_[i]->init();
-        
-          // Set non-evidence values to unknown
-        Array<TruthValue> tmpValues;
-        tmpValues.growToSize(knePreds->size());
-        domain->getDB()->setValuesToUnknown(knePreds, &tmpValues);
-      }
-    }
+      inferences_[i]->init();
   }
 
   ~DiscriminativeLearner() 
@@ -251,13 +204,6 @@ class DiscriminativeLearner
     {
       delete[] trainTrueCnts_[i];
       delete[] trainFalseCnts_[i];
-    }
-    if (withEM_)
-    {
-      for (int i = 0; i < emDiffCnts_.size(); i++)
-      {
-        delete[] emDiffCnts_[i];
-      }      
     }
   }
 
@@ -294,17 +240,7 @@ class DiscriminativeLearner
       for (int i = 0; i < domainCnt_; i++)
       {
         assert(clauseCntPerDomain_[i] == clauseCnt);
-        const MLN* mln;
-        
-          // Check if using BP
-        if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-        {
-          mln = bp_->getFactorGraph()->getMLN();
-        }
-        else
-        {
-          mln = inferences_[i]->getState()->getMLN();
-        }
+        const MLN* mln = inferences_[i]->getState()->getMLN();
         
         // Clauses are typically shared among MLNs for different
         // domains, so many of these calls to setWt() are redundant.
@@ -342,23 +278,13 @@ class DiscriminativeLearner
         int clauseCnt = clauseCntPerDomain_[i];
         Array<double>& wts = (*wtsPerDomain)[i];
         assert(wts.size() == clauseCnt);
-        const MLN* mln;
-        
-          // Check if using BP
-        if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-        {
-          mln = bp_->getFactorGraph()->getMLN();
-        }
-        else
-        {
-          mln = inferences_[i]->getState()->getMLN();
-        }
+        const MLN* mln = inferences_[i]->getState()->getMLN();
 
         for (int j = 0; j < clauseCnt; j++)
         {
           Clause* c = (Clause*) mln->getClause(j);
-          if (relevantClauses[j]) c->setWt(wts[j]);
-          else                    c->setWt(0);
+          if(relevantClauses[j]) c->setWt(wts[j]);
+          else                   c->setWt(0);
         }
       }
     }
@@ -414,29 +340,6 @@ class DiscriminativeLearner
 
     for (int i = 0; i < numWeights; i++)
       weights[i] /= domainCnt_;
-  }
-
-
-  void setRandGaussWeights(double* weights, int numWeights, const double* means,
-                           const double* stdevs)
-  {
-    if (dldebug) cout << "Setting random weights: " << endl;
-    for (int i = 0; i < numWeights; i++)
-    {
-      weights[i] = ExtRandom::gaussRandom(means[i], stdevs[i]);
-      cout << weights[i] << endl;
-    }
-  }
-
-  void setRandomWeights(double* weights, int numWeights, const double& min,
-                        const double& max)
-  {
-    if (dldebug) cout << "Setting random weights: " << endl;
-    for (int i = 0; i < numWeights; i++)
-    {
-      weights[i] = (max - min)*(double)rand()/(double)RAND_MAX + min;
-      cout << weights[i] << endl;
-    }
   }
 
 
@@ -565,14 +468,6 @@ class DiscriminativeLearner
       // Set the initial weight to the average log odds across domains/databases
     if (initWithLogOdds)
       setLogOddsWeights(weights, numWeights);
-    else if (withEM_)
-    {
-        // If using EM, init weights according to prior, or randomly
-      if (usePrior_)
-        setRandGaussWeights(weights, numWeights, priorMeans_, priorStdDevs_);
-      else
-        setRandomWeights(weights, numWeights, -1.0, 1.0);
-    }
 
       // Initialize averageWeights
     memcpy(averageWeights, weights, numWeights*sizeof(double));
@@ -963,12 +858,13 @@ class DiscriminativeLearner
         // Convergence criteria for 2nd order methods: 
         // Stop when the maximum predicted improvement in log likelihood 
         // is very small.
+        const double MIN_LL_CHANGE = 0.0001;
         double maxchange = -dotprod(gradient, wchange, numWeights);
         cout << "Maximum estimated improvement: " << maxchange << endl;
         if ((method_ == CG || method_ == DN) &&
-            maxchange < min_ll_change_)
+            maxchange < MIN_LL_CHANGE)
         {
-          cout << "Upper bound is less than " << min_ll_change_
+          cout << "Upper bound is less than " << MIN_LL_CHANGE
                << "; halting learning." << endl;
           break;
         }
@@ -1037,12 +933,6 @@ class DiscriminativeLearner
     {
       for (int i = 0; i < domainCnt_; i++) 
       {
-          // Check if using BP
-        if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-        {
-          continue;
-        }
-                
         VariableState* state = inferences_[i]->getState();
         Database* db = state->getDomain()->getDB();
           // Change known NE to original values
@@ -1071,20 +961,8 @@ class DiscriminativeLearner
       relevantClauses.growToSize(clauseCnt);
       memset((bool*)relevantClauses.getItems(), false, 
              relevantClauses.size()*sizeof(bool));
-      const Domain* domain;
-      const MLN* mln;
-
-        // Check if using BP
-      if ((bp_ = dynamic_cast<BP*>(inferences_[d])))
-      {
-        domain = bp_->getFactorGraph()->getDomain();
-        mln = bp_->getFactorGraph()->getMLN();        
-      }
-      else
-      {
-        domain = inferences_[d]->getState()->getDomain();
-        mln = inferences_[d]->getState()->getMLN();
-      }
+      const Domain* domain = inferences_[d]->getState()->getDomain();
+      const MLN* mln = inferences_[d]->getState()->getMLN();
     
       const Array<IndexClause*>* indclauses;
       const Clause* clause;
@@ -1102,9 +980,8 @@ class DiscriminativeLearner
             clause = (*indclauses)[j]->clause;			
             clauseid = mln->findClauseIdx(clause);
             
-              // If clause is external to this mln, then it stays irrelevant
-            if (!mln->isExternalClause(clauseid))
-              relevantClauses[clauseid] = true;
+            // If clause is external to this mln, then it stays irrelevant
+            if (!mln->isExternalClause(clauseid)) relevantClauses[clauseid] = true;
           }
         }
       }    
@@ -1148,21 +1025,8 @@ class DiscriminativeLearner
     double tmpUnknownCnt;
     int clauseCnt = clauseCntPerDomain_[domainIdx];
     Array<bool>& relevantClauses = relevantClausesPerDomain_[domainIdx];
-    const Domain* domain;
-    const MLN* mln;
-
-      // Check if using BP
-    if ((bp_ = dynamic_cast<BP*>(inferences_[domainIdx])))
-    {
-      domain = bp_->getFactorGraph()->getDomain();
-      mln = bp_->getFactorGraph()->getMLN();        
-    }
-    else
-    {
-      domain = inferences_[domainIdx]->getState()->getDomain();
-      mln = inferences_[domainIdx]->getState()->getMLN();
-    }
-
+    const MLN* mln = inferences_[domainIdx]->getState()->getMLN();
+    const Domain* domain = inferences_[domainIdx]->getState()->getDomain();
 
     for (int clauseno = 0; clauseno < clauseCnt; clauseno++) 
     {
@@ -1204,7 +1068,6 @@ class DiscriminativeLearner
     { // Eager inference
       trainTrueCnts_.growToSize(domainCnt_);
       trainFalseCnts_.growToSize(domainCnt_);
-      if (withEM_) emDiffCnts_.growToSize(domainCnt_);
     }
     
     for (int i = 0; i < domainCnt_; i++)
@@ -1212,20 +1075,10 @@ class DiscriminativeLearner
       if (dldebug) cout << "Domain " << i << endl;
       int clauseCnt = clauseCntPerDomain_[i];
       if (dldebug) cout << "Clause count: " << clauseCnt << endl;
-      Domain* domain;
-        // Check if using BP
-      if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-      {
-        FactorGraph* fg = bp_->getFactorGraph();
-        domain = (Domain*)fg->getDomain();
-      }
-      else
-      {
-        VariableState* state = inferences_[i]->getState();
-        domain = (Domain*)state->getDomain();
-      }
+      VariableState* state = inferences_[i]->getState();
+      Domain* domain = (Domain*)state->getDomain();
 
-      if (lazyInference_ || (bp_ = dynamic_cast<BP*>(inferences_[i])))
+      if (lazyInference_)
       {
         domain->getDB()->setPerformingInference(false);
   
@@ -1270,81 +1123,6 @@ class DiscriminativeLearner
       }
       else
       { // Eager inference
-        VariableState* state = inferences_[i]->getState();
-        if (withEM_)
-        {
-          VariableState* emState = emInferences_[i]->getState();
-          const GroundPredicateHashArray* emUnePreds = emState->getUnePreds();
-          const GroundPredicateHashArray* emKnePreds = emState->getKnePreds();
-
-          emDiffCnts_[i] = new double[clauseCnt];
-
-          if (dldebug)
-          {
-            if (emUnePreds)
-            {
-              cout << "Unknown non-evid preds (E): " << emUnePreds->size()
-                   << endl;
-            }
-            if (emKnePreds)
-            {
-              cout << "Known non-evid preds (E): " << emKnePreds->size()
-                   << endl;
-            }
-          }
-          int emUnePredsSize = 0;
-          int emKnePredsSize = 0;
-          if (emUnePreds) emUnePredsSize = emUnePreds->size();
-          if (emKnePreds) emKnePredsSize = emKnePreds->size();
-          
-          int emTotalPreds = emUnePredsSize + emKnePredsSize;
-          // Used to store gnd preds to be ignored in the count because they
-          // are UNKNOWN
-          Array<bool>* emUnknownPred = new Array<bool>;
-          emUnknownPred->growToSize(emTotalPreds, false);
-          for (int predno = 0; predno < emTotalPreds; predno++) 
-          {
-            GroundPredicate* p;
-            if (predno < emUnePredsSize)
-              p = (*emUnePreds)[predno];
-            else
-              p = (*emKnePreds)[predno - emUnePredsSize];
-            TruthValue tv = emState->getDomain()->getDB()->getValue(p);
-
-            //assert(tv != UNKNOWN);
-            if (tv == TRUE)
-            {
-              emState->setValueOfAtom(predno + 1, true, false, -1);
-              p->setTruthValue(true);
-            }
-            else
-            {
-              emState->setValueOfAtom(predno + 1, false, false, -1);
-              p->setTruthValue(false);
-                // Can have unknown truth values when using EM. We want to
-                // ignore these when performing the counts
-              if (tv == UNKNOWN)
-              {
-                (*emUnknownPred)[predno] = true;
-              }
-            }
-          }
-
-          emState->initMakeBreakCostWatch();
-          //cout<<"getting true cnts => "<<endl;
-          emState->getNumClauseGndingsWithUnknown(emDiffCnts_[i], clauseCnt,
-                                                  true, emUnknownPred);
-          delete emUnknownPred;
-          if (dldebug)
-          {
-            for (int clauseno = 0; clauseno < clauseCnt; clauseno++)
-            {
-              cout << clauseno << " : emDiffCnt = " << emDiffCnts_[i][clauseno]
-                   << endl;
-            }
-          }
-        }
-
         const GroundPredicateHashArray* unePreds = state->getUnePreds();
         const GroundPredicateHashArray* knePreds = state->getKnePreds();
 
@@ -1393,16 +1171,8 @@ class DiscriminativeLearner
 
         state->initMakeBreakCostWatch();
         //cout<<"getting true cnts => "<<endl;
-        state->getNumClauseGndingsWithUnknown(trainTrueCnts_[i], clauseCnt,
-                                              true, unknownPred);
-        if (withEM_)
-        {
-          for (int clauseno = 0; clauseno < clauseCnt; clauseno++)
-          {
-            emDiffCnts_[i][clauseno] = trainTrueCnts_[i][clauseno] - 
-                                       emDiffCnts_[i][clauseno];
-          }
-        }
+        state->getNumClauseGndingsWithUnknown(trainTrueCnts_[i], clauseCnt, true,
+                                              unknownPred);
         //cout<<endl;
         //cout<<"getting false cnts => "<<endl;
         state->getNumClauseGndingsWithUnknown(trainFalseCnts_[i], clauseCnt,
@@ -1424,36 +1194,10 @@ class DiscriminativeLearner
     cout << "List of CNF Clauses : " << endl;
     for (int clauseno = 0; clauseno < clauseCntPerDomain_[0]; clauseno++)
     {
-      tc = 0.0; fc = 0.0; nonEvidPreds = 0;
-      Domain* domain0;
-        // Check if using BP
-      if ((bp_ = dynamic_cast<BP*>(inferences_[0])))
-      {
-        domain0 = (Domain*)bp_->getFactorGraph()->getDomain();
-      }
-      else
-      {
-        domain0 = (Domain*)inferences_[0]->getState()->getDomain();
-      }
-      
+      tc = 0.0; fc = 0.0;
       for (int i = 0; i < domainCnt_; i++) 
       {
-        const MLN* mln;
-        Domain* domain;
-          // Check if using BP
-        if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-        {
-          FactorGraph* fg = bp_->getFactorGraph();
-          domain = (Domain*)fg->getDomain();
-          mln = fg->getMLN();        
-        }
-        else
-        {
-          VariableState* state = inferences_[i]->getState();
-          domain = (Domain*)state->getDomain();
-          mln = state->getMLN();        
-        }
-
+        Domain* domain = (Domain*)inferences_[i]->getState()->getDomain();
         Array<bool>& relevantClauses = relevantClausesPerDomain_[i];
         Array<double>& logOdds = logOddsPerDomain_[i];
       
@@ -1466,13 +1210,14 @@ class DiscriminativeLearner
         }
         
         cout << clauseno << ":";
-        const Clause* clause = mln->getClause(clauseno);
-        clause->print(cout, domain0);
+        const Clause* clause =
+          inferences_[i]->getState()->getMLN()->getClause(clauseno);
+        clause->print(cout, inferences_[0]->getState()->getDomain());
         cout << endl;
       
         double domainTrueCnts = 0.0;
         double domainFalseCnts = 0.0;
-        if (lazyInference_ || (bp_ = dynamic_cast<BP*>(inferences_[i])))
+        if (lazyInference_)
         {
           domainTrueCnts = totalTrueCnts_[i][clauseno] -
                            defaultTrueCnts_[i][clauseno];
@@ -1495,8 +1240,7 @@ class DiscriminativeLearner
 
         for (int i = 0; i < clause->getNumPredicates(); i++)
         {
-          const char* predName =
-            clause->getPredicate(i)->getTemplate()->getName();
+          const char* predName = clause->getPredicate(i)->getTemplate()->getName();
           if (nonEvidPredNames.contains(predName)) 
             nonEvidPreds++;
         }
@@ -1538,27 +1282,12 @@ class DiscriminativeLearner
     for (int i = 0; i < domainCnt_; i++) 
     {
       if (dldebug) cout << "in domain " << i << endl;
-
-        // Check if using BP
-      if ((bp_ = dynamic_cast<BP*>(inferences_[i])))
-      {
-        inferences_[i]->infer();
-      }
-      else
-      {
-        VariableState* state = inferences_[i]->getState();
-        state->setGndClausesWtsToSumOfParentWts();
-          // MWS: Search is started from state at end of last iteration
-        state->init();
-        inferences_[i]->infer();
-        state->saveLowStateToGndPreds();
-      }
-
-      if (dldebug)
-      {
-        cout << "Inferred following values (M): " << endl;
-        inferences_[i]->printProbabilities(cout);
-      }
+      VariableState* state = inferences_[i]->getState();
+      state->setGndClausesWtsToSumOfParentWts();
+      // MWS: Search is started from state at end of last iteration
+      state->init();
+      inferences_[i]->infer();
+      state->saveLowStateToGndPreds();
     }
   }
 
@@ -1584,34 +1313,29 @@ class DiscriminativeLearner
         // Mark known non-evidence preds as evidence
       domain->getDB()->setValuesToGivenValues(knePreds, knePredValues);
 
-      VariableState* emState = emInferences_[i]->getState();
         // Infer missing values
-      emState->setGndClausesWtsToSumOfParentWts();
+      state->setGndClausesWtsToSumOfParentWts();
         // MWS: Search is started from state at end of last iteration
-      emState->init();
-      emInferences_[i]->infer();
-      emState->saveLowStateToGndPreds();
+      state->init();
+      inferences_[i]->infer();
+      state->saveLowStateToGndPreds();
 
       if (dldebug)
       {
-        cout << "Inferred following values (E): " << endl;
-        emInferences_[i]->printProbabilities(cout);
+        cout << "Inferred following values: " << endl;
+        inferences_[i]->printProbabilities(cout);
       }
 
         // Compute counts
       int clauseCnt = clauseCntPerDomain_[i];
-      emState->initMakeBreakCostWatch();
+      state->initMakeBreakCostWatch();
       //cout<<"getting true cnts => "<<endl;
       const Array<double>* clauseTrueCnts =
-        emInferences_[i]->getClauseTrueCnts();
+        inferences_[i]->getClauseTrueCnts();
       assert(clauseTrueCnts->size() == clauseCnt);
-      int numSamples = emInferences_[i]->getNumSamples();
+      int numSamples = inferences_[i]->getNumSamples();
       for (int j = 0; j < clauseCnt; j++)
-      {
-        //trainTrueCnts_[i][j] = (*clauseTrueCnts)[j]/numSamples;
-        trainTrueCnts_[i][j] = (*clauseTrueCnts)[j]/numSamples + 
-                               emDiffCnts_[i][j];
-      }
+        trainTrueCnts_[i][j] = (*clauseTrueCnts)[j]/numSamples;
 
         // Set evidence values back
       //assert(uePreds.size() == ueValues[i].size());
@@ -1648,7 +1372,7 @@ class DiscriminativeLearner
     memset(clauseTrainTotal, 0, clauseCnt*sizeof(double));
     memset(clauseInferredTotal, 0, clauseCnt*sizeof(double));
 
-    if (!(lazyInference_ || (bp_ = dynamic_cast<BP*>(inferences_[domainIdx]))))
+    if (!lazyInference_)
     {
       if (!inferredCnts) inferredCnts = new double[clauseCnt];
 
@@ -1673,7 +1397,7 @@ class DiscriminativeLearner
       clauseInferredTotal[clauseno] += totalGndings * 
           inferences_[domainIdx]->getNumSamples();
       
-      if (lazyInference_ || (bp_ = dynamic_cast<BP*>(inferences_[domainIdx])))
+      if (lazyInference_)
       {
       	Clause* clause = (Clause*) mln->getClause(clauseno);
 
@@ -1723,13 +1447,9 @@ class DiscriminativeLearner
     int numSamples = inferences_[domainIdx]->getNumSamples();
     for (int i = 0; i < clauseCnt; i++)
     {
-      if ((bp_ = dynamic_cast<BP*>(inferences_[domainIdx])))
-        inferredCnts[i] = (*clauseTrueCnts)[i];
-      else
-        inferredCnts[i] = (*clauseTrueCnts)[i] / numSamples;
+      inferredCnts[i] = (*clauseTrueCnts)[i] / numSamples;
     }
-    if (!(lazyInference_ || (bp_ = dynamic_cast<BP*>(inferences_[domainIdx]))))
-      trainCnts = trainTrueCnts_[domainIdx];
+    if (!lazyInference_) trainCnts = trainTrueCnts_[domainIdx];
 
     if (dldebug)
       cout << "numSamples = " << numSamples << endl;
@@ -1739,7 +1459,7 @@ class DiscriminativeLearner
     for (int clauseno = 0; clauseno < clauseCnt; clauseno++) 
     {
       if (!relevantClauses[clauseno]) continue;
-      if (lazyInference_ || (bp_ = dynamic_cast<BP*>(inferences_[domainIdx])))
+      if (lazyInference_)
       {
         clauseTrainCnts[clauseno] = clauseTrainCnts[clauseno] + 
                                     totalTrueCnts_[domainIdx][clauseno] -
@@ -1888,18 +1608,11 @@ class DiscriminativeLearner
   int maxBacktracks_;
   int backtrackCount_;
   double cg_max_lambda_;
-  double min_ll_change_;
 
   Array<Inference*> inferences_;
   
     // Using EM to fill in missing values?
   bool withEM_;
-  Array<Inference*> emInferences_;
-    // True counts from clauses satisfied by 
-  Array<double*> emDiffCnts_;
-    // Used to check if BP is being used (handled differently, because it works
-    // on a factor graph
-  BP* bp_;
 };
 
 

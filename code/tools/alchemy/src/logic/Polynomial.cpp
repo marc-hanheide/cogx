@@ -66,7 +66,6 @@
  */
 #include "Polynomial.h"
 
-#include <cstdio>
 #include <iomanip>
 #include <math.h>
 

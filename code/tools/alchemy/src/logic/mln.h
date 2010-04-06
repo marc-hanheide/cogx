@@ -168,7 +168,7 @@ class MLN
     int idx;
     bool app = appendClause(formulaString, hasExist, c, c->getWt(),
                             c->isHardClause(), idx, tiedClauses,
-                            hasWeightFullStop, isConjunction, 0.0);
+                            hasWeightFullStop, isConjunction);
     if (app)
     {
       setFormulaNumPreds(formulaString, c->getNumPredicates());
@@ -190,10 +190,10 @@ class MLN
                     Clause* const& c, const double& wt,
                     const bool& isHardClause, int& retClauseIdx,
                     const bool& tiedClauses, const bool& hasWeightFullStop,
-                    const bool& conjunction, const double& util)
+                    const bool& conjunction)
   {
     assert(c);
-    if (!tiedClauses) c->canonicalize();
+    c->canonicalize();
     bool isAppended;
     Clause* clause;
     if ((retClauseIdx = clauses_->find(c)) >= 0) // if clauses_ contains c
@@ -212,8 +212,6 @@ class MLN
       externalClause_->append(false);
     }
     clause->addWt(wt);
-    clause->addUtil(util);
-    if (util != 0.0) clause->setAction(true);
     if (isHardClause) clause->setIsHardClause(isHardClause);
     if (hasWeightFullStop) clause->setStaticWt(hasWeightFullStop);
 
@@ -452,11 +450,8 @@ class MLN
 
   const Clause* findClause(const Clause* const & c) const 
   { 
-cout << "m1" << endl;
     int i = findClauseIdx(c);
-cout << "m2" << endl;
     if (i < 0) return NULL;
-cout << "m3" << endl;
     return (*clauses_)[i];
   }
 

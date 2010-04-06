@@ -75,269 +75,272 @@
 #include "logichelper.h"
 #include <set>
 
-// This flag indicates that the constraint is not solvable.
-#define UNSOLVABLE 1010101
-// This flag indicates that the discrete part of the constraint needs to be
-// flipped
-#define FLIPDIS 1010102
+#define UNSOLVABLE 1010101  // This flag indicates that the constraint is not solvable.
+#define FLIPDIS 1010102  // This flag indicates that the discrete part of the constraint needs to be flipped
 //#define PICK2VAR 2020202
 #define CANNOTSATCURRENT -1000000
 
 const bool hvsdebug = false;
 
 const double SMALLVALUE = 0.0000000000001;
-//domain dependent, generally 10 * maximum abs value
-double ABSBIG = 1111111111;
+double ABSBIG = 1111111111; //domain dependent, generally 10 * maximum abs value
 
 #define MIN(x,y) (x<y)?x:y
 #define MAX(x,y) (x>y)?x:y
 
 enum UNSATTYPE
 {
-  UNSAT_DIS0,// dis == 0, and th > 0
-  UNSAT_DIS1, // dis == 1, but cont < th	   
-  UNSAT_UNKNOWN
+	UNSAT_DIS0,// dis == 0, and th > 0
+	UNSAT_DIS1, // dis == 1, but cont < th	   
+	UNSAT_UNKNOWN
 };
 
 using namespace std;
 
 /**
- * Represents the state of propositional variables and clauses. Some of this
- * code is based on the MaxWalkSat package of Kautz et al.
- * 
- * All inference algorithms should have a HVariableState to access the
- * information needed in its predicates and clauses.
- * 
- * Each atom has its own index starting at 1. The negation of an atom with
- * index a is represented by -a (this is why the indices do not start at 0).
- * Each clause has its own index starting at 0.
- * 
- * A HVariableState is either eager or lazy. Eager states build an MRF upfront
- * based on an MLN and a domain. Thus, all ground clauses and predicates are
- * in memory after building the MRF. Lazy states activate atoms and clauses as
- * they are needed from the MLN and domain. An atom is activated if it is in
- * an unsatisfied clause with the assumption of all atoms being false or if it
- * is looked at during inference (it is flipped or the cost of flipping it is
- * computed). Active clauses are those which contain active atoms.
- */
+* Represents the state of propositional variables and clauses. Some of this
+* code is based on the MaxWalkSat package of Kautz et al.
+* 
+* All inference algorithms should have a HVariableState to access the
+* information needed in its predicates and clauses.
+* 
+* Each atom has its own index starting at 1. The negation of an atom with
+* index a is represented by -a (this is why the indices do not start at 0).
+* Each clause has its own index starting at 0.
+* 
+* A HVariableState is either eager or lazy. Eager states build an MRF upfront
+* based on an MLN and a domain. Thus, all ground clauses and predicates are
+* in memory after building the MRF. Lazy states activate atoms and clauses as
+* they are needed from the MLN and domain. An atom is activated if it is in
+* an unsatisfied clause with the assumption of all atoms being false or if it
+* is looked at during inference (it is flipped or the cost of flipping it is
+* computed). Active clauses are those which contain active atoms.
+*/
 
 // Variable state containing information about both hybrid and discrete parts.
 class HVariableState
 {
- public:
-
- /**
-  * Constructor for a HVariableState. The hard clause weight is set. In lazy
-  * mode, the initial active atoms and clauses are retrieved and in eager
-  * mode, the MRF is built and the atoms and clauses are retrieved from it.
-  * In addition, all information arrays are filled with information.
-  * 
-  * @param unknownQueries Query predicates with unknown values used to build
-  * MRF in eager mode.
-  * @param knownQueries Query predicates with known values used to build MRF
-  * in eager mode.
-  * @param knownQueryValues Truth values of the known query predicates.
-  * @param allPredGndingsAreQueries Array used to build MRF in eager mode.
-  * @param mln mln and domain are used to build MRF in eager state and to
-  * retrieve active atoms in lazy state.
-  * @param domain mln and domain are used to build MRF in eager state and to
-  * retrieve active atoms in lazy state.
-  * @param lazy Flag stating whether lazy mode is used or not.
-  */
-  HVariableState(GroundPredicateHashArray* const& unknownQueries,
-                 GroundPredicateHashArray* const& knownQueries,
-                 Array<TruthValue>* const & knownQueryValues,
-                 const Array<int>* const & allPredGndingsAreQueries,
-                 const bool& markHardGndClauses,
-                 const bool& trackParentClauseWts, const MLN* const & mln,
-                 const Domain* const & domain,
-                 const bool& lazy)
-  {
-    stillActivating_ = true;
+public:
+	/**
+	* Constructor for a HVariableState. The hard clause weight is set. In lazy
+	* mode, the initial active atoms and clauses are retrieved and in eager
+	* mode, the MRF is built and the atoms and clauses are retrieved from it.
+	* In addition, all information arrays are filled with information.
+	* 
+	* @param unknownQueries Query predicates with unknown values used to build
+	* MRF in eager mode.
+	* @param knownQueries Query predicates with known values used to build MRF
+	* in eager mode.
+	* @param knownQueryValues Truth values of the known query predicates.
+	* @param allPredGndingsAreQueries Array used to build MRF in eager mode.
+	* @param mln mln and domain are used to build MRF in eager state and to
+	* retrieve active atoms in lazy state.
+	* @param domain mln and domain are used to build MRF in eager state and to
+	* retrieve active atoms in lazy state.
+	* @param lazy Flag stating whether lazy mode is used or not.
+	*/
+	HVariableState(GroundPredicateHashArray* const& unknownQueries,
+		GroundPredicateHashArray* const& knownQueries,
+		Array<TruthValue>* const & knownQueryValues,
+		const Array<int>* const & allPredGndingsAreQueries,
+		const bool& markHardGndClauses,
+		const bool& trackParentClauseWts,
+		const MLN* const & mln, const Domain* const & domain,
+		const bool& lazy)
+	{
+      stillActivating_ = true;
     breakHardClauses_ = false;
       // By default MaxWalkSAT mode
     inferenceMode_ = MODE_MWS;
     Timer timer;
     double startTime = timer.time();
 
-    if (hvsdebug)
-      cout << "from hybrid vs" << endl;
+		if (hvsdebug)
+		{
+			cout << "from hybrid vs" << endl;
+		}
+		this->mln_ = (MLN*)mln;
+		this->domain_ = (Domain*)domain;
+		this->lazy_ = lazy;
 
-    this->mln_ = (MLN*)mln;
-    this->domain_ = (Domain*)domain;
-    this->lazy_ = lazy;
+		// Instantiate information
+		bInitFromEvi_ = false;
+		baseNumAtoms_ = 0;
+		activeAtoms_ = 0;
+		numFalseClauses_ = 0;
+		costOfFalseClauses_ = 0.0;
+		weightSumDis_ = 0.0;
+		weightSumCont_ = 0.0;
+		costOfTotalFalseConstraints_ = 0.0;
+		totalFalseConstraintNum_ = 0;
+		costHybridFalseConstraint_ = 0.0;
+		hybridFalseConstraintNum_ = 0;
+		lowCost_ = LDBL_MAX;
+		lowBad_ = INT_MAX;
+		lowCostAll_ = LDBL_MAX;
+		lowBadAll_ = INT_MAX;
+		lowCostHybrid_ = LDBL_MAX;
+		lowBadHybrid_ = INT_MAX;
 
-      // Instantiate information
-    bInitFromEvi_ = false;
-    baseNumAtoms_ = 0;
-    activeAtoms_ = 0;
-    numFalseClauses_ = 0;
-    costOfFalseClauses_ = 0.0;
-    weightSumDis_ = 0.0;
-    weightSumCont_ = 0.0;
-    costOfTotalFalseConstraints_ = 0.0;
-    totalFalseConstraintNum_ = 0;
-    costHybridFalseConstraint_ = 0.0;
-    hybridFalseConstraintNum_ = 0;
-    lowCost_ = LDBL_MAX;
-    lowBad_ = INT_MAX;
-    lowCostAll_ = LDBL_MAX;
-    lowBadAll_ = INT_MAX;
-    lowCostHybrid_ = LDBL_MAX;
-    lowBadHybrid_ = INT_MAX;
+		hybridClauseNum_ = 0;
+		hybridFormulaNum_ = 0;
 
-    hybridClauseNum_ = 0;
-    hybridFormulaNum_ = 0;
-
-      // Clauses and preds are stored in gndClauses_ and gndPreds_
+		// Clauses and preds are stored in gndClauses_ and gndPreds_
     gndClauses_ = new GroundClauseHashArray;
-    gndPreds_ = new Array<GroundPredicate*>;
-    bMaxOnly_ = false;
+		gndPreds_ = new Array<GroundPredicate*>;
+		bMaxOnly_ = false;
 
-      // Set the hard clause weight
-    setHardClauseWeight();
+		// Set the hard clause weight
+		setHardClauseWeight();
 
-      // Lazy version: Produce state with initial active atoms and clauses
-    if (lazy_)
-    {
+		// Lazy version: Produce state with initial active atoms and clauses
+		if (lazy_)
+		{
         // Set number of non-evidence atoms from domain
       domain_->computeNumNonEvidAtoms();
       numNonEvAtoms_ = domain_->getNumNonEvidenceAtoms();
-        // Unknown preds are treated as false
-      domain_->getDB()->setPerformingInference(true);
-      clauseLimit_ = INT_MAX;
-      noApprox_ = false;
-      haveDeactivated_ = false;
+			// Unknown preds are treated as false
+			domain_->getDB()->setPerformingInference(true);
+			clauseLimit_ = INT_MAX;
+			noApprox_ = false;
+			haveDeactivated_ = false;
 
-        ///// Get initial active atoms and clauses /////
-        // Get initial set of active atoms (atoms in unsat. clauses)
-        // Assumption is: all atoms are initially false except those in blocks
-        // One atom in each block is set to true and activated
+			///// Get initial active atoms and clauses /////
+			// Get initial set of active atoms (atoms in unsat. clauses)
+			// Assumption is: all atoms are initially false except those in blocks
+			// One atom in each block is set to true and activated
       initBlocksRandom();
 
+      //bool ignoreActivePreds = false;
       bool ignoreActivePreds = true;
       cout << "Getting initial active atoms ... " << endl;
-      getActiveClauses(newClauses_, ignoreActivePreds);
+			getActiveClauses(newClauses_, ignoreActivePreds);
       cout << "done." << endl;
-      int defaultCnt = newClauses_.size();
-      long double defaultCost = 0;
+			int defaultCnt = newClauses_.size();
+			long double defaultCost = 0;
 
-      for (int i = 0; i < defaultCnt; i++)
-      {
-        if (newClauses_[i]->isHardClause())
-          defaultCost += hardWt_;
-        else
-          defaultCost += abs(newClauses_[i]->getWt());
-      }
+			for (int i = 0; i < defaultCnt; i++)
+			{
+				if (newClauses_[i]->isHardClause())
+					defaultCost += hardWt_;
+				else
+					defaultCost += abs(newClauses_[i]->getWt());
+			}
 
-        // Clear ground clauses in the ground preds
-      for (int i = 0; i < gndPredHashArray_.size(); i++)
-        gndPredHashArray_[i]->removeGndClauses();
+			// Clear ground clauses in the ground preds
+			for (int i = 0; i < gndPredHashArray_.size(); i++)
+				gndPredHashArray_[i]->removeGndClauses();
 
-        // Delete new clauses
-      for (int i = 0; i < newClauses_.size(); i++)
-        delete newClauses_[i];
-      newClauses_.clear();
+			// Delete new clauses
+			for (int i = 0; i < newClauses_.size(); i++)
+				delete newClauses_[i];
+			newClauses_.clear();
 
-      baseNumAtoms_ = gndPredHashArray_.size();
+			baseNumAtoms_ = gndPredHashArray_.size();
       cout << "Number of Baseatoms = " << baseNumAtoms_ << endl;
-      cout << "Default => Cost\t" << "******\t" << " Clause Cnt\t" << endl;
-      cout << "           " << defaultCost << "\t" << "******\t" << defaultCnt
-           << "\t" << endl << endl;
+			cout << "Default => Cost\t" << "******\t" << " Clause Cnt\t" << endl;
+			cout << "           " << defaultCost << "\t" << "******\t" << defaultCnt
+				<< "\t" << endl << endl;
 
-        // Set base atoms as active in DB
-      for (int i = 0; i < baseNumAtoms_; i++)
-      {
-        domain_->getDB()->setActiveStatus(gndPredHashArray_[i], true);
-        activeAtoms_++;        
-      }
+			// Set base atoms as active in DB
+			for (int i = 0; i < baseNumAtoms_; i++)
+			{
+				domain_->getDB()->setActiveStatus(gndPredHashArray_[i], true);
+				activeAtoms_++;        
+			}
 
-        // Get the initial set of active clauses
-      ignoreActivePreds = false;
+			// Get the initial set of active clauses
+			ignoreActivePreds = false;
       cout << "Getting initial active clauses ... ";
-      getActiveClauses(newClauses_, ignoreActivePreds);      
+			getActiveClauses(newClauses_, ignoreActivePreds);      
       cout << "done." << endl;
-    } // End lazy version
-      // Eager version: Use KBMC to produce the state
-    else
-    {
-      unePreds_ = unknownQueries;
-      knePreds_ = knownQueries;
-      knePredValues_ = knownQueryValues;
-        // MRF is built on known and unknown queries
-      int size = 0;
-      if (unknownQueries) size += unknownQueries->size();
-      if (knownQueries) size += knownQueries->size();
-      GroundPredicateHashArray* queries = new GroundPredicateHashArray(size);
-      if (unknownQueries) queries->append(unknownQueries);
-      if (knownQueries) queries->append(knownQueries);
-      mrf_ = new MRF(queries, allPredGndingsAreQueries, domain_,
+		} // End lazy version
+		// Eager version: Use KBMC to produce the state
+		else
+		{
+			unePreds_ = unknownQueries;
+			knePreds_ = knownQueries;
+			knePredValues_ = knownQueryValues;
+			// MRF is built on known and unknown queries
+			int size = 0;
+			if (unknownQueries) size += unknownQueries->size();
+			if (knownQueries) size += knownQueries->size();
+			GroundPredicateHashArray* queries = new GroundPredicateHashArray(size);
+			if (unknownQueries) queries->append(unknownQueries);
+			if (knownQueries) queries->append(knownQueries);
+			mrf_ = new MRF(queries, allPredGndingsAreQueries, domain_,
                      domain_->getDB(), mln_, markHardGndClauses,
-                     trackParentClauseWts, -1);
-        //delete to save space. Can be deleted because no more gndClauses are
-        //appended to gndPreds beyond this point
-      mrf_->deleteGndPredsGndClauseSets();
+				trackParentClauseWts, -1);
+			//delete to save space. Can be deleted because no more gndClauses are
+			//appended to gndPreds beyond this point
 
-        //do not delete the intArrRep in gndPreds_;
-      delete queries;
+			mrf_->deleteGndPredsGndClauseSets();
 
-        // Put ground clauses in newClauses_
-      newClauses_ = *(Array<GroundClause*>*)mrf_->getGndClauses();
+			//do not delete the intArrRep in gndPreds_;
+			delete queries;
 
-        // Put ground preds in the hash array
-      const GroundPredicateHashArray* gndPreds = mrf_->getGndPreds();
-      for (int i = 0; i < gndPreds->size(); i++)
-        gndPredHashArray_.append((*gndPreds)[i]);
+			// Put ground clauses in newClauses_
+			newClauses_ = *(Array<GroundClause*>*)mrf_->getGndClauses();
 
-        // baseNumAtoms_ are all atoms in eager version
-      baseNumAtoms_ = gndPredHashArray_.size();        
-    } // End eager version
+			// Put ground preds in the hash array
+			//const Array<GroundPredicate*>* gndPreds = mrf_->getGndPreds();
+			const GroundPredicateHashArray* gndPreds = mrf_->getGndPreds();
+			for (int i = 0; i < gndPreds->size(); i++)
+				gndPredHashArray_.append((*gndPreds)[i]);
 
-      // At this point, ground clauses are held in newClauses_
-      // and ground predicates are held in gndPredHashArray_
-      // for both versions
+			// baseNumAtoms_ are all atoms in eager version
+			baseNumAtoms_ = gndPredHashArray_.size();        
+		} // End eager version
 
-      // Add the clauses and preds and fill info arrays
-    bool initial = true;
-    addNewClauses(initial);		
+		// At this point, ground clauses are held in newClauses_
+		// and ground predicates are held in gndPredHashArray_
+		// for both versions
+
+		// Add the clauses and preds and fill info arrays
+		bool initial = true;
+		addNewClauses(initial);		
     
-    cout << "[VS] ";
-    Timer::printTime(cout,timer.time()-startTime);
-    cout << endl;
-    cout << ">>> DONE: Initial num. of clauses: " << getNumClauses() << endl;
-  }
+	cout << "[VS] ";
+	Timer::printTime(cout,timer.time()-startTime);
+	cout << endl;
+	cout << ">>> DONE: Initial num. of clauses: " << getNumClauses() << endl;
+	}
 
- /**
-  * Destructor. Blocks are deleted in lazy version; MRF is deleted in eager
-  * version.
-  */ 
-  ~HVariableState()
-  {
-    if (lazy_)
-    {
-      if (gndClauses_)
-      for (int i = 0; i < gndClauses_->size(); i++)
-        delete (*gndClauses_)[i];
+	/**
+	* Destructor. Blocks are deleted in lazy version; MRF is deleted in eager
+	* version.
+	*/ 
+	~HVariableState()
+	{
+      if (lazy_)
+      {
+        if (gndClauses_)
+          for (int i = 0; i < gndClauses_->size(); i++)
+            delete (*gndClauses_)[i];
 
-      for (int i = 0; i < gndPredHashArray_.size(); i++)
-      {
-        gndPredHashArray_[i]->removeGndClauses();
-        delete gndPredHashArray_[i];
+        for (int i = 0; i < gndPredHashArray_.size(); i++)
+        {
+          gndPredHashArray_[i]->removeGndClauses();
+          delete gndPredHashArray_[i];
+		}
       }
-    }
-    else
-    {
-        // MRF from eager version is deleted
-      if (mrf_)
+      else
       {
-        delete mrf_;
-        mrf_ = NULL;
-      }
-      
-      for (int i = 0; i < contsolvers_.size(); i++)
-        delete contsolvers_[i];
-    }
-  }
+			// MRF from eager version is deleted
+        if (mrf_)
+        {
+          delete mrf_;
+          mrf_ = NULL;
+        }
+			//if (unePreds_) delete unePreds_;
+			//if (knePreds_) delete knePreds_;
+			//if (knePredValues_) delete knePredValues_;
+			for (int i = 0; i < contsolvers_.size(); i++)
+			{
+				delete contsolvers_[i];
+			}
+		}    
+	}
 
   /**
    * New clauses are added to the state. If not the initialization, then
@@ -352,55 +355,59 @@ class HVariableState
     else addNewClauses(ADD_CLAUSE_REGULAR, newClauses_);
   }
 
- /**
-  * Information about the state is reset and initialized.
-  */
-  void init()
-  {
-    if (hvsdebug)
-    {
-      cout << "entering init" << endl;
-      cout << "discrete clause number: " << getNumClauses()
-           << ", hybrid clause number: " << hybridClauseNum_ << endl;
-    }
 
-    for (int i = 0; i < getNumClauses(); i++) 
-    {
-      numTrueLits_[i] = 0;
-      falseClause_[i] = 0;
-      whereFalse_[i] = 0;
-    }
+
+	/**
+	* Information about the state is reset and initialized.
+	*/
+	void init()
+	{
+		if (hvsdebug)
+		{
+			cout << "entering init" << endl;
+			cout <<	"discrete clause number: " << getNumClauses()
+                 << ", hybrid clause number: " << hybridClauseNum_ << endl;
+		}
+
+		for (int i = 0; i < getNumClauses(); i++) 
+		{
+			numTrueLits_[i] = 0;
+			falseClause_[i] = 0;
+			whereFalse_[i] = 0;
+		}
 		
-    totalFalseConstraintNum_ = 0;
-    costOfTotalFalseConstraints_ = 0.0;
-    numFalseClauses_ = 0;
-    costOfFalseClauses_ = 0.0;
-    hybridFalseConstraintNum_ = 0;
-    costHybridFalseConstraint_ = 0.0;
+		totalFalseConstraintNum_ = 0;
+		costOfTotalFalseConstraints_ = 0.0;
+		numFalseClauses_ = 0;
+		costOfFalseClauses_ = 0.0;
+		hybridFalseConstraintNum_ = 0;
+		costHybridFalseConstraint_ = 0.0;
 
-    weightSumCont_ = 0.0;
-    weightSumDis_ = 0.0;
+		weightSumCont_ = 0.0;
+		weightSumDis_ = 0.0;
 
-      // Initialize info arrays
-    initMakeBreakCostWatch();
-    initMakeBreakCostWatchCont();
-    if (hvsdebug)
-      cout << "leaving init" << endl;
-  }
+		// Initialize info arrays
+		initMakeBreakCostWatch();
+		initMakeBreakCostWatchCont();
+		if (hvsdebug)
+		{
+			cout << "leaving init" << endl;
+		}		
+	}
 
-  void initLowState()
-  {
-    lowCost_ = LDBL_MAX;
-    lowBad_ = INT_MAX;
-    lowCostAll_ = LDBL_MAX;
-    lowBadAll_ = INT_MAX;
-    lowCostHybrid_ = LDBL_MAX;
-    lowBadHybrid_ = INT_MAX;
-  }
+	void initLowState()
+	{
+		lowCost_ = LDBL_MAX;
+		lowBad_ = INT_MAX;
+		lowCostAll_ = LDBL_MAX;
+		lowBadAll_ = INT_MAX;
+		lowCostHybrid_ = LDBL_MAX;
+		lowBadHybrid_ = INT_MAX;
+	}
 
- /**
-  * State is re-initialized with all new clauses and atoms.
-  */
+  /**
+   * State is re-initialized with all new clauses and atoms.
+   */
   void reinit()
   {
     clause_.clearAndCompress();
@@ -414,6 +421,7 @@ class HVariableState
     deadClause_.clearAndCompress();
     threshold_.clearAndCompress();
 
+    //newClauses_.append(gndClauses_);
     for (int i = 0; i < gndClauses_->size(); i++)
       newClauses_.append((*gndClauses_)[i]);
 
@@ -430,20 +438,20 @@ class HVariableState
     init();    
   }
 
-    // Initialize variables from evidence.
-  void setInitFromEvi(bool bInitFromEvi)
-  {
-    bInitFromEvi_ = bInitFromEvi;
-  }
+	// Initialize variables from evidence.
+	void setInitFromEvi(bool bInitFromEvi)
+	{
+		bInitFromEvi_ = bInitFromEvi;
+	}
 
- /**
-  * Makes a random truth assigment to all (active) atoms. Blocks are
-  * taken into account: exactly one atom in the block is set to true
-  * and the others are set to false. For continous variables, we assign an
-  * arbitrary value
-  */
-  void initRandom()
-  {
+	/**
+	* Makes a random truth assigment to all (active) atoms. Blocks are
+	* taken into account: exactly one atom in the block is set to true
+	* and the others are set to false. For continous variables, we assign an
+    * arbitrary value
+	*/
+	void initRandom()
+	{
 		// Initialize variable assignment values
 		if (!bInitFromEvi_) // Random initialization rather than initialize from evidence.
 		{
@@ -473,12 +481,6 @@ class HVariableState
 		}
 		else
 		{
-            // Random truth value for discrete variables.
-            for (int i = 1; i <= baseNumAtoms_; i++)
-            {
-                if (hvsdebug) cout << "Atom " << i << " not in block" << endl;
-                setValueOfAtom(i, random() % 2, false, -1);
-            }
 			//atom_.copyFrom(atomEvi_);
 			contAtoms_.copyFrom(contAtomsEvi_);
 		}
@@ -3439,14 +3441,10 @@ class HVariableState
 		}
 	}
 
-	// Update the related info for the disClauseValue, clauseValue, weightSum,
-    // etc.
-	// This function could be called by UpdateHybridClauseByCont or
-    // UpdateHybridClauseByDis.
-	// If called by UpdateHybridClauseByCont, then the constraint must be
-    // unsatisfied in previous iteration due to HMCS
-	// If called by UpdateHybridClauseByDis, then it could be satisfied in
-    // previous iteration.
+	// Update the related info for the disClauseValue, clauseValue, weightSum, etc.
+	// This function could be called by UpdateHybridClauseByCont or UpdateHybridClauseByDis.
+	// If called by UpdateHybridClauseByCont, then the constraint must be unsatisfied in previous iteration due to HMCS
+	// If called by UpdateHybridClauseByDis, then it could be satisfied in previous iteration.
 	void UpdateHybridClause(const int& contClauseIdx)
 	{
 		double cont;
@@ -3455,14 +3453,12 @@ class HVariableState
 		hybridClauseValue_[contClauseIdx] = 
           HybridClauseValue(contClauseIdx, dis, cont);
 		hybridClauseDisValue_[contClauseIdx] = dis;
-		weightSumCont_ =
-          weightSumCont_ - vOld + hybridClauseValue_[contClauseIdx];
+		weightSumCont_ = weightSumCont_ - vOld + hybridClauseValue_[contClauseIdx];
 		//hybridClauseValue_[contClauseIdx] = bDis*cont*hybridWts_[contClauseIdx];
 		//contDisValue_[contClauseIdx] = int(bDis);
 		bool bSatLast = hybridConstraints_[contClauseIdx].bSatisfiedLast_;
 		hybridConstraints_[contClauseIdx].bSatisfiedLast_ =
-			isSatisfied(hybridConstraints_[contClauseIdx],
-                        hybridClauseValue_[contClauseIdx]);
+			isSatisfied(hybridConstraints_[contClauseIdx], hybridClauseValue_[contClauseIdx]);
 
 		if (!hybridConstraints_[contClauseIdx].bSatisfiedLast_)
 		{
@@ -3478,8 +3474,7 @@ class HVariableState
 
 		if(bSatLast && !hybridConstraints_[contClauseIdx].bSatisfiedLast_)
 		{
-              // update false cont constraint info
-			addFalseHybridConstraint(contClauseIdx);
+			addFalseHybridConstraint(contClauseIdx);// update false cont constraint info
 		}
 
 		if (!bSatLast && hybridConstraints_[contClauseIdx].bSatisfiedLast_)
@@ -3582,20 +3577,17 @@ class HVariableState
 	//////////////////////////////////////////////////////////////////////////
 
 	// Solve the hybrid constraint according to the given continuous variable.
-	double SolveConstraintAndRandomSample(const int& contClauseIdx,
-                                          const int& inIdx) 
+	double SolveConstraintAndRandomSample(const int& contClauseIdx, const int& inIdx) 
 	{
 		double dis = HybridClauseDisPartValue(contClauseIdx);
 		// Discrete part is 0, while threshold greater than 0, at this time can not solve by varying continuous variables
-		if (fabs(dis) < 0.0001 &&
-            hybridConstraints_[contClauseIdx].vThreshold_ > 0) 
+		if (fabs(dis) < 0.0001 && hybridConstraints_[contClauseIdx].vThreshold_ > 0) 
 		{
 			//cout << "unsolvable becoz of dis, constraint: " << contClauseIdx << endl;
 			return FLIPDIS;
 		}
 		// The discrete part is 0 and the threshold is less than 0. The constraint is always satisfied, no matter what values the continuous variables are.
-		else if (fabs(dis) < 0.0001 && 
-                 hybridConstraints_[contClauseIdx].vThreshold_ <= 0)
+		else if (fabs(dis) < 0.0001 && hybridConstraints_[contClauseIdx].vThreshold_ <= 0)
 		{
 			return 0;
 		}
@@ -3630,9 +3622,8 @@ class HVariableState
 		// This is the improvement from discrete clauses
 		long double improvementDis = makeCost_[atomIdx] - breakCost_[atomIdx];
 		double improvementHybrid = getDisImproveInHybridByFlippingMCSAT(atomIdx);
-		if (hvsdebug)
-        {
-		  cout << "Leaving HVariableState::getImprovementByFlippingDisHMCS" << endl;
+		if (hvsdebug) {
+			cout << "Leaving HVariableState::getImprovementByFlippingDisHMCS" << endl;
 		}
 		return improvementDis + improvementHybrid;
 	}
@@ -3643,9 +3634,8 @@ class HVariableState
     // computed as the actual number of newly satisfied constraints.
 	double getDisImproveInHybridByFlippingMCSAT(const int& atomIdx) 
 	{	
-		if (hvsdebug)
-        {
-		  cout << "Entering HVariableState::getDisImproveInHybridByFlippingMCSAT" << endl;
+		if (hvsdebug) {
+			cout << "Entering HVariableState::getDisImproveInHybridByFlippingMCSAT" << endl;
 		}
 		double improvement = 0;
 		atom_[atomIdx] = !atom_[atomIdx];
@@ -3658,24 +3648,16 @@ class HVariableState
 			if (!isSatisfied(cst, contClauseValue) && cst.bSatisfiedLast_)
             {
 				// Calculate improvement according to cost.
-				// Each hybrid constraint is treated as a single weighted
-                // ground formula.
-				improvement =
-                  improvement - fabs(hybridClauseCost_[contClauseIdx]);
-			}
-            else if (isSatisfied(cst, contClauseValue) && !cst.bSatisfiedLast_)
-            {
-				// each hybrid constraint is treated as a single weighted
-                // ground formula
-				improvement =
-                  improvement + fabs(hybridClauseCost_[contClauseIdx]);
+				// Each hybrid constraint is treated as a single weighted ground formula.
+				improvement = improvement - fabs(hybridClauseCost_[contClauseIdx]);
+			} else if (isSatisfied(cst, contClauseValue) && !cst.bSatisfiedLast_) {
+				// each hybrid constraint is treated as a single weighted ground formula
+				improvement = improvement + fabs(hybridClauseCost_[contClauseIdx]);
 			}
 		}
 		atom_[atomIdx] = !atom_[atomIdx];
-		if (hvsdebug)
-        {
-		  cout << "Leaving HVariableState::getDisImproveInHybridByFlippingMCSAT"
-               << endl;
+		if (hvsdebug) {
+			cout << "Leaving HVariableState::getDisImproveInHybridByFlippingMCSAT" << endl;
 		}
 		return improvement;
 	}
@@ -3769,16 +3751,13 @@ class HVariableState
       {
         int hClause = hybridContOccurrence_[atomIdx][i];
         double hclause_val = HybridClauseValue(hClause);
-          //since current assignment can surely satisfy current constraint, we
-          //only count the unsatisfied one here				
-        if (!isSatisfied(hybridConstraints_[hClause], hclause_val) && 
-            hybridConstraints_[hClause].bSatisfiedLast_)
+          //since current assignment can surely satisfy current constraint, we only count the unsatisfied one here				
+        if (!isSatisfied(hybridConstraints_[hClause], hclause_val) && hybridConstraints_[hClause].bSatisfiedLast_)
         {
             //improvement--;
           improvement = improvement - fabs(hybridClauseCost_[hClause]);
         }
-        else if (isSatisfied(hybridConstraints_[hClause], hclause_val) &&
-                 !hybridConstraints_[hClause].bSatisfiedLast_)
+        else if (isSatisfied(hybridConstraints_[hClause], hclause_val) && !hybridConstraints_[hClause].bSatisfiedLast_)
         {
             //improvement++;
           improvement = improvement + fabs(hybridClauseCost_[hClause]);
@@ -3794,24 +3773,19 @@ class HVariableState
 		double dis = HybridClauseDisPartValue(contClauseIdx);
 
 		// discrete part is 0, while the constraint threshold is greater than 0
-		// at this time it can not be solved by changing any continuous
-        // variable(s)
-		if (fabs(dis) < SMALLVALUE &&
-            hybridConstraints_[contClauseIdx].vThreshold_ > 0) 
+		// at this time it can not be solved by changing any continuous variable(s)
+		if (fabs(dis) < SMALLVALUE && hybridConstraints_[contClauseIdx].vThreshold_ > 0) 
 		{
 			return false;
 		}
 		// otherwise this constraint is already satisfied
-		else if (fabs(dis) < SMALLVALUE &&
-                 hybridConstraints_[contClauseIdx].vThreshold_ < 0) 
+		else if (fabs(dis) < SMALLVALUE && hybridConstraints_[contClauseIdx].vThreshold_ < 0) 
 		{
 			return true;
 		}
 
-		// we need to compute the optimum value here, if there is no optimum,
-        // the program will exit
-		// TODO: replace the computation of optimum with L-BFGS-B to adapt
-        // arbitrary polynomial
+		// we need to compute the optimum value here, if there is no optimum, the program will exit
+		// TODO: replace the computation of optimum with L-BFGS-B to adapt arbitrary polynomial
 
 		double optValue;
 		map<int,double>::const_iterator citer;
@@ -3837,23 +3811,20 @@ class HVariableState
 			}
 		}
 
-		if (fabs(dis) == 1 &&
-            optValue * hybridWts_[contClauseIdx] >=
-            hybridConstraints_[contClauseIdx].vThreshold_)
+		if (fabs(dis) == 1 
+			&& optValue * hybridWts_[contClauseIdx] >= hybridConstraints_[contClauseIdx].vThreshold_)
 		{
 			return true;
 		}
-		else if (fabs(dis) == 1 &&
-                 optValue * hybridWts_[contClauseIdx] <
-                 hybridConstraints_[contClauseIdx].vThreshold_)
+		else if (fabs(dis) == 1 
+			&& optValue * hybridWts_[contClauseIdx] < hybridConstraints_[contClauseIdx].vThreshold_)
 		{
 			return false;
 		}
 		return true;
 	}
 
-	// HMC-SAT style, each hybrid clause is associated with an inequality
-    // constraint.
+	// HMC-SAT style, each hybrid clause is associated with an inequality constraint.
 	// Return value: positive -- discrete clause, negative -- hybrid clause
 	int getRandomFalseClauseIndexHMCS()  //need to be changed to adapt hybrid
 	{
@@ -3890,26 +3861,19 @@ class HVariableState
 			bool dis;
 			double vContClause = 
               HybridClauseValue(hybridContOccurrence_[atomIdx][i],dis,cont);
-			// since current assignment can surely satisfy current constraint,
-            // we only count the unsatisfied one here
-			if (!isSatisfied(hybridConstraints_[contClauseIdx], vContClause) &&
-                hybridConstraints_[contClauseIdx].bSatisfiedLast_)				
+			//since current assignment can surely satisfy current constraint, we only count the unsatisfied one here				
+			if (!isSatisfied(hybridConstraints_[contClauseIdx], vContClause) && hybridConstraints_[contClauseIdx].bSatisfiedLast_)				
 			{
 				//improvement--;
-				improvement =
-                  improvement - fabs(hybridClauseCost_[contClauseIdx]);
+				improvement = improvement - fabs(hybridClauseCost_[contClauseIdx]);
 			}
-			else if (isSatisfied(hybridConstraints_[contClauseIdx],
-                                 vContClause) &&
-                     !hybridConstraints_[contClauseIdx].bSatisfiedLast_)
+			else if (isSatisfied(hybridConstraints_[contClauseIdx], vContClause) && !hybridConstraints_[contClauseIdx].bSatisfiedLast_)
 			{
 				//improvement++;
-				improvement =
-                  improvement + fabs(hybridClauseCost_[contClauseIdx]);
+				improvement = improvement + fabs(hybridClauseCost_[contClauseIdx]);
 			}
 		}
-		//check continuous constraints, assume constraints are in the form 
-        //C(x) > v
+		//check continuous constraints, assume constraints are in the form C(x) > v
 		contAtoms_[atomIdx] = vOldContAtomValue; //reset the cont variable value
 		return improvement;
 	}
@@ -3941,10 +3905,8 @@ class HVariableState
 	{
 		for(int i = 0; i < hybridClauseNum_; i++)
 		{
-			hybridConstraints_[i].vThreshold_ = 
-              hybridClauseValue_[i] +
-              log((double(random()) + 0.1)/double(RAND_MAX));
-		}
+			hybridConstraints_[i].vThreshold_ = hybridClauseValue_[i] + log((double(random()) + 0.1)/double(RAND_MAX));
+		}									
 	}
 
 	void addFalseClause(const int& clauseIdx)
@@ -4021,11 +3983,9 @@ class HVariableState
 			lbfgsp.setUpperBounds(upper);
 			lbfgsp.setLowerBounds(lower);
 
-			// Since the L-BfGS package only support minize functionality
-            // interface.
+			// Since the L-BfGS package only support minize functionality interface.
 			// We assume the weight contribution from num terms are negative,
-			// s.t., we could achieve the optimal value by minimizing its
-            // negation.
+			// s.t., we could achieve the optimal value by minimizing its negation.
 			if (hybridClauseCost_[i] > 0)	
 			{
 				pl.MultiplyConst(-1.0);
@@ -4038,13 +3998,11 @@ class HVariableState
 			lbfgsCache_[i].copyFrom(pl.GetVarValue());
 			if(hybridClauseCost_[i] > 0) f *= -1.0;
 			hmwsContOptimal_[i] = f;
-			if ((f > 0 && hybridClauseCost_[i] > 0) ||
-                (hybridClauseCost_[i] < 0 && f < 0))
+			if ((f > 0 && hybridClauseCost_[i] > 0) || (hybridClauseCost_[i] < 0 && f < 0))
 			{
 				hmwsDisOptimal_[i] = true;
 			}
-			else if ((f > 0 && hybridClauseCost_[i] < 0) ||
-                     (hybridClauseCost_[i] > 0 && f < 0))
+			else if ((f > 0 && hybridClauseCost_[i] < 0) || (hybridClauseCost_[i] > 0 && f < 0))
 			{
 				hmwsDisOptimal_[i] = false;
 			}
@@ -4054,17 +4012,12 @@ class HVariableState
 		}
 	}
 
-	// Given a set of continuous variables, compute its Markov blanket in the
-    // HMLN (the hybrid clauses involving these variables -- S, assume values
-    // of all other variables are fixed). 
-	// Then optimize the Markov blanket according to these variables. Save the 
-    // variable values in assign.
+	// Given a set of continuous variables, compute its Markov blanket in the HMLN (the hybrid clauses involving these variables -- S, assume values of all other variables are fixed). 
+	// Then optimize the Markov blanket according to these variables. Save the variable values in assign.
 	// Return value is the improvement of weighted sum on the Markov blanket.
-	// Due to the implementation limit of Polynomial class, the variable order
-    // in the contVarIdx has to be the same as in their polynomial.
+	// Due to the implementation limit of Polynomial class, the variable order in the contVarIdx has to be the same as in their polynomial.
 	// This function doesn't change the state variables' values.
-	double ReduceClauseAndOptimize(const Array<int>& contVarIdx,
-                                   Array<double>& assign)
+	double ReduceClauseAndOptimize(const Array<int>& contVarIdx, Array<double>& assign)
 	{
 		if (hvsdebug) {
 			cout << "Entering ReduceClauseAndOptimize ...." << endl;
@@ -4435,8 +4388,12 @@ class HVariableState
 
 	void saveLastAsCurrentAssignment()
 	{
+cout << "entering saveLastAsCurrentAssingment" << endl;
+cout << "atom_size1 " << atom_.size() << endl;
 		atom_.copyFrom(atomsLast_);
+cout << "atom_size2 " << atom_.size() << endl;
 		contAtoms_.copyFrom(contAtomsLast_);
+cout << "leaving saveLastAsCurrentAssingment" << endl;
 	}
 	void updateCost()
 	{
@@ -4444,6 +4401,7 @@ class HVariableState
 		costHybridFalseConstraint_ = 0;
 		totalFalseConstraintNum_ = 0;
 		costOfTotalFalseConstraints_ = 0;
+cout << "3NFC0" << endl;
 		numFalseClauses_ = 0;
 		costOfFalseClauses_ = 0;	 
 		weightSumCont_ = 0;
@@ -4453,16 +4411,13 @@ class HVariableState
 	}
 	
 	// Used by learning. 
-	// Compute the value sum of given first-order hybrid formula from the
-    // ground values of hybrid variables.
+	// Compute the value sum of given first-order hybrid formula from the ground values of hybrid variables.
 	void getContClauseGndings(Array<double>* const & numGndings)
 	{
 		assert(numGndings->size() == hybridFormulaNum_);
-          // First-order hybrid formulas.
-		for (int i = 0; i < hybridFormulaNum_; i++) 
+		for(int i = 0; i < hybridFormulaNum_; i++) // First-order hybrid formulas.
 		{
-              // Index of ground hybrid clauses.
-			Array<int>& ar = hybridFormulaGndClauseIdx_[i]; 
+			Array<int>& ar = hybridFormulaGndClauseIdx_[i]; // Index of ground hybrid clauses.
 			double v = 0;
 			for(int j = 0; j < ar.size(); j++)
 			{
@@ -4473,8 +4428,7 @@ class HVariableState
 		}
 	}
 
-	void getContClauseGndingsWithUnknown(double numGndings[], int contClauseCnt,
-                                         const Array<bool>* const& unknownPred)
+	void getContClauseGndingsWithUnknown(double numGndings[], int contClauseCnt, const Array<bool>* const& unknownPred)
 	{
 		assert(unknownPred->size() == getNumAtoms());
 		assert(contClauseCnt == getNumContFormulas());
@@ -4732,16 +4686,11 @@ class HVariableState
 		return isSatisfied(hybridConstraints_[iContClauseIdx]);
 	}
 
-    /**
-     * Checks if a hybrid constraint is satisfied by a value. Each hybrid
-     * constraint has a current threshold, and a value given by the current
-     * assignment. This simply checks if the value (weight * discrete part
-     * * continuous part) is greater than or equal to the threshold.
-     */
-	bool isSatisfied(const HybridConstraint& cst, double value)
+	//check constraint satisfied or not
+	bool isSatisfied(const HybridConstraint& cst, double currentValue) // the value is wt* dis * cont
 	{
 		assert(hybridWts_[cst.contClauseIdx_] != 0);
-		if (value >= cst.vThreshold_)
+		if (currentValue >= cst.vThreshold_)
 		{
 			return true;
 		}			
@@ -4751,14 +4700,12 @@ class HVariableState
 
 	bool CheckIfLBFGSCacheSatisfied(int contClauseIdx)
 	{
-		// if still can not find satisfying solution till some point, we just
-        // quit L-BFGS
+		// if still can not find satisfying solutionution till some point, we just quit L-BFGS
 		PolyNomial pl = hybridPls_[contClauseIdx];
 		pl.SetVarValue(lbfgsCache_[contClauseIdx]);
 		double plValue = pl.ComputePlValue();
 		bool dis = HybridClauseDisPartValue(contClauseIdx);
-		return isSatisfied(hybridConstraints_[contClauseIdx],
-                           plValue * double(dis));
+		return isSatisfied(hybridConstraints_[contClauseIdx], plValue * double(dis));
 	}
 
 
@@ -4771,11 +4718,8 @@ class HVariableState
 		return isSatisfied(cst, currentValue);
 	}
 
-	void LoadDisPartAtoms(const string & str, Array<int>& arDis,
-                          map<string, int>& gndPredCont, const int& clauseIdx) 
-	{
-        // here we assume the same dis variables can not appear more than once
-        // in the same clause
+	void LoadDisPartAtoms(const string & str, Array<int>& arDis, map<string, int>& gndPredCont, const int& clauseIdx) 
+	{// here we assume the same dis variables can not appear more than 1 times in the same clause
 		stringstream s(str);
 		string strPred;
 		while(getline(s, strPred, ';'))

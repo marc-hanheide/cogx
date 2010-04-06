@@ -73,394 +73,337 @@
 #include "hashint.h"
 #include <ext/hash_set>
 #include "variable.h"
-#include "hypercube.h"
-#include "hypercubeoperations.h"
-#include "inferutil.h"
 
 using namespace std;
 using namespace __gnu_cxx;
 
 class SuperClause
 {
-  public:
+ public:
+
+  SuperClause(Clause * const & clause, Array<Variable *> * const & eqVars,
+              Array<int> * const & varIdToCanonicalVarId, bool useImplicit,
+              double outputWt)
+  {
+    int parentSuperClauseId = -1;
+    outputWt_ = outputWt;
+    init(clause, eqVars, varIdToCanonicalVarId, useImplicit,
+         parentSuperClauseId);
+  }
+
+  SuperClause(Clause * const & clause, Array<Variable *> * const & eqVars,
+              Array<int> * const & varIdToCanonicalVarId, bool useImplicit,
+              int parentSuperClauseId, double outputWt)
+  {
+    outputWt_ = outputWt;
+    init(clause, eqVars, varIdToCanonicalVarId, useImplicit,
+         parentSuperClauseId);
+  }
+
+  void init(Clause * const & clause, Array<Variable *> * const & eqVars,
+            Array<int> * const & varIdToCanonicalVarId, bool useImplicit,
+            int parentSuperClauseId)
+  {
+    clause_ = clause;
+    constantTuples_ = new IntArrayHashArray();
+    tupleCnts_ = new Array<double>();
+    implicitTupleFlags_ = new Array<bool>();
+    eqVars_ = new Array<Variable *>(*eqVars);
+    varIdToCanonicalVarId_ = new Array<int>(*varIdToCanonicalVarId);
+    useImplicit_ = useImplicit;
+    superClauseId_ = superClauseIndex__++; 
+    parentSuperClauseId_ = parentSuperClauseId;
+  }
+                    
+  ~SuperClause()
+  {
+    delete constantTuples_;
+    delete tupleCnts_;
+    delete implicitTupleFlags_;
+    delete eqVars_;
+  }
           
-    SuperClause(Clause * const & clause, 
-                IntArrayHashArray * const & neqConstraints,
-                Array<int> * const & varIdToCanonicalVarId,
-                bool useCT, double outputWt)
+  SuperClause * createSuperClauseFromTemplate()
+  {
+    return new SuperClause(clause_, eqVars_, varIdToCanonicalVarId_,
+                           useImplicit_, superClauseId_, outputWt_);
+  }
+
+  int getSuperClauseId() { return superClauseId_;}
+
+  int getParentSuperClauseId() { return parentSuperClauseId_;}
+
+  Clause * getClause() { return clause_;}
+
+  double getTupleCount(int index) {return (*tupleCnts_)[index];}
+
+  int getNumTuples(){ return constantTuples_->size();}
+
+  int getTupleIndex(Array<int> * const & constants)
+  {
+    return constantTuples_->find(constants);
+  }
+
+  Array<int> * getConstantTuple(int tindex) {return (*constantTuples_)[tindex];}
+
+  Array<int> * getVarIdToCanonicalVarId() { return varIdToCanonicalVarId_;}
+
+  bool isUseImplicit() { return useImplicit_;}
+
+  bool checkIfImplicit(Array<int> * const & constants)
+  {
+    bool isImplicit = false;
+    for (int i = 0; i < constants->size(); i++)
     {
-      int parentSuperClauseId = -1;
-      outputWt_ = outputWt;
-      init(clause,neqConstraints,varIdToCanonicalVarId,useCT,parentSuperClauseId);
+      if ((*eqVars_)[i] == NULL)
+        continue;
+      if ((*eqVars_)[i]->isImplicit((*constants)[i]))
+      {
+        isImplicit = true;
+        break;
+      }
+    }
+    return isImplicit;
+  }
+
+    //increments the count of the given constant tuple. Assumes that
+    //tuple is already present
+  void incrementTupleCount(Array<int> * const & constants, double cnt)
+  {
+    int index = constantTuples_->find(constants);
+    (*tupleCnts_)[index] += cnt;
+  }
+
+    //add the constant tuple - returns true if the addition was
+    //successful i.e. if the tuple was not already present
+  bool addConstantTuple(Array<int> * const & constants)
+  {
+    bool isImplicit; 
+    int index = constantTuples_->find(constants);
+      //this tuple does not exist already then add it
+    if (index < 0)
+    {
+      constantTuples_->append(constants);
+      tupleCnts_->append(0.0);
+      if (useImplicit_)
+        isImplicit = checkIfImplicit(constants);
+      else
+        isImplicit = false;
+      implicitTupleFlags_->append(isImplicit);
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+    //add a copy of the constants (after replacing the non existent vars by
+    //their var ids) and increment the count. 
+  void addNewConstantsAndIncrementCount(Array<int> * const & constants,
+                                        double cnt)
+  {
+    bool addedNew = false;
+    Array<int>* newConstants = new Array<int>(*constants);
+      //add this constant tuple to the superclause
+    addedNew = addConstantTuple(newConstants);   
+    incrementTupleCount(newConstants,cnt);
+      //delete this newly created tuple if it was already present
+    if (!addedNew)
+      delete newConstants;
+  }
+
+    //get the constants corresponding to this predicate in the given tuple id
+  Array<int> * getPredicateConstants(int tindex, Predicate *pred)
+  {
+    bool isImplicitTuple = useImplicit_ && (*implicitTupleFlags_)[tindex];
+    Array<Variable*> *pvars = new Array<Variable *>();
+    Array<int> * pconstants = new Array<int>;
+    Array<int> * constants = (*constantTuples_)[tindex];
+    for (int i = 0; i < pred->getNumTerms(); i++)
+    {
+      const Term *term = pred->getTerm(i);
+      int id = term->getId();
+      assert(id < 0);
+      pconstants->append((*constants)[-id]);
+        //need to do this only if implicit representation
+      if (isImplicitTuple)
+        pvars->append((*eqVars_)[-id]);
     }
 
-          SuperClause(Clause * const & clause, 
-                      IntArrayHashArray * const & neqConstraints,
-                      Array<int> * const & varIdToCanonicalVarId,
-                      bool useCT, 
-                      int parentSuperClauseId, double outputWt)
+    if (!isImplicitTuple)
     {
-    	outputWt_ = outputWt;
-               init(clause,neqConstraints,varIdToCanonicalVarId,useCT,parentSuperClauseId);
-          }
+      delete pvars;
+      return pconstants;
+    }
 
-          void init(Clause * const & clause, 
-                      IntArrayHashArray * const & neqConstraints,
-                      Array<int> * const & varIdToCanonicalVarId,
-                      bool useCT,
-                      int parentSuperClauseId) {
-               clause_ = clause;
-			   neqConstraints_ = neqConstraints;
-               varIdToCanonicalVarId_ = varIdToCanonicalVarId;
-               useCT_ = useCT;
+      //to make sure this is not used below
+    constants = NULL;
                
-			   hyperCubes_ = new HyperCubeHashArray();
-               hyperCubeCnts_ = new Array<double>();
-			   
-               superClauseId_ = superClauseIndex__++; 
-               parentSuperClauseId_ = parentSuperClauseId;
-          }
-                    
-          ~SuperClause() {
-               delete hyperCubes_;
-               delete hyperCubeCnts_;
-          }
+      //now standardize the implicit constants
+    Array<bool> *seenIds = new Array<bool>(pconstants->size(), false);
+    IntHashArray *pconstantsForVar = new IntHashArray();
+    for (int i = 0; i < pconstants->size(); i++)
+    {
+      if (!(*pvars)[i]->isImplicit((*pconstants)[i]) || (*seenIds)[i])
+        continue;
+      pconstantsForVar->clear();
+      for (int j = i; j < pconstants->size(); j++)
+      {
+        if(!(*pvars)[j]->isImplicit((*pconstants)[j]))
+          continue;
+        if((*pvars)[i] != (*pvars)[j])
+          continue;
+        pconstantsForVar->append((*pconstants)[j]);
+        (*seenIds)[j] = true;
+      }
+                   
+      for (int j = i; j < pconstants->size(); j++)
+      {
+        if(!(*pvars)[j]->isImplicit((*pconstants)[j]))
+          continue;
+        if((*pvars)[i] != (*pvars)[j])
+          continue;
+        int index = pconstantsForVar->find((*pconstants)[j]);
+        (*pconstants)[j] = (*pvars)[i]->getImplicitConstant(index);
+      }
+    }
+
+    delete pvars;
+    delete seenIds;
+    delete pconstantsForVar;
+    return pconstants;
+  }
+
+  int getImplicitCount(Array<int> * const & constants,
+                       Array<bool> * const & relevantIds,
+                       Array<bool> * const & predIds)
+  {
+    if(!useImplicit_) return 1;
+    int cnt = 1;
+    bool print = false;
+    Array<bool> *seenIds = new Array<bool>(constants->size(),false);
+    IntHashArray *constantsForVar = new IntHashArray();
+    IntHashArray *predConstantsForVar = new IntHashArray();
+    if (print)
+    {
+      cout<<"Constants : ";
+      printArray(*constants,1,cout);
+      cout<<endl;
+    }
+    for (int i = 0; i < constants->size(); i++)
+    {
+      if (!(*relevantIds)[i] || (*seenIds)[i])
+        continue;
+      constantsForVar->clear();
+      predConstantsForVar->clear();
+      for (int j = i; j < constants->size(); j++)
+      {
+        if (!(*relevantIds)[j])
+          continue;
+        if ((*eqVars_)[i] != (*eqVars_)[j])
+          continue;
+                      
+          //take a note of this if it appears in the predicate
+        if (predIds && (*predIds)[j])
+          predConstantsForVar->append((*constants)[j]);
+        constantsForVar->append((*constants)[j]);
+        (*seenIds)[j] = true;
+      }
+      int numImplicitConstants = (*eqVars_)[i]->getNumImplicitConstants();
+      int constantsForVarSize = constantsForVar->size();
+      int predConstantsForVarSize = predConstantsForVar->size();
+      assert(predConstantsForVarSize <= constantsForVarSize);
+                   
+      if (print)
+      {
+        cout<<"numImplicitConstants = "<<numImplicitConstants;
+        cout<<", constantsForVarSize = "<<constantsForVarSize<<endl;
+        cout<<", predConstantsForVarSize = "<<predConstantsForVarSize<<endl;
+      }
+      cnt = cnt * Util::permute(numImplicitConstants - predConstantsForVarSize,
+                                constantsForVarSize - predConstantsForVarSize);
+    }
+
+    delete seenIds;
+    delete constantsForVar;
+    delete predConstantsForVar;
+
+    return cnt;
+  }
+
+    //get the count of implicit constants (partial tuples) joining with this
+    //predicate in the given tuple 
+  int getImplicitCountJoiningWithPred(int tindex, Predicate *pred)
+  {
+      //count is 1 if we are not using implicit representation
+    bool isImplicitTuple = useImplicit_ && (*implicitTupleFlags_)[tindex];
+    if (!isImplicitTuple)
+      return 1;
+
+    Array<int> *constants = (*constantTuples_)[tindex];
+    Array<bool> *relevantIds = new Array<bool>(constants->size(),true);
+
+    for (int i = 0; i < constants->size(); i++)
+    {
+      int constantId = (*constants)[i];
+      if (!(*eqVars_)[i] || !((*eqVars_)[i]->isImplicit(constantId)))
+      {
+        (*relevantIds)[i] = false;
+      }
+    }
+
+    Array<bool> *predIds = new Array<bool>(constants->size(), false);
+      //those appearing in this predicate should also be ignored
+      //(made irrelevant)
+    for (int i = 0; i < pred->getNumTerms(); i++)
+    {
+      const Term *term = pred->getTerm(i);
+      int id = term->getId();
+      assert(id < 0);
+      (*predIds)[-id] = true;
+    }
+
+    int cnt = getImplicitCount(constants, relevantIds, predIds);
+    delete relevantIds;
+    delete predIds;
+    return cnt;
+  }
           
-          SuperClause * createSuperClauseFromTemplate() {
-               //this becomes the parent super clause
-               return new SuperClause(clause_, neqConstraints_, varIdToCanonicalVarId_,
-                                      useCT_,superClauseId_);
-          }
-
-		  IntArrayHashArray * getNeqConstraints() { return neqConstraints_;}
-
-          int getSuperClauseId() { return superClauseId_;}
+    //get the total number of implicit tuples which are represented by the
+    //tuple at given index
+  int getNumImplicitTuples(int tindex)
+  {
+      //count is 1 if we are not using implicit representation
+    bool isImplicitTuple = useImplicit_ && (*implicitTupleFlags_)[tindex];
+    if (!isImplicitTuple)
+      return 1;
+    Array<int> *constants;
+    constants = (*constantTuples_)[tindex];
+    Array<bool> *relevantIds = new Array<bool>(constants->size(), true);
+    for (int i = 0; i < constants->size(); i++)
+    {
+      int constantId = (*constants)[i];
+      if (!(*eqVars_)[i] || !((*eqVars_)[i]->isImplicit(constantId)))
+      {
+        (*relevantIds)[i] = false;
+      }
+    }
+    Array<bool> * predIds = NULL;
+    int cnt = getImplicitCount(constants, relevantIds, predIds);
+    delete relevantIds;
+    return cnt;
+  }
           
-          int getParentSuperClauseId() { return parentSuperClauseId_;}
-
-          Clause * getClause(){ return clause_;}
-
-          double getHyperCubeCount(int hindex) {return (*hyperCubeCnts_)[hindex];}
-
-          int getNumHyperCubes(){ return hyperCubes_->size();}
-
-          int getHyperCubeIndex(HyperCube * const & hyperCube) {return hyperCubes_->find(hyperCube);}
-
-          HyperCubeHashArray *getHyperCubes() {return hyperCubes_;}
-          
-		  HyperCube * getHyperCube(int hindex) {return (*hyperCubes_)[hindex];}
-
-          Array<int> * getVarIdToCanonicalVarId(){return varIdToCanonicalVarId_;}
-
-          bool isUseCT(){ return useCT_;}
-
-          //increments the count of the given HyperCube. Assumes that
-          //hyperCube is already present
-          void incrementHyperCubeCount(HyperCube * const & hyperCube, double cnt) {
-             int index = hyperCubes_->find(hyperCube);
-             (*hyperCubeCnts_)[index] += cnt;
-          }
-
-          //add the hyperCube - returns true if the addition was
-          //successful i.e. if the hyperCube was not already present
-          bool addHyperCube(HyperCube * const & hyperCube) {
-               int index = hyperCubes_->find(hyperCube);
-               //this tuple does not exist already then add it
-               if(index < 0) {
-                 hyperCubes_->append(hyperCube);
-                 hyperCubeCnts_->append(0.0);
-                 return true;
-               } else {
-                    return false;
-               }
-          }
-
-          //create a hypercube with the given constants and increment the count
-          void addNewConstantsAndIncrementCount(Array<int> * const & constants, double cnt) {
-           bool addedNew = false;
-           HyperCube *newHyperCube = new HyperCube(constants);
-           //add this hyperCube to the superclause
-           addedNew = addHyperCube(newHyperCube);   
-           incrementHyperCubeCount(newHyperCube,cnt);
-           //delete this newly created hypercube if it was already present
-           if(!addedNew) {
-			//newHyperCube->deleteVarConstants();
-            delete newHyperCube;
-		   }
-         }
-          
-		  //add a copy of the hypercube and increment the count
-          void addNewHyperCubeAndIncrementCount(HyperCube * const & hyperCube, double cnt) {
-           bool addedNew = false;
-           HyperCube *newHyperCube = new HyperCube(hyperCube);
-           //add this hyperCube to the superclause
-           addedNew = addHyperCube(newHyperCube);   
-           incrementHyperCubeCount(newHyperCube,cnt);
-           //delete this newly created hypercube if it was already present
-           if(!addedNew) {
-			//newHyperCube->deleteVarConstants();	
-            delete newHyperCube;
-		   }
-         }
-
-
-          //get the HyperCube corresponding to this predicate in the given hypercube id
-          HyperCube * getPredicateHyperCube(int hindex, Predicate *pred) {
-			   int predTermCnt = pred->getNumTerms();
-			   //IntHashArray *varConstants;
-			   IntArray *varConstants;
-			   HyperCube * phyperCube = new HyperCube(predTermCnt);
-               HyperCube * hyperCube = (*hyperCubes_)[hindex];
-
-               if(useCT_) {
-			    hyperCube->updateToImplicitTiedRepresentation();
-			   }
-
-			   //add the element at index 0
-			   //phyperCube->addNewVariable(hyperCube->getVarConstants(0));
-               for(int termno=0;termno<predTermCnt;termno++) {
-                const Term *term = pred->getTerm(termno);
-                int varId = -term->getId();
-                assert(varId >= 0);
-				
-		        //copies are created in the end
-				//varConstants = new IntArray(*(hyperCube->getVarConstants(varId)));
-				varConstants = hyperCube->getVarConstants(varId);
-                phyperCube->setVarConstants(varConstants,termno+1);
-			    //phyperCube->addNewVariable(hyperCube->getVarConstants(varId));
-               }
-		
-			   if(useCT_) {
-			    hyperCube->updateToExplicitTiedRepresentation();
-		        phyperCube->updateToExplicitTiedRepresentation();
-			   }
-
-			   //now create the copies for each of the varConstants
-		       for(int termno=0; termno<predTermCnt;termno++) {
-		        int termIndex = termno+1;
-		        int refTermIndex = phyperCube->getReferenceVarId(termIndex);
-		        if(!useCT_) {
-					assert(refTermIndex == termIndex);
-				}
-				//this is a reference variable - nothing to do
-		        if(refTermIndex != termIndex)
-				 continue;
-		        varConstants = new IntArray(*(phyperCube->getVarConstants(termIndex)));
-		        phyperCube->setVarConstants(varConstants,termIndex);
-		      }
-			  return phyperCube;
-          }
-            
-          //check whether this hypercube has non zero number of tuples 
-		  int hasZeroNumTuples(HyperCube * const & hyperCube) {
-			bool needDetailedCheck = false;
-			int varCnt = hyperCube->getVarCount();
-			for(int varId=1;varId<=varCnt;varId++) {
-				  int refVarId = hyperCube->getReferenceVarId(varId);
-				  if(varId != refVarId)
-					   continue;
-                  if(hyperCube->getVarConstantCount(varId) < varCnt) {
-					   needDetailedCheck = true;
-					   break;
-				}
-			}
-
-		   if(!needDetailedCheck)
-				return false;
-
-		   Array<bool> *fixedIds = new Array<bool>(varCnt+1,false);   
-		   int num = getNumTuples(hyperCube,fixedIds);
-		   delete fixedIds;
-		   return (num <= 0);
-		  }
-
-		  //get the number of partial tuples when the variables in the fixedIds
-		  //array are fixed
-		  int getNumTuples(HyperCube * const & hyperCube, Array<bool> * const & fixedIds) {
-			   int num;
-			   int varCnt = hyperCube->getVarCount();
-			   
-			   if(useCT_) 
-			   {
-				 
-				 /*	
-			     cout<<"hyperCube is "<<endl;
-				 hyperCube->print(cout);
-				 cout<<endl;
-                 */
-				 bool allAreFixed = true;
-			     for(int varId=1;varId<=varCnt;varId++) {
-					if((*fixedIds)[varId])
-						 continue;
-					allAreFixed = false;
-			    }
-			    if(allAreFixed) {
-					return 1;
-			    }
-			    
-				//note: it is important to initialize everything to one in the
-				//following array of constantCnts
-				Array<int> *constantCnts = new IntArray(varCnt+1,1);
-				
-				for(int varId=1;varId<=varCnt;varId++) {
-				  int refVarId = hyperCube->getReferenceVarId(varId);
-				  if(varId != refVarId)
-					   continue;
-				  if((*fixedIds)[varId]) 
-					 continue;
-                  (*constantCnts)[varId] = hyperCube->getVarConstantCount(varId);
-				}
-
-			    //following code takes care of modifying the counts appropriately
-				//to incoprorate the constrained representation -
-				//NOTE: THE FOLLOWING PIECE OF CODE ASSUMES THAT MAXIMUM SIZE OF AN
-				//EQUIVALENCE CLASS OF CONSTRAINTS IS 3. IF THIS CONDITION IS VIOLATED,
-				//THE COUNTS MAY NOT BE CORRECT
-				
-				Array<int> *seenCnts = new IntArray(varCnt+1,0);
-				IntArrayHashArray *relevantConstraints = hyperCube->getRelevantConstraints(neqConstraints_);
-                IntArray *constraint;
-				int affectedVarId, oldCnt;
-				for(int i=0;i<relevantConstraints->size();i++) {
-					 constraint = (*relevantConstraints)[i];
-		             int varId1 = -(*constraint)[0];
-					 int varId2 = -(*constraint)[1];
-					 affectedVarId = 0;
-
-					 if(hyperCube->hasDisjointVarConstants(varId1,varId2))
-						  continue;
-                     
-					 (*seenCnts)[varId1]++;
-					 (*seenCnts)[varId2]++;
-
-					 if((*fixedIds)[varId1] || ((*fixedIds)[varId2])) 
-					  if((*fixedIds)[varId1] && ((*fixedIds)[varId2]))
-                       continue;
-                     
-					 //following are various conditions for finding which variable
-					 //should be affected for counts
-					 //first - fixed ids should not be touched
-					 if(!affectedVarId && (*fixedIds)[varId1]) 
-					    affectedVarId = varId2;	  
-                     if(!affectedVarId && (*fixedIds)[varId2]) 
-						  affectedVarId = varId1;
-					 
-					 //second - change the count of the id which has been seen less number of times
-				     if(!affectedVarId && (*seenCnts)[varId1] < (*seenCnts)[varId2])
-						affectedVarId = varId1;
-				     if(!affectedVarId && (*seenCnts)[varId2] < (*seenCnts)[varId1])
-						affectedVarId = varId2;
-					 
-					 //third - change the count which is lower
-					 if(!affectedVarId && (*constantCnts)[varId1] <= (*constantCnts)[varId2])
-					   affectedVarId = varId1;
-					 if(!affectedVarId && (*constantCnts)[varId1] >= (*constantCnts)[varId2])
-					   affectedVarId = varId2;
-					 
-					 oldCnt = (*constantCnts)[affectedVarId];
-				     (*constantCnts)[affectedVarId] = max(0,oldCnt-1);
-			   }
-				 
-			   num = 1;
-			   for(int varId=1;varId<=varCnt;varId++) {
-			     if((*fixedIds)[varId])
-					continue;
-				 num = num * (*constantCnts)[varId];
-			  }
-			  
-			  relevantConstraints->deleteItemsAndClear();
-			  delete relevantConstraints;
-			  delete seenCnts;
-			  delete constantCnts;
-			   
-			 } else {
-				 num = 1;
-			     for(int varId=1;varId<=varCnt;varId++) {
-			     if((*fixedIds)[varId])
-					continue;
-				 num = num * hyperCube->getVarConstantCount(varId);
-			   }
-		    }
-		     return num;
-		  }
-
-
-          //get the count of partial tuples joining with a predicate in
-          //the given hyperCube
-          int getNumTuplesJoiningWithHyperCube(int hindex, Predicate *pred) {
-               HyperCube *hyperCube = (*hyperCubes_)[hindex];
-			   int varCnt = hyperCube->getVarCount();
-               Array<bool> *fixedIds = new Array<bool>(varCnt+1,false);
-
-			   //those appearing in this predicate should not be counted
-               for(int i=0;i<pred->getNumTerms();i++) {
-                const Term *term = pred->getTerm(i);
-                int varId = -term->getId();
-                assert(varId > 0);
-                int refVarId = hyperCube->getReferenceVarId(varId);
-				(*fixedIds)[refVarId] = true;
-               }
-
-               int num = getNumTuples(hyperCube,fixedIds);
-               delete fixedIds;
-               return num;
-          }
-          
-          //get the total number of tuples which are represented by the
-          //hyperCube at the given index
-          int getNumTuples(int hindex) {
-               HyperCube *hyperCube = (*hyperCubes_)[hindex];
-			   int varCnt = hyperCube->getVarCount();
-               Array<bool> *fixedIds = new Array<bool>(varCnt+1,false);
-			   
-			   int num = getNumTuples(hyperCube,fixedIds);
-			  
-			   /*
-			   cout<<endl;
-			   hyperCube->print(cout);
-			   cout<<" ** "<<num<<endl;
-			   //cout<<"  :  "<<(*hyperCubeCnts_)[hindex]<<" * "<<num<<endl;
-			   cout<<endl;
-			   */
-			   delete fixedIds;
-               return num;
-		  }
-
-          int getNumTuples(){ 
-               int num = 0;
-			   //cout<<"***************************************************"<<endl;
-			   //cout<<"The Hypercubes and their counts are ="<<endl;
-               for(int hindex=0;hindex<hyperCubes_->size();hindex++) {
-                 num = num + getNumTuples(hindex);
-               }
-			   //cout<<"***************************************************"<<endl;
-               return num;
-
-          }
-          
-          double getNumTuplesWithDuplicates(){ 
-               double num = 0;
-			   //cout<<"***************************************************"<<endl;
-			   //cout<<"The Hypercubes and their counts are ="<<endl;
-               for(int hindex=0;hindex<hyperCubes_->size();hindex++) {
-			     double duplicateCnt = (double)(*hyperCubeCnts_)[hindex];
-                 num = num + duplicateCnt*getNumTuples(hindex);
-               }
-			   //cout<<"***************************************************"<<endl;
-               return num;
-
-          }
-		  int getNumConstants(int hindex) {
-			   return (*hyperCubes_)[hindex]->getNumConstants();
-		  }
-
-		  int getNumConstants(){ 
-               int num = 0;
-               for(int hindex=0;hindex<hyperCubes_->size();hindex++) {
-                 num = num + getNumConstants(hindex);
-               }
-               return num;
-          }
+  int getNumTuplesIncludingImplicit()
+  {
+    int num = 0;
+    for (int index = 0; index < constantTuples_->size(); index++)
+    {
+      num = num + getNumImplicitTuples(index);
+    }
+    return num;
+  }
 
   double getOutputWt()
   {
@@ -472,277 +415,43 @@ class SuperClause
     outputWt_ += outputWt;
   }
 
-		  
-		  //merge the given superClause with this one
-		  //Assumes that they correspond to the same underlying clause
-		  void merge(SuperClause * const & superClause) {
-			   HyperCube *hyperCube;	
-			   for(int hindex=0;hindex<superClause->getNumHyperCubes();hindex++) {
-                      hyperCube = superClause->getHyperCube(hindex);
-                      double hcnt = superClause->getHyperCubeCount(hindex);
-                      bool addedNew = addHyperCube(hyperCube);
-				      incrementHyperCubeCount(hyperCube,hcnt);
-					  if(!addedNew) {
-						//hyperCube->deleteVarConstants();  
-						delete hyperCube;
-					  }
-			   }
-		  }
+    //print the tuples  
+  ostream& print(ostream& out)
+  {
+    int beginIndex = 1;
+    for (int i = 0; i < constantTuples_->size(); i++)
+    {
+      printArray(*((*constantTuples_)[i]), beginIndex, out);
+      out << endl;
+    }
+    return out;
+  }
 
-/*************************** Methods for refining the hypercubes *************************/
+    //static function
+  void static resetIndex() { superClauseIndex__ = 0;}
 
-		/* get the predicate hypercube reverse index for the predicate
-		 * refinements corresponding to this hypercube */
-		Array<HyperCubeReverseIndex *> *getRefinedReverseIndex(int hindex, 
-				                                               Array<HyperCubeRefinement *> *hcRefinementArr,
-															   bool print) 
-		{
-			 int predCnt = clause_->getNumPredicates();
-			 Array<HyperCube *> *refinedPHyperCubes;
-			 Array<HyperCubeReverseIndex *> * reverseIndexArr = new Array<HyperCubeReverseIndex *>(predCnt,NULL);
-			 HyperCubeRefinement *hcRefinement;
-			 HyperCubeReverseIndex *reverseIndex;
-			 HyperCube *phyperCube, *refinedPHyperCube;
-             
-			 Predicate *pred;
-             int predId;
-			 if(print) {
-				  cout<<"Getting reverse index.."<<endl;
-			 }
-
-			 for(int pindex=0;pindex<predCnt;pindex++) {
-				  pred = clause_->getPredicate(pindex);
-				  predId = pred->getId();
-				  reverseIndex = new HyperCubeReverseIndex();
-				  reverseIndex->createIndex();
-				  phyperCube = getPredicateHyperCube(hindex, pred);
-				  hcRefinement = (*hcRefinementArr)[predId];
-				  
-				  /*cout<<"Pred id = "<<predId<<endl;
-				  cout<<"Number of subset hypercubes in this refinement = "<<hcRefinement->getNumSubsetHyperCubes()<<endl;
-                   */
-				  //cout<<"While getting refined reverse index"<<endl;
-				  if(print) {
-				   cout<<"Pred HyperCube is:"<<endl;
-				   phyperCube->print(cout);
-				   cout<<endl;
-				  }
-
-				  refinedPHyperCubes = hcRefinement->getRefinedHyperCubes(phyperCube);
-				  if(print) {
-				   cout<<"Number of refined Predicate hypercubes obtained = "<<refinedPHyperCubes->size()<<endl;
-				   cout<<"And these are "<<endl;
-				  }
-				  
-				  for(int i=0;i<refinedPHyperCubes->size();i++) {
-					   if(print) {
-					     cout<<i<<":"<<endl;
-					     (*refinedPHyperCubes)[i]->print(cout);
-					   }
-					    //refinedPHyperCube = new HyperCube((*refinedPHyperCubes)[i]); 
-					    refinedPHyperCube = (*refinedPHyperCubes)[i]; 
-					    reverseIndex->addHyperCube(refinedPHyperCube);
-				 }
-				  
-				  (*reverseIndexArr)[pindex] = reverseIndex;
-				  delete phyperCube;
-			 }
-			 return reverseIndexArr;
-		}
-        
-		//refine the hypercubes in this superclause according to hypercuberefinement
-		//Array. Also update the new hypercuberefinement array
-        void refineHyperCubes(Array<HyperCubeRefinement *> *hcRefinementArr,
-                              Array<HyperCubeRefinement *> *newHCRefinementArr,
-							  Domain * const & domain,
-							  bool print) {
-		  //print = true;
-		  if(print) {
-		   cout<<"------------------------------------------------------------"<<endl;
-		   cout<<"Ok, came in to get the Refined HyperCubes..."<<endl;
-		  }
-
-		  Array<HyperCube *> *newHyperCubes = new Array<HyperCube *>();	 
-		  Array<double> *newHyperCubeCnts = new Array<double>();	 
-		  
-		  Array<HyperCube *> *refinedHyperCubes;
-		  Array<HyperCubeReverseIndex *> * reverseIndexArr;
-		  IntHashArray *unknownPredIndices = new IntHashArray();
-		  for(int predno=0;predno<clause_->getNumPredicates();predno++) {
-			   unknownPredIndices->append(predno);
-		  }
-
-		  for(int hindex=0;hindex<getNumHyperCubes();hindex++) {
-
-		   //first get the phypercubes and the reverseindex according to
-		   //current refinement
-		    if(print) {
-			 cout<<endl<<"----------------------------------------------"<<endl;
-			 cout<<"hindex = "<<hindex<<endl;
-		     HyperCube *hyperCube = getHyperCube(hindex);
-		    
-			 cout<<"Getting the refined hypercubes for "<<endl;
-		     hyperCube->print(cout);
-			 cout<<endl;
-			}
-			reverseIndexArr = getRefinedReverseIndex(hindex,hcRefinementArr,print);
-		   
-		   //now perform the hypercube join (based on reverseindex) and get the new hypercube 
-		   //refinement
-		   
-		   if(print) {
-		    cout<<endl;
-            cout<<"Now performing the join.."<<endl;
-		   }
-
-		    SuperClause *superClause = NULL;
-		    refinedHyperCubes = getClauseHyperCubes(clause_,superClause,reverseIndexArr,
-					                               newHCRefinementArr,unknownPredIndices,
-												   neqConstraints_,useCT_,domain);
-		   
-		   newHyperCubes->append(refinedHyperCubes);
-		   
-		   if(print) {
-			cout<<"size of refined hypercube = "<<refinedHyperCubes->size()<<endl;
-		   }
-
-		   //update the cnts array as well
-
-		   for(int i=0;i<refinedHyperCubes->size();i++) {
-		    newHyperCubeCnts->append((*hyperCubeCnts_)[hindex]);
-		   }
-           
-		   delete refinedHyperCubes;
-
-		   //(*hyperCubes_)[hindex]->deleteVarConstants();
-		   delete (*hyperCubes_)[hindex];
-
-		   //delete the individual elements
-		   reverseIndexArr->deleteItemsAndClear();
-           delete reverseIndexArr;
-		  }
-		  
-		  hyperCubes_->clear();
-		  hyperCubeCnts_->clear();
-
-		  for(int i=0;i<newHyperCubes->size();i++) { 
-			   HyperCube *hc = (*newHyperCubes)[i];
-			   double cnt = (*newHyperCubeCnts)[i];
-			   int index = hyperCubes_->find(hc);
-
-			   //add this this hypercube if not added earlier
-			   if(index < 0) {
-                 hyperCubes_->append((*newHyperCubes)[i]);
-		         hyperCubeCnts_->append(cnt);
-			   } else { //simply update the count
-					delete hc;
-					(*hyperCubeCnts_)[index] += cnt;
-			   }
-		  }
-
-		  if(print) {
-			   cout<<"old counts were: "<<endl;
-			   for(int i=0;i<hyperCubeCnts_->size();i++)
-			    cout<<(*hyperCubeCnts_)[i]<<" ";
-			   cout<<endl;
-
-			   cout<<"new counts are: "<<endl;
-			   for(int i=0;i<newHyperCubeCnts->size();i++)
-			    cout<<(*newHyperCubeCnts)[i]<<" ";
-			   cout<<endl;
-		  }
-
-		  
-		  //(*hyperCubeCnts_) = (*newHyperCubeCnts);
-		  
-		  delete unknownPredIndices;
-		  delete newHyperCubes;
-		  delete newHyperCubeCnts;
-		 
-		  if(print) {
-		   cout<<"              Done getting the refined hypercubes...       "<<endl;
-		   cout<<"------------------------------------------------------------"<<endl;
-		  }
-		}
-
-/*************************** End Methods for Refining the hypercubes *************************/
-        
-		
-		//print the hyperCubes
-        ostream& print(ostream& out) {
-           for(int i=0;i<hyperCubes_->size();i++) {
-			 (*hyperCubes_)[i]->print(out);
-		   }
-		   return out;
-		}
-          
-		
-		void printClauses(Domain * const & domain, ostream & out) {
-			  Array<IntArray *> * tuples;
-			  IntArray *tuple;
-			  HyperCube *hyperCube;
-			  Clause *gndClause;
-			  Predicate *pred,*gndPred;
-			  IntArray *ptuple;
-			  int constant;
-			  for(int hindex=0;hindex<hyperCubes_->size();hindex++) {
-				  hyperCube = (*hyperCubes_)[hindex];
-			      tuples = hyperCube->getTuples();
-				  for(int tindex=0;tindex<tuples->size();tindex++) {
-                     tuple = (*tuples)[tindex];
-				     gndClause = new Clause(); 
-
-					 for(int predno=0;predno<clause_->getNumPredicates();predno++) {
-					   ptuple = new IntArray();
-                       pred = clause_->getPredicate(predno);
-                       for(int termno=0;termno<pred->getNumTerms();termno++) {
-                          int varId = -(pred->getTerm(termno)->getId());
-						  constant = (*tuple)[varId];
-						  ptuple->append(constant);
-					   }
-					   gndPred = domain->getPredicate(ptuple,pred->getId());
-					   //gndPred = getGroundPredicate(pred->getTemplate(),ptuple);
-					   gndPred->setSense(pred->getSense());
-					   gndClause->appendPredicate(gndPred);
-					   delete ptuple;
-					 }
-					 gndClause->print(out,domain);
-				     out<<endl;
-					 delete gndClause;
-					 delete tuple;
-				  }
-			      tuples->clear();
-				  delete tuples;
-			  }
-		}
-
-
-        //static function
-         void static resetIndex() { superClauseIndex__ = 0;}
-
-     private:
-          Clause* clause_;
-          double wtScale_;
-          HyperCubeHashArray *hyperCubes_;
-          Array<double> * hyperCubeCnts_;
-          IntArrayHashArray * neqConstraints_;
-          Array<int> * varIdToCanonicalVarId_;
-          int superClauseId_;
-          int parentSuperClauseId_;
+ private:
+  Clause* clause_;
+  double wtScale_;
+  IntArrayHashArray *constantTuples_;
+  Array<bool> * implicitTupleFlags_;
+  Array<double> * tupleCnts_;
+  Array<Variable *> * eqVars_;
+  Array<int> * varIdToCanonicalVarId_;
+  bool useImplicit_;
+  int superClauseId_;
+  int parentSuperClauseId_;
   double outputWt_;
           
-		  //whether to use the constrained representation
-          bool useCT_;
-		  
-          
-          static int superClauseIndex__;
-
+  static int superClauseIndex__;
 };
 
 //extern function defined in superpred.cpp
-extern void createSuperClauses(Array<Array<SuperClause*>*> * const & superClausesArr,
+extern void createSuperClauses(
+                           Array<Array<SuperClause*>*>* const & superClausesArr,
                                Domain * const & domain);
 
-typedef hash_map<Array<int>*,SuperClause *, HashIntArray, EqualIntArray> IntArrayToSuperClause;
+typedef hash_map<Array<int>*, SuperClause*, HashIntArray, EqualIntArray>
+  IntArrayToSuperClause;
 
 #endif

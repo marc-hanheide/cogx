@@ -68,8 +68,6 @@
 
 using namespace __gnu_cxx;
 #include "hasharray.h"
-#include "hash.h"
-#include <string.h>
 
 class HashInt
 {

@@ -67,8 +67,17 @@
 %{
 #define YYSTYPE int
 #define YYDEBUG 1
-%}
 
+#include "fol.h"
+#include "follex.cpp"
+
+  // 0: no output; 1,2: increasing order of verbosity
+int folDbg = 0;
+//int folDbg = 1;
+//int folDbg = 2;
+
+%}
+     
 
 /*************************** Declarations ***************************/
 // the token 'error' is declared by Bison
@@ -97,20 +106,6 @@
 %glr-parser
 %expect 16
 %error-verbose
-
-// This must be in a %code {} section since bison 2.4 so it appears before tokens
-// The comments following { and } must remain intact as they
-// are used to insert the proper directive in replacefoly.pl
-%code { //bisonopencode
-#include "fol.h"
-#include "follex.cpp"
-
-  // 0: no output; 1,2: increasing order of verbosity
-int folDbg = 0;
-//int folDbg = 1;
-//int folDbg = 2;
-} //bisonclosecode
-
 %% 
 
 /*************************** Grammar **************************/
@@ -148,10 +143,6 @@ input:
     zzreset();
   }
   weight
-  {
-    if (folDbg >= 2) printf("input: utility\n"); 
-  }
-  utility
   {  
     if (folDbg >= 2) printf("input: sentence\n");
       // the states should be reset because a parse error may have occurred
@@ -196,12 +187,11 @@ input:
                             zzhasFullStop, zzreadHardClauseWts, 
                             zzmustHaveWtOrFullStop, zzinIndivisible,
                             zzisHybrid, zzcontPred, zzmean,
-                            zzhasWeightFullStop, zzutil);
+                            zzhasWeightFullStop);
       zzformulaInfos.append(epfi); 
     }
 
     if (zzwt) { delete zzwt; zzwt = NULL; }
-    if (zzutil) { delete zzutil; zzutil = NULL; }
   }
   newline
 ;
@@ -1050,30 +1040,12 @@ weight_fullstop:
 | 
   '.' 
 { 
-  if (folDbg >= 1) printf("."); zzconsumeToken(zztokenList,"."); 
+  if (folDbg >= 1) printf(".\n"); zzconsumeToken(zztokenList,"."); 
   zzassert(!zzhasWeightFullStop, "expecting no full stop");
   zzhasWeightFullStop = true;
   zzformulaStr.append(".");
 }
 
-utility:
-  // empty
-|
-  ':'
-{
-  if (folDbg >= 1) printf(":"); zzconsumeToken(zztokenList,":"); 
-//  zzassert(!zzhasUtility, "expecting no utility");
-//  zzhasUtility = true;
-  zzformulaStr.append(":");
-}
-  ZZ_NUM
-  {
-    const char* util = zztokenList.removeLast();
-    if (folDbg >= 1) printf("n_%f ", atof(util));
-    if (zzutil) delete zzutil;
-    zzutil = new double(atof(util));
-    delete [] util;
-  }
 
 // You must explicitly specify the connectives between the "sentence"s in order
 // for Bison to effect the left-associativity of the connectives

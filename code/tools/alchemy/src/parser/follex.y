@@ -433,14 +433,6 @@ ZZ_ID [a-zA-Z_\-][a-zA-Z0-9_\-'']*
   return yytext[0];
 }
 
-":" {
-  if (follexDbg) printf("COLON: %s\n", yytext);
-  zzcolumn += strlen(yytext);
-  zznumCharRead += strlen(yytext);
-  zztokenList.add(yytext);
-  return yytext[0];
-}
-
 
 [ \t]+ { /* eat up whitespace */
   if (follexDbg) 

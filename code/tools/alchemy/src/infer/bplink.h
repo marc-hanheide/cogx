@@ -2,11 +2,11 @@
  * All of the documentation and software included in the
  * Alchemy Software is copyrighted by Stanley Kok, Parag
  * Singla, Matthew Richardson, Pedro Domingos, Marc
- * Sumner, Hoifung Poon, Daniel Lowd, and Jue Wang.
+ * Sumner, Hoifung Poon, and Daniel Lowd.
  * 
- * Copyright [2004-09] Stanley Kok, Parag Singla, Matthew
+ * Copyright [2004-08] Stanley Kok, Parag Singla, Matthew
  * Richardson, Pedro Domingos, Marc Sumner, Hoifung
- * Poon, Daniel Lowd, and Jue Wang. All rights reserved.
+ * Poon, and Daniel Lowd. All rights reserved.
  * 
  * Contact: Pedro Domingos, University of Washington
  * (pedrod@cs.washington.edu).
@@ -29,9 +29,8 @@
  * acknowledgment: "This product includes software
  * developed by Stanley Kok, Parag Singla, Matthew
  * Richardson, Pedro Domingos, Marc Sumner, Hoifung
- * Poon, Daniel Lowd, and Jue Wang in the Department of
- * Computer Science and Engineering at the University of
- * Washington".
+ * Poon, and Daniel Lowd in the Department of Computer Science and
+ * Engineering at the University of Washington".
  * 
  * 4. Your publications acknowledge the use or
  * contribution made by the Software to your research
@@ -41,7 +40,7 @@
  * Statistical Relational AI", Technical Report,
  * Department of Computer Science and Engineering,
  * University of Washington, Seattle, WA.
- * http://alchemy.cs.washington.edu.
+ * http://www.cs.washington.edu/ai/alchemy.
  * 
  * 5. Neither the name of the University of Washington nor
  * the names of its contributors may be used to endorse or
@@ -64,62 +63,58 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  */
-#ifndef _HYPERCUBE_OPERATIONS_H_MAY_2008
-#define _HYPERCUBE_OPERATIONS_H_MAY_2008
-
-#include <ext/hash_set>
-#include <ext/hash_map>
-#include <ostream>
+#ifndef _BPLINK_H_Jan_2008
+#define _BPLINK_H_Jan_2008
 
 #include "util.h"
-#include "inferutil.h"
+#include "mrf.h"
 #include "array.h"
-#include "hashint.h"
-#include "mln.h"
-#include "domain.h"
-#include "hypercube.h"
-#include "hypercubereverseindex.h"
-#include "hypercuberefinement.h"
+#include <math.h>
 
 using namespace std;
 using namespace __gnu_cxx;
 
-class SuperClause;
-//function declaration in other files
+class BPNode;
+class BPFactor;
 
+/**
+ * Stores all relevant information about the link between a factor and a node.
+ */
+class BPLink
+{
+ public:
 
-/******************************************************************************************/
+  BPLink(BPNode * const & node, BPFactor * const & factor, 
+         int & reverseNodeIndex, int & reverseFactorIndex,
+         int & predIndex, double & cnt)
+  {
+    node_ = node;
+    factor_ = factor;
+    reverseNodeIndex_ = reverseNodeIndex;
+    reverseFactorIndex_ = reverseFactorIndex;
+    predIndex_ = predIndex;
+    cnt_ = cnt;
+  }
 
-//in createhypercube*.cpp
-Array<HyperCube *> *createGroundHyperCubes(IntArrayHashArray * const & tupleConstantsArr);
+  BPNode * getNode() { return node_;} 
+  BPFactor * getFactor() {return factor_;}
+  int getReverseNodeIndex() { return reverseNodeIndex_;}
+  int getReverseFactorIndex() { return reverseFactorIndex_;}
+  int getPredIndex() { return predIndex_;}
+  double getCount() {return cnt_;}
+   
+  ostream& print(ostream& out);
 
-Array<HyperCube *> *createHyperCubes(IntArrayHashArray * const & tupleConstantsArr,
-		                             HyperCubeCreateType type,
-									 double noise);
-
-Array<HyperCube *> *createComplementaryHyperCubes(Array<HyperCube *> * const & inpHyperCubes,
-		                                          HyperCube * const & domainHyperCube);
-
-
-/******************************************************************************************/
-
-
-//in joinhypercube.cpp
-Array<HyperCube *> *getClauseHyperCubes(Clause * const & clause, 
-		                                SuperClause * const & superClause,
-		                                Array<HyperCubeReverseIndex *> * const & predHCReverseIndexArr,
-		                                Array<HyperCubeRefinement *> * const & hcRefinementArr,
-										IntHashArray * const & unknownPredIndices,
-										IntArrayHashArray * const & neqConstraints,
-										bool useCT,
-										Domain * const & domain);
-
-
-/******************************************************************************************/
-//relevant definitions in refinehypercube.h/.cpp
-class HyperCubeRefinement;
-
-/******************************************************************************************/
+ private:
+  BPNode * node_;
+  BPFactor * factor_;
+  int reverseNodeIndex_;
+  int reverseFactorIndex_;
+    //Index of the pred amongst the predicates in the corresponding
+    // clause (factor)
+  int predIndex_;
+  double cnt_;
+};
 
 #endif
 

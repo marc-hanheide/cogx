@@ -122,14 +122,12 @@ class Clause
   Clause() 
     : wt_(0), predicates_(new Array<Predicate*>), intArrRep_(NULL),
       hashCode_(0), dirty_(true), isHardClause_(false), locked_(false),
-      varIdToVarsGroundedType_(NULL), auxClauseData_(NULL), staticWt_(false),
-      action_(false), util_(0.0) {}
+      varIdToVarsGroundedType_(NULL), auxClauseData_(NULL), staticWt_(false) {}
 
   Clause(const double& wt) 
     : wt_(wt), predicates_(new Array<Predicate*>), intArrRep_(NULL),
       hashCode_(0), dirty_(true), isHardClause_(false), locked_(false),
-      varIdToVarsGroundedType_(NULL), auxClauseData_(NULL), staticWt_(false),
-      action_(false), util_(0.0) {}
+      varIdToVarsGroundedType_(NULL), auxClauseData_(NULL), staticWt_(false) {}
 
 
   Clause(const Clause& c)
@@ -155,10 +153,6 @@ class Clause
     isHardClause_ = c.isHardClause_;
 
     staticWt_ = c.staticWt_;
-    
-    action_ = c.action_;
-    
-    util_ = c.util_;
 
     if (c.varIdToVarsGroundedType_)
     {
@@ -288,12 +282,6 @@ class Clause
   void setWt(const double& wt) { if (!locked_) wt_ = wt; }  
   void addWt(const double& wt) { if (!locked_) wt_ += wt; }
  
-  double getUtil() const { return util_; }
-
-    // not setting dirty bit because it does not affect the clause
-  void setUtil(const double& util) { util_ = util; }  
-  void addUtil(const double& util) { util_ += util; }
-
   void setDirty() { dirty_ = true; }
   bool isDirty() const { return dirty_; }
 
@@ -345,9 +333,6 @@ class Clause
 
   bool isStaticWt() const { return staticWt_; }
   void setStaticWt(const bool& b) { staticWt_ = b; }
-
-  bool isAction() const { return action_; }
-  void setAction(const bool& b) { action_ = b; }
 
   bool isLocked() const { return locked_; }
   void lock()   { locked_ = true; }
@@ -2941,26 +2926,6 @@ public:
 
   void removeAllPredicates() { setDirty(); predicates_->clear();}
 
-  bool isActionFactor()
-  {
-    if (predicates_->size() != 1)
-      return false;
-    if (action_)
-      return true;
-    return false;
-  }
-
-  void flip()
-  {
-    if (!isActionFactor())
-    {
-      cout << "ERROR: This isn't an action factor." << endl;
-      cout << predicates_->size() << "\t" << isHardClause_ << endl;
-      exit(1);
-    }
-    (*predicates_)[0]->invertSense();
-  }
-
 
  private:
   double wt_;
@@ -2979,8 +2944,6 @@ public:
   bool staticWt_;
   static ClauseSampler* clauseSampler_;
   static double fixedSizeB_;
-  bool action_;
-  double util_;
 };
 
 

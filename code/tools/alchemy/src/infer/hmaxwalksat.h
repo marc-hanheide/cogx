@@ -1091,88 +1091,82 @@ protected:
 		}	
 		//need to update the temperature here
 	}
+	/**
+	* Pick an atom according to the SampleSat heuristic. This means sometimes
+	* sim. annealing, sometimes HMaxWalkSat.
+	* 
+	* @return Index of atom picked.
+	*/
+	int pickSS()
+	{
+		long double costOfFalseClauses = hstate_->getCostOfTotalFalseConstraints();
+		// If we have already reached a solution or if in an SA step,
+		// then perform SA
+		if (costOfFalseClauses <= targetCost_ + SMALLVALUE || (random() % 100 < saRatio_ && !lateSa_))
+		{
+			if (hmwsdebug)
+			{
+				cout << "SASTEP" << endl;
+			}
+			// Choose a random atom to flip
+			int toFlip = hstate_->getIndexOfRandomAtom(); //change to hybrid, pos, discrete, neg, continuous
+			if (toFlip > 0)  // Discrete atom.
+			{
+				if (hmwsdebug)
+				{
+					cout << "Choose to flip dis atom " << toFlip << ":";
+                    hstate_->printDisAtom(toFlip, cout);
+                    cout << endl;
+				}
+				long double improvement = calculateImprovementDisHMCS(toFlip); 
 
- /**
-  * Pick an atom according to the SampleSat heuristic. This means sometimes
-  * sim. annealing, sometimes HMaxWalkSat.
-  * 
-  * @return Index of atom picked.
-  */
-  int pickSS()
-  {
-    long double costOfFalseClauses = hstate_->getCostOfTotalFalseConstraints();
-      // If we have already reached a solution or if in an SA step,
-      // then perform SA
-    if (costOfFalseClauses <= targetCost_ + SMALLVALUE ||
-        (random() % 100 < saRatio_ && !lateSa_))
-    {
-      if (hmwsdebug)
-        cout << "SASTEP" << endl;
-
-        // Choose a random atom to flip
-        // change to hybrid, pos, discrete, neg, continuous
-      int toFlip = hstate_->getIndexOfRandomAtom();
-      if (toFlip > 0)  // Discrete atom.
-      {
         if (hmwsdebug)
         {
-          cout << "Choose to flip dis atom " << toFlip << ":";
-          hstate_->printDisAtom(toFlip, cout);
-          cout << endl;
-        }
-        long double improvement = calculateImprovementDisHMCS(toFlip); 
-
-        if (hmwsdebug)
           cout << "By flipping, improvement is " << improvement << endl;
+        }
 
-          // If pos. or no improvement, then the atom will be flipped
-          // Or neg. improvement: According to temp. flip atom anyway
-        if ((improvement >= 0) || 
-            (random() <= exp(improvement/(saTemp_/100.0)) * RAND_MAX))
-        {
-          return toFlip;
-        }
-        else
-        {
-          return NOVALUE;
-        }
-      }
-      else  // Continuous variable.
-      {
-          //generate the new value for the continuous variable according to the
-          //proposal distribution
-        int contAtomIdx = -toFlip;
-        double vContAtomFlipped;				
-        long double improvement =
-          hstate_->GetImprovementByMovingContVar(contAtomIdx, vContAtomFlipped); 
+				// If pos. or no improvement, then the atom will be flipped
+				// Or neg. improvement: According to temp. flip atom anyway
+				if ((improvement >= 0) || (random() <= exp(improvement/(saTemp_/100.0)) * RAND_MAX))
+				{
+					return toFlip;
+				}
+				else
+				{
+					return NOVALUE;
+				}
+			}
+			else  // Continuous variable.
+			{
+				//generate the new value for the continuous variable according to the proposal distribution
+				int contAtomIdx = -toFlip;
+				double vContAtomFlipped;				
+				long double improvement = hstate_->GetImprovementByMovingContVar(contAtomIdx, vContAtomFlipped); 
 				
-        if (hmwsdebug)
-        {
-          cout << "Choose to move cont atom " << contAtomIdx << ":";
-          hstate_->printContAtom(contAtomIdx, cout);
-          cout << " To " << vContAtomFlipped << ", improvement is "
-               << improvement << endl;
-        }
+				if (hmwsdebug)
+				{
+					cout << "Choose to move cont atom " << contAtomIdx << ":";hstate_->printContAtom(contAtomIdx, cout);
+					cout << " To " << vContAtomFlipped << ", improvement is " << improvement << endl;
+				}
 
-        if ((improvement >= 0) ||
-            (random() <= exp(improvement/(saTemp_/100.0)) * RAND_MAX))
-        {	
-          pickedContValue_ = vContAtomFlipped; //the value picked.
-          return toFlip; //neg, indicate cont variable.
-        }	  
-        else
-        {
-          return NOVALUE;
-        }
-      }	
-    }
-      // Not in a solution or SA step: perform Hybrid WalkSAT step
-    else
-    {
-      return pickHMCS();  // TODO: juewang
-    }
-  }
-
+				if ((improvement >= 0) ||
+					(random() <= exp(improvement/(saTemp_/100.0)) * RAND_MAX))
+				{	
+					pickedContValue_ = vContAtomFlipped; //the value picked.
+					return toFlip; //neg, indicate cont variable.
+				}	  
+				else
+				{
+					return NOVALUE;
+				}
+			}	
+		}
+		// Not in a solution or SA step: perform Hybrid WalkSAT step
+		else
+		{
+			return pickHMCS();  // TODO: juewang
+		}
+	}
 	/**
 	* Calculates the improvement (makecost - breakcost) by flipping an atom.
 	* If the atom is in a block, then its index is saved in candidateBlockedVars

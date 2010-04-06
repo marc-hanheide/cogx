@@ -66,7 +66,6 @@
 #ifndef LISTOBJ_H_JUN_21_2005
 #define LISTOBJ_H_JUN_21_2005
 
-#include <cstdio>
 #include <string>
 #include <list>
 #include <ostream>

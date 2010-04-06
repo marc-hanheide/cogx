@@ -75,8 +75,6 @@
 #include "node.h"
 #include "superclause.h"
 
-const double ACTION_WT = 20.0;
-
 using namespace std;
 using namespace __gnu_cxx;
 
@@ -104,12 +102,6 @@ class Factor
     links_ = new Array<Link *>();
     outputWt_ = outputWt;
     initFactorMesssages();
-    
-    action_ = false;
-    actionValue_ = true;
-
-    taggedSend_ = false;
-    taggedReceive_ = false;
   }
   
   /**
@@ -119,12 +111,6 @@ class Factor
   {
     links_ = new Array<Link *>();
     msgsArr_ = new Array<double *>;
-
-    action_ = false;
-    actionValue_ = true;
-
-    taggedSend_ = false;
-    taggedReceive_ = false;
   }
 		  
   /**
@@ -269,69 +255,12 @@ class Factor
    * Updates the stored msgs and updates the msgProduct
    */
   void moveToNextStep();
-
+  
   ostream& print(ostream& out);
-
-  bool isAction() { return action_; }
-
-  bool getActionValue() { return actionValue_; }
-
-  void flip()
-  {
-    actionValue_ = !actionValue_;
-    factorMsgs_[actionValue_] = clause_->getWt();
-    factorMsgs_[!actionValue_] = 0.0;
-  }
-
-    // Only makes sense for action factors!
-  Node* getActionNode()
-  {
-    if (!action_)
-    {
-      cout << "NOT AN ACTION FACTOR." << endl;
-      exit(1);
-    }
-    return (*links_)[0]->getNode();
-  }
-
-  void setAction()
-  {
-    //cout << "SETTING ACTION" << endl;
-    action_ = true;
-    actionValue_ = true;
-    clause_->setWt(ACTION_WT);
-    factorMsgs_[actionValue_] = clause_->getWt();
-    factorMsgs_[!actionValue_] = 0.0;
-  }
-
-    // Add neighbors to send and receive sets.
-  void tagNeighborsSendReceive(set<Factor*> &sendFactors,
-                               set<Factor*> &receiveFactors,
-                               set<Node*> &sendNodes,
-                               set<Node*> &receiveNodes);
-  void tagNeighborsSendReceive(list<Factor*> &sendFactors,
-                               list<Factor*> &receiveFactors,
-                               list<Node*> &sendNodes,
-                               list<Node*> &receiveNodes);
-
-    // Add neighbors to receive set.
-  void tagNeighborsReceive(set<Node*> &receiveNodes);
-  void tagNeighborsReceive(list<Node*> &receiveNodes);
-
-  void resetTags()
-  {
-    taggedSend_ = false;
-    taggedReceive_ = false;
-  }
-   
-  static void setIsApproxNetwork(bool val);
 
   ostream& printWts(ostream& out);
 
  protected:
-  bool action_;
-  bool actionValue_;
-
   Clause * clause_;
 
     //only one of the two below is used - superClause in case of lifted
@@ -347,9 +276,6 @@ class Factor
     // Outgoing messages
   double *factorMsgs_;
   double outputWt_;
-  static bool isApproxNetwork__;
-  
-  bool taggedSend_, taggedReceive_;
 };
 
 #endif

@@ -249,6 +249,7 @@ void Domain::reorderConstants(MLN* const & mln,
       int constId = (*constIds)[j];
       const char* constName = getConstantName(constId);
       int newConstId = newConstDualMap->insert(constName, i);
+      assert(prevNewConstId + 1 == newConstId);
       prevNewConstId = newConstId;
       (*newConstantsByType)[i]->append(newConstId);
       oldToNewConstIds[constId] = newConstId;
@@ -264,6 +265,7 @@ void Domain::reorderConstants(MLN* const & mln,
       int constId = (*constIds)[j];
       const char* constName = getConstantName(constId);
       int newConstId = newConstDualMap->insert(constName, i);
+      assert(prevNewConstId + 1 == newConstId);
       prevNewConstId = newConstId;
       (*newExternalConstantsByType)[i]->append(newConstId);
       oldToNewConstIds[constId] = newConstId;
@@ -341,6 +343,7 @@ void Domain::reorderConstants(MLN* const & mln)
       int constId = (*constIds)[j];
       const char* constName = getConstantName(constId);
       int newConstId = newConstDualMap->insert(constName, i);
+      assert(prevNewConstId + 1 == newConstId);
       prevNewConstId = newConstId;
       (*newConstantsByType)[i]->append(newConstId);
       oldToNewConstIds[constId] = newConstId;
@@ -353,6 +356,7 @@ void Domain::reorderConstants(MLN* const & mln)
       int constId = (*extConstIds)[j];
       const char* constName = getConstantName(constId);
       int newConstId = newConstDualMap->insert(constName, i);
+      assert(prevNewConstId + 1 == newConstId);
       prevNewConstId = newConstId;
       (*newExternalConstantsByType)[i]->append(newConstId);
       oldToNewConstIds[constId] = newConstId;
