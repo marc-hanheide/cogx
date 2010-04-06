@@ -8,7 +8,7 @@
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
 	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
 	<property name="binderslice.dir" value="${basedir}/subarchitectures/binder/src/slice" />
-
+	<property name="projectroot.dir" value="${basedir}" />
 
 
 	<!-- =================================================================== -->
@@ -41,7 +41,7 @@
 		<ant target="${target}" dir="subarchitectures/binder" /> 
  		<ant target="${target}" dir="subarchitectures/nav.sa" /> 
   		<ant target="${target}" dir="subarchitectures/spatial.sa" />
-<!-- 		<ant target="${target}" dir="subarchitectures/planner.sa" /> -->
+ 		<ant target="${target}" dir="subarchitectures/planner.sa" />
 <!-- 		<ant target="${target}" dir="subarchitectures/comsys" /> -->
 <!-- 		<ant target="${target}" dir="subarchitectures/coma.sa" /> -->
 <!-- 		<ant target="${target}" dir="subarchitectures/motivation.sa" /> -->
