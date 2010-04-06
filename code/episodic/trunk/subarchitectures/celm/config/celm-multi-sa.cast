@@ -1,7 +1,7 @@
 HOST localhost
 
 #
-# Setup of the CAST-ELM system in multiple subarchitectures.
+# Example setup of the CAST-ELM system in multiple subarchitectures.
 #
 # Recompile with GlobalSettings.singleSA == false 
 # (file subarchitectures/celm/src/java/celmarchitecture/global/GlobalSettings.java)
@@ -34,26 +34,21 @@ JAVA TM cast.architecture.AlwaysPositiveTaskManager
 JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --server localhost --db elm --user elm --passwd lF8AxP4
 
 # SUBARCHITECTURE <subarch name> <default host to be used>
-SUBARCHITECTURE CELMSimulator.sa
+#SUBARCHITECTURE CELMSimulator.sa
 #JAVA WM celmarchitecture.subarchitectures.simulator.SimulatorWorkingMemory 
-JAVA WM celmarchitecture.global.DefaultWorkingMemory --noXarchCN #--sendXarchCN
-JAVA TM cast.architecture.AlwaysPositiveTaskManager 
+#JAVA WM celmarchitecture.global.DefaultWorkingMemory --noXarchCN #--sendXarchCN
+#JAVA TM cast.architecture.AlwaysPositiveTaskManager 
 #JAVA MG EventSimulator celmarchitecture.subarchitectures.simulator.Simulator --writer-sa CELMWriter.sa
 #JAVA MG QuerySimulator celmarchitecture.subarchitectures.simulator.QuerySimulator --recollection-sa CELMRecollection.sa 
 
 SUBARCHITECTURE CELMMonitors.sa
 JAVA WM celmarchitecture.global.DefaultWorkingMemory --noXarchCN
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
-JAVA MG NavMonitor celmarchitecture.subarchitectures.monitors.NavMonitor --writer-sa CELMWriter.sa 
-JAVA MG ComaMonitor celmarchitecture.subarchitectures.monitors.ComaMonitor --writer-sa CELMWriter.sa
-JAVA MG ComsysMonitor celmarchitecture.subarchitectures.monitors.ComsysMonitor --writer-sa CELMWriter.sa
-JAVA MG PlanningMonitor celmarchitecture.subarchitectures.monitors.PlanningMonitor --writer-sa CELMWriter.sa
-JAVA MG VisionMonitor celmarchitecture.subarchitectures.monitors.VisionMonitor --writer-sa CELMWriter.sa
-JAVA MG ObjectMonitor celmarchitecture.subarchitectures.monitors.ObjectMonitor --writer-sa CELMWriter.sa
-
+#JAVA MG NavMonitor celmarchitecture.subarchitectures.monitors.NavMonitor --writer-sa CELMWriter.sa 
+JAVA MG PBMonitor celmarchitecture.subarchitectures.monitors.PBMonitor --subscribe autogen.Planner.Action,beliefmodels.adl.Belief,comadata.ComaRoom,SpatialProperties.ConnectivityPathProperty,motivation.slice.ExploreMotive,SpatialProperties.GatewayPlaceProperty,motivation.slice.Motive,binder.autogen.core.PerceivedEntity,SpatialData.Place,SpatialProperties.PlaceProperty,autogen.Planner.PlanningTask,binder.autogen.core.Proxy,binder.autogen.specialentities.RelationProxy #,motivation.util.castextensions.WMLock # Unlike the others, WMLock does not seem to be derived from IceObject. This causes problems if used here.
 
 # SUBARCHITECTURE <subarch name> <default host to be used>
-SUBARCHITECTURE CELMLocationConversion.sa
-JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
-JAVA TM cast.architecture.AlwaysPositiveTaskManager 
-JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter
+#SUBARCHITECTURE CELMLocationConversion.sa
+#JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
+#JAVA TM cast.architecture.AlwaysPositiveTaskManager 
+#JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter

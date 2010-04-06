@@ -1,7 +1,10 @@
-cHOST localhost
+HOST localhost
 
 #
 # C-ELM test system, set up in multiple subarchitectures.
+# Can be used to quickly check whether C-ELM/ELM is properly set up without
+# other subarchitectures. Events and queries are simulated by two of the 
+# processes below.
 #
 # Recompile with GlobalSettings.singleSA == false 
 # (file subarchitectures/celm/src/java/celmarchitecture/global/GlobalSettings.java)
@@ -40,7 +43,8 @@ JAVA MG QuerySimulator celmarchitecture.subarchitectures.simulator.QuerySimulato
 # no monitors for "external" SAs here!
 
 # SUBARCHITECTURE <subarch name> <default host to be used>
-SUBARCHITECTURE CELMLocationConversion.sa
-JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
-JAVA TM cast.architecture.AlwaysPositiveTaskManager 
-JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter
+#SUBARCHITECTURE CELMLocationConversion.sa
+#JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN 
+#JAVA TM cast.architecture.AlwaysPositiveTaskManager 
+#JAVA MG LocationConverter celmarchitecture.subarchitectures.locationConversion.LocationConverter
+

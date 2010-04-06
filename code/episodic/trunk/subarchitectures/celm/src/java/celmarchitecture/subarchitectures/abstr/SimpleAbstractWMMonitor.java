@@ -105,11 +105,8 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 	 */
 	protected void addPartialEvent(String eventType,
 			byte[] eventSpecificBinaryData, Date startTime, Date endTime,
-			// String[] physicalEntityIDs, 
 			EventSpecificFeatures data)
 			throws SubarchitectureComponentException {
-			
-		// String[] physicalEntityIDs = null; // deactivated for now, to be removed with the next refactoring	
 			
 		CELMEventTime eventTime;
 		if (startTime == null || endTime == null) {
@@ -121,7 +118,6 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 		CELMPartialEventToStore partialCEvent = new CELMPartialEventToStore(
 				eventType,
 				eventTime,
-				// (physicalEntityIDs == null ? new String[0] : physicalEntityIDs),
 				EventConverter.toCEventSpecificFeatures(data),
 				(eventSpecificBinaryData == null ? new byte[0]
 						: eventSpecificBinaryData));
