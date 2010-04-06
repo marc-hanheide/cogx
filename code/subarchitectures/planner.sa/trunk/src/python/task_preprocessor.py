@@ -5,10 +5,9 @@ from string import maketrans
 
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
 from standalone import pddl
-from standalone.pddl import state
+from standalone.pddl import state, prob_state
 import binder.autogen
-import binder.autogen.specialentities as specialentities
-import binder.autogen.featvalues as featvalues
+from binder.autogen import distribs, featurecontent
 
 forbidden_letters = "-:"
 replace_chr = "_"
@@ -17,6 +16,18 @@ UCASE_REXP = re.compile("([A-Z])")
 
 # attention: current_domain is used as a global in this module
 current_domain = None
+
+class SVarDistribution(tuple):
+    def __new__(_class, *args):
+        return tuple.__new__(_class, args)
+    
+    feature = property(lambda self: self[0])
+    args = property(lambda self: self[1:-1])
+    values = property(lambda self: self[-1])
+
+    def __str__(self):
+      valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
+      return "(%s %s) = [%s]" % (self.feature, " ".join(a.id for a in self.args), valstr)
 
 def rename_objects(objects):
   namedict = {}
@@ -42,7 +53,7 @@ def transform_goal_string(goal, namedict):
   return goal
 
 def feature_val_to_object(fval):
-  if fval.__class__ == featvalues.StringValue:
+  if fval.__class__ == featurecontent.StringValue:
     #lookup constants
     if fval.val in current_domain:
       return current_domain[fval.val]
@@ -51,93 +62,126 @@ def feature_val_to_object(fval):
     
     return pddl.TypedObject(fval.val, pddl.t_object)
   
-  elif fval.__class__ == featvalues.AddressValue:
+  elif fval.__class__ == featurecontent.PointerValue:
     #todo: how to support address values sensibly?
-    return pddl.TypedObject(fval.val, pddl.t_object)
+    return pddl.TypedObject(fval.beliefId, pddl.t_object)
   
-  elif fval.__class__ == featvalues.IntegerValue:
+  elif fval.__class__ == featurecontent.IntegerValue:
     return pddl.TypedObject(fval.val, pddl.t_number)
   
-  elif fval.__class__ == featvalues.BooleanValue:
+  elif fval.__class__ == featurecontent.BooleanValue:
     if fval.val:
       return pddl.TRUE
     return pddl.FALSE
   
-  elif fval.__class__ == featvalues.UnknownValue:
+  elif fval.__class__ == featurecontent.UnknownValue:
     return pddl.UNKNOWN
 
   assert False, "Unknown feature type: %s" % fval.__class__
 
 
-def gen_fact_tuples(unions):
-  for union in unions:
-    if isinstance(union, specialentities.RelationUnion):
-      try:
-        source = feature_val_to_object(union.usource.alternativeValues[0])
-        target = feature_val_to_object(union.utarget.alternativeValues[0])
-      except Exception, e:
-        print "Error getting source or target of relation %s." % union.entityID
-        print "Message was: %s" % str(e)
-        continue
+def gen_fact_tuples(beliefs):
+  def extract_features(dist):
+    if isinstance(dist, distribs.DistributionWithExistDep):
+      #ignore existence probability for now
+      return extract_features(dist.Pc)
+    if isinstance(dist, distribs.CondIndependentDistribs):
+      return sum((extract_features(d) for d in dist.distribs), [])
+    if isinstance(dist, distribs.FeatureValueDistribution):
+      result = []
+      for valpair in dist.values:
+        val = feature_val_to_object(valpair.val)
+        result.append((dist.feat, val, valpair.prob))
+      return result
+    if isinstance(dist, distribs.NormalDistribution):
+      #TODO: discretize?
+      return [(dist.feat, feature_val_to_object(dist.mean), 1.0)]
+    if isinstance(dist, distribs.DiscreteDistribution):
+      assert False, "DiscreteDistribution not supported yet"
+    assert False, "class %s not supported" % str(type(dist))
 
-      for feature in union.features:
-        # choose feature val with highest probability:
-        max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
-        yield (feature.featlabel, source, target, feature_val_to_object(max_val))
+  for bel in beliefs:
+    factdict = defaultdict(list)
+    for feat, val, prob in extract_features(bel.content):
+      factdict[str(feat)].append((val, prob))
+
+    for feat,vals in factdict.iteritems():
+      #print feat, bel, vals
+      yield SVarDistribution(feat, bel, vals)
+
+  # for bel in beliefs:
+  #   if isinstance(union, specialentities.RelationUnion):
+  #     try:
+  #       source = feature_val_to_object(union.usource.alternativeValues[0])
+  #       target = feature_val_to_object(union.utarget.alternativeValues[0])
+  #     except Exception, e:
+  #       print "Error getting source or target of relation %s." % union.entityID
+  #       print "Message was: %s" % str(e)
+  #       continue
+
+  #     for feature in union.features:
+  #       # choose feature val with highest probability:
+  #       max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
+  #       yield (feature.featlabel, source, target, feature_val_to_object(max_val))
         
-    else:
-      name = union.entityID
-      object = pddl.TypedObject(name, pddl.t_object)
+  #   else:
+  #     name = union.entityID
+  #     object = pddl.TypedObject(name, pddl.t_object)
       
-      for feature in union.features:
-        # choose feature val with highest probability:
-        max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
-        yield (feature.featlabel, object, feature_val_to_object(max_val))
+  #     for feature in union.features:
+  #       # choose feature val with highest probability:
+  #       max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
+  #       yield (feature.featlabel, object, feature_val_to_object(max_val))
 
 def filter_unknown_preds(fact_tuples):
   for ft in fact_tuples:
-    feature_label = ft[0]
-    if feature_label not in current_domain.functions and \
-          feature_label not in current_domain.predicates:
+    if ft.feature not in current_domain.functions and \
+          ft.feature not in current_domain.predicates:
       print "filtering feature assignment %s, because '%s' is not part of the planning domain" \
-          % (map(str,ft), feature_label)
+          % (str(ft), str(ft.feature))
     else:
       #print "using", map(str, ft)
       yield ft
 
 def tuples2facts(fact_tuples):
   for ftup in fact_tuples:
-    feature_label = ftup[0]
-    args = ftup[1:-1]
-    val = ftup[-1]
+    feature_label = str(ftup.feature)
     if feature_label in current_domain.functions:
-      func = current_domain.functions.get(feature_label, args)
-      yield state.Fact(state.StateVariable(func, args), val)
+      func = current_domain.functions.get(feature_label, ftup.args)
     else:
       assert feature_label in current_domain.predicates
-      pred = current_domain.predicates.get(feature_label, args)
-      yield state.Fact(state.StateVariable(pred, args), val)
+      func = current_domain.predicates.get(feature_label, ftup.args)
+
+    if len(ftup.values) == 1:
+      yield state.Fact(state.StateVariable(func, ftup.args), val[0][0])
+    else:
+      vdist = prob_state.ValueDistribution(dict(ftup.values))
+      yield prob_state.ProbFact(state.StateVariable(func, ftup.args), vdist)
 
 def unify_objects(obj_descriptions):
   namedict = {}
   for ftup in obj_descriptions:
-    feature_label = ftup[0]
-
-    result = [feature_label]
-    for obj in ftup[1:]:
+    args = []
+    for obj in ftup.args:
       if obj.name in namedict:
-        result.append(namedict[obj.name])
+        args.append(namedict[obj.name])
       else:
         namedict[obj.name] = obj
-        result.append(obj)
+        args.append(obj)
+    values = []
+    for obj, prob in ftup.values:
+      if obj.name in namedict:
+        values.append((namedict[obj.name], prob))
+      else:
+        namedict[obj.name] = obj
+        values.append((obj, prob))
         
-    yield tuple(result)
+    yield SVarDistribution(ftup.feature, args, values)
       
 def infer_types(obj_descriptions):
   constraints = defaultdict(set)
   for ftup in obj_descriptions:
-    pred = ftup[0]
-    args = ftup[1:]
+    pred = str(ftup.feature)
     if pred in current_domain.functions:
       declarations = current_domain.functions[pred]
       is_function = True
@@ -146,12 +190,16 @@ def infer_types(obj_descriptions):
       is_function = False
     for declaration in declarations:
       ftypes = map(lambda a: a.type, declaration.args)
-      ftypes.append(declaration.type)
+      #ftypes.append(declaration.type)
 
       #only consider this function if the basic value types (object, boolean, number) match
-      if len(args) == len(ftypes) and all(map(lambda t, a: t.equal_or_subtype_of(a.type), ftypes, args)):
+      if len(ftup.args) == len(ftypes) and all(map(lambda t, a: t.equal_or_subtype_of(a.type), ftypes, args)) and \
+            all(declaration.type.equal_or_subtype_of(arg.type) for arg, _ in ftup.values):
         for arg, type in zip(args, ftypes):
           constraints[arg].add(type)
+        for arg, _ in ftup.values:
+          constraints[arg].add(declaration.type)
+          
         #print "Inferring: %s is instance of %s because of use in %s" % (name, nametype, declaration)
         #print "Inferring: %s is instance of %s because of use in %s" % (val, valtype, declaration)
         
@@ -207,7 +255,7 @@ def generate_mapl_task(task_desc, domain_fn):
     problem.goal = pddl.conditions.Falsity()
 
   task._mapltask = problem
-  task.set_state(state.State(facts, problem))
+  task.set_state(prob_state.ProbabilisticState(facts, problem))
   
   return task  
 

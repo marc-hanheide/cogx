@@ -3,7 +3,7 @@ from os.path import abspath, dirname, join, isdir
 from collections import defaultdict
 
 import autogen.Planner as Planner
-import binder.autogen.core
+#import binder.autogen.core
 import cast.core
 from standalone import pddl, plans
 from standalone.pddl import state
