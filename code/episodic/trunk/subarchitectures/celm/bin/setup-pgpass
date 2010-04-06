@@ -9,7 +9,7 @@ if [ -e $PGPFILE ]; then
 fi;
 
 echo -n "Adding elm to the pgpass file...   " && \
-echo "*:*:elm:elm:somepw" >> $PGPFILE && \
+echo "*:*:elm:elm:lF8AxP4" >> $PGPFILE && \
 echo "done." && \
 echo -n "Setting file permissions...        " && \
 chmod 600 $PGPFILE && \
