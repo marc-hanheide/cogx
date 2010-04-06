@@ -22,11 +22,17 @@ tgLabel::tgLabel(const char* ttf_filename){
 }
 
 tgLabel::~tgLabel(){
-	if(m_font) delete(m_font);
-	if(m_texture) delete(m_texture);
+	if(m_font){
+		delete(m_font);
+	}
+	
+	if(m_texture){
+		delete(m_texture);
+	}
 }
 
-void tgLabel::AddText(const char* text){
+void tgLabel::AddText(const char* text, int size){
+	m_txtHeight = size;
 	string str(text);
 	m_text.push_back(str);
 	if(m_maxStrLen<str.size())
@@ -34,18 +40,16 @@ void tgLabel::AddText(const char* text){
 }
 
 void tgLabel::CreateLabel(){
-
 	if(m_fontfilename.empty()){
 		printf("[tgLabel::CreateLabel()] Warning no font specified for label\n");
 		return;
 	}	
 
 	int i,s;
-	int m_charWidth = 15;
-	int m_txtHeight = 20;
-	int m_txtX = 4;
-	int m_txtY = 8;
-	int m_txtStepY = 24;
+	int m_charWidth = m_txtHeight * 0.75; //15;
+	int m_txtX = m_txtHeight * 0.2; //4;
+	int m_txtY = m_txtHeight * 0.4; //8;
+	int m_txtStepY = m_txtHeight + m_txtHeight * 0.2; //24;
 	
 	if(!m_texture)
 		m_texture = new tgTexture();
@@ -74,6 +78,12 @@ void tgLabel::CreateLabel(){
 	m_txtSize = m_text.size();
 }
 
+void tgLabel::Clear(){
+	m_text.clear();
+	m_maxStrLen = 0;
+	m_txtSize = 0;
+}
+
 void tgLabel::Draw(){
 
 	if(m_text.empty())
@@ -100,6 +110,7 @@ void tgLabel::Draw(){
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_COLOR, GL_ONE);
+// 	glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	m_texture->Bind();
