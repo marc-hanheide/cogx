@@ -118,7 +118,6 @@ module celm {
 
       LongList              subevents;
 
-      StringList     physicalEntities;
       CELMEventSpecificFeatures    eventSpecificFeatures;
       CELMEventSpecificBinaryData  eventSpecificBinaryData;
     };
@@ -173,7 +172,6 @@ module celm {
       // below: optional information
       // if not needed, create 0-sized arrays 
       // or CORBA will make trouble (when passing null's)
-      StringList     physicalEntities;
       CELMEventSpecificFeatures    eventSpecificFeatures;
       CELMEventSpecificBinaryData  eventSpecificBinaryData;
     };
@@ -257,8 +255,6 @@ module celm {
       CELMCueMatchMode             supereventMatchMode;
       LongList              superevents;
        
-      CELMCueMatchMode             physicalEntityMatchMode;
-      StringList     physicalEntities;
       
       CELMCueMatchMode             esfMatchMode;
       bool                       esfRestrictMatchToKeys;

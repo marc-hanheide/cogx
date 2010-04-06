@@ -3,7 +3,7 @@ package celmarchitecture.subarchitectures.elmwriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
+import java.util.Map;
 
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -33,6 +33,10 @@ import elm.event.WKTParseException;
  */
 public class ElmWriter extends ManagedComponent {
 
+	public static final String configKeyFlushDB = "--flush-db";
+
+	private boolean flushDB = false;
+
 	private boolean localVerbose = false;
 	private boolean verbose = GlobalSettings.verbose || localVerbose;
 
@@ -48,9 +52,12 @@ public class ElmWriter extends ManagedComponent {
 		super();
 	}
 
-	public void configure(Properties config) {
+	protected void configure(Map<String, String> config) {
 		dbConfig.configure(config);
 		saNames.configure(config);
+		
+		if (config.containsKey(configKeyFlushDB)) 
+	    		flushDB = true;
 	}
 
 	private Connection connect(String url, String user, String password) {
@@ -93,6 +100,13 @@ public class ElmWriter extends ManagedComponent {
 					+ dbConfig.server + "/" + dbConfig.name, dbConfig.user,
 					dbConfig.passwd));
 
+			if (flushDB) {
+				if (verbose)
+					println("flushing old ELM db entries...");
+				dbWriter.flushMemoryStore();
+			
+			}			
+			
 			addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
 					CELMEventToStore.class, WorkingMemoryOperation.ADD),
 			// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(CELMEventToStore.class,
@@ -105,7 +119,7 @@ public class ElmWriter extends ManagedComponent {
 							storeEvent(_wmc);
 						}
 					});
-
+			
 			addWakeupEvent();
 			if (verbose)
 				println("ELMWriter waking up...");

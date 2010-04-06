@@ -6,7 +6,7 @@
 package celmarchitecture.global;
 
 
-import java.util.Properties;
+import java.util.Map;
 
 import cast.architecture.SubarchitectureWorkingMemory;
 
@@ -30,7 +30,7 @@ public class DefaultWorkingMemory extends SubarchitectureWorkingMemory {
 		super();
 	}
 
-	public void configure(Properties config) {
+	protected void configure(Map<String, String> config) {
 
 		if (config.containsKey(configKeySendXarchCN))
 			sendXarch = true;

@@ -5,7 +5,7 @@
 
 package celmarchitecture.global;
 
-import java.util.Properties;
+import java.util.Map;
 
 /**
  *  Unifies the configuration of ElmWriter and Recollector's 
@@ -24,16 +24,16 @@ public class DBConfig {
     public String passwd                        = "somepw";
     
     
-    public void configure(Properties config) {
+    public void configure(Map<String, String> config) {
 	
 	if (config.containsKey(configKeyServer)) 
-	    server = config.getProperty(configKeyServer);
+	    server = config.get(configKeyServer);
 	if (config.containsKey(configKeyDB)) 
-	    name   = config.getProperty(configKeyDB);
+	    name   = config.get(configKeyDB);
 	if (config.containsKey(configKeyUser)) 
-	    user   = config.getProperty(configKeyUser);
+	    user   = config.get(configKeyUser);
 	if (config.containsKey(configKeyPasswd)) 
-	    passwd = config.getProperty(configKeyPasswd);
+	    passwd = config.get(configKeyPasswd);
 
     }
     

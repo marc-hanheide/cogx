@@ -43,7 +43,7 @@
 	<target name="compile" depends="slice" description="compiles the source code">
 	  <javac srcdir="${src.dir}" 
 		 destdir="${output.dir}" 
-		 excludes="**/monitors/**, **/LocationConverter.java"
+		 excludes="**/LocationConverter.java"
 		 debug="${debug}" 
 		 deprecation="${deprecation}" 
 		 optimize="${optimize}" 

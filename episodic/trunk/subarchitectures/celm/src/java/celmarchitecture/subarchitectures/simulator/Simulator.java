@@ -1,7 +1,7 @@
 package celmarchitecture.subarchitectures.simulator;
 
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Map;
 
 import NavData.RobotPose2d;
 import cast.SubarchitectureComponentException;
@@ -47,7 +47,7 @@ public class Simulator extends ManagedComponent {
 		super();
 	}
 
-	public void configure(Properties config) {
+	protected void configure(Map<String, String> config) {
 		saNames.configure(config);
 	}
 

@@ -3,7 +3,7 @@ package celmarchitecture.subarchitectures.recollection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Vector;
 
 import cast.SubarchitectureComponentException;
@@ -58,7 +58,7 @@ public class Recollector extends ManagedComponent {
 		super();
 	}
 
-	public void configure(Properties config) {
+	protected void configure(Map<String, String> config) {
 		dbConfig.configure(config);
 	}
 

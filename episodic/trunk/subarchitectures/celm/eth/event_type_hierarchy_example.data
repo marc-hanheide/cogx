@@ -1,0 +1,12 @@
+root_type	perception
+root_type	action
+perception	see
+see	watch
+perception	listen
+action	move
+move	go
+action	watch
+action	listen
+see	look at
+action	take a look around
+action	speak

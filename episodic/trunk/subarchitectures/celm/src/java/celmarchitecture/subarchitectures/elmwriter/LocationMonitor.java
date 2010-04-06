@@ -1,6 +1,6 @@
 package celmarchitecture.subarchitectures.elmwriter;
 
-import java.util.Properties;
+import java.util.Map;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import NavData.RobotPose2d;
@@ -68,19 +68,19 @@ public class LocationMonitor extends ManagedComponent {
 		super();
 	}
 
-	public void configure(Properties config) {
+	protected void configure(Map<String, String> config) {
 		saNames.configure(config);
 	}
 
 	@Override
 	public void start() {
 
-			WorkingMemoryChangeReceiver wmcrRobotPose = new WorkingMemoryChangeReceiver() {
+			WorkingMemoryChangeReceiver wmcrRobotPose2d = new WorkingMemoryChangeReceiver() {
 
 				public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 
 					// log(CASTUtils.toString(_wmc));
-					addRobotPose(_wmc);
+					addRobotPose2d(_wmc);
 				}
 			};
 
@@ -94,10 +94,10 @@ public class LocationMonitor extends ManagedComponent {
 			};
 
 			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-					RobotPose2d.class, WorkingMemoryOperation.ADD), wmcrRobotPose);
+					RobotPose2d.class, WorkingMemoryOperation.ADD), wmcrRobotPose2d);
 			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 					RobotPose2d.class, WorkingMemoryOperation.OVERWRITE),
-					wmcrRobotPose);
+					wmcrRobotPose2d);
 
 			addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
 					CELMPartialEventToStore.class, WorkingMemoryOperation.ADD),
@@ -106,7 +106,7 @@ public class LocationMonitor extends ManagedComponent {
 
 	}
 
-	private void addRobotPose(WorkingMemoryChange _ceventChange) {
+	private void addRobotPose2d(WorkingMemoryChange _ceventChange) {
 
 		try {
 			if (verbose)

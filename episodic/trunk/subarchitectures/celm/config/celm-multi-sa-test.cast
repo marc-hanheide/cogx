@@ -13,7 +13,7 @@ cHOST localhost
 SUBARCHITECTURE CELMWriter.sa
 JAVA WM celmarchitecture.global.DefaultWorkingMemory --noXarchCN
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
-JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --recognition-sa CELMEventRecognition.sa --server localhost --db elm --user elm --passwd somepw
+JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --recognition-sa CELMEventRecognition.sa --server localhost --db elm --user elm --passwd lF8AxP4
 JAVA MG LocationMonitor celmarchitecture.subarchitectures.elmwriter.LocationMonitor --writer-sa CELMWriter.sa
 #JAVA MG EventMonitor celmarchitecture.subarchitectures.elmwriter.EventMonitor
 
@@ -28,7 +28,7 @@ JAVA MG EventRecognizer celmarchitecture.subarchitectures.recognition.Recognizer
 SUBARCHITECTURE CELMRecollection.sa
 JAVA WM celmarchitecture.global.DefaultWorkingMemory --sendXarchCN
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
-JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --server localhost --db elm --user elm --passwd somepw
+JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --server localhost --db elm --user elm --passwd lF8AxP4
 
 # SUBARCHITECTURE <subarch name> <default host to be used>
 SUBARCHITECTURE CELMSimulator.sa
