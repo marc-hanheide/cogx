@@ -55,10 +55,11 @@ private:
   // Models
   ModelEntry m_camModel;
   std::vector<ModelEntry*> m_VisualObjectList;
-  std::vector<ModelEntry> m_ConvexHullList;
-  std::vector<ModelEntry> m_SOIList;
+  std::vector<ModelEntry*> m_ConvexHullList;
+  std::vector<ModelEntry*> m_SOIList;
   
   cogx::Math::Vector3 m_cor;	///< center of rotation of the scene
+  cogx::Math::Vector3 m_coo;	///< center of rotation of the scene
   int	m_cor_num;
   
 
@@ -77,6 +78,8 @@ private:
   bool m_lock;
   bool m_wireframe;
   bool m_normals;
+  bool m_labels;
+  bool m_drawcamera;
   float m_fTime;
  
   // Functions with GL commands allowed

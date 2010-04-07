@@ -40,13 +40,15 @@ public:
 	tgPose			m_pose;
 	Material 		m_material;
 	
+	void ApplyMaterial();
+	void ApplyColor();
+	
 	virtual void DrawFaces();
 	void DrawFaces(bool lighting);
 	virtual void DrawPolygons();
-// 	virtual void DrawNormals(float normal_length);
+	virtual void DrawNormals(float normal_length);
 
-	void ApplyMaterial();
-	void ApplyColor();
+
 
 };
 

@@ -231,6 +231,10 @@ void tgModel::TriangulatePolygon(std::vector<vec3> points){
 	std::vector<Vertex>::iterator v_act, v_pre, v_post, v_in;
 	
 	s=points.size();
+	if(s<3){
+		printf("[tgModel::TriangulatePolygon] Warning to few points for polygon: %d\n", s);
+		return;
+	}
 	
 	for(i=0; i<s; i++){
 		// Calculate normal
@@ -248,10 +252,7 @@ void tgModel::TriangulatePolygon(std::vector<vec3> points){
 	}
 	
 	poly_normal.normalize();	// normalize polygon normal
-	
-	v_pre = vertices.end()-1;
 	v_act = vertices.begin();
-	v_post = vertices.begin()+1;
 	while(vertices.size()>2){
 
 		if(v_act==vertices.end()-1){
@@ -281,9 +282,10 @@ void tgModel::TriangulatePolygon(std::vector<vec3> points){
 		}
 		
 			// Test if any other point of remaining polygon lies in this triangle
+			pointInTriangle = false;
 		if(pointIsConvex){
 			pointInTriangle = false;
-			for(v_in=vertices.begin(); v_in<vertices.end(); v_in++){
+			for(v_in=vertices.begin(); v_in<vertices.end() && vertices.size()>3; v_in++){
 				if(v_in!=v_act && v_in!=v_pre && v_in!=v_post){
 					if( PointOnSameSide((*v_in).pos, (*v_post).pos, (*v_act).pos, (*v_pre).pos) &&
 							PointOnSameSide((*v_in).pos, (*v_act).pos, (*v_pre).pos, (*v_post).pos) &&
@@ -309,8 +311,8 @@ void tgModel::TriangulatePolygon(std::vector<vec3> points){
 			
 			f.normal = poly_normal;
 			m_faces.push_back(f);
-		
 			vertices.erase(v_act);
+			
 		}else{
 			v_act = v_post;
 		}

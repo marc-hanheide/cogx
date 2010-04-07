@@ -52,6 +52,7 @@ public:
 	void CreateLabel();
 	void Clear();
 	void Draw();
+	const char* c_str(){ if(!m_text.empty()) return m_text[0].c_str(); }
 	
 };
 
