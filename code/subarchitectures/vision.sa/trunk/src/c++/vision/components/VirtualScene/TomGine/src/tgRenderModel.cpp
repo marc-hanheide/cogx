@@ -93,4 +93,31 @@ void tgRenderModel::DrawPolygons(){
 	}
 }
 
+void tgRenderModel::DrawNormals(float normal_length){
+	m_vertices.size();
+	int i,j,v;
+	Face* f;
+		
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
+	glColor3f(0.0, 0.0, 1.0);
+	
+	m_pose.Activate();
+	
+	glBegin(GL_LINES);
+	
+		for(j=0; j<(int)m_vertices.size(); j++){
+			glVertex3f( m_vertices[j].pos.x,
+									m_vertices[j].pos.y,
+									m_vertices[j].pos.z );
+			glVertex3f( m_vertices[j].pos.x + m_vertices[j].normal.x * normal_length,
+									m_vertices[j].pos.y + m_vertices[j].normal.y * normal_length,
+									m_vertices[j].pos.z + m_vertices[j].normal.z * normal_length );
+		}
 
+	glEnd();
+	
+	m_pose.Deactivate();
+	
+	glColor3f(1.0, 1.0, 1.0);
+}

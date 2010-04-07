@@ -121,7 +121,6 @@ bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& mod
 		points.push_back(p);
 	}
 	model.TriangulatePolygon(points);
-
 	// Top plane
 	points.clear();
 	for(j=object.pTop.size()-1; j>=0; j--){
@@ -148,7 +147,7 @@ bool convertConvexHullObj2Model(VisionData::OneObj object, TomGine::tgModel& mod
 		model.m_vertices.push_back(v);
 		f.vertices.push_back(vidx++);
 	}
-	if(object.pTop.size()>0){
+	if(object.pTop.size()>2){
 		v.pos.x = object.pTop[0].x;
 		v.pos.y = object.pTop[0].y;
 		v.pos.z = object.pTop[0].z;

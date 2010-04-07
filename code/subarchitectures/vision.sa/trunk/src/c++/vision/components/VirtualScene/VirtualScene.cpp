@@ -30,12 +30,18 @@ VirtualScene::VirtualScene(){
 	m_running = true;
 	m_render = true;
 	m_lock = false;
+	m_labels = false;
 	m_normals = false;
+	m_drawcamera = false;
 	m_objectType = 0;
 	m_cor_num = 0;
 }
 
 VirtualScene::~VirtualScene(){
+	vector<ModelEntry*>::iterator it;
+	
+	for(it=m_VisualObjectList.begin(); it<m_VisualObjectList.end(); it++)
+		delete(*it);
 
 }
 
@@ -55,93 +61,49 @@ void VirtualScene::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 }
 
 void VirtualScene::deleteVisualObject(const cdl::WorkingMemoryChange & _wmc){
-	vector<ModelEntry*>::iterator it;
-	for(it=m_VisualObjectList.begin(); it<m_VisualObjectList.end(); it++){
-		if((*it)->castWMA == _wmc.address){
-			m_VisualObjectList.erase(it);
-		}
-	}
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = DELETEVISUALOBJECT;
+	m_vsc.push_back(vsc);
 }
 
 void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
-	log("receiving ConvexHull: %s", _wmc.address.id.c_str());
-
-	if(!m_lock){
-		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
-		ModelEntry newModelEntry;
-		
-		// Convert plane to geometry
-		if(!convertConvexHullPlane2Model(obj, newModelEntry.model)){
-			log("  error can not convert ConvexHullPlane to virtual scene model");
-			return;
-		}
-		// Convert each object to geometry
-		for(int i=0; i<obj->Objects.size(); i++){
-			if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry.model)){
-				log("  error can not convert ConvexHullObject to virtual scene model");
-				return;
-			}
-		}
-		
-		newModelEntry.model.m_material = getRandomMaterial();
-		newModelEntry.castWMA = _wmc.address;
-		m_ConvexHullList.push_back(newModelEntry);
-		
-		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->center.pos);
-		m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
-		updateCameraViews();
-		
-		m_lock = true;
-	}
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = ADDCONVEXHULL;
+	m_vsc.push_back(vsc);
 }
 
 void VirtualScene::overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc){
-
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = OVERWRITECONVEXHULL;
+	m_vsc.push_back(vsc);
 }
 
 void VirtualScene::deleteConvexHull(const cdl::WorkingMemoryChange & _wmc){
-	vector<ModelEntry>::iterator it;
-	for(it=m_ConvexHullList.begin(); it<m_ConvexHullList.end(); it++){
-		if((*it).castWMA == _wmc.address){
-			m_ConvexHullList.erase(it);
-		}
-	}
+
 }
 
 void VirtualScene::addSOI(const cdl::WorkingMemoryChange & _wmc){
-	log("receiving SOI: %s", _wmc.address.id.c_str());
-	SOIPtr soi = getMemoryEntry<SOI>(_wmc.address);
-	cogx::Math::Pose3 pose;
-	
-	ModelEntry newModelEntry;
-	if(!convertSOI2Model(soi, newModelEntry.model, pose.pos)){
-		log("  error can not convert ConvexHullObject to virtual scene model");
-		return;
-	}
-	
-	cogx::Math::setIdentity(pose.rot);
-	convertPose2tgPose(pose, newModelEntry.model.m_pose);
-	
-	newModelEntry.model.m_material = getRandomMaterial(0.5);
-	
-	newModelEntry.castWMA = _wmc.address;
-	m_SOIList.push_back(newModelEntry);
-	
-	addVectorToCenterOfRotation(m_cor, m_cor_num, pose.pos);
-	m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = ADDSOI;
+	m_vsc.push_back(vsc);
 }
 
 void VirtualScene::overwriteSOI(const cdl::WorkingMemoryChange & _wmc){
-
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = OVERWRITESOI;
+	m_vsc.push_back(vsc);
 }
 
 void VirtualScene::deleteSOI(const cdl::WorkingMemoryChange & _wmc){
-	vector<ModelEntry>::iterator it;
-	for(it=m_SOIList.begin(); it<m_SOIList.end(); it++){
-		if((*it).castWMA == _wmc.address){
-			m_SOIList.erase(it);
-		}
-	}
+	VirtualSceneChange vsc;
+	vsc.wmc = _wmc;
+	vsc.cmd = DELETESOI;
+	m_vsc.push_back(vsc);
 }
 
 // *** base functions *** (configure, start, runcomponent)
@@ -158,6 +120,21 @@ void VirtualScene::configure(const map<string,string> & _config){
     istringstream istr(it->second);
     istr >> m_camId;
   }
+  
+  if((it = _config.find("--labels")) != _config.end())
+  {
+    m_labels = true;
+  }
+  
+  if((it = _config.find("--drawcamera")) != _config.end())
+  {
+    m_drawcamera = true;
+  }
+  
+  if((it = _config.find("--normals")) != _config.end())
+  {
+    m_normals = true;
+  }  
   
   if((it = _config.find("--maxModels")) != _config.end())
 	{
@@ -241,7 +218,7 @@ void VirtualScene::runComponent(){
     	updateGL();
     	
     	m_engine->Activate3D();
-    	drawCamera();
+    	if(m_drawcamera) drawCamera();
     	switch(m_objectType){
       	case 1:
       		drawVisualObjects();
@@ -310,8 +287,11 @@ void VirtualScene::updateCameraViews(){
 	TomGine::tgVector3 new_cam_pos;
 	tgCamera cam = m_camera0;
 	
-	cor_cam = TomGine::tgVector3(m_camera0.GetPos().x-m_cor.x, m_camera0.GetPos().y-m_cor.y, m_camera0.GetPos().z-m_cor.z);
-	m_engine->SetCenterOfRotation(0.5*(m_camera0.GetPos().x+m_cor.x),0.5*(m_camera0.GetPos().y+m_cor.y),0.5*(m_camera0.GetPos().z+m_cor.z));
+	cor_cam = TomGine::tgVector3(m_camera0.GetPos().x-m_coo.x, m_camera0.GetPos().y-m_coo.y, m_camera0.GetPos().z-m_coo.z);
+	m_cor.x = 0.5*(m_camera0.GetPos().x+m_coo.x);
+	m_cor.y = 0.5*(m_camera0.GetPos().y+m_coo.y);
+	m_cor.z = 0.5*(m_camera0.GetPos().z+m_coo.z);
+	m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
 	
 	float l = cor_cam.length();
 	new_cam_pos = m_camera0.GetPos() - m_camera0.GetF() * l;
@@ -346,19 +326,22 @@ void VirtualScene::applyVirtualSceneCmd(){
 	
 	// ADD VISUAL OBJECT
 	if(vsc.cmd == ADDVISUALOBJECT){
-		log("ADDVISUALOBJECT:");
+		log("ADDVISUALOBJECT: %s", vsc.wmc.address.id.c_str());
 		VisualObjectPtr obj = getMemoryEntry<VisualObject>(vsc.wmc.address);
 		ModelEntry* newModelEntry = new ModelEntry(m_fontfilename.c_str());
-		convertGeometry2Model(obj->model, newModelEntry->model);
+		if(!convertGeometry2Model(obj->model, newModelEntry->model)){
+			log("ADDVISUALOBJECT: error can not convert VisualObject to virtual scene model");
+			return;
+		}
 		newModelEntry->model.m_material = getRandomMaterial();
 		convertPose2tgPose(obj->pose, newModelEntry->model.m_pose);
 		newModelEntry->castWMA = vsc.wmc.address;
-		newModelEntry->label.AddText(obj->label.c_str(), 30);
-		newModelEntry->label.SetPose(newModelEntry->model.m_pose);
+		if(m_labels) newModelEntry->label.AddText(obj->label.c_str(), 30);
+		if(m_labels) newModelEntry->label.SetPose(newModelEntry->model.m_pose);
 		m_VisualObjectList.push_back(newModelEntry);
-		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->pose.pos);
+		addVectorToCenterOfRotation(m_coo, m_cor_num, obj->pose.pos);
 		updateCameraViews();
-		log("ADDVISUALOBJECT: ok %s - %s", obj->label.c_str(), vsc.wmc.address.id.c_str());
+		log("ADDVISUALOBJECT: ok %s", obj->label.c_str());
 
 	// OVERWRITE VISUAL OBJECT
 	}else if(vsc.cmd == OVERWRITEVISUALOBJECT){
@@ -366,7 +349,7 @@ void VirtualScene::applyVirtualSceneCmd(){
 		for(int i=0; i<m_VisualObjectList.size(); i++){
 			if(m_VisualObjectList[i]->castWMA == vsc.wmc.address){
 				convertPose2tgPose(obj->pose, m_VisualObjectList[i]->model.m_pose);
-				m_VisualObjectList[i]->label.SetPose(m_VisualObjectList[i]->model.m_pose);
+				if(m_labels) m_VisualObjectList[i]->label.SetPose(m_VisualObjectList[i]->model.m_pose);
 			}
 		}
 	
@@ -374,115 +357,124 @@ void VirtualScene::applyVirtualSceneCmd(){
 	}else if(vsc.cmd == DELETEVISUALOBJECT){
 		for(it=m_VisualObjectList.begin(); it<m_VisualObjectList.end(); it++){
 			if((*it)->castWMA == vsc.wmc.address){
+				delete(*it);
 				m_VisualObjectList.erase(it);
+			}
+		}
+	
+
+	// ADD CONVEX HULL
+	}else if(vsc.cmd == ADDCONVEXHULL){
+		log("ADDCONVEXHULL: %s", vsc.wmc.address.id.c_str());
+		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(vsc.wmc.address);
+		ModelEntry* newModelEntry = new ModelEntry(m_fontfilename.c_str());
+		// Convert plane to geometry
+		if(!convertConvexHullPlane2Model(obj, newModelEntry->model)){
+			log("ADDCONVEXHULL: error can not convert ConvexHullPlane to virtual scene model");
+			return;
+		}
+		// Convert each object to geometry
+		for(int i=0; i<obj->Objects.size(); i++){
+
+			if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry->model)){
+				log("ADDCONVEXHULL: error can not convert ConvexHullObject to virtual scene model");
+				return;
+			}
+		}
+		newModelEntry->model.m_material = getRandomMaterial();
+		newModelEntry->castWMA = vsc.wmc.address;
+		m_ConvexHullList.push_back(newModelEntry);
+		addVectorToCenterOfRotation(m_coo, m_cor_num, obj->center.pos);
+		updateCameraViews();
+		log("ADDCONVEXHULL: ok");
+		
+	// OVERWRITE CONVEX HULL
+	}else if(vsc.cmd == OVERWRITECONVEXHULL){	
+		log("OVERWRITECONVEXHULL: not implemented yet!");
+	
+	// DELETE CONVEX HULL
+	}else if(vsc.cmd == DELETECONVEXHULL){
+		for(it=m_ConvexHullList.begin(); it<m_ConvexHullList.end(); it++){
+			if((*it)->castWMA == vsc.wmc.address){
+				delete(*it);
+				m_ConvexHullList.erase(it);
+			}
+		}
+	
+	// ADD SOI
+	}else if(vsc.cmd == ADDSOI){
+		log("ADDSOI: %s", vsc.wmc.address.id.c_str());
+		SOIPtr soi = getMemoryEntry<SOI>(vsc.wmc.address);
+		cogx::Math::Pose3 pose;
+		
+		ModelEntry* newModelEntry = new ModelEntry(m_fontfilename.c_str());
+		if(!convertSOI2Model(soi, newModelEntry->model, pose.pos)){
+			log("ADDSOI: error can not convert ConvexHullObject to virtual scene model");
+			return;
+		}
+		cogx::Math::setIdentity(pose.rot);
+		convertPose2tgPose(pose, newModelEntry->model.m_pose);
+		newModelEntry->model.m_material = getRandomMaterial(0.5);
+		newModelEntry->castWMA = vsc.wmc.address;
+		m_SOIList.push_back(newModelEntry);
+		addVectorToCenterOfRotation(m_coo, m_cor_num, pose.pos);
+		log("ADDSOI: ok");
+	
+	// OVERWRITE SOI
+	}else if(vsc.cmd == OVERWRITESOI){
+		log("OVERWRITESOI: not implemented yet!");
+	
+	// DELETE SOI
+	}else if(vsc.cmd == DELETESOI){
+		for(it=m_SOIList.begin(); it<m_SOIList.end(); it++){
+			if((*it)->castWMA == vsc.wmc.address){
+				delete(*it);
+				m_SOIList.erase(it);
 			}
 		}
 	}
 
-// // void VirtualScene::addConvexHull(const cdl::WorkingMemoryChange & _wmc){
-// 	log("receiving ConvexHull: %s", _wmc.address.id.c_str());
-// 
-// 	if(!m_lock){
-// 		ConvexHullPtr obj = getMemoryEntry<ConvexHull>(_wmc.address);
-// 		ModelEntry newModelEntry;
-// 		
-// 		// Convert plane to geometry
-// 		if(!convertConvexHullPlane2Model(obj, newModelEntry.model)){
-// 			log("  error can not convert ConvexHullPlane to virtual scene model");
-// 			return;
-// 		}
-// 		// Convert each object to geometry
-// 		for(int i=0; i<obj->Objects.size(); i++){
-// 			if(!convertConvexHullObj2Model(obj->Objects[i], newModelEntry.model)){
-// 				log("  error can not convert ConvexHullObject to virtual scene model");
-// 				return;
-// 			}
-// 		}
-// 		
-// 		newModelEntry.model.m_material = getRandomMaterial();
-// 		newModelEntry.castWMA = _wmc.address;
-// 		m_ConvexHullList.push_back(newModelEntry);
-// 		
-// 		addVectorToCenterOfRotation(m_cor, m_cor_num, obj->center.pos);
-// 		m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
-// 		updateCameraViews();
-// 		
-// 		m_lock = true;
-// 	}
-// 
-// 
-// // void VirtualScene::overwriteConvexHull(const cdl::WorkingMemoryChange & _wmc){
-// 
-// 
-// 
-// // void VirtualScene::deleteConvexHull(const cdl::WorkingMemoryChange & _wmc){
-// 	vector<ModelEntry>::iterator it;
-// 	for(it=m_ConvexHullList.begin(); it<m_ConvexHullList.end(); it++){
-// 		if((*it).castWMA == _wmc.address){
-// 			m_ConvexHullList.erase(it);
-// 		}
-// 	}
-// 
-// 
-// // void VirtualScene::addSOI(const cdl::WorkingMemoryChange & _wmc){
-// 	log("receiving SOI: %s", _wmc.address.id.c_str());
-// 	SOIPtr soi = getMemoryEntry<SOI>(_wmc.address);
-// 	cogx::Math::Pose3 pose;
-// 	
-// 	ModelEntry newModelEntry;
-// 	if(!convertSOI2Model(soi, newModelEntry.model, pose.pos)){
-// 		log("  error can not convert ConvexHullObject to virtual scene model");
-// 		return;
-// 	}
-// 	
-// 	cogx::Math::setIdentity(pose.rot);
-// 	convertPose2tgPose(pose, newModelEntry.model.m_pose);
-// 	
-// 	newModelEntry.model.m_material = getRandomMaterial(0.5);
-// 	
-// 	newModelEntry.castWMA = _wmc.address;
-// 	m_SOIList.push_back(newModelEntry);
-// 	
-// 	addVectorToCenterOfRotation(m_cor, m_cor_num, pose.pos);
-// 	m_engine->SetCenterOfRotation(m_cor.x, m_cor.y, m_cor.z);
-// 
-// 
+
+
 // // void VirtualScene::overwriteSOI(const cdl::WorkingMemoryChange & _wmc){
 // 
 // 
 // 
 // // void VirtualScene::deleteSOI(const cdl::WorkingMemoryChange & _wmc){
 // 	vector<ModelEntry>::iterator it;
-// 	for(it=m_SOIList.begin(); it<m_SOIList.end(); it++){
-// 		if((*it).castWMA == _wmc.address){
-// 			m_SOIList.erase(it);
-// 		}
-// 	}
+
 
 }
 
 // *** Draw functions ***
 void VirtualScene::drawCamera(){
-// 	m_camModel.model.DrawFaces(m_wireframe);
+	m_camModel.model.DrawFaces(!m_wireframe);
 	m_camModel.model.m_pose.Activate();
 	glColor3f(0.5,0.5,0.5);
 	m_camera0.DrawFrustum();
 	m_camModel.model.m_pose.Deactivate();
+	
+	// Draw center of rotation
+	glPointSize(2);
+	glColor3f(1.0,0.0,0.0);
+	glBegin(GL_POINTS);
+		glVertex3f(m_cor.x, m_cor.y, m_cor.z);
+	glEnd();
 }
 
 void VirtualScene::drawVisualObjects(){
 	for(int i=0; i<m_VisualObjectList.size(); i++){
 		m_VisualObjectList[i]->model.DrawFaces(!m_wireframe);
-		m_VisualObjectList[i]->label.Draw();
 		if(m_normals) m_VisualObjectList[i]->model.DrawNormals(0.01);
+		if(m_labels) m_VisualObjectList[i]->label.Draw();
 	}
 }
 
 void VirtualScene::drawConvexHulls(){
 	for(int i=0; i<m_ConvexHullList.size(); i++){
-		m_ConvexHullList[i].model.DrawFaces(!m_wireframe);
-		m_ConvexHullList[i].model.DrawQuadstrips();
-		if(m_normals) m_ConvexHullList[i].model.DrawNormals(0.01);
+		m_ConvexHullList[i]->model.DrawFaces(!m_wireframe);
+		m_ConvexHullList[i]->model.DrawQuadstrips();
+		if(m_normals) m_ConvexHullList[i]->model.DrawNormals(0.01);
 	}
 }
 
@@ -491,8 +483,8 @@ void VirtualScene::drawSOIs(){
 	glEnable(GL_CULL_FACE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for(int i=0; i<m_SOIList.size(); i++){
-		m_SOIList[i].model.DrawFaces();
-		if(m_normals) m_SOIList[i].model.DrawNormals(0.01);
+		m_SOIList[i]->model.DrawFaces();
+		if(m_normals) m_SOIList[i]->model.DrawNormals(0.01);
 	}
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
