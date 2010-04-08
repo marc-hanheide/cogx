@@ -1,5 +1,6 @@
 package binder.testing;
 
+import binder.abstr.BeliefWriter;
 import binder.abstr.PerceptWriter;
 import cast.architecture.ManagedComponent;
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.Map;
  * @started 24.03.2010
  * 
  */
-public abstract class AbstractBinderTest extends PerceptWriter {
+public abstract class AbstractBinderTest extends BeliefWriter {
 
 	
 	// System time at test initialization
