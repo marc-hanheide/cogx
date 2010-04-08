@@ -1,6 +1,6 @@
 package binder.abstr;
 
-import binder.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.PerceptBelief;
 import cast.AlreadyExistsOnWMException;
 import cast.architecture.ManagedComponent;
 

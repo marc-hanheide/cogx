@@ -6,17 +6,19 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
+import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.FeatureValueDistribution;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.Feature;
+import beliefmodels.autogen.history.PerceptHistory;
+import beliefmodels.builders.BeliefContentBuilder;
+import beliefmodels.builders.FeatureValueBuilder;
+import beliefmodels.builders.PerceptBuilder;
 import binder.arch.BinderException;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.distribs.CondIndependentDistribs;
-import binder.autogen.distribs.FeatureValueDistribution;
-import binder.autogen.distribs.FeatureValueProbPair;
-import binder.autogen.distribs.ProbDistribution;
-import binder.autogen.featurecontent.Feature;
-import binder.autogen.history.PerceptHistory;
-import binder.builders.BeliefContentBuilder;
-import binder.builders.FeatureValueBuilder;
-import binder.builders.PerceptBuilder;
+
 
 public class BasicPerceptInsertion extends AbstractBinderTest {
 
@@ -87,7 +89,7 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 
 		}
 
-		catch (BinderException e) {
+		catch (BeliefException e) {
 			isTestFinished = true;
 			isTestSuccessful = false;
 			reasonForFailure = e.getMessage();

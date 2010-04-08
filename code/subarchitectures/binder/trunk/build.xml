@@ -52,7 +52,7 @@
 	
 	<target name="slice-beliefmodels" depends="prepare" description="generates source from slice">
 	  <slice2java tie="true" outputdir="${src.dir}"> 
-	    <fileset dir="${slice.dir}" includes="beliefmodels.ice perceptmanagement.ice"/>
+	    <fileset dir="${slice.dir}" includes="perceptmanagement.ice"/>
 	    <includepath>
              <pathelement path="${slice.dir}"/>
  	    	 <pathelement path="${castslice.dir}"/>	    	

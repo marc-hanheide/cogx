@@ -1,7 +1,7 @@
 package binder.components;
 
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
