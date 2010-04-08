@@ -22,10 +22,10 @@
 package binder.interfaces;
 
 
+import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.ProbDistribution;
 import cast.cdl.WorkingMemoryPointer;
-import binder.autogen.beliefs.Belief;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.distribs.ProbDistribution;
 
 
 public interface PerceptWriterInterface {

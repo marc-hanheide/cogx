@@ -21,15 +21,15 @@
 
 package binder.interfaces;
 
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.DiscreteDistribution;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
+import beliefmodels.autogen.distribs.FormulaProbPair;
+import beliefmodels.autogen.distribs.NormalDistribution;
+import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.Feature;
+import beliefmodels.autogen.logicalcontent.Formula;
 import binder.arch.BinderException;
-import binder.autogen.distribs.CondIndependentDistribs;
-import binder.autogen.distribs.DiscreteDistribution;
-import binder.autogen.distribs.DistributionWithExistDep;
-import binder.autogen.distribs.FormulaProbPair;
-import binder.autogen.distribs.NormalDistribution;
-import binder.autogen.distribs.ProbDistribution;
-import binder.autogen.featurecontent.Feature;
-import binder.autogen.logicalcontent.Formula;
 
 public interface BeliefContentBuilderInterface {
 
