@@ -53,6 +53,7 @@ module autogen {
     interface CppServer
     {
       void deliverPlan(int id, ActionSeq plan);
+      void updateBeliefState(BeliefSeq beliefs);
       //void deliverPlan(PlanningTask task);
       void updateStatus(int id, Completion status);
       void setChangeFilter(int id, StateChangeFilter filter);
