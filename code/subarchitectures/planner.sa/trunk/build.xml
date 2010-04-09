@@ -43,6 +43,7 @@
   	    <pathelement path="${slice.dir}"/> 
   	    <pathelement path="${castslice.dir}"/> 
   	    <pathelement path="${projectroot.dir}/subarchitectures/binder/src/slice"/> 
+  	    <pathelement path="${projectroot.dir}/tools/beliefs/src/slice"/> 
 	    </includepath>
 	  </slice2java>
 	</target>
