@@ -20,17 +20,17 @@
 
 package beliefmodels.builders;
 
-
 import beliefmodels.arch.BeliefException;
-import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 
-public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 
-	
+public class TemporalUnionBuilder  extends AbstractBeliefBuilder{
+
 	  
 	/**
-	 * Construct a new percept union belief
+	 * Construct a new temporal union belief
 	 * 
 	 * @param curPlace the current place
 	 * @param curTime the curernt time
@@ -39,12 +39,10 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	 * @return the resulting belief
 	 * @throws BinderException 
 	 */
-	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, String id) 
+	public static TemporalUnionBelief createNewSingleTemporalUnionBuilder (MultiModalBelief mmbelief, String id) 
 		throws BeliefException {
 		
-		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.content, createHistory(percept));
+		return new TemporalUnionBelief(mmbelief.frame, mmbelief.estatus, id,mmbelief.content, createHistory(mmbelief));
 	}
 	
-
-
 }

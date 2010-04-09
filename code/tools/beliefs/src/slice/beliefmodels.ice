@@ -168,16 +168,6 @@ module featurecontent {
  *
  * TO BE COMPLETED!!
  */
-enum Feature {
-	Colour, 
-	Shape, 
-	ObjectLabel, 
-	Size,
-	PlaceId,
-	PlaceStatus,
-	ConnectedTo1,
-	ConnectedTo2,
-	Position };
 	
 	
 class FeatureValue { };
@@ -332,7 +322,7 @@ sequence<FeatureValueProbPair> FeatureValueProbPairs;
 
 
 class FeatureValueDistribution extends ProbDistribution {
-	featurecontent::Feature feat;
+	string feat;
 	FeatureValueProbPairs values;
 };
 	
@@ -343,7 +333,7 @@ class FeatureValueDistribution extends ProbDistribution {
  * distribution with mean and variance as parameters
  */
 class NormalDistribution extends ProbDistribution {
-	featurecontent::Feature feat;
+	string feat;
 	double mean;
 	double variance;
 };

@@ -34,7 +34,6 @@ import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.FormulaProbPair;
 import beliefmodels.autogen.distribs.NormalDistribution;
 import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.featurecontent.Feature;
 import beliefmodels.autogen.featurecontent.UnknownValue;
 import beliefmodels.autogen.logicalcontent.ElementaryFormula;
 import beliefmodels.autogen.logicalcontent.Formula;
@@ -197,7 +196,7 @@ public class BeliefContentBuilder {
 	
 	
 	public static FeatureValueDistribution createNewFeatureValueDistribution 
-			(Feature feat, FeatureValueProbPair[] values, boolean addUnknownValue) throws BeliefException {
+			(String feat, FeatureValueProbPair[] values, boolean addUnknownValue) throws BeliefException {
 		
 		
 		// Vector<FormulaProbPair> modalPairs = createModalFormulaPairs(feat, values);
@@ -282,7 +281,7 @@ public class BeliefContentBuilder {
 	 * @return a new, well-formed normal distribution
 	 * @throws BeliefException 
 	 */
-	public static NormalDistribution createNewNormalDistribution (Feature feat, double mean, double variance) throws BeliefException {
+	public static NormalDistribution createNewNormalDistribution (String feat, double mean, double variance) throws BeliefException {
 		
 		if (feat == null) {
 			throw new BeliefException("error, feat == null");
