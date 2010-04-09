@@ -27,6 +27,7 @@ protected:
     void generateState(PlanningTaskPtr& task);
     //void deliverPlan(const autogen::Planner::PlanningTaskPtr& task);
     void deliverPlan(int id, const ActionSeq& plan);
+    void updateBeliefState(const BeliefSeq& beliefs);
     void updateStatus(int id, Completion status);
     void setChangeFilter(int id, const StateChangeFilterPtr& filter);
 
@@ -39,6 +40,7 @@ protected:
         InternalCppServer(WMControl* Parent);
         //virtual void deliverPlan(const PlanningTaskPtr& task, const Ice::Current&);
         virtual void deliverPlan(int id, const ActionSeq& plan, const Ice::Current&);
+        virtual void updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&);
         virtual void updateStatus(int id, Completion status, const Ice::Current&);
         virtual void setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&);
 

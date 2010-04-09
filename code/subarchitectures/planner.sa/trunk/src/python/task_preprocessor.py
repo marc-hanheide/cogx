@@ -6,8 +6,7 @@ from string import maketrans
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
 from standalone import pddl
 from standalone.pddl import state, prob_state
-import binder.autogen
-from binder.autogen import distribs, featurecontent
+from beleifmodels.autogen import distribs, featurecontent
 
 forbidden_letters = "-:"
 replace_chr = "_"

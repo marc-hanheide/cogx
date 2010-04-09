@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <boost/foreach.hpp>
 
 using namespace std;
 using namespace beliefmodels::autogen::beliefs;
@@ -17,6 +18,8 @@ extern "C" {
 static const int MAX_PLANNING_RETRIES = 1;
 static const int MAX_EXEC_RETRIES = 1;
 static const int REPLAN_DELAY = 3000;
+
+static const string BINDER_SA = "binding.sa";
 
 void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
   m_lastUpdate = getCASTTime();
@@ -307,6 +310,19 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
 
 }
 
+void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
+    BOOST_FOREACH(BeliefPtr bel, beliefs) {
+        try {
+            WorkingMemoryAddress wma;
+            wma.id = bel->id;
+            wma.subarchitecture = BINDER_SA;
+            overwriteWorkingMemory(wma, bel);
+        }
+        catch (cast::ConsistencyException e) {
+            log("Consistency exception when trying to update belief %s", bel->id.c_str());
+        }
+    }
+}
 
 void WMControl::updateStatus(int id, Completion status) {
     assert(activeTasks.find(id) != activeTasks.end());
@@ -363,6 +379,10 @@ WMControl::InternalCppServer::InternalCppServer(WMControl* Parent) {
 
 void WMControl::InternalCppServer::deliverPlan(int id, const ActionSeq& plan, const Ice::Current&) {
     parent->deliverPlan(id, plan);
+}
+
+void WMControl::InternalCppServer::updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&) {
+    parent->updateBeliefState(beliefs);
 }
 
 void WMControl::InternalCppServer::updateStatus(int id, Completion status, const Ice::Current&) {
