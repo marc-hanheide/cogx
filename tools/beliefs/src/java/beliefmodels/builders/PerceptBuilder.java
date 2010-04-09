@@ -31,12 +31,9 @@ import beliefmodels.autogen.history.PerceptHistory;
 import beliefmodels.builders.EpistemicStatusBuilder;
 import beliefmodels.builders.SpatioTemporalFrameBuilder;
 
-public class PerceptBuilder {
+public class PerceptBuilder extends AbstractBeliefBuilder {
 
-	private static int increment = 0;
-
-	
-	  
+  
 	/**
 	 * Construct a new perceptual belief
 	 * 
