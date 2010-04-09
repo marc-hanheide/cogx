@@ -1,3 +1,4 @@
+#include <cstring>
 #include "CensusGPU.h"
 
 
@@ -23,22 +24,14 @@ void CensusGPU::setImages(IplImage* left, IplImage* right) {
 	int i, j;
 	int modWidth;
 
-	if (left->nChannels != 1)
-	{
-		IplImage *tmp = cvCreateImage(cvSize(left->width, left->height), IPL_DEPTH_8U, 1);
-		cvCvtColor(right, tmp, CV_RGB2GRAY);
-		right = cvCloneImage(tmp);
-		cvCvtColor(left, tmp, CV_RGB2GRAY);
-		left = cvCloneImage(tmp);
-		cvReleaseImage(&tmp);
-	}
-
+  assert(left->nChannels == 1 && right->nChannels == 1);
 
 	iOrgWidth = left->width;
 	modWidth = iAlignUp(left->width, 16);
 
 
 	if (async) {
+    assert(0);
 		if (this->iWidth != modWidth || this->iHeight != left->height) {
 			if (this->iWidth || this->iHeight)
 				gpuCensusImageCleanup();
@@ -102,6 +95,7 @@ void CensusGPU::getDisparityMap(IplImage *dm) {
 #endif
 
 void CensusGPU::setImages(unsigned char *left, unsigned char *right, unsigned int iWidth, unsigned int iHeight) {
+
 	if (this->iWidth != iWidth || this->iHeight != iHeight) {
 		if (this->iWidth || this->iHeight)
 			gpuCensusImageCleanup();
