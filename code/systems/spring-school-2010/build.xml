@@ -36,7 +36,7 @@
 		<ant target="${target}" dir="tools/hardware/video" /> 		
  		<ant target="${target}" dir="tools/hardware/blobfinder" /> 
  		<ant target="${target}" dir="subarchitectures/vision.sa" /> 
-<!-- 		<ant target="${target}" dir="tools/beliefmodels" />  -->
+ 		<ant target="${target}" dir="tools/beliefs" />
 <!-- 		<ant target="${target}" dir="tools/interconnectivity" /> -->
 		<ant target="${target}" dir="subarchitectures/binder" /> 
  		<ant target="${target}" dir="subarchitectures/nav.sa" /> 

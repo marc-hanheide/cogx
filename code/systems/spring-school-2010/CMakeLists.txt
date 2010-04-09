@@ -18,7 +18,7 @@ include(CASTBuild)
 
 
 #Adding alchemy to the compilation
-include("${COGX_ROOT}/tools/alchemy/alchemy.cmake")
+#include("${COGX_ROOT}/tools/alchemy/alchemy.cmake")
 
 
 # use cmake files packaged with CAST as well
@@ -30,14 +30,20 @@ add_definitions(-Wall)
 
 add_subdirectory (tools/d-lib)
 
-option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
-if(BUILD_SA_BINDING)
-add_subdirectory (subarchitectures/binder)
-endif(BUILD_SA_BINDING)
+# option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
+# if(BUILD_SA_BINDING)
+# add_subdirectory (subarchitectures/binder)
+# endif(BUILD_SA_BINDING)
+
+option(BUILD_BELIEFMODELS "Build beliefmodels" YES)
+if(BUILD_BELIEFMODELS)
+add_subdirectory (tools/beliefs)
+endif(BUILD_BELIEFMODELS)
 
 option(BUILD_ALCHEMY "Build Alchemy package" ON)
 if(BUILD_ALCHEMY)
-	BUILD_ALCHEMY_MACRO()
+  add_subdirectory (tools/alchemy)
+#	BUILD_ALCHEMY_MACRO()
 endif(BUILD_ALCHEMY)
 
 
