@@ -61,7 +61,8 @@ module Math {
     Vector3 pos;
     Matrix33 rot;
   };
-  
+
+  // 3D plane: a*x + b*y + c*z + d = 0
   struct Plane3 {
   	double a;
   	double b;
