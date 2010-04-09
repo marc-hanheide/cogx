@@ -6,23 +6,27 @@ package binder.components.perceptmediator.transferfunctions;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryPointer;
 
+import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.FeatureValueDistribution;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.epstatus.EpistemicStatus;
+import beliefmodels.autogen.featurecontent.Feature;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.framing.SpatioTemporalFrame;
+import beliefmodels.autogen.history.PerceptHistory;
+import beliefmodels.builders.BeliefContentBuilder;
+import beliefmodels.builders.EpistemicStatusBuilder;
+import beliefmodels.builders.PerceptBuilder;
+import beliefmodels.builders.SpatioTemporalFrameBuilder;
 import binder.arch.BinderException;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.distribs.CondIndependentDistribs;
-import binder.autogen.distribs.FeatureValueDistribution;
-import binder.autogen.distribs.FeatureValueProbPair;
-import binder.autogen.epstatus.EpistemicStatus;
-import binder.autogen.featurecontent.Feature;
-import binder.autogen.featurecontent.FeatureValue;
-import binder.autogen.framing.SpatioTemporalFrame;
-import binder.autogen.history.PerceptHistory;
-import binder.builders.BeliefContentBuilder;
-import binder.builders.EpistemicStatusBuilder;
-import binder.builders.PerceptBuilder;
-import binder.builders.SpatioTemporalFrameBuilder;
+
 
 
 
@@ -44,8 +48,13 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		for (Entry<Feature, FeatureValue> fvm : mapping.entrySet()) {
 			FeatureValueProbPair[] values = new FeatureValueProbPair[1];
 			values[0] = new FeatureValueProbPair(fvm.getValue(), 1.0f);
-			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(fvm.getKey(), values, true);
-			BeliefContentBuilder.addCondIndependentDistrib(features, cdistrib);
+			FeatureValueDistribution cdistrib;
+			try {
+				cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(fvm.getKey(), values, true);
+				BeliefContentBuilder.addCondIndependentDistrib(features, cdistrib);
+			} catch (BeliefException e) {
+				Logger.getLogger(SimpleDiscreteTransferFunction.class).error("Belief exception", e);
+			}
 		}
 		perceptBelief.content = features;
 	}
@@ -56,7 +65,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 * @see binder.components.perceptmediator.TransferFunction#createBelief(java.lang.String, cast.cdl.CASTTime)
 	 */
 	@Override
-	public PerceptBelief createBelief(String id, CASTTime curTime) throws BinderException {
+	public PerceptBelief createBelief(String id, CASTTime curTime) throws BinderException, BeliefException {
 		SpatioTemporalFrame frame = 
 			SpatioTemporalFrameBuilder.createSimpleSpatioTemporalFrame("here", curTime, curTime);
 		

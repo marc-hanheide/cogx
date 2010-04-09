@@ -8,13 +8,12 @@ import org.apache.log4j.Logger;
 
 import SpatialData.Place;
 import SpatialProperties.ConnectivityPathProperty;
+import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.featurecontent.Feature;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.builders.FeatureValueBuilder;
 import binder.arch.BinderException;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.distribs.CondIndependentDistribs;
-import binder.autogen.distribs.ProbDistribution;
-import binder.autogen.featurecontent.Feature;
-import binder.autogen.featurecontent.FeatureValue;
-import binder.builders.FeatureValueBuilder;
 import binder.components.perceptmediator.PerceptBeliefManager;
 import cast.CASTException;
 import cast.cdl.CASTTime;
@@ -98,7 +97,7 @@ public class ConnectivityTransferFunction extends
 
 	@Override
 	public PerceptBelief createBelief(String id, CASTTime curTime)
-			throws BinderException {
+			throws BinderException, BeliefException {
 		PerceptBelief basePb = super.createBelief(id, curTime);
 		PerceptBelief newPb = new PerceptBelief();
 		newPb.estatus = basePb.estatus;

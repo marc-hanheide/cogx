@@ -8,8 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
+import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.PerceptBelief;
 import binder.arch.BinderException;
-import binder.autogen.beliefs.PerceptBelief;
 import binder.autogen.perceptmanagement.PerceptBeliefMaps;
 import binder.components.perceptmediator.transferfunctions.TransferFunction;
 import cast.CASTException;
@@ -157,7 +158,6 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 				final PerceptBelief belief = transferFunction.createBelief(
 						component.newDataID(), CASTUtils.getTimeServer()
 								.getCASTTime());
-				belief.source = ev.address;
 				final WorkingMemoryAddress beliefWMA = new WorkingMemoryAddress(
 						belief.id, component.getSubarchitectureID());
 
@@ -193,6 +193,8 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 		} catch (CASTException e) {
 			logger.error("in PerceptMonitor::run: ", e);
 		} catch (BinderException e) {
+			logger.error("in PerceptMonitor::run: ", e);
+		} catch (BeliefException e) {
 			logger.error("in PerceptMonitor::run: ", e);
 		} finally {
 			try {
