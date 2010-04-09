@@ -6,6 +6,7 @@
 #ifndef VISION_UTILS_H
 #define VISION_UTILS_H
 
+#include <iostream>
 #include <VideoUtils.h>
 #include <Sphere3.h>
 #include <Box3.h>
@@ -81,6 +82,64 @@ inline cogx::Math::Vector3 getCenterOfGeometryModel(VisionData::GeometryModelPtr
 	vCenter.z /= v.size();
 	
 	return vCenter;
+}
+
+/**
+ * Print RGB color in text form to a stream: '[r g b]`
+ */
+inline void writeText(std::ostream &os, const VisionData::ColorRGB &col)
+{
+  os << '[' << col.r << ' ' << col.g << ' ' << col.b << ']';
+}
+
+/**
+ * Read RGB color in text from a stream.
+ * The expected format is: '[r g b]', white spaces are ignored.
+ */
+inline void readText(std::istream &is, VisionData::ColorRGB &col) throw(std::runtime_error)
+{
+  char c;
+  is >> c;
+  if(c == '[')
+  {
+    // note: we have to read values as ints not as unsigned chars, because
+    // is >> col.r >> col.g >> col.b >> c;
+    // would read [128 128 128] as col.r = 1, col.g = 1, col.b = 8  etc.
+    int r, g, b;
+    is >> r >> g >> b >> c;
+    col.r = r;
+    col.g = g;
+    col.b = b;
+    if(c != ']')
+    {
+      throw std::runtime_error(cast::exceptionMessage(__HERE__,
+            "error reading ColorRGB: ']' expected, have '%c'", c));
+    }
+  }
+  else
+    throw std::runtime_error(cast::exceptionMessage(__HERE__,
+          "error reading ColorRGB: '[' expected, have '%c'", c));
+}
+
+
+/**
+ * Writing to a stream is taken to be a textual output, rather than a
+ * serialisation of the actual binary data.
+ */
+inline std::ostream& operator<<(std::ostream &os, const VisionData::ColorRGB &col)
+{
+  writeText(os, col);
+  return os;
+}
+
+/**
+ * Reading from a stream is taken to read a textual input, rather than
+ * de-serialising the actual binary data.
+ */
+inline std::istream& operator>>(std::istream &is, VisionData::ColorRGB &col)
+{
+  readText(is, col);
+  return is;
 }
 
 #endif
