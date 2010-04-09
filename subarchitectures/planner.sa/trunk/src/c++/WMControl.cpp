@@ -5,7 +5,7 @@
 #include <cassert>
 
 using namespace std;
-using namespace binder::autogen::beliefs;
+using namespace beliefmodels::autogen::beliefs;
 using namespace cast::cdl;
 
 extern "C" {
@@ -190,8 +190,11 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 }
 
 void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
+    log("state change...");
     if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
-        BeliefPtr changedBelief = getMemoryEntry<Belief>(wmc.address);
+        debug("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
+        BeliefPtr changedBelief = getMemoryEntry<Belief>(wmc.address.id, "binding.sa");
+        debug("got object");
         m_currentState.insert(std::pair<std::string, BeliefPtr>(wmc.address.id, changedBelief));
     }
     else {

@@ -17,7 +17,7 @@ module autogen {
 
     sequence<string> stringSeq;
 
-    sequence<binder::autogen::beliefs::Belief> BeliefSeq;
+    sequence<beliefmodels::autogen::beliefs::Belief> BeliefSeq;
 
     class StateChangeFilter {
       BeliefSeq removeFilter;

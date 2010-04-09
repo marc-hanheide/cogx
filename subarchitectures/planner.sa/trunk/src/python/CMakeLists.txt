@@ -1,7 +1,8 @@
 include(Slice2Py)
 
-cast_slice2Py(GEN_FILE Planner.ice ${CAST_SLICE_DIR} ${CAST_SLICE_DIR}/cast/slice ${COGX_ROOT}/subarchitectures/binder/src/slice)
-cast_slice2Py(GEN_FILE2 ../binder/src/slice/beliefmodels.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
+cast_slice2Py(GEN_FILE Planner.ice ${CAST_SLICE_DIR} ${CAST_SLICE_DIR}/cast/slice ${COGX_ROOT}/subarchitectures/binder/src/slice
+  ${COGX_ROOT}/tools/beliefs/src/slice)
+cast_slice2Py(GEN_FILE2 ../../tools/beliefs/src/slice/beliefmodels.ice ${CAST_SLICE_DIR}/cast/slice ${CAST_SLICE_DIR} )
 
 add_custom_target(python ALL DEPENDS ${GEN_FILE} ${GEN_FILE2})
 
