@@ -2,10 +2,10 @@ package castutils.viewer.plugins;
 
 import java.util.Vector;
 
-import binder.autogen.beliefs.Belief;
-import binder.autogen.distribs.CondIndependentDistribs;
-import binder.autogen.distribs.FeatureValueDistribution;
-import binder.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.FeatureValueDistribution;
+import beliefmodels.autogen.distribs.ProbDistribution;
 
 //import binder.utils.BeliefModelUtils;
 
