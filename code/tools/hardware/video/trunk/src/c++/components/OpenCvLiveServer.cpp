@@ -182,10 +182,10 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
 		w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
 		h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
 
-		if(w!=width || h!=height) 
+		if(w!=width || h!=height)
 		{
 			println("[OpenCvLiveServer::init] cvSetCaptureProperty(WIDTH, HEIGHT) didn't work, trying cvSetCaptureProperty(MODE)");
-		
+
 			if(width == 320) {
 				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_320x240_YUV422);
 			}
@@ -199,10 +199,10 @@ void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
 				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1280x960_RGB8);
 			if(width == 1600)
 				cvSetCaptureProperty(captures[i], CV_CAP_PROP_MODE, DC1394_VIDEO_MODE_1600x1200_RGB8);
-			
+
 			w = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_WIDTH);
 			h = (int)cvGetCaptureProperty(captures[i], CV_CAP_PROP_FRAME_HEIGHT);
-		
+
 			if(w!=width)
 				printf("[OpenCvLiveServer::init] Warning: setting video resolution not supported by this OpenCV implementation!\n");
 		}
@@ -313,6 +313,10 @@ void OpenCvLiveServer::retrieveFrameInternal(int camIdx, int width, int height,
   if(retrievedImages[camIdx] == 0)
     retrievedImages[camIdx] = cvRetrieveFrame(captures[camIdx]);
 
+  frame.time = grabTimes[camIdx];
+  frame.camId = camIds[camIdx];
+  frame.camPars = camPars[camIdx];
+
   // no size given, use native size
   if((width == 0 || height == 0) || (width == this->width && height == this->height))
   {
@@ -325,11 +329,8 @@ void OpenCvLiveServer::retrieveFrameInternal(int camIdx, int width, int height,
     copyImage(tmp, frame);
     // TODO: avoid allocate/deallocating all the time
     cvReleaseImage(&tmp);
+    changeImageSize(frame.camPars, width, height);
   }
-
-  frame.time = grabTimes[camIdx];
-  frame.camId = camIds[camIdx];
-  frame.camPars = camPars[camIdx];
 }
 
 void OpenCvLiveServer::retrieveFrames(const std::vector<int> &camIds,
@@ -420,7 +421,7 @@ void OpenCvLiveServer::copyImage(const IplImage *iplImg, Video::Image &img)
         img.data[channels*(y*img.width + x) + 2] =
            iplImg->imageData[y*iplImg->widthStep + channels*x + 0];
       }
-#else 
+#else
     memcpy(&img.data[0], iplImg->imageData, iplImg->height*iplImg->widthStep);
 #endif
   }

@@ -206,7 +206,7 @@ void PointGreyServer::LogCameraConfig()
  */
 void PointGreyServer::LogPropertyInfo(FlyCapture2::PropertyInfo* pPropInfo)
 {
-	
+
   log(" CAMERA PROPERTY INFORMATION\n"
       "Property Type:		%s\n"
       "Present:		%s\n"
@@ -436,7 +436,7 @@ bool PointGreyServer::IsCurrentlyInFormat7(int camId)
 	FlyCapture2::Error error;
 	FlyCapture2::VideoMode currVideoMode;
 	FlyCapture2::FrameRate currFrameRate;
-		
+
 	error = cameras[camId]->GetVideoModeAndFrameRate( &currVideoMode, &currFrameRate );
 	if ( error != FlyCapture2::PGRERROR_OK ) throw runtime_error(error.GetDescription());
 	return (currVideoMode == FlyCapture2::VIDEOMODE_FORMAT7);
@@ -471,7 +471,7 @@ bool PointGreyServer::GetFormat7ImageParametersFromCamera(FlyCapture2::Mode mode
 		modeOffset *= 4;
 		modeOffset &= 0x000FFFFF;
 
-		unsigned int imageSize;        
+		unsigned int imageSize;
 		error = cameras[camId]->ReadRegister( modeOffset + 0x008, &imageSize );
 		if( error != FlyCapture2::PGRERROR_OK )
 		{
@@ -502,16 +502,16 @@ bool PointGreyServer::GetFormat7ImageParametersFromCamera(FlyCapture2::Mode mode
 void PointGreyServer::SetVideoMode7(int camId)
 {
 	FlyCapture2::Error error;
-	
+
 	// Save the current settings
 	FlyCapture2::VideoMode currVideoMode;
 	FlyCapture2::FrameRate currFrameRate;
 	FlyCapture2::Format7ImageSettings currFmt7Settings;
 	unsigned int currPacketSize;
-	
+
 	// Get current video mode and frame rate
-	error = cameras[camId]->GetVideoModeAndFrameRate( &currVideoMode, &currFrameRate );		
-	if ( error != FlyCapture2::PGRERROR_OK ) 
+	error = cameras[camId]->GetVideoModeAndFrameRate( &currVideoMode, &currFrameRate );
+	if ( error != FlyCapture2::PGRERROR_OK )
 		throw runtime_error(error.GetDescription());
 
 	if ( currVideoMode == FlyCapture2::VIDEOMODE_FORMAT7 )
@@ -522,7 +522,7 @@ void PointGreyServer::SetVideoMode7(int camId)
 		if ( error != FlyCapture2::PGRERROR_OK )
 			throw runtime_error(error.GetDescription());
 	}
-	
+
 	// Get the image settings
 	FlyCapture2::Format7ImageSettings newFmt7Settings;
 	if(videoMode == 0) newFmt7Settings.mode = FlyCapture2::MODE_0;
@@ -637,25 +637,25 @@ FlyCapture2::FrameRate PointGreyServer::selectFrameRate(int &_fps)
 {
 	switch(_fps)
 	{
-		case 1: 
+		case 1:
 			return FlyCapture2::FRAMERATE_1_875;
 		break;
-		case 3: 
+		case 3:
 			return FlyCapture2::FRAMERATE_3_75;
 		break;
-		case 7: 
+		case 7:
 			return FlyCapture2::FRAMERATE_7_5;
 		break;
-		case 15: 
+		case 15:
 			return FlyCapture2::FRAMERATE_15;
 		break;
-		case 30: 
+		case 30:
 			return FlyCapture2::FRAMERATE_30;
 		break;
-		case 60: 
+		case 60:
 			return FlyCapture2::FRAMERATE_60;
 		break;
-		case 120: 
+		case 120:
 			return FlyCapture2::FRAMERATE_120;
 		break;
 		default:
@@ -729,7 +729,7 @@ void PointGreyServer::init() throw(runtime_error)
 
 // 	// start unsyncronized capturing of images
 // 	for(size_t i=0; i<(size_t)getNumCameras(); i++)
-// 	{	
+// 	{
 // 		error = cameras[i]->StartCapture();
 // 		if(error != FlyCapture2::PGRERROR_OK)
 // 			throw runtime_error(error.GetDescription());
@@ -833,7 +833,7 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
 		image = retrievedImages[camIdx];
 
 	// if image size is greater than actual image size, change camera capturing mode to higher resolution.
-	if (width > this->width) 
+	if (width > this->width)
 	{
 		log("Image with higher resolution requested: %u x %u. Change resolution", width, height);
 	  FlyCapture2::Error error;
@@ -842,7 +842,7 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
 		if(!useVideoMode7)
 		{
 			for(size_t i=0; i<(size_t)getNumCameras(); i++)
-			{	
+			{
 				int w = width;
 				int h = height;
 				// stop capturing of images from all cameras
@@ -870,6 +870,10 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
 		this->height = height;
 	}
 
+  frame.time = grabTimes[camIdx];
+  frame.camId = camIds[camIdx];
+  frame.camPars = camPars[camIdx];
+
   // no size given, use native size
   if((width == 0 || height == 0) || (width == this->width && height == this->height))
   {
@@ -882,18 +886,15 @@ void PointGreyServer::retrieveFrameInternal(int camIdx, int width, int height, V
     // NOTE: this is very wasteful! And should only be a temporary solution!
 		// convert to iplImage, resize and convert back to Video::Image
     copyImage(image, frame);
-    IplImage *tmp = 0; 
+    IplImage *tmp = 0;
     IplImage *tmp_resized = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
     convertImageToIpl(frame, &tmp);
     cvResize(tmp, tmp_resized);
     convertImageFromIpl(tmp_resized, frame);
     cvReleaseImage(&tmp_resized);
     cvReleaseImage(&tmp);
+    changeImageSize(frame.camPars, width, height);
   }
-
-  frame.time = grabTimes[camIdx];
-  frame.camId = camIds[camIdx];
-  frame.camPars = camPars[camIdx];
 }
 
 /**

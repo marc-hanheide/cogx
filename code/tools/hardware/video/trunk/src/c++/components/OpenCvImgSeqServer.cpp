@@ -171,22 +171,25 @@ void OpenCvImgSeqServer::retrieveFrameInternal(int camIdx, int width, int height
   // To handle the case where retrieve is called before any Grab
   if(!haveFrames())
     grabFramesInternal();
-    // no size given, use native size
-    if(width == 0 || height == 0)
-    {
-      convertImageFromIpl(grabbedImages[camIdx], frame);
-    }
-    else
-    {
-      IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
-      cvResize(grabbedImages[camIdx], tmp);
-      convertImageFromIpl(tmp, frame);
-      // TODO: avoid allocate/deallocating all the time
-      cvReleaseImage(&tmp);
-    }
-    frame.time = grabTimes[camIdx];
-    frame.camId = camIds[camIdx];
-    frame.camPars = camPars[camIdx];
+
+  frame.time = grabTimes[camIdx];
+  frame.camId = camIds[camIdx];
+  frame.camPars = camPars[camIdx];
+
+  // no size given, use native size
+  if((width == 0 || height == 0) || (width == this->width && height == this->height))
+  {
+    convertImageFromIpl(grabbedImages[camIdx], frame);
+  }
+  else
+  {
+    IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+    cvResize(grabbedImages[camIdx], tmp);
+    convertImageFromIpl(tmp, frame);
+    // TODO: avoid allocate/deallocating all the time
+    cvReleaseImage(&tmp);
+    changeImageSize(frame.camPars, width, height);
+  }
 }
 
 void OpenCvImgSeqServer::retrieveFrames(const std::vector<int> &camIds,
