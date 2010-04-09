@@ -239,6 +239,21 @@ void saveCameraParameters(const CameraParameters &cam, const string &configfile)
   ostr << "pose = " << cam.pose;
 }
 
+void changeImageSize(CameraParameters &cam, int newWidth, int newHeight)
+{
+  assert(newWidth > 0);
+  assert(newHeight > 0);
+  // adjust camera parameters for scaled images
+  double sx = (double)newWidth/(double)cam.width;
+  double sy = (double)newHeight/(double)cam.height;
+  cam.width = newWidth;
+  cam.height = newHeight;
+  cam.fx *= sx;
+  cam.cx *= sx;
+  cam.fy *= sy;
+  cam.cy *= sy;
+}
+
 void distortPoint(const CameraParameters &cam, double u, double v,
     double &ud, double &vd)
 {
@@ -283,4 +298,3 @@ bool undistortPoint(const CameraParameters &cam, double ud, double vd,
 }
 
 }
-

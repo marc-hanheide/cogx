@@ -44,6 +44,11 @@ void loadCameraParametersFromSVSCalib(CameraParameters &cam,
  */
 void saveCameraParameters(const CameraParameters &cam, const string &configfile);
 
+/**
+ * Change image size, e.g. when using downscaled images.
+ */
+void changeImageSize(CameraParameters &cam, int newWidth, int newHeight);
+
 void distortPoint(const CameraParameters &cam, double u, double v,
     double &ud, double &vd);
 
