@@ -10,7 +10,6 @@ import java.util.concurrent.FutureTask;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
-import binder.arch.BinderException;
 import binder.autogen.perceptmanagement.PerceptBeliefMaps;
 import binder.components.perceptmediator.transferfunctions.TransferFunction;
 import cast.CASTException;
@@ -92,11 +91,10 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 				transferFunction.transform(percept, belief);
 			} catch (CASTException e) {
 				logger.error("CAST exception on overwritten", e);
-			} catch (BinderException e) {
-				logger.error("BinderException on overwritten", e);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("interrupted exception on overwritten", e);
+			} catch (BeliefException e) {
+				logger.error("exception on overwritten", e);
 			}
 		}
 
@@ -156,8 +154,8 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 				// be made into a belief
 
 				final PerceptBelief belief = transferFunction.createBelief(
-						component.newDataID(), CASTUtils.getTimeServer()
-								.getCASTTime());
+						component.newDataID(), ev.address, CASTUtils
+								.getTimeServer().getCASTTime());
 				final WorkingMemoryAddress beliefWMA = new WorkingMemoryAddress(
 						belief.id, component.getSubarchitectureID());
 
@@ -191,8 +189,6 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 		} catch (InterruptedException e) {
 			logger.warn("interrupted in PerceptMonitor::run: ", e);
 		} catch (CASTException e) {
-			logger.error("in PerceptMonitor::run: ", e);
-		} catch (BinderException e) {
 			logger.error("in PerceptMonitor::run: ", e);
 		} catch (BeliefException e) {
 			logger.error("in PerceptMonitor::run: ", e);
