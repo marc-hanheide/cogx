@@ -1,13 +1,17 @@
 package binder.testing;
 
-import cast.AlreadyExistsOnWMException;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
+import cast.core.CASTData;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
@@ -16,12 +20,11 @@ import beliefmodels.autogen.history.PerceptHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
-import binder.arch.BinderException;
 
 
-public class BasicPerceptInsertion extends AbstractBinderTest {
+public class Step1234PerceptInsertion extends AbstractBinderTest {
 
-	String name = "basic percept construction and insertion";
+	String name = "step 1,2,3 and 4 after percept construction and insertion";
 	String description = "construct one percept with all necessary properties " +
 	"(spatio-temporal frame, epistemic status, belief content, history), and insert it into the WM";
 
@@ -43,7 +46,7 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 	@Override
 	public void start() {
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+				ChangeFilterFactory.createLocalTypeFilter(StableBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						checkIfSuccessful(_wmc);
@@ -55,9 +58,22 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 
 
 	private void checkIfSuccessful(WorkingMemoryChange _wmc) {
-		isTestSuccessful = true;
-		isTestFinished = true;
-		log("WOOOHHOOO!");
+		try { 
+			CASTData<StableBelief> beliefData = getMemoryEntryWithData(_wmc.address,
+					StableBelief.class);
+			StableBelief newBelief = beliefData.getData();	
+			isTestSuccessful = true;
+			isTestFinished = true;
+			log("Stable belief correctly received!");
+			
+		}
+		 catch (DoesNotExistOnWMException e) {
+				e.printStackTrace();
+			}
+		 catch (UnknownSubarchitectureException e) {	
+			e.printStackTrace();
+		} 
+
 	}
 
 

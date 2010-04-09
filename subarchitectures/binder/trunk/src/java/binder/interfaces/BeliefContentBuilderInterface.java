@@ -27,7 +27,6 @@ import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.FormulaProbPair;
 import beliefmodels.autogen.distribs.NormalDistribution;
 import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.featurecontent.Feature;
 import beliefmodels.autogen.logicalcontent.Formula;
 import binder.arch.BinderException;
 
@@ -127,7 +126,7 @@ public interface BeliefContentBuilderInterface {
 	 * 			the variance of the Gaussian
 	 * @return a new, well-formed normal distribution
 	 */
-	public NormalDistribution createNewNormalDistribution (Feature feat, double mean, double variance);
+	public NormalDistribution createNewNormalDistribution (String feat, double mean, double variance);
 	
 	
 }
