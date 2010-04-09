@@ -47,11 +47,11 @@ protected:
     };
 
 private:
-    void sendStateChange(int id, std::vector<binder::autogen::beliefs::BeliefPtr>& changedBeliefs, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter);
+    void sendStateChange(int id, std::vector<beliefmodels::autogen::beliefs::BeliefPtr>& changedBeliefs, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter);
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
     void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
 
-    typedef std::tr1::unordered_map<std::string, binder::autogen::beliefs::BeliefPtr> BeliefMap;
+    typedef std::tr1::unordered_map<std::string, beliefmodels::autogen::beliefs::BeliefPtr> BeliefMap;
     BeliefMap m_currentState;
     std::map<int, StateChangeFilterPtr> m_stateFilters;
     cast::cdl::CASTTime m_lastUpdate;
