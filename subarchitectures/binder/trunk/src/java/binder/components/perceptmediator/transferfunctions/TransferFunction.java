@@ -4,6 +4,7 @@
 package binder.components.perceptmediator.transferfunctions;
 
 import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryAddress;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
@@ -15,6 +16,6 @@ import beliefmodels.autogen.beliefs.PerceptBelief;
 public interface TransferFunction<From extends Ice.ObjectImpl,To extends Belief>   {
 	public void transform(From f, To t) throws BeliefException, InterruptedException;
 
-	public PerceptBelief createBelief(String id, CASTTime curTime) throws BeliefException;
+	public PerceptBelief createBelief(String id, WorkingMemoryAddress srcAddr, CASTTime curTime) throws BeliefException;
 
 }
