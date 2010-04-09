@@ -10,6 +10,7 @@ project(GpuStereo)
 
 set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 set(LIBNAME libgpustereo.so)
+SET(CMAKE_CXX_FLAGS ${CXX_FLAGS} "-fPIC")
 add_custom_command(
    OUTPUT ${OUTDIR}/${LIBNAME}
    COMMAND make -f ${CMAKE_CURRENT_SOURCE_DIR}/Makefile_cmake lib
