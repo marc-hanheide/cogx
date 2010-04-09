@@ -20,3 +20,22 @@ add_custom_target(tfd ALL)
 add_dependencies(tfd tfd_preprocess tfd_search)
 
 endif(BUILD_SA_PLANNER_TFD)
+
+option(BUILD_SA_PLANNER_DOWNWARD "Build fast downward planner in planner.sa" NO)
+if(BUILD_SA_PLANNER_DOWNWARD)
+
+set(DOWNWARD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/downward")
+
+add_custom_target(downward_preprocess
+                   COMMAND make
+                   WORKING_DIRECTORY ${DOWNWARD_DIR}/preprocess/
+                   COMMENT "Building ${DOWNWARD_DIR}/preprocess/preprocess")
+add_custom_target(downward_search
+                   COMMAND make
+                   WORKING_DIRECTORY ${DOWNWARD_DIR}/search/
+                   COMMENT "Building ${DOWNWARD_DIR}/search/search")
+
+add_custom_target(downward ALL)
+add_dependencies(downward downward_preprocess downward_search)
+
+endif(BUILD_SA_PLANNER_DOWNWARD)
