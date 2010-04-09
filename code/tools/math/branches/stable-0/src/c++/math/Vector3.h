@@ -316,11 +316,11 @@ inline void readText(istream &is, Vector3 &a) throw(runtime_error)
     is >> a.x >> a.y >> a.z >> c;
     if(c != ']')
       throw runtime_error(exceptionMessage(__HERE__,
-            "error reading Vector3: ']' expected"));
+            "error reading Vector3: ']' expected, have '%c'", c));
   }
   else
     throw runtime_error(exceptionMessage(__HERE__,
-          "error reading Vector3: '[' expected"));
+          "error reading Vector3: '[' expected, have '%c'", c));
 }
 
 
