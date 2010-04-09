@@ -64,6 +64,8 @@ private:
 
   /**
    * Camera IDs for getting left and right images
+   * this must be a vector of length 2 with camIds[LEFT] and camIds[RIGHT] the
+   * ids of the left and right cameras respectively
    */
   std::vector<int> camIds;
 
