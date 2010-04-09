@@ -15,7 +15,6 @@ import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.featurecontent.Feature;
 import beliefmodels.autogen.history.PerceptHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
@@ -88,7 +87,7 @@ public class Step1PerceptInsertion extends AbstractBinderTest {
 			values[0] = new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("red"), 0.7f);
 			values[1] = new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("pink"), 0.3f);
 
-			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(Feature.Colour, values, true);
+			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution("Colour", values, true);
 
 			BeliefContentBuilder.addCondIndependentDistrib(features, cdistrib);
 

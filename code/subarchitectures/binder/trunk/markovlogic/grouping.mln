@@ -1,0 +1,38 @@
+union = {U1}
+percept = {P1}
+belief = {U1,P1}
+shapeval = {Cyl,Sphe,Unknown,Irrelevant}
+existval = {True,False}
+labelval = {Mug,Ball,Unknown,Irrelevant}
+
+InWM(belief)
+Existence(belief,existval)
+Shape(belief,shapeval)
+Label(belief,labelval)
+
+2.3025850929940455 Existence(U1,True)
+-0.83932969073802677 Existence(U1,True) ^ Shape(U1,Cyl) ^ Label(U1,Mug)
+-1.5324768712979722 Existence(U1,True) ^ Shape(U1,Cyl) ^ Label(U1,Ball)
+-2.6310891599660819 Existence(U1,True) ^ Shape(U1,Cyl) ^ Label(U1,Unknown)
+-2.2256240518579173 Existence(U1,True) ^ Shape(U1,Unknown) ^ Label(U1,Mug)
+-2.9187712324178627 Existence(U1,True) ^ Shape(U1,Unknown) ^ Label(U1,Ball)
+-4.0173835210859723 Existence(U1,True) ^ Shape(U1,Unknown) ^ Label(U1,Unknown)
+Existence(U1,True) => !Shape(U1,Sphe).
+Existence(U1,True) => !Shape(U1,Irrelevant).
+Existence(U1,True) => !Label(U1,Irrelevant).
+Existence(U1,False) => Shape(U1,Irrelevant).
+Existence(U1,False) => !Shape(U1,Cyl).
+Existence(U1,False) => !Shape(U1,Unknown).
+Existence(U1,False) => !Shape(U1,Sphe).
+Existence(U1,False) => !Label(U1,Mug).
+Existence(U1,False) => !Label(U1,Ball).
+Existence(U1,False) => !Label(U1,Unknown).
+
+Existence(x,y) ^ Existence(x,z) => y=z.
+Exist y Existence(x,y).
+
+Shape(x,y) ^ Shape(x,z) => y=z.
+Exist y Shape(x,y).
+
+Label(x,y) ^ Label(x,z) => y=z.
+Exist y Label(x,y).

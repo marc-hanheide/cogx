@@ -22,7 +22,6 @@
 
 package binder.interfaces;
 
-import beliefmodels.autogen.featurecontent.Feature;
 import beliefmodels.autogen.logicalcontent.*;
 
 
@@ -92,5 +91,5 @@ public interface FormulaBuilderInterface {
 	 * 			the formula pointed to
 	 * @return a new modal formula
 	 */
-	public ModalFormula createNewModalFormula (Feature feat, Formula form);
+	public ModalFormula createNewModalFormula (String feat, Formula form);
 }

@@ -10,9 +10,9 @@ import SpatialData.Place;
 import SpatialProperties.ConnectivityPathProperty;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
-import beliefmodels.autogen.featurecontent.Feature;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.builders.FeatureValueBuilder;
+
 import binder.arch.BinderException;
 import binder.components.perceptmediator.PerceptBeliefManager;
 import cast.CASTException;
@@ -30,17 +30,17 @@ public class ConnectivityTransferFunction extends
 	PerceptBeliefManager perceptBeliefManager;
 
 	@Override
-	Map<Feature, FeatureValue> getFeatureValueMapping(
+	Map<String, FeatureValue> getFeatureValueMapping(
 			ConnectivityPathProperty from) throws InterruptedException {
 		assert (from != null);
-		Map<Feature, FeatureValue> result = new HashMap<Feature, FeatureValue>();
+		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		// TODO: the features are stupid here!
 		WorkingMemoryAddress wmaPlace1 = getReferredBelief(from.place1Id);
 		WorkingMemoryAddress wmaPlace2 = getReferredBelief(from.place2Id);
 
-		result.put(Feature.ConnectedTo1, FeatureValueBuilder
+		result.put("ConnectedTo1", FeatureValueBuilder
 				.createNewStringValue(wmaPlace1.id));
-		result.put(Feature.ConnectedTo2, FeatureValueBuilder
+		result.put("ConnectedTo2", FeatureValueBuilder
 				.createNewStringValue(wmaPlace2.id));
 		return result;
 	}
@@ -97,7 +97,7 @@ public class ConnectivityTransferFunction extends
 
 	@Override
 	public PerceptBelief createBelief(String id, CASTTime curTime)
-			throws BinderException, BeliefException {
+			throws BeliefException {
 		PerceptBelief basePb = super.createBelief(id, curTime);
 		PerceptBelief newPb = new PerceptBelief();
 		newPb.estatus = basePb.estatus;
