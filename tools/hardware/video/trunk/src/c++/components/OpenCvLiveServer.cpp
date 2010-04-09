@@ -321,6 +321,10 @@ void OpenCvLiveServer::retrieveFrameInternal(int camIdx, int width, int height,
   if((width == 0 || height == 0) || (width == this->width && height == this->height))
   {
     copyImage(retrievedImages[camIdx], frame);
+    // adjust to native size
+    // (note that calibration image size need not be the same as currently set
+    // native capture size)
+    changeImageSize(frame.camPars, this->width, this->height);
   }
   else
   {
@@ -329,6 +333,7 @@ void OpenCvLiveServer::retrieveFrameInternal(int camIdx, int width, int height,
     copyImage(tmp, frame);
     // TODO: avoid allocate/deallocating all the time
     cvReleaseImage(&tmp);
+    // adjust to scaled image size
     changeImageSize(frame.camPars, width, height);
   }
 }
