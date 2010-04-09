@@ -67,7 +67,6 @@ StereoServer::StereoServer()
 
 StereoServer::~StereoServer()
 {
-  delete census;
   for(int i = LEFT; i <= RIGHT; i++)
   {
     cvReleaseImage(&colorImg[i]);
@@ -165,9 +164,6 @@ void StereoServer::configure(const map<string,string> & _config)
   stereoCam.SetInputImageSize(cvSize(stereoWidth, stereoHeight));
   stereoCam.SetupImageRectification();
 
-  // allocate the actual stereo matcher with given max disparity
-  census = new CensusGPU(maxDisp);
-
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
   if(camIds.size() != 2)
@@ -188,6 +184,18 @@ void StereoServer::start()
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
   setupMyIceCommunication();
+
+  /* note: this is not needed as we get camera parameters with every image from
+   * the video server.
+   * However in the long run, it might be good
+  // get informed about camera movements
+  addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::ADD),
+      new MemberFunctionChangeReceiver<StereoServer>(this,
+        &StereoServer::receiveCameraParameters));
+
+  addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<StereoServer>(this,
+        &StereoServer::receiveCameraParameters));*/
 
   // allocate all our various images
   for(int i = LEFT; i <= RIGHT; i++)
@@ -282,11 +290,15 @@ void StereoServer::getRectImage(int side, Video::Image& image)
   image.camPars.id = side;
   image.camPars.width = stereoCam.cam[side].width;
   image.camPars.height = stereoCam.cam[side].height;
-  image.camPars.fx = stereoCam.sx*stereoCam.cam[side].proj[0][0];
-  image.camPars.fy = stereoCam.sy*stereoCam.cam[side].proj[1][1];
-  image.camPars.cx = stereoCam.sx*stereoCam.cam[side].proj[0][2];
-  image.camPars.cy = stereoCam.sy*stereoCam.cam[side].proj[1][2];
-  setIdentity(image.camPars.pose);
+  image.camPars.fx = stereoCam.cam[side].proj[0][0];
+  image.camPars.fy = stereoCam.cam[side].proj[1][1];
+  image.camPars.cx = stereoCam.cam[side].proj[0][2];
+  image.camPars.cy = stereoCam.cam[side].proj[1][2];
+  changeImageSize(image.camPars, stereoCam.inImgSize.width, stereoCam.inImgSize.height);
+  // get from relative left pose to global left pose
+  Pose3 global_pose;
+  transform(stereoCam.pose, stereoCam.cam[side].pose, global_pose);
+  image.camPars.pose = global_pose;
   image.camPars.time = getCASTTime();
   unlockComponent();
 }
@@ -354,16 +366,22 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
 
 void StereoServer::runComponent()
 {
+  // allocate the actual stereo matcher with given max disparity
+  census = new CensusGPU(maxDisp);
+
   // NOTE: stupid polling runloop is still necessary
   // push interface does not work for stereo server, probably some threading
   // issue with cuda or whatever
   vector<Video::Image> images;
   while(isRunning())
   {
+    // HACK: we should actually sent the list of cam ids and not just assume
+    // that the video server has precisely two cameras in the right order
     videoServer->getScaledImages(stereoWidth, stereoHeight, images);
     receiveImages(images);
     sleepComponent(100);
   }
+  delete census;
 }
 
 }
