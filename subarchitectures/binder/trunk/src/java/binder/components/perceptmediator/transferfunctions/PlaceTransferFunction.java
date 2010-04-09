@@ -7,17 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import SpatialData.Place;
+import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.featurecontent.Feature;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.builders.FeatureValueBuilder;
 import binder.arch.BinderException;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.epstatus.EpistemicStatus;
-import binder.autogen.featurecontent.Feature;
-import binder.autogen.featurecontent.FeatureValue;
-import binder.autogen.framing.SpatioTemporalFrame;
-import binder.autogen.history.PerceptHistory;
-import binder.builders.EpistemicStatusBuilder;
-import binder.builders.FeatureValueBuilder;
-import binder.builders.PerceptBuilder;
-import binder.builders.SpatioTemporalFrameBuilder;
+
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryPointer;
 
@@ -38,7 +34,7 @@ public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place,
 	}
 
 	@Override
-	public PerceptBelief createBelief(String id, CASTTime curTime) throws BinderException {
+	public PerceptBelief createBelief(String id, CASTTime curTime) throws BinderException, BeliefException {
 		PerceptBelief basePb = super.createBelief(id, curTime);
 		PerceptBelief newPb = new PerceptBelief();
 		newPb.estatus = basePb.estatus;
