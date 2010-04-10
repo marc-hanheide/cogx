@@ -2,36 +2,62 @@ package binder.components.perceptmediator.transferfunctions;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import SpatialData.Place;
 import SpatialProperties.ConnectivityPathProperty;
-import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.builders.FeatureValueBuilder;
-import binder.components.perceptmediator.PerceptBeliefManager;
-import cast.CASTException;
-import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.WMView;
-import castutils.castextensions.WMView.ChangeHandler;
 
 public class ConnectivityTransferFunction extends
-		SimpleDiscreteTransferFunction<ConnectivityPathProperty, PerceptBelief> {
+		DependentDiscreteTransferFunction<ConnectivityPathProperty, PerceptBelief> {
 
-	WMView<Place> places;
-	PerceptBeliefManager perceptBeliefManager;
+	class PlaceMatchingFunction implements ReferenceMatchingFunction<PerceptBelief> {
+		
+		private long placeId;
+		
+		
+		/**
+		 * @param placeId
+		 */
+		public PlaceMatchingFunction(long placeId) {
+			super();
+			this.placeId = placeId;
+		}
 
+
+		@Override
+		public boolean matches(PerceptBelief r) {
+			if (r.type.equals(Place.class.getCanonicalName())) {
+				assert (r.content instanceof CondIndependentDistribs);
+				CondIndependentDistribs dist = (CondIndependentDistribs) r.content;
+				FeatureValueDistribution fv = (FeatureValueDistribution) dist.distribs.get("PlaceId");
+				IntegerValue idVal = (IntegerValue) fv.values.get(0).val;
+				
+				return idVal.val == placeId;
+				
+			}
+			else {
+				return false;
+			}
+		}
+		
+	}
+	
 	@Override
 	Map<String, FeatureValue> getFeatureValueMapping(
-			ConnectivityPathProperty from) throws InterruptedException {
+			final ConnectivityPathProperty from) throws InterruptedException {
 		assert (from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
-		// TODO: the features are stupid here!
-		WorkingMemoryAddress wmaPlace1 = getReferredBelief(from.place1Id);
-		WorkingMemoryAddress wmaPlace2 = getReferredBelief(from.place2Id);
+
+	
+		WorkingMemoryAddress wmaPlace1 = getReferredBelief(new PlaceMatchingFunction(from.place1Id));
+		WorkingMemoryAddress wmaPlace2 = getReferredBelief(new PlaceMatchingFunction(from.place2Id));
 
 		result.put("ConnectedTo1", FeatureValueBuilder
 				.createNewStringValue(wmaPlace1.id));
@@ -41,70 +67,12 @@ public class ConnectivityTransferFunction extends
 	}
 
 	/**
-	 * @param places
+	 * @param perceptBeliefs
 	 */
-	public ConnectivityTransferFunction(WMView<Place> places,
-			PerceptBeliefManager perceptBeliefManager) {
-		super();
-		this.places = places;
-		this.perceptBeliefManager = perceptBeliefManager;
-
-		places.registerHandler(new ChangeHandler<Place>() {
-
-			@Override
-			public void entryChanged(Map<WorkingMemoryAddress, Place> map,
-					WorkingMemoryChange wmc, Place newEntry, Place oldEntry)
-					throws CASTException {
-				notifyWaitingThreads();
-
-			}
-
-		});
+	public ConnectivityTransferFunction(WMView<PerceptBelief> perceptBeliefs) {
+		super(perceptBeliefs);
 
 	}
 
-	private synchronized void notifyWaitingThreads() {
-		notifyAll();
-	}
-
-	private synchronized WorkingMemoryAddress getReferredBelief(long place1Id)
-			throws InterruptedException {
-
-		while (true) {
-			for (Entry<WorkingMemoryAddress, Place> entry : places.entrySet()) {
-				if (entry.getValue().id == place1Id) {
-
-					try {
-						WorkingMemoryAddress beliefWMA = perceptBeliefManager
-								.read().percept2Belief.get(entry.getKey());
-						if (beliefWMA != null)
-							return beliefWMA;
-						else
-							throw (new IllegalStateException(
-									"found belief, but can't find it in map... this MUST NOT happen!"));
-					} catch (CASTException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					return entry.getKey();
-				}
-			}
-			wait();
-		}
-	}
-
-	@Override
-	public PerceptBelief createBelief(String id, WorkingMemoryAddress srcAddr,
-			CASTTime curTime) throws BeliefException {
-		PerceptBelief basePb = super.createBelief(id, srcAddr, curTime);
-		PerceptBelief newPb = new PerceptBelief();
-		newPb.estatus = basePb.estatus;
-		newPb.frame = basePb.frame;
-		newPb.hist = basePb.hist;
-		newPb.id = id;
-		newPb.content = null;
-
-		return newPb;
-	}
 
 }

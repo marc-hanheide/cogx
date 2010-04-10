@@ -3,29 +3,24 @@
  */
 package binder.components.perceptmediator.transferfunctions;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-
-import cast.cdl.CASTTime;
-import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryPointer;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
-import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.epstatus.EpistemicStatus;
 import beliefmodels.autogen.featurecontent.FeatureValue;
-import beliefmodels.autogen.framing.SpatioTemporalFrame;
 import beliefmodels.autogen.history.PerceptHistory;
 import beliefmodels.builders.BeliefContentBuilder;
-import beliefmodels.builders.EpistemicStatusBuilder;
 import beliefmodels.builders.PerceptBuilder;
-import beliefmodels.builders.SpatioTemporalFrameBuilder;
+import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryAddress;
 
 /**
  * @author marc
@@ -45,26 +40,31 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	public void transform(From from, To perceptBelief) throws BeliefException,
 			InterruptedException {
 		assert (perceptBelief != null);
-		assert(perceptBelief.content instanceof CondIndependentDistribs);
+		assert (perceptBelief.content != null);
+		assert (perceptBelief.content instanceof CondIndependentDistribs);
 
 		CondIndependentDistribs features = (CondIndependentDistribs) perceptBelief.content;
 		Map<String, FeatureValue> mapping = getFeatureValueMapping(from);
 		for (Entry<String, FeatureValue> fvm : mapping.entrySet()) {
-			FeatureValueProbPair[] values = new FeatureValueProbPair[1];
-			values[0] = new FeatureValueProbPair(fvm.getValue(), 1.0f);
-			FeatureValueDistribution cdistrib;
-			try {
-				cdistrib = BeliefContentBuilder
-						.createNewFeatureValueDistribution(fvm.getKey(),
-								values, true);
-				BeliefContentBuilder.addCondIndependentDistrib(features,
-						cdistrib);
-			} catch (BeliefException e) {
-				Logger.getLogger(SimpleDiscreteTransferFunction.class).error(
-						"Belief exception", e);
-			}
+			putDiscreteFeature(features, fvm.getKey(), fvm.getValue());
 		}
-		perceptBelief.content = features;
+	}
+
+	protected void putDiscreteFeature(CondIndependentDistribs features,
+			String key, FeatureValue value) {
+		List<FeatureValueProbPair> values = new LinkedList<FeatureValueProbPair>();
+		values.add(new FeatureValueProbPair(value, 1.0f));
+		FeatureValueDistribution cdistrib;
+		try {
+			cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(
+					values, false);
+			BeliefContentBuilder.putCondIndependentDistrib(features, key,
+					cdistrib);
+		} catch (BeliefException e) {
+			Logger.getLogger(SimpleDiscreteTransferFunction.class).error(
+					"Belief exception", e);
+		}
+
 	}
 
 	abstract Map<String, FeatureValue> getFeatureValueMapping(From from)
@@ -79,18 +79,17 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	 */
 	@Override
 	public PerceptBelief createBelief(String id, WorkingMemoryAddress srcAddr,
-			CASTTime curTime) throws BeliefException {
+			String type, CASTTime curTime) throws BeliefException {
 
-		PerceptHistory hist = PerceptBuilder
-				.createNewPerceptHistory(new WorkingMemoryPointer(srcAddr,
-						"src"));
+		// create a simple history with just the link to the percept
+		PerceptHistory hist = PerceptBuilder.createNewPerceptHistory(srcAddr);
 
+		// always create a CondIndependentDistribs
 		CondIndependentDistribs features = BeliefContentBuilder
 				.createNewCondIndependentDistribs();
 
-		
 		PerceptBelief pb = PerceptBuilder.createNewPerceptBelief(id, "here",
-				curTime, features, hist);
+				type, curTime, features, hist);
 
 		return pb;
 	}

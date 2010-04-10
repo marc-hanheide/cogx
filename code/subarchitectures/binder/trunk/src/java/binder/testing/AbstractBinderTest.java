@@ -1,7 +1,7 @@
 package binder.testing;
 
 import binder.abstr.BeliefWriter;
-import binder.abstr.PerceptWriter;
+import binder.abstr.BeliefWriter;
 import cast.architecture.ManagedComponent;
 import java.util.Map;
 

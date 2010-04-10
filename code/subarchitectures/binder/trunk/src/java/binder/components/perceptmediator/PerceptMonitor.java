@@ -26,12 +26,25 @@ import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEventQueue;
 
 /**
+ * This implements a monitor for specifc types of low-level percepts that are
+ * propagated to the Binder. It implements Runnable so that several monitors can
+ * be executed concurrently.
+ * 
  * @author marc
  * 
  */
 public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 		implements Runnable {
 
+	/**
+	 * A receiver objects to be registered for each percept that has been
+	 * propagated to the binder. This receiver is called for any update that
+	 * happens to the underlying percept. So the change change can be propagated
+	 * to the PerceptBelief immediately.
+	 * 
+	 * @author marc
+	 * 
+	 */
 	public class PerceptChangeReceiver implements WorkingMemoryChangeReceiver {
 		/**
 		 * @param beliefAddress
@@ -46,6 +59,7 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 					reference, WorkingMemoryOperation.DELETE), this);
 		}
 
+		/** the belief id this receiver is bound to */
 		WorkingMemoryAddress beliefAddress;
 
 		/*
@@ -67,7 +81,7 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 				deleted(_wmc);
 		}
 
-		public void overwritten(WorkingMemoryChange _wmc) {
+		private void overwritten(WorkingMemoryChange _wmc) {
 			try {
 				final PerceptBelief belief = component.getMemoryEntry(
 						beliefAddress, PerceptBelief.class);
@@ -98,15 +112,11 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 			}
 		}
 
-		public void deleted(WorkingMemoryChange _wmc) {
+		private void deleted(WorkingMemoryChange _wmc) {
 			try {
 				log("source percept deleted");
 				component.deleteFromWorkingMemory(beliefAddress);
 				component.removeChangeFilter(this);
-				PerceptBeliefMaps pbm = PerceptBeliefManager
-						.readMaps(component);
-				pbm.percept2Belief.remove(_wmc.address);
-				PerceptBeliefManager.commitMaps(component, pbm);
 
 			} catch (DoesNotExistOnWMException e1) {
 				logger.warn(
@@ -120,11 +130,25 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 		}
 	}
 
+	/** thread pool size for asynchronous refernce resolution */
 	private static final int MAX_THREADS = 15;
 
+	/**
+	 * a synchronized event queue that ensure that any new insert notification
+	 * returns immediately while the worker thread can sequentially work on all
+	 * the events.
+	 */
 	WMEventQueue entryQueue;
+	
+	/**  
+	 * the type this PerceptMonitor is working on
+	 */
 	Class<T> type;
+	
+	/** the registered TransferFunction for PerceptMonitor */
 	TransferFunction<T, PerceptBelief> transferFunction;
+	
+	/** an executor service used for running asynchronous belief propagation */
 	ExecutorService executor;
 
 	/**
@@ -144,6 +168,7 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 		log("register ADD listener for type " + type.getSimpleName());
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
 				WorkingMemoryOperation.ADD), entryQueue);
+
 		try {
 			while (true) {
 				final WorkingMemoryChange ev = entryQueue.take();
@@ -154,7 +179,7 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 				// be made into a belief
 
 				final PerceptBelief belief = transferFunction.createBelief(
-						component.newDataID(), ev.address, CASTUtils
+						component.newDataID(), ev.address, ev.type, CASTUtils
 								.getTimeServer().getCASTTime());
 				final WorkingMemoryAddress beliefWMA = new WorkingMemoryAddress(
 						belief.id, component.getSubarchitectureID());
@@ -174,10 +199,6 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 										+ CASTUtils.toString(ev.address)
 										+ " => "
 										+ CASTUtils.toString(beliefWMA));
-								PerceptBeliefMaps pbm = PerceptBeliefManager
-										.readMaps(component);
-								pbm.percept2Belief.put(ev.address, beliefWMA);
-								PerceptBeliefManager.commitMaps(component, pbm);
 								return belief;
 							}
 						});
