@@ -1,13 +1,13 @@
 package binder.abstr;
 
-import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.Belief;
 import cast.AlreadyExistsOnWMException;
 import cast.architecture.ManagedComponent;
 
-public class PerceptWriter extends ManagedComponent {
+public class BeliefWriter extends ManagedComponent {
 
 	
-	public void insertPerceptInWM (PerceptBelief b) {
+	public void insertBeliefInWM (Belief b) {
 		try {
 			addToWorkingMemory(b.id, b);
 		}
