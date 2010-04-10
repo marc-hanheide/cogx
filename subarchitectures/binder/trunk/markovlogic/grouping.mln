@@ -1,38 +1,123 @@
-union = {U1}
-percept = {P1}
-belief = {U1,P1}
-shapeval = {Cyl,Sphe,Unknown,Irrelevant}
-existval = {True,False}
-labelval = {Mug,Ball,Unknown,Irrelevant}
 
-InWM(belief)
-Existence(belief,existval)
+// constant declarations
+existingunion = {U1,U2,U3}
+percept = {P}
+potentialunion = {U4,U5,U6,U7,Nothing}
+belief = {U1,U2,U3,P,U4,U5,U6,U7}
+origin = {Subarch1, Subarch2, Subarch3}
+boolval = {True,False}
+shapeval = {Cyl,Sphe,Unknown,None}
+labelval = {Mug,Ball,Unknown,None}
+
+
+// predicate declarations
+Existence(belief)
 Shape(belief,shapeval)
 Label(belief,labelval)
+Origin(belief,origin)
 
-2.3025850929940455 Existence(U1,True)
--0.83932969073802677 Existence(U1,True) ^ Shape(U1,Cyl) ^ Label(U1,Mug)
--1.5324768712979722 Existence(U1,True) ^ Shape(U1,Cyl) ^ Label(U1,Ball)
--2.6310891599660819 Existence(U1,True) ^ Shape(U1,Cyl) ^ Label(U1,Unknown)
--2.2256240518579173 Existence(U1,True) ^ Shape(U1,Unknown) ^ Label(U1,Mug)
--2.9187712324178627 Existence(U1,True) ^ Shape(U1,Unknown) ^ Label(U1,Ball)
--4.0173835210859723 Existence(U1,True) ^ Shape(U1,Unknown) ^ Label(U1,Unknown)
-Existence(U1,True) => !Shape(U1,Sphe).
-Existence(U1,True) => !Shape(U1,Irrelevant).
-Existence(U1,True) => !Label(U1,Irrelevant).
-Existence(U1,False) => Shape(U1,Irrelevant).
-Existence(U1,False) => !Shape(U1,Cyl).
-Existence(U1,False) => !Shape(U1,Unknown).
-Existence(U1,False) => !Shape(U1,Sphe).
-Existence(U1,False) => !Label(U1,Mug).
-Existence(U1,False) => !Label(U1,Ball).
-Existence(U1,False) => !Label(U1,Unknown).
 
-Existence(x,y) ^ Existence(x,z) => y=z.
-Exist y Existence(x,y).
+// formulae for belief probability distributions
+
+2.1972245773362196 Existence(U1)
+-0.39304258810960718 Existence(U1) ^ Shape(U1,Cyl)
+-2.0024805005437076 Existence(U1) ^ Shape(U1,Sphe)
+-2.4079456086518722 Existence(U1) ^ Shape(U1,Unknown)
+Existence(U1) => !Shape(U1,None).
+Existence(U1) => !Label(U1,Mug).
+Existence(U1) => !Label(U1,Ball).
+Existence(U1) => !Label(U1,Unknown).
+Existence(U1) => Label(U1,None).
+Origin(U1,Subarch1).
+
+
+1.3862943611198906 Existence(U2)
+-0.38566248081198462 Existence(U2) ^ Shape(U2,Sphe)
+-2.120263536200091 Existence(U2) ^ Shape(U2,Unknown)
+Existence(U2) => !Shape(U2,None).
+Existence(U2) => !Shape(U2,Cyl).
+Existence(U2) => !Label(U2,Mug).
+Existence(U2) => !Label(U2,Ball).
+Existence(U2) => !Label(U2,Unknown).
+Existence(U2) => Label(U2,None).
+Origin(U2,Subarch1).
+
+-10 Existence(U3)
+-10 Existence(U3) ^ Shape(U3,Cyl)
+-10 Existence(U3) ^ Shape(U3,Sphe)
+-10 Existence(U3) ^ Shape(U3,Unknown)
+Existence(U3) => !Shape(U3,None).
+Existence(U3) => !Label(U3,Mug).
+Existence(U3) => !Label(U3,Ball).
+Existence(U3) => !Label(U3,Unknown).
+Existence(U3) => Label(U3,None).
+Origin(U3,Subarch1).
+
+
+1.7346010553881064 Existence(P)
+-0.26787944515560119 Existence(P) ^ Label(P,Mug)
+-3.158251203051766 Existence(P) ^ Label(P,Ball)
+-3.158251203051766 Existence(P) ^ Label(P,Unknown)
+Existence(P) => !Label(P,None).
+Existence(P) => !Shape(P,Cyl).
+Existence(P) => !Shape(P,Sphe).
+Existence(P) => !Shape(P,Unknown).
+Existence(P) => Shape(P,None).
+Origin(P,Subarch2).
+
+
+Corr0(percept)
+Corr1a(existingunion)
+Corr1b(existingunion)
+Corr2a(existingunion)
+Corr2b(existingunion)
+
+SingleUnion
+UnifyWithPercept(existingunion)
+
+Outcome(potentialunion)
+
+
+Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Mug) <=> Corr1a(x).
+Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Mug) <=> Corr1b(x).
+Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Ball) <=> Corr2a(x).
+Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Ball) <=> Corr2b(x).
+
+4 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Ball) => !UnifyWithPercept(x)
+4 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Ball) => !UnifyWithPercept(x)
+4 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Mug) => !UnifyWithPercept(x)
+4 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Mug) => !UnifyWithPercept(x)
+
+1 Corr1a(x) => UnifyWithPercept(x)
+1 Corr1b(x) => UnifyWithPercept(x)
+1 Corr2a(x) => UnifyWithPercept(x)
+1 Corr2b(x) => UnifyWithPercept(x)
+
+-2 Existence(P) => SingleUnion
+
+Corr1a(x) v Corr1b(x) v Corr2a(x) v Corr2b(x) v !UnifyWithPercept(x).
+
+
+UnifyWithPercept(U1) <=> Outcome(U4).
+UnifyWithPercept(U2) <=> Outcome(U5).
+UnifyWithPercept(U3) <=> Outcome(U6).
+SingleUnion <=> Outcome(U7).
+!Existence(P) <=> Outcome(Nothing).
+
+Outcome(x) ^ Outcome(y) => x=y.
+Exist x Outcome(x). 
+
+
+// Additional rules for existence dependency
+!Existence(x) => y=None v !Shape(x,y).
+!Existence(x) => y=None v !Label(x,y).
+!Existence(x) => Shape(x,None).
+!Existence(x) => Label(x,None).
+
+// Exclusivity and unicity constraints
 
 Shape(x,y) ^ Shape(x,z) => y=z.
-Exist y Shape(x,y).
+EXIST y Shape(x,y).
 
 Label(x,y) ^ Label(x,z) => y=z.
-Exist y Label(x,y).
+EXIST y Label(x,y).

@@ -1,8 +1,5 @@
-Shape(U1,Cyl) 0.704855
-Shape(U1,Sphe) 4.9995e-05
-Shape(U1,Unknown) 0.193531
-Shape(U1,Irrelevant) 0.101665
-Shape(P1,Cyl) 0.257524
-Shape(P1,Sphe) 0.2484
-Shape(P1,Unknown) 0.244651
-Shape(P1,Irrelevant) 0.249525
+Outcome(U4) 0.786371
+Outcome(U5) 0.0468453
+Outcome(U6) 4.9995e-05
+Outcome(U7) 0.123238
+Outcome(Nothing) 0.0436456
