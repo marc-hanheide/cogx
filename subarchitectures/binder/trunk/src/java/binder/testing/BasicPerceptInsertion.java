@@ -1,8 +1,12 @@
 package binder.testing;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import cast.AlreadyExistsOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
@@ -68,21 +72,21 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 
 			CondIndependentDistribs features = BeliefContentBuilder.createNewCondIndependentDistribs();
 
-			FeatureValueProbPair[] values = new FeatureValueProbPair[2];
-			values[0] = new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("red"), 0.7f);
-			values[1] = new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("pink"), 0.3f);
+			List<FeatureValueProbPair> values = new LinkedList<FeatureValueProbPair>();
+			values.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("red"), 0.7f));
+			values.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("pink"), 0.3f));
 
-			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution("Colour", values, true);
+			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(values, true);
 
-			BeliefContentBuilder.addCondIndependentDistrib(features, cdistrib);
+			BeliefContentBuilder.putCondIndependentDistrib(features, "Colour", cdistrib);
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, features);
 
-			PerceptHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryPointer());
+			PerceptHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("",""));
 
 			String id = newDataID();
 
-			PerceptBelief belief = PerceptBuilder.createNewPerceptBelief(id, "here", this.getCASTTime(), beliefcontent, hist);
+			PerceptBelief belief = PerceptBuilder.createNewPerceptBelief(id, "test", "here", this.getCASTTime(), beliefcontent, hist);
 
 			insertBeliefInWM(belief);
 

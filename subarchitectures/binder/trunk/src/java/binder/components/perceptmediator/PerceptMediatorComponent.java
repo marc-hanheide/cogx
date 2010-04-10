@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import beliefmodels.autogen.beliefs.PerceptBelief;
 import binder.components.perceptmediator.transferfunctions.ConnectivityTransferFunction;
 import binder.components.perceptmediator.transferfunctions.PlaceTransferFunction;
 
@@ -25,7 +26,7 @@ public class PerceptMediatorComponent extends ManagedComponent {
 
 	Set<PerceptMonitor<? extends Ice.ObjectImpl>> monitors;
 	Set<Thread> monitorThreads;
-	private WMView<Place> places;
+	private WMView<PerceptBelief> perceptBeliefs;
 
 	/**
 	 * 
@@ -33,7 +34,7 @@ public class PerceptMediatorComponent extends ManagedComponent {
 	public PerceptMediatorComponent() {
 		monitors = new HashSet<PerceptMonitor<? extends Ice.ObjectImpl>>();
 		monitorThreads = new HashSet<Thread>();
-		places=WMView.create(this, Place.class);
+		perceptBeliefs=WMView.create(this, PerceptBelief.class);
 	}
 
 	/*
@@ -45,10 +46,11 @@ public class PerceptMediatorComponent extends ManagedComponent {
 	protected void start() {
 		super.start();
 		try {
-			places.start();
+			perceptBeliefs.start();
 		} catch (UnknownSubarchitectureException e) {
-			getLogger().error("trying to start WMView<Place>", e);
+			getLogger().error("trying to start WMView<PerceptBelief>", e);
 		}
+
 		// spawn all registered monitors
 		log("spawn all monitors");
 		for (PerceptMonitor<? extends Ice.ObjectImpl> monitor : monitors) {
@@ -70,7 +72,7 @@ public class PerceptMediatorComponent extends ManagedComponent {
 				new PlaceTransferFunction()));
 		monitors.add(new PerceptMonitor<ConnectivityPathProperty>(this,
 				ConnectivityPathProperty.class,
-				new ConnectivityTransferFunction(places, PerceptBeliefManager.getManager(this))));
+				new ConnectivityTransferFunction(perceptBeliefs)));
 	}
 
 	/*
