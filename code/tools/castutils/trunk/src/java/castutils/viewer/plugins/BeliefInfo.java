@@ -1,6 +1,7 @@
 package castutils.viewer.plugins;
 
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
@@ -23,16 +24,14 @@ public class BeliefInfo implements Plugin {
 		if (belief != null) {
 			String agentStatus = belief.estatus.getClass().getSimpleName();
 			extraInfo.add("Status: " + agentStatus);
-//			if (belief.frame != null) {
-//				extraInfo.add("ST frame:" + belief.frame.getClass().getSimpleName());
-//			}
+
 			extraInfo.add("Type: " + belief.getClass().getSimpleName());
 			if (belief.content instanceof CondIndependentDistribs) {
 				CondIndependentDistribs dist = (CondIndependentDistribs) belief.content;
-				for (ProbDistribution pd : dist.distribs) {
+				for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
 					if (pd instanceof FeatureValueDistribution) {
 						FeatureValueDistribution fvd = (FeatureValueDistribution) pd;
-						extraInfo.add(fvd.feat.toString());
+						extraInfo.add(pd.getKey() + " (# of features) " + fvd.values.size());
 					}
 				}
 			}
