@@ -88,10 +88,10 @@ Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Ball) <=> Corr2b(x).
 4 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Mug) => !UnifyWithPercept(x)
 4 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Mug) => !UnifyWithPercept(x)
 
-1 Corr1a(x) => UnifyWithPercept(x)
-1 Corr1b(x) => UnifyWithPercept(x)
-1 Corr2a(x) => UnifyWithPercept(x)
-1 Corr2b(x) => UnifyWithPercept(x)
+-1 Corr1a(x) => UnifyWithPercept(x)
+-1 Corr1b(x) => UnifyWithPercept(x)
+-1 Corr2a(x) => UnifyWithPercept(x)
+-1 Corr2b(x) => UnifyWithPercept(x)
 
 -2 Existence(P) => SingleUnion
 
