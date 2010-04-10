@@ -42,7 +42,7 @@ public class TemporalUnionBuilder  extends AbstractBeliefBuilder{
 	public static TemporalUnionBelief createNewSingleTemporalUnionBuilder (MultiModalBelief mmbelief, String id) 
 		throws BeliefException {
 		
-		return new TemporalUnionBelief(mmbelief.frame, mmbelief.estatus, id,mmbelief.content, createHistory(mmbelief));
+		return new TemporalUnionBelief(mmbelief.frame, mmbelief.estatus, id,mmbelief.type, mmbelief.content, createHistory(mmbelief));
 	}
 	
 }

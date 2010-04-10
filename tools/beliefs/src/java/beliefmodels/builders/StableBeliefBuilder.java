@@ -43,7 +43,7 @@ public class StableBeliefBuilder  extends AbstractBeliefBuilder{
 	public static StableBelief createnewStableBelief (TemporalUnionBelief union, String id) 
 		throws BeliefException {
 		
-		return new StableBelief(union.frame, union.estatus, id,union.content, createHistory(union));
+		return new StableBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(union));
 	}
 	
 }

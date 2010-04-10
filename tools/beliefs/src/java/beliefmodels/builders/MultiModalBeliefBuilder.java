@@ -41,7 +41,7 @@ public class MultiModalBeliefBuilder  extends AbstractBeliefBuilder{
 	public static MultiModalBelief createNewMultiModalBelief (PerceptUnionBelief union, String id) 
 		throws BeliefException {
 		
-		return new MultiModalBelief(union.frame, union.estatus, id,union.content, createHistory(union));
+		return new MultiModalBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(union));
 	}
 	
 }

@@ -42,7 +42,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, String id) 
 		throws BeliefException {
 		
-		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.content, createHistory(percept));
+		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, percept.content, createHistory(percept));
 	}
 	
 

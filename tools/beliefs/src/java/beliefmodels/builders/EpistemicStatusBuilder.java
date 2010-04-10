@@ -21,6 +21,8 @@
 
 package beliefmodels.builders;
 
+import java.util.List;
+
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.epstatus.AttributedEpistemicStatus;
 import beliefmodels.autogen.epstatus.PrivateEpistemicStatus;
@@ -59,14 +61,14 @@ public class EpistemicStatusBuilder {
 	 * @throws BinderException 
 	 * 			null arguments
 	 */
-	public static AttributedEpistemicStatus createNewAttributedEpistemicStatus (String agent, String[] agents) throws BeliefException {
+	public static AttributedEpistemicStatus createNewAttributedEpistemicStatus (String agent, List<String> agents) throws BeliefException {
 		if (agent == null || agent.equals("")) {
 			throw new BeliefException("error, agent is null or empty");
 		}
 		if (agents == null) {
 			throw new BeliefException("error, agents is null");
 		}
-		else if (agents.length == 0) {
+		else if (agents.size() == 0) {
 			throw new BeliefException("error, agents length is 0");
 		}
 		return new AttributedEpistemicStatus(agent, agents);
@@ -81,11 +83,11 @@ public class EpistemicStatusBuilder {
 	 * @throws BinderException 
 	 * 			null argument
 	 */
-	public static SharedEpistemicStatus createNewSharedEpistemicStatus (String[] agents) throws BeliefException {
+	public static SharedEpistemicStatus createNewSharedEpistemicStatus (List<String> agents) throws BeliefException {
 		if (agents == null) {
 			throw new BeliefException("error, agents is null");
 		}
-		else if (agents.length == 0) {
+		else if (agents.size() == 0) {
 			throw new BeliefException("error, agents length is 0");
 		}
 		return new SharedEpistemicStatus (agents);
