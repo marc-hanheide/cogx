@@ -57,7 +57,7 @@ public class BinderMonitor extends ManagedComponent {
 					}
 				}
 		);
-	}
+	} 
 	
 	
 	protected void unionBeliefAdded(WorkingMemoryChange _wmc) {
