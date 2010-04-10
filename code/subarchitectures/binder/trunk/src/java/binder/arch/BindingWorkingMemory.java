@@ -32,4 +32,5 @@ import cast.architecture.SubarchitectureWorkingMemory;
 
 public class BindingWorkingMemory extends SubarchitectureWorkingMemory {
 
+	public static final String BINDER_SA = "binder";
 }
