@@ -23,6 +23,9 @@ package beliefmodels.builders;
 
 
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
@@ -116,14 +119,14 @@ public class BeliefContentBuilder {
 	 * @return a new CondIndependentDistribs object
 	 */
 	public static CondIndependentDistribs createNewCondIndependentDistribs () {
-		return new CondIndependentDistribs(new ProbDistribution[0]);
+		return new CondIndependentDistribs(new HashMap<String, ProbDistribution>());
 	}
 	
 	
 		
 	
 	/**
-	 * Add a new distribution to a set of conditionally independent distributions
+	 * Puts a new distribution to a set of conditionally independent distributions
 	 * 
 	 * @param distribs 
 	 * 			the existing set of conditionally independent distributions
@@ -133,7 +136,7 @@ public class BeliefContentBuilder {
 	 * 			exception thrown if distribs or newDistrib is a null pointer
 	 * @post distribs now contains newDistrib
 	 */
-	public static void addCondIndependentDistrib(CondIndependentDistribs distribs,
+	public static void putCondIndependentDistrib(CondIndependentDistribs distribs, String key,
 			ProbDistribution newDistrib) throws BeliefException {
 		
 		if (distribs == null || newDistrib == null) {
@@ -143,12 +146,14 @@ public class BeliefContentBuilder {
 			throw new BeliefException ("error, distribution in distribs is a null pointer");
 		}
 		
-		ProbDistribution[] newDistribs = new ProbDistribution[distribs.distribs.length +1];
-		for (int i = 0; i < distribs.distribs.length ; i++) {
-			newDistribs[i] = distribs.distribs[i];
-		}
-		newDistribs[distribs.distribs.length] = newDistrib;
-		distribs.distribs = newDistribs;
+		
+		distribs.distribs.put(key, newDistrib);
+//		ProbDistribution[] newDistribs = new ProbDistribution[distribs.distribs.length +1];
+//		for (int i = 0; i < distribs.distribs.length ; i++) {
+//			newDistribs[i] = distribs.distribs[i];
+//		}
+//		newDistribs[distribs.distribs.length] = newDistrib;
+//		distribs.distribs = newDistribs;
 	}
 
 	
@@ -161,25 +166,25 @@ public class BeliefContentBuilder {
 	 * @throws BeliefException 
 	 * 			if the <form,prob> pairs are not well-formed
 	 */
-	public static DiscreteDistribution createNewDiscreteDistribution (FormulaProbPair[] pairs) throws BeliefException {
+	public static DiscreteDistribution createNewDiscreteDistribution (List<FormulaProbPair> pairs) throws BeliefException {
 		
 		if (pairs == null) {
 			throw new BeliefException ("error, pairs is null");
 		}
 		
-		else if (pairs.length == 0) {
+		else if (pairs.size() == 0) {
 			throw new BeliefException ("error, no <form,prob> pair is provided");
 		}
 		else {
 			float total = 0.0f;
-			for (int i = 0 ; i < pairs.length ; i++) {
-				if (pairs[i] == null) {
-					throw new BeliefException("error, pair["+i+"] is null");
+			for (FormulaProbPair pair : pairs) {
+				if (pair == null) {
+					throw new BeliefException("error, pair is null");
 				}
-				else if (pairs[i].form == null) {
-					throw new BeliefException("error, form of pair["+i+"] is null");
+				else if (pair.form == null) {
+					throw new BeliefException("error, form of pair is null");
 				}
-				total+= pairs[i].prob;
+				total+= pair.prob;
 			}
 			
 			if (total > 1.01) {
@@ -196,25 +201,22 @@ public class BeliefContentBuilder {
 	
 	
 	public static FeatureValueDistribution createNewFeatureValueDistribution 
-			(String feat, FeatureValueProbPair[] values, boolean addUnknownValue) throws BeliefException {
+			(List<FeatureValueProbPair> values, boolean addUnknownValue) throws BeliefException {
 		
 		
 		// Vector<FormulaProbPair> modalPairs = createModalFormulaPairs(feat, values);
 		 
-		if (feat == null) {
-			throw new BeliefException("error, feat is null");
-		}
 		if (values == null) {
 			throw new BeliefException("error, values is null");
 		}
-		if (values.length == 0) {
+		if (values.size() == 0) {
 			throw new BeliefException("error, values.lengh == 0");
 		}
 		
 		float total = 0.0f;
 
-		for (int i = 0 ; i < values.length ; i++) {
-			total += values[i].prob;
+		for (FeatureValueProbPair value : values) {
+			total += value.prob;
 		}
 		
 		if (total > 1.01) {
@@ -225,15 +227,14 @@ public class BeliefContentBuilder {
 			if (addUnknownValue) {
 				debug("sum of probs is: " + total +", adding unknown value");
 				FeatureValueProbPair uval = new FeatureValueProbPair(new UnknownValue(), 1- total);
-				values = addNewPairToArray(values, uval);
-				
+				values.add(uval);
 			}
 			else {
 				log("warning, probabilities sum up to: " + total);
 			}
 		}
 		
-		return new FeatureValueDistribution (feat, values);
+		return new FeatureValueDistribution (values);
 	}
 	
 	
@@ -262,8 +263,8 @@ public class BeliefContentBuilder {
 	 */
 	public static DiscreteDistribution createNewDiscreteDistributionWithUniquePair (Formula form, float probForm) throws BeliefException {
 		
-		FormulaProbPair[] pairs = new FormulaProbPair[1];
-		pairs[0] = new FormulaProbPair(form, probForm);
+		List<FormulaProbPair> pairs = new LinkedList<FormulaProbPair>();
+		pairs.add(new FormulaProbPair(form, probForm));
 		
 		return createNewDiscreteDistribution(pairs);
 	}
@@ -281,13 +282,9 @@ public class BeliefContentBuilder {
 	 * @return a new, well-formed normal distribution
 	 * @throws BeliefException 
 	 */
-	public static NormalDistribution createNewNormalDistribution (String feat, double mean, double variance) throws BeliefException {
+	public static NormalDistribution createNewNormalDistribution (double mean, double variance) throws BeliefException {
 		
-		if (feat == null) {
-			throw new BeliefException("error, feat == null");
-		}
-		
-		return new NormalDistribution(feat, mean, variance);
+		return new NormalDistribution(mean, variance);
 	}
 	
 	
@@ -313,13 +310,13 @@ public class BeliefContentBuilder {
 			throw new BeliefException("error, probExist is < 0 or > 1");
 		}
 		
-		FormulaProbPair[] existPairs = new FormulaProbPair[2];
+		List<FormulaProbPair> existPairs = new LinkedList<FormulaProbPair>();
 		
 		ElementaryFormula existForm = FormulaBuilder.createNewExistFormula();
-		existPairs[0] = createNewFormulaProbPair(existForm, probExist);
+		existPairs.add(createNewFormulaProbPair(existForm, probExist));
 		
 		NegatedFormula notExistForm = FormulaBuilder.createNewNegatedFormula(existForm);
-		existPairs[1] = createNewFormulaProbPair(notExistForm, 1- probExist);
+		existPairs.add(createNewFormulaProbPair(notExistForm, 1- probExist));
 		
 		return createNewDiscreteDistribution(existPairs);
 	}
@@ -363,22 +360,22 @@ public class BeliefContentBuilder {
 
 	
 	
-	/**
-	 * Add a new pair to the array
-	 * 
-	 * @param array the existing array
-	 * @param newEl the new element to add
-	 * @return the next, extended array
-	 */
-	private static FeatureValueProbPair[] addNewPairToArray (FeatureValueProbPair[] array, FeatureValueProbPair newEl) {
-		FeatureValueProbPair[] newArray = new FeatureValueProbPair[array.length + 1];
-		for (int i = 0 ; i < array.length ; i++) {
-			newArray[i] = array[i];
-		}
-		newArray[array.length] = newEl;
-		return newArray;
-	}
-	
+//	/**
+//	 * Add a new pair to the array
+//	 * 
+//	 * @param array the existing array
+//	 * @param newEl the new element to add
+//	 * @return the next, extended array
+//	 */
+//	private static FeatureValueProbPair[] addNewPairToArray (FeatureValueProbPair[] array, FeatureValueProbPair newEl) {
+//		FeatureValueProbPair[] newArray = new FeatureValueProbPair[array.length + 1];
+//		for (int i = 0 ; i < array.length ; i++) {
+//			newArray[i] = array[i];
+//		}
+//		newArray[array.length] = newEl;
+//		return newArray;
+//	}
+//	
 	
 	
 	public static void log(String s) {

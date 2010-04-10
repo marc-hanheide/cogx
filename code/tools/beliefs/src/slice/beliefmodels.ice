@@ -112,7 +112,7 @@ class PrivateEpistemicStatus extends EpistemicStatus {
 /**
  * Sequence of agents
  */
-sequence<string> Agents;
+["java:type:java.util.LinkedList<String>"] sequence<string> Agents;
 
 /**
  * Attributed epistemic status of an agent A to a group of 
@@ -191,6 +191,10 @@ class PointerValue extends FeatureValue {
 	string beliefId;
 };
 
+class MemoryAddressValue extends FeatureValue {
+      cast::cdl::WorkingMemoryAddress beliefId;
+};
+
 }; 
 
 
@@ -248,7 +252,7 @@ class ModalFormula extends Formula {
 /**
  * A sequence of formulae
  */
-sequence<Formula> FormulaSeq;
+["java:type:java.util.LinkedList<Formula>"] sequence<Formula> FormulaSeq;
 
 
 /**
@@ -287,7 +291,7 @@ class ProbDistribution { };
 /**
  * sequence of probability distributions
  */
-sequence<ProbDistribution> Distributions;
+dictionary<string,ProbDistribution> Distributions;
 
 
 /**
@@ -313,16 +317,17 @@ class CondIndependentDistribs extends ProbDistribution {
 };
 
 
+
 struct FeatureValueProbPair {
 	featurecontent::FeatureValue val;
 	float prob;
 };
 
-sequence<FeatureValueProbPair> FeatureValueProbPairs;
+
+["java:type:java.util.LinkedList<FeatureValueProbPair>"] sequence<FeatureValueProbPair> FeatureValueProbPairs;
 
 
 class FeatureValueDistribution extends ProbDistribution {
-	string feat;
 	FeatureValueProbPairs values;
 };
 	
@@ -333,7 +338,6 @@ class FeatureValueDistribution extends ProbDistribution {
  * distribution with mean and variance as parameters
  */
 class NormalDistribution extends ProbDistribution {
-	string feat;
 	double mean;
 	double variance;
 };
@@ -351,7 +355,7 @@ struct FormulaProbPair {
 /**
  * A collection of <form,prob> pairs
  */
-sequence<FormulaProbPair> FormulaProbPairs;
+["java:type:java.util.LinkedList<FormulaProbPair>"] sequence<FormulaProbPair> FormulaProbPairs;
 
 
 /**
@@ -384,13 +388,13 @@ class BeliefHistory { };
  * memory pointer (including the subarchitecture ID)
  */
 class PerceptHistory extends BeliefHistory {
-	cast::cdl::WorkingMemoryPointer origin;
+	cast::cdl::WorkingMemoryAddress origin;
 };
 
 /**
  * Collection of belief identifiers
  */
-sequence<string> BeliefIds;
+["java:type:java.util.LinkedList<String>"] sequence<string> BeliefIds;
 
 
 /**
@@ -435,6 +439,7 @@ module beliefs {
  */
 class Belief extends epobject::EpistemicObject {
 	string id;
+	string type;
 	distribs::ProbDistribution content;
 	history::BeliefHistory hist; 
 };

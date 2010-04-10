@@ -21,6 +21,9 @@
 
 package beliefmodels.builders;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.logicalcontent.BinaryOp;
 import beliefmodels.autogen.logicalcontent.ComplexFormula;
@@ -71,7 +74,7 @@ public class FormulaBuilder {
 			throw new BeliefException("error, op is null");
 		}
 		
-		Formula[] forms = new Formula[0];
+		List<Formula> forms = new LinkedList<Formula>();
 		ComplexFormula form = new ComplexFormula (getNewNominal(), forms, op);
 		return form;
 	}
@@ -97,13 +100,13 @@ public class FormulaBuilder {
 			throw new BeliefException("error, cform.forms is null");
 		}
 		
-		Formula[] newForms = new Formula[cform.forms.length + 1];
-		for (int i = 0 ; i < cform.forms.length ; i++) {
-			newForms[i] = cform.forms[i];
-		}
-		newForms[cform.forms.length] = newForm;
+//		Formula[] newForms = new Formula[cform.forms.length + 1];
+//		for (int i = 0 ; i < cform.forms.length ; i++) {
+//			newForms[i] = cform.forms[i];
+//		}
+//		newForms[cform.forms.length] = newForm;
 		
-		cform.forms = newForms;
+		cform.forms.add(newForm);
 	}
 
 	

@@ -21,6 +21,7 @@
 package beliefmodels.builders;
 
 import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
@@ -44,7 +45,7 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 	 * @return the resulting belief
 	 * @throws BinderException 
 	 */
-	public static PerceptBelief createNewPerceptBelief (String id, String curPlace, CASTTime curTime, ProbDistribution content, PerceptHistory hist) 
+	public static PerceptBelief createNewPerceptBelief (String id, String type, String curPlace, CASTTime curTime, ProbDistribution content, PerceptHistory hist) 
 		throws BeliefException {
 		
 		if (curPlace == null || curTime == null || content == null || hist == null) {
@@ -60,11 +61,11 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 			EpistemicStatusBuilder.createNewPrivateEpistemicStatus(EpistemicStatusBuilder.ROBOT_AGENT);
 	
 		// and creating the belief
-		return new PerceptBelief(frame,status,id, content,hist);
+		return new PerceptBelief(frame,status,id, type, content,hist);
 	}
 	
 	
-	public static PerceptHistory createNewPerceptHistory (WorkingMemoryPointer origin) {
+	public static PerceptHistory createNewPerceptHistory (WorkingMemoryAddress origin) {
 		return new PerceptHistory(origin);
 	}
 
