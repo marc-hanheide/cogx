@@ -2,6 +2,9 @@ import os, sys, logging, traceback, Ice
 from os.path import abspath, dirname, join, isdir
 from collections import defaultdict
 
+LOG_FORMAT="[%(levelname)s %(name)s: %(message)s]"
+logging.basicConfig(format=LOG_FORMAT)
+
 import autogen.Planner as Planner
 from beliefmodels.autogen import distribs, featurecontent
 #import binder.autogen.core
@@ -10,6 +13,7 @@ from standalone import pddl, plans, config
 from standalone.pddl import state
 
 log = config.logger("PythonServer")
+
 
 this_path = abspath(dirname(__file__))
 
@@ -23,7 +27,7 @@ from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 
-TEST_DOMAIN_FN = join(dirname(__file__), "test_data/minidora.domain.mapl")
+TEST_DOMAIN_FN = join(dirname(__file__), "test_data/springtest.mapl")
 class DummyWriter(object):
   def write(*args):
     pass
@@ -152,6 +156,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task = self.tasks[task_desc.id]
     plan = task.get_plan()
 
+    finished_actions = []
     if plan is None:
       #always replan if we don't have a plan
       task.mark_changed()
@@ -166,7 +171,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           log.error("%s, status: %s", str(pnode), pnode.status)
         raise Exception("Plans from WMControl and Planner don't match!")
 
-      finished_actions = []
       requires_action_dispatch = False
       for action, pnode in zip(task_desc.plan, executable_plan):
         if action.status != Planner.Completion.PENDING:
@@ -188,11 +192,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
         task.mark_changed()
     
     import task_preprocessor
-    objects, facts = task_preprocessor.generate_mapl_state(task_desc, task)
+    objects, new_state = task_preprocessor.generate_mapl_state(task_desc, task)
     #print map(str, objects)
     #print map(str, facts)
 
-    print_state_difference(task.get_state(), state.State(facts))
+    print_state_difference(task.get_state(), new_state)
 
     newtask = pddl.Problem(task.mapltask.name, objects, [], None, task._mapldomain)
 
@@ -201,8 +205,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       newtask.goal = task._mapltask.goal.copy(newtask)
     except KeyError:
       newtask.goal = pddl.conditions.Falsity()
-    
-    task.set_state(state.State(facts, newtask))
+
+    new_state.problem = newtask
+    task.set_state(new_state)
     task.mapltask = newtask
 
     if finished_actions:
