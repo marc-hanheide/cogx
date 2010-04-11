@@ -67,7 +67,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		try {
 			cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(
 					values, false);
-			BeliefContentBuilder.putCondIndependentDistrib(features, key,
+			BeliefContentBuilder.insertNewCondIndependentDistrib(features, key,
 					cdistrib);
 		} catch (BeliefException e) {
 			logger.error(
