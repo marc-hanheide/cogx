@@ -91,10 +91,10 @@ public class Step1PerceptInsertion extends AbstractBinderTest {
 			List<FeatureValueProbPair> values = new LinkedList<FeatureValueProbPair>();
 			values.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("red"), 0.7f));
 			values.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("pink"), 0.3f));
-
+ 
 			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(values, true);
 
-			BeliefContentBuilder.insertNewCondIndependentDistrib(features, "Colour", cdistrib);
+			BeliefContentBuilder.putNewCondIndependentDistrib(features, "Colour", cdistrib);
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, features);
 
