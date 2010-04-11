@@ -104,15 +104,28 @@ def gen_fact_tuples(beliefs):
     assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
 
   for bel in beliefs:
-    obj = pddl.TypedObject(bel.id, pddl.t_object)
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
       factdict[str(feat)].append((val, prob))
+      
+    if bel.type != "relation":
+      obj = pddl.TypedObject(bel.id, pddl.t_object)
+      for feat,vals in factdict.iteritems():
+        #print feat, bel, vals
+        yield SVarDistribution(feat, [obj], vals)
+    else:
+      elems = []
+      i=0
+      while ("element%d" % i) in factdict:
+        el_vals = factdict["element%d" % i]
+        assert len(el_vals) == 1, "element features in relations must have exactly one possible value"
+        elems.append(el_vals[0][0])
+        i += 1
 
-    for feat,vals in factdict.iteritems():
-      #print feat, bel, vals
-      yield SVarDistribution(feat, [obj], vals)
-
+      for feat,vals in factdict.iteritems():
+        if feat.startswith("element"):
+          continue
+        yield SVarDistribution(feat, elems, vals)
   # for bel in beliefs:
   #   if isinstance(union, specialentities.RelationUnion):
   #     try:
