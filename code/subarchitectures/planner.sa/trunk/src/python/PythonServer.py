@@ -1,4 +1,4 @@
-import os, sys, traceback, Ice
+import os, sys, logging, traceback, Ice
 from os.path import abspath, dirname, join, isdir
 from collections import defaultdict
 
@@ -40,7 +40,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def configureComponent(self, config):
     log.info("registering Python planner server")
     self.registerIceServer(Planner.PythonServer,self)
-    log.debug(print "and trying to get it back again immediately")
+    log.debug("and trying to get it back again immediately")
     server = self.getIceServer("PlannerPythonServer", Planner.PythonServer, Planner.PythonServerPrx)
     log.debug("It worked. We got a server: %s", str(server))
     

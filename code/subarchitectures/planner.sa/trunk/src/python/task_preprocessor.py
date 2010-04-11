@@ -3,10 +3,13 @@ import itertools
 import re
 from string import maketrans
 
+import standalone
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
 from standalone import pddl
 from standalone.pddl import state, prob_state
-from beleifmodels.autogen import distribs, featurecontent
+from beliefmodels.autogen import distribs, featurecontent
+
+log = standalone.config.logger("PythonServer")
 
 forbidden_letters = "-:"
 replace_chr = "_"
@@ -85,19 +88,19 @@ def gen_fact_tuples(beliefs):
       #ignore existence probability for now
       return extract_features(dist.Pc)
     if isinstance(dist, distribs.CondIndependentDistribs):
-      return sum((extract_features(d) for d in dist.distribs), [])
-    if isinstance(dist, distribs.FeatureValueDistribution):
-      result = []
-      for valpair in dist.values:
-        val = feature_val_to_object(valpair.val)
-        result.append((dist.feat, val, valpair.prob))
-      return result
-    if isinstance(dist, distribs.NormalDistribution):
-      #TODO: discretize?
-      return [(dist.feat, feature_val_to_object(dist.mean), 1.0)]
+        result = []
+        for feat, fval_dist in dist.distribs.iteritems():
+            if isinstance(fval_dist, distribs.FeatureValueDistribution):
+                for valpair in fval_dist.values:
+                    val = feature_val_to_object(valpair.val)
+                    result.append((feat, val, valpair.prob))
+            elif isinstance(fval_dist, distribs.NormalDistribution):
+                #TODO: discretize?
+                result.append((feat, feature_val_to_object(fval_dist.mean), 1.0))
+        return result
     if isinstance(dist, distribs.DiscreteDistribution):
       assert False, "DiscreteDistribution not supported yet"
-    assert False, "class %s not supported" % str(type(dist))
+    assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
 
   for bel in beliefs:
     factdict = defaultdict(list)
@@ -136,8 +139,8 @@ def filter_unknown_preds(fact_tuples):
   for ft in fact_tuples:
     if ft.feature not in current_domain.functions and \
           ft.feature not in current_domain.predicates:
-      print "filtering feature assignment %s, because '%s' is not part of the planning domain" \
-          % (str(ft), str(ft.feature))
+      log.debug("filtering feature assignment %s, because '%s' is not part of the planning domain", \
+                    str(ft), str(ft.feature))
     else:
       #print "using", map(str, ft)
       yield ft
@@ -223,7 +226,7 @@ def infer_types(obj_descriptions):
         return -1
       elif type2.is_subtype_of(type1):
         return 1
-      print "%s could be of types %s or %s" % (obj.name, type1, type2)
+      log.error("%s could be of types %s or %s", obj.name, type1, type2)
       assert False, "Multiple inheritance not supported yet"
     most_spec_type = sorted(types, cmp=type_cmp)[0]
     obj.type = most_spec_type
@@ -249,7 +252,7 @@ def generate_mapl_task(task_desc, domain_fn):
   try:
     goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
     problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
-    print "goal:",problem.goal
+    log.debug("goal: %s", problem.goal)
   except pddl.parser.ParseError:
     problem.goal = pddl.conditions.Falsity()
 
