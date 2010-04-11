@@ -573,13 +573,13 @@ public class MarkovLogic {
 		if (dist.pairs.size() != 2) {
 			throw new MLException(
 					"DiscreteDistribution must have exactly two arguments");
-		}
+		} 
 
 		if (!(dist.pairs.get(0).form instanceof ElementaryFormula)) {
 			throw new MLException(
 					"First pair formula must be of type ElementaryFormula");
 		}
-
+ 
 		if (!(dist.pairs.get(1).form instanceof ElementaryFormula)) {
 			throw new MLException(
 					"Second pair formula must be of type ElementaryFormula");

@@ -21,7 +21,7 @@ public class PredicateDataTest extends TestCase {
 			predicate_types.addNewPredictate("1", new Predicate("Color", arg));
 		} catch (MLException e) {
 			assertTrue(false);
-		}
+		} 
 		
 		assertTrue(predicate_types.hasPredicate("Color"));
 		assertTrue(predicate_types.hasType("belief_id"));

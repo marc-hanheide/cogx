@@ -16,6 +16,8 @@ import com.sun.tools.internal.jxc.SchemaGenerator.Runner;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.distribs.DiscreteDistribution;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.builders.PerceptUnionBuilder;
 import binder.abstr.BeliefWriter;
 import binder.abstr.MarkovLogicComponent;
@@ -40,13 +42,31 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 
 	@Override
 	public void start() {
+		
+		// ONLY FOR TESTING
+		try {
+			PerceptUnionBelief u1 = new PerceptUnionBelief();
+			u1.id = newDataID();
+			PerceptUnionBelief u2 = new PerceptUnionBelief();
+			u2.id = newDataID();	
+			PerceptUnionBelief u3 = new PerceptUnionBelief();
+			u3.id = newDataID();
+			addToWorkingMemory(u1.id, u1);
+			addToWorkingMemory(u2.id, u2);
+			addToWorkingMemory(u3.id, u3);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						
 						try {
-							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);					
+							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);	
+							log("received a new percept belief!");
 							performPerceptualGrouping (beliefData.getData());
 						}	
 			
@@ -60,11 +80,15 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 					}
 				}
 		);
+		
+	
 	}
 
 
 	public void performPerceptualGrouping(PerceptBelief b) {
 	
+		log("now starting perceptual grouping...");
+
 		Vector<PerceptUnionBelief> existingUnions = extractExistingUnions();
 		
 		Vector<String> newUnions = new Vector<String>();
@@ -73,13 +97,24 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			String newUnionId = newDataID();
 			newUnions.add(newUnionId);
 			linkToExistingUnions.put(u.id, newUnionId);
-			log(newUnionId);
 		}
 			
 		MLNGenerator.writeMLNFile(b, existingUnions, newUnions, MLNFile);
 		
 		Vector[] inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 	
+		Vector<String> unionIds = inferenceResults[0];
+		Vector<Float> groupingProbs = inferenceResults[1];
+		
+		float existProb = ((DiscreteDistribution)((DistributionWithExistDep)b.content).Pe).pairs.get(0).prob;
+		log("exist prob: " + existProb);
+		
+		int incr = 0;
+		for (String id : unionIds) {
+			float prob = existProb * groupingProbs.get(incr);
+			log("prob of " + id + ": " + prob);
+			incr++;
+		}
 		
 		 try {
 		PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(b, newDataID());
