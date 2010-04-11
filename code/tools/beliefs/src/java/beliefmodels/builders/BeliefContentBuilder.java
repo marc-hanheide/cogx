@@ -22,11 +22,9 @@
 package beliefmodels.builders;
 
 
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
@@ -123,20 +121,49 @@ public class BeliefContentBuilder {
 	}
 	
 	
+	/**
+	 * Insert a new feature (feat label + set of alternative feature values) into a belief content
+	 * 
+	 * @param beliefcontent 
+	 * 			the belief content, expressed as a probability distribution with existence dependency
+	 * @param key
+	 * 			the feature label 
+	 * @param featDistrib
+	 * 			the set of alternative feature values
+	 * @throws BeliefException 
+	 * 			exception thrown if distribution is a null pointer, 
+	 * 			or if content distribution is not conditionally independent
+	 * @post the belief content is updated with the new feature
+	 */
+	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, String key, ProbDistribution featDistrib) throws BeliefException {
 		
+		if (beliefcontent == null) {
+			throw new BeliefException("error, belief content is null");
+		}
+		else if (beliefcontent.Pc == null) {
+			throw new BeliefException("error, content distribution in belief content is null");
+		}
+		else if (!(beliefcontent.Pc instanceof CondIndependentDistribs)) {
+			throw new BeliefException("error, content distribution is not set to be conditionally independent");
+		}
+		putNewCondIndependentDistrib(((CondIndependentDistribs)beliefcontent.Pc), key, featDistrib);
+	}
+	
 	
 	/**
-	 * Puts a new distribution to a set of conditionally independent distributions
+	 * Insert a new distribution to a set of conditionally independent distributions
 	 * 
 	 * @param distribs 
 	 * 			the existing set of conditionally independent distributions
 	 * @param newDistrib 
 	 * 			the next distribution to add
+	 * @param key
+	 * 			the key of the distribution (i.e. the feature label)
 	 * @throws BeliefException 
 	 * 			exception thrown if distribs or newDistrib is a null pointer
 	 * @post distribs now contains newDistrib
 	 */
-	public static void putCondIndependentDistrib(CondIndependentDistribs distribs, String key,
+	public static void putNewCondIndependentDistrib(CondIndependentDistribs distribs, String key,
 			ProbDistribution newDistrib) throws BeliefException {
 		
 		if (distribs == null || newDistrib == null) {
