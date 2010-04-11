@@ -20,16 +20,16 @@ UCASE_REXP = re.compile("([A-Z])")
 current_domain = None
 
 class SVarDistribution(tuple):
-    def __new__(_class, *args):
-        return tuple.__new__(_class, args)
+  def __new__(_class, feat, args, value):
+    return tuple.__new__(_class, [feat] + args + [value])
     
-    feature = property(lambda self: self[0])
-    args = property(lambda self: self[1:-1])
-    values = property(lambda self: self[-1])
+  feature = property(lambda self: self[0])
+  args = property(lambda self: self[1:-1])
+  values = property(lambda self: self[-1])
 
-    def __str__(self):
-      valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
-      return "(%s %s) = [%s]" % (self.feature, " ".join(a.id for a in self.args), valstr)
+  def __str__(self):
+    valstr = " ".join("%.2f: %s" % (v[1], v[0]) for v in self.values)
+    return "(%s %s) = [%s]" % (self.feature, " ".join(a.name for a in self.args), valstr)
 
 def rename_objects(objects):
   namedict = {}
@@ -56,13 +56,14 @@ def transform_goal_string(goal, namedict):
 
 def feature_val_to_object(fval):
   if fval.__class__ == featurecontent.StringValue:
+    val = fval.val.lower()
     #lookup constants
-    if fval.val in current_domain:
-      return current_domain[fval.val]
-    if fval.val == "unknown":
+    if val in current_domain:
+      return current_domain[val]
+    if val == "unknown":
       return pddl.UNKNOWN
-    
-    return pddl.TypedObject(fval.val, pddl.t_object)
+
+    return pddl.TypedObject(val, pddl.t_object)
   
   elif fval.__class__ == featurecontent.PointerValue:
     #todo: how to support address values sensibly?
@@ -88,28 +89,29 @@ def gen_fact_tuples(beliefs):
       #ignore existence probability for now
       return extract_features(dist.Pc)
     if isinstance(dist, distribs.CondIndependentDistribs):
-        result = []
-        for feat, fval_dist in dist.distribs.iteritems():
-            if isinstance(fval_dist, distribs.FeatureValueDistribution):
-                for valpair in fval_dist.values:
-                    val = feature_val_to_object(valpair.val)
-                    result.append((feat, val, valpair.prob))
-            elif isinstance(fval_dist, distribs.NormalDistribution):
-                #TODO: discretize?
-                result.append((feat, feature_val_to_object(fval_dist.mean), 1.0))
-        return result
+      result = []
+      for feat, fval_dist in dist.distribs.iteritems():
+        if isinstance(fval_dist, distribs.FeatureValueDistribution):
+          for valpair in fval_dist.values:
+            val = feature_val_to_object(valpair.val)
+            result.append((feat, val, valpair.prob))
+        elif isinstance(fval_dist, distribs.NormalDistribution):
+          #TODO: discretize?
+          result.append((feat, feature_val_to_object(fval_dist.mean), 1.0))
+      return result
     if isinstance(dist, distribs.DiscreteDistribution):
       assert False, "DiscreteDistribution not supported yet"
     assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
 
   for bel in beliefs:
+    obj = pddl.TypedObject(bel.id, pddl.t_object)
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
       factdict[str(feat)].append((val, prob))
 
     for feat,vals in factdict.iteritems():
       #print feat, bel, vals
-      yield SVarDistribution(feat, bel, vals)
+      yield SVarDistribution(feat, [obj], vals)
 
   # for bel in beliefs:
   #   if isinstance(union, specialentities.RelationUnion):
@@ -155,7 +157,7 @@ def tuples2facts(fact_tuples):
       func = current_domain.predicates.get(feature_label, ftup.args)
 
     if len(ftup.values) == 1:
-      yield state.Fact(state.StateVariable(func, ftup.args), val[0][0])
+      yield state.Fact(state.StateVariable(func, ftup.args), ftup.values[0][0])
     else:
       vdist = prob_state.ValueDistribution(dict(ftup.values))
       yield prob_state.ProbFact(state.StateVariable(func, ftup.args), vdist)
@@ -177,7 +179,7 @@ def unify_objects(obj_descriptions):
       else:
         namedict[obj.name] = obj
         values.append((obj, prob))
-        
+
     yield SVarDistribution(ftup.feature, args, values)
       
 def infer_types(obj_descriptions):
@@ -195,9 +197,9 @@ def infer_types(obj_descriptions):
       #ftypes.append(declaration.type)
 
       #only consider this function if the basic value types (object, boolean, number) match
-      if len(ftup.args) == len(ftypes) and all(map(lambda t, a: t.equal_or_subtype_of(a.type), ftypes, args)) and \
+      if len(ftup.args) == len(ftypes) and all(map(lambda t, a: t.equal_or_subtype_of(a.type), ftypes, ftup.args)) and \
             all(declaration.type.equal_or_subtype_of(arg.type) for arg, _ in ftup.values):
-        for arg, type in zip(args, ftypes):
+        for arg, type in zip(ftup.args, ftypes):
           constraints[arg].add(type)
         for arg, _ in ftup.values:
           constraints[arg].add(declaration.type)
@@ -257,7 +259,7 @@ def generate_mapl_task(task_desc, domain_fn):
     problem.goal = pddl.conditions.Falsity()
 
   task._mapltask = problem
-  task.set_state(prob_state.ProbabilisticState(facts, problem))
+  task.set_state(prob_state.ProbabilisticState(facts, problem).determinized_state(0.1, 0.9))
   
   return task  
 
@@ -271,7 +273,8 @@ def generate_mapl_state(task_desc, task):
   task.namedict = rename_objects(objects)
 
   facts = list(tuples2facts(obj_descriptions))
-  return objects, facts
+  state = prob_state.ProbabilisticState(facts, task.mapltask).determinized_state(0.1, 0.9) 
+  return objects, state
 
 
 def map2binder_rep(plan, task):

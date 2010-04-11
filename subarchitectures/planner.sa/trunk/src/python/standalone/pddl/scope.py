@@ -53,7 +53,7 @@ class FunctionTable(dict):
         if name not in self:
             return []
         
-        fs = dict.__getitem__(self, name)
+        fs = dict.__getitem__(self, name.lower())
         
         argtypes = []
         for arg in args:
