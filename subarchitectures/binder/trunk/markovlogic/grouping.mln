@@ -1,49 +1,19 @@
-// =================================================================                                                        
-// Copyright (C) 2010-2012 Pierre Lison (plison@dfki.de)                                                                
-//                                                                                                                          
-// This library is free software; you can redistribute it and/or                                                            
-// modify it under the terms of the GNU Lesser General Public License                                                       
-// as published by the Free Software Foundation; either version 2.1 of                                                      
-// the License, or (at your option) any later version.                                                                      
-//                                                                                                                          
-// This library is distributed in the hope that it will be useful, but                                                      
-// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
-// Lesser General Public License for more details.                                                                          
-//                                                                                                                          
-// You should have received a copy of the GNU Lesser General Public                                                         
-// License along with this program; if not, write to the Free Software                                                      
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
-// 02111-1307, USA.                                                                                                         
-// =================================================================                                                        
- 
- 
-/**
- *
- * Markov Logic Network for perceptual grouping
- *
- * @author Pierre Lison (plison@dfki.de)
- * @version 11/04/2010
- * @started 06/04/2010
- */
-
 
 ///////////////////////////////
 // CONSTANTS 
 ///////////////////////////////
 
 // beliefs
-existingunion = {U1,U2,U3}
+existingunion = {U0_3,U1_3,U2_3}
 percept = {P}
-belief = {U1,U2,U3,P}
+belief = {U0_3,U1_3,U2_3,P}
 
 // possible outcomes of the grouping process
-outcome = {U4,U5,U6,Single}
+outcome = {U3_3,U4_3,U5_3,U6_3}
 
 // feature values
 shapeval = {Cyl,Sphe,Unknown,None}
 labelval = {Mug,Ball,Unknown,None}
-
 
 ///////////////////////////////
 // PREDICATES  
@@ -56,41 +26,40 @@ Label(belief,labelval)
 Outcome(outcome)
 UnifyWith(existingunion)
 
-
 ///////////////////////////////
 // EXISTING UNIONS
 ///////////////////////////////
 
-2.1972245773362196 Existence(U1)
--0.39304258810960718 Existence(U1) ^ Shape(U1,Cyl)
--2.0024805005437076 Existence(U1) ^ Shape(U1,Sphe)
--2.4079456086518722 Existence(U1) ^ Shape(U1,Unknown)
-Existence(U1) => !Shape(U1,None).
-Existence(U1) => !Label(U1,Mug).
-Existence(U1) => !Label(U1,Ball).
-Existence(U1) => !Label(U1,Unknown).
-Existence(U1) => Label(U1,None).
+2.1972245773362196 Existence(U0_3)
+-0.39304258810960718 Existence(U0_3) ^ Shape(U0_3,Cyl)
+-2.0024805005437076 Existence(U0_3) ^ Shape(U0_3,Sphe)
+-2.4079456086518722 Existence(U0_3) ^ Shape(U0_3,Unknown)
+Existence(U0_3) => !Shape(U0_3,None).
+Existence(U0_3) => !Label(U0_3,Mug).
+Existence(U0_3) => !Label(U0_3,Ball).
+Existence(U0_3) => !Label(U0_3,Unknown).
+Existence(U0_3) => Label(U0_3,None).
 
 
-1.3862943611198906 Existence(U2)
--0.38566248081198462 Existence(U2) ^ Shape(U2,Sphe)
--2.120263536200091 Existence(U2) ^ Shape(U2,Unknown)
-Existence(U2) => !Shape(U2,None).
-Existence(U2) => !Shape(U2,Cyl).
-Existence(U2) => !Label(U2,Mug).
-Existence(U2) => !Label(U2,Ball).
-Existence(U2) => !Label(U2,Unknown).
-Existence(U2) => Label(U2,None).
+1.3862943611198906 Existence(U1_3)
+-0.38566248081198462 Existence(U1_3) ^ Shape(U1_3,Sphe)
+-2.120263536200091 Existence(U1_3) ^ Shape(U1_3,Unknown)
+Existence(U1_3) => !Shape(U1_3,None).
+Existence(U1_3) => !Shape(U1_3,Cyl).
+Existence(U1_3) => !Label(U1_3,Mug).
+Existence(U1_3) => !Label(U1_3,Ball).
+Existence(U1_3) => !Label(U1_3,Unknown).
+Existence(U1_3) => Label(U1_3,None).
 
--10 Existence(U3)
--10 Existence(U3) ^ Shape(U3,Cyl)
--10 Existence(U3) ^ Shape(U3,Sphe)
--10 Existence(U3) ^ Shape(U3,Unknown)
-Existence(U3) => !Shape(U3,None).
-Existence(U3) => !Label(U3,Mug).
-Existence(U3) => !Label(U3,Ball).
-Existence(U3) => !Label(U3,Unknown).
-Existence(U3) => Label(U3,None).
+-10 Existence(U2_3)
+-10 Existence(U2_3) ^ Shape(U2_3,Cyl)
+-10 Existence(U2_3) ^ Shape(U2_3,Sphe)
+-10 Existence(U2_3) ^ Shape(U2_3,Unknown)
+Existence(U2_3) => !Shape(U2_3,None).
+Existence(U2_3) => !Label(U2_3,Mug).
+Existence(U2_3) => !Label(U2_3,Ball).
+Existence(U2_3) => !Label(U2_3,Unknown).
+Existence(U2_3) => Label(U2_3,None).
 
 
 ///////////////////////////////
@@ -154,10 +123,10 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 
 
 // specification of the different outcomes
--1.5 Existence(P) => Outcome(Single)
-UnifyWith(U1) <=> Outcome(U4).
-UnifyWith(U2) <=> Outcome(U5).
-UnifyWith(U3) <=> Outcome(U6).
+-1.5 Existence(P) => Outcome(U6_3)
+UnifyWith(U0_3) <=> Outcome(U3_3).
+UnifyWith(U1_3) <=> Outcome(U4_3).
+UnifyWith(U2_3) <=> Outcome(U5_3).
 
 
 // mutual exclusivity and unicity
