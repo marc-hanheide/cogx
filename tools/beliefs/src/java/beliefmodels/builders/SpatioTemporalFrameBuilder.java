@@ -26,7 +26,7 @@ import beliefmodels.autogen.framing.TemporalInterval;
 import cast.cdl.CASTTime;
 
 public class SpatioTemporalFrameBuilder {
-
+ 
 
 	/**
 	 * Create a new spatio-temporal frame with a place, a start time and a end time

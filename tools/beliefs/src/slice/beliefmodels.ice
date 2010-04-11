@@ -162,13 +162,6 @@ class EpistemicObject {
 
 module featurecontent {
 
-/**
- * Enumeration of possible features ("modal operators" in the modal 
- * logic terminology) which can be defined on a formula
- *
- * TO BE COMPLETED!!
- */
-	
 	
 class FeatureValue { };
 
