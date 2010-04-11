@@ -5,6 +5,7 @@ import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.builders.TemporalUnionBuilder;
 import binder.abstr.BeliefWriter;
+import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -39,7 +40,10 @@ public class Tracking_fake extends BeliefWriter {
 						 catch (BeliefException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-							}
+							} catch (AlreadyExistsOnWMException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 		);

@@ -96,6 +96,10 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 			isTestFinished = true;
 			isTestSuccessful = false;
 			reasonForFailure = e.getMessage();
+		} catch (AlreadyExistsOnWMException e) {
+			isTestFinished = true;
+			isTestSuccessful = false;
+			reasonForFailure = e.getMessage();
 		}
 
 	}

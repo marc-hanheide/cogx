@@ -3,6 +3,7 @@ package binder.testing;
 import java.util.LinkedList;
 import java.util.List;
 
+import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -110,6 +111,10 @@ public class Step1234PerceptInsertion extends AbstractBinderTest {
 		}
 
 		catch (BeliefException e) {
+			isTestFinished = true;
+			isTestSuccessful = false;
+			reasonForFailure = e.getMessage();
+		} catch (AlreadyExistsOnWMException e) {
 			isTestFinished = true;
 			isTestSuccessful = false;
 			reasonForFailure = e.getMessage();
