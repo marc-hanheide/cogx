@@ -3,13 +3,6 @@ package binder.testing;
 import java.util.LinkedList;
 import java.util.List;
 
-import cast.AlreadyExistsOnWMException;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.WorkingMemoryPointer;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
@@ -20,7 +13,12 @@ import beliefmodels.autogen.history.PerceptHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
-import binder.arch.BinderException;
+import cast.AlreadyExistsOnWMException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 
 
 public class BasicPerceptInsertion extends AbstractBinderTest {
