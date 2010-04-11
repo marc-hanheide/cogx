@@ -295,6 +295,8 @@ def get_planner_tempdir(base_path):
         tmp_dir = os.path.join(base_path, "static_dir_for_debugging")
         if os.path.exists(tmp_dir):
             utils.removeall(tmp_dir)  # remove old version
+        else:
+            os.makedirs(tmp_dir)
         return tmp_dir
     return tempfile.mkdtemp(dir=base_path)
 
