@@ -86,7 +86,7 @@ public class Step1234PerceptInsertion extends AbstractBinderTest {
 	public void startTest() {
 
 		try {
-
+ 
 			CondIndependentDistribs features = BeliefContentBuilder.createNewCondIndependentDistribs();
 
 			List<FeatureValueProbPair> values = new LinkedList<FeatureValueProbPair>();

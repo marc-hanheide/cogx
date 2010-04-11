@@ -101,7 +101,7 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 		}
 
 	}
-
+ 
 
 	@Override
 	public boolean isTestFinished() {
