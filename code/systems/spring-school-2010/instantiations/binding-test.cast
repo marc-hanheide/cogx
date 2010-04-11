@@ -12,4 +12,4 @@ CPP TM AlwaysPositiveTaskManager
 
 JAVA MG perceptmediator binder.components.perceptmediator.PerceptMediatorComponent --debug
 
-JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, binder.autogen.beliefs.Belief, binder.autogen.perceptmanagement.PerceptBeliefMaps, SpatialProperties.ConnectivityPathProperty"
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, binder.autogen.perceptmanagement.PerceptBeliefMaps, SpatialProperties.ConnectivityPathProperty"
