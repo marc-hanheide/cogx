@@ -24,8 +24,8 @@ public class BeliefInfo implements Plugin {
 		if (belief != null) {
 			String agentStatus = belief.estatus.getClass().getSimpleName();
 			extraInfo.add("Status: " + agentStatus);
-
-			extraInfo.add("Type: " + belief.getClass().getSimpleName());
+			extraInfo.add("Type: " + belief.type);
+			extraInfo.add("Class: " + belief.getClass().getSimpleName());
 			if (belief.content instanceof CondIndependentDistribs) {
 				CondIndependentDistribs dist = (CondIndependentDistribs) belief.content;
 				for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
