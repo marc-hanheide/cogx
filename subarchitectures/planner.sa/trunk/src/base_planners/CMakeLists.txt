@@ -21,7 +21,7 @@ add_dependencies(tfd tfd_preprocess tfd_search)
 
 endif(BUILD_SA_PLANNER_TFD)
 
-option(BUILD_SA_PLANNER_DOWNWARD "Build fast downward planner in planner.sa" NO)
+option(BUILD_SA_PLANNER_DOWNWARD "Build fast downward planner in planner.sa" YES)
 if(BUILD_SA_PLANNER_DOWNWARD)
 
 set(DOWNWARD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/downward")
