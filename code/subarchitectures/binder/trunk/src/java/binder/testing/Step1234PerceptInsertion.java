@@ -108,7 +108,7 @@ public class Step1234PerceptInsertion extends AbstractBinderTest {
 
 			insertBeliefInWM(belief);
 
-		}
+		} 
 
 		catch (BeliefException e) {
 			isTestFinished = true;
