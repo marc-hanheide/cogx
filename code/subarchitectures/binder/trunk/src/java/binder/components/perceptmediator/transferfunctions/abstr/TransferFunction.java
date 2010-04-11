@@ -1,7 +1,7 @@
 /**
  * 
  */
-package binder.components.perceptmediator.transferfunctions;
+package binder.components.perceptmediator.transferfunctions.abstr;
 
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;

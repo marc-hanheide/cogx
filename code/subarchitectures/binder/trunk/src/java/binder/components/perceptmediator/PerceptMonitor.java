@@ -11,7 +11,7 @@ import java.util.concurrent.FutureTask;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import binder.autogen.perceptmanagement.PerceptBeliefMaps;
-import binder.components.perceptmediator.transferfunctions.TransferFunction;
+import binder.components.perceptmediator.transferfunctions.abstr.TransferFunction;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.SubarchitectureComponentException;
