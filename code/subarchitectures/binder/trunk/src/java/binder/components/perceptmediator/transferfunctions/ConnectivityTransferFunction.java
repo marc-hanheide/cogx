@@ -19,7 +19,7 @@ public class ConnectivityTransferFunction extends
 
 	static final String ATTR_CONNECTED1="ConnectedTo1";
 	static final String ATTR_CONNECTED2="ConnectedTo2";
-	
+	 
 	
 	@Override
 	protected
@@ -38,7 +38,7 @@ public class ConnectivityTransferFunction extends
 				.createNewStringValue(wmaPlace2.id));
 		return result;
 	}
-
+ 
 	/**
 	 * @param perceptBeliefs
 	 */

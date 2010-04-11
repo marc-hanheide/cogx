@@ -96,7 +96,7 @@ public class Step1234PerceptInsertion extends AbstractBinderTest {
 
 			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(values, true);
 
-			BeliefContentBuilder.putCondIndependentDistrib(features, "Colour", cdistrib);
+			BeliefContentBuilder.insertNewCondIndependentDistrib(features, "Colour", cdistrib);
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, features);
 
