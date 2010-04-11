@@ -16,33 +16,28 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import binder.autogen.featurecontent.*;
-import binder.autogen.beliefs.Belief;
-import binder.autogen.beliefs.MultiModalBelief;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.beliefs.PerceptUnionBelief;
-import binder.autogen.beliefs.TemporalUnionBelief;
-import binder.autogen.distribs.CondIndependentDistribs;
-import binder.autogen.distribs.DiscreteDistribution;
-import binder.autogen.distribs.DistributionWithExistDep;
-import binder.autogen.distribs.FeatureValueDistribution;
-import binder.autogen.distribs.FeatureValueProbPair;
-import binder.autogen.distribs.FormulaProbPair;
-import binder.autogen.distribs.NormalDistribution;
-import binder.autogen.distribs.ProbDistribution;
-import binder.autogen.featurecontent.BooleanValue;
-import binder.autogen.featurecontent.FeatureValue;
-import binder.autogen.featurecontent.IntegerValue;
-import binder.autogen.featurecontent.PointerValue;
-import binder.autogen.featurecontent.StringValue;
-import binder.autogen.featurecontent.UnknownValue;
-import binder.autogen.logicalcontent.BinaryOp;
-import binder.autogen.logicalcontent.ComplexFormula;
-import binder.autogen.logicalcontent.ElementaryFormula;
-import binder.autogen.logicalcontent.Formula;
-import binder.autogen.logicalcontent.ModalFormula;
-import binder.autogen.logicalcontent.NegatedFormula;
-import binder.autogen.logicalcontent.PointerFormula;
+import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.beliefs.MultiModalBelief;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.DiscreteDistribution;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
+import beliefmodels.autogen.distribs.FeatureValueDistribution;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FormulaProbPair;
+import beliefmodels.autogen.distribs.NormalDistribution;
+import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.*;
+import beliefmodels.autogen.logicalcontent.BinaryOp;
+import beliefmodels.autogen.logicalcontent.ComplexFormula;
+import beliefmodels.autogen.logicalcontent.ElementaryFormula;
+import beliefmodels.autogen.logicalcontent.Formula;
+import beliefmodels.autogen.logicalcontent.ModalFormula;
+import beliefmodels.autogen.logicalcontent.NegatedFormula;
+import beliefmodels.autogen.logicalcontent.PointerFormula;
+
 
 /**
  * 
@@ -216,17 +211,17 @@ public class MarkovLogic {
 
 		// we add the first formula to the string builder
 		// to get the operators OP working easily
-		assert formula.forms.length >= 1;
-		String first = convertFormulaToString(formula.forms[0], belief_id);
+		assert formula.forms.size() >= 1;
+		String first = convertFormulaToString(formula.forms.get(0), belief_id);
 		complex_formula.append(LBRACE);
 		complex_formula.append(first);
 		complex_formula.append(RBRACE);
 
 		// and then the (possibly empty) rest of the complex formula
-		for (int i = 1; i < formula.forms.length; ++i) {
+		for (int i = 1; i < formula.forms.size(); ++i) {
 			complex_formula.append(OP);
 			complex_formula.append(LBRACE);
-			complex_formula.append(convertFormulaToString(formula.forms[i],
+			complex_formula.append(convertFormulaToString(formula.forms.get(0),
 					belief_id));
 			complex_formula.append(RBRACE);
 		}
@@ -243,8 +238,8 @@ public class MarkovLogic {
 			CondIndependentDistribs dist, String belief_id) throws MLException {
 		List<MLFormula> formulae = new LinkedList<MLFormula>();
 
-		for (ProbDistribution indep : dist.distribs) {
-			formulae.addAll(convertDistributionToMarkovLogic(indep, belief_id));
+		for (String indepKeys : dist.distribs.keySet()) {
+			formulae.addAll(convertDistributionToMarkovLogic(dist.distribs.get(indepKeys), belief_id));
 		}
 
 		return formulae;
@@ -334,8 +329,11 @@ public class MarkovLogic {
 	}
 
 	private List<MLFormula> convertFeatureValueDistribution(FeatureValueDistribution dist, String belief_id) throws MLException {
-		String feature = dist.feat.toString();
-
+	
+		// BIG FAT WARNING: we currently don't have access to the feature label anymore!!
+	//	String feature = dist.feat.toString();
+		String feature = "blabla";
+		
 		List<MLFormula> formulae = new LinkedList<MLFormula>();
 
 		Predicate predicate_from_feature = new Predicate(feature, feature
@@ -572,26 +570,26 @@ public class MarkovLogic {
 
 		DiscreteDistribution dist = (DiscreteDistribution) dist_exists;
 
-		if (dist.pairs.length != 2) {
+		if (dist.pairs.size() != 2) {
 			throw new MLException(
 					"DiscreteDistribution must have exactly two arguments");
 		}
 
-		if (!(dist.pairs[0].form instanceof ElementaryFormula)) {
+		if (!(dist.pairs.get(0).form instanceof ElementaryFormula)) {
 			throw new MLException(
 					"First pair formula must be of type ElementaryFormula");
 		}
 
-		if (!(dist.pairs[1].form instanceof ElementaryFormula)) {
+		if (!(dist.pairs.get(1).form instanceof ElementaryFormula)) {
 			throw new MLException(
 					"Second pair formula must be of type ElementaryFormula");
 		}
 
-		ElementaryFormula formula0 = (ElementaryFormula) dist.pairs[0].form;
-		ElementaryFormula formula1 = (ElementaryFormula) dist.pairs[1].form;
+		ElementaryFormula formula0 = (ElementaryFormula) dist.pairs.get(0).form;
+		ElementaryFormula formula1 = (ElementaryFormula) dist.pairs.get(1).form;
 
-		float prob0 = dist.pairs[0].prob;
-		float prob1 = dist.pairs[1].prob;
+		float prob0 = dist.pairs.get(0).prob;
+		float prob1 = dist.pairs.get(1).prob;
 
 		if (prob0 + prob1 <= 1f + DELTA && prob0 + prob1 >= 1f + DELTA) {
 			throw new MLException(
@@ -855,12 +853,12 @@ public class MarkovLogic {
 	//
 	// /////////////////////////////////////////////////////////////////////////////////////
 
-	public Set<String> testGetFeatureAlternatives(Belief belief, Feature feature) {
+	public Set<String> testGetFeatureAlternatives(Belief belief, String feature) {
 		return predicate_data
 				.getValuesForType(feature.toString().toLowerCase());
 	}
 
-	public boolean testHasFeature(Belief belief, Feature feature) {
+	public boolean testHasFeature(Belief belief, String feature) {
 		return predicate_data.hasBeliefForPredicate(feature.toString(),
 				belief.id);
 	}

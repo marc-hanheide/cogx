@@ -3,26 +3,28 @@
  */
 package binder.ml;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.Map;
 
-import binder.autogen.featurecontent.*;
-import binder.autogen.beliefs.Belief;
-import binder.autogen.beliefs.PerceptBelief;
-import binder.autogen.distribs.DiscreteDistribution;
-import binder.autogen.distribs.FeatureValueDistribution;
-import binder.autogen.distribs.FeatureValueProbPair;
-import binder.autogen.distribs.FormulaProbPair;
-import binder.autogen.logicalcontent.BinaryOp;
-import binder.autogen.logicalcontent.ComplexFormula;
-import binder.autogen.logicalcontent.ElementaryFormula;
-import binder.autogen.logicalcontent.Formula;
-import binder.autogen.logicalcontent.ModalFormula;
-import binder.autogen.logicalcontent.NegatedFormula;
-import binder.autogen.logicalcontent.PointerFormula;
-import binder.builders.FeatureValueBuilder;
 import junit.framework.TestCase;
 
+import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.DiscreteDistribution;
+import beliefmodels.autogen.distribs.FeatureValueDistribution;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FormulaProbPair;
+import beliefmodels.autogen.logicalcontent.BinaryOp;
+import beliefmodels.autogen.logicalcontent.ComplexFormula;
+import beliefmodels.autogen.logicalcontent.ElementaryFormula;
+import beliefmodels.autogen.logicalcontent.Formula;
+import beliefmodels.autogen.logicalcontent.ModalFormula;
+import beliefmodels.autogen.logicalcontent.NegatedFormula;
+import beliefmodels.autogen.logicalcontent.PointerFormula;
+import beliefmodels.builders.FeatureValueBuilder;
+ 
 /**
  * @author Carsten Ehrler (carsten.ehrler@dfki.de)
  *
@@ -36,13 +38,12 @@ public class MarkovLogicTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		String color = Feature.Colour.toString();
 		
 		ElementaryFormula elementary_formula = new ElementaryFormula();
 		elementary_formula.prop = "Red";
 		
 		ModalFormula modal_formula = new ModalFormula();
-		modal_formula.op = color;
+		modal_formula.op = "colour";
 		modal_formula.form = elementary_formula;
 		
 		NegatedFormula neg = new NegatedFormula();
@@ -52,7 +53,9 @@ public class MarkovLogicTest extends TestCase {
 		pointer.beliefPointer = "1";
 		
 		ComplexFormula complex = new ComplexFormula();
-		Formula[] formulae = {(Formula)pointer, (Formula)modal_formula};
+		List<Formula> formulae = new LinkedList<Formula>();
+		formulae.add(pointer);
+		formulae.add(modal_formula);
 		complex.forms = formulae;
 		complex.op = BinaryOp.conj;
 		
@@ -60,7 +63,8 @@ public class MarkovLogicTest extends TestCase {
 		pair.form = complex;
 		pair.prob = 0.8f;
 		
-		FormulaProbPair[] probs = {pair};
+		List<FormulaProbPair> probs = new LinkedList<FormulaProbPair>();
+		probs.add(pair);
 		
 		DiscreteDistribution dist = new DiscreteDistribution();
 		dist.pairs = probs;
@@ -91,9 +95,9 @@ public class MarkovLogicTest extends TestCase {
 			e.printStackTrace();
 		}
 		
-		assertTrue(ml.testHasFeature(belief, Feature.Colour));
+		assertTrue(ml.testHasFeature(belief, "colour"));
 		
-		Set<String> names = ml.testGetFeatureAlternatives(belief, Feature.Colour);
+		Set<String> names = ml.testGetFeatureAlternatives(belief, "colour");
 		assertTrue(names.contains("Red"));
 	}
 	
@@ -108,24 +112,27 @@ public class MarkovLogicTest extends TestCase {
 		b1.id = "1";
 		b2.id = "2";
 		
-		FeatureValueProbPair[] f1 = new FeatureValueProbPair[1];
-		FeatureValueProbPair[] f2 = new FeatureValueProbPair[1];
+		List<FeatureValueProbPair> f1 = new LinkedList<FeatureValueProbPair>();
+		List<FeatureValueProbPair> f2 = new LinkedList<FeatureValueProbPair>();
+
 		
-		f1[0] = new FeatureValueProbPair();
-		f1[0].prob = 0.8f;
-		f1[0].val = FeatureValueBuilder.createNewStringValue("Cylindrical");
+		FeatureValueProbPair f1_0 = new FeatureValueProbPair();
+		f1_0.prob = 0.8f;
+		f1_0.val = FeatureValueBuilder.createNewStringValue("Cylindrical");
+		f1.add(f1_0);
 		
-		f2[0] = new FeatureValueProbPair();
-		f2[0].prob = 0.9f;
-		f2[0].val = FeatureValueBuilder.createNewStringValue("Mug");
+		FeatureValueProbPair f2_0 = new FeatureValueProbPair();
+		f2_0.prob = 0.9f;
+		f2_0.val = FeatureValueBuilder.createNewStringValue("Mug");
+		f2.add(f2_0);
 		
 		FeatureValueDistribution fvd1 = new FeatureValueDistribution();
 		FeatureValueDistribution fvd2 = new FeatureValueDistribution();
 		
-		fvd1.feat = Feature.Shape;
+	//	fvd1.feat = "shape";
 		fvd1.values = f1;
 		
-		fvd2.feat = Feature.ObjectLabel;
+	//	fvd2.feat = Feature.ObjectLabel;
 		fvd2.values = f2;
 		
 		b1.content = fvd1;

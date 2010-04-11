@@ -1,6 +1,6 @@
 package binder.components;
 
-import binder.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.PerceptBelief;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -19,7 +19,7 @@ public class MLBinder<Type extends Object> extends ManagedComponent {
 		log("Initialize Binder... ");
 		
 		// change filter for monitoring of Belief insertions
-		this.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(belief_type.class,
+		this.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(PerceptBelief.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange wmc) throws CASTException {
 				actionBeliefAdded(wmc);

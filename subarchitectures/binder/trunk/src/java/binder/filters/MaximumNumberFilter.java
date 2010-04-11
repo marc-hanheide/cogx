@@ -2,7 +2,7 @@ package binder.filters;
 
 import java.util.Map;
 
-import binder.autogen.beliefs.Belief;
+import beliefmodels.autogen.beliefs.Belief;
 import binder.interfaces.BeliefFilterInterface;
 
 public class MaximumNumberFilter implements BeliefFilterInterface {
