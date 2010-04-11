@@ -78,7 +78,7 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 
 			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(values, true);
 
-			BeliefContentBuilder.insertNewCondIndependentDistrib(features, "Colour", cdistrib);
+			BeliefContentBuilder.putNewCondIndependentDistrib(features, "Colour", cdistrib);
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, features);
 
