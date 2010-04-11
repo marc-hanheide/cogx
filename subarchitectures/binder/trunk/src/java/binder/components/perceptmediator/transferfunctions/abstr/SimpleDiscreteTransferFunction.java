@@ -1,7 +1,7 @@
 /**
  * 
  */
-package binder.components.perceptmediator.transferfunctions;
+package binder.components.perceptmediator.transferfunctions.abstr;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +29,15 @@ import cast.cdl.WorkingMemoryAddress;
 public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl, To extends PerceptBelief>
 		implements TransferFunction<From, To> {
 
+	/**
+	 * @param logger
+	 */
+	public SimpleDiscreteTransferFunction(Logger logger) {
+		super();
+		this.logger = logger;
+	}
+
+	Logger logger;
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -61,13 +70,13 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			BeliefContentBuilder.putCondIndependentDistrib(features, key,
 					cdistrib);
 		} catch (BeliefException e) {
-			Logger.getLogger(SimpleDiscreteTransferFunction.class).error(
+			logger.error(
 					"Belief exception", e);
 		}
 
 	}
 
-	abstract Map<String, FeatureValue> getFeatureValueMapping(From from)
+	protected abstract Map<String, FeatureValue> getFeatureValueMapping(From from)
 			throws InterruptedException;
 
 	/*
@@ -88,8 +97,8 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		CondIndependentDistribs features = BeliefContentBuilder
 				.createNewCondIndependentDistribs();
 
-		PerceptBelief pb = PerceptBuilder.createNewPerceptBelief(id, "here",
-				type, curTime, features, hist);
+		PerceptBelief pb = PerceptBuilder.createNewPerceptBelief(id, type, "here",
+				curTime, features, hist);
 
 		return pb;
 	}
