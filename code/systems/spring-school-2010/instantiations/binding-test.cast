@@ -1,9 +1,15 @@
 HOST localhost
 
-SUBARCHITECTURE spatial.sa
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
-JAVA MG perceptmediatortest binder.components.perceptmediator.PerceptMediatorTest --debug
+INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+#INCLUDE includes/spatial.sa/spatial-binder.cast
+
+#SUBARCHITECTURE spatial.sa
+#JAVA WM cast.architecture.SubarchitectureWorkingMemory
+#CPP TM AlwaysPositiveTaskManager
+#JAVA MG perceptmediatortest binder.components.perceptmediator.PerceptMediatorTest --debug
 
 
 SUBARCHITECTURE binding.sa
