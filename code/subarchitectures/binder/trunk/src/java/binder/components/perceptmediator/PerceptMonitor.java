@@ -130,7 +130,7 @@ public class PerceptMonitor<T extends Ice.ObjectImpl> extends CASTHelper
 	}
 
 	/** thread pool size for asynchronous refernce resolution */
-	private static final int MAX_THREADS = 15;
+	private static final int MAX_THREADS = 1;
 
 	/**
 	 * a synchronized event queue that ensure that any new insert notification
