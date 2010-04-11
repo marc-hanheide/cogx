@@ -14,6 +14,8 @@ FakeMotivationSA::FakeMotivationSA() :
 { }
 
 void FakeMotivationSA::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
+    cast::ManagedComponent::configure(_config, _current);
+    
     cast::cdl::StringMap::const_iterator it = _config.begin();
     it = _config.find("--goal");
     if (it != _config.end()) {
@@ -22,16 +24,21 @@ void FakeMotivationSA::configure(const cast::cdl::StringMap& _config, const Ice:
 }
 
 void FakeMotivationSA::runComponent() {
-    println("FakeMotivationSA: running");
-    sleepComponent(10000);
+    log("FakeMotivationSA: running");
+    sleepComponent(1000);
     string id = newDataID();
-
+    debug("step1");
     autogen::Planner::PlanningTaskPtr plan = new autogen::Planner::PlanningTask();
     plan->goal = m_goal;
+    plan->executionStatus = autogen::Planner::PENDING;
+    plan->planningStatus = autogen::Planner::PENDING;
+    debug("step2");
 
     addChangeFilter(cast::createAddressFilter(id,"planner.sa",cast::cdl::OVERWRITE),
 		    new cast::MemberFunctionChangeReceiver<FakeMotivationSA>(this, &FakeMotivationSA::planGenerated));
+    debug("step3");
     addToWorkingMemory(id,"planner.sa", plan);
+    debug("step4");
 }
 
 void FakeMotivationSA::planGenerated(const cast::cdl::WorkingMemoryChange& wmc) {
