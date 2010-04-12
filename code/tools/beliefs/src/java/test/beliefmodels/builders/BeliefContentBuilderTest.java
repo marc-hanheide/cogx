@@ -18,7 +18,7 @@
 // =================================================================  
 
 /**
- * UNIT TEST for the FormulaBuilder class
+ * UNIT TEST for the BeliefContentBuilder class
  * 
  * The unit tests illustrate assumptions on method parameters, how to access the individual methods, 
  * and how to get access to information in the objects that the methods return. 
@@ -28,80 +28,27 @@
 // Package
 package test.beliefmodels.builders;
 
-//JUnit 
+// JUnit
 import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-// Belief models
-import beliefmodels.arch.BeliefException;
-import beliefmodels.autogen.logicalcontent.BinaryOp;
-import beliefmodels.autogen.logicalcontent.ComplexFormula;
-import beliefmodels.autogen.logicalcontent.ElementaryFormula;
-import beliefmodels.autogen.logicalcontent.Formula;
-import beliefmodels.autogen.logicalcontent.ModalFormula;
-import beliefmodels.autogen.logicalcontent.NegatedFormula;
-import beliefmodels.autogen.logicalcontent.PointerFormula;
-import beliefmodels.builders.FormulaBuilder;
 
 
-public class FormulaBuilderTest {
 
-	
-	private String prop; // test proposition
-	
-	/**
-	 *  Set up global private variables for the unit tests
-	 */
+
+public class BeliefContentBuilderTest {
+
 	@Before
-	public void setUp() { 
-		prop = "proposition";
-	} // end setUp 
-	
+	public void setUp() throws Exception {
+		
+	}
+
 	/**
-	 * Creating an elementary formula from a non-null, non-empty value succeeds
+	 * 
 	 */
 	
-	@Test
-	public void ElementaryFormulaFromNonNullValue () { 
-		try { 
-			ElementaryFormula eform = FormulaBuilder.createNewElFormula(prop);
-		} catch (BeliefException be) { 
-			fail("Creating a formula from a non-null, non-empty value should not fail: "+be.getMessage());
-		}
-	} // end test
-	
-	/**
-	 * Creating an elementary formula from a null-value fails. 
-	 */
-	
-	@Test
-	public void ElementaryFormulaFromNullFails () { 
-		try { 
-			ElementaryFormula eform = FormulaBuilder.createNewElFormula(null);
-			fail("Creating an elementary formula from a null-value fails");
-		} catch (BeliefException be) { 
-			assertEquals("Cannot create an elementary formula from a null value", be.getMessage());
-		} // end try.. catch
-	} // end test
-	
-	/**
-	 * Creating an elementary formula from an empty string fails
-	 */
-	
-	@Test
-	public void ElementaryFormulaFromEmptyStringFails () { 
-		try { 
-			ElementaryFormula eform = FormulaBuilder.createNewElFormula("");
-			fail("Creating an elementary formula from an empty value fails");
-		} catch (BeliefException be) { 
-			assertEquals("Cannot create an elementary formula from an empty value", be.getMessage());
-		} // end try.. catch
-	} // end test	
 	
 	
 	
 	
 	
 	
-} // end class
+} // end class 
