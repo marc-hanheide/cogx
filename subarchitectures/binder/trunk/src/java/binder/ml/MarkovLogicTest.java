@@ -11,6 +11,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
@@ -122,6 +123,7 @@ public class MarkovLogicTest extends TestCase {
 		
 		FeatureValueProbPair f1_0 = new FeatureValueProbPair();
 		f1_0.prob = 0.8f;
+		try {
 		f1_0.val = FeatureValueBuilder.createNewStringValue("Cylindrical");
 		f1.values.add(f1_0);
 		
@@ -129,7 +131,10 @@ public class MarkovLogicTest extends TestCase {
 		f2_0.prob = 0.9f;
 		f2_0.val = FeatureValueBuilder.createNewStringValue("Mug");
 		f2.values.add(f2_0);
-		
+		}
+		catch (BeliefException e) {
+			e.printStackTrace();
+		}
 		BasicProbDistribution fvd1 = new BasicProbDistribution();
 		BasicProbDistribution fvd2 = new BasicProbDistribution();
 		

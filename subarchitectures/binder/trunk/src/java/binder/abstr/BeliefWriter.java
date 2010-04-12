@@ -63,7 +63,7 @@ public class BeliefWriter extends ManagedComponent implements BeliefWriterInterf
 	 * @throws PermissionException 
 	 * @pre the WM must include an existing belief with the same identifier
 	 * @post belief on the WM is replaced
-	 */ 
+	 */  
 	public void updateBeliefOnWM (Belief belief) throws DoesNotExistOnWMException, PermissionException, ConsistencyException {
 		
 		try {
