@@ -15,8 +15,8 @@
 #define Shrink_SOI 0.5
 #define Upper_BG 1.2
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
-#define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
-#define rate_of_centers 0.5	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
+#define min_height_of_obj 0.08	//unit cm, due to the error of stereo, >0.01 is suggested
+#define rate_of_centers 0.2	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
 #define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
@@ -255,6 +255,7 @@ void DrawPointf(Vector3 v3p, GLfloat red, GLfloat green, GLfloat blue)
 
 void DrawPoints()
 {
+  //cout<<"Drawing......"<<endl;
   glPointSize(2);
   glBegin(GL_POINTS);
   for(size_t i = 0; i < pointsN.size(); i++)
@@ -360,6 +361,11 @@ void MouseMove(int x, int y)
   glutPostRedisplay();
 }
 
+void show_window()
+{
+    glutPostRedisplay();
+}
+
 
 void PlanePopOut::configure(const map<string,string> & _config)
 {
@@ -427,7 +433,7 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		N = 5;
+		N = 50;
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 			pointsN.push_back(*it);
 		points_label.clear();
@@ -454,6 +460,7 @@ void PlanePopOut::runComponent()
 			}
 			if (doDisplay)
 			{
+				//glutIdleFunc(show_window);
 				glutPostRedisplay();
 				glutMainLoopEvent();
 			}
@@ -505,13 +512,14 @@ void PlanePopOut::runComponent()
 					CurrentObjList.at(i).bInWM = true;
 					CurrentObjList.at(i).id = PreviousObjList.at(j).id;
 					CurrentObjList.at(i).count = PreviousObjList.at(j).count;
-					if (abs((CurrentObjList.at(i).c.y-PreviousObjList.at(j).c.y)/CurrentObjList.at(i).c.y)>0.1)
+					if (dist(CurrentObjList.at(i).c, PreviousObjList.at(j).c)/norm(CurrentObjList.at(i).c) > 1/2)
+					  //(abs((CurrentObjList.at(i).c.y-PreviousObjList.at(j).c.y)/CurrentObjList.at(i).c.y)>0.2)
 					{
 					    //cout<<"Current = "<<CurrentObjList.at(i).c.y<<"  Previous = "<<PreviousObjList.at(j).c.y<<endl;
 					    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;					
 					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 					    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-					    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+					    cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
 					}
 					else
 					{
@@ -696,7 +704,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
 	if (N == 1) obj_number_threshold = 400;
-	if (N == 5) obj_number_threshold = 60;
+	if (N == 50) obj_number_threshold = 100;
 	if (N == 10) obj_number_threshold = 20;
 	while(!candidants.empty())
 	{
@@ -777,7 +785,7 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Visio
 
 bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
-	if (sqrt((obj1.c.x-obj2.c.x)*(obj1.c.x-obj2.c.x)+(obj1.c.y-obj2.c.y)*(obj1.c.y-obj2.c.y)+(obj1.c.z-obj2.c.z)*(obj1.c.z-obj2.c.z))<rate_of_centers*obj1.r && obj1.r/obj2.r>ratio_of_radius && obj1.r/obj2.r<1/ratio_of_radius)
+	if (dist(obj1.c,obj2.c)<rate_of_centers*obj1.r)
 		return true; //the same object
 	else
 		return false; //not the same one
