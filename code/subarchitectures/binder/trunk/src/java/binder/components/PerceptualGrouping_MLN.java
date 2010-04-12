@@ -18,7 +18,9 @@ import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.distribs.DiscreteDistribution;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
+import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
+import beliefmodels.utils.DistributionUtils;
 import binder.abstr.BeliefWriter;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
@@ -43,21 +45,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	@Override
 	public void start() {
 		
-		// ONLY FOR TESTING
-		try {
-			PerceptUnionBelief u1 = new PerceptUnionBelief();
-			u1.id = newDataID();
-			PerceptUnionBelief u2 = new PerceptUnionBelief();
-			u2.id = newDataID();	
-			PerceptUnionBelief u3 = new PerceptUnionBelief();
-			u3.id = newDataID();
-			addToWorkingMemory(u1.id, u1);
-			addToWorkingMemory(u2.id, u2);
-			addToWorkingMemory(u3.id, u3);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		insertExistingUnionsForTesting();
 		
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
@@ -84,38 +72,63 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	
 	}
 
+	private void insertExistingUnionsForTesting() {
+		try {
+			PerceptUnionBelief u1 = new PerceptUnionBelief();
+			u1.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, new DiscreteDistribution());
+			u1.id = newDataID();
+			PerceptUnionBelief u2 = new PerceptUnionBelief();
+			u2.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, new DiscreteDistribution());
+			u2.id = newDataID();	
+			PerceptUnionBelief u3 = new PerceptUnionBelief();
+			u3.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.05f, new DiscreteDistribution());
+			u3.id = newDataID();
+			addToWorkingMemory(u1.id, u1);
+			addToWorkingMemory(u2.id, u2);
+			addToWorkingMemory(u3.id, u3);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public void performPerceptualGrouping(PerceptBelief b) {
 	
 		log("now starting perceptual grouping...");
 
-		Vector<PerceptUnionBelief> existingUnions = extractExistingUnions();
+		HashMap<String, PerceptUnionBelief> existingUnions = extractExistingUnions();
 		
 		Vector<String> newUnions = new Vector<String>();
 		HashMap<String,String> linkToExistingUnions = new HashMap<String,String>();
-		for (PerceptUnionBelief u : existingUnions) {
+		for (String existingUnionId : existingUnions.keySet()) {
 			String newUnionId = newDataID();
 			newUnions.add(newUnionId);
-			linkToExistingUnions.put(u.id, newUnionId);
+			linkToExistingUnions.put(newUnionId, existingUnionId);
 		}
 			
-		MLNGenerator.writeMLNFile(b, existingUnions, newUnions, MLNFile);
+		MLNGenerator.writeMLNFile(b, existingUnions.values(), newUnions, MLNFile);
 		
-		Vector[] inferenceResults = runAlchemyInference(MLNFile, resultsFile);
+		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 	
-		Vector<String> unionIds = inferenceResults[0];
-		Vector<Float> groupingProbs = inferenceResults[1];
 		
-		float existProb = ((DiscreteDistribution)((DistributionWithExistDep)b.content).Pe).pairs.get(0).prob;
-		log("exist prob: " + existProb);
-		
-		int incr = 0;
-		for (String id : unionIds) {
-			float prob = existProb * groupingProbs.get(incr);
+		float perceptExistProb = DistributionUtils.getExistenceProbability(b);
+				
+		for (String id : inferenceResults.keySet()) {
+			float prob = perceptExistProb * inferenceResults.get(id);
 			log("prob of " + id + ": " + prob);
-			incr++;
 		}
 		
+		for (String newUnionId: linkToExistingUnions.keySet()) {
+			PerceptUnionBelief associatedExistingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
+			float unionCurrentExistProb = DistributionUtils.getExistenceProbability(associatedExistingUnion);
+			float unionNewExistProb = (unionCurrentExistProb * (1-perceptExistProb)) + 
+				(perceptExistProb * (1 - inferenceResults.get(newUnionId)) * unionCurrentExistProb);
+			log("new prob for " +  linkToExistingUnions.get(newUnionId) + ": " + unionNewExistProb);
+			
+			DistributionUtils.setExistenceProbability(associatedExistingUnion, unionNewExistProb);
+		}
+		
+		// here, filtering should take place
 		 try {
 		PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(b, newDataID());
 		insertBeliefInWM(union);
@@ -127,17 +140,12 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		}
 
 	}
-
 	
-
-	private Vector<PerceptUnionBelief> createNewUnions(	Vector<PerceptUnionBelief> existingUnions, PerceptBelief b) {
-		
-		return new Vector<PerceptUnionBelief>();
-	}
 	
-	private Vector<PerceptUnionBelief> extractExistingUnions() {
+	
+	private HashMap<String, PerceptUnionBelief> extractExistingUnions() {
 
-		Vector<PerceptUnionBelief> existingunions = new Vector<PerceptUnionBelief>();
+		HashMap<String, PerceptUnionBelief> existingunions = new HashMap<String, PerceptUnionBelief>();
 
 		try {
 			CASTData<PerceptUnionBelief>[] unions;
@@ -145,7 +153,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			unions = getWorkingMemoryEntries(BindingWorkingMemory.BINDER_SA, PerceptUnionBelief.class);
 
 			for (int i = (unions.length - 1) ; i >= 0 ; i--) {
-				existingunions.add(unions[i].getData());
+				existingunions.put(unions[i].getData().id, unions[i].getData());
 			}
 		}
 		catch (UnknownSubarchitectureException e) {
