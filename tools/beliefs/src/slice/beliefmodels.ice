@@ -48,7 +48,6 @@
 module beliefmodels {
 module autogen {
 
-	
 
 // ================================
 // SPATIO-TEMPORAL FRAME
@@ -161,6 +160,21 @@ class EpistemicObject {
 
 
 module featurecontent {
+
+module featurenames {
+       const string FeatPlaceId = "PlaceId";
+       const string FeatPlaceStatus = "PlaceStatus";
+
+       const string FeatConnected = "connected";
+       const string FeatPartof = "part_of";
+
+       const string TypeRelation = "relation";
+
+       const string RelationElement0 = "element0";
+       const string RelationElement1 = "element1";
+       const string RelationElement2 = "element2";
+       const string RelationElement3 = "element3";
+};
 
 	
 class FeatureValue { };
