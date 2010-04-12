@@ -46,7 +46,7 @@ public class EpistemicStatusBuilder {
 	 */
 	public static PrivateEpistemicStatus createNewPrivateEpistemicStatus (String agent) throws BeliefException {
 		if (agent == null || agent.equals("")) {
-			throw new BeliefException("error, agent is null or empty");
+			throw new BeliefException("Error when setting private epistemic status: agent is null or empty");
 		}
 		return new PrivateEpistemicStatus(agent);
 	}
@@ -63,13 +63,13 @@ public class EpistemicStatusBuilder {
 	 */
 	public static AttributedEpistemicStatus createNewAttributedEpistemicStatus (String agent, List<String> agents) throws BeliefException {
 		if (agent == null || agent.equals("")) {
-			throw new BeliefException("error, agent is null or empty");
+			throw new BeliefException("Error when setting attributed epistemic status: Attributing agent is null or empty");
 		}
 		if (agents == null) {
-			throw new BeliefException("error, agents is null");
+			throw new BeliefException("Error when setting attributed epistemic status: Attributed-to agents is null");
 		}
 		else if (agents.size() == 0) {
-			throw new BeliefException("error, agents length is 0");
+			throw new BeliefException("Error when setting attributed epistemic status: Attributed-to agents length is 0");
 		}
 		return new AttributedEpistemicStatus(agent, agents);
 	}
@@ -85,10 +85,10 @@ public class EpistemicStatusBuilder {
 	 */
 	public static SharedEpistemicStatus createNewSharedEpistemicStatus (List<String> agents) throws BeliefException {
 		if (agents == null) {
-			throw new BeliefException("error, agents is null");
+			throw new BeliefException("Error when setting shared epistemic status: agents list is null");
 		}
 		else if (agents.size() == 0) {
-			throw new BeliefException("error, agents length is 0");
+			throw new BeliefException("Error when setting shared epistemic status: agents list length is 0");
 		}
 		return new SharedEpistemicStatus (agents);
 	}
