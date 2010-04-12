@@ -9,6 +9,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
+import autogen.Planner.Completion;
+import autogen.Planner.PlanningTask;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.StringValue;
+import beliefmodels.autogen.featurecontent.IntegerValue;
+
 import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
@@ -16,11 +22,6 @@ import motivation.slice.GeneralGoalMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.PatrolMotive;
-import autogen.Planner.Completion;
-import autogen.Planner.PlanningTask;
-import binder.autogen.core.FeatureValue;
-import binder.autogen.featvalues.IntegerValue;
-import binder.autogen.featvalues.StringValue;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
@@ -201,11 +202,11 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 									+ em.correspondingUnion
 									+ "/"
 									+ binderFacade
-											.getUnion(em.correspondingUnion).entityID);
+											.getBelief(em.correspondingUnion).id);
 
 					conjunctiveGoal = GoalTranslator
 							.motive2PlannerGoal(em, binderFacade
-									.getUnion(em.correspondingUnion).entityID);
+									.getBelief(em.correspondingUnion).id);
 				}
 			} else if (m instanceof CategorizeRoomMotive) {
 				CategorizeRoomMotive crm = (CategorizeRoomMotive) m;
@@ -213,13 +214,13 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 				if (crm.correspondingUnion != null)
 					conjunctiveGoal = GoalTranslator
 							.motive2PlannerGoal(crm, binderFacade
-									.getUnion(crm.correspondingUnion).entityID,
+									.getBelief(crm.correspondingUnion).id,
 									getAgentUnion());
 			} else if (m instanceof HomingMotive) {
 				HomingMotive crm = (HomingMotive) m;
 				crm.correspondingUnion = resolveMotive(crm);
 				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(crm,
-						binderFacade.getUnion(crm.correspondingUnion).entityID,
+						binderFacade.getBelief(crm.correspondingUnion).id,
 						getAgentUnion());
 			} else if (m instanceof GeneralGoalMotive) {
 				GeneralGoalMotive ggm = (GeneralGoalMotive) m;
@@ -229,12 +230,12 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 				PatrolMotive pm = (PatrolMotive) m;
 				pm.correspondingUnion = resolveMotive(pm);
 				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(pm,
-						binderFacade.getUnion(pm.correspondingUnion).entityID,
+						binderFacade.getBelief(pm.correspondingUnion).id,
 						getAgentUnion());
 			} else if (m instanceof CategorizePlaceMotive) {
 				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(
 						(CategorizePlaceMotive) m, binderFacade
-								.getUnion(m.correspondingUnion).entityID,
+								.getBelief(m.correspondingUnion).id,
 						getAgentUnion());
 			}
 			if (conjunctiveGoal != null) {
