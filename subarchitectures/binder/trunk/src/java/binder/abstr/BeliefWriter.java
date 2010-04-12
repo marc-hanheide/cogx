@@ -29,6 +29,14 @@ import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 
+/**
+ * 
+ * NOTE: we should here add various checks to ensure the beliefs are well-formed, and maybe include
+ * filters as well
+ * 
+ * @author plison
+ *
+ */
 public class BeliefWriter extends ManagedComponent implements BeliefWriterInterface {
 
 	
