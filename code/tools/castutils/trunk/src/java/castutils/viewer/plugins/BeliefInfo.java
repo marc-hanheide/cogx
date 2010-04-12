@@ -3,13 +3,11 @@ package castutils.viewer.plugins;
 import java.util.Vector;
 import java.util.Map.Entry;
 
-
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
 
