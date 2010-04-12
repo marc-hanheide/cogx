@@ -3,17 +3,22 @@
  */
 package motivation.util;
 
+import java.util.List;
+
+import SpatialData.Place;
+import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.StringValue;
+import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import castutils.castextensions.CausalEventMonitor;
-import binder.autogen.core.Feature;
-import binder.autogen.core.Union;
-import binder.autogen.core.UnionConfiguration;
-import binder.autogen.featvalues.IntegerValue;
+import castutils.facades.BinderFacade;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 
 import comadata.ComaRoom;
 
@@ -30,7 +35,7 @@ import comadata.ComaRoom;
  * 
  */
 public class RoomUnionEventRelation extends
-		CausalEventMonitor<ComaRoom, UnionConfiguration> {
+		CausalEventMonitor<ComaRoom, Belief> {
 
 	/**
 	 * generate a ComaRoomUnionEventRelation that uses the given component. It
@@ -46,7 +51,7 @@ public class RoomUnionEventRelation extends
 		addTriggerFilter(ChangeFilterFactory
 				.createGlobalTypeFilter(ComaRoom.class));
 		addImplicationFilter(ChangeFilterFactory
-				.createGlobalTypeFilter(UnionConfiguration.class));
+				.createGlobalTypeFilter(Belief.class));
 
 	}
 
@@ -65,12 +70,6 @@ public class RoomUnionEventRelation extends
 			WorkingMemoryChange wmcImplication) throws CASTException {
 		component.debug("comparing changes");
 
-		UnionConfiguration unionConfiguration = component.getMemoryEntry(
-				wmcImplication.address, UnionConfiguration.class);
-
-		// sanity check...
-		if (unionConfiguration.includedUnions == null)
-			return false;
 		// if we have a delete event... simply return true
 		if (wmcTrigger.operation == WorkingMemoryOperation.DELETE) {
 			return true;
@@ -79,12 +78,13 @@ public class RoomUnionEventRelation extends
 		try {
 			ComaRoom room = component.getMemoryEntry(wmcTrigger.address,
 					ComaRoom.class);
+			Belief belief = component.getMemoryEntry(wmcImplication.address,
+					Belief.class);
 			if (wmcTrigger.operation == WorkingMemoryOperation.ADD
 					|| wmcTrigger.operation == WorkingMemoryOperation.OVERWRITE) {
 				// on add or overwrite we expect to find the place in the
 				// unions
-				return findComaRoomIdInUnions(
-						unionConfiguration.includedUnions, room.roomId);
+				return findComaRoomIdInUnions(belief, room.roomId);
 			}
 		} catch (DoesNotExistOnWMException e) {
 			component
@@ -107,19 +107,23 @@ public class RoomUnionEventRelation extends
 	 * 
 	 * @see motivation.util.castextensions.CausalEventMonitor#start()
 	 */
-	private boolean findComaRoomIdInUnions(Union[] unions, long searchedRoomID) {
-		for (Union union : unions) {
-			for (Feature f : union.features) {
-				if (f.featlabel.equals("roomID") && f.alternativeValues[0] instanceof IntegerValue) {
-					int placeId = ((IntegerValue) f.alternativeValues[0]).val;
-					if (placeId == searchedRoomID) {
-						component.debug("found corresponding ID");
-						return true;
-					}
+	private boolean findComaRoomIdInUnions(Belief belief, long searchedRoomID) {
+		if (belief.type.equals(CASTUtils.typeName(ComaRoom.class))) {
+			try {
+				List<FeatureValue> fvl = BinderFacade
+						.get(component)
+						.getFeatureValue(belief, PlaceMatchingFunction.PLACE_ID);
+				int placeId = Integer.parseInt(((StringValue) fvl.get(0)).val);
+				if (placeId == searchedRoomID) {
+					component.debug("found corresponding ID");
+					return true;
 				}
+			} catch (CASTException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+
 		}
 		return false;
 	}
-
 }
