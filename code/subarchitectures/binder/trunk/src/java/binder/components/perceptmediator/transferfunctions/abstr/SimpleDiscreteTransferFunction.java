@@ -12,8 +12,8 @@ import org.apache.log4j.Logger;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.history.PerceptHistory;
@@ -63,12 +63,10 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			String key, FeatureValue value) {
 		List<FeatureValueProbPair> values = new LinkedList<FeatureValueProbPair>();
 		values.add(new FeatureValueProbPair(value, 1.0f));
-		FeatureValueDistribution cdistrib;
+		BasicProbDistribution cdistrib;
 		try {
-			cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(
-					values, false);
-			BeliefContentBuilder.putNewCondIndependentDistrib(features, key,
-					cdistrib);
+			cdistrib = BeliefContentBuilder.createNewFeatureDistribution(key, values);
+			BeliefContentBuilder.putNewCondIndependentDistrib(features, cdistrib);
 		} catch (BeliefException e) {
 			logger.error(
 					"Belief exception", e);

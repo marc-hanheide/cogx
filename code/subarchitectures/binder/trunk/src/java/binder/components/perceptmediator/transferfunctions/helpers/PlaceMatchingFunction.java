@@ -4,8 +4,9 @@
 package binder.components.perceptmediator.transferfunctions.helpers;
 
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
+import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
@@ -33,8 +34,8 @@ public class PlaceMatchingFunction implements ContentMatchingFunction<PerceptBel
 		if (r.type.equals(CASTUtils.typeName(SpatialData.Place.class))) {
 			assert (r.content instanceof CondIndependentDistribs);
 			CondIndependentDistribs dist = (CondIndependentDistribs) r.content;
-			FeatureValueDistribution fv = (FeatureValueDistribution) dist.distribs.get(PLACE_ID);
-			IntegerValue idVal = (IntegerValue) fv.values.get(0).val;
+			BasicProbDistribution fv = (BasicProbDistribution) dist.distribs.get(PLACE_ID);
+			IntegerValue idVal = (IntegerValue) ((FeatureValues)fv.values).values.get(0).val;
 			return idVal.val == placeId;
 			
 		}

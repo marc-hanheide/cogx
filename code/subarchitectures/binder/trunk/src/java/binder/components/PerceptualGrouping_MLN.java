@@ -14,7 +14,7 @@ import java.util.Vector;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
-import beliefmodels.autogen.distribs.DiscreteDistribution;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
@@ -73,13 +73,13 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	private void insertExistingUnionsForTesting() {
 		try {
 			PerceptUnionBelief u1 = new PerceptUnionBelief();
-			u1.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, new DiscreteDistribution());
+			u1.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, new BasicProbDistribution());
 			u1.id = newDataID();
 			PerceptUnionBelief u2 = new PerceptUnionBelief();
-			u2.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, new DiscreteDistribution());
+			u2.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, new BasicProbDistribution());
 			u2.id = newDataID();	
 			PerceptUnionBelief u3 = new PerceptUnionBelief();
-			u3.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.05f, new DiscreteDistribution());
+			u3.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.05f, new BasicProbDistribution());
 			u3.id = newDataID();
 			addToWorkingMemory(u1.id, u1);
 			addToWorkingMemory(u2.id, u2);
@@ -103,7 +103,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			newUnions.add(newUnionId);
 			linkToExistingUnions.put(newUnionId, existingUnionId);
 		}
-			
+			 
 		MLNGenerator.writeMLNFile(b, existingUnions.values(), newUnions, MLNFile);
 		
 		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
@@ -115,7 +115,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			float prob = perceptExistProb * inferenceResults.get(id);
 			log("prob of " + id + ": " + prob);
 		}
-		
+		 
 		for (String newUnionId: linkToExistingUnions.keySet()) {
 			PerceptUnionBelief associatedExistingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
 			float unionCurrentExistProb = DistributionUtils.getExistenceProbability(associatedExistingUnion);

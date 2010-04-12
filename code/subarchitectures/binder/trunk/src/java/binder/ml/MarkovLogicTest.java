@@ -3,6 +3,7 @@
  */
 package binder.ml;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -12,10 +13,11 @@ import junit.framework.TestCase;
 
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
-import beliefmodels.autogen.distribs.DiscreteDistribution;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.FormulaProbPair;
+import beliefmodels.autogen.distribs.FormulaValues;
 import beliefmodels.autogen.logicalcontent.BinaryOp;
 import beliefmodels.autogen.logicalcontent.ComplexFormula;
 import beliefmodels.autogen.logicalcontent.ElementaryFormula;
@@ -66,8 +68,9 @@ public class MarkovLogicTest extends TestCase {
 		List<FormulaProbPair> probs = new LinkedList<FormulaProbPair>();
 		probs.add(pair);
 		
-		DiscreteDistribution dist = new DiscreteDistribution();
-		dist.pairs = probs;
+		BasicProbDistribution dist = new BasicProbDistribution();
+		dist.values = new FormulaValues();
+		((FormulaValues)dist.values).pairs = probs;
 		
 		belief = new PerceptBelief();
 		belief.content = dist;
@@ -112,22 +115,23 @@ public class MarkovLogicTest extends TestCase {
 		b1.id = "1";
 		b2.id = "2";
 		
-		List<FeatureValueProbPair> f1 = new LinkedList<FeatureValueProbPair>();
-		List<FeatureValueProbPair> f2 = new LinkedList<FeatureValueProbPair>();
-
+		FeatureValues f1 = new FeatureValues();
+		f1.values = new ArrayList<FeatureValueProbPair>();
+		FeatureValues f2 = new FeatureValues();
+		f2.values = new ArrayList<FeatureValueProbPair>();
 		
 		FeatureValueProbPair f1_0 = new FeatureValueProbPair();
 		f1_0.prob = 0.8f;
 		f1_0.val = FeatureValueBuilder.createNewStringValue("Cylindrical");
-		f1.add(f1_0);
+		f1.values.add(f1_0);
 		
 		FeatureValueProbPair f2_0 = new FeatureValueProbPair();
 		f2_0.prob = 0.9f;
 		f2_0.val = FeatureValueBuilder.createNewStringValue("Mug");
-		f2.add(f2_0);
+		f2.values.add(f2_0);
 		
-		FeatureValueDistribution fvd1 = new FeatureValueDistribution();
-		FeatureValueDistribution fvd2 = new FeatureValueDistribution();
+		BasicProbDistribution fvd1 = new BasicProbDistribution();
+		BasicProbDistribution fvd2 = new BasicProbDistribution();
 		
 	//	fvd1.feat = "shape";
 		fvd1.values = f1;

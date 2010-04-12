@@ -5,8 +5,8 @@ import java.util.List;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.history.PerceptHistory;
@@ -74,9 +74,10 @@ public class BasicPerceptInsertion extends AbstractBinderTest {
 			values.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("red"), 0.7f));
 			values.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("pink"), 0.3f));
 
-			FeatureValueDistribution cdistrib = BeliefContentBuilder.createNewFeatureValueDistribution(values, true);
+			String colourfeat = "colour";
+			BasicProbDistribution cdistrib = BeliefContentBuilder.createNewFeatureDistribution(colourfeat,values);
 
-			BeliefContentBuilder.putNewCondIndependentDistrib(features, "Colour", cdistrib);
+			BeliefContentBuilder.putNewCondIndependentDistrib(features, cdistrib);
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, features);
 
