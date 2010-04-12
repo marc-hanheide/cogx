@@ -1,5 +1,6 @@
 package binder.utils;
 
+import java.util.Collection;
 import java.util.Vector;
 
 import beliefmodels.autogen.beliefs.PerceptBelief;
@@ -10,7 +11,7 @@ public class MLNGenerator {
 	public static String markovlogicDir = "subarchitectures/binder/markovlogic/";
 
 	
-	public static void writeMLNFile(PerceptBelief b, Vector<PerceptUnionBelief> existingUnions, 
+	public static void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, 
 			Vector<String> newUnionsIds, String MLNFileToWrite) {
 	
 		String constantsSection = constructConstantsSection(existingUnions, newUnionsIds);
@@ -26,7 +27,10 @@ public class MLNGenerator {
 	}
 	
 	
-	private static String extractFinalOutcomeSection(Vector<PerceptUnionBelief> existingUnions, Vector<String> newUnionsIds) {
+	
+	
+	
+	private static String extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, Vector<String> newUnionsIds) {
 		return FileUtils.readfile(markovlogicDir + "grouping/outcome.mln");
 	}
 	
@@ -43,7 +47,7 @@ public class MLNGenerator {
 		return FileUtils.readfile(markovlogicDir + "grouping/featvalueconstraints.mln");
 	}
 	
-	private static String constructFormulaeForExistingUnions (Vector<PerceptUnionBelief> existingUnions) {
+	private static String constructFormulaeForExistingUnions (Collection<PerceptUnionBelief> existingUnions) {
 		
 		return FileUtils.readfile(markovlogicDir + "grouping/existingunions.mln");
 	}
@@ -53,8 +57,17 @@ public class MLNGenerator {
 		return FileUtils.readfile(markovlogicDir + "grouping/newpercept.mln");
 	}
 	
-	private static String constructConstantsSection (Vector<PerceptUnionBelief> existingUnions, Vector<String> newUnionsIds) {
+	private static String constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, Vector<String> newUnionsIds) {
 	
 		return FileUtils.readfile(markovlogicDir + "grouping/constantssection.mln");
+	}
+	
+	
+	public static String getMarkovLogicConstantFromID (String id) {
+		return "U" + id.replace(":", "_");
+	}
+	
+	public static String getIDFromMarkovLogicSontant (String mlconstant) {
+		return mlconstant.substring(1).replace("_", ":");
 	}
 }

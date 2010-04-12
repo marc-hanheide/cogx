@@ -107,6 +107,8 @@ EXIST y Label(x,y).
 1 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Mug) => UnifyWith(x)
 1 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Ball) => UnifyWith(x)
 1 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Ball) => UnifyWith(x)
+
+
 2 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
 2 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
 2 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Ball) => !UnifyWith(x)
