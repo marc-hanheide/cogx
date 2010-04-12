@@ -356,11 +356,12 @@ struct FeatureValueProbPair {
 
 /**
  * 
+ */
 class FeatureValues extends DistributionValues {
 	FeatureValueProbPairs values;
 };
 	
-
+ 
 /**
  * Continuous probability distribution P(X) defined on the value
  * of a particular feature.  The distribution P(X) is a normal
