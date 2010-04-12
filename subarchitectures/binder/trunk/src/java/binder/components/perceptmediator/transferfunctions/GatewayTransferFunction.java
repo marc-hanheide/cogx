@@ -6,8 +6,10 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import SpatialProperties.GatewayPlaceProperty;
+import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.featurenames.FeatPlaceId;
 import beliefmodels.builders.FeatureValueBuilder;
 import binder.components.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
@@ -22,14 +24,14 @@ public class GatewayTransferFunction
 	@Override
 	protected
 	Map<String, FeatureValue> getFeatureValueMapping(
-			final GatewayPlaceProperty from) throws InterruptedException {
+			final GatewayPlaceProperty from) throws InterruptedException, BeliefException {
 		assert (from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 
 		WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
 				from.placeId));
 
-		result.put(PlaceMatchingFunction.PLACE_ID, FeatureValueBuilder
+		result.put(FeatPlaceId.value, FeatureValueBuilder
 				.createNewStringValue(wmaPlace.id));
 		return result;
 	}

@@ -26,7 +26,7 @@ public class ConnectivityTransferFunction
 
 	@Override
 	protected Map<String, FeatureValue> getFeatureValueMapping(
-			final ConnectivityPathProperty from) throws InterruptedException {
+			final ConnectivityPathProperty from) throws InterruptedException, BeliefException {
 		assert (from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 
