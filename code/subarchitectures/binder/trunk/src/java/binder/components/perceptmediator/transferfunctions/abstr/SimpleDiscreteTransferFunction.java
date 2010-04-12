@@ -77,7 +77,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	}
 
 	protected abstract Map<String, FeatureValue> getFeatureValueMapping(From from)
-			throws InterruptedException;
+			throws InterruptedException, BeliefException;
 
 	/*
 	 * (non-Javadoc)
