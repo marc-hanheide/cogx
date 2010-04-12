@@ -21,13 +21,14 @@ import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.DiscreteDistribution;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.FormulaProbPair;
-import beliefmodels.autogen.distribs.NormalDistribution;
+import beliefmodels.autogen.distribs.FormulaValues;
+import beliefmodels.autogen.distribs.NormalValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.*;
 import beliefmodels.autogen.logicalcontent.BinaryOp;
@@ -245,14 +246,19 @@ public class MarkovLogic {
 		return formulae;
 	}
 
-	private List<MLFormula> convertDiscreteDistribution(
-			DiscreteDistribution dist, String belief_id) throws MLException {
+	private List<MLFormula> convertFormulaDistribution(
+			BasicProbDistribution dist, String belief_id) throws MLException {
 		List<MLFormula> formulae = new LinkedList<MLFormula>();
 
-		for (FormulaProbPair pair : dist.pairs) {
+		if (dist.values instanceof FormulaValues) {
+		for (FormulaProbPair pair : ((FormulaValues)dist.values).pairs) {
 			Float weight = convertProbabilityToWeight(pair.prob);
 			String formula = convertFormulaToString(pair.form, belief_id);
 			formulae.add(new MLFormula(weight, formula));
+		}
+		}
+		else {
+			throw new MLException("error, dist.values are of wrong type");
 		}
 		return formulae;
 	}
@@ -274,32 +280,43 @@ public class MarkovLogic {
 			return convertDistributionWithExistDep(
 					(DistributionWithExistDep) dist, belief_id);
 		}
-		if (dist instanceof FeatureValueDistribution) {
-			return convertFeatureValueDistribution(
-					(FeatureValueDistribution) dist, belief_id);
-		}
+		
 		if (dist instanceof CondIndependentDistribs) {
 			return convertCondIndependentDistribs(
 					(CondIndependentDistribs) dist, belief_id);
 		}
-		if (dist instanceof NormalDistribution) {
-			return convertNormalDistribution((NormalDistribution) dist,
-					belief_id);
+		
+		if (dist instanceof BasicProbDistribution) {
+			if (((BasicProbDistribution)dist).values instanceof FeatureValues) {
+				return convertFeatureDistribution(
+						(BasicProbDistribution) dist, belief_id);
+			}
+			else if (((BasicProbDistribution)dist).values instanceof FormulaValues) {
+				return convertFormulaDistribution(
+						(BasicProbDistribution) dist, belief_id);
+			}
+			else if (((BasicProbDistribution)dist).values instanceof NormalValues) {
+				return convertNormalDistribution(
+						(BasicProbDistribution) dist, belief_id);
+			}
+			else {
+				throw new MLException("distribution missing");
+			}
+			
 		}
-		if (dist instanceof DiscreteDistribution) {
-			return convertDiscreteDistribution((DiscreteDistribution) dist,
-					belief_id);
-		} else {
+	
+		 else {
 			throw new MLException("distribution missing");
 		}
 	}
 
+	
 	private List<MLFormula> convertDistributionWithExistDep(
 			DistributionWithExistDep dist, String belief_id) throws MLException {
-		ProbDistribution dist_exists = dist.Pe;
+
 		ProbDistribution dist_cond = dist.Pc;
 
-		float exists_probability = getExistsProbability(dist_exists);
+		float exists_probability = dist.existProb;
 
 		List<MLFormula> formulae = new LinkedList<MLFormula>();
 
@@ -328,7 +345,7 @@ public class MarkovLogic {
 		return formulae;
 	}
 
-	private List<MLFormula> convertFeatureValueDistribution(FeatureValueDistribution dist, String belief_id) throws MLException {
+	private List<MLFormula> convertFeatureDistribution(BasicProbDistribution dist, String belief_id) throws MLException {
 	
 		// BIG FAT WARNING: we currently don't have access to the feature label anymore!!
 	//	String feature = dist.feat.toString();
@@ -348,10 +365,16 @@ public class MarkovLogic {
 		
 		predicate_data.addValueForType(BELIEF_TYPE, getInternalName(belief_id));
 		
-		for (FeatureValueProbPair feature_value_pair : dist.values) {
+		
+		if (dist.values instanceof FeatureValues) {
+		for (FeatureValueProbPair feature_value_pair : ((FeatureValues)dist.values).values) {
 			MLFormula ml_formula = convertFeatureValuePairToMLFormula(
 					feature_value_pair, feature, belief_id);
 			formulae.add(ml_formula);
+		}
+		}
+		else {
+			throw new MLException("error, distribution values of wrong type");
 		}
 		return formulae;
 	}
@@ -471,7 +494,7 @@ public class MarkovLogic {
 		return modal_op + getInternalName(belief_id) + CFUNC + argument + RFUNC;
 	}
 
-	private List<MLFormula> convertNormalDistribution(NormalDistribution dist,
+	private List<MLFormula> convertNormalDistribution(BasicProbDistribution dist,
 			String belief_id) throws MLException {
 		// TODO Auto-generated method stub
 		throw new MLException("Normal distribution not yet implemented");
@@ -545,6 +568,8 @@ public class MarkovLogic {
 		}
 		return correlations.toString();
 	}
+	
+	
 	/**
 	 * This method computes the probability of the Exists and checks that
 	 * Distribution dist_exists is of type DiscriteDistribution with exactly two
@@ -561,9 +586,9 @@ public class MarkovLogic {
 	 *             of type DiscreteDistribution with exactly two pairs <true,p1>
 	 *             and <false, p2 such that p1 + p2 = 1
 	 */
-	private float getExistsProbability(ProbDistribution dist_exists)
+	/**private float getExistsProbability(ProbDistribution dist_exists)
 			throws MLException {
-		if (!(dist_exists instanceof DiscreteDistribution)) {
+		if (!(dist_exists instanceof Basi)) {
 			throw new MLException(
 					"Exists distribution must have type DiscreteDistribution!");
 		}
@@ -614,7 +639,7 @@ public class MarkovLogic {
 		} else {
 			return prob1;
 		}
-	}
+	} */
 	
 	private String getInternalName(String belief_id) {
 		return PNTR_PREFIX + belief_id_to_internal_id.get(belief_id).toString();
