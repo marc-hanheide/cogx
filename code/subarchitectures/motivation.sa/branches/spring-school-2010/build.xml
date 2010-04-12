@@ -46,6 +46,7 @@
   	    <pathelement path="${castslice.dir}"/> 
   	    <pathelement path="${basedir}/../planner.sa/src/slice"/> 
   	    <pathelement path="${basedir}/../binder/src/slice"/>
+	    <pathelement path="${projectroot.dir}/tools/beliefs/src/slice"/> 
 	    </includepath>
 	  </slice2java>
 	</target>
@@ -89,7 +90,7 @@
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
-		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" excludes="dora/**" >
 		<classpath refid="build.classpath"/> </javac>
 	</target>
 
