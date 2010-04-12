@@ -282,9 +282,20 @@ class ProbDistribution { };
 
 
 /**
- * sequence of probability distributions
+ * Abstract class for expressing the alternative values contained
+ * in a distribution
  */
-dictionary<string,ProbDistribution> Distributions;
+class DistributionValues { };
+
+
+/**
+ * A basic probability distribution, consisting of a key ("label")
+ * associated with a set of alternative values
+ */
+class  BasicProbDistribution extends ProbDistribution {
+	string key;
+	DistributionValues values;
+};
 
 
 /**
@@ -296,9 +307,17 @@ dictionary<string,ProbDistribution> Distributions;
  *   P(X1...Xn|E=false) = 0 for all values of X1...Xn
  */
 class DistributionWithExistDep extends ProbDistribution {
-	ProbDistribution Pe;
+	float	existProb;
 	ProbDistribution Pc;
-};
+}; 
+
+
+/**
+ * sequence of probability distributions
+ */
+dictionary<string,ProbDistribution> Distributions;
+
+
 
 /**
  * Discrete probability distribution for P(X1...Xn) where each 
@@ -311,6 +330,7 @@ class CondIndependentDistribs extends ProbDistribution {
 
 
 
+
 struct FeatureValueProbPair {
 	featurecontent::FeatureValue val;
 	float prob;
@@ -320,7 +340,9 @@ struct FeatureValueProbPair {
 ["java:type:java.util.LinkedList<FeatureValueProbPair>"] sequence<FeatureValueProbPair> FeatureValueProbPairs;
 
 
-class FeatureValueDistribution extends ProbDistribution {
+/**
+ * 
+class FeatureValues extends DistributionValues {
 	FeatureValueProbPairs values;
 };
 	
@@ -330,11 +352,11 @@ class FeatureValueDistribution extends ProbDistribution {
  * of a particular feature.  The distribution P(X) is a normal
  * distribution with mean and variance as parameters
  */
-class NormalDistribution extends ProbDistribution {
+class NormalValues extends DistributionValues {
 	double mean;
 	double variance;
 };
-
+ 
 /**
  * A data structure consisting of a formula associated with a 
  * probability value
@@ -355,9 +377,10 @@ struct FormulaProbPair {
  * A discrete distribution defined as a collection of
  * <form,prob> pairs
  */
-class DiscreteDistribution extends ProbDistribution {
+class FormulaValues extends DistributionValues {
 	FormulaProbPairs pairs;
 };
+
 
 }; // end distributions
 
