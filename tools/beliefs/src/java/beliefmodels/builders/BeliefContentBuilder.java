@@ -27,19 +27,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.DiscreteDistribution;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.FormulaProbPair;
-import beliefmodels.autogen.distribs.NormalDistribution;
+import beliefmodels.autogen.distribs.FormulaValues;
+import beliefmodels.autogen.distribs.NormalValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.UnknownValue;
-import beliefmodels.autogen.logicalcontent.ElementaryFormula;
 import beliefmodels.autogen.logicalcontent.Formula;
-import beliefmodels.autogen.logicalcontent.NegatedFormula;
-import beliefmodels.builders.FormulaBuilder;
 
 public class BeliefContentBuilder {
 	
@@ -72,44 +70,11 @@ public class BeliefContentBuilder {
 			throw new BeliefException("error, distribution is a null pointer");
 		}
 		
-		// building the existence distribution
-		DiscreteDistribution existDistrib = createExistDistribution(probExist);
-		
 		// constructing the full distribution
-		return createNewDistributionWithExistDep (existDistrib, contentDistrib);
+		return createNewDistributionWithExistDep (probExist, contentDistrib);
 	}
 
-	
-	
-	
-	/**
-	 * Create a belief content defined as a distribution with "exist" dependency (cf. slice specs)
-	 * 
-	 * @param existDistrib 
-	 * 			the distribution on the existence probability
-	 * @param contentDistrib 
-	 * 			the distribution on the rest
-	 * 
-	 * @return a probability distribution with exist dependency
-	 * @throws BeliefException 
-	 * 			exception thrown if one distribution is a null pointer
-	 */
-	public static DistributionWithExistDep createNewDistributionWithExistDep (
-			ProbDistribution existDistrib, ProbDistribution contentDistrib) throws BeliefException {
-	
-		// checking the distributions are not null
-		if (existDistrib == null || contentDistrib == null) {
-			throw new BeliefException("error, distribution is a null pointer");
-		}
 		
-		// creating the new distribution
-		DistributionWithExistDep newDistrib = 
-			new DistributionWithExistDep(existDistrib, contentDistrib);
-		
-		return newDistrib;
-	}
-
-	
 
 	/**
 	 * Create a new set of conditionally independent distributions
@@ -119,6 +84,7 @@ public class BeliefContentBuilder {
 	public static CondIndependentDistribs createNewCondIndependentDistribs () {
 		return new CondIndependentDistribs(new HashMap<String, ProbDistribution>());
 	}
+	
 	
 	
 	/**
@@ -135,7 +101,7 @@ public class BeliefContentBuilder {
 	 * 			or if content distribution is not conditionally independent
 	 * @post the belief content is updated with the new feature
 	 */
-	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, String key, ProbDistribution featDistrib) throws BeliefException {
+	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, String key, BasicProbDistribution featDistrib) throws BeliefException {
 		
 		if (beliefcontent == null) {
 			throw new BeliefException("error, belief content is null");
@@ -146,25 +112,24 @@ public class BeliefContentBuilder {
 		else if (!(beliefcontent.Pc instanceof CondIndependentDistribs)) {
 			throw new BeliefException("error, content distribution is not set to be conditionally independent");
 		}
-		putNewCondIndependentDistrib(((CondIndependentDistribs)beliefcontent.Pc), key, featDistrib);
+		putNewCondIndependentDistrib(((CondIndependentDistribs)beliefcontent.Pc), featDistrib);
 	}
+	
 	
 	
 	/**
 	 * Insert a new distribution to a set of conditionally independent distributions
+	 * NB: the key/identifier to the distribution must be set in newDistrib
 	 * 
 	 * @param distribs 
 	 * 			the existing set of conditionally independent distributions
 	 * @param newDistrib 
 	 * 			the next distribution to add
-	 * @param key
-	 * 			the key of the distribution (i.e. the feature label)
 	 * @throws BeliefException 
 	 * 			exception thrown if distribs or newDistrib is a null pointer
 	 * @post distribs now contains newDistrib
 	 */
-	public static void putNewCondIndependentDistrib(CondIndependentDistribs distribs, String key,
-			ProbDistribution newDistrib) throws BeliefException {
+	public static void putNewCondIndependentDistrib(CondIndependentDistribs distribs, BasicProbDistribution newDistrib) throws BeliefException {
 		
 		if (distribs == null || newDistrib == null) {
 			throw new BeliefException("error, distribution is a null pointer");
@@ -173,27 +138,28 @@ public class BeliefContentBuilder {
 			throw new BeliefException ("error, distribution in distribs is a null pointer");
 		}
 		
+		else if (newDistrib.key == null || newDistrib.key == "") {
+			throw new BeliefException ("error, no key specified in the distribution");
+		}
 		
-		distribs.distribs.put(key, newDistrib);
-//		ProbDistribution[] newDistribs = new ProbDistribution[distribs.distribs.length +1];
-//		for (int i = 0; i < distribs.distribs.length ; i++) {
-//			newDistribs[i] = distribs.distribs[i];
-//		}
-//		newDistribs[distribs.distribs.length] = newDistrib;
-//		distribs.distribs = newDistribs;
+		distribs.distribs.put(newDistrib.key, newDistrib);
+
 	}
 
 	
 	/**
-	 * Create a new discrete probability distribution out of a sequence of <formula,prob> pairs
+	 * Create a new discrete probability distribution out of a sequence of <formula,prob> 
+	 * pairs and a distribution identifier
 	 * 
 	 * @param pairs
 	 * 			array of <form,prob> pairs
+	 * @param id
+	 * 			the distribution identifier (e.g. "content")
 	 * @return a new, well-formed discrete probability distribution
 	 * @throws BeliefException 
 	 * 			if the <form,prob> pairs are not well-formed
 	 */
-	public static DiscreteDistribution createNewDiscreteDistribution (List<FormulaProbPair> pairs) throws BeliefException {
+	public static BasicProbDistribution createNewFormulaDistribution (String distribId, List<FormulaProbPair> pairs) throws BeliefException {
 		
 		if (pairs == null) {
 			throw new BeliefException ("error, pairs is null");
@@ -222,17 +188,30 @@ public class BeliefContentBuilder {
 			}
 		}
 		
-		return new DiscreteDistribution(pairs);
+		FormulaValues formValues = new FormulaValues(pairs);
+		
+		return new BasicProbDistribution(distribId, formValues);
 	}
 	
 	
-	
-	public static FeatureValueDistribution createNewFeatureValueDistribution 
-			(List<FeatureValueProbPair> values, boolean addUnknownValue) throws BeliefException {
+	/**
+	 * Create a new probability distribution out of a distribution identifier and a list of 
+	 * <featvalue,prob> pairs
+	 * 
+	 * @param distribId
+	 * 			the distribution identifier (i.e. the feature label)
+	 * @param values
+	 * 			set of <featvalue, prob> pairs
+	 * @return the resulting probability distribution -- if the sum of probabilities is lower than
+	 * 			1.0, the value "unknown" is added to the set of pairs to provide a well-formed distribution
+	 * @pre	each probability must be >=0 and <= 1, and the sum of all probabilities must be <= 1
+	 * @throws BeliefException
+	 * 			if the inputs are not well-formed
+	 */
+	public static BasicProbDistribution createNewFeatureDistribution 
+			(String distribId, List<FeatureValueProbPair> values) throws BeliefException {
 		
-		
-		// Vector<FormulaProbPair> modalPairs = createModalFormulaPairs(feat, values);
-		 
+				 
 		if (values == null) {
 			throw new BeliefException("error, values is null");
 		}
@@ -251,21 +230,27 @@ public class BeliefContentBuilder {
 		}
 		
 		else if (total < 0.99) {
-			if (addUnknownValue) {
 				debug("sum of probs is: " + total +", adding unknown value");
 				FeatureValueProbPair uval = new FeatureValueProbPair(new UnknownValue(), 1- total);
 				values.add(uval);
-			}
-			else {
-				log("warning, probabilities sum up to: " + total);
-			}
 		}
 		
-		return new FeatureValueDistribution (values);
+		FeatureValues featvalues = new FeatureValues(values);
+		
+		return new BasicProbDistribution (distribId, featvalues);
 	}
 	
 	
-	
+	/**
+	 * Create a new <formula,prob> pair
+	 * 
+	 * @param form the formula
+	 * @param prob its probability
+	 * @pre the probability must be < 0 and > 1
+	 * @return
+	 * @throws BeliefException
+	 * 			if formula is null or probability ill-formed
+	 */
 	public static FormulaProbPair createNewFormulaProbPair(Formula form, float prob) throws BeliefException {
 		if (form == null) {
 			throw new BeliefException("error, form is null");
@@ -282,26 +267,28 @@ public class BeliefContentBuilder {
 	 * 
 	 * @param form
 	 * 			the formula
+	 * @param distribId
+	 * 			the distribution identifier (e.g. "content")
 	 * @param probForm
 	 * 			the probability of the formula
 	 * @return a new discrete probability distribution with a unique pair
 	 * @throws BeliefException 
 	 * 			if 
 	 */
-	public static DiscreteDistribution createNewDiscreteDistributionWithUniquePair (Formula form, float probForm) throws BeliefException {
+	public static BasicProbDistribution createNewFormulaDistributionWithUniquePair (String distribId, Formula form, float probForm) throws BeliefException {
 		
 		List<FormulaProbPair> pairs = new LinkedList<FormulaProbPair>();
 		pairs.add(new FormulaProbPair(form, probForm));
-		
-		return createNewDiscreteDistribution(pairs);
+				
+		return createNewFormulaDistribution(distribId, pairs);
 	}
 
 	
 	/**
 	 * Create a new continuous normal distribution (i.e. a Gaussian) with a particular feature, plus 
 	 * the mean and variance parameter of the Gaussian
-	 * @param feat 
-	 * 			the feature for which the distribution applies
+	 * @param distribId 
+	 * 			the distribution identifier (i.e. the feature label)
 	 * @param mean
 	 * 			the mean of the Gaussian
 	 * @param variance
@@ -309,100 +296,19 @@ public class BeliefContentBuilder {
 	 * @return a new, well-formed normal distribution
 	 * @throws BeliefException 
 	 */
-	public static NormalDistribution createNewNormalDistribution (double mean, double variance) throws BeliefException {
+	public static BasicProbDistribution createNewNormalDistribution (String distribId, double mean, double variance) throws BeliefException {
 		
-		return new NormalDistribution(mean, variance);
+		NormalValues nvalues = new NormalValues(mean, variance);
+		
+		return new BasicProbDistribution(distribId, nvalues);
 	}
 	
 	
 	
 	// =================================================
-	// PRIVATE METHODS
+	// UTILITY METHODS
 	// =================================================
 
-	
-	
-	
-	/**
-	 * Create a distribution over existence property, based on the probability that it exists
-	 * 
-	 * @param probExist 
-	 * 			probability >= 0 and <= 1
-	 * @return the discrete distrbution
-	 * @throws BeliefException
-	 */
-	private static DiscreteDistribution createExistDistribution (float probExist) throws BeliefException {
-		
-		if (probExist < 0.0 || probExist > 1) {
-			throw new BeliefException("error, probExist is < 0 or > 1");
-		}
-		
-		List<FormulaProbPair> existPairs = new LinkedList<FormulaProbPair>();
-		
-		ElementaryFormula existForm = FormulaBuilder.createNewExistFormula();
-		existPairs.add(createNewFormulaProbPair(existForm, probExist));
-		
-		NegatedFormula notExistForm = FormulaBuilder.createNewNegatedFormula(existForm);
-		existPairs.add(createNewFormulaProbPair(notExistForm, 1- probExist));
-		
-		return createNewDiscreteDistribution(existPairs);
-	}
-	
-	
-/**
-	private static Vector<FormulaProbPair> createModalFormulaPairs (Feature feat, FormulaProbPair[] elpairs) throws BeliefException {
-		if (feat == null) {
-			throw new BeliefException("error, feat is null");
-		}
-		if (elpairs == null) {
-			throw new BeliefException("error, elpairs is null");
-		}
-		if (elpairs.length == 0) {
-			throw new BeliefException("error, elpairs.lengh == 0");
-		}
-		
-		Vector<FormulaProbPair> modalPairs = new Vector<FormulaProbPair>();
-		
-		for (int i = 0; i < elpairs.length; i++) {
-			FormulaProbPair pair = elpairs[i];
-			
-			if (pair == null) {
-				throw new BeliefException ("error, form is null");
-			}
-			if (pair.form == null) {
-				throw new BeliefException("error, pair.form is null");
-			}
-			if (pair.prob < 0 || pair.prob > 1) {
-				throw new BeliefException("error, probability of pair < 0 or > 1");
-			}
-			
-			ModalFormula newMForm = FormulaBuilder.createNewModalFormula(feat, pair.form);
-			FormulaProbPair newPair = createNewFormulaProbPair(newMForm, pair.prob);
-			modalPairs.add(newPair);
-		}
-		
-		return modalPairs;
-	}
-	*/
-
-	
-	
-//	/**
-//	 * Add a new pair to the array
-//	 * 
-//	 * @param array the existing array
-//	 * @param newEl the new element to add
-//	 * @return the next, extended array
-//	 */
-//	private static FeatureValueProbPair[] addNewPairToArray (FeatureValueProbPair[] array, FeatureValueProbPair newEl) {
-//		FeatureValueProbPair[] newArray = new FeatureValueProbPair[array.length + 1];
-//		for (int i = 0 ; i < array.length ; i++) {
-//			newArray[i] = array[i];
-//		}
-//		newArray[array.length] = newEl;
-//		return newArray;
-//	}
-//	
 	
 	
 	public static void log(String s) {
