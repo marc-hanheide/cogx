@@ -1,13 +1,8 @@
 package vision;
 
+import VisionData.VisualObject;
 import blobfinder.ColorRGB;
 import cast.core.CASTUtils;
-import VisionData.Face;
-import VisionData.GeometryModel;
-import VisionData.Vertex;
-import VisionData.VisualObject;
-import VisionData.VisualObjectView;
-import cogx.Math.Matrix33;
 import cogx.Math.Vector3;
 
 public class VisionUtils {

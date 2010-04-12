@@ -3,20 +3,22 @@
  */
 package motivation.util;
 
-import comadata.ComaRoom;
+import java.util.List;
 
-import castutils.castextensions.CausalEventMonitor;
 import SpatialData.Place;
-import binder.autogen.core.Feature;
-import binder.autogen.core.Union;
-import binder.autogen.core.UnionConfiguration;
-import binder.autogen.featvalues.StringValue;
+import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.StringValue;
+import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
+import castutils.castextensions.CausalEventMonitor;
+import castutils.facades.BinderFacade;
 
 /**
  * This class implements an EventRelation between Places and UnionConfiguration
@@ -30,8 +32,7 @@ import cast.cdl.WorkingMemoryOperation;
  * @sa compare()
  * 
  */
-public class PlaceUnionEventRelation extends
-		CausalEventMonitor<Place, UnionConfiguration> {
+public class PlaceUnionEventRelation extends CausalEventMonitor<Place, Belief> {
 
 	/**
 	 * generate a PlaceUnionEventRelation that uses the given component. It adds
@@ -46,7 +47,7 @@ public class PlaceUnionEventRelation extends
 		addTriggerFilter(ChangeFilterFactory
 				.createGlobalTypeFilter(Place.class));
 		addImplicationFilter(ChangeFilterFactory
-				.createGlobalTypeFilter(UnionConfiguration.class));
+				.createGlobalTypeFilter(Belief.class));
 
 	}
 
@@ -65,12 +66,12 @@ public class PlaceUnionEventRelation extends
 			WorkingMemoryChange wmcImplication) throws CASTException {
 		component.debug("comparing changes");
 
-		UnionConfiguration unionConfiguration = component.getMemoryEntry(
-				wmcImplication.address, UnionConfiguration.class);
+		// UnionConfiguration unionConfiguration = component.getMemoryEntry(
+		// wmcImplication.address, UnionConfiguration.class);
 
 		// sanity check...
-		if (unionConfiguration.includedUnions == null)
-			return false;
+		// if (unionConfiguration.includedUnions == null)
+		// return false;
 		// if we have a delete event... simply return true
 		if (wmcTrigger.operation == WorkingMemoryOperation.DELETE) {
 			return true;
@@ -79,13 +80,15 @@ public class PlaceUnionEventRelation extends
 		try {
 			Place place = component.getMemoryEntry(wmcTrigger.address,
 					Place.class);
+			Belief belief = component.getMemoryEntry(wmcImplication.address,
+					Belief.class);
+
 			if (wmcTrigger.operation == WorkingMemoryOperation.ADD
 					|| wmcTrigger.operation == WorkingMemoryOperation.OVERWRITE) {
 				// on add or overwrite we expect to find the place in the
 				// unions
 
-				return findPlaceIdInUnions(unionConfiguration.includedUnions,
-						place.id);
+				return findPlaceIdInUnions(belief, place.id);
 			}
 		} catch (DoesNotExistOnWMException e) {
 			component
@@ -99,7 +102,7 @@ public class PlaceUnionEventRelation extends
 	/**
 	 * this performs the search for a specific place_id on all existing unions
 	 * 
-	 * @param unions
+	 * @param belief
 	 *            unions to be searched
 	 * @param searchedPlaceID
 	 *            the place_id we are looking for
@@ -108,18 +111,22 @@ public class PlaceUnionEventRelation extends
 	 * 
 	 * @see motivation.util.castextensions.CausalEventMonitor#start()
 	 */
-	private boolean findPlaceIdInUnions(Union[] unions, long searchedPlaceID) {
-		for (Union union : unions) {
-			for (Feature f : union.features) {
-				if (f.featlabel.equals("place_id")) {
-					int placeId = Integer
-							.parseInt(((StringValue) f.alternativeValues[0]).val);
-					if (placeId == searchedPlaceID) {
-						component.debug("found corresponding ID");
-						return true;
-					}
+	private boolean findPlaceIdInUnions(Belief belief, long searchedPlaceID) {
+		if (belief.type.equals(CASTUtils.typeName(Place.class))) {
+			try {
+				List<FeatureValue> fvl = BinderFacade
+						.get(component)
+						.getFeatureValue(belief, PlaceMatchingFunction.PLACE_ID);
+				int placeId = Integer.parseInt(((StringValue) fvl.get(0)).val);
+				if (placeId == searchedPlaceID) {
+					component.debug("found corresponding ID");
+					return true;
 				}
+			} catch (CASTException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+
 		}
 		return false;
 	}
