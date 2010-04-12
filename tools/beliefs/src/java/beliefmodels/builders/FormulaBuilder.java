@@ -52,11 +52,17 @@ public class FormulaBuilder {
 	 * 			the logical proposition
 	 * @return the new elementary formula
 	 */
-	public static ElementaryFormula createNewElFormula (String prop) {	
-		
-		return new ElementaryFormula(getNewNominal(), prop);
-	}
-	
+	public static ElementaryFormula createNewElFormula (String prop) throws BeliefException {	
+		if (prop != null) { 
+			if (!prop.equals("")) { 
+				return new ElementaryFormula(getNewNominal(), prop);
+			} else { 
+				throw new BeliefException("Cannot create an elementary formula from an empty value");
+			}
+		} else { 
+			throw new BeliefException("Cannot create an elementary formula from a null value");
+		}
+	}	
 	
 	
 	/**
