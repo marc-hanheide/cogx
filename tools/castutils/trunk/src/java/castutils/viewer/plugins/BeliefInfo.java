@@ -4,9 +4,10 @@ import java.util.Vector;
 import java.util.Map.Entry;
 
 import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
@@ -33,10 +34,10 @@ public class BeliefInfo implements Plugin {
 				CondIndependentDistribs dist = (CondIndependentDistribs) belief.content;
 				String features="";
 				for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
-					if (pd.getValue() instanceof FeatureValueDistribution) {
-						FeatureValueDistribution fvd = (FeatureValueDistribution) pd.getValue();
+					if (pd.getValue() instanceof BasicProbDistribution) {
+						BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
 						features+=pd.getKey()+"=[";
-						for (FeatureValueProbPair fv : fvd.values) {
+						for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
 							String featStr="*";
 							if (fv.val instanceof IntegerValue)
 								featStr=Integer.toString(((IntegerValue) fv.val).val);

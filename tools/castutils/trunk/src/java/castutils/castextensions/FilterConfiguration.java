@@ -38,9 +38,9 @@ public class FilterConfiguration extends LinkedList<WorkingMemoryChangeFilter>{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		 
 	}
-	
+	 
 	private WorkingMemoryChangeFilter createFilter(String[] elems) {
 		String[] fields = new String[6];
 		Arrays.fill(fields, "*");

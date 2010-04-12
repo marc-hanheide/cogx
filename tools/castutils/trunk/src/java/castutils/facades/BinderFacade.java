@@ -6,16 +6,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
+   
 import beliefmodels.autogen.beliefs.Belief;
-import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.FeatureValueDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FeatureValues; 
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
-import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.featurenames.FeatPlaceId;
 import beliefmodels.autogen.featurecontent.featurenames.RelationElement0;
@@ -23,7 +22,6 @@ import beliefmodels.autogen.featurecontent.featurenames.RelationElement1;
 import beliefmodels.autogen.featurecontent.featurenames.TypeRelation;
 
 import castutils.castextensions.CASTHelper;
-import castutils.castextensions.WMEntrySet;
 import castutils.castextensions.WMView;
 import SpatialData.Place;
 import cast.CASTException;
@@ -38,7 +36,7 @@ public class BinderFacade extends CASTHelper {
 
 	WMView<Belief> proxies;
 	ManagedComponent component;
-
+ 
 	/**
 	 * @param component
 	 */
@@ -89,11 +87,11 @@ public class BinderFacade extends CASTHelper {
 		if (pd == null) 
 			return new LinkedList<FeatureValue>();
 		
-		assert(pd instanceof FeatureValueDistribution);
+		assert(pd instanceof BasicProbDistribution);
 		
 		List<FeatureValue> result = new LinkedList<FeatureValue>();
 		
-		for (FeatureValueProbPair f : ((FeatureValueDistribution) pd).values) {
+		for (FeatureValueProbPair f : ((FeatureValues)((BasicProbDistribution) pd).values).values) {
 			result.add(f.val);
 		}
 		return result;
