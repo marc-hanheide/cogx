@@ -11,8 +11,6 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Vector;
 
-import com.sun.tools.internal.jxc.SchemaGenerator.Runner;
-
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
