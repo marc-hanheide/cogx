@@ -12,7 +12,7 @@ public class MLNGenerator {
 
 	
 	public static void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, 
-			Vector<String> newUnionsIds, String MLNFileToWrite) {
+			Collection<String> newUnionsIds, String MLNFileToWrite) {
 	
 		String constantsSection = constructConstantsSection(existingUnions, newUnionsIds);
 		String predicatesSection = getPredicatesSection();
@@ -30,7 +30,7 @@ public class MLNGenerator {
 	
 	
 	
-	private static String extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, Vector<String> newUnionsIds) {
+	private static String extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, Collection<String> newUnionsIds) {
 		return FileUtils.readfile(markovlogicDir + "grouping/outcome.mln");
 	}
 	
@@ -57,7 +57,7 @@ public class MLNGenerator {
 		return FileUtils.readfile(markovlogicDir + "grouping/newpercept.mln");
 	}
 	
-	private static String constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, Vector<String> newUnionsIds) {
+	private static String constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, Collection<String> newUnionsIds) {
 	
 		return FileUtils.readfile(markovlogicDir + "grouping/constantssection.mln");
 	}
