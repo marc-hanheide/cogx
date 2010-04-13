@@ -27,7 +27,7 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 						try {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
 							
-								PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), newDataID());
+								PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, newDataID());
 								insertBeliefInWM(union);
 						}	
 			

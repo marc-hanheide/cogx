@@ -18,6 +18,7 @@ import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -68,7 +69,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);	
 							
 							log("received a new percept: " + beliefData.getID());
-							performPerceptualGrouping (beliefData.getData());
+							performPerceptualGrouping (beliefData.getData(), _wmc.address);
 							log("perceptual grouping operation on percept " + beliefData.getID() + " now finished");
 						}	
 			
@@ -91,7 +92,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 * 
 	 * @param percept the new percept which was inserted
 	 */
-	public void performPerceptualGrouping(PerceptBelief percept) {
+	public void performPerceptualGrouping(PerceptBelief percept, WorkingMemoryAddress perceptWMAddress) {
 	
 		log("now starting perceptual grouping...");
 
@@ -117,7 +118,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 		
 		// create the new unions given the inference results
-		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, existingUnions,
+		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, perceptWMAddress, existingUnions,
 				unionsMapping, newSingleUnionId, inferenceResults);
 
 		// and add them to the working memory
@@ -187,6 +188,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 */
 	private Vector<PerceptUnionBelief> createNewUnions(
 			PerceptBelief percept,
+			WorkingMemoryAddress perceptWMAddress,
 			HashMap<String,PerceptUnionBelief> existingUnions,
 			HashMap<String,String> unionsMapping,
 			String newSingleUnionId,
@@ -210,7 +212,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			
 			PerceptUnionBelief existingUnion = existingUnions.get(unionsMapping.get(id)); 
 			try {
-			PerceptUnionBelief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, existingUnion, prob, id);
+			PerceptUnionBelief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, perceptWMAddress, existingUnion, prob, id);
 			newUnions.add(newUnion);
 			}
 			catch (BeliefException e) {
@@ -222,7 +224,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			throw new BeliefException("ERROR, id " + newSingleUnionId + " is not in inferenceResults");
 		}
 		PerceptUnionBelief newSingleUnion = 
-			PerceptUnionBuilder.createNewSingleUnionBelief(percept, inferenceResults.get(newSingleUnionId), newSingleUnionId);
+			PerceptUnionBuilder.createNewSingleUnionBelief(percept, perceptWMAddress, inferenceResults.get(newSingleUnionId), newSingleUnionId);
 		
 		newUnions.add(newSingleUnion);
 		
