@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Vector;
 
+import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import binder.utils.MLNGenerator;
 
@@ -21,7 +22,7 @@ public abstract class MarkovLogicComponent extends BeliefWriter {
 	String query = "Outcome";
 	 
 	
-	public HashMap<String,Float> runAlchemyInference(String mlnFile, String resultsFile) {
+	public HashMap<String,Float> runAlchemyInference(String mlnFile, String resultsFile) throws BeliefException {
 		
 		Runtime run = Runtime.getRuntime(); 
 		log("Now running Alchemy...");
@@ -51,6 +52,7 @@ public abstract class MarkovLogicComponent extends BeliefWriter {
 			else {
 				log("ERROR: Alchemy inference failed");
 				System.out.println(output);
+				throw new BeliefException("ERROR: Alchemy inference failed");
 			}
 
 		}
