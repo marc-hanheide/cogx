@@ -109,18 +109,13 @@ public class RoomUnionEventRelation extends
 	 */
 	private boolean findComaRoomIdInUnions(Belief belief, long searchedRoomID) {
 		if (belief.type.equals(CASTUtils.typeName(ComaRoom.class))) {
-			try {
-				List<FeatureValue> fvl = BinderFacade
-						.get(component)
-						.getFeatureValue(belief, PlaceMatchingFunction.PLACE_ID);
-				int placeId = Integer.parseInt(((StringValue) fvl.get(0)).val);
-				if (placeId == searchedRoomID) {
-					component.debug("found corresponding ID");
-					return true;
-				}
-			} catch (CASTException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			List<FeatureValue> fvl = BinderFacade
+					.get(component)
+					.getFeatureValue(belief, PlaceMatchingFunction.PLACE_ID);
+			int placeId = Integer.parseInt(((StringValue) fvl.get(0)).val);
+			if (placeId == searchedRoomID) {
+				component.debug("found corresponding ID");
+				return true;
 			}
 
 		}
