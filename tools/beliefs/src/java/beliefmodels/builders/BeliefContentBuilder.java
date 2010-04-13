@@ -71,7 +71,7 @@ public class BeliefContentBuilder {
 		}
 		
 		// constructing the full distribution
-		return createNewDistributionWithExistDep (probExist, contentDistrib);
+		return new DistributionWithExistDep (probExist, contentDistrib);
 	}
 
 		

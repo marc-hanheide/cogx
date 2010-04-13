@@ -61,6 +61,14 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 			PerceptUnionBelief existingUnion, float existProb, String id)
 	throws BeliefException {
 
+		if (percept ==null || existingUnion == null) {
+			throw new BeliefException("percept is null");
+		}
+		 
+		else if (percept.content == null || existingUnion.content == null) {
+			throw new BeliefException ("percept content is null");
+		}
+		
 		
 		// we first check if the probabilistic content of the percept and union are
 		// defined as a distrib with existence dependency
