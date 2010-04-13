@@ -131,16 +131,17 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		}
 			
 		// Write the markov logic network to a file
-		MLNGenerator.writeMLNFile(percept, existingUnions.values(), unionsMapping, MLNFile);
+	//	MLNGenerator.writeMLNFile(percept, existingUnions.values(), unionsMapping, MLNFile);
 		
 		// run the alchemy inference
 		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 		
 		// create the new unions given the inference results
-		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, inferenceResults);
+		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, existingUnions,
+				unionsMapping, inferenceResults);
 
 		// and add them to the working memory
-		addNewUnionToWM(percept, newUnions);
+		addNewUnionToWM(newUnions);
 
 		// modify the existence probabilities of the existing unions
 		modifyExistingUnions(percept, existingUnions, unionsMapping, inferenceResults);
@@ -170,6 +171,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	}
 
 	
+	
 	/**
 	 * Add new unions to the binder working memory
 	 * 
@@ -178,14 +180,13 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 * @pre the unions (or at least their identifier) must not be already be present on 
 	 * 		the working memory 
 	 */
-	private void addNewUnionToWM(PerceptBelief b, Vector<PerceptUnionBelief> newUnions) {
+	private void addNewUnionToWM(Vector<PerceptUnionBelief> newUnions) {
 		try {
-			PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(b, newDataID());
-			insertBeliefInWM(union);
+			for (PerceptUnionBelief union : newUnions) {
+				insertBeliefInWM(union);		
+			}
 		}
-		catch (BeliefException e) {
-			e.printStackTrace();
-		} catch (AlreadyExistsOnWMException e) {
+		 catch (AlreadyExistsOnWMException e) {
 			e.printStackTrace();
 		}
 
@@ -201,18 +202,30 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 * @return
 	 */
 	private Vector<PerceptUnionBelief> createNewUnions(
-			PerceptBelief percept, 
+			PerceptBelief percept,
+			HashMap<String,PerceptUnionBelief> existingUnions,
+			HashMap<String,String> unionsMapping,
 			HashMap<String,Float> inferenceResults) {
 
 		// extract the existence probability of the percept
 		float perceptExistProb = DistributionUtils.getExistenceProbability(percept);
 
+		Vector<PerceptUnionBelief> newUnions = new Vector<PerceptUnionBelief>();
 		for (String id : inferenceResults.keySet()) {
 			float prob = perceptExistProb * inferenceResults.get(id);
 			log("prob of " + id + ": " + prob);
-		}
+			log("existunionid: " + unionsMapping.get(id));
+			PerceptUnionBelief existingUnion = existingUnions.get(unionsMapping.get(id)); 
+			try {
+			PerceptUnionBelief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, existingUnion, prob, id);
+			newUnions.add(newUnion);
+			}
+			catch (BeliefException e) {
+				e.printStackTrace();
+			}
+		} 
 
-		return new Vector<PerceptUnionBelief>();
+		return newUnions;
 	}
 	
 	
