@@ -4,6 +4,7 @@
         <path id="build.classpath">
           <pathelement path="${ice.jar}"/>
           <pathelement path="${cast.jar}"/>
+          <pathelement path="${log4j.jar}"/>
 	  <pathelement path="${projectroot.dir}/subarchitectures/binder/src/java"/>
 	  <pathelement path="${projectroot.dir}/tools/beliefs/src/java"/>
         </path>
