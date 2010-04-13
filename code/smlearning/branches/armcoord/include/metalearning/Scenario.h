@@ -264,94 +264,94 @@ protected:
 	///
 	///creates polyflap and puts it in the scene (from position and rotation)
 	///
-	Actor* setupPolyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context*/);
+	Actor* setup_polyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context*/);
 	
 	///
 	///creates polyflap and puts it in the scene (from pose)
 	///
-	Actor* setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions);
+	Actor* setup_polyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions);
 	
 	///
 	///Hack to solve a collision problem (don't know if it is still there):
 	///Function that checks if arm hitted the polyflap while approaching it
 	///
-	bool checkPfPosition(const Actor* polyFlapActor, const Mat34& refPos);
+	bool check_pf_position(const Actor* polyFlapActor, const Mat34& refPos);
 
 	///
 	///calculate final pose according to the given direction angle
 	///
-	void setMovementAngle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
+	void set_movement_angle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
 
 	///
 	///calculate position to direct the arm given parameters set in the learning scenario
 	///
-	static void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
+	static void set_point_coordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
 
 	///
 	///calls setPointCoordinates for a discrete canonical number of different actions
 	///
-	static void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+	static void set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
 
 
 
 
 
-	void initializePolyflap();
+	void initialize_polyflap();
 
-	void  initializeMovement();
+	void  initialize_movement();
 
 	
-	void setUpMovement();
+	void set_up_movement();
 
-	void firstInit();
+	void first_init();
 
-	void setupHome();
+	void setup_home();
 
-	void setupLoop(int argc, char* argv[]);
+	void setup_loop(int argc, char* argv[]);
 
-	void sendPosition(golem::GenWorkspaceState position, golem::ReacPlanner::Action action);
+	void send_position(golem::GenWorkspaceState position, golem::ReacPlanner::Action action);
 
-	void initWriting();
+	void init_writing();
 
-	void writePosAndOr();
+	void write_finger_pos_and_or();
 
-	void writeSpeedAndAngle();
+	void write_finger_speed_and_angle();
 
-	void writeVectorIntoSequence();
+	void write_f_vector_into_sequence();
 
-	void initData();
+	void init_data();
 
-	void moveFinger();
+	void move_finger();
 
-	void writeSequenceIntoDataset();
+	void write_sequence_into_dataset();
 
-	void setCollisionDetection(bool b);
+	void set_collision_detection(bool b);
 
-	void printSequenceInfo();
+	void print_sequence_info();
 
-	void moveFingerUp();
+	void move_finger_up();
 
-	void removePolyflap();
+	void remove_polyflap();
 
-	void pepareHomeMovement();
+	void pepare_home_movement();
 
-	void iterationEndInfo();
+	void iteration_end_info();
 
-	void finishIteration();
+	void finish_iteration();
 
-	void moveToInitial();
+	void move_to_initial();
 
-	void writeDatasetIntoBinary();
+	void write_dataset_into_binary();
 
-	void createPolyflapObject();
+	void create_polyflap_object();
 
-	void computeVectors();
+	void compute_vectors();
 
-	void setPositionT();
+	void set_positionT();
 
-	void defineStartPosition();
+	void define_start_position();
 
-	void prepareTarget();
+	void prepare_target();
 
 };
 
