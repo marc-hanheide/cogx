@@ -131,7 +131,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		}
 			
 		// Write the markov logic network to a file
-		MLNGenerator.writeMLNFile(percept, existingUnions.values(), unionsMapping.keySet(), MLNFile);
+		MLNGenerator.writeMLNFile(percept, existingUnions.values(), unionsMapping, MLNFile);
 		
 		// run the alchemy inference
 		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);

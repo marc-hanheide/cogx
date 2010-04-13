@@ -6,7 +6,7 @@ package binder.components.perceptmediator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
+   
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import binder.components.perceptmediator.transferfunctions.ConnectivityTransferFunction;
 import binder.components.perceptmediator.transferfunctions.GatewayTransferFunction;
@@ -19,7 +19,7 @@ import SpatialProperties.GatewayPlaceProperty;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import castutils.castextensions.WMView;
-
+ 
 /**
  * @author marc
  * 
