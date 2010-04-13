@@ -10,6 +10,7 @@ public class MLFormula {
 	
 	private Float weight;
 	private String formula;
+	private boolean sharp;
 	
 	private static String OP_IMP = " => ";
 	private static String OP_EQUI = " <=> ";
@@ -17,6 +18,7 @@ public class MLFormula {
 	public MLFormula(Float weight, String formula) {
 		this.setWeight(weight);
 		this.setFormula(formula);
+		this.sharp = false;
 	}
 
 	public void setWeight(Float weight) {
@@ -25,6 +27,10 @@ public class MLFormula {
 
 	public Float getWeight() {
 		return weight;
+	}
+	
+	public void setSharp() {
+		sharp = true;
 	}
 
 	public void setFormula(String formula) {
@@ -45,6 +51,11 @@ public class MLFormula {
 	
 	@Override
 	public String toString() {
+		if(sharp) {
+			return formula + ".\n";
+		}
+		else {
 		return weight.toString() + " " + formula + "\n";
+		}
 	}
 }
