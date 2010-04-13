@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cast/core/CASTUtils.hpp>
+#include "AccessImage.h"
 #include "ConvertImage.h"
 
 // define this to use memcpy() instead of looping over image lines and pixels
@@ -53,15 +54,14 @@ void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
   throw(runtime_error)
 {
   assert(iplImg != 0);
-  if(iplImg->nChannels != 3)
-    throw runtime_error(exceptionMessage(__HERE__,
-      "can only handle 3 channel colour images, have %d channels",
-      iplImg->nChannels));
 
   img.width = iplImg->width;
   img.height = iplImg->height;
-  img.data.resize(iplImg->width*iplImg->height*iplImg->nChannels);
-  if(iplImg->depth == (int)IPL_DEPTH_8U || iplImg->depth == (int)IPL_DEPTH_8S)
+  // Video::Image's always have 3 channels
+  img.data.resize(img.width*img.height*3);
+
+  if(iplImg->nChannels == 3 &&
+     (iplImg->depth == (int)IPL_DEPTH_8U || iplImg->depth == (int)IPL_DEPTH_8S))
   {
 #ifdef FAST_DIRTY_CONVERSION
     if(iplImg->widthStep == iplImg->width*3)
@@ -74,20 +74,39 @@ void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
     {
       // note: this neat triple loop is a lot slower than a memcpy, but
       // works irrespective of the image memory layouts (e.g. line padding)
-      int x, y, c;
+      AccessRgbImage accImg(iplImg);
+      int x, y;
       for(y = 0; y < iplImg->height; y++)
         for(x = 0; x < iplImg->width; x++)
-          for(c = 0; c < 3; c++)
-          {
-            assert(3*(y*img.width + x) + c < img.data.size());
-            img.data[3*(y*img.width + x) + c] =
-              iplImg->imageData[y*iplImg->widthStep + 3*x + c];
-          }
+        {
+          // note: AccessRgbPixel has order b, g, r
+          const AccessRgbPixel &pix = accImg[y][x];
+          // Video::Image's always have 3 channels
+          int i = 3*(y*img.width + x);
+          img.data[i] = pix.b;
+          img.data[i+1] = pix.g;
+          img.data[i+2] = pix.r;
+        }
     }
+  }
+  else if(iplImg->nChannels == 1 && iplImg->depth == IPL_DEPTH_32F)
+  {
+    AccessBwImageFloat accImg(iplImg);
+    int x, y;
+    for(y = 0; y < iplImg->height; y++)
+      for(x = 0; x < iplImg->width; x++)
+      {
+        // Video::Image's always have 3 channels
+        int i = 3*(y*img.width + x);
+        float f = accImg[y][x];
+        img.data[i] = (unsigned char)f;
+        img.data[i+1] = (unsigned char)f;
+        img.data[i+2] = (unsigned char)f;
+      }
   }
   else
     throw runtime_error(exceptionMessage(__HERE__,
-      "can only handle 8 bit colour values"));
+      "can not handle %d channel %d bit images", iplImg->nChannels, iplImg->depth));
 }
 
 IplImage* convertImageToIplGray(const Video::Image & img)
