@@ -42,6 +42,8 @@ import cast.core.CASTData;
  * - need to add functionality for percept updates or deletions
  * - remove the testing stuff and have a proper, separate tester class
  * - actually build the union content
+ * - change the belief history to have only cast values
+ * - testing, defensive programming, check null values and pre/post conditions
  * 
  * @author plison
  *
@@ -57,9 +59,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 */
 	@Override
 	public void start() {
-		
-		insertExistingUnionsForTesting();
-		
+				
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
@@ -82,31 +82,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 				}
 		);
 	}
-
-	
-	/**
-	 * Temporary method to add new unions
-	 */
-	private void insertExistingUnionsForTesting() {
-		try {
-			PerceptUnionBelief u1 = new PerceptUnionBelief();
-			u1.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, BeliefContentBuilder.createNewCondIndependentDistribs());
-			u1.id = newDataID();
-			PerceptUnionBelief u2 = new PerceptUnionBelief();
-			u2.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, BeliefContentBuilder.createNewCondIndependentDistribs());
-			u2.id = newDataID();	
-			PerceptUnionBelief u3 = new PerceptUnionBelief();
-			u3.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.05f, BeliefContentBuilder.createNewCondIndependentDistribs());
-			u3.id = newDataID();
-			addToWorkingMemory(u1.id, u1);
-			addToWorkingMemory(u2.id, u2);
-			addToWorkingMemory(u3.id, u3);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
+  
 	
 	
 	/**
@@ -128,6 +104,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			String newUnionId = newDataID();
 			unionsMapping.put(newUnionId, existingUnionId);
 		}
+		log("newly created union ids: " + unionsMapping.keySet().toString());
 			
 		String newSingleUnionId = newDataID();
 		
