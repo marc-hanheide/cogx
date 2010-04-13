@@ -65,8 +65,14 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 	}
 	
 	
-	public static PerceptHistory createNewPerceptHistory (WorkingMemoryAddress origin) {
-		return new PerceptHistory(origin);
+	public static PerceptHistory createNewPerceptHistory (WorkingMemoryAddress origin) 
+		throws BeliefException
+	{	
+		if (origin!= null) { 
+			return new PerceptHistory(origin);
+		} else {
+			throw new BeliefException("Error when creating belief history: cannot create history for null");
+		}
 	}
 
 }
