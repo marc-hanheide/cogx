@@ -47,8 +47,8 @@
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice" description="compiles the source code">
-		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+	<target name="compile" depends="compile-slice" description="compiles the source code">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" excludes="coma/**">
 		<classpath refid="build.classpath"/> </javac>
 		<mkdir  dir="${output.dir}/coma.libs"/>
 
