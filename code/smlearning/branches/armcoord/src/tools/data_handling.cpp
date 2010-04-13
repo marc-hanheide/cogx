@@ -678,7 +678,7 @@ map<Vec3, int, compare_Vec3> get_canonical_positions () {
 		//arm target update
 		
 		Vec3 pos (positionT);
-		Scenario::setCoordinatesIntoTarget(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		Scenario::set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
 		positionsT[pos] = i;
 		
 	}

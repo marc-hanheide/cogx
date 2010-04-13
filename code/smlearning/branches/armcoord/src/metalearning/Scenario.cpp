@@ -188,7 +188,7 @@ void Scenario::release() {
 ///
 ///creates a polyflap object
 ///setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context)
-Actor* Scenario::setupPolyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context*/) {
+Actor* Scenario::setup_polyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context*/) {
 	// Creator
 	Creator creator(scene);
 	Actor::Desc *pActorDesc;
@@ -223,7 +223,7 @@ Actor* Scenario::setupPolyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec
 ///
 ///creates a polyflap object
 ///
-Actor* Scenario::setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions) {
+Actor* Scenario::setup_polyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions) {
 	// Creator
 	Creator creator(scene);
 	Actor::Desc *pActorDesc;
@@ -249,9 +249,9 @@ Actor* Scenario::setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions)
 	return polyFlapActor;
 }
 
-void Scenario::createPolyflapObject(){
+void Scenario::create_polyflap_object(){
 
-	object = setupPolyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
+	object = setup_polyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
 	//golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
 	curPol = object->getGlobalBoundsSeq();
 
@@ -260,7 +260,7 @@ void Scenario::createPolyflapObject(){
 }
 
 
-void Scenario::computeVectors(){
+void Scenario::compute_vectors(){
 	Mat34 curPolPos1;
 	Mat34 curPolPos2;
 	//find out bounds of polyflap and compute the position of the polyflap
@@ -286,26 +286,26 @@ void Scenario::computeVectors(){
 
 }
 
-void Scenario::initializePolyflap(){
+void Scenario::initialize_polyflap(){
 
 
-	createPolyflapObject();
+	create_polyflap_object();
 
-	computeVectors();
+	compute_vectors();
 
 
 }
 
 
 
-void Scenario::setPositionT(){
+void Scenario::set_positionT(){
 		//initialization of arm target: the center of the polyflap
 		//Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
 		positionT.set(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
 
 }
 
-void Scenario::defineStartPosition(){
+void Scenario::define_start_position(){
 	        //int startPosition;
 
 		if (startingPosition == 0)
@@ -315,9 +315,9 @@ void Scenario::defineStartPosition(){
 
 }
 
-void Scenario::prepareTarget(){
+void Scenario::prepare_target(){
 //arm target update
-		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+		set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 		cout << "Position " << startPosition-1 << endl;
 
 		// and set target waypoint
@@ -332,13 +332,13 @@ void Scenario::prepareTarget(){
 		//return startPosition;
 }
 
-void  Scenario::initializeMovement(){
+void  Scenario::initialize_movement(){
 
-		setPositionT();
+		set_positionT();
 
-		defineStartPosition();
+		define_start_position();
 
-		prepareTarget();
+		prepare_target();
 	
 		
 }
@@ -347,7 +347,7 @@ void  Scenario::initializeMovement(){
 
 
 
-void Scenario::setUpMovement(){
+void Scenario::set_up_movement(){
 
 		
 		// Trajectory duration calculated from a speed constant.
@@ -379,7 +379,7 @@ void Scenario::setUpMovement(){
 		
 		//int verticalAngle = rand() % 7;
 
-		setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
+		set_movement_angle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
 
 		//return horizontalAngle;
@@ -478,7 +478,7 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 
 
 
-void Scenario::firstInit(){
+void Scenario::first_init(){
 
 // 	// initialize random seed:
 	randomG.setRandSeed (context.getRandSeed());
@@ -493,7 +493,7 @@ void Scenario::firstInit(){
 }
 
 
-void Scenario::setupHome(){
+void Scenario::setup_home(){
 // setup home position
 	//GenWorkspaceState home;
 	home.pos = desc.homePose;
@@ -511,7 +511,7 @@ void Scenario::setupHome(){
 
 }
 
-void Scenario::setupLoop(int argc, char* argv[]){
+void Scenario::setup_loop(int argc, char* argv[]){
 numSequences = 10000;
 	//int startingPosition = 0;
 	startingPosition = 0;
@@ -522,7 +522,7 @@ numSequences = 10000;
 }
 
 
-void Scenario::sendPosition(golem::GenWorkspaceState position, golem::ReacPlanner::Action action){
+void Scenario::send_position(golem::GenWorkspaceState position, golem::ReacPlanner::Action action){
 // reachedAngle = 0.0;
 		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 			if (arm->getReacPlanner().send(position, action)) {
@@ -538,7 +538,7 @@ void Scenario::sendPosition(golem::GenWorkspaceState position, golem::ReacPlanne
 }
 
 
-void Scenario::initWriting(){
+void Scenario::init_writing(){
 
 	/////////////////////////////////////////////////
 	//create sequence for this loop run and initial (motor command) vector
@@ -549,7 +549,7 @@ void Scenario::initWriting(){
 }
 
 
-void Scenario::writePosAndOr(){
+void Scenario::write_finger_pos_and_or(){
 
 	/////////////////////////////////////////////////
 	//writing in the initial vector	
@@ -567,7 +567,7 @@ void Scenario::writePosAndOr(){
 }
 
 
-void Scenario::writeSpeedAndAngle(){
+void Scenario::write_finger_speed_and_angle(){
 
 	/////////////////////////////////////////////////
 	//writing in the initial vector
@@ -583,7 +583,7 @@ void Scenario::writeSpeedAndAngle(){
 
 }
 
-void Scenario::writeVectorIntoSequence(){
+void Scenario::write_f_vector_into_sequence(){
 
 	/////////////////////////////////////////////////
 	//writing of the initial vector into sequence
@@ -593,7 +593,7 @@ void Scenario::writeVectorIntoSequence(){
 }
 
 
-void Scenario::initData(){
+void Scenario::init_data(){
 	// initialize data
 	learningData.setToDefault();
 	learningData.effector = effectorBounds;
@@ -602,14 +602,14 @@ void Scenario::initData(){
 
 }
 
-void Scenario::moveFinger(){
+void Scenario::move_finger(){
 	target.pos = end;
 	target.t = context.getTimer()->elapsed() + tmDeltaAsync + duration;
 
 	arm->setCollisionBoundsGroup(0x0);
 	arm->getReacPlanner().send(target, ReacPlanner::ACTION_LOCAL);
 
-	initData();
+	init_data();
 
 
 		
@@ -625,7 +625,7 @@ void Scenario::moveFinger(){
 
 }
 
-void Scenario::writeSequenceIntoDataset(){
+void Scenario::write_sequence_into_dataset(){
 	/////////////////////////////////////////////////
 	//writing the sequence into the dataset
 	data.push_back(learningData.currentSeq);
@@ -633,7 +633,7 @@ void Scenario::writeSequenceIntoDataset(){
 
 }
 
-void Scenario::setCollisionDetection(bool b){
+void Scenario::set_collision_detection(bool b){
 	if (b) {
  		// ON collision detection
 		arm->setCollisionBoundsGroup(0xFFFFFFFF);
@@ -647,11 +647,11 @@ void Scenario::setCollisionDetection(bool b){
 
 }
 
-void Scenario::printSequenceInfo(){
+void Scenario::print_sequence_info(){
 	cout << "sequence size: " << learningData.currentSeq.size() << endl;
 }
 
-void Scenario::moveFingerUp(){
+void Scenario::move_finger_up(){
 	Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (desc.polyflapDimensions.v2*1.1));
 	// and set target waypoint
 	golem::GenWorkspaceState preHome;
@@ -668,29 +668,29 @@ void Scenario::moveFingerUp(){
 
 }
 
-void Scenario::removePolyflap(){
+void Scenario::remove_polyflap(){
 	// remove object
 	scene.releaseObject(*object);
 	object = NULL;
 //	scene.releaseObject(*predictedPolyflapObject);
 }
 
-void Scenario::pepareHomeMovement(){
+void Scenario::pepare_home_movement(){
 	home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(3.0);
 }
 
-void Scenario::iterationEndInfo(){
+void Scenario::iteration_end_info(){
 	context.getLogger()->post(Message::LEVEL_INFO, "Done");
 	cout << "Iteration " << iteration << " completed!" << endl;
 }
 
-void Scenario::finishIteration(){
+void Scenario::finish_iteration(){
 	if (universe.interrupted())
 		throw Interrupted();
 
 }
 
-void Scenario::moveToInitial(){
+void Scenario::move_to_initial(){
 	initial.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(5.0);
 	// movement will last no shorter than 5 sec
 	arm->getReacPlanner().send(initial, ReacPlanner::ACTION_GLOBAL);
@@ -698,7 +698,7 @@ void Scenario::moveToInitial(){
 	(void)arm->getReacPlanner().waitForEnd(60000);
 }
 
-void Scenario::writeDatasetIntoBinary(){
+void Scenario::write_dataset_into_binary(){
 	
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
@@ -715,11 +715,11 @@ void Scenario::writeDatasetIntoBinary(){
 ///
 void Scenario::run(int argc, char* argv[]) {
 
-	firstInit();
+	first_init();
 
-	setupHome();
+	setup_home();
 
-	setupLoop(argc, argv);
+	setup_loop(argc, argv);
 	
 	
 	
@@ -731,23 +731,23 @@ void Scenario::run(int argc, char* argv[]) {
 		//polyflap actor
 
 
-		initializePolyflap();
+		initialize_polyflap();
 		
-		initializeMovement();
+		initialize_movement();
 
-		sendPosition(target , ReacPlanner::ACTION_GLOBAL);
+		send_position(target , ReacPlanner::ACTION_GLOBAL);
 
-		initWriting();	
+		init_writing();	
 
-		writePosAndOr();	
+		write_finger_pos_and_or();	
 
-		setUpMovement();
+		set_up_movement();
 
-		writeSpeedAndAngle();
+		write_finger_speed_and_angle();
 
-		writeVectorIntoSequence();
+		write_f_vector_into_sequence();
 
-		moveFinger();
+		move_finger();
 	
 		
 		// Real polState = -1; //polyflap was smoothly moved
@@ -764,34 +764,34 @@ void Scenario::run(int argc, char* argv[]) {
 
 
 
-		writeSequenceIntoDataset();
+		write_sequence_into_dataset();
 
-		setCollisionDetection(false);		
+		set_collision_detection(false);		
 
-		printSequenceInfo();
+		print_sequence_info();
 			
-		moveFingerUp();
+		move_finger_up();
 
-		removePolyflap();
+		remove_polyflap();
 
-		pepareHomeMovement();
+		pepare_home_movement();
 		
-		setCollisionDetection(true);
+		set_collision_detection(true);
 		
-		sendPosition(home , ReacPlanner::ACTION_GLOBAL);
+		send_position(home , ReacPlanner::ACTION_GLOBAL);
 
 		//context.getLogger()->post(Message::LEVEL_INFO, "Moving home...");
 		//arm->getReacPlanner().waitForEnd(60000);
 		
-		iterationEndInfo();		
+		iteration_end_info();		
 		
-		finishIteration();
+		finish_iteration();
 
 	}
 
-	moveToInitial();
+	move_to_initial();
 	
-	writeDatasetIntoBinary();
+	write_dataset_into_binary();
 
 
 }
@@ -802,14 +802,14 @@ void Scenario::run(int argc, char* argv[]) {
 ///Hack to solve a collision problem (don't know if it is still there):
 ///Function that checks if arm hitted the polyflap while approaching it
 ///
-bool Scenario::checkPfPosition(const Actor* polyFlapActor, const Mat34& refPos) {
+bool Scenario::check_pf_position(const Actor* polyFlapActor, const Mat34& refPos) {
 	return (polyFlapActor->getPose().equals(refPos, Real(0.001)));
 }
 
 ///
 ///calculate final pose according to the given direction angle
 ///
-void Scenario::setMovementAngle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
+void Scenario::set_movement_angle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
 	pose.p.v1 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
 	pose.p.v2 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
 	pose.p.v1 += Real(cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 
@@ -820,7 +820,7 @@ void Scenario::setMovementAngle(const int angle, golem::WorkspaceCoord& pose,con
 ///
 ///calculate position to direct the arm given parameters set in the learning scenario
 ///
-void Scenario::setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical) {
+void Scenario::set_point_coordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical) {
 	position.v1 += (spacing*normalVec.v1); 
 	position.v2 += (spacing*normalVec.v2); 
 	position.v1 += (horizontal*orthogonalVec.v1); 
@@ -829,130 +829,130 @@ void Scenario::setPointCoordinates(Vec3& position, const Vec3& normalVec, const 
 }
 
 ///
-///calls setPointCoordinates for a discrete canonical number of different actions
+///calls set_point_coordinates for a discrete canonical number of different actions
 ///setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
-void Scenario::setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
+void Scenario::set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
 
 
 	//set it's coordinates into target
 	switch (startPosition) {
 	case 1: 
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front down left (1)");
 		break;
 
 	case 2:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front down middle (2)");
 		break;
 
 	case 3:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front down right (3)");
 		break;
 
 	case 4:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front center left (4)");
 		break;
 
 	case 5:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front center middle (5)");
 		break;
 
 	case 6:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front center right (6)");
 		break;
 
 	case 7:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front up left (7)");
 		break;
 
 	case 8:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front up middle (8)");
 		break;
 
 	case 9:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front up right (9)");
 		break;
 
 	case 10:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back down left (10)");
 		break;
 
 	case 11:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back down middle (11)");
 		break;
 
 	case 12:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back down right (12)");
 		break;
 
 	case 13:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back center left (13)");
 		break;
 
 	case 14:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back center middle (14)");
 		break;
 
 	case 15:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back center right (15)");
 		break;
 
 	case 16:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back up left (16)");
 		break;
 
 	case 17:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back up middle (17)");
 		break;
 
 	case 18:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back up right (18)");
 		break;
 
 	case 19:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side down left (19)");
 		break;
 
 	case 20:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side down right (20)");
 		break;
 
 	case 21:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side center left (21)");
 		break;
 
 	case 22:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side center right (22)");
 		break;
 
 	case 23:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side up left (23)");
 		break;
 
 	case 24:
-		setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side up right (24)");
 		break;
 
