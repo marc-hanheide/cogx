@@ -320,7 +320,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		creator.setToDefault();
 		//polyflap actor
 
-		object = setupPolyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
+		object = setup_polyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
 		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
 		if (iteration == 0)
 			objectLocalBounds = object->getLocalBoundsSeq();
@@ -379,7 +379,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 
 		//arm target position update
-		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+		set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 		cout << "Position " << startPosition-1 << endl;
 
 		// and set target waypoint
@@ -452,7 +452,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		
 		//int verticalAngle = rand() % 7;
 
-		setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
+		set_movement_angle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
 
 
