@@ -31,7 +31,7 @@ void CensusGPU::setImages(IplImage* left, IplImage* right) {
 
 
 	if (async) {
-    assert(0);
+    assert(0); // don't want async for now, so just die
 		if (this->iWidth != modWidth || this->iHeight != left->height) {
 			if (this->iWidth || this->iHeight)
 				gpuCensusImageCleanup();
@@ -86,7 +86,7 @@ void CensusGPU::getDisparityMap(IplImage *dm) {
 		for (unsigned int x=0; x < this->iOrgWidth; x++) {
 			f = fDM[y*this->iWidth+x];
 
-			cvSet2D(dm, y, x, cvScalar(f, f, f));
+			cvSet2D(dm, y, x, cvScalar(f));
 		}
 	}
 
@@ -97,7 +97,7 @@ void CensusGPU::getDisparityMap(IplImage *dm) {
 void CensusGPU::setImages(unsigned char *left, unsigned char *right, unsigned int iWidth, unsigned int iHeight) {
 
 	if (this->iWidth != iWidth || this->iHeight != iHeight) {
-		if (this->iWidth || this->iHeight)
+		if (this->iWidth != 0 || this->iHeight != 0)
 			gpuCensusImageCleanup();
 
 		gpuCensusImageSetup(iWidth, iHeight, dispMin, dispMax);
@@ -107,6 +107,7 @@ void CensusGPU::setImages(unsigned char *left, unsigned char *right, unsigned in
 	this->iHeight = iHeight;
 
 	if (async) {
+	  assert(0); // don't want async for now, so just die
 		unsigned char *h_left, *h_right;
 		h_left = gpuGetLeftImageBuffer(asyncImgLoadNr);
 		h_right = gpuGetRightImageBuffer(asyncImgLoadNr);
@@ -131,6 +132,7 @@ void CensusGPU::match() {
 	//QueryPerformanceCounter(&t1);
 
 	if (async) {
+	  assert(0); // don't want async for now, so just die
 		gpuCensusSetAsyncImageNr(asyncImgMatchNr);
 		asyncImgMatchNr = 1 - asyncImgMatchNr;
 	}
@@ -145,7 +147,8 @@ void CensusGPU::match() {
 
 	gpuCompareDisps();
 
-	gpuRoundAndScaleDisparities();
+  // why would we need that??
+	//gpuRoundAndScaleDisparities();
 
 	//QueryPerformanceCounter(&t2);
 	//elapsed = (t2.QuadPart - t1.QuadPart) * 1000.0 / freq.QuadPart;
@@ -154,7 +157,7 @@ void CensusGPU::match() {
 
 void CensusGPU::printTiming() {
 	printf("========================================\n");
-	printf("   Census Transform............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n", 
+	printf("   Census Transform............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
 		getCensusTiming(eCensusTransform),
 		getCensusMemory(eCensusTransform)/(getCensusTiming(eCensusTransform)*1000000),
 		getCensusFLOP(eCensusTransform)/(getCensusTiming(eCensusTransform)*1000000));
@@ -164,22 +167,22 @@ void CensusGPU::printTiming() {
 		getCensusMemory(eCalcDSI)/(getCensusTiming(eCalcDSI)*1000000),
 		getCensusFLOP(eCalcDSI)/(getCensusTiming(eCalcDSI)*1000000));
 
-	printf("   Aggregate Costs.............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n", 
+	printf("   Aggregate Costs.............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
 		getCensusTiming(eAggregateCosts),
 		getCensusMemory(eAggregateCosts)/(getCensusTiming(eAggregateCosts)*1000000),
 		getCensusFLOP(eAggregateCosts)/(getCensusTiming(eAggregateCosts)*1000000));
 
-	printf("   Refine Subpixel.............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n", 
+	printf("   Refine Subpixel.............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
 		getCensusTiming(eRefineSubPixel),
 		getCensusMemory(eRefineSubPixel)/(getCensusTiming(eRefineSubPixel)*1000000),
 		getCensusFLOP(eRefineSubPixel)/(getCensusTiming(eRefineSubPixel)*1000000));
 
-	printf("   Compare Disparities.......... %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n", 
+	printf("   Compare Disparities.......... %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
 		getCensusTiming(eCompareDisps),
 		getCensusMemory(eCompareDisps)/(getCensusTiming(eCompareDisps)*1000000),
 		getCensusFLOP(eCompareDisps)/(getCensusTiming(eCompareDisps)*1000000));
 
-	printf("   Round + Scale Disparities.... %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n", 
+	printf("   Round + Scale Disparities.... %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
 		getCensusTiming(eRoundAndScaleDisparities),
 		getCensusMemory(eRoundAndScaleDisparities)/(getCensusTiming(eRoundAndScaleDisparities)*1000000),
 		getCensusFLOP(eRoundAndScaleDisparities)/(getCensusTiming(eRoundAndScaleDisparities)*1000000));
