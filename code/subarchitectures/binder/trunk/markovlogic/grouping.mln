@@ -4,12 +4,12 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {U0_3,U1_3,U2_3}
+existingunion = {U0_2,U1_2,U2_2}
 percept = {P}
-belief = {U0_3,U1_3,U2_3,P}
+belief = {U0_2,U1_2,U2_2,P}
 
 // possible outcomes of the grouping process
-outcome = {U3_3,U4_3,U5_3,U6_3}
+outcome = {U0_3,U1_3,U2_3,U3_3}
 
 // feature values
 shapeval = {Cyl,Sphe,Unknown,None}
@@ -30,36 +30,36 @@ UnifyWith(existingunion)
 // EXISTING UNIONS
 ///////////////////////////////
 
-2.1972245773362196 Existence(U0_3)
--0.39304258810960718 Existence(U0_3) ^ Shape(U0_3,Cyl)
--2.0024805005437076 Existence(U0_3) ^ Shape(U0_3,Sphe)
--2.4079456086518722 Existence(U0_3) ^ Shape(U0_3,Unknown)
-Existence(U0_3) => !Shape(U0_3,None).
-Existence(U0_3) => !Label(U0_3,Mug).
-Existence(U0_3) => !Label(U0_3,Ball).
-Existence(U0_3) => !Label(U0_3,Unknown).
-Existence(U0_3) => Label(U0_3,None).
+2.1972245773362196 Existence(U0_2)
+-0.39304258810960718 Existence(U0_2) ^ Shape(U0_2,Cyl)
+-2.0024805005437076 Existence(U0_2) ^ Shape(U0_2,Sphe)
+-2.4079456086518722 Existence(U0_2) ^ Shape(U0_2,Unknown)
+Existence(U0_2) => !Shape(U0_2,None).
+Existence(U0_2) => !Label(U0_2,Mug).
+Existence(U0_2) => !Label(U0_2,Ball).
+Existence(U0_2) => !Label(U0_2,Unknown).
+Existence(U0_2) => Label(U0_2,None).
 
 
-1.3862943611198906 Existence(U1_3)
--0.38566248081198462 Existence(U1_3) ^ Shape(U1_3,Sphe)
--2.120263536200091 Existence(U1_3) ^ Shape(U1_3,Unknown)
-Existence(U1_3) => !Shape(U1_3,None).
-Existence(U1_3) => !Shape(U1_3,Cyl).
-Existence(U1_3) => !Label(U1_3,Mug).
-Existence(U1_3) => !Label(U1_3,Ball).
-Existence(U1_3) => !Label(U1_3,Unknown).
-Existence(U1_3) => Label(U1_3,None).
+1.3862943611198906 Existence(U1_2)
+-0.38566248081198462 Existence(U1_2) ^ Shape(U1_2,Sphe)
+-2.120263536200091 Existence(U1_2) ^ Shape(U1_2,Unknown)
+Existence(U1_2) => !Shape(U1_2,None).
+Existence(U1_2) => !Shape(U1_2,Cyl).
+Existence(U1_2) => !Label(U1_2,Mug).
+Existence(U1_2) => !Label(U1_2,Ball).
+Existence(U1_2) => !Label(U1_2,Unknown).
+Existence(U1_2) => Label(U1_2,None).
 
--10 Existence(U2_3)
--10 Existence(U2_3) ^ Shape(U2_3,Cyl)
--10 Existence(U2_3) ^ Shape(U2_3,Sphe)
--10 Existence(U2_3) ^ Shape(U2_3,Unknown)
-Existence(U2_3) => !Shape(U2_3,None).
-Existence(U2_3) => !Label(U2_3,Mug).
-Existence(U2_3) => !Label(U2_3,Ball).
-Existence(U2_3) => !Label(U2_3,Unknown).
-Existence(U2_3) => Label(U2_3,None).
+-10 Existence(U2_2)
+-10 Existence(U2_2) ^ Shape(U2_2,Cyl)
+-10 Existence(U2_2) ^ Shape(U2_2,Sphe)
+-10 Existence(U2_2) ^ Shape(U2_2,Unknown)
+Existence(U2_2) => !Shape(U2_2,None).
+Existence(U2_2) => !Label(U2_2,Mug).
+Existence(U2_2) => !Label(U2_2,Ball).
+Existence(U2_2) => !Label(U2_2,Unknown).
+Existence(U2_2) => Label(U2_2,None).
 
 
 ///////////////////////////////
@@ -125,10 +125,10 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 
 
 // specification of the different outcomes
--1.5 Existence(P) => Outcome(U6_3)
-UnifyWith(U0_3) <=> Outcome(U3_3).
-UnifyWith(U1_3) <=> Outcome(U4_3).
-UnifyWith(U2_3) <=> Outcome(U5_3).
+-1.5 Existence(P) => Outcome(U3_3)
+UnifyWith(U0_2) <=> Outcome(U0_3).
+UnifyWith(U1_2) <=> Outcome(U1_3).
+UnifyWith(U2_2) <=> Outcome(U2_3).
 
 
 // mutual exclusivity and unicity
