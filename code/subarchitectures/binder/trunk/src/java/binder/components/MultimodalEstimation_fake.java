@@ -28,7 +28,7 @@ public class MultimodalEstimation_fake extends BeliefWriter {
 						try {
 							CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptUnionBelief.class);
 							
-								MultiModalBelief mmBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), newDataID());
+								MultiModalBelief mmBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, newDataID());
 								insertBeliefInWM(mmBelief);
 						}	
 			

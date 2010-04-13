@@ -20,7 +20,7 @@ import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.history.PerceptHistory;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
@@ -100,7 +100,7 @@ public class Step1PerceptInsertion extends AbstractBinderTest {
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, features);
 
-			PerceptHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("",""));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("",""));
 
 			String id = newDataID();
 

@@ -27,7 +27,7 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 						try {
 							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
 							
-							StableBelief mmBelief = StableBeliefBuilder.createnewStableBelief(beliefData.getData(), newDataID());
+							StableBelief mmBelief = StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, newDataID());
 								insertBeliefInWM(mmBelief);
 						}	
 			

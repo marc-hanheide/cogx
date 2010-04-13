@@ -16,7 +16,7 @@ import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.FeatureValue;
-import beliefmodels.autogen.history.PerceptHistory;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.PerceptBuilder;
 import cast.cdl.CASTTime;
@@ -89,7 +89,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			String type, CASTTime curTime) throws BeliefException {
 
 		// create a simple history with just the link to the percept
-		PerceptHistory hist = PerceptBuilder.createNewPerceptHistory(srcAddr);
+		CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(srcAddr);
 
 		// always create a CondIndependentDistribs
 		CondIndependentDistribs features = BeliefContentBuilder
