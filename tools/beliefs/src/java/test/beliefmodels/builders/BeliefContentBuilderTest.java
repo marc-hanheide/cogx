@@ -50,5 +50,4 @@ public class BeliefContentBuilderTest {
 	
 	
 	
-	
 } // end class 
