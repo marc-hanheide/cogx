@@ -12,18 +12,18 @@ include "../common/urg_04LX.inc"
 
 # set the size of a pixel in meters
 #resolution 0.10
-resolution 0.10
+resolution 0.02
 
 # configure the GUI window
 window
 ( 
-  size [ 600.000 840.000 ] 
+  size [ 1000.000 680.000 ] 
 #  center [-2.450 -1.650] 
-  center [0.1 -0.8]
-  scale 0.013 
+#  center [0.1 -0.8]
+  scale 0.025
 )
 
-size [ 30 15 ]
+size [ 25 9 ]
 
 
 ## configure the GUI window
@@ -37,11 +37,11 @@ size [ 30 15 ]
 # load an environment bitmap
 map
 (
-  bitmap "spring-school-map.jpg"
-  bitmap_resolution 0.200
-  size [24 12]
-  #boundary 1
-  name "dfki_floor1"
+  bitmap "spring-school-map.png"
+  bitmap_resolution 0.25
+  size [25 9]
+  boundary 1
+  name "ljubljana"
 )
 
 # extend the p3 model to have a ptz and blobfinder
@@ -61,7 +61,7 @@ define cogxp3blob cogxp3
 cogxp3blob
 (
   name "robot"
-  pose [-3 -0.82 0]
+  pose [-11.45 3.45 0]
 
   urg_04LX( pose [0.14 0 0] samples 654 laser_sample_skip 0)
 
