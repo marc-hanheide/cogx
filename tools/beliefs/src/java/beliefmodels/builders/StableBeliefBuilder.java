@@ -20,6 +20,7 @@
 
 package beliefmodels.builders;
 
+import cast.cdl.WorkingMemoryAddress;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
@@ -33,17 +34,16 @@ public class StableBeliefBuilder  extends AbstractBeliefBuilder{
 	/**
 	 * Construct a new stable belief
 	 * 
-	 * @param curPlace the current place
-	 * @param curTime the curernt time
-	 * @param content the belief content
-	 * @param hist the percept history
+	 * @param union the temporal union belief
+	 * @param address the WM address of the temporal union
+	 * @param id the identifier to use for the belief
 	 * @return the resulting belief
 	 * @throws BinderException 
 	 */
-	public static StableBelief createnewStableBelief (TemporalUnionBelief union, String id) 
+	public static StableBelief createnewStableBelief (TemporalUnionBelief union, WorkingMemoryAddress address, String id) 
 		throws BeliefException {
 		
-		return new StableBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(union));
+		return new StableBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(address));
 	}
 	
 }

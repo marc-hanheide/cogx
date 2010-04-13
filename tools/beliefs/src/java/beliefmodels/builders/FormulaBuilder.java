@@ -34,17 +34,17 @@ import beliefmodels.autogen.logicalcontent.NegatedFormula;
 import beliefmodels.autogen.logicalcontent.PointerFormula;
 
 public class FormulaBuilder {
-	
-	
+	   
+	 
 	private static int increment = 0;
 	
 	public static final String EXIST_PROP = "Exists";
 	
-	
+	 
 	// ============================================
 	// GENERAL FORMULA CONSTRUCTION METHODS
 	// ============================================
-
+ 
 
 	/**
 	 * Create a new elementary formula with proposition prop

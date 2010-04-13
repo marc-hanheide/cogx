@@ -49,7 +49,7 @@ public class BeliefContentBuilder {
 	// GENERAL METHODS FOR BELIEF CONTENT CONSTRUCTION
 	// =================================================
  
-
+ 
 	/**
 	 * Create a belief content defined as a distribution with "exist" dependency (cf. slice specs)
 	 * 
