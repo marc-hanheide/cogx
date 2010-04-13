@@ -204,7 +204,7 @@ void StereoServer::start()
     rectColorImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 3);
     rectGreyImg[i] = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
   }
-  disparityImg = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
+  disparityImg = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_32F, 1);
   cvSet(disparityImg, cvScalar(0));
 
   // NOTE: stupid polling runloop is still necessary
@@ -228,7 +228,7 @@ void StereoServer::getPoints(bool transformToGlobal, vector<VisionData::SurfaceP
   for(int y = 0; y < disparityImg->height; y++)
     for(int x = 0; x < disparityImg->width; x++)
     {
-      unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
+      float d = *((float*)Video::cvAccessImageData(disparityImg, x, y));
       if(d != 0)
       {
         VisionData::SurfacePoint p;
@@ -260,7 +260,7 @@ void StereoServer::getPointsInSOI(bool transformToGlobal, const VisionData::SOI 
   for(int y = 0; y < disparityImg->height; y++)
     for(int x = 0; x < disparityImg->width; x++)
     {
-      unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
+      float d = *((float*)Video::cvAccessImageData(disparityImg, x, y));
       if(d != 0)
       {
         VisionData::SurfacePoint p;

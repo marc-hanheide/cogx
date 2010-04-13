@@ -48,7 +48,7 @@ float g_CensusTiming[6];
 #define PRINT_BANDWIDTH 0
 #define USE_FAST_AGGREGATION 1
 
-// 24 bit multiplication takes only 4 clock cycles compared to 16 clock 
+// 24 bit multiplication takes only 4 clock cycles compared to 16 clock
 // cycles for the normal multiplication
 #define USE_24BIT_MULTIPLICATION 1
 
@@ -86,6 +86,8 @@ float g_CensusTiming[6];
 		CUT_SAFE_CALL(cutStopTimer(hTimer)); \
 		gpuTime = cutGetTimerValue(hTimer);
 
+#define DISPARITY_SCALING 4
+
 
 void setCensusTiming(CensusStep s, float timeMs) {
 	g_CensusTiming[s] = timeMs;
@@ -101,22 +103,22 @@ extern "C" unsigned int getCensusFLOP(CensusStep s) {
 	switch (s) {
 		case eAggregateCosts:
 			return disparities*60*16*16*iDivUp(g_Width, 16)*iDivUp(g_Height, 16);
-		
+
 		case eCalcDSI:
 			return (5*(128+disparities)*2*g_Height*iDivUp(g_Width, 128)+(17+43*disparities)*g_Width*g_Height);
-		
+
 		case eCensusTransform:
 			return 2*3000*16*16*iDivUp(g_Width, 64)*iDivUp(g_Height, 64);
-		
+
 		case eCompareDisps:
 			return 16*16*16*iDivUp(g_Width, 16)*iDivUp(g_Height, 16);
-		
+
 		case eRefineSubPixel:
 			return ((disparities*7+35)*g_Width*g_Height) + ((disparities*7+43)*g_Width*g_Height);
-		
+
 		case eRoundAndScaleDisparities:
 			return 12*16*16*iDivUp(g_Width, 16)*iDivUp(g_Height, 16);
-		
+
 		default:
 			return 0;
 	}
@@ -128,22 +130,22 @@ extern "C" unsigned int getCensusMemory(CensusStep s) {
 	switch (s) {
 		case eAggregateCosts:
 			return disparities*(g_Width*g_Height*sizeof(int) + iDivUp(g_Width, 16)*iDivUp(g_Height, 16)*21*21*sizeof(int));
-		
+
 		case eCalcDSI:
 			return (iDivUp(g_Width, 128)*g_Height*2*(128 + disparities)*2*sizeof(unsigned int)+2*(g_Width-g_disp_max)*g_Height*sizeof(unsigned int));
-		
+
 		case eCensusTransform:
 			return 2*(iDivUp(g_Width, CENSUS_SPARSE_TILE_W)*iDivUp(g_Height, CENSUS_SPARSE_TILE_H)*CENSUS_SPARSE_SMEM_W*CENSUS_SMEM_H*sizeof(unsigned int)+g_Width*g_Height*8);
-		
+
 		case eCompareDisps:
 			return 2*g_Width*g_Height*sizeof(float);
-		
+
 		case eRefineSubPixel:
 			return 2*(disparities+2)*g_Width*g_Height*sizeof(int);
-		
+
 		case eRoundAndScaleDisparities:
 			return 2*g_Width*g_Height*sizeof(float);
-		
+
 		default:
 			return 0;
 	}
@@ -153,7 +155,7 @@ extern "C" unsigned int getCensusMemory(CensusStep s) {
 inline
 __device__ int f2i(float f) {
 
-	return f < 0 ? f - .5 : f + .5; 
+	return f < 0 ? f - .5 : f + .5;
 
 }
 
@@ -381,7 +383,7 @@ __global__ void calcDSI(unsigned int *DSI, unsigned int *census_L, unsigned int 
 
 	// ((2 * (#threads + maxdisparity)) * nrOfInt) int values must be allocated
 	extern __shared__ unsigned int smCensusData[];
-	
+
 	unsigned int *smCensusL = smCensusData;
 	unsigned int *smCensusR = &smCensusData[smWidth+disp_stop*nrOfInt];
 
@@ -403,7 +405,7 @@ __global__ void calcDSI(unsigned int *DSI, unsigned int *census_L, unsigned int 
 
 	unsigned int cost;
 	int offset2;
-	
+
 	__syncthreads();
 
 	//Calculation
@@ -461,7 +463,7 @@ __global__ void aggregateFilter(unsigned int *d_imageOut, unsigned int *d_imageI
 				}
 			}*/
 
-			// Bad performance due to uncoalesced load, because -radius leads to 
+			// Bad performance due to uncoalesced load, because -radius leads to
 			// misalignment on devices with Compute Capability < 1.2
 
 			//~24 ms
@@ -471,13 +473,13 @@ __global__ void aggregateFilter(unsigned int *d_imageOut, unsigned int *d_imageI
 
 				#pragma unroll
 				for (i = 0; threadIdx.x + i < 16 + 2 * radius; i += 16) {
-					x = blockX + threadIdx.x + i - radius;					
+					x = blockX + threadIdx.x + i - radius;
 
 					if (x < 0 || y < 0 || x >= iWidth || y >= iHeight)
 						data = 0;
 					else
 						data = getArrayValue(d_imageIn, x, y, iWidth);
-						
+
 					smImageBlock[threadIdx.y + j][threadIdx.x + i] = data;
 				}
 			}
@@ -549,7 +551,7 @@ __global__ void aggregateFilter(unsigned int *d_imageOut, unsigned int *d_imageI
 		data = 0;
 
 		__syncthreads();
-		
+
 
 		//#pragma unroll
 		//for(j=0; j < radius*2+1; j++) {
@@ -598,7 +600,7 @@ __global__ void aggregateFilter(unsigned int *d_imageOut, unsigned int *d_imageI
 //				}
 //			}*/
 //
-//			// Bad performance due to uncoalesced load, because -radius leads to 
+//			// Bad performance due to uncoalesced load, because -radius leads to
 //			// misalignment on devices with Compute Capability < 1.2
 //
 //			//~24 ms
@@ -614,7 +616,7 @@ __global__ void aggregateFilter(unsigned int *d_imageOut, unsigned int *d_imageI
 //						//data = tex1Dfetch(texInt, y*iWidth+x);
 //
 //					smImageBlock[j+threadIdx.y][i+threadIdx.x] = data;
-//					
+//
 //
 //					//smImageBlock[j+threadIdx.y][i+threadIdx.x] = tex2D(texDSI, x, y);
 //				}
@@ -690,7 +692,7 @@ __global__ void aggregateFilter(unsigned int *d_imageOut, unsigned int *d_imageI
 //			for (x = threadIdx.x; x < threadIdx.x+blockSize; x++) {
 //				data += smImageBlock[y][x];
 //			}
-//			*/ 
+//			*/
 //			data += sumValues<blockSize>(&smImageBlock[j][threadIdx.x]); // about 3ms faster than a loop
 //		}
 //
@@ -710,7 +712,7 @@ __global__ void setArray(T* arr, T value, int width, int height) {
 
 
 template <bool RL, int blockSize>
-__global__ void refineSubPixel(float *d_DMI, int *d_Cost, unsigned int *d_Confidence, unsigned int *d_DSI, 
+__global__ void refineSubPixel(float *d_DMI, int *d_Cost, unsigned int *d_Confidence, unsigned int *d_DSI,
 							   int disp_start, int disp_stop, int disp_step, int maxCosts,
 							   int iWidth, int iHeight) {
 	const int disparities = (disp_stop - disp_start + 1) / disp_step;
@@ -730,8 +732,8 @@ __global__ void refineSubPixel(float *d_DMI, int *d_Cost, unsigned int *d_Confid
 		offset1 = IMUL(iWidth, iHeight);
 		offset2 = IMUL(y, iWidth);
 
-		if (x == 400 && y == 49)
-			x+=0;
+		//if (x == 400 && y == 49)
+		//	x+=0;
 
 		if (RL) {
 			for (d = 0, disp_cut = disp_start+disp_step*d; d < disparities && x < iWidth-disp_cut; d++, disp_cut+=disp_step) {
@@ -927,13 +929,13 @@ __global__ void refineSubPixel(float *d_DMI, int *d_Cost, unsigned int *d_Confid
 //		else {
 //			subPixelDisp = (minDisp * disp_step + disp_start);
 //		}
-//      
+//
 //		setArrayValue(d_DMI, subPixelDisp, x, y, iWidth);
 //		setArrayValue(d_Cost, minCost, x, y, iWidth);
 //	}
 //}
-__global__ void compareDispsLeft(float *d_DMI, int *d_Costs, unsigned int *d_Confidence, 
-								 float *d_DMI_LR, float *d_DMI_RL, 
+__global__ void compareDispsLeft(float *d_DMI, int *d_Costs, unsigned int *d_Confidence,
+								 float *d_DMI_LR, float *d_DMI_RL,
 								 int *d_CostsLR, int *d_CostsRL,
 								 unsigned int *d_ConfidenceLR, unsigned int *d_ConfidenceRL,
 								 float max_disp_diff, int maxCosts, int iWidth, int iHeight) {
@@ -942,8 +944,8 @@ __global__ void compareDispsLeft(float *d_DMI, int *d_Costs, unsigned int *d_Con
 
 	float a, b, diff;
 
-	if (x == 400 && y == 49)
-		a = 5;
+	//if (x == 400 && y == 49)
+	//	a = 5;
 	if (x < iWidth && y < iHeight) {
 		a = getArrayValue(d_DMI_LR, x, y, iWidth);
 		if (a > x || x-a >= iWidth) b = a; // for debuging only
@@ -1124,7 +1126,7 @@ extern "C" void gpuCalcDSI() {
 //		calcDSI<8> <<<grid, block, sharedMem>>>(d_DSI_Temp, d_censusLeft, d_censusRight, g_disp_min, g_disp_max, g_disp_step, g_Width, g_Height);
 //#else
 //		calcDSI<8> <<<grid, block, sharedMem>>>(d_DSI, d_censusLeft, d_censusRight, g_disp_min, g_disp_max, g_disp_step, g_Width, g_Height);
-//#endif	
+//#endif
 	}
 
 	STOP_TIMER(g_CensusTiming[eCalcDSI]);
@@ -1241,7 +1243,7 @@ extern "C" void gpuRoundAndScaleDisparities() {
 
 	START_TIMER;
 
-	roundAndScaleDisparities<<<grid, block>>>(d_DMI, 10, 4, g_Width, g_Height);
+	roundAndScaleDisparities<<<grid, block>>>(d_DMI, 10, DISPARITY_SCALING, g_Width, g_Height);
 
 	STOP_TIMER(g_CensusTiming[eRoundAndScaleDisparities]);
 
@@ -1262,9 +1264,9 @@ extern "C" void gpuCensusImageSetup(unsigned int w, unsigned int h, unsigned int
 	g_blockSize = blockSize;
 
 	for (int i=0; i<2; i++) {
-		CUDA_SAFE_CALL( cudaStreamCreate(&streamImageLeft[i]) ); 
-		CUDA_SAFE_CALL( cudaStreamCreate(&streamImageRight[i]) ); 
-		CUDA_SAFE_CALL( cudaStreamCreate(&streamDM[i]) ); 
+		CUDA_SAFE_CALL( cudaStreamCreate(&streamImageLeft[i]) );
+		CUDA_SAFE_CALL( cudaStreamCreate(&streamImageRight[i]) );
+		CUDA_SAFE_CALL( cudaStreamCreate(&streamDM[i]) );
 
 		CUDA_SAFE_CALL( cudaMallocHost((void**)&h_left[i],  g_Width*g_Height*sizeof(unsigned char)) );
 		CUDA_SAFE_CALL( cudaMallocHost((void**)&h_right[i], g_Width*g_Height*sizeof(unsigned char)) );
@@ -1331,9 +1333,9 @@ extern "C" void gpuCensusImageCleanup() {
 	CUDA_SAFE_CALL( cudaUnbindTexture(texImageRight) );
 
 	for (int i=0; i<2; i++) {
-		CUDA_SAFE_CALL( cudaStreamDestroy(streamImageLeft[i]) ); 
-		CUDA_SAFE_CALL( cudaStreamDestroy(streamImageRight[i]) ); 
-		CUDA_SAFE_CALL( cudaStreamDestroy(streamDM[i]) ); 
+		CUDA_SAFE_CALL( cudaStreamDestroy(streamImageLeft[i]) );
+		CUDA_SAFE_CALL( cudaStreamDestroy(streamImageRight[i]) );
+		CUDA_SAFE_CALL( cudaStreamDestroy(streamDM[i]) );
 
 		CUDA_SAFE_CALL( cudaFreeHost(h_left[i]) );
 		CUDA_SAFE_CALL( cudaFreeHost(h_right[i]) );

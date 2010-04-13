@@ -173,10 +173,6 @@ void StereoCamera::ProjectPoint(double X, double Y, double Z,
  */
 void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z)
 {
-  // note: in gpustereo gpuRoundAndScaleDisparities() disparities are scaled
-  // with a fixed factor of 4
-  d /= 4.;
-
   // NOTE: actually tx = -proj[0][3]/proj[0][0] because:
   // proj[0][3] = -fx*tx  (where fx = proj[0][0])
   // but there seems to be an error in the SVS calib file:
