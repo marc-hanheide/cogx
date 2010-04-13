@@ -4,16 +4,18 @@ enum CensusStep {
 	eAggregateCosts,
 	eRefineSubPixel,
 	eCompareDisps,
-	eRoundAndScaleDisparities
+	eRoundAndScaleDisparities,
+	eThresholdConfidence,
+	eCalcTextureMap,
+	eThresholdTexture,
+	eCalcDepthMap
 };
 
 extern "C" float getCensusTiming(CensusStep s);
 extern "C" unsigned int getCensusMemory(CensusStep s);
 extern "C" unsigned int getCensusFLOP(CensusStep s);
 
-// values by Michael Weber:
-//disp_min=0, unsigned int disp_max=50, unsigned int disp_step=1, bool sparse = true, unsigned int blockSize = 5
-extern "C" void gpuCensusImageSetup(unsigned int w, unsigned int h, unsigned int disp_min=0, unsigned int disp_max=50, unsigned int disp_step=1, bool sparse = true, unsigned int blockSize = 5);
+extern "C" void gpuCensusImageSetup(unsigned int w, unsigned int h, unsigned int disp_min=0, unsigned int disp_max=179, unsigned int disp_step=1, bool sparse = true, unsigned int blockSize = 5, int dmScale = 4);
 
 extern "C" void gpuCensusSetImages(unsigned char *left, unsigned char *right);
 
@@ -28,6 +30,10 @@ extern "C" void gpuCensusTransform();
 
 extern "C" void gpuCensusTransformSparse();
 
+extern "C" void gpuCalcTextureMap();
+
+extern "C" void gpuCalcDepthMap(float f, float b);
+
 extern "C" void gpuCalcDSI();
 
 extern "C" void gpuAggregateCosts();
@@ -38,7 +44,15 @@ extern "C" void gpuCompareDisps();
 
 extern "C" void gpuRoundAndScaleDisparities();
 
+extern "C" void gpuThresholdConfidence();
+extern "C" void gpuThresholdTexture();
+extern "C" void gpuRoundScaleThresholdDisparities();
+
+
 extern "C" void gpuGetDisparityMap(float *h_data);
+extern "C" void gpuGetConfidenceMap(int *h_data);
+extern "C" void gpuGetTexture(int *h_data);
+extern "C" void gpuGetDepthMap(int *h_data);
 
 extern "C" void debugGetCensusLeft(int *h_data);
 extern "C" void debugGetCensusRight(int *h_data);

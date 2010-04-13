@@ -1,17 +1,20 @@
-#include <cstring>
 #include "CensusGPU.h"
 
 
 
-CensusGPU::CensusGPU(int _dispMax) {
+CensusGPU::CensusGPU(int _disp_max) {
 	iWidth = 0;
 	iHeight = 0;
 	async = false;
 	asyncImgLoadNr = 0;
 	asyncImgMatchNr = 0;
-  // always assume min disparity of 0
-	dispMin = 0;
-	dispMax = _dispMax;
+
+	disp_min = 0;
+	disp_max = _disp_max;
+	disp_step = 1;
+	sparse = true;
+	blockSize = 5;
+	dmScale = 1;
 }
 
 CensusGPU::~CensusGPU() {
@@ -24,19 +27,27 @@ void CensusGPU::setImages(IplImage* left, IplImage* right) {
 	int i, j;
 	int modWidth;
 
-  assert(left->nChannels == 1 && right->nChannels == 1);
+	if (left->nChannels != 1)
+	{
+		IplImage *tmp = cvCreateImage(cvSize(left->width, left->height), IPL_DEPTH_8U, 1);
+		cvCvtColor(right, tmp, CV_RGB2GRAY);
+		right = cvCloneImage(tmp);
+		cvCvtColor(left, tmp, CV_RGB2GRAY);
+		left = cvCloneImage(tmp);
+		cvReleaseImage(&tmp);
+	}
+
 
 	iOrgWidth = left->width;
 	modWidth = iAlignUp(left->width, 16);
 
 
 	if (async) {
-    assert(0); // don't want async for now, so just die
 		if (this->iWidth != modWidth || this->iHeight != left->height) {
 			if (this->iWidth || this->iHeight)
 				gpuCensusImageCleanup();
 
-			gpuCensusImageSetup(modWidth, left->height, dispMin, dispMax);
+			gpuCensusImageSetup(modWidth, left->height, disp_min, disp_max, disp_step, sparse, blockSize, dmScale);
 
 			this->iWidth = modWidth;
 			this->iHeight = left->height;
@@ -86,28 +97,91 @@ void CensusGPU::getDisparityMap(IplImage *dm) {
 		for (unsigned int x=0; x < this->iOrgWidth; x++) {
 			f = fDM[y*this->iWidth+x];
 
-			cvSet2D(dm, y, x, cvScalar(f));
+			cvSet2D(dm, y, x, cvScalar(f, f, f));
 		}
 	}
 
 	free(fDM);
 }
+
+void CensusGPU::getConfidenceMap(IplImage *cm) {
+	int *CM;
+	int v;
+
+	CM = (int*)malloc(this->iWidth*this->iHeight*sizeof(int));
+	gpuGetConfidenceMap(CM);
+
+	for (unsigned int y=0; y < this->iHeight; y++) {
+		for (unsigned int x=0; x < this->iOrgWidth; x++) {
+			v = CM[y*this->iWidth+x];
+
+			cvSet2D(cm, y, x, cvScalar(v, v, v));
+		}
+	}
+
+	free(CM);
+}
+
+void CensusGPU::getTexture(IplImage *tex) {
+	int *ttex;
+	int v;
+
+	ttex = (int*)malloc(this->iWidth*this->iHeight*sizeof(int));
+	gpuGetTexture(ttex);
+
+	for (unsigned int y=0; y < this->iHeight; y++) {
+		for (unsigned int x=0; x < this->iOrgWidth; x++) {
+			v = ttex[y*this->iWidth+x];
+
+			cvSet2D(tex, y, x, cvScalar(v, v, v));
+		}
+	}
+
+	free(ttex);
+}
+
+
+void CensusGPU::getDepthMap(IplImage *dm) {
+	int *DM;
+	int v;
+
+	DM = (int*)malloc(this->iWidth*this->iHeight*sizeof(int));
+	gpuGetDepthMap(DM);
+
+	for (unsigned int y=0; y < this->iHeight; y++) {
+		for (unsigned int x=0; x < this->iOrgWidth; x++) {
+			v = DM[y*this->iWidth+x];
+
+			cvSet2D(dm, y, x, cvScalar(v, v, v));
+		}
+	}
+
+	free(DM);
+}
 #endif
 
-void CensusGPU::setImages(unsigned char *left, unsigned char *right, unsigned int iWidth, unsigned int iHeight) {
+void CensusGPU::setOptions(unsigned int disp_min, unsigned int disp_max, unsigned int disp_step, bool sparse, unsigned int blockSize, int dmScale) {
+	this->disp_min = disp_min;
+	this->disp_max = disp_max;
+	this->disp_step = disp_step;
+	this->sparse = sparse;
+	this->blockSize = blockSize;
+	this->dmScale = dmScale;
+}
 
+void CensusGPU::setImages(unsigned char *left, unsigned char *right, unsigned int iWidth, unsigned int iHeight) {
 	if (this->iWidth != iWidth || this->iHeight != iHeight) {
-		if (this->iWidth != 0 || this->iHeight != 0)
+		if (this->iWidth || this->iHeight)
 			gpuCensusImageCleanup();
 
-		gpuCensusImageSetup(iWidth, iHeight, dispMin, dispMax);
+		printf("width %d height %d",iWidth,iHeight);
+		gpuCensusImageSetup(iWidth, iHeight, disp_min, disp_max, disp_step, sparse, blockSize, dmScale);
 	}
 
 	this->iWidth = iWidth;
 	this->iHeight = iHeight;
 
 	if (async) {
-	  assert(0); // don't want async for now, so just die
 		unsigned char *h_left, *h_right;
 		h_left = gpuGetLeftImageBuffer(asyncImgLoadNr);
 		h_right = gpuGetRightImageBuffer(asyncImgLoadNr);
@@ -132,12 +206,13 @@ void CensusGPU::match() {
 	//QueryPerformanceCounter(&t1);
 
 	if (async) {
-	  assert(0); // don't want async for now, so just die
 		gpuCensusSetAsyncImageNr(asyncImgMatchNr);
 		asyncImgMatchNr = 1 - asyncImgMatchNr;
 	}
 
 	gpuCensusTransform();
+
+	//gpuCalcTextureMap();
 
 	gpuCalcDSI();
 
@@ -147,8 +222,18 @@ void CensusGPU::match() {
 
 	gpuCompareDisps();
 
-  // why would we need that??
-	//gpuRoundAndScaleDisparities();
+	//gpuThresholdConfidence();
+
+	/*
+
+	gpuThresholdTexture();
+
+	gpuRoundAndScaleDisparities();
+	*/
+
+	//gpuCalcDepthMap(600.f, 0.01f);
+
+	//gpuRoundScaleThresholdDisparities();
 
 	//QueryPerformanceCounter(&t2);
 	//elapsed = (t2.QuadPart - t1.QuadPart) * 1000.0 / freq.QuadPart;
@@ -156,7 +241,7 @@ void CensusGPU::match() {
 }
 
 void CensusGPU::printTiming() {
-	printf("========================================\n");
+	printf("====================================================================\n");
 	printf("   Census Transform............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
 		getCensusTiming(eCensusTransform),
 		getCensusMemory(eCensusTransform)/(getCensusTiming(eCensusTransform)*1000000),
@@ -166,6 +251,11 @@ void CensusGPU::printTiming() {
 		getCensusTiming(eCalcDSI),
 		getCensusMemory(eCalcDSI)/(getCensusTiming(eCalcDSI)*1000000),
 		getCensusFLOP(eCalcDSI)/(getCensusTiming(eCalcDSI)*1000000));
+
+	printf("   Calc Texture Map............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
+		getCensusTiming(eCalcTextureMap),
+		getCensusMemory(eCalcTextureMap)/(getCensusTiming(eCalcTextureMap)*1000000),
+		getCensusFLOP(eCalcTextureMap)/(getCensusTiming(eCalcTextureMap)*1000000));
 
 	printf("   Aggregate Costs.............. %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
 		getCensusTiming(eAggregateCosts),
@@ -186,6 +276,16 @@ void CensusGPU::printTiming() {
 		getCensusTiming(eRoundAndScaleDisparities),
 		getCensusMemory(eRoundAndScaleDisparities)/(getCensusTiming(eRoundAndScaleDisparities)*1000000),
 		getCensusFLOP(eRoundAndScaleDisparities)/(getCensusTiming(eRoundAndScaleDisparities)*1000000));
+
+	printf("   Threshold Confidence......... %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
+		getCensusTiming(eThresholdConfidence),
+		getCensusMemory(eThresholdConfidence)/(getCensusTiming(eThresholdConfidence)*1000000),
+		getCensusFLOP(eThresholdConfidence)/(getCensusTiming(eThresholdConfidence)*1000000));
+
+	printf("   Calculate Depth Map......... %.2f ms - %5.1f GB/s - %5.1f GFLOPS\n",
+		getCensusTiming(eCalcDepthMap),
+		getCensusMemory(eCalcDepthMap)/(getCensusTiming(eCalcDepthMap)*1000000),
+		getCensusFLOP(eCalcDepthMap)/(getCensusTiming(eCalcDepthMap)*1000000));
 
 	printf("\n");
 }
