@@ -23,29 +23,62 @@ package beliefmodels.builders;
 
 import java.util.Set;
 
+import cast.cdl.WorkingMemoryAddress;
+
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
-import beliefmodels.autogen.distribs.ProbDistribution;
 
 public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 
 
 
 	/**
-	 * Construct a new percept union belief
+	 * Construct a new percept union belief similar to a given percept
 	 * 
 	 * @param percept the percept
 	 * @param id the identifier for the new belief
 	 * @throws BinderException 
 	 */
-	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, String id)  
+	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address, String id)  
 		throws BeliefException {
 
-		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, percept.content, createHistory(percept));
+		if (percept == null) {
+			throw new BeliefException("ERROR, belief is null");
+		}
+		
+		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, percept.content, createHistory(address));
+	}
+	
+	
+	
+	/**
+	 * Construct a new percept union belief similar to a given percept, excepted the existence probability
+	 * 
+	 * @param percept the percept
+	 * @param existProb the existence probability
+	 * @param id the identifier for the new belief
+	 * @throws BinderException 
+	 */
+	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address, float existProb, String id)  
+		throws BeliefException {
+
+		if (percept == null) {
+			throw new BeliefException("ERROR, belief is null");
+		}
+		else if (percept.content == null) {
+			throw new BeliefException("ERROR, belief content is null");
+		}
+		else if (!(percept.content instanceof DistributionWithExistDep)) {
+			throw new BeliefException("ERROR, belief content does not include an existence dependency");
+		}
+		DistributionWithExistDep newDistrib = 
+			BeliefContentBuilder.createNewDistributionWithExistDep(existProb, ((DistributionWithExistDep)percept.content).Pc);
+		
+		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, newDistrib, createHistory(address));
 	}
 
 
@@ -57,7 +90,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	 * @param id the identifier for the new belief
 	 * @throws BinderException 
 	 */
-	public static PerceptUnionBelief createNewDoubleUnionBelief (PerceptBelief percept, 
+	public static PerceptUnionBelief createNewDoubleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address,
 			PerceptUnionBelief existingUnion, float existProb, String id)
 	throws BeliefException {
 
@@ -111,7 +144,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 		DistributionWithExistDep newDistrib = BeliefContentBuilder.createNewDistributionWithExistDep(existProb, newCIDistrib);
 
 		// creating and returning the union belief
-		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, newDistrib, createHistory(percept));
+		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, newDistrib, createHistory(address));
 	}
 
 }

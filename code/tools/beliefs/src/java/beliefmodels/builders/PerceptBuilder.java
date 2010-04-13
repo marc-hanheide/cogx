@@ -20,6 +20,9 @@
 
 package beliefmodels.builders;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
@@ -28,7 +31,7 @@ import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.epstatus.EpistemicStatus;
 import beliefmodels.autogen.framing.SpatioTemporalFrame;
-import beliefmodels.autogen.history.PerceptHistory;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.EpistemicStatusBuilder;
 import beliefmodels.builders.SpatioTemporalFrameBuilder;
 
@@ -45,7 +48,7 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 	 * @return the resulting belief
 	 * @throws BinderException 
 	 */
-	public static PerceptBelief createNewPerceptBelief (String id, String type, String curPlace, CASTTime curTime, ProbDistribution content, PerceptHistory hist) 
+	public static PerceptBelief createNewPerceptBelief (String id, String type, String curPlace, CASTTime curTime, ProbDistribution content, CASTBeliefHistory hist) 
 		throws BeliefException {
 		
 		if (curPlace == null || curTime == null || content == null || hist == null) {
@@ -65,11 +68,13 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 	}
 	
 	
-	public static PerceptHistory createNewPerceptHistory (WorkingMemoryAddress origin) 
+	public static CASTBeliefHistory createNewPerceptHistory (WorkingMemoryAddress origin) 
 		throws BeliefException
 	{	
 		if (origin!= null) { 
-			return new PerceptHistory(origin);
+			List<WorkingMemoryAddress> origins = new ArrayList<WorkingMemoryAddress>();
+			origins.add(origin);
+			return new CASTBeliefHistory(origins);
 		} else {
 			throw new BeliefException("Error when creating belief history: cannot create history for null");
 		}

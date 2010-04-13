@@ -413,29 +413,23 @@ module history {
 class BeliefHistory { };
 
 
-/** 
- * If the belief is a percept, i.e. directly derived from
- * a subarchitecture perceptual input, link to the working
- * memory pointer (including the subarchitecture ID)
- */
-class PerceptHistory extends BeliefHistory {
-	cast::cdl::WorkingMemoryAddress origin;
-};
-
 /**
  * Collection of belief identifiers
  */
-["java:type:java.util.LinkedList<String>"] sequence<string> BeliefIds;
+["java:type:java.util.LinkedList<cast.cdl.WorkingMemoryAddress>"] sequence<cast::cdl::WorkingMemoryAddress> BeliefIds;
 
 
-/**
- * If the belief is not a percept, the history is expressed 
- * as a set of pointers to the belief's ancestors and offspring
+/** 
+ * Link to the history of the belief formation, via CAST pointers. 
+ * If the belief is a percept (directly derived from a subarchitecture 
+ * perceptual input), links to the local subarch data structure.
+ * Else, link to one or more lower-level belief working memory 
+ * addresses.
  */
-class BinderHistory extends BeliefHistory {
+class CASTBeliefHistory extends BeliefHistory {
 	BeliefIds ancestors;
-	BeliefIds offspring;
-};	
+};
+
 
 
 }; // end history

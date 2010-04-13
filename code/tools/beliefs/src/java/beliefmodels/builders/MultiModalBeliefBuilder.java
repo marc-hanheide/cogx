@@ -20,6 +20,7 @@
 
 package beliefmodels.builders;
 
+import cast.cdl.WorkingMemoryAddress;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
@@ -27,21 +28,20 @@ import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 
 public class MultiModalBeliefBuilder  extends AbstractBeliefBuilder{
 
-	  
+	   
 	/**
 	 * Construct a new multi-modal belief
 	 * 
-	 * @param curPlace the current place
-	 * @param curTime the curernt time
-	 * @param content the belief content
-	 * @param hist the percept history
+	 * @param union the percept union belief
+	 * @param address the working memory address for the percept union belief
+	 * @param id the 
 	 * @return the resulting belief
 	 * @throws BinderException 
 	 */
-	public static MultiModalBelief createNewMultiModalBelief (PerceptUnionBelief union, String id) 
+	public static MultiModalBelief createNewMultiModalBelief (PerceptUnionBelief union, WorkingMemoryAddress address, String id) 
 		throws BeliefException {
 		
-		return new MultiModalBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(union));
+		return new MultiModalBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(address));
 	}
 	
 }
