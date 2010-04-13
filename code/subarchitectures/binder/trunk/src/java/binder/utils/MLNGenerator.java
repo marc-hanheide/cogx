@@ -1,8 +1,8 @@
 package binder.utils;
 
 import java.util.Collection;
-import java.util.Vector;
-
+import java.util.HashMap;
+ 
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 
@@ -12,15 +12,15 @@ public class MLNGenerator {
 
 	
 	public static void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, 
-			Collection<String> newUnionsIds, String MLNFileToWrite) {
+			HashMap<String,String> unionsMapping, String MLNFileToWrite) {
 	
-		String constantsSection = constructConstantsSection(existingUnions, newUnionsIds);
+		String constantsSection = constructConstantsSection(existingUnions, unionsMapping);
 		String predicatesSection = getPredicatesSection();
 		String formulaeForExistingUnions = constructFormulaeForExistingUnions(existingUnions);
 		String formulaeForPercept = constructFormulaeForPercept(b);
 		String featvaluesconstraintsSection = getFeatValueConstraintsSection();
 		String correlationSection = getCorrelationSection();
-		String outcomeSection = extractFinalOutcomeSection(existingUnions, newUnionsIds);
+		String outcomeSection = extractFinalOutcomeSection(existingUnions, unionsMapping);
 		
 		FileUtils.writeFile(MLNFileToWrite, constantsSection + predicatesSection + formulaeForExistingUnions + 
 				formulaeForPercept + featvaluesconstraintsSection + correlationSection + outcomeSection);	
@@ -30,7 +30,7 @@ public class MLNGenerator {
 	
 	
 	
-	private static String extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, Collection<String> newUnionsIds) {
+	private static String extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, HashMap<String,String> unionsMapping) {
 		return FileUtils.readfile(markovlogicDir + "grouping/outcome.mln");
 	}
 	
@@ -57,7 +57,7 @@ public class MLNGenerator {
 		return FileUtils.readfile(markovlogicDir + "grouping/newpercept.mln");
 	}
 	
-	private static String constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, Collection<String> newUnionsIds) {
+	private static String constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, HashMap<String,String> unionsMapping) {
 	
 		return FileUtils.readfile(markovlogicDir + "grouping/constantssection.mln");
 	}
