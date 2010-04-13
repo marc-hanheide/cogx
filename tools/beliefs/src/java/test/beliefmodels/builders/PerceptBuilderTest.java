@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
 
 // Belief models
 import beliefmodels.arch.BeliefException;
-import beliefmodels.autogen.history.PerceptHistory;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.PerceptBuilder;
 
 public class PerceptBuilderTest {
@@ -54,7 +54,7 @@ public class PerceptBuilderTest {
 	@Test
 	public void NewHistoryForNullAddressFails () { 
 		try { 
-			PerceptHistory phist = PerceptBuilder.createNewPerceptHistory(null);
+			CASTBeliefHistory phist = PerceptBuilder.createNewPerceptHistory(null);
 			fail("Creating a history for a null address should fail"); 
 		} catch (BeliefException be) {
 			assertEquals("Error when creating belief history: cannot create history for null", 
