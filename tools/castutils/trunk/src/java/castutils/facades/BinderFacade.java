@@ -6,12 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-   
+
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
-import beliefmodels.autogen.distribs.FeatureValues; 
+import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
@@ -36,7 +36,7 @@ public class BinderFacade extends CASTHelper {
 
 	WMView<Belief> proxies;
 	ManagedComponent component;
- 
+
 	/**
 	 * @param component
 	 */
@@ -53,8 +53,7 @@ public class BinderFacade extends CASTHelper {
 	 * @return the singleton
 	 * @throws CASTException
 	 */
-	public static BinderFacade get(ManagedComponent component)
-			throws CASTException {
+	public static BinderFacade get(ManagedComponent component) {
 		if (singleton == null) {
 			singleton = new BinderFacade(component);
 			singleton.start();
@@ -79,19 +78,18 @@ public class BinderFacade extends CASTHelper {
 	 * @param featureLabel
 	 * @return the alternativeFeatures
 	 */
-	public List<FeatureValue> getFeatureValue(Belief entity,
-			String featureLabel) {
-		assert(entity.content instanceof CondIndependentDistribs);
+	public List<FeatureValue> getFeatureValue(Belief entity, String featureLabel) {
+		assert (entity.content instanceof CondIndependentDistribs);
 		CondIndependentDistribs cid = (CondIndependentDistribs) entity.content;
 		ProbDistribution pd = cid.distribs.get(featureLabel);
-		if (pd == null) 
+		if (pd == null)
 			return new LinkedList<FeatureValue>();
-		
-		assert(pd instanceof BasicProbDistribution);
-		
+
+		assert (pd instanceof BasicProbDistribution);
+
 		List<FeatureValue> result = new LinkedList<FeatureValue>();
-		
-		for (FeatureValueProbPair f : ((FeatureValues)((BasicProbDistribution) pd).values).values) {
+
+		for (FeatureValueProbPair f : ((FeatureValues) ((BasicProbDistribution) pd).values).values) {
 			result.add(f.val);
 		}
 		return result;
@@ -108,20 +106,19 @@ public class BinderFacade extends CASTHelper {
 	public Map<String, FeatureValue> findFeaturesInUnion(String featureLabel) {
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 
-		//List<FeatureValue> features;
+		// List<FeatureValue> features;
 
 		for (Belief union : proxies.values()) {
-			
+
 			debug("check belief " + union.id);
 			List<FeatureValue> fvl = getFeatureValue(union, featureLabel);
-			if (fvl.size()>0) {
+			if (fvl.size() > 0) {
 				result.put(union.id, fvl.get(0));
 			}
 		}
 		return result;
 
 	}
-
 
 	/**
 	 * look up proxy using its ID
@@ -146,32 +143,35 @@ public class BinderFacade extends CASTHelper {
 		return findRelationByAttribute(src, RelationElement1.value);
 	}
 
-	public Map<WorkingMemoryAddress, Belief> findRelationByAttribute(String src, String attr) {
+	public Map<WorkingMemoryAddress, Belief> findRelationByAttribute(
+			String src, String attr) {
 		Map<WorkingMemoryAddress, Belief> result = new HashMap<WorkingMemoryAddress, Belief>();
-		for (Entry<WorkingMemoryAddress, Belief> e : new HashSet<Entry<WorkingMemoryAddress, Belief>>(proxies.entrySet())) {
+		for (Entry<WorkingMemoryAddress, Belief> e : new HashSet<Entry<WorkingMemoryAddress, Belief>>(
+				proxies.entrySet())) {
 			Belief rp = e.getValue();
 			if (rp.type.equals(TypeRelation.value)) {
 				StringValue fv = (StringValue) getFeatureValue(rp, attr).get(0);
 				if (fv.equals(src)) {
 					result.put(e.getKey(), rp);
 				}
-			} 
+			}
 		}
 		return result;
 
 	}
 
-	public Map<WorkingMemoryAddress, Belief> findRelations(
-			String targetOrSrc, String relationType) {
+	public Map<WorkingMemoryAddress, Belief> findRelations(String targetOrSrc,
+			String relationType) {
 		log("look for all relations having target or source equal to "
 				+ targetOrSrc + " and being of type " + relationType);
 		Map<WorkingMemoryAddress, Belief> result = new HashMap<WorkingMemoryAddress, Belief>();
 		result.putAll(findRelationBySrc(targetOrSrc));
-		result.putAll(findRelationByTarget(targetOrSrc));		
+		result.putAll(findRelationByTarget(targetOrSrc));
 		if (relationType.length() > 0) {
 			log("check relation type");
 			for (Entry<WorkingMemoryAddress, Belief> e : result.entrySet()) {
-				List<FeatureValue> fvl = getFeatureValue(e.getValue(), relationType);
+				List<FeatureValue> fvl = getFeatureValue(e.getValue(),
+						relationType);
 				log("fvl.size() == " + fvl.size());
 				if (fvl.size() == 0) {
 					continue;
@@ -191,8 +191,10 @@ public class BinderFacade extends CASTHelper {
 				+ selectedRelations.size());
 		for (Entry<WorkingMemoryAddress, Belief> e : selectedRelations
 				.entrySet()) {
-			String sourceId = ((StringValue) getFeatureValue(e.getValue(),RelationElement0.value).get(0)).val;
-			String targetId = ((StringValue) getFeatureValue(e.getValue(),RelationElement1.value).get(0)).val;
+			String sourceId = ((StringValue) getFeatureValue(e.getValue(),
+					RelationElement0.value).get(0)).val;
+			String targetId = ((StringValue) getFeatureValue(e.getValue(),
+					RelationElement1.value).get(0)).val;
 			debug("getRelatedProxies: sourceID = " + sourceId);
 			debug("getRelatedProxies: targetID = " + targetId);
 			WorkingMemoryAddress sourceAddr = new WorkingMemoryAddress(
