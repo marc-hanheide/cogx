@@ -8,14 +8,12 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import SpatialData.Place;
 import SpatialProperties.PlaceContainmentObjectProperty;
 import SpatialProperties.StringValue;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.featurenames.FeatPlaceId;
-import beliefmodels.autogen.featurecontent.featurenames.FeatPlaceStatus;
 import beliefmodels.builders.FeatureValueBuilder;
 import binder.components.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
@@ -27,7 +25,6 @@ public class PlaceObjectContainmentTransferFunction extends SimpleDiscreteTransf
 
 	public PlaceObjectContainmentTransferFunction() {
 		super(Logger.getLogger(PlaceObjectContainmentTransferFunction.class));
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
