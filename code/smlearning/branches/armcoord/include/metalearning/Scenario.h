@@ -229,6 +229,12 @@ protected:
 	int horizontalAngle;
 	int numSequences;
 
+	SecTmReal tmDeltaAsync;
+	golem::GenConfigspaceState initial;
+	GenWorkspaceState home;
+	int startingPosition;
+	golem::Bounds::SeqPtr curPol;
+
 	// Real reachedAngle;
 	
 	/** iteration counter */
@@ -292,11 +298,60 @@ protected:
 
 	void initializePolyflap();
 
-	void  initializeMovement(const SecTmReal tmDeltaAsync, int startingPosition);
+	void  initializeMovement();
 
 	
 	void setUpMovement();
 
+	void firstInit();
+
+	void setupHome();
+
+	void setupLoop(int argc, char* argv[]);
+
+	void sendPosition(golem::GenWorkspaceState position, golem::ReacPlanner::Action action);
+
+	void initWriting();
+
+	void writePosAndOr();
+
+	void writeSpeedAndAngle();
+
+	void writeVectorIntoSequence();
+
+	void initData();
+
+	void moveFinger();
+
+	void writeSequenceIntoDataset();
+
+	void setCollisionDetection(bool b);
+
+	void printSequenceInfo();
+
+	void moveFingerUp();
+
+	void removePolyflap();
+
+	void pepareHomeMovement();
+
+	void iterationEndInfo();
+
+	void finishIteration();
+
+	void moveToInitial();
+
+	void writeDatasetIntoBinary();
+
+	void createPolyflapObject();
+
+	void computeVectors();
+
+	void setPositionT();
+
+	void defineStartPosition();
+
+	void prepareTarget();
 
 };
 
