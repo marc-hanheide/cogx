@@ -41,11 +41,15 @@ public class MLNGenerator {
 	
 	private static final String EXISTING_UNIONS = "existingunion";
 
+	public static final String STANDARD_INPUT_ID = "P";
+		
 	private static final Object NEWLINE = "\n";
 
 	public static String markovlogicDir = "subarchitectures/binder/markovlogic/";
 	
 	private Map<String, Set<String>> names_for_type;
+	
+	private Belief newInput;
 	
 	public MLNGenerator() {
 		names_for_type = new TreeMap<String, Set<String>>();
@@ -58,6 +62,8 @@ public class MLNGenerator {
 	// we build the corresponding Markov logic network file step by step
 	public void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, 
 			HashMap<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
+		
+		newInput = b;
 		
 		StringBuilder mln_file = new StringBuilder();
 		
@@ -415,7 +421,14 @@ public class MLNGenerator {
 		}
 
 		if (dist instanceof DistributionWithExistDep) {
-			return convertDistributionWithExistDep((DistributionWithExistDep) dist, belief_id);
+			String id;
+			if (getMarkovLogicConstantFromID(newInput.id).equals(belief_id)) {
+				id = STANDARD_INPUT_ID;
+			}
+			else {
+				id = belief_id;
+			}
+			return convertDistributionWithExistDep((DistributionWithExistDep) dist, id);
 		}
 		
 		if (dist instanceof CondIndependentDistribs) {
@@ -569,18 +582,18 @@ public class MLNGenerator {
 		return "U" + id.replace(":", "_");
 	}
 	
-	public  static String getIDFromMarkovLogicSontant (String mlconstant) {
+	public static String getIDFromMarkovLogicConstant (String mlconstant) {
 		return mlconstant.substring(1).replace("_", ":");
 	}
 
-	private static String setFirstLetterToUppercase(String s) {
+	private String setFirstLetterToUppercase(String s) {
 		return (s.substring(0,1).toUpperCase() + s.substring(1));
 	}
 	
-	private static String setFirstLetterToLowercase(String s) {
+	private String setFirstLetterToLowercase(String s) {
 		return (s.substring(0,1).toLowerCase() + s.substring(1));
 	}
-
+ 
 	private static void log(String s) {
 		if (LOGGING) {
 			System.out.println("[MLNGenerator] " + s);

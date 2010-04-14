@@ -79,7 +79,7 @@ public abstract class MarkovLogicComponent extends BeliefWriter {
 	      String markovlogicunion = line2.substring(0, line2.indexOf(")"));
 	      float prob = Float.parseFloat(line2.substring(line2.indexOf(" ")));
 	      
-	      String union = MLNGenerator.getIDFromMarkovLogicSontant(markovlogicunion);
+	      String union = MLNGenerator.getIDFromMarkovLogicConstant(markovlogicunion);
 	      
 	      inferenceResults.put(union, prob);
 	      
