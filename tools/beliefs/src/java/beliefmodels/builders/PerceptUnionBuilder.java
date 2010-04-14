@@ -23,6 +23,7 @@ package beliefmodels.builders;
 
 import java.util.Set;
 
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 
 import beliefmodels.arch.BeliefException;
@@ -31,10 +32,44 @@ import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
+import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.epstatus.EpistemicStatus;
+import beliefmodels.autogen.framing.SpatioTemporalFrame;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 
 public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 
 
+	
+	/**
+	 * Construct a new percept union belief
+	 * 
+	 * @param curPlace the current place
+	 * @param curTime the curernt time
+	 * @param content the belief content
+	 * @param hist the percept history
+	 * @return the resulting belief
+	 * @throws BinderException 
+	 */
+	public static PerceptUnionBelief createNewPerceptUnionBelief (String id, String type, String curPlace, CASTTime curTime, ProbDistribution content, CASTBeliefHistory hist) 
+		throws BeliefException {
+		
+		if (curPlace == null || curTime == null || content == null || hist == null) {
+			throw new BeliefException("error, one of the belief component is null");
+		}
+		
+		// constructing the spatio-temporal frame
+		SpatioTemporalFrame frame = 
+			SpatioTemporalFrameBuilder.createSimpleSpatioTemporalFrame(curPlace, curTime, curTime);
+		
+		// constructing the epistemic status
+		EpistemicStatus status = 
+			EpistemicStatusBuilder.createNewPrivateEpistemicStatus(EpistemicStatusBuilder.ROBOT_AGENT);
+	
+		// and creating the belief
+		return new PerceptUnionBelief(frame,status,id, type, content,hist);
+	}
+	
 
 	/**
 	 * Construct a new percept union belief similar to a given percept
@@ -137,7 +172,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 		// and inserting each subdistrib into the new belief content
 		for (String featlabel : unionCIDistrib.distribs.keySet()) {
 			BeliefContentBuilder.putNewCondIndependentDistrib(newCIDistrib, 
-					(BasicProbDistribution)perceptCIDistrib.distribs.get(featlabel));
+					(BasicProbDistribution)unionCIDistrib.distribs.get(featlabel));
 		}
 
 		// creating the new, full belief content
