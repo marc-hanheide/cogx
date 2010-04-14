@@ -113,7 +113,7 @@ public class MLNGenerator {
 		
 		result.append(NEWLINE);
 		for(String predicate_type : names_for_type.keySet()) {
-			result.append(predicate_type + "(belief," + names_for_type.get(predicate_type) + "val)\n");
+			result.append(predicate_type + "(belief, " + setFirstLetterToLowercase(predicate_type) + "val)\n");
 		}
 		
 		result.append(NEWLINE);
@@ -313,11 +313,16 @@ public class MLNGenerator {
 	
 	
 	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution distrib) {
-		if(!names_for_type.containsKey(distrib.key)) {
-			names_for_type.put(distrib.key, new TreeSet<String>());
+		String keyWithUppercase = setFirstLetterToUppercase(distrib.key);
+		if(!names_for_type.containsKey(keyWithUppercase)) {
+			names_for_type.put(keyWithUppercase, new TreeSet<String>());
 		}
-		names_for_type.get(distrib.key).addAll(getListDistributionValues(distrib.values));
+		for (String value: getListDistributionValues(distrib.values)) {
+			String valWithUppercase = setFirstLetterToUppercase(value);
+			names_for_type.get(keyWithUppercase).add(valWithUppercase);
+		}
 	}
+	
 
 	private List<String> getListDistributionValues(DistributionValues values) {
 		if(values instanceof FeatureValues) {
@@ -455,7 +460,7 @@ public class MLNGenerator {
 		
 		// now we need to add the hard constraint for all the names
 		// that have not appeared for the predicate feature
-		Set<String> non_occuring_values = new TreeSet<String>(names_for_type.get(feature));
+		Set<String> non_occuring_values = new TreeSet<String>(names_for_type.get(setFirstLetterToUppercase(feature)));
 		non_occuring_values.remove("None");
 		non_occuring_values.removeAll(occuring_values);
 		for(String non_occuring_value : non_occuring_values) {
@@ -556,6 +561,13 @@ public class MLNGenerator {
 		return mlconstant.substring(1).replace("_", ":");
 	}
 
+	private static String setFirstLetterToUppercase(String s) {
+		return (s.substring(0,1).toUpperCase() + s.substring(1));
+	}
+	
+	private static String setFirstLetterToLowercase(String s) {
+		return (s.substring(0,1).toLowerCase() + s.substring(1));
+	}
 
 	private static void log(String s) {
 		if (LOGGING) {
