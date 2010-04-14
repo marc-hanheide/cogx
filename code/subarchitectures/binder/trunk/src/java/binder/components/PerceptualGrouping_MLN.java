@@ -1,9 +1,16 @@
 package binder.components;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
@@ -42,8 +49,8 @@ import cast.core.CASTData;
  * 
  * 
  * NOTE: 
- * - still need to check subarchitecture consistency
- * - still need to add filters
+ * - still need to check subarchitecture consistency OK
+ * - still need to add filters OK
  * - only perform updates on existing unions when change is significant
  * - need to add functionality for percept updates or deletions
  * - remove the testing stuff and have a proper, separate tester class  OK
@@ -63,6 +70,9 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 
 	String MLNFile = markovlogicDir + "grouping.mln";
 	String resultsFile = markovlogicDir + "unions.results";
+	
+	public float lowestProbThreshold = 0.08f;
+	public int maxAlternatives = 2;
 
 	
 	/**
@@ -131,20 +141,43 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		try { 
 		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 		
+		log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
+		HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults, maxAlternatives);
+		
 		// create the new unions given the inference results
 		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, perceptWMAddress, relevantUnions,
-				unionsMapping, newSingleUnionId, inferenceResults);
+				unionsMapping, newSingleUnionId, filteredInferenceResults);
 
 		// and add them to the working memory
-		addNewUnionToWM(newUnions);
+		for (PerceptUnionBelief newUnion : newUnions) {
+			if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
+				insertBeliefInWM(newUnion);
+				log("inserting belief " + newUnion.id + " on WM");
+			}
+			else {
+				log ("Belief " + newUnion.id + " has probability " + DistributionUtils.getExistenceProbability(newUnion) +
+						", which is lower than the minimum threshold.  Not inserting");
+			}
+		}
 
 		// modify the existence probabilities of the existing unions
-		modifyExistingUnions(percept, relevantUnions, unionsMapping, inferenceResults);
+		modifyExistingUnions(percept, relevantUnions, unionsMapping, filteredInferenceResults);
 		
 		// and update them on the working memory
-		updateExistingUnionsInWM(relevantUnions);
+		for (String relevantUnionIds : relevantUnions.keySet()) {
+			PerceptUnionBelief relevantUnion = relevantUnions.get(relevantUnionIds);
+			if (DistributionUtils.getExistenceProbability(relevantUnion) > lowestProbThreshold)  {
+				updateBeliefOnWM(relevantUnion);
+				log("updating belief " + relevantUnion.id + " on WM");
+			}
+			else  {
+				deleteBeliefOnWM(relevantUnion.id);
+				log("deleting belief: " + relevantUnion.id + " on WM");
+			}
 		}
-		catch (BeliefException e) {
+		
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 		}
@@ -154,48 +187,35 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	}
 
 
-	/**
-	 * Update unions already existing on the binder working memory with updated content (mostly with
-	 * updated existence probability)
-	 * 
-	 * @param existingUnions the unions to update on the working memory
-	 * @pre the unions must already be present on the working memory, with the same identifier
-	 */
-	private void updateExistingUnionsInWM(HashMap<String, PerceptUnionBelief> existingUnions) {
-
-		try {
-			for (String unionId: existingUnions.keySet()) {
-				updateBeliefOnWM(existingUnions.get(unionId));
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		} 
+	private HashMap<String, Float> filterInferenceResults (HashMap<String,Float> results, int maxSize) {
+		
+		     List<Entry<String,Float>> list = new LinkedList<Entry<String,Float>>(results.entrySet());
+		     Collections.sort(list, new Comparator<Entry<String,Float>>() {
+		          public int compare(Entry<String,Float> o1, Entry<String,Float> o2) {
+		               if (o1.getValue().floatValue() >= o2.getValue().floatValue()) {
+		            	   return -1;
+		               }
+		              return 1;
+		          }
+		     });
+		// logger.info(list);
+		
+		int increment = 0;
+		HashMap<String,Float> newResults = new HashMap<String,Float>();
+		for (Iterator<Entry<String,Float>> it = list.iterator(); it.hasNext();) {
+		     Map.Entry<String,Float> entry = (Map.Entry<String,Float>)it.next();
+		     if (increment < maxAlternatives) {
+		     newResults.put(entry.getKey(), entry.getValue());
+		     increment++;
+		     }
+		     else {
+		    	 newResults.put(entry.getKey(), new Float(0.0f)); 
+		     }
+		     }
+		return newResults;
 	}
-
 	
 	
-	/**
-	 * Add new unions to the binder working memory
-	 * 
-	 * @param b temporary parameter
-	 * @param newUnions the set of new unions to add on the working memory
-	 * @pre the unions (or at least their identifier) must not be already be present on 
-	 * 		the working memory 
-	 */
-	private void addNewUnionToWM(Vector<PerceptUnionBelief> newUnions) {
-		try {
-			for (PerceptUnionBelief union : newUnions) {
-				insertBeliefInWM(union);		
-			}
-		}
-		 catch (AlreadyExistsOnWMException e) {
-			e.printStackTrace();
-		}
-
-	}
-
-
 	/**
 	 * Create a set of new percept union beliefs from the inference results, associated with the 
 	 * original percept
