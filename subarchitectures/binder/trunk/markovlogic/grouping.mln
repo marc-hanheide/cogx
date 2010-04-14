@@ -8,7 +8,7 @@ percept = {P}
 belief = {U0_2,U2_2,U1_2,P}
 
 // possible outcomes of the grouping process
-outcome = {U0_3,UP,U2_3,U1_3}
+outcome = {U0_3,U2_3,U1_3,U3_3}
 
 // feature values
 colourval = {Pink,Red,Unknown,None}

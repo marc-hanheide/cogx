@@ -111,11 +111,11 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		log("newly created union ids: " + unionsMapping.keySet().toString());
 			
 		String newSingleUnionId = newDataID();
-		unionsMapping.put("P", newSingleUnionId);
+	//	unionsMapping.put("P", newSingleUnionId);
 		
 		// Write the markov logic network to a file
 		try {
-			(new MLNGenerator()).writeMLNFile(percept, existingUnions.values(), unionsMapping, MLNFile);
+			(new MLNGenerator()).writeMLNFile(percept, existingUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
 		} catch (MLException e1) {
 			e1.printStackTrace();
 		}
@@ -211,6 +211,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			if (!inferenceResults.containsKey(id)) {
 				throw new BeliefException("ERROR, id " + id + " is not in inferenceResults.  inferenceResults = " + inferenceResults.keySet().toString());
 			}
+			
 			else if (!existingUnions.containsKey(unionsMapping.get(id))) {
 				throw new BeliefException("ERROR, existing union id " + unionsMapping.get(id) + " is not in existingUnions");
 			}

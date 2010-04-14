@@ -56,7 +56,9 @@ public class MLNGenerator {
 	/////////////////////////////////////////////////////////////////////////////////////
 	
 	// we build the corresponding Markov logic network file step by step
-	public void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, HashMap<String,String> unionsMapping, String MLNFileToWrite) throws MLException {
+	public void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, 
+			HashMap<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
+		
 		StringBuilder mln_file = new StringBuilder();
 		
 		// before we can start with the serialization we need to know all the names
@@ -74,22 +76,23 @@ public class MLNGenerator {
 		shapes.add("Mug");
 		shapes.add("Ball");
 		names_for_type.put("Label", labels);
-		
+	
 		
 		// now lets do the serialization
-		mln_file.append(constructConstantsSection(existingUnions, unionsMapping));
+		mln_file.append(constructConstantsSection(existingUnions, unionsMapping, newSingleUnionId));
 		mln_file.append(getPredicatesSection());
 		mln_file.append(constructFormulaeForExistingUnions(existingUnions));
 		mln_file.append(constructFormulaeForPercept(b));
 		mln_file.append(getFeatValueConstraintsSection());
 		mln_file.append(getCorrelationSection());
-		mln_file.append(extractFinalOutcomeSection(existingUnions, unionsMapping));
+		mln_file.append(extractFinalOutcomeSection(existingUnions, unionsMapping, newSingleUnionId));
 		
 		FileUtils.writeFile(MLNFileToWrite, mln_file.toString());
 	}
 	
 	// 1) constants section 
-	private StringBuilder constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, HashMap<String,String> unionsMapping) {
+	private StringBuilder constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, 
+			HashMap<String,String> unionsMapping, String newSingleUnionId) {
 		StringBuilder result = new StringBuilder();
 		result.append("///////////////////////////////\n");
 		result.append("// CONSTANTS\n");
@@ -103,7 +106,7 @@ public class MLNGenerator {
 		// 1.2) possible new outcomes
 		result.append(NEWLINE);
 		result.append("// possible outcomes of the grouping process\n");
-		result.append(serializeOutcomes(unionsMapping));
+		result.append(serializeOutcomes(unionsMapping, newSingleUnionId));
 		
 		// 1.3) feature values
 		result.append(NEWLINE);
@@ -203,7 +206,7 @@ public class MLNGenerator {
 	}
 	
 	// 7) final outcome section
-	private StringBuilder extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, HashMap<String,String> unionsMapping) {
+	private StringBuilder extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, HashMap<String,String> unionsMapping, String singleUnionId) {
 		// FIXME: add parameter to control the probability of the outcome
 		// FIXME: add parameter to control greediness of the binding process
 		// FIXME: @Pierre Is the mapping P -> BELIEFID already in the unionsMapping?
@@ -217,12 +220,10 @@ public class MLNGenerator {
 		result.append(NEWLINE);
 		
 		// a) specification of the different outcomes
-		assert unionsMapping.containsKey("P");
-		result.append("-1.5 Existence(P) => Outcome(" + getMarkovLogicConstantFromID(unionsMapping.get("P")) + ")\n");
+		result.append("-1.5 Existence(P) => Outcome(" + getMarkovLogicConstantFromID(singleUnionId) + ")\n");
 		
 		// then comes the rest of the possible results
 		Set<String> new_unions = new TreeSet<String>(unionsMapping.keySet());
-		assert new_unions.remove("P");
 		for(String new_union : new_unions) {
 			result.append("UnifyWith(" + getMarkovLogicConstantFromID(unionsMapping.get(new_union)) + 
 					") <=> Outcome(" + getMarkovLogicConstantFromID(new_union) + ").\n");
@@ -261,7 +262,7 @@ public class MLNGenerator {
 		return result;
 	}
 	
-	private StringBuilder serializeOutcomes(HashMap<String, String> unionsMapping) {
+	private StringBuilder serializeOutcomes(HashMap<String, String> unionsMapping, String newSingleUnionId) {
 		StringBuilder result = new StringBuilder();
 		result.append("outcome = {");
 		 
@@ -270,7 +271,7 @@ public class MLNGenerator {
 		while(iter.hasNext()) {
 			result.append("," + getMarkovLogicConstantFromID(iter.next()));
 		}
-		
+		result.append("," + getMarkovLogicConstantFromID(newSingleUnionId));
 		result.append("}\n");
 		return result;
 	}
