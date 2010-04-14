@@ -11,7 +11,6 @@ belief = {U0_2,U2_2,U1_2,P}
 outcome = {U0_3,U2_3,U1_3,U3_3}
 
 // feature values
-colourval = {Pink,Red,Unknown,None}
 labelval = {,Unknown,None}
 shapeval = {Ball,Cyl,Mug,Sphe,Unknown,None}
 
@@ -19,7 +18,6 @@ shapeval = {Ball,Cyl,Mug,Sphe,Unknown,None}
 // PREDICATES
 ///////////////////////////////
 
-Colour(belief, colourval)
 Label(belief, labelval)
 Shape(belief, shapeval)
 
@@ -32,37 +30,40 @@ Existence(belief)
 ///////////////////////////////
 
 2.1972244 Existence(U0_2)
+1.0986123 Existence(U0_2) => Shape(U0_2,Cyl)
+-1.734601 Existence(U0_2) => Shape(U0_2,Sphe)
+-2.1972244 Existence(U0_2) => Shape(U0_2,Unknown)
+Existence(U0_2) => !Shape(U0_2,Ball).
+Existence(U0_2) => !Shape(U0_2,Mug).
+Existence(U0_2) => Shape(U0_2,None).
 
--2.944439 Existence(U2_2)
+-5.293305 Existence(U2_2)
 
 1.3862945 Existence(U1_2)
+1.7346013 Existence(U1_2) => Shape(U1_2,Sphe)
+-1.7346013 Existence(U1_2) => Shape(U1_2,Unknown)
+Existence(U1_2) => !Shape(U1_2,Ball).
+Existence(U1_2) => !Shape(U1_2,Cyl).
+Existence(U1_2) => !Shape(U1_2,Mug).
+Existence(U1_2) => Shape(U1_2,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
-1.3862945 Existence(U3_2)
-0.84729785 Existence(U3_2) => Colour(U3_2,Red)
--0.8472978 Existence(U3_2) => Colour(U3_2,Pink)
-Existence(U3_2) => !Colour(U3_2,Pink).
-Existence(U3_2) => !Colour(U3_2,Red).
-Existence(U3_2) => Colour(U3_2,None).
+1.7346013 Existence(U3_2)
 
 ///////////////////////////////
 // FEATURE VALUE CONSTRAINTS
 ///////////////////////////////
 
 // rules for existence dependency
-!Existence(x) => y=None v !Colour(x,y).
-!Existence(x) => Colour(x,None).
 !Existence(x) => y=None v !Label(x,y).
 !Existence(x) => Label(x,None).
 !Existence(x) => y=None v !Shape(x,y).
 !Existence(x) => Shape(x,None).
 
 // mutual exclusivity and unicity constraints
-Colour(x,y) ^ Colour(x,z) => y=z.
-EXIST y Colour(x,y).
 Label(x,y) ^ Label(x,z) => y=z.
 EXIST y Label(x,y).
 Shape(x,y) ^ Shape(x,z) => y=z.
