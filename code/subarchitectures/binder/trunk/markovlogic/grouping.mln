@@ -2,19 +2,22 @@
 // CONSTANTS
 ///////////////////////////////
 
-// beliefsexistingunion = {U0_2,U2_2,U1_2}
+// beliefs
+existingunion = {U0_2,U2_2,U1_2}
 percept = {P}
 belief = {U0_2,U2_2,U1_2,P}
 
-// possible outcomes of the grouping processoutcome = {U0_2,U3_3,U1_2,U2_2}
+// possible outcomes of the grouping process
+outcome = {U0_2,U3_3,U1_2,U2_2}
 
-// feature valuescolourval = {pink,red,Unknown,None}
+// feature values
+colourval = {Pink,Red,Unknown,None}
 
 ///////////////////////////////
 // PREDICATES
 ///////////////////////////////
 
-colour(belief,[pink, red]val)
+Colour(belief, colourval)
 
 Outcome(outcome)
 UnifyWith(existingunion)
@@ -36,6 +39,8 @@ UnifyWith(existingunion)
 1.3862945 Existence(U3_2)
 0.84729785 Existence(U3_2) => colour(U3_2,red)
 -0.8472978 Existence(U3_2) => colour(U3_2,pink)
+Existence(U3_2) => !colour(U3_2,Pink).
+Existence(U3_2) => !colour(U3_2,Red).
 Existence(U3_2) => colour(U3_2,None).
 
 ///////////////////////////////
@@ -43,12 +48,12 @@ Existence(U3_2) => colour(U3_2,None).
 ///////////////////////////////
 
 // rules for existence dependency
-!Existence(x) => y=None v !colour(x,y).
-!Existence(x) => colour(x,None).
+!Existence(x) => y=None v !Colour(x,y).
+!Existence(x) => Colour(x,None).
 
 // mutual exclusivity and unicity constraints
-Shape(x,y) ^ colour(x,z) => y=z.
-EXIST y colour(x,y).
+Shape(x,y) ^ Colour(x,z) => y=z.
+EXIST y Colour(x,y).
 
 
 
