@@ -4,7 +4,7 @@ CATEGORIES = distributions
 DISTFILES =
 MAINTAINER = mhanheid
 
-DEB_PACKAGES=python-numpy-ext@ubuntu imlib11-dev@ubuntu
+DEB_PACKAGES=
 
 
 LIBDEPS = 	contrib/opencv-trunk \
