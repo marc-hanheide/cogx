@@ -11,16 +11,16 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
     
- 
+  
 /**
  * Simple class to demonstrate how to monitor the working memory for new changes 
  * 
  * @author plison
- *
+ * 
  */
 public class BinderMonitor extends ManagedComponent {
 
- 
+  
 	public void start() {
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
