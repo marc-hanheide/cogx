@@ -12,15 +12,20 @@ outcome = {U0_2,U3_3,U1_2,U2_2}
 
 // feature values
 colourval = {Pink,Red,Unknown,None}
+labelval = {,Unknown,None}
+shapeval = {Ball,Cyl,Mug,Sphe,Unknown,None}
 
 ///////////////////////////////
 // PREDICATES
 ///////////////////////////////
 
 Colour(belief, colourval)
+Label(belief, labelval)
+Shape(belief, shapeval)
 
 Outcome(outcome)
 UnifyWith(existingunion)
+Existence(belief)
 
 ///////////////////////////////
 // EXISTING UNIONS
@@ -37,11 +42,11 @@ UnifyWith(existingunion)
 ///////////////////////////////
 
 1.3862945 Existence(U3_2)
-0.84729785 Existence(U3_2) => colour(U3_2,red)
--0.8472978 Existence(U3_2) => colour(U3_2,pink)
-Existence(U3_2) => !colour(U3_2,Pink).
-Existence(U3_2) => !colour(U3_2,Red).
-Existence(U3_2) => colour(U3_2,None).
+0.84729785 Existence(U3_2) => Colour(U3_2,Red)
+-0.8472978 Existence(U3_2) => Colour(U3_2,Pink)
+Existence(U3_2) => !Colour(U3_2,Pink).
+Existence(U3_2) => !Colour(U3_2,Red).
+Existence(U3_2) => Colour(U3_2,None).
 
 ///////////////////////////////
 // FEATURE VALUE CONSTRAINTS
@@ -50,10 +55,18 @@ Existence(U3_2) => colour(U3_2,None).
 // rules for existence dependency
 !Existence(x) => y=None v !Colour(x,y).
 !Existence(x) => Colour(x,None).
+!Existence(x) => y=None v !Label(x,y).
+!Existence(x) => Label(x,None).
+!Existence(x) => y=None v !Shape(x,y).
+!Existence(x) => Shape(x,None).
 
 // mutual exclusivity and unicity constraints
-Shape(x,y) ^ Colour(x,z) => y=z.
+Colour(x,y) ^ Colour(x,z) => y=z.
 EXIST y Colour(x,y).
+Label(x,y) ^ Label(x,z) => y=z.
+EXIST y Label(x,y).
+Shape(x,y) ^ Shape(x,z) => y=z.
+EXIST y Shape(x,y).
 
 
 
@@ -80,7 +93,10 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 ///////////////////////////////
 
 -1.5 Existence(P) => Outcome(U3_3)
-UnifyWith(U0_3) <=> Outcome(U0_2).UnifyWith(U1_3) <=> Outcome(U2_2).UnifyWith(U2_3) <=> Outcome(U1_2).-1 Outcome(x)
+UnifyWith(U0_3) <=> Outcome(U0_2).
+UnifyWith(U1_3) <=> Outcome(U2_2).
+UnifyWith(U2_3) <=> Outcome(U1_2).
+-1 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).
 

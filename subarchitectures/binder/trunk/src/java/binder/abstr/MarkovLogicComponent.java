@@ -62,7 +62,7 @@ public abstract class MarkovLogicComponent extends BeliefWriter {
 		return new HashMap<String,Float>();
 	}
 	
-	
+	  
 	
 	public HashMap<String,Float> readResultsFile (String resultsFile) {
 	    

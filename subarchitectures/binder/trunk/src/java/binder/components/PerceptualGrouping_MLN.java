@@ -209,7 +209,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		for (String id : unionsMapping.keySet()) {
 			
 			if (!inferenceResults.containsKey(id)) {
-				throw new BeliefException("ERROR, id " + id + " is not in inferenceResults");
+				throw new BeliefException("ERROR, id " + id + " is not in inferenceResults.  inferenceResults = " + inferenceResults.keySet().toString());
 			}
 			else if (!existingUnions.containsKey(unionsMapping.get(id))) {
 				throw new BeliefException("ERROR, existing union id " + unionsMapping.get(id) + " is not in existingUnions");

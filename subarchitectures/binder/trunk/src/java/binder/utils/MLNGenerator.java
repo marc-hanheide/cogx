@@ -1,5 +1,6 @@
 package binder.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,7 +32,6 @@ import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.UnknownValue;
 import binder.ml.MLException;
 import binder.ml.MLFormula;
-import binder.ml.Predicate;
 
 public class MLNGenerator {
 
@@ -65,6 +65,16 @@ public class MLNGenerator {
 		for(Belief belief : existingUnions) {
 			extractTypesAndNames(belief.content);
 		}
+		Set<String> shapes = new TreeSet<String>();
+		shapes.add("Cyl");
+		shapes.add("Sphe");
+		names_for_type.put("Shape", shapes);
+		
+		Set<String> labels = new TreeSet<String>();
+		shapes.add("Mug");
+		shapes.add("Ball");
+		names_for_type.put("Label", labels);
+		
 		
 		// now lets do the serialization
 		mln_file.append(constructConstantsSection(existingUnions, unionsMapping));
@@ -119,6 +129,7 @@ public class MLNGenerator {
 		result.append(NEWLINE);
 		result.append("Outcome(outcome)\n");
 		result.append("UnifyWith(existingunion)\n");
+		result.append("Existence(belief)\n");
 		result.append(NEWLINE);
 		return  result;
 	}
@@ -170,7 +181,7 @@ public class MLNGenerator {
 		// b) the serialization of the exclusivity and unicinity constraints
 		result.append("// mutual exclusivity and unicity constraints\n");
 		for(String predicate_type : names_for_type.keySet()) {
-			result.append("Shape(x,y) ^ " + predicate_type + "(x,z) => y=z.\n");
+			result.append(predicate_type+"(x,y) ^ " + predicate_type + "(x,z) => y=z.\n");
 			result.append("EXIST y " + predicate_type + "(x,y).\n");
 		}
 		result.append(NEWLINE);
@@ -214,7 +225,7 @@ public class MLNGenerator {
 		assert old_unions.remove("P");
 		for(String old_union : old_unions) {
 			result.append("UnifyWith(" + getMarkovLogicConstantFromID(old_union) + 
-					") <=> Outcome(" + getMarkovLogicConstantFromID(unionsMapping.get(old_union)) + ").");
+					") <=> Outcome(" + getMarkovLogicConstantFromID(unionsMapping.get(old_union)) + ").\n");
 		}
 		
 		// b) mutual exclusivity and unicity
@@ -453,7 +464,7 @@ public class MLNGenerator {
 		for(FeatureValueProbPair pair : values.values) {
 			float weight = convertProbabilityToWeight(pair.prob);
 			String value = getFeatureValue(pair.val);
-			String formula = feature + "(" + belief_id + "," + value + ")";
+			String formula = setFirstLetterToUppercase(feature) + "(" + belief_id + "," + setFirstLetterToUppercase(value) + ")";
 			formulae.add(new MLFormula(weight, formula));
 			occuring_values.add(value);
 		}
@@ -464,13 +475,13 @@ public class MLNGenerator {
 		non_occuring_values.remove("None");
 		non_occuring_values.removeAll(occuring_values);
 		for(String non_occuring_value : non_occuring_values) {
-			MLFormula hard_formula = new MLFormula(1f,"!" + feature + "(" + belief_id + "," + non_occuring_value + ")");
+			MLFormula hard_formula = new MLFormula(1f,"!" + setFirstLetterToUppercase(feature) + "(" + belief_id + "," + non_occuring_value + ")");
 			hard_formula.setSharp();
 			formulae.add(hard_formula);
 		}
 		
 		// take care of the None case
-		MLFormula none_formula = new MLFormula(1f, feature + "(" + belief_id + ",None)");
+		MLFormula none_formula = new MLFormula(1f, setFirstLetterToUppercase(feature) + "(" + belief_id + ",None)");
 		none_formula.setSharp();
 		formulae.add(none_formula);
 		
