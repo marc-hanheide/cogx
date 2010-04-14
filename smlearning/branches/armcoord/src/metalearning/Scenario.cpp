@@ -403,9 +403,10 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		arm->getArm().lookupInp(chunk.armState, context.getTimer()->elapsed());
 		chunk.effectorPose = effector->getPose();
 		chunk.objectPose = object->getPose();
-// 		golem::Mat34 p = chunk.objectPose; 
-// 		cout << "pose: ";
-// 		printf("%f %f %f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
+		// golem::Mat34 p = chunk.objectPose; 
+		// golem::Mat34 p = chunk.effectorPose; 
+		// cout << "pose: ";
+		// printf("%f %f %f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
 
 		Real efRoll, efPitch, efYaw;
 		chunk.effectorPose.R.toEuler (efRoll, efPitch, efYaw);
@@ -414,15 +415,15 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 
 		Real polStateOutput = 0; //polyflap moves with the same Y angle
 		Real epsilonAngle = 0.005;
-		Real pfFlipThreshold = REAL_PI / 4.0;
+		// Real pfFlipThreshold = REAL_PI / 4.0;
 
 		if (learningData.currentSeq.size() > 1) {
 			if (currentPfRoll < (obRoll - epsilonAngle) ) {//polyflap Y angle increases
-				// polStateOutput = 1;
-				if (obRoll > pfFlipThreshold)
-					polStateOutput = 1;
-				else
-					polStateOutput = 0.75;
+				polStateOutput = 1;
+				// if (obRoll > pfFlipThreshold)
+				// 	polStateOutput = 1;
+				// else
+				// 	polStateOutput = 0.75;
 			}
 			if (currentPfRoll > (obRoll + epsilonAngle) )//polyflap Y angle decreases
 				polStateOutput = -1;
@@ -437,9 +438,8 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		currentPfRoll = obRoll;
 		currentPfY = chunk.objectPose.p.v2;
 
-		// if (obRoll > reachedAngle) {
+		// if (obRoll > reachedAngle)
 		// 	reachedAngle = obRoll;
-		// }
 
 		
 // 		learningData.data.push_back(chunk);
@@ -456,7 +456,7 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, -0.01, desc.maxRange));
 		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));

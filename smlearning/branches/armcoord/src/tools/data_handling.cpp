@@ -846,11 +846,14 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data
 
 
 ///
-///write a dataset in cryssmex format
+///write a dataset in cryssmex format by using the canonical representation
 ///
 void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::DataSet data) {
 	//assuming an input(output) vector be symbolic (dimensionality 0 in cryssmex)
 	writeFileName += ".cry";
+
+	assert (data.size() >= 1);
+	assert (data[0].size() >= 2);
 	
 	int inputVectorSize = 0;
 	int outputVectorSize = 0;
@@ -919,9 +922,10 @@ void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::
 }
 
 ///
-///write a dataset in cryssmex format. This code assumes vectorial data format
+///write a dataset in cryssmex format. This code assumes vectorial data format and an output
+///label defined artificially
 ///
-void write_dataset_cryssmex_fmt (string writeFileName, DataSet data) {
+void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, int modulo) {
 
 	//this function assumes data coming from feature vectors in dataset
 	//the first vector has the motor command information (of size 5 is for now assumed)
@@ -951,22 +955,98 @@ void write_dataset_cryssmex_fmt (string writeFileName, DataSet data) {
 		Sequence::const_iterator v;
 
 		FeatureVector motorCommandVector;
+		int time_step = 0;
 		for (v=s->begin(); v!= s->end(); v++) {
 			FeatureVector::const_iterator n;
 			long featvectorSize = v->size();
 			if (v == s->begin() )
 				for (n=v->begin(); n!= v->end(); n++)
 					motorCommandVector.push_back (*n);
-			else if (v != s->begin()) {
+			else if (v != s->begin() && time_step % modulo == 0) {
 				for (n=motorCommandVector.begin(); n!=motorCommandVector.end(); n++)
 					writeFile << *n << "  ";
 				for (n=v->begin(); n!= v->end()-1; n++)
 					writeFile << *n << "  ";
 				writeFile << *(v->end()-1) << endl;
 			}
+			time_step++;
 		}
 	}
 	writeFile.close();
+}
+
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format
+///and works as a regression predictor (output is of the same dimensionality as the state space) and canonical format for the input
+///
+void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSet data ) {
+	//assuming an input(output) vector be symbolic (dimensionality 0 in cryssmex)
+	writeFileName += ".cry";
+
+	assert (data.size() >= 1);
+	assert (data[0].size() >= 2);
+	
+	int inputVectorSize = 0;
+	int stateVectorSize = data[0][1].rawVector.size(); 
+	int outputVectorSize = data[0][2].rawVector.size();
+	assert (stateVectorSize == outputVectorSize);
+	
+	ofstream writeFile(writeFileName.c_str(), ios::out);
+
+	writeFile << "# input dim" << endl;
+	writeFile << inputVectorSize << endl;
+	writeFile << "# state dim" << endl;
+	writeFile << stateVectorSize << endl;
+	writeFile << "# output dim" << endl;
+	writeFile << outputVectorSize << endl;
+
+	set<string> motorCommandsSet;
+	set<string> outputsSet;
+	CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+
+		CanonicalData::Sequence::const_iterator v;
+		for (v=s->begin(); v!= s->end(); v++) {
+			if (v != s->begin()) {
+				string currentMotorCommand = v->motorCommand;
+				if (motorCommandsSet.find (currentMotorCommand) == motorCommandsSet.end())
+					motorCommandsSet.insert (currentMotorCommand);
+			}
+		}
+	}
+	writeFile << "# nr input symbols" << endl;
+	writeFile << motorCommandsSet.size() << endl;
+	writeFile << "# examples" << endl;
+	set<string>::iterator it;
+	for (it=motorCommandsSet.begin(); it!=motorCommandsSet.end(); it++)
+		writeFile << *it << " ";
+	writeFile << endl;
+	writeFile << "# output examples" << endl << "0.0" << endl;
+	// writeFile.precision(20);
+
+	//CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		CanonicalData::Sequence::const_iterator v;
+// 		string currentMotorCommand = s->begin()->motorCommand;
+
+		for (v=s->begin(); v!= s->end(); v++) {
+			
+			if (v != s->begin() && v+1 != s->end()) {
+				FeatureVector::const_iterator n;
+				string currentMotorCommand = v->motorCommand;
+				writeFile << currentMotorCommand << "   ";
+				for (n=v->rawVector.begin(); n!= v->rawVector.end(); n++)
+					writeFile << *n << " ";
+
+				for (n=(v+1)->rawVector.begin(); n!=(v+1)->rawVector.end(); n++)
+					writeFile << *n << " ";
+				writeFile << endl;
+			}
+		}
+	}
+	writeFile.close();
+
+
 }
 
 

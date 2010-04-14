@@ -225,7 +225,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, 0.0, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, -0.01, desc.maxRange));
 		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
