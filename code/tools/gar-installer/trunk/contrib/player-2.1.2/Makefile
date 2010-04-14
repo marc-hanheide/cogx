@@ -20,7 +20,7 @@ CONFIGURE_SCRIPTS = $(WORKSRC)/configure
 BUILD_SCRIPTS = $(WORKSRC)/Makefile
 INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
-CONFIGURE_ARGS = $(DIRPATHS) --disable-sicklms400 --disable-mricp
+CONFIGURE_ARGS = $(DIRPATHS) --disable-sicklms400 --disable-mricp --with-boost-signals=mt --with-boost-thread=mt
 
 include ../../gar.mk
 
