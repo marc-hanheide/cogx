@@ -11,6 +11,7 @@ import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
+import binder.ml.MLException;
 import binder.utils.MLNGenerator;
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
@@ -41,10 +42,12 @@ import cast.core.CASTData;
  * - still need to add filters
  * - only perform updates on existing unions when change is significant
  * - need to add functionality for percept updates or deletions
- * - remove the testing stuff and have a proper, separate tester class
- * - actually build the union content
- * - change the belief history to have only cast values
+ * - remove the testing stuff and have a proper, separate tester class  OK
+ * - actually build the union content OK
+ * - change the belief history to have only cast values OK
  * - testing, defensive programming, check null values and pre/post conditions
+ * - when constructing a new belief, propagate the pointers correctly
+ * - have proper logging functionality
  * 
  * @author plison
  *
@@ -110,7 +113,11 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		String newSingleUnionId = newDataID();
 		
 		// Write the markov logic network to a file
-	//	MLNGenerator.writeMLNFile(percept, existingUnions.values(), unionsMapping, MLNFile);
+		try {
+			(new MLNGenerator()).writeMLNFile(percept, existingUnions.values(), unionsMapping, MLNFile);
+		} catch (MLException e1) {
+			e1.printStackTrace();
+		}
 		
 		// run the alchemy inference
 		
