@@ -111,6 +111,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		log("newly created union ids: " + unionsMapping.keySet().toString());
 			
 		String newSingleUnionId = newDataID();
+		unionsMapping.put("P", newSingleUnionId);
 		
 		// Write the markov logic network to a file
 		try {
