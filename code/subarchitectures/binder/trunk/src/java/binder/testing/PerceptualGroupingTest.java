@@ -24,6 +24,7 @@ import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
+import beliefmodels.builders.PerceptUnionBuilder;
 
 
 public class PerceptualGroupingTest extends AbstractBinderTest {
@@ -64,8 +65,10 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 
 		try {
 			
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("","haptic"));
+
+			
 			// First union
-			PerceptUnionBelief u1 = new PerceptUnionBelief();
 			CondIndependentDistribs cdistrib_u1 = BeliefContentBuilder.createNewCondIndependentDistribs();
 			
 			List<FeatureValueProbPair> shapePairs_u1 = new LinkedList<FeatureValueProbPair>();
@@ -75,12 +78,13 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			BasicProbDistribution shapeDistrib_u1 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_u1);		
 			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_u1, shapeDistrib_u1);
 			
-			u1.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, cdistrib_u1);
-			u1.id = newDataID();
+			ProbDistribution content_u1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, cdistrib_u1);
+			
+			PerceptUnionBelief u1 = PerceptUnionBuilder.createNewPerceptUnionBelief(newDataID(), "test", "here", getCASTTime(), content_u1, hist);
+
 			addToWorkingMemory(u1.id, u1);
 			
 			 
-			PerceptUnionBelief u2 = new PerceptUnionBelief();
 			CondIndependentDistribs cdistrib_u2 = BeliefContentBuilder.createNewCondIndependentDistribs();
 			
 			List<FeatureValueProbPair> shapePairs_u2 = new LinkedList<FeatureValueProbPair>();
@@ -89,16 +93,19 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			BasicProbDistribution shapeDistrib_u2 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_u2);		
 			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_u2, shapeDistrib_u2);
 			
-			u2.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cdistrib_u2);
-			u2.id = newDataID();
+			ProbDistribution content_u2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cdistrib_u2);
+			
+			PerceptUnionBelief u2 = PerceptUnionBuilder.createNewPerceptUnionBelief(newDataID(), "test", "here", getCASTTime(), content_u2, hist);
+			
 			addToWorkingMemory(u2.id, u2);
 			
 			
-			PerceptUnionBelief u3 = new PerceptUnionBelief();
 			CondIndependentDistribs cdistrib_u3 = BeliefContentBuilder.createNewCondIndependentDistribs();
 			
-			u3.content = BeliefContentBuilder.createNewDistributionWithExistDep(0.005f, cdistrib_u3);
-			u3.id = newDataID();
+			ProbDistribution content_u3 = BeliefContentBuilder.createNewDistributionWithExistDep(0.005f, cdistrib_u3);
+
+			PerceptUnionBelief u3 = PerceptUnionBuilder.createNewPerceptUnionBelief(newDataID(), "test", "here", getCASTTime(), content_u3, hist);
+
 			addToWorkingMemory(u3.id, u3);
 			
 			
@@ -155,7 +162,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.85f, features);
 
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("",""));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("","vision"));
 
 			String id = newDataID();
 

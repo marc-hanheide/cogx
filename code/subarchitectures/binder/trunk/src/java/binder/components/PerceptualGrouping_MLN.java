@@ -1,11 +1,15 @@
 package binder.components;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
@@ -49,6 +53,8 @@ import cast.core.CASTData;
  * - when constructing a new belief, propagate the pointers correctly
  * - have proper logging functionality
  * - implement the same kind of functionality for tracking
+ * - send examples of test cases to Sergio
+ * - do the test with percepts instead of unions as inputs
  * 
  * @author plison
  *
@@ -77,12 +83,9 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 							log("perceptual grouping operation on percept " + beliefData.getID() + " now finished");
 						}	
 			
-						 catch (DoesNotExistOnWMException e) {
+						 catch (Exception e) {
 								e.printStackTrace();
-							}
-						 catch (UnknownSubarchitectureException e) {	
-							e.printStackTrace();
-						} 	 
+							} 
 					}
 				}
 		);
@@ -96,16 +99,19 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 * 
 	 * @param percept the new percept which was inserted
 	 */
-	public void performPerceptualGrouping(PerceptBelief percept, WorkingMemoryAddress perceptWMAddress) {
+	public void performPerceptualGrouping(PerceptBelief percept, WorkingMemoryAddress perceptWMAddress) throws BeliefException {
 	
 		log("now starting perceptual grouping...");
 
 		// extract the unions already existing in the binder WM
 		HashMap<String, PerceptUnionBelief> existingUnions = extractExistingUnions();
 		
+		HashMap<String, PerceptUnionBelief> relevantUnions = selectRelevantUnions(existingUnions, percept);
+		
+		if (relevantUnions.size() > 0) {
 		// Create identifiers for each possible new union		
 		HashMap<String,String> unionsMapping = new HashMap<String,String>();
-		for (String existingUnionId : existingUnions.keySet()) {
+		for (String existingUnionId : relevantUnions.keySet()) {
 			String newUnionId = newDataID();
 			unionsMapping.put(newUnionId, existingUnionId);
 		}
@@ -116,7 +122,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		
 		// Write the markov logic network to a file
 		try {
-			(new MLNGenerator()).writeMLNFile(percept, existingUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
+			(new MLNGenerator()).writeMLNFile(percept, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
 		} catch (MLException e1) {
 			e1.printStackTrace();
 		}
@@ -126,20 +132,24 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 		
 		// create the new unions given the inference results
-		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, perceptWMAddress, existingUnions,
+		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, perceptWMAddress, relevantUnions,
 				unionsMapping, newSingleUnionId, inferenceResults);
 
 		// and add them to the working memory
 		addNewUnionToWM(newUnions);
 
 		// modify the existence probabilities of the existing unions
-		modifyExistingUnions(percept, existingUnions, unionsMapping, inferenceResults);
+		modifyExistingUnions(percept, relevantUnions, unionsMapping, inferenceResults);
 		
 		// and update them on the working memory
-		updateExistingUnionsInWM(existingUnions);
+		updateExistingUnionsInWM(relevantUnions);
 		}
 		catch (BeliefException e) {
 			e.printStackTrace();
+		}
+		}
+		else {
+			log("no relevant union to group with percept " + percept.id + " has been found");
 		}
 	}
 
@@ -272,6 +282,63 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		
 	}  
 	 
+	
+	private List<String> getOriginSubarchitectures(Belief b) throws BeliefException {
+		
+		List<String> subarchitectures = new ArrayList<String>();
+		
+		if (!(b.hist instanceof CASTBeliefHistory)) {
+			throw new BeliefException ("ERROR: history not specified as cast pointer");
+		}
+		else if (((CASTBeliefHistory)b.hist).ancestors == null) {
+			throw new BeliefException ("ERROR: percept history is null");
+		}
+	
+		for (WorkingMemoryAddress ancestorAddress : ((CASTBeliefHistory)b.hist).ancestors) {
+			if (!(ancestorAddress.subarchitecture.equals(BindingWorkingMemory.BINDER_SA))) {
+				subarchitectures.add(ancestorAddress.subarchitecture);
+			} else
+				try {
+					if (existsOnWorkingMemory(ancestorAddress)) {
+						Belief subB = getMemoryEntry(ancestorAddress, Belief.class);
+						subarchitectures.addAll(getOriginSubarchitectures(subB));
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+		}
+		return subarchitectures;
+	}
+	
+	
+	private HashMap<String,PerceptUnionBelief> selectRelevantUnions (HashMap<String,PerceptUnionBelief> existingUnions, 
+			PerceptBelief percept) throws BeliefException {
+		
+		HashMap<String,PerceptUnionBelief> relevantUnions = new HashMap<String,PerceptUnionBelief>();
+	
+		if (((CASTBeliefHistory)percept.hist).ancestors.size() == 0) {
+			throw new BeliefException ("ERROR: percept history contains 0 element");
+		}
+		else if (((CASTBeliefHistory)percept.hist).ancestors.size() > 1) {
+			throw new BeliefException ("ERROR: percept history contains more than 1 element");
+		}
+		
+		String perceptOrigin = getOriginSubarchitectures(percept).get(0);
+		
+		for (String existingUnionId : existingUnions.keySet()) {
+			
+			PerceptUnionBelief existingUnion = existingUnions.get(existingUnionId);
+			List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
+			
+			if (!existinUnionOrigins.contains(perceptOrigin)) {
+				relevantUnions.put(existingUnionId, existingUnion);
+			}
+			
+		}
+		
+		
+		return relevantUnions;
+	}
 	
 	/**
 	 * Exact the set of existing unions from the binder working memory
