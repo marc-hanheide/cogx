@@ -528,11 +528,11 @@ public class MLNGenerator {
 		return new Float(Math.log(prob / (1f - prob)));
 	}
 	
-	public String getMarkovLogicConstantFromID(String id) {
+	public static String getMarkovLogicConstantFromID(String id) {
 		return "U" + id.replace(":", "_");
 	}
 	
-	public String getIDFromMarkovLogicSontant (String mlconstant) {
+	public static String getIDFromMarkovLogicSontant (String mlconstant) {
 		return mlconstant.substring(1).replace("_", ":");
 	}
 }
