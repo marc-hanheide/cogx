@@ -365,15 +365,21 @@ CanonicalData::DataSet canonical_input_output_enumerator (DataSet data);
 CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data, int modulo = 1);
 
 ///
-///write a dataset in cryssmex format
+///write a dataset in cryssmex format by using the canonical representation
 ///
 void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::DataSet data);
 
 ///
-///write a dataset in cryssmex format
+///write a dataset in cryssmex format. This code assumes vectorial data format and an output
+///label defined artificially
 ///
-void write_dataset_cryssmex_fmt (string writeFileName, DataSet data);
+void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, int modulo = 1);
 
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format
+///and works as a regression predictor (output is of the same dimensionality as the state space) and canonical format for the input
+///
+void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSet data);
 
 }; /* smlearning namespace */
 

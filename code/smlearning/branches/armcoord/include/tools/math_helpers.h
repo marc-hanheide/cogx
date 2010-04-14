@@ -32,8 +32,10 @@
 #include <Math.h>
 #include <stdlib.h>
 #include <Vec3.h>
+#include <iostream>
 
 using namespace golem;
+using namespace std;
 
 namespace smlearning {
 
@@ -54,7 +56,9 @@ R normalize(R const& value, R const& min, R const& max) {
 	R interval = max - min;
 	R relativeVal = val - min;
 	R res = relativeVal/interval;
-	return -1.0 + (res*2.0);
+	res = -1.0 + (res*2.0);
+	assert (res >= -1.0 && res <= 1.0);
+	return res;
 }
 
 template <typename R>
