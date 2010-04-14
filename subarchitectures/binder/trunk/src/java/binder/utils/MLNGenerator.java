@@ -221,11 +221,11 @@ public class MLNGenerator {
 		result.append("-1.5 Existence(P) => Outcome(" + getMarkovLogicConstantFromID(unionsMapping.get("P")) + ")\n");
 		
 		// then comes the rest of the possible results
-		Set<String> old_unions = new TreeSet<String>(unionsMapping.keySet());
-		assert old_unions.remove("P");
-		for(String old_union : old_unions) {
-			result.append("UnifyWith(" + getMarkovLogicConstantFromID(old_union) + 
-					") <=> Outcome(" + getMarkovLogicConstantFromID(unionsMapping.get(old_union)) + ").\n");
+		Set<String> new_unions = new TreeSet<String>(unionsMapping.keySet());
+		assert new_unions.remove("P");
+		for(String new_union : new_unions) {
+			result.append("UnifyWith(" + getMarkovLogicConstantFromID(unionsMapping.get(new_union)) + 
+					") <=> Outcome(" + getMarkovLogicConstantFromID(new_union) + ").\n");
 		}
 		
 		// b) mutual exclusivity and unicity
@@ -264,8 +264,8 @@ public class MLNGenerator {
 	private StringBuilder serializeOutcomes(HashMap<String, String> unionsMapping) {
 		StringBuilder result = new StringBuilder();
 		result.append("outcome = {");
-		
-		Iterator<String> iter = unionsMapping.values().iterator();
+		 
+		Iterator<String> iter = unionsMapping.keySet().iterator();
 		result.append(getMarkovLogicConstantFromID(iter.next()));
 		while(iter.hasNext()) {
 			result.append("," + getMarkovLogicConstantFromID(iter.next()));
