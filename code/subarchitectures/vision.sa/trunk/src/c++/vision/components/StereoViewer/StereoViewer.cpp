@@ -62,8 +62,8 @@ static void InitWin()
   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_ambient);
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
+  glDisable(GL_LIGHTING);
+  glDisable(GL_LIGHT0);
 
   // setup view point stuff
   cam_trans[0] = cam_trans[1] = cam_trans[2] = 0.;
@@ -215,7 +215,7 @@ static void DrawOverlays()
 
 static void DrawPoints()
 {
-  glPointSize(3.);
+  glPointSize(2.);
   glBegin(GL_POINTS);
   for(size_t i = 0; i < points.size(); i++)
   {
@@ -397,7 +397,8 @@ void StereoViewer::runComponent()
       cvSaveImage(side == LEFT ? "viewer-rect-L.png" : "viewer-rect-R.png",
         iplImage);
 
-      //cvSet(iplImage, cvScalar(0));
+      // clear image before drawing reprojected points
+      // cvSet(iplImage, cvScalar(0));
       for(size_t i = 0; i < points.size(); i++)
       {
         Vector2 p = projectPoint(image.camPars, points[i].p);
