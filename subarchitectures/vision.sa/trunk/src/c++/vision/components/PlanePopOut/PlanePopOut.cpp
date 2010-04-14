@@ -12,13 +12,13 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 
-#define Shrink_SOI 0.5
-#define Upper_BG 1.2
+#define Shrink_SOI 1
+#define Upper_BG 1.5
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
-#define min_height_of_obj 0.08	//unit cm, due to the error of stereo, >0.01 is suggested
+#define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
 #define rate_of_centers 0.2	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 10		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 
 /**
@@ -433,7 +433,7 @@ void PlanePopOut::runComponent()
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
-		N = 50;
+		N = (int)points.size()/2500;
 		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 			pointsN.push_back(*it);
 		points_label.clear();
@@ -519,7 +519,7 @@ void PlanePopOut::runComponent()
 					    CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;					
 					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 					    overwriteWorkingMemory(CurrentObjList.at(i).id, obj);
-					    cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
+					    //cout<<"Overwrite!! ID of the overwrited SOI = "<<CurrentObjList.at(i).id<<endl;
 					}
 					else
 					{
@@ -535,7 +535,7 @@ void PlanePopOut::runComponent()
 					    CurrentObjList.at(i).id = newDataID();
 					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 					    addToWorkingMemory(CurrentObjList.at(i).id, obj);
-					    cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
+					    //cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 					}
 				    }
 				    break;
@@ -552,7 +552,7 @@ void PlanePopOut::runComponent()
 				{
 				  //cout<<"count of obj = "<<PreviousObjList.at(j).count<<endl;
 				  deleteFromWorkingMemory(PreviousObjList.at(j).id);
-				  cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
+				  //cout<<"Delete!! ID of the deleted SOI = "<<PreviousObjList.at(j).id<<endl;
 				}
 			    }
 			}
@@ -703,9 +703,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
-	if (N == 1) obj_number_threshold = 400;
-	if (N == 50) obj_number_threshold = 100;
-	if (N == 10) obj_number_threshold = 20;
+	obj_number_threshold = 20;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;
