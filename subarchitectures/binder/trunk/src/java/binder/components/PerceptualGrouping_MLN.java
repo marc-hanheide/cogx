@@ -48,6 +48,7 @@ import cast.core.CASTData;
  * - testing, defensive programming, check null values and pre/post conditions
  * - when constructing a new belief, propagate the pointers correctly
  * - have proper logging functionality
+ * - implement the same kind of functionality for tracking
  * 
  * @author plison
  *
@@ -121,7 +122,6 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		}
 		
 		// run the alchemy inference
-		
 		try { 
 		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 		

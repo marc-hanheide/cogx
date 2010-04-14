@@ -79,7 +79,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			u1.id = newDataID();
 			addToWorkingMemory(u1.id, u1);
 			
-			
+			 
 			PerceptUnionBelief u2 = new PerceptUnionBelief();
 			CondIndependentDistribs cdistrib_u2 = BeliefContentBuilder.createNewCondIndependentDistribs();
 			
@@ -101,6 +101,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			u3.id = newDataID();
 			addToWorkingMemory(u3.id, u3);
 			
+			
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -108,7 +109,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 	}
 
 
-
+ 
 	private void checkIfSuccessful(WorkingMemoryChange _wmc) {
 		try { 
 			CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address,
