@@ -61,9 +61,9 @@ public class MLNGenerator {
 		
 		// before we can start with the serialization we need to know all the names
 		// and types that appear in the beliefs
-		extractTypesAndNames(b);
+		extractTypesAndNames(b.content);
 		for(Belief belief : existingUnions) {
-			extractTypesAndNames(belief);
+			extractTypesAndNames(belief.content);
 		}
 		
 		// now lets do the serialization
@@ -284,16 +284,19 @@ public class MLNGenerator {
 		return result;
 	}
 	
-	private void extractTypesAndNames(Belief belief) {
+	private void extractTypesAndNames(ProbDistribution distribution) {
 		// TODO: extend with the remaining distributions
-		ProbDistribution distribution = belief.content;
 		
 		if(distribution instanceof BasicProbDistribution) {
 			extractTypesAndNamesBasicProbDistribution((BasicProbDistribution) distribution);
 			return;
 		}
 		
-		log("Distribution unknown");
+		else if (distribution instanceof DistributionWithExistDep) {
+			extractTypesAndNames (((DistributionWithExistDep)distribution).Pc);
+		}
+		
+		log("Distribution unknown: " + distribution.getClass().getCanonicalName());
 	}
 	
 	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution belief) {
