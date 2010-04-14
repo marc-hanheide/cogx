@@ -87,17 +87,17 @@ public class MLNGenerator {
 		
 		// 1.1) beliefs
 		result.append(NEWLINE);
-		result.append("// beliefs");
+		result.append("// beliefs\n");
 		result.append(serializeBeliefs(existingUnions));
 		
 		// 1.2) possible new outcomes
 		result.append(NEWLINE);
-		result.append("// possible outcomes of the grouping process");
+		result.append("// possible outcomes of the grouping process\n");
 		result.append(serializeOutcomes(unionsMapping));
 		
 		// 1.3) feature values
 		result.append(NEWLINE);
-		result.append("// feature values");
+		result.append("// feature values\n");
 		result.append(serializeFeatureValues());
 		
 		result.append(NEWLINE);
@@ -284,29 +284,42 @@ public class MLNGenerator {
 		return result;
 	}
 	
-	private void extractTypesAndNames(ProbDistribution distribution) {
+	private void extractTypesAndNames(ProbDistribution distribution) throws MLException {
 		// TODO: extend with the remaining distributions
 		
 		if(distribution instanceof BasicProbDistribution) {
 			extractTypesAndNamesBasicProbDistribution((BasicProbDistribution) distribution);
-			return;
 		}
 		
 		else if (distribution instanceof DistributionWithExistDep) {
-			extractTypesAndNames (((DistributionWithExistDep)distribution).Pc);
+			extractTypesAndNames (((DistributionWithExistDep)distribution).Pc);	
 		}
 		
-		log("Distribution unknown: " + distribution.getClass().getCanonicalName());
+		else if (distribution instanceof CondIndependentDistribs) {
+			if (((CondIndependentDistribs)distribution).distribs == null) {
+				throw new MLException ("Error, distribution is null");
+			}
+			
+			for (String subdistribKey : ((CondIndependentDistribs)distribution).distribs.keySet()) {
+				extractTypesAndNames (((CondIndependentDistribs)distribution).distribs.get(subdistribKey));
+			}
+		}
+		
+		else {
+			log("Distribution unknown: " + distribution.getClass().getCanonicalName());
+			throw new MLException ("Error, distribution is null");
+		}
 	}
 	
-	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution belief) {
-		if(!names_for_type.containsKey(belief.key)) {
-			names_for_type.put(belief.key, new TreeSet<String>());
+	
+	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution distrib) {
+		if(!names_for_type.containsKey(distrib.key)) {
+			names_for_type.put(distrib.key, new TreeSet<String>());
 		}
-		names_for_type.get(belief.key).addAll(addDistributionValuesToType(belief.values));
+		names_for_type.get(distrib.key).addAll(getListDistributionValues(distrib.values));
 	}
 
-	private List<String> addDistributionValuesToType(DistributionValues values) {
+	private List<String> getListDistributionValues(DistributionValues values) {
 		if(values instanceof FeatureValues) {
 			return namesAndTypesFeatureValues((FeatureValues) values);
 		}
