@@ -84,6 +84,11 @@ protected:
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** load training data in RNNLIB format */
 	void loadCurrentTrainSeq (int inputSize, int outputSize);
+
+	virtual void initialize_polyflap();
+	virtual void initialize_movement();
+	virtual void define_start_position();
+	virtual void write_dataset_into_binary();
  
 
 };

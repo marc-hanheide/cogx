@@ -257,109 +257,42 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 // 	}
 }
 
-void ActiveLearnScenario::run(int argc, char* argv[]) {
 
-	Ice::CommunicatorPtr ic;
-	try {
-	ic = Ice::initialize(argc, argv);
 
-	Ice::ObjectPrx base2 = ic->stringToProxy("DataPlotter:default -p 8174");
-	smlearning::plotting::PlottingAppPrx plotApp = smlearning::plotting::PlottingAppPrx::checkedCast(base2);
+void ActiveLearnScenario::initialize_polyflap(){
+	cout << "ALS: initialize_polyflap" << endl;
 
-	if (!plotApp)
-		throw "Invalid proxy";
-	plotApp->init (smregionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
-	plotApp->resize(640,480);
+	create_polyflap_object();
 	
-	plotApp->show();
+	if (iteration == 0) {
+			objectLocalBounds = object->getLocalBoundsSeq();		
+	}
+	currentPfY = object->getPose().p.v2;
 
+
+	compute_vectors();
+
+
+}
+
+
+void  ActiveLearnScenario::initialize_movement(){
+	cout << "ALS: initialize_movement" << endl;
+
+	set_positionT();
+
+	define_start_position();
+
+	prepare_target();
 	
-// 	// initialize random seed:
-	randomG.setRandSeed (context.getRandSeed());
-	netBuilt = false;
-
-
-
-
-
-
-
-
-	const SecTmReal tmDeltaAsync = arm->getReacPlanner().getTimeDeltaAsync();
-
-	// get initial configuration (it is the current joint configuration)
-	golem::GenConfigspaceState initial;
-	arm->getArm().lookupInp(initial, context.getTimer()->elapsed());
-
-	
-	// setup home position
-	GenWorkspaceState home;
-	home.pos = desc.homePose;
-	// move the arm with global path planning and collision detection
-	home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(5.0);
-	// movement will last no shorter than 5 sec
-	arm->getReacPlanner().send(home, ReacPlanner::ACTION_GLOBAL);
-	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
-	(void)arm->getReacPlanner().waitForEnd(60000);
-	
-	
-	// Define the initial pose in the Cartesian workspace
-	Vec3 orientationT(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
-
-	numSequences = 10000;
-	int startingPosition = 0;
-	if (argc > 2)
-		numSequences = atoi(argv[2]);
-	if (argc > 3)
-		startingPosition = atoi(argv[3]);
-	
-	//start of the experiment loop
-	for (iteration = 0; iteration<numSequences; iteration++) {
 		
-		// experiment main loops
-		creator.setToDefault();
-		//polyflap actor
-
-		object = setup_polyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
-		golem::Bounds::SeqPtr curPol = object->getGlobalBoundsSeq();
-		if (iteration == 0)
-			objectLocalBounds = object->getLocalBoundsSeq();
-		
-		object->getPose().R.toEuler (currentPfRoll, currentPfPitch, currentPfYaw);
-		currentPfY = object->getPose().p.v2;
-
-		Mat34 curPolPos1;
-		Mat34 curPolPos2;
-		//find out bounds of polyflap and compute the position of the polyflap
-		if (curPol->front()->getPose().p.v3 > curPol->back()->getPose().p.v3) {
-			curPolPos1 = curPol->front()->getPose();
-			curPolPos2 = curPol->back()->getPose();
-		}
-		else {
-			curPolPos1 = curPol->back()->getPose();
-			curPolPos2 = curPol->front()->getPose();
-		}
+}
 
 
-		Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
+void ActiveLearnScenario::define_start_position(){
+	cout << "ALS: define_start_position" << endl;
 
-		//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-		Vec3 polyflapNormalVec =
-			computeNormalVector(
-					    Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)),
-					    Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0))
-					    );
-			
-		Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);	
-
-
-		//initialization of arm target: the center of the polyflap
-		Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
-
-
-	        int startPosition;
-
-		if (startingPosition == 0)
+	if (startingPosition == 0)
 			if ( iteration < smregionsCount ) 
 				startPosition = floor(randomG.nextUniform (1.0, 18.0));
 			else {
@@ -376,125 +309,70 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		else
 			startPosition = startingPosition;
 
+}
 
-
-		//arm target position update
-		set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
-		cout << "Position " << startPosition-1 << endl;
-
-		// and set target waypoint
-		golem::GenWorkspaceState target;
-		fromCartesianPose(target.pos, positionT, orientationT);
-		target.vel.setId(); // it doesn't mov
-
-		target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
-
-		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
-			if (arm->getReacPlanner().send(target , ReacPlanner::ACTION_GLOBAL)) {
-				break;
-			}
-			context.getLogger()->post(Message::LEVEL_INFO, "Unable to find path to polyflap, trying again.");
-		}
-
-		// wait for completion of the action (until the arm moves to the initial pose)
-		arm->getReacPlanner().waitForEnd(60000);
-
-		/////////////////////////////////////////////////
-		//create sequence for this loop run and initial (motor command) vector
-		learningData.currentSeq.clear();
-		learningData.currentMotorCommandVector.clear();
-		/////////////////////////////////////////////////
-
-		/////////////////////////////////////////////////
-		//writing in the initial vector
-		//initial position, normalized
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
-		learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
-		//initial orientation, normalized
-// 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
-// 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
-// 		currentMotorCommandVector.push_back(normalize<double>(orientationT.v3, -REAL_PI, REAL_PI));
-		//end pose info missing (must be added later 
-		/////////////////////////////////////////////////
-
-
-		// Trajectory duration calculated from a speed constant.
-		int speed = floor (randomG.nextUniform (3.0, 5.0));
-		cout << "speed: " << speed << endl;
-		
-		SecTmReal duration = speed;
-				
-		/////////////////////////////////////////////////
-		//writing in the initial vector
-		learningData.currentMotorCommandVector.push_back(normalize<double>(speed, 3.0, 5.0));
-		/////////////////////////////////////////////////
-
-		// Trajectory end pose equals begin + shift along Y axis
-		WorkspaceCoord end = target.pos;
-
-		//normal vector to the center of the polyflap
-		Vec3 polyflapCenterNormalVec =
-			computeNormalVector(
-					    Vec3 (positionT.v1, positionT.v2, positionT.v3),
-					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5)
-					    );
-		//and it's orthogonal
-		Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
-// 		context.getLogger()->post(Message::LEVEL_INFO, "centernormalvec: %f, %1f, %f", polyflapCenterNormalVec.v1, polyflapCenterNormalVec.v2, polyflapCenterNormalVec.v3);
-
-
-		//the lenght of the movement
-		Real currDistance = desc.distance;
-
-		//chose random horizontal and vertical angle
-		int horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
-		
-		//int verticalAngle = rand() % 7;
-
-		set_movement_angle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
-		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
-
-
-		learningData.currentMotorCommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
-
-		/////////////////////////////////////////////////
-		//writing of the initial vector into sequence
-		learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
-		/////////////////////////////////////////////////
-
-		target.pos = end;
-		target.t = context.getTimer()->elapsed() + tmDeltaAsync + duration;
+void ActiveLearnScenario::write_dataset_into_binary(){
+	cout << "ALS: write_dataset_into_binary" << endl;
+	/////////////////////////////////////////////////
+	//writing the dataset into binary file
+	learner.save_net_data (writeDownCollectedData(data));
+	/////////////////////////////////////////////////
 	
-		arm->setCollisionBoundsGroup(0x0);
-		arm->getReacPlanner().send(target, ReacPlanner::ACTION_LOCAL);
+}
 
-		// initialize data
-		learningData.setToDefault();
-		learningData.effector = effectorBounds;
-		learningData.object = *object->getLocalBoundsSeq();
-		learningData.obstacles = *obstacles->getGlobalBoundsSeq();
-		
+void ActiveLearnScenario::run(int argc, char* argv[]) {
 
-		
+	Ice::CommunicatorPtr ic;
+	try {
+	ic = Ice::initialize(argc, argv);
 
+	Ice::ObjectPrx base2 = ic->stringToProxy("DataPlotter:default -p 8174");
+	smlearning::plotting::PlottingAppPrx plotApp = smlearning::plotting::PlottingAppPrx::checkedCast(base2);
+
+	if (!plotApp)
+		throw "Invalid proxy";
+	plotApp->init (smregionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
+	plotApp->resize(640,480);
+	
+	plotApp->show();
+
+	netBuilt = false;
+
+
+	first_init();
+
+	setup_home();
+
+	setup_loop(argc, argv);
+	
+	//start of the experiment loop
+	for (iteration = 0; iteration<numSequences; iteration++) {
 		
-		// wait for the movement to start, but no longer than 60 seconds
-		(void)arm->getReacPlanner().waitForBegin(60000);
-		context.getTimer()->sleep(tmDeltaAsync);
-		bStart = true;
-			
-		// wait for the movement end, no longer than 60 seconds
-		(void)arm->getReacPlanner().waitForEnd(60000);
-		context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
-		bStart = false;
+		// experiment main loops
+		creator.setToDefault();
+		//polyflap actor
+
+		initialize_polyflap();
 		
-		
-		/////////////////////////////////////////////////
-		//writing the sequence into the dataset
-		data.push_back(learningData.currentSeq);
-		/////////////////////////////////////////////////
-		
+		initialize_movement();
+
+		send_position(target, ReacPlanner::ACTION_GLOBAL);
+
+		init_writing();
+
+		write_finger_pos_and_or();
+
+		set_up_movement();
+	
+		write_finger_speed_and_angle();
+
+		write_f_vector_into_sequence();
+
+		move_finger();
+
+		write_sequence_into_dataset();
+
+
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
@@ -504,76 +382,45 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 			plotApp->updateData(startPosition-1, learnProgData, errorData);
 		}
 
-		//off collision detection
-		arm->setCollisionBoundsGroup(0x0);
 
-			
-		cout << "sequence size: " << learningData.currentSeq.size() << endl;
+		set_collision_detection(false);
+
+		print_sequence_info();
+
+
 		cout << "predicted poses 1 size: " << learningData.currentPredictedPfSeq.size() << endl;
 
+		move_finger_up();
 
-		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (desc.polyflapDimensions.v2*1.1));
-		// and set target waypoint
-		golem::GenWorkspaceState preHome;
-		preHome.pos.p = positionPreH;
-		preHome.pos.R = home.pos.R;
-		preHome.vel.setId(); // it doesn't move
+		remove_polyflap();
 
-		preHome.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(2.0); // i.e. the movement will last at least 2 sec
-
-		// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
-		arm->getReacPlanner().send(preHome, ReacPlanner::ACTION_GLOBAL);
-		// wait for completion of the action (until the arm moves to the initial pose)
-		arm->getReacPlanner().waitForEnd();
-
-		// remove object
-		scene.releaseObject(*object);
-		object = NULL;
-// 		scene.releaseObject(*predictedPolyflapObject);
+		pepare_home_movement();
 		
-		home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(3.0);
 
-// 		// ON collision detection
-		arm->setCollisionBoundsGroup(0xFFFFFFFF);
-
-		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
-			if (arm->getReacPlanner().send(home, ReacPlanner::ACTION_GLOBAL)) {
-				break;
-			}
-			
-			context.getLogger()->post(Message::LEVEL_INFO, "Unable to find path home, trying again.");
-		}
+		set_collision_detection(true);
+		
+		send_position(home , ReacPlanner::ACTION_GLOBAL);
 
 
 
+		iteration_end_info();		
+		
+		
 
-
-		context.getLogger()->post(Message::LEVEL_INFO, "Moving home...");
-		arm->getReacPlanner().waitForEnd(60000);
-
-		context.getLogger()->post(Message::LEVEL_INFO, "Done");
-
-		cout << "Iteration " << iteration << " completed!" << endl;
 
 		learningData.currentPredictedPfSeq.clear();
 		learningData.currentPredictedEfSeq.clear();
 
-		
-		if (universe.interrupted())
-			throw Interrupted();
-	}
-	initial.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(5.0);
-	// movement will last no shorter than 5 sec
-	arm->getReacPlanner().send(initial, ReacPlanner::ACTION_GLOBAL);
-	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
-	(void)arm->getReacPlanner().waitForEnd(60000);
+		finish_iteration();
 
-	/////////////////////////////////////////////////
-	//writing the dataset into binary file
-	learner.save_net_data (writeDownCollectedData(data));
-	
-	/////////////////////////////////////////////////
-	
+}
+
+	move_to_initial();
+
+
+	write_dataset_into_binary();
+
+
 	} catch (const Ice::Exception& ex) {
 		std::cerr << ex << std::endl;
 	} catch (const char* msg) {

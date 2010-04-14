@@ -296,9 +296,9 @@ protected:
 
 
 
-	void initialize_polyflap();
+	virtual void initialize_polyflap();
 
-	void  initialize_movement();
+	virtual void  initialize_movement();
 
 	
 	void set_up_movement();
@@ -341,7 +341,7 @@ protected:
 
 	void move_to_initial();
 
-	void write_dataset_into_binary();
+	virtual void write_dataset_into_binary();
 
 	void create_polyflap_object();
 
@@ -349,7 +349,7 @@ protected:
 
 	void set_positionT();
 
-	void define_start_position();
+	virtual void define_start_position();
 
 	void prepare_target();
 

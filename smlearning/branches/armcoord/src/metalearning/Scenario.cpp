@@ -306,6 +306,7 @@ void Scenario::set_positionT(){
 }
 
 void Scenario::define_start_position(){
+		cout << "SC: define_start_position" << endl;
 	        //int startPosition;
 
 		if (startingPosition == 0)
