@@ -35,6 +35,10 @@ import binder.ml.Predicate;
 
 public class MLNGenerator {
 
+	public static boolean LOGGING = true;
+	
+	public static boolean DEBUG = true;
+	
 	private static final String EXISTING_UNIONS = "existingunion";
 
 	private static final Object NEWLINE = "\n";
@@ -289,7 +293,7 @@ public class MLNGenerator {
 			return;
 		}
 		
-		System.err.println("Distribution unknown");
+		log("Distribution unknown");
 	}
 	
 	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution belief) {
@@ -310,7 +314,7 @@ public class MLNGenerator {
 			return namesAndTypesFormulaValues((FormulaValues) values);
 		}
 		else {
-			System.err.println("DistributionValues unknown");
+			log("DistributionValues unknown");
 		}
 		return null;
 	}
@@ -532,7 +536,21 @@ public class MLNGenerator {
 		return "U" + id.replace(":", "_");
 	}
 	
-	public static String getIDFromMarkovLogicSontant (String mlconstant) {
+	public  static String getIDFromMarkovLogicSontant (String mlconstant) {
 		return mlconstant.substring(1).replace("_", ":");
 	}
+
+
+	private static void log(String s) {
+		if (LOGGING) {
+			System.out.println("[MLNGenerator] " + s);
+		}
+	}
+
+	private static void debug(String s) {
+		if (DEBUG) {
+			System.out.println("[MLNGenerator] " + s);
+		}
+	}
+	
 }
