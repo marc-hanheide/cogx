@@ -1,6 +1,8 @@
 
 // =================================================================                                                        
-// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+// Copyright (C) 2010
+// Pierre Lison (pierre.lison@dfki.de)
+// Geert-Jan M. Kruijff (gj@dfki.de)
 //                                                                                                                          
 // This library is free software; you can redistribute it and/or                                                            
 // modify it under the terms of the GNU Lesser General Public License                                                       
@@ -74,9 +76,10 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	
 
 	/**
-	 * Construct a new percept union belief similar to a given percept
+	 * Construct a new percept union belief, from a given percept belief and its working memory address (CAST). 
 	 * 
 	 * @param percept the percept
+	 * @param address The address to be used for creating the history 
 	 * @param id the identifier for the new belief
 	 * @throws BinderException 
 	 */
@@ -84,7 +87,15 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 		throws BeliefException {
 
 		if (percept == null) {
-			throw new BeliefException("ERROR, belief is null");
+			throw new BeliefException("Error in constructing PerceptUnionBelief: source belief is null");
+		}
+		
+		if (address == null || address.id == null || address.subarchitecture == null || address.id.equals("") || address.subarchitecture.equals("")) {
+			throw new BeliefException("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information");
+		}
+		
+		if (id == null || id.equals("")) { 
+			throw new BeliefException("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty");
 		}
 		
 		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, percept.content, createHistory(address));
