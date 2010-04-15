@@ -469,6 +469,9 @@ void TrackerModel::textureFromImage(Texture* image,
 		}
 	}
 	
+	if(!m_passlist.empty())
+		m_textured = true;
+	
 // 	UpdateDisplayLists();
 }
 

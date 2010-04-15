@@ -209,6 +209,7 @@ void convertCameraParameter(Video::CameraParameters vidCamPars, Tracking::Camera
 // SDL - Keyboard and Mouse input control
 bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
  	int i=0;
+ 	Tracking::Pose p;
  	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)){
@@ -228,13 +229,24 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					break;				
 				case SDLK_3:
 					tracker->setKernelSize(2);
-					printf("Kernel size: %d\n", (int)2);
+					printf("Kernel size: %d\n", (int)4);
 					break;
 				case SDLK_4:
-					tracker->setEdgeShader();
+					tracker->setKernelSize(2);
+					printf("Kernel size: %d\n", (int)5);
 					break;
 				case SDLK_5:
+					tracker->setKernelSize(2);
+					printf("Kernel size: %d\n", (int)6);
+					break;
+				case SDLK_8:
+					tracker->setEdgeShader();
+					break;
+				case SDLK_9:
 					tracker->setColorShader();
+					break;
+				case SDLK_a:
+					tracker->addModelFromFile("instantiations/ply-models/jasmin.ply", p, "jasmin");
 					break;
 				case SDLK_e:
 					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
@@ -253,8 +265,8 @@ bool inputsControl(Tracking::Tracker* tracker, float fTimeTracker){
 					tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
 					break;
 				case SDLK_s:
-// 					tracker->saveModels("instantiations/ply-models/");
-					tracker->saveScreenshot("screenshot.jpg");
+					tracker->saveModels("instantiations/ply-models/");
+// 					tracker->saveScreenshot("screenshot.jpg");
 					break;
 				case SDLK_t:
 					tracker->textureFromImage(false);

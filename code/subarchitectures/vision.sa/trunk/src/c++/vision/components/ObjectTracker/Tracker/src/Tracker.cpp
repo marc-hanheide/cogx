@@ -226,15 +226,15 @@ int Tracker::addModelFromFile(const char* filename, Pose& p, std::string label, 
 	}
 	
 	ModelEntry* modelEntry = new ModelEntry();
+	modelEntry->label = label;
+	modelEntry->model.setBFC(bfc);
 	
 	ModelLoader modelloader;
 	modelloader.LoadPly(modelEntry->model, filename);
 	
-	modelEntry->label = label;
-	modelEntry->model.setBFC(bfc);
-	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
 	modelEntry->pose = p;
 	modelEntry->initial_pose = p;
+	modelEntry->predictor->sample(modelEntry->distribution, params.num_particles, p, params.variation);
 	modelEntry->id = params.model_id_count++;
 	modelEntry->num_particles = params.num_particles;
 	modelEntry->num_recursions = params.num_recursions;
@@ -433,8 +433,6 @@ void Tracker::saveModels(const char* pathname){
 	}
 }
 
-
-
 void Tracker::saveScreenshot(const char* filename){
 	IplImage* img = cvCreateImage ( cvSize ( params.width, params.height ), IPL_DEPTH_8U, 3 );
 	glReadPixels(0,0,params.width,params.height,GL_RGB,GL_UNSIGNED_BYTE, img->imageData);
@@ -596,11 +594,12 @@ void Tracker::swap(){
 
 // Show performance and likelihood
 void Tracker::printStatistics(){
-	printf("\n\nStatistics:\n");
+	printf("\n\nStatistics: \n");
 
 	for(int i=0; i<m_modellist.size(); i++){
 		Pose pMean =  m_modellist[i]->distribution.getMean();
 		printf("	Object %d '%s'\n", i, m_modellist[i]->label.c_str());
+		printf("		Textured: %d\n", m_modellist[i]->model.m_textured);
 		printf("		Recursions: %i\n", m_modellist[i]->num_recursions );
 		printf("		Particles: %i\n", m_modellist[i]->distribution.size() );
 		printf("		Mean Pose: %f %f %f\n", pMean.t.x, pMean.t.y, pMean.t.z);

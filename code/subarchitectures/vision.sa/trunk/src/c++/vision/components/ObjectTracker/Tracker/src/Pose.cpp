@@ -36,6 +36,9 @@ void Pose::getPose(mat3 &rot, vec3 &pos){
 }
 
 void Pose::rotate(float x, float y, float z){
+	if(x==0.0 && y==0.0 && z ==0.0)
+		return;
+	
 	Quaternion q2;
 	
 	q2.fromEuler(x,y,z);

@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 // 	model_2.print();
 	p.t = vec3(0.05, 0.1, 0.05);
 // 	id_2 = m_tracker->addModel(model_2, p, "Object-1", true);
-	id_2 = m_tracker->addModelFromFile("resources/model/HappyDay.ply", p, "HappyDay", true);
+	id_2 = m_tracker->addModelFromFile("resources/model/jasmin6.ply", p, "jasmin6", true);
 
 	// *************************************************************************************
   // Main Loop
@@ -97,7 +97,6 @@ int main(int argc, char *argv[])
 		
 		// Image processing
 		m_tracker->image_processing((unsigned char*)img->imageData);
-		m_tracker->drawImage(NULL);
 		fTimeIP = timer.Update();
 		
 		// Tracking (particle filtering)
@@ -133,7 +132,7 @@ int main(int argc, char *argv[])
 
 		fTimeTrack = timer.Update();
 		fTimeTotal = fTimeGrab + fTimeIP + fTimeTrack;
-		m_tracker->setFrameTime(fTimeTotal);
+// 		m_tracker->setFrameTime(fTimeTotal);
 //  		prinf("grab: %.0f ip: %.0f track: %f\n",fTimeGrab*1000, fTimeIP*1000, fTimeTrack*1000);
 	}
 	

@@ -111,9 +111,9 @@ public:
 	/** @brief Adds a geometrical model to the tracker
 	*		@return id of the added model (-1 if not successfull)
 	*/
-	int 		addModel(Model& m, Pose& p,  std::string label, bool bfc=false);
+	int 		addModel(Model& m, Pose& p,  std::string label, bool bfc=true);
 	
-	int			addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc=false);
+	int			addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc=true);
 	
 	/** @brief Remove model from tracker */
 	void 		removeModel(int id);

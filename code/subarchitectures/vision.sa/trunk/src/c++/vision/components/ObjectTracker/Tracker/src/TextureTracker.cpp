@@ -53,10 +53,11 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		}else{
 			params.m_spreadlvl = 0;
 		}
-		params.kernel_size = (int)floor(0.5*(MAX_KERNEL_SIZE)*(1.0-c_max));
-		m_shadeCompare->bind();
-		m_shadeCompare->setUniform("kernelsize", params.kernel_size);
-		m_shadeCompare->unbind();
+		
+// 		params.kernel_size = (int)floor(0.5*(MAX_KERNEL_SIZE)*(1.0-c_max));
+// 		m_shadeCompare->bind();
+// 		m_shadeCompare->setUniform("kernelsize", params.kernel_size);
+// 		m_shadeCompare->unbind();
 		
 		m_tex_model_ip[params.m_spreadlvl]->bind(0);
 		m_tex_frame_ip[params.m_spreadlvl]->bind(1);	
@@ -68,8 +69,9 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		
 		// predict movement of object
 		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
+		
 		// set timestep to 0.0 for further recursion (within same image)
-		modelEntry->predictor->updateTime(0.0);
+// 		modelEntry->predictor->updateTime(0.0);
 	}
 	// weighted mean	
 	modelEntry->pose = modelEntry->distribution.getMean();
@@ -350,6 +352,8 @@ bool TextureTracker::track(ModelEntry *modelEntry){
 	// Process model (texture reprojection, edge detection)
 	model_processing(modelEntry);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	drawImage(0);
 	
 	// Apply particle filtering
 	if(!modelEntry->lock){
