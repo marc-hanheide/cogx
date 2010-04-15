@@ -107,7 +107,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	 * Construct a new percept union belief similar to a given percept, 
 	 * except for the existence distributed which is constructed with the provided existProb parameter. 
 	 * 
-	 * @param percept the percept
+	 * @param percept The percept, which must have a discrete distribution with existence dependency
 	 * @param existProb the existence probability
 	 * @param id the identifier for the new belief
 	 * @throws BinderException 
@@ -131,7 +131,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 			throw new BeliefException("Error in constructing PerceptUnionBelief: content in source belief is null");
 		}
 		else if (!(percept.content instanceof DistributionWithExistDep)) {
-			throw new BeliefException("Error in constructing PerceptUnionBelief: content in source belief does not include an existence dependency");
+			throw new BeliefException("Error in constructing PerceptUnionBelief: content in source belief does not include an existence distribution");
 		}
 		
 		DistributionWithExistDep newDistrib = 
