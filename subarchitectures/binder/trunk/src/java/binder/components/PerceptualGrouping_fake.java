@@ -1,8 +1,12 @@
 package binder.components;
 
+import java.util.List;
+
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.PerceptUnionBuilder;
 import binder.abstr.BeliefWriter;
 import cast.AlreadyExistsOnWMException;
@@ -11,6 +15,7 @@ import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -50,5 +55,10 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 	}
 	
 	
-	
+	private void updatePointersToBelief (Belief newBelief) {
+		
+		if (newBelief.hist != null && newBelief.hist instanceof CASTBeliefHistory) {
+			List<WorkingMemoryAddress> ancestors = ((CASTBeliefHistory)newBelief.hist).ancestors;
+		}
+	}
 }

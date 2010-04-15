@@ -150,15 +150,13 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			
 			CondIndependentDistribs features = BeliefContentBuilder.createNewCondIndependentDistribs();
 			
-			
-			CondIndependentDistribs cdistrib = BeliefContentBuilder.createNewCondIndependentDistribs();
-			
+					
 			List<FeatureValueProbPair> labelPairs = new LinkedList<FeatureValueProbPair>();
 			labelPairs.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Mug"), 0.9f));
 			labelPairs.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Ball"), 0.05f));
 			
 			BasicProbDistribution labelDistrib = BeliefContentBuilder.createNewFeatureDistribution("label", labelPairs);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib, labelDistrib);
+			BeliefContentBuilder.putNewCondIndependentDistrib(features, labelDistrib);
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.85f, features);
 
