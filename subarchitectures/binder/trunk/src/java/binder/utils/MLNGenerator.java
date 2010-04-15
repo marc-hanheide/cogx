@@ -426,7 +426,7 @@ public class MLNGenerator {
 			if(val instanceof PointerValue) {
 				// TODO: is this correct to translate the belief id to
 				// our internal representation?
-				result.add(getMarkovLogicConstantFromID(((PointerValue)val).beliefId.id));
+				result.add(getMarkovLogicConstantFromID(((PointerValue)val).beliefId));
 				continue;
 			}
 		}
@@ -550,7 +550,7 @@ public class MLNGenerator {
 		else if(val instanceof PointerValue) {
 			// TODO: is this correct to translate the belief id to
 			// our internal representation?
-			return getMarkovLogicConstantFromID(((PointerValue)val).beliefId.id);
+			return getMarkovLogicConstantFromID(((PointerValue)val).beliefId);
 		}
 
 		throw new MLException("unknwon feature value type");
