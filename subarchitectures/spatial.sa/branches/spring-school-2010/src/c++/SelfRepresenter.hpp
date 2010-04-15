@@ -19,15 +19,14 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <SpatialData.hpp>
 #include <SpatialProperties.hpp>
-#include <BinderEssentials.hpp>
-#include <Marshalling.hpp>
+//#include <BinderEssentials.hpp>
+//#include <Marshalling.hpp>
 #include <NavData.hpp>
 #include <string>
 #include <map>
 
 using namespace std;
 using namespace cast;
-using namespace binder::autogen::core;
 
 namespace spatial {
   class SelfRepresenter : public cast::ManagedComponent

@@ -8,7 +8,6 @@
 
 using namespace std;
 using namespace cast;
-using namespace binder::autogen::core;
 using namespace spatial;
 
 extern "C" {
@@ -75,78 +74,63 @@ SelfRepresenter::getCurrentNavNode()
 void
 SelfRepresenter::runComponent()
 {
-  try {
-    Marshalling::MarshallerPrx agg(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
+  string robotPositionPropertyWMID = "";
+
+
+  FrontierInterface::PlaceInterfacePrx agg2(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
+  int prevPlaceID = -1;
+
+  cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
+  origin->address.subarchitecture = "spatial.sa";
+  origin->address.id = "local";
+  origin->type = "data"; //uh oh, do we always need to include this?
+
+  while (isRunning()) {
+    // Regularly check robot pose
+    NavData::FNodePtr curFNode = getCurrentNavNode();
     try {
-      cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
-      origin->address.subarchitecture = "spatial.sa";
-      origin->address.id = "local";
-      origin->type = "data"; //uh oh, do we always need to include this?
+      SpatialData::PlacePtr curPlace = agg2->getPlaceFromNodeID(curFNode->nodeId);
 
-      agg->addProxy("robot", "1", 1.0, origin);
+      int curPlaceID = curPlace->id;
+      if (curPlaceID != prevPlaceID) {
+	// Place has changed!
 
-      FeaturePtr feature = new Feature();
-      feature->featlabel = "category";
-      feature->alternativeValues.push_back(new
-					   binder::autogen::featvalues::StringValue(1, getCASTTime(), "robot"));
-      agg->addFeature("robot", "1", feature);
-      agg->commitFeatures("robot","1");
+	SpatialProperties::IntegerValuePtr placeIDValue = 
+	  new SpatialProperties::IntegerValue;
+	placeIDValue->value = curPlaceID;
+
+	SpatialProperties::ValueProbabilityPair pair1 =
+	{ placeIDValue, 1.0 };
+
+	SpatialProperties::ValueProbabilityPairs pairs;
+	pairs.push_back(pair1);
+
+	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	  new SpatialProperties::DiscreteProbabilityDistribution;
+	discDistr->data = pairs;
+
+	SpatialProperties::PlaceContainmentAgentPropertyPtr robotLocationProperty =
+	  new SpatialProperties::PlaceContainmentAgentProperty();
+	robotLocationProperty->agentID = 0; //Robot's ID
+	robotLocationProperty->distribution = discDistr;
+	robotLocationProperty->mapValue = placeIDValue;
+	robotLocationProperty->mapValueReliable = 1;
+
+	if (robotPositionPropertyWMID == "") {
+	  robotPositionPropertyWMID = newDataID();
+	  addToWorkingMemory<SpatialProperties::PlaceContainmentAgentProperty>(robotPositionPropertyWMID, robotLocationProperty);
+	}
+	else  {
+	  overwriteWorkingMemory<SpatialProperties::PlaceContainmentAgentProperty>(robotPositionPropertyWMID, robotLocationProperty);
+	}
+      }
+      prevPlaceID = curPlaceID;
     }
     catch (Ice::Exception e) {
-      log("Failed to add robot proxy!");
+      log("Unable to get current Place!");
     }
-
-    FrontierInterface::PlaceInterfacePrx agg2(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-
-    int prevPlaceID = -1;
-
-    cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
-    origin->address.subarchitecture = "spatial.sa";
-    origin->address.id = "local";
-    origin->type = "data"; //uh oh, do we always need to include this?
-
-    while (isRunning()) {
-      // Regularly check robot pose
-      NavData::FNodePtr curFNode = getCurrentNavNode();
-      try {
-	SpatialData::PlacePtr curPlace = agg2->getPlaceFromNodeID(curFNode->nodeId);
-
-	int curPlaceID = curPlace->id;
-	if (curPlaceID != prevPlaceID) {
-	  // Place has changed!
-
-	  // replace position feature
-	  agg->deleteProxy("robotpos", "robot");
-
-	  stringstream ss;
-	  ss << curPlaceID;
-
-	  agg->addRelation("robotpos", "robot",
-	      "robot", "1",
-	      "place", ss.str(), 1.0, origin);
-
-	  // Add the "relationType" label feature
-	  FeaturePtr feature = new Feature();
-	  feature->featlabel = "located";
-
-	  feature->alternativeValues.push_back(new
-	      binder::autogen::featvalues::BooleanValue(1, getCASTTime(), true));
-	  agg->addFeature("robotpos", "robot", feature);
-
-	  // Foreground relation proxy
-	  agg->commitFeatures("robotpos", "robot");
-	}
-	prevPlaceID = curPlaceID;
-      }
-      catch (Ice::Exception e) {
-	log("Unable to get current Place!");
-      }
-      usleep(500000);
-    }
-  }
-  catch (Ice::Exception e) {
-    log("Unexpected ICE exception!");
-    exit(1);
+    usleep(500000);
   }
 }
 
