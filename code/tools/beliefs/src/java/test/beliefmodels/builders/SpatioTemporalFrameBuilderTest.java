@@ -23,6 +23,8 @@
  * The unit tests illustrate assumptions on method parameters, how to access the individual methods, 
  * and how to get access to information in the objects that the methods return. 
  * 
+ * @author 	Geert-Jan M. Kruijff, gj@dfki.de
+ * @version 100415
  */
 
 // Package
