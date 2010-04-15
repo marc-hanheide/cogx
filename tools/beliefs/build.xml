@@ -110,9 +110,9 @@
 	<!-- JUnit4-based unit testing                                           -->
 	<!-- =================================================================== -->
 	
-	<target name="test" depends="-test-run,-test-report"/>
+	<target name="test" depends="-test-run,-test-report,compile"/>
 		
-	<target name="-test-run" depends="compile">
+	<target name="-test-run">
 		<mkdir dir="${junit.data}"/>
 		<junit printsummary="yes" fork="true" haltonfailure="no">
 			<classpath>

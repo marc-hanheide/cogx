@@ -19,7 +19,7 @@
 // =================================================================                                                        
 
 
-package beliefmodels.builders;
+package beliefmodels.builders; 
 
 
 import java.util.HashMap;
