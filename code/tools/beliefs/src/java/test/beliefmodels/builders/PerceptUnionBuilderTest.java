@@ -20,6 +20,9 @@
 // Package
 package test.beliefmodels.builders;
 
+// Java
+import java.util.ArrayList;
+
 // JUnit
 import org.junit.Before;
 import org.junit.Test;
@@ -27,12 +30,16 @@ import static org.junit.Assert.*;
 
 // Beliefs
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.featurecontent.*;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.epstatus.PrivateEpistemicStatus;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.history.CASTBeliefHistory;
-
+import beliefmodels.builders.BeliefContentBuilder;
+import beliefmodels.builders.FeatureValueBuilder; 
 import beliefmodels.builders.PerceptBuilder; 
 import beliefmodels.builders.PerceptUnionBuilder;
 
@@ -76,10 +83,19 @@ public class PerceptUnionBuilderTest {
 		id = "id";
 		type="vision";
 		curPlace="here";
-		content = new ProbDistribution();
+		// create a basic probability distribution over feature values
+		FeatureValue fVal1 = FeatureValueBuilder.createNewStringValue("val1");
+		FeatureValue fVal2 = FeatureValueBuilder.createNewStringValue("val2");
+		FeatureValueProbPair fVal1Pr = new FeatureValueProbPair (fVal1, 0.4f);
+		FeatureValueProbPair fVal2Pr = new FeatureValueProbPair (fVal2, 0.6f);
+		ArrayList fValPrPairs = new ArrayList();
+		fValPrPairs.add(fVal1Pr);
+		fValPrPairs.add(fVal2Pr);
+		content = BeliefContentBuilder.createNewFeatureDistribution("myId", fValPrPairs);
+		DistributionWithExistDep distExist = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, content);
 		wma = new WorkingMemoryAddress(id,"vision");
 		hist = PerceptBuilder.createNewPerceptHistory(wma);
-		pBelief = PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, content, hist);
+		pBelief = PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, distExist, hist);
 
 	} // end setUp
 	
@@ -347,7 +363,8 @@ public class PerceptUnionBuilderTest {
 		try { 
 			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,0.7f,id);
 		} catch (BeliefException be) {
-			fail("Creating a PerceptUnionBelief from a single PerceptBelief and all parameters instantiated should have succeeded");
+			fail("Creating a PerceptUnionBelief from a single PerceptBelief and all parameters instantiated should have succeeded: "
+					+be.getMessage());
 		} // end try..catch
 	} // end test
 	 
