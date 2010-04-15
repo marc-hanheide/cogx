@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
 
 // Beliefs
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.epstatus.PrivateEpistemicStatus;
 import beliefmodels.autogen.distribs.ProbDistribution;
@@ -61,7 +62,8 @@ public class PerceptUnionBuilderTest {
 	String curPlace;
 	ProbDistribution content;
 	CASTBeliefHistory hist;
-	
+	WorkingMemoryAddress wma; 
+	PerceptBelief pBelief;
 	
 	/**
 	 * Initializes the global private variables used in the test class
@@ -75,7 +77,10 @@ public class PerceptUnionBuilderTest {
 		type="vision";
 		curPlace="here";
 		content = new ProbDistribution();
-		hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress(id,"vision"));
+		wma = new WorkingMemoryAddress(id,"vision");
+		hist = PerceptBuilder.createNewPerceptHistory(wma);
+		pBelief = PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, content, hist);
+
 	} // end setUp
 	
 	/**
@@ -219,7 +224,7 @@ public class PerceptUnionBuilderTest {
 	} // end test	
 	
 	/**
-	 * A newly PerceptUnionBelief gets private epistemic status
+	 * A new PerceptUnionBelief gets private epistemic status
 	 */
 				
 	@Test
@@ -236,8 +241,105 @@ public class PerceptUnionBuilderTest {
 		} // end try..catch
 	} // end test
 	
+	/**
+	 * Creating a PerceptUnionBelief from a single PerceptBelief succeeds with all parameters instantiated
+	 */
 	
+	@Test
+	public void NewPerceptUnionBeliefFromPerceptBeliefSucceeds () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,id);
+		} catch (BeliefException be) {
+			fail("Creating a PerceptUnionBelief from a single PerceptBelief and all parameters instantiated should have succeeded");
+		} // end try..catch
+	} // end test
 	
+	/**
+	 * Creating a PerceptUnionBelief from a null belief fails
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromNullPerceptBeliefFails () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(null,wma,id);
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptUnionBelief: source belief is null", be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a PerceptUnionBelief from a null address fails
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromNullAddressFails () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,null,id);
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information", 
+					be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a PerceptUnionBelief from a null values address fails
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromNullValuesAddressFails () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,new WorkingMemoryAddress(null,null),id);
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information",
+					be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a PerceptUnionBelief from an empty values address fails
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromEmptyValuesAddressFails () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,new WorkingMemoryAddress("",""),id);
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information",
+					be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a PerceptUnionBelief from a null Id fails
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromNullIdFails () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,null);
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty", 
+					be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a PerceptUnionBelief from an empty Id fails
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromEmptyIdFails () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,"");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty",
+					be.getMessage());
+		} // end try..catch
+		
+	} // end test	
+	
+		
+	 
 	
 
 } // end class
