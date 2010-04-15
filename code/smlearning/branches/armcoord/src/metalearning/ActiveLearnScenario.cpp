@@ -258,10 +258,12 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 }
 
 
-
+///
+///prepares the polyflap to use
+///
 void ActiveLearnScenario::initialize_polyflap(){
-	cout << "ALS: initialize_polyflap" << endl;
-
+	
+	//creates a polyflap
 	create_polyflap_object();
 	
 	if (iteration == 0) {
@@ -269,26 +271,29 @@ void ActiveLearnScenario::initialize_polyflap(){
 	}
 	currentPfY = object->getPose().p.v2;
 
-
+	//computes needed information about the polyflap
 	compute_vectors();
-
-
 }
 
-
+///
+///choose and describe the start point of the experiment trajectory
+///
 void  ActiveLearnScenario::initialize_movement(){
-	cout << "ALS: initialize_movement" << endl;
 
+	//set default coordinates
 	set_positionT();
 
+	//choose start point
 	define_start_position();
 
-	prepare_target();
-	
-		
+	//edit the coordinates so that they describe chosen start point
+	prepare_target();	
 }
 
 
+///
+///choose the starting position
+///
 void ActiveLearnScenario::define_start_position(){
 	cout << "ALS: define_start_position" << endl;
 
@@ -338,13 +343,16 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	netBuilt = false;
 
-
+	//set: random seed, tmDeltaAsync; get initial config
 	first_init();
 
+	//setup and move to home position; define fingertip orientation
 	setup_home();
 
+	//define numSequences and startingPosition
 	setup_loop(argc, argv);
 	
+
 	//start of the experiment loop
 	for (iteration = 0; iteration<numSequences; iteration++) {
 		
@@ -352,24 +360,34 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		creator.setToDefault();
 		//polyflap actor
 
+		//create and setup polyflap object, compute its vectors
 		initialize_polyflap();
 		
+		//compute coordinates of start position
 		initialize_movement();
 
+		//move the finger to the beginnign of experiment trajectory
 		send_position(target, ReacPlanner::ACTION_GLOBAL);
-
+		
+		//create feature sequence and vector
 		init_writing();
 
+		//write initial position and orientation of the finger
 		write_finger_pos_and_or();
 
+		//compute direction and other features of trajectory
 		set_up_movement();
-	
+
+		//write chosen speed and angle of the finger experiment trajectory	
 		write_finger_speed_and_angle();
 
+		//add feature vector to the sequence
 		write_f_vector_into_sequence();
 
+		//move the finger along described experiment trajectory
 		move_finger();
 
+		//write sequence into dataset
 		write_sequence_into_dataset();
 
 
@@ -383,41 +401,44 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		}
 
 
+		//turn off collision detection
 		set_collision_detection(false);
 
+		//print out information about current sequence
 		print_sequence_info();
-
-
 		cout << "predicted poses 1 size: " << learningData.currentPredictedPfSeq.size() << endl;
 
+		//move the finger up to avoid path finding problems 
 		move_finger_up();
 
+		//remove polyflap object from the scene
 		remove_polyflap();
 
-		pepare_home_movement();
-		
-
+		//set up needed data for home movement
+		prepare_home_movement();
+				
+		//turn on collision detection
 		set_collision_detection(true);
-		
+			
+		//move the finger to home position	
 		send_position(home , ReacPlanner::ACTION_GLOBAL);
 
-
-
+		//print out end information of this iteration
 		iteration_end_info();		
 		
 		
-
-
 		learningData.currentPredictedPfSeq.clear();
 		learningData.currentPredictedEfSeq.clear();
-
+	
+		//finish this iteration
 		finish_iteration();
 
 }
 
+	//move the arm to its initial position
 	move_to_initial();
-
-
+	
+	//write obtained data into a binary file
 	write_dataset_into_binary();
 
 
