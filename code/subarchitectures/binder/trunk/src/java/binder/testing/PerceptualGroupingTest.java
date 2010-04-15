@@ -65,7 +65,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 
 		try {
 			
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("","haptic"));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
 
 			
 			// First union
@@ -115,8 +115,8 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 		}
 	}
 
-
-  
+ 
+   
 	private void checkIfSuccessful(WorkingMemoryChange _wmc) {
 		try { 
 			CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address,
@@ -162,7 +162,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.85f, features);
 
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("","vision"));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ssfsfasd","vision"));
 
 			String id = newDataID();
 
