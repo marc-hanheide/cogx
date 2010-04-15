@@ -67,6 +67,8 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 	//      for random polyflap position
 	//maxRange = 0.4;
 	XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+	//minimum Z value for polyflap position
+	XMLData(val.minZ, context->getContextFirst("polyflapInteraction minZ"));
 
 	//minimal duration of a movement (by normal speed)
 	XMLData(val.minDuration, context->getContextFirst("polyflapInteraction minDuration"));
@@ -192,7 +194,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 // 		cout << "Effector roll: " << efRoll << " pitch: " << efPitch << " yaw: " << efYaw << endl;
 		Real obRoll, obPitch, obYaw;
 		chunk.objectPose.R.toEuler (obRoll, obPitch, obYaw);
-		cout << "Object roll: " << obRoll << " pitch: " << obPitch << " yaw: " << obYaw << endl;
+		// cout << "Object roll: " << obRoll << " pitch: " << obPitch << " yaw: " << obYaw << endl;
 
 		Real polStateOutput = 0; //polyflap moves with the same Y angle
 		Real epsilonAngle = 0.005;
@@ -225,7 +227,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, -0.01, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
 		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
@@ -239,11 +241,9 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 			learner.build (smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
 			netBuilt = true;
 		}
-		loadCurrentTrainSeq (learner.header->inputSize, learner.header->outputSize);
+		load_current_trainSeq (learner.header->inputSize, learner.header->outputSize);
 		learner.feed_forward (*trainSeq);
-// 		golem::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange);
-// 		learningData.currentPredictedPfSeq.push_back (predictedPfPose);
-		getPfEfSeqFromOutputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+		get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
 	
 	}
 // 	if (bStop) {
@@ -320,7 +320,7 @@ void ActiveLearnScenario::write_dataset_into_binary(){
 	cout << "ALS: write_dataset_into_binary" << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	learner.save_net_data (writeDownCollectedData(data));
+	learner.save_net_data (writedown_collected_data(data));
 	/////////////////////////////////////////////////
 	
 }
@@ -381,8 +381,8 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		//write chosen speed and angle of the finger experiment trajectory	
 		write_finger_speed_and_angle();
 
-		//add feature vector to the sequence
-		write_f_vector_into_sequence();
+		//add motor vector to the sequence
+		write_motor_vector_into_sequence();
 
 		//move the finger along described experiment trajectory
 		move_finger();
@@ -431,9 +431,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		learningData.currentPredictedEfSeq.clear();
 	
 		//finish this iteration
-		finish_iteration();
+		check_interrupted();
 
-}
+	}
 
 	//move the arm to its initial position
 	move_to_initial();
@@ -455,7 +455,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 //------------------------------------------------------------------------------
 
 
-golem::Mat34  ActiveLearnScenario::getPfEfPoseFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose) {
+golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose) {
 	int finalActIndex = outputActivations.shape[0] - 1;
 // 	cout << finalActIndex << endl;
 	int outputsize = outputActivations.shape[1];
@@ -477,7 +477,7 @@ golem::Mat34  ActiveLearnScenario::getPfEfPoseFromOutputActivations (rnnlib::Seq
 	//extract polyflap Pose
 	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
-	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
+	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], minZ, maxRange);
 	Real pfRoll, pfPitch, pfYaw;
 	pfRoll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	pfPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
@@ -489,7 +489,7 @@ golem::Mat34  ActiveLearnScenario::getPfEfPoseFromOutputActivations (rnnlib::Seq
 }
 
 
-void ActiveLearnScenario::getPfEfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int sIndex, Real maxRange, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq) {
+void ActiveLearnScenario::get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int sIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq) {
 
 	currentPredictedPfSeq.clear();
 	for (int i=0; i < outputActivations.shape[0]; i++) {
@@ -511,7 +511,7 @@ void ActiveLearnScenario::getPfEfSeqFromOutputActivations (rnnlib::SeqBuffer<dou
 		//extract polyflap Pose
 		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+		currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], minZ, maxRange);
 		Real pfRoll, pfPitch, pfYaw;
 		pfRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
 		pfPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
@@ -522,7 +522,7 @@ void ActiveLearnScenario::getPfEfSeqFromOutputActivations (rnnlib::SeqBuffer<dou
 }
 
 //------------------------------------------------------------------------------
-void ActiveLearnScenario::loadCurrentTrainSeq (int inputSize, int outputSize) {
+void ActiveLearnScenario::load_current_trainSeq (int inputSize, int outputSize) {
 	if (trainSeq)
 		delete trainSeq;
 	trainSeq = new rnnlib::DataSequence (inputSize, outputSize);

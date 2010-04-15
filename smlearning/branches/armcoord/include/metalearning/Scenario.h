@@ -108,6 +108,8 @@ public:
 
 		/** assumed maximum range of polyflap X-coordinate location during the experiment */
 		Real maxRange;
+		/** assumed minimum value for polyflap Z-coordinate location during experiment (in xml file should have value of -0.01... bug in PhysX?) */
+		Real minZ;
 		
 		//minimal duration of a movement (by normal speed)
 		SecTmReal minDuration;
@@ -363,7 +365,7 @@ protected:
 	///
 	///add the vector to the current sequence
 	///
-	void write_f_vector_into_sequence();
+	void write_motor_vector_into_sequence();
 
 	///
 	///initialize learning data
@@ -413,7 +415,7 @@ protected:
 	///
 	///finish current iteration
 	///
-	void finish_iteration();
+	void check_interrupted();
 
 	///
 	///move the arm to its initial position

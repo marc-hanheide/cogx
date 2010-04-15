@@ -75,15 +75,15 @@ protected:
 	ActiveLearnScenario(golem::Scene &scene) : Scenario (scene) {};
 
 	/** restore predicted last polyflap and effector pose from neural activations */
-	golem::Mat34 getPfEfPoseFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
+	golem::Mat34 get_pfefPose_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
 	/** restore sequence of predicted polyflap poses from neural activations */
-	void getPfEfSeqFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, vector<golem::Mat34>& currentPredictedPfSeq,  vector<golem::Mat34>& currentPredictedEfSeq);
+	void get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq,  vector<golem::Mat34>& currentPredictedEfSeq);
 	/** Renders the object. */
         virtual void render();
 	/** (Post)processing function called AFTER every physics simulation step and before randering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** load training data in RNNLIB format */
-	void loadCurrentTrainSeq (int inputSize, int outputSize);
+	void load_current_trainSeq (int inputSize, int outputSize);
 
 	///
 	///prepares the polyflap to use
