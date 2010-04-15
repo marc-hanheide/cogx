@@ -24,6 +24,7 @@ package beliefmodels.builders;
 import beliefmodels.autogen.framing.SimpleSpatioTemporalFrame;
 import beliefmodels.autogen.framing.TemporalInterval;
 import cast.cdl.CASTTime;
+import beliefmodels.arch.BeliefException;
 
 public class SpatioTemporalFrameBuilder {
  
@@ -35,12 +36,18 @@ public class SpatioTemporalFrameBuilder {
 	 * @param startTime a starting time
 	 * @param endTime an ending time
 	 * @return the constructed spatio-temporal frame
+	 * @throws BeliefException Thrown if any of the parameters is null or empty
 	 */
 	public static SimpleSpatioTemporalFrame createSimpleSpatioTemporalFrame 
-		(String place, CASTTime startTime, CASTTime endTime) {
+		(String place, CASTTime startTime, CASTTime endTime) 
+		throws BeliefException
+	{
+		if (place == null || place.equals("") || startTime == null || endTime == null) {
+			throw new BeliefException("Error when creating ST frame: parameters cannot be null or empty"); 
+		} // end if
 		
 		TemporalInterval interval = new TemporalInterval(startTime, endTime);
 		return new SimpleSpatioTemporalFrame(place, interval);
-	}
+	} // end method
 	
 }
