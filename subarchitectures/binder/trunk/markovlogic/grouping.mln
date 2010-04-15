@@ -30,28 +30,48 @@ Existence(belief)
 ///////////////////////////////
 
 2.1972244 Existence(U0_2)
-1.0986123 Existence(U0_2) => Shape(U0_2,Cyl)
--1.734601 Existence(U0_2) => Shape(U0_2,Sphe)
--2.1972244 Existence(U0_2) => Shape(U0_2,Unknown)
-Existence(U0_2) => Label(U0_2,None).
-Existence(U0_2) => Shape(U0_2,None).
-Existence(U0_2) => Shape(U0_2,None).
+!Label(U0_2,Ball).
+!Label(U0_2,Mug).
+Label(U0_2,None).
+!Shape(U0_2,Cyl).
+!Shape(U0_2,Sphe).
+Shape(U0_2,None).
+NaN Existence(U0_2) ^ Shape(U0_2,Cyl)
+NaN Existence(U0_2) ^ Shape(U0_2,Sphe)
+NaN Existence(U0_2) ^ Shape(U0_2,Unknown)
+Existence(U0_2) => !Shape(U0_2,None).
 
 -5.293305 Existence(U2_2)
+!Label(U2_2,Ball).
+!Label(U2_2,Mug).
+Label(U2_2,None).
+!Shape(U2_2,Cyl).
+!Shape(U2_2,Sphe).
+Shape(U2_2,None).
 
 1.3862945 Existence(U1_2)
-1.7346013 Existence(U1_2) => Shape(U1_2,Sphe)
--1.7346013 Existence(U1_2) => Shape(U1_2,Unknown)
+!Label(U1_2,Ball).
+!Label(U1_2,Mug).
+Label(U1_2,None).
+!Shape(U1_2,Cyl).
+!Shape(U1_2,Sphe).
+Shape(U1_2,None).
+NaN Existence(U1_2) ^ Shape(U1_2,Sphe)
+NaN Existence(U1_2) ^ Shape(U1_2,Unknown)
 Existence(U1_2) => !Shape(U1_2,Cyl).
-Existence(U1_2) => Label(U1_2,None).
-Existence(U1_2) => Shape(U1_2,None).
-Existence(U1_2) => Shape(U1_2,None).
+Existence(U1_2) => !Shape(U1_2,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 1.7346013 Existence(P)
+!Label(P,Ball).
+!Label(P,Mug).
+Label(P,None).
+!Shape(P,Cyl).
+!Shape(P,Sphe).
+Shape(P,None).
 
 ///////////////////////////////
 // FEATURE VALUE CONSTRAINTS
