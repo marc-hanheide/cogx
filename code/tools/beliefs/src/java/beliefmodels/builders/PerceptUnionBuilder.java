@@ -54,9 +54,11 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	public static PerceptUnionBelief createNewPerceptUnionBelief (String id, String type, String curPlace, CASTTime curTime, ProbDistribution content, CASTBeliefHistory hist) 
 		throws BeliefException {
 		
-		if (curPlace == null || curTime == null || content == null || hist == null) {
-			throw new BeliefException("error, one of the belief component is null");
-		}
+		if (id == null || type == null || id.equals("") || type.equals("") || 
+				curPlace == null || curPlace.equals("") || curTime == null || content == null || hist == null) 
+		{
+			throw new BeliefException("Error in constructing PerceptUnionBelief: parameters cannot be null or empty");
+		} // end if  
 		
 		// constructing the spatio-temporal frame
 		SpatioTemporalFrame frame = 

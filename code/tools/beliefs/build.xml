@@ -1,5 +1,5 @@
 <!-- Inner build file for a module in the CogX system -->
-<project name="binder" default="compile" basedir=".">
+<project name="binder" default="test" basedir=".">
   
 	<!-- =================================================================== -->
      <!-- Add JAR files to classpath                                          -->
@@ -110,7 +110,7 @@
 	<!-- JUnit4-based unit testing                                           -->
 	<!-- =================================================================== -->
 	
-	<target name="test" depends="-test-run,-test-report,compile"/>
+	<target name="test" depends="compile,-test-run,-test-report"/>
 		
 	<target name="-test-run">
 		<mkdir dir="${junit.data}"/>
