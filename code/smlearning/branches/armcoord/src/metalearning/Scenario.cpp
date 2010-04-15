@@ -84,6 +84,8 @@ bool XMLData(Scenario::Desc &val, XMLContext* context, bool create) {
 	//      for random polyflap position
 	//maxRange = 0.4;
 	XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+	//minimum Z value for polyflap position
+	XMLData(val.minZ, context->getContextFirst("polyflapInteraction minZ"));
 
 	//minimal duration of a movement (by normal speed)
 	XMLData(val.minDuration, context->getContextFirst("polyflapInteraction minDuration"));
@@ -476,7 +478,7 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, -0.01, desc.maxRange));
+		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
 		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
@@ -509,7 +511,7 @@ void Scenario::first_init(){
 ///describe the home position (position, where the finger starts and ends every iteration)
 ///
 void Scenario::setup_home(){
-// setup home position
+	// setup home position
 	//GenWorkspaceState home;
 	home.pos = desc.homePose;
 	// move the arm with global path planning and collision detection
@@ -521,7 +523,6 @@ void Scenario::setup_home(){
 	
 	
 	// Define the initial pose in the Cartesian workspace
-	//Vec3 orientationT(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 	orientationT.set(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 }
 
@@ -530,7 +531,7 @@ void Scenario::setup_home(){
 ///describe the lenght of experiment (number of sequences) and if given, the starting position
 ///
 void Scenario::setup_loop(int argc, char* argv[]){
-numSequences = 10000;
+	numSequences = 10000;
 	//int startingPosition = 0;
 	startingPosition = 0;
 	if (argc > 2)
@@ -612,9 +613,9 @@ void Scenario::write_finger_speed_and_angle(){
 
 
 ///
-///add the vector to the current sequence
+///add the motor vector to the current sequence
 ///
-void Scenario::write_f_vector_into_sequence(){
+void Scenario::write_motor_vector_into_sequence(){
 
 	/////////////////////////////////////////////////
 	//writing of the initial vector into sequence
@@ -749,7 +750,7 @@ void Scenario::iteration_end_info(){
 ///
 ///finish current iteration
 ///
-void Scenario::finish_iteration(){
+void Scenario::check_interrupted(){
 	if (universe.interrupted())
 		throw Interrupted();
 }
@@ -774,7 +775,7 @@ void Scenario::write_dataset_into_binary(){
 	
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	writeDownCollectedData(data);
+	writedown_collected_data(data);
 	/////////////////////////////////////////////////
 	
 }
@@ -827,8 +828,8 @@ void Scenario::run(int argc, char* argv[]) {
 		//write chosen speed and angle of the finger experiment trajectory
 		write_finger_speed_and_angle();
 
-		//add feature vector to the sequence
-		write_f_vector_into_sequence();
+		//add motor feature vector to the sequence
+		write_motor_vector_into_sequence();
 
 		//move the finger along described experiment trajectory
 		move_finger();
@@ -878,7 +879,7 @@ void Scenario::run(int argc, char* argv[]) {
 		iteration_end_info();		
 	
 		//finish this iteration
-		finish_iteration();
+		check_interrupted();
 
 	}
 

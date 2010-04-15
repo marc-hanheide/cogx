@@ -342,7 +342,7 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 ///
 ///write collected data in an experiment and returns file name
 ///
-string writeDownCollectedData(DataSet data);
+string writedown_collected_data(DataSet data);
 
 ///
 ///a utility function to obtain the file name from a possibly large path/file pattern

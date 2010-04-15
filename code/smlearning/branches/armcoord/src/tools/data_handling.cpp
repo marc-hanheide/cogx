@@ -594,7 +594,7 @@ bool concatenate_datasets (string dir, string writeFileName) {
 ///
 ///write collected data in an experiment and returns file name without ext.
 ///
-string writeDownCollectedData(DataSet data) {
+string writedown_collected_data(DataSet data) {
 	time_t rawtime;
 	struct tm * timeinfo;
   	char buffer [12];
@@ -904,7 +904,6 @@ void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::
 	//CanonicalData::DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
 		CanonicalData::Sequence::const_iterator v;
-// 		string currentMotorCommand = s->begin()->motorCommand;
 
 		for (v=s->begin(); v!= s->end(); v++) {
 			
@@ -1001,7 +1000,6 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 	writeFile << outputVectorSize << endl;
 
 	set<string> motorCommandsSet;
-	set<string> outputsSet;
 	CanonicalData::DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
 
@@ -1022,12 +1020,11 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 		writeFile << *it << " ";
 	writeFile << endl;
 	writeFile << "# output examples" << endl << "0.0" << endl;
-	// writeFile.precision(20);
+	writeFile.precision(20);
 
 	//CanonicalData::DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
 		CanonicalData::Sequence::const_iterator v;
-// 		string currentMotorCommand = s->begin()->motorCommand;
 
 		for (v=s->begin(); v!= s->end(); v++) {
 			
