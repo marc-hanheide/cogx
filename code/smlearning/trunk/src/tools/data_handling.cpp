@@ -17,12 +17,13 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with nnl.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License.
+   If not, see <http://www.gnu.org/licenses/>.
  
 */
 
 #include <tools/data_handling.h>
+#include <metalearning/Scenario.h>
 
 namespace smlearning {
 
@@ -191,7 +192,7 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 					targetPatternsStr << *n;
 				}
 				//zero padding
-				for (int i=0; i<paddingSize; i++)
+  				for (int i=0; i<paddingSize; i++)
 					targetPatternsStr << ", 0";
 				if (v+1 == (*s).end() && s+1 == data.end())
 					targetPatternsStr << ";";
@@ -591,9 +592,9 @@ bool concatenate_datasets (string dir, string writeFileName) {
 
 
 ///
-///write collected data in an offline experiment
+///write collected data in an experiment and returns file name without ext.
 ///
-void writeDownCollectedData(DataSet data) {
+string writedown_collected_data(DataSet data) {
 	time_t rawtime;
 	struct tm * timeinfo;
   	char buffer [12];
@@ -608,11 +609,444 @@ void writeDownCollectedData(DataSet data) {
 	name.append(buffer);
 
 	
-	write_dataset(name  , data);
+	write_dataset(name, data);
+
+	return name;
 	//DataSet savedData;
 	//read_dataset(name, savedData);
 	//print_dataset<double> (savedData);
 }
+
+///
+///a utility function to obtain the file name from a possibly large path/file pattern
+///
+string get_seqBaseFileName (string seqFile) {
+	boost::regex seqfile_re (".*/(.*)$");
+	boost::cmatch match;
+	string seqBaseFileName;
+	if (boost::regex_match(seqFile.c_str(), match, seqfile_re)) {
+		seqBaseFileName = string(match[1].first, match[1].second);
+	}
+	else
+		seqBaseFileName = seqFile;
+	cout << "seqBaseFileName: " << seqBaseFileName << endl;
+	cout << "seqFile: " << seqFile << endl;
+	return seqBaseFileName;
+}
+
+///
+///obtain a discretization of starting finger poses from a canonical set of actions
+///
+map<Vec3, int, compare_Vec3> get_canonical_positions () {
+	//generate all possible polyflap poses
+	//TODO: the following data should be obtained from an xml file
+
+	//Polyflap Position and orientation
+	const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
+	const Vec3 startPolyflapRotation(Real(0.0*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));//Y,X,Z
+	//Polyflap dimensions		
+	const Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
+		
+
+// 	//vertical distance from the ground
+// 	const Real over = 0.01;
+	//vertical distance from the ground considering fingertip radius
+	Real over = 0.002 + 0.015;
+	//distance from the front/back of the polyflap
+	const Real dist = 0.05;
+	//distance from the side of the polyflap
+	const Real side = polyflapDimensions.v1*0.6;
+	//center of the polyflap
+	const Real center = polyflapDimensions.v2*0.6;
+	//distance from the top of the polyflap
+	//const Real top = polyflapDimensions.v2* 1.2;
+	const Real top = polyflapDimensions.v2 - 0.02;
+	//lenght of the movement		
+	const Real distance = 0.2;
+
+	//initialization of arm target: the center of the polyflap
+	Vec3 positionT (0.2, 0.2, 0.001);
+	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
+	Vec3 polyflapNormalVec = computeNormalVector(Vec3 (0.2, 0.2, 0.0),Vec3 (0.2, 0.25, 0.0));			
+	Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);
+
+	map<Vec3, int, compare_Vec3> positionsT;
+	
+
+	int smRegionsCount = 18;
+	for (int i=1; i <= smRegionsCount; i++) {
+		//arm target update
+		
+		Vec3 pos (positionT);
+		Scenario::set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		positionsT[pos] = i;
+		
+	}
+
+	return positionsT;
+}
+
+///
+///enumerate a dataset
+///
+CanonicalData::DataSet canonical_input_output_enumerator (DataSet data) {
+
+	//a number that slightly greater then the maximal reachable space of the arm
+	//    - used for workspace position normalization and later as a position upper bound
+	//      for random polyflap position
+	Real maxRange = 0.4;
+
+	map<Vec3, int, compare_Vec3> positionsT = get_canonical_positions ();
+	
+	map<Vec3, int>::const_iterator it;
+	cout << "map size: " << positionsT.size() << endl;
+	for (it = positionsT.begin(); it != positionsT.end(); it++) {
+		cout << "canon. pos.: "  << it->second  << ": stored start. pos.: "  << it->first.v1 << " " << it->first.v2 << " " << it->first.v3 << endl;
+	}
+
+	//Construct a new data set using a simple artificial discretization
+	//A canonical set of starting positions are obtained (i.e. the 18)
+	//Depending on feature vector size, polyflap poses and eventually finger
+	//effector poses are extracted
+	CanonicalData::DataSet newdata;
+	DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		Sequence::const_iterator v;
+		CanonicalData::Sequence newsequence;
+
+		stringstream motorCommandStr;
+		for (v=s->begin(); v!= s->end(); v++) {
+			CanonicalData::FeatureVector newfeaturevector;
+			long featvectorSize = v->size();
+			if (v == s->begin() ) {
+				assert (featvectorSize == 5);
+				golem::Vec3 startingPosition;
+				startingPosition.v1 = denormalize(v->at(0),0.0,maxRange);
+				startingPosition.v2 = denormalize(v->at(1),0.0,maxRange);
+				startingPosition.v3 = denormalize(v->at(2),0.0,maxRange);
+// 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
+				
+				int canonical_start_pos = positionsT.find (startingPosition)->second;
+				newfeaturevector.rawVector.push_back (canonical_start_pos);
+				newfeaturevector.rawVector.push_back (v->at(3));
+				newfeaturevector.rawVector.push_back (v->at(4));
+				//stringstream motorCommandStr;
+				motorCommandStr << canonical_start_pos << "_" << (*v)[3] << "_" << (*v)[4];
+				newfeaturevector.motorCommand = motorCommandStr.str();
+// 				cout << "motor command: " << newfeaturevector.motorCommand << endl;
+			}
+			else if (v != s->begin() ) {
+				assert (featvectorSize == 13 || featvectorSize == 7 );
+				if (featvectorSize == 7)
+					for (int i=0; i<6; i++)
+						newfeaturevector.rawVector.push_back(v->at(i));
+				else if (featvectorSize == 13)
+					for (int i=/*6*/0; i<12; i++)
+						newfeaturevector.rawVector.push_back(v->at(i));
+				stringstream labelStr;
+				labelStr << v->at(featvectorSize-1);
+				newfeaturevector.label = labelStr.str();
+				newfeaturevector.motorCommand = motorCommandStr.str();
+				
+					
+			}
+			newsequence.push_back (newfeaturevector);
+		}
+		newdata.push_back (newsequence);
+	}
+	cout << endl;
+
+	
+
+	return newdata;
+	
+}
+
+
+///
+///enumerate a dataset taking into account time steps
+///and a  of the complete dataset
+///
+CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data, int modulo) {
+	
+	//a number that slightly greater then the maximal reachable space of the arm
+	//    - used for workspace position normalization and later as a position upper bound
+	//      for random polyflap position
+	Real maxRange = 0.4;
+
+	map<Vec3, int, compare_Vec3> positionsT = get_canonical_positions ();
+	
+	map<Vec3, int>::const_iterator it;
+	cout << "map size: " << positionsT.size() << endl;
+	for (it = positionsT.begin(); it != positionsT.end(); it++) {
+		cout << "canon. pos.: "  << it->second  << ": stored start. pos.: "  << it->first.v1 << " " << it->first.v2 << " " << it->first.v3 << endl;
+	}
+
+	//Construct a new data set using a simple artificial discretization
+	//A canonical set of starting positions are obtained (i.e. the 18)
+	//Depending on feature vector size, polyflap poses and eventually finger
+	//effector poses are extracted
+	CanonicalData::DataSet newdata;
+	DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		Sequence::const_iterator v;
+		CanonicalData::Sequence newsequence;
+
+		stringstream motorCommandBaseStr;
+		int time_step = 0;
+		for (v=s->begin(); v!= s->end(); v++) {
+			stringstream motorCommandStr;
+			CanonicalData::FeatureVector newfeaturevector;
+			long featvectorSize = v->size();
+			if (v == s->begin() ) {
+				assert (featvectorSize == 5);
+				golem::Vec3 startingPosition;
+				startingPosition.v1 = denormalize(v->at(0),0.0,maxRange);
+				startingPosition.v2 = denormalize(v->at(1),0.0,maxRange);
+				startingPosition.v3 = denormalize(v->at(2),0.0,maxRange);
+// 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
+				
+				int canonical_start_pos = positionsT.find (startingPosition)->second;
+				newfeaturevector.rawVector.push_back (canonical_start_pos);
+				newfeaturevector.rawVector.push_back (v->at(3));
+				newfeaturevector.rawVector.push_back (v->at(4));
+// 				stringstream motorCommandStr;
+				motorCommandBaseStr << canonical_start_pos << "_" << (*v)[3] << "_" << (*v)[4];
+				newfeaturevector.motorCommand = motorCommandBaseStr.str();
+// 				cout << "motor command: " << newfeaturevector.motorCommand << endl;
+				newsequence.push_back (newfeaturevector);
+			}
+			else if (v != s->begin() && time_step % modulo == 0) {
+				assert (featvectorSize == 13 || featvectorSize == 7 );
+				if (featvectorSize == 7)
+					for (int i=0; i<6; i++)
+						newfeaturevector.rawVector.push_back(v->at(i));
+				else if (featvectorSize == 13)
+					for (int i=6; i<12; i++)
+						newfeaturevector.rawVector.push_back(v->at(i));
+				stringstream labelStr;
+				labelStr << v->at(featvectorSize-1);
+				newfeaturevector.label = labelStr.str();
+				motorCommandStr << motorCommandBaseStr.str() << "_" << time_step;
+				newfeaturevector.motorCommand = motorCommandStr.str();
+				newsequence.push_back (newfeaturevector);
+			
+			}
+			// newsequence.push_back (newfeaturevector);
+			time_step++;
+		}
+		newdata.push_back (newsequence);
+	}
+	cout << endl;
+
+	
+
+	return newdata;
+}
+
+
+///
+///write a dataset in cryssmex format by using the canonical representation
+///
+void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::DataSet data) {
+	//assuming an input(output) vector be symbolic (dimensionality 0 in cryssmex)
+	writeFileName += ".cry";
+
+	assert (data.size() >= 1);
+	assert (data[0].size() >= 2);
+	
+	int inputVectorSize = 0;
+	int outputVectorSize = 0;
+	int stateVectorSize = data[0][1].rawVector.size();
+	
+	ofstream writeFile(writeFileName.c_str(), ios::out);
+
+	writeFile << "# input dim" << endl;
+	writeFile << inputVectorSize << endl;
+	writeFile << "# state dim" << endl;
+	writeFile << stateVectorSize << endl;
+	writeFile << "# output dim" << endl;
+	writeFile << outputVectorSize << endl;
+
+	set<string> motorCommandsSet;
+	set<string> outputsSet;
+	CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+
+		CanonicalData::Sequence::const_iterator v;
+		for (v=s->begin(); v!= s->end(); v++) {
+			if (v != s->begin()) {
+				string currentMotorCommand = v->motorCommand;
+				if (motorCommandsSet.find (currentMotorCommand) == motorCommandsSet.end())
+					motorCommandsSet.insert (currentMotorCommand);
+				string currentOutput = v->label;
+				
+				if (outputsSet.find (currentOutput) == outputsSet.end())
+					outputsSet.insert (currentOutput);
+			}
+		}
+	}
+	writeFile << "# nr input symbols" << endl;
+	writeFile << motorCommandsSet.size() << endl;
+	writeFile << "# examples" << endl;
+	set<string>::iterator it;
+	for (it=motorCommandsSet.begin(); it!=motorCommandsSet.end(); it++)
+		writeFile << *it << " ";
+	writeFile << endl;
+	writeFile << "# nr output symbols" << endl;
+	writeFile << outputsSet.size() << endl;
+	writeFile << "# examples" << endl;
+	for (it=outputsSet.begin(); it!=outputsSet.end(); it++)
+		writeFile << *it << " ";
+	writeFile << endl;
+	writeFile.precision(20);
+
+	//CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		CanonicalData::Sequence::const_iterator v;
+
+		for (v=s->begin(); v!= s->end(); v++) {
+			
+			if (v != s->begin()) {
+				FeatureVector::const_iterator n;
+				string currentMotorCommand = v->motorCommand;
+				writeFile << currentMotorCommand << "   ";
+				for (n=v->rawVector.begin(); n!= v->rawVector.end(); n++)
+					writeFile << *n << " ";
+				writeFile << "  " << v->label << endl;
+			}
+		}
+	}
+	writeFile.close();
+}
+
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format and an output
+///label defined artificially
+///
+void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, int modulo) {
+
+	//this function assumes data coming from feature vectors in dataset
+	//the first vector has the motor command information (of size 5 is for now assumed)
+	//the rest of vectors contain a 6D finger effector pose,
+	//a 6D polyflap pose and a final output value in that order
+	int inputVectorSize;
+	assert ((inputVectorSize = data[0][0].size() + (data[0][1].size()-1)/2) == 11);
+	int stateVectorSize;
+	assert ((stateVectorSize = (data[0][1].size() - 1) /2) == 6);
+	int outputVectorSize = 1;
+
+	writeFileName += ".cry";
+	ofstream writeFile(writeFileName.c_str(), ios::out);
+
+	writeFile << "# input dim" << endl;
+	writeFile << inputVectorSize << endl;
+	writeFile << "# state dim" << endl;
+	writeFile << stateVectorSize << endl;
+	writeFile << "# output dim" << endl;
+	writeFile << outputVectorSize << endl;
+	writeFile << "# input examples" << endl << "0.0" << endl;
+	writeFile << "# output examples" << endl << "0.0" << endl;
+	writeFile.precision(20);
+	
+	DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		Sequence::const_iterator v;
+
+		FeatureVector motorCommandVector;
+		int time_step = 0;
+		for (v=s->begin(); v!= s->end(); v++) {
+			FeatureVector::const_iterator n;
+			long featvectorSize = v->size();
+			if (v == s->begin() )
+				for (n=v->begin(); n!= v->end(); n++)
+					motorCommandVector.push_back (*n);
+			else if (v != s->begin() && time_step % modulo == 0) {
+				for (n=motorCommandVector.begin(); n!=motorCommandVector.end(); n++)
+					writeFile << *n << "  ";
+				for (n=v->begin(); n!= v->end()-1; n++)
+					writeFile << *n << "  ";
+				writeFile << *(v->end()-1) << endl;
+			}
+			time_step++;
+		}
+	}
+	writeFile.close();
+}
+
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format
+///and works as a regression predictor (output is of the same dimensionality as the state space) and canonical format for the input
+///
+void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSet data ) {
+	//assuming an input(output) vector be symbolic (dimensionality 0 in cryssmex)
+	writeFileName += ".cry";
+
+	assert (data.size() >= 1);
+	assert (data[0].size() >= 2);
+	
+	int inputVectorSize = 0;
+	int stateVectorSize = data[0][1].rawVector.size(); 
+	int outputVectorSize = data[0][2].rawVector.size();
+	assert (stateVectorSize == outputVectorSize);
+	
+	ofstream writeFile(writeFileName.c_str(), ios::out);
+
+	writeFile << "# input dim" << endl;
+	writeFile << inputVectorSize << endl;
+	writeFile << "# state dim" << endl;
+	writeFile << stateVectorSize << endl;
+	writeFile << "# output dim" << endl;
+	writeFile << outputVectorSize << endl;
+
+	set<string> motorCommandsSet;
+	CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+
+		CanonicalData::Sequence::const_iterator v;
+		for (v=s->begin(); v!= s->end(); v++) {
+			if (v != s->begin()) {
+				string currentMotorCommand = v->motorCommand;
+				if (motorCommandsSet.find (currentMotorCommand) == motorCommandsSet.end())
+					motorCommandsSet.insert (currentMotorCommand);
+			}
+		}
+	}
+	writeFile << "# nr input symbols" << endl;
+	writeFile << motorCommandsSet.size() << endl;
+	writeFile << "# examples" << endl;
+	set<string>::iterator it;
+	for (it=motorCommandsSet.begin(); it!=motorCommandsSet.end(); it++)
+		writeFile << *it << " ";
+	writeFile << endl;
+	writeFile << "# output examples" << endl << "0.0" << endl;
+	writeFile.precision(20);
+
+	//CanonicalData::DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		CanonicalData::Sequence::const_iterator v;
+
+		for (v=s->begin(); v!= s->end(); v++) {
+			
+			if (v != s->begin() && v+1 != s->end()) {
+				FeatureVector::const_iterator n;
+				string currentMotorCommand = v->motorCommand;
+				writeFile << currentMotorCommand << "   ";
+				for (n=v->rawVector.begin(); n!= v->rawVector.end(); n++)
+					writeFile << *n << " ";
+
+				for (n=(v+1)->rawVector.begin(); n!=(v+1)->rawVector.end(); n++)
+					writeFile << *n << " ";
+				writeFile << endl;
+			}
+		}
+	}
+	writeFile.close();
+
+
+}
+
+
 
 
 };

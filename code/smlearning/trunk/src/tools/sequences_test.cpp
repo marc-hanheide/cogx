@@ -5,7 +5,7 @@ using namespace smlearning;
 int main(int argc, char * argv[]) {
 	if (argc < 2) {
 		cerr << argv[0] << " seq_file (without extension)" << endl;
-		exit (0);
+		return 1;
 	}
 	DataSet savedData;
 

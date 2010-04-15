@@ -11,7 +11,7 @@ int main (int argc, char *argv[]) {
 		dir = "./";
 	else {
 		cerr << argv[0] << " write_sequence_file_name (without extension) [target_dir (default:current dir.)]" << endl;
-		exit (0);
+		return 1;
 	}
 	
 	if (concatenate_datasets ( dir, argv[1] ))

@@ -54,9 +54,14 @@ struct RNN {
 	void print_net_data (ostream& out = cout);
 
 	///
-	///save RNN config file to be used for offline experiments
+	///save network topology
 	///
-	ostream& save_config_file (ostream& out = cout);
+	void save_net_data(string netFile, ostream& out = cout);
+	
+	///
+	///set neural network file name
+	///
+	void set_net_file (string fileName);
 
 	///
 	///construct RNN machine using config data
@@ -68,6 +73,10 @@ struct RNN {
 	///
 	void set_config_file (rnnlib::ConfigFile &configFile);
 
+	///
+	///save RNN config file to be used for offline experiments
+	///
+	ostream& save_config_file (ostream& out = cout);
 };
 
 struct OfflineRNN :  RNN {

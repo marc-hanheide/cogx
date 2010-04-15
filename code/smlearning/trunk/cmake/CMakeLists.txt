@@ -10,7 +10,7 @@ PROJECT(SMLearning)
 
 # Project root directory
 GET_FILENAME_COMPONENT(PROJECT_ROOT ../.. ABSOLUTE)
-SET(SMLEARNING_ROOT ${PROJECT_ROOT}/trunk CACHE INTERNAL "Path prefix for SMLearning package")
+SET(SMLEARNING_ROOT ${PROJECT_ROOT}/armcoord CACHE INTERNAL "Path prefix for SMLearning package")
 
 # Look for Boost libraries
 SET(CMAKE_MODULE_PATH ${SMLEARNING_ROOT}/cmake)
@@ -109,8 +109,8 @@ SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
-	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
-	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenario.cpp
 )
 
@@ -118,17 +118,13 @@ SET(OFFLINE_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/offline_experiment.cpp
 )
 
-SET(OFFLINE_EXPERIMENT_ICE_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/offline_experiment_ice.cpp
-)
+#SET(OFFLINE_EXPERIMENT_ICE_SOURCE
+#	${SMLEARNING_ROOT}/src/metalearning/offline_experiment_ice.cpp
+#)
 
-SET(ENSEMBLE_OFF_EXPERIMENT_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/ensemble_off_experiment.cpp
-)
-
-SET(ACTIVELEARN_EXPERIMENT_ICE_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
-)
+#SET(ACTIVELEARN_EXPERIMENT_ICE_SOURCE
+#	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
+#)
 
 SET(ACTIVELEARN_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment.cpp
@@ -139,8 +135,8 @@ SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
 	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
-	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
-	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
+#	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
+#	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenario.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
@@ -163,12 +159,24 @@ SET(DATA_PLOT_TEST_SOURCE
         ${SMLEARNING_ROOT}/src/tools/data_plot_test.cpp
 )
 
+SET(CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/canonical_input_output_enumerator_test.cpp
+)
+
+SET(PRINT_DATASET_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/print_dataset.cpp
+)
+
 SET(N_FOLD_CVSETS_NETS_SOURCE
         ${SMLEARNING_ROOT}/src/tools/n_fold_cvsets_nets.cpp
 )
 
 SET(CONCATENATE_SEQUENCEDATASETS_SOURCE
         ${SMLEARNING_ROOT}/src/tools/concatenate_sequencedatasets.cpp
+)
+
+SET(WRITE_DATA_CRYSSMEX_FMT_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/write_data_cryssmex_fmt.cpp
 )
 
 SET(TOOLS_HEADERS
@@ -245,30 +253,35 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${PL
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
-ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
-ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
+#ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
+#ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
-ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
+ADD_EXECUTABLE(canonical_input_output_enumerator_test ${CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE})
+ADD_EXECUTABLE(print_dataset ${PRINT_DATASET_SOURCE})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
+ADD_EXECUTABLE(write_data_cryssmex_fmt ${WRITE_DATA_CRYSSMEX_FMT_SOURCE})
 ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
 
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLearning)
+INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/metalearning/ensemble_experiment.sh DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
+#INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
+#INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS canonical_input_output_enumerator_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS write_data_cryssmex_fmt RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test_server RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test_client RUNTIME DESTINATION bin/SMLearning)

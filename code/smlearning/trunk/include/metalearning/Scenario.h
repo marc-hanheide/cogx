@@ -56,95 +56,19 @@
 #include <tools/data_handling.h>
 #include <tools/math_helpers.h>
 
+//#include <tr1/tuple>
+
 
 using namespace std;
 using namespace golem;
 using namespace golem::tools;
+//using namespace std::tr1;
 
 
 namespace smlearning {
 
 #define MAX_PLANNER_TRIALS 50
 
-/** Learning data format */
-class LearningData {
-public:
-	/** Data chunk */
-	class Chunk {
-	public:
-		typedef std::vector<Chunk> Seq;
-		
-		/** Do nothing */
-		Chunk() {
-		}
-		
-		/** Data chunk time stamp */
-		golem::SecTmReal timeStamp;
-		
-		/** Arm state - (joint) dynamic configuration */
-		golem::GenConfigspaceState armState;
-		/** End-effector GLOBAL pose */
-		golem::Mat34 effectorPose;
-		/** Object GLOBAL pose */
-		golem::Mat34 objectPose;
-		
-	};
-
-	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
-	golem::Bounds::Seq effector;
-	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::objectPose */
-	golem::Bounds::Seq object;
-	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
-	golem::Bounds::Seq obstacles;
-	
-	/** Time-dependent data */
-// 	Chunk::Seq data;
-	DataSet data;
-	/** current predicted polyflap poses sequence */
-	vector<Mat34> currentPredictedObjSeq;
-	/** current polyflap poses and motor command sequence */
-	smlearning::Sequence currentSeq;
-	/** current motor command */
-	FeatureVector currentMotorCommandVector;
-	/** Record validity */
-	//bool bArmState;
-	//bool bEffectorPose;
-	//bool bObjectPose;
-	//bool bFtsData;
-	//bool bImageIndex;
-	//bool bEffector;
-	//bool bObject;
-	//bool bObstacles;
-
-	/** Reset to default (empty)*/
-	void setToDefault() {
-		effector.clear();
-		object.clear();
-		obstacles.clear();
-		data.clear();
-		//bArmState = false;
-		//bEffectorPose = false;
-		//bObjectPose = false;
-		//bFtsData = false;
-		//bImageIndex = false;
-		//bEffector = false;
-		//bObject = false;
-		//bObstacles = false;
-	}
-	/** Check if the data is valid */
-	bool isValid() const {
-		if (!data.empty()) // must not be empty
-			return false;
-		//if (bEffector && effector.empty())
-		//	return false;
-		//if (bObject && object.empty())
-		//	return false;
-		//if (bObstacles && obstacles.empty())
-		//	return false;
-
-		return true;
-	}
-};
 
 //------------------------------------------------------------------------------
 
@@ -154,8 +78,6 @@ public:
 ///
 class Scenario : public golem::Object
 {
-	int numSequences;
-	int startingPosition;
 public:
 
 
@@ -183,6 +105,36 @@ public:
 		golem::SecTmReal speriod;
 		/** 2D motion constraint */
 		bool motion2D;
+
+		/** assumed maximum range of polyflap X-coordinate location during the experiment */
+		Real maxRange;
+		/** assumed minimum value for polyflap Z-coordinate location during experiment (in xml file should have value of -0.01... bug in PhysX?) */
+		Real minZ;
+		
+		//minimal duration of a movement (by normal speed)
+		SecTmReal minDuration;
+		//Polyflap Position and orientation
+		Vec3 startPolyflapPosition; 
+		Vec3 startPolyflapRotation; 
+		//Polyflap dimensions		
+		Vec3 polyflapDimensions; 
+
+//	 	//vertical distance from the ground
+// 		const Real over = 0.01;
+		//vertical distance from the ground considering fingertip radius
+		Real over;
+		//distance from the front/back of the polyflap
+		Real dist; 
+		//distance from the side of the polyflap
+		Real side; 
+		//center of the polyflap
+		Real center; 
+		//distance from the top of the polyflap
+		//const Real top = polyflapDimensions.v2* 1.2;
+		Real top; 
+		//lenght of the movement		
+		Real distance; 
+
 		
 		/** Constructs description object */
 		Desc() {
@@ -232,6 +184,7 @@ public:
 	///
 	void run(int argc, char* argv[]);
 
+	friend map<Vec3, int, compare_Vec3> get_canonical_positions ();
 protected:
 	/** Description */
 	Desc desc;
@@ -250,17 +203,62 @@ protected:
 	Actor::Appearance appearance;
 	/** Trial data */
 	LearningData learningData;
+	/** Dataset */
+ 	DataSet data;
 	/** Time */
 	golem::SecTmReal trialTime;
 	/** Random number generator */
 	golem::Rand randomG;
+	/** Y (roll) angle of polyflap */
+	Real currentPfRoll;
+	/** X (pitch) angle of polyflap */
+	Real currentPfPitch;
+	/** Z (yaw) angle of polyflap */
+	Real currentPfYaw;
+	/** Y position of polyflap */
+	Real currentPfY;
+	/** polyflap position (used to compute starting point coordinates) */
+	Vec3 polyflapPosition;
+	/** normal vector of the polyflap  |_ --> */
+	Vec3 polyflapNormalVec;
+	/** orthogonal vector of the polyflap */
+	Vec3 polyflapOrthogonalVec;
+	/** coordinates vector used for target description */
+	Vec3 positionT;
+	/** rotations vector used for target description */
+	Vec3 orientationT;
+	/** workspace state used to describe the starting point and also the end point of trajectory */
+	golem::GenWorkspaceState target;
+	/** position chosen for the start of experiment trajectory */
+	int startPosition;
+	/** speed of movement along the experiment trajectory */
+	int speed;
+	/** minimal duration of the movement along the experiment trajectory */
+	SecTmReal duration;
+	/** pose describing the endpoint of the experiment trajectory */
+	WorkspaceCoord end;
+	/** chosen horizontal angle of the experiment trajectory */
+	int horizontalAngle;
+	/** number of collected sequences in one experiment session */
+	int numSequences;
+	/** asynchron time delta*/
+	SecTmReal tmDeltaAsync;
+	/** spacestate describing the initial position of the arm (first and last position of the arm in every experiment session) */
+	golem::GenConfigspaceState initial;
+	/** workspace state describing the home position (first and last position of every experiment iteration) */
+	GenWorkspaceState home;
+	/** help variable used to determine the startPosition variable */
+	int startingPosition;
+	/** pointer to bounds describing polyflap, used for some initial polyflap computations */
+	golem::Bounds::SeqPtr curPol;
 
-	/** assumed maximum range of polyflap X-coordinate location during the experiment */
-	Real maxRange;
+	// Real reachedAngle;
+	
 	/** iteration counter */
 	int iteration;
 	/** const number of SM regions */
 	static const int smregionsCount = 18;
+	/** threshold angle when polyflap is flipping over */
 
 	/** Creator */
 	golem::Creator creator;
@@ -268,6 +266,8 @@ protected:
 	golem::CriticalSection cs;
 	golem::Event ev;
 	volatile bool bStart, bStop, bRec;
+
+
 
 	/** (Post)processing function called AFTER every physics simulation step and before randering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
@@ -281,40 +281,183 @@ protected:
 	///
 	///creates polyflap and puts it in the scene (from position and rotation)
 	///
-	Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context);
+	Actor* setup_polyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context*/);
 	
 	///
 	///creates polyflap and puts it in the scene (from pose)
 	///
-	Actor* setupPolyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions);
+	Actor* setup_polyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions);
 	
 	///
 	///Hack to solve a collision problem (don't know if it is still there):
 	///Function that checks if arm hitted the polyflap while approaching it
 	///
-	bool checkPfPosition(const Actor* polyFlapActor, const Mat34& refPos);
+	bool check_pf_position(const Actor* polyFlapActor, const Mat34& refPos);
 
 	///
 	///calculate final pose according to the given direction angle
 	///
-	void setMovementAngle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
+	void set_movement_angle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
 
 	///
 	///calculate position to direct the arm given parameters set in the learning scenario
 	///
-	void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
+	static void set_point_coordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
 
 	///
-	///calls setPointCoordinates for a discrete number of different actions
+	///calls setPointCoordinates for a discrete canonical number of different actions
 	///
-	void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+	static void set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+
+
+
+
+	///
+	///prepares the polyflap to use
+	///
+	virtual void initialize_polyflap();
+
+	///
+	///choose and describe the start point of the experiment trajectory
+	///
+	virtual void  initialize_movement();
+
+	///
+	///describe the experiment trajectory
+	///
+	void set_up_movement();
+
+	///
+	///initialize the experiment
+	///
+	void first_init();
+
+	///
+	///describe the home position (position, where the finger starts and ends every iteration)
+	///
+	void setup_home();
+
+	///
+	///describe the lenght of experiment (number of sequences) and if given, the starting position
+	///
+	void setup_loop(int argc, char* argv[]);
+
+	///
+	///try to find a path to given position, if found, move the finegr along it and wait for it to stop
+	///
+	void send_position(golem::GenWorkspaceState position, golem::ReacPlanner::Action action);
+
+	///
+	///create feature vector and sequence
+	///
+	void init_writing();
+
+	///
+	///write finger features to the vector
+	///
+	void write_finger_pos_and_or();
+
+	///
+	///write finger features to the vector
+	///
+	void write_finger_speed_and_angle();
+
+	///
+	///add the vector to the current sequence
+	///
+	void write_motor_vector_into_sequence();
+
+	///
+	///initialize learning data
+	///
+	void init_data();
+
+	///
+	///set the end of the experiment trajectory, initialize learning data and let the finger move along the experiment trajectory
+	///
+	void move_finger();
+
+	///
+	///write vector sequence into current dataset
+	///
+	void write_sequence_into_dataset();
+
+	///
+	///turn the finger collision detection on (true) or off (false)
+	///
+	void set_collision_detection(bool b);
+
+	///
+	///print out desired sequenc information
+	///
+	void print_sequence_info();
+
+	///
+	///move finger up in order to increase the chances of finding a suitable path to home position
+	///
+	void move_finger_up();
+
+	///
+	///remove the polyflap object from the scene
+	///
+	void remove_polyflap();
+
+	///
+	///describe the movement to home position
+	///
+	void prepare_home_movement();
+
+	///
+	///print out desired information at the end of a sequence
+	///
+	void iteration_end_info();
 	
+	///
+	///finish current iteration
+	///
+	void check_interrupted();
+
+	///
+	///move the arm to its initial position
+	///
+	void move_to_initial();
+
+	///
+	///write obtained dataset into a binary file
+	///
+	virtual void write_dataset_into_binary();
+
 	
+	///
+	///creates the polyflap object, obtains bounds and determines current rotation of the polyflap
+	///
+	void create_polyflap_object();
+
+	///
+	///computes normal and orthogonal vector of the polyflap and determines the position of the polyflap
+	///
+	void compute_vectors();
+
+	///
+	///set current position of the polyflap as default position for computing of the starting position
+	///
+	void set_positionT();
+
+	///
+	///choose the starting position
+	///
+	virtual void define_start_position();
+
+	///
+	///set the variable target so that it obtains the coordinates of the start point of the experiment trajectory
+	///
+	void prepare_target();
+
 };
 
 //------------------------------------------------------------------------------
 
-/** Reads/writes ActiveLearnScenario description from/to a given context */
+/** Reads/writes Scenario description from/to a given context */
 bool XMLData(Scenario::Desc &val, golem::XMLContext* context, bool create = false);
 
 //------------------------------------------------------------------------------
