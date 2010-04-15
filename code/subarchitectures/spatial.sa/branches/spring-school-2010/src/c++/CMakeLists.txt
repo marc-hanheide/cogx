@@ -64,12 +64,9 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData SpatialProperties)
 link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials Marshalling)
 endif(BUILD_SPATIAL4BINDING)
 
-if(BUILD_SPATIAL4BINDING)
 add_cast_component(SelfRepresenter SelfRepresenter.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} NavData)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData SpatialProperties FrontierInterface)
-link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials Marshalling)
-endif(BUILD_SPATIAL4BINDING)
 
 add_cast_component(PathQueryProcessor PathQueryProcessor.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} NavData)

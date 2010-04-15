@@ -240,6 +240,36 @@ module SpatialProperties
   };
 
   // -----------------------------------------------------------------
+  // Agent properties
+  // -----------------------------------------------------------------
+  /** 
+   * Generic, abstract class representing the distribution of values 
+   * of a single property of a single autonomous agent.
+   */
+  class AgentProperty
+  {
+    /** ID of the agent that has this property. */
+    long agentID;
+    
+    /** Probability distribution of values of this property. */
+    ProbabilityDistribution distribution;
+
+    /** Maximum a posteriori estimate of the property value. */
+    PropertyValue mapValue;
+
+    /** True if the MAP estimate is considered as reliable. */
+    bool mapValueReliable;
+  };
+
+  /**
+   * Class representing the property of an agent being "in" a Place
+   */
+  class PlaceContainmentAgentProperty extends AgentProperty
+  {
+  };
+
+
+  // -----------------------------------------------------------------
   // Object properties
   // -----------------------------------------------------------------
 
@@ -267,8 +297,6 @@ module SpatialProperties
    */
   class PlaceContainmentObjectProperty extends ObjectProperty
   {
-    /** ID of the Place the object is supposed to be in. */
-    long placeId;
   };
 
   /**
@@ -276,8 +304,6 @@ module SpatialProperties
    */
   class ObjectContainmentObjectProperty extends ObjectProperty
   {
-    /** ID of the Object the object is supposed to be in. */
-    long placeId;
   };
 
   /**
@@ -285,8 +311,6 @@ module SpatialProperties
    */
   class SupportObjectProperty extends ObjectProperty
   {
-    /** ID of the Object the object is supposed to be on. */
-    long placeId;
   };
 
 
