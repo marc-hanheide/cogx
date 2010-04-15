@@ -185,6 +185,7 @@ void Scenario::release() {
 		scene.releaseObject(*obstacles);
 }
 
+
 ///
 ///creates a polyflap object
 ///setupPolyflap(scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context)
@@ -220,6 +221,7 @@ Actor* Scenario::setup_polyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Ve
 	return polyFlapActor;
 }
 
+
 ///
 ///creates a polyflap object
 ///
@@ -249,6 +251,10 @@ Actor* Scenario::setup_polyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions
 	return polyFlapActor;
 }
 
+
+///
+///creates the polyflap object, obtains bounds and determines current rotation of the polyflap
+///
 void Scenario::create_polyflap_object(){
 
 	object = setup_polyflap(/*scene, desc.startPolyflapPosition, desc.startPolyflapRotation, desc.polyflapDimensions, context*/);
@@ -260,6 +266,9 @@ void Scenario::create_polyflap_object(){
 }
 
 
+///
+///computes normal and orthogonal vector of the polyflap and determines the position of the polyflap
+///
 void Scenario::compute_vectors(){
 	Mat34 curPolPos1;
 	Mat34 curPolPos2;
@@ -283,39 +292,48 @@ void Scenario::compute_vectors(){
 			    );
 		
 	polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);	
-
 }
 
+
+///
+///prepares the polyflap to use
+///
 void Scenario::initialize_polyflap(){
 
-
+	//creates a polyflap
 	create_polyflap_object();
 
+	//computes needed information about the polyflap
 	compute_vectors();
-
-
 }
 
 
-
+///
+///set current position of the polyflap as default position for computing of the starting position
+///
 void Scenario::set_positionT(){
 		//initialization of arm target: the center of the polyflap
 		//Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
 		positionT.set(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
-
 }
 
+
+///
+///choose the starting position
+///
 void Scenario::define_start_position(){
-		cout << "SC: define_start_position" << endl;
 	        //int startPosition;
 
 		if (startingPosition == 0)
 			startPosition = floor(randomG.nextUniform (1.0, 18.0));
 		else
 			startPosition = startingPosition;
-
 }
 
+
+///
+///set the variable target so that it obtains the coordinates of the start point of the experiment trajectory
+///
 void Scenario::prepare_target(){
 //arm target update
 		set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
@@ -333,21 +351,26 @@ void Scenario::prepare_target(){
 		//return startPosition;
 }
 
+
+///
+///choose and describe the start point of the experiment trajectory
+///
 void  Scenario::initialize_movement(){
 
+		//set default coordinates
 		set_positionT();
 
+		//choose start point
 		define_start_position();
 
+		//edit the coordinates so that they describe chosen start point
 		prepare_target();
-	
-		
 }
 
 
-
-
-
+///
+///describe the experiment trajectory
+///
 void Scenario::set_up_movement(){
 
 		
@@ -384,11 +407,7 @@ void Scenario::set_up_movement(){
 		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
 
 		//return horizontalAngle;
-
-
 }
-
-
 
 
 void Scenario::postprocess(SecTmReal elapsedTime) {
@@ -465,20 +484,13 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		currentFeatureVector.push_back(polStateOutput);
 		
 		learningData.currentSeq.push_back(currentFeatureVector);
-	
-	
 	}
 }
 
 
-
-
-
-
-
-
-
-
+///
+///initialize the experiment
+///
 void Scenario::first_init(){
 
 // 	// initialize random seed:
@@ -490,10 +502,12 @@ void Scenario::first_init(){
 	// get initial configuration (it is the current joint configuration)
 	//golem::GenConfigspaceState initial;
 	arm->getArm().lookupInp(initial, context.getTimer()->elapsed());
-
 }
 
 
+///
+///describe the home position (position, where the finger starts and ends every iteration)
+///
 void Scenario::setup_home(){
 // setup home position
 	//GenWorkspaceState home;
@@ -509,9 +523,12 @@ void Scenario::setup_home(){
 	// Define the initial pose in the Cartesian workspace
 	//Vec3 orientationT(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 	orientationT.set(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
-
 }
 
+
+///
+///describe the lenght of experiment (number of sequences) and if given, the starting position
+///
 void Scenario::setup_loop(int argc, char* argv[]){
 numSequences = 10000;
 	//int startingPosition = 0;
@@ -523,6 +540,9 @@ numSequences = 10000;
 }
 
 
+///
+///try to find a path to given position, if found, move the finegr along it and wait for it to stop
+///
 void Scenario::send_position(golem::GenWorkspaceState position, golem::ReacPlanner::Action action){
 // reachedAngle = 0.0;
 		for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
@@ -534,11 +554,14 @@ void Scenario::send_position(golem::GenWorkspaceState position, golem::ReacPlann
 
 
 		context.getLogger()->post(Message::LEVEL_INFO, "Moving...");
-		// wait for completion of the action (until the arm moves to the initial pose)
+		// wait for completion of the action (until the arm stops moving)
 		arm->getReacPlanner().waitForEnd(60000);
 }
 
 
+///
+///create feature vector and sequence
+///
 void Scenario::init_writing(){
 
 	/////////////////////////////////////////////////
@@ -546,10 +569,12 @@ void Scenario::init_writing(){
 	learningData.currentSeq.clear();
 	learningData.currentMotorCommandVector.clear();
 	/////////////////////////////////////////////////	
-
 }
 
 
+///
+///write finger features to the vector
+///
 void Scenario::write_finger_pos_and_or(){
 
 	/////////////////////////////////////////////////
@@ -564,10 +589,12 @@ void Scenario::write_finger_pos_and_or(){
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v3, -REAL_PI, REAL_PI));
 	//end pose info missing (must be added later 
 	/////////////////////////////////////////////////
-
 }
 
 
+///
+///write finger features to the vector
+///
 void Scenario::write_finger_speed_and_angle(){
 
 	/////////////////////////////////////////////////
@@ -581,9 +608,12 @@ void Scenario::write_finger_speed_and_angle(){
 	//writing in the initial vector
 	learningData.currentMotorCommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
 	/////////////////////////////////////////////////
-
 }
 
+
+///
+///add the vector to the current sequence
+///
 void Scenario::write_f_vector_into_sequence(){
 
 	/////////////////////////////////////////////////
@@ -594,20 +624,27 @@ void Scenario::write_f_vector_into_sequence(){
 }
 
 
+///
+///initialize learning data
+///
 void Scenario::init_data(){
 	// initialize data
 	learningData.setToDefault();
 	learningData.effector = effectorBounds;
 	learningData.object = *object->getLocalBoundsSeq();
 	learningData.obstacles = *obstacles->getGlobalBoundsSeq();
-
 }
 
+
+///
+///set the end of the experiment trajectory, initialize learning data and let the finger move along the experiment trajectory
+///
 void Scenario::move_finger(){
 	target.pos = end;
 	target.t = context.getTimer()->elapsed() + tmDeltaAsync + duration;
 
-	arm->setCollisionBoundsGroup(0x0);
+	//arm->setCollisionBoundsGroup(0x0);
+	set_collision_detection(false);	
 	arm->getReacPlanner().send(target, ReacPlanner::ACTION_LOCAL);
 
 	init_data();
@@ -623,17 +660,23 @@ void Scenario::move_finger(){
 	(void)arm->getReacPlanner().waitForEnd(60000);
 	context.getTimer()->sleep(tmDeltaAsync + desc.speriod);
 	bStart = false;
-
 }
 
+
+///
+///write vector sequence into current dataset
+///
 void Scenario::write_sequence_into_dataset(){
 	/////////////////////////////////////////////////
 	//writing the sequence into the dataset
 	data.push_back(learningData.currentSeq);
 	/////////////////////////////////////////////////
-
 }
 
+
+///
+///turn the finger collision detection on (true) or off (false)
+///
 void Scenario::set_collision_detection(bool b){
 	if (b) {
  		// ON collision detection
@@ -644,14 +687,20 @@ void Scenario::set_collision_detection(bool b){
 		//off collision detection
 		arm->setCollisionBoundsGroup(0x0);
 	}
-		
-
 }
 
+
+///
+///print out desired sequenc information
+///
 void Scenario::print_sequence_info(){
 	cout << "sequence size: " << learningData.currentSeq.size() << endl;
 }
 
+
+///
+///move finger up in order to increase the chances of finding a suitable path to home position
+///
 void Scenario::move_finger_up(){
 	Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (desc.polyflapDimensions.v2*1.1));
 	// and set target waypoint
@@ -666,9 +715,12 @@ void Scenario::move_finger_up(){
 	arm->getReacPlanner().send(preHome, ReacPlanner::ACTION_GLOBAL);
 	// wait for completion of the action (until the arm moves to the initial pose)
 	arm->getReacPlanner().waitForEnd();
-
 }
 
+
+///
+///remove the polyflap object from the scene
+///
 void Scenario::remove_polyflap(){
 	// remove object
 	scene.releaseObject(*object);
@@ -676,21 +728,36 @@ void Scenario::remove_polyflap(){
 //	scene.releaseObject(*predictedPolyflapObject);
 }
 
-void Scenario::pepare_home_movement(){
+
+///
+///describe the movement to home position
+///
+void Scenario::prepare_home_movement(){
 	home.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(3.0);
 }
 
+
+///
+///print out desired information at the end of a sequence
+///
 void Scenario::iteration_end_info(){
 	context.getLogger()->post(Message::LEVEL_INFO, "Done");
 	cout << "Iteration " << iteration << " completed!" << endl;
 }
 
+
+///
+///finish current iteration
+///
 void Scenario::finish_iteration(){
 	if (universe.interrupted())
 		throw Interrupted();
-
 }
 
+
+///
+///move the arm to its initial position
+///
 void Scenario::move_to_initial(){
 	initial.t = context.getTimer()->elapsed() + tmDeltaAsync + SecTmReal(5.0);
 	// movement will last no shorter than 5 sec
@@ -699,6 +766,10 @@ void Scenario::move_to_initial(){
 	(void)arm->getReacPlanner().waitForEnd(60000);
 }
 
+
+///
+///write obtained dataset into a binary file
+///
 void Scenario::write_dataset_into_binary(){
 	
 	/////////////////////////////////////////////////
@@ -708,6 +779,7 @@ void Scenario::write_dataset_into_binary(){
 	
 }
 
+
 ///
 ///The experiment performed in this method behaves as follows:
 ///The arm randomly selects any of the possible actions.
@@ -716,10 +788,13 @@ void Scenario::write_dataset_into_binary(){
 ///
 void Scenario::run(int argc, char* argv[]) {
 
+	//set: random seed, tmDeltaAsync; get initial config
 	first_init();
 
+	//setup and move to home position; define fingertip orientation
 	setup_home();
 
+	//define numSequences and startingPosition
 	setup_loop(argc, argv);
 	
 	
@@ -731,23 +806,31 @@ void Scenario::run(int argc, char* argv[]) {
 		creator.setToDefault();
 		//polyflap actor
 
-
+		//create and setup polyflap object, compute its vectors
 		initialize_polyflap();
 		
+		//compute coordinates of start position
 		initialize_movement();
 
+		//move the finger to the beginnign of experiment trajectory
 		send_position(target , ReacPlanner::ACTION_GLOBAL);
-
+		
+		//create feature sequence and vector
 		init_writing();	
 
+		//write initial position and orientation of the finger
 		write_finger_pos_and_or();	
 
+		//compute direction and other features of trajectory
 		set_up_movement();
 
+		//write chosen speed and angle of the finger experiment trajectory
 		write_finger_speed_and_angle();
 
+		//add feature vector to the sequence
 		write_f_vector_into_sequence();
 
+		//move the finger along described experiment trajectory
 		move_finger();
 	
 		
@@ -764,34 +847,45 @@ void Scenario::run(int argc, char* argv[]) {
 		// 	n->at(n->size()-1) = polState;
 
 
-
+		//write sequence into dataset
 		write_sequence_into_dataset();
 
+		//turn off collision detection
 		set_collision_detection(false);		
 
+		//print out information about current sequence
 		print_sequence_info();
-			
+
+		//move the finger up to avoid path finding problems 
 		move_finger_up();
 
+		//remove polyflap object from the scene
 		remove_polyflap();
 
-		pepare_home_movement();
+		//set up needed data for home movement
+		prepare_home_movement();
 		
+		//turn on collision detection
 		set_collision_detection(true);
 		
+		//move the finger to home position
 		send_position(home , ReacPlanner::ACTION_GLOBAL);
 
 		//context.getLogger()->post(Message::LEVEL_INFO, "Moving home...");
 		//arm->getReacPlanner().waitForEnd(60000);
 		
+		//print out end information of this iteration
 		iteration_end_info();		
-		
+	
+		//finish this iteration
 		finish_iteration();
 
 	}
 
+	//move the arm to its initial position
 	move_to_initial();
 	
+	//write obtained data into a binary file
 	write_dataset_into_binary();
 
 
@@ -807,6 +901,7 @@ bool Scenario::check_pf_position(const Actor* polyFlapActor, const Mat34& refPos
 	return (polyFlapActor->getPose().equals(refPos, Real(0.001)));
 }
 
+
 ///
 ///calculate final pose according to the given direction angle
 ///
@@ -818,6 +913,7 @@ void Scenario::set_movement_angle(const int angle, golem::WorkspaceCoord& pose,c
 	pose.p.v3 += 0.0;	
 }
 
+
 ///
 ///calculate position to direct the arm given parameters set in the learning scenario
 ///
@@ -828,6 +924,7 @@ void Scenario::set_point_coordinates(Vec3& position, const Vec3& normalVec, cons
 	position.v2 +=(horizontal*orthogonalVec.v2); 
 	position.v3 += vertical; 
 }
+
 
 ///
 ///calls set_point_coordinates for a discrete canonical number of different actions

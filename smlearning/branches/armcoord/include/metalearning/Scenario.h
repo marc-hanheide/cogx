@@ -215,24 +215,39 @@ protected:
 	Real currentPfYaw;
 	/** Y position of polyflap */
 	Real currentPfY;
-///
+	/** polyflap position (used to compute starting point coordinates) */
 	Vec3 polyflapPosition;
+	/** normal vector of the polyflap  |_ --> */
 	Vec3 polyflapNormalVec;
+	/** orthogonal vector of the polyflap */
 	Vec3 polyflapOrthogonalVec;
+	/** coordinates vector used for target description */
 	Vec3 positionT;
-	golem::GenWorkspaceState target;
+	/** rotations vector used for target description */
 	Vec3 orientationT;
+	/** workspace state used to describe the starting point and also the end point of trajectory */
+	golem::GenWorkspaceState target;
+	/** position chosen for the start of experiment trajectory */
 	int startPosition;
+	/** speed of movement along the experiment trajectory */
 	int speed;
+	/** minimal duration of the movement along the experiment trajectory */
 	SecTmReal duration;
+	/** pose describing the endpoint of the experiment trajectory */
 	WorkspaceCoord end;
+	/** chosen horizontal angle of the experiment trajectory */
 	int horizontalAngle;
+	/** number of collected sequences in one experiment session */
 	int numSequences;
-
+	/** asynchron time delta*/
 	SecTmReal tmDeltaAsync;
+	/** spacestate describing the initial position of the arm (first and last position of the arm in every experiment session) */
 	golem::GenConfigspaceState initial;
+	/** workspace state describing the home position (first and last position of every experiment iteration) */
 	GenWorkspaceState home;
+	/** help variable used to determine the startPosition variable */
 	int startingPosition;
+	/** pointer to bounds describing polyflap, used for some initial polyflap computations */
 	golem::Bounds::SeqPtr curPol;
 
 	// Real reachedAngle;
@@ -295,62 +310,145 @@ protected:
 
 
 
-
+	///
+	///prepares the polyflap to use
+	///
 	virtual void initialize_polyflap();
 
+	///
+	///choose and describe the start point of the experiment trajectory
+	///
 	virtual void  initialize_movement();
 
-	
+	///
+	///describe the experiment trajectory
+	///
 	void set_up_movement();
 
+	///
+	///initialize the experiment
+	///
 	void first_init();
 
+	///
+	///describe the home position (position, where the finger starts and ends every iteration)
+	///
 	void setup_home();
 
+	///
+	///describe the lenght of experiment (number of sequences) and if given, the starting position
+	///
 	void setup_loop(int argc, char* argv[]);
 
+	///
+	///try to find a path to given position, if found, move the finegr along it and wait for it to stop
+	///
 	void send_position(golem::GenWorkspaceState position, golem::ReacPlanner::Action action);
 
+	///
+	///create feature vector and sequence
+	///
 	void init_writing();
 
+	///
+	///write finger features to the vector
+	///
 	void write_finger_pos_and_or();
 
+	///
+	///write finger features to the vector
+	///
 	void write_finger_speed_and_angle();
 
+	///
+	///add the vector to the current sequence
+	///
 	void write_f_vector_into_sequence();
 
+	///
+	///initialize learning data
+	///
 	void init_data();
 
+	///
+	///set the end of the experiment trajectory, initialize learning data and let the finger move along the experiment trajectory
+	///
 	void move_finger();
 
+	///
+	///write vector sequence into current dataset
+	///
 	void write_sequence_into_dataset();
 
+	///
+	///turn the finger collision detection on (true) or off (false)
+	///
 	void set_collision_detection(bool b);
 
+	///
+	///print out desired sequenc information
+	///
 	void print_sequence_info();
 
+	///
+	///move finger up in order to increase the chances of finding a suitable path to home position
+	///
 	void move_finger_up();
 
+	///
+	///remove the polyflap object from the scene
+	///
 	void remove_polyflap();
 
-	void pepare_home_movement();
+	///
+	///describe the movement to home position
+	///
+	void prepare_home_movement();
 
+	///
+	///print out desired information at the end of a sequence
+	///
 	void iteration_end_info();
-
+	
+	///
+	///finish current iteration
+	///
 	void finish_iteration();
 
+	///
+	///move the arm to its initial position
+	///
 	void move_to_initial();
 
+	///
+	///write obtained dataset into a binary file
+	///
 	virtual void write_dataset_into_binary();
 
+	
+	///
+	///creates the polyflap object, obtains bounds and determines current rotation of the polyflap
+	///
 	void create_polyflap_object();
 
+	///
+	///computes normal and orthogonal vector of the polyflap and determines the position of the polyflap
+	///
 	void compute_vectors();
 
+	///
+	///set current position of the polyflap as default position for computing of the starting position
+	///
 	void set_positionT();
 
+	///
+	///choose the starting position
+	///
 	virtual void define_start_position();
 
+	///
+	///set the variable target so that it obtains the coordinates of the start point of the experiment trajectory
+	///
 	void prepare_target();
 
 };

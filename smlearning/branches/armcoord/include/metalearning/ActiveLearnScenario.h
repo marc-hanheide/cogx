@@ -85,9 +85,24 @@ protected:
 	/** load training data in RNNLIB format */
 	void loadCurrentTrainSeq (int inputSize, int outputSize);
 
+	///
+	///prepares the polyflap to use
+	///
 	virtual void initialize_polyflap();
+
+	///
+	///choose and describe the start point of the experiment trajectory
+	///
 	virtual void initialize_movement();
+
+	///
+	///choose the starting position
+	///
 	virtual void define_start_position();
+
+	///
+	///write obtained dataset into a binary file
+	///
 	virtual void write_dataset_into_binary();
  
 
