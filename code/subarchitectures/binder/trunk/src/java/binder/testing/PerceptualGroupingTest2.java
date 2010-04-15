@@ -27,7 +27,7 @@ import beliefmodels.builders.PerceptBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
 
 
-public class PerceptualGroupingTest extends AbstractBinderTest {
+public class PerceptualGroupingTest2 extends AbstractBinderTest {
 
 	String name = "step 1 (perceptual grouping) after percept construction and insertion";
 	String description = "construct one percept with all necessary properties " +
@@ -65,7 +65,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 
 		try {
 			
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("","haptic"));
 
 			
 			// First union
@@ -115,8 +115,8 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 		}
 	}
 
+
  
-   
 	private void checkIfSuccessful(WorkingMemoryChange _wmc) {
 		try { 
 			CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address,
@@ -149,17 +149,20 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 		try {
 			
 			CondIndependentDistribs features = BeliefContentBuilder.createNewCondIndependentDistribs();
-					
+			
+			
+			CondIndependentDistribs cdistrib = BeliefContentBuilder.createNewCondIndependentDistribs();
+			
 			List<FeatureValueProbPair> labelPairs = new LinkedList<FeatureValueProbPair>();
 			labelPairs.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Mug"), 0.9f));
 			labelPairs.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Ball"), 0.05f));
 			
 			BasicProbDistribution labelDistrib = BeliefContentBuilder.createNewFeatureDistribution("label", labelPairs);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(features, labelDistrib);
+			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib, labelDistrib);
 
 			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.85f, features);
 
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ssfsfasd","vision"));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("","vision"));
 
 			String id = newDataID();
 
@@ -168,7 +171,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			insertBeliefInWM(belief);
 
 		}
- 
+
 		catch (BeliefException e) {
 			isTestFinished = true;
 			isTestSuccessful = false;
