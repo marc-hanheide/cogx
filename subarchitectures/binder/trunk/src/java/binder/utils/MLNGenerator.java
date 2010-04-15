@@ -363,14 +363,16 @@ public class MLNGenerator {
 	
 	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution distrib, Set<String> predicatesForCurrentBelief) {
 		String keyWithUppercase = setFirstLetterToUppercase(distrib.key);
+		predicatesForCurrentBelief.add(keyWithUppercase);
 		if(!names_for_type.containsKey(keyWithUppercase)) {
 			names_for_type.put(keyWithUppercase, new TreeSet<String>());
 		}
 		for (String value: getListDistributionValues(distrib.values)) {
 			String valWithUppercase = setFirstLetterToUppercase(value);
 			names_for_type.get(keyWithUppercase).add(valWithUppercase);
-			predicatesForCurrentBelief.add(valWithUppercase);
 		}
+		names_for_type.get(keyWithUppercase).add("Unknown");
+		names_for_type.get(keyWithUppercase).add("None");
 	}
 	
 
@@ -588,7 +590,7 @@ public class MLNGenerator {
 		// then we have to add formulas for each missing feature and value
 		// of type e.g.: Existence(U1) => !Label(U1,Mug).
 		Set<String> non_occuring_predicates = new TreeSet<String>(names_for_type.keySet());
-		non_occuring_predicates.removeAll(this.predicates_for_belief.get(belief_id));
+		non_occuring_predicates.removeAll(predicates_for_belief.get(belief_id));
 		String internal_id = setFirstLetterToUppercase(belief_id);
 		for(String non_occuring_predicate : non_occuring_predicates) {
 			for(String non_occuring_value : names_for_type.get(non_occuring_predicate)) {
