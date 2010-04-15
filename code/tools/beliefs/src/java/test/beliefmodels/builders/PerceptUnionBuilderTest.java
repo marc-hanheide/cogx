@@ -27,10 +27,15 @@ import static org.junit.Assert.*;
 
 // Beliefs
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.epstatus.PrivateEpistemicStatus;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+
 import beliefmodels.builders.PerceptBuilder; 
 import beliefmodels.builders.PerceptUnionBuilder;
+
+import beliefmodels.utils.EpistemicStatusUtils;
 
 //Remark: CAST dependencies should be removed!
 // CAST
@@ -87,84 +92,84 @@ public class PerceptUnionBuilderTest {
 	} // end test
 	
 	/**
-	 * Creating a new PerceptBelief with the Id parameter null fails
+	 * Creating a new PerceptUnionBelief with the Id parameter null fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForNullIdFails () { 
+	public void NewPerceptUnionBeliefForNullIdFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(null, type, curPlace, curTime, content, hist);
-			fail("Creating a new PerceptBelief with the Id parameter null fails");
+			fail("Creating a new PerceptUnionBelief with the Id parameter null fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test
 	
 	/**
-	 * Creating a new PerceptBelief with the Id parameter empty fails
+	 * Creating a new PerceptUnionBelief with the Id parameter empty fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForEmptyIdFails () { 
+	public void NewPerceptUnionBeliefForEmptyIdFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief("", type, curPlace, curTime, content, hist);
-			fail("Creating a new PerceptBelief with the Id parameter empty fails");
+			fail("Creating a new PerceptUnionBelief with the Id parameter empty fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test
 	
 	/**
-	 * Creating a new PerceptBelief with the type parameter null fails
+	 * Creating a new PerceptUnionBelief with the type parameter null fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForNullTypeFails () { 
+	public void NewPerceptUnionBeliefForNullTypeFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(id, null, curPlace, curTime, content, hist);
-			fail("Creating a new PerceptBelief with the type parameter null fails");
+			fail("Creating a new PerceptUnionBelief with the type parameter null fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test
 	
 	/**
-	 * Creating a new PerceptBelief with the type parameter empty fails
+	 * Creating a new PerceptUnionBelief with the type parameter empty fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForEmptyTypeFails () { 
+	public void NewPerceptUnionBeliefForEmptyTypeFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(id, "", curPlace, curTime, content, hist);
-			fail("Creating a new PerceptBelief with the type parameter empty fails");
+			fail("Creating a new PerceptUnionBelief with the type parameter empty fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test
 	
 	/**
-	 * Creating a new PerceptBelief with the curPlace parameter null fails
+	 * Creating a new PerceptUnionBelief with the curPlace parameter null fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForNullPlaceFails () { 
+	public void NewPerceptUnionBeliefForNullPlaceFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(id, type, null, curTime, content, hist);
-			fail("Creating a new PerceptBelief with the curPlace parameter null fails");
+			fail("Creating a new PerceptUnionBelief with the curPlace parameter null fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test	
 	
 	/**
-	 * Creating a new PerceptBelief with the curPlace parameter null fails
+	 * Creating a new PerceptUnionBelief with the curPlace parameter null fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForEmptyPlaceFails () { 
+	public void NewPerceptUnionBeliefForEmptyPlaceFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(id, type, "", curTime, content, hist);
-			fail("Creating a new PerceptBelief with the curPlace parameter empty fails");
+			fail("Creating a new PerceptUnionBelief with the curPlace parameter empty fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
@@ -172,48 +177,67 @@ public class PerceptUnionBuilderTest {
 	
 	
 	/**
-	 * Creating a new PerceptBelief with the curTime parameter null fails
+	 * Creating a new PerceptUnionBelief with the curTime parameter null fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForNullTimeFails () { 
+	public void NewPerceptUnionBeliefForNullTimeFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(id, type, curPlace, null, content, hist);
-			fail("Creating a new PerceptBelief with the curTime parameter null fails");
+			fail("Creating a new PerceptUnionBelief with the curTime parameter null fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test	
 	
 	/**
-	 * Creating a new PerceptBelief with the content parameter null fails
+	 * Creating a new PerceptUnionBelief with the content parameter null fails
 	 */
 	
 	@Test
-	public void NewPerceptBeliefForNullContentFails () { 
+	public void NewPerceptUnionBeliefForNullContentFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(id, type, curPlace, curTime, null, hist);
-			fail("Creating a new PerceptBelief with the content parameter null fails");
+			fail("Creating a new PerceptUnionBelief with the content parameter null fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test	
 	
 	/**
-	 * Creating a new PerceptBelief with the curTime parameter null fails
+	 * Creating a new PerceptUnionBelief with the curTime parameter null fails
 	 */
 	
 	@Test
 	public void NewPerceptBeliefForNullHistoryFails () { 
 		try {
 			PerceptUnionBuilder.createNewPerceptUnionBelief(id, type, curPlace, curTime, content, null);
-			fail("Creating a new PerceptBelief with the hist parameter null fails");
+			fail("Creating a new PerceptUnionBelief with the hist parameter null fails");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: parameters cannot be null or empty",be.getMessage());
 		} // end try..catch
 	} // end test	
 	
+	/**
+	 * A newly PerceptUnionBelief gets private epistemic status
+	 */
 				
+	@Test
+	public void NewPerceptUnionBeliefIsPrivate () {
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewPerceptUnionBelief(id, type, curPlace, curTime, content, hist);
+			if (EpistemicStatusUtils.isPrivate(puBelief.estatus)) {
+				; 
+			} else { 
+				fail("Creating a new PerceptUnionBelief with all parameters should yield by default a private belief");
+			} // end if..else
+		} catch (BeliefException be) {
+			fail("Creating a new PerceptUnionBelief with all instantiated parameter should succeed");
+		} // end try..catch
+	} // end test
+	
+	
+	
 	
 
 } // end class
