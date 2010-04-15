@@ -338,7 +338,7 @@ public class MarkovLogic {
 		// on proposition ExistsBeliefK we add a clause:
 		// "weight_i Formula <=> ExistsBeliefK"
 		for (MLFormula conditional_formula : conditional_formulae) {
-			conditional_formula.addThisEquivalence(exists);
+			//conditional_formula.addThisEquivalence(exists);
 			formulae.add(conditional_formula);
 		}
 
