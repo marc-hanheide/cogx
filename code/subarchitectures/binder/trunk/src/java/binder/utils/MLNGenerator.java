@@ -114,7 +114,7 @@ public class MLNGenerator {
 				String predicate = setFirstLetterToUppercase(tokens[0].trim());
 				
 				Set<String> names = new TreeSet<String>();
-				for(String name : tokens[0].split(" ")) {
+				for(String name : tokens[1].split(" ")) {
 					names.add(setFirstLetterToUppercase(name.trim()));
 					log("adding: " + predicate + " with name " + name);
 				}
