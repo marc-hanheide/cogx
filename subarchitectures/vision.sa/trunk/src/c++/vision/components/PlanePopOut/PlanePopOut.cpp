@@ -16,9 +16,9 @@
 #define Upper_BG 1.5
 #define Lower_BG 1.1	// 1.1-1.5 radius of BoundingSphere
 #define min_height_of_obj 0.03	//unit cm, due to the error of stereo, >0.01 is suggested
-#define rate_of_centers 0.2	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
+#define rate_of_centers 0.4	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
 #define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses
-#define Torleration 10		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+#define Torleration 5		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
 				//this makes stable obj
 
 /**
@@ -496,6 +496,8 @@ void PlanePopOut::runComponent()
 		}
 		else
 		{
+		    for (unsigned int k=0; k<PreviousObjList.size(); k++)
+			log("Previous objects center are: object %u center is (%f, %f, %f)", k, PreviousObjList.at(k).c.x, PreviousObjList.at(k).c.y, PreviousObjList.at(k).c.z);
 		    for (unsigned int j=0; j<PreviousObjList.size(); j++)
 		    {
 			bool deleteObjFlag = true; // if this flag is still true after compare, then this object should be deleted from the WM
@@ -535,6 +537,8 @@ void PlanePopOut::runComponent()
 					    CurrentObjList.at(i).id = newDataID();
 					    SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 					    addToWorkingMemory(CurrentObjList.at(i).id, obj);
+					    log("Add an New Object in the WM, id is %s", CurrentObjList.at(i).id.c_str());
+					    log("objects number = %u",objnumber);
 					    //cout<<"New!! ID of the added SOI = "<<CurrentObjList.at(i).id<<endl;
 					}
 				    }
@@ -759,7 +763,7 @@ double PlanePopOut::Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std
 			if (v3Obj.z<min_z) min_z = v3Obj.z;
 		}
 	}
-	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/40;
+	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/20;
 }
 
 SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI)
