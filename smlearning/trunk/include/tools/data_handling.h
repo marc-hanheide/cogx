@@ -39,14 +39,118 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 
+#include <Tools/Tools.h>
+
+#include <tools/math_helpers.h>
+
 using namespace std;
 using namespace boost::filesystem;
+using namespace golem;
 
 namespace smlearning {
 
+///
+///this representation should also allow for labels, i.e., a vector of size 1
+///properly discretized
+///
 typedef vector<double> FeatureVector;
 typedef vector<FeatureVector> Sequence;
 typedef vector<Sequence> DataSet;
+
+struct CanonicalData {
+	struct FeatureVector {
+		smlearning::FeatureVector rawVector;
+		string motorCommand;
+		string label;
+	};
+	typedef vector<FeatureVector> Sequence;
+	typedef vector<Sequence> DataSet;
+
+	DataSet data;
+};
+
+
+/** Learning data format */
+class LearningData {
+public:
+	/** Data chunk */
+	class Chunk {
+	public:
+		typedef std::vector<Chunk> Seq;
+		
+		/** Do nothing */
+		Chunk() {
+		}
+		
+		/** Data chunk time stamp */
+		golem::SecTmReal timeStamp;
+		
+		/** Arm state - (joint) dynamic configuration */
+		golem::GenConfigspaceState armState;
+		/** End-effector GLOBAL pose */
+		golem::Mat34 effectorPose;
+		/** Object GLOBAL pose */
+		golem::Mat34 objectPose;
+		
+	};
+
+	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::effectorPose */
+	golem::Bounds::Seq effector;
+	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::objectPose */
+	golem::Bounds::Seq object;
+	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
+	golem::Bounds::Seq obstacles;
+	
+	/** Time-dependent data */
+// 	Chunk::Seq data;
+	DataSet data;
+	/** current predicted polyflap poses sequence */
+	vector<Mat34> currentPredictedPfSeq;
+	/** current predicted effector poses sequence */
+	vector<Mat34> currentPredictedEfSeq;
+	/** current polyflap poses and motor command sequence */
+	smlearning::Sequence currentSeq;
+	/** current motor command */
+	FeatureVector currentMotorCommandVector;
+	/** Record validity */
+	//bool bArmState;
+	//bool bEffectorPose;
+	//bool bObjectPose;
+	//bool bFtsData;
+	//bool bImageIndex;
+	//bool bEffector;
+	//bool bObject;
+	//bool bObstacles;
+
+	/** Reset to default (empty)*/
+	void setToDefault() {
+		effector.clear();
+		object.clear();
+		obstacles.clear();
+		data.clear();
+		//bArmState = false;
+		//bEffectorPose = false;
+		//bObjectPose = false;
+		//bFtsData = false;
+		//bImageIndex = false;
+		//bEffector = false;
+		//bObject = false;
+		//bObstacles = false;
+	}
+	/** Check if the data is valid */
+	bool isValid() const {
+		if (!data.empty()) // must not be empty
+			return false;
+		//if (bEffector && effector.empty())
+		//	return false;
+		//if (bObject && object.empty())
+		//	return false;
+		//if (bObstacles && obstacles.empty())
+		//	return false;
+
+		return true;
+	}
+};
 
 ///
 ///function that prints the passed argument
@@ -91,6 +195,7 @@ void print_sequence (const Sequence& s) {
 ///
 template <typename T>
 void print_dataset (const DataSet& d) {
+	cout << "Dataset size: " << d.size() << endl;
 	for_each (d.begin(), d.end(), print_sequence<T>);
 }
 
@@ -235,10 +340,46 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 
 
 ///
-///write collected data in an offline experiment
+///write collected data in an experiment and returns file name
 ///
-void writeDownCollectedData(DataSet data);
+string writedown_collected_data(DataSet data);
 
+///
+///a utility function to obtain the file name from a possibly large path/file pattern
+///
+string get_seqBaseFileName (string seqFile);
+
+///
+///obtain a discretization of starting finger poses from a canonical set of actions
+///
+map<Vec3, int, compare_Vec3> get_canonical_positions ();
+
+///
+///artificially discretize (enumerate) a dataset using a simple representation
+///
+CanonicalData::DataSet canonical_input_output_enumerator (DataSet data);
+
+///
+///enumerate a dataset taking into account time steps
+///
+CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data, int modulo = 1);
+
+///
+///write a dataset in cryssmex format by using the canonical representation
+///
+void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::DataSet data);
+
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format and an output
+///label defined artificially
+///
+void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, int modulo = 1);
+
+///
+///write a dataset in cryssmex format. This code assumes vectorial data format
+///and works as a regression predictor (output is of the same dimensionality as the state space) and canonical format for the input
+///
+void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSet data);
 
 }; /* smlearning namespace */
 

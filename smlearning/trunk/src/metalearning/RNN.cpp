@@ -29,8 +29,17 @@ namespace smlearning {
 
 ostream& RNN::save_config_file (ostream& out)
 {
-	out << conf;
+	try {
+		out << conf;
+	} catch (ofstream::failure e) {
+		cout << "Exception opening/reading file";
+	}
+
 	return out;
+}
+
+void RNN::set_config_file (rnnlib::ConfigFile &configFile) {
+	conf = configFile;
 }
 
 void RNN::print_net_data (ostream& out)
@@ -40,8 +49,21 @@ void RNN::print_net_data (ostream& out)
 	out << *net;
 }
 
-void RNN::set_config_file (rnnlib::ConfigFile &configFile) {
-	conf = configFile;
+void RNN::save_net_data(string netFile, ostream& out)
+{
+	netFile += ".net";
+	assert (netFile != "");
+	ofstream fout(netFile.c_str());
+	if (fout.is_open())
+	{
+		out << "saving to " << netFile << endl;
+		conf.set<bool>("loadWeights", true);
+		fout << conf << rnnlib::DataExportHandler::instance();
+	}
+	else
+	{
+		out << "WARNING trainer unable to save to file " << netFile << endl;
+	}
 }
 
 void OfflineRNN::build (ostream& out) {
