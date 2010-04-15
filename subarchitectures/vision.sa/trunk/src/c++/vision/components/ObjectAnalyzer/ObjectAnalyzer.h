@@ -49,8 +49,10 @@ class ObjectAnalyzer : public ManagedComponent
 	 * status of ProtoObject persistency
 	 */
 	enum ProtoObjectStatus {
-	  STABLE,
-	  DELETED };
+	  PROTO,
+	  DELETED,
+	  OBJECT
+	   };
 
 	/** 
 	 * ProtoObject data, contains also data used to evaluate ProtoObject persistency
