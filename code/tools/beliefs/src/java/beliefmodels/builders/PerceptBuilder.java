@@ -68,16 +68,29 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 	}
 	
 	
+	/**
+	 * Given a non-empty, non-null address for a belief, create a new working memory history object. A CAST-type history is 
+	 * created, which represents an ordered list of addresses on/from which the belief has been built. 
+	 * 
+	 * @param origin A CAST working memory address pointing to a belief
+	 * @return CASTBeliefHistory A history object, containing an ordered list of addresses to beliefs
+	 * @throws BeliefException Thrown if the address is a null object, or contains null or empty values
+	 */
+		
 	public static CASTBeliefHistory createNewPerceptHistory (WorkingMemoryAddress origin) 
 		throws BeliefException
 	{	
-		if (origin!= null) { 
-			List<WorkingMemoryAddress> origins = new ArrayList<WorkingMemoryAddress>();
-			origins.add(origin);
-			return new CASTBeliefHistory(origins);
+		if (origin!= null && origin.id != null && origin.subarchitecture != null) {
+				if (!origin.id.equals("") && !origin.subarchitecture.equals("")) { 
+					List<WorkingMemoryAddress> origins = new ArrayList<WorkingMemoryAddress>();
+					origins.add(origin);
+					return new CASTBeliefHistory(origins);
+				} else {
+					throw new BeliefException("Error when creating belief history: cannot create history for empty id/subarchitecture");
+				}
 		} else {
 			throw new BeliefException("Error when creating belief history: cannot create history for null");
 		}
-	}
+	} // end method
 
 }

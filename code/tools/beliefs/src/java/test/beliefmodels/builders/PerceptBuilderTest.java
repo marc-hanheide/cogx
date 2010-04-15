@@ -37,7 +37,7 @@ import cast.cdl.WorkingMemoryAddress;
 
 // Junit
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.Test; 
 import static org.junit.Assert.*;
 
 // Belief models
@@ -51,6 +51,10 @@ public class PerceptBuilderTest {
 	public void setUp() throws Exception {
 	}
 	
+	/**
+	 * Creating a new history for a null object (or pointer) should fail. 
+	 */
+	
 	@Test
 	public void NewHistoryForNullFails () { 
 		try { 
@@ -63,8 +67,42 @@ public class PerceptBuilderTest {
 	} // end test
 	
 	
+	/** 
+	 * Creating a new history for an address with null pointers should fail
+	 */
 	
-	
-	
+	@Test
+	public void NewHistoryForNullAddressFails () { 
+		WorkingMemoryAddress nullWMA = new WorkingMemoryAddress(null,null);
+		try {
+			CASTBeliefHistory phist = PerceptBuilder.createNewPerceptHistory(nullWMA);
+			fail("Creating a history for an address with null values should fail"); 
+		} catch (BeliefException be) {
+			assertEquals("Error when creating belief history: cannot create history for null", 
+					be.getMessage());
+		} // end try..catch
+	} // end test
 
+	/**
+	 * Creating a new history for an address with empty values should fail
+	 */
+	
+	@Test
+	public void NewHistoryForEmptyAddressValuesFails () {  
+		WorkingMemoryAddress emptyWMA = new WorkingMemoryAddress("",""); 
+		try {
+			CASTBeliefHistory phist = PerceptBuilder.createNewPerceptHistory(emptyWMA);
+			fail("Creating a history for an address with empty values should fail"); 
+		} catch (BeliefException be) {
+			assertEquals("Error when creating belief history: cannot create history for empty id/subarchitecture", 
+					be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	
+	
+	
+	
+	
+	
 } // end class
