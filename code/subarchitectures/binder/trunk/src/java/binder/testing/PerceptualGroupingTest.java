@@ -116,7 +116,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 	}
 
 
- 
+  
 	private void checkIfSuccessful(WorkingMemoryChange _wmc) {
 		try { 
 			CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address,

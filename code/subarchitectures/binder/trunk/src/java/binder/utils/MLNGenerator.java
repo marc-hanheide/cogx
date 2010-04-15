@@ -426,7 +426,7 @@ public class MLNGenerator {
 			if(val instanceof PointerValue) {
 				// TODO: is this correct to translate the belief id to
 				// our internal representation?
-				result.add(getMarkovLogicConstantFromID(((PointerValue)val).beliefId));
+				result.add(getMarkovLogicConstantFromID(((PointerValue)val).beliefId.id));
 				continue;
 			}
 		}
@@ -550,7 +550,7 @@ public class MLNGenerator {
 		else if(val instanceof PointerValue) {
 			// TODO: is this correct to translate the belief id to
 			// our internal representation?
-			return getMarkovLogicConstantFromID(((PointerValue)val).beliefId);
+			return getMarkovLogicConstantFromID(((PointerValue)val).beliefId.id);
 		}
 
 		throw new MLException("unknwon feature value type");
@@ -621,7 +621,7 @@ public class MLNGenerator {
 
 		return formulae;
 	}
-	
+	  
 	/**
 	 * Convert the prior probability into a weight for the Markov Network
 	 * according to w = log(p/(1-p))
