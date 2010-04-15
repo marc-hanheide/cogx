@@ -1,6 +1,9 @@
 
 package beliefmodels.builders;
 
+import java.util.List;
+
+import cast.cdl.WorkingMemoryAddress;
 import beliefmodels.autogen.featurecontent.*;
 import beliefmodels.arch.BeliefException;
 
@@ -30,5 +33,16 @@ public class FeatureValueBuilder {
 	
 	public static UnknownValue createNewUnknownValue() {
 		return new UnknownValue();
+	}
+	
+	public static PointerValue createNewPointerValue(WorkingMemoryAddress pointer) {
+		return new PointerValue(pointer);
+	}
+	
+	public static SetValue createNewSetValue(List<FeatureValue> values) throws BeliefException {
+		if (values == null) {
+			throw new BeliefException("error, values is null");
+		}
+		return new SetValue(values);
 	}
 }

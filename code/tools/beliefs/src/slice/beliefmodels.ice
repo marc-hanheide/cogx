@@ -194,12 +194,15 @@ class BooleanValue extends FeatureValue {
 
 class UnknownValue extends FeatureValue { } ;
 
+
 class PointerValue extends FeatureValue {
-	string beliefId;
+      cast::cdl::WorkingMemoryAddress beliefId;
 };
 
-class MemoryAddressValue extends FeatureValue {
-      cast::cdl::WorkingMemoryAddress beliefId;
+["java:type:java.util.LinkedList<FeatureValue>"] sequence<FeatureValue> FeatureValues;
+
+class SetValue extends FeatureValue {
+	FeatureValues vals;
 };
 
 }; 
