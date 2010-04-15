@@ -518,22 +518,14 @@ public class MLNGenerator {
 		for(String non_occuring_value : non_occuring_values) {
 			MLFormula hard_formula = new MLFormula(1f,"!" + setFirstLetterToUppercase(feature) + "(" + belief_id + "," + non_occuring_value + ")");
 			hard_formula.setSharp();
-			formulae.add(hard_formula);
-		}
-		
-		// and then add a hard formula for all the predicates that do not appear
-		// at all for the belief in its distribution
-		Set<String> non_occuring_predicates = new TreeSet<String>(names_for_type.keySet());
-		non_occuring_predicates.removeAll(this.predicates_for_belief.get(belief_id));
-		for(String non_occuring_predicate : non_occuring_predicates) {
-			MLFormula hard_formula = new MLFormula(1f, setFirstLetterToUppercase(non_occuring_predicate) + "(" + setFirstLetterToUppercase(belief_id) + ",None)");
-			hard_formula.setSharp();
+			hard_formula.setOpAddImp();
 			formulae.add(hard_formula);
 		}
 		
 		// take care of the None case
-		MLFormula none_formula = new MLFormula(1f, setFirstLetterToUppercase(feature) + "(" + belief_id + ",None)");
+		MLFormula none_formula = new MLFormula(1f,"!" + setFirstLetterToUppercase(feature) + "(" + belief_id + ",None)");
 		none_formula.setSharp();
+		none_formula.setOpAddImp();
 		formulae.add(none_formula);
 		
 		return formulae;
@@ -577,27 +569,53 @@ public class MLNGenerator {
 	
 	private List<MLFormula> convertDistributionWithExistDep(
 			DistributionWithExistDep dist, String belief_id) throws MLException {
-
+		
 		ProbDistribution dist_cond = dist.Pc;
-
+		
 		float exists_probability = dist.existProb;
-
+		
 		List<MLFormula> formulae = new LinkedList<MLFormula>();
-
+		
 		Float weight_exists = convertProbabilityToWeight(exists_probability);
-
+		
 		String exists = "Existence(" + belief_id + ")";
 		MLFormula formula_exists = new MLFormula(weight_exists, exists);
-
+		
 		formulae.add(formula_exists);
-
+		
 		List<MLFormula> conditional_formulae = convertDistributionToMarkovLogic(dist_cond, belief_id);
-
+		
+		// then we have to add formulas for each missing feature and value
+		// of type e.g.: Existence(U1) => !Label(U1,Mug).
+		Set<String> non_occuring_predicates = new TreeSet<String>(names_for_type.keySet());
+		non_occuring_predicates.removeAll(this.predicates_for_belief.get(belief_id));
+		String internal_id = setFirstLetterToUppercase(belief_id);
+		for(String non_occuring_predicate : non_occuring_predicates) {
+			for(String non_occuring_value : names_for_type.get(non_occuring_predicate)) {
+				// skip the "None" case
+				if(!non_occuring_value.equals("None")) {
+					MLFormula hard_formula = new MLFormula(1f, "!" + setFirstLetterToUppercase(non_occuring_predicate) + "(" + internal_id + "," + non_occuring_value + ")");
+					hard_formula.setSharp();
+					hard_formula.setOpAddImp();
+					formulae.add(hard_formula);
+				}
+			}
+			// handle the "None" case
+			MLFormula hard_formula = new MLFormula(1f, setFirstLetterToUppercase(non_occuring_predicate) + "(" + internal_id + ",None)");
+			hard_formula.setSharp();
+			hard_formula.setOpAddImp();
+			formulae.add(hard_formula);
+		}
+		
 		// for each formula i \in 1..n form dist_cond conditionally dependent
 		// on proposition ExistsBeliefK we add a clause:
 		// "weight_i Formula <=> ExistsBeliefK"
 		for (MLFormula conditional_formula : conditional_formulae) {
-			conditional_formula.addThisImpliesFormula(exists);
+			conditional_formula.addThis(exists);
+			
+			// set the new weight w_new = log(p_exists * p_cond) = log(p_exists * exp(w_old)/(1+exp(w_old)))
+			conditional_formula.setWeight(convertConditionalProbabilityToWeight(exists_probability, 
+					convertWeightToProbability(conditional_formula.getWeight())));
 			formulae.add(conditional_formula);
 		}
 
@@ -610,6 +628,14 @@ public class MLNGenerator {
 	 */
 	private Float convertProbabilityToWeight(float prob) {
 		return new Float(Math.log(prob / (1f - prob)));
+	}
+	
+	private Float convertWeightToProbability(float prob) {
+		return new Float(Math.log(prob / (1f - prob)));
+	}
+	
+	private Float convertConditionalProbabilityToWeight(float prob1, float prob2) {
+		return new Float(Math.log(prob1 * prob2));
 	}
 	
 	public static String getMarkovLogicConstantFromID(String id) {

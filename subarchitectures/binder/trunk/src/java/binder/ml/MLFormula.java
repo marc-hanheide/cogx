@@ -12,13 +12,16 @@ public class MLFormula {
 	private String formula;
 	private boolean sharp;
 	
+	private String OP_ADD;
+	
 	private static String OP_IMP = " => ";
-	private static String OP_EQUI = " <=> ";
+	private static String OP_CONJ = " ^ ";
 	
 	public MLFormula(Float weight, String formula) {
 		this.setWeight(weight);
 		this.setFormula(formula);
 		this.sharp = false;
+		this.OP_ADD = OP_CONJ;
 	}
 
 	public void setWeight(Float weight) {
@@ -32,7 +35,15 @@ public class MLFormula {
 	public void setSharp() {
 		sharp = true;
 	}
-
+	
+	public void setOpAddImp() {
+		this.OP_ADD = OP_IMP;
+	}
+	
+	public void setOpAddConj() {
+		this.OP_ADD = OP_CONJ;
+	}
+	
 	public void setFormula(String formula) {
 		this.formula = formula;
 	}
@@ -41,12 +52,8 @@ public class MLFormula {
 		return formula;
 	}
 	
-	public void addThisImpliesFormula(String formula) {
-		this.formula = formula + OP_IMP + this.formula;
-	}
-	
-	public void addThisEquivalence(String formula) {
-		this.formula = formula + OP_EQUI + this.formula;
+	public void addThis(String formula) {
+		this.formula = formula + OP_ADD + this.formula;
 	}
 	
 	@Override
