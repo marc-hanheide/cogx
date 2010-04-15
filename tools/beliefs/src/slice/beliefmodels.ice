@@ -431,6 +431,7 @@ class BeliefHistory { };
  */
 class CASTBeliefHistory extends BeliefHistory {
 	BeliefIds ancestors;
+	BeliefIds offspring;
 };
 
 
