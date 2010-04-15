@@ -71,8 +71,9 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
 		
 		// set timestep to 0.0 for further recursion (within same image)
-// 		modelEntry->predictor->updateTime(0.0);
+		modelEntry->predictor->updateTime(0.0);
 	}
+	
 	// weighted mean	
 	modelEntry->pose = modelEntry->distribution.getMean();
 }
