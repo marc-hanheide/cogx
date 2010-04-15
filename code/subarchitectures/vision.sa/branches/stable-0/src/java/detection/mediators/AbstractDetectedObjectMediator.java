@@ -67,7 +67,7 @@ public abstract class AbstractDetectedObjectMediator<T extends Ice.ObjectImpl>
 					Place currentPlace = SpatialFacade.get(this).getPlace();
 					PlaceContainmentObjectProperty pcop = new PlaceContainmentObjectProperty(
 							-1, new ProbabilityDistribution(),
-							new PropertyValue(), true, currentPlace.id);
+							new PropertyValue(), true);
 					if (transform(pcop, object)) {
 						String id = newDataID();
 						propagationMap.put(event.address,
@@ -86,7 +86,6 @@ public abstract class AbstractDetectedObjectMediator<T extends Ice.ObjectImpl>
 								PlaceContainmentObjectProperty.class);
 						T object = getMemoryEntry(event.address, type);
 						Place currentPlace = SpatialFacade.get(this).getPlace();
-						pcop.placeId = currentPlace.id;
 						if (transform(pcop, object)) {
 							overwriteWorkingMemory(toBeUpdated, pcop);
 						}
