@@ -164,11 +164,11 @@ void ObjectTracker::destroy(){
 }
 
 void ObjectTracker::receiveImages(const std::vector<Video::Image>& images){
-//   lockComponent();
-// 		assert(images.size() > 0);
-// 		m_image = images[0];
-// 		convertCameraParameter(m_image.camPars, m_trackCamPars);
-// 	unlockComponent();
+  lockComponent();
+		assert(images.size() > 0);
+		m_image = images[0];
+		convertCameraParameter(m_image.camPars, m_trackCamPars);
+	unlockComponent();
 }
 
 void ObjectTracker::runComponent(){
@@ -177,7 +177,7 @@ void ObjectTracker::runComponent(){
   // Initialize Tracker
   // Grab one image from VideoServer for initialisation
   initTracker();
-//   m_videoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
+  m_videoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
   
   while(isRunning() && m_running)
   {
@@ -394,18 +394,23 @@ void ObjectTracker::runTracker(){
 // 		m_running = false;
 // 	}
 	
-	
+		
 	lockComponent();
+		// 		m_videoServer->getImage(m_camIds[0], m_image);
 		dTime = getFrameTime(last_image_time, m_image.time);
-// 		fTimeGrab = m_timer.Update();
+		
+// 		if(dTime==0.0){
+// 			unlockComponent();
+// 			return;
+// 		}
+		
 		// image processing
-		m_videoServer->getImage(m_camIds[0], m_image);
 		m_tracker->image_processing((unsigned char*)(&m_image.data[0]));
-// 		fTimeIP = m_timer.Update();
+		m_tracker->setFrameTime(dTime);
 	unlockComponent();
 	
 	last_image_time = m_image.time;
-	m_tracker->setFrameTime(dTime);
+	
 
 	// track models
 	m_tracker->track();

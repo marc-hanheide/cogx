@@ -15,6 +15,7 @@
 #include "TM_Vector3.h"
 #include "Timer.h"
 
+
 #define GAUSS  0
 #define NORMAL 1
 
@@ -27,7 +28,6 @@ protected:
 	float m_powTimeSteps;
 	
 	Tracking::TM_Vector3 m_cam_view;
-	Timer m_timer;
 	
 	float noise(float sigma, unsigned int type=GAUSS);
 	Tracking::Particle genNoise(float sigma, Tracking::Particle pConstraint, unsigned int type=GAUSS);
