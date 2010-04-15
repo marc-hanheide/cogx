@@ -52,14 +52,14 @@ public class PerceptBuilderTest {
 	}
 	
 	@Test
-	public void NewHistoryForNullAddressFails () { 
+	public void NewHistoryForNullFails () { 
 		try { 
 			CASTBeliefHistory phist = PerceptBuilder.createNewPerceptHistory(null);
 			fail("Creating a history for a null address should fail"); 
 		} catch (BeliefException be) {
 			assertEquals("Error when creating belief history: cannot create history for null", 
 					be.getMessage());
-		}
+		} // end try..catch
 	} // end test
 	
 	
