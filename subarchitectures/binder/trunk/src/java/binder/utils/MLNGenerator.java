@@ -88,7 +88,7 @@ public class MLNGenerator {
 		// for all the remaining ones
 		for(Belief belief : existingUnions) {
 			predicates_for_current_belief = new TreeSet<String>();
-			predicates_for_belief.put(belief.id, predicates_for_current_belief);
+			predicates_for_belief.put(getMarkovLogicConstantFromID(belief.id), predicates_for_current_belief);
 			extractTypesAndNames(belief.content, predicates_for_current_belief);
 		}
 		
