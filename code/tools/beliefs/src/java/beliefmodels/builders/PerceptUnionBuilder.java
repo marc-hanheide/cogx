@@ -78,10 +78,10 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	/**
 	 * Construct a new percept union belief, from a given percept belief and its working memory address (CAST). 
 	 * 
-	 * @param percept the percept
+	 * @param percept The percept from which the union is to be created
 	 * @param address The address to be used for creating the history 
-	 * @param id the identifier for the new belief
-	 * @throws BinderException 
+	 * @param id The identifier for the new belief (union)
+	 * @throws BinderException Thrown if any of the parameters are empty or null
 	 */
 	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address, String id)  
 		throws BeliefException {
@@ -104,7 +104,8 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	
 	
 	/**
-	 * Construct a new percept union belief similar to a given percept, excepted the existence probability
+	 * Construct a new percept union belief similar to a given percept, 
+	 * except for the existence distributed which is constructed with the provided existProb parameter. 
 	 * 
 	 * @param percept the percept
 	 * @param existProb the existence probability
@@ -114,15 +115,25 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address, float existProb, String id)  
 		throws BeliefException {
 
-		if (percept == null) {
-			throw new BeliefException("ERROR, belief is null");
+		if (address == null || address.id == null || address.subarchitecture == null || address.id.equals("") || address.subarchitecture.equals("")) {
+			throw new BeliefException("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information");
 		}
-		else if (percept.content == null) {
-			throw new BeliefException("ERROR, belief content is null");
+		
+		if (id == null || id.equals("")) { 
+			throw new BeliefException("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty");
+		}
+
+		if (percept == null) {
+			throw new BeliefException("Error in constructing PerceptUnionBelief: source belief is null");
+		}
+		
+		if (percept.content == null) {
+			throw new BeliefException("Error in constructing PerceptUnionBelief: content in source belief is null");
 		}
 		else if (!(percept.content instanceof DistributionWithExistDep)) {
-			throw new BeliefException("ERROR, belief content does not include an existence dependency");
+			throw new BeliefException("Error in constructing PerceptUnionBelief: content in source belief does not include an existence dependency");
 		}
+		
 		DistributionWithExistDep newDistrib = 
 			BeliefContentBuilder.createNewDistributionWithExistDep(existProb, ((DistributionWithExistDep)percept.content).Pc);
 		

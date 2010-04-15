@@ -335,10 +335,21 @@ public class PerceptUnionBuilderTest {
 			assertEquals("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty",
 					be.getMessage());
 		} // end try..catch
-		
 	} // end test	
 	
-		
+	/**
+	 * Creating a PerceptUnionBelief from a single PerceptBelief succeeds with all parameters instantiated, including
+	 * the existence probability for constructing a probability distribution
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromPerceptBeliefWithExistenceProbSucceeds () { 
+		try { 
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,0.7f,id);
+		} catch (BeliefException be) {
+			fail("Creating a PerceptUnionBelief from a single PerceptBelief and all parameters instantiated should have succeeded");
+		} // end try..catch
+	} // end test
 	 
 	
 
