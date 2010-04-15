@@ -12,7 +12,7 @@ outcome = {U0_3,U2_3,U1_3,U3_3}
 
 // feature values
 labelval = {Ball,Mug,Unknown,None}
-shapeval = {Cyl,Sphe,Unknown,None}
+shapeval = {Cyl,None,Sphe,Unknown,Unknown,None}
 
 ///////////////////////////////
 // PREDICATES
@@ -30,48 +30,44 @@ Existence(belief)
 ///////////////////////////////
 
 2.1972244 Existence(U0_2)
-!Label(U0_2,Ball).
-!Label(U0_2,Mug).
-Label(U0_2,None).
-!Shape(U0_2,Cyl).
-!Shape(U0_2,Sphe).
-Shape(U0_2,None).
-NaN Existence(U0_2) ^ Shape(U0_2,Cyl)
-NaN Existence(U0_2) ^ Shape(U0_2,Sphe)
-NaN Existence(U0_2) ^ Shape(U0_2,Unknown)
+-0.39304265 Existence(U0_2) ^ Shape(U0_2,Cyl)
+-2.0024805 Existence(U0_2) ^ Shape(U0_2,Sphe)
+-2.4079454 Existence(U0_2) ^ Shape(U0_2,Unknown)
 Existence(U0_2) => !Shape(U0_2,None).
+Existence(U0_2) => !Label(U0_2,Ball).
+Existence(U0_2) => !Label(U0_2,Mug).
+Existence(U0_2) => Label(U0_2,None).
 
 -5.293305 Existence(U2_2)
-!Label(U2_2,Ball).
-!Label(U2_2,Mug).
-Label(U2_2,None).
-!Shape(U2_2,Cyl).
-!Shape(U2_2,Sphe).
-Shape(U2_2,None).
+Existence(U2_2) => !Label(U2_2,Ball).
+Existence(U2_2) => !Label(U2_2,Mug).
+Existence(U2_2) => Label(U2_2,None).
+Existence(U2_2) => !Shape(U2_2,Cyl).
+Existence(U2_2) => !Shape(U2_2,Sphe).
+Existence(U2_2) => !Shape(U2_2,Unknown).
+Existence(U2_2) => Shape(U2_2,None).
 
 1.3862945 Existence(U1_2)
-!Label(U1_2,Ball).
-!Label(U1_2,Mug).
-Label(U1_2,None).
-!Shape(U1_2,Cyl).
-!Shape(U1_2,Sphe).
-Shape(U1_2,None).
-NaN Existence(U1_2) ^ Shape(U1_2,Sphe)
-NaN Existence(U1_2) ^ Shape(U1_2,Unknown)
+-0.38566247 Existence(U1_2) ^ Shape(U1_2,Sphe)
+-2.1202636 Existence(U1_2) ^ Shape(U1_2,Unknown)
 Existence(U1_2) => !Shape(U1_2,Cyl).
 Existence(U1_2) => !Shape(U1_2,None).
+Existence(U1_2) => !Label(U1_2,Ball).
+Existence(U1_2) => !Label(U1_2,Mug).
+Existence(U1_2) => Label(U1_2,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 1.7346013 Existence(P)
-!Label(P,Ball).
-!Label(P,Mug).
-Label(P,None).
-!Shape(P,Cyl).
-!Shape(P,Sphe).
-Shape(P,None).
+Existence(P) => !Label(P,Ball).
+Existence(P) => !Label(P,Mug).
+Existence(P) => Label(P,None).
+Existence(P) => !Shape(P,Cyl).
+Existence(P) => !Shape(P,Sphe).
+Existence(P) => !Shape(P,Unknown).
+Existence(P) => Shape(P,None).
 
 ///////////////////////////////
 // FEATURE VALUE CONSTRAINTS
