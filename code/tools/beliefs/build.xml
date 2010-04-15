@@ -100,17 +100,24 @@
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="expandlibs,slice" description="compiles the source code">
-		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source"> 
-				<classpath refid="build.classpath"/>
-				</javac>
+	<target name="compile" depends="compile-java,test" description="compiles the source code and runs the unit-tests">
 	</target>
+
+
+       <target name="compile-java" depends="expandlibs,slice" description="compiles the source code">
+                <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+                                <classpath refid="build.classpath"/>
+                </javac>
+        </target>
+
+
+
 
 	<!-- =================================================================== -->
 	<!-- JUnit4-based unit testing                                           -->
 	<!-- =================================================================== -->
 	
-	<target name="test" depends="compile,-test-run,-test-report"/>
+	<target name="test" depends="-test-run,-test-report"/>
 		
 	<target name="-test-run">
 		<mkdir dir="${junit.data}"/>
