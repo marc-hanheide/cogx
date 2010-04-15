@@ -31,7 +31,6 @@ package test.beliefmodels.builders;
 
 // Remark: CAST dependencies should be removed!
 // CAST
-import beliefmodels.arch.BeliefException;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 
@@ -42,14 +41,28 @@ import static org.junit.Assert.*;
 
 // Belief models
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.PerceptBuilder;
 
 public class PerceptBuilderTest {
 
+	CASTTime curTime; 
+	String id;
+	String type;
+	String curPlace;
+	ProbDistribution content;
+	CASTBeliefHistory hist;
+	
 	@Before
 	public void setUp() throws Exception {
-	}
+		curTime = new CASTTime();
+		id = "id";
+		type="vision";
+		curPlace="here";
+		content = new ProbDistribution();
+		hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress(id,"vision"));
+	} // end setUp
 	
 	/**
 	 * Creating a new history for a null object (or pointer) should fail. 
@@ -98,6 +111,150 @@ public class PerceptBuilderTest {
 					be.getMessage());
 		} // end try..catch
 	} // end test
+	
+	
+	/**
+	 * Creating a new PerceptBelief with no parameter empty or null succeeds
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForFilledInParametersSucceeds () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, content, hist);
+		} catch (BeliefException be) {
+			fail("Creating a new PerceptBelief with all parameters instantiated should not fail");
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a new PerceptBelief with the Id parameter null fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForNullIdFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(null, type, curPlace, curTime, content, hist);
+			fail("Creating a new PerceptBelief with the Id parameter null fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a new PerceptBelief with the Id parameter empty fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForEmptyIdFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief("", type, curPlace, curTime, content, hist);
+			fail("Creating a new PerceptBelief with the Id parameter empty fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a new PerceptBelief with the type parameter null fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForNullTypeFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, null, curPlace, curTime, content, hist);
+			fail("Creating a new PerceptBelief with the type parameter null fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a new PerceptBelief with the type parameter empty fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForEmptyTypeFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, "", curPlace, curTime, content, hist);
+			fail("Creating a new PerceptBelief with the type parameter empty fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a new PerceptBelief with the curPlace parameter null fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForNullPlaceFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, type, null, curTime, content, hist);
+			fail("Creating a new PerceptBelief with the curPlace parameter null fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test	
+	
+	/**
+	 * Creating a new PerceptBelief with the curPlace parameter null fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForEmptyPlaceFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, type, "", curTime, content, hist);
+			fail("Creating a new PerceptBelief with the curPlace parameter empty fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test	
+	
+	
+	/**
+	 * Creating a new PerceptBelief with the curTime parameter null fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForNullTimeFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, type, curPlace, null, content, hist);
+			fail("Creating a new PerceptBelief with the curTime parameter null fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test	
+	
+	/**
+	 * Creating a new PerceptBelief with the content parameter null fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForNullContentFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, null, hist);
+			fail("Creating a new PerceptBelief with the content parameter null fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test	
+	
+	/**
+	 * Creating a new PerceptBelief with the curTime parameter null fails
+	 */
+	
+	@Test
+	public void NewPerceptBeliefForNullHistoryFails () { 
+		try {
+			PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, content, null);
+			fail("Creating a new PerceptBelief with the hist parameter null fails");
+		} catch (BeliefException be) {
+			assertEquals("Error in constructing PerceptBelief: parameters cannot be null or empty",be.getMessage());
+		} // end try..catch
+	} // end test	
+	
+				
+		
 	
 	
 	
