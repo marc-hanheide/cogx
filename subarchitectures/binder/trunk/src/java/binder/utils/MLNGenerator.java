@@ -1,6 +1,5 @@
 package binder.utils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,15 +43,24 @@ public class MLNGenerator {
 	public static final String STANDARD_INPUT_ID = "P";
 		
 	private static final Object NEWLINE = "\n";
-
-	public static String markovlogicDir = "subarchitectures/binder/markovlogic/";
+	
+	MLNPreferences preferences;
 	
 	private Map<String, Set<String>> names_for_type;
+	private Map<String, Set<String>> predicates_for_belief;
 	
 	private Belief newInput;
 	
 	public MLNGenerator() {
 		names_for_type = new TreeMap<String, Set<String>>();
+		predicates_for_belief = new TreeMap<String, Set<String>>();
+		preferences = new MLNPreferences();
+	}
+	
+	public MLNGenerator(MLNPreferences preferences) {
+		names_for_type = new TreeMap<String, Set<String>>();
+		predicates_for_belief = new TreeMap<String, Set<String>>();
+		this.preferences = preferences;
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -67,22 +75,22 @@ public class MLNGenerator {
 		
 		StringBuilder mln_file = new StringBuilder();
 		
+		// we read all the predicates that are specified in the correlation
+		// section including all names and add them to names_for_types 
+		parseCorrelationPredicates();
+		
 		// before we can start with the serialization we need to know all the names
 		// and types that appear in the beliefs
-		extractTypesAndNames(b.content);
-		for(Belief belief : existingUnions) {
-			extractTypesAndNames(belief.content);
-		}
-		Set<String> shapes = new TreeSet<String>();
-		shapes.add("Cyl");
-		shapes.add("Sphe");
-		names_for_type.put("Shape", shapes);
+		Set<String> predicates_for_current_belief = new TreeSet<String>();
+		predicates_for_belief.put(STANDARD_INPUT_ID, predicates_for_current_belief);
+		extractTypesAndNames(b.content, predicates_for_current_belief);
 		
-		Set<String> labels = new TreeSet<String>();
-		shapes.add("Mug");
-		shapes.add("Ball");
-		names_for_type.put("Label", labels);
-	
+		// for all the remaining ones
+		for(Belief belief : existingUnions) {
+			predicates_for_current_belief = new TreeSet<String>();
+			predicates_for_belief.put(belief.id, predicates_for_current_belief);
+			extractTypesAndNames(belief.content, predicates_for_current_belief);
+		}
 		
 		// now lets do the serialization
 		mln_file.append(constructConstantsSection(existingUnions, unionsMapping, newSingleUnionId));
@@ -96,6 +104,34 @@ public class MLNGenerator {
 		FileUtils.writeFile(MLNFileToWrite, mln_file.toString());
 	}
 	
+	private void parseCorrelationPredicates() {
+		String content = FileUtils.readfile(this.preferences.getFile_predicates());
+		String[] lines = content.split("\n");
+		for(String line : lines) {
+			String[] tokens = line.split(":");
+			
+			if(tokens.length == 2) {
+				String predicate = setFirstLetterToUppercase(tokens[0].trim());
+				
+				Set<String> names = new TreeSet<String>();
+				for(String name : tokens[0].split(" ")) {
+					names.add(setFirstLetterToUppercase(name.trim()));
+					log("adding: " + predicate + " with name " + name);
+				}
+				
+				if(names_for_type.containsKey(predicate)) {
+					names_for_type.get(predicate).addAll(names);
+				}
+				else {
+					names_for_type.put(predicate, names);
+				}
+			}
+			else {
+				log("skipping ling " + line + "while parsing correlation tokens");
+			}
+		}
+	}
+
 	// 1) constants section 
 	private StringBuilder constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, 
 			HashMap<String,String> unionsMapping, String newSingleUnionId) {
@@ -200,15 +236,7 @@ public class MLNGenerator {
 	
 	// 6) correlation section
 	private String getCorrelationSection () {
-		// TODO: @Pierre the correlations have to come from somewhere else of course.
-		// However, there is a problem because we can't assume that all the names that
-		// appear in the correlations have been defines already in the constants section.
-		// We need to resolve this problem somehow either by making all names static
-		// i.e. known a prior or we parse the correlation file...
-		// FIXME: we need to adapt the method
-		// FIXME: implement path to the file in the constructor
-		
-		return FileUtils.readfile(markovlogicDir + "grouping/correlations.mln");
+		return FileUtils.readfile(this.preferences.getFile_correlations());
 	}
 	
 	// 7) final outcome section
@@ -226,7 +254,8 @@ public class MLNGenerator {
 		result.append(NEWLINE);
 		
 		// a) specification of the different outcomes
-		result.append("-1.5 Existence(P) => Outcome(" + getMarkovLogicConstantFromID(singleUnionId) + ")\n");
+		Float greediness = this.preferences.getGreediness();
+		result.append(greediness.toString() + " Existence(P) => Outcome(" + getMarkovLogicConstantFromID(singleUnionId) + ")\n");
 		
 		// then comes the rest of the possible results
 		Set<String> new_unions = new TreeSet<String>(unionsMapping.keySet());
@@ -236,7 +265,8 @@ public class MLNGenerator {
 		}
 		
 		// b) mutual exclusivity and unicity
-		result.append("-1 Outcome(x)\n");
+		Float outcome = this.preferences.getOutcome();
+		result.append(outcome.toString() + " Outcome(x)\n");
 		result.append("Outcome(x) ^ Outcome(y) => x=y.\n");
 		result.append("Exist x Outcome(x).\n");
 		result.append(NEWLINE);
@@ -302,24 +332,24 @@ public class MLNGenerator {
 		return result;
 	}
 	
-	private void extractTypesAndNames(ProbDistribution distribution) throws MLException {
+	private void extractTypesAndNames(ProbDistribution distribution, Set<String> predicatesForCurrentBelief) throws MLException {
 		// TODO: extend with the remaining distributions
 		
 		if(distribution instanceof BasicProbDistribution) {
-			extractTypesAndNamesBasicProbDistribution((BasicProbDistribution) distribution);
+			extractTypesAndNamesBasicProbDistribution((BasicProbDistribution) distribution, predicatesForCurrentBelief);
 		}
 		
 		else if (distribution instanceof DistributionWithExistDep) {
-			extractTypesAndNames (((DistributionWithExistDep)distribution).Pc);	
+			extractTypesAndNames(((DistributionWithExistDep)distribution).Pc, predicatesForCurrentBelief);	
 		}
 		
 		else if (distribution instanceof CondIndependentDistribs) {
 			if (((CondIndependentDistribs)distribution).distribs == null) {
-				throw new MLException ("Error, distribution is null");
+				throw new MLException("Error, distribution is null");
 			}
 			
 			for (String subdistribKey : ((CondIndependentDistribs)distribution).distribs.keySet()) {
-				extractTypesAndNames (((CondIndependentDistribs)distribution).distribs.get(subdistribKey));
+				extractTypesAndNames(((CondIndependentDistribs)distribution).distribs.get(subdistribKey), predicatesForCurrentBelief);
 			}
 		}
 		
@@ -330,7 +360,7 @@ public class MLNGenerator {
 	}
 	
 	
-	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution distrib) {
+	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution distrib, Set<String> predicatesForCurrentBelief) {
 		String keyWithUppercase = setFirstLetterToUppercase(distrib.key);
 		if(!names_for_type.containsKey(keyWithUppercase)) {
 			names_for_type.put(keyWithUppercase, new TreeSet<String>());
@@ -338,6 +368,7 @@ public class MLNGenerator {
 		for (String value: getListDistributionValues(distrib.values)) {
 			String valWithUppercase = setFirstLetterToUppercase(value);
 			names_for_type.get(keyWithUppercase).add(valWithUppercase);
+			predicatesForCurrentBelief.add(valWithUppercase);
 		}
 	}
 	
@@ -494,6 +525,16 @@ public class MLNGenerator {
 			formulae.add(hard_formula);
 		}
 		
+		// and then add a hard formula for all the predicates that do not appear
+		// at all for the belief in its distribution
+		Set<String> non_occuring_predicates = new TreeSet<String>(names_for_type.keySet());
+		non_occuring_predicates.removeAll(this.predicates_for_belief.get(belief_id));
+		for(String non_occuring_predicate : non_occuring_predicates) {
+			MLFormula hard_formula = new MLFormula(1f, setFirstLetterToUppercase(non_occuring_predicate) + "(" + setFirstLetterToUppercase(belief_id) + ",None)");
+			hard_formula.setSharp();
+			formulae.add(hard_formula);
+		}
+		
 		// take care of the None case
 		MLFormula none_formula = new MLFormula(1f, setFirstLetterToUppercase(feature) + "(" + belief_id + ",None)");
 		none_formula.setSharp();
@@ -593,14 +634,15 @@ public class MLNGenerator {
 	private String setFirstLetterToLowercase(String s) {
 		return (s.substring(0,1).toLowerCase() + s.substring(1));
 	}
- 
+	
 	private static void log(String s) {
 		if (LOGGING) {
 			System.out.println("[MLNGenerator] " + s);
 		}
 	}
-
-	private static void debug(String s) {
+	
+	@SuppressWarnings("unused")
+	private static void debug(final String s) {
 		if (DEBUG) {
 			System.out.println("[MLNGenerator] " + s);
 		}
