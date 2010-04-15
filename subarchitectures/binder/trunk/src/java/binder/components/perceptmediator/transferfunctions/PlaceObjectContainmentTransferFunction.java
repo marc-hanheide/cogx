@@ -9,7 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import SpatialProperties.PlaceContainmentObjectProperty;
-import SpatialProperties.StringValue;
+import SpatialProperties.IntegerValue;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
@@ -33,8 +33,8 @@ public class PlaceObjectContainmentTransferFunction extends SimpleDiscreteTransf
 		assert(from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 
-		result.put(FeatPlaceId.value, FeatureValueBuilder.createNewIntegerValue((int) from.placeId));
-		result.put("Label", FeatureValueBuilder.createNewStringValue(((StringValue) from.mapValue).value));
+		result.put(FeatPlaceId.value, FeatureValueBuilder.createNewIntegerValue((int)((IntegerValue) from.mapValue).value));
+//		result.put("Label", FeatureValueBuilder.createNewStringValue(((StringValue) from.mapValue).value));
 		
 		return result;
 	}
