@@ -30,7 +30,6 @@ public:
 	TrackerModel();
 	~TrackerModel();
 	
-	
 	TrackerModel& operator=(const TrackerModel& m);
 	TrackerModel& operator=(const Model& m);
 	
@@ -95,14 +94,12 @@ public:
 	bool 			getTextured(){ return m_textured; }
 	Texture* 	getTexture(){ return m_texture; }
 	Texture* 	getOriginalTexture(){ return m_tex_original; }
-	mat4 			getModelviewProjection(){ return m_modelviewprojection; }
 	float			getBoundingSphereRadius(){ return m_boundingSphereRadius; }
 	
 	// sets
 	void setBFC(bool bfc){ m_bfc = bfc; }
 	void setTexture(Texture* tex){ m_texture = tex; }
 	void setOriginalTexture(Texture* tex){ m_tex_original = tex; }
-	void setModelviewProjection(mat4 m){ m_modelviewprojection = m; }
 	void restoreTexture(){ m_texture=m_tex_original; }
 	
 		// generate display lists
@@ -124,14 +121,11 @@ protected:
 	Shader* m_shadeTexturing;
 	int m_shadeTexturingID;
 	bool m_bfc;
-	mat4 m_modelviewprojection;		// Transformation matrix from model to camera to image -space
 	float m_boundingSphereRadius;
 
 	// Functions
 	bool isRedundant(Edge* e1);
 	void UpdateDisplayLists();
-	
-
 };
 
 } // namespace Tracking

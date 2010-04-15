@@ -466,6 +466,9 @@ bool ModelLoader::LoadPly(TrackerModel &model, const char* filename){
 		model.m_passlist.push_back(p);
 	}
 	
+	if(!model.m_passlist.empty())
+		model.m_textured = true;
+	
 	model.computeFaceNormals();
 	model.Update();
 	

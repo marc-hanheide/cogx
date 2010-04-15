@@ -32,6 +32,7 @@ ObjectTracker::ObjectTracker(){
   m_testmode = false;
   m_textured = true;
   m_automatictexturing = true;
+  m_drawcoords = false;
   m_bfc = true;
   
   fTimeTotal = 0.0;
@@ -114,6 +115,11 @@ void ObjectTracker::configure(const map<string,string> & _config){
 		m_automatictexturing = false;
 		log("  Texturing: manual");
 	}
+	if((it = _config.find("--coordinateframe")) != _config.end()){
+		m_drawcoords = true;
+	}else{
+		m_drawcoords = false;
+	}
 	
 	if((it = _config.find("--BFC_disabled")) != _config.end()){
 		m_bfc = false;
@@ -158,11 +164,11 @@ void ObjectTracker::destroy(){
 }
 
 void ObjectTracker::receiveImages(const std::vector<Video::Image>& images){
-  lockComponent();
-		assert(images.size() > 0);
-		m_image = images[0];
-		convertCameraParameter(m_image.camPars, m_trackCamPars);
-	unlockComponent();
+//   lockComponent();
+// 		assert(images.size() > 0);
+// 		m_image = images[0];
+// 		convertCameraParameter(m_image.camPars, m_trackCamPars);
+// 	unlockComponent();
 }
 
 void ObjectTracker::runComponent(){
@@ -171,7 +177,7 @@ void ObjectTracker::runComponent(){
   // Initialize Tracker
   // Grab one image from VideoServer for initialisation
   initTracker();
-  m_videoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
+//   m_videoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
   
   while(isRunning() && m_running)
   {
@@ -383,24 +389,23 @@ void ObjectTracker::runTracker(){
 // 	m_timer.Update();
 	
 	// Get image and update it
-	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
-		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
-		m_running = false;
-	}
+// 	if( !m_tracker->setCameraParameters(m_trackCamPars) ){
+// 		throw runtime_error(exceptionMessage(__HERE__, "Wrong Camera Parameter"));
+// 		m_running = false;
+// 	}
 	
 	
 	lockComponent();
 		dTime = getFrameTime(last_image_time, m_image.time);
 // 		fTimeGrab = m_timer.Update();
 		// image processing
-// 		m_videoServer->getImage(m_camIds[0], m_image);
+		m_videoServer->getImage(m_camIds[0], m_image);
 		m_tracker->image_processing((unsigned char*)(&m_image.data[0]));
 // 		fTimeIP = m_timer.Update();
 	unlockComponent();
 	
 	last_image_time = m_image.time;
 	m_tracker->setFrameTime(dTime);
-	
 
 	// track models
 	m_tracker->track();
@@ -425,10 +430,10 @@ void ObjectTracker::runTracker(){
 // 	fTimeCvt = m_timer.Update();
 		
 	// draw results
-	m_tracker->drawImage(NULL);
+// 	m_tracker->drawImage(NULL);
 	m_tracker->drawResult();
 // 	m_tracker->drawCalibrationPattern();
-	m_tracker->drawCoordinates();
+	if(m_drawcoords) m_tracker->drawCoordinates();
 	m_tracker->swap();
 	
 // 	fTimeDraw = m_timer.Update();
