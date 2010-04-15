@@ -3,8 +3,10 @@
  */
 package detection.mediators;
 
+import SpatialProperties.DiscreteProbabilityDistribution;
 import SpatialProperties.PlaceContainmentObjectProperty;
 import SpatialProperties.StringValue;
+import SpatialProperties.ValueProbabilityPair;
 import VisionData.VisualObject;
 
 /**
@@ -19,7 +21,9 @@ public class VisualObjectMediator extends AbstractDetectedObjectMediator<VisualO
 
 	@Override
 	protected boolean transform(PlaceContainmentObjectProperty pcop, VisualObject object) {
-		pcop.mapValue=new StringValue(object.label);
+		ValueProbabilityPair[] data = new ValueProbabilityPair[1];
+		data[0]=new ValueProbabilityPair(new StringValue(object.label), 1.0);
+		pcop.distribution = new DiscreteProbabilityDistribution(data);
 		// TODO: decide when to add to propagate this observation, assuming always here!
 		return true;
 	}

@@ -4,10 +4,7 @@
 package detection.mediators;
 
 import SpatialProperties.DiscreteProbabilityDistribution;
-import SpatialProperties.FloatValue;
-import SpatialProperties.IntegerValue;
 import SpatialProperties.PlaceContainmentObjectProperty;
-import SpatialProperties.ProbabilityDistribution;
 import SpatialProperties.StringValue;
 import SpatialProperties.ValueProbabilityPair;
 import VisionData.Person;
