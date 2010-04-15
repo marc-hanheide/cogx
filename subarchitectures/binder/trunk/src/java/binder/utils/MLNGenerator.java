@@ -120,6 +120,9 @@ public class MLNGenerator {
 					}
 				}
 				
+				names.add("Unknown");
+				names.add("None");
+				
 				if(names_for_type.containsKey(predicate)) {
 					names_for_type.get(predicate).addAll(names);
 				}
@@ -328,7 +331,7 @@ public class MLNGenerator {
 				result.append(iter.next());
 			}
 			
-			result.append(",Unknown,None}\n");
+			result.append("}\n");
 		}
 		return result;
 	}
