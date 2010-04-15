@@ -597,14 +597,14 @@ public class MLNGenerator {
 					MLFormula hard_formula = new MLFormula(1f, "!" + setFirstLetterToUppercase(non_occuring_predicate) + "(" + internal_id + "," + non_occuring_value + ")");
 					hard_formula.setSharp();
 					hard_formula.setOpAddImp();
-					formulae.add(hard_formula);
+					conditional_formulae.add(hard_formula);
 				}
 			}
 			// handle the "None" case
 			MLFormula hard_formula = new MLFormula(1f, setFirstLetterToUppercase(non_occuring_predicate) + "(" + internal_id + ",None)");
 			hard_formula.setSharp();
 			hard_formula.setOpAddImp();
-			formulae.add(hard_formula);
+			conditional_formulae.add(hard_formula);
 		}
 		
 		// for each formula i \in 1..n form dist_cond conditionally dependent
@@ -630,8 +630,8 @@ public class MLNGenerator {
 		return new Float(Math.log(prob / (1f - prob)));
 	}
 	
-	private Float convertWeightToProbability(float prob) {
-		return new Float(Math.log(prob / (1f - prob)));
+	private Float convertWeightToProbability(float weight) {
+		return new Float(Math.exp(weight)/(1+Math.exp(weight)));
 	}
 	
 	private Float convertConditionalProbabilityToWeight(float prob1, float prob2) {
