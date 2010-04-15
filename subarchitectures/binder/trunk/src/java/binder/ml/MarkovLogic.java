@@ -398,7 +398,7 @@ public class MarkovLogic {
 		} else if (feature_value instanceof UnknownValue) {
 			value = VAL_UNKNOWN;
 		} else if (feature_value instanceof PointerValue) {
-			value = getInternalName(((PointerValue) feature_value).beliefId);
+			value = getInternalName(((PointerValue) feature_value).beliefId.id);
 		}
 
 		predicate_data.addValueForType(feature.toLowerCase(), value);

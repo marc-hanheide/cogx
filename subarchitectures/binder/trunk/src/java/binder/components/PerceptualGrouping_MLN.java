@@ -47,13 +47,13 @@ import cast.core.CASTData;
  * then inserted onto the working memory, as well as the associated update of the existing percept union
  * beliefs.
  * 
- * 
+ *  
  * 
  * NOTE: 
  * - still need to check subarchitecture consistency OK
  * - still need to add filters OK
  * - only perform updates on existing unions when change is significant OK
- * - need to add functionality for percept updates or deletions
+ * - need to add functionality for percept updates or deletions OK?
  * - remove the testing stuff and have a proper, separate tester class  OK
  * - actually build the union content OK
  * - change the belief history to have only cast values OK
@@ -61,14 +61,14 @@ import cast.core.CASTData;
  * - when constructing a new belief, propagate the pointers correctly
  * - have proper logging functionality
  * - implement the same kind of functionality for tracking
- * - send examples of test cases to Sergio
+ * - send examples of test cases to Sergio OK
  * - do the test with percepts instead of unions as inputs
  * 
  * @author plison
  *
- */
+ */ 
 public class PerceptualGrouping_MLN extends MarkovLogicComponent {
-
+ 
 	
 	String MLNFile = markovlogicDir + "grouping.mln";
 	
@@ -89,12 +89,51 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 */
 	@Override
 	public void start() {
-				
+			
+		// Insertion
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
 						try {
+							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);	
+							
+							log("received a new percept: " + beliefData.getID());
+							performPerceptualGrouping (beliefData.getData(), _wmc.address);
+							log("perceptual grouping operation on percept " + beliefData.getID() + " now finished");
+						}	
+			
+						 catch (Exception e) {
+								e.printStackTrace();
+							} 
+					}
+				}
+		);
+		
+		// Deletion
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
+						try {
+							deleteAllMultiModalBeliefAttachedToUnion(_wmc.address);
+						}	
+			
+						 catch (Exception e) {
+								e.printStackTrace();
+							} 
+					}
+				}
+		);
+		
+		// Update
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
+						try {
+							deleteAllMultiModalBeliefAttachedToUnion(_wmc.address);
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);	
 							
 							log("received a new percept: " + beliefData.getID());
@@ -195,6 +234,13 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	}
 
 
+	/**
+	 * Filter the inference results to retain only the maxSize-best results
+	 * 
+	 * @param results the results of Alchemy inference
+	 * @param maxSize the number of results to retain
+	 * @return the filtered results
+	 */
 	private HashMap<String, Float> filterInferenceResults (HashMap<String,Float> results, int maxSize) {
 		
 		     List<Entry<String,Float>> list = new LinkedList<Entry<String,Float>>(results.entrySet());
@@ -206,7 +252,6 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		              return 1;
 		          }
 		     });
-		// logger.info(list);
 		
 		int increment = 0;
 		HashMap<String,Float> newResults = new HashMap<String,Float>();
@@ -222,6 +267,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		     }
 		return newResults;
 	}
+	
 	
 	
 	/**
@@ -255,7 +301,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			}
 			
 			float prob = perceptExistProb * inferenceResults.get(id);
-			log("computed prob of " + id + ": " + prob);
+			log("computed probability for new percept union " + id + ": " + prob);
 			
 			PerceptUnionBelief existingUnion = existingUnions.get(unionsMapping.get(id)); 
 			try {
@@ -402,21 +448,23 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		}
 		return existingunions;
 	}
+	 
 	
 	
-	
-	private void deleteAllMultiModalBeliefAttachedToUnion (PerceptUnionBelief union) {
+	private void deleteAllMultiModalBeliefAttachedToUnion (WorkingMemoryAddress unionAddress) {
 		
-
-//		HashMap<String, PerceptUnionBelief> existingunions = new HashMap<String, PerceptUnionBelief>();
-
 		try {
 			CASTData<MultiModalBelief>[] mmBeliefs;
 
 			mmBeliefs = getWorkingMemoryEntries(BindingWorkingMemory.BINDER_SA, MultiModalBelief.class);
 
 			for (int i = (mmBeliefs.length - 1) ; i >= 0 ; i--) {
-				// TODO!!!
+				MultiModalBelief mmbelief = mmBeliefs[i].getData();
+				if (mmbelief != null && mmbelief.hist != null && mmbelief.hist instanceof CASTBeliefHistory) {
+					if (((CASTBeliefHistory)mmbelief.hist).ancestors.contains(unionAddress)) {
+						deleteBeliefOnWM (mmBeliefs[i].getID());
+					}
+				}
 			}
 		}
 		catch (UnknownSubarchitectureException e) {

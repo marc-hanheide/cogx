@@ -25,7 +25,6 @@ import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.BooleanValue;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
-import beliefmodels.autogen.featurecontent.MemoryAddressValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.UnknownValue;
@@ -66,11 +65,11 @@ public class MLNGenerator {
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Build the Markov network file
 	/////////////////////////////////////////////////////////////////////////////////////
-	
+	 
 	// we build the corresponding Markov logic network file step by step
 	public void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, 
 			HashMap<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
-		
+		 
 		newInput = b;
 		
 		StringBuilder mln_file = new StringBuilder();
@@ -170,7 +169,7 @@ public class MLNGenerator {
 		
 		result.append(NEWLINE);
 		for(String predicate_type : names_for_type.keySet()) {
-			result.append(predicate_type + "(belief, " + setFirstLetterToLowercase(predicate_type) + "val)\n");
+			result.append(predicate_type + "(belief," + setFirstLetterToLowercase(predicate_type) + "val)\n");
 		}
 		
 		result.append(NEWLINE);
@@ -427,12 +426,7 @@ public class MLNGenerator {
 			if(val instanceof PointerValue) {
 				// TODO: is this correct to translate the belief id to
 				// our internal representation?
-				result.add(getMarkovLogicConstantFromID(((PointerValue)val).beliefId));
-				continue;
-			}
-			if(val instanceof MemoryAddressValue) {
-				// FIXME: what to do here with the WM memory pointer???
-				result.add(((MemoryAddressValue)val).beliefId.toString());
+				result.add(getMarkovLogicConstantFromID(((PointerValue)val).beliefId.id));
 				continue;
 			}
 		}
@@ -564,12 +558,9 @@ public class MLNGenerator {
 		else if(val instanceof PointerValue) {
 			// TODO: is this correct to translate the belief id to
 			// our internal representation?
-			return getMarkovLogicConstantFromID(((PointerValue)val).beliefId);
+			return getMarkovLogicConstantFromID(((PointerValue)val).beliefId.id);
 		}
-		else if(val instanceof MemoryAddressValue) {
-			// FIXME: what to do here with the WM memory pointer???
-			return ((MemoryAddressValue)val).beliefId.toString();
-		}
+
 		throw new MLException("unknwon feature value type");
 	}
 

@@ -11,15 +11,15 @@ belief = {U0_2,U2_2,U1_2,P}
 outcome = {U0_3,U2_3,U1_3,U3_3}
 
 // feature values
-labelval = {,Unknown,None}
-shapeval = {Ball,Cyl,Mug,Sphe,Unknown,None}
+labelval = {Ball,Mug,Unknown,None}
+shapeval = {Cyl,Sphe,Unknown,None}
 
 ///////////////////////////////
 // PREDICATES
 ///////////////////////////////
 
-Label(belief, labelval)
-Shape(belief, shapeval)
+Label(belief,labelval)
+Shape(belief,shapeval)
 
 Outcome(outcome)
 UnifyWith(existingunion)
@@ -33,8 +33,8 @@ Existence(belief)
 1.0986123 Existence(U0_2) => Shape(U0_2,Cyl)
 -1.734601 Existence(U0_2) => Shape(U0_2,Sphe)
 -2.1972244 Existence(U0_2) => Shape(U0_2,Unknown)
-Existence(U0_2) => !Shape(U0_2,Ball).
-Existence(U0_2) => !Shape(U0_2,Mug).
+Existence(U0_2) => Label(U0_2,None).
+Existence(U0_2) => Shape(U0_2,None).
 Existence(U0_2) => Shape(U0_2,None).
 
 -5.293305 Existence(U2_2)
@@ -42,9 +42,9 @@ Existence(U0_2) => Shape(U0_2,None).
 1.3862945 Existence(U1_2)
 1.7346013 Existence(U1_2) => Shape(U1_2,Sphe)
 -1.7346013 Existence(U1_2) => Shape(U1_2,Unknown)
-Existence(U1_2) => !Shape(U1_2,Ball).
 Existence(U1_2) => !Shape(U1_2,Cyl).
-Existence(U1_2) => !Shape(U1_2,Mug).
+Existence(U1_2) => Label(U1_2,None).
+Existence(U1_2) => Shape(U1_2,None).
 Existence(U1_2) => Shape(U1_2,None).
 
 ///////////////////////////////
@@ -97,7 +97,7 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 UnifyWith(U0_2) <=> Outcome(U0_3).
 UnifyWith(U2_2) <=> Outcome(U1_3).
 UnifyWith(U1_2) <=> Outcome(U2_3).
--1 Outcome(x)
+-1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).
 
