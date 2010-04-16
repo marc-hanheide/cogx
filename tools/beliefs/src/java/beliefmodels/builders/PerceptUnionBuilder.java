@@ -149,7 +149,8 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 
 	/**
 	 * Construct a new percept union belief from the merge of a percept and a union. These beliefs must have content, 
-	 * of type DistributionWithExistDep. Each existence distribution must have a set of conditionally independent distributions. 
+	 * of type DistributionWithExistDep. Each existence distribution must have a set of conditionally independent distributions.
+	 * The distributions of the percept and the union must model different features (i.e. no label appears in both distributions). 
 	 * 
 	 * @param percept 			The percept belief
 	 * @param existingUnion 	The union belief
@@ -199,9 +200,9 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 		for (String featlabel : perceptCIDistrib.distribs.keySet()) {
 			BeliefContentBuilder.putNewCondIndependentDistrib(newCIDistrib, 
 					(BasicProbDistribution)perceptCIDistrib.distribs.get(featlabel));
-		}
+		} 
 
-		// extracting the conditionally independent distrib in the unnion
+		// extracting the conditionally independent distrib in the union belief
 		CondIndependentDistribs unionCIDistrib = ((CondIndependentDistribs)((DistributionWithExistDep)existingUnion.content).Pc);
 
 		// and inserting each subdistrib into the new belief content

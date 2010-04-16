@@ -191,7 +191,7 @@ public class BeliefContentBuilder {
 	 * @param newDistrib 
 	 * 			the next distribution to add
 	 * @throws BeliefException 
-	 * 			exception thrown if distribs or newDistrib is a null pointer
+	 * 			exception thrown if distribs or newDistrib is a null pointer, or if the key of newDistrib is already in the map
 	 * @post distribs now contains newDistrib
 	 */
 	public static void putNewCondIndependentDistrib(CondIndependentDistribs distribs, BasicProbDistribution newDistrib) 
@@ -213,6 +213,10 @@ public class BeliefContentBuilder {
 		else if (newDistrib.key == null || newDistrib.key == "") {
 			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
 					"Null or empty key specified in the provided probability distribution");
+		}
+		else if (distribs.distribs.containsKey(newDistrib.key)) { 
+			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
+					"Feature key ["+newDistrib.key+"] already present in set of conditionally independent distributions");
 		}
 		
 		distribs.distribs.put(newDistrib.key, newDistrib);
