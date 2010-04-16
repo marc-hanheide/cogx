@@ -225,7 +225,17 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		}
 		}
 		else {
+			try {
 			log("no relevant union to group with percept " + percept.id + " has been found");
+			PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(percept, perceptWMAddress, newDataID());
+			if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
+				insertBeliefInWM(union);
+				log("inserting belief " + union.id + " on WM");
+			}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

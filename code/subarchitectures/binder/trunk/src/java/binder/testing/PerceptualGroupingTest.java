@@ -61,57 +61,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 				}
 		);
 		
-		
 
-		try {
-			
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
-	
-			// First union
-			CondIndependentDistribs cdistrib_b1 = BeliefContentBuilder.createNewCondIndependentDistribs();
-			
-			List<FeatureValueProbPair> shapePairs_b1 = new LinkedList<FeatureValueProbPair>();
-			shapePairs_b1.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Cyl"), 0.75f));
-			shapePairs_b1.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.15f));
-			
-			BasicProbDistribution shapeDistrib_b1 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b1);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b1, shapeDistrib_b1);
-			
-			ProbDistribution content_b1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, cdistrib_b1);
-			
-			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b1, hist);
-
-			addToWorkingMemory(b1.id, b1);
-			
-			 
-			CondIndependentDistribs cdistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
-			
-			List<FeatureValueProbPair> shapePairs_b2 = new LinkedList<FeatureValueProbPair>();
-			shapePairs_b2.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.85f));
-			
-			BasicProbDistribution shapeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b2);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b2, shapeDistrib_b2);
-			
-			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cdistrib_b2);
-			
-			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist);
-			
-			addToWorkingMemory(b2.id, b2);
-			
-			
-			CondIndependentDistribs cdistrib_b3 = BeliefContentBuilder.createNewCondIndependentDistribs();
-			
-			ProbDistribution content_b3 = BeliefContentBuilder.createNewDistributionWithExistDep(0.005f, cdistrib_b3);
-
-			PerceptBelief b3 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b3, hist);
-
-			addToWorkingMemory(b3.id, b3);
-			
-			
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
  
@@ -145,6 +95,65 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 	@Override
 	public void startTest() {
 
+		
+
+		try {
+			
+			log("HERE1");
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
+	
+			// First union
+			CondIndependentDistribs cdistrib_b1 = BeliefContentBuilder.createNewCondIndependentDistribs();
+			
+			List<FeatureValueProbPair> shapePairs_b1 = new LinkedList<FeatureValueProbPair>();
+			shapePairs_b1.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Cyl"), 0.75f));
+			shapePairs_b1.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.15f));
+			
+			BasicProbDistribution shapeDistrib_b1 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b1);		
+			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b1, shapeDistrib_b1);
+			
+			ProbDistribution content_b1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, cdistrib_b1);
+			
+			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b1, hist);
+
+			insertBeliefInWM(b1);
+			
+			log("HERE2");
+			
+			CondIndependentDistribs cdistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
+			
+			List<FeatureValueProbPair> shapePairs_b2 = new LinkedList<FeatureValueProbPair>();
+			shapePairs_b2.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.85f));
+			
+			BasicProbDistribution shapeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b2);		
+			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b2, shapeDistrib_b2);
+			
+			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cdistrib_b2);
+			
+			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist);
+			
+			insertBeliefInWM(b2);
+			
+			
+			log("HERE3");
+			
+			log(this.existsOnWorkingMemory(b2.id));
+			
+			CondIndependentDistribs cdistrib_b3 = BeliefContentBuilder.createNewCondIndependentDistribs();
+			
+			ProbDistribution content_b3 = BeliefContentBuilder.createNewDistributionWithExistDep(0.005f, cdistrib_b3);
+
+			PerceptBelief b3 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b3, hist);
+
+			insertBeliefInWM(b3);
+			
+			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		sleepComponent(1000);
 		try {
 			
 			CondIndependentDistribs features = BeliefContentBuilder.createNewCondIndependentDistribs();
@@ -176,7 +185,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			isTestFinished = true;
 			isTestSuccessful = false;
 			reasonForFailure = e.getMessage();
-		}
+		} 
 
 	}
 
