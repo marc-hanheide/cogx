@@ -16,7 +16,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import binder.abstr.BeliefWriter;
 
-public class MultimodalEstimation_fake extends BeliefWriter {
+public class MultiModalEstimation_fake extends BeliefWriter {
  
 	@Override
 	public void start() {

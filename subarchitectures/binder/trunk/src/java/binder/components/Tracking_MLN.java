@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,16 +16,15 @@ import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.history.CASTBeliefHistory;
-import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
+import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import binder.ml.MLException;
 import binder.utils.MLNGenerator;
-import cast.AlreadyExistsOnWMException;
-import cast.DoesNotExistOnWMException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -58,11 +56,11 @@ import cast.core.CASTData;
  * - actually build the union content OK
  * - change the belief history to have only cast values OK
  * - testing, defensive programming, check null values and pre/post conditions
- * - when constructing a new belief, propagate the pointers correctly
+ * - when constructing a new belief, propagate the pointers correctly OK
  * - have proper logging functionality
- * - implement the same kind of functionality for tracking
+ * - implement the same kind of functionality for tracking 
  * - send examples of test cases to Sergio OK
- * - do the test with percepts instead of unions as inputs
+ * - do the test with percepts instead of unions as inputs OK
  * 
  * @author plison
  *
@@ -70,14 +68,14 @@ import cast.core.CASTData;
 public class Tracking_MLN extends MarkovLogicComponent {
  
 	
-	String MLNFile = markovlogicDir + "grouping.mln";
+	String MLNFile = markovlogicDir + "tracking.mln";
 	
 	String resultsFile = markovlogicDir + "unions.results";
 	
-	// lowest probability threshold for the existence probability of a percept union
+	// lowest probability threshold for the existence probability of a mmbelief union
 	public float lowestProbThreshold = 0.08f;
 	
-	// maximum number of alternatives to consider for perceptual grouping.  If more are available, take the highest-probability ones
+	// maximum number of alternatives to consider for mmbeliefual grouping.  If more are available, take the highest-probability ones
 	public int maxAlternatives = 2;
 	
 	// minimum difference in probability in order to trigger a working memory update on an existing union
@@ -85,22 +83,22 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	
 	
 	/**
-	 * Add a change filter on the insertion of new percept beliefs on the binder working memory
+	 * Add a change filter on the insertion of new mmbelief beliefs on the binder working memory
 	 */
 	@Override
 	public void start() {
 			
 		// Insertion
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
 						try {
-							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);	
+							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);	
 							
-							log("received a new percept: " + beliefData.getID());
-							performPerceptualGrouping (beliefData.getData(), _wmc.address);
-							log("perceptual grouping operation on percept " + beliefData.getID() + " now finished");
+							log("received a new mmbelief: " + beliefData.getID());
+							performTracking (beliefData.getData(), _wmc.address);
+							log("mmbeliefual grouping operation on mmbelief " + beliefData.getID() + " now finished");
 						}	
 			
 						 catch (Exception e) {
@@ -112,11 +110,11 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		
 		// Deletion
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
 						try {
-							deleteAllMultiModalBeliefAttachedToUnion(_wmc.address);
+							deleteAllStableBeliefAttachedToUnion(_wmc.address);
 						}	
 			
 						 catch (Exception e) {
@@ -128,17 +126,17 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		
 		// Update
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
 					
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
 						try {
-							deleteAllMultiModalBeliefAttachedToUnion(_wmc.address);
-							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);	
+							deleteAllStableBeliefAttachedToUnion(_wmc.address);
+							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);	
 							
-							log("received a new percept: " + beliefData.getID());
-							performPerceptualGrouping (beliefData.getData(), _wmc.address);
-							log("perceptual grouping operation on percept " + beliefData.getID() + " now finished");
+							log("received a new mmbelief: " + beliefData.getID());
+							performTracking (beliefData.getData(), _wmc.address);
+							log("mmbeliefual grouping operation on mmbelief " + beliefData.getID() + " now finished");
 						}	
 			
 						 catch (Exception e) {
@@ -152,19 +150,19 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	
 	
 	/**
-	 * Perform the perceptual grouping operation for the given belief, and subsequently update
-	 * the working memory with new percept unions (and possibly also with updates on existing ones)
+	 * Perform the tracking operation for the given belief, and subsequently update
+	 * the working memory with new temporal unions (and possibly also with updates on existing ones)
 	 * 
-	 * @param percept the new percept which was inserted
+	 * @param mmbelief the new mmbelief which was inserted
 	 */
-	public void performPerceptualGrouping(PerceptBelief percept, WorkingMemoryAddress perceptWMAddress) throws BeliefException {
+	public void performTracking(MultiModalBelief mmbelief, WorkingMemoryAddress mmbeliefWMAddress) throws BeliefException {
 	
-		log("now starting perceptual grouping...");
+		log("now starting mmbeliefual grouping...");
 
 		// extract the unions already existing in the binder WM
-		HashMap<String, PerceptUnionBelief> existingUnions = extractExistingUnions();
+		HashMap<String, Belief> existingUnions = extractExistingUnions();
 		
-		HashMap<String, PerceptUnionBelief> relevantUnions = selectRelevantUnions(existingUnions, percept);
+		HashMap<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, mmbelief);
 		
 		if (relevantUnions.size() > 0) {
 		// Create identifiers for each possible new union		
@@ -180,7 +178,7 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		
 		// Write the markov logic network to a file
 		try {
-			(new MLNGenerator()).writeMLNFile(percept, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
+			(new MLNGenerator()).writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
 		} catch (MLException e1) {
 			e1.printStackTrace();
 		}
@@ -193,11 +191,11 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults, maxAlternatives);
 		
 		// create the new unions given the inference results
-		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, perceptWMAddress, relevantUnions,
+		Vector<Belief> newUnions = createNewUnions(mmbelief, mmbeliefWMAddress, relevantUnions,
 				unionsMapping, newSingleUnionId, filteredInferenceResults);
 
 		// and add them to the working memory
-		for (PerceptUnionBelief newUnion : newUnions) {
+		for (Belief newUnion : newUnions) {
 			if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
 				insertBeliefInWM(newUnion);
 				log("inserting belief " + newUnion.id + " on WM");
@@ -209,10 +207,10 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		}
 
 		// modify the existence probabilities of the existing unions
-		List<PerceptUnionBelief> unionsToUpdate = getExistingUnionsToUpdate(percept, relevantUnions, unionsMapping, filteredInferenceResults);
+		List<Belief> unionsToUpdate = getExistingUnionsToUpdate(mmbelief, relevantUnions, unionsMapping, filteredInferenceResults);
 		
 		// and update them on the working memory
-		for (PerceptUnionBelief unionToUpdate : unionsToUpdate) {
+		for (Belief unionToUpdate : unionsToUpdate) {
 			if (DistributionUtils.getExistenceProbability(unionToUpdate) > lowestProbThreshold)  {
 				log("updating belief " + unionToUpdate.id + " on WM");
 				updateBeliefOnWM(unionToUpdate);
@@ -229,7 +227,17 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		}
 		}
 		else {
-			log("no relevant union to group with percept " + percept.id + " has been found");
+			try {
+			log("no relevant union to group with mmbelief " + mmbelief.id + " has been found");
+			TemporalUnionBelief union = TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, newDataID());
+			if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
+				insertBeliefInWM(union);
+				log("inserting belief " + union.id + " on WM");
+			}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -271,25 +279,25 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	
 	
 	/**
-	 * Create a set of new percept union beliefs from the inference results, associated with the 
-	 * original percept
-	 * @param percept
+	 * Create a set of new mmbelief union beliefs from the inference results, associated with the 
+	 * original mmbelief
+	 * @param mmbelief
 	 * @param linkToExistingUnions
 	 * @param inferenceResults
 	 * @return
 	 */
-	private Vector<PerceptUnionBelief> createNewUnions(
-			PerceptBelief percept,
-			WorkingMemoryAddress perceptWMAddress,
-			HashMap<String,PerceptUnionBelief> existingUnions,
+	private Vector<Belief> createNewUnions(
+			MultiModalBelief mmbelief,
+			WorkingMemoryAddress mmbeliefWMAddress,
+			HashMap<String,Belief> existingUnions,
 			HashMap<String,String> unionsMapping,
 			String newSingleUnionId,
 			HashMap<String,Float> inferenceResults) throws BeliefException {
 
-		// extract the existence probability of the percept
-		float perceptExistProb = DistributionUtils.getExistenceProbability(percept);
+		// extract the existence probability of the mmbelief
+		float mmbeliefExistProb = DistributionUtils.getExistenceProbability(mmbelief);
 
-		Vector<PerceptUnionBelief> newUnions = new Vector<PerceptUnionBelief>();
+		Vector<Belief> newUnions = new Vector<Belief>();
 		for (String id : unionsMapping.keySet()) {
 			
 			if (!inferenceResults.containsKey(id)) {
@@ -300,60 +308,60 @@ public class Tracking_MLN extends MarkovLogicComponent {
 				throw new BeliefException("ERROR, existing union id " + unionsMapping.get(id) + " is not in existingUnions");
 			}
 			
-			float prob = perceptExistProb * inferenceResults.get(id);
-			log("computed probability for new percept union " + id + ": " + prob);
+			float prob = mmbeliefExistProb * inferenceResults.get(id);
+			log("computed probability for new mmbelief union " + id + ": " + prob);
 			
-			PerceptUnionBelief existingUnion = existingUnions.get(unionsMapping.get(id)); 
-			try {
+			Belief existingUnion = existingUnions.get(unionsMapping.get(id)); 
+		//	try {
 			List<WorkingMemoryAddress> addresses = new LinkedList<WorkingMemoryAddress>();
-			addresses.add(perceptWMAddress);
+			addresses.add(mmbeliefWMAddress);
 			addresses.add(new WorkingMemoryAddress(existingUnion.id, BindingWorkingMemory.BINDER_SA));
-			PerceptUnionBelief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, addresses, existingUnion, prob, id);
+			TemporalUnionBelief newUnion = TemporalUnionBuilder.createNewDoubleUnionBelief(mmbelief, addresses, existingUnion, prob, id);
 			newUnions.add(newUnion);
-			}
-			catch (BeliefException e) {
+		//	}
+		/**	catch (BeliefException e) {
 				e.printStackTrace();
-			}
+			} */
 		} 
 		
 		if (!inferenceResults.containsKey(newSingleUnionId)) {
 			throw new BeliefException("ERROR, id " + newSingleUnionId + " is not in inferenceResults");
 		}
-		PerceptUnionBelief newSingleUnion = 
-			PerceptUnionBuilder.createNewSingleUnionBelief(percept, perceptWMAddress, inferenceResults.get(newSingleUnionId), newSingleUnionId);
+		TemporalUnionBelief newSingleUnion = 
+			TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, inferenceResults.get(newSingleUnionId), newSingleUnionId);
 		
 		newUnions.add(newSingleUnion);
 		
 		return newUnions;
 	}
-	 
+	  
 	 
 	/**
 	 * Modify the existence probability of existing unions, based on the inference results, 
-	 * the newly inserted percept, the set of existing unions, and the mapping between the new 
+	 * the newly inserted mmbelief, the set of existing unions, and the mapping between the new 
 	 * and the already existing unions
 	 * 
-	 * @param percept the percept
+	 * @param mmbelief the mmbelief
 	 * @param existingUnions the set of existing unions
 	 * @param linkToExistingUnions mapping from new unions to existing unions they include
 	 * @param inferenceResults the inference results
 	 */
-	private List<PerceptUnionBelief> getExistingUnionsToUpdate (
-			PerceptBelief percept, 
-			HashMap<String,PerceptUnionBelief> existingUnions, 
+	private List<Belief> getExistingUnionsToUpdate (
+			MultiModalBelief mmbelief, 
+			HashMap<String,Belief> existingUnions, 
 			HashMap<String,String> linkToExistingUnions,
 			HashMap<String,Float> inferenceResults) {
 		
-		List<PerceptUnionBelief> unionsToUpdate = new LinkedList<PerceptUnionBelief>();
+		List<Belief> unionsToUpdate = new LinkedList<Belief>();
 		
-		// extract the existence probability of the percept
-		float perceptExistProb = DistributionUtils.getExistenceProbability(percept);
+		// extract the existence probability of the mmbelief
+		float mmbeliefExistProb = DistributionUtils.getExistenceProbability(mmbelief);
 		
 		for (String newUnionId: linkToExistingUnions.keySet()) {
-			PerceptUnionBelief existingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
+			Belief existingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
 			float unionCurrentExistProb = DistributionUtils.getExistenceProbability(existingUnion);
-			float unionNewExistProb = (unionCurrentExistProb * (1-perceptExistProb)) + 
-				(perceptExistProb * (1 - inferenceResults.get(newUnionId)) * unionCurrentExistProb);
+			float unionNewExistProb = (unionCurrentExistProb * (1-mmbeliefExistProb)) + 
+				(mmbeliefExistProb * (1 - inferenceResults.get(newUnionId)) * unionCurrentExistProb);
 			log("new prob for " +  linkToExistingUnions.get(newUnionId) + ": " + unionNewExistProb);
 			
 			try {
@@ -380,7 +388,7 @@ public class Tracking_MLN extends MarkovLogicComponent {
 			throw new BeliefException ("ERROR: history not specified as cast pointer");
 		}
 		else if (((CASTBeliefHistory)b.hist).ancestors == null) {
-			throw new BeliefException ("ERROR: percept history is null");
+			throw new BeliefException ("ERROR: mmbelief history is null");
 		}
 	
 		for (WorkingMemoryAddress ancestorAddress : ((CASTBeliefHistory)b.hist).ancestors) {
@@ -400,26 +408,26 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	}
 	
 	
-	private HashMap<String,PerceptUnionBelief> selectRelevantUnions (HashMap<String,PerceptUnionBelief> existingUnions, 
-			PerceptBelief percept) throws BeliefException {
+	private HashMap<String,Belief> selectRelevantUnions (HashMap<String,Belief> existingUnions, 
+			MultiModalBelief mmbelief) throws BeliefException {
 		
-		HashMap<String,PerceptUnionBelief> relevantUnions = new HashMap<String,PerceptUnionBelief>();
+		HashMap<String,Belief> relevantUnions = new HashMap<String,Belief>();
 	
-		if (((CASTBeliefHistory)percept.hist).ancestors.size() == 0) {
-			throw new BeliefException ("ERROR: percept history contains 0 element");
+		if (((CASTBeliefHistory)mmbelief.hist).ancestors.size() == 0) {
+			throw new BeliefException ("ERROR: mmbelief history contains 0 element");
 		}
-		else if (((CASTBeliefHistory)percept.hist).ancestors.size() > 1) {
-			throw new BeliefException ("ERROR: percept history contains more than 1 element");
+		else if (((CASTBeliefHistory)mmbelief.hist).ancestors.size() > 1) {
+			throw new BeliefException ("ERROR: mmbelief history contains more than 1 element");
 		}
 		
-		String perceptOrigin = getOriginSubarchitectures(percept).get(0);
+		String mmbeliefOrigin = getOriginSubarchitectures(mmbelief).get(0);
 		
 		for (String existingUnionId : existingUnions.keySet()) {
 			
-			PerceptUnionBelief existingUnion = existingUnions.get(existingUnionId);
+			Belief existingUnion = existingUnions.get(existingUnionId);
 			List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
 			
-			if (!existinUnionOrigins.contains(perceptOrigin)) {
+			if (!existinUnionOrigins.contains(mmbeliefOrigin)) {
 				relevantUnions.put(existingUnionId, existingUnion);
 			}
 			
@@ -434,14 +442,14 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	 * 
 	 * @return the set of existing unions (as a mapping from identifier to objects)
 	 */
-	private HashMap<String, PerceptUnionBelief> extractExistingUnions() {
+	private HashMap<String, Belief> extractExistingUnions() {
 
-		HashMap<String, PerceptUnionBelief> existingunions = new HashMap<String, PerceptUnionBelief>();
+		HashMap<String, Belief> existingunions = new HashMap<String, Belief>();
 
 		try {
-			CASTData<PerceptUnionBelief>[] unions;
+			CASTData<TemporalUnionBelief>[] unions;
 
-			unions = getWorkingMemoryEntries(BindingWorkingMemory.BINDER_SA, PerceptUnionBelief.class);
+			unions = getWorkingMemoryEntries(BindingWorkingMemory.BINDER_SA, TemporalUnionBelief.class);
 
 			for (int i = (unions.length - 1) ; i >= 0 ; i--) {
 				existingunions.put(unions[i].getData().id, unions[i].getData());
@@ -458,7 +466,7 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	 
 	
 	
-	private void deleteAllMultiModalBeliefAttachedToUnion (WorkingMemoryAddress unionAddress) {
+	private void deleteAllStableBeliefAttachedToUnion (WorkingMemoryAddress unionAddress) {
 		
 		try {
 			CASTData<MultiModalBelief>[] mmBeliefs;

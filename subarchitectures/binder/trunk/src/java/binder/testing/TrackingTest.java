@@ -15,6 +15,7 @@ import cast.core.CASTData;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
@@ -27,7 +28,7 @@ import beliefmodels.builders.PerceptBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
 
 
-public class PerceptualGroupingTest extends AbstractBinderTest {
+public class TrackingTest extends AbstractBinderTest {
 
 	String name = "step 1 (perceptual grouping) after percept construction and insertion";
 	String description = "construct one percept with all necessary properties " +
@@ -53,7 +54,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 	@Override
 	public void start() {
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PerceptUnionBelief.class,
+				ChangeFilterFactory.createLocalTypeFilter(TemporalUnionBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						checkIfSuccessful(_wmc);
@@ -68,9 +69,9 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
    
 	private void checkIfSuccessful(WorkingMemoryChange _wmc) {
 		try { 
-			CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address,
-					PerceptUnionBelief.class);
-			PerceptUnionBelief newBelief = beliefData.getData();	
+			CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address,
+					TemporalUnionBelief.class);
+			TemporalUnionBelief newBelief = beliefData.getData();	
 			nbUnionsOnWM++;
 			log("union inserted on WM: " + newBelief.id);
 			log("existence probability of union " + newBelief.id + ": " + ((DistributionWithExistDep)newBelief.content).existProb);
@@ -79,7 +80,7 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 				isTestSuccessful = true;
 				isTestFinished = true;
 			}
-			log("Percept Union correctly received!");
+			log("Temporal Union correctly received!");
 			
 		}
 		 catch (DoesNotExistOnWMException e) {
@@ -96,11 +97,11 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 	public void startTest() {
 
 		
+
 		try {
 			
 			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
 	
-			// First union
 			CondIndependentDistribs cdistrib_b1 = BeliefContentBuilder.createNewCondIndependentDistribs();
 			
 			List<FeatureValueProbPair> shapePairs_b1 = new LinkedList<FeatureValueProbPair>();
@@ -115,58 +116,33 @@ public class PerceptualGroupingTest extends AbstractBinderTest {
 			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b1, hist);
 
 			insertBeliefInWM(b1);
-			
-			
-			CondIndependentDistribs cdistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
-			
-			List<FeatureValueProbPair> shapePairs_b2 = new LinkedList<FeatureValueProbPair>();
-			shapePairs_b2.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.85f));
-			
-			BasicProbDistribution shapeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b2);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b2, shapeDistrib_b2);
-			
-			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cdistrib_b2);
-			
-			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist);
-			
-			insertBeliefInWM(b2);
-			
-						
-			
-			CondIndependentDistribs cdistrib_b3 = BeliefContentBuilder.createNewCondIndependentDistribs();
-			
-			ProbDistribution content_b3 = BeliefContentBuilder.createNewDistributionWithExistDep(0.005f, cdistrib_b3);
-
-			PerceptBelief b3 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b3, hist);
-
-			insertBeliefInWM(b3);
-			
-			
+				
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 		
+		sleepComponent(5000);
+		
 		try {
 			
-			CondIndependentDistribs features = BeliefContentBuilder.createNewCondIndependentDistribs();
-					
-			List<FeatureValueProbPair> labelPairs = new LinkedList<FeatureValueProbPair>();
-			labelPairs.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Mug"), 0.9f));
-			labelPairs.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Ball"), 0.05f));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
 			
-			BasicProbDistribution labelDistrib = BeliefContentBuilder.createNewFeatureDistribution("label", labelPairs);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(features, labelDistrib);
+			CondIndependentDistribs cdistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
+			
+			List<FeatureValueProbPair> shapePairs_b2 = new LinkedList<FeatureValueProbPair>();
+			shapePairs_b2.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Cyl"), 0.71f));
+			shapePairs_b2.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.16f));
+			
+			BasicProbDistribution shapeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b2);		
+			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b2, shapeDistrib_b2);
+			
+			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.92f, cdistrib_b2);
+			
+			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist);
 
-			ProbDistribution beliefcontent = BeliefContentBuilder.createNewDistributionWithExistDep(0.85f, features);
-
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ssfsfasd","vision"));
-
-			String id = newDataID();
-
-			PerceptBelief belief = PerceptBuilder.createNewPerceptBelief(id, "test", "here", this.getCASTTime(), beliefcontent, hist);
-
-			insertBeliefInWM(belief);
+			insertBeliefInWM(b2);
+			
 
 		}
  
