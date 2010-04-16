@@ -100,8 +100,7 @@ public class PerceptUnionBuilderTest {
 		BeliefContentBuilder.putNewCondIndependentDistrib(cDists, featDist);
 		content = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cDists);
 		// Add another feature distribution (just the same but with a different name
-		BasicProbDistribution featDist2 = featDist;
-		featDist2.key = "feature2";
+		BasicProbDistribution featDist2 = BeliefContentBuilder.createNewFeatureDistribution("feature2", fValPrPairs);
 		BeliefContentBuilder.putNewFeatureInBeliefContent(content, featDist2);
 		// Create the percept belief
 		wma = new WorkingMemoryAddress(id,"vision");
@@ -380,23 +379,81 @@ public class PerceptUnionBuilderTest {
 	} // end test
 	 
 	/**
-	 * Creating a union as the merger of a percept belief and a union succeeds
+	 * Creating a union as the merger of a percept belief and a union fails if the union and the percept model 
+	 * content as conditionally independent distributions over identical features. 
 	 */
 	
 	@Test
-	public void NewPerceptUnionBeliefFromPerceptBeliefAndUnionSucceeds () { 
+	public void NewPerceptUnionBeliefFromPerceptBeliefWithSameFeaturesAsUnionFails () { 
 		try {
 			// Set up the union (based on pBelief), and another percept belief (pBelief2) identical to pBelief
 			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,0.7f,"pu1");
 			PerceptBelief pBelief2 = pBelief;
 			pBelief2.id = "id2";
+			// Construct a list of working memory address, one for the percept and one for the union
+			ArrayList<WorkingMemoryAddress> wmaList = new ArrayList<WorkingMemoryAddress>();
+			wmaList.add(wma); // assume this is the wma for the percept
+			wmaList.add(wma); // assume this is the wma for the union
 			// Create a new union on the basis of the merger of the union and the "new" percept belief
-			PerceptUnionBuilder.createNewDoubleUnionBelief(pBelief2, wma, puBelief, 0.5f, "pu2");
+			PerceptUnionBuilder.createNewDoubleUnionBelief(pBelief2, wmaList, puBelief, 0.5f, "pu2");
+			// We shouldn't get to this point
+			fail("Creating a PerceptUnionBelief from a percept belief and a union belief with identical features "+
+					"should have failed");
 		} catch (BeliefException be) {
-			fail("Creating a PerceptUnionBelief from a percept belief and a union belief should have succeeded: "
-					+be.getMessage());
+			assertEquals("Error in adding a new conditionally independent distribution: "+
+					"Feature key [feature2] already present in set of conditionally independent distributions" ,
+					be.getMessage());
 		} // end try..catch
 	} // end test
+	
+	/**
+	 * Creating a union as the merger of a percept belief and an already existing union succeeds if the union and the 
+	 * percept model content "from different modalities" i.e. with conditionally independent distributions over strictly
+	 * different features. 
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromPerceptBeliefWithDifferentFeaturesSucceeds () { 
+		try {
+			// Set up the union (based on pBelief)
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,0.7f,"pu1");	
+			// Set up another percept belief (pBelief2) different to pBelief
+			// Create a basic probability distribution over feature values
+			FeatureValue fVal1 = FeatureValueBuilder.createNewStringValue("val11");
+			FeatureValue fVal2 = FeatureValueBuilder.createNewStringValue("val12");
+			FeatureValueProbPair fVal1Pr = new FeatureValueProbPair (fVal1, 0.3f);
+			FeatureValueProbPair fVal2Pr = new FeatureValueProbPair (fVal2, 0.7f);
+			ArrayList<FeatureValueProbPair> fValPrPairs = new ArrayList<FeatureValueProbPair>();
+			fValPrPairs.add(fVal1Pr);
+			fValPrPairs.add(fVal2Pr);
+			featDist = BeliefContentBuilder.createNewFeatureDistribution("hfeature", fValPrPairs);
+			// Add the feature distribution as a conditionally independent distribution, add to existential dist
+			CondIndependentDistribs cDists = BeliefContentBuilder.createNewCondIndependentDistribs();
+			BeliefContentBuilder.putNewCondIndependentDistrib(cDists, featDist);
+			DistributionWithExistDep hapticContent = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cDists);
+			// Add another feature distribution (just the same but with a different name
+			BasicProbDistribution featDist2 = BeliefContentBuilder.createNewFeatureDistribution("hfeature2", fValPrPairs);
+			BeliefContentBuilder.putNewFeatureInBeliefContent(hapticContent, featDist2);
+			// Create the percept belief
+			curTime = new CASTTime();
+			String hapticId = "id3";
+			String hapticType="haptic";
+			curPlace="here";
+			WorkingMemoryAddress wmaH = new WorkingMemoryAddress(hapticId,"haptic");
+			CASTBeliefHistory hapticHist = PerceptBuilder.createNewPerceptHistory(wmaH);
+			PerceptBelief hapticPBelief = PerceptBuilder.createNewPerceptBelief(hapticId, hapticType, curPlace, 
+					curTime, hapticContent, hapticHist);
+			// Construct a list of working memory address, one for the percept and one for the union
+			ArrayList<WorkingMemoryAddress> wmaList = new ArrayList<WorkingMemoryAddress>();
+			wmaList.add(wma); // assume this is the wma for the percept
+			wmaList.add(wmaH); // assume this is the wma for the union
+			PerceptUnionBuilder.createNewDoubleUnionBelief(hapticPBelief, wmaList, puBelief, 0.5f, "pu2");
+		} catch (BeliefException be) {
+			fail("Creating a new union from a percept and a union with strictly different features should have succeeded: "
+					+be.getMessage());
+		} // end try..catch		
+	} // end test
+	
 	
 	
 	
