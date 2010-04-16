@@ -38,7 +38,8 @@ public:
 	/** @brief rotate pose by using euler angles */
 	void rotate(float x, float y, float z);
 	/** @brief rotate pose by using rotation vector */
-	void rotate(vec3 rot);
+	void rotateAxis(vec3 rot);
+	void rotateEuler(vec3 rot);
 	
 	/** @brief move position by [x,y,z] */
 	void translate(float x, float y, float z);

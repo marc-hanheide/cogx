@@ -46,7 +46,7 @@ public:
 	void fromMatrix(mat4 m);
 	mat4 getMatrix4();
 	mat3 getMatrix3();
-	void getAxisAngle(vec3 *axis, double *angle);
+	void getAxisAngle(vec3 &axis, double &angle);
 
 };
 

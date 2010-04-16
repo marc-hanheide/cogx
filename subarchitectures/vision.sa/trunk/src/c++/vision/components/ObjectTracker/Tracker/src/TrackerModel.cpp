@@ -81,7 +81,7 @@ TrackerModel& TrackerModel::operator=(const Model& m){
 	m_passlist.clear();	
 	m_facepixellist.assign(m_facelist.size(), 0);
 	
-// 	computeEdges();
+	computeEdges();
 	Update();
 	
 	return (*this);

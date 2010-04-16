@@ -27,8 +27,8 @@ public:
 	float z;			///< scaling (zoom)
 	float zp;			///< scaling speed (zoom)
 	
-	float w;			///< weighted likelihood (sum of w of distribution = 1)
-	float c;			///< confidence level (matching pixels divided by overall pixels)
+	double w;			///< weighted likelihood (sum of w of distribution = 1)
+	double c;			///< confidence level (matching pixels divided by overall pixels)
 
 	Particle(float val=0.0);
 	Particle(const Particle& p2);
@@ -36,6 +36,7 @@ public:
 	
 	Particle& operator=(const Particle& p2);
 	Particle& operator=(const Pose& p);
+	Particle& operator*(const float& f);
 	
 	/**	@brief Comparing weighted likelihood of two particles	*/
 	inline bool operator<(const Particle& p2) const { return w < p2.w; }

@@ -79,6 +79,7 @@ protected:
 	int  m_showmodel;
 	bool m_draw_edges;
 	bool m_tracker_initialized;
+	bool m_drawimage;
 	
 
 	// Functions (virtual)
@@ -188,6 +189,12 @@ public:
 	void setModelModeFlag(int val){ m_showmodel = val; }
 	
 	// Functions for analysing PDF
+	virtual void evaluatePDF( int id,
+													float x_min, float y_min,
+													float x_max, float y_max,
+													int res,
+													const char* meshfile, const char* xfile){}
+													
 	virtual std::vector<float> getPDFxy(	Particle pose,
 																				float x_min, float y_min,
 																				float x_max, float y_max,

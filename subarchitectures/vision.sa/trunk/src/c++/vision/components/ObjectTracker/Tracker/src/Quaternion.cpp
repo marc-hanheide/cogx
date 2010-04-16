@@ -186,13 +186,13 @@ mat3 Quaternion::getMatrix3(){
 
 
 // Convert to Axis/Angles
-void Quaternion::getAxisAngle(vec3 *axis, double *angle){
+void Quaternion::getAxisAngle(vec3 &axis, double &angle){
 	float scale = sqrt(x * x + y * y + z * z);
-	axis->x = x / scale;
-	axis->y = y / scale;
-	axis->z = z / scale;
-	*angle = acos(w) * 2.0f;
-	if(isnan(*angle))
-		*angle = 0.0;
+	axis.x = x / scale;
+	axis.y = y / scale;
+	axis.z = z / scale;
+	angle = acos(w) * 2.0f;
+	if(isnan(angle))
+		angle = 0.0;
 }
 

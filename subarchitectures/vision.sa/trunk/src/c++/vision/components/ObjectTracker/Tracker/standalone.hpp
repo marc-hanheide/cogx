@@ -70,6 +70,9 @@ bool control(Tracker* tracker, SDL_Event &event){
 				case SDLK_5:
 					tracker->setColorShader();
 					break;
+				case SDLK_a:
+					tracker->evaluatePDF(0, -0.05, -0.05, 0.05, 0.05, 256, "jasmin1.pdf", "jasmin1.xpdf");
+					break;
 				case SDLK_e:
 					tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
 					break;

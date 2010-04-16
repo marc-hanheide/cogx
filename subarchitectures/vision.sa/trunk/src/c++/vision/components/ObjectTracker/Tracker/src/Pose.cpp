@@ -46,9 +46,21 @@ void Pose::rotate(float x, float y, float z){
 	q.normalise();
 }
 
-void Pose::rotate(vec3 rot){
+void Pose::rotateAxis(vec3 rot){
+// 	Quaternion q2;
+// 	q2.fromEuler(rot.x,rot.y,rot.z);
+// 	q = q2 * q;
+// 	q.normalise();
 	Quaternion q2;
-	
+	float a = rot.length();
+	rot.normalize();
+	q2.fromAxis(rot,a);
+	q = q2 * q;
+	q.normalise(); 
+}
+
+void Pose::rotateEuler(vec3 rot){
+	Quaternion q2;
 	q2.fromEuler(rot.x,rot.y,rot.z);
 	q = q2 * q;
 	q.normalise();
