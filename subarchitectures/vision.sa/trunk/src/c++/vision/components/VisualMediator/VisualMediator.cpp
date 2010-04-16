@@ -173,8 +173,9 @@ void VisualMediator::runComponent()
 		log("An add proxy instruction");
 		VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
 
-		if(data.status == STABLE)
+		if(data.status == OBJECT)
 		{
+		  data.status = PROXY;
 		  try
 		  {
 			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(data.addr);
@@ -240,7 +241,7 @@ void VisualMediator::runComponent()
 		log("An update proxy instruction"); 
 		VisualObjectData &data = VisualObjectMap[proxyToUpdate.front()];
 	
-		if(data.status == STABLE)
+		if(data.status == PROXY)
 		{
 		  try
 		  {
@@ -291,7 +292,12 @@ void VisualMediator::runComponent()
 			log("VisualObject ID: %s was removed before it could be processed", data.addr.id.c_str());
 		  }
 		}
-		
+		else if(data.status == OBJECT)
+		{
+		  proxyToUpdate.push(data.addr.id);
+		  queuesNotEmpty->post();
+		  log("No updating, waiting for the proxy to be created");
+		}
 		proxyToUpdate.pop();
 	  }
 	  else if(!proxyToDelete.empty())
@@ -299,14 +305,15 @@ void VisualMediator::runComponent()
 		log("A delete proxy instruction");
 		VisualObjectData &obj = VisualObjectMap[proxyToDelete.front()];
 
-		  if(obj.status == DELETED)
+		  if(obj.status == PROXY)
 		  {
+			obj.status == DELETED;
 			try
 			{  
 			  deleteEntityInWM(obj.proxyId);
 			  
 			  log("A proxy deleted ID: %s", obj.proxyId.c_str());
-			  VisualObjectMap.erase(proxyToDelete.front());
+//			  VisualObjectMap.erase(proxyToDelete.front());
 			}
 			catch (DoesNotExistOnWMException e)
 			{
@@ -339,7 +346,7 @@ void VisualMediator::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
   data.addr = _wmc.address;
   data.addedTime = obj->time;
-  data.status = STABLE;
+  data.status = OBJECT;
 
   VisualObjectMap.insert(make_pair(data.addr.id, data));
   proxyToAdd.push(data.addr.id);
@@ -357,7 +364,7 @@ void VisualMediator::updatedVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
   CASTTime time=getCASTTime();
 
-  data.status= STABLE;
+//  data.status= STABLE;
   data.lastUpdateTime = time;
   proxyToUpdate.push(data.addr.id);
   debug("A VisualObject ID %s ",data.addr.id.c_str());
@@ -371,12 +378,18 @@ void VisualMediator::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
   VisualObjectData &obj = VisualObjectMap[_wmc.address.id];
   log("Detected deletion if the VisualObject ID %s ", obj.addr.id.c_str());
   
-  CASTTime time=getCASTTime();
-  obj.status= DELETED;
-  obj.deleteTime = time;
-  proxyToDelete.push(obj.addr.id);
-
-  queuesNotEmpty->post();		 
+  if(obj.status == PROXY)
+  {
+	proxyToDelete.push(obj.addr.id);
+	queuesNotEmpty->post();
+  }
+  else
+  {
+	obj.status= DELETED;
+	CASTTime time=getCASTTime();
+	obj.deleteTime = time;
+  }
+  		 
 }
 
 
@@ -384,8 +397,16 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 {
   log("A belief was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
   
-  BeliefPtr obj =
-	getMemoryEntry<Belief>(_wmc.address);
+  BeliefPtr obj; 
+  
+  try {
+	obj = getMemoryEntry<Belief>(_wmc.address);
+  }
+  catch (DoesNotExistOnWMException e) {
+	log("WARNING: belief ID %s was removed before it could be processed", _wmc.address.id.c_str());
+	return;
+  }
+  	
 	
   debug("Got a belief from WM. ID: %s", _wmc.address.id.c_str());
   
@@ -872,7 +893,7 @@ void VisualMediator::checkDistribution4Clarification(string proxyID, IntSeq labe
 	  col = labels[i]; 
 	}
 	
-	if(labels[i] >= 9 && labels[i] <= 10 && distribution[i] > 0.35 && distribution[i] <= 0.7)
+	if(labels[i] >= 9 && labels[i] <= 10 && distribution[i] > 0.35 && distribution[i] <= 0.6)
 	{
 	  ns++; 
 	  sha = labels[i]; 
