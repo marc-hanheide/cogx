@@ -104,8 +104,6 @@ public class BeliefContentBuilder {
 	 * 
 	 * @param beliefcontent 
 	 * 			the belief content, expressed as a probability distribution with existence dependency
-	 * @param key
-	 * 			the feature label 
 	 * @param featDistrib
 	 * 			the set of alternative feature values
 	 * @throws BeliefException 
@@ -113,7 +111,7 @@ public class BeliefContentBuilder {
 	 * 			or if content distribution is not conditionally independent
 	 * @post the belief content is updated with the new feature
 	 */
-	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, String key, BasicProbDistribution featDistrib) 
+	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, BasicProbDistribution featDistrib) 
 	throws BeliefException 
 	{
 		if (beliefcontent == null) {
