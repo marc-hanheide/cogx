@@ -1,134 +1,112 @@
-// =================================================================                                                        
-// Copyright (C) 2010-2012 Pierre Lison (plison@dfki.de)                                                                
-//                                                                                                                          
-// This library is free software; you can redistribute it and/or                                                            
-// modify it under the terms of the GNU Lesser General Public License                                                       
-// as published by the Free Software Foundation; either version 2.1 of                                                      
-// the License, or (at your option) any later version.                                                                      
-//                                                                                                                          
-// This library is distributed in the hope that it will be useful, but                                                      
-// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
-// Lesser General Public License for more details.                                                                          
-//                                                                                                                          
-// You should have received a copy of the GNU Lesser General Public                                                         
-// License along with this program; if not, write to the Free Software                                                      
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
-// 02111-1307, USA.                                                                                                         
-// =================================================================                                                        
- 
- 
-/**
- *
- * Markov Logic Network for temporal tracking
- *
- * @author Pierre Lison (plison@dfki.de)
- * @version 11/04/2010
- * @started 06/04/2010
- */
-
-
 ///////////////////////////////
-// CONSTANTS 
+// CONSTANTS
 ///////////////////////////////
 
 // beliefs
-pastbelief = {P1,P2}
-currentbelief = {C}
-belief = {P1,P2,C}
+existingunion = {U0_5,U1_5}
+percept = {P}
+belief = {U0_5,U1_5,P}
 
-// possible outcomes of the tracking process
-outcome = {M1,M2,Single}
+// possible outcomes of the grouping process
+outcome = {U6_5,U5_5,U7_5}
 
 // feature values
-positionval = {Kitchen,Office1,Office2,Corridor,Unknown,None}
-
+labelval = {Ball,Mug,None,Unknown}
+shapeval = {Cyl,None,Sphe,Unknown}
 
 ///////////////////////////////
-// PREDICATES  
+// PREDICATES
 ///////////////////////////////
 
-Existence(belief)
-Position(belief,positionval)
+Label(belief,labelval)
+Shape(belief,shapeval)
 
 Outcome(outcome)
-Match(pastbelief)
-
-
-///////////////////////////////
-// PAST BELIEFS
-///////////////////////////////
-
-2.1972245773362196 Existence(P1)
--0.39304258810960718 Existence(P1) ^ Position(P1,Kitchen)
--2.0024805005437076 Existence(P1) ^ Position(P1,Office1)
--2.4079456086518722 Existence(P1) ^ Position(P1,Unknown)
-Existence(P1) => !Position(P1,Office2).
-Existence(P1) => !Position(P1,Corridor).
-Existence(P1) => !Position(P1,None).
-
-
-1.3862943611198906 Existence(P2)
--0.38566248081198462 Existence(P2) ^ Position(P2,Corridor)
--2.120263536200091 Existence(P2) ^ Position(P2,Unknown)
-Existence(P2) => !Position(P2,Kitchen).
-Existence(P2) => !Position(P2,Office1).
-Existence(P2) => !Position(P2,Office2).
-Existence(P2) => !Position(P2,None).
-
+UnifyWith(existingunion)
+Existence(belief)
 
 ///////////////////////////////
-// CURRENT BELIEF
+// EXISTING UNIONS
 ///////////////////////////////
 
+-0.6631267 Existence(U0_5)
+-1.3663812 Existence(U0_5) ^ Shape(U0_5,Cyl)
+-2.975819 Existence(U0_5) ^ Shape(U0_5,Sphe)
+-3.381284 Existence(U0_5) ^ Shape(U0_5,Unknown)
+Existence(U0_5) => !Shape(U0_5,None).
+Existence(U0_5) => !Label(U0_5,Ball).
+Existence(U0_5) => !Label(U0_5,Mug).
+Existence(U0_5) => !Label(U0_5,Unknown).
+Existence(U0_5) => Label(U0_5,None).
 
-1.7346010553881064 Existence(C)
--0.26787944515560119 Existence(C) ^ Position(C,Kitchen)
--3.158251203051766 Existence(C) ^ Position(C,Corridor)
--3.158251203051766 Existence(C) ^ Position(C,Unknown)
-Existence(C) => !Position(C,Office1).
-Existence(C) => !Position(C,Office2).
-Existence(C) => !Position(C,None).
+1.3862945 Existence(U1_5)
+-0.38566247 Existence(U1_5) ^ Shape(U1_5,Sphe)
+-2.1202636 Existence(U1_5) ^ Shape(U1_5,Unknown)
+Existence(U1_5) => !Shape(U1_5,Cyl).
+Existence(U1_5) => !Shape(U1_5,None).
+Existence(U1_5) => !Label(U1_5,Ball).
+Existence(U1_5) => !Label(U1_5,Mug).
+Existence(U1_5) => !Label(U1_5,Unknown).
+Existence(U1_5) => Label(U1_5,None).
 
+///////////////////////////////
+// NEW PERCEPT
+///////////////////////////////
 
+-1.0772594 Existence(P)
+-1.4756831 Existence(P) ^ Label(P,Mug)
+-4.366055 Existence(P) ^ Label(P,Ball)
+-4.3660545 Existence(P) ^ Label(P,Unknown)
+Existence(P) => !Label(P,None).
+Existence(P) => !Shape(P,Cyl).
+Existence(P) => !Shape(P,Sphe).
+Existence(P) => !Shape(P,Unknown).
+Existence(P) => Shape(P,None).
 
 ///////////////////////////////
 // FEATURE VALUE CONSTRAINTS
 ///////////////////////////////
 
 // rules for existence dependency
-!Existence(x) => y=None v !Position(x,y).
-!Existence(x) => Position(x,None).
+!Existence(x) => y=None v !Label(x,y).
+!Existence(x) => Label(x,None).
+!Existence(x) => y=None v !Shape(x,y).
+!Existence(x) => Shape(x,None).
 
 // mutual exclusivity and unicity constraints
-Position(x,y) ^ Position(x,z) => y=z.
-EXIST y Position(x,y).
+Label(x,y) ^ Label(x,z) => y=z.
+EXIST y Label(x,y).
+Shape(x,y) ^ Shape(x,z) => y=z.
+EXIST y Shape(x,y).
+
+
 
 ///////////////////////////////
 // CORRELATIONS
 ///////////////////////////////
 
 // general correlations
-1 Existence(x) ^ Existence(C) ^ (EXIST y Position(x,y) ^ Position(C,y)) => Match(x)
-
+1 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Mug) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Mug) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Ball) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Ball) => UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Ball) => !UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Ball) => !UnifyWith(x)
 
 // at least one correlation must hold
-Match(x) => EXIST y Position(x,y) ^ Position(C,y).
-Match(x) => Existence(x) ^ Existence(C).
-
+UnifyWith(x) => (Shape(x,Cyl) ^ Label(P,Mug)) v (Shape(P,Cyl) ^ Label(x,Mug)) v (Shape(x,Sphe) ^ Label(P,Ball)) v (Shape(P,Sphe) ^ Label(x,Ball)).
+UnifyWith(x) => Existence(x) ^ Existence(P).
 
 ///////////////////////////////
 // FINAL OUTCOME
 ///////////////////////////////
 
-
-// specification of the different outcomes
--2 Existence(C) => Outcome(Single)
-Match(P1) <=> Outcome(M1).
-Match(P2) <=> Outcome(M2).
-
-
-// mutual exclusivity and unicity
--1 Outcome(x)
+-1.5 Existence(P) => Outcome(U7_5)
+UnifyWith(U0_5) <=> Outcome(U5_5).
+UnifyWith(U1_5) <=> Outcome(U6_5).
+-1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
-Exist x Outcome(x). 
+Exist x Outcome(x).
+
