@@ -23,6 +23,7 @@
 package beliefmodels.builders;
 
 
+import java.util.List;
 import java.util.Set;
 
 import cast.cdl.CASTTime;
@@ -107,9 +108,14 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	 * Construct a new percept union belief similar to a given percept, 
 	 * except for the existence distributed which is constructed with the provided existProb parameter. 
 	 * 
-	 * @param percept The percept, which must have a discrete distribution with existence dependency
-	 * @param existProb the existence probability
-	 * @param id the identifier for the new belief
+	 * @param percept 
+	 * 			the percept, which must have a discrete distribution with existence dependency
+	 * @pram  address
+	 * 			the working memory address of the percpet
+	 * @param existProb 
+	 * 			the existence probability
+	 * @param id 
+	 * 			the identifier for the new belief
 	 * @throws BinderException 
 	 */
 	public static PerceptUnionBelief createNewSingleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address, float existProb, String id)  
@@ -148,11 +154,12 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	 * @param percept 			The percept belief
 	 * @param existingUnion 	The union belief
 	 * @param id 				The identifier for the new belief
-	 * @param address			The address of the percept belief to be added
+	 * @param addresses			The address of the percept belief and the existing union
 	 * @throws BinderException 	Thrown if content is null, or not of the correct type (DistributionWithExistDep and conditionally 
 	 * 							independent distributions. 
 	 */
-	public static PerceptUnionBelief createNewDoubleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address,
+	
+	public static PerceptUnionBelief createNewDoubleUnionBelief (PerceptBelief percept, List<WorkingMemoryAddress> addresses,
 			PerceptUnionBelief existingUnion, float existProb, String id)
 	throws BeliefException {
 
@@ -207,7 +214,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 		DistributionWithExistDep newDistrib = BeliefContentBuilder.createNewDistributionWithExistDep(existProb, newCIDistrib);
 
 		// creating and returning the union belief
-		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, newDistrib, createHistory(address));
+		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, newDistrib, createHistory(addresses));
 	}
 
 }

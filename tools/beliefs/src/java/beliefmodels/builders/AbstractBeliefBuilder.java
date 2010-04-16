@@ -22,4 +22,15 @@ public abstract class AbstractBeliefBuilder {
 		}
 	} 
 	
+	
+	public static CASTBeliefHistory createHistory(List<WorkingMemoryAddress> previousBeliefs) throws BeliefException {
+		if (previousBeliefs != null) { 
+			List<WorkingMemoryAddress> ancestors = new LinkedList<WorkingMemoryAddress>();
+			ancestors.addAll(previousBeliefs);
+			return new CASTBeliefHistory(ancestors, new LinkedList<WorkingMemoryAddress>());
+		} else { 
+			throw new BeliefException("Error when creating belief history: cannot create history for null");
+		}
+	} 
+	
 }
