@@ -170,6 +170,12 @@ public class BeliefContentBuilder {
 			throw new BeliefException("Error in updating belief content with a new feature: "+ 
 					"Content distribution is not set to be conditionally independent");
 		}
+		
+		if ( ((CondIndependentDistribs)beliefcontent.Pc).distribs.containsKey(featDistrib.key)) { 
+			throw new BeliefException("Error in updating belief content with a new feature: "+ 
+					"Feature key ["+featDistrib.key+"] already present in set of conditionally independent distributions");
+		}
+		
 		putNewCondIndependentDistrib(((CondIndependentDistribs)beliefcontent.Pc), featDistrib);
 	} // end method
 	 
