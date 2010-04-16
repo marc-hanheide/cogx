@@ -376,12 +376,51 @@ public class BeliefContentBuilderTest {
 		
 	@Test 
 	public void AddNewFeatureToConditionallyIndependentFeatureDistributionSucceeds () { 
-		// 
-		
-		
-		
+		try {
+			// Create a conditionally independent distribution for a feature and its values
+			CondIndependentDistribs cDists = BeliefContentBuilder.createNewCondIndependentDistribs();
+			// Start from the sampleBaseDistribution of a feature with its feature-values and probabilities,
+			BeliefContentBuilder.putNewCondIndependentDistrib(cDists, sampleBaseDistribution);
+			// Create existential content on the basis of these, with an existence probability
+			DistributionWithExistDep existContent = BeliefContentBuilder.createNewDistributionWithExistDep(0.5f,cDists);
+			// Create a second conditionally independent distribution, for another feature 
+			BasicProbDistribution sampleBaseDistribution2 = sampleBaseDistribution;
+			sampleBaseDistribution2.key = "feat2";		
+			// Add the new feature into the already formed content 
+			BeliefContentBuilder.putNewFeatureInBeliefContent(existContent,sampleBaseDistribution2);
+		} catch (BeliefException be) {
+			fail("Adding a new distribution into a map of conditionally independent feature distributions for a belief should have succeeded: "+
+					be.getMessage());
+		} // end try..catch
 	} // end test
 	
-
+	/**
+	 * Adding two distributions, with identical keys, to a set of conditionally independent distributions fails. 
+	 */
+	
+	@Test
+	public void AddAlreadyPresentDistributionKeyToConditionallyIndependentDistsFails () { 
+		try {
+			// Create a conditionally independent distribution for a feature and its values
+			CondIndependentDistribs cDists = BeliefContentBuilder.createNewCondIndependentDistribs();
+			// Start from the sampleBaseDistribution of a feature with its feature-values and probabilities,
+			BeliefContentBuilder.putNewCondIndependentDistrib(cDists, sampleBaseDistribution);
+			// Create existential content on the basis of these, with an existence probability
+			DistributionWithExistDep existContent = BeliefContentBuilder.createNewDistributionWithExistDep(0.5f,cDists);
+			// Create a second conditionally independent distribution, for another feature 
+			BasicProbDistribution sampleBaseDistribution2 = sampleBaseDistribution;
+			// Add the new feature into the already formed content 
+			BeliefContentBuilder.putNewFeatureInBeliefContent(existContent,sampleBaseDistribution2);
+			// We should not get to this point: we should not be able to add two dists with the same key
+			fail("Adding a distribution with an already present key in a map of conditionally independent feature distributions "
+					+"for a belief should not have succeeded");
+		} catch (BeliefException be) {
+			assertEquals("Error in updating belief content with a new feature: "+ 
+					"Feature key [feat] already present in set of conditionally independent distributions"  , 
+					be.getMessage());
+		} // end try..catch	
+	} // end test
+	
+	
 	
 } // end class 
