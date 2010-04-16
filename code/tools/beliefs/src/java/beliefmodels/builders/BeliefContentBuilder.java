@@ -97,19 +97,63 @@ public class BeliefContentBuilder {
 		return new CondIndependentDistribs(new HashMap<String, ProbDistribution>());
 	}
 	
+	/**
+	 * Get a probability distribution, specified by key, from the set of conditionally independent distributions
+	 * 
+	 * @param 	key 				The key for the distribution to be retrieved
+	 * @param 	cDists				The set of conditionally independent distributions
+	 * @returns	ProbDistribution 	The distribution to be retrieved
+	 * @throws	BeliefException 	Thrown if the set does not contain a distribution with the specified key
+	 */
+	
+	public static ProbDistribution getConditionallyIndependentDistribution (CondIndependentDistribs cDists, String key)
+	throws BeliefException
+	{ 
+		if (cDists.distribs.containsKey(key)) {
+			ProbDistribution dist = (ProbDistribution) cDists.distribs.get(key);
+			return dist;
+		} else {
+			throw new BeliefException("Error in retrieving conditionally independent distribution: "
+					+ "Key ["+key+"] unknown in set of distributions");
+		} // end if..else
+	} // end method
 	
 	
 	/**
-	 * Insert a new feature (feat label + set of alternative feature values) into a belief content
+	 * Remove a probability distribution, specified by key, from the set of conditionally independent distributions
 	 * 
-	 * @param beliefcontent 
-	 * 			the belief content, expressed as a probability distribution with existence dependency
-	 * @param featDistrib
+	 * @param 	key 				The key for the distribution to be retrieved
+	 * @param 	cDists				The set of conditionally independent distributions
+	 * @returns	ProbDistribution 	The distribution to be retrieved
+	 * @throws	BeliefException 	Thrown if the set does not contain a distribution with the specified key
+     * @post	The set of conditionally independent distributions cDists no longer contains the distribution for key
+	 */	
+	
+	public static void removeConditionallyIndependentDistribution (CondIndependentDistribs cDists, String key) 
+	throws BeliefException
+	{
+		if (cDists.distribs.containsKey(key)) {
+			cDists.distribs.remove(key);
+		} else {
+			throw new BeliefException("Error in retrieving conditionally independent distribution: "
+					+ "Key ["+key+"] unknown in set of distributions");
+		} // end if..else	
+	} // end method
+	
+	
+	/**
+	 * Insert a new feature (feat label + set of alternative feature values) into a belief content. The distribution 
+	 * featDist specifies the feature (featDistrib.key) and the <feature-value, probability>-pairs (as a list). The feature
+	 * is used as key to store the distribution in a hash map. 
+	 * 
+	 * @param 	beliefcontent 
+	 * 			the belief content, expressed as a set of conditionally independent distributions with existence dependency
+	 * @param 	featDistrib
 	 * 			the set of alternative feature values
-	 * @throws BeliefException 
-	 * 			exception thrown if distribution is a null pointer, 
+	 * @throws 	BeliefException 
+	 * 			exception thrown if either the content or the feature distribution is null, 
 	 * 			or if content distribution is not conditionally independent
-	 * @post the belief content is updated with the new feature
+	 * @post 	The belief content is updated with the new feature
 	 */
 	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, BasicProbDistribution featDistrib) 
 	throws BeliefException 
@@ -128,12 +172,13 @@ public class BeliefContentBuilder {
 		}
 		putNewCondIndependentDistrib(((CondIndependentDistribs)beliefcontent.Pc), featDistrib);
 	} // end method
-	
+	 
 	
 	
 	/**
 	 * Insert a new distribution to a set of conditionally independent distributions
-	 * NB: the key/identifier to the distribution must be set in newDistrib
+	 * NB: the key/identifier to the distribution must be set in the provided newDistrib. This key identifies the 
+	 * feature over whose values the distribution is defined. The key is used to store the distribution in a hash map. 
 	 * 
 	 * @param distribs 
 	 * 			the existing set of conditionally independent distributions
@@ -146,15 +191,22 @@ public class BeliefContentBuilder {
 	public static void putNewCondIndependentDistrib(CondIndependentDistribs distribs, BasicProbDistribution newDistrib) 
 	throws BeliefException 
 	{
-		if (distribs == null || newDistrib == null) {
-			throw new BeliefException("error, distribution is a null pointer");
+		if (distribs == null) {
+			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
+					"Conditional distributions map is null");
 		}
+		else if (newDistrib == null) { 
+			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
+					"Provided probability distribution is null");	
+		} 
 		else if (distribs.distribs == null) {
-			throw new BeliefException ("error, distribution in distribs is a null pointer");
+			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
+					"Conditional distributions map has not been properly initialized");
 		}
 		
 		else if (newDistrib.key == null || newDistrib.key == "") {
-			throw new BeliefException ("error, no key specified in the distribution");
+			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
+					"Null or empty key specified in the provided probability distribution");
 		}
 		
 		distribs.distribs.put(newDistrib.key, newDistrib);
