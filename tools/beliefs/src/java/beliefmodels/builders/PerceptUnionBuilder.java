@@ -142,40 +142,44 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 
 
 	/**
-	 * Construct a new percept union belief from the merge of a percept and a union
+	 * Construct a new percept union belief from the merge of a percept and a union. These beliefs must have content, 
+	 * of type DistributionWithExistDep. Each existence distribution must have a set of conditionally independent distributions. 
 	 * 
-	 * @param percept the percept
-	 * @param existingUnion the union
-	 * @param id the identifier for the new belief
-	 * @throws BinderException 
+	 * @param percept 			The percept belief
+	 * @param existingUnion 	The union belief
+	 * @param id 				The identifier for the new belief
+	 * @param address			The address of the percept belief to be added
+	 * @throws BinderException 	Thrown if content is null, or not of the correct type (DistributionWithExistDep and conditionally 
+	 * 							independent distributions. 
 	 */
 	public static PerceptUnionBelief createNewDoubleUnionBelief (PerceptBelief percept, WorkingMemoryAddress address,
 			PerceptUnionBelief existingUnion, float existProb, String id)
 	throws BeliefException {
 
+		// Check whether we have content to operate on
 		if (percept ==null || existingUnion == null) {
-			throw new BeliefException("percept is null");
-		}
-		 
-		else if (percept.content == null || existingUnion.content == null) {
-			throw new BeliefException ("percept content is null");
-		}
-		
-		
-		// we first check if the probabilistic content of the percept and union are
-		// defined as a distrib with existence dependency
+			throw new BeliefException("Error in constructing the merger of a union and a percept: "+
+					"Percept belief is null");
+		} else if (percept.content == null) {
+			throw new BeliefException ("Error in constructing the merger of a union and a percept: "+
+					"Percept belief content is null");
+		} else if (existingUnion.content == null) {
+			throw new BeliefException ("Error in constructing the merger of a union and a percept: "+
+					"Union belief content is null");
+		} // end if..else
+		// Check whether we have the right content to operate on: 
+		// Content of the percept and union must be defined as a distribution with existence dependency
 		if (!(percept.content instanceof DistributionWithExistDep) ||
 				!(existingUnion.content instanceof DistributionWithExistDep)) {
-			throw new BeliefException("ERROR: percept or union content is not structured " +
-			"as a distribution with existence dependency");
-		}
-
-		// and that the rest is conditionally independent
+			throw new BeliefException("Error in constructing the merger of a union and a percept: "+
+					"Percept or union content is not structured as a distribution with existence dependency");
+		} 
+		// The distribution itself must be a set of conditionally independent distributions
 		else if (!(((DistributionWithExistDep)percept.content).Pc instanceof CondIndependentDistribs) ||
 				!(((DistributionWithExistDep)existingUnion.content).Pc instanceof CondIndependentDistribs)) {
-			throw new BeliefException("ERROR: percept or union content does not include " + 
-			" a conditionally independent distribution");
-		}
+			throw new BeliefException("Error in constructing the merger of a union and a percept: "+
+					"Percept or union content does not include a conditionally independent distribution");
+		} // end if..else
 
 		
 		// we create a new conditionally independent distrib

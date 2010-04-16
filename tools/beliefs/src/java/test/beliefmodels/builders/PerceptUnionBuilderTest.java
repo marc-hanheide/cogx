@@ -34,6 +34,8 @@ import beliefmodels.autogen.featurecontent.*;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.epstatus.PrivateEpistemicStatus;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
@@ -67,10 +69,11 @@ public class PerceptUnionBuilderTest {
 	String id;
 	String type;
 	String curPlace;
-	ProbDistribution content;
+	BasicProbDistribution featDist;
 	CASTBeliefHistory hist;
 	WorkingMemoryAddress wma; 
 	PerceptBelief pBelief;
+	DistributionWithExistDep content;
 	
 	/**
 	 * Initializes the global private variables used in the test class
@@ -80,7 +83,7 @@ public class PerceptUnionBuilderTest {
 	@Before
 	public void setUp() throws Exception {
 		curTime = new CASTTime();
-		id = "id";
+		id = "id1";
 		type="vision";
 		curPlace="here";
 		// create a basic probability distribution over feature values
@@ -88,15 +91,22 @@ public class PerceptUnionBuilderTest {
 		FeatureValue fVal2 = FeatureValueBuilder.createNewStringValue("val2");
 		FeatureValueProbPair fVal1Pr = new FeatureValueProbPair (fVal1, 0.4f);
 		FeatureValueProbPair fVal2Pr = new FeatureValueProbPair (fVal2, 0.6f);
-		ArrayList fValPrPairs = new ArrayList();
+		ArrayList<FeatureValueProbPair> fValPrPairs = new ArrayList<FeatureValueProbPair>();
 		fValPrPairs.add(fVal1Pr);
 		fValPrPairs.add(fVal2Pr);
-		content = BeliefContentBuilder.createNewFeatureDistribution("myId", fValPrPairs);
-		DistributionWithExistDep distExist = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, content);
+		featDist = BeliefContentBuilder.createNewFeatureDistribution("feature", fValPrPairs);
+		// Add the feature distribution as a conditionally independent distribution, add to existential dist
+		CondIndependentDistribs cDists = BeliefContentBuilder.createNewCondIndependentDistribs();
+		BeliefContentBuilder.putNewCondIndependentDistrib(cDists, featDist);
+		content = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, cDists);
+		// Add another feature distribution (just the same but with a different name
+		BasicProbDistribution featDist2 = featDist;
+		featDist2.key = "feature2";
+		BeliefContentBuilder.putNewFeatureInBeliefContent(content, featDist2);
+		// Create the percept belief
 		wma = new WorkingMemoryAddress(id,"vision");
 		hist = PerceptBuilder.createNewPerceptHistory(wma);
-		pBelief = PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, distExist, hist);
-
+		pBelief = PerceptBuilder.createNewPerceptBelief(id, type, curPlace, curTime, content, hist);
 	} // end setUp
 	
 	/**
@@ -253,7 +263,8 @@ public class PerceptUnionBuilderTest {
 				fail("Creating a new PerceptUnionBelief with all parameters should yield by default a private belief");
 			} // end if..else
 		} catch (BeliefException be) {
-			fail("Creating a new PerceptUnionBelief with all instantiated parameter should succeed");
+			fail("Creating a new PerceptUnionBelief with all instantiated parameter should succeed: "+
+					be.getMessage());
 		} // end try..catch
 	} // end test
 	
@@ -264,7 +275,7 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromPerceptBeliefSucceeds () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,id);
+			PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,id);
 		} catch (BeliefException be) {
 			fail("Creating a PerceptUnionBelief from a single PerceptBelief and all parameters instantiated should have succeeded");
 		} // end try..catch
@@ -277,7 +288,7 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromNullPerceptBeliefFails () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(null,wma,id);
+			PerceptUnionBuilder.createNewSingleUnionBelief(null,wma,id);
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: source belief is null", be.getMessage());
 		} // end try..catch
@@ -290,7 +301,7 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromNullAddressFails () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,null,id);
+			PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,null,id);
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information", 
 					be.getMessage());
@@ -304,7 +315,7 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromNullValuesAddressFails () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,new WorkingMemoryAddress(null,null),id);
+			PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,new WorkingMemoryAddress(null,null),id);
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information",
 					be.getMessage());
@@ -318,7 +329,7 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromEmptyValuesAddressFails () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,new WorkingMemoryAddress("",""),id);
+			PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,new WorkingMemoryAddress("",""),id);
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: address for source belief is null or has empty information",
 					be.getMessage());
@@ -332,7 +343,7 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromNullIdFails () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,null);
+			PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,null);
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty", 
 					be.getMessage());
@@ -346,7 +357,7 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromEmptyIdFails () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,"");
+			PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,"");
 		} catch (BeliefException be) {
 			assertEquals("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty",
 					be.getMessage());
@@ -361,13 +372,34 @@ public class PerceptUnionBuilderTest {
 	@Test
 	public void NewPerceptUnionBeliefFromPerceptBeliefWithExistenceProbSucceeds () { 
 		try { 
-			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,0.7f,id);
+			PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,0.7f,id);
 		} catch (BeliefException be) {
 			fail("Creating a PerceptUnionBelief from a single PerceptBelief and all parameters instantiated should have succeeded: "
 					+be.getMessage());
 		} // end try..catch
 	} // end test
 	 
+	/**
+	 * Creating a union as the merger of a percept belief and a union succeeds
+	 */
+	
+	@Test
+	public void NewPerceptUnionBeliefFromPerceptBeliefAndUnionSucceeds () { 
+		try {
+			// Set up the union (based on pBelief), and another percept belief (pBelief2) identical to pBelief
+			PerceptUnionBelief puBelief = PerceptUnionBuilder.createNewSingleUnionBelief(pBelief,wma,0.7f,"pu1");
+			PerceptBelief pBelief2 = pBelief;
+			pBelief2.id = "id2";
+			// Create a new union on the basis of the merger of the union and the "new" percept belief
+			PerceptUnionBuilder.createNewDoubleUnionBelief(pBelief2, wma, puBelief, 0.5f, "pu2");
+		} catch (BeliefException be) {
+			fail("Creating a PerceptUnionBelief from a percept belief and a union belief should have succeeded: "
+					+be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	
+	
 	
 
 } // end class
