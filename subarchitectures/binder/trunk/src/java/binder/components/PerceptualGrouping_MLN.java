@@ -305,7 +305,10 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			
 			PerceptUnionBelief existingUnion = existingUnions.get(unionsMapping.get(id)); 
 			try {
-			PerceptUnionBelief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, perceptWMAddress, existingUnion, prob, id);
+			List<WorkingMemoryAddress> addresses = new LinkedList<WorkingMemoryAddress>();
+			addresses.add(perceptWMAddress);
+			addresses.add(new WorkingMemoryAddress(existingUnion.id, BindingWorkingMemory.BINDER_SA));
+			PerceptUnionBelief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, addresses, existingUnion, prob, id);
 			newUnions.add(newUnion);
 			}
 			catch (BeliefException e) {
