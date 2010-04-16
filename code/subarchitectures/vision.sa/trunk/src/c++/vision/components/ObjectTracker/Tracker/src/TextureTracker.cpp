@@ -31,7 +31,7 @@ void TextureTracker::image_processing(unsigned char* image){
 
 // Particle filtering
 void TextureTracker::particle_filtering(ModelEntry* modelEntry){
-	
+	Particle p;
 	m_cam_perspective.Activate();
 	
 	// Calculate Zoom Direction and pass it to the particle filter
@@ -44,6 +44,7 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 
 	for(int i=0; i<modelEntry->num_recursions; i++){
 		
+		// TODO Evaluate if this makes sense (robustness, accuracy)
 		if(modelEntry->model.getTextured()){
 			params.m_spreadlvl = (int)floor((NUM_SPREAD_LOOPS-1)*2.0*(1.0-c_max));
 			if(params.m_spreadlvl>=NUM_SPREAD_LOOPS)
@@ -54,6 +55,7 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 			params.m_spreadlvl = 0;
 		}
 		
+		// TODO Evaluate if this makes sense (robustness, accuracy)
 // 		params.kernel_size = (int)floor(0.5*(MAX_KERNEL_SIZE)*(1.0-c_max));
 // 		m_shadeCompare->bind();
 // 		m_shadeCompare->setUniform("kernelsize", params.kernel_size);
@@ -63,9 +65,13 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 		m_tex_frame_ip[params.m_spreadlvl]->bind(1);	
 		m_tex_model->bind(2);
 		m_tex_frame->bind(3);
-		
+				
 		// update importance weights and confidence levels
 		modelEntry->distribution.updateLikelihood(modelEntry->model, m_shadeCompare, 1, params.convergence, m_showparticles);
+
+// 		printf("%f\n", ( 1.0 - i * 0.5 / (float)(modelEntry->num_recursions-1)));
+		// TODO Evaluate if this makes sense (accuracy)
+// 		p = (params.variation * ( 1.0 - i * 0.8 / (float)(modelEntry->num_recursions-1)));
 		
 		// predict movement of object
 		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
@@ -93,9 +99,14 @@ void TextureTracker::evaluateParticle(ModelEntry* modelEntry){
 	glColorMask(0,0,0,0); glDepthMask(0);
 	glColor3f(1.0,1.0,1.0);
 
+// 	m_tex_frame_ip[params.m_spreadlvl]->bind(1);	
+// 	modelEntry->model.setTexture(m_tex_model_ip[params.m_spreadlvl]);
+// 	
+	m_tex_model_ip[params.m_spreadlvl]->bind(0);
 	m_tex_frame_ip[params.m_spreadlvl]->bind(1);	
-	modelEntry->model.setTexture(m_tex_model_ip[params.m_spreadlvl]);
-		
+	m_tex_model->bind(2);
+	m_tex_frame->bind(3);
+	
 	// Draw particles and count pixels
 	m_shadeCompare->bind();
 	m_shadeCompare->setUniform("analyze", false);
@@ -129,10 +140,8 @@ void TextureTracker::evaluateParticle(ModelEntry* modelEntry){
 
 	if(v != 0){
 		modelEntry->pose.c = (float(d)/float(v));
-		modelEntry->pose.w = pow(modelEntry->pose.c, 5*(1.0-modelEntry->pose.c));
 	}else{
 		modelEntry->pose.c = 0.0;
-		modelEntry->pose.w = 0.0;
 	}
 	
 	glColorMask(1,1,1,1); glDepthMask(1);
@@ -294,6 +303,8 @@ bool TextureTracker::track(){
 		return false;
 	}
 	
+	m_drawimage = true;
+	
 	// Track models
 	for(int i=0; i<m_modellist.size(); i++){
 		track(m_modellist[i]);
@@ -345,6 +356,9 @@ bool TextureTracker::track(){
 		m1++;
 	}
 	
+	if(m_drawimage)
+		drawImage(0);
+	
 	return true;
 }
 
@@ -354,7 +368,10 @@ bool TextureTracker::track(ModelEntry *modelEntry){
 	model_processing(modelEntry);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	drawImage(0);
+	if(m_drawimage){
+		drawImage(0);
+		m_drawimage = false;
+	}
 	
 	// Apply particle filtering
 	if(!modelEntry->lock){
@@ -464,56 +481,74 @@ void TextureTracker::drawModelEntry(ModelEntry* modelEntry){
 				m_showmodel = 0;
 				break;			
 		}
-		
+				
 // 		m_modellist[i]->model.drawCoordinates();
 // 		m_modellist[i]->model.drawNormals();
 		modelEntry->pose.deactivate();
 }
 
+
+void TextureTracker::evaluatePDF( int id,
+																	float x_min, float y_min,
+																	float x_max, float y_max,
+																	int res,
+																	const char* meshfile, const char* xfile)
+{
+	ModelEntryList::iterator it = m_modellist.begin();
+	while(it != m_modellist.end()){
+		if(id==(*it)->id){
+			vector<float> pdf;
+			pdf = getPDFxy((*it), x_min, y_min, x_max, y_max, res);
+			savePDF(pdf, x_min, y_min, x_max, y_max, res, meshfile, xfile);			
+			return;
+		}
+		it++;
+	}
+}
+
 // Plots pdf in x-y plane (with z and rotational DOF locked)
-vector<float> TextureTracker::getPDFxy(	Particle pose,
+vector<float> TextureTracker::getPDFxy(	ModelEntry* modelEntry,
 																				float x_min, float y_min,
 																				float x_max, float y_max,
-																				int res,
-																				const char* filename, const char* filename2)
+																				int res)
 {
-// 	int i = 0;
-// 	printf("Evaluating PDF constrained to x,y movement only\n");
-// 	float x_step = (x_max-x_min) / res;
-// 	float y_step = (y_max-y_min) / res;
-// 	
-// 	float scale = 0.1;
-// 	
-// 	Particle pSearch = pose;
-// 	x_min = (pSearch.t.x += x_min);
-// 	y_min = (pSearch.t.y += y_min);
-// 	
-// 	vector<float> vPDF;
-// 	vPDF.assign(res*res, 0.0);
-// 	
-// 	Frustum* frustum = m_cam_perspective.GetFrustum();
-// 	
-// 	float p;
-// 	
-// 	i=0;
-// 	pSearch.t.y = y_min;
-// 	for(int n=0; n<res; n++){
-// 		pSearch.t.x = x_min;
-// 		for(int m=0; m<res; m++){
-// 			if(frustum->PointInFrustum(pSearch.t.x, pSearch.t.y, pSearch.t.z)){
-// 				evaluateParticle(&pSearch);
-// 				p = pSearch.c * scale;		
-// 			}else{
-// 				p = 0.0;
-// 			}
-// 			vPDF[i] = p;
-// 			
-// 			i++;
-// 			pSearch.t.x += x_step;
-// 		}
-// 		pSearch.t.y += y_step;
-// 	}
-// 	
+	int i = 0;
+	printf("Evaluating PDF constrained to x,y movement only\n");
+	float x_step = (x_max-x_min) / res;
+	float y_step = (y_max-y_min) / res;
+	
+	float scale = 0.1;
+	
+	x_min = (modelEntry->pose.t.x += x_min);
+	y_min = (modelEntry->pose.t.y += y_min);
+	
+	vector<float> vPDF;
+	vPDF.assign(res*res, 0.0);
+	
+	Frustum* frustum = m_cam_perspective.GetFrustum();
+	
+	float p;
+	
+	i=0;
+	modelEntry->pose.t.y = y_min;
+	for(int n=0; n<res; n++){
+		modelEntry->pose.t.x = x_min;
+		for(int m=0; m<res; m++){
+			if(frustum->PointInFrustum(modelEntry->pose.t.x, modelEntry->pose.t.y, modelEntry->pose.t.z)){
+				evaluateParticle(modelEntry);
+				p = modelEntry->pose.c * scale;		
+				printf("%f\n", p);
+			}else{
+				p = 0.0;
+			}
+			vPDF[i] = p;
+			
+			i++;
+			modelEntry->pose.t.x += x_step;
+		}
+		modelEntry->pose.t.y += y_step;
+	}
+	
 //  	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 // 	glEnable(GL_BLEND);
 // 	glBegin(GL_QUADS);
@@ -527,8 +562,8 @@ vector<float> TextureTracker::getPDFxy(	Particle pose,
 // 	
 // 	swap();
 // 	usleep(3000000);
-// 	
-// 	return vPDF;
+	
+	return vPDF;
 }
 
 // draws a rectangular terrain using a heightmap
@@ -538,132 +573,132 @@ void TextureTracker::savePDF(	vector<float> vPDFMap,
 															int res,
 															const char* meshfile, const char* xfile)
 {
-// 	int i,d,x,y;
-// 	
-// 	float x_step = (x_max-x_min) / res;
-// 	float y_step = (y_max-y_min) / res;
-// 	
-// 	vector<vec3> vertexlist;
-// 	vector<vec3> normallist;
-// 	vector<vec2> texcoordlist;
-// 	vector<unsigned int> indexlist;
-// 	
-// 	for(y=0; y<res; y++){
-// 		for(x=0; x<res; x++){
-// 			vec3 v[5], n;
-// 			vec2 tc;
-// 			d=0;
-// 			
-// 			v[0].x = x_min + float(x)*x_step;
-// 			v[0].y = y_min + float(y)*y_step;
-// 			v[0].z = vPDFMap[y*res+x];
-// 			
-// 			if(x<res-1){
-// 			v[1].x = x_min + float(x+1)*x_step;
-// 			v[1].y = y_min + float(y)*y_step;
-// 			v[1].z = vPDFMap[y*res+(x+1)];
-// 			n += (v[1]-v[0]);
-// 			d++;
-// 			}
-// 			
-// 			if(y<res-1){
-// 			v[2].x = x_min + float(x)*x_step;
-// 			v[2].y = y_min + float(y+1)*y_step;
-// 			v[2].z = vPDFMap[(y+1)*res+x];
-// 			n += (v[2]-v[0]);
-// 			d++;
-// 			}
-// 			
-// 			if(x>0){
-// 			v[3].x = x_min + float(x-1)*x_step;
-// 			v[3].y = y_min + float(y)*y_step;
-// 			v[3].z = vPDFMap[y*res+(x-1)];
-// 			n += (v[3]-v[0]);
-// 			d++;
-// 			}
-// 			
-// 			if(y>0){
-// 			v[4].x = x_min + float(x)*x_step;
-// 			v[4].y = y_min + float(y-1)*y_step;
-// 			v[4].z = vPDFMap[(y-1)*res+x];
-// 			n += (v[4]-v[0]);
-// 			d++;
-// 			}
-// 			
-// 			n = n * (1.0/d);
-// 			
-// 			tc.x = float(x)/res;
-// 			tc.y = float(y)/res;
-// 			
-// 			vertexlist.push_back(v[0]);
-// 			normallist.push_back(n);
-// 			texcoordlist.push_back(tc);
-// 			
-// 			if(x<res-1 && y<res-1){
-// 				indexlist.push_back(y*res+x);
-// 				indexlist.push_back(y*res+(x+1));
-// 				indexlist.push_back((y+1)*res+(x+1));
-// 				
-// 				indexlist.push_back(y*res+x);
-// 				indexlist.push_back((y+1)*res+(x+1));
-// 				indexlist.push_back((y+1)*res+x);
-// 			}
-// 		}
-// 	}
-// 	/*
-// 	glClear(GL_DEPTH_BUFFER_BIT);
-// 	m_lighting.Activate();
-// 	
-// 	glEnableClientState(GL_VERTEX_ARRAY); glVertexPointer(3, GL_FLOAT, 0, &vertexlist[0]);
-// 	glEnableClientState(GL_NORMAL_ARRAY); glNormalPointer(GL_FLOAT, 0, &normallist[0]);
-// 	glEnableClientState(GL_TEXTURE_COORD_ARRAY); glTexCoordPointer(2, GL_FLOAT, 0, &texcoordlist[0]);
-// 	
-// 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-// 	glDrawElements(GL_TRIANGLES, 6 * (xres-1) * (yres-1), GL_UNSIGNED_INT, &indexlist[0]);
-// 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-// 	
-// 	glDisableClientState(GL_VERTEX_ARRAY);
-// 	glDisableClientState(GL_NORMAL_ARRAY);
-// 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-// 	
-// 	m_lighting.Deactivate();
-// 	*/
-// 	if(meshfile){
-// 		FILE* fd = fopen(meshfile,"w");
-// 		fprintf(fd, "ply\nformat ascii 1.0\n");
-// 		fprintf(fd, "element vertex %d\n", res*res);
-// 		fprintf(fd, "property float x\n");
-// 		fprintf(fd, "property float y\n");
-// 		fprintf(fd, "property float z\n");
-// 		fprintf(fd, "property float nx\n");
-// 		fprintf(fd, "property float ny\n");
-// 		fprintf(fd, "element face %d\n", (res-1)*(res-1)*2);
-// 		fprintf(fd, "property list uchar uint vertex_indices\n");
-// 		fprintf(fd, "end_header\n");
-// 		
-// 		for(i=0; i<vertexlist.size(); i++){
-// 			vec3 v = vertexlist[i];
-// 			vec3 n = normallist[i];
-// 			fprintf(fd, "%f %f %f %f %f\n", v.x, v.y, v.z, n.x, n.y);
-// 		}
-// 		
-// 		for(i=0; i<indexlist.size(); i+=3){
-// 			fprintf(fd, "3 %d %d %d\n", indexlist[i], indexlist[i+1], indexlist[i+2]);
-// 		}
-// 		
-// 		printf("  output written to '%s'\n  done\n", meshfile);
-// 		
-// 		fclose(fd);
-// 	}
-// 	
-// 	if(xfile){
-// 		FILE* fd2 = fopen(xfile,"w");
-// 		y = res/2;
-// 		for(x=0; x<res; x++){
-// 			fprintf(fd2, "%f\n", vPDFMap[y*res+x]);
-// 		}
-// 		printf("  output written to '%s'\n  done\n", xfile);
-// 		fclose(fd2);
-// 	}
+	int i,d,x,y;
+	
+	float x_step = (x_max-x_min) / res;
+	float y_step = (y_max-y_min) / res;
+	
+	vector<vec3> vertexlist;
+	vector<vec3> normallist;
+	vector<vec2> texcoordlist;
+	vector<unsigned int> indexlist;
+	
+	for(y=0; y<res; y++){
+		for(x=0; x<res; x++){
+			vec3 v[5], n;
+			vec2 tc;
+			d=0;
+			
+			v[0].x = x_min + float(x)*x_step;
+			v[0].y = y_min + float(y)*y_step;
+			v[0].z = vPDFMap[y*res+x];
+			
+			if(x<res-1){
+			v[1].x = x_min + float(x+1)*x_step;
+			v[1].y = y_min + float(y)*y_step;
+			v[1].z = vPDFMap[y*res+(x+1)];
+			n += (v[1]-v[0]);
+			d++;
+			}
+			
+			if(y<res-1){
+			v[2].x = x_min + float(x)*x_step;
+			v[2].y = y_min + float(y+1)*y_step;
+			v[2].z = vPDFMap[(y+1)*res+x];
+			n += (v[2]-v[0]);
+			d++;
+			}
+			
+			if(x>0){
+			v[3].x = x_min + float(x-1)*x_step;
+			v[3].y = y_min + float(y)*y_step;
+			v[3].z = vPDFMap[y*res+(x-1)];
+			n += (v[3]-v[0]);
+			d++;
+			}
+			
+			if(y>0){
+			v[4].x = x_min + float(x)*x_step;
+			v[4].y = y_min + float(y-1)*y_step;
+			v[4].z = vPDFMap[(y-1)*res+x];
+			n += (v[4]-v[0]);
+			d++;
+			}
+			
+			n = n * (1.0/d);
+			
+			tc.x = float(x)/res;
+			tc.y = float(y)/res;
+			
+			vertexlist.push_back(v[0]);
+			normallist.push_back(n);
+			texcoordlist.push_back(tc);
+			
+			if(x<res-1 && y<res-1){
+				indexlist.push_back(y*res+x);
+				indexlist.push_back(y*res+(x+1));
+				indexlist.push_back((y+1)*res+(x+1));
+				
+				indexlist.push_back(y*res+x);
+				indexlist.push_back((y+1)*res+(x+1));
+				indexlist.push_back((y+1)*res+x);
+			}
+		}
+	}
+	/*
+	glClear(GL_DEPTH_BUFFER_BIT);
+	m_lighting.Activate();
+	
+	glEnableClientState(GL_VERTEX_ARRAY); glVertexPointer(3, GL_FLOAT, 0, &vertexlist[0]);
+	glEnableClientState(GL_NORMAL_ARRAY); glNormalPointer(GL_FLOAT, 0, &normallist[0]);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY); glTexCoordPointer(2, GL_FLOAT, 0, &texcoordlist[0]);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDrawElements(GL_TRIANGLES, 6 * (xres-1) * (yres-1), GL_UNSIGNED_INT, &indexlist[0]);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	m_lighting.Deactivate();
+	*/
+	if(meshfile){
+		FILE* fd = fopen(meshfile,"w");
+		fprintf(fd, "ply\nformat ascii 1.0\n");
+		fprintf(fd, "element vertex %d\n", res*res);
+		fprintf(fd, "property float x\n");
+		fprintf(fd, "property float y\n");
+		fprintf(fd, "property float z\n");
+		fprintf(fd, "property float nx\n");
+		fprintf(fd, "property float ny\n");
+		fprintf(fd, "element face %d\n", (res-1)*(res-1)*2);
+		fprintf(fd, "property list uchar uint vertex_indices\n");
+		fprintf(fd, "end_header\n");
+		
+		for(i=0; i<vertexlist.size(); i++){
+			vec3 v = vertexlist[i];
+			vec3 n = normallist[i];
+			fprintf(fd, "%f %f %f %f %f\n", v.x, v.y, v.z, n.x, n.y);
+		}
+		
+		for(i=0; i<indexlist.size(); i+=3){
+			fprintf(fd, "3 %d %d %d\n", indexlist[i], indexlist[i+1], indexlist[i+2]);
+		}
+		
+		printf("  output written to '%s'\n  done\n", meshfile);
+		
+		fclose(fd);
+	}
+	
+	if(xfile){
+		FILE* fd2 = fopen(xfile,"w");
+		y = res/2;
+		for(x=0; x<res; x++){
+			fprintf(fd2, "%f\n", vPDFMap[y*res+x]);
+		}
+		printf("  output written to '%s'\n  done\n", xfile);
+		fclose(fd2);
+	}
 }
 

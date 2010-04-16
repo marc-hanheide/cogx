@@ -70,11 +70,17 @@ public:
 	
 	virtual void drawModelEntry(ModelEntry* modelEntry);
 	
-	virtual std::vector<float> getPDFxy(	Particle pose,
+	virtual void evaluatePDF( int id,
+														float x_min, float y_min,
+														float x_max, float y_max,
+														int res,
+														const char* meshfile, const char* xfile);
+
+	
+	virtual std::vector<float> getPDFxy(	ModelEntry* modelEntry,
 																				float x_min, float y_min,
 																				float x_max, float y_max,
-																				int res,
-																				const char* filename=NULL, const char* filename2=NULL);
+																				int res);
 																
 	virtual void savePDF(	std::vector<float> vPDFMap,
 												float x_min, float y_min,

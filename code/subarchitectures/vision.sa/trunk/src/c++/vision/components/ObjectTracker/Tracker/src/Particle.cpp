@@ -116,3 +116,13 @@ Particle& Particle::operator=(const Pose& p2){
 	q = p2.q;
 }
 
+Particle& Particle::operator*(const float &f){
+	r  = r  * f;
+	rp = rp * f;
+	t  = t  * f;
+	tp = tp * f;
+	z  = z  * f;
+	zp = zp * f;
+	
+	return *this;
+}

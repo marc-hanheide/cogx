@@ -48,12 +48,13 @@ void Distribution::calcMean(){
 	
 	// Weighted sum over all particles
 	for(id=0; id<num_particles; id++){
+// 		m_meanParticle.r  += m_particlelist[id].r * m_particlelist[id].w;
 		m_meanParticle.t 	+= m_particlelist[id].t * m_particlelist[id].w;
 		m_meanParticle.tp += m_particlelist[id].tp * m_particlelist[id].w;
 		m_meanParticle.rp += m_particlelist[id].rp * m_particlelist[id].w;
 		c_mean 	+= m_particlelist[id].c;
 		
-		m_particlelist[id].q.getAxisAngle(&axis, &angle);
+		m_particlelist[id].q.getAxisAngle(axis, angle);
 		maxAxis += axis * m_particlelist[id].w;
 		maxAngle += angle * m_particlelist[id].w;
 	}
@@ -79,10 +80,10 @@ Distribution::~Distribution(){
 		glDeleteQueriesARB(m_particlelist.size(), &queryEdges[0]);
 }
 
-float Distribution::getVariance(){
+double Distribution::getVariance(){
 	int id=0;
-	float mean = 0.0;
-	float var = 0.0;
+	double mean = 0.0;
+	double var = 0.0;
 	
 	// Evaluate mean
 	for(id=0; id<m_particlelist.size(); id++)
@@ -98,7 +99,7 @@ float Distribution::getVariance(){
 
 void Distribution::normalizeW(){
 	int id;
-	float dw_sum = 0.0;
+	double dw_sum = 0.0;
 	if(w_sum>0.0){
 		dw_sum = 1.0/w_sum;
 		for(id=0; id<m_particlelist.size(); id++){
@@ -212,7 +213,8 @@ void Distribution::calcLikelihood(int convergence){
 		
 		// Likelihood calculation formula
 		if(v != 0){
-			m_particlelist[id].c = (float(d)/float(v) + float(d)/float(v_max)) * 0.5;
+			// TODO evaluate weights and convergence factor (w.r.t. robustness / accuracy / anti-locking)
+			m_particlelist[id].c = 0.5 * double(d)/double(v) + 0.5 * double(d)/double(v_max);
 			m_particlelist[id].w = pow(m_particlelist[id].c, convergence*(1.0-m_particlelist[id].c));
 		}else{
 			m_particlelist[id].c = 0.0;
@@ -232,11 +234,9 @@ void Distribution::calcLikelihood(int convergence){
 	// normalize weights
 	normalizeW();
 	
-	if(c_max==0.0){
+	if(c_max<=0.0){
 		for(id=0; id<m_particlelist.size(); id++){
-			m_particlelist[id].c = 0.01; //*rand()/RAND_MAX;
-// 			if(c_max<m_particlelist[id].c)
-// 				c_max = m_particlelist[id].c;
+			m_particlelist[id].c = 0.01;
 		}
 		c_max=0.01;
 	}

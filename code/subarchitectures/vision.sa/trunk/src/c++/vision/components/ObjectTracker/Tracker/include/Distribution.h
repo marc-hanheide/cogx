@@ -24,7 +24,7 @@ typedef std::vector<Particle> ParticleList;
 /**	@brief class Distribution */
 class Distribution
 {
-private:
+public:
 	
 	ParticleList m_particlelist;				///< List of particles forming the likelihood distribution
 	std::vector<unsigned int> queryMatches;	///< OpenGL Occlussion Query for counting matching pixels
@@ -32,10 +32,10 @@ private:
 	Particle m_meanParticle;						///< Particle representing weighted mean of particle distribution
 	
 	int v_max;								///< Maximum number of  overall edge pixels of current view
-	float w_sum;							///< Sum of all weights, before normalisation (afterwards its 1)
-	float w_max;							///< Maximum weighted likelihood in one likelihood measure
-	float c_max;							///< Maximum confidence level in one likelihood measure
-	float c_mean;
+	double w_sum;							///< Sum of all weights, before normalisation (afterwards its 1)
+	double w_max;							///< Maximum weighted likelihood in one likelihood measure
+	double c_max;							///< Maximum confidence level in one likelihood measure
+	double c_mean;
 	TM_Vector3 m_cam_view;
 	
 	// Functions
@@ -60,23 +60,22 @@ public:
 	Particle		getParticle(int id){ return (m_particlelist[id]); }
 	
 	/** @brief Calculates variance confidence level of likelihood distribution */
-	float 			getVariance();
+	double 			getVariance();
 	
 	/**	@brief Recalculates weights of particlelist to sum up to 1 */
 	void				normalizeW();
 	
 	/** @brief Gets maximum weighted likelihood of last likelihood measure */
-	float 			getMaxW(){ return w_max; }
+	double 			getMaxW(){ return w_max; }
 	
 	/** @brief Gets maximum confidence level of last likelihood measure */
-	float 			getMaxC(){ return c_max; }
+	double 			getMaxC(){ return c_max; }
 	
 	/** @brief Gets weighted likelihood of a particle by id */
-	float				getW(int id){ return m_particlelist[id].w; }
+	double				getW(int id){ return m_particlelist[id].w; }
 	
 	/** @brief gets confidence level of a particle by id */
-	float				getC(int id){ return m_particlelist[id].c; }
-	
+	double				getC(int id){ return m_particlelist[id].c; }
 	
 	/** @brief Number of particles representing the distribution*/
 	int 				size(){ return m_particlelist.size(); }

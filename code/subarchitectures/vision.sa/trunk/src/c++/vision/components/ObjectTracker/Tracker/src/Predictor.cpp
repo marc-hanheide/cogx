@@ -63,26 +63,26 @@ void Predictor::addsamples(Distribution& d, int num_particles, Particle mean, Pa
 		// Distribution function (gaussian noise)
 		epsilon = genNoise(sigma, variance);
 		
-		if(m_dTime>0.0){
-			// TODO Prediction model, Better motion model (motion estimator, physical correct)
-			// WARNING motion model not possible while recursive tracking
-			p.tp = p.tp + epsilon.tp;
-			p.rp = p.rp + epsilon.rp;
-			p.zp = p.zp + epsilon.zp;
-				
-			epsilon.z = epsilon.z + epsilon.zp*m_dTime;
-			
-			p.translate(epsilon.t + p.tp*m_dTime);
-			p.rotate(epsilon.r + p.rp*m_dTime);
-			p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
-		
-		}else{
+// 		if(m_dTime>0.0){
+// 			// TODO Prediction model, Better motion model (motion estimator, physical correct)
+// 			// WARNING motion model not possible while recursive tracking
+// 			p.tp = p.tp + epsilon.tp;
+// 			p.rp = p.rp + epsilon.rp;
+// 			p.zp = p.zp + epsilon.zp;
+// 				
+// 			epsilon.z = epsilon.z + epsilon.zp*m_dTime;
+// 			
+// 			p.translate(epsilon.t + p.tp*m_dTime);
+// 			p.rotate(epsilon.r + p.rp*m_dTime);
+// 			p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
+// 		
+// 		}else{
 		
 			p.translate(epsilon.t);
-			p.rotate(epsilon.r);
+			p.rotateAxis(epsilon.r);
 			p.translate( m_cam_view.x * epsilon.z, m_cam_view.y * epsilon.z, m_cam_view.z * epsilon.z);
 			
-		}
+// 		}
 		
 		d.push_back(p);
 	}	
@@ -100,8 +100,9 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 	
 	Particle epsilon, p;
 	int n, id, i, nid=0;
-	float sigma = 0.01;
-	float c=0.0;
+	double sigma = 0.01;
+	double c=0.0;
+	double cn=0.0;
 	
 	float pNormal = 0.7;
 	float pNoMotion = 0.1;
@@ -123,8 +124,17 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 		n = round(particlelist_tmp[id].w * num_particles);
 		c = particlelist_tmp[id].c;
 		
+		// TODO evaluate if this makes sense (higher accuracy/convergence)
+// 		if(d.getMaxC()>0.0){
+// 			cn = c / d.getMaxC();
+// 			c = c*(1.0-c) + cn*c;
+// // 			c = 0.8*cn + c*(1.0-cn);
+// 		}
+		
 		// Tukey estimator
-		sigma = (1.0-pow(1.0-pow(1.0-c,2),3));
+		// TODO evaluate optimal power of estimator (accuracy / robustness)
+// 		sigma = (1.0-pow(1.0-pow(1.0-c,2),3));
+		sigma = 1.0 - c;
 		
 		// ensure range of sigma
 		if(sigma==0.0) sigma = 0.001;
