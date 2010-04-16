@@ -37,6 +37,7 @@ import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.UnknownValue;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.FeatureValues;
@@ -73,7 +74,7 @@ public class BeliefContentBuilderTest {
 		fValPrPairs = new ArrayList<FeatureValueProbPair>();
 		fValPrPairs.add(fVal1Pr);
 		fValPrPairs.add(fVal2Pr);
-		BasicProbDistribution sampleBaseDistribution = BeliefContentBuilder.createNewFeatureDistribution("feats", fValPrPairs);
+		sampleBaseDistribution = BeliefContentBuilder.createNewFeatureDistribution("feat", fValPrPairs);
 	}
 
 	/**
@@ -269,7 +270,7 @@ public class BeliefContentBuilderTest {
 			fail("Creating a new distribution with an existence probability should fail given negative probability");
 		} catch (BeliefException be) {
 			assertEquals("Error in creating a distribution with an existence probability: "+
-					"existence probability [-0.5f] is outside range (0.0f..1.0f]",be.getMessage());
+					"existence probability [-0.5] is outside range (0.0f..1.0f]",be.getMessage());
 		} // end try..catch
 	} // end test
 	
@@ -285,24 +286,102 @@ public class BeliefContentBuilderTest {
 			fail("Creating a new distribution with an existence probability should fail given too large probability");
 		} catch (BeliefException be) {
 			assertEquals("Error in creating a distribution with an existence probability: "+
-					"existence probability [1000.0f] is outside range (0.0f..1.0f]",be.getMessage());
+					"existence probability [1000.0] is outside range (0.0f..1.0f]",be.getMessage());
 		} // end try..catch
 	} // end test
 	
+	
 	/**
-	 * Putting a new feature into a conditionally independent feature distribution succeeds (when given such)
+	 * Creating a new conditionally independent distribution of a feature with <feature-value,probability> pairs succeeds
 	 */
 	
+	@Test
+	public void CreateNewConditionallyIndependentFeatureDistributionSucceeds () { 
+		try { 
+			// Create a new set of conditionally independent distributions
+			CondIndependentDistribs cDists = BeliefContentBuilder.createNewCondIndependentDistribs();
+			// Start from the sampleBaseDistribution of a feature with its feature-values and probabilities,
+			BeliefContentBuilder.putNewCondIndependentDistrib(cDists, sampleBaseDistribution);
+		} catch (BeliefException be) { 
+			fail("Adding a new distribution to a map of conditionally independent distributions should have succeeded: "+
+					be.getMessage());
+		} // end try.. catch
+	} // end test
+	
+	/**
+	 * Creating a new conditionally independent distribution of a feature with <feature-value,probability> pairs 
+	 * means we can successfully retrieve it again from the set of distributions
+	 */
+	
+	@Test
+	public void CreateNewConditionallyIndependentFeatureDistributionAddsDistribution () { 
+		try { 
+			// Create a new set of conditionally independent distributions
+			CondIndependentDistribs cDists = BeliefContentBuilder.createNewCondIndependentDistribs();
+			// Start from the sampleBaseDistribution of a feature with its feature-values and probabilities,
+			BeliefContentBuilder.putNewCondIndependentDistrib(cDists, sampleBaseDistribution);
+			// Now we should be able to get the distribution from cDists, by the key of the distribution
+			BeliefContentBuilder.getConditionallyIndependentDistribution(cDists, sampleBaseDistribution.key); 
+		} catch (BeliefException be) { 
+			fail("Adding a new distribution to a map of conditionally independent distributions should have made it retrievable: "+
+					be.getMessage());
+		} // end try.. catch
+	} // end test
+	
+	/**
+	 * Creating a new conditionally independent distribution of a feature with <feature-value,probability> pairs means
+	 * we can also again remove it from the set of distributions
+	 */
+	
+	@Test
+	public void RemoveNewlyAddedConditionallyIndependentFeatureDistributionSucceeds () { 
+		try { 
+			// Create a new set of conditionally independent distributions
+			CondIndependentDistribs cDists = BeliefContentBuilder.createNewCondIndependentDistribs();
+			// Start from the sampleBaseDistribution of a feature with its feature-values and probabilities,
+			BeliefContentBuilder.putNewCondIndependentDistrib(cDists, sampleBaseDistribution);
+			// Now we should be able to get the distribution from cDists, by the key of the distribution
+			BeliefContentBuilder.removeConditionallyIndependentDistribution(cDists, sampleBaseDistribution.key); 
+		} catch (BeliefException be) { 
+			fail("Adding a new distribution to a map of conditionally independent distributions should have made it removable: "+
+					be.getMessage());
+		} // end try.. catch
+	} // end test
+	
+	
+	
+	/**
+	 * Adding a new feature to belief content that is not a set of conditionally independent distributions should not succeed
+	 */
+	
+	@Test
+	public void AddNewFeatureToBaseDistributionWithExistenceFails () { 
+		try {
+			DistributionWithExistDep baseExistDist = BeliefContentBuilder.createNewDistributionWithExistDep(0.5f,sampleBaseDistribution);
+			BasicProbDistribution sampleBaseDistribution2 = sampleBaseDistribution;
+			sampleBaseDistribution2.key = "feat2";
+			BeliefContentBuilder.putNewFeatureInBeliefContent(baseExistDist, sampleBaseDistribution2);
+			fail("Adding a new feature to belief content that is not a set of conditionally independent distributions should not succeed");
+		} catch (BeliefException be) {
+			assertEquals("Error in updating belief content with a new feature: "+ 
+					"Content distribution is not set to be conditionally independent", 
+					be.getMessage());
+		} // 
+	} // end test
+	
+	
+	/**
+	 * Putting a new feature into a map of conditionally independent feature distributions for a belief succeeds 	 
+	 */
+		
 	@Test 
 	public void AddNewFeatureToConditionallyIndependentFeatureDistributionSucceeds () { 
-		// Start from the sampleBaseDistribution 
-		
+		// 
 		
 		
 		
 	} // end test
 	
-	
-	
+
 	
 } // end class 
