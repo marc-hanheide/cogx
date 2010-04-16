@@ -382,7 +382,7 @@ public class PerceptUnionBuilderTest {
 	 * Creating a union as the merger of a percept belief and a union fails if the union and the percept model 
 	 * content as conditionally independent distributions over identical features. 
 	 */
-	
+	 
 	@Test
 	public void NewPerceptUnionBeliefFromPerceptBeliefWithSameFeaturesAsUnionFails () { 
 		try {
