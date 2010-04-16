@@ -61,7 +61,8 @@ class VisualMediator :
    * status of VisualObject persistency
    */
   enum VisualObjectStatus {
-   STABLE,
+   OBJECT,
+   PROXY,
    DELETED };
 
   /** 
