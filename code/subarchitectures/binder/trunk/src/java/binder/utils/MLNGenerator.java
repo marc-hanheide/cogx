@@ -67,7 +67,7 @@ public class MLNGenerator {
 	/////////////////////////////////////////////////////////////////////////////////////
 	 
 	// we build the corresponding Markov logic network file step by step
-	public void writeMLNFile(PerceptBelief b, Collection<PerceptUnionBelief> existingUnions, 
+	public void writeMLNFile(Belief b, Collection<Belief> existingUnions, 
 			HashMap<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
 		 
 		newInput = b;
@@ -137,7 +137,7 @@ public class MLNGenerator {
 	}
 
 	// 1) constants section 
-	private StringBuilder constructConstantsSection (Collection<PerceptUnionBelief> existingUnions, 
+	private StringBuilder constructConstantsSection (Collection<Belief> existingUnions, 
 			HashMap<String,String> unionsMapping, String newSingleUnionId) {
 		StringBuilder result = new StringBuilder();
 		result.append("///////////////////////////////\n");
@@ -184,14 +184,14 @@ public class MLNGenerator {
 	}
 	
 	// 3) existing union section
-	private StringBuilder constructFormulaeForExistingUnions (Collection<PerceptUnionBelief> existingUnions) throws MLException {
+	private StringBuilder constructFormulaeForExistingUnions (Collection<Belief> existingUnions) throws MLException {
 		StringBuilder result = new StringBuilder();
 		result.append("///////////////////////////////\n");
 		result.append("// EXISTING UNIONS\n");
 		result.append("///////////////////////////////\n");
 		result.append(NEWLINE);
 		
-		for(PerceptUnionBelief belief : existingUnions) {
+		for(Belief belief : existingUnions) {
 			result.append(serializeBelief(belief));
 			result.append(NEWLINE);
 		}
@@ -200,7 +200,7 @@ public class MLNGenerator {
 	}
 	
 	// 4) new percept section
-	private StringBuilder constructFormulaeForPercept (PerceptBelief b) throws MLException {
+	private StringBuilder constructFormulaeForPercept (Belief b) throws MLException {
 		StringBuilder result = new StringBuilder();
 		result.append("///////////////////////////////\n");
 		result.append("// NEW PERCEPT\n");
@@ -244,7 +244,7 @@ public class MLNGenerator {
 	}
 	
 	// 7) final outcome section
-	private StringBuilder extractFinalOutcomeSection(Collection<PerceptUnionBelief> existingUnions, HashMap<String,String> unionsMapping, String singleUnionId) {
+	private StringBuilder extractFinalOutcomeSection(Collection<Belief> existingUnions, HashMap<String,String> unionsMapping, String singleUnionId) {
 		// FIXME: add parameter to control the probability of the outcome
 		// FIXME: add parameter to control greediness of the binding process
 		// FIXME: @Pierre Is the mapping P -> BELIEFID already in the unionsMapping?
@@ -282,9 +282,9 @@ public class MLNGenerator {
 	// Build the markov network file (helper methods)
 	/////////////////////////////////////////////////////////////////////////////////////
 	
-	private StringBuilder serializeBeliefs(Collection<PerceptUnionBelief> existingUnions) {
+	private StringBuilder serializeBeliefs(Collection<Belief> existingUnions) {
 		StringBuilder result = new StringBuilder();
-		Iterator<PerceptUnionBelief> iter = existingUnions.iterator();
+		Iterator<Belief> iter = existingUnions.iterator();
 		
 		// 1) the existing unions
 		String existing_unions = getMarkovLogicConstantFromID(iter.next().id);
