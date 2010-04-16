@@ -78,7 +78,7 @@ public class BeliefContentBuilder {
 		// Should check whether the distribution is empty (SLICE has no general interface, "impossible" to check here)
 		
 		// check that the probability is within the range (0.0f..1.0f]
-		if (probExist <= 0.0f || probExist > 1.0f) {
+		if (probExist < 0.0f || probExist > 1.0f) {
 			throw new BeliefException("Error in creating a distribution with an existence probability: "+
 					"existence probability ["+probExist+"] is outside range (0.0f..1.0f]");
 		} // end if

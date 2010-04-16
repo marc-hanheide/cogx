@@ -30,6 +30,7 @@ import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
@@ -146,7 +147,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, newDistrib, createHistory(address));
 	}
 
-
+ 
 	/**
 	 * Construct a new percept union belief from the merge of a percept and a union. These beliefs must have content, 
 	 * of type DistributionWithExistDep. Each existence distribution must have a set of conditionally independent distributions.
@@ -161,7 +162,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 	 */
 	
 	public static PerceptUnionBelief createNewDoubleUnionBelief (PerceptBelief percept, List<WorkingMemoryAddress> addresses,
-			PerceptUnionBelief existingUnion, float existProb, String id)
+			Belief existingUnion, float existProb, String id)
 	throws BeliefException {
 
 		// Check whether we have content to operate on
