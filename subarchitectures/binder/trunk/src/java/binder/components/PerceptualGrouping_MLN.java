@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,15 +17,12 @@ import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.history.CASTBeliefHistory;
-import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import binder.ml.MLException;
 import binder.utils.MLNGenerator;
-import cast.AlreadyExistsOnWMException;
-import cast.DoesNotExistOnWMException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -162,9 +158,9 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		log("now starting perceptual grouping...");
 
 		// extract the unions already existing in the binder WM
-		HashMap<String, PerceptUnionBelief> existingUnions = extractExistingUnions();
+		HashMap<String, Belief> existingUnions = extractExistingUnions();
 		
-		HashMap<String, PerceptUnionBelief> relevantUnions = selectRelevantUnions(existingUnions, percept);
+		HashMap<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, percept);
 		
 		if (relevantUnions.size() > 0) {
 		// Create identifiers for each possible new union		
@@ -193,11 +189,11 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults, maxAlternatives);
 		
 		// create the new unions given the inference results
-		Vector<PerceptUnionBelief> newUnions = createNewUnions(percept, perceptWMAddress, relevantUnions,
+		Vector<Belief> newUnions = createNewUnions(percept, perceptWMAddress, relevantUnions,
 				unionsMapping, newSingleUnionId, filteredInferenceResults);
 
 		// and add them to the working memory
-		for (PerceptUnionBelief newUnion : newUnions) {
+		for (Belief newUnion : newUnions) {
 			if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
 				insertBeliefInWM(newUnion);
 				log("inserting belief " + newUnion.id + " on WM");
@@ -209,10 +205,10 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		}
 
 		// modify the existence probabilities of the existing unions
-		List<PerceptUnionBelief> unionsToUpdate = getExistingUnionsToUpdate(percept, relevantUnions, unionsMapping, filteredInferenceResults);
+		List<Belief> unionsToUpdate = getExistingUnionsToUpdate(percept, relevantUnions, unionsMapping, filteredInferenceResults);
 		
 		// and update them on the working memory
-		for (PerceptUnionBelief unionToUpdate : unionsToUpdate) {
+		for (Belief unionToUpdate : unionsToUpdate) {
 			if (DistributionUtils.getExistenceProbability(unionToUpdate) > lowestProbThreshold)  {
 				log("updating belief " + unionToUpdate.id + " on WM");
 				updateBeliefOnWM(unionToUpdate);
@@ -278,10 +274,10 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 * @param inferenceResults
 	 * @return
 	 */
-	private Vector<PerceptUnionBelief> createNewUnions(
+	private Vector<Belief> createNewUnions(
 			PerceptBelief percept,
 			WorkingMemoryAddress perceptWMAddress,
-			HashMap<String,PerceptUnionBelief> existingUnions,
+			HashMap<String,Belief> existingUnions,
 			HashMap<String,String> unionsMapping,
 			String newSingleUnionId,
 			HashMap<String,Float> inferenceResults) throws BeliefException {
@@ -289,7 +285,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		// extract the existence probability of the percept
 		float perceptExistProb = DistributionUtils.getExistenceProbability(percept);
 
-		Vector<PerceptUnionBelief> newUnions = new Vector<PerceptUnionBelief>();
+		Vector<Belief> newUnions = new Vector<Belief>();
 		for (String id : unionsMapping.keySet()) {
 			
 			if (!inferenceResults.containsKey(id)) {
@@ -303,12 +299,12 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 			float prob = perceptExistProb * inferenceResults.get(id);
 			log("computed probability for new percept union " + id + ": " + prob);
 			
-			PerceptUnionBelief existingUnion = existingUnions.get(unionsMapping.get(id)); 
+			Belief existingUnion = existingUnions.get(unionsMapping.get(id)); 
 			try {
 			List<WorkingMemoryAddress> addresses = new LinkedList<WorkingMemoryAddress>();
 			addresses.add(perceptWMAddress);
 			addresses.add(new WorkingMemoryAddress(existingUnion.id, BindingWorkingMemory.BINDER_SA));
-			PerceptUnionBelief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, addresses, existingUnion, prob, id);
+			Belief newUnion = PerceptUnionBuilder.createNewDoubleUnionBelief(percept, addresses, existingUnion, prob, id);
 			newUnions.add(newUnion);
 			}
 			catch (BeliefException e) {
@@ -338,19 +334,19 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 * @param linkToExistingUnions mapping from new unions to existing unions they include
 	 * @param inferenceResults the inference results
 	 */
-	private List<PerceptUnionBelief> getExistingUnionsToUpdate (
+	private List<Belief> getExistingUnionsToUpdate (
 			PerceptBelief percept, 
-			HashMap<String,PerceptUnionBelief> existingUnions, 
+			HashMap<String,Belief> existingUnions, 
 			HashMap<String,String> linkToExistingUnions,
 			HashMap<String,Float> inferenceResults) {
 		
-		List<PerceptUnionBelief> unionsToUpdate = new LinkedList<PerceptUnionBelief>();
+		List<Belief> unionsToUpdate = new LinkedList<Belief>();
 		
 		// extract the existence probability of the percept
 		float perceptExistProb = DistributionUtils.getExistenceProbability(percept);
 		
 		for (String newUnionId: linkToExistingUnions.keySet()) {
-			PerceptUnionBelief existingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
+			Belief existingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
 			float unionCurrentExistProb = DistributionUtils.getExistenceProbability(existingUnion);
 			float unionNewExistProb = (unionCurrentExistProb * (1-perceptExistProb)) + 
 				(perceptExistProb * (1 - inferenceResults.get(newUnionId)) * unionCurrentExistProb);
@@ -400,10 +396,10 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	}
 	
 	
-	private HashMap<String,PerceptUnionBelief> selectRelevantUnions (HashMap<String,PerceptUnionBelief> existingUnions, 
+	private HashMap<String,Belief> selectRelevantUnions (HashMap<String,Belief> existingUnions, 
 			PerceptBelief percept) throws BeliefException {
 		
-		HashMap<String,PerceptUnionBelief> relevantUnions = new HashMap<String,PerceptUnionBelief>();
+		HashMap<String,Belief> relevantUnions = new HashMap<String,Belief>();
 	
 		if (((CASTBeliefHistory)percept.hist).ancestors.size() == 0) {
 			throw new BeliefException ("ERROR: percept history contains 0 element");
@@ -416,7 +412,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 		
 		for (String existingUnionId : existingUnions.keySet()) {
 			
-			PerceptUnionBelief existingUnion = existingUnions.get(existingUnionId);
+			Belief existingUnion = existingUnions.get(existingUnionId);
 			List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
 			
 			if (!existinUnionOrigins.contains(perceptOrigin)) {
@@ -434,9 +430,9 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent {
 	 * 
 	 * @return the set of existing unions (as a mapping from identifier to objects)
 	 */
-	private HashMap<String, PerceptUnionBelief> extractExistingUnions() {
+	private HashMap<String, Belief> extractExistingUnions() {
 
-		HashMap<String, PerceptUnionBelief> existingunions = new HashMap<String, PerceptUnionBelief>();
+		HashMap<String, Belief> existingunions = new HashMap<String, Belief>();
 
 		try {
 			CASTData<PerceptUnionBelief>[] unions;
