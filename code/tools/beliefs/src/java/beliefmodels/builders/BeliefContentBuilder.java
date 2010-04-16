@@ -210,13 +210,13 @@ public class BeliefContentBuilder {
 	 */
 	public static BasicProbDistribution createNewFeatureDistribution 
 			(String distribId, List<FeatureValueProbPair> values) throws BeliefException {
-		
+		 
 				 
 		if (values == null) {
-			throw new BeliefException("error, values is null");
+			throw new BeliefException("Error in creating a feature distribution: values is null");
 		}
 		if (values.size() == 0) {
-			throw new BeliefException("error, values.lengh == 0");
+			throw new BeliefException("Error in creating a feature distribution: values is empty");
 		}
 		
 		float total = 0.0f;
@@ -226,7 +226,8 @@ public class BeliefContentBuilder {
 		}
 		
 		if (total > 1.01) {
-			throw new BeliefException("error, probabilities of feature distribution sum up to: " + total);
+			throw new BeliefException("Error in creating a feature distribution: "+
+					"probabilities of feature distribution sum up to more than 1 [" + total+"]");
 		}
 		
 		else if (total < 0.99) {
