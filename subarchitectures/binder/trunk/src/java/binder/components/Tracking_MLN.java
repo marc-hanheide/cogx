@@ -58,16 +58,16 @@ import cast.core.CASTData;
  * - actually build the union content OK
  * - change the belief history to have only cast values OK
  * - testing, defensive programming, check null values and pre/post conditions
- * - when constructing a new belief, propagate the pointers correctly OK
+ * - when constructing a new belief, propagate the pointers correctly
  * - have proper logging functionality
- * - implement the same kind of functionality for tracking 
+ * - implement the same kind of functionality for tracking
  * - send examples of test cases to Sergio OK
- * - do the test with percepts instead of unions as inputs OK
+ * - do the test with percepts instead of unions as inputs
  * 
  * @author plison
  *
  */ 
-public class PerceptualGrouping_MLN extends MarkovLogicComponent {
+public class Tracking_MLN extends MarkovLogicComponent {
  
 	
 	String MLNFile = markovlogicDir + "grouping.mln";
