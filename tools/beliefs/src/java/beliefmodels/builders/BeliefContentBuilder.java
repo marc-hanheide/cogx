@@ -22,9 +22,13 @@
 package beliefmodels.builders; 
 
 
+import static org.junit.Assert.fail;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.junit.Test;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
@@ -51,12 +55,13 @@ public class BeliefContentBuilder {
  
  
 	/**
-	 * Create a belief content defined as a distribution with "exist" dependency (cf. slice specs)
+	 * Create a belief content defined as a distribution with "exist" dependency (cf. slice specs). The probability
+	 * must be in the range (0.0f...1.0f]
 	 * 
 	 * @param probExist 
-	 * 			the probability of existence of the belief
+	 * 			the probability of existence of the belief 
 	 * @param contentDistrib 
-	 * 			the distribution on the rest
+	 * 			the distribution on the rest (this is checked for null, but not for empty!) 
 	 * 
 	 * @return a probability distribution with exist dependency
 	 * @throws BeliefException 
@@ -67,12 +72,19 @@ public class BeliefContentBuilder {
 
 		// checking the distribution is not null
 		if (contentDistrib == null) {
-			throw new BeliefException("error, distribution is a null pointer");
+			throw new BeliefException("Error in creating a distribution with an existence probability: "+
+					"source distribution is null");
 		}
+		// Should check whether the distribution is empty (SLICE has no general interface, "impossible" to check here)
 		
+		// check that the probability is within the range (0.0f..1.0f]
+		if (probExist <= 0.0f || probExist > 1.0f) {
+			throw new BeliefException("Error in creating a distribution with an existence probability: "+
+					"existence probability ["+probExist+"] is outside range (0.0f..1.0f]");
+		} // end if
 		// constructing the full distribution
 		return new DistributionWithExistDep (probExist, contentDistrib);
-	}
+	} // end method
 
 		
 
@@ -101,19 +113,23 @@ public class BeliefContentBuilder {
 	 * 			or if content distribution is not conditionally independent
 	 * @post the belief content is updated with the new feature
 	 */
-	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, String key, BasicProbDistribution featDistrib) throws BeliefException {
-		
+	public static void putNewFeatureInBeliefContent(DistributionWithExistDep beliefcontent, String key, BasicProbDistribution featDistrib) 
+	throws BeliefException 
+	{
 		if (beliefcontent == null) {
-			throw new BeliefException("error, belief content is null");
+			throw new BeliefException("Error in updating belief content with a new feature: "
+					+"Belief content is null");
 		}
 		else if (beliefcontent.Pc == null) {
-			throw new BeliefException("error, content distribution in belief content is null");
+			throw new BeliefException("Error in updating belief content with a new feature: "+
+					"Content distribution in belief content is null");
 		}
 		else if (!(beliefcontent.Pc instanceof CondIndependentDistribs)) {
-			throw new BeliefException("error, content distribution is not set to be conditionally independent");
+			throw new BeliefException("Error in updating belief content with a new feature: "+ 
+					"Content distribution is not set to be conditionally independent");
 		}
 		putNewCondIndependentDistrib(((CondIndependentDistribs)beliefcontent.Pc), featDistrib);
-	}
+	} // end method
 	
 	
 	
@@ -129,8 +145,9 @@ public class BeliefContentBuilder {
 	 * 			exception thrown if distribs or newDistrib is a null pointer
 	 * @post distribs now contains newDistrib
 	 */
-	public static void putNewCondIndependentDistrib(CondIndependentDistribs distribs, BasicProbDistribution newDistrib) throws BeliefException {
-		
+	public static void putNewCondIndependentDistrib(CondIndependentDistribs distribs, BasicProbDistribution newDistrib) 
+	throws BeliefException 
+	{
 		if (distribs == null || newDistrib == null) {
 			throw new BeliefException("error, distribution is a null pointer");
 		}
@@ -143,7 +160,6 @@ public class BeliefContentBuilder {
 		}
 		
 		distribs.distribs.put(newDistrib.key, newDistrib);
-
 	}
 
 	
@@ -199,7 +215,7 @@ public class BeliefContentBuilder {
 	 * <featvalue,prob> pairs
 	 * 
 	 * @param distribId
-	 * 			the distribution identifier (i.e. the feature label)
+	 * 			the distri)bution identifier (i.e. the feature label)
 	 * @param values
 	 * 			set of <featvalue, prob> pairs
 	 * @return the resulting probability distribution -- if the sum of probabilities is lower than

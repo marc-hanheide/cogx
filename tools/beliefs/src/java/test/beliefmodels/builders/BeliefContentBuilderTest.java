@@ -59,12 +59,21 @@ import beliefmodels.builders.FeatureValueBuilder;
 
 public class BeliefContentBuilderTest {
 
-	
-	
+	// A list of <feature-value, probability> pairs, summing up to 1.0f
+	ArrayList<FeatureValueProbPair> fValPrPairs;
+	// A basic distribution with <feature-value, probability> pairs, summing up to 1.0f
+	BasicProbDistribution sampleBaseDistribution; 
 	
 	@Before
 	public void setUp() throws Exception {
-		
+		FeatureValue fVal1 = FeatureValueBuilder.createNewStringValue("val1");
+		FeatureValue fVal2 = FeatureValueBuilder.createNewStringValue("val2");
+		FeatureValueProbPair fVal1Pr = new FeatureValueProbPair (fVal1, 0.4f);
+		FeatureValueProbPair fVal2Pr = new FeatureValueProbPair (fVal2, 0.6f);
+		fValPrPairs = new ArrayList<FeatureValueProbPair>();
+		fValPrPairs.add(fVal1Pr);
+		fValPrPairs.add(fVal2Pr);
+		BasicProbDistribution sampleBaseDistribution = BeliefContentBuilder.createNewFeatureDistribution("feats", fValPrPairs);
 	}
 
 	/**
@@ -77,13 +86,6 @@ public class BeliefContentBuilderTest {
 	{ 
 		try { 
 			// create a basic probability distribution over feature values
-			FeatureValue fVal1 = FeatureValueBuilder.createNewStringValue("val1");
-			FeatureValue fVal2 = FeatureValueBuilder.createNewStringValue("val2");
-			FeatureValueProbPair fVal1Pr = new FeatureValueProbPair (fVal1, 0.4f);
-			FeatureValueProbPair fVal2Pr = new FeatureValueProbPair (fVal2, 0.6f);
-			ArrayList<FeatureValueProbPair> fValPrPairs = new ArrayList<FeatureValueProbPair>();
-			fValPrPairs.add(fVal1Pr);
-			fValPrPairs.add(fVal2Pr);
 			BeliefContentBuilder.createNewFeatureDistribution("feats", fValPrPairs);
 		} catch (BeliefException be) {
 			fail("Creating a new base distribution from <feature-value, probability> pairs should have succeeded: "+
@@ -227,9 +229,78 @@ public class BeliefContentBuilderTest {
 		} // end try..catch
 	} // end test	
 	
+	/**
+	 * Create a new distribution with an existence probability succeeds
+	 */
+	
+	@Test
+	public void CreateNewDistributionWithExistDepSucceeds () { 
+		try { 
+			BeliefContentBuilder.createNewDistributionWithExistDep(0.5f,sampleBaseDistribution);
+		} catch (BeliefException be) {
+			fail("Creating a new distribution with an existence probability should have succeeded"
+					+be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a new distribution with an existence probability fails given a null source distribution
+	 */
+	
+	@Test
+	public void CreateNewDistributionWithExistDepFromNullFails () { 
+		try { 
+			BeliefContentBuilder.createNewDistributionWithExistDep(0.5f,null);
+			fail("Creating a new distribution with an existence probability should fail given a null source distribution");
+		} catch (BeliefException be) {
+			assertEquals("Error in creating a distribution with an existence probability: "+
+					"source distribution is null",be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Creating a new distribution with an existence probability outside the range (0.0f..1.0f] fails
+	 */
+	
+	@Test
+	public void CreateNewDistributionWithExistDepWithNegExistenceFails () { 
+		try { 
+			BeliefContentBuilder.createNewDistributionWithExistDep(-0.5f,sampleBaseDistribution);
+			fail("Creating a new distribution with an existence probability should fail given negative probability");
+		} catch (BeliefException be) {
+			assertEquals("Error in creating a distribution with an existence probability: "+
+					"existence probability [-0.5f] is outside range (0.0f..1.0f]",be.getMessage());
+		} // end try..catch
+	} // end test
 	
 	
+	/**
+	 * Creating a new distribution with an existence probability outside the range (0.0f..1.0f] fails
+	 */
 	
+	@Test
+	public void CreateNewDistributionWithExistDepWithHugeExistenceFails () { 
+		try { 
+			BeliefContentBuilder.createNewDistributionWithExistDep(1000.0f,sampleBaseDistribution);
+			fail("Creating a new distribution with an existence probability should fail given too large probability");
+		} catch (BeliefException be) {
+			assertEquals("Error in creating a distribution with an existence probability: "+
+					"existence probability [1000.0f] is outside range (0.0f..1.0f]",be.getMessage());
+		} // end try..catch
+	} // end test
+	
+	/**
+	 * Putting a new feature into a conditionally independent feature distribution succeeds (when given such)
+	 */
+	
+	@Test 
+	public void AddNewFeatureToConditionallyIndependentFeatureDistributionSucceeds () { 
+		// Start from the sampleBaseDistribution 
+		
+		
+		
+		
+	} // end test
 	
 	
 	
