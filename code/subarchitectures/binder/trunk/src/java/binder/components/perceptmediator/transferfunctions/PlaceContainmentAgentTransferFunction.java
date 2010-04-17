@@ -11,9 +11,10 @@ import org.apache.log4j.Logger;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMView;
+import castutils.facades.SpatialFacade;
 
-import SpatialProperties.PlaceContainmentObjectProperty;
 import SpatialProperties.IntegerValue;
+import SpatialProperties.PlaceContainmentAgentProperty;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
@@ -27,26 +28,24 @@ import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatching
  * @author marc
  *
  */
-public class PlaceObjectContainmentTransferFunction extends DependentDiscreteTransferFunction<PlaceContainmentObjectProperty, PerceptBelief> {
+public class PlaceContainmentAgentTransferFunction extends DependentDiscreteTransferFunction<PlaceContainmentAgentProperty, PerceptBelief> {
 
-	public PlaceObjectContainmentTransferFunction(ManagedComponent component, WMView<PerceptBelief> allBeliefs) {
-		super(component, allBeliefs, Logger.getLogger(PlaceObjectContainmentTransferFunction.class));
+	public PlaceContainmentAgentTransferFunction(ManagedComponent component, WMView<PerceptBelief> allBeliefs) {
+		super(component, allBeliefs, Logger.getLogger(PlaceContainmentAgentTransferFunction.class));
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	protected
-	Map<String, FeatureValue> getFeatureValueMapping(PlaceContainmentObjectProperty from) throws BeliefException, InterruptedException {
+	Map<String, FeatureValue> getFeatureValueMapping(PlaceContainmentAgentProperty from) throws BeliefException, InterruptedException {
 		assert(from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 
-		result.put("Label", FeatureValueBuilder.createNewStringValue(from.label));
-
+		result.put("AgentId", FeatureValueBuilder.createNewIntegerValue((int) from.agentID));
 		WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
 				((IntegerValue) from.mapValue).value));
 		result.put(FeatPlaceId.value, FeatureValueBuilder
 				.createNewStringValue(wmaPlace.id));
-
-		
 		return result;
 	}
 

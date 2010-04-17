@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
@@ -20,12 +21,12 @@ public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectI
 	WMView<To> allBeliefs;
 	WMContentWaiter<To> waitingBeliefReader;
 
-
 	/**
 	 * @param places
 	 */
-	public DependentDiscreteTransferFunction(WMView<To> allBeliefs, Logger logger) {
-		super(logger);
+	public DependentDiscreteTransferFunction(ManagedComponent component,
+			WMView<To> allBeliefs, Logger logger) {
+		super(component, logger);
 		this.allBeliefs = allBeliefs;
 		waitingBeliefReader = new WMContentWaiter<To>(this.allBeliefs);
 	}
