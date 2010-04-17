@@ -95,7 +95,6 @@ public class TrackingTest extends AbstractBinderTest {
 
 	@Override
 	public void startTest() {
-
 		
 
 		try {
@@ -121,8 +120,8 @@ public class TrackingTest extends AbstractBinderTest {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		sleepComponent(5000);
+		 
+	 	sleepComponent(5000);
 		
 		try {
 			

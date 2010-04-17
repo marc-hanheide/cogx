@@ -165,7 +165,9 @@ public class MLNGenerator {
 	
 	// 2) predicate section
 	private StringBuilder getPredicatesSection() {
+	
 		StringBuilder result = new StringBuilder();
+
 		result.append("///////////////////////////////\n");
 		result.append("// PREDICATES\n");
 		result.append("///////////////////////////////\n");
@@ -179,7 +181,8 @@ public class MLNGenerator {
 		result.append("Outcome(outcome)\n");
 		result.append("UnifyWith(existingunion)\n");
 		result.append("Existence(belief)\n");
-		result.append(NEWLINE);
+		result.append(NEWLINE); 
+		
 		return  result;
 	}
 	
