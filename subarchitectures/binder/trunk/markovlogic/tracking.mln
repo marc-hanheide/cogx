@@ -3,12 +3,12 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {U0_5,U1_5}
+existingunion = {U0_5}
 percept = {P}
-belief = {U0_5,U1_5,P}
+belief = {U0_5,P}
 
 // possible outcomes of the grouping process
-outcome = {U6_5,U5_5,U7_5}
+outcome = {U1_5,U2_5}
 
 // feature values
 labelval = {Ball,Mug,None,Unknown}
@@ -29,39 +29,29 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
--0.6631267 Existence(U0_5)
--1.3663812 Existence(U0_5) ^ Shape(U0_5,Cyl)
--2.975819 Existence(U0_5) ^ Shape(U0_5,Sphe)
--3.381284 Existence(U0_5) ^ Shape(U0_5,Unknown)
+2.1972244 Existence(U0_5)
+-0.39304265 Existence(U0_5) ^ Shape(U0_5,Cyl)
+-2.0024805 Existence(U0_5) ^ Shape(U0_5,Sphe)
+-2.4079454 Existence(U0_5) ^ Shape(U0_5,Unknown)
 Existence(U0_5) => !Shape(U0_5,None).
 Existence(U0_5) => !Label(U0_5,Ball).
 Existence(U0_5) => !Label(U0_5,Mug).
 Existence(U0_5) => !Label(U0_5,Unknown).
 Existence(U0_5) => Label(U0_5,None).
 
-1.3862945 Existence(U1_5)
--0.38566247 Existence(U1_5) ^ Shape(U1_5,Sphe)
--2.1202636 Existence(U1_5) ^ Shape(U1_5,Unknown)
-Existence(U1_5) => !Shape(U1_5,Cyl).
-Existence(U1_5) => !Shape(U1_5,None).
-Existence(U1_5) => !Label(U1_5,Ball).
-Existence(U1_5) => !Label(U1_5,Mug).
-Existence(U1_5) => !Label(U1_5,Unknown).
-Existence(U1_5) => Label(U1_5,None).
-
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
--1.0772594 Existence(P)
--1.4756831 Existence(P) ^ Label(P,Mug)
--4.366055 Existence(P) ^ Label(P,Ball)
--4.3660545 Existence(P) ^ Label(P,Unknown)
-Existence(P) => !Label(P,None).
-Existence(P) => !Shape(P,Cyl).
-Existence(P) => !Shape(P,Sphe).
-Existence(P) => !Shape(P,Unknown).
-Existence(P) => Shape(P,None).
+2.4423473 Existence(P)
+-0.42587197 Existence(P) ^ Shape(P,Cyl)
+-1.9159632 Existence(P) ^ Shape(P,Sphe)
+-2.1236024 Existence(P) ^ Shape(P,Unknown)
+Existence(P) => !Shape(P,None).
+Existence(P) => !Label(P,Ball).
+Existence(P) => !Label(P,Mug).
+Existence(P) => !Label(P,Unknown).
+Existence(P) => Label(P,None).
 
 ///////////////////////////////
 // FEATURE VALUE CONSTRAINTS
@@ -80,32 +70,25 @@ Shape(x,y) ^ Shape(x,z) => y=z.
 EXIST y Shape(x,y).
 
 
-
 ///////////////////////////////
-// CORRELATIONS
+// SIMILARITIES
 ///////////////////////////////
 
 // general correlations
-1 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Mug) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Mug) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Ball) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Ball) => UnifyWith(x)
-2 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
-2 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
-2 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Ball) => !UnifyWith(x)
-2 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Ball) => !UnifyWith(x)
 
-// at least one correlation must hold
-UnifyWith(x) => (Shape(x,Cyl) ^ Label(P,Mug)) v (Shape(P,Cyl) ^ Label(x,Mug)) v (Shape(x,Sphe) ^ Label(P,Ball)) v (Shape(P,Sphe) ^ Label(x,Ball)).
+1 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Shape(P,Cyl) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Shape(P,Sphe) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Label(x,Mug) ^ Label(P,Mug) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Label(x,Ball) ^ Label(P,Ball) => UnifyWith(x)
+
 UnifyWith(x) => Existence(x) ^ Existence(P).
-
+UnifyWith(x) => (Shape(x,Cyl) ^ Shape(P,Cyl)) v (Shape(x,Sphe) ^ Shape(P,Sphe)) v (Label(x,Mug) ^ Label(P,Mug)) v (Label(x,Ball) ^ Label(P,Ball)).
 ///////////////////////////////
 // FINAL OUTCOME
 ///////////////////////////////
 
--1.5 Existence(P) => Outcome(U7_5)
-UnifyWith(U0_5) <=> Outcome(U5_5).
-UnifyWith(U1_5) <=> Outcome(U6_5).
+-1.5 Existence(P) => Outcome(U2_5)
+UnifyWith(U0_5) <=> Outcome(U1_5).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).

@@ -25,6 +25,7 @@ import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import binder.ml.MLException;
 import binder.utils.MLNGenerator;
+import binder.utils.MLNPreferences;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -75,7 +76,7 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	// lowest probability threshold for the existence probability of a mmbelief union
 	public float lowestProbThreshold = 0.08f;
 	
-	// maximum number of alternatives to consider for mmbeliefual grouping.  If more are available, take the highest-probability ones
+	// maximum number of alternatives to consider for tracking.  If more are available, take the highest-probability ones
 	public int maxAlternatives = 2;
 	
 	// minimum difference in probability in order to trigger a working memory update on an existing union
@@ -98,7 +99,7 @@ public class Tracking_MLN extends MarkovLogicComponent {
 							
 							log("received a new mmbelief: " + beliefData.getID());
 							performTracking (beliefData.getData(), _wmc.address);
-							log("mmbeliefual grouping operation on mmbelief " + beliefData.getID() + " now finished");
+							log("tracking operation on mmbelief " + beliefData.getID() + " now finished");
 						}	
 			
 						 catch (Exception e) {
@@ -136,7 +137,7 @@ public class Tracking_MLN extends MarkovLogicComponent {
 							
 							log("received a new mmbelief: " + beliefData.getID());
 							performTracking (beliefData.getData(), _wmc.address);
-							log("mmbeliefual grouping operation on mmbelief " + beliefData.getID() + " now finished");
+							log("tracking operation on mmbelief " + beliefData.getID() + " now finished");
 						}	
 			
 						 catch (Exception e) {
@@ -157,7 +158,7 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	 */
 	public void performTracking(MultiModalBelief mmbelief, WorkingMemoryAddress mmbeliefWMAddress) throws BeliefException {
 	
-		log("now starting mmbeliefual grouping...");
+		log("now starting tracking...");
 
 		// extract the unions already existing in the binder WM
 		HashMap<String, Belief> existingUnions = extractExistingUnions();
@@ -178,7 +179,11 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		
 		// Write the markov logic network to a file
 		try {
-			(new MLNGenerator()).writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
+			MLNPreferences prefs = new MLNPreferences();
+			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/similarities.mln");
+			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
+			MLNGenerator gen = new MLNGenerator(prefs);
+			gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
 		} catch (MLException e1) {
 			e1.printStackTrace();
 		}
@@ -407,32 +412,31 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		return subarchitectures;
 	}
 	
-	
+
 	private HashMap<String,Belief> selectRelevantUnions (HashMap<String,Belief> existingUnions, 
 			MultiModalBelief mmbelief) throws BeliefException {
-		
+
 		HashMap<String,Belief> relevantUnions = new HashMap<String,Belief>();
-	
+
 		if (((CASTBeliefHistory)mmbelief.hist).ancestors.size() == 0) {
 			throw new BeliefException ("ERROR: mmbelief history contains 0 element");
 		}
-		else if (((CASTBeliefHistory)mmbelief.hist).ancestors.size() > 1) {
-			throw new BeliefException ("ERROR: mmbelief history contains more than 1 element");
-		}
-		
-		String mmbeliefOrigin = getOriginSubarchitectures(mmbelief).get(0);
-		
-		for (String existingUnionId : existingUnions.keySet()) {
-			
-			Belief existingUnion = existingUnions.get(existingUnionId);
-			List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
-			
-			if (!existinUnionOrigins.contains(mmbeliefOrigin)) {
-				relevantUnions.put(existingUnionId, existingUnion);
+
+
+		for (String mmbeliefOrigin : getOriginSubarchitectures(mmbelief)) {
+
+			for (String existingUnionId : existingUnions.keySet()) {
+
+				Belief existingUnion = existingUnions.get(existingUnionId);
+				List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
+
+				if (existinUnionOrigins.contains(mmbeliefOrigin)) {
+					relevantUnions.put(existingUnionId, existingUnion);
+				}
+
 			}
-			
 		}
-		
+
 		
 		return relevantUnions;
 	}

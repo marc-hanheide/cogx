@@ -38,7 +38,7 @@ public abstract class MarkovLogicComponent extends BeliefWriter {
 			String output = "";
 			while ((s = stdInput.readLine()) != null) {
 				output += s + "\n";
-				if (s.contains("ERROR in grouping.mln")) {
+				if (s.contains("ERROR")) {
 					inferenceSuccessful = false;
 				}
 			}
