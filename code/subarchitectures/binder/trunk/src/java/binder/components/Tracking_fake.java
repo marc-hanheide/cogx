@@ -27,7 +27,7 @@ public class Tracking_fake extends BeliefWriter {
 						try {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 							
-							TemporalUnionBelief mmBelief = TemporalUnionBuilder.createNewSingleTemporalUnionBuilder(beliefData.getData(), _wmc.address, newDataID());
+							TemporalUnionBelief mmBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, newDataID());
 								insertBeliefInWM(mmBelief);
 						}	
 			
