@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import cast.architecture.ManagedComponent;
+
 import SpatialData.Place;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
@@ -23,8 +25,8 @@ import binder.components.perceptmediator.transferfunctions.abstr.SimpleDiscreteT
  */
 public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place, PerceptBelief> {
 
-	public PlaceTransferFunction() {
-		super(Logger.getLogger(PlaceTransferFunction.class));
+	public PlaceTransferFunction(ManagedComponent component) {
+		super(component, Logger.getLogger(PlaceTransferFunction.class));
 		// TODO Auto-generated constructor stub
 	}
 

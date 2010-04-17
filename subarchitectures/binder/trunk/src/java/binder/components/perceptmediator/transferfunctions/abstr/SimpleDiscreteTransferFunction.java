@@ -19,6 +19,7 @@ import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.PerceptBuilder;
+import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 
@@ -32,12 +33,15 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 	/**
 	 * @param logger
 	 */
-	public SimpleDiscreteTransferFunction(Logger logger) {
+	public SimpleDiscreteTransferFunction(ManagedComponent component, Logger logger) {
 		super();
+		this.component = component;
 		this.logger = logger;
 	}
 
-	Logger logger;
+	protected Object component;
+	protected Logger logger;
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -66,7 +70,9 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		BasicProbDistribution cdistrib;
 		try {
 			cdistrib = BeliefContentBuilder.createNewFeatureDistribution(key, values);
-			BeliefContentBuilder.putNewCondIndependentDistrib(features, cdistrib);
+			// TODO Here the API should be used instead!
+			features.distribs.put(cdistrib.key, cdistrib);
+			//BeliefContentBuilder.putNewCondIndependentDistrib(features, cdistrib);
 		} catch (BeliefException e) {
 			logger.error(
 					"Belief exception", e);

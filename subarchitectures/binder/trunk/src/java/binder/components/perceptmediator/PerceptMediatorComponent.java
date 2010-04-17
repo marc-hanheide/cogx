@@ -10,11 +10,15 @@ import java.util.Set;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import binder.components.perceptmediator.transferfunctions.ConnectivityTransferFunction;
 import binder.components.perceptmediator.transferfunctions.GatewayTransferFunction;
+import binder.components.perceptmediator.transferfunctions.PlaceContainmentAgentTransferFunction;
+import binder.components.perceptmediator.transferfunctions.PlaceObjectContainmentTransferFunction;
 import binder.components.perceptmediator.transferfunctions.PlaceTransferFunction;
 
 import SpatialData.Place;
 import SpatialProperties.ConnectivityPathProperty;
 import SpatialProperties.GatewayPlaceProperty;
+import SpatialProperties.PlaceContainmentAgentProperty;
+import SpatialProperties.PlaceContainmentObjectProperty;
 
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
@@ -71,13 +75,19 @@ public class PerceptMediatorComponent extends ManagedComponent {
 	@Override
 	protected void configure(Map<String, String> config) {
 		monitors.add(new PerceptMonitor<Place>(this, Place.class,
-				new PlaceTransferFunction()));
+				new PlaceTransferFunction(this)));
 		monitors.add(new PerceptMonitor<ConnectivityPathProperty>(this,
 				ConnectivityPathProperty.class,
-				new ConnectivityTransferFunction(perceptBeliefs)));
+				new ConnectivityTransferFunction(this, perceptBeliefs)));
 		monitors.add(new PerceptMonitor<GatewayPlaceProperty>(this,
 				GatewayPlaceProperty.class,
-				new GatewayTransferFunction(perceptBeliefs)));
+				new GatewayTransferFunction(this, perceptBeliefs)));
+		monitors.add(new PerceptMonitor<PlaceContainmentAgentProperty>(this,
+				PlaceContainmentAgentProperty.class,
+				new PlaceContainmentAgentTransferFunction(this, perceptBeliefs)));
+		monitors.add(new PerceptMonitor<PlaceContainmentObjectProperty>(this,
+				PlaceContainmentObjectProperty.class,
+				new PlaceObjectContainmentTransferFunction(this, perceptBeliefs)));
 	}
 
 	/*

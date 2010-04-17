@@ -12,6 +12,7 @@ import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.builders.FeatureValueBuilder;
 import binder.components.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
+import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMView;
@@ -47,8 +48,8 @@ public class ConnectivityTransferFunction
 	/**
 	 * @param perceptBeliefs
 	 */
-	public ConnectivityTransferFunction(WMView<PerceptBelief> perceptBeliefs) {
-		super(perceptBeliefs, Logger
+	public ConnectivityTransferFunction(ManagedComponent component, WMView<PerceptBelief> perceptBeliefs) {
+		super(component, perceptBeliefs, Logger
 				.getLogger(ConnectivityTransferFunction.class));
 
 	}

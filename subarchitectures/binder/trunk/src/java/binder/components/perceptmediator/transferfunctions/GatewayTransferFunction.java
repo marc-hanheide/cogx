@@ -13,6 +13,7 @@ import beliefmodels.autogen.featurecontent.featurenames.FeatPlaceId;
 import beliefmodels.builders.FeatureValueBuilder;
 import binder.components.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
+import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMView;
 
@@ -39,8 +40,8 @@ public class GatewayTransferFunction
 	/**
 	 * @param perceptBeliefs
 	 */
-	public GatewayTransferFunction(WMView<PerceptBelief> perceptBeliefs) {
-		super(perceptBeliefs, Logger.getLogger(GatewayTransferFunction.class));
+	public GatewayTransferFunction(ManagedComponent component, WMView<PerceptBelief> perceptBeliefs) {
+		super(component, perceptBeliefs, Logger.getLogger(GatewayTransferFunction.class));
 
 	}
 
