@@ -1,12 +1,11 @@
-SUBARCHITECTURE vision.sa
-JAVA WM                       cast.architecture.SubarchitectureWorkingMemory 
-JAVA TM                       cast.architecture.AlwaysPositiveTaskManager
-JAVA MG not-much-of-a-looker  vision.components.BlobjectDetector --label-teabox 255,0,0 --label-journal 0,255,0 --label-cassette 0,0,255  --label-juice 255,255,0 --label-notebook 255,0,255
+#SUBARCHITECTURE vision.sa
+#JAVA WM                       cast.architecture.SubarchitectureWorkingMemory 
+#JAVA TM                       cast.architecture.AlwaysPositiveTaskManager
 
-# red: teabox
-# green: journal
-# blue: cassette
-# yellow: juice
-# magenta: notebook
+JAVA MG blobdetector  vision.components.BlobjectDetector --label-record1 255,0,0 --label-record2 0,255,0 --label-record3 0,0,255  --label-record4 255,0,255 
+
+JAVA MG peopledetector  vision.components.BlobbyPeopleDetector --person-colour=0,0,255 
+
+
 
 

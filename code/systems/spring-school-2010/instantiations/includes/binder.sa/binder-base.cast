@@ -1,4 +1,5 @@
 SUBARCHITECTURE binder 
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
-JAVA WM binder.components.BindingWorkingMemory #--log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+
 

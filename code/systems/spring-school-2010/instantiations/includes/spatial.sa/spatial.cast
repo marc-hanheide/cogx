@@ -7,5 +7,5 @@ CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.
 CPP GD path.query PathQueryProcessor #--no-indirect-paths 
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf #--log
 
-#JAVA MG exe-spatial spatial.motivation.SpatialActionInterface  #--log
+JAVA MG exe-spatial spatial.motivation.SpatialActionInterface  #--log
 
