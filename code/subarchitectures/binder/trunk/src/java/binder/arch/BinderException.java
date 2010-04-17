@@ -23,7 +23,7 @@ package binder.arch;
 public class BinderException extends Exception {
 
 	private static final long serialVersionUID = 1L;
-	
+ 	 
 	/** some message */
 	protected String m;
 
