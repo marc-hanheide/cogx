@@ -59,7 +59,7 @@ module SpatialProperties
   };
 
   /** Sequence of value-probability pairs. */
-  sequence <ValueProbabilityPair> ValueProbabilityPairs;
+  ["java:type:java.util.Vector<ValueProbabilityPair>"] sequence <ValueProbabilityPair> ValueProbabilityPairs;
 
   /** Generic, abstract class for all probability distributions. */
   class ProbabilityDistribution
@@ -297,6 +297,7 @@ module SpatialProperties
    */
   class PlaceContainmentObjectProperty extends ObjectProperty
   {
+    string label;
   };
 
   /**
