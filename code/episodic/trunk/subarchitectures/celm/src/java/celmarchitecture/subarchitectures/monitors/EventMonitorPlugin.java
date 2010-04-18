@@ -10,6 +10,20 @@ import cast.cdl.WorkingMemoryOperation;
 import elm.event.EventSpecificFeatures;
 import celmarchitecture.global.GlobalSettings;
 
+
+/**
+ * EventMonitorPlugin is an interface defining the prototypes of methods
+ * which can deduce event information (sensu ELM) from CAST WM changes.
+ * See EventMonitorDefaultPlugin for a default implementation. 
+ * The EventMonitorDefaultPlugin, however, can only extract some rough
+ * event type-general information. You are encouraged to provide more 
+ * specific information than this in your plugins.
+ *
+ * @see PBMonitor
+ * @see EventMonitorDefaultPlugin
+ *
+ * @author Dennis Stachowicz
+ */
 public interface EventMonitorPlugin {
 
 	/**

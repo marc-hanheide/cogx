@@ -26,8 +26,14 @@ import celmarchitecture.subarchitectures.abstr.SimpleAbstractWMMonitor;
 
 
 /**
- * PBMonitor is ...
- * 
+ * PBMonitor (short for plugin-based monitor) is a process which monitors 
+ * CAST WMs for changes which indicate events in the sense of an episodic-like
+ * memory. There is a plugin system inspired by the WM Monitor Plugins created 
+ * by Marc which handles these WM changes.
+ *
+ * @see EventMonitorPlugin
+ * @see EventMonitorDefaultPlugin
+ *
  * @author Dennis Stachowicz
  */
 public class PBMonitor extends SimpleAbstractWMMonitor {
