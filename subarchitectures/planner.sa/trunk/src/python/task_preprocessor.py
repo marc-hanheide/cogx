@@ -110,7 +110,6 @@ def gen_fact_tuples(beliefs):
   for bel in beliefs:
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
-      print feat, val, prob
       factdict[str(feat)].append((val, prob))
       
     if bel.type != "relation":

@@ -2,6 +2,7 @@ from collections import defaultdict
 import time, itertools
 import config
 
+import pddl
 from pddl import state
 import plans
 
@@ -132,6 +133,10 @@ def make_po_plan(actions, task):
         plan.add_node(pnode)
         #linear plan for now
         #plan.add_link(previous, pnode)
+
+        if not pnode.replanconds and not pnode.preconds:
+            plan.add_link(plan.init_node, pnode, "started", pddl.TRUE)
+            log.debug("%s depends artificially on init", pnode)
                          
         for svar, val in itertools.chain(pnode.replanconds, pnode.preconds):
             if svar not in frontier:
