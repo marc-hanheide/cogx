@@ -1,22 +1,23 @@
 /**
-\mainpage The (CAST-integrated) Episodic-like memory (C-ELM) system
+\mainpage ELM's integration layer with CAST (C-ELM)
 
 \section secAbout About ELM and C-ELM
 
 ELM is a software package providing episodic-like memory functionality for cognitive robotics systems. It mainly consists of a Java library (acting as a client to a PostgreSQL server with PostGIS extensions for spatial processing) and provides a Java interface. The C-ELM package integrates ELM with the CAST cognitive robotics middleware and with other software software packages stemming from the CoSy and CogX projects. It adds another interface layer on top of the ELM interface as well as implementations of several CAST processes, conversion functionality etc. In other words: While ELM provides the core episodic-like memory functionality developed to be independent of middleware or other software, C-ELM provides the code specific for this particular instantiation of ELM.
 
 \section secSAs About processes, working memories and subarchitectures
-The processes of the C-ELM system make only very little assumptions about the subarchitectures they run in or about which processes run in it, too. They can all be merged into one subarchitecture sharing the same working memory or be spread over several as needed in the specfic scenario. Especially monitor processes can even be added to other subarchitectures they are monitoring - which can be necessary if their working memories are configured not send cross-subarchitecture change notifications! Whether processes run in a single subarchitecture or not and what the names of the relevant subarchitectures are can be configured using parameters in CAST config files. (If the config switches are not used, default values are taken from celmarchitecture::global::GlobalSettings and celmarchitecture::global::SANames.)
+The processes of the C-ELM system make only very little assumptions about the subarchitectures they run in or about which processes run in it, too. They can all be merged into one subarchitecture sharing the same working memory or be spread over several. Whether processes run in a single subarchitecture or not and what the names of the relevant subarchitectures are can be configured using parameters in CAST config files. (If the config switches are not used, default values are taken from celmarchitecture::global::GlobalSettings and celmarchitecture::global::SANames.)
 
 \section secGetStarted Getting started with the interfaces of the C-ELM layer
 
 To get started with the most basic usage of the C-ELM layer you might want to have a look at
 the following files, classes and structs: 
 
-The file CELM.idl contains definitions of IDL structs. To report an event instances of struct celm::autogen::CELM_EventToStore or celm::autogen::CELM_PartialEventToStore can be written to the working memory of the ElmWriter process. Recollection of experienced events on the other hand is triggered when celm::autogen::CELM_EventQuery instances are written to Recollector's working memory.
+The file CELM.ice contains definitions of IDL structs. To report an event instances of struct celm::autogen::CELMEventToStore or celm::autogen::CELMPartialEventToStore can be written to the working memory of the ElmWriter process. Recollection of experienced events on the other hand is triggered when celm::autogen::CELMEventQuery instances are written to Recollector's working memory.
 
-You might also want to have a look at some running code using this functionality. If you want to report events you can one of use the monitor processes as a template (or see there whether your data is already handled!), e.g. ObjectMonitor (celmarchitecture::subarchitectures::monitors::ObjectMonitor). They are derived from class SimpleAbstractWMMonitor (celmarchitecture::subarchitectures::monitors::SimpleAbstractWMMonitor) which provides some methods for more convenience with this task (like celmarchitecture::subarchitectures::monitors::SimpleAbstractWMMonitor::addPartialEvent()).
+Neither celm::autogen::CELMEventToStore nor celm::autogen::CELMPartialEventToStore structures need
+to be written to CELM's WM directly, however. The use of monitoring processes presents a more flexible and modular approach for the reporting of events to CELM. Such monitoring processes listen for changes on CAST WMs which represent events (in the sense of ELM) and then construct the appropriate celm::autogen::CELMPartialEventToStore structures from the information obtained. Two ways of writing such monitor processes have been developed: a plugin-based newer approach (see celmarchitecture::subarchitectures::monitors::PBMonitor) and a 'traditional' one (see celmarchitecture::subarchitectures::abstr::SimpleAbstractWMMonitor).
 
-For a running example of a process triggering recollection, see class QuerySimulator (celmarchitecture::subarchitectures::simulator::QuerySimulator).
+Finally, for an example of a process triggering recollection, see class QuerySimulator (celmarchitecture::subarchitectures::simulator::QuerySimulator).
 
 */
