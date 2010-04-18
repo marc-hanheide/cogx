@@ -248,7 +248,8 @@ public class BinderFacade extends CASTHelper {
 	}
 
 	public Belief getBelief(String id) {
-		return proxies.get(id);
+        WorkingMemoryAddress wma = new WorkingMemoryAddress(id, BINDER_SA);
+		return proxies.get(wma);
 	}
 
 }
