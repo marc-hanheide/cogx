@@ -10,6 +10,7 @@ import java.util.Set;
 
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
 
 import motivation.slice.PlanProxy;
@@ -187,14 +188,14 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			}
 			
 			List<FeatureValue> placeIDFeatures = m_binderFacade
-					.getFeatureValue(placeUnion, "place_id");
+					.getFeatureValue(placeUnion, "PlaceId");
 			if (placeIDFeatures.isEmpty()) {
 				throw new ActionExecutionException(
-						"No place_id features for union id: " + placeUnionID);
+						"No PlaceId features for union id: " + placeUnionID);
 
 			}
-			StringValue placeIDString = (StringValue) placeIDFeatures.get(0);
-			act.placeID = Long.parseLong(placeIDString.val);
+			IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
+			act.placeID = placeID.val;
 			return act;
 //		} else if (_plannedAction.name.equals("categorize_room")) {
 //			assert _plannedAction.arguments.length == 2 : "categorize_room action arity is expected to be 2";
