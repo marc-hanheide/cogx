@@ -91,13 +91,17 @@ def gen_fact_tuples(beliefs):
     if isinstance(dist, distribs.CondIndependentDistribs):
       result = []
       for feat, fval_dist in dist.distribs.iteritems():
-        if isinstance(fval_dist, distribs.FeatureValueDistribution):
-          for valpair in fval_dist.values:
+        assert isinstance(fval_dist, distribs.BasicProbDistribution)
+        assert feat == fval_dist.key
+        value = fval_dist.values
+        
+        if isinstance(value, distribs.FeatureValues):
+          for valpair in value.values:
             val = feature_val_to_object(valpair.val)
             result.append((feat, val, valpair.prob))
-        elif isinstance(fval_dist, distribs.NormalDistribution):
+        elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
-          result.append((feat, feature_val_to_object(fval_dist.mean), 1.0))
+          result.append((feat, feature_val_to_object(value.mean), 1.0))
       return result
     if isinstance(dist, distribs.DiscreteDistribution):
       assert False, "DiscreteDistribution not supported yet"
@@ -106,12 +110,12 @@ def gen_fact_tuples(beliefs):
   for bel in beliefs:
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
+      print feat, val, prob
       factdict[str(feat)].append((val, prob))
       
     if bel.type != "relation":
       obj = pddl.TypedObject(bel.id, pddl.t_object)
       for feat,vals in factdict.iteritems():
-        #print feat, bel, vals
         yield SVarDistribution(feat, [obj], vals)
     else:
       elems = []

@@ -19,7 +19,7 @@ static const int MAX_PLANNING_RETRIES = 1;
 static const int MAX_EXEC_RETRIES = 1;
 static const int REPLAN_DELAY = 3000;
 
-static const string BINDER_SA = "binding.sa";
+static const string BINDER_SA = "binder";
 
 void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
   m_lastUpdate = getCASTTime();
@@ -196,7 +196,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("state change...");
     if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
         debug("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
-        BeliefPtr changedBelief = getMemoryEntry<Belief>(wmc.address.id, "binding.sa");
+        BeliefPtr changedBelief = getMemoryEntry<Belief>(wmc.address);
         debug("got object");
         m_currentState.insert(std::pair<std::string, BeliefPtr>(wmc.address.id, changedBelief));
     }
