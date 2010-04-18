@@ -27,7 +27,9 @@ INCLUDE includes/binder.sa/perceptmediators.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
-#INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/planner.sa/planner.cast
+JAVA MG executor execution.components.PrototypePlanExecutor --self-motivate --goal "(forall (?p - place) (= (placestatus ?p) trueplace))" --log --debug
+
 #INCLUDE includes/motivation.sa/motivation.cast
 
 # exection ####################################################################
@@ -36,7 +38,7 @@ JAVA MG  manual-execution execution.components.GraphicalExecutionManager
 
 # viewing and debugging #######################################################
 
-JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, binder.autogen.perceptmanagement.PerceptBeliefMaps, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject"
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, binder.autogen.perceptmanagement.PerceptBeliefMaps, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action"
 
 
 
@@ -44,7 +46,7 @@ JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "Spatia
 # MOTIVATION
 ##############################################################################
 # execution ###################################################################
-#JAVA MG executor execution.components.PrototypePlanExecutor 
+#JAVA MG executor execution.components.PrototypePlanExecutor
 # motivation ##################################################################
 #JAVA MG ExploreAndCategorizeGenerator motivation.components.generators.ExploreAndCategorizeGenerator
 
