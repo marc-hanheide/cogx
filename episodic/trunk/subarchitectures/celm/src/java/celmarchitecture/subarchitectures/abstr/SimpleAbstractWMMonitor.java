@@ -20,8 +20,13 @@ import elm.event.EventSpecificFeatures;
  * SimpleAbstractWMMonitor provides functionality to simplify writing monitor
  * processes reporting events to the C-ELM system (mainly addPartialEvent()).
  * 
- * To use it just derive your monitor process from this class.
- * 
+ * To use it monitor processes can be derived from this class. A new approach,
+ * however, is provided with the plugins for the PBMonitor process.
+ *
+ * @see PBMonitor
+ * @see EventMonitorPlugin
+ * @see EventMonitorDefaultPlugin 
+ *
  * @author Dennis Stachowicz
  */
 public class SimpleAbstractWMMonitor extends ManagedComponent {
