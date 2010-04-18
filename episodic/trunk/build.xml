@@ -22,10 +22,13 @@
 	<target name="template" depends="init">
 	  <echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
 	  <!-- e.g. <ant target="${target}" dir="subarchitectures/nav.sa" /> -->
+	  <ant target="${target}" dir="tools/math" />
 	  <ant target="${target}" dir="tools/elm" />
 	  <ant target="${target}" dir="subarchitectures/nav.sa" />
+	  <!-- <ant target="${target}" dir="subarchitectures/spatial.sa" />  -->
 	  <ant target="${target}" dir="subarchitectures/spatial.sa" />
 	  <ant target="${target}" dir="subarchitectures/celm" />
+	  <ant target="${target}" dir="subarchitectures/binder" />
 	</target>
 
 
