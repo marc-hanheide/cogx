@@ -241,25 +241,17 @@ def update_beliefs(diffstate, namedict, beliefs):
   bdict = dict((b.id, b) for b in beliefs)
   changed_ids = set()
 
-  def get_feature_dist(dist, feature):
+  def get_value_dist(dist, feature):
     if isinstance(dist, distribs.DistributionWithExistDep):
       return get_feature_dist(dist.Pc, feature)
     if isinstance(dist, distribs.CondIndependentDistribs):
-      for d in dist.distribs:
-        result = get_feature_dist(d, feature)
-        if result:
-          return result
-      return None
-    if isinstance(dist, distribs.FeatureValueDistribution):
-      if dist.feat == feature:
-        return dist
-      return None
-    if isinstance(dist, distribs.NormalDistribution):
-      if dist.feat == feature:
-        return dist
-      return None
-    if isinstance(dist, distribs.DiscreteDistribution):
-      assert False, "DiscreteDistribution not supported yet"
+      if feature in dist.distribs:
+        return dist.distribs[feature].values
+      return None, dist
+    if isinstance(dist, distribs.BasicProbDistribution):
+      if dist.key == feature:
+        return dist.values
+      return None, None
     assert False, "class %s not supported" % str(type(dist))
   
   for svar, val in diffstate.iteritems():
@@ -270,9 +262,17 @@ def update_beliefs(diffstate, namedict, beliefs):
       log.warning("tried to find belief for %s, but failed", str(obj))
       continue
       
-    dist = get_feature_dist(bel.content, svar.function.name)
+    feature = svar.function.name
+    dist, parent = get_value_dist(bel.content, feature)
+    if not dist:
+      if isinstance(parent, distribs.CondIndependentDistribs):
+        dist = distribs.FeatureValues()
+        parent.distribs[feature] = distribs.BasicProbDistribution(feature, dist)
+      else:
+        continue
+      
     #TODO: deterministic state update for now
-    if isinstance(dist, distribs.NormalDistribution):
+    if isinstance(dist, distribs.NormalValues):
       dist.mean = val.value
       dist.variance = 0;
     else:
@@ -295,6 +295,7 @@ def update_beliefs(diffstate, namedict, beliefs):
       pair = distribs.FeatureValueProbPair(fval, 1.0)
       dist.values = [pair]
 
+    print bel
     changed_ids.add(bel.id)
 
   return [bdict[id] for id in changed_ids]
