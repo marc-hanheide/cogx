@@ -165,8 +165,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       executable_plan = plan.topological_sort()[plan.execution_position:-1]
         
       if len(task_desc.plan) != len(executable_plan):
+        log.error("wm plan:")
         for action in task_desc.plan:
           log.error("%s, status: %s", action.fullName, str(action.status))
+        log.error("internal plan (execution position is %d):", plan.execution_position)
         for pnode in plan.topological_sort():
           log.error("%s, status: %s", str(pnode), pnode.status)
         raise Exception("Plans from WMControl and Planner don't match!")
@@ -222,11 +224,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.replan()
     self.deliver_plan(task)
 
-def compute_state_updates(state, actions):
+def compute_state_updates(_state, actions):
   diffstate = state.State()
   for action in actions:
     for fact in action.effects:
-      if fact not in state:
+      if fact not in _state:
         diffstate.set(fact)
         log.debug("not in state: %s", str(fact))
       elif fact.svar in diffstate:
@@ -262,8 +264,12 @@ def update_beliefs(diffstate, namedict, beliefs):
   
   for svar, val in diffstate.iteritems():
     obj = svar.args[0]
-    bel = bdict[namedict[obj]]
-
+    try:
+      bel = bdict[namedict[obj]]
+    except:
+      log.warning("tried to find belief for %s, but failed", str(obj))
+      continue
+      
     dist = get_feature_dist(bel.content, svar.function.name)
     #TODO: deterministic state update for now
     if isinstance(dist, distribs.NormalDistribution):
