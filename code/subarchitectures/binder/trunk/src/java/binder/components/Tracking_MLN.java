@@ -118,7 +118,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 
 				log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
-				HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults, maxAlternatives);
+				HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults);
 
 				// create the new unions given the inference results
 				Vector<Belief> newUnions = createNewUnions(mmbelief, mmbeliefWMAddress, relevantUnions,

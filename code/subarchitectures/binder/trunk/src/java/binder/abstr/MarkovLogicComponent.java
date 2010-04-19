@@ -129,9 +129,19 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 
 		return inferenceResults;
 	}
-
+	
+	/**
+	 * 
+	 * @param percept
+	 * @param perceptWMAddress
+	 * @throws BeliefException
+	 */
 	public abstract void workingMemoryChangeInsert(Belief percept, WorkingMemoryAddress perceptWMAddress) throws BeliefException;
 
+	/**
+	 * 
+	 * @param perceptWMAddress
+	 */
 	public abstract void workingMemoryChangeDelete(WorkingMemoryAddress perceptWMAddress);
 
 	/**
@@ -197,18 +207,14 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 	 * Filter the inference results to retain only the maxSize-best results
 	 * 
 	 * @param results the results of Alchemy inference
-	 * @param maxSize the number of results to retain
 	 * @return the filtered results
 	 */
-	protected HashMap<String, Float> filterInferenceResults(HashMap<String,Float> results, int maxSize) {
+	protected HashMap<String, Float> filterInferenceResults(HashMap<String,Float> results) {
 
 		List<Entry<String,Float>> list = new LinkedList<Entry<String,Float>>(results.entrySet());
 		Collections.sort(list, new Comparator<Entry<String,Float>>() {
 			public int compare(Entry<String,Float> o1, Entry<String,Float> o2) {
-				if (o1.getValue().floatValue() >= o2.getValue().floatValue()) {
-					return -1;
-				}
-				return 1;
+				return -(Float.compare(o1.getValue().floatValue(), o2.getValue().floatValue()));
 			}
 		});
 
@@ -226,7 +232,13 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 		}
 		return newResults;
 	}
-
+	
+	/**
+	 * 
+	 * @param b
+	 * @return
+	 * @throws BeliefException
+	 */
 	protected List<String> getOriginSubarchitectures(Belief b) throws BeliefException {
 
 		List<String> subarchitectures = new ArrayList<String>();
