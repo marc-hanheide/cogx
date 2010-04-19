@@ -3,10 +3,8 @@ package castutils.viewer.plugins;
 import java.util.Vector;
 
 import SpatialProperties.DiscreteProbabilityDistribution;
-import SpatialProperties.FloatValue;
 import SpatialProperties.IntegerValue;
 import SpatialProperties.ObjectProperty;
-import SpatialProperties.PlaceProperty;
 
 public class ObjectPropertyInfo implements Plugin {
 
