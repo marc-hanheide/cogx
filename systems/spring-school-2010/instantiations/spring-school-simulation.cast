@@ -14,7 +14,7 @@ JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 
 INCLUDE includes/vision.sa/vision-blobs.cast
-INCLUDE includes/vision.sa/vision-mediators.cast
+
 #JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
 
 # coma ######################################################################
