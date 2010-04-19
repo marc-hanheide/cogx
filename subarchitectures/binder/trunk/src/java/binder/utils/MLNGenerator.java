@@ -100,6 +100,9 @@ public class MLNGenerator {
 		mln_file.append(getCorrelationSection());
 		mln_file.append(extractFinalOutcomeSection(existingUnions, unionsMapping, newSingleUnionId));
 		
+		log(this.names_for_type.toString());
+		log(this.predicates_for_belief.toString());
+		
 		FileUtils.writeFile(MLNFileToWrite, mln_file.toString());
 	}
 	
@@ -342,12 +345,15 @@ public class MLNGenerator {
 	private void extractTypesAndNames(ProbDistribution distribution, Set<String> predicatesForCurrentBelief) throws MLException {
 		// TODO: extend with the remaining distributions
 		
+		log("TYPE:");
+		log(distribution.toString());
+		
 		if(distribution instanceof BasicProbDistribution) {
 			extractTypesAndNamesBasicProbDistribution((BasicProbDistribution) distribution, predicatesForCurrentBelief);
 		}
 		
 		else if (distribution instanceof DistributionWithExistDep) {
-			extractTypesAndNames(((DistributionWithExistDep)distribution).Pc, predicatesForCurrentBelief);	
+			extractTypesAndNames(((DistributionWithExistDep)distribution).Pc, predicatesForCurrentBelief);
 		}
 		
 		else if (distribution instanceof CondIndependentDistribs) {
@@ -370,6 +376,10 @@ public class MLNGenerator {
 	private void extractTypesAndNamesBasicProbDistribution(BasicProbDistribution distrib, Set<String> predicatesForCurrentBelief) {
 		String keyWithUppercase = setFirstLetterToUppercase(distrib.key);
 		predicatesForCurrentBelief.add(keyWithUppercase);
+		
+		log("ADD PREDICATE");
+		log(predicatesForCurrentBelief.toString());
+		
 		if(!names_for_type.containsKey(keyWithUppercase)) {
 			names_for_type.put(keyWithUppercase, new TreeSet<String>());
 		}
@@ -442,7 +452,17 @@ public class MLNGenerator {
 	}
 
 	private StringBuilder serializeBelief(Belief belief) throws MLException {
-		List<MLFormula> formulae = convertDistributionToMarkovLogic(belief.content, getMarkovLogicConstantFromID(belief.id));
+		String belief_id;
+		
+		// convert to internal ids for the name
+		if(belief.id.equals(newInput.id)) {
+			belief_id = STANDARD_INPUT_ID;
+		}
+		else {
+			belief_id = getMarkovLogicConstantFromID(belief.id);
+		}
+		
+		List<MLFormula> formulae = convertDistributionToMarkovLogic(belief.content, belief_id);
 		StringBuilder result = new StringBuilder();
 		for(MLFormula formula : formulae) {
 			result.append(formula.toString());
@@ -456,14 +476,7 @@ public class MLNGenerator {
 		}
 
 		if (dist instanceof DistributionWithExistDep) {
-			String id;
-			if (getMarkovLogicConstantFromID(newInput.id).equals(belief_id)) {
-				id = STANDARD_INPUT_ID;
-			}
-			else {
-				id = belief_id;
-			}
-			return convertDistributionWithExistDep((DistributionWithExistDep) dist, id);
+			return convertDistributionWithExistDep((DistributionWithExistDep) dist, belief_id);
 		}
 		
 		if (dist instanceof CondIndependentDistribs) {

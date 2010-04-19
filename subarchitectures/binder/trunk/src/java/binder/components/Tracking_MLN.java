@@ -66,90 +66,15 @@ import cast.core.CASTData;
  * @author plison
  *
  */ 
-public class Tracking_MLN extends MarkovLogicComponent {
- 
-	
-	String MLNFile = markovlogicDir + "tracking.mln";
-	
-	String resultsFile = markovlogicDir + "unions.results";
-	
-	// lowest probability threshold for the existence probability of a mmbelief union
-	public float lowestProbThreshold = 0.08f;
-	
-	// maximum number of alternatives to consider for tracking.  If more are available, take the highest-probability ones
-	public int maxAlternatives = 2;
-	
-	// minimum difference in probability in order to trigger a working memory update on an existing union
-	public float minProbDifferenceForUpdate = 0.1f;
-	
-	
-	/**
-	 * Add a change filter on the insertion of new mmbelief beliefs on the binder working memory
-	 */
-	@Override
-	public void start() {
-			
-		// Insertion
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
-						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);	
-							
-							log("received a new mmbelief: " + beliefData.getID());
-							performTracking (beliefData.getData(), _wmc.address);
-							log("tracking operation on mmbelief " + beliefData.getID() + " now finished");
-						}	
-			
-						 catch (Exception e) {
-								e.printStackTrace();
-							} 
-					}
-				}
-		);
-		
-		// Deletion
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
-						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							deleteAllStableBeliefAttachedToUnion(_wmc.address);
-						}	
-			
-						 catch (Exception e) {
-								e.printStackTrace();
-							} 
-					}
-				}
-		);
-		
-		// Update
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
-						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
-					
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							deleteAllStableBeliefAttachedToUnion(_wmc.address);
-							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);	
-							
-							log("received a new mmbelief: " + beliefData.getID());
-							performTracking (beliefData.getData(), _wmc.address);
-							log("tracking operation on mmbelief " + beliefData.getID() + " now finished");
-						}	
-			
-						 catch (Exception e) {
-								e.printStackTrace();
-							} 
-					}
-				}
-		);
+public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
+
+
+	public Tracking_MLN() {
+		super(new MultiModalBelief());
+		MLNFile = markovlogicDir + "tracking.mln";
+		resultsFile = markovlogicDir + "tracking.results";
 	}
-  
-	
-	
+
 	/**
 	 * Perform the tracking operation for the given belief, and subsequently update
 	 * the working memory with new temporal unions (and possibly also with updates on existing ones)
@@ -157,88 +82,88 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	 * @param mmbelief the new mmbelief which was inserted
 	 */
 	public void performTracking(MultiModalBelief mmbelief, WorkingMemoryAddress mmbeliefWMAddress) throws BeliefException {
-	
+
 		log("now starting tracking...");
 
 		// extract the unions already existing in the binder WM
 		HashMap<String, Belief> existingUnions = extractExistingUnions();
-		
+
 		HashMap<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, mmbelief);
-		
+
 		if (relevantUnions.size() > 0) {
-		// Create identifiers for each possible new union		
-		HashMap<String,String> unionsMapping = new HashMap<String,String>();
-		for (String existingUnionId : relevantUnions.keySet()) {
-			String newUnionId = newDataID();
-			unionsMapping.put(newUnionId, existingUnionId);
-		}
-		log("newly created union ids: " + unionsMapping.keySet().toString());
-			
-		String newSingleUnionId = newDataID();
-	//	unionsMapping.put("P", newSingleUnionId);
-		
-		// Write the markov logic network to a file
-		try {
-			MLNPreferences prefs = new MLNPreferences();
-			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/similarities.mln");
-			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
-			MLNGenerator gen = new MLNGenerator(prefs);
-			gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
-		} catch (MLException e1) {
-			e1.printStackTrace();
-		}
-		
-		// run the alchemy inference
-		try { 
-		HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
-		
-		log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
-		HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults, maxAlternatives);
-		
-		// create the new unions given the inference results
-		Vector<Belief> newUnions = createNewUnions(mmbelief, mmbeliefWMAddress, relevantUnions,
-				unionsMapping, newSingleUnionId, filteredInferenceResults);
-
-		// and add them to the working memory
-		for (Belief newUnion : newUnions) {
-			if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
-				insertBeliefInWM(newUnion);
-				log("inserting belief " + newUnion.id + " on WM");
+			// Create identifiers for each possible new union		
+			HashMap<String,String> unionsMapping = new HashMap<String,String>();
+			for (String existingUnionId : relevantUnions.keySet()) {
+				String newUnionId = newDataID();
+				unionsMapping.put(newUnionId, existingUnionId);
 			}
-			else {
-				log ("Belief " + newUnion.id + " has probability " + DistributionUtils.getExistenceProbability(newUnion) +
+			log("newly created union ids: " + unionsMapping.keySet().toString());
+
+			String newSingleUnionId = newDataID();
+			//	unionsMapping.put("P", newSingleUnionId);
+
+			// Write the markov logic network to a file
+			try {
+				MLNPreferences prefs = new MLNPreferences();
+				prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/similarities.mln");
+				prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
+				MLNGenerator gen = new MLNGenerator(prefs);
+				gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
+			} catch (MLException e1) {
+				e1.printStackTrace();
+			}
+
+			// run the alchemy inference
+			try { 
+				HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
+
+				log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
+				HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults, maxAlternatives);
+
+				// create the new unions given the inference results
+				Vector<Belief> newUnions = createNewUnions(mmbelief, mmbeliefWMAddress, relevantUnions,
+						unionsMapping, newSingleUnionId, filteredInferenceResults);
+
+				// and add them to the working memory
+				for (Belief newUnion : newUnions) {
+					if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
+						insertBeliefInWM(newUnion);
+						log("inserting belief " + newUnion.id + " on WM");
+					}
+					else {
+						log ("Belief " + newUnion.id + " has probability " + DistributionUtils.getExistenceProbability(newUnion) +
 						", which is lower than the minimum threshold.  Not inserting");
-			}
-		}
+					}
+				}
 
-		// modify the existence probabilities of the existing unions
-		List<Belief> unionsToUpdate = getExistingUnionsToUpdate(mmbelief, relevantUnions, unionsMapping, filteredInferenceResults);
-		
-		// and update them on the working memory
-		for (Belief unionToUpdate : unionsToUpdate) {
-			if (DistributionUtils.getExistenceProbability(unionToUpdate) > lowestProbThreshold)  {
-				log("updating belief " + unionToUpdate.id + " on WM");
-				updateBeliefOnWM(unionToUpdate);
+				// modify the existence probabilities of the existing unions
+				List<Belief> unionsToUpdate = getExistingUnionsToUpdate(mmbelief, relevantUnions, unionsMapping, filteredInferenceResults);
+
+				// and update them on the working memory
+				for (Belief unionToUpdate : unionsToUpdate) {
+					if (DistributionUtils.getExistenceProbability(unionToUpdate) > lowestProbThreshold)  {
+						log("updating belief " + unionToUpdate.id + " on WM");
+						updateBeliefOnWM(unionToUpdate);
+					}
+					else  {
+						log("deleting belief: " + unionToUpdate.id + " on WM");
+						deleteBeliefOnWM(unionToUpdate.id);
+					}
+				}
+
 			}
-			else  {
-				log("deleting belief: " + unionToUpdate.id + " on WM");
-				deleteBeliefOnWM(unionToUpdate.id);
+			catch (Exception e) {
+				e.printStackTrace();
 			}
-		}
-		
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
 		}
 		else {
 			try {
-			log("no relevant union to group with mmbelief " + mmbelief.id + " has been found");
-			TemporalUnionBelief union = TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, newDataID());
-			if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
-				insertBeliefInWM(union);
-				log("inserting belief " + union.id + " on WM");
-			}
+				log("no relevant union to group with mmbelief " + mmbelief.id + " has been found");
+				TemporalUnionBelief union = TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, newDataID());
+				if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
+					insertBeliefInWM(union);
+					log("inserting belief " + union.id + " on WM");
+				}
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -247,42 +172,6 @@ public class Tracking_MLN extends MarkovLogicComponent {
 	}
 
 
-	/**
-	 * Filter the inference results to retain only the maxSize-best results
-	 * 
-	 * @param results the results of Alchemy inference
-	 * @param maxSize the number of results to retain
-	 * @return the filtered results
-	 */
-	private HashMap<String, Float> filterInferenceResults (HashMap<String,Float> results, int maxSize) {
-		
-		     List<Entry<String,Float>> list = new LinkedList<Entry<String,Float>>(results.entrySet());
-		     Collections.sort(list, new Comparator<Entry<String,Float>>() {
-		          public int compare(Entry<String,Float> o1, Entry<String,Float> o2) {
-		               if (o1.getValue().floatValue() >= o2.getValue().floatValue()) {
-		            	   return -1;
-		               }
-		              return 1;
-		          }
-		     });
-		
-		int increment = 0;
-		HashMap<String,Float> newResults = new HashMap<String,Float>();
-		for (Iterator<Entry<String,Float>> it = list.iterator(); it.hasNext();) {
-		     Map.Entry<String,Float> entry = (Map.Entry<String,Float>)it.next();
-		     if (increment < maxAlternatives) {
-		     newResults.put(entry.getKey(), entry.getValue());
-		     increment++;
-		     }
-		     else {
-		    	 newResults.put(entry.getKey(), new Float(0.0f)); 
-		     }
-		     }
-		return newResults;
-	}
-	
-	
-	
 	/**
 	 * Create a set of new mmbelief union beliefs from the inference results, associated with the 
 	 * original mmbelief
@@ -304,43 +193,43 @@ public class Tracking_MLN extends MarkovLogicComponent {
 
 		Vector<Belief> newUnions = new Vector<Belief>();
 		for (String id : unionsMapping.keySet()) {
-			
+
 			if (!inferenceResults.containsKey(id)) {
 				throw new BeliefException("ERROR, id " + id + " is not in inferenceResults.  inferenceResults = " + inferenceResults.keySet().toString());
 			}
-			
+
 			else if (!existingUnions.containsKey(unionsMapping.get(id))) {
 				throw new BeliefException("ERROR, existing union id " + unionsMapping.get(id) + " is not in existingUnions");
 			}
-			
+
 			float prob = mmbeliefExistProb * inferenceResults.get(id);
 			log("computed probability for new mmbelief union " + id + ": " + prob);
-			
+
 			Belief existingUnion = existingUnions.get(unionsMapping.get(id)); 
-		//	try {
+			//	try {
 			List<WorkingMemoryAddress> addresses = new LinkedList<WorkingMemoryAddress>();
 			addresses.add(mmbeliefWMAddress);
 			addresses.add(new WorkingMemoryAddress(existingUnion.id, BindingWorkingMemory.BINDER_SA));
 			TemporalUnionBelief newUnion = TemporalUnionBuilder.createNewDoubleUnionBelief(mmbelief, addresses, existingUnion, prob, id);
 			newUnions.add(newUnion);
-		//	}
-		/**	catch (BeliefException e) {
+			//	}
+			/**	catch (BeliefException e) {
 				e.printStackTrace();
 			} */
 		} 
-		
+
 		if (!inferenceResults.containsKey(newSingleUnionId)) {
 			throw new BeliefException("ERROR, id " + newSingleUnionId + " is not in inferenceResults");
 		}
 		TemporalUnionBelief newSingleUnion = 
 			TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, inferenceResults.get(newSingleUnionId), newSingleUnionId);
-		
+
 		newUnions.add(newSingleUnion);
-		
+
 		return newUnions;
 	}
-	  
-	 
+
+
 	/**
 	 * Modify the existence probability of existing unions, based on the inference results, 
 	 * the newly inserted mmbelief, the set of existing unions, and the mapping between the new 
@@ -356,21 +245,21 @@ public class Tracking_MLN extends MarkovLogicComponent {
 			HashMap<String,Belief> existingUnions, 
 			HashMap<String,String> linkToExistingUnions,
 			HashMap<String,Float> inferenceResults) {
-		
+
 		List<Belief> unionsToUpdate = new LinkedList<Belief>();
-		
+
 		// extract the existence probability of the mmbelief
 		float mmbeliefExistProb = DistributionUtils.getExistenceProbability(mmbelief);
-		
+
 		for (String newUnionId: linkToExistingUnions.keySet()) {
 			Belief existingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
 			float unionCurrentExistProb = DistributionUtils.getExistenceProbability(existingUnion);
 			float unionNewExistProb = (unionCurrentExistProb * (1-mmbeliefExistProb)) + 
-				(mmbeliefExistProb * (1 - inferenceResults.get(newUnionId)) * unionCurrentExistProb);
+			(mmbeliefExistProb * (1 - inferenceResults.get(newUnionId)) * unionCurrentExistProb);
 			log("new prob for " +  linkToExistingUnions.get(newUnionId) + ": " + unionNewExistProb);
-			
+
 			try {
-			DistributionUtils.setExistenceProbability(existingUnion, unionNewExistProb);
+				DistributionUtils.setExistenceProbability(existingUnion, unionNewExistProb);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -383,35 +272,6 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		}
 		return unionsToUpdate;
 	}  
-	 
-	
-	private List<String> getOriginSubarchitectures(Belief b) throws BeliefException {
-		
-		List<String> subarchitectures = new ArrayList<String>();
-		
-		if (!(b.hist instanceof CASTBeliefHistory)) {
-			throw new BeliefException ("ERROR: history not specified as cast pointer");
-		}
-		else if (((CASTBeliefHistory)b.hist).ancestors == null) {
-			throw new BeliefException ("ERROR: mmbelief history is null");
-		}
-	
-		for (WorkingMemoryAddress ancestorAddress : ((CASTBeliefHistory)b.hist).ancestors) {
-			if (!(ancestorAddress.subarchitecture.equals(BindingWorkingMemory.BINDER_SA))) {
-				subarchitectures.add(ancestorAddress.subarchitecture);
-			} else
-				try {
-					if (existsOnWorkingMemory(ancestorAddress)) {
-						Belief subB = getMemoryEntry(ancestorAddress, Belief.class);
-						subarchitectures.addAll(getOriginSubarchitectures(subB));
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-		}
-		return subarchitectures;
-	}
-	
 
 	private HashMap<String,Belief> selectRelevantUnions (HashMap<String,Belief> existingUnions, 
 			MultiModalBelief mmbelief) throws BeliefException {
@@ -437,10 +297,10 @@ public class Tracking_MLN extends MarkovLogicComponent {
 			}
 		}
 
-		
+
 		return relevantUnions;
 	}
-	
+
 	/**
 	 * Exact the set of existing unions from the binder working memory
 	 * 
@@ -467,11 +327,10 @@ public class Tracking_MLN extends MarkovLogicComponent {
 		}
 		return existingunions;
 	}
-	 
-	
-	
+
+
 	private void deleteAllStableBeliefAttachedToUnion (WorkingMemoryAddress unionAddress) {
-		
+
 		try {
 			CASTData<MultiModalBelief>[] mmBeliefs;
 
@@ -493,6 +352,20 @@ public class Tracking_MLN extends MarkovLogicComponent {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
+
+
+	@Override
+	public void workingMemoryChangeDelete(WorkingMemoryAddress WMAddress) {
+		deleteAllStableBeliefAttachedToUnion(WMAddress);
+	}
+
+
+
+	@Override
+	public void workingMemoryChangeInsert(Belief belief, WorkingMemoryAddress WMAddress) throws BeliefException {
+		performTracking((MultiModalBelief)belief, WMAddress);
+	}
+
+
 }
