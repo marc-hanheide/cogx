@@ -71,7 +71,6 @@ Existence(U1) => !Label(U1,Ball).
 Existence(U1) => !Label(U1,Unknown).
 Existence(U1) => Label(U1,None).
 
-
 1.3862943611198906 Existence(U2)
 -0.38566248081198462 Existence(U2) ^ Shape(U2,Sphe)
 -2.120263536200091 Existence(U2) ^ Shape(U2,Unknown)
