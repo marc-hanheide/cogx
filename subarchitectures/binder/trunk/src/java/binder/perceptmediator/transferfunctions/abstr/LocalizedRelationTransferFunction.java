@@ -20,23 +20,48 @@ import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
 import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
 import castutils.facades.SpatialFacade;
 
 /**
+ * a specialized {@link DependentDiscreteTransferFunction} that is used to
+ * establish a relation between a perceived entity and the current location of
+ * the robot.
+ * 
  * @author marc
  * 
+ * @param <From>
+ *            the type to generate percepts from
  */
 public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectImpl>
 		extends DependentDiscreteTransferFunction<From> {
 
+	/**
+	 * constructor
+	 * 
+	 * @see DependentDiscreteTransferFunction
+	 * @param component
+	 * @param allBeliefs
+	 * @param logger
+	 */
 	public LocalizedRelationTransferFunction(ManagedComponent component,
 			WMView<PerceptBelief> allBeliefs, Logger logger) {
 		super(component, allBeliefs, logger);
 
 	}
 
+	/**
+	 * abstract method that returns the {@link ContentMatchingFunction} to be
+	 * used
+	 * 
+	 * @param id
+	 *            the WM id of the referred entry (to be waited for by
+	 *            {@link WMContentWaiter})
+	 * @return an instance of a {@link ContentMatchingFunction} that is used for
+	 *         matching
+	 */
 	protected abstract ContentMatchingFunction<PerceptBelief> getMatchingFunction(
 			String id);
 
@@ -59,20 +84,30 @@ public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectI
 			WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
 					place.id));
 			WorkingMemoryAddress wmaFrom = getReferredBelief(getMatchingFunction(wmc.address.id));
-			result.put("is-in", FeatureValueBuilder.createNewBooleanValue(true));
+			result
+					.put("is-in", FeatureValueBuilder
+							.createNewBooleanValue(true));
 			result.put(RelationElement0.value, FeatureValueBuilder
 					.createNewStringValue(wmaFrom.id));
 			result.put(RelationElement1.value, FeatureValueBuilder
 					.createNewStringValue(wmaPlace.id));
 
 		} catch (CASTException e) {
-			component.logException("CASTException when mapping features, not all features might have been assigned", e);
+			component
+					.logException(
+							"CASTException when mapping features, not all features might have been assigned",
+							e);
 		}
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see binder.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction#create(cast.cdl.WorkingMemoryAddress, cast.cdl.WorkingMemoryChange, Ice.ObjectImpl)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * binder.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction
+	 * #create(cast.cdl.WorkingMemoryAddress, cast.cdl.WorkingMemoryChange,
+	 * Ice.ObjectImpl)
 	 */
 	@Override
 	public PerceptBelief create(WorkingMemoryAddress newAddr,
