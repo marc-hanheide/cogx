@@ -1,26 +1,30 @@
 package castutils.castextensions;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import cast.CASTException;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTComponent;
 
+/**
+ * This realizes a {@link BlockingQueue} that can be used as a
+ * {@link WorkingMemoryChangeReceiver} to serialize events. Often used to avoid
+ * concurrency in a {@link CASTComponent} by taking entries off this queue in
+ * runComponent().
+ * 
+ * @author marc
+ * 
+ */
 public class WMEventQueue extends LinkedBlockingQueue<WorkingMemoryChange>
 		implements WorkingMemoryChangeReceiver {
 
-	/**
-	 * @param arg0
-	 */
-	public WMEventQueue() {
-		super();
-	}
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7628018827365709394L;
 
+	/* (non-Javadoc)
+	 * @see cast.architecture.WorkingMemoryChangeReceiver#workingMemoryChanged(cast.cdl.WorkingMemoryChange)
+	 */
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange wmc)
 			throws CASTException {
