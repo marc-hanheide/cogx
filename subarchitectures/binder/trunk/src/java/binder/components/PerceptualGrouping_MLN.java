@@ -101,7 +101,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent<PerceptBelief> 
 				HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
 
 				log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
-				HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults, maxAlternatives);
+				HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults);
 
 				// create the new unions given the inference results
 				Vector<Belief> newUnions = createNewUnions(percept, perceptWMAddress, relevantUnions,

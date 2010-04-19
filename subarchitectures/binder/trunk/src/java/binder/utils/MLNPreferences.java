@@ -1,5 +1,11 @@
 package binder.utils;
 
+/**
+ * 
+ * @author Carsten Ehrler (carsten.ehrler@gmail.com)
+ * 
+ * {@link #MLNPreferences()}
+ */
 public class MLNPreferences {
 	
 	public static String markovlogicDir = "subarchitectures/binder/markovlogic/";
