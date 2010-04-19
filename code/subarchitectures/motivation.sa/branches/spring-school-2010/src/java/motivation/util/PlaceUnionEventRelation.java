@@ -20,8 +20,6 @@ import cast.core.CASTUtils;
 import castutils.castextensions.CausalEventMonitor;
 import castutils.facades.BinderFacade;
 
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Union;
-
 /**
  * This class implements an EventRelation between Places and UnionConfiguration
  * updates. It allows to encapsulate the propagation of place information to the

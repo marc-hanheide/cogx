@@ -20,7 +20,6 @@ import cast.core.CASTUtils;
 import castutils.castextensions.CausalEventMonitor;
 import castutils.facades.BinderFacade;
 
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Union;
 import comadata.ComaRoom;
 
 /**
