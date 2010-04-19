@@ -188,6 +188,10 @@ class IntegerValue extends FeatureValue {
 	int val;
 };
 
+class FloatValue extends FeatureValue {
+	double val;
+};
+
 class BooleanValue extends FeatureValue {
 	bool val;
 };
