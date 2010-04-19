@@ -23,36 +23,45 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
+import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 
 /**
+ * This is an abstract class for the most simple {@link TransferFunction} to
+ * establish a mapping between input percepts (of generic type From) and
+ * {@link PerceptBelief}. all it does is creating discrete FeatureDistribution
+ * of an {@link CondIndependentDistribs} in a belief. This abstract
+ * implementation requires the specific mapping between percepts and belief to
+ * be implemented in a subclass by implementing getFeatureValueMapping.
+ * 
  * @author marc
  * 
+ * @param <From>
+ *            type we generate beliefs from
  */
 public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl>
-		implements TransferFunction<From, PerceptBelief>{
+		extends CASTHelper implements TransferFunction<From, PerceptBelief> {
 
 	/**
-	 * @param logger
+	 * constructor
+	 * 
+	 * @param component
 	 */
-	public SimpleDiscreteTransferFunction(ManagedComponent component, Logger logger) {
-		super();
-		this.component = component;
-		this.logger = logger;
+	public SimpleDiscreteTransferFunction(ManagedComponent component,
+			Logger logger) {
+		super(component);
 	}
 
-	protected ManagedComponent component;
-	protected Logger logger;
-	
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * binder.components.perceptmediator.TransferFunction#transform(Ice.ObjectImpl
-	 * )
+	 * castutils.castextensions.WMEntrySynchronizer.TransferFunction#transform
+	 * (cast.cdl.WorkingMemoryChange, Ice.ObjectImpl, Ice.ObjectImpl)
 	 */
 	@Override
-	public boolean transform(WorkingMemoryChange wmc, From from, PerceptBelief perceptBelief) {
+	public boolean transform(WorkingMemoryChange wmc, From from,
+			PerceptBelief perceptBelief) {
 		assert (perceptBelief != null);
 		assert (perceptBelief.content != null);
 		assert (perceptBelief.content instanceof CondIndependentDistribs);
@@ -67,29 +76,55 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		} catch (InterruptedException e) {
 			component.logException(e);
 		} catch (BeliefException e) {
-			component.logException(e);		}
+			component.logException(e);
+		}
 		return true;
 	}
 
+	/**
+	 * helper method to encapsulate all the create of a discrete feature in
+	 * binding
+	 * 
+	 * @param features
+	 *            the distribution of features
+	 * @param key
+	 *            the feature name to be written
+	 * @param value
+	 *            the {@link FeatureValue} to be written
+	 */
 	protected void putDiscreteFeature(CondIndependentDistribs features,
 			String key, FeatureValue value) {
 		List<FeatureValueProbPair> values = new LinkedList<FeatureValueProbPair>();
 		values.add(new FeatureValueProbPair(value, 1.0f));
 		BasicProbDistribution cdistrib;
 		try {
-			cdistrib = BeliefContentBuilder.createNewFeatureDistribution(key, values);
+			cdistrib = BeliefContentBuilder.createNewFeatureDistribution(key,
+					values);
 			// TODO Here the API should be used instead!
 			features.distribs.put(cdistrib.key, cdistrib);
-			//BeliefContentBuilder.putNewCondIndependentDistrib(features, cdistrib);
+			// BeliefContentBuilder.putNewCondIndependentDistrib(features,
+			// cdistrib);
 		} catch (BeliefException e) {
-			logger.error(
-					"Belief exception", e);
+			logger.error("Belief exception", e);
 		}
 
 	}
 
-	protected abstract Map<String, FeatureValue> getFeatureValueMapping(WorkingMemoryChange wmc, From from)
-			throws InterruptedException, BeliefException;
+	/**
+	 * the abstract method
+	 * 
+	 * @param wmc
+	 *            the {@link WorkingMemoryChange} that caused the update
+	 * @param from
+	 *            the data entry that caused the update
+	 * @return a {@link Map} of feature names and {@link FeatureValue} that will
+	 *         be written to the belief.
+	 * @throws InterruptedException
+	 * @throws BeliefException
+	 */
+	protected abstract Map<String, FeatureValue> getFeatureValueMapping(
+			WorkingMemoryChange wmc, From from) throws InterruptedException,
+			BeliefException;
 
 	/*
 	 * (non-Javadoc)
@@ -103,16 +138,18 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			WorkingMemoryChange wmc, From from) {
 
 		try {
-		// create a simple history with just the link to the percept
-		CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(wmc.address);
+			// create a simple history with just the link to the percept
+			CASTBeliefHistory hist = PerceptBuilder
+					.createNewPerceptHistory(wmc.address);
 
-		// always create a CondIndependentDistribs
-		CondIndependentDistribs features = BeliefContentBuilder
-				.createNewCondIndependentDistribs();
+			// always create a CondIndependentDistribs
+			CondIndependentDistribs features = BeliefContentBuilder
+					.createNewCondIndependentDistribs();
 
-		PerceptBelief pb;
-			pb = PerceptBuilder.createNewPerceptBelief(idToCreate.id, wmc.type, "here",
-					CASTUtils.getTimeServer().getCASTTime(), features, hist);
+			PerceptBelief pb;
+			pb = PerceptBuilder.createNewPerceptBelief(idToCreate.id, wmc.type,
+					"here", CASTUtils.getTimeServer().getCASTTime(), features,
+					hist);
 			return pb;
 		} catch (BeliefException e) {
 			component.logException(e);
