@@ -221,9 +221,11 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		super(component);
 		this.component = component;
 		
+		
 		places = WMView.create(component, Place.class, "spatial.sa");
 		rooms = WMView.create(component, ComaRoom.class,"coma");
-
+		
+		
 		this.spatialCheckThread = new SpatialCheckThread();
 
 		placeInterface = null; // lazy init

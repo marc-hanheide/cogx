@@ -4,7 +4,7 @@ import java.util.Vector;
 
 import Ice.ObjectImpl;
 
-public class Person implements Plugin {
+public class PersonInfo implements Plugin {
 
 	@Override
 	public Vector<Object> toVector(ObjectImpl _iceObject) {
