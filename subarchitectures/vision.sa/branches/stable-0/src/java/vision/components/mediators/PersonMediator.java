@@ -3,32 +3,54 @@
  */
 package vision.components.mediators;
 
+import java.util.EnumSet;
+import java.util.Vector;
+
+import vision.components.mediators.abstr.AbstractLocalizedPerceptionMediator;
+
+import SpatialProperties.DiscreteProbabilityDistribution;
+import SpatialProperties.IntegerValue;
+import SpatialProperties.PlaceContainmentAgentProperty;
+import SpatialProperties.ValueProbabilityPair;
+import VisionData.Person;
+import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import SpatialProperties.PlaceContainmentObjectProperty;
-import VisionData.Person;
 
 /**
  * @author marc
  * 
  */
-public class PersonMediator extends AbstractDetectedObjectMediator<Person> {
+public class PersonMediator extends
+		AbstractLocalizedPerceptionMediator<Person, PlaceContainmentAgentProperty> {
 
-	static int counter=0;
-	
-	public PersonMediator() {
-		super(Person.class, false);
+	public PersonMediator(ManagedComponent c) {
+		super(c, Person.class, PlaceContainmentAgentProperty.class, EnumSet.of(
+				WorkingMemoryOperation.ADD, WorkingMemoryOperation.OVERWRITE));
+		// TODO Auto-generated constructor stub
+	}
+
+	private static long personIdCounter = 1;
+
+
+	@Override
+	protected boolean convert(WorkingMemoryChange wmc, Person from,
+			PlaceContainmentAgentProperty to, long placeId) {
+		Vector<ValueProbabilityPair> data = new Vector<ValueProbabilityPair>(1);
+		to.mapValue = new IntegerValue(placeId);
+		data.add(new ValueProbabilityPair(to.mapValue, 1.0));
+		to.distribution = new DiscreteProbabilityDistribution(data);
+		to.mapValueReliable = true;
+		return true;
 	}
 
 	@Override
-	protected boolean transform(PlaceContainmentObjectProperty pcop,
-			Person object, WorkingMemoryChange event) {
-		pcop.label="Person";
-		if (event.operation==WorkingMemoryOperation.ADD)
-			pcop.objectId = counter++;
-		// TODO: check if this makes sense: we only propagate persons if they
-		// are closer than a distance
-		return object.distance < 1.5;
+	public PlaceContainmentAgentProperty create(
+			WorkingMemoryAddress idToCreate, WorkingMemoryChange wmc,
+			Person from) {
+		return new PlaceContainmentAgentProperty(personIdCounter++, null, null,
+				false);
 	}
 
 }
