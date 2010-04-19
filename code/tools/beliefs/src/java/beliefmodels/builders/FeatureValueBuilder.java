@@ -27,6 +27,10 @@ public class FeatureValueBuilder {
 		return new BooleanValue(val);
 	}
 	
+	public static FloatValue createNewFloatValue(double val) {
+		return new FloatValue(val);
+	}
+	
 	public static IntegerValue createNewIntegerValue(int val) {
 		return new IntegerValue(val);
 	}
