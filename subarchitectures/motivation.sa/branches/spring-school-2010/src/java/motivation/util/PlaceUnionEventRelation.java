@@ -9,7 +9,7 @@ import SpatialData.Place;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.StringValue;
-import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
+import beliefmodels.autogen.featurecontent.featurenames.FeatPlaceId;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
@@ -19,6 +19,8 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import castutils.castextensions.CausalEventMonitor;
 import castutils.facades.BinderFacade;
+
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Union;
 
 /**
  * This class implements an EventRelation between Places and UnionConfiguration
@@ -115,7 +117,7 @@ public class PlaceUnionEventRelation extends CausalEventMonitor<Place, Belief> {
 		if (belief.type.equals(CASTUtils.typeName(Place.class))) {
 			List<FeatureValue> fvl = BinderFacade
 					.get(component)
-					.getFeatureValue(belief, PlaceMatchingFunction.PLACE_ID);
+					.getFeatureValue(belief, FeatPlaceId.value);
 			int placeId = Integer.parseInt(((StringValue) fvl.get(0)).val);
 			if (placeId == searchedPlaceID) {
 				component.debug("found corresponding ID");

@@ -9,9 +9,7 @@ import SpatialData.Place;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.StringValue;
-import binder.components.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
-import castutils.castextensions.CausalEventMonitor;
-import castutils.facades.BinderFacade;
+import beliefmodels.autogen.featurecontent.featurenames.FeatPlaceId;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
@@ -19,7 +17,10 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import castutils.castextensions.CausalEventMonitor;
+import castutils.facades.BinderFacade;
 
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Union;
 import comadata.ComaRoom;
 
 /**
@@ -111,7 +112,7 @@ public class RoomUnionEventRelation extends
 		if (belief.type.equals(CASTUtils.typeName(ComaRoom.class))) {
 			List<FeatureValue> fvl = BinderFacade
 					.get(component)
-					.getFeatureValue(belief, PlaceMatchingFunction.PLACE_ID);
+					.getFeatureValue(belief, FeatPlaceId.value);
 			int placeId = Integer.parseInt(((StringValue) fvl.get(0)).val);
 			if (placeId == searchedRoomID) {
 				component.debug("found corresponding ID");
