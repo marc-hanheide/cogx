@@ -28,8 +28,23 @@ import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTData;
 
 /**
+ * This class represents a local view of specific type T in the working memory.
+ * It implements a map Map<WorkingMemoryAddress, T> interface so access is
+ * really easy. To use it, you should first create it and then later on invoke
+ * start, usually in a CASTComponent.start() call. It provides a synchronized
+ * view of the WM content and encapsulates all the event registration and entry
+ * reading. Furthermore it allows to register local a Set of ChangeHandler that
+ * are called whenever a change to the view occurs.
+ * 
  * @author marc
  * 
+ * @param <T>
+ *            the Ice.ObjectImpl this view encapsulates
+ */
+/**
+ * @author marc
+ * 
+ * @param <T>
  */
 public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		Map<WorkingMemoryAddress, T> {
@@ -48,6 +63,17 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	private boolean shouldInitialize;
 
+	/**
+	 * an interface to register a {@link ChangeHandler} being triggered on any
+	 * change to the view.
+	 * 
+	 * @author marc
+	 * 
+	 * @param <T2>
+	 *            the type this
+	 *            {@link castutils.castextensions.WMEntrySet.ChangeHandler} is
+	 *            designed for
+	 */
 	public interface ChangeHandler<T2 extends Ice.ObjectImpl> {
 		void entryChanged(Map<WorkingMemoryAddress, T2> map,
 				WorkingMemoryChange wmc, T2 newEntry, T2 oldEntry)
@@ -55,6 +81,16 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	}
 
+	/**
+	 * dispatch change to handlers
+	 * 
+	 * @see {@link ChangeHandler}
+	 * @param map
+	 * @param wmc
+	 * @param newEntry
+	 * @param oldEntry
+	 * @throws CASTException
+	 */
 	synchronized void dispatchChangeEvent(Map<WorkingMemoryAddress, T> map,
 			WorkingMemoryChange wmc, T newEntry, T oldEntry)
 			throws CASTException {
@@ -63,7 +99,7 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		}
 	}
 
-	public class WMChangeReceiver implements WorkingMemoryChangeReceiver {
+	private class WMChangeReceiver implements WorkingMemoryChangeReceiver {
 
 		public WMChangeReceiver(Class<? extends T> specClass) {
 			super();
@@ -124,58 +160,88 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 	/**
 	 * Factory method
 	 * 
-	 * @param c
-	 *            the management component this WMSet is in
-	 * @return
+	 * @param <T2>
+	 *            the Java generics typename this view encapsulates
+	 * @param component
+	 *            we always need a working {@link ManagedComponent} to perform
+	 *            all the memory operations on
+	 * @param encapsulatedType
+	 *            the class object to register for
+	 * @return a fresh WMView object
 	 */
-	public static <T2 extends ObjectImpl> WMView<T2> create(ManagedComponent c,
-			Class<T2> cls) {
-		WMView<T2> s = new WMView<T2>(c, cls);
+	public static <T2 extends ObjectImpl> WMView<T2> create(
+			ManagedComponent component, Class<T2> encapsulatedType) {
+		WMView<T2> s = new WMView<T2>(component, encapsulatedType);
 		return s;
 	}
 
 	/**
 	 * Factory method
 	 * 
-	 * @param c
-	 *            the management component this WMSet is in
-	 * @return
+	 * @param <T2>
+	 *            the Java generics typename this view encapsulates
+	 * @param component
+	 *            we always need a working {@link ManagedComponent} to perform
+	 *            all the memory operations on
+	 * @param encapsulatedType
+	 *            the class object to register for
+	 * @param subarchitectureId
+	 *            restrict to this subarchitecture
+	 * @return a fresh WMView object
 	 */
-	public static <T2 extends ObjectImpl> WMView<T2> create(ManagedComponent c,
-			Class<T2> cls, String subarchitectureId) {
-		WMView<T2> s = new WMView<T2>(c, cls, subarchitectureId);
+	public static <T2 extends ObjectImpl> WMView<T2> create(
+			ManagedComponent component, Class<T2> encapsulatedType,
+			String subarchitectureId) {
+		WMView<T2> s = new WMView<T2>(component, encapsulatedType,
+				subarchitectureId);
 		return s;
 	}
 
-	protected WMView(ManagedComponent c, Class<T> cls, String subarchitectureId) {
-		super(c);
-		this.updateHandler = Collections.synchronizedSet(new HashSet<ChangeHandler<T>>());
-		
+	/**
+	 * constructor
+	 * 
+	 * @param component
+	 * @param encapsulatedType
+	 * @param subarchitectureId
+	 */
+	protected WMView(ManagedComponent component, Class<T> encapsulatedType,
+			String subarchitectureId) {
+		super(component);
+		this.updateHandler = Collections
+				.synchronizedSet(new HashSet<ChangeHandler<T>>());
+
 		this.subarchitecturId = subarchitectureId;
 		shouldInitialize = true;
 		// specificTypes = new HashSet<Class<? extends T>>();
-		this.component = c;
-		type = cls;
+		this.component = component;
+		type = encapsulatedType;
 		// create a synchronized hashmap
 		map = Collections
 				.synchronizedMap(new HashMap<WorkingMemoryAddress, T>());
 	}
 
-	protected WMView(ManagedComponent c, Class<T> cls) {
-		super(c);
-		this.updateHandler = Collections.synchronizedSet(new HashSet<ChangeHandler<T>>());
+	/**
+	 * constructor
+	 * 
+	 * @param component
+	 * @param encapsulatedType
+	 */
+	protected WMView(ManagedComponent component, Class<T> encapsulatedType) {
+		super(component);
+		this.updateHandler = Collections
+				.synchronizedSet(new HashSet<ChangeHandler<T>>());
 
 		this.subarchitecturId = null;
 		shouldInitialize = false;
 		// specificTypes = new HashSet<Class<? extends T>>();
-		this.component = c;
-		type = cls;
+		this.component = component;
+		type = encapsulatedType;
 		// create a synchronized hashmap
 		map = Collections
 				.synchronizedMap(new HashMap<WorkingMemoryAddress, T>());
 	}
 
-	public void register() {
+	private void register() {
 		log("register listeners");
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
 				WorkingMemoryOperation.ADD), new WMChangeReceiver(type));
@@ -186,6 +252,14 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	}
 
+	/**
+	 * start the view. This must not be invoked before the corresponding
+	 * {@link ManagedComponent} is started. It is best practice to start a view
+	 * in the start method of the {@link ManagedComponent}.
+	 * 
+	 * @throws UnknownSubarchitectureException
+	 *             when trying to start in an unknown SA
+	 */
 	public void start() throws UnknownSubarchitectureException {
 		// register the addition
 		register();
@@ -204,16 +278,15 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		}
 	}
 
-	/**
-	 * @param handler
-	 *            the only handler to set
+	/** same as registerHandler, but deprecated
+	 * @param handler 
 	 */
 	@Deprecated
 	public synchronized void setHandler(ChangeHandler<T> handler) {
 		this.registerHandler(handler);
 	}
 
-	/**
+	/** register a ChanceHandler
 	 * @param handler
 	 *            the handler to add
 	 */
@@ -221,7 +294,7 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		this.updateHandler.add(handler);
 	}
 
-	/**
+	/** deregister a ChangeHandler
 	 * @param addReceiver
 	 *            the addReceiver to set
 	 */

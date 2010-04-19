@@ -8,8 +8,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import Ice.ObjectImpl;
 import cast.CASTException;
@@ -22,20 +20,66 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 
 /**
- * This implements a monitor for specifc types of low-level percepts that are
- * propagated to the Binder. It implements Runnable so that several monitors can
- * be executed concurrently.
- * 
+ * This implements a monitor for specific types in WM that are propagated to
+ * another (often more high-level) type in WM. It implements Runnable so that
+ * such a {@link WMEntrySynchronizer} can be run in a separate Thread.
+ * @see WMTypeAlignment
  * @author marc
  * 
+ * @param <From>
+ *            the generic type to listen for and generate from
+ * @param <To>
+ *            the generic that is generated and synchronized to the From type
  */
 public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.ObjectImpl>
 		extends CASTHelper implements Runnable {
 
+	/**
+	 * an interface to be implemented by classes that should serve as a
+	 * {@link TransferFunction} for {@link WMEntrySynchronizer}.
+	 * 
+	 * @author marc
+	 * 
+	 * @param <From2>
+	 *            the generic type of the source of the transfer
+	 * @param <To2>
+	 *            the generic type of the sink of the transfer
+	 */
 	public interface TransferFunction<From2 extends Ice.ObjectImpl, To2 extends Ice.ObjectImpl> {
 
+		/**
+		 * fill the values of the sink object (the object being transferred
+		 * into)
+		 * 
+		 * @param wmc
+		 *            the {@link WorkingMemoryChange} that triggers the update.
+		 *            This is always an event affecting an entry of the From2
+		 *            type.
+		 * @param from
+		 *            the object that has changed and needs to be synchronized
+		 *            to the "to" objects
+		 * @param to
+		 *            the object to be updated by this method call.
+		 * @return true iff the transform was successful and the To memory entry
+		 *         should be updated
+		 */
 		public boolean transform(WorkingMemoryChange wmc, From2 from, To2 to);
 
+		/**
+		 * create a new instance of the To type
+		 * 
+		 * @param idToCreate
+		 *            the id assigned to this new entry (This method must not
+		 *            actually modify any working memory).
+		 * @param wmc
+		 *            the {@link WorkingMemoryChange} that triggers the
+		 *            creation. This is always an event affecting an entry of
+		 *            the From2 type.
+		 * @param from
+		 *            the object that has changed and needs to be synchronized
+		 *            to the "to" objects
+		 * @return
+		 */
 		public To2 create(WorkingMemoryAddress idToCreate,
 				WorkingMemoryChange wmc, From2 from);
 
@@ -66,23 +110,30 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 	/** the registered TransferFunction for PerceptMonitor */
 	protected TransferFunction<From, To> transferFunction;
 
-	/** an executor service used for running asynchronous belief propagation */
-	protected final ExecutorService executor;
-
+	/**
+	 * the set of {@link WorkingMemoryOperation} to check for.
+	 * 
+	 */
 	protected final Set<WorkingMemoryOperation> ops;
 
 	/**
-	 * @param c
+	 * create new synchronizer only for given memory operations
+	 * 
+	 * @param component
+	 * @param fromType
+	 * @param toType
+	 * @param transferFunction
+	 * @param ops
 	 */
-	protected WMEntrySynchronizer(ManagedComponent c, Class<From> fromType,
-			Class<To> toType, TransferFunction<From, To> transferFunction,
+	protected WMEntrySynchronizer(ManagedComponent component,
+			Class<From> fromType, Class<To> toType,
+			TransferFunction<From, To> transferFunction,
 			Set<WorkingMemoryOperation> ops) {
-		super(c);
+		super(component);
 		this.fromType = fromType;
 		this.toType = toType;
 		this.transferFunction = transferFunction;
 		entryQueue = new WMEventQueue();
-		executor = Executors.newFixedThreadPool(MAX_THREADS);
 		this.ops = ops;
 		this.wm2wmMap = Collections
 				.synchronizedMap(new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>());
@@ -92,21 +143,29 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 	 * create new synchronizer only for given memory operations
 	 * 
 	 * @param <FromS>
+	 *            From type
 	 * @param <ToS>
+	 *            To type
 	 * @param component
+	 *            the underlying component employed for memory operations
 	 * @param fromType
+	 *            the from class object
 	 * @param toType
-	 * @param tf
+	 *            the to class object
+	 * @param transferFunction
+	 *            an instance of a {@link TransferFunction}
 	 * @param wmOps
+	 *            the set of {@link WorkingMemoryOperation} that are
+	 *            synchronized
 	 * @return a new object
 	 */
 	public static <FromS extends ObjectImpl, ToS extends ObjectImpl> WMEntrySynchronizer<FromS, ToS> create(
 			ManagedComponent component, Class<FromS> fromType,
-			Class<ToS> toType, TransferFunction<FromS, ToS> tf,
+			Class<ToS> toType, TransferFunction<FromS, ToS> transferFunction,
 			Set<WorkingMemoryOperation> wmOps) {
 
 		return new WMEntrySynchronizer<FromS, ToS>(component, fromType, toType,
-				tf, wmOps);
+				transferFunction, wmOps);
 	}
 
 	/**
@@ -130,6 +189,11 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 				tf, ops);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		log("register listeners for type " + fromType.getSimpleName());
@@ -251,6 +315,11 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 		}
 	}
 
+	/**
+	 * to be overwritten by any subclass if required. Is called after the
+	 * registration of ChangeReceivers and before actually entering the run
+	 * loop (@see {@link Runnable}). 
+	 */
 	protected void start() {
 		// to be overwritten
 

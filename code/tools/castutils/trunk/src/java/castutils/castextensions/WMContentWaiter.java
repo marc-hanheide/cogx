@@ -19,12 +19,28 @@ import castutils.castextensions.WMView.ChangeHandler;
  * 
  * @author marc
  * 
- * @param <T> the type of data to look for in the WMView and working memory respectively.
+ * @param <T>
+ *            the type of data to look for in the WMView and working memory
+ *            respectively.
  */
 public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 		ChangeHandler<T> {
-	public interface ContentMatchingFunction<RT extends Ice.ObjectImpl> {
-		boolean matches(RT r);
+	/**
+	 * an interface realizing a matching function used for the
+	 * {@link WMContentWaiter} to match the content in a view with the content
+	 * the {@link WMContentWaiter} is waiting for.
+	 * 
+	 * @author marc
+	 * 
+	 * @param <ContentType>
+	 *            type of the content to be matched
+	 */
+	public interface ContentMatchingFunction<ContentType extends Ice.ObjectImpl> {
+		/**
+		 * @param viewContent
+		 * @return true if content matches
+		 */
+		public boolean matches(ContentType viewContent);
 	}
 
 	private LinkedBlockingQueue<Entry<WorkingMemoryAddress, T>> eventQueue;
@@ -32,8 +48,10 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 	private Logger logger;
 
 	/**
+	 * constructor
+	 * 
 	 * @param view
-	 * @param cmf
+	 *            the view in which we are waiting for the value to appear.
 	 */
 	public WMContentWaiter(WMView<T> view) {
 		super();
@@ -42,6 +60,16 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 		this.eventQueue = new LinkedBlockingQueue<Entry<WorkingMemoryAddress, T>>();
 	}
 
+	/**
+	 * this implements a blocking read that wait until the view contains to
+	 * object we are looking for according to the match function.
+	 * 
+	 * @param cmf
+	 *            the matching function that decides when the content is present
+	 *            that we are looking for.
+	 * @return an {@link Entry} of the found content.
+	 * @throws InterruptedException
+	 */
 	public Entry<WorkingMemoryAddress, T> read(ContentMatchingFunction<T> cmf)
 			throws InterruptedException {
 
@@ -73,6 +101,13 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * castutils.castextensions.WMView.ChangeHandler#entryChanged(java.util.Map,
+	 * cast.cdl.WorkingMemoryChange, Ice.ObjectImpl, Ice.ObjectImpl)
+	 */
 	@Override
 	public void entryChanged(Map<WorkingMemoryAddress, T> map,
 			final WorkingMemoryChange wmc, final T newEntry, T oldEntry)
