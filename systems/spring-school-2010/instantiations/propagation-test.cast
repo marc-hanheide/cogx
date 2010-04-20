@@ -46,7 +46,7 @@ SUBARCHITECTURE planner.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Planner WMControl #--log
-JAVA MG executor execution.components.PrototypePlanExecutor --log
+JAVA MG executor execution.components.DoraExecutionMediator --log
 
 JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator   #--log
 JAVA MG CategorizePlaceGenerator motivation.components.generators.CategorizePlaceGenerator   #--log

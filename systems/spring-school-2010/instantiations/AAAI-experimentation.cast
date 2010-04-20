@@ -37,7 +37,7 @@ INCLUDE includes/planner.sa/planner.cast
 # MOTIVATION
 ##############################################################################
 # execution ###################################################################
-JAVA MG executor execution.components.PrototypePlanExecutor 
+JAVA MG executor execution.components.DoraExecutionMediator 
 # motivation ##################################################################
 JAVA MG ExploreAndCategorizeGenerator motivation.components.generators.ExploreAndCategorizeGenerator
 
