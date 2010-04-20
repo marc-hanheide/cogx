@@ -99,18 +99,21 @@ public class TrackingTest extends AbstractBinderTest {
 
 		try {
 			
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","vision"));
 	
-			CondIndependentDistribs cdistrib_b1 = BeliefContentBuilder.createNewCondIndependentDistribs();
+			CondIndependentDistribs contentDistrib_b1 = BeliefContentBuilder.createNewCondIndependentDistribs();
+						
+			BasicProbDistribution typeDistrib_b1 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("type", 
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Person"), 0.85f));
 			
-			List<FeatureValueProbPair> shapePairs_b1 = new LinkedList<FeatureValueProbPair>();
-			shapePairs_b1.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Cyl"), 0.75f));
-			shapePairs_b1.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.15f));
+			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b1, typeDistrib_b1);
+
+			BasicProbDistribution locationDistrib_b1 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("location", 
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Kitchen"), 0.81f));
 			
-			BasicProbDistribution shapeDistrib_b1 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b1);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b1, shapeDistrib_b1);
+			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b1, locationDistrib_b1);
 			
-			ProbDistribution content_b1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, cdistrib_b1);
+			ProbDistribution content_b1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b1);
 			
 			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b1, hist);
 
@@ -125,18 +128,21 @@ public class TrackingTest extends AbstractBinderTest {
 		
 		try {
 			
-			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","haptic"));
+			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","vision"));
 			
-			CondIndependentDistribs cdistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
+			CondIndependentDistribs contentDistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
+						
+			BasicProbDistribution typeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("type", 
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Person"), 0.79f));
 			
-			List<FeatureValueProbPair> shapePairs_b2 = new LinkedList<FeatureValueProbPair>();
-			shapePairs_b2.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Cyl"), 0.71f));
-			shapePairs_b2.add(new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Sphe"), 0.16f));
+			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, typeDistrib_b2);
+
+			BasicProbDistribution locationDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("location", 
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Kitchen"), 0.89f));
 			
-			BasicProbDistribution shapeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistribution("shape", shapePairs_b2);		
-			BeliefContentBuilder.putNewCondIndependentDistrib(cdistrib_b2, shapeDistrib_b2);
+			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, locationDistrib_b2);
 			
-			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.92f, cdistrib_b2);
+			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
 			
 			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist);
 
