@@ -66,6 +66,12 @@ namespace blobfinder {
 
   }
 
+  void 
+  PlayerBlobFinderServer::runComponent() {
+
+
+  }
+
 
   Ice::Int PlayerBlobFinderServer::BlobFinderI::getBlobCount(const Ice::Current & _crt) const {
     m_playerClient->Read();
@@ -73,7 +79,11 @@ namespace blobfinder {
   }
 
   blobfinder::BlobInfoSequence PlayerBlobFinderServer::BlobFinderI::getBlobs(const Ice::Current & _crt) const {
-    m_playerClient->Read();
+    
+    //oddly requires 2 reads to produce the correct answer
+    m_playerClient->Read();    
+    m_playerClient->Read();    
+    
     int blobCount = m_blobFinderProxy->GetCount();
     
     BlobInfoSequence blobs;
