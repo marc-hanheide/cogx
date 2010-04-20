@@ -317,6 +317,50 @@ public class BeliefContentBuilder {
 		return new BasicProbDistribution (distribId, featvalues);
 	}
 	
+
+	
+	
+	/**
+	 * Create a new probability distribution out of a distribution identifier and a single 
+	 * <feature value,prob> pair
+	 * 
+	 * @param distribId
+	 * 			the distri)bution identifier (i.e. the feature label)
+	 * @param value
+	 * 			a single <featvalue, prob> pair
+	 * @return the resulting probability distribution -- if the probability is lower than
+	 * 			1.0, the value "unknown" is added to the set of pairs to provide a well-formed distribution
+	 * @pre	the probability in the pairmust be >=0 and <= 1
+	 * @throws BeliefException
+	 * 			if the inputs are not well-formed
+	 */
+	public static BasicProbDistribution createNewFeatureDistributionWithSinglePair
+			(String distribId, FeatureValueProbPair value) throws BeliefException {
+		 
+		
+		if (value == null) {
+			throw new BeliefException("Error in creating a feature distribution: value is null");
+		}
+		
+		if (value.prob > 1.01) {
+			throw new BeliefException("Error in creating a feature distribution: "+
+					"probabilities of feature distribution sum up to more than 1 [" + value.prob +"]");
+		}
+		
+		List<FeatureValueProbPair> values = new LinkedList<FeatureValueProbPair>();
+		values.add(value);
+		
+		if (value.prob < 0.99) {
+				debug("prob is: " + value.prob +", adding unknown value");
+				FeatureValueProbPair uval = new FeatureValueProbPair(new UnknownValue(), 1- value.prob);
+				values.add(uval);
+		}
+		
+		FeatureValues featvalues = new FeatureValues(values);
+		
+		return new BasicProbDistribution (distribId, featvalues);
+	}
+	
 	
 	/**
 	 * Create a new <formula,prob> pair
