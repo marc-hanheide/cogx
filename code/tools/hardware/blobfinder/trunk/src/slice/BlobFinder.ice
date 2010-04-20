@@ -36,7 +36,7 @@ module blobfinder {
     int area;
     ///The blob bounding box
     cogx::Math::Rect2 boundingBox;
-    ///The range to the blob in some unit (player says metres, I disagree).
+    ///The range to the blob in some unit. Player docs says metres, I disagree. Looks like millimetres to me.
     float range;    
   };
 
