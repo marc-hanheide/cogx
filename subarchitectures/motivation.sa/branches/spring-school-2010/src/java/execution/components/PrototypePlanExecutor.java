@@ -3,21 +3,16 @@
  */
 package execution.components;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import beliefmodels.autogen.beliefs.Belief;
-import beliefmodels.autogen.featurecontent.FeatureValue;
-import beliefmodels.autogen.featurecontent.IntegerValue;
-import beliefmodels.autogen.featurecontent.StringValue;
 
 import motivation.slice.PlanProxy;
-import castutils.facades.BinderFacade;
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
+import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.IntegerValue;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -30,6 +25,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import castutils.facades.BinderFacade;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
@@ -38,10 +34,13 @@ import execution.util.SerialPlanExecutor;
 import execution.util.SleepyThread;
 
 /**
- * A component which will create a plan then execute it. This is a place holder
- * for the later stuff.
+ * Converts planner actions into things the system can act on then executes
+ * these things. This is the main execution interface between the planner and
+ * the rest of the system.
  * 
- * All actions just stack up for serial execution. Nothing smart is done.
+ * All actions just stack up for serial execution.
+ * 
+ * Nothing smart is done.
  * 
  * @author nah
  * 
@@ -186,7 +185,7 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 				throw new ActionExecutionException(
 						"No union for place union id: " + placeUnionID);
 			}
-			
+
 			List<FeatureValue> placeIDFeatures = m_binderFacade
 					.getFeatureValue(placeUnion, "PlaceId");
 			if (placeIDFeatures.isEmpty()) {
@@ -197,51 +196,54 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
 			act.placeID = placeID.val;
 			return act;
-//		} else if (_plannedAction.name.equals("categorize_room")) {
-//			assert _plannedAction.arguments.length == 2 : "categorize_room action arity is expected to be 2";
-//			String roomUnionID = plannerLiteralToWMID(_plannedAction.arguments[1]);
-//			// ok, we have to do some binder lookups here to find all places
-//			// that belong to the room:
-//			// 1. lookup the union for the room
-//			// 2. find all RelationProxies that have this room union as a source
-//			// ("contains" relations)
-//			// 3. read the target of these relations and check if they have a
-//			// "place_id"
-//			// 4. add these place_ids to the Action arguments
-//			Union roomUnion = m_binderFacade.getUnion(roomUnionID);
-//			Set<Long> placeIDs = new HashSet<Long>();
-//			log("look at roomUnion:");
-//			for (Proxy p : roomUnion.includedProxies) {
-//				// check if it is room
-//
-//				if (m_binderFacade.getFeatureValue(p, "roomId") != null) {
-//					Map<WorkingMemoryAddress, RelationProxy> relMap = m_binderFacade
-//							.findRelationBySrc(p.entityID);
-//					for (RelationProxy rp : relMap.values()) {
-//						Proxy placeProxy = m_binderFacade
-//								.getProxy(((AddressValue) rp.target.alternativeValues[0]).val);
-//						List<FeatureValue> features = m_binderFacade
-//								.getFeatureValue(placeProxy, "place_id");
-//						if (!features.isEmpty()) {
-//							long placeId = Long
-//									.parseLong(((StringValue) features.get(0)).val);
-//							log("  related to this room is place_id " + placeId);
-//							placeIDs.add(new Long(placeId));
-//						}
-//
-//					}
-//					break;
-//				}
-//			}
-//			ActiveVisualSearch avs = newActionInstance(ActiveVisualSearch.class);
-//			// TODO: what is expected here???
-//			avs.placeIDs = new long[placeIDs.size()];
-//			int count = 0;
-//			for (Long o : placeIDs)
-//				avs.placeIDs[count++] = o.longValue();
-//			return avs;
-		}
-		else if (_plannedAction.name.equals("explore_place")) {
+			// } else if (_plannedAction.name.equals("categorize_room")) {
+			// assert _plannedAction.arguments.length == 2 :
+			// "categorize_room action arity is expected to be 2";
+			// String roomUnionID =
+			// plannerLiteralToWMID(_plannedAction.arguments[1]);
+			// // ok, we have to do some binder lookups here to find all places
+			// // that belong to the room:
+			// // 1. lookup the union for the room
+			// // 2. find all RelationProxies that have this room union as a
+			// source
+			// // ("contains" relations)
+			// // 3. read the target of these relations and check if they have a
+			// // "place_id"
+			// // 4. add these place_ids to the Action arguments
+			// Union roomUnion = m_binderFacade.getUnion(roomUnionID);
+			// Set<Long> placeIDs = new HashSet<Long>();
+			// log("look at roomUnion:");
+			// for (Proxy p : roomUnion.includedProxies) {
+			// // check if it is room
+			//
+			// if (m_binderFacade.getFeatureValue(p, "roomId") != null) {
+			// Map<WorkingMemoryAddress, RelationProxy> relMap = m_binderFacade
+			// .findRelationBySrc(p.entityID);
+			// for (RelationProxy rp : relMap.values()) {
+			// Proxy placeProxy = m_binderFacade
+			// .getProxy(((AddressValue) rp.target.alternativeValues[0]).val);
+			// List<FeatureValue> features = m_binderFacade
+			// .getFeatureValue(placeProxy, "place_id");
+			// if (!features.isEmpty()) {
+			// long placeId = Long
+			// .parseLong(((StringValue) features.get(0)).val);
+			// log("  related to this room is place_id " + placeId);
+			// placeIDs.add(new Long(placeId));
+			// }
+			//
+			// }
+			// break;
+			// }
+			// }
+			// ActiveVisualSearch avs =
+			// newActionInstance(ActiveVisualSearch.class);
+			// // TODO: what is expected here???
+			// avs.placeIDs = new long[placeIDs.size()];
+			// int count = 0;
+			// for (Long o : placeIDs)
+			// avs.placeIDs[count++] = o.longValue();
+			// return avs;
+		} else if (_plannedAction.name.equals("explore_place")) {
 			return new ExplorePlace();
 		}
 
