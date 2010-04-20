@@ -42,6 +42,7 @@ namespace blobfinder {
     configure(const std::map<std::string,std::string> & _config);
 
     virtual void start();
+    virtual void runComponent();
 
 
   public:
