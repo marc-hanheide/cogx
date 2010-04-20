@@ -4,15 +4,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import VisionData.PeopleDetectionCommand;
 import VisionData.Person;
 import blobfinder.BlobFinderInterface;
 import blobfinder.BlobFinderInterfacePrx;
 import blobfinder.BlobInfo;
 import blobfinder.ColorRGB;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.WMException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import castutils.castextensions.Condition;
 import castutils.castextensions.Converter;
@@ -121,17 +129,38 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 		try {
 			m_blobFinder = getIceServer("blob.server",
 					BlobFinderInterface.class, BlobFinderInterfacePrx.class);
+
+			addChangeFilter(ChangeFilterFactory.createTypeFilter(
+					PeopleDetectionCommand.class, WorkingMemoryOperation.ADD),
+					new WorkingMemoryChangeReceiver() {
+
+						@Override
+						public void workingMemoryChanged(
+								WorkingMemoryChange _wmc) throws CASTException {
+							handleDetectionCommand(_wmc.address);
+						}
+					});
+
 		} catch (CASTException e) {
 			throw new RuntimeException(e);
 		}
 
 	}
 
+	private void handleDetectionCommand(WorkingMemoryAddress _address)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			PermissionException {
+		// PeopleDetectionCommand cmd = getMemoryEntry(_address,
+		// PeopleDetectionCommand.class);
+		detectPeople();
+		deleteFromWorkingMemory(_address);
+	}
+
 	public void detectPeople() {
 		try {
 			BlobInfo[] blobs = m_blobFinder.getBlobs();
 			List<WMOperation> operations = m_aligner.sync(Arrays.asList(blobs));
-			// println(operations.size() + " operations");
+			println(operations.size() + " operations");
 			m_performer.performOperations(operations);
 		} catch (WMException e) {
 			e.printStackTrace();
@@ -220,15 +249,15 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	protected void runComponent() {
 
 		// for testing
-
-		if (m_blobFinder != null) {
-			while (isRunning()) {
-				lockComponent();
-				detectPeople();
-				unlockComponent();
-				sleepComponent(1000);
-			}
-		}
+		//
+		// if (m_blobFinder != null) {
+		// while (isRunning()) {
+		// lockComponent();
+		// detectPeople();
+		// unlockComponent();
+		// sleepComponent(1000);
+		// }
+		// }
 	}
 
 }
