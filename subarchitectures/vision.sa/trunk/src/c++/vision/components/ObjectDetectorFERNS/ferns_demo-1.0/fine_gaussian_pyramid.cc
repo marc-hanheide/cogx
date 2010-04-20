@@ -21,6 +21,7 @@
   Street, Fifth Floor, Boston, MA 02110-1301, USA
 */
 #include <iostream>
+#include <cstdio>
 using namespace std;
 
 #include <assert.h>

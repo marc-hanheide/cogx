@@ -21,6 +21,10 @@
 #include "planar_pattern_detector_builder.h"
 #include "template_matching_based_tracker.h"
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
+
 namespace cast
 {
 
@@ -104,6 +108,10 @@ private:
    * Default is false.
    */
   bool outputToNav;
+
+#ifdef FEAT_VISUALIZATION
+  cogx::display::CDisplayClient m_display;
+#endif
 
   /**
    * Display detection results.
