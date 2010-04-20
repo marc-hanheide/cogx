@@ -76,6 +76,8 @@ module execution {
       };
 
       sequence<long> LongSeq;	
+      sequence<string> StringSeq;	
+
       /**
        * Move the robot to a particular place.
        */
@@ -103,6 +105,19 @@ module execution {
       class LogMessage extends Action {
 	string message;
       };
+
+
+
+
+	class DetectObjects extends Action {
+		StringSeq labels;
+	};
+	
+	class DetectPeople extends Action {};
+	
+	class TurnBy extends Action {
+		double angle;
+	    };
 
 
     };
