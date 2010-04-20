@@ -221,8 +221,11 @@ ObjectDetectorFERNS::~ObjectDetectorFERNS()
     delete detectors[i];
     delete trackers[i];
   }
+
+#ifndef FEAT_VISUALIZATION
   if(doDisplay)
     cvDestroyWindow("ObjectDetectorFERNS");
+#endif
 }
 
 void ObjectDetectorFERNS::configure(const map<string,string> & _config)
@@ -306,7 +309,12 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
     cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX,
          1.0, 1.0, 0.0,
          3, 8);
+
+#ifdef FEAT_VISUALIZATION
+    m_display.configureDisplayClient(_config);
+#else
     cvNamedWindow("ObjectDetectorFERNS", 1);
+#endif
   }
 
   setupFERNS();
@@ -320,6 +328,10 @@ void ObjectDetectorFERNS::start()
   addChangeFilter(createLocalTypeFilter<DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetectorFERNS>(this,
         &ObjectDetectorFERNS::receiveDetectionCommand));
+
+#ifdef FEAT_VISUALIZATION
+  m_display.connectIceClient(*this);
+#endif
 }
 
 void ObjectDetectorFERNS::receiveDetectionCommand(
@@ -341,10 +353,14 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   if(doDisplay)
   {
     drawResults(grayImage);
+#ifdef FEAT_VISUALIZATION
+    m_display.setImage("ObjectDetectorFERNS", grayImage);
+#else
     cvShowImage("ObjectDetectorFERNS", grayImage);
     // needed to make the window appear
     // (an odd behaviour of OpenCV windows!)
     cvWaitKey(10);
+#endif
   }
   cvReleaseImage(&grayImage);
 

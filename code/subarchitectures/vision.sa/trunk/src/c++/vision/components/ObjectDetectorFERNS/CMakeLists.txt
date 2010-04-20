@@ -7,7 +7,10 @@ include_directories(/opt/local/include)
 include_directories(/opt/local/include/opencv)
 link_directories(/opt/local/lib)
 
-include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
+include_directories(
+   ${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen
+   ${VISUALIZATION_INCLUDE_DIRS}
+   )
 
 # Set the sources.
 SET(SOURCES ObjectDetectorFERNS.cpp
@@ -30,8 +33,8 @@ ferns_demo-1.0/template_matching_based_tracker.cc)
 
 
 add_cast_component(ObjectDetectorFERNS ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} NavData)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils ${VISUALIZATION_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore z)
+link_cast_component(${CAST_COMPONENT_NAME} NavData)
 
 
