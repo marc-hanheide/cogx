@@ -12,14 +12,18 @@ outcome = {U1_5,U2_5}
 
 // feature values
 labelval = {Ball,Mug,None,Unknown}
+locationval = {Kitchen,None,Unknown}
 shapeval = {Cyl,None,Sphe,Unknown}
+typeval = {None,Person,Unknown}
 
 ///////////////////////////////
 // PREDICATES
 ///////////////////////////////
 
 Label(belief,labelval)
+Location(belief,locationval)
 Shape(belief,shapeval)
+Type(belief,typeval)
 
 Outcome(outcome)
 UnifyWith(existingunion)
@@ -30,28 +34,40 @@ Existence(belief)
 ///////////////////////////////
 
 2.1972244 Existence(U0_5)
--0.39304265 Existence(U0_5) ^ Shape(U0_5,Cyl)
--2.0024805 Existence(U0_5) ^ Shape(U0_5,Sphe)
--2.4079454 Existence(U0_5) ^ Shape(U0_5,Unknown)
-Existence(U0_5) => !Shape(U0_5,None).
+-0.31608158 Existence(U0_5) ^ Location(U0_5,Kitchen)
+-1.7660918 Existence(U0_5) ^ Location(U0_5,Unknown)
+Existence(U0_5) => !Location(U0_5,None).
+-0.26787946 Existence(U0_5) ^ Type(U0_5,Person)
+-2.0024807 Existence(U0_5) ^ Type(U0_5,Unknown)
+Existence(U0_5) => !Type(U0_5,None).
 Existence(U0_5) => !Label(U0_5,Ball).
 Existence(U0_5) => !Label(U0_5,Mug).
 Existence(U0_5) => !Label(U0_5,Unknown).
 Existence(U0_5) => Label(U0_5,None).
+Existence(U0_5) => !Shape(U0_5,Cyl).
+Existence(U0_5) => !Shape(U0_5,Sphe).
+Existence(U0_5) => !Shape(U0_5,Unknown).
+Existence(U0_5) => Shape(U0_5,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
-2.4423473 Existence(P)
--0.42587197 Existence(P) ^ Shape(P,Cyl)
--1.9159632 Existence(P) ^ Shape(P,Sphe)
--2.1236024 Existence(P) ^ Shape(P,Unknown)
-Existence(P) => !Shape(P,None).
+2.1972244 Existence(P)
+-0.22189441 Existence(P) ^ Location(P,Kitchen)
+-2.3126354 Existence(P) ^ Location(P,Unknown)
+Existence(P) => !Location(P,None).
+-0.3410828 Existence(P) ^ Type(P,Person)
+-1.6660084 Existence(P) ^ Type(P,Unknown)
+Existence(P) => !Type(P,None).
 Existence(P) => !Label(P,Ball).
 Existence(P) => !Label(P,Mug).
 Existence(P) => !Label(P,Unknown).
 Existence(P) => Label(P,None).
+Existence(P) => !Shape(P,Cyl).
+Existence(P) => !Shape(P,Sphe).
+Existence(P) => !Shape(P,Unknown).
+Existence(P) => Shape(P,None).
 
 ///////////////////////////////
 // FEATURE VALUE CONSTRAINTS
@@ -60,14 +76,22 @@ Existence(P) => Label(P,None).
 // rules for existence dependency
 !Existence(x) => y=None v !Label(x,y).
 !Existence(x) => Label(x,None).
+!Existence(x) => y=None v !Location(x,y).
+!Existence(x) => Location(x,None).
 !Existence(x) => y=None v !Shape(x,y).
 !Existence(x) => Shape(x,None).
+!Existence(x) => y=None v !Type(x,y).
+!Existence(x) => Type(x,None).
 
 // mutual exclusivity and unicity constraints
 Label(x,y) ^ Label(x,z) => y=z.
 EXIST y Label(x,y).
+Location(x,y) ^ Location(x,z) => y=z.
+EXIST y Location(x,y).
 Shape(x,y) ^ Shape(x,z) => y=z.
 EXIST y Shape(x,y).
+Type(x,y) ^ Type(x,z) => y=z.
+EXIST y Type(x,y).
 
 
 ///////////////////////////////
@@ -76,13 +100,14 @@ EXIST y Shape(x,y).
 
 // general correlations
 
-1 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Shape(P,Cyl) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Shape(P,Sphe) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Label(x,Mug) ^ Label(P,Mug) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Label(x,Ball) ^ Label(P,Ball) => UnifyWith(x)
+10 Existence(x) ^ Existence(P) ^ Type(x,y) ^ Type(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+10 UnifyWith(x) ^ Type(x,y) ^ Type(P,z) => y=z
+
+10 Existence(x) ^ Existence(P) ^ Location(x,y) ^ Location(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+10 UnifyWith(x) ^ Location(x,y) ^ Location(P,z) => y=z
+
 
 UnifyWith(x) => Existence(x) ^ Existence(P).
-UnifyWith(x) => (Shape(x,Cyl) ^ Shape(P,Cyl)) v (Shape(x,Sphe) ^ Shape(P,Sphe)) v (Label(x,Mug) ^ Label(P,Mug)) v (Label(x,Ball) ^ Label(P,Ball)).
 ///////////////////////////////
 // FINAL OUTCOME
 ///////////////////////////////

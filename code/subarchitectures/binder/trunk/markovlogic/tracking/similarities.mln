@@ -5,10 +5,11 @@
 
 // general correlations
 
-1 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Shape(P,Cyl) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Shape(P,Sphe) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Label(x,Mug) ^ Label(P,Mug) => UnifyWith(x)
-1 Existence(x) ^ Existence(P) ^ Label(x,Ball) ^ Label(P,Ball) => UnifyWith(x)
+10 Existence(x) ^ Existence(P) ^ Type(x,y) ^ Type(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+10 UnifyWith(x) ^ Type(x,y) ^ Type(P,z) => y=z
+
+10 Existence(x) ^ Existence(P) ^ Location(x,y) ^ Location(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+10 UnifyWith(x) ^ Location(x,y) ^ Location(P,z) => y=z
+
 
 UnifyWith(x) => Existence(x) ^ Existence(P).
-UnifyWith(x) => (Shape(x,Cyl) ^ Shape(P,Cyl)) v (Shape(x,Sphe) ^ Shape(P,Sphe)) v (Label(x,Mug) ^ Label(P,Mug)) v (Label(x,Ball) ^ Label(P,Ball)).

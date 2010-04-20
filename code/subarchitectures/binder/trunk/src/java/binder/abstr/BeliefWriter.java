@@ -28,7 +28,7 @@ import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
-
+ 
 /**
  * 
  * NOTE: we should here add various checks to ensure the beliefs are well-formed, and maybe include
