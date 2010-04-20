@@ -35,6 +35,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
 	private GraphicalExecutionManager m_exeMan;
+	private JRadioButton m_detectPeopleAction;
 
 	/**
 	 * This is the default constructor
@@ -115,6 +116,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_goAction = new JRadioButton("go to place");
 			m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
+			m_detectPeopleAction = new JRadioButton("detect people");
 
 			m_goAction.setSelected(true);
 
@@ -122,9 +124,13 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_goAction);
 			actionGroup.add(m_avsAction);
 			actionGroup.add(m_detectObjectsAction);
+			actionGroup.add(m_detectPeopleAction);
+
 			m_actionPanel.add(m_goAction, new GridBagConstraints());
 			m_actionPanel.add(m_avsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectObjectsAction, new GridBagConstraints());
+			m_actionPanel.add(m_detectPeopleAction, new GridBagConstraints());
+
 		}
 		return m_actionPanel;
 	}
@@ -169,6 +175,9 @@ public class ActionInterfaceFrame extends JFrame {
 			runAVS();
 		} else if (m_detectObjectsAction.isSelected()) {
 			detectObjects();
+
+		} else if (m_detectPeopleAction.isSelected()) {
+			detectPeople();
 		}
 
 	}
@@ -208,6 +217,13 @@ public class ActionInterfaceFrame extends JFrame {
 	 */
 	private void detectObjects() throws CASTException {
 		m_exeMan.triggerDetectObjects(new MonitorPanel());
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void detectPeople() throws CASTException {
+		m_exeMan.triggerDetectPeople(new MonitorPanel());
 	}
 
 	/**

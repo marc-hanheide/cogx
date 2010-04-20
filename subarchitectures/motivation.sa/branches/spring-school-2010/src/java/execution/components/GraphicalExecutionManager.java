@@ -17,6 +17,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.DetectObjects;
+import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionInterfaceFrame;
 import execution.util.ActionMonitor;
@@ -98,6 +99,13 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			throws CASTException {
 		DetectObjects act = newActionInstance(DetectObjects.class);
 		act.labels = m_objectLabels;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerDetectPeople(ActionMonitor _monitor)
+			throws CASTException {
+		DetectPeople act = newActionInstance(DetectPeople.class);
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
