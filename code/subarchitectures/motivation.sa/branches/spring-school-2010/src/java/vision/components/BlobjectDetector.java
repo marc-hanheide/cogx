@@ -60,11 +60,11 @@ public class BlobjectDetector extends ManagedComponent implements
 
 	}
 
-	public void workingMemoryChanged(WorkingMemoryChange _arg0)
+	public void workingMemoryChanged(WorkingMemoryChange _wmc)
 			throws CASTException {
 
 		// load command
-		DetectionCommand dc = getMemoryEntry(_arg0.address,
+		DetectionCommand dc = getMemoryEntry(_wmc.address,
 				DetectionCommand.class);
 
 		// because vision is never this quick...
@@ -112,6 +112,10 @@ public class BlobjectDetector extends ManagedComponent implements
 				addToWorkingMemory(newDataID(), obj);
 			}
 		}
+
+		// executed the command, results (if any) are on working memory,
+		// now delete command as not needed anymore
+		deleteFromWorkingMemory(_wmc.address);
 
 	}
 
