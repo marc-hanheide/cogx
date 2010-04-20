@@ -27,7 +27,7 @@ INCLUDE includes/binder.sa/perceptmediators.cast
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
-JAVA MG executor execution.components.PrototypePlanExecutor --self-motivate --goal "(forall (?p - place) (= (placestatus ?p) trueplace))" --log --debug
+JAVA MG executor execution.components.DoraExecutionMediator --self-motivate --goal "(forall (?p - place) (= (placestatus ?p) trueplace))" --log --debug
 
 # exection ####################################################################
 JAVA MG  manual-execution execution.components.GraphicalExecutionManager

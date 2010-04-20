@@ -36,7 +36,7 @@ SUBARCHITECTURE planner.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory --log --debug
 CPP TM AlwaysPositiveTaskManager
 CPP MG Planner WMControl --log
-JAVA MG executor execution.components.PrototypePlanExecutor --log --self-motivate 
+JAVA MG executor execution.components.DoraExecutionMediator --log --self-motivate 
 # JAVA MG vis.plan motivation.util.viewer.ViewerCastComponent --subscribe autogen.Planner.PlanningTask,autogen.Planner.Action
 
 
