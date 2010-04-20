@@ -14,6 +14,10 @@
 #include <VisionData.hpp>
 #include <VideoClient.h>
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
+
 namespace cast
 {
 
@@ -37,6 +41,12 @@ private:
    * wether we are currently receiving images from the server
    */
   bool receiving;
+
+#ifdef FEAT_VISUALIZATION
+  cogx::display::CActiveDisplayClient<VideoViewer> m_display;
+  void handleGuiEvent(const Visualization::TEvent &event);
+  bool m_bSendIplImage;
+#endif
 
 protected:
   /**
