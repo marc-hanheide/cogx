@@ -132,6 +132,10 @@ module VisionData {
     StringSeq labels;
   };
   
+  class PeopleDetectionCommand {
+  	//nothing involved here
+  };
+  
   class DominantPlane {
   	cogx::Math::Plane3 plane;
   };
