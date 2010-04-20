@@ -1,8 +1,4 @@
-#SUBARCHITECTURE vision.sa
-#JAVA WM                       cast.architecture.SubarchitectureWorkingMemory 
-#JAVA TM                       cast.architecture.AlwaysPositiveTaskManager
-
-JAVA MG blobdetector  vision.components.BlobjectDetector --label-record1 255,0,0 --label-record2 0,255,0 --label-record3 0,0,255  --label-record4 255,0,255 
+JAVA MG blobdetector  vision.components.BlobjectDetector --label-record1 255,0,0 --label-record2 0,255,0 --label-record3 0,0,255  --label-record4 255,0,255  --log
 
 JAVA MG peopledetector  vision.components.BlobbyPeopleDetector --person-colour=0,0,255 
 
