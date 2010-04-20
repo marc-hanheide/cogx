@@ -19,7 +19,7 @@ public interface ActionExecutor {
 	}
 
 	/**
-	 * Check if the executor will execute.
+	 * Check if the executor will execute given this action.
 	 * 
 	 * @param _action
 	 * @return
