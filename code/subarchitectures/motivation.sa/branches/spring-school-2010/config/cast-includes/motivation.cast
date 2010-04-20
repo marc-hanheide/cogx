@@ -1,5 +1,5 @@
 # execution ###################################################################
-JAVA MG executor execution.components.PrototypePlanExecutor 
+JAVA MG executor execution.components.DoraExecutionMediator
 
 
 # motivation ##################################################################
