@@ -33,13 +33,16 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel m_actionPanel;
 	private JRadioButton m_avsAction;
 	private JRadioButton m_goAction;
+	private JRadioButton m_detectObjectsAction;
 	private GraphicalExecutionManager m_exeMan;
-	
+
 	/**
 	 * This is the default constructor
-	 * @param _graphicalExecutionManager 
+	 * 
+	 * @param _graphicalExecutionManager
 	 */
-	public ActionInterfaceFrame(GraphicalExecutionManager _graphicalExecutionManager) {
+	public ActionInterfaceFrame(
+			GraphicalExecutionManager _graphicalExecutionManager) {
 		super();
 		m_exeMan = _graphicalExecutionManager;
 		initialize();
@@ -76,8 +79,8 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	public void addPlace(long _id) {
-//		1Model.addRow(new Object[] { _id, true });
-		m_placeTableModel.addRow(new Object[] { _id});
+		// 1Model.addRow(new Object[] { _id, true });
+		m_placeTableModel.addRow(new Object[] { _id });
 		pack();
 	}
 
@@ -111,12 +114,17 @@ public class ActionInterfaceFrame extends JFrame {
 			m_actionPanel.setLayout(new GridBagLayout());
 			m_goAction = new JRadioButton("go to place");
 			m_avsAction = new JRadioButton("visual search in");
+			m_detectObjectsAction = new JRadioButton("detect objects");
+
 			m_goAction.setSelected(true);
+
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_goAction);
 			actionGroup.add(m_avsAction);
+			actionGroup.add(m_detectObjectsAction);
 			m_actionPanel.add(m_goAction, new GridBagConstraints());
 			m_actionPanel.add(m_avsAction, new GridBagConstraints());
+			m_actionPanel.add(m_detectObjectsAction, new GridBagConstraints());
 		}
 		return m_actionPanel;
 	}
@@ -148,33 +156,58 @@ public class ActionInterfaceFrame extends JFrame {
 
 		@Override
 		public void actionComplete(Action _action) {
-			
+			m_exeMan.println("Action complete");
 		}
-		
+
 	}
-	
+
 	private void go() throws CASTException {
 		// get action
-		if(m_goAction.isSelected()) {
-			int selectedRow = m_placeTable.getSelectedRow();
-			if(selectedRow != -1) {
-				Object placeIDVal = m_placeTableModel.getValueAt(selectedRow, PLACE_ID_COLUMN);
-				assert(placeIDVal != null);
-				long placeID = (Long) placeIDVal;
-				m_exeMan.triggerGoToAction(placeID, new MonitorPanel());
-			}
+		if (m_goAction.isSelected()) {
+			goToPlace();
+		} else if (m_avsAction.isSelected()) {
+			runAVS();
+		} else if (m_detectObjectsAction.isSelected()) {
+			detectObjects();
 		}
-		else if (m_avsAction.isSelected()) {
-			int[] selectedRows = m_placeTable.getSelectedRows();
-			if(selectedRows.length > 0) {
-				long[] placeIDs = new long[selectedRows.length];
-				for(int i = 0; i < selectedRows.length; ++i) {
-					placeIDs[i] = (Long) m_placeTableModel.getValueAt(selectedRows[i], PLACE_ID_COLUMN);
-				}
-				m_exeMan.triggerAVSAction(placeIDs, new MonitorPanel());
 
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void runAVS() throws CASTException {
+		int[] selectedRows = m_placeTable.getSelectedRows();
+		if (selectedRows.length > 0) {
+			long[] placeIDs = new long[selectedRows.length];
+			for (int i = 0; i < selectedRows.length; ++i) {
+				placeIDs[i] = (Long) m_placeTableModel.getValueAt(
+						selectedRows[i], PLACE_ID_COLUMN);
 			}
+			m_exeMan.triggerAVSAction(placeIDs, new MonitorPanel());
+
 		}
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void goToPlace() throws CASTException {
+		int selectedRow = m_placeTable.getSelectedRow();
+		if (selectedRow != -1) {
+			Object placeIDVal = m_placeTableModel.getValueAt(selectedRow,
+					PLACE_ID_COLUMN);
+			assert (placeIDVal != null);
+			long placeID = (Long) placeIDVal;
+			m_exeMan.triggerGoToAction(placeID, new MonitorPanel());
+		}
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void detectObjects() throws CASTException {
+		m_exeMan.triggerDetectObjects(new MonitorPanel());
 	}
 
 	/**
@@ -185,6 +218,16 @@ public class ActionInterfaceFrame extends JFrame {
 	private JButton getM_stopButton() {
 		if (m_stopButton == null) {
 			m_stopButton = new JButton("Stop!");
+			m_stopButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent _e) {
+					try {
+						m_exeMan.stopCurrentAction();
+					} catch (CASTException e) {
+						m_exeMan.logException(e);
+					}
+				}
+			});
 		}
 		return m_stopButton;
 	}
@@ -196,11 +239,11 @@ public class ActionInterfaceFrame extends JFrame {
 	 */
 	private JTable getM_placeTable() {
 		if (m_placeTable == null) {
-//			m_placeTable = new JTable(1, 2);
-//			m_placeTableModel = new DefaultTableModel(new String[] { "id",
-//			"explored" }, 0);
+			// m_placeTable = new JTable(1, 2);
+			// m_placeTableModel = new DefaultTableModel(new String[] { "id",
+			// "explored" }, 0);
 			m_placeTable = new JTable(1, 1);
-			m_placeTableModel = new DefaultTableModel(new String[] { "id"}, 0);
+			m_placeTableModel = new DefaultTableModel(new String[] { "id" }, 0);
 			m_placeTable.setModel(m_placeTableModel);
 		}
 		return m_placeTable;

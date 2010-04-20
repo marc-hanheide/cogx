@@ -25,8 +25,14 @@ import execution.util.ActionExecutor.ExecutionCompletionCallback;
 
 /**
  * 
- * Manages interactions with WM for action execution. Should only be constructed
- * with a component that is already running (i.e. in or past the start method
+ * Manages interactions with WM for action execution. Users should register
+ * {@link ActionExecutorFactory} instances associated with the type of action
+ * expected on working memory. This factory will then be used to create a new
+ * instance of {@link ActionExecutor} for each action that needs to be executed
+ * of the given type.
+ * 
+ * The object should only be constructed with a component that is already running (i.e. in
+ * or past the start method
  * 
  * @author nah
  * 
