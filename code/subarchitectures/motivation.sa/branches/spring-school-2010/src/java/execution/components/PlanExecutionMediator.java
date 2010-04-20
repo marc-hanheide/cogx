@@ -20,7 +20,6 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import castutils.facades.BinderFacade;
 import execution.util.ActionConverter;
 import execution.util.SerialPlanExecutor;
 import execution.util.SleepyThread;
