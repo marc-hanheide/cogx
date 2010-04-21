@@ -1,6 +1,7 @@
 package binder.components;
 
-import beliefmodels.arch.BeliefException;
+import java.util.List;
+
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
@@ -11,9 +12,6 @@ import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.BeliefWriter;
 import binder.arch.BindingWorkingMemory;
-import cast.AlreadyExistsOnWMException;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
@@ -38,10 +36,63 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 								updatePointersInCurrentBelief(union);
 								updatePointersInOtherBeliefs(union);
 								
-								insertBeliefInWM(union);
-
 								addOffspringToPercept(beliefData.getData(), 
-										new WorkingMemoryAddress(union.id, BindingWorkingMemory.BINDER_SA));								
+										new WorkingMemoryAddress(union.id, BindingWorkingMemory.BINDER_SA));	
+								
+								insertBeliefInWM(union);
+							
+						}	
+
+						catch (Exception e) {
+							e.printStackTrace();
+						} 
+					}
+				}
+		);
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						
+						try {
+							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
+
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									PerceptUnionBelief childBelief = getMemoryEntry(child, PerceptUnionBelief.class);
+									childBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
+									updateBeliefOnWM(childBelief);
+								}
+							}
+							
+						}	
+
+						catch (Exception e) {
+							e.printStackTrace();
+						} 
+					}
+				}
+		);
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(PerceptBelief.class,
+						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						
+						try {
+							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
+
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									deleteBeliefOnWM(child.id);
+								}
+							}
+							
 						}	
 
 						catch (Exception e) {
@@ -67,9 +118,14 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 			for (FeatureValueProbPair pointer : FeatureContentUtils.getAllPointerValuesInBelief(newBelief)) {
 
 				WorkingMemoryAddress point = ((PointerValue)pointer.val).beliefId ;
-				PerceptBelief belief = getMemoryEntry(point, PerceptBelief.class);
+				if (existsOnWorkingMemory(point)) {
+				Belief belief = getMemoryEntry(point, Belief.class);
 				if (((CASTBeliefHistory)belief.hist).offspring.size() > 0) {
 					((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
+				}
+				}
+				else {
+					log("WARNING, belief " + point + "not yet in working memory");
 				}
 
 			}

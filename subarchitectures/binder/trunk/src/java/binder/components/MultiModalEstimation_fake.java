@@ -1,5 +1,7 @@
 package binder.components;
 
+import java.util.List;
+
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
@@ -40,10 +42,10 @@ public class MultiModalEstimation_fake extends BeliefWriter {
 								updatePointersInCurrentBelief(mmBelief);
 								updatePointersInOtherBeliefs(mmBelief);
 								
-								insertBeliefInWM(mmBelief);
-
 								addOffspringToUnion(beliefData.getData(), 
 										new WorkingMemoryAddress(mmBelief.id, BindingWorkingMemory.BINDER_SA));	
+								
+								insertBeliefInWM(mmBelief);
 						}	
 			
 						 catch (DoesNotExistOnWMException e) {
@@ -59,6 +61,58 @@ public class MultiModalEstimation_fake extends BeliefWriter {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+					}
+				}
+		);
+		
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(PerceptUnionBelief.class,
+						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						
+						try {
+							CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptUnionBelief.class);
+
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									MultiModalBelief childBelief = getMemoryEntry(child, MultiModalBelief.class);
+									childBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, childBelief.id);
+									updateBeliefOnWM(childBelief);
+								}
+							}
+							
+						}	
+
+						catch (Exception e) {
+							e.printStackTrace();
+						} 
+					}
+				}
+		);
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(PerceptUnionBelief.class,
+						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						
+						try {
+							CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptUnionBelief.class);
+
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									deleteBeliefOnWM(child.id);
+								}
+							}
+							
+						}	
+
+						catch (Exception e) {
+							e.printStackTrace();
+						} 
 					}
 				}
 		);
@@ -79,11 +133,15 @@ public class MultiModalEstimation_fake extends BeliefWriter {
 			for (FeatureValueProbPair pointer : FeatureContentUtils.getAllPointerValuesInBelief(newBelief)) {
 
 				WorkingMemoryAddress point = ((PointerValue)pointer.val).beliefId ;
-				PerceptUnionBelief belief = getMemoryEntry(point, PerceptUnionBelief.class);
+				if (existsOnWorkingMemory(point)) {
+				Belief belief = getMemoryEntry(point, Belief.class);
 				if (((CASTBeliefHistory)belief.hist).offspring.size() > 0) {
 					((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
 				}
-
+				}
+				else {
+					log("WARNING: belief" + point.id + " does not exist on WM");
+				}
 			}
 		}
 		catch (Exception e) {

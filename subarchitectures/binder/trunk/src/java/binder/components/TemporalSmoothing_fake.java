@@ -1,5 +1,7 @@
 package binder.components;
 
+import java.util.List;
+
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
@@ -9,6 +11,7 @@ import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.StableBeliefBuilder;
+import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.BeliefWriter;
 import binder.arch.BindingWorkingMemory;
@@ -40,11 +43,11 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 							updatePointersInCurrentBelief(stableBelief);
 							updatePointersInOtherBeliefs(stableBelief);
 								
-							insertBeliefInWM(stableBelief);
-
 							addOffspringToTStableBelief(beliefData.getData(), 
-										new WorkingMemoryAddress(stableBelief.id, BindingWorkingMemory.BINDER_SA));	
-							
+									new WorkingMemoryAddress(stableBelief.id, BindingWorkingMemory.BINDER_SA));	
+
+							insertBeliefInWM(stableBelief);
+								
 						}	
 			
 						 catch (DoesNotExistOnWMException e) {
@@ -60,6 +63,59 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+					}
+				}
+		);
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(TemporalUnionBelief.class,
+						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						
+						try {
+							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
+
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							log("number of offspring for : " + beliefData.getData().id + ": "+ offspring.size());
+
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									StableBelief childBelief = getMemoryEntry(child, StableBelief.class);
+									childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, childBelief.id);
+									updateBeliefOnWM(childBelief);
+								}
+							}
+							
+						}	
+
+						catch (Exception e) {
+							e.printStackTrace();
+						} 
+					}
+				}
+		);
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(TemporalUnionBelief.class,
+						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						
+						try {
+							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
+
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									deleteBeliefOnWM(child.id);
+								}
+							}
+							
+						}	
+
+						catch (Exception e) {
+							e.printStackTrace();
+						} 
 					}
 				}
 		);
@@ -80,11 +136,15 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 			for (FeatureValueProbPair pointer : FeatureContentUtils.getAllPointerValuesInBelief(newBelief)) {
 
 				WorkingMemoryAddress point = ((PointerValue)pointer.val).beliefId ;
-				TemporalUnionBelief belief = getMemoryEntry(point, TemporalUnionBelief.class);
+				if (existsOnWorkingMemory(point)) {
+				Belief belief = getMemoryEntry(point, Belief.class);
 				if (((CASTBeliefHistory)belief.hist).offspring.size() > 0) {
 					((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
 				}
-
+				}
+				else {
+					log("warning: belief " + point.id + " does not exist yet on WM");
+				}
 			}
 		}
 		catch (Exception e) {

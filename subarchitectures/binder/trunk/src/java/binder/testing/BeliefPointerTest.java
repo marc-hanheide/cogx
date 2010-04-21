@@ -12,8 +12,10 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import beliefmodels.arch.BeliefException;
+import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
@@ -32,7 +34,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 	@Override
 	public void start() {
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PerceptUnionBelief.class,
+				ChangeFilterFactory.createLocalTypeFilter(StableBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						checkIfSuccessful(_wmc);
@@ -40,33 +42,34 @@ public class BeliefPointerTest extends AbstractBinderTest {
 				}
 		);
 	}
-	
+	 
 	  
 	public void checkIfSuccessful(WorkingMemoryChange wmc) {
 		
-		CASTData<PerceptUnionBelief> beliefData;
+		CASTData<StableBelief> beliefData;
 		try {
 			beliefData = getMemoryEntryWithData(wmc.address,
-					PerceptUnionBelief.class);
+					StableBelief.class);
 			
-			PerceptUnionBelief newBelief = beliefData.getData();	
+			StableBelief newBelief = beliefData.getData();	
 
-			if (((CASTBeliefHistory)newBelief.hist).ancestors.get(0).id.equals(id_p2)) {
+		if (newBelief.id.equals("1:6")) {
 				log("belief " + beliefData.getID() + " (offspring from " + ((CASTBeliefHistory)newBelief.hist).ancestors.get(0).id + 
 						"), has a feature pointing to: " + ((PointerValue)FeatureContentUtils.getValuesInBelief(newBelief, "pointer").get(0).val).beliefId.id);
-			}
-			else  {
-				PerceptUnionBelief otherUnion = getMemoryEntry(new WorkingMemoryAddress("0:3", BindingWorkingMemory.BINDER_SA), PerceptUnionBelief.class);
+			} 
+		else  {
+			if (existsOnWorkingMemory(new WorkingMemoryAddress("1:6", BindingWorkingMemory.BINDER_SA))) {
+			StableBelief otherUnion = getMemoryEntry(new WorkingMemoryAddress("1:6", BindingWorkingMemory.BINDER_SA), StableBelief.class);
 				log("belief " + otherUnion.id + " (offspring from " + ((CASTBeliefHistory)otherUnion.hist).ancestors.get(0).id + 
 						"), has a feature pointing to: " + ((PointerValue)FeatureContentUtils.getValuesInBelief(otherUnion, "pointer").get(0).val).beliefId.id);				
-			}
-			
+			}  
+		}
 		}  catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+	 
 	@Override
 	public String getReasonForFailure() {
 		// TODO Auto-generated method stub
@@ -125,12 +128,16 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			PerceptBelief p2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "p2", "here", 
 					this.getCASTTime(), distrib_p2, PerceptBuilder.createHistory(new WorkingMemoryAddress("", "subarch1")));
 			
-			insertBeliefInWM(p2);	
-			
-			id_p2 = p2.id;
+			insertBeliefInWM(p1);
+
+				sleepComponent(5000);
+
+				insertBeliefInWM(p2);	
 
 			
-			insertBeliefInWM(p1);
+
+			id_p2 = p2.id;
+
 			
 		} 
 		catch (Exception e) {
