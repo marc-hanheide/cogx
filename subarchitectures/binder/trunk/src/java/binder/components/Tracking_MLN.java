@@ -280,6 +280,17 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		return unionsToUpdate;
 	}  
 
+	
+	
+	/**
+	 * Only selecting the unions which are originating from the same subarchitecture as the current 
+	 * mmbelief
+	 * 
+	 * @param existingUnions
+	 * @param mmbelief
+	 * @return
+	 * @throws BeliefException
+	 */
 	private HashMap<String,Belief> selectRelevantUnions (HashMap<String,Belief> existingUnions, 
 			MultiModalBelief mmbelief) throws BeliefException {
 

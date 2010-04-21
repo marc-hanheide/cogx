@@ -37,9 +37,9 @@ import binder.ml.MLFormula;
  */
 public class MLNGenerator {
 
-	public static boolean LOGGING = true;
+	public static boolean LOGGING = false;
 
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	private static final String EXISTING_UNIONS = "existingunion";
 
