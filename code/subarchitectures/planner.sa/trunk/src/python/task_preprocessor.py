@@ -67,7 +67,7 @@ def feature_val_to_object(fval):
   
   elif fval.__class__ == featurecontent.PointerValue:
     #todo: how to support address values sensibly?
-    return pddl.TypedObject(fval.beliefId, pddl.t_object)
+    return pddl.TypedObject(fval.beliefId.id, pddl.t_object)
   
   elif fval.__class__ == featurecontent.IntegerValue:
     return pddl.TypedObject(fval.val, pddl.t_number)
@@ -172,6 +172,8 @@ def tuples2facts(fact_tuples):
       assert feature_label in current_domain.predicates
       func = current_domain.predicates.get(feature_label, ftup.args)
 
+    assert isinstance(func, pddl.Function), "Error looking up %s(%s), got %s" % (feature_label, ", ".join(map(str, ftup.args)), str(func))
+      
     if len(ftup.values) == 1:
       yield state.Fact(state.StateVariable(func, ftup.args), ftup.values[0][0])
     else:
