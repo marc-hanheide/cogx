@@ -3,15 +3,15 @@ package binder.perceptmediator.components;
 import Ice.ObjectImpl;
 import SpatialProperties.PlaceContainmentAgentProperty;
 import binder.perceptmediator.PerceptBindingMediator;
-import binder.perceptmediator.components.abstr.PerceptMediatorComponent;
-import binder.perceptmediator.transferfunctions.AgentTransferFunction;
+import binder.perceptmediator.components.abstr.ReferringPerceptMediatorComponent;
+import binder.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 
-public class AgentMediator extends PerceptMediatorComponent {
+public class AgentMediator extends ReferringPerceptMediatorComponent {
 
 	@Override
 	protected PerceptBindingMediator<? extends ObjectImpl> getMediator() {
 		return PerceptBindingMediator.create(this, PlaceContainmentAgentProperty.class,
-				new AgentTransferFunction(this));
+				new LocalizedAgentTransferFunction(this, perceptBeliefsView));
 	}
 
 }
