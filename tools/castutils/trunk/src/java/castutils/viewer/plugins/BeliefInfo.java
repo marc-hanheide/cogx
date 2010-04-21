@@ -11,6 +11,7 @@ import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
@@ -41,13 +42,7 @@ public class BeliefInfo implements Plugin {
 						BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
 						features+=pd.getKey()+"=[";
 						for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
-							String featStr="*";
-							if (fv.val instanceof IntegerValue)
-								featStr=Integer.toString(((IntegerValue) fv.val).val);
-							if (fv.val instanceof PointerValue)
-								featStr=CASTUtils.toString(((PointerValue) fv.val).beliefId);
-							if (fv.val instanceof StringValue)
-								featStr=((StringValue) fv.val).val;
+							String featStr = toString(fv.val);
 							features+=featStr+" ";
 						}
 						features+="] ";
@@ -57,6 +52,21 @@ public class BeliefInfo implements Plugin {
 			}
 		}
 		return extraInfo;
+	}
+
+	/**
+	 * @param fv
+	 * @return
+	 */
+	public static String toString(FeatureValue fv) {
+		String featStr="*";
+		if (fv instanceof IntegerValue)
+			featStr=Integer.toString(((IntegerValue) fv).val);
+		if (fv instanceof PointerValue)
+			featStr=CASTUtils.toString(((PointerValue) fv).beliefId);
+		if (fv instanceof StringValue)
+			featStr=((StringValue) fv).val;
+		return featStr;
 	}
 
 }
