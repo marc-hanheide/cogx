@@ -44,7 +44,7 @@ PlaceManager::PlaceManager() : m_placeIDCounter(0),
   m_isPathFollowing(false),
   m_startNodeForCurrentPath(-1),
   m_goalPlaceForCurrentPath(-1),
-  m_firstNodeProcessed(false)
+  m_firstMovementRegistered(false)
 {
   cout<<"PlaceManager::PlaceManager()"<<endl;
 }
@@ -166,32 +166,31 @@ PlaceManager::runComponent()
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(change.address);
 
-  if (oobj != 0) {
-    debug("PlaceManager::runComponent: now running in runComponent");
-    processPlaceArrival(false);
-    debug("PlaceManager::runComponent: now finished running in runComponent");
-  
-  }
-  m_firstNodeProcessed = true;
+//  if (oobj != 0) {
+//    debug("PlaceManager::runComponent: now running in runComponent");
+//    processPlaceArrival(false);
+//    debug("PlaceManager::runComponent: now finished running in runComponent");
+//  
+//  }
+//  m_firstNodeProcessed = true;
 
 }
 
 void 
 PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  while (!m_firstNodeProcessed) {
-    sleepComponent(250);
-  }
-  debug("newNavNode called");
-  NavData::FNodePtr oobj =
-    getMemoryEntry<NavData::FNode>(objID.address);
+  try {
+    NavData::FNodePtr oobj =
+      getMemoryEntry<NavData::FNode>(objID.address);
+    if (m_firstMovementRegistered) {
+      debug("newNavNode called");
 
-  if (oobj != 0) {
-    if (m_startNodeForCurrentPath >= 0) {
-      // Robot has moved; this must be a newly discovered node at
-      // the robot's location
-      // (as opposed to one loaded from disk)
-      processPlaceArrival(false);
+      if (oobj != 0) {
+	// Robot has moved; this must be a newly discovered node at
+	// the robot's location
+	// (as opposed to one loaded from disk)
+	processPlaceArrival(false);
+      }
     }
     else {
       // Special case: Robot hasn't yet moved; this must be a loaded map
@@ -212,6 +211,9 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 
       m_Places[newPlaceID] = p;
     }
+  }
+  catch (DoesNotExistOnWMException) {
+    log("Error! Nav node missing from WM!");
   }
   debug("newNavNode exited");
 }
@@ -1382,6 +1384,7 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
       }
     }
   }
+  m_firstMovementRegistered = true;
   //log("robotMoved exited");
 }
 
