@@ -21,11 +21,14 @@ import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
 import beliefmodels.builders.PerceptUnionBuilder;
+import beliefmodels.utils.FeatureContentUtils;
+import binder.arch.BindingWorkingMemory;
 
 
 public class TrackingTest extends AbstractBinderTest {
@@ -76,19 +79,25 @@ public class TrackingTest extends AbstractBinderTest {
 			log("union inserted on WM: " + newBelief.id);
 			log("existence probability of union " + newBelief.id + ": " + ((DistributionWithExistDep)newBelief.content).existProb);
 			
-			if (nbUnionsOnWM==7) { 
+			log("number of unions received: " + nbUnionsOnWM);
+		
+			/**			TemporalUnionBelief pUnion = getMemoryEntry(new WorkingMemoryAddress("2:5", BindingWorkingMemory.BINDER_SA), TemporalUnionBelief.class);
+			
+		for (FeatureValueProbPair pair: FeatureContentUtils.getValuesInBelief(pUnion, "pointTo")) {
+				if (pair.val.getClass().equals(PointerValue.class))
+					log("belief " + pUnion.id + " pointing to belief "+ ((PointerValue)pair.val).beliefId.id + " with prob. " + pair.prob);
+			} */
+
+			if (nbUnionsOnWM==3) { 
 				isTestSuccessful = true;
 				isTestFinished = true;
-			}
+				}
 			log("Temporal Union correctly received!");
 			
 		}
-		 catch (DoesNotExistOnWMException e) {
+		 catch (Exception e) {
 				e.printStackTrace();
 			}
-		 catch (UnknownSubarchitectureException e) {	
-			e.printStackTrace();
-		} 
 
 	}
 
@@ -96,6 +105,7 @@ public class TrackingTest extends AbstractBinderTest {
 	@Override
 	public void startTest() {
 		
+	
 
 		try {
 			
@@ -124,8 +134,12 @@ public class TrackingTest extends AbstractBinderTest {
 			e.printStackTrace();
 		}
 		 
-	 	sleepComponent(5000);
+	
 		
+		////////////////////////////////
+		
+	 	sleepComponent(5000);
+
 		try {
 			
 			CASTBeliefHistory hist = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","vision"));
@@ -146,7 +160,7 @@ public class TrackingTest extends AbstractBinderTest {
 			
 			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist);
 
-			insertBeliefInWM(b2);
+			insertBeliefInWM(b2);		
 			
 
 		}
