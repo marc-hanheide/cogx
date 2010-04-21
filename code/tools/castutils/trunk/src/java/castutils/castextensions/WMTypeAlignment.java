@@ -86,6 +86,7 @@ public class WMTypeAlignment<InputT, OutputT extends Object> {
 
 				// if it's a new object
 				if (!m_previousInput.containsKey(hash)) {
+//					System.out.println("new object");
 					address = new WorkingMemoryAddress(m_component.newDataID(),
 							m_component.getSubarchitectureID());
 					operations.add(new WMAdd(address, m_converter
@@ -93,6 +94,7 @@ public class WMTypeAlignment<InputT, OutputT extends Object> {
 				}
 				// else we've seen it before
 				else {
+//					System.out.println("updated object");
 					address = m_previousInput.get(hash);
 					operations.add(new WMOverwrite(address, m_converter
 							.convert(inputObject)));
