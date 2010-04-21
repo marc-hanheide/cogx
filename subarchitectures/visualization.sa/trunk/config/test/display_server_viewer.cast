@@ -6,6 +6,7 @@ CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 CPP MG display.srv DisplayServer --log true --debug true
+CPP MG visualization.test VisualizationTest --videoname videoserver --display-server-id "display.srv" --camid 0 --debug true
 
 SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
