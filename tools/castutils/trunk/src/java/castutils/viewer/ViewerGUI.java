@@ -58,9 +58,6 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	volatile protected boolean freezeView;
 	private Logger logger;
 
-	
-	
-	
 	/**
 	 * This is the default constructor
 	 */
@@ -88,7 +85,6 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 		this(ComponentLogger.getLogger(ViewerGUI.class));
 	}
 
-	
 	private synchronized void mapToTableModel() {
 		final Vector<Vector<Object>> v = new Vector<Vector<Object>>(
 				tableContent.values());
@@ -180,19 +176,19 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			sorter = new TableRowSorter<TableModel>(tableModel);
 			sorter.setSortsOnUpdates(true);
 			jTable.setRowSorter(sorter);
-			jTable.sizeColumnsToFit(7);
+			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 			getContentPane().add(new JScrollPane(jTable));
 		}
 		return jTable;
 	}
 
 	protected void showDetails(int selectedRow) {
-		String address=(String) jTable.getValueAt(selectedRow, 2);
+		String address = (String) jTable.getValueAt(selectedRow, 2);
 		// TODO: it's a very ugly way of getting the address
-		StringTokenizer st=new StringTokenizer(address, "@");
-		WorkingMemoryAddress wma=new WorkingMemoryAddress();
-		wma.id=st.nextToken();
-		wma.subarchitecture=st.nextToken();
+		StringTokenizer st = new StringTokenizer(address, "@");
+		WorkingMemoryAddress wma = new WorkingMemoryAddress();
+		wma.id = st.nextToken();
+		wma.subarchitecture = st.nextToken();
 		tableContent.get(wma);
 	}
 
@@ -243,12 +239,13 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	}
 
 	private String addrToString(WorkingMemoryAddress wma) {
-		return wma.id + "@"+wma.subarchitecture;
+		return wma.id + "@" + wma.subarchitecture;
 	}
 
 	@Override
 	public void entryChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
-			final WorkingMemoryChange wmc, final Ice.ObjectImpl motive, final Ice.ObjectImpl oldMotive) {
+			final WorkingMemoryChange wmc, final Ice.ObjectImpl motive,
+			final Ice.ObjectImpl oldMotive) {
 
 		switch (wmc.operation) {
 		case ADD:
@@ -256,7 +253,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			Plugin pluginToCall = findPlugin(motive.getClass());
 
 			Vector<Object> row = new Vector<Object>();
-			row.add(String.format("%06d",counter++));
+			row.add(String.format("%06d", counter++));
 			// mark additions
 			if (wmc.operation == WorkingMemoryOperation.ADD)
 				row.add("*");
@@ -268,10 +265,16 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 				Vector<Object> extraInfo = pluginToCall.toVector(motive);
 				row.addAll(extraInfo);
 			}
+			{ // log it
+				String logString = wmc.operation.name() + ":";
+				for (Object o : row) {
+					logString += o.toString()+"\n";
+				}
+				logger.info(logString);
+			}
 			tableContent.put(wmc.address, row);
 			break;
 		case DELETE:
-			logger.debug("deleted from table models "+motive.getClass().getSimpleName());
 			tableContent.remove(wmc.address);
 			break;
 		}
