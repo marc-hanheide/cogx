@@ -10,6 +10,6 @@ JAVA MG pm-gateway 	binder.perceptmediator.components.PlaceGatewayMediator --deb
 
 # relation mediators:
 JAVA MG pm-place-conn 	binder.perceptmediator.components.PlaceConnectivityMediator --debug
-JAVA MG pm-agent-rel 	binder.perceptmediator.components.PlaceContainmentAgentMediator --debug
-JAVA MG pm-person-rel 	binder.perceptmediator.components.PersonRelationMediator --debug
-JAVA MG pm-object-rel 	binder.perceptmediator.components.VisualObjectRelationMediator --debug
+#JAVA MG pm-agent-rel 	binder.perceptmediator.components.PlaceContainmentAgentMediator --debug
+#JAVA MG pm-person-rel 	binder.perceptmediator.components.PersonRelationMediator --debug
+#JAVA MG pm-object-rel 	binder.perceptmediator.components.VisualObjectRelationMediator --debug
