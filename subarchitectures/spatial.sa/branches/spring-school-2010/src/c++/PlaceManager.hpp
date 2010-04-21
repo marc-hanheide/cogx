@@ -137,6 +137,7 @@ class PlaceManager : public cast::ManagedComponent
     // frontier
     bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
     				// generate PlaceholderPlaceProperties
+    bool m_bNoPlaceholders;
 
     long m_hypIDCounter;
     std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;
