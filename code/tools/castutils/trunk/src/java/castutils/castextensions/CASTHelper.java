@@ -22,20 +22,18 @@ public class CASTHelper {
 	protected CASTHelper(ManagedComponent c) {
 		component = c;
 		name = this.getClass().getSimpleName();
+		logger = Logger.getLogger(component.getLoggerName() + "." + name);
 	}
 
 	protected void println(Object o) {
-		logger = Logger.getLogger(component.getLoggerName() + "." + name);
 		logger.info(name + ": " + o);
 	}
 
 	protected void log(Object o) {
-		logger = Logger.getLogger(component.getLoggerName() + "." + name);
 		logger.debug(name + ": " + o);
 	}
 
 	protected void debug(Object o) {
-		logger = Logger.getLogger(component.getLoggerName() + "." + name);
 		logger.trace(name + ": " + o);
 	}
 }
