@@ -14,6 +14,7 @@ import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
+import beliefmodels.builders.BeliefContentBuilder;
 
 
 public class FeatureContentUtils {
@@ -192,6 +193,12 @@ public class FeatureContentUtils {
 				
 				addAnotherValueInBasicProbDistribution((BasicProbDistribution)featDistrib, newPair);
 					
+			}
+			
+			else  {
+				BasicProbDistribution newDistrib = 
+					BeliefContentBuilder.createNewFeatureDistributionWithSinglePair(featlabel, newPair);
+				BeliefContentBuilder.putNewCondIndependentDistrib((CondIndependentDistribs)distrib, newDistrib);
 			}
 		}
 	}
