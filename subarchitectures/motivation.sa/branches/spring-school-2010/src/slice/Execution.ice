@@ -108,17 +108,27 @@ module execution {
 
 
 
-
-	class DetectObjects extends Action {
-		StringSeq labels;
-	};
+      /**
+       * Try to detect objects with these labels.
+       */
+      class DetectObjects extends Action {
+	StringSeq labels;
+      };
+      
+      /**
+       * Run the people detector without moving the robot.
+       */
+      class DetectPeople extends Action {};
 	
-	class DetectPeople extends Action {};
-	
-	class TurnBy extends Action {
-		double angle;
-	    };
 
+      /**
+       * Turn the robot in stages to look for people.
+       */
+      class LookForPeople extends Action {};
+      
+
+
+      
 
     };
 

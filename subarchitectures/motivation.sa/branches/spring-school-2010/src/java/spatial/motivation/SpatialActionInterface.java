@@ -33,9 +33,11 @@ import execution.slice.TriBool;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.LookForPeople;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.LocalActionStateManager;
+import execution.util.LookForPeopleExecutor;
 
 /**
  * Component to listen to planner actions the trigger the spatial sa as
@@ -45,17 +47,6 @@ import execution.util.LocalActionStateManager;
  * 
  */
 public class SpatialActionInterface extends ManagedComponent {
-
-	private LocalActionStateManager m_actionStateManager;
-
-	private HashSet<Long> m_placeIDs;
-
-	/**
-	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to 0.
-	 * 
-	 */
-	private long m_avsTimeoutMillis = 0;
-
 	private class AlwaysSucceedsExecutor implements ActionExecutor {
 
 		@Override
@@ -87,10 +78,10 @@ public class SpatialActionInterface extends ManagedComponent {
 	private class AVSExecutor extends Thread implements ActionExecutor,
 			WorkingMemoryChangeReceiver {
 
-		private long[] m_avsPlaceIDs;
-		private ExecutionCompletionCallback m_callback;
 		private WorkingMemoryAddress m_avsAddr;
 		private AVSCommand m_avsCmd;
+		private long[] m_avsPlaceIDs;
+		private ExecutionCompletionCallback m_callback;
 		private boolean m_isStopped;
 
 		public AVSExecutor() {
@@ -213,10 +204,10 @@ public class SpatialActionInterface extends ManagedComponent {
 	private class GoToPlaceExecutor implements ActionExecutor,
 			WorkingMemoryChangeReceiver {
 
-		private long m_placeID;
 		private ExecutionCompletionCallback m_callback;
-		private WorkingMemoryAddress m_navCmdAddr;
 		private boolean m_isComplete = false;
+		private WorkingMemoryAddress m_navCmdAddr;
+		private long m_placeID;
 
 		public boolean accept(Action _action) {
 			m_placeID = ((GoToPlace) _action).placeID;
@@ -258,17 +249,32 @@ public class SpatialActionInterface extends ManagedComponent {
 			}
 		}
 
-		/**
-		 * Sets all values necessary to prevent exceptions later on
-		 */
-		private NavCommand newNavCommand() {
-			return new NavCommand(CommandType.STOP, Priority.NORMAL, null,
-					null, null, null, null, StatusError.NONE,
-					Completion.COMMANDPENDING);
-		}
-
 		public boolean isBlockingAction() {
 			return false;
+		}
+
+		@Override
+		public void stopExecution() {
+			// remove overwrite receiver
+			if (!m_isComplete) {
+				try {
+					log("aborting execution");
+					removeChangeFilter(this);
+					// reread
+					lockEntry(m_navCmdAddr, WorkingMemoryPermissions.LOCKEDODR);
+					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
+							NavCommand.class);
+					navCmd.comp = Completion.COMMANDABORTED;
+					overwriteWorkingMemory(m_navCmdAddr, navCmd);
+					unlockEntry(m_navCmdAddr);
+
+				} catch (DoesNotExistOnWMException e) {
+					//
+					// e.printStackTrace();
+				} catch (SubarchitectureComponentException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
@@ -294,29 +300,56 @@ public class SpatialActionInterface extends ManagedComponent {
 				unlockEntry(_wmc.address);
 			}
 		}
+	}
+
+	public class LookForPeopleExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public LookForPeopleExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
 
 		@Override
-		public void stopExecution() {
-			// remove overwrite receiver
-			if (!m_isComplete) {
-				try {
-					log("aborting execution");
-					removeChangeFilter(this);
-					// reread
-					lockEntry(m_navCmdAddr, WorkingMemoryPermissions.LOCKEDODR);
-					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
-							NavCommand.class);
-					navCmd.comp = Completion.COMMANDABORTED;
-					overwriteWorkingMemory(m_navCmdAddr, navCmd);
-					unlockEntry(m_navCmdAddr);
+		public ActionExecutor getActionExecutor() {
+			return new LookForPeopleExecutor(m_component,4);
+		}
 
-				} catch (DoesNotExistOnWMException e) {
-					//
-					// e.printStackTrace();
-				} catch (SubarchitectureComponentException e) {
-					e.printStackTrace();
-				}
-			}
+	}
+
+	/**
+	 * Sets all values necessary to prevent exceptions later on
+	 */
+	public static NavCommand newNavCommand() {
+		return new NavCommand(CommandType.STOP, Priority.NORMAL, null, null,
+				null, null, null, StatusError.NONE, Completion.COMMANDPENDING);
+	}
+
+	private LocalActionStateManager m_actionStateManager;
+
+	/**
+	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to
+	 * 0.
+	 * 
+	 */
+	private long m_avsTimeoutMillis = 0;
+
+	private HashSet<Long> m_placeIDs;
+
+	public SpatialActionInterface() {
+	}
+
+	@Override
+	protected void configure(Map<String, String> _config) {
+		String avsTimeoutString = _config.get("--avs-timeout");
+		if (avsTimeoutString != null) {
+			m_avsTimeoutMillis = Long.parseLong(avsTimeoutString);
+		}
+
+		if (useAVSTimeout()) {
+			log("using AVS timeout of: " + m_avsTimeoutMillis + "ms");
+		} else {
+			log("no AVS timeout");
 		}
 	}
 
@@ -348,17 +381,12 @@ public class SpatialActionInterface extends ManagedComponent {
 					}
 				});
 
+		m_actionStateManager.registerActionType(LookForPeople.class,
+				new LookForPeopleExecutorFactory(this));
+
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-			public void workingMemoryChanged(WorkingMemoryChange _wmc)
-					throws CASTException {
-				Place place = getMemoryEntry(_wmc.address, Place.class);
-
-				// store id
-				addPlace(place);
-			}
-
 			/**
 			 * @param _place
 			 */
@@ -371,22 +399,16 @@ public class SpatialActionInterface extends ManagedComponent {
 				m_placeIDs.add(_place.id);
 				// log("stored id: " + _place.id);
 			}
+
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+					throws CASTException {
+				Place place = getMemoryEntry(_wmc.address, Place.class);
+
+				// store id
+				addPlace(place);
+			}
 		});
 
-	}
-
-	@Override
-	protected void configure(Map<String, String> _config) {
-		String avsTimeoutString = _config.get("--avs-timeout");
-		if (avsTimeoutString != null) {
-			m_avsTimeoutMillis = Long.parseLong(avsTimeoutString);
-		}
-
-		if (useAVSTimeout()) {
-			log("using AVS timeout of: " + m_avsTimeoutMillis + "ms");
-		} else {
-			log("no AVS timeout");
-		}
 	}
 
 	/**
@@ -394,9 +416,6 @@ public class SpatialActionInterface extends ManagedComponent {
 	 */
 	private boolean useAVSTimeout() {
 		return m_avsTimeoutMillis > 0;
-	}
-
-	public SpatialActionInterface() {
 	}
 
 }

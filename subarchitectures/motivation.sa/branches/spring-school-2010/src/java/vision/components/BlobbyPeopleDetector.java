@@ -159,8 +159,9 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	public void detectPeople() {
 		try {
 			BlobInfo[] blobs = m_blobFinder.getBlobs();
+			log(blobs.length + " blobs");
 			List<WMOperation> operations = m_aligner.sync(Arrays.asList(blobs));
-			println(operations.size() + " operations");
+			log(operations.size() + " operations");
 			m_performer.performOperations(operations);
 		} catch (WMException e) {
 			e.printStackTrace();
