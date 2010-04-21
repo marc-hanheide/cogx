@@ -171,10 +171,10 @@ public class BeliefContentBuilder {
 					"Content distribution is not set to be conditionally independent");
 		}
 		
-		if ( ((CondIndependentDistribs)beliefcontent.Pc).distribs.containsKey(featDistrib.key)) { 
+	/**	if ( ((CondIndependentDistribs)beliefcontent.Pc).distribs.containsKey(featDistrib.key)) { 
 			throw new BeliefException("Error in updating belief content with a new feature: "+ 
 					"Feature key ["+featDistrib.key+"] already present in set of conditionally independent distributions");
-		}
+		} */
 		
 		putNewCondIndependentDistrib(((CondIndependentDistribs)beliefcontent.Pc), featDistrib);
 	} // end method
@@ -214,10 +214,10 @@ public class BeliefContentBuilder {
 			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
 					"Null or empty key specified in the provided probability distribution");
 		}
-		else if (distribs.distribs.containsKey(newDistrib.key)) { 
+	/**	else if (distribs.distribs.containsKey(newDistrib.key)) { 
 			throw new BeliefException("Error in adding a new conditionally independent distribution: "+
 					"Feature key ["+newDistrib.key+"] already present in set of conditionally independent distributions");
-		}
+		} */
 		
 		distribs.distribs.put(newDistrib.key, newDistrib);
 	}
