@@ -22,9 +22,12 @@ INCLUDE includes/vision.sa/vision-blobs.cast
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
+JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
+
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
+INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/perceptmediators.cast
 JAVA GD bindermonitor binder.components.BinderMonitor --debug
 
@@ -39,7 +42,7 @@ JAVA MG  manual-execution execution.components.GraphicalExecutionManager
 
 # viewing and debugging #######################################################
 
-JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, binder.autogen.perceptmanagement.PerceptBeliefMaps, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action"
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
 
 
 
