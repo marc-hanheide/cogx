@@ -10,6 +10,8 @@
 #include <QVBoxLayout>
 #include "ChangeSlot.hpp"
 
+#include "../convenience.hpp"
+
 QCustomGuiPanel::QCustomGuiPanel(QWidget* parent, Qt::WindowFlags flags)
    :QFrame(parent, flags)
 {
@@ -36,6 +38,10 @@ void QCustomGuiPanel::onUiDataChanged(cogx::display::CDisplayModel *pModel,
 
 void QCustomGuiPanel::removeUi()
 {
+   DTRACE("QCustomGuiPanel::removeUi");
+
+   if (layout()) delete layout();
+
    // Remove the current widgets; they should be deleted when todelete goes out of scope.
    QWidget todelete;
    QList<QObject*> wdgts = findChildren<QObject*>();
@@ -47,8 +53,12 @@ void QCustomGuiPanel::removeUi()
 
 void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
+   DTRACE("QCustomGuiPanel::updateUi");
    setVisible(false);
    removeUi();
+
+   m_pView = pView;
+   if (!pView) return;
 
    CPtrVector<cogx::display::CGuiElement> elements;
    elements = pModel->getGuiElements(pView->m_id);
@@ -63,7 +73,6 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
    QCheckBox *pBox;
    QPushButton *pButton;
 
-   if (layout()) delete layout();
    QLayout *pLayout = new QVBoxLayout();
 
    FOR_EACH(pgel, elements) {

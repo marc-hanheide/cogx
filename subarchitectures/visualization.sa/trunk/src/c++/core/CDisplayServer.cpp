@@ -248,6 +248,7 @@ void CDisplayServer::onUiDataChanged(CGuiElement *pElement, const std::string& n
 {
    debug(std::string("Time: ") + sfloat (fclocks()));
    debug(std::string("New value ") + pElement->m_id + "=" + newValue);
+   DTRACE("CDisplayServer::onUiDataChanged");
    // TODO: put the event into a queue and wake up the event (callback) server
    if (! hIceDisplayServer.get()) return;
    hIceDisplayServer->addDataChange(new CGuiElementValue(pElement, newValue));
@@ -296,7 +297,6 @@ void CDisplayServerI::run()
    // Called by CCallbackSenderThread
    // TODO: the real work should probably be performed by m_pDisplayServer
    // OTOH this function could monitor the (event) queues of m_pDisplayServer
-   bool running = false;
    while (true) {
       std::set<Visualization::EventReceiverPrx> clients;
       CPtrVector<CGuiElementValue> changes;
@@ -321,17 +321,14 @@ void CDisplayServerI::run()
       Visualization::TEvent event;
 
       if(!clients.empty() && !changes.empty()) {
-         cout << "EventServer Woke up. Sending events." << endl;
-         running = ! running;
+         DTRACE("EventServer Woke up. Sending events.");
          // TODO: check the queues and send messages
+         CGuiElementValue *pChange;
          for(set<Visualization::EventReceiverPrx>::iterator p = clients.begin(); p != clients.end(); ++p) {
             try {
-               //event.type = Visualization::evCheckBoxChange;
-               //event.sourceId = "toggle.viewer.running";
-               //event.data = running ? "1" : "0"; // "TODO: add data";
-               CGuiElementValue *pChange;
                FOR_EACH(pChange, changes) {
-                  if (!pChange || pChange->pElement->m_dataOwner != (*p)->ice_getIdentity())
+                  if (!pChange || !pChange->pElement) continue;
+                  if (!p->get() || pChange->pElement->m_dataOwner != (*p)->ice_getIdentity())
                      continue;
 
                   switch (pChange->pElement->m_type) {
@@ -348,19 +345,23 @@ void CDisplayServerI::run()
 
                   (*p)->handleEvent(event);
                }
-               FOR_EACH(pChange, changes) {
-                  if(pChange) delete pChange;
-               }
             }
             catch(const Ice::Exception& ex) {
-               cerr << "handleEvent crashed." << endl;
+               DMESSAGE("handleEvent crashed with Ice::Exception: " << ex);
                //cerr << "removing client `" << _communicator->identityToString((*p)->ice_getIdentity())
                //   << "':\n" << ex << endl;
 
                IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
                m_EventClients.erase(*p);
             }
+            catch(...) {
+               DMESSAGE("handleEvent crashed for unknonw reasons");
+            }
          }
+         FOR_EACH(pChange, changes) {
+            if(pChange) delete pChange;
+         }
+         changes.clear();
       }
    }
 } 

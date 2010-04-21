@@ -9,6 +9,7 @@
 #include <QObject>
 #include "../GuiElements.hpp"
 #include "../Model.hpp"
+#include "../convenience.hpp"
 
 // An instance of CChangeSlot is created for each dynamic Qt widget.  When a
 // signal is trigerred by the widget, it is passed to one of the slots below
@@ -40,6 +41,7 @@ public:
          m_pGuiElement->Observers += m_pView;
    }
    ~CChangeSlot() {
+      DMESSAGE("~Destroying CChangeSlot");
       if (m_pGuiElement && m_pView) m_pGuiElement->Observers -= m_pView;
    }
 
