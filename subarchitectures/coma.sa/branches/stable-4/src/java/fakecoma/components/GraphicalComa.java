@@ -8,8 +8,11 @@ import java.awt.event.ActionListener;
 import java.util.Map;
 import java.util.Vector;
 
+import comadata.ComaRoom;
+
 import SpatialData.Place;
 
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -25,9 +28,11 @@ import fakecoma.gui.ComaJFrame;
  */
 public class GraphicalComa extends ManagedComponent implements ActionListener {
 	ComaJFrame frame;
+	private int roomId;
 
 	public GraphicalComa() {
 		super();
+		roomId=0;
 		frame = new ComaJFrame(this);
 
 	}
@@ -36,7 +41,7 @@ public class GraphicalComa extends ManagedComponent implements ActionListener {
 	protected void configure(Map<String, String> config) {
 
 	}
-
+	
 	@Override
 	protected void start() {
 		frame.pack();
@@ -67,6 +72,17 @@ public class GraphicalComa extends ManagedComponent implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		Vector<Long> places = frame.getPlaces();
-		
+		String[] concepts = new String[] {frame.getRoomName()};
+		long[] placeIds = new long[places.size()];
+		int i=0;
+		for (Long l : places) {
+			placeIds[i++]=l.longValue();
+		}
+		ComaRoom room = new ComaRoom(roomId++, "", placeIds, concepts);
+		try {
+			addToWorkingMemory(newDataID(), room);
+		} catch (AlreadyExistsOnWMException e) {
+			logException(e);
+		}
 	}
 }

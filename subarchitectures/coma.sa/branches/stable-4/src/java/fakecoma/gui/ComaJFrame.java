@@ -197,4 +197,8 @@ public class ComaJFrame extends JFrame {
 		return result;
 	}
 
+	public String getRoomName() {
+		return m_roomLabel.getText();
+	}
+
 }
