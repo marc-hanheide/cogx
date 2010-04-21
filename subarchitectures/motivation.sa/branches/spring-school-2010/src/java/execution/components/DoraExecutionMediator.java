@@ -9,6 +9,8 @@ import beliefmodels.autogen.featurecontent.IntegerValue;
 import cast.CASTException;
 import castutils.facades.BinderFacade;
 import execution.slice.ActionExecutionException;
+import execution.slice.actions.DetectObjects;
+import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionConverter;
@@ -22,6 +24,8 @@ import execution.util.ActionConverter;
 public class DoraExecutionMediator extends PlanExecutionMediator implements
 		ActionConverter {
 	private final BinderFacade m_binderFacade;
+	private static final String[] DEFAULT_LABELS = { "record1", "record2",
+			"record3", "record4" };
 
 	public DoraExecutionMediator() {
 		m_binderFacade = new BinderFacade(this);
@@ -118,6 +122,26 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			// return avs;
 		} else if (_plannedAction.name.equals("explore_place")) {
 			return new ExplorePlace();
+		} else if (_plannedAction.name.equals("look-for-object")) {
+			assert _plannedAction.arguments.length == 1 : "look-for-object action arity is expected to be 1";
+
+			DetectObjects act = newActionInstance(DetectObjects.class);
+			act.labels = DEFAULT_LABELS;
+			return act;
+		} else if (_plannedAction.name.equals("look-for-people")) {
+			assert _plannedAction.arguments.length == 1 : "look-for-people action arity is expected to be 1";
+
+			DetectPeople act = newActionInstance(DetectPeople.class);
+			return act;
+		} else if (_plannedAction.name.equals("ask-for-feature")) {
+			assert _plannedAction.arguments.length == 3 : "ask-for-feature action arity is expected to be 3";
+			String beliefID = plannerLiteralToWMID(_plannedAction.arguments[1]);
+			String featureID = _plannedAction.arguments[1];
+			Belief belief = m_binderFacade.getBelief(beliefID);
+			// TODO: implement this action
+			throw(new ActionExecutionException(_plannedAction.name + " not yet implemented."));
+			//AskFeature act = newActionInstance(AskFeature.class);
+			//return act;
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
