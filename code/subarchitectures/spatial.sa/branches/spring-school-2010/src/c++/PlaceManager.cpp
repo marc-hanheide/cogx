@@ -88,13 +88,18 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   else {
     m_minFrontierLength = 0.0;
   }
-
+  
   if(_config.find("--min-node-separation") != _config.end()) {
     std::istringstream str(_config.find("--min-node-separation")->second);
     str >> m_minNodeSeparation;
   }
   else {
     m_minNodeSeparation = 2.0;
+  }
+
+  m_bNoPlaceholders = false;
+  if(_config.find("--no-placeholders") != _config.end()) {
+    m_bNoPlaceholders = true;
   }
 
   if(_config.find("--hyp-path-length") != _config.end()) {
@@ -520,359 +525,361 @@ FrontierPtCompare(const FrontierInterface::FrontierPtPtr &a, const FrontierInter
 void
 PlaceManager::evaluateUnexploredPaths()
 {
+  if (!m_bNoPlaceholders) {
 
-  FrontierInterface::FrontierPtSeq points;
-  try {
-    // To be called whenever it is deemed that the robot needs to
-    // check its surroundings for potential paths.
-
-    // Typically, this procedure should be carried out after a move
-    // action terminates, or at least whenever a new Place has been
-    // created at the current location.
-
-    // The intended function is: if we detect any
-    // probable Paths that might be expected to yield new Places,
-    // Placeholders should be created for these.
-
-    debug("PlaceManager::evaluateUnexploredPaths called");
-
+    FrontierInterface::FrontierPtSeq points;
     try {
-      // Year 1 implementation: base exploration edges on Cure exploration
-      // frontiers
-      points = frontierReader->getFrontiers();
+      // To be called whenever it is deemed that the robot needs to
+      // check its surroundings for potential paths.
 
-      log("Retrieved %i frontiers", points.size());
+      // Typically, this procedure should be carried out after a move
+      // action terminates, or at least whenever a new Place has been
+      // created at the current location.
+
+      // The intended function is: if we detect any
+      // probable Paths that might be expected to yield new Places,
+      // Placeholders should be created for these.
+
+      debug("PlaceManager::evaluateUnexploredPaths called");
+
+      try {
+	// Year 1 implementation: base exploration edges on Cure exploration
+	// frontiers
+	points = frontierReader->getFrontiers();
+
+	log("Retrieved %i frontiers", points.size());
+      }
+      catch (Exception e) {
+	log("Error! getFrontiers failed!");
+	debug("PlaceManager::evaluateUnexploredPaths exited");
+	return;
+      }
     }
     catch (Exception e) {
       log("Error! getFrontiers failed!");
+      return;
+    }
+
+    NavData::FNodePtr curNode = getCurrentNavNode();
+    if (curNode == 0) {
+      log ("Could not determine current nav node!");
       debug("PlaceManager::evaluateUnexploredPaths exited");
       return;
     }
-  }
-  catch (Exception e) {
-    log("Error! getFrontiers failed!");
-    return;
-  }
+    int curNodeId = curNode->nodeId;
+    double nodeX = curNode->x;
+    double nodeY = curNode->y;
+    SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNodeId);
+    if (curPlace != 0) {
+      int currentPlaceID = curPlace->id;
 
-  NavData::FNodePtr curNode = getCurrentNavNode();
-  if (curNode == 0) {
-    log ("Could not determine current nav node!");
-    debug("PlaceManager::evaluateUnexploredPaths exited");
-    return;
-  }
-  int curNodeId = curNode->nodeId;
-  double nodeX = curNode->x;
-  double nodeY = curNode->y;
-  SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNodeId);
-  if (curPlace != 0) {
-    int currentPlaceID = curPlace->id;
+      sort(points.begin(), points.end(), FrontierPtCompare);
 
-    sort(points.begin(), points.end(), FrontierPtCompare);
+      vector<FrontierInterface::NodeHypothesisPtr> hypotheses;
+      debug("evaluateUnexploredPaths:1");
+      getMemoryEntries<FrontierInterface::NodeHypothesis>(hypotheses);
+      debug("evaluateUnexploredPaths:2");
 
-    vector<FrontierInterface::NodeHypothesisPtr> hypotheses;
-    debug("evaluateUnexploredPaths:1");
-    getMemoryEntries<FrontierInterface::NodeHypothesis>(hypotheses);
-    debug("evaluateUnexploredPaths:2");
-
-    // Find which hypotheses exist that originate in the current Place
-    vector<FrontierInterface::NodeHypothesisPtr> relevantHyps;
-    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypIt =
-	hypotheses.begin(); hypIt != hypotheses.end(); hypIt++) {
-      try {
-	if ((*hypIt)->originPlaceID == currentPlaceID) {
-	  relevantHyps.push_back(*hypIt);
+      // Find which hypotheses exist that originate in the current Place
+      vector<FrontierInterface::NodeHypothesisPtr> relevantHyps;
+      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypIt =
+	  hypotheses.begin(); hypIt != hypotheses.end(); hypIt++) {
+	try {
+	  if ((*hypIt)->originPlaceID == currentPlaceID) {
+	    relevantHyps.push_back(*hypIt);
+	  }
+	}
+	catch (IceUtil::NullHandleException e) {
+	  log("Error: hypothesis suddenly disappeared!");
 	}
       }
-      catch (IceUtil::NullHandleException e) {
-	log("Error: hypothesis suddenly disappeared!");
-      }
-    }
 
-    // Loop over currently observed frontiers
-    for (FrontierInterface::FrontierPtSeq::iterator frontierIt =
-	points.begin(); frontierIt != points.end(); frontierIt++) {
-      FrontierInterface::FrontierPtPtr frontierPt = *frontierIt;
-      double x = frontierPt->x;
-      double y = frontierPt->y;
-      double nodeDistanceSq = (x - nodeX)*(x - nodeX) + (y - nodeY)*(y - nodeY);
-      log("Evaluating frontier at (%f, %f) with square-distance %f and length %f", x, y, nodeDistanceSq, frontierPt->mWidth);
+      // Loop over currently observed frontiers
+      for (FrontierInterface::FrontierPtSeq::iterator frontierIt =
+	  points.begin(); frontierIt != points.end(); frontierIt++) {
+	FrontierInterface::FrontierPtPtr frontierPt = *frontierIt;
+	double x = frontierPt->x;
+	double y = frontierPt->y;
+	double nodeDistanceSq = (x - nodeX)*(x - nodeX) + (y - nodeY)*(y - nodeY);
+	log("Evaluating frontier at (%f, %f) with square-distance %f and length %f", x, y, nodeDistanceSq, frontierPt->mWidth);
 
-      double newX = nodeX + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
-      double newY = nodeY + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
+	double newX = nodeX + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
+	double newY = nodeY + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
 
-      // Consider only frontiers with an open path to them
-      if (frontierPt->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
-	// Consider only frontiers within a certain maximum distance of the current
-	// Nav node
-	if (nodeDistanceSq < m_maxFrontierDist*m_maxFrontierDist) {
-	  // Consider only frontiers at a great enough distance to the current Nav node
-	  if (nodeDistanceSq > m_minFrontierDist*m_minFrontierDist) {
-	    // Consider only frontiers of sufficient size
-	    if (frontierPt->mWidth > m_minFrontierLength) {
-	      double minDistanceSq = FLT_MAX;
-	      int minDistID = -1;
+	// Consider only frontiers with an open path to them
+	if (frontierPt->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
+	  // Consider only frontiers within a certain maximum distance of the current
+	  // Nav node
+	  if (nodeDistanceSq < m_maxFrontierDist*m_maxFrontierDist) {
+	    // Consider only frontiers at a great enough distance to the current Nav node
+	    if (nodeDistanceSq > m_minFrontierDist*m_minFrontierDist) {
+	      // Consider only frontiers of sufficient size
+	      if (frontierPt->mWidth > m_minFrontierLength) {
+		double minDistanceSq = FLT_MAX;
+		int minDistID = -1;
 
-	      // Check already-rejected hypotheses for this node
-	      if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
-		for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
-		    m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
-		  double distanceSq = ((*rejectedHypIt)->x - newX)*((*rejectedHypIt)->x - newX) + ((*rejectedHypIt)->y - newY)*((*rejectedHypIt)->y - newY);
-		  log ("distanceSq = %f", distanceSq);
-		  if (distanceSq < minDistanceSq) {
-		    minDistanceSq = distanceSq;
-		  }
-		}
-	      }
-	      // Compare distance to all other hypotheses created for this node
-	      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator extantHypIt =
-		  relevantHyps.begin(); extantHypIt != relevantHyps.end(); extantHypIt++) {
-		FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
-		try {
-		  if (extantHyp->originPlaceID == currentPlaceID) {
-		    double distanceSq = (extantHyp->x - newX)*(extantHyp->x - newX) + (extantHyp->y - newY)*(extantHyp->y - newY);
-		    debug("2distanceSq = %f", distanceSq);
+		// Check already-rejected hypotheses for this node
+		if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
+		  for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
+		      m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
+		    double distanceSq = ((*rejectedHypIt)->x - newX)*((*rejectedHypIt)->x - newX) + ((*rejectedHypIt)->y - newY)*((*rejectedHypIt)->y - newY);
+		    log ("distanceSq = %f", distanceSq);
 		    if (distanceSq < minDistanceSq) {
 		      minDistanceSq = distanceSq;
-		      minDistID = extantHyp->hypID;
 		    }
 		  }
 		}
-		catch (IceUtil::NullHandleException e) {
-		  log("Error: hypothesis suddenly disappeared!");
+		// Compare distance to all other hypotheses created for this node
+		for (vector<FrontierInterface::NodeHypothesisPtr>::iterator extantHypIt =
+		    relevantHyps.begin(); extantHypIt != relevantHyps.end(); extantHypIt++) {
+		  FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
+		  try {
+		    if (extantHyp->originPlaceID == currentPlaceID) {
+		      double distanceSq = (extantHyp->x - newX)*(extantHyp->x - newX) + (extantHyp->y - newY)*(extantHyp->y - newY);
+		      debug("2distanceSq = %f", distanceSq);
+		      if (distanceSq < minDistanceSq) {
+			minDistanceSq = distanceSq;
+			minDistID = extantHyp->hypID;
+		      }
+		    }
+		  }
+		  catch (IceUtil::NullHandleException e) {
+		    log("Error: hypothesis suddenly disappeared!");
+		  }
 		}
-	      }
 
-	      if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
-		// Create new hypothetical node in the direction of the frontier
-		FrontierInterface::NodeHypothesisPtr newHyp = 
-		  new FrontierInterface::NodeHypothesis;
-		newHyp->x = newX;
-		newHyp->y = newY;
-		newHyp->hypID = m_hypIDCounter;
-		newHyp->originPlaceID = currentPlaceID;
+		if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
+		  // Create new hypothetical node in the direction of the frontier
+		  FrontierInterface::NodeHypothesisPtr newHyp = 
+		    new FrontierInterface::NodeHypothesis;
+		  newHyp->x = newX;
+		  newHyp->y = newY;
+		  newHyp->hypID = m_hypIDCounter;
+		  newHyp->originPlaceID = currentPlaceID;
 
-		log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
-		    newHyp->y, newHyp->hypID);
+		  log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
+		      newHyp->y, newHyp->hypID);
 
-		string newID = newDataID();
-		m_HypIDToWMIDMap[newHyp->hypID]=newID;
-		hypotheses.push_back(newHyp);
-		relevantHyps.push_back(newHyp);
+		  string newID = newDataID();
+		  m_HypIDToWMIDMap[newHyp->hypID]=newID;
+		  hypotheses.push_back(newHyp);
+		  relevantHyps.push_back(newHyp);
 
-		// Create the Place struct corresponding to the hypothesis
-		PlaceHolder p;
-		p.m_data = new SpatialData::Place;   
-		//p.m_data->id = oobj->getData()->nodeId;
+		  // Create the Place struct corresponding to the hypothesis
+		  PlaceHolder p;
+		  p.m_data = new SpatialData::Place;   
+		  //p.m_data->id = oobj->getData()->nodeId;
 
-		int newPlaceID = m_placeIDCounter;
-		m_placeIDCounter++;
-		p.m_data->id = newPlaceID;
-		m_PlaceIDToHypMap[newPlaceID] = newHyp;
-		m_hypIDCounter++;
+		  int newPlaceID = m_placeIDCounter;
+		  m_placeIDCounter++;
+		  p.m_data->id = newPlaceID;
+		  m_PlaceIDToHypMap[newPlaceID] = newHyp;
+		  m_hypIDCounter++;
 
-		// Add connectivity property (one-way)
-		createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
-		p.m_data->status = SpatialData::PLACEHOLDER;
-		p.m_WMid = newDataID();
-		log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
-		addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
-		addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
+		  // Add connectivity property (one-way)
+		  createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
+		  p.m_data->status = SpatialData::PLACEHOLDER;
+		  p.m_WMid = newDataID();
+		  log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+		  addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+		  addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
 
-		m_Places[newPlaceID]=p;
-	      }
-	      else if (minDistID != -1) {
-		// Modify the extant hypothesis that best matched the
-		// new position indicated by the frontier
-		try {
-		  FrontierInterface::NodeHypothesisPtr updatedHyp = 
-		    getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
-
-		  updatedHyp->x = newX;
-		  updatedHyp->y = newY;
-
-		  log("Updating hypothesis at (%f, %f) with ID %i", updatedHyp->x,
-		      updatedHyp->y, updatedHyp->hypID);
-
-		  overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
+		  m_Places[newPlaceID]=p;
 		}
-		catch (DoesNotExistOnWMException) {
-		  log("Error! Could not update hypothesis on WM - entry missing!");
+		else if (minDistID != -1) {
+		  // Modify the extant hypothesis that best matched the
+		  // new position indicated by the frontier
+		  try {
+		    FrontierInterface::NodeHypothesisPtr updatedHyp = 
+		      getMemoryEntry<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
+
+		    updatedHyp->x = newX;
+		    updatedHyp->y = newY;
+
+		    log("Updating hypothesis at (%f, %f) with ID %i", updatedHyp->x,
+			updatedHyp->y, updatedHyp->hypID);
+
+		    overwriteWorkingMemory<FrontierInterface::NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
+		  }
+		  catch (DoesNotExistOnWMException) {
+		    log("Error! Could not update hypothesis on WM - entry missing!");
+		  }
 		}
 	      }
 	    }
 	  }
 	}
-      }
-      else {
-	log("Frontier not reachable, skipping");
-      }
+	else {
+	  log("Frontier not reachable, skipping");
+	}
 
-      if (m_useLocalMaps && hypothesisEvaluator != 0) {
-	// Now, update/create Placeholder properties for all Placeholders
-	// reachable from this Place.
-	for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypothesisIt =
-	    relevantHyps.begin(); hypothesisIt != relevantHyps.end(); hypothesisIt++) {
-	  try {
-	    int hypID = (*hypothesisIt)->hypID;
+	if (m_useLocalMaps && hypothesisEvaluator != 0) {
+	  // Now, update/create Placeholder properties for all Placeholders
+	  // reachable from this Place.
+	  for (vector<FrontierInterface::NodeHypothesisPtr>::iterator hypothesisIt =
+	      relevantHyps.begin(); hypothesisIt != relevantHyps.end(); hypothesisIt++) {
+	    try {
+	      int hypID = (*hypothesisIt)->hypID;
 
-	    SpatialData::PlacePtr placeholder = getPlaceFromHypID(hypID);
+	      SpatialData::PlacePtr placeholder = getPlaceFromHypID(hypID);
 
-	    if (placeholder != 0) {
+	      if (placeholder != 0) {
 
-	      FrontierInterface::HypothesisEvaluation eval = 
-		hypothesisEvaluator->getHypothesisEvaluation(hypID);
-	      log("Hypothesis %i evaluates to %f %f.", hypID, eval.freeSpaceValue,
-		  eval.unexploredBorderValue);
+		FrontierInterface::HypothesisEvaluation eval = 
+		  hypothesisEvaluator->getHypothesisEvaluation(hypID);
+		log("Hypothesis %i evaluates to %f %f.", hypID, eval.freeSpaceValue,
+		    eval.unexploredBorderValue);
 
-	      //Create/update the placeholder properties
+		//Create/update the placeholder properties
 
-	      {
-		//Free space property
-		SpatialProperties::FloatValuePtr freespacevalue = 
-		  new SpatialProperties::FloatValue;
-		freespacevalue->value = eval.freeSpaceValue;
-		SpatialProperties::ValueProbabilityPair pair =
-		{ freespacevalue, 1.0 };
-		SpatialProperties::ValueProbabilityPairs pairs;
-		pairs.push_back(pair);
-		SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-		  new SpatialProperties::DiscreteProbabilityDistribution;
-		discDistr->data = pairs;
+		{
+		  //Free space property
+		  SpatialProperties::FloatValuePtr freespacevalue = 
+		    new SpatialProperties::FloatValue;
+		  freespacevalue->value = eval.freeSpaceValue;
+		  SpatialProperties::ValueProbabilityPair pair =
+		  { freespacevalue, 1.0 };
+		  SpatialProperties::ValueProbabilityPairs pairs;
+		  pairs.push_back(pair);
+		  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+		    new SpatialProperties::DiscreteProbabilityDistribution;
+		  discDistr->data = pairs;
 
-		map<int, string>::iterator
-		  foundFSIt = m_freeSpaceProperties.find(hypID);
-		if (foundFSIt != m_freeSpaceProperties.end()) {
-		  try {
-		    debug("lock 6");
-		    lockEntry(foundFSIt->second, cdl::LOCKEDODR);
-		    debug("evaluateUnexploredPaths:3");
-		    SpatialProperties::AssociatedSpacePlaceholderPropertyPtr
-		      freeProp = getMemoryEntry
-		      <SpatialProperties::AssociatedSpacePlaceholderProperty>
-		      (foundFSIt->second);
-		    debug("evaluateUnexploredPaths:4");
+		  map<int, string>::iterator
+		    foundFSIt = m_freeSpaceProperties.find(hypID);
+		  if (foundFSIt != m_freeSpaceProperties.end()) {
+		    try {
+		      debug("lock 6");
+		      lockEntry(foundFSIt->second, cdl::LOCKEDODR);
+		      debug("evaluateUnexploredPaths:3");
+		      SpatialProperties::AssociatedSpacePlaceholderPropertyPtr
+			freeProp = getMemoryEntry
+			<SpatialProperties::AssociatedSpacePlaceholderProperty>
+			(foundFSIt->second);
+		      debug("evaluateUnexploredPaths:4");
 
-		    // Property exists; change it
+		      // Property exists; change it
+		      freeProp->distribution = discDistr;
+		      freeProp->placeId = placeholder->id;
+		      freeProp->mapValue = freespacevalue;
+		      freeProp->mapValueReliable = 1;
+		      debug("overwrite 2: %s", foundFSIt->second.c_str());
+		      bool done = false;
+		      while (!done) {
+			try {
+			  overwriteWorkingMemory
+			    <SpatialProperties::AssociatedSpacePlaceholderProperty>(foundFSIt->second,freeProp);
+			  done=true;
+			}
+			catch(PermissionException e) {
+			  log("Error! permissionException! Trying again...");
+			}
+		      }
+		      unlockEntry(foundFSIt->second);
+		      debug("unlock 6");
+		    }
+		    catch(DoesNotExistOnWMException e) {
+		      log("Property missing!");
+		    }
+		  }
+		  else {
+		    SpatialProperties::AssociatedSpacePlaceholderPropertyPtr freeProp =
+		      new SpatialProperties::AssociatedSpacePlaceholderProperty;
 		    freeProp->distribution = discDistr;
 		    freeProp->placeId = placeholder->id;
 		    freeProp->mapValue = freespacevalue;
 		    freeProp->mapValueReliable = 1;
-		    debug("overwrite 2: %s", foundFSIt->second.c_str());
-		    bool done = false;
-		    while (!done) {
-		      try {
-			overwriteWorkingMemory
-			  <SpatialProperties::AssociatedSpacePlaceholderProperty>(foundFSIt->second,freeProp);
-			done=true;
+
+		    string newID = newDataID();
+		    addToWorkingMemory<SpatialProperties::AssociatedSpacePlaceholderProperty>
+		      (newID, freeProp);
+		    m_freeSpaceProperties[hypID] = newID;
+		  }
+		}
+
+		{
+		  //Frontier length property
+		  SpatialProperties::FloatValuePtr bordervalue = 
+		    new SpatialProperties::FloatValue;
+		  bordervalue->value = eval.unexploredBorderValue;
+		  SpatialProperties::ValueProbabilityPair pair =
+		  { bordervalue, 1.0 };
+		  SpatialProperties::ValueProbabilityPairs pairs;
+		  pairs.push_back(pair);
+		  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+		    new SpatialProperties::DiscreteProbabilityDistribution;
+		  discDistr->data = pairs;
+
+		  map<int, string>::iterator
+		    foundUnexpIt = m_borderProperties.find(hypID);
+		  if (foundUnexpIt != m_borderProperties.end()) {
+		    try {
+		      debug("lock 7");
+		      lockEntry(foundUnexpIt->second, cdl::LOCKEDODR);
+		      debug("evaluateUnexploredPaths:5");
+		      SpatialProperties::AssociatedBorderPlaceholderPropertyPtr
+			borderProp = getMemoryEntry
+			<SpatialProperties::AssociatedBorderPlaceholderProperty>
+			(foundUnexpIt->second);
+		      debug("evaluateUnexploredPaths:6");
+
+		      // Property exists; change it
+		      borderProp->distribution = discDistr;
+		      borderProp->placeId = placeholder->id;
+		      borderProp->mapValue = bordervalue;
+		      borderProp->mapValueReliable = 1;
+		      debug("overwrite 3: %s", foundUnexpIt->second.c_str());
+		      bool done = false;
+		      while (!done) {
+			try {
+			  overwriteWorkingMemory
+			    <SpatialProperties::AssociatedBorderPlaceholderProperty>(foundUnexpIt->second,borderProp);
+			  done=true;
+			}
+			catch(PermissionException e) {
+			  log("Error! permissionException! Trying again...");
+			}
 		      }
-		      catch(PermissionException e) {
-			log("Error! permissionException! Trying again...");
-		      }
+
+		      unlockEntry(foundUnexpIt->second);
+		      debug("unlock 7");
 		    }
-		    unlockEntry(foundFSIt->second);
-		    debug("unlock 6");
+		    catch(DoesNotExistOnWMException e) {
+		      log("Property missing!");
+		    }
+
 		  }
-		  catch(DoesNotExistOnWMException e) {
-		    log("Property missing!");
-		  }
-		}
-		else {
-		  SpatialProperties::AssociatedSpacePlaceholderPropertyPtr freeProp =
-		    new SpatialProperties::AssociatedSpacePlaceholderProperty;
-		  freeProp->distribution = discDistr;
-		  freeProp->placeId = placeholder->id;
-		  freeProp->mapValue = freespacevalue;
-		  freeProp->mapValueReliable = 1;
-
-		  string newID = newDataID();
-		  addToWorkingMemory<SpatialProperties::AssociatedSpacePlaceholderProperty>
-		    (newID, freeProp);
-		  m_freeSpaceProperties[hypID] = newID;
-		}
-	      }
-
-	      {
-		//Frontier length property
-		SpatialProperties::FloatValuePtr bordervalue = 
-		  new SpatialProperties::FloatValue;
-		bordervalue->value = eval.unexploredBorderValue;
-		SpatialProperties::ValueProbabilityPair pair =
-		{ bordervalue, 1.0 };
-		SpatialProperties::ValueProbabilityPairs pairs;
-		pairs.push_back(pair);
-		SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-		  new SpatialProperties::DiscreteProbabilityDistribution;
-		discDistr->data = pairs;
-
-		map<int, string>::iterator
-		  foundUnexpIt = m_borderProperties.find(hypID);
-		if (foundUnexpIt != m_borderProperties.end()) {
-		  try {
-		    debug("lock 7");
-		    lockEntry(foundUnexpIt->second, cdl::LOCKEDODR);
-		    debug("evaluateUnexploredPaths:5");
-		    SpatialProperties::AssociatedBorderPlaceholderPropertyPtr
-		      borderProp = getMemoryEntry
-		      <SpatialProperties::AssociatedBorderPlaceholderProperty>
-		      (foundUnexpIt->second);
-		    debug("evaluateUnexploredPaths:6");
-
-		    // Property exists; change it
+		  else {
+		    SpatialProperties::AssociatedBorderPlaceholderPropertyPtr borderProp =
+		      new SpatialProperties::AssociatedBorderPlaceholderProperty;
 		    borderProp->distribution = discDistr;
 		    borderProp->placeId = placeholder->id;
 		    borderProp->mapValue = bordervalue;
 		    borderProp->mapValueReliable = 1;
-		    debug("overwrite 3: %s", foundUnexpIt->second.c_str());
-		    bool done = false;
-		    while (!done) {
-		      try {
-			overwriteWorkingMemory
-			  <SpatialProperties::AssociatedBorderPlaceholderProperty>(foundUnexpIt->second,borderProp);
-			done=true;
-		      }
-		      catch(PermissionException e) {
-			log("Error! permissionException! Trying again...");
-		      }
-		    }
 
-		    unlockEntry(foundUnexpIt->second);
-		    debug("unlock 7");
+		    string newID = newDataID();
+		    addToWorkingMemory<SpatialProperties::AssociatedBorderPlaceholderProperty>
+		      (newID, borderProp);
+		    m_borderProperties[hypID] = newID;
 		  }
-		  catch(DoesNotExistOnWMException e) {
-		    log("Property missing!");
-		  }
-
-		}
-		else {
-		  SpatialProperties::AssociatedBorderPlaceholderPropertyPtr borderProp =
-		    new SpatialProperties::AssociatedBorderPlaceholderProperty;
-		  borderProp->distribution = discDistr;
-		  borderProp->placeId = placeholder->id;
-		  borderProp->mapValue = bordervalue;
-		  borderProp->mapValueReliable = 1;
-
-		  string newID = newDataID();
-		  addToWorkingMemory<SpatialProperties::AssociatedBorderPlaceholderProperty>
-		    (newID, borderProp);
-		  m_borderProperties[hypID] = newID;
 		}
 	      }
 	    }
-	  }
-	  catch (IceUtil::NullHandleException) {
-	    log("Error! Couldn't evaluate hypothesis; it disappeared!");
+	    catch (IceUtil::NullHandleException) {
+	      log("Error! Couldn't evaluate hypothesis; it disappeared!");
+	    }
 	  }
 	}
       }
     }
+    debug("PlaceManager::evaluateUnexploredPaths exited");
+    //  catch(CASTException &e) {
+    //    println(e.what());
+    //    println(e.message);
+    //    abort();
+    //
+    //  }
   }
-  debug("PlaceManager::evaluateUnexploredPaths exited");
-  //  catch(CASTException &e) {
-  //    println(e.what());
-  //    println(e.message);
-  //    abort();
-  //
-  //  }
 }
 
 NavData::FNodePtr
