@@ -52,6 +52,12 @@ namespace cast
          */
         ~PeopleDetector();
 
+
+      /**
+       * Run the people detector for a single frame.
+       */
+      void runDetection();
+
     protected:
 
         virtual void configure(const std::map<std::string,std::string> & config);

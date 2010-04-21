@@ -210,13 +210,22 @@ struct PersonRecord
 };
 
 
+
+
 void PeopleDetector::runComponent()
 {
-    println("runComponent started");
+    while (isRunning()) {
+      
+    }
+}
 
-    int cnt = 0;
+void PeopleDetector::runDetection()
+{
+    log("running detection");
 
-    vector<PersonRecord> detections;
+    static int cnt = 0;
+
+    static vector<PersonRecord> detections;
 
     while (isRunning())
     {
