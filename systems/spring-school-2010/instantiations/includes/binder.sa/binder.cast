@@ -1,4 +1,3 @@
-JAVA MG monitor binder.components.BinderMonitor --gui #--log
-JAVA MG binder binder.components.Binder #--log
-JAVA MG discretizer binder.components.UnionDiscretizer #--log
-
+JAVA GD grouping binder.components.PerceptualGrouping_MLN --log
+JAVA GD mmestimation binder.components.MultiModalEstimation_fake --log
+JAVA GD tracking binder.components.Tracking_MLN --log
