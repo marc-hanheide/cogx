@@ -7,22 +7,15 @@ import java.util.Map;
 
 import VisionData.DetectionCommand;
 import VisionData.PeopleDetectionCommand;
-import cast.AlreadyExistsOnWMException;
-import cast.CASTException;
-import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import execution.slice.Action;
-import execution.slice.TriBool;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.LocalActionStateManager;
-import execution.util.NonBlockingActionExecutor;
 import execution.util.NonBlockingCompleteOnDeleteExecutor;
 
 /**
