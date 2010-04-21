@@ -1,6 +1,9 @@
 #include <cast/core/CASTUtils.hpp>
+#include <cast/architecture.hpp>
 #include "LaserClientUtils.hpp"
+
 #include <VideoUtils.h>
+#include <VisionData.hpp>
 
 #include <opencv/highgui.h>
 #include <opencv/cvaux.h>
@@ -20,6 +23,7 @@
 using namespace std;
 using namespace Laser;
 using namespace cast;
+using namespace VisionData;
 
 /**
  * The function called to create a new instance of our component.
@@ -32,10 +36,12 @@ extern "C"
     }
 }
 
-PeopleDetector::PeopleDetector()
-{
-    deinterlacing = false;
-}
+
+PeopleDetector::PeopleDetector() :
+  deinterlacing(false),
+  m_numDetectionAttempts(1),
+  m_runContinuously(false)
+{}
 
 PeopleDetector::~PeopleDetector()
 {}
@@ -129,6 +135,23 @@ void PeopleDetector::configure(const std::map<std::string,std::string> & config)
     }
     //log("Using m_IceServerPort=%d", m_IceServerPort);
 
+
+    if((it = config.find("--numattempts")) != config.end()) {
+      istringstream istr(it->second);
+      istr >> m_numDetectionAttempts;
+    }
+
+    if((it = config.find("--continuous")) != config.end()) {
+      m_runContinuously = true;
+    }
+
+    if(m_runContinuously) {
+      log("running continuously");
+    }
+    else {
+      log("running on demand");	
+    }
+
     // sanity checks: Have all important things be configured? Is the
     // configuration consistent?
     if(videoServerName.empty()) {
@@ -140,6 +163,11 @@ void PeopleDetector::configure(const std::map<std::string,std::string> & config)
 void PeopleDetector::start()
 {
 
+  // we want to receive PeopleDetectionCommand
+  addChangeFilter(createLocalTypeFilter<PeopleDetectionCommand>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<PeopleDetector>(this,
+								   &PeopleDetector::receiveDetectionCommand));
+  
   // get connection to the video server
   m_videoServer = getIceServer<Video::VideoInterface>(videoServerName);
   
@@ -152,6 +180,27 @@ void PeopleDetector::start()
   upper_storage = cvCreateMemStorage(0);
   face_storage = cvCreateMemStorage(0);
   fullbody_storage = cvCreateMemStorage(0);
+}
+
+
+void PeopleDetector::receiveDetectionCommand(
+    const cdl::WorkingMemoryChange & _wmc)
+{
+  PeopleDetectionCommandPtr cmd =
+    getMemoryEntry<PeopleDetectionCommand>(_wmc.address);
+
+  if(m_runContinuously) {
+    log("Ignoring people detection command as running continuously");
+  }
+  else {
+    log("People detecting for %d attempts", m_numDetectionAttempts);
+    for(unsigned int i = 0; i < m_numDetectionAttempts; ++i) {
+      runDetection();
+    }
+  }
+  // executed the command, results (if any) are on working memory,
+  // now delete command as not needed anymore
+  deleteFromWorkingMemory(_wmc.address);
 }
 
 std::string IntToStr(float i)
@@ -212,11 +261,14 @@ struct PersonRecord
 
 
 
-void PeopleDetector::runComponent()
-{
+void PeopleDetector::runComponent() {
+  if(m_runContinuously) {
     while (isRunning()) {
-      
+      lockComponent();
+      runDetection();
+      unlockComponent();    
     }
+  }
 }
 
 void PeopleDetector::runDetection()
@@ -227,8 +279,7 @@ void PeopleDetector::runDetection()
 
     static vector<PersonRecord> detections;
 
-    while (isRunning())
-    {
+
       //log("Frame %d",cnt);
 
         // Capture an image from the camera
@@ -719,6 +770,5 @@ void PeopleDetector::runDetection()
 
         cvReleaseImage(&img);
 
-    }
 }
 

@@ -41,6 +41,16 @@ namespace cast
        */
       Video::VideoInterfacePrx m_videoServer;
 
+      /**
+       * How many frames to use when triggered on demand. Default 5.
+       */
+      unsigned int m_numDetectionAttempts;
+
+      /**
+       * Whether to run continuously or not. Default false.
+       */
+      bool m_runContinuously;
+
     public:
         /**
          * Constructor
@@ -57,6 +67,13 @@ namespace cast
        * Run the people detector for a single frame.
        */
       void runDetection();
+
+
+      /**
+       * Do detection on demand.
+       */
+      void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
+
 
     protected:
 
