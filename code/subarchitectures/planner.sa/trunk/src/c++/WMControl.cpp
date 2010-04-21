@@ -44,7 +44,7 @@ void WMControl::start() {
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
-    addChangeFilter(cast::createGlobalTypeFilter<Belief>(cast::cdl::WILDCARD),
+    addChangeFilter(cast::createGlobalTypeFilter<StableBelief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
     connectToPythonServer();
