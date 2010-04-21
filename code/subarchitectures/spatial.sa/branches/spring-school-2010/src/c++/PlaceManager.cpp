@@ -179,16 +179,41 @@ PlaceManager::runComponent()
 void 
 PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  if (m_firstNodeProcessed) {
-    debug("newNavNode called");
-    shared_ptr<CASTData<NavData::FNode> > oobj =
-      getWorkingMemoryEntry<NavData::FNode>(objID.address);
+  while (!m_firstNodeProcessed) {
+    sleepComponent(250);
+  }
+  debug("newNavNode called");
+  NavData::FNodePtr oobj =
+    getMemoryEntry<NavData::FNode>(objID.address);
 
-    if (oobj != 0) {
+  if (oobj != 0) {
+    if (m_startNodeForCurrentPath >= 0) {
+      // Robot has moved; this must be a newly discovered node at
+      // the robot's location
+      // (as opposed to one loaded from disk)
       processPlaceArrival(false);
     }
-    debug("newNavNode exited");
+    else {
+      // Special case: Robot hasn't yet moved; this must be a loaded map
+      // node. Just add it as a Place.
+      PlaceHolder p;
+      p.m_data = new SpatialData::Place;   
+      //p.m_data->id = oobj->getData()->nodeId;
+
+      int newPlaceID = m_placeIDCounter;
+      m_placeIDCounter++;
+      p.m_data->id = newPlaceID;
+      m_PlaceIDToNodeMap[newPlaceID] = oobj;
+
+      p.m_data->status = SpatialData::TRUEPLACE;
+      p.m_WMid = newDataID();
+      log("Adding place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+      addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+
+      m_Places[newPlaceID] = p;
+    }
   }
+  debug("newNavNode exited");
 }
 
 void
@@ -1022,6 +1047,10 @@ PlaceManager::processPlaceArrival(bool failed)
 
     int wasHeadingForPlace = m_goalPlaceForCurrentPath;
     int wasComingFromNode = m_startNodeForCurrentPath;
+
+    if (wasComingFromNode == -1) {
+    }
+
     map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
       m_PlaceIDToHypMap.find(wasHeadingForPlace);
 
