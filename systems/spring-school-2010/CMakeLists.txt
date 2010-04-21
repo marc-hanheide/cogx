@@ -40,14 +40,14 @@ if(BUILD_BELIEFMODELS)
 add_subdirectory (tools/beliefs)
 endif(BUILD_BELIEFMODELS)
 
-option(BUILD_ALCHEMY "Build Alchemy package" ON)
+option(BUILD_ALCHEMY "Build Alchemy package" NO)
 if(BUILD_ALCHEMY)
   add_subdirectory (tools/alchemy)
 #	BUILD_ALCHEMY_MACRO()
 endif(BUILD_ALCHEMY)
 
 
-option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" NO)
+option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" YES)
 if(BUILD_SA_MOTIVATION)
 add_subdirectory (subarchitectures/motivation.sa)
 endif(BUILD_SA_MOTIVATION)
@@ -129,13 +129,13 @@ if(BUILD_MULTI_TESTER)
 endif(BUILD_MULTI_TESTER)
 
 # Planner
-option(BUILD_SA_PLANNER "Build planner subarchitecure" NO)
+option(BUILD_SA_PLANNER "Build planner subarchitecure" YES)
 if(BUILD_SA_PLANNER)
     add_subdirectory (subarchitectures/planner.sa)
 endif(BUILD_SA_PLANNER)
 
 # Fake motivation
-option(BUILD_SA_FAKE_MOTIVATION "Build fake motivation subarchitecure" YES)
+option(BUILD_SA_FAKE_MOTIVATION "Build fake motivation subarchitecure" NO)
 if(BUILD_SA_FAKE_MOTIVATION)
     add_subdirectory (subarchitectures/fakemotivation.sa)
 endif(BUILD_SA_FAKE_MOTIVATION)
