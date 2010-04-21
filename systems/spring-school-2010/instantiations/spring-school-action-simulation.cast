@@ -17,6 +17,7 @@ JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 
 INCLUDE includes/vision.sa/vision-blobs.cast
+INCLUDE includes/vision.sa/vision-execution.cast
 
 #JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
 
@@ -31,13 +32,14 @@ INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/perceptmediators.cast
 JAVA GD bindermonitor binder.components.BinderMonitor --debug
 
-# planning and motivation #####################################################
-INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/planner.cast
-JAVA MG executor execution.components.DoraExecutionMediator --self-motivate --goal "(forall (?p - place) (= (placestatus ?p) trueplace))" --log --debug
 
-# exection ####################################################################
+SUBARCHITECTURE planning.sa
+# exection ################
+####################################################
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
 JAVA MG  manual-execution execution.components.GraphicalExecutionManager
+JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
 
 
 # viewing and debugging #######################################################
