@@ -4,6 +4,7 @@
  */
 
 #include "QCastMainFrame.hpp"
+#include "../convenience.hpp"
 
 #include <cstdio> // TODO: Temporary (printf); remove
 
@@ -13,6 +14,8 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    m_pModel = NULL;
    ui.setupUi(this);
    ui.listWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+   connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
+         this, SLOT(onViewActivated(QListWidgetItem*)));
 }
 
 QCastMainFrame::~QCastMainFrame()
@@ -29,21 +32,21 @@ void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
 
 void QCastMainFrame::notifyObjectAdded(cogx::display::CDisplayObject *pObject)
 {
-   if (pObject != NULL)
-      printf ("TODO: check if view for %s exists, diplay in view-list", pObject->m_id.c_str());
+   if (pObject != NULL) {
+      DMESSAGE("TODO: check if view for " << pObject->m_id << " exists, diplay in view-list");
+   }
    // TODO: if (m_pCurrentView->hasObject(pObject)) m_pCurrentView->update();
 }
 
 void QCastMainFrame::updateViewList()
 {
+   DTRACE("QCastMainFrame::updateViewList");
    ui.listWidget->clear();
    if (! m_pModel) return;
 
    cogx::display::CDisplayView *pView;
    FOR_EACH_V(pView, m_pModel->m_Views) {
       QListWidgetItem* pItem = new QListWidgetItem(tr(pView->m_id.c_str()), ui.listWidget);
-      connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
-            this, SLOT(onViewActivated(QListWidgetItem*)));
       // TODO: notify on click
    }
 }
@@ -52,18 +55,23 @@ void QCastMainFrame::updateViewList()
 // A view was activated from the GUI
 void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
 {
+   DTRACE("QCastMainFrame::onViewActivated");
    if (! pSelected) return;
    cogx::display::CDisplayView *pView;
+   DMESSAGE(pSelected->text().toStdString());
    pView = m_pModel->getView(pSelected->text().toStdString());
    if (pView) {
-      updateCustomUi(pView);
+      if (! ui.wgCustomGui->hasView(pView)) {
+         updateCustomUi(pView);
+         // TODO: should retrieve data for custom widgets from appropriate components.
+      }
       ui.drawingArea->setView(pView);
-      // TODO: should retrieve data for custom widgets from appropriate components.
    }
 }
 
 void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
 {
+   DTRACE("QCastMainFrame::updateCustomUi");
    if (!m_pModel || !pView) {
       ui.wgCustomGui->setVisible(false);
       return;

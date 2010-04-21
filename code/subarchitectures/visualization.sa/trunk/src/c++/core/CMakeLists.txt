@@ -8,8 +8,11 @@ include(${QT_USE_FILE} )
 #get_filename_component(PYLIBNAME "${PYTHON_LIBRARY}" NAME)
 #include_directories(. ${PYTHON_INCLUDE_PATH})
 
+add_definitions(-DDEBUG_TRACE)
+
 set(SERVER_CPP
    ptrvector.cpp
+   convenience.cpp
    CDisplayServer.cpp
    Model.cpp
    object/CSvgImage.cpp
