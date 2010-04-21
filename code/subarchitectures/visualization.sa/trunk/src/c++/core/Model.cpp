@@ -258,6 +258,14 @@ void CDisplayView::refreshObject(const std::string& id)
    }
 }
 
+void CDisplayView::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
+{
+   CDisplayModelObserver *pobsrvr;
+   FOR_EACH(pobsrvr, viewObservers) {
+      pobsrvr->onUiDataChanged(NULL, this, pElement, newValue);
+   }
+}
+
 // The CDisplayObject should not draw itself, instead it should provide another
 // object (Renderer) that will draw it. function: getRenderer(context).
 // Implementation: all objects of the same class share the same (static)

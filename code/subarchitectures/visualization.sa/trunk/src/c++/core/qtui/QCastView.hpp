@@ -3,7 +3,6 @@
  * Created: 2010-03-10
  */
 
-
 #ifndef QCASTVIEW_NXKFPZKI
 #define QCASTVIEW_NXKFPZKI
 
@@ -24,12 +23,15 @@ public:
    QCastView( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
    ~QCastView();
    void setView(cogx::display::CDisplayView* pDisplayView);
+
+public:
+   // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
 
 protected:
-   virtual void paintEvent ( QPaintEvent * event ); /*override*/
+   // Qt events
+   virtual void paintEvent(QPaintEvent * event); /*override*/
    virtual void wheelEvent(QWheelEvent *e); /*override*/
-
 };
 
 #endif /* end of include guard: QCASTVIEW_NXKFPZKI */

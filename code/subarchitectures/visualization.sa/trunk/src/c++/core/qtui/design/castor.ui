@@ -79,7 +79,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QFrame" name="wgCustomGui">
+      <widget class="QCustomGuiPanel" name="wgCustomGui">
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -97,6 +97,12 @@
    <class>QCastView</class>
    <extends>QWidget</extends>
    <header>qtui/QCastView.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCustomGuiPanel</class>
+   <extends>QFrame</extends>
+   <header>qtui/QCustomGuiPanel.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

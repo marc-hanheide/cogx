@@ -19,6 +19,7 @@ set(GUI_CPP
    qtui/QCastApplication.cpp
    qtui/QCastMainFrame.cpp
    qtui/QCastView.cpp
+   qtui/QCustomGuiPanel.cpp
    qtui/ChangeSlot.cpp
    )
 set(SERVER_MOC_HEADERS
@@ -26,6 +27,7 @@ set(SERVER_MOC_HEADERS
    qtui/QCastMainFrame.hpp
    qtui/QCastView.hpp
    qtui/ChangeSlot.hpp
+   qtui/QCustomGuiPanel.hpp
    )
 set(SERVER_UI_FILES
    qtui/design/castor.ui

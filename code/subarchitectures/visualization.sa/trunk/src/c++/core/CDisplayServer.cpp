@@ -244,7 +244,7 @@ void CDisplayServer::addButton(const Ice::Identity& ident, const std::string& vi
    }
 }
 
-void CDisplayServer::onDataChanged(CGuiElement *pElement, const std::string& newValue)
+void CDisplayServer::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
    debug(std::string("Time: ") + sfloat (fclocks()));
    debug(std::string("New value ") + pElement->m_id + "=" + newValue);

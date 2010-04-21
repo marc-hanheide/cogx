@@ -15,10 +15,23 @@ class CGuiElement;
 class CGuiElementObserver
 {
 public:
-   virtual void onDataChanged(CGuiElement *pElement, const std::string& newValue) = 0;
+   virtual void onUiDataChanged(CGuiElement *pElement, const std::string& newValue) = 0;
 };
 
 
+// An instance of this class describes a dynamically created UI widget which
+// is displayed when an object associated with the widget is displayed in a
+// view.
+// When a view is activated, a list of widgets for the view is obtained from
+// the model.
+//
+// Events:
+// Instances of this class are created in CDisplayServer which is an observer
+// for each instance. When a change happens in a widget, the associated
+// CGuiElement instance is notified, which notifies all its observers including
+// CDisplayServer which finally notifies the remote client(s).
+// 
+// TODO: ATM there is no way to retrieve the data for a widget from a (remote) component
 class CGuiElement
 {
 public:
@@ -28,7 +41,7 @@ public:
    std::string m_id;
    std::string m_label;
    Ice::Identity m_dataOwner; // the ID of the component that holds data for the element
-   // TODO: list of subscribed clients
+   // TODO: list of subscribed clients (CAST components); notify on change
    // TODO: wtDropList has a list of items
 
    CObserver<CGuiElementObserver> Observers;
@@ -41,10 +54,13 @@ public:
       return true;
    }
 
-   void notifyDataChange(const std::string& newValue) {
+   void notifyDataChange(const std::string& newValue, void* changeSource) {
       CGuiElementObserver *pObsrvr;
       FOR_EACH(pObsrvr, Observers) {
-         pObsrvr->onDataChanged(this, newValue);
+         // The source of the data change should already be aware of the change
+         // so we don't need to notify it.
+         if (pObsrvr == changeSource) continue;
+         pObsrvr->onUiDataChanged(this, newValue);
       }
    }
 };

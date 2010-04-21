@@ -33,6 +33,8 @@ public:
    virtual void onViewChanged(CDisplayModel *pModel, CDisplayView *pView) {}
    virtual void onViewAdded(CDisplayModel *pModel, CDisplayView *pView) {}
    virtual void onViewRemoved(CDisplayModel *pModel, const std::string& id) {}
+   virtual void onUiDataChanged(CDisplayModel *pModel, CDisplayView *pSourceView,
+         CGuiElement *pElement, const std::string& newValue) {}
 };
 
 // Holder for all data that can be displayed.
@@ -59,7 +61,7 @@ public:
    bool addGuiElement(CGuiElement* pGuiElement);
    CPtrVector<CGuiElement> getGuiElements(const std::string &viewId);
 
-public:
+//public:
    CObserver<CDisplayModelObserver> modelObservers;
 
 private:
@@ -99,7 +101,7 @@ public:
 
 // A view defines a set of objects to be displayed side by side.
 // It also defines the layout of the objects.
-class CDisplayView
+class CDisplayView: public CGuiElementObserver
 {
    TObjectMap m_Objects;
 public:
@@ -113,6 +115,10 @@ public:
    bool hasObject(const std::string &id);
 
    virtual void draw2D(QPainter &painter);
+
+public:
+   // CGuiElementObserver
+   void onUiDataChanged(CGuiElement *pElement, const std::string& newValue);
 
 public:
    CObserver<CDisplayModelObserver> viewObservers;

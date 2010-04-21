@@ -67,3 +67,4 @@ void QCastView::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::displa
 {
    if (pView == this->pView) update();
 }
+
