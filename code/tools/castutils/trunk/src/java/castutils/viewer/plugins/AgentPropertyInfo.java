@@ -14,7 +14,7 @@ public class AgentPropertyInfo implements Plugin {
 		AgentProperty gpp = (AgentProperty) iceObject;
 
 		Vector<Object> extraInfo = new Vector<Object>();
-		extraInfo.add("place ID=" + gpp.agentID);
+		extraInfo.add("agentID=" + gpp.agentID);
 		if (gpp.distribution != null
 				&& ((DiscreteProbabilityDistribution) gpp.distribution).data
 						.get(0).value instanceof FloatValue) {
