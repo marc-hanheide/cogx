@@ -20,6 +20,7 @@
 package binder.abstr;
 
 import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 import binder.arch.BindingWorkingMemory;
 import binder.interfaces.BeliefWriterInterface;
 import cast.AlreadyExistsOnWMException;
@@ -28,6 +29,7 @@ import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
  
 /**
  * 
@@ -75,8 +77,16 @@ public class BeliefWriter extends ManagedComponent implements BeliefWriterInterf
 	public void updateBeliefOnWM (Belief belief) throws DoesNotExistOnWMException, PermissionException, ConsistencyException {
 		
 		try {
+			if (existsOnWorkingMemory(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA))) {
+				
+				Belief oldBelief = 
+					getMemoryEntry(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA), Belief.class);
+				
+				((CASTBeliefHistory)belief.hist).offspring = ((CASTBeliefHistory)oldBelief.hist).offspring;
+				
 			overwriteWorkingMemory(belief.id, BindingWorkingMemory.BINDER_SA, belief);
 			log("existing belief " + belief.id + " updated on the working memory");
+			}
 		} 
 		catch (UnknownSubarchitectureException e) {
 			log("ERROR: problem with the subarchitecture identifier for the binder");

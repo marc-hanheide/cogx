@@ -311,7 +311,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				if (existinUnionOrigins.contains(mmbeliefOrigin)) {
 					relevantUnions.put(existingUnionId, existingUnion);
 				}
-
 			}
 		}
 
