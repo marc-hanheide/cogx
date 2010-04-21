@@ -19,6 +19,7 @@ import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.LookForPeople;
 import execution.util.ActionInterfaceFrame;
 import execution.util.ActionMonitor;
 
@@ -106,6 +107,13 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	public WorkingMemoryAddress triggerDetectPeople(ActionMonitor _monitor)
 			throws CASTException {
 		DetectPeople act = newActionInstance(DetectPeople.class);
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerLookForPeople(ActionMonitor _monitor)
+			throws CASTException {
+		LookForPeople act = newActionInstance(LookForPeople.class);
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
