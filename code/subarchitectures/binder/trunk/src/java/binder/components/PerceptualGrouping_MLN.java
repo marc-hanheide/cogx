@@ -10,9 +10,14 @@ import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.StableBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
+import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import binder.ml.MLException;
@@ -110,8 +115,16 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent<PerceptBelief> 
 				// and add them to the working memory
 				for (Belief newUnion : newUnions) {
 					if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
-						insertBeliefInWM(newUnion);
 						log("inserting belief " + newUnion.id + " on WM");
+						
+						updatePointersInCurrentBelief(newUnion);
+						updatePointersInOtherBeliefs(newUnion);
+							
+						insertBeliefInWM(newUnion);
+
+						addOffspringToPercept(percept, 
+									new WorkingMemoryAddress(newUnion.id, BindingWorkingMemory.BINDER_SA));	
+						
 					}
 					else {
 						log ("Belief " + newUnion.id + " has probability " + DistributionUtils.getExistenceProbability(newUnion) +
@@ -144,8 +157,16 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent<PerceptBelief> 
 				log("no relevant union to group with percept " + percept.id + " has been found");
 				PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(percept, perceptWMAddress, newDataID());
 				if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
-					insertBeliefInWM(union);
+					
 					log("inserting belief " + union.id + " on WM");
+					
+					updatePointersInCurrentBelief(union);
+					updatePointersInOtherBeliefs(union);
+						
+					insertBeliefInWM(union);
+
+					addOffspringToPercept(percept, 
+								new WorkingMemoryAddress(union.id, BindingWorkingMemory.BINDER_SA));	
 				}
 			}
 			catch (Exception e) {
@@ -205,7 +226,7 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent<PerceptBelief> 
 			throw new BeliefException("ERROR, id " + newSingleUnionId + " is not in inferenceResults");
 		}
 		PerceptUnionBelief newSingleUnion = 
-			PerceptUnionBuilder.createNewSingleUnionBelief(percept, perceptWMAddress, inferenceResults.get(newSingleUnionId), newSingleUnionId);
+			PerceptUnionBuilder.createNewSingleUnionBelief(percept, perceptWMAddress, inferenceResults.get(newSingleUnionId) * perceptExistProb, newSingleUnionId);
 
 		newUnions.add(newSingleUnion);
 
@@ -319,6 +340,66 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent<PerceptBelief> 
 	public void workingMemoryChangeInsert(Belief percept, WorkingMemoryAddress perceptWMAddress) throws BeliefException {
 		performPerceptualGrouping((PerceptBelief)percept, perceptWMAddress);
 	}
+	
+
+	private void addOffspringToPercept (PerceptBelief percept, WorkingMemoryAddress addressUnion) {
+
+		if (percept.hist != null && percept.hist instanceof CASTBeliefHistory) {
+			((CASTBeliefHistory)percept.hist).offspring.add(addressUnion);
+		}
+	}
+
+
+	private void updatePointersInCurrentBelief (Belief newBelief) {
+		try {
+
+			for (FeatureValueProbPair pointer : FeatureContentUtils.getAllPointerValuesInBelief(newBelief)) {
+
+				WorkingMemoryAddress point = ((PointerValue)pointer.val).beliefId ;
+				PerceptBelief belief = getMemoryEntry(point, PerceptBelief.class);
+				if (((CASTBeliefHistory)belief.hist).offspring.size() > 0) {
+					((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
+				}
+
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+
+	private void updatePointersInOtherBeliefs (Belief newBelief) {
+		try {
+
+			if (newBelief.hist != null && newBelief.hist instanceof CASTBeliefHistory) {
+
+				for (WorkingMemoryAddress ancestor: ((CASTBeliefHistory)newBelief.hist).ancestors) {
+
+					CASTData<PerceptUnionBelief>[] unions = getWorkingMemoryEntries(PerceptUnionBelief.class);
+
+					for (int i = 0 ; i < unions.length ; i++ ) {
+						PerceptUnionBelief union = unions[i].getData();
+						for (FeatureValueProbPair pointerValueInUnion : FeatureContentUtils.getAllPointerValuesInBelief(union)) {
+							PointerValue val = (PointerValue)pointerValueInUnion.val;
+							if (val.beliefId.equals(ancestor)) {
+								((PointerValue)pointerValueInUnion.val).beliefId = 
+									new WorkingMemoryAddress(newBelief.id, BindingWorkingMemory.BINDER_SA);
+								updateBeliefOnWM(union);
+							}
+						}
+					}
+				} 
+			}
+
+
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 	/**
 	 * Exact the set of existing unions from the binder working memory

@@ -1,26 +1,21 @@
 package binder.components;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
-import beliefmodels.autogen.beliefs.PerceptBelief;
-import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
-import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
+import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import binder.ml.MLException;
@@ -28,11 +23,7 @@ import binder.utils.MLNGenerator;
 import binder.utils.MLNPreferences;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
 
@@ -113,6 +104,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				e1.printStackTrace();
 			}
 
+	
 			// run the alchemy inference
 			try { 
 				HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
@@ -127,8 +119,16 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				// and add them to the working memory
 				for (Belief newUnion : newUnions) {
 					if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
-						insertBeliefInWM(newUnion);
+						
 						log("inserting belief " + newUnion.id + " on WM");
+
+						updatePointersInCurrentBelief(newUnion);
+						updatePointersInOtherBeliefs(newUnion);
+						
+						insertBeliefInWM(newUnion);
+						
+						addOffspringToMMBelief(mmbelief, 
+								new WorkingMemoryAddress(newUnion.id, BindingWorkingMemory.BINDER_SA));
 					}
 					else {
 						log ("Belief " + newUnion.id + " has probability " + DistributionUtils.getExistenceProbability(newUnion) +
@@ -150,19 +150,27 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 						deleteBeliefOnWM(unionToUpdate.id);
 					}
 				}
-
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		
 		else {
 			try {
 				log("no relevant union to group with mmbelief " + mmbelief.id + " has been found");
 				TemporalUnionBelief union = TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, newDataID());
 				if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
-					insertBeliefInWM(union);
+					
 					log("inserting belief " + union.id + " on WM");
+
+					updatePointersInCurrentBelief(union);
+					updatePointersInOtherBeliefs(union);
+					
+					insertBeliefInWM(union);
+					
+					addOffspringToMMBelief(mmbelief, 
+							new WorkingMemoryAddress(union.id, BindingWorkingMemory.BINDER_SA));
 				}
 			}
 			catch (Exception e) {
@@ -190,7 +198,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 		// extract the existence probability of the mmbelief
 		float mmbeliefExistProb = DistributionUtils.getExistenceProbability(mmbelief);
-
 		Vector<Belief> newUnions = new Vector<Belief>();
 		for (String id : unionsMapping.keySet()) {
 
@@ -222,7 +229,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 			throw new BeliefException("ERROR, id " + newSingleUnionId + " is not in inferenceResults");
 		}
 		TemporalUnionBelief newSingleUnion = 
-			TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, inferenceResults.get(newSingleUnionId), newSingleUnionId);
+			TemporalUnionBuilder.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress, inferenceResults.get(newSingleUnionId) * mmbeliefExistProb, newSingleUnionId);
 
 		newUnions.add(newSingleUnion);
 
@@ -354,6 +361,95 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	}
 
 
+
+
+	private void addOffspringToMMBelief (MultiModalBelief mmBelief, WorkingMemoryAddress addressTUnionBelief) {
+
+		if (mmBelief.hist != null && mmBelief.hist instanceof CASTBeliefHistory) {
+			((CASTBeliefHistory)mmBelief.hist).offspring.add(addressTUnionBelief);
+		}
+	}
+
+
+	private void updatePointersInCurrentBelief (Belief newBelief) {
+		try {
+
+			for (FeatureValueProbPair pointer : FeatureContentUtils.getAllPointerValuesInBelief(newBelief)) {
+
+				WorkingMemoryAddress point = ((PointerValue)pointer.val).beliefId ;
+				MultiModalBelief belief = getMemoryEntry(point, MultiModalBelief.class);
+				if (((CASTBeliefHistory)belief.hist).offspring.size() > 0) {
+					((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
+				}
+
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+ 
+	private void updatePointersInOtherBeliefs (Belief newBelief) {
+		try {
+
+			if (newBelief.hist != null && newBelief.hist instanceof CASTBeliefHistory) {
+
+				for (WorkingMemoryAddress ancestor: ((CASTBeliefHistory)newBelief.hist).ancestors) {
+
+					CASTData<TemporalUnionBelief>[] tunions = getWorkingMemoryEntries(TemporalUnionBelief.class);
+
+					for (int i = 0 ; i < tunions.length ; i++ ) {
+						TemporalUnionBelief tunion = tunions[i].getData();
+						for (FeatureValueProbPair pointerValueInUnion : FeatureContentUtils.getAllPointerValuesInBelief(tunion)) {
+							PointerValue val = (PointerValue)pointerValueInUnion.val;
+							if (val.beliefId.equals(ancestor)) {
+								Belief ancestorBelief = getMemoryEntry(ancestor, Belief.class);
+								if (!ancestorBelief.getClass().equals(TemporalUnionBelief.class)) {
+								((PointerValue)pointerValueInUnion.val).beliefId = 
+									new WorkingMemoryAddress(newBelief.id, BindingWorkingMemory.BINDER_SA);
+								}
+								else {
+									// dirty hacks here...
+									
+									// here, reducing the probability of the existing link
+									float oldProb = pointerValueInUnion.prob;
+									pointerValueInUnion.prob = (DistributionUtils.getExistenceProbability(ancestorBelief) - 
+										DistributionUtils.getExistenceProbability(newBelief)) / DistributionUtils.getExistenceProbability(ancestorBelief);
+									
+									log("link from " + tunion.id + " to " + ((PointerValue)pointerValueInUnion.val).beliefId.id + 
+											" has prob. reduced from " + oldProb + " to " 
+											+ pointerValueInUnion.prob);
+									
+									BasicProbDistribution pointerDistrib = 
+										FeatureContentUtils.getFeatureForFeatureValueInBelief(tunion, pointerValueInUnion.val);
+									
+									if (pointerDistrib != null) {
+									// and adding a second link as well
+									FeatureContentUtils.addAnotherValueInBasicProbDistribution(pointerDistrib,
+											new FeatureValueProbPair(new PointerValue(new WorkingMemoryAddress(newBelief.id, BindingWorkingMemory.BINDER_SA)), 
+													DistributionUtils.getExistenceProbability(newBelief)  / DistributionUtils.getExistenceProbability(ancestorBelief)));
+									
+									log("creation of new link from " + tunion.id + " to " + newBelief.id + 
+											" with prob. " + DistributionUtils.getExistenceProbability(newBelief)  / DistributionUtils.getExistenceProbability(ancestorBelief));
+									
+									}
+								}
+								updateBeliefOnWM(tunion);
+							}
+						}
+					}
+				} 
+			}
+
+
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 	@Override
 	public void workingMemoryChangeDelete(WorkingMemoryAddress WMAddress) {
