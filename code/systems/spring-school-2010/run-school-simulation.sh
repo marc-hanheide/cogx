@@ -4,6 +4,12 @@ PIDS=""
 
 trap 'kill $PIDS' INT TERM PIPE QUIT ABRT HUP 
 
+if [ "$1" ]; then
+    configFile="$1"
+else
+    configFile="instantiations/spring-school-simulation.cast"
+fi
+
 LOGNAME=./log
 
 xterm -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml" &
@@ -22,7 +28,7 @@ PIDS="$PIDS $SERVERPID"
 
 sleep 3
 
-xterm -e bash -c "output/bin/cast-client-start instantiations/spring-school-simulation.cast  2>&1 | tee client.log" &
+xterm -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee client.log" &
 #xterm -e output/bin/cast-client-start instantiations/binding-planner-test.cast &
 PIDS="$PIDS $!"
 
