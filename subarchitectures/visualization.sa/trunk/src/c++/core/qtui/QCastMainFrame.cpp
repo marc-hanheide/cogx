@@ -4,12 +4,8 @@
  */
 
 #include "QCastMainFrame.hpp"
-#include <QCheckBox>
-#include <QPushButton>
 
 #include <cstdio> // TODO: Temporary (printf); remove
-
-#include "ChangeSlot.hpp"
 
 QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    : QMainWindow(parent, flags)
@@ -29,15 +25,6 @@ void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
    if (m_pModel) m_pModel->modelObservers -= this;
    m_pModel = pDisplayModel;
    if (m_pModel) m_pModel->modelObservers += this;
-
-   // XXX Testing
-   if (m_pModel) {
-      cogx::display::CDisplayView *pView;
-      //pView = m_pModel->getView("video.viewer");
-      //if (pView) ui.drawingArea->setView(pView);
-      updateCustomUi(pView);
-      updateViewList();
-   }
 }
 
 void QCastMainFrame::notifyObjectAdded(cogx::display::CDisplayObject *pObject)
@@ -71,6 +58,7 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
    if (pView) {
       updateCustomUi(pView);
       ui.drawingArea->setView(pView);
+      // TODO: should retrieve data for custom widgets from appropriate components.
    }
 }
 
@@ -80,54 +68,7 @@ void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
       ui.wgCustomGui->setVisible(false);
       return;
    }
-   CPtrVector<cogx::display::CGuiElement> elements;
-   elements = m_pModel->getGuiElements(pView->m_id);
-   if (elements.size() < 1) {
-      ui.wgCustomGui->setVisible(false);
-      return;
-   }
-   ui.wgCustomGui->setVisible(false);
-
-   // Create new widgets
-   cogx::display::CGuiElement* pgel;
-   CChangeSlot *pSlot;
-   QCheckBox *pBox;
-   QPushButton *pButton;
-
-   if (ui.wgCustomGui->layout()) delete ui.wgCustomGui->layout();
-   QLayout *pLayout = new QVBoxLayout();
-
-   // Remove the current widgets; they will be deleted when todelete goes out of scope.
-   {
-      // TODO This worked before layout was added: check if it still works
-      QWidget todelete;
-      QList<QObject*> wdgts = ui.wgCustomGui->findChildren<QObject*>();
-      QObject *pobj;
-      FOR_EACH(pobj, wdgts) {
-         if (pobj) pobj->setParent(&todelete);
-      }
-   }
-
-
-   FOR_EACH(pgel, elements) {
-      if (!pgel) continue;
-      switch (pgel->m_type) {
-         case cogx::display::CGuiElement::wtCheckBox:
-            pBox = new QCheckBox(QString(pgel->m_label.c_str()), ui.wgCustomGui);
-            pLayout->addWidget(pBox);
-            pSlot = new CChangeSlot(pgel, pBox);
-            connect(pBox, SIGNAL(stateChanged(int)), pSlot, SLOT(onCheckBoxChange(int)));
-            break;
-         case cogx::display::CGuiElement::wtButton:
-            pButton = new QPushButton(QString(pgel->m_label.c_str()), ui.wgCustomGui);
-            pLayout->addWidget(pButton);
-            pSlot = new CChangeSlot(pgel, pButton);
-            connect(pButton, SIGNAL(clicked(bool)), pSlot, SLOT(onButtonClick(bool)));
-            break;
-      }
-   }
-   ui.wgCustomGui->setLayout(pLayout);
-   ui.wgCustomGui->setVisible(true);
+   ui.wgCustomGui->updateUi(m_pModel, pView);
 }
 
 void QCastMainFrame::onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)

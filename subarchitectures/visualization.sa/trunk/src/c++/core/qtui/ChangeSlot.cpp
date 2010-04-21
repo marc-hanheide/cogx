@@ -9,11 +9,11 @@ void CChangeSlot::onCheckBoxChange(int value)
 {
    std::stringstream sval;
    sval << value;
-   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval.str());
+   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval.str(), m_pView);
 }
 
 void CChangeSlot::onButtonClick(bool checked)
 {
    std::string sval = checked ? "1" : "0";
-   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval);
+   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval, m_pView);
 }

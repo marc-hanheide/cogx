@@ -64,7 +64,7 @@ private:
    void startIceServer();
 
    // CGuiElementObserver
-   void onDataChanged(CGuiElement *pElement, const std::string& newValue); /*override*/
+   void onUiDataChanged(CGuiElement *pElement, const std::string& newValue); /*override*/
 };
 
 // The implementation of DisplayInterface. This class implements
