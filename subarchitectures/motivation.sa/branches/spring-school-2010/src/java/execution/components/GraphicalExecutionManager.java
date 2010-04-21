@@ -6,6 +6,7 @@ package execution.components;
 import java.util.Map;
 
 import SpatialData.Place;
+import beliefmodels.autogen.beliefs.StableBelief;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -16,6 +17,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.actions.ActiveVisualSearch;
+import execution.slice.actions.ComsysQueryFeature;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
@@ -74,6 +76,40 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			}
 
 		});
+
+		// use these to harvest beliefs
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				StableBelief.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						addStableBelief(_wmc.address, getMemoryEntry(
+								_wmc.address, StableBelief.class));
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				StableBelief.class, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+
+						removeStableBelief(_wmc.address);
+					}
+				});
+
+	}
+
+	private void removeStableBelief(WorkingMemoryAddress _address) {
+		m_gui.removeBelief(_address);
+	}
+
+	private void addStableBelief(WorkingMemoryAddress _address,
+			StableBelief _belief) {
+		m_gui.addBelief(_address, _belief);
 	}
 
 	private void addPlace(WorkingMemoryAddress _address, Place _memoryEntry) {
@@ -130,6 +166,15 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			return false;
 		}
 
+	}
+
+	public WorkingMemoryAddress triggerAskForFeatureAction(String _beliefID,
+			String _featureType, ActionMonitor _monitor) throws CASTException {
+		ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+		act.beliefID = _beliefID;
+		act.featureID = _featureType;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
 	}
 
 }

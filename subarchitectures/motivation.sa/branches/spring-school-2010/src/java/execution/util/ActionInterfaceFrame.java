@@ -5,23 +5,34 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import beliefmodels.autogen.beliefs.StableBelief;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.ProbDistribution;
 import cast.CASTException;
+import cast.cdl.WorkingMemoryAddress;
 import execution.components.GraphicalExecutionManager;
 import execution.slice.Action;
 
 public class ActionInterfaceFrame extends JFrame {
 
 	private static final int PLACE_ID_COLUMN = 0;
+	private static final int BELIEF_ID_COLUMN = 0;
+	@SuppressWarnings("unused")
+	private static final int BELIEF_TYPE_COLUMN = 1;
 	private static final long serialVersionUID = 1L;
 	private JPanel jContentPane = null;
 
@@ -36,8 +47,11 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
 	private JRadioButton m_lookForPeopleAction;
+	private JRadioButton m_askForFeatureAction;
 
 	private GraphicalExecutionManager m_exeMan;
+	private JTable m_beliefTable;
+	private DefaultTableModel m_beliefTableModel;
 
 	/**
 	 * This is the default constructor
@@ -59,7 +73,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private void initialize() {
 		this.setSize(300, 200);
 		this.setContentPane(getJContentPane());
-		this.setTitle("Spatial SA Actions");
+		this.setTitle("Robot Actions (Don't you just hate writing GUIs?)");
 	}
 
 	/**
@@ -77,6 +91,7 @@ public class ActionInterfaceFrame extends JFrame {
 			middlePanel.add(getActionPanel(), null);
 			middlePanel.add(getM_buttonPanel(), null);
 			jContentPane.add(middlePanel, null);
+			jContentPane.add(getBeliefTable(), null);
 		}
 		return jContentPane;
 	}
@@ -120,6 +135,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
 			m_lookForPeopleAction = new JRadioButton("look for people");
+			m_askForFeatureAction = new JRadioButton("ask for feature");
 
 			m_goAction.setSelected(true);
 
@@ -129,12 +145,14 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
 			actionGroup.add(m_lookForPeopleAction);
+			actionGroup.add(m_askForFeatureAction);
 
 			m_actionPanel.add(m_goAction, new GridBagConstraints());
 			m_actionPanel.add(m_avsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForPeopleAction, new GridBagConstraints());
+			m_actionPanel.add(m_askForFeatureAction, new GridBagConstraints());
 		}
 		return m_actionPanel;
 	}
@@ -184,10 +202,71 @@ public class ActionInterfaceFrame extends JFrame {
 			detectPeople();
 		} else if (m_lookForPeopleAction.isSelected()) {
 			lookForPeople();
+		} else if (m_askForFeatureAction.isSelected()) {
+			askForFeature();
 		}
 
 	}
 
+	/**
+	 * Popup 
+	 */
+	private void askForFeature() {
+		int selectedRow = m_beliefTable.getSelectedRow();
+		if (selectedRow != -1) {
+			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
+					BELIEF_ID_COLUMN);
+			assert (beliefIDVal != null);
+			final String beliefID = (String) beliefIDVal;
+			
+			final JDialog dialog = new JDialog(this);
+			dialog.setLayout(new FlowLayout());
+			dialog.add(new JLabel("What feature do you want to ask about?"));
+
+			final JTextField textfield = new JTextField(30);
+			dialog.add(textfield);
+
+			ActionListener submit = new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent _e) {
+					submit(beliefID, dialog, textfield);
+				}
+			};
+			
+			textfield.addActionListener(submit);
+			
+			JButton goButton = new JButton("Go!");
+			goButton.addActionListener(submit);
+
+			dialog.add(goButton);
+			dialog.pack();
+			dialog.setVisible(true);
+
+		}
+		
+		
+		
+	}
+	
+	/**
+	 * @param beliefID
+	 * @param dialog
+	 * @param textfield
+	 */
+	private void submit(final String beliefID,
+			final JDialog dialog, final JTextField textfield) {
+		dialog.setVisible(false);
+		String featureType = textfield.getText();
+		if (featureType.length() > 0) {
+			try {
+				m_exeMan.triggerAskForFeatureAction(beliefID,
+						featureType, new MonitorPanel());
+			} catch (CASTException e) {
+				m_exeMan.logException(e);
+			}
+		}
+	}
 
 	/**
 	 * @throws CASTException
@@ -234,10 +313,9 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	private void lookForPeople() throws CASTException {
-		m_exeMan.triggerLookForPeople(new MonitorPanel());		
+		m_exeMan.triggerLookForPeople(new MonitorPanel());
 	}
 
-	
 	/**
 	 * This method initializes m_stopButton
 	 * 
@@ -275,6 +353,46 @@ public class ActionInterfaceFrame extends JFrame {
 			m_placeTable.setModel(m_placeTableModel);
 		}
 		return m_placeTable;
+	}
+
+	/**
+	 * This method initializes m_beliefTable
+	 * 
+	 * @return javax.swing.JTable
+	 */
+	private JTable getBeliefTable() {
+		if (m_beliefTable == null) {
+			// m_placeTable = new JTable(1, 2);
+			// m_placeTableModel = new DefaultTableModel(new String[] { "id",
+			// "explored" }, 0);
+			m_beliefTable = new JTable(1, 2);
+			m_beliefTableModel = new DefaultTableModel(new String[] { "id",
+					"type" }, 0);
+			m_beliefTable.setModel(m_beliefTableModel);
+		}
+		return m_beliefTable;
+	}
+
+	public void addBelief(WorkingMemoryAddress _address, StableBelief _belief) {
+		println(_belief.type);
+		assert (_belief.content instanceof CondIndependentDistribs);
+		CondIndependentDistribs cid = (CondIndependentDistribs) _belief.content;
+		Map<String, ProbDistribution> featureDistributions = cid.distribs;
+		for (String featureType : featureDistributions.keySet()) {
+			println(featureType);
+		}
+		m_beliefTableModel.addRow(new Object[] { _address.id, _belief.type });
+		pack();
+
+	}
+
+	private void println(Object _o) {
+		m_exeMan.println(_o);
+	}
+
+	public void removeBelief(WorkingMemoryAddress _address) {
+		// TODO Auto-generated method stub
+
 	}
 
 }
