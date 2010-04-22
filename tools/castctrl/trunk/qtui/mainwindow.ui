@@ -1101,6 +1101,9 @@
    <property name="text">
     <string>Start CAST Servers</string>
    </property>
+   <property name="shortcut">
+    <string>F4</string>
+   </property>
   </action>
   <action name="actStopCastServers">
    <property name="icon">
@@ -1110,6 +1113,9 @@
    </property>
    <property name="text">
     <string>Stop CAST Servers</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F4</string>
    </property>
   </action>
   <action name="actStartCastClient">
@@ -1121,6 +1127,9 @@
    <property name="text">
     <string>Start CAST Client</string>
    </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
   </action>
   <action name="actStopCastClient">
    <property name="icon">
@@ -1130,6 +1139,9 @@
    </property>
    <property name="text">
     <string>Stop CAST Client</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F5</string>
    </property>
   </action>
   <action name="actStartExternalServers">
@@ -1141,6 +1153,9 @@
    <property name="text">
     <string>Start External Servers</string>
    </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
   </action>
   <action name="actStopExternalServers">
    <property name="icon">
@@ -1150,6 +1165,9 @@
    </property>
    <property name="text">
     <string>Stop External Servers</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F3</string>
    </property>
   </action>
   <action name="actEnableCleanupScript">
@@ -1177,6 +1195,9 @@
    <property name="text">
     <string>Make</string>
    </property>
+   <property name="shortcut">
+    <string>Shift+F8</string>
+   </property>
   </action>
   <action name="actRunMakeInstall">
    <property name="icon">
@@ -1186,6 +1207,9 @@
    </property>
    <property name="text">
     <string>Make Install</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
    </property>
   </action>
   <action name="actRunMakeClean">
