@@ -65,6 +65,13 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		assert (perceptBelief != null);
 		assert (perceptBelief.content != null);
 		assert (perceptBelief.content instanceof CondIndependentDistribs);
+		{
+			String offsprings="";
+			for (WorkingMemoryAddress offspringWMA : ((CASTBeliefHistory) perceptBelief.hist).offspring) {
+				offsprings += " " + offspringWMA.id;
+			}
+			component.println("offspring BEFORE transformation occurs:"+offsprings);
+		}
 
 		CondIndependentDistribs features = (CondIndependentDistribs) perceptBelief.content;
 		Map<String, FeatureValue> mapping;
@@ -77,6 +84,13 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			component.logException(e);
 		} catch (BeliefException e) {
 			component.logException(e);
+		}
+		{
+			String offsprings="";
+			for (WorkingMemoryAddress offspringWMA : ((CASTBeliefHistory) perceptBelief.hist).offspring) {
+				offsprings += " " + offspringWMA.id;
+			}
+			component.println("offspring AFTER transformation occured:" + offsprings);
 		}
 		return true;
 	}
@@ -100,10 +114,8 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		try {
 			cdistrib = BeliefContentBuilder.createNewFeatureDistribution(key,
 					values);
-			// TODO Here the API should be used instead!
-			features.distribs.put(cdistrib.key, cdistrib);
-			// BeliefContentBuilder.putNewCondIndependentDistrib(features,
-			// cdistrib);
+			BeliefContentBuilder.putNewCondIndependentDistrib(features,
+					cdistrib);
 		} catch (BeliefException e) {
 			logger.error("Belief exception", e);
 		}
