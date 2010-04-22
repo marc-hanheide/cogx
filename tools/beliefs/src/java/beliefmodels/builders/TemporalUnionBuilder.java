@@ -43,6 +43,7 @@ import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.epstatus.EpistemicStatus;
 import beliefmodels.autogen.framing.SpatioTemporalFrame;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.utils.FeatureContentUtils;
 
 public class TemporalUnionBuilder extends AbstractBeliefBuilder {
 
@@ -105,7 +106,7 @@ public class TemporalUnionBuilder extends AbstractBeliefBuilder {
 			throw new BeliefException("Error in constructing TemporalUnionBelief: id for union belief cannot be null or empty");
 		}
 		
-		return new TemporalUnionBelief(mmbelief.frame, mmbelief.estatus, id, mmbelief.type, mmbelief.content, createHistory(address));
+		return new TemporalUnionBelief(mmbelief.frame, mmbelief.estatus, id, mmbelief.type, FeatureContentUtils.duplicateContent(mmbelief.content), createHistory(address));
 	}
 	
 	

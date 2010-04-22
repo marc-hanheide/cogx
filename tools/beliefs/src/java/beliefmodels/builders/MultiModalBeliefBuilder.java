@@ -24,6 +24,7 @@ import cast.cdl.WorkingMemoryAddress;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.utils.FeatureContentUtils;
 
 
 public class MultiModalBeliefBuilder  extends AbstractBeliefBuilder{
@@ -41,7 +42,7 @@ public class MultiModalBeliefBuilder  extends AbstractBeliefBuilder{
 	public static MultiModalBelief createNewMultiModalBelief (PerceptUnionBelief union, WorkingMemoryAddress address, String id) 
 		throws BeliefException {
 		
-		return new MultiModalBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(address));
+		return new MultiModalBelief(union.frame, union.estatus, id, union.type, FeatureContentUtils.duplicateContent(union.content), createHistory(address));
 	}
 	
 }

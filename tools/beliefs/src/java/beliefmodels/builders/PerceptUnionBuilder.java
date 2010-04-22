@@ -40,6 +40,7 @@ import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.epstatus.EpistemicStatus;
 import beliefmodels.autogen.framing.SpatioTemporalFrame;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.utils.FeatureContentUtils;
 
 public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 
@@ -100,7 +101,7 @@ public class PerceptUnionBuilder extends AbstractBeliefBuilder {
 			throw new BeliefException("Error in constructing PerceptUnionBelief: id for union belief cannot be null or empty");
 		}
 		
-		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, percept.content, createHistory(address));
+		return new PerceptUnionBelief(percept.frame, percept.estatus, id, percept.type, FeatureContentUtils.duplicateContent(percept.content), createHistory(address));
 	}
 	
 	

@@ -26,6 +26,7 @@ import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
+import beliefmodels.utils.FeatureContentUtils;
 
 
 public class StableBeliefBuilder  extends AbstractBeliefBuilder{
@@ -43,7 +44,7 @@ public class StableBeliefBuilder  extends AbstractBeliefBuilder{
 	public static StableBelief createnewStableBelief (TemporalUnionBelief union, WorkingMemoryAddress address, String id) 
 		throws BeliefException {
 		
-		return new StableBelief(union.frame, union.estatus, id, union.type, union.content, createHistory(address));
+		return new StableBelief(union.frame, union.estatus, id, union.type, FeatureContentUtils.duplicateContent(union.content), createHistory(address));
 	}
 	
 }

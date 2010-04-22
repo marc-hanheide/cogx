@@ -1,7 +1,9 @@
 package beliefmodels.utils;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
@@ -12,8 +14,8 @@ import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.featurecontent.FeatureValue;
-import beliefmodels.autogen.featurecontent.PointerValue;
+import beliefmodels.autogen.featurecontent.*;
+
 import beliefmodels.builders.BeliefContentBuilder;
 
 
@@ -168,6 +170,74 @@ public class FeatureContentUtils {
 	}
 	
 	
+	public static ProbDistribution duplicateContent (ProbDistribution distrib) 
+		throws BeliefException {
+		
+		if (distrib instanceof DistributionWithExistDep) {
+			return new DistributionWithExistDep(((DistributionWithExistDep)distrib).existProb, 
+					duplicateContent(((DistributionWithExistDep)distrib).Pc));
+		}
+		else if (distrib instanceof CondIndependentDistribs) {
+			
+			Map<String,ProbDistribution> hash = new HashMap<String,ProbDistribution>();
+			for (String existingKey : ((CondIndependentDistribs)distrib).distribs.keySet()) {
+				ProbDistribution existingDistrib = ((CondIndependentDistribs)distrib).distribs.get(existingKey);
+				hash.put(existingKey, duplicateContent(existingDistrib));
+			}
+			return new CondIndependentDistribs(hash);
+		}
+		
+		else if (distrib instanceof BasicProbDistribution) {	
+			return new BasicProbDistribution(((BasicProbDistribution)distrib).key, duplicateContent(((BasicProbDistribution)distrib).values));
+		}
+		
+		return distrib;
+	}
+	
+	public static DistributionValues duplicateContent(DistributionValues values) {
+		
+		if (values instanceof FeatureValues) {
+			
+			List<FeatureValueProbPair> newPairs = new LinkedList<FeatureValueProbPair>();
+			for (FeatureValueProbPair existingPair: ((FeatureValues)values).values)  {
+				
+				FeatureValueProbPair newPair = new FeatureValueProbPair(duplicateContent(existingPair.val), existingPair.prob);
+				newPairs.add(newPair);
+			}
+			return new FeatureValues(newPairs);
+		}
+		
+		return values;
+	}
+	
+	public static FeatureValue duplicateContent(FeatureValue value) {
+	
+		if (value instanceof StringValue) {
+			return new StringValue(((StringValue)value).val);
+		}
+		if (value instanceof PointerValue) {
+			return new PointerValue(((PointerValue)value).beliefId);
+		}
+		if (value instanceof IntegerValue) {
+			return new IntegerValue(((IntegerValue)value).val);
+		}
+		if (value instanceof FloatValue) {
+			return new FloatValue(((FloatValue)value).val);
+		}
+		if (value instanceof BooleanValue) {
+			return new BooleanValue(((BooleanValue)value).val);
+		}
+		if (value instanceof UnknownValue) {
+			return new UnknownValue();
+		}
+		if (value instanceof SetValue) {
+			return new SetValue(((SetValue)value).vals);
+		}
+		
+		return value;
+	}
+	
+	
 	public static void addAnotherValueInBasicProbDistribution(BasicProbDistribution distrib, FeatureValueProbPair newPair) {
 		if (distrib.values.getClass().equals(FeatureValues.class)) {
 			FeatureValues featvals = (FeatureValues)distrib.values;
@@ -176,6 +246,7 @@ public class FeatureContentUtils {
 			featvals.values.add(newPair);
 		}
 	}
+	
 	
 	
 	public static void addAnotherValueInDistribution (ProbDistribution distrib, String featlabel, 
