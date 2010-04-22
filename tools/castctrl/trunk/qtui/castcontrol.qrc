@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons" >
+    <file>res/runMakeClean.png</file>
+    <file>res/CMakeSetup128.png</file>
+    <file>res/svn-commit.png</file>
+    <file>res/svn-update.png</file>
     <file>res/go-down.png</file>
     <file>res/go-up.png</file>
     <file>res/system-run.png</file>
