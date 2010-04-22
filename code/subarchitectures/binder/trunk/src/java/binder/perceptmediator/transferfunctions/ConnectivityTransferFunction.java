@@ -38,9 +38,9 @@ public class ConnectivityTransferFunction extends
 				from.place2Id));
 
 		result.put(RelationElement0.value, FeatureValueBuilder
-				.createNewStringValue(wmaPlace1.id));
+				.createNewPointerValue(wmaPlace1));
 		result.put(RelationElement1.value, FeatureValueBuilder
-				.createNewStringValue(wmaPlace2.id));
+				.createNewPointerValue(wmaPlace2));
 		result.put(FeatConnected.value, FeatureValueBuilder
 				.createNewBooleanValue(true));
 		return result;
