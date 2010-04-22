@@ -48,6 +48,8 @@ private:
   SiftMatchGPU *matcher;
   int matcherSize;
 
+  Array<KeypointDescriptor*> inlier;   //just a container for drawing inlier...
+
   void DeletePairs(Array<KeyClusterPair*> &matches);
   void MatchKeypoints2(Array<KeypointDescriptor *> &keys, Array<CodebookEntry *> &cb, 
                        Array<KeyClusterPair*> &matches);
@@ -75,6 +77,8 @@ public:
   void SetCameraParameter(CvMat *C);
 
   void SetDebugImage(IplImage *img){dbg = img;}
+
+  void DrawInlier(IplImage *img, CvScalar col=CV_RGB(0,255,0));
 };
 
 /*********************** INLINE METHODES **************************/
