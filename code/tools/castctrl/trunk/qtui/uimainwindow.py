@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Apr 22 18:37:00 2010
+# Created: Thu Apr 22 18:48:40 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -630,15 +630,23 @@ class Ui_MainWindow(object):
         self.actStartTerminal.setToolTip(QtGui.QApplication.translate("MainWindow", "Start Terminal (Configured in castcontrol.conf)", None, QtGui.QApplication.UnicodeUTF8))
         self.actOpenHostConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Host Configuration", None, QtGui.QApplication.UnicodeUTF8))
         self.actStartCastServers.setText(QtGui.QApplication.translate("MainWindow", "Start CAST Servers", None, QtGui.QApplication.UnicodeUTF8))
+        self.actStartCastServers.setShortcut(QtGui.QApplication.translate("MainWindow", "F4", None, QtGui.QApplication.UnicodeUTF8))
         self.actStopCastServers.setText(QtGui.QApplication.translate("MainWindow", "Stop CAST Servers", None, QtGui.QApplication.UnicodeUTF8))
+        self.actStopCastServers.setShortcut(QtGui.QApplication.translate("MainWindow", "Shift+F4", None, QtGui.QApplication.UnicodeUTF8))
         self.actStartCastClient.setText(QtGui.QApplication.translate("MainWindow", "Start CAST Client", None, QtGui.QApplication.UnicodeUTF8))
+        self.actStartCastClient.setShortcut(QtGui.QApplication.translate("MainWindow", "F5", None, QtGui.QApplication.UnicodeUTF8))
         self.actStopCastClient.setText(QtGui.QApplication.translate("MainWindow", "Stop CAST Client", None, QtGui.QApplication.UnicodeUTF8))
+        self.actStopCastClient.setShortcut(QtGui.QApplication.translate("MainWindow", "Shift+F5", None, QtGui.QApplication.UnicodeUTF8))
         self.actStartExternalServers.setText(QtGui.QApplication.translate("MainWindow", "Start External Servers", None, QtGui.QApplication.UnicodeUTF8))
+        self.actStartExternalServers.setShortcut(QtGui.QApplication.translate("MainWindow", "F3", None, QtGui.QApplication.UnicodeUTF8))
         self.actStopExternalServers.setText(QtGui.QApplication.translate("MainWindow", "Stop External Servers", None, QtGui.QApplication.UnicodeUTF8))
+        self.actStopExternalServers.setShortcut(QtGui.QApplication.translate("MainWindow", "Shift+F3", None, QtGui.QApplication.UnicodeUTF8))
         self.actEnableCleanupScript.setText(QtGui.QApplication.translate("MainWindow", "Enable Cleanup Script", None, QtGui.QApplication.UnicodeUTF8))
         self.actEnableCleanupScript.setToolTip(QtGui.QApplication.translate("MainWindow", "Enable Cleanup Script (will be executed before CAST servers start)", None, QtGui.QApplication.UnicodeUTF8))
         self.actRunMake.setText(QtGui.QApplication.translate("MainWindow", "Make", None, QtGui.QApplication.UnicodeUTF8))
+        self.actRunMake.setShortcut(QtGui.QApplication.translate("MainWindow", "Shift+F8", None, QtGui.QApplication.UnicodeUTF8))
         self.actRunMakeInstall.setText(QtGui.QApplication.translate("MainWindow", "Make Install", None, QtGui.QApplication.UnicodeUTF8))
+        self.actRunMakeInstall.setShortcut(QtGui.QApplication.translate("MainWindow", "F8", None, QtGui.QApplication.UnicodeUTF8))
         self.actRunMakeClean.setText(QtGui.QApplication.translate("MainWindow", "Make Clean", None, QtGui.QApplication.UnicodeUTF8))
         self.actConfigureWithCMake.setText(QtGui.QApplication.translate("MainWindow", "Configure With CMake", None, QtGui.QApplication.UnicodeUTF8))
 
