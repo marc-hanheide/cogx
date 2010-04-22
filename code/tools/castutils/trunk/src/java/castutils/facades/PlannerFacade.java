@@ -64,9 +64,8 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					+ "'))";
 		}
 
-		public static String motive2PlannerGoal(GeneralGoalMotive m,
-				String robotUnion) {
-			return m.internalGoal.replace("@R", robotUnion);
+		public static String motive2PlannerGoal(GeneralGoalMotive m) {
+			return m.internalGoal;
 		}
 
 		
@@ -167,8 +166,8 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 
 	@Override
 	public WMEntryQueueElement call() throws Exception {
-		unionsWithPlaceID = binderFacade.findFeaturesInUnion("place_id");
-		unionsWithRoomId = binderFacade.findFeaturesInUnion("roomID");
+//		unionsWithPlaceID = binderFacade.findFeaturesInUnion("place_id");
+//		unionsWithRoomId = binderFacade.findFeaturesInUnion("roomID");
 
 		return generatePlan(motives);
 	}
@@ -224,8 +223,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 						getAgentUnion());
 			} else if (m instanceof GeneralGoalMotive) {
 				GeneralGoalMotive ggm = (GeneralGoalMotive) m;
-				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(ggm,
-						getAgentUnion());
+				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(ggm);
 			} else if (m instanceof PatrolMotive) {
 				PatrolMotive pm = (PatrolMotive) m;
 				pm.correspondingUnion = resolveMotive(pm);

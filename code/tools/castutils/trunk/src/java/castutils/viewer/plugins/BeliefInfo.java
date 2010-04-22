@@ -3,6 +3,7 @@ package castutils.viewer.plugins;
 import java.util.Vector;
 import java.util.Map.Entry;
 
+import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 
 import beliefmodels.autogen.beliefs.Belief;
@@ -15,6 +16,7 @@ import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
+import beliefmodels.autogen.history.CASTBeliefHistory;
 
 //import binder.utils.BeliefModelUtils;
 
@@ -33,7 +35,11 @@ public class BeliefInfo implements Plugin {
 			String agentStatus = belief.estatus.getClass().getSimpleName();
 			extraInfo.add("Status: " + agentStatus);
 			extraInfo.add("Type: " + belief.type);
-			extraInfo.add("Class: " + belief.getClass().getSimpleName());
+			String offsprings = "";
+			for (WorkingMemoryAddress offspringWMA : ((CASTBeliefHistory)belief.hist).offspring) {
+				offsprings+=" "+offspringWMA.id;
+			}
+			extraInfo.add("offspring:" + offsprings);
 			if (belief.content instanceof CondIndependentDistribs) {
 				CondIndependentDistribs dist = (CondIndependentDistribs) belief.content;
 				String features="";
