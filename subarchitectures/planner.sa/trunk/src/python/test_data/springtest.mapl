@@ -6,11 +6,8 @@
 		place - object
 		room - object
 		robot - agent
-        movable - object
 		robot - movable
-		place_type - object
 		place_id - object  ;; make this a number at some point 
-		room_id - object  ;; make this a number at some point 
 		place_category - object
         place_status - object
 	)
@@ -22,15 +19,10 @@
 
     (:predicates
 		(connected ?n1 - place ?n2 - place)
-		(contains ?r - room ?n - place)
-		;; special
-		(has-goal ?a - agent)
-		(commited ?a - agent)
-        ;;(connects ?p1 - place_id ?p2 - place_id)
+        (visited ?p - place)
     )	
 
 	(:functions
-		(place_type ?n - place) - place_type
         (is-in ?r - movable) - place
 		(place_id ?n - place) - place_id
 		(placestatus ?n - place) - place_status
@@ -65,7 +57,7 @@
 	 :variables (?loc - place)
 	 :precondition (and
 	 	(= (is-in ?a) ?loc)
-		(contains ?r ?loc)
+;;		(contains ?r ?loc)
 		)
      :sense (areaclass ?r)
     )
@@ -76,12 +68,15 @@
 	 :parameters (?to - place)
 	 :variables (?from - place)
 	 :precondition (and
-		;;(located ?a ?from)
+		(= (is-in ?a) ?from)
+        (or (connected ?from ?to)
+            (connected ?to ?from))
         ;;(or (= (placestatus ?to) trueplace)
         ;;    (connected ?from ?to)) 
 		)
 	 :effect (and
 		(assign (is-in ?a) ?to)
+        (visited ?to)
 	))
 
 ;;; 	(:action move
