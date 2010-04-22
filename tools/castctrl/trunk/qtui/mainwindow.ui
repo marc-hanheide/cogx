@@ -888,7 +888,21 @@
     <addaction name="actQuit"/>
     <addaction name="actStartTerminal"/>
    </widget>
+   <widget class="QMenu" name="menu_Process">
+    <property name="title">
+     <string>&amp;Process</string>
+    </property>
+    <addaction name="actStartCastServers"/>
+    <addaction name="actStopCastServers"/>
+    <addaction name="actStartCastClient"/>
+    <addaction name="actStopCastClient"/>
+    <addaction name="actStartExternalServers"/>
+    <addaction name="actStopExternalServers"/>
+    <addaction name="separator"/>
+    <addaction name="actEnableCleanupScript"/>
+   </widget>
    <addaction name="menuCast"/>
+   <addaction name="menu_Process"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -931,6 +945,38 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>24</width>
+     <height>24</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actStartCastServers"/>
+   <addaction name="actStopCastServers"/>
+   <addaction name="actEnableCleanupScript"/>
+   <addaction name="separator"/>
+   <addaction name="actStartCastClient"/>
+   <addaction name="actStopCastClient"/>
+   <addaction name="separator"/>
+   <addaction name="actStartExternalServers"/>
+   <addaction name="actStopExternalServers"/>
+  </widget>
   <action name="actQuit">
    <property name="text">
     <string>&amp;Quit</string>
@@ -969,8 +1015,83 @@
     <string>Select Host Configuration</string>
    </property>
   </action>
+  <action name="actStartCastServers">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/res/system-run.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Start CAST Servers</string>
+   </property>
+  </action>
+  <action name="actStopCastServers">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/res/system-suspend.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Stop CAST Servers</string>
+   </property>
+  </action>
+  <action name="actStartCastClient">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/res/cogxStart.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Start CAST Client</string>
+   </property>
+  </action>
+  <action name="actStopCastClient">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/res/cogxStop.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Stop CAST Client</string>
+   </property>
+  </action>
+  <action name="actStartExternalServers">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/res/go-up.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Start External Servers</string>
+   </property>
+  </action>
+  <action name="actStopExternalServers">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/res/go-down.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Stop External Servers</string>
+   </property>
+  </action>
+  <action name="actEnableCleanupScript">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="castcontrol.qrc">
+     <normaloff>:/icons/res/shellscriptOff.png</normaloff>
+     <normalon>:/icons/res/shellscriptOn.png</normalon>:/icons/res/shellscriptOff.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Cleanup Script</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="castcontrol.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>btBrowseCastFile</sender>
@@ -979,8 +1100,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>700</x>
-     <y>237</y>
+     <x>805</x>
+     <y>322</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -995,8 +1116,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>700</x>
-     <y>330</y>
+     <x>805</x>
+     <y>415</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1011,8 +1132,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>783</x>
-     <y>391</y>
+     <x>805</x>
+     <y>229</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

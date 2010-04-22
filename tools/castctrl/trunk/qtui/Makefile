@@ -1,7 +1,7 @@
 
 .PHONY: all
 
-all: uimainwindow.py uiconfigdlg.py
+all: uimainwindow.py uiconfigdlg.py castcontrol_rc.py
 
 uimainwindow.py: mainwindow.ui
 	@pyuic4 -o uimainwindow.py mainwindow.ui
@@ -12,6 +12,9 @@ uimainwindow.py: mainwindow.ui
 
 uiconfigdlg.py: configdlg.ui
 	@pyuic4 -o uiconfigdlg.py configdlg.ui
+
+castcontrol_rc.py: castcontrol.qrc
+	@pyrcc4 -o castcontrol_rc.py castcontrol.qrc
 
 #icons.py: res/cogx.xpm
 #   @python makeres.py
