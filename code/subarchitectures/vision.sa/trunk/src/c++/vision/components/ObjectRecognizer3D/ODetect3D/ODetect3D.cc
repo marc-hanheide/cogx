@@ -238,6 +238,7 @@ void ODetect3D::FitModelRANSAC(Array<KeyClusterPair*> &matches, PoseCv &pose, un
   KeyClusterPair* kp;
   PoseCv tempPose;
   CvMat *rod = cvCreateMat(3,1,CV_32F);
+  //CvMat *trod = cvCreateMat(3,1,CV_32F);
 
   while (pow(1. - pow(eps,4),k) >= Def::DO_RANSAC_ETA0 && k<Def::DO_MAX_RANSAC_TRIALS)
   {
@@ -255,7 +256,17 @@ void ODetect3D::FitModelRANSAC(Array<KeyClusterPair*> &matches, PoseCv &pose, un
       cvmSet( imgPoints, i, 1, kp->k->p.y);
     }        
 
-    cvFindExtrinsicCameraParams2(modelPoints, imgPoints, cameraMatrix, distCoeffs, rod, tempPose.t);
+    ////if we have a ''reliable'' pose track it...
+    //if (pow(1. - pow(eps,4),k) < Def::DO_RANSAC_ETA0*10.)
+    //{
+    //  cvCopy(trod,rod);
+    //  cvCopy(pose.t, tempPose.t);
+    //  cvFindExtrinsicCameraParams2(modelPoints, imgPoints, cameraMatrix, distCoeffs, rod, tempPose.t, true);
+    //}
+    //else
+    {
+      cvFindExtrinsicCameraParams2(modelPoints, imgPoints, cameraMatrix, distCoeffs, rod, tempPose.t);
+    }
     cvRodrigues2(rod,tempPose.R);
 
     GetInlier(matches,tempPose,inl);
@@ -265,16 +276,21 @@ void ODetect3D::FitModelRANSAC(Array<KeyClusterPair*> &matches, PoseCv &pose, un
       inls = inl;
       eps = (double)inls / (double)matches.Size();
       CopyPoseCv(tempPose, pose);
+      //cvCopy(rod,trod);
     }
 
     k++;
   }
+  #ifdef DEBUG
+  cout<<"Num. of RANSAC iter.: "<<k<<endl;
+  #endif
 
   numInl=inls;
 
   cvReleaseMat(&modelPoints);
   cvReleaseMat(&imgPoints);
   cvReleaseMat(&rod);
+  //cvReleaseMat(&trod);
 }
 
 /**
@@ -327,6 +343,8 @@ void ODetect3D::RefinePoseLS(Array<KeyClusterPair*> &matches, PoseCv &pose, unsi
   PoseCv tmpPose;
   Vector3 t, p;
 
+  inlier.Clear();
+
   modelPoints.PushBack(Point3D());
   imgPoints.PushBack(Point2D());
   for (unsigned i=0; i<matches.Size(); i++)
@@ -344,6 +362,7 @@ void ODetect3D::RefinePoseLS(Array<KeyClusterPair*> &matches, PoseCv &pose, unsi
 
       modelPoints.PushBack(Point3D());
       imgPoints.PushBack(Point2D());
+      inlier.PushBack(matches[i]->k);      //just store pointers to inlier for drawing....
     }
   }
   modelPoints.EraseLast();
@@ -449,7 +468,7 @@ bool ODetect3D::Detect(Array<KeypointDescriptor *> &keys, Object3D &object)
   clock_gettime(CLOCK_REALTIME, &start2);
   #endif
 
-  FitModelRANSAC(matches, object.pose, numInl);    // ransac pose
+  FitModelRANSAC(matches, object.pose, numInl);               // ransac pose
  
   #ifdef DEBUG
   clock_gettime(CLOCK_REALTIME, &end2);
@@ -495,6 +514,16 @@ void ODetect3D::SetCameraParameter(CvMat *C)
   cvCopy(C,cameraMatrix);
 }
 
+/**
+ * Draw inlier stored during recognition.
+ * Attention: Pointers are stored!
+ *            DrawInlier only works as long as image keypoints are valid!
+ */
+void ODetect3D::DrawInlier(IplImage *img, CvScalar col)
+{
+  for (unsigned i=0; i<inlier.Size(); i++)
+    KeypointDescriptor::Draw(img,*inlier[i], col);
+}
 
 
 /************************************ DEBUG METHODES *********************************/

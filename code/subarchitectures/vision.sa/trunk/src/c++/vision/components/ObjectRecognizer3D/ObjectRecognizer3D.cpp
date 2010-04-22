@@ -454,9 +454,10 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 			if(m_recEntries[m_label].object->conf < m_confidence){
 				log("%s: Confidence of detected object to low: %f<%f", m_label.c_str(), m_recEntries[m_label].object->conf,m_confidence);
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(255,0,0), 2);
+				m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
 			}else{
 				P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
-				
+				m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
 				// Transform pose from Camera to world coordinates
 				Pose3 P, A, B;
 				P = m_image.camPars.pose;
