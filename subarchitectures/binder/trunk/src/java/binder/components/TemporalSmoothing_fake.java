@@ -1,5 +1,6 @@
 package binder.components;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import beliefmodels.arch.BeliefException;
@@ -125,6 +126,11 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 	private void addOffspringToTStableBelief (TemporalUnionBelief tunionBelief, WorkingMemoryAddress addressStableBelief) {
 
 		if (tunionBelief.hist != null && tunionBelief.hist instanceof CASTBeliefHistory) {
+			((CASTBeliefHistory)tunionBelief.hist).offspring.add(addressStableBelief);
+		}
+		else {
+			log("WARNING: offspring of tunion is ill-formed");
+			tunionBelief.hist = new CASTBeliefHistory(new LinkedList<WorkingMemoryAddress>(), new LinkedList<WorkingMemoryAddress>());
 			((CASTBeliefHistory)tunionBelief.hist).offspring.add(addressStableBelief);
 		}
 	}

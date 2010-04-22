@@ -1,5 +1,6 @@
 package binder.components;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import beliefmodels.arch.BeliefException;
@@ -126,6 +127,11 @@ public class Tracking_fake extends BeliefWriter {
 	private void addOffspringToMMBelief (MultiModalBelief mmBelief, WorkingMemoryAddress addressTUnionBelief) {
 
 		if (mmBelief.hist != null && mmBelief.hist instanceof CASTBeliefHistory) {
+			((CASTBeliefHistory)mmBelief.hist).offspring.add(addressTUnionBelief);
+		}
+		else {
+			log("WARNING: offspring of tunion is ill-formed");
+			mmBelief.hist = new CASTBeliefHistory(new LinkedList<WorkingMemoryAddress>(), new LinkedList<WorkingMemoryAddress>());
 			((CASTBeliefHistory)mmBelief.hist).offspring.add(addressTUnionBelief);
 		}
 	}
