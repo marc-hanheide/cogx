@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons" >
+    <file>res/terminal.png</file>
     <file>res/runMakeClean.png</file>
     <file>res/CMakeSetup128.png</file>
     <file>res/svn-commit.png</file>

@@ -94,6 +94,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._remoteHosts = []
         self._pumpRemoteMessages = True
 
+        # XXX keep the old interface, just in case, but hide it
+        self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.tabOldInterface))
+
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.log.addSource(LOGGER)
 
@@ -267,7 +270,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             procman.xrun_wait(cmd)
 
     def startServers(self):
-        if self.ui.ckCleanupScript.isChecked():
+        # if self.ui.ckCleanupScript.isChecked():
+        if self.ui.actEnableCleanupScript.isChecked():
             self.runCleanupScript()
         srvs = self.getServers(self._manager)
         for p in srvs: p.start()
@@ -291,6 +295,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     # def on_btServerStart_clicked(self, valid=True):
     def onStartCastServers(self):
         # if not valid: return
+        self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
         self.startServers()
 
     # def on_btServerStop_clicked(self, valid=True):
@@ -410,6 +415,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not self._checkBuidDir(): return
         p = self._manager.getProcess("BUILD")
         if p != None:
+            self.ui.tabWidget.setCurrentWidget(self.ui.tabBuildLog)
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": ""})
@@ -421,6 +427,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not self._checkBuidDir(): return
         p = self._manager.getProcess("BUILD")
         if p != None:
+            self.ui.tabWidget.setCurrentWidget(self.ui.tabBuildLog)
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": "install"})
@@ -429,6 +436,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not self._checkBuidDir(): return
         p = self._manager.getProcess("BUILD")
         if p != None:
+            self.ui.tabWidget.setCurrentWidget(self.ui.tabBuildLog)
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": "clean"})
