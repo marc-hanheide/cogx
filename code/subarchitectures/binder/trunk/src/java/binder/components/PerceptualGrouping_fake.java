@@ -23,6 +23,8 @@ import cast.core.CASTData;
 public class PerceptualGrouping_fake extends BeliefWriter {
 
 	
+	String beliefUpdateToIgnore = "";
+	
 	@Override
 	public void start() {
 		addChangeFilter(
@@ -40,6 +42,8 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 								
 								addOffspringToPercept(beliefData.getData(), 
 										new WorkingMemoryAddress(union.id, BindingWorkingMemory.BINDER_SA));	
+								beliefUpdateToIgnore = beliefData.getID();
+								updateBeliefOnWM(beliefData.getData());
 								
 								insertBeliefInWM(union);
 							
@@ -60,6 +64,7 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 						try {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
 
+							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							
 							for (WorkingMemoryAddress child : offspring) {
@@ -69,7 +74,11 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 									updateBeliefOnWM(childBelief);
 								}
 							}
-							
+							}
+							else {
+								log("ignore update, simple addition of offspring");
+								beliefUpdateToIgnore = "";
+							}
 						}	
 
 						catch (Exception e) {

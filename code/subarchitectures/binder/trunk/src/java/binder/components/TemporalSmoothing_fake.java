@@ -29,6 +29,9 @@ import cast.core.CASTData;
 public class TemporalSmoothing_fake extends BeliefWriter {
 
 	
+	String beliefUpdateToIgnore = "";
+
+	
 	@Override
 	public void start() {
 		addChangeFilter(
@@ -46,24 +49,17 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 								
 							addOffspringToTStableBelief(beliefData.getData(), 
 									new WorkingMemoryAddress(stableBelief.id, BindingWorkingMemory.BINDER_SA));	
-
+							beliefUpdateToIgnore = beliefData.getID();
+							updateBeliefOnWM(beliefData.getData());
+							
+							
 							insertBeliefInWM(stableBelief);
 								
 						}	
 			
-						 catch (DoesNotExistOnWMException e) {
+						 catch (Exception e) {
 								e.printStackTrace();
 							}
-						 catch (UnknownSubarchitectureException e) {	
-							e.printStackTrace();
-						} 
-						 catch (BeliefException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (AlreadyExistsOnWMException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
 					}
 				}
 		);
@@ -76,6 +72,8 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 						try {
 							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
 
+							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							log("number of offspring for : " + beliefData.getData().id + ": "+ offspring.size());
 
@@ -85,6 +83,11 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 									childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, childBelief.id);
 									updateBeliefOnWM(childBelief);
 								}
+							}
+							}
+							else {
+								log("ignore update, simple addition of offspring");
+								beliefUpdateToIgnore = "";
 							}
 							
 						}	
