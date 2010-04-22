@@ -1,5 +1,6 @@
 package binder.components;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import beliefmodels.autogen.beliefs.Belief;
@@ -21,6 +22,7 @@ import cast.core.CASTData;
 
 public class PerceptualGrouping_fake extends BeliefWriter {
 
+	
 	@Override
 	public void start() {
 		addChangeFilter(
@@ -107,6 +109,11 @@ public class PerceptualGrouping_fake extends BeliefWriter {
 	private void addOffspringToPercept (PerceptBelief percept, WorkingMemoryAddress addressUnion) {
 
 		if (percept.hist != null && percept.hist instanceof CASTBeliefHistory) {
+			((CASTBeliefHistory)percept.hist).offspring.add(addressUnion);
+		}
+		else {
+			log("WARNING: offspring of percept is ill-formed");
+			percept.hist = new CASTBeliefHistory(new LinkedList<WorkingMemoryAddress>(), new LinkedList<WorkingMemoryAddress>());
 			((CASTBeliefHistory)percept.hist).offspring.add(addressUnion);
 		}
 	}

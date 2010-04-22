@@ -1,5 +1,6 @@
 package binder.components;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import beliefmodels.arch.BeliefException;
@@ -122,6 +123,11 @@ public class MultiModalEstimation_fake extends BeliefWriter {
 	private void addOffspringToUnion (PerceptUnionBelief union, WorkingMemoryAddress addressMMBelief) {
 
 		if (union.hist != null && union.hist instanceof CASTBeliefHistory) {
+			((CASTBeliefHistory)union.hist).offspring.add(addressMMBelief);
+		}
+		else {
+			log("WARNING: offspring of tunion is ill-formed");
+			union.hist = new CASTBeliefHistory(new LinkedList<WorkingMemoryAddress>(), new LinkedList<WorkingMemoryAddress>());
 			((CASTBeliefHistory)union.hist).offspring.add(addressMMBelief);
 		}
 	}
