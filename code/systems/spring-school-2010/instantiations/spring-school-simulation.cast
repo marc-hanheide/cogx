@@ -29,12 +29,15 @@ JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
 INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/perceptmediators.cast
-JAVA GD bindermonitor binder.components.BinderMonitor --debug
+#JAVA GD bindermonitor binder.components.BinderMonitor --debug
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
-JAVA MG executor execution.components.DoraExecutionMediator --self-motivate --goal "(forall (?p - place) (= (placestatus ?p) trueplace))" --log --debug
+INCLUDE includes/motivation.sa/motivation.cast
+
+
+
 
 # exection ####################################################################
 JAVA MG  manual-execution execution.components.GraphicalExecutionManager
