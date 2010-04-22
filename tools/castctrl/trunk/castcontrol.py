@@ -94,6 +94,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._remoteHosts = []
         self._pumpRemoteMessages = True
 
+        root = self._options.xe("${COGX_ROOT}")
+        if len(root) > 64: root = "..." + root[-64:]
+        self.setWindowTitle("CAST Control - " + root)
+
         # XXX keep the old interface, just in case, but hide it
         self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.tabOldInterface))
 
