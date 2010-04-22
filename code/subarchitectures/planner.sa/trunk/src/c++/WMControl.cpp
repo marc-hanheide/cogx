@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace beliefmodels::autogen::beliefs;
+using namespace beliefmodels::autogen::history;
 using namespace cast::cdl;
 
 extern "C" {
@@ -44,7 +45,7 @@ void WMControl::start() {
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
-    addChangeFilter(cast::createGlobalTypeFilter<StableBelief>(cast::cdl::WILDCARD),
+    addChangeFilter(cast::createGlobalTypeFilter<PerceptBelief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
     connectToPythonServer();
@@ -132,8 +133,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 
 void WMControl::generateState(autogen::Planner::PlanningTaskPtr& task) {
     log("Planner WMControl:: generating state");
-    
-    task->state.clear();
+    task->state = vector<BeliefPtr>();
     task->state.reserve(m_currentState.size());
     for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
         task->state.push_back(i->second);
@@ -195,10 +195,10 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     log("state change...");
     if (wmc.operation == cast::cdl::ADD || wmc.operation == cast::cdl::OVERWRITE) {
-        debug("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
+        log("added/changed belief at %s@%s", wmc.address.id.c_str(), wmc.address.subarchitecture.c_str());
         BeliefPtr changedBelief = getMemoryEntry<Belief>(wmc.address);
-        debug("got object");
-        m_currentState.insert(std::pair<std::string, BeliefPtr>(wmc.address.id, changedBelief));
+        log("got object");
+        m_currentState[wmc.address.id] = changedBelief;
     }
     else {
         m_currentState.erase(wmc.address.id);
@@ -256,6 +256,7 @@ void WMControl::sendStateChange(int id, std::vector<BeliefPtr>& changedUnions, c
 
     log("Sending state update for task %d", id);
     generateState(task);
+    
     overwriteWorkingMemory(activeTasks[id].address, task);
     //pyServer->updateTask(task);
     dispatchPlanning(task, 0);
@@ -316,8 +317,29 @@ void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
             WorkingMemoryAddress wma;
             wma.id = bel->id;
             wma.subarchitecture = BINDER_SA;
-            overwriteWorkingMemory(wma, bel);
-        }
+			if (existsOnWorkingMemory(wma)) {
+				BeliefPtr oldBelief = getMemoryEntry<Belief>(wma);
+				
+                CASTBeliefHistoryPtr hist = dynamic_cast<CASTBeliefHistory*>(bel->hist.get());
+                CASTBeliefHistoryPtr oldHist = dynamic_cast<CASTBeliefHistory*>(oldBelief->hist.get());
+                if (hist && oldHist) {
+                    hist->offspring = oldHist->offspring;
+                    overwriteWorkingMemory(wma, bel);
+                    log("existing belief  %s updated on the working memory", bel->id.c_str());
+                }
+                else {
+                    log("ERROR: no history found.");
+                }
+			}
+        //     WorkingMemoryAddress wma;
+        //     wma.id = bel->id;
+        //     wma.subarchitecture = BINDER_SA;
+        //     overwriteWorkingMemory(wma, bel);
+        // }
+		} 
+		catch (cast::UnknownSubarchitectureException e) {
+			log("ERROR: problem with the subarchitecture identifier for the binder");
+		} 
         catch (cast::ConsistencyException e) {
             log("Consistency exception when trying to update belief %s", bel->id.c_str());
         }

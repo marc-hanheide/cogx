@@ -18,6 +18,7 @@ UCASE_REXP = re.compile("([A-Z])")
 
 # attention: current_domain is used as a global in this module
 current_domain = None
+belief_dict = None
 
 class SVarDistribution(tuple):
   def __new__(_class, feat, args, value):
@@ -54,6 +55,14 @@ def transform_goal_string(goal, namedict):
 
   return goal
 
+def belief_to_object(belief):
+  object_type = pddl.t_object
+  #get type hints from belief.type
+  if belief.type.lower() in current_domain.types:
+    object_type = current_domain.types[belief.type.lower()]
+
+  return pddl.TypedObject(belief.id, object_type)
+    
 def feature_val_to_object(fval):
   if fval.__class__ == featurecontent.StringValue:
     val = fval.val.lower()
@@ -66,8 +75,8 @@ def feature_val_to_object(fval):
     return pddl.TypedObject(val, pddl.t_object)
   
   elif fval.__class__ == featurecontent.PointerValue:
-    #todo: how to support address values sensibly?
-    return pddl.TypedObject(fval.beliefId.id, pddl.t_object)
+    bel = belief_dict[fval.beliefId.id]
+    return belief_to_object(bel)
   
   elif fval.__class__ == featurecontent.IntegerValue:
     return pddl.TypedObject(fval.val, pddl.t_number)
@@ -110,10 +119,11 @@ def gen_fact_tuples(beliefs):
   for bel in beliefs:
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
+      print feat, bel.id, val, prob
       factdict[str(feat)].append((val, prob))
       
     if bel.type != "relation":
-      obj = pddl.TypedObject(bel.id, pddl.t_object)
+      obj = belief_to_object(bel)
       for feat,vals in factdict.iteritems():
         yield SVarDistribution(feat, [obj], vals)
     else:
@@ -215,7 +225,8 @@ def infer_types(obj_descriptions):
       #ftypes.append(declaration.type)
 
       #only consider this function if the basic value types (object, boolean, number) match
-      if len(ftup.args) == len(ftypes) and all(map(lambda t, a: t.equal_or_subtype_of(a.type), ftypes, ftup.args)) and \
+      if len(ftup.args) == len(ftypes) and \
+            all(t.equal_or_subtype_of(a.type) or a.type.equal_or_subtype_of(t) for (t,a) in zip(ftypes, ftup.args)) and \
             all(declaration.type.equal_or_subtype_of(arg.type) for arg, _ in ftup.values):
         for arg, type in zip(ftup.args, ftypes):
           constraints[arg].add(type)
@@ -238,7 +249,8 @@ def infer_types(obj_descriptions):
     #  constraints[obj].add("object")
     
     types = constraints[obj]
-    #print "%s has the following type constraints %s" % (obj.name, map(str,types))
+    types.add(obj.type)
+    log.debug("%s has the following type constraints %s", obj.name, map(str,types))
     def type_cmp(type1, type2):
       if type1 == type2:
         return 0
@@ -255,11 +267,13 @@ def infer_types(obj_descriptions):
   return objects
 
 def generate_mapl_task(task_desc, domain_fn):
-  global current_domain
+  global current_domain, belief_dict
   task = Task(task_desc.id)
   
   task.load_mapl_domain(domain_fn)
   current_domain = task._mapldomain
+
+  belief_dict = dict((b.id, b) for b in task_desc.state)
   
   obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(task_desc.state))))
   
@@ -278,12 +292,16 @@ def generate_mapl_task(task_desc, domain_fn):
 
   task._mapltask = problem
   task.set_state(prob_state.ProbabilisticState(facts, problem).determinized_state(0.1, 0.9))
+
+  print task.get_state()
   
   return task  
 
 def generate_mapl_state(task_desc, task):
-  global current_domain
+  global current_domain, belief_dict
   current_domain = task._mapldomain
+  
+  belief_dict = dict((b.id, b) for b in task_desc.state)
   
   obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(task_desc.state))))
   
@@ -292,6 +310,9 @@ def generate_mapl_state(task_desc, task):
 
   facts = list(tuples2facts(obj_descriptions))
   state = prob_state.ProbabilisticState(facts, task.mapltask).determinized_state(0.1, 0.9) 
+
+  print state
+  
   return objects, state
 
 

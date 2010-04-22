@@ -9,6 +9,7 @@ import autogen.Planner as Planner
 from beliefmodels.autogen import distribs, featurecontent
 #import binder.autogen.core
 import cast.core
+import cast.cdl
 from standalone import pddl, plans, config
 from standalone.pddl import state
 
@@ -26,11 +27,9 @@ extend_pythonpath()
 from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
+BINDER_SA = "binder"
 
 TEST_DOMAIN_FN = join(dirname(__file__), "test_data/springtest.mapl")
-class DummyWriter(object):
-  def write(*args):
-    pass
 
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   
@@ -156,6 +155,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task = self.tasks[task_desc.id]
     plan = task.get_plan()
 
+    # for bel in task_desc.state:
+    #   print bel
+
     finished_actions = []
     if plan is None:
       #always replan if we don't have a plan
@@ -214,6 +216,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     if finished_actions:
       diffstate = compute_state_updates(task.get_state(), finished_actions)
+      for fact in diffstate.iterfacts():
+        task.get_state().set(fact)
       beliefs = update_beliefs(diffstate, task.namedict, task_desc.state)
       self.getClient().updateBeliefState(beliefs)
       
@@ -246,11 +250,11 @@ def update_beliefs(diffstate, namedict, beliefs):
       return get_feature_dist(dist.Pc, feature)
     if isinstance(dist, distribs.CondIndependentDistribs):
       if feature in dist.distribs:
-        return dist.distribs[feature].values
+        return dist.distribs[feature].values, dist
       return None, dist
     if isinstance(dist, distribs.BasicProbDistribution):
       if dist.key == feature:
-        return dist.values
+        return dist.values, None
       return None, None
     assert False, "class %s not supported" % str(type(dist))
   
@@ -288,14 +292,13 @@ def update_beliefs(diffstate, namedict, beliefs):
       else:
         name = namedict[val]
         if ":" in name:
-          fval = featurecontent.PointerValue(name)
+          fval = featurecontent.PointerValue(cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
         else:
           fval = featurecontent.StringValue(name)
           
       pair = distribs.FeatureValueProbPair(fval, 1.0)
       dist.values = [pair]
 
-    print bel
     changed_ids.add(bel.id)
 
   return [bdict[id] for id in changed_ids]
