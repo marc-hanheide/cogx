@@ -12,11 +12,8 @@ CPP GD self.representer SelfRepresenter
 #JAVA MG player castutils.components.WorkingMemoryPlayer  --state
 
 # vision ######################################################################
-SUBARCHITECTURE vision.sa
-JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
-
-INCLUDE includes/vision.sa/vision-blobs.cast
+INCLUDE includes/vision.sa/vision-base+blobs.cast
+INCLUDE includes/vision.sa/vision-execution.cast
 
 #JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
 
@@ -30,6 +27,10 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/perceptmediators.cast
 #JAVA GD bindermonitor binder.components.BinderMonitor --debug
+
+# comsys ######################################################################
+INCLUDE includes/comsys.sa/comsys-base.cast
+JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
