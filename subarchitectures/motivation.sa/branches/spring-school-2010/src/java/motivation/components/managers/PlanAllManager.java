@@ -46,27 +46,31 @@ public class PlanAllManager extends ManagedComponent {
 	volatile private boolean interrupt;
 	private WMMotiveEventQueue activeMotiveEventQueue;
 
-	PlaceUnionEventRelation placeUnionEventRelation;
-	RoomUnionEventRelation roomUnionEventRelation;
+	// PlaceUnionEventRelation placeUnionEventRelation;
+	// RoomUnionEventRelation roomUnionEventRelation;
 	PlannerFacade plannerFacade;
 	ExecutorFacade executorFacade;
 	BinderFacade binderFacade;
 
 	Executor backgroundExecutor;
 
-	/** this is the the very last resort time out... if a plan has been executed in this amount of time we break
+	/**
+	 * this is the the very last resort time out... if a plan has been executed
+	 * in this amount of time we break
 	 * 
 	 */
 	int failsafeExectutionTimeoutSecs = 450;
 
-	/** this is the the very last resort time out... if a plan has not been delivered in time 
+	/**
+	 * this is the the very last resort time out... if a plan has not been
+	 * delivered in time
 	 * 
 	 */
 	int failsafePlanningTimeoutSecs = 10;
 
 	/**
 	 * @param specificType
-	 * @throws CASTException 
+	 * @throws CASTException
 	 */
 	public PlanAllManager() throws CASTException {
 		super();
@@ -77,8 +81,8 @@ public class PlanAllManager extends ManagedComponent {
 		executorFacade = new ExecutorFacade(this);
 		activeMotiveEventQueue = new WMMotiveEventQueue();
 		backgroundExecutor = Executors.newCachedThreadPool();
-		placeUnionEventRelation = new PlaceUnionEventRelation(this);
-		roomUnionEventRelation = new RoomUnionEventRelation(this);
+		// placeUnionEventRelation = new PlaceUnionEventRelation(this);
+		// roomUnionEventRelation = new RoomUnionEventRelation(this);
 	}
 
 	/*
@@ -99,8 +103,7 @@ public class PlanAllManager extends ManagedComponent {
 				MotiveStatus.ACTIVE, null), new ChangeHandler() {
 
 			@Override
-			public void entryChanged(
-					Map<WorkingMemoryAddress, ObjectImpl> map,
+			public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
 					WorkingMemoryChange wmc, ObjectImpl newMotive,
 					ObjectImpl oldMotive) {
 				interrupt = true;
@@ -111,8 +114,8 @@ public class PlanAllManager extends ManagedComponent {
 		binderFacade.start();
 		motives.start();
 		// start the causal event listening on places
-		placeUnionEventRelation.start();
-		roomUnionEventRelation.start();
+		// placeUnionEventRelation.start();
+		// roomUnionEventRelation.start();
 	}
 
 	@Override
@@ -155,11 +158,16 @@ public class PlanAllManager extends ManagedComponent {
 
 					// make sure all changes have been propagated to the
 					// unions!
-					log("wait to finalize propagation of places to unions");
-					placeUnionEventRelation.waitForPropagation(1000);
-					log("wait to finalize propagation of rooms to unions");
-					roomUnionEventRelation.waitForPropagation(1000);
-					log("got all changes");
+
+					// TODO has been deactivated until it has been updated for
+					// the new binder
+
+					// log("wait to finalize propagation of places to unions");
+					// placeUnionEventRelation.waitForPropagation(1000);
+					// log("wait to finalize propagation of rooms to unions");
+					// roomUnionEventRelation.waitForPropagation(1000);
+					// log("got all changes");
+
 					// after this we can be quite sure that we actually have
 					// all required information on the binder, available to the
 					// planner
@@ -169,17 +177,20 @@ public class PlanAllManager extends ManagedComponent {
 							plannerFacade);
 					// generate the plan asynchronously
 					backgroundExecutor.execute(generatedPlan);
-					// in the meantime compute the maximum time to wait for the plan
-					int maxPlanningTime=0;
-					int maxExecutionTime=0;
+					// in the meantime compute the maximum time to wait for the
+					// plan
+					int maxPlanningTime = 0;
+					int maxExecutionTime = 0;
 					for (Motive m : activeMotives) {
-						maxPlanningTime+=m.maxPlanningTime;
-						maxExecutionTime+=m.maxExecutionTime;
+						maxPlanningTime += m.maxPlanningTime;
+						maxExecutionTime += m.maxExecutionTime;
 					}
-					log("max planning and execution time for problem computed:\n" 
-							+ "  maxPlanningTime == " + maxPlanningTime +"\n"
-							+ "  maxExecutionTime == " + maxExecutionTime);	
-					
+					log("max planning and execution time for problem computed:\n"
+							+ "  maxPlanningTime == "
+							+ maxPlanningTime
+							+ "\n"
+							+ "  maxExecutionTime == " + maxExecutionTime);
+
 					// wait for the future to be completed
 					WMEntryQueueElement pt = null;
 					int loopCount = 0;
@@ -250,12 +261,11 @@ public class PlanAllManager extends ManagedComponent {
 				}
 			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logException(e);
 		} catch (ExecutionException e) {
-			e.printStackTrace();
+			logException(e);
 		} catch (CASTException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logException(e);
 		}
 
 	}

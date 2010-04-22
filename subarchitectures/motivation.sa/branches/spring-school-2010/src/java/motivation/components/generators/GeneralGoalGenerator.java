@@ -3,6 +3,9 @@
  */
 package motivation.components.generators;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import motivation.factories.MotiveFactory;
 import motivation.slice.GeneralGoalMotive;
 import motivation.slice.Motive;
@@ -20,18 +23,31 @@ import cast.core.CASTUtils;
  * @author marc
  * 
  */
-public class ExploreAndCategorizeGenerator extends AbstractMotiveGenerator {
+public class GeneralGoalGenerator extends AbstractMotiveGenerator {
 	/** add a really low gain to homing */
-	private static final double CONSTANT_GAIN = 1.0;
-	private static final String GOAL = "(and (forall (?p - place) (= (explored ?p) true)) (forall (?r - room) (kval '@R' (areaclass ?r))))";
-	protected static final float CONSTANT_COST = (float) 10.0;
+	private static final double DEFAULT_CONSTANT_GAIN = 1.0;
+	private static final double DEFAULT_CONSTANT_COSTS = 1.0;
+	private static final String DEFAULT_GOAL = "(forall (?p - place) (= (placestatus ?p) trueplace))";
+	// private static final String DEFAULT_GOAL =
+	// "(and (forall (?p - place) (= (explored ?p) true)) (forall (?r - room) (kval '@R' (areaclass ?r))))";
+	// give planning at maximum 15 seconds
+	private static final int DEFAULT_MAX_PLANNING_TIME = 15;
+	// give the max at max 60 minutes to reach goal
+	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 60;
 	private boolean initialized;
+
+	private String goalString = DEFAULT_GOAL;
+	private double constantGain = DEFAULT_CONSTANT_GAIN;
+	private double constantCosts = DEFAULT_CONSTANT_COSTS;
+	protected int maxPlanningTime = DEFAULT_MAX_PLANNING_TIME;
+	protected int maxExecutionTime = DEFAULT_MAX_EXECUTION_TIME;
 
 	/**
 	 * 
 	 */
-	public ExploreAndCategorizeGenerator() {
+	public GeneralGoalGenerator() {
 		initialized = false;
+
 	}
 
 	/*
@@ -72,25 +88,46 @@ public class ExploreAndCategorizeGenerator extends AbstractMotiveGenerator {
 				if (!initialized) { // if home base is not set yet
 					GeneralGoalMotive newMotive = MotiveFactory
 							.createGeneralGoalMotive(_wmc.address);
-					newMotive.internalGoal = GOAL;
-					newMotive.informationGain = CONSTANT_GAIN;
-					newMotive.costs = CONSTANT_COST;
+					newMotive.internalGoal = goalString;
+					newMotive.informationGain = constantGain;
+					newMotive.costs = (float) constantCosts;
 
-					newMotive.maxPlanningTime = 5;
+					newMotive.maxPlanningTime = maxPlanningTime;
 					// wait at most 5 minutes
-					newMotive.maxExecutionTime = 5 * 60;
+					newMotive.maxExecutionTime = maxExecutionTime;
 
 					scheduleCheckMotive(newMotive);
 				} else { // if we have this one already
 					try {
 						removeChangeFilter(this);
 					} catch (SubarchitectureComponentException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						logException(e);
 					}
 				}
 			}
 		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#configure(java.util.Map)
+	 */
+	@Override
+	protected void configure(Map<String, String> config) {
+		for (Entry<String, String> c : config.entrySet()) {
+			if (c.getKey().equals("--goal"))
+				goalString = c.getValue();
+			else if (c.getKey().equals("--maxPlanningTime"))
+				maxPlanningTime = Integer.valueOf(c.getValue());
+			else if (c.getKey().equals("--maxExecutionTime"))
+				maxExecutionTime = Integer.valueOf(c.getValue());
+			else if (c.getKey().equals("--costs"))
+				constantCosts = Double.valueOf(c.getValue());
+			else if (c.getKey().equals("--gain"))
+				constantGain = Double.valueOf(c.getValue());
+
+		}
 	}
 
 }
