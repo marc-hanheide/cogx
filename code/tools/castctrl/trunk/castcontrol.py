@@ -115,14 +115,32 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         # Event connections
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
+        self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
+
+        # Config actions
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
         self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
         self.connect(self.ui.actOpenHostConfig, QtCore.SIGNAL("triggered()"), self.onBrowseHostConfig)
-        self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
         self.connect(self.ui.playerConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onPlayerConfigChanged)
         self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onHostConfigChanged)
+
+        # Process actions
+        self.connect(self.ui.actStartCastServers, QtCore.SIGNAL("triggered()"), self.onStartCastServers)
+        self.connect(self.ui.actStopCastServers, QtCore.SIGNAL("triggered()"), self.onStopCastServers)
+        self.connect(self.ui.actStartCastClient, QtCore.SIGNAL("triggered()"), self.onStartCastClient)
+        self.connect(self.ui.actStopCastClient, QtCore.SIGNAL("triggered()"), self.onStopCastClient)
+        self.connect(self.ui.actStartExternalServers, QtCore.SIGNAL("triggered()"), self.onStartExternalServers)
+        self.connect(self.ui.actStopExternalServers, QtCore.SIGNAL("triggered()"), self.onStopExternalServers)
+
+        # Build actions
+        self.connect(self.ui.actRunMake, QtCore.SIGNAL("triggered()"), self.onRunMake)
+        self.connect(self.ui.actRunMakeInstall, QtCore.SIGNAL("triggered()"), self.onRunMakeInstall)
+        self.connect(self.ui.actRunMakeClean, QtCore.SIGNAL("triggered()"), self.onRunMakeClean)
+        self.connect(self.ui.actConfigureWithCMake, QtCore.SIGNAL("triggered()"), self.onRunCmakeConfig)
+
+
         self.connect(self.ui.actCtxShowBuildError, QtCore.SIGNAL("triggered()"), self.onEditBuildError)
 
         # Context menu actions for QTextEdit
@@ -270,12 +288,14 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.processTree.expandAll()
 
     # Somehow we get 2 events for a button click ... filter one out
-    def on_btServerStart_clicked(self, valid=True):
-        if not valid: return
+    # def on_btServerStart_clicked(self, valid=True):
+    def onStartCastServers(self):
+        # if not valid: return
         self.startServers()
 
-    def on_btServerStop_clicked(self, valid=True):
-        if not valid: return
+    # def on_btServerStop_clicked(self, valid=True):
+    def onStopCastServers(self):
+        # if not valid: return
         self.stopServers()
 
     # build config file from rules in hostconfig
@@ -338,8 +358,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         return working
 
 
-    def on_btClientStart_clicked(self, valid=True):
-        if not valid: return
+    # def on_btClientStart_clicked(self, valid=True):
+    def onStartCastClient(self):
+        # if not valid: return
         p = self._manager.getProcess("client")
         if p != None:
             self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
@@ -351,21 +372,24 @@ class CCastControlWnd(QtGui.QMainWindow):
                 LOGGER.error("%s" % e)
         # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
 
-    def on_btClientStop_clicked(self, valid=True):
-        if not valid: return
+    # def on_btClientStop_clicked(self, valid=True):
+    def onStopCastClient(self):
+        # if not valid: return
         p = self._manager.getProcess("client")
         if p != None: p.stop()
 
-    def on_btPlayerStart_clicked(self, valid=True):
-        if not valid: return
+    # def on_btPlayerStart_clicked(self, valid=True):
+    def onStartExternalServers(self):
+        # if not valid: return
         p = self._manager.getProcess("player")
         if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
         if self.ui.ckPeekabot.isChecked():
             p = self._manager.getProcess("peekabot")
             if p != None: p.start()
 
-    def on_btPlayerStop_clicked(self, valid=True):
-        if not valid: return
+    # def on_btPlayerStop_clicked(self, valid=True):
+    def onStopExternalServers(self):
+        # if not valid: return
         p = self._manager.getProcess("player")
         if p != None: p.stop()
         p = self._manager.getProcess("peekabot")
@@ -380,8 +404,9 @@ class CCastControlWnd(QtGui.QMainWindow):
             return False
         return True
 
-    def on_btBuild_clicked(self, valid=True):
-        if not valid: return
+    # def on_btBuild_clicked(self, valid=True):
+    def onRunMake(self):
+        # if not valid: return
         if not self._checkBuidDir(): return
         p = self._manager.getProcess("BUILD")
         if p != None:
@@ -390,14 +415,23 @@ class CCastControlWnd(QtGui.QMainWindow):
             p.start(params={"target": ""})
             # p.start()
 
-    def on_btBuildInstall_clicked(self, valid=True):
-        if not valid: return
+    # def on_btBuildInstall_clicked(self, valid=True):
+    def onRunMakeInstall(self):
+        # if not valid: return
         if not self._checkBuidDir(): return
         p = self._manager.getProcess("BUILD")
         if p != None:
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
             p.start(params={"target": "install"})
+
+    def onRunMakeClean(self):
+        if not self._checkBuidDir(): return
+        p = self._manager.getProcess("BUILD")
+        if p != None:
+            self.buildLog.clearOutput()
+            if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
+            p.start(params={"target": "clean"})
 
     def _checkMakeCache(self, listsDir, cacheFile):
         bdir = os.path.dirname(cacheFile)
@@ -430,8 +464,9 @@ class CCastControlWnd(QtGui.QMainWindow):
                 pass
         return True
 
-    def on_btCmakeGui_clicked(self, valid=True):
-        if not valid: return
+    # def on_btCmakeGui_clicked(self, valid=True):
+    def onRunCmakeConfig(self):
+        # if not valid: return
         root = self._options.xe("${COGX_ROOT}")
         bdir = self._options.xe("${COGX_BUILD_DIR}")
         bcmc = os.path.join(bdir, "CMakeCache.txt")
