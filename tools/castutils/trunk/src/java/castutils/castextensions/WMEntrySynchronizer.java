@@ -17,12 +17,14 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 
 /**
  * This implements a monitor for specific types in WM that are propagated to
  * another (often more high-level) type in WM. It implements Runnable so that
  * such a {@link WMEntrySynchronizer} can be run in a separate Thread.
+ * 
  * @see WMTypeAlignment
  * @author marc
  * 
@@ -86,9 +88,6 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 	}
 
 	private Map<WorkingMemoryAddress, WorkingMemoryAddress> wm2wmMap;
-
-	/** thread pool size for asynchronous refernce resolution */
-	private static final int MAX_THREADS = 1;
 
 	/**
 	 * a synchronized event queue that ensure that any new insert notification
@@ -229,55 +228,66 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 						break;
 					}
 					case OVERWRITE: {
-						if (ops.contains(WorkingMemoryOperation.DELETE)) {
+						if (ops.contains(WorkingMemoryOperation.OVERWRITE)) {
 							final From from = component.getMemoryEntry(
 									ev.address, fromType);
 							WorkingMemoryAddress toWMA = wm2wmMap
 									.get(ev.address);
 							boolean isNew = false;
 							To to;
-							if (toWMA == null) {
-								isNew = true;
-								final String id = component.newDataID();
-								toWMA = new WorkingMemoryAddress(id, component
-										.getSubarchitectureID());
-								to = component.getMemoryEntry(toWMA, toType);
-							} else {
-								isNew = false;
-								to = transferFunction.create(toWMA, ev, from);
-							}
-							if (to != null) {
-								if (transferFunction.transform(ev, from, to)) {
-									if (isNew) {
-										component.addToWorkingMemory(toWMA, to);
-										log("added to WM. remember mapping "
-												+ CASTUtils
-														.toString(ev.address)
-												+ " => "
-												+ CASTUtils.toString(toWMA));
-										wm2wmMap.put(ev.address, toWMA);
-									} else {
-										log("overwritten in WM: "
-												+ CASTUtils
-														.toString(ev.address)
-												+ " => "
-												+ CASTUtils.toString(toWMA));
-										component.overwriteWorkingMemory(toWMA,
-												to);
-									}
+							try {
+								if (toWMA == null) {
+									isNew = true;
+									final String id = component.newDataID();
+									toWMA = new WorkingMemoryAddress(id,
+											component.getSubarchitectureID());
+									to = transferFunction.create(toWMA, ev,
+											from);
 								} else {
-									if (!isNew) {
-										wm2wmMap.remove(ev.address);
-										log("removed from WM: "
-												+ CASTUtils
-														.toString(ev.address)
-												+ " => "
-												+ CASTUtils.toString(toWMA));
-										component
-												.deleteFromWorkingMemory(toWMA);
-									}
+									isNew = false;
+									component.lockEntry(toWMA,
+											WorkingMemoryPermissions.LOCKEDODR);
+									to = component
+											.getMemoryEntry(toWMA, toType);
 								}
+								if (to != null) {
+									if (transferFunction
+											.transform(ev, from, to)) {
+										if (isNew) {
+											component.addToWorkingMemory(toWMA,
+													to);
+											log("added to WM. remember mapping "
+													+ CASTUtils
+															.toString(ev.address)
+													+ " => "
+													+ CASTUtils.toString(toWMA));
+											wm2wmMap.put(ev.address, toWMA);
+										} else {
+											log("overwritten in WM: "
+													+ CASTUtils
+															.toString(ev.address)
+													+ " => "
+													+ CASTUtils.toString(toWMA));
+											component.overwriteWorkingMemory(
+													toWMA, to);
+										}
+									} else {
+										if (!isNew) {
+											wm2wmMap.remove(ev.address);
+											log("removed from WM: "
+													+ CASTUtils
+															.toString(ev.address)
+													+ " => "
+													+ CASTUtils.toString(toWMA));
+											component
+													.deleteFromWorkingMemory(toWMA);
+										}
+									}
 
+								}
+							} finally {
+								if (!isNew)
+									component.unlockEntry(toWMA);
 							}
 						}
 						break;
@@ -317,8 +327,8 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 
 	/**
 	 * to be overwritten by any subclass if required. Is called after the
-	 * registration of ChangeReceivers and before actually entering the run
-	 * loop (@see {@link Runnable}). 
+	 * registration of ChangeReceivers and before actually entering the run loop
+	 * (@see {@link Runnable}).
 	 */
 	protected void start() {
 		// to be overwritten
