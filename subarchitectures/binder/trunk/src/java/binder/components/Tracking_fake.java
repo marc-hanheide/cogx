@@ -28,6 +28,9 @@ import cast.core.CASTData;
 
 public class Tracking_fake extends BeliefWriter {
  
+
+	String beliefUpdateToIgnore = "";
+
 	    
 	@Override
 	public void start() {
@@ -46,24 +49,16 @@ public class Tracking_fake extends BeliefWriter {
 								
 							addOffspringToMMBelief(beliefData.getData(), 
 									new WorkingMemoryAddress(tunion.id, BindingWorkingMemory.BINDER_SA));	
-
+							beliefUpdateToIgnore = beliefData.getID();
+							updateBeliefOnWM(beliefData.getData());
+							
 							insertBeliefInWM(tunion);
 
 						}	
 			
-						 catch (DoesNotExistOnWMException e) {
+						 catch (Exception e) {
 								e.printStackTrace();
 							}
-						 catch (UnknownSubarchitectureException e) {	
-							e.printStackTrace();
-						} 
-						 catch (BeliefException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (AlreadyExistsOnWMException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
 					}
 				}
 		);
@@ -77,6 +72,8 @@ public class Tracking_fake extends BeliefWriter {
 						try {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
+							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							
 							for (WorkingMemoryAddress child : offspring) {
@@ -86,7 +83,11 @@ public class Tracking_fake extends BeliefWriter {
 									updateBeliefOnWM(childBelief);
 								}
 							}
-							
+							}
+							else {
+								log("ignore update, simple addition of offspring");
+								beliefUpdateToIgnore = "";
+							}
 						}	
 
 						catch (Exception e) {

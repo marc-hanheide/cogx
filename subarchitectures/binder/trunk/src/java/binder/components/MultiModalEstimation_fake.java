@@ -28,6 +28,9 @@ import binder.arch.BindingWorkingMemory;
 
 public class MultiModalEstimation_fake extends BeliefWriter {
  
+	
+	String beliefUpdateToIgnore = "";
+	
 	@Override
 	public void start() {
 		addChangeFilter(
@@ -45,23 +48,15 @@ public class MultiModalEstimation_fake extends BeliefWriter {
 								
 								addOffspringToUnion(beliefData.getData(), 
 										new WorkingMemoryAddress(mmBelief.id, BindingWorkingMemory.BINDER_SA));	
+								beliefUpdateToIgnore = beliefData.getID();
+								updateBeliefOnWM(beliefData.getData());
 								
 								insertBeliefInWM(mmBelief);
 						}	
 			
-						 catch (DoesNotExistOnWMException e) {
+						 catch (Exception e) {
 								e.printStackTrace();
 							}
-						 catch (UnknownSubarchitectureException e) {	
-							e.printStackTrace();
-						} 
-						 catch (BeliefException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (AlreadyExistsOnWMException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
 					}
 				}
 		);
@@ -75,6 +70,8 @@ public class MultiModalEstimation_fake extends BeliefWriter {
 						try {
 							CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptUnionBelief.class);
 
+							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
@@ -83,7 +80,11 @@ public class MultiModalEstimation_fake extends BeliefWriter {
 									updateBeliefOnWM(childBelief);
 								}
 							}
-							
+							}
+							else {
+								log("ignore update, simple addition of offspring");
+								beliefUpdateToIgnore = "";
+							}
 						}	
 
 						catch (Exception e) {
