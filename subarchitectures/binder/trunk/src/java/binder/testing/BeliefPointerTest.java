@@ -43,7 +43,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 		);
 	}
 	 
-	  
+	   
 	public void checkIfSuccessful(WorkingMemoryChange wmc) {
 		
 		CASTData<StableBelief> beliefData;
@@ -51,9 +51,9 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			beliefData = getMemoryEntryWithData(wmc.address,
 					StableBelief.class);
 			
-			StableBelief newBelief = beliefData.getData();	
+			StableBelief newBelief = beliefData.getData();	 
 
-		if (newBelief.id.equals("1:6")) {
+		if (newBelief.id.equals("1:2")) {
 				log("belief " + beliefData.getID() + " (offspring from " + ((CASTBeliefHistory)newBelief.hist).ancestors.get(0).id + 
 						"), has a feature pointing to: " + ((PointerValue)FeatureContentUtils.getValuesInBelief(newBelief, "pointer").get(0).val).beliefId.id);
 			} 
@@ -68,7 +68,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+	} 
 	 
 	@Override
 	public String getReasonForFailure() {
