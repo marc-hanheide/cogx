@@ -1,12 +1,8 @@
 # execution ###################################################################
 JAVA MG executor execution.components.DoraExecutionMediator
 
-
 # motivation ##################################################################
-JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator 
-JAVA MG PatrolPlaceGenerator spatial.motivation.PatrolPlaceGenerator 
-JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator
-JAVA MG HomingGenerator   spatial.motivation.HomingGenerator
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (placestatus ?p) trueplace))"
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
