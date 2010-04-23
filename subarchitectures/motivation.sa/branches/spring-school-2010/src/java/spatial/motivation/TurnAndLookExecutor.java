@@ -18,7 +18,6 @@ import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 import execution.slice.Action;
 import execution.slice.TriBool;
-import execution.util.LookForPeopleExecutor;
 import execution.util.NonBlockingActionExecutor;
 
 public abstract class TurnAndLookExecutor extends NonBlockingActionExecutor {
