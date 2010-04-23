@@ -117,7 +117,7 @@ public class TrackingTest extends AbstractBinderTest {
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b1, typeDistrib_b1);
 
 			BasicProbDistribution locationDistrib_b1 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("location", 
-					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Kitchen"), 0.81f));
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Kitchen"), 0.91f));
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b1, locationDistrib_b1);
 			
@@ -145,7 +145,7 @@ public class TrackingTest extends AbstractBinderTest {
 			CondIndependentDistribs contentDistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
 						
 			BasicProbDistribution typeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("type", 
-					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Person"), 0.79f));
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Person"), 0.89f));
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, typeDistrib_b2);
 

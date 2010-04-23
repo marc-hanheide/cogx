@@ -21,7 +21,11 @@ import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
 /**
@@ -53,6 +57,7 @@ import cast.core.CASTData;
  */
 public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
+	
 	public Tracking_MLN() {
 		super(new MultiModalBelief());
 		MLNFile = markovlogicDir + "tracking.mln";
@@ -62,134 +67,74 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				+ "tracking/correlations_predicates.mln";
 	}
 
+	
+
 	/**
-	 * Perform the tracking operation for the given belief, and subsequently
-	 * update the working memory with new temporal unions (and possibly also
-	 * with updates on existing ones)
-	 * 
-	 * @param belief
-	 *            the new mmbelief which was inserted
+	 * Add a change filter on the insertion of new percept beliefs on the binder working memory
 	 */
-	/*
-	public void performTracking(MultiModalBelief belief,
-			WorkingMemoryAddress beliefWMAddress) throws BeliefException {
+	public void start() {
+		// Insertion
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
+						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+					@SuppressWarnings("unchecked")
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
+						try {
+							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
-		log("now starting tracking...");
-
-		// extract the unions already existing in the binder WM
-		Map<String, Belief> existingUnions = extractExistingUnions();
-
-		Map<String, Belief> relevantUnions = selectRelevantUnions(
-				existingUnions, belief);
-
-		if (relevantUnions.size() > 0) {
-			// Create identifiers for each possible new union
-			HashMap<String, String> unionsMapping = new HashMap<String, String>();
-			for (String existingUnionId : relevantUnions.keySet()) {
-				String newUnionId = newDataID();
-				unionsMapping.put(newUnionId, existingUnionId);
-			}
-			log("newly created union ids: " + unionsMapping.keySet().toString());
-
-			String newSingleUnionId = newDataID();
-			// unionsMapping.put("P", newSingleUnionId);
-
-			// Write the markov logic network to a file
-			try {
-				MLNPreferences prefs = new MLNPreferences();
-				prefs.setFile_correlations(MLNPreferences.markovlogicDir
-						+ "tracking/similarities.mln");
-				prefs.setFile_predicates(MLNPreferences.markovlogicDir
-						+ "tracking/correlations_predicates.mln");
-				MLNGenerator gen = new MLNGenerator(prefs);
-				gen.writeMLNFile(belief, relevantUnions.values(),
-						unionsMapping, newSingleUnionId, MLNFile);
-			} catch (MLException e1) {
-				e1.printStackTrace();
-			}
-
-			// run the alchemy inference
-			try {
-				HashMap<String, Float> inferenceResults = runAlchemyInference(
-						MLNFile, resultsFile);
-
-				log("filtering inference results to keep only the "
-						+ maxAlternatives + " best alternatives");
-				HashMap<String, Float> filteredInferenceResults = filterInferenceResults(inferenceResults);
-
-				// create the new unions given the inference results
-				Vector<Belief> newUnions = createNewUnions(belief,
-						beliefWMAddress, relevantUnions, unionsMapping,
-						newSingleUnionId, filteredInferenceResults);
-
-				// and add them to the working memory
-				for (Belief newUnion : newUnions) {
-					if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold) {
-						log("inserting belief " + newUnion.id + " on WM");
-
-						updatePointersInCurrentBelief(newUnion);
-						updatePointersInOtherBeliefs(newUnion);
-
-						insertBeliefInWM(newUnion);
-
-						addOffspringToBelief(belief, new WorkingMemoryAddress(
-								newUnion.id, BindingWorkingMemory.BINDER_SA));
-						
-					} else {
-						log("Belief "
-								+ newUnion.id
-								+ " has probability "
-								+ DistributionUtils
-										.getExistenceProbability(newUnion)
-								+ ", which is lower than the minimum threshold.  Not inserting");
+							log("received a new percept: " + beliefData.getID());
+							performInference(beliefData.getData(), _wmc.address);
+							log("grouping operation on percept " + beliefData.getID() + " now finished");
+						}
+						catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
+		);
 
-				// modify the existence probabilities of the existing unions
-				List<Belief> unionsToUpdate = getExistingUnionsToUpdate(
-						belief, relevantUnions, unionsMapping,
-						filteredInferenceResults);
-
-				// and update them on the working memory
-				for (Belief unionToUpdate : unionsToUpdate) {
-					if (DistributionUtils
-							.getExistenceProbability(unionToUpdate) > lowestProbThreshold) {
-						log("updating belief " + unionToUpdate.id + " on WM");
-						updateBeliefOnWM(unionToUpdate);
-					} else {
-						log("deleting belief: " + unionToUpdate.id + " on WM");
-						deleteBeliefOnWM(unionToUpdate.id);
+		// Deletion
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
+						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
+						try {
+							workingMemoryChangeDelete(_wmc.address);
+						}
+						catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		else {
-			try {
-				log("no relevant union to group with mmbelief " + belief.id
-						+ " has been found");
-				TemporalUnionBelief union = TemporalUnionBuilder
-						.createNewSingleUnionBelief(belief,
-								beliefWMAddress, newDataID());
-				if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold) {
+		);
 
-					log("inserting belief " + union.id + " on WM");
+		// Update
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
+						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					@SuppressWarnings("unchecked")
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
+						try {
+							workingMemoryChangeDelete(_wmc.address);
+							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
-					updatePointersInCurrentBelief(union);
-					updatePointersInOtherBeliefs(union);
-
-					insertBeliefInWM(union);
-
-					addOffspringToBelief(belief, new WorkingMemoryAddress(
-							union.id, BindingWorkingMemory.BINDER_SA));
+							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+							log("received a new percept: " + beliefData.getID());
+							MultiModalBelief belief = beliefData.getData();
+							performInference(belief, _wmc.address);
+							log("grouping operation on percept " + beliefData.getID() + " now finished");
+							}	
+						}
+						catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		);
 	}
-	*/
+
+	
+
 	/**
 	 * Create a set of new mmbelief union beliefs from the inference results,
 	 * associated with the original mmbelief

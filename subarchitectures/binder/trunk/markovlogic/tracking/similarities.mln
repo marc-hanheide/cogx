@@ -5,11 +5,14 @@
 
 // general correlations
 
-10 Existence(x) ^ Existence(P) ^ Type(x,y) ^ Type(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-10 UnifyWith(x) ^ Type(x,y) ^ Type(P,z) => y=z
+100 Existence(x) ^ Existence(P) ^ Type(x,y) ^ Type(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+100 UnifyWith(x) ^ Type(x,y) ^ Type(P,z) => y=z
+UnifyWith(x) ^ Type(x,y) => y!=Unknown. 
+UnifyWith(x) ^ Type(x,y) => y!=None. 
 
-10 Existence(x) ^ Existence(P) ^ Location(x,y) ^ Location(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-10 UnifyWith(x) ^ Location(x,y) ^ Location(P,z) => y=z
-
+100 Existence(x) ^ Existence(P) ^ Location(x,y) ^ Location(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+100 UnifyWith(x) ^ Location(x,y) ^ Location(P,z) => y=z
+UnifyWith(x) ^ Location(x,y) => y!=Unknown. 
+UnifyWith(x) ^ Location(x,y) => y!=None. 
 
 UnifyWith(x) => Existence(x) ^ Existence(P).

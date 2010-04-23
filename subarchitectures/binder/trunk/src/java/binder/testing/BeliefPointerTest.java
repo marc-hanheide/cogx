@@ -41,7 +41,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 					}
 				}
 		);
-	}
+	} 
 	 
 	   
 	public void checkIfSuccessful(WorkingMemoryChange wmc) {
@@ -53,17 +53,17 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			
 			StableBelief newBelief = beliefData.getData();	 
 
-		if (newBelief.id.equals("1:2")) {
+		if (newBelief.id.equals("4:6")) {
 				log("belief " + beliefData.getID() + " (offspring from " + ((CASTBeliefHistory)newBelief.hist).ancestors.get(0).id + 
 						"), has a feature pointing to: " + ((PointerValue)FeatureContentUtils.getValuesInBelief(newBelief, "pointer").get(0).val).beliefId.id);
 			} 
-		else  {
-			if (existsOnWorkingMemory(new WorkingMemoryAddress("1:6", BindingWorkingMemory.BINDER_SA))) {
-			StableBelief otherUnion = getMemoryEntry(new WorkingMemoryAddress("1:6", BindingWorkingMemory.BINDER_SA), StableBelief.class);
+	/**	else  {
+			if (existsOnWorkingMemory(new WorkingMemoryAddress("0:6", BindingWorkingMemory.BINDER_SA))) {
+				StableBelief otherUnion = getMemoryEntry(new WorkingMemoryAddress("0:6", BindingWorkingMemory.BINDER_SA), StableBelief.class);
 				log("belief " + otherUnion.id + " (offspring from " + ((CASTBeliefHistory)otherUnion.hist).ancestors.get(0).id + 
 						"), has a feature pointing to: " + ((PointerValue)FeatureContentUtils.getValuesInBelief(otherUnion, "pointer").get(0).val).beliefId.id);				
-			}  
-		}
+			} 
+		} */ 
 		}  catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -128,11 +128,12 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			PerceptBelief p2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "p2", "here", 
 					this.getCASTTime(), distrib_p2, PerceptBuilder.createHistory(new WorkingMemoryAddress("", "subarch1")));
 			
+			
 			insertBeliefInWM(p1);
 
-				sleepComponent(5000);
+			sleepComponent(5000);
 
-				insertBeliefInWM(p2);	
+			insertBeliefInWM(p2);	
 
 			
 
