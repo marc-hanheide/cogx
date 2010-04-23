@@ -46,6 +46,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
+	private JRadioButton m_lookForObjectsAction;
 	private JRadioButton m_lookForPeopleAction;
 	private JRadioButton m_askForFeatureAction;
 
@@ -134,7 +135,9 @@ public class ActionInterfaceFrame extends JFrame {
 			m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
+			m_lookForObjectsAction = new JRadioButton("look for objects");
 			m_lookForPeopleAction = new JRadioButton("look for people");
+
 			m_askForFeatureAction = new JRadioButton("ask for feature");
 
 			m_goAction.setSelected(true);
@@ -144,6 +147,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_avsAction);
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
+			actionGroup.add(m_lookForObjectsAction);
 			actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_askForFeatureAction);
 
@@ -151,6 +155,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_actionPanel.add(m_avsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectPeopleAction, new GridBagConstraints());
+			m_actionPanel.add(m_lookForObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_askForFeatureAction, new GridBagConstraints());
 		}
@@ -200,6 +205,8 @@ public class ActionInterfaceFrame extends JFrame {
 
 		} else if (m_detectPeopleAction.isSelected()) {
 			detectPeople();
+		} else if (m_lookForObjectsAction.isSelected()) {
+			lookForObjects();
 		} else if (m_lookForPeopleAction.isSelected()) {
 			lookForPeople();
 		} else if (m_askForFeatureAction.isSelected()) {
@@ -209,7 +216,7 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	/**
-	 * Popup 
+	 * Popup
 	 */
 	private void askForFeature() {
 		int selectedRow = m_beliefTable.getSelectedRow();
@@ -218,7 +225,7 @@ public class ActionInterfaceFrame extends JFrame {
 					BELIEF_ID_COLUMN);
 			assert (beliefIDVal != null);
 			final String beliefID = (String) beliefIDVal;
-			
+
 			final JDialog dialog = new JDialog(this);
 			dialog.setLayout(new FlowLayout());
 			dialog.add(new JLabel("What feature do you want to ask about?"));
@@ -227,15 +234,15 @@ public class ActionInterfaceFrame extends JFrame {
 			dialog.add(textfield);
 
 			ActionListener submit = new ActionListener() {
-				
+
 				@Override
 				public void actionPerformed(ActionEvent _e) {
 					submit(beliefID, dialog, textfield);
 				}
 			};
-			
+
 			textfield.addActionListener(submit);
-			
+
 			JButton goButton = new JButton("Go!");
 			goButton.addActionListener(submit);
 
@@ -244,24 +251,22 @@ public class ActionInterfaceFrame extends JFrame {
 			dialog.setVisible(true);
 
 		}
-		
-		
-		
+
 	}
-	
+
 	/**
 	 * @param beliefID
 	 * @param dialog
 	 * @param textfield
 	 */
-	private void submit(final String beliefID,
-			final JDialog dialog, final JTextField textfield) {
+	private void submit(final String beliefID, final JDialog dialog,
+			final JTextField textfield) {
 		dialog.setVisible(false);
 		String featureType = textfield.getText();
 		if (featureType.length() > 0) {
 			try {
-				m_exeMan.triggerAskForFeatureAction(beliefID,
-						featureType, new MonitorPanel());
+				m_exeMan.triggerAskForFeatureAction(beliefID, featureType,
+						new MonitorPanel());
 			} catch (CASTException e) {
 				m_exeMan.logException(e);
 			}
@@ -314,6 +319,10 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private void lookForPeople() throws CASTException {
 		m_exeMan.triggerLookForPeople(new MonitorPanel());
+	}
+	
+	private void lookForObjects() throws CASTException {
+		m_exeMan.triggerLookForObjects(new MonitorPanel());
 	}
 
 	/**

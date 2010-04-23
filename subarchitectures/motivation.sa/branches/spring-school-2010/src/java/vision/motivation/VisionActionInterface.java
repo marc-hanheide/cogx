@@ -67,8 +67,6 @@ public class VisionActionInterface extends ManagedComponent {
 			NonBlockingCompleteOnDeleteExecutor implements
 			WorkingMemoryChangeReceiver {
 
-		private String[] m_labels;
-
 		public DetectPeopleActionExecutor(ManagedComponent _component) {
 			super(_component);
 		}

@@ -126,6 +126,13 @@ module execution {
        */
       class LookForPeople extends Action {};
       
+      /**
+       * Turn the robot in stages to look for objects.
+       */
+      class LookForObjects extends Action {
+	StringSeq labels;
+      };
+      
 
 
       
