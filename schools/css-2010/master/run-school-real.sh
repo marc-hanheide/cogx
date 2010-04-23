@@ -4,13 +4,19 @@ PIDS=""
 
 trap 'kill $PIDS' INT TERM PIPE QUIT ABRT HUP 
 
+if [ "$1" ]; then
+    configFile="$1"
+else
+    configFile="instantiations/spring-school-real.cast"
+fi
+
 LOGNAME=./log
 
 xterm -e bash -c "output/bin/log4j-server log4j.properties.server > $LOGNAME.xml" &
 PIDS="$PIDS $!"
 sleep 2
 
-xterm -e player instantiations/stage/spring-school/cogxp3-spring-school.cfg &
+xterm -e player subarchitectures/nav.sa/config/player_cfg/botx.cfg &
 PIDS="$PIDS $!"
 
 #xterm -e peekabot &
@@ -22,7 +28,7 @@ PIDS="$PIDS $SERVERPID"
 
 sleep 3
 
-xterm -e bash -c "output/bin/cast-client-start instantiations/spring-school-real.cast  2>&1 | tee client.log" &
+xterm -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee client.log" &
 #xterm -e output/bin/cast-client-start instantiations/binding-planner-test.cast &
 PIDS="$PIDS $!"
 
