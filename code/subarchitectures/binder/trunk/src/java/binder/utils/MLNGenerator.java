@@ -46,6 +46,8 @@ public class MLNGenerator {
 	public static final String STANDARD_INPUT_ID = "P";
 
 	private static final Object NEWLINE = "\n";
+	
+	private static float EPSILON = 0.00001f;
 
 	MLNPreferences preferences;
 
@@ -249,7 +251,7 @@ public class MLNGenerator {
 
 		result.append(NEWLINE);
 		for(String predicate_type : names_for_type.keySet()) {
-			result.append(predicate_type + "(belief," + setFirstLetterToLowercase(predicate_type) + "val)\n");
+			result.append(predicate_type + "(belief," + setLettersToLowercase(predicate_type) + "val)\n");
 		}
 
 		result.append(NEWLINE);
@@ -901,10 +903,23 @@ public class MLNGenerator {
 	 * 
 	 * @paramm prob The probability to convert
 	 * @return the weight in Markov Logic
+	 * @throws MLException 
 	 */
 	
-	private Float convertProbabilityToWeight(float prob) {
-		return new Float(Math.log(prob / (1f - prob)));
+	private Float convertProbabilityToWeight(float prob) throws MLException {
+		if(prob > 1f || prob < 0f) {
+			throw new MLException("Value is not a probability: " + prob);
+		}
+		// handle the border case, where denominator approaches 0 or 1
+		if(prob >= 1f - EPSILON) {
+			return Float.MAX_VALUE;
+		}
+		if(prob <= EPSILON) {
+			return Float.MIN_VALUE;
+		}
+		else {
+			return Math.max(new Float(Math.log(prob / (1f - prob))),0);
+		}
 	}
 
 	/**
@@ -915,19 +930,24 @@ public class MLNGenerator {
 	 * @return the corresponding probability
 	 */
 	private Float convertWeightToProbability(float weight) {
-		return new Float(Math.exp(weight)/(1+Math.exp(weight)));
+		float a = (float)Math.exp(weight);
+		return new Float(a/(1+a));
 	}
 	
 	/**
 	 * Calculate the weight for a Markov Logic formula in an exists
-	 * relationship. w = log(prob1 * prob2)
+	 * relationship. w = log(prob1 * prob2) = log(prob1) + log(prob2)
 	 * 
 	 * @param prob1 probability of the Exists
 	 * @param prob2 probability of the conditioned predicate
 	 * @return weight of the implication Exists => Predicate
+	 * @throws MLException 
 	 */
-	private Float convertConditionalProbabilityToWeight(float prob1, float prob2) {
-		return new Float(Math.log(prob1 * prob2));
+	private Float convertConditionalProbabilityToWeight(float prob1, float prob2) throws MLException {
+		if(prob1 > 1f || prob1 < 0 || prob2 > 1f || prob2 < 0) {
+			throw new MLException("Value is not a probability");
+		}
+		return new Float(Math.log(prob1) + Math.log(prob2));
 	}
 	
 	/**
@@ -962,8 +982,8 @@ public class MLNGenerator {
 	 * @param s
 	 * @return
 	 */
-	private String setFirstLetterToLowercase(String s) {
-		return (s.substring(0,1).toLowerCase() + s.substring(1));
+	private String setLettersToLowercase(String s) {
+		return (s.toLowerCase());
 	}
 	
 	/**

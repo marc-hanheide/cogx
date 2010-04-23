@@ -4,7 +4,6 @@ package binder.utils;
  * 
  * @author Carsten Ehrler (carsten.ehrler@gmail.com)
  * 
- * {@link #MLNPreferences()}
  */
 public class MLNPreferences {
 	
@@ -59,7 +58,9 @@ public class MLNPreferences {
 
 	public MLNPreferences(float greediness, float outcome,
 			String fileCorrelations, String filePredicates) {
-		super();
+		assert fileCorrelations != null;
+		assert filePredicates != null;
+		
 		this.greediness = greediness;
 		this.outcome = outcome;
 		file_correlations = fileCorrelations;
