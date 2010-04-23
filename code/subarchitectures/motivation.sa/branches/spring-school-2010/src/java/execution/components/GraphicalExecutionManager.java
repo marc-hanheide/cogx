@@ -21,6 +21,7 @@ import execution.slice.actions.ComsysQueryFeature;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.util.ActionInterfaceFrame;
 import execution.util.ActionMonitor;
@@ -147,13 +148,22 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
+	public WorkingMemoryAddress triggerLookForObjects(ActionMonitor _monitor)
+			throws CASTException {
+		LookForObjects act = newActionInstance(LookForObjects.class);
+		act.labels = m_objectLabels;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+
 	public WorkingMemoryAddress triggerLookForPeople(ActionMonitor _monitor)
 			throws CASTException {
 		LookForPeople act = newActionInstance(LookForPeople.class);
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-
+	
 	public boolean stopCurrentAction() throws PermissionException,
 			UnknownSubarchitectureException {
 		if (m_currentActionAddress == null) {
@@ -176,5 +186,6 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
+
 
 }

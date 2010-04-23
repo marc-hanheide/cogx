@@ -33,11 +33,11 @@ import execution.slice.TriBool;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.LocalActionStateManager;
-import execution.util.LookForPeopleExecutor;
 
 /**
  * Component to listen to planner actions the trigger the spatial sa as
@@ -312,7 +312,22 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		@Override
 		public ActionExecutor getActionExecutor() {
-			return new LookForPeopleExecutor(m_component,m_detections);
+			return new LookForPeopleExecutor(m_component, m_detections);
+		}
+
+	}
+
+	public class LookForObjectsExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public LookForObjectsExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
+
+		@Override
+		public ActionExecutor getActionExecutor() {
+			return new LookForObjectsExecutor(m_component, m_detections);
 		}
 
 	}
@@ -354,13 +369,14 @@ public class SpatialActionInterface extends ManagedComponent {
 		} else {
 			log("no AVS timeout");
 		}
-		
+
 		String numDetections = _config.get("--detections");
-		if(numDetections != null) {
+		if (numDetections != null) {
 			m_detections = Integer.parseInt(numDetections);
 		}
-		log("when looking for people I will run " + m_detections + " detections");
-		
+		log("when looking for people I will run " + m_detections
+				+ " detections");
+
 	}
 
 	@Override
@@ -391,6 +407,8 @@ public class SpatialActionInterface extends ManagedComponent {
 					}
 				});
 
+		m_actionStateManager.registerActionType(LookForObjects.class,
+				new LookForObjectsExecutorFactory(this));
 		m_actionStateManager.registerActionType(LookForPeople.class,
 				new LookForPeopleExecutorFactory(this));
 
