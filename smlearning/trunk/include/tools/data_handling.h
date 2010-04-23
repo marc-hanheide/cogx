@@ -229,15 +229,35 @@ bool write_cdl_file_basis (string fileName, const DataSet& data);
 ///
 bool write_nc_file_basis (string fileName, const DataSet& data);
 
+
+void load_ef_pos_off(FeatureVector featVec, smlearning::FeatureVector& vec);
+
+void load_speed_and_angle_off(double speed, double angle, smlearning::FeatureVector& vec);
+
+void load_feat_vector_off(FeatureVector featVec, smlearning::FeatureVector& vec);
+
+bool write_nc_file_Markov (string fileName, const DataSet& data);
+
 ///
 ///concatenate .seq files in one file
 ///
 bool concatenate_datasets (string dir, string writeFileName);
 
+
+
+
+void load_ef_pos_act(FeatureVector featVec, vector<float>& vec, int count);
+
+void load_speed_and_angle_act(double speed, double angle, vector<float>& vec, int count);
+
+void load_feat_vector_act(FeatureVector featVec, vector<float>& vec, int count);
+
+void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
+
 ///
 ///load a sequence into inputs and target vectors (for machine learning)
 ///
-void load_sequence (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
+void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
 
 ///
 ///generation of n-fold cross-validation sets from a particular sequence file
@@ -246,8 +266,10 @@ template<class Function>
 bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_netcdf_file, string target_dir, bool print_data = false) {
 
 	DataSet data;
-	if (n < 2)
+	if (n < 2) {
+		cout << "You have to use at least 2 cross-validation sets" << endl;
 		return false;
+	}
 	if (!read_dataset (seqFileName, data)){
 		cout << "file " + seqFileName + " could not be read" << endl;
 		return false;

@@ -148,6 +148,7 @@ void ActiveLearnScenario::render () {
 
 	idx.pop_back();
 	idx.push_back(learningData.currentPredictedEfSeq.size()-1);
+	if (learningData.currentPredictedEfSeq.size() > 0) {
 	for (int i=0; i<2; i++) {
 		Mat34 currentPose = learningData.currentPredictedEfSeq[idx[i]];			
 		boundsRenderer.setMat(currentPose);
@@ -157,6 +158,7 @@ void ActiveLearnScenario::render () {
 			boundsRenderer.setWireColour (RGBA::BLUE);			
 		
 		boundsRenderer.renderWire (effectorBounds.begin(), effectorBounds.end());
+	}
 	}
 
 	
@@ -218,13 +220,13 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		/////////////////////////////////////////////////
 		//storing the feature vector
 
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
+	/*	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(efRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(efPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(efYaw, -REAL_PI, REAL_PI));
-
+	*/
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
@@ -373,7 +375,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		init_writing();
 
 		//write initial position and orientation of the finger
-		write_finger_pos_and_or();
+	//	write_finger_pos_and_or();
 
 		//compute direction and other features of trajectory
 		set_up_movement();
@@ -465,7 +467,7 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (rnnlib::
 	assert (startIndex < outputsize);
 
 	//extract effector Pose
-	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
+/*	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	Real efRoll, efPitch, efYaw;
@@ -473,7 +475,7 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (rnnlib::
 	efPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	efYaw = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	predictedEfPose.R.fromEuler (efRoll, efPitch, efYaw);
-
+*/
 	//extract polyflap Pose
 	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
@@ -498,7 +500,7 @@ void ActiveLearnScenario::get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<
 		int startIndex = sIndex;
 
 		//extract effector Pose
-		currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+	/*	currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		currentPredictedEfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		currentPredictedEfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		Real efRoll, efPitch, efYaw;
@@ -507,7 +509,7 @@ void ActiveLearnScenario::get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<
  		efYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
 		currentPredictedEfPose.R.fromEuler(efRoll, efPitch, efYaw);
 		currentPredictedEfSeq.push_back (currentPredictedEfPose);
-		
+	*/	
 		//extract polyflap Pose
 		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
@@ -531,7 +533,9 @@ void ActiveLearnScenario::load_current_trainSeq (int inputSize, int outputSize) 
 	targetShape.push_back (learningData.currentSeq.size() - 1);
 	trainSeq->inputs.reshape(inputShape);
 	trainSeq->targetPatterns.reshape(targetShape);
-	load_sequence (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
+	//load_sequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
+	load_sequence_Markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
+
 }
 
 //------------------------------------------------------------------------------
