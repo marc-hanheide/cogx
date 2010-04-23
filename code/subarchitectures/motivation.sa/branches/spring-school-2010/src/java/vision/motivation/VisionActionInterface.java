@@ -78,6 +78,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 		@Override
 		public void executeAction() {
+			println("execute action");
 			PeopleDetectionCommand cmd = new PeopleDetectionCommand();
 			addThenCompleteOnDelete(new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID()), cmd);
