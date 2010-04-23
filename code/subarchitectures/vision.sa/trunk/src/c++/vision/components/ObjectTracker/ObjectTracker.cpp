@@ -435,10 +435,10 @@ void ObjectTracker::runTracker(){
 // 	fTimeCvt = m_timer.Update();
 		
 	// draw results
-// 	m_tracker->drawImage(NULL);
+	m_tracker->drawImage(NULL);
 	m_tracker->drawResult();
 // 	m_tracker->drawCalibrationPattern();
-	if(m_drawcoords) m_tracker->drawCoordinates();
+// 	if(m_drawcoords) m_tracker->drawCoordinates();
 	m_tracker->swap();
 	
 // 	fTimeDraw = m_timer.Update();
