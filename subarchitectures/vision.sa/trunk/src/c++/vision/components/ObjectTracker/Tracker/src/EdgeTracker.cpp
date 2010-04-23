@@ -87,6 +87,8 @@ bool EdgeTracker::track(){
 		return false;
 	}
 	
+	drawImage(0);
+	
 	for(int i=0; i<m_modellist.size(); i++){
 		// Recursive particle filtering
 		if(!m_lock){

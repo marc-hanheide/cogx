@@ -125,11 +125,12 @@ void Predictor::resample(Distribution& d, int num_particles, Particle variance){
 		c = particlelist_tmp[id].c;
 		
 		// TODO evaluate if this makes sense (higher accuracy/convergence)
-// 		if(d.getMaxC()>0.0){
-// 			cn = c / d.getMaxC();
-// 			c = c*(1.0-c) + cn*c;
-// // 			c = 0.8*cn + c*(1.0-cn);
-// 		}
+		// Remark: Defenitely removes jittering, maybe makes it less robust against fast movements
+		if(d.getMaxC()>0.0){
+			cn = c / d.getMaxC();
+			c = c*(1.0-c) + cn*c;
+// 			c = 0.8*cn + c*(1.0-cn);
+		}
 		
 		// Tukey estimator
 		// TODO evaluate optimal power of estimator (accuracy / robustness)

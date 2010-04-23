@@ -104,19 +104,26 @@ public:
 	/** @brief Tracks all models by matching their edges against edges of images */
 	virtual bool track()=0;
 	
-	/** @brief Resets the pose of the models to the initial pose */
+	/** @brief Resets the pose of all models to the initial pose */
 	void reset();
+	/** @brief Resets the pose of a model to the initial pose
+	*		@param id the id of the model given by addModel() or addModelFromFile() */
 	void reset(int id);
 	
 	// Model handling
 	/** @brief Adds a geometrical model to the tracker
-	*		@return id of the added model (-1 if not successfull)
-	*/
-	int 		addModel(Model& m, Pose& p,  std::string label, bool bfc=true);
+	*		@return id of the added model (-1 if not successfull)	*/
+	int 		addModel(Model& m, Pose& pose,  std::string label, bool bfc=true);
 	
-	int			addModelFromFile(const char* filename, Pose& p, std::string label, bool bfc=true);
+	/** @brief Adds a geometrical model from file (ply-fileformat) to the tracker
+	*		@param filename absolute filename of the model (or relative to the execution path)
+	*		@param pose place where the model is initially put to
+	*		@param label label of the model
+	*		@param bfc enable/disable backfaceculling (look up OpenGL Backface Culling)
+	*		@return  id of the added model (-1 if not successfull)	*/
+	int			addModelFromFile(const char* filename, Pose& pose, std::string label, bool bfc=true);
 	
-	/** @brief Remove model from tracker */
+	/** @brief Remove model from tracker by id */
 	void 		removeModel(int id);
 	
 	void		addPoseHypothesis(int id, Pose &p, std::string label, bool bfc);

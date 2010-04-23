@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
 		m_tracker->track();
 		
 		// Draw result
+		m_tracker->drawImage(0);
 		m_tracker->drawResult();
 		m_tracker->drawCoordinates();
 		
@@ -119,6 +120,7 @@ int main(int argc, char *argv[])
 			glEnd();
 			glColor3f(1.0,1.0,1.0);
 		p_result.deactivate();
+		
 		
 		m_tracker->swap();
 		

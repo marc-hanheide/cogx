@@ -32,6 +32,7 @@ void TextureTracker::image_processing(unsigned char* image){
 // Particle filtering
 void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 	Particle p;
+	int num_particles;
 	m_cam_perspective.Activate();
 	
 	// Calculate Zoom Direction and pass it to the particle filter
@@ -74,7 +75,9 @@ void TextureTracker::particle_filtering(ModelEntry* modelEntry){
 // 		p = (params.variation * ( 1.0 - i * 0.8 / (float)(modelEntry->num_recursions-1)));
 		
 		// predict movement of object
-		modelEntry->predictor->resample(modelEntry->distribution, modelEntry->num_particles, params.variation);
+		num_particles = modelEntry->num_particles * (1.0 - c_max);
+// 		printf("%d\n", num_particles);
+		modelEntry->predictor->resample(modelEntry->distribution, num_particles, params.variation);
 		
 		// set timestep to 0.0 for further recursion (within same image)
 		modelEntry->predictor->updateTime(0.0);
@@ -209,6 +212,7 @@ TextureTracker::TextureTracker(){
 	m_showmodel = 0;
 	m_draw_edges = false;
 	m_tracker_initialized = false;
+	m_drawimage = false;
 }
 
 TextureTracker::~TextureTracker(){
@@ -303,8 +307,6 @@ bool TextureTracker::track(){
 		return false;
 	}
 	
-	m_drawimage = true;
-	
 	// Track models
 	for(int i=0; i<m_modellist.size(); i++){
 		track(m_modellist[i]);
@@ -356,9 +358,6 @@ bool TextureTracker::track(){
 		m1++;
 	}
 	
-	if(m_drawimage)
-		drawImage(0);
-	
 	return true;
 }
 
@@ -368,10 +367,8 @@ bool TextureTracker::track(ModelEntry *modelEntry){
 	model_processing(modelEntry);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	if(m_drawimage){
+	if(m_drawimage)
 		drawImage(0);
-		m_drawimage = false;
-	}
 	
 	// Apply particle filtering
 	if(!modelEntry->lock){
