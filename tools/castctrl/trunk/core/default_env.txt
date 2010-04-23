@@ -4,7 +4,7 @@ CAST_DIR=/usr/local
 CAST_INSTALL_ROOT=${CAST_DIR}
 
 CUDA_ROOT=/usr/local/cuda
-CURE_LIB_DIR=TODO_FIXME/cosycure/lib/cure
+CURE_LIB_DIR=/usr/local/lib/cure
 MERCURY_ROOT=/usr/local/mercury-rotd-2009-10-25
 MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/glnx86
 # MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/glnx86
@@ -47,3 +47,5 @@ CMD_PYTHON_SERVER=python -m ComponentServer
 CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_PEEKABOT=peekabot
+CMD_LOG4J_SERVER=${CMD_JAVA} org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
+
