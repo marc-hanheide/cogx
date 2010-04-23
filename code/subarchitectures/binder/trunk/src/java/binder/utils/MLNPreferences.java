@@ -42,7 +42,7 @@ public class MLNPreferences {
 	}
 
 	private float greediness;
-	
+	 
 	private float outcome;
 	
 	private String file_correlations;
@@ -50,7 +50,7 @@ public class MLNPreferences {
 	private String file_predicates;
 	
 	public MLNPreferences() {
-		greediness = -1.5f;
+		greediness = -2.5f;
 		outcome = -1f;
 		file_correlations = markovlogicDir + "grouping/correlations.mln"; 
 		file_predicates = markovlogicDir + "grouping/correlations_predicates.mln";

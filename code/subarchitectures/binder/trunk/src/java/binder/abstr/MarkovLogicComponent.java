@@ -41,7 +41,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
-public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWriter {
+public abstract class MarkovLogicComponent<T extends Belief> extends FakeComponent {
 
 	/**
 	 * 
@@ -65,6 +65,9 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 	public int maxAlternatives = 2;
 	public float minProbDifferenceForUpdate = 0.1f;
 
+	protected String beliefUpdateToIgnore = "";
+
+	
 	public MarkovLogicComponent(T belief) {
 		type = belief;
 	}
@@ -200,11 +203,15 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 
 				updatePointersInCurrentBelief(newUnion);
 				updatePointersInOtherBeliefs(newUnion);
-				
-				insertBeliefInWM(newUnion);
-				
-				addOffspringToBelief(belief, 
-						new WorkingMemoryAddress(newUnion.id, BindingWorkingMemory.BINDER_SA));
+					
+				addOffspring(belief, newUnion.id);	
+				beliefUpdateToIgnore = belief.id;
+
+				try {
+					insertBeliefInWM(newUnion);
+				} catch (Exception e) {
+					e.printStackTrace();
+				} 
 			}
 			else {
 				log ("Belief " + newUnion.id + " has probability " + DistributionUtils.getExistenceProbability(newUnion) +
@@ -224,11 +231,15 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 
 				updatePointersInCurrentBelief(union);
 				updatePointersInOtherBeliefs(union);
-				
-				insertBeliefInWM(union);
-				
-				addOffspringToBelief(belief, 
-						new WorkingMemoryAddress(union.id, BindingWorkingMemory.BINDER_SA));
+					
+				addOffspring(belief, union.id);	
+				beliefUpdateToIgnore = belief.id;
+
+				try {
+					insertBeliefInWM(union);
+				} catch (Exception e) {
+					e.printStackTrace();
+				} 
 			}
 		}
 		catch (Exception e) {
@@ -304,68 +315,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 	public abstract void workingMemoryChangeDelete(WorkingMemoryAddress perceptWMAddress);
 
 	/**
-	 * Add a change filter on the insertion of new percept beliefs on the binder working memory
-	 */
-	public void start() {
-		// Insertion
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(type.getClass(),
-						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-					@SuppressWarnings("unchecked")
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							CASTData<? extends Belief> beliefData = getMemoryEntryWithData(_wmc.address, type.getClass());
-
-							log("received a new percept: " + beliefData.getID());
-							performInference((T)beliefData.getData(), _wmc.address);
-							log("grouping operation on percept " + beliefData.getID() + " now finished");
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}
-		);
-
-		// Deletion
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(type.getClass(),
-						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							workingMemoryChangeDelete(_wmc.address);
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}
-		);
-
-		// Update
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(type.getClass(),
-						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
-					@SuppressWarnings("unchecked")
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							workingMemoryChangeDelete(_wmc.address);
-							CASTData<? extends Belief> beliefData = getMemoryEntryWithData(_wmc.address, type.getClass());
-
-							log("received a new percept: " + beliefData.getID());
-							T belief = (T)beliefData.getData();
-							performInference(belief, _wmc.address);
-							log("grouping operation on percept " + beliefData.getID() + " now finished");
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}
-		);
-	}
-
-	/**
 	 * Filter the inference results to retain only the maxSize-best results
 	 * 
 	 * @param results the results of Alchemy inference
@@ -426,24 +375,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 				}
 		}
 		return subarchitectures;
-	}
-
-	protected void updatePointersInCurrentBelief(Belief newBelief) {
-		try {
-	
-			for (FeatureValueProbPair pointer : FeatureContentUtils.getAllPointerValuesInBelief(newBelief)) {
-				WorkingMemoryAddress point = ((PointerValue)pointer.val).beliefId ;
-				Belief belief = getMemoryEntry(point, type.getClass());
-				if (((CASTBeliefHistory)belief.hist).offspring.size() > 0) {
-					((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
-				}
-	
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	
 	}
 
 	protected void deleteAllMultiModalBeliefAttachedToUnion(WorkingMemoryAddress unionAddress) {
@@ -554,10 +485,5 @@ public abstract class MarkovLogicComponent<T extends Belief> extends BeliefWrite
 	
 	protected abstract void updatePointersInOtherBeliefs (Belief newBelief);
 
-	protected void addOffspringToBelief(T belief, WorkingMemoryAddress addressBelief) {
-	
-		if (belief.hist != null && belief.hist instanceof CASTBeliefHistory) {
-			((CASTBeliefHistory)belief.hist).offspring.add(addressBelief);
-		}
-	}
+
 }

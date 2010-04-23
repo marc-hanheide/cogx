@@ -15,6 +15,7 @@ import beliefmodels.builders.StableBeliefBuilder;
 import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.BeliefWriter;
+import binder.abstr.FakeComponent;
 import binder.arch.BindingWorkingMemory;
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
@@ -26,7 +27,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
-public class TemporalSmoothing_fake extends BeliefWriter {
+public class TemporalSmoothing_fake extends FakeComponent {
 
 	
 	String beliefUpdateToIgnore = "";
@@ -43,17 +44,14 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
 							
 							StableBelief stableBelief = StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, newDataID());
-
-							updatePointersInCurrentBelief(stableBelief);
-							updatePointersInOtherBeliefs(stableBelief);
-								
-							addOffspringToTStableBelief(beliefData.getData(), 
-									new WorkingMemoryAddress(stableBelief.id, BindingWorkingMemory.BINDER_SA));	
-							beliefUpdateToIgnore = beliefData.getID();
-							updateBeliefOnWM(beliefData.getData());
 							
+							updatePointers(stableBelief, StableBelief.class);
 							
 							insertBeliefInWM(stableBelief);
+
+							addOffspring(beliefData.getData(), stableBelief.id);	
+							beliefUpdateToIgnore = beliefData.getID();
+							updateBeliefOnWM(beliefData.getData());
 								
 						}	
 			
@@ -125,71 +123,4 @@ public class TemporalSmoothing_fake extends BeliefWriter {
 		);
 	}
 	
-
-	private void addOffspringToTStableBelief (TemporalUnionBelief tunionBelief, WorkingMemoryAddress addressStableBelief) {
-
-		if (tunionBelief.hist != null && tunionBelief.hist instanceof CASTBeliefHistory) {
-			((CASTBeliefHistory)tunionBelief.hist).offspring.add(addressStableBelief);
-		}
-		else {
-			log("WARNING: offspring of tunion is ill-formed");
-			tunionBelief.hist = new CASTBeliefHistory(new LinkedList<WorkingMemoryAddress>(), new LinkedList<WorkingMemoryAddress>());
-			((CASTBeliefHistory)tunionBelief.hist).offspring.add(addressStableBelief);
-		}
-	}
-
-
-	private void updatePointersInCurrentBelief (Belief newBelief) {
-		try {
-
-			for (FeatureValueProbPair pointer : FeatureContentUtils.getAllPointerValuesInBelief(newBelief)) {
-
-				WorkingMemoryAddress point = ((PointerValue)pointer.val).beliefId ;
-				if (existsOnWorkingMemory(point)) {
-				Belief belief = getMemoryEntry(point, Belief.class);
-				if (((CASTBeliefHistory)belief.hist).offspring.size() > 0) {
-					((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
-				}
-				}
-				else {
-					log("warning: belief " + point.id + " does not exist yet on WM");
-				}
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-
-	private void updatePointersInOtherBeliefs (Belief newBelief) {
-		try {
-
-			if (newBelief.hist != null && newBelief.hist instanceof CASTBeliefHistory) {
-
-				for (WorkingMemoryAddress ancestor: ((CASTBeliefHistory)newBelief.hist).ancestors) {
-
-					CASTData<StableBelief>[] stables = getWorkingMemoryEntries(StableBelief.class);
-
-					for (int i = 0 ; i < stables.length ; i++ ) {
-						StableBelief stable = stables[i].getData();
-						for (FeatureValueProbPair pointerValueInUnion : FeatureContentUtils.getAllPointerValuesInBelief(stable)) {
-							PointerValue val = (PointerValue)pointerValueInUnion.val;
-							if (val.beliefId.equals(ancestor)) {
-								((PointerValue)pointerValueInUnion.val).beliefId = 
-									new WorkingMemoryAddress(newBelief.id, BindingWorkingMemory.BINDER_SA);
-								updateBeliefOnWM(stable);
-							}
-						}
-					}
-				} 
-			}
-
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 }
