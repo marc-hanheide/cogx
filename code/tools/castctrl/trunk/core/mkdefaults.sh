@@ -16,3 +16,6 @@ echo 'useroptions="""' >> $out
 cat default_user.txt >> $out
 echo '"""' >> $out
 
+echo 'log4joptions="""' >> $out
+cat default_log4jsrv.txt >> $out
+echo '"""' >> $out

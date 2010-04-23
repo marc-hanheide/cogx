@@ -89,7 +89,14 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._options.configEnvironment()
         self._userOptions = options.CUserOptions()
         self._userOptions.loadConfig(self.fnconf) # TODO: user options should be in ~/.cast/...
+
+        # move option values to UI
         self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
+        val = self._options.getOption("log4jServerPort")
+        if val != "": self.ui.edLo4jServerPort.setText(val)
+        val = self._options.getOption("log4jServerOutfile")
+        if val != "": self.ui.edLog4jOutfile.setText(val)
+
         self._manager = procman.CProcessManager()
         self._remoteHosts = []
         self._pumpRemoteMessages = True
@@ -168,6 +175,19 @@ class CCastControlWnd(QtGui.QMainWindow):
             if fn.strip() == "": continue
             self.ui.hostConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
 
+        log4jlevels = ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
+        for i in log4jlevels:
+            self.ui.log4jConsoleLevelCmbx.addItem(i)
+            self.ui.log4jFileLevelCmbx.addItem(i)
+
+        val = self._options.getOption('log4jConsoleLevel')
+        if not val in log4jlevels: val = log4jlevels[0]
+        self.ui.log4jConsoleLevelCmbx.setCurrentIndex(log4jlevels.index(val))
+
+        val = self._options.getOption('log4jXmlFileLevel')
+        if not val in log4jlevels: val = log4jlevels[-1]
+        self.ui.log4jFileLevelCmbx.setCurrentIndex(log4jlevels.index(val))
+
     def makeConfigFileDisplay(self, fn):
         fn = "%s" % fn
         return "%s   @ %s" % (os.path.basename(fn), os.path.dirname(fn))
@@ -207,6 +227,30 @@ class CCastControlWnd(QtGui.QMainWindow):
         lhost = lhost.strip()
         return lhost
 
+    @property
+    def _log4jServerPort(self):
+        val = "%s" % self.ui.edLo4jServerPort.text()
+        val = val.strip()
+        return val
+
+    @property
+    def _log4jServerOutfile(self):
+        val = "%s" % self.ui.edLog4jOutfile.text()
+        val = val.strip()
+        return val
+
+    @property
+    def _log4jConsoleLevel(self):
+        val = "%s" % self.ui.log4jConsoleLevelCmbx.currentText()
+        val = val.strip()
+        return val
+
+    @property
+    def _log4jXmlFileLevel(self):
+        val = "%s" % self.ui.log4jFileLevelCmbx.currentText()
+        val = val.strip()
+        return val
+
     def _initLocalProcesses(self):
         self._manager.addProcess(procman.CProcess("server-java", self._options.xe("${CMD_JAVA_SERVER}")))
         self._manager.addProcess(procman.CProcess("server-cpp", self._options.xe("${CMD_CPP_SERVER}")))
@@ -214,7 +258,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("client", self._options.xe("${CMD_CAST_CLIENT}")))
         self._manager.addProcess(procman.CProcess("player", self._options.xe("${CMD_PLAYER}")))
         self._manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
+        self._manager.addProcess(procman.CProcess("log4jServer", self._options.xe("${CMD_LOG4J_SERVER}")))
+
         self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
+
         self.procBuild.allowTerminate = True
         self._manager.addProcess(self.procBuild)
         self._processModel.rootItem.addHost(self._manager)
@@ -245,6 +292,10 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
             self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx)
+            self._options.setOption("log4jServerPort", self._log4jServerPort)
+            self._options.setOption("log4jServerOutfile", self._log4jServerOutfile)
+            self._options.setOption("log4jConsoleLevel", self._log4jConsoleLevel)
+            self._options.setOption("log4jXmlFileLevel", self._log4jXmlFileLevel)
             self._options.saveHistory(open(self.fnhist, 'w'))
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
@@ -387,12 +438,43 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("client")
         if p != None: p.stop()
 
-    # def on_btPlayerStart_clicked(self, valid=True):
+    def prepareLog4jServer(self, fnameSrvConf):
+        f = open(fnameSrvConf, "w")
+        conf = self._options.getSection("LOG4J.SimpleSocketServer.conf")
+        f.write("\n".join(conf))
+        level = self._log4jConsoleLevel
+        if level != 'OFF':
+            conf = self._options.getSection("LOG4J.SimpleSocketServer.console")
+            for ln in conf:
+                ln = ln.replace('${LEVEL}', level)
+                f.write(ln); f.write('\n')
+
+        level = self._log4jXmlFileLevel
+        logfile = self._log4jServerOutfile
+        if level != 'OFF':
+            conf = self._options.getSection("LOG4J.SimpleSocketServer.xmlfile")
+            for ln in conf:
+                ln = ln.replace('${LEVEL}', level)
+                ln = ln.replace('${LOGFILE}', logfile)
+                f.write(ln); f.write('\n')
+
+        f.close()
+
     def onStartExternalServers(self):
-        # if not valid: return
-        p = self._manager.getProcess("player")
-        if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
-        if self.ui.ckPeekabot.isChecked():
+        if self.ui.ckRunLog4jServer.isChecked():
+            p = self._manager.getProcess("log4jServer")
+            if p != None:
+                LOGGER.log("Log4j STARTING 2")
+                conf = "cctmp.SimpleSocketServer.conf"
+                self.prepareLog4jServer(conf)
+                p.start( params = {
+                    "LOG4J_PORT": self._log4jServerPort,
+                    "LOG4J_SERVER_CONFIG": conf
+                    })
+        if self.ui.ckRunPlayer.isChecked():
+            p = self._manager.getProcess("player")
+            if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
+        if self.ui.ckRunPeekabot.isChecked():
             p = self._manager.getProcess("peekabot")
             if p != None: p.start()
 
@@ -402,6 +484,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("player")
         if p != None: p.stop()
         p = self._manager.getProcess("peekabot")
+        if p != None: p.stop()
+        p = self._manager.getProcess("log4jServer")
         if p != None: p.stop()
 
     def _checkBuidDir(self):

@@ -58,6 +58,9 @@ class CCastOptions(object):
         self.cleanupScript = [s.lstrip() for s in optdefault.cleanup.split("\n")]
         self.codeRootDir = os.path.abspath('.')
 
+        self.confSection = {} # other configuration sections
+        self.parseConfigLines(optdefault.log4joptions.split("\n"))
+
     @property
     def environscript(self):
         if self._environscript == None:
@@ -73,12 +76,9 @@ class CCastOptions(object):
     def xe(self, shexpr):
         return _xe(shexpr, self.environ)
 
-    def loadConfig(self, filename):
-        if not os.path.exists(filename): return
-        self._xenviron = None
-        f = open(filename, "r")
+    def parseConfigLines(self, lines):
         section = None
-        for ln in f.readlines():
+        for ln in lines:
             l = ln.split('#')[0]
             l = l.strip()
             if l == "[ENVIRONMENT]":
@@ -87,9 +87,17 @@ class CCastOptions(object):
             elif l == "[CLEANUP-SCRIPT]":
                 self.cleanupScript = []
                 section = self.cleanupScript
-            elif l.startswith('['): section = None
+            elif l.startswith('[') and l.endswith(']') and l != "[USEROPTIONS]":
+                section = []
+                self.confSection[l.strip(" []")] = section
             elif section != None:
                 section.append(ln.rstrip())
+
+    def loadConfig(self, filename):
+        if not os.path.exists(filename): return
+        self._xenviron = None
+        f = open(filename, "r")
+        self.parseConfigLines(f.readlines())
         f.close()
 
     def loadHistory(self, filename):
@@ -117,6 +125,9 @@ class CCastOptions(object):
             if expr[0].startswith("#") or expr[0] == "": continue
             self.options[expr[0]] = expr[1]
             
+    def getSection(self, sectionName):
+        if self.confSection.has_key(sectionName): return self.confSection[sectionName]
+        return ""
 
     # this should be called only when the config file doesnt exist
     def saveConfig(self, afile):
@@ -127,9 +138,17 @@ class CCastOptions(object):
         f.write("[CLEANUP-SCRIPT]\n")
         for ln in self.cleanupScript:
             f.write(ln); f.write("\n")
+
+        # custom sections
+        for k,v in self.confSection.iteritems():
+            f.write("[%s]\n" % k)
+            for ln in v:
+                f.write(ln); f.write("\n")
+
         # FIXME: temporary location for user options; move to a file in home dir
         f.write("[USEROPTIONS]\n")
         f.write(optdefault.useroptions)
+
 
     def saveHistory(self, afile):
         f = afile
