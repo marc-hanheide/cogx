@@ -438,6 +438,21 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("client")
         if p != None: p.stop()
 
+    def _prepareLogFile(self, logfile):
+        try:
+            if not os.path.exists(logfile):
+                fdir, fn = os.path.split(logfile)
+                if not os.path.exists(fdir):
+                    os.makedirs(fdir)
+            f = open(logfile, 'w')
+            head = self._options.getSection("LOG4J.SimpleSocketServer.XMLLayout.head")
+            f.write("\n".join(head))
+            f.close()
+        except Exception as e:
+            dlg = QtGui.QErrorMessage(self)
+            dlg.setModal(True)
+            dlg.showMessage("Had some problems preparing the log file.\n%s" % e)
+
     def prepareLog4jServer(self, fnameSrvConf):
         f = open(fnameSrvConf, "w")
         conf = self._options.getSection("LOG4J.SimpleSocketServer.conf")
@@ -452,6 +467,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         level = self._log4jXmlFileLevel
         logfile = self._log4jServerOutfile
         if level != 'OFF':
+            if logfile == '': logfile = 'logs/cast-log.xml'
+            logfile = os.path.abspath(logfile)
+            self._prepareLogFile(logfile)
             conf = self._options.getSection("LOG4J.SimpleSocketServer.xmlfile")
             for ln in conf:
                 ln = ln.replace('${LEVEL}', level)
