@@ -369,6 +369,24 @@ void  Scenario::initialize_movement(){
 		prepare_target();
 }
 
+Real Scenario::chooseAngle(Real min, Real max, string form){
+	Real res;
+	if (form == "disc") {
+cout << "disc" << endl;
+		res = floor(randomG.nextUniform (min, max));
+	}
+	else if (form == "cont") {
+cout << "cont" << endl;
+		res = randomG.nextUniform (min, max);
+	}
+	else {
+		res = -1.0;
+	}
+cout << res << endl;
+	return res;
+}
+
+
 
 ///
 ///describe the experiment trajectory
@@ -401,7 +419,11 @@ void Scenario::set_up_movement(){
 		Real currDistance = desc.distance;
 
 		//chose random horizontal and vertical angle
-		horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
+		// use disc for integer values and cont for non-integer values
+		//horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
+		//horizontalAngle = chooseAngle(60.0, 120.0, "disc");
+		horizontalAngle = chooseAngle(60.0, 120.0, "cont");
+				
 		
 		//int verticalAngle = rand() % 7;
 
@@ -538,6 +560,7 @@ void Scenario::setup_loop(int argc, char* argv[]){
 		numSequences = atoi(argv[2]);
 	if (argc > 3)
 		startingPosition = atoi(argv[3]);
+
 }
 
 
@@ -906,7 +929,7 @@ bool Scenario::check_pf_position(const Actor* polyFlapActor, const Mat34& refPos
 ///
 ///calculate final pose according to the given direction angle
 ///
-void Scenario::set_movement_angle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
+void Scenario::set_movement_angle(const Real angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
 	pose.p.v1 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
 	pose.p.v2 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
 	pose.p.v1 += Real(cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 

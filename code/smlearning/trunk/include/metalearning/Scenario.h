@@ -238,7 +238,7 @@ protected:
 	/** pose describing the endpoint of the experiment trajectory */
 	WorkspaceCoord end;
 	/** chosen horizontal angle of the experiment trajectory */
-	int horizontalAngle;
+	Real horizontalAngle;
 	/** number of collected sequences in one experiment session */
 	int numSequences;
 	/** asynchron time delta*/
@@ -297,7 +297,7 @@ protected:
 	///
 	///calculate final pose according to the given direction angle
 	///
-	void set_movement_angle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
+	void set_movement_angle(const Real angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
 
 	///
 	///calculate position to direct the arm given parameters set in the learning scenario
@@ -452,6 +452,8 @@ protected:
 	///set the variable target so that it obtains the coordinates of the start point of the experiment trajectory
 	///
 	void prepare_target();
+
+	Real chooseAngle(Real min, Real max, string form);
 
 };
 

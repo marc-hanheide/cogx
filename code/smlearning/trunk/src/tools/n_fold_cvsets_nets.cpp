@@ -5,7 +5,7 @@ using namespace smlearning;
 
 int main(int argc, char * argv[]) {
 	if (argc < 5) {
-		cerr << argv[0] << " sequence_file (without extension) target_dir basis/padding nr_cv_sets" << endl;
+		cerr << argv[0] << " sequence_file (without extension) target_dir basis/padding/Markov nr_cv_sets" << endl;
 		return 1;
 	}
 
@@ -38,11 +38,19 @@ int main(int argc, char * argv[]) {
 		else
 			cout << "nc file NOT written" << endl;
 	}
+	else if (encoding == "Markov") {
+		if (write_nc_file_Markov (target_dir + "/" + seqBaseFileName, savedData))
+			cout << "nc file written" << endl;
+		else
+			cout << "nc file NOT written" << endl;
+	}
 	//generate n fold cross validation sets
 	if (encoding == "basis")
 		write_n_fold_cross_valid_sets (seqFile, n, write_nc_file_basis, target_dir );
 	else if (encoding == "padding")
 		write_n_fold_cross_valid_sets (seqFile, n, write_cdl_file_padding, target_dir );
+	else if (encoding == "Markov")
+		write_n_fold_cross_valid_sets (seqFile, n, write_nc_file_Markov, target_dir );
 
 	generate_network_files_nfoldcv_set ("/usr/local/bin/SMLearning/defaultnet.config", seqBaseFileName, n, target_dir );
 

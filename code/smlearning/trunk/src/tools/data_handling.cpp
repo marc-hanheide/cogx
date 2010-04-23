@@ -443,10 +443,112 @@ bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize,
 
 }
 
+
+
+void load_ef_pos_off(FeatureVector featVec, smlearning::FeatureVector& vec) {
+	vec.push_back(featVec[0]);
+	vec.push_back(featVec[1]);
+	vec.push_back(featVec[2]);
+
+//cout << vec.size() << endl;
+//cout << featVec[0] << endl;
+//cout << featVec[1] << endl;
+//cout << featVec[2] << endl;
+//cout << vec.back() << endl;
+//cout << "------------------------" << endl;
+
+
+}
+
+void load_speed_and_angle_off(double speed, double angle, smlearning::FeatureVector& vec) {
+		vec.push_back(speed);
+		vec.push_back(angle);
+//cout << vec.size() << endl;
+//cout << speed << endl;
+//cout << angle << endl;
+//cout << vec.back() << endl;
+//cout << "------------------------" << endl;
+
+}
+
+void load_feat_vector_off(FeatureVector featVec, smlearning::FeatureVector& vec){
+
+	FeatureVector::const_iterator n;
+
+	for (n=featVec.begin(); n!= featVec.end(); n++) {
+		vec.push_back (*n);
+	}
+//cout << vec.size() << endl;
+//cout << featVec.back() << endl;
+//cout << vec.back() << endl;
+
+}
+
+
+
+bool write_nc_file_Markov (string fileName, const DataSet& data) {
+//Markov
+	fileName += ".nc";
+
+	int initialVectorSize = data[0][0].size();
+	int featureVectorSize = initialVectorSize + data[0][1].size();
+	//int featureVectorSize = 18;
+
+	FeatureVector inputVector;
+	FeatureVector targetVector;
+	vector<int> seqLengthsVector;
+	size_t numTimesteps_len = 0;
+	DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		size_t seqSize = (*s).size() - 1 - 1;  // we need to substract this additional 1,  since we don't write the motorComVec (there is one vector less)
+		seqLengthsVector.push_back( seqSize );
+		numTimesteps_len += seqSize;
+
+		Sequence::const_iterator v;
+		v = (*s).begin();
+		double speed = (*v)[3];
+		double angle = (*v)[4];
+		v++;
+		Sequence::const_iterator start = v;
+		
+
+		for (v/*=(*s).begin()*/; v!= (*s).end(); v++) {
+			//put inputs and targetPatterns data
+			if (v+1 != (*s).end()) {
+//cout << "///////////////////////" << endl;
+//cout << "INPUT" << endl;
+//cout << (*v).size() << endl;
+				load_ef_pos_off((*v), inputVector);
+				load_speed_and_angle_off(speed, angle, inputVector);
+				load_feat_vector_off((*v), inputVector);
+//cout << "///////////////////////" << endl;
+			}
+
+			if (v != start) {
+//cout << "///////////////////////" << endl;
+//cout << "TARGET" << endl;
+				load_ef_pos_off((*v), targetVector);
+				load_speed_and_angle_off(speed, angle, targetVector);
+				load_feat_vector_off((*v), targetVector);
+//cout << "///////////////////////" << endl;
+			}
+				
+		}
+	}
+
+	//netcdf file storing
+	if (!write_nc_data (fileName, data, featureVectorSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
+		return false;
+
+	return true;
+
+}
+
 ///
 ///write a netcdf nc file format for feature vectors using basis vectors
 ///
 bool write_nc_file_basis (string fileName, const DataSet& data) {
+//basis
 	fileName += ".nc";
 
 	int initialVectorSize = data[0][0].size();
@@ -508,10 +610,104 @@ bool write_nc_file_basis (string fileName, const DataSet& data) {
 	
 }
 
+
+void load_ef_pos_act(FeatureVector featVec, vector<float>& vec, int* count) {
+
+//int c = (*count);
+	vec[(*count)++] = featVec[0];
+	vec[(*count)++] = featVec[1];
+	vec[(*count)++] = featVec[2];	
+//cout << (*count) << endl;
+//cout << featVec[0] << endl;
+//cout << featVec[1] << endl;
+//cout << featVec[2] << endl;
+//cout << vec[c++] << endl;
+//cout << vec[c++] << endl;
+//cout << vec[c] << endl;
+//cout << "------------------------" << endl;
+
+}
+
+
+void load_speed_and_angle_act(double speed, double angle, vector<float>& vec, int* count) {
+
+	vec[(*count)++] = speed;
+	vec[(*count)++] = angle;
+//cout << (*count) << endl;
+//cout << speed << endl;
+//cout << angle << endl;
+//cout << vec[3] << endl;
+//cout << vec[4] << endl;
+
+//cout << "------------------------" << endl;
+
+}
+
+void load_feat_vector_act(FeatureVector featVec, vector<float>& vec, int* count){
+
+	FeatureVector::const_iterator n;
+
+	for (n=featVec.begin(); n!= featVec.end(); n++) {
+		vec[(*count)++] = *n;
+	}
+
+
+}
+
+void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVector, Sequence s) {
+//Markov
+	int contInput = 0;
+	int contTarget = 0;
+	int* pContInput = &contInput;
+	int* pContTarget = &contTarget;
+
+	Sequence::const_iterator v;
+	v = s.begin();
+//	double speed = (*v)[3];
+//	double angle = (*v)[4];
+	double speed = (*v)[0];
+	double angle = (*v)[1];
+	v++;
+	Sequence::const_iterator start = v;
+
+	for (v; v!= s.end(); v++) {
+		if (v+1 != s.end()) {
+//cout << "///////////////////////" << endl;
+//cout << "INPUT" << endl;
+//cout << (*v).size() << endl;
+			//load_ef_pos_act((*v), inputVector, pContInput);
+			load_speed_and_angle_act(speed, angle, inputVector, pContInput);
+			load_feat_vector_act((*v), inputVector, pContInput);
+//cout << "///////////////////////" << endl;
+		}
+
+		if (v != start) {
+//cout << "///////////////////////" << endl;
+//cout << "TARGET" << endl;
+			//load_ef_pos_act((*v), targetVector, pContTarget);
+			load_speed_and_angle_act(speed, angle, targetVector, pContTarget);
+			load_feat_vector_act((*v), targetVector, pContTarget);
+//cout << "///////////////////////" << endl;
+		}
+	}
+
+//cout << inputVector.size() << endl;
+//for (int a = 0; a < 10; a++) {
+//	cout << inputVector[a] << endl;
+//}
+
+}
+
+
 ///
 ///load a sequence into inputs and target vectors (for machine learning)
 ///
-void load_sequence (vector<float>& inputVector, vector<float>& targetVector, Sequence s) {
+void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s) {
+//basis
+
+
+
+
 
 	int initialVectorSize = s[0].size();
 	int featureVectorSize = initialVectorSize + s[1].size();
