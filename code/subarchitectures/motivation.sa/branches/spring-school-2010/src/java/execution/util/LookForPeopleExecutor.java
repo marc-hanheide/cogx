@@ -27,7 +27,7 @@ import execution.slice.TriBool;
  */
 public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 
-	private int m_detections;
+	private final int m_detections;
 	private final ManagedComponent m_component;
 	private final Stack<NavCommand> m_remainingCommands;
 	private final WorkingMemoryChangeReceiver m_afterDetect;
@@ -35,7 +35,7 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 	private final WorkingMemoryChangeReceiver m_afterTurn;
 	private String m_navCmdID;
 
-	public LookForPeopleExecutor(ManagedComponent _component, int _detections) {
+	public LookForPeopleExecutor(ManagedComponent _component, final int _detections) {
 		m_component = _component;
 		m_detections = _detections;
 		m_remainingCommands = new Stack<NavCommand>();
