@@ -164,7 +164,7 @@ void PeopleDetector::start()
 {
 
   // we want to receive PeopleDetectionCommand
-  addChangeFilter(createLocalTypeFilter<PeopleDetectionCommand>(cdl::ADD),
+  addChangeFilter(createGlobalTypeFilter<PeopleDetectionCommand>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<PeopleDetector>(this,
 								   &PeopleDetector::receiveDetectionCommand));
   

@@ -338,7 +338,7 @@ void ObjectDetectorFERNS::start()
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
   // we want to receive DetectionCommands
-  addChangeFilter(createLocalTypeFilter<DetectionCommand>(cdl::ADD),
+  addChangeFilter(createGlobalTypeFilter<DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetectorFERNS>(this,
         &ObjectDetectorFERNS::receiveDetectionCommand));
 }
