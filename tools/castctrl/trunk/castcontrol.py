@@ -461,7 +461,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         f.close()
 
     def onStartExternalServers(self):
-        if self.ui.ckRunLog4jServer.isChecked():
+        if not self.ui.ckRunLog4jServer.isChecked():
+            pass # TODO: ln -s log4j configuration for client: one with server, one w/o
+        else:
             p = self._manager.getProcess("log4jServer")
             if p != None:
                 LOGGER.log("Log4j STARTING 2")
@@ -471,12 +473,15 @@ class CCastControlWnd(QtGui.QMainWindow):
                     "LOG4J_PORT": self._log4jServerPort,
                     "LOG4J_SERVER_CONFIG": conf
                     })
+
         if self.ui.ckRunPlayer.isChecked():
             p = self._manager.getProcess("player")
             if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
+
         if self.ui.ckRunPeekabot.isChecked():
             p = self._manager.getProcess("peekabot")
             if p != None: p.start()
+
 
     # def on_btPlayerStop_clicked(self, valid=True):
     def onStopExternalServers(self):
