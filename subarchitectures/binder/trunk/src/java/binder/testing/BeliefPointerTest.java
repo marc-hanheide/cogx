@@ -53,7 +53,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			
 			StableBelief newBelief = beliefData.getData();	 
 
-		if (newBelief.id.equals("4:6")) {
+		if (newBelief.id.equals("1:6")) {
 				log("belief " + beliefData.getID() + " (offspring from " + ((CASTBeliefHistory)newBelief.hist).ancestors.get(0).id + 
 						"), has a feature pointing to: " + ((PointerValue)FeatureContentUtils.getValuesInBelief(newBelief, "pointer").get(0).val).beliefId.id);
 			} 

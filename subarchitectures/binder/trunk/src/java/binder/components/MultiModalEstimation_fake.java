@@ -76,6 +76,7 @@ public class MultiModalEstimation_fake extends FakeComponent {
 									MultiModalBelief childBelief = getMemoryEntry(child, MultiModalBelief.class);
 									childBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, childBelief.id);
 									updateBeliefOnWM(childBelief);
+									updatePointers(childBelief, PerceptUnionBelief.class);
 								}
 							}
 							}
