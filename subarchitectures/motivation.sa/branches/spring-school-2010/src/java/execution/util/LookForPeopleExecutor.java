@@ -2,6 +2,8 @@ package execution.util;
 
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
+
 import spatial.motivation.SpatialActionInterface;
 import SpatialData.CommandType;
 import SpatialData.Completion;
@@ -16,6 +18,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
+import cast.core.CASTUtils;
 import execution.slice.Action;
 import execution.slice.TriBool;
 
@@ -34,6 +37,7 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 
 	private final WorkingMemoryChangeReceiver m_afterTurn;
 	private String m_navCmdID;
+	static Logger logger = Logger.getLogger(LookForPeopleExecutor.class);
 
 	public LookForPeopleExecutor(ManagedComponent _component, final int _detections) {
 		m_component = _component;
@@ -41,6 +45,7 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 		m_remainingCommands = new Stack<NavCommand>();
 
 		double increment = (2 * Math.PI) / m_detections;
+		logger.info("new LookForPeopleExecutor for " + m_detections + " detections.");
 		for (int i = 0; i < m_detections; i++) {
 			NavCommand cmd = SpatialActionInterface.newNavCommand();
 			cmd.cmd = CommandType.TURN;
@@ -54,7 +59,9 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
 				m_component.removeChangeFilter(this);
+				logger.debug("afterDetectListener triggered: " + CASTUtils.toString(_wmc));
 				if (!m_remainingCommands.empty()) {
+					logger.debug("there are further nav commands");
 					m_navCmdID = m_component.newDataID();
 					m_component.addChangeFilter(ChangeFilterFactory
 							.createIDFilter(m_navCmdID,
@@ -73,12 +80,15 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 			@Override
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
+				logger.debug("afterTurnListener triggered: " + CASTUtils.toString(_wmc));
+
 				// read in the nav cmd
 				m_component.lockEntry(_wmc.address,
 						WorkingMemoryPermissions.LOCKEDODR);
 
 				NavCommand cmd = m_component.getMemoryEntry(_wmc.address,
 						NavCommand.class);
+				logger.debug("nav command status: " + cmd.comp.name());
 
 				// if this command failed, fail the whole thing
 				if (cmd.comp == Completion.COMMANDFAILED) {
@@ -88,6 +98,8 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 					executionComplete(TriBool.TRIFALSE);
 
 				} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
+					logger.debug("time to detect now, triggerDetection()");
+
 					m_navCmdID = null;
 					m_component.removeChangeFilter(this);
 					m_component.deleteFromWorkingMemory(_wmc.address);
@@ -105,6 +117,8 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 
 	@Override
 	public void executeAction() {
+		logger.debug("execute action!");
+
 		triggerDetection();
 	}
 
@@ -113,12 +127,15 @@ public class LookForPeopleExecutor extends NonBlockingActionExecutor {
 	 */
 	private void triggerDetection() {
 		// Fire off a detection command
+		logger.debug("detection triggered");
+
 		PeopleDetectionCommand detect = new PeopleDetectionCommand();
 		String id = m_component.newDataID();
 		try {
 			m_component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 					WorkingMemoryOperation.DELETE), m_afterDetect);
 			m_component.addToWorkingMemory(id, detect);
+			logger.debug("submitted to WM... waiting to complete");
 		} catch (AlreadyExistsOnWMException e) {
 			e.printStackTrace();
 		}
