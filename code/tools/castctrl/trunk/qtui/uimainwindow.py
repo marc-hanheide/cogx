@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri Apr 23 12:41:40 2010
+# Created: Fri Apr 23 13:22:15 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -686,7 +686,7 @@ class Ui_MainWindow(object):
         self.buildBar.addAction(self.actRunMakeClean)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.btBrowseCastFile, QtCore.SIGNAL("clicked()"), self.actOpenClientConfig.trigger)
         QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
         QtCore.QObject.connect(self.btBrowseHostFile, QtCore.SIGNAL("clicked()"), self.actOpenHostConfig.trigger)
