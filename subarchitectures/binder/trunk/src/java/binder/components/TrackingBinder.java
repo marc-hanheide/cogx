@@ -11,7 +11,6 @@ public class TrackingBinder extends ManagedComponent {
 		log("OK, dummy is working !");
 	}
 	
-	
 	private void log(String s) {
 		if (LOGGING) {
 		System.out.println("[Dummy] " + s);
