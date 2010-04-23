@@ -127,7 +127,7 @@ class CCastOptions(object):
             
     def getSection(self, sectionName):
         if self.confSection.has_key(sectionName): return self.confSection[sectionName]
-        return ""
+        return []
 
     # this should be called only when the config file doesnt exist
     def saveConfig(self, afile):
