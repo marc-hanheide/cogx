@@ -34,21 +34,6 @@ import execution.util.NonBlockingActionExecutor;
 
 public class ComsysActionInterface extends ManagedComponent {
 
-	public class QueryExecutorFactory implements ActionExecutorFactory {
-
-		private ComsysActionInterface m_component;
-
-		public QueryExecutorFactory(ComsysActionInterface _component) {
-			m_component = _component;
-		}
-
-		@Override
-		public ActionExecutor getActionExecutor() {
-			return new FeatureQueryActionExecutor(m_component);
-		}
-
-	}
-
 	private LocalActionStateManager m_actionStateManager;
 	private final BinderFacade m_binderFacade;
 
@@ -64,11 +49,6 @@ public class ComsysActionInterface extends ManagedComponent {
 
 		private String m_featureID;
 		private String m_beliefID;
-		private final ComsysActionInterface m_component;
-
-		public FeatureQueryActionExecutor(ComsysActionInterface _component) {
-			m_component = _component;
-		}
 
 		@Override
 		public boolean accept(Action _action) {
@@ -90,12 +70,12 @@ public class ComsysActionInterface extends ManagedComponent {
 
 			Map<String, ProbDistribution> distribs = ((CondIndependentDistribs) belief.content).distribs;
 			for (String feature : distribs.keySet()) {
-				blurb += "\n -> it already has " + feature + " with value ";  
-				FeatureValues values = (FeatureValues) (( BasicProbDistribution)distribs.get(feature)).values;
-				blurb += BeliefInfo.toString(values.values.get(0).val);			
+				blurb += "\n -> it already has " + feature + " with value ";
+				FeatureValues values = (FeatureValues) ((BasicProbDistribution) distribs
+						.get(feature)).values;
+				blurb += BeliefInfo.toString(values.values.get(0).val);
 			}
-			
-			
+
 			JTextArea textArea = new JTextArea(blurb);
 
 			dialog.add(textArea);
@@ -169,7 +149,12 @@ public class ComsysActionInterface extends ManagedComponent {
 		m_binderFacade.start();
 		m_actionStateManager = new LocalActionStateManager(this);
 		m_actionStateManager.registerActionType(ComsysQueryFeature.class,
-				new QueryExecutorFactory(this));
+				new ActionExecutorFactory() {
+					@Override
+					public ActionExecutor getActionExecutor() {
+						return new FeatureQueryActionExecutor();
+					}
+				});
 	}
 
 }
