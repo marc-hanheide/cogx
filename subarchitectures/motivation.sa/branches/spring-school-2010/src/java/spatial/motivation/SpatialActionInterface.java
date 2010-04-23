@@ -312,7 +312,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		@Override
 		public ActionExecutor getActionExecutor() {
-			return new LookForPeopleExecutor(m_component,4);
+			return new LookForPeopleExecutor(m_component,m_detections);
 		}
 
 	}
@@ -336,7 +336,10 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	private HashSet<Long> m_placeIDs;
 
+	private int m_detections;
+
 	public SpatialActionInterface() {
+		m_detections = 4;
 	}
 
 	@Override
@@ -351,6 +354,13 @@ public class SpatialActionInterface extends ManagedComponent {
 		} else {
 			log("no AVS timeout");
 		}
+		
+		String numDetections = _config.get("--detections");
+		if(numDetections != null) {
+			m_detections = Integer.parseInt(numDetections);
+		}
+		log("when looking for people I will run " + m_detections + " detections");
+		
 	}
 
 	@Override
