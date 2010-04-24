@@ -1,0 +1,49 @@
+(define (scenario cogxscen) (:domain service)
+
+(:common
+
+(:objects
+	place1 place2 place3 - place
+    kitchen - place_category
+    R2D2 - robot
+	Michael - human
+	mug - phys_obj
+)
+
+(:init
+	(connected place1 place2)
+	(connected place2 place1)
+	(connected place2 place3)
+	(connected place3 place2)
+	(= (pos R2D2) place1)
+	(= (pos Michael) place3)
+	(= (pos mug) R2D2)
+)
+
+)
+
+(:world
+(:init
+)
+)
+
+
+(:agent R2D2
+(:init
+)
+(:goal (and 
+    (= (pos mug) Michael)
+))
+)
+
+(:agent Michael
+(:init
+)
+(:goal (and 
+    (= (pos mug) Michael)
+))
+)
+
+
+
+)
