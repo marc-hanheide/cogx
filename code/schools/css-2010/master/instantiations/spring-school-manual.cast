@@ -14,7 +14,6 @@ INCLUDE includes/vision.sa/vision-objects.cast
 INCLUDE includes/vision.sa/vision-people.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 
-
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 

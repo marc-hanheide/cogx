@@ -5,8 +5,8 @@
 
 # Define host names
 # HOST <id>  <ip>//<hostname>
-HOST  Robot          192.168.33.125
-HOST  Remote         192.168.33.126
+HOST  Robot          localhost
+HOST  Remote         localhost
 
 # All subarchitectures executed on the same host
 # SA  <sa_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
