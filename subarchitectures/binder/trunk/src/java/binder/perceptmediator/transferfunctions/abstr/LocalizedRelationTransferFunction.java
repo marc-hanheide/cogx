@@ -88,9 +88,9 @@ public abstract class LocalizedRelationTransferFunction<From extends Ice.ObjectI
 					.put("is-in", FeatureValueBuilder
 							.createNewBooleanValue(true));
 			result.put(RelationElement0.value, FeatureValueBuilder
-					.createNewStringValue(wmaFrom.id));
+					.createNewPointerValue(wmaFrom));
 			result.put(RelationElement1.value, FeatureValueBuilder
-					.createNewStringValue(wmaPlace.id));
+					.createNewPointerValue(wmaPlace));
 
 		} catch (CASTException e) {
 			component
