@@ -99,8 +99,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							log("received a new belief: " + beliefData.getID());
 							
 							updatePointers(beliefData.getData(), TemporalUnionBelief.class);
-							
-							
+											
 							performInference(beliefData.getData(), _wmc.address, getPreferences(beliefData.getData()));			
 							
 							log("tracking operation on belief " + beliefData.getID() + " now finished");
@@ -168,10 +167,13 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		
 		if (b.type.equals("object")) {
 			prefs.setFile_correlations(prefs.markovlogicDir + "tracking/tracking-objects.mln");
+			prefs.activateTracking();
 		}
 		else if (b.type.equals("person")) {
 			prefs.setFile_correlations(prefs.markovlogicDir + "tracking/tracking-persons.mln");
+			prefs.activateTracking();
 		}
+
 		return prefs;
 	}
 
