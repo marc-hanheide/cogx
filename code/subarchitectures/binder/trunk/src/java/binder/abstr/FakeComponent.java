@@ -58,7 +58,7 @@ public abstract class FakeComponent extends BeliefWriter {
 				}
 				}
 				else {
-					log("WARNING, belief " + point + "not yet in working memory");
+					log("WARNING, belief " + point.id + "not yet in working memory");
 				}
 
 			}

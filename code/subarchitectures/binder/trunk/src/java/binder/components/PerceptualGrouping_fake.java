@@ -44,8 +44,8 @@ public class PerceptualGrouping_fake extends FakeComponent {
 								insertBeliefInWM(union);
 
 								addOffspring(beliefData.getData(), union.id);	
-								beliefUpdateToIgnore = beliefData.getID();
-								updateBeliefOnWM(beliefData.getData());
+					//			beliefUpdateToIgnore = beliefData.getID();
+					//			updateBeliefOnWM(beliefData.getData());
 							
 						}	
 
