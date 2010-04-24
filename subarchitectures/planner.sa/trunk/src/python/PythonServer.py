@@ -6,6 +6,7 @@ LOG_FORMAT="[%(levelname)s %(name)s: %(message)s]"
 logging.basicConfig(format=LOG_FORMAT)
 
 import autogen.Planner as Planner
+import beliefmodels.autogen as bm
 from beliefmodels.autogen import distribs, featurecontent
 #import binder.autogen.core
 import cast.core
@@ -252,6 +253,7 @@ def compute_state_updates(_state, old_state, actions):
 def update_beliefs(diffstate, namedict, beliefs):
   bdict = dict((b.id, b) for b in beliefs)
   changed_ids = set()
+  new_beliefs = []
 
   def get_value_dist(dist, feature):
     if isinstance(dist, distribs.DistributionWithExistDep):
@@ -265,14 +267,84 @@ def update_beliefs(diffstate, namedict, beliefs):
         return dist.values, None
       return None, None
     assert False, "class %s not supported" % str(type(dist))
-  
+
+  def find_relation(args, beliefs):
+    result = None
+
+    arg_values = []
+    for arg in args:
+      if arg in namedict:
+        #arg is provided by the binder
+        name = namedict[arg]
+      else:
+        #arg is a domain constant
+        name = arg.name
+        
+      if name in bdict:
+        #arg is a pointer to another belief
+        value = featurecontent.PointerValue(cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
+      elif arg.is_instance_of(pddl.t_boolean):
+        value = False
+        if arg == pddl.TRUE:
+          value = True
+        value = featurecontent.BooleanValue(value)
+      else:
+        #assume a string value
+        value = featurecontent.StringValue(name)
+
+      arg_values.append(value)
+    
+    for bel in beliefs:
+      if not bel.type == "relation":
+        continue
+      
+      found = True
+      for i, arg in enumerate(arg_values):
+        dist, _ = get_value_dist(bel.content, "element%d" % i)
+        if not dist:
+          found = False
+          break
+
+        elem = dist.values[0].val
+        if elem != arg:
+          found = False
+          break
+
+      if found:
+        result = bel
+        break
+
+    if result:
+      return result
+
+    frame = bm.framing.SpatioTemporalFrame()
+    eps = bm.epstatus.PrivateEpistemicStatus("robot")
+    hist = bm.history.CASTBeliefHistory([], [])
+    dist_dict = {}
+    for i, arg in enumerate(arg_values):
+      feat = "element%d" % i
+      pair = distribs.FeatureValueProbPair(arg, 1.0)
+      dist_dict[feat] = distribs.BasicProbDistribution(feat, distribs.FeatureValues([pair])) 
+    dist = distribs.CondIndependentDistribs(dist_dict)
+    result = bm.beliefs.StableBelief(frame, eps, "temporary", "relation", dist, hist)
+    return result
+    
   for svar, val in diffstate.iteritems():
-    obj = svar.args[0]
-    try:
-      bel = bdict[namedict[obj]]
-    except:
-      log.warning("tried to find belief for %s, but failed", str(obj))
+    if svar.modality:
       continue
+    
+    if len(svar.args) == 1:
+      obj = svar.args[0]
+      try:
+        bel = bdict[namedict[obj]]
+      except:
+        log.warning("tried to find belief for %s, but failed", str(obj))
+        continue
+    else:
+      bel = find_relation(svar.args, beliefs)
+      if bel.id == "temporary":
+        beliefs.append(bel)
+        new_beliefs.append(bel)
       
     feature = svar.function.name
     dist, parent = get_value_dist(bel.content, feature)
@@ -307,9 +379,10 @@ def update_beliefs(diffstate, namedict, beliefs):
       pair = distribs.FeatureValueProbPair(fval, 1.0)
       dist.values = [pair]
 
-    changed_ids.add(bel.id)
+    if bel.id != "temporary":
+      changed_ids.add(bel.id)
 
-  return [bdict[id] for id in changed_ids]
+  return [bdict[id] for id in changed_ids] + new_beliefs
   
 def print_state_difference(state1, state2, print_fn=None):
   def collect_facts(state):

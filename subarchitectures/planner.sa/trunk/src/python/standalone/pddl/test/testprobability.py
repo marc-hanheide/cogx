@@ -68,17 +68,17 @@ class ProbStateTest(common.PddlTest):
         self.assertEqual(dstate[svar_loc21], prob["pos2"])
 
         self.assertFalse(svar_loc11 in dstate)
-        self.assert_(svar_loc11.as_modality(mapl.i_indomain, [prob["pos1"]]) in dstate)
-        self.assert_(svar_loc11.as_modality(mapl.i_indomain, [prob["pos2"]]) in dstate)
-        self.assert_(svar_loc11.as_modality(mapl.i_indomain, [prob["apt2"]]) in dstate)
+        self.assertFalse(svar_loc11.as_modality(mapl.not_indomain, [prob["pos1"]]) in dstate)
+        self.assertFalse(svar_loc11.as_modality(mapl.not_indomain, [prob["pos2"]]) in dstate)
+        self.assertFalse(svar_loc11.as_modality(mapl.not_indomain, [prob["apt2"]]) in dstate)
 
         self.assert_(svar_loc12 in dstate)
         self.assertEqual(dstate[svar_loc12], prob["pos1"])
 
         self.assertFalse(svar_loc13 in dstate)
-        self.assert_(svar_loc13.as_modality(mapl.i_indomain, [prob["pos1"]]) in dstate)
-        self.assert_(svar_loc13.as_modality(mapl.i_indomain, [prob["pos2"]]) in dstate)
-        self.assertFalse(svar_loc13.as_modality(mapl.i_indomain, [prob["apt2"]]) in dstate)
+        self.assertFalse(svar_loc13.as_modality(mapl.not_indomain, [prob["pos1"]]) in dstate)
+        self.assertFalse(svar_loc13.as_modality(mapl.not_indomain, [prob["pos2"]]) in dstate)
+        self.assert_(svar_loc13.as_modality(mapl.not_indomain, [prob["apt2"]]) in dstate)
 
     def testProbabilisticEffect(self):
         """Testing probabilistic updates"""

@@ -589,8 +589,17 @@ class MAPLCompiler(Translator):
         self.remove_replan = remove_replan
         
     def translate_action(self, action, domain=None):
+        import mapl
         assert domain is not None
 
+        @visitors.copy
+        def visitor(eff, results):
+            if isinstance(eff, effects.SimpleEffect):
+                if (eff.predicate == mapl.knowledge):
+                    e2 = eff.copy()
+                    e2.predicate = mapl.direct_knowledge
+                    return e2
+        
         a2 = actions.Action(action.name, action.args, None, None, domain)
         if action.precondition:
             a2.precondition = action.precondition.copy(new_scope=a2)
@@ -603,7 +612,8 @@ class MAPLCompiler(Translator):
                 a2.replan = action.replan.copy(new_scope=a2)
                 
         if action.effect:
-            a2.effect = action.effect.copy(new_scope=a2)
+            a2.effect = action.effect.visit(visitor)
+            a2.effect.set_scope(a2)
         if action.sensors:
             keff = action.knowledge_effect().copy(a2)
             if a2.effect:
@@ -638,12 +648,13 @@ class MAPLCompiler(Translator):
         p = Parameter("?f", FunctionType(t_object))
         indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
         p = Parameter("?f", FunctionType(t_object))
-        i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
+        #i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
+        not_indomain = Predicate("not_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
 
         dom.predicates.add(knowledge)
         dom.predicates.add(direct_knowledge)
         dom.predicates.add(indomain)
-        dom.predicates.add(i_indomain)
+        dom.predicates.add(not_indomain)
         
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
@@ -660,6 +671,7 @@ class MAPLCompiler(Translator):
         for i in _problem.init:
             #determinise probabilistic init conditions
             if isinstance(i, effects.ProbabilisticEffect):
+                assert False
                 for p, eff in i.effects:
                     for e in eff.visit(visitors.to_list):
                         if e.predicate in assignment_ops:
