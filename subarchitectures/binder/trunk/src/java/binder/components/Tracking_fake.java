@@ -78,8 +78,8 @@ public class Tracking_fake extends FakeComponent {
 								if (existsOnWorkingMemory(child)) {
 									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
 									childBelief =TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
-									updateBeliefOnWM(childBelief);
 									updatePointers(childBelief, TemporalUnionBelief.class);
+									updateBeliefOnWM(childBelief);
 								}
 							}
 							}
