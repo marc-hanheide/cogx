@@ -1,0 +1,17 @@
+
+///////////////////////////////
+// NEW PERCEPT
+///////////////////////////////
+
+
+1.7346010553881064 Existence(P)
+-0.26787944515560119 Existence(P) ^ Label(P,Mug)
+-3.158251203051766 Existence(P) ^ Label(P,Ball)
+-3.158251203051766 Existence(P) ^ Label(P,Unknown)
+Existence(P) => !Label(P,None).
+Existence(P) => !Shape(P,Cyl).
+Existence(P) => !Shape(P,Sphe).
+Existence(P) => !Shape(P,Unknown).
+Existence(P) => Shape(P,None).
+
+
