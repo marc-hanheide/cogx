@@ -71,8 +71,8 @@ public class PerceptualGrouping_fake extends FakeComponent {
 								if (existsOnWorkingMemory(child)) {
 									PerceptUnionBelief childBelief = getMemoryEntry(child, PerceptUnionBelief.class);
 									childBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
-									updateBeliefOnWM(childBelief);
 									updatePointers(childBelief, PerceptUnionBelief.class);
+									updateBeliefOnWM(childBelief);
 								}
 							}
 							}

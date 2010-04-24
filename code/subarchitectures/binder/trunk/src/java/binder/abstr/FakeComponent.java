@@ -18,7 +18,7 @@ public abstract class FakeComponent extends BeliefWriter {
 		(Belief newlyConstructedBelief, Class<Type> cls) {
 		
 		updatePointersInCurrentBelief(newlyConstructedBelief);
-		updatePointersInOtherBeliefs(newlyConstructedBelief,cls);
+	//	updatePointersInOtherBeliefs(newlyConstructedBelief,cls);
 
 	}
 

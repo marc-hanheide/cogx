@@ -6,7 +6,6 @@ import java.util.List;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
-import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
@@ -75,8 +74,8 @@ public class MultiModalEstimation_fake extends FakeComponent {
 								if (existsOnWorkingMemory(child)) {
 									MultiModalBelief childBelief = getMemoryEntry(child, MultiModalBelief.class);
 									childBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, childBelief.id);
-									updateBeliefOnWM(childBelief);
 									updatePointers(childBelief, MultiModalBelief.class);
+									updateBeliefOnWM(childBelief);
 								}
 							}
 							}

@@ -78,8 +78,8 @@ public class TemporalSmoothing_fake extends FakeComponent {
 								if (existsOnWorkingMemory(child)) {
 									StableBelief childBelief = getMemoryEntry(child, StableBelief.class);
 									childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, childBelief.id);
-									updateBeliefOnWM(childBelief);
 									updatePointers(childBelief, StableBelief.class);
+									updateBeliefOnWM(childBelief);
 								}
 							}
 							}
