@@ -1,0 +1,12 @@
+HOST localhost
+
+
+SUBARCHITECTURE motivation.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG motivation.generators.TestGenerator motivation.components.generators.TestGenerator   --log 
+#JAVA MG PlaceGenerator spatial.motivation.PlaceGenerator   --log
+JAVA MG motivation.filters.MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" --log
+JAVA MG motivation.managers.PlanAllManager motivation.components.managers.PlanAllManager  --log
+JAVA MG motivation.util.WMMotiveDisplay motivation.util.WMMotiveDisplay  --log
+JAVA MG motivation.util.viewer.ViewerCastComponent motivation.util.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive"
