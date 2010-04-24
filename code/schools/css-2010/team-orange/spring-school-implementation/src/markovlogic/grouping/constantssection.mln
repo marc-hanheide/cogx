@@ -1,0 +1,16 @@
+
+///////////////////////////////
+// CONSTANTS 
+///////////////////////////////
+
+// beliefs
+existingunion = {U0_3,U1_3,U2_3}
+percept = {P}
+belief = {U0_3,U1_3,U2_3,P}
+
+// possible outcomes of the grouping process
+outcome = {U3_3,U4_3,U5_3,U6_3}
+
+// feature values
+shapeval = {Cyl,Sphe,Unknown,None}
+labelval = {Mug,Ball,Unknown,None}
