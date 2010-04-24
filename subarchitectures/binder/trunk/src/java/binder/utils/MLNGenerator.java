@@ -762,7 +762,7 @@ public class MLNGenerator {
 			String value = getFeatureValue(pair.val);
 			String formula = setFirstLetterToUppercase(feature) + "(" + belief_id + "," + setFirstLetterToUppercase(value) + ")";
 			formulae.add(new MLFormula(weight, formula));
-			occuring_values.add(value);
+			occuring_values.add(setFirstLetterToUppercase(value));
 		}
 
 		// now we need to add the hard constraint for all the names
@@ -907,18 +907,18 @@ public class MLNGenerator {
 	 */
 	
 	private Float convertProbabilityToWeight(float prob) throws MLException {
-		if(prob > 1f || prob < 0f) {
+		if(Float.compare(prob, 1f) > 0 || Float.compare(prob, 0f) < 0) {
 			throw new MLException("Value is not a probability: " + prob);
 		}
 		// handle the border case, where denominator approaches 0 or 1
-		if(prob >= 1f - EPSILON) {
+		if(Float.compare(prob, 1f) >= 0) {
 			return Float.MAX_VALUE;
 		}
-		if(prob <= EPSILON) {
+		if(Float.compare(prob, 0f) <= 0) {
 			return Float.MIN_VALUE;
 		}
 		else {
-			return Math.max(new Float(Math.log(prob / (1f - prob))),0);
+			return new Float(Math.log(prob / (1f - prob)));
 		}
 	}
 
@@ -928,10 +928,26 @@ public class MLNGenerator {
 	 * 
 	 * @param weight
 	 * @return the corresponding probability
+	 * @throws MLException 
 	 */
-	private Float convertWeightToProbability(float weight) {
+	private Float convertWeightToProbability(float weight) throws MLException {
+		// handle the border cases
+		if(Float.compare(weight, Float.MIN_VALUE) == 0) {
+			return 0f;
+		}
+		if(Float.compare(weight, Float.MAX_VALUE) == 0) {
+			return 1f;
+		}
+		
 		float a = (float)Math.exp(weight);
-		return new Float(a/(1+a));
+		
+		a = a/(a+1);
+		
+		if(Float.compare(a, Float.NaN) == 0) {
+			throw new MLException("Error in probability conversion...");
+		}
+		
+		return a;
 	}
 	
 	/**

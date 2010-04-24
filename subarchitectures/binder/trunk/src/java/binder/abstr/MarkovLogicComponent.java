@@ -63,7 +63,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	protected String predicatesFile = "";
 	protected String correlationsFile = "";
 
-	public float lowestProbThreshold = 0.08f;
+	public float lowestProbThreshold = 0.20f;
 	public int maxAlternatives = 2;
 	public float minProbDifferenceForUpdate = 0.1f;
 
@@ -86,7 +86,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		Runtime run = Runtime.getRuntime(); 
 		log("Now running Alchemy...");
 		try {
-			String[] args = {inferCmd, "-i", mlnFile, "-e", emptyFile, "-r", resultsFile, "-q", query};
+			String[] args = {inferCmd, "-i", mlnFile, "-e", emptyFile, "-r", resultsFile, "-q", query, "-maxSteps", "50"};
 			Process p = run.exec(args);
 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -453,27 +453,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	 * @return
 	 * @throws BeliefException
 	 */
-	protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, T belief) throws BeliefException {
-		
-		Map<String,Belief> relevantUnions = new HashMap<String,Belief>();
-		
-		if (((CASTBeliefHistory)belief.hist).ancestors.size() == 0) {
-			throw new BeliefException ("ERROR: belief history contains 0 element");
-		}
-		
-		for(String mmbeliefOrigin : getOriginSubarchitectures(belief)) {
-			for(String existingUnionId : existingUnions.keySet()) {
-				
-				Belief existingUnion = existingUnions.get(existingUnionId);
-				List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
-				
-				if (existinUnionOrigins.contains(mmbeliefOrigin)) {
-					relevantUnions.put(existingUnionId, existingUnion);
-				}
-			}
-		}
-		return relevantUnions;
-	}
+	abstract protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, T belief) throws BeliefException  ;
 	
 	protected abstract Vector<Belief> createNewUnions(
 			T percept,

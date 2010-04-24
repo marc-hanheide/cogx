@@ -48,7 +48,7 @@ import cast.core.CASTData;
  * the test with percepts instead of unions as inputs OK
  * 
  * @author plison
- * 
+ *  
  */
 public class PerceptualGrouping_MLN extends MarkovLogicComponent<PerceptBelief> {
 
@@ -318,5 +318,13 @@ public class PerceptualGrouping_MLN extends MarkovLogicComponent<PerceptBelief> 
 			WorkingMemoryAddress beliefWMAddress) throws BeliefException {
 		PerceptUnionBelief union = PerceptUnionBuilder.createNewSingleUnionBelief(belief, beliefWMAddress, newDataID());
 		return union;
+	}
+
+	@Override
+	protected Map<String, Belief> selectRelevantUnions(
+			Map<String, Belief> existingUnions, PerceptBelief belief)
+			throws BeliefException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
