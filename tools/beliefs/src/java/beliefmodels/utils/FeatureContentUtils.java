@@ -238,6 +238,44 @@ public class FeatureContentUtils {
 	}
 	
 	
+	public static void replaceExistingValueInDistribution (ProbDistribution distrib, String featlabel, 
+			FeatureValueProbPair newPair) throws BeliefException {
+		
+		if (distrib instanceof DistributionWithExistDep) {
+			replaceExistingValueInDistribution (((DistributionWithExistDep)distrib).Pc, featlabel, newPair);
+		}
+		
+		if (distrib instanceof CondIndependentDistribs) {
+						
+			if (((CondIndependentDistribs)distrib).distribs.containsKey(featlabel)) {
+							
+				ProbDistribution featDistrib = ((CondIndependentDistribs)distrib).distribs.get(featlabel);
+				
+				replaceExistingValueInBasicDistribution((BasicProbDistribution)featDistrib, newPair);
+					
+			}
+			
+			else  {
+				BasicProbDistribution newDistrib = 
+					BeliefContentBuilder.createNewFeatureDistributionWithSinglePair(featlabel, newPair);
+				BeliefContentBuilder.putNewCondIndependentDistrib((CondIndependentDistribs)distrib, newDistrib);
+			}
+		}
+	}
+	
+	
+
+	public static void replaceExistingValueInBasicDistribution(BasicProbDistribution distrib, FeatureValueProbPair newPair) {
+		if (distrib.values.getClass().equals(FeatureValues.class)) {
+			FeatureValues featvals = (FeatureValues)distrib.values;
+			
+			featvals.values = new LinkedList<FeatureValueProbPair>();
+			featvals.values.add(newPair);
+		}
+	}
+	
+	
+	
 	public static void addAnotherValueInBasicProbDistribution(BasicProbDistribution distrib, FeatureValueProbPair newPair) {
 		if (distrib.values.getClass().equals(FeatureValues.class)) {
 			FeatureValues featvals = (FeatureValues)distrib.values;
