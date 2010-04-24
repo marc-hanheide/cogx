@@ -43,6 +43,7 @@
  		<ant target="${target}" dir="subarchitectures/planner.sa" /> 
 		<ant target="${target}" dir="subarchitectures/coma.sa" /> 
  		<ant target="${target}" dir="subarchitectures/motivation.sa" />
+ 		<ant target="${target}" dir="spring-school-implementation" /> 
 	</target>
 
 
