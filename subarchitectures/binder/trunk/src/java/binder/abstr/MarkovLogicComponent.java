@@ -67,7 +67,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	public int maxAlternatives = 2;
 	public float minProbDifferenceForUpdate = 0.1f;
 
-	protected String beliefUpdateToIgnore = "";
+	protected Vector<String> beliefUpdateToIgnore = new Vector<String>();
 
 	
 	public MarkovLogicComponent(T belief) {
@@ -202,15 +202,15 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
 				
 				log("inserting belief " + newUnion.id + " on WM");
-
-				updatePointersInCurrentBelief(newUnion);
-				updatePointersInOtherBeliefs(newUnion);
-					
+			
+				// adding the offspring
 				addOffspring(belief, newUnion.id);	
-				beliefUpdateToIgnore = belief.id;
+				beliefUpdateToIgnore.add(belief.id);
 
 				try {
 					insertBeliefInWM(newUnion);
+					updateBeliefOnWM(belief);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				} 
@@ -230,15 +230,13 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
 				
 				log("inserting belief " + union.id + " on WM");
-
-				updatePointersInCurrentBelief(union);
-				updatePointersInOtherBeliefs(union);
-					
+			
 				addOffspring(belief, union.id);	
-				beliefUpdateToIgnore = belief.id;
+				beliefUpdateToIgnore.add(belief.id);
 
 				try {
 					insertBeliefInWM(union);
+					updateBeliefOnWM(belief);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} 

@@ -2,6 +2,7 @@ package binder.components;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
@@ -29,7 +30,7 @@ import cast.core.CASTData;
 public class Tracking_fake extends FakeComponent {
  
 
-	String beliefUpdateToIgnore = "";
+	Vector<String> beliefUpdateToIgnore = new Vector<String>();
 
 	    
 	@Override
@@ -49,7 +50,7 @@ public class Tracking_fake extends FakeComponent {
 							insertBeliefInWM(tunion);
 
 							addOffspring(beliefData.getData(), tunion.id);	
-							beliefUpdateToIgnore = beliefData.getID();
+							beliefUpdateToIgnore.add(beliefData.getID());
 							updateBeliefOnWM(beliefData.getData());
 							
 						}	
@@ -70,7 +71,7 @@ public class Tracking_fake extends FakeComponent {
 						try {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
-							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							
@@ -85,7 +86,7 @@ public class Tracking_fake extends FakeComponent {
 							}
 							else {
 								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore = "";
+								beliefUpdateToIgnore.remove(beliefData.getID());
 							}
 						}	
 

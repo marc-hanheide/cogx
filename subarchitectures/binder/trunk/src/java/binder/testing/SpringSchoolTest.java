@@ -106,8 +106,6 @@ try {
 			ProbDistribution content_b3 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b3);
 			
 			PerceptBelief b3 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b3, hist_b3);
-
-			sleepComponent(5000);
 			
 			insertBeliefInWM(b3);
 				
