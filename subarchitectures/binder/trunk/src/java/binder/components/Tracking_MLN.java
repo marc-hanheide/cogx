@@ -10,11 +10,13 @@ import java.util.Vector;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
+import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import beliefmodels.utils.FeatureContentUtils;
@@ -133,21 +135,41 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 					@SuppressWarnings("unchecked")
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
 						try {
-							workingMemoryChangeDelete(_wmc.address);
+		//					workingMemoryChangeDelete(_wmc.address);
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
-
+							
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									log("belief " + child.id + " exists on WM, overwriting");
+									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
+									childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
+									updatePointers(childBelief, TemporalUnionBelief.class);
+									updateBeliefOnWM(childBelief);
+								}
+								else {
+									log("belief " + child.id + " does not exist on WM, creating it");
+									TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+									updatePointers(childBelief, TemporalUnionBelief.class);
+									insertBeliefInWM(childBelief);
+								}
+							}
+							
 		//					log("beliefUpdateToIgnore: " + beliefUpdateToIgnore);
 							
-							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
-							log("received a belief update: " + beliefData.getID());
+			//				if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
+								
+					/**		log("received a belief update: " + beliefData.getID());
 							MultiModalBelief belief = beliefData.getData();
 							updatePointers(belief, TemporalUnionBelief.class);
 							performInference(belief, _wmc.address, getPreferences(belief));
-							log("tracking operation on belief " + belief.id + " now finished");
-							}	
-							else {
+							log("tracking operation on belief " + belief.id + " now finished"); */
+							
+					//		}	
+			/**				else {
 								beliefUpdateToIgnore.remove(beliefData.getID());
-							}
+							} */
 						}
 						catch (Exception e) {
 							e.printStackTrace();
@@ -165,12 +187,12 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		
 		if (b.type.equals("object")) {
 			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
-			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlatioins_predicates.mln");
-	//		prefs.activateTracking();
+			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
+			prefs.activateTracking();
 		}
 		else if (b.type.equals("person")) {
 			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
-	//		prefs.activateTracking();
+			prefs.activateTracking();
 		}
 
 		return prefs;

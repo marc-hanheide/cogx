@@ -64,7 +64,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	public int maxAlternatives = 1;
 	public float minProbDifferenceForUpdate = 0.1f;
 
-	protected Vector<String> beliefUpdateToIgnore = new Vector<String>();
+//	protected Vector<String> beliefUpdateToIgnore = new Vector<String>();
 
 	
 	public MarkovLogicComponent(Class<T> cls, String MLNFile) {
@@ -205,10 +205,10 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			
 				// adding the offspring
 				addOffspring(belief, newUnion.id);	
-				beliefUpdateToIgnore.add(belief.id);
+	//			beliefUpdateToIgnore.add(belief.id);
 
 				try {
-					insertBeliefInWM(newUnion);
+	//				insertBeliefInWM(newUnion);
 					updateBeliefOnWM(belief);
 
 				} catch (Exception e) {
@@ -232,12 +232,14 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 				log("inserting belief " + union.id + " on WM");
 			
 				addOffspring(belief, union.id);	
-				beliefUpdateToIgnore.add(belief.id);
+		//		beliefUpdateToIgnore.add(belief.id);
 
 				try {
-					insertBeliefInWM(union);
+		//			insertBeliefInWM(union);
 					updateBeliefOnWM(belief);
-				} catch (Exception e) {
+					
+				} 
+				catch (Exception e) {
 					e.printStackTrace();
 				} 
 			}
