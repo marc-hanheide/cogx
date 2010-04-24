@@ -1,11 +1,14 @@
+cmake_minimum_required (VERSION 2.6)
+project (Alchemy)
+
 if(APPLE)
-  add_custom_target(ALL alchemy
-                   COMMAND make -f makefile_MAC
-                   WORKING_DIRECTORY ${COGX_ROOT}/tools/alchemy/src
-                   COMMENT "Building alchemy")
+	set(ALCHEMY_MAKEFILE makefile_MAC)
 else()
-  add_custom_target(ALL alchemy
-                   COMMAND make
-                   WORKING_DIRECTORY ${COGX_ROOT}/tools/alchemy/src
-                   COMMENT "Building alchemy")
+	set(ALCHEMY_MAKEFILE makefile)
 endif()
+
+add_custom_target(alchemy ALL
+	COMMAND make -f ${ALCHEMY_MAKEFILE}
+	WORKING_DIRECTORY ${COGX_ROOT}/tools/alchemy/src
+	COMMENT "Building alchemy"
+)
