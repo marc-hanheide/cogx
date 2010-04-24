@@ -6,7 +6,6 @@ import java.util.List;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
-import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
@@ -80,7 +79,7 @@ public class Tracking_fake extends FakeComponent {
 									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
 									childBelief =TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
 									updateBeliefOnWM(childBelief);
-									updatePointers(childBelief, PerceptUnionBelief.class);
+									updatePointers(childBelief, TemporalUnionBelief.class);
 								}
 							}
 							}

@@ -5,8 +5,6 @@ import java.util.List;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
-import beliefmodels.autogen.beliefs.MultiModalBelief;
-import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
@@ -81,7 +79,7 @@ public class TemporalSmoothing_fake extends FakeComponent {
 									StableBelief childBelief = getMemoryEntry(child, StableBelief.class);
 									childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, childBelief.id);
 									updateBeliefOnWM(childBelief);
-									updatePointers(childBelief, PerceptUnionBelief.class);
+									updatePointers(childBelief, StableBelief.class);
 								}
 							}
 							}
