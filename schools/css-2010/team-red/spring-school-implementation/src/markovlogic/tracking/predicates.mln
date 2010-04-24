@@ -1,0 +1,14 @@
+
+///////////////////////////////
+// PREDICATES  
+///////////////////////////////
+
+Existence(belief)
+Shape(belief,shapeval)
+Label(belief,labelval)
+Type(belief,typeval)
+Location(belief,locationval)
+Pointer(belief,pointerval)
+
+Outcome(outcome)
+UnifyWith(existingunion)
