@@ -50,8 +50,8 @@ public class Tracking_fake extends FakeComponent {
 							insertBeliefInWM(tunion);
 
 							addOffspring(beliefData.getData(), tunion.id);	
-							beliefUpdateToIgnore = beliefData.getID();
-							updateBeliefOnWM(beliefData.getData());
+			//				beliefUpdateToIgnore = beliefData.getID();
+			//				updateBeliefOnWM(beliefData.getData());
 							
 						}	
 			

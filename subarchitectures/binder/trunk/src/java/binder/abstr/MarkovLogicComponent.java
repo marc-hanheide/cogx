@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.Map.Entry;
 
+import binder.utils.FileUtils;
+
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
