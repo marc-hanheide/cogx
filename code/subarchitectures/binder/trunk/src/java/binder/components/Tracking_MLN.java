@@ -123,7 +123,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							workingMemoryChangeDelete(_wmc.address);
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
-							log("beliefUpdateToIgnore: " + beliefUpdateToIgnore);
+		//					log("beliefUpdateToIgnore: " + beliefUpdateToIgnore);
 							
 							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 							log("received a new belief: " + beliefData.getID());
@@ -338,4 +338,35 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		TemporalUnionBelief union = TemporalUnionBuilder.createNewSingleUnionBelief(belief, beliefWMAddress, newDataID());
 		return union;
 	}
+	
+	
+	protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, MultiModalBelief belief) throws BeliefException {
+		
+		Map<String,Belief> relevantUnions = new HashMap<String,Belief>();
+		
+		for (String existingUnionId: existingUnions.keySet()) {
+			Belief existingUnion = existingUnions.get(existingUnionId);
+			if (existingUnion.type.equals(belief.type)) {
+				relevantUnions.put(existingUnionId, existingUnion);
+			}
+		}
+		
+		/**	if (((CASTBeliefHistory)belief.hist).ancestors.size() == 0) {
+			throw new BeliefException ("ERROR: belief history contains 0 element");
+		}
+		
+		for(String mmbeliefOrigin : getOriginSubarchitectures(belief)) {
+			for(String existingUnionId : existingUnions.keySet()) {
+				
+				Belief existingUnion = existingUnions.get(existingUnionId);
+				List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
+				
+				if (existinUnionOrigins.contains(mmbeliefOrigin)) {
+					relevantUnions.put(existingUnionId, existingUnion);
+				}
+			}
+		} */
+		return relevantUnions;
+	}
+
 }
