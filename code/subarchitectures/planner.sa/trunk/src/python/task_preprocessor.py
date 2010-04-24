@@ -119,7 +119,6 @@ def gen_fact_tuples(beliefs):
   for bel in beliefs:
     factdict = defaultdict(list)
     for feat, val, prob in extract_features(bel.content):
-      print feat, bel.id, val, prob
       factdict[str(feat)].append((val, prob))
       
     if bel.type != "relation":
@@ -250,7 +249,7 @@ def infer_types(obj_descriptions):
     
     types = constraints[obj]
     types.add(obj.type)
-    log.debug("%s has the following type constraints %s", obj.name, map(str,types))
+    #log.debug("%s has the following type constraints %s", obj.name, map(str,types))
     def type_cmp(type1, type2):
       if type1 == type2:
         return 0
