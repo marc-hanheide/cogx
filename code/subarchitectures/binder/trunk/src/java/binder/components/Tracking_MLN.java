@@ -19,6 +19,7 @@ import beliefmodels.utils.DistributionUtils;
 import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
+import binder.utils.MLNPreferences;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -86,7 +87,9 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							
 							updatePointers(beliefData.getData(), TemporalUnionBelief.class);
 							
-							performInference(beliefData.getData(), _wmc.address);
+							
+							performInference(beliefData.getData(), _wmc.address, getPreferences(beliefData.getData()));
+							
 							
 							log("tracking operation on belief " + beliefData.getID() + " now finished");
 
@@ -126,10 +129,10 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		//					log("beliefUpdateToIgnore: " + beliefUpdateToIgnore);
 							
 							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
-							log("received a new belief: " + beliefData.getID());
+							log("received a belief update: " + beliefData.getID());
 							MultiModalBelief belief = beliefData.getData();
-							performInference(belief, _wmc.address);
-							log("tracking operation on belief " + beliefData.getID() + " now finished");
+							performInference(belief, _wmc.address, getPreferences(belief));
+							log("tracking operation on belief " + belief.id + " now finished");
 							}	
 							else {
 								beliefUpdateToIgnore.remove(beliefData.getID());
@@ -144,6 +147,21 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	}
 
 	
+	
+	
+	private MLNPreferences getPreferences(Belief b) {
+		MLNPreferences prefs = new MLNPreferences();
+		prefs.setFile_correlations(correlationsFile);
+		prefs.setFile_predicates(predicatesFile);
+		
+		if (b.type.equals("object")) {
+			prefs.setFile_correlations(prefs.markovlogicDir + "tracking/tracking-objects.mln");
+		}
+		else if (b.type.equals("person")) {
+			prefs.setFile_correlations(prefs.markovlogicDir + "tracking/tracking-persons.mln");
+		}
+		return prefs;
+	}
 
 	/**
 	 * Create a set of new mmbelief union beliefs from the inference results,

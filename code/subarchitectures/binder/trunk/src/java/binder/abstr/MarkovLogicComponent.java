@@ -128,7 +128,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	 * 
 	 * @param belief the new belief which was inserted
 	 */
-	public void performInference(T belief, WorkingMemoryAddress beliefWMAddress) throws BeliefException {
+	public void performInference(T belief, WorkingMemoryAddress beliefWMAddress, MLNPreferences prefs)
+		throws BeliefException {
 		// extract the unions already existing in the binder WM
 		Map<String, Belief> existingUnions = extractExistingUnions();
 		
@@ -136,7 +137,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		if (relevantUnions.size() > 0) {
 			performInferenceSomethinToGroup(belief, beliefWMAddress,
-					relevantUnions);
+					relevantUnions, prefs);
 		}
 		
 		else {
@@ -146,7 +147,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 
 	private void performInferenceSomethinToGroup(T belief,
 			WorkingMemoryAddress beliefWMAddress,
-			Map<String, Belief> relevantUnions) {
+			Map<String, Belief> relevantUnions, MLNPreferences prefs) {
 		// Create identifiers for each possible new union		
 		Map<String, String> unionsMapping = createIdentifiersForNewUnions(relevantUnions);
 		
@@ -154,7 +155,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		// unionsMapping.put("P", newSingleUnionId);
 		// Write the Markov logic network to a file
-		writeMarkovLogic(belief, relevantUnions, unionsMapping, newSingleUnionId);
+		writeMarkovLogic(belief, relevantUnions, unionsMapping, newSingleUnionId, prefs);
 
 		// run the alchemy inference
 		try { 
@@ -265,11 +266,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 
 	private void writeMarkovLogic(T mmbelief,
 			Map<String, Belief> relevantUnions,
-			Map<String, String> unionsMapping, String newSingleUnionId) {
+			Map<String, String> unionsMapping, String newSingleUnionId, MLNPreferences prefs) {
 		try {
-			MLNPreferences prefs = new MLNPreferences();
-			prefs.setFile_correlations(correlationsFile);
-			prefs.setFile_predicates(predicatesFile);
 			MLNGenerator gen = new MLNGenerator(prefs);
 			gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
 		} catch (MLException e1) {
