@@ -3,7 +3,6 @@ package binder.abstr;
 import java.util.LinkedList;
 
 import beliefmodels.autogen.beliefs.Belief;
-import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
