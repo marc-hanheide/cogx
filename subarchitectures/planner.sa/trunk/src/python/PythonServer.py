@@ -29,12 +29,13 @@ from standalone.planner import Planner as StandalonePlanner
 
 BINDER_SA = "binder"
 
-TEST_DOMAIN_FN = join(dirname(__file__), "test_data/springtest.mapl")
+TEST_DOMAIN_FN = join(dirname(__file__), "domains/springtest.mapl")
 
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   
   def __init__(self):
     cast.core.CASTComponent.__init__(self)
+    self.domain_fn = TEST_DOMAIN_FN
     self.client = None
     self.planner = StandalonePlanner()
     self.tasks = {}
@@ -49,6 +50,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     
     self.client_name = config.get("--wm", "Planner")
     self.show_dot = "--nodot" not in config
+
+    if "--domain" in config:
+      self.domain_fn = join(dirname(__file__), "domains", config["--domain"])
 
     logging.getLogger().setLevel(logging.WARNING)
     if "--log" in config:
@@ -80,7 +84,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #print "INIT: " + task_desc.state;
 
     import task_preprocessor
-    task = task_preprocessor.generate_mapl_task(task_desc, TEST_DOMAIN_FN)
+    task = task_preprocessor.generate_mapl_task(task_desc, self.domain_fn)
     self.tasks[task_desc.id] = task
 
     self.planner.register_task(task)
@@ -200,7 +204,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #print map(str, objects)
     #print map(str, facts)
 
-    print_state_difference(task.get_state(), new_state)
+    old_state = task.get_state()
+    print_state_difference(old_state, new_state)
 
     newtask = pddl.Problem(task.mapltask.name, objects, [], None, task._mapldomain)
 
@@ -215,7 +220,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.mapltask = newtask
 
     if finished_actions:
-      diffstate = compute_state_updates(task.get_state(), finished_actions)
+      diffstate = compute_state_updates(task.get_state(), old_state, finished_actions)
       for fact in diffstate.iterfacts():
         task.get_state().set(fact)
       beliefs = update_beliefs(diffstate, task.namedict, task_desc.state)
@@ -228,13 +233,16 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.replan()
     self.deliver_plan(task)
 
-def compute_state_updates(_state, actions):
+def compute_state_updates(_state, old_state, actions):
   diffstate = state.State()
   for action in actions:
     for fact in action.effects:
       if fact not in _state:
-        diffstate.set(fact)
-        log.debug("not in state: %s", str(fact))
+        if old_state[fact.svar] == _state[fact.svar]:
+          diffstate.set(fact)
+          log.debug("not in state: %s", str(fact))
+        else:
+          log.debug("don't update fact %s, it was overwritten from outside", str(fact));
       elif fact.svar in diffstate:
         del diffstate[fact.svar]
         log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
