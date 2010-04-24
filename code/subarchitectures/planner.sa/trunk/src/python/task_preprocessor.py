@@ -11,7 +11,7 @@ from beliefmodels.autogen import distribs, featurecontent
 
 log = standalone.config.logger("PythonServer")
 
-forbidden_letters = "-:"
+forbidden_letters = "-: "
 replace_chr = "_"
 trans_tbl = maketrans(forbidden_letters, replace_chr * len(forbidden_letters))
 UCASE_REXP = re.compile("([A-Z])")

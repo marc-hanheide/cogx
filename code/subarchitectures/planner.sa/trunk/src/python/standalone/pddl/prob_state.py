@@ -257,10 +257,11 @@ class ProbabilisticState(State):
         s = State(prob=self.problem)
         svar2idvars = defaultdict(list)
         for fact, prob in self.iterfacts():
+            #TODO: Handle cases with limited number of alternatives
             if prob >= upper_threshold:
                 s.set(fact)
-            elif prob > lower_threshold:
-                idvar = fact.svar.as_modality(mapl.i_indomain, [fact.value])
+            elif prob < lower_threshold:
+                idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
                 svar2idvars[fact.svar].append(idvar)
         for svar, idvars in svar2idvars.iteritems():
             if svar not in s:
