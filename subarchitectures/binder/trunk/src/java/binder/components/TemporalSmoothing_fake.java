@@ -6,11 +6,13 @@ import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.builders.MultiModalBeliefBuilder;
 import beliefmodels.builders.StableBeliefBuilder;
 import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.FeatureContentUtils;
@@ -29,8 +31,6 @@ import cast.core.CASTData;
 
 public class TemporalSmoothing_fake extends FakeComponent {
 
-	
-	Vector<String> beliefUpdateToIgnore = new Vector<String>();
 
 	
 	@Override
@@ -43,14 +43,7 @@ public class TemporalSmoothing_fake extends FakeComponent {
 						try {
 							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
 							
-							StableBelief stableBelief = StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, newDataID());
-							
-							updatePointers(stableBelief, StableBelief.class);
-							
-							insertBeliefInWM(stableBelief);
-
-							addOffspring(beliefData.getData(), stableBelief.id);	
-							beliefUpdateToIgnore.add(beliefData.getID());
+							addOffspring(beliefData.getData(), newDataID());	
 							updateBeliefOnWM(beliefData.getData());
 								
 						}	
@@ -70,23 +63,24 @@ public class TemporalSmoothing_fake extends FakeComponent {
 						try {
 							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
 
-							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							log("number of offspring for : " + beliefData.getData().id + ": "+ offspring.size());
 
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
+									log("belief " + child.id + " exists on WM, overwriting");
 									StableBelief childBelief = getMemoryEntry(child, StableBelief.class);
 									childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, childBelief.id);
 									updatePointers(childBelief, StableBelief.class);
 									updateBeliefOnWM(childBelief);
 								}
-							}
-							}
-							else {
-								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore.remove(beliefData.getData());
+								else {
+									log("belief " + child.id + " does not exist on WM, creating it");
+									StableBelief childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, child.id);
+									updatePointers(childBelief, StableBelief.class);
+									insertBeliefInWM(childBelief);
+								}
 							}
 							
 						}	
