@@ -48,8 +48,8 @@ public class MultiModalEstimation_fake extends FakeComponent {
 								insertBeliefInWM(mmBelief);
 
 								addOffspring(beliefData.getData(), mmBelief.id);	
-			//					beliefUpdateToIgnore = beliefData.getID();
-			//					updateBeliefOnWM(beliefData.getData());
+								beliefUpdateToIgnore = beliefData.getID();
+								updateBeliefOnWM(beliefData.getData());
 						}	
 			
 						 catch (Exception e) {

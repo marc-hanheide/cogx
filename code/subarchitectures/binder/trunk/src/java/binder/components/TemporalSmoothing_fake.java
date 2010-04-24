@@ -51,8 +51,8 @@ public class TemporalSmoothing_fake extends FakeComponent {
 							insertBeliefInWM(stableBelief);
 
 							addOffspring(beliefData.getData(), stableBelief.id);	
-			//				beliefUpdateToIgnore = beliefData.getID();
-			//				updateBeliefOnWM(beliefData.getData());
+							beliefUpdateToIgnore = beliefData.getID();
+							updateBeliefOnWM(beliefData.getData());
 								
 						}	
 			
