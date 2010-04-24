@@ -352,7 +352,7 @@ public class BeliefContentBuilder {
 		
 		if (value.prob < 0.99) {
 				debug("prob is: " + value.prob +", adding unknown value");
-				FeatureValueProbPair uval = new FeatureValueProbPair(new UnknownValue(), 1- value.prob);
+				FeatureValueProbPair uval = new FeatureValueProbPair(new UnknownValue(), 1.0f- value.prob);
 				values.add(uval);
 		}
 		
