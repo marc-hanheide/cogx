@@ -3,20 +3,21 @@ package castutils.viewer.plugins;
 import java.util.Vector;
 import java.util.Map.Entry;
 
-import cast.cdl.WorkingMemoryAddress;
-import cast.core.CASTUtils;
-
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.BooleanValue;
 import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.FloatValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTUtils;
 
 //import binder.utils.BeliefModelUtils;
 
@@ -72,6 +73,10 @@ public class BeliefInfo implements Plugin {
 			featStr=CASTUtils.toString(((PointerValue) fv).beliefId);
 		if (fv instanceof StringValue)
 			featStr=((StringValue) fv).val;
+		if (fv instanceof FloatValue)
+			featStr= Double.toString(((FloatValue) fv).val);
+		if (fv instanceof BooleanValue)
+			featStr=Boolean.toString(((BooleanValue) fv).val);
 		return featStr;
 	}
 
