@@ -64,6 +64,7 @@ try {
 			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b1, hist_b1);
 
 			insertBeliefInWM(b1);
+	
 	 
 			
 			CASTBeliefHistory hist_b2 = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","vision"));
