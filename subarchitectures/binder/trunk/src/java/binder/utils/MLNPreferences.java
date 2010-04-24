@@ -49,6 +49,16 @@ public class MLNPreferences {
 	
 	private String file_predicates;
 	
+	private boolean performTracking = false;
+	
+	public void activateTracking() {
+		performTracking = true;
+	}
+	
+	public boolean isTrackingActivated() {
+		return performTracking;
+	}
+	
 	public MLNPreferences() {
 		greediness = -3.5f;
 		outcome = -1f;

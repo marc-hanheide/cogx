@@ -135,7 +135,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
 		
-		if (relevantUnions.size() > 0) {
+		if (relevantUnions.size() > 0 && prefs.isTrackingActivated()) {
 			performInferenceSomethinToGroup(belief, beliefWMAddress,
 					relevantUnions, prefs);
 		}
