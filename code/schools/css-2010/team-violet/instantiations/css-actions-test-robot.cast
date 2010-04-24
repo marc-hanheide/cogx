@@ -1,0 +1,25 @@
+HOST localhost
+
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG  video OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+CPP MG people-detector PeopleDetector --log --videohost localhost --videoname video --camid 0 --deinterlace 0 --sleepForSync 0 --faceCascade "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml" --fullbodyCascade "/usr/share/opencv/haarcascades/haarcascade_fullbody.xml"  --numattempts 5
+CPP MG people-test PeopleDetectorTest --log --videohost localhost --videoname video --camid 0 
+INCLUDE includes/vision.sa/vision-execution.cast
+
+
+SUBARCHITECTURE planner.sa
+
+###############################################################################
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# execution ###################################################################
+JAVA MG exe.gui execution.components.GraphicalExecutionManager 
+
+
+
