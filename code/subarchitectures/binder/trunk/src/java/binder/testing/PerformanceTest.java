@@ -92,7 +92,7 @@ public class PerformanceTest extends AbstractBinderTest {
 		
 			ProbDistribution content_b1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b1);
 			
-			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b1, hist_b1);
+			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "object", "here", getCASTTime(), content_b1, hist_b1);
 
 			insertBeliefInWM(b1);
 	
@@ -125,7 +125,7 @@ public class PerformanceTest extends AbstractBinderTest {
 			
 			content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
 			
-			b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist_b2);
+			b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "object", "here", getCASTTime(), content_b2, hist_b2);
 
 			insertBeliefInWM(b2);
 				

@@ -61,7 +61,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	protected String resultsFile = markovlogicDir + "unions.results";
 
 	public float lowestProbThreshold = 0.20f;
-	public int maxAlternatives = 2;
+	public int maxAlternatives = 1;
 	public float minProbDifferenceForUpdate = 0.1f;
 
 	protected Vector<String> beliefUpdateToIgnore = new Vector<String>();
