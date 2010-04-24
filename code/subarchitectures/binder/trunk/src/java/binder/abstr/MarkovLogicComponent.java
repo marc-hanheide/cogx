@@ -48,9 +48,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	/**
 	 * 
 	 */
-	private T type;
 
-	protected String markovlogicDir = "subarchitectures/binder/markovlogic/";
+	protected static String markovlogicDir = "subarchitectures/binder/markovlogic/";
 
 	protected String inferCmd = "tools/alchemy/bin/infer";
 
@@ -58,10 +57,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 
 	private String query = "Outcome";
 
-	protected String MLNFile = markovlogicDir + "grouping.mln";
+	protected String MLNFile = "";
 	protected String resultsFile = markovlogicDir + "unions.results";
-	protected String predicatesFile = "";
-	protected String correlationsFile = "";
 
 	public float lowestProbThreshold = 0.20f;
 	public int maxAlternatives = 2;
@@ -70,8 +67,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	protected Vector<String> beliefUpdateToIgnore = new Vector<String>();
 
 	
-	public MarkovLogicComponent(T belief) {
-		type = belief;
+	public MarkovLogicComponent(Class<T> cls, String MLNFile) {
+		this.MLNFile = MLNFile;
 	}
 
 	/**
@@ -122,6 +119,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	
 	protected abstract HashMap<String, Belief> extractExistingUnions();
 	
+	
 	/**
 	 * Perform the generic inference operation for the given belief, and subsequently update
 	 * the working memory with the outcome (and possibly also with updates on existing ones)
@@ -135,17 +133,18 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
 		
-		if (relevantUnions.size() > 0 && prefs.isTrackingActivated()) {
-			performInferenceSomethinToGroup(belief, beliefWMAddress,
-					relevantUnions, prefs);
+		if (relevantUnions.size() > 0 && 
+				prefs.isTrackingActivated()) {
+			
+			performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
 		}
 		
 		else {
-			performInferenceNothingToGroup(belief, beliefWMAddress);
+			performDirectInference(belief, beliefWMAddress);
 		}
 	}
 
-	private void performInferenceSomethinToGroup(T belief,
+	private void performMarkovLogicInference (T belief,
 			WorkingMemoryAddress beliefWMAddress,
 			Map<String, Belief> relevantUnions, MLNPreferences prefs) {
 		// Create identifiers for each possible new union		
@@ -223,7 +222,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		}
 	}
 
-	private void performInferenceNothingToGroup(T belief,
+	private void performDirectInference (T belief,
 			WorkingMemoryAddress beliefWMAddress) {
 		try {
 			log("no relevant union to group with mmbelief " + belief.id + " has been found");

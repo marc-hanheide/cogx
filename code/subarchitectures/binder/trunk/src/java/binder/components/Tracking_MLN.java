@@ -59,14 +59,12 @@ import cast.core.CASTData;
  */
 public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
-	
+
+	static String MLNFile = markovlogicDir + "tracking.mln";
+
 	public Tracking_MLN() {
-		super(new MultiModalBelief());
-		MLNFile = markovlogicDir + "tracking.mln";
+		super(MultiModalBelief.class, MLNFile);
 		resultsFile = markovlogicDir + "tracking.results";
-		correlationsFile = markovlogicDir + "tracking/similarities.mln";
-		predicatesFile = markovlogicDir
-				+ "tracking/correlations_predicates.mln";
 	}
 
 	
@@ -162,15 +160,13 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	
 	private MLNPreferences getPreferences(Belief b) {
 		MLNPreferences prefs = new MLNPreferences();
-		prefs.setFile_correlations(correlationsFile);
-		prefs.setFile_predicates(predicatesFile);
 		
 		if (b.type.equals("object")) {
-			prefs.setFile_correlations(prefs.markovlogicDir + "tracking/tracking-objects.mln");
+			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
 			prefs.activateTracking();
 		}
 		else if (b.type.equals("person")) {
-			prefs.setFile_correlations(prefs.markovlogicDir + "tracking/tracking-persons.mln");
+			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
 			prefs.activateTracking();
 		}
 
@@ -224,10 +220,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 					.createNewDoubleUnionBelief(mmbelief, addresses,
 							existingUnion, prob, id);
 			newUnions.add(newUnion);
-			// }
-			/**
-			 * catch (BeliefException e) { e.printStackTrace(); }
-			 */
+
 		}
 
 		if (!inferenceResults.containsKey(newSingleUnionId)) {
