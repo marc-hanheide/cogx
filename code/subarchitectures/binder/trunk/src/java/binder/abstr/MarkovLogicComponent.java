@@ -52,9 +52,9 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 
 	protected String markovlogicDir = "subarchitectures/binder/markovlogic/";
 
-	private String inferCmd = "tools/alchemy/bin/infer";
+	protected String inferCmd = "tools/alchemy/bin/infer";
 
-	private String emptyFile = markovlogicDir + "empty.db";
+	protected String emptyFile = markovlogicDir + "empty.db";
 
 	private String query = "Outcome";
 

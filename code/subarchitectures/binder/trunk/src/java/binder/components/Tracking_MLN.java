@@ -1,5 +1,6 @@
 package binder.components;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,6 +75,18 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	 * Add a change filter on the insertion of new percept beliefs on the binder working memory
 	 */
 	public void start() {
+		
+		Runtime run = Runtime.getRuntime(); 
+		log("Verifying that Alchemy is correctly compiled...");
+		String[] args = {inferCmd};
+		try {
+			Process p = run.exec(args);
+		} catch (IOException e1) {
+			System.out.println("FATAL ERROR: tools/alchemy/bin/infer is not found.  Alchemy package does not seem to be properly compiled.  Exiting...");
+			System.exit(0);
+		}
+
+		
 		// Insertion
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
@@ -88,8 +101,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							updatePointers(beliefData.getData(), TemporalUnionBelief.class);
 							
 							
-							performInference(beliefData.getData(), _wmc.address, getPreferences(beliefData.getData()));
-							
+							performInference(beliefData.getData(), _wmc.address, getPreferences(beliefData.getData()));			
 							
 							log("tracking operation on belief " + beliefData.getID() + " now finished");
 

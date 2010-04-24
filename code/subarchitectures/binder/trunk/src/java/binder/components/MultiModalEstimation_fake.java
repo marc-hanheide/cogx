@@ -29,9 +29,7 @@ import binder.arch.BindingWorkingMemory;
 
 public class MultiModalEstimation_fake extends FakeComponent {
  
-	
-	Vector<String> beliefUpdateToIgnore = new Vector<String>();
-	
+		
 	@Override
 	public void start() {
 		addChangeFilter(
@@ -42,14 +40,8 @@ public class MultiModalEstimation_fake extends FakeComponent {
 						try {
 							CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptUnionBelief.class);
 							
-								MultiModalBelief mmBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, newDataID());				
-								updatePointers(mmBelief, MultiModalBelief.class);
-								
-								insertBeliefInWM(mmBelief);
-
-								addOffspring(beliefData.getData(), mmBelief.id);	
-								beliefUpdateToIgnore.add(beliefData.getID());
-								updateBeliefOnWM(beliefData.getData());
+							addOffspring(beliefData.getData(), newDataID());	
+							updateBeliefOnWM(beliefData.getData());
 						}	
 			
 						 catch (Exception e) {
@@ -68,21 +60,21 @@ public class MultiModalEstimation_fake extends FakeComponent {
 						try {
 							CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptUnionBelief.class);
 
-							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
-
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
+									log("belief " + child.id + " exists on WM, overwriting");
 									MultiModalBelief childBelief = getMemoryEntry(child, MultiModalBelief.class);
-									childBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, childBelief.id);
+									childBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, child.id);
 									updatePointers(childBelief, MultiModalBelief.class);
 									updateBeliefOnWM(childBelief);
 								}
-							}
-							}
-							else {
-								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore.remove(beliefData.getID());
+								else {
+									log("belief " + child.id + " does not exist on WM, creating it");
+									MultiModalBelief childBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, child.id);
+									updatePointers(childBelief, MultiModalBelief.class);
+									insertBeliefInWM(childBelief);
+								}
 							}
 						}	
 

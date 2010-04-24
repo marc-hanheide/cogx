@@ -24,9 +24,7 @@ import cast.core.CASTData;
 
 public class PerceptualGrouping_fake extends FakeComponent {
 
-	
-	Vector<String> beliefUpdateToIgnore = new Vector<String>();
-	
+		
 	@Override
 	public void start() {
 		addChangeFilter(
@@ -36,17 +34,9 @@ public class PerceptualGrouping_fake extends FakeComponent {
 						
 						try {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
-							
-								PerceptUnionBelief union = 
-									PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, newDataID());
 
-								updatePointers(union, PerceptUnionBelief.class);
-								
-								insertBeliefInWM(union);
-
-								addOffspring(beliefData.getData(), union.id);	
-								beliefUpdateToIgnore.add(beliefData.getID());
-								updateBeliefOnWM(beliefData.getData());
+							addOffspring(beliefData.getData(), newDataID());	
+							updateBeliefOnWM(beliefData.getData());
 							
 						}	
 
@@ -65,21 +55,22 @@ public class PerceptualGrouping_fake extends FakeComponent {
 						try {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
 
-							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
+									log("belief " + child.id + " exists on WM, overwriting");
 									PerceptUnionBelief childBelief = getMemoryEntry(child, PerceptUnionBelief.class);
 									childBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
 									updatePointers(childBelief, PerceptUnionBelief.class);
 									updateBeliefOnWM(childBelief);
 								}
-							}
-							}
-							else {
-								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore.remove(beliefData.getID());
+								else {
+									log("belief " + child.id + " does not exist on WM, creating it");
+									PerceptUnionBelief childBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+									updatePointers(childBelief, PerceptUnionBelief.class);
+									insertBeliefInWM(childBelief);
+								}
 							}
 						}	
 

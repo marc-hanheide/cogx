@@ -29,9 +29,6 @@ import cast.core.CASTData;
 
 public class Tracking_fake extends FakeComponent {
  
-
-	Vector<String> beliefUpdateToIgnore = new Vector<String>();
-
 	    
 	@Override
 	public void start() {
@@ -42,15 +39,8 @@ public class Tracking_fake extends FakeComponent {
 						 
 						try {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
-							
-							TemporalUnionBelief tunion = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, newDataID());							
-
-							updatePointers(tunion, TemporalUnionBelief.class);
-							
-							insertBeliefInWM(tunion);
-
-							addOffspring(beliefData.getData(), tunion.id);	
-							beliefUpdateToIgnore.add(beliefData.getID());
+	
+							addOffspring(beliefData.getData(), newDataID());	
 							updateBeliefOnWM(beliefData.getData());
 							
 						}	
@@ -71,23 +61,24 @@ public class Tracking_fake extends FakeComponent {
 						try {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
-							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
-
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
+									log("belief " + child.id + " exists on WM, overwriting");
 									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
-									childBelief =TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
+									childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
 									updatePointers(childBelief, TemporalUnionBelief.class);
 									updateBeliefOnWM(childBelief);
 								}
+								else {
+									log("belief " + child.id + " does not exist on WM, creating it");
+									TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+									updatePointers(childBelief, TemporalUnionBelief.class);
+									insertBeliefInWM(childBelief);
+								}
 							}
-							}
-							else {
-								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore.remove(beliefData.getID());
-							}
+							
 						}	
 
 						catch (Exception e) {
