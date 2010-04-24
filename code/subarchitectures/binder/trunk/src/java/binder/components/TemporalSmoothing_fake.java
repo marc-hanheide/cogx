@@ -2,6 +2,7 @@ package binder.components;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
@@ -29,7 +30,7 @@ import cast.core.CASTData;
 public class TemporalSmoothing_fake extends FakeComponent {
 
 	
-	String beliefUpdateToIgnore = "";
+	Vector<String> beliefUpdateToIgnore = new Vector<String>();
 
 	
 	@Override
@@ -49,7 +50,7 @@ public class TemporalSmoothing_fake extends FakeComponent {
 							insertBeliefInWM(stableBelief);
 
 							addOffspring(beliefData.getData(), stableBelief.id);	
-							beliefUpdateToIgnore = beliefData.getID();
+							beliefUpdateToIgnore.add(beliefData.getID());
 							updateBeliefOnWM(beliefData.getData());
 								
 						}	
@@ -69,7 +70,7 @@ public class TemporalSmoothing_fake extends FakeComponent {
 						try {
 							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
 
-							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							log("number of offspring for : " + beliefData.getData().id + ": "+ offspring.size());
@@ -85,7 +86,7 @@ public class TemporalSmoothing_fake extends FakeComponent {
 							}
 							else {
 								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore = "";
+								beliefUpdateToIgnore.remove(beliefData.getData());
 							}
 							
 						}	

@@ -2,6 +2,7 @@ package binder.components;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
@@ -24,7 +25,7 @@ import cast.core.CASTData;
 public class PerceptualGrouping_fake extends FakeComponent {
 
 	
-	String beliefUpdateToIgnore = "";
+	Vector<String> beliefUpdateToIgnore = new Vector<String>();
 	
 	@Override
 	public void start() {
@@ -44,7 +45,7 @@ public class PerceptualGrouping_fake extends FakeComponent {
 								insertBeliefInWM(union);
 
 								addOffspring(beliefData.getData(), union.id);	
-								beliefUpdateToIgnore = beliefData.getID();
+								beliefUpdateToIgnore.add(beliefData.getID());
 								updateBeliefOnWM(beliefData.getData());
 							
 						}	
@@ -64,7 +65,7 @@ public class PerceptualGrouping_fake extends FakeComponent {
 						try {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
 
-							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							
 							for (WorkingMemoryAddress child : offspring) {
@@ -78,7 +79,7 @@ public class PerceptualGrouping_fake extends FakeComponent {
 							}
 							else {
 								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore = "";
+								beliefUpdateToIgnore.remove(beliefData.getID());
 							}
 						}	
 

@@ -2,6 +2,7 @@ package binder.components;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
@@ -29,7 +30,7 @@ import binder.arch.BindingWorkingMemory;
 public class MultiModalEstimation_fake extends FakeComponent {
  
 	
-	String beliefUpdateToIgnore = "";
+	Vector<String> beliefUpdateToIgnore = new Vector<String>();
 	
 	@Override
 	public void start() {
@@ -47,7 +48,7 @@ public class MultiModalEstimation_fake extends FakeComponent {
 								insertBeliefInWM(mmBelief);
 
 								addOffspring(beliefData.getData(), mmBelief.id);	
-								beliefUpdateToIgnore = beliefData.getID();
+								beliefUpdateToIgnore.add(beliefData.getID());
 								updateBeliefOnWM(beliefData.getData());
 						}	
 			
@@ -67,7 +68,7 @@ public class MultiModalEstimation_fake extends FakeComponent {
 						try {
 							CASTData<PerceptUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptUnionBelief.class);
 
-							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							for (WorkingMemoryAddress child : offspring) {
@@ -81,7 +82,7 @@ public class MultiModalEstimation_fake extends FakeComponent {
 							}
 							else {
 								log("ignore update, simple addition of offspring");
-								beliefUpdateToIgnore = "";
+								beliefUpdateToIgnore.remove(beliefData.getID());
 							}
 						}	
 

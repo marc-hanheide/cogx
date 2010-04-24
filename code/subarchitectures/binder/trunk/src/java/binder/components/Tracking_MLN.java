@@ -83,7 +83,11 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
 							log("received a new belief: " + beliefData.getID());
+							
+							updatePointers(beliefData.getData(), TemporalUnionBelief.class);
+							
 							performInference(beliefData.getData(), _wmc.address);
+							
 							log("tracking operation on belief " + beliefData.getID() + " now finished");
 
 						}
@@ -119,12 +123,17 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							workingMemoryChangeDelete(_wmc.address);
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
-							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
+							log("beliefUpdateToIgnore: " + beliefUpdateToIgnore);
+							
+							if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
 							log("received a new belief: " + beliefData.getID());
 							MultiModalBelief belief = beliefData.getData();
 							performInference(belief, _wmc.address);
 							log("tracking operation on belief " + beliefData.getID() + " now finished");
 							}	
+							else {
+								beliefUpdateToIgnore.remove(beliefData.getID());
+							}
 						}
 						catch (Exception e) {
 							e.printStackTrace();
