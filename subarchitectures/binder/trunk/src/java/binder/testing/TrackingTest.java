@@ -156,7 +156,7 @@ public class TrackingTest extends AbstractBinderTest {
 			
 			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
 			
-			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b2, hist);
+			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "robot", "here", getCASTTime(), content_b2, hist);
 
 			insertBeliefInWM(b2);		
 			
@@ -167,7 +167,7 @@ public class TrackingTest extends AbstractBinderTest {
 			isTestFinished = true;
 			isTestSuccessful = false;
 			reasonForFailure = e.getMessage();
-		} catch (AlreadyExistsOnWMException e) {
+		}  catch (AlreadyExistsOnWMException e) {
 			isTestFinished = true;
 			isTestSuccessful = false;
 			reasonForFailure = e.getMessage();
