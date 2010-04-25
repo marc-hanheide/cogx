@@ -63,7 +63,6 @@ public class TemporalSmoothing_fake extends FakeComponent {
 						try {
 							CASTData<TemporalUnionBelief> beliefData = getMemoryEntryWithData(_wmc.address, TemporalUnionBelief.class);
 
-
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							log("number of offspring for : " + beliefData.getData().id + ": "+ offspring.size());
 
