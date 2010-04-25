@@ -40,6 +40,14 @@ public class MLNPreferences {
 	public void setFile_predicates(String filePredicates) {
 		file_predicates = filePredicates;
 	}
+	
+	public void setGeneratedMLNFile (String generatedMLNFile) {
+		this.generatedMLNFile = generatedMLNFile;
+	}
+	
+	public String getGeneratedMLNFile () {
+		return generatedMLNFile;
+	}
 
 	private float greediness;
 	 
@@ -48,6 +56,8 @@ public class MLNPreferences {
 	private String file_correlations;
 	
 	private String file_predicates;
+	
+	private String generatedMLNFile;
 	
 	private boolean performTracking = false;
 	
@@ -62,8 +72,9 @@ public class MLNPreferences {
 	public MLNPreferences() {
 		greediness = -3.5f;
 		outcome = -1f;
-		file_correlations = markovlogicDir + "grouping/correlations.mln"; 
-		file_predicates = markovlogicDir + "grouping/correlations_predicates.mln";
+		file_correlations = markovlogicDir + "tracking/tracking-objects.mln"; 
+		file_predicates = markovlogicDir + "tracking/correlations_predicates.mln";
+		generatedMLNFile = markovlogicDir + "tracking.mln";
 	}
 
 	public MLNPreferences(float greediness, float outcome,

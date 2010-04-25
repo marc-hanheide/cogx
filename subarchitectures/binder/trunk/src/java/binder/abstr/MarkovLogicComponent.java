@@ -47,10 +47,6 @@ import cast.core.CASTData;
 
 public abstract class MarkovLogicComponent<T extends Belief> extends FakeComponent {
 
-	/**
-	 * 
-	 */
-
 	protected static String markovlogicDir = "subarchitectures/binder/markovlogic/";
 
 	protected String inferCmd = "tools/alchemy/bin/infer";
@@ -59,18 +55,14 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 
 	private String query = "Outcome";
 
-	protected String MLNFile = "";
 	protected String resultsFile = markovlogicDir + "unions.results";
 
 	public float lowestProbThreshold = 0.20f;
 	public int maxAlternatives = 1;
 	public float minProbDifferenceForUpdate = 0.1f;
 
-//	protected Vector<String> beliefUpdateToIgnore = new Vector<String>();
-
 	
-	public MarkovLogicComponent(Class<T> cls, String MLNFile) {
-		this.MLNFile = MLNFile;
+	public MarkovLogicComponent(Class<T> cls) {
 	}
 
 	/**
@@ -143,6 +135,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 				prefs.isTrackingActivated()) {
 			
 			log("doing markov logic inference on belief "  + belief.id);
+			log("Markov Logic Network used: " + prefs.getFile_correlations());
 			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
 		}
 		
@@ -162,13 +155,12 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		String newSingleUnionId = newDataID();
 		
-		// unionsMapping.put("P", newSingleUnionId);
 		// Write the Markov logic network to a file
 		writeMarkovLogic(belief, relevantUnions, unionsMapping, newSingleUnionId, prefs);
 
 		// run the alchemy inference
 		try { 
-			HashMap<String,Float> inferenceResults = runAlchemyInference(MLNFile, resultsFile);
+			HashMap<String,Float> inferenceResults = runAlchemyInference(prefs.getGeneratedMLNFile(), resultsFile);
 
 			log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
 			HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults);
@@ -193,17 +185,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 					}
 				}
 			}
-			
-			// create the new unions given the inference results
-	//		Vector<Belief> newUnions = createNewUnions(belief, beliefWMAddress, relevantUnions,
-	//				unionsMapping, newSingleUnionId, filteredInferenceResults);
-
-	//		resultingBeliefs.addAll(newUnions);
-			
-			// modify the existence probabilities of the existing unions
-	//		List<Belief> unionsToUpdate = getExistingUnionsToUpdate(belief, relevantUnions, unionsMapping, filteredInferenceResults);
-
-	//		resultingBeliefs.addAll(unionsToUpdate);
 						
 		}
 		catch (Exception e) {
@@ -213,46 +194,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		return resultingBeliefs;
 	}
 
-	private void performInferenceUpdateWM(List<Belief> unionsToUpdate)
-			throws DoesNotExistOnWMException, PermissionException,
-			ConsistencyException {
-		for (Belief unionToUpdate : unionsToUpdate) {
-			if (DistributionUtils.getExistenceProbability(unionToUpdate) > lowestProbThreshold)  {
-				log("updating belief " + unionToUpdate.id + " on WM");
-				updateBeliefOnWM(unionToUpdate);
-			}
-			else  {
-				log("deleting belief: " + unionToUpdate.id + " on WM");
-				deleteBeliefOnWM(unionToUpdate.id);
-			}
-		}
-	}
-
-	private void performInferenceAddToWM(T belief, Vector<Belief> newUnions)
-			throws AlreadyExistsOnWMException {
-		for (Belief newUnion : newUnions) {
-			if (DistributionUtils.getExistenceProbability(newUnion) > lowestProbThreshold)  {
-				
-				log("inserting belief " + newUnion.id + " on WM");
-			
-				// adding the offspring
-				addOffspring(belief, newUnion.id);	
-	//			beliefUpdateToIgnore.add(belief.id);
-
-				try {
-	//				insertBeliefInWM(newUnion);
-					updateBeliefOnWM(belief);
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				} 
-			}
-			else {
-				log ("Belief " + newUnion.id + " has probability " + DistributionUtils.getExistenceProbability(newUnion) +
-				", which is lower than the minimum threshold.  Not inserting");
-			}
-		}
-	}
 
 	private List<Belief> performDirectInference (T belief,
 			WorkingMemoryAddress beliefWMAddress) {
@@ -262,23 +203,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			log("no markov logic tracking for mmbelief " + belief.id);
 			Belief union = createNewSingleUnionBelief(belief, beliefWMAddress);
 			resultingBeliefs.add(union);
-			
-	/**		if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
-				
-				log("inserting belief " + union.id + " on WM");
-			
-				addOffspring(belief, union.id);	
-		//		beliefUpdateToIgnore.add(belief.id);
-
-				try {
-		//			insertBeliefInWM(union);
-					updateBeliefOnWM(belief);
-					
-				} 
-				catch (Exception e) {
-					e.printStackTrace();
-				} 
-			} */
+		
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -288,7 +213,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	}
 	
 	
-
 	protected abstract Belief createNewSingleUnionBelief(T belief,
 			WorkingMemoryAddress beliefWMAddress) throws BeliefException;
 
@@ -312,7 +236,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			Map<String, String> unionsMapping, String newSingleUnionId, MLNPreferences prefs) {
 		try {
 			MLNGenerator gen = new MLNGenerator(prefs);
-			gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, MLNFile);
+			gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, prefs.getGeneratedMLNFile());
 		} catch (MLException e1) {
 			e1.printStackTrace();
 		}
@@ -380,81 +304,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		return newResults;
 	}
 	
-	/**
-	 * 
-	 * @param b
-	 * @return
-	 * @throws BeliefException
-	 */
-	protected List<String> getOriginSubarchitectures(Belief b) throws BeliefException {
-
-		List<String> subarchitectures = new ArrayList<String>();
-
-		if (!(b.hist instanceof CASTBeliefHistory)) {
-			throw new BeliefException ("ERROR: history not specified as cast pointer");
-		}
-		else if (((CASTBeliefHistory)b.hist).ancestors == null) {
-			throw new BeliefException ("ERROR: percept history is null");
-		}
-
-		for (WorkingMemoryAddress ancestorAddress : ((CASTBeliefHistory)b.hist).ancestors) {
-			if (!(ancestorAddress.subarchitecture.equals(BindingWorkingMemory.BINDER_SA))) {
-				subarchitectures.add(ancestorAddress.subarchitecture);
-			} else
-				try {
-					if (existsOnWorkingMemory(ancestorAddress)) {
-						Belief subB = getMemoryEntry(ancestorAddress, Belief.class);
-						subarchitectures.addAll(getOriginSubarchitectures(subB));
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-		}
-		return subarchitectures;
-	}
-
-	/**
-	 * Modify the existence probability of existing unions, based on the inference results, 
-	 * the newly inserted percept, the set of existing unions, and the mapping between the new 
-	 * and the already existing unions
-	 * 
-	 * @param percept the percept
-	 * @param existingUnions the set of existing unions
-	 * @param linkToExistingUnions mapping from new unions to existing unions they include
-	 * @param inferenceResults the inference results
-	 */
-	protected List<Belief> getExistingUnionsToUpdate(
-			T percept,
-			Map<String,Belief> existingUnions,
-			Map<String,String> linkToExistingUnions,
-			Map<String,Float> inferenceResults) {
-
-		List<Belief> unionsToUpdate = new LinkedList<Belief>();
-
-		// extract the existence probability of the percept
-		float perceptExistProb = DistributionUtils.getExistenceProbability(percept);
-
-		for (String newUnionId: linkToExistingUnions.keySet()) {
-			Belief existingUnion = existingUnions.get(linkToExistingUnions.get(newUnionId));
-			float unionCurrentExistProb = DistributionUtils.getExistenceProbability(existingUnion);
-			float unionNewExistProb = (unionCurrentExistProb * (1-perceptExistProb)) + 
-			(perceptExistProb * (1 - inferenceResults.get(newUnionId)) * unionCurrentExistProb);
-			log("new prob for " +  linkToExistingUnions.get(newUnionId) + ": " + unionNewExistProb);
-
-			try {
-				DistributionUtils.setExistenceProbability(existingUnion, unionNewExistProb);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			if (Math.abs(unionNewExistProb - unionCurrentExistProb) > minProbDifferenceForUpdate) {
-				unionsToUpdate.add(existingUnion);
-				log("Existing union " + existingUnion.id + " going from existence probability " + unionCurrentExistProb + 
-						" to probabibility " + unionNewExistProb + ", update necessary");
-			}
-		}
-		return unionsToUpdate;
-	}
 
 	/**
 	 * Only selecting the unions which are originating from the same subarchitecture as the current 
@@ -466,16 +315,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	 * @throws BeliefException
 	 */
 	abstract protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, T belief) throws BeliefException  ;
-	
-	protected abstract Vector<Belief> createNewUnions(
-			T percept,
-			WorkingMemoryAddress perceptWMAddress,
-			Map<String,Belief> existingUnions,
-			Map<String,String> unionsMapping,
-			String newSingleUnionId,
-			Map<String,Float> inferenceResults) throws BeliefException;
-	
-	protected abstract void updatePointersInOtherBeliefs (Belief newBelief);
 
 
 	protected MultiModalBelief duplicateBelief(MultiModalBelief b) throws BeliefException {

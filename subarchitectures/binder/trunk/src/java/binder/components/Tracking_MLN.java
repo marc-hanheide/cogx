@@ -47,16 +47,6 @@ import cast.core.CASTData;
  * 
  * 
  * 
- * NOTE: - still need to check subarchitecture consistency OK - still need to
- * add filters OK - only perform updates on existing unions when change is
- * significant OK - need to add functionality for percept updates or deletions
- * OK? - remove the testing stuff and have a proper, separate tester class OK -
- * actually build the union content OK - change the belief history to have only
- * cast values OK - testing, defensive programming, check null values and
- * pre/post conditions - when constructing a new belief, propagate the pointers
- * correctly OK - have proper logging functionality - implement the same kind of
- * functionality for tracking - send examples of test cases to Sergio OK - do
- * the test with percepts instead of unions as inputs OK
  * 
  * @author plison
  * 
@@ -64,13 +54,17 @@ import cast.core.CASTData;
 public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 
-	static String MLNFile = markovlogicDir + "tracking.mln";
+	String generatedMLNFile = markovlogicDir + "tracking.mln";
+	HashMap<String,String> trackerMLNs = new HashMap<String,String>();
 	
 	Vector<MultiModalBelief> beliefUpdatesToIgnore = new Vector<MultiModalBelief>();
 
 	public Tracking_MLN() {
-		super(MultiModalBelief.class, MLNFile);
+		super(MultiModalBelief.class);
 		resultsFile = markovlogicDir + "tracking.results";
+		beliefUpdatesToIgnore = new Vector<MultiModalBelief>();
+		trackerMLNs.put("Object", MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
+		trackerMLNs.put("Person", MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
 	}
 
 	
@@ -190,7 +184,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	}
 
 	
-	
 	private void inference (MultiModalBelief belief, WorkingMemoryAddress beliefWMAddress)
 		throws BeliefException, DoesNotExistOnWMException, PermissionException, ConsistencyException, 
 		AlreadyExistsOnWMException, UnknownSubarchitectureException {
@@ -217,171 +210,19 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	private MLNPreferences getPreferences(Belief b) {
 		MLNPreferences prefs = new MLNPreferences();
 		
-		if (b.type.contains("Object")) {
-			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
-			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
-			prefs.activateTracking();
-		}
-		else if (b.type.contains("Person")) {
-			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
-			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
-			prefs.activateTracking();
+		prefs.setGeneratedMLNFile(generatedMLNFile);
+		
+		for (String key : trackerMLNs.keySet()) {
+			if (b.type.contains(key)) {
+				prefs.setFile_correlations(trackerMLNs.get(key));
+				prefs.activateTracking();
+			}
 		}
 
 		return prefs;
 	}
 
-	/**
-	 * Create a set of new mmbelief union beliefs from the inference results,
-	 * associated with the original mmbelief
-	 * 
-	 * @param mmbelief
-	 * @param linkToExistingUnions
-	 * @param inferenceResults
-	 * @return
-	 */
-	@Override
-	protected Vector<Belief> createNewUnions(MultiModalBelief mmbelief,
-			WorkingMemoryAddress mmbeliefWMAddress,
-			Map<String, Belief> relevantUnions,
-			Map<String, String> unionsMapping, String newSingleUnionId,
-			Map<String, Float> inferenceResults) throws BeliefException {
-
-		// extract the existence probability of the mmbelief
-		float mmbeliefExistProb = DistributionUtils
-				.getExistenceProbability(mmbelief);
-		Vector<Belief> newUnions = new Vector<Belief>();
-		for (String id : unionsMapping.keySet()) {
-
-			if (!inferenceResults.containsKey(id)) {
-				throw new BeliefException("ERROR, id " + id
-						+ " is not in inferenceResults.  inferenceResults = "
-						+ inferenceResults.keySet().toString());
-			}
-
-			else if (!relevantUnions.containsKey(unionsMapping.get(id))) {
-				throw new BeliefException("ERROR, existing union id "
-						+ unionsMapping.get(id) + " is not in existingUnions");
-			}
-
-			float prob = mmbeliefExistProb * inferenceResults.get(id);
-			log("computed probability for new mmbelief union " + id + ": "
-					+ prob);
-
-			Belief existingUnion = relevantUnions.get(unionsMapping.get(id));
-			// try {
-			List<WorkingMemoryAddress> addresses = new LinkedList<WorkingMemoryAddress>();
-			addresses.add(mmbeliefWMAddress);
-			addresses.add(new WorkingMemoryAddress(existingUnion.id,
-					BindingWorkingMemory.BINDER_SA));
-			TemporalUnionBelief newUnion = TemporalUnionBuilder
-					.createNewDoubleUnionBelief(mmbelief, addresses,
-							existingUnion, prob, id);
-			newUnions.add(newUnion);
-
-		}
-
-		if (!inferenceResults.containsKey(newSingleUnionId)) {
-			throw new BeliefException("ERROR, id " + newSingleUnionId
-					+ " is not in inferenceResults");
-		}
-		TemporalUnionBelief newSingleUnion = TemporalUnionBuilder
-				.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress,
-						inferenceResults.get(newSingleUnionId)
-								* mmbeliefExistProb, newSingleUnionId);
-
-		newUnions.add(newSingleUnion);
-
-		return newUnions;
-	}
-
-	@Override
-	protected void updatePointersInOtherBeliefs(Belief newBelief) {
-		try {
-
-			if (newBelief.hist != null
-					&& newBelief.hist instanceof CASTBeliefHistory) {
-
-				for (WorkingMemoryAddress ancestor : ((CASTBeliefHistory) newBelief.hist).ancestors) {
-
-					CASTData<TemporalUnionBelief>[] tunions = getWorkingMemoryEntries(TemporalUnionBelief.class);
-
-					for (int i = 0; i < tunions.length; i++) {
-						TemporalUnionBelief tunion = tunions[i].getData();
-						for (FeatureValueProbPair pointerValueInUnion : FeatureContentUtils
-								.getAllPointerValuesInBelief(tunion)) {
-							PointerValue val = (PointerValue) pointerValueInUnion.val;
-							if (val.beliefId.equals(ancestor)) {
-								Belief ancestorBelief = getMemoryEntry(
-										ancestor, Belief.class);
-								if (!ancestorBelief.getClass().equals(
-										TemporalUnionBelief.class)) {
-									((PointerValue) pointerValueInUnion.val).beliefId = new WorkingMemoryAddress(
-											newBelief.id,
-											BindingWorkingMemory.BINDER_SA);
-								} else {
-									// dirty hacks here...
-
-									// here, reducing the probability of the
-									// existing link
-									float oldProb = pointerValueInUnion.prob;
-									pointerValueInUnion.prob = (DistributionUtils
-											.getExistenceProbability(ancestorBelief) - DistributionUtils
-											.getExistenceProbability(newBelief))
-											/ DistributionUtils
-													.getExistenceProbability(ancestorBelief);
-
-									log("link from "
-											+ tunion.id
-											+ " to "
-											+ ((PointerValue) pointerValueInUnion.val).beliefId.id
-											+ " has prob. reduced from "
-											+ oldProb + " to "
-											+ pointerValueInUnion.prob);
-
-									BasicProbDistribution pointerDistrib = FeatureContentUtils
-											.getFeatureForFeatureValueInBelief(
-													tunion,
-													pointerValueInUnion.val);
-
-									if (pointerDistrib != null) {
-										// and adding a second link as well
-										FeatureContentUtils
-												.addAnotherValueInBasicProbDistribution(
-														pointerDistrib,
-														new FeatureValueProbPair(
-																new PointerValue(
-																		new WorkingMemoryAddress(
-																				newBelief.id,
-																				BindingWorkingMemory.BINDER_SA)),
-																DistributionUtils
-																		.getExistenceProbability(newBelief)
-																		/ DistributionUtils
-																				.getExistenceProbability(ancestorBelief)));
-
-										log("creation of new link from "
-												+ tunion.id
-												+ " to "
-												+ newBelief.id
-												+ " with prob. "
-												+ DistributionUtils
-														.getExistenceProbability(newBelief)
-												/ DistributionUtils
-														.getExistenceProbability(ancestorBelief));
-
-									}
-								}
-								updateBeliefOnWM(tunion);
-							}
-						}
-					}
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+	
 
 	/**
 	 * Exact the set of existing unions from the binder working memory
