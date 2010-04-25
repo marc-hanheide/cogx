@@ -105,6 +105,10 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							log("received a new belief: " + beliefData.getID());
 	
 							inference(beliefData.getData(), _wmc.address);
+							
+							beliefUpdatesToIgnore.add(beliefData.getData());
+							updateBeliefOnWM(beliefData.getData());
+
 						}
 						catch (Exception e) {
 							e.printStackTrace();
@@ -193,10 +197,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 			}
 			addOffspring(belief, b.id);	
 		}
-		
-		beliefUpdatesToIgnore.add(belief);
-		updateBeliefOnWM(belief);
-
 	}
 	
 	
