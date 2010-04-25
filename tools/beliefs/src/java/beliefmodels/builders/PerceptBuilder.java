@@ -28,6 +28,8 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.epstatus.EpistemicStatus;
 import beliefmodels.autogen.framing.SpatioTemporalFrame;
@@ -65,8 +67,13 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 		EpistemicStatus status = 
 			EpistemicStatusBuilder.createNewPrivateEpistemicStatus(EpistemicStatusBuilder.ROBOT_AGENT);
 	
+		ProbDistribution wrappedContent = content;
+		if (content instanceof CondIndependentDistribs) {
+			 wrappedContent = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, content);
+		}
+		
 		// and creating the belief
-		return new PerceptBelief(frame,status,id, type, content,hist);
+		return new PerceptBelief(frame,status,id, type, wrappedContent,hist);
 	}
 	
 	 
