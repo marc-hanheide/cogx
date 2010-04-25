@@ -115,16 +115,28 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 		
 		// Deletion
+
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						
 						try {
-							workingMemoryChangeDelete(_wmc.address);
-						}
+							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
+
+							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							
+							for (WorkingMemoryAddress child : offspring) {
+								if (existsOnWorkingMemory(child)) {
+									deleteBeliefOnWM(child.id);
+								}
+							}
+							
+						}	
+
 						catch (Exception e) {
 							e.printStackTrace();
-						}
+						} 
 					}
 				}
 		);
@@ -354,11 +366,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void workingMemoryChangeDelete(WorkingMemoryAddress WMAddress) {
-		deleteAllMultiModalBeliefAttachedToUnion(WMAddress);
 	}
 
 	/**
