@@ -592,13 +592,16 @@ class MAPLCompiler(Translator):
         import mapl
         assert domain is not None
 
-        @visitors.copy
         def visitor(eff, results):
             if isinstance(eff, effects.SimpleEffect):
+                if (eff.predicate == mapl.update):
+                    return None
                 if (eff.predicate == mapl.knowledge):
                     e2 = eff.copy()
                     e2.predicate = mapl.direct_knowledge
                     return e2
+            return eff.copy(new_parts = filter(None, results))
+                
         
         a2 = actions.Action(action.name, action.args, None, None, domain)
         if action.precondition:
