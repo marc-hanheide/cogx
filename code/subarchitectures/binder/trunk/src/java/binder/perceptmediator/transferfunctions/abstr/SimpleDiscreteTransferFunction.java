@@ -177,7 +177,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 
 	public static String getBeliefTypeFromCastType(String casttype) {
 		StringTokenizer st = new StringTokenizer(casttype, ":");
-		String type = casttype;
+		String type = casttype.toLowerCase();
 		while (st.hasMoreTokens())
 			type = st.nextToken();
 		return type;
