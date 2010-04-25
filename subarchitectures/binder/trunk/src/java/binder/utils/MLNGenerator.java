@@ -960,10 +960,10 @@ public class MLNGenerator {
 	 */
 	private Float convertWeightToProbability(float weight) throws MLException {
 		// handle the border cases
-		if(Float.compare(weight, Float.MIN_VALUE) == 0) {
+		if(Float.compare(weight, -100f) == 0) {
 			return 0f;
 		}
-		if(Float.compare(weight, Float.MAX_VALUE) == 0) {
+		if(Float.compare(weight, 100f) == 0) {
 			return 1f;
 		}
 		

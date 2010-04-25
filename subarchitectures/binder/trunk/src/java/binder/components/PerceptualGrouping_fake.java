@@ -7,6 +7,7 @@ import java.util.Vector;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
@@ -65,12 +66,17 @@ public class PerceptualGrouping_fake extends FakeComponent {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
 									PerceptUnionBelief newChildBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+								
+									PerceptUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), PerceptUnionBelief.class);
+									newChildBelief.content = mergeBeliefContent(newChildBelief.content, existingBelief.content);
+	
 									updatePointers(newChildBelief, PerceptUnionBelief.class);
 									updateBeliefOnWM(newChildBelief);
 								}
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");
 									PerceptUnionBelief childBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+									
 									updatePointers(childBelief, PerceptUnionBelief.class);
 									insertBeliefInWM(childBelief);
 								}

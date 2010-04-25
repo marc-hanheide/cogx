@@ -7,6 +7,7 @@ import java.util.Vector;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
+import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
@@ -72,9 +73,11 @@ public class Tracking_fake extends FakeComponent {
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
-									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
-									childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+									TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
 								
+									TemporalUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), TemporalUnionBelief.class);
+									childBelief.content = mergeBeliefContent(childBelief.content, existingBelief.content);
+		
 									updatePointers(childBelief, TemporalUnionBelief.class);
 									
 									updateBeliefOnWM(childBelief);
