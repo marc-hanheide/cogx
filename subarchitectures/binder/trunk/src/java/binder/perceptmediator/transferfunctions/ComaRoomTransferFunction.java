@@ -5,6 +5,10 @@ package binder.perceptmediator.transferfunctions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import org.apache.log4j.Logger;
 
@@ -20,6 +24,7 @@ import beliefmodels.builders.FeatureValueBuilder;
 import binder.arch.BindingWorkingMemory;
 import binder.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import binder.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
+import binder.perceptmediator.transferfunctions.helpers.BeliefIdMatchingFunction;
 import binder.perceptmediator.transferfunctions.helpers.ComaRoomMatchingFunction;
 import binder.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import cast.CASTException;
@@ -30,7 +35,9 @@ import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
+import castutils.facades.ExecutorFacade;
 
 /**
  * @author marc
@@ -61,30 +68,47 @@ public class ComaRoomTransferFunction extends
 	}
 
 	@Override
-	public boolean transform(WorkingMemoryChange wmc, ComaRoom from,
-			PerceptBelief perceptBelief) {
+	public boolean transform(WorkingMemoryChange wmc, final ComaRoom from,
+			final PerceptBelief perceptBelief) {
 		boolean transformed = super.transform(wmc, from, perceptBelief);
 		if (transformed) {
-			try {
-				for (long placeId : from.containedPlaceIds) {
-					WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
-							placeId));
-					PerceptBelief placeBelief = allBeliefs.get(wmaPlace);
-					this.putDiscreteFeature(
-							(CondIndependentDistribs) placeBelief.content,
-							"in-room", new PointerValue(
-									new WorkingMemoryAddress(perceptBelief.id,
-											BindingWorkingMemory.BINDER_SA
-											)));
-					component.overwriteWorkingMemory(wmaPlace, placeBelief);
+			Callable<?> updateTask = new Callable<Object>() {
+
+				@Override
+				public Object call() throws Exception {
+					try {
+						WMContentWaiter<PerceptBelief> waiter = new WMContentWaiter<PerceptBelief>(
+								allBeliefs);
+						logger
+								.debug("waiting for room to appear before linking to it");
+						waiter.read(new BeliefIdMatchingFunction(
+								perceptBelief.id));
+						logger.debug("room is on binder, can now link places");
+						for (long placeId : from.containedPlaceIds) {
+							WorkingMemoryAddress wmaPlace = getReferredBelief(new PlaceMatchingFunction(
+									placeId));
+							PerceptBelief placeBelief = allBeliefs
+									.get(wmaPlace);
+							putDiscreteFeature(
+									(CondIndependentDistribs) placeBelief.content,
+									"in-room",
+									new PointerValue(new WorkingMemoryAddress(
+											perceptBelief.id,
+											BindingWorkingMemory.BINDER_SA)));
+							component.overwriteWorkingMemory(wmaPlace,
+									placeBelief);
+						}
+					} catch (InterruptedException e) {
+						component.logException(e);
+						return false;
+					} catch (CASTException e) {
+						component.logException(e);
+						return false;
+					}
+					return null;
 				}
-			} catch (InterruptedException e) {
-				component.logException(e);
-				return false;
-			} catch (CASTException e) {
-				component.logException(e);
-				return false;
-			}
+			};
+			Executors.newSingleThreadExecutor().submit(updateTask);
 
 		}
 		return transformed;
