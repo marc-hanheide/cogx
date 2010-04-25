@@ -217,7 +217,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	private MLNPreferences getPreferences(Belief b) {
 		MLNPreferences prefs = new MLNPreferences();
 		
-		if (b.type.equals("Object")) {
+		if (b.type.contains("Object")) {
 			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
 			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
 			prefs.activateTracking();
