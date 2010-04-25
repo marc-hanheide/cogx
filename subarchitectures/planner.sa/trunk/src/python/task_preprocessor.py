@@ -278,6 +278,7 @@ def generate_mapl_task(task_desc, domain_fn):
   
   objects = infer_types(obj_descriptions)
   task.namedict = rename_objects(objects)
+  task.beliefdict = belief_dict
 
   facts = list(tuples2facts(obj_descriptions))
 
@@ -292,7 +293,7 @@ def generate_mapl_task(task_desc, domain_fn):
   task._mapltask = problem
   task.set_state(prob_state.ProbabilisticState(facts, problem).determinized_state(0.1, 0.9))
 
-  print task.get_state()
+  log.debug(str(task.get_state()))
   
   return task  
 
@@ -306,11 +307,12 @@ def generate_mapl_state(task_desc, task):
   
   objects = infer_types(obj_descriptions)
   task.namedict = rename_objects(objects)
+  task.beliefdict = belief_dict
 
   facts = list(tuples2facts(obj_descriptions))
   state = prob_state.ProbabilisticState(facts, task.mapltask).determinized_state(0.1, 0.9) 
 
-  print state
+  log.debug(str(state))
   
   return objects, state
 

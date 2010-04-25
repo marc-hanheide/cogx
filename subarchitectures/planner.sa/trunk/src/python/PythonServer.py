@@ -125,13 +125,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     ordered_plan = plan.topological_sort()
     outplan = []
     first_action = -1
+    
     for i,pnode in enumerate(ordered_plan):
       if isinstance(pnode, plans.DummyNode) or not pnode.is_executable():
         continue
       if first_action == -1:
         first_action = i
       
-      uargs = [task.namedict.get(a, a.name) for a in pnode.args]
+      uargs = [featvalue_from_object(arg, task.namedict, task.beliefdict) for arg in pnode.args]
 
       fullname = str(pnode)
       outplan.append(Planner.Action(task.taskID, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
@@ -164,6 +165,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #   print bel
 
     finished_actions = []
+    failed_actions = []
     if plan is None:
       #always replan if we don't have a plan
       task.mark_changed()
@@ -195,6 +197,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
             pnode.status = plans.ActionStatusEnum.EXECUTED
           elif action.status == Planner.Completion.ABORTED or Planner.Completion.FAILED:
             pnode.status = plans.ActionStatusEnum.FAILED
+            failed_actions.append(pnode)
             task.mark_changed()
             
       if requires_action_dispatch:
@@ -221,7 +224,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.mapltask = newtask
 
     if finished_actions:
-      diffstate = compute_state_updates(task.get_state(), old_state, finished_actions)
+      diffstate = compute_state_updates(task.get_state(), old_state, finished_actions, failed_actions)
       for fact in diffstate.iterfacts():
         task.get_state().set(fact)
       beliefs = update_beliefs(diffstate, task.namedict, task_desc.state)
@@ -234,21 +237,45 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.replan()
     self.deliver_plan(task)
 
-def compute_state_updates(_state, old_state, actions):
+def compute_state_updates(_state, old_state, actions, failed):
   diffstate = state.State()
   for action in actions:
     for fact in action.effects:
+      if fact.svar.modality != pddl.mapl.update:
+        continue
+
+      fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
+
       if fact not in _state:
-        if old_state[fact.svar] == _state[fact.svar]:
-          diffstate.set(fact)
-          log.debug("not in state: %s", str(fact))
-        else:
-          log.debug("don't update fact %s, it was overwritten from outside", str(fact));
+        diffstate.set(fact)
+        log.debug("not in state: %s", str(fact))
       elif fact.svar in diffstate:
         del diffstate[fact.svar]
         log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
 
   return diffstate
+
+def featvalue_from_object(arg, namedict, bdict):
+  if arg in namedict:
+    #arg is provided by the binder
+    name = namedict[arg]
+  else:
+    #arg is a domain constant
+    name = arg.name
+
+  if name in bdict:
+    #arg is a pointer to another belief
+    value = featurecontent.PointerValue(cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
+  elif arg.is_instance_of(pddl.t_boolean):
+    value = False
+    if arg == pddl.TRUE:
+      value = True
+    value = featurecontent.BooleanValue(value)
+  else:
+    #assume a string value
+    value = featurecontent.StringValue(name)
+
+  return value
 
 def update_beliefs(diffstate, namedict, beliefs):
   bdict = dict((b.id, b) for b in beliefs)
@@ -271,28 +298,7 @@ def update_beliefs(diffstate, namedict, beliefs):
   def find_relation(args, beliefs):
     result = None
 
-    arg_values = []
-    for arg in args:
-      if arg in namedict:
-        #arg is provided by the binder
-        name = namedict[arg]
-      else:
-        #arg is a domain constant
-        name = arg.name
-        
-      if name in bdict:
-        #arg is a pointer to another belief
-        value = featurecontent.PointerValue(cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
-      elif arg.is_instance_of(pddl.t_boolean):
-        value = False
-        if arg == pddl.TRUE:
-          value = True
-        value = featurecontent.BooleanValue(value)
-      else:
-        #assume a string value
-        value = featurecontent.StringValue(name)
-
-      arg_values.append(value)
+    arg_values = [featvalue_from_object(arg, namedict, bdict) for arg in args]
     
     for bel in beliefs:
       if not bel.type == "relation":
@@ -330,9 +336,6 @@ def update_beliefs(diffstate, namedict, beliefs):
     return result
     
   for svar, val in diffstate.iteritems():
-    if svar.modality:
-      continue
-    
     if len(svar.args) == 1:
       obj = svar.args[0]
       try:

@@ -130,10 +130,10 @@ class ProbabilisticState(State):
     def iterdists(self):
         return (ProbFact.from_tuple(tup) for tup in self.iteritems())
 
-    def iterfacts(self):
+    def iterfacts(self, only_nonzero=True):
         def fact_iter(svar, dist):
             for k,v in dist.iteritems():
-                if v > 0:
+                if v > 0 or not only_nonzero:
                     yield Fact(svar, k), v
         return itertools.chain(*(fact_iter(svar, dist) for svar,dist in self.iteritems()))
     
@@ -256,7 +256,7 @@ class ProbabilisticState(State):
     def determinized_state(self, lower_threshold, upper_threshold):
         s = State(prob=self.problem)
         svar2idvars = defaultdict(list)
-        for fact, prob in self.iterfacts():
+        for fact, prob in self.iterfacts(only_nonzero=False):
             #TODO: Handle cases with limited number of alternatives
             if prob >= upper_threshold:
                 s.set(fact)
@@ -264,7 +264,7 @@ class ProbabilisticState(State):
                 idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
                 svar2idvars[fact.svar].append(idvar)
         for svar, idvars in svar2idvars.iteritems():
-            if svar not in s:
+            if svar not in s or s[svar] == UNKNOWN:
                 for idvar in idvars:
                     s[idvar] = TRUE
         return s
