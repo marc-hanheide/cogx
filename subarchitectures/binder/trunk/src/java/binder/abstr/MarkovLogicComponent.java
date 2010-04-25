@@ -21,9 +21,11 @@ import binder.utils.FileUtils;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import beliefmodels.utils.FeatureContentUtils;
 import binder.arch.BindingWorkingMemory;
@@ -166,22 +168,37 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
 			HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults);
 
+			for (String id : filteredInferenceResults.keySet()) {
+				if (existsOnWorkingMemory(id)) {
+					
+					if (filteredInferenceResults.get(id) > lowestProbThreshold) {
+						resultingBeliefs.add(getMemoryEntry(new WorkingMemoryAddress(id, BindingWorkingMemory.BINDER_SA), 
+							TemporalUnionBelief.class));
+					}
+				}
+				else {		
+					
+					TemporalUnionBelief newBelief = TemporalUnionBuilder.createNewSingleUnionBelief((MultiModalBelief) belief, beliefWMAddress, id);
+					float existProb = DistributionUtils.getExistenceProbability(newBelief) * filteredInferenceResults.get(id);
+					DistributionUtils.setExistenceProbability(newBelief, existProb);
+					
+					if (DistributionUtils.getExistenceProbability(newBelief) > lowestProbThreshold)  {
+
+						resultingBeliefs.add(newBelief);
+					}
+				}
+			}
+			
 			// create the new unions given the inference results
-			Vector<Belief> newUnions = createNewUnions(belief, beliefWMAddress, relevantUnions,
-					unionsMapping, newSingleUnionId, filteredInferenceResults);
+	//		Vector<Belief> newUnions = createNewUnions(belief, beliefWMAddress, relevantUnions,
+	//				unionsMapping, newSingleUnionId, filteredInferenceResults);
 
-			resultingBeliefs.addAll(newUnions);
+	//		resultingBeliefs.addAll(newUnions);
 			
-			// and add them to the working memory
-		//	performInferenceAddToWM(belief, newUnions);
-
 			// modify the existence probabilities of the existing unions
-			List<Belief> unionsToUpdate = getExistingUnionsToUpdate(belief, relevantUnions, unionsMapping, filteredInferenceResults);
+	//		List<Belief> unionsToUpdate = getExistingUnionsToUpdate(belief, relevantUnions, unionsMapping, filteredInferenceResults);
 
-			resultingBeliefs.addAll(unionsToUpdate);
-			
-			// and update them on the working memory
-		//	performInferenceUpdateWM(unionsToUpdate);
+	//		resultingBeliefs.addAll(unionsToUpdate);
 						
 		}
 		catch (Exception e) {
@@ -276,12 +293,13 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		for (String existingUnionId : relevantUnions.keySet()) {
 			String newUnionId = newDataID();
-			unionsMapping.put(newUnionId, existingUnionId);
+			unionsMapping.put(existingUnionId, existingUnionId);
 		}
 		
 		log("newly created union ids: " + unionsMapping.keySet().toString());
 		return unionsMapping;
 	}
+	
 
 	private void writeMarkovLogic(T mmbelief,
 			Map<String, Belief> relevantUnions,

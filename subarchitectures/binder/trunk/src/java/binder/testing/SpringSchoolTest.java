@@ -1,6 +1,7 @@
 package binder.testing;
 
 import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
@@ -10,10 +11,40 @@ import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
 import binder.arch.BindingWorkingMemory;
+import cast.SubarchitectureComponentException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTData;
 
 public class SpringSchoolTest extends AbstractBinderTest {
 
+	
+	
+	@Override
+	public void start() {
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(TemporalUnionBelief.class,
+						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						try {
+							
+							CASTData<TemporalUnionBelief>[] unions = getWorkingMemoryEntries(TemporalUnionBelief.class);
+							log("Current number of unions in WM: " + unions.length);
+						} 
+						catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
+				}
+		);
+	}
+	
 	@Override
 	public String getReasonForFailure() {
 		// TODO Auto-generated method stub
@@ -124,7 +155,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			PerceptBelief b4 = PerceptBuilder.createNewPerceptBelief(newDataID(), "person", "here", getCASTTime(), content_b4, hist_b4);
 
-			insertBeliefInWM(b4);
+		//	insertBeliefInWM(b4);
 
 
 
@@ -141,7 +172,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "person", "here", getCASTTime(), content_b5, hist_b5);
 
-			insertBeliefInWM(b5);
+		//	insertBeliefInWM(b5);
 
 		}
 		catch (Exception e) {
