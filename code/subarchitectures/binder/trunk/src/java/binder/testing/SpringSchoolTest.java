@@ -121,7 +121,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 			CondIndependentDistribs contentDistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
 
 			BasicProbDistribution typeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("type", 
-					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("record"), 0.89f));
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("3:2"), 0.89f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, typeDistrib_b2);
 
@@ -143,7 +143,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 			CondIndependentDistribs contentDistrib_b3 = BeliefContentBuilder.createNewCondIndependentDistribs();
 
 			BasicProbDistribution typeDistrib_b3 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("type", 
-					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("record"), 0.95f));
+					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("3:2"), 0.95f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b3, typeDistrib_b3);
 

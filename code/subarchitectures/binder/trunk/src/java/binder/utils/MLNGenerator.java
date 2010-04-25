@@ -612,7 +612,8 @@ public class MLNGenerator {
 		for(FeatureValueProbPair feature_pair : values.values) {
 			FeatureValue val = feature_pair.val;
 			if(val instanceof StringValue) {
-				result.add(((StringValue)val).val);
+				result.add("v"+((StringValue)val).val.replace(":", "_"));
+				
 				continue;
 			}
 			if(val instanceof IntegerValue) {
@@ -797,8 +798,8 @@ public class MLNGenerator {
 	 */
 	private String getFeatureValue(FeatureValue val) throws MLException {
 		if(val instanceof StringValue) {
-			return ((StringValue)val).val.replace(":", "_");
-		}
+			return "v"+((StringValue)val).val.replace(":", "_");
+		} 
 		
 		else if(val instanceof IntegerValue) {
 			return new Integer(((IntegerValue)val).val).toString();
