@@ -8,6 +8,7 @@ import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.featurecontent.IntegerValue;
+import binder.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
 
@@ -31,7 +32,7 @@ public class PlaceMatchingFunction implements ContentMatchingFunction<PerceptBel
 
 	@Override
 	public boolean matches(PerceptBelief r) {
-		if (r.type.equals(CASTUtils.typeName(SpatialData.Place.class))) {
+		if (r.type.equals(SimpleDiscreteTransferFunction.getBeliefTypeFromCastType(SpatialData.Place.class))) {
 			assert (r.content instanceof CondIndependentDistribs);
 			CondIndependentDistribs dist = (CondIndependentDistribs) r.content;
 			BasicProbDistribution fv = (BasicProbDistribution) dist.distribs.get(PLACE_ID);
