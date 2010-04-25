@@ -23,6 +23,10 @@ import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import binder.utils.MLNPreferences;
+import cast.AlreadyExistsOnWMException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -63,6 +67,8 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 
 	static String MLNFile = markovlogicDir + "tracking.mln";
+	
+	Vector<MultiModalBelief> beliefUpdatesToIgnore = new Vector<MultiModalBelief>();
 
 	public Tracking_MLN() {
 		super(MultiModalBelief.class, MLNFile);
@@ -97,10 +103,8 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
 							log("received a new belief: " + beliefData.getID());
-							
-							addOffspring(beliefData.getData(), newDataID());	
-							updateBeliefOnWM(beliefData.getData());
-
+	
+							inference(beliefData.getData(), _wmc.address);
 						}
 						catch (Exception e) {
 							e.printStackTrace();
@@ -133,45 +137,19 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 					@SuppressWarnings("unchecked")
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
 						try {
-		//					workingMemoryChangeDelete(_wmc.address);
-							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
+							CASTData<MultiModalBelief> beliefData = 
+								getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 							
-							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
-							
-							MultiModalBelief beliefCopy = duplicateBelief(beliefData.getData());
-							updatePointers(beliefCopy, TemporalUnionBelief.class);
-							List<Belief> results = performInference(beliefCopy, _wmc.address, getPreferences(beliefData.getData()));
-			
-							
-							for (WorkingMemoryAddress child : offspring) {
-								if (existsOnWorkingMemory(child)) {
-									log("belief " + child.id + " exists on WM, overwriting");
-									TemporalUnionBelief childBelief = (TemporalUnionBelief) results.get(0);
-									// have to check how to do this??
-									//			updateBeliefOnWM(childBelief);
-								}
-								else {
-									log("belief " + child.id + " does not exist on WM, creating it");
-									TemporalUnionBelief childBelief = (TemporalUnionBelief) results.get(0);
-									childBelief.id = child.id;
-									insertBeliefInWM(childBelief);
-								}
-							}
-							
-		//					log("beliefUpdateToIgnore: " + beliefUpdateToIgnore);
-							
-			//				if (!beliefUpdateToIgnore.contains(beliefData.getID())) {
+							if (!beliefUpdatesToIgnore.contains(beliefData.getData())) {
+								log("updating existing multi-modal belief...");
 								
-					/**		log("received a belief update: " + beliefData.getID());
-							MultiModalBelief belief = beliefData.getData();
-							updatePointers(belief, TemporalUnionBelief.class);
-							performInference(belief, _wmc.address, getPreferences(belief));
-							log("tracking operation on belief " + belief.id + " now finished"); */
-							
-					//		}	
-			/**				else {
-								beliefUpdateToIgnore.remove(beliefData.getID());
-							} */
+								inference(beliefData.getData(), _wmc.address);
+							}
+							else {
+								log("ignoring overwrite update (offspring change)");
+								beliefUpdatesToIgnore.remove(beliefData.getData());
+							}
+ 							
 						}
 						catch (Exception e) {
 							e.printStackTrace();
@@ -182,6 +160,32 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	}
 
 	
+	
+	private void inference (MultiModalBelief belief, WorkingMemoryAddress beliefWMAddress)
+		throws BeliefException, DoesNotExistOnWMException, PermissionException, ConsistencyException, 
+		AlreadyExistsOnWMException, UnknownSubarchitectureException {
+	
+		
+		MultiModalBelief beliefCopy = duplicateBelief(belief);
+		updatePointers(beliefCopy, TemporalUnionBelief.class);
+		List<Belief> results = performInference(beliefCopy, beliefWMAddress, getPreferences(belief));
+
+		for (Belief b : results) {
+			if (existsOnWorkingMemory(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA))) {
+				log("belief " + b.id + " exists on WM, overwriting");
+				updateBeliefOnWM(b);
+			}
+			else {
+				log("belief " + b.id + " does not exist on WM, creating it");
+				insertBeliefInWM(b);
+			}
+			addOffspring(belief, b.id);	
+		}
+		
+		beliefUpdatesToIgnore.add(belief);
+		updateBeliefOnWM(belief);
+
+	}
 	
 	
 	private MLNPreferences getPreferences(Belief b) {
