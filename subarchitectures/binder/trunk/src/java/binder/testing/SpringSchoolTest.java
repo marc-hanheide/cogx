@@ -155,7 +155,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			PerceptBelief b4 = PerceptBuilder.createNewPerceptBelief(newDataID(), "person", "here", getCASTTime(), content_b4, hist_b4);
 
-		//	insertBeliefInWM(b4);
+			insertBeliefInWM(b4);
 
 
 
@@ -172,7 +172,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "person", "here", getCASTTime(), content_b5, hist_b5);
 
-		//	insertBeliefInWM(b5);
+			insertBeliefInWM(b5);
 
 		}
 		catch (Exception e) {

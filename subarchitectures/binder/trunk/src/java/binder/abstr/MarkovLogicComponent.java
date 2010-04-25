@@ -135,15 +135,15 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
 		
-		if (relevantUnions.size() > 0 && 
+	/**	if (relevantUnions.size() > 0 && 
 				prefs.isTrackingActivated()) {
 			
 			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
 		}
 		
-		else {
+		else { */
 			return performDirectInference(belief, beliefWMAddress);
-		}
+	//	}
 	}
 
 	private List<Belief> performMarkovLogicInference (T belief,
@@ -410,30 +410,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 				}
 		}
 		return subarchitectures;
-	}
-
-	protected void deleteAllMultiModalBeliefAttachedToUnion(WorkingMemoryAddress unionAddress) {
-	
-		try {
-			CASTData<MultiModalBelief>[] mmBeliefs;
-	
-			mmBeliefs = getWorkingMemoryEntries(BindingWorkingMemory.BINDER_SA, MultiModalBelief.class);
-	
-			for (int i = (mmBeliefs.length - 1) ; i >= 0 ; i--) {
-				MultiModalBelief mmbelief = mmBeliefs[i].getData();
-				if (mmbelief != null && mmbelief.hist != null && mmbelief.hist instanceof CASTBeliefHistory) {
-					if (((CASTBeliefHistory)mmbelief.hist).ancestors.contains(unionAddress)) {
-						deleteBeliefOnWM (mmBeliefs[i].getID());
-					}
-				}
-			}
-		}
-		catch (UnknownSubarchitectureException e) {
-			log("Problem with architecture name!");
-		}
-		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**

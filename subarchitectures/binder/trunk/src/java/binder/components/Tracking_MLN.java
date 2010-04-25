@@ -97,7 +97,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-					@SuppressWarnings("unchecked")
+
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
 						try {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
