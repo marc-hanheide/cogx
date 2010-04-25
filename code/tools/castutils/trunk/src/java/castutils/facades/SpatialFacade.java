@@ -13,6 +13,7 @@ import Ice.ObjectImpl;
 import SpatialData.PathQueryStatus;
 import SpatialData.PathTransitionCostRequest;
 import SpatialData.Place;
+import SpatialProperties.PlaceContainmentAgentProperty;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -22,6 +23,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.CASTHelper;
 import castutils.castextensions.WMEntryQueue;
+import castutils.castextensions.WMEventQueue;
 import castutils.castextensions.WMView;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
@@ -52,7 +54,11 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			WMEventQueue agentChangeEventQueue = new WMEventQueue();
+			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
+					PlaceContainmentAgentProperty.class, WorkingMemoryOperation.ADD), agentChangeEventQueue);
 
+			
 			// initialize current place
 			while (currentPlace == null && !interrupted())
 				currentPlace = getPlaceInterface().getCurrentPlace();
@@ -60,6 +66,9 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 
 			while (!interrupted()) {
 				try {
+					// wait for the next change
+					agentChangeEventQueue.take();
+
 					Place place = getPlaceInterface().getCurrentPlace();
 
 					if (place == null || place.id != currentPlace.id) {
@@ -68,7 +77,6 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 							c.update(place);
 						}
 					}
-					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					break;
 				} catch (Exception e) {
