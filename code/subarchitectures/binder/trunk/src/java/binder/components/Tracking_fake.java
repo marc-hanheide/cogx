@@ -40,7 +40,8 @@ public class Tracking_fake extends FakeComponent {
 						try {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 	
-							addOffspring(beliefData.getData(), newDataID());	
+							addOffspring(beliefData.getData(), newDataID());
+							
 							updateBeliefOnWM(beliefData.getData());
 							
 						}	
