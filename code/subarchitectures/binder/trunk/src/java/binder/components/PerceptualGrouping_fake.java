@@ -60,10 +60,9 @@ public class PerceptualGrouping_fake extends FakeComponent {
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
-									PerceptUnionBelief childBelief = getMemoryEntry(child, PerceptUnionBelief.class);
-									childBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
-									updatePointers(childBelief, PerceptUnionBelief.class);
-									updateBeliefOnWM(childBelief);
+									PerceptUnionBelief newChildBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+									updatePointers(newChildBelief, PerceptUnionBelief.class);
+									updateBeliefOnWM(newChildBelief);
 								}
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");

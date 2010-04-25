@@ -59,22 +59,31 @@ public class Tracking_fake extends FakeComponent {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						
 						try {
+
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
+							log("overwriting belief " + beliefData.getID());
+
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+							
+							log("number of offspring for belief " + beliefData.getID() + ": " + offspring.size());
 							
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
 									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
 									childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+								
 									updatePointers(childBelief, TemporalUnionBelief.class);
+									
 									updateBeliefOnWM(childBelief);
 								}
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");
 									TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+								
 									updatePointers(childBelief, TemporalUnionBelief.class);
+									
 									insertBeliefInWM(childBelief);
 								}
 							}
