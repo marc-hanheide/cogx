@@ -5,6 +5,8 @@ import java.util.List;
 import autogen.Planner.Action;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.PointerValue;
+import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import cast.CASTException;
 import castutils.facades.BinderFacade;
@@ -13,6 +15,8 @@ import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.ComsysTestFeatureValue;
+import execution.slice.actions.ComsysQueryFeature;
 import execution.util.ActionConverter;
 
 /**
@@ -55,7 +59,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 			GoToPlace act = newActionInstance(GoToPlace.class);
-			String placeUnionID = plannerLiteralToWMID(_plannedAction.arguments[1]);
+			String placeUnionID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
 			Belief placeUnion = m_binderFacade.getBelief(placeUnionID);
 
 			if (placeUnion == null) {
@@ -135,13 +139,32 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			return act;
 		} else if (_plannedAction.name.equals("ask-for-feature")) {
 			assert _plannedAction.arguments.length == 3 : "ask-for-feature action arity is expected to be 3";
-			String beliefID = plannerLiteralToWMID(_plannedAction.arguments[1]);
-			String featureID = _plannedAction.arguments[1];
+			String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			String featureID = "";
 			Belief belief = m_binderFacade.getBelief(beliefID);
 			// TODO: implement this action
 			throw(new ActionExecutionException(_plannedAction.name + " not yet implemented."));
 			//AskFeature act = newActionInstance(AskFeature.class);
 			//return act;
+		} else if (_plannedAction.name.equals("ask-for-placename")) {
+			assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
+			String beliefID =  ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			String featureID = "name";
+			Belief belief = m_binderFacade.getBelief(beliefID);
+			ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+            act.beliefID = beliefID;
+            act.featureID = featureID;
+			return act;
+		} else if (_plannedAction.name.equals("verify-placename")) {
+			assert _plannedAction.arguments.length == 3 : "ask-for-feature action arity is expected to be 2";
+			String beliefID =  ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			String featureID = "name";
+			Belief belief = m_binderFacade.getBelief(beliefID);
+			ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
+            act.beliefID = beliefID;
+            act.featureType = featureID;
+            act.featureValue = _plannedAction.arguments[2];
+			return act;
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
