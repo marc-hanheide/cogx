@@ -207,12 +207,11 @@ public class TemporalUnionBuilder extends AbstractBeliefBuilder {
 		// and inserting each subdistrib into the new belief content
 		for (String featlabel : mmbeliefCIDistrib.distribs.keySet()) {
 			
-			String newKey = ((BasicProbDistribution)mmbeliefCIDistrib.distribs.get(featlabel)).key + "_t1";
+			String newKey = ((BasicProbDistribution)mmbeliefCIDistrib.distribs.get(featlabel)).key ; // + "_t1";
 			DistributionValues distribValues = ((BasicProbDistribution)mmbeliefCIDistrib.distribs.get(featlabel)).values;
 			BasicProbDistribution newSubDistrib = new BasicProbDistribution(newKey, distribValues);
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(newCIDistrib, newSubDistrib);
-			
 		} 
 
 		// extracting the conditionally independent distrib in the union belief
@@ -220,7 +219,7 @@ public class TemporalUnionBuilder extends AbstractBeliefBuilder {
 
 		// and inserting each subdistrib into the new belief content
 		for (String featlabel : unionCIDistrib.distribs.keySet()) {
-			String newKey = ((BasicProbDistribution)unionCIDistrib.distribs.get(featlabel)).key + "_t2";
+			String newKey = ((BasicProbDistribution)unionCIDistrib.distribs.get(featlabel)).key  ; // + "_t2";
 			DistributionValues distribValues = ((BasicProbDistribution)unionCIDistrib.distribs.get(featlabel)).values;
 			BasicProbDistribution newSubDistrib = new BasicProbDistribution(newKey, distribValues);
 			
