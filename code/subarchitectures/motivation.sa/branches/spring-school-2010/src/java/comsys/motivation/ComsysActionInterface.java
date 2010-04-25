@@ -54,12 +54,14 @@ public class ComsysActionInterface extends ManagedComponent {
 
 		private String m_featureID;
 		private String m_beliefID;
+		private String m_question;
 
 		@Override
 		public boolean accept(Action _action) {
 			ComsysQueryFeature act = (ComsysQueryFeature) _action;
 			m_beliefID = act.beliefID;
 			m_featureID = act.featureID;
+			m_question = act.question;
 			return true;
 		}
 
@@ -70,7 +72,9 @@ public class ComsysActionInterface extends ManagedComponent {
 
 			final JDialog dialog = new JDialog();
 			dialog.setLayout(new FlowLayout());
-			String blurb = "what is the value of feature " + m_featureID
+			String blurb;
+			if (m_question.isEmpty()) {
+			blurb = "what is the value of feature " + m_featureID
 					+ " for belief " + m_beliefID + " of type " + belief.type
 					+ "?";
 
@@ -81,7 +85,10 @@ public class ComsysActionInterface extends ManagedComponent {
 						.get(feature)).values;
 				blurb += BeliefInfo.toString(values.values.get(0).val);
 			}
-
+			}
+			else {
+				blurb=m_question;
+			}
 			JTextArea textArea = new JTextArea(blurb);
 
 			dialog.add(textArea);
