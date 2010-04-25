@@ -55,8 +55,12 @@ public class PerceptualGrouping_fake extends FakeComponent {
 						try {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
 
+							log("overwriting belief " + beliefData.getID());
+
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
-							
+
+							log("number of offspring for belief " + beliefData.getID() + ": " + offspring.size());
+
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
