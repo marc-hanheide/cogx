@@ -93,7 +93,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 		
 		// Deletion
-
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {

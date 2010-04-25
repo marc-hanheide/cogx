@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
@@ -26,6 +27,8 @@ import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.UnknownValue;
+import beliefmodels.builders.BeliefContentBuilder;
+import beliefmodels.utils.FeatureContentUtils;
 import binder.ml.MLException;
 import binder.ml.MLFormula;
 
@@ -93,6 +96,19 @@ public class MLNGenerator {
 	// Build the Markov network file
 	/////////////////////////////////////////////////////////////////////////////////////
 
+	
+	private Belief controlExistDep (Belief b) {
+		if (b.content instanceof CondIndependentDistribs) {
+			try {
+			ProbDistribution distrib = FeatureContentUtils.duplicateContent(b.content);
+			b.content = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, distrib);
+			}
+			catch (BeliefException e) {
+				e.printStackTrace();
+			}
+		}
+		return b;
+	}
 	/**
 	 * This method constructs the Markov Logic Network (MLN) in a textual description from the current
 	 * state of the WM. The MLN file can then be passed to alchemy to perform inference over possible
@@ -112,6 +128,13 @@ public class MLNGenerator {
 			Map<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
 
 		newInput = b;
+		
+		b = controlExistDep(b);
+		
+		for (Belief bb : existingUnions) {
+			bb = controlExistDep(bb);
+		}
+		
 		
 		// sanity check of the input
 		if(b == null || existingUnions == null || unionsMapping == null || newSingleUnionId == null || MLNFileToWrite == null) {
@@ -917,10 +940,10 @@ public class MLNGenerator {
 		}
 		// handle the border case, where denominator approaches 0 or 1
 		if(Float.compare(prob, 1f) >= 0) {
-			return Float.MAX_VALUE;
+			return 100f;
 		}
 		if(Float.compare(prob, 0f) <= 0) {
-			return Float.MIN_VALUE;
+			return -100f;
 		}
 		else {
 			return new Float(Math.log(prob / (1f - prob)));
