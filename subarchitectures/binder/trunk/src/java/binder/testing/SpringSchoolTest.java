@@ -43,6 +43,24 @@ public class SpringSchoolTest extends AbstractBinderTest {
 					}
 				}
 		);
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(TemporalUnionBelief.class,
+						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						try {
+							
+							CASTData<TemporalUnionBelief>[] unions = getWorkingMemoryEntries(TemporalUnionBelief.class);
+							log("Current number of unions in WM: " + unions.length);
+						} 
+						catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
+				}
+		);
 	}
 	
 	@Override
@@ -173,6 +191,8 @@ public class SpringSchoolTest extends AbstractBinderTest {
 			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "person", "here", getCASTTime(), content_b5, hist_b5);
 
 			insertBeliefInWM(b5);
+			
+			updateBeliefOnWM(b5);
 
 		}
 		catch (Exception e) {

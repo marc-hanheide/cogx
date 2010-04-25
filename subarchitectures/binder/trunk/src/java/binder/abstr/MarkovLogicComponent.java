@@ -138,6 +138,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		if (relevantUnions.size() > 0 && 
 				prefs.isTrackingActivated()) {
 			
+			log("doing markov logic inference on belief "  + belief.id);
 			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
 		}
 		
