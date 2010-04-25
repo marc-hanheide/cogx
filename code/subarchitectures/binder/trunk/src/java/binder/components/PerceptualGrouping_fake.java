@@ -75,6 +75,10 @@ public class PerceptualGrouping_fake extends FakeComponent {
 									insertBeliefInWM(childBelief);
 								}
 							}
+							
+							if (offspring.size() == 0) {
+								log("WARNING: " + beliefData.getID() + " has no offspring, something wrong here");
+							}
 						}	
 
 						catch (Exception e) {
