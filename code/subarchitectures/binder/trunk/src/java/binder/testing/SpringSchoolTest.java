@@ -132,7 +132,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
 
-			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "object", "here", getCASTTime(), content_b2, hist_b2);
+			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Object", "here", getCASTTime(), content_b2, hist_b2);
 
 			insertBeliefInWM(b2);
 
@@ -154,7 +154,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			ProbDistribution content_b3 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b3);
 
-			PerceptBelief b3 = PerceptBuilder.createNewPerceptBelief(newDataID(), "object", "here", getCASTTime(), content_b3, hist_b3);
+			PerceptBelief b3 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Object", "here", getCASTTime(), content_b3, hist_b3);
 
 			insertBeliefInWM(b3);
 			
@@ -171,7 +171,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			ProbDistribution content_b4 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
 
-			PerceptBelief b4 = PerceptBuilder.createNewPerceptBelief(newDataID(), "person", "here", getCASTTime(), content_b4, hist_b4);
+			PerceptBelief b4 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b4, hist_b4);
 
 			insertBeliefInWM(b4);
 
@@ -188,7 +188,13 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			ProbDistribution content_b5 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b5);
 
-			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "person", "here", getCASTTime(), content_b5, hist_b5);
+			BasicProbDistribution distanceDistrib_b5 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("distance", 
+					new FeatureValueProbPair(FeatureValueBuilder.createNewFloatValue(0.67f), 0.95f));
+
+			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b5, distanceDistrib_b5); 
+
+			
+			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b5, hist_b5);
 
 			insertBeliefInWM(b5);
 			

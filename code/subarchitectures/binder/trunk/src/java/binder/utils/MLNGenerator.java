@@ -758,11 +758,14 @@ public class MLNGenerator {
 
 		Set<String> occuring_values = new TreeSet<String>();
 		for(FeatureValueProbPair pair : values.values) {
+			try {
 			float weight = convertProbabilityToWeight(pair.prob);
 			String value = getFeatureValue(pair.val);
 			String formula = setFirstLetterToUppercase(feature) + "(" + belief_id + "," + setFirstLetterToUppercase(value) + ")";
 			formulae.add(new MLFormula(weight, formula));
 			occuring_values.add(setFirstLetterToUppercase(value));
+			}
+			catch (MLException e) { }
 		}
 
 		// now we need to add the hard constraint for all the names
