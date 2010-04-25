@@ -135,15 +135,15 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
 		
-	/**	if (relevantUnions.size() > 0 && 
+		if (relevantUnions.size() > 0 && 
 				prefs.isTrackingActivated()) {
 			
 			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
 		}
 		
-		else { */
+		else { 
 			return performDirectInference(belief, beliefWMAddress);
-	//	}
+		}
 	}
 
 	private List<Belief> performMarkovLogicInference (T belief,
@@ -287,6 +287,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	protected abstract Belief createNewSingleUnionBelief(T belief,
 			WorkingMemoryAddress beliefWMAddress) throws BeliefException;
 
+	
 	private Map<String, String> createIdentifiersForNewUnions(
 			Map<String, Belief> relevantUnions) {
 		Map<String,String> unionsMapping = new HashMap<String,String>();

@@ -157,9 +157,25 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 								getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 							
 							if (!beliefUpdatesToIgnore.contains(beliefData.getData())) {
-								log("updating existing multi-modal belief...");
 								
-								inference(beliefData.getData(), _wmc.address);
+								List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+								
+								for (WorkingMemoryAddress child : offspring) {
+									if (existsOnWorkingMemory(child)) {
+										log("belief " + child.id + " exists on WM, overwriting");
+										TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
+										childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+										updatePointers(childBelief, TemporalUnionBelief.class);
+										updateBeliefOnWM(childBelief);
+									}
+									else {
+										log("belief " + child.id + " does not exist on WM, creating it");
+										TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+										updatePointers(childBelief, TemporalUnionBelief.class);
+										insertBeliefInWM(childBelief);
+									}
+								}
+								
 							}
 							else {
 								log("ignoring overwrite update (offspring change)");
