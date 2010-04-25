@@ -9,9 +9,14 @@ import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.MultiModalBeliefBuilder;
 import beliefmodels.builders.StableBeliefBuilder;
 import beliefmodels.builders.TemporalUnionBuilder;
@@ -68,10 +73,14 @@ public class TemporalSmoothing_fake extends FakeComponent {
 
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
-									log("belief " + child.id + " exists on WM, overwriting");
-									StableBelief childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, child.id);
-									updatePointers(childBelief, StableBelief.class);
-									updateBeliefOnWM(childBelief);
+									log("belief " + child.id + " exists on WM, merging content");
+									StableBelief newChildBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, child.id);
+
+									StableBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), StableBelief.class);
+									newChildBelief.content = mergeBeliefContent(newChildBelief.content, existingBelief.content);
+									
+									updatePointers(newChildBelief, StableBelief.class);
+									updateBeliefOnWM(newChildBelief);
 								}
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");
@@ -115,5 +124,6 @@ public class TemporalSmoothing_fake extends FakeComponent {
 				}
 		);
 	}
+	
 	
 }

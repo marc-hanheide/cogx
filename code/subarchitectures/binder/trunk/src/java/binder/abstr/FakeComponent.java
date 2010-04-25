@@ -4,9 +4,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.utils.FeatureContentUtils;
 import binder.arch.BindingWorkingMemory;
 import cast.cdl.WorkingMemoryAddress;
@@ -80,6 +85,47 @@ public abstract class FakeComponent extends BeliefWriter {
 	
 
 
+
+	
+	protected ProbDistribution mergeBeliefContent (ProbDistribution distribA, ProbDistribution distribB) {
+		
+		try {
+			ProbDistribution distrib1 = FeatureContentUtils.duplicateContent(distribA);
+			ProbDistribution distrib2 = FeatureContentUtils.duplicateContent(distribB);
+
+			if (distrib1 instanceof CondIndependentDistribs && distrib2 instanceof CondIndependentDistribs) {
+			CondIndependentDistribs merge = BeliefContentBuilder.createNewCondIndependentDistribs();
+			for (String key: ((CondIndependentDistribs)distrib1).distribs.keySet()) {
+				BeliefContentBuilder.putNewCondIndependentDistrib
+					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib1).distribs.get(key));
+			}
+			for (String key: ((CondIndependentDistribs)distrib2).distribs.keySet()) {
+				BeliefContentBuilder.putNewCondIndependentDistrib
+					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib2).distribs.get(key));
+			}
+			return merge;
+		}
+		else if (distrib1 instanceof DistributionWithExistDep && distrib2 instanceof DistributionWithExistDep) {
+			CondIndependentDistribs merge = BeliefContentBuilder.createNewCondIndependentDistribs();
+			for (String key: ((CondIndependentDistribs)distrib1).distribs.keySet()) {
+				BeliefContentBuilder.putNewCondIndependentDistrib
+					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib1).distribs.get(key));
+			}
+			for (String key: ((CondIndependentDistribs)distrib2).distribs.keySet()) {
+				BeliefContentBuilder.putNewCondIndependentDistrib
+					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib2).distribs.get(key));
+			}
+			DistributionWithExistDep mergeWithExist = BeliefContentBuilder.createNewDistributionWithExistDep(((DistributionWithExistDep)distrib1).existProb, merge);
+			return mergeWithExist;
+		}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return distribA;
+
+	}
+	
 	private <T extends Belief> void updatePointersInOtherBeliefs 
 		(Belief newBelief, Class<T> cls) {
 		try {

@@ -8,6 +8,7 @@ import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.PerceptUnionBelief;
+import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
@@ -64,10 +65,13 @@ public class MultiModalEstimation_fake extends FakeComponent {
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
-									MultiModalBelief childBelief = getMemoryEntry(child, MultiModalBelief.class);
-									childBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, child.id);
-									updatePointers(childBelief, MultiModalBelief.class);
-									updateBeliefOnWM(childBelief);
+									MultiModalBelief newChildBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, child.id);
+								
+									MultiModalBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), MultiModalBelief.class);
+									newChildBelief.content = mergeBeliefContent(newChildBelief.content, existingBelief.content);
+		
+									updatePointers(newChildBelief, MultiModalBelief.class);
+									updateBeliefOnWM(newChildBelief);
 								}
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");
