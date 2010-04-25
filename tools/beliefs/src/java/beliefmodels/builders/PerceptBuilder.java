@@ -67,13 +67,13 @@ public class PerceptBuilder extends AbstractBeliefBuilder {
 		EpistemicStatus status = 
 			EpistemicStatusBuilder.createNewPrivateEpistemicStatus(EpistemicStatusBuilder.ROBOT_AGENT);
 	
-		ProbDistribution wrappedContent = content;
+	/**	ProbDistribution wrappedContent = content;
 		if (content instanceof CondIndependentDistribs) {
 			 wrappedContent = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, content);
-		}
+		}  */
 		
 		// and creating the belief
-		return new PerceptBelief(frame,status,id, type, wrappedContent,hist);
+		return new PerceptBelief(frame,status,id, type, content, hist);
 	}
 	
 	 
