@@ -343,12 +343,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		return inferenceResults;
 	}
 
-	/**
-	 * 
-	 * @param perceptWMAddress
-	 */
-	public abstract void workingMemoryChangeDelete(WorkingMemoryAddress perceptWMAddress);
-
+	
 	/**
 	 * Filter the inference results to retain only the maxSize-best results
 	 * 
