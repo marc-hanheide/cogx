@@ -143,26 +143,6 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			return performDirectInference(belief, beliefWMAddress);
 		}
 	}
-	
-	
-	public List<Belief> performInference(T belief, WorkingMemoryAddress beliefWMAddress, MLNPreferences prefs, 
-			List<Belief> beliefIdsToUse) throws BeliefException{
-		
-		// extract the unions already existing in the binder WM
-		Map<String, Belief> existingUnions = extractExistingUnions();
-		
-		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
-		
-		if (relevantUnions.size() > 0 && 
-				prefs.isTrackingActivated()) {
-			
-			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
-		}
-		
-		else {
-			return performDirectInference(belief, beliefWMAddress);
-		}
-	}
 
 	private List<Belief> performMarkovLogicInference (T belief,
 			WorkingMemoryAddress beliefWMAddress,
