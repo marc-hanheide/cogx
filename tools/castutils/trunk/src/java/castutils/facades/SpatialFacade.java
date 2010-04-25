@@ -57,6 +57,8 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 			WMEventQueue agentChangeEventQueue = new WMEventQueue();
 			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
 					PlaceContainmentAgentProperty.class, WorkingMemoryOperation.ADD), agentChangeEventQueue);
+			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
+					PlaceContainmentAgentProperty.class, WorkingMemoryOperation.OVERWRITE), agentChangeEventQueue);
 
 			
 			// initialize current place
