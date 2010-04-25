@@ -797,8 +797,9 @@ public class MLNGenerator {
 	 */
 	private String getFeatureValue(FeatureValue val) throws MLException {
 		if(val instanceof StringValue) {
-			return ((StringValue)val).val;
+			return ((StringValue)val).val.replace(":", "_");
 		}
+		
 		else if(val instanceof IntegerValue) {
 			return new Integer(((IntegerValue)val).val).toString();
 		}
