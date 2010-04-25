@@ -1,6 +1,7 @@
 package binder.abstr;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
@@ -27,6 +28,15 @@ public abstract class FakeComponent extends BeliefWriter {
 		addOffspring(oldBelief, new WorkingMemoryAddress(newBeliefId, 
 				BindingWorkingMemory.BINDER_SA));
 	}
+	
+
+	protected void addOffspring (Belief oldBelief, List<String> newBeliefIds) {
+		for (String newBeliefId : newBeliefIds) {
+		addOffspring(oldBelief, new WorkingMemoryAddress(newBeliefId, 
+				BindingWorkingMemory.BINDER_SA));
+		}
+	}
+	
 	
 	protected void addOffspring (Belief oldBelief, WorkingMemoryAddress addressUnion) {
 

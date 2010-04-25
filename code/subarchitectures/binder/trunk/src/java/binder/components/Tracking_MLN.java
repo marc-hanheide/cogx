@@ -97,11 +97,9 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
 							log("received a new belief: " + beliefData.getID());
-							updatePointers(beliefData.getData(), TemporalUnionBelief.class);
-											
-							performInference(beliefData.getData(), _wmc.address, getPreferences(beliefData.getData()));			
 							
-							log("tracking operation on belief " + beliefData.getID() + " now finished");
+							addOffspring(beliefData.getData(), newDataID());	
+							updateBeliefOnWM(beliefData.getData());
 
 						}
 						catch (Exception e) {
@@ -144,15 +142,37 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
 									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
-									childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, childBelief.id);
-									updatePointers(childBelief, TemporalUnionBelief.class);
-									updateBeliefOnWM(childBelief);
+									
+									MultiModalBelief beliefCopy = duplicateBelief(beliefData.getData());
+									
+									updatePointers(beliefCopy, TemporalUnionBelief.class);
+									
+									List<Belief> results = performInference(beliefCopy, _wmc.address, getPreferences(beliefData.getData()));
+									
+									for (Belief b : results) { 
+										// HERE, ADD THRESHOLD STUFF
+										insertBeliefInWM(b);
+									}
+									
 								}
+
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");
-									TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
-									updatePointers(childBelief, TemporalUnionBelief.class);
-									insertBeliefInWM(childBelief);
+									MultiModalBelief beliefCopy = duplicateBelief(beliefData.getData());
+						
+									updatePointers(beliefCopy, TemporalUnionBelief.class);
+									
+									List<Belief> results = performInference(beliefCopy, _wmc.address, getPreferences(beliefData.getData()));
+									
+									for (Belief b : results) { 
+										// HERE, ADD THRESHOLD STUFF
+										if (!existsOnWorkingMemory(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA))) {
+											insertBeliefInWM(b);											
+										}
+										else {
+											updateBeliefOnWM(b);
+										}
+									}
 								}
 							}
 							

@@ -126,7 +126,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	 * 
 	 * @param belief the new belief which was inserted
 	 */
-	public void performInference(T belief, WorkingMemoryAddress beliefWMAddress, MLNPreferences prefs)
+	public List<Belief> performInference(T belief, WorkingMemoryAddress beliefWMAddress, MLNPreferences prefs)
 		throws BeliefException {
 		// extract the unions already existing in the binder WM
 		Map<String, Belief> existingUnions = extractExistingUnions();
@@ -136,17 +136,40 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		if (relevantUnions.size() > 0 && 
 				prefs.isTrackingActivated()) {
 			
-			performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
+			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
 		}
 		
 		else {
-			performDirectInference(belief, beliefWMAddress);
+			return performDirectInference(belief, beliefWMAddress);
+		}
+	}
+	
+	
+	public List<Belief> performInference(T belief, WorkingMemoryAddress beliefWMAddress, MLNPreferences prefs, 
+			List<Belief> beliefIdsToUse) throws BeliefException{
+		
+		// extract the unions already existing in the binder WM
+		Map<String, Belief> existingUnions = extractExistingUnions();
+		
+		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
+		
+		if (relevantUnions.size() > 0 && 
+				prefs.isTrackingActivated()) {
+			
+			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
+		}
+		
+		else {
+			return performDirectInference(belief, beliefWMAddress);
 		}
 	}
 
-	private void performMarkovLogicInference (T belief,
+	private List<Belief> performMarkovLogicInference (T belief,
 			WorkingMemoryAddress beliefWMAddress,
 			Map<String, Belief> relevantUnions, MLNPreferences prefs) {
+		
+		List<Belief> resultingBeliefs = new LinkedList<Belief>();
+		
 		// Create identifiers for each possible new union		
 		Map<String, String> unionsMapping = createIdentifiersForNewUnions(relevantUnions);
 		
@@ -167,18 +190,25 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			Vector<Belief> newUnions = createNewUnions(belief, beliefWMAddress, relevantUnions,
 					unionsMapping, newSingleUnionId, filteredInferenceResults);
 
+			resultingBeliefs.addAll(newUnions);
+			
 			// and add them to the working memory
-			performInferenceAddToWM(belief, newUnions);
+		//	performInferenceAddToWM(belief, newUnions);
 
 			// modify the existence probabilities of the existing unions
 			List<Belief> unionsToUpdate = getExistingUnionsToUpdate(belief, relevantUnions, unionsMapping, filteredInferenceResults);
 
+			resultingBeliefs.addAll(unionsToUpdate);
+			
 			// and update them on the working memory
-			performInferenceUpdateWM(unionsToUpdate);
+		//	performInferenceUpdateWM(unionsToUpdate);
+						
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		return resultingBeliefs;
 	}
 
 	private void performInferenceUpdateWM(List<Belief> unionsToUpdate)
@@ -222,12 +252,16 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		}
 	}
 
-	private void performDirectInference (T belief,
+	private List<Belief> performDirectInference (T belief,
 			WorkingMemoryAddress beliefWMAddress) {
+
+		List<Belief> resultingBeliefs = new LinkedList<Belief>();
 		try {
 			log("no relevant union to group with mmbelief " + belief.id + " has been found");
 			Belief union = createNewSingleUnionBelief(belief, beliefWMAddress);
-			if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
+			resultingBeliefs.add(union);
+			
+	/**		if (DistributionUtils.getExistenceProbability(union) > lowestProbThreshold)  {
 				
 				log("inserting belief " + union.id + " on WM");
 			
@@ -242,12 +276,16 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 				catch (Exception e) {
 					e.printStackTrace();
 				} 
-			}
+			} */
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		return resultingBeliefs;
 	}
+	
+	
 
 	protected abstract Belief createNewSingleUnionBelief(T belief,
 			WorkingMemoryAddress beliefWMAddress) throws BeliefException;
@@ -465,4 +503,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	protected abstract void updatePointersInOtherBeliefs (Belief newBelief);
 
 
+	protected MultiModalBelief duplicateBelief(MultiModalBelief b) throws BeliefException {
+		return new MultiModalBelief(b.frame, b.estatus, 	b.id,b.type, 
+				FeatureContentUtils.duplicateContent(b.content), b.hist);
+	}
 }
