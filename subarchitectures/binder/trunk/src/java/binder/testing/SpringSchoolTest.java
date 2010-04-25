@@ -130,7 +130,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, locationDistrib_b2);
 
-			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
+			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, contentDistrib_b2);
 
 			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Object", "here", getCASTTime(), content_b2, hist_b2);
 
@@ -152,13 +152,13 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b3, locationDistrib_b3);
 
-			ProbDistribution content_b3 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b3);
+			ProbDistribution content_b3 = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, contentDistrib_b3);
 
 			PerceptBelief b3 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Object", "here", getCASTTime(), content_b3, hist_b3);
 
 			insertBeliefInWM(b3);
 			
-			
+			 
 
 			CASTBeliefHistory hist_b4 = PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress("ddfsadsf","vision"));
 
