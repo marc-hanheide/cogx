@@ -138,41 +138,23 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 							
 							List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 							
+							MultiModalBelief beliefCopy = duplicateBelief(beliefData.getData());
+							updatePointers(beliefCopy, TemporalUnionBelief.class);
+							List<Belief> results = performInference(beliefCopy, _wmc.address, getPreferences(beliefData.getData()));
+			
+							
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
-									TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
-									
-									MultiModalBelief beliefCopy = duplicateBelief(beliefData.getData());
-									
-									updatePointers(beliefCopy, TemporalUnionBelief.class);
-									
-									List<Belief> results = performInference(beliefCopy, _wmc.address, getPreferences(beliefData.getData()));
-									
-									for (Belief b : results) { 
-										// HERE, ADD THRESHOLD STUFF
-										insertBeliefInWM(b);
-									}
-									
+									TemporalUnionBelief childBelief = (TemporalUnionBelief) results.get(0);
+									// have to check how to do this??
+									//			updateBeliefOnWM(childBelief);
 								}
-
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");
-									MultiModalBelief beliefCopy = duplicateBelief(beliefData.getData());
-						
-									updatePointers(beliefCopy, TemporalUnionBelief.class);
-									
-									List<Belief> results = performInference(beliefCopy, _wmc.address, getPreferences(beliefData.getData()));
-									
-									for (Belief b : results) { 
-										// HERE, ADD THRESHOLD STUFF
-										if (!existsOnWorkingMemory(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA))) {
-											insertBeliefInWM(b);											
-										}
-										else {
-											updateBeliefOnWM(b);
-										}
-									}
+									TemporalUnionBelief childBelief = (TemporalUnionBelief) results.get(0);
+									childBelief.id = child.id;
+									insertBeliefInWM(childBelief);
 								}
 							}
 							
