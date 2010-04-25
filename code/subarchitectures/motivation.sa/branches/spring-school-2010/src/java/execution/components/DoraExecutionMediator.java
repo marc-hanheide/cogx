@@ -72,8 +72,6 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
 			act.placeID = placeID.val;
 			return act;
-		} else if (_plannedAction.name.equals("explore_place")) {
-			return new ExplorePlace();
 		} else if (_plannedAction.name.equals("look-for-object")) {
 			assert _plannedAction.arguments.length == 1 : "look-for-object action arity is expected to be 1";
 
