@@ -135,6 +135,10 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		
 		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
 		
+		log("nb existing unions: " + existingUnions.size());
+		log("nb relevant unions: " + relevantUnions.size());
+		log("tracking activated for belief: " + prefs.isTrackingActivated());
+		
 		if (relevantUnions.size() > 0 && 
 				prefs.isTrackingActivated()) {
 			
@@ -255,7 +259,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 
 		List<Belief> resultingBeliefs = new LinkedList<Belief>();
 		try {
-			log("no relevant union to group with mmbelief " + belief.id + " has been found");
+			log("no markov logic tracking for mmbelief " + belief.id);
 			Belief union = createNewSingleUnionBelief(belief, beliefWMAddress);
 			resultingBeliefs.add(union);
 			

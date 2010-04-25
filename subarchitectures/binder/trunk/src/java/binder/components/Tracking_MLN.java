@@ -10,13 +10,11 @@ import java.util.Vector;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
-import beliefmodels.autogen.beliefs.PerceptUnionBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
-import beliefmodels.builders.PerceptUnionBuilder;
 import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import beliefmodels.utils.FeatureContentUtils;
@@ -219,13 +217,14 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	private MLNPreferences getPreferences(Belief b) {
 		MLNPreferences prefs = new MLNPreferences();
 		
-		if (b.type.equals("object")) {
+		if (b.type.equals("Object")) {
 			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
 			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
 			prefs.activateTracking();
 		}
-		else if (b.type.equals("person")) {
+		else if (b.type.contains("Person")) {
 			prefs.setFile_correlations(MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
+			prefs.setFile_predicates(MLNPreferences.markovlogicDir + "tracking/correlations_predicates.mln");
 			prefs.activateTracking();
 		}
 
