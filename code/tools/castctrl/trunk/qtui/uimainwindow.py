@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri Apr 23 13:22:15 2010
+# Created: Sun Apr 25 16:33:11 2010
 #      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -623,6 +623,7 @@ class Ui_MainWindow(object):
         self.actStopExternalServers.setObjectName("actStopExternalServers")
         self.actEnableCleanupScript = QtGui.QAction(MainWindow)
         self.actEnableCleanupScript.setCheckable(True)
+        self.actEnableCleanupScript.setChecked(True)
         icon7 = QtGui.QIcon()
         icon7.addPixmap(QtGui.QPixmap(":/icons/res/shellscriptOff.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon7.addPixmap(QtGui.QPixmap(":/icons/res/shellscriptOn.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)

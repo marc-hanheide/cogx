@@ -1490,6 +1490,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="castcontrol.qrc">
      <normaloff>:/icons/res/shellscriptOff.png</normaloff>
