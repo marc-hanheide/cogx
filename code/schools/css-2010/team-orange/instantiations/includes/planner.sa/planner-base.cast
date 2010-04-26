@@ -1,5 +1,5 @@
 
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain domain.mapl --log
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain orange.domain.mapl --log
 
 SUBARCHITECTURE planner.sa
 
