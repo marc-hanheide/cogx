@@ -5,7 +5,6 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,18 +12,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.Map.Entry;
 
-import binder.utils.FileUtils;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
-import beliefmodels.autogen.distribs.FeatureValueProbPair;
-import beliefmodels.autogen.featurecontent.PointerValue;
-import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import beliefmodels.utils.FeatureContentUtils;
@@ -32,45 +26,183 @@ import binder.arch.BindingWorkingMemory;
 import binder.ml.MLException;
 import binder.utils.MLNGenerator;
 import binder.utils.MLNPreferences;
-import cast.AlreadyExistsOnWMException;
-import cast.ConsistencyException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
-import cast.SubarchitectureComponentException;
-import cast.UnknownSubarchitectureException;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
+
 
 public abstract class MarkovLogicComponent<T extends Belief> extends FakeComponent {
 
+	
+	// the directory in which to find the MLN code 
 	protected static String markovlogicDir = "subarchitectures/binder/markovlogic/";
 
+	// the command line for Alchemy inference over MLN
 	protected String inferCmd = "tools/alchemy/bin/infer";
 
+	// empty file for providing the evidence 
 	protected String emptyFile = markovlogicDir + "empty.db";
 
+	// the predicate to query
 	private String query = "Outcome";
 
+	// the result file
 	protected String resultsFile = markovlogicDir + "unions.results";
 
+	// minimum probability threshold
 	public float lowestProbThreshold = 0.20f;
+	
+	// maximum number of alternatives to consider
 	public int maxAlternatives = 1;
+	
+	// minimum difference between probabilities to trigger an explicit update
 	public float minProbDifferenceForUpdate = 0.1f;
 
+		
 	
-	public MarkovLogicComponent(Class<T> cls) {
+	/**
+	 * Perform the generic inference operation for the given belief, and subsequently update
+	 * the working memory with the outcome (and possibly also with updates on existing ones)
+	 * 
+	 * @param belief the new belief which was inserted
+	 * @param beliefWMAddress the address of the belief
+	 * @param prefs the preferences for the inference
+	 */
+	public List<Belief> performInference(T belief, WorkingMemoryAddress beliefWMAddress, MLNPreferences prefs)
+		throws BeliefException {
+		// extract the unions already existing in the binder WM
+		Map<String, Belief> existingUnions = extractExistingUnions();
+		
+		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
+		
+		debug("nb existing unions: " + existingUnions.size());
+		debug("nb relevant unions: " + relevantUnions.size());
+		debug("tracking activated for belief: " + prefs.isTrackingActivated());
+		
+		if (relevantUnions.size() > 0 && 
+				prefs.isTrackingActivated()) {
+			
+			debug("doing markov logic inference on belief "  + belief.id);
+			debug("Markov Logic Network used: " + prefs.getFile_correlations());
+			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
+		}
+		
+		else { 
+			return performDirectInference(belief, beliefWMAddress);
+		}
 	}
 
+	
 	/**
+	 * Perform the Markov Logic inference given a belief, a working memory address,
+	 * the set of relevant unions, and the preferences, and return the combination of new
+	 * beliefs to create, and existing beliefs to update
 	 * 
-	 * @param mlnFile
-	 * @param resultsFile
+	 * @param belief the basic belief
+	 * @param beliefWMAddress the address
+	 * @param relevantUnions the set of relevant unions on which to perform the match
+	 * @param prefs the preferences
+	 * @return the set of new or modified beliefs
+	 */
+	
+	private List<Belief> performMarkovLogicInference (T belief,
+			WorkingMemoryAddress beliefWMAddress,
+			Map<String, Belief> relevantUnions, MLNPreferences prefs) {
+		
+		List<Belief> resultingBeliefs = new LinkedList<Belief>();
+		
+		// Create identifiers for each possible new union		
+		Map<String, String> unionsMapping = createIdentifiersForNewUnions(relevantUnions);
+		
+		String newSingleUnionId = newDataID();
+		
+		// Write the Markov logic network to a file
+		writeMarkovLogic(belief, relevantUnions, unionsMapping, newSingleUnionId, prefs);
+
+		// run the alchemy inference
+		try { 
+			HashMap<String,Float> inferenceResults = runAlchemyInference(prefs.getGeneratedMLNFile(), resultsFile);
+
+			log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
+			HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults);
+
+			// looping on the result
+			for (String id : filteredInferenceResults.keySet()) {
+				
+				// if the result pertains to an already existing belief
+				if (existsOnWorkingMemory(id)) {
+					
+					// checking the probability
+					if (filteredInferenceResults.get(id) > lowestProbThreshold) {
+						
+						// if the probability is high enough, add it to the set of beliefs
+						resultingBeliefs.add(getMemoryEntry
+								(new WorkingMemoryAddress(id, BindingWorkingMemory.BINDER_SA), 
+							TemporalUnionBelief.class));
+					}
+				}
+				
+				
+				// if the belief does not exist, create a new one
+				else {			
+					
+					// creating the new belief
+					TemporalUnionBelief newBelief = 
+						TemporalUnionBuilder.createNewSingleUnionBelief((MultiModalBelief) belief, beliefWMAddress, id);
+					float existProb = 
+						DistributionUtils.getExistenceProbability(newBelief) * filteredInferenceResults.get(id);
+					DistributionUtils.setExistenceProbability(newBelief, existProb);
+					
+					// checking the final probability
+					if (DistributionUtils.getExistenceProbability(newBelief) > lowestProbThreshold)  {
+
+						resultingBeliefs.add(newBelief);
+					}
+				}
+			}
+						
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return resultingBeliefs;
+	}
+
+
+	/**
+	 * Perform direct (i.e. non-MLN-based) inference on the beliefs
+	 * 
+	 * @param belief the belief
+	 * @param beliefWMAddress the belief address
+	 * @return the new belief to create
+	 */
+	private List<Belief> performDirectInference (T belief,
+			WorkingMemoryAddress beliefWMAddress) {
+
+		List<Belief> resultingBeliefs = new LinkedList<Belief>();
+		try {
+			log("no markov logic tracking for mmbelief " + belief.id);
+			Belief union = TemporalUnionBuilder.createNewSingleUnionBelief
+			((MultiModalBelief)belief, beliefWMAddress, newDataID());
+				
+			resultingBeliefs.add(union);
+		
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return resultingBeliefs;
+	}
+	
+	
+	
+	/**
+	 * Run alchemy inference on a markov logic file, and outputting results in a file
+	 * 
+	 * @param mlnFile the markov logic file
+	 * @param resultsFile the results file
 	 * @return
-	 * @throws BeliefException
+	 * @throws BeliefException belief exception thrown
 	 */
 	public HashMap<String,Float> runAlchemyInference(String mlnFile, String resultsFile) throws BeliefException {
 
@@ -111,112 +243,15 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		return new HashMap<String,Float>();
 	}
 	
-	protected abstract HashMap<String, Belief> extractExistingUnions();
-	
-	
 	/**
-	 * Perform the generic inference operation for the given belief, and subsequently update
-	 * the working memory with the outcome (and possibly also with updates on existing ones)
+	 * Create identifiers for new unions
+	 * NOTE: this is currently a hack
 	 * 
-	 * @param belief the new belief which was inserted
+	 * @param relevantUnions the set of relevant unions on which to base these
+	 * 		identifiers
+	 * @return returning the mapping from old to new identifiers
+	 *  
 	 */
-	public List<Belief> performInference(T belief, WorkingMemoryAddress beliefWMAddress, MLNPreferences prefs)
-		throws BeliefException {
-		// extract the unions already existing in the binder WM
-		Map<String, Belief> existingUnions = extractExistingUnions();
-		
-		Map<String, Belief> relevantUnions = selectRelevantUnions(existingUnions, belief);
-		
-		log("nb existing unions: " + existingUnions.size());
-		log("nb relevant unions: " + relevantUnions.size());
-		log("tracking activated for belief: " + prefs.isTrackingActivated());
-		
-		if (relevantUnions.size() > 0 && 
-				prefs.isTrackingActivated()) {
-			
-			log("doing markov logic inference on belief "  + belief.id);
-			log("Markov Logic Network used: " + prefs.getFile_correlations());
-			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
-		}
-		
-		else { 
-			return performDirectInference(belief, beliefWMAddress);
-		}
-	}
-
-	private List<Belief> performMarkovLogicInference (T belief,
-			WorkingMemoryAddress beliefWMAddress,
-			Map<String, Belief> relevantUnions, MLNPreferences prefs) {
-		
-		List<Belief> resultingBeliefs = new LinkedList<Belief>();
-		
-		// Create identifiers for each possible new union		
-		Map<String, String> unionsMapping = createIdentifiersForNewUnions(relevantUnions);
-		
-		String newSingleUnionId = newDataID();
-		
-		// Write the Markov logic network to a file
-		writeMarkovLogic(belief, relevantUnions, unionsMapping, newSingleUnionId, prefs);
-
-		// run the alchemy inference
-		try { 
-			HashMap<String,Float> inferenceResults = runAlchemyInference(prefs.getGeneratedMLNFile(), resultsFile);
-
-			log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
-			HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults);
-
-			for (String id : filteredInferenceResults.keySet()) {
-				if (existsOnWorkingMemory(id)) {
-					
-					if (filteredInferenceResults.get(id) > lowestProbThreshold) {
-						resultingBeliefs.add(getMemoryEntry(new WorkingMemoryAddress(id, BindingWorkingMemory.BINDER_SA), 
-							TemporalUnionBelief.class));
-					}
-				}
-				else {		
-					
-					TemporalUnionBelief newBelief = TemporalUnionBuilder.createNewSingleUnionBelief((MultiModalBelief) belief, beliefWMAddress, id);
-					float existProb = DistributionUtils.getExistenceProbability(newBelief) * filteredInferenceResults.get(id);
-					DistributionUtils.setExistenceProbability(newBelief, existProb);
-					
-					if (DistributionUtils.getExistenceProbability(newBelief) > lowestProbThreshold)  {
-
-						resultingBeliefs.add(newBelief);
-					}
-				}
-			}
-						
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return resultingBeliefs;
-	}
-
-
-	private List<Belief> performDirectInference (T belief,
-			WorkingMemoryAddress beliefWMAddress) {
-
-		List<Belief> resultingBeliefs = new LinkedList<Belief>();
-		try {
-			log("no markov logic tracking for mmbelief " + belief.id);
-			Belief union = createNewSingleUnionBelief(belief, beliefWMAddress);
-			resultingBeliefs.add(union);
-		
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return resultingBeliefs;
-	}
-	
-	
-	protected abstract Belief createNewSingleUnionBelief(T belief,
-			WorkingMemoryAddress beliefWMAddress) throws BeliefException;
-
-	
 	private Map<String, String> createIdentifiersForNewUnions(
 			Map<String, Belief> relevantUnions) {
 		Map<String,String> unionsMapping = new HashMap<String,String>();
@@ -231,17 +266,30 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	}
 	
 
+	/**
+	 * Write the markov logic file for a new given belief, the set of relevant unions, the 
+	 * unions mapping, the new union id, and the set of preferences
+	 * 
+	 * @param mmbelief the new multi-modal belief
+	 * @param relevantUnions the set of relevant unions
+	 * @param unionsMapping the identifiers mapping
+	 * @param newSingleUnionId the new union id
+	 * @param prefs the set of preferences
+	 */
 	private void writeMarkovLogic(T mmbelief,
 			Map<String, Belief> relevantUnions,
 			Map<String, String> unionsMapping, String newSingleUnionId, MLNPreferences prefs) {
+		
 		try {
 			MLNGenerator gen = new MLNGenerator(prefs);
-			gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, newSingleUnionId, prefs.getGeneratedMLNFile());
+			gen.writeMLNFile(mmbelief, relevantUnions.values(), unionsMapping, 
+					newSingleUnionId, prefs.getGeneratedMLNFile());
 		} catch (MLException e1) {
 			e1.printStackTrace();
 		}
 	}
 
+	
 	/**
 	 * 
 	 * @param resultsFile
@@ -305,6 +353,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	}
 	
 
+	protected abstract HashMap<String, Belief> extractExistingUnions();
+
 	/**
 	 * Only selecting the unions which are originating from the same subarchitecture as the current 
 	 * mmbelief
@@ -314,7 +364,8 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	 * @return
 	 * @throws BeliefException
 	 */
-	abstract protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, T belief) throws BeliefException  ;
+	abstract protected Map<String,Belief> selectRelevantUnions 
+		(Map<String, Belief> existingUnions, T belief) throws BeliefException  ;
 
 
 	protected MultiModalBelief duplicateBelief(MultiModalBelief b) throws BeliefException {
