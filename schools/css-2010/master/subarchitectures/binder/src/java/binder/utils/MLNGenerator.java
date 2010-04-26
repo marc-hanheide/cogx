@@ -10,7 +10,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionValues;
@@ -26,6 +28,9 @@ import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.UnknownValue;
+import beliefmodels.builders.BeliefContentBuilder;
+import beliefmodels.builders.MultiModalBeliefBuilder;
+import beliefmodels.utils.FeatureContentUtils;
 import binder.ml.MLException;
 import binder.ml.MLFormula;
 
@@ -93,6 +98,20 @@ public class MLNGenerator {
 	// Build the Markov network file
 	/////////////////////////////////////////////////////////////////////////////////////
 
+	
+	private Belief controlExistDep (Belief b) {
+		Belief b2 = new MultiModalBelief (b.frame, b.estatus, b.id, b.type, b.content, b.hist);
+		if (b2.content instanceof CondIndependentDistribs) {
+			try {
+			ProbDistribution distrib = FeatureContentUtils.duplicateContent(b2.content);
+			b2.content = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, distrib);
+			}
+			catch (BeliefException e) {
+				e.printStackTrace();
+			}
+		}
+		return b2;
+	}
 	/**
 	 * This method constructs the Markov Logic Network (MLN) in a textual description from the current
 	 * state of the WM. The MLN file can then be passed to alchemy to perform inference over possible
@@ -112,6 +131,13 @@ public class MLNGenerator {
 			Map<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
 
 		newInput = b;
+		 
+		b = controlExistDep(b);
+		
+		for (Belief bb : existingUnions) {
+			bb = controlExistDep(bb);
+		}
+		
 		
 		// sanity check of the input
 		if(b == null || existingUnions == null || unionsMapping == null || newSingleUnionId == null || MLNFileToWrite == null) {
@@ -612,7 +638,8 @@ public class MLNGenerator {
 		for(FeatureValueProbPair feature_pair : values.values) {
 			FeatureValue val = feature_pair.val;
 			if(val instanceof StringValue) {
-				result.add(((StringValue)val).val);
+				result.add("v"+((StringValue)val).val.replace(":", "_"));
+				
 				continue;
 			}
 			if(val instanceof IntegerValue) {
@@ -758,11 +785,14 @@ public class MLNGenerator {
 
 		Set<String> occuring_values = new TreeSet<String>();
 		for(FeatureValueProbPair pair : values.values) {
+			try {
 			float weight = convertProbabilityToWeight(pair.prob);
 			String value = getFeatureValue(pair.val);
 			String formula = setFirstLetterToUppercase(feature) + "(" + belief_id + "," + setFirstLetterToUppercase(value) + ")";
 			formulae.add(new MLFormula(weight, formula));
-			occuring_values.add(value);
+			occuring_values.add(setFirstLetterToUppercase(value));
+			}
+			catch (MLException e) { }
 		}
 
 		// now we need to add the hard constraint for all the names
@@ -794,8 +824,9 @@ public class MLNGenerator {
 	 */
 	private String getFeatureValue(FeatureValue val) throws MLException {
 		if(val instanceof StringValue) {
-			return ((StringValue)val).val;
-		}
+			return "v"+((StringValue)val).val.replace(":", "_");
+		} 
+		
 		else if(val instanceof IntegerValue) {
 			return new Integer(((IntegerValue)val).val).toString();
 		}
@@ -907,18 +938,18 @@ public class MLNGenerator {
 	 */
 	
 	private Float convertProbabilityToWeight(float prob) throws MLException {
-		if(prob > 1f || prob < 0f) {
+		if(Float.compare(prob, 1f) > 0 || Float.compare(prob, 0f) < 0) {
 			throw new MLException("Value is not a probability: " + prob);
 		}
 		// handle the border case, where denominator approaches 0 or 1
-		if(prob >= 1f - EPSILON) {
-			return Float.MAX_VALUE;
+		if(Float.compare(prob, 1f) >= 0) {
+			return 100f;
 		}
-		if(prob <= EPSILON) {
-			return Float.MIN_VALUE;
+		if(Float.compare(prob, 0f) <= 0) {
+			return -100f;
 		}
 		else {
-			return Math.max(new Float(Math.log(prob / (1f - prob))),0);
+			return new Float(Math.log(prob / (1f - prob)));
 		}
 	}
 
@@ -928,10 +959,26 @@ public class MLNGenerator {
 	 * 
 	 * @param weight
 	 * @return the corresponding probability
+	 * @throws MLException 
 	 */
-	private Float convertWeightToProbability(float weight) {
+	private Float convertWeightToProbability(float weight) throws MLException {
+		// handle the border cases
+		if(Float.compare(weight, -100f) == 0) {
+			return 0f;
+		}
+		if(Float.compare(weight, 100f) == 0) {
+			return 1f;
+		}
+		
 		float a = (float)Math.exp(weight);
-		return new Float(a/(1+a));
+		
+		a = a/(a+1);
+		
+		if(Float.compare(a, Float.NaN) == 0) {
+			throw new MLException("Error in probability conversion...");
+		}
+		
+		return a;
 	}
 	
 	/**
