@@ -41,7 +41,7 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels=james
 
 
 # viewing and debugging #######################################################

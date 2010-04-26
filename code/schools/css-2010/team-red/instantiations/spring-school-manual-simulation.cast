@@ -8,15 +8,30 @@ INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 # vision ######################################################################
-INCLUDE includes/vision.sa/vision-base+blobs.cast
+#INCLUDE includes/vision.sa/vision-base+blobs.cast
+INCLUDE includes/vision.sa/vision-base.cast
+INCLUDE includes/vision.sa/vision-live.cast
+INCLUDE includes/vision.sa/vision-objects.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+INCLUDE includes/binder.sa/binder.cast
+INCLUDE includes/binder.sa/perceptmediators.cast
+JAVA GD bindermonitor binder.components.BinderMonitor --debug
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "james"
+
+
+# viewing and debugging #######################################################
+
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
+
 
 
 

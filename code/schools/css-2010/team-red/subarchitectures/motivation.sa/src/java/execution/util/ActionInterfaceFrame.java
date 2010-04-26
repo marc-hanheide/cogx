@@ -3,9 +3,11 @@ package execution.util;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
+
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -94,7 +96,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
-			jContentPane.setLayout(new FlowLayout());
+			jContentPane.setLayout(new BoxLayout(jContentPane, BoxLayout.X_AXIS));
 			jContentPane.add(getM_placeTable(), null);
 			JPanel middlePanel = new JPanel();
 			middlePanel.setLayout(new BoxLayout(middlePanel, BoxLayout.Y_AXIS));
@@ -139,7 +141,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getActionPanel() {
 		if (m_actionPanel == null) {
 			m_actionPanel = new JPanel();
-			m_actionPanel.setLayout(new GridBagLayout());
+			m_actionPanel.setLayout(new BoxLayout(m_actionPanel, BoxLayout.Y_AXIS));
 			m_goAction = new JRadioButton("go to place");
 			m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
