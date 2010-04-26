@@ -2,7 +2,7 @@ HOST localhost
 
 
 # spatial #####################################################################
-INCLUDE includes/spatial.sa/spatial-ptz.cast
+#INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
@@ -12,8 +12,8 @@ CPP GD self.representer SelfRepresenter
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-live.cast
 INCLUDE includes/vision.sa/vision-objects.cast
-INCLUDE includes/vision.sa/vision-people.cast
-INCLUDE includes/vision.sa/vision-execution.cast
+#INCLUDE includes/vision.sa/vision-people.cast
+Include includes/vision.sa/vision-execution.cast
 
 #JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
 
@@ -41,7 +41,7 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels=james
 
 
 # viewing and debugging #######################################################

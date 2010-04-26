@@ -76,13 +76,13 @@ public class BlobjectDetector extends ManagedComponent implements
 		if (blobs.length == 0) {
 			log("see no blobs around here");
 			// we don't see anything
-			for (String label : dc.labels) {
-				// for the time being just fail
-				VisualObject obj = VisionUtils.newVisualObject();
-				obj.label = label;
-				obj.detectionConfidence = 0f;
-				addToWorkingMemory(newDataID(), obj);
-			}
+// 			for (String label : dc.labels) {
+// 				// for the time being just fail
+// 				VisualObject obj = VisionUtils.newVisualObject();
+// 				obj.label = label;
+// 				obj.detectionConfidence = 0f;
+// 				addToWorkingMemory(newDataID(), obj);
+// 			}
 		} else {
 			log("there are some blobs around");
 			for (String label : dc.labels) {
@@ -109,7 +109,12 @@ public class BlobjectDetector extends ManagedComponent implements
 						}
 					}
 				}
-				if (obj.detectionConfidence > 0.1) addToWorkingMemory(newDataID(), obj);
+				log("confidence is ..."+obj.detectionConfidence);
+
+// 				if (obj.detectionConfidence > 1.0) System.exit(0);
+// 				if (obj.detectionConfidence < 0.0) System.exit(0);
+
+				if (obj.detectionConfidence == 1.0) addToWorkingMemory(newDataID(), obj);
 			}
 		}
 
