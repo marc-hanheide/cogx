@@ -41,7 +41,10 @@
          :agent         (?a - agent)
          :parameters    (?p - package ?v - vehicle)
          :precondition  (= (location-of ?p) (location-of ?v))
-         :effect        (assign (location-of ?p) ?v))
+         :effect        (and (assign (location-of ?p) ?v)
+                             (update (location-of ?p) ?v))
+)
+
 
 (:action unload
          :agent         (?a - agent)
