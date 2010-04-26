@@ -1,3 +1,23 @@
+
+//=================================================================                                                        
+//Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+//                                                                                                                       
+//This library is free software; you can redistribute it and/or                                                            
+//modify it under the terms of the GNU Lesser General Public License                                                       
+//as published by the Free Software Foundation; either version 2.1 of                                                      
+//the License, or (at your option) any later version.                                                                      
+//                                                                                                                       
+//This library is distributed in the hope that it will be useful, but                                                      
+//WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
+//Lesser General Public License for more details.                                                                          
+//                                                                                                                       
+//You should have received a copy of the GNU Lesser General Public                                                         
+//License along with this program; if not, write to the Free Software                                                      
+//Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
+//02111-1307, USA.                                                                                                         
+//=================================================================                                                        
+
 package binder.components;
 
 import java.io.IOException;
@@ -15,10 +35,6 @@ import beliefmodels.builders.TemporalUnionBuilder;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
 import binder.utils.MLNPreferences;
-import cast.AlreadyExistsOnWMException;
-import cast.ConsistencyException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -117,7 +133,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	
 	/**
 	 * Verify whether the Alchemy software is present in the system
-	 * 
 	 */
 	private void verifyAlchemyIsPresent () {
 		Runtime run = Runtime.getRuntime(); 
@@ -144,7 +159,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 			log("received a new belief: " + beliefData.getID());
 
-			inference(beliefData.getData(), wmc.address);
+			performInference(beliefData.getData(), wmc.address);
 			
 			beliefUpdatesToIgnore.add(beliefData.getData());
 			updateBeliefOnWM(beliefData.getData());
@@ -222,7 +237,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				
 			}
 			else {
-				log("ignoring overwrite update (offspring change)");
+			//	log("ignoring overwrite update (offspring change)");
 				beliefUpdatesToIgnore.remove(beliefData.getData());
 			}
 				
@@ -233,11 +248,19 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 	}
 	
-	// perform general inference
-	private void inference (MultiModalBelief belief, WorkingMemoryAddress beliefWMAddress)
-		throws BeliefException, DoesNotExistOnWMException, PermissionException, ConsistencyException, 
-		AlreadyExistsOnWMException, UnknownSubarchitectureException {
+
+	/**
+	 * Perform inference on the newly added multi-modal belief (associated with its address).  
+	 * The belief pointers are first updated, then Markov Logic inference is triggered, and the results
+	 * are inserted into the working memory
+	 * 
+	 * @param belief the multi-modal belief
+	 * @param beliefWMAddress the address of the belief in the WM
+	 */
 	
+	private void performInference (MultiModalBelief belief, WorkingMemoryAddress beliefWMAddress)  {
+	
+		try {
 		// duplicate the current multi-modal belief, and update the pointers
 		MultiModalBelief beliefCopy = duplicateBelief(belief);
 		updatePointers(beliefCopy, TemporalUnionBelief.class);
@@ -256,6 +279,10 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				insertBeliefInWM(b);
 			}
 			addOffspring(belief, b.id);	
+		}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -287,8 +314,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	/**
 	 * Exact the set of existing unions from the binder working memory
 	 * 
-	 * @return the set of existing unions (as a mapping from identifier to
-	 *         objects)
+	 * @return the set of existing unions (as a mapping from identifier to objects)
 	 */
 	protected HashMap<String, Belief> extractExistingUnions() {
 
@@ -311,7 +337,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		return existingunions;
 	}
 
-	
 	
 	/**
 	 * Select the relevant set of unions on which to track the new belief, based on the

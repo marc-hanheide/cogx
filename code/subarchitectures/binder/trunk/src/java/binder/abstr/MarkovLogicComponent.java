@@ -83,7 +83,13 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 			
 			debug("doing markov logic inference on belief "  + belief.id);
 			debug("Markov Logic Network used: " + prefs.getFile_correlations());
-			return performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
+			try {
+			List<Belief> results = performMarkovLogicInference(belief, beliefWMAddress, relevantUnions, prefs);
+			return results;
+			}
+			catch (BeliefException e) {
+				return performDirectInference(belief, beliefWMAddress);
+			}
 		}
 		
 		else { 
@@ -102,11 +108,12 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 	 * @param relevantUnions the set of relevant unions on which to perform the match
 	 * @param prefs the preferences
 	 * @return the set of new or modified beliefs
+	 * @throws BeliefException 
 	 */
 	
 	private List<Belief> performMarkovLogicInference (T belief,
 			WorkingMemoryAddress beliefWMAddress,
-			Map<String, Belief> relevantUnions, MLNPreferences prefs) {
+			Map<String, Belief> relevantUnions, MLNPreferences prefs) throws BeliefException {
 		
 		List<Belief> resultingBeliefs = new LinkedList<Belief>();
 		
@@ -119,8 +126,9 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		writeMarkovLogic(belief, relevantUnions, unionsMapping, newSingleUnionId, prefs);
 
 		// run the alchemy inference
-		try { 
-			HashMap<String,Float> inferenceResults = runAlchemyInference(prefs.getGeneratedMLNFile(), resultsFile);
+		HashMap<String,Float> inferenceResults = runAlchemyInference(prefs.getGeneratedMLNFile(), resultsFile);
+
+			try { 
 
 			log("filtering inference results to keep only the " + maxAlternatives + " best alternatives");
 			HashMap<String,Float> filteredInferenceResults = filterInferenceResults(inferenceResults);

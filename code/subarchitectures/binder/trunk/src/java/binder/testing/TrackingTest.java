@@ -116,14 +116,14 @@ public class TrackingTest extends AbstractBinderTest {
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b1, typeDistrib_b1);
 
-			BasicProbDistribution locationDistrib_b1 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("location", 
+			BasicProbDistribution locationDistrib_b1 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("is-in", 
 					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Kitchen"), 0.91f));
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b1, locationDistrib_b1);
 			
 			ProbDistribution content_b1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b1);
 			
-			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "test", "here", getCASTTime(), content_b1, hist);
+			PerceptBelief b1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Object", "here", getCASTTime(), content_b1, hist);
 
 			insertBeliefInWM(b1);
 				
@@ -149,14 +149,14 @@ public class TrackingTest extends AbstractBinderTest {
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, typeDistrib_b2);
 
-			BasicProbDistribution locationDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("location", 
+			BasicProbDistribution locationDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("is-in", 
 					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("Kitchen"), 0.89f));
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, locationDistrib_b2);
 			
 			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
 			
-			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "robot", "here", getCASTTime(), content_b2, hist);
+			PerceptBelief b2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Object", "here", getCASTTime(), content_b2, hist);
 
 			insertBeliefInWM(b2);		
 			
