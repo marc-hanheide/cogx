@@ -16,6 +16,7 @@ module autogen {
     };
 
     sequence<string> stringSeq;
+    sequence<beliefmodels::autogen::featurecontent::FeatureValue> ArgumentSeq;
 
     sequence<beliefmodels::autogen::beliefs::Belief> BeliefSeq;
 
@@ -27,7 +28,7 @@ module autogen {
     class Action {
       int taskID;
       string name;
-      stringSeq arguments;
+      ArgumentSeq arguments;
       string fullName;
       Completion status;
     };

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import SpatialData.Place;
 import beliefmodels.autogen.beliefs.StableBelief;
+import beliefmodels.autogen.featurecontent.FeatureValue;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -18,6 +19,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.ComsysQueryFeature;
+import execution.slice.actions.ComsysTestFeatureValue;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
@@ -185,6 +187,16 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		act.featureID = _featureType;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID, String _featureLabel,
+			FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
+		ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
+		act.beliefID = _beliefID;
+		act.featureType = _featureLabel;
+		act.featureValue = _fv;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;		
 	}
 
 

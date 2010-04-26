@@ -82,9 +82,13 @@ public class BeliefWriter extends ManagedComponent implements BeliefWriterInterf
 				Belief oldBelief = 
 					getMemoryEntry(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA), Belief.class);
 				
-				((CASTBeliefHistory)belief.hist).offspring = ((CASTBeliefHistory)oldBelief.hist).offspring;
+		//		((CASTBeliefHistory)belief.hist).offspring = ((CASTBeliefHistory)oldBelief.hist).offspring;
+				oldBelief.content = belief.content;
+				oldBelief.frame = belief.frame;
+				oldBelief.estatus = belief.estatus;
+				oldBelief.type = belief.type;
 				
-			overwriteWorkingMemory(belief.id, BindingWorkingMemory.BINDER_SA, belief);
+			overwriteWorkingMemory(belief.id, BindingWorkingMemory.BINDER_SA, oldBelief);
 			log("existing belief " + belief.id + " updated on the working memory");
 			}
 		} 
