@@ -62,7 +62,7 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	 * Starting the MLN-based tracker
 	 */
 	public Tracking_MLN() {
-		super(MultiModalBelief.class);
+		super();
 		resultsFile = markovlogicDir + "tracking.results";
 		beliefUpdatesToIgnore = new Vector<MultiModalBelief>();
 		trackerMLNs.put("Object", MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
@@ -194,10 +194,12 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 			CASTData<MultiModalBelief> beliefData = 
 				getMemoryEntryWithData(wmc.address, MultiModalBelief.class);
 			
+			// only perform update if the belief in not in the "ignore" list
 			if (!beliefUpdatesToIgnore.contains(beliefData.getData())) {
 				
 				List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 				
+				// looping on the list of offspring
 				for (WorkingMemoryAddress child : offspring) {
 					if (existsOnWorkingMemory(child)) {
 						log("belief " + child.id + " exists on WM, overwriting");
@@ -230,15 +232,19 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
 	}
 	
+	// perform general inference
 	private void inference (MultiModalBelief belief, WorkingMemoryAddress beliefWMAddress)
 		throws BeliefException, DoesNotExistOnWMException, PermissionException, ConsistencyException, 
 		AlreadyExistsOnWMException, UnknownSubarchitectureException {
 	
-		
+		// duplicate the current multi-modal belief, and update the pointers
 		MultiModalBelief beliefCopy = duplicateBelief(belief);
 		updatePointers(beliefCopy, TemporalUnionBelief.class);
+		
+		// perform the inference itself
 		List<Belief> results = performInference(beliefCopy, beliefWMAddress, getPreferences(belief));
 
+		// update an existing belief or insert a new one
 		for (Belief b : results) {
 			if (existsOnWorkingMemory(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA))) {
 				log("belief " + b.id + " exists on WM, overwriting");
@@ -253,6 +259,13 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	}
 	
 	
+	
+	/**
+	 * Get the preferences to set (tracker system etc.) for a particular belief
+	 * 
+	 * @param b the belief on which the inference is to be made
+	 * @return the preferences
+	 */
 	private MLNPreferences getPreferences(Belief b) {
 		MLNPreferences prefs = new MLNPreferences();
 		
@@ -297,15 +310,15 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		return existingunions;
 	}
 
-	@Override
-	protected Belief createNewSingleUnionBelief(MultiModalBelief belief,
-			WorkingMemoryAddress beliefWMAddress) throws BeliefException {
-		TemporalUnionBelief union = TemporalUnionBuilder.createNewSingleUnionBelief(belief, beliefWMAddress, newDataID());
-		return union;
-	}
 	
 	
-	protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, MultiModalBelief belief) throws BeliefException {
+	/**
+	 * Select the relevant set of unions on which to track the new belief, based on the
+	 * belief types (which must be identical).
+	 * 
+	 */
+	protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, 
+			MultiModalBelief belief) throws BeliefException {
 		
 		Map<String,Belief> relevantUnions = new HashMap<String,Belief>();
 		
@@ -315,22 +328,6 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				relevantUnions.put(existingUnionId, existingUnion);
 			}
 		}
-		
-		/**	if (((CASTBeliefHistory)belief.hist).ancestors.size() == 0) {
-			throw new BeliefException ("ERROR: belief history contains 0 element");
-		}
-		
-		for(String mmbeliefOrigin : getOriginSubarchitectures(belief)) {
-			for(String existingUnionId : existingUnions.keySet()) {
-				
-				Belief existingUnion = existingUnions.get(existingUnionId);
-				List<String> existinUnionOrigins = getOriginSubarchitectures(existingUnion);
-				
-				if (existinUnionOrigins.contains(mmbeliefOrigin)) {
-					relevantUnions.put(existingUnionId, existingUnion);
-				}
-			}
-		} */
 		return relevantUnions;
 	}
 

@@ -105,7 +105,7 @@ public abstract class FakeComponent extends BeliefWriter {
 					BeliefContentBuilder.putNewCondIndependentDistrib
 					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib2).distribs.get(key));
 				}
-				return merge;
+		//		return merge;
 			}
 			else if (distrib1 instanceof DistributionWithExistDep && distrib2 instanceof DistributionWithExistDep) {
 				
@@ -122,7 +122,7 @@ public abstract class FakeComponent extends BeliefWriter {
 				
 				DistributionWithExistDep mergeWithExist = BeliefContentBuilder.createNewDistributionWithExistDep(((DistributionWithExistDep)distrib1).existProb, merge);
 				
-				return mergeWithExist;
+		//		return mergeWithExist;
 			}
 		}
 		catch (Exception e) {
