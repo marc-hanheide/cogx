@@ -109,7 +109,7 @@ public class BlobjectDetector extends ManagedComponent implements
 						}
 					}
 				}
-				addToWorkingMemory(newDataID(), obj);
+				if (obj.detectionConfidence > 0.1) addToWorkingMemory(newDataID(), obj);
 			}
 		}
 
