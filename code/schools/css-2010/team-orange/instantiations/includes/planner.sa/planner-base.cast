@@ -1,4 +1,5 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --log
+
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain domain.mapl --log
 
 SUBARCHITECTURE planner.sa
 
