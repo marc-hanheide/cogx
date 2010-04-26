@@ -1,0 +1,36 @@
+PLANNER NOTES
+
+* robot is in ?X: move ?robot ?to ?from
+
+(is-in robot place_id2)
+
+* all places ?X have been visited: move, with (update (visited ?to) true)
+ 
+(forall (?p place) (visited ?p))
+
+* place location for one human is known: 
+
+(exists (?h person) (?p place) (?r robot) (is-in ?h ?p) (kval ?r ?p))
+
+* room name for one human is known 
+
+(exists (?h person) (?p place) (?r robot) (is-in ?h ?p) (kval ?r (name ?p)))
+
+* place locations for all humans are known 
+
+(exists (?r robot) (forall (?h human) (?p place) (is-in ?h ?p) (kval ?r ?p)))
+
+* room names for all humans are known 
+
+(exists (?r robot) (forall (?h human) (?p place) (is-in ?h ?p) (kval ?r (name ?p))))
+
+* place locations for all objects are known 
+
+(exists (?r robot) (forall (?o object) (?p place) (kval ?r (is-in ?o ?p)) (visited ?p)))
+
+// can't just require that the robot knows the place because that's by default
+
+* room names for place locations for all objects are known: whenever an object is found, ensure you know the place name, do this buy asking, which means that we need to know where there is a human 
+
+
+(exists (?r robot) (forall (?o object) (?p place) (kval ?r (is-in ?o ?p)) (visited ?p) (kval ?r (name ?p))))
