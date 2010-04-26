@@ -26,7 +26,7 @@ import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 public abstract class DependentDiscreteTransferFunction<From extends Ice.ObjectImpl>
 		extends SimpleDiscreteTransferFunction<From> {
 
-	WMView<PerceptBelief> allBeliefs;
+	protected WMView<PerceptBelief> allBeliefs;
 	WMContentWaiter<PerceptBelief> waitingBeliefReader;
 
 	/**
