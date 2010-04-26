@@ -9,7 +9,7 @@ from itertools import imap
 import config, utils
 import globals as global_vars
 
-import task
+import task as taskmod #import task
 from task import PlanningStatusEnum, Task
 import pddl
 import plans
@@ -380,7 +380,7 @@ class Downward(BasePlanner):
 
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "output.sas", "output", "sas_plan", "stdout.out")]
 
-        w = task.FDWriter()
+        w = taskmod.FDWriter() #w = task.FDWriter()
         dom_str = "\n".join(w.write_domain(_task.mapltask.domain))
         prob_str = "\n".join(w.write_problem(_task.mapltask))
         mutex_str = "\n".join(w.write_mutex(w.mutex_groups))
