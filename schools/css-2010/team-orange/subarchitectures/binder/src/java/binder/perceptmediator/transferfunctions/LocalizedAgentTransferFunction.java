@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import SpatialData.Place;
+import SpatialProperties.IntegerValue;
 import SpatialProperties.PlaceContainmentAgentProperty;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
@@ -45,15 +46,15 @@ public class LocalizedAgentTransferFunction extends
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		// TODO: we should use a DoubleValue here!
 		try {
-			Place currentPlace = SpatialFacade.get(component).getPlace();
+			long currentPlace = ((IntegerValue) from.mapValue).value;
+			log("current place id of agent is " + currentPlace);
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
-					currentPlace.id));
+					currentPlace));
+			log("  the corresponding PerceptBelief is " + placeWMA);
 			result.put("AgentId", FeatureValueBuilder
 					.createNewIntegerValue((int) from.agentID));
 			result.put("is-in", FeatureValueBuilder
 					.createNewPointerValue(placeWMA));
-		} catch (CASTException e) {
-			component.logException(e);
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}
