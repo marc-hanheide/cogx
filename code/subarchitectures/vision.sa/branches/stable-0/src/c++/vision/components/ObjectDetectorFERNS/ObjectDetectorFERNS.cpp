@@ -38,7 +38,7 @@ using namespace VisionData;
 // font for drawing text into OpenCV windows
 static CvFont font;
 
-string tolower(const string &upper)
+static string tolower(const string &upper)
 {
   string lower(upper);
   for(size_t i = 0; i < lower.size(); i++)
@@ -46,7 +46,71 @@ string tolower(const string &upper)
   return lower;
 }
 
-Rect2 calculateObjectBoundingBox(planar_pattern_detector * d)
+// look at the turning angles between sides of the contour to see whether we have
+// a convex contour.
+// note that only convex contours can ve valid object detections
+static bool isObjectContourConvex(Vector2 corners[4])
+{
+  // turning direction between sides adjacent to the last visited corner
+  // can be -1 (left), 1 (right) or 0 (undefined - needed for first corner)
+  int last_dir = 0;
+  for(int i = 0; i < 4; i++)
+  {
+    int j = i < 3 ? i + 1 : 0;
+    int k = j < 3 ? j + 1 : 0;
+    Vector2 ij = corners[j] - corners[i];
+    Vector2 jk = corners[k] - corners[j];
+    // turning direction between sides adjacent to the current corner
+    int dir = leftOf(ij, jk) ? -1 : 1;
+    // if we have already visited a previous corner
+    if(last_dir != 0)
+    {
+      // if the turning direction between sides changes, the contour is not convex
+      if(dir != last_dir)
+      {
+	printf(">>>>>>>>>> rejected non-convex object <<<<<<<<<\n");
+	return false;
+      }
+    }
+    // remember current turn direction
+    last_dir = dir;
+  }
+  // the turning direction maintained the same (whether left or right we actually
+  // don't care, so the contour is convex
+  return true;
+}
+
+// look at the turning angles between sides of the contour to see whether we have
+// a convex contour.
+// note that only convex contours can ve valid object detections
+static bool isObjectContourConvex(planar_pattern_detector *d)
+{
+  // contour corners
+  Vector2 corners[4];
+  for(int i = 0; i < 4; i++)
+  {
+    corners[i].x = d->detected_u_corner[i];
+    corners[i].y = d->detected_v_corner[i];
+  }
+  return isObjectContourConvex(corners);
+}
+
+// look at the turning angles between sides of the contour to see whether we have
+// a convex contour.
+// note that only convex contours can ve valid object detections
+static bool isObjectContourConvex(template_matching_based_tracker *t)
+{
+  // contour corners
+  Vector2 corners[4];
+  for(int i = 0; i < 4; i++)
+  {
+    corners[i].x = t->u[2*i];
+    corners[i].y = t->u[2*i+1];
+  }
+  return isObjectContourConvex(corners);
+}
+
+static Rect2 calculateObjectBoundingBox(planar_pattern_detector * d)
 {
   Rect2 bbox;
   double xmin = min(min(d->detected_u_corner[0], d->detected_u_corner[1]),
@@ -64,7 +128,7 @@ Rect2 calculateObjectBoundingBox(planar_pattern_detector * d)
   return bbox;
 }
 
-Rect2 calculateObjectBoundingBox(
+static Rect2 calculateObjectBoundingBox(
     template_matching_based_tracker * t)
 {
   Rect2 bbox;
@@ -83,7 +147,7 @@ Rect2 calculateObjectBoundingBox(
   return bbox;
 }
 
-void draw_quadrangle(IplImage * frame,
+static void draw_quadrangle(IplImage * frame,
 		     int u0, int v0,
 		     int u1, int v1,
 		     int u2, int v2,
@@ -96,7 +160,7 @@ void draw_quadrangle(IplImage * frame,
   cvLine(frame, cvPoint(u3, v3), cvPoint(u0, v0), color, thickness);
 }
 
-void draw_detected_position(IplImage * frame,
+static void draw_detected_position(IplImage * frame,
     planar_pattern_detector * detector)
 {
   draw_quadrangle(frame,
@@ -107,7 +171,7 @@ void draw_detected_position(IplImage * frame,
 		  cvScalar(255), 3);
 }
 
-void draw_initial_rectangle(IplImage * frame,
+static void draw_initial_rectangle(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   draw_quadrangle(frame,
@@ -118,7 +182,7 @@ void draw_initial_rectangle(IplImage * frame,
 		  cvScalar(128), 3);
 }
 
-void draw_tracked_position(IplImage * frame,
+static void draw_tracked_position(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   draw_quadrangle(frame,
@@ -129,7 +193,7 @@ void draw_tracked_position(IplImage * frame,
 		  cvScalar(255), 3);
 }
 
-void draw_tracked_locations(IplImage * frame,
+static void draw_tracked_locations(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   for(int i = 0; i < tracker->nx * tracker->ny; i++) {
@@ -139,7 +203,7 @@ void draw_tracked_locations(IplImage * frame,
   }
 }
 
-void draw_detected_keypoints(IplImage * frame,
+static void draw_detected_keypoints(IplImage * frame,
     planar_pattern_detector * detector)
 {
   for(int i = 0; i < detector->number_of_detected_points; i++)
@@ -150,7 +214,7 @@ void draw_detected_keypoints(IplImage * frame,
 	     cvScalar(100), 1);
 }
 
-void draw_recognized_keypoints(IplImage * frame,
+static void draw_recognized_keypoints(IplImage * frame,
     planar_pattern_detector * detector)
 {
   for(int i = 0; i < detector->number_of_model_points; i++)
@@ -162,7 +226,7 @@ void draw_recognized_keypoints(IplImage * frame,
 	       cvScalar(255, 255, 255), 1);
 }
 
-void draw_detected_label(IplImage * frame, planar_pattern_detector * detector,
+static void draw_detected_label(IplImage * frame, planar_pattern_detector * detector,
     string & label)
 {
   double x = (detector->detected_u_corner[0] + detector->detected_u_corner[1] +
@@ -172,7 +236,7 @@ void draw_detected_label(IplImage * frame, planar_pattern_detector * detector,
   cvPutText(frame, label.c_str(), cvPoint(x, y), &font, cvScalar(255));
 };
 
-void draw_tracked_label(IplImage * frame,
+static void draw_tracked_label(IplImage * frame,
     template_matching_based_tracker * tracker, string & label)
 {
   double x = (tracker->u[0] + tracker->u[2] + tracker->u[4] + tracker->u[6])/4;
@@ -180,7 +244,7 @@ void draw_tracked_label(IplImage * frame,
   cvPutText(frame, label.c_str(), cvPoint(x, y), &font, cvScalar(255));
 };
 
-void draw_detected_bounding_box(IplImage * frame,
+static void draw_detected_bounding_box(IplImage * frame,
     planar_pattern_detector * detector)
 {
   Rect2 bbox = calculateObjectBoundingBox(detector);
@@ -192,7 +256,7 @@ void draw_detected_bounding_box(IplImage * frame,
      cvScalar(255), 5);
 }
 
-void draw_tracked_bounding_box(IplImage * frame,
+static void draw_tracked_bounding_box(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   Rect2 bbox = calculateObjectBoundingBox(tracker);
@@ -481,29 +545,39 @@ void ObjectDetectorFERNS::detectObject_Internal(IplImage * frame, size_t i)
   if(mode == DETECT_AND_TRACK)
   {
     if(last_frame_ok[i])
-      last_frame_ok[i] = trackers[i]->track(frame);
+    {
+      last_frame_ok[i] = false;
+      if(trackers[i]->track(frame))
+	if(isObjectContourConvex(trackers[i]))
+          last_frame_ok[i] = true;
+    }
 
     if(!last_frame_ok[i])
     {
       detectors[i]->detect(frame);
-
       if(detectors[i]->pattern_is_detected)
       {
-        last_frame_ok[i] = true;
+	if(isObjectContourConvex(detectors[i]))
+	{
+	  last_frame_ok[i] = true;
 
-        trackers[i]->initialize(
-            detectors[i]->detected_u_corner[0], detectors[i]->detected_v_corner[0],
-            detectors[i]->detected_u_corner[1], detectors[i]->detected_v_corner[1],
-            detectors[i]->detected_u_corner[2], detectors[i]->detected_v_corner[2],
-            detectors[i]->detected_u_corner[3], detectors[i]->detected_v_corner[3]);
+	  trackers[i]->initialize(
+	      detectors[i]->detected_u_corner[0], detectors[i]->detected_v_corner[0],
+	      detectors[i]->detected_u_corner[1], detectors[i]->detected_v_corner[1],
+	      detectors[i]->detected_u_corner[2], detectors[i]->detected_v_corner[2],
+	      detectors[i]->detected_u_corner[3], detectors[i]->detected_v_corner[3]);
+	}
       }
       // else last_frame_ok remains false
     }
   }
   else // mode == DETECT_ONLY
   {
+    last_frame_ok[i] = false;
     detectors[i]->detect(frame);
-    last_frame_ok[i] = detectors[i]->pattern_is_detected;
+    if(detectors[i]->pattern_is_detected)
+      if(isObjectContourConvex(detectors[i]))
+        last_frame_ok[i] = true;
   }
 }
 

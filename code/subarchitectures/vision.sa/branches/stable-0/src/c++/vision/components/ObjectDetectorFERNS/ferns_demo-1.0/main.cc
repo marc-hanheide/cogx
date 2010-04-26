@@ -243,8 +243,8 @@ int main(int argc, char ** argv)
 
   detector = planar_pattern_detector_builder::build_with_cache(model_image.c_str(),
 							       &range,
-							       400,
-							       5000,
+							       400,  // default: 400
+							       5000,  // default> 5000
 							       0.0,
 							       32, 7, 4,
 							       30, 12,
