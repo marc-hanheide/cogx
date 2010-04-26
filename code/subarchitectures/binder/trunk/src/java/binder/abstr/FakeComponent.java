@@ -105,24 +105,24 @@ public abstract class FakeComponent extends BeliefWriter {
 					BeliefContentBuilder.putNewCondIndependentDistrib
 					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib2).distribs.get(key));
 				}
-		//		return merge;
+				return merge;
 			}
 			else if (distrib1 instanceof DistributionWithExistDep && distrib2 instanceof DistributionWithExistDep) {
 				
 				CondIndependentDistribs merge = BeliefContentBuilder.createNewCondIndependentDistribs();
 				
-				for (String key: ((CondIndependentDistribs)distrib1).distribs.keySet()) {
+				for (String key: ((CondIndependentDistribs)((DistributionWithExistDep)distrib1).Pc).distribs.keySet()) {
 					BeliefContentBuilder.putNewCondIndependentDistrib
-					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib1).distribs.get(key));
+					(merge, (BasicProbDistribution)((CondIndependentDistribs)((DistributionWithExistDep)distrib1).Pc).distribs.get(key));
 				}
-				for (String key: ((CondIndependentDistribs)distrib2).distribs.keySet()) {
+				for (String key: ((CondIndependentDistribs)((DistributionWithExistDep)distrib2).Pc).distribs.keySet()) {
 					BeliefContentBuilder.putNewCondIndependentDistrib
-					(merge, (BasicProbDistribution)((CondIndependentDistribs)distrib2).distribs.get(key));
+					(merge, (BasicProbDistribution)((CondIndependentDistribs)((DistributionWithExistDep)distrib2).Pc).distribs.get(key));
 				}
 				
 				DistributionWithExistDep mergeWithExist = BeliefContentBuilder.createNewDistributionWithExistDep(((DistributionWithExistDep)distrib1).existProb, merge);
 				
-		//		return mergeWithExist;
+				return mergeWithExist;
 			}
 		}
 		catch (Exception e) {
