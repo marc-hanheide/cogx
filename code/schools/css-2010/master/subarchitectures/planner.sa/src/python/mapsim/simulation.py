@@ -195,7 +195,7 @@ class Simulation(object):
                     perceptions.append(state.Fact(svar, value))
                 else:
                     print "%d: %s senses %s != %s" % (self.time, agent.name, str(svar), value.name)
-                    perceptions.append(state.Fact(svar.as_modality(mapl.i_indomain, [value]), pddl.FALSE))
+                    perceptions.append(state.Fact(svar.as_modality(mapl.not_indomain, [value]), pddl.TRUE))
             else:
                 if self.state[svar] == pddl.UNKNOWN and svar.function.type == pddl.t_boolean:
                     #HACK: default to FALSE for undefined boolean fluents
