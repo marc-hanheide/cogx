@@ -79,8 +79,9 @@ public class BeliefWriter extends ManagedComponent implements BeliefWriterInterf
 			if (existsOnWorkingMemory(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA))) {
 				
 				Belief oldBelief = 
-					getMemoryEntry(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA), Belief.class);
-				
+					getMemoryEntry(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA), belief.getClass());
+			
+				log("oldBelief ID: " + oldBelief.id);
 		//		((CASTBeliefHistory)belief.hist).offspring = ((CASTBeliefHistory)oldBelief.hist).offspring;
 				oldBelief.content = belief.content;
 				oldBelief.frame = belief.frame;
