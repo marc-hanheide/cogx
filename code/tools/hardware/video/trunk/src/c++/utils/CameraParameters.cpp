@@ -241,8 +241,8 @@ void saveCameraParameters(const CameraParameters &cam, const string &configfile)
 
 void changeImageSize(CameraParameters &cam, int newWidth, int newHeight)
 {
-  assert(newWidth > 0);
-  assert(newHeight > 0);
+  //assert(newWidth > 0);
+  //assert(newHeight > 0);
   // adjust camera parameters for scaled images
   double sx = (double)newWidth/(double)cam.width;
   double sy = (double)newHeight/(double)cam.height;
