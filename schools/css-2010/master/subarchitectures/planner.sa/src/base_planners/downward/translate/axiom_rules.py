@@ -168,9 +168,10 @@ def negate(axioms):
     result = [pddl.PropositionalAxiom(axioms[0].name, [], axioms[0].effect.negate())]
     for axiom in axioms:
         condition = axiom.condition
+        #assert len(condition) > 0, "%s: Negated axiom impossible; cannot deal with that" % axiom.name
         if len(condition) == 0:
-            continue
-        #assert len(condition) > 0, "Negated axiom impossible; cannot deal with that"
+            #print "%s: Negated axiom impossible; cannot deal with that" % axiom.name
+            return []
         if len(condition) == 1: # Handle easy special case quickly.
             new_literal = condition[0].negate()
             for result_axiom in result:
