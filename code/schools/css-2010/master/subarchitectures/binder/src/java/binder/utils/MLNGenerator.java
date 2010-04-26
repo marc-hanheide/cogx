@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
@@ -127,15 +128,17 @@ public class MLNGenerator {
 	 * 			Path to the MLN file to which the result is written
 	 * @throws MLException
 	 */
-	public void writeMLNFile(Belief b, Collection<Belief> existingUnions, 
+	public void writeMLNFile(Belief b, Collection<Belief> existingUnionsInit, 
 			Map<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
 
 		newInput = b;
 		 
 		b = controlExistDep(b);
 		
-		for (Belief bb : existingUnions) {
+		Collection<Belief> existingUnions = new Vector<Belief>();
+		for (Belief bb : existingUnionsInit) {
 			bb = controlExistDep(bb);
+			existingUnions.add(bb);
 		}
 		
 		
