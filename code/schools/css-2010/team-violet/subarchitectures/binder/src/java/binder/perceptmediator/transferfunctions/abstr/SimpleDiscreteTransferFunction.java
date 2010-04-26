@@ -77,6 +77,8 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		Map<String, FeatureValue> mapping;
 		try {
 			mapping = getFeatureValueMapping(wmc, from);
+                        if (mapping == null)
+                            return false;
 			for (Entry<String, FeatureValue> fvm : mapping.entrySet()) {
 				putDiscreteFeature(features, fvm.getKey(), fvm.getValue());
 			}
