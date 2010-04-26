@@ -20,6 +20,7 @@ INCLUDE includes/planner.sa/planner-base.cast
 
 # exection ####################################################################
 JAVA MG  manual-execution execution.components.GraphicalExecutionManager
+INCLUDE includes/vision.sa/vision-viewer.cast
 
 
 
