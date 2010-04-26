@@ -1,8 +1,8 @@
 # execution ###################################################################
-JAVA MG executor execution.components.SpringSchoolExecutionMediator
+JAVA MG executor execution.components.DoraExecutionMediator
 
 # motivation ##################################################################
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (placestatus ?p) trueplace))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 

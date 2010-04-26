@@ -1,6 +1,6 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --log
+COMPONENT PYTHON PlannerPythonServer PythonServer --log --domain /home/cogx/workspace/spring-school-master/my-spring-school-system/spring-school-implementation/domains/visit_all.mapl
 
-SUBARCHITECTURE planner.sa
+SUBARCHITECTURE planner.sa 
 
 ###############################################################################
 JAVA WM cast.architecture.SubarchitectureWorkingMemory

@@ -6,7 +6,7 @@ INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
-INCLUDE includes/spatial.sa/spatial-peekabot.cast
+#INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
 #JAVA MG recorder castutils.components.WorkingMemoryRecorder  --config recorder-filter.txt
 #JAVA MG player castutils.components.WorkingMemoryPlayer  --state
