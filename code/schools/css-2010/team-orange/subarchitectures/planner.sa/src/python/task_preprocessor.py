@@ -11,7 +11,7 @@ from beliefmodels.autogen import distribs, featurecontent
 
 log = standalone.config.logger("PythonServer")
 
-forbidden_letters = "-:"
+forbidden_letters = "-: "
 replace_chr = "_"
 trans_tbl = maketrans(forbidden_letters, replace_chr * len(forbidden_letters))
 UCASE_REXP = re.compile("([A-Z])")
@@ -67,8 +67,8 @@ def feature_val_to_object(fval):
   if fval.__class__ == featurecontent.StringValue:
     val = fval.val.lower()
     #lookup constants
-    if val in current_domain:
-      return current_domain[val]
+    #if val in current_domain:
+    #  return current_domain[val]
     if val == "unknown":
       return pddl.UNKNOWN
 
@@ -79,7 +79,10 @@ def feature_val_to_object(fval):
     return belief_to_object(bel)
   
   elif fval.__class__ == featurecontent.IntegerValue:
-    return pddl.TypedObject(fval.val, pddl.t_number)
+    if "numeric-fluents" in current_domain.requirements or "fluents" in current_domain.requirements:
+      return pddl.TypedObject(fval.val, pddl.t_number)
+    else:
+      return pddl.TypedObject(str(fval.val), pddl.t_object)
   
   elif fval.__class__ == featurecontent.BooleanValue:
     if fval.val:
@@ -237,10 +240,9 @@ def infer_types(obj_descriptions):
         
   objects = set()
   for obj in constraints:
-    if obj == pddl.UNKNOWN or obj in current_domain:
-      #don't change any constants
+    if obj == pddl.UNKNOWN:
       continue
-      
+    
     # now find most specific type
     
     # how could THAT happen?
@@ -261,6 +263,12 @@ def infer_types(obj_descriptions):
       assert False, "Multiple inheritance not supported yet"
     most_spec_type = sorted(types, cmp=type_cmp)[0]
     obj.type = most_spec_type
+
+    if obj in current_domain and current_domain[obj].is_instance_of(most_spec_type):
+      #use existing constant
+      obj.type = current_domain[obj].type
+      continue
+
     objects.add(obj)
 
   return objects
@@ -278,10 +286,18 @@ def generate_mapl_task(task_desc, domain_fn):
   
   objects = infer_types(obj_descriptions)
   task.namedict = rename_objects(objects)
+  task.beliefdict = belief_dict
 
   facts = list(tuples2facts(obj_descriptions))
 
-  problem = pddl.Problem("cogxtask", objects, [], None, task._mapldomain)
+  if "action-costs" in current_domain.requirements:
+    opt = "minimize"
+    opt_func = pddl.FunctionTerm(pddl.builtin.total_cost, [])
+  else:
+    opt = None
+    opt_func = None
+
+  problem = pddl.Problem("cogxtask", objects, [], None, task._mapldomain, opt, opt_func )
   try:
     goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
     problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
@@ -292,7 +308,7 @@ def generate_mapl_task(task_desc, domain_fn):
   task._mapltask = problem
   task.set_state(prob_state.ProbabilisticState(facts, problem).determinized_state(0.1, 0.9))
 
-  print task.get_state()
+  log.debug(str(task.get_state()))
   
   return task  
 
@@ -306,11 +322,12 @@ def generate_mapl_state(task_desc, task):
   
   objects = infer_types(obj_descriptions)
   task.namedict = rename_objects(objects)
+  task.beliefdict = belief_dict
 
   facts = list(tuples2facts(obj_descriptions))
   state = prob_state.ProbabilisticState(facts, task.mapltask).determinized_state(0.1, 0.9) 
 
-  print state
+  log.debug(str(state))
   
   return objects, state
 
