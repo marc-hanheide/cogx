@@ -115,7 +115,10 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 	}
 
 	
-	
+	/**
+	 * Verify whether the Alchemy software is present in the system
+	 * 
+	 */
 	private void verifyAlchemyIsPresent () {
 		Runtime run = Runtime.getRuntime(); 
 		log("Verifying that Alchemy is correctly compiled...");
@@ -129,6 +132,12 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		}
 	}
 	
+	
+	/**
+	 * Perform inference if new multi-modal belief added in the system
+	 * 
+	 * @param wmc working memory change
+	 */
 	private void multimodalBeliefAdded (WorkingMemoryChange wmc) {
 		try {
 			CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(wmc.address, MultiModalBelief.class);
@@ -146,6 +155,12 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		}
 	}
 	
+	
+	/**
+	 * Delete the offspring of a given multi-modal belief
+	 * 
+	 * @param wmc working memory change
+	 */
 	private void multimodalBeliefDeleted (WorkingMemoryChange wmc) {
 
 		try {
@@ -166,6 +181,13 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		} 
 	}
 	
+	
+	/**
+	 * Perform an inference if a given multi-modal belief is overwritten (updated) in the
+	 * working memory
+	 * 
+	 * @param wmc working memory change
+	 */
 	private void multimodalBeliefOverwritten (WorkingMemoryChange wmc) {
 		
 		try {
@@ -179,8 +201,11 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				for (WorkingMemoryAddress child : offspring) {
 					if (existsOnWorkingMemory(child)) {
 						log("belief " + child.id + " exists on WM, overwriting");
-						TemporalUnionBelief childBelief = getMemoryEntry(child, TemporalUnionBelief.class);
-						childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), wmc.address, child.id);
+						TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), wmc.address, child.id);
+					
+						TemporalUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), TemporalUnionBelief.class);
+						childBelief.content = mergeBeliefContent(childBelief.content, existingBelief.content);
+
 						updatePointers(childBelief, TemporalUnionBelief.class);
 						updateBeliefOnWM(childBelief);
 					}

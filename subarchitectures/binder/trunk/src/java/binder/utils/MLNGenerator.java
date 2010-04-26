@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
+import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.DistributionValues;
@@ -28,6 +29,7 @@ import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.UnknownValue;
 import beliefmodels.builders.BeliefContentBuilder;
+import beliefmodels.builders.MultiModalBeliefBuilder;
 import beliefmodels.utils.FeatureContentUtils;
 import binder.ml.MLException;
 import binder.ml.MLFormula;
@@ -98,16 +100,17 @@ public class MLNGenerator {
 
 	
 	private Belief controlExistDep (Belief b) {
-		if (b.content instanceof CondIndependentDistribs) {
+		Belief b2 = new MultiModalBelief (b.frame, b.estatus, b.id, b.type, b.content, b.hist);
+		if (b2.content instanceof CondIndependentDistribs) {
 			try {
-			ProbDistribution distrib = FeatureContentUtils.duplicateContent(b.content);
-			b.content = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, distrib);
+			ProbDistribution distrib = FeatureContentUtils.duplicateContent(b2.content);
+			b2.content = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, distrib);
 			}
 			catch (BeliefException e) {
 				e.printStackTrace();
 			}
 		}
-		return b;
+		return b2;
 	}
 	/**
 	 * This method constructs the Markov Logic Network (MLN) in a textual description from the current
@@ -128,7 +131,7 @@ public class MLNGenerator {
 			Map<String,String> unionsMapping, String newSingleUnionId, String MLNFileToWrite) throws MLException {
 
 		newInput = b;
-		
+		 
 		b = controlExistDep(b);
 		
 		for (Belief bb : existingUnions) {
