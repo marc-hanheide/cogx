@@ -129,7 +129,7 @@ public class MultiModalEstimation_fake extends FakeComponent {
 					updatePointers(newChildBelief, MultiModalBelief.class);
 
 					MultiModalBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), MultiModalBelief.class);
-					newChildBelief.content = mergeBeliefContent(newChildBelief.content, existingBelief.content);
+					newChildBelief.content = mergeBeliefContent(existingBelief.content, newChildBelief.content);
 
 					updateBeliefOnWM(newChildBelief);
 				}
