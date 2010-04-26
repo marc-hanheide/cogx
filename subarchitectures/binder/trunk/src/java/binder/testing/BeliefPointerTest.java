@@ -126,7 +126,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			CondIndependentDistribs featDistrib_p2 = BeliefContentBuilder.createNewCondIndependentDistribs();
 			List<FeatureValueProbPair> pointerVals = new LinkedList<FeatureValueProbPair>();
 			FeatureValueProbPair pointerVal1 = new FeatureValueProbPair(FeatureValueBuilder.createNewPointerValue(
-					new WorkingMemoryAddress(p1.id, BindingWorkingMemory.BINDER_SA)), 1.0f);
+					new WorkingMemoryAddress(p1.id+1, BindingWorkingMemory.BINDER_SA)), 1.0f);
 			pointerVals.add(pointerVal1);
 			BasicProbDistribution pointerFeat = BeliefContentBuilder.createNewFeatureDistribution("pointer", pointerVals);
 			BeliefContentBuilder.putNewCondIndependentDistrib(featDistrib_p2, pointerFeat);
