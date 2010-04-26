@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,6 +23,11 @@ import javax.swing.table.DefaultTableModel;
 import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.BooleanValue;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.FloatValue;
+import beliefmodels.autogen.featurecontent.IntegerValue;
+import beliefmodels.autogen.featurecontent.StringValue;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import execution.components.GraphicalExecutionManager;
@@ -49,10 +55,13 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_lookForObjectsAction;
 	private JRadioButton m_lookForPeopleAction;
 	private JRadioButton m_askForFeatureAction;
+	private JRadioButton m_testFeatureValueAction;
 
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
+	private static final Object[] FEATURE_VALUE_TYPES = { StringValue.class,
+			IntegerValue.class, FloatValue.class, BooleanValue.class };
 
 	/**
 	 * This is the default constructor
@@ -139,6 +148,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_lookForPeopleAction = new JRadioButton("look for people");
 
 			m_askForFeatureAction = new JRadioButton("ask for feature");
+			m_testFeatureValueAction = new JRadioButton("test a feature value");
 
 			m_goAction.setSelected(true);
 
@@ -150,6 +160,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_lookForObjectsAction);
 			actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_askForFeatureAction);
+			actionGroup.add(m_testFeatureValueAction);
 
 			m_actionPanel.add(m_goAction, new GridBagConstraints());
 			m_actionPanel.add(m_avsAction, new GridBagConstraints());
@@ -158,6 +169,8 @@ public class ActionInterfaceFrame extends JFrame {
 			m_actionPanel.add(m_lookForObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_askForFeatureAction, new GridBagConstraints());
+			m_actionPanel.add(m_testFeatureValueAction,
+					new GridBagConstraints());
 		}
 		return m_actionPanel;
 	}
@@ -211,6 +224,8 @@ public class ActionInterfaceFrame extends JFrame {
 			lookForPeople();
 		} else if (m_askForFeatureAction.isSelected()) {
 			askForFeature();
+		} else if (m_testFeatureValueAction.isSelected()) {
+			testFeatureValue();
 		}
 
 	}
@@ -230,18 +245,72 @@ public class ActionInterfaceFrame extends JFrame {
 			dialog.setLayout(new FlowLayout());
 			dialog.add(new JLabel("What feature do you want to ask about?"));
 
-			final JTextField textfield = new JTextField(30);
+			final JTextField textfield = new JTextField(10);
 			dialog.add(textfield);
 
 			ActionListener submit = new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent _e) {
-					submit(beliefID, dialog, textfield);
+					submitFeatureQuery(beliefID, dialog, textfield);
+					dialog.setVisible(false);
 				}
 			};
 
 			textfield.addActionListener(submit);
+
+			JButton goButton = new JButton("Go!");
+			goButton.addActionListener(submit);
+
+			dialog.add(goButton);
+			dialog.pack();
+			dialog.setVisible(true);
+		}
+	}
+
+	/**
+	 * Popup
+	 */
+	private void testFeatureValue() {
+		int selectedRow = m_beliefTable.getSelectedRow();
+		if (selectedRow != -1) {
+			Object beliefIDVal = m_beliefTableModel.getValueAt(selectedRow,
+					BELIEF_ID_COLUMN);
+			assert (beliefIDVal != null);
+			final String beliefID = (String) beliefIDVal;
+
+			final JDialog dialog = new JDialog(this);
+			dialog.setLayout(new FlowLayout());
+			dialog
+					.add(new JLabel(
+							"What feature TYPE do you want to ask about?"));
+			final JTextField textfield = new JTextField(10);
+			dialog.add(textfield);
+
+			dialog.add(new JLabel(
+					"VALUE TYPE: "));
+
+			final JComboBox featureValueTypesCombo = new JComboBox(
+					FEATURE_VALUE_TYPES);
+
+			dialog.add(featureValueTypesCombo);
+			dialog.add(new JLabel("VALUE: "));
+
+			final JTextField valuefield = new JTextField(10);
+			dialog.add(valuefield);
+
+			ActionListener submit = new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent _e) {
+					submitFeatureValueTest(beliefID, textfield.getText(),
+							FEATURE_VALUE_TYPES[featureValueTypesCombo
+									.getSelectedIndex()], valuefield.getText());
+					dialog.setVisible(false);
+				}
+			};
+
+			valuefield.addActionListener(submit);
 
 			JButton goButton = new JButton("Go!");
 			goButton.addActionListener(submit);
@@ -254,13 +323,47 @@ public class ActionInterfaceFrame extends JFrame {
 
 	}
 
+	private void submitFeatureValueTest(String _beliefID, String _featureLabel,
+			Object _valueType, String _value) {
+		if (_featureLabel.isEmpty() || _value.isEmpty()) {
+			m_exeMan
+					.println("Missing values for feature test. Please fill in all the fields");
+			return;
+		}
+
+		FeatureValue fv = null;
+
+		if (_valueType == StringValue.class) {
+			fv = new StringValue(_value);
+		} else if (_valueType == IntegerValue.class) {
+			fv = new IntegerValue(Integer.parseInt(_value));
+		} else if (_valueType == FloatValue.class) {
+			fv = new FloatValue(Float.parseFloat(_value));
+		} else if (_valueType == BooleanValue.class) {
+			fv = new BooleanValue(Boolean.parseBoolean(_value));
+		} else {
+			assert (false);
+		}
+
+		//final sanity check in case assertions are disable
+		if(fv != null) {
+			try {
+				m_exeMan.triggerFeatureValueTest(_beliefID, _featureLabel, fv,
+						new MonitorPanel());
+			} catch (CASTException e) {
+				m_exeMan.logException(e);
+			}
+		}
+		
+	}
+
 	/**
 	 * @param beliefID
 	 * @param dialog
 	 * @param textfield
 	 */
-	private void submit(final String beliefID, final JDialog dialog,
-			final JTextField textfield) {
+	private void submitFeatureQuery(final String beliefID,
+			final JDialog dialog, final JTextField textfield) {
 		dialog.setVisible(false);
 		String featureType = textfield.getText();
 		if (featureType.length() > 0) {
@@ -320,7 +423,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private void lookForPeople() throws CASTException {
 		m_exeMan.triggerLookForPeople(new MonitorPanel());
 	}
-	
+
 	private void lookForObjects() throws CASTException {
 		m_exeMan.triggerLookForObjects(new MonitorPanel());
 	}

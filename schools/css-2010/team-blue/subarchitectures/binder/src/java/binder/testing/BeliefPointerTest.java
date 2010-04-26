@@ -41,6 +41,14 @@ public class BeliefPointerTest extends AbstractBinderTest {
 					}
 				}
 		);
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(StableBelief.class,
+						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						checkIfSuccessful(_wmc);
+					}
+				}
+		);
 	} 
 	 
 	   
@@ -111,7 +119,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 			CondIndependentDistribs featDistrib_p1 = BeliefContentBuilder.createNewCondIndependentDistribs();
 			DistributionWithExistDep distrib_p1 = BeliefContentBuilder.createNewDistributionWithExistDep(0.8f, featDistrib_p1);
 			
-			PerceptBelief p1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "p1", "here", 
+			PerceptBelief p1 = PerceptBuilder.createNewPerceptBelief(newDataID(), "p", "here", 
 					this.getCASTTime(), distrib_p1, PerceptBuilder.createHistory(new WorkingMemoryAddress("", "subarch1")));
 	
 			 
@@ -125,7 +133,7 @@ public class BeliefPointerTest extends AbstractBinderTest {
 					
 			DistributionWithExistDep distrib_p2 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, featDistrib_p2);
 			
-			PerceptBelief p2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "p2", "here", 
+			PerceptBelief p2 = PerceptBuilder.createNewPerceptBelief(newDataID(), "p", "here", 
 					this.getCASTTime(), distrib_p2, PerceptBuilder.createHistory(new WorkingMemoryAddress("", "subarch1")));
 			
 			
@@ -135,6 +143,17 @@ public class BeliefPointerTest extends AbstractBinderTest {
 
 			insertBeliefInWM(p2);	
 
+			sleepComponent(5000);
+
+			pointerVals = new LinkedList<FeatureValueProbPair>();
+			pointerVal1 = new FeatureValueProbPair(FeatureValueBuilder.createNewPointerValue(
+					new WorkingMemoryAddress(p1.id+1, BindingWorkingMemory.BINDER_SA)), 1.0f);
+			pointerVals.add(pointerVal1);
+			pointerFeat = BeliefContentBuilder.createNewFeatureDistribution("pointer", pointerVals);
+			BeliefContentBuilder.putNewCondIndependentDistrib(featDistrib_p2, pointerFeat);
+
+			updateBeliefOnWM(p2);
+			
 			
 
 			id_p2 = p2.id;
