@@ -5,14 +5,12 @@
 
 // general correlations
 
-100 Existence(x) ^ Existence(P) ^ Type(x,y) ^ Type(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-100 UnifyWith(x) ^ Type(x,y) ^ Type(P,z) => y=z
-UnifyWith(x) ^ Type(x,y) => y!=Unknown. 
-UnifyWith(x) ^ Type(x,y) => y!=None. 
-
 100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
 100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
 UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
 UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
 UnifyWith(x) => Existence(x) ^ Existence(P).
+
+
+// ADD YOUR ADDITIONAL FORMULAE FOR OBJECT TRACKING HERE
