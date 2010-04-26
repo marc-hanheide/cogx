@@ -192,8 +192,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 					new FeatureValueProbPair(FeatureValueBuilder.createNewFloatValue(0.67f), 0.95f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b5, distanceDistrib_b5); 
-
-			
+	
 			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), contentDistrib_b5, hist_b5);
 
 			insertBeliefInWM(b5);
