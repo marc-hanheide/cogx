@@ -4,11 +4,8 @@
 ///////////////////////////////
 
 Existence(belief)
-Shape(belief,shapeval)
-Label(belief,labelval)
 Type(belief,typeval)
-Location(belief,locationval)
-Pointer(belief,pointerval)
+Is-in(belief,is-inval)
 
 Outcome(outcome)
 UnifyWith(existingunion)

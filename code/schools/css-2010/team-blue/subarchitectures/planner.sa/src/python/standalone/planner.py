@@ -10,7 +10,7 @@ import config, utils
 import globals as global_vars
 
 import task
-from task import PlanningStatusEnum, Task
+from task import PlanningStatusEnum, Task, FDWriter
 import pddl
 import plans
 import plan_postprocess
@@ -380,7 +380,7 @@ class Downward(BasePlanner):
 
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "output.sas", "output", "sas_plan", "stdout.out")]
 
-        w = task.FDWriter()
+        w = task.fdwriter()
         dom_str = "\n".join(w.write_domain(_task.mapltask.domain))
         prob_str = "\n".join(w.write_problem(_task.mapltask))
         mutex_str = "\n".join(w.write_mutex(w.mutex_groups))
@@ -419,7 +419,7 @@ class Downward(BasePlanner):
         output.write(prep_out)
         log.debug("preprocess output:")
         log.debug(prep_out)
-        
+     
         if proc.returncode != 0:
             utils.print_errors(proc, cmd, prep_out, "Fast Downward Preprocess")
             return None
@@ -430,6 +430,8 @@ class Downward(BasePlanner):
         output.write(search_out)
         log.debug("search output:")
         log.debug(search_out)
+
+        print search_out
         
         if proc.returncode != 0:
             utils.print_errors(proc, cmd, search_out, "Fast Downward Search")
@@ -582,8 +584,11 @@ class TFD(BasePlanner):
             
 if __name__ == '__main__':    
     assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""
+
     domain_fn, problem_fn = sys.argv[1:]
+    fdwrtier = FDWriter()
     task = Task()
+    task.set_fdwriter(fdwrtier)
     planner = Planner()
     task.load_mapl_domain(domain_fn)
     task.load_mapl_problem(problem_fn)
