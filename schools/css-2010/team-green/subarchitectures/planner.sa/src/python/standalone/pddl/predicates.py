@@ -297,9 +297,13 @@ class FunctionTerm(Term):
 
     @staticmethod
     def parse(it, scope, maxNesting=999):
-        name = it.get(None, "function identifier")
-        if name.token.string not in scope.functions:
-            raise ParseError(name.token, "Unknown function: '%s'" % name.token.string)
+        name = it.get(None, "function or predicate identifier")
+        if name.token.string in scope.functions:
+            table = scope.functions
+        elif name.token.string in scope.predicates:
+            table = scope.predicates
+        else:
+            raise ParseError(name.token, "Unknown function or predicate: '%s'" % name.token.string)
         
         args = []
         i = 0
@@ -313,12 +317,12 @@ class FunctionTerm(Term):
             except parser.EndOfListError:
                 break
 
-        func = scope.functions.get(name.token.string, args)
+        func = table.get(name.token.string, args)
         if not func:
             type_str = " ".join(str(a.get_type()) for a in args)
-            candidates = scope.functions[name.token.string]
+            candidates = table[name.token.string]
             c_str = "\n  ".join(str(p) for p in candidates)
-            raise ParseError(name.token, "no matching function found for (%s %s). Candidates are:\n  %s" % (name.token.string, type_str, c_str))
+            raise ParseError(name.token, "no matching function or predicate found for (%s %s). Candidates are:\n  %s" % (name.token.string, type_str, c_str))
 
         return FunctionTerm(func, args)
 
