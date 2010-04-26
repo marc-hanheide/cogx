@@ -74,13 +74,14 @@ public class TemporalSmoothing_fake extends FakeComponent {
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, merging content");
-									StableBelief newChildBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, child.id);
+									StableBelief childBelief =StableBeliefBuilder.createnewStableBelief(beliefData.getData(), _wmc.address, child.id);
+
+									updatePointers(childBelief, StableBelief.class);
 
 									StableBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), StableBelief.class);
-									newChildBelief.content = mergeBeliefContent(newChildBelief.content, existingBelief.content);
+									childBelief.content = mergeBeliefContent(existingBelief.content, childBelief.content);
 									
-									updatePointers(newChildBelief, StableBelief.class);
-									updateBeliefOnWM(newChildBelief);
+									updateBeliefOnWM(childBelief);
 								}
 								else {
 									log("belief " + child.id + " does not exist on WM, creating it");
