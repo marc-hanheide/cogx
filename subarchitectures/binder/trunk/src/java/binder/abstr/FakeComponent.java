@@ -68,7 +68,7 @@ public abstract class FakeComponent extends BeliefWriter {
 						((PointerValue)pointer.val).beliefId = ((CASTBeliefHistory)belief.hist).offspring.get(0);	
 					}
 					else {
-						log("(updating pointers) WARNING: belief " + belief.hist + " has no offspring");
+						log("(updating pointers) WARNING: belief " + belief.id + " has no offspring");
 					}
 				}
 				else {

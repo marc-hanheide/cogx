@@ -19,6 +19,7 @@ import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
+import beliefmodels.autogen.distribs.DistributionWithExistDep;
 import beliefmodels.builders.TemporalUnionBuilder;
 import beliefmodels.utils.DistributionUtils;
 import beliefmodels.utils.FeatureContentUtils;
@@ -149,10 +150,13 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 						TemporalUnionBuilder.createNewSingleUnionBelief((MultiModalBelief) belief, beliefWMAddress, id);
 					float existProb = 
 						DistributionUtils.getExistenceProbability(newBelief) * filteredInferenceResults.get(id);
-					DistributionUtils.setExistenceProbability(newBelief, existProb);
+					
+					if (newBelief.content instanceof DistributionWithExistDep) {
+						DistributionUtils.setExistenceProbability(newBelief, existProb);
+					}
 					
 					// checking the final probability
-					if (DistributionUtils.getExistenceProbability(newBelief) > lowestProbThreshold)  {
+					if (existProb > lowestProbThreshold)  {
 
 						resultingBeliefs.add(newBelief);
 					}
@@ -242,7 +246,7 @@ public abstract class MarkovLogicComponent<T extends Belief> extends FakeCompone
 		}
 		return new HashMap<String,Float>();
 	}
-	
+	 
 	/**
 	 * Create identifiers for new unions
 	 * NOTE: this is currently a hack

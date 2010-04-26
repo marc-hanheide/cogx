@@ -67,10 +67,11 @@ public class MultiModalEstimation_fake extends FakeComponent {
 									log("belief " + child.id + " exists on WM, overwriting");
 									MultiModalBelief newChildBelief = MultiModalBeliefBuilder.createNewMultiModalBelief(beliefData.getData(), _wmc.address, child.id);
 								
-									MultiModalBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), MultiModalBelief.class);
-									newChildBelief.content = mergeBeliefContent(existingBelief.content, newChildBelief.content);
-		
 									updatePointers(newChildBelief, MultiModalBelief.class);
+
+									MultiModalBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), MultiModalBelief.class);
+									newChildBelief.content = mergeBeliefContent(newChildBelief.content, existingBelief.content);
+		
 									updateBeliefOnWM(newChildBelief);
 								}
 								else {

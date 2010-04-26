@@ -36,7 +36,7 @@ public class PerceptualGrouping_fake extends FakeComponent {
 						try {
 							CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(_wmc.address, PerceptBelief.class);
 
-							addOffspring(beliefData.getData(), newDataID());	
+							addOffspring(beliefData.getData(), newDataID());
 							updateBeliefOnWM(beliefData.getData());
 							
 						}	
@@ -65,12 +65,14 @@ public class PerceptualGrouping_fake extends FakeComponent {
 							for (WorkingMemoryAddress child : offspring) {
 								if (existsOnWorkingMemory(child)) {
 									log("belief " + child.id + " exists on WM, overwriting");
-									PerceptUnionBelief newChildBelief = PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
+									PerceptUnionBelief newChildBelief = 
+										PerceptUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), _wmc.address, child.id);
 								
-									PerceptUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), PerceptUnionBelief.class);
-									newChildBelief.content = mergeBeliefContent(existingBelief.content, newChildBelief.content);
-	
 									updatePointers(newChildBelief, PerceptUnionBelief.class);
+
+									PerceptUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), PerceptUnionBelief.class);
+									newChildBelief.content = mergeBeliefContent(newChildBelief.content, existingBelief.content);
+									
 									updateBeliefOnWM(newChildBelief);
 								}
 								else {
