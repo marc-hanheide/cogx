@@ -1,0 +1,11 @@
+(define (domain cogx)
+        (:requirements :mapl :adl :object-fluents)
+	(:predicates
+                (success)
+	)
+	       
+        (:action succeed
+	         :agent (?a - agent)
+	         :effect (success)
+        )
+)
