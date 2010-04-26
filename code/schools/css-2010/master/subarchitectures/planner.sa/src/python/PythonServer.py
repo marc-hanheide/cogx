@@ -91,6 +91,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.planner.register_task(task)
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
+    problem_fn = abspath(join(this_path, "problem%d.mapl" % task.taskID))
+    f = open(problem_fn, "w")
+    f.write(task.problem_str(pddl.mapl.MAPLWriter))
+    f.close()
+    
     task.replan()
     self.deliver_plan(task)
     
@@ -211,7 +216,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     old_state = task.get_state()
     print_state_difference(old_state, new_state)
 
-    newtask = pddl.Problem(task.mapltask.name, objects, [], None, task._mapldomain)
+    newtask = pddl.Problem(task.mapltask.name, objects, [], None, task._mapldomain, task.mapltask.optimization, task.mapltask.opt_func)
 
     #check if the goal is still valid
     try:
@@ -234,6 +239,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
+    problem_fn = abspath(join(this_path, "problem%d.mapl" % task.taskID))
+    f = open(problem_fn, "w")
+    f.write(task.problem_str(pddl.mapl.MAPLWriter))
+    f.close()
+
     task.replan()
     self.deliver_plan(task)
 
@@ -253,6 +263,20 @@ def compute_state_updates(_state, old_state, actions, failed):
         del diffstate[fact.svar]
         log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
 
+  for action in failed:
+    for fact in action.effects:
+      if fact.svar.modality != pddl.mapl.update_fail:
+        continue
+
+      fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
+
+      if fact not in _state:
+        diffstate.set(fact)
+        log.debug("not in state: %s", str(fact))
+      elif fact.svar in diffstate:
+        del diffstate[fact.svar]
+        log.debug("previous change %s overwritten by later action", str(state.Fact(fact.svar, diffstate[fact.svar])))
+        
   return diffstate
 
 def featvalue_from_object(arg, namedict, bdict):

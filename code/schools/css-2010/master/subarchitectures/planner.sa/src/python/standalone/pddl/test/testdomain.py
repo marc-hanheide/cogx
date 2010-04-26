@@ -12,6 +12,12 @@ class DomainTest(common.PddlTest):
 
         self.assertEqual(len(dom.actions), 6)
 
+    def testLogisticsAC(self):
+        """Testing logistics domain with action costs"""
+        dom = self.load("testdata/logistics.acosts.mapl")
+
+        self.assertEqual(len(dom.actions), 6)
+        
     def testBlocksworld(self):
         """Testing blocksworld domain"""
         dom = self.load("testdata/blocksworld.domain.pddl")

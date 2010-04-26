@@ -16,7 +16,7 @@ from scope import Scope, FunctionTable
 from actions import Action
 from axioms import Axiom
 
-supported = set(["mapl",  "modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions", "partial-observability"])
+supported = set(["mapl",  "modal-predicates", "strips", "typing", "equality", "negative-preconditions", "disjunctive-preconditions", "existential-preconditions", "universal-preconditions", "quantified-preconditions", "conditional-effects", "adl", "derived-predicated", "fluents", "numeric-fluents", "object-fluents", "durative-actions", "partial-observability", "action-costs"])
 
 support_depends = {"mapl" : ["object-fluents", "modal-predicates"],
                    "adl" : ["typing", "negative-preconditions", "disjunctive-preconditions", "quantified-preconditions", "equality", "conditional-effects"],
@@ -96,6 +96,10 @@ class Domain(Scope):
             typeDict[builtin.t_number.name] = builtin.t_number
             preds.add(builtin.numeric_comparators)
             functions.add(builtin.numeric_functions)
+
+        if "action-costs" in requirements:
+            preds.add(builtin.increase)
+            functions.add(builtin.total_cost)
 
         if "mapl" in requirements:
             for t in mapl.mapl_types:
