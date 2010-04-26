@@ -1,7 +1,27 @@
+
+//=================================================================                                                        
+//Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+//                                                                                                                       
+//This library is free software; you can redistribute it and/or                                                            
+//modify it under the terms of the GNU Lesser General Public License                                                       
+//as published by the Free Software Foundation; either version 2.1 of                                                      
+//the License, or (at your option) any later version.                                                                      
+//                                                                                                                       
+//This library is distributed in the hope that it will be useful, but                                                      
+//WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
+//Lesser General Public License for more details.                                                                          
+//                                                                                                                       
+//You should have received a copy of the GNU Lesser General Public                                                         
+//License along with this program; if not, write to the Free Software                                                      
+//Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
+//02111-1307, USA.                                                                                                         
+//=================================================================                                                        
+
 package binder.components;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -10,15 +30,11 @@ import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
 import beliefmodels.autogen.beliefs.TemporalUnionBelief;
-import beliefmodels.autogen.distribs.BasicProbDistribution;
-import beliefmodels.autogen.distribs.FeatureValueProbPair;
-import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.TemporalUnionBuilder;
-import beliefmodels.utils.DistributionUtils;
-import beliefmodels.utils.FeatureContentUtils;
 import binder.abstr.MarkovLogicComponent;
 import binder.arch.BindingWorkingMemory;
+import binder.utils.MLNPreferences;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -29,277 +45,278 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
 /**
- * Perceptual grouping operation, responsible for merging percept beliefs from
- * different modalities into percept union beliefs.
+ * Tracking operation, responsible for merging multi-modal beliefs observed at different
+ * time points into temporal union beliefs.
  * 
  * The component continuously monitors changes on the binder working memory, and
  * triggers its internal inference mechanism (based on a Markov Logic Network)
- * when a percept is being inserted, updated or deleted. The final outcome of
- * this inference is the creation of new percept union beliefs which are then
+ * when a multi-modal belief is being inserted, updated or deleted. The final outcome of
+ * this inference is the creation of new temporal union beliefs which are then
  * inserted onto the working memory, as well as the associated update of the
- * existing percept union beliefs.
+ * existing temporal union beliefs.
  * 
  * 
- * 
- * NOTE: - still need to check subarchitecture consistency OK - still need to
- * add filters OK - only perform updates on existing unions when change is
- * significant OK - need to add functionality for percept updates or deletions
- * OK? - remove the testing stuff and have a proper, separate tester class OK -
- * actually build the union content OK - change the belief history to have only
- * cast values OK - testing, defensive programming, check null values and
- * pre/post conditions - when constructing a new belief, propagate the pointers
- * correctly OK - have proper logging functionality - implement the same kind of
- * functionality for tracking - send examples of test cases to Sergio OK - do
- * the test with percepts instead of unions as inputs OK
- * 
- * @author plison
+ * @author Pierre Lison & Carsten Ehrler (plison@dfki.de)
+ * @version April 25, 2010
  * 
  */
 public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 
+
+	// the full markov logic file which is going to be generated
+	String generatedMLNFile = markovlogicDir + "tracking.mln";
 	
+	// the list of possible tracking systems
+	HashMap<String,String> trackerMLNs = new HashMap<String,String>();
+	
+	// the set of beliefs whose overwrite can be temporarily ignored (because the update
+	// only concerns the offspring property)
+	private Vector<MultiModalBelief> beliefUpdatesToIgnore = new Vector<MultiModalBelief>();
+
+	
+	/**
+	 * Starting the MLN-based tracker
+	 */
 	public Tracking_MLN() {
-		super(new MultiModalBelief());
-		MLNFile = markovlogicDir + "tracking.mln";
+		super();
 		resultsFile = markovlogicDir + "tracking.results";
-		correlationsFile = markovlogicDir + "tracking/similarities.mln";
-		predicatesFile = markovlogicDir
-				+ "tracking/correlations_predicates.mln";
+		beliefUpdatesToIgnore = new Vector<MultiModalBelief>();
+		trackerMLNs.put("Object", MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
+		trackerMLNs.put("object", MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
+		trackerMLNs.put("Person", MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
+		trackerMLNs.put("person", MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
 	}
 
 	
 
 	/**
-	 * Add a change filter on the insertion of new percept beliefs on the binder working memory
+	 * Add change filters on the insertion of new multi-modal beliefs on the binder working memory
 	 */
 	public void start() {
+		
+		// verifying that Alchemy has been properly compiled
+		verifyAlchemyIsPresent();
+
+		
 		// Insertion
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-					@SuppressWarnings("unchecked")
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
 
-							log("received a new percept: " + beliefData.getID());
-							performInference(beliefData.getData(), _wmc.address);
-							log("grouping operation on percept " + beliefData.getID() + " now finished");
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
+						multimodalBeliefAdded(_wmc);
 					}
 				}
 		);
 
+		
 		// Deletion
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							workingMemoryChangeDelete(_wmc.address);
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						multimodalBeliefDeleted(_wmc);
 					}
 				}
 		);
 
+		
 		// Update
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(MultiModalBelief.class,
 						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
-					@SuppressWarnings("unchecked")
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {	
-						try {
-							workingMemoryChangeDelete(_wmc.address);
-							CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(_wmc.address, MultiModalBelief.class);
-
-							if (!beliefData.getID().equals(beliefUpdateToIgnore)) {
-							log("received a new percept: " + beliefData.getID());
-							MultiModalBelief belief = beliefData.getData();
-							performInference(belief, _wmc.address);
-							log("grouping operation on percept " + beliefData.getID() + " now finished");
-							}	
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-						}
+						multimodalBeliefOverwritten(_wmc);
 					}
 				}
 		);
 	}
 
 	
-
 	/**
-	 * Create a set of new mmbelief union beliefs from the inference results,
-	 * associated with the original mmbelief
-	 * 
-	 * @param mmbelief
-	 * @param linkToExistingUnions
-	 * @param inferenceResults
-	 * @return
+	 * Verify whether the Alchemy software is present in the system
 	 */
-	@Override
-	protected Vector<Belief> createNewUnions(MultiModalBelief mmbelief,
-			WorkingMemoryAddress mmbeliefWMAddress,
-			Map<String, Belief> relevantUnions,
-			Map<String, String> unionsMapping, String newSingleUnionId,
-			Map<String, Float> inferenceResults) throws BeliefException {
-
-		// extract the existence probability of the mmbelief
-		float mmbeliefExistProb = DistributionUtils
-				.getExistenceProbability(mmbelief);
-		Vector<Belief> newUnions = new Vector<Belief>();
-		for (String id : unionsMapping.keySet()) {
-
-			if (!inferenceResults.containsKey(id)) {
-				throw new BeliefException("ERROR, id " + id
-						+ " is not in inferenceResults.  inferenceResults = "
-						+ inferenceResults.keySet().toString());
-			}
-
-			else if (!relevantUnions.containsKey(unionsMapping.get(id))) {
-				throw new BeliefException("ERROR, existing union id "
-						+ unionsMapping.get(id) + " is not in existingUnions");
-			}
-
-			float prob = mmbeliefExistProb * inferenceResults.get(id);
-			log("computed probability for new mmbelief union " + id + ": "
-					+ prob);
-
-			Belief existingUnion = relevantUnions.get(unionsMapping.get(id));
-			// try {
-			List<WorkingMemoryAddress> addresses = new LinkedList<WorkingMemoryAddress>();
-			addresses.add(mmbeliefWMAddress);
-			addresses.add(new WorkingMemoryAddress(existingUnion.id,
-					BindingWorkingMemory.BINDER_SA));
-			TemporalUnionBelief newUnion = TemporalUnionBuilder
-					.createNewDoubleUnionBelief(mmbelief, addresses,
-							existingUnion, prob, id);
-			newUnions.add(newUnion);
-			// }
-			/**
-			 * catch (BeliefException e) { e.printStackTrace(); }
-			 */
-		}
-
-		if (!inferenceResults.containsKey(newSingleUnionId)) {
-			throw new BeliefException("ERROR, id " + newSingleUnionId
-					+ " is not in inferenceResults");
-		}
-		TemporalUnionBelief newSingleUnion = TemporalUnionBuilder
-				.createNewSingleUnionBelief(mmbelief, mmbeliefWMAddress,
-						inferenceResults.get(newSingleUnionId)
-								* mmbeliefExistProb, newSingleUnionId);
-
-		newUnions.add(newSingleUnion);
-
-		return newUnions;
-	}
-
-	@Override
-	protected void updatePointersInOtherBeliefs(Belief newBelief) {
+	private void verifyAlchemyIsPresent () {
+		Runtime run = Runtime.getRuntime(); 
+		log("Verifying that Alchemy is correctly compiled...");
+		String[] args = {inferCmd};
 		try {
+			Process p = run.exec(args);
+		} catch (IOException e1) {
+			System.out.println("FATAL ERROR: tools/alchemy/bin/infer is not found.  " + 
+					"Alchemy package does not seem to be properly compiled.  Exiting...");
+			System.exit(0);
+		}
+	}
+	
+	
+	/**
+	 * Perform inference if new multi-modal belief added in the system
+	 * 
+	 * @param wmc working memory change
+	 */
+	private void multimodalBeliefAdded (WorkingMemoryChange wmc) {
+		try {
+			CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(wmc.address, MultiModalBelief.class);
 
-			if (newBelief.hist != null
-					&& newBelief.hist instanceof CASTBeliefHistory) {
+			log("received a new belief: " + beliefData.getID());
 
-				for (WorkingMemoryAddress ancestor : ((CASTBeliefHistory) newBelief.hist).ancestors) {
+			performInference(beliefData.getData(), wmc.address);
+			
+			beliefUpdatesToIgnore.add(beliefData.getData());
+			updateBeliefOnWM(beliefData.getData());
 
-					CASTData<TemporalUnionBelief>[] tunions = getWorkingMemoryEntries(TemporalUnionBelief.class);
-
-					for (int i = 0; i < tunions.length; i++) {
-						TemporalUnionBelief tunion = tunions[i].getData();
-						for (FeatureValueProbPair pointerValueInUnion : FeatureContentUtils
-								.getAllPointerValuesInBelief(tunion)) {
-							PointerValue val = (PointerValue) pointerValueInUnion.val;
-							if (val.beliefId.equals(ancestor)) {
-								Belief ancestorBelief = getMemoryEntry(
-										ancestor, Belief.class);
-								if (!ancestorBelief.getClass().equals(
-										TemporalUnionBelief.class)) {
-									((PointerValue) pointerValueInUnion.val).beliefId = new WorkingMemoryAddress(
-											newBelief.id,
-											BindingWorkingMemory.BINDER_SA);
-								} else {
-									// dirty hacks here...
-
-									// here, reducing the probability of the
-									// existing link
-									float oldProb = pointerValueInUnion.prob;
-									pointerValueInUnion.prob = (DistributionUtils
-											.getExistenceProbability(ancestorBelief) - DistributionUtils
-											.getExistenceProbability(newBelief))
-											/ DistributionUtils
-													.getExistenceProbability(ancestorBelief);
-
-									log("link from "
-											+ tunion.id
-											+ " to "
-											+ ((PointerValue) pointerValueInUnion.val).beliefId.id
-											+ " has prob. reduced from "
-											+ oldProb + " to "
-											+ pointerValueInUnion.prob);
-
-									BasicProbDistribution pointerDistrib = FeatureContentUtils
-											.getFeatureForFeatureValueInBelief(
-													tunion,
-													pointerValueInUnion.val);
-
-									if (pointerDistrib != null) {
-										// and adding a second link as well
-										FeatureContentUtils
-												.addAnotherValueInBasicProbDistribution(
-														pointerDistrib,
-														new FeatureValueProbPair(
-																new PointerValue(
-																		new WorkingMemoryAddress(
-																				newBelief.id,
-																				BindingWorkingMemory.BINDER_SA)),
-																DistributionUtils
-																		.getExistenceProbability(newBelief)
-																		/ DistributionUtils
-																				.getExistenceProbability(ancestorBelief)));
-
-										log("creation of new link from "
-												+ tunion.id
-												+ " to "
-												+ newBelief.id
-												+ " with prob. "
-												+ DistributionUtils
-														.getExistenceProbability(newBelief)
-												/ DistributionUtils
-														.getExistenceProbability(ancestorBelief));
-
-									}
-								}
-								updateBeliefOnWM(tunion);
-							}
-						}
-					}
-				}
-			}
-
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	/**
+	 * Delete the offspring of a given multi-modal belief
+	 * 
+	 * @param wmc working memory change
+	 */
+	private void multimodalBeliefDeleted (WorkingMemoryChange wmc) {
 
-	@Override
-	public void workingMemoryChangeDelete(WorkingMemoryAddress WMAddress) {
-		deleteAllMultiModalBeliefAttachedToUnion(WMAddress);
+		try {
+			CASTData<MultiModalBelief> beliefData = getMemoryEntryWithData(wmc.address, MultiModalBelief.class);
+
+			List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+			
+			for (WorkingMemoryAddress child : offspring) {
+				if (existsOnWorkingMemory(child)) {
+					deleteBeliefOnWM(child.id);
+				}
+			}
+			
+		}	
+
+		catch (Exception e) {
+			e.printStackTrace();
+		} 
 	}
+	
+	
+	/**
+	 * Perform an inference if a given multi-modal belief is overwritten (updated) in the
+	 * working memory
+	 * 
+	 * @param wmc working memory change
+	 */
+	private void multimodalBeliefOverwritten (WorkingMemoryChange wmc) {
+		
+		try {
+			CASTData<MultiModalBelief> beliefData = 
+				getMemoryEntryWithData(wmc.address, MultiModalBelief.class);
+			
+			// only perform update if the belief in not in the "ignore" list
+			if (!beliefUpdatesToIgnore.contains(beliefData.getData())) {
+				
+				List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+				
+				// looping on the list of offspring
+				for (WorkingMemoryAddress child : offspring) {
+					if (existsOnWorkingMemory(child)) {
+						log("belief " + child.id + " exists on WM, overwriting");
+						TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), wmc.address, child.id);
+					
+						updatePointers(childBelief, TemporalUnionBelief.class);
+
+						TemporalUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA), TemporalUnionBelief.class);
+						childBelief.content = mergeBeliefContent(existingBelief.content, childBelief.content);
+
+						updateBeliefOnWM(childBelief);
+					}
+					else {
+						log("belief " + child.id + " does not exist on WM, creating it");
+						TemporalUnionBelief childBelief = TemporalUnionBuilder.createNewSingleUnionBelief(beliefData.getData(), wmc.address, child.id);
+						updatePointers(childBelief, TemporalUnionBelief.class);
+						insertBeliefInWM(childBelief);
+					}
+				}
+				
+			}
+			else {
+			//	log("ignoring overwrite update (offspring change)");
+				beliefUpdatesToIgnore.remove(beliefData.getData());
+			}
+				
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+
+	/**
+	 * Perform inference on the newly added multi-modal belief (associated with its address).  
+	 * The belief pointers are first updated, then Markov Logic inference is triggered, and the results
+	 * are inserted into the working memory
+	 * 
+	 * @param belief the multi-modal belief
+	 * @param beliefWMAddress the address of the belief in the WM
+	 */
+	
+	private void performInference (MultiModalBelief belief, WorkingMemoryAddress beliefWMAddress)  {
+	
+		try {
+		// duplicate the current multi-modal belief, and update the pointers
+		MultiModalBelief beliefCopy = duplicateBelief(belief);
+		updatePointers(beliefCopy, TemporalUnionBelief.class);
+		
+		// perform the inference itself
+		List<Belief> results = performInference(beliefCopy, beliefWMAddress, getPreferences(belief));
+
+		// update an existing belief or insert a new one
+		for (Belief b : results) {
+			if (existsOnWorkingMemory(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA))) {
+				log("belief " + b.id + " exists on WM, overwriting");
+				updateBeliefOnWM(b);
+			}
+			else {
+				log("belief " + b.id + " does not exist on WM, creating it");
+				insertBeliefInWM(b);
+			}
+			addOffspring(belief, b.id);	
+		}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	/**
+	 * Get the preferences to set (tracker system etc.) for a particular belief
+	 * 
+	 * @param b the belief on which the inference is to be made
+	 * @return the preferences
+	 */
+	private MLNPreferences getPreferences(Belief b) {
+		MLNPreferences prefs = new MLNPreferences();
+		
+		prefs.setGeneratedMLNFile(generatedMLNFile);
+		
+		for (String key : trackerMLNs.keySet()) {
+			if (b.type.contains(key)) {
+				prefs.setFile_correlations(trackerMLNs.get(key));
+				prefs.activateTracking();
+			}
+		}
+
+		return prefs;
+	}
+
+	
 
 	/**
 	 * Exact the set of existing unions from the binder working memory
 	 * 
-	 * @return the set of existing unions (as a mapping from identifier to
-	 *         objects)
+	 * @return the set of existing unions (as a mapping from identifier to objects)
 	 */
 	protected HashMap<String, Belief> extractExistingUnions() {
 
@@ -322,10 +339,24 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		return existingunions;
 	}
 
-	@Override
-	protected Belief createNewSingleUnionBelief(MultiModalBelief belief,
-			WorkingMemoryAddress beliefWMAddress) throws BeliefException {
-		TemporalUnionBelief union = TemporalUnionBuilder.createNewSingleUnionBelief(belief, beliefWMAddress, newDataID());
-		return union;
+	
+	/**
+	 * Select the relevant set of unions on which to track the new belief, based on the
+	 * belief types (which must be identical).
+	 * 
+	 */
+	protected Map<String,Belief> selectRelevantUnions(Map<String, Belief> existingUnions, 
+			MultiModalBelief belief) throws BeliefException {
+		
+		Map<String,Belief> relevantUnions = new HashMap<String,Belief>();
+		
+		for (String existingUnionId: existingUnions.keySet()) {
+			Belief existingUnion = existingUnions.get(existingUnionId);
+			if (existingUnion.type.equals(belief.type)) {
+				relevantUnions.put(existingUnionId, existingUnion);
+			}
+		}
+		return relevantUnions;
 	}
+
 }

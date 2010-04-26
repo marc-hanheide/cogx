@@ -75,17 +75,17 @@ class Task(object):
         s = state.State([], self._mapltask)
         for i in self._mapltask.init:
             #determinise probabilistic init conditions
-            if isinstance(i, pddl.effects.ProbabilisticEffect):
-                for p, eff in i.effects:
-                    facts = s.get_effect_facts(eff)
-                    for svar, value in facts.iteritems():
-                        if not isinstance(svar, pddl.Predicate) and svar.modality is None:
-                            if svar in s:
-                                del s[svar]
-                            id_var = svar.as_modality(mapl.i_indomain, [value])
-                            s[id_var] = pddl.TRUE
-            else:
-                s.set(state.Fact.from_literal(i))
+            # if isinstance(i, pddl.effects.ProbabilisticEffect):
+            #     for p, eff in i.effects:
+            #         facts = s.get_effect_facts(eff)
+            #         for svar, value in facts.iteritems():
+            #             if not isinstance(svar, pddl.Predicate) and svar.modality is None:
+            #                 if svar in s:
+            #                     del s[svar]
+            #                 id_var = svar.as_modality(mapl.i_indomain, [value])
+            #                 s[id_var] = pddl.TRUE
+            # else:
+            s.set(state.Fact.from_literal(i))
         self._state = s
 
     def mark_changed(self):

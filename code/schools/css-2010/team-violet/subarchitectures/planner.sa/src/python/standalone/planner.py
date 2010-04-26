@@ -583,10 +583,23 @@ class TFD(BasePlanner):
 if __name__ == '__main__':    
     assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""
     domain_fn, problem_fn = sys.argv[1:]
-    task = Task()
+    _task = Task()
     planner = Planner()
-    task.load_mapl_domain(domain_fn)
-    task.load_mapl_problem(problem_fn)
-    planner._start_planner(task)
-    planner._evaluate_current_plan(task)
-    plan = task.get_plan()
+    _task.load_mapl_domain(domain_fn)
+    _task.load_mapl_problem(problem_fn)
+    planner._start_planner(_task)
+    planner._evaluate_current_plan(_task)
+    plan = _task.get_plan()
+    ordered_plan = plan.topological_sort()
+    for p in ordered_plan:
+        print p
+
+    G = plan.to_dot()
+    dot_fn = "plan.dot"
+    G.write(dot_fn)
+    log.debug("Dot file for plan is stored in %s", dot_fn)
+    
+    log.info("Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh")
+    show_dot_script = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "show_dot.sh")
+    os.system("%s %s" % (show_dot_script, dot_fn)) 
+        

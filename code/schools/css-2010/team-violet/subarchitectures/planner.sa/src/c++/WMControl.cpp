@@ -6,8 +6,8 @@
 #include <boost/foreach.hpp>
 
 using namespace std;
+using namespace beliefmodels::autogen;
 using namespace beliefmodels::autogen::beliefs;
-using namespace beliefmodels::autogen::history;
 using namespace cast::cdl;
 
 extern "C" {
@@ -45,7 +45,7 @@ void WMControl::start() {
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
-    addChangeFilter(cast::createGlobalTypeFilter<PerceptBelief>(cast::cdl::WILDCARD),
+    addChangeFilter(cast::createGlobalTypeFilter<StableBelief>(cast::cdl::WILDCARD),
             new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
 
     connectToPythonServer();
@@ -314,23 +314,39 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
 void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
     BOOST_FOREACH(BeliefPtr bel, beliefs) {
         try {
-            WorkingMemoryAddress wma;
-            wma.id = bel->id;
-            wma.subarchitecture = BINDER_SA;
-			if (existsOnWorkingMemory(wma)) {
-				BeliefPtr oldBelief = getMemoryEntry<Belief>(wma);
+            if (bel->id == "temporary") {
+                CASTTime time = getCASTTime();
+                framing::TemporalInterval interval;
+                interval.startTime = time;
+                interval.endTime = time;
+                bel->frame = new framing::SimpleSpatioTemporalFrame("here", interval);
+                bel->id = newDataID();
+
+                WorkingMemoryAddress wma;
+                wma.id = bel->id;
+                wma.subarchitecture = BINDER_SA;
+                addToWorkingMemory(wma, bel);
+                log("added belief  %s to working memory", bel->id.c_str());
+            }
+            else {
+                WorkingMemoryAddress wma;
+                wma.id = bel->id;
+                wma.subarchitecture = BINDER_SA;
+                if (existsOnWorkingMemory(wma)) {
+                    BeliefPtr oldBelief = getMemoryEntry<Belief>(wma);
 				
-                CASTBeliefHistoryPtr hist = dynamic_cast<CASTBeliefHistory*>(bel->hist.get());
-                CASTBeliefHistoryPtr oldHist = dynamic_cast<CASTBeliefHistory*>(oldBelief->hist.get());
-                if (hist && oldHist) {
-                    hist->offspring = oldHist->offspring;
-                    overwriteWorkingMemory(wma, bel);
-                    log("existing belief  %s updated on the working memory", bel->id.c_str());
+                    history::CASTBeliefHistoryPtr hist = dynamic_cast<history::CASTBeliefHistory*>(bel->hist.get());
+                    history::CASTBeliefHistoryPtr oldHist = dynamic_cast<history::CASTBeliefHistory*>(oldBelief->hist.get());
+                    if (hist && oldHist) {
+                        hist->offspring = oldHist->offspring;
+                        overwriteWorkingMemory(wma, bel);
+                        log("existing belief  %s updated on the working memory", bel->id.c_str());
+                    }
+                    else {
+                        log("ERROR: no history found.");
+                    }
                 }
-                else {
-                    log("ERROR: no history found.");
-                }
-			}
+            }
         //     WorkingMemoryAddress wma;
         //     wma.id = bel->id;
         //     wma.subarchitecture = BINDER_SA;
