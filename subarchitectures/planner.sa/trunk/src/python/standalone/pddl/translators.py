@@ -594,9 +594,9 @@ class MAPLCompiler(Translator):
 
         def visitor(eff, results):
             if isinstance(eff, effects.SimpleEffect):
-                if (eff.predicate == mapl.update):
+                if eff.predicate in (mapl.update, mapl.update_fail):
                     return None
-                if (eff.predicate == mapl.knowledge):
+                if eff.predicate == mapl.knowledge:
                     e2 = eff.copy()
                     e2.predicate = mapl.direct_knowledge
                     return e2
