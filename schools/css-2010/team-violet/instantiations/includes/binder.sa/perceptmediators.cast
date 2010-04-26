@@ -14,4 +14,4 @@ JAVA MG pm-place-conn 	binder.perceptmediator.components.PlaceConnectivityMediat
 #JAVA MG pm-agent-rel 	binder.perceptmediator.components.PlaceContainmentAgentMediator --debug
 #JAVA MG pm-person-rel 	binder.perceptmediator.components.PersonRelationMediator --debug
 #JAVA MG pm-object-rel 	binder.perceptmediator.components.VisualObjectRelationMediator --debug
-JAVA MG pm-room-rel 	binder.perceptmediator.components.RoomRelationMediator --debug
+#JAVA MG pm-room-rel 	binder.perceptmediator.components.RoomRelationMediator --debug

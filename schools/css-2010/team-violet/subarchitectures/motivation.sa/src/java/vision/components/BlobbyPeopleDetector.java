@@ -56,6 +56,7 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	private int m_imageXCentre;
 	private OperationPerformer m_performer;
 	private WMTypeAlignment<BlobInfo, Person> m_aligner;
+	static int blobCounter=0;
 
 	private final class BlobInfo2PersonConverter implements
 			Converter<BlobInfo, Person> {
@@ -101,7 +102,9 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 
 	private final class BlobInfoHasher implements HashCoder<BlobInfo> {
 		public int hashCode(BlobInfo _t) {
-			return _t.id;
+			// each blob is a new blob for us...
+			return blobCounter++;
+			//			return _t.id;
 		}
 	}
 

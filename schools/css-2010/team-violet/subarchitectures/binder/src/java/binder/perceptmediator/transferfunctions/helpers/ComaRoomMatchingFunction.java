@@ -8,6 +8,7 @@ import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.featurecontent.StringValue;
+import binder.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMContentWaiter.ContentMatchingFunction;
 
@@ -22,7 +23,7 @@ public class ComaRoomMatchingFunction implements
 
 	@Override
 	public boolean matches(PerceptBelief r) {
-		if (r.type.equals(CASTUtils.typeName(ComaRoom.class))) {
+		if (r.type.equals(SimpleDiscreteTransferFunction.getBeliefTypeFromCastType(ComaRoom.class))) {
 			assert (r.content instanceof CondIndependentDistribs);
 			CondIndependentDistribs dist = (CondIndependentDistribs) r.content;
 			BasicProbDistribution fv = (BasicProbDistribution) dist.distribs.get("RoomId");

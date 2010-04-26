@@ -6,10 +6,12 @@ package binder.perceptmediator.transferfunctions.abstr;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import SpatialData.Place;
 import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
@@ -66,11 +68,12 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 		assert (perceptBelief.content != null);
 		assert (perceptBelief.content instanceof CondIndependentDistribs);
 		{
-			String offsprings="";
+			String offsprings = "";
 			for (WorkingMemoryAddress offspringWMA : ((CASTBeliefHistory) perceptBelief.hist).offspring) {
 				offsprings += " " + offspringWMA.id;
 			}
-			component.println("offspring BEFORE transformation occurs:"+offsprings);
+			component.println("offspring BEFORE transformation occurs:"
+					+ offsprings);
 		}
 
 		CondIndependentDistribs features = (CondIndependentDistribs) perceptBelief.content;
@@ -88,11 +91,12 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			component.logException(e);
 		}
 		{
-			String offsprings="";
+			String offsprings = "";
 			for (WorkingMemoryAddress offspringWMA : ((CASTBeliefHistory) perceptBelief.hist).offspring) {
 				offsprings += " " + offspringWMA.id;
 			}
-			component.println("offspring AFTER transformation occured:" + offsprings);
+			component.println("offspring AFTER transformation occured:"
+					+ offsprings);
 		}
 		return true;
 	}
@@ -161,9 +165,10 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 					.createNewCondIndependentDistribs();
 
 			PerceptBelief pb;
-			pb = PerceptBuilder.createNewPerceptBelief(idToCreate.id, wmc.type,
-					"here", CASTUtils.getTimeServer().getCASTTime(), features,
-					hist);
+
+			pb = PerceptBuilder.createNewPerceptBelief(idToCreate.id,
+					getBeliefTypeFromCastType(wmc.type), "here", CASTUtils
+							.getTimeServer().getCASTTime(), features, hist);
 			return pb;
 		} catch (BeliefException e) {
 			component.logException(e);
@@ -172,4 +177,15 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 
 	}
 
+	public static String getBeliefTypeFromCastType(String casttype) {
+		StringTokenizer st = new StringTokenizer(casttype, ":");
+		String type = casttype.toLowerCase();
+		while (st.hasMoreTokens())
+			type = st.nextToken();
+		return type;
+	}
+
+	public static Object getBeliefTypeFromCastType(Class<? extends Ice.Object> class1) {
+		return getBeliefTypeFromCastType(CASTUtils.typeName(class1));
+	}
 }

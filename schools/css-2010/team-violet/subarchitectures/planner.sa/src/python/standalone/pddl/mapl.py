@@ -24,11 +24,17 @@ direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", ty
 p = Parameter("?f", types.FunctionType(t_object))
 indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 p = Parameter("?f", types.FunctionType(t_object))
-i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+#i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+not_indomain = Predicate("not_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+
+p = Parameter("?f", types.FunctionType(t_object))
+update = Predicate("update", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
+p = Parameter("?f", types.FunctionType(t_object))
+update_fail = Predicate("update-failed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
 shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
 
-modal_predicates = [knowledge, shared_knowledge, indomain, direct_knowledge, i_indomain]
+modal_predicates = [knowledge, shared_knowledge, indomain, direct_knowledge, not_indomain, update, update_fail]
 
 is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", t_agent)], builtin=True)
 achieved = Predicate("achieved", [Parameter("?sg", t_subgoal)], builtin=True)
@@ -51,7 +57,7 @@ kval_axiom = """
 in_domain_axiom = """
 (:derived (in-domain ?svar - (function object) ?val - (typeof ?svar))
           (or (= ?svar ?val)
-              (and (i_in-domain ?svar ?val)
+              (and (not (not_in-domain ?svar ?val))
                    (not (exists (?val2 - (typeof ?svar)) (= ?svar ?val2))))
           )
 )
