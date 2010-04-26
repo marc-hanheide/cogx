@@ -21,10 +21,9 @@ class Task(object):
     """
     """
 
-    def __init__(self, fdwriter = None, taskID=0, mapltask = None, add_assertions = False):
+    def __init__(self, taskID=0, mapltask = None, add_assertions = False):
         """Initialise public and private fields."""
         # public
-        self.FDWriter = fdwriter
         self.taskID = taskID
         self.statistics = statistics.Statistics(statistics_defaults)
         self._mapltask = mapltask
@@ -58,12 +57,6 @@ class Task(object):
     @property
     def mapldomain(self):
         return self._mapldomain
-
-    def fdwriter(self):
-        return self.FDWriter
-
-    def set_fdwriter(self, fdwriter):
-        self.FDWriter = fdwriter
 
     def add_assertions(self):
         new_assertions = []
