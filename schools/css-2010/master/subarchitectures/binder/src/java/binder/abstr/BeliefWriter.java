@@ -20,7 +20,6 @@
 package binder.abstr;
 
 import beliefmodels.autogen.beliefs.Belief;
-import beliefmodels.autogen.history.CASTBeliefHistory;
 import binder.arch.BindingWorkingMemory;
 import binder.interfaces.BeliefWriterInterface;
 import cast.AlreadyExistsOnWMException;
@@ -33,10 +32,9 @@ import cast.cdl.WorkingMemoryAddress;
  
 /**
  * 
- * NOTE: we should here add various checks to ensure the beliefs are well-formed, and maybe include
- * filters as well
+ * General method for inserting, updating and deleting beliefs in the working memory
  * 
- * @author plison
+ * @author Pierre Lison (plison@dfki.de)
  *
  */
 public class BeliefWriter extends ManagedComponent implements BeliefWriterInterface {
@@ -74,14 +72,16 @@ public class BeliefWriter extends ManagedComponent implements BeliefWriterInterf
 	 * @pre the WM must include an existing belief with the same identifier
 	 * @post belief on the WM is replaced
 	 */  
-	public void updateBeliefOnWM (Belief belief) throws DoesNotExistOnWMException, PermissionException, ConsistencyException {
+	public void updateBeliefOnWM (Belief belief) 
+		throws DoesNotExistOnWMException, PermissionException, ConsistencyException {
 		
 		try {
 			if (existsOnWorkingMemory(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA))) {
 				
 				Belief oldBelief = 
-					getMemoryEntry(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA), Belief.class);
-				
+					getMemoryEntry(new WorkingMemoryAddress(belief.id, BindingWorkingMemory.BINDER_SA), belief.getClass());
+			
+		//		log("oldBelief ID: " + oldBelief.id);
 		//		((CASTBeliefHistory)belief.hist).offspring = ((CASTBeliefHistory)oldBelief.hist).offspring;
 				oldBelief.content = belief.content;
 				oldBelief.frame = belief.frame;
