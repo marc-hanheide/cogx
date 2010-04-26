@@ -82,7 +82,9 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		resultsFile = markovlogicDir + "tracking.results";
 		beliefUpdatesToIgnore = new Vector<MultiModalBelief>();
 		trackerMLNs.put("Object", MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
+		trackerMLNs.put("object", MLNPreferences.markovlogicDir + "tracking/tracking-objects.mln");
 		trackerMLNs.put("Person", MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
+		trackerMLNs.put("person", MLNPreferences.markovlogicDir + "tracking/tracking-persons.mln");
 	}
 
 	
