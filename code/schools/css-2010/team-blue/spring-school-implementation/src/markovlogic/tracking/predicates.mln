@@ -6,6 +6,7 @@
 Existence(belief)
 Type(belief,typeval)
 Is-in(belief,is-inval)
+Label(belief,labelval)
 
 Outcome(outcome)
 UnifyWith(existingunion)
