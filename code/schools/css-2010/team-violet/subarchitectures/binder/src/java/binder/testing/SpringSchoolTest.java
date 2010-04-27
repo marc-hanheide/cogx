@@ -166,14 +166,19 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			BasicProbDistribution locationDistrib_b4 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("is-in", 
 					new FeatureValueProbPair(FeatureValueBuilder.createNewPointerValue(new WorkingMemoryAddress(b1.id, BindingWorkingMemory.BINDER_SA)), 0.93f));
-
+			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b4, locationDistrib_b4);
+
+			BasicProbDistribution distDistrib_b4 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("is-in", 
+					new FeatureValueProbPair(FeatureValueBuilder.createNewFloatValue(0.4f), 1.0f));
+			
+			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b4, distDistrib_b4);
 
 			ProbDistribution content_b4 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
 
 			PerceptBelief b4 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b4, hist_b4);
 
-		//	insertBeliefInWM(b4);
+			insertBeliefInWM(b4);
 
 
 
@@ -187,15 +192,15 @@ public class SpringSchoolTest extends AbstractBinderTest {
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b5, locationDistrib_b5);
 
 			ProbDistribution content_b5 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b5);
-
+	
 			BasicProbDistribution distanceDistrib_b5 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("distance", 
-					new FeatureValueProbPair(FeatureValueBuilder.createNewFloatValue(0.67f), 0.95f));
+					new FeatureValueProbPair(FeatureValueBuilder.createNewFloatValue(0.67f), 1.0f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b5, distanceDistrib_b5); 
 	
 			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b5, hist_b5);
 
-		//	insertBeliefInWM(b5);
+			insertBeliefInWM(b5);
 					
 		//	updateBeliefOnWM(b5);
 
