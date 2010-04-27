@@ -19,8 +19,8 @@
 )
 
 (:goal (and
-	   (forall (?p - place) (= (explored ?p) true))
-;;	   (forall (?p - place) (kval R2D2 (place_type ?p)))
+
+	   (forall (?p - place) (kval R2D2 (place_type ?p)))
 )
 
 ))
