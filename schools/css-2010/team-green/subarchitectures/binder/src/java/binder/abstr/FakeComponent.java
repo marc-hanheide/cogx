@@ -17,9 +17,25 @@ import binder.arch.BindingWorkingMemory;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTData;
 
+
+/**
+ * Abstract class for a fake binder component
+ * 
+ * @author Pierre Lison (plison@dfki.de)
+ *
+ */
 public abstract class FakeComponent extends BeliefWriter {
 
 
+	/**
+	 * Updating the pointers in the belief, in case the currently pointed-at belief
+	 * has a new offspring
+	 * 
+	 * @param <Type> the type of belief
+	 * @param newlyConstructedBelief the belief to modify
+	 * @param cls the belief class
+	 */
+	
 	protected <Type extends Belief> void updatePointers
 	(Belief newlyConstructedBelief, Class<Type> cls) {
 
@@ -29,12 +45,24 @@ public abstract class FakeComponent extends BeliefWriter {
 	}
 
 
+	/**
+	 * add the newBeliefId to the list of offspring in the belief
+	 * 
+	 * @param oldBelief the belief in which to add the offspring
+	 * @param newBeliefId the belief identifier to add
+	 */
 	protected void addOffspring (Belief oldBelief, String newBeliefId) {
 		addOffspring(oldBelief, new WorkingMemoryAddress(newBeliefId, 
 				BindingWorkingMemory.BINDER_SA));
 	}
 
 
+	/**
+	 * add a set of new belief identifiers to the belief
+	 *
+	 * @param oldBelief the belief in which to add the offspring
+	 * @param newBeliefIds the list of belief identifiers to add
+	 */
 	protected void addOffspring (Belief oldBelief, List<String> newBeliefIds) {
 		for (String newBeliefId : newBeliefIds) {
 			addOffspring(oldBelief, new WorkingMemoryAddress(newBeliefId, 
@@ -43,19 +71,31 @@ public abstract class FakeComponent extends BeliefWriter {
 	}
 
 
-	protected void addOffspring (Belief oldBelief, WorkingMemoryAddress addressUnion) {
+	/**
+	 * add the working memory address as offspring in the belief
+	 * 
+	 * @param oldBelief the belief in which to add the offspring
+	 * @param address the address to add in the offspring set 
+	 */
+	protected void addOffspring (Belief oldBelief, WorkingMemoryAddress address) {
 
 		if (oldBelief.hist != null && oldBelief.hist instanceof CASTBeliefHistory) {
-			((CASTBeliefHistory)oldBelief.hist).offspring.add(addressUnion);
+			((CASTBeliefHistory)oldBelief.hist).offspring.add(address);
 		}
 		else {
 			log("WARNING: offspring of percept is ill-formed");
 			oldBelief.hist = new CASTBeliefHistory(new LinkedList<WorkingMemoryAddress>(), new LinkedList<WorkingMemoryAddress>());
-			((CASTBeliefHistory)oldBelief.hist).offspring.add(addressUnion);
+			((CASTBeliefHistory)oldBelief.hist).offspring.add(address);
 		}
 	}
 
 
+	/**
+	 * Update the pointers in the current belief to make them point to the most
+	 * recent "version" of their belief (i.e. take the offspring of the currently pointed-to belief)
+	 * 
+	 * @param newBelief the belief to update
+	 */
 	protected void updatePointersInCurrentBelief (Belief newBelief) {
 		try {
 
@@ -83,16 +123,21 @@ public abstract class FakeComponent extends BeliefWriter {
 	}
 
 
-
-
-
-
+	/**
+	 * Merge the two distribution distribA and distribB into one
+	 * 
+	 * @param distribA the first distribution
+	 * @param distribB the second distribution
+	 * @return the merged distribution
+	 */
 	protected ProbDistribution mergeBeliefContent (ProbDistribution distribA, ProbDistribution distribB) {
 
 		try {
 			ProbDistribution distrib1 = FeatureContentUtils.duplicateContent(distribA);
 			ProbDistribution distrib2 = FeatureContentUtils.duplicateContent(distribB);
 
+			// Case 1: conditionally independent distributions
+			
 			if (distrib1 instanceof CondIndependentDistribs && distrib2 instanceof CondIndependentDistribs) {
 				
 				CondIndependentDistribs merge = BeliefContentBuilder.createNewCondIndependentDistribs();
@@ -107,6 +152,9 @@ public abstract class FakeComponent extends BeliefWriter {
 				}
 				return merge;
 			}
+			
+			// Case 2: distribution with existence dependency
+			
 			else if (distrib1 instanceof DistributionWithExistDep && distrib2 instanceof DistributionWithExistDep) {
 				
 				CondIndependentDistribs merge = BeliefContentBuilder.createNewCondIndependentDistribs();
@@ -120,7 +168,8 @@ public abstract class FakeComponent extends BeliefWriter {
 					(merge, (BasicProbDistribution)((CondIndependentDistribs)((DistributionWithExistDep)distrib2).Pc).distribs.get(key));
 				}
 				
-				DistributionWithExistDep mergeWithExist = BeliefContentBuilder.createNewDistributionWithExistDep(((DistributionWithExistDep)distrib1).existProb, merge);
+				DistributionWithExistDep mergeWithExist = 
+					BeliefContentBuilder.createNewDistributionWithExistDep(((DistributionWithExistDep)distrib1).existProb, merge);
 				
 				return mergeWithExist;
 			}
@@ -132,6 +181,15 @@ public abstract class FakeComponent extends BeliefWriter {
 
 	}
 
+	
+	/**
+	 * Update the pointers included in the other beliefs which are outdated
+	 * NOTE: currently broken/untested
+	 * 
+	 * @param <T>
+	 * @param newBelief
+	 * @param cls
+	 */
 	private <T extends Belief> void updatePointersInOtherBeliefs 
 	(Belief newBelief, Class<T> cls) {
 		try {
