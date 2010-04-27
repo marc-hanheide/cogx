@@ -81,7 +81,7 @@ public class BlobjectDetector extends ManagedComponent implements
 				VisualObject obj = VisionUtils.newVisualObject();
 				obj.label = label;
 				obj.detectionConfidence = 0f;
-				addToWorkingMemory(newDataID(), obj);
+//				addToWorkingMemory(newDataID(), obj);
 			}
 		} else {
 			log("there are some blobs around");
@@ -105,11 +105,12 @@ public class BlobjectDetector extends ManagedComponent implements
 						if (blob.colour.equals(rgb)) {
 							println("  YES, found an object");
 							obj.detectionConfidence = 1f;
+							addToWorkingMemory(newDataID(), obj);
 							break;
 						}
 					}
 				}
-				addToWorkingMemory(newDataID(), obj);
+				
 			}
 		}
 
