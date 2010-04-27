@@ -1,6 +1,10 @@
 ;;; ======================================================================================
 ;;; DOMAIN for the ORANGE team (gj@dfki.de) (version 1)
 ;;;
+;;;
+;;; The domain defines a robot "orange" and visual objects "james jesusjones chakakahn heartbreaker"
+;;; The robot initializes all objects as NOT being found. 
+;;;
 ;;; This domain can be tested with the following goals, using [ move1.problem.mapl ] 
 ;;; 
 ;;; * move to place p4 -- (:goal (= (is-in dora) p4))
@@ -22,6 +26,19 @@
 	visualobject - movable
 )
 	
+(:objects
+	orange	- robot
+	james jesusjones chakakahn heartbreaker - visualobject
+)
+
+(:init
+	(= (found james) false)
+	(= (found jesusjones) false)
+	(= (found chakakahn) false)
+	(= (found heartbreaker) false)
+)
+
+
 ;;; ======================================================================================
 ;;; PREDICATES
 ;;; ----------
@@ -31,6 +48,7 @@
 (:predicates
 	(connected ?n1 - place ?n2 - place)
 )	
+
 ;;; ======================================================================================
 ;;; FUNCTIONS
 ;;; functions can be updated, and as such yield a belief in the belief model on the binder
@@ -39,7 +57,8 @@
 ;;; visited: 	records whether a place has been visited (boolean)
 ;;; searched:	records whether a place has been searched for objects (boolean)
 ;;; searched-human: records whether a place has been search for people (boolean)
-;;; 
+;;; found:      records whether a movable object has been found
+;;; located: 	records the place where a movable object has been found
 ;;; ======================================================================================
 
 (:functions
@@ -47,6 +66,8 @@
 	(visited ?p - place) - boolean 	
 	(searched ?p - place) - boolean
 	(searched-human ?p - place) - boolean
+	(found ?p - movable) - boolean
+	(located ?p - movable) - place
 )
 
 ;;; ======================================================================================	
@@ -58,6 +79,7 @@
 ;;; 		action in that place, and marks and updates the place as searched.  	
 ;;; look-for-people: given that the robot is in a place, the action performs a look-for-people
 ;;; 		action in that place, and marks and updates the place as searched-human  
+;;; 
 ;;; ======================================================================================	
 
 
@@ -100,8 +122,5 @@
 	 	 	(update (searched-human ?p) true)			
 			)
 ) ;;; look-for-people
-
-
-
 
 ) ;;; end domain
