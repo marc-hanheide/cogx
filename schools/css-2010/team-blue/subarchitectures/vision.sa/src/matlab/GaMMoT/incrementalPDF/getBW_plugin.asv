@@ -1,0 +1,35 @@
+function covariance = getBW_plugin( kernel_pdf, prior_adapt, sg, n_sg ) 
+% Matej Kristan (2007)
+%
+% A plug in rule for bandwidth selection uder a Gaussian
+% assumption
+%
+it_max = 5 ;
+d = rows(kernel_pdf.mu) ;
+
+N_eff = n_sg ;
+Const1 = ((4 / ( d + 2 ))/N_eff)^(2/(d+4)) ;
+% initialize covariance
+C0 = getSilvermanBWfromGaussian( sg, n_sg ) ;
+% iterate until convergence
+for i = 1 : it_max
+    
+    
+    C1 = C0*Const1 ;
+    s = ((C0 - C1).^2)/d^2 ;
+    if ( s < tol ) break ; end
+    C0 = C1 ;
+end
+covariance = C1 ;
+
+
+
+% --------------------------------------------------------- % 
+function kernel_pdf = augmentMixtureWithCurrentData( kernel_pdf, prior_adapt, covariance, x_new ) 
+kernel_pdf.mu = [ kernel_pdf.mu, x_new ] ;
+kernel_pdf.weights = [ kernel_pdf.weights*kernel_pdf.components*(1-prior_adapt), 1.0*1.0*prior_adapt ] ; 
+kernel_pdf.weights  = kernel_pdf.weights  / sum(kernel_pdf.weights ) ;
+kernel_pdf.covariances = [ kernel_pdf.covariances; covariance ] ;
+kernel_pdf.components = kernel_pdf.components + 1.0 ;
+kernel_pdf.weights = kernel_pdf.weights / sum(kernel_pdf.weights) ;
+    
