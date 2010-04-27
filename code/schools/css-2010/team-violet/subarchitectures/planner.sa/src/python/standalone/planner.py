@@ -10,7 +10,7 @@ import config, utils
 import globals as global_vars
 
 import task
-from task import PlanningStatusEnum, Task
+from task import PlanningStatusEnum, Task, FDWriter
 import pddl
 import plans
 import plan_postprocess
@@ -380,7 +380,7 @@ class Downward(BasePlanner):
 
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "output.sas", "output", "sas_plan", "stdout.out")]
 
-        w = task.FDWriter()
+        w = task.fdwriter()
         dom_str = "\n".join(w.write_domain(_task.mapltask.domain))
         prob_str = "\n".join(w.write_problem(_task.mapltask))
         mutex_str = "\n".join(w.write_mutex(w.mutex_groups))
@@ -419,7 +419,7 @@ class Downward(BasePlanner):
         output.write(prep_out)
         log.debug("preprocess output:")
         log.debug(prep_out)
-        
+     
         if proc.returncode != 0:
             utils.print_errors(proc, cmd, prep_out, "Fast Downward Preprocess")
             return None
@@ -430,6 +430,8 @@ class Downward(BasePlanner):
         output.write(search_out)
         log.debug("search output:")
         log.debug(search_out)
+
+        print search_out
         
         if proc.returncode != 0:
             utils.print_errors(proc, cmd, search_out, "Fast Downward Search")
@@ -582,24 +584,14 @@ class TFD(BasePlanner):
             
 if __name__ == '__main__':    
     assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""
-    domain_fn, problem_fn = sys.argv[1:]
-    _task = Task()
-    planner = Planner()
-    _task.load_mapl_domain(domain_fn)
-    _task.load_mapl_problem(problem_fn)
-    planner._start_planner(_task)
-    planner._evaluate_current_plan(_task)
-    plan = _task.get_plan()
-    ordered_plan = plan.topological_sort()
-    for p in ordered_plan:
-        print p
 
-    G = plan.to_dot()
-    dot_fn = "plan.dot"
-    G.write(dot_fn)
-    log.debug("Dot file for plan is stored in %s", dot_fn)
-    
-    log.info("Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh")
-    show_dot_script = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "show_dot.sh")
-    os.system("%s %s" % (show_dot_script, dot_fn)) 
-        
+    domain_fn, problem_fn = sys.argv[1:]
+    fdwrtier = FDWriter()
+    task = Task()
+    task.set_fdwriter(fdwrtier)
+    planner = Planner()
+    task.load_mapl_domain(domain_fn)
+    task.load_mapl_problem(problem_fn)
+    planner._start_planner(task)
+    planner._evaluate_current_plan(task)
+    plan = task.get_plan()
