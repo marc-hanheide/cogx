@@ -16,5 +16,6 @@
     )
 
     ;;; (:goal (= (is-in dora) p4)) ;;;
-    (:goal (forall (?p - place) (= (visited ?p) true) ))
+    ;;; (:goal (forall (?p - place) (= (visited ?p) true) ))
+    (:goal (forall (?p - place) (= (searched ?p) true) ))
 )
