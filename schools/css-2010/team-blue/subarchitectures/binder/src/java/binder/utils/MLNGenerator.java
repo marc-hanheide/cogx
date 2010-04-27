@@ -25,6 +25,7 @@ import beliefmodels.autogen.distribs.NormalValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.featurecontent.BooleanValue;
 import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.FloatValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import beliefmodels.autogen.featurecontent.StringValue;
@@ -543,6 +544,16 @@ public class MLNGenerator {
 		}
 	}
 
+	private boolean doesNotContainUnsupportedValues(BasicProbDistribution distrib) {
+		if (distrib.values instanceof FeatureValues) {
+			for (FeatureValueProbPair pair: ((FeatureValues)distrib.values).values) {
+				if (pair.val instanceof FloatValue) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 	/**
 	 * 
 	 * @param distrib
@@ -553,6 +564,8 @@ public class MLNGenerator {
 		if(distrib == null) {
 			throw new MLException("Dsitribution reference is NULL");
 		}
+		
+		if (doesNotContainUnsupportedValues(distrib)) {
 		
 		String keyWithUppercase = setFirstLetterToUppercase(distrib.key);
 		predicatesForCurrentBelief.add(keyWithUppercase);
@@ -569,6 +582,7 @@ public class MLNGenerator {
 		}
 		names_for_type.get(keyWithUppercase).add("Unknown");
 		names_for_type.get(keyWithUppercase).add("None");
+		}
 	}
 
 	/**
@@ -800,6 +814,7 @@ public class MLNGenerator {
 
 		// now we need to add the hard constraint for all the names
 		// that have not appeared for the predicate feature
+		if (names_for_type.containsKey(setFirstLetterToUppercase(feature))) {
 		Set<String> non_occuring_values = new TreeSet<String>(names_for_type.get(setFirstLetterToUppercase(feature)));
 		non_occuring_values.remove("None");
 		non_occuring_values.removeAll(occuring_values);
@@ -815,7 +830,7 @@ public class MLNGenerator {
 		none_formula.setSharp();
 		none_formula.setOpAddImp();
 		formulae.add(none_formula);
-
+		}
 		return formulae;
 	}
 	
