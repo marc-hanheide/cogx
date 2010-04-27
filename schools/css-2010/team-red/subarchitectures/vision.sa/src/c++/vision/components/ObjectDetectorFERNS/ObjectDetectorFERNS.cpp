@@ -560,10 +560,21 @@ void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
     postObjectToWM_Internal(i, image);
 }
 
+namespace Unlikely_Reused{
+  std::set<std::string> previous_postings;
+}
+
 void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
     const Video::Image &image)
 {
   VisualObjectPtr obj = createVisualObject(i, image);
+
+  if(obj->detectionConfidence < 0.1) return;
+
+  if( Unlikely_Reused::previous_postings.find(obj->label)
+      != Unlikely_Reused::previous_postings.end()) return;
+
+  Unlikely_Reused::previous_postings.insert(obj->label);
 
   // if no WM ID yet for that object
   if(objWMIds[i] == "")
