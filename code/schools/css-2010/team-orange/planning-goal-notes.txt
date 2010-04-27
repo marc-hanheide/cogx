@@ -1,12 +1,23 @@
 PLANNER NOTES
 
-* robot is in ?X: move ?robot ?to ?from
+[ orange-0.domain.map ] testable in standalone with [ move1.problem.mapl ] 
 
-(is-in robot place_id2)
+* move to place p4 
 
-* all places ?X have been visited: move, with (update (visited ?to) true)
- 
-(forall (?p place) (visited ?p))
+(:goal (= (is-in dora) p4))
+
+* visit all places 
+
+(:goal (forall (?p - place) (= (visited ?p) true) ))
+
+* look for objects in all places 
+
+(:goal (forall (?p - place) (= (searched ?p) true) ))
+
+
+
+
+
 
 * place location for one human is known: 
 
@@ -31,6 +42,5 @@ PLANNER NOTES
 // can't just require that the robot knows the place because that's by default
 
 * room names for place locations for all objects are known: whenever an object is found, ensure you know the place name, do this buy asking, which means that we need to know where there is a human 
-
 
 (exists (?r robot) (forall (?o object) (?p place) (kval ?r (is-in ?o ?p)) (visited ?p) (kval ?r (name ?p))))
