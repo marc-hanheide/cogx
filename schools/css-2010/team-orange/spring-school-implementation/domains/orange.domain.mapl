@@ -1,58 +1,58 @@
-
-
-;;; ============================ ;;;
-;;; DOMAIN MODEL FOR TEAM ORANGE ;;;
-;;; ============================ ;;;
-
-
 (define (domain cogx)
 
 (:requirements :mapl :adl :object-fluents)
-
-;;; TYPES ;;;
 	
-(:types
-    place - object
-    robot - agent
-    robot - movable
+(:types 
+	place - object
+	robot - agent
+	robot - movable
 )
-
-;;; PREDICATES ;;;
+	
+;;; ======================================================================================
+;;; PREDICATES
+;;; ----------
+;;; connected:	asserts that there is a directed connected from place ?n1 to place ?n2
+;;; ======================================================================================
 
 (:predicates
-    (connected ?f - place ?t - place)
-    (occupied ?p - place)
+	(connected ?n1 - place ?n2 - place)
 )	
-
-
-;;; FUNCTIONS  ;;;
+;;; ======================================================================================
+;;; FUNCTIONS
+;;; functions can be updated, and as such yield a belief in the belief model on the binder
+;;; ------------
+;;; is-in:	records the robot's current position (place)
+;;; visited: 	records whether a place has been visited (boolean)
+;;; ======================================================================================
 
 (:functions
-    (is-in ?a - movable) ?place
+	(is-in ?r - robot) - place
+	(visited ?p - place) - boolean 	
 )
 
-;;; ACTIONS ;;;
+;;; ======================================================================================	
+;;; ACTIONS
+;;; ------------
+;;; move:	takes the robot from a place (?from) to a given goal place (?to), marking 
+;;; 		the goal place as visited. visited is assigned true, and updated to true.
+;;; ======================================================================================	
 
-
-;;; move is an action that assumes the robot to be in the   ;;;
-;;; place to start from, and that it is possible to get to  ;;;
-;;; a non-occupied ?to place from ?from. the effects are    ;;;
-;;; that the robot is in the ?to place, which now becomes   ;;;
-;;; occupied, whereas the ?from place is no longer occupied ;;; 
 
 (:action move
-    :parameters	(?a robot ?to ?from - place)
-    :preconditions (and
-		(= (is-in ?a) ?from)	
-		(connected ?from ?to)
-		(not (occupied ?to)
- 		)
-    :effect 	(and 
- 		(assign (is-in ?a) ?to)
-		(update (occupied ?from) false)
-		(update (occupied ?to) true)	
- 		)
-)
+	 :agent		(?a - robot)
+	 :parameters 	(?to - place)
+	 :variables 	(?from - place)
+	 :precondition 	(and
+			(= (is-in ?a) ?from)
+			(or (connected ?from ?to)
+			(connected ?to ?from))
+			)
+	 :effect 	(and
+			(assign (is-in ?a) ?to)
+			(assign (visited ?to) true)
+			(update (visited ?to) true)
+			)
+) ;;; end move
 
 
 
@@ -64,10 +64,4 @@
 
 
 
-
-
-
-
-;;; END DOMAIN DEFINITION ;;;
-
-)
+) ;;; end domain

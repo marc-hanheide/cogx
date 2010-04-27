@@ -11,9 +11,11 @@
 		(connected ?n1 - place ?n2 - place)
     )	
 
-	(:functions
+    (:functions
         (is-in ?r - robot) - place
- 	)
+	(visited ?p - place) - boolean 	
+
+     )
 	
 ;;; actions ;;;
 
@@ -28,6 +30,8 @@
 		)
 	 :effect (and
 		(assign (is-in ?a) ?to)
+		(assign (visited ?to) true)
+		(update (visited ?to) true)
 	))
 
 )
