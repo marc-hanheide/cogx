@@ -9,9 +9,13 @@ INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 # vision ######################################################################
 #INCLUDE includes/vision.sa/vision-base+blobs.cast
-INCLUDE includes/vision.sa/vision-base.cast
-INCLUDE includes/vision.sa/vision-live.cast
-INCLUDE includes/vision.sa/vision-objects.cast
+##INCLUDE includes/vision.sa/vision-base.cast
+##INCLUDE includes/vision.sa/vision-live.cast
+##INCLUDE includes/vision.sa/vision-objects.cast
+##INCLUDE includes/vision.sa/vision-execution.cast
+
+# SImulated VIsion SA
+INCLUDE includes/vision.sa/vision-base+blobs.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 
 
@@ -25,7 +29,7 @@ JAVA GD bindermonitor binder.components.BinderMonitor --debug
 INCLUDE includes/planner.sa/planner-base.cast
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "james"
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "record1 record2 record3 record4"
 
 
 # viewing and debugging #######################################################

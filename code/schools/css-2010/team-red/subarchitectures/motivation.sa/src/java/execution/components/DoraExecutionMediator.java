@@ -73,7 +73,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			act.placeID = placeID.val;
 			return act;
 		} else if (_plannedAction.name.equals("look-for-object")) {
-			assert _plannedAction.arguments.length == 1 : "look-for-object action arity is expected to be 1";
+			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
 
 			DetectObjects act = newActionInstance(DetectObjects.class);
 			act.labels = DEFAULT_LABELS;

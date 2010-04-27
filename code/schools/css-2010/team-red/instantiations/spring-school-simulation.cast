@@ -1,6 +1,5 @@
 HOST localhost
 
-
 # spatial #####################################################################
 INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 INCLUDE includes/spatial.sa/spatial-ptz.cast
@@ -41,7 +40,7 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels=james
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager #--labels=james
 
 
 # viewing and debugging #######################################################

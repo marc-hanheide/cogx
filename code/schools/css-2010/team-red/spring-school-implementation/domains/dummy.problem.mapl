@@ -1,0 +1,12 @@
+(define (problem cogx-problem)
+    (:domain cogx)
+	
+	(:objects
+        dora - agent
+ 	)
+
+    (:init
+    )
+
+    (:goal (success))
+)
