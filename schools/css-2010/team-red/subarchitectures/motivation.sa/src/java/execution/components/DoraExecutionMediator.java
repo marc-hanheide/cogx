@@ -2,6 +2,8 @@ package execution.components;
 
 import java.util.List;
 
+import java.util.Map;
+
 import autogen.Planner.Action;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
@@ -30,8 +32,11 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 	private static final String[] DEFAULT_LABELS = { "record1", "record2",
 			"record3", "record4" };
 
-	public DoraExecutionMediator() {
-		m_binderFacade = new BinderFacade(this);
+	private String[] m_objectLabels;
+
+    public DoraExecutionMediator() {
+	m_objectLabels = DEFAULT_LABELS;
+	m_binderFacade = new BinderFacade(this);
 	}
 
 	@Override
@@ -39,6 +44,18 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 		super.start();
 		m_binderFacade.start();
 	}
+
+    
+	@Override
+	protected void configure(Map<String, String> _config) {
+		//System.exit(0);
+		String labels = _config.get("--labels");
+		if (labels != null) {
+			m_objectLabels = labels.split(",");
+		}
+		log("using object labels: " + m_objectLabels);
+	}
+
 
 	/**
 	 * Does the system specific work of converting a planning action into real
@@ -76,7 +93,8 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
 
 			DetectObjects act = newActionInstance(DetectObjects.class);
-			act.labels = DEFAULT_LABELS;
+			act.labels = m_objectLabels;// DEFAULT_LABELS;
+			//act.labels = DEFAULT_LABELS;//m_objectLabels
 			return act;
 		} else if (_plannedAction.name.equals("look-for-people")) {
 			assert _plannedAction.arguments.length == 1 : "look-for-people action arity is expected to be 1";
