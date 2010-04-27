@@ -1,2 +1,2 @@
-CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+CPP GD  VideoServer OpenCvLiveServer --imgsize "640 480" --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
 
