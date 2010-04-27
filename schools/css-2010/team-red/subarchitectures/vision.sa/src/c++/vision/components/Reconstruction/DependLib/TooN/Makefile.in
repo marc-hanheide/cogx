@@ -1,0 +1,21 @@
+#Standard boilerplate
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+mandir = @mandir@
+includedir = @includedir@
+
+
+hdr = $(DESTDIR)/$(includedir)/TooN
+
+all:
+
+install:
+	mkdir -p $(hdr)
+	cp *.h *.hh $(hdr)
+	cp -r optimization $(hdr)/
+
+clean:
+	rm -rf html
+
+docs:
+	doxygen doc/Doxyfile
