@@ -1,4 +1,4 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --log
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain move3.mapl --log
 
 SUBARCHITECTURE planner.sa
 
