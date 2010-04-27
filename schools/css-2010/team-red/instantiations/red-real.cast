@@ -25,7 +25,7 @@ JAVA GD bindermonitor binder.components.BinderMonitor --debug
 INCLUDE includes/planner.sa/planner-base.cast
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "james"
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "james,chakakhan,heartbrakers,jesusjones"
 
 
 # viewing and debugging #######################################################
