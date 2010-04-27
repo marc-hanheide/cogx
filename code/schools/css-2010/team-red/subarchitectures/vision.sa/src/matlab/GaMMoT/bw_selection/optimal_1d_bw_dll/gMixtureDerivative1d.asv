@@ -1,0 +1,19 @@
+function gMixtureDerivative1d( mu, h, r )
+
+N = cols(mu) ;
+Ch = h.^(r+1) ;
+
+X1 = repmat(mu,N,1) ;
+X2 = transpose(X1) ;
+Z = (X1 - X2)/h ;
+
+if ( r == 4 )
+    d = evalDifK_r4( Z ) ;
+elseif ( r == 6 ) 
+    d = evalDifK_r6( Z ) ;
+else
+    Kr = diffK( r, Z ) ;
+end
+
+
+
