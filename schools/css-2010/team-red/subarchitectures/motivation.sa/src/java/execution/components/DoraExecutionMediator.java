@@ -15,6 +15,7 @@ import execution.slice.ActionExecutionException;
 import execution.slice.actions.ComsysQueryFeature;
 import execution.slice.actions.ComsysTestFeatureValue;
 import execution.slice.actions.DetectObjects;
+import execution.slice.actions.LookForObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
@@ -92,7 +93,9 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 		} else if (_plannedAction.name.equals("look-for-object")) {
 			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
 
-			DetectObjects act = newActionInstance(DetectObjects.class);
+// 			DetectObjects act = newActionInstance(LookForObjects.class);
+			LookForObjects act = newActionInstance(LookForObjects.class);
+// 			DetectObjects act = newActionInstance(DetectObjects.class);
 			act.labels = m_objectLabels;// DEFAULT_LABELS;
 			//act.labels = DEFAULT_LABELS;//m_objectLabels
 			return act;
