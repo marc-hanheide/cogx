@@ -11,7 +11,6 @@
 #include <cctype>
 #include <cassert>
 #include <sstream>
-#include <set>
 #include <highgui.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
@@ -38,7 +37,7 @@ using namespace VisionData;
 // font for drawing text into OpenCV windows
 static CvFont font;
 
-static string tolower(const string &upper)
+string tolower(const string &upper)
 {
   string lower(upper);
   for(size_t i = 0; i < lower.size(); i++)
@@ -46,71 +45,7 @@ static string tolower(const string &upper)
   return lower;
 }
 
-// look at the turning angles between sides of the contour to see whether we have
-// a convex contour.
-// note that only convex contours can ve valid object detections
-static bool isObjectContourConvex(Vector2 corners[4])
-{
-  // turning direction between sides adjacent to the last visited corner
-  // can be -1 (left), 1 (right) or 0 (undefined - needed for first corner)
-  int last_dir = 0;
-  for(int i = 0; i < 4; i++)
-  {
-    int j = i < 3 ? i + 1 : 0;
-    int k = j < 3 ? j + 1 : 0;
-    Vector2 ij = corners[j] - corners[i];
-    Vector2 jk = corners[k] - corners[j];
-    // turning direction between sides adjacent to the current corner
-    int dir = leftOf(ij, jk) ? -1 : 1;
-    // if we have already visited a previous corner
-    if(last_dir != 0)
-    {
-      // if the turning direction between sides changes, the contour is not convex
-      if(dir != last_dir)
-      {
-	printf(">>>>>>>>>> rejected non-convex object <<<<<<<<<\n");
-	return false;
-      }
-    }
-    // remember current turn direction
-    last_dir = dir;
-  }
-  // the turning direction maintained the same (whether left or right we actually
-  // don't care, so the contour is convex
-  return true;
-}
-
-// look at the turning angles between sides of the contour to see whether we have
-// a convex contour.
-// note that only convex contours can ve valid object detections
-static bool isObjectContourConvex(planar_pattern_detector *d)
-{
-  // contour corners
-  Vector2 corners[4];
-  for(int i = 0; i < 4; i++)
-  {
-    corners[i].x = d->detected_u_corner[i];
-    corners[i].y = d->detected_v_corner[i];
-  }
-  return isObjectContourConvex(corners);
-}
-
-// look at the turning angles between sides of the contour to see whether we have
-// a convex contour.
-// note that only convex contours can ve valid object detections
-static bool isObjectContourConvex(template_matching_based_tracker *t)
-{
-  // contour corners
-  Vector2 corners[4];
-  for(int i = 0; i < 4; i++)
-  {
-    corners[i].x = t->u[2*i];
-    corners[i].y = t->u[2*i+1];
-  }
-  return isObjectContourConvex(corners);
-}
-
-static Rect2 calculateObjectBoundingBox(planar_pattern_detector * d)
+Rect2 calculateObjectBoundingBox(planar_pattern_detector * d)
 {
   Rect2 bbox;
   double xmin = min(min(d->detected_u_corner[0], d->detected_u_corner[1]),
@@ -128,7 +63,7 @@ static Rect2 calculateObjectBoundingBox(planar_pattern_detector * d)
   return bbox;
 }
 
-static Rect2 calculateObjectBoundingBox(
+Rect2 calculateObjectBoundingBox(
     template_matching_based_tracker * t)
 {
   Rect2 bbox;
@@ -147,7 +82,7 @@ static Rect2 calculateObjectBoundingBox(
   return bbox;
 }
 
-static void draw_quadrangle(IplImage * frame,
+void draw_quadrangle(IplImage * frame,
 		     int u0, int v0,
 		     int u1, int v1,
 		     int u2, int v2,
@@ -160,7 +95,7 @@ static void draw_quadrangle(IplImage * frame,
   cvLine(frame, cvPoint(u3, v3), cvPoint(u0, v0), color, thickness);
 }
 
-static void draw_detected_position(IplImage * frame,
+void draw_detected_position(IplImage * frame,
     planar_pattern_detector * detector)
 {
   draw_quadrangle(frame,
@@ -171,7 +106,7 @@ static void draw_detected_position(IplImage * frame,
 		  cvScalar(255), 3);
 }
 
-static void draw_initial_rectangle(IplImage * frame,
+void draw_initial_rectangle(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   draw_quadrangle(frame,
@@ -182,7 +117,7 @@ static void draw_initial_rectangle(IplImage * frame,
 		  cvScalar(128), 3);
 }
 
-static void draw_tracked_position(IplImage * frame,
+void draw_tracked_position(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   draw_quadrangle(frame,
@@ -193,7 +128,7 @@ static void draw_tracked_position(IplImage * frame,
 		  cvScalar(255), 3);
 }
 
-static void draw_tracked_locations(IplImage * frame,
+void draw_tracked_locations(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   for(int i = 0; i < tracker->nx * tracker->ny; i++) {
@@ -203,7 +138,7 @@ static void draw_tracked_locations(IplImage * frame,
   }
 }
 
-static void draw_detected_keypoints(IplImage * frame,
+void draw_detected_keypoints(IplImage * frame,
     planar_pattern_detector * detector)
 {
   for(int i = 0; i < detector->number_of_detected_points; i++)
@@ -214,7 +149,7 @@ static void draw_detected_keypoints(IplImage * frame,
 	     cvScalar(100), 1);
 }
 
-static void draw_recognized_keypoints(IplImage * frame,
+void draw_recognized_keypoints(IplImage * frame,
     planar_pattern_detector * detector)
 {
   for(int i = 0; i < detector->number_of_model_points; i++)
@@ -226,7 +161,7 @@ static void draw_recognized_keypoints(IplImage * frame,
 	       cvScalar(255, 255, 255), 1);
 }
 
-static void draw_detected_label(IplImage * frame, planar_pattern_detector * detector,
+void draw_detected_label(IplImage * frame, planar_pattern_detector * detector,
     string & label)
 {
   double x = (detector->detected_u_corner[0] + detector->detected_u_corner[1] +
@@ -236,7 +171,7 @@ static void draw_detected_label(IplImage * frame, planar_pattern_detector * dete
   cvPutText(frame, label.c_str(), cvPoint(x, y), &font, cvScalar(255));
 };
 
-static void draw_tracked_label(IplImage * frame,
+void draw_tracked_label(IplImage * frame,
     template_matching_based_tracker * tracker, string & label)
 {
   double x = (tracker->u[0] + tracker->u[2] + tracker->u[4] + tracker->u[6])/4;
@@ -244,7 +179,7 @@ static void draw_tracked_label(IplImage * frame,
   cvPutText(frame, label.c_str(), cvPoint(x, y), &font, cvScalar(255));
 };
 
-static void draw_detected_bounding_box(IplImage * frame,
+void draw_detected_bounding_box(IplImage * frame,
     planar_pattern_detector * detector)
 {
   Rect2 bbox = calculateObjectBoundingBox(detector);
@@ -256,7 +191,7 @@ static void draw_detected_bounding_box(IplImage * frame,
      cvScalar(255), 5);
 }
 
-static void draw_tracked_bounding_box(IplImage * frame,
+void draw_tracked_bounding_box(IplImage * frame,
     template_matching_based_tracker * tracker)
 {
   Rect2 bbox = calculateObjectBoundingBox(tracker);
@@ -273,7 +208,6 @@ ObjectDetectorFERNS::ObjectDetectorFERNS()
 {
   mode = DETECT_AND_TRACK;
   camId = 0;
-  numDetectionAttempts = 1;
   doDisplay = false;
   show_tracked_locations = false;
   show_keypoints = false;
@@ -313,37 +247,24 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
     while(istr >> model)
     {
       string label;
-      // find label name, either given explicitely as
-      // some/path/foo-front.jpg:foolabel
-      // or if no ':' is found by implicitly assuming stripped filename as
-      // label: foo-front
-      size_t label_pos = model.find_last_of(":");
-      if(label_pos != string::npos && label_pos < model.size() - 1)
-      {
-        label = model.substr(label_pos + 1, string::npos);
-        model = model.substr(0, label_pos);
-      }
+      // remove pathname: find last of '/' (Unix) or '\' (DOS)
+      size_t start = model.find_last_of("/\\");
+      if(start == string::npos)
+        start = 0;
       else
-      {
-        // remove pathname: find last of '/' (Unix) or '\' (DOS)
-        size_t start = model.find_last_of("/\\");
-        if(start == string::npos)
-          start = 0;
-        else
-          start++;
-        // remove suffix .jpg etc: find last '.'
-        size_t end = model.find_last_of(".");
-        if(end == string::npos)
-          end = model.size();
-        label = model.substr(start, end - start);
-      }
+        start++;
+      // remove suffix .jpg etc: find last '.'
+      size_t end = model.find_last_of(".");
+      if(end == string::npos)
+        end = model.size();
+      label = model.substr(start, end - start);
       model_images.push_back(model);
       model_labels.push_back(label);
     }
 
     ostringstream ostr;
     for(size_t i = 0; i < model_images.size(); i++)
-      ostr << " " << model_images[i] << ":" << model_labels[i];
+      ostr << " '" << model_images[i] << "'";
     log("using models: %s", ostr.str().c_str());
   }
 
@@ -359,12 +280,6 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
   {
     istringstream istr(it->second);
     istr >> camId;
-  }
-
-  if((it = _config.find("--numattempts")) != _config.end())
-  {
-    istringstream istr(it->second);
-    istr >> numDetectionAttempts;
   }
 
   if((it = _config.find("--displaylevel")) != _config.end())
@@ -402,18 +317,9 @@ void ObjectDetectorFERNS::start()
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
   // we want to receive DetectionCommands
-  addChangeFilter(createGlobalTypeFilter<DetectionCommand>(cdl::ADD),
+  addChangeFilter(createLocalTypeFilter<DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetectorFERNS>(this,
         &ObjectDetectorFERNS::receiveDetectionCommand));
-}
-
-size_t ObjectDetectorFERNS::indexOf(const string &label) throw(runtime_error)
-{
-  for(size_t i = 0; i < model_labels.size(); i++)
-    if(label == model_labels[i])
-      return i;
-  throw runtime_error(exceptionMessage(__HERE__, "unknown label '%s'", label.c_str()));
-  return 0;
 }
 
 void ObjectDetectorFERNS::receiveDetectionCommand(
@@ -428,41 +334,19 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   log("FERNS detecting: %s", ostr.str().c_str());
 
   Video::Image image;
-
-  // set holding all objects that were detected over a series of images
-  std::set<string> detectedObjects;
-
-  // try detection in a series of images
-  for(int i = 0; i < numDetectionAttempts; i++)
-  {
-    videoServer->getImage(camId, image);
-    IplImage *grayImage = convertImageToIplGray(image);
-    detectObjects(grayImage, cmd->labels);
-    // remember what objects were detected
-    for(size_t i = 0; i < cmd->labels.size(); i++)
-      if(last_frame_ok[indexOf(cmd->labels[i])])
-        detectedObjects.insert(cmd->labels[i]);
-    if(doDisplay)
-    {
-      drawResults(grayImage);
-      cvShowImage("ObjectDetectorFERNS", grayImage);
-      // needed to make the window appear
-      // (an odd behaviour of OpenCV windows!)
-      cvWaitKey(10);
-    }
-    cvReleaseImage(&grayImage);
-  }
-  // a bit HACKy: say that we detected an object with a given label
-  // in the last frame, when actually we only know that we detected it at
-  // least in one of the last numDetectionAttempts frames
-  // This is required because postObjectsToWM() looks at last_frame_ok when
-  // setting detection confidence.
-  for(std::set<string>::iterator it = detectedObjects.begin();
-      it != detectedObjects.end(); it++)
-  {
-    last_frame_ok[indexOf(*it)] = true;
-  }
+  videoServer->getImage(camId, image);
+  IplImage *grayImage = convertImageToIplGray(image);
+  detectObjects(grayImage, cmd->labels);
   postObjectsToWM(cmd->labels, image);
+  if(doDisplay)
+  {
+    drawResults(grayImage);
+    cvShowImage("ObjectDetectorFERNS", grayImage);
+    // needed to make the window appear
+    // (an odd behaviour of OpenCV windows!)
+    cvWaitKey(10);
+  }
+  cvReleaseImage(&grayImage);
 
   // executed the command, results (if any) are on working memory,
   // now delete command as not needed anymore
@@ -496,25 +380,24 @@ void ObjectDetectorFERNS::setupFERNS() throw(runtime_error)
 
     detectors[i]->set_maximum_number_of_points_to_detect(1000);
 
-    if (mode==DETECT_AND_TRACK) {
-     trackers[i] = new template_matching_based_tracker();
-     string trackerfn = model_images[i] + string(".tracker_data");
-     if (!trackers[i]->load(trackerfn.c_str()))
-     {
-       log("Training template matching...\n");
-       trackers[i]->learn(detectors[i]->model_image,
-          5, // number of used matrices (coarse-to-fine)
-          40, // max motion in pixel used to train to coarser matrix
-          20, 20, // defines a grid. Each cell will have one tracked point.
-          detectors[i]->u_corner[0], detectors[i]->v_corner[1],
-          detectors[i]->u_corner[2], detectors[i]->v_corner[2],
-          40, 40, // neighbordhood for local maxima selection
-          10000 // number of training samples
-          );
-       trackers[i]->save(trackerfn.c_str());
-     }
-     trackers[i]->initialize();
+    trackers[i] = new template_matching_based_tracker();
+    string trackerfn = model_images[i] + string(".tracker_data");
+    if (!trackers[i]->load(trackerfn.c_str()))
+    {
+      log("Training template matching...\n");
+      trackers[i]->learn(detectors[i]->model_image,
+         5, // number of used matrices (coarse-to-fine)
+         40, // max motion in pixel used to train to coarser matrix
+         20, 20, // defines a grid. Each cell will have one tracked point.
+         detectors[i]->u_corner[0], detectors[i]->v_corner[1],
+         detectors[i]->u_corner[2], detectors[i]->v_corner[2],
+         40, 40, // neighbordhood for local maxima selection
+         10000 // number of training samples
+         );
+      trackers[i]->save(trackerfn.c_str());
     }
+    trackers[i]->initialize();
+
     last_frame_ok[i] = false;
   }
 }
@@ -545,39 +428,29 @@ void ObjectDetectorFERNS::detectObject_Internal(IplImage * frame, size_t i)
   if(mode == DETECT_AND_TRACK)
   {
     if(last_frame_ok[i])
-    {
-      last_frame_ok[i] = false;
-      if(trackers[i]->track(frame))
-	if(isObjectContourConvex(trackers[i]))
-          last_frame_ok[i] = true;
-    }
+      last_frame_ok[i] = trackers[i]->track(frame);
 
     if(!last_frame_ok[i])
     {
       detectors[i]->detect(frame);
+
       if(detectors[i]->pattern_is_detected)
       {
-	if(isObjectContourConvex(detectors[i]))
-	{
-	  last_frame_ok[i] = true;
+        last_frame_ok[i] = true;
 
-	  trackers[i]->initialize(
-	      detectors[i]->detected_u_corner[0], detectors[i]->detected_v_corner[0],
-	      detectors[i]->detected_u_corner[1], detectors[i]->detected_v_corner[1],
-	      detectors[i]->detected_u_corner[2], detectors[i]->detected_v_corner[2],
-	      detectors[i]->detected_u_corner[3], detectors[i]->detected_v_corner[3]);
-	}
+        trackers[i]->initialize(
+            detectors[i]->detected_u_corner[0], detectors[i]->detected_v_corner[0],
+            detectors[i]->detected_u_corner[1], detectors[i]->detected_v_corner[1],
+            detectors[i]->detected_u_corner[2], detectors[i]->detected_v_corner[2],
+            detectors[i]->detected_u_corner[3], detectors[i]->detected_v_corner[3]);
       }
       // else last_frame_ok remains false
     }
   }
   else // mode == DETECT_ONLY
   {
-    last_frame_ok[i] = false;
     detectors[i]->detect(frame);
-    if(detectors[i]->pattern_is_detected)
-      if(isObjectContourConvex(detectors[i]))
-        last_frame_ok[i] = true;
+    last_frame_ok[i] = detectors[i]->pattern_is_detected;
   }
 }
 
@@ -630,25 +503,14 @@ void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
 
 void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
 {
-  for(size_t i = 0; i < model_labels.size(); i++)
+  for(size_t i = 0; i < model_images.size(); i++)
     postObjectToWM_Internal(i, image);
-}
-
-namespace Unlikely_Reused{
-  std::set<std::string> previous_postings;
 }
 
 void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
     const Video::Image &image)
 {
   VisualObjectPtr obj = createVisualObject(i, image);
-
-  if(obj->detectionConfidence < 0.1) return;
-
-  if( Unlikely_Reused::previous_postings.find(obj->label)
-      != Unlikely_Reused::previous_postings.end()) return;
-
-  Unlikely_Reused::previous_postings.insert(obj->label);
 
   // if no WM ID yet for that object
   if(objWMIds[i] == "")
@@ -693,7 +555,7 @@ VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
 
   obj->label = model_labels[i];
   obj->time = image.time;
-  if(last_frame_ok[i])
+  if(detectors[i]->pattern_is_detected || last_frame_ok[i])
     obj->detectionConfidence = 1.;
   else
     obj->detectionConfidence = 0.;
