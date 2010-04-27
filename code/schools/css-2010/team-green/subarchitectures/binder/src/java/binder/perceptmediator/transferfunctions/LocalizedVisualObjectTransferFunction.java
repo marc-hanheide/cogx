@@ -54,7 +54,7 @@ public class LocalizedVisualObjectTransferFunction extends
 					.createNewStringValue(wmc.address.id));
 			result.put("VisualObjectName", FeatureValueBuilder//result.put("VisualObjectId", FeatureValueBuilder
 					.createNewStringValue(from.label));
-			result.put("VisuaObjectIdConfidence", FeatureValueBuilder.createNewFloatValue(from.labelConfidence));			
+			result.put("VisuaObjectIdConfidence", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence));			
 		//	result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
 		} catch (BeliefException e) {
 			component.logException(e);
