@@ -30,7 +30,6 @@
 	(is-in ?r - robot) - place
 	(visited ?p - place) - boolean 	
 	(searched ?p - place) - boolean
-	(located ?p - object) - place
 )
 
 ;;; ======================================================================================	
@@ -70,13 +69,6 @@
 	 	 	(update (searched ?p) true)			
 			)
 ) ;;; look-for-object
-
-
-
-
-
-
-
 
 
 
