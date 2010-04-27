@@ -42,7 +42,6 @@
 ;;; 		action in that place, and marks and updates the place as searched.  	
 ;;; ======================================================================================	
 
-
 (:action move
 	 :agent		(?a - robot)
 	 :parameters 	(?to - place)
