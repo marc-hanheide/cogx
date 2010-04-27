@@ -1,3 +1,16 @@
+;;; ======================================================================================
+;;; DOMAIN for the ORANGE team (gj@dfki.de) (version 1)
+;;;
+;;; This domain can be tested with the following goals, using [ move1.problem.mapl ] 
+;;; 
+;;; * move to place p4 -- (:goal (= (is-in dora) p4))
+;;; * visit all places -- (:goal (forall (?p - place) (= (visited ?p) true) ))
+;;; * look for objects in all places -- (:goal (forall (?p - place) (= (searched ?p) true) ))
+;;; * look for humans in all places -- 
+
+;;; ======================================================================================
+
+
 (define (domain cogx)
 
 (:requirements :mapl :adl :object-fluents)
@@ -6,6 +19,7 @@
 	place - object
 	robot - agent
 	robot - movable
+	visualobject - movable
 )
 	
 ;;; ======================================================================================
@@ -21,15 +35,18 @@
 ;;; FUNCTIONS
 ;;; functions can be updated, and as such yield a belief in the belief model on the binder
 ;;; ------------
-;;; is-in:	records the robot's current position (place)
+;;; is-in:	records a movable object's (robot or visualobject) current position (place)
 ;;; visited: 	records whether a place has been visited (boolean)
 ;;; searched:	records whether a place has been searched for objects (boolean)
+;;; searched-human: records whether a place has been search for people (boolean)
+;;; 
 ;;; ======================================================================================
 
 (:functions
-	(is-in ?r - robot) - place
+	(is-in ?r - movable) - place
 	(visited ?p - place) - boolean 	
 	(searched ?p - place) - boolean
+	(searched-human ?p - place) - boolean
 )
 
 ;;; ======================================================================================	
@@ -37,8 +54,10 @@
 ;;; ------------
 ;;; move:	takes the robot from a place (?from) to a given goal place (?to), marking 
 ;;; 		the goal place as visited. visited is assigned true, and updated to true.
-;;; look-for-objects:	given that the robot is in a place, the action performs a look-for-objects
+;;; look-for-object: given that the robot is in a place, the action performs a look-for-objects
 ;;; 		action in that place, and marks and updates the place as searched.  	
+;;; look-for-people: given that the robot is in a place, the action performs a look-for-people
+;;; 		action in that place, and marks and updates the place as searched-human  
 ;;; ======================================================================================	
 
 
@@ -70,7 +89,17 @@
 			)
 ) ;;; look-for-object
 
-
+(:action look-for-people
+	 :agent		(?a - robot)
+	 :variables	(?p - place)
+	 :precondition	(and 
+	 		(= (is-in ?a) ?p)
+			)
+	 :effect	(and
+	 	 	(assign (searched-human ?p) true)
+	 	 	(update (searched-human ?p) true)			
+			)
+) ;;; look-for-people
 
 
 
