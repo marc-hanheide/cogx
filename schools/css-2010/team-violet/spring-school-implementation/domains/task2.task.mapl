@@ -1,0 +1,16 @@
+(define (problem cogx-problem)
+  (:domain cogx)
+
+  (:objects
+   pablo - robot
+   p1 p2 p3 - place
+   )
+
+  (:init
+   (connected p1 p2)
+   (connected p3 p2)
+   (= (is-in pablo) p1)
+   )
+
+  (:goal (forall (?p - place) (searched ?p)))
+) 
