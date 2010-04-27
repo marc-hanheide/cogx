@@ -17,6 +17,7 @@ import beliefmodels.builders.FeatureValueBuilder;
 import binder.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import binder.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import binder.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
+import binder.perceptmediator.transferfunctions.helpers.ObjectLabelMatchingFunction;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
@@ -53,6 +54,13 @@ public class LocalizedObjectTransferFunction extends
 			Place currentPlace = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
+                        PerceptBelief existingObjectBelief = tryGetReferredBelief(new ObjectLabelMatchingFunction(
+                                from.label));
+                        if (existingObjectBelief != null) {
+                            //There's already a belief about an object with this
+                            //label. Skip it.
+                            return null;
+                        }
 			result.put("is-in", FeatureValueBuilder
 					.createNewPointerValue(placeWMA));
 			result.put("ObjectId", FeatureValueBuilder
