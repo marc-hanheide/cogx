@@ -13,7 +13,7 @@ INCLUDE includes/vision.sa/vision-execution.cast
 
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/planner-base.cast
+#INCLUDE includes/planner.sa/planner-base.cast
 
 # exection ####################################################################
 JAVA MG  manual-execution execution.components.GraphicalExecutionManager
@@ -30,9 +30,9 @@ INCLUDE includes/binder.sa/perceptmediators.cast
 #JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
 
 # planning and motivation #####################################################
-#INCLUDE includes/planner.sa/planner-base.cast
-#INCLUDE includes/planner.sa/planner.cast
-#INCLUDE includes/motivation.sa/motivation.cast
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/motivation.sa/motivation.cast
 
 JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
 
