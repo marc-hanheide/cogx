@@ -1,0 +1,36 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :object-fluents)
+	
+	(:types 
+		place place_id - object
+		robot - agent
+	)
+	
+    (:predicates
+		(connected ?n1 - place ?n2 - place)
+    )	
+
+	(:functions
+        (is-in ?r - robot) - place
+        (placeid ?p - place) - place_id
+ 	)
+	
+;;; actions ;;;
+
+	(:action move
+	 :agent (?a - robot)
+	 :parameters (?to - place)
+	 :variables (?from - place)
+	 :precondition (and
+		(= (is-in ?a) ?from)
+        (or (connected ?from ?to)
+            (connected ?to ?from))
+		)
+	 :effect (and
+		(assign (is-in ?a) ?to)
+	))
+
+)
+
+;; goal: (exists (?r - robot ?p - place) (and (= (is-in ?r) ?p) (= (placeid ?p) place_id_2)))

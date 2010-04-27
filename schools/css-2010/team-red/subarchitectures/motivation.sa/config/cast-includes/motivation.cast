@@ -1,8 +1,13 @@
 # execution ###################################################################
-JAVA MG executor execution.components.SpringSchoolExecutionMediator
+JAVA MG executor execution.components.DoraExecutionMediator
+#JAVA MG executor execution.components.SpringSchoolExecutionMediator
 
 # motivation ##################################################################
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (placestatus ?p) trueplace))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
+
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?r - robot) (forall (?p - place) (kval ?r (name ?p))))"
+
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (placestatus ?p) trueplace))"
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
