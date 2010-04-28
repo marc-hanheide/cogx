@@ -27,7 +27,10 @@ import castutils.facades.SpatialFacade;
 import java.util.List ;
 import java.util.ArrayList;
 
-import beliefmodels.autogen.beliefs.StableBelief ;
+import beliefmodels.autogen.beliefs.StableBelief ; 
+import java.util.Iterator;
+import beliefmodels.autogen.distribs.*;
+import beliefmodels.autogen.distribs.FeatureContentUtils;
 
 /**
  * @author marc
@@ -50,19 +53,43 @@ public class LocalizedVisualObjectTransferFunction extends
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		// TODO: we should use a DoubleValue here!
 		try {
-			// scan thorugh all working memory stable entries...
-			//List<StableBelief> ls = new ArrayList<StableBelief>(); //Ice.Object
+	 		// scan thorugh all working memory stable entries...
+			List<StableBelief> ls = new ArrayList<StableBelief>(); //Ice.Object
+			String str_tmp ;
 			//StableBelief tmp_stbel ;
 			//StableBelief [] tmp_stbel2 ;
 
-			//component.getMemoryEntries(StableBelief.class, ls) ;
+			List<FeatureValueProbPair>  ls_pair = new ArrayList<FeatureValueProbPair>(); 
+			FeatureContentUtils tmp_util ;
+
+			component.getMemoryEntries(StableBelief.class, ls) ;
 			//component.getMemoryEntriesWithData(StableBelief.class, ls) ;
+ 
+//wmc.address.id
+// from.label
+
+Iterator it=ls.iterator();
+
+			StableBelief stb ; 
+			stb = 	(StableBelief)it.next() ;
+
+		String featlabel = "label" ;
+		ls_pair = tmp_util.FeatureContentUtils.getValuesInBelief(stb, featlabel) ; 
+
+
+ 
+ 
+		//	str_tmp =  stb.id ; //FeatureValueBuilder.createNewStringValue( ls[0].label ) ;
+		//	System.out.print("--------------------------------------------------->" + str_tmp ); 
+			
 
 
 		/*	for ( int i = 0 ; i < ls.size() ; i++) {
-				ls[i]
-			}
-			*/
+				str_tmp =  FeatureValueBuilder.createNewStringValue( ls[i].label )) ;
+				//System.out.print("An error occured in LocalizedVisualObjectTransferFunction!!"); 
+
+			}*/
+			
 
                       // component.getWorkingMemoryEntries(tmp_stbel) ;
 
