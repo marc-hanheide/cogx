@@ -14,9 +14,6 @@
 	(:predicates
                 (connected ?loc1 - place ?loc2  - place)
                 (checked_for_objects ?loc - place)
-                (neighbor_checked_for_objects ?loc - place)
-                (started)
-                (finished)
 	)
 
         (:functions
@@ -26,21 +23,12 @@
 		(placeid ?loc - place) - object
         )
 
-        (:action start
-                 :agent (?a - robot)
-                 :precondition (not (started))
-                 :effect (and
-                                (started)
-                                (update (started) true)
-                         )
-        )
 
         (:action move
 	         :agent (?a - robot)
 	         :parameters (?to - place)
 		 :variables (?from - place)
 		 :precondition (and
-                               (started)
 				(= (is-in ?a) ?from)
 	                	(or (connected ?from ?to)
 	            		    (connected ?to ?from))
@@ -55,20 +43,15 @@
         (:action look-for-objects
                  :agent (?a - robot)
                  :variables (?at - place)
-                 :precondition (and (started) (not (checked_for_objects ?at)) (not (neighbor_checked_for_objects ?at)) (= (is-in ?a) ?at))
+                 :precondition (and 
+				    (not (checked_for_objects ?at))
+				    (= (is-in ?a) ?at)
+			       )
                  :effect (and 
                               (checked_for_objects ?at)
-           ;;                   (forall (?loc - place) (when (connected ?at ?loc) (neighbor_checked_for_objects ?loc)))
-           ;;                   (forall (?loc - place) (when (connected ?loc ?at) (neighbor_checked_for_objects ?loc)))
+			      (update (checked_for_objects ?at) true)
                          )
         )
-
-        (:action report
-                 :agent (?a - agent)
-                 :parameters ()
-                 :precondition (and
-                                 (forall (?loc - place) (checked_for_objects ?loc))
-                               )
-                 :effect       (finished)
-        )
 )
+
+
