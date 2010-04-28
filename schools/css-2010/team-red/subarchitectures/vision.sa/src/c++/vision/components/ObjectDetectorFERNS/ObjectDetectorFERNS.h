@@ -111,6 +111,8 @@ private:
    * Default is false.
    */
   bool outputToNav;
+  
+  int imgcnt;
 
   /**
    * Display detection results.
