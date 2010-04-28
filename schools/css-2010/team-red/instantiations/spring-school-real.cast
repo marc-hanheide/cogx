@@ -43,7 +43,7 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "breathless level"
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "breathless,level"
 #JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "james,chakakhan,heartbrakers,jesusjones"
 
 
