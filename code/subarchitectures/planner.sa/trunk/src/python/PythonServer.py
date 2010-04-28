@@ -222,7 +222,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     try:
       newtask.goal = task._mapltask.goal.copy(newtask)
     except KeyError:
+      log.warning("Goal is not valid anymore.")
+      task.set_state(Planner.Completion.PLANNING_FAILURE)
       newtask.goal = pddl.conditions.Falsity()
+      self.deliver_plan(task)
+      return
+      
 
     new_state.problem = newtask
     task.set_state(new_state)
