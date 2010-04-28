@@ -1,12 +1,20 @@
 HOST localhost
 
+# spatial #####################################################################
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter 
+
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-live-v4l.cast
 INCLUDE includes/vision.sa/vision-objects.cast
 #INCLUDE includes/vision.sa/vision-execution.cast
-CPP MG Dummy DummyDriver --labels "james jesus heart chaka" --log
+CPP MG Dummy DummyDriver --labels "james jesus heart chaka" #--log
+#CPP MG Dummy DummyDriver --labels "james" --log
 
 
 # binder ######################################################################
