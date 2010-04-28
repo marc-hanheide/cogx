@@ -5,22 +5,30 @@
   (:types 
    place - object
    robot - agent
+   locatable - object
+   visualobject robot - locatable
+   recordlabel - object
    )
   
   (:predicates
    (connected ?n1 - place ?n2 - place)
    (visited ?loc - place)
    (searched ?loc - place)
-   
    )	
   
   (:functions
-   (is-in ?r - robot) - place
+   (is-in ?l - locatable) - place
+   (label ?l - locatable) - recordlabel
    )
+
+;;; objects ;;;
+  (:constants
+   record1 record2 record3 record4 - recordlabel
+  )
   
 ;;; actions ;;;
 
-  (:action look-for-object
+  (:action look-for-objects
 	   :agent (?a - robot)
 	   :variables (?loc - place)
 	   :precondition (and
@@ -28,6 +36,7 @@
 			  )
 	   :effect (and
 		    (searched ?loc)
+		    ;;;(forall (?l - recordlabel) (exists (?v - visualobject) (=(label ?v) ?l)));;;
 		    (update (searched ?loc) true)
 		    ))
 
