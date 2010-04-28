@@ -19,7 +19,8 @@ public class WMLock implements Lock {
 	WorkingMemoryAddress address;
 	ManagedComponent component;
 	private String name;
-
+	private boolean slave;
+	
 	@Override
 	public void lock() {
 		try {
@@ -84,11 +85,29 @@ public class WMLock implements Lock {
 		this.name = name;
 		this.component = component;
 		this.address = null;
+		this.slave=false;
+	}
+	
+	/**
+	 * @param wmObject
+	 * @param component
+	 * @throws CASTException
+	 */
+	public WMLock(ManagedComponent component, String name, boolean slave)  {
+		super();
+		this.name = name;
+		this.component = component;
+		this.address = null;
+		this.slave=slave;
 	}
 	
 	public void initialize() throws CASTException {
 		List<WMMutex> allMutexes = new LinkedList<WMMutex>();
-		component.getMemoryEntries(WMMutex.class, allMutexes);
+		if (slave)
+			while (allMutexes.size()==0)
+				component.getMemoryEntries(WMMutex.class, allMutexes);
+		else
+			component.getMemoryEntries(WMMutex.class, allMutexes);
 		for (WMMutex m : allMutexes) {
 			if (m.name.equals(name)) {
 				component.log("WMLock: using existing Mutex with name " + name + "and address " + CASTUtils.toString(m.addr));
@@ -108,3 +127,5 @@ public class WMLock implements Lock {
 	}
 
 }
+
+
