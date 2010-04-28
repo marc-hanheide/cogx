@@ -1,4 +1,6 @@
-CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./instantiations/records/james.jpg" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
+#CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./instantiations/records/james.jpg ./instantiations/records/chakakhan.jpg ./instantiations/records/heartbrakers.jpg ./instantiations/records/jesusjones.jpg" --mode DETECT_ONLY --displaylevel 2 --numattempts 5 --log
+
+CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./instantiations/records/breathless.jpg ./instantiations/records/level.jpg" --mode DETECT_ONLY --displaylevel 2 --numattempts 5 --log
 
 #./ferns/MAGAZINE.jpg ./ferns/juice.jpg
 
