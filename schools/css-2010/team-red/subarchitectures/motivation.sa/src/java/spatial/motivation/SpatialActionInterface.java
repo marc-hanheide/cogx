@@ -34,6 +34,7 @@ import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
+import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
@@ -332,6 +333,21 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
+	public class PTULookForObjectsExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public PTULookForObjectsExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
+
+		@Override
+		public ActionExecutor getActionExecutor() {
+			return new PTUTurnLookExecutor(m_component, m_detections);
+		}
+
+	}
+
 	/**
 	 * Sets all values necessary to prevent exceptions later on
 	 */
@@ -409,6 +425,8 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		m_actionStateManager.registerActionType(LookForObjects.class,
 				new LookForObjectsExecutorFactory(this));
+		m_actionStateManager.registerActionType(PTULookForObjects.class,
+				new PTULookForObjectsExecutorFactory(this));
 		m_actionStateManager.registerActionType(LookForPeople.class,
 				new LookForPeopleExecutorFactory(this));
 

@@ -24,6 +24,7 @@ import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
+import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.util.ActionInterfaceFrame;
 import execution.util.ActionMonitor;
@@ -32,7 +33,7 @@ import execution.util.ActionMonitor;
  * 
  * Config options:
  * 
- * --labels=label1,label2,label3 etc. labels that are used to detect objects
+ * --labels="label1,label2,label3" etc. labels that are used to detect objects
  * 
  * @author nah
  * 
@@ -153,6 +154,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	public WorkingMemoryAddress triggerLookForObjects(ActionMonitor _monitor)
 			throws CASTException {
 		LookForObjects act = newActionInstance(LookForObjects.class);
+		act.labels = m_objectLabels;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerPTULookForObjects(ActionMonitor _monitor)
+			throws CASTException {
+		PTULookForObjects act = newActionInstance(PTULookForObjects.class);
 		act.labels = m_objectLabels;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
