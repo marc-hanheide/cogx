@@ -62,6 +62,9 @@ class CCastConfig:
                 continue
             rs = r.split()
             if len(rs) < 2: continue
+            if len(rs) > 3:
+                rs[2] = " ".join(rs[2:]).strip(" \"")
+                rs = rs[:3]
             rs[0] = rs[0].upper()
             goodrule = [ 1 for desc in ['SA', 'ID', 'HPAR'] if rs[0] == desc]
             if len(goodrule) > 0:
@@ -150,7 +153,7 @@ class CCastConfig:
         return host
 
     def _fixHostParam(self, text, param):
-        rx = re.compile(r"%s\s+(\S+)" % param)
+        rx = re.compile(r"%s\s+(\"[^\"]+\"|\S+)" % param)
         mo = rx.search(text)
         if mo != None:
             host = self._fixLocalhost(mo.group(1))
@@ -158,7 +161,7 @@ class CCastConfig:
         return text
 
     def _setHostParam(self, text, param, value):
-        rx = re.compile(r"%s\s+(\S+)" % param)
+        rx = re.compile(r"%s\s+(\"[^\"]+\"|\S+)" % param)
         mo = rx.search(text)
         if mo != None:
             text = text[:mo.start(1)] + '"' + value + '"' + text[mo.end(1):]
