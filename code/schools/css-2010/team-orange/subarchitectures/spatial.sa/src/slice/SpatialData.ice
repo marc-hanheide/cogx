@@ -38,6 +38,19 @@ module SpatialData {
     PlaceStatus status;
   };
 
+
+  class MaryCommand
+  {
+    string text;
+  }
+
+
+  class PlayMp3Command
+  {
+    long song;
+  }
+
+
   /**
    * Message struct indicating the merging of two extant Places
    * into a single Place.
