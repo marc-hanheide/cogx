@@ -61,35 +61,35 @@
 		(assign (is-in ?a) ?to)
 	))
 
-	(:action look-for-object-cheap
-	 :agent (?a - robot)
-	 :parameters (?to - place)
-	 :precondition (and
-			(not (visited ?to))
-			(= (is-in ?a) ?to)
+;; 	(:action look-for-object-cheap
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?to - place)
+;; 	 :precondition (and
+;; 			(not (visited ?to))
+;; 			(= (is-in ?a) ?to)
 
 			
-			(exists (?pp - place) 
-				(and 
-				 (not (visited ?pp))
-				 (or (connected ?to ?pp)
-				     (connected ?pp ?to))) 
-				 )
+;; ;; 			(exists (?pp - place) 
+;; ;; 				(and 
+;; ;; 				 (not (visited ?pp))
+;; ;; 				 (or (connected ?to ?pp)
+;; ;; 				     (connected ?pp ?to))) 
+;; ;; 				 )
 
-;; 			(forall (?pp - place) 
-;; 				(or 
-;; 				 (not (visited ?pp))
-;; 				 (not (or (connected ?to ?pp)
-;; 					  (connected ?pp ?to))) 
-;; 				 ))
-			)
-	 :effect (and
-		  (increase (total-cost) 10000)
-		  (visited ?to)	
-		  (update (visited ?to) true) ))
+;; ;; 			(forall (?pp - place) 
+;; ;; 				(or 
+;; ;; 				 (not (visited ?pp))
+;; ;; 				 (not (or (connected ?to ?pp)
+;; ;; 					  (connected ?pp ?to))) 
+;; ;; 				 ))
+;; 			)
+;; 	 :effect (and
+;; 		  (increase (total-cost) 10000)
+;; 		  (visited ?to)	
+;; 		  (update (visited ?to) true) ))
 
 	
-	(:action look-for-object-expensive
+	(:action look-for-object
 	 :agent (?a - robot)
 	 :parameters (?to - place)
 	 :precondition (and
@@ -98,7 +98,7 @@
 
 			)
 	 :effect (and
-		  (increase (total-cost) 1020)
+;; 		  (increase (total-cost) 1020)
 		  (visited ?to)	
 		  (update (visited ?to) true) ))
 
