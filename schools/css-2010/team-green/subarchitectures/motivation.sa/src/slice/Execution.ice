@@ -163,6 +163,7 @@ module execution {
       };
       
 
+      class Start extends Action {};
 
       
 
