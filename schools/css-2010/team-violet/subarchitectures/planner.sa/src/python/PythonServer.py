@@ -227,7 +227,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       newtask.goal = pddl.conditions.Falsity()
       self.deliver_plan(task)
       return
-      
+
 
     new_state.problem = newtask
     task.set_state(new_state)

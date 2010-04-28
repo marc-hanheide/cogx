@@ -27,8 +27,8 @@ import execution.util.ActionConverter;
 public class DoraExecutionMediator extends PlanExecutionMediator implements
 		ActionConverter {
 	private final BinderFacade m_binderFacade;
-	private static final String[] DEFAULT_LABELS = { "record1", "record2",
-			"record3", "record4" };
+	private static final String[] DEFAULT_LABELS = { "chakakhan", "heartbreakers",
+	"james", "jesusjones"};
 
 	public DoraExecutionMediator() {
 		m_binderFacade = new BinderFacade(this);

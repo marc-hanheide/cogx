@@ -302,6 +302,9 @@ def generate_mapl_task(task_desc, domain_fn):
     opt_func = None
 
   problem = pddl.Problem("cogxtask", objects, [], None, task._mapldomain, opt, opt_func )
+  goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
+  problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+  log.debug("goal: %s", problem.goal)
 
   goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
   problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)

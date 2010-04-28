@@ -466,8 +466,9 @@ class ModalPredicateCompiler(Translator):
             return literal
 
         pred = scope.predicates.get("-".join(name_elems), args)
-
-        result = Literal(pred, args, negated=literal.negated)
+	print "-".join(name_elems)
+        
+	result = Literal(pred, args, negated=literal.negated)
         result.__class__ = literal.__class__
         return result.copy_instance()
                 
