@@ -41,7 +41,7 @@ public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place>
 // 			result.put("wave1", FeatureValueBuilder.createNewStringValue("no"));
 			
 		} else {
-			result.put("wave1", FeatureValueBuilder.createNewStringValue("yes"));
+			result.put("wave1", FeatureValueBuilder.createNewStringValue("no"));
 // 			result.put("wave1", FeatureValueBuilder.createNewStringValue("yes"));
 		}
 		return result;
