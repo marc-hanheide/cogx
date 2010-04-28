@@ -10,7 +10,10 @@
 UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
 UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
+100 Existence(x) ^ Existence(P) ^ Label(x,y) ^ Label(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+100 UnifyWith(x) ^ Label(x,y) ^ Label(P,z) => y=z
+UnifyWith(x) ^ Label(x,y) => y!=Unknown. 
+UnifyWith(x) ^ Label(x,y) => y!=None. 
+
 UnifyWith(x) => Existence(x) ^ Existence(P).
 
-
-// ADD YOUR ADDITIONAL FORMULAE FOR OBJECT TRACKING HERE
