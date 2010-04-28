@@ -6,6 +6,7 @@
 // general correlations
 
 100 Existence(x) ^ Existence(P) ^ Label(x, t) ^ Label(P, t) ^ t!=Unknown ^ t!=None=> UnifyWith(x)
+100 Existence(x) ^ Existence(P) ^ Is-in(x, t) ^ Is-in(P, t) ^ t=Unknown ^ t!=None=> UnifyWith(x)
 
 UnifyWith(x) ^ Label(x,t1) ^ Label(P,t2) => t1=t2.
 
