@@ -51,18 +51,18 @@ public class LocalizedVisualObjectTransferFunction extends
 		// TODO: we should use a DoubleValue here!
 		try {
 			// scan thorugh all working memory stable entries...
-		//	List<StableBelief> ls = new ArrayList<StableBelief>(); //Ice.Object
+			//List<StableBelief> ls = new ArrayList<StableBelief>(); //Ice.Object
 			//StableBelief tmp_stbel ;
 			//StableBelief [] tmp_stbel2 ;
 
-		//	component.getMemoryEntries(StableBelief.class, ls) ;
+			//component.getMemoryEntries(StableBelief.class, ls) ;
 			//component.getMemoryEntriesWithData(StableBelief.class, ls) ;
 
 
 		/*	for ( int i = 0 ; i < ls.size() ; i++) {
 				ls[i]
-			}*/
-			
+			}
+			*/
 
                       // component.getWorkingMemoryEntries(tmp_stbel) ;
 
@@ -86,7 +86,15 @@ public class LocalizedVisualObjectTransferFunction extends
 					.createNewStringValue(from.label));
 			result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence)); 
 
+			boolean detected ; 
+			if ( from.detectionConfidence > 0.5 ) {
+				detected = true ;
+			} else {
+				detected = false ;
+			}
+			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));			
 			
+
 			float siz ;
 		if( from.views.length > 0 ) {		
 			siz = (float)from.views[0].boundingBox.height * (float)from.views[0].boundingBox.width ; 
