@@ -92,7 +92,8 @@ def feature_val_to_object(fval):
   elif fval.__class__ == featurecontent.UnknownValue:
     return pddl.UNKNOWN
 
-  assert False, "Unknown feature type: %s" % fval.__class__
+  return None
+  #assert False, "Unknown feature type: %s" % fval.__class__
 
 
 def gen_fact_tuples(beliefs):
@@ -110,10 +111,13 @@ def gen_fact_tuples(beliefs):
         if isinstance(value, distribs.FeatureValues):
           for valpair in value.values:
             val = feature_val_to_object(valpair.val)
-            result.append((feat, val, valpair.prob))
+            if val is not None:
+              result.append((feat, val, valpair.prob))
         elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
-          result.append((feat, feature_val_to_object(value.mean), 1.0))
+          val = feature_val_to_object(value.mean)
+          if val is not None:
+            result.append((feat, val , 1.0))
       return result
     if isinstance(dist, distribs.DiscreteDistribution):
       assert False, "DiscreteDistribution not supported yet"
