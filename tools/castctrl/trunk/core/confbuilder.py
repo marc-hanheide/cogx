@@ -20,6 +20,17 @@ def parsebool(val, default=0):
     if val == "yes" or val == "on" or val == "true" or val == "t": return 1
     return int(val)
 
+def quoteParams(parList):
+    pars = []
+    merging = False
+    for p in parList:
+        if merging: pars[-1] = pars[-1] + " " + p
+        else: pars.append(p)
+        if p.startswith('"'): merging = True
+        if p.endswith('"'): merging = False
+    return pars
+    
+
 class CCastConfig:
     reInclude = re.compile(r"^\s*include\s+(\S+)", re.IGNORECASE)
     reSubarch = re.compile(r"^\s*subarchitecture\s+(\S+)", re.IGNORECASE)
@@ -63,8 +74,8 @@ class CCastConfig:
             rs = r.split()
             if len(rs) < 2: continue
             if len(rs) > 3:
-                rs[2] = " ".join(rs[2:]).strip(" \"")
-                rs = rs[:3]
+                pars = quoteParams(rs[2:])
+                rs = rs[:2] + pars
             rs[0] = rs[0].upper()
             goodrule = [ 1 for desc in ['SA', 'ID', 'HPAR'] if rs[0] == desc]
             if len(goodrule) > 0:
