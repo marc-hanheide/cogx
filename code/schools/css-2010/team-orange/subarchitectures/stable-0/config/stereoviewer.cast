@@ -1,0 +1,18 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+# reading stored images
+COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/test-stereo/img-160-%03d-L.jpg subarchitectures/vision.sa/config/test-stereo/img-160-%03d-R.jpg" --start 1 --end 1 --framerate_ms 1000 --camconfigs "subarchitectures/vision.sa/config/test-stereo/stereo.ini:L subarchitectures/vision.sa/config/test-stereo/stereo.ini:R"
+
+# live images
+#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE
+
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/test-stereo/stereo.ini #--display
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG stereoviewer StereoViewer --stereohost localhost --stereoname stereo --videoname video --camid 0
+
