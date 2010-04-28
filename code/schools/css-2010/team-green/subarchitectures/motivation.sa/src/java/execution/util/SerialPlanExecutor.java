@@ -361,6 +361,7 @@ public class SerialPlanExecutor extends Thread {
 		if (action.status == Completion.PENDING) {
 			actionWrapper = new PlannedActionWrapper(action, m_converter
 					.toSystemAction(action));
+			System.out.println("Abend!");
 			WorkingMemoryAddress actionAddr = m_component.triggerExecution(
 					actionWrapper.execute(), actionWrapper);
 			actionWrapper.setActionAddress(actionAddr);

@@ -5,6 +5,8 @@ import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.LogMessage;
 import execution.slice.actions.PrintMessage;
+import execution.slice.actions.Start;
+import execution.slice.actions.Report;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.LocalActionStateManager;
@@ -37,7 +39,7 @@ public class TestActionExecutor extends ManagedComponent {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep((long) (Math.random() * 5000));
+			        Thread.sleep((long) (Math.random() * 5000));
 				println(m_lm.message);
 				m_callback.executionComplete(TriBool.TRITRUE);
 			} catch (InterruptedException e) {
@@ -83,6 +85,88 @@ public class TestActionExecutor extends ManagedComponent {
 
 	}
 
+//         private class StartExecutor extends Thread implements ActionExecutor {
+
+// 		private ExecutionCompletionCallback m_callback;
+
+// 		public boolean accept(Action _action) {
+// 			return true;
+// 		}
+
+// 		public TriBool execute() {
+// 		        assert true : "non-blocking execution should be used";
+// 			return null;
+// 		}
+
+// 		public void execute(ExecutionCompletionCallback _callback) {
+// 			//store callback
+// 			m_callback = _callback;
+// 			start();
+// 		}
+
+// 		@Override
+// 		public void run() {
+// 		    m_callback.executionComplete(TriBool.TRITRUE);
+// 		}
+
+// 		public boolean isBlockingAction() {
+// 			return false;
+// 		}
+
+// 		@Override
+// 		public void stopExecution() {
+// 		}
+
+// 	}
+
+        private class StartExecutor implements ActionExecutor {
+
+		public boolean accept(Action _action) {
+			return true;
+		}
+
+		public TriBool execute() {
+			return TriBool.TRITRUE;
+		}
+
+		public void execute(ExecutionCompletionCallback _callback) {
+		    //_callback.executionComplete(TriBool.TRITRUE);
+		}
+
+		public boolean isBlockingAction() {
+			return true;
+		}
+
+		@Override
+		public void stopExecution() {
+		}
+
+	}
+
+        private class ReportExecutor implements ActionExecutor {
+
+		public boolean accept(Action _action) {
+			return true;
+		}
+
+		public TriBool execute() {
+			return TriBool.TRITRUE;
+		}
+
+		public void execute(ExecutionCompletionCallback _callback) {
+		    //_callback.executionComplete(TriBool.TRITRUE);
+		}
+
+		public boolean isBlockingAction() {
+			return true;
+		}
+
+		@Override
+		public void stopExecution() {
+		}
+
+	}
+
 	@Override
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
@@ -97,6 +181,18 @@ public class TestActionExecutor extends ManagedComponent {
 				new ActionExecutorFactory() {
 					public ActionExecutor getActionExecutor() {
 						return new LogExecutor();
+					}
+				});
+		m_actionStateManager.registerActionType(Start.class,
+				new ActionExecutorFactory() {
+					public ActionExecutor getActionExecutor() {
+						return new StartExecutor();
+					}
+				});
+		m_actionStateManager.registerActionType(Report.class,
+				new ActionExecutorFactory() {
+					public ActionExecutor getActionExecutor() {
+						return new ReportExecutor();
 					}
 				});
 
