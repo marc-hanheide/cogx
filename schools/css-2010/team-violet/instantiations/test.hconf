@@ -1,0 +1,16 @@
+# CAST HOST configuration file
+
+HOST  TheOne         localhost
+
+SA    none           [TheOne]  # This is for the default HOST in .cast file (ie. no SA defined yet)
+
+ID   ptz.server  [TheOne]  0
+
+# Parameters that define hosts; one parameter per line
+# HPAR <component_id?>|<param>  [<host_id>]//<ip>//<hostname>
+# Player may execute on a separate computer
+HPAR  goal-generator|--goal "(or (forall (?p - place) (searched ?p)) (forall (?l - recordlabel) (exists (?o - locatable) (and (= (label ?o) ?l) (exists (?p - place) (=(is-in ?o) ?p))))))"
+
+HPAR  PlannerPythonServer|--domain   task2.domian.mapl
+
+HPAR ferns.detector|--displaylevel 0
