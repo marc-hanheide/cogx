@@ -53,7 +53,7 @@ public class LocalizedVisualObjectTransferFunction extends
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		// TODO: we should use a DoubleValue here!
 		try {
-	 		// scan thorugh all working memory stable entries...
+	 	/*	// scan thorugh all working memory stable entries...
 			List<StableBelief> ls = new ArrayList<StableBelief>(); //Ice.Object
 			String str_tmp ;
 			//StableBelief tmp_stbel ;
@@ -99,7 +99,7 @@ Iterator it=ls.iterator();
 
 
 			//
-			
+			*/
 
 
 			Place currentPlace = SpatialFacade.get(component).getPlace();
