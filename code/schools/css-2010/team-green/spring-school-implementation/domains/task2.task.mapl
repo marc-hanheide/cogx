@@ -1,19 +1,20 @@
 (define (problem task2task) (:domain task2)
 
 (:objects
-	loc1 loc2 loc3 loc4 loc5 - location
+	loc1 loc2 loc3 loc4 loc5 - place
 )
 
 (:init
-        (= (started) false)
-        (= (robot_pos) loc1)
-        (neighbored loc1 loc2)
-        (neighbored loc2 loc1)
-        
+	   (= (visited loc1) false)
+	   (= (visited loc2) false)
+	   (= (visited loc3) false)
+	   (= (visited loc4) false)
+	   (= (visited loc5) false)
+	   (= (is_in) loc1)
 )
 
 (:goal 
-       (finished)
+       (forall (?loc - place) (= (visited ?loc) true))
 )
 
 )
