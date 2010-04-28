@@ -24,8 +24,8 @@ def quoteParams(parList):
     pars = []
     merging = False
     for p in parList:
-        if merging: pars[-1] = pars[-1] + " " + p
-        else: pars.append(p)
+        if merging: pars[-1] = pars[-1] + " " + p.strip('"')
+        else: pars.append(p.strip('"'))
         if p.startswith('"'): merging = True
         if p.endswith('"'): merging = False
     return pars

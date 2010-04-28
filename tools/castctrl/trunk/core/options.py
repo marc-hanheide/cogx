@@ -88,7 +88,7 @@ class CCastOptions(object):
                 self.cleanupScript = []
                 section = self.cleanupScript
             elif l.startswith('[') and l.endswith(']'):
-                if l != "[USEROPTIONS]": section = None
+                if l == "[USEROPTIONS]": section = None
                 else:
                     section = []
                     self.confSection[l.strip(" []")] = section
