@@ -68,13 +68,23 @@
 			(not (visited ?to))
 			(= (is-in ?a) ?to)
 
-			(forall (?pp - place) 
-				(or (not (visited ?pp) )
-				    (and (not (connected ?to ?pp))
-					 (not (connected ?pp ?to)))))
+			
+			(exists (?pp - place) 
+				(and 
+				 (not (visited ?pp))
+				 (or (connected ?to ?pp)
+				     (connected ?pp ?to))) 
+				 )
+
+;; 			(forall (?pp - place) 
+;; 				(or 
+;; 				 (not (visited ?pp))
+;; 				 (not (or (connected ?to ?pp)
+;; 					  (connected ?pp ?to))) 
+;; 				 ))
 			)
 	 :effect (and
-		  (increase (total-cost) 10)
+		  (increase (total-cost) 10000)
 		  (visited ?to)	
 		  (update (visited ?to) true) ))
 
@@ -88,7 +98,7 @@
 
 			)
 	 :effect (and
-		  (increase (total-cost) 10000)
+		  (increase (total-cost) 1020)
 		  (visited ?to)	
 		  (update (visited ?to) true) ))
 
