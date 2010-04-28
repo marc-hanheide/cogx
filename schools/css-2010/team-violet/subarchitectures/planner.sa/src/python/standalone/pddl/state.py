@@ -527,7 +527,7 @@ class State(dict):
         if isinstance(effect, effects.UniversalEffect):
             combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), effect.args))
             for params in combinations:
-                effect.instantiate(zip(effect.args, params))
+                effect.instantiate(dict(zip(effect.args, params)))
                 facts.update(self.get_effect_facts(effect.effect, trace_vars))
                 effect.uninstantiate()
                 
