@@ -2,5 +2,5 @@
 # Author: mmarko
 
 cd output/python
-ln -s -f ../../subarchitectures/planner.sa/src/python/domains domains
+ln -s -f -T ../../subarchitectures/planner.sa/src/python/domains domains
 
