@@ -41,25 +41,25 @@
 		(assign (is-in ?a) ?to)
 	))
 
-;; 	(:action expensive-move
-;; 	 :agent (?a - robot)
-;; 	 :parameters (?to - place)
-;; 	 :variables (?from - place)
-;; 	 :precondition (and
-;; 		(= (is-in ?a) ?from)
-;; 		)
-;; 	 :effect (and
-;; 		  (increase (total-cost) 100)
+	(:action expensive-move
+	 :agent (?a - robot)
+	 :parameters (?to - place)
+	 :variables (?from - place)
+	 :precondition (and
+		(= (is-in ?a) ?from)
+		)
+	 :effect (and
+		  (increase (total-cost) 100)
 
-;; ;; 		  (when 
-;; ;; 		    (increase (total-cost) 10))
+;; 		  (when 
+;; 		    (increase (total-cost) 10))
 		  
-;; ;; 		  (when (not (or (connected ?from ?to)
-;; ;; 			    (connected ?to ?from))
-;; ;; 		    (increase (total-cost) 10)))
+;; 		  (when (not (or (connected ?from ?to)
+;; 			    (connected ?to ?from))
+;; 		    (increase (total-cost) 10)))
 		  
-;; 		(assign (is-in ?a) ?to)
-;; 	))
+		(assign (is-in ?a) ?to)
+	))
 
 	(:action look-for-object
 	 :agent (?a - robot)
