@@ -42,13 +42,13 @@ module SpatialData {
   class MaryCommand
   {
     string text;
-  }
+  };
 
 
   class PlayMp3Command
   {
     long song;
-  }
+  };
 
 
   /**
