@@ -54,13 +54,13 @@ public class LocalizedObjectTransferFunction extends
 			Place currentPlace = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
-                        PerceptBelief existingObjectBelief = tryGetReferredBelief(new ObjectLabelMatchingFunction(
+                        /*PerceptBelief existingObjectBelief = tryGetReferredBelief(new ObjectLabelMatchingFunction(
                                 from.label));
                         if (existingObjectBelief != null) {
                             //There's already a belief about an object with this
                             //label. Skip it.
                             return null;
-                        }
+                        }*/
 			result.put("is-in", FeatureValueBuilder
 					.createNewPointerValue(placeWMA));
 			result.put("ObjectId", FeatureValueBuilder
