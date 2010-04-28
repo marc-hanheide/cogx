@@ -50,11 +50,11 @@ public class LocalizedVisualObjectTransferFunction extends
 					currentPlace.id));
 			result.put("is-in", FeatureValueBuilder
 					.createNewPointerValue(placeWMA));
-			result.put("VisualObjectId", FeatureValueBuilder//result.put("VisualObjectId", FeatureValueBuilder
+			result.put("vo_id", FeatureValueBuilder//  VisualObjectId
 					.createNewStringValue(wmc.address.id));
-			result.put("VisualObjectName", FeatureValueBuilder//result.put("VisualObjectId", FeatureValueBuilder
+			result.put("name", FeatureValueBuilder// VisualObjectName
 					.createNewStringValue(from.label));
-			result.put("VisuaObjectIdConfidence", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence));			
+			result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence)); //VisuaObjectIdConfidence			
 		//	result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
 		} catch (BeliefException e) {
 			component.logException(e);
