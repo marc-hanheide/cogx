@@ -11,6 +11,7 @@
 #include <cctype>
 #include <cassert>
 #include <sstream>
+#include <set>
 #include <highgui.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
@@ -208,6 +209,7 @@ ObjectDetectorFERNS::ObjectDetectorFERNS()
 {
   mode = DETECT_AND_TRACK;
   camId = 0;
+  numDetectionAttempts = 1;
   doDisplay = false;
   show_tracked_locations = false;
   show_keypoints = false;
@@ -247,24 +249,37 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
     while(istr >> model)
     {
       string label;
-      // remove pathname: find last of '/' (Unix) or '\' (DOS)
-      size_t start = model.find_last_of("/\\");
-      if(start == string::npos)
-        start = 0;
+      // find label name, either given explicitely as
+      // some/path/foo-front.jpg:foolabel
+      // or if no ':' is found by implicitly assuming stripped filename as
+      // label: foo-front
+      size_t label_pos = model.find_last_of(":");
+      if(label_pos != string::npos && label_pos < model.size() - 1)
+      {
+        label = model.substr(label_pos + 1, string::npos);
+        model = model.substr(0, label_pos);
+      }
       else
-        start++;
-      // remove suffix .jpg etc: find last '.'
-      size_t end = model.find_last_of(".");
-      if(end == string::npos)
-        end = model.size();
-      label = model.substr(start, end - start);
+      {
+        // remove pathname: find last of '/' (Unix) or '\' (DOS)
+        size_t start = model.find_last_of("/\\");
+        if(start == string::npos)
+          start = 0;
+        else
+          start++;
+        // remove suffix .jpg etc: find last '.'
+        size_t end = model.find_last_of(".");
+        if(end == string::npos)
+          end = model.size();
+        label = model.substr(start, end - start);
+      }
       model_images.push_back(model);
       model_labels.push_back(label);
     }
 
     ostringstream ostr;
     for(size_t i = 0; i < model_images.size(); i++)
-      ostr << " '" << model_images[i] << "'";
+      ostr << " " << model_images[i] << ":" << model_labels[i];
     log("using models: %s", ostr.str().c_str());
   }
 
@@ -280,6 +295,12 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
   {
     istringstream istr(it->second);
     istr >> camId;
+  }
+
+  if((it = _config.find("--numattempts")) != _config.end())
+  {
+    istringstream istr(it->second);
+    istr >> numDetectionAttempts;
   }
 
   if((it = _config.find("--displaylevel")) != _config.end())
@@ -317,9 +338,18 @@ void ObjectDetectorFERNS::start()
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
   // we want to receive DetectionCommands
-  addChangeFilter(createLocalTypeFilter<DetectionCommand>(cdl::ADD),
+  addChangeFilter(createGlobalTypeFilter<DetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetectorFERNS>(this,
         &ObjectDetectorFERNS::receiveDetectionCommand));
+}
+
+size_t ObjectDetectorFERNS::indexOf(const string &label) throw(runtime_error)
+{
+  for(size_t i = 0; i < model_labels.size(); i++)
+    if(label == model_labels[i])
+      return i;
+  throw runtime_error(exceptionMessage(__HERE__, "unknown label '%s'", label.c_str()));
+  return 0;
 }
 
 void ObjectDetectorFERNS::receiveDetectionCommand(
@@ -334,19 +364,41 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   log("FERNS detecting: %s", ostr.str().c_str());
 
   Video::Image image;
-  videoServer->getImage(camId, image);
-  IplImage *grayImage = convertImageToIplGray(image);
-  detectObjects(grayImage, cmd->labels);
-  postObjectsToWM(cmd->labels, image);
-  if(doDisplay)
+
+  // set holding all objects that were detected over a series of images
+  std::set<string> detectedObjects;
+
+  // try detection in a series of images
+  for(int i = 0; i < numDetectionAttempts; i++)
   {
-    drawResults(grayImage);
-    cvShowImage("ObjectDetectorFERNS", grayImage);
-    // needed to make the window appear
-    // (an odd behaviour of OpenCV windows!)
-    cvWaitKey(10);
+    videoServer->getImage(camId, image);
+    IplImage *grayImage = convertImageToIplGray(image);
+    detectObjects(grayImage, cmd->labels);
+    // remember what objects were detected
+    for(size_t i = 0; i < cmd->labels.size(); i++)
+      if(last_frame_ok[indexOf(cmd->labels[i])])
+        detectedObjects.insert(cmd->labels[i]);
+    if(doDisplay)
+    {
+      drawResults(grayImage);
+      cvShowImage("ObjectDetectorFERNS", grayImage);
+      // needed to make the window appear
+      // (an odd behaviour of OpenCV windows!)
+      cvWaitKey(10);
+    }
+    cvReleaseImage(&grayImage);
   }
-  cvReleaseImage(&grayImage);
+  // a bit HACKy: say that we detected an object with a given label
+  // in the last frame, when actually we only know that we detected it at
+  // least in one of the last numDetectionAttempts frames
+  // This is required because postObjectsToWM() looks at last_frame_ok when
+  // setting detection confidence.
+  for(std::set<string>::iterator it = detectedObjects.begin();
+      it != detectedObjects.end(); it++)
+  {
+    last_frame_ok[indexOf(*it)] = true;
+  }
+  postObjectsToWM(cmd->labels, image);
 
   // executed the command, results (if any) are on working memory,
   // now delete command as not needed anymore
@@ -380,24 +432,25 @@ void ObjectDetectorFERNS::setupFERNS() throw(runtime_error)
 
     detectors[i]->set_maximum_number_of_points_to_detect(1000);
 
-    trackers[i] = new template_matching_based_tracker();
-    string trackerfn = model_images[i] + string(".tracker_data");
-    if (!trackers[i]->load(trackerfn.c_str()))
-    {
-      log("Training template matching...\n");
-      trackers[i]->learn(detectors[i]->model_image,
-         5, // number of used matrices (coarse-to-fine)
-         40, // max motion in pixel used to train to coarser matrix
-         20, 20, // defines a grid. Each cell will have one tracked point.
-         detectors[i]->u_corner[0], detectors[i]->v_corner[1],
-         detectors[i]->u_corner[2], detectors[i]->v_corner[2],
-         40, 40, // neighbordhood for local maxima selection
-         10000 // number of training samples
-         );
-      trackers[i]->save(trackerfn.c_str());
+    if (mode==DETECT_AND_TRACK) {
+     trackers[i] = new template_matching_based_tracker();
+     string trackerfn = model_images[i] + string(".tracker_data");
+     if (!trackers[i]->load(trackerfn.c_str()))
+     {
+       log("Training template matching...\n");
+       trackers[i]->learn(detectors[i]->model_image,
+          5, // number of used matrices (coarse-to-fine)
+          40, // max motion in pixel used to train to coarser matrix
+          20, 20, // defines a grid. Each cell will have one tracked point.
+          detectors[i]->u_corner[0], detectors[i]->v_corner[1],
+          detectors[i]->u_corner[2], detectors[i]->v_corner[2],
+          40, 40, // neighbordhood for local maxima selection
+          10000 // number of training samples
+          );
+       trackers[i]->save(trackerfn.c_str());
+     }
+     trackers[i]->initialize();
     }
-    trackers[i]->initialize();
-
     last_frame_ok[i] = false;
   }
 }
@@ -503,7 +556,7 @@ void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
 
 void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
 {
-  for(size_t i = 0; i < model_images.size(); i++)
+  for(size_t i = 0; i < model_labels.size(); i++)
     postObjectToWM_Internal(i, image);
 }
 
@@ -555,7 +608,7 @@ VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
 
   obj->label = model_labels[i];
   obj->time = image.time;
-  if(detectors[i]->pattern_is_detected || last_frame_ok[i])
+  if(last_frame_ok[i])
     obj->detectionConfidence = 1.;
   else
     obj->detectionConfidence = 0.;
