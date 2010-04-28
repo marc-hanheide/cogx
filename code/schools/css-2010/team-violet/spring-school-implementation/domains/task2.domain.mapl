@@ -14,19 +14,29 @@
    (connected ?n1 - place ?n2 - place)
    (visited ?loc - place)
    (searched ?loc - place)
-   )	
+   )
   
   (:functions
    (is-in ?l - locatable) - place
    (label ?l - locatable) - recordlabel
+   (object-acknowledged ?l - locatable) - boolean
    )
 
 ;;; objects ;;;
   (:constants
-   record1 record2 record3 record4 - recordlabel
+   chakakhan heartbreakers james jesusjones - recordlabel
   )
   
 ;;; actions ;;;
+
+  (:action acknowledge-object
+   :agent (?a - robot)
+   :variables (?l - locatable ?p - place)
+   :precondition (= (is-in ?l) ?p)
+   :effect (and
+     (assign (object-acknowledged ?l) true)
+     (update (object-acknowledged ?l) true)
+     ))
 
   (:action look-for-objects
 	   :agent (?a - robot)
@@ -36,7 +46,8 @@
 			  )
 	   :effect (and
 		    (searched ?loc)
-		    ;;;(forall (?l - recordlabel) (exists (?v - visualobject) (=(label ?v) ?l)));;;
+;;;		    (forall (?l - recordlabel) (kval ?a (recordlocation ?l)));;;
+;;;		    (forall (?l - recordlabel) (exists (?v - visualobject) (=(label ?v) ?l)));;;
 		    (update (searched ?loc) true)
 		    ))
 

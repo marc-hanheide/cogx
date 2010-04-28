@@ -170,6 +170,12 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			act.success=TriBool.TRITRUE;
 			act.message=_plannedAction.fullName;
 			return act;
+		} else if (_plannedAction.name.equals("acknowledge-object")) {
+			PrintMessage act = newActionInstance(PrintMessage.class);
+			act.status=ActionStatus.COMPLETE;
+			act.success=TriBool.TRITRUE;
+			act.message=_plannedAction.fullName;
+			return act;
 		}
 		// in case we do not find the action we have an exception
 		throw new ActionExecutionException("No conversion available for: "
