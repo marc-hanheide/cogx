@@ -234,6 +234,7 @@ public class SerialPlanningTaskExecutor extends Thread {
 		Action action = nextAction();
 		PlannedActionWrapper actionWrapper = new PlannedActionWrapper(action,
 				m_converter.toSystemAction(action));
+		System.out.println("Moin");
 		m_component.triggerExecution(actionWrapper.execute(), actionWrapper);
 		return actionWrapper;
 	}

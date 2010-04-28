@@ -20,6 +20,7 @@ import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.PrintMessage;
 import execution.slice.actions.Start;
+import execution.slice.actions.Report;
 import execution.util.ActionConverter;
 
 import execution.slice.TriBool;
@@ -174,15 +175,13 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			return act;
 		} else if(_plannedAction.name.equals("start")) {
 		    assert _plannedAction.arguments.length == 1 : "start action arity is expected to be 1";
-		    //execution.slice.Action act = newActionInstance(execution.slice.Action.class);
 		    Start act = newActionInstance(Start.class);
 		    act.status = ActionStatus.COMPLETE;
 		    act.success = TriBool.TRITRUE;
-		    System.out.println("Creating Start Action!!!");
 		    return act;
 		} else if(_plannedAction.name.equals("report")) {
 		    assert _plannedAction.arguments.length == 1 : "report action arity is expected to be 1";
-		    execution.slice.Action act = newActionInstance(execution.slice.Action.class);
+		    Report act = newActionInstance(Report.class);
 		    act.status = ActionStatus.COMPLETE;
 		    act.success = TriBool.TRITRUE;
 		    return act;
