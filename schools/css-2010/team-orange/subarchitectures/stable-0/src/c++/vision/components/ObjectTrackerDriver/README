@@ -1,0 +1,84 @@
+/* Driver for the object tracker component
+*
+*  @author: Thomas Mörwald, April 2009
+*
+*  This component is an example on how to control the
+*  object tracker by loading a model from ply-file
+*  to the working memory and calling several tracking commands.
+*
+*/
+
+
+Testing the tracker
+-------------------
+
+The tracker can be tasted by using the "subarchitectures/vision.sa/config/tracker.cast".
+Do not press any button while the test is running.
+Wait until the message [LOG "TrackerDriver": Tracking test successfull] appears.
+If tracking fails please contact me: moerwald@acin.tuwien.ac.at
+
+
+Loading a ply model
+-------------------
+
+The object tracker supports loading of ply model which is described here:
+http://local.wasp.uwa.edu.au/~pbourke/dataformats/ply/
+
+Note that the ObjectTracker should not load the models, but the
+ObjectTrackerDriver, since in future the tracker will receive the geometry
+from Working Memory as well.
+
+../components/ObjectTracker/resources/model/box_blender.ply contains the
+data of a box which I generated using blender ply-exporter.
+
+Note that the tracker detects edges using the faces to generate them. This
+means that curved surfaces represented by lots of triangles will be full
+of edges though in reality they won't be visible since this triangulation
+is just an approximation of the surface. I'm currently working on an texture
+based object tracker which should be able to cope this problem.
+
+Note that for loading ply-files in other components than the ObjectTracker you
+have to include the following lines to your CMakeLists.txt
+
+include_directories(../ObjectTracker)
+include_directories(../ObjectTracker/include)
+SET(SOURCES ../ObjectTracker/src/ply.c ../ObjectTracker/src/PlyModel.cpp ../ObjectTracker/src/Model.cpp)
+add_cast_component(ObjectTrackerDriver ${SOURCES})
+
+
+Adding model to working memory
+------------------------------
+
+The ObjectTracker component listens to the VisualObject::Add. This means,
+that whenever an VisualObject is added to Working Memory, the ObjectTracker
+converts the GeometryModel of the VisualObject to it's internal format and
+adds it to the objects to track when the Tracking command is called. The
+definition of an GeometryModel of an VisualObject can be found in VisionData.ice
+
+
+Tracking commands
+-----------------
+
+By now the tracking command supports start and stop tracking and releasing
+of all models. It's planned that there will be a tracking command with a
+model-id list to define which models to track, release, etc. Look up the
+definition in the VisionData.ice
+
+
+Coordinate System
+-----------------
+By now I'm using the OpenGL coordinate system. which means that:
+
+x ... points to the right
+y ... points upwards
+z ... points forward
+
+in the image plane.
+
+
+
+I'd welcome any feedback about the Trackers functionality.
+
+
+
+
