@@ -162,6 +162,12 @@ module execution {
 	StringSeq labels;
       };
       
+      /**
+       * Use a combination of ptu and rotation of the platform to look for objects.
+       */
+      class PTULookForObjects extends Action {
+	StringSeq labels;
+      };
 
 
       
