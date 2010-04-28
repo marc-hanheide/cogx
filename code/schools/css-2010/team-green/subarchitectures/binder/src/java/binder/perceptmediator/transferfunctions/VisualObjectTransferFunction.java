@@ -36,6 +36,15 @@ public class VisualObjectTransferFunction extends SimpleDiscreteTransferFunction
 		result.put("vo_id", FeatureValueBuilder.createNewStringValue(wmc.address.id));//VisualObjectId
 		result.put("name", FeatureValueBuilder.createNewStringValue(from.label));//VisualObjectName
 		result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence));//VisuaObjectIdConfidence
+
+	boolean detected ; 
+			if ( from.detectionConfidence > 0.5 ) {
+				detected = true ;
+			} else {
+				detected = false ;
+			}
+			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));
+	
 float siz ;
 		if( from.views.length > 0 ) {		
 			siz = (float)from.views[0].boundingBox.height * (float)from.views[0].boundingBox.width ; 
