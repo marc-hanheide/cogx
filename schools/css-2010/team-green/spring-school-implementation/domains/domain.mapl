@@ -1,0 +1,144 @@
+(define (domain task2)
+
+        (:requirements :mapl :adl :object-fluents)
+
+        (:types
+                place - object
+                robot - agent
+                robot visualobject person - movable
+	        place_name - object
+	        place_id - object
+		
+        )
+
+	(:predicates
+                (connected ?loc1 - place ?loc2  - place)
+                (checked_for_objects ?loc - place)
+                (neighbor_checked_for_objects ?loc - place)
+                (started ?a - robot)
+                (finished ?a - robot)
+		(ready_to_report ?a - robot)
+		(detected ?v - visualobject)
+	)
+
+        (:functions
+                (is-in ?r - movable) - place
+		(name ?o - visualobject) - object
+		;;(visited ?loc - place) - boolean
+		;;(PlaceStatus ?loc - place) - place_status
+		(placeid ?loc - place) - place_id
+		(start_place ?r - robot) - place
+        )
+
+        (:action start
+                 :agent (?a - robot)
+		 :variables (?at - place)
+                 :precondition (and (not (started ?a)) (= (is-in ?a) ?at))
+                 :effect (and
+                                (started ?a)
+				(assign (start_place ?a) ?at)
+                                (update (started ?a) true)
+				(update (start_place ?a) ?at)
+                         )
+        )
+
+        (:action move
+	         :agent (?a - robot)
+	         :parameters (?to - place)
+		 :variables (?from - place)
+		 :precondition (and
+                               (started ?a)
+				(= (is-in ?a) ?from)
+	                	(or (connected ?from ?to)
+	            		    (connected ?to ?from))
+			       )
+                 :effect (and 
+                              (assign (is-in ?a) ?to)
+;                              (assign (visited ?to) true)
+;                              (update (visited ?to) true)
+                         )
+        )
+
+        (:action look-for-objects
+                 :agent (?a - robot)
+                 :variables (?at - place)
+                 :precondition (and 
+		 	       	    (started ?a) 
+				    (not (checked_for_objects ?at)) 
+				   ; (not (neighbor_checked_for_objects ?at)) 
+				    (= (is-in ?a) ?at)
+			       )
+                 :effect (and 
+                              (checked_for_objects ?at)
+			      (update (checked_for_objects ?at) true)
+                 ;(forall (?loc - place) (when (connected ?at ?loc) (neighbor_checked_for_objects ?loc)))
+                 ;(forall (?loc - place) (when (connected ?loc ?at) (neighbor_checked_for_objects ?loc)))
+		 ;(forall (?loc - place) (when (connected ?at ?loc) (update (neighbor_checked_for_objects ?loc) true)))
+                 ;(forall (?loc - place) (when (connected ?loc ?at) (update (neighbor_checked_for_objects ?loc) true)))
+                         )
+        )
+
+	(:action move_to_report_pos
+                 :agent (?a - robot)
+                 :parameters (?to - place)
+                 :precondition (and
+				 (started ?a)
+				 (forall (?loc - place) (checked_for_objects ?loc))
+				 (= (start_place ?a) ?to)
+			;	 (forall (?loc - place) (or 
+				; 	       	 	    (checked_for_objects ?loc)
+				;			    (neighbor_checked_for_objects ?loc)
+				;			))
+                               )
+                 :effect       (and 
+		 	       	    (ready_to_report ?a) 
+				    (assign (is-in ?a) ?to)
+				    (update (ready_to_report ?a) true)
+			       )
+        )
+
+        (:action report
+                 :agent (?a - robot)
+                 :precondition (and
+                                 (ready_to_report ?a)
+                               )
+                 :effect       (and
+				  (finished ?a)
+				  (update (finished ?a) true)
+
+        		       )
+        )
+
+;	(:derived (all_records_found ?a - agent) (and 
+;		  		     	  	      (kval ?a (record_pos jesus)) 
+;					     	      (kval ?a (record_pos james)) 
+;					     	      (kval ?a (record_pos heart))))
+						      
+
+;	(:action reset
+;		 :agent (?a - agent)
+;		 :precondition (and
+;				 (started)
+;				 (forall (?loc - place) (checked_for_objects ?loc))
+;				 (not (or
+;					(and (kval ?a (record_pos jesus)) 
+;					     (kval ?a (record_pos james)) 
+;					     (kval ?a (record_pos heart)))
+;					(and (kval ?a (record_pos jesus)) 
+;					     (kval ?a (record_pos james)) 
+;					     (kval ?a (record_pos chaka)))
+;					(and (kval ?a (record_pos heart)) 
+;					     (kval ?a (record_pos james)) 
+;					     (kval ?a (record_pos chaka)))
+;					(and (kval ?a (record_pos jesus)) 
+;					     (kval ?a (record_pos heart)) 
+;					     (kval ?a (record_pos heart)))))
+;			       )
+;	 	:effect (and
+;				(forall (?loc - place) (not (checked_for_objects ?loc)))
+;				(forall (?loc - place) (update (checked_for_objects ?loc) false))
+;			)
+;	)
+
+;; still missing:  correct precond for move_to_report_pos (corresponds to precond of reset more or less)
+)
