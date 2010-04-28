@@ -4,6 +4,10 @@
 ///////////////////////////////
 
 // general correlations
+100 Existence(x) ^ Existence(P) ^ Vo_id(x,y) ^ Vo_id(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+100 UnifyWith(x) ^ Vo_id(x,y) ^ Vo_id(P,z) => y=z
+UnifyWith(x) ^ Vo_id(x,y) => y!=Unknown. 
+UnifyWith(x) ^ Vo_id(x,y) => y!=None.
 
 100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
 100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
