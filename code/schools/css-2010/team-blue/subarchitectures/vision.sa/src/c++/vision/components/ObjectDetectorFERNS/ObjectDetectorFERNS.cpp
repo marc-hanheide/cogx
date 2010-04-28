@@ -550,8 +550,10 @@ void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
     const Video::Image &image)
 {
   for(size_t i = 0; i < model_labels.size(); i++)
-    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end())
-      postObjectToWM_Internal(i, image);
+    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end()){
+      if(last_frame_ok[i])
+	postObjectToWM_Internal(i, image);
+    }
 }
 
 void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
