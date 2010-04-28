@@ -1,6 +1,6 @@
 (define (domain cogx)
 
-	(:requirements :mapl :adl :object-fluents)
+	(:requirements :mapl :adl :object-fluents :action-costs)
 	
 	(:types 
 		place place_id - object
@@ -25,17 +25,47 @@
 	 :variables (?from - place)
 	 :precondition (and
 		(= (is-in ?a) ?from)
-        (or (connected ?from ?to)
-            (connected ?to ?from))
+		(or (connected ?from ?to)
+		    (connected ?to ?from))
 		)
 	 :effect (and
+		  (increase (total-cost) 10)
+
+;; 		  (when 
+;; 		    (increase (total-cost) 10))
+		  
+;; 		  (when (not (or (connected ?from ?to)
+;; 			    (connected ?to ?from))
+;; 		    (increase (total-cost) 10)))
+		  
 		(assign (is-in ?a) ?to)
 	))
+
+;; 	(:action expensive-move
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?to - place)
+;; 	 :variables (?from - place)
+;; 	 :precondition (and
+;; 		(= (is-in ?a) ?from)
+;; 		)
+;; 	 :effect (and
+;; 		  (increase (total-cost) 100)
+
+;; ;; 		  (when 
+;; ;; 		    (increase (total-cost) 10))
+		  
+;; ;; 		  (when (not (or (connected ?from ?to)
+;; ;; 			    (connected ?to ?from))
+;; ;; 		    (increase (total-cost) 10)))
+		  
+;; 		(assign (is-in ?a) ?to)
+;; 	))
 
 	(:action look-for-object
 	 :agent (?a - robot)
 	 :parameters (?to - place)
 	 :precondition (and
+			(not (visited ?to))
 		(= (is-in ?a) ?to)
 		)
 	 :effect (and
@@ -43,6 +73,8 @@
 		  (update (visited ?to) true) ))
 
 )
+
+;; (metric minimize (total-costs))
 
 ;; goal: (forall (?p - place) (visited ?p))
 
