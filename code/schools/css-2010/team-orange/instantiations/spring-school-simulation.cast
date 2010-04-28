@@ -46,9 +46,10 @@ JAVA MG  manual-execution execution.components.GraphicalExecutionManager
 
 # viewing and debugging #######################################################
 
-JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
+#JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom, beliefmodels.autogen.beliefs.StableBelief"
+JAVA MG WMViewer castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, beliefmodels.autogen.beliefs.StableBelief"
 
-JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
+#JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
 
 
 
