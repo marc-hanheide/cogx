@@ -43,17 +43,19 @@ public class LocalizedVisualObjectTransferFunction extends
 			WorkingMemoryChange wmc, VisualObject from) throws BeliefException {
 		assert (from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
+
 		// TODO: we should use a DoubleValue here!
 		try {
 			Place currentPlace = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
-			result.put("is-in", FeatureValueBuilder
-					.createNewPointerValue(placeWMA));
+			if(from.detectionConfidence == 1f)
+			   result.put("is-in", FeatureValueBuilder.createNewPointerValue(placeWMA));
+			else
+			   result.put("is-in", FeatureValueBuilder.createNewStringValue("Unknown")); 
 			result.put("VisualObjectId", FeatureValueBuilder
 					.createNewStringValue(wmc.address.id));
-			result.put("Label", FeatureValueBuilder
-					.createNewStringValue(from.label));
+			result.put("Label", FeatureValueBuilder.createNewStringValue(from.label));
 //			result.put("distance", FeatureValueBuilder
 //					.createNewFloatValue(from.distance));
 		} catch (BeliefException e) {
@@ -63,7 +65,7 @@ public class LocalizedVisualObjectTransferFunction extends
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}
-
+       
 		return result;
 	}
 
