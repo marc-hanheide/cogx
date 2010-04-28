@@ -1,5 +1,6 @@
 # execution ###################################################################
-JAVA MG executor execution.components.DoraExecutionMediator --labels "breathless,level"
+JAVA MG executor execution.components.SpringSchoolExecutionMediator --labels "breathless,level"
+#JAVA MG executor execution.components.DoraExecutionMediator --labels "breathless,level"
 #JAVA MG executor execution.components.DoraExecutionMediator --labels "james,chakakhan,heartbrakers,jesusjones"
 
 #JAVA MG executor execution.components.SpringSchoolExecutionMediator 
