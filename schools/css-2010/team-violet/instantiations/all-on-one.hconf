@@ -25,7 +25,7 @@ SA    vision.sa      [TheOne]
 # ID  <component_id>  [<host_id>]//<ip>//<hostname>  <enabled?>
 # ID    video.viewer   [TheOne]
 
-# Parameters that define hosts
+# Parameters that define hosts; one parameter per line
 # HPAR <component_id?>|<param>  [<host_id>]//<ip>//<hostname>
 # Player may execute on a separate computer
 HPAR  |--player-host   [Player]
