@@ -33,9 +33,9 @@ public class VisualObjectTransferFunction extends SimpleDiscreteTransferFunction
 		assert(from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		// TODO: we should use a DoubleValue here!
-		result.put("VisualObjectId", FeatureValueBuilder.createNewStringValue(wmc.address.id));
-		result.put("VisualObjectName", FeatureValueBuilder.createNewStringValue(from.label));
-		result.put("VisuaObjectIdConfidence", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence));
+		result.put("vo_id", FeatureValueBuilder.createNewStringValue(wmc.address.id));//VisualObjectId
+		result.put("name", FeatureValueBuilder.createNewStringValue(from.label));//VisualObjectName
+		result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence));//VisuaObjectIdConfidence
 		//result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
 		return result;
 	}
