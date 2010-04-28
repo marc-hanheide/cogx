@@ -5,7 +5,7 @@
 (:types 
 	place - object
 	robot - agent
-	robot - movable
+	robot visualobject - movable
 )
 	
 ;;; ======================================================================================
@@ -27,7 +27,7 @@
 ;;; ======================================================================================
 
 (:functions
-	(is-in ?r - robot) - place
+	(is-in ?r - movable) - place
 	(visited ?p - place) - boolean 	
 	(searched ?p - place) - boolean
 	(located ?p - object) - place
