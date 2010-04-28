@@ -26,7 +26,7 @@ JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
 INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/perceptmediators.cast
-#JAVA GD bindermonitor binder.components.BinderMonitor --debug
+JAVA GD bindermonitor binder.components.BinderMonitor --debug
 
 # comsys ######################################################################
 INCLUDE includes/comsys.sa/comsys-base.cast

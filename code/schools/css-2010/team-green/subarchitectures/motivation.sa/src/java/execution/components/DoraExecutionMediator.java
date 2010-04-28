@@ -51,7 +51,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 	public execution.slice.Action toSystemAction(Action _plannedAction)
 			throws CASTException {
 		if (_plannedAction.name.equals("move")) {
-			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
+			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 1";
 
 			GoToPlace act = newActionInstance(GoToPlace.class);
 			String placeUnionID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
@@ -100,6 +100,12 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
             act.featureType = featureID;
             act.featureValue = _plannedAction.arguments[2];
 			return act;
+		} else if(_plannedAction.name.equals("start")) {
+		    assert _plannedAction.arguments.length == 1 : "start action arity is expected to be 1";
+		} else if(_plannedAction.name.equals("move_to_report_pos")) {
+		     assert _plannedAction.arguments.length == 1 : "move_to_report_pos action arity is expected to be 1";
+		} else if(_plannedAction.name.equals("report")) {
+		     assert _plannedAction.arguments.length == 0 : "report action arity is expected to be 0";
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
