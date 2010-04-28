@@ -451,7 +451,7 @@ class ModalPredicateCompiler(Translator):
             return literal
 
         pred = scope.predicates.get("-".join(name_elems), args)
-        
+
         result = Literal(pred, args, negated=literal.negated)
         result.__class__ = literal.__class__
         return result.copy_instance()
@@ -496,12 +496,12 @@ class ModalPredicateCompiler(Translator):
         if new_args:
             args = new_args
         else:
-            args = [types.Parameter(p.name, p.type) for p in action.args]
+            args = [types.Parameter(p.name, p.type) for p in axiom.args]
 
         if new_pred:
             pred = new_pred
         else:
-            pred = domain.predicates.get(axiom.predicate, args)
+            pred = domain.predicates.get(axiom.predicate.name, args)
 
         a2 = axioms.Axiom(pred, args, None, domain)
         a2.condition = axiom.condition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
@@ -600,7 +600,13 @@ class MAPLCompiler(Translator):
                     e2 = eff.copy()
                     e2.predicate = mapl.direct_knowledge
                     return e2
-            return eff.copy(new_parts = filter(None, results))
+                else:
+                    return eff.copy()
+
+            filtered_results = filter(None, results)
+            if not filtered_results:
+                return None
+            return eff.copy(new_parts = filtered_results)
                 
         
         a2 = actions.Action(action.name, action.args, None, None, domain)
@@ -616,6 +622,8 @@ class MAPLCompiler(Translator):
                 
         if action.effect:
             a2.effect = action.effect.visit(visitor)
+            if a2.effect is None:
+                a2.effect = effects.ConjunctiveEffect([])
             a2.effect.set_scope(a2)
         if action.sensors:
             keff = action.knowledge_effect().copy(a2)
@@ -658,7 +666,7 @@ class MAPLCompiler(Translator):
         dom.predicates.add(direct_knowledge)
         dom.predicates.add(indomain)
         dom.predicates.add(not_indomain)
-        
+
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
