@@ -1,4 +1,5 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --log --domain /home/cogx/workspace/spring-school-master/my-spring-school-system/spring-school-implementation/domains/visit_all.mapl
+COMPONENT PYTHON PlannerPythonServer PythonServer --log --domain /home/ari/projects/team-blue/spring-school-implementation/domains/visit_all.mapl
+#COMPONENT PYTHON PlannerPythonServer PythonServer --log --domain /home/cogx/workspace/spring-school-master/my-spring-school-system/spring-school-implementation/domains/visit_all.mapl
 
 SUBARCHITECTURE planner.sa 
 
