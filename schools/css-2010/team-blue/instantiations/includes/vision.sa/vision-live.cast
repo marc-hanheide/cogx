@@ -1,2 +1,4 @@
-CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE --imgsize "640 480"
+
+#CPP MG VideoServer PointGreyServer --imgsize "640 480" --framerate_fps "15" --camids "0 1" --log --swapredblue #--camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"  #--format7 "640 480 0 0 1 1600" #--debug --setAutPropAdj "0 0 0 0 0 0" 
 
