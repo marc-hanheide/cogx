@@ -5,11 +5,10 @@
 
 // general correlations
 
-100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None ^ Label(x, t) ^ Label(P, t) ^ t!=Unknown ^ t!=None=> UnifyWith(x)
-UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z.
+100 Existence(x) ^ Existence(P) ^ Label(x, t) ^ Label(P, t) ^ t!=Unknown ^ t!=None=> UnifyWith(x)
+
 UnifyWith(x) ^ Label(x,t1) ^ Label(P,t2) => t1=t2.
-UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
-UnifyWith(x) ^ Is-in(x,y) => y!=None. 
+
 UnifyWith(x) ^ Label(x,t) => t!=Unknown. 
 UnifyWith(x) ^ Label(x,t) => t!=None.
 
