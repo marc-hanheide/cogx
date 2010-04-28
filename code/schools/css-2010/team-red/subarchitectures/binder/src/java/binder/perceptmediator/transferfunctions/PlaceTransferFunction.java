@@ -36,6 +36,13 @@ public class PlaceTransferFunction extends SimpleDiscreteTransferFunction<Place>
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		result.put(FeatPlaceId.value, FeatureValueBuilder.createNewIntegerValue((int) from.id));
 		result.put(FeatPlaceStatus.value, FeatureValueBuilder.createNewStringValue(from.status.name()));
+		if (from.id % 2 == 0) { // Even id
+			result.put("wave1", FeatureValueBuilder.createNewStringValue("no"));
+			result.put("wave2", FeatureValueBuilder.createNewStringValue("yes"));			
+		} else {
+			result.put("wave1", FeatureValueBuilder.createNewStringValue("yes"));
+			result.put("wave2", FeatureValueBuilder.createNewStringValue("no"));
+		}
 		return result;
 	}
 
