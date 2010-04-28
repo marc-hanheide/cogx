@@ -233,7 +233,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.set_state(new_state)
     task.mapltask = newtask
 
-    if finished_actions:
+    if finished_actions or failed_actions:
       diffstate = compute_state_updates(task.get_state(), old_state, finished_actions, failed_actions)
       for fact in diffstate.iterfacts():
         task.get_state().set(fact)
