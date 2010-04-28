@@ -99,7 +99,7 @@ Iterator it=ls.iterator();
 
 
 			//
-			*/
+			
 
 
 			Place currentPlace = SpatialFacade.get(component).getPlace();
