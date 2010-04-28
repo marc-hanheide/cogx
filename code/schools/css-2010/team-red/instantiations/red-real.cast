@@ -12,6 +12,7 @@ INCLUDE includes/spatial.sa/spatial-peekabot.cast
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-live.cast
 INCLUDE includes/vision.sa/vision-objects.cast
+INCLUDE includes/vision.sa/vision-people.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 
 

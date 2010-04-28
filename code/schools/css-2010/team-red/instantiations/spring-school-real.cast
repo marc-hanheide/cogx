@@ -12,10 +12,12 @@ CPP GD self.representer SelfRepresenter
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-live.cast
 INCLUDE includes/vision.sa/vision-objects.cast
-#INCLUDE includes/vision.sa/vision-people.cast
+INCLUDE includes/vision.sa/vision-people.cast
 Include includes/vision.sa/vision-execution.cast
 
-#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
+#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --labels "breathless level"
+#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --labels "james,chakakhan,heartbrakers,jesusjones"
+
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
@@ -26,7 +28,7 @@ JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
 INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/perceptmediators.cast
-#JAVA GD bindermonitor binder.components.BinderMonitor --debug
+JAVA GD bindermonitor binder.components.BinderMonitor --debug
 
 # comsys ######################################################################
 INCLUDE includes/comsys.sa/comsys-base.cast
@@ -41,7 +43,8 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels=james
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "breathless level"
+#JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "james,chakakhan,heartbrakers,jesusjones"
 
 
 # viewing and debugging #######################################################
