@@ -92,7 +92,8 @@ def feature_val_to_object(fval):
   elif fval.__class__ == featurecontent.UnknownValue:
     return pddl.UNKNOWN
 
-  assert False, "Unknown feature type: %s" % fval.__class__
+  return None
+  #assert False, "Unknown feature type: %s" % fval.__class__
 
 
 def gen_fact_tuples(beliefs):
@@ -110,10 +111,13 @@ def gen_fact_tuples(beliefs):
         if isinstance(value, distribs.FeatureValues):
           for valpair in value.values:
             val = feature_val_to_object(valpair.val)
-            result.append((feat, val, valpair.prob))
+            if val is not None:
+              result.append((feat, val, valpair.prob))
         elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
-          result.append((feat, feature_val_to_object(value.mean), 1.0))
+          val = feature_val_to_object(value.mean)
+          if val is not None:
+            result.append((feat, val , 1.0))
       return result
     if isinstance(dist, distribs.DiscreteDistribution):
       assert False, "DiscreteDistribution not supported yet"
@@ -298,12 +302,10 @@ def generate_mapl_task(task_desc, domain_fn):
     opt_func = None
 
   problem = pddl.Problem("cogxtask", objects, [], None, task._mapldomain, opt, opt_func )
-  try:
-    goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
-    problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
-    log.debug("goal: %s", problem.goal)
-  except pddl.parser.ParseError:
-    problem.goal = pddl.conditions.Falsity()
+
+  goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
+  problem.goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, problem)
+  log.debug("goal: %s", problem.goal)
 
   task._mapltask = problem
   task.set_state(prob_state.ProbabilisticState(facts, problem).determinized_state(0.1, 0.9))
