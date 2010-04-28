@@ -164,6 +164,12 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			act.featureType = featureID;
 			act.featureValue = _plannedAction.arguments[2];
 			return act;
+		} else if (_plannedAction.name.equals("commit-name")) {
+			PrintMessage act = newActionInstance(PrintMessage.class);
+			act.status=ActionStatus.COMPLETE;
+			act.success=TriBool.TRITRUE;
+			act.message=_plannedAction.fullName;
+			return act;
 		}
 		// in case we do not find the action we have an exception
 		throw new ActionExecutionException("No conversion available for: "
