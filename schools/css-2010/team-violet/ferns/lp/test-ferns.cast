@@ -6,12 +6,14 @@ CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 # reading stored images
-CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "ferns/lp/testseq/seq%03d.jpg" --start 0 --end 21 --framerate_ms 250
+#CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "ferns/lp/testseq/seq%03d.jpg" --start 0 --end 21 --framerate_ms 250
 
 # live images
-#CPP MG videoserver OpenCvLiveServer --camids 0 --devnums 0
+CPP MG videoserver OpenCvLiveServer --imgsize "640 480" --camids 0 --devnums 0
 
-CPP MG VideoClient ObjectDetectorFERNS --videoname videoserver --camid 0 --models "ferns/lp/chakakhan_img000.jpg:chakakhan  ferns/lp/heartbreakers_img000.jpg:heartbreakers ferns/lp/james_img000.jpg:james ferns/lp/jesusjones_img000.jpg:jesusjones" --mode DETECT_ONLY --displaylevel 2 #--log
+# CPP MG VideoClient ObjectDetectorFERNS --videoname videoserver --camid 0 --models "ferns/lp/chakakhan.jpg  ferns/lp/heartbreakers.jpg  ferns/lp/james.jpg  ferns/lp/jesusjones.jpg" --mode DETECT_ONLY --displaylevel 2 #--log
+
+CPP MG VideoClient ObjectDetectorFERNS --videoname videoserver --camid 0 --models "ferns/lp/chakakhan_img000.jpg:chakakhan  ferns/lp/heartbreakers_img000.jpg:heartbreakers  ferns/lp/james_img000.jpg:james  ferns/lp/jesusjones_img000.jpg:jesusjones" --mode DETECT_ONLY --displaylevel 2 #--log
 
 CPP MG Dummy DummyDriver --labels "chakakhan heartbreakers james jesusjones" --log
 
