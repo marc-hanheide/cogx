@@ -23,14 +23,14 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.WMView;
 import castutils.facades.SpatialFacade;
-
+/*
 import java.util.List ;
 import java.util.ArrayList;
 
 import beliefmodels.autogen.beliefs.StableBelief ; 
-import java.util.Iterator;
-import beliefmodels.autogen.distribs.*;
-import beliefmodels.autogen.distribs.FeatureContentUtils;
+//import java.util.Iterator;
+//import beliefmodels.autogen.distribs.*;
+//import beliefmodels.autogen.distribs.FeatureContentUtils;*/
 
 /**
  * @author marc
