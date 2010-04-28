@@ -1,0 +1,7 @@
+h: Hi robot.
+r: Hello.
+h: this is a box.
+r: What color@H* is the box HH%
+h: it is red.
+r: the box is red@L* HH%
+h: yes.
