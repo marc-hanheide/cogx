@@ -1,5 +1,5 @@
-CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/james1.jpg:james ./ferns/james2.jpg:james ./ferns/james3.jpg:james  ./ferns/jesus1.jpg:jesus ./ferns/jesus2.jpg:jesus ./ferns/jesus3.jpg:jesus    ./ferns/chaka1.jpg:chaka ./ferns/chaka2.jpg:chaka ./ferns/chaka3.jpg:chaka    ./ferns/heart1.jpg:heart ./ferns/heart2.jpg:heart ./ferns/heart3.jpg:heart" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
-#CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/james.jpg ./ferns/jesus.jpg ./ferns/chaka.jpg ./ferns/heart.jpg" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
+#CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/james1.jpg:james ./ferns/james2.jpg:james ./ferns/james3.jpg:james  ./ferns/jesus1.jpg:jesus ./ferns/jesus2.jpg:jesus ./ferns/jesus3.jpg:jesus    ./ferns/chaka1.jpg:chaka ./ferns/chaka2.jpg:chaka ./ferns/chaka3.jpg:chaka    ./ferns/heart1.jpg:heart ./ferns/heart2.jpg:heart ./ferns/heart3.jpg:heart" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
+CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/james1.jpg:james  ./ferns/jesus1.jpg:jesus ./ferns/chaka1.jpg:chaka ./ferns/heart1.jpg:heart" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
 
 #./ferns/MAGAZINE.jpg ./ferns/juice.jpg
 
