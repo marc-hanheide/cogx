@@ -331,6 +331,7 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
   }
 
   setupFERNS();
+  imgcnt = 0;
 }
 
 void ObjectDetectorFERNS::start()
@@ -379,9 +380,10 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
       if(last_frame_ok[indexOf(cmd->labels[i])])
         detectedObjects.insert(cmd->labels[i]);
     if(doDisplay)
-    {
+    {   
       drawResults(grayImage);
       cvShowImage("ObjectDetectorFERNS", grayImage);
+
       // needed to make the window appear
       // (an odd behaviour of OpenCV windows!)
       cvWaitKey(10);
@@ -534,6 +536,12 @@ void ObjectDetectorFERNS::drawResults(IplImage * frame)
           draw_recognized_keypoints(frame, detectors[i]);
         }
       }
+      
+            
+      char filename[1024];
+      snprintf(filename, 1024, "img%03d.jpg", imgcnt++);
+      cvSaveImage(filename, frame, 0);
+      
     }
   }
 }
