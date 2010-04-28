@@ -2,13 +2,21 @@
 # defines CogX demo robot
 include "../common/cogxp3.inc"
 
+
+
 include "box.inc"
+
+
 
 # defines 'map' object used for floorplans
 include "../common/map.inc"
 
+
+
 # defines sick laser
 include "../common/urg_04LX.inc"
+
+
 
 # set the size of a pixel in meters
 #resolution 0.10
@@ -61,9 +69,9 @@ define cogxp3blob cogxp3
 cogxp3blob
 (
   name "robot"
-  pose [-11.45 3.45 0]
+  pose [-10.878 3.253 2806.848]
 
-  urg_04LX( pose [0.14 0 0] samples 654 laser_sample_skip 0)
+  urg_04LX( pose [0.140 0.000 0.000] samples 654 laser_sample_skip 0)
 
 )
 
@@ -73,7 +81,7 @@ box2d
 (
 name "greenbox1"
 color "green"
-pose [-2 2.3 0.000]
+pose [-11.850 0.900 0.000]
 blob_return 1
 )
 
@@ -81,7 +89,7 @@ box2d
 (
 name "greenbox2"
 color "green"
-pose [-0.74 1.4 0.000]
+pose [-0.740 1.400 0.000]
 blob_return 1
 )
 
@@ -90,7 +98,7 @@ box2d
 (
 name "bluebox1"
 color "blue"
-pose [-0.1 2.3 0.000]
+pose [-0.100 2.300 0.000]
 blob_return 1
 )
 
@@ -98,7 +106,7 @@ box2d
 (
 name "bluebox2"
 color "blue"
-pose [-0.1  1.4 0.000]
+pose [-9.900  2.425 0.000]
 blob_return 1
 )
 
@@ -108,7 +116,7 @@ box2d
 (
 name "redbox1"
 color "red"
-pose [2 2.6 0.000]
+pose [-11.900 -1.575 0.000]
 blob_return 1
 )
 
@@ -116,7 +124,7 @@ box2d
 (
 name "redbox2"
 color "red"
-pose [3.5 1.26 0.000]
+pose [3.500 1.260 0.000]
 blob_return 1
 )
 
@@ -126,7 +134,7 @@ box2d
 (
 name "yellowbox1"
 color "yellow"
-pose [0.000 -4.6 0.000]
+pose [-9.950 3.825 0.000]
 blob_return 1
 )
 
@@ -134,7 +142,7 @@ box2d
 (
 name "yellowbox2"
 color "yellow"
-pose [2.300 -4.6 0.000]
+pose [2.300 -4.600 0.000]
 blob_return 1
 )
 
@@ -143,7 +151,7 @@ box2d
 (
 name "magentabox1"
 color "magenta"
-pose [-3.4 -5.6 0.000]
+pose [-3.400 -5.600 0.000]
 blob_return 1
 )
 
@@ -151,7 +159,7 @@ box2d
 (
 name "magentabox2"
 color "magenta"
-pose [-0.7 -4.2 0.000]
+pose [-11.775 3.475 0.000]
 blob_return 1
 )
 
