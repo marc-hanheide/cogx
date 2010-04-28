@@ -56,6 +56,21 @@ class ADLCompiler(Translator):
         for i in _problem.init:
             if not i.negated:
                 p2.init.append(i.copy(new_scope=p2))
+
+        #make sure that the goal is in the form FD likes (exactly one "and" at the top level)
+        if not isinstance(p2.goal, conditions.Conjunction):
+            p2.goal = conditions.Conjunction([p2.goal])
+        else:
+            newparts = []
+            open_parts = p2.goal.parts[:]
+            while open_parts:
+                part = open_parts.pop(0)
+                if isinstance(part, conditions.Conjunction):
+                    open_parts += part.parts
+                else:
+                    newparts.append(part)
+            p2.goal = conditions.Conjunction(newparts)
+            
         return p2
 
 class CompositeTypeCompiler(Translator):

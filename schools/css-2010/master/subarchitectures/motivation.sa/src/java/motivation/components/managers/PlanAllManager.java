@@ -136,6 +136,10 @@ public class PlanAllManager extends ManagedComponent {
 		log("running");
 
 		try {
+			// TODO
+			// really bad hack to avoid the racong condition on startup
+			this.sleepComponent(1000);
+			
 			wmLock.initialize();
 			while (isRunning()) {
 				log("checking for active motives to manage them");
