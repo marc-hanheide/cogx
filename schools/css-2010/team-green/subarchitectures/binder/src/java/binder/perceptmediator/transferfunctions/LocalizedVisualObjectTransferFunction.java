@@ -24,6 +24,11 @@ import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.WMView;
 import castutils.facades.SpatialFacade;
 
+import java.util.List ;
+import java.util.ArrayList;
+
+import beliefmodels.autogen.beliefs.StableBelief ;
+
 /**
  * @author marc
  * 
@@ -45,6 +50,31 @@ public class LocalizedVisualObjectTransferFunction extends
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		// TODO: we should use a DoubleValue here!
 		try {
+			// scan thorugh all working memory stable entries...
+		//	List<StableBelief> ls = new ArrayList<StableBelief>(); //Ice.Object
+			//StableBelief tmp_stbel ;
+			//StableBelief [] tmp_stbel2 ;
+
+		//	component.getMemoryEntries(StableBelief.class, ls) ;
+			//component.getMemoryEntriesWithData(StableBelief.class, ls) ;
+
+
+		/*	for ( int i = 0 ; i < ls.size() ; i++) {
+				ls[i]
+			}*/
+			
+
+                      // component.getWorkingMemoryEntries(tmp_stbel) ;
+
+
+		//	component.getMemoryEntries(ls) ;
+ 
+
+
+			//
+			
+
+
 			Place currentPlace = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
@@ -54,8 +84,17 @@ public class LocalizedVisualObjectTransferFunction extends
 					.createNewStringValue(wmc.address.id));
 			result.put("name", FeatureValueBuilder// VisualObjectName
 					.createNewStringValue(from.label));
-			result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence)); //VisuaObjectIdConfidence			
-		//	result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
+			result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence)); 
+
+			
+			float siz ;
+		if( from.views.length > 0 ) {		
+			siz = (float)from.views[0].boundingBox.height * (float)from.views[0].boundingBox.width ; 
+		}else{
+			siz = 0 ; 
+		}
+		result.put("siz", FeatureValueBuilder.createNewFloatValue(siz)); 
+
 		} catch (BeliefException e) {
 			component.logException(e);
 		} catch (CASTException e) {
@@ -63,6 +102,8 @@ public class LocalizedVisualObjectTransferFunction extends
 			//System.out.print("An error occured in LocalizedVisualObjectTransferFunction!!"); 
 		} catch (InterruptedException e) {
 			component.logException(e);
+
+
 		}
 
 		return result;
