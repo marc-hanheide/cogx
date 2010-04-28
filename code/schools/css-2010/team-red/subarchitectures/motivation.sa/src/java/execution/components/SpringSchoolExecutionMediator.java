@@ -21,6 +21,7 @@ import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
+import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.PrintMessage;
 import execution.util.ActionConverter;
@@ -171,6 +172,13 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    assert _plannedAction.arguments.length == 1 : "look-for-people action arity is expected to be 1";
 	    // create the action instance and return it
 	    LookForPeople act = newActionInstance(LookForPeople.class);
+	    return act;
+	}   else if (_plannedAction.name.equals("ptu-look-for-objects")) {
+		
+	    assert _plannedAction.arguments.length == 2 : "ptu-look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
+	    
+	    PTULookForObjects act = newActionInstance(PTULookForObjects.class);
+	    act.labels = m_objectLabels;
 	    return act;
 	}   else if (_plannedAction.name.equals("cheap-look-for-objects")) {
 		

@@ -55,6 +55,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
 	private JRadioButton m_lookForObjectsAction;
+	private JRadioButton m_ptulookForObjectsAction;
 	private JRadioButton m_lookForPeopleAction;
 	private JRadioButton m_askForFeatureAction;
 	private JRadioButton m_testFeatureValueAction;
@@ -147,6 +148,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
 			m_lookForObjectsAction = new JRadioButton("look for objects");
+			m_ptulookForObjectsAction = new JRadioButton("ptu look for objects");
 			m_lookForPeopleAction = new JRadioButton("look for people");
 
 			m_askForFeatureAction = new JRadioButton("ask for feature");
@@ -160,6 +162,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
 			actionGroup.add(m_lookForObjectsAction);
+			actionGroup.add(m_ptulookForObjectsAction);
 			actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_askForFeatureAction);
 			actionGroup.add(m_testFeatureValueAction);
@@ -169,6 +172,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_actionPanel.add(m_detectObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForObjectsAction, new GridBagConstraints());
+			m_actionPanel.add(m_ptulookForObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_askForFeatureAction, new GridBagConstraints());
 			m_actionPanel.add(m_testFeatureValueAction,
@@ -222,6 +226,8 @@ public class ActionInterfaceFrame extends JFrame {
 			detectPeople();
 		} else if (m_lookForObjectsAction.isSelected()) {
 			lookForObjects();
+		} else if (m_ptulookForObjectsAction.isSelected()) {
+			ptulookForObjects();
 		} else if (m_lookForPeopleAction.isSelected()) {
 			lookForPeople();
 		} else if (m_askForFeatureAction.isSelected()) {
@@ -428,6 +434,10 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private void lookForObjects() throws CASTException {
 		m_exeMan.triggerLookForObjects(new MonitorPanel());
+	}
+
+	private void ptulookForObjects() throws CASTException {
+		m_exeMan.triggerPTULookForObjects(new MonitorPanel());
 	}
 
 	/**
