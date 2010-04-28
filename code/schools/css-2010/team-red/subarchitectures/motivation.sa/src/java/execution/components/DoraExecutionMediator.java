@@ -68,7 +68,31 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 	 */
 	public execution.slice.Action toSystemAction(Action _plannedAction)
 			throws CASTException {
-		if (_plannedAction.name.equals("move")) {
+
+		if (_plannedAction.name.equals("expensive-move")) {
+			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
+
+			GoToPlace act = newActionInstance(GoToPlace.class);
+			String placeUnionID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			Belief placeUnion = m_binderFacade.getBelief(placeUnionID);
+
+			if (placeUnion == null) {
+				throw new ActionExecutionException(
+						"No union for place union id: " + placeUnionID);
+			}
+
+			List<FeatureValue> placeIDFeatures = m_binderFacade
+					.getFeatureValue(placeUnion, "PlaceId");
+			if (placeIDFeatures.isEmpty()) {
+				throw new ActionExecutionException(
+						"No PlaceId features for union id: " + placeUnionID);
+
+			}
+			IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
+			act.placeID = placeID.val;
+			return act;
+		}
+		else if (_plannedAction.name.equals("move")) {
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 			GoToPlace act = newActionInstance(GoToPlace.class);
@@ -91,6 +115,24 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			act.placeID = placeID.val;
 			return act;
 		} else if (_plannedAction.name.equals("look-for-object")) {
+			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
+
+// 			DetectObjects act = newActionInstance(LookForObjects.class);
+			LookForObjects act = newActionInstance(LookForObjects.class);
+// 			DetectObjects act = newActionInstance(DetectObjects.class);
+			act.labels = m_objectLabels;// DEFAULT_LABELS;
+			//act.labels = DEFAULT_LABELS;//m_objectLabels
+			return act;
+		} else if (_plannedAction.name.equals("look-for-object-cheap")) {
+			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
+
+// 			DetectObjects act = newActionInstance(LookForObjects.class);
+			LookForObjects act = newActionInstance(LookForObjects.class);
+// 			DetectObjects act = newActionInstance(DetectObjects.class);
+			act.labels = m_objectLabels;// DEFAULT_LABELS;
+			//act.labels = DEFAULT_LABELS;//m_objectLabels
+			return act;
+		}  else if (_plannedAction.name.equals("look-for-object-expensive")) {
 			assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
 
 // 			DetectObjects act = newActionInstance(LookForObjects.class);
