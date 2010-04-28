@@ -35,10 +35,12 @@ public class VisualObjectTransferFunction extends SimpleDiscreteTransferFunction
 		// TODO: we should use a DoubleValue here!
 		result.put("VisualObjectId", FeatureValueBuilder.createNewStringValue(wmc.address.id));
 		result.put("label", FeatureValueBuilder.createNewStringValue(from.label));
+
 		if (from.detectionConfidence>0.5)
-		    result.put("detected", FeatureValueBuilder.createNewIntegerValue(1));
+		    result.put("detected", FeatureValueBuilder.createNewBooleanValue(true));
 		else
-		    result.put("detected", FeatureValueBuilder.createNewIntegerValue(0));
+		    result.put("detected", FeatureValueBuilder.createNewBooleanValue(false));
+
 		return result;
 	}
 
