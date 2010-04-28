@@ -1,13 +1,21 @@
 # execution ###################################################################
-JAVA MG executor execution.components.DoraExecutionMediator
+JAVA MG executor execution.components.SpringSchoolExecutionMediator
 
 # motivation ##################################################################
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
+##### GOAL GENERATOR ######
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and (= (is-in dora) p4))" 
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and )" 
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(finished)"
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (and (investigated ?p)))"
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
-JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
+JAVA MG MotivationScheduler motivation.components.managers.Scheduler --maxPlannedMotives 1 --orderPolicy PriorityCostGain #JoinedGainCost 
 
 JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
 
 JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
+
+
+
