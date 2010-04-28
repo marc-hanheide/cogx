@@ -3,72 +3,41 @@
         (:requirements :mapl :adl :object-fluents)
 
         (:types
-                location record - object
-        )
-
-        (:constants
+                place - object
                 robot - agent
-                james jesus_jones heartbreakers chaka_khan - record
+                robot - movable
+	        place_name - object
+	        place_id - object
+		
         )
 
 	(:predicates
-                (neighbored ?loc1 - location ?loc2 - location)
-                (visited ?loc - location)
-                (finished)
-                (finished_looking)
-                (is_start_node ?loc - location)
+                (connected ?loc1 - place ?loc2  - place)
 	)
 
         (:functions
-                (robot_pos) - location
-                (record_pos ?rec - record) - location
-                (started) - boolean
-                (start_node) - location
-        )  
-
-        (:action start
-                 :agent(?a - agent)
-	         :parameters (?loc - location)
-                 :precondition (and (= (started) false) (= (robot_pos) ?loc))
-                 :effect(and (assign (started) true) (assign (start_node) ?loc))
+                (is-in ?r - agent) - place
+		(visited ?loc - place) - boolean
+		(PlaceStatus ?loc - place) - object
+		(placeid ?loc - place) - object
+;;		(AgentId ?loc - place) - object
         )
 
+
         (:action move
-	         :agent (?a - agent)
-	         :parameters (?to - location)
-                 :precondition(and (not (visited ?to)) (= (started) true))
+	         :agent (?a - robot)
+	         :parameters (?to - place)
+		 :variables (?from - place)
+		 :precondition (and
+				(= (is-in ?a) ?from)
+	                	(or (connected ?from ?to)
+	            		    (connected ?to ?from))
+			       )
                  :effect (and 
-                              (assign (robot_pos) ?to)
-                              (visited ?to)
- ;                             (forall (?loc - location) (when (neighbored ?loc ?to) (visited ?loc)))
+                              (assign (is-in ?a) ?to)
+                              (assign (visited ?to) true)
                               (update (visited ?to) true)
                          )
         )
 
-        (:action look-for-object
-                 :agent (?a - agent)
-	         :parameters (?rec - record)
-                 :precondition(and (not (kval ?a (record_pos ?rec))) (= (started) true))
-                 :effect (and
-                                (kval ?a (record_pos ?rec))
-                         )
-        )
-
-        (:action move_to_report_pos
-                 :agent (?a - agent)
-                 :parameters (?to - location)
-                 :precondition (and 
-;                                (forall (?loc - location) (visited ?loc))
-                                 (= (start_node) ?to)
-                                 (forall (?rec - record) (kval ?a (record_pos ?rec)))
-                               )
-                 :effect       (and (finished_looking) (assign (robot_pos) ?to))
-        )
-
-        (:action report
-                 :agent (?a - agent)
-                 :parameters ()
-                 :precondition (finished_looking)
-                 :effect       (finished)
-        )
 )
