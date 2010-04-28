@@ -52,8 +52,6 @@ public class LocalizedPersonTransferFunction extends
 					.createNewPointerValue(placeWMA));
 			result.put("PersonId", FeatureValueBuilder
 					.createNewStringValue(wmc.address.id));
-			result.put("distance", FeatureValueBuilder
-					.createNewFloatValue(from.distance));
 		} catch (BeliefException e) {
 			component.logException(e);
 		} catch (CASTException e) {
