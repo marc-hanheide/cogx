@@ -1,0 +1,28 @@
+(define (problem cogxtask)
+
+(:domain cogx)
+
+(:objects  robot_3__q - robot
+           place_2__q place_1__q place_0__q - place
+           place_id_0 place_id_2 place_id_1 - place_id
+)
+
+(:init  (= (placeid place_2__q) place_id_2)
+        (= (is-in robot_3__q) place_0__q)
+        (connected place_0__q place_1__q)
+        (= (placeid place_1__q) place_id_1)
+        (= (placeid place_0__q) place_id_0)
+        (connected place_1__q place_2__q)
+        (connected place_1__q place_0__q)
+        (connected place_2__q place_1__q)
+
+	(= (wave1 place_2__q) yes)
+	(= (wave1 place_1__q) yes)
+	(= (wave1 place_0__q) yes)
+;; 	(= (wave1 ) yes)
+;; 	(= (wave1 ) yes)
+)
+
+(:goal  (and  (forall (?p - place)  (explored ?p))))
+
+)
