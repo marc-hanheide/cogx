@@ -11,7 +11,7 @@ CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "subarchitectures/visio
 # live images
 #CPP MG videoserver OpenCvLiveServer --camids 0 --devnums 0
 
-CPP MG VideoClient ObjectDetectorFERNS --videoname videoserver --camid 0 --models "subarchitectures/vision.sa/config/test-ferns/tea.jpg subarchitectures/vision.sa/config/test-ferns/poster.jpg" --mode DETECT_ONLY --displaylevel 2 #--log
+CPP MG VideoClient ObjectDetectorFERNS --videoname videoserver --camid 0 --models "subarchitectures/vision.sa/config/test-ferns/tea.jpg subarchitectures/vision.sa/config/test-ferns/poster.jpg" --mode DETECT_ONLY --displaylevel 2 --log
 
 CPP MG Dummy DummyDriver --labels "tea poster" --log
 

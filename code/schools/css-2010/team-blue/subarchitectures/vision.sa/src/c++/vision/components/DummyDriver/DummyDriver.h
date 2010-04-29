@@ -28,7 +28,9 @@ private:
    * callback function called whenever a new object appears ore an object
    * changes
    */
-  void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
+//   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
+  void receiveDetectionDone(const cdl::WorkingMemoryChange & _wmc);
+  bool halt;
 
 protected:
   /**
