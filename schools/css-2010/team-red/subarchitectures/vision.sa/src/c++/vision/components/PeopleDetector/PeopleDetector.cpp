@@ -4,6 +4,7 @@
 
 #include <VideoUtils.h>
 #include <VisionData.hpp>
+#include <NavData.hpp>
 
 #include <opencv/highgui.h>
 #include <opencv/cvaux.h>
@@ -22,6 +23,7 @@
 
 using namespace std;
 using namespace Laser;
+using namespace NavData;
 using namespace cast;
 using namespace VisionData;
 
@@ -35,6 +37,11 @@ extern "C"
         return new PeopleDetector();
     }
 }
+
+namespace yeahrightneverused {
+  std::vector< std::pair<double, double> > g_PeoplePos;
+  double g_tolerance = 2;
+};
 
 
 PeopleDetector::PeopleDetector() :
@@ -141,6 +148,11 @@ void PeopleDetector::configure(const std::map<std::string,std::string> & config)
     if((it = config.find("--numattempts")) != config.end()) {
       istringstream istr(it->second);
       istr >> m_numDetectionAttempts;
+    }
+
+    if((it = config.find("--tolerance")) != config.end()) {
+      istringstream istr(it->second);
+      istr >> yeahrightneverused::g_tolerance;
     }
 
     if((it = config.find("--continuous")) != config.end()) {
@@ -701,15 +713,58 @@ void PeopleDetector::runDetection()
             // detections list.
             for (size_t j = 0; j < newDetections.size(); j++)
             {
-                // New detections that are valid get a new ID from cast.
-                PersonRecord r = newDetections[j];
-                r.castID = newDataID();
-                detections.push_back(r);               
+              // New detections that are valid get a new ID from cast.
+              PersonRecord r = newDetections[j];
+              r.castID = newDataID();
+              detections.push_back(r);               
+
+              double pDist = scan.ranges[scan.ranges.size() - r.scanIndex - 1];
+              double pAng = scan.startAngle + scan.angleStep * r.scanIndex;
+              
+              VisionData::PersonPtr data = new VisionData::Person(pDist, 
+                                                                  pAng,
+                                                                  r.laserX, 
+                                                                  r.laserZ, 
+                                                                  r.deltaX, 
+                                                                  r.deltaZ);
+              
+              bool addToWM = true;
+
+              // Here we check that the person is not too close to an
+              // existing person
+              try {    
+                std::vector< boost::shared_ptr<CASTData<NavData::RobotPose2d> > >poseVector;
+                getWorkingMemoryEntries<NavData::RobotPose2d>(1, poseVector);
                 
-                VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
-                    scan.ranges[scan.ranges.size() - r.scanIndex - 1],
-                    r.laserX, r.laserZ, r.deltaX, r.deltaZ);    
-                addToWorkingMemory(r.castID, data);                 
+                if (!poseVector.empty()) {
+
+                  double px = poseVector[0]->getData()->x +
+                    pDist * cos(poseVector[0]->getData()->theta);
+                  double py = poseVector[0]->getData()->y + 
+                    pDist * sin(poseVector[0]->getData()->theta);
+                  
+                  double minD = 1e10;
+                  for (int i = 0; i < yeahrightneverused::g_PeoplePos.size(); i++) {
+                    double d = hypot(yeahrightneverused::g_PeoplePos[i].first -
+                                     px,
+                                     yeahrightneverused::g_PeoplePos[i].second -
+                                     py);
+                                     
+                    if (d < minD) minD = d;
+                  }
+                  
+                  if (minD < yeahrightneverused::g_tolerance) {
+                    log("Skipping this person because it is too close to a previous observation");
+                    addToWM = false;
+                  } else {
+                    yeahrightneverused::g_PeoplePos.push_back( std::make_pair(px, py) );
+                  }
+                }
+
+                if (addToWM) addToWorkingMemory(r.castID, data);
+              } catch (CASTException e) {
+              }
+
             }
 
 
