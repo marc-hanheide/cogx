@@ -95,7 +95,7 @@ public class TestActionExecutor extends ManagedComponent {
 		public TriBool execute() {
 		        try { 
 			    Runtime rt = Runtime.getRuntime(); 
-			    Process p = rt.exec("espeak \"Hello. Lets go and find those records.\""); 
+			    Process p = rt.exec("espeak 'Hello. Lets go and find those records.'"); 
 			    p.waitFor();
 			} catch(Exception e) { 
 			    System.out.println(e.getMessage()); 
@@ -119,11 +119,21 @@ public class TestActionExecutor extends ManagedComponent {
 
         private class ReportExecutor implements ActionExecutor {
 
+	    String msg;
+
 		public boolean accept(Action _action) {
+		    msg = ((Report)_action).message;
 			return true;
 		}
 
 		public TriBool execute() {
+		        try { 
+			    Runtime rt = Runtime.getRuntime(); 
+			    Process p = rt.exec(msg); 
+			    p.waitFor();
+			} catch(Exception e) { 
+			    System.out.println(e.getMessage()); 
+			} 
 			return TriBool.TRITRUE;
 		}
 
