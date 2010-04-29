@@ -35,6 +35,7 @@ import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
+import execution.slice.actions.SpinAround;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.util.ActionExecutor;
@@ -446,6 +447,21 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
+	public class SpinAroundExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public SpinAroundExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
+
+		@Override
+		public ActionExecutor getActionExecutor() {
+                    return new SpinAroundExecutor(m_component, m_detections);
+		}
+
+	}
+
 	public class PTULookForObjectsExecutorFactory implements ActionExecutorFactory {
 
 		private final ManagedComponent m_component;
@@ -550,6 +566,8 @@ public class SpatialActionInterface extends ManagedComponent {
 				new PTULookForObjectsExecutorFactory(this));
 		m_actionStateManager.registerActionType(LookForPeople.class,
 				new LookForPeopleExecutorFactory(this));
+		m_actionStateManager.registerActionType(SpinAround.class,
+                                new SpinAroundExecutorFactory(this));
 
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
