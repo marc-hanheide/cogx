@@ -66,7 +66,7 @@ void DummyDriver::runComponent()
     halt = true;
     
     while(isRunning() && halt){
-      sleepComponent(5);
+      sleepComponent(500);
     }
     
   }
