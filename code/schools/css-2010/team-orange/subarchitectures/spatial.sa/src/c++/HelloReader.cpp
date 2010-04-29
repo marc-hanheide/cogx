@@ -21,24 +21,20 @@ void HelloReader::makeAnnouncement(const cast::cdl::WorkingMemoryChange & _wmc) 
 
 MarySpeech(ann->message) ;
 
-switch(ann->songId)
-{
-    case 0:
+if (ann->songId == "chaka")
 	system("play ./wave/chakakhan.wav");
-	break;
-    case 1:
+else if (ann->songId == "james")
 	system("play ./wave/james.wav");
-	break;
-    case 2:
+else if (ann->songId == "jesus")
 	system("play ./wave/jones.wav");
-	break;
-    case 3:
+else if (ann->songId == "heart")
 	system("play ./wave/heartbreaker.wav");
-	break;
+else if (ann->songId == "all")
+	system("play ./wave/all.wav");
 
 }
 
-}
+
 
 
 
