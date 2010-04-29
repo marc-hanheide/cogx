@@ -41,7 +41,7 @@ INCLUDE includes/motivation.sa/motivation.cast
 
 
 # exection ####################################################################
-JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "chakakhan heartbreakers james jesusjones"
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "chakakhan,heartbreakers,james,jesusjones"
 
 
 # viewing and debugging #######################################################
