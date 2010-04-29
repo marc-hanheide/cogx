@@ -3,7 +3,7 @@
         (:requirements :mapl :adl :object-fluents)
 
         (:types
-                place place_name place_id person_name comaroom room_name - object
+                place place_name place_id person_name comaroom room_name record_name - object
                 robot - agent
                 visualobject person - movable		
         )
@@ -17,6 +17,7 @@
                 (finished ?a - robot)
 		(detected ?v - visualobject)
                 (have_all_info_about ?p - person)
+		(is-in-room ?loc - place ?n - room_name)
 	)
 
         (:functions
@@ -26,10 +27,9 @@
 		(placeid ?loc - place) - place_id
 		(start_place ?r - robot) - place
                 (person-name ?p - person) - person_name
-                (owns-record ?p - person) - visualobject
+                (record ?p - person) - record_name
                 (in-room ?loc - place) - comaroom
                 (concepts ?r - comaroom) - room_name
-                (is-in-room ?loc - place) - room_name
         )
 
         (:constants
@@ -45,14 +45,17 @@
 				(assign (start_place ?a) ?at)
                                 (update (started ?a) true)
 				(update (start_place ?a) ?at)
-                                (forall (?loc - place ?c - comaroom ?n - room_name) 
-                                        (when (and
-                                                  (= (in-room ?loc) ?c) 
-                                                  (= (concepts ?c) ?n)
-                                              )
-                                              (update (is-in-room ?loc) ?n)
-                                        )
-                                )
+                              ;  (forall (?loc - place ?c - comaroom ?n - room_name) 
+                              ;          (when (and
+                              ;                    (= (in-room ?loc) ?c) 
+                              ;                    (= (concepts ?c) ?n)
+                              ;                )
+                              ;                (and
+			      ;			  (update (is-in-room ?loc) ?n)
+			      ;			  (assign (is-in-room ?loc) ?n)
+			      ;		      )
+                              ;          )
+                              ;  )
                          )
         )
 
@@ -95,8 +98,8 @@
                  :agent(?a - robot)
                  :parameters (?p - person)
                  :variables (?at - place)
-                 :precondition (and (not (kval ?a (owns-record ?p))) (= (is-in ?a) ?at) (= (is-in ?p) ?at))
-                 :effect (kval ?a (owns-record ?p))
+                 :precondition (and (not (kval ?a (record ?p))) (= (is-in ?a) ?at) (= (is-in ?p) ?at))
+                 :effect (kval ?a (record ?p))
         )
 
 	(:action move_to_report_pos
@@ -152,7 +155,7 @@
                   (forall (?a - robot) 
                          (and
                                (kval ?a (person-name ?p))
-;                               (kval ?a (owns-record ?p)))
+                               (kval ?a (record ?p))
                          )
                   )
         )
@@ -182,4 +185,9 @@
                         (forall (?p - person) (have_all_info_about ?p))
                   )
 	)
+
+;	(:derived (is-in-room ?loc - place ?n - room_name)
+;		  (exists (?c - comaroom) (and (= (in-room ?loc) ?c) (= (concepts ?c) ?n)))
+;	)
+		  
 )
