@@ -270,7 +270,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 				for (Object o : row) {
 					logString += o.toString()+"\n";
 				}
-				logger.info(logString);
+				logger.debug(logString);
 			}
 			tableContent.put(wmc.address, row);
 			break;
