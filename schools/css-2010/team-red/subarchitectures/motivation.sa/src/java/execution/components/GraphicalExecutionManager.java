@@ -212,7 +212,8 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			String _featureType, ActionMonitor _monitor) throws CASTException {
 		ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
 		act.beliefID = _beliefID;
-		act.featureID = _featureType;
+		act.featureID = "name";//_featureType;
+		act.question = "What is your name?";
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}

@@ -3,27 +3,25 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {UJ1_P,UW1_P,UD1_P}
+existingunion = {UD1_P}
 percept = {P}
-belief = {UJ1_P,UW1_P,UD1_P,P}
+belief = {UD1_P,P}
 
 // possible outcomes of the grouping process
-outcome = {UJ1_P,UW1_P,UD1_P,Ua1_P}
+outcome = {UD1_P,UH1_P}
 
 // feature values
-is-inval = {None,U0_p,U1_p,Unknown,Uq1_p}
-object-labelval = {None,Unknown,Vrecord2,Vrecord3}
+is-inval = {None,U0_p,Unknown}
+personidval = {None,Unknown,V0_g,V1_g}
 typeval = {None,Unknown}
-visualobjectidval = {None,Unknown,V0_f,V3_f,V4_f,V5_f}
 
 ///////////////////////////////
 // PREDICATES
 ///////////////////////////////
 
 Is-in(belief,is-inval)
-Object-label(belief,object-labelval)
+Personid(belief,personidval)
 Type(belief,typeval)
-Visualobjectid(belief,visualobjectidval)
 
 Outcome(outcome)
 UnifyWith(existingunion)
@@ -33,60 +31,14 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
-100.0 Existence(UJ1_P)
-0.0 Existence(UJ1_P) ^ Visualobjectid(UJ1_P,V3_f)
-Existence(UJ1_P) => !Visualobjectid(UJ1_P,Unknown).
-Existence(UJ1_P) => !Visualobjectid(UJ1_P,V0_f).
-Existence(UJ1_P) => !Visualobjectid(UJ1_P,V4_f).
-Existence(UJ1_P) => !Visualobjectid(UJ1_P,V5_f).
-Existence(UJ1_P) => !Visualobjectid(UJ1_P,None).
-0.0 Existence(UJ1_P) ^ Is-in(UJ1_P,U1_p)
-Existence(UJ1_P) => !Is-in(UJ1_P,U0_p).
-Existence(UJ1_P) => !Is-in(UJ1_P,Unknown).
-Existence(UJ1_P) => !Is-in(UJ1_P,Uq1_p).
-Existence(UJ1_P) => !Is-in(UJ1_P,None).
-0.0 Existence(UJ1_P) ^ Object-label(UJ1_P,Vrecord3)
-Existence(UJ1_P) => !Object-label(UJ1_P,Unknown).
-Existence(UJ1_P) => !Object-label(UJ1_P,Vrecord2).
-Existence(UJ1_P) => !Object-label(UJ1_P,None).
-Existence(UJ1_P) => !Type(Uj1_p,Unknown).
-Existence(UJ1_P) => Type(Uj1_p,None).
-
-100.0 Existence(UW1_P)
-0.0 Existence(UW1_P) ^ Visualobjectid(UW1_P,V4_f)
-Existence(UW1_P) => !Visualobjectid(UW1_P,Unknown).
-Existence(UW1_P) => !Visualobjectid(UW1_P,V0_f).
-Existence(UW1_P) => !Visualobjectid(UW1_P,V3_f).
-Existence(UW1_P) => !Visualobjectid(UW1_P,V5_f).
-Existence(UW1_P) => !Visualobjectid(UW1_P,None).
-0.0 Existence(UW1_P) ^ Is-in(UW1_P,Uq1_p)
-Existence(UW1_P) => !Is-in(UW1_P,U0_p).
-Existence(UW1_P) => !Is-in(UW1_P,U1_p).
-Existence(UW1_P) => !Is-in(UW1_P,Unknown).
-Existence(UW1_P) => !Is-in(UW1_P,None).
-0.0 Existence(UW1_P) ^ Object-label(UW1_P,Vrecord2)
-Existence(UW1_P) => !Object-label(UW1_P,Unknown).
-Existence(UW1_P) => !Object-label(UW1_P,Vrecord3).
-Existence(UW1_P) => !Object-label(UW1_P,None).
-Existence(UW1_P) => !Type(Uw1_p,Unknown).
-Existence(UW1_P) => Type(Uw1_p,None).
-
 100.0 Existence(UD1_P)
-0.0 Existence(UD1_P) ^ Visualobjectid(UD1_P,V0_f)
-Existence(UD1_P) => !Visualobjectid(UD1_P,Unknown).
-Existence(UD1_P) => !Visualobjectid(UD1_P,V3_f).
-Existence(UD1_P) => !Visualobjectid(UD1_P,V4_f).
-Existence(UD1_P) => !Visualobjectid(UD1_P,V5_f).
-Existence(UD1_P) => !Visualobjectid(UD1_P,None).
 0.0 Existence(UD1_P) ^ Is-in(UD1_P,U0_p)
-Existence(UD1_P) => !Is-in(UD1_P,U1_p).
 Existence(UD1_P) => !Is-in(UD1_P,Unknown).
-Existence(UD1_P) => !Is-in(UD1_P,Uq1_p).
 Existence(UD1_P) => !Is-in(UD1_P,None).
-0.0 Existence(UD1_P) ^ Object-label(UD1_P,Vrecord2)
-Existence(UD1_P) => !Object-label(UD1_P,Unknown).
-Existence(UD1_P) => !Object-label(UD1_P,Vrecord3).
-Existence(UD1_P) => !Object-label(UD1_P,None).
+0.0 Existence(UD1_P) ^ Personid(UD1_P,V0_g)
+Existence(UD1_P) => !Personid(UD1_P,Unknown).
+Existence(UD1_P) => !Personid(UD1_P,V1_g).
+Existence(UD1_P) => !Personid(UD1_P,None).
 Existence(UD1_P) => !Type(Ud1_p,Unknown).
 Existence(UD1_P) => Type(Ud1_p,None).
 
@@ -95,21 +47,13 @@ Existence(UD1_P) => Type(Ud1_p,None).
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,Uq1_p)
-Existence(P) => !Is-in(P,U0_p).
-Existence(P) => !Is-in(P,U1_p).
+0.0 Existence(P) ^ Is-in(P,U0_p)
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
-0.0 Existence(P) ^ Visualobjectid(P,V5_f)
-Existence(P) => !Visualobjectid(P,Unknown).
-Existence(P) => !Visualobjectid(P,V0_f).
-Existence(P) => !Visualobjectid(P,V3_f).
-Existence(P) => !Visualobjectid(P,V4_f).
-Existence(P) => !Visualobjectid(P,None).
-0.0 Existence(P) ^ Object-label(P,Vrecord3)
-Existence(P) => !Object-label(P,Unknown).
-Existence(P) => !Object-label(P,Vrecord2).
-Existence(P) => !Object-label(P,None).
+0.0 Existence(P) ^ Personid(P,V1_g)
+Existence(P) => !Personid(P,Unknown).
+Existence(P) => !Personid(P,V0_g).
+Existence(P) => !Personid(P,None).
 Existence(P) => !Type(P,Unknown).
 Existence(P) => Type(P,None).
 
@@ -120,22 +64,18 @@ Existence(P) => Type(P,None).
 // rules for existence dependency
 !Existence(x) => y=None v !Is-in(x,y).
 !Existence(x) => Is-in(x,None).
-!Existence(x) => y=None v !Object-label(x,y).
-!Existence(x) => Object-label(x,None).
+!Existence(x) => y=None v !Personid(x,y).
+!Existence(x) => Personid(x,None).
 !Existence(x) => y=None v !Type(x,y).
 !Existence(x) => Type(x,None).
-!Existence(x) => y=None v !Visualobjectid(x,y).
-!Existence(x) => Visualobjectid(x,None).
 
 // mutual exclusivity and unicity constraints
 Is-in(x,y) ^ Is-in(x,z) => y=z.
 EXIST y Is-in(x,y).
-Object-label(x,y) ^ Object-label(x,z) => y=z.
-EXIST y Object-label(x,y).
+Personid(x,y) ^ Personid(x,z) => y=z.
+EXIST y Personid(x,y).
 Type(x,y) ^ Type(x,z) => y=z.
 EXIST y Type(x,y).
-Visualobjectid(x,y) ^ Visualobjectid(x,z) => y=z.
-EXIST y Visualobjectid(x,y).
 
 
 ///////////////////////////////
@@ -144,29 +84,18 @@ EXIST y Visualobjectid(x,y).
 
 // general correlations
 
-100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None  => UnifyWith(x)
+100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
 100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
 UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
 UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
-100 Existence(x) ^ Existence(P) ^ Label(x,y) ^ Label(P,y) ^ y!=Unknown ^ y!=None  => UnifyWith(x)
-100 UnifyWith(x) ^ Label(x,y) ^ Label(P,z) => y=z
-UnifyWith(x) ^ Label(x,y) => y!=Unknown. 
-UnifyWith(x) ^ Label(x,y) => y!=None. 
-
-
 UnifyWith(x) => Existence(x) ^ Existence(P).
-
-
-// ADD YOUR ADDITIONAL FORMULAE FOR OBJECT TRACKING HERE
 ///////////////////////////////
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(Ua1_P)
+-3.5 Existence(P) => Outcome(UH1_P)
 UnifyWith(UD1_P) <=> Outcome(UD1_P).
-UnifyWith(UJ1_P) <=> Outcome(UJ1_P).
-UnifyWith(UW1_P) <=> Outcome(UW1_P).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).

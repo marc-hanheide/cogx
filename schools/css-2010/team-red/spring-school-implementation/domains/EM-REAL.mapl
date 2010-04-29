@@ -52,9 +52,45 @@
 	   :parameters (?to - place)
 	   :variables (?from - place)
 	   :precondition (and
+;; 			  (or (not (=  (wave1 ?to) yes)) (not (visited ?to)))
+			  ;; (or (not (=  (wave1 ?to) yes)) )
+
+			  
+			  (or (forall (?pp - place) 
+				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+			      (=  (wave1 ?to) yes))
+
+			  (not (visited ?to))
+
 			  (= (is-in ?a) ?from)
 			  (or (connected ?from ?to)
 			      (connected ?to ?from))
+			  
+			  (or (not (=  (wave1 ?from) yes)) (visited ?from))
+			  )
+	   :effect (and
+		    (assign (is-in ?a) ?to)
+;; 		    (visited ?to)
+;; 		    (update (visited ?to) true)
+		    ))
+
+  (:action move-rough
+	   :agent (?a - robot)
+	   :parameters (?to - place)
+	   :variables (?from - place)
+	   :precondition (and
+
+			  (not (and (or (forall (?pp - place) 
+						(or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+					(=  (wave1 ?to) yes))
+				    
+				    (not (visited ?to))))
+
+
+			  (= (is-in ?a) ?from)
+			  (or (connected ?from ?to)
+			      (connected ?to ?from))
+			  (or (not (=  (wave1 ?from) yes)) (visited ?from))
 			  )
 	   :effect (and
 		    (assign (is-in ?a) ?to)
@@ -86,17 +122,17 @@
 	   (kval ?a (name ?p))
 	   )
 
-  (:action ask-for-place-name
-	   :agent (?a - robot)
-	   :parameters (?p - person)
-	   :variables (?loc - place)
-	   :precondition (and
-			  (= (is-in ?a) ?loc)
-			  (= (is-in ?p) ?loc)
-			  )
-	   :effect
-	   (kval ?a (name ?loc))
-	   )
+;;   (:action ask-for-place-name
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?p - person)
+;; 	   :variables (?loc - place)
+;; 	   :precondition (and
+;; 			  (= (is-in ?a) ?loc)
+;; 			  (= (is-in ?p) ?loc)
+;; 			  )
+;; 	   :effect
+;; 	   (kval ?a (name ?loc))
+;; 	   )
 
   (:action commit-name
 	   :agent (?a - robot)
