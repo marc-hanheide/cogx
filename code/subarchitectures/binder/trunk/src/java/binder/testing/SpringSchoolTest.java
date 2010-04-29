@@ -6,10 +6,12 @@ import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
 import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.featurecontent.BooleanValue;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
+import beliefmodels.utils.FeatureContentUtils;
 import binder.arch.BindingWorkingMemory;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -34,6 +36,8 @@ public class SpringSchoolTest extends AbstractBinderTest {
 							
 							CASTData<TemporalUnionBelief>[] unions = getWorkingMemoryEntries(TemporalUnionBelief.class);
 							log("Current number of unions in WM: " + unions.length);
+							if (FeatureContentUtils.getValuesInBelief(unions[0].getData(), "detected").size() > 0) 
+							log("features in first union " + unions[0].getID() + ":  " + ((BooleanValue)FeatureContentUtils.getValuesInBelief(unions[0].getData(), "detected").get(0).val).val);
 						} 
 						catch (Exception e) {
 							// TODO Auto-generated catch block
@@ -47,6 +51,26 @@ public class SpringSchoolTest extends AbstractBinderTest {
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(TemporalUnionBelief.class,
 						WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						try {
+							
+							CASTData<TemporalUnionBelief>[] unions = getWorkingMemoryEntries(TemporalUnionBelief.class);
+							log("Current number of unions in WM: " + unions.length);
+							if (FeatureContentUtils.getValuesInBelief(unions[0].getData(), "detected").size() > 0) 
+							log("features in first union " + unions[0].getID() + ":  " + ((BooleanValue)FeatureContentUtils.getValuesInBelief(unions[0].getData(), "detected").get(0).val).val);
+						} 
+						catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
+				}
+		);
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(TemporalUnionBelief.class,
+						WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						try {
 							
@@ -169,12 +193,13 @@ public class SpringSchoolTest extends AbstractBinderTest {
 			
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b4, locationDistrib_b4);
 
-			BasicProbDistribution distDistrib_b4 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("is-in", 
-					new FeatureValueProbPair(FeatureValueBuilder.createNewFloatValue(0.4f), 1.0f));
-			
-			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b4, distDistrib_b4);
+			BasicProbDistribution detected = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("detected", 
+					new FeatureValueProbPair(FeatureValueBuilder.createNewBooleanValue(true), 1.0f));
 
-			ProbDistribution content_b4 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b2);
+			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b4, detected);
+
+			
+			ProbDistribution content_b4 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b4);
 
 			PerceptBelief b4 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b4, hist_b4);
 
@@ -191,18 +216,18 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b5, locationDistrib_b5);
 
-			ProbDistribution content_b5 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b5);
 	
 			BasicProbDistribution distanceDistrib_b5 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("distance", 
 					new FeatureValueProbPair(FeatureValueBuilder.createNewFloatValue(0.67f), 1.0f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b5, distanceDistrib_b5); 
-	
+			
+		
+			ProbDistribution content_b5 = BeliefContentBuilder.createNewDistributionWithExistDep(0.9f, contentDistrib_b5);
+
 			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b5, hist_b5);
 
-			insertBeliefInWM(b5);
-					
-		//	updateBeliefOnWM(b5);
+			insertBeliefInWM(b5);						
 
 		}
 		catch (Exception e) {

@@ -274,7 +274,15 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 		for (Belief b : results) {
 			if (existsOnWorkingMemory(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA))) {
 				log("belief " + b.id + " exists on WM, overwriting");
-				updateBeliefOnWM(b);
+				
+				TemporalUnionBelief childBelief = 
+					TemporalUnionBuilder.createNewSingleUnionBelief(belief, beliefWMAddress, b.id);
+			
+				TemporalUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA), TemporalUnionBelief.class);
+				childBelief.content = mergeBeliefContent(existingBelief.content, childBelief.content);
+
+				updateBeliefOnWM(childBelief);
+
 			}
 			else {
 				log("belief " + b.id + " does not exist on WM, creating it");
