@@ -7,7 +7,8 @@ JAVA MG executor execution.components.SpringSchoolExecutionMediator
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and )" 
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(finished)"
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (and (investigated ?p)))"
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (and (investigated ?p)))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and (forall (?p - place) (investigated ?p)) (exists (?r - robot) (and (forall (?h - person)  (kval ?r (name ?h))) (forall (?h - person)  (kval ?r (name-of-record ?h)))) ))"
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
