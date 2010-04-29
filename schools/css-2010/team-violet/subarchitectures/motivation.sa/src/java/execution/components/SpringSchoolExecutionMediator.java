@@ -7,6 +7,7 @@ import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
+import beliefmodels.autogen.featurecontent.StringValue;
 import cast.CASTException;
 import castutils.facades.BinderFacade;
 import execution.slice.ActionExecutionException;
@@ -144,6 +145,21 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			// optionally we can define an explicit question here to make life
 			// simpler
 			act.question = "What is your name?";
+			return act;
+		} else if (_plannedAction.name.equals("ask-for-your-record")) {
+			assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
+			ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+			act.question = "What's your record?";
+			act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			act.featureID = "person-record";
+			return act;
+		} else if (_plannedAction.name.equals("ask-for-record-room")) {
+			assert _plannedAction.arguments.length == 3 : "ask-for-feature action arity is expected to be 3";
+			String recordName = ((StringValue) _plannedAction.arguments[2]).val;
+			ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+			act.question = "In which room is the record "+ recordName +"?";
+			act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			act.featureID = "is-in-room";
 			return act;
 		} else if (_plannedAction.name.equals("ask-for-placename")) {
 			assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
