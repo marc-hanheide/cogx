@@ -16,6 +16,13 @@ class Effect(object):
     def copy(self, new_scope=None, copy_instance=False):
         return self.__class__()
 
+    def set_scope(self, new_scope):
+        assert new_scope is None or isinstance(new_scope, Scope)
+        self.scope = new_scope
+
+    def get_scope(self):
+        return self.scope
+    
     def free(self):
         def visitor(eff, results=[]):
             if isinstance(eff, predicates.Term):
@@ -80,18 +87,22 @@ class Effect(object):
         return not self.__eq__(other)
             
 class ConjunctiveEffect(Effect):
-    def __init__(self, effects):
+    def __init__(self, effects, scope=None):
         self.parts = effects
+        self.scope = scope
         
     def visit(self, fn):
         return fn(self, [e.visit(fn) for e in self.parts])
 
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        if not new_scope:
+            new_scope = self.scope
         if not new_parts:
             return ConjunctiveEffect([e.copy(new_scope, copy_instance=copy_instance) for e in self.parts])
         return ConjunctiveEffect(new_parts)
 
     def set_scope(self, new_scope):
+        self.scope = new_scope
         for e in self.parts:
             e.set_scope(new_scope)
     
@@ -139,6 +150,9 @@ class UniversalEffect(Scope, Effect):
     def set_scope(self, new_scope):
         Scope.set_parent(self, new_scope)
         self.effect.set_scope(self)
+
+    def get_scope(self):
+        return self.parent
     
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.args == other.args and self.effect == other.effect
@@ -154,8 +168,9 @@ class UniversalEffect(Scope, Effect):
         return eff
 
 class ProbabilisticEffect(Effect):
-    def __init__(self, effects):
+    def __init__(self, effects, scope=None):
         self.effects = effects
+        self.scope = scope
         # self.summed_effects = []
         # psum = 0
         # for p, eff in effects:
@@ -176,12 +191,15 @@ class ProbabilisticEffect(Effect):
         return fn(self, [(p, e.visit(fn)) for p,e in self.effects])
     
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        if not new_scope:
+            new_scope = self.scope
         if new_parts:
             return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.new_parts])
         else:
             return ProbabilisticEffect([(p, eff.copy(new_scope, copy_instance=copy_instance)) for p,eff in self.effects])
 
     def set_scope(self, new_scope):
+        self.scope = new_scope
         for p, e in self.effects:
             e.set_scope(new_scope)
         
@@ -243,20 +261,24 @@ class ProbabilisticEffect(Effect):
                 
 
 class ConditionalEffect(Effect):
-    def __init__(self, condition, effect):
+    def __init__(self, condition, effect, scope=None):
         self.condition = condition
         self.effect = effect
+        self.scope = scope
         
     def visit(self, fn):
         return fn(self, [self.effect.visit(fn)])
     
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        if not new_scope:
+            new_scope = self.scope
         if new_parts:
             return ConditionalEffect(self.condition.copy(new_scope), new_parts[0].copy(new_scope, copy_instance=copy_instance))
         else:
             return ConditionalEffect(self.condition.copy(new_scope, copy_instance=copy_instance), self.effect.copy(new_scope, copy_instance=copy_instance))
         
     def set_scope(self, new_scope):
+        self.scope = new_scope
         self.condition.set_scope(new_scope)
         self.effect.set_scope(new_scope)
 

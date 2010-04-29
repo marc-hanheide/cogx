@@ -81,13 +81,15 @@ class Predicate(Function):
 
 
 class Literal(object):
-    def __init__(self, predicate, args, scope=None, negated=False):
+    def __init__(self, predicate, args, _scope=None, negated=False):
+        assert _scope is None or isinstance(_scope, scope.Scope)
         self.predicate = predicate
         self.negated = negated
+        self.scope = _scope
         assert isinstance(predicate, Function)
 
-        if scope:
-            self.args = scope.lookup(args)
+        if _scope:
+            self.args = _scope.lookup(args)
         else:
             self.args = [Term(a) for a in args]
 
@@ -106,10 +108,13 @@ class Literal(object):
             if new_scope:
                 l.set_scope(new_scope)
             return l
+        if not new_scope:
+            new_scope = self.scope
         
         return self.__class__(self.predicate, self.args, new_scope, self.negated)
 
     def set_scope(self, new_scope):
+        self.scope = new_scope
         self.args = new_scope.lookup(self.args)
     
     def copy_instance(self):
