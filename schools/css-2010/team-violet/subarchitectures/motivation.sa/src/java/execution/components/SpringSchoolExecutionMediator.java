@@ -23,6 +23,7 @@ import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.PrintMessage;
 import execution.util.ActionConverter;
+import violetsound.AePlayWave;
 
 /**
  * Execution mediator specifically for Dora/Spring School.
@@ -179,6 +180,13 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			act.beliefID = beliefID;
 			act.featureType = featureID;
 			act.featureValue = _plannedAction.arguments[2];
+			return act;
+		} else if (_plannedAction.name.equals("report-finished")) {
+			new AePlayWave("wavs/GlaDOS-okay_the_test_is_over_now.wav").start();
+			PrintMessage act = newActionInstance(PrintMessage.class);
+			act.status=ActionStatus.COMPLETE;
+			act.success=TriBool.TRITRUE;
+			act.message=_plannedAction.fullName;
 			return act;
 		} else if (_plannedAction.name.equals("commit-name")) {
 			PrintMessage act = newActionInstance(PrintMessage.class);
