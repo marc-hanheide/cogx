@@ -290,19 +290,19 @@
 			  
 			  (forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
 
-			  (forall (?o - visualobject) 
-				  (forall (?a - robot) 
-					  (forall (?p - person)
-						  (kval ?a (owner ?p))
-						  )))
+;; 			  (forall (?o - visualobject) 
+;; 				  (forall (?a - robot) 
+;; 					  (forall (?p - person)
+;; 						  (kval ?a (owner ?p))
+;; 						  )))
 			  (forall (?a - robot) 
 				  (forall (?p - person)
 					   (kval ?a (name ?p))
 					   ))
-			  (forall (?a - robot) 
-				  (forall (?r - visualobject) 
-					  (and 
-					   (kval ?a (owned-by ?r)))))
+;; 			  (forall (?a - robot) 
+;; 				  (forall (?r - visualobject) 
+;; 					  (and 
+;; 					   (kval ?a (owned-by ?r)))))
 				  
 			  ;; 			 (forall (?p - place) (visited ?p))
 			  ;;(forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
