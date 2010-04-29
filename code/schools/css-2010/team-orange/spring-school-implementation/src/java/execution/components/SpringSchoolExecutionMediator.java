@@ -23,6 +23,7 @@ import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.PrintMessage;
 import execution.slice.actions.ReportFinished;
+import execution.slice.actions.ReportNothing;
 import execution.slice.actions.ReportObject;
 import execution.slice.actions.ReportPerson;
 import execution.util.ActionConverter;
@@ -196,6 +197,14 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			act.label=((StringValue) _plannedAction.arguments[2]).val;
 
 			return act;
+
+		} else if (_plannedAction.name.equals("report-nothing")) {
+			// this is the action that just triggers the people detector once
+			assert _plannedAction.arguments.length == 1 : "report-nothing action arity is expected to be 1";
+			// create the action instance and return it
+			ReportNothing act = newActionInstance(ReportNothing.class);
+			return act;
+
 		} else if (_plannedAction.name.equals("report-person")) {
 			// this is the action that just triggers the people detector once
 			assert _plannedAction.arguments.length == 1 : "report-person action arity is expected to be 2";
