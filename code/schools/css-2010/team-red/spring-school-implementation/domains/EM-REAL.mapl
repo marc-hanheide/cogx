@@ -1,9 +1,14 @@
+;; We are allowed to mark stable-beliefs as invalid.
+
 (define (domain cogx)
   ;; the planner domain is case insensitive, the beliefs are mixed
   ;; case, though here we only use lower case...
   (:requirements :mapl :adl :object-fluents :action-costs)
   
   (:types 
+
+   comaroom - object
+   roomname - object
    place place_id - object
    person person_id person_name  - object
    visualobject visualobject_id visualobject_label - object
@@ -16,7 +21,7 @@
   (:predicates
    (goal-achieved ?a - agent)
 
-   (asked-who-owns-record ?a - agent ?l - visualobject_label ?p - person)
+   (asked-who-owns-record ?a - robot ?l - visualobject_label ?p - person)
    
 
    (connected ?n1 - place ?n2 - place)
@@ -32,7 +37,12 @@
 
   (:functions
    
+   ;;Static in the starting state.
+   (concepts ?comaroom) - roomname
+
    (owned-by ?r - visualobject) - person_name
+
+   (owner ?r - person) - visualobject_label
 
 ;;    (owns-record ?h - person) - visualobject
 
@@ -117,6 +127,28 @@
 
 
 
+
+  (:action is-record-xxx-your-record
+
+	   :agent (?a - robot)
+	   :parameters (?p - person ?l - visualobject_label)
+	   :variables (?loc - place)
+	   :precondition (and
+			  
+
+;; 			  (not  (asked-is-record-xxx-your-record ?a ?l ?p))
+
+			  (not (kval ?a (owner ?p)))
+			  
+			  (= (is-in ?a) ?loc)
+			  (= (is-in ?p) ?loc)
+			  )
+	   :effect (and (kval ?a (owner ?p))
+;; 			(asked-is-record-xxx-your-record ?a ?l ?p)
+;; 			(update (asked-is-record-xxx-your-record ?a ?l ?p) true)
+			)
+
+	   )
 
   (:action ask-for-your-name
 	   :agent (?a - robot)
@@ -255,16 +287,18 @@
 			  
 			  (forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
 
+;; 			  (forall (?a - robot) 
+;; 				  (forall (?p - person)
+;; 					   (kval ?a (owner ?p))
+;; 					   ))
 			  (forall (?a - robot) 
-				  (and 
-				   (forall (?p - person) 
-					   (and 
-					    (kval ?a (name ?p))
-					    
-					    ))
-				   (forall (?r - visualobject) 
-					   (and 
-					    (kval ?a (owned-by ?r))))))
+				  (forall (?p - person)
+					   (kval ?a (name ?p))
+					   ))
+			  (forall (?a - robot) 
+				  (forall (?r - visualobject) 
+					  (and 
+					   (kval ?a (owned-by ?r)))))
 				  
 			  ;; 			 (forall (?p - place) (visited ?p))
 			  ;;(forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))

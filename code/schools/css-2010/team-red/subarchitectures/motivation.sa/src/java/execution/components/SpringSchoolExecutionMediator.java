@@ -417,18 +417,38 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    // Runtime.getRuntime().exec(__command);
 
 	    return act;
-	}  else if (_plannedAction.name.equals("who-owns-record")) {
+	}  else if (_plannedAction.name.equals("is-record-xxx-your-record")) {
+	    
+	    assert _plannedAction.arguments.length == 3 : "is-record-xxx-your-record action arity is expected to be 3";
+	    String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+	    String featureID = "owner";
+
+	    
+	    String record_label = ((StringValue) _plannedAction.arguments[2]).val;
+
+	    ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
+	    act.question = "Is record " +   record_label  +  " yours?";
+	    act.beliefID = beliefID;
+	    act.featureType = featureID;
+	    act.featureValue = _plannedAction.arguments[2];
+
+
+	    say_something("./talk.sh Is-record-" +   record_label  +  "-yours?");
+
+	    return act;
+	    
+	}else if (_plannedAction.name.equals("who-owns-record")) {
 
 	    // this is the action to ask for a person's name
-	    assert _plannedAction.arguments.length == 2 : "who-owns-record action arity is expected to be 2";
+	    assert _plannedAction.arguments.length == 3 : "who-owns-record action arity is expected to be 3";
 	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
-	    act.beliefID = ((PointerValue) _plannedAction.arguments[2]).beliefId.id;
+	    act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
 
-	    String str = ((StringValue) _plannedAction.arguments[3]).val;
+	    String str = ((StringValue) _plannedAction.arguments[2]).val;
 	    
 	    act.featureID = "owner";
 	    act.question = "Who owns record with label " + str + "?";
-	    say_something("./talk.sh Who-owns-record-with-label-" + str + "?-I-think-" + str + "is-good-music!");
+	    say_something("./talk.sh Who-owns-record-with-label-" + str + "?-I-think-" + str + "-is-good-music!");
 	    return act;
 	} // else if (_plannedAction.name.equals("which-record-is-owned-by")) {
 
