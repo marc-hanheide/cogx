@@ -3,7 +3,7 @@
         (:requirements :mapl :adl :object-fluents)
 
         (:types
-                place place_name place_id person_name - object
+                place place_name place_id person_name comaroom room_name - object
                 robot - agent
                 visualobject person - movable		
         )
@@ -27,6 +27,9 @@
 		(start_place ?r - robot) - place
                 (person-name ?p - person) - person_name
                 (owns-record ?p - person) - visualobject
+                (in-room ?loc - place) - comaroom
+                (concepts ?r - comaroom) - room_name
+                (is-in-room ?loc - place) - room_name
         )
 
         (:constants
@@ -42,6 +45,14 @@
 				(assign (start_place ?a) ?at)
                                 (update (started ?a) true)
 				(update (start_place ?a) ?at)
+                                (forall (?loc - place ?c - comaroom ?n - room_name) 
+                                        (when (and
+                                                  (= (in-room ?loc) ?c) 
+                                                  (= (concepts ?c) ?n)
+                                              )
+                                              (update (is-in-room ?loc) ?n)
+                                        )
+                                )
                          )
         )
 
@@ -129,12 +140,20 @@
         		       )
         )
 
+;        (:derived (lock_due_to_new_object)
+;                  (exists (?v - visualobject)
+;                          (forall (?a - robot)
+;                                  (not ?a (kval (is-in-room ?v)))
+;                           )
+;                  )
+;        )
+
         (:derived (have_all_info_about ?p - person)
                   (forall (?a - robot) 
-                          (and
-                                (kval ?a (person-name ?p))
-                   ;            (kval ?a (owns-record ?p)))
-                          )
+                         (and
+                               (kval ?a (person-name ?p))
+;                               (kval ?a (owns-record ?p)))
+                         )
                   )
         )
 
