@@ -3,15 +3,15 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {Ut_P}
+existingunion = {UT1_P}
 percept = {P}
-belief = {Ut_P,P}
+belief = {UT1_P,P}
 
 // possible outcomes of the grouping process
-outcome = {Ut_P,Uv_P}
+outcome = {UT1_P,UV1_P}
 
 // feature values
-is-inval = {None,Ub_p,Unknown}
+is-inval = {None,Unknown,Us_p}
 personidval = {None,Unknown,V0_g,V1_g}
 typeval = {None,Unknown}
 
@@ -31,23 +31,23 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
-100.0 Existence(Ut_P)
-0.0 Existence(Ut_P) ^ Is-in(Ut_P,Ub_p)
-Existence(Ut_P) => !Is-in(Ut_P,Unknown).
-Existence(Ut_P) => !Is-in(Ut_P,None).
-0.0 Existence(Ut_P) ^ Personid(Ut_P,V0_g)
-Existence(Ut_P) => !Personid(Ut_P,Unknown).
-Existence(Ut_P) => !Personid(Ut_P,V1_g).
-Existence(Ut_P) => !Personid(Ut_P,None).
-Existence(Ut_P) => !Type(Ut_p,Unknown).
-Existence(Ut_P) => Type(Ut_p,None).
+100.0 Existence(UT1_P)
+0.0 Existence(UT1_P) ^ Is-in(UT1_P,Us_p)
+Existence(UT1_P) => !Is-in(UT1_P,Unknown).
+Existence(UT1_P) => !Is-in(UT1_P,None).
+0.0 Existence(UT1_P) ^ Personid(UT1_P,V0_g)
+Existence(UT1_P) => !Personid(UT1_P,Unknown).
+Existence(UT1_P) => !Personid(UT1_P,V1_g).
+Existence(UT1_P) => !Personid(UT1_P,None).
+Existence(UT1_P) => !Type(Ut1_p,Unknown).
+Existence(UT1_P) => Type(Ut1_p,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,Ub_p)
+0.0 Existence(P) ^ Is-in(P,Us_p)
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
 0.0 Existence(P) ^ Personid(P,V1_g)
@@ -94,8 +94,8 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(Uv_P)
-UnifyWith(Ut_P) <=> Outcome(Ut_P).
+-3.5 Existence(P) => Outcome(UV1_P)
+UnifyWith(UT1_P) <=> Outcome(UT1_P).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).
