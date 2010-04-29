@@ -26,6 +26,27 @@ import execution.util.ActionConverter;
 import execution.slice.TriBool;
 import execution.slice.ActionStatus;
 
+
+import java.util.List ;
+import java.util.ArrayList;
+
+import beliefmodels.autogen.beliefs.StableBelief ; 
+import beliefmodels.autogen.beliefs.Belief ;
+import java.util.Iterator;
+import beliefmodels.autogen.distribs.*;
+import beliefmodels.utils.FeatureContentUtils;
+
+import java.lang.String ; 
+import beliefmodels.autogen.featurecontent.StringValue ;
+import beliefmodels.autogen.featurecontent.FeatureValue ;
+import beliefmodels.autogen.featurecontent.PointerValue ;
+import beliefmodels.autogen.featurecontent.IntegerValue;
+import beliefmodels.autogen.featurecontent.BooleanValue ;
+import beliefmodels.autogen.beliefs.PerceptBelief;
+import beliefmodels.autogen.beliefs.MultiModalBelief;
+import cast.cdl.WorkingMemoryAddress;
+
+
 /**
  * Execution mediator specifically for Dora/Spring School.
  * 
@@ -184,6 +205,96 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 		    Report act = newActionInstance(Report.class);
 		    act.status = ActionStatus.COMPLETE;
 		    act.success = TriBool.TRITRUE;
+
+		   try{	
+		
+			String[] record_names = {"record_1", "record_2", "record_3", "record_4"} ;
+			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
+
+			List<StableBelief> ls = new ArrayList<StableBelief>(); 
+			String str_tmp ; 
+
+			List<FeatureValueProbPair>  ls_pair = new ArrayList<FeatureValueProbPair>(); 
+			FeatureContentUtils tmp_util ;
+
+			getMemoryEntries(StableBelief.class, ls) ;
+
+			Iterator it=ls.iterator();
+			Belief stb ; 
+				
+			while( it.hasNext() ) {
+				String what_I_have_to_say = "";
+				stb = (Belief)it.next() ;
+				ls_pair = FeatureContentUtils.getValuesInBelief(stb, "name" ) ;
+				if ( ls_pair.size() > 0 ) {
+					Iterator it2=ls_pair.iterator();
+					if( it2.hasNext()  ) {
+						FeatureValueProbPair fvp_tmp ;
+						fvp_tmp = (FeatureValueProbPair)it2.next() ;
+						StringValue val  = (StringValue)fvp_tmp.val ;
+						String vv  = val.val ;
+						
+						int detected_entity = 0 ; // 1 ... record, 2 ... person
+						for ( int i_r = 0 ; i_r < record_names.length; i_r++ ) { 
+							if ( vv.equals(record_names[i_r])) {
+								detected_entity = 1 ;
+								break ;			
+							}
+						}
+
+
+/*
+						for ( int i_r = 0 ; i_r < person_names.length; i_r++ ) { 
+							if ( vv.equals(record_names[i_r])) {
+								detected_entity = 2 ;
+								break ;			
+							}
+						}
+*/
+
+						if ( detected_entity == 1 ) {//vv.equals("record_1") || vv.equals("record_2") || vv.equals("record_3") || vv.equals("record_4")) 
+							// we have detected a record							
+							List<FeatureValueProbPair>  ls_pair_det = new ArrayList<FeatureValueProbPair>();
+							ls_pair_det = FeatureContentUtils.getValuesInBelief(stb, "detected" ) ;
+							Iterator it_det = ls_pair_det.iterator();
+							fvp_tmp = (FeatureValueProbPair)it_det.next() ;
+							BooleanValue val_det  = (BooleanValue)fvp_tmp.val   ;
+							boolean have_detection = val_det.val ;
+							if ( have_detection == true ){
+								// check for the place
+								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
+								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
+								Iterator it3 =ls_pair2.iterator();
+								fvp_tmp = (FeatureValueProbPair)it3.next() ;
+							 
+								PointerValue  valxs  = (PointerValue)fvp_tmp.val   ;
+ 								WorkingMemoryAddress wma = valxs.beliefId ;
+
+								StableBelief beliefData = getMemoryEntry(wma,StableBelief.class );
+
+								List<FeatureValueProbPair>  ls_pair_plc = new ArrayList<FeatureValueProbPair>(); 
+								ls_pair_plc = FeatureContentUtils.getValuesInBelief(beliefData, "PlaceId" ) ;
+								Iterator it4 =ls_pair_plc.iterator();							
+								FeatureValueProbPair fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
+
+								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
+								int valofplc =  val_plc.val ;
+								what_I_have_to_say = "espeak" + " 'Yo man, the record "+ vv + " is at place " + valofplc + "'";
+								//System.out.print( what_I_have_to_say ) ;
+							}
+						} else if ( detected_entity == 2 ) {
+							// we have detected a person: check if its detected, where it is, which record it owns 
+							
+						}
+					 act.message = what_I_have_to_say ;				
+					}
+				}
+			}
+
+			} catch(Exception e) { 
+			    System.out.println(e.getMessage()); 
+			} 
+
 		    return act;
 		}
 		// in case we do not find the action we have an exception
