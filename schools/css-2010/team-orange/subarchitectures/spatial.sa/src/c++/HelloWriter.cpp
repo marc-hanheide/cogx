@@ -11,7 +11,7 @@ void HelloWriter::runComponent() {
   SpatialData::AnnouncementPtr ann = new SpatialData::Announcement();
 //  ann->message="Hooray! Hooray! Hooray! I have completed my task! Let's listen to all the records once again!";
 //  ann->songId="all";
-  ann->message="Human target acquired in place number 1.";
+  ann->message="Hello World!";
   ann->songId="";
   addToWorkingMemory(newDataID(), ann);
 
