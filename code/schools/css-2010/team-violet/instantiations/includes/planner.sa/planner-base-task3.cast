@@ -1,0 +1,8 @@
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain task3.domain.mapl --log --debug
+
+SUBARCHITECTURE planner.sa
+
+###############################################################################
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
