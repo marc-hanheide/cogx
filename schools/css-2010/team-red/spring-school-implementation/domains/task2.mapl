@@ -163,7 +163,7 @@
 	  :parameters ()
 	  :precondition (and
 ;; 			 (forall (?p - place) (visited ?p))
-			 (forall (?p - place) (wave1-visited ?p))
+			 (forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
 			 )
 	  :effect (and
 		   (goal-achieved))
