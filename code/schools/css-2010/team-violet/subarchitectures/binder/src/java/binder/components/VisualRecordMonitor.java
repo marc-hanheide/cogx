@@ -15,6 +15,7 @@ import beliefmodels.builders.PerceptBuilder;
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
+import cast.PermissionException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -23,6 +24,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import cast.core.CASTData;
@@ -38,6 +40,21 @@ import violetsound.AePlayWave;
 public class VisualRecordMonitor extends ManagedComponent {
    private static final String[] DEFAULT_LABELS = {
       "chakakhan", "heartbreakers", "james", "jesusjones" };
+
+   private static final String[] KNOWN_RECORD_PROPS = {
+      "is-in" };
+
+   private class Record {
+      public String label;
+      public WorkingMemoryAddress address;
+      public boolean hasPlace;
+      public Record(String label, WorkingMemoryAddress address) {
+         this.label = label;
+         this.address = address;
+         this.hasPlace = false;
+      }
+   }
+   HashMap<String, Record> KnownRecords;
 
    public void start() {
 
@@ -69,10 +86,8 @@ public class VisualRecordMonitor extends ManagedComponent {
                         + "@" + _wmc.address.subarchitecture
                         + " type=" + sb.type);
                   } catch (DoesNotExistOnWMException e) {
-                     // TODO Auto-generated catch block
                      e.printStackTrace();
                   } catch (UnknownSubarchitectureException e) {
-                     // TODO Auto-generated catch block
                      e.printStackTrace();
                   }
                }
@@ -125,9 +140,9 @@ public class VisualRecordMonitor extends ManagedComponent {
          // StableBelief belief = new StableBelief(frame, estatus, id, "VisualObject", beliefcontent, hist);
          StableBelief belief = new StableBelief(frame, estatus, id, "VisualObject", features, hist);
          WorkingMemoryAddress addr = new WorkingMemoryAddress (id, "binder");
-         System.out.println("WorkingMemoryAddress " + recordName);
          try {
             addToWorkingMemory(addr, belief);
+            KnownRecords.put(addr.id, new Record(recordName, addr));
          } catch (DoesNotExistOnWMException ex) {
             //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Error DoesNotExistOnWMException");
@@ -142,28 +157,70 @@ public class VisualRecordMonitor extends ManagedComponent {
             System.out.println("Error AlreadyExistsOnWMException");
             System.exit(1);
          }
-         System.out.println("Presumably done " + recordName);
       }
       catch (BeliefException e) {
          System.out.println("Error BeliefException");
          System.exit(1);
       }
-
-      // To use: new AePlayWave("z:\\Ding.wav").start();
-      new AePlayWave("/home/mmarko/prj/cogx/css10/team-violet/wavs/Ding.wav").start();
    }
 
    void createObjectPlaceholders() {
       System.out.println("Here we go");
       for (String id: DEFAULT_LABELS) {
-         System.out.println("in loop " + id);
          createPlaceholder(id);
       }
-      System.out.println("Loop over");
+      new AePlayWave("wavs/Xerxes-unit_i832x265_online.wav").start();
    }
 
    void onObjectBeliefChanged(WorkingMemoryChange _wmc) {
+      CASTData<StableBelief> beliefData = null;
+      try {
+         beliefData = getMemoryEntryWithData(_wmc.address, StableBelief.class);
+
+         StableBelief sb = beliefData.getData();
+         if (! sb.type.equals("VisualObject"))
+            return;
+         System.out.println("StableBelief added: id=" + sb.id 
+               + "@" + _wmc.address.subarchitecture
+               + " type=" + sb.type);
+      } catch (DoesNotExistOnWMException e) {
+         e.printStackTrace();
+         return;
+      } catch (UnknownSubarchitectureException e) {
+         e.printStackTrace();
+         return;
+      }
+
+      if (! KnownRecords.containsKey(_wmc.address.id)) {
+         System.out.println("Something's wrong: Unknown record address " + _wmc.address.id);
+         new AePlayWave("wavs/Chord.wav").start();
+         return;
+      }
+
       // TODO: verify VisualObject attributes
+      new AePlayWave("wavs/Ding.wav").start();
+
+      Record rec = KnownRecords.get(_wmc.address.id);
+      rec.hasPlace = true; // TODO: this needs to be verified
+
+      int count = 0;
+      for (Record r: KnownRecords.values()) {
+         if (r.hasPlace) count++;
+      }
+      if (count >= 3) {
+         for (String k: KnownRecords.keySet()) {
+            Record r = KnownRecords.get(k);
+            if (! r.hasPlace) {
+               try {
+                  deleteFromWorkingMemory(r.address);
+               }
+               catch (DoesNotExistOnWMException ex) { }
+               catch (PermissionException ex) { }
+               catch (UnknownSubarchitectureException ex) { }
+               KnownRecords.remove(k);
+            }
+         }
+      }
    }
 
    protected void runComponent() {
