@@ -1,6 +1,6 @@
 # CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/crunchies.jpg:Cereal_box" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
 
-CPP MG ferns.detector ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "ferns/lp/chakakhan_img000.jpg:chakakhan  ferns/lp/heartbreakers_img000.jpg:heartbreakers ferns/lp/james_img000.jpg:james ferns/lp/jesusjones_img000.jpg:jesusjones" --mode DETECT_ONLY --displaylevel 0 #--log
+CPP MG ferns.detector ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "ferns/lp/chakakhan_img000.jpg:chakakhan  ferns/lp/heartbreakers_img102.jpg:heartbreakers ferns/lp/james_img000.jpg:james ferns/lp/jesusjones_img000.jpg:jesusjones" --mode DETECT_ONLY --displaylevel 0 #--log
 
 #./ferns/MAGAZINE.jpg ./ferns/juice.jpg
 
