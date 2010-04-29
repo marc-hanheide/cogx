@@ -3,7 +3,7 @@
 (:requirements :mapl :adl :object-fluents)
 
 (:types
-        place recordname foo - object
+        place recordname - object
         robot - agent
         robot visualobject - movable
 )
@@ -39,7 +39,6 @@
 (:functions
         (is-in ?r - movable) - place
         (label ?l - visualobject) - recordname
-        (detected ?l - visualobject) - foo
 )
 
 ;;; ======================================================================================   
@@ -127,50 +126,35 @@
 			)
 ) ;;; detect-object
 
-(:action report-always
-	:agent		(?a - robot)
-	:parameters	(?p - place ?l - recordname ?b - foo)
+(:action report-object
+        :agent          (?a - robot)
+        :parameters     (?p - place ?l - recordname)
 	:variables	(?v - visualobject)
-	:precondition	(and
-			    (= (detected ?v) ?b)
-			    (= (label ?v) ?l)
-			    (object-report-pending ?p ?v)
+        :precondition   (and
+				(= (label ?v) ?l)
+				(object-report-pending ?p ?v)
+				(not (located ?p ?v))
 			)
-	:effects	(and
+        :effect         (and
+			   (located ?p ?v)
+			   (update (located ?p ?v) true)
                            (not (object-report-pending ?p ?v))
                            (update (object-report-pending ?p ?v) false)
+                        )
+) ;;; end report-object
+
+(:action report-nothing
+	:agent		(?a - robot)
+	:variables	(?p - place ?v - visualobject)
+	:precondition	(and
+			  (object-report-pending ?p ?v)
+			  (located ?p ?v) 
 			)
-) ;;; report-always
-
-;(:action report-object
-;        :agent          (?a - robot)
-;        :parameters     (?p - place ?l - recordname)
-;	:variables	(?v - visualobject)
-;        :precondition   (and
-;				(= (label ?v) ?l)
-;				(object-report-pending ?p ?v)
-;				(not (located ?p ?v))
-;			)
-;        :effect         (and
-;			   (located ?p ?v)
-;			   (update (located ?p ?v) true)
-;                           (not (object-report-pending ?p ?v))
-;                           (update (object-report-pending ?p ?v) false)
-;                        )
-;) ;;; end report-object
-
-;(:action report-nothing
-;	:agent		(?a - robot)
-;	:variables	(?p - place ?v - visualobject)
-;	:precondition	(and
-;			  (object-report-pending ?p ?v)
-;			  (located ?p ?v) 
-;			)
-;	:effect		(and
-;                           (not (object-report-pending ?p ?v))
-;                           (update (object-report-pending ?p ?v) false)
-;                        )
-;) ;;; end report-nothing
+	:effect		(and
+                           (not (object-report-pending ?p ?v))
+                           (update (object-report-pending ?p ?v) false)
+                        )
+) ;;; end report-nothing
 
 (:action report-finished
 	:agent		(?a - robot)
