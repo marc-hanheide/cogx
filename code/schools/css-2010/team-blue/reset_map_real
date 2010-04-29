@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm -f robotpose.ccf
+cp stored-maps/2ndtask-real/* .
+
