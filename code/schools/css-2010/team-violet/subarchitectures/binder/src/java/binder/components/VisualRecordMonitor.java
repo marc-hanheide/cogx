@@ -54,7 +54,7 @@ public class VisualRecordMonitor extends ManagedComponent {
          this.hasPlace = false;
       }
    }
-   HashMap<String, Record> KnownRecords;
+   HashMap<String, Record> KnownRecords = new HashMap<String, Record>(4);
 
    public void start() {
 
