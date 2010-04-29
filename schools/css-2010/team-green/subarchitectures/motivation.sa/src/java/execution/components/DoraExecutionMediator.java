@@ -241,8 +241,14 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 								break ;			
 							}
 						}
-
-
+/*
+						// test whether its person we're looking at (stupid way)
+						List<FeatureValueProbPair>  ls_pair_rectmp = new ArrayList<FeatureValueProbPair>();
+						ls_pair_rectmp = FeatureContentUtils.getValuesInBelief(stb, "record" ) ;
+						if ( ls_pair_rectmp.size() > 0 ) { 
+							detected_entity = 2 ;	
+						}
+*/
 /*
 						for ( int i_r = 0 ; i_r < person_names.length; i_r++ ) { 
 							if ( vv.equals(record_names[i_r])) {
@@ -279,7 +285,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
 								int valofplc =  val_plc.val ;
-								what_I_have_to_say = "espeak" + " 'Yo man, the record "+ vv + " is at place " + valofplc + "'";
+								what_I_have_to_say = "espeak_" + " 'Yo_man,_the_record_"+ vv + "_is_at_place_" + valofplc + "'";
 								//System.out.print( what_I_have_to_say ) ;
 							}
 						} else if ( detected_entity == 2 ) {
