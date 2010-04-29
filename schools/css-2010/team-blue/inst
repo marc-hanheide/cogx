@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd BUILD
+cmake .
+cd ..
+make -C BUILD install
