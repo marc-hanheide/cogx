@@ -85,39 +85,6 @@ public class TestActionExecutor extends ManagedComponent {
 
 	}
 
-//         private class StartExecutor extends Thread implements ActionExecutor {
-
-// 		private ExecutionCompletionCallback m_callback;
-
-// 		public boolean accept(Action _action) {
-// 			return true;
-// 		}
-
-// 		public TriBool execute() {
-// 		        assert true : "non-blocking execution should be used";
-// 			return null;
-// 		}
-
-// 		public void execute(ExecutionCompletionCallback _callback) {
-// 			//store callback
-// 			m_callback = _callback;
-// 			start();
-// 		}
-
-// 		@Override
-// 		public void run() {
-// 		    m_callback.executionComplete(TriBool.TRITRUE);
-// 		}
-
-// 		public boolean isBlockingAction() {
-// 			return false;
-// 		}
-
-// 		@Override
-// 		public void stopExecution() {
-// 		}
-
-// 	}
 
         private class StartExecutor implements ActionExecutor {
 
@@ -126,6 +93,13 @@ public class TestActionExecutor extends ManagedComponent {
 		}
 
 		public TriBool execute() {
+		        try { 
+			    Runtime rt = Runtime.getRuntime(); 
+			    Process p = rt.exec("espeak \"Hello. Lets go and find those records.\""); 
+			    p.waitFor();
+			} catch(Exception e) { 
+			    System.out.println(e.getMessage()); 
+			} 
 			return TriBool.TRITRUE;
 		}
 
