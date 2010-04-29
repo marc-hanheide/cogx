@@ -208,7 +208,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 		   try{	
 		
-			String[] record_names = {"record_1", "record_2", "record_3", "record_4"} ;
+			String[] record_names = DEFAULT_LABELS ; //{"record_1", "record_2", "record_3", "record_4"} ;
 			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
 
 			List<StableBelief> ls = new ArrayList<StableBelief>(); 
