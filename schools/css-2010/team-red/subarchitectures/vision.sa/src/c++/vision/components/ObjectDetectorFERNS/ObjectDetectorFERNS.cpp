@@ -539,6 +539,8 @@ void ObjectDetectorFERNS::drawResults(IplImage * frame)
       
             
       char filename[1024];
+      ImgNeed2BeAddintoWM.clear();
+      ImgNeed2BeAddintoWM.push_back(imgcnt);
       snprintf(filename, 1024, "img%03d.jpg", imgcnt++);
       cvSaveImage(filename, frame, 0);
       
@@ -589,6 +591,20 @@ void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
   {
     objWMIds[i] = newDataID();
     addToWorkingMemory(objWMIds[i], obj);
+    
+    string WMIdCurrImg= "WM Id: " + objWMIds[i] +" @vision.sa";
+    for (unsigned int i = 0; i<ImgNeed2BeAddintoWM.size(); i++)
+    {
+	char filename[1024];
+	snprintf(filename, 1024, "img%03d.jpg", ImgNeed2BeAddintoWM.at(i));
+	IplImage* tmpimg = cvLoadImage(filename);
+	double x, y;
+	x = tmpimg->width/4;
+	y = tmpimg->height-5;
+	cvPutText(tmpimg, WMIdCurrImg.c_str(), cvPoint(x, y), &font, cvScalar(255));
+	cvSaveImage(filename, tmpimg, 0);
+	cvReleaseImage(&tmpimg);
+    }
   }
   else
   {
