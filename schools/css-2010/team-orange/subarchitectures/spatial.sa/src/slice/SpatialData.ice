@@ -45,7 +45,7 @@ module SpatialData {
   class Announcement
   {
     string message;
-    int songId;
+    string songId;
   };
 
 
