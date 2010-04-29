@@ -368,6 +368,33 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   // set holding all objects that were detected over a series of images
   std::set<string> detectedObjects;
 
+  if (camId>0)
+  {
+  for(int cc=0; cc<2; ++cc)
+  {
+  // try detection in a series of images
+  for(int i = 0; i < numDetectionAttempts; i++)
+  {
+    videoServer->getImage(cc, image);
+    IplImage *grayImage = convertImageToIplGray(image);
+    detectObjects(grayImage, cmd->labels);
+    // remember what objects were detected
+    for(size_t i = 0; i < cmd->labels.size(); i++)
+      if(last_frame_ok[indexOf(cmd->labels[i])])
+        detectedObjects.insert(cmd->labels[i]);
+    if(doDisplay)
+    {
+      drawResults(grayImage);
+      cvShowImage("ObjectDetectorFERNS", grayImage);
+      // needed to make the window appear
+      // (an odd behaviour of OpenCV windows!)
+      cvWaitKey(10);
+    }
+    cvReleaseImage(&grayImage);
+  }}
+  }
+  else
+  {
   // try detection in a series of images
   for(int i = 0; i < numDetectionAttempts; i++)
   {
@@ -387,6 +414,8 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
       cvWaitKey(10);
     }
     cvReleaseImage(&grayImage);
+  }
+
   }
   // a bit HACKy: say that we detected an object with a given label
   // in the last frame, when actually we only know that we detected it at
