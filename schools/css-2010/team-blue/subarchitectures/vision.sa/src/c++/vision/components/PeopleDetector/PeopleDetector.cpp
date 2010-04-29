@@ -97,6 +97,15 @@ void PeopleDetector::configure(const std::map<std::string,std::string> & config)
         str >> removeAfterDistance;
     }
     else removeAfterDistance = 1.0;
+    
+    if ((it = config.find("--dontAddFartherThan")) != config.end())
+    {
+        std::istringstream str(it->second);
+        str >> dontAddFartherThan;
+    }
+    else dontAddFartherThan = 15.0;
+    
+    
 
     if ((it = config.find("--faceCascade")) != config.end())
     {
@@ -370,6 +379,7 @@ void PeopleDetector::runDetection()
 
                 originalX.push_back(y * z);
                 originalY.push_back(x * z);
+// 		log("seqX %f seqZ %f originalX %f originalY %f", sx, z, y*z, x*z);
             }
 
             // zbuffer with a value for each vertical scanline in the image, with corresponding
@@ -398,6 +408,7 @@ void PeopleDetector::runDetection()
                         zbufferBits[int(seqX[i])] = true;
                         zbuffer[int(seqX[i])] = seqZ[i];
                         zbufferOrigin[int(seqX[i])] = i;
+// 			log("seqX %f seqZ %f zbuffer: %f", seqX[i], seqZ[i], zbuffer[int(seqX[i])]);
                     }
                 }
             }
@@ -436,7 +447,9 @@ void PeopleDetector::runDetection()
                     s = cvGet2D(img, y, x);
 
                     s2.val[0] = limit(d * s.val[0], 0, 255);
-
+		    
+// 		    log("x %d y %d zbuffer %f", x, y, zbuffer[x]);
+		    
                     cvSet2D(img, y, x, s2);
                 }
             }
@@ -517,7 +530,10 @@ void PeopleDetector::runDetection()
 
                 r.laserZ = originalX[zbufferOrigin[index]];
                 r.laserX = originalY[zbufferOrigin[index]];
-                r.scanIndex = zbufferOrigin[index];                
+                r.scanIndex = zbufferOrigin[index]; 
+		
+// 		log("laserZ %f laserX %f", r.laserZ, r.laserX);
+		distanceFromRobot = r.laserX;
 
                 bool found = false;
                 for (size_t j = 0; j < newDetections.size(); j++)
@@ -647,7 +663,8 @@ void PeopleDetector::runDetection()
                         VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
                             scan.ranges[scan.ranges.size() - r.scanIndex - 1],
                             r.laserX, r.laserZ, r.deltaX, r.deltaZ);                                                   
-                        overwriteWorkingMemory(r.castID, data);            
+                        overwriteWorkingMemory(r.castID, data);       
+// 			log("overwriteWorkingMemory");
 
                         newDetections.erase(newDetections.begin() + j);
                         break;
@@ -665,7 +682,8 @@ void PeopleDetector::runDetection()
                     VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
                         scan.ranges[scan.ranges.size() - r.scanIndex - 1],
                         r.laserX, r.laserZ, r.deltaX, r.deltaZ);                        
-                    overwriteWorkingMemory(r.castID, data);                                
+                    overwriteWorkingMemory(r.castID, data);  
+// 		    log("overwriteWorkingMemory");
                     
                     detectionsCopy.push_back(r);
                 }
@@ -690,6 +708,7 @@ void PeopleDetector::runDetection()
                 if (!found)
                 {
                     deleteFromWorkingMemory(r.castID);
+// 		    log("deleteFromWorkingMemory");
                 }
             }
 
@@ -700,14 +719,21 @@ void PeopleDetector::runDetection()
             for (size_t j = 0; j < newDetections.size(); j++)
             {
                 // New detections that are valid get a new ID from cast.
-                PersonRecord r = newDetections[j];
-                r.castID = newDataID();
-                detections.push_back(r);               
+                if(distanceFromRobot < dontAddFartherThan){
+		  PersonRecord r = newDetections[j];
+		  r.castID = newDataID();
+		  detections.push_back(r);               
+		  
+		  VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
+		      scan.ranges[scan.ranges.size() - r.scanIndex - 1],
+		      r.laserX, r.laserZ, r.deltaX, r.deltaZ);    
                 
-                VisionData::PersonPtr data = new VisionData::Person(scan.startAngle + scan.angleStep * r.scanIndex, 
-                    scan.ranges[scan.ranges.size() - r.scanIndex - 1],
-                    r.laserX, r.laserZ, r.deltaX, r.deltaZ);    
-                addToWorkingMemory(r.castID, data);                 
+		  addToWorkingMemory(r.castID, data);   
+		  log("Person detected in %f m, adding to WM", distanceFromRobot);
+		}else{
+		   
+// 		  log("not adding: %f > %f", distanceFromRobot, dontAddFartherThan);
+		}
             }
 
 
