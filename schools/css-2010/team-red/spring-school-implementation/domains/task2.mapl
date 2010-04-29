@@ -1,0 +1,176 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :object-fluents :action-costs)
+	
+	(:types 
+		place place_id - object
+		robot - agent
+		place_special - object
+	)
+	
+	(:constants yes no - place_special)
+
+    (:predicates
+	 (goal-achieved)
+		(connected ?n1 - place ?n2 - place)
+		(visited ?p - place)
+		(wave1-visited ?pp - place)
+    )	
+
+	(:functions
+        (is-in ?r - robot) - place
+        (placeid ?p - place) - place_id
+	(wave1 ?p - place) - place_special
+ 	)
+	
+;;; actions ;;;
+
+	
+  (:action move
+	   :agent (?a - robot)
+	   :parameters (?to - place)
+	   :variables (?from - place)
+	   :precondition (and
+;; 			  (or (not (=  (wave1 ?to) yes)) (not (visited ?to)))
+			  ;; (or (not (=  (wave1 ?to) yes)) )
+
+			  
+			  (or (forall (?pp - place) 
+				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+			      (=  (wave1 ?to) yes))
+
+			  (not (visited ?to))
+
+			  (= (is-in ?a) ?from)
+			  (or (connected ?from ?to)
+			      (connected ?to ?from))
+			  
+			  (or (not (=  (wave1 ?from) yes)) (visited ?from))
+			  )
+	   :effect (and
+
+		    (assign (is-in ?a) ?to)
+;; 		    (visited ?to)
+;; 		    (update (visited ?to) true)
+		    ))
+
+
+  
+  (:action move-rough
+	   :agent (?a - robot)
+	   :parameters (?to - place)
+	   :variables (?from - place)
+	   :precondition (and
+
+			  (not (and (or (forall (?pp - place) 
+						(or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+					(=  (wave1 ?to) yes))
+				    
+				    (not (visited ?to))))
+
+
+			  (= (is-in ?a) ?from)
+			  (or (connected ?from ?to)
+			      (connected ?to ?from))
+			  (or (not (=  (wave1 ?from) yes)) (visited ?from))
+			  )
+	   :effect (and
+		    (assign (is-in ?a) ?to)
+;; 		    (visited ?to)
+;; 		    (update (visited ?to) true)
+		    ))
+
+
+
+;; 	(:action move
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?to - place)
+;; 	 :variables (?from - place)
+;; 	 :precondition (and
+;; 		(= (is-in ?a) ?from)
+;; 		(or (connected ?from ?to)
+;; 		    (connected ?to ?from))
+;; 		(or (not (=  (wave1 ?from) yes)) (visited ?from))
+;; 		)
+;; 	 :effect (and
+;; 		  (increase (total-cost) 10)
+
+;; ;; 		  (when 
+;; ;; 		    (increase (total-cost) 10))
+		  
+;; ;; 		  (when (not (or (connected ?from ?to)
+;; ;; 			    (connected ?to ?from))
+;; ;; 		    (increase (total-cost) 10)))
+		  
+;; 		(assign (is-in ?a) ?to)
+;; 	))
+
+;; 	(:action expensive-move
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?to - place)
+;; 	 :variables (?from - place)
+;; 	 :precondition (and
+;; 		(= (is-in ?a) ?from)
+;; 		)
+;; 	 :effect (and
+;; 		  (increase (total-cost) 10000)
+
+;; ;; 		  (when 
+;; ;; 		    (increase (total-cost) 10))
+		  
+;; ;; 		  (when (not (or (connected ?from ?to)
+;; ;; 			    (connected ?to ?from))
+;; ;; 		    (increase (total-cost) 10)))
+		  
+;; 		(assign (is-in ?a) ?to)
+;; 	))
+
+	(:action cheap-look-for-objects
+	 :agent (?a - robot)
+	 :parameters (?to - place)
+	 :precondition (and
+			(not (visited ?to))
+			(= (is-in ?a) ?to)
+			(= (wave1 ?to) yes)
+			)
+	 :effect (and
+		  (wave1-visited ?to)
+		  (update (wave1-visited ?to) true)
+		  (visited ?to)	
+		  (update (visited ?to) true) ))
+
+	
+	(:action expensive-look-for-objects
+	 :agent (?a - robot)
+	 :parameters (?to - place)
+	 :precondition (and
+			(= (wave1 ?to) no)
+
+			(forall (?pp - place) 
+				(or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+
+			(= (wave1 ?to) no)
+			(not (visited ?to))
+			(= (is-in ?a) ?to)
+
+			)
+	 :effect (and
+		  (visited ?to)	
+		  (update (visited ?to) true) ))
+
+(:action goal-action
+	  :agent (?a - robot)
+	  :parameters ()
+	  :precondition (and
+;; 			 (forall (?p - place) (visited ?p))
+			 (forall (?p - place) (wave1-visited ?p))
+			 )
+	  :effect (and
+		   (goal-achieved))
+	  )
+)
+
+;; (metric minimize (total-costs))
+
+;; goal: (forall (?p - place) (visited ?p))
+
