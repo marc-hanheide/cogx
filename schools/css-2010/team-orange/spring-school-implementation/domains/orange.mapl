@@ -159,7 +159,12 @@
 				(not (exists (?p - place ?l - recordname) (object-report-pending ?p ?l)))
 				(or
 				(and (forall (?p - place) (searched1 ?p))
-				     (forall (?p - place) (visited2 ?p))
+				     (forall (?p - place)
+						(or
+						   (and (endnode ?p) (visited1 ?p))
+						   (and (not (endnode ?p)) (visited2 ?p))
+						)
+				     )
 				)
 				(exists (?v1 ?v2 ?v3 - visualobject ?l1 ?l2 ?l3 - recordname)
 					(and 
