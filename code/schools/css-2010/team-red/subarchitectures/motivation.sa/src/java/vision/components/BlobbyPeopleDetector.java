@@ -3,7 +3,9 @@ package vision.components;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
+import NavData.RobotPose2d;
 import VisionData.PeopleDetectionCommand;
 import VisionData.Person;
 import blobfinder.BlobFinderInterface;
@@ -28,6 +30,7 @@ import castutils.castextensions.HashCoder;
 import castutils.castextensions.WMTypeAlignment;
 import castutils.meta.OperationPerformer;
 import castutils.slice.WMOperation;
+import cast.core.CASTData;
 
 /**
  * A fake people detector that uses the player blobfinder model to find people.
@@ -57,47 +60,53 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	private OperationPerformer m_performer;
 	private WMTypeAlignment<BlobInfo, Person> m_aligner;
 	static int blobCounter=0;
+    private double m_tolerance = 2;
+
+    private Vector<RobotPose2d> m_PeoplePos = null;
+
+    /**
+     * Generates a new person struct. Does the maths by assuming that the
+     * whole person is in view and the ratio between person width in metres
+     * and pixels is the same for image width.
+     * 
+     * @param _blobInfo
+     * @return
+     */
+    public Person blob2person(BlobInfo _blobInfo) {
+        // get range in metre
+        double rangeMetres = _blobInfo.range / 1000;
+        
+        // convert image coords to real world info
+        double pixelsPerMetre = _blobInfo.boundingBox.width / m_personWidth;
+        
+        // println("p/m " + pixelsPerMetre);
+        
+        // offset of bounding box, assumes camera is in the middle of the
+        // robot
+        double pixelOffsetOfPerson = _blobInfo.boundingBox.pos.x
+            - m_imageXCentre;
+        
+        // println("offset " + pixelOffsetOfPerson);
+        
+        double deltaXMetres = pixelOffsetOfPerson / pixelsPerMetre;
+        
+        // println("deltaX " + deltaXMetres);
+        
+        double angleRadians = Math.asin(deltaXMetres / rangeMetres);
+        
+        // println("rads " + angleRadians);
+        
+        double angleDegrees = Math.toDegrees(angleRadians);
+        
+        return new Person(angleDegrees, rangeMetres, deltaXMetres,
+                          rangeMetres * Math.cos(angleRadians), 0, 0);
+    }    
 
 	private final class BlobInfo2PersonConverter implements
 			Converter<BlobInfo, Person> {
-
-		/**
-		 * Generates a new person struct. Does the maths by assuming that the
-		 * whole person is in view and the ratio between person width in metres
-		 * and pixels is the same for image width.
-		 * 
-		 * @param _blobInfo
-		 * @return
-		 */
-		public Person convert(BlobInfo _blobInfo) {
-			// get range in metre
-			double rangeMetres = _blobInfo.range / 1000;
-
-			// convert image coords to real world info
-			double pixelsPerMetre = _blobInfo.boundingBox.width / m_personWidth;
-
-			// println("p/m " + pixelsPerMetre);
-
-			// offset of bounding box, assumes camera is in the middle of the
-			// robot
-			double pixelOffsetOfPerson = _blobInfo.boundingBox.pos.x
-					- m_imageXCentre;
-
-			// println("offset " + pixelOffsetOfPerson);
-
-			double deltaXMetres = pixelOffsetOfPerson / pixelsPerMetre;
-
-			// println("deltaX " + deltaXMetres);
-
-			double angleRadians = Math.asin(deltaXMetres / rangeMetres);
-
-			// println("rads " + angleRadians);
-
-			double angleDegrees = Math.toDegrees(angleRadians);
-
-			return new Person(angleDegrees, rangeMetres, deltaXMetres,
-					rangeMetres * Math.cos(angleRadians), 0, 0);
-		}
+            public Person convert(BlobInfo _blobInfo) {
+                return blob2person(_blobInfo);
+            }
 	}
 
 	private final class BlobInfoHasher implements HashCoder<BlobInfo> {
@@ -110,7 +119,53 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 
 	private final class PersonColourTester implements Condition<BlobInfo> {
 		public boolean test(BlobInfo _t) {
-			return _t.colour.equals(m_personColour);
+
+                    Person p = blob2person(_t);
+                    RobotPose2d ppos = new RobotPose2d();
+                    ppos.x = 0;
+                    ppos.y = 0;
+
+                    // Get hold of teh current robot pose
+                    try {
+                        CASTData<RobotPose2d>[] rp = getWorkingMemoryEntries("spatial.sa", RobotPose2d.class, 1);
+                        ppos.x = rp[0].getData().x + 
+                            p.distance * Math.cos(rp[0].getData().theta);
+                        ppos.y = rp[0].getData().y + 
+                            p.distance * Math.sin(rp[0].getData().theta);
+                        log("RP: x=" + rp[0].getData().x + 
+                            " y=" + rp[0].getData().y + 
+                            " a=" + rp[0].getData().theta + 
+                            " Person: x=" + ppos.x +
+                            " y=" + ppos.y);
+                        
+                        double minD = 1e10;
+                        for (int i = 0; i < m_PeoplePos.size(); i++) {
+                            double d = Math.hypot(ppos.x - 
+                                                  m_PeoplePos.elementAt(i).x,
+                                                  ppos.y - 
+                                                  m_PeoplePos.elementAt(i).y);
+                            if (d < minD) minD = d;
+                        }
+
+                        log("minD=" + minD);
+
+                        if (minD < m_tolerance) {
+                            log("Not adding new person, too close to the old");
+                            return false;
+                        }
+
+                    } catch (Exception e) {                        
+                    }
+                    
+                    if (_t.colour.equals(m_personColour)) {
+                        m_PeoplePos.add(ppos);
+                        log("Found a new person");
+                        // We have found a new person
+                        return true;
+                    } else {
+                        log("This persn is too close to a previously seen person");
+                        return false;
+                    }
 		}
 	}
 
@@ -119,6 +174,8 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 		m_personColour = new ColorRGB(255, 255, 0);
 		m_personWidth = 0.4d;
 		m_imageXCentre = 40;
+
+                m_PeoplePos = new Vector<RobotPose2d>();
 
 		m_performer = new OperationPerformer(this);
 		m_aligner = new WMTypeAlignment<BlobInfo, Person>(this,
@@ -247,6 +304,15 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 		log("person width: " + m_personWidth);
 		log(CASTUtils.concatenate("person colour: ", m_personColour.r, " ",
 				m_personColour.g, " " + m_personColour.b));
+                
+                String tolstring = _config.get("--tolerance");
+		if (tolstring != null) {
+			m_tolerance = Double.parseDouble(tolstring);
+		} else {
+			m_tolerance = 2;
+		}
+		log("Using tolerance " + m_tolerance + "m");
+
 	}
 
 	@Override
