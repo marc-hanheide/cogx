@@ -52,6 +52,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	}
 
     private void say_something(String __command){
+
 		try {
 
 		    Runtime.getRuntime().exec(__command);
@@ -80,13 +81,13 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 		    //System.out.println("Exception " + e.getMessage());
 		}
 
-// 		// Make an executable bash script for generating noise.
-// 		FileWriter fstream = new FileWriter("talk.sh");
-// 		BufferedWriter out = new BufferedWriter(fstream);
-// 		out.write("echo \"" + args[0] + "\" | festival --tts");
-// 		out.close();
-// 		String command = "chmod a+x talk.sh";
-// 		Runtime.getRuntime().exec(command);
+// // 		// Make an executable bash script for generating noise.
+// // 		FileWriter fstream = new FileWriter("talk.sh");
+// // 		BufferedWriter out = new BufferedWriter(fstream);
+// // 		out.write("echo \"" + args[0] + "\" | festival --tts");
+// // 		out.close();
+// // 		String command = "chmod a+x talk.sh";
+// // 		Runtime.getRuntime().exec(command);
 	}
 
 	@Override
@@ -116,6 +117,13 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	 */
     public execution.slice.Action toSystemAction(Action _plannedAction)
 	throws CASTException {
+// 	assert 1==2 : "Got action with name :: " + _plannedAction.name;
+
+	
+	
+
+// 	System.exit(0);
+
 	if (_plannedAction.name.equals("expensive-move")) {
 	    assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
@@ -187,6 +195,10 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    // read the one placeID from the StableBelief
 	    IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
 	    act.placeID = placeID.val;
+
+	    
+	    say_something("./talk.sh Hmmmmm-this-looks-like-a-nice-place-to-stop?-Yeah!");
+
 	    // we have now created the action object, so we create it and let
 	    // the execution framework to the rest of the work
 	    return act;
@@ -249,6 +261,31 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    assert _plannedAction.arguments.length == 1 : "detect-people action arity is expected to be 1";
 	    // create the action instance and return it
 	    DetectPeople act = newActionInstance(DetectPeople.class);
+	    return act;
+	} else if (_plannedAction.name.equals("look-for-people-first")) {
+
+	    // this is the action that make the robot turn and triggers the
+	    // people detector several times
+	    assert _plannedAction.arguments.length == 2 : "look-for-people-first action arity is expected to be 2 but got" + _plannedAction.arguments.length;
+
+	    //System.exit(0);
+
+	    // create the action instance and return it
+	    LookForPeople act = newActionInstance(LookForPeople.class);
+	    
+	    
+	    say_something("./talk.sh Anyone-about?");
+
+	    return act;
+	} else if (_plannedAction.name.equals("look-for-people-second")) {
+	    // this is the action that make the robot turn and triggers the
+	    // people detector several times
+	    assert _plannedAction.arguments.length == 2 : "look-for-people-second action arity is expected to be 2 but got " + _plannedAction.arguments.length;
+	    // create the action instance and return it
+	    LookForPeople act = newActionInstance(LookForPeople.class);
+
+	    say_something("./talk.sh Anyone-there?-I-want-a-friend...Please!");
+	    
 	    return act;
 	} else if (_plannedAction.name.equals("look-for-people")) {
 	    // this is the action that make the robot turn and triggers the

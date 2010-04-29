@@ -43,7 +43,16 @@
 ;; 	(= (wave1 ) yes)
 )
 
-(:goal  (and  (forall (?p - place)  (visited ?p))))
+;; (:goal (forall (?p - place)  (visited ?p)))
+
+(:goal  (and  (forall (?p - place)  (visited ?p)) 
+	      (forall (?a - robot) 
+		      (forall (?p - person) 
+			      (and 
+				   (kval ?a (name ?p))
+				   )))))
+
+;; (:goal  (and  (forall (?p - place)  (visited ?p))))
 ;;(:goal  (and  (forall (?p - place)  (explored ?p))))
 
 )
