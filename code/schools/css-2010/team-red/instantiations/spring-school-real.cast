@@ -21,7 +21,10 @@ Include includes/vision.sa/vision-execution.cast
 
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
-JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
+#JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
+#JAVA MG recorder castutils.components.WorkingMemoryRecorder --file coma-simulation.dump
+JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/redroom/coma.log
+#JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
 
 
 # binder ######################################################################
