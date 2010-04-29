@@ -18,6 +18,7 @@
 
 (:predicates
 	(finished)
+        (object-report-pending ?p - place ?l - recordname)
         (connected ?n1 - place ?n2 - place)
 	(visited1 ?p - place)
 	(visited2 ?p - place)
@@ -58,6 +59,7 @@
                         (= (is-in ?a) ?from)
                         (or (connected ?from ?to)
                         (connected ?to ?from))
+			(not (exists (?p - place ?l - recordname) (object-report-pending ?p ?l)))
                         )
          :effect        (and
                         (assign (is-in ?a) ?to)
@@ -74,7 +76,7 @@
                         )
 ) ;;; end move
 
-(:action look-for-object
+(:action look-for-objects
          :agent         (?a - robot)
          :variables     (?p - place)
          :precondition  (and
@@ -99,13 +101,15 @@
                                       (and
 				        (located ?p ?l)
 				        (update (located ?p ?l) true)
+					(object-report-pending ?p ?l)
+                                        (update (object-report-pending ?p ?l) true)
                                       )
 				)
 			)
                         )
-) ;;; look-for-object
+) ;;; look-for-objects
 
-(:action detect-object
+(:action detect-objects
 	 :agent		(?a - robot)
          :variables     (?p - place)
          :precondition  (and
@@ -130,6 +134,8 @@
 				      (and
                                         (located ?p ?l)
                                         (update (located ?p ?l) true)
+					(object-report-pending ?p ?l)
+					(update (object-report-pending ?p ?l) true)
 				      )
                                 )
                         )
@@ -137,19 +143,32 @@
                         )
 ) ;;; detect-object
 
+(:action report-object
+        :agent          (?a - robot)
+        :parameters     (?p - place ?l - recordname)
+        :precondition   (object-report-pending ?p ?l)
+        :effect         (and
+                           (not (object-report-pending ?p ?l))
+                           (update (object-report-pending ?p ?l) false)
+                        )
+) ;;; end report-object
+
 (:action report-finished
 	:agent		(?a - robot)
-	:precondition	(or
-			(and (forall (?p - place) (searched1 ?p)) (forall (?p - place) (visited2 ?p)))
-			(exists (?v1 ?v2 ?v3 - visualobject ?l1 ?l2 ?l3 - recordname)
-				(and 
-					(= (label ?v1) ?l1) (= (label ?v2) ?l2) (= (label ?v3) ?l3) 
-					(exists (?p1 - place) (located ?p1 ?l1))
-					(exists (?p2 - place) (located ?p2 ?l2))
-					(exists (?p3 - place) (located ?p3 ?l3))
-					(not (= ?l1 ?l2)) (not (= ?l3 ?l2)) (not (= ?l1 ?l3))
+	:precondition	(and
+				(not (exists (?p - place ?l - recordname) (object-report-pending ?p ?l)))
+				(or
+				(and (forall (?p - place) (searched1 ?p)) (forall (?p - place) (visited2 ?p)))
+				(exists (?v1 ?v2 ?v3 - visualobject ?l1 ?l2 ?l3 - recordname)
+					(and 
+						(= (label ?v1) ?l1) (= (label ?v2) ?l2) (= (label ?v3) ?l3) 
+						(exists (?p1 - place) (located ?p1 ?l1))
+						(exists (?p2 - place) (located ?p2 ?l2))
+						(exists (?p3 - place) (located ?p3 ?l3))
+						(not (= ?l1 ?l2)) (not (= ?l3 ?l2)) (not (= ?l1 ?l3))
+					)
 				)
-			)
+				)
 			)
 	:effect		(and
 				(finished)
