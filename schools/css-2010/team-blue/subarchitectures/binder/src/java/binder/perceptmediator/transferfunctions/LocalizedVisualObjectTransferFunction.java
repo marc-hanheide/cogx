@@ -50,12 +50,18 @@ public class LocalizedVisualObjectTransferFunction extends
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
 			if(from.detectionConfidence == 1f)
+			{
 			   result.put("is-in", FeatureValueBuilder.createNewPointerValue(placeWMA));
+			   result.put("Label", FeatureValueBuilder.createNewStringValue(from.label));
+			}
 			else
-			   result.put("is-in", FeatureValueBuilder.createNewStringValue("Unknown")); 
+			{
+			   result.put("is-in", FeatureValueBuilder.createNewStringValue("Unknown"));
+			   result.put("Label", FeatureValueBuilder.createNewStringValue("Unknown"));
+			} 
 			result.put("VisualObjectId", FeatureValueBuilder
 					.createNewStringValue(wmc.address.id));
-			result.put("Label", FeatureValueBuilder.createNewStringValue(from.label));
+			
 //			result.put("distance", FeatureValueBuilder
 //					.createNewFloatValue(from.distance));
 		} catch (BeliefException e) {
