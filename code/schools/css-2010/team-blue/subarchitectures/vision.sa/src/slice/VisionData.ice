@@ -114,7 +114,7 @@ module VisionData {
 
 
     // ID of component with latest access to this WM entry
-    string componentID;
+    //string componentID;
 
     // List of views of the object from different cameras
     VisualObjectViewSeq views;
