@@ -136,7 +136,7 @@
 			    (= (label ?v) ?l)
 			    (object-report-pending ?p ?v)
 			)
-	:effects	(and
+	:effect		(and
                            (not (object-report-pending ?p ?v))
                            (update (object-report-pending ?p ?v) false)
 			)
