@@ -24,6 +24,7 @@
    (goal-achieved ?a - agent)
 
    (asked-who-owns-record ?a - robot ?l - visualobject_label ?p - person)
+   (asked-is-record-xxx-your-record ?a - robot ?l - visualobject_label ?p - person)
    
 
    (connected ?n1 - place ?n2 - place)
@@ -138,7 +139,7 @@
 	   :precondition (and
 			  
 
-;; 			  (not  (asked-is-record-xxx-your-record ?a ?l ?p))
+			  (not  (asked-is-record-xxx-your-record ?a ?l ?p))
 
 			  (not (kval ?a (owner ?p)))
 			  
@@ -146,8 +147,8 @@
 			  (= (is-in ?p) ?loc)
 			  )
 	   :effect (and (kval ?a (owner ?p))
-;; 			(asked-is-record-xxx-your-record ?a ?l ?p)
-;; 			(update (asked-is-record-xxx-your-record ?a ?l ?p) true)
+			(asked-is-record-xxx-your-record ?a ?l ?p)
+			(update (asked-is-record-xxx-your-record ?a ?l ?p) true)
 			)
 
 	   )
