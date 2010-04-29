@@ -1,5 +1,7 @@
 #!/bin/bash
 
+dc1394_reset_bus
+
 PIDS=""
 
 trap 'kill $PIDS' INT TERM PIPE QUIT ABRT HUP 
