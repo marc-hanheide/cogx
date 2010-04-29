@@ -144,7 +144,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			CondIndependentDistribs contentDistrib_b2 = BeliefContentBuilder.createNewCondIndependentDistribs();
 
-			BasicProbDistribution typeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("type", 
+			BasicProbDistribution typeDistrib_b2 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("label", 
 					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("3:2"), 0.89f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, typeDistrib_b2);
@@ -153,6 +153,12 @@ public class SpringSchoolTest extends AbstractBinderTest {
 					new FeatureValueProbPair(FeatureValueBuilder.createNewPointerValue(new WorkingMemoryAddress(b1.id, BindingWorkingMemory.BINDER_SA)), 0.93f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, locationDistrib_b2);
+			
+		//	BasicProbDistribution expected = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("expected", 
+		//			new FeatureValueProbPair(FeatureValueBuilder.createNewBooleanValue(true), 1.0f));
+
+		//	BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b2, expected);
+			
 
 			ProbDistribution content_b2 = BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, contentDistrib_b2);
 
@@ -166,7 +172,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			CondIndependentDistribs contentDistrib_b3 = BeliefContentBuilder.createNewCondIndependentDistribs();
 
-			BasicProbDistribution typeDistrib_b3 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("type", 
+			BasicProbDistribution typeDistrib_b3 = BeliefContentBuilder.createNewFeatureDistributionWithSinglePair("label", 
 					new FeatureValueProbPair(FeatureValueBuilder.createNewStringValue("3:2"), 0.95f));
 
 			BeliefContentBuilder.putNewCondIndependentDistrib(contentDistrib_b3, typeDistrib_b3);
@@ -203,7 +209,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			PerceptBelief b4 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b4, hist_b4);
 
-			insertBeliefInWM(b4);
+		//	insertBeliefInWM(b4);
 
 
 
@@ -227,7 +233,7 @@ public class SpringSchoolTest extends AbstractBinderTest {
 
 			PerceptBelief b5 = PerceptBuilder.createNewPerceptBelief(newDataID(), "Person", "here", getCASTTime(), content_b5, hist_b5);
 
-			insertBeliefInWM(b5);						
+		//	insertBeliefInWM(b5);						
 
 		}
 		catch (Exception e) {
