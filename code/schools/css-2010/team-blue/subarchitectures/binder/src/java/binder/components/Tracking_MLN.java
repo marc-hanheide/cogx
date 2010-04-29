@@ -278,6 +278,8 @@ public class Tracking_MLN extends MarkovLogicComponent<MultiModalBelief> {
 				TemporalUnionBelief childBelief = 
 					TemporalUnionBuilder.createNewSingleUnionBelief(belief, beliefWMAddress, b.id);
 			
+				updatePointers(childBelief, TemporalUnionBelief.class);
+
 				TemporalUnionBelief existingBelief = getMemoryEntry(new WorkingMemoryAddress(b.id, BindingWorkingMemory.BINDER_SA), TemporalUnionBelief.class);
 				childBelief.content = mergeBeliefContent(existingBelief.content, childBelief.content);
 
