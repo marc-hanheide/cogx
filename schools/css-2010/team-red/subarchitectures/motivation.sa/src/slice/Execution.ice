@@ -172,6 +172,13 @@ module execution {
       class LookForObjects extends Action {
 	StringSeq labels;
       };
+
+      /**
+       * Turn the robot in stages to look for objects and people.
+       */
+      class LookForObjectsAndPeople extends Action {
+	StringSeq labels;
+      };
       
       /**
        * Use a combination of ptu and rotation of the platform to look for objects.

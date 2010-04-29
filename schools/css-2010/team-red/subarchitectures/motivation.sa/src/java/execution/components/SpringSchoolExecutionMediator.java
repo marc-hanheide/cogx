@@ -344,6 +344,16 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    // 			LookForObjects act = newActionInstance(LookForObjects.class);
 	    // 			act.labels = DEFAULT_LABELS;
 	    // 			return act;
+	}else if (_plannedAction.name.equals("look-for-objects-and-people")) {
+		
+	    assert _plannedAction.arguments.length == 2 : "look-for-object action arity is expected to be 2 but we got " + _plannedAction.arguments.length;
+	    
+	    say_something("./talk.sh More information, more information, aaaahhh!");
+
+	    LookForObjects act = newActionInstance(LookForObjects.class);
+	    act.labels = m_objectLabels;// DEFAULT_LABELS;
+	    return act;
+
 	} else if (_plannedAction.name.equals("ask-for-your-name")) {
 	    // this is the action to ask for a person's name
 	    assert _plannedAction.arguments.length == 2 : "ask-for-your-name action arity is expected to be 2";
