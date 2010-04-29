@@ -451,13 +451,58 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		private WorkingMemoryAddress m_addr;
 
+
+		private ExecutionCompletionCallback m_callback;
+		private boolean m_isComplete = false;
+		private WorkingMemoryAddress m_navCmdAddr;
+		private long m_placeID;
+
+
+
 		@Override
 		public boolean accept(Action _action) {
+			m_placeID=0;
 			return true;
 		}
 
 		@Override
 		public TriBool execute() {
+
+			return TriBool.TRITRUE;
+		}
+
+		@Override
+		public boolean isBlockingAction() {
+			return false;
+		}
+
+		@Override
+		public void stopExecution() {
+			// remove overwrite receiver
+			if (!m_isComplete) {
+				try {
+					log("aborting execution");
+					removeChangeFilter(this);
+					// reread
+					lockEntry(m_navCmdAddr, WorkingMemoryPermissions.LOCKEDODR);
+					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
+							NavCommand.class);
+					navCmd.comp = Completion.COMMANDABORTED;
+					overwriteWorkingMemory(m_navCmdAddr, navCmd);
+					unlockEntry(m_navCmdAddr);
+
+				} catch (DoesNotExistOnWMException e) {
+					//
+					// e.printStackTrace();
+				} catch (SubarchitectureComponentException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+		@Override
+		public void execute(ExecutionCompletionCallback _callback) {
 
 			// SEND COMMAND
 			Announcement ann = new Announcement();
@@ -470,29 +515,65 @@ public class SpatialActionInterface extends ManagedComponent {
 			} catch (CASTException e) {
 				println(e.message);
 				e.printStackTrace();
-				return TriBool.TRIFALSE;
 			}
 
-			return TriBool.TRITRUE;
+
+
+
+			// if we haven't seen this place, then fail
+			if (!m_placeIDs.contains(m_placeID)) {
+				_callback.executionComplete(TriBool.TRIFALSE);
+				return;
+			}
+
+			// else create the command and send it off, ignoring path transition
+			// probs for now
+			NavCommand cmd = newNavCommand();
+			cmd.cmd = CommandType.GOTOPLACE;
+			cmd.destId = new long[1];
+			cmd.destId[0] = m_placeID;
+
+			// going to add locally for the time being, but using wma to allow
+			// this to be changed later
+			m_navCmdAddr = new WorkingMemoryAddress(newDataID(),
+					getSubarchitectureID());
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(
+					m_navCmdAddr, WorkingMemoryOperation.OVERWRITE), this);
+			m_callback = _callback;
+
+			try {
+				addToWorkingMemory(m_navCmdAddr, cmd);
+			} catch (CASTException e) {
+				println(e.message);
+				e.printStackTrace();
+				_callback.executionComplete(TriBool.TRIFALSE);
+			}
+
 		}
 
 		@Override
-		public boolean isBlockingAction() {
-			return true;
-		}
-
-		@Override
-		public void stopExecution() {
-		}
-
-		@Override
-		public void execute(ExecutionCompletionCallback _callback) {
-
-		}
-
-		@Override
-		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
+			// read in the nav cmd
+			lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
+			NavCommand cmd = getMemoryEntry(_wmc.address, NavCommand.class);
+			if (cmd.comp == Completion.COMMANDFAILED) {
+				log("command failed by the looks of this: " + cmd.comp);
+				m_isComplete = true;
+				m_callback.executionComplete(TriBool.TRIFALSE);
+				deleteFromWorkingMemory(_wmc.address);
+				removeChangeFilter(this);
+			} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
+				log("command completed by the looks of this: " + cmd.comp);
+				m_isComplete = true;
+				m_callback.executionComplete(TriBool.TRITRUE);
+				deleteFromWorkingMemory(_wmc.address);
+				removeChangeFilter(this);
+			} else {
+				log("command in progress: " + cmd.comp);
+				unlockEntry(_wmc.address);
+			}
+
 		}
 
 	}
