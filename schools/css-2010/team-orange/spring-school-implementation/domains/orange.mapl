@@ -17,7 +17,7 @@
 ;;; ======================================================================================
 
 (:predicates
-	(finished)
+	(finished ?r - robot)
         (object-report-pending ?p - place ?l - recordname)
         (connected ?n1 - place ?n2 - place)
 	(visited1 ?p - place)
@@ -158,7 +158,9 @@
 	:precondition	(and
 				(not (exists (?p - place ?l - recordname) (object-report-pending ?p ?l)))
 				(or
-				(and (forall (?p - place) (searched1 ?p)) (forall (?p - place) (visited2 ?p)))
+				(and (forall (?p - place) (searched1 ?p))
+				     (forall (?p - place) (visited2 ?p))
+				)
 				(exists (?v1 ?v2 ?v3 - visualobject ?l1 ?l2 ?l3 - recordname)
 					(and 
 						(= (label ?v1) ?l1) (= (label ?v2) ?l2) (= (label ?v3) ?l3) 
@@ -171,8 +173,8 @@
 				)
 			)
 	:effect		(and
-				(finished)
-				(update (finished) true)
+				(finished ?a)
+				(update (finished ?a) true)
 			)
 ) ;;; end report-finished
 
