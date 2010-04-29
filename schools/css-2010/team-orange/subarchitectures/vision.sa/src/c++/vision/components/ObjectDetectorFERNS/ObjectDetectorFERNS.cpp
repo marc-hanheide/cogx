@@ -566,15 +566,15 @@ void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
   VisualObjectPtr obj = createVisualObject(i, image);
 
   // if no WM ID yet for that object
-  if(objWMIds[i] == "")
-  {
+//  if(objWMIds[i] == "")
+//  {
     objWMIds[i] = newDataID();
     addToWorkingMemory(objWMIds[i], obj);
-  }
-  else
-  {
-    overwriteWorkingMemory(objWMIds[i], obj);
-  }
+//  }
+//  else
+//  {
+//    overwriteWorkingMemory(objWMIds[i], obj);
+//  }
 
   if(outputToNav)
   {
