@@ -159,6 +159,9 @@ PlaceManager::stop()
 {
 }
 
+
+
+
 void 
 PlaceManager::runComponent()
 {
@@ -180,6 +183,24 @@ PlaceManager::runComponent()
 //  m_firstNodeProcessed = true;
 
 }
+
+
+
+void PlaceManager::updatePlaceConnections(int placeId)
+{
+  map<int, PlaceHolder>::iterator it = m_Places.find(placeId);
+  if(it != m_Places.end()) 
+  {
+    SpatialData::PlacePtr placePtr = getMemoryEntry<SpatialData::Place>(m_Places[placeId].m_WMid);
+    if (placePtr != 0) 
+    {
+	placePtr->connectionCounter = m_Connections[placeId];
+	overwriteWorkingMemory(m_Places[placeId].m_WMid, placePtr);
+    }
+  }
+}
+
+
 
 void 
 PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
@@ -215,6 +236,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
       addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
 
       m_Places[newPlaceID] = p;
+      updatePlaceConnections(newPlaceID);
     }
   }
   catch (DoesNotExistOnWMException) {
@@ -379,6 +401,22 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 
 	createConnectivityProperty(newEdgeCost, newEdgeStartId, newEdgeEndId);
 	createConnectivityProperty(newEdgeCost, newEdgeEndId, newEdgeStartId);
+
+	// Update connections counter
+	map<int, int>::iterator it2 = m_Connections.find(newEdgeStartId);
+        if(it2 != m_Connections.end())
+          m_Connections[newEdgeStartId] = m_Connections[newEdgeStartId]+1;
+        else
+          m_Connections[newEdgeStartId] = 1;
+	it2 = m_Connections.find(newEdgeEndId);
+        if(it2 != m_Connections.end())
+          m_Connections[newEdgeEndId] = m_Connections[newEdgeEndId]+1;
+        else
+          m_Connections[newEdgeEndId] = 1;
+
+        // Update connectivity information in places
+	updatePlaceConnections(newEdgeStartId);
+	updatePlaceConnections(newEdgeEndId);
       }
       catch (IceUtil::NullHandleException e) {
 	log("Error! edge objects disappeared from memory!");
@@ -1275,6 +1313,7 @@ PlaceManager::processPlaceArrival(bool failed)
 	    addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
 
 	    m_Places[newPlaceID] = p;
+	    updatePlaceConnections(newPlaceID);
 
 	    //Write the Gateway property if present
 	    if (curNodeGateway == 1) {

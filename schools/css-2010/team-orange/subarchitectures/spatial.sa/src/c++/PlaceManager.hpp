@@ -103,6 +103,16 @@ class PlaceManager : public cast::ManagedComponent
     // A map of places and IDs
     std::map<int, PlaceHolder> m_Places;
 
+    struct Connection
+    {
+	int from;
+	int to;
+    };
+
+    std::map<int, int> m_Connections; // placeId : connections counter
+
+    void updatePlaceConnections(int placeId);
+
     long m_placeIDCounter;
 
   private:
