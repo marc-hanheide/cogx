@@ -70,7 +70,7 @@ public class LocalizedVisualObjectTransferFunction extends
 		// TODO: we should use a DoubleValue here!
 
 		try {
-
+/*
 	 System.out.println(" Starting verbalization.....................................................");
  			String[] record_names = {"record_1", "record_2", "record_3", "record_4"} ;
  			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
@@ -122,20 +122,7 @@ public class LocalizedVisualObjectTransferFunction extends
 
 						detected_entity = detectedVB ;
 
-/*
-						isvb = obstype.equals(typePS) ;
-						if ( isvb == true ) {
-							detected_entity = 2 ; 
-							System.out.println("Detected PS!") ;
-						}
 
-						/*if ( obstype.equals(typeVB) ) {
-							detected_entity = 1 ; 
-							System.out.println("Detected VB!") ;
- 						} else if ( obstype.equals(typePS) ) {
-							detected_entity = 2 ;
-							System.out.println("Detected PS!") ;
-						}*/
 
 					//	System.out.println("detected_entity: " + detected_entity ) ;
 
@@ -176,7 +163,7 @@ public class LocalizedVisualObjectTransferFunction extends
  								int valofplc =  val_plc.val ;
  								what_I_have_to_say = "espeak_" + " 'Yo_man,_the_record_"+ vv + "_is_at_place_" + valofplc + "'";
  								//System.out.print( what_I_have_to_say ) ;*/
- 							}
+ 			/*				}
 						} else if ( detected_entity == 2 ) {
  							// we have detected a person: check if its detected, where it is, which record it owns 
 
@@ -187,7 +174,7 @@ public class LocalizedVisualObjectTransferFunction extends
  					}
  				}
  			}
-
+*/
 
 
 
