@@ -7,6 +7,7 @@
    place place_id - object
    person person_id person_name record-name - object
    robot - agent
+   robot visualobject person - locatable
    )
   
   (:predicates
@@ -16,8 +17,7 @@
    )		    
 
   (:functions
-   (is-in ?r - robot) - place
-   (is-in ?h - person) - place
+   (is-in ?r - locatable) - place
 
    ;; we need to model the place id as well to distinguish places from
    ;; other objects
