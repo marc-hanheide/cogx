@@ -406,7 +406,7 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
 
   // executed the command, results (if any) are on working memory,
   // now delete command as not needed anymore
-//   deleteFromWorkingMemory(_wmc.address);
+  deleteFromWorkingMemory(_wmc.address);
 }
 
 void ObjectDetectorFERNS::setupFERNS() throw(runtime_error)
@@ -575,7 +575,6 @@ void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
       {
 	objWMIds[i] = newDataID();
 	addToWorkingMemory(objWMIds[i], obj);
-	log("addToWorkingMemory(VisualObject)");
       }
       else
       {
