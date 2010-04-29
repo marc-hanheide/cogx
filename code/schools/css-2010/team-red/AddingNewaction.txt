@@ -1,0 +1,40 @@
+Actions defined in
+
+You need to add a new action here
+
+./output/classes/execution/slice/actions/Execution.ice
+
+
+To make smething actuall happen
+===============================
+
+If the action is a spatial action you need to modify
+
+./subarchitectures/motivation.sa/src/java/spatial/motivation/SpatialActionInterface.java
+
+
+If it is a complicated/compound action you might need to define a new Executor which fr spatial effects can be found in
+
+./subarchitectures/motivation.sa/src/java/spatial/motivation/PTUTurnLookExecutor.java
+
+
+To make the planner able to use the action
+==========================================
+
+./subarchitectures/motivation.sa/src/java/execution/components/GraphicalExecutionManager.java
+
+
+
+To add action to the Robot Action GUI
+=====================================
+
+The GUI is defined in
+
+./subarchitectures/motivation.sa/src/java/execution/util/ActionInterfaceFrame.java
+
+Here you have some call back methods
+
+./subarchitectures/motivation.sa/src/java/execution/components/GraphicalExecutionManager.java
+
+
+
