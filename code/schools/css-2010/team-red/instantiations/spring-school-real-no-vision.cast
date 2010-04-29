@@ -1,0 +1,60 @@
+HOST localhost
+
+
+# spatial #####################################################################
+#INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter 
+
+# vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+INCLUDE includes/vision.sa/vision-live.cast
+INCLUDE includes/vision.sa/vision-objects.cast
+INCLUDE includes/vision.sa/vision-people.cast
+Include includes/vision.sa/vision-execution.cast
+
+#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --labels "breathless level"
+#JAVA MG ContinuousDetector  vision.components.ContinuousDetector --labels "james,chakakhan,heartbrakers,jesusjones"
+
+
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+#JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
+#JAVA MG recorder castutils.components.WorkingMemoryRecorder --file coma-simulation.dump
+JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/redroom/coma.log
+#JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
+
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+INCLUDE includes/binder.sa/binder.cast
+INCLUDE includes/binder.sa/perceptmediators.cast
+JAVA GD bindermonitor binder.components.BinderMonitor --debug
+
+# comsys ######################################################################
+INCLUDE includes/comsys.sa/comsys-base.cast
+JAVA MG  comsys-execution comsys.motivation.ComsysActionInterface
+
+# planning and motivation #####################################################
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/planner.cast
+INCLUDE includes/motivation.sa/motivation.cast
+
+
+
+
+# exection ####################################################################
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "breathless,level"
+#JAVA MG  manual-execution execution.components.GraphicalExecutionManager --labels "james,chakakhan,heartbrakers,jesusjones"
+
+
+# viewing and debugging #######################################################
+
+JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
+
+JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
+
+
+
