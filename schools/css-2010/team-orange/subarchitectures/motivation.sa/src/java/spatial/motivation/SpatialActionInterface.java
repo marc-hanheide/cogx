@@ -36,6 +36,7 @@ import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.ReportObject;
 import execution.slice.actions.ReportPerson;
+import execution.slice.actions.ReportNothing;
 import execution.slice.actions.ReportFinished;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
@@ -446,6 +447,48 @@ public class SpatialActionInterface extends ManagedComponent {
 
 
 
+
+	private class ReportNothingExecutor implements ActionExecutor,
+			WorkingMemoryChangeReceiver {
+
+
+		@Override
+		public boolean accept(Action _action) {
+			return true;
+		}
+
+		@Override
+		public TriBool execute() {
+
+			return TriBool.TRITRUE;
+		}
+
+		@Override
+		public boolean isBlockingAction() {
+			return true;
+		}
+
+		@Override
+		public void stopExecution() {
+		}
+
+		@Override
+		public void execute(ExecutionCompletionCallback _callback) {
+
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+				throws CASTException {
+		}
+
+	}
+
+
+
+
+
+
 	private class ReportFinishedExecutor implements ActionExecutor,
 			WorkingMemoryChangeReceiver {
 
@@ -701,6 +744,15 @@ public class SpatialActionInterface extends ManagedComponent {
 						return new ReportPersonExecutor();
 					}
 				});
+
+		m_actionStateManager.registerActionType(ReportNothing.class,
+				new ActionExecutorFactory() {
+					@Override
+					public ActionExecutor getActionExecutor() {
+						return new ReportNothingExecutor();
+					}
+				});
+
 
 		m_actionStateManager.registerActionType(ReportFinished.class,
 				new ActionExecutorFactory() {

@@ -175,6 +175,9 @@ module execution {
       class ReportFinished extends Action {
       };
 
+      class ReportNothing extends Action {
+      };
+
 
     };
 
