@@ -1,0 +1,5 @@
+CPP MG VideoClient1 ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/james1.jpg:james  ./ferns/jesus1.jpg:jesus ./ferns/chaka1.jpg:chaka ./ferns/heart1.jpg:heart" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
+CPP MG VideoClient2 ObjectDetectorFERNS --videoname VideoServer --camid 1 --models "./ferns/james1.jpg:james  ./ferns/jesus1.jpg:jesus ./ferns/chaka1.jpg:chaka ./ferns/heart1.jpg:heart" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
+
+#./ferns/MAGAZINE.jpg ./ferns/juice.jpg
+
