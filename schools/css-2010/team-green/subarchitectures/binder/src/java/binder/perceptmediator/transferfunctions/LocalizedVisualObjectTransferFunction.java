@@ -189,7 +189,19 @@ public class LocalizedVisualObjectTransferFunction extends
 			} else {
 				detected = false ;
 			}
-			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));			
+			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));
+			if (detected){
+				String detectedRecordName = from.label;
+				try { 
+					Runtime rt = Runtime.getRuntime(); 
+				    	Process p = rt.exec("espeak" + "'I_just_detected_a_record_called_" + detectedRecordName + "._who bought this boring old crap?'");
+
+				    	p.waitFor();
+				}
+				catch(Exception e) { 
+				    System.out.println(e.getMessage()); 
+				}
+			}			
 
 			float siz ;
 		if( from.views.length > 0 ) {		
