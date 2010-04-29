@@ -1,8 +1,7 @@
 package binder.components;
 
+import beliefmodels.arch.BeliefException;
 import beliefmodels.autogen.beliefs.StableBelief;
-import beliefmodels.autogen.beliefs.CondIndependentDistribs;
-import beliefmodels.autogen.beliefs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
@@ -11,6 +10,9 @@ import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
+import cast.AlreadyExistsOnWMException;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -19,6 +21,8 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -50,6 +54,7 @@ public class VisualRecordMonitor extends ManagedComponent {
    }  
 
    private void createPlaceholder(String recordName) {
+       try {
       CondIndependentDistribs features = BeliefContentBuilder.createNewCondIndependentDistribs();
       List<FeatureValueProbPair> labelPairs = new LinkedList<FeatureValueProbPair>();
       labelPairs.add(new FeatureValueProbPair(
@@ -63,15 +68,27 @@ public class VisualRecordMonitor extends ManagedComponent {
       CASTBeliefHistory hist =
          PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress (newDataID(), "vision"));
 
-      beliefmodels.autogen.framing.SpatioTemporalFrame frame;
-      beliefmodels.autogen.epstatus.EpistemicStatus estatus;
+      beliefmodels.autogen.framing.SpatioTemporalFrame frame=null;
+      beliefmodels.autogen.epstatus.EpistemicStatus estatus=null;
       String id;
       id = recordName; // new WorkingMemoryAddress(child.id, BindingWorkingMemory.BINDER_SA);
 
       // TODO create wm id
       StableBelief belief = new StableBelief(frame, estatus, id, "VisualObject", beliefcontent, hist);
       WorkingMemoryAddress addr = new WorkingMemoryAddress (newDataID(), "binder");
-      addToWorkingMemory(addr, belief);
+            try {
+                addToWorkingMemory(addr, belief);
+            } catch (DoesNotExistOnWMException ex) {
+                //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnknownSubarchitectureException ex) {
+                //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+       }
+       catch (BeliefException e) {
+       }
+       catch (AlreadyExistsOnWMException e) {
+       }
+       
    }
 
    void createObjectPlaceholders() {
