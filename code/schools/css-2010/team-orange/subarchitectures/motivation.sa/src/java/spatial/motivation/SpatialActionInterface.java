@@ -408,7 +408,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 			// SEND COMMAND
 			Announcement ann = new Announcement();
-			ann.message.format("Person found in place number %d!.", m_placeId);
+			ann.message.format("Human target acquired in place number %d!.", m_placeId);
 			ann.songId = "";
 			m_addr = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
 
@@ -461,7 +461,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 			// SEND COMMAND
 			Announcement ann = new Announcement();
-			ann.message = "Hooray! Hooray! Hooray! I have completed my task! Let's listen to it all once again!";
+			ann.message = "Hooray! Hooray! Hooray! I have completed my task! Let's listen to all the records once again!";
 			ann.songId = "all";
 			m_addr = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
 

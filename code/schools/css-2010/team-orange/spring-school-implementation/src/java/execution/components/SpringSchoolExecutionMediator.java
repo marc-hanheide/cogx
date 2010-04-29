@@ -6,6 +6,7 @@ import autogen.Planner.Action;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
+import beliefmodels.autogen.featurecontent.StringValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
 import cast.CASTException;
 import castutils.facades.BinderFacade;
@@ -21,6 +22,9 @@ import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.PrintMessage;
+import execution.slice.actions.ReportFinished;
+import execution.slice.actions.ReportObject;
+import execution.slice.actions.ReportPerson;
 import execution.util.ActionConverter;
 
 /**
@@ -32,8 +36,8 @@ import execution.util.ActionConverter;
 public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 		implements ActionConverter {
 	private final BinderFacade m_binderFacade;
-	private static final String[] DEFAULT_LABELS = { "record1", "record2",
-			"record3", "record4" };
+	private static final String[] DEFAULT_LABELS = { "james", "jesus",
+			"chaka", "heart" };
 
 	public SpringSchoolExecutionMediator() {
 		m_binderFacade = new BinderFacade(this);
@@ -164,6 +168,64 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			act.featureType = featureID;
 			act.featureValue = _plannedAction.arguments[2];
 			return act;
+		} else if (_plannedAction.name.equals("report-object")) {
+			// this is the action that just triggers the people detector once
+			assert _plannedAction.arguments.length == 3 : "report-object action arity is expected to be 3";
+			// create the action instance and return it
+			ReportObject act = newActionInstance(ReportObject.class);
+
+			// GET PLACE ID
+			String stableBeliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			Belief stableBelief = m_binderFacade.getBelief(stableBeliefID);
+			if (stableBelief == null) {
+				throw new ActionExecutionException(
+						"No union for place union id: " + stableBeliefID);
+			}
+			List<FeatureValue> placeIDFeatures = m_binderFacade
+					.getFeatureValue(stableBelief, "PlaceId");
+			if (placeIDFeatures.isEmpty()) {
+				throw new ActionExecutionException(
+						"No PlaceId features for belief id: " + stableBeliefID);
+
+			}
+			IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
+			act.placeId = placeID.val;
+
+
+			// GET LABEL
+			act.label=((StringValue) _plannedAction.arguments[2]).val;
+
+			return act;
+		} else if (_plannedAction.name.equals("report-person")) {
+			// this is the action that just triggers the people detector once
+			assert _plannedAction.arguments.length == 1 : "report-person action arity is expected to be 2";
+			// create the action instance and return it
+			ReportPerson act = newActionInstance(ReportPerson.class);
+
+			// GET PLACE ID
+			String stableBeliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			Belief stableBelief = m_binderFacade.getBelief(stableBeliefID);
+			if (stableBelief == null) {
+				throw new ActionExecutionException(
+						"No union for place union id: " + stableBeliefID);
+			}
+			List<FeatureValue> placeIDFeatures = m_binderFacade
+					.getFeatureValue(stableBelief, "PlaceId");
+			if (placeIDFeatures.isEmpty()) {
+				throw new ActionExecutionException(
+						"No PlaceId features for belief id: " + stableBeliefID);
+
+			}
+			IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
+			act.placeId = placeID.val;
+
+			return act;
+		} else if (_plannedAction.name.equals("report-finished")) {
+			// this is the action that just triggers the people detector once
+			assert _plannedAction.arguments.length == 1 : "finish action arity is expected to be 1";
+			// create the action instance and return it
+			ReportFinished act = newActionInstance(ReportFinished.class);
+			return act;
 		}
 		// in case we do not find the action we have an exception
 		throw new ActionExecutionException("No conversion available for: "
@@ -177,3 +239,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	}
 
 }
+
+//report-object place label
+//report-person place
+//report-finished
