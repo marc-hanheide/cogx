@@ -52,4 +52,6 @@ JAVA MG WMViewer castutils.viewer.ViewerCastComponent --log --subscribe "VisionD
 #JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
 
 
+CPP GD helloReader HelloReader
+
 
