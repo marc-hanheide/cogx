@@ -44,8 +44,9 @@ import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.BooleanValue ;
 import beliefmodels.autogen.beliefs.PerceptBelief;
 import beliefmodels.autogen.beliefs.MultiModalBelief;
+import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import cast.cdl.WorkingMemoryAddress;
-
+import java.io.*;
 
 /**
  * Execution mediator specifically for Dora/Spring School.
@@ -235,110 +236,145 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 		    Report act = newActionInstance(Report.class);
 		    act.status = ActionStatus.COMPLETE;
 		    act.success = TriBool.TRITRUE;
+		
+		String what_I_have_to_say = "espeak -s110 'From what I gather, " ;
+		try{
+			 
 
+	 		//System.out.println(" Starting verbalization.....................................................");
+ 			//String[] record_names = {"record1", "record2", "record3", "record4"} ;
+ 			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
 
-// 		   try{	
-// 		       System.out.println(" Starting verbalization.....................................................");
-// 			String[] record_names = DEFAULT_LABELS ; //{"record_1", "record_2", "record_3", "record_4"} ;
-// 			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
+ 			List<StableBelief> ls = new ArrayList<StableBelief>(); 
+ 			String str_tmp ; 
 
-// 			List<StableBelief> ls = new ArrayList<StableBelief>(); 
-// 			String str_tmp ; 
+ 			List<FeatureValueProbPair>  ls_pair = new ArrayList<FeatureValueProbPair>(); 
+ 			FeatureContentUtils tmp_util ;
 
-// 			System.out.println("ls_size:" + ls.size());
+ 			getMemoryEntries(StableBelief.class, ls) ;
 
-// 			List<FeatureValueProbPair>  ls_pair = new ArrayList<FeatureValueProbPair>(); 
-// 			FeatureContentUtils tmp_util ;
+ 			Iterator it=ls.iterator();
+ 			Belief stb ; 
+ 			//System.out.println("ls size: " + ls.size());
+			
+ 			while( it.hasNext() ) {
+ 				
+ 				stb = (Belief)it.next() ;
+ 				ls_pair = FeatureContentUtils.getValuesInBelief(stb, "name" ) ;
+				//System.out.println("ls_pair size: " + ls_pair.size());
+ 				if ( ls_pair.size() > 0 ) {
+ 					Iterator it2=ls_pair.iterator();
+ 					if( it2.hasNext()  ) {
+						System.out.println("--> I've entered it2.hasNext()");
+ 						FeatureValueProbPair fvp_tmp ;
+ 						fvp_tmp = (FeatureValueProbPair)it2.next() ;
+ 						StringValue val  = (StringValue)fvp_tmp.val ;
+ 						String vv  = val.val ;
+						//System.out.println("Value of String vv: " + vv );						
 
-// 			getMemoryEntries(StableBelief.class, ls) ;
+						//System.out.println("stb type: " + stb.type );
+						int detected_entity = 0 ;
+						//int detectedVB = 0 ;
+						String obstype = (String)stb.type ;
+						String typeVB = "VisualObject" ; 
+						String typePS = "Person" ;
+						String name_to_use  ;
 
-// 			Iterator it=ls.iterator();
-// 			Belief stb ; 
-// 			System.out.println("ls_pair_size: " + ls_pair.size());
-// 			while( it.hasNext() ) {
-// 			    System.out.println("YIPPIE");
-// 				String what_I_have_to_say = "";
-// 				stb = (Belief)it.next() ;
-// 				ls_pair = FeatureContentUtils.getValuesInBelief(stb, "name" ) ;
-// 				if ( ls_pair.size() > 0 ) {
-// 					Iterator it2=ls_pair.iterator();
-// 					if( it2.hasNext()  ) {
-// 						FeatureValueProbPair fvp_tmp ;
-// 						fvp_tmp = (FeatureValueProbPair)it2.next() ;
-// 						StringValue val  = (StringValue)fvp_tmp.val ;
-// 						String vv  = val.val ;
-						
-// 						int detected_entity = 0 ; // 1 ... record, 2 ... person
-// 						for ( int i_r = 0 ; i_r < record_names.length; i_r++ ) { 
-// 							if ( vv.equals(record_names[i_r])) {
-// 								detected_entity = 1 ;
-// 								break ;			
-// 							}
-// 						}
-// /*
-// 						// test whether its person we're looking at (stupid way)
-// 						List<FeatureValueProbPair>  ls_pair_rectmp = new ArrayList<FeatureValueProbPair>();
-// 						ls_pair_rectmp = FeatureContentUtils.getValuesInBelief(stb, "record" ) ;
-// 						if ( ls_pair_rectmp.size() > 0 ) { 
-// 							detected_entity = 2 ;	
-// 						}
-// */
-// /*
-// 						for ( int i_r = 0 ; i_r < person_names.length; i_r++ ) { 
-// 							if ( vv.equals(record_names[i_r])) {
-// 								detected_entity = 2 ;
-// 								break ;			
-// 							}
-// 						}
-// */
+						if ( obstype.equals(typeVB)  ) {
+							detected_entity = 1 ;
+						} else if ( obstype.equals(typePS) ) {
+							detected_entity = 2 ;
+						}
 
-// 						if ( detected_entity == 1 ) {//vv.equals("record_1") || vv.equals("record_2") || vv.equals("record_3") || vv.equals("record_4")) 
-// 							// we have detected a record							
-// 							List<FeatureValueProbPair>  ls_pair_det = new ArrayList<FeatureValueProbPair>();
-// 							ls_pair_det = FeatureContentUtils.getValuesInBelief(stb, "detected" ) ;
-// 							Iterator it_det = ls_pair_det.iterator();
-// 							fvp_tmp = (FeatureValueProbPair)it_det.next() ;
-// 							BooleanValue val_det  = (BooleanValue)fvp_tmp.val   ;
-// 							boolean have_detection = val_det.val ;
-// 							if ( have_detection == true ){
-// 								// check for the place
-// 								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
-// 								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
-// 								Iterator it3 =ls_pair2.iterator();
-// 								fvp_tmp = (FeatureValueProbPair)it3.next() ;
-							 
-// 								PointerValue  valxs  = (PointerValue)fvp_tmp.val   ;
-//  								WorkingMemoryAddress wma = valxs.beliefId ;
+						System.out.println("detected_entity: " + detected_entity ) ;
 
-// 								StableBelief beliefData = getMemoryEntry(wma,StableBelief.class );
+						if ( detected_entity != 0 ) {
+							// we have detected a record							
+ 							List<FeatureValueProbPair>  ls_pair_det = new ArrayList<FeatureValueProbPair>();
+ 							ls_pair_det = FeatureContentUtils.getValuesInBelief(stb, "detected" ) ;
+							//System.out.println("Value of ls_pair_det: " + ls_pair_det );
 
-// 								List<FeatureValueProbPair>  ls_pair_plc = new ArrayList<FeatureValueProbPair>(); 
-// 								ls_pair_plc = FeatureContentUtils.getValuesInBelief(beliefData, "PlaceId" ) ;
-// 								Iterator it4 =ls_pair_plc.iterator();							
-// 								FeatureValueProbPair fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
+ 							Iterator it_det = ls_pair_det.iterator();
+ 							fvp_tmp = (FeatureValueProbPair)it_det.next() ;
+ 							BooleanValue val_det  = (BooleanValue)fvp_tmp.val   ;
+ 							boolean have_detection = val_det.val ;
 
-// 								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
-// 								int valofplc =  val_plc.val ;
-// 								what_I_have_to_say = "espeak_" + " 'Yo_man,_the_record_"+ vv + "_is_at_place_" + valofplc + "'";
-// 								//System.out.print( what_I_have_to_say ) ;
-// 							}
-// 						} else if ( detected_entity == 2 ) {
-// 							// we have detected a person: check if its detected, where it is, which record it owns 
+							System.out.println("Value of have_detection: " + have_detection );
+ 							if ( have_detection == true ){
+ 								// check for the place
+ 								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
+ 								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
+ 								Iterator it3 =ls_pair2.iterator();
+ 								fvp_tmp = (FeatureValueProbPair)it3.next() ; 							 	
+
+ 								PointerValue valxs  = (PointerValue)fvp_tmp.val   ;					
+								
+
+  								WorkingMemoryAddress wma = valxs.beliefId ;
+							//	System.out.println("Value of wma: " + CASTUtils.toString(wma) );
+								//System.out.print( "I've come to the point here..." ) ;
+								
+ 								//CASTData beliefData = component.getWorkingMemoryEntry(wma ); //,StableBelief.class TemporalUnionBelief
+								StableBelief beliefData = getMemoryEntry(wma, StableBelief.class ); 
+								//System.out.print( "Have I come to here?...:" +beliefData ) ;
+
+ 								List<FeatureValueProbPair>  ls_pair_plc = new ArrayList<FeatureValueProbPair>(); 
+ 								ls_pair_plc = FeatureContentUtils.getValuesInBelief(beliefData, "PlaceId" ) ;
+								//System.out.print( "Size of ls_pair_plc :" + ls_pair_plc.size() ) ;
+
+ 								Iterator it4 =ls_pair_plc.iterator();							
+ 								FeatureValueProbPair fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
+
+ 								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
+ 								int valofplc =  val_plc.val ;
+
+								// extract room number from  beliefData
+									
+								List<FeatureValueProbPair>  ls_pair4 = new ArrayList<FeatureValueProbPair>();
+ 								ls_pair4 = FeatureContentUtils.getValuesInBelief(beliefData, "in-room" ) ;
+ 								it4 =ls_pair4.iterator();
+ 								fvp_tmp = (FeatureValueProbPair)it4.next() ; 
+								PointerValue valxss  = (PointerValue)fvp_tmp.val   ;					
+  								wma = valxss.beliefId ;
+								
+								StableBelief beliefDataX = getMemoryEntry(wma, StableBelief.class ); 
+								List<FeatureValueProbPair>  ls_pair_plcc = new ArrayList<FeatureValueProbPair>();
+								ls_pair_plcc = FeatureContentUtils.getValuesInBelief(beliefDataX, "RoomId" ) ;
+								it4 =ls_pair_plcc.iterator();
+								fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
+								val_plc  = (IntegerValue)fvp_tmp2.val ;
+ 								int valofRoom =  val_plc.val ;
 							
-// 						}
-// 					 act.message = what_I_have_to_say ;
-// 					 System.out.println("-------------- Here's what i have:"+what_I_have_to_say);
-// 					  System.out.println("-------------- Here's what i have:"+act.message);
-// 					}
-// 				}
-// 			}
+								if ( detected_entity == 1 ) {
+									what_I_have_to_say = what_I_have_to_say + "The record " + vv + " is at place " + valofplc + " which is in room number" + valofRoom + ". " ;
+								} else if ( detected_entity == 2) {
+									what_I_have_to_say = what_I_have_to_say + "The person " + vv + " is at place " + valofplc + " which is in room number" + valofRoom +". " ;
+								}
+ 							}
+							
+						}
 
-// 			} catch(Exception e) { 
-// 		       System.out.println("---------------------------------------------------------- Exception!!!!!!!");
-// 			    System.out.println(e.getMessage()); 
-// 			} 
+ 					}
+ 				}
+ 			}
+			what_I_have_to_say = what_I_have_to_say + "'";	
+			System.out.println(  what_I_have_to_say);
+			
+			try { BufferedWriter out = new BufferedWriter(new FileWriter("/what_I_had_to_say.txt")); 
+				out.write(what_I_have_to_say); out.close(); 
+			} catch (IOException e) { } 
 
-		    act.message = "espeak 'I_have_finished_my_task,Marc_come_and_see.'";
+			
+		}catch(Exception e){
+			System.out.println(e.getMessage()); 
+		}	
+
+
+
+
+ 
+
+		    act.message = what_I_have_to_say ; //"espeak 'I_have_finished_my_task,Marc_come_and_see.'";
 		    return act;
 		}
 		// in case we do not find the action we have an exception

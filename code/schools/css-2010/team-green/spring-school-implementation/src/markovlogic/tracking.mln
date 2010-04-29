@@ -3,19 +3,19 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {UT_P,U2_P,UG_P,Ub_P,UM_P,U7_P,UB_P,U4_P,Uk_P}
+existingunion = {UG_Q,UN_Q,UK_Q,UW_Q,UR_Q}
 percept = {P}
-belief = {UT_P,U2_P,UG_P,Ub_P,UM_P,U7_P,UB_P,U4_P,Uk_P,P}
+belief = {UG_Q,UN_Q,UK_Q,UW_Q,UR_Q,P}
 
 // possible outcomes of the grouping process
-outcome = {UT_P,U2_P,Ub_P,UG_P,UM_P,U7_P,UB_P,Uk_P,U4_P,U41_P}
+outcome = {UG_Q,UN_Q,UW_Q,UK_Q,UR_Q,Ui_Q}
 
 // feature values
-detectedval = {False,None,Unknown}
-is-inval = {None,U0_p,Unknown}
-nameval = {None,Unknown,Vchakakhan,Vheartbreakers,Vjames,Vjesus}
+detectedval = {False,None,True,Unknown}
+is-inval = {None,U3_p,U3_q,Unknown}
+nameval = {None,Unknown,Vrecord1,Vrecord2,Vrecord3,Vrecord4}
 typeval = {None,Unknown}
-vo_idval = {None,Unknown,V0_f,V1_f,V2_f,V3_f,V4_f,V5_f,V6_f,V7_f,V8_f,Va_f}
+vo_idval = {None,Unknown,V1_f,V3_f,V4_f,V5_f,V6_f,V7_f}
 
 ///////////////////////////////
 // PREDICATES
@@ -35,286 +35,162 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
-100.0 Existence(UT_P)
-0.0 Existence(UT_P) ^ Is-in(UT_P,U0_p)
-Existence(UT_P) => !Is-in(UT_P,Unknown).
-Existence(UT_P) => !Is-in(UT_P,None).
-0.0 Existence(UT_P) ^ Name(UT_P,Vheartbreakers)
-Existence(UT_P) => !Name(UT_P,Unknown).
-Existence(UT_P) => !Name(UT_P,Vchakakhan).
-Existence(UT_P) => !Name(UT_P,Vjames).
-Existence(UT_P) => !Name(UT_P,Vjesus).
-Existence(UT_P) => !Name(UT_P,None).
-0.0 Existence(UT_P) ^ Detected(UT_P,False)
-Existence(UT_P) => !Detected(UT_P,Unknown).
-Existence(UT_P) => !Detected(UT_P,None).
-0.0 Existence(UT_P) ^ Vo_id(UT_P,V6_f)
-Existence(UT_P) => !Vo_id(UT_P,Unknown).
-Existence(UT_P) => !Vo_id(UT_P,V0_f).
-Existence(UT_P) => !Vo_id(UT_P,V1_f).
-Existence(UT_P) => !Vo_id(UT_P,V2_f).
-Existence(UT_P) => !Vo_id(UT_P,V3_f).
-Existence(UT_P) => !Vo_id(UT_P,V4_f).
-Existence(UT_P) => !Vo_id(UT_P,V5_f).
-Existence(UT_P) => !Vo_id(UT_P,V7_f).
-Existence(UT_P) => !Vo_id(UT_P,V8_f).
-Existence(UT_P) => !Vo_id(UT_P,Va_f).
-Existence(UT_P) => !Vo_id(UT_P,None).
-Existence(UT_P) => !Type(Ut_p,Unknown).
-Existence(UT_P) => Type(Ut_p,None).
+100.0 Existence(UG_Q)
+0.0 Existence(UG_Q) ^ Is-in(UG_Q,U3_p)
+Existence(UG_Q) => !Is-in(UG_Q,U3_q).
+Existence(UG_Q) => !Is-in(UG_Q,Unknown).
+Existence(UG_Q) => !Is-in(UG_Q,None).
+0.0 Existence(UG_Q) ^ Name(UG_Q,Vrecord2)
+Existence(UG_Q) => !Name(UG_Q,Unknown).
+Existence(UG_Q) => !Name(UG_Q,Vrecord1).
+Existence(UG_Q) => !Name(UG_Q,Vrecord3).
+Existence(UG_Q) => !Name(UG_Q,Vrecord4).
+Existence(UG_Q) => !Name(UG_Q,None).
+0.0 Existence(UG_Q) ^ Detected(UG_Q,True)
+Existence(UG_Q) => !Detected(UG_Q,False).
+Existence(UG_Q) => !Detected(UG_Q,Unknown).
+Existence(UG_Q) => !Detected(UG_Q,None).
+0.0 Existence(UG_Q) ^ Vo_id(UG_Q,V1_f)
+Existence(UG_Q) => !Vo_id(UG_Q,Unknown).
+Existence(UG_Q) => !Vo_id(UG_Q,V3_f).
+Existence(UG_Q) => !Vo_id(UG_Q,V4_f).
+Existence(UG_Q) => !Vo_id(UG_Q,V5_f).
+Existence(UG_Q) => !Vo_id(UG_Q,V6_f).
+Existence(UG_Q) => !Vo_id(UG_Q,V7_f).
+Existence(UG_Q) => !Vo_id(UG_Q,None).
+Existence(UG_Q) => !Type(Ug_q,Unknown).
+Existence(UG_Q) => Type(Ug_q,None).
 
-100.0 Existence(U2_P)
-0.0 Existence(U2_P) ^ Is-in(U2_P,U0_p)
-Existence(U2_P) => !Is-in(U2_P,Unknown).
-Existence(U2_P) => !Is-in(U2_P,None).
-0.0 Existence(U2_P) ^ Name(U2_P,Vjames)
-Existence(U2_P) => !Name(U2_P,Unknown).
-Existence(U2_P) => !Name(U2_P,Vchakakhan).
-Existence(U2_P) => !Name(U2_P,Vheartbreakers).
-Existence(U2_P) => !Name(U2_P,Vjesus).
-Existence(U2_P) => !Name(U2_P,None).
-0.0 Existence(U2_P) ^ Detected(U2_P,False)
-Existence(U2_P) => !Detected(U2_P,Unknown).
-Existence(U2_P) => !Detected(U2_P,None).
-0.0 Existence(U2_P) ^ Vo_id(U2_P,V0_f)
-Existence(U2_P) => !Vo_id(U2_P,Unknown).
-Existence(U2_P) => !Vo_id(U2_P,V1_f).
-Existence(U2_P) => !Vo_id(U2_P,V2_f).
-Existence(U2_P) => !Vo_id(U2_P,V3_f).
-Existence(U2_P) => !Vo_id(U2_P,V4_f).
-Existence(U2_P) => !Vo_id(U2_P,V5_f).
-Existence(U2_P) => !Vo_id(U2_P,V6_f).
-Existence(U2_P) => !Vo_id(U2_P,V7_f).
-Existence(U2_P) => !Vo_id(U2_P,V8_f).
-Existence(U2_P) => !Vo_id(U2_P,Va_f).
-Existence(U2_P) => !Vo_id(U2_P,None).
-Existence(U2_P) => !Type(U2_p,Unknown).
-Existence(U2_P) => Type(U2_p,None).
+100.0 Existence(UN_Q)
+0.0 Existence(UN_Q) ^ Is-in(UN_Q,U3_q)
+Existence(UN_Q) => !Is-in(UN_Q,U3_p).
+Existence(UN_Q) => !Is-in(UN_Q,Unknown).
+Existence(UN_Q) => !Is-in(UN_Q,None).
+0.0 Existence(UN_Q) ^ Name(UN_Q,Vrecord4)
+Existence(UN_Q) => !Name(UN_Q,Unknown).
+Existence(UN_Q) => !Name(UN_Q,Vrecord1).
+Existence(UN_Q) => !Name(UN_Q,Vrecord2).
+Existence(UN_Q) => !Name(UN_Q,Vrecord3).
+Existence(UN_Q) => !Name(UN_Q,None).
+0.0 Existence(UN_Q) ^ Detected(UN_Q,False)
+Existence(UN_Q) => !Detected(UN_Q,True).
+Existence(UN_Q) => !Detected(UN_Q,Unknown).
+Existence(UN_Q) => !Detected(UN_Q,None).
+0.0 Existence(UN_Q) ^ Vo_id(UN_Q,V3_f)
+Existence(UN_Q) => !Vo_id(UN_Q,Unknown).
+Existence(UN_Q) => !Vo_id(UN_Q,V1_f).
+Existence(UN_Q) => !Vo_id(UN_Q,V4_f).
+Existence(UN_Q) => !Vo_id(UN_Q,V5_f).
+Existence(UN_Q) => !Vo_id(UN_Q,V6_f).
+Existence(UN_Q) => !Vo_id(UN_Q,V7_f).
+Existence(UN_Q) => !Vo_id(UN_Q,None).
+Existence(UN_Q) => !Type(Un_q,Unknown).
+Existence(UN_Q) => Type(Un_q,None).
 
-100.0 Existence(UG_P)
-0.0 Existence(UG_P) ^ Is-in(UG_P,U0_p)
-Existence(UG_P) => !Is-in(UG_P,Unknown).
-Existence(UG_P) => !Is-in(UG_P,None).
-0.0 Existence(UG_P) ^ Name(UG_P,Vjames)
-Existence(UG_P) => !Name(UG_P,Unknown).
-Existence(UG_P) => !Name(UG_P,Vchakakhan).
-Existence(UG_P) => !Name(UG_P,Vheartbreakers).
-Existence(UG_P) => !Name(UG_P,Vjesus).
-Existence(UG_P) => !Name(UG_P,None).
-0.0 Existence(UG_P) ^ Detected(UG_P,False)
-Existence(UG_P) => !Detected(UG_P,Unknown).
-Existence(UG_P) => !Detected(UG_P,None).
-0.0 Existence(UG_P) ^ Vo_id(UG_P,V4_f)
-Existence(UG_P) => !Vo_id(UG_P,Unknown).
-Existence(UG_P) => !Vo_id(UG_P,V0_f).
-Existence(UG_P) => !Vo_id(UG_P,V1_f).
-Existence(UG_P) => !Vo_id(UG_P,V2_f).
-Existence(UG_P) => !Vo_id(UG_P,V3_f).
-Existence(UG_P) => !Vo_id(UG_P,V5_f).
-Existence(UG_P) => !Vo_id(UG_P,V6_f).
-Existence(UG_P) => !Vo_id(UG_P,V7_f).
-Existence(UG_P) => !Vo_id(UG_P,V8_f).
-Existence(UG_P) => !Vo_id(UG_P,Va_f).
-Existence(UG_P) => !Vo_id(UG_P,None).
-Existence(UG_P) => !Type(Ug_p,Unknown).
-Existence(UG_P) => Type(Ug_p,None).
+100.0 Existence(UK_Q)
+0.0 Existence(UK_Q) ^ Is-in(UK_Q,U3_p)
+Existence(UK_Q) => !Is-in(UK_Q,U3_q).
+Existence(UK_Q) => !Is-in(UK_Q,Unknown).
+Existence(UK_Q) => !Is-in(UK_Q,None).
+0.0 Existence(UK_Q) ^ Name(UK_Q,Vrecord3)
+Existence(UK_Q) => !Name(UK_Q,Unknown).
+Existence(UK_Q) => !Name(UK_Q,Vrecord1).
+Existence(UK_Q) => !Name(UK_Q,Vrecord2).
+Existence(UK_Q) => !Name(UK_Q,Vrecord4).
+Existence(UK_Q) => !Name(UK_Q,None).
+0.0 Existence(UK_Q) ^ Detected(UK_Q,False)
+Existence(UK_Q) => !Detected(UK_Q,True).
+Existence(UK_Q) => !Detected(UK_Q,Unknown).
+Existence(UK_Q) => !Detected(UK_Q,None).
+0.0 Existence(UK_Q) ^ Vo_id(UK_Q,V6_f)
+Existence(UK_Q) => !Vo_id(UK_Q,Unknown).
+Existence(UK_Q) => !Vo_id(UK_Q,V1_f).
+Existence(UK_Q) => !Vo_id(UK_Q,V3_f).
+Existence(UK_Q) => !Vo_id(UK_Q,V4_f).
+Existence(UK_Q) => !Vo_id(UK_Q,V5_f).
+Existence(UK_Q) => !Vo_id(UK_Q,V7_f).
+Existence(UK_Q) => !Vo_id(UK_Q,None).
+Existence(UK_Q) => !Type(Uk_q,Unknown).
+Existence(UK_Q) => Type(Uk_q,None).
 
-100.0 Existence(Ub_P)
-0.0 Existence(Ub_P) ^ Is-in(Ub_P,U0_p)
-Existence(Ub_P) => !Is-in(Ub_P,Unknown).
-Existence(Ub_P) => !Is-in(Ub_P,None).
-0.0 Existence(Ub_P) ^ Name(Ub_P,Vchakakhan)
-Existence(Ub_P) => !Name(Ub_P,Unknown).
-Existence(Ub_P) => !Name(Ub_P,Vheartbreakers).
-Existence(Ub_P) => !Name(Ub_P,Vjames).
-Existence(Ub_P) => !Name(Ub_P,Vjesus).
-Existence(Ub_P) => !Name(Ub_P,None).
-0.0 Existence(Ub_P) ^ Detected(Ub_P,False)
-Existence(Ub_P) => !Detected(Ub_P,Unknown).
-Existence(Ub_P) => !Detected(Ub_P,None).
-0.0 Existence(Ub_P) ^ Vo_id(Ub_P,V7_f)
-Existence(Ub_P) => !Vo_id(Ub_P,Unknown).
-Existence(Ub_P) => !Vo_id(Ub_P,V0_f).
-Existence(Ub_P) => !Vo_id(Ub_P,V1_f).
-Existence(Ub_P) => !Vo_id(Ub_P,V2_f).
-Existence(Ub_P) => !Vo_id(Ub_P,V3_f).
-Existence(Ub_P) => !Vo_id(Ub_P,V4_f).
-Existence(Ub_P) => !Vo_id(Ub_P,V5_f).
-Existence(Ub_P) => !Vo_id(Ub_P,V6_f).
-Existence(Ub_P) => !Vo_id(Ub_P,V8_f).
-Existence(Ub_P) => !Vo_id(Ub_P,Va_f).
-Existence(Ub_P) => !Vo_id(Ub_P,None).
-Existence(Ub_P) => !Type(Ub_p,Unknown).
-Existence(Ub_P) => Type(Ub_p,None).
+100.0 Existence(UW_Q)
+0.0 Existence(UW_Q) ^ Is-in(UW_Q,U3_q)
+Existence(UW_Q) => !Is-in(UW_Q,U3_p).
+Existence(UW_Q) => !Is-in(UW_Q,Unknown).
+Existence(UW_Q) => !Is-in(UW_Q,None).
+0.0 Existence(UW_Q) ^ Name(UW_Q,Vrecord2)
+Existence(UW_Q) => !Name(UW_Q,Unknown).
+Existence(UW_Q) => !Name(UW_Q,Vrecord1).
+Existence(UW_Q) => !Name(UW_Q,Vrecord3).
+Existence(UW_Q) => !Name(UW_Q,Vrecord4).
+Existence(UW_Q) => !Name(UW_Q,None).
+0.0 Existence(UW_Q) ^ Detected(UW_Q,True)
+Existence(UW_Q) => !Detected(UW_Q,False).
+Existence(UW_Q) => !Detected(UW_Q,Unknown).
+Existence(UW_Q) => !Detected(UW_Q,None).
+0.0 Existence(UW_Q) ^ Vo_id(UW_Q,V5_f)
+Existence(UW_Q) => !Vo_id(UW_Q,Unknown).
+Existence(UW_Q) => !Vo_id(UW_Q,V1_f).
+Existence(UW_Q) => !Vo_id(UW_Q,V3_f).
+Existence(UW_Q) => !Vo_id(UW_Q,V4_f).
+Existence(UW_Q) => !Vo_id(UW_Q,V6_f).
+Existence(UW_Q) => !Vo_id(UW_Q,V7_f).
+Existence(UW_Q) => !Vo_id(UW_Q,None).
+Existence(UW_Q) => !Type(Uw_q,Unknown).
+Existence(UW_Q) => Type(Uw_q,None).
 
-100.0 Existence(UM_P)
-0.0 Existence(UM_P) ^ Is-in(UM_P,U0_p)
-Existence(UM_P) => !Is-in(UM_P,Unknown).
-Existence(UM_P) => !Is-in(UM_P,None).
-0.0 Existence(UM_P) ^ Name(UM_P,Vjesus)
-Existence(UM_P) => !Name(UM_P,Unknown).
-Existence(UM_P) => !Name(UM_P,Vchakakhan).
-Existence(UM_P) => !Name(UM_P,Vheartbreakers).
-Existence(UM_P) => !Name(UM_P,Vjames).
-Existence(UM_P) => !Name(UM_P,None).
-0.0 Existence(UM_P) ^ Detected(UM_P,False)
-Existence(UM_P) => !Detected(UM_P,Unknown).
-Existence(UM_P) => !Detected(UM_P,None).
-0.0 Existence(UM_P) ^ Vo_id(UM_P,V5_f)
-Existence(UM_P) => !Vo_id(UM_P,Unknown).
-Existence(UM_P) => !Vo_id(UM_P,V0_f).
-Existence(UM_P) => !Vo_id(UM_P,V1_f).
-Existence(UM_P) => !Vo_id(UM_P,V2_f).
-Existence(UM_P) => !Vo_id(UM_P,V3_f).
-Existence(UM_P) => !Vo_id(UM_P,V4_f).
-Existence(UM_P) => !Vo_id(UM_P,V6_f).
-Existence(UM_P) => !Vo_id(UM_P,V7_f).
-Existence(UM_P) => !Vo_id(UM_P,V8_f).
-Existence(UM_P) => !Vo_id(UM_P,Va_f).
-Existence(UM_P) => !Vo_id(UM_P,None).
-Existence(UM_P) => !Type(Um_p,Unknown).
-Existence(UM_P) => Type(Um_p,None).
-
-100.0 Existence(U7_P)
-0.0 Existence(U7_P) ^ Is-in(U7_P,U0_p)
-Existence(U7_P) => !Is-in(U7_P,Unknown).
-Existence(U7_P) => !Is-in(U7_P,None).
-0.0 Existence(U7_P) ^ Name(U7_P,Vheartbreakers)
-Existence(U7_P) => !Name(U7_P,Unknown).
-Existence(U7_P) => !Name(U7_P,Vchakakhan).
-Existence(U7_P) => !Name(U7_P,Vjames).
-Existence(U7_P) => !Name(U7_P,Vjesus).
-Existence(U7_P) => !Name(U7_P,None).
-0.0 Existence(U7_P) ^ Detected(U7_P,False)
-Existence(U7_P) => !Detected(U7_P,Unknown).
-Existence(U7_P) => !Detected(U7_P,None).
-0.0 Existence(U7_P) ^ Vo_id(U7_P,V2_f)
-Existence(U7_P) => !Vo_id(U7_P,Unknown).
-Existence(U7_P) => !Vo_id(U7_P,V0_f).
-Existence(U7_P) => !Vo_id(U7_P,V1_f).
-Existence(U7_P) => !Vo_id(U7_P,V3_f).
-Existence(U7_P) => !Vo_id(U7_P,V4_f).
-Existence(U7_P) => !Vo_id(U7_P,V5_f).
-Existence(U7_P) => !Vo_id(U7_P,V6_f).
-Existence(U7_P) => !Vo_id(U7_P,V7_f).
-Existence(U7_P) => !Vo_id(U7_P,V8_f).
-Existence(U7_P) => !Vo_id(U7_P,Va_f).
-Existence(U7_P) => !Vo_id(U7_P,None).
-Existence(U7_P) => !Type(U7_p,Unknown).
-Existence(U7_P) => Type(U7_p,None).
-
-100.0 Existence(UB_P)
-0.0 Existence(UB_P) ^ Is-in(UB_P,U0_p)
-Existence(UB_P) => !Is-in(UB_P,Unknown).
-Existence(UB_P) => !Is-in(UB_P,None).
-0.0 Existence(UB_P) ^ Name(UB_P,Vchakakhan)
-Existence(UB_P) => !Name(UB_P,Unknown).
-Existence(UB_P) => !Name(UB_P,Vheartbreakers).
-Existence(UB_P) => !Name(UB_P,Vjames).
-Existence(UB_P) => !Name(UB_P,Vjesus).
-Existence(UB_P) => !Name(UB_P,None).
-0.0 Existence(UB_P) ^ Detected(UB_P,False)
-Existence(UB_P) => !Detected(UB_P,Unknown).
-Existence(UB_P) => !Detected(UB_P,None).
-0.0 Existence(UB_P) ^ Vo_id(UB_P,V3_f)
-Existence(UB_P) => !Vo_id(UB_P,Unknown).
-Existence(UB_P) => !Vo_id(UB_P,V0_f).
-Existence(UB_P) => !Vo_id(UB_P,V1_f).
-Existence(UB_P) => !Vo_id(UB_P,V2_f).
-Existence(UB_P) => !Vo_id(UB_P,V4_f).
-Existence(UB_P) => !Vo_id(UB_P,V5_f).
-Existence(UB_P) => !Vo_id(UB_P,V6_f).
-Existence(UB_P) => !Vo_id(UB_P,V7_f).
-Existence(UB_P) => !Vo_id(UB_P,V8_f).
-Existence(UB_P) => !Vo_id(UB_P,Va_f).
-Existence(UB_P) => !Vo_id(UB_P,None).
-Existence(UB_P) => !Type(Ub_p,Unknown).
-Existence(UB_P) => Type(Ub_p,None).
-
-100.0 Existence(U4_P)
-0.0 Existence(U4_P) ^ Is-in(U4_P,U0_p)
-Existence(U4_P) => !Is-in(U4_P,Unknown).
-Existence(U4_P) => !Is-in(U4_P,None).
-0.0 Existence(U4_P) ^ Name(U4_P,Vjesus)
-Existence(U4_P) => !Name(U4_P,Unknown).
-Existence(U4_P) => !Name(U4_P,Vchakakhan).
-Existence(U4_P) => !Name(U4_P,Vheartbreakers).
-Existence(U4_P) => !Name(U4_P,Vjames).
-Existence(U4_P) => !Name(U4_P,None).
-0.0 Existence(U4_P) ^ Detected(U4_P,False)
-Existence(U4_P) => !Detected(U4_P,Unknown).
-Existence(U4_P) => !Detected(U4_P,None).
-0.0 Existence(U4_P) ^ Vo_id(U4_P,V1_f)
-Existence(U4_P) => !Vo_id(U4_P,Unknown).
-Existence(U4_P) => !Vo_id(U4_P,V0_f).
-Existence(U4_P) => !Vo_id(U4_P,V2_f).
-Existence(U4_P) => !Vo_id(U4_P,V3_f).
-Existence(U4_P) => !Vo_id(U4_P,V4_f).
-Existence(U4_P) => !Vo_id(U4_P,V5_f).
-Existence(U4_P) => !Vo_id(U4_P,V6_f).
-Existence(U4_P) => !Vo_id(U4_P,V7_f).
-Existence(U4_P) => !Vo_id(U4_P,V8_f).
-Existence(U4_P) => !Vo_id(U4_P,Va_f).
-Existence(U4_P) => !Vo_id(U4_P,None).
-Existence(U4_P) => !Type(U4_p,Unknown).
-Existence(U4_P) => Type(U4_p,None).
-
-100.0 Existence(Uk_P)
-0.0 Existence(Uk_P) ^ Is-in(Uk_P,U0_p)
-Existence(Uk_P) => !Is-in(Uk_P,Unknown).
-Existence(Uk_P) => !Is-in(Uk_P,None).
-0.0 Existence(Uk_P) ^ Name(Uk_P,Vjames)
-Existence(Uk_P) => !Name(Uk_P,Unknown).
-Existence(Uk_P) => !Name(Uk_P,Vchakakhan).
-Existence(Uk_P) => !Name(Uk_P,Vheartbreakers).
-Existence(Uk_P) => !Name(Uk_P,Vjesus).
-Existence(Uk_P) => !Name(Uk_P,None).
-0.0 Existence(Uk_P) ^ Detected(Uk_P,False)
-Existence(Uk_P) => !Detected(Uk_P,Unknown).
-Existence(Uk_P) => !Detected(Uk_P,None).
-0.0 Existence(Uk_P) ^ Vo_id(Uk_P,V8_f)
-Existence(Uk_P) => !Vo_id(Uk_P,Unknown).
-Existence(Uk_P) => !Vo_id(Uk_P,V0_f).
-Existence(Uk_P) => !Vo_id(Uk_P,V1_f).
-Existence(Uk_P) => !Vo_id(Uk_P,V2_f).
-Existence(Uk_P) => !Vo_id(Uk_P,V3_f).
-Existence(Uk_P) => !Vo_id(Uk_P,V4_f).
-Existence(Uk_P) => !Vo_id(Uk_P,V5_f).
-Existence(Uk_P) => !Vo_id(Uk_P,V6_f).
-Existence(Uk_P) => !Vo_id(Uk_P,V7_f).
-Existence(Uk_P) => !Vo_id(Uk_P,Va_f).
-Existence(Uk_P) => !Vo_id(Uk_P,None).
-Existence(Uk_P) => !Type(Uk_p,Unknown).
-Existence(Uk_P) => Type(Uk_p,None).
+100.0 Existence(UR_Q)
+0.0 Existence(UR_Q) ^ Is-in(UR_Q,U3_q)
+Existence(UR_Q) => !Is-in(UR_Q,U3_p).
+Existence(UR_Q) => !Is-in(UR_Q,Unknown).
+Existence(UR_Q) => !Is-in(UR_Q,None).
+0.0 Existence(UR_Q) ^ Name(UR_Q,Vrecord1)
+Existence(UR_Q) => !Name(UR_Q,Unknown).
+Existence(UR_Q) => !Name(UR_Q,Vrecord2).
+Existence(UR_Q) => !Name(UR_Q,Vrecord3).
+Existence(UR_Q) => !Name(UR_Q,Vrecord4).
+Existence(UR_Q) => !Name(UR_Q,None).
+0.0 Existence(UR_Q) ^ Detected(UR_Q,False)
+Existence(UR_Q) => !Detected(UR_Q,True).
+Existence(UR_Q) => !Detected(UR_Q,Unknown).
+Existence(UR_Q) => !Detected(UR_Q,None).
+0.0 Existence(UR_Q) ^ Vo_id(UR_Q,V4_f)
+Existence(UR_Q) => !Vo_id(UR_Q,Unknown).
+Existence(UR_Q) => !Vo_id(UR_Q,V1_f).
+Existence(UR_Q) => !Vo_id(UR_Q,V3_f).
+Existence(UR_Q) => !Vo_id(UR_Q,V5_f).
+Existence(UR_Q) => !Vo_id(UR_Q,V6_f).
+Existence(UR_Q) => !Vo_id(UR_Q,V7_f).
+Existence(UR_Q) => !Vo_id(UR_Q,None).
+Existence(UR_Q) => !Type(Ur_q,Unknown).
+Existence(UR_Q) => Type(Ur_q,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,U0_p)
+0.0 Existence(P) ^ Is-in(P,U3_q)
+Existence(P) => !Is-in(P,U3_p).
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
-0.0 Existence(P) ^ Name(P,Vheartbreakers)
+0.0 Existence(P) ^ Name(P,Vrecord4)
 Existence(P) => !Name(P,Unknown).
-Existence(P) => !Name(P,Vchakakhan).
-Existence(P) => !Name(P,Vjames).
-Existence(P) => !Name(P,Vjesus).
+Existence(P) => !Name(P,Vrecord1).
+Existence(P) => !Name(P,Vrecord2).
+Existence(P) => !Name(P,Vrecord3).
 Existence(P) => !Name(P,None).
 0.0 Existence(P) ^ Detected(P,False)
+Existence(P) => !Detected(P,True).
 Existence(P) => !Detected(P,Unknown).
 Existence(P) => !Detected(P,None).
-0.0 Existence(P) ^ Vo_id(P,Va_f)
+0.0 Existence(P) ^ Vo_id(P,V7_f)
 Existence(P) => !Vo_id(P,Unknown).
-Existence(P) => !Vo_id(P,V0_f).
 Existence(P) => !Vo_id(P,V1_f).
-Existence(P) => !Vo_id(P,V2_f).
 Existence(P) => !Vo_id(P,V3_f).
 Existence(P) => !Vo_id(P,V4_f).
 Existence(P) => !Vo_id(P,V5_f).
 Existence(P) => !Vo_id(P,V6_f).
-Existence(P) => !Vo_id(P,V7_f).
-Existence(P) => !Vo_id(P,V8_f).
 Existence(P) => !Vo_id(P,None).
 Existence(P) => !Type(P,Unknown).
 Existence(P) => Type(P,None).
@@ -371,16 +247,12 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(U41_P)
-UnifyWith(U2_P) <=> Outcome(U2_P).
-UnifyWith(U4_P) <=> Outcome(U4_P).
-UnifyWith(U7_P) <=> Outcome(U7_P).
-UnifyWith(UB_P) <=> Outcome(UB_P).
-UnifyWith(UG_P) <=> Outcome(UG_P).
-UnifyWith(UM_P) <=> Outcome(UM_P).
-UnifyWith(UT_P) <=> Outcome(UT_P).
-UnifyWith(Ub_P) <=> Outcome(Ub_P).
-UnifyWith(Uk_P) <=> Outcome(Uk_P).
+-3.5 Existence(P) => Outcome(Ui_Q)
+UnifyWith(UG_Q) <=> Outcome(UG_Q).
+UnifyWith(UK_Q) <=> Outcome(UK_Q).
+UnifyWith(UN_Q) <=> Outcome(UN_Q).
+UnifyWith(UR_Q) <=> Outcome(UR_Q).
+UnifyWith(UW_Q) <=> Outcome(UW_Q).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).

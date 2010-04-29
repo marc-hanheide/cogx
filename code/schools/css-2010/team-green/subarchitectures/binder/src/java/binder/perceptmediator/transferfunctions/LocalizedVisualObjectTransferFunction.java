@@ -18,6 +18,7 @@ import binder.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferF
 import binder.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import binder.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 import cast.CASTException;
+import cast.core.CASTUtils;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -71,7 +72,7 @@ public class LocalizedVisualObjectTransferFunction extends
 		// TODO: we should use a DoubleValue here!
 
 		try {
-/*	 		System.out.println(" Starting verbalization.....................................................");
+/** /	 		System.out.println(" Starting verbalization.....................................................");
  			String[] record_names = {"record1", "record2", "record3", "record4"} ;
  			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
 
@@ -138,12 +139,14 @@ public class LocalizedVisualObjectTransferFunction extends
  								fvp_tmp = (FeatureValueProbPair)it3.next() ; 							 	
 
  								PointerValue valxs  = (PointerValue)fvp_tmp.val   ;					
+								
 
   								WorkingMemoryAddress wma = valxs.beliefId ;
+							//	System.out.println("Value of wma: " + CASTUtils.toString(wma) );
 								//System.out.print( "I've come to the point here..." ) ;
 								
- 								//CASTData beliefData = component.getWorkingMemoryEntry(wma ); //,StableBelief.class
-								TemporalUnionBelief beliefData = component.getMemoryEntry(wma, TemporalUnionBelief.class ); 
+ 								//CASTData beliefData = component.getWorkingMemoryEntry(wma ); //,StableBelief.class TemporalUnionBelief
+								StableBelief beliefData = component.getMemoryEntry(wma, StableBelief.class ); 
 								//System.out.print( "Have I come to here?...:" +beliefData ) ;
 
  								List<FeatureValueProbPair>  ls_pair_plc = new ArrayList<FeatureValueProbPair>(); 
@@ -156,10 +159,27 @@ public class LocalizedVisualObjectTransferFunction extends
  								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
  								int valofplc =  val_plc.val ;
 
+								// extract room number from  beliefData
+									
+								List<FeatureValueProbPair>  ls_pair4 = new ArrayList<FeatureValueProbPair>();
+ 								ls_pair4 = FeatureContentUtils.getValuesInBelief(beliefData, "in-room" ) ;
+ 								it4 =ls_pair4.iterator();
+ 								fvp_tmp = (FeatureValueProbPair)it4.next() ; 
+								PointerValue valxss  = (PointerValue)fvp_tmp.val   ;					
+  								wma = valxss.beliefId ;
+								
+								StableBelief beliefDataX = component.getMemoryEntry(wma, StableBelief.class ); 
+								List<FeatureValueProbPair>  ls_pair_plcc = new ArrayList<FeatureValueProbPair>();
+								ls_pair_plcc = FeatureContentUtils.getValuesInBelief(beliefDataX, "RoomId" ) ;
+								it4 =ls_pair_plcc.iterator();
+								fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
+								val_plc  = (IntegerValue)fvp_tmp2.val ;
+ 								int valofRoom =  val_plc.val ;
+							
 								if ( detected_entity == 1 ) {
-									what_I_have_to_say = what_I_have_to_say + "The record " + vv + " is at place " + valofplc + ". " ;
+									what_I_have_to_say = what_I_have_to_say + "The record " + vv + " is at place " + valofplc + " which is in room number" + valofRoom + ". " ;
 								} else if ( detected_entity == 2) {
-									what_I_have_to_say = what_I_have_to_say + "The person " + vv + " is at place " + valofplc + ". " ;
+									what_I_have_to_say = what_I_have_to_say + "The person " + vv + " is at place " + valofplc + " which is in room number" + valofRoom +". " ;
 								}
  							}
 							
@@ -170,7 +190,7 @@ public class LocalizedVisualObjectTransferFunction extends
  			}
 			what_I_have_to_say = what_I_have_to_say + "'";	
 			System.out.println(  what_I_have_to_say);
-*/
+/ * */
 
 			Place currentPlace = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
