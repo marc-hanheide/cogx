@@ -38,7 +38,6 @@ add_subdirectory (src/c++/vision/components/ObjectTrackerDriver)
 add_subdirectory (src/c++/vision/components/ObjectTrackerTest)
 endif (BUILD_SA_VISION_OBJTRACKER)
 
-add_subdirectory (src/c++/vision/components/VisionDriver)
 option(BUILD_SA_VISION_RECONSTRUCTION "build visual reconstruction" NO)
 if (BUILD_SA_VISION_RECONSTRUCTION)
 add_subdirectory (src/c++/vision/components/Reconstruction)
@@ -75,6 +74,12 @@ if (BUILD_SA_VISION_OBJRECOGNIZER)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer)
 add_subdirectory (src/python/ObjectRecognizer)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
+
+option(BUILD_SA_VISION_OBJRECOGNIZER_3D "build Object Recognizer" NO)
+if (BUILD_SA_VISION_OBJRECOGNIZER_3D)
+add_subdirectory (src/c++/vision/components/ObjectRecognizer3D)
+add_subdirectory (src/c++/vision/components/ObjectRecognizer3DDriver)
+endif (BUILD_SA_VISION_OBJRECOGNIZER_3D)
 
 option(BUILD_VISUAL_LEARNER "Build UOL visual learning component" NO) # default NO until fully integrated
 option(BUILD_VISUAL_LEARNER_CTF "Build Matlab CTF for UOL visual learner; off=use prebuilt CTF from SVN" NO)

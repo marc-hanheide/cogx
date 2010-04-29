@@ -53,7 +53,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 void ObjectTracker::overwriteVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
-	printf("overwriteVisualObject: '%s'\n", obj->componentID.c_str());
+// 	printf("overwriteVisualObject: '%s'\n", obj->componentID.c_str());
 	TrackingEntryList::iterator it;
 	if(obj->componentID.compare(getComponentID())!=0){
 		for(it = m_trackinglist.begin(); it != m_trackinglist.end(); it++){
