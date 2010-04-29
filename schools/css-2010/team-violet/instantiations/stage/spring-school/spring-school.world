@@ -4,7 +4,9 @@ include "../common/cogxp3.inc"
 
 
 
+
 include "box.inc"
+
 
 
 
@@ -13,8 +15,10 @@ include "../common/map.inc"
 
 
 
+
 # defines sick laser
 include "../common/urg_04LX.inc"
+
 
 
 
@@ -69,7 +73,7 @@ define cogxp3blob cogxp3
 cogxp3blob
 (
   name "robot"
-  pose [-10.878 3.253 2806.848]
+  pose [-10.878 3.253 3503.817]
 
   urg_04LX( pose [0.140 0.000 0.000] samples 654 laser_sample_skip 0)
 
@@ -81,7 +85,7 @@ box2d
 (
 name "greenbox1"
 color "green"
-pose [-11.850 0.900 0.000]
+pose [-10.825 2.125 0.000]
 blob_return 1
 )
 
@@ -106,7 +110,7 @@ box2d
 (
 name "bluebox2"
 color "blue"
-pose [-9.900  2.425 0.000]
+pose [-9.900  3.075 0.000]
 blob_return 1
 )
 
@@ -159,7 +163,7 @@ box2d
 (
 name "magentabox2"
 color "magenta"
-pose [-11.775 3.475 0.000]
+pose [-11.800 3.100 0.000]
 blob_return 1
 )
 
