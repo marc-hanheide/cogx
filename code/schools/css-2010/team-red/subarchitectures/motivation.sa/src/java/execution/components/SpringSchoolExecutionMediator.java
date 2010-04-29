@@ -4,6 +4,9 @@ import java.util.List;
 
 import java.util.Map;
 
+import java.lang.Runtime;
+import java.io.*;
+
 import autogen.Planner.Action;
 import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
@@ -47,10 +50,42 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 		m_binderFacade = new BinderFacade(this);
 	}
 
+    private void say_something(String __command){
+		try {
+
+		    Runtime.getRuntime().exec(__command);
+		    
+		} catch (Exception e) {
+		    //System.out.println("Exception " + e.getMessage());
+		}
+    }
+    
 	@Override
 	protected void start() {
 		super.start();
 		m_binderFacade.start();
+
+
+		
+		try {
+		    FileWriter fstream = new FileWriter("talk.sh");
+		    BufferedWriter out = new BufferedWriter(fstream);
+		    out.write("echo \"$1\" | festival --tts");
+		    out.close();
+		    
+		    String command = "chmod a+x talk.sh";
+		    Runtime.getRuntime().exec(command);
+		} catch (Exception e) {
+		    //System.out.println("Exception " + e.getMessage());
+		}
+
+// 		// Make an executable bash script for generating noise.
+// 		FileWriter fstream = new FileWriter("talk.sh");
+// 		BufferedWriter out = new BufferedWriter(fstream);
+// 		out.write("echo \"" + args[0] + "\" | festival --tts");
+// 		out.close();
+// 		String command = "chmod a+x talk.sh";
+// 		Runtime.getRuntime().exec(command);
 	}
 
 	@Override
@@ -189,7 +224,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
 	    act.placeID = placeID.val;
 	    act.tol = new double[1];
-	    act.tol[1] = m_tolerance;
+	    act.tol[0] = m_tolerance;
 	    // we have now created the action object, so we create it and let
 	    // the execution framework to the rest of the work
 	    return act;
@@ -280,6 +315,11 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    // optionally we can define an explicit question here to make life
 	    // simpler
 	    act.question = "What is your name?";
+	    say_something("./talk.sh What-is-your-name?");
+
+// 	    String __command = "./talk.sh What-is-your-name?";
+	    // Runtime.getRuntime().exec(__command);
+
 	    return act;
 	} else if (_plannedAction.name.equals("ask-for-placename")) {
 	    assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";

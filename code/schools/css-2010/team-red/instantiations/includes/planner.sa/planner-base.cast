@@ -1,4 +1,4 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --debug --domain charles2.mapl --log #  --nodot
+COMPONENT PYTHON PlannerPythonServer PythonServer --debug --domain EM-REAL.mapl --log  --nodot
 
 SUBARCHITECTURE planner.sa
 
@@ -6,3 +6,4 @@ SUBARCHITECTURE planner.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
+ 
