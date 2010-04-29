@@ -54,6 +54,17 @@ public class LocalizedPersonTransferFunction extends
 					.createNewStringValue(wmc.address.id));
                         result.put("record", FeatureValueBuilder.createNewStringValue("no"));
 			result.put("person-name", FeatureValueBuilder.createNewStringValue(""));
+
+			boolean detected ; 
+			if ( from.distance < 2.00 ) {
+				detected = true ;
+			} else {
+				detected = false ;
+			}
+			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));
+
+
+
 		} catch (BeliefException e) {
 			component.logException(e);
 		} catch (CASTException e) {
