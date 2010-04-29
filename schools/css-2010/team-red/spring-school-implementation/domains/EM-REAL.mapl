@@ -17,12 +17,12 @@
    (connected ?n1 - place ?n2 - place)
 
    (visited ?p - place)
-   (visited-person ?p - place)
+;;    (visited-person ?p - place)
 
    (explored ?p - place)
 	
    (wave1-visited ?pp - place)	
-   (wave1-visited-person ?pp - place)	
+;;    (wave1-visited-person ?pp - place)	
    )	
 
   (:functions
@@ -120,48 +120,48 @@
 ;; 			  )
 ;; 	   :effect (and (visited-person ?p) (update (visited-person ?p) true)))
 
-  (:action look-for-people-first
-	   :agent (?a - robot)
-	   :parameters (?p - place)
-	   :precondition (and 
+;;   (:action look-for-people-first
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?p - place)
+;; 	   :precondition (and 
 			  
-			  (not (visited-person ?p))
+;; 			  (not (visited-person ?p))
 
-			  (= (wave1 ?p) yes)
+;; 			  (= (wave1 ?p) yes)
 
-			  (= (is-in ?a) ?p))
-	   :effect (and
+;; 			  (= (is-in ?a) ?p))
+;; 	   :effect (and
 		    
-		    (wave1-visited-person ?p)
-		    (update (wave1-visited-person ?p) true)
-		    (visited-person ?p)	
-		    (update (visited-person ?p) true) )
+;; 		    (wave1-visited-person ?p)
+;; 		    (update (wave1-visited-person ?p) true)
+;; 		    (visited-person ?p)	
+;; 		    (update (visited-person ?p) true) )
 
-;; 		    (explored ?p)
-;; 		    (update (explored ?p) true)
+;; ;; 		    (explored ?p)
+;; ;; 		    (update (explored ?p) true)
 
-		    )
+;; 		    )
 
-  (:action look-for-people-second
-	   :agent (?a - robot)
-	   :parameters (?p - place)
-	   :precondition (and 
+;;   (:action look-for-people-second
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?p - place)
+;; 	   :precondition (and 
 			  
-			  (not (visited-person ?p))
+;; 			  (not (visited-person ?p))
 
-			  (forall (?pp - place) 
-				  (or (not (= (wave1 ?pp) yes)) (wave1-visited-person ?pp)))
+;; 			  (forall (?pp - place) 
+;; 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited-person ?pp)))
 
-			  (= (wave1 ?p) no)
+;; 			  (= (wave1 ?p) no)
 
 
-			  (= (is-in ?a) ?p))
-	   :effect (and
-		    (visited-person ?p)	
-		    (update (visited-person ?p) true) )
-;; 		    (explored ?p)
-;; 		    (update (explored ?p) true)
-		    )
+;; 			  (= (is-in ?a) ?p))
+;; 	   :effect (and
+;; 		    (visited-person ?p)	
+;; 		    (update (visited-person ?p) true) )
+;; ;; 		    (explored ?p)
+;; ;; 		    (update (explored ?p) true)
+;; 		    )
 	 
 
 
@@ -203,53 +203,93 @@
 ;; 	   (kval ?a (name ?loc))
 ;; 	   )
 
-  (:action commit-name
-	   :agent (?a - robot)
-	   :parameters (?p - person ?n - person_name)
-	   :precondition (and
-			  (in-domain (name ?p) ?n)
-			  )
-	   :replan (kval ?a (name ?p))
-	   :effect
-	   (assign (name ?p) ?n)
-	   )
+;;   (:action commit-name
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?p - person ?n - person_name)
+;; 	   :precondition (and
+;; 			  (in-domain (name ?p) ?n)
+;; 			  )
+;; 	   :replan (kval ?a (name ?p))
+;; 	   :effect
+;; 	   (assign (name ?p) ?n)
+;; 	   )
 
   
-  
-  (:action cheap-look-for-objects
+  (:action look-for-objects-and-people-wave1
 	   :agent (?a - robot)
-	   :parameters (?to - place)
+	   :parameters (?p - place)
 	   :precondition (and
 
-			  (visited-person ?to)
-			  (not (visited ?to))
-			  (= (is-in ?a) ?to)
-			  (= (wave1 ?to) yes)
+			  
+			  (not (visited ?p))
+
+			  (= (wave1 ?p) yes)
+
+			  (= (is-in ?a) ?p)
 			  )
 	   :effect (and
-		    (wave1-visited ?to)
-		    (update (wave1-visited ?to) true)
-		    (visited ?to)	
-		    (update (visited ?to) true) ))
+		    (wave1-visited ?p)
+		    (update (wave1-visited ?p) true)
 
-	
-  (:action expensive-look-for-objects
+		    (visited ?p)	
+		    (update (visited ?p) true)))
+  
+  (:action look-for-objects-and-people-wave2
 	   :agent (?a - robot)
-	   :parameters (?to - place)
+	   :parameters (?p - place)
 	   :precondition (and
-			  (visited-person ?to)
 
+			  
+			  (not (visited ?p))
+
+			  
 			  (forall (?pp - place) 
 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
 
-			  (= (wave1 ?to) no)
-			  (not (visited ?to))
-			  (= (is-in ?a) ?to)
+			  (= (wave1 ?p) no)
 
+			  (= (is-in ?a) ?p)
 			  )
 	   :effect (and
-		    (visited ?to)	
-		    (update (visited ?to) true) ))
+
+		    (visited ?p)	
+		    (update (visited ?p) true)))
+  
+
+;;   (:action cheap-look-for-objects
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?to - place)
+;; 	   :precondition (and
+
+;; 			  (visited-person ?to)
+;; 			  (not (visited ?to))
+;; 			  (= (is-in ?a) ?to)
+;; 			  (= (wave1 ?to) yes)
+;; 			  )
+;; 	   :effect (and
+;; 		    (wave1-visited ?to)
+;; 		    (update (wave1-visited ?to) true)
+;; 		    (visited ?to)	
+;; 		    (update (visited ?to) true) ))
+
+	
+;;   (:action expensive-look-for-objects
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?to - place)
+;; 	   :precondition (and
+;; 			  (visited-person ?to)
+
+;; 			  (forall (?pp - place) 
+;; 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+
+;; 			  (= (wave1 ?to) no)
+;; 			  (not (visited ?to))
+;; 			  (= (is-in ?a) ?to)
+
+;; 			  )
+;; 	   :effect (and
+;; 		    (visited ?to)	
+;; 		    (update (visited ?to) true) ))
 
   )
 
