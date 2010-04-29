@@ -94,14 +94,21 @@ module execution {
 
       };
 
+      sequence<double> DoubleSeq;
+
       /**
        * Move the robot to a particular place.
        */
-      class GoToPlace extends Action {
+      class GoToPlaceRough extends Action {
 	/**
 	 * The ID of the place.
 	 */
 	long placeID;
+
+	/**
+	 * The tolerance with which we go there
+	 **/
+	DoubleSeq tol;
       };
 
       sequence<long> LongSeq;	

@@ -33,6 +33,7 @@ import execution.slice.TriBool;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
@@ -303,6 +304,118 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 	}
 
+	private class GoToPlaceRoughExecutor implements ActionExecutor,
+			WorkingMemoryChangeReceiver {
+
+		private ExecutionCompletionCallback m_callback;
+		private boolean m_isComplete = false;
+		private WorkingMemoryAddress m_navCmdAddr;
+		private long m_placeID;
+		private double[] m_tol;
+
+		public boolean accept(Action _action) {
+			m_placeID = ((GoToPlaceRough) _action).placeID;
+			// FIXME: throwing away everything but first tolerance argument
+			m_tol = new double[1];
+			if (m_tol.length > 0) {
+				m_tol[0] = ((GoToPlaceRough) _action).tol[0];
+			} else {
+				// Using default values
+				m_tol[0] = 0.2;
+			}
+			return true;
+		}
+
+		public TriBool execute() {
+			return null;
+		}
+
+		public void execute(ExecutionCompletionCallback _callback) {
+			// if we haven't seen this place, then fail
+			if (!m_placeIDs.contains(m_placeID)) {
+				_callback.executionComplete(TriBool.TRIFALSE);
+				return;
+			}
+
+			// else create the command and send it off, ignoring path transition
+			// probs for now
+			NavCommand cmd = newNavCommand();
+			cmd.cmd = CommandType.GOTOPLACE;
+			cmd.destId = new long[1];
+			cmd.destId[0] = m_placeID;
+			cmd.tolerance = new double[1];
+			cmd.tolerance[0] = m_tol[0];
+
+			// going to add locally for the time being, but using wma to allow
+			// this to be changed later
+			m_navCmdAddr = new WorkingMemoryAddress(newDataID(),
+					getSubarchitectureID());
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(
+					m_navCmdAddr, WorkingMemoryOperation.OVERWRITE), this);
+			m_callback = _callback;
+
+			try {
+				addToWorkingMemory(m_navCmdAddr, cmd);
+			} catch (CASTException e) {
+				println(e.message);
+				e.printStackTrace();
+				_callback.executionComplete(TriBool.TRIFALSE);
+			}
+		}
+
+		public boolean isBlockingAction() {
+			return false;
+		}
+
+		@Override
+		public void stopExecution() {
+			// remove overwrite receiver
+			if (!m_isComplete) {
+				try {
+					log("aborting execution");
+					removeChangeFilter(this);
+					// reread
+					lockEntry(m_navCmdAddr, WorkingMemoryPermissions.LOCKEDODR);
+					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
+							NavCommand.class);
+					navCmd.comp = Completion.COMMANDABORTED;
+					overwriteWorkingMemory(m_navCmdAddr, navCmd);
+					unlockEntry(m_navCmdAddr);
+
+				} catch (DoesNotExistOnWMException e) {
+					//
+					// e.printStackTrace();
+				} catch (SubarchitectureComponentException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		public void workingMemoryChanged(WorkingMemoryChange _wmc)
+				throws CASTException {
+
+			// read in the nav cmd
+			lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
+			NavCommand cmd = getMemoryEntry(_wmc.address, NavCommand.class);
+			if (cmd.comp == Completion.COMMANDFAILED) {
+				log("command failed by the looks of this: " + cmd.comp);
+				m_isComplete = true;
+				m_callback.executionComplete(TriBool.TRIFALSE);
+				deleteFromWorkingMemory(_wmc.address);
+				removeChangeFilter(this);
+			} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
+				log("command completed by the looks of this: " + cmd.comp);
+				m_isComplete = true;
+				m_callback.executionComplete(TriBool.TRITRUE);
+				deleteFromWorkingMemory(_wmc.address);
+				removeChangeFilter(this);
+			} else {
+				log("command in progress: " + cmd.comp);
+				unlockEntry(_wmc.address);
+			}
+		}
+	}
+
 	public class LookForPeopleExecutorFactory implements ActionExecutorFactory {
 
 		private final ManagedComponent m_component;
@@ -404,6 +517,14 @@ public class SpatialActionInterface extends ManagedComponent {
 					@Override
 					public ActionExecutor getActionExecutor() {
 						return new GoToPlaceExecutor();
+					}
+				});
+
+		m_actionStateManager.registerActionType(GoToPlaceRough.class,
+				new ActionExecutorFactory() {
+					@Override
+					public ActionExecutor getActionExecutor() {
+						return new GoToPlaceRoughExecutor();
 					}
 				});
 

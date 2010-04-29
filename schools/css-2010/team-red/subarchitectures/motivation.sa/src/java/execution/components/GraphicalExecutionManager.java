@@ -23,6 +23,7 @@ import execution.slice.actions.ComsysTestFeatureValue;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
@@ -34,6 +35,7 @@ import execution.util.ActionMonitor;
  * Config options:
  * 
  * --labels="label1,label2,label3" etc. labels that are used to detect objects
+ * --tolerance <tol> tolerance for the gotoplacerough
  * 
  * @author nah
  * 
@@ -65,6 +67,14 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			m_objectLabels = labels.split(",");
 		}
 		log("using object labels: " + m_objectLabels);
+		double tol = 0.5;
+		String tolstring = _config.get("--tolerance");
+		if (tolstring != null) {
+			tol = Double.parseDouble(tolstring);
+		}
+		m_gui.setTolerance(tol);
+		log("Using tolerance " + tol + "m");
+
 	}
 
 	@Override
@@ -124,6 +134,15 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 			ActionMonitor _monitor) throws CASTException {
 		GoToPlace act = newActionInstance(GoToPlace.class);
 		act.placeID = _placeID;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerGoToRoughAction(long _placeID, double tol,
+			ActionMonitor _monitor) throws CASTException {
+		GoToPlaceRough act = newActionInstance(GoToPlaceRough.class);
+		act.placeID = _placeID;
+		act.tol = new double[] { tol };
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
