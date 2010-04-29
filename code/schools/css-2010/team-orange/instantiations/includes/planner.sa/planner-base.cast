@@ -1,6 +1,5 @@
 
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain orange.mapl --log
-
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain orange.mapl --log --nodot
 SUBARCHITECTURE planner.sa
 
 ###############################################################################
