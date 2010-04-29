@@ -62,6 +62,17 @@ public class LocalizedPersonTransferFunction extends
 				detected = false ;
 			}
 			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));
+			if (detected){
+				try { 
+					Runtime rt = Runtime.getRuntime(); 
+				    	Process p = rt.exec("espeak" + "'I_just_detected_a_record_person._He_is_really_ugly.'");
+
+				    	p.waitFor();
+				}
+				catch(Exception e) { 
+				    System.out.println(e.getMessage()); 
+				}
+			}
 
 
 
