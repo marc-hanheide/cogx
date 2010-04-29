@@ -5,8 +5,8 @@
 
 // general correlations
 
-100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
+100 Existence(x) ^ Existence(P) ^ ( Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None v  Name(x,n) ^ Name(P,n) ^ n!=Unknown ^ n!=None) => UnifyWith(x)
+UnifyWith(x) ^ Name(x,y) ^ Name(P,z) => y=z
 UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
 UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
