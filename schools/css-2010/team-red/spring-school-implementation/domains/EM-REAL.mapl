@@ -14,23 +14,32 @@
   (:constants yes no - place_special)
 
   (:predicates
+   (goal-achieved ?a - agent)
+
+   (asked-who-owns-record ?a - agent ?l - visualobject_label ?p - person)
+   
+
    (connected ?n1 - place ?n2 - place)
 
    (visited ?p - place)
-;;    (visited-person ?p - place)
+   ;;    (visited-person ?p - place)
 
    (explored ?p - place)
 	
    (wave1-visited ?pp - place)	
-;;    (wave1-visited-person ?pp - place)	
+   ;;    (wave1-visited-person ?pp - place)	
    )	
 
   (:functions
-   (owns-record ?h - person) - visualobject
+   
+   (owned-by ?r - visualobject) - person_name
+
+;;    (owns-record ?h - person) - visualobject
 
    (is-in ?r - robot) - place
    (is-in ?h - person) - place
    (is-in ?o - visualobject) - place
+
    (label ?o - visualobject) - visualobject_label
 
    (wave1 ?p - place) - place_special
@@ -45,7 +54,7 @@
    ;; value types are not supported
    (name ?h - person) - person_name
 
-;;    (name ?h - room) - person_name
+   ;;    (name ?h - room) - person_name
 
    ;; we also need the id of the persons and objects as unique identifier here
    (personid ?h - person) - person_id
@@ -59,12 +68,12 @@
 	   :parameters (?to - place)
 	   :variables (?from - place)
 	   :precondition (and
-;; 			  (or (not (=  (wave1 ?to) yes)) (not (visited ?to)))
+			  ;; 			  (or (not (=  (wave1 ?to) yes)) (not (visited ?to)))
 			  ;; (or (not (=  (wave1 ?to) yes)) )
 
 			  
 			  (or (forall (?pp - place) 
-				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+				      (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
 			      (=  (wave1 ?to) yes))
 
 			  (not (visited ?to))
@@ -78,8 +87,8 @@
 	   :effect (and
 
 		    (assign (is-in ?a) ?to)
-;; 		    (visited ?to)
-;; 		    (update (visited ?to) true)
+		    ;; 		    (visited ?to)
+		    ;; 		    (update (visited ?to) true)
 		    ))
 
   (:action move-rough
@@ -102,67 +111,11 @@
 			  )
 	   :effect (and
 		    (assign (is-in ?a) ?to)
-;; 		    (visited ?to)
-;; 		    (update (visited ?to) true)
+		    ;; 		    (visited ?to)
+		    ;; 		    (update (visited ?to) true)
 		    ))
 
 
-;;   (:action thingi-action
-;; 	   :agent (?a - robot)
-;; 	   :variables (?p - place)
-;; 	   :precondition (and 
-;; 			  (not (visited-person ?p))
-			  
-			  
-;; ;; 			  (forall (?pp - place) 
-;; ;; 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited-person ?pp)))
-
-;; 			  )
-;; 	   :effect (and (visited-person ?p) (update (visited-person ?p) true)))
-
-;;   (:action look-for-people-first
-;; 	   :agent (?a - robot)
-;; 	   :parameters (?p - place)
-;; 	   :precondition (and 
-			  
-;; 			  (not (visited-person ?p))
-
-;; 			  (= (wave1 ?p) yes)
-
-;; 			  (= (is-in ?a) ?p))
-;; 	   :effect (and
-		    
-;; 		    (wave1-visited-person ?p)
-;; 		    (update (wave1-visited-person ?p) true)
-;; 		    (visited-person ?p)	
-;; 		    (update (visited-person ?p) true) )
-
-;; ;; 		    (explored ?p)
-;; ;; 		    (update (explored ?p) true)
-
-;; 		    )
-
-;;   (:action look-for-people-second
-;; 	   :agent (?a - robot)
-;; 	   :parameters (?p - place)
-;; 	   :precondition (and 
-			  
-;; 			  (not (visited-person ?p))
-
-;; 			  (forall (?pp - place) 
-;; 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited-person ?pp)))
-
-;; 			  (= (wave1 ?p) no)
-
-
-;; 			  (= (is-in ?a) ?p))
-;; 	   :effect (and
-;; 		    (visited-person ?p)	
-;; 		    (update (visited-person ?p) true) )
-;; ;; 		    (explored ?p)
-;; ;; 		    (update (explored ?p) true)
-;; 		    )
-	 
 
 
   (:action ask-for-your-name
@@ -170,6 +123,8 @@
 	   :parameters (?p - person)
 	   :variables (?loc - place)
 	   :precondition (and
+			  (not (kval ?a (name ?p)))
+
 			  (= (is-in ?a) ?loc)
 			  (= (is-in ?p) ?loc)
 			  )
@@ -177,42 +132,76 @@
 	   (kval ?a (name ?p))
 	   )
 
-  
-   (:action ask-for-your-record
+  (:action who-owns-record
 	   :agent (?a - robot)
-	   :parameters (?p - person)
-	   :variables (?loc - place)
+	   :parameters (?r - visualobject ?l - visualobject_label)
+	   :variables (?loc - place ?p - person)
 	   :precondition (and
+			  
+			  (= (label ?r) ?l)
+
+			  (not  (asked-who-owns-record ?a ?l ?p))
+
+			  (not (kval ?a (owned-by ?r)))
+			  
 			  (= (is-in ?a) ?loc)
 			  (= (is-in ?p) ?loc)
 			  )
-	   :effect
-	   (kval ?a (owns-record ?p))
+	   :effect (and (kval ?a (owned-by ?r))
+			(asked-who-owns-record ?a ?l ?p)
+			(update (asked-who-owns-record ?a ?l ?p) true)
+			)
 	   )
 
-
-;;   (:action ask-for-place-name
+;;   (:action ask-for-your-record
 ;; 	   :agent (?a - robot)
 ;; 	   :parameters (?p - person)
 ;; 	   :variables (?loc - place)
 ;; 	   :precondition (and
+;; 			  (not (kval ?a (owns-record ?p)))
 ;; 			  (= (is-in ?a) ?loc)
 ;; 			  (= (is-in ?p) ?loc)
 ;; 			  )
 ;; 	   :effect
-;; 	   (kval ?a (name ?loc))
+;; 	   (kval ?a (owns-record ?p))
 ;; 	   )
 
-;;   (:action commit-name
+;;   (:action which-record-is-owned-by
 ;; 	   :agent (?a - robot)
-;; 	   :parameters (?p - person ?n - person_name)
+;; 	   :parameters (?p - person)
+;; 	   :variables (?loc - place)
 ;; 	   :precondition (and
-;; 			  (in-domain (name ?p) ?n)
+;; 			  (not (kval ?a (owns-record ?p)))
+;; 			  (= (is-in ?a) ?loc)
+;; 			  (= (is-in ?p) ?loc)
 ;; 			  )
-;; 	   :replan (kval ?a (name ?p))
 ;; 	   :effect
-;; 	   (assign (name ?p) ?n)
+;; 	   (kval ?a (owns-record ?p))
 ;; 	   )
+
+
+  ;;   (:action ask-for-place-name
+  ;; 	   :agent (?a - robot)
+  ;; 	   :parameters (?p - person)
+  ;; 	   :variables (?loc - place)
+  ;; 	   :precondition (and
+  ;; 			  (= (is-in ?a) ?loc)
+  ;; 			  (= (is-in ?p) ?loc)
+  ;; 			  )
+  ;; 	   :effect
+  ;; 	   (kval ?a (name ?loc))
+  ;; 	   )
+
+  ;;   (:action commit-name
+  ;; 	   :agent (?a - robot)
+  ;; 	   :parameters (?p - person ?n - person_name)
+  ;; 	   :precondition (and
+  ;; 			  (in-domain (name ?p) ?n)
+  ;; 			  )
+  ;; 	   :replan (kval ?a (name ?p))
+  ;; 	   :effect
+  ;; 	   (assign (name ?p) ?n)
+  ;; 	   )
 
   
   (:action look-for-objects-and-people-wave1
@@ -256,41 +245,37 @@
 		    (update (visited ?p) true)))
   
 
-;;   (:action cheap-look-for-objects
-;; 	   :agent (?a - robot)
-;; 	   :parameters (?to - place)
-;; 	   :precondition (and
+  
+  (:action goal-action
+	   :agent (?a - robot)
+	   :parameters ()
+	   :precondition (and
 
-;; 			  (visited-person ?to)
-;; 			  (not (visited ?to))
-;; 			  (= (is-in ?a) ?to)
-;; 			  (= (wave1 ?to) yes)
-;; 			  )
-;; 	   :effect (and
-;; 		    (wave1-visited ?to)
-;; 		    (update (wave1-visited ?to) true)
-;; 		    (visited ?to)	
-;; 		    (update (visited ?to) true) ))
+;; 			  (forall (?p - place)  (visited ?p))
+			  
+			  (forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
 
-	
-;;   (:action expensive-look-for-objects
-;; 	   :agent (?a - robot)
-;; 	   :parameters (?to - place)
-;; 	   :precondition (and
-;; 			  (visited-person ?to)
-
-;; 			  (forall (?pp - place) 
-;; 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
-
-;; 			  (= (wave1 ?to) no)
-;; 			  (not (visited ?to))
-;; 			  (= (is-in ?a) ?to)
-
-;; 			  )
-;; 	   :effect (and
-;; 		    (visited ?to)	
-;; 		    (update (visited ?to) true) ))
+			  (forall (?a - robot) 
+				  (and 
+				   (forall (?p - person) 
+					   (and 
+					    (kval ?a (name ?p))
+					    
+					    ))
+				   (forall (?r - visualobject) 
+					   (and 
+					    (kval ?a (owned-by ?r))))))
+				  
+			  ;; 			 (forall (?p - place) (visited ?p))
+			  ;;(forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
+			  )
+	   :effect (and
+		    (goal-achieved ?a)
+		    (update (goal-achieved ?a) true)
+		    )
+	   )
 
   )
 
 
+	
