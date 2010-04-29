@@ -171,11 +171,11 @@ public class Tracking_fake extends FakeComponent {
 
 			List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
 			
-			for (WorkingMemoryAddress child : offspring) {
+		/**	for (WorkingMemoryAddress child : offspring) {
 				if (existsOnWorkingMemory(child)) {
 					deleteBeliefOnWM(child.id);
 				}
-			}
+			} */
 			
 		}	
 
