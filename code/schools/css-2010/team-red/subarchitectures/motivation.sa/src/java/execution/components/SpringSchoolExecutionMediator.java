@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import java.lang.Runtime;
+import java.lang.String;
 import java.io.*;
 
 import autogen.Planner.Action;
@@ -12,6 +13,7 @@ import beliefmodels.autogen.beliefs.Belief;
 import beliefmodels.autogen.featurecontent.FeatureValue;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.PointerValue;
+import beliefmodels.autogen.featurecontent.StringValue;
 import cast.CASTException;
 import castutils.facades.BinderFacade;
 import execution.slice.ActionExecutionException;
@@ -415,32 +417,49 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    // Runtime.getRuntime().exec(__command);
 
 	    return act;
-	} else if (_plannedAction.name.equals("ask-for-placename")) {
-	    assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
-	    String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
-	    String featureID = "name";
+	}  else if (_plannedAction.name.equals("who-owns-record")) {
+
+	    // this is the action to ask for a person's name
+	    assert _plannedAction.arguments.length == 2 : "who-owns-record action arity is expected to be 2";
 	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
-	    act.question = "What room is this?";
-	    act.beliefID = beliefID;
-	    act.featureID = featureID;
+	    act.beliefID = ((PointerValue) _plannedAction.arguments[2]).beliefId.id;
+
+	    String str = ((StringValue) _plannedAction.arguments[3]).val;
+	    
+	    act.featureID = "owner";
+	    act.question = "Who owns record with label " + str + "?";
+	    say_something("./talk.sh Who-owns-record-with-label-" + str + "?-I-think-" + str + "is-good-music!");
 	    return act;
-	} else if (_plannedAction.name.equals("verify-placename")) {
-	    assert _plannedAction.arguments.length == 3 : "ask-for-feature action arity is expected to be 2";
-	    String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
-	    String featureID = "name";
-	    ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
-	    act.question = "";
-	    act.beliefID = beliefID;
-	    act.featureType = featureID;
-	    act.featureValue = _plannedAction.arguments[2];
-	    return act;
-	} else if (_plannedAction.name.equals("commit-name")) {
-	    PrintMessage act = newActionInstance(PrintMessage.class);
-	    act.status=ActionStatus.COMPLETE;
-	    act.success=TriBool.TRITRUE;
-	    act.message=_plannedAction.fullName;
-	    return act;
-	}
+	} // else if (_plannedAction.name.equals("which-record-is-owned-by")) {
+
+	    
+
+// 	}else if (_plannedAction.name.equals("ask-for-placename")) {
+// 	    assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
+// 	    String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+// 	    String featureID = "name";
+// 	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+// 	    act.question = "What room is this?";
+// 	    act.beliefID = beliefID;
+// 	    act.featureID = featureID;
+// 	    return act;
+// 	} else if (_plannedAction.name.equals("verify-placename")) {
+// 	    assert _plannedAction.arguments.length == 3 : "ask-for-feature action arity is expected to be 2";
+// 	    String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+// 	    String featureID = "name";
+// 	    ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
+// 	    act.question = "";
+// 	    act.beliefID = beliefID;
+// 	    act.featureType = featureID;
+// 	    act.featureValue = _plannedAction.arguments[2];
+// 	    return act;
+// 	} else if (_plannedAction.name.equals("commit-name")) {
+// 	    PrintMessage act = newActionInstance(PrintMessage.class);
+// 	    act.status=ActionStatus.COMPLETE;
+// 	    act.success=TriBool.TRITRUE;
+// 	    act.message=_plannedAction.fullName;
+// 	    return act;
+// 	}
 	// in case we do not find the action we have an exception
 	throw new ActionExecutionException("No conversion available for: "
 					   + _plannedAction.name);

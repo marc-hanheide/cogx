@@ -3,16 +3,16 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {UG1_P,UK1_P}
+existingunion = {UG1_P}
 percept = {P}
-belief = {UG1_P,UK1_P,P}
+belief = {UG1_P,P}
 
 // possible outcomes of the grouping process
-outcome = {UG1_P,UK1_P,UN1_P}
+outcome = {UG1_P,UI1_P}
 
 // feature values
-is-inval = {None,U3_p,U5_p,Unknown}
-personidval = {None,Unknown,V1_g,V2_g,V3_g}
+is-inval = {None,U3_p,Unknown}
+personidval = {None,Unknown,V0_g,V1_g}
 typeval = {None,Unknown}
 
 ///////////////////////////////
@@ -33,43 +33,26 @@ Existence(belief)
 
 100.0 Existence(UG1_P)
 0.0 Existence(UG1_P) ^ Is-in(UG1_P,U3_p)
-Existence(UG1_P) => !Is-in(UG1_P,U5_p).
 Existence(UG1_P) => !Is-in(UG1_P,Unknown).
 Existence(UG1_P) => !Is-in(UG1_P,None).
-0.0 Existence(UG1_P) ^ Personid(UG1_P,V1_g)
+0.0 Existence(UG1_P) ^ Personid(UG1_P,V0_g)
 Existence(UG1_P) => !Personid(UG1_P,Unknown).
-Existence(UG1_P) => !Personid(UG1_P,V2_g).
-Existence(UG1_P) => !Personid(UG1_P,V3_g).
+Existence(UG1_P) => !Personid(UG1_P,V1_g).
 Existence(UG1_P) => !Personid(UG1_P,None).
 Existence(UG1_P) => !Type(Ug1_p,Unknown).
 Existence(UG1_P) => Type(Ug1_p,None).
-
-100.0 Existence(UK1_P)
-0.0 Existence(UK1_P) ^ Is-in(UK1_P,U5_p)
-Existence(UK1_P) => !Is-in(UK1_P,U3_p).
-Existence(UK1_P) => !Is-in(UK1_P,Unknown).
-Existence(UK1_P) => !Is-in(UK1_P,None).
-0.0 Existence(UK1_P) ^ Personid(UK1_P,V2_g)
-Existence(UK1_P) => !Personid(UK1_P,Unknown).
-Existence(UK1_P) => !Personid(UK1_P,V1_g).
-Existence(UK1_P) => !Personid(UK1_P,V3_g).
-Existence(UK1_P) => !Personid(UK1_P,None).
-Existence(UK1_P) => !Type(Uk1_p,Unknown).
-Existence(UK1_P) => Type(Uk1_p,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,U5_p)
-Existence(P) => !Is-in(P,U3_p).
+0.0 Existence(P) ^ Is-in(P,U3_p)
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
-0.0 Existence(P) ^ Personid(P,V3_g)
+0.0 Existence(P) ^ Personid(P,V1_g)
 Existence(P) => !Personid(P,Unknown).
-Existence(P) => !Personid(P,V1_g).
-Existence(P) => !Personid(P,V2_g).
+Existence(P) => !Personid(P,V0_g).
 Existence(P) => !Personid(P,None).
 Existence(P) => !Type(P,Unknown).
 Existence(P) => Type(P,None).
@@ -106,14 +89,20 @@ EXIST y Type(x,y).
 UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
 UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
+
+100 Existence(x) ^ Existence(P) ^ Name(x) ^ Name(P) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
+UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
+UnifyWith(x) ^ Is-in(x,y) => y!=None. 
+
+
 UnifyWith(x) => Existence(x) ^ Existence(P).
 ///////////////////////////////
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(UN1_P)
+-3.5 Existence(P) => Outcome(UI1_P)
 UnifyWith(UG1_P) <=> Outcome(UG1_P).
-UnifyWith(UK1_P) <=> Outcome(UK1_P).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).
