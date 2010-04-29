@@ -326,6 +326,11 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    LookForObjects act = newActionInstance(LookForObjects.class);
 	    // 			DetectObjects act = newActionInstance(DetectObjects.class);
 	    act.labels = m_objectLabels;// DEFAULT_LABELS;
+
+	    
+	    
+	    say_something("./talk.sh Taking-a-looksy..-As-they-say!");
+
 	    return act;
 	} else if (_plannedAction.name.equals("expensive-look-for-objects")) {
 		
@@ -335,6 +340,9 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    LookForObjects act = newActionInstance(LookForObjects.class);
 	    // 			DetectObjects act = newActionInstance(DetectObjects.class);
 	    act.labels = m_objectLabels;// DEFAULT_LABELS;
+
+	    say_something("./talk.sh Looking-looking-looking!");
+
 	    return act;
 	}else if (_plannedAction.name.equals("look-for-objects")) {
 		
