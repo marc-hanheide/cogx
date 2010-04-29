@@ -15,8 +15,7 @@ public class PersonMediator extends ReferringPerceptMediatorComponent {
 	protected PerceptBindingMediator<? extends ObjectImpl> getMediator() {
 		return PerceptBindingMediator.create(this, Person.class,
 				new LocalizedPersonTransferFunction(this, perceptBeliefsView), EnumSet.of(
-						WorkingMemoryOperation.ADD,
-						WorkingMemoryOperation.OVERWRITE));
+						WorkingMemoryOperation.ADD));
 	}
 
 }
