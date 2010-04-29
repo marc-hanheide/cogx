@@ -14,8 +14,12 @@ class Condition(object):
         return self.__class__()
 
     def set_scope(self, new_scope):
-        pass
+        assert new_scope is None or isinstance(new_scope, Scope)
+        self.scope = new_scope
 
+    def get_scope(self):
+        return self.scope
+    
     def free(self):
         def visitor(cond, results=[]):
             if isinstance(cond, predicates.Term):
@@ -110,8 +114,9 @@ class Truth(Condition):
         return Falsity()
 
 class JunctionCondition(Condition):
-    def __init__(self, parts):
+    def __init__(self, parts, scope=None):
         self.parts = parts
+        self.scope = scope
 
     def visit(self, fn):
         return fn(self, [p.visit(fn) for p in self.parts])
@@ -119,9 +124,12 @@ class JunctionCondition(Condition):
     def copy(self, new_scope=None, new_parts = None, copy_instance=False):
         if not new_parts:
             new_parts = self.parts
-        return self.__class__([ p.copy(new_scope, copy_instance=copy_instance) for p in new_parts])
+        if not new_scope:
+            new_scope = self.scope
+        return self.__class__([ p.copy(new_scope, copy_instance=copy_instance) for p in new_parts], new_scope)
 
     def set_scope(self, new_scope):
+        self.scope = new_scope
         for p in self.parts:
             p.set_scope(new_scope)
 
@@ -150,6 +158,9 @@ class QuantifiedCondition(Condition, Scope):
 
     def visit(self, fn):
         return fn(self, [self.condition.visit(fn)])
+
+    def get_scope(self):
+        return self.parent
     
     def copy(self, new_scope=None, new_parts = None, copy_instance=False):
         if not new_scope:
@@ -208,6 +219,6 @@ class LiteralCondition(predicates.Literal, Condition):
     @staticmethod
     def parse(it, scope):
         literal = predicates.Literal.parse(it,scope)
-        return LiteralCondition(literal.predicate, literal.args, literal.negated)
+        return LiteralCondition(literal.predicate, literal.args, scope, literal.negated)
 
 

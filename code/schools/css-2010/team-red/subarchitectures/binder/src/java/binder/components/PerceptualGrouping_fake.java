@@ -167,15 +167,15 @@ public class PerceptualGrouping_fake extends FakeComponent {
 	private void perceptBeliefDeleted (WorkingMemoryChange wmc) {
 		
 		try {
-			CASTData<PerceptBelief> beliefData = getMemoryEntryWithData(wmc.address, PerceptBelief.class);
+			PerceptBelief beliefData = getMemoryEntry(wmc.address, PerceptBelief.class);
 
-			List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.getData().hist).offspring;
+			List<WorkingMemoryAddress> offspring = ((CASTBeliefHistory)beliefData.hist).offspring;
 			
-			for (WorkingMemoryAddress child : offspring) {
+		/**	for (WorkingMemoryAddress child : offspring) {
 				if (existsOnWorkingMemory(child)) {
 					deleteBeliefOnWM(child.id);
 				}
-			}
+			} */
 			
 		}	
 

@@ -1,6 +1,7 @@
 from collections import defaultdict
 import itertools, time
 
+from scope import Scope
 import predicates, conditions, effects, actions, axioms, domain, problem
 import visitors
 import mapltypes as types
@@ -286,6 +287,8 @@ class ObjectFluentCompiler(Translator):
         def visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
                 if cond.predicate == equals:
+                    if  isinstance(cond.args[0], (VariableTerm, ConstantTerm)) and isinstance(cond.args[1], (VariableTerm, ConstantTerm)):
+                        return cond, []
                     assert isinstance(cond.args[0], FunctionTerm) and isinstance(cond.args[1], (VariableTerm, ConstantTerm))
                     new_pred = scope.predicates.get(cond.args[0].function.name, cond.args[0].args + cond.args[-1:])
                     if not new_pred:
@@ -348,6 +351,13 @@ class ObjectFluentCompiler(Translator):
                         ceffect = effects.ConditionalEffect(condition, negeffect)
                         effs = [effects.UniversalEffect([param], ceffect, None), effects.SimpleEffect(new_pred, term.args[:] + [value])]
                     return effects.ConjunctiveEffect(effs)
+            elif isinstance(eff, effects.ConditionalEffect):
+                #evil hack:
+                new_scope = Scope([], eff.scope)
+                new_scope.predicates = scope.predicates
+                cond, _ = self.translate_condition(eff.condition, new_scope)
+                return effects.ConditionalEffect(cond, results[0])
+                                                
 
         result = eff.visit(effectsVisitor)
         result.set_scope(scope)
