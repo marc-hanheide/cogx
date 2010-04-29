@@ -453,7 +453,7 @@ bool ODetect3D::Detect(Array<KeypointDescriptor *> &keys, Object3D &object)
   clock_gettime(CLOCK_REALTIME, &start3);
   #endif
 
-  RefinePoseLS(matches, object.pose, numInl, object.err);     // least squares pose
+  //RefinePoseLS(matches, object.pose, numInl, object.err);     // least squares pose
 
   ComputeConfidence(keys, numInl, object);
 
@@ -480,69 +480,6 @@ bool ODetect3D::Detect(Array<KeypointDescriptor *> &keys, Object3D &object)
   return false;
 }
 
-/******************************** PUBLIC **************************/
-/**
- * Simple RANSAC based 3d object detector
- */
-bool ODetect3D::DetectOnly(Array<KeypointDescriptor *> &keys, Object3D &object)
-{
-  #ifdef DEBUG
-  struct timespec start0, end0, start1, end1, start2, end2, start3, end3;
-  clock_gettime(CLOCK_REALTIME, &start1);
-  clock_gettime(CLOCK_REALTIME, &start0);
-  #endif
-
-  unsigned numInl=0;
-  Array<KeyClusterPair*> matches;
-
-  if (Def::DO_MATCHER==2)              // match keypoints with codebook  gpu
-    MatchKeypointsGPU(keys, object.codebook, matches);
-  else if (Def::DO_MATCHER==1)         // threshold matches
-    MatchKeypoints(keys, object.codebook, matches);
-  else                                 // use second nearest neighbour
-    MatchKeypoints2(keys, object.codebook, matches);
-
-  #ifdef DEBUG
-  clock_gettime(CLOCK_REALTIME, &end0);
-  if (dbg!=0)
-    for (unsigned i=0; i<matches.Size(); i++)
-      KeypointDescriptor::Draw(dbg,*matches[i]->k,CV_RGB(255,0,0));
-  clock_gettime(CLOCK_REALTIME, &start2);
-  #endif
-
-  FitModelRANSAC(matches, object.pose, numInl);    // ransac pose
- 
-  #ifdef DEBUG
-  clock_gettime(CLOCK_REALTIME, &end2);
-  clock_gettime(CLOCK_REALTIME, &start3);
-  #endif
-
-  #RefinePoseLS(matches, object.pose, numInl, object.err);     // least squares pose
-
-  ComputeConfidence(keys, numInl, object);
-
-  DeletePairs(matches);
-
-  #ifdef DEBUG
-  clock_gettime(CLOCK_REALTIME, &end3);
-  clock_gettime(CLOCK_REALTIME, &end1);
-  cout<<"id="<<object.id<<", conf="<<object.conf<<", err="<<object.err<<", numInl="<<numInl
-      <<", cbSize="<<object.codebook.Size()<<endl;
-  cout<<"Pose translation: ["<<cvmGet(object.pose.t,0,0)<<" "<<cvmGet(object.pose.t,1,0)<<" "<<cvmGet(object.pose.t,2,0)<<"]"<<endl;
-  cout<<"Time for matching keypoints [s]: "<<P::timespec_diff(&end0, &start0)<<endl;
-  cout<<"Time for RANSAC [s]: "<<P::timespec_diff(&end2, &start2)<<endl;
-  cout<<"Time for least squares pose [s]: "<<P::timespec_diff(&end3, &start3)<<endl;
-  cout<<"Time for object detection (matching and RANSAC) [s]: "<<P::timespec_diff(&end1, &start1)<<endl;
-  #endif
-
-  if (numInl>=4)
-    return true;
-
-  object.conf=0.;
-  object.err=DBL_MAX;
-
-  return false;
-}
 
 /**
  

@@ -51,7 +51,7 @@ void ObjectRecognizer3DDriver::addRecognizer3DCommand(VisionData::Recognizer3DCo
   rec_cmd->label = label;
   rec_cmd->visualObjectID = visualObjectID;
   addToWorkingMemory(newDataID(), rec_cmd);
-  log("Add Recognizer3DCommand: '%s'", rec_cmd->label.c_str());
+//   log("Add Recognizer3DCommand: '%s'", rec_cmd->label.c_str());
 }
 
 void ObjectRecognizer3DDriver::addTrackingCommand(VisionData::TrackingCommandType cmd){
@@ -108,9 +108,10 @@ void ObjectRecognizer3DDriver::runComponent(){
   m_timer.Update();
   
   // trigger Recognizer3D
-  for(int j=0; j<loops && isRunning(); j++){
-  	
-  	log("*** Loop %d/%d ***", j, loops);
+//   for(int j=0; j<loops && isRunning(); j++){
+
+  while(isRunning()){
+//   	log("*** Loop %d/%d ***", j, loops);
 //   	addTrackingCommand(RELEASEMODELS);
   	
 		for(int i=0; i<m_labels.size(); i++){
@@ -119,17 +120,18 @@ void ObjectRecognizer3DDriver::runComponent(){
 		}
 		
 		while(m_halt && isRunning())
-			sleepComponent(100);
+			sleepComponent(5);
 			
 // 		log("Taking Screenshot");
 // 		addTrackingCommand(SCREENSHOT);
 		m_halt = true;
-	}
+  sleepComponent(20);
+  }
 	
-	printf("Results: %f\n", m_timer.Update()/(loops*m_labels.size()));
-	for(int i=0; i<m_labels.size(); i++){
-		printf("  %s %f %f\n", m_labels[i].c_str(), 100*float(m_sumDetections[m_labels[i]])/loops, 100*m_sumConfidence[m_labels[i]]/loops);
-	}
+// 	printf("Results: %f\n", m_timer.Update()/(loops*m_labels.size()));
+// 	for(int i=0; i<m_labels.size(); i++){
+// 		printf("  %s %f %f\n", m_labels[i].c_str(), 100*float(m_sumDetections[m_labels[i]])/loops, 100*m_sumConfidence[m_labels[i]]/loops);
+// 	}
 	
 	log("Stop");
 
@@ -145,13 +147,13 @@ void ObjectRecognizer3DDriver::receiveVisualObject(const cdl::WorkingMemoryChang
 
 void ObjectRecognizer3DDriver::overwriteRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
   VisionData::Recognizer3DCommandPtr rec_cmd = getMemoryEntry<VisionData::Recognizer3DCommand>(_wmc.address);
-	
-	log("%s %f", rec_cmd->label.c_str(), rec_cmd->confidence);
-	
-	m_sumConfidence[rec_cmd->label] += rec_cmd->confidence;
-	if(rec_cmd->confidence > 0.03)
-		m_sumDetections[rec_cmd->label] += 1;
-	
+// 	
+// 	log("%s %f", rec_cmd->label.c_str(), rec_cmd->confidence);
+// 	
+// 	m_sumConfidence[rec_cmd->label] += rec_cmd->confidence;
+// 	if(rec_cmd->confidence > 0.03)
+// 		m_sumDetections[rec_cmd->label] += 1;
+// 	
   if(rec_cmd->label.compare(m_labels.back().c_str()) == 0)
   	m_halt =false;
 }

@@ -72,7 +72,6 @@ public:
   ~ODetect3D();
 
   bool Detect(Array<KeypointDescriptor *> &keys, Object3D &object);
-  bool DetectOnly(Array<KeypointDescriptor *> &keys, Object3D &object);
   void SetCameraParameter(CvMat *C);
 
   void SetDebugImage(IplImage *img){dbg = img;}
