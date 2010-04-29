@@ -26,6 +26,8 @@ namespace cast
         double trackerThreshold;
         int removeAfterFrames;
         double removeAfterDistance;
+	double dontAddFartherThan;
+	double distanceFromRobot;
 
       /**
        * component ID of the video server to connect to
