@@ -7,6 +7,11 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.Action;
 import execution.slice.actions.LookForObjects;
+import VisionData.PeopleDetectionCommand;
+import cast.AlreadyExistsOnWMException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryOperation;
 
 public class LookForObjectsExecutor extends TurnAndLookExecutor {
 
@@ -26,14 +31,16 @@ public class LookForObjectsExecutor extends TurnAndLookExecutor {
 	protected void triggerDetection() {
 		m_component.log("detection triggered");
 		// Fire off a detection command
-		DetectionCommand detect = new DetectionCommand(m_labels);
-		String id = m_component.newDataID();
+		String[] id = {m_component.newDataID(), m_component.newDataID()};
 		try {
-			m_component
-					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+			m_component.addChangeFilter(ChangeFilterFactory.createIDFilter(id[0],
 							WorkingMemoryOperation.DELETE),
 							getAfterDetectionReceiver());
-			m_component.addToWorkingMemory(id, detect);
+			m_component.addChangeFilter(ChangeFilterFactory.createIDFilter(id[1],
+							WorkingMemoryOperation.DELETE),
+							getAfterDetectionReceiver());
+			m_component.addToWorkingMemory(id[0], new PeopleDetectionCommand());
+			m_component.addToWorkingMemory(id[1], new DetectionCommand(m_labels));
 		} catch (AlreadyExistsOnWMException e) {
 			e.printStackTrace();
 		}
