@@ -5,6 +5,7 @@
 	(:types 
 		place place_id - object
 		robot - agent
+		robot visualobject - locatable
 	)
 	
 	(:predicates
@@ -15,7 +16,7 @@
     	)	
 
 	(:functions
-	        (is-in ?r - robot) - place
+	        (is-in ?r - locatable) - place
  	)
 	
 ;;; actions ;;;
