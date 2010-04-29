@@ -2,6 +2,7 @@ package vision.components;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
 import vision.VisionUtils;
 import VisionData.DetectionCommand;
@@ -38,11 +39,24 @@ public class BlobjectDetector extends ManagedComponent implements
 	private static final int LABEL_CONFIG_PREFIX_LENGTH = LABEL_CONFIG_PREFIX
 			.length();
 
+	private Vector<String> m_PreviouslyPosted = null;
+
 	private final HashMap<String, ColorRGB> m_label2colour;
 
 	public BlobjectDetector() {
 		m_blobFinder = null;
 		m_label2colour = new HashMap<String, ColorRGB>();
+		m_PreviouslyPosted = new Vector<String>();
+	}
+
+	boolean shouldObjectBePosted(String label)
+	{
+		if (m_PreviouslyPosted.contains(label)) {
+			return false;
+		}
+
+		m_PreviouslyPosted.add(label);
+		return true;
 	}
 
 	@Override
