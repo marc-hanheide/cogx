@@ -1,2 +1,2 @@
-CPP GD  VideoServer OpenCvImgSeqServer --videoname video --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 250
+CPP GD  VideoServer OpenCvImgSeqServer --videoname video --camids "0" --files "people/img%03d.jpg" --start 6 --end 15 --framerate_ms 200
 
