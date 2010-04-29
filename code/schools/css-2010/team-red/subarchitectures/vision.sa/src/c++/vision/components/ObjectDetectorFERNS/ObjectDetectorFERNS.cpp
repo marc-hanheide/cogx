@@ -210,6 +210,7 @@ ObjectDetectorFERNS::ObjectDetectorFERNS()
   mode = DETECT_AND_TRACK;
   camId = 0;
   numDetectionAttempts = 1;
+  voteThreshold = 1;
   doDisplay = false;
   show_tracked_locations = false;
   show_keypoints = false;
@@ -302,6 +303,22 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
     istringstream istr(it->second);
     istr >> numDetectionAttempts;
   }
+  {
+    ostringstream oss;
+    oss << "Running recognizer " << numDetectionAttempts << " times";
+    log(oss.str());
+  }
+
+  if((it = _config.find("--votethreshold")) != _config.end())
+  {
+    istringstream istr(it->second);
+    istr >> voteThreshold;
+  }
+  {
+    ostringstream oss;
+    oss << "Requiring " << voteThreshold << " detections to accept";
+    log(oss.str());
+  }
 
   if((it = _config.find("--displaylevel")) != _config.end())
   {
@@ -369,6 +386,9 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   // set holding all objects that were detected over a series of images
   std::set<string> detectedObjects;
 
+  std::vector<int> votes(cmd->labels.size());
+  for(size_t i = 0; i < cmd->labels.size(); i++) votes[i] = 0;
+
   // try detection in a series of images
   for(int i = 0; i < numDetectionAttempts; i++)
   {
@@ -377,17 +397,19 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
     detectObjects(grayImage, cmd->labels);
     // remember what objects were detected
     for(size_t i = 0; i < cmd->labels.size(); i++)
-      if(last_frame_ok[indexOf(cmd->labels[i])])
+      if(last_frame_ok[indexOf(cmd->labels[i])]) {
         detectedObjects.insert(cmd->labels[i]);
+        votes[i]++;
+      }
     if(doDisplay)
-    {   
-      drawResults(grayImage);
-      cvShowImage("ObjectDetectorFERNS", grayImage);
-
-      // needed to make the window appear
-      // (an odd behaviour of OpenCV windows!)
-      cvWaitKey(10);
-    }
+      {   
+        drawResults(grayImage);
+        cvShowImage("ObjectDetectorFERNS", grayImage);
+        
+        // needed to make the window appear
+        // (an odd behaviour of OpenCV windows!)
+        cvWaitKey(10);
+      }
     cvReleaseImage(&grayImage);
   }
   // a bit HACKy: say that we detected an object with a given label
@@ -395,10 +417,16 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   // least in one of the last numDetectionAttempts frames
   // This is required because postObjectsToWM() looks at last_frame_ok when
   // setting detection confidence.
+  int i = 0;
   for(std::set<string>::iterator it = detectedObjects.begin();
       it != detectedObjects.end(); it++)
   {
-    last_frame_ok[indexOf(*it)] = true;
+    if (votes[i] >= voteThreshold) {
+      last_frame_ok[indexOf(*it)] = true;
+    } else {
+      last_frame_ok[indexOf(*it)] = false;
+    }
+    i++;
   }
   postObjectsToWM(cmd->labels, image);
 
