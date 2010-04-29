@@ -6,7 +6,12 @@ JAVA MG executor execution.components.SpringSchoolExecutionMediator --labels "br
 #JAVA MG executor execution.components.SpringSchoolExecutionMediator  --tolerance 0.5
 
 # motivation ##################################################################
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place)  (explored ?p))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --maxPlanningTime 120 --goal "(and  (forall (?p - place)  (visited ?p)) (forall (?a - robot) (forall (?p - person)(and (kval ?a (name ?p)) ))))"
+
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --maxPlanningTime 120 --goal "(forall (?p - place)  (visited ?p))"
+
+
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place)  (explored ?p))"
 
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
 

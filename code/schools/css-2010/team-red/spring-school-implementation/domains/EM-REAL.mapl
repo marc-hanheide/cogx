@@ -26,6 +26,8 @@
    )	
 
   (:functions
+   (owns-record ?h - person) - visualobject
+
    (is-in ?r - robot) - place
    (is-in ?h - person) - place
    (is-in ?o - visualobject) - place
@@ -120,7 +122,7 @@
 
   (:action look-for-people-first
 	   :agent (?a - robot)
-	   :variables (?p - place)
+	   :parameters (?p - place)
 	   :precondition (and 
 			  
 			  (not (visited-person ?p))
@@ -142,7 +144,7 @@
 
   (:action look-for-people-second
 	   :agent (?a - robot)
-	   :variables (?p - place)
+	   :parameters (?p - place)
 	   :precondition (and 
 			  
 			  (not (visited-person ?p))
@@ -174,6 +176,20 @@
 	   :effect
 	   (kval ?a (name ?p))
 	   )
+
+  
+   (:action ask-for-your-record
+	   :agent (?a - robot)
+	   :parameters (?p - person)
+	   :variables (?loc - place)
+	   :precondition (and
+			  (= (is-in ?a) ?loc)
+			  (= (is-in ?p) ?loc)
+			  )
+	   :effect
+	   (kval ?a (owns-record ?p))
+	   )
+
 
 ;;   (:action ask-for-place-name
 ;; 	   :agent (?a - robot)
