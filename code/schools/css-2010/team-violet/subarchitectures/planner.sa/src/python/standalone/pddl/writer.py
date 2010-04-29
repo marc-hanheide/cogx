@@ -209,8 +209,6 @@ class Writer(object):
                     head = "over all"
             else:
                 assert False, "cant handle condition: %s" % str(cond)
-            else:
-                assert False, "cant handle condition: %s" % str(cond)
             strings = sum(parts, [])
             return self.section(head, strings)
         

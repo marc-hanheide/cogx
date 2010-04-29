@@ -3,17 +3,17 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {UF_P,UC_P,UA_P}
+existingunion = {U8_P,UA_P}
 percept = {P}
-belief = {UF_P,UC_P,UA_P,P}
+belief = {U8_P,UA_P,P}
 
 // possible outcomes of the grouping process
-outcome = {UC_P,UF_P,UA_P,UJ_P}
+outcome = {U8_P,UA_P,UD_P}
 
 // feature values
-is-inval = {None,U0_p,U1_p,U2_p,Unknown}
-labelval = {None,Unknown,Vchakakhan,Vheartbreakers,Vjames,Vjesusjones}
-objectidval = {None,Unknown,V6_f,V9_f,Vd1_f,Vy_f}
+is-inval = {None,U1_p,U2_p,Unknown}
+labelval = {None,Unknown,Vheartbreakers,Vjames,Vjesusjones}
+objectidval = {None,Unknown,V7_f,Vh_f,Vk_f}
 typeval = {None,Unknown}
 
 ///////////////////////////////
@@ -33,65 +33,38 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
-100.0 Existence(UF_P)
-0.0 Existence(UF_P) ^ Is-in(UF_P,U2_p)
-Existence(UF_P) => !Is-in(UF_P,U0_p).
-Existence(UF_P) => !Is-in(UF_P,U1_p).
-Existence(UF_P) => !Is-in(UF_P,Unknown).
-Existence(UF_P) => !Is-in(UF_P,None).
-0.0 Existence(UF_P) ^ Label(UF_P,Vchakakhan)
-Existence(UF_P) => !Label(UF_P,Unknown).
-Existence(UF_P) => !Label(UF_P,Vheartbreakers).
-Existence(UF_P) => !Label(UF_P,Vjames).
-Existence(UF_P) => !Label(UF_P,Vjesusjones).
-Existence(UF_P) => !Label(UF_P,None).
-0.0 Existence(UF_P) ^ Objectid(UF_P,Vy_f)
-Existence(UF_P) => !Objectid(UF_P,Unknown).
-Existence(UF_P) => !Objectid(UF_P,V6_f).
-Existence(UF_P) => !Objectid(UF_P,V9_f).
-Existence(UF_P) => !Objectid(UF_P,Vd1_f).
-Existence(UF_P) => !Objectid(UF_P,None).
-Existence(UF_P) => !Type(Uf_p,Unknown).
-Existence(UF_P) => Type(Uf_p,None).
-
-100.0 Existence(UC_P)
-0.0 Existence(UC_P) ^ Is-in(UC_P,U1_p)
-Existence(UC_P) => !Is-in(UC_P,U0_p).
-Existence(UC_P) => !Is-in(UC_P,U2_p).
-Existence(UC_P) => !Is-in(UC_P,Unknown).
-Existence(UC_P) => !Is-in(UC_P,None).
-0.0 Existence(UC_P) ^ Label(UC_P,Vheartbreakers)
-Existence(UC_P) => !Label(UC_P,Unknown).
-Existence(UC_P) => !Label(UC_P,Vchakakhan).
-Existence(UC_P) => !Label(UC_P,Vjames).
-Existence(UC_P) => !Label(UC_P,Vjesusjones).
-Existence(UC_P) => !Label(UC_P,None).
-0.0 Existence(UC_P) ^ Objectid(UC_P,V9_f)
-Existence(UC_P) => !Objectid(UC_P,Unknown).
-Existence(UC_P) => !Objectid(UC_P,V6_f).
-Existence(UC_P) => !Objectid(UC_P,Vd1_f).
-Existence(UC_P) => !Objectid(UC_P,Vy_f).
-Existence(UC_P) => !Objectid(UC_P,None).
-Existence(UC_P) => !Type(Uc_p,Unknown).
-Existence(UC_P) => Type(Uc_p,None).
+100.0 Existence(U8_P)
+0.0 Existence(U8_P) ^ Is-in(U8_P,U1_p)
+Existence(U8_P) => !Is-in(U8_P,U2_p).
+Existence(U8_P) => !Is-in(U8_P,Unknown).
+Existence(U8_P) => !Is-in(U8_P,None).
+0.0 Existence(U8_P) ^ Label(U8_P,Vjesusjones)
+Existence(U8_P) => !Label(U8_P,Unknown).
+Existence(U8_P) => !Label(U8_P,Vheartbreakers).
+Existence(U8_P) => !Label(U8_P,Vjames).
+Existence(U8_P) => !Label(U8_P,None).
+0.0 Existence(U8_P) ^ Objectid(U8_P,V7_f)
+Existence(U8_P) => !Objectid(U8_P,Unknown).
+Existence(U8_P) => !Objectid(U8_P,Vh_f).
+Existence(U8_P) => !Objectid(U8_P,Vk_f).
+Existence(U8_P) => !Objectid(U8_P,None).
+Existence(U8_P) => !Type(U8_p,Unknown).
+Existence(U8_P) => Type(U8_p,None).
 
 100.0 Existence(UA_P)
 0.0 Existence(UA_P) ^ Is-in(UA_P,U1_p)
-Existence(UA_P) => !Is-in(UA_P,U0_p).
 Existence(UA_P) => !Is-in(UA_P,U2_p).
 Existence(UA_P) => !Is-in(UA_P,Unknown).
 Existence(UA_P) => !Is-in(UA_P,None).
-0.0 Existence(UA_P) ^ Label(UA_P,Vjames)
+0.0 Existence(UA_P) ^ Label(UA_P,Vheartbreakers)
 Existence(UA_P) => !Label(UA_P,Unknown).
-Existence(UA_P) => !Label(UA_P,Vchakakhan).
-Existence(UA_P) => !Label(UA_P,Vheartbreakers).
+Existence(UA_P) => !Label(UA_P,Vjames).
 Existence(UA_P) => !Label(UA_P,Vjesusjones).
 Existence(UA_P) => !Label(UA_P,None).
-0.0 Existence(UA_P) ^ Objectid(UA_P,V6_f)
+0.0 Existence(UA_P) ^ Objectid(UA_P,Vh_f)
 Existence(UA_P) => !Objectid(UA_P,Unknown).
-Existence(UA_P) => !Objectid(UA_P,V9_f).
-Existence(UA_P) => !Objectid(UA_P,Vd1_f).
-Existence(UA_P) => !Objectid(UA_P,Vy_f).
+Existence(UA_P) => !Objectid(UA_P,V7_f).
+Existence(UA_P) => !Objectid(UA_P,Vk_f).
 Existence(UA_P) => !Objectid(UA_P,None).
 Existence(UA_P) => !Type(Ua_p,Unknown).
 Existence(UA_P) => Type(Ua_p,None).
@@ -101,22 +74,19 @@ Existence(UA_P) => Type(Ua_p,None).
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,U0_p)
+0.0 Existence(P) ^ Is-in(P,U2_p)
 Existence(P) => !Is-in(P,U1_p).
-Existence(P) => !Is-in(P,U2_p).
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
-0.0 Existence(P) ^ Label(P,Vjesusjones)
+0.0 Existence(P) ^ Label(P,Vjames)
 Existence(P) => !Label(P,Unknown).
-Existence(P) => !Label(P,Vchakakhan).
 Existence(P) => !Label(P,Vheartbreakers).
-Existence(P) => !Label(P,Vjames).
+Existence(P) => !Label(P,Vjesusjones).
 Existence(P) => !Label(P,None).
-0.0 Existence(P) ^ Objectid(P,Vd1_f)
+0.0 Existence(P) ^ Objectid(P,Vk_f)
 Existence(P) => !Objectid(P,Unknown).
-Existence(P) => !Objectid(P,V6_f).
-Existence(P) => !Objectid(P,V9_f).
-Existence(P) => !Objectid(P,Vy_f).
+Existence(P) => !Objectid(P,V7_f).
+Existence(P) => !Objectid(P,Vh_f).
 Existence(P) => !Objectid(P,None).
 Existence(P) => !Type(P,Unknown).
 Existence(P) => Type(P,None).
@@ -171,10 +141,9 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(UJ_P)
+-3.5 Existence(P) => Outcome(UD_P)
+UnifyWith(U8_P) <=> Outcome(U8_P).
 UnifyWith(UA_P) <=> Outcome(UA_P).
-UnifyWith(UC_P) <=> Outcome(UC_P).
-UnifyWith(UF_P) <=> Outcome(UF_P).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).
