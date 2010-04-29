@@ -605,6 +605,12 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
 	ctrl.cmd = NavData::lGOTONODE;
 	ctrl.nodeId = destNode->nodeId;
 	ctrl.tolerance = nav->tolerance;
+	log("Tolerance variable for GOTOPLACE");
+	for (int i = 0; i < ctrl.tolerance.size(); i++) {
+		char buf[32];
+		sprintf(buf, "tolerance[%d] = %.4f", i, ctrl.tolerance[i]);
+		log(buf);
+	}
       }
       else {
 	FrontierInterface::NodeHypothesisPtr destHyp = m_placeInterface->getHypFromPlaceID(nav->destId[0]);
