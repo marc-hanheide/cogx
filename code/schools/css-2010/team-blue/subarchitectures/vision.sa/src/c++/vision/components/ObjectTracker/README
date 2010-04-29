@@ -1,0 +1,60 @@
+/* Particle based object tracker using edge geometry models
+*
+*  @author: Thomas Mörwald, 2009, moerwald@acin.tuwien.ac.at
+*  
+*/
+
+The ObjectTracker is a component that tracks objects within a camera
+image by using a geometrical model, given by the working memory. (VisualObject)
+It is able to run in real time and to track several objects within one image.
+
+Therefore a particle filtering system is implemented. To rise the accuracy,
+please increase the number of particles and recursions. This of course reduces
+the speed of the system.
+
+
+Installation prerequieries:
+---------------------------
+
+MODERN GRAPHICS CARD
+	best: NVIDIA
+	not working on ATI and old graphics cards because of poor implementation of the
+	drivers, especially regarding glsl (opengl shading language)
+
+SDL:
+	libsdl1.2-dev
+
+OpenCV:
+	libcv-dev
+	libcvaux-dev
+	libhighgui-dev
+
+OpenGL implementation like:
+	freeglut
+	mesa
+	...
+		
+	
+// if anything missing please inform me
+
+Hints:
+------
+
+
+
+Key settings:
+-------------
+Works only if focus is on the ObjectTracker-Window of the tracker
+
+Esc:	quit tracker
+e:		draw edge map of camera image (toggle)
+l:		lock tracker at current position
+m:		show matching pixels (red=match, blue=edge tolerance failed, black=no edge)
+p:		show particles
+s:		show statistics
+t:		grab texture from image
+z:		set tracker to initial position
+1:		set size of pixel matching kernel to 1
+2:		set size of pixel matching kernel to 2
+3:		set size of pixel matching kernel to 3
+
