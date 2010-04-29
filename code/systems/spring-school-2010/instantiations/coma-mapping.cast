@@ -17,7 +17,7 @@ INCLUDE includes/spatial.sa/spatial-peekabot.cast
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
 #JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
-#JAVA MG recorder castutils.components.WorkingMemoryRecorder  --config recorder-filter.txt
+#JAVA MG recorder castutils.components.WorkingMemoryRecorder  
 JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
 
 
