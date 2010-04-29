@@ -1,4 +1,4 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --debug --domain EM-REAL.mapl --nodot --log 
+COMPONENT PYTHON PlannerPythonServer PythonServer --debug --domain task2.mapl --nodot --log 
 
 SUBARCHITECTURE planner.sa
 
