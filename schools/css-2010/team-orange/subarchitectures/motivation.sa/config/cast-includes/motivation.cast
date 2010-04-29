@@ -5,8 +5,10 @@ JAVA MG executor execution.components.DoraExecutionMediator
 # motivation ##################################################################
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (placestatus ?p) trueplace))"
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (visited ?p) true))"
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (searched ?p) true))"
-
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (searched ?p))"
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (searched ?p) true))"
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?v - visualobject) (detected ?v))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?v1 ?v2 ?v3 - visualobject ?l1 ?l2 ?l3 - recordname) (and (= (label ?v1) ?l1) (= (label ?v2) ?l2) (= (label ?v3) ?l3) (exists (?p1 - place) (located ?p1 ?l1)) (exists (?p2 - place) (located ?p2 ?l2)) (exists (?p3 - place) (located ?p3 ?l3)) (not (= ?l1 ?l2)) (not (= ?l3 ?l2)) (not (= ?l1 ?l3))))"
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
