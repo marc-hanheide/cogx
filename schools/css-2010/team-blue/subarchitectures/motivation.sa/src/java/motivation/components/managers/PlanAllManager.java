@@ -74,7 +74,7 @@ public class PlanAllManager extends ManagedComponent {
 	 */
 	public PlanAllManager() throws CASTException {
 		super();
-		wmLock = new WMLock(this, "SchedulerManagerSync");
+		wmLock = new WMLock(this, "SchedulerManagerSync", true);
 		motives = WMMotiveSet.create(this);
 		binderFacade = new BinderFacade(this);
 		plannerFacade = new PlannerFacade(this, binderFacade);
