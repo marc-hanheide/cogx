@@ -1,7 +1,7 @@
 (define (domain cogx)
   ;; the planner domain is case insensitive, the beliefs are mixed
   ;; case, though here we only use lower case...
-  (:requirements :mapl :adl :object-fluents)
+  (:requirements :mapl :adl :object-fluents :action-costs)
   
   (:types 
    place place_id - object
@@ -15,9 +15,14 @@
 
   (:predicates
    (connected ?n1 - place ?n2 - place)
+
    (visited ?p - place)
+   (visited-person ?p - place)
+
    (explored ?p - place)
+	
    (wave1-visited ?pp - place)	
+   (wave1-visited-person ?pp - place)	
    )	
 
   (:functions
@@ -69,6 +74,7 @@
 			  (or (not (=  (wave1 ?from) yes)) (visited ?from))
 			  )
 	   :effect (and
+
 		    (assign (is-in ?a) ?to)
 ;; 		    (visited ?to)
 ;; 		    (update (visited ?to) true)
@@ -99,15 +105,62 @@
 		    ))
 
 
-  (:action look-for-people
+;;   (:action thingi-action
+;; 	   :agent (?a - robot)
+;; 	   :variables (?p - place)
+;; 	   :precondition (and 
+;; 			  (not (visited-person ?p))
+			  
+			  
+;; ;; 			  (forall (?pp - place) 
+;; ;; 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited-person ?pp)))
+
+;; 			  )
+;; 	   :effect (and (visited-person ?p) (update (visited-person ?p) true)))
+
+  (:action look-for-people-first
 	   :agent (?a - robot)
 	   :variables (?p - place)
-	   :precondition (= (is-in ?a) ?p)
+	   :precondition (and 
+			  
+			  (not (visited-person ?p))
+
+			  (= (wave1 ?p) yes)
+
+			  (= (is-in ?a) ?p))
 	   :effect (and
-		    (explored ?p)
-		    (update (explored ?p) true)
+		    
+		    (wave1-visited-person ?p)
+		    (update (wave1-visited-person ?p) true)
+		    (visited-person ?p)	
+		    (update (visited-person ?p) true) )
+
+;; 		    (explored ?p)
+;; 		    (update (explored ?p) true)
+
 		    )
-	   )
+
+  (:action look-for-people-second
+	   :agent (?a - robot)
+	   :variables (?p - place)
+	   :precondition (and 
+			  
+			  (not (visited-person ?p))
+
+			  (forall (?pp - place) 
+				  (or (not (= (wave1 ?pp) yes)) (wave1-visited-person ?pp)))
+
+			  (= (wave1 ?p) no)
+
+
+			  (= (is-in ?a) ?p))
+	   :effect (and
+		    (visited-person ?p)	
+		    (update (visited-person ?p) true) )
+;; 		    (explored ?p)
+;; 		    (update (explored ?p) true)
+		    )
+	 
 
 
   (:action ask-for-your-name
@@ -151,6 +204,8 @@
 	   :agent (?a - robot)
 	   :parameters (?to - place)
 	   :precondition (and
+
+			  (visited-person ?to)
 			  (not (visited ?to))
 			  (= (is-in ?a) ?to)
 			  (= (wave1 ?to) yes)
@@ -166,7 +221,7 @@
 	   :agent (?a - robot)
 	   :parameters (?to - place)
 	   :precondition (and
-			  (= (wave1 ?to) no)
+			  (visited-person ?to)
 
 			  (forall (?pp - place) 
 				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
