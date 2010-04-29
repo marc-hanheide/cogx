@@ -11,6 +11,6 @@ ID   ptz.server  [TheOne]  0
 # Player may execute on a separate computer
 HPAR  goal-generator|--goal "(or (forall (?p - place) (searched ?p)) (forall (?l - recordlabel) (exists (?o - locatable) (and (= (label ?o) ?l) (exists (?p - place) (=(is-in ?o) ?p))))))"
 
-HPAR  PlannerPythonServer|--domain   task2.domian.mapl
+HPAR  PlannerPythonServer|--domain   task2mm.domain.mapl
 
 HPAR ferns.detector|--displaylevel 0
