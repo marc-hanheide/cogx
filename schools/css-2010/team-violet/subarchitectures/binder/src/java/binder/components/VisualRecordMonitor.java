@@ -77,19 +77,19 @@ public class VisualRecordMonitor extends ManagedComponent {
             ChangeFilterFactory.createLocalTypeFilter(StableBelief.class,
                WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
                public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-                  try {
-                     CASTData<StableBelief> beliefData =
-                        getMemoryEntryWithData(_wmc.address, StableBelief.class);
+                  //try {
+                  //   CASTData<StableBelief> beliefData =
+                  //      getMemoryEntryWithData(_wmc.address, StableBelief.class);
 
-                     StableBelief sb = beliefData.getData();
-                     System.out.println("StableBelief added: id=" + sb.id 
-                        + "@" + _wmc.address.subarchitecture
-                        + " type=" + sb.type);
-                  } catch (DoesNotExistOnWMException e) {
-                     e.printStackTrace();
-                  } catch (UnknownSubarchitectureException e) {
-                     e.printStackTrace();
-                  }
+                  //   StableBelief sb = beliefData.getData();
+                  //   System.out.println("StableBelief added: id=" + sb.id 
+                  //      + "@" + _wmc.address.subarchitecture
+                  //      + " type=" + sb.type);
+                  //} catch (DoesNotExistOnWMException e) {
+                  //   e.printStackTrace();
+                  //} catch (UnknownSubarchitectureException e) {
+                  //   e.printStackTrace();
+                  //}
                }
             }
             );
