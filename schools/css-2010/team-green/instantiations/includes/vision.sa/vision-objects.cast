@@ -1,4 +1,7 @@
-CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/crunchies.jpg:Cereal_box" --mode DETECT_ONLY --displaylevel 2 --numattempts 10 --log
+#CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/chaka-khan.jpg:ChakaKhan ./ferns/heart-breakers.jpg:Heartbreakers ./ferns/jesus-jones.jpg:Jesus ./ferns/strip-mine.jpg:James" --mode DETECT_ONLY --displaylevel 2 --numattempts 3 --log #--output_to_nav does not work for now!
+CPP MG VideoClient ObjectDetectorFERNS --videoname VideoServer --camid 0 --models "./ferns/chaka-khan-lo.jpg:ChakaKhan ./ferns/heart-breakers-lo.jpg:Heartbreakers ./ferns/jesus-jones-lo.jpg:Jesus ./ferns/strip-mine-lo.jpg:James" --mode DETECT_ONLY --displaylevel 2 --numattempts 3 --log
 
 #./ferns/MAGAZINE.jpg ./ferns/juice.jpg
+
+#CPP MG Dummy DummyDriver --labels "James Jesus ChakaKhan Heartbreakers" --log
 

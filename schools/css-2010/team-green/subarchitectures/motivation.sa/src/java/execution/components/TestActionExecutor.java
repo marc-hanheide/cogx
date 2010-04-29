@@ -95,9 +95,7 @@ public class TestActionExecutor extends ManagedComponent {
 		public TriBool execute() {
 		        try { 
 			    Runtime rt = Runtime.getRuntime(); 
-			    Process p = rt.exec("espeak 'Hello'");
-			    p.waitFor();
-			    p = rt.exec("espeak 'Lets_go_and_find_those_records.'");
+			    Process p = rt.exec("espeak 'Hello_lets_go_and_find_those_records'");
 			    p.waitFor();
 			} catch(Exception e) { 
 			    System.out.println(e.getMessage()); 
@@ -129,10 +127,12 @@ public class TestActionExecutor extends ManagedComponent {
 		}
 
 		public TriBool execute() {
-		        try { 
-			    Runtime rt = Runtime.getRuntime(); 
-			    Process p = rt.exec(msg); 
-			    p.waitFor();
+		        try {
+			    System.out.println("We are finished");
+			    System.out.println(this.msg);
+			    Runtime rt = Runtime.getRuntime();
+			    Process p = rt.exec(this.msg); 
+			    Process p1 = rt.exec("eog /home/cogx/team_green/*.jpg");
 			} catch(Exception e) { 
 			    System.out.println(e.getMessage()); 
 			} 
@@ -140,7 +140,6 @@ public class TestActionExecutor extends ManagedComponent {
 		}
 
 		public void execute(ExecutionCompletionCallback _callback) {
-		    //_callback.executionComplete(TriBool.TRITRUE);
 		}
 
 		public boolean isBlockingAction() {

@@ -112,14 +112,14 @@
 
 
 	(:derived (ready_to_move_to_report_pos ?a - robot) 
-		  (exists (?v1 ?v2 ?v3 - visualobject)
+		  (exists (?v1 - visualobject) ;(?v1 ?v2 ?v3 - visualobject)
 		  	  (and 
-			       (not (= ?v1 ?v2))
-			       (not (= ?v1 ?v3))
-			       (not (= ?v2 ?v3))
+			       ;(not (= ?v1 ?v2))
+			       ;(not (= ?v1 ?v3))
+			       ;(not (= ?v2 ?v3))
 			       (detected ?v1)
-			       (detected ?v2)
-			       (detected ?v3)
+			       ;(detected ?v2)
+			       ;(detected ?v3)
 			  )
 		  )
 	)
