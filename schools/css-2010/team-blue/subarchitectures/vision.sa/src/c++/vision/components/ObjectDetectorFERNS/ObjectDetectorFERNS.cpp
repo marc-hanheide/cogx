@@ -550,10 +550,8 @@ void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
     const Video::Image &image)
 {
   for(size_t i = 0; i < model_labels.size(); i++)
-    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end()){
-      if(last_frame_ok[i])
+    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end())
 	postObjectToWM_Internal(i, image);
-    }
 }
 
 void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
@@ -565,18 +563,19 @@ void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
 void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
     const Video::Image &image)
 {
-  VisualObjectPtr obj = createVisualObject(i, image);
+    VisualObjectPtr obj = createVisualObject(i, image);
 
-  // if no WM ID yet for that object
-  if(objWMIds[i] == "")
-  {
-    objWMIds[i] = newDataID();
-    addToWorkingMemory(objWMIds[i], obj);
-  }
-  else
-  {
-    overwriteWorkingMemory(objWMIds[i], obj);
-  }
+    // if no WM ID yet for that object
+    if(objWMIds[i] == "")
+    {
+      objWMIds[i] = newDataID();
+      addToWorkingMemory(objWMIds[i], obj);
+    }
+    else
+    {
+      overwriteWorkingMemory(objWMIds[i], obj);
+    }
+
 
   if(outputToNav)
   {
