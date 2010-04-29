@@ -1,0 +1,125 @@
+(define (domain cogx)
+
+(:requirements :mapl :adl :object-fluents)
+
+(:types
+        place recordname - object
+        robot - agent
+        robot visualobject - movable
+)
+
+;;; ======================================================================================
+;;; PREDICATES
+;;; ----------
+;;; connected:  asserts that there is a directed connected from place ?n1 to place ?n2
+;;; visited:    asserts whether a place has been visited
+;;; searched:   asserts whether a place has been searched for objects
+;;; ======================================================================================
+
+(:predicates
+        (connected ?n1 - place ?n2 - place)
+	(visited1 ?p - place)
+	(visited2 ?p - place)
+        (searched ?p - place)
+        (detected ?v - visualobject)
+        (endnode ?p - place)
+        (located ?p - place ?l - recordname)
+)
+
+;;; ======================================================================================
+;;; FUNCTIONS
+;;; functions can be updated, and as such yield a belief in the belief model on the binder
+;;; ------------
+;;; is-in:      records the robot's current position (place)
+;;; ======================================================================================
+
+(:functions
+        (is-in ?r - movable) - place
+        (label ?l - visualobject) - recordname
+)
+
+;;; ======================================================================================   
+;;; ACTIONS
+;;; ------------
+;;; move:       takes the robot from a place (?from) to a given goal place (?to), marking
+;;;             the goal place as visited. visited is assigned true, and updated to true.
+;;; look-for-objects:   given that the robot is in a place, the action performs a look-for-objects
+;;;             action in that place, and marks and updates the place as searched.
+;;; ======================================================================================   
+
+(:action move
+         :agent         (?a - robot)
+         :parameters    (?to - place)
+         :variables     (?from - place)
+         :precondition  (and
+			(not (visited2 ?to))
+                        (= (is-in ?a) ?from)
+                        (or (connected ?from ?to)
+                        (connected ?to ?from))
+                        )
+         :effect        (and
+                        (assign (is-in ?a) ?to)
+			(when (visited1 ?to)
+			      (and
+				(visited2 ?to)
+				(update (visited2 ?to) true)
+			      )
+			)
+                        (visited1 ?to)
+                        (update (visited1 ?to) true)
+                        )
+) ;;; end move
+
+(:action look-for-object
+         :agent         (?a - robot)
+         :variables     (?p - place)
+         :precondition  (and
+                        (= (is-in ?a) ?p)
+                        (endnode ?p)
+                        )
+         :effect        (and
+                        (searched ?p)
+                        (update (searched ?p) true)
+			(forall (?v - visualobject ?l - recordname)
+				(when (and
+					(= (label ?v) ?l)
+					(not (exists (?p0 - place) (located ?p0 ?l)))
+					(detected ?v)
+				      )
+                                      (and
+				        (located ?p ?l)
+				        (update (located ?p ?l) true)
+                                      )
+				)
+			)
+                        )
+) ;;; look-for-object
+
+(:action detect-object
+	 :agent		(?a - robot)
+         :variables     (?p - place)
+         :precondition  (and
+                        (= (is-in ?a) ?p)
+                        (not (endnode ?p))
+                        )
+         :effect        (and
+                        (searched ?p)
+                        (update (searched ?p) true)
+                        (forall (?v - visualobject ?l - recordname)
+                                (when (and
+					(= (label ?v) ?l)
+                                        (not (exists (?p0 - place) (located ?p0 ?l)))
+                                        (detected ?v)
+                                      )
+				      (and
+                                        (located ?p ?l)
+                                        (update (located ?p ?l) true)
+				      )
+                                )
+                        )
+
+                        )
+) ;;; detect-object
+
+) ;;; end domain
+
