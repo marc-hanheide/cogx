@@ -58,8 +58,8 @@ public class LocalizedVisualObjectTransferFunction extends
 					.createNewStringValue(from.label));
 		if (from.detectionConfidence>0.5)
 		    result.put("detected", FeatureValueBuilder.createNewBooleanValue(true));
-		else
-		    result.put("detected", FeatureValueBuilder.createNewBooleanValue(false));
+//		else
+//		    result.put("detected", FeatureValueBuilder.createNewBooleanValue(false));
 
 		} catch (BeliefException e) {
 			component.logException(e);
