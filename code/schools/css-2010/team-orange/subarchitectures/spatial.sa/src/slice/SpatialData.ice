@@ -36,6 +36,9 @@ module SpatialData {
 
     // Status of Place definition
     PlaceStatus status;
+
+    // Connection counter
+    long connectionCounter;
   };
 
 
@@ -272,7 +275,7 @@ module SpatialData {
 
     // Place ID for GOTOPLACE
     LongOpt destId;
-   
+
     // Target location, in the coordinate system of the Sensory layer
     // (I.e. robocentric, not necessarily robot-relative) (input)
     DoubleOpt  pose; //(x,y) or (x,y,a); for GOTOPOSITION
@@ -289,7 +292,7 @@ module SpatialData {
     // Field that tells if the command is in progress, still pending, etc
     Completion comp;
   };
-  
+
   /**
    * Commands for visual search
    * 
