@@ -26,6 +26,7 @@ namespace cast
         double trackerThreshold;
         int removeAfterFrames;
         double removeAfterDistance;
+	int count;
 
       /**
        * component ID of the video server to connect to
