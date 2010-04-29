@@ -68,6 +68,8 @@
 			)
                         (visited1 ?to)
                         (update (visited1 ?to) true)
+			(not (searched1 ?to))
+                        (update (searched1 ?to) false)
                         )
 ) ;;; end move
 
