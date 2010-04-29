@@ -112,6 +112,7 @@ public class BeliefWriter extends ManagedComponent implements BeliefWriterInterf
 		
 		try {
 			deleteFromWorkingMemory(beliefID, BindingWorkingMemory.BINDER_SA);
+			log("existing belief " + beliefID + " deleted from the working memory");
 		}
 		catch (UnknownSubarchitectureException e) {
 			log("ERROR: problem with the subarchitecture identifier for the binder");
