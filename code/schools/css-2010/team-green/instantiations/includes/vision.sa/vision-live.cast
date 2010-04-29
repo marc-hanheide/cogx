@@ -1,2 +1,3 @@
 CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "1" --swapredblue --devclass FIREWIRE
+#CPP GD  VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "0"
 

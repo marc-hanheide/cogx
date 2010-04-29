@@ -22,6 +22,8 @@ import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.PrintMessage;
 import execution.util.ActionConverter;
+import execution.slice.actions.Start;
+import execution.slice.actions.Report;
 
 /**
  * Execution mediator specifically for Dora/Spring School.
@@ -32,13 +34,26 @@ import execution.util.ActionConverter;
 public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 		implements ActionConverter {
 	private final BinderFacade m_binderFacade;
-	private static final String[] DEFAULT_LABELS = { "record1", "record2",
-			"record3", "record4" };
+	private static final String[] DEFAULT_LABELS = {
+	  "James", "Jesus", "Heartbreakers", "ChakaKhan"
+	  /*"record1", "record2", "record3", "record4"*/
+	};
+	private String[] m_objectLabels;
 
 	public SpringSchoolExecutionMediator() {
 		m_binderFacade = new BinderFacade(this);
+		m_objectLabels = DEFAULT_LABELS;
 	}
 
+/*	@Override
+	protected void configure(Map<String, String> _config) {
+		String labels = _config.get("--labels");
+		if (labels != null) {
+			m_objectLabels = labels.split(",");
+		}
+		log("using object labels: " + m_objectLabels);
+	}
+*/
 	@Override
 	protected void start() {
 		super.start();
@@ -55,7 +70,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	 */
 	public execution.slice.Action toSystemAction(Action _plannedAction)
 			throws CASTException {
-		if (_plannedAction.name.equals("move")) {
+	    if (_plannedAction.name.equals("move") || _plannedAction.name.equals("move_to_report_pos")) {
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 			// create a new instance of the action, look in the
@@ -105,7 +120,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			// instantiations/includes/vision.sa/vision-blobs.cast to setup the
 			// corresponding components to accept these labels.
 			DetectObjects act = newActionInstance(DetectObjects.class);
-			act.labels = DEFAULT_LABELS;
+			act.labels = m_objectLabels;
 			return act;
 		} else if (_plannedAction.name.equals("detect-people")) {
 			// this is the action that just triggers the people detector once
@@ -126,7 +141,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			assert _plannedAction.arguments.length == 1 : "look-for-objects action arity is expected to be 1";
 			// create the action instance and return it
 			LookForObjects act = newActionInstance(LookForObjects.class);
-			act.labels = DEFAULT_LABELS;
+			act.labels = m_objectLabels;
 			return act;
 		} else if (_plannedAction.name.equals("ask-for-your-name")) {
 			// this is the action to ask for a person's name
@@ -164,6 +179,24 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			act.featureType = featureID;
 			act.featureValue = _plannedAction.arguments[2];
 			return act;
+		} else if (_plannedAction.name.equals("commit-name")) {
+			PrintMessage act = newActionInstance(PrintMessage.class);
+			act.status=ActionStatus.COMPLETE;
+			act.success=TriBool.TRITRUE;
+			act.message=_plannedAction.fullName;
+			return act;
+		} else if(_plannedAction.name.equals("start")) {
+		    assert _plannedAction.arguments.length == 1 : "start action arity is expected to be 1";
+		    Start act = newActionInstance(Start.class);
+		    act.status = ActionStatus.COMPLETE;
+		    act.success = TriBool.TRITRUE;
+		    return act;
+		} else if(_plannedAction.name.equals("report")) {
+		    assert _plannedAction.arguments.length == 1 : "report action arity is expected to be 1";
+		    Report act = newActionInstance(Report.class);
+		    act.status = ActionStatus.COMPLETE;
+		    act.success = TriBool.TRITRUE;
+		    return act;
 		}
 		// in case we do not find the action we have an exception
 		throw new ActionExecutionException("No conversion available for: "

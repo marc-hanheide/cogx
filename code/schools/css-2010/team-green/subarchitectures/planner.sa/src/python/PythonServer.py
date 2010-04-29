@@ -249,6 +249,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     f.write(task.problem_str(pddl.mapl.MAPLWriter))
     f.close()
 
+    task.set_plan(None)
+    task.mark_changed()
+
     task.replan()
     self.deliver_plan(task)
 

@@ -1,6 +1,6 @@
 # execution ###################################################################
-JAVA MG executor execution.components.SpringSchoolExecutionMediator --labels "Jesus,James,ChakaKhan,Heartbreakers"
-#JAVA MG executor execution.components.DoraExecutionMediator --labels "Jesus,James,ChakaKhan,Heartbreakers"
+#JAVA MG executor execution.components.SpringSchoolExecutionMediator --labels "Jesus,James,ChakaKhan,Heartbreakers"
+JAVA MG executor execution.components.DoraExecutionMediator --labels "Jesus,James,ChakaKhan,Heartbreakers"
 
 # motivation ##################################################################
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (= (placestatus ?p) trueplace))"

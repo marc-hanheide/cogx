@@ -56,13 +56,26 @@ import cast.cdl.WorkingMemoryAddress;
 public class DoraExecutionMediator extends PlanExecutionMediator implements
 		ActionConverter {
 	private final BinderFacade m_binderFacade;
-	private static final String[] DEFAULT_LABELS = { "record1", "record2",
-			"record3", "record4" };
+	private static final String[] DEFAULT_LABELS = {
+	  "James", "Jesus", "Heartbreakers", "ChakaKhan"
+	  /*"record1", "record2", "record3", "record4"*/
+	};
+	private String[] m_objectLabels;
 
 	public DoraExecutionMediator() {
 		m_binderFacade = new BinderFacade(this);
+		m_objectLabels = DEFAULT_LABELS;
 	}
-
+/*
+	@Override
+	protected void configure(Map<String, String> _config) {
+		String labels = _config.get("--labels");
+		if (labels != null) {
+			m_objectLabels = labels.split(",");
+		}
+		log("using object labels: " + m_objectLabels);
+	}
+*/
 	@Override
 	protected void start() {
 		super.start();
@@ -85,7 +98,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			// create a new instance of the action, look in the
 			// execution.slice.actions package to see all available actions:
 			// http://www.cs.bham.ac.uk/~hanheidm/spring-school-javadoc/execution/slice/actions/package-summary.html
-			GoToPlace act = newActionInstance(GoToPlace.class);
+			GoToPlace act = newActionInstance(GoToPlace.class);	       	
 
 			// read the stable belief of the place that has been passed as an
 			// argument of this action
@@ -129,7 +142,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			// instantiations/includes/vision.sa/vision-blobs.cast to setup the
 			// corresponding components to accept these labels.
 			DetectObjects act = newActionInstance(DetectObjects.class);
-			act.labels = DEFAULT_LABELS;
+			act.labels = m_objectLabels;
 			return act;
 		} else if (_plannedAction.name.equals("detect-people")) {
 			// this is the action that just triggers the people detector once
@@ -150,7 +163,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			assert _plannedAction.arguments.length == 1 : "look-for-objects action arity is expected to be 1";
 			// create the action instance and return it
 			LookForObjects act = newActionInstance(LookForObjects.class);
-			act.labels = DEFAULT_LABELS;
+			act.labels = m_objectLabels;
 			return act;
 		} else if (_plannedAction.name.equals("ask-for-your-name")) {
 			// this is the action to ask for a person's name
@@ -206,101 +219,109 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 		    act.status = ActionStatus.COMPLETE;
 		    act.success = TriBool.TRITRUE;
 
-		   try{	
-		
-			String[] record_names = DEFAULT_LABELS ; //{"record_1", "record_2", "record_3", "record_4"} ;
-			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
 
-			List<StableBelief> ls = new ArrayList<StableBelief>(); 
-			String str_tmp ; 
+// 		   try{	
+// 		       System.out.println(" Starting verbalization.....................................................");
+// 			String[] record_names = DEFAULT_LABELS ; //{"record_1", "record_2", "record_3", "record_4"} ;
+// 			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
 
-			List<FeatureValueProbPair>  ls_pair = new ArrayList<FeatureValueProbPair>(); 
-			FeatureContentUtils tmp_util ;
+// 			List<StableBelief> ls = new ArrayList<StableBelief>(); 
+// 			String str_tmp ; 
 
-			getMemoryEntries(StableBelief.class, ls) ;
+// 			System.out.println("ls_size:" + ls.size());
 
-			Iterator it=ls.iterator();
-			Belief stb ; 
-				
-			while( it.hasNext() ) {
-				String what_I_have_to_say = "";
-				stb = (Belief)it.next() ;
-				ls_pair = FeatureContentUtils.getValuesInBelief(stb, "name" ) ;
-				if ( ls_pair.size() > 0 ) {
-					Iterator it2=ls_pair.iterator();
-					if( it2.hasNext()  ) {
-						FeatureValueProbPair fvp_tmp ;
-						fvp_tmp = (FeatureValueProbPair)it2.next() ;
-						StringValue val  = (StringValue)fvp_tmp.val ;
-						String vv  = val.val ;
+// 			List<FeatureValueProbPair>  ls_pair = new ArrayList<FeatureValueProbPair>(); 
+// 			FeatureContentUtils tmp_util ;
+
+// 			getMemoryEntries(StableBelief.class, ls) ;
+
+// 			Iterator it=ls.iterator();
+// 			Belief stb ; 
+// 			System.out.println("ls_pair_size: " + ls_pair.size());
+// 			while( it.hasNext() ) {
+// 			    System.out.println("YIPPIE");
+// 				String what_I_have_to_say = "";
+// 				stb = (Belief)it.next() ;
+// 				ls_pair = FeatureContentUtils.getValuesInBelief(stb, "name" ) ;
+// 				if ( ls_pair.size() > 0 ) {
+// 					Iterator it2=ls_pair.iterator();
+// 					if( it2.hasNext()  ) {
+// 						FeatureValueProbPair fvp_tmp ;
+// 						fvp_tmp = (FeatureValueProbPair)it2.next() ;
+// 						StringValue val  = (StringValue)fvp_tmp.val ;
+// 						String vv  = val.val ;
 						
-						int detected_entity = 0 ; // 1 ... record, 2 ... person
-						for ( int i_r = 0 ; i_r < record_names.length; i_r++ ) { 
-							if ( vv.equals(record_names[i_r])) {
-								detected_entity = 1 ;
-								break ;			
-							}
-						}
-/*
-						// test whether its person we're looking at (stupid way)
-						List<FeatureValueProbPair>  ls_pair_rectmp = new ArrayList<FeatureValueProbPair>();
-						ls_pair_rectmp = FeatureContentUtils.getValuesInBelief(stb, "record" ) ;
-						if ( ls_pair_rectmp.size() > 0 ) { 
-							detected_entity = 2 ;	
-						}
-*/
-/*
-						for ( int i_r = 0 ; i_r < person_names.length; i_r++ ) { 
-							if ( vv.equals(record_names[i_r])) {
-								detected_entity = 2 ;
-								break ;			
-							}
-						}
-*/
+// 						int detected_entity = 0 ; // 1 ... record, 2 ... person
+// 						for ( int i_r = 0 ; i_r < record_names.length; i_r++ ) { 
+// 							if ( vv.equals(record_names[i_r])) {
+// 								detected_entity = 1 ;
+// 								break ;			
+// 							}
+// 						}
+// /*
+// 						// test whether its person we're looking at (stupid way)
+// 						List<FeatureValueProbPair>  ls_pair_rectmp = new ArrayList<FeatureValueProbPair>();
+// 						ls_pair_rectmp = FeatureContentUtils.getValuesInBelief(stb, "record" ) ;
+// 						if ( ls_pair_rectmp.size() > 0 ) { 
+// 							detected_entity = 2 ;	
+// 						}
+// */
+// /*
+// 						for ( int i_r = 0 ; i_r < person_names.length; i_r++ ) { 
+// 							if ( vv.equals(record_names[i_r])) {
+// 								detected_entity = 2 ;
+// 								break ;			
+// 							}
+// 						}
+// */
 
-						if ( detected_entity == 1 ) {//vv.equals("record_1") || vv.equals("record_2") || vv.equals("record_3") || vv.equals("record_4")) 
-							// we have detected a record							
-							List<FeatureValueProbPair>  ls_pair_det = new ArrayList<FeatureValueProbPair>();
-							ls_pair_det = FeatureContentUtils.getValuesInBelief(stb, "detected" ) ;
-							Iterator it_det = ls_pair_det.iterator();
-							fvp_tmp = (FeatureValueProbPair)it_det.next() ;
-							BooleanValue val_det  = (BooleanValue)fvp_tmp.val   ;
-							boolean have_detection = val_det.val ;
-							if ( have_detection == true ){
-								// check for the place
-								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
-								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
-								Iterator it3 =ls_pair2.iterator();
-								fvp_tmp = (FeatureValueProbPair)it3.next() ;
+// 						if ( detected_entity == 1 ) {//vv.equals("record_1") || vv.equals("record_2") || vv.equals("record_3") || vv.equals("record_4")) 
+// 							// we have detected a record							
+// 							List<FeatureValueProbPair>  ls_pair_det = new ArrayList<FeatureValueProbPair>();
+// 							ls_pair_det = FeatureContentUtils.getValuesInBelief(stb, "detected" ) ;
+// 							Iterator it_det = ls_pair_det.iterator();
+// 							fvp_tmp = (FeatureValueProbPair)it_det.next() ;
+// 							BooleanValue val_det  = (BooleanValue)fvp_tmp.val   ;
+// 							boolean have_detection = val_det.val ;
+// 							if ( have_detection == true ){
+// 								// check for the place
+// 								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
+// 								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
+// 								Iterator it3 =ls_pair2.iterator();
+// 								fvp_tmp = (FeatureValueProbPair)it3.next() ;
 							 
-								PointerValue  valxs  = (PointerValue)fvp_tmp.val   ;
- 								WorkingMemoryAddress wma = valxs.beliefId ;
+// 								PointerValue  valxs  = (PointerValue)fvp_tmp.val   ;
+//  								WorkingMemoryAddress wma = valxs.beliefId ;
 
-								StableBelief beliefData = getMemoryEntry(wma,StableBelief.class );
+// 								StableBelief beliefData = getMemoryEntry(wma,StableBelief.class );
 
-								List<FeatureValueProbPair>  ls_pair_plc = new ArrayList<FeatureValueProbPair>(); 
-								ls_pair_plc = FeatureContentUtils.getValuesInBelief(beliefData, "PlaceId" ) ;
-								Iterator it4 =ls_pair_plc.iterator();							
-								FeatureValueProbPair fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
+// 								List<FeatureValueProbPair>  ls_pair_plc = new ArrayList<FeatureValueProbPair>(); 
+// 								ls_pair_plc = FeatureContentUtils.getValuesInBelief(beliefData, "PlaceId" ) ;
+// 								Iterator it4 =ls_pair_plc.iterator();							
+// 								FeatureValueProbPair fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
 
-								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
-								int valofplc =  val_plc.val ;
-								what_I_have_to_say = "espeak_" + " 'Yo_man,_the_record_"+ vv + "_is_at_place_" + valofplc + "'";
-								//System.out.print( what_I_have_to_say ) ;
-							}
-						} else if ( detected_entity == 2 ) {
-							// we have detected a person: check if its detected, where it is, which record it owns 
+// 								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
+// 								int valofplc =  val_plc.val ;
+// 								what_I_have_to_say = "espeak_" + " 'Yo_man,_the_record_"+ vv + "_is_at_place_" + valofplc + "'";
+// 								//System.out.print( what_I_have_to_say ) ;
+// 							}
+// 						} else if ( detected_entity == 2 ) {
+// 							// we have detected a person: check if its detected, where it is, which record it owns 
 							
-						}
-					 act.message = what_I_have_to_say ;				
-					}
-				}
-			}
+// 						}
+// 					 act.message = what_I_have_to_say ;
+// 					 System.out.println("-------------- Here's what i have:"+what_I_have_to_say);
+// 					  System.out.println("-------------- Here's what i have:"+act.message);
+// 					}
+// 				}
+// 			}
 
-			} catch(Exception e) { 
-			    System.out.println(e.getMessage()); 
-			} 
+// 			} catch(Exception e) { 
+// 		       System.out.println("---------------------------------------------------------- Exception!!!!!!!");
+// 			    System.out.println(e.getMessage()); 
+// 			} 
 
+		    act.message = "espeak 'I_have_finished_my_task,Marc_come_and_see.'";
 		    return act;
 		}
 		// in case we do not find the action we have an exception
