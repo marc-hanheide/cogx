@@ -3,12 +3,9 @@
         (:requirements :mapl :adl :object-fluents)
 
         (:types
-                place - object
+                place place_name place_id person_name - object
                 robot - agent
-                robot visualobject person - movable
-	        place_name - object
-	        place_id - object
-		
+                visualobject person - movable		
         )
 
 	(:predicates
@@ -19,13 +16,21 @@
 		(ready_to_report ?a - robot)
                 (finished ?a - robot)
 		(detected ?v - visualobject)
+                (have_all_info_about ?p - person)
 	)
 
         (:functions
                 (is-in ?r - movable) - place
+                (is-in ?r - robot) - place
 		(name ?o - visualobject) - object
 		(placeid ?loc - place) - place_id
 		(start_place ?r - robot) - place
+                (person-name ?p - person) - person_name
+                (owns-record ?p - person) - visualobject
+        )
+
+        (:constants
+                NO_RECORD - visualobject
         )
 
         (:action start
@@ -67,6 +72,21 @@
                          )
         )
 
+        (:action ask-for-your-name
+                 :agent(?a - robot)
+                 :parameters (?p - person)
+                 :variables (?at - place)
+                 :precondition (and (not (kval ?a (person-name ?p))) (= (is-in ?a) ?at) (= (is-in ?p) ?at))
+                 :effect (kval ?a (person-name ?p))
+        )
+
+        (:action ask-for-your-record
+                 :agent(?a - robot)
+                 :parameters (?p - person)
+                 :variables (?at - place)
+                 :precondition (and (not (kval ?a (owns-record ?p))) (= (is-in ?a) ?at) (= (is-in ?p) ?at))
+                 :effect (kval ?a (owns-record ?p))
+        )
 
 	(:action move_to_report_pos
                  :agent (?a - robot)
@@ -109,22 +129,36 @@
         		       )
         )
 
+        (:derived (have_all_info_about ?p - person)
+                  (forall (?a - robot) (and
+                          (kval ?a (person-name ?p))
+                   ;       (kval ?a (owns-record ?p)))
+                  )
+        )
 
-
-	(:derived (ready_to_move_to_report_pos ?a - robot) 
-		  (exists (?v1 ?v2 ?v3 - visualobject)
-		  	  (and 
+	(:derived (ready_to_move_to_report_pos ?a - robot)
+                  (and
+                        (exists (?v1 ?v2 ?v3 - visualobject)
+		  	   (and 
 			       (not (= ?v1 ?v2))
 			       (not (= ?v1 ?v3))
 			       (not (= ?v2 ?v3))
+                               (not (= ?v1 NO_RECORD))
+                               (not (= ?v2 NO_RECORD))
+                               (not (= ?v3 NO_RECORD))
 			       (detected ?v1)
 			       (detected ?v2)
 			       (detected ?v3)
-			  )
-		  )
+			   )
+		        )
+                        (forall (?p - person) (have_all_info_about ?p))
+                  )
 	)
 
 	(:derived (ready_to_move_to_report_pos ?a - robot)
-		  (forall (?loc - place) (checked_for_objects ?loc))
+                  (and
+                        (forall (?loc - place) (checked_for_objects ?loc))
+                        (forall (?p - person) (have_all_info_about ?p))
+                  )
 	)
 )

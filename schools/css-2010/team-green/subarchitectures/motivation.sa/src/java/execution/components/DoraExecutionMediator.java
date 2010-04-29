@@ -177,12 +177,29 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			// feature should be put
 			act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
 			// this is the feature that shall be written
+			act.featureID = "person-name";
+			// optionally we can define an explicit question here to make life
+			// simpler
+			act.question = "What is your name?";
+			return act;
+		} /*else if (_plannedAction.name.equals("ask-for-your-record")) {
+			// this is the action to ask for a person's name
+			assert _plannedAction.arguments.length == 2 : "ask-for-your-name action arity is expected to be 2";
+			// create the action instance: This action will trigger a GUI
+			// dialog. The feature that is being asked for (in this case "name")
+			// will be written to the belief that is given as argument if the
+			// user confirms that he knows it.
+			ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+			// the action requires the id of the StableBelief in which the
+			// feature should be put
+			act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+			// this is the feature that shall be written
 			act.featureID = "name";
 			// optionally we can define an explicit question here to make life
 			// simpler
 			act.question = "What is your name?";
 			return act;
-		} else if (_plannedAction.name.equals("ask-for-placename")) {
+                        } */else if (_plannedAction.name.equals("ask-for-placename")) {
 			assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
 			String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
 			String featureID = "name";
