@@ -25,6 +25,7 @@ import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
+import execution.slice.actions.SpinAround;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.util.ActionInterfaceFrame;
@@ -176,6 +177,13 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		act.labels = m_objectLabels;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerSpinAround(ActionMonitor _monitor)
+			throws CASTException {
+            SpinAround act = newActionInstance(SpinAround.class);
+            m_currentActionAddress = triggerExecution(act, _monitor);
+            return m_currentActionAddress;
 	}
 
 	public WorkingMemoryAddress triggerPTULookForObjects(ActionMonitor _monitor)

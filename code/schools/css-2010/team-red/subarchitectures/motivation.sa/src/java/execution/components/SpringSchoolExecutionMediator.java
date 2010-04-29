@@ -25,6 +25,7 @@ import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
+import execution.slice.actions.SpinAround;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.PrintMessage;
@@ -255,6 +256,13 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    assert _plannedAction.arguments.length == 1 : "look-for-people action arity is expected to be 1";
 	    // create the action instance and return it
 	    LookForPeople act = newActionInstance(LookForPeople.class);
+	    return act;
+	} else if (_plannedAction.name.equals("spin-around")) {
+	    // this is the action that make the robot turn but does
+	    // not trigger any detector since we have no vision
+	    assert _plannedAction.arguments.length == 1 : "spin-around action arity is expected to be 1";
+	    // create the action instance and return it
+	    SpinAround act = newActionInstance(SpinAround.class);
 	    return act;
 	}   else if (_plannedAction.name.equals("ptu-look-for-objects")) {
 		

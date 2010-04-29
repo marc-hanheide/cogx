@@ -155,8 +155,12 @@ module execution {
        * Run the people detector without moving the robot.
        */
       class DetectPeople extends Action {};
-	
 
+      /**
+       * Turn the robot around on the spot to test the navigation without vision
+       */
+      class SpinAround extends Action {};
+	
       /**
        * Turn the robot in stages to look for people.
        */
@@ -175,9 +179,6 @@ module execution {
       class PTULookForObjects extends Action {
 	StringSeq labels;
       };
-
-
-      
 
     };
 
