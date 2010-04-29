@@ -1,5 +1,9 @@
 #!/bin/bash
 
+rm -f robotpose.ccf
+./reset_map_real
+./firewire
+
 PIDS=""
 
 trap 'kill $PIDS' INT TERM PIPE QUIT ABRT HUP 
