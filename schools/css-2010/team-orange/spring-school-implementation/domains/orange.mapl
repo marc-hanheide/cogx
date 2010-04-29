@@ -93,19 +93,12 @@
                         (searched1 ?p)
                         (update (searched1 ?p) true)
 			(forall (?v - visualobject)
-				(when (and
-					(not (exists (?p0 - place) (located ?p0 ?v)))
-					(detected ?v)
-				      )
-                                     (and
-				        (located ?p ?v)
-				        (update (located ?p ?v) true)
-					(object-report-pending ?p ?v)
-                                        (update (object-report-pending ?p ?v) true)
-                                      )
+				(and
+				(object-report-pending ?p ?v)
+                        	(update (object-report-pending ?p ?v) true)
 				)
-			)
                         )
+			)
 ) ;;; look-for-objects
 
 (:action detect-objects
@@ -125,19 +118,12 @@
                         (searched1 ?p)
                         (update (searched1 ?p) true)
                         (forall (?v - visualobject)
-                                (when (and
-                                        (not (exists (?p0 - place) (located ?p0 ?v)))
-                                        (detected ?v)
-                                      )
-                                     (and
-                                        (located ?p ?v)
-                                        (update (located ?p ?v) true)
-                                        (object-report-pending ?p ?v)
-                                        (update (object-report-pending ?p ?v) true)
-                                      )
+                                (and
+                                (object-report-pending ?p ?v)
+                                (update (object-report-pending ?p ?v) true)
                                 )
                         )
-                        )
+			)
 ) ;;; detect-object
 
 (:action report-object
@@ -147,12 +133,28 @@
         :precondition   (and
 				(= (label ?v) ?l)
 				(object-report-pending ?p ?v)
+				(not (located ?p ?v))
 			)
         :effect         (and
+			   (located ?p ?v)
+			   (update (located ?p ?v) true)
                            (not (object-report-pending ?p ?v))
                            (update (object-report-pending ?p ?v) false)
                         )
 ) ;;; end report-object
+
+(:action report-nothing
+	:agent		(?a - robot)
+	:variables	(?p - place ?v - visualobject)
+	:precondition	(and
+			  (object-report-pending ?p ?v)
+			  (located ?p ?v) 
+			)
+	:effect		(and
+                           (not (object-report-pending ?p ?v))
+                           (update (object-report-pending ?p ?v) false)
+                        )
+) ;;; end report-nothing
 
 (:action report-finished
 	:agent		(?a - robot)
