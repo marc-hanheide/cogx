@@ -1,0 +1,130 @@
+(define (domain task2)
+
+        (:requirements :mapl :adl :object-fluents)
+
+        (:types
+                place - object
+                robot - agent
+                robot visualobject person - movable
+	        place_name - object
+	        place_id - object
+		
+        )
+
+	(:predicates
+                (connected ?loc1 - place ?loc2  - place)
+                (checked_for_objects ?loc - place)
+                (started ?a - robot)
+		(ready_to_move_to_report_pos ?a - robot)
+		(ready_to_report ?a - robot)
+                (finished ?a - robot)
+		(detected ?v - visualobject)
+	)
+
+        (:functions
+                (is-in ?r - movable) - place
+		(name ?o - visualobject) - object
+		(placeid ?loc - place) - place_id
+		(start_place ?r - robot) - place
+        )
+
+        (:action start
+                 :agent (?a - robot)
+		 :variables (?at - place)
+                 :precondition (and (not (started ?a)) (= (is-in ?a) ?at))
+                 :effect (and
+                                (started ?a)
+				(assign (start_place ?a) ?at)
+                                (update (started ?a) true)
+				(update (start_place ?a) ?at)
+                         )
+        )
+
+        (:action move
+	         :agent (?a - robot)
+	         :parameters (?to - place)
+		 :variables (?from - place)
+		 :precondition (and
+				   (started ?a)
+				   (= (is-in ?a) ?from)
+	                	   (or (connected ?from ?to)
+	            		       (connected ?to ?from))
+			       )
+                 :effect (assign (is-in ?a) ?to)
+        )
+
+        (:action look-for-people-and-objects
+                 :agent (?a - robot)
+                 :variables (?at - place)
+                 :precondition (and 
+		 	       	    (started ?a) 
+				    (not (checked_for_objects ?at)) 
+				    (= (is-in ?a) ?at)
+			       )
+                 :effect (and 
+                              (checked_for_objects ?at)
+			      (update (checked_for_objects ?at) true)
+                         )
+        )
+
+
+	(:action move_to_report_pos
+                 :agent (?a - robot)
+                 :parameters (?to - place)
+                 :precondition (and
+				 (started ?a)
+				 (= (start_place ?a) ?to)
+				 (ready_to_move_to_report_pos ?a)
+                               )
+                 :effect       (and 
+		 	       	    (ready_to_report ?a) 
+				    (assign (is-in ?a) ?to)
+				    (update (ready_to_report ?a) true)
+			       )
+        )
+
+	(:action move_to_report_pos
+                :agent (?a - robot)
+                :parameters (?to - place)
+                :precondition (and
+				      (started ?a)
+				      (= (start_place ?a) ?to)
+				      (ready_to_move_to_report_pos ?a)
+                              )
+                :effect       (and 
+		 	       	    (ready_to_report ?a) 
+				    (assign (is-in ?a) ?to)
+			    	    (update (ready_to_report ?a) true)
+			       )
+       )
+
+        (:action report
+                 :agent (?a - robot)
+                 :precondition (and
+                                 (ready_to_report ?a)
+                               )
+                 :effect       (and
+				  (finished ?a)
+				  (update (finished ?a) true)
+        		       )
+        )
+
+
+
+	(:derived (ready_to_move_to_report_pos ?a - robot) 
+		  (exists (?v1 ?v2 ?v3 - visualobject)
+		  	  (and 
+			       (not (= ?v1 ?v2))
+			       (not (= ?v1 ?v3))
+			       (not (= ?v2 ?v3))
+			       (detected ?v1)
+			       (detected ?v2)
+			       (detected ?v3)
+			  )
+		  )
+	)
+
+	(:derived (ready_to_move_to_report_pos ?a - robot)
+		  (forall (?loc - place) (checked_for_objects ?loc))
+	)
+)
