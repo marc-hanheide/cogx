@@ -50,5 +50,7 @@ JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "Spatia
 
 JAVA MG WMViewerBeliefs  castutils.viewer.ViewerCastComponent --log --subscribe "beliefmodels.autogen.beliefs.StableBelief"
 
+JAVA MG ObjViewer castutils.viewer.ViewerCastComponent --log --subscribe "VisionData.VisualObject"
+
 
 

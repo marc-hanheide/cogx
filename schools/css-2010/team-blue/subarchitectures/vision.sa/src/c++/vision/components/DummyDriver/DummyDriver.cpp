@@ -38,18 +38,20 @@ void DummyDriver::configure(const map<string,string> & _config)
       ostr << " '" << labels[i] << "'";
     log("detecting objects: %s", ostr.str().c_str());
   }
+  
+  halt = false;
 }
 
 void DummyDriver::start()
 {
   // we want to receive detected objects
-  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
-      new MemberFunctionChangeReceiver<DummyDriver>(this,
-        &DummyDriver::receiveVisualObject));
+//   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
+//       new MemberFunctionChangeReceiver<DummyDriver>(this,
+//         &DummyDriver::receiveDetectionCommand));
   // .. and when they change
-  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
+  addChangeFilter(createLocalTypeFilter<VisionData::DetectionDone>(cdl::ADD),
       new MemberFunctionChangeReceiver<DummyDriver>(this,
-        &DummyDriver::receiveVisualObject));
+        &DummyDriver::receiveDetectionDone));
 }
 
 void DummyDriver::runComponent()
@@ -58,22 +60,31 @@ void DummyDriver::runComponent()
                        // object observations too soon.
   // and initiate detection
   VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
-  cmd->labels = labels;
-  addToWorkingMemory(newDataID(), cmd);
+  while(isRunning()){
+    cmd->labels = labels;
+    addToWorkingMemory(newDataID(), cmd);
+    halt = true;
+    
+    while(isRunning() && halt){
+      sleepComponent(5);
+    }
+    
+  }
 }
 
-void DummyDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
+void DummyDriver::receiveDetectionDone(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisionData::VisualObjectPtr obj =
-    getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  if(obj->detectionConfidence >= 0.5)
-    log("ok, detected '%s'", obj->label.c_str());
-  else
-    log("nah, did not detect '%s'", obj->label.c_str());
+  VisionData::DetectionDonePtr dd =
+    getMemoryEntry<VisionData::DetectionDone>(_wmc.address);
+  if(dd->done)
+    halt = false;
+  
+  deleteFromWorkingMemory(_wmc.address);
+  
 
-  VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
-  cmd->labels.push_back(obj->label);
-  addToWorkingMemory(newDataID(), cmd);
+//   VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
+//   cmd->labels.push_back(obj->label);
+//   addToWorkingMemory(newDataID(), cmd);
 }
 
 }

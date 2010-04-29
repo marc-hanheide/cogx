@@ -136,6 +136,10 @@ module VisionData {
   class DetectionCommand {
     StringSeq labels;
   };
+
+  class DetectionDone{
+    bool done;
+  };
   
   class PeopleDetectionCommand {
   	//nothing involved here

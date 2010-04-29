@@ -361,7 +361,7 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   ostringstream ostr;
   for(size_t i = 0; i < cmd->labels.size(); i++)
     ostr << " '" << cmd->labels[i] << "'";
-  log("FERNS detecting: %s", ostr.str().c_str());
+  //log("FERNS detecting: %s", ostr.str().c_str());
 
   Video::Image image;
 
@@ -399,10 +399,14 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
     last_frame_ok[indexOf(*it)] = true;
   }
   postObjectsToWM(cmd->labels, image);
+  
+  DetectionDonePtr dd = new DetectionDone;
+  dd->done = true;
+  addToWorkingMemory(newDataID(), dd);
 
   // executed the command, results (if any) are on working memory,
   // now delete command as not needed anymore
-  deleteFromWorkingMemory(_wmc.address);
+//   deleteFromWorkingMemory(_wmc.address);
 }
 
 void ObjectDetectorFERNS::setupFERNS() throw(runtime_error)
@@ -566,15 +570,18 @@ void ObjectDetectorFERNS::postObjectToWM_Internal(size_t i,
     VisualObjectPtr obj = createVisualObject(i, image);
 
     // if no WM ID yet for that object
-    if(objWMIds[i] == "")
-    {
-      objWMIds[i] = newDataID();
-      addToWorkingMemory(objWMIds[i], obj);
-    }
-    else
-    {
-      overwriteWorkingMemory(objWMIds[i], obj);
-    }
+   // if(last_frame_ok[i]){
+      if(objWMIds[i] == "")
+      {
+	objWMIds[i] = newDataID();
+	addToWorkingMemory(objWMIds[i], obj);
+	log("addToWorkingMemory(VisualObject)");
+      }
+      else
+      {
+	overwriteWorkingMemory(objWMIds[i], obj);
+      }
+    //}
 
 
   if(outputToNav)

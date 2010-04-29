@@ -10,11 +10,12 @@ CPP TM AlwaysPositiveTaskManager
 
 # live images
 #CPP MG videoserver OpenCvLiveServer --camids 0 --devnums 0
-CPP GD  videoserver OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+#CPP GD  videoserver OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+CPP GD  videoserver OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE --imgsize "640 480" --log
 
-CPP MG VideoClient ObjectDetectorFERNS --videoname videoserver --camid 0 --models "ferns/swingout-000.jpg" --mode DETECT_ONLY --displaylevel 2 #--log
+CPP MG VideoClient ObjectDetectorFERNS --videoname videoserver --camid 0 --models "ferns/chakakahn-000.jpg:record1" --mode DETECT_ONLY --displaylevel 2 --log
 
-CPP MG Dummy DummyDriver --labels "swingout-000" --log
+CPP MG Dummy DummyDriver --labels "record1" --log
 
 
 SUBARCHITECTURE nav.sa 
