@@ -44,6 +44,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel jContentPane = null;
 
+	private double m_tolerance = 0.2;
+
 	private JPanel m_buttonPanel = null;
 	private JButton m_goButton = null;
 	private JButton m_stopButton = null;
@@ -52,6 +54,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel m_actionPanel;
 	private JRadioButton m_avsAction;
 	private JRadioButton m_goAction;
+	private JRadioButton m_goActionRough;
 	private JRadioButton m_detectObjectsAction;
 	private JRadioButton m_detectPeopleAction;
 	private JRadioButton m_lookForObjectsAction;
@@ -87,6 +90,10 @@ public class ActionInterfaceFrame extends JFrame {
 		this.setSize(300, 200);
 		this.setContentPane(getJContentPane());
 		this.setTitle("Robot Actions (Don't you just hate writing GUIs?)");
+	}
+
+	public void setTolerance(double tolerance) {
+		m_tolerance = tolerance;
 	}
 
 	/**
@@ -144,6 +151,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_actionPanel = new JPanel();
 			m_actionPanel.setLayout(new BoxLayout(m_actionPanel, BoxLayout.Y_AXIS));
 			m_goAction = new JRadioButton("go to place");
+			m_goActionRough = new JRadioButton("go to place roughly");
 			m_avsAction = new JRadioButton("visual search in");
 			m_detectObjectsAction = new JRadioButton("detect objects");
 			m_detectPeopleAction = new JRadioButton("detect people");
@@ -158,6 +166,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_goAction);
+			actionGroup.add(m_goActionRough);
 			actionGroup.add(m_avsAction);
 			actionGroup.add(m_detectObjectsAction);
 			actionGroup.add(m_detectPeopleAction);
@@ -168,6 +177,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_testFeatureValueAction);
 
 			m_actionPanel.add(m_goAction, new GridBagConstraints());
+			m_actionPanel.add(m_goActionRough, new GridBagConstraints());
 			m_actionPanel.add(m_avsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_detectPeopleAction, new GridBagConstraints());
@@ -217,6 +227,8 @@ public class ActionInterfaceFrame extends JFrame {
 		// get action
 		if (m_goAction.isSelected()) {
 			goToPlace();
+		} else if (m_goActionRough.isSelected()) {
+			goToPlaceRough();
 		} else if (m_avsAction.isSelected()) {
 			runAVS();
 		} else if (m_detectObjectsAction.isSelected()) {
@@ -411,6 +423,21 @@ public class ActionInterfaceFrame extends JFrame {
 			assert (placeIDVal != null);
 			long placeID = (Long) placeIDVal;
 			m_exeMan.triggerGoToAction(placeID, new MonitorPanel());
+		}
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void goToPlaceRough() throws CASTException {
+		int selectedRow = m_placeTable.getSelectedRow();
+		if (selectedRow != -1) {
+			Object placeIDVal = m_placeTableModel.getValueAt(selectedRow,
+					PLACE_ID_COLUMN);
+			assert (placeIDVal != null);
+			long placeID = (Long) placeIDVal;
+			double tolerance = m_tolerance;
+			m_exeMan.triggerGoToRoughAction(placeID, tolerance, new MonitorPanel());
 		}
 	}
 

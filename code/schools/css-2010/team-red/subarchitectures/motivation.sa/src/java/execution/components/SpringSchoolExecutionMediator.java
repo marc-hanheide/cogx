@@ -20,6 +20,7 @@ import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
@@ -39,6 +40,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			"record3", "record4" };
 
 	private String[] m_objectLabels;
+	private double m_tolerance;
 
 	public SpringSchoolExecutionMediator() {
 	    m_objectLabels = DEFAULT_LABELS;
@@ -59,6 +61,13 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			m_objectLabels = labels.split(",");
 		}
 		log("using object labels: " + m_objectLabels);
+		String tolstring = _config.get("--tolerance");
+		if (tolstring != null) {
+			m_tolerance = Double.parseDouble(tolstring);
+		} else {
+			m_tolerance = 0.5;
+		}
+		log("Using tolerance " + m_tolerance + "m");
 	}
 
 	/**
@@ -142,6 +151,45 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    // read the one placeID from the StableBelief
 	    IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
 	    act.placeID = placeID.val;
+	    // we have now created the action object, so we create it and let
+	    // the execution framework to the rest of the work
+	    return act;
+	}else if (_plannedAction.name.equals("move-rough")) {
+	    assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
+
+	    // create a new instance of the action, look in the
+	    // execution.slice.actions package to see all available actions:
+	    // http://www.cs.bham.ac.uk/~hanheidm/spring-school-javadoc/execution/slice/actions/package-summary.html
+	    GoToPlaceRough act = newActionInstance(GoToPlaceRough.class);
+
+	    // read the stable belief of the place that has been passed as an
+	    // argument of this action
+	    String stableBeliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+
+	    // read the belief from working memory using the binder facade
+	    // helper class
+	    Belief stableBelief = m_binderFacade.getBelief(stableBeliefID);
+
+	    if (stableBelief == null) {
+		throw new ActionExecutionException(
+						   "No union for place union id: " + stableBeliefID);
+	    }
+
+	    // read all features PlaceId from the StableBelief by using the
+	    // binder facade again. should be exactly one
+	    List<FeatureValue> placeIDFeatures = m_binderFacade
+		.getFeatureValue(stableBelief, "PlaceId");
+	    if (placeIDFeatures.isEmpty()) {
+		throw new ActionExecutionException(
+						   "No PlaceId features for belief id: " + stableBeliefID);
+
+	    }
+
+	    // read the one placeID from the StableBelief
+	    IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
+	    act.placeID = placeID.val;
+	    act.tol = new double[1];
+	    act.tol[1] = m_tolerance;
 	    // we have now created the action object, so we create it and let
 	    // the execution framework to the rest of the work
 	    return act;
