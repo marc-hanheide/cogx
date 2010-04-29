@@ -35,6 +35,7 @@ import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
+import execution.slice.actions.LookForObjectsAndPeople;
 import execution.slice.actions.SpinAround;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
@@ -447,6 +448,21 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
+	public class LookForObjectsAndPeopleExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public LookForObjectsAndPeopleExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
+
+		@Override
+		public ActionExecutor getActionExecutor() {
+			return new LookForObjectsAndPeopleExecutor(m_component, m_detections);
+		}
+
+	}
+
 	public class SpinAroundExecutorFactory implements ActionExecutorFactory {
 
 		private final ManagedComponent m_component;
@@ -562,6 +578,8 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		m_actionStateManager.registerActionType(LookForObjects.class,
 				new LookForObjectsExecutorFactory(this));
+		m_actionStateManager.registerActionType(LookForObjectsAndPeople.class,
+				new LookForObjectsAndPeopleExecutorFactory(this));
 		m_actionStateManager.registerActionType(PTULookForObjects.class,
 				new PTULookForObjectsExecutorFactory(this));
 		m_actionStateManager.registerActionType(LookForPeople.class,
