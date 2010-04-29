@@ -77,6 +77,8 @@ public class ComaRoomTransferFunction extends
 				@Override
 				public Object call() throws Exception {
 					try {
+						// TODO another VERY ugly hack to wait for places to appear first
+						Thread.sleep(12000);
 						WMContentWaiter<PerceptBelief> waiter = new WMContentWaiter<PerceptBelief>(
 								allBeliefs);
 						logger
