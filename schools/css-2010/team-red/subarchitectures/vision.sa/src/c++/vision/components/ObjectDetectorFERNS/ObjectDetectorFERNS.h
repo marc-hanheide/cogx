@@ -89,6 +89,13 @@ private:
    * It sometimes just makes sense to try a few images before giving up.
    */
   int numDetectionAttempts;
+
+  /**
+   * The minumin number of detections out of the numDetectionAttempts
+   * that need to be successful to say that we detected the objects
+   */
+  int voteThreshold;
+
   /**
    * Whether to open own (OpenCV) windows and display stuff
    * Default is false.
