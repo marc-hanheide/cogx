@@ -17,7 +17,7 @@
 
 #include "PeopleDetector.hpp"
 
-#define DONT_SAVE_FRAMES
+//#define DONT_SAVE_FRAMES
 
 
 using namespace std;
@@ -51,6 +51,8 @@ void PeopleDetector::configure(const std::map<std::string,std::string> & config)
   //println("configure");
 
     std::map<std::string,std::string>::const_iterator it;
+    
+    count = 0;
 
     if((it = config.find("--videoname")) != config.end()) {
       videoServerName = it->second;
@@ -420,7 +422,7 @@ void PeopleDetector::runDetection()
                 }
             }
 
-            #ifndef DONT_SAVE_FRAMES
+//            #ifndef DONT_SAVE_FRAMES
             // This just paints the laser visualisation into the image.
             for (int x = 0; x < img->width; x++)
             {
@@ -440,7 +442,7 @@ void PeopleDetector::runDetection()
                     cvSet2D(img, y, x, s2);
                 }
             }
-            #endif
+//            #endif
 
             // This will contain PersonRecords for all the new inputs from the detectors, minus those
             // that are obviously already being tracked.
@@ -711,7 +713,7 @@ void PeopleDetector::runDetection()
             }
 
 
-            #ifndef DONT_SAVE_FRAMES
+//            #ifndef DONT_SAVE_FRAMES
             // Updating visualisation with objects being tracked.
             for (size_t i = 0; i < detections.size(); i++)
             {
@@ -757,8 +759,16 @@ void PeopleDetector::runDetection()
             }
 
             // Save images to disk so they can be viewed later.
-            cvSaveImage(("./out/" + IntToStr((float)cnt) +".bmp").c_str(), img);
-            #endif
+	    
+      char filename[1024];
+      snprintf(filename, 1024, "PDimg%03d.jpg", count++);
+      //log("filename is %c", filename);
+      cvSaveImage(filename, img);
+      
+//      exit(0);
+
+            //cvSaveImage(("./out/" + IntToStr((float)cnt) +".bmp").c_str(), img);
+//            #endif
             
             // update frame counter (not really necessary)
             cnt++;
