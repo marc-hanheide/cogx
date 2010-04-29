@@ -285,7 +285,9 @@ class ObjectFluentCompiler(Translator):
         
         def visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
-                if cond.predicate == equals:
+		if cond.predicate == equals:
+		    if  isinstance(cond.args[0], (VariableTerm, ConstantTerm)) and isinstance(cond.args[1], (VariableTerm, ConstantTerm)):
+			return cond, []
                     assert isinstance(cond.args[0], FunctionTerm) and isinstance(cond.args[1], (VariableTerm, ConstantTerm))
                     new_pred = scope.predicates.get(cond.args[0].function.name, cond.args[0].args + cond.args[-1:])
                     if not new_pred:

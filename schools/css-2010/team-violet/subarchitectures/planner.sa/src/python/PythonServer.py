@@ -402,7 +402,7 @@ def update_beliefs(diffstate, namedict, beliefs):
       elif val == pddl.UNKNOWN:
         fval = featurecontent.UnknownValue()
       else:
-        name = namedict[val]
+        name = namedict.get(val, val.name);
         if ":" in name:
           fval = featurecontent.PointerValue(cast.cdl.WorkingMemoryAddress(name, BINDER_SA))
         else:

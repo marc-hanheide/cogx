@@ -2,8 +2,8 @@
 JAVA MG executor execution.components.SpringSchoolExecutionMediator
 
 # motivation ##################################################################
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and (or (forall (?p - place) (searched ?p)) (forall (?l - recordlabel) (exists (?o - locatable) (and(= (label ?o) ?l) (exists (?p - place) (= (is-in ?o) ?p)))))) (forall (?v - visualobject) (exists (?r - robot) (kval ?r (object-acknowledged ?v)))))"
-#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(or (forall (?p - place) (searched ?p)) (and (forall (?l - recordlabel) (exists (?o - locatable) (= (label ?o) ?l) (exists (?p - place) (=(is-in ?o) ?p))))))"
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and (or (forall (?p - place) (searched ?p)) (forall (?l - recordlabel) (exists (?o - locatable) (and(= (label ?o) ?l) (exists (?p - place) (= (is-in ?o) ?p)))))) (forall (?v - visualobject) (exists (?r - robot) (kval ?r (object-acknowledged ?v)))))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and (or (forall (?p - place) (searched ?p)) (exists (?oc - visualobject) (= (object-acknowledged ?oc) three))) (forall (?v - visualobject) (exists (?r - robot) (kval ?r (object-acknowledged ?v)))))"
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
 JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
