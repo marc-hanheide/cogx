@@ -18,7 +18,7 @@ sleep 2
 
 xterm -e player instantiations/stage/spring-school/cogxp3-spring-school.cfg &
 PIDS="$PIDS $!"
-rm -f  robotpose.ccf
+rm -f robotpose.ccf
 
 #xterm -e peekabot &
 #PIDS="$PIDS $!"
