@@ -18,6 +18,7 @@ sleep 2
 
 xterm -e player subarchitectures/nav.sa/config/player_cfg/botx.cfg &
 PIDS="$PIDS $!"
+rm -f robotpose.ccf
 
 #xterm -e peekabot &
 #PIDS="$PIDS $!"
