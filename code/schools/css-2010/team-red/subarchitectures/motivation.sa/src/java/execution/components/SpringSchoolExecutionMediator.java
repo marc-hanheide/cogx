@@ -28,6 +28,7 @@ import execution.slice.actions.LookForObjects;
 import execution.slice.actions.SpinAround;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
+import execution.slice.actions.LookForObjectsAndPeople;
 import execution.slice.actions.PrintMessage;
 import execution.util.ActionConverter;
 
@@ -124,7 +125,16 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 
 // 	System.exit(0);
 
-	if (_plannedAction.name.equals("expensive-move")) {
+	if (_plannedAction.name.equals("goal-action")) {
+	    
+	    GoToPlace act = newActionInstance(GoToPlace.class);
+
+	    act.placeID = 0;
+
+	    say_something("./talk.sh Yay!-I-am-finished-NOw-it-is-time-to-go-home...La-La-La-La-La-La-La-La-La-La-La-La-La");
+	    return act;
+	    
+	}else if (_plannedAction.name.equals("expensive-move")) {
 	    assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 	    // create a new instance of the action, look in the
@@ -197,7 +207,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    act.placeID = placeID.val;
 
 	    
-	    say_something("./talk.sh Hmmmmm-this-looks-like-a-nice-place-to-stop?-Yeah!");
+	    say_something("./talk.sh HmM-this-looks-like-a-nice-place-to-stopP?-Year!");
 
 	    // we have now created the action object, so we create it and let
 	    // the execution framework to the rest of the work
@@ -350,7 +360,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    
 	    say_something("./talk.sh More information, more information, aaaahhh!");
 
-	    LookForObjects act = newActionInstance(LookForObjects.class);
+	    LookForObjectsAndPeople act = newActionInstance(LookForObjectsAndPeople.class);
 	    act.labels = m_objectLabels;// DEFAULT_LABELS;
 	    return act;
 
@@ -360,7 +370,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    
 	    say_something("./talk.sh More-information,-more-information,-aaaahhh!");
 
-	    LookForObjects act = newActionInstance(LookForObjects.class);
+	    LookForObjectsAndPeople act = newActionInstance(LookForObjectsAndPeople.class);
 	    act.labels = m_objectLabels;// DEFAULT_LABELS;
 	    return act;
 
@@ -391,7 +401,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    // optionally we can define an explicit question here to make life
 	    // simpler
 	    act.question = "What is your name?";
-	    say_something("./talk.sh What-is-your-name?");
+	    say_something("./talk.sh What-is-your-name?-Please-tell-me-I-really-like-you..-really-truly!");
 
 // 	    String __command = "./talk.sh What-is-your-name?";
 	    // Runtime.getRuntime().exec(__command);
@@ -402,7 +412,7 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	    String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
 	    String featureID = "name";
 	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
-	    act.question = "";
+	    act.question = "What room is this?";
 	    act.beliefID = beliefID;
 	    act.featureID = featureID;
 	    return act;
