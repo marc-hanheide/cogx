@@ -115,8 +115,8 @@ void NavControl::configure(const map<string,string>& _config)
     println("Will NOT use X window to show the exploration map");
   }
 
-  double maxGotoV = 0.5;
-  double maxGotoW = 0.5;
+  double maxGotoV = 0.7;
+  double maxGotoW = 1;
 
   if ((it = _config.find("--max-goto-v")) != _config.end()) {
     std::istringstream str(it->second);
@@ -907,7 +907,7 @@ NavControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
     // pure speed command
     cmd.speed = cureCmd.v;
-    cmd.rotspeed = cureCmd.w;
+    cmd.rotspeed = 2.0 * cureCmd.w;
 
   } else if (cureCmd.type == Cure::MotionAlgorithm::CMD_TYPE_VA) {
 
@@ -916,7 +916,7 @@ NavControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
     Cure::Pose3D cp = m_CurrPose;
     double da = Cure::HelpFunctions::angleDiffRad(cureCmd.dir, cp.getTheta());
     cmd.rotspeed = 0.5 * da;
-    Cure::HelpFunctions::limitAndSetValueSymm(cmd.rotspeed, 0.5);
+    Cure::HelpFunctions::limitAndSetValueSymm(cmd.rotspeed, m_DefTolRot);
 
     // We limit the translation speed when we need to turn much
     cmd.speed = cureCmd.v * exp(-da*da/(0.3*0.3));
