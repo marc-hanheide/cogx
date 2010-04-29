@@ -25,3 +25,6 @@ INCLUDE includes/binder.sa/perceptmediators.cast
 
 # viewing and debugging #######################################################
 JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, beliefmodels.autogen.beliefs.Belief, SpatialProperties.PathProperty, SpatialProperties.AgentProperty, SpatialProperties.PlaceProperty, SpatialProperties.ObjectProperty, execution.slice.Action, VisionData.Person, VisionData.VisualObject, autogen.Planner.PlanningTask, autogen.Planner.Action, comadata.ComaRoom"
+
+# exection ####################################################################
+JAVA MG  manual-execution execution.components.GraphicalExecutionManager

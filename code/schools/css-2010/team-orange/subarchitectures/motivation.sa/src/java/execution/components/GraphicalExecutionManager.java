@@ -39,8 +39,8 @@ import execution.util.ActionMonitor;
  */
 public class GraphicalExecutionManager extends AbstractExecutionManager {
 
-	private static final String[] DEFAULT_LABELS = { "record1", "record2",
-			"record3", "record4" };
+	private static final String[] DEFAULT_LABELS = { "jesus", "james",
+			"chaka", "heart" };
 
 	private final ActionInterfaceFrame m_gui;
 	private String[] m_objectLabels;

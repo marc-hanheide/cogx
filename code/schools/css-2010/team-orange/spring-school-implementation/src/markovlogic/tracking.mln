@@ -3,19 +3,19 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {UF1_P,UD1_P,UI1_P}
+existingunion = {U7_M,UA_M,UE_M,U5_M}
 percept = {P}
-belief = {UF1_P,UD1_P,UI1_P,P}
+belief = {U7_M,UA_M,UE_M,U5_M,P}
 
 // possible outcomes of the grouping process
-outcome = {UF1_P,UD1_P,UI1_P,UM1_P}
+outcome = {U7_M,UE_M,UA_M,U5_M,Us_M}
 
 // feature values
 detectedval = {False,None,Unknown}
-is-inval = {None,U0_p,Unknown}
+is-inval = {None,U1_m,Unknown}
 labelval = {None,Unknown,Vchaka,Vheart,Vjames,Vjesus}
 typeval = {None,Unknown}
-visualobjectidval = {None,Unknown,V0_f,V1_f,V2_f,V3_f}
+visualobjectidval = {None,Unknown,V0_g,V1_g,V2_g,V3_g,Vb_g}
 
 ///////////////////////////////
 // PREDICATES
@@ -35,89 +35,116 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
-100.0 Existence(UF1_P)
-0.0 Existence(UF1_P) ^ Visualobjectid(UF1_P,V1_f)
-Existence(UF1_P) => !Visualobjectid(UF1_P,Unknown).
-Existence(UF1_P) => !Visualobjectid(UF1_P,V0_f).
-Existence(UF1_P) => !Visualobjectid(UF1_P,V2_f).
-Existence(UF1_P) => !Visualobjectid(UF1_P,V3_f).
-Existence(UF1_P) => !Visualobjectid(UF1_P,None).
-0.0 Existence(UF1_P) ^ Is-in(UF1_P,U0_p)
-Existence(UF1_P) => !Is-in(UF1_P,Unknown).
-Existence(UF1_P) => !Is-in(UF1_P,None).
-0.0 Existence(UF1_P) ^ Label(UF1_P,Vjesus)
-Existence(UF1_P) => !Label(UF1_P,Unknown).
-Existence(UF1_P) => !Label(UF1_P,Vchaka).
-Existence(UF1_P) => !Label(UF1_P,Vheart).
-Existence(UF1_P) => !Label(UF1_P,Vjames).
-Existence(UF1_P) => !Label(UF1_P,None).
-0.0 Existence(UF1_P) ^ Detected(UF1_P,False)
-Existence(UF1_P) => !Detected(UF1_P,Unknown).
-Existence(UF1_P) => !Detected(UF1_P,None).
-Existence(UF1_P) => !Type(Uf1_p,Unknown).
-Existence(UF1_P) => Type(Uf1_p,None).
+100.0 Existence(U7_M)
+0.0 Existence(U7_M) ^ Visualobjectid(U7_M,V1_g)
+Existence(U7_M) => !Visualobjectid(U7_M,Unknown).
+Existence(U7_M) => !Visualobjectid(U7_M,V0_g).
+Existence(U7_M) => !Visualobjectid(U7_M,V2_g).
+Existence(U7_M) => !Visualobjectid(U7_M,V3_g).
+Existence(U7_M) => !Visualobjectid(U7_M,Vb_g).
+Existence(U7_M) => !Visualobjectid(U7_M,None).
+0.0 Existence(U7_M) ^ Is-in(U7_M,U1_m)
+Existence(U7_M) => !Is-in(U7_M,Unknown).
+Existence(U7_M) => !Is-in(U7_M,None).
+0.0 Existence(U7_M) ^ Label(U7_M,Vjesus)
+Existence(U7_M) => !Label(U7_M,Unknown).
+Existence(U7_M) => !Label(U7_M,Vchaka).
+Existence(U7_M) => !Label(U7_M,Vheart).
+Existence(U7_M) => !Label(U7_M,Vjames).
+Existence(U7_M) => !Label(U7_M,None).
+0.0 Existence(U7_M) ^ Detected(U7_M,False)
+Existence(U7_M) => !Detected(U7_M,Unknown).
+Existence(U7_M) => !Detected(U7_M,None).
+Existence(U7_M) => !Type(U7_m,Unknown).
+Existence(U7_M) => Type(U7_m,None).
 
-100.0 Existence(UD1_P)
-0.0 Existence(UD1_P) ^ Visualobjectid(UD1_P,V0_f)
-Existence(UD1_P) => !Visualobjectid(UD1_P,Unknown).
-Existence(UD1_P) => !Visualobjectid(UD1_P,V1_f).
-Existence(UD1_P) => !Visualobjectid(UD1_P,V2_f).
-Existence(UD1_P) => !Visualobjectid(UD1_P,V3_f).
-Existence(UD1_P) => !Visualobjectid(UD1_P,None).
-0.0 Existence(UD1_P) ^ Is-in(UD1_P,U0_p)
-Existence(UD1_P) => !Is-in(UD1_P,Unknown).
-Existence(UD1_P) => !Is-in(UD1_P,None).
-0.0 Existence(UD1_P) ^ Label(UD1_P,Vjames)
-Existence(UD1_P) => !Label(UD1_P,Unknown).
-Existence(UD1_P) => !Label(UD1_P,Vchaka).
-Existence(UD1_P) => !Label(UD1_P,Vheart).
-Existence(UD1_P) => !Label(UD1_P,Vjesus).
-Existence(UD1_P) => !Label(UD1_P,None).
-0.0 Existence(UD1_P) ^ Detected(UD1_P,False)
-Existence(UD1_P) => !Detected(UD1_P,Unknown).
-Existence(UD1_P) => !Detected(UD1_P,None).
-Existence(UD1_P) => !Type(Ud1_p,Unknown).
-Existence(UD1_P) => Type(Ud1_p,None).
+100.0 Existence(UA_M)
+0.0 Existence(UA_M) ^ Visualobjectid(UA_M,V2_g)
+Existence(UA_M) => !Visualobjectid(UA_M,Unknown).
+Existence(UA_M) => !Visualobjectid(UA_M,V0_g).
+Existence(UA_M) => !Visualobjectid(UA_M,V1_g).
+Existence(UA_M) => !Visualobjectid(UA_M,V3_g).
+Existence(UA_M) => !Visualobjectid(UA_M,Vb_g).
+Existence(UA_M) => !Visualobjectid(UA_M,None).
+0.0 Existence(UA_M) ^ Is-in(UA_M,U1_m)
+Existence(UA_M) => !Is-in(UA_M,Unknown).
+Existence(UA_M) => !Is-in(UA_M,None).
+0.0 Existence(UA_M) ^ Label(UA_M,Vchaka)
+Existence(UA_M) => !Label(UA_M,Unknown).
+Existence(UA_M) => !Label(UA_M,Vheart).
+Existence(UA_M) => !Label(UA_M,Vjames).
+Existence(UA_M) => !Label(UA_M,Vjesus).
+Existence(UA_M) => !Label(UA_M,None).
+0.0 Existence(UA_M) ^ Detected(UA_M,False)
+Existence(UA_M) => !Detected(UA_M,Unknown).
+Existence(UA_M) => !Detected(UA_M,None).
+Existence(UA_M) => !Type(Ua_m,Unknown).
+Existence(UA_M) => Type(Ua_m,None).
 
-100.0 Existence(UI1_P)
-0.0 Existence(UI1_P) ^ Visualobjectid(UI1_P,V2_f)
-Existence(UI1_P) => !Visualobjectid(UI1_P,Unknown).
-Existence(UI1_P) => !Visualobjectid(UI1_P,V0_f).
-Existence(UI1_P) => !Visualobjectid(UI1_P,V1_f).
-Existence(UI1_P) => !Visualobjectid(UI1_P,V3_f).
-Existence(UI1_P) => !Visualobjectid(UI1_P,None).
-0.0 Existence(UI1_P) ^ Is-in(UI1_P,U0_p)
-Existence(UI1_P) => !Is-in(UI1_P,Unknown).
-Existence(UI1_P) => !Is-in(UI1_P,None).
-0.0 Existence(UI1_P) ^ Label(UI1_P,Vheart)
-Existence(UI1_P) => !Label(UI1_P,Unknown).
-Existence(UI1_P) => !Label(UI1_P,Vchaka).
-Existence(UI1_P) => !Label(UI1_P,Vjames).
-Existence(UI1_P) => !Label(UI1_P,Vjesus).
-Existence(UI1_P) => !Label(UI1_P,None).
-0.0 Existence(UI1_P) ^ Detected(UI1_P,False)
-Existence(UI1_P) => !Detected(UI1_P,Unknown).
-Existence(UI1_P) => !Detected(UI1_P,None).
-Existence(UI1_P) => !Type(Ui1_p,Unknown).
-Existence(UI1_P) => Type(Ui1_p,None).
+100.0 Existence(UE_M)
+0.0 Existence(UE_M) ^ Visualobjectid(UE_M,V3_g)
+Existence(UE_M) => !Visualobjectid(UE_M,Unknown).
+Existence(UE_M) => !Visualobjectid(UE_M,V0_g).
+Existence(UE_M) => !Visualobjectid(UE_M,V1_g).
+Existence(UE_M) => !Visualobjectid(UE_M,V2_g).
+Existence(UE_M) => !Visualobjectid(UE_M,Vb_g).
+Existence(UE_M) => !Visualobjectid(UE_M,None).
+0.0 Existence(UE_M) ^ Is-in(UE_M,U1_m)
+Existence(UE_M) => !Is-in(UE_M,Unknown).
+Existence(UE_M) => !Is-in(UE_M,None).
+0.0 Existence(UE_M) ^ Label(UE_M,Vheart)
+Existence(UE_M) => !Label(UE_M,Unknown).
+Existence(UE_M) => !Label(UE_M,Vchaka).
+Existence(UE_M) => !Label(UE_M,Vjames).
+Existence(UE_M) => !Label(UE_M,Vjesus).
+Existence(UE_M) => !Label(UE_M,None).
+0.0 Existence(UE_M) ^ Detected(UE_M,False)
+Existence(UE_M) => !Detected(UE_M,Unknown).
+Existence(UE_M) => !Detected(UE_M,None).
+Existence(UE_M) => !Type(Ue_m,Unknown).
+Existence(UE_M) => Type(Ue_m,None).
+
+100.0 Existence(U5_M)
+0.0 Existence(U5_M) ^ Visualobjectid(U5_M,V0_g)
+Existence(U5_M) => !Visualobjectid(U5_M,Unknown).
+Existence(U5_M) => !Visualobjectid(U5_M,V1_g).
+Existence(U5_M) => !Visualobjectid(U5_M,V2_g).
+Existence(U5_M) => !Visualobjectid(U5_M,V3_g).
+Existence(U5_M) => !Visualobjectid(U5_M,Vb_g).
+Existence(U5_M) => !Visualobjectid(U5_M,None).
+0.0 Existence(U5_M) ^ Is-in(U5_M,U1_m)
+Existence(U5_M) => !Is-in(U5_M,Unknown).
+Existence(U5_M) => !Is-in(U5_M,None).
+0.0 Existence(U5_M) ^ Label(U5_M,Vjames)
+Existence(U5_M) => !Label(U5_M,Unknown).
+Existence(U5_M) => !Label(U5_M,Vchaka).
+Existence(U5_M) => !Label(U5_M,Vheart).
+Existence(U5_M) => !Label(U5_M,Vjesus).
+Existence(U5_M) => !Label(U5_M,None).
+0.0 Existence(U5_M) ^ Detected(U5_M,False)
+Existence(U5_M) => !Detected(U5_M,Unknown).
+Existence(U5_M) => !Detected(U5_M,None).
+Existence(U5_M) => !Type(U5_m,Unknown).
+Existence(U5_M) => Type(U5_m,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,U0_p)
+0.0 Existence(P) ^ Is-in(P,U1_m)
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
-0.0 Existence(P) ^ Visualobjectid(P,V3_f)
+0.0 Existence(P) ^ Visualobjectid(P,Vb_g)
 Existence(P) => !Visualobjectid(P,Unknown).
-Existence(P) => !Visualobjectid(P,V0_f).
-Existence(P) => !Visualobjectid(P,V1_f).
-Existence(P) => !Visualobjectid(P,V2_f).
+Existence(P) => !Visualobjectid(P,V0_g).
+Existence(P) => !Visualobjectid(P,V1_g).
+Existence(P) => !Visualobjectid(P,V2_g).
+Existence(P) => !Visualobjectid(P,V3_g).
 Existence(P) => !Visualobjectid(P,None).
-0.0 Existence(P) ^ Label(P,Vchaka)
+0.0 Existence(P) ^ Label(P,Vheart)
 Existence(P) => !Label(P,Unknown).
-Existence(P) => !Label(P,Vheart).
+Existence(P) => !Label(P,Vchaka).
 Existence(P) => !Label(P,Vjames).
 Existence(P) => !Label(P,Vjesus).
 Existence(P) => !Label(P,None).
@@ -162,10 +189,10 @@ EXIST y Visualobjectid(x,y).
 
 // general correlations
 
-100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
-UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
-UnifyWith(x) ^ Is-in(x,y) => y!=None. 
+//100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+//100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
+//UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
+//UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
 100 Existence(x) ^ Existence(P) ^ Label(x,y) ^ Label(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
 100 UnifyWith(x) ^ Label(x,y) ^ Label(P,z) => y=z
@@ -178,10 +205,11 @@ UnifyWith(x) => Existence(x) ^ Existence(P).
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(UM1_P)
-UnifyWith(UD1_P) <=> Outcome(UD1_P).
-UnifyWith(UF1_P) <=> Outcome(UF1_P).
-UnifyWith(UI1_P) <=> Outcome(UI1_P).
+-3.5 Existence(P) => Outcome(Us_M)
+UnifyWith(U5_M) <=> Outcome(U5_M).
+UnifyWith(U7_M) <=> Outcome(U7_M).
+UnifyWith(UA_M) <=> Outcome(UA_M).
+UnifyWith(UE_M) <=> Outcome(UE_M).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).
