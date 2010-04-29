@@ -130,9 +130,11 @@
         )
 
         (:derived (have_all_info_about ?p - person)
-                  (forall (?a - robot) (and
-                          (kval ?a (person-name ?p))
-                   ;       (kval ?a (owns-record ?p)))
+                  (forall (?a - robot) 
+                          (and
+                                (kval ?a (person-name ?p))
+                   ;            (kval ?a (owns-record ?p)))
+                          )
                   )
         )
 
