@@ -1,0 +1,7 @@
+HOST localhost
+
+INCLUDE includes/spatial.sa/spatial-base.cast
+
+# Speech
+CPP GD helloReader HelloReader
+CPP GD helloWriter HelloWriter
