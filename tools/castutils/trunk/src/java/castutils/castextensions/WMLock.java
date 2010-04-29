@@ -25,8 +25,8 @@ public class WMLock implements Lock {
 	public void lock() {
 		try {
 			component.lockEntry(address, WorkingMemoryPermissions.LOCKEDO);
-			wmObject=component.getMemoryEntry(address, WMMutex.class);
-			wmObject.holderName=component.getComponentID();
+			wmObject = component.getMemoryEntry(address, WMMutex.class);
+			wmObject.holderName = component.getComponentID();
 			component.overwriteWorkingMemory(address, wmObject);
 		} catch (CASTException e) {
 			component.println("WMLock::lock: " + e);
@@ -65,8 +65,8 @@ public class WMLock implements Lock {
 	@Override
 	public void unlock() {
 		try {
-			wmObject=component.getMemoryEntry(address, WMMutex.class);
-			wmObject.holderName="";
+			wmObject = component.getMemoryEntry(address, WMMutex.class);
+			wmObject.holderName = "";
 			component.overwriteWorkingMemory(address, wmObject);
 			component.unlockEntry(address);
 		} catch (CASTException e) {
@@ -80,14 +80,14 @@ public class WMLock implements Lock {
 	 * @param component
 	 * @throws CASTException
 	 */
-	public WMLock(ManagedComponent component, String name)  {
+	public WMLock(ManagedComponent component, String name) {
 		super();
 		this.name = name;
 		this.component = component;
 		this.address = null;
 		this.slave=false;
 	}
-	
+
 	/**
 	 * @param wmObject
 	 * @param component
@@ -110,16 +110,18 @@ public class WMLock implements Lock {
 			component.getMemoryEntries(WMMutex.class, allMutexes);
 		for (WMMutex m : allMutexes) {
 			if (m.name.equals(name)) {
-				component.log("WMLock: using existing Mutex with name " + name + "and address " + CASTUtils.toString(m.addr));
+				component.log("WMLock: using existing Mutex with name " + name
+						+ "and address " + CASTUtils.toString(m.addr));
 				this.wmObject = m;
 				this.address = m.addr;
 				break;
 			}
 		}
 		if (this.address == null) { // if we have not found the mutex already on
-									// WM we have to create it
+			// WM we have to create it
 			component.log("WMLock: created new Mutex with name " + name);
-			this.address=new WorkingMemoryAddress(component.newDataID(), component.getSubarchitectureID());
+			this.address = new WorkingMemoryAddress(component.newDataID(),
+					component.getSubarchitectureID());
 			this.wmObject = new WMMutex(name, "", this.address);
 			component.addToWorkingMemory(this.address, this.wmObject);
 		}
