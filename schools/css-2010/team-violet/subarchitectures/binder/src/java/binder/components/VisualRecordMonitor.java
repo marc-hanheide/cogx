@@ -1,23 +1,24 @@
 package binder.components;
 
-import beliefmodels.autogen.beliefs.AttributedBelief;
-import beliefmodels.autogen.beliefs.MultiModalBelief;
-import beliefmodels.autogen.beliefs.PerceptBelief;
-import beliefmodels.autogen.beliefs.PerceptUnionBelief;
-import beliefmodels.autogen.beliefs.SharedBelief;
 import beliefmodels.autogen.beliefs.StableBelief;
-import beliefmodels.autogen.beliefs.TemporalUnionBelief;
 import beliefmodels.autogen.beliefs.CondIndependentDistribs;
 import beliefmodels.autogen.beliefs.BasicProbDistribution;
-import binder.gui.BeliefGraph;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
+import beliefmodels.autogen.distribs.BasicProbDistribution;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.history.CASTBeliefHistory;
+import beliefmodels.builders.BeliefContentBuilder;
+import beliefmodels.builders.FeatureValueBuilder;
+import beliefmodels.builders.PerceptBuilder;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
