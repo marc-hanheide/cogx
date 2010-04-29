@@ -7,6 +7,8 @@
   
   (:types 
 
+   bollocks - object
+
    comaroom - object
    roomname - object
    place place_id - object
@@ -16,7 +18,7 @@
    place_special - object
    )
   
-  (:constants yes no - place_special)
+  (:constants yes no - place_special bbbbbb - bollocks)
 
   (:predicates
    (goal-achieved ?a - agent)
@@ -287,10 +289,11 @@
 			  
 			  (forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
 
-;; 			  (forall (?a - robot) 
-;; 				  (forall (?p - person)
-;; 					   (kval ?a (owner ?p))
-;; 					   ))
+			  (forall (?o - visualobject) 
+				  (forall (?a - robot) 
+					  (forall (?p - person)
+						  (kval ?a (owner ?p))
+						  )))
 			  (forall (?a - robot) 
 				  (forall (?p - person)
 					   (kval ?a (name ?p))
