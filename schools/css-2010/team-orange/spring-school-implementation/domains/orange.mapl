@@ -20,7 +20,8 @@
         (connected ?n1 - place ?n2 - place)
 	(visited1 ?p - place)
 	(visited2 ?p - place)
-        (searched ?p - place)
+        (searched1 ?p - place)
+        (searched2 ?p - place)
         (detected ?v - visualobject)
         (endnode ?p - place)
         (located ?p - place ?l - recordname)
@@ -47,12 +48,12 @@
 ;;;             action in that place, and marks and updates the place as searched.
 ;;; ======================================================================================   
 
+;;; (not (visited2 ?to))
 (:action move
          :agent         (?a - robot)
          :parameters    (?to - place)
          :variables     (?from - place)
          :precondition  (and
-			(not (visited2 ?to))
                         (= (is-in ?a) ?from)
                         (or (connected ?from ?to)
                         (connected ?to ?from))
@@ -78,8 +79,14 @@
                         (endnode ?p)
                         )
          :effect        (and
-                        (searched ?p)
-                        (update (searched ?p) true)
+			(when (searched1 ?p)
+                              (and
+                                (searched2 ?p)
+                                (update (searched2 ?p) true)
+                              )
+                        )
+                        (searched1 ?p)
+                        (update (searched1 ?p) true)
 			(forall (?v - visualobject ?l - recordname)
 				(when (and
 					(= (label ?v) ?l)
@@ -103,8 +110,14 @@
                         (not (endnode ?p))
                         )
          :effect        (and
-                        (searched ?p)
-                        (update (searched ?p) true)
+ 			(when (searched1 ?p)
+                              (and
+                                (searched2 ?p)
+                                (update (searched2 ?p) true)
+                              )
+                        )
+                        (searched1 ?p)
+                        (update (searched1 ?p) true)
                         (forall (?v - visualobject ?l - recordname)
                                 (when (and
 					(= (label ?v) ?l)
