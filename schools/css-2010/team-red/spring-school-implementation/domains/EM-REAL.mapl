@@ -295,13 +295,34 @@
 ;; 					  (forall (?p - person)
 ;; 						  (kval ?a (owner ?p))
 ;; 						  )))
+
+			  (forall (?a - robot) 
+				  (forall (?p - person) 
+					  (forall (?l - visualobject_label) 
+						  (asked-who-owns-record ?a ?l ?p))))
+			  
 			  (forall (?a - robot) 
 				  (forall (?p - person)
 					   (kval ?a (name ?p))
 					   ))
+
+			  
+			  (forall (?a - robot) 
+				  (forall (?l - visualobject_label) 
+					  (forall (?p - person)
+						  (or (asked-is-record-xxx-your-record ?a ?l ?p)
+;; 						      (exists (?r - visualobject) 
+;; 							      (or (not (kval ?a (owned-by ?r)))
+;; 								       (= (owned-by ?r) ?p)))
+						      ))))
+
+
+
+;; 				  ))
+
 ;; 			  (forall (?a - robot) 
-;; 				  (forall (?r - visualobject) 
-;; 					  (and 
+;; 				  (forall (?l - visualobject_label) 
+;; 					  (and  (asked-is-record-xxx-your-record ?a ?l ?p)
 ;; 					   (kval ?a (owned-by ?r)))))
 				  
 			  ;; 			 (forall (?p - place) (visited ?p))
