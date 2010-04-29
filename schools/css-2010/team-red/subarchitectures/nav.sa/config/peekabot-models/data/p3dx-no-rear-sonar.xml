@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<scene>
+  <model>
+    <name>chassis</name>
+    <file>chassis-sans-rear-sonar.pbmf</file>
+
+    <children>
+      <include file="pioneer3dx/front-bumpers.xml"/>
+      <include file="pioneer3dx/rear-bumpers.xml"/>
+    </children>
+  </model>
+
+</scene>
