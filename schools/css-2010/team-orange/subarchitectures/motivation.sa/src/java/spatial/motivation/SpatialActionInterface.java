@@ -9,6 +9,7 @@ import java.util.Map;
 
 import SpatialData.AVSAction;
 import SpatialData.AVSCommand;
+import SpatialData.Announcement;
 import SpatialData.CommandType;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
@@ -33,6 +34,9 @@ import execution.slice.TriBool;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.ReportObject;
+import execution.slice.actions.ReportPerson;
+import execution.slice.actions.ReportFinished;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
 import execution.util.ActionExecutor;
@@ -302,6 +306,213 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+	private class ReportObjectExecutor implements ActionExecutor,
+			WorkingMemoryChangeReceiver {
+
+		private long m_placeId;
+		private String m_label;
+		private String m_name;
+		private WorkingMemoryAddress m_addr;
+
+		@Override
+		public boolean accept(Action _action) {
+			m_placeId = ((ReportObject) _action).placeId;
+			m_label = ((ReportObject) _action).label;
+			return true;
+		}
+
+		@Override
+		public TriBool execute() {
+
+			// SEND COMMAND
+			Announcement ann = new Announcement();
+			if (m_label=="chaka") 
+			    m_name="Chaka Khan";
+			else if (m_label=="james") 
+			    m_name="James";
+			else if (m_label=="jesus") 
+			    m_name="Jesus Jones";
+			else if (m_label=="heart") 
+			    m_name="Hearbreakers";
+
+			ann.message.format("Record by %s found in place number %d. Let's listen to it for a second.", m_name, m_placeId);
+			ann.songId = m_label;
+			m_addr = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+
+			try {
+				addToWorkingMemory(m_addr, ann);
+			} catch (CASTException e) {
+				println(e.message);
+				e.printStackTrace();
+				return TriBool.TRIFALSE;
+			}
+
+			return TriBool.TRITRUE;
+		}
+
+		@Override
+		public boolean isBlockingAction() {
+			return true;
+		}
+
+		@Override
+		public void stopExecution() {
+		}
+
+		@Override
+		public void execute(ExecutionCompletionCallback _callback) {
+
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+				throws CASTException {
+		}
+
+	}
+
+
+
+
+
+	private class ReportPersonExecutor implements ActionExecutor,
+			WorkingMemoryChangeReceiver {
+
+		private long m_placeId;
+		private String m_label;
+		private String m_name;
+		private WorkingMemoryAddress m_addr;
+
+		@Override
+		public boolean accept(Action _action) {
+			m_placeId = ((ReportPerson) _action).placeId;
+//			m_label = ((ReportPerson) _action).label;
+			return true;
+		}
+
+		@Override
+		public TriBool execute() {
+
+			// SEND COMMAND
+			Announcement ann = new Announcement();
+			ann.message.format("Person found in place number %d!.", m_placeId);
+			ann.songId = "";
+			m_addr = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+
+			try {
+				addToWorkingMemory(m_addr, ann);
+			} catch (CASTException e) {
+				println(e.message);
+				e.printStackTrace();
+				return TriBool.TRIFALSE;
+			}
+
+			return TriBool.TRITRUE;
+		}
+
+		@Override
+		public boolean isBlockingAction() {
+			return true;
+		}
+
+		@Override
+		public void stopExecution() {
+		}
+
+		@Override
+		public void execute(ExecutionCompletionCallback _callback) {
+
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+				throws CASTException {
+		}
+
+	}
+
+
+
+	private class ReportFinishedExecutor implements ActionExecutor,
+			WorkingMemoryChangeReceiver {
+
+		private WorkingMemoryAddress m_addr;
+
+		@Override
+		public boolean accept(Action _action) {
+			return true;
+		}
+
+		@Override
+		public TriBool execute() {
+
+			// SEND COMMAND
+			Announcement ann = new Announcement();
+			ann.message = "Hooray! Hooray! Hooray! I have completed my task! Let's listen to it all once again!";
+			ann.songId = "all";
+			m_addr = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+
+			try {
+				addToWorkingMemory(m_addr, ann);
+			} catch (CASTException e) {
+				println(e.message);
+				e.printStackTrace();
+				return TriBool.TRIFALSE;
+			}
+
+			return TriBool.TRITRUE;
+		}
+
+		@Override
+		public boolean isBlockingAction() {
+			return true;
+		}
+
+		@Override
+		public void stopExecution() {
+		}
+
+		@Override
+		public void execute(ExecutionCompletionCallback _callback) {
+
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+				throws CASTException {
+		}
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	public class LookForPeopleExecutorFactory implements ActionExecutorFactory {
 
 		private final ManagedComponent m_component;
@@ -390,6 +601,41 @@ public class SpatialActionInterface extends ManagedComponent {
 						return new GoToPlaceExecutor();
 					}
 				});
+
+
+
+		// REGISTER NEW EXECUTORS
+		m_actionStateManager.registerActionType(ReportObject.class,
+				new ActionExecutorFactory() {
+					@Override
+					public ActionExecutor getActionExecutor() {
+						return new ReportObjectExecutor();
+					}
+				});
+
+		m_actionStateManager.registerActionType(ReportPerson.class,
+				new ActionExecutorFactory() {
+					@Override
+					public ActionExecutor getActionExecutor() {
+						return new ReportPersonExecutor();
+					}
+				});
+
+		m_actionStateManager.registerActionType(ReportFinished.class,
+				new ActionExecutorFactory() {
+					@Override
+					public ActionExecutor getActionExecutor() {
+						return new ReportFinishedExecutor();
+					}
+				});
+
+
+
+
+
+
+
+
 
 		m_actionStateManager.registerActionType(ActiveVisualSearch.class,
 				new ActionExecutorFactory() {

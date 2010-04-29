@@ -161,10 +161,20 @@ module execution {
       class LookForObjects extends Action {
 	StringSeq labels;
       };
-      
 
 
-      
+      class ReportObject extends Action {
+	long placeId;
+	string label;
+      };
+
+      class ReportPerson extends Action {
+	long placeId;
+      };
+
+      class ReportFinished extends Action {
+      };
+
 
     };
 
