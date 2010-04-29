@@ -24,6 +24,9 @@ import cast.cdl.WorkingMemoryChange;
 import castutils.castextensions.WMView;
 import castutils.facades.SpatialFacade;
 
+
+
+
 import java.util.List ;
 import java.util.ArrayList;
 
@@ -40,7 +43,11 @@ import beliefmodels.autogen.featurecontent.PointerValue ;
 import beliefmodels.autogen.featurecontent.IntegerValue;
 import beliefmodels.autogen.featurecontent.BooleanValue ;
 import beliefmodels.autogen.beliefs.PerceptBelief;
-import beliefmodels.autogen.beliefs.MultiModalBelief;
+import beliefmodels.autogen.beliefs.MultiModalBelief; 
+import cast.core.CASTData ;
+
+
+import java.io.*;
 /**
  * @author marc
  * 
@@ -61,11 +68,133 @@ public class LocalizedVisualObjectTransferFunction extends
 		assert (from != null);
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		// TODO: we should use a DoubleValue here!
+
 		try {
+
+	 System.out.println(" Starting verbalization.....................................................");
+ 			String[] record_names = {"record_1", "record_2", "record_3", "record_4"} ;
+ 			// String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;
+
+ 			List<StableBelief> ls = new ArrayList<StableBelief>(); 
+ 			String str_tmp ; 
+
+ 		
+
+ 			List<FeatureValueProbPair>  ls_pair = new ArrayList<FeatureValueProbPair>(); 
+ 			FeatureContentUtils tmp_util ;
+
+ 			component.getMemoryEntries(StableBelief.class, ls) ;
+
+ 			Iterator it=ls.iterator();
+ 			Belief stb ; 
+ 			System.out.println("ls size: " + ls.size());
+ 			while( it.hasNext() ) {
+ 				String what_I_have_to_say = "";
+ 				stb = (Belief)it.next() ;
+ 				ls_pair = FeatureContentUtils.getValuesInBelief(stb, "name" ) ;
+				System.out.println("ls_pair size: " + ls_pair.size());
+ 				if ( ls_pair.size() > 0 ) {
+ 					Iterator it2=ls_pair.iterator();
+ 					if( it2.hasNext()  ) {
+						System.out.println("--> I've entered it2.hasNext()");
+ 						FeatureValueProbPair fvp_tmp ;
+ 						fvp_tmp = (FeatureValueProbPair)it2.next() ;
+ 						StringValue val  = (StringValue)fvp_tmp.val ;
+ 						String vv  = val.val ;
+						System.out.println("Value of String vv: " + vv );						
+
+						System.out.println("stb type: " + stb.type );
+						int detected_entity = 0 ;
+						int detectedVB = 0 ;
+						String obstype = (String)stb.type ;
+						String typeVB = "VisualObject" ; 
+						String typePS = "Person" ;
+
+						boolean isvb = obstype.equals(typeVB) ;
+						if ( isvb ) {
+							detectedVB = (int) 1 ; 
+						}
+
+						isvb = obstype.equals(typePS) ;
+						if ( isvb ) {
+							detectedVB = (int) 2 ; 
+						}
+
+						detected_entity = detectedVB ;
+
+/*
+						isvb = obstype.equals(typePS) ;
+						if ( isvb == true ) {
+							detected_entity = 2 ; 
+							System.out.println("Detected PS!") ;
+						}
+
+						/*if ( obstype.equals(typeVB) ) {
+							detected_entity = 1 ; 
+							System.out.println("Detected VB!") ;
+ 						} else if ( obstype.equals(typePS) ) {
+							detected_entity = 2 ;
+							System.out.println("Detected PS!") ;
+						}*/
+
+					//	System.out.println("detected_entity: " + detected_entity ) ;
+
+ 						if ( detected_entity == 1 ) {
+ 							// we have detected a record							
+ 							List<FeatureValueProbPair>  ls_pair_det = new ArrayList<FeatureValueProbPair>();
+ 							ls_pair_det = FeatureContentUtils.getValuesInBelief(stb, "detected" ) ;
+							System.out.println("Value of ls_pair_det: " + ls_pair_det );
+
+ 							Iterator it_det = ls_pair_det.iterator();
+ 							fvp_tmp = (FeatureValueProbPair)it_det.next() ;
+ 							BooleanValue val_det  = (BooleanValue)fvp_tmp.val   ;
+ 							boolean have_detection = val_det.val ;
+							System.out.println("Value of have_detection: " + have_detection );
+ 							if ( have_detection == true ){
+ 								// check for the place
+ 								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
+ 								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
+ 								Iterator it3 =ls_pair2.iterator();
+ 								fvp_tmp = (FeatureValueProbPair)it3.next() ; 							 	
+
+ 								PointerValue valxs  = (PointerValue)fvp_tmp.val   ;
+								
+
+  								WorkingMemoryAddress wma = valxs.beliefId ;
+								System.out.print( "I've come to the point here..." ) ;
+								
+ 								//CASTData beliefData = component.getWorkingMemoryEntry(wma ); //,StableBelief.class
+								TemporalUnionBelief beliefData = component.getWorkingMemoryEntry(wma ); 
+									System.out.print( "Have I come to here?...:" +beliefData ) ;
+
+ 								List<FeatureValueProbPair>  ls_pair_plc = new ArrayList<FeatureValueProbPair>(); 
+ 							/*	ls_pair_plc = FeatureContentUtils.getValuesInBelief(beliefData, "PlaceId" ) ;
+ 								Iterator it4 =ls_pair_plc.iterator();							
+ 								FeatureValueProbPair fvp_tmp2 = (FeatureValueProbPair)it4.next() ;
+
+ 								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
+ 								int valofplc =  val_plc.val ;
+ 								what_I_have_to_say = "espeak_" + " 'Yo_man,_the_record_"+ vv + "_is_at_place_" + valofplc + "'";
+ 								//System.out.print( what_I_have_to_say ) ;*/
+ 							}
+						} else if ( detected_entity == 2 ) {
+ 							// we have detected a person: check if its detected, where it is, which record it owns 
+
+							
+ 						}
+ 					 System.out.println("-------------- Here's what i have:"+what_I_have_to_say);
+ 					 
+ 					}
+ 				}
+ 			}
+
+
+
+
 	  		// scan thorugh all working memory stable entries...
 		/* * /	
-			String[] record_names = {"record_1", "record_2", "record_3", "record_4"} ;
- 			//String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;	
+			String[] record_names = {"record1", "record_2", "record_3", "record_4"} ;
+ 	//		String[] person_names = { "person_1", "person_2", "person_3", "person_4"} ;	
 
 			List<StableBelief> ls = new ArrayList<StableBelief>(); //Ice.Object
 			String str_tmp ; 
@@ -97,7 +226,7 @@ public class LocalizedVisualObjectTransferFunction extends
 								break ;			
 							}
 						}
-/*
+/ *
 						for ( int i_r = 0 ; i_r < person_names.length; i_r++ ) { 
 							if ( vv.equals(record_names[i_r])) {
 								detected_entity = 2 ;
@@ -137,17 +266,9 @@ public class LocalizedVisualObjectTransferFunction extends
 								System.out.print( what_I_have_to_say ) ;
 							}
 						} else if ( detected_entity == 2 ) {
-/ *
-							// we have detected a person: check if its detected, where it is, which record it owns 							
-							List<FeatureValueProbPair>  ls_pair_det = new ArrayList<FeatureValueProbPair>();
-							ls_pair_det = FeatureContentUtils.getValuesInBelief(stb, "detected" ) ;
-							Iterator it_det = ls_pair_det.iterator();
-							fvp_tmp = (FeatureValueProbPair)it_det.next() ;
-							BooleanValue val_det  = (BooleanValue)fvp_tmp.val   ;
-							boolean have_detection = val_det.val ;
-							if ( have_detection == true ){
+							// we have detected a person: check if its detected, where it is, which record it owns 
 								// check for the place
-								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
+							/ *	List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
 								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
 								Iterator it3 =ls_pair2.iterator();
 								fvp_tmp = (FeatureValueProbPair)it3.next() ;
@@ -164,12 +285,17 @@ public class LocalizedVisualObjectTransferFunction extends
 
 								IntegerValue val_plc  = (IntegerValue)fvp_tmp2.val ;
 								int valofplc =  val_plc.val ;
- 
-								what_I_have_to_say = "Person "+ vv + " is at place " + valofplc + "and owns a record " + name_of_my_record ;
-								System.out.print( what_I_have_to_say ) ;
-							}
-* /
-						}				
+
+								// get the name of person's record
+								List<FeatureValueProbPair>  ls_pair_rec = new ArrayList<FeatureValueProbPair>();
+								ls_pair_rec = FeatureContentUtils.getValuesInBelief(stb, "record" ) ;
+								Iterator it_rrec = ls_pair_rec.iterator();
+								fvp_tmp = (FeatureValueProbPair)it_rrec.next() ;
+								StringValue valr  = (StringValue)fvp_tmp.val ;
+								String name_of_my_record  = valr.val ;
+
+								what_I_have_to_say = "Person "+ vv + " is at place " + valofplc + "and owns " + name_of_my_record + "record." ;
+								System.out.print( what_I_have_to_say ) ;* /				
 					}
 				}
 			}
@@ -188,8 +314,8 @@ public class LocalizedVisualObjectTransferFunction extends
 					.createNewStringValue(wmc.address.id));
 			result.put("name", FeatureValueBuilder// VisualObjectName
 					.createNewStringValue(from.label));
-			result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence)); 
-
+			result.put("conf", FeatureValueBuilder.createNewFloatValue( from.detectionConfidence ));  
+			
 			boolean detected ; 
 			if ( from.detectionConfidence > 0.5 ) {
 				detected = true ;
@@ -197,7 +323,6 @@ public class LocalizedVisualObjectTransferFunction extends
 				detected = false ;
 			}
 			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));			
-			
 
 			float siz ;
 		if( from.views.length > 0 ) {		

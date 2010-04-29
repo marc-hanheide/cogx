@@ -3,6 +3,7 @@
  */
 package binder.perceptmediator.transferfunctions;
 
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ public class VisualObjectTransferFunction extends SimpleDiscreteTransferFunction
 		// TODO: we should use a DoubleValue here!
 		result.put("vo_id", FeatureValueBuilder.createNewStringValue(wmc.address.id));//VisualObjectId
 		result.put("name", FeatureValueBuilder.createNewStringValue(from.label));//VisualObjectName
-		result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence));//VisuaObjectIdConfidence
+		result.put("conf", FeatureValueBuilder.createNewFloatValue(from.detectionConfidence));//VisuaObjectIdConfidence 
 
 	boolean detected ; 
 			if ( from.detectionConfidence > 0.5 ) {

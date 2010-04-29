@@ -35,6 +35,8 @@ public class PersonTransferFunction extends SimpleDiscreteTransferFunction<Perso
 		// TODO: we should use a DoubleValue here!
 		result.put("PersonId", FeatureValueBuilder.createNewStringValue(wmc.address.id));
 		result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
+		result.put("record", FeatureValueBuilder.createNewStringValue("no"));
+		result.put("name", FeatureValueBuilder.createNewStringValue(""));
 		return result;
 	}
 
