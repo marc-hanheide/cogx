@@ -1,4 +1,5 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain task2.domain.mapl --nodot --debug --log 
+#COMPONENT PYTHON PlannerPythonServer PythonServer --domain task2.domain.mapl --nodot --debug --log 
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain domain.mapl --debug --nodot --log 
 
 SUBARCHITECTURE planner.sa
 
