@@ -113,6 +113,8 @@ private:
   bool outputToNav;
   
   int imgcnt;
+  
+  std::vector<int> ImgNeed2BeAddintoWM;
 
   /**
    * Display detection results.
