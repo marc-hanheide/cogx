@@ -465,25 +465,25 @@ void SlamProcess::storeDataToFile()
       m_WriteMapToWorkingMemory = true;
     }
 
-    if (!m_DontWriteFiles) {
-      std::fstream fsl;
-      fsl.open("robotpose.ccf", std::ios::out);
-      if (fsl > 0) {
-        m_Mutex.lock();
-        Cure::Pose3D p = m_PP->getPose();
-        m_Mutex.unlock();
-        double ang[3];
-        p.getAngles(ang);
-        fsl << "ROBOTPOSE\n";
-        fsl << p.getX() << " "
-            << p.getY() << " "
-            << p.getZ() << " "
-            << ang[0] << " "
-            << ang[1] << " "
-            << ang[2] << std::endl;
-      }
-      fsl.close();
+    std::string filename = "robotpose.ccf";
+    if (!m_DontWriteFiles) filename = "bak-robotpose.ccf";
+    std::fstream fsl;
+    fsl.open(filename.c_str(), std::ios::out);
+    if (fsl > 0) {
+      m_Mutex.lock();
+      Cure::Pose3D p = m_PP->getPose();
+      m_Mutex.unlock();
+      double ang[3];
+      p.getAngles(ang);
+      fsl << "ROBOTPOSE\n";
+      fsl << p.getX() << " "
+          << p.getY() << " "
+          << p.getZ() << " "
+          << ang[0] << " "
+          << ang[1] << " "
+          << ang[2] << std::endl;
     }
+    fsl.close();
     
     m_TimeMapLastSaved = currTime;
   }
