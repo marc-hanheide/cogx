@@ -27,6 +27,7 @@ JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-m
 INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/binder.sa/binder.cast
 INCLUDE includes/binder.sa/perceptmediators.cast
+JAVA GD PresentResult binder.gui.PresentResult --log
 #JAVA GD bindermonitor binder.components.BinderMonitor --debug
 
 # comsys ######################################################################
