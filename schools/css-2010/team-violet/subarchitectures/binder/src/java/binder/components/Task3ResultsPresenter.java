@@ -65,7 +65,7 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
         if(!alreadyExist)
         {
             //new AePlayWave("i:/wavs/" + personsSounds[persons.size()] + ".wav").start();
-            new AePlayWave("/wavs/" + personsSounds[persons.size()] + ".wav").start();
+            new AePlayWave("wavs/" + personsSounds[persons.size()] + ".wav").start();
         }
 
         Task3ResultsPresenter.persons.put(name, new Person(name, place, room, record));
@@ -80,7 +80,7 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
         if(!alreadyExist)
         {
             //new AePlayWave("i:/wavs/" + recordsSounds[persons.size()] + ".wav").start();
-            new AePlayWave("/wavs/" + recordsSounds[persons.size()] + ".wav").start();
+            new AePlayWave("wavs/" + recordsSounds[persons.size()] + ".wav").start();
         }
 
         Task3ResultsPresenter.records.put(name, new Record(name, place, room, owner));
