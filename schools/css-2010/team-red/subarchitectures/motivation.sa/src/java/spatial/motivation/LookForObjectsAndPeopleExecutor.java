@@ -1,6 +1,7 @@
 package spatial.motivation;
 
 import java.util.Stack;
+import java.lang.Thread;
 
 import org.apache.log4j.Logger;
 
@@ -163,12 +164,13 @@ public class LookForObjectsAndPeopleExecutor extends NonBlockingActionExecutor {
 		DetectionCommand detect = new DetectionCommand(m_labels);
 		String id = m_component.newDataID();
 		try {
+			Thread.sleep(1000);
 			m_component
 					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 							WorkingMemoryOperation.DELETE),
 							getAfterObjectDetectionReceiver());
 			m_component.addToWorkingMemory(id, detect);
-		} catch (AlreadyExistsOnWMException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
