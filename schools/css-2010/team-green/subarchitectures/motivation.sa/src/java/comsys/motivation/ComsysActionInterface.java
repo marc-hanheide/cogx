@@ -138,6 +138,18 @@ public class ComsysActionInterface extends ManagedComponent {
 				@Override
 				public void actionPerformed(ActionEvent _e) {
 					dialog.setVisible(false);
+                                        String featureValue = "NO_RECORD";
+                                        try {
+                                            FeatureContentUtils.addAnotherValueInBelief(belief, m_featureID, 
+                                                                        new FeatureValueProbPair( new beliefmodels.autogen.featurecontent.StringValue(featureValue), 1f));
+
+					    overwriteWorkingMemory(belief.id, BindingWorkingMemory.BINDER_SA, belief);
+                                            executionComplete(TriBool.TRITRUE);
+
+                                        } catch (Exception e) {
+                                            logException(e);
+                                            executionComplete(TriBool.TRIFALSE);
+                                        }
 					executionComplete(TriBool.TRITRUE);
 				}
 			});
