@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.UIManager;
+import violetsound.AePlayWave;
 
 /**
  *
@@ -24,13 +25,18 @@ import javax.swing.UIManager;
  * in which room is each person? Represented by the person name and the room name
  *
  * @author Benoit Larochelle
+ *
+ * Behaviour undefined for more than 4 items
  */
 public class Task3ResultsPresenter extends javax.swing.JFrame
 {
     private static Task3ResultsPresenter instance = new Task3ResultsPresenter();
 
-    public static Map<String, Person> persons = new HashMap<String, Person>(4);
-    public static Map<String, Record> records = new HashMap<String, Record>(4);
+    private static Map<String, Person> persons = new HashMap<String, Person>(4);
+    private static Map<String, Record> records = new HashMap<String, Record>(4);
+
+    private static String[] personsSounds = {"turret-i_see_you", "turret-who_are_you", "turret-hello_friend", "turret-target_acquired"};
+    private static String[] recordsSounds = {"curiosity-what_is_thaat", "curiosity-what_is_that", "curiosity-whats_thaat", "curiosity-oh_whats_that"};
 
     public static Task3ResultsPresenter getInstance()
     {
@@ -52,16 +58,34 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
 
     }
 
-    public static void setPerson(String name, String place, String room, String record)
+    public static boolean setPerson(String name, String place, String room, String record)
     {
+        boolean alreadyExist = persons.containsKey(name);
+
+        if(!alreadyExist)
+        {
+            //new AePlayWave("i:/wavs/" + personsSounds[persons.size()] + ".wav").start();
+            new AePlayWave("/wavs/" + personsSounds[persons.size()] + ".wav").start();
+        }
+
         Task3ResultsPresenter.persons.put(name, new Person(name, place, room, record));
         updateUI();
+        return alreadyExist;
     }
 
-    public static void setRecord(String name, String place, String room, String owner)
+    public static boolean setRecord(String name, String place, String room, String owner)
     {
+        boolean alreadyExist = persons.containsKey(name);
+
+        if(!alreadyExist)
+        {
+            //new AePlayWave("i:/wavs/" + recordsSounds[persons.size()] + ".wav").start();
+            new AePlayWave("/wavs/" + recordsSounds[persons.size()] + ".wav").start();
+        }
+
         Task3ResultsPresenter.records.put(name, new Record(name, place, room, owner));
         updateUI();
+        return alreadyExist;
     }
 
     private static void updateUI()
@@ -518,8 +542,9 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
         });
     }
 
-    public static class Record
+    private static class Record
     {
+
         public String name;
         public String place;
         public String room;
@@ -535,8 +560,9 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
 
     }
 
-    public static class Person
+    private static class Person
     {
+
         public String name;
         public String place;
         public String room;
