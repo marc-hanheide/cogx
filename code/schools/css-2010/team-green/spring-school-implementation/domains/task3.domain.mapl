@@ -3,7 +3,7 @@
         (:requirements :mapl :adl :object-fluents)
 
         (:types
-                place place_name place_id name comaroom room_name - object
+                place place_name place_id name_type comaroom room_name - object
                 robot - agent
                 visualobject person - movable		
         )
@@ -15,25 +15,24 @@
 		(ready_to_move_to_report_pos ?a - robot)
 		(ready_to_report ?a - robot)
                 (finished ?a - robot)
-		(detected ?v - visualobject)
+		(detected ?v - movable)
                 (have_all_info_about ?p - person)
-        ;        (locked_due_to_missing_object_information)
 	)
 
         (:functions
                 (is-in ?r - movable) - place
                 (is-in ?r - robot) - place
-		(name ?o - movable) - object
+		(name ?o - movable) - name_type
 		(placeid ?loc - place) - place_id
 		(start_place ?r - robot) - place
-                (record ?p - person) - name
+                (record ?p - person) - name_type
                 (in-room ?loc - place) - comaroom
                 (concepts ?r - comaroom) - room_name
                 (is-in-room ?m - movable) - comaroom
         )
 
         (:constants
-                NO_RECORD - visualobject
+                not_asked none - name_type
         )
 
         (:action start
@@ -54,7 +53,6 @@
 		 :variables (?from - place)
 		 :precondition (and
 				   (started ?a)
-                       ;            (not (locked_due_to_missing_object_information))
 				   (= (is-in ?a) ?from)
 	                	   (or (connected ?from ?to)
 	            		       (connected ?to ?from))
@@ -67,7 +65,6 @@
                  :variables (?at - place)
                  :precondition (and 
 		 	       	    (started ?a) 
-                     ;               (not (locked_due_to_missing_object_information))
 				    (not (checked_for_objects ?at)) 
 				    (= (is-in ?a) ?at)
 			       )
@@ -83,12 +80,12 @@
                  :variables (?at - place)
                  :precondition (and 
                                     (started ?a)
-                        ;            (not (locked_due_to_missing_object_information))
-                                    (not (kval ?a (name ?p))) 
+				    (= (name ?p) not_asked)
+;                                    (not (kval ?a (name ?p))) 
                                     (= (is-in ?a) ?at) 
                                     (= (is-in ?p) ?at)
                                )
-                 :effect (kval ?a (name ?p))
+                 :effect (assign (name ?p) none)
         )
 
         (:action ask-for-your-record
@@ -97,13 +94,14 @@
                  :variables (?at - place)
                  :precondition (and 
                                     (started ?a)
-                     ;               (not (locked_due_to_missing_object_information))
-                                    (not (kval ?a (record ?p)))
-                                    (kval ?a (name ?p)) 
+                                ;    (not (kval ?a (record ?p)))
+                                ;    (kval ?a (name ?p))
+				    (= (record ?p) not_asked) 
+				    (not (= (name ?p) not_asked))
                                     (= (is-in ?a) ?at) 
                                     (= (is-in ?p) ?at)
                                )
-                 :effect (kval ?a (record ?p))
+                 :effect (assign (record ?p) none)
         )
 
 	(:action move_to_report_pos
@@ -111,7 +109,6 @@
                  :parameters (?to - place)
                  :precondition (and
 				 (started ?a)
-                      ;           (not (locked_due_to_missing_object_information))
 				 (= (start_place ?a) ?to)
 				 (ready_to_move_to_report_pos ?a)
                                )
@@ -122,12 +119,11 @@
 			       )
         )
 
-	(:action move_to_report_pos
+	(:action move_to_report_pos1
                 :agent (?a - robot)
                 :parameters (?to - place)
                 :precondition (and
 				      (started ?a)
-                    ;                  (not (locked_due_to_missing_object_information))
 				      (= (start_place ?a) ?to)
 				      (ready_to_move_to_report_pos ?a)
                               )
@@ -149,32 +145,14 @@
         		       )
         )
 
-        ; (:action derive_object_comaroom
-        ;          :agent (?a - robot)
-        ;          :parameters (?v - visualobject ?c - comaroom)
-        ;          :variables (?loc - place)
-        ;          :precondition (and
-        ;                            (started ?a)
-        ;                            (= (is-in ?v) ?loc)
-        ;                            (= (in-room ?loc) ?c)
-        ;                        )
-        ;          :effect (and
-        ;                       (assign (is-in-room ?v) ?c)
-        ;                       (update (is-in-room ?v) ?c)
-        ;                  )
-        ; )
-                 
-        ; (:derived (locked_due_to_missing_object_information)
-        ;            (exists (?v - visualobject ?a - robot)
-        ;                    (not (kval ?a (is-in-room ?v)))
-        ;            )
-        ; )
 
         (:derived (have_all_info_about ?p - person)
                   (forall (?a - robot) 
                          (and
-                               (kval ?a (name ?p))
-                               (kval ?a (record ?p))
+				(not (= (name ?p) not_asked))
+				(not (= (record ?p) not_asked))
+                          ;     (kval ?a (name ?p))
+                          ;     (kval ?a (record ?p))
                          )
                   )
         )
@@ -186,9 +164,6 @@
 			       (not (= ?v1 ?v2))
 			       (not (= ?v1 ?v3))
 			       (not (= ?v2 ?v3))
-                               (not (= ?v1 NO_RECORD))
-                               (not (= ?v2 NO_RECORD))
-                               (not (= ?v3 NO_RECORD))
 			       (detected ?v1)
 			       (detected ?v2)
 			       (detected ?v3)
@@ -203,9 +178,5 @@
                         (forall (?loc - place) (checked_for_objects ?loc))
                         (forall (?p - person) (have_all_info_about ?p))
                   )
-	)
-
- ;       (:derived (assign (is-in-room ?loc - place) ?n - room_name)
- ;                 (exists (?c - comaroom) (and (= (in-room ?loc) ?c) (= (concepts ?c) ?n)))
- ;       )		  
+	)		  
 )
