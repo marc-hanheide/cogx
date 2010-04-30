@@ -7,6 +7,7 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.Action;
 import execution.slice.actions.LookForObjects;
+import java.lang.Thread;
 
 public class LookForObjectsExecutor extends TurnAndLookExecutor {
 
@@ -25,16 +26,18 @@ public class LookForObjectsExecutor extends TurnAndLookExecutor {
 	@Override
 	protected void triggerDetection() {
 		m_component.log("detection triggered");
+
 		// Fire off a detection command
 		DetectionCommand detect = new DetectionCommand(m_labels);
 		String id = m_component.newDataID();
 		try {
+			Thread.sleep(1000);
 			m_component
 					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 							WorkingMemoryOperation.DELETE),
 							getAfterDetectionReceiver());
 			m_component.addToWorkingMemory(id, detect);
-		} catch (AlreadyExistsOnWMException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
