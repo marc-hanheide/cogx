@@ -216,7 +216,7 @@ public class LocalizedVisualObjectTransferFunction extends
 					Runtime rt = Runtime.getRuntime(); 
 				    	Process p = rt.exec("espeak -s110" + "'I_just_detected_a_record_called_" + detectedRecordName + "._" + detectedRecordName + "is_a_shit_singer.'");
 
-				    	p.waitFor();
+				    //	p.waitFor();
 				}
 				catch(Exception e) { 
 				    System.out.println(e.getMessage()); 

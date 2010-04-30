@@ -95,8 +95,8 @@ public class TestActionExecutor extends ManagedComponent {
 		public TriBool execute() {
 		        try { 
 			    Runtime rt = Runtime.getRuntime(); 
-			    Process p = rt.exec("espeak -s90 'My_name_is_Stephen_Hawking. Mathematics_is_hard._Lets_go_shopping.'");
-			    p.waitFor();
+			    Process p = rt.exec("espeak -s90 'Hi,_my_name_is_barbie,_I_love_you_very_much._Mathematics_is_hard._Lets_go_shopping.'");
+			 //   p.waitFor();
 			} catch(Exception e) { 
 			    System.out.println(e.getMessage()); 
 			} 
