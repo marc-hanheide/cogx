@@ -255,8 +255,12 @@ public class VisualRecordMonitor extends ManagedComponent {
    }
   
    String extractPlace(FeatureValues values) {
-      return "";
-
+      String strval = "";
+      //for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
+      //   String featStr = VisualRecordMonitor.toString(fv.val);
+      //   strval += featStr;
+      //}
+      return strval;
    }
 
    void processPersonBelief(StableBelief belief, String op) {
