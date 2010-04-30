@@ -53,7 +53,7 @@ public class LocalizedPersonTransferFunction extends
 			result.put("PersonId", FeatureValueBuilder
 					.createNewStringValue(wmc.address.id));
                         result.put("record", FeatureValueBuilder.createNewStringValue("no"));
-			result.put("person-name", FeatureValueBuilder.createNewStringValue(""));
+			result.put("name", FeatureValueBuilder.createNewStringValue(""));
 
 			boolean detected ; 
 			if ( from.distance < 2.00 ) {
@@ -65,7 +65,7 @@ public class LocalizedPersonTransferFunction extends
 			if (detected){
 				try { 
 					Runtime rt = Runtime.getRuntime(); 
-				    	Process p = rt.exec("espeak" + "'I_just_detected_a_record_person._He_is_really_ugly.'");
+				    	Process p = rt.exec("espeak" + "'I_just_detected_a_person._He_is_really_ugly.'");
 
 				    	p.waitFor();
 				}
