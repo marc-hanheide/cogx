@@ -6,6 +6,9 @@ INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 CPP GD self.representer SelfRepresenter 
+# Speech
+CPP GD helloReader HelloReader
+CPP GD helloWriter HelloWriter
 
 
 # vision ######################################################################
@@ -30,6 +33,3 @@ JAVA MG WMViewer  castutils.viewer.ViewerCastComponent --log --subscribe "Spatia
 JAVA MG  manual-execution execution.components.GraphicalExecutionManager
 
 
-# Speech
-CPP GD helloReader HelloReader
-CPP GD helloWriter HelloWriter
