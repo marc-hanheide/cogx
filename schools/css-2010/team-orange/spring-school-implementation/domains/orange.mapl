@@ -3,7 +3,7 @@
 (:requirements :mapl :adl :object-fluents)
 
 (:types
-        place recordname foo - object
+        place recordname - object
         robot - agent
         robot visualobject - movable
 )
@@ -18,7 +18,7 @@
 
 (:predicates
 	(finished ?r - robot)
-        (object-report-pending ?p - place ?v - visualobject)
+        (object-report-pending ?p - place ?l - recordname)
         (connected ?n1 - place ?n2 - place)
 	(visited1 ?p - place)
 	(visited2 ?p - place)
@@ -26,7 +26,7 @@
         (searched2 ?p - place)
         (detected ?v - visualobject)
         (endnode ?p - place)
-        (located ?p - place ?v - visualobject)
+        (located ?p - place ?l - recordname)
 )
 
 ;;; ======================================================================================
@@ -39,7 +39,6 @@
 (:functions
         (is-in ?r - movable) - place
         (label ?l - visualobject) - recordname
-        (detected ?l - visualobject) - foo
 )
 
 ;;; ======================================================================================   
@@ -60,7 +59,7 @@
                         (= (is-in ?a) ?from)
                         (or (connected ?from ?to)
                         (connected ?to ?from))
-			(not (exists (?p - place ?v - visualobject) (object-report-pending ?p ?v)))
+			(not (exists (?p - place ?l - recordname) (object-report-pending ?p ?l)))
                         )
          :effect        (and
                         (assign (is-in ?a) ?to)
@@ -93,13 +92,21 @@
                         )
                         (searched1 ?p)
                         (update (searched1 ?p) true)
-			(forall (?v - visualobject)
-				(and
-				(object-report-pending ?p ?v)
-                        	(update (object-report-pending ?p ?v) true)
+			(forall (?v - visualobject ?l - recordname)
+				(when (and
+					(= (label ?v) ?l)
+					(not (exists (?p0 - place) (located ?p0 ?l)))
+					(detected ?v)
+				      )
+                                      (and
+				        (located ?p ?l)
+				        (update (located ?p ?l) true)
+					(object-report-pending ?p ?l)
+                                        (update (object-report-pending ?p ?l) true)
+                                      )
 				)
-                        )
 			)
+                        )
 ) ;;; look-for-objects
 
 (:action detect-objects
@@ -118,64 +125,38 @@
                         )
                         (searched1 ?p)
                         (update (searched1 ?p) true)
-                        (forall (?v - visualobject)
-                                (and
-                                (object-report-pending ?p ?v)
-                                (update (object-report-pending ?p ?v) true)
+                        (forall (?v - visualobject ?l - recordname)
+                                (when (and
+					(= (label ?v) ?l)
+                                        (not (exists (?p0 - place) (located ?p0 ?l)))
+                                        (detected ?v)
+                                      )
+				      (and
+                                        (located ?p ?l)
+                                        (update (located ?p ?l) true)
+					(object-report-pending ?p ?l)
+					(update (object-report-pending ?p ?l) true)
+				      )
                                 )
                         )
-			)
-) ;;; detect-object
 
-;(:action report-always
-;	:agent		(?a - robot)
-;	:parameters	(?p - place ?l - recordname ?b - foo)
-;	:variables	(?v - visualobject)
-;	:precondition	(and
-;			    (= (detected ?v) ?b)
-;			    (= (label ?v) ?l)
-;			    (object-report-pending ?p ?v)
-;			)
-;	:effect		(and
-;                           (not (object-report-pending ?p ?v))
-;                           (update (object-report-pending ?p ?v) false)
-;			)
-;) ;;; report-always
+                        )
+) ;;; detect-object
 
 (:action report-object
         :agent          (?a - robot)
         :parameters     (?p - place ?l - recordname)
-	:variables	(?v - visualobject)
-        :precondition   (and
-				(= (label ?v) ?l)
-				(object-report-pending ?p ?v)
-				(not (located ?p ?v))
-			)
+        :precondition   (object-report-pending ?p ?l)
         :effect         (and
-			   (located ?p ?v)
-			   (update (located ?p ?v) true)
-                           (not (object-report-pending ?p ?v))
-                           (update (object-report-pending ?p ?v) false)
+                           (not (object-report-pending ?p ?l))
+                           (update (object-report-pending ?p ?l) false)
                         )
 ) ;;; end report-object
-
-(:action report-nothing
-	:agent		(?a - robot)
-	:variables	(?p - place ?v - visualobject)
-	:precondition	(and
-			  (object-report-pending ?p ?v)
-			  (located ?p ?v) 
-			)
-	:effect		(and
-                           (not (object-report-pending ?p ?v))
-                           (update (object-report-pending ?p ?v) false)
-                        )
-) ;;; end report-nothing
 
 (:action report-finished
 	:agent		(?a - robot)
 	:precondition	(and
-				(not (exists (?p - place ?v - visualobject) (object-report-pending ?p ?v)))
+				(not (exists (?p - place ?l - recordname) (object-report-pending ?p ?l)))
 				(or
 				(and (forall (?p - place) (searched1 ?p))
 				     (forall (?p - place)
@@ -188,9 +169,9 @@
 				(exists (?v1 ?v2 ?v3 - visualobject ?l1 ?l2 ?l3 - recordname)
 					(and 
 						(= (label ?v1) ?l1) (= (label ?v2) ?l2) (= (label ?v3) ?l3) 
-						(exists (?p1 - place) (located ?p1 ?v1))
-						(exists (?p2 - place) (located ?p2 ?v2))
-						(exists (?p3 - place) (located ?p3 ?v3))
+						(exists (?p1 - place) (located ?p1 ?l1))
+						(exists (?p2 - place) (located ?p2 ?l2))
+						(exists (?p3 - place) (located ?p3 ?l3))
 						(not (= ?l1 ?l2)) (not (= ?l3 ?l2)) (not (= ?l1 ?l3))
 					)
 				)
