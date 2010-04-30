@@ -5,184 +5,276 @@
   (:types 
    place - object
    room - object
+   roomname - object
    robot - agent
-   person - object
+   person - locatable
    locatable - object
    visualobject robot - locatable
    recordlabel - object
    ackvalue - object
-   name - object
+   person-name - object
    )
   
   (:predicates
    (connected ?n1 - place ?n2 - place)
    (visited ?loc - place)
    (searched ?loc - place)
-   (asked-about-name ?pp - person)
-   (asked-about-record ?pp - person)
+   (known-record-room ?l - recordlabel)
    (asked-about-label ?pp - person ?l - recordlabel)
-   (known-label-room ?l - recordlabel)
-   )
+   (is-in-room ?l - locatable ?r - room)
+   (talked-to-all)
+   (seen-all)
+   (finished)
+   (done ?r - robot)
+  )
   
   (:functions
    (is-in ?l - locatable) - place
-   (is-in-room ?l - locatable) - room
    (in-room ?p - place) - room
    (label ?l - locatable) - recordlabel
-   (object-acknowledged ?l - locatable) - ackvalue
-   (person-name ?pp - person) - name
+   (person-asked ?pp - person) - ackvalue
+   (name ?pp - person) - person-name
+   (concepts ?r - room) - roomname
+   (room-label ?l - locatable) - roomname
    (person-record ?pp - person) - recordlabel
-   )
+   (asked-about-name ?pp - person) - boolean
+   (asked-about-record ?pp - person) - boolean
+   (object-acknowledged ?o - visualobject) - boolean
+  )
 
 ;;; objects ;;;
   (:constants
    chakakhan heartbreakers james jesusjones - recordlabel
-   one two three - ackvalue
+   one two three four - ackvalue
+   c d corridor - roomname
   )
 
-  (:derived (known-label-room ?l - recordlabel) 
-   (exists (?r - room ?v - visualobject) 
+  (:derived (is-in-room ?l - locatable ?r - room)
+   (exists (?p - place)
+    (and
+     (=(in-room ?p) ?r)
+     (=(is-in ?l) ?p))))
+
+  (:derived (known-record-room ?l - recordlabel) 
+   (exists (?r - room ?v - visualobject ?n - roomname) 
     (and 
-     (= (is-in-room ?v) ?r)
-     (= (label ?v) ?l))))
-  
+     (= (label ?v) ?l)
+     (is-in-room ?v ?r))))
+
+;;;  (:derived (finished)
+;;;   (and 
+;;;    (forall (?p - place)
+;;;     (searched ?p))
+;;;    (talked-to-all)
+;;;    (seen-all))
+;;;  )
+
+  (:derived (talked-to-all)
+   (forall (?pp - person) 
+    (and 
+     (= (asked-about-name ?pp) true) 
+     (or (= (asked-about-record ?pp) true)
+         (exists (?pp2 - person ?n - person-name) 
+            (and
+	      (not (= ?pp ?pp2))
+              (= (name ?pp) ?n)
+              (= (name ?pp2) ?n)
+              (= (asked-about-record ?pp2) true)))))))
+
+  (:derived (seen-all)
+   (exists (?r - robot) 
+    (forall (?v - visualobject) 
+     (= (object-acknowledged ?v) true))))
+
 ;;; actions ;;;
 
-  (:action look-for-all
+  (:action look-for-objects
 	   :agent (?a - robot)
 	   :variables (?loc - place)
 	   :precondition (and
 			  (= (is-in ?a) ?loc)
 			  (not (searched ?loc))
-			  (or 
-			   (exists (?v - visualobject)
-			    (or
-			     (not (kval ?a (is-in-room ?v)))
-			     (= (is-in-room ?v) (in-room ?loc))))
-			   (not 
-			    (exists (?pp - person)
-			     (= (person-asked ?pp) four)))))
+;;;			  (or 
+;;;			   (exists (?v - visualobject)
+;;;			    (or
+;;;			     (not (kval ?a (is-in-room ?v)))
+;;;			     (and
+;;;			      (= (is-in-room ?v) ?r1)
+;;;			      (= (in-room ?loc) ?r1))))
+;;;			   (not 
+;;;			    (exists (?pp - person)
+;;;			     (= (person-asked ?pp) four))))
+			 )
 	   :effect (and
 		    (searched ?loc)
 		    (update (searched ?loc) true)
 		    ))
   
+  (:action report-finished
+	   :agent (?a - robot)
+	   :precondition
+	   (and 
+	    (forall (?p - place)
+	     (searched ?p))
+	    (talked-to-all)
+	    (seen-all))
+	   :effect (and
+	     (done ?a)
+	     (update (done ?a) true))
+  )
+
   (:action ask-for-your-name
    	   :agent (?a - robot)
-	   :parameter (?pp - person)
+	   :parameters (?pp - person)
 	   :variables (?loc - place)
-	   :precondition (
+	   :precondition (and
 	     		  (= (is-in ?a) ?loc)
 			  (= (is-in ?pp) ?loc)
-			  (not (kval ?a (person-name ?pp))))
-	   :effects (and
-	     (kval ?a (person-name ?pp))
-	     (asked-about-name ?pp)
-	     (update (asked-about-name ?pp)))
+;;;			  (not (kval ?a (name ?pp)))
+	   )
+	   :effect (and
+	     (kval ?a (name ?pp))
+	     (assign (asked-about-name ?pp) true)
+	     (update (asked-about-name ?pp) true))
   )
 
   (:action ask-for-your-record
    	   :agent (?a - robot)
-	   :variables (?loc - place)
-	   :parameters (?pp - person)
-	   :precondition (
-	     		  (= (is-in ?a) ?loc)
-			  (= (is-in ?pp) ?loc)
-			  (kval ?a (person-name ?pp))
-			  (not (kval ?a (person-record ?pp))))
-	   :effects (and
-	     (kval ?a (person-record ?pp))
-	     (asked-about-record ?pp)
-	     (update (asked-about-record ?pp)))
-  )
-
-  (:action ask-for-record-room
-   	   :agent (?a - robot)
-	   :parameters (?loc - place ?v - visualobject ?l - recordlabel)
-	   :variables (?pp - person)
-	   :precondition (
-	     		  (= (label ?v) ?l)
-	     		  (= (is-in ?a) ?loc)
-			  (= (is-in ?pp) ?loc)
-			  (kval ?a (person-name ?pp))
-			  (not (known-label-room ?l)))
-	   :effects (and 
-	     (asked-about-label ?pp ?l)
-	     (update (asked-about-label ?pp ?l)))
-  )
-
-
-  (:action acknowledge-asked-one
-   	   :agent (?a - robot)
 	   :parameters (?pp - person)
 	   :variables (?loc - place)
 	   :precondition (and
-	     		  (asked-about-name ?pp)
-			  (asked-about-record ?pp)
-			  (forall (?l - recordlabel) 
-			   (asked-about-label ?pp ?l))
-			  (not (kval ?a (person-asked ?pp))))
+	     		  (= (is-in ?a) ?loc)
+			  (= (is-in ?pp) ?loc)
+;;;			  (kval ?a (name ?pp))
+;;;			  (not (kval ?a (person-record ?pp)))
+           )
 	   :effect (and
-	     	    (assign (person-asked ?pp) one)
-		    (update (person-asked ?pp) one))
+;;;	     (kval ?a (person-record ?pp))
+	     (assign (asked-about-record ?pp) true)
+	     (update (asked-about-record ?pp) true))
   )
+
+;;;  (:action ask-for-record-room
+;;;   	   :agent (?a - robot)
+;;;	   :parameters (?loc - place ?v - visualobject ?l - recordlabel)
+;;;	   :variables (?pp - person)
+;;;	   :precondition (and
+;;;	     		  (= (label ?v) ?l)
+;;;	     		  (= (is-in ?a) ?loc)
+;;;			  (= (is-in ?pp) ?loc)
+;;;			  (kval ?a (name ?pp))
+;;;			  (not (known-record-room ?l)))
+;;;	   :effect (and 
+;;;	     (asked-about-label ?pp ?l))
+;;;  )
+
+  (:action acknowledge-object
+   :agent (?a - robot)
+   :variables (?l - visualobject ?p - place ?r - room ?n - roomname)
+   :precondition (and 
+     (= (is-in ?l) ?p)
+     (is-in-room ?l ?r)
+     (= (concepts ?r) ?n))
+   :effect (and
+     (assign (object-acknowledged ?l) true)
+     (update (object-acknowledged ?l) true)
+     (assign (room-label ?l) ?n)
+     (update (room-label ?l) ?n)
+     ))
+
+;;;  (:action acknowledge-asked-one
+;;;   	   :agent (?a - robot)
+;;;	   :parameters (?pp - person)
+;;;	   :variables (?loc - place)
+;;;	   :precondition (and
+;;;	     		  (=(asked-about-name ?pp) true)
+;;;			  (=(asked-about-record ?pp) true)
+;;;			  (forall (?l - recordlabel) 
+;;;			   (asked-about-label ?pp ?l))
+;;;			  (forall (?pp2 - person)
+;;;			   (imply 
+;;;			    (=(person-asked ?pp2) one)
+;;;			    (exists (?n - person-name)
+;;;			     (and
+;;;			      (=(name ?pp2) ?n)
+;;;			      (=(name ?pp) ?n)))))
+;;;			  (not (kval ?a (person-asked ?pp))))
+;;;	   :effect (and
+;;;	     	    (assign (person-asked ?pp) one)
+;;;		    (update (person-asked ?pp) one))
+;;;  )
 	   
-  (:action acknowledge-asked-two
-   	   :agent (?a - robot)
-	   :parameters (?pp - person)
-	   :variables (?loc - place)
-	   :precondition (and
-	     		  (asked-about-name ?pp)
-			  (asked-about-record ?pp)
-			  (forall (?l - recordlabel) 
-			   (asked-about-label ?pp ?l))
-			  (exists (?pp2 - person)
-			   (= (person-asked ?pp2) one))
-			  (not (exists (?pp3 - person)
-			   (= (person-asked ?pp3) two)))
-			  (not (kval ?a (person-asked ?pp))))
-	   :effect (and
-	     	    (assign (person-asked ?pp) two)
-		    (update (person-asked ?pp) two))
-  )
-
-  (:action acknowledge-asked-three
-   	   :agent (?a - robot)
-	   :parameters (?pp - person)
-	   :variables (?loc - place)
-	   :precondition (and
-	     		  (asked-about-name ?pp)
-			  (asked-about-record ?pp)
-			  (forall (?l - recordlabel) 
-			   (asked-about-label ?pp ?l))
-			  (exists (?pp2 - person)
-			   (= (person-asked ?pp2) two))
-			  (not (exists (?pp3 - person)
-			   (= (person-asked ?pp3) three)))
-			  (not (kval ?a (person-asked ?pp))))
-	   :effect (and
-	     	    (assign (person-asked ?pp) three)
-		    (update (person-asked ?pp) three))
-  )
-
-  (:action acknowledge-asked-four
-   	   :agent (?a - robot)
-	   :parameters (?pp - person)
-	   :variables (?loc - place)
-	   :precondition (and
-	     		  (asked-about-name ?pp)
-			  (asked-about-record ?pp)
-			  (forall (?l - recordlabel) 
-			   (asked-about-label ?pp ?l))
-			  (exists (?pp2 - person)
-			   (= (person-asked ?pp2) three))
-			  (not (exists (?pp3 - person)
-			   (= (person-asked ?pp3) four)))
-			  (not (kval ?a (person-asked ?pp))))
-	   :effect (and
-	     	    (assign (person-asked ?pp) four)
-		    (update (person-asked ?pp) four))
-  )
+;;;  (:action acknowledge-asked-two
+;;;   	   :agent (?a - robot)
+;;;	   :parameters (?pp - person)
+;;;	   :variables (?loc - place)
+;;;	   :precondition (and
+;;;	     		  (=(asked-about-name ?pp) true)
+;;;			  (=(asked-about-record ?pp) true)
+;;;;;;			  (forall (?l - recordlabel) 
+;;;;;;			   (asked-about-label ?pp ?l))
+;;;			  (exists (?pp2 - person)
+;;;			   (= (person-asked ?pp2) one))
+;;;			  (forall (?pp2 - person)
+;;;			   (imply 
+;;;			    (=(person-asked ?pp2) two)
+;;;			    (exists (?n - person-name)
+;;;			     (and
+;;;			      (=(name ?pp2) ?n)
+;;;			      (=(name ?pp) ?n)))))
+;;;			  (not (kval ?a (person-asked ?pp))))
+;;;	   :effect (and
+;;;	     	    (assign (person-asked ?pp) two)
+;;;		    (update (person-asked ?pp) two))
+;;;  )
+;;;
+;;;  (:action acknowledge-asked-three
+;;;   	   :agent (?a - robot)
+;;;	   :parameters (?pp - person)
+;;;	   :variables (?loc - place)
+;;;	   :precondition (and
+;;;	     		  (=(asked-about-name ?pp) true)
+;;;			  (=(asked-about-record ?pp) true)
+;;;;;;			  (forall (?l - recordlabel) 
+;;;;;;			   (asked-about-label ?pp ?l))
+;;;			  (exists (?pp2 - person)
+;;;			   (= (person-asked ?pp2) two))
+;;;			  (forall (?pp2 - person)
+;;;			   (imply 
+;;;			    (=(person-asked ?pp2) three)
+;;;			    (exists (?n - person-name)
+;;;			     (and
+;;;			      (=(name ?pp2) ?n)
+;;;			      (=(name ?pp) ?n)))))
+;;;			  (not (kval ?a (person-asked ?pp))))
+;;;	   :effect (and
+;;;	     	    (assign (person-asked ?pp) three)
+;;;		    (update (person-asked ?pp) three))
+;;;  )
+;;;
+;;;  (:action acknowledge-asked-four
+;;;   	   :agent (?a - robot)
+;;;	   :parameters (?pp - person)
+;;;	   :variables (?loc - place)
+;;;	   :precondition (and
+;;;	     		  (=(asked-about-name ?pp) true)
+;;;			  (=(asked-about-record ?pp) true)
+;;;;;;			  (forall (?l - recordlabel) 
+;;;;;;			   (asked-about-label ?pp ?l))
+;;;			  (exists (?pp2 - person)
+;;;			   (= (person-asked ?pp2) three))
+;;;			  (forall (?pp2 - person)
+;;;			   (imply 
+;;;			    (=(person-asked ?pp2) four)
+;;;			    (exists (?n - person-name)
+;;;			     (and
+;;;			      (=(name ?pp2) ?n)
+;;;			      (=(name ?pp) ?n)))))
+;;;			  (not (kval ?a (person-asked ?pp))))
+;;;	   :effect (and
+;;;	     	    (assign (person-asked ?pp) four)
+;;;		    (update (person-asked ?pp) four))
+;;;  )
 
   (:action move
 	   :agent (?a - robot)
@@ -192,10 +284,11 @@
 			  (= (is-in ?a) ?from)
 			  (or (connected ?from ?to)
 			      (connected ?to ?from))
-			  (not (exists (?pp - person))
-			   (and
-			    (= (is-in ?pp) ?from)
-			    (not (kval ?a (person-asked ?pp))))))
+	     		 )
+;;;			  (not (exists (?pp - person)
+;;;			   (and
+;;;			    (= (is-in ?pp) ?from)
+;;;			    (not (kval ?a (person-asked ?pp)))))))
 	   :effect (and
 		    (assign (is-in ?a) ?to)
 		    (visited ?to)

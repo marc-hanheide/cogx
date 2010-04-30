@@ -1,0 +1,65 @@
+# execution ###################################################################
+JAVA MG executor execution.components.SpringSchoolExecutionMediator
+
+# motivation ##################################################################
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and (or (forall (?p - place) (searched ?p)) (and (exists (?pa ?pb ?pc ?pd - person) (and (= (asked-about-name ?pa) true) (= (asked-about-name ?pb) true) (=(asked-about-name ?pc) true) (=(asked-about-name ?pd) true) (not (= (name ?pa) (name ?pb))) (not (= (name ?pa) (name ?pc))) (not (= (name ?pa) (name ?pd))) (not (= (name ?pb) (name ?pc))) (not (= (name ?pb) (name ?pd))) (not (= (name ?pc) (name ?pd))))) (exists (?r - robot) (forall (?v - visualobject) (kval ?r (is-in ?v)))))) (exists (?r - robot) (and (forall (?pp - person) (and (=(asked-about-name ?pp) true) (=(asked-about-record ?pp) true)))) (forall (?o - visualobject) (imply (kval ?r (is-in ?o)) (=(acknowledged-object ?o) true)))))"
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and (or (forall (?p - place) (searched ?p)) (and (exists (?pa ?pb ?pc ?pd - person) (and (= (asked-about-name ?pa) true) (= (asked-about-name ?pb) true) (=(asked-about-name ?pc) true) (=(asked-about-name ?pd) true))) (exists (?r - robot) (forall (?v - visualobject) (kval ?r (is-in ?v)))))) (exists (?r - robot) (and (forall (?pp - person) (and (=(asked-about-name ?pp) true) (=(asked-about-record ?pp) true)))) (forall (?o - visualobject) (imply (kval ?r (is-in ?o)) (=(acknowledged-object ?o) true)))))"
+
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(and 
+# (or 
+#  (forall (?p - place) (searched ?p))
+#  (and
+#   (exists (?pa pb pc pd - person) 
+#    (and
+#     (asked-about-name ?pa)
+#     (asked-about-name ?pb)
+#     (asked-about-name ?pc)
+#     (asked-about-name ?pd)
+#     (not (= (name ?pa) (name ?pb)))
+#     (not (= (name ?pa) (name ?pc)))
+#     (not (= (name ?pa) (name ?pd)))
+#     (not (= (name ?pb) (name ?pc)))
+#     (not (= (name ?pb) (name ?pd)))
+#     (not (= (name ?pc) (name ?pd)))
+#    )
+#   )
+#   (exists (?r - robot) 
+#    (forall (?v - visualobject) 
+#     (kval ?r (is-in ?v))))))
+# (exists (?r - robot) 
+#  (and
+#   (forall (?pp - person) 
+#    (and
+#     (asked-about-name ?pp)
+#     (asked-about-record ?pp)
+#    )))
+#   (forall (?o - visualobject)
+#    (imply (kval ?r (is-in ?o)) (=(acknowledged-object ?o) true))))
+#)"
+
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?r - robot) (done ?r))"
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "
+#(and 
+# (forall (?p - place) 
+#  (searched ?p)) 
+# (forall (?pp - person) 
+#  (and 
+#   (= (asked-about-name ?pp) true) 
+#   (exists (?pp2 - person ?n - person-name) 
+#    (and 
+#     (= (name ?pp) ?n)
+#     (= (name ?pp2) ?n)
+#     (= (asked-about-record ?pp2) true))))) 
+# (exists (?r - robot) 
+#  (forall (?v - visualobject) 
+#   (= (object-acknowledged ?v) true))))"
+
+JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
+
+JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy  PriorityCostGain #JoinedGainCost 
+
+JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
+
+JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
+
+JAVA MG TestActionExecutor execution.components.TestActionExecutor
