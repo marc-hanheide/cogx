@@ -77,6 +77,16 @@ public class ComsysActionInterface extends ManagedComponent {
 			blurb = "what is the value of feature " + m_featureID
 					+ " for belief " + m_beliefID + " of type " + belief.type
 					+ "?";
+			try { 
+				Runtime rt = Runtime.getRuntime(); 
+			    	Process p = rt.exec("espeak -s110" + "'Human._" + blurb + "_You_have_ten_seconds_to_comply.'");
+
+			    	p.waitFor();
+			}
+			catch(Exception e) { 
+			    System.out.println(e.getMessage()); 
+			}
+
 
 			Map<String, ProbDistribution> distribs = ((CondIndependentDistribs) belief.content).distribs;
 			for (String feature : distribs.keySet()) {

@@ -24,6 +24,14 @@ public class LookForPeopleExecutor extends TurnAndLookExecutor {
 
 		
 		// Fire off a detection command
+		try { 
+			Runtime rt = Runtime.getRuntime(); 
+		    	Process p = rt.exec("espeak -s110" + "'Searching for humans. Exterminate. Exterminate'");
+		    	p.waitFor();
+		}
+		catch(Exception e) { 
+		    System.out.println(e.getMessage()); 
+		}
 		PeopleDetectionCommand detect = new PeopleDetectionCommand();
 		String id = m_component.newDataID();
 		try {
