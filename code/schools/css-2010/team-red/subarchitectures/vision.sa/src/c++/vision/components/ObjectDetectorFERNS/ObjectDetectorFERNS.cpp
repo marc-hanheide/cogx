@@ -396,10 +396,10 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
     IplImage *grayImage = convertImageToIplGray(image);
     detectObjects(grayImage, cmd->labels);
     // remember what objects were detected
-    for(size_t i = 0; i < cmd->labels.size(); i++)
-      if(last_frame_ok[indexOf(cmd->labels[i])]) {
-        detectedObjects.insert(cmd->labels[i]);
-        votes[i]++;
+    for(size_t ii = 0; ii < cmd->labels.size(); ii++)
+      if(last_frame_ok[indexOf(cmd->labels[ii])]) {
+        detectedObjects.insert(cmd->labels[ii]);
+        votes[ii]++;
       }
     if(doDisplay)
       {   
