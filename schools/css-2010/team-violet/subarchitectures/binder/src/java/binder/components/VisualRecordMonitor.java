@@ -256,10 +256,10 @@ public class VisualRecordMonitor extends ManagedComponent {
   
    String extractPlace(FeatureValues values) {
       String strval = "";
-      //for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
-      //   String featStr = VisualRecordMonitor.toString(fv.val);
-      //   strval += featStr;
-      //}
+      for (FeatureValueProbPair fv : values.values) {
+        String featStr = VisualRecordMonitor.toString(fv.val);
+        strval += featStr;
+      }
       return strval;
    }
 

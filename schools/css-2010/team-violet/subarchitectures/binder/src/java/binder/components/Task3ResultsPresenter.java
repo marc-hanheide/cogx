@@ -75,7 +75,7 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
 
     public static boolean setRecord(String name, String place, String room, String owner)
     {
-        boolean alreadyExist = persons.containsKey(name);
+        boolean alreadyExist = records.containsKey(name);
 
         if(!alreadyExist)
         {
