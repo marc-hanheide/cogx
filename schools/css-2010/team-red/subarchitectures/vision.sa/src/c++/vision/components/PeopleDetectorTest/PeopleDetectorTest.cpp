@@ -53,7 +53,7 @@ void PeopleDetectorTest::start()
   // get connection to the video server
   m_videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
-  cvNamedWindow(getComponentID().c_str(), 1);
+  //cvNamedWindow(getComponentID().c_str(), 1);
   
   addChangeFilter(cast::createLocalTypeFilter<VisionData::Person>(cast::cdl::ADD),
     new cast::MemberFunctionChangeReceiver<PeopleDetectorTest>(this, &PeopleDetectorTest::newPerson));  
@@ -130,18 +130,21 @@ void PeopleDetectorTest::runComponent()
             }
     }
 
-    cvShowImage(getComponentID().c_str(), iplImage);    
-    //cvSaveImage(("./out/" + IntToStr((float)count++) +".bmp").c_str(), iplImage);
+    //cvShowImage(getComponentID().c_str(), iplImage);  
+    
+      char filename[1024];
+      snprintf(filename, 1024, "PDimg%03d.jpg", count++);
+      cvSaveImage(filename, iplImage, 0);
 
     // needed to make the window appear
     // (an odd behaviour of OpenCV windows!)
-    cvWaitKey(10);
+    //cvWaitKey(10);
     cvReleaseImage(&iplImage);
 
     // wait a bit so we don't hog the CPU
     sleepComponent(100);
   }
-  cvDestroyWindow(getComponentID().c_str());
+  //cvDestroyWindow(getComponentID().c_str());
 }
 
 }
