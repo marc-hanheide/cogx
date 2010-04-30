@@ -1,0 +1,415 @@
+;; We are allowed to mark stable-beliefs as invalid.
+
+(define (domain cogx)
+  ;; the planner domain is case insensitive, the beliefs are mixed
+  ;; case, though here we only use lower case...
+  (:requirements :mapl :adl :object-fluents :action-costs)
+  
+  (:types 
+
+   bollocks - object
+
+   record-labels - object
+
+   comaroom - object
+   roomname - object
+   place place_id - object
+   person person_id person_name  - object
+   visualobject visualobject_id visualobject_label - object
+   robot - agent
+   place_special - object
+   )
+  
+  (:constants yes no - place_special 
+	      bbbbbb - bollocks
+	      
+	      chakakhan heartbrakers level breathless - record-labels 
+
+;; 	      james chakakhan heartbrakers jesusjones - record-labels 
+	       )
+
+  (:predicates
+   (ga ?a - robot)
+
+;;    (asked-who-owns-record ?a - robot ?l - record-labels ?p - person)
+   (awor-chakakhan ?a - robot ?p - person)
+   (awor-heartbrakers ?a - robot ?p - person)
+   (awor-level ?a - robot ?p - person)
+   (awor-breathless ?a - robot ?p - person)
+
+   (asked-is-record-xxx-your-record-chakakhan ?a - agent ?p - person)
+   (asked-is-record-xxx-your-record-heartbrakers ?a - agent ?p - person)
+   (asked-is-record-xxx-your-record-level ?a - agent ?p - person)
+   (asked-is-record-xxx-your-record-breathless ?a - agent ?p - person) 
+
+;; 	      james chakakhan ?p - person)
+
+   (connected ?n1 - place ?n2 - place)
+
+   (visited ?p - place)
+   ;;    (visited-person ?p - place)
+
+   (explored ?p - place)
+	
+   (wave1-visited ?pp - place)	
+   ;;    (wave1-visited-person ?pp - place)	
+   )	
+
+  (:functions
+   
+   ;;Static in the starting state.
+   (concepts ?comaroom) - roomname
+
+   (owned-by ?r - visualobject) - person_name
+
+   (owner ?r - person) - visualobject_label
+
+;;    (owns-record ?h - person) - visualobject
+
+   (is-in ?r - robot) - place
+   (is-in ?h - person) - place
+   (is-in ?o - visualobject) - place
+
+   (label ?o - visualobject) - visualobject_label
+
+   (wave1 ?p - place) - place_special
+
+   ;; we need to model the place id as well to distinguish places from
+   ;; other objects
+   (placeid ?p - place) - place_id
+
+   ;; a person can a have name feature. StringValues, IntegerValues,
+   ;; and PointerValues in StableBelief are turned into funtions in
+   ;; the planner, BooleanValues are turned into predicates, other
+   ;; value types are not supported
+   (name ?h - person) - person_name
+
+   ;;    (name ?h - room) - person_name
+
+   ;; we also need the id of the persons and objects as unique identifier here
+   (personid ?h - person) - person_id
+   (objectid ?h - visualobject) - visualobject_id
+   )
+  
+;;; actions ;;;
+
+  (:action move
+	   :agent (?a - robot)
+	   :parameters (?to - place)
+	   :variables (?from - place)
+	   :precondition (and
+			  ;; 			  (or (not (=  (wave1 ?to) yes)) (not (visited ?to)))
+			  ;; (or (not (=  (wave1 ?to) yes)) )
+
+			  
+			  (or (forall (?pp - place) 
+				      (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+			      (=  (wave1 ?to) yes))
+
+			  (not (visited ?to))
+
+			  (= (is-in ?a) ?from)
+			  (or (connected ?from ?to)
+			      (connected ?to ?from))
+			  
+			  (or (not (=  (wave1 ?from) yes)) (visited ?from))
+			  )
+	   :effect (and
+
+		    (assign (is-in ?a) ?to)
+		    ;; 		    (visited ?to)
+		    ;; 		    (update (visited ?to) true)
+		    ))
+
+  (:action move-rough
+	   :agent (?a - robot)
+	   :parameters (?to - place)
+	   :variables (?from - place)
+	   :precondition (and
+
+			  (not (and (or (forall (?pp - place) 
+						(or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+					(=  (wave1 ?to) yes))
+				    
+				    (not (visited ?to))))
+
+
+			  (= (is-in ?a) ?from)
+			  (or (connected ?from ?to)
+			      (connected ?to ?from))
+			  (or (not (=  (wave1 ?from) yes)) (visited ?from))
+			  )
+	   :effect (and
+		    (assign (is-in ?a) ?to)
+		    ;; 		    (visited ?to)
+		    ;; 		    (update (visited ?to) true)
+		    ))
+
+
+
+
+  (:action is-record-xxx-your-record
+
+	   :agent (?a - robot)
+	   :parameters (?p - person ?l - record-labels);;visualobject_label)
+	   :variables (?loc - place)
+	   :precondition (and
+
+			  (or (not (= ?l chakakhan))
+			    (not  (asked-is-record-xxx-your-record-chakakhan ?a ?p)))
+
+			  (or (not (= ?l heartbrakers))
+			    (not  (asked-is-record-xxx-your-record-heartbrakers ?a ?p)))
+
+			  (or (not (= ?l level))
+			    (not  (asked-is-record-xxx-your-record-level ?a ?p)))
+
+			  (or (not  (= ?l breathless))
+			    (not  (asked-is-record-xxx-your-record-breathless ?a ?p)))
+
+
+;; 			  (not (kval ?a (owner ?p)))
+			  
+			  (= (is-in ?a) ?loc)
+			  (= (is-in ?p) ?loc)
+			  )
+	   :effect (and ;; (kval ?a (owner ?p))
+			
+			(when (= ?l chakakhan)
+			  (and 
+			   (asked-is-record-xxx-your-record-chakakhan ?a ?p)
+			   (update (asked-is-record-xxx-your-record-chakakhan ?a ?p) true)))
+
+			(when (= ?l heartbrakers)
+			  (and 
+			   (asked-is-record-xxx-your-record-heartbrakers ?a ?p)
+			   (update (asked-is-record-xxx-your-record-heartbrakers ?a ?p) true)))
+
+			(when (= ?l level)
+			  (and 
+			   (asked-is-record-xxx-your-record-level ?a ?p)
+			   (update (asked-is-record-xxx-your-record-level ?a ?p) true)))
+
+			(when (= ?l breathless)
+			  (and 
+			   (asked-is-record-xxx-your-record-breathless ?a ?p)
+			   (update (asked-is-record-xxx-your-record-breathless ?a ?p) true)))
+
+			
+			)
+
+	   )
+
+  (:action ask-for-your-name
+	   :agent (?a - robot)
+	   :parameters (?p - person)
+	   :variables (?loc - place)
+	   :precondition (and
+			  (not (kval ?a (name ?p)))
+
+			  (= (is-in ?a) ?loc)
+			  (= (is-in ?p) ?loc)
+			  )
+	   :effect
+	   (kval ?a (name ?p))
+	   )
+
+  (:action who-owns-record
+	   :agent (?a - robot)
+	   :parameters (?l - record-labels);;?r - visualobject 
+	   :variables (?loc - place ?p - person)
+	   :precondition (and
+			  
+;; 			  (= (label ?r) ?l)
+
+			  (or (not  (= ?l chakakhan))
+			    (not  (awor-chakakhan ?a ?p)))
+
+			  (or (not (= ?l heartbrakers))
+			    (not  (awor-heartbrakers ?a ?p)))
+
+			  (or (not (= ?l level))
+			    (not  (awor-level ?a ?p)))
+
+			  (or (not (= ?l breathless))
+			    (not  (awor-breathless ?a ?p)))
+
+;; 			  (not (kval ?a (owned-by ?r)))
+			  
+			  (= (is-in ?a) ?loc)
+			  (= (is-in ?p) ?loc)
+			  )
+	   :effect (and 
+;; 		    (kval ?a (owned-by ?r))
+
+;; 			    (awor-chakakhan ?a ?p)
+
+;; 			    (awor-heartbrakers ?a ?p)
+
+;; 			    (awor-level ?a ?p)
+
+;; 			    (awor-breathless ?a ?p)
+			  (when (= ?l chakakhan)
+			    (and (awor-chakakhan ?a ?p)
+				 (update (awor-chakakhan ?a ?p) true)))
+
+			  (when (= ?l heartbrakers)
+			    (and (awor-heartbrakers ?a ?p)
+				 (update (awor-heartbrakers ?a ?p) true)))
+
+			  (when (= ?l level)
+			    (and (awor-level ?a ?p)
+				 (update (awor-level ?a ?p) true)))
+
+			  (when (= ?l breathless)
+			    (and (awor-breathless ?a ?p)
+				 (update (awor-breathless ?a ?p) true)))
+
+		    )
+	   )
+
+;;   (:action ask-for-your-record
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?p - person)
+;; 	   :variables (?loc - place)
+;; 	   :precondition (and
+;; 			  (not (kval ?a (owns-record ?p)))
+;; 			  (= (is-in ?a) ?loc)
+;; 			  (= (is-in ?p) ?loc)
+;; 			  )
+;; 	   :effect
+;; 	   (kval ?a (owns-record ?p))
+;; 	   )
+
+;;   (:action which-record-is-owned-by
+;; 	   :agent (?a - robot)
+;; 	   :parameters (?p - person)
+;; 	   :variables (?loc - place)
+;; 	   :precondition (and
+;; 			  (not (kval ?a (owns-record ?p)))
+;; 			  (= (is-in ?a) ?loc)
+;; 			  (= (is-in ?p) ?loc)
+;; 			  )
+;; 	   :effect
+;; 	   (kval ?a (owns-record ?p))
+;; 	   )
+
+
+  ;;   (:action ask-for-place-name
+  ;; 	   :agent (?a - robot)
+  ;; 	   :parameters (?p - person)
+  ;; 	   :variables (?loc - place)
+  ;; 	   :precondition (and
+  ;; 			  (= (is-in ?a) ?loc)
+  ;; 			  (= (is-in ?p) ?loc)
+  ;; 			  )
+  ;; 	   :effect
+  ;; 	   (kval ?a (name ?loc))
+  ;; 	   )
+
+  ;;   (:action commit-name
+  ;; 	   :agent (?a - robot)
+  ;; 	   :parameters (?p - person ?n - person_name)
+  ;; 	   :precondition (and
+  ;; 			  (in-domain (name ?p) ?n)
+  ;; 			  )
+  ;; 	   :replan (kval ?a (name ?p))
+  ;; 	   :effect
+  ;; 	   (assign (name ?p) ?n)
+  ;; 	   )
+
+  
+  (:action look-for-objects-and-people-wave1
+	   :agent (?a - robot)
+	   :parameters (?p - place)
+	   :precondition (and
+
+			  
+			  (not (visited ?p))
+
+			  (= (wave1 ?p) yes)
+
+			  (= (is-in ?a) ?p)
+			  )
+	   :effect (and
+		    (wave1-visited ?p)
+		    (update (wave1-visited ?p) true)
+
+		    (visited ?p)	
+		    (update (visited ?p) true)))
+  
+  (:action look-for-objects-and-people-wave2
+	   :agent (?a - robot)
+	   :parameters (?p - place)
+	   :precondition (and
+
+			  
+			  (not (visited ?p))
+
+			  
+			  (forall (?pp - place) 
+				  (or (not (= (wave1 ?pp) yes)) (wave1-visited ?pp)))
+
+			  (= (wave1 ?p) no)
+
+			  (= (is-in ?a) ?p)
+			  )
+	   :effect (and
+
+		    (visited ?p)	
+		    (update (visited ?p) true)))
+  
+
+  
+  (:action goal-action
+	   :agent (?a - robot)
+	   :parameters ()
+	   :precondition (and
+
+;; 			  (forall (?p - place)  (visited ?p))
+			  
+			  (forall (?p - place) 
+				  (or (not (= (wave1 ?p) yes)) 
+				      (wave1-visited ?p)))
+
+ 
+			  (forall (?p - person) 
+				  (and (awor-chakakhan ?a ?p)
+				      (awor-heartbrakers ?a ?p)
+				      (awor-level ?a ?p)
+				      (awor-breathless ?a ?p)))
+			   
+			  (forall (?p - person)
+				  (kval ?a (name ?p))
+				  )
+
+			  
+			  (forall (?p - person)
+				  (and (asked-is-record-xxx-your-record-chakakhan ?a ?p)
+				       (asked-is-record-xxx-your-record-heartbrakers ?a ?p)
+				       (asked-is-record-xxx-your-record-level ?a ?p)
+				       (asked-is-record-xxx-your-record-breathless ?a ?p)
+				       ))
+
+
+
+;; 				  ))
+
+;; 			  (forall (?a - robot) 
+;; 				  (forall (?l - visualobject_label) 
+;; 					  (and  (asked-is-record-xxx-your-record ?a ?l ?p)
+;; 					   (kval ?a (owned-by ?r)))))
+				  
+			  ;; 			 (forall (?p - place) (visited ?p))
+			  ;;(forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
+			  )
+	   :effect (and
+		    (ga ?a)
+		    (update (ga ?a) true)
+		    )
+	   )
+
+  )
+
+
+	
