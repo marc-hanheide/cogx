@@ -25,7 +25,8 @@
 
 ;;; objects ;;;
   (:constants
-   chakakhan heartbreakers james jesusjones - recordlabel
+   james jesusjones - recordlabel
+   ;;;chakakhan heartbreakers james jesusjones - recordlabel;;;
    one two three - ackvalue
   )
   

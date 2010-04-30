@@ -3,17 +3,16 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {U3_P,U5_P}
+existingunion = {U2_R}
 percept = {P}
-belief = {U3_P,U5_P,P}
+belief = {U2_R,P}
 
 // possible outcomes of the grouping process
-outcome = {U3_P,U5_P,U8_P}
+outcome = {U2_R,U6_R}
 
 // feature values
-is-inval = {None,U0_p,Unknown}
-labelval = {None,Unknown,Vjames,Vjesusjones}
-objectidval = {None,Unknown,V7_f,Vm_f,Vz_f}
+is-inval = {None,U0_r,Unknown}
+personidval = {None,Unknown,V1_h,V2_h}
 typeval = {None,Unknown}
 
 ///////////////////////////////
@@ -21,8 +20,7 @@ typeval = {None,Unknown}
 ///////////////////////////////
 
 Is-in(belief,is-inval)
-Label(belief,labelval)
-Objectid(belief,objectidval)
+Personid(belief,personidval)
 Type(belief,typeval)
 
 Outcome(outcome)
@@ -33,55 +31,29 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
-100.0 Existence(U3_P)
-0.0 Existence(U3_P) ^ Is-in(U3_P,U0_p)
-Existence(U3_P) => !Is-in(U3_P,Unknown).
-Existence(U3_P) => !Is-in(U3_P,None).
-0.0 Existence(U3_P) ^ Label(U3_P,Vjesusjones)
-Existence(U3_P) => !Label(U3_P,Unknown).
-Existence(U3_P) => !Label(U3_P,Vjames).
-Existence(U3_P) => !Label(U3_P,None).
-0.0 Existence(U3_P) ^ Objectid(U3_P,V7_f)
-Existence(U3_P) => !Objectid(U3_P,Unknown).
-Existence(U3_P) => !Objectid(U3_P,Vm_f).
-Existence(U3_P) => !Objectid(U3_P,Vz_f).
-Existence(U3_P) => !Objectid(U3_P,None).
-Existence(U3_P) => !Type(U3_p,Unknown).
-Existence(U3_P) => Type(U3_p,None).
-
-100.0 Existence(U5_P)
-0.0 Existence(U5_P) ^ Is-in(U5_P,U0_p)
-Existence(U5_P) => !Is-in(U5_P,Unknown).
-Existence(U5_P) => !Is-in(U5_P,None).
-0.0 Existence(U5_P) ^ Label(U5_P,Vjames)
-Existence(U5_P) => !Label(U5_P,Unknown).
-Existence(U5_P) => !Label(U5_P,Vjesusjones).
-Existence(U5_P) => !Label(U5_P,None).
-0.0 Existence(U5_P) ^ Objectid(U5_P,Vm_f)
-Existence(U5_P) => !Objectid(U5_P,Unknown).
-Existence(U5_P) => !Objectid(U5_P,V7_f).
-Existence(U5_P) => !Objectid(U5_P,Vz_f).
-Existence(U5_P) => !Objectid(U5_P,None).
-Existence(U5_P) => !Type(U5_p,Unknown).
-Existence(U5_P) => Type(U5_p,None).
+100.0 Existence(U2_R)
+0.0 Existence(U2_R) ^ Is-in(U2_R,U0_r)
+Existence(U2_R) => !Is-in(U2_R,Unknown).
+Existence(U2_R) => !Is-in(U2_R,None).
+0.0 Existence(U2_R) ^ Personid(U2_R,V1_h)
+Existence(U2_R) => !Personid(U2_R,Unknown).
+Existence(U2_R) => !Personid(U2_R,V2_h).
+Existence(U2_R) => !Personid(U2_R,None).
+Existence(U2_R) => !Type(U2_r,Unknown).
+Existence(U2_R) => Type(U2_r,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,U0_p)
+0.0 Existence(P) ^ Is-in(P,U0_r)
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
-0.0 Existence(P) ^ Label(P,Vjesusjones)
-Existence(P) => !Label(P,Unknown).
-Existence(P) => !Label(P,Vjames).
-Existence(P) => !Label(P,None).
-0.0 Existence(P) ^ Objectid(P,Vz_f)
-Existence(P) => !Objectid(P,Unknown).
-Existence(P) => !Objectid(P,V7_f).
-Existence(P) => !Objectid(P,Vm_f).
-Existence(P) => !Objectid(P,None).
+0.0 Existence(P) ^ Personid(P,V2_h)
+Existence(P) => !Personid(P,Unknown).
+Existence(P) => !Personid(P,V1_h).
+Existence(P) => !Personid(P,None).
 Existence(P) => !Type(P,Unknown).
 Existence(P) => Type(P,None).
 
@@ -92,20 +64,16 @@ Existence(P) => Type(P,None).
 // rules for existence dependency
 !Existence(x) => y=None v !Is-in(x,y).
 !Existence(x) => Is-in(x,None).
-!Existence(x) => y=None v !Label(x,y).
-!Existence(x) => Label(x,None).
-!Existence(x) => y=None v !Objectid(x,y).
-!Existence(x) => Objectid(x,None).
+!Existence(x) => y=None v !Personid(x,y).
+!Existence(x) => Personid(x,None).
 !Existence(x) => y=None v !Type(x,y).
 !Existence(x) => Type(x,None).
 
 // mutual exclusivity and unicity constraints
 Is-in(x,y) ^ Is-in(x,z) => y=z.
 EXIST y Is-in(x,y).
-Label(x,y) ^ Label(x,z) => y=z.
-EXIST y Label(x,y).
-Objectid(x,y) ^ Objectid(x,z) => y=z.
-EXIST y Objectid(x,y).
+Personid(x,y) ^ Personid(x,z) => y=z.
+EXIST y Personid(x,y).
 Type(x,y) ^ Type(x,z) => y=z.
 EXIST y Type(x,y).
 
@@ -116,30 +84,23 @@ EXIST y Type(x,y).
 
 // general correlations
 
-// "Unify locatables in the same Place"
-//100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-//100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
-//UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
-//UnifyWith(x) ^ Is-in(x,y) => y!=None. 
+100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
+UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
+UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
-// "Unify locatables with the same Label"
-100 Existence(x) ^ Existence(P) ^ Label(x,y) ^ Label(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-100 UnifyWith(x) ^ Label(x,y) ^ Label(P,z) => y=z
-UnifyWith(x) ^ Label(x,y) => y!=Unknown. 
-UnifyWith(x) ^ Label(x,y) => y!=None. 
-
+//100 Existence(x) ^ Existence(P) ^ Name(x,y) ^ Name(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+//100 UnifyWith(x) ^ Name(x,y) ^ Name(P,z) => y=z
+//UnifyWith(x) ^ Name(x,y) => y!=Unknown. 
+//UnifyWith(x) ^ Name(x,y) => y!=None. 
 
 UnifyWith(x) => Existence(x) ^ Existence(P).
-
-
-// ADD YOUR ADDITIONAL FORMULAE FOR OBJECT TRACKING HERE
 ///////////////////////////////
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(U8_P)
-UnifyWith(U3_P) <=> Outcome(U3_P).
-UnifyWith(U5_P) <=> Outcome(U5_P).
+-3.5 Existence(P) => Outcome(U6_R)
+UnifyWith(U2_R) <=> Outcome(U2_R).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).

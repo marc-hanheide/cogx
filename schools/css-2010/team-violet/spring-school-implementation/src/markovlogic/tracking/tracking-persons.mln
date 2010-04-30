@@ -6,13 +6,13 @@
 // general correlations
 
 100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-//100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
-//UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
-//UnifyWith(x) ^ Is-in(x,y) => y!=None. 
+100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
+UnifyWith(x) ^ Is-in(x,y) => y!=Unknown. 
+UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
-100 Existence(x) ^ Existence(P) ^ Name(x,y) ^ Name(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-100 UnifyWith(x) ^ Name(x,y) ^ Name(P,z) => y=z
-UnifyWith(x) ^ Name(x,y) => y!=Unknown. 
-UnifyWith(x) ^ Name(x,y) => y!=None. 
+//100 Existence(x) ^ Existence(P) ^ Name(x,y) ^ Name(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+//100 UnifyWith(x) ^ Name(x,y) ^ Name(P,z) => y=z
+//UnifyWith(x) ^ Name(x,y) => y!=Unknown. 
+//UnifyWith(x) ^ Name(x,y) => y!=None. 
 
 UnifyWith(x) => Existence(x) ^ Existence(P).

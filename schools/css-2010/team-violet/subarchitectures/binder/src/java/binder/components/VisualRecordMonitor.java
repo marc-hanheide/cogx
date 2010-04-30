@@ -252,6 +252,8 @@ public class VisualRecordMonitor extends ManagedComponent {
       for (String id: DEFAULT_LABELS) {
          createPlaceholder(id);
       }
+      new AePlayWave("wavs/Ding.wav").start();
+
    }
   
    String extractPlace(FeatureValues values) {
