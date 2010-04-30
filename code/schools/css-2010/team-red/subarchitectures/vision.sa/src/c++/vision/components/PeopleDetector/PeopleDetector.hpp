@@ -52,6 +52,8 @@ namespace cast
        */
       bool m_runContinuously;
 
+      double m_MaxDist;
+
     public:
         /**
          * Constructor
