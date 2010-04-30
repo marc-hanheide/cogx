@@ -10,11 +10,11 @@
  */
 package binder.components;
 
+import violetsound.AePlayWave;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.UIManager;
-import violetsound.AePlayWave;
 
 /**
  *
@@ -80,7 +80,7 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
         if(!alreadyExist)
         {
             //new AePlayWave("i:/wavs/" + recordsSounds[persons.size()] + ".wav").start();
-            new AePlayWave("wavs/" + recordsSounds[persons.size()] + ".wav").start();
+            new AePlayWave("wavs/" + recordsSounds[records.size()] + ".wav").start();
         }
 
         Task3ResultsPresenter.records.put(name, new Record(name, place, room, owner));
