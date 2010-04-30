@@ -123,9 +123,28 @@ public class VisualRecordMonitor extends ManagedComponent {
                WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
                public void workingMemoryChanged(WorkingMemoryChange _wmc) {
                   // onObjectBeliefChanged(_wmc);
+                  try {
+                    CASTData<StableBelief> beliefData =
+                       getMemoryEntryWithData(_wmc.address, StableBelief.class);
+
+                    StableBelief sb = beliefData.getData();
+
+                    if (sb.type.equals("VisualObject")) {
+                       processObjectBelief(sb, "change");
+                       // new AePlayWave("wavs/curiosity-oh_whats_that.wav").start();
+                    }
+                    if (sb.type.equals("Person")) {
+                       processPersonBelief(sb, "change");
+                       // new AePlayWave("wavs/Shodan-are_you_afraid.wav").start();
+                    }
+                  } catch (DoesNotExistOnWMException e) {
+                    e.printStackTrace();
+                  } catch (UnknownSubarchitectureException e) {
+                    e.printStackTrace();
+                  }
                }
-            }
-            );
+
+               });
 
       // Testing
       addChangeFilter(
@@ -138,10 +157,6 @@ public class VisualRecordMonitor extends ManagedComponent {
 
                     StableBelief sb = beliefData.getData();
 
-                    //List<FeatureValue> labels = m_binderFacade.getFeatureValue(sb, "label");
-                    //StringValue recordname = ((StringValue) labels.get(0));
-                    //System.out.println("ADDED> " + recordname.val);
-
                     if (sb.type.equals("VisualObject")) {
                        processObjectBelief(sb, "add");
                        new AePlayWave("wavs/curiosity-oh_whats_that.wav").start();
@@ -150,9 +165,6 @@ public class VisualRecordMonitor extends ManagedComponent {
                        processPersonBelief(sb, "add");
                        new AePlayWave("wavs/Shodan-are_you_afraid.wav").start();
                     }
-                    //System.out.println("StableBelief added: id=" + sb.id 
-                    //  + "@" + _wmc.address.subarchitecture
-                    //  + " type=" + sb.type);
                   } catch (DoesNotExistOnWMException e) {
                     e.printStackTrace();
                   } catch (UnknownSubarchitectureException e) {
@@ -264,10 +276,11 @@ public class VisualRecordMonitor extends ManagedComponent {
          }
       }
       if (! name.isEmpty()) {
+         System.out.println("    Adding person belief with name (" + op + ")");
          Task3ResultsPresenter.setPerson(name, place, room, record);
       }
       else {
-         System.out.println("    NOT Adding person belief with NO NAME");
+         System.out.println("    NOT Adding person belief with NO NAME(" + op + ")");
          // Task3ResultsPresenter.setPerson("Empty Label", place, room, record);
       }
    }
@@ -299,11 +312,11 @@ public class VisualRecordMonitor extends ManagedComponent {
          }
       }
       if (! name.isEmpty()) {
-         System.out.println("    Adding object belief with name");
+         System.out.println("    Adding object belief with name (" + op + ")");
          Task3ResultsPresenter.setRecord(name, place, room, owner);
       }
       else {
-         System.out.println("    Adding object belief with NO NAME");
+         System.out.println("    Adding object belief with NO NAME (" + op + ")");
          Task3ResultsPresenter.setRecord("Empty Label", place, room, owner);
       }
    }
