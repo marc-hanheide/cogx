@@ -6,12 +6,21 @@ import beliefmodels.autogen.beliefs.StableBelief;
 import beliefmodels.autogen.distribs.BasicProbDistribution;
 import beliefmodels.autogen.distribs.CondIndependentDistribs;
 import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.distribs.FeatureValues;
 import beliefmodels.autogen.distribs.ProbDistribution;
 import beliefmodels.autogen.epstatus.PrivateEpistemicStatus;
 import beliefmodels.autogen.history.CASTBeliefHistory;
 import beliefmodels.builders.BeliefContentBuilder;
 import beliefmodels.builders.FeatureValueBuilder;
 import beliefmodels.builders.PerceptBuilder;
+import beliefmodels.autogen.distribs.FeatureValueProbPair;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.BooleanValue;
+import beliefmodels.autogen.featurecontent.FeatureValue;
+import beliefmodels.autogen.featurecontent.FloatValue;
+import beliefmodels.autogen.featurecontent.IntegerValue;
+import beliefmodels.autogen.featurecontent.PointerValue;
+import beliefmodels.autogen.featurecontent.StringValue;
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
@@ -22,12 +31,16 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import castutils.facades.BinderFacade;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import cast.core.CASTData;
+import cast.core.CASTUtils;
 import violetsound.AePlayWave;
 
 
@@ -38,11 +51,31 @@ import violetsound.AePlayWave;
  */
 
 public class VisualRecordMonitor extends ManagedComponent {
+   private final BinderFacade m_binderFacade;
    private static final String[] DEFAULT_LABELS = {
       "chakakhan", "heartbreakers", "james", "jesusjones" };
 
    private static final String[] KNOWN_RECORD_PROPS = {
       "is-in" };
+
+   private static final String[] RECORD_WAVS = {
+      "wavs/curiosity-oh_whats_that.wav",
+      "wavs/curiosity-what_is_thaat.wav",
+      "wavs/curiosity-what_is_that.wav",
+      "wavs/curiosity-whats_thaat.wav"
+   };
+   private int[] ordRecordWav;
+
+   private static final String[] PERSON_WAVS = {
+      "wavs/curiosity-who_are_you.wav",
+      "wavs/Shodan-are_you_afraid.wav",
+      "wavs/turret-are_you_still_there.wav",
+      "wavs/turret-hello_friend.wav",
+      "wavs/turret-i_see_you.wav",
+      "wavs/turret-there_you_are.wav",
+      "wavs/turret-who_are_you.wav"
+   };
+   private int[] ordPersonWav;
 
    private class Record {
       public String label;
@@ -56,17 +89,37 @@ public class VisualRecordMonitor extends ManagedComponent {
    }
    HashMap<String, Record> KnownRecords = new HashMap<String, Record>(4);
 
-   public void start() {
+   public static String toString(FeatureValue fv) {
+      String featStr="*";
+      if (fv instanceof IntegerValue)
+         featStr=Integer.toString(((IntegerValue) fv).val);
+      if (fv instanceof PointerValue)
+         featStr=CASTUtils.toString(((PointerValue) fv).beliefId);
+      if (fv instanceof StringValue)
+         featStr=((StringValue) fv).val;
+      if (fv instanceof FloatValue)
+         featStr= Double.toString(((FloatValue) fv).val);
+      if (fv instanceof BooleanValue)
+         featStr=Boolean.toString(((BooleanValue) fv).val);
+      return featStr;
+   }
 
+   public VisualRecordMonitor() {
+      m_binderFacade = new BinderFacade(this);
+      // ord
+   }
+
+   public void start() {
       System.out.println("Entering start");
+
+      super.start();
+      m_binderFacade.start();
 
       //percept belief
       addChangeFilter(
             ChangeFilterFactory.createLocalTypeFilter(StableBelief.class,
                WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
                public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-                  // TODO: check that it's a belief about a VisualObject and pass
-                  // it to onObjectBeliefChanged
                   onObjectBeliefChanged(_wmc);
                }
             }
@@ -77,19 +130,47 @@ public class VisualRecordMonitor extends ManagedComponent {
             ChangeFilterFactory.createLocalTypeFilter(StableBelief.class,
                WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
                public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-                  //try {
-                  //   CASTData<StableBelief> beliefData =
-                  //      getMemoryEntryWithData(_wmc.address, StableBelief.class);
+                  try {
+                    CASTData<StableBelief> beliefData =
+                       getMemoryEntryWithData(_wmc.address, StableBelief.class);
 
-                  //   StableBelief sb = beliefData.getData();
-                  //   System.out.println("StableBelief added: id=" + sb.id 
-                  //      + "@" + _wmc.address.subarchitecture
-                  //      + " type=" + sb.type);
-                  //} catch (DoesNotExistOnWMException e) {
-                  //   e.printStackTrace();
-                  //} catch (UnknownSubarchitectureException e) {
-                  //   e.printStackTrace();
-                  //}
+                    StableBelief sb = beliefData.getData();
+
+                    if (sb.content instanceof CondIndependentDistribs) {
+                       CondIndependentDistribs dist = (CondIndependentDistribs) sb.content;
+                       String features="";
+                       for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
+                          if (pd.getValue() instanceof BasicProbDistribution) {
+                             BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
+                             features+=pd.getKey()+"=[";
+                             for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
+                                String featStr = VisualRecordMonitor.toString(fv.val);
+                                features+=featStr+" ";
+                             }
+                             features+="] ";
+                          }
+                       }
+                       System.out.println("Stable Belief Added> " + features);
+                    }
+                    //List<FeatureValue> labels = m_binderFacade.getFeatureValue(sb, "label");
+                    //StringValue recordname = ((StringValue) labels.get(0));
+                    //System.out.println("ADDED> " + recordname.val);
+
+                    ProbDistribution content = sb.content;
+                    if (sb.type.equals("VisualObject")) {
+                       new AePlayWave("wavs/curiosity-oh_whats_that.wav").start();
+                    }
+                    if (sb.type.equals("Person")) {
+                       new AePlayWave("wavs/Shodan-are_you_afraid.wav").start();
+                    }
+                    //System.out.println("StableBelief added: id=" + sb.id 
+                    //  + "@" + _wmc.address.subarchitecture
+                    //  + " type=" + sb.type);
+                  } catch (DoesNotExistOnWMException e) {
+                    e.printStackTrace();
+                  } catch (UnknownSubarchitectureException e) {
+                    e.printStackTrace();
+                  }
                }
             }
             );
@@ -124,8 +205,8 @@ public class VisualRecordMonitor extends ManagedComponent {
          BasicProbDistribution labelDistrib =
             BeliefContentBuilder.createNewFeatureDistribution("label", labelPairs);
          BeliefContentBuilder.putNewCondIndependentDistrib(features, labelDistrib);
-         ProbDistribution beliefcontent =
-            BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, features);
+         //ProbDistribution beliefcontent =
+         //   BeliefContentBuilder.createNewDistributionWithExistDep(1.0f, features);
          CASTBeliefHistory hist =
             PerceptBuilder.createNewPerceptHistory(new WorkingMemoryAddress (newDataID(), "vision"));
 
@@ -140,22 +221,24 @@ public class VisualRecordMonitor extends ManagedComponent {
          // StableBelief belief = new StableBelief(frame, estatus, id, "VisualObject", beliefcontent, hist);
          StableBelief belief = new StableBelief(frame, estatus, id, "VisualObject", features, hist);
          WorkingMemoryAddress addr = new WorkingMemoryAddress (id, "binder");
-         try {
-            addToWorkingMemory(addr, belief);
-            KnownRecords.put(addr.id, new Record(recordName, addr));
-         } catch (DoesNotExistOnWMException ex) {
-            //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Error DoesNotExistOnWMException");
-            System.exit(1);
-         } catch (UnknownSubarchitectureException ex) {
-            //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Error UnknownSubarchitectureException");
-            System.exit(1);
-         }
-         catch (AlreadyExistsOnWMException e) {
-            //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Error AlreadyExistsOnWMException");
-            System.exit(1);
+         if (false) {
+            try {
+               addToWorkingMemory(addr, belief);
+               KnownRecords.put(addr.id, new Record(recordName, addr));
+            } catch (DoesNotExistOnWMException ex) {
+               //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
+               System.out.println("Error DoesNotExistOnWMException");
+               System.exit(1);
+            } catch (UnknownSubarchitectureException ex) {
+               //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
+               System.out.println("Error UnknownSubarchitectureException");
+               System.exit(1);
+            }
+            catch (AlreadyExistsOnWMException e) {
+               //Logger.getLogger(VisualRecordMonitor.class.getName()).log(Level.SEVERE, null, ex);
+               System.out.println("Error AlreadyExistsOnWMException");
+               System.exit(1);
+            }
          }
       }
       catch (BeliefException e) {
@@ -165,7 +248,6 @@ public class VisualRecordMonitor extends ManagedComponent {
    }
 
    void createObjectPlaceholders() {
-      System.out.println("Here we go");
       for (String id: DEFAULT_LABELS) {
          createPlaceholder(id);
       }
@@ -191,14 +273,17 @@ public class VisualRecordMonitor extends ManagedComponent {
          return;
       }
 
+      //List<FeatureValue> labels = m_binderFacade.getFeatureValue(sb, "label");
+      //String recordname = (String) labels.get(0);
+
       if (! KnownRecords.containsKey(_wmc.address.id)) {
-         System.out.println("Something's wrong: Unknown record address " + _wmc.address.id);
-         new AePlayWave("wavs/Chord.wav").start();
-         return;
+        //System.out.println("Something's wrong: Unknown record address " + _wmc.address.id);
+        //new AePlayWave("wavs/Chord.wav").start();
+        return;
       }
 
       // TODO: verify VisualObject attributes
-      new AePlayWave("wavs/Ding.wav").start();
+      // new AePlayWave("wavs/curiosity-oh_whats_that.wav").start();
 
       Record rec = KnownRecords.get(_wmc.address.id);
       rec.hasPlace = true; // TODO: this needs to be verified
