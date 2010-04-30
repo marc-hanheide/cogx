@@ -120,50 +120,50 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	private final class PersonColourTester implements Condition<BlobInfo> {
 		public boolean test(BlobInfo _t) {
 
-                    Person p = blob2person(_t);
-                    RobotPose2d ppos = new RobotPose2d();
-                    ppos.x = 0;
-                    ppos.y = 0;
-
-                    // Get hold of teh current robot pose
-                    try {
-                        CASTData<RobotPose2d>[] rp = getWorkingMemoryEntries("spatial.sa", RobotPose2d.class, 1);
-                        ppos.x = rp[0].getData().x + 
-                            p.distance * Math.cos(rp[0].getData().theta);
-                        ppos.y = rp[0].getData().y + 
-                            p.distance * Math.sin(rp[0].getData().theta);
-                        log("RP: x=" + rp[0].getData().x + 
-                            " y=" + rp[0].getData().y + 
-                            " a=" + rp[0].getData().theta + 
-                            " Person: x=" + ppos.x +
-                            " y=" + ppos.y);
-                        
-                        double minD = 1e10;
-                        for (int i = 0; i < m_PeoplePos.size(); i++) {
-                            double d = Math.hypot(ppos.x - 
-                                                  m_PeoplePos.elementAt(i).x,
-                                                  ppos.y - 
-                                                  m_PeoplePos.elementAt(i).y);
-                            if (d < minD) minD = d;
-                        }
-
-                        log("minD=" + minD);
-
-                        if (minD < m_tolerance) {
-                            log("Not adding new person, too close to the old");
-                            return false;
-                        }
-
-                    } catch (Exception e) {                        
-                    }
-                    
                     if (_t.colour.equals(m_personColour)) {
+                        Person p = blob2person(_t);
+                        RobotPose2d ppos = new RobotPose2d();
+                        ppos.x = 0;
+                        ppos.y = 0;
+                        
+                        // Get hold of the current robot pose
+                        try {
+                            CASTData<RobotPose2d>[] rp = getWorkingMemoryEntries("spatial.sa", RobotPose2d.class, 1);
+                            ppos.x = rp[0].getData().x + 
+                                p.distance * Math.cos(rp[0].getData().theta);
+                            ppos.y = rp[0].getData().y + 
+                                p.distance * Math.sin(rp[0].getData().theta);
+                            log("RP: x=" + rp[0].getData().x + 
+                                " y=" + rp[0].getData().y + 
+                                " a=" + rp[0].getData().theta + 
+                                " Person: x=" + ppos.x +
+                                " y=" + ppos.y);
+                            
+                            double minD = 1e10;
+                            for (int i = 0; i < m_PeoplePos.size(); i++) {
+                                double d = Math.hypot(ppos.x - 
+                                                      m_PeoplePos.elementAt(i).x,
+                                                      ppos.y - 
+                                                      m_PeoplePos.elementAt(i).y);
+                                if (d < minD) minD = d;
+                            }
+                            
+                            log("minD=" + minD);
+                            
+                            if (minD < m_tolerance) {
+                                log("Not adding new person, too close to the old");
+                                return false;
+                            }
+
+                        } catch (Exception e) {                        
+                        }
+                    
                         m_PeoplePos.add(ppos);
                         log("Found a new person");
                         // We have found a new person
                         return true;
                     } else {
-                        log("This persn is too close to a previously seen person");
+                        log("This blob was not a person");
                         return false;
                     }
 		}
@@ -219,9 +219,9 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 	public void detectPeople() {
 		try {
 			BlobInfo[] blobs = m_blobFinder.getBlobs();
-			log(blobs.length + " blobs");
+			//log(blobs.length + " blobs");
 			List<WMOperation> operations = m_aligner.sync(Arrays.asList(blobs));
-			log(operations.size() + " operations");
+			//log(operations.size() + " operations");
 			m_performer.performOperations(operations);
 		} catch (WMException e) {
 			e.printStackTrace();
