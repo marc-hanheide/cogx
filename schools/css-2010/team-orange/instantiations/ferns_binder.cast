@@ -16,6 +16,7 @@ INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-live-v4l.cast
 INCLUDE includes/vision.sa/vision-objects.cast
 INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-people.cast
 #CPP MG Dummy DummyDriver --labels "james jesus heart chaka" #--log
 #CPP MG Dummy DummyDriver --labels "james" --log
 

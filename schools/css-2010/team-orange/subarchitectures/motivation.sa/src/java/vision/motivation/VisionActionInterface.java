@@ -6,6 +6,7 @@ package vision.motivation;
 import java.util.Map;
 
 import VisionData.DetectionCommand;
+import cast.CASTException;
 import VisionData.PeopleDetectionCommand;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -51,6 +52,17 @@ public class VisionActionInterface extends ManagedComponent {
 
 		@Override
 		public void executeAction() {
+
+			PeopleDetectionCommand cmdp = new PeopleDetectionCommand();
+
+			try {
+				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), cmdp);
+			} catch (CASTException e) {
+				println(e.message);
+				e.printStackTrace();
+			}
+
+
 			DetectionCommand cmd = new DetectionCommand(m_labels);
 			addThenCompleteOnDelete(new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID()), cmd);
