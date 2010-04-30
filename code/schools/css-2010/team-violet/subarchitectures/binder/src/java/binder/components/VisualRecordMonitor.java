@@ -77,6 +77,8 @@ public class VisualRecordMonitor extends ManagedComponent {
       "wavs/turret-who_are_you.wav"
    };
    private int[] ordPersonWav;
+   private String PersonSound = "wavs/shodan asterisk.wav";
+   private String RecordSound = "wavs/shodan menu select.wav";
 
    private class Record {
       public WorkingMemoryAddress address;
@@ -130,12 +132,12 @@ public class VisualRecordMonitor extends ManagedComponent {
                     StableBelief sb = beliefData.getData();
 
                     if (sb.type.equals("VisualObject")) {
+                       new AePlayWave(RecordSound).start();
                        processObjectBelief(sb, "change");
-                       // new AePlayWave("wavs/curiosity-oh_whats_that.wav").start();
                     }
                     if (sb.type.equals("Person")) {
+                       new AePlayWave(PersonSound).start();
                        processPersonBelief(sb, "change");
-                       // new AePlayWave("wavs/Shodan-are_you_afraid.wav").start();
                     }
                   } catch (DoesNotExistOnWMException e) {
                     e.printStackTrace();
@@ -158,12 +160,12 @@ public class VisualRecordMonitor extends ManagedComponent {
                     StableBelief sb = beliefData.getData();
 
                     if (sb.type.equals("VisualObject")) {
+                       new AePlayWave(RecordSound).start();
                        processObjectBelief(sb, "add");
-                       new AePlayWave("wavs/curiosity-oh_whats_that.wav").start();
                     }
                     if (sb.type.equals("Person")) {
+                       new AePlayWave(PersonSound).start();
                        processPersonBelief(sb, "add");
-                       new AePlayWave("wavs/Shodan-are_you_afraid.wav").start();
                     }
                   } catch (DoesNotExistOnWMException e) {
                     e.printStackTrace();
@@ -251,6 +253,11 @@ public class VisualRecordMonitor extends ManagedComponent {
          createPlaceholder(id);
       }
    }
+  
+   String extractPlace(FeatureValues values) {
+      return "";
+
+   }
 
    void processPersonBelief(StableBelief belief, String op) {
       String name, place, room, record;
@@ -270,7 +277,7 @@ public class VisualRecordMonitor extends ManagedComponent {
                   name = strval;
                }
                else if (key.equals("is-in")) {
-                  place = strval;
+                  place = extractPlace((FeatureValues)fvd.values);
                }
             }
          }
@@ -306,7 +313,7 @@ public class VisualRecordMonitor extends ManagedComponent {
                   name = strval;
                }
                else if (key.equals("is-in")) {
-                  place = strval;
+                  place = extractPlace((FeatureValues)fvd.values);
                }
             }
          }
