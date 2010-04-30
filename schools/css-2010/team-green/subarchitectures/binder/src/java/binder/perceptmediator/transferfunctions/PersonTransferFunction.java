@@ -39,7 +39,7 @@ public class PersonTransferFunction extends SimpleDiscreteTransferFunction<Perso
 		result.put("name", FeatureValueBuilder.createNewStringValue("not_asked"));
 
 boolean detected ; 
-			if ( from.distance < 1.80 ) {
+			if ( from.distance < 3.0 ) {
 				detected = true ;
 			} else {
 				detected = false ;
