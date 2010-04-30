@@ -31,7 +31,7 @@ public class GeneralGoalGenerator extends AbstractMotiveGenerator {
 	// private static final String DEFAULT_GOAL =
 	// "(and (forall (?p - place) (= (explored ?p) true)) (forall (?r - room) (kval '@R' (areaclass ?r))))";
 	// give planning at maximum 15 seconds
-	private static final int DEFAULT_MAX_PLANNING_TIME = 15;
+	private static final int DEFAULT_MAX_PLANNING_TIME = 60;
 	// give the max at max 60 minutes to reach goal
 	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 60;
 	private boolean initialized;
