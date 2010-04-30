@@ -466,7 +466,7 @@ void SlamProcess::storeDataToFile()
     }
 
     std::string filename = "robotpose.ccf";
-    if (!m_DontWriteFiles) filename = "bak-robotpose.ccf";
+    if (m_DontWriteFiles) filename = "bak-robotpose.ccf";
     std::fstream fsl;
     fsl.open(filename.c_str(), std::ios::out);
     if (fsl > 0) {

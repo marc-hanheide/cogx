@@ -907,7 +907,7 @@ NavControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
     // pure speed command
     cmd.speed = cureCmd.v;
-    cmd.rotspeed = 2.0 * cureCmd.w;
+    cmd.rotspeed = cureCmd.w;
 
   } else if (cureCmd.type == Cure::MotionAlgorithm::CMD_TYPE_VA) {
 
@@ -916,7 +916,7 @@ NavControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
     Cure::Pose3D cp = m_CurrPose;
     double da = Cure::HelpFunctions::angleDiffRad(cureCmd.dir, cp.getTheta());
     cmd.rotspeed = 0.5 * da;
-    Cure::HelpFunctions::limitAndSetValueSymm(cmd.rotspeed, m_DefTolRot);
+    Cure::HelpFunctions::limitAndSetValueSymm(cmd.rotspeed, 0.5);
 
     // We limit the translation speed when we need to turn much
     cmd.speed = cureCmd.v * exp(-da*da/(0.3*0.3));
