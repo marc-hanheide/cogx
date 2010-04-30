@@ -50,7 +50,7 @@
 ;; 	(= (wave1 ) yes)
 )
 
-(:goal (forall (?a - agent) (goal-achieved ?a)))
+(:goal (forall (?a - robot) (ga ?a)))
 
 ;; (:goal (forall (?p - place)  (visited ?p)))
 

@@ -3,10 +3,17 @@ package execution.components;
 import java.util.List;
 
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Vector;
 
 import java.lang.Runtime;
 import java.lang.String;
 import java.io.*;
+
+import beliefmodels.autogen.distribs.ProbDistribution;
+import beliefmodels.autogen.distribs.CondIndependentDistribs;
+import beliefmodels.autogen.beliefs.StableBelief;
+import cast.core.CASTData;
 
 import autogen.Planner.Action;
 import beliefmodels.autogen.beliefs.Belief;
@@ -24,6 +31,7 @@ import execution.slice.actions.ComsysTestFeatureValue;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ExplorePlace;
+import execution.slice.actions.Fart;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.GoToPlaceRough;
 import execution.slice.actions.LookForObjects;
@@ -46,10 +54,15 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 	private static final String[] DEFAULT_LABELS = { "record1", "record2",
 			"record3", "record4" };
 
+    private Vector<String> ownership_questions;
+
 	private String[] m_objectLabels;
 	private double m_tolerance;
 
 	public SpringSchoolExecutionMediator() {
+
+	    ownership_questions = new Vector<String>();
+
 	    m_objectLabels = DEFAULT_LABELS;
 		m_binderFacade = new BinderFacade(this);
 	}
@@ -123,12 +136,20 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 // 	assert 1==2 : "Got action with name :: " + _plannedAction.name;
 
 	
+// 	try {
+	    
+// 	    Runtime.getRuntime().exec("./delivermessage.sh");
+	    
+// 	} catch (Exception e) {
+// 	    //System.out.println("Exception " + e.getMessage());
+// 	}
 	
-
+	
 // 	System.exit(0);
 
 	if (_plannedAction.name.equals("goal-action")) {
 	    
+// 	    GoToPlace act = newActionInstance(GoToPlace.class);
 	    GoToPlace act = newActionInstance(GoToPlace.class);
 
 	    act.placeID = 0;
@@ -437,19 +458,93 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 
 	    return act;
 	    
-	}else if (_plannedAction.name.equals("who-owns-record")) {
+	}// else if (_plannedAction.name.equals("who-owns-record")) {
+
+// 	    // this is the action to ask for a person's name
+// 	    assert _plannedAction.arguments.length == 3 : "who-owns-record action arity is expected to be 3";
+// 	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+// 	    act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+
+// 	    String str = ((StringValue) _plannedAction.arguments[2]).val;
+	    
+// 	    act.featureID = "owner";
+// 	    act.question = "Who owns record with label " + str + "?";
+// 	    say_something("./talk.sh Who-owns-record-with-label-" + str + "?-I-think-" + str + "-is-good-music!");
+// 	    return act;
+// 	}
+	else if (_plannedAction.name.equals("who-owns-record")) {
 
 	    // this is the action to ask for a person's name
-	    assert _plannedAction.arguments.length == 3 : "who-owns-record action arity is expected to be 3";
-	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
-	    act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
-
-	    String str = ((StringValue) _plannedAction.arguments[2]).val;
+	    assert _plannedAction.arguments.length == 2 : "who-owns-record action arity is expected to be 2";
 	    
-	    act.featureID = "owner";
-	    act.question = "Who owns record with label " + str + "?";
-	    say_something("./talk.sh Who-owns-record-with-label-" + str + "?-I-think-" + str + "-is-good-music!");
+	    String record_label = ((StringValue) _plannedAction.arguments[1]).val;
+	    String featureID = "owns-"+record_label;
+
+	    int boolean_value = 0;
+
+// 	    try {
+// 		CASTData<StableBelief> data =
+// 		    getMemoryEntryWithData(((PointerValue) _plannedAction.arguments[0]).beliefId,
+// 					   StableBelief.class);
+
+// 		data.getData();
+		
+// 		if (data.getData().content instanceof CondIndependentDistribs) {
+// 		    CondIndependentDistribs dist = (CondIndependentDistribs)
+// 			data.getData().content;
+// 		    for (Entry<String, ProbDistribution> pd :
+// 			     dist.distribs.entrySet()) {
+// 			String tryThis = pd.getKey();
+
+// 			if(tryThis == featureID){ 
+// 			    boolean_value = 1;
+// 			}
+// 		    }
+// 		}
+// 	    } catch (Exception e) {}
+
+// 	    if((boolean_value == 1) && ownership_questions.contains(featureID)){
+// 		say_something("./talk.sh Burp!");
+// 		return new Fart();
+// 	    }
+
+// 	    ownership_questions.add(featureID);
+
+	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+	    // the action requires the id of the StableBelief in which the
+	    // feature should be put
+	    act.beliefID = ((PointerValue) _plannedAction.arguments[0]).beliefId.id;
+	    // this is the feature that shall be written
+	    act.featureID = featureID;
+	    // optionally we can define an explicit question here to make life
+	    // simpler
+	    act.question = "Who owns " +   record_label  +  "?";
+
+	    say_something("./talk.sh Who-owns-" +   record_label  +  "?");
+
+
 	    return act;
+
+// 	    ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
+// 	    act.question = ;
+// 	    act.beliefID = beliefID;
+// 	    act.featureType = featureID;
+// 	    act.featureValue = _plannedAction.arguments[2];
+
+
+// 	    say_something("./talk.sh Is-record-" +   record_label  +  "-yours?");
+
+// 	    return act;
+	    
+
+// 	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
+// 	    act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
+
+	    
+// 	    act.featureID = "owner";
+// 	    act.question = "Who owns record with label " + str + "?";
+// 	    say_something("./talk.sh Who-owns-record-with-label-" + str + "?-I-think-" + str + "-is-good-music!");
+// 	    return act;
 	} // else if (_plannedAction.name.equals("which-record-is-owned-by")) {
 
 	    

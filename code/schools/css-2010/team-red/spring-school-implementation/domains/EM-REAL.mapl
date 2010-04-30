@@ -9,6 +9,8 @@
 
    bollocks - object
 
+   record-labels - object
+
    comaroom - object
    roomname - object
    place place_id - object
@@ -18,14 +20,29 @@
    place_special - object
    )
   
-  (:constants yes no - place_special bbbbbb - bollocks)
+  (:constants yes no - place_special 
+	      bbbbbb - bollocks
+	      
+	      record1 record2 record3 record4 - record-labels 
+
+;; 	      james chakakhan heartbrakers jesusjones - record-labels 
+	       )
 
   (:predicates
-   (goal-achieved ?a - agent)
+   (ga ?a - robot)
 
-   (asked-who-owns-record ?a - robot ?l - visualobject_label ?p - person)
-   (asked-is-record-xxx-your-record ?a - robot ?l - visualobject_label ?p - person)
-   
+;;    (asked-who-owns-record ?a - robot ?l - record-labels ?p - person)
+   (awor-record1 ?a - robot ?p - person)
+   (awor-record2 ?a - robot ?p - person)
+   (awor-record3 ?a - robot ?p - person)
+   (awor-record4 ?a - robot ?p - person)
+
+   (asked-is-record-xxx-your-record-record1 ?a - agent ?p - person)
+   (asked-is-record-xxx-your-record-record2 ?a - agent ?p - person)
+   (asked-is-record-xxx-your-record-record3 ?a - agent ?p - person)
+   (asked-is-record-xxx-your-record-record4 ?a - agent ?p - person) 
+
+;; 	      james chakakhan ?p - person)
 
    (connected ?n1 - place ?n2 - place)
 
@@ -134,21 +151,51 @@
   (:action is-record-xxx-your-record
 
 	   :agent (?a - robot)
-	   :parameters (?p - person ?l - visualobject_label)
+	   :parameters (?p - person ?l - record-labels);;visualobject_label)
 	   :variables (?loc - place)
 	   :precondition (and
-			  
 
-			  (not  (asked-is-record-xxx-your-record ?a ?l ?p))
+			  (or (not (= ?l record1))
+			    (not  (asked-is-record-xxx-your-record-record1 ?a ?p)))
 
-			  (not (kval ?a (owner ?p)))
+			  (or (not (= ?l record2))
+			    (not  (asked-is-record-xxx-your-record-record2 ?a ?p)))
+
+			  (or (not (= ?l record3))
+			    (not  (asked-is-record-xxx-your-record-record3 ?a ?p)))
+
+			  (or (not  (= ?l record4))
+			    (not  (asked-is-record-xxx-your-record-record4 ?a ?p)))
+
+
+;; 			  (not (kval ?a (owner ?p)))
 			  
 			  (= (is-in ?a) ?loc)
 			  (= (is-in ?p) ?loc)
 			  )
-	   :effect (and (kval ?a (owner ?p))
-			(asked-is-record-xxx-your-record ?a ?l ?p)
-			(update (asked-is-record-xxx-your-record ?a ?l ?p) true)
+	   :effect (and ;; (kval ?a (owner ?p))
+			
+			(when (= ?l record1)
+			  (and 
+			   (asked-is-record-xxx-your-record-record1 ?a ?p)
+			   (update (asked-is-record-xxx-your-record-record1 ?a ?p) true)))
+
+			(when (= ?l record2)
+			  (and 
+			   (asked-is-record-xxx-your-record-record2 ?a ?p)
+			   (update (asked-is-record-xxx-your-record-record2 ?a ?p) true)))
+
+			(when (= ?l record3)
+			  (and 
+			   (asked-is-record-xxx-your-record-record3 ?a ?p)
+			   (update (asked-is-record-xxx-your-record-record3 ?a ?p) true)))
+
+			(when (= ?l record4)
+			  (and 
+			   (asked-is-record-xxx-your-record-record4 ?a ?p)
+			   (update (asked-is-record-xxx-your-record-record4 ?a ?p) true)))
+
+			
 			)
 
 	   )
@@ -169,23 +216,56 @@
 
   (:action who-owns-record
 	   :agent (?a - robot)
-	   :parameters (?r - visualobject ?l - visualobject_label)
+	   :parameters (?l - record-labels);;?r - visualobject 
 	   :variables (?loc - place ?p - person)
 	   :precondition (and
 			  
-			  (= (label ?r) ?l)
+;; 			  (= (label ?r) ?l)
 
-			  (not  (asked-who-owns-record ?a ?l ?p))
+			  (or (not  (= ?l record1))
+			    (not  (awor-record1 ?a ?p)))
 
-			  (not (kval ?a (owned-by ?r)))
+			  (or (not (= ?l record2))
+			    (not  (awor-record2 ?a ?p)))
+
+			  (or (not (= ?l record3))
+			    (not  (awor-record3 ?a ?p)))
+
+			  (or (not (= ?l record4))
+			    (not  (awor-record4 ?a ?p)))
+
+;; 			  (not (kval ?a (owned-by ?r)))
 			  
 			  (= (is-in ?a) ?loc)
 			  (= (is-in ?p) ?loc)
 			  )
-	   :effect (and (kval ?a (owned-by ?r))
-			(asked-who-owns-record ?a ?l ?p)
-			(update (asked-who-owns-record ?a ?l ?p) true)
-			)
+	   :effect (and 
+;; 		    (kval ?a (owned-by ?r))
+
+;; 			    (awor-record1 ?a ?p)
+
+;; 			    (awor-record2 ?a ?p)
+
+;; 			    (awor-record3 ?a ?p)
+
+;; 			    (awor-record4 ?a ?p)
+			  (when (= ?l record1)
+			    (and (awor-record1 ?a ?p)
+				 (update (awor-record1 ?a ?p) true)))
+
+			  (when (= ?l record2)
+			    (and (awor-record2 ?a ?p)
+				 (update (awor-record2 ?a ?p) true)))
+
+			  (when (= ?l record3)
+			    (and (awor-record3 ?a ?p)
+				 (update (awor-record3 ?a ?p) true)))
+
+			  (when (= ?l record4)
+			    (and (awor-record4 ?a ?p)
+				 (update (awor-record4 ?a ?p) true)))
+
+		    )
 	   )
 
 ;;   (:action ask-for-your-record
@@ -288,33 +368,28 @@
 
 ;; 			  (forall (?p - place)  (visited ?p))
 			  
-			  (forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
+			  (forall (?p - place) 
+				  (or (not (= (wave1 ?p) yes)) 
+				      (wave1-visited ?p)))
 
-;; 			  (forall (?o - visualobject) 
-;; 				  (forall (?a - robot) 
-;; 					  (forall (?p - person)
-;; 						  (kval ?a (owner ?p))
-;; 						  )))
-
-			  (forall (?a - robot) 
-				  (forall (?p - person) 
-					  (forall (?l - visualobject_label) 
-						  (asked-who-owns-record ?a ?l ?p))))
-			  
-			  (forall (?a - robot) 
-				  (forall (?p - person)
-					   (kval ?a (name ?p))
-					   ))
+ 
+			  (forall (?p - person) 
+				  (and (awor-record1 ?a ?p)
+				      (awor-record2 ?a ?p)
+				      (awor-record3 ?a ?p)
+				      (awor-record4 ?a ?p)))
+			   
+			  (forall (?p - person)
+				  (kval ?a (name ?p))
+				  )
 
 			  
-			  (forall (?a - robot) 
-				  (forall (?l - visualobject_label) 
-					  (forall (?p - person)
-						  (or (asked-is-record-xxx-your-record ?a ?l ?p)
-;; 						      (exists (?r - visualobject) 
-;; 							      (or (not (kval ?a (owned-by ?r)))
-;; 								       (= (owned-by ?r) ?p)))
-						      ))))
+			  (forall (?p - person)
+				  (and (asked-is-record-xxx-your-record-record1 ?a ?p)
+				       (asked-is-record-xxx-your-record-record2 ?a ?p)
+				       (asked-is-record-xxx-your-record-record3 ?a ?p)
+				       (asked-is-record-xxx-your-record-record4 ?a ?p)
+				       ))
 
 
 
@@ -329,8 +404,8 @@
 			  ;;(forall (?p - place) (or (not (= (wave1 ?p) yes)) (wave1-visited ?p)))
 			  )
 	   :effect (and
-		    (goal-achieved ?a)
-		    (update (goal-achieved ?a) true)
+		    (ga ?a)
+		    (update (ga ?a) true)
 		    )
 	   )
 

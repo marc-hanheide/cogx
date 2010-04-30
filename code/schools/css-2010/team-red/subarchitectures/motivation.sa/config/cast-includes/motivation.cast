@@ -1,5 +1,5 @@
 # execution ###################################################################
-JAVA MG executor execution.components.SpringSchoolExecutionMediator --labels "breathless,level"
+JAVA MG executor execution.components.SpringSchoolExecutionMediator #--labels "breathless,level"
 #JAVA MG executor execution.components.DoraExecutionMediator --labels "breathless,level"
 #JAVA MG executor execution.components.DoraExecutionMediator --labels "james,chakakhan,heartbrakers,jesusjones"
 
@@ -7,7 +7,7 @@ JAVA MG executor execution.components.SpringSchoolExecutionMediator --labels "br
 
 # motivation ##################################################################
 
-JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?a - agent) (goal-achieved ?a))"
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?a - robot) (ga ?a))"
 
 #JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --maxPlanningTime 240 --goal "(and  (forall (?p - place)  (visited ?p)) (forall (?a - robot) (forall (?p - person)(and (kval ?a (name ?p)) ))))"
 
