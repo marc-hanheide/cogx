@@ -291,7 +291,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 								it2 = ls_pair.iterator();					
 								val = (StringValue)fvp_tmp.val ;
 								my_record = val.val ;
-								if ( my_record.compareToIgnoreCase("NO_RECORD") == 0 ) {
+								if ( my_record.compareToIgnoreCase("not_asked") == 0 ) {
 									my_record = "no" ;
 								}
 							}							

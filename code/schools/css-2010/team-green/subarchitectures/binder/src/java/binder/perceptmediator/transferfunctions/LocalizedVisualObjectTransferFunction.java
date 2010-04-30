@@ -203,6 +203,8 @@ public class LocalizedVisualObjectTransferFunction extends
 					.createNewStringValue(from.label));
 			result.put("conf", FeatureValueBuilder.createNewFloatValue( from.detectionConfidence ));  
 			
+  
+
 			boolean detected ; 
 			if ( from.detectionConfidence > 0.5 ) {
 				detected = true ;
