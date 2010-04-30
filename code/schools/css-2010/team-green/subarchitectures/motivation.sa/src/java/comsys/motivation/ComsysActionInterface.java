@@ -81,7 +81,7 @@ public class ComsysActionInterface extends ManagedComponent {
 				Runtime rt = Runtime.getRuntime(); 
 			    	Process p = rt.exec("espeak -s110" + "'Human._" + blurb + "_You_have_ten_seconds_to_comply.'");
 
-			    	p.waitFor();
+			    	//p.waitFor();
 			}
 			catch(Exception e) { 
 			    System.out.println(e.getMessage()); 
