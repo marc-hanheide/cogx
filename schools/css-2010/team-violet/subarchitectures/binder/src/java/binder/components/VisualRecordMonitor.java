@@ -328,7 +328,7 @@ public class VisualRecordMonitor extends ManagedComponent {
                else if (key.equals("is-in")) {
                   place = extractPlace((FeatureValues)fvd.values);
                }
-               else if (key.equals("person-room") || key.equals("room")) {
+               else if (key.equals("person-room") || key.equals("room") || key.equals("room-label")) {
                   room = strval;
                }
                else if (key.equals("person-record") || key.equals("record")) {
@@ -370,6 +370,9 @@ public class VisualRecordMonitor extends ManagedComponent {
                }
                else if (key.equals("is-in")) {
                   place = extractPlace((FeatureValues)fvd.values);
+               }
+               else if (key.equals("room-label")) {
+                  room = strval;
                }
             }
          }
