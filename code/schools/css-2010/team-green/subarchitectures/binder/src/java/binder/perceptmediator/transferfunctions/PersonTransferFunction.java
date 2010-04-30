@@ -36,7 +36,7 @@ public class PersonTransferFunction extends SimpleDiscreteTransferFunction<Perso
 		result.put("PersonId", FeatureValueBuilder.createNewStringValue(wmc.address.id));
 		result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
 		result.put("record", FeatureValueBuilder.createNewStringValue("no"));
-		result.put("name", FeatureValueBuilder.createNewStringValue(""));
+		result.put("name", FeatureValueBuilder.createNewStringValue("none"));
 
 boolean detected ; 
 			if ( from.distance < 1.80 ) {
