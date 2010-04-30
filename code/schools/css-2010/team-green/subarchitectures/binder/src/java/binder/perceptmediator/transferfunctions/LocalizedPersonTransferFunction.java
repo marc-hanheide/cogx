@@ -53,6 +53,7 @@ public class LocalizedPersonTransferFunction extends
 			result.put("PersonId", FeatureValueBuilder
 					.createNewStringValue(wmc.address.id));
                         result.put("record", FeatureValueBuilder.createNewStringValue("no"));
+			result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
 			result.put("name", FeatureValueBuilder.createNewStringValue(""));
 
 			boolean detected ; 
@@ -60,8 +61,9 @@ public class LocalizedPersonTransferFunction extends
 				detected = true ;
 			} else {
 				detected = false ;
-			}
+			} 
 			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));
+
 			if (detected){
 				try { 
 					Runtime rt = Runtime.getRuntime(); 
