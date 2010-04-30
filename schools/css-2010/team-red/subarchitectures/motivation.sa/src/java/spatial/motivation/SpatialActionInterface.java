@@ -39,6 +39,7 @@ import execution.slice.actions.LookForObjectsAndPeople;
 import execution.slice.actions.SpinAround;
 import execution.slice.actions.PTULookForObjects;
 import execution.slice.actions.LookForPeople;
+import execution.slice.actions.Fart;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.LocalActionStateManager;
@@ -204,6 +205,37 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 
 	}
+
+    private class FartExecutor implements ActionExecutor {
+        private ExecutionCompletionCallback m_callback;
+	private final ManagedComponent m_component;
+
+
+        public FartExecutor(ManagedComponent _component) {
+            m_component = _component;
+        }
+
+        public boolean accept(Action _action) {
+            return true;
+        }
+
+        public TriBool execute() {
+            return null;
+        }
+
+        public void execute(ExecutionCompletionCallback _callback) {
+            m_callback = _callback;
+        }
+
+        public boolean isBlockingAction() {
+            return false;
+        }
+
+        @Override
+            public void stopExecution() {
+
+        }
+    }
 
 	private class GoToPlaceExecutor implements ActionExecutor,
 			WorkingMemoryChangeReceiver {
@@ -478,6 +510,21 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
+	public class FartExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public FartExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
+
+		@Override
+		public ActionExecutor getActionExecutor() {
+                    return new FartExecutor(m_component);
+		}
+
+	}
+
 	public class PTULookForObjectsExecutorFactory implements ActionExecutorFactory {
 
 		private final ManagedComponent m_component;
@@ -586,6 +633,8 @@ public class SpatialActionInterface extends ManagedComponent {
 				new LookForPeopleExecutorFactory(this));
 		m_actionStateManager.registerActionType(SpinAround.class,
                                 new SpinAroundExecutorFactory(this));
+		m_actionStateManager.registerActionType(Fart.class,
+                                      new FartExecutorFactory(this));
 
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
