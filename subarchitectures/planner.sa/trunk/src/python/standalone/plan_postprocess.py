@@ -41,6 +41,8 @@ def getGoalDescription(goal, _state):
 
 def getRWDescription(action, args, _state, time):
     pnode = plans.PlanNode(action, args, time, plans.ActionStatusEnum.EXECUTABLE)
+
+    log.debug("get description for action (%s %s)", action.name, " ".join(a.name for a in action.args))
     
     action.instantiate(args)
 
@@ -70,8 +72,8 @@ def getRWDescription(action, args, _state, time):
         universal_args = []
         rel = _state.get_relevant_vars(action.precondition)
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
-        sat = extstate.is_satisfied(action.precondition, read_vars, universal_args),  "%s: %s" % (str(pnode), action.precondition.pddl_str())
-        assert sat
+        sat = extstate.is_satisfied(action.precondition, read_vars, universal_args)
+        assert sat,  "%s: %s" % (str(pnode), action.precondition.pddl_str())
         pnode.preconds = set(read_vars)
         pnode.original_preconds = set(state.Fact(var, extstate[var]) for var in read_vars)
         pnode.explanations.update(reasons)
