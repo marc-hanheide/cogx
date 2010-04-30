@@ -52,7 +52,7 @@ public class LocalizedPersonTransferFunction extends
 					.createNewPointerValue(placeWMA));
 			result.put("PersonId", FeatureValueBuilder
 					.createNewStringValue(wmc.address.id));
-                        result.put("record", FeatureValueBuilder.createNewStringValue("no"));
+                        result.put("record", FeatureValueBuilder.createNewStringValue("no_record"));
 			result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
 			result.put("name", FeatureValueBuilder.createNewStringValue("none"));
 
@@ -65,13 +65,13 @@ public class LocalizedPersonTransferFunction extends
 				detected = false ;
 			} 
 			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected)); 
-/*
-			if (detected){
+
+		/*	if (detected){
 				try { 
 					Runtime rt = Runtime.getRuntime(); 
-				    	Process p = rt.exec("espeak -s90" + 							"'I_have_detected_a_pathetic_human._Answer_my_questions_or_I_will_destroy_you.'");
+				    	Process p = rt.exec("espeak -s90 'Helllllloooooooo'") ; //+ 							//"'I_have_detected_a_pathetic_human._Answer_my_questions_or_I_will_destroy_you.'");
 
-				    	p.waitFor();
+				   // 	p.waitFor();
 				}
 				catch(Exception e) { 
 				    System.out.println(e.getMessage()); 
