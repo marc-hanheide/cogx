@@ -48,7 +48,9 @@ PeopleDetector::PeopleDetector() :
   deinterlacing(false),
   m_numDetectionAttempts(1),
   m_runContinuously(false)
-{}
+{
+    m_MaxDist = 2.5;
+}
 
 PeopleDetector::~PeopleDetector()
 {}
@@ -153,6 +155,11 @@ void PeopleDetector::configure(const std::map<std::string,std::string> & config)
     if((it = config.find("--tolerance")) != config.end()) {
       istringstream istr(it->second);
       istr >> yeahrightneverused::g_tolerance;
+    }
+
+    if((it = config.find("--maxdist")) != config.end()) {
+      istringstream istr(it->second);
+      istr >> m_MaxDist;
     }
 
     if((it = config.find("--continuous")) != config.end()) {
@@ -733,10 +740,14 @@ void PeopleDetector::runDetection()
               // Here we check that the person is not too close to an
               // existing person
               try {    
+                // Get the odometry and pray that it will not dirft so much
                 std::vector< boost::shared_ptr<CASTData<NavData::RobotPose2d> > >poseVector;
                 getWorkingMemoryEntries<NavData::RobotPose2d>(1, poseVector);
                 
-                if (!poseVector.empty()) {
+                if (pDist < m_MaxDist) {
+                  log("Skipping person detection because the person is too far away");
+                  addToWM = false;
+                } else if (!poseVector.empty()) {
 
                   double px = poseVector[0]->getData()->x +
                     pDist * cos(poseVector[0]->getData()->theta);
