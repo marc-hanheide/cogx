@@ -165,6 +165,9 @@ module execution {
        * Turn the robot in stages to look for people.
        */
       class LookForPeople extends Action {};
+
+      /** Just fart */
+      class Fart extends Action {};
       
       /**
        * Turn the robot in stages to look for objects.
