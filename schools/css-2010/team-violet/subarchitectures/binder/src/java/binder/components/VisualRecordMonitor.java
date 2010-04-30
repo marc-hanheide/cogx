@@ -257,8 +257,51 @@ public class VisualRecordMonitor extends ManagedComponent {
    String extractPlace(FeatureValues values) {
       String strval = "";
       for (FeatureValueProbPair fv : values.values) {
-        String featStr = VisualRecordMonitor.toString(fv.val);
-        strval += featStr;
+         if (! (fv.val instanceof PointerValue)) continue;
+         WorkingMemoryAddress wma = ((PointerValue) fv.val).beliefId;
+         String featStr = CASTUtils.toString(((PointerValue) fv.val).beliefId);
+ 
+         CASTData<StableBelief> beliefData = null;
+         StableBelief sb = null;
+         try {
+            beliefData = getMemoryEntryWithData(wma, StableBelief.class);
+
+            sb = beliefData.getData();
+            if (! sb.type.equals("Place"))
+               continue;
+         } catch (DoesNotExistOnWMException e) {
+            strval += "!inWM:";
+         } catch (UnknownSubarchitectureException e) {
+            strval += "!anSA:";
+         }
+
+         if (sb != null) {
+            String name, status;
+            name = ""; status = "";
+            if (sb.content instanceof CondIndependentDistribs) {
+               CondIndependentDistribs dist = (CondIndependentDistribs) sb.content;
+               for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
+                  if (pd.getValue() instanceof BasicProbDistribution) {
+                     BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
+                     String key = pd.getKey();
+                     String strvalb = "";
+                     for (FeatureValueProbPair fvb : ((FeatureValues)fvd.values).values) {
+                        String featStrb = VisualRecordMonitor.toString(fvb.val);
+                        strvalb += featStrb;
+                     }
+                     if (key.equals("PlaceId")) {
+                        name = strvalb;
+                     }
+                     else if (key.equals("PlaceStatus")) {
+                        // maybe
+                     }
+                  }
+               }
+            }
+            strval += "P" + name + status + " ";
+         }
+
+         strval += featStr;
       }
       return strval;
    }
@@ -277,21 +320,29 @@ public class VisualRecordMonitor extends ManagedComponent {
                   String featStr = VisualRecordMonitor.toString(fv.val);
                   strval += featStr;
                }
-               if (key.equals("name")) {
+               if (key.equals("person-name") || key.equals("name")) {
                   name = strval;
                }
                else if (key.equals("is-in")) {
                   place = extractPlace((FeatureValues)fvd.values);
+               }
+               else if (key.equals("person-room") || key.equals("room")) {
+                  room = strval;
+               }
+               else if (key.equals("person-record") || key.equals("record")) {
+                  record = strval;
                }
             }
          }
       }
       if (! name.isEmpty()) {
          System.out.println("    Adding person belief with name (" + op + ")");
+         System.out.println("    name " + name + " place " + place + " room " + room);
          Task3ResultsPresenter.setPerson(name, place, room, record);
       }
       else {
          System.out.println("    NOT Adding person belief with NO NAME(" + op + ")");
+         System.out.println("    place " + place + " room " + room);
          // Task3ResultsPresenter.setPerson("Empty Label", place, room, record);
       }
    }
