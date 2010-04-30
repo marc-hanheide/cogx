@@ -356,7 +356,6 @@ public class VisualRecordMonitor extends ManagedComponent {
          for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
             System.out.println(pd.getKey());
             if (pd.getValue() instanceof BasicProbDistribution) {
-               System.out.println("The value seems ok (BasicProbDistribution)");
                BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
                String key = pd.getKey();
                String strval = "";
