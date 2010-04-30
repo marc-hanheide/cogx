@@ -54,7 +54,9 @@ public class LocalizedPersonTransferFunction extends
 					.createNewStringValue(wmc.address.id));
                         result.put("record", FeatureValueBuilder.createNewStringValue("no"));
 			result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
-			result.put("name", FeatureValueBuilder.createNewStringValue(""));
+			result.put("name", FeatureValueBuilder.createNewStringValue("none"));
+
+		
 
 			boolean detected ; 
 			if ( from.distance < 1.80 ) {
@@ -62,8 +64,8 @@ public class LocalizedPersonTransferFunction extends
 			} else {
 				detected = false ;
 			} 
-			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected));
-
+			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected)); 
+/*
 			if (detected){
 				try { 
 					Runtime rt = Runtime.getRuntime(); 
@@ -75,7 +77,7 @@ public class LocalizedPersonTransferFunction extends
 				    System.out.println(e.getMessage()); 
 				}
 			}
-
+*/
 
 
 		} catch (BeliefException e) {
