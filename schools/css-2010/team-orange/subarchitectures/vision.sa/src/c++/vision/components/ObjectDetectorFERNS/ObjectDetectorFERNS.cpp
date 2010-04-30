@@ -15,6 +15,7 @@
 #include <highgui.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
+#include <SpatialData.hpp>
 #include "ObjectDetectorFERNS.h"
 
 /**
@@ -417,6 +418,30 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   }
 
   }
+
+  // Get the detected objects and send a command
+  std::set<string>::iterator it;
+  for( it = detectedObjects.begin(); it != detectedObjects.end(); it++ ) 
+  {
+    std::string name;
+
+			if ((*it)=="chaka") 
+			    name="Chaka Khan";
+			else if ((*it)=="james") 
+			    name="James";
+			else if ((*it)=="jesus") 
+			    name="Jesus Jones";
+			else if ((*it)=="heart") 
+			    name="Hearbreakers";
+
+
+    SpatialData::AnnouncementPtr obj = new SpatialData::Announcement();
+    obj->message = "Record by "+name+" found!. Let's listen to it for a second.";
+    obj->songId = (*it);
+    addToWorkingMemory(newDataID(), "spatial.sa", obj);
+  }
+
+
   // a bit HACKy: say that we detected an object with a given label
   // in the last frame, when actually we only know that we detected it at
   // least in one of the last numDetectionAttempts frames
