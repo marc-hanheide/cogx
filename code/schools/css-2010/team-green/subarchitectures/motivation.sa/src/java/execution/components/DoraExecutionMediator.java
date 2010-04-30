@@ -237,7 +237,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 		    act.status = ActionStatus.COMPLETE;
 		    act.success = TriBool.TRITRUE;
 		String my_record = "";
-		String what_I_have_to_say = "espeak -s110 'Mark, listen very carefully. I shall say this only once. From what I gather, " ;
+		String what_I_have_to_say = "espeak -s90 'Mark, listen very carefully. I shall say this only once. From what I gather, " ;
 		try{
 			 
 
@@ -287,10 +287,13 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 							stb = (Belief)it.next() ;
  							ls_pair = FeatureContentUtils.getValuesInBelief(stb, "record" ) ;
-							if ( ls_pair.size() ) {
+							if ( ls_pair.size() > 0 ) {
 								it2 = ls_pair.iterator();					
 								val = (StringValue)fvp_tmp.val ;
 								my_record = val.val ;
+								if ( my_record.compareToIgnoreCase("NO_RECORD") == 0 ) {
+									my_record = "no" ;
+								}
 							}							
 						}
 

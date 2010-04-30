@@ -65,7 +65,7 @@ public class LocalizedPersonTransferFunction extends
 			if (detected){
 				try { 
 					Runtime rt = Runtime.getRuntime(); 
-				    	Process p = rt.exec("espeak" + "'I_just_detected_a_person._He_is_really_ugly.'");
+				    	Process p = rt.exec("espeak -s90" + "'I_just_detected_a_person._He_is_really_ugly.'");
 
 				    	p.waitFor();
 				}
