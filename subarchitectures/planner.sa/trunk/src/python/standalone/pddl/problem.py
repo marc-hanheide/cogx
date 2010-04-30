@@ -119,11 +119,13 @@ class Problem(domain.Domain):
                 if opt.string not in ("minimize", "maximize"):
                     raise UnexpectedTokenError(opt, "'minimize' or 'maximize'")
                 problem.optimization = opt.string
-                
-                #problem.functions.add(builtin.total_time)
+
+                if "durative-actions" in domain.requirements:
+                    problem.functions.add(builtin.total_time)
                 #problem.functions.add(builtin.total_cost)
                 func = predicates.Term.parse(j,problem)
-                #problem.functions.remove(builtin.total_time)
+                if "durative-actions" in domain.requirements:
+                    problem.functions.remove(builtin.total_time)
                 #problem.functions.remove(builtin.total_cost)
 
                 j.no_more_tokens()
