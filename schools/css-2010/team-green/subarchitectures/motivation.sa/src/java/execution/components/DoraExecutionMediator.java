@@ -236,8 +236,8 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 		    Report act = newActionInstance(Report.class);
 		    act.status = ActionStatus.COMPLETE;
 		    act.success = TriBool.TRITRUE;
-		
-		String what_I_have_to_say = "espeak -s110 'From what I gather, " ;
+		String my_record = "";
+		String what_I_have_to_say = "espeak -s110 'Mark, listen very carefully. I shall say this only once. From what I gather, " ;
 		try{
 			 
 
@@ -265,7 +265,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
  				if ( ls_pair.size() > 0 ) {
  					Iterator it2=ls_pair.iterator();
  					if( it2.hasNext()  ) {
-						System.out.println("--> I've entered it2.hasNext()");
+						//System.out.println("--> I've entered it2.hasNext()");
  						FeatureValueProbPair fvp_tmp ;
  						fvp_tmp = (FeatureValueProbPair)it2.next() ;
  						StringValue val  = (StringValue)fvp_tmp.val ;
@@ -284,6 +284,14 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 							detected_entity = 1 ;
 						} else if ( obstype.equals(typePS) ) {
 							detected_entity = 2 ;
+
+							stb = (Belief)it.next() ;
+ 							ls_pair = FeatureContentUtils.getValuesInBelief(stb, "record" ) ;
+							if ( ls_pair.size() ) {
+								it2 = ls_pair.iterator();					
+								val = (StringValue)fvp_tmp.val ;
+								my_record = val.val ;
+							}							
 						}
 
 						System.out.println("detected_entity: " + detected_entity ) ;
@@ -301,6 +309,8 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 							System.out.println("Value of have_detection: " + have_detection );
  							if ( have_detection == true ){
+							 
+
  								// check for the place
  								List<FeatureValueProbPair>  ls_pair2 = new ArrayList<FeatureValueProbPair>();
  								ls_pair2 = FeatureContentUtils.getValuesInBelief(stb, "is-in" ) ;
@@ -348,7 +358,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 								if ( detected_entity == 1 ) {
 									what_I_have_to_say = what_I_have_to_say + "The record " + vv + " is at place " + valofplc + " which is in room number" + valofRoom + ". " ;
 								} else if ( detected_entity == 2) {
-									what_I_have_to_say = what_I_have_to_say + "The person " + vv + " is at place " + valofplc + " which is in room number" + valofRoom +". " ;
+									what_I_have_to_say = what_I_have_to_say + "The person " + vv + " is at place " + valofplc + " which is in room number" + valofRoom + " and owns " + my_record + " record. " ;
 								}
  							}
 							
