@@ -23,10 +23,9 @@
         (:functions
                 (is-in ?r - movable) - place
                 (is-in ?r - robot) - place
-		(name ?o - visualobject) - object
+		(name ?o - movable) - object
 		(placeid ?loc - place) - place_id
 		(start_place ?r - robot) - place
-                (person-name ?p - person) - name
                 (record ?p - person) - name
                 (in-room ?loc - place) - comaroom
                 (concepts ?r - comaroom) - room_name
@@ -85,11 +84,11 @@
                  :precondition (and 
                                     (started ?a)
                         ;            (not (locked_due_to_missing_object_information))
-                                    (not (kval ?a (person-name ?p))) 
+                                    (not (kval ?a (name ?p))) 
                                     (= (is-in ?a) ?at) 
                                     (= (is-in ?p) ?at)
                                )
-                 :effect (kval ?a (person-name ?p))
+                 :effect (kval ?a (name ?p))
         )
 
         (:action ask-for-your-record
@@ -100,7 +99,7 @@
                                     (started ?a)
                      ;               (not (locked_due_to_missing_object_information))
                                     (not (kval ?a (record ?p)))
-                                    (kval ?a (person-name ?p)) 
+                                    (kval ?a (name ?p)) 
                                     (= (is-in ?a) ?at) 
                                     (= (is-in ?p) ?at)
                                )
@@ -166,17 +165,15 @@
         ; )
                  
         ; (:derived (locked_due_to_missing_object_information)
-        ;            (forall (?a - robot)
-        ;                   (exists (?v - visualobject)
-        ;                           (not (kval ?a (is-in-room ?v)))
-        ;                   )
+        ;            (exists (?v - visualobject ?a - robot)
+        ;                    (not (kval ?a (is-in-room ?v)))
         ;            )
         ; )
 
         (:derived (have_all_info_about ?p - person)
                   (forall (?a - robot) 
                          (and
-                               (kval ?a (person-name ?p))
+                               (kval ?a (name ?p))
                                (kval ?a (record ?p))
                          )
                   )
