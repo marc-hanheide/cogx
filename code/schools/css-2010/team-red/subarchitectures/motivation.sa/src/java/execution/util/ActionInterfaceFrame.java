@@ -60,6 +60,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_lookForObjectsAction;
 	private JRadioButton m_lookForObjectsAndPeopleAction;
 	private JRadioButton m_spinAroundAction;
+	private JRadioButton m_deliverMessageAction;
 	private JRadioButton m_ptulookForObjectsAction;
 	private JRadioButton m_lookForPeopleAction;
 	private JRadioButton m_askForFeatureAction;
@@ -160,6 +161,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_lookForObjectsAction = new JRadioButton("look for objects");
 			m_lookForObjectsAndPeopleAction = new JRadioButton("look for objects and people");
 			m_spinAroundAction = new JRadioButton("spin around");
+			m_deliverMessageAction = new JRadioButton("deliver message");
 			m_ptulookForObjectsAction = new JRadioButton("ptu look for objects");
 			m_lookForPeopleAction = new JRadioButton("look for people");
 
@@ -177,6 +179,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_lookForObjectsAction);
 			actionGroup.add(m_lookForObjectsAndPeopleAction);
 			actionGroup.add(m_spinAroundAction);
+			actionGroup.add(m_deliverMessageAction);
 			actionGroup.add(m_ptulookForObjectsAction);
 			actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_askForFeatureAction);
@@ -190,6 +193,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_actionPanel.add(m_lookForObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForObjectsAndPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_spinAroundAction, new GridBagConstraints());
+			m_actionPanel.add(m_deliverMessageAction, new GridBagConstraints());
 			m_actionPanel.add(m_ptulookForObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_askForFeatureAction, new GridBagConstraints());
@@ -250,6 +254,8 @@ public class ActionInterfaceFrame extends JFrame {
 			lookForObjectsAndPeople();
 		} else if (m_spinAroundAction.isSelected()) {
 			spinAround();
+		} else if (m_deliverMessageAction.isSelected()) {
+			deliverMessage();
 		} else if (m_ptulookForObjectsAction.isSelected()) {
 			ptulookForObjects();
 		} else if (m_lookForPeopleAction.isSelected()) {
@@ -481,6 +487,16 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private void spinAround() throws CASTException {
 		m_exeMan.triggerSpinAround(new MonitorPanel());
+	}
+
+        private void deliverMessage() throws CASTException {
+            try {
+                
+            String command = "./delivermessage.sh";
+            Runtime.getRuntime().exec(command);
+            } catch (Exception e) {
+                System.out.println("Exception " + e.getMessage());
+            }            
 	}
 
 	private void ptulookForObjects() throws CASTException {
