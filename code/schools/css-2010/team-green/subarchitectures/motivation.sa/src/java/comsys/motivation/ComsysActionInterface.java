@@ -148,7 +148,7 @@ public class ComsysActionInterface extends ManagedComponent {
 				@Override
 				public void actionPerformed(ActionEvent _e) {
 					dialog.setVisible(false);
-                                        String featureValue = "NO_RECORD";
+                                        String featureValue = "none";
                                         try {
                                             FeatureContentUtils.addAnotherValueInBelief(belief, m_featureID, 
                                                                         new FeatureValueProbPair( new beliefmodels.autogen.featurecontent.StringValue(featureValue), 1f));
