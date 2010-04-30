@@ -64,6 +64,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_ptulookForObjectsAction;
 	private JRadioButton m_lookForPeopleAction;
 	private JRadioButton m_askForFeatureAction;
+	private JRadioButton m_fartAction;
 	private JRadioButton m_testFeatureValueAction;
 
 	private GraphicalExecutionManager m_exeMan;
@@ -162,6 +163,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_lookForObjectsAndPeopleAction = new JRadioButton("look for objects and people");
 			m_spinAroundAction = new JRadioButton("spin around");
 			m_deliverMessageAction = new JRadioButton("deliver message");
+			m_fartAction = new JRadioButton("fart");
 			m_ptulookForObjectsAction = new JRadioButton("ptu look for objects");
 			m_lookForPeopleAction = new JRadioButton("look for people");
 
@@ -180,6 +182,7 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_lookForObjectsAndPeopleAction);
 			actionGroup.add(m_spinAroundAction);
 			actionGroup.add(m_deliverMessageAction);
+			actionGroup.add(m_fartAction);
 			actionGroup.add(m_ptulookForObjectsAction);
 			actionGroup.add(m_lookForPeopleAction);
 			actionGroup.add(m_askForFeatureAction);
@@ -194,6 +197,7 @@ public class ActionInterfaceFrame extends JFrame {
 			m_actionPanel.add(m_lookForObjectsAndPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_spinAroundAction, new GridBagConstraints());
 			m_actionPanel.add(m_deliverMessageAction, new GridBagConstraints());
+			m_actionPanel.add(m_fartAction, new GridBagConstraints());
 			m_actionPanel.add(m_ptulookForObjectsAction, new GridBagConstraints());
 			m_actionPanel.add(m_lookForPeopleAction, new GridBagConstraints());
 			m_actionPanel.add(m_askForFeatureAction, new GridBagConstraints());
@@ -256,6 +260,8 @@ public class ActionInterfaceFrame extends JFrame {
 			spinAround();
 		} else if (m_deliverMessageAction.isSelected()) {
 			deliverMessage();
+		} else if (m_fartAction.isSelected()) {
+			fart();
 		} else if (m_ptulookForObjectsAction.isSelected()) {
 			ptulookForObjects();
 		} else if (m_lookForPeopleAction.isSelected()) {
@@ -498,6 +504,10 @@ public class ActionInterfaceFrame extends JFrame {
                 System.out.println("Exception " + e.getMessage());
             }            
 	}
+
+    private void fart() throws CASTException {
+        System.out.println("Farting now....");
+    }
 
 	private void ptulookForObjects() throws CASTException {
 		m_exeMan.triggerPTULookForObjects(new MonitorPanel());
