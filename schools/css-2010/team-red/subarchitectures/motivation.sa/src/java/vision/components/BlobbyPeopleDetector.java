@@ -126,7 +126,10 @@ public class BlobbyPeopleDetector extends ManagedComponent {
                         ppos.x = 0;
                         ppos.y = 0;
                         
-                        // Get hold of the current robot pose
+                        // Get hold of the current odmetry reading to
+                        // calculate the persons position. This will
+                        // only work over short distances but should
+                        // be fine when near the person.
                         try {
                             CASTData<RobotPose2d>[] rp = getWorkingMemoryEntries("spatial.sa", RobotPose2d.class, 1);
                             ppos.x = rp[0].getData().x + 
