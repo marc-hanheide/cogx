@@ -150,7 +150,7 @@ public class PresentResult extends ManagedComponent {
             }                                
         }        
 
-        log("Read room with name " + r.name);
+        //log("Read room with name " + r.name);
         return r;
     }
 
@@ -175,7 +175,7 @@ public class PresentResult extends ManagedComponent {
                         for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
                             p.roomaddress = ((PointerValue) fv.val).beliefId.id;
 
-                            log("Getting adress of room " + p.roomaddress);
+                            //log("Getting adress of room " + p.roomaddress);
                             
                             try {
                                 CASTData<StableBelief> data = 
@@ -257,7 +257,7 @@ public class PresentResult extends ManagedComponent {
                     BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
                     
                     if (pd.getKey().equals("object-label")) {
-                        log("Got an object label for VisualObject");
+                        //log("Got an object label for VisualObject");
                         for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
                             o.category = ((StringValue) fv.val).val;
                             break;
@@ -265,7 +265,7 @@ public class PresentResult extends ManagedComponent {
                         }
                     } else if (pd.getKey().equals("is-in")) {
 
-                        log("Got the is-in for VisualObject");
+                        //log("Got the is-in for VisualObject");
                         for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
                             try {
                                 CASTData<StableBelief> data = 
@@ -319,7 +319,7 @@ public class PresentResult extends ManagedComponent {
             info += " Features: " + features;
         }
         
-        log(info);
+        //log(info);
         
         
         if (sBelief.type.equals("Place")) {
@@ -329,7 +329,7 @@ public class PresentResult extends ManagedComponent {
             boolean add = true;
             for (int i = 0; i < m_Places.size(); i++) {
                 if (m_Places.elementAt(i).id == p.id) {
-                    log("Place already existed");
+                    //log("Place already existed");
                     m_Places.elementAt(i).roomaddress = p.roomaddress;
                     m_Places.elementAt(i).roomname = p.roomname;
                     add = false;
@@ -378,7 +378,7 @@ public class PresentResult extends ManagedComponent {
             boolean add = true;
             for (int i = 0; i < m_People.size(); i++) {
                 if (m_People.elementAt(i).address == p.address) {
-                    log("Person already existed");
+                    //log("Person already existed");
                     m_People.elementAt(i).name = p.name;
                     m_People.elementAt(i).roomname = p.roomname;
                     m_People.elementAt(i).record = p.record;
@@ -403,7 +403,7 @@ public class PresentResult extends ManagedComponent {
             boolean add = true;
             for (int i = 0; i < m_VisualObjects.size(); i++) {
                 if (m_VisualObjects.elementAt(i).address == vo.address) {
-                    log("VisualObject already existed");
+                    //log("VisualObject already existed");
                     m_VisualObjects.elementAt(i).roomname = vo.roomname;
                     add = false;
                     break;
@@ -414,26 +414,57 @@ public class PresentResult extends ManagedComponent {
                      
         }        
 
-        info = "\nInformation about the world so far\n";
-        for (int i = 0; i < m_Rooms.size(); i++) {
-            info += "Room at address " + m_Rooms.elementAt(i).address + " with name \"" + m_Rooms.elementAt(i).name + "\"\n";
-        }
+        info = "\nInformation about the world\n============================\n";
         for (int i = 0; i < m_People.size(); i++) {
             info += "Person at address " + m_People.elementAt(i).address + " with name \"" + m_People.elementAt(i).name + "\" at place with id " + m_People.elementAt(i).placeid + " and in room \"" + m_People.elementAt(i).roomname + "\"\n";
         }
         for (int i = 0; i < m_VisualObjects.size(); i++) {
             info += "VisualObject at address " + m_VisualObjects.elementAt(i).address + " of category \"" + m_VisualObjects.elementAt(i).category + "\" at place with id " + m_VisualObjects.elementAt(i).placeid + " and in room \"" + m_VisualObjects.elementAt(i).roomname + "\"\n";
         }
+        info += "----------- Rooms and places ------------\n";
+        for (int i = 0; i < m_Rooms.size(); i++) {
+            info += "Room at address " + m_Rooms.elementAt(i).address + " with name \"" + m_Rooms.elementAt(i).name + "\"\n";
+        }
         for (int i = 0; i < m_Places.size(); i++) {
             info += "Place at address " + m_Places.elementAt(i).address + " with id " + m_Places.elementAt(i).id + " associated with room at address " + m_Places.elementAt(i).roomaddress + " and name \"" + 
                 m_Places.elementAt(i).roomname + "\"\n";
         }
 
+        String message = "";
+        for (int i = 0; i < m_People.size(); i++) {
+            if (m_People.elementAt(i).name != "UNKNOWN") {
+                message += "There is a person named " + 
+                    m_People.elementAt(i).name + " near place " +
+                    m_People.elementAt(i).placeid + " in room " + 
+                    m_People.elementAt(i).roomname + ". ";
+            } else {
+                message += "There is an unknown person near place " +
+                    m_People.elementAt(i).placeid + " in room " + 
+                    m_People.elementAt(i).roomname + ". ";
+            }
+        }
+        for (int i = 0; i < m_VisualObjects.size(); i++) {
+            message += "The object " +
+                m_VisualObjects.elementAt(i).category + " is near place " +
+                m_VisualObjects.elementAt(i).placeid + " in room " + 
+                m_VisualObjects.elementAt(i).roomname + ". ";
+        }
+        message = "echo \"" + message + "\" | festival --tts";
+        
         try {
             FileWriter fstream = new FileWriter("information.txt");
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(info);
             out.close();
+
+            FileWriter fstream2 = new FileWriter("delivermessage.sh");
+            BufferedWriter out2 = new BufferedWriter(fstream2);
+            out2.write(message);
+            out2.close();
+
+            String command = "chmod a+x delivermessage.sh";
+            Runtime.getRuntime().exec(command);
+
         } catch (Exception e) {}
     }
 
