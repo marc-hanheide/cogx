@@ -66,10 +66,10 @@ public class LocalizedPersonTransferFunction extends
 			} 
 			result.put("detected", FeatureValueBuilder.createNewBooleanValue(detected)); 
 
-		/*	if (detected){
+			if (detected){
 				try { 
 					Runtime rt = Runtime.getRuntime(); 
-				    	Process p = rt.exec("espeak -s90 'Helllllloooooooo'") ; //+ 							//"'I_have_detected_a_pathetic_human._Answer_my_questions_or_I_will_destroy_you.'");
+				    	Process p = rt.exec("espeak -s90 'I_have_detected_a_pathetic_human_Answer_my_questions_or_I_will_destroy_you.'");
 
 				   // 	p.waitFor();
 				}
@@ -77,7 +77,7 @@ public class LocalizedPersonTransferFunction extends
 				    System.out.println(e.getMessage()); 
 				}
 			}
-*/
+
 
 
 		} catch (BeliefException e) {
