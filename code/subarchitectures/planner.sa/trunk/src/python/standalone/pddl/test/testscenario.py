@@ -13,7 +13,7 @@ dora_domain = \
 """
 (define (domain cogx)
 
-        (:requirements :mapl :adl :durative-actions :object-fluents)
+        (:requirements :mapl :adl :durative-actions :object-fluents :action-costs)
 	
 	(:types 
 		place - object
