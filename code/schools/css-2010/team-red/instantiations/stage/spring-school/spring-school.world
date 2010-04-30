@@ -121,7 +121,7 @@ blob_return 1
 )
 
 
-#create two yellow boxs
+#create four yellow boxs
 box2d
 (
 name "yellowbox1"
@@ -135,6 +135,22 @@ box2d
 name "yellowbox2"
 color "yellow"
 pose [2.300 -4.6 0.000]
+blob_return 1
+)
+
+box2d
+(
+name "yellowbox3"
+color "yellow"
+pose [4.6 -4.6 0.000]
+blob_return 1
+)
+
+box2d
+(
+name "yellowbox4"
+color "yellow"
+pose [6.9 -4.6 0.000]
 blob_return 1
 )
 
