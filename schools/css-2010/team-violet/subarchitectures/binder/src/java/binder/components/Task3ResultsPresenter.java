@@ -8,7 +8,7 @@
  *
  * Created on 2010-04-29, 20:15:33
  */
-package testtoplaywavfiles;
+package binder.components;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,8 +29,8 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
 {
     private static Task3ResultsPresenter instance = new Task3ResultsPresenter();
 
-    private static Map<String, Person> persons = new HashMap<String, Person>(4);
-    private static Map<String, Record> records = new HashMap<String, Record>(4);
+    public static Map<String, Person> persons = new HashMap<String, Person>(4);
+    public static Map<String, Record> records = new HashMap<String, Record>(4);
 
     public static Task3ResultsPresenter getInstance()
     {
@@ -518,9 +518,8 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
         });
     }
 
-    private static class Record
+    public static class Record
     {
-
         public String name;
         public String place;
         public String room;
@@ -536,9 +535,8 @@ public class Task3ResultsPresenter extends javax.swing.JFrame
 
     }
 
-    private static class Person
+    public static class Person
     {
-
         public String name;
         public String place;
         public String room;

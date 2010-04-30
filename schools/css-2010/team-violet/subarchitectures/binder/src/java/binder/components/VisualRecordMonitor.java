@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 import violetsound.AePlayWave;
+// import Task3ResultsPresenter;
 
 
 /**
@@ -78,9 +79,10 @@ public class VisualRecordMonitor extends ManagedComponent {
    private int[] ordPersonWav;
 
    private class Record {
-      public String label;
       public WorkingMemoryAddress address;
+      public String label;
       public boolean hasPlace;
+      public String Place;
       public Record(String label, WorkingMemoryAddress address) {
          this.label = label;
          this.address = address;
@@ -120,7 +122,7 @@ public class VisualRecordMonitor extends ManagedComponent {
             ChangeFilterFactory.createLocalTypeFilter(StableBelief.class,
                WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
                public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-                  onObjectBeliefChanged(_wmc);
+                  // onObjectBeliefChanged(_wmc);
                }
             }
             );
@@ -136,31 +138,16 @@ public class VisualRecordMonitor extends ManagedComponent {
 
                     StableBelief sb = beliefData.getData();
 
-                    if (sb.content instanceof CondIndependentDistribs) {
-                       CondIndependentDistribs dist = (CondIndependentDistribs) sb.content;
-                       String features="";
-                       for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
-                          if (pd.getValue() instanceof BasicProbDistribution) {
-                             BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
-                             features+=pd.getKey()+"=[";
-                             for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
-                                String featStr = VisualRecordMonitor.toString(fv.val);
-                                features+=featStr+" ";
-                             }
-                             features+="] ";
-                          }
-                       }
-                       System.out.println("Stable Belief Added> " + features);
-                    }
                     //List<FeatureValue> labels = m_binderFacade.getFeatureValue(sb, "label");
                     //StringValue recordname = ((StringValue) labels.get(0));
                     //System.out.println("ADDED> " + recordname.val);
 
-                    ProbDistribution content = sb.content;
                     if (sb.type.equals("VisualObject")) {
+                       processObjectBelief(sb, "add");
                        new AePlayWave("wavs/curiosity-oh_whats_that.wav").start();
                     }
                     if (sb.type.equals("Person")) {
+                       processPersonBelief(sb, "add");
                        new AePlayWave("wavs/Shodan-are_you_afraid.wav").start();
                     }
                     //System.out.println("StableBelief added: id=" + sb.id 
@@ -251,7 +238,74 @@ public class VisualRecordMonitor extends ManagedComponent {
       for (String id: DEFAULT_LABELS) {
          createPlaceholder(id);
       }
-      new AePlayWave("wavs/Xerxes-unit_i832x265_online.wav").start();
+   }
+
+   void processPersonBelief(StableBelief belief, String op) {
+      String name, place, room, record;
+      name = ""; place = ""; room = ""; record = "";
+      if (belief.content instanceof CondIndependentDistribs) {
+         CondIndependentDistribs dist = (CondIndependentDistribs) belief.content;
+         for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
+            if (pd.getValue() instanceof BasicProbDistribution) {
+               BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
+               String key = pd.getKey();
+               String strval = "";
+               for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
+                  String featStr = VisualRecordMonitor.toString(fv.val);
+                  strval += featStr;
+               }
+               if (key.equals("name")) {
+                  name = strval;
+               }
+               else if (key.equals("is-in")) {
+                  place = strval;
+               }
+            }
+         }
+      }
+      if (! name.isEmpty()) {
+         Task3ResultsPresenter.setPerson(name, place, room, record);
+      }
+      else {
+         System.out.println("    NOT Adding person belief with NO NAME");
+         // Task3ResultsPresenter.setPerson("Empty Label", place, room, record);
+      }
+   }
+
+   void processObjectBelief(StableBelief belief, String op) {
+      String name, place, room, owner;
+      name = ""; place = ""; room = ""; owner = "";
+      System.out.println("Adding object belief");
+      if (belief.content instanceof CondIndependentDistribs) {
+         CondIndependentDistribs dist = (CondIndependentDistribs) belief.content;
+         for (Entry<String, ProbDistribution> pd : dist.distribs.entrySet()) {
+            System.out.println(pd.getKey());
+            if (pd.getValue() instanceof BasicProbDistribution) {
+               System.out.println("The value seems ok (BasicProbDistribution)");
+               BasicProbDistribution fvd = (BasicProbDistribution) pd.getValue();
+               String key = pd.getKey();
+               String strval = "";
+               for (FeatureValueProbPair fv : ((FeatureValues)fvd.values).values) {
+                  String featStr = VisualRecordMonitor.toString(fv.val);
+                  strval += featStr;
+               }
+               if (key.equals("label")) {
+                  name = strval;
+               }
+               else if (key.equals("is-in")) {
+                  place = strval;
+               }
+            }
+         }
+      }
+      if (! name.isEmpty()) {
+         System.out.println("    Adding object belief with name");
+         Task3ResultsPresenter.setRecord(name, place, room, owner);
+      }
+      else {
+         System.out.println("    Adding object belief with NO NAME");
+         Task3ResultsPresenter.setRecord("Empty Label", place, room, owner);
+      }
    }
 
    void onObjectBeliefChanged(WorkingMemoryChange _wmc) {
@@ -309,6 +363,8 @@ public class VisualRecordMonitor extends ManagedComponent {
    }
 
    protected void runComponent() {
-      createObjectPlaceholders();
+      // createObjectPlaceholders();
+      new AePlayWave("wavs/Xerxes-unit_i832x265_online.wav").start();
+      Task3ResultsPresenter.getInstance().setVisible(true);
    }
 }
