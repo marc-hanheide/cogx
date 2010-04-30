@@ -56,7 +56,7 @@ public class LocalizedPersonTransferFunction extends
 			result.put("name", FeatureValueBuilder.createNewStringValue(""));
 
 			boolean detected ; 
-			if ( from.distance < 2.00 ) {
+			if ( from.distance < 1.80 ) {
 				detected = true ;
 			} else {
 				detected = false ;
