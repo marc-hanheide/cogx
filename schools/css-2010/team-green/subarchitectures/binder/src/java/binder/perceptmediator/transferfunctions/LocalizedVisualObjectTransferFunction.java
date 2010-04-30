@@ -214,7 +214,7 @@ public class LocalizedVisualObjectTransferFunction extends
 				String detectedRecordName = from.label;
 				try { 
 					Runtime rt = Runtime.getRuntime(); 
-				    	Process p = rt.exec("espeak" + "'I_just_detected_a_record_called_" + detectedRecordName + "._who bought this boring old crap?'");
+				    	Process p = rt.exec("espeak -s110" + "'I_just_detected_a_record_called_" + detectedRecordName + "._who_bought_this_boring_old_crap?'");
 
 				    	p.waitFor();
 				}
