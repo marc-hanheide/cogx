@@ -424,6 +424,7 @@ class State(dict):
         return extstate.is_satisfied(action.precondition)
             
     def is_satisfied(self, cond, relevantVars=None, universal=None):
+        import logging
         def instantianteAndCheck(cond, params):
             cond.instantiate(dict(zip(cond.args, params)))
             result = checkConditionVisitor(cond.condition)
@@ -463,7 +464,8 @@ class State(dict):
                 if not cond.parts:
                     return True, [], []
 
-                return allFacts(imap(checkConditionVisitor, cond.parts))
+                result = allFacts(imap(checkConditionVisitor, cond.parts))
+                return result
             elif isinstance(cond, conditions.Disjunction):
                 return anyFacts(imap(checkConditionVisitor, cond.parts))
             elif isinstance(cond, conditions.QuantifiedCondition):
@@ -482,6 +484,7 @@ class State(dict):
             assert False
 
         result, svars, univ = checkConditionVisitor(cond)
+
         if relevantVars is not None:
             relevantVars += svars
         if universal is not None:
@@ -616,12 +619,19 @@ class State(dict):
         #print "finding releveant:", time.time()-t0
 
         ex_state = State(self.iterfacts(), self.problem)
-            
+
+        import logging
+        
         t0 = time.time()
         for level, preds in sorted(self.problem.stratification.iteritems()):
+            logging.getLogger().debug("level: %d, %s", level, map(str, preds))
             t1 = time.time()
             axioms = set()
+            #for p, ax in pred_to_axioms.iteritems():
+            #    logging.getLogger().debug("%s => %s", p.name, ", ".join(a.predicate.name for a in ax))
+                
             for p in preds:
+                #logging.getLogger().debug("added %s", ", ".join(a.predicate.name for a in pred_to_axioms[p]))
                 axioms |= pred_to_axioms[p]
 
             recursive_atoms = set()
@@ -634,7 +644,11 @@ class State(dict):
                     return self.problem.predicates.get(a.predicate.name, c)
                 
                 if relevant:
-                    gen = (svar.as_literal() for svar in relevant)
+                    gen = []
+                    for svar in relevant:
+                        atom = svar.as_literal()
+                        if atom.predicate in preds:
+                            gen.append(atom)
                 else:
                     combinations = product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), a.args))
 
@@ -653,7 +667,10 @@ class State(dict):
             #print "collecting level %d (%d atoms):" % (level, len(recursive_atoms)+len(nonrecursive_atoms)), time.time()-t1
             
             changed = True
+
+            logging.getLogger().debug("start")
             while changed:
+                logging.getLogger().debug("axiom eval pass")
                 t2 = time.time()
                 changed = False
                 open = (nonrecursive_atoms | recursive_atoms) - true_atoms
@@ -669,6 +686,8 @@ class State(dict):
                                 universal = None
                                 
                             if ex_state.is_satisfied(ax.condition, vars, universal):
+                                #logging.getLogger().debug("set to true: %s", atom.pddl_str())
+
                                 true_atoms.add(atom)
                                 ex_state[StateVariable.from_literal(atom)] = TRUE
                                 changed = True
@@ -679,6 +698,7 @@ class State(dict):
                                     for param in universal:
                                         universalReasons[this_svar].add(param)
                                 break
+                                
                             ax.uninstantiate()
                     #print "atom:", time.time()-t3
 
