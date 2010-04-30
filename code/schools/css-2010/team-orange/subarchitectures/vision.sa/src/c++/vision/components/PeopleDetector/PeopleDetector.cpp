@@ -4,6 +4,7 @@
 
 #include <VideoUtils.h>
 #include <VisionData.hpp>
+#include <SpatialData.hpp>
 
 #include <opencv/highgui.h>
 #include <opencv/cvaux.h>
@@ -727,6 +728,17 @@ void PeopleDetector::runDetection()
                         cvSet2D(img, y, pos, s2);
                     }
             }
+
+
+	    if (detections.size()>0)
+	    {
+
+    SpatialData::AnnouncementPtr obj = new SpatialData::Announcement();
+    obj->message = "Oh, I see a person. Greetings!";
+    obj->songId = "";
+    addToWorkingMemory(newDataID(), "spatial.sa", obj);
+	    }
+
 
             // Draw faces on visualisation if they exist.
             for (int i = 0; face && i < face->total; i++)
