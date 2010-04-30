@@ -48,6 +48,11 @@ public class LocalizedPersonTransferFunction extends
 			Place currentPlace = SpatialFacade.get(component).getPlace();
 			WorkingMemoryAddress placeWMA = getReferredBelief(new PlaceMatchingFunction(
 					currentPlace.id));
+			if (from.distance > 1.8) {
+			  // Distance to robot too large. Will see this Person from
+			  // some other Place.
+			  return null;
+			}
 			result.put("is-in", FeatureValueBuilder
 					.createNewPointerValue(placeWMA));
 			result.put("PersonId", FeatureValueBuilder

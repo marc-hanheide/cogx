@@ -194,9 +194,11 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 			act.success=TriBool.TRITRUE;
 			act.message=_plannedAction.fullName;
 			return act;
-		} else if (_plannedAction.name.equals("acknowledge-object-one") ||
-		    _plannedAction.name.equals("acknowledge-object-two") ||
-		    _plannedAction.name.equals("acknowledge-object-three") ) {
+		} else if (_plannedAction.name.equals("acknowledge-object") ||
+		    _plannedAction.name.equals("acknowledge-asked-one") ||
+		    _plannedAction.name.equals("acknowledge-asked-two") ||
+		    _plannedAction.name.equals("acknowledge-asked-four") ||
+		    _plannedAction.name.equals("acknowledge-asked-three") ) {
 			PrintMessage act = newActionInstance(PrintMessage.class);
 			act.status=ActionStatus.COMPLETE;
 			act.success=TriBool.TRITRUE;
