@@ -482,33 +482,33 @@ public class SpringSchoolExecutionMediator extends PlanExecutionMediator
 
 	    int boolean_value = 0;
 
-// 	    try {
-// 		CASTData<StableBelief> data =
-// 		    getMemoryEntryWithData(((PointerValue) _plannedAction.arguments[0]).beliefId,
-// 					   StableBelief.class);
+	    try {
+		CASTData<StableBelief> data =
+		    getMemoryEntryWithData(((PointerValue) _plannedAction.arguments[0]).beliefId,
+					   StableBelief.class);
 
-// 		data.getData();
+		data.getData();
 		
-// 		if (data.getData().content instanceof CondIndependentDistribs) {
-// 		    CondIndependentDistribs dist = (CondIndependentDistribs)
-// 			data.getData().content;
-// 		    for (Entry<String, ProbDistribution> pd :
-// 			     dist.distribs.entrySet()) {
-// 			String tryThis = pd.getKey();
+		if (data.getData().content instanceof CondIndependentDistribs) {
+		    CondIndependentDistribs dist = (CondIndependentDistribs)
+			data.getData().content;
+		    for (Entry<String, ProbDistribution> pd :
+			     dist.distribs.entrySet()) {
+			String tryThis = pd.getKey();
 
-// 			if(tryThis == featureID){ 
-// 			    boolean_value = 1;
-// 			}
-// 		    }
-// 		}
-// 	    } catch (Exception e) {}
+			if(tryThis == featureID){ 
+			    boolean_value = 1;
+			}
+		    }
+		}
+	    } catch (Exception e) {}
 
-// 	    if((boolean_value == 1) && ownership_questions.contains(featureID)){
-// 		say_something("./talk.sh Burp!");
-// 		return new Fart();
-// 	    }
+	    if((boolean_value == 1) && ownership_questions.contains(featureID)){
+		say_something("./talk.sh Burp!");
+		return new Fart();
+	    }
 
-// 	    ownership_questions.add(featureID);
+	    ownership_questions.add(featureID);
 
 	    ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
 	    // the action requires the id of the StableBelief in which the
