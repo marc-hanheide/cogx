@@ -46,7 +46,7 @@ public abstract class TurnAndLookExecutor extends NonBlockingActionExecutor {
 			NavCommand cmd = SpatialActionInterface.newNavCommand();
 			cmd.cmd = CommandType.TURN;
 			cmd.angle = new double[] { increment };
-                        cmd.tolerance = new double[] { 15.0 * Math.PI / 180 };
+                        cmd.tolerance = new double[] { 5.0 * Math.PI / 180 };
 			m_remainingCommands.push(cmd);
 		}
 
