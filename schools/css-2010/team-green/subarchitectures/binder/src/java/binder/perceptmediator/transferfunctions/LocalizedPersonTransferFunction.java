@@ -59,7 +59,7 @@ public class LocalizedPersonTransferFunction extends
 		
 
 			boolean detected ; 
-			if ( from.distance < 1.80 ) {
+			if ( from.distance < 3.0 ) {
 				detected = true ;
 			} else {
 				detected = false ;
