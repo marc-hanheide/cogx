@@ -72,7 +72,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			for (WorkingMemoryAddress offspringWMA : ((CASTBeliefHistory) perceptBelief.hist).offspring) {
 				offsprings += " " + offspringWMA.id;
 			}
-			component.println("offspring BEFORE transformation occurs:"
+			component.debug("offspring BEFORE transformation occurs:"
 					+ offsprings);
 		}
 
@@ -93,7 +93,7 @@ public abstract class SimpleDiscreteTransferFunction<From extends Ice.ObjectImpl
 			for (WorkingMemoryAddress offspringWMA : ((CASTBeliefHistory) perceptBelief.hist).offspring) {
 				offsprings += " " + offspringWMA.id;
 			}
-			component.println("offspring AFTER transformation occured:"
+			component.debug("offspring AFTER transformation occured:"
 					+ offsprings);
 		}
 		return true;
