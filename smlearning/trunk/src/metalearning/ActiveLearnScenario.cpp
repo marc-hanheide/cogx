@@ -533,8 +533,8 @@ void ActiveLearnScenario::load_current_trainSeq (int inputSize, int outputSize) 
 	targetShape.push_back (learningData.currentSeq.size() - 1);
 	trainSeq->inputs.reshape(inputShape);
 	trainSeq->targetPatterns.reshape(targetShape);
-	//load_sequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
-	load_sequence_Markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
+	load_sequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
+	//load_sequence_Markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
 
 }
 

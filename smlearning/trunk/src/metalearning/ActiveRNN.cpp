@@ -35,25 +35,28 @@ void ActiveRNN::build (int smregionsCount, int patternSize, ostream& out) {
 	header = new rnnlib::DataHeader ( patternSize, patternSize );
 	net = new rnnlib::MultilayerNet(out, conf, *header);
 	//build weight container after net is created
-	rnnlib::WeightContainer::instance().build();
-	int numWeights = rnnlib::WeightContainer::instance().weights.size();
-	
+	//rnnlib::WeightContainer::instance().build();
+	net->weightContainer.build();
+	//int numWeights = rnnlib::WeightContainer::instance().weights.size();
+	int numWeights = net->weightContainer.weights.size();
+
 	//build the network after the weight container
 	net->build();
 	
 	//only construct optimiser after weight container is built
 	if (conf.get<string>("optimiser", "steepest") == "rprop")
 	{
-		opt = new rnnlib::Rprop(out);
+		opt = new rnnlib::Rprop(out, &(net->weightContainer));
 	}
 	else
 	{
-		opt = new rnnlib::SteepestDescent(out, conf.get<double>("learnRate", 1e-4), conf.get<double>("momentum", 0.9));
+		opt = new rnnlib::SteepestDescent(out, &(net->weightContainer), conf.get<double>("learnRate", 1e-4), conf.get<double>("momentum", 0.9));
 	}
 	out << "setting random seed to " << Random::set_seed(conf.get<unsigned long int>("randSeed", 0)) << endl << endl;
 	double initWeightRange = conf.get<double>("initWeightRange", 0.1);
 	out << "randomising uninitialised weights with mean 0 std. dev. " << initWeightRange << endl << endl;
-	rnnlib::WeightContainer::instance().randomise(initWeightRange);	
+	//rnnlib::WeightContainer::instance().randomise(initWeightRange);	
+	net->weightContainer.randomise(initWeightRange);
 	out << "optimiser:" << endl << *opt << endl;
 
 	print_net_data();
@@ -89,7 +92,8 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostr
 // 		out << "\tError: " << endl;
 // 		out << "\t" << error << endl;
 		opt->update_weights();
-		rnnlib::WeightContainer::instance().reset_derivs();
+		//rnnlib::WeightContainer::instance().reset_derivs();
+		net->weightContainer.reset_derivs();
 // 		i++;
 	}
 // 	} while (error > 10.0 || i < 10);
