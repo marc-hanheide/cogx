@@ -46,6 +46,10 @@ void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
 
    QSvgRenderer doc(QByteArray::fromRawData(pImage->data.c_str(), pImage->data.length()), NULL);
    QSize size = doc.defaultSize();
+   //printf("%s\n", pImage->data.c_str());
+   //printf("Image %s, len:%d, size:%dx%d, %s\n",
+   //      pImage->m_id.c_str(), pImage->data.length(), size.width(), size.height(),
+   //      doc.isValid() ? "VALID" : "INVALID!!!");
 
    pPainter->save();
    // TODO: render each part with its own transformation

@@ -57,6 +57,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
+add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
 add_cast_component(DisplayClient CDisplayClient.cpp)
 #set_target_properties(ObjectRecognizerSrv PROPERTIES

@@ -197,7 +197,7 @@ void VideoViewer::runComponent()
     infile.open("subarchitectures/visualization.sa/config/test/images/lion.svg", std::ifstream::in);
     std::stringstream str;
     str << infile.rdbuf();
-    // println(str.str());
+    infile.close();
     m_display.setObject("Visualization.test.SVG", "lion", str.str());
   }
 #else
