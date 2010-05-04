@@ -1,0 +1,9 @@
+HOST localhost
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG display.srv DisplayServer --log true --debug true
+
+CPP MG fileviewer.cli FileMonitorDC --display-server-id "display.srv" --monitor "/home/mmarko/Documents/doc/Devel/CogX/code/systems/ul/output/python/{plan*.dot}" --log true --debug true

@@ -58,6 +58,7 @@ void CDisplayClient::setImage(const std::string& id, const Video::Image& image/*
    m_pServer->setImage(id, image);
 }
 
+#ifdef FEAT_VISUALIZATION_OPENCV
 void CDisplayClient::setImage(const std::string& id, const IplImage* pImage) 
 {
    if (! pImage) return;
@@ -85,6 +86,7 @@ void CDisplayClient::setImage(const std::string& id, const IplImage* pImage)
 
    m_pServer->setRawImage(id, pImage->width, pImage->height, pImage->nChannels, data);
 }
+#endif
 
 void CDisplayClient::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
 {
@@ -97,6 +99,7 @@ void CDisplayClient::setObjectTransform(const std::string& id, const std::string
    m_pServer->setObjectTransform(id, partId, transform);
 }
 
+#ifdef FEAT_VISUALIZATION_OPENCV
 void CDisplayClient::setObjectTransform(const std::string& id, const std::string& partId, CvMat* pTransform)
 {
    if (!pTransform) return;
@@ -132,6 +135,7 @@ void CDisplayClient::setObjectTransform(const std::string& id, const std::string
    }
    m_pServer->setObjectTransform(id, partId, mat);
 }
+#endif
 
 void CDisplayClient::addCheckBox(const std::string& viewId, const std::string& ctrlId, const std::string& label)
 {

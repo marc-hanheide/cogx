@@ -8,8 +8,11 @@
 #include <string>
 #include <map>
 #include <stdexcept>
-#include <highgui.h> // OpenCV - transport an IplImage
 #include <cast/core/CASTComponent.hpp>
+
+#ifdef FEAT_VISUALIZATION_OPENCV
+# include <highgui.h> // OpenCV - transport an IplImage
+#endif
 
 #include <DisplayServer.hpp> // generated from ice
 
@@ -49,16 +52,19 @@ public:
    // -----------------------------------------------------------------
 public:
    void setImage(const std::string& id, const Video::Image& image); 
-   void setImage(const std::string& id, const IplImage* pImage); 
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData); 
    void setObjectTransform(const std::string& id, const std::string& partId,
          const cogx::Math::Matrix33& transform);
-   void setObjectTransform(const std::string& id, const std::string& partId, CvMat* pTransform); 
 
    // Events from GUI are only available in CActiveDisplayClient.
    // component-id, view-id, control-id, ...
    void addCheckBox(const std::string& viewId, const std::string& ctrlId, const std::string& label);
    void addButton(const std::string& viewId, const std::string& ctrlId, const std::string& label);
+
+#ifdef FEAT_VISUALIZATION_OPENCV
+   void setImage(const std::string& id, const IplImage* pImage); 
+   void setObjectTransform(const std::string& id, const std::string& partId, CvMat* pTransform); 
+#endif
 };
 
 
