@@ -8,6 +8,15 @@ from mapltypes import TRUE, FALSE, t_object, t_boolean
 from parser import ParseError, UnexpectedTokenError
 
 def parse_arg_list(it, typeDict, parentScope=None, previous_params=[], require_types=False):
+    """parses a PDDL argument list and returns it as a list of Parameter objects.
+
+    Arguments:
+    it -- the ElementIterator of the list to parse.
+    typeDict -- a dictionary of typename to Type objects that contains the defined types.
+    parentScope -- The Scope this element lives in, None by default
+    previous_params -- List of already parsed Parameters, empty by default
+    require_types -- If True, requires that a typename is specified for each parameter. Otherwise t_object is assumed as default.
+    """
     tempScope = scope.Scope([], parentScope)
     
     def left_func(elem):
@@ -34,7 +43,19 @@ def parse_arg_list(it, typeDict, parentScope=None, previous_params=[], require_t
     return args
 
 class Function(object):
+    """A Function object represents any type of PDDL function or
+    predicate."""
+    
     def __init__(self, name, args, type, builtin=False):
+        """Create a new Function object.
+
+        Arguments:
+        name -- the name of the function
+        args -- list of Parameter objects of this function
+        type -- Type object of this function
+        builtin -- True if this function is a builtin PDDL/MAPL/whateverDDL function
+        """
+        
         self.name = name
         self.args = args
         self.type = type
@@ -65,7 +86,16 @@ class Function(object):
         return self.hash
     
 class Predicate(Function):
+    """A Predicate is just a Function with a boolean type."""
+    
     def __init__(self, name, args, builtin=False):
+        """Create a new Predicate object.
+
+        Arguments:
+        name -- the name of the predicate
+        args -- list of Parameter objects of this predicate
+        builtin -- True if this function is a builtin PDDL/MAPL/whateverDDL predicate
+        """
         Function.__init__(self, name, args, t_boolean, builtin)
         
     @staticmethod
@@ -81,7 +111,21 @@ class Predicate(Function):
 
 
 class Literal(object):
+    """This class represents a PDDL literal.
+
+    The arguments of the literal can be functions, variables and
+    constants and are stored as Term objects in the "args" member
+    variable."""
+    
     def __init__(self, predicate, args, _scope=None, negated=False):
+        """Create a new Literal object.
+
+        Arguments:
+        predicate -- the Predicate object this literal refers to.
+        args -- list of TypesObjects or Terms that are arguments of this literal.
+        _scope -- Scope this literal is in. If not None, all arguments will be looked up in this Scope befor the Literal is created.
+        negated -- True if the literal is negated.
+        """
         assert _scope is None or isinstance(_scope, scope.Scope)
         self.predicate = predicate
         self.negated = negated
@@ -94,15 +138,27 @@ class Literal(object):
             self.args = [Term(a) for a in args]
 
     def pddl_str(self, instantiated=True):
+        """Return a pddl representation of this Literal.
+        
+        Arguments:
+        instantiated -- if True (which is the default) resolves
+        instantiated Parameters before printing the string."""
         s = "(%s %s)" % (self.predicate.name, " ".join(a.pddl_str(instantiated) for a in self.args))
         if self.negated:
             return "(not %s)" % s
         return s
 
     def negate(self):
+        """Return the negated version of this Literal."""
         return self.__class__(self.predicate, self.args[:], None, not self.negated)
 
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        """Create a copy of this Literal.
+
+        Arguments:
+        new_scope -- if not None, the arguments will be looked up in this Scope.
+        copy_instance -- if True, return a Literal with all instantiated Parameters resolved.
+        """
         if copy_instance:
             l = self.copy_instance()
             if new_scope:
@@ -118,9 +174,13 @@ class Literal(object):
         self.args = new_scope.lookup(self.args)
     
     def copy_instance(self):
+        """Return a copy of this Literal where all instantiated
+        Parameters are resolved to their ground objects."""
         return self.__class__(self.predicate, [a.copy_instance() for a in self.args], negated=self.negated)
 
     def collect_arguments(self):
+        """Return a list of all arguments of this Literal, including
+        all arguments of any nested FunctionTerms"""
         return sum([term.visit(collect_args_visitor) for term in self.args], [])
             
     def __str__(self):
@@ -185,7 +245,20 @@ class Literal(object):
 
 
 class Term(object):
+    """This is an abstract superclass for all terms in a PDDL
+    functional expression."""
+    
     def __init__(self, *params):
+        """Return different subclasses of Term, depending on
+        arguments:
+
+        One Term: Returns a copy of that Term
+        One Parameter: Returns a VariableTerm with the Parameter as the argument
+        One TypedObject: Returns a ConstantTerm with the TypedObject as the argument
+        One int or float: Returns a ConstantTerm with a new TypedNumber of the argument
+
+        One Function and a list of arguments: Returns a FunctionTerm
+        """
         if len(params) == 1:
             obj = params[0]
             if isinstance(obj, (ConstantTerm, VariableTerm)):
@@ -221,9 +294,21 @@ class Term(object):
             raise Exception("Too many arguments for Term()")
     
     def visit(self, fn):
+        """visit this Term and all its children.
+
+        Arguments:
+        fn -- visitor function that will be called with the current
+        Term and a list of results of previous calls."""
+        
         return fn(self, [])
     
     def pddl_str(self, instantiated=True):
+        """Return a pddl representation of this Term.
+        
+        Arguments:
+        instantiated -- if True (which is the default) resolves
+        instantiated Parameters before printing the string."""
+        
         def printVisitor(term, results=[]):
             if isinstance(term, VariableTerm) and term.is_instantiated() and instantiated:
                 term = term.get_instance()
@@ -236,9 +321,12 @@ class Term(object):
         return self.visit(printVisitor)
     
     def get_type(self):
+        """Return the PDDL type of this Term"""
         raise NotImplementedError()
     
     def is_instance_of(self, type):
+        """Return True if the PDDL type of this Term is equal to
+        "type" or a subtype."""
         return self.get_type().equal_or_subtype_of(type)
 
     def __eq__(self, other):
@@ -274,7 +362,18 @@ class Term(object):
 
     
 class FunctionTerm(Term):
+    """This class represents a function term. It is similar to a
+    Literal, but it can be nested inside other Terms or Literals.
+    """
+    
     def __init__(self, function, args, scope=None):
+        """Create a new FunctionTerm object.
+
+        Arguments:
+        predicate -- the Function of this term.
+        args -- list of TypesObjects or Terms that are arguments of this function.
+        scope -- Scope this function term is in. If not None, all arguments will be looked up in this Scope befor the FunctionTerm is created.
+        """
         self.function = function
 
         if scope:
@@ -283,12 +382,21 @@ class FunctionTerm(Term):
             self.args = args
     
     def get_type(self):
+        """Return the PDDL type of this Term. For FunctionTerms, this is always a FunctionType."""
         return FunctionType(self.function.type)
     
     def copy_instance(self):
+        """Return a copy of this FunctionTerm where all instantiated
+        Parameters are resolved to their ground objects."""
         return FunctionTerm(self.function, [a.copy_instance() for a in self.args])
 
     def visit(self, fn):
+        """visit this Term and all its children.
+
+        Arguments:
+        fn -- visitor function that will be called with the current
+        Term and a list of results of previous calls."""
+        
         return fn(self, [a.visit(fn) for a in self.args])
     
     def __str__(self):
@@ -332,24 +440,41 @@ class FunctionTerm(Term):
         return FunctionTerm(func, args)
 
 class VariableTerm(Term):
+    """This class represents a variable term. It is always bound to a
+    Parameter object, which can be accessed by the "object" member.
+    """
+    
     def __init__(self, parameter):
+        """Create a new VariableTerm object.
+
+        Arguments:
+        parameter -- The Parameter object that this term refers to
+        """
         assert isinstance(parameter, Parameter)
         self.object = parameter
         
     def is_instantiated(self):
+        """Returns True if this terms parameter is instantiated."""
         return self.object.is_instantiated()
 
     def get_instance(self):
+        """Returns the ground object if this terms parameter is
+        instantiated."""
         if self.is_instantiated():
             return self.object.get_instance()
         raise Exception, "Term %s is not instantiated" % str(self.object)
 
     def copy_instance(self):
+        """Returns a ConstantTerm referring to the ground object if
+        this terms parameter is instantiated. Return a copy of this
+        VariableTerm otherwise."""
         if self.is_instantiated():
             return ConstantTerm(self.get_instance())
         return VariableTerm(self.object)
     
     def get_type(self):
+        """Return the PDDL type of this Term. This is the type of the
+        terms parameter."""
         return self.object.type
 
     def __eq__(self, other):
@@ -361,18 +486,44 @@ class VariableTerm(Term):
         return hash((self.__class__, self.object))
     
 class FunctionVariableTerm(FunctionTerm, VariableTerm):
-    def __init__(self, obj):
-        self.object = obj
+    """This class represents a variable term with a function type. It
+    is always bound to a Parameter object, which can be accessed by
+    the "object" member.
+
+    If the parameter is instantiated with a FunctionTerm, it will
+    behave like a FunctionTerm.
+    """
+    
+    def __init__(self, parameter):
+        """Create a new FunctionVariableTerm object.
+
+        Arguments:
+        parameter -- The Parameter object that this term refers to
+        """
+        self.object = parameter
 
     def get_type(self):
+        """Return the PDDL type of this Term. This is the type of the
+        terms parameter."""
         return self.object.type
 
     def visit(self, fn):
+        """visit this Term and all its children. If this terms
+        Parameter is instantiated, it will visit the FunctionTerm it
+        is instantiated with.
+
+        Arguments:
+        fn -- visitor function that will be called with the current
+        Term and a list of results of previous calls."""
+        
         if self.is_instantiated():
             return self.object.get_instance().visit(fn)
         return fn(self, [])
     
     def copy_instance(self):
+        """Returns a FunctionTerm referring to the instantiated term
+        if this terms parameter is instantiated. Return a copy of this
+        VariableTerm otherwise."""
         if self.is_instantiated():
             return FunctionTerm(self.get_instance().function, [a for a in self.get_instance().args])
         return FunctionVariableTerm(self.object)
@@ -404,14 +555,26 @@ class FunctionVariableTerm(FunctionTerm, VariableTerm):
     
     
 class ConstantTerm(Term):
+    """This class represents a constant term. It is always bound to a
+    TypedObject, which can be accessed by the "object" member.
+    """
+    
     def __init__(self, obj):
+        """Create a new ConstantTerm object.
+
+        Arguments:
+        obj -- The TypedObject that this term refers to
+        """
         assert isinstance(obj, TypedObject)
         self.object = obj
     
     def get_type(self):
+        """Return the PDDL type of this Term. This is the type of the
+        object."""
         return self.object.type
 
     def copy_instance(self):
+        """Returns a copy of this term."""
         return ConstantTerm(self.object)
     
     def __str__(self):
@@ -427,6 +590,9 @@ class ConstantTerm(Term):
 
 
 def collect_args_visitor(term, results):
+    """This visitor collects all TypedObjects that occur in this Term
+    (and it's children) and returns them as a list."""
+    
     if isinstance(term, (VariableTerm, ConstantTerm)):
         return [term.object]
     if isinstance(term, FunctionTerm):
