@@ -52,9 +52,9 @@ public class LocalizedPersonTransferFunction extends
 					.createNewPointerValue(placeWMA));
 			result.put("PersonId", FeatureValueBuilder
 					.createNewStringValue(wmc.address.id));
-                        result.put("record", FeatureValueBuilder.createNewStringValue("not_asked"));
+                       // result.put("record", FeatureValueBuilder.createNewStringValue("not_asked"));
 			result.put("distance", FeatureValueBuilder.createNewFloatValue(from.distance));
-			result.put("name", FeatureValueBuilder.createNewStringValue("not_asked"));
+			//result.put("name", FeatureValueBuilder.createNewStringValue("not_asked"));
 
  		
 

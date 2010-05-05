@@ -3,19 +3,20 @@
 ///////////////////////////////
 
 // beliefs
-existingunion = {UG_Q}
+existingunion = {Uw1_S,UG1_S,UE1_S,UB2_S,Ue1_S,UJ1_S,UZ1_S}
 percept = {P}
-belief = {UG_Q,P}
+belief = {Uw1_S,UG1_S,UE1_S,UB2_S,Ue1_S,UJ1_S,UZ1_S,P}
 
 // possible outcomes of the grouping process
-outcome = {UG_Q,UM_Q}
+outcome = {Uw1_S,UE1_S,UG1_S,UB2_S,UJ1_S,Ue1_S,UZ1_S,UV3_S}
 
 // feature values
-detectedval = {False,None,Unknown}
-is-inval = {None,U3_q,Unknown}
-nameval = {None,Unknown,Vrecord3,Vrecord4}
+detectedval = {False,None,True,Unknown}
+is-inval = {None,U3_s,U4_s,U5_s,U9_s,Ub_s,Uc_s,Ue_s,Uf_s,Unknown}
+nameval = {None,Unknown,Vnot_asked}
+personidval = {None,Unknown,V0_h,V1_h,V5_h,V6_h,V9_h,Vb_h,Vl_h,Vm_h}
+recordval = {None,Unknown,Vnot_asked}
 typeval = {None,Unknown}
-vo_idval = {None,Unknown,V2_f,V3_f}
 
 ///////////////////////////////
 // PREDICATES
@@ -24,8 +25,9 @@ vo_idval = {None,Unknown,V2_f,V3_f}
 Detected(belief,detectedval)
 Is-in(belief,is-inval)
 Name(belief,nameval)
+Personid(belief,personidval)
+Record(belief,recordval)
 Type(belief,typeval)
-Vo_id(belief,vo_idval)
 
 Outcome(outcome)
 UnifyWith(existingunion)
@@ -35,43 +37,279 @@ Existence(belief)
 // EXISTING UNIONS
 ///////////////////////////////
 
-100.0 Existence(UG_Q)
-0.0 Existence(UG_Q) ^ Is-in(UG_Q,U3_q)
-Existence(UG_Q) => !Is-in(UG_Q,Unknown).
-Existence(UG_Q) => !Is-in(UG_Q,None).
-0.0 Existence(UG_Q) ^ Name(UG_Q,Vrecord3)
-Existence(UG_Q) => !Name(UG_Q,Unknown).
-Existence(UG_Q) => !Name(UG_Q,Vrecord4).
-Existence(UG_Q) => !Name(UG_Q,None).
-0.0 Existence(UG_Q) ^ Detected(UG_Q,False)
-Existence(UG_Q) => !Detected(UG_Q,Unknown).
-Existence(UG_Q) => !Detected(UG_Q,None).
-0.0 Existence(UG_Q) ^ Vo_id(UG_Q,V2_f)
-Existence(UG_Q) => !Vo_id(UG_Q,Unknown).
-Existence(UG_Q) => !Vo_id(UG_Q,V3_f).
-Existence(UG_Q) => !Vo_id(UG_Q,None).
-Existence(UG_Q) => !Type(Ug_q,Unknown).
-Existence(UG_Q) => Type(Ug_q,None).
+100.0 Existence(Uw1_S)
+0.0 Existence(Uw1_S) ^ Is-in(Uw1_S,Uc_s)
+Existence(Uw1_S) => !Is-in(Uw1_S,U3_s).
+Existence(Uw1_S) => !Is-in(Uw1_S,U4_s).
+Existence(Uw1_S) => !Is-in(Uw1_S,U5_s).
+Existence(Uw1_S) => !Is-in(Uw1_S,U9_s).
+Existence(Uw1_S) => !Is-in(Uw1_S,Ub_s).
+Existence(Uw1_S) => !Is-in(Uw1_S,Ue_s).
+Existence(Uw1_S) => !Is-in(Uw1_S,Uf_s).
+Existence(Uw1_S) => !Is-in(Uw1_S,Unknown).
+Existence(Uw1_S) => !Is-in(Uw1_S,None).
+0.0 Existence(Uw1_S) ^ Record(Uw1_S,Vnot_asked)
+Existence(Uw1_S) => !Record(Uw1_S,Unknown).
+Existence(Uw1_S) => !Record(Uw1_S,None).
+0.0 Existence(Uw1_S) ^ Personid(Uw1_S,Vb_h)
+Existence(Uw1_S) => !Personid(Uw1_S,Unknown).
+Existence(Uw1_S) => !Personid(Uw1_S,V0_h).
+Existence(Uw1_S) => !Personid(Uw1_S,V1_h).
+Existence(Uw1_S) => !Personid(Uw1_S,V5_h).
+Existence(Uw1_S) => !Personid(Uw1_S,V6_h).
+Existence(Uw1_S) => !Personid(Uw1_S,V9_h).
+Existence(Uw1_S) => !Personid(Uw1_S,Vl_h).
+Existence(Uw1_S) => !Personid(Uw1_S,Vm_h).
+Existence(Uw1_S) => !Personid(Uw1_S,None).
+0.0 Existence(Uw1_S) ^ Name(Uw1_S,Vnot_asked)
+Existence(Uw1_S) => !Name(Uw1_S,Unknown).
+Existence(Uw1_S) => !Name(Uw1_S,None).
+0.0 Existence(Uw1_S) ^ Detected(Uw1_S,False)
+Existence(Uw1_S) => !Detected(Uw1_S,True).
+Existence(Uw1_S) => !Detected(Uw1_S,Unknown).
+Existence(Uw1_S) => !Detected(Uw1_S,None).
+Existence(Uw1_S) => !Type(Uw1_s,Unknown).
+Existence(Uw1_S) => Type(Uw1_s,None).
+
+100.0 Existence(UG1_S)
+0.0 Existence(UG1_S) ^ Is-in(UG1_S,U4_s)
+Existence(UG1_S) => !Is-in(UG1_S,U3_s).
+Existence(UG1_S) => !Is-in(UG1_S,U5_s).
+Existence(UG1_S) => !Is-in(UG1_S,U9_s).
+Existence(UG1_S) => !Is-in(UG1_S,Ub_s).
+Existence(UG1_S) => !Is-in(UG1_S,Uc_s).
+Existence(UG1_S) => !Is-in(UG1_S,Ue_s).
+Existence(UG1_S) => !Is-in(UG1_S,Uf_s).
+Existence(UG1_S) => !Is-in(UG1_S,Unknown).
+Existence(UG1_S) => !Is-in(UG1_S,None).
+0.0 Existence(UG1_S) ^ Record(UG1_S,Vnot_asked)
+Existence(UG1_S) => !Record(UG1_S,Unknown).
+Existence(UG1_S) => !Record(UG1_S,None).
+0.0 Existence(UG1_S) ^ Personid(UG1_S,V1_h)
+Existence(UG1_S) => !Personid(UG1_S,Unknown).
+Existence(UG1_S) => !Personid(UG1_S,V0_h).
+Existence(UG1_S) => !Personid(UG1_S,V5_h).
+Existence(UG1_S) => !Personid(UG1_S,V6_h).
+Existence(UG1_S) => !Personid(UG1_S,V9_h).
+Existence(UG1_S) => !Personid(UG1_S,Vb_h).
+Existence(UG1_S) => !Personid(UG1_S,Vl_h).
+Existence(UG1_S) => !Personid(UG1_S,Vm_h).
+Existence(UG1_S) => !Personid(UG1_S,None).
+0.0 Existence(UG1_S) ^ Name(UG1_S,Vnot_asked)
+Existence(UG1_S) => !Name(UG1_S,Unknown).
+Existence(UG1_S) => !Name(UG1_S,None).
+0.0 Existence(UG1_S) ^ Detected(UG1_S,False)
+Existence(UG1_S) => !Detected(UG1_S,True).
+Existence(UG1_S) => !Detected(UG1_S,Unknown).
+Existence(UG1_S) => !Detected(UG1_S,None).
+Existence(UG1_S) => !Type(Ug1_s,Unknown).
+Existence(UG1_S) => Type(Ug1_s,None).
+
+100.0 Existence(UE1_S)
+0.0 Existence(UE1_S) ^ Is-in(UE1_S,U3_s)
+Existence(UE1_S) => !Is-in(UE1_S,U4_s).
+Existence(UE1_S) => !Is-in(UE1_S,U5_s).
+Existence(UE1_S) => !Is-in(UE1_S,U9_s).
+Existence(UE1_S) => !Is-in(UE1_S,Ub_s).
+Existence(UE1_S) => !Is-in(UE1_S,Uc_s).
+Existence(UE1_S) => !Is-in(UE1_S,Ue_s).
+Existence(UE1_S) => !Is-in(UE1_S,Uf_s).
+Existence(UE1_S) => !Is-in(UE1_S,Unknown).
+Existence(UE1_S) => !Is-in(UE1_S,None).
+0.0 Existence(UE1_S) ^ Record(UE1_S,Vnot_asked)
+Existence(UE1_S) => !Record(UE1_S,Unknown).
+Existence(UE1_S) => !Record(UE1_S,None).
+0.0 Existence(UE1_S) ^ Personid(UE1_S,V0_h)
+Existence(UE1_S) => !Personid(UE1_S,Unknown).
+Existence(UE1_S) => !Personid(UE1_S,V1_h).
+Existence(UE1_S) => !Personid(UE1_S,V5_h).
+Existence(UE1_S) => !Personid(UE1_S,V6_h).
+Existence(UE1_S) => !Personid(UE1_S,V9_h).
+Existence(UE1_S) => !Personid(UE1_S,Vb_h).
+Existence(UE1_S) => !Personid(UE1_S,Vl_h).
+Existence(UE1_S) => !Personid(UE1_S,Vm_h).
+Existence(UE1_S) => !Personid(UE1_S,None).
+0.0 Existence(UE1_S) ^ Name(UE1_S,Vnot_asked)
+Existence(UE1_S) => !Name(UE1_S,Unknown).
+Existence(UE1_S) => !Name(UE1_S,None).
+0.0 Existence(UE1_S) ^ Detected(UE1_S,True)
+Existence(UE1_S) => !Detected(UE1_S,False).
+Existence(UE1_S) => !Detected(UE1_S,Unknown).
+Existence(UE1_S) => !Detected(UE1_S,None).
+Existence(UE1_S) => !Type(Ue1_s,Unknown).
+Existence(UE1_S) => Type(Ue1_s,None).
+
+100.0 Existence(UB2_S)
+0.0 Existence(UB2_S) ^ Is-in(UB2_S,Ue_s)
+Existence(UB2_S) => !Is-in(UB2_S,U3_s).
+Existence(UB2_S) => !Is-in(UB2_S,U4_s).
+Existence(UB2_S) => !Is-in(UB2_S,U5_s).
+Existence(UB2_S) => !Is-in(UB2_S,U9_s).
+Existence(UB2_S) => !Is-in(UB2_S,Ub_s).
+Existence(UB2_S) => !Is-in(UB2_S,Uc_s).
+Existence(UB2_S) => !Is-in(UB2_S,Uf_s).
+Existence(UB2_S) => !Is-in(UB2_S,Unknown).
+Existence(UB2_S) => !Is-in(UB2_S,None).
+0.0 Existence(UB2_S) ^ Record(UB2_S,Vnot_asked)
+Existence(UB2_S) => !Record(UB2_S,Unknown).
+Existence(UB2_S) => !Record(UB2_S,None).
+0.0 Existence(UB2_S) ^ Personid(UB2_S,Vl_h)
+Existence(UB2_S) => !Personid(UB2_S,Unknown).
+Existence(UB2_S) => !Personid(UB2_S,V0_h).
+Existence(UB2_S) => !Personid(UB2_S,V1_h).
+Existence(UB2_S) => !Personid(UB2_S,V5_h).
+Existence(UB2_S) => !Personid(UB2_S,V6_h).
+Existence(UB2_S) => !Personid(UB2_S,V9_h).
+Existence(UB2_S) => !Personid(UB2_S,Vb_h).
+Existence(UB2_S) => !Personid(UB2_S,Vm_h).
+Existence(UB2_S) => !Personid(UB2_S,None).
+0.0 Existence(UB2_S) ^ Name(UB2_S,Vnot_asked)
+Existence(UB2_S) => !Name(UB2_S,Unknown).
+Existence(UB2_S) => !Name(UB2_S,None).
+0.0 Existence(UB2_S) ^ Detected(UB2_S,True)
+Existence(UB2_S) => !Detected(UB2_S,False).
+Existence(UB2_S) => !Detected(UB2_S,Unknown).
+Existence(UB2_S) => !Detected(UB2_S,None).
+Existence(UB2_S) => !Type(Ub2_s,Unknown).
+Existence(UB2_S) => Type(Ub2_s,None).
+
+100.0 Existence(Ue1_S)
+0.0 Existence(Ue1_S) ^ Is-in(Ue1_S,Ub_s)
+Existence(Ue1_S) => !Is-in(Ue1_S,U3_s).
+Existence(Ue1_S) => !Is-in(Ue1_S,U4_s).
+Existence(Ue1_S) => !Is-in(Ue1_S,U5_s).
+Existence(Ue1_S) => !Is-in(Ue1_S,U9_s).
+Existence(Ue1_S) => !Is-in(Ue1_S,Uc_s).
+Existence(Ue1_S) => !Is-in(Ue1_S,Ue_s).
+Existence(Ue1_S) => !Is-in(Ue1_S,Uf_s).
+Existence(Ue1_S) => !Is-in(Ue1_S,Unknown).
+Existence(Ue1_S) => !Is-in(Ue1_S,None).
+0.0 Existence(Ue1_S) ^ Record(Ue1_S,Vnot_asked)
+Existence(Ue1_S) => !Record(Ue1_S,Unknown).
+Existence(Ue1_S) => !Record(Ue1_S,None).
+0.0 Existence(Ue1_S) ^ Personid(Ue1_S,V9_h)
+Existence(Ue1_S) => !Personid(Ue1_S,Unknown).
+Existence(Ue1_S) => !Personid(Ue1_S,V0_h).
+Existence(Ue1_S) => !Personid(Ue1_S,V1_h).
+Existence(Ue1_S) => !Personid(Ue1_S,V5_h).
+Existence(Ue1_S) => !Personid(Ue1_S,V6_h).
+Existence(Ue1_S) => !Personid(Ue1_S,Vb_h).
+Existence(Ue1_S) => !Personid(Ue1_S,Vl_h).
+Existence(Ue1_S) => !Personid(Ue1_S,Vm_h).
+Existence(Ue1_S) => !Personid(Ue1_S,None).
+0.0 Existence(Ue1_S) ^ Name(Ue1_S,Vnot_asked)
+Existence(Ue1_S) => !Name(Ue1_S,Unknown).
+Existence(Ue1_S) => !Name(Ue1_S,None).
+0.0 Existence(Ue1_S) ^ Detected(Ue1_S,True)
+Existence(Ue1_S) => !Detected(Ue1_S,False).
+Existence(Ue1_S) => !Detected(Ue1_S,Unknown).
+Existence(Ue1_S) => !Detected(Ue1_S,None).
+Existence(Ue1_S) => !Type(Ue1_s,Unknown).
+Existence(Ue1_S) => Type(Ue1_s,None).
+
+100.0 Existence(UJ1_S)
+0.0 Existence(UJ1_S) ^ Is-in(UJ1_S,U5_s)
+Existence(UJ1_S) => !Is-in(UJ1_S,U3_s).
+Existence(UJ1_S) => !Is-in(UJ1_S,U4_s).
+Existence(UJ1_S) => !Is-in(UJ1_S,U9_s).
+Existence(UJ1_S) => !Is-in(UJ1_S,Ub_s).
+Existence(UJ1_S) => !Is-in(UJ1_S,Uc_s).
+Existence(UJ1_S) => !Is-in(UJ1_S,Ue_s).
+Existence(UJ1_S) => !Is-in(UJ1_S,Uf_s).
+Existence(UJ1_S) => !Is-in(UJ1_S,Unknown).
+Existence(UJ1_S) => !Is-in(UJ1_S,None).
+0.0 Existence(UJ1_S) ^ Record(UJ1_S,Vnot_asked)
+Existence(UJ1_S) => !Record(UJ1_S,Unknown).
+Existence(UJ1_S) => !Record(UJ1_S,None).
+0.0 Existence(UJ1_S) ^ Personid(UJ1_S,V5_h)
+Existence(UJ1_S) => !Personid(UJ1_S,Unknown).
+Existence(UJ1_S) => !Personid(UJ1_S,V0_h).
+Existence(UJ1_S) => !Personid(UJ1_S,V1_h).
+Existence(UJ1_S) => !Personid(UJ1_S,V6_h).
+Existence(UJ1_S) => !Personid(UJ1_S,V9_h).
+Existence(UJ1_S) => !Personid(UJ1_S,Vb_h).
+Existence(UJ1_S) => !Personid(UJ1_S,Vl_h).
+Existence(UJ1_S) => !Personid(UJ1_S,Vm_h).
+Existence(UJ1_S) => !Personid(UJ1_S,None).
+0.0 Existence(UJ1_S) ^ Name(UJ1_S,Vnot_asked)
+Existence(UJ1_S) => !Name(UJ1_S,Unknown).
+Existence(UJ1_S) => !Name(UJ1_S,None).
+0.0 Existence(UJ1_S) ^ Detected(UJ1_S,True)
+Existence(UJ1_S) => !Detected(UJ1_S,False).
+Existence(UJ1_S) => !Detected(UJ1_S,Unknown).
+Existence(UJ1_S) => !Detected(UJ1_S,None).
+Existence(UJ1_S) => !Type(Uj1_s,Unknown).
+Existence(UJ1_S) => Type(Uj1_s,None).
+
+100.0 Existence(UZ1_S)
+0.0 Existence(UZ1_S) ^ Is-in(UZ1_S,U9_s)
+Existence(UZ1_S) => !Is-in(UZ1_S,U3_s).
+Existence(UZ1_S) => !Is-in(UZ1_S,U4_s).
+Existence(UZ1_S) => !Is-in(UZ1_S,U5_s).
+Existence(UZ1_S) => !Is-in(UZ1_S,Ub_s).
+Existence(UZ1_S) => !Is-in(UZ1_S,Uc_s).
+Existence(UZ1_S) => !Is-in(UZ1_S,Ue_s).
+Existence(UZ1_S) => !Is-in(UZ1_S,Uf_s).
+Existence(UZ1_S) => !Is-in(UZ1_S,Unknown).
+Existence(UZ1_S) => !Is-in(UZ1_S,None).
+0.0 Existence(UZ1_S) ^ Record(UZ1_S,Vnot_asked)
+Existence(UZ1_S) => !Record(UZ1_S,Unknown).
+Existence(UZ1_S) => !Record(UZ1_S,None).
+0.0 Existence(UZ1_S) ^ Personid(UZ1_S,V6_h)
+Existence(UZ1_S) => !Personid(UZ1_S,Unknown).
+Existence(UZ1_S) => !Personid(UZ1_S,V0_h).
+Existence(UZ1_S) => !Personid(UZ1_S,V1_h).
+Existence(UZ1_S) => !Personid(UZ1_S,V5_h).
+Existence(UZ1_S) => !Personid(UZ1_S,V9_h).
+Existence(UZ1_S) => !Personid(UZ1_S,Vb_h).
+Existence(UZ1_S) => !Personid(UZ1_S,Vl_h).
+Existence(UZ1_S) => !Personid(UZ1_S,Vm_h).
+Existence(UZ1_S) => !Personid(UZ1_S,None).
+0.0 Existence(UZ1_S) ^ Name(UZ1_S,Vnot_asked)
+Existence(UZ1_S) => !Name(UZ1_S,Unknown).
+Existence(UZ1_S) => !Name(UZ1_S,None).
+0.0 Existence(UZ1_S) ^ Detected(UZ1_S,False)
+Existence(UZ1_S) => !Detected(UZ1_S,True).
+Existence(UZ1_S) => !Detected(UZ1_S,Unknown).
+Existence(UZ1_S) => !Detected(UZ1_S,None).
+Existence(UZ1_S) => !Type(Uz1_s,Unknown).
+Existence(UZ1_S) => Type(Uz1_s,None).
 
 ///////////////////////////////
 // NEW PERCEPT
 ///////////////////////////////
 
 100.0 Existence(P)
-0.0 Existence(P) ^ Is-in(P,U3_q)
+0.0 Existence(P) ^ Is-in(P,Uf_s)
+Existence(P) => !Is-in(P,U3_s).
+Existence(P) => !Is-in(P,U4_s).
+Existence(P) => !Is-in(P,U5_s).
+Existence(P) => !Is-in(P,U9_s).
+Existence(P) => !Is-in(P,Ub_s).
+Existence(P) => !Is-in(P,Uc_s).
+Existence(P) => !Is-in(P,Ue_s).
 Existence(P) => !Is-in(P,Unknown).
 Existence(P) => !Is-in(P,None).
-0.0 Existence(P) ^ Name(P,Vrecord4)
+0.0 Existence(P) ^ Record(P,Vnot_asked)
+Existence(P) => !Record(P,Unknown).
+Existence(P) => !Record(P,None).
+0.0 Existence(P) ^ Personid(P,Vm_h)
+Existence(P) => !Personid(P,Unknown).
+Existence(P) => !Personid(P,V0_h).
+Existence(P) => !Personid(P,V1_h).
+Existence(P) => !Personid(P,V5_h).
+Existence(P) => !Personid(P,V6_h).
+Existence(P) => !Personid(P,V9_h).
+Existence(P) => !Personid(P,Vb_h).
+Existence(P) => !Personid(P,Vl_h).
+Existence(P) => !Personid(P,None).
+0.0 Existence(P) ^ Name(P,Vnot_asked)
 Existence(P) => !Name(P,Unknown).
-Existence(P) => !Name(P,Vrecord3).
 Existence(P) => !Name(P,None).
-0.0 Existence(P) ^ Detected(P,False)
+0.0 Existence(P) ^ Detected(P,True)
+Existence(P) => !Detected(P,False).
 Existence(P) => !Detected(P,Unknown).
 Existence(P) => !Detected(P,None).
-0.0 Existence(P) ^ Vo_id(P,V3_f)
-Existence(P) => !Vo_id(P,Unknown).
-Existence(P) => !Vo_id(P,V2_f).
-Existence(P) => !Vo_id(P,None).
 Existence(P) => !Type(P,Unknown).
 Existence(P) => Type(P,None).
 
@@ -86,10 +324,12 @@ Existence(P) => Type(P,None).
 !Existence(x) => Is-in(x,None).
 !Existence(x) => y=None v !Name(x,y).
 !Existence(x) => Name(x,None).
+!Existence(x) => y=None v !Personid(x,y).
+!Existence(x) => Personid(x,None).
+!Existence(x) => y=None v !Record(x,y).
+!Existence(x) => Record(x,None).
 !Existence(x) => y=None v !Type(x,y).
 !Existence(x) => Type(x,None).
-!Existence(x) => y=None v !Vo_id(x,y).
-!Existence(x) => Vo_id(x,None).
 
 // mutual exclusivity and unicity constraints
 Detected(x,y) ^ Detected(x,z) => y=z.
@@ -98,10 +338,12 @@ Is-in(x,y) ^ Is-in(x,z) => y=z.
 EXIST y Is-in(x,y).
 Name(x,y) ^ Name(x,z) => y=z.
 EXIST y Name(x,y).
+Personid(x,y) ^ Personid(x,z) => y=z.
+EXIST y Personid(x,y).
+Record(x,y) ^ Record(x,z) => y=z.
+EXIST y Record(x,y).
 Type(x,y) ^ Type(x,z) => y=z.
 EXIST y Type(x,y).
-Vo_id(x,y) ^ Vo_id(x,z) => y=z.
-EXIST y Vo_id(x,y).
 
 
 ///////////////////////////////
@@ -109,10 +351,12 @@ EXIST y Vo_id(x,y).
 ///////////////////////////////
 
 // general correlations
-100 Existence(x) ^ Existence(P) ^ Name(x,y) ^ Name(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
-100 UnifyWith(x) ^ Name(x,y) ^ Name(P,z) => y=z
-UnifyWith(x) ^ Name(x,y) => y!=Unknown. 
-UnifyWith(x) ^ Name(x,y) => y!=None.
+
+//100 Existence(x) ^ Existence(P) ^ Name(x,y) ^ Name(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
+//100 UnifyWith(x) ^ Name(x,y) ^ Name(P,z) => y=z
+//UnifyWith(x) ^ Name(x,y) => y!=Unknown. 
+//UnifyWith(x) ^ Name(x,y) => y!=None.
+
 
 100 Existence(x) ^ Existence(P) ^ Is-in(x,y) ^ Is-in(P,y) ^ y!=Unknown ^ y!=None => UnifyWith(x)
 100 UnifyWith(x) ^ Is-in(x,y) ^ Is-in(P,z) => y=z
@@ -120,15 +364,18 @@ UnifyWith(x) ^ Is-in(x,y) => y!=Unknown.
 UnifyWith(x) ^ Is-in(x,y) => y!=None. 
 
 UnifyWith(x) => Existence(x) ^ Existence(P).
-
-
-// ADD YOUR ADDITIONAL FORMULAE FOR OBJECT TRACKING HERE
 ///////////////////////////////
 // FINAL OUTCOME
 ///////////////////////////////
 
--3.5 Existence(P) => Outcome(UM_Q)
-UnifyWith(UG_Q) <=> Outcome(UG_Q).
+-3.5 Existence(P) => Outcome(UV3_S)
+UnifyWith(UB2_S) <=> Outcome(UB2_S).
+UnifyWith(UE1_S) <=> Outcome(UE1_S).
+UnifyWith(UG1_S) <=> Outcome(UG1_S).
+UnifyWith(UJ1_S) <=> Outcome(UJ1_S).
+UnifyWith(UZ1_S) <=> Outcome(UZ1_S).
+UnifyWith(Ue1_S) <=> Outcome(Ue1_S).
+UnifyWith(Uw1_S) <=> Outcome(Uw1_S).
 -1.0 Outcome(x)
 Outcome(x) ^ Outcome(y) => x=y.
 Exist x Outcome(x).

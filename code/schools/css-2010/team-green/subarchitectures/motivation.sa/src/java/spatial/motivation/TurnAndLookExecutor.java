@@ -24,11 +24,11 @@ public abstract class TurnAndLookExecutor extends NonBlockingActionExecutor {
 
 	private final int m_detections;
 	protected final ManagedComponent m_component;
-	private final Stack<NavCommand> m_remainingCommands;
-	private final WorkingMemoryChangeReceiver m_afterDetect;
+	protected final Stack<NavCommand> m_remainingCommands;
+	protected final WorkingMemoryChangeReceiver m_afterDetect;
 
-	private final WorkingMemoryChangeReceiver m_afterTurn;
-	private String m_navCmdID;
+	protected final WorkingMemoryChangeReceiver m_afterTurn;
+	protected String m_navCmdID;
 
 	static Logger logger = Logger.getLogger(TurnAndLookExecutor.class);
 

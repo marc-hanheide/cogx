@@ -12,7 +12,7 @@ CPP GD self.representer SelfRepresenter
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-live.cast
 INCLUDE includes/vision.sa/vision-objects.cast
-#INCLUDE includes/vision.sa/vision-people.cast
+INCLUDE includes/vision.sa/vision-people.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 
 #JAVA MG ContinuousDetector  vision.components.ContinuousDetector --label-record1 --label-record2 --label-record3 --label-record4
@@ -20,7 +20,7 @@ INCLUDE includes/vision.sa/vision-execution.cast
 # coma ######################################################################
 INCLUDE includes/coma.sa/coma-base.cast
 JAVA GD FakeComa fakecoma.components.GraphicalComa --debug
-
+JAVA MG player castutils.components.WorkingMemoryPlayer  --state --file stored-maps/3rdtask-real/coma.log
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast

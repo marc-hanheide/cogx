@@ -35,8 +35,7 @@ public class LookForPeopleExecutor extends TurnAndLookExecutor {
 		PeopleDetectionCommand detect = new PeopleDetectionCommand();
 		String id = m_component.newDataID();
 		try {
-			m_component
-					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+			m_component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 							WorkingMemoryOperation.DELETE),
 							getAfterDetectionReceiver());
 			m_component.addToWorkingMemory(id, detect);

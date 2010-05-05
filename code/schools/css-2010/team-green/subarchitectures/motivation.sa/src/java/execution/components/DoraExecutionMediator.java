@@ -18,6 +18,7 @@ import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
+import execution.slice.actions.LookForPeopleAndObjects;
 import execution.slice.actions.PrintMessage;
 import execution.slice.actions.Start;
 import execution.slice.actions.Report;
@@ -166,6 +167,14 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			LookForObjects act = newActionInstance(LookForObjects.class);
 			act.labels = m_objectLabels;
 			return act;
+		} else if (_plannedAction.name.equals("look-for-people-and-objects")) {
+			// this is the action that make the robot turn and triggers the
+			// object detector several times
+			assert _plannedAction.arguments.length == 1 : "look-for-people-and-objects action arity is expected to be 1";
+			// create the action instance and return it
+			LookForPeopleAndObjects act = newActionInstance(LookForPeopleAndObjects.class);
+			act.objectLabels = m_objectLabels;
+			return act;
 		} else if (_plannedAction.name.equals("ask-for-your-name")) {
 			// this is the action to ask for a person's name
 			assert _plannedAction.arguments.length == 2 : "ask-for-your-name action arity is expected to be 2";
@@ -183,7 +192,7 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			// simpler
 			act.question = "What is your name?";
 			return act;
-		} /*else if (_plannedAction.name.equals("ask-for-your-record")) {
+		} else if (_plannedAction.name.equals("ask-for-your-record")) {
 			// this is the action to ask for a person's name
 			assert _plannedAction.arguments.length == 2 : "ask-for-your-name action arity is expected to be 2";
 			// create the action instance: This action will trigger a GUI
@@ -195,12 +204,12 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			// feature should be put
 			act.beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
 			// this is the feature that shall be written
-			act.featureID = "name";
+			act.featureID = "record";
 			// optionally we can define an explicit question here to make life
 			// simpler
-			act.question = "What is your name?";
+			act.question = "What is your records name?";
 			return act;
-                        } */else if (_plannedAction.name.equals("ask-for-placename")) {
+                        } else if (_plannedAction.name.equals("ask-for-placename")) {
 			assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
 			String beliefID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
 			String featureID = "name";
