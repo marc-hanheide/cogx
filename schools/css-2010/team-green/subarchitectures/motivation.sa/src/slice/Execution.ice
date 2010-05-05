@@ -161,6 +161,10 @@ module execution {
       class LookForObjects extends Action {
 	StringSeq labels;
       };
+
+      class LookForPeopleAndObjects extends Action {
+      	    StringSeq objectLabels;
+      };
       
 
       class Start extends Action {};

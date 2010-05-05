@@ -80,12 +80,14 @@
                  :variables (?at - place)
                  :precondition (and 
                                     (started ?a)
-				    (= (name ?p) not_asked)
-;                                    (not (kval ?a (name ?p))) 
+				    ;(= (name ?p) not_asked)
+				    (not (kval ?a (name ?p)))
                                     (= (is-in ?a) ?at) 
                                     (= (is-in ?p) ?at)
                                )
-                 :effect (assign (name ?p) none)
+ 		                :effect (kval ?a (name ?p))
+
+;assign (name ?p) none)
         )
 
         (:action ask-for-your-record
@@ -94,14 +96,15 @@
                  :variables (?at - place)
                  :precondition (and 
                                     (started ?a)
-                                ;    (not (kval ?a (record ?p)))
-                                ;    (kval ?a (name ?p))
+				    (not (kval ?a (record ?p)))
+				    (kval ?a (name ?p))
 				    (= (record ?p) not_asked) 
 				    (not (= (name ?p) not_asked))
+				  ;  (not (= (name ?p) none))
                                     (= (is-in ?a) ?at) 
                                     (= (is-in ?p) ?at)
                                )
-                 :effect (assign (record ?p) none)
+                 :effect (kval ?a (record ?p));assign (record ?p) none)
         )
 
 	(:action move_to_report_pos
@@ -119,7 +122,7 @@
 			       )
         )
 
-	(:action move_to_report_pos1
+	(:action move_to_report_pos
                 :agent (?a - robot)
                 :parameters (?to - place)
                 :precondition (and
@@ -149,10 +152,10 @@
         (:derived (have_all_info_about ?p - person)
                   (forall (?a - robot) 
                          (and
-				(not (= (name ?p) not_asked))
-				(not (= (record ?p) not_asked))
-                          ;     (kval ?a (name ?p))
-                          ;     (kval ?a (record ?p))
+				(kval ?a (name ?p))
+				(kval ?a (record ?p))
+	;			(not (= (name ?p) not_asked))
+			;	(not (= (record ?p) not_asked))
                          )
                   )
         )
@@ -169,7 +172,7 @@
 			       (detected ?v3)
 			   )
 		        )
-                        (forall (?p - person) (have_all_info_about ?p))
+                       (forall (?p - person) (have_all_info_about ?p))
                   )
 	)
 

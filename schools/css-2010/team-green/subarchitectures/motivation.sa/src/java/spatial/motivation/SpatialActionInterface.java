@@ -35,6 +35,7 @@ import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
+import execution.slice.actions.LookForPeopleAndObjects;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.LocalActionStateManager;
@@ -332,6 +333,21 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
+        public class LookForPeopleAndObjectsExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public LookForPeopleAndObjectsExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
+
+		@Override
+		public ActionExecutor getActionExecutor() {
+			return new LookForPeopleAndObjectsExecutor(m_component, m_detections);
+		}
+
+	}
+
 	/**
 	 * Sets all values necessary to prevent exceptions later on
 	 */
@@ -411,6 +427,8 @@ public class SpatialActionInterface extends ManagedComponent {
 				new LookForObjectsExecutorFactory(this));
 		m_actionStateManager.registerActionType(LookForPeople.class,
 				new LookForPeopleExecutorFactory(this));
+		m_actionStateManager.registerActionType(LookForPeopleAndObjects.class,
+				new LookForPeopleAndObjectsExecutorFactory(this));
 
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,

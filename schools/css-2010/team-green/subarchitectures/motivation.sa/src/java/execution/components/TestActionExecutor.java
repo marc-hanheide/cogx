@@ -131,8 +131,10 @@ public class TestActionExecutor extends ManagedComponent {
 			    System.out.println("We are finished");
 			    System.out.println(this.msg);
 			    Runtime rt = Runtime.getRuntime();
-			    Process p = rt.exec(this.msg); 
-			    Process p1 = rt.exec("eog /home/cogx/team_green/*.jpg");
+			    Process p = rt.exec(this.msg);
+			    p.waitFor();
+			    Process p1 = rt.exec("eog /home/cogx/team_green");
+			    p1.waitFor();
 			} catch(Exception e) { 
 			    System.out.println(e.getMessage()); 
 			} 
