@@ -12,6 +12,12 @@ from predicates import *
 from mapltypes import TypedNumber
 
 def product(*iterables):
+    """Returns an iterator with the cartesian product of the lists
+    provided as argument.
+
+    Arguments:
+    *iterables -- list of lists
+    """
     if not iterables:
         yield tuple()
         return
@@ -24,6 +30,24 @@ def product(*iterables):
                        
 
 def instantiate_args(args, state=None):
+    """Given a list of Terms and a state, try to instantiate these
+    terms to ground objects as follows:
+
+    A ConstantTerm will be copied.
+    
+    A VariableTerm will be replaced by a ConstantTerm of its
+    intantiated object. Uninstantiated VariableTerms will cause an
+    exception.
+
+    A FunctionTerm or FunctionVariableTerm will be evaluated and
+    looked up in the state. A ConstantTerm of that functions's value
+    in the state will be returned. If no state is supplied, an
+    exception will be raised.
+
+    Arguments:
+    args -- list of Term objects
+    state -- State object that is used to look up FunctionTerms
+    """
     if state:
         return [state.evaluate_term(arg) for arg in args]
     
@@ -39,7 +63,21 @@ def instantiate_args(args, state=None):
     return result
 
 class StateVariable(object):
+    """This class represents a state variable in mapl.
+
+    In its basic variant it is defined by a function and a list of
+    (ground) arguments. Additionally a state variable may have a
+    modality and a list of arguments specific to that modality."""
+    
     def __init__(self, function, args, modality=None, modal_args=[]):
+        """Return a new StateVariable.
+
+        Arguments:
+        function -- Function this StateVariable represents.
+        args -- List of TypedObjects (not Parameters).
+        modality -- A Predicate that represents this StateVariable's modality.
+        modal_args -- List of TypedObjects (not Parameters)."""
+        
         self.function = function
         assert len(function.args) == len(args)
         for a, fa in zip(args, function.args):
@@ -51,12 +89,18 @@ class StateVariable(object):
         self.hash = hash((self.function,self.modality)+ tuple(self.args)+tuple(self.modal_args))
 
     def get_type(self):
+        """Return the type of this state variable. If a modality is
+        defined, the result will be the type of the modality,
+        otherwise the type of the function."""
         if self.modality:
             return self.modality.type
         else:
             return self.function.type
 
     def get_predicate(self):
+        """Return the Predicate of this StateVariable. This will be
+        the modality if it exists, the function if it is a Predicate,
+        ot None otherwise."""
         if self.modality:
             return self.modality
         if isinstance(self.function, Predicate):
@@ -64,12 +108,25 @@ class StateVariable(object):
         return None
 
     def as_modality(self, modality, modal_args=[]):
+        """Return a copy of this StateVariable with a modified modality.
+
+        Arguments:
+        modality -- The Predicate defining the new modality
+        modal_args -- List of TypedObjects depending on the modality
+        """
         return StateVariable(self.function, self.args, modality, modal_args)
 
     def nonmodal(self):
+        """Return a copy of this StateVariable without any modality."""
         return StateVariable(self.function, self.args, None, [])
     
     def get_args(self):
+        """Return a list of arguments like they would be supplied to
+        the Literal defining this StateVariable.
+
+        If no modality is set, this will be the list of
+        arguments. Otherwise, it will be the list of modal arguments
+        with a FunctionTerm inserted at the appropriate Position."""
         if not self.modality:
             return self.args
         fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
@@ -83,6 +140,10 @@ class StateVariable(object):
         return args
 
     def as_literal(self):
+        """Return a representation of this StateVariable as a Literal.
+        
+        If this StateVariable's function is not a Predicate and no
+        modality is defined, an Exception will be raised."""
         assert isinstance(self.function, Predicate) or self.modality is not None
         
         if not self.modality:
@@ -115,12 +176,31 @@ class StateVariable(object):
     
     @staticmethod
     def from_term(term, state=None):
+        """Create a new StateVariable from a FunctionTerm. If the Term
+        contains nested functions, a state must be applied to look
+        them up.
+
+        Arguments:
+        term -- FunctionTerm
+        state -- state to look up nested function."""
         assert isinstance(term, FunctionTerm)
         args = instantiate_args(term.args, state)
         return StateVariable(term.function, args)
 
     @staticmethod
     def get_svars_in_term(term, state=None):
+        """Create a new StateVariable from a FunctionTerm and returns
+        a list of all StateVariable that occur in this term (as nested
+        functions). If the Term contains nested functions, a state
+        must be applied to look them up.
+
+        Returns a tuple with the resulting StateVariable and a list of
+        contained StateVariables (including the result itself).
+
+        Arguments:
+        term -- FunctionTerm
+        state -- state to look up nested function."""
+        
         assert isinstance(term, FunctionTerm)
         svar, vars = get_svars_from_term(term, state)
         vars.add(svar)
@@ -128,6 +208,14 @@ class StateVariable(object):
     
     @staticmethod
     def from_literal(literal, state=None):
+        """Create a new StateVariable from a Literal. If the Literal
+        contains nested functions, a state must be applied to look
+        them up.
+
+        Arguments:
+        literal -- Literal
+        state -- state to look up nested function."""
+        
         function = None
         litargs = []
         modal_args = []
@@ -160,7 +248,16 @@ class StateVariable(object):
     
 
 class Fact(tuple):
+    """This class represents an assignment of a value to a
+    StateVariable. The values of StateVariables referring to
+    predicates are TRUE and FALSE."""
+    
     def __new__(_class, svar, value):
+        """Create a new Fact.
+
+        Arguments:
+        svar -- StateVariable
+        value -- TypedObject"""
         #assert value.is_instance_of(svar.get_type()), "type of %s (%s) is incompatible with %s" % (str(svar), str(svar.get_type()), str(value))
         return tuple.__new__(_class, (svar, value))
     
@@ -168,6 +265,8 @@ class Fact(tuple):
     value = property(lambda self: self[1])
     
     def as_literal(self, useEqual=False, _class=None):
+        """Return a representation of this Fact as a Literal."""
+        
         if isinstance(self.svar.function, Predicate) or self.svar.modality is not None:
             lit = self.svar.as_literal()
             if self.value == TRUE:
@@ -192,6 +291,13 @@ class Fact(tuple):
 
     @staticmethod
     def from_literal(literal, state=None):
+        """Create a new Fact from a Literal. If the Literal
+        contains nested functions, a state must be applied to look
+        them up.
+
+        Arguments:
+        literal -- Literal
+        state -- state to look up nested function."""
         value = None
         if literal.predicate in assignment_ops + [equals]:
             value = instantiate_args(literal.args[-1:], state)[0]
@@ -205,6 +311,17 @@ class Fact(tuple):
         
     @staticmethod
     def from_condition(condition, state=None):
+        """Return a list of Facts from a Condition. If Literals in the
+        Condition contain nested functions, a state must be applied to
+        look them up.
+
+        This method only works for simple Conjunctions of
+        Literals. For more complex conditions, use the is_satisfied()
+        method of the State class.
+
+        Arguments:
+        condition -- Condition
+        state -- state to look up nested function."""
         def factVisitor(cond, facts):
             if isinstance(cond, conditions.LiteralCondition):
                 return [Fact.from_literal(cond, state)]
@@ -218,16 +335,47 @@ class Fact(tuple):
 
     @staticmethod
     def from_effect(effect, state=None):
-        if not isinstance(effect, effects.SimpleEffect):
-            raise  Exception("can't get facts for quantified or conditional effects")
-        return Fact.from_literal(effect, state)
+        """Return a list of Facts from an Effect. If Literals in the
+        effect contain nested functions, a state must be applied to
+        look them up.
+
+        This method only works for simple conjunctions of
+        Effect. For more complex conditions, use the get_effect_facts()
+        method of the State class.
+
+        Arguments:
+        effect -- Effect
+        state -- state to look up nested function."""
+        def factVisitor(eff, facts):
+            if isinstance(eff, effects.SimpleEffect):
+                return [Fact.from_literal(eff, state)]
+            elif isinstance(eff, effects.ConjunctiveEffect):
+                return sum(facts, [])
+            else:
+                raise Exception("can't get facts for %s" % eff.__class__)
+        return effect.visit(factVisitor)
     
     @staticmethod
     def from_tuple(tup):
+        """Create a Fact object from a tuple containing a
+        StateVariable and a TypedObject."""
         return Fact(tup[0], tup[1])
     
 class State(dict):
+    """This class represents a complete planning state. It is a
+    dictionary of StateVariable to TypedObjects.
+
+    It has additional features to compute the truth value of
+    conditions and the results of effect statements, as well as the
+    evaluation of axioms."""
+    
     def __init__(self, facts=[], prob=None):
+        """Create a new State object.
+
+        Arguments:
+        facts -- List of Fact objects or (StateVariable, TypedObject) tuples the State should be initialized with.
+        prob -- The PDDL problem description this State is based on."""
+        
         #defaultdict.__init__(self, lambda: UNKNOWN)
         assert prob is None or isinstance(prob, problem.Problem)
         self.problem = prob
@@ -240,18 +388,28 @@ class State(dict):
         self.random = random.Random()
 
     def copy(self):
+        """Create a copy of this State."""
         s = State([], self.problem)
         for svar,val in self.iteritems():
             s[svar] = val
         return s
 
     def set_random_seed(self, seed):
+        """Set the random seed used to compute the effects of
+        "probabilistic" statements.
+
+        Argument:
+        seed -- random seed"""
         self.random.seed(seed)
 
     def iterfacts(self):
+        """Returns an iterator of all Facts contained in this
+        State."""
         return (Fact.from_tuple(tup) for tup in self.iteritems())
 
     def set(self, fact):
+        """Sets a StateVariable to a value as specified in the
+        supplied Fact object."""
         self[fact.svar] = fact.value
         
     def __getitem__(self, key):
@@ -279,6 +437,12 @@ class State(dict):
 
     @staticmethod
     def from_problem(problem, seed=None):
+        """Create a State from a PDDL problem description.
+
+        Arguments:
+        problem -- a Problem object
+        seed -- Random seed used to generate the state when the problem has probabilistic initial facts."""
+        
         s = State([], problem)
         if seed is not None:
             s.set_random_seed(seed)
@@ -291,6 +455,15 @@ class State(dict):
         return s
 
     def evaluate_term(self, term, trace_vars=False):
+        """Evaluate a Term and return its value in the current
+        state. All Parameters in the term (and nested terms) must be
+        instantiated, otherwise an Exception is raised.
+
+        Arguments:
+        term -- Term object to evaluate
+        trace_vars -- if True, all StateVariables required to resolve
+        the term are written to the read_svars member variable.
+        """
         if term.__class__ == ConstantTerm:
             return term.object
         if term.__class__ == VariableTerm:
@@ -322,6 +495,16 @@ class State(dict):
         return self[svar]
 
     def svar_from_term(self, term, trace_vars=False):
+        """Create a StateVariable from a (potentially nested)
+        FunctionTerm. All Parameters in the term (and nested terms)
+        must be instantiated, otherwise an Exception is raised.
+
+        Arguments:
+        term -- Term object to evaluate
+        trace_vars -- if True, all StateVariables required to resolve
+        the term are written to the read_svars member variable.
+        """
+        
         assert isinstance(term, FunctionTerm), "%s is not a function term." % str(term)
         if isinstance(term, VariableTerm):
             assert term.is_instantiated(), "%s is not instantiated." % str(term)
@@ -335,6 +518,17 @@ class State(dict):
         return StateVariable(term.function, values)
 
     def evaluate_literal(self, literal, trace_vars=False):
+        """Return the truth value of a Literal in this state. All
+        Parameters to the literal (and nested terms) must be
+        instantiated, otherwise an Exception is raised.
+
+        Arguments:
+        literal -- Literal object to evaluate
+        trace_vars -- if True, all StateVariables required to resolve
+        the literal's arguments are written to the read_svars member
+        variable.
+        """
+        
 #        print literal.pddl_str()
         values = []
         svars = []
@@ -372,6 +566,19 @@ class State(dict):
 
 
     def get_literal_effect(self, literal, trace_vars=False):
+        """Return a Fact that describes the effect of applying a
+        Literal to this state. Supported are adding/deleting atoms,
+        fluent assignments and numeric operations. All Parameters to
+        the literal (and nested terms) must be instantiated, otherwise
+        an Exception is raised.
+
+        Arguments:
+        literal -- Literal object to apply.
+        trace_vars -- if True, all StateVariables required to resolve
+        the literal's arguments are written to the read_svars member
+        variable.
+        """
+        
         eff_svar = None
         eff_value = None
         values = []
@@ -420,10 +627,30 @@ class State(dict):
         return Fact(eff_svar, eff_value)
         
     def is_executable(self, action):
+        """Returns True if the supplied action is executable in this
+        state. All Parameters to the action must be instantiated,
+        otherwise an Exception is raised.
+
+        Arguments:
+        action -- Action object to evaluate
+        """
         extstate = self.get_extended_state(self.get_relevant_vars(action.precondition))
         return extstate.is_satisfied(action.precondition)
             
     def is_satisfied(self, cond, relevantVars=None, universal=None):
+        """Returns True if the supplied Condition is satisfied in this
+        state. All Parameters to the condition must be instantiated,
+        otherwise an Exception is raised.
+
+        Arguments:
+        cond -- Condition object to evaluate
+        relevantVars -- if a list is supplied, all StateVariables that
+        were used to detemine the truth of the condition are written
+        to that list.
+        universal -- if a list is supplied, the Parameters of a
+        UniversalCondition that is required to be satisfied will be
+        written to that list.
+        """
         import logging
         def instantianteAndCheck(cond, params):
             cond.instantiate(dict(zip(cond.args, params)))
@@ -492,6 +719,13 @@ class State(dict):
         return result
 
     def get_relevant_vars(self, cond, restrict_to=None):
+        """Returns a list of StateVariables that might be relevant for
+        determining the truth value of a condition.
+
+        Arguments:
+        cond -- the Condition object to evaluate
+        restrict_to -- optionally a list of predicates for which the
+        relevance should be checked."""
         def restrictionVisitor(cond):
             if isinstance(cond, conditions.LiteralCondition):
                 return cond.predicate in restrict_to
@@ -526,6 +760,18 @@ class State(dict):
         return set(self.read_svars)
 
     def get_effect_facts(self, effect, trace_vars=False):
+        """Return list of Facts that describe the effect of applying
+        an Effect to this state. Supported are adding/deleting atoms,
+        fluent assignments and numeric operations. All Parameters to
+        the Effect (and nested elements) must be instantiated,
+        otherwise an Exception is raised.
+
+        Arguments:
+        effect -- Effect object to apply.
+        trace_vars -- if True, all StateVariables required to resolve
+        the effects's arguments are written to the read_svars member
+        variable.
+        """
         facts = {}
         if isinstance(effect, effects.UniversalEffect):
             combinations = product(*map(lambda a: self.problem.get_all_objects(a.type), effect.args))
@@ -571,6 +817,17 @@ class State(dict):
         return facts
         
     def apply_effect(self, effect, trace_vars=False):
+        """Apply an Effect to this state. Supported are
+        adding/deleting atoms, fluent assignments and numeric
+        operations. All Parameters to the Effect (and nested elements)
+        must be instantiated, otherwise an Exception is raised.
+
+        Arguments:
+        effect -- Effect object to apply.
+        trace_vars -- if True, all StateVariables required to resolve
+        the effects's arguments are written to the read_svars member
+        variable.
+        """
         facts = self.get_effect_facts(effect, trace_vars=trace_vars)
 
         for svar, val in facts.iteritems():
@@ -579,7 +836,21 @@ class State(dict):
             self[svar] = val
             
     def get_extended_state(self, svars=None, getReasons=False):
-        """Evaluate all axioms neccessary to instantiate the variables in 'svars'."""
+        """Return a copy of this state with evaluated derived predicates.
+
+        If getReasons is True, this method will additionally return a
+        dictionary that contains for each derived StateVariable a list
+        of non-derived StateVariables that were required to derive it.
+        If evaluation of UniversalConditions is required for a
+        derivation, the Parameters of those conditions will be
+        supplied in a second directory.
+        
+        Arguments:
+        svars -- If not None, only the axioms required to determine
+        that value of the StateVariables in this list will be
+        evaluated.
+        getReasons -- also return from which variable each derived predicate was derived.
+        """
         t0 = time.time()
         pred_to_axioms = defaultdict(set)
         for a in self.problem.axioms:

@@ -42,7 +42,7 @@ class StateTest(common.PddlTest):
         action.instantiate({"?a" :self.prob["agent"], "?t" : self.prob["tru1"], "?to" : self.prob["pos1"]})
         #Can't create a fact from an assignment from one function to another.
         self.assertRaises(Exception, Fact.from_condition, action.precondition)
-        effect = Fact.from_effect(action.effect)
+        effect = Fact.from_effect(action.effect)[0]
         expected = Fact(StateVariable(self.dom.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos1"])
         unexpected = Fact(StateVariable(self.dom.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos2"])
         
@@ -53,13 +53,13 @@ class StateTest(common.PddlTest):
 
         #Test alternative instantiation syntax
         action.instantiate([self.prob["agent"], self.prob["tru1"], self.prob["pos1"]])
-        effect2 = Fact.from_effect(action.effect)
+        effect2 = Fact.from_effect(action.effect)[0]
         self.assertEqual(effect2, expected)
         action.uninstantiate()
 
         #Test name only instantiation
         action.instantiate(["agent", "tru1", "pos1"])
-        effect3 = Fact.from_effect(action.effect)
+        effect3 = Fact.from_effect(action.effect)[0]
         self.assertEqual(effect3, expected)
         action.uninstantiate()
                            
