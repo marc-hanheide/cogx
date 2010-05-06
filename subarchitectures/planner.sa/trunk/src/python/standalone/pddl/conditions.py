@@ -7,20 +7,40 @@ from scope import Scope
 import predicates
 
 class Condition(object):
+    """This is an abstract base class for all condition objects."""
+    
     def visit(self, fn):
+        """Visit this Condition and all its children.
+
+        Arguments:
+        fn -- visitor function that will be called with the current
+        Condition and a list of results of previous calls."""
         return fn(self, [])
 
     def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        """Return a deep copy of this Condition object
+
+        Arguments:
+        new_scope -- if not None, the copy will be created in this scope
+        new_parts -- if not None, replace the content of this condition with those given in this argument.
+        copy_instance -- if True, replace all instantiated Parameters with their instantiations"""
         return self.__class__()
 
     def set_scope(self, new_scope):
+        """Set a new scope for this Condition and all its children
+
+        Arguments:
+        new_scope -- Scope object"""
         assert new_scope is None or isinstance(new_scope, Scope)
         self.scope = new_scope
 
     def get_scope(self):
+        """Return the Scope obect that this Condition resides in."""
         return self.scope
     
     def free(self):
+        """Return the set of free Parameters that are used in this Condition."""
+        
         def visitor(cond, results=[]):
             if isinstance(cond, predicates.Term):
                 if cond.__class__ == predicates.FunctionTerm:
@@ -38,6 +58,11 @@ class Condition(object):
         return set(self.visit(visitor))
 
     def has_class(self, _class):
+        """Return True if any descendant of this Condition is of class '_class'.
+
+        Arguments:
+        _class -- Class object to check for."""
+        
         def visitor(cond, results=[]):
             if isinstance(cond, _class):
                 return True
@@ -54,6 +79,12 @@ class Condition(object):
         return hash(self.__class__)
 
     def pddl_str(self, instantiated=True):
+        """Return a pddl text representation of this Condition.
+        
+        Arguments:
+        instantiated -- if True (which is the default) resolves
+        instantiated Parameters before printing the string."""
+        
         def printVisitor(cond, results=[]):
             if cond.__class__ == LiteralCondition:
                 s = "(%s %s)" % (cond.predicate.name, " ".join(a.pddl_str(instantiated) for a in cond.args))
@@ -106,15 +137,30 @@ class Condition(object):
         raise NotImplementedError
 
 class Falsity(Condition):
+    """This class represents an always false condition."""
+    
     def negate(self):
+        """Return a negated copy of this condition."""
         return Truth()
 
 class Truth(Condition):
+    """This class represents an always true condition."""
+
     def negate(self):
+        """Return a negated copy of this condition."""
         return Falsity()
 
 class JunctionCondition(Condition):
+    """This is an abstract base class for conjunctions and disjunctions."""
+    
     def __init__(self, parts, scope=None):
+        """Create a new JunctionCondition.
+
+        Arguments:
+        parts -- Conditions that this JunctionCondition contains
+        scope -- Scope this Condition resides in.
+        """
+        
         self.parts = parts
         self.scope = scope
 
@@ -141,17 +187,31 @@ class JunctionCondition(Condition):
     
     
 class Conjunction(JunctionCondition):
+    """This class represents a conjunction of zero or more Conditions."""
+    
     def negate(self):
         neg_parts = [c.negate() for c in self.parts]
         return Disjunction(neg_parts)
 
 class Disjunction(JunctionCondition):
+    """This class represents a disjunction of zero or more Conditions."""
+    
     def negate(self):
         neg_parts = [c.negate() for c in self.parts]
         return Conjunction(neg_parts)
 
 class QuantifiedCondition(Condition, Scope):
+    """This is an abstract base class for existential and universal conditions."""
+    
     def __init__(self, args, condition, parent):
+        """Create a new QuantifiedCondition
+
+        Arguments:
+        args -- List of Parameters over which the condition shall be quantified
+        condition -- The Condition that shall be quantified over
+        parent -- Scope this Condition resides in.
+        """
+        
         Scope.__init__(self, args, parent)
         self.args = args
         self.condition = condition
@@ -199,6 +259,8 @@ class QuantifiedCondition(Condition, Scope):
         return cond
 
 class UniversalCondition(QuantifiedCondition):
+    """This class represents a universally quantified condition."""
+    
     def negate(self):
         neg = ExistentialCondition([types.Parameter(p.name, p.type) for p in self.args], None, self.parent)
         neg.condition = self.condition.negate()
@@ -206,6 +268,8 @@ class UniversalCondition(QuantifiedCondition):
         return neg
 
 class ExistentialCondition(QuantifiedCondition):
+    """This class represents an existentially quantified condition."""
+    
     def negate(self):
         neg = UniversalCondition([types.Parameter(p.name, p.type) for p in self.args], None, self.parent)
         neg.condition = self.condition.negate()
@@ -213,6 +277,8 @@ class ExistentialCondition(QuantifiedCondition):
         return neg
 
 class LiteralCondition(predicates.Literal, Condition):
+    """This class represents a Literal in a condition."""
+    
     def __init__(self, predicate, args, scope=None, negated=False):
         predicates.Literal.__init__(self, predicate, args, scope, negated)
     

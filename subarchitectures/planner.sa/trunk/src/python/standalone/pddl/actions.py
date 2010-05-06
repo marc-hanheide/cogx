@@ -8,7 +8,19 @@ import predicates, conditions, effects
 from scope import Scope
 
 class Action(Scope):
+    """This class represents a PDDl action."""
+    
     def __init__(self, name, args, precondition, effect, domain, replan=None):
+        """Create a new PDDL action.
+
+        Arguments:
+        name -- name of the action
+        args -- List of Parameters for this action
+        precondition -- a Condition object
+        effect -- an Effect object
+        domain -- the Domain this action belongs to.
+        replan -- Condition object for the replan condition (defaults to None)"""
+        
         assert effect != []
         Scope.__init__(self, args, domain)
         self.name = name
@@ -26,6 +38,12 @@ class Action(Scope):
             self.effect.set_scope(self)
 
     def instantiate(self, mapping):
+        """Instantiate the Parameters of this action.
+
+        Arguments:
+        mapping -- either a dictionary from Parameters to TypedObjects
+        or a list of TypedObjects. In the latetr case, the list is
+        assumed to be in the order of the Action's Parameters."""
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
         Scope.instantiate(self, mapping)
@@ -36,6 +54,10 @@ class Action(Scope):
         #indent = len("(:action ")
 
     def copy(self, newdomain=None):
+        """Create a deep copy of this Action.
+
+        Arguments:
+        newdomain -- if not None, the copy will be created inside this scope."""
         if not newdomain:
             newdomain = self.parent
             

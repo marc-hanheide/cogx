@@ -138,7 +138,7 @@ class Literal(object):
             self.args = [Term(a) for a in args]
 
     def pddl_str(self, instantiated=True):
-        """Return a pddl representation of this Literal.
+        """Return a pddl text representation of this Literal.
         
         Arguments:
         instantiated -- if True (which is the default) resolves
