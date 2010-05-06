@@ -4,7 +4,9 @@
 #include <sys/types.h>
 #include <sys/inotify.h>
 #include <sstream>
+#include <fstream>
 #include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 
 extern "C"
 {
@@ -16,19 +18,118 @@ extern "C"
 
 namespace cogx { namespace display {
 
+std::map<std::string, CFileMonitor::SConverter> CFileMonitor::SConverter::converters;
+
+void CFileMonitor::SConverter::add(const std::string &id, const std::string &command,
+      const std::string &type, const std::string &exts)
+{
+   converters[id].id = id;
+   converters[id].command = command;
+   converters[id].type = type;
+   converters[id].extensions = std::string(",") + exts + ",";
+}
+
+CFileMonitor::SConverter* CFileMonitor::SConverter::find(const std::string &id)
+{
+   typeof(converters.begin()) it = converters.find(id);
+   if (it == converters.end()) return NULL;
+   return &it->second;
+}
+
+CFileMonitor::SConverter* CFileMonitor::SConverter::findByExt(const std::string &ext)
+{
+   if (ext == "") return NULL;
+   std::string fx = std::string(",") + ext + ",";
+   for (typeof(converters.begin()) it = converters.begin(); it != converters.end(); it++) {
+      int pd = it->second.extensions.find(fx);
+      if (pd >= 0) return &it->second;
+   }
+   return NULL;
+}
+
+std::string CFileMonitor::SConverter::names()
+{
+   std::ostringstream names;
+   for (typeof(converters.begin()) it = converters.begin(); it != converters.end(); it++) {
+      if (it != converters.begin()) names << ",";
+      names << it->first;
+   }
+   return names.str();
+}
+
+struct _s_init_converters_
+{
+   _s_init_converters_()
+   {
+      CFileMonitor::SConverter::add("image", "", "binary", "bmp,gif,jpeg,jpg,png,pbm,pgm,ppm,tiff,xbm,xpm");
+      CFileMonitor::SConverter::add("dot", "dot -Tsvg", "text", "dot");
+      CFileMonitor::SConverter::add("neato", "neato -Tsvg");
+      CFileMonitor::SConverter::add("twopi", "twopi -Tsvg");
+      CFileMonitor::SConverter::add("circo", "circo -Tsvg");
+      CFileMonitor::SConverter::add("fdp", "fdp -Tsvg");
+      CFileMonitor::SConverter::add("svg", "", "text", "svg");
+   }
+} _init_converters_;
+
 CFileMonitor::SWatchInfo::SWatchInfo(const std::string &watchDef)
 {
-   watchId = 0;
-   int pd = watchDef.find_last_of('/');
-   std::string masks;
-   if (pd == watchDef.npos) {
-      directory = "";
-      masks = watchDef;
+   watchId = -1;
+   pConverter = NULL;
+
+   boost::regex rxWatch ("\\s*((\\w+)\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
+   boost::smatch res;
+   boost::match_flag_type flags = boost::match_default;
+
+   if ( ! boost::regex_match(watchDef, res, rxWatch, flags)) {
+      printf("**Invalid watch format: %s\n", watchDef.c_str());
+      printf("**Use: Name=Converter:path/to/files/{mask;mask;...}\n");
+      printf("**  If Name and Converter are ommitted they will be deduced from filename.\n");
+      printf("**  Known converters: %s.\n", SConverter::names().c_str());
    }
-   else if (pd > 0) {
-      directory = watchDef.substr(0, pd);
-      masks = watchDef.substr(pd+1);
+   //printf("2: %s\n", res[2].str().c_str());
+   //printf("4: %s\n", res[4].str().c_str());
+   //printf("5: %s\n", res[5].str().c_str());
+   //printf("7: %s\n", res[7].str().c_str());
+   title = res[2];
+   directory = res[5];
+   std::string converter = res[4];
+   std::string masks = res[7];
+
+   if (converter != "") {
+      pConverter = SConverter::find(converter);
+      if (pConverter == NULL) {
+         printf("**Unknown converter %s\n", converter.c_str());
+         printf("**  Known converters: %s.\n", SConverter::names().c_str());
+      }
    }
+
+   if (masks.length() < 1) {
+      unsigned int pd = directory.find_last_of('/');
+      if (pd == directory.npos) {
+         masks = directory;
+         directory = "";
+      }
+      else {
+         masks = directory.substr(pd+1);
+         directory = directory.substr(0, pd);
+      }
+   }
+ 
+   // directory.rstrip("/")
+   int l = directory.size();
+   while (l > 0 && directory[l-1] == '/') l--;
+   directory = directory.substr(0, l);
+
+   //int pd = watchDef.find_last_of('/');
+   //std::string masks;
+   //if (pd == watchDef.npos) {
+   //   directory = "";
+   //   masks = watchDef;
+   //}
+   //else if (pd > 0) {
+   //   directory = watchDef.substr(0, pd);
+   //   masks = watchDef.substr(pd+1);
+   //}
 
    if (masks.size() > 0) {
       const char delim[] = ";{}";
@@ -65,7 +166,7 @@ bool CFileMonitor::SWatchInfo::matches(const std::string &fname)
       boost::regex rx (*it);
       boost::smatch res;
       boost::match_flag_type flags = boost::match_default;
-      if (boost::regex_match(fname.begin(), fname.end(), res, rx, flags)) {
+      if (boost::regex_match(fname, res, rx, flags)) {
          printf("Found match for %s in %s\n", fname.c_str(), (*it).c_str());
          return true;
       }
@@ -99,13 +200,30 @@ void CFileMonitor::configure(const std::map<std::string,std::string> & _config)
 {
    debug("CFileMonitor::configure");
 
-   std::map<std::string, std::string>::const_iterator it;
+   std::map<std::string, std::string>::const_iterator it, itVar;
    m_display.configureDisplayClient(_config);
+
+   boost::regex rxVar( "(\\w+)=(.*)" );
+   boost::smatch res;
+   boost::match_flag_type flags = boost::match_default;
+   std::map<std::string, std::string> vars;
+   if((it = _config.find("--setvars")) != _config.end()) {
+      std::istringstream istr(it->second);
+      std::string vardef;
+      while(istr >> vardef) {
+         if (boost::regex_match(vardef, res, rxVar, flags)) {
+            vars[res[1]] = res[2];
+         }
+      }
+   }
 
    if((it = _config.find("--monitor")) != _config.end()) {
       std::istringstream istr(it->second);
       std::string wdef;
       while(istr >> wdef) {
+         for (itVar = vars.begin(); itVar != vars.end(); itVar++) {
+            boost::replace_all(wdef, std::string("%(") + itVar->first + ")", itVar->second);
+         }
          SWatchInfo* pinfo = new SWatchInfo(wdef);
          if (pinfo->filemasks.size() < 1) {
             log("Error --monitor: No files selected with %s", wdef.c_str());
@@ -176,32 +294,80 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
       SWatchInfo* pinfo = *it;
       if (pinfo->watchId != watchId) continue;
       if (! pinfo->matches(fname)) continue;
-      // TODO: real work
-      std::ostringstream cmd;
-      cmd << "dot -Tsvg ";
-      cmd << pinfo->directory << "/" << fname;
-      debug("cmd: %s", cmd.str().c_str());
-      FILE *fp = popen(cmd.str().c_str(), "r");
-      if (fp == NULL) {
-         log("Popen failed: %s", cmd.str().c_str());
-         break;
-      }
 
-      std::ostringstream xml;
-      const int PACK_LEN = 255;
-      char buffer[PACK_LEN + 1];
-      int len = PACK_LEN;
-      while (len == PACK_LEN) {
-         len = fread(buffer, 1, PACK_LEN, fp);
-         if (len > 0) {
-            buffer[len] = '\0';
-            xml << std::string(buffer);
+      SConverter *pConv = pinfo->pConverter;
+      if (pConv == NULL) {
+         int fd = fname.find_last_of(".");
+         if (fd >= 0) {
+            std::string ext = fname.substr(fd+1);
+            pConv = SConverter::findByExt(ext);
          }
       }
+      if (pConv == NULL) {
+         log("Error: Could not find a suitable converter for %s", fname.c_str());
+         return;
+      }
+      std::string title = pinfo->title;
+      if (title == "") {
+         int fd = fname.find_last_of("/");
+         if (fd < 0) title = fname;
+         else title = fname.substr(fd+1);
+      }
 
-      m_display.setObject("FileMonitor", "DOT", xml.str());
+      if (pConv->command != "") {
+         std::ostringstream cmd;
+         cmd << pConv->command << " ";
+         cmd << pinfo->directory << "/" << fname;
+         debug("cmd: %s", cmd.str().c_str());
+         FILE *fp = popen(cmd.str().c_str(), "r");
+         if (fp == NULL) {
+            log("Popen failed: %s", cmd.str().c_str());
+            break;
+         }
 
-      break;
+         if (pConv->type == "text") {
+            std::ostringstream xml;
+            const int PACK_LEN = 255;
+            char buffer[PACK_LEN + 1];
+            int len = PACK_LEN;
+            while (len == PACK_LEN) {
+               len = fread(buffer, 1, PACK_LEN, fp);
+               if (len > 0) {
+                  buffer[len] = '\0';
+                  xml << std::string(buffer);
+               }
+            }
+
+            m_display.setObject(title, "FileMonitor", xml.str());
+         }
+         else {
+            // TODO: capture binary data from stream
+         }
+         pclose(fp);
+      }
+      else {
+         std::string fn = pinfo->directory + "/" + fname;
+         std::ifstream infile;
+         // No converter, read the file and send it
+         if (pConv->type == "text") {
+            infile.open(fn.c_str(), std::ifstream::in);
+            std::stringstream str;
+            str << infile.rdbuf();
+            infile.close();
+            m_display.setObject(title, "FileMonitor", str.str());
+         }
+         else if (pConv->id == "image") {
+            // TODO: read binary data from file (server needs a setCompressedImage)
+            std::vector<unsigned char> data;
+            infile.open(fn.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+            long size = infile.tellg();
+            infile.seekg(0, std::ios::beg);
+            data.resize(size);
+            infile.read((char*)&data[0], size);
+            infile.close();
+            m_display.setImage(title, data);
+         }
+      }
    }
 }
 
