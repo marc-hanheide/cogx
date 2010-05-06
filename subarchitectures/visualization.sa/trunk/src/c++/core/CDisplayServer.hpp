@@ -52,6 +52,8 @@ public:
    // TODO: (maybe) create a different image implementation for client/server comm.
    void setRawImage(const std::string& id, int width, int height, int channels,
          const std::vector<unsigned char>& data);
+   void setCompressedImage(const std::string& id, const std::vector<unsigned char>& data,
+         const std::string &format);
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData);
    void setObjectTransform(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
@@ -108,7 +110,11 @@ public:
    {
       m_pDisplayServer->setRawImage(id, width, height, channels, data);
    }
-
+   virtual void setCompressedImage(const std::string& id,
+         const std::vector<unsigned char>& data, const std::string &format, const Ice::Current&)
+   {
+      m_pDisplayServer->setCompressedImage(id, data, format);
+   }
    virtual void addCheckBox(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label, const Ice::Current&)
    {

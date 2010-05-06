@@ -51,7 +51,14 @@ public:
    // pass the parameters to the server (m_pServer) and return its results.
    // -----------------------------------------------------------------
 public:
+   // Set image from raw data.
    void setImage(const std::string& id, const Video::Image& image); 
+
+   // Set image from compressed/formatted data.
+   // Formats: (supported by Qt) bmp,gif,jpeg,jpg,png,pbm,pgm,ppm,tiff,xbm,xpm
+   // If no format is specified, Qt will try to detect it from data headers.
+   void setImage(const std::string& id, const std::vector<unsigned char>& data, const std::string &format=""); 
+
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData); 
    void setObjectTransform(const std::string& id, const std::string& partId,
          const cogx::Math::Matrix33& transform);
