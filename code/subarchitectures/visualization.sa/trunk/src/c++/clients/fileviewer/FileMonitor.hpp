@@ -32,6 +32,7 @@ private:
    friend struct _s_init_converters_;
 
    struct SWatchInfo {
+      std::string watchDef;
       int watchId;
       std::string title;
       std::string directory;
