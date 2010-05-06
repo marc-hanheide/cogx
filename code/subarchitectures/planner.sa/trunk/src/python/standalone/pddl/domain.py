@@ -23,7 +23,21 @@ support_depends = {"mapl" : ["object-fluents", "modal-predicates"],
                    "fluents" : ["numeric-fluents", "object-fluents"]}
 
 class Domain(Scope):
+    """This class represents a PDDL domain."""
+    
     def __init__(self, name, types, constants, predicates, functions, actions, axioms, observe=None):
+        """Create a new PDDL domain.
+
+        Arguments:
+        name -- name of the domain
+        types -- dictionary from typename to Type objects
+        constants -- sequence of TypedObjects
+        predicates -- FunctionTable with the domain's predicates
+        functions -- FunctionTable with the domain's functions
+        actions -- List of Action objects
+        axioms -- List of Axiom objects
+        observe -- List of Observation objects (for DTPDDL)
+        """
         Scope.__init__(self, constants, None)
         self.name = name
         self.types = types
@@ -43,6 +57,7 @@ class Domain(Scope):
         self.name2action = None
 
     def copy(self):
+        """Create a deep copy of this Domain."""
         dom = Domain(self.name, self.types.copy(), self.constants.copy(), self.predicates.copy(), self.functions.copy(), [], [])
         dom.actions = [a.copy(dom) for a in self.actions]
         dom.axioms = [a.copy(dom) for a in self.axioms]
@@ -56,11 +71,17 @@ class Domain(Scope):
         return dom
 
     def get_action(self, name):
+        """Return the action with the given name.
+
+        Arguments:
+        name -- name of the Action to look up"""
+        
         if not self.name2action:
             self.name2action = dict((a.name, a) for a in self.actions)
         return self.name2action[name]
 
     def stratify_axioms(self):
+        """Compute stratification layers for the axioms in this domain."""
         self.stratification, self.nonrecursive = axioms.stratify(self.axioms)
     
     @staticmethod

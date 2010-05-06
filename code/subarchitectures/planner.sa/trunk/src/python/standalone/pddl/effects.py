@@ -10,20 +10,40 @@ import conditions, predicates
 import random
 
 class Effect(object):
+    """This is an abstract base class for all effect objects."""
+    
     def visit(self, fn):
+        """Visit this Effect and all its children.
+
+        Arguments:
+        fn -- visitor function that will be called with the current
+        Effect and a list of results of previous calls."""
         return fn(self, [])
     
-    def copy(self, new_scope=None, copy_instance=False):
+    def copy(self, new_scope=None, new_parts=None, copy_instance=False):
+        """Return a deep copy of this Effect object
+
+        Arguments:
+        new_scope -- if not None, the copy will be created in this scope
+        new_parts -- if not None, replace the content of this effect with those given in this argument.
+        copy_instance -- if True, replace all instantiated Parameters with their instantiations"""
         return self.__class__()
 
     def set_scope(self, new_scope):
+        """Set a new scope for this Effect and all its children
+
+        Arguments:
+        new_scope -- Scope object"""
         assert new_scope is None or isinstance(new_scope, Scope)
         self.scope = new_scope
 
     def get_scope(self):
+        """Return the Scope obect that this Effect resides in."""
         return self.scope
     
     def free(self):
+        """Return the set of free Parameters that are used in this Effect."""
+        
         def visitor(eff, results=[]):
             if isinstance(eff, predicates.Term):
                 if eff.__class__ == predicates.FunctionTerm:
@@ -43,6 +63,12 @@ class Effect(object):
         return set(self.visit(visitor))
     
     def pddl_str(self, instantiated=True):
+        """Return a pddl text representation of this Effect.
+        
+        Arguments:
+        instantiated -- if True (which is the default) resolves
+        instantiated Parameters before printing the string."""
+        
         def printVisitor(eff, results=[]):
             if eff.__class__ == SimpleEffect:
                 s = "(%s %s)" % (eff.predicate.name, " ".join(a.pddl_str(instantiated) for a in eff.args))
@@ -87,7 +113,15 @@ class Effect(object):
         return not self.__eq__(other)
             
 class ConjunctiveEffect(Effect):
+    """This class represents a list of zero or more Effects."""
+    
     def __init__(self, effects, scope=None):
+        """Create a new ConjunctiveEffect.
+
+        Arguments:
+        effects -- Effects that this ConjunctiveEffect contains
+        scope -- Scope this Effect resides in.
+        """
         self.parts = effects
         self.scope = scope
         
@@ -120,7 +154,16 @@ class ConjunctiveEffect(Effect):
         return eff
     
 class UniversalEffect(Scope, Effect):
+    """This class represents a universal effect."""
+    
     def __init__(self, args, effect, parentScope):
+        """Create a new QuantifiedCondition
+
+        Arguments:
+        args -- List of Parameters over which the effect shall be quantified
+        effect -- The Effect that shall be quantified over
+        parent -- Scope this Effect resides in.
+        """
         Scope.__init__(self, args, parentScope)
         self.args = args
         self.effect = effect
@@ -168,7 +211,15 @@ class UniversalEffect(Scope, Effect):
         return eff
 
 class ProbabilisticEffect(Effect):
+    """This class represents a probabilistic effect."""
+    
     def __init__(self, effects, scope=None):
+        """Create a new ProbabilisticEffect
+
+        Arguments:
+        effects -- A list of (probability, Effect) tuples that describe the possible Effects and their probability.
+        scope -- Scope this Effect resides in.
+        """
         self.effects = effects
         self.scope = scope
         # self.summed_effects = []
@@ -261,7 +312,16 @@ class ProbabilisticEffect(Effect):
                 
 
 class ConditionalEffect(Effect):
+    """This class represents a conditional effect."""
+    
     def __init__(self, condition, effect, scope=None):
+        """Create a new ConditionalEffect
+
+        Arguments:
+        condition -- Condition object that must evaluate to True for this effect to be applied
+        effect -- The Effect object the condition applies to.
+        scope -- Scope this Effect resides in.
+        """
         self.condition = condition
         self.effect = effect
         self.scope = scope
@@ -295,6 +355,8 @@ class ConditionalEffect(Effect):
         return ConditionalEffect(condition, effects)
 
 class SimpleEffect(predicates.Literal, Effect):
+    """This class represents an effect that sets/unsets a literal or assigns values to fluents."""
+    
     def __str__(self):
         return "Effect: %s" % predicates.Literal.__str__(self)
 
