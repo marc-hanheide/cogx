@@ -17,10 +17,26 @@ private:
    cogx::display::CActiveDisplayClient<CFileMonitor> m_display;
    // void handleGuiEvent(const Visualization::TEvent &event);
 
+   struct SConverter {
+      std::string id;
+      std::string command;
+      std::string type;
+      std::string extensions;
+      static std::map<std::string, SConverter> converters;
+      static void add(const std::string &_id, const std::string &_command,
+            const std::string &type="text", const std::string &exts="");
+      static SConverter* find(const std::string &id);
+      static SConverter* findByExt(const std::string &ext);
+      static std::string names();
+   };
+   friend struct _s_init_converters_;
+
    struct SWatchInfo {
       int watchId;
+      std::string title;
       std::string directory;
       std::vector<std::string> filemasks;
+      SConverter* pConverter;
       SWatchInfo(const std::string& watchDef);
       bool matches(const std::string& filename);
       void dump(std::ostream& steam);
