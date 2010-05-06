@@ -16,7 +16,7 @@ $ sudo tools/jam/src/bin.linuxx86/bjam --prefix=/usr/local --libdir=/usr/local/l
 In Ubuntu 9.04 you can install the boost package v1.37:
 libboost1.37-dev
 
-In Ubuntu 9.10 you can install libboost1.40-dev
+In Ubuntu 9.10 you can install libboost1.40-dev or libboost-dev
 
 Probably you will also have to install libboost-date-time1.xx-dev,
 libboost-iostreams1.xx-dev and libboost-filesystem1.xx-dev
