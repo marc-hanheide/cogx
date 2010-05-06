@@ -15,7 +15,7 @@
    id="svg2"
    sodipodi:version="0.32"
    inkscape:version="0.47pre4 r22446"
-   sodipodi:docname="cogx_icon.svg"
+   sodipodi:docname="cogx_icons.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="/home/lukacu/Documents/Graphics/Work/CogX/cogx.png"
    inkscape:export-xdpi="179.32826"
@@ -207,23 +207,23 @@
     </linearGradient>
     <linearGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient3168-0"
-       id="linearGradient3704"
-       x1="120.92857"
-       y1="43.433605"
-       x2="131.07143"
-       y2="43.433605"
-       gradientUnits="userSpaceOnUse" />
+       xlink:href="#linearGradient3718"
+       id="linearGradient3381"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.6035437,0,0,1.6035437,-86.93898,-21.961194)"
+       x1="165.18864"
+       y1="44.451019"
+       x2="157.80293"
+       y2="37.880749" />
     <linearGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient3718"
-       id="linearGradient3716"
-       x1="153.60715"
-       y1="40.219318"
-       x2="169.60715"
-       y2="40.219318"
+       xlink:href="#linearGradient3168-0"
+       id="linearGradient3439"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.6035437,0,0,1.6035437,-86.93898,-21.961194)" />
+       x1="132.85715"
+       y1="47.897892"
+       x2="124.82143"
+       y2="39.862179" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -235,9 +235,9 @@
      objecttolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="142.75317"
-     inkscape:cy="955.61137"
+     inkscape:zoom="2.8"
+     inkscape:cx="139.00013"
+     inkscape:cy="984.44435"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:window-width="1097"
@@ -261,7 +261,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -317,12 +317,12 @@
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path
-       style="fill:url(#linearGradient3704);stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       style="fill:url(#linearGradient3439);stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
        d="m 121.42857,29.862178 0,27.142857 22.85715,-12.678571 -22.85715,-14.464286 z"
        id="path3696"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:url(#linearGradient3716);fill-opacity:1.0;stroke:none"
+       style="fill:url(#linearGradient3381);fill-opacity:1;stroke:none"
        id="rect3708"
        width="24.053156"
        height="24.625851"
