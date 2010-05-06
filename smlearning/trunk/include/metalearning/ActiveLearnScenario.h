@@ -23,6 +23,7 @@
 
 #include <metalearning/Scenario.h>
 #include <metalearning/ActiveRNN.h>
+#include <metalearning/SMRegion.h>
 #include <Ice/Ice.h>
 #include <PlotApp.hh>
 
@@ -32,14 +33,10 @@
 namespace smlearning {
 
 
-
-
 //------------------------------------------------------------------------------
 
 /** ActiveLearnScenario class */
 class ActiveLearnScenario : public smlearning::Scenario {
-	/** training sequence for the LSTM */
-	rnnlib::DataSequence* trainSeq;
 public:
 	/** Run experiment */
 	///
@@ -69,8 +66,13 @@ public:
 protected:
 	/** LSTM active learner */
 	ActiveRNN learner;
-	/** to know if net has been already built (initialized in constructor) */
+	/** to know if net has been already built */
 	bool netBuilt;
+	/** training sequence for the LSTM */
+	rnnlib::DataSequence* trainSeq;
+	/** map of indexed sensorimotor regions */
+	typedef map<int, SMRegion> RegionsMap;
+	RegionsMap regions;
 	/** Objects can be constructed only in the Scene context. */
 	ActiveLearnScenario(golem::Scene &scene) : Scenario (scene) {};
 
@@ -104,7 +106,21 @@ protected:
 	///write obtained dataset into a binary file
 	///
 	virtual void write_dataset_into_binary();
- 
+
+	///
+	///Update learners according to an sensorimotor region splitting criterion
+	///
+	void update_learners ();
+	
+	///
+	///Find the appropriate region index according to the given sensorimotor context
+	///
+	int get_SMRegion (const FeatureVector SMContext);
+
+	///
+	///partition of regions according to variance of dataset instances
+	///
+	void split_region (int region);
 
 };
 

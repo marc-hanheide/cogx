@@ -27,6 +27,7 @@
 #define SMLEARNING_ACTIVERNN_H_
 
 #include <metalearning/RNN.h>
+#include <metalearning/SMRegion.h>
 
 #include <NetcdfDataset.hpp>
 #include <WeightContainer.hpp>

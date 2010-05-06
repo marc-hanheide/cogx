@@ -108,6 +108,7 @@ LINK_DIRECTORIES(
 SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
+	${SMLEARNING_ROOT}/src/metalearning/SMRegion.cpp
 	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
@@ -134,6 +135,7 @@ SET(ACTIVELEARN_EXPERIMENT_SOURCE
 SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
+	${SMLEARNING_ROOT}/include/metalearning/SMRegion.h
 	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
 #	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
 #	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
