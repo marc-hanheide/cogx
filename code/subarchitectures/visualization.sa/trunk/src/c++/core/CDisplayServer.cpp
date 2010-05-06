@@ -102,6 +102,7 @@ void CDisplayServer::runComponent()
 void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       int channels, const std::vector<unsigned char>& data)
 {
+   DTRACE("CDisplayServer::setRawImage");
    CRasterImage *pImage = NULL;
    CRasterImage *pExisting = m_Model.getImage(id);
 
@@ -174,8 +175,25 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
    }
 }
 
+void CDisplayServer::setCompressedImage(const std::string& id, const std::vector<unsigned char>& data,
+      const std::string &format)
+{
+   DTRACE("CDisplayServer::setCompressedImage");
+   CRasterImage *pExisting = m_Model.getImage(id);
+   CRasterImage *pImage = NULL;
+
+   pImage = new CRasterImage();
+   pImage->m_id = id;
+   pImage->m_pImage = new QImage();
+   bool ok = pImage->m_pImage->loadFromData(&data[0], data.size(), format.c_str());
+
+   if (ok) m_Model.setObject(pImage);
+   else if(pExisting) m_Model.removeObject(id);
+}
+
 void CDisplayServer::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
 {
+   DTRACE("CDisplayServer::setObject");
    // TODO: object/part
    CSvgImage *pImage = NULL;
    CSvgImage *pExisting = (CSvgImage*) m_Model.getObject(id); // XXX UNSAFE !!!!

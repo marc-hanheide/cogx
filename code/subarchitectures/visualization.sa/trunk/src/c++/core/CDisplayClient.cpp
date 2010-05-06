@@ -53,9 +53,15 @@ void CDisplayClient::connectIceClient(CASTComponent& owner)
    owner.debug("CDisplayClient Connected.");
 }
 
-void CDisplayClient::setImage(const std::string& id, const Video::Image& image/*, const Ice::Current&*/)
+void CDisplayClient::setImage(const std::string& id, const Video::Image& image)
 {
    m_pServer->setImage(id, image);
+}
+
+void CDisplayClient::setImage(const std::string& id, const std::vector<unsigned char>& data,
+    const std::string &format)
+{
+   m_pServer->setCompressedImage(id, data, format);
 }
 
 #ifdef FEAT_VISUALIZATION_OPENCV

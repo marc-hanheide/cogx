@@ -4,6 +4,8 @@
  */
 #include "Model.hpp"
 
+#include "convenience.hpp"
+
 using namespace std;
 
 namespace cogx { namespace display {
@@ -79,6 +81,7 @@ CRasterImage* CDisplayModel::getImage(const std::string &id)
 void CDisplayModel::setObject(CDisplayObject *pObject)
 {
    if (pObject == NULL) return;
+   DTRACE("CDisplayModel::setObject");
 
    CDisplayView *pview;
    CDisplayObject *pfound;
@@ -104,6 +107,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
 
    // XXX Create a default view for each object (this may create too many views)
    if (views.size() < 1) {
+      DMESSAGE("Creating new view for: " << pObject->m_id);
       pview = new cogx::display::CDisplayView();
       pview->m_id = pObject->m_id;
       pview->addObject(pObject);
@@ -114,6 +118,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       }
    }
    else {
+      DMESSAGE("Object " << pObject->m_id << " found in " << views.size() << "views");
       // XXX this was already done by CDisplayView::replaceObject etc. 
       FOR_EACH(pview, views) {
          FOR_EACH(pobsrvr, modelObservers) {
@@ -125,6 +130,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
 
 void CDisplayModel::refreshObject(const std::string &id)
 {
+   DTRACE("CDisplayModel::refreshObject");
    TObjectMap::iterator itobj = m_Objects.find(id);
    CDisplayObject* pfound = (itobj == m_Objects.end()) ? NULL : itobj->second;
    if (pfound) {
@@ -136,16 +142,16 @@ void CDisplayModel::refreshObject(const std::string &id)
    }
 }
 
-CDisplayObject* CDisplayModel::removeObject(const std::string &id)
+void CDisplayModel::removeObject(const std::string &id)
 {
+   DTRACE("CDisplayModel::removeObject");
    CDisplayObject *pfound;
    TObjectMap::iterator itobj = m_Objects.find(id);
    pfound = (itobj == m_Objects.end()) ? NULL : itobj->second;
    if (pfound != NULL) {
       m_Objects.erase(m_Objects.find(pfound->m_id));
-      return pfound;
+      delete pfound;
    }
-   return NULL;
 }
 
 bool CDisplayModel::addGuiElement(CGuiElement* pGuiElement)
@@ -205,6 +211,7 @@ void CDisplayView::addObject(CDisplayObject *pObject)
    // if (pExisting) return; // TODO: This is an error! Should use ReplaceObject
    TObjectMap::iterator existing = m_Objects.find(pObject->m_id);
    if (existing != m_Objects.end()) return;
+   DMESSAGE(m_id << ": Adding object: " << pObject->m_id);
 
    m_Objects[pObject->m_id] = pObject;
    CDisplayModelObserver *pobsrvr;
@@ -218,7 +225,8 @@ void CDisplayView::removeObject(const std::string& id)
    //CDisplayObject *pExisting = m_Objects.find(pObject->m_id);
    //if (! pExisting) return;
    TObjectMap::iterator existing = m_Objects.find(id);
-   if (existing == m_Objects.end()) return;
+   if (existing == m_Objects.end() || existing->second == NULL) return;
+   DMESSAGE(m_id << ": Removing  object: " << id);
 
    m_Objects.erase(existing);
 
@@ -233,7 +241,8 @@ void CDisplayView::replaceObject(const std::string& id, CDisplayObject *pNew)
    //CDisplayObject *pExisting = m_Objects.find(pRemove->m_id);
    //if (! pExisting) return;
    TObjectMap::iterator existing = m_Objects.find(id);
-   if (existing == m_Objects.end()) return;
+   if (existing == m_Objects.end() || existing->second == NULL) return;
+   DMESSAGE(m_id << ": Replacing object: " << id);
 
    m_Objects.erase(existing);
    if (pNew)
@@ -251,6 +260,7 @@ void CDisplayView::refreshObject(const std::string& id)
    //if (! pExisting) return;
    TObjectMap::iterator existing = m_Objects.find(id);
    if (existing == m_Objects.end()) return;
+   DMESSAGE(m_id << ": Refresh object: " << id);
 
    CDisplayModelObserver *pobsrvr;
    FOR_EACH(pobsrvr, viewObservers) {
