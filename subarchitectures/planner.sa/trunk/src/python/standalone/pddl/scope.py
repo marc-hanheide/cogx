@@ -7,17 +7,32 @@ import mapltypes as types
 import predicates
 
 class FunctionTable(dict):
+    """This class is used to store and retrieve PDDL Function objects
+    according to name and argument types."""
+    
     def __init__(self, functions=[]):
+        """Create a new FunctionTable.
+
+        Arguments:
+        functions -- List of Function objects this table should contain."""
         for f in functions:
             self.add(f)
 
     def copy(self):
+        """Create a copy of this table."""
         c =  FunctionTable()
         for f in self:
             c.add(f)
         return c
 
     def add(self, function):
+        """Add a new Function to the table. If a function with
+        identical name and arguments exists, an Exception will be
+        raised.
+
+        Arguments:
+        function -- Function object or list of Function objects .
+        """
         if isinstance(function, (list, tuple, set)):
             for f in function:
                 self.add(f)
@@ -33,6 +48,11 @@ class FunctionTable(dict):
         
 
     def remove(self, function):
+        """Remove Functions from this table.
+
+        Arguments:
+        function -- Function object or list of Function objects .
+        """
         if isinstance(function, (list, tuple, set)):
             for f in function:
                 self.remove(f)
@@ -48,7 +68,17 @@ class FunctionTable(dict):
                 
         
     def get(self, name, args):
-        """Get all functions matching the provided name and argument types"""
+        """Get all functions matching the provided name and argument
+        types.
+
+        If excactly one function matches the supplied information, it
+        will be returned. Otherwise a list of matching Functions will
+        be returned.
+
+        Arguments:
+        name -- the name of the function to look for
+        args -- a list of Terms, TypedObjects or Types that describe
+        the arguments of the function that is searched."""
         
         if name not in self:
             return []
@@ -69,6 +99,7 @@ class FunctionTable(dict):
         result = []
 #        print name, map(str, args)
         for f in fs:
+            #in case one tries to check the function argument, too
             if len(argtypes) == len(f.args):
                 funcargs = {}
                 matches = True
@@ -120,13 +151,38 @@ class FunctionTable(dict):
         raise NotImplementedError
 
 class Scope(dict):
+    """This class represents any PDDL object that can define variables
+    or constants. It implements a lookup table to get the associated
+    Parameters or TypedObjects given their name. Most methods of this
+    class can take strings, TypedObjects or Terms as keys. For the
+    latter two, the name of the objects will be used as a key.
+
+    Scopes can be nested; when a symbol is not found in one scope, it
+    will be looked up in it's parent Scope.
+
+    Usually, a Scope object will not be used directly but be inherited
+    by classes representing PDDL elements, e.g. domains, actions,
+    quantified conditions/effects.
+    """
+    
     def __init__(self, objects, parent):
+        """Create a new Scope object.
+
+        Arguments:
+        objects -- List of Parameters and TypedObjects that should be defined in this scope.
+        parent -- Scope that this scope resides in. May be None if no parent exists.
+        """
+        
         self.set_parent(parent)
         self.termcache = {}
         for obj in objects:
             dict.__setitem__(self, obj.name, obj)
 
     def set_parent(self, parent):
+        """Change the parent of this Scope object.
+
+        Arguments:
+        parent -- Scope object."""
         self.parent = parent
         if parent is not None:
             self.predicates = parent.predicates
@@ -142,6 +198,11 @@ class Scope(dict):
 
     
     def lookup(self, args):
+        """Lookup a list of symbols in this Scope. Returns a list of
+        Terms corresponding to the supplied symbols.
+
+        Arguments:
+        args -- list of strings, TypesObjects or Terms to look up"""
         result = []
         for arg in args:
             if arg.__class__ == predicates.FunctionTerm:
@@ -156,23 +217,33 @@ class Scope(dict):
         return result
 
     def add(self, obj):
+        """Add an object to this Scope.
+
+        Arguments:
+        obj -- TypedObject or Parameter to add."""
         if isinstance(obj, (tuple, list)):
             for o in obj:
                 dict.__setitem__(self, o.name, o)
         else:
             dict.__setitem__(self, obj.name, obj)
 
-    def merge(self, other):
-        #assume unique variables for now
-        for entry in other.values():
-            name = entry.name
-            #reassign existing variables
-            if name in self:
-                raise KeyError, "Variable %s already exists" % name
+    # def merge(self, other):
+    #     #assume unique variables for now
+    #     for entry in other.values():
+    #         name = entry.name
+    #         #reassign existing variables
+    #         if name in self:
+    #             raise KeyError, "Variable %s already exists" % name
                 
-            dict.__setitem__(self, entry.name, entry)
+    #         dict.__setitem__(self, entry.name, entry)
 
     def tryInstantiate(self, mapping):
+        """Try to instantiate parameters in this scope. If
+        instantiation fails (see instantiate() method), this method
+        will return False, otherwise True.
+
+        Arguments:
+        mapping -- dictionary from parameter to object."""
         try:
             self.instantiate(mapping)
         except:
@@ -181,6 +252,15 @@ class Scope(dict):
         return True
             
     def instantiate(self, mapping):
+        """Instantiate Parameters. All parameters and values must be
+        defined in this Scope or one of its ancestors. An exception is
+        instantiating a functional variable with a FunctionTerm, here
+        the FunctionTerm is not looked up in the scope.
+
+        If any of the objects are not defined, an Exception will be raised.
+
+        Arguments:
+        mapping -- dictionary from parameter to object."""
         self.uninstantiate()
         nonfunctions = []
         #instantiate function variables first, as they can affect the types of other parameters
@@ -201,11 +281,13 @@ class Scope(dict):
 
             
     def uninstantiate(self):
+        """Uninstantiate all Parameters defined in this Scope."""
         for val in self.itervalues():
             if isinstance(val, types.Parameter):
                 val.instantiate(None)
 
     def uniquify_variables(self):
+        """Rename objects to that there are no name collisions."""
         renamings = {}
         for entry in self.values():
             if entry.name in self.parent:
