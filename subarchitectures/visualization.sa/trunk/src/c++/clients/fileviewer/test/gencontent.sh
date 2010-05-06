@@ -10,4 +10,5 @@ while [ 0 -lt 1 ]; do
       cp $f xdata/
       sleep 1s
    done
+   echo "--"
 done

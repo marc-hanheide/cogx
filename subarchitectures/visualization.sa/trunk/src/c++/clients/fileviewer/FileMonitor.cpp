@@ -1,3 +1,7 @@
+/*
+ * Author: Marko Mahnič
+ * Created: 2010-04-26
+ */
 
 #include "FileMonitor.hpp"
 
@@ -73,6 +77,7 @@ struct _s_init_converters_
 
 CFileMonitor::SWatchInfo::SWatchInfo(const std::string &watchDef)
 {
+   this->watchDef = watchDef;
    watchId = -1;
    pConverter = NULL;
 
@@ -167,7 +172,7 @@ bool CFileMonitor::SWatchInfo::matches(const std::string &fname)
       boost::smatch res;
       boost::match_flag_type flags = boost::match_default;
       if (boost::regex_match(fname, res, rx, flags)) {
-         printf("Found match for %s in %s\n", fname.c_str(), (*it).c_str());
+         // printf("Found match for %s in %s\n", fname.c_str(), (*it).c_str());
          return true;
       }
    }
@@ -244,7 +249,6 @@ void CFileMonitor::configure(const std::map<std::string,std::string> & _config)
 
 void CFileMonitor::start()
 {
-   m_display.connectIceClient(*this);
 }
 
 void CFileMonitor::destroy()
@@ -289,7 +293,7 @@ void describeEvent(inotify_event *event)
 
 void CFileMonitor::processFileChange(int watchId, const std::string &fname)
 {
-   debug("WILL CHECK FILE %s", fname.c_str());
+   debug("FILE CHANGED: %s", fname.c_str());
    for (typeof(m_watches.begin()) it = m_watches.begin(); it != m_watches.end(); it++) {
       SWatchInfo* pinfo = *it;
       if (pinfo->watchId != watchId) continue;
@@ -315,10 +319,10 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
       }
 
       if (pConv->command != "") {
+         debug("Convert cmd: %s -> %s", pConv->command.c_str(), title.c_str());
          std::ostringstream cmd;
          cmd << pConv->command << " ";
          cmd << pinfo->directory << "/" << fname;
-         debug("cmd: %s", cmd.str().c_str());
          FILE *fp = popen(cmd.str().c_str(), "r");
          if (fp == NULL) {
             log("Popen failed: %s", cmd.str().c_str());
@@ -350,6 +354,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
          std::ifstream infile;
          // No converter, read the file and send it
          if (pConv->type == "text") {
+            debug("Send text: %s", title.c_str());
             infile.open(fn.c_str(), std::ifstream::in);
             std::stringstream str;
             str << infile.rdbuf();
@@ -357,6 +362,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
             m_display.setObject(title, "FileMonitor", str.str());
          }
          else if (pConv->id == "image") {
+            debug("Send image: %s", title.c_str());
             // TODO: read binary data from file (server needs a setCompressedImage)
             std::vector<unsigned char> data;
             infile.open(fn.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
@@ -375,6 +381,8 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
 // see also: man://inotify(7), man://inotify_init, man://select(2), man://select_tut(2) 
 void CFileMonitor::runComponent()
 {
+   m_display.connectIceClient(*this);
+
    /* size of the event structure, not counting name */
    const size_t EVENT_SIZE = (sizeof (struct inotify_event));
 
@@ -418,7 +426,7 @@ void CFileMonitor::runComponent()
       }
       else if (ret && FD_ISSET (fd, &rfds)) { // rfds changed before timeout
          int length = read( fd, buffer, BUF_LEN );  
-         debug("Change occured, length=%d", length);
+         // debug("Change occured, length=%d", length);
          int i = 0;
          if (length < 0) {
             /* error, etc. */
