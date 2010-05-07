@@ -220,13 +220,13 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		/////////////////////////////////////////////////
 		//storing the feature vector
 
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
+	/*	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(efRoll, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(efPitch, -REAL_PI, REAL_PI));
 		currentFeatureVector.push_back(normalize(efYaw, -REAL_PI, REAL_PI));
-	
+	*/
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
 		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
@@ -239,10 +239,12 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 
 		/////////////////////////////////////////////////
 		//initialize RNN learner
-		if (!netBuilt) {
-			learner.build (smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
-			netBuilt = true;
+		if (!netBuilts[startPosition-1]) {
+			learners[startPosition-1].build (smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
+			//learner.build (smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
+			netBuilts[startPosition-1] = true;
 		}
+		learner = learners[startPosition - 1];
 		load_current_trainSeq (learner.header->inputSize, learner.header->outputSize);
 		learner.feed_forward (*trainSeq);
 		get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
@@ -297,10 +299,10 @@ void  ActiveLearnScenario::initialize_movement(){
 ///choose the starting position
 ///
 void ActiveLearnScenario::define_start_position(){
-	cout << "ALS: define_start_position" << endl;
+	//cout << "ALS: define_start_position" << endl;
 
 	if (startingPosition == 0)
-			if ( iteration < smregionsCount ) 
+			if ( true /*iteration < smregionsCount*/ ) 
 				startPosition = floor(randomG.nextUniform (1.0, 18.0));
 			else {
 				//active selection of samples
@@ -319,32 +321,42 @@ void ActiveLearnScenario::define_start_position(){
 }
 
 void ActiveLearnScenario::write_dataset_into_binary(){
-	cout << "ALS: write_dataset_into_binary" << endl;
+	//cout << "ALS: write_dataset_into_binary" << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	learner.save_net_data (writedown_collected_data(data));
+	//learner.save_net_data (writedown_collected_data(data));
 	/////////////////////////////////////////////////
 	
 }
 
 void ActiveLearnScenario::run(int argc, char* argv[]) {
 
+
 	Ice::CommunicatorPtr ic;
 	try {
 	ic = Ice::initialize(argc, argv);
+
+	bool a[smregionsCount];
+	netBuilts = a;
+	ActiveRNN b[smregionsCount];
+	learners = b;
+	
 
 	Ice::ObjectPrx base2 = ic->stringToProxy("DataPlotter:default -p 8174");
 	smlearning::plotting::PlottingAppPrx plotApp = smlearning::plotting::PlottingAppPrx::checkedCast(base2);
 
 	if (!plotApp)
 		throw "Invalid proxy";
-	plotApp->init (smregionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
+	plotApp->init (smregionsCount, learners[0].SMOOTHING + learners[0].TIMEWINDOW);
 	plotApp->resize(640,480);
 	
 	plotApp->show();
 
-	netBuilt = false;
-
+	//netBuilt = false;
+	for (int i = 0; i < 18; i++) {
+		netBuilts[i] = false;
+	}
+	
 	//set: random seed, tmDeltaAsync; get initial config
 	first_init();
 
@@ -396,8 +408,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
-			//learner.update (*trainSeq, startPosition-1);
-			update_learners ();
+			learner.update (*trainSeq, startPosition-1);
 			vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
 			vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
 			plotApp->updateData(startPosition-1, learnProgData, errorData);
@@ -468,7 +479,7 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (rnnlib::
 	assert (startIndex < outputsize);
 
 	//extract effector Pose
-	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
+/*	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	Real efRoll, efPitch, efYaw;
@@ -476,7 +487,7 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (rnnlib::
 	efPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	efYaw = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	predictedEfPose.R.fromEuler (efRoll, efPitch, efYaw);
-
+*/
 	//extract polyflap Pose
 	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
 	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
@@ -501,7 +512,7 @@ void ActiveLearnScenario::get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<
 		int startIndex = sIndex;
 
 		//extract effector Pose
-		currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+	/*	currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		currentPredictedEfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		currentPredictedEfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		Real efRoll, efPitch, efYaw;
@@ -510,7 +521,7 @@ void ActiveLearnScenario::get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<
  		efYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
 		currentPredictedEfPose.R.fromEuler(efRoll, efPitch, efYaw);
 		currentPredictedEfSeq.push_back (currentPredictedEfPose);
-		
+	*/	
 		//extract polyflap Pose
 		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
 		currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
@@ -538,120 +549,6 @@ void ActiveLearnScenario::load_current_trainSeq (int inputSize, int outputSize) 
 	//load_sequence_Markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, learningData.currentSeq);
 
 }
-
-//------------------------------------------------------------------------------
-
-///
-///Find the appropriate region index according to the given sensorimotor context
-///
-int ActiveLearnScenario::get_SMRegion (const FeatureVector sMContext) {
-	for (RegionsMap::const_iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter) {
-		bool wrongCuttingValue = false;
-		SMRegion currentRegion = regionIter->second;
-		assert (sMContext.size() == currentRegion.sMContextSize);
-		for (int i=0; i<currentRegion.sMContextSize; i++) {
-			if ( currentRegion.minValuesSMVector[i] > sMContext[i] ||
-			     currentRegion.maxValuesSMVector[i] < sMContext[i]) {
-				wrongCuttingValue = true;
-				break;
-			}
-		}
-		if (wrongCuttingValue) continue; else return currentRegion.index;
-	}
-	return -1;
-}
-
-//------------------------------------------------------------------------------
-
-///
-///Update learners according to an sensorimotor region splitting criterion
-///
-void ActiveLearnScenario::update_learners () {
-
-
-	int currentRegion = get_SMRegion (learningData.currentMotorCommandVector);
-	
-}
-
-///
-///variance calculation of a vector
-///
-// double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
-// 	vector<double> means;
-// 	vector<double> variances;
-// 	//this code assumes a "basis" representation of features
-// 	int 
-		
-// 	for (int i=myRobot.sensorimotorStateDim(); i<instances.numAttributes(); i++) {
-// 		means[i] = 0.0;
-// 		for (int j=0; j<instances.numInstances(); j++)
-// 			means[i] += instances.instance(j).value (i);
-// 		means[i] /= instances.numInstances();
-// 	}
-
-// 	for (int i=myRobot.sensorimotorStateDim(); i<instances.numAttributes(); i++) {
-// 		for (int j=0; j<instances.numInstances(); j++) {
-// 			double meanDiff = instances.instance(j).value (i) - means[i];
-// 			variances[i] += (meanDiff * meanDiff);
-// 		}
-// 		variances[i] /= instances.numInstances();
-// 	}
-// 	double variance = 0.0;
-// 	for (int i=myRobot.sensorimotorStateDim(); i<instances.numAttributes(); i++)
-// 		variance += variances[i];
-// 	variance /= myRobot.sensoryStateDim();  //myRobot.sensoryStateDim == instances.numAttributes - myRobot.sensorimotorStateDim()
-
-// 	return variance;
-// }
-
-// ///
-// ///minimality criterion for splitting a sensorimotor region
-// ///
-// double ActiveLearnScenario::evaluateMinimality (const DataSet& firstSplittingSet, const DataSet& secondSplittingSet, int sMContextSize) {
-// 	//calculate variance of sequence S(t+1),...S(t+n) for each splitting set
-// 	double varianceLastSC1stSet = variance (firstSplittingSet, sMContextSize);
-// 	double varianceLastSC2ndSet = variance (secondSplittingSet, sMContextSize);
-// 	return (firstSplittingSet.size()  * varianceLastSC1stSet +
-// 		secondSplittingSet.size() * varianceLastSC2ndSet);
-// }
-
-
-///
-///partition of regions according to variance of dataset instances
-///
-void ActiveLearnScenario::split_region (int regionIdx) {
-	double minimalQuantity = 1e6;
-	DataSet firstSplittingSet;
-	DataSet secondSplittingSet;
-	double cuttingValue = -1.0;
-	int cuttingIdx = -1;
-	SMRegion& region = regions[regionIdx];
-	for (int i=0; i<region.sMContextSize; i++) {
-		for (double j=-0.999; j<1.0; j=j+0.001) {
-			DataSet firstSplittingSetTry;
-			DataSet secondSplittingSetTry;
-			for (int k=0; k < region.data.size(); k++) {
-				FeatureVector currentSMContext = region.data[k][0];
-				//cutting criterion for splitting
-				if (currentSMContext[i] < j)
-					firstSplittingSetTry.push_back (region.data[k]);
-				else
-					secondSplittingSetTry.push_back (region.data[k]);
-			}
-			// double quantityEval = evaluateMinimality (firstSplittingSetTry, secondSplittingSetTry);
-			// if (quantityEval < minimalQuantity) {
-			// 	minimalQuantity = quantityEval;
-			// 	firstSplittingSet = firstSplittingSetTry;
-			// 	secondSplittingSet = secondSplittingSetTry;
-			// 	cuttingValue = j;
-			// 	cuttingIdx = i;
-			// }
-		}
-	}
-	
-}
-
-
 
 //------------------------------------------------------------------------------
 
