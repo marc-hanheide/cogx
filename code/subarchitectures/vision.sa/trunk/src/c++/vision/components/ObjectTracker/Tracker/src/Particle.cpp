@@ -114,6 +114,8 @@ Particle& Particle::operator=(const Pose& p2){
 	c = 0.0;
 	
 	q = p2.q;
+
+	return *this;
 }
 
 Particle& Particle::operator*(const float &f){
