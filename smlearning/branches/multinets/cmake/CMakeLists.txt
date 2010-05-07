@@ -10,7 +10,7 @@ PROJECT(SMLearning)
 
 # Project root directory
 GET_FILENAME_COMPONENT(PROJECT_ROOT ../.. ABSOLUTE)
-SET(SMLEARNING_ROOT ${PROJECT_ROOT}/trunk CACHE INTERNAL "Path prefix for SMLearning package")
+SET(SMLEARNING_ROOT ${PROJECT_ROOT}/multinets CACHE INTERNAL "Path prefix for SMLearning package")
 
 # Look for Boost libraries
 SET(CMAKE_MODULE_PATH ${SMLEARNING_ROOT}/cmake)
