@@ -12,7 +12,7 @@
 #ifndef TG_LIGHTING
 #define TG_LIGHTING
 
-#include <GL/gl.h>
+#include "headers.h"
 #include "mathlib.h"
 
 struct tgMaterial{

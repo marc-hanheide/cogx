@@ -39,11 +39,13 @@ bool Texture::save(const char* filename){
 	cvConvertImage(img, img, CV_CVTIMG_SWAP_RB);
 	cvSaveImage(filename, img);
 	cvReleaseImage(&img);
+	return true;
 }
 
 bool Texture::getImageData(unsigned char* image_data){
 	bind();
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data);
+	return true;
 }
 
 void Texture::bind(int stage){

@@ -192,7 +192,7 @@ void Quaternion::getAxisAngle(vec3 &axis, double &angle){
 	axis.y = y / scale;
 	axis.z = z / scale;
 	angle = acos(w) * 2.0f;
-	if(isnan(angle))
+	if(angle < 0.0 || angle > (2.0*PI))
 		angle = 0.0;
 }
 

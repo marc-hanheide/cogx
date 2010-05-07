@@ -206,7 +206,7 @@ public:
 																				float x_min, float y_min,
 																				float x_max, float y_max,
 																				int res,
-																				const char* filename=NULL, const char* filename2=NULL){}
+																				const char* filename=NULL, const char* filename2=NULL){ std::vector<float> a; return a;}
 	
 	virtual void savePDF(	std::vector<float> vPDFMap,
 												float x_min, float y_min,
