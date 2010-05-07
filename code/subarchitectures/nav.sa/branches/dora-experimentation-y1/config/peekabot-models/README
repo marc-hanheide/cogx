@@ -1,0 +1,9 @@
+You need to copy the content of the models and scenes directory into
+the corresponding folders in either
+
+~/.peekabot
+
+or
+
+<PEEKABOT_PREFIX>/share/peekabot
+
