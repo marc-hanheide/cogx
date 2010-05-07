@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+
+<!-- This defines rear bumpers for MobileRobotics Pioneer3 DX -->
+
+<!-- Copyright 2009 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+  <!-- Bumpers -->
+  <color r="0" g="0" b="0">
+    <!-- Rear bumpers -->
+    <group>
+      <name>rear_bumpers</name>
+      <children>
+	<model>
+	  <file>pioneer3dx/bumper-rear.pbmf</file>
+	</model>
+
+	<sensor type="bumper">
+	  <name>bumper1</name>
+	  <children>
+	    <model><file>pioneer3dx/bumper-rear1.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper2</name>
+	  <children>
+	    <model><file>pioneer3dx/bumper-rear2.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper3</name>
+	  <children>
+	    <model><file>pioneer3dx/bumper-rear3.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper4</name>
+	  <children>
+	    <model><file>pioneer3dx/bumper-rear4.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper5</name>
+	  <children>
+	    <model><file>pioneer3dx/bumper-rear5.pbmf</file></model>
+	  </children>
+	</sensor>
+      </children>
+    </group>
+  </color>
+</scene>
