@@ -18,6 +18,8 @@ extern "C"
 #include "object/CSvgImage.hpp"
 #include "object/CRasterImage.hpp"
 
+#include "fake/tomgine_test.cpp"
+
 using namespace std;
 using namespace cast;
 
@@ -194,6 +196,15 @@ void CDisplayServer::setCompressedImage(const std::string& id, const std::vector
 void CDisplayServer::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
 {
    DTRACE("CDisplayServer::setObject");
+   {
+      static bool done = false;
+      if (!done) {
+         DTRACE("tomgine_test_createModel");
+         tomgine_test_createModel(&m_Model);
+      }
+      done = true;
+   }
+
    // TODO: object/part
    CSvgImage *pImage = NULL;
    CSvgImage *pExisting = (CSvgImage*) m_Model.getObject(id); // XXX UNSAFE !!!!

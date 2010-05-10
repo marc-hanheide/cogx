@@ -14,12 +14,14 @@ class CRasterImage: public CDisplayObject
 {
    friend class CRasterImage_Render2D;
    static std::auto_ptr<CRenderer> render2D;
+
 public:
    QImage* m_pImage;
 
 public:
    CRasterImage();
    ~CRasterImage();
+   bool isBitmap(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
 };
 

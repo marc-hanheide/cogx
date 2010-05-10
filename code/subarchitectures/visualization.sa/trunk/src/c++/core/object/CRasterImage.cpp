@@ -14,13 +14,17 @@ std::auto_ptr<CRenderer> CRasterImage::render2D(new CRasterImage_Render2D());
 CRasterImage::CRasterImage()
 {
    m_pImage = NULL;
-   m_isBitmap = true;
 }
 
 CRasterImage::~CRasterImage()
 {
    if (m_pImage != NULL) delete m_pImage;
    m_pImage = NULL;
+}
+
+bool CRasterImage::isBitmap()
+{
+   return true;
 }
    
 CRenderer* CRasterImage::getRenderer(ERenderContext context)
