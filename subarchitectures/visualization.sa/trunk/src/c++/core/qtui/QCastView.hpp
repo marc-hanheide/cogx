@@ -7,7 +7,6 @@
 #define QCASTVIEW_NXKFPZKI
 
 #include <QWidget>
-// #include <QAbstractScrollArea>
 #include "../Model.hpp"
 
 class QCastView: public QWidget, public cogx::display::CDisplayModelObserver

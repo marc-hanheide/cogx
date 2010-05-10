@@ -73,7 +73,7 @@ CRasterImage* CDisplayModel::getImage(const std::string &id)
 {
    TObjectMap::iterator itobj = m_Objects.find(id);
    CDisplayObject* pfound = (itobj == m_Objects.end()) ? NULL : itobj->second;
-   if (pfound && pfound->isRasterImage())
+   if (pfound && pfound->isBitmap())
       return (CRasterImage*) pfound;
    return NULL;
 }
@@ -111,6 +111,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       pview = new cogx::display::CDisplayView();
       pview->m_id = pObject->m_id;
       pview->addObject(pObject);
+      // TODO?: Set preferred context based on object type
       m_Views[pview->m_id] = pview;
       views.push_back(pview);
       FOR_EACH(pobsrvr, modelObservers) {
@@ -183,15 +184,25 @@ CPtrVector<CGuiElement> CDisplayModel::getGuiElements(const std::string &viewId)
 
 CDisplayObject::CDisplayObject()
 {
-   m_isBitmap = false;
 }
 
 CDisplayObject::~CDisplayObject()
 {
 }
 
+bool CDisplayObject::isBitmap()
+{
+   return false;
+}
+
+bool CDisplayObject::is3D()
+{
+   return false;
+}
+
 CDisplayView::CDisplayView()
 {
+   m_preferredContext = Context2D;
 }
 
 CDisplayView::~CDisplayView()
@@ -284,7 +295,6 @@ void CDisplayView::onUiDataChanged(CGuiElement *pElement, const std::string& new
 // TODO: the context may provide additional display options.
 void CDisplayView::draw2D(QPainter &painter)
 {
-   // painter.drawText(0, 40, QString("View ID: ") + QString(m_id.c_str()));
    CDisplayObject *pObject;
    CRenderer *pRender;
    FOR_EACH_V(pObject, m_Objects) {
@@ -292,6 +302,19 @@ void CDisplayView::draw2D(QPainter &painter)
       pRender = pObject->getRenderer(Context2D);
       if (pRender) {
          pRender->draw(pObject, &painter);
+      }
+   }
+}
+
+void CDisplayView::drawGL()
+{
+   CDisplayObject *pObject;
+   CRenderer *pRender;
+   FOR_EACH_V(pObject, m_Objects) {
+      if (!pObject) continue;
+      pRender = pObject->getRenderer(ContextGL);
+      if (pRender) {
+         pRender->draw(pObject, NULL);
       }
    }
 }

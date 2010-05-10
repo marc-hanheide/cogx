@@ -22,7 +22,7 @@ class CDisplayModel;
 class CRasterImage;
 class CRenderer;
 
-typedef enum { Context2D=1 } ERenderContext;
+typedef enum { Context2D=1, ContextGL=2 } ERenderContext;
 
 typedef std::map<std::string, CDisplayObject*> TObjectMap;
 typedef std::map<std::string, CDisplayView*> TViewMap;
@@ -71,16 +71,14 @@ private:
 // The base class for an object to be displayed.
 class CDisplayObject
 {
-protected:
-   bool m_isBitmap; // Bitmaps have special treatment
-
 public:
    std::string m_id;
    double m_timestamp;
    CDisplayObject();
    virtual ~CDisplayObject();
+   virtual bool isBitmap(); // Bitmaps have special treatment
+   virtual bool is3D(); // If true, view's preferred context will be set to ContextGL
 
-   bool isRasterImage() { return m_isBitmap; }
    virtual CRenderer* getRenderer(ERenderContext context) { return NULL; }
 
    //// Some objects can be merged with a new version instead of being replaced (eg. bitmaps)
@@ -106,6 +104,7 @@ class CDisplayView: public CGuiElementObserver
    TObjectMap m_Objects;
 public:
    std::string m_id;
+   ERenderContext m_preferredContext;
    CDisplayView();
    virtual ~CDisplayView();
    void addObject(CDisplayObject *pObject);
@@ -115,6 +114,7 @@ public:
    bool hasObject(const std::string &id);
 
    virtual void draw2D(QPainter &painter);
+   virtual void drawGL();
 
 public:
    // CGuiElementObserver
