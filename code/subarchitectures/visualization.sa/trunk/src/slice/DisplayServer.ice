@@ -17,6 +17,8 @@ module Visualization
       // 3 channels for RGB, 1 channel for GS
       void setRawImage(string id, int width, int height, int channels, Video::ByteSeq data);
 
+      void setCompressedImage(string id, Video::ByteSeq data, string format);
+
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
       void addClient(Ice::Identity ident);
