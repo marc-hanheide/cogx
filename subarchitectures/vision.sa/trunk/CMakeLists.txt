@@ -85,8 +85,12 @@ endif(BUILD_SA_VISION_VISMEDIATOR)
 option(BUILD_SA_VISION_VIRTUALSCENE "build Virtual Scene" YES)
 if(BUILD_SA_VISION_VIRTUALSCENE)
 add_subdirectory (src/c++/vision/components/VirtualScene)
-add_subdirectory (src/c++/vision/components/VirtualSceneTest)
 endif(BUILD_SA_VISION_VIRTUALSCENE)
+
+option(BUILD_SA_VISION_VIRTUALSCENE_TEST "build Virtual Scene Test" NO)
+if(BUILD_SA_VISION_VIRTUALSCENE_TEST)
+add_subdirectory (src/c++/vision/components/VirtualSceneTest)
+endif(BUILD_SA_VISION_VIRTUALSCENE_TEST)
 
 option(BUILD_SA_VISION_OBJRECOGNIZER "build object recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER)
