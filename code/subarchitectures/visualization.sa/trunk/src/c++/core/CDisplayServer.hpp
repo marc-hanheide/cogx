@@ -55,6 +55,8 @@ public:
    void setCompressedImage(const std::string& id, const std::vector<unsigned char>& data,
          const std::string &format);
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData);
+   void setTomGineObject(const std::string& id, const std::string& partId, 
+         const std::vector<unsigned char>& data);
    void setObjectTransform(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
    void addCheckBox(const Ice::Identity& ident, const std::string& viewId,
@@ -87,6 +89,29 @@ public:
    {
       m_pDisplayServer->setObject(id, partId, xmlData);
    }
+
+   virtual void setImage(const std::string& id, const Video::Image& image, const Ice::Current&) {
+      m_pDisplayServer->setRawImage(id, image.width, image.height, 3, image.data);
+   }
+
+   virtual void setRawImage(const std::string& id, int width, int height, int channels,
+         const std::vector<unsigned char>& data, const Ice::Current&)
+   {
+      m_pDisplayServer->setRawImage(id, width, height, channels, data);
+   }
+
+   virtual void setCompressedImage(const std::string& id,
+         const std::vector<unsigned char>& data, const std::string &format, const Ice::Current&)
+   {
+      m_pDisplayServer->setCompressedImage(id, data, format);
+   }
+
+   virtual void setTomGineObject(const std::string& id, const std::string& partId, 
+         const std::vector<unsigned char>& data, const Ice::Current&)
+   {
+      m_pDisplayServer->setTomGineObject(id, partId, data);
+   }
+
    virtual void setObjectTransform(const std::string& id, const std::string& partId,
          const cogx::Math::Matrix33& transform, const Ice::Current&)
    {
@@ -102,24 +127,13 @@ public:
       tr.push_back(transform.m22);
       m_pDisplayServer->setObjectTransform(id, partId, tr);
    }
-   virtual void setImage(const std::string& id, const Video::Image& image, const Ice::Current&) {
-      m_pDisplayServer->setRawImage(id, image.width, image.height, 3, image.data);
-   }
-   virtual void setRawImage(const std::string& id, int width, int height, int channels,
-         const std::vector<unsigned char>& data, const Ice::Current&)
-   {
-      m_pDisplayServer->setRawImage(id, width, height, channels, data);
-   }
-   virtual void setCompressedImage(const std::string& id,
-         const std::vector<unsigned char>& data, const std::string &format, const Ice::Current&)
-   {
-      m_pDisplayServer->setCompressedImage(id, data, format);
-   }
+
    virtual void addCheckBox(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label, const Ice::Current&)
    {
       m_pDisplayServer->addCheckBox(ident, viewId, ctrlId, label);
    }
+
    virtual void addButton(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label, const Ice::Current&)
    {

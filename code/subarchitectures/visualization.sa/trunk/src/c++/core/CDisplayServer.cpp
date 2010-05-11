@@ -16,6 +16,7 @@ extern "C"
 
 #include "object/CSvgImage.hpp"
 #include "object/CRasterImage.hpp"
+#include "object/CTomGineModel.hpp"
 
 #ifdef DEBUG_TRACE
 #undef DEBUG_TRACE
@@ -222,6 +223,28 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
       pImage->data = xmlData;
       m_Model.setObject(pImage);
    }
+}
+
+void CDisplayServer::setTomGineObject(const std::string& id, const std::string& partId, 
+      const std::vector<unsigned char>& data)
+{
+   DTRACE("CDisplayServer::setTomGineObject");
+
+   // TODO: object/part
+   CTomGineModel *pModel = NULL;
+   CTomGineModel *pExisting = (CTomGineModel*) m_Model.getObject(id); // XXX UNSAFE !!!!
+   if (pExisting) {
+      if (data.size() < 1) pModel->removePart(partId);
+      else pModel->deserialize(partId, data);
+      m_Model.refreshObject(id);
+   }
+   else {
+      pModel = new CTomGineModel();
+      pModel->m_id = id;
+      pModel->deserialize(partId, data);
+      m_Model.setObject(pModel);
+   }
+
 }
 
 void CDisplayServer::setObjectTransform(const std::string& id, const std::string& partId,
