@@ -6,17 +6,22 @@
 #include "QCastView.hpp"
 #include <QPainter>
 #include <QWheelEvent>
+#include "../convenience.hpp"
 
 QCastView::QCastView( QWidget* parent, Qt::WindowFlags flags )
    : QWidget(parent, flags)
 {
    pView = NULL;
-   m_scale = 0.5;
+   m_scale = 1.0;
    m_offset = QPointF(0, 0);
 }
 
 QCastView::~QCastView()
 {
+   DTRACE("QCastView::~QCastView");
+   if (pView != NULL) {
+      pView->viewObservers.removeObserver(this);
+   }
    pView = NULL;
 }
 
@@ -46,21 +51,40 @@ void QCastView::paintEvent ( QPaintEvent * event )
    }
 }
 
+void QCastView::resetOffset()
+{
+   m_offset = QPointF(0, 0);
+}
+
+void QCastView::resetScale()
+{
+   m_scale = 1.0;
+}
+
+
 void QCastView::wheelEvent(QWheelEvent *e)
 {
-   const double sclmin = 1/32.0;
-   const double sclmax = 32.0;
+   if (e->modifiers() & Qt::ControlModifier) {
+      const double sclmin = 1/32.0;
+      const double sclmax = 32.0;
 
-   // world-coord of pixel under cursor
-   QPointF ppix = (e->pos() - m_offset * m_scale) / m_scale; 
+      // world-coord of pixel under cursor
+      QPointF ppix = (e->pos() - m_offset * m_scale) / m_scale; 
 
-   if (e->delta() > 0) m_scale *= 2;
-   else m_scale /= 2;
-   if (m_scale < sclmin) m_scale = sclmin;
-   if (m_scale > sclmax) m_scale = sclmax;
+      if (e->delta() > 0) m_scale *= 2;
+      else m_scale /= 2;
+      if (m_scale < sclmin) m_scale = sclmin;
+      if (m_scale > sclmax) m_scale = sclmax;
 
-   m_offset = (e->pos() - ppix * m_scale) / m_scale;
-   update();
+      m_offset = (e->pos() - ppix * m_scale) / m_scale;
+      update();
+   }
+   else {
+      QPointF yoffs(0, 32.0/m_scale);
+      if (e->delta() > 0) m_offset += yoffs;
+      else m_offset -= yoffs;
+      update();
+   }
 }
 
 void QCastView::onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)

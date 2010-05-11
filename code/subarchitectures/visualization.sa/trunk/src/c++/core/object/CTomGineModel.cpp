@@ -3,6 +3,11 @@
  * Created: 2010-05-10
  */
 #include "CTomGineModel.hpp"
+
+
+#ifdef DEBUG_TRACE
+#undef DEBUG_TRACE
+#endif
 #include "../convenience.hpp"
 
 namespace cogx { namespace display {

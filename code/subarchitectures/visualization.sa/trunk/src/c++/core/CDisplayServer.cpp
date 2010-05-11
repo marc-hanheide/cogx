@@ -14,9 +14,13 @@ extern "C"
 #include "qtui/QCastApplication.hpp"
 #include <QImage>
 
-#include "convenience.hpp"
 #include "object/CSvgImage.hpp"
 #include "object/CRasterImage.hpp"
+
+#ifdef DEBUG_TRACE
+#undef DEBUG_TRACE
+#endif
+#include "convenience.hpp"
 
 #include "fake/tomgine_test.cpp"
 

@@ -6,6 +6,7 @@
 #include "QCastViewGL.hpp"
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include "../convenience.hpp"
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
@@ -13,11 +14,16 @@
 
 QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
 {
+   DTRACE("QCastViewGL::QCastViewGL");
    pView = NULL;
 }
 
 QCastViewGL::~QCastViewGL()
 {
+   DTRACE("QCastViewGL::~QCastViewGL");
+   if (pView != NULL) {
+      pView->viewObservers.removeObserver(this);
+   }
    pView = NULL;
 }
 
