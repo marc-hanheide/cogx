@@ -4,6 +4,9 @@
  */
 #include "Model.hpp"
 
+#ifdef DEBUG_TRACE
+#undef DEBUG_TRACE
+#endif
 #include "convenience.hpp"
 
 using namespace std;
@@ -109,9 +112,11 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
    if (views.size() < 1) {
       DMESSAGE("Creating new view for: " << pObject->m_id);
       pview = new cogx::display::CDisplayView();
+      // XXX: Set preferred context based on object type
+      if (pObject->is3D()) pview->m_preferredContext = ContextGL;
+
       pview->m_id = pObject->m_id;
       pview->addObject(pObject);
-      // TODO?: Set preferred context based on object type
       m_Views[pview->m_id] = pview;
       views.push_back(pview);
       FOR_EACH(pobsrvr, modelObservers) {

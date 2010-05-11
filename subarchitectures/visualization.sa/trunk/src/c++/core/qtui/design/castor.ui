@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QFrame" name="frame_2">
+     <widget class="QViewContainer" name="drawingArea">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -25,7 +25,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QCastView" name="drawingArea" native="true">
+        <widget class="QCastView" name="_cast_view_unused" native="true">
          <property name="minimumSize">
           <size>
            <width>200</width>
@@ -103,6 +103,12 @@
    <class>QCustomGuiPanel</class>
    <extends>QFrame</extends>
    <header>qtui/QCustomGuiPanel.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QViewContainer</class>
+   <extends>QFrame</extends>
+   <header>qtui/QViewContainer.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

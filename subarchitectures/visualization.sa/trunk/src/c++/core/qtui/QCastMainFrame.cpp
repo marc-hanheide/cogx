@@ -41,6 +41,7 @@ void QCastMainFrame::notifyObjectAdded(cogx::display::CDisplayObject *pObject)
 void QCastMainFrame::updateViewList()
 {
    DTRACE("QCastMainFrame::updateViewList");
+   // TODO: remember current view, make selected after the list is recreated
    ui.listWidget->clear();
    if (! m_pModel) return;
 
@@ -51,6 +52,15 @@ void QCastMainFrame::updateViewList()
    }
 }
 
+void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
+{
+   DTRACE("QCastMainFrame::updateCustomUi");
+   if (!m_pModel || !pView) {
+      ui.wgCustomGui->setVisible(false);
+      return;
+   }
+   ui.wgCustomGui->updateUi(m_pModel, pView);
+}
 
 // A view was activated from the GUI
 void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
@@ -69,19 +79,9 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
    }
 }
 
-void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
-{
-   DTRACE("QCastMainFrame::updateCustomUi");
-   if (!m_pModel || !pView) {
-      ui.wgCustomGui->setVisible(false);
-      return;
-   }
-   ui.wgCustomGui->updateUi(m_pModel, pView);
-}
-
 void QCastMainFrame::onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    // TODO: only if the view is not in the list
    updateViewList();
-   ui.drawingArea->onViewChanged(pModel, pView);
+   // ui.drawingArea->onViewChanged(pModel, pView);
 }

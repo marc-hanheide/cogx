@@ -5,11 +5,11 @@
 #ifndef QCASTVIEWGL_9ZC8AKWT
 #define QCASTVIEWGL_9ZC8AKWT
 
-// #include <QWidget>
+#include "QCastViewBase.hpp"
 #include <QGLWidget>
-#include "../Model.hpp"
 
-class QCastViewGL: public QGLWidget, public cogx::display::CDisplayModelObserver
+// class QCastViewGL: public QGLWidget, public cogx::display::CDisplayModelObserver
+class QCastViewGL: public QGLWidget, public QCastViewBase
 {
    Q_OBJECT
 private:
@@ -22,9 +22,11 @@ private:
 public:
    QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
    ~QCastViewGL();
-   void setView(cogx::display::CDisplayView* pDisplayView);
 
 public:
+   // QCastViewBase
+   void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
+   operator QWidget&() { return *this; } /*override*/
    // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
 
