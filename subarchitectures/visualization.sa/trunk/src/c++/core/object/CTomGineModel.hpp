@@ -16,11 +16,15 @@ class CTomGineModel: public CDisplayObject
    static std::auto_ptr<CRenderer> renderGL;
 
 public:
-   TomGine::tgRenderModel* m_pModel;
+   // TODO: map of parts
+   std::map<std::string, TomGine::tgRenderModel*> m_Models;
+   // TomGine::tgRenderModel* m_pModel;
 
 public:
    CTomGineModel();
    ~CTomGineModel();
+   void deserialize(const std::string& partId, const std::vector<unsigned char>& data);
+   void removePart(const std::string&partId);
    virtual bool is3D(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
 };

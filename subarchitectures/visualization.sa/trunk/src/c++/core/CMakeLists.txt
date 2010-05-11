@@ -63,6 +63,8 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${QT_LIBRARIES}
    ${QT_QTSVG_LIBRARY}
    ${TOMGINE_LIBS}
+   boost_serialization-mt
+   boost_iostreams-mt
    )
 
 find_package(OpenCV REQUIRED)
