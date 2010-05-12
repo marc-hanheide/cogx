@@ -19,6 +19,7 @@
 #include <Golem/Simulator.h>
 #include <Golem/Rand.h>
 #include <Golem/Renderer.h>
+
 #include <algorithm>
 
 #include <metalearning/Scenario.h>
@@ -66,24 +67,48 @@ public:
 protected:
 	/** LSTM active learner */
 	ActiveRNN learner;
+
 	/** to know if net has been already built */
 	bool netBuilt;
+
 	/** training sequence for the LSTM */
 	rnnlib::DataSequence* trainSeq;
+
 	/** map of indexed sensorimotor regions */
 	typedef map<int, SMRegion> RegionsMap;
 	RegionsMap regions;
+
+	/** struct defining an action tuple */
+	struct Action { int startPosition; int speed; Real horizontalAngle; };
+	typedef vector<pair<FeatureVector, Action> > ActionsVector;
+
+	/** regions counter for defining regions indices */
+	int regionsCount;
+
+	/** current context Region */
+	SMRegion currentRegion;
+
+	/** constant number of maximum candidate actions */
+	static const int maxNumberCandidateActions = 1000;
+
+	/** near greedy action selection probability bound for choosing random actions */
+	static const double neargreedyActionProb = 0.3;
+
 	/** Objects can be constructed only in the Scene context. */
 	ActiveLearnScenario(golem::Scene &scene) : Scenario (scene) {};
 
 	/** restore predicted last polyflap and effector pose from neural activations */
-	golem::Mat34 get_pfefPose_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
+	golem::Mat34 get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
+
 	/** restore sequence of predicted polyflap poses from neural activations */
-	void get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq,  vector<golem::Mat34>& currentPredictedEfSeq);
+	void get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq,  vector<golem::Mat34>& currentPredictedEfSeq);
+
 	/** Renders the object. */
         virtual void render();
+
 	/** (Post)processing function called AFTER every physics simulation step and before randering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
+
 	/** load training data in RNNLIB format */
 	void load_current_trainSeq (int inputSize, int outputSize);
 
@@ -93,14 +118,9 @@ protected:
 	virtual void initialize_polyflap();
 
 	///
-	///choose and describe the start point of the experiment trajectory
+	///select an optimal action from a random set of actions
 	///
-	virtual void initialize_movement();
-
-	///
-	///choose the starting position
-	///
-	virtual void define_start_position();
+	virtual void choose_action ();
 
 	///
 	///write obtained dataset into a binary file
@@ -108,14 +128,29 @@ protected:
 	virtual void write_dataset_into_binary();
 
 	///
-	///Update learners according to an sensorimotor region splitting criterion
+	///get the index of the actions vector that maximizes learning progress
+	///
+	pair<FeatureVector, Action> get_actionsIdx_maxLearningProgress (const ActionsVector& candidateActions);
+		
+	///
+	///Update learners according to a sensorimotor region splitting criterion
 	///
 	void update_learners ();
 	
 	///
 	///Find the appropriate region index according to the given sensorimotor context
 	///
-	int get_SMRegion (const FeatureVector SMContext);
+	int get_SMRegion (const FeatureVector& SMContext);
+
+	///
+	///variance calculation of a vector
+	///
+	double variance (const DataSet& data, int sMContextSize);
+
+	///
+	///minimality criterion for splitting a sensorimotor region
+	///
+	double evaluate_minimality (const DataSet& firstSplittingSet, const DataSet& secondSplittingSet, int sMContextSize);
 
 	///
 	///partition of regions according to variance of dataset instances

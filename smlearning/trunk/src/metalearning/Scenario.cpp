@@ -305,18 +305,33 @@ void Scenario::initialize_polyflap(){
 	//creates a polyflap
 	create_polyflap_object();
 
+	currentPfY = object->getPose().p.v2;
+
 	//computes needed information about the polyflap
 	compute_vectors();
 }
 
+///
+///select an optimal action from a random set of actions
+///
+void Scenario::choose_action () {
+	//choose starting position
+	define_start_position ();
+
+	//speed = floor (randomG.nextUniform (3.0, 5.0));
+	speed = 3.0;
+
+	horizontalAngle = choose_angle(60.0, 120.0, "cont");
+
+}
 
 ///
 ///set current position of the polyflap as default position for computing of the starting position
 ///
-void Scenario::set_positionT(){
-		//initialization of arm target: the center of the polyflap
-		//Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
-		positionT.set(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
+void Scenario::init_positionT(Vec3& positionT) {
+	//initialization of arm target: the center of the polyflap
+	//Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
+	positionT.set(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
 }
 
 
@@ -324,12 +339,14 @@ void Scenario::set_positionT(){
 ///choose the starting position
 ///
 void Scenario::define_start_position(){
-	        //int startPosition;
-
-		if (startingPosition == 0)
-			startPosition = floor(randomG.nextUniform (1.0, 18.0));
-		else
-			startPosition = startingPosition;
+	//int startPosition;
+	
+	if (startingPosition == 0)
+		startPosition = floor(randomG.nextUniform (1.0, 19.0));
+	else
+		startPosition = startingPosition;
+	
+	assert (startPosition >= 1 && startPosition <= startingPositionsCount);
 }
 
 
@@ -337,52 +354,49 @@ void Scenario::define_start_position(){
 ///set the variable target so that it obtains the coordinates of the start point of the experiment trajectory
 ///
 void Scenario::prepare_target(){
-//arm target update
-		set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
-		cout << "Position " << startPosition-1 << endl;
-
-		// and set target waypoint
-		//golem::GenWorkspaceState target;
-		fromCartesianPose(target.pos, positionT, orientationT);
-		target.vel.setId(); // it doesn't mov
-
-		target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
-
-		//tuple<golem::GenWorkspaceState, Vec3, int> t = make_tuple(target, positionT, startPosition);
-		//return t;
-		//return startPosition;
+	//arm target update
+	set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+	cout << "Position " << startPosition-1 << endl;
+	
+	// and set target waypoint
+	//golem::GenWorkspaceState target;
+	fromCartesianPose(target.pos, positionT, orientationT);
+	target.vel.setId(); // it doesn't mov
+	
+	target.t = context.getTimer()->elapsed() + tmDeltaAsync + desc.minDuration; // i.e. the movement will last at least 5 sec
+	
+	//tuple<golem::GenWorkspaceState, Vec3, int> t = make_tuple(target, positionT, startPosition);
+	//return t;
+	//return startPosition;
 }
 
 
 ///
 ///choose and describe the start point of the experiment trajectory
 ///
-void  Scenario::initialize_movement(){
+void  Scenario::calculate_starting_position_coord(){
 
-		//set default coordinates
-		set_positionT();
+	//set default coordinates
+	init_positionT(positionT);
 
-		//choose start point
-		define_start_position();
-
-		//edit the coordinates so that they describe chosen start point
-		prepare_target();
+	//edit the coordinates so that they describe chosen start point
+	prepare_target();
 }
 
-Real Scenario::chooseAngle(Real min, Real max, string form){
+///
+///select random angle (discrete or continouos)
+///
+Real Scenario::choose_angle(Real min, Real max, string form){
 	Real res;
 	if (form == "disc") {
-cout << "disc" << endl;
 		res = floor(randomG.nextUniform (min, max));
 	}
 	else if (form == "cont") {
-cout << "cont" << endl;
 		res = randomG.nextUniform (min, max);
 	}
 	else {
 		res = -1.0;
 	}
-cout << res << endl;
 	return res;
 }
 
@@ -394,43 +408,100 @@ cout << res << endl;
 void Scenario::set_up_movement(){
 
 		
-		// Trajectory duration calculated from a speed constant.
-		speed = floor (randomG.nextUniform (3.0, 5.0));
-		cout << "speed: " << speed << endl;
+	// Trajectory duration calculated from a speed constant.
+	//speed = floor (randomG.nextUniform (3.0, 5.0));
+	// speed = 3.0;
+	cout << "speed: " << speed << endl;
 		
-		duration = speed;
+	duration = speed;
 
 
-		// Trajectory end pose equals begin + shift along Y axis
-		end = target.pos;
+	// Trajectory end pose equals begin + shift along Y axis
+	end = target.pos;
 
-		//normal vector to the center of the polyflap
-		Vec3 polyflapCenterNormalVec =
-			computeNormalVector(
-					    Vec3 (positionT.v1, positionT.v2, positionT.v3),
-					    Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5)
-					    );
-		//and it's orthogonal
-		Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
-// 		context.getLogger()->post(Message::LEVEL_INFO, "centernormalvec: %f, %1f, %f", polyflapCenterNormalVec.v1, polyflapCenterNormalVec.v2, polyflapCenterNormalVec.v3);
+	//normal vector to the center of the polyflap
+	Vec3 polyflapCenterNormalVec =
+		computeNormalVector(
+				    Vec3 (positionT.v1, positionT.v2, positionT.v3),
+				    Vec3 (polyflapPosition.v1, polyflapPosition.v2, desc.polyflapDimensions.v2*0.5)
+				    );
+	//and it's orthogonal
+	Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
+	// 		context.getLogger()->post(Message::LEVEL_INFO, "centernormalvec: %f, %1f, %f", polyflapCenterNormalVec.v1, polyflapCenterNormalVec.v2, polyflapCenterNormalVec.v3);
 
 
-		//the lenght of the movement
-		Real currDistance = desc.distance;
+	//the lenght of the movement
+	Real currDistance = desc.distance;
 
-		//chose random horizontal and vertical angle
-		// use disc for integer values and cont for non-integer values
-		//horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
-		//horizontalAngle = chooseAngle(60.0, 120.0, "disc");
-		horizontalAngle = chooseAngle(60.0, 120.0, "cont");
+	//chose random horizontal and vertical angle
+	// use disc for integer values and cont for non-integer values
+	//horizontalAngle = floor(randomG.nextUniform (60.0, 120.0));
+	//horizontalAngle = choose_angle(60.0, 120.0, "disc");
+	// horizontalAngle = choose_angle(60.0, 120.0, "cont");
 				
 		
-		//int verticalAngle = rand() % 7;
+	//int verticalAngle = rand() % 7;
 
-		set_movement_angle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
-		cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
+	set_movement_angle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
+	cout << "Horizontal direction angle: " << horizontalAngle << " degrees" << endl;
 
-		//return horizontalAngle;
+	//return horizontalAngle;
+}
+
+///
+///storing a feature vector
+///
+void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk) {
+
+	
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.efRoll, -REAL_PI, REAL_PI));
+	currentFeatureVector.push_back(normalize(chunk.efPitch, -REAL_PI, REAL_PI));
+	currentFeatureVector.push_back(normalize(chunk.efYaw, -REAL_PI, REAL_PI));
+	
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.obRoll, -REAL_PI, REAL_PI));
+	currentFeatureVector.push_back(normalize(chunk.obPitch, -REAL_PI, REAL_PI));
+	currentFeatureVector.push_back(normalize(chunk.obYaw, -REAL_PI, REAL_PI));
+
+}
+
+///
+///storing a label (in this case polyflap status)
+///
+void Scenario::add_label (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk) {
+	Real polStateOutput = 0; //polyflap moves with the same Y angle
+	Real epsilonAngle = 0.005;
+	// Real pfFlipThreshold = REAL_PI / 4.0;
+	
+	if (learningData.currentSeq.size() > 1) {
+		if (currentPfRoll < (chunk.obRoll - epsilonAngle) ) {//polyflap Y angle increases
+			polStateOutput = 1;
+			// if (obRoll > pfFlipThreshold)
+			// 	polStateOutput = 1;
+			// else
+			// 	polStateOutput = 0.75;
+		}
+		if (currentPfRoll > (chunk.obRoll + epsilonAngle) )//polyflap Y angle decreases
+			polStateOutput = -1;
+		Real epsilonPfY = 0.000001;
+		if (polStateOutput == 0 && currentPfY < (chunk.objectPose.p.v2 - epsilonPfY) ) // polyflap Y position increases
+			polStateOutput = 0.5;
+		if (polStateOutput == 0 && currentPfY > (chunk.objectPose.p.v2 + epsilonPfY) ) //polyflap Y position decreases
+			polStateOutput = -0.5;
+	}
+	
+	// 		cout << "polStateOutput: " << polStateOutput << endl;
+
+	// if (obRoll > reachedAngle)
+	// 	reachedAngle = obRoll;
+	
+	currentFeatureVector.push_back(polStateOutput);
+
 }
 
 
@@ -451,63 +522,20 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		// golem::Mat34 p = chunk.effectorPose; 
 		// cout << "pose: ";
 		// printf("%f %f %f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
+	
+		chunk.effectorPose.R.toEuler (chunk.efRoll, chunk.efPitch, chunk.efYaw);
+		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
 
-		Real efRoll, efPitch, efYaw;
-		chunk.effectorPose.R.toEuler (efRoll, efPitch, efYaw);
-		Real obRoll, obPitch, obYaw;
-		chunk.objectPose.R.toEuler (obRoll, obPitch, obYaw);
+		add_feature_vector (currentFeatureVector, chunk);
+		add_label (currentFeatureVector, chunk);
 
-		Real polStateOutput = 0; //polyflap moves with the same Y angle
-		Real epsilonAngle = 0.005;
-		// Real pfFlipThreshold = REAL_PI / 4.0;
-
-		if (learningData.currentSeq.size() > 1) {
-			if (currentPfRoll < (obRoll - epsilonAngle) ) {//polyflap Y angle increases
-				polStateOutput = 1;
-				// if (obRoll > pfFlipThreshold)
-				// 	polStateOutput = 1;
-				// else
-				// 	polStateOutput = 0.75;
-			}
-			if (currentPfRoll > (obRoll + epsilonAngle) )//polyflap Y angle decreases
-				polStateOutput = -1;
-			Real epsilonPfY = 0.000001;
-			if (polStateOutput == 0 && currentPfY < (chunk.objectPose.p.v2 - epsilonPfY) ) // polyflap Y position increases
-				polStateOutput = 0.5;
-			if (polStateOutput == 0 && currentPfY > (chunk.objectPose.p.v2 + epsilonPfY) ) //polyflap Y position decreases
-				polStateOutput = -0.5;
-		}
-		
-// 		cout << "polStateOutput: " << polStateOutput << endl;
-		currentPfRoll = obRoll;
-		currentPfY = chunk.objectPose.p.v2;
-
-		// if (obRoll > reachedAngle)
-		// 	reachedAngle = obRoll;
-
-		
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
-		/////////////////////////////////////////////////
-		//storing the feature vector
-
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(efRoll, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(efPitch, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(efYaw, -REAL_PI, REAL_PI));
-
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
-		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
-
-		currentFeatureVector.push_back(polStateOutput);
 		
 		learningData.currentSeq.push_back(currentFeatureVector);
+
+		currentPfRoll = chunk.obRoll;
+		currentPfY = chunk.objectPose.p.v2;
 	}
 }
 
@@ -592,6 +620,7 @@ void Scenario::init_writing(){
 	//create sequence for this loop run and initial (motor command) vector
 	learningData.currentSeq.clear();
 	learningData.currentMotorCommandVector.clear();
+	//learningData.currentFeatureVector.clear();
 	/////////////////////////////////////////////////	
 }
 
@@ -599,14 +628,14 @@ void Scenario::init_writing(){
 ///
 ///write finger features to the vector
 ///
-void Scenario::write_finger_pos_and_or(){
+void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, const Vec3& positionT){
 
 	/////////////////////////////////////////////////
 	//writing in the initial vector	
 	//initial position, normalized
-	learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
-	learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
-	learningData.currentMotorCommandVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
+	featureVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
+	featureVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
+	featureVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
 	//initial orientation, normalized
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
@@ -619,18 +648,18 @@ void Scenario::write_finger_pos_and_or(){
 ///
 ///write finger features to the vector
 ///
-void Scenario::write_finger_speed_and_angle(){
+void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, const int speed, const Real horizontalAngle){
 
 	/////////////////////////////////////////////////
 	//writing in the initial vector
-	learningData.currentMotorCommandVector.push_back(normalize<double>(speed, 3.0, 5.0));
+	featureVector.push_back(normalize<double>(speed, 3.0, 5.0));
 	/////////////////////////////////////////////////
 
 
 
 	/////////////////////////////////////////////////
 	//writing in the initial vector
-	learningData.currentMotorCommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
+	featureVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
 	/////////////////////////////////////////////////
 }
 
@@ -640,9 +669,9 @@ void Scenario::write_finger_speed_and_angle(){
 ///
 void Scenario::write_motor_vector_into_sequence(){
 
+	assert (learningData.currentMotorCommandVector.size() == motorVectorSize);
 	/////////////////////////////////////////////////
 	//writing of the initial vector into sequence
-	LearningData::Chunk chunk;
 	learningData.currentSeq.push_back(learningData.currentMotorCommandVector);
 	/////////////////////////////////////////////////
 }
@@ -690,7 +719,7 @@ void Scenario::move_finger(){
 ///
 ///write vector sequence into current dataset
 ///
-void Scenario::write_sequence_into_dataset(){
+void Scenario::write_sequence_into_dataset(DataSet& data){
 	/////////////////////////////////////////////////
 	//writing the sequence into the dataset
 	data.push_back(learningData.currentSeq);
@@ -832,10 +861,13 @@ void Scenario::run(int argc, char* argv[]) {
 
 		//create and setup polyflap object, compute its vectors
 		initialize_polyflap();
-		
-		//compute coordinates of start position
-		initialize_movement();
 
+		//select a random action
+		choose_action ();
+
+		//compute coordinates of start position
+		calculate_starting_position_coord ();
+		
 		//move the finger to the beginnign of experiment trajectory
 		send_position(target , ReacPlanner::ACTION_GLOBAL);
 		
@@ -843,36 +875,21 @@ void Scenario::run(int argc, char* argv[]) {
 		init_writing();	
 
 		//write initial position and orientation of the finger
-		write_finger_pos_and_or();	
+		write_finger_pos_and_or(learningData.currentMotorCommandVector, positionT);
+
+		//write chosen speed and angle of the finger experiment trajectory
+		write_finger_speed_and_angle(learningData.currentMotorCommandVector, speed, horizontalAngle);
+		//add motor feature vector to the sequence
+		write_motor_vector_into_sequence();
 
 		//compute direction and other features of trajectory
 		set_up_movement();
 
-		//write chosen speed and angle of the finger experiment trajectory
-		write_finger_speed_and_angle();
-
-		//add motor feature vector to the sequence
-		write_motor_vector_into_sequence();
-
 		//move the finger along described experiment trajectory
 		move_finger();
-	
-		
-		// Real polState = -1; //polyflap was smoothly moved
-		// if (reachedAngle > 0.1) { //polyflap was tilted more than threshold
-		// 	polState = 0;
-		// }
-		// if (reachedAngle > 1.5) {//polyflap was flipped
-		// 	polState = 1;
-		// }
-
-		// Sequence::iterator n;
-		// for (n=learningData.currentSeq.begin()+1; n!=learningData.currentSeq.end();n++)
-		// 	n->at(n->size()-1) = polState;
-
 
 		//write sequence into dataset
-		write_sequence_into_dataset();
+		write_sequence_into_dataset(data);
 
 		//turn off collision detection
 		set_collision_detection(false);		

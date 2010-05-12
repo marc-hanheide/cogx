@@ -335,7 +335,7 @@ bool check_nc_err(const int stat, const int line, const char *file) {
 ///
 ///almost automatically generated netcdf function to store netcdf data files
 ///
-bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize, FeatureVector& inputVector, FeatureVector& targetVector, vector<int>& seqLengthsVector, size_t& numTimesteps_len) {
+bool write_nc_data (string fileName, const DataSet& data, int inputVectorSize, int targetVectorSize, FeatureVector& inputVector, FeatureVector& targetVector, vector<int>& seqLengthsVector, size_t& numTimesteps_len) {
 
 	//return status
 	int stat;
@@ -348,8 +348,8 @@ bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize,
 	int targetPattSize_dim;
 	//dimension lengths
 	size_t numSeqs_len = data.size();
-	size_t inputPattSize_len = featureVectorSize;
-	size_t targetPattSize_len = featureVectorSize;
+	size_t inputPattSize_len = inputVectorSize;
+	size_t targetPattSize_len = targetVectorSize;
 	//variable ids
 	int inputs_id;
 	int seqLengths_id;
@@ -399,8 +399,9 @@ bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize,
 	if (check_nc_err (stat, __LINE__, __FILE__))
 		return false;
 
-	cout << "numTimesteps: " << numTimesteps_len << endl << "inputPattSize: " << inputPattSize_len << endl;
+	cout << "numTimesteps: " << numTimesteps_len << endl << "inputPattSize: " << inputPattSize_len << endl << "targetPattSize: " << targetPattSize_len << endl;
 	cout << "inputVector.size(): " << inputVector.size() << endl;
+	cout << "targetVector.size(): " << targetVector.size() << endl;
 	assert (numTimesteps_len * inputPattSize_len == inputVector.size ());
 	assert (numTimesteps_len * targetPattSize_len == targetVector.size ());
 
@@ -537,7 +538,7 @@ bool write_nc_file_Markov (string fileName, const DataSet& data) {
 	}
 
 	//netcdf file storing
-	if (!write_nc_data (fileName, data, featureVectorSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
+	if (!write_nc_data (fileName, data, featureVectorSize, featureVectorSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
 		return false;
 
 	return true;
@@ -560,50 +561,45 @@ bool write_nc_file_basis (string fileName, const DataSet& data) {
 	size_t numTimesteps_len = 0;
 	DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
-		size_t seqSize = (*s).size() - 1;
+		size_t seqSize = s->size() - 1;
 		seqLengthsVector.push_back( seqSize );
 		numTimesteps_len += seqSize;
 
 		Sequence::const_iterator v;
-		for (v=(*s).begin(); v!= (*s).end(); v++) {
+		for (v=s->begin(); v!= s->end(); v++) {
 			FeatureVector::const_iterator n;
 			//put inputs and targetPatterns data
-			if (v+1 != (*s).end()) {
-				if (v != (*s).begin()) {
+			if (v+1 != s->end()) {
+				if (v != s->begin()) {
 					//zero padding
 					for (int i=0; i<initialVectorSize; i++)
 						inputVector.push_back (0.0);
 				}
-				for (n=(*v).begin(); n!= (*v).end(); n++) {
+				for (n=v->begin(); n!= v->end(); n++) {
 					inputVector.push_back (*n);
 				}
-				if (v == (*s).begin()) {
+				if (v == s->begin()) {
 					//zero padding
 					for (int i=0; i<featureVectorSize - initialVectorSize; i++)
-						inputVector.push_back (0.0);
+						//inputVector.push_back (0.0);
+						inputVector.push_back ((v+1)->at(i));
 				}
 			}
 			
-			if (v != (*s).begin()) {
-				if (v != (*s).begin()) {
-					//zero padding
-					for (int i=0; i<initialVectorSize; i++)
-						targetVector.push_back (0.0);
-				}
-				for (n=(*v).begin(); n!= (*v).end(); n++) {
+			if (v != s->begin()) {
+				/*for (int i=0; i<initialVectorSize; i++)
+				  targetVector.push_back (0.0);*/
+				int i=0;
+				for (n=v->begin() + data[0][1].size()/2; n!= v->end(); n++) {
+					i++;
 					targetVector.push_back (*n);
-				}
-				//zero padding
-				if (v == (*s).begin() ) {
-					for (int i=0; i<featureVectorSize - initialVectorSize; i++)
-						targetVector.push_back (0.0);
 				}
 			}
 		}
 	}
 
 	//netcdf file storing
-	if (!write_nc_data (fileName, data, featureVectorSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
+	if (!write_nc_data (fileName, data, featureVectorSize, (featureVectorSize - initialVectorSize) / 2 /*+ 1*/, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
 		return false;
 
 	return true;
@@ -611,12 +607,12 @@ bool write_nc_file_basis (string fileName, const DataSet& data) {
 }
 
 
-void load_ef_pos_act(FeatureVector featVec, vector<float>& vec, int* count) {
+void load_ef_pos_act(FeatureVector featVec, vector<float>& vec, int& count) {
 
 //int c = (*count);
-	vec[(*count)++] = featVec[0];
-	vec[(*count)++] = featVec[1];
-	vec[(*count)++] = featVec[2];	
+	vec[count++] = featVec[0];
+	vec[count++] = featVec[1];
+	vec[count++] = featVec[2];	
 //cout << (*count) << endl;
 //cout << featVec[0] << endl;
 //cout << featVec[1] << endl;
@@ -629,10 +625,10 @@ void load_ef_pos_act(FeatureVector featVec, vector<float>& vec, int* count) {
 }
 
 
-void load_speed_and_angle_act(double speed, double angle, vector<float>& vec, int* count) {
+void load_speed_and_angle_act(double speed, double angle, vector<float>& vec, int& count) {
 
-	vec[(*count)++] = speed;
-	vec[(*count)++] = angle;
+	vec[count++] = speed;
+	vec[count++] = angle;
 //cout << (*count) << endl;
 //cout << speed << endl;
 //cout << angle << endl;
@@ -643,13 +639,12 @@ void load_speed_and_angle_act(double speed, double angle, vector<float>& vec, in
 
 }
 
-void load_feat_vector_act(FeatureVector featVec, vector<float>& vec, int* count){
+void load_feat_vector_act(FeatureVector featVec, vector<float>& vec, int& count){
 
 	FeatureVector::const_iterator n;
 
-	for (n=featVec.begin(); n!= featVec.end(); n++) {
-		vec[(*count)++] = *n;
-	}
+	for (n=featVec.begin(); n!= featVec.end(); n++)
+		vec[count++] = *n;
 
 
 }
@@ -658,35 +653,31 @@ void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVect
 //Markov
 	int contInput = 0;
 	int contTarget = 0;
-	int* pContInput = &contInput;
-	int* pContTarget = &contTarget;
 
-	Sequence::const_iterator v;
-	v = s.begin();
-//	double speed = (*v)[3];
-//	double angle = (*v)[4];
-	double speed = (*v)[0];
-	double angle = (*v)[1];
+	Sequence::const_iterator v = s.begin();
+	double speed = v->at(3);
+	double angle = v->at(4);
 	v++;
-	Sequence::const_iterator start = v;
 
-	for (v; v!= s.end(); v++) {
+	for (; v!= s.end(); v++) {
 		if (v+1 != s.end()) {
 //cout << "///////////////////////" << endl;
 //cout << "INPUT" << endl;
 //cout << (*v).size() << endl;
-			//load_ef_pos_act((*v), inputVector, pContInput);
-			load_speed_and_angle_act(speed, angle, inputVector, pContInput);
-			load_feat_vector_act((*v), inputVector, pContInput);
+			//load_ef_pos_act((*v), inputVector, contInput);
+			load_speed_and_angle_act(speed, angle, inputVector, contInput);
+			load_feat_vector_act((*v), inputVector, contInput);
 //cout << "///////////////////////" << endl;
 		}
 
-		if (v != start) {
+		if (v != s.begin() + 1) {
 //cout << "///////////////////////" << endl;
 //cout << "TARGET" << endl;
 			//load_ef_pos_act((*v), targetVector, pContTarget);
-			load_speed_and_angle_act(speed, angle, targetVector, pContTarget);
-			load_feat_vector_act((*v), targetVector, pContTarget);
+			//load_speed_and_angle_act(speed, angle, targetVector, contTarget);
+			//for (; contTarget<s.begin()->size(); contTarget++)
+			//	targetVector[contTarget] = 0.0;
+			load_feat_vector_act((*v), targetVector, contTarget);
 //cout << "///////////////////////" << endl;
 		}
 	}
@@ -700,17 +691,13 @@ void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVect
 
 
 ///
-///load a sequence into inputs and target vectors (for machine learning)
+///load a sequence into inputs and target vectors (for machine learning) (basis representation)
 ///
 void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s) {
-//basis
-
-
-
-
 
 	int initialVectorSize = s[0].size();
-	int featureVectorSize = initialVectorSize + s[1].size();
+	int sensorVectorSize = s[1].size();
+	int featureVectorSize = initialVectorSize + sensorVectorSize;
 	Sequence::const_iterator v;
 	int contInput = 0;
 	int contTarget = 0;
@@ -723,29 +710,22 @@ void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVecto
 				for (int i=0; i<initialVectorSize; i++)
 					inputVector[contInput++] = 0.0;
 			}
-			for (n=(*v).begin(); n!= (*v).end(); n++) {
+			for (n=v->begin(); n!= v->end(); n++) {
 				inputVector[contInput++] = *n;
 			}
 			if (v == s.begin()) {
 				//zero padding
 				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
-					inputVector[contInput++] = 0.0;
+					//inputVector[contInput++] = 0.0;
+					inputVector[contInput++] = (v+1)->at(i);
 			}
 		}
 			
 		if (v != s.begin()) {
-			if (v != s.begin()) {
-				//zero padding
-				for (int i=0; i<initialVectorSize; i++)
-					targetVector[contTarget++] = 0.0;
-			}
-			for (n=(*v).begin(); n!= (*v).end(); n++) {
+			/*for (int i=0; i<initialVectorSize; i++)
+			  targetVector[contTarget++] = 0.0;*/
+			for (n=v->begin() + sensorVectorSize/2; n!= v->end(); n++) {
 				targetVector[contTarget++] = *n;
-			}
-			//zero padding
-			if (v == s.begin() ) {
-				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
-					targetVector[contTarget++] = 0.0;
 			}
 		}
 	}
