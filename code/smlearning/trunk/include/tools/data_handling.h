@@ -91,6 +91,10 @@ public:
 		golem::Mat34 effectorPose;
 		/** Object GLOBAL pose */
 		golem::Mat34 objectPose;
+		/** End-effector orientation in Euler coordinates */
+		golem::Real efRoll, efPitch, efYaw; 
+		/** Object orientation in Euler coordinates */
+		golem::Real obRoll, obPitch, obYaw; 
 		
 	};
 
@@ -230,27 +234,12 @@ bool write_cdl_file_basis (string fileName, const DataSet& data);
 bool write_nc_file_basis (string fileName, const DataSet& data);
 
 
-void load_ef_pos_off(FeatureVector featVec, smlearning::FeatureVector& vec);
-
-void load_speed_and_angle_off(double speed, double angle, smlearning::FeatureVector& vec);
-
-void load_feat_vector_off(FeatureVector featVec, smlearning::FeatureVector& vec);
-
 bool write_nc_file_Markov (string fileName, const DataSet& data);
 
 ///
 ///concatenate .seq files in one file
 ///
 bool concatenate_datasets (string dir, string writeFileName);
-
-
-
-
-void load_ef_pos_act(FeatureVector featVec, vector<float>& vec, int count);
-
-void load_speed_and_angle_act(double speed, double angle, vector<float>& vec, int count);
-
-void load_feat_vector_act(FeatureVector featVec, vector<float>& vec, int count);
 
 void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
 

@@ -256,9 +256,10 @@ protected:
 	
 	/** iteration counter */
 	int iteration;
-	/** const number of SM regions */
-	static const int smregionsCount = 18;
-	/** threshold angle when polyflap is flipping over */
+	/** const number of starting positions */
+	static const int startingPositionsCount = 18;
+	/** constant used for assertions (motorCommandVector size should be predefined) */
+	static const int motorVectorSize = 5;
 
 	/** Creator */
 	golem::Creator creator;
@@ -309,8 +310,10 @@ protected:
 	///
 	static void set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
 
-
-
+	///
+	///select a random action
+	///
+	virtual void choose_action ();
 
 	///
 	///prepares the polyflap to use
@@ -320,7 +323,7 @@ protected:
 	///
 	///choose and describe the start point of the experiment trajectory
 	///
-	virtual void  initialize_movement();
+	virtual void calculate_starting_position_coord ();
 
 	///
 	///describe the experiment trajectory
@@ -355,12 +358,12 @@ protected:
 	///
 	///write finger features to the vector
 	///
-	void write_finger_pos_and_or();
+	void write_finger_pos_and_or(FeatureVector& featureVector, const Vec3& pos);
 
 	///
 	///write finger features to the vector
 	///
-	void write_finger_speed_and_angle();
+	void write_finger_speed_and_angle(FeatureVector& featureVector, const int speed, const Real horizontalAngle);
 
 	///
 	///add the vector to the current sequence
@@ -378,9 +381,19 @@ protected:
 	void move_finger();
 
 	///
+	///storing a feature vector
+	///
+	void add_feature_vector (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk);
+
+	///
+	///storing a label (in this case polyflap status)
+	///
+	void add_label (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk);
+
+	///
 	///write vector sequence into current dataset
 	///
-	void write_sequence_into_dataset();
+	void write_sequence_into_dataset(DataSet& data);
 
 	///
 	///turn the finger collision detection on (true) or off (false)
@@ -441,19 +454,22 @@ protected:
 	///
 	///set current position of the polyflap as default position for computing of the starting position
 	///
-	void set_positionT();
+	void init_positionT(Vec3& pos);
 
 	///
 	///choose the starting position
 	///
-	virtual void define_start_position();
+	virtual void define_start_position ();
 
 	///
 	///set the variable target so that it obtains the coordinates of the start point of the experiment trajectory
 	///
 	void prepare_target();
 
-	Real chooseAngle(Real min, Real max, string form);
+	///
+	///select random angle (discrete or continouos)
+	///
+	Real choose_angle(Real min, Real max, string form);
 
 };
 

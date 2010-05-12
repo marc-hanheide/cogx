@@ -30,9 +30,9 @@ namespace smlearning {
 ///
 ///construct RNN for active learning
 ///
-void ActiveRNN::build (int smregionsCount, int patternSize, ostream& out) {
+void ActiveRNN::build (int smregionsCount, int inputPatternSize, int targetPatternSize, ostream& out) {
 
-	header = new rnnlib::DataHeader ( patternSize, patternSize );
+	header = new rnnlib::DataHeader ( inputPatternSize, targetPatternSize);
 	net = new rnnlib::MultilayerNet(out, conf, *header);
 	//build weight container after net is created
 	//rnnlib::WeightContainer::instance().build();
@@ -144,7 +144,7 @@ double ActiveRNN::updateLearnProgress (int smregionIdx) {
 	
 }
 
-///
+/* ///
 ///active selection of samples
 ///
 int ActiveRNN::chooseSMRegion () {
@@ -156,9 +156,9 @@ int ActiveRNN::chooseSMRegion () {
 			maxLearningProgress = learnProg_errorsMap[i].first.back();
 		}
 			
-	return regionIdx;
+	return reg
 	
-}
+} */
 
 
 

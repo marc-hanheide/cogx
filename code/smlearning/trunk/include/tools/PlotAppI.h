@@ -114,7 +114,7 @@ public:
 #endif
 		QWidget *hBox = new QWidget(toolBar);
 
-		QSpinBox *regionSpinBox = new QSpinBox;
+		regionSpinBox = new QSpinBox;
 		regionSpinBox->setRange(0, 17);
 		regionSpinBox->setEnabled (false);	
 		region = 0;

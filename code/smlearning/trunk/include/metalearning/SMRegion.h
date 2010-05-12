@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <tools/data_handling.h>
+#include <metalearning/ActiveRNN.h>
 
 using namespace std;
 
@@ -38,11 +39,22 @@ namespace smlearning {
 /// using a statistical measure, i.e., variance.
 struct SMRegion {
 
+	/** index coming from a map of regions in the Scenario */
 	int index;
+	/** vector of minimum values of the motor context vectors in the dataset */
 	vector<double> minValuesSMVector;
+	/** vector of maximum values of the motor context vectors in the dataset */
 	vector<double> maxValuesSMVector;
+	/** size of the motor context */
 	int sMContextSize;
+	/** instances corresponding to the region */
 	DataSet data;
+	/** RNN learner corresponding to the region */
+	ActiveRNN learner;
+	/** vector corresponding to learning progress */
+	vector<double> learningProgressHistory;
+	/** vector corresponding to history of errors */
+	vector<double> errorsHistory;
 
 	SMRegion () {
 	}

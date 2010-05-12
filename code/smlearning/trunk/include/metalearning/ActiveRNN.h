@@ -27,7 +27,6 @@
 #define SMLEARNING_ACTIVERNN_H_
 
 #include <metalearning/RNN.h>
-#include <metalearning/SMRegion.h>
 
 #include <NetcdfDataset.hpp>
 #include <WeightContainer.hpp>
@@ -77,7 +76,7 @@ struct ActiveRNN : RNN {
 	///
 	///construct RNN machine using config data
 	///
-	virtual void build (int smregionsCount, int patternSize, ostream& out = cout);
+	virtual void build (int smregionsCount, int inputPatternSize, int targetPatternSize, ostream& out = cout);
 
 	///
 	///update the machine state with current sequence

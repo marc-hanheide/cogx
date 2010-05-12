@@ -147,24 +147,23 @@ void ActiveLearnScenario::render () {
 	}
 
 	idx.pop_back();
-	idx.push_back(learningData.currentPredictedEfSeq.size()-1);
 	if (learningData.currentPredictedEfSeq.size() > 0) {
-	for (int i=0; i<2; i++) {
-		Mat34 currentPose = learningData.currentPredictedEfSeq[idx[i]];			
-		boundsRenderer.setMat(currentPose);
-		if (idx[i] == learningData.currentPredictedEfSeq.size()-1)
-			boundsRenderer.setWireColour (RGBA::RED);
-		else if (idx[i] == 0)
-			boundsRenderer.setWireColour (RGBA::BLUE);			
-		
-		boundsRenderer.renderWire (effectorBounds.begin(), effectorBounds.end());
-	}
+		idx.push_back(learningData.currentPredictedEfSeq.size()-1);
+		for (int i=0; i<2; i++) {
+			Mat34 currentPose = learningData.currentPredictedEfSeq[idx[i]];			
+			boundsRenderer.setMat(currentPose);
+			if (idx[i] == learningData.currentPredictedEfSeq.size()-1)
+				boundsRenderer.setWireColour (RGBA::RED);
+			else if (idx[i] == 0)
+				boundsRenderer.setWireColour (RGBA::BLUE);			
+			
+			boundsRenderer.renderWire (effectorBounds.begin(), effectorBounds.end());
+		}
 	}
 
 	
 
 }
-
 
 //------------------------------------------------------------------------------
 
@@ -191,61 +190,37 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 // 		cout << "pose: ";
 // 		printf("%.20f %.20f %.20f %f %f %f %f %f %f %f %f %f\n", p.p.v1, p.p.v2, p.p.v3, p.R._m._11, p.R._m._12, p.R._m._13, p.R._m._21, p.R._m._22, p.R._m._23, p.R._m._31, p.R._m._32, p.R._m._33);  
 
-		Real efRoll, efPitch, efYaw;
-		chunk.effectorPose.R.toEuler (efRoll, efPitch, efYaw);
+		chunk.effectorPose.R.toEuler (chunk.efRoll, chunk.efPitch, chunk.efYaw);
 // 		cout << "Effector roll: " << efRoll << " pitch: " << efPitch << " yaw: " << efYaw << endl;
-		Real obRoll, obPitch, obYaw;
-		chunk.objectPose.R.toEuler (obRoll, obPitch, obYaw);
+		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
 		// cout << "Object roll: " << obRoll << " pitch: " << obPitch << " yaw: " << obYaw << endl;
 
-		Real polStateOutput = 0; //polyflap moves with the same Y angle
-		Real epsilonAngle = 0.005;
-		if (currentPfRoll < (obRoll - epsilonAngle) ) //polyflap Y angle increases
-			polStateOutput = 1;
-		if (currentPfRoll > (obRoll + epsilonAngle) ) //polyflap Y angle decreases
-			polStateOutput = -1;
-
-		if (polStateOutput == 0 && currentPfY < chunk.objectPose.p.v2) // polyflap Y position increases
-			polStateOutput = 0.5;
-		if (polStateOutput == 0 && currentPfY > chunk.objectPose.p.v2) //polyflap Y position decreases
-			polStateOutput = -0.5;
-		
-// 		cout << "polStateOutput: " << polStateOutput << endl;
-		currentPfRoll = obRoll;
-		currentPfY = chunk.objectPose.p.v2;
-
-		
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
-		/////////////////////////////////////////////////
-		//storing the feature vector
-
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(efRoll, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(efPitch, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(efYaw, -REAL_PI, REAL_PI));
-	
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
-		currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
-		currentFeatureVector.push_back(normalize(obRoll, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(obPitch, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(normalize(obYaw, -REAL_PI, REAL_PI));
-		currentFeatureVector.push_back(polStateOutput);
-
+		add_feature_vector (currentFeatureVector, chunk); 
+		//add_label (currentFeatureVector, chunk);
+		
 		learningData.currentSeq.push_back(currentFeatureVector);
+
+		int size = learningData.currentSeq.size();
+		// for (int i=0; i<learningData.currentSeq[size-1].size(); i++) 
+		// 	cout << learningData.currentSeq[size-1][i] << " ";
+		// cout << endl;
+
+		currentPfRoll = chunk.obRoll;
+		currentPfY = chunk.objectPose.p.v2;
 
 		/////////////////////////////////////////////////
 		//initialize RNN learner
 		if (!netBuilt) {
-			learner.build (smregionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size() );
+			learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size(),  /*learningData.currentMotorCommandVector.size() + */currentFeatureVector.size() / 2);
+			//learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() - 3 + currentFeatureVector.size(), currentFeatureVector.size() );
 			netBuilt = true;
 		}
 		load_current_trainSeq (learner.header->inputSize, learner.header->outputSize);
 		learner.feed_forward (*trainSeq);
-		get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+		//get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+		get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
 	
 	}
 // 	if (bStop) {
@@ -278,45 +253,72 @@ void ActiveLearnScenario::initialize_polyflap(){
 }
 
 ///
-///choose and describe the start point of the experiment trajectory
+///get the action that maximizes learning progress
 ///
-void  ActiveLearnScenario::initialize_movement(){
-
-	//set default coordinates
-	set_positionT();
-
-	//choose start point
-	define_start_position();
-
-	//edit the coordinates so that they describe chosen start point
-	prepare_target();	
+pair<FeatureVector, ActiveLearnScenario::Action> ActiveLearnScenario::get_actionsIdx_maxLearningProgress (const ActionsVector& candidateActions) {
+	double maxLearningProgress = -1e6;
+	int index = -1;
+	for (int i=0; i < candidateActions.size(); i++) {
+		SMRegion contextRegion = regions[get_SMRegion (candidateActions[i].first)];
+		double learningProgress = 0.0/*contextRegion.learningProgressHistory.back()*/;
+		if ( learningProgress > maxLearningProgress  ) {
+			maxLearningProgress = learningProgress;
+			index = i;
+		}
+	}
+	assert (index != -1);
+	return candidateActions[index];
 }
 
 
-///
-///choose the starting position
-///
-void ActiveLearnScenario::define_start_position(){
-	cout << "ALS: define_start_position" << endl;
 
-	if (startingPosition == 0)
-			if ( iteration < smregionsCount ) 
-				startPosition = floor(randomG.nextUniform (1.0, 18.0));
-			else {
-				//active selection of samples
-				double neargreedyActionRand = randomG.nextUniform (0.0, 1.0);
-				
-				cout << "neargreedyRand: " << neargreedyActionRand << endl;
-				if (neargreedyActionRand <= learner.neargreedyActionProb)
-					startPosition = floor(randomG.nextUniform (1.0, 18.0));
+///
+///select an optimal action from a random set of actions
+///
+void ActiveLearnScenario::choose_action () {
+	
+	if (startingPosition == 0) {
 
-				else
-					assert ((startPosition = learner.chooseSMRegion () + 1) != -1);
+		//active selection of samples
+		double neargreedyActionRand = randomG.nextUniform (0.0, 1.0);
+		
+		cout << "neargreedyRand: " << neargreedyActionRand << endl;
+		if (neargreedyActionRand <= neargreedyActionProb) {
+			Scenario::choose_action ();
+		}
+		
+		else {
+
+			ActionsVector candidateActions;
+			
+			for (int i=0; i<maxNumberCandidateActions; i++) {
+				Action action;
+				action.startPosition = floor(randomG.nextUniform (1.0, 19.0));
+				//action.speed = floor (randomG.nextUniform (3.0, 5.0));
+				action.speed = 3.0;
+				action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
+				FeatureVector motorVector;
+				Vec3 pos;
+				init_positionT (pos);
+				set_coordinates_into_target(startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+				write_finger_pos_and_or (motorVector, pos);
+				write_finger_speed_and_angle (motorVector, action.speed, action.horizontalAngle);
+				candidateActions.push_back (make_pair (motorVector, action));
 			}
-		else
-			startPosition = startingPosition;
 
+			pair<FeatureVector, Action> chosenAction = get_actionsIdx_maxLearningProgress(candidateActions);
+			
+			this->startPosition = chosenAction.second.startPosition;
+			this->speed = chosenAction.second.speed;
+			this->horizontalAngle = chosenAction.second.horizontalAngle;
+
+		}
+	}
+	else
+		Scenario::choose_action ();
+	
 }
+
 
 void ActiveLearnScenario::write_dataset_into_binary(){
 	cout << "ALS: write_dataset_into_binary" << endl;
@@ -338,12 +340,15 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	if (!plotApp)
 		throw "Invalid proxy";
-	plotApp->init (smregionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
+	plotApp->init (startingPositionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
 	plotApp->resize(640,480);
 	
 	plotApp->show();
 
 	netBuilt = false;
+	regionsCount = 0;
+	SMRegion firstRegion (regionsCount, motorVectorSize );
+	regions[regionsCount] = firstRegion;
 
 	//set: random seed, tmDeltaAsync; get initial config
 	first_init();
@@ -364,9 +369,15 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 		//create and setup polyflap object, compute its vectors
 		initialize_polyflap();
-		
+
+		//select an optimal action from a random set of actions
+		{
+			CriticalSectionWrapper csw (cs);
+			choose_action ();
+		}
+
 		//compute coordinates of start position
-		initialize_movement();
+		calculate_starting_position_coord ();
 
 		//move the finger to the beginnign of experiment trajectory
 		send_position(target, ReacPlanner::ACTION_GLOBAL);
@@ -375,29 +386,30 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		init_writing();
 
 		//write initial position and orientation of the finger
-	//	write_finger_pos_and_or();
+		write_finger_pos_and_or(learningData.currentMotorCommandVector, positionT);
+
+		//write chosen speed and angle of the finger experiment trajectory	
+		write_finger_speed_and_angle(learningData.currentMotorCommandVector, speed, horizontalAngle);
+		//add motor vector to the sequence
+		write_motor_vector_into_sequence();
+
+		currentRegion = regions[get_SMRegion (learningData.currentMotorCommandVector)];
 
 		//compute direction and other features of trajectory
 		set_up_movement();
-
-		//write chosen speed and angle of the finger experiment trajectory	
-		write_finger_speed_and_angle();
-
-		//add motor vector to the sequence
-		write_motor_vector_into_sequence();
 
 		//move the finger along described experiment trajectory
 		move_finger();
 
 		//write sequence into dataset
-		write_sequence_into_dataset();
+		write_sequence_into_dataset(data);
 
 
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
-			//learner.update (*trainSeq, startPosition-1);
-			update_learners ();
+			learner.update (*trainSeq, startPosition-1);
+			//update_learners ();
 			vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
 			vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
 			plotApp->updateData(startPosition-1, learnProgData, errorData);
@@ -458,7 +470,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 //------------------------------------------------------------------------------
 
 
-golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose) {
+golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose) {
 	int finalActIndex = outputActivations.shape[0] - 1;
 // 	cout << finalActIndex << endl;
 	int outputsize = outputActivations.shape[1];
@@ -492,7 +504,7 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (rnnlib::
 }
 
 
-void ActiveLearnScenario::get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<double> outputActivations, int sIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq) {
+void ActiveLearnScenario::get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int sIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq) {
 
 	currentPredictedPfSeq.clear();
 	for (int i=0; i < outputActivations.shape[0]; i++) {
@@ -501,15 +513,15 @@ void ActiveLearnScenario::get_pfefSeq_from_outputActivations (rnnlib::SeqBuffer<
 		int startIndex = sIndex;
 
 		//extract effector Pose
-		currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		currentPredictedEfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		currentPredictedEfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		Real efRoll, efPitch, efYaw;
-		efRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
-		efPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
- 		efYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
-		currentPredictedEfPose.R.fromEuler(efRoll, efPitch, efYaw);
-		currentPredictedEfSeq.push_back (currentPredictedEfPose);
+		// currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+		// currentPredictedEfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+		// currentPredictedEfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+		// Real efRoll, efPitch, efYaw;
+		// efRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+		// efPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+ 		// efYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+		// currentPredictedEfPose.R.fromEuler(efRoll, efPitch, efYaw);
+		// currentPredictedEfSeq.push_back (currentPredictedEfPose);
 		
 		//extract polyflap Pose
 		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
@@ -544,7 +556,7 @@ void ActiveLearnScenario::load_current_trainSeq (int inputSize, int outputSize) 
 ///
 ///Find the appropriate region index according to the given sensorimotor context
 ///
-int ActiveLearnScenario::get_SMRegion (const FeatureVector sMContext) {
+int ActiveLearnScenario::get_SMRegion (const FeatureVector& sMContext) {
 	for (RegionsMap::const_iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter) {
 		bool wrongCuttingValue = false;
 		SMRegion currentRegion = regionIter->second;
@@ -564,7 +576,7 @@ int ActiveLearnScenario::get_SMRegion (const FeatureVector sMContext) {
 //------------------------------------------------------------------------------
 
 ///
-///Update learners according to an sensorimotor region splitting criterion
+///Update learners according to a sensorimotor region splitting criterion
 ///
 void ActiveLearnScenario::update_learners () {
 
@@ -576,44 +588,53 @@ void ActiveLearnScenario::update_learners () {
 ///
 ///variance calculation of a vector
 ///
-// double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
-// 	vector<double> means;
-// 	vector<double> variances;
-// 	//this code assumes a "basis" representation of features
-// 	int 
-		
-// 	for (int i=myRobot.sensorimotorStateDim(); i<instances.numAttributes(); i++) {
-// 		means[i] = 0.0;
-// 		for (int j=0; j<instances.numInstances(); j++)
-// 			means[i] += instances.instance(j).value (i);
-// 		means[i] /= instances.numInstances();
-// 	}
+double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
+	vector<double> means;
+	vector<double> variances;
 
-// 	for (int i=myRobot.sensorimotorStateDim(); i<instances.numAttributes(); i++) {
-// 		for (int j=0; j<instances.numInstances(); j++) {
-// 			double meanDiff = instances.instance(j).value (i) - means[i];
-// 			variances[i] += (meanDiff * meanDiff);
-// 		}
-// 		variances[i] /= instances.numInstances();
-// 	}
-// 	double variance = 0.0;
-// 	for (int i=myRobot.sensorimotorStateDim(); i<instances.numAttributes(); i++)
-// 		variance += variances[i];
-// 	variance /= myRobot.sensoryStateDim();  //myRobot.sensoryStateDim == instances.numAttributes - myRobot.sensorimotorStateDim()
+	assert (data.size() >= 2);
+	double featVectorSize;
+	assert ((featVectorSize = data[0][1].size()) > 0);
+	means.resize (featVectorSize, 0.0);
+	variances.resize (featVectorSize, 0.0);
+	int numInstances = 0;
+	
+	for (int i=0; i<data.size(); i++)
+		for (int j=1; j<data[i].size(); j++) {
+			assert (data[i][j].size() == featVectorSize);
+			numInstances++;
+			for (int k=0; k<featVectorSize; k++)
+				means[k] += data[i][j][k];
+	}
+	for (int k=0; k<featVectorSize; k++)
+		means[k] /= numInstances;
 
-// 	return variance;
-// }
+	for (int k=0; k<featVectorSize; k++) {
+		for (int i=0; i<data.size(); i++)
+			for (int j=1; j<data[i].size(); j++) {
+				double meanDiff = data[i][j][k] - means[k];
+				variances[k] += (meanDiff * meanDiff);
+			}
+		variances[k] /= numInstances;
+	}
+	double variance = 0.0;
+	for (int k=0; k<featVectorSize; k++)
+		variance += variances[k];
+	variance /= featVectorSize;
 
-// ///
-// ///minimality criterion for splitting a sensorimotor region
-// ///
-// double ActiveLearnScenario::evaluateMinimality (const DataSet& firstSplittingSet, const DataSet& secondSplittingSet, int sMContextSize) {
-// 	//calculate variance of sequence S(t+1),...S(t+n) for each splitting set
-// 	double varianceLastSC1stSet = variance (firstSplittingSet, sMContextSize);
-// 	double varianceLastSC2ndSet = variance (secondSplittingSet, sMContextSize);
-// 	return (firstSplittingSet.size()  * varianceLastSC1stSet +
-// 		secondSplittingSet.size() * varianceLastSC2ndSet);
-// }
+	return variance;
+}
+
+///
+///minimality criterion for splitting a sensorimotor region
+///
+double ActiveLearnScenario::evaluate_minimality (const DataSet& firstSplittingSet, const DataSet& secondSplittingSet, int sMContextSize) {
+	//calculate variance of sequence S(t+1),...S(t+n) for each splitting set
+	double varianceLastSC1stSet = variance (firstSplittingSet, sMContextSize);
+	double varianceLastSC2ndSet = variance (secondSplittingSet, sMContextSize);
+	return (firstSplittingSet.size()  * varianceLastSC1stSet +
+		secondSplittingSet.size() * varianceLastSC2ndSet);
+}
 
 
 ///
@@ -638,16 +659,28 @@ void ActiveLearnScenario::split_region (int regionIdx) {
 				else
 					secondSplittingSetTry.push_back (region.data[k]);
 			}
-			// double quantityEval = evaluateMinimality (firstSplittingSetTry, secondSplittingSetTry);
-			// if (quantityEval < minimalQuantity) {
-			// 	minimalQuantity = quantityEval;
-			// 	firstSplittingSet = firstSplittingSetTry;
-			// 	secondSplittingSet = secondSplittingSetTry;
-			// 	cuttingValue = j;
-			// 	cuttingIdx = i;
-			// }
+			double quantityEval = evaluate_minimality (firstSplittingSetTry, secondSplittingSetTry, region.sMContextSize);
+			if (quantityEval < minimalQuantity) {
+				minimalQuantity = quantityEval;
+				firstSplittingSet = firstSplittingSetTry;
+				secondSplittingSet = secondSplittingSetTry;
+				cuttingValue = j;
+				cuttingIdx = i;
+			}
 		}
 	}
+	assert (firstSplittingSet.size () > 0);
+	assert (secondSplittingSet.size() > 0);
+	assert (cuttingValue != -1.0);
+	assert (cuttingIdx != -1);
+	SMRegion firstRegion (region, ++regionsCount, cuttingValue, cuttingIdx, true);
+	SMRegion secondRegion (region, ++regionsCount, cuttingValue, cuttingIdx, false);
+	regions[firstRegion.index] = firstRegion;
+	regions[secondRegion.index] = secondRegion;
+	firstRegion.data = firstSplittingSet;
+	secondRegion.data = secondSplittingSet;
+	firstRegion.learner = region.learner;
+	secondRegion.learner = region.learner;
 	
 }
 
