@@ -41,7 +41,7 @@ interface MainWindow {
 
 interface PlottingApp {
 
-	void init (int regionsNr, int size);
+	void init (/*int regionsNr,*/ int size);
 	void updateData (int region, SeqDouble lpData, SeqDouble eData);
 	void resize (int width, int height);
 	void show ();

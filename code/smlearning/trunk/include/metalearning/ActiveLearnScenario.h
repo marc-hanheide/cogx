@@ -66,10 +66,10 @@ public:
 	
 protected:
 	/** LSTM active learner */
-	ActiveRNN learner;
+	//ActiveRNN learner;
 
 	/** to know if net has been already built */
-	bool netBuilt;
+	//bool netBuilt;
 
 	/** training sequence for the LSTM */
 	rnnlib::DataSequence* trainSeq;
@@ -86,7 +86,7 @@ protected:
 	int regionsCount;
 
 	/** current context Region */
-	SMRegion currentRegion;
+	SMRegion* currentRegion;
 
 	/** constant number of maximum candidate actions */
 	static const int maxNumberCandidateActions = 1000;
@@ -94,8 +94,11 @@ protected:
 	/** near greedy action selection probability bound for choosing random actions */
 	static const double neargreedyActionProb = 0.3;
 
+	/** number of instances to decide splitting a region */
+	int splittingCriterion1;
+
 	/** Objects can be constructed only in the Scene context. */
-	ActiveLearnScenario(golem::Scene &scene) : Scenario (scene) {};
+	ActiveLearnScenario(golem::Scene &scene) : Scenario (scene) { };
 
 	/** restore predicted last polyflap and effector pose from neural activations */
 	golem::Mat34 get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
@@ -109,7 +112,14 @@ protected:
 	/** (Post)processing function called AFTER every physics simulation step and before randering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 
-	/** load training data in RNNLIB format */
+	///
+	///describe the lenght of experiment (number of sequences) and if given, the starting position
+	///calculate the splittingCriterion1 constant according to nr. of sequences
+	virtual void setup_loop(int argc, char* argv[]);
+
+	/**
+	   load training data in RNNLIB format
+	*/
 	void load_current_trainSeq (int inputSize, int outputSize);
 
 	///
@@ -143,6 +153,11 @@ protected:
 	int get_SMRegion (const FeatureVector& SMContext);
 
 	///
+	///Obtain current context region pointer
+	///
+	void update_currentRegion ();
+
+	///
 	///variance calculation of a vector
 	///
 	double variance (const DataSet& data, int sMContextSize);
@@ -155,7 +170,7 @@ protected:
 	///
 	///partition of regions according to variance of dataset instances
 	///
-	void split_region (int region);
+	void split_region (SMRegion& region);
 
 };
 

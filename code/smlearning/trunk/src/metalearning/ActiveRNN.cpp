@@ -28,9 +28,9 @@
 namespace smlearning {
 
 ///
-///construct RNN for active learning
+///initialize RNN for active learning
 ///
-void ActiveRNN::build (int smregionsCount, int inputPatternSize, int targetPatternSize, ostream& out) {
+void ActiveRNN::init (/*int smregionsCount, */int inputPatternSize, int targetPatternSize, ostream& out) {
 
 	header = new rnnlib::DataHeader ( inputPatternSize, targetPatternSize);
 	net = new rnnlib::MultilayerNet(out, conf, *header);
@@ -38,8 +38,36 @@ void ActiveRNN::build (int smregionsCount, int inputPatternSize, int targetPatte
 	//rnnlib::WeightContainer::instance().build();
 	net->weightContainer.build();
 	//int numWeights = rnnlib::WeightContainer::instance().weights.size();
-	int numWeights = net->weightContainer.weights.size();
+	//int numWeights = net->weightContainer.weights.size();
 
+	build (out);
+}
+
+///
+///initialize RNN for active learning
+///
+void ActiveRNN::init (int inputPatternSize, int targetPatternSize, rnnlib::WeightContainer& wC, ostream& out) {
+
+	header = new rnnlib::DataHeader ( inputPatternSize, targetPatternSize);
+	net = new rnnlib::MultilayerNet(out, conf, *header);
+	//build weight container after net is created
+	net->weightContainer.build();
+	net->weightContainer.weights = wC.weights;
+	net->weightContainer.derivatives = wC.derivatives;
+	net->weightContainer.plasticities = wC.plasticities;
+	net->weightContainer.connections = wC.connections;
+	//int numWeights = rnnlib::WeightContainer::instance().weights.size();
+	//int numWeights = net->weightContainer.weights.size();
+
+	build (out);
+}
+
+
+///
+///construct RNN for active learning
+///
+void ActiveRNN::build (ostream& out) {
+	
 	//build the network after the weight container
 	net->build();
 	
@@ -55,22 +83,22 @@ void ActiveRNN::build (int smregionsCount, int inputPatternSize, int targetPatte
 	out << "setting random seed to " << Random::set_seed(conf.get<unsigned long int>("randSeed", 0)) << endl << endl;
 	double initWeightRange = conf.get<double>("initWeightRange", 0.1);
 	out << "randomising uninitialised weights with mean 0 std. dev. " << initWeightRange << endl << endl;
-	//rnnlib::WeightContainer::instance().randomise(initWeightRange);	
+	//rnnlib::WeightContainer::instance().randomise(initWeightRange);
 	net->weightContainer.randomise(initWeightRange);
 	out << "optimiser:" << endl << *opt << endl;
 
 	print_net_data();
 
-	//build the map for learning progress and errors list associations
-	for (int i=0; i<smregionsCount; i++) {
-		vector<double> errorsHistory;
-		vector<double> learnProgHistory;
-		learnProgHistory.push_back (0.0);
-		pair<vector<double>, vector<double> > learnProg_errors;
-		learnProg_errors.first = learnProgHistory;
-		learnProg_errors.second = errorsHistory;
-		learnProg_errorsMap[i] = learnProg_errors;
-	}
+	// //build the map for learning progress and errors list associations
+	// for (int i=0; i<smregionsCount; i++) {
+	// 	vector<double> errorsHistory;
+	// 	vector<double> learnProgHistory;
+	// 	learnProgHistory.push_back (0.0);
+	// 	pair<vector<double>, vector<double> > learnProg_errors;
+	// 	learnProg_errors.first = learnProgHistory;
+	// 	learnProg_errors.second = errorsHistory;
+	// 	learnProg_errorsMap[i] = learnProg_errors;
+	// }
 	//normalizationFactor = patternSize /** 4*/ * 0.5;
 
 }
@@ -78,7 +106,7 @@ void ActiveRNN::build (int smregionsCount, int inputPatternSize, int targetPatte
 ///
 ///update the machine state with current sequence
 ///
-double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostream& out) {
+double ActiveRNN::update (const rnnlib::DataSequence& seq, /*int smregionIdx,*/ ostream& out) {
 	
 	if (rnnlib::GlobalVariables::instance().isVerbose()) {
 		out << "data sequence:" << endl;
@@ -97,18 +125,18 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostr
 // 		i++;
 	}
 // 	} while (error > 10.0 || i < 10);
-	out << "Region: " << smregionIdx << endl;
+	// out << "Region: " << smregionIdx << endl;
 	double normalizationFactor = seq.num_timesteps() * 0.5;
 	error /= normalizationFactor;
 	out << "\tError: " << endl;
 	out << "\t" << error << endl;
-	learnProg_errorsMap[smregionIdx].second.push_back (error);
-	if (learnProg_errorsMap[smregionIdx].second.size () > SMOOTHING+TIMEWINDOW)
-		learnProg_errorsMap[smregionIdx].second.erase (learnProg_errorsMap[smregionIdx].second.begin());
-	out << "\tLearning progress: " << endl;
-	out << "\t" << updateLearnProgress (smregionIdx) << endl;
-	if (learnProg_errorsMap[smregionIdx].first.size () > SMOOTHING+TIMEWINDOW)
-		learnProg_errorsMap[smregionIdx].first.erase (learnProg_errorsMap[smregionIdx].first.begin());
+	// learnProg_errorsMap[smregionIdx].second.push_back (error);
+	// if (learnProg_errorsMap[smregionIdx].second.size () > SMOOTHING+TIMEWINDOW)
+	// 	learnProg_errorsMap[smregionIdx].second.erase (learnProg_errorsMap[smregionIdx].second.begin());
+	// out << "\tLearning progress: " << endl;
+	// out << "\t" << updateLearnProgress (smregionIdx) << endl;
+	// if (learnProg_errorsMap[smregionIdx].first.size () > SMOOTHING+TIMEWINDOW)
+	// 	learnProg_errorsMap[smregionIdx].first.erase (learnProg_errorsMap[smregionIdx].first.begin());
 
 	return error;
 
@@ -118,7 +146,7 @@ void ActiveRNN::feed_forward (const rnnlib::DataSequence& seq) {
 	net->feed_forward(seq);
 }
 
-///
+/* ///
 ///update the learning progress associated to region r
 ///
 double ActiveRNN::updateLearnProgress (int smregionIdx) {
@@ -142,7 +170,7 @@ double ActiveRNN::updateLearnProgress (int smregionIdx) {
 	
 	return learnProg_errorsMap[smregionIdx].first.back();
 	
-}
+} */
 
 /* ///
 ///active selection of samples

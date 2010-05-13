@@ -460,6 +460,8 @@ void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, Learning
 	currentFeatureVector.push_back(normalize(chunk.efRoll, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.efPitch, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.efYaw, -REAL_PI, REAL_PI));
+
+	assert (currentFeatureVector.size() == efVectorSize);
 	
 	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
 	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
@@ -468,6 +470,8 @@ void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, Learning
 	currentFeatureVector.push_back(normalize(chunk.obPitch, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.obYaw, -REAL_PI, REAL_PI));
 
+	assert (currentFeatureVector.size() == efVectorSize + pfVectorSize);
+	
 }
 
 ///
@@ -504,6 +508,18 @@ void Scenario::add_label (FeatureVector& currentFeatureVector, LearningData::Chu
 
 }
 
+///
+///add the feature vector to the current sequence
+///
+void Scenario::write_feature_vector_into_current_sequence(FeatureVector& featureVector){
+
+	assert (featureVector.size() == featureVectorSize);
+	/////////////////////////////////////////////////
+	//writing of the feature vector into sequence
+	learningData.currentSeq.push_back(featureVector);
+	/////////////////////////////////////////////////
+}
+
 
 void Scenario::postprocess(SecTmReal elapsedTime) {
 	if (bStart) {
@@ -527,12 +543,12 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
 
 		add_feature_vector (currentFeatureVector, chunk);
-		add_label (currentFeatureVector, chunk);
+		//add_label (currentFeatureVector, chunk);
 
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
-		
-		learningData.currentSeq.push_back(currentFeatureVector);
+
+		write_feature_vector_into_current_sequence (currentFeatureVector);
 
 		currentPfRoll = chunk.obRoll;
 		currentPfY = chunk.objectPose.p.v2;
@@ -667,7 +683,7 @@ void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, const 
 ///
 ///add the motor vector to the current sequence
 ///
-void Scenario::write_motor_vector_into_sequence(){
+void Scenario::write_motor_vector_into_current_sequence(){
 
 	assert (learningData.currentMotorCommandVector.size() == motorVectorSize);
 	/////////////////////////////////////////////////
@@ -719,7 +735,7 @@ void Scenario::move_finger(){
 ///
 ///write vector sequence into current dataset
 ///
-void Scenario::write_sequence_into_dataset(DataSet& data){
+void Scenario::write_current_sequence_into_dataset(DataSet& data){
 	/////////////////////////////////////////////////
 	//writing the sequence into the dataset
 	data.push_back(learningData.currentSeq);
@@ -880,7 +896,7 @@ void Scenario::run(int argc, char* argv[]) {
 		//write chosen speed and angle of the finger experiment trajectory
 		write_finger_speed_and_angle(learningData.currentMotorCommandVector, speed, horizontalAngle);
 		//add motor feature vector to the sequence
-		write_motor_vector_into_sequence();
+		write_motor_vector_into_current_sequence();
 
 		//compute direction and other features of trajectory
 		set_up_movement();
@@ -889,7 +905,7 @@ void Scenario::run(int argc, char* argv[]) {
 		move_finger();
 
 		//write sequence into dataset
-		write_sequence_into_dataset(data);
+		write_current_sequence_into_dataset(data);
 
 		//turn off collision detection
 		set_collision_detection(false);		

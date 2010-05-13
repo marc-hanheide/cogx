@@ -27,5 +27,36 @@
 
 namespace smlearning {
 
+///
+///update the learning progress associated to the region
+///
+void SMRegion::updateLearnProgress (const rnnlib::DataSequence& seq) {
+
+	errorsHistory.push_back (learner.update(seq));
+	
+	double timewindowRatio = timewindow / double(smoothing + timewindow);
+	double smoothingRatio = smoothing / double(smoothing + timewindow);
+	double smoothing = errorsHistory.size() * smoothingRatio + 1;
+	int lastPrevSmoothErrorIdx = (int)ceil(errorsHistory.size() * (1 - timewindowRatio));
+	double accPrevSmoothError = 0.0;
+	for (int i=0; i != lastPrevSmoothErrorIdx; i++)
+		accPrevSmoothError += errorsHistory[i];
+	accPrevSmoothError /= smoothing;
+
+	int firstCurrSmoothErrorIdx = (int)floor(errorsHistory.size() * (1 - smoothingRatio));
+	double accCurrSmoothError = 0.0;
+	for (int i=firstCurrSmoothErrorIdx; i<errorsHistory.size(); i++)
+		accCurrSmoothError += errorsHistory[i];
+	accCurrSmoothError /= smoothing;
+	
+	
+	learningProgressHistory.push_back (-(accCurrSmoothError - accPrevSmoothError));
+	
+	cout << "\tLearning progress: " << endl;
+	cout << "\t" << learningProgressHistory.back() << endl;
+	
+}
+
+
 
 }; /* namespace smlearning */

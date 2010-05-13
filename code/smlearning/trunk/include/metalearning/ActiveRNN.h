@@ -54,12 +54,12 @@ struct ActiveRNN : RNN {
 	rnnlib::Optimiser* opt;
 	rnnlib::DataHeader *header;
 
-	///
+	/*	///
 	///constants to define the smoothing and time window parameters in the evaluation of learning progress
 	///
 	static const int SMOOTHING = 25;
 	static const int TIMEWINDOW = 15;
-	static const double neargreedyActionProb = 0.35;
+	static const double neargreedyActionProb = 0.35; */
 	///
 	///normalization factor for prediction error
 	///
@@ -69,19 +69,27 @@ struct ActiveRNN : RNN {
 	///associative map of an indexed sensorimotor region and corresponding
 	///learning progress and error history
 	///
-	map<int, pair<vector<double>, vector<double> > > learnProg_errorsMap;
+	// map<int, pair<vector<double>, vector<double> > > learnProg_errorsMap;
 
 	///methods
 
 	///
-	///construct RNN machine using config data
+	///initialize RNN for active learning
 	///
-	virtual void build (int smregionsCount, int inputPatternSize, int targetPatternSize, ostream& out = cout);
+	virtual void init (/*int smregionsCount,*/ int inputPatternSize, int targetPatternSize, ostream& out = cout);
+	///
+	///initialize RNN for active learning
+	///
+	virtual void init (int inputPatternSize, int targetPatternSize, rnnlib::WeightContainer& wC, ostream& out = cout);
+	///
+	///construct RNN machine using config data for active learning
+	///
+	virtual void build (ostream& out = cout);
 
 	///
 	///update the machine state with current sequence
 	///
-	double update (const rnnlib::DataSequence& seq, int smregionIdx, ostream& out = cout);
+	double update (const rnnlib::DataSequence& seq/*, int smregionIdx*/, ostream& out = cout);
 
 
 	///
