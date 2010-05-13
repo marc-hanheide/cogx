@@ -200,7 +200,7 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		add_feature_vector (currentFeatureVector, chunk); 
 		//add_label (currentFeatureVector, chunk);
 		
-		learningData.currentSeq.push_back(currentFeatureVector);
+		write_feature_vector_into_current_sequence (currentFeatureVector);
 
 		int size = learningData.currentSeq.size();
 		// for (int i=0; i<learningData.currentSeq[size-1].size(); i++) 
@@ -212,15 +212,15 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 
 		/////////////////////////////////////////////////
 		//initialize RNN learner
-		if (!netBuilt) {
-			learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size(),  /*learningData.currentMotorCommandVector.size() + */currentFeatureVector.size() / 2);
-			//learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() - 3 + currentFeatureVector.size(), currentFeatureVector.size() );
-			netBuilt = true;
-		}
-		load_current_trainSeq (learner.header->inputSize, learner.header->outputSize);
-		learner.feed_forward (*trainSeq);
+		// if (!netBuilt) {
+		// 	learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size(),  /*learningData.currentMotorCommandVector.size() + */currentFeatureVector.size() / 2);
+		// 	//learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() - 3 + currentFeatureVector.size(), currentFeatureVector.size() );
+		// 	netBuilt = true;
+		// }
+		load_current_trainSeq (currentRegion->learner.header->inputSize, currentRegion->learner.header->outputSize);
+		currentRegion->learner.feed_forward (*trainSeq);
 		//get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
-		get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+		get_pfefSeq_from_outputActivations (currentRegion->learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
 	
 	}
 // 	if (bStop) {
@@ -232,6 +232,20 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 // 		//bStart = bStop = bRec = false;
 // // 		ev.set(true);
 // 	}
+}
+
+///
+///describe the lenght of experiment (number of sequences) and if given, the starting position
+///calculate the splittingCriterion1 constant according to nr. of sequences
+void ActiveLearnScenario::setup_loop(int argc, char* argv[]) {
+	Scenario::setup_loop (argc, argv);
+
+	splittingCriterion1 = numSequences / startingPositionsCount;
+
+	if (splittingCriterion1 < 5)
+		splittingCriterion1 = 4;
+
+	cout << "splitting criterion: " << splittingCriterion1 << endl;
 }
 
 
@@ -260,7 +274,7 @@ pair<FeatureVector, ActiveLearnScenario::Action> ActiveLearnScenario::get_action
 	int index = -1;
 	for (int i=0; i < candidateActions.size(); i++) {
 		SMRegion contextRegion = regions[get_SMRegion (candidateActions[i].first)];
-		double learningProgress = 0.0/*contextRegion.learningProgressHistory.back()*/;
+		double learningProgress = contextRegion.learningProgressHistory.back();
 		if ( learningProgress > maxLearningProgress  ) {
 			maxLearningProgress = learningProgress;
 			index = i;
@@ -324,7 +338,13 @@ void ActiveLearnScenario::write_dataset_into_binary(){
 	cout << "ALS: write_dataset_into_binary" << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	learner.save_net_data (writedown_collected_data(data));
+	string basename = writedown_collected_data(data);
+
+	for (RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
+		stringstream name;
+		name << basename << "_region" << regionIter->first;
+		regionIter->second.learner.save_net_data (name.str());
+	}
 	/////////////////////////////////////////////////
 	
 }
@@ -340,15 +360,17 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	if (!plotApp)
 		throw "Invalid proxy";
-	plotApp->init (startingPositionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
+	regionsCount = 0;
+	SMRegion firstRegion (regionsCount, motorVectorSize );
+	regions[regionsCount] = firstRegion;
+	regions[regionsCount].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize);
+
+	plotApp->init (/*regionsCount+1,*/ firstRegion.smoothing + firstRegion.timewindow);
 	plotApp->resize(640,480);
 	
 	plotApp->show();
 
-	netBuilt = false;
-	regionsCount = 0;
-	SMRegion firstRegion (regionsCount, motorVectorSize );
-	regions[regionsCount] = firstRegion;
+	//netBuilt = false;
 
 	//set: random seed, tmDeltaAsync; get initial config
 	first_init();
@@ -358,7 +380,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	//define numSequences and startingPosition
 	setup_loop(argc, argv);
-	
+
 
 	//start of the experiment loop
 	for (iteration = 0; iteration<numSequences; iteration++) {
@@ -391,9 +413,10 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		//write chosen speed and angle of the finger experiment trajectory	
 		write_finger_speed_and_angle(learningData.currentMotorCommandVector, speed, horizontalAngle);
 		//add motor vector to the sequence
-		write_motor_vector_into_sequence();
+		write_motor_vector_into_current_sequence();
 
-		currentRegion = regions[get_SMRegion (learningData.currentMotorCommandVector)];
+		//update context region
+		update_currentRegion ();
 
 		//compute direction and other features of trajectory
 		set_up_movement();
@@ -402,17 +425,19 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		move_finger();
 
 		//write sequence into dataset
-		write_sequence_into_dataset(data);
+		write_current_sequence_into_dataset(data);
+		write_current_sequence_into_dataset(currentRegion->data);
 
 
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
-			learner.update (*trainSeq, startPosition-1);
-			//update_learners ();
-			vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
-			vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
-			plotApp->updateData(startPosition-1, learnProgData, errorData);
+			//learner.update (*trainSeq, startPosition-1);
+			update_learners ();
+			vector<double> learnProgData = currentRegion->learningProgressHistory;
+			vector<double> errorData = currentRegion->errorsHistory;
+			//plotApp->updateData(startPosition-1, learnProgData, errorData);
+			plotApp->updateData(currentRegion->index, learnProgData, errorData);
 		}
 
 
@@ -557,7 +582,7 @@ void ActiveLearnScenario::load_current_trainSeq (int inputSize, int outputSize) 
 ///Find the appropriate region index according to the given sensorimotor context
 ///
 int ActiveLearnScenario::get_SMRegion (const FeatureVector& sMContext) {
-	for (RegionsMap::const_iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter) {
+	for (RegionsMap::const_iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
 		bool wrongCuttingValue = false;
 		SMRegion currentRegion = regionIter->second;
 		assert (sMContext.size() == currentRegion.sMContextSize);
@@ -576,13 +601,32 @@ int ActiveLearnScenario::get_SMRegion (const FeatureVector& sMContext) {
 //------------------------------------------------------------------------------
 
 ///
+///Obtain current context region pointer
+///
+void ActiveLearnScenario::update_currentRegion () {
+
+	int regionIdx = get_SMRegion (learningData.currentMotorCommandVector);
+	assert (regionIdx != -1);
+	currentRegion = &regions[regionIdx];
+
+}
+
+
+//------------------------------------------------------------------------------
+
+///
 ///Update learners according to a sensorimotor region splitting criterion
 ///
 void ActiveLearnScenario::update_learners () {
 
-
-	int currentRegion = get_SMRegion (learningData.currentMotorCommandVector);
 	
+	if (currentRegion->data.size() > splittingCriterion1 && startingPosition == 0) {
+		split_region (*currentRegion);
+	}
+
+	//Evaluate learning progress
+	cout << "Region: " << currentRegion->index << endl;
+	currentRegion->updateLearnProgress (*trainSeq);
 }
 
 ///
@@ -592,7 +636,10 @@ double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
 	vector<double> means;
 	vector<double> variances;
 
-	assert (data.size() >= 2);
+	if (data.size() == 0)
+		return 0.0;
+	
+	assert (data[0].size() >= 2);
 	double featVectorSize;
 	assert ((featVectorSize = data[0][1].size()) > 0);
 	means.resize (featVectorSize, 0.0);
@@ -640,13 +687,13 @@ double ActiveLearnScenario::evaluate_minimality (const DataSet& firstSplittingSe
 ///
 ///partition of regions according to variance of dataset instances
 ///
-void ActiveLearnScenario::split_region (int regionIdx) {
+void ActiveLearnScenario::split_region (SMRegion& region) {
 	double minimalQuantity = 1e6;
 	DataSet firstSplittingSet;
 	DataSet secondSplittingSet;
 	double cuttingValue = -1.0;
 	int cuttingIdx = -1;
-	SMRegion& region = regions[regionIdx];
+	// SMRegion& region = regions[regionIdx];
 	for (int i=0; i<region.sMContextSize; i++) {
 		for (double j=-0.999; j<1.0; j=j+0.001) {
 			DataSet firstSplittingSetTry;
@@ -673,14 +720,20 @@ void ActiveLearnScenario::split_region (int regionIdx) {
 	assert (secondSplittingSet.size() > 0);
 	assert (cuttingValue != -1.0);
 	assert (cuttingIdx != -1);
-	SMRegion firstRegion (region, ++regionsCount, cuttingValue, cuttingIdx, true);
-	SMRegion secondRegion (region, ++regionsCount, cuttingValue, cuttingIdx, false);
+	SMRegion firstRegion (region, ++regionsCount, cuttingValue, cuttingIdx, firstSplittingSet, true);
+	SMRegion secondRegion (region, ++regionsCount, cuttingValue, cuttingIdx, secondSplittingSet, false);
 	regions[firstRegion.index] = firstRegion;
 	regions[secondRegion.index] = secondRegion;
-	firstRegion.data = firstSplittingSet;
-	secondRegion.data = secondSplittingSet;
-	firstRegion.learner = region.learner;
-	secondRegion.learner = region.learner;
+
+	regions[firstRegion.index].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize, region.learner.net->weightContainer);
+	regions[secondRegion.index].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize, region.learner.net->weightContainer);
+
+	assert (regions.erase (region.index) == 1);
+	
+	update_currentRegion ();
+	cout << "region split" << endl;
+
+
 	
 }
 

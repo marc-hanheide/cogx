@@ -29,11 +29,11 @@ class InitEvent : public QEvent
 public:
 
 
-	int regionsNr;
+	//int regionsNr;
 	int size;
-	InitEvent(int r, int s ) :
+	InitEvent(/*int r,*/ int s ) :
 		QEvent ((QEvent::Type)1001),
-		regionsNr (r),
+		//regionsNr (r),
 		size(s)
 	{
 	}
@@ -87,15 +87,21 @@ class PlotApp: public QMainWindow
 	enum Mode { User, Robot };
 	QComboBox *modeComboBox;
 	QSpinBox *regionSpinBox;
+	//QToolBar *toolBar;
+	//QWidget *hBox;
+	QHBoxLayout *layout;
 	Mode mode;
 	int region;
-	vector<RegionData> regionsData; 
+	//vector<RegionData> regionsData;
+	map<int, RegionData> regionsData;
 	
 public:
 	PlotApp () {	}
-	void init (int regionsNr, int size)
+	void init (/*int regionsNr,*/int size)
 	{
-		regionsData.resize (regionsNr);
+		// regionsData.resize (regionsNr);
+		RegionData initialData;
+		regionsData[0] = initialData;
 // 		for (int i=0; i<regionsNr; i++) {
 // 			RegionData r;
 // 			regionsData.push_back (r);
@@ -115,7 +121,7 @@ public:
 		QWidget *hBox = new QWidget(toolBar);
 
 		regionSpinBox = new QSpinBox;
-		regionSpinBox->setRange(0, 17);
+		regionSpinBox->setRange(0, 0);
 		regionSpinBox->setEnabled (false);	
 		region = 0;
 	
@@ -130,7 +136,7 @@ public:
 		QLabel *modeLabel = new QLabel(tr("&Mode: "), hBox );
 		modeLabel->setBuddy(modeComboBox);
 		
-		QHBoxLayout *layout = new QHBoxLayout(hBox);
+		/*QHBoxLayout **/layout = new QHBoxLayout(hBox);
 		layout->addWidget(regionLabel);
 		layout->addWidget(regionSpinBox);
 		layout->addWidget(new QWidget(hBox), 10); // spacer);
@@ -174,7 +180,7 @@ public:
 		if (e->type() == 1001) {
 			cout << "initializing..." << endl;
 			InitEvent* ie = dynamic_cast<InitEvent*>(e);
-			init (ie->regionsNr, ie->size);
+			init (/*regionsNr, */ie->size);
 		}
 		else if (e->type() == 1002) {
 			cout << "resizing..." << endl;
@@ -233,6 +239,9 @@ public:
 
 	void updateData(int r, vector<double> lpD, vector<double> eD)
 	{
+		if (regionSpinBox->maximum() < r)
+			regionSpinBox->setMaximum (r);
+
 		// update the display
 		regionsData[r].learnprogData = lpD;
 		regionsData[r].errorData = eD;
@@ -287,8 +296,8 @@ public:
 		w = new PlotApp();
 	}
 
-	void init ( int regionsNr, int size, const Ice::Current& ) {
-		QApplication::postEvent(w, new InitEvent(regionsNr, size) );
+	void init ( /*int regionsNr,*/ int size, const Ice::Current& ) {
+		QApplication::postEvent(w, new InitEvent(/*regionsNr,*/ size) );
 
 	}
 	
@@ -315,8 +324,8 @@ public:
 		w = new PlotApp();
 	}
 
-	void init ( int regionsNr, int size ) {
-		QApplication::postEvent(w, new InitEvent(regionsNr, size) );
+	void init ( /*int regionsNr,*/ int size ) {
+		QApplication::postEvent(w, new InitEvent(/*regionsNr,*/ size) );
 
 	}
 	

@@ -260,6 +260,12 @@ protected:
 	static const int startingPositionsCount = 18;
 	/** constant used for assertions (motorCommandVector size should be predefined) */
 	static const int motorVectorSize = 5;
+	/** constant used for assertions (featureVector size should be predefined) */
+	static const int featureVectorSize = 12;
+	/** constant used for assertions (polyflap feature vector size should be predefined) */
+	static const int pfVectorSize = 6;
+	/** constant used for assertions (effector feature vector size should be predefined) */
+	static const int efVectorSize = 6;
 
 	/** Creator */
 	golem::Creator creator;
@@ -343,7 +349,7 @@ protected:
 	///
 	///describe the lenght of experiment (number of sequences) and if given, the starting position
 	///
-	void setup_loop(int argc, char* argv[]);
+	virtual void setup_loop(int argc, char* argv[]);
 
 	///
 	///try to find a path to given position, if found, move the finegr along it and wait for it to stop
@@ -368,7 +374,12 @@ protected:
 	///
 	///add the vector to the current sequence
 	///
-	void write_motor_vector_into_sequence();
+	void write_motor_vector_into_current_sequence();
+
+	///
+	///add the feature vector to the current sequence
+	///
+	void write_feature_vector_into_current_sequence(FeatureVector& featureVector);
 
 	///
 	///initialize learning data
@@ -393,7 +404,7 @@ protected:
 	///
 	///write vector sequence into current dataset
 	///
-	void write_sequence_into_dataset(DataSet& data);
+	void write_current_sequence_into_dataset(DataSet& data);
 
 	///
 	///turn the finger collision detection on (true) or off (false)

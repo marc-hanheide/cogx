@@ -37,6 +37,8 @@ namespace smlearning {
 /// SMRegion class. This class encapsulates the numerical limits of
 /// sensorimotor contexts defined by creating regions in a space by
 /// using a statistical measure, i.e., variance.
+/// It also handles the error and learning progress history of the
+/// corresponding learner associated to it
 struct SMRegion {
 
 	/** index coming from a map of regions in the Scenario */
@@ -55,6 +57,10 @@ struct SMRegion {
 	vector<double> learningProgressHistory;
 	/** vector corresponding to history of errors */
 	vector<double> errorsHistory;
+	/** constant to define the smoothing parameter in the evaluation of learning progress */
+	static const int smoothing = 25;
+	/** constant to define the time window parameter in the evaluation of learning progress */
+	static const int timewindow = 15;
 
 	SMRegion () {
 	}
@@ -64,20 +70,29 @@ struct SMRegion {
 		minValuesSMVector (smRegion.minValuesSMVector),
 		maxValuesSMVector (smRegion.maxValuesSMVector),
 		sMContextSize (smRegion.sMContextSize),
-		data (smRegion.data) {
+		data (smRegion.data),
+		learningProgressHistory (smRegion.learningProgressHistory),
+		errorsHistory (smRegion.errorsHistory),
+		learner (smRegion.learner)
+	{
 	}
 	
 	SMRegion (int idx, int smCtxtSize) :
 		index(idx), sMContextSize (smCtxtSize) {
 		minValuesSMVector.resize(sMContextSize, -1.0);
 		maxValuesSMVector.resize(sMContextSize, 1.0);
+		learningProgressHistory.push_back (0.0);
 	}
 
-	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, bool firstRegion ) :
+	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, DataSet inheritedData, bool firstRegion ) :
 		index (idx),
 		sMContextSize (parentRegion.sMContextSize),
 		minValuesSMVector (parentRegion.minValuesSMVector),
-		maxValuesSMVector (parentRegion.maxValuesSMVector) {
+		maxValuesSMVector (parentRegion.maxValuesSMVector),
+		learner (parentRegion.learner),
+		data (inheritedData),
+		learningProgressHistory (parentRegion.learningProgressHistory),
+		errorsHistory (parentRegion.errorsHistory) {
 		
 		//update cutting values
 		//instances must be added using add_DataSet
@@ -96,6 +111,12 @@ struct SMRegion {
 
 	~SMRegion () {
 	}
+
+	///
+	///update the learning progress associated to the region
+	///
+	void updateLearnProgress (const rnnlib::DataSequence& seq);
+
 
 };
 
