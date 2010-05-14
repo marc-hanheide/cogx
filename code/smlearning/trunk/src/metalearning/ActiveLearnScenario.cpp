@@ -274,7 +274,11 @@ pair<FeatureVector, ActiveLearnScenario::Action> ActiveLearnScenario::get_action
 	int index = -1;
 	for (int i=0; i < candidateActions.size(); i++) {
 		SMRegion contextRegion = regions[get_SMRegion (candidateActions[i].first)];
-		double learningProgress = contextRegion.learningProgressHistory.back();
+		double learningProgress;
+		if (contextRegion.learningProgressHistory.size() > 0)
+			learningProgress = contextRegion.learningProgressHistory.back();
+		else
+			learningProgress = -1e5;
 		if ( learningProgress > maxLearningProgress  ) {
 			maxLearningProgress = learningProgress;
 			index = i;

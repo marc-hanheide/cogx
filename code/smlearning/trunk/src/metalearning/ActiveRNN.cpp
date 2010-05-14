@@ -37,8 +37,6 @@ void ActiveRNN::init (/*int smregionsCount, */int inputPatternSize, int targetPa
 	//build weight container after net is created
 	//rnnlib::WeightContainer::instance().build();
 	net->weightContainer.build();
-	//int numWeights = rnnlib::WeightContainer::instance().weights.size();
-	//int numWeights = net->weightContainer.weights.size();
 
 	build (out);
 }
@@ -56,9 +54,8 @@ void ActiveRNN::init (int inputPatternSize, int targetPatternSize, rnnlib::Weigh
 	net->weightContainer.derivatives = wC.derivatives;
 	net->weightContainer.plasticities = wC.plasticities;
 	net->weightContainer.connections = wC.connections;
-	//int numWeights = rnnlib::WeightContainer::instance().weights.size();
-	//int numWeights = net->weightContainer.weights.size();
 
+	
 	build (out);
 }
 
@@ -68,17 +65,21 @@ void ActiveRNN::init (int inputPatternSize, int targetPatternSize, rnnlib::Weigh
 ///
 void ActiveRNN::build (ostream& out) {
 	
+	//int numWeights = rnnlib::WeightContainer::instance().weights.size();
+	int numWeights = net->weightContainer.weights.size();
+	out << numWeights << " weights" << endl << endl;
+
 	//build the network after the weight container
 	net->build();
 	
 	//only construct optimiser after weight container is built
 	if (conf.get<string>("optimiser", "steepest") == "rprop")
 	{
-		opt = new rnnlib::Rprop(out, &(net->weightContainer));
+		opt = new rnnlib::Rprop(out, &(net->weightContainer), &(net->dataExportHandler));
 	}
 	else
 	{
-		opt = new rnnlib::SteepestDescent(out, &(net->weightContainer), conf.get<double>("learnRate", 1e-4), conf.get<double>("momentum", 0.9));
+		opt = new rnnlib::SteepestDescent(out, &(net->weightContainer), &(net->dataExportHandler), conf.get<double>("learnRate", 1e-4), conf.get<double>("momentum", 0.9));
 	}
 	out << "setting random seed to " << Random::set_seed(conf.get<unsigned long int>("randSeed", 0)) << endl << endl;
 	double initWeightRange = conf.get<double>("initWeightRange", 0.1);

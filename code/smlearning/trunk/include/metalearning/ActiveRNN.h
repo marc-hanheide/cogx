@@ -81,10 +81,6 @@ struct ActiveRNN : RNN {
 	///initialize RNN for active learning
 	///
 	virtual void init (int inputPatternSize, int targetPatternSize, rnnlib::WeightContainer& wC, ostream& out = cout);
-	///
-	///construct RNN machine using config data for active learning
-	///
-	virtual void build (ostream& out = cout);
 
 	///
 	///update the machine state with current sequence
@@ -106,7 +102,12 @@ struct ActiveRNN : RNN {
 	///active selection of samples
 	///
 	int chooseSMRegion ();
-	
+
+protected:
+	///
+	///construct RNN machine using config data for active learning
+	///
+	virtual void build (ostream& out = cout);
 };
 
 }; /* namespace smlearning */

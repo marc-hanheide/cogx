@@ -81,7 +81,7 @@ struct SMRegion {
 		index(idx), sMContextSize (smCtxtSize) {
 		minValuesSMVector.resize(sMContextSize, -1.0);
 		maxValuesSMVector.resize(sMContextSize, 1.0);
-		learningProgressHistory.push_back (0.0);
+		//learningProgressHistory.push_back (0.0);
 	}
 
 	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, DataSet inheritedData, bool firstRegion ) :
