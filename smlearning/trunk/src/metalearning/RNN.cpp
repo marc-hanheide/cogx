@@ -58,7 +58,7 @@ void RNN::save_net_data(string netFile, ostream& out)
 	{
 		out << "saving to " << netFile << endl;
 		conf.set<bool>("loadWeights", true);
-		fout << conf << rnnlib::DataExportHandler::instance();
+		fout << conf << net->dataExportHandler;
 	}
 	else
 	{
