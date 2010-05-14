@@ -99,49 +99,89 @@ void CDisplayClient::setObject(const std::string& id, const std::string& partId,
    m_pServer->setObject(id, partId, xmlData);
 }
 
-void CDisplayClient::setObjectTransform(const std::string& id, const std::string& partId,
+void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
+       const std::vector<double>& transform)
+{
+   m_pServer->setObjectTransform2D(id, partId, transform);
+}
+
+void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
       const cogx::Math::Matrix33& transform)
 {
-   m_pServer->setObjectTransform(id, partId, transform);
+   std::vector<double> tr;
+   tr.push_back(transform.m00);
+   tr.push_back(transform.m01);
+   tr.push_back(transform.m02);
+   tr.push_back(transform.m10);
+   tr.push_back(transform.m11);
+   tr.push_back(transform.m12);
+   tr.push_back(transform.m20);
+   tr.push_back(transform.m21);
+   tr.push_back(transform.m22);
+   m_pServer->setObjectTransform2D(id, partId, tr);
 }
 
 #ifdef FEAT_VISUALIZATION_OPENCV
-void CDisplayClient::setObjectTransform(const std::string& id, const std::string& partId, CvMat* pTransform)
+void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId, CvMat* pTransform)
 {
    if (!pTransform) return;
    if (pTransform->rows < 2 || pTransform->cols < 2) return;
 
-   cogx::Math::Matrix33 mat;
-   mat.m00 = cvmGet(pTransform, 0, 0);
-   mat.m01 = cvmGet(pTransform, 0, 1);
-   mat.m10 = cvmGet(pTransform, 1, 0);
-   mat.m11 = cvmGet(pTransform, 1, 1);
-   if (pTransform->cols > 2) {
-      mat.m02 = 0; //cvmGet(pTransform, 0, 2);
-      mat.m12 = 0; //cvmGet(pTransform, 1, 2);
+   std::vector<double> tr;
+
+   for (int ir = 0; ir < 2; ir++) {
+      for (int j = 0; j < 2; j++) tr.push_back(cvmGet(pTransform, ir, j));
+      if (pTransform->cols < 3) tr.push_back(0);
+      else tr.push_back(cvmGet(pTransform, ir, 2));
+   }
+   if (pTransform->rows < 3) {
+      tr.push_back(0);
+      tr.push_back(0);
+      tr.push_back(1);
    }
    else {
-      mat.m02 = 0;
-      mat.m12 = 0;
+      for (int j = 0; j < 2; j++) tr.push_back(cvmGet(pTransform, 2, j));
+      if (pTransform->cols < 3) tr.push_back(1);
+      else tr.push_back(cvmGet(pTransform, 2, 2));
    }
-   if (pTransform->rows > 2) {
-      mat.m20 = cvmGet(pTransform, 2, 0);
-      mat.m21 = cvmGet(pTransform, 2, 1);
-      if (pTransform->cols > 2) {
-         mat.m22 = cvmGet(pTransform, 2, 2);
-      }
-      else {
-         mat.m22 = 1;
-      }
-   }
-   else {
-      mat.m20 = 0;
-      mat.m21 = 0;
-      mat.m22 = 1;
-   }
-   m_pServer->setObjectTransform(id, partId, mat);
+
+   //cogx::Math::Matrix33 mat;
+   //mat.m00 = cvmGet(pTransform, 0, 0);
+   //mat.m01 = cvmGet(pTransform, 0, 1);
+   //mat.m10 = cvmGet(pTransform, 1, 0);
+   //mat.m11 = cvmGet(pTransform, 1, 1);
+   //if (pTransform->cols > 2) {
+   //   mat.m02 = 0; //cvmGet(pTransform, 0, 2);
+   //   mat.m12 = 0; //cvmGet(pTransform, 1, 2);
+   //}
+   //else {
+   //   mat.m02 = 0;
+   //   mat.m12 = 0;
+   //}
+   //if (pTransform->rows > 2) {
+   //   mat.m20 = cvmGet(pTransform, 2, 0);
+   //   mat.m21 = cvmGet(pTransform, 2, 1);
+   //   if (pTransform->cols > 2) {
+   //      mat.m22 = cvmGet(pTransform, 2, 2);
+   //   }
+   //   else {
+   //      mat.m22 = 1;
+   //   }
+   //}
+   //else {
+   //   mat.m20 = 0;
+   //   mat.m21 = 0;
+   //   mat.m22 = 1;
+   //}
+   m_pServer->setObjectTransform2D(id, partId, tr);
 }
 #endif
+
+void CDisplayClient::setObjectPose3D(const std::string& id, const std::string& partId,
+         const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation)
+{
+   m_pServer->setObjectPose3D(id, partId, position, rotation);
+}
 
 void CDisplayClient::addCheckBox(const std::string& viewId, const std::string& ctrlId, const std::string& label)
 {
