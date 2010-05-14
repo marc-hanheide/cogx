@@ -8,16 +8,32 @@
 
 module Visualization
 {
+   sequence<byte> ByteSeq;
+   sequence<double> FloatSeq;
+
+   struct Quaternion {
+      double x;
+      double y;
+      double z;
+      double w;
+   };
+
    interface DisplayInterface
    {
-      void setObject(string id, string partId, string objectXml);
-      void setObjectTransform(string id, string partId, cogx::Math::Matrix33 transform);
+      void setObject(string id, string partId, string svgObject);
+      void setObjectTransform2D(string id, string partId, FloatSeq matrix33);
+
       void setImage(string id, Video::Image image);
 
       // 3 channels for RGB, 1 channel for GS
-      void setRawImage(string id, int width, int height, int channels, Video::ByteSeq data);
+      void setRawImage(string id, int width, int height, int channels, ByteSeq data);
 
-      void setCompressedImage(string id, Video::ByteSeq data, string format);
+      // Formats supported by Qt
+      void setCompressedImage(string id, ByteSeq data, string format);
+
+      // Pass a serialized tgRenderModel
+      void setTomGineObject(string id, string partId, ByteSeq data);
+      void setObjectPose3D(string id, string partId, cogx::Math::Vector3 position, Quaternion rotation);
 
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
@@ -26,11 +42,16 @@ module Visualization
       // TODO: a checkbox has an initial value (0, 1, 2)
       void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label);
       void addButton(Ice::Identity ident, string viewId, string ctrlId, string label);
+      void addToolButton(Ice::Identity ident, string viewId, string ctrlId, string label, string svgIcon);
+      void enableMouseEvents(Ice::Identity ident, string viewId, bool enabled);
    };
 
    enum EEventType
    {
-      evButtonClick, evCheckBoxChange, evDropListChange
+      evButtonClick,
+      evCheckBoxChange, // data = state
+      evDropListChange, // data = list item text
+      evMouseClick      // source = view, data = button, (x,y) = position
    };
 
    struct TEvent
@@ -38,6 +59,8 @@ module Visualization
       EEventType type;
       string sourceId;
       string data;
+      float x;
+      float y; // Position of the mouse click inside the control
    };
 
    interface EventReceiver

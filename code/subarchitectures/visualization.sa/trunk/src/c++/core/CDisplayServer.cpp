@@ -247,18 +247,48 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
 
 }
 
-void CDisplayServer::setObjectTransform(const std::string& id, const std::string& partId,
+void CDisplayServer::setObjectTransform2D(const std::string& id, const std::string& partId,
       const std::vector<double>& transform)
 {
    // TODO: object/part
    CSvgImage *pExisting = (CSvgImage*) m_Model.getObject(id); // XXX UNSAFE !!!!
    if (!pExisting) return;
 
+   {
+      tomgine_test_updateModel(this);
+   }
+
    //debug("Setting transform");
    //for(int i=0; i< transform.size(); i++) {
    //  printf("%f\n", transform[i]);
    //}
-   pExisting->trmatrix = transform;
+   // TODO check size if (transform.size() != 9) transform.resize(9, 0.0);
+   pExisting->trmatrix = transform; // TODO: setPartTransform2D(partId, transform)
+   m_Model.refreshObject(id);
+}
+
+void CDisplayServer::setObjectPose3D(const std::string& id, const std::string& partId,
+      const Math::Vector3& position, const Visualization::Quaternion& rotation)
+{
+   CDisplayObject *pExisting = m_Model.getObject(id);
+   if (!pExisting) return;
+
+   //debug("Setting transform");
+   //for(int i=0; i< transform.size(); i++) {
+   //  printf("%f\n", transform[i]);
+   //}
+   // TODO check size if if (transform.size() != 16) transform.resize(16, 0.0);
+   //TODO pExisting->setPartTransform3D(partId, transform);
+   std::vector<double> pos, rot;
+   pos.reserve(3); rot.reserve(4);
+   pos.push_back(position.x);
+   pos.push_back(position.y);
+   pos.push_back(position.z);
+   rot.push_back(rotation.x);
+   rot.push_back(rotation.y);
+   rot.push_back(rotation.z);
+   rot.push_back(rotation.w);
+   pExisting->setPose3D(partId, pos, rot);
    m_Model.refreshObject(id);
 }
 

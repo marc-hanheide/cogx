@@ -57,8 +57,10 @@ public:
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData);
    void setTomGineObject(const std::string& id, const std::string& partId, 
          const std::vector<unsigned char>& data);
-   void setObjectTransform(const std::string& id, const std::string& partId,
+   void setObjectTransform2D(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
+   void setObjectPose3D(const std::string& id, const std::string& partId,
+         const Math::Vector3& position, const Visualization::Quaternion& rotation);
    void addCheckBox(const Ice::Identity& ident, const std::string& viewId,
          const std::string& ctrlId, const std::string& label);
    void addButton(const Ice::Identity& ident, const std::string& viewId,
@@ -112,20 +114,26 @@ public:
       m_pDisplayServer->setTomGineObject(id, partId, data);
    }
 
-   virtual void setObjectTransform(const std::string& id, const std::string& partId,
-         const cogx::Math::Matrix33& transform, const Ice::Current&)
+   virtual void setObjectTransform2D(const std::string& id, const std::string& partId,
+         const std::vector<double>& matrix33, const Ice::Current&)
    {
-      std::vector<double> tr;
-      tr.push_back(transform.m00);
-      tr.push_back(transform.m01);
-      tr.push_back(transform.m02);
-      tr.push_back(transform.m10);
-      tr.push_back(transform.m11);
-      tr.push_back(transform.m12);
-      tr.push_back(transform.m20);
-      tr.push_back(transform.m21);
-      tr.push_back(transform.m22);
-      m_pDisplayServer->setObjectTransform(id, partId, tr);
+      //std::vector<double> tr;
+      //tr.push_back(transform.m00);
+      //tr.push_back(transform.m01);
+      //tr.push_back(transform.m02);
+      //tr.push_back(transform.m10);
+      //tr.push_back(transform.m11);
+      //tr.push_back(transform.m12);
+      //tr.push_back(transform.m20);
+      //tr.push_back(transform.m21);
+      //tr.push_back(transform.m22);
+      m_pDisplayServer->setObjectTransform2D(id, partId, matrix33);
+   }
+
+   virtual void setObjectPose3D(const std::string& id, const std::string& partId,
+         const Math::Vector3& position, const Visualization::Quaternion& rotation, const Ice::Current&)
+   {
+      m_pDisplayServer->setObjectPose3D(id, partId, position, rotation);
    }
 
    virtual void addCheckBox(const Ice::Identity& ident, const std::string& viewId,
@@ -138,6 +146,19 @@ public:
          const std::string& ctrlId, const std::string& label, const Ice::Current&)
    {
       m_pDisplayServer->addButton(ident, viewId, ctrlId, label);
+   }
+
+   virtual void addToolButton(const Ice::Identity& ident, const std::string& viewId,
+         const std::string& ctrlId, const std::string& label, const std::string& svgIcon,
+         const Ice::Current&)
+   {
+      // m_pDisplayServer->addToolButton(ident, viewId, ctrlId, label, svgIcon);
+   }
+
+   virtual void enableMouseEvents(const Ice::Identity& ident, const std::string& viewId,
+         bool enable, const Ice::Current&)
+   {
+      // m_pDisplayServer->enableMouseEvents(ident, viewId, ctrlId, enable);
    }
 
    //-----------------------------------------------------------------

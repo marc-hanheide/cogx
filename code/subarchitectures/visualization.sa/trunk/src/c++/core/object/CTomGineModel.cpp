@@ -63,6 +63,16 @@ bool CTomGineModel::is3D()
    return true;
 }
 
+void CTomGineModel::removePart(const std::string&partId)
+{
+   typeof(m_Models.begin()) it = m_Models.find(partId);
+   if (it->second != NULL) {
+      TomGine::tgRenderModel* pModel = m_Models[partId];
+      m_Models.erase(it);
+      delete pModel;
+   }
+}
+
 CRenderer* CTomGineModel::getRenderer(ERenderContext context)
 {
    switch(context) {
@@ -101,7 +111,24 @@ void CTomGineModel_RenderGL::draw(CDisplayObject *pObject, void *pContext)
       //   glDisable(GL_BLEND);
       //}
    }
+}
 
+void CTomGineModel::setPose3D(const std::string partId, const std::vector<double>& position,
+      const std::vector<double>& rotation)
+{
+   TomGine::tgRenderModel* pModel = NULL;
+   if (m_Models.find(partId)->second != NULL) {
+      pModel = m_Models[partId];
+   }
+   if (! pModel) return;
+
+   pModel->m_pose.pos.x = position[0];
+   pModel->m_pose.pos.y = position[1];
+   pModel->m_pose.pos.z = position[2];
+   pModel->m_pose.q.x = rotation[0];
+   pModel->m_pose.q.y = rotation[1];
+   pModel->m_pose.q.z = rotation[2];
+   pModel->m_pose.q.w = rotation[3];
 }
 
 }} // namespace

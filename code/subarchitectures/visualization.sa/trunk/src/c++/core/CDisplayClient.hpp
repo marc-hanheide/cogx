@@ -60,8 +60,12 @@ public:
    void setImage(const std::string& id, const std::vector<unsigned char>& data, const std::string &format=""); 
 
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData); 
-   void setObjectTransform(const std::string& id, const std::string& partId,
+   void setObjectTransform2D(const std::string& id, const std::string& partId,
          const cogx::Math::Matrix33& transform);
+   void setObjectTransform2D(const std::string& id, const std::string& partId,
+         const std::vector<double>& transform);
+   void setObjectPose3D(const std::string& id, const std::string& partId,
+         const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation);
 
    // Events from GUI are only available in CActiveDisplayClient.
    // component-id, view-id, control-id, ...
@@ -70,7 +74,7 @@ public:
 
 #ifdef FEAT_VISUALIZATION_OPENCV
    void setImage(const std::string& id, const IplImage* pImage); 
-   void setObjectTransform(const std::string& id, const std::string& partId, CvMat* pTransform); 
+   void setObjectTransform2D(const std::string& id, const std::string& partId, CvMat* pTransform); 
 #endif
 };
 
