@@ -322,7 +322,7 @@ void ActiveLearnScenario::choose_action () {
 				FeatureVector motorVector;
 				Vec3 pos;
 				init_positionT (pos);
-				set_coordinates_into_target(startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+				set_coordinates_into_target(action.startPosition, pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 				write_finger_pos_and_or (motorVector, pos);
 				write_finger_speed_and_angle (motorVector, action.speed, action.horizontalAngle);
 				candidateActions.push_back (make_pair (motorVector, action));
@@ -753,7 +753,7 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 	assert (regions.erase (region.index) == 1);
 	
 	update_currentRegion ();
-	cout << "region split" << endl;
+	cout << "region split..." << endl;
 
 
 	

@@ -379,7 +379,7 @@ void  Scenario::calculate_starting_position_coord(){
 	//set default coordinates
 	init_positionT(positionT);
 
-	//edit the coordinates so that they describe chosen start point
+	//set the variable target so that it obtains the coordinates of the start point
 	prepare_target();
 }
 
