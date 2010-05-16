@@ -342,17 +342,18 @@ void ActiveLearnScenario::choose_action () {
 }
 
 
-void ActiveLearnScenario::write_dataset_into_binary(){
-	cout << "ALS: write_dataset_into_binary" << endl;
+void ActiveLearnScenario::write_data (){
+	cout << "ALS: writing data..." << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	string basename = writedown_collected_data(data);
+	//string basename = writedown_collected_data(data);
+	write_dataset (dataFileName, data);
 
 	for (RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
 		stringstream name;
-		name << basename << "_region" << regionIter->first;
+		name << dataFileName << "_region" << regionIter->first;
 		if (!regionIter->second.write_data (name.str()))
-			cout << "Saving region " << regionIter->first << " data was unsuccesful!" << endl;
+			cerr << "Saving region " << regionIter->first << " data was unsuccesful!" << endl;
 	}
 	/////////////////////////////////////////////////
 	
@@ -384,6 +385,8 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	regions[regionsCount] = firstRegion;
 	if (netconfigFileName.empty())
 		regions[regionsCount].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize);
+	else
+		regions[regionsCount].learner.init (motorVectorSize + featureVectorSize, pfVectorSize, netconfigFileName);
 
 	plotApp->init (regionsCount+1, firstRegion.smoothing + firstRegion.timewindow);
 	plotApp->resize(640,480);
@@ -442,8 +445,19 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		{
 			CriticalSectionWrapper csw (cs);
 			update_learners ();
-			vector<double> learnProgData = currentRegion->learningProgressHistory;
-			vector<double> errorData = currentRegion->errorsHistory;
+			double windowSize = currentRegion->smoothing + currentRegion->timewindow;
+			vector<double> learnProgData;
+			vector<double> errorData;
+			if (currentRegion->learningProgressHistory.size() > windowSize) {
+				learnProgData = vector<double> (currentRegion->learningProgressHistory.end() - windowSize, currentRegion->learningProgressHistory.end());
+				errorData = vector<double> (currentRegion->errorsHistory.end() - windowSize, currentRegion->errorsHistory.end());
+			}
+			else {
+				learnProgData = currentRegion->learningProgressHistory;
+				errorData = currentRegion->errorsHistory;
+			}
+			assert (learnProgData.size() <= windowSize);
+			assert (errorData.size() <= windowSize);
 			plotApp->updateData(currentRegion->index, learnProgData, errorData);
 		}
 
@@ -486,7 +500,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	move_to_initial();
 	
 	//write obtained data into a binary file
-	write_dataset_into_binary();
+	write_data ();
 
 
 	} catch (const Ice::Exception& ex) {
@@ -628,6 +642,7 @@ void ActiveLearnScenario::update_learners () {
 
 	
 	if (currentRegion->data.size() > splittingCriterion1 && startingPosition == 0) {
+		write_data ();
 		split_region (*currentRegion);
 	}
 

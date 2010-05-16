@@ -59,7 +59,7 @@ struct ActiveRNN : RNN {
 	///
 	///initialize RNN for active learning
 	///
-	virtual void init (int inputPatternSize, int targetPatternSize, ostream& out = cout);
+	virtual void init (int inputPatternSize, int targetPatternSize, string netconfigFileName = "", ostream& out = cout);
 	///
 	///initialize RNN for active learning
 	///
