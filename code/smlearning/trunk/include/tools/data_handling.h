@@ -209,31 +209,43 @@ void print_dataset (const DataSet& d) {
 void generate_rand_sequences (DataSet& data, long numSeq, long seqSize);
 
 ///
-///write DataSet struct to a file
+///write real vector to a file
+///
+void write_realvector (ofstream& writeFile, const vector<double>& v);
+
+///
+///write DataSet vector to a file
 ///
 bool write_dataset (string fileName, const DataSet& data);
 
 ///
-///read DataSet struct from a file
+///read real vector from a file
+///
+void read_realvector (ifstream& readFile, vector<double>& v);
+
+///
+///read DataSet vector from a file
 ///
 bool read_dataset (string fileName, DataSet& data);
 
 ///
-///write DataSet struct to a cdl (netcdf in text format) file using zero-padding
+///write DataSet vector to a cdl (netcdf in text format) file using zero-padding (deprecated)
 ///
 bool write_cdl_file_padding (string fileName, const DataSet& data);
 
 ///
-///write DataSet struct to a cdl (netcdf in text format) file using basis feature vectors
-///
+///write DataSet vector to a cdl (netcdf in text format) file using basis feature vectors
+///(deprecated - do not use)
 bool write_cdl_file_basis (string fileName, const DataSet& data);
 
 ///
-///write DataSet struct to a nc (netcdf format) file using basis feature vectors
+///write DataSet vector to a nc (netcdf format) file using basis feature vectors
 ///
 bool write_nc_file_basis (string fileName, const DataSet& data);
 
-
+///
+///write DataSet vector to a nc (netcdf format) file using a markovian based representation
+///(deprecated)
 bool write_nc_file_Markov (string fileName, const DataSet& data);
 
 ///
@@ -241,16 +253,20 @@ bool write_nc_file_Markov (string fileName, const DataSet& data);
 ///
 bool concatenate_datasets (string dir, string writeFileName);
 
+///
+///load a sequence into inputs and target vectors (deprecated)
+///
 void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
 
 ///
-///load a sequence into inputs and target vectors (for machine learning)
+///load a sequence into inputs and target vectors (for active LSTM learning)
 ///
 void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
 
 ///
 ///generation of n-fold cross-validation sets from a particular sequence file
 ///and using a certain write_netcdf_file function
+///
 template<class Function>
 bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_netcdf_file, string target_dir, bool print_data = false) {
 
@@ -353,7 +369,7 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 ///
 ///write collected data in an experiment and returns file name
 ///
-string writedown_collected_data(DataSet data);
+string writedown_collected_data(DataSet& data);
 
 ///
 ///a utility function to obtain the file name from a possibly large path/file pattern

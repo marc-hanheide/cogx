@@ -61,6 +61,22 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
 
 }
 
+///
+///write real vector to a file
+///
+void write_realvector (ofstream& writeFile, const vector<double>& v) {
+	long featvectorSize = v.size();
+	writeFile.write ((const char*)&featvectorSize, sizeof (v.size()));
+	vector<double>::const_iterator n;
+	for (n=v.begin(); n!= v.end(); n++) {
+		writeFile.write ((const char* )&(*n), sizeof (*n));
+	}
+	
+}
+
+///
+///write DataSet vector to a file
+///
 bool write_dataset (string fileName, const DataSet& data) {
 	fileName += ".seq";
 	ofstream writeFile(fileName.c_str(), ios::out | ios::binary);
@@ -72,19 +88,13 @@ bool write_dataset (string fileName, const DataSet& data) {
 //  	cout << numSeqs << endl;
 	DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
-		long seqSize = (*s).size();
+		long seqSize = s->size();
 		writeFile.write ((const char*)&seqSize, sizeof (seqSize));
 //  		cout << "\t" << seqSize << endl;
 		Sequence::const_iterator v;
 
-		for (v=(*s).begin(); v!= (*s).end(); v++) {
-			long featvectorSize = (*v).size();
-			writeFile.write ((const char*)&featvectorSize, sizeof (featvectorSize));
-//  			cout << "\t\t" << featvectorSize << endl;
-			FeatureVector::const_iterator n;
-			for (n=(*v).begin(); n!= (*v).end(); n++) {
-				writeFile.write ((const char* )&(*n), sizeof (*n));
-			}
+		for (v=s->begin(); v!= s->end(); v++) {
+			write_realvector (writeFile, *v);
 		}
 	}
 	
@@ -92,6 +102,23 @@ bool write_dataset (string fileName, const DataSet& data) {
 	return true;
 }
 
+///
+///read real vector from a file
+///
+void read_realvector (ifstream& readFile, vector<double>& v) {
+	long featvectorSize;
+	readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
+	// cout << "\t\t" << featvectorSize << endl;
+	for (int n=0; n<featvectorSize; n++) {
+		double value;
+		readFile.read ((char* )&value, sizeof(value));
+		v.push_back (value);
+	}
+}
+
+///
+///read DataSet vector from a file
+///
 bool read_dataset (string fileName, DataSet& data) {
 	fileName += ".seq";
 	ifstream readFile(fileName.c_str(), ios::in | ios::binary);
@@ -108,14 +135,7 @@ bool read_dataset (string fileName, DataSet& data) {
 //  		cout << "\t" << seqSize << endl;
 		for (int v=0; v<seqSize; v++) {
 			FeatureVector currentVector;
-			long featvectorSize;
-			readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
-// 			cout << "\t\t" << featvectorSize << endl;
-			for (int n=0; n<featvectorSize; n++) {
-				double value;
-				readFile.read ((char* )&value, sizeof(value));
-				currentVector.push_back (value);
-			}
+			read_realvector (readFile, currentVector);
 			currentSequence.push_back (currentVector);
 		}
 		data.push_back(currentSequence);
@@ -123,14 +143,10 @@ bool read_dataset (string fileName, DataSet& data) {
 	
 	readFile.close();
 	return true;
-
-
-
-	
 }
 
 ///
-///write a cdl file format with zero padding
+///write a cdl file format with zero padding (deprecated)
 ///
 bool write_cdl_file_padding (string fileName, const DataSet& data) {
 	fileName += ".cdl";
@@ -225,7 +241,7 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 }
 
 ///
-///write a cdl file format for feature vectors using basis vectors
+///write a cdl file format for feature vectors using basis vectors (deprecated - do not use)
 ///
 bool write_cdl_file_basis (string fileName, const DataSet& data) {
 	fileName += ".cdl";
@@ -579,7 +595,8 @@ bool write_nc_file_basis (string fileName, const DataSet& data) {
 					inputVector.push_back (*n);
 				}
 				if (v == s->begin()) {
-					//zero padding
+					// //zero padding
+					//completing with next feature vector info
 					for (int i=0; i<featureVectorSize - initialVectorSize; i++)
 						//inputVector.push_back (0.0);
 						inputVector.push_back ((v+1)->at(i));
@@ -589,11 +606,8 @@ bool write_nc_file_basis (string fileName, const DataSet& data) {
 			if (v != s->begin()) {
 				/*for (int i=0; i<initialVectorSize; i++)
 				  targetVector.push_back (0.0);*/
-				int i=0;
-				for (n=v->begin() + data[0][1].size()/2; n!= v->end(); n++) {
-					i++;
+				for (n=v->begin() + data[0][1].size()/2; n!= v->end(); n++)
 					targetVector.push_back (*n);
-				}
 			}
 		}
 	}
@@ -714,7 +728,8 @@ void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVecto
 				inputVector[contInput++] = *n;
 			}
 			if (v == s.begin()) {
-				//zero padding
+				// //zero padding
+				//completing with next feature vector info
 				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
 					//inputVector[contInput++] = 0.0;
 					inputVector[contInput++] = (v+1)->at(i);
@@ -770,7 +785,7 @@ bool concatenate_datasets (string dir, string writeFileName) {
 ///
 ///write collected data in an experiment and returns file name without ext.
 ///
-string writedown_collected_data(DataSet data) {
+string writedown_collected_data(DataSet& data) {
 	time_t rawtime;
 	struct tm * timeinfo;
   	char buffer [12];

@@ -1,9 +1,9 @@
 #!/bin/bash
-# automata_extraction.sh
+# ensemble_experiment.sh
 
 if (($# != 4));
 then
-	echo 'USAGE: automata_extraction.sh <firstStartPosition> <lastStartPosition> <numberOfIterations> <experiment (offline/active)>'
+	echo 'USAGE: ensemble_experiment.sh <firstStartPosition> <lastStartPosition> <numberOfIterations> <experiment (offline/active)>'
 	exit 1;
 fi
 

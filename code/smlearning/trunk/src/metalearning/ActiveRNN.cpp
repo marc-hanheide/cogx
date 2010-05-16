@@ -90,17 +90,6 @@ void ActiveRNN::build (ostream& out) {
 
 	print_net_data();
 
-	// //build the map for learning progress and errors list associations
-	// for (int i=0; i<smregionsCount; i++) {
-	// 	vector<double> errorsHistory;
-	// 	vector<double> learnProgHistory;
-	// 	learnProgHistory.push_back (0.0);
-	// 	pair<vector<double>, vector<double> > learnProg_errors;
-	// 	learnProg_errors.first = learnProgHistory;
-	// 	learnProg_errors.second = errorsHistory;
-	// 	learnProg_errorsMap[i] = learnProg_errors;
-	// }
-	//normalizationFactor = patternSize /** 4*/ * 0.5;
 
 }
 
@@ -126,18 +115,10 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, /*int smregionIdx,*/ 
 // 		i++;
 	}
 // 	} while (error > 10.0 || i < 10);
-	// out << "Region: " << smregionIdx << endl;
 	double normalizationFactor = seq.num_timesteps() * 0.5;
 	error /= normalizationFactor;
 	out << "\tError: " << endl;
 	out << "\t" << error << endl;
-	// learnProg_errorsMap[smregionIdx].second.push_back (error);
-	// if (learnProg_errorsMap[smregionIdx].second.size () > SMOOTHING+TIMEWINDOW)
-	// 	learnProg_errorsMap[smregionIdx].second.erase (learnProg_errorsMap[smregionIdx].second.begin());
-	// out << "\tLearning progress: " << endl;
-	// out << "\t" << updateLearnProgress (smregionIdx) << endl;
-	// if (learnProg_errorsMap[smregionIdx].first.size () > SMOOTHING+TIMEWINDOW)
-	// 	learnProg_errorsMap[smregionIdx].first.erase (learnProg_errorsMap[smregionIdx].first.begin());
 
 	return error;
 
@@ -147,47 +128,6 @@ void ActiveRNN::feed_forward (const rnnlib::DataSequence& seq) {
 	net->feed_forward(seq);
 }
 
-/* ///
-///update the learning progress associated to region r
-///
-double ActiveRNN::updateLearnProgress (int smregionIdx) {
-
-	double timewindowRatio = TIMEWINDOW / double(SMOOTHING + TIMEWINDOW);
-	double smoothingRatio = SMOOTHING / double(SMOOTHING + TIMEWINDOW);
-	double smoothing = learnProg_errorsMap[smregionIdx].second.size() * smoothingRatio + 1;
-	int lastPrevSmoothErrorIdx = (int)ceil(learnProg_errorsMap[smregionIdx].second.size() * (1 - timewindowRatio));
-	double accPrevSmoothError = 0.0;
-	for (int i=0; i != lastPrevSmoothErrorIdx; i++)
-		accPrevSmoothError += learnProg_errorsMap[smregionIdx].second[i];
-	accPrevSmoothError /= smoothing;
-
-	int firstCurrSmoothErrorIdx = (int)floor(learnProg_errorsMap[smregionIdx].second.size() * (1 - smoothingRatio));
-	double accCurrSmoothError = 0.0;
-	for (int i=firstCurrSmoothErrorIdx; i<learnProg_errorsMap[smregionIdx].second.size(); i++)
-		accCurrSmoothError += learnProg_errorsMap[smregionIdx].second[i];
-	accCurrSmoothError /= smoothing;
-	
-	learnProg_errorsMap[smregionIdx].first.push_back (-(accCurrSmoothError - accPrevSmoothError));
-	
-	return learnProg_errorsMap[smregionIdx].first.back();
-	
-} */
-
-/* ///
-///active selection of samples
-///
-int ActiveRNN::chooseSMRegion () {
-	double maxLearningProgress = -1.0;
-	int regionIdx = -1;
-	for (int i=0; i<learnProg_errorsMap.size(); i++)
-		if (learnProg_errorsMap[i].first.back() > maxLearningProgress) {
-			regionIdx = i;
-			maxLearningProgress = learnProg_errorsMap[i].first.back();
-		}
-			
-	return reg
-	
-} */
 
 
 

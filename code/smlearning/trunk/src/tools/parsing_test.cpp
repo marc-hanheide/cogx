@@ -12,6 +12,6 @@ int main(int argc, char * argv[]) {
 	myRNN.set_traindatafile ("/usr/local/bin/SMLearning/train.nc");
 	myRNN.build ();
 	myRNN.print_net_data ();
-	myRNN.save_config_file (cout);
+	myRNN.write_config_file (cout);
 	return 0;
 }

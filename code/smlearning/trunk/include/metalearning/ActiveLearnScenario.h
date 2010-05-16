@@ -65,11 +65,6 @@ public:
 
 	
 protected:
-	/** LSTM active learner */
-	//ActiveRNN learner;
-
-	/** to know if net has been already built */
-	//bool netBuilt;
 
 	/** training sequence for the LSTM */
 	rnnlib::DataSequence* trainSeq;
@@ -87,6 +82,9 @@ protected:
 
 	/** current context Region */
 	SMRegion* currentRegion;
+
+	/** file name of a trained learner (empty if not provided as a program arg) */
+	string netconfigFileName;
 
 	/** constant number of maximum candidate actions */
 	static const int maxNumberCandidateActions = 1000;
@@ -158,7 +156,7 @@ protected:
 	void update_currentRegion ();
 
 	///
-	///variance calculation of a vector
+	///variance calculation of a dataset
 	///
 	double variance (const DataSet& data, int sMContextSize);
 
