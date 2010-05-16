@@ -44,10 +44,6 @@ void ActiveRNN::init (int inputPatternSize, int targetPatternSize, string netcon
 	}
 	//build weight container after net is created
 	net->weightContainer.build();
-	if (conf.get<bool>("loadWeights", false))
-	{
-		out << "loading dynamic data from " << conf.filename << endl;
-	}
 
 	build (out);
 }
@@ -66,7 +62,8 @@ void ActiveRNN::init (int inputPatternSize, int targetPatternSize, rnnlib::Weigh
 	net->weightContainer.plasticities = wC.plasticities;
 	net->weightContainer.connections = wC.connections;
 
-	
+	conf.set<bool>("loadWeights", false);
+
 	build (out);
 }
 

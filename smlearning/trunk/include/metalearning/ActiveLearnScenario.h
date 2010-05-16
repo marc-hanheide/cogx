@@ -87,7 +87,7 @@ protected:
 	string netconfigFileName;
 
 	/** constant number of maximum candidate actions */
-	static const int maxNumberCandidateActions = 10000;
+	static const int maxNumberCandidateActions = 1000;
 
 	/** near greedy action selection probability bound for choosing random actions */
 	static const double neargreedyActionProb = 0.3;
