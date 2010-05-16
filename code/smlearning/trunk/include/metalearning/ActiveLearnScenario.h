@@ -87,7 +87,7 @@ protected:
 	string netconfigFileName;
 
 	/** constant number of maximum candidate actions */
-	static const int maxNumberCandidateActions = 1000;
+	static const int maxNumberCandidateActions = 10000;
 
 	/** near greedy action selection probability bound for choosing random actions */
 	static const double neargreedyActionProb = 0.3;
@@ -133,7 +133,7 @@ protected:
 	///
 	///write obtained dataset into a binary file
 	///
-	virtual void write_dataset_into_binary();
+	virtual void write_data ();
 
 	///
 	///get the index of the actions vector that maximizes learning progress

@@ -1,4 +1,4 @@
-/** @file SMRegion.h
+/** @file SMRegion.cpp
  * 
  * 
  * @author	Sergio Roa (DFKI)

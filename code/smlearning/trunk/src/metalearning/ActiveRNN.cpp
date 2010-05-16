@@ -5,8 +5,9 @@
  *
  * @version 1.0
  *
- *           2009      Sergio Roa
- 
+ *           2009      Sergio Roa 
+                       Alex Graves
+		       
    This is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
@@ -30,13 +31,23 @@ namespace smlearning {
 ///
 ///initialize RNN for active learning
 ///
-void ActiveRNN::init (/*int smregionsCount, */int inputPatternSize, int targetPatternSize, ostream& out) {
+void ActiveRNN::init (int inputPatternSize, int targetPatternSize, string netconfigFileName, ostream& out) {
 
 	header = new rnnlib::DataHeader ( inputPatternSize, targetPatternSize);
-	net = new rnnlib::MultilayerNet(out, conf, *header);
+
+	if (netconfigFileName.empty())
+		net = new rnnlib::MultilayerNet(out, conf, *header);
+	else {
+		rnnlib::ConfigFile config (netconfigFileName);
+		set_config_file (config);
+		net = new rnnlib::MultilayerNet(out, conf, *header);
+	}
 	//build weight container after net is created
-	//rnnlib::WeightContainer::instance().build();
 	net->weightContainer.build();
+	if (conf.get<bool>("loadWeights", false))
+	{
+		out << "loading dynamic data from " << conf.filename << endl;
+	}
 
 	build (out);
 }
@@ -65,7 +76,6 @@ void ActiveRNN::init (int inputPatternSize, int targetPatternSize, rnnlib::Weigh
 ///
 void ActiveRNN::build (ostream& out) {
 	
-	//int numWeights = rnnlib::WeightContainer::instance().weights.size();
 	int numWeights = net->weightContainer.weights.size();
 	out << numWeights << " weights" << endl << endl;
 
@@ -82,9 +92,16 @@ void ActiveRNN::build (ostream& out) {
 		opt = new rnnlib::SteepestDescent(out, &(net->weightContainer), &(net->dataExportHandler), conf.get<double>("learnRate", 1e-4), conf.get<double>("momentum", 0.9));
 	}
 	out << "setting random seed to " << Random::set_seed(conf.get<unsigned long int>("randSeed", 0)) << endl << endl;
+
+	if (conf.get<bool>("loadWeights", false))
+	{
+		out << "loading dynamic data from "  << conf.filename << endl;
+		net->dataExportHandler.load(conf, out);
+		// out << "epoch = " << trainer.epoch << endl << endl;
+	}
+	
 	double initWeightRange = conf.get<double>("initWeightRange", 0.1);
 	out << "randomising uninitialised weights with mean 0 std. dev. " << initWeightRange << endl << endl;
-	//rnnlib::WeightContainer::instance().randomise(initWeightRange);
 	net->weightContainer.randomise(initWeightRange);
 	out << "optimiser:" << endl << *opt << endl;
 
@@ -110,7 +127,6 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, /*int smregionIdx,*/ 
 // 		out << "\tError: " << endl;
 // 		out << "\t" << error << endl;
 		opt->update_weights();
-		//rnnlib::WeightContainer::instance().reset_derivs();
 		net->weightContainer.reset_derivs();
 // 		i++;
 	}

@@ -605,6 +605,8 @@ void Scenario::setup_loop(int argc, char* argv[]){
 	if (argc > 3)
 		startingPosition = atoi(argv[3]);
 
+	dataFileName = get_base_filename_from_time ();
+
 }
 
 
@@ -839,11 +841,12 @@ void Scenario::move_to_initial(){
 ///
 ///write obtained dataset into a binary file
 ///
-void Scenario::write_dataset_into_binary(){
+void Scenario::write_data (){
 	
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	writedown_collected_data(data);
+	//writedown_collected_data(data);
+	write_dataset (dataFileName, data);
 	/////////////////////////////////////////////////
 	
 }
@@ -943,7 +946,7 @@ void Scenario::run(int argc, char* argv[]) {
 	move_to_initial();
 	
 	//write obtained data into a binary file
-	write_dataset_into_binary();
+	write_data ();
 
 
 }

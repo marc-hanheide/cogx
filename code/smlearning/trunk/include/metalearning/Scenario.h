@@ -205,6 +205,8 @@ protected:
 	LearningData learningData;
 	/** Dataset */
  	DataSet data;
+	/** base file name for dataset */
+	string dataFileName;
 	/** Time */
 	golem::SecTmReal trialTime;
 	/** Random number generator */
@@ -449,7 +451,7 @@ protected:
 	///
 	///write obtained dataset into a binary file
 	///
-	virtual void write_dataset_into_binary();
+	virtual void write_data ();
 
 	
 	///

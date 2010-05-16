@@ -781,11 +781,10 @@ bool concatenate_datasets (string dir, string writeFileName) {
 }
 	
 
-
 ///
-///write collected data in an experiment and returns file name without ext.
+///returns file name based on current time
 ///
-string writedown_collected_data(DataSet& data) {
+string get_base_filename_from_time () {
 	time_t rawtime;
 	struct tm * timeinfo;
   	char buffer [12];
@@ -799,14 +798,10 @@ string writedown_collected_data(DataSet& data) {
 	string name;
 	name.append(buffer);
 
-	
-	write_dataset(name, data);
-
 	return name;
-	//DataSet savedData;
-	//read_dataset(name, savedData);
-	//print_dataset<double> (savedData);
+
 }
+
 
 ///
 ///a utility function to obtain the file name from a possibly large path/file pattern

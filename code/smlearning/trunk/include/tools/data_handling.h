@@ -367,9 +367,9 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 
 
 ///
-///write collected data in an experiment and returns file name
+///returns file name based on current time
 ///
-string writedown_collected_data(DataSet& data);
+string get_base_filename_from_time ();
 
 ///
 ///a utility function to obtain the file name from a possibly large path/file pattern
