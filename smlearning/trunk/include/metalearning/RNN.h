@@ -31,7 +31,7 @@
 namespace smlearning {
 
 ///
-///encapsulation of structs to generate RNNs config files in offline experiments
+///RNN class. Encapsulation of LSTM learners
 ///
 struct RNN {
 
@@ -56,7 +56,7 @@ struct RNN {
 	///
 	///save network topology
 	///
-	void save_net_data(string netFile, ostream& out = cout);
+	bool write_net_data(string netFile, ostream& out = cout);
 	
 	///
 	///set neural network file name
@@ -76,9 +76,12 @@ struct RNN {
 	///
 	///save RNN config file to be used for offline experiments
 	///
-	ostream& save_config_file (ostream& out = cout);
+	ostream& write_config_file (ostream& out = cout);
 };
 
+///
+///OfflineRNN class. Structs for generating config files for offline experiments
+///
 struct OfflineRNN :  RNN {
 
 	OfflineRNN () : RNN () { }
@@ -104,6 +107,7 @@ struct OfflineRNN :  RNN {
 ///generate config files for RNNs for offline experiments
 ///
 bool generate_network_files_nfoldcv_set (const string defaultnetFileName, const string baseDataFileName, int n, string targetDir );
+
 
 
 }; /* namespace smlearning */

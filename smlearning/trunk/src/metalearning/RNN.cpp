@@ -27,7 +27,7 @@
 
 namespace smlearning {
 
-ostream& RNN::save_config_file (ostream& out)
+ostream& RNN::write_config_file (ostream& out)
 {
 	try {
 		out << conf;
@@ -49,7 +49,7 @@ void RNN::print_net_data (ostream& out)
 	out << *net;
 }
 
-void RNN::save_net_data(string netFile, ostream& out)
+bool RNN::write_net_data(string netFile, ostream& out)
 {
 	netFile += ".net";
 	assert (netFile != "");
@@ -59,10 +59,12 @@ void RNN::save_net_data(string netFile, ostream& out)
 		out << "saving to " << netFile << endl;
 		conf.set<bool>("loadWeights", true);
 		fout << conf << net->dataExportHandler;
+		return true;
 	}
 	else
 	{
 		out << "WARNING trainer unable to save to file " << netFile << endl;
+		return false;
 	}
 }
 
@@ -82,7 +84,7 @@ void OfflineRNN::set_traindatafile (string fileName) {
 
 
 ///
-///generate config files for RNNs for offline experiments
+///generate config files for RNNs for offline experiments (n-fold cross-validation)
 ///
 bool generate_network_files_nfoldcv_set (const string defaultnetConfigFile, const string baseDataFileName, int n, string target_dir ) {
 
@@ -101,11 +103,12 @@ bool generate_network_files_nfoldcv_set (const string defaultnetConfigFile, cons
 		
 		myRNN.set_testdatafile (testingFileName.str());
 		myRNN.set_traindatafile (trainingFileName.str());
-		myRNN.save_config_file (netFile);
+		myRNN.write_config_file (netFile);
 		netFile.close();
 	}
 
 	return true;
 }
+
 
 }; /* namespace smlearning */

@@ -55,11 +55,11 @@ class InitEvent : public QEvent
 public:
 
 
-	//int regionsNr;
+	int regionsNr;
 	int size;
-	InitEvent(/*int r,*/ int s ) :
+	InitEvent(int r, int s ) :
 		QEvent ((QEvent::Type)1001),
-		//regionsNr (r),
+		regionsNr (r),
 		size(s)
 	{
 	}
@@ -123,15 +123,15 @@ class PlotApp: public QMainWindow
 	
 public:
 	PlotApp () {	}
-	void init (/*int regionsNr,*/int size)
+	void init (int regionsNr, int size)
 	{
 		// regionsData.resize (regionsNr);
-		RegionData initialData;
-		regionsData[0] = initialData;
-// 		for (int i=0; i<regionsNr; i++) {
-// 			RegionData r;
-// 			regionsData.push_back (r);
-// 		}
+		// RegionData initialData;
+		// regionsData[0] = initialData;
+		for (int i=0; i<regionsNr; i++) {
+			RegionData r;
+			regionsData[i] = r;
+		}
 		
 		plot_size = size;
 		qRegisterMetaType<vector<double> >("vector<double>");
@@ -147,7 +147,7 @@ public:
 		QWidget *hBox = new QWidget(toolBar);
 
 		regionSpinBox = new QSpinBox;
-		regionSpinBox->setRange(0, 0);
+		regionSpinBox->setRange(0, regionsNr-1);
 		regionSpinBox->setEnabled (false);	
 		region = 0;
 	
@@ -206,7 +206,7 @@ public:
 		if (e->type() == 1001) {
 			cout << "initializing..." << endl;
 			InitEvent* ie = dynamic_cast<InitEvent*>(e);
-			init (/*regionsNr, */ie->size);
+			init (ie->regionsNr, ie->size);
 		}
 		else if (e->type() == 1002) {
 			cout << "resizing..." << endl;
@@ -322,8 +322,8 @@ public:
 		w = new PlotApp();
 	}
 
-	void init ( /*int regionsNr,*/ int size, const Ice::Current& ) {
-		QApplication::postEvent(w, new InitEvent(/*regionsNr,*/ size) );
+	void init ( int regionsNr, int size, const Ice::Current& ) {
+		QApplication::postEvent(w, new InitEvent(regionsNr, size) );
 
 	}
 	
@@ -350,8 +350,8 @@ public:
 		w = new PlotApp();
 	}
 
-	void init ( /*int regionsNr,*/ int size ) {
-		QApplication::postEvent(w, new InitEvent(/*regionsNr,*/ size) );
+	void init ( int regionsNr, int size ) {
+		QApplication::postEvent(w, new InitEvent(regionsNr, size) );
 
 	}
 	

@@ -30,7 +30,7 @@ namespace smlearning {
 ///
 ///update the learning progress associated to the region
 ///
-void SMRegion::updateLearnProgress (const rnnlib::DataSequence& seq) {
+void SMRegion::update_learning_progress (const rnnlib::DataSequence& seq) {
 
 	errorsHistory.push_back (learner.update(seq));
 	
@@ -56,6 +56,26 @@ void SMRegion::updateLearnProgress (const rnnlib::DataSequence& seq) {
 	cout << "\t" << learningProgressHistory.back() << endl;
 	
 }
+
+///
+///save region limits and learner data into a file
+///
+bool SMRegion::write_data (string fileName) {
+	string regFileName = fileName + ".reg";
+	ofstream writeFile (regFileName.c_str(), ios::out | ios::binary);
+	if (!writeFile)
+		return false;  
+
+	write_realvector (writeFile, minValuesSMVector);
+	write_realvector (writeFile, maxValuesSMVector);
+	write_realvector (writeFile, learningProgressHistory);
+	write_realvector (writeFile, errorsHistory);
+	
+	writeFile.close ();
+
+	return learner.write_net_data (fileName);
+}
+
 
 
 

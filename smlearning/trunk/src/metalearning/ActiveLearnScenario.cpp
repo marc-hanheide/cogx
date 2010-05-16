@@ -246,6 +246,10 @@ void ActiveLearnScenario::setup_loop(int argc, char* argv[]) {
 		splittingCriterion1 = 4;
 
 	cout << "splitting criterion: " << splittingCriterion1 << endl;
+
+	if (argc > 4)
+		netconfigFileName = string (argv[4]);
+	
 }
 
 
@@ -347,7 +351,8 @@ void ActiveLearnScenario::write_dataset_into_binary(){
 	for (RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
 		stringstream name;
 		name << basename << "_region" << regionIter->first;
-		regionIter->second.learner.save_net_data (name.str());
+		if (!regionIter->second.write_data (name.str()))
+			cout << "Saving region " << regionIter->first << " data was unsuccesful!" << endl;
 	}
 	/////////////////////////////////////////////////
 	
@@ -364,17 +369,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	if (!plotApp)
 		throw "Invalid proxy";
-	regionsCount = 0;
-	SMRegion firstRegion (regionsCount, motorVectorSize );
-	regions[regionsCount] = firstRegion;
-	regions[regionsCount].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize);
-
-	plotApp->init (/*regionsCount+1,*/ firstRegion.smoothing + firstRegion.timewindow);
-	plotApp->resize(640,480);
-	
-	plotApp->show();
-
-	//netBuilt = false;
 
 	//set: random seed, tmDeltaAsync; get initial config
 	first_init();
@@ -384,6 +378,17 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	//define numSequences and startingPosition
 	setup_loop(argc, argv);
+
+	regionsCount = 0;
+	SMRegion firstRegion (regionsCount, motorVectorSize );
+	regions[regionsCount] = firstRegion;
+	if (netconfigFileName.empty())
+		regions[regionsCount].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize);
+
+	plotApp->init (regionsCount+1, firstRegion.smoothing + firstRegion.timewindow);
+	plotApp->resize(640,480);
+	
+	plotApp->show();
 
 
 	//start of the experiment loop
@@ -436,11 +441,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		//update RNN learner with current sequence
 		{
 			CriticalSectionWrapper csw (cs);
-			//learner.update (*trainSeq, startPosition-1);
 			update_learners ();
 			vector<double> learnProgData = currentRegion->learningProgressHistory;
 			vector<double> errorData = currentRegion->errorsHistory;
-			//plotApp->updateData(startPosition-1, learnProgData, errorData);
 			plotApp->updateData(currentRegion->index, learnProgData, errorData);
 		}
 
@@ -630,11 +633,11 @@ void ActiveLearnScenario::update_learners () {
 
 	//Evaluate learning progress
 	cout << "Region: " << currentRegion->index << endl;
-	currentRegion->updateLearnProgress (*trainSeq);
+	currentRegion->update_learning_progress (*trainSeq);
 }
 
 ///
-///variance calculation of a vector
+///variance calculation of a dataset
 ///
 double ActiveLearnScenario::variance (const DataSet& data, int sMContextSize) {
 	vector<double> means;

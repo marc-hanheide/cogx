@@ -115,7 +115,12 @@ struct SMRegion {
 	///
 	///update the learning progress associated to the region
 	///
-	void updateLearnProgress (const rnnlib::DataSequence& seq);
+	void update_learning_progress (const rnnlib::DataSequence& seq);
+
+	///
+	///save region limits on a file
+	///
+	bool write_data (string fileName);
 
 
 };

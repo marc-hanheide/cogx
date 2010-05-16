@@ -30,19 +30,19 @@ int main(int argc, char * argv[]) {
 		if (write_nc_file_basis (target_dir + "/" + seqBaseFileName, savedData))
 			cout << "nc file written" << endl;
 		else
-			cout << "nc file NOT written" << endl;
+			cerr << "nc file NOT written" << endl;
 	}
 	else if (encoding == "padding") {
 		if (write_cdl_file_padding (target_dir + "/" + seqBaseFileName, savedData))
 			cout << "nc file written" << endl;
 		else
-			cout << "nc file NOT written" << endl;
+			cerr << "nc file NOT written" << endl;
 	}
 	else if (encoding == "Markov") {
 		if (write_nc_file_Markov (target_dir + "/" + seqBaseFileName, savedData))
 			cout << "nc file written" << endl;
 		else
-			cout << "nc file NOT written" << endl;
+			cerr << "nc file NOT written" << endl;
 	}
 	//generate n fold cross validation sets
 	if (encoding == "basis")
