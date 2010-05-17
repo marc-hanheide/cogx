@@ -324,6 +324,7 @@ void ActiveLearnScenario::write_dataset_into_binary(){
 	//cout << "ALS: write_dataset_into_binary" << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
+	//for (int i = 0; i < smregionsCount; i++)
 	//learner.save_net_data (writedown_collected_data(data));
 	/////////////////////////////////////////////////
 	
