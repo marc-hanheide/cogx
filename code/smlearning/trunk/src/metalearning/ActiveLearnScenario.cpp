@@ -381,7 +381,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	setup_loop(argc, argv);
 
 	regionsCount = 0;
-	SMRegion firstRegion (regionsCount, motorVectorSize );
+	SMRegion firstRegion (regionsCount, motorVectorSize, splittingCriterion1 );
 	regions[regionsCount] = firstRegion;
 	if (netconfigFileName.empty())
 		regions[regionsCount].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize);
