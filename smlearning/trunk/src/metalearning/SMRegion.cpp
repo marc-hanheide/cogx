@@ -36,21 +36,44 @@ void SMRegion::update_learning_progress (const rnnlib::DataSequence& seq) {
 	
 	double timewindowRatio = timewindow / double(smoothing + timewindow);
 	double smoothingRatio = smoothing / double(smoothing + timewindow);
-	double smoothing = errorsHistory.size() * smoothingRatio + 1;
-	int lastPrevSmoothErrorIdx = (int)ceil(errorsHistory.size() * (1 - timewindowRatio));
-	double accPrevSmoothError = 0.0;
-	for (int i=0; i != lastPrevSmoothErrorIdx; i++)
-		accPrevSmoothError += errorsHistory[i];
-	accPrevSmoothError /= smoothing;
+	//double smoothing = errorsHistory.size() * smoothingRatio + 1;
 
-	int firstCurrSmoothErrorIdx = (int)floor(errorsHistory.size() * (1 - smoothingRatio));
-	double accCurrSmoothError = 0.0;
-	for (int i=firstCurrSmoothErrorIdx; i<errorsHistory.size(); i++)
-		accCurrSmoothError += errorsHistory[i];
-	accCurrSmoothError /= smoothing;
-	
-	
-	learningProgressHistory.push_back (-(accCurrSmoothError - accPrevSmoothError));
+	int smoothingLast = timewindow + smoothing + 1;
+	int smoothingPrev = timewindow + smoothing + 1;
+	int windowidxPreviousError;
+	if (errorsHistory.size () <= smoothing + timewindow) {
+		windowidxPreviousError = 0;
+		smoothingLast = errorsHistory.size();
+	}
+	else
+		windowidxPreviousError = errorsHistory.size() -1 - (timewindow + smoothing);
+
+	int windowidxLastError;
+	if (errorsHistory.size () <= smoothing) {
+		windowidxLastError = (int)ceil((errorsHistory.size() - 1) * timewindowRatio);
+		smoothingPrev = errorsHistory.size() - windowidxLastError;
+	}
+	else
+		windowidxLastError = errorsHistory.size() - 1 - smoothing;
+
+	assert (windowidxPreviousError >= 0 && windowidxLastError >= 0);
+	double accPrevSmoothError = 0.0;
+	double accLastSmoothError = 0.0;
+
+	bool lastErrorPassed = false;
+	for (int i=errorsHistory.size() - 1; i>=windowidxPreviousError; i--) {
+		accPrevSmoothError += errorsHistory[i];
+		if (!lastErrorPassed)
+			if (i == windowidxLastError) {
+				accLastSmoothError = accPrevSmoothError;
+				lastErrorPassed = true;
+			}
+	}
+	accPrevSmoothError /= smoothingPrev;
+	accLastSmoothError /= smoothingLast;
+
+	learningProgressHistory.push_back (-(accLastSmoothError - accPrevSmoothError));
+
 	
 	cout << "\tLearning progress: " << endl;
 	cout << "\t" << learningProgressHistory.back() << endl;
@@ -76,7 +99,23 @@ bool SMRegion::write_data (string fileName) {
 	return learner.write_net_data (fileName);
 }
 
+bool SMRegion::read_data (string fileName) {
+	string regFileName = fileName + ".reg";
+	ifstream readFile (regFileName.c_str(), ios::in | ios::binary);
+	if (!readFile)
+		return false;  
 
+	read_realvector (readFile, minValuesSMVector);
+	read_realvector (readFile, maxValuesSMVector);
+	read_realvector (readFile, learningProgressHistory);
+	read_realvector (readFile, errorsHistory);
+	
+	readFile.close ();
+
+	return true;
+	
+	//return learner.write_net_data (fileName);
+}
 
 
 }; /* namespace smlearning */

@@ -58,14 +58,14 @@ struct SMRegion {
 	/** vector corresponding to history of errors */
 	vector<double> errorsHistory;
 	/** constant to define the smoothing parameter in the evaluation of learning progress */
-	static const int smoothing = 25;
+	int smoothing;
 	/** constant to define the time window parameter in the evaluation of learning progress */
-	static const int timewindow = 15;
+	int timewindow;
 
 	SMRegion () {
 	}
 	
-	SMRegion (const SMRegion& smRegion) :
+	/*SMRegion (const SMRegion& smRegion) :
 		index(smRegion.index),
 		minValuesSMVector (smRegion.minValuesSMVector),
 		maxValuesSMVector (smRegion.maxValuesSMVector),
@@ -73,14 +73,19 @@ struct SMRegion {
 		data (smRegion.data),
 		learningProgressHistory (smRegion.learningProgressHistory),
 		errorsHistory (smRegion.errorsHistory),
-		learner (smRegion.learner)
+		learner (smRegion.learner),
+		smoothing (smRegion.smoothing),
+		timewindow (smRegion.timewindow)
 	{
-	}
+	}*/
 	
-	SMRegion (int idx, int smCtxtSize) :
+	SMRegion (int idx, int smCtxtSize, int splittingCriterion1) :
 		index(idx), sMContextSize (smCtxtSize) {
 		minValuesSMVector.resize(sMContextSize, -1.0);
 		maxValuesSMVector.resize(sMContextSize, 1.0);
+		timewindow = splittingCriterion1 * 0.375;
+		smoothing = splittingCriterion1 * 0.625;
+		cout << "timewindow: " << timewindow << ", smoothing: " << smoothing << endl;
 		//learningProgressHistory.push_back (0.0);
 	}
 
@@ -92,7 +97,9 @@ struct SMRegion {
 		learner (parentRegion.learner),
 		data (inheritedData),
 		learningProgressHistory (parentRegion.learningProgressHistory),
-		errorsHistory (parentRegion.errorsHistory) {
+		errorsHistory (parentRegion.errorsHistory),
+		timewindow (parentRegion.timewindow),
+		smoothing (parentRegion.smoothing) {
 		
 		//update cutting values
 		//instances must be added using add_DataSet
@@ -122,6 +129,7 @@ struct SMRegion {
 	///
 	bool write_data (string fileName);
 
+	bool read_data (string fileName);
 
 };
 
