@@ -99,6 +99,9 @@ bool SMRegion::write_data (string fileName) {
 	return learner.write_net_data (fileName);
 }
 
+///
+///read region limits and learner data from a file
+///
 bool SMRegion::read_data (string fileName) {
 	string regFileName = fileName + ".reg";
 	ifstream readFile (regFileName.c_str(), ios::in | ios::binary);
