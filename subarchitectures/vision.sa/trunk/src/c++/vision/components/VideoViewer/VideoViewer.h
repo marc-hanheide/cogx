@@ -45,7 +45,6 @@ private:
 #ifdef FEAT_VISUALIZATION
   cogx::display::CActiveDisplayClient<VideoViewer> m_display;
   void handleGuiEvent(const Visualization::TEvent &event);
-  bool m_bSendIplImage;
 #endif
 
 protected:
