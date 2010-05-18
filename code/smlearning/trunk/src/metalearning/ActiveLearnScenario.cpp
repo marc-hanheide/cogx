@@ -273,7 +273,7 @@ void ActiveLearnScenario::initialize_polyflap(){
 ///
 ///get the action that maximizes learning progress
 ///
-pair<FeatureVector, ActiveLearnScenario::Action> ActiveLearnScenario::get_actionsIdx_maxLearningProgress (const ActionsVector& candidateActions) {
+pair<FeatureVector, ActiveLearnScenario::Action> ActiveLearnScenario::get_action_maxLearningProgress (const ActionsVector& candidateActions) {
 	double maxLearningProgress = -1e6;
 	int index = -1;
 	for (int i=0; i < candidateActions.size(); i++) {
@@ -328,7 +328,7 @@ void ActiveLearnScenario::choose_action () {
 				candidateActions.push_back (make_pair (motorVector, action));
 			}
 
-			pair<FeatureVector, Action> chosenAction = get_actionsIdx_maxLearningProgress(candidateActions);
+			pair<FeatureVector, Action> chosenAction = get_action_maxLearningProgress(candidateActions);
 			
 			this->startPosition = chosenAction.second.startPosition;
 			this->speed = chosenAction.second.speed;
@@ -342,16 +342,19 @@ void ActiveLearnScenario::choose_action () {
 }
 
 
-void ActiveLearnScenario::write_data (){
+void ActiveLearnScenario::write_data (bool final){
 	cout << "ALS: writing data..." << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
 	//string basename = writedown_collected_data(data);
-	write_dataset (dataFileName, data);
+	if (final)
+		write_dataset (dataFileName, data);
 
 	for (RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
 		stringstream name;
 		name << dataFileName << "_region" << regionIter->first;
+		if (final)
+			name << "_final";
 		if (!regionIter->second.write_data (name.str()))
 			cerr << "Saving region " << regionIter->first << " data was unsuccesful!" << endl;
 	}
@@ -445,7 +448,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		{
 			CriticalSectionWrapper csw (cs);
 			update_learners ();
-			double windowSize = currentRegion->smoothing + currentRegion->timewindow;
+			int windowSize = currentRegion->smoothing + currentRegion->timewindow;
 			vector<double> learnProgData;
 			vector<double> errorData;
 			if (currentRegion->learningProgressHistory.size() > windowSize) {
@@ -500,7 +503,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	move_to_initial();
 	
 	//write obtained data into a binary file
-	write_data ();
+	write_data (true);
 
 
 	} catch (const Ice::Exception& ex) {

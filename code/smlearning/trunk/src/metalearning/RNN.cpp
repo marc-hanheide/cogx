@@ -28,6 +28,47 @@
 
 namespace smlearning {
 
+
+///
+///construct RNN
+///
+void RNN::build (ostream& out) {
+	
+	int numWeights = net->weightContainer.weights.size();
+	out << numWeights << " weights" << endl << endl;
+
+	//build the network after the weight container
+	net->build();
+	
+	//only construct optimiser after weight container is built
+	if (conf.get<string>("optimiser", "steepest") == "rprop")
+	{
+		opt = new rnnlib::Rprop(out, &(net->weightContainer), &(net->dataExportHandler));
+	}
+	else
+	{
+		opt = new rnnlib::SteepestDescent(out, &(net->weightContainer), &(net->dataExportHandler), conf.get<double>("learnRate", 1e-4), conf.get<double>("momentum", 0.9));
+	}
+	out << "setting random seed to " << Random::set_seed(conf.get<unsigned long int>("randSeed", 0)) << endl << endl;
+
+	if (conf.get<bool>("loadWeights", false))
+	{
+		out << "loading dynamic data from "  << conf.filename << endl;
+		net->dataExportHandler.load(conf, out);
+		// out << "epoch = " << trainer.epoch << endl << endl;
+	}
+	
+	double initWeightRange = conf.get<double>("initWeightRange", 0.1);
+	out << "randomising uninitialised weights with mean 0 std. dev. " << initWeightRange << endl << endl;
+	net->weightContainer.randomise(initWeightRange);
+	out << "optimiser:" << endl << *opt << endl;
+
+	print_net_data();
+
+
+}
+
+
 ostream& RNN::write_config_file (ostream& out)
 {
 	try {
@@ -69,17 +110,24 @@ bool RNN::write_net_data(string netFile, ostream& out)
 	}
 }
 
-void OfflineRNN::build (ostream& out) {
+void RNN::init (ostream& out) {
 	string dataFile = conf.get<string>("trainFile");
-	rnnlib::DataHeader header(dataFile, task, 1);
-	net = new rnnlib::MultilayerNet(out, conf, header);
+	header = new rnnlib::DataHeader (dataFile, task, 1);
+	net = new rnnlib::MultilayerNet(out, conf, *header);
+
+	//build weight container after net is created
+	net->weightContainer.build();
+
+	build (out);
+
+
 }
 
-void OfflineRNN::set_testdatafile (string fileName) {
+void RNN::set_testdatafile (string fileName) {
 	conf.set<string>("testFile", fileName);
 }
 
-void OfflineRNN::set_traindatafile (string fileName) {
+void RNN::set_traindatafile (string fileName) {
 	conf.set<string>("trainFile", fileName);
 }
 
@@ -89,7 +137,7 @@ void OfflineRNN::set_traindatafile (string fileName) {
 ///
 bool generate_network_files_nfoldcv_set (const string defaultnetConfigFile, const string baseDataFileName, int n, string target_dir ) {
 
-	OfflineRNN myRNN;
+	RNN myRNN;
 	rnnlib::ConfigFile conf(defaultnetConfigFile);
 	myRNN.set_config_file (conf);
 

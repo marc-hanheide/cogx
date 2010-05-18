@@ -107,11 +107,11 @@ protected:
 	/** Renders the object. */
         virtual void render();
 
-	/** (Post)processing function called AFTER every physics simulation step and before randering. */
+	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 
 	///
-	///describe the lenght of experiment (number of sequences) and if given, the starting position
+	///describe the length of experiment (number of sequences) and if given, the starting position
 	///calculate the splittingCriterion1 constant according to nr. of sequences
 	virtual void setup_loop(int argc, char* argv[]);
 
@@ -133,12 +133,12 @@ protected:
 	///
 	///write obtained dataset into a binary file
 	///
-	virtual void write_data ();
+	virtual void write_data (bool final = false);
 
 	///
-	///get the index of the actions vector that maximizes learning progress
+	///get the actions vector that maximizes learning progress
 	///
-	pair<FeatureVector, Action> get_actionsIdx_maxLearningProgress (const ActionsVector& candidateActions);
+	pair<FeatureVector, Action> get_action_maxLearningProgress (const ActionsVector& candidateActions);
 		
 	///
 	///Update learners according to a sensorimotor region splitting criterion

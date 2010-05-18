@@ -71,7 +71,7 @@ void ActiveRNN::init (int inputPatternSize, int targetPatternSize, rnnlib::Weigh
 ///
 ///construct RNN for active learning
 ///
-void ActiveRNN::build (ostream& out) {
+/*void ActiveRNN::build (ostream& out) {
 	
 	int numWeights = net->weightContainer.weights.size();
 	out << numWeights << " weights" << endl << endl;
@@ -105,7 +105,7 @@ void ActiveRNN::build (ostream& out) {
 	print_net_data();
 
 
-}
+}*/
 
 ///
 ///update the machine state with current sequence
