@@ -28,10 +28,10 @@
 
 #include <metalearning/RNN.h>
 
-#include <NetcdfDataset.hpp>
+/* #include <NetcdfDataset.hpp>
 #include <WeightContainer.hpp>
 #include <SteepestDescent.hpp>
-#include <Rprop.hpp>
+#include <Rprop.hpp> */
 
 #include <map>
 
@@ -48,11 +48,11 @@ struct ActiveRNN : RNN {
 	~ActiveRNN () {
 	}
 
-	///
+/*	///
 	///Optimization algorithm
 	///
 	rnnlib::Optimiser* opt;
-	rnnlib::DataHeader *header;
+	rnnlib::DataHeader *header; */
 
 	///methods
 
@@ -81,7 +81,7 @@ protected:
 	///
 	///construct RNN machine using config data for active learning
 	///
-	virtual void build (ostream& out = cout);
+	//virtual void build (ostream& out = cout);
 };
 
 }; /* namespace smlearning */

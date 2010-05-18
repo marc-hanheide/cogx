@@ -1,8 +1,4 @@
-#include <tools/data_handling.h>
 #include <metalearning/SMRegion.h>
-
-//#include <cstdlib.h>
-
 
 /*
 
@@ -77,8 +73,8 @@ int main(int argc, char *argv[]) {
 	actionsForGnuplotScript << "set output \"|epstopdf --filter > '" + fileName + ".pdf'" << endl;
 	actionsForGnuplotScript << "set style line 1 lt 1 lc rgb \"red\"" << endl;
 	actionsForGnuplotScript << "set style line 2 lt 1 lc rgb \"blue\"" << endl;
-//	actionsForGnuplotScript << "set log xy" << endl;
-	actionsForGnuplotScript << "set title \"Evaluation progress\"" << endl;
+	// actionsForGnuplotScript << "set log y" << endl;
+	actionsForGnuplotScript << "set title \"Region " << region.index << "\"" << endl;
 	actionsForGnuplotScript << "plot  \"" + tempFileValuesName + "\" "; 
 	actionsForGnuplotScript << "using 1:2 ls 1 title 'Learning progress history' with lines, ";
 	actionsForGnuplotScript << "\"" + tempFileValuesName + "\" "; 

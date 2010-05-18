@@ -89,6 +89,7 @@ bool SMRegion::write_data (string fileName) {
 	if (!writeFile)
 		return false;  
 
+	writeFile.write ((const char*)&index, sizeof (index));
 	write_realvector (writeFile, minValuesSMVector);
 	write_realvector (writeFile, maxValuesSMVector);
 	write_realvector (writeFile, learningProgressHistory);
@@ -108,6 +109,7 @@ bool SMRegion::read_data (string fileName) {
 	if (!readFile)
 		return false;  
 
+	readFile.read ((char *)&index, sizeof(index));
 	read_realvector (readFile, minValuesSMVector);
 	read_realvector (readFile, maxValuesSMVector);
 	read_realvector (readFile, learningProgressHistory);
