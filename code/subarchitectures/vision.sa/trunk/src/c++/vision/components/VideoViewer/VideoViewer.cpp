@@ -79,10 +79,11 @@ void VideoViewer::start()
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
-
 #ifdef FEAT_VISUALIZATION
-  m_bSendIplImage = false;
   m_display.connectIceClient(*this);
+  m_display.installEventReceiver();
+  m_display.setEventCallback(this, &VideoViewer::handleGuiEvent);
+  m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
 #endif
@@ -92,16 +93,6 @@ void VideoViewer::start()
   // start receiving images pushed by the video server
   videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
   receiving = true;
-
-#ifdef FEAT_VISUALIZATION
-  m_display.installEventReceiver();
-  m_display.setEventCallback(this, &VideoViewer::handleGuiEvent);
-
-  m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
-  m_display.addCheckBox(getComponentID(), "toggle.viewer.sendipl", "Send &IplImage");
-
-  //m_display.addButton(getComponentID(), "viewer.do.nothing", "Show &time");
-#endif
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -126,25 +117,6 @@ void VideoViewer::handleGuiEvent(const Visualization::TEvent &event)
         receiving = !receiving;
       }
     }
-    else if (event.sourceId == "toggle.viewer.sendipl") {
-      debug(std::string("Time: ") + sfloat (fclocks()));
-      bool newrcv = (event.data != "0");
-      if (m_bSendIplImage != newrcv) {
-        m_bSendIplImage = newrcv;
-        if(m_bSendIplImage) {
-          println("Sendind images of type IplImage.");
-        }
-        else {
-          println("Sending images of type Video::Image.");
-        }
-      }
-    }
-  }
-  else if (event.type == Visualization::evButtonClick) {
-    if (event.sourceId == "viewer.do.nothing") {
-      debug(std::string("Time: ") + sfloat (fclocks()));
-      println("The button works.");
-    }
   }
 }
 #endif
@@ -159,13 +131,7 @@ void VideoViewer::destroy()
 void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
 {
 #ifdef FEAT_VISUALIZATION
-  if (! m_bSendIplImage)
-    m_display.setImage(getComponentID(), images[0]);
-  else {
-    IplImage *iplImage = convertImageToIpl(images[0]);
-    m_display.setImage(getComponentID(), iplImage);
-    cvReleaseImage(&iplImage);
-  }
+  m_display.setImage(getComponentID(), images[0]);
 #else
   IplImage *iplImage = convertImageToIpl(images[0]);
   cvShowImage(getComponentID().c_str(), iplImage);
@@ -213,5 +179,5 @@ void VideoViewer::runComponent()
   }
 }
 
-}
+} // namespace
 
