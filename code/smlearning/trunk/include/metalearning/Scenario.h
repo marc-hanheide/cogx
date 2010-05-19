@@ -135,6 +135,8 @@ public:
 		//lenght of the movement		
 		Real distance; 
 
+		string startingPositionsConfig;
+		
 		
 		/** Constructs description object */
 		Desc() {
@@ -254,12 +256,16 @@ protected:
 	/** pointer to bounds describing polyflap, used for some initial polyflap computations */
 	golem::Bounds::SeqPtr curPol;
 
+
+	vector<int> availableStartingPositions;
+
+
 	// Real reachedAngle;
 	
 	/** iteration counter */
 	int iteration;
 	/** const number of starting positions */
-	static const int startingPositionsCount = 18;
+	static const int startingPositionsCount = 24;
 	/** constant used for assertions (motorCommandVector size should be predefined) */
 	static const int motorVectorSize = 5;
 	/** constant used for assertions (featureVector size should be predefined) */

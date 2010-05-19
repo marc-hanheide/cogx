@@ -1234,5 +1234,81 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 
 
 
+vector<int> parseStartingPositions(string argsStr, int maxStartPos) {
+	
+	vector<int> positions;
+	int currNumber1 = 0;
+	int currNumber2 = 0;
+	bool range = false;
+
+
+
+	string::iterator it;
+	for ( it=argsStr.begin() ; it < argsStr.end(); it++ ) {
+		const char character = *it;
+cout << "character "  << character << endl;
+		if (isdigit(character) && !range) {
+			currNumber1 *= 10;
+			currNumber1 += atoi(&character);
+cout << "case 1: new nr1: " << currNumber1 << endl;
+		} else if (isdigit(character) && range) {
+			currNumber2 *= 10;
+			currNumber2 += atoi(&character);
+cout << "case 2: new nr2: " << currNumber2 << endl;
+		} else if (character == "-"[0]) {
+cout << "case 3: dash" << endl;
+			range = true;
+		} else  if (character == ","[0]) {
+cout << "case 4: comma" << endl;
+			if (currNumber1 > 0 && currNumber1 <= maxStartPos) {
+cout << "appending nr1 :" << currNumber1 << endl;
+			positions.push_back(currNumber1);
+			}
+			if (range) {
+cout << "range on" << endl;
+				for (int i = (currNumber1 + 1); i < currNumber2; i++) {
+					if (i > 0 && i <= maxStartPos) {
+					positions.push_back(i);
+cout << "appending :" << i << endl;
+					}
+				}
+				if (currNumber1 > 0 && currNumber2 <= maxStartPos) {
+cout << "appending nr2 :" << currNumber2 << endl;
+				positions.push_back(currNumber2);			
+				}
+			}
+			currNumber1 = 0;
+			currNumber2 = 0;
+			range = false;
+cout << "variables set back: " << currNumber1 << " " << currNumber2 << " " << range << endl;
+		} else {
+cout << "nothing" << endl;
+		} 
+	}
+	if (argsStr.at(argsStr.length()-1) != ","[0]) {
+			if (currNumber1 > 0 && currNumber1 <= maxStartPos) {
+cout << "appending nr1 :" << currNumber1 << endl;
+			positions.push_back(currNumber1);
+			}
+			if (range) {
+cout << "range on" << endl;
+				for (int i = (currNumber1 + 1); i < currNumber2; i++) {
+					if (i > 0 && i <= maxStartPos) {
+					positions.push_back(i);
+cout << "appending :" << i << endl;
+					}
+				}
+				if (currNumber1 > 0 && currNumber2 <= maxStartPos) {
+cout << "appending nr2 :" << currNumber2 << endl;
+				positions.push_back(currNumber2);			
+				}
+			}
+	}
+cout << "finished" << endl;
+	return positions;
+}
+
+
+
 
 };
