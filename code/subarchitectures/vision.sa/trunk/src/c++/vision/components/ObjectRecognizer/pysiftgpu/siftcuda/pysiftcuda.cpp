@@ -243,7 +243,8 @@ PyObject* PyCS_HomographyMatchDescriptors(PyObject *self, PyObject *args)
 {
    PyObject* ndaDescrA = NULL;
    PyObject* ndaDescrB = NULL;
-   if (!PyArg_ParseTuple(args, "OO", &ndaDescrA, &ndaDescrB))
+   float maxPixDist = 5.0;
+   if (!PyArg_ParseTuple(args, "OO|f", &ndaDescrA, &ndaDescrB, &maxPixDist))
       return NULL;
    int nf1 = checkDescriptorArray(ndaDescrA);
    int nf2 = checkDescriptorArray(ndaDescrB);
@@ -275,7 +276,6 @@ PyObject* PyCS_HomographyMatchDescriptors(PyObject *self, PyObject *args)
 
    float homography[9];
    int numMatches;
-   const float maxPixDist = 3.0;
 
    // Reduce the number of points for RANSAC
    if (nf1 > nf2 * 2) siftData1.numPts = nf2 * 2;
@@ -348,7 +348,7 @@ PyMethodDef methods[] = {
        "Returns an array Nx3 with indices of matching descriptors (iA, iB, score)."
     },
     {"homographyMatchDescriptors", PyCS_HomographyMatchDescriptors, METH_VARARGS, 
-       "homographyMatchDescriptors(descriptorsA, descriptorsB)\n"
+       "homographyMatchDescriptors(descriptorsA, descriptorsB, maxPixDist=5.0)\n"
        "   descriptorsX - a numpy ndaray Nx128.\n"
        "Returns a tuple (siftMatches, hmgrMatches, homography):\n"
        "  siftMaches - Nx3 array with indices of matching descriptors (iA, iB, score)\n"
