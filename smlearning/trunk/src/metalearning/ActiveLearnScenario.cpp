@@ -320,7 +320,7 @@ void ActiveLearnScenario::choose_action () {
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
 				Action action;
-				startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];				
+				action.startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];				
 				//action.startPosition = floor(randomG.nextUniform (1.0, 19.0));
 				//action.speed = floor (randomG.nextUniform (3.0, 5.0));
 				action.speed = 3.0;
