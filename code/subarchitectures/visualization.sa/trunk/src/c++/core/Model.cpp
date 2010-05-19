@@ -29,6 +29,13 @@ CDisplayModel::CDisplayModel()
    //painter.drawEllipse(100, 88, 50, 70);
    //pView->newObject(pImage);
    //setObject(pImage);
+
+   //// XXX Testing composed views
+   //cogx::display::CDisplayView* pview = new cogx::display::CDisplayView();
+   //pview->m_id = "Composed View";
+   //m_Views[pview->m_id] = pview;
+   //pview->m_SubscribedObjects["video.viewer"] = true;
+   //pview->m_SubscribedObjects["Visualization.test.SVG"] = true;
 }
 
 CDisplayModel::~CDisplayModel()
@@ -60,7 +67,20 @@ CPtrVector<CDisplayView> CDisplayModel::findViewsWithObject(const std::string &i
    CDisplayView *pview;
    FOR_EACH_V(pview, m_Views) {
       if (pview && pview->hasObject(id))
-        views.push_back(pview);
+         views.push_back(pview);
+   }
+   return views;
+}
+
+CPtrVector<CDisplayView> CDisplayModel::findViewsWaitingFor(const std::string &objectId)
+{
+   CPtrVector<CDisplayView> views;
+   CDisplayView *pview;
+   FOR_EACH_V(pview, m_Views) {
+      if (!pview) continue;
+      if (pview->hasObject(objectId)) continue;
+      if (pview->waitsForObject(objectId))
+         views.push_back(pview);
    }
    return views;
 }
@@ -104,9 +124,14 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       m_Objects[pObject->m_id] = pObject;
    }
 
+   CPtrVector<CDisplayView> views = findViewsWaitingFor(pObject->m_id);
+   FOR_EACH(pview, views) {
+      if (pview) pview->addObject(pObject);
+   }
+
    // Notify interested observers that the views containing the object have changed.
    CDisplayModelObserver *pobsrvr;
-   CPtrVector<CDisplayView> views = findViewsWithObject(pObject->m_id);
+   views = findViewsWithObject(pObject->m_id);
 
    // XXX Create a default view for each object (this may create too many views)
    if (views.size() < 1) {
@@ -120,7 +145,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       m_Views[pview->m_id] = pview;
       views.push_back(pview);
       FOR_EACH(pobsrvr, modelObservers) {
-         pobsrvr->onViewAdded(this, pview);
+         if (pobsrvr) pobsrvr->onViewAdded(this, pview);
       }
    }
    else {
@@ -128,7 +153,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       // XXX this was already done by CDisplayView::replaceObject etc. 
       FOR_EACH(pview, views) {
          FOR_EACH(pobsrvr, modelObservers) {
-            pobsrvr->onViewChanged(this, pview);
+            if (pobsrvr) pobsrvr->onViewChanged(this, pview);
          }
       }
    }
@@ -217,7 +242,12 @@ CDisplayView::~CDisplayView()
 
 bool CDisplayView::hasObject(const std::string &id)
 {
-   return m_Objects[id] ? true : false;
+   return m_Objects.count(id) ? true : false;
+}
+
+bool CDisplayView::waitsForObject(const std::string &id)
+{
+   return m_SubscribedObjects.count(id) ? true : false;
 }
 
 void CDisplayView::addObject(CDisplayObject *pObject)
@@ -306,7 +336,18 @@ void CDisplayView::draw2D(QPainter &painter)
       if (!pObject) continue;
       pRender = pObject->getRenderer(Context2D);
       if (pRender) {
+         painter.save();
+         if (m_Trafos.count(pObject->m_id)) {
+            std::vector<double>& trmatrix = m_Trafos[pObject->m_id];
+            QTransform trans;
+            trans.setMatrix(
+                 trmatrix[0], trmatrix[1], trmatrix[2],
+                 trmatrix[3], trmatrix[4], trmatrix[5],
+                 trmatrix[6], trmatrix[7], trmatrix[8]);
+            painter.setWorldTransform(trans, true);
+         }
          pRender->draw(pObject, &painter);
+         painter.restore();
       }
    }
 }

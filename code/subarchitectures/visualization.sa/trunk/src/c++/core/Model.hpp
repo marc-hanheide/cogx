@@ -66,6 +66,7 @@ public:
 
 private:
    CPtrVector<CDisplayView> findViewsWithObject(const std::string &id);
+   CPtrVector<CDisplayView> findViewsWaitingFor(const std::string &objectId);
 };
 
 // The base class for an object to be displayed.
@@ -105,6 +106,10 @@ public:
 class CDisplayView: public CGuiElementObserver
 {
    TObjectMap m_Objects;
+public: // XXX remove
+   std::map<std::string, std::vector<double> > m_Trafos;
+   std::map<std::string, bool> m_SubscribedObjects;
+
 public:
    std::string m_id;
    ERenderContext m_preferredContext;
@@ -115,6 +120,7 @@ public:
    void removeObject(const std::string& id);
    void refreshObject(const std::string& id);
    bool hasObject(const std::string &id);
+   bool waitsForObject(const std::string &id);
 
    virtual void draw2D(QPainter &painter);
    virtual void drawGL();

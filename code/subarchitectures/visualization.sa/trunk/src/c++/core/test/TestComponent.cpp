@@ -172,7 +172,7 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
     iangl += 10;
     if (iangl > 360) iangl = 0;
     double mdata[9];
-    double scl = 0.2;
+    double scl = 0.5;
     double angl = iangl * 3.14 / 180;
     mdata[0] = scl*cos(angl);  mdata[1] = scl*sin(angl); mdata[2] = 0;
     mdata[3] = -scl*sin(angl); mdata[4] = scl*cos(angl); mdata[5] = 0;
