@@ -30,7 +30,7 @@ void CDisplayClient::configureDisplayClient(const map<string,string> & _config)
 {
    map<string,string>::const_iterator it;
 
-   if((it = _config.find("--display-server-id")) != _config.end()) {
+   if((it = _config.find("--displayserver")) != _config.end()) {
       m_serverName = it->second;
    }
 }

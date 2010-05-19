@@ -76,7 +76,7 @@ public:
    double m_timestamp;
    CDisplayObject();
    virtual ~CDisplayObject();
-   virtual bool isBitmap(); // Bitmaps have special treatment
+   virtual bool isBitmap();
    virtual bool is3D(); // If true, view's preferred context will be set to ContextGL
 
    virtual CRenderer* getRenderer(ERenderContext context) { return NULL; }

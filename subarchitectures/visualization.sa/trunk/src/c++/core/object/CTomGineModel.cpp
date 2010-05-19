@@ -116,6 +116,9 @@ void CTomGineModel_RenderGL::draw(CDisplayObject *pObject, void *pContext)
 void CTomGineModel::setPose3D(const std::string partId, const std::vector<double>& position,
       const std::vector<double>& rotation)
 {
+   assert(position.size() == 3);
+   assert(rotation.size() == 4);
+
    TomGine::tgRenderModel* pModel = NULL;
    if (m_Models.find(partId)->second != NULL) {
       pModel = m_Models[partId];

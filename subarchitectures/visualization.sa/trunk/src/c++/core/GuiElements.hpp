@@ -35,11 +35,14 @@ public:
 class CGuiElement
 {
 public:
-   enum TWidgetType { wtButton, wtCheckBox, wtDropList };
+   enum TWidgetType { wtAction, wtButton, wtCheckBox, wtDropList };
    TWidgetType m_type;
    std::string m_viewId;  // TODO: list of views (or objects?) that show the widget
    std::string m_id;
    std::string m_label;
+   std::string m_iconLabel;
+   std::string m_iconSvg;
+   bool m_checkable;
    Ice::Identity m_dataOwner; // the ID of the component that holds data for the element
    // TODO: list of subscribed clients (CAST components); notify on change
    // TODO: wtDropList has a list of items

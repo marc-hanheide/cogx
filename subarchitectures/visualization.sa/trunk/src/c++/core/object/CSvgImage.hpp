@@ -14,16 +14,30 @@ class CSvgImage: public CDisplayObject
    friend class CSvgImage_Render2D;
    static std::auto_ptr<CRenderer> render2D;
 public:
-   // TODO: a SVG image may have multiple parts: data + transformation
-   std::string data;
-   std::vector<double> trmatrix;
+   // A SVG image may have multiple parts: data + transformation
+   struct SPart
+   {
+      std::string id;
+      std::string data;
+      std::vector<double> trmatrix;
+      SPart(const std::string& partId) {
+         id = partId;
+      }
+      void setIdentity() {
+         trmatrix.resize(0);
+      }
+   };
+   std::vector<SPart*> m_Parts;
 
 public:
    CSvgImage();
    ~CSvgImage();
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    void setPart(const std::string& partId, const std::string& xmlData);
-   void setPartTransform(const std::string& partId, const std::vector<double> &matrix);
+   void setTransform2D(const std::string& partId, const std::vector<double> &matrix); /*override*/
+
+private:
+   SPart* findPart(const std::string& partId);
 };
 
 class CSvgImage_Render2D: public CRenderer

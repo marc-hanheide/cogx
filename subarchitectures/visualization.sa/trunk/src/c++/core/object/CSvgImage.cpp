@@ -18,16 +18,47 @@ CSvgImage::CSvgImage()
 
 CSvgImage::~CSvgImage()
 {
+   SPart* pPart;
+   FOR_EACH(pPart, m_Parts) {
+      if (pPart) delete pPart;
+   }
+   m_Parts.erase(m_Parts.begin(), m_Parts.end());
+}
+
+CSvgImage::SPart* CSvgImage::findPart(const std::string& partId)
+{
+   SPart* pPart;
+   FOR_EACH(pPart, m_Parts) {
+      if (pPart && pPart->id == partId) return pPart;
+   }
+   return NULL;
 }
 
 void CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
 {
+   SPart* pPart = findPart(partId);
+   if (! pPart) {
+      pPart = new SPart(partId);
+      pPart->setIdentity();
+      m_Parts.push_back(pPart);
+   }
+   if (pPart) {
+      pPart->data = xmlData;
+   }
 }
 
-void CSvgImage::setPartTransform(const std::string& partId, const std::vector<double> &matrix)
+void CSvgImage::setTransform2D(const std::string& partId, const std::vector<double> &matrix)
 {
-   if (matrix.size() != 9) return;
-   trmatrix = matrix;
+   assert (matrix.size() == 9 || matrix.size() == 0);
+   SPart* pPart = findPart(partId);
+   if (! pPart) {
+      pPart = new SPart(partId);
+      m_Parts.push_back(pPart);
+   }
+   if (pPart) {
+      if (matrix.size() != 9) pPart->setIdentity();
+      else pPart->trmatrix = matrix;
+   }
 }
 
 CRenderer* CSvgImage::getRenderer(ERenderContext context)
@@ -44,47 +75,30 @@ void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
    CSvgImage *pImage = (CSvgImage*) pObject;
    QPainter *pPainter = (QPainter*) pContext;
 
-   QSvgRenderer doc(QByteArray::fromRawData(pImage->data.c_str(), pImage->data.length()), NULL);
-   QSize size = doc.defaultSize();
-   //printf("%s\n", pImage->data.c_str());
-   //printf("Image %s, len:%d, size:%dx%d, %s\n",
-   //      pImage->m_id.c_str(), pImage->data.length(), size.width(), size.height(),
-   //      doc.isValid() ? "VALID" : "INVALID!!!");
+   CSvgImage::SPart* pPart;
+   FOR_EACH(pPart, pImage->m_Parts) {
+      if (! pPart) continue;
+      if (pPart->data.size() < 16) continue;
 
-   pPainter->save();
-   // TODO: render each part with its own transformation
-   // (for test we just transform a copy the only object)
-   try {
-      doc.render(pPainter, QRectF(0, 0, size.width(), size.height()));
-      std::vector<double>& trmatrix = pImage->trmatrix;
-      if (trmatrix.size() == 9) {
-         QTransform trans;
-
-         //trans.translate(100, 100);
-         //trans.rotate(30);
-         //trans.scale(0.2, 0.2);
-         //printf("---------\n");
-         //printf("%f\n", trans.m11());
-         //printf("%f\n", trans.m12());
-         //printf("%f\n", trans.m13());
-         //printf("%f\n", trans.m21());
-         //printf("%f\n", trans.m22());
-         //printf("%f\n", trans.m23());
-         //printf("%f\n", trans.m31());
-         //printf("%f\n", trans.m32());
-         //printf("%f\n", trans.m33());
-
-         trans.setMatrix(
-              trmatrix[0], trmatrix[1], trmatrix[2],
-              trmatrix[3], trmatrix[4], trmatrix[5],
-              trmatrix[6], trmatrix[7], trmatrix[8]);
-         pPainter->setWorldTransform(trans, true);
+      pPainter->save();
+      try {
+         QSvgRenderer doc(QByteArray::fromRawData(pPart->data.c_str(), pPart->data.length()), NULL);
+         QSize size = doc.defaultSize();
+         if (pPart->trmatrix.size() == 9) {
+            std::vector<double>& trmatrix = pPart->trmatrix;
+            QTransform trans;
+            trans.setMatrix(
+                 trmatrix[0], trmatrix[1], trmatrix[2],
+                 trmatrix[3], trmatrix[4], trmatrix[5],
+                 trmatrix[6], trmatrix[7], trmatrix[8]);
+            pPainter->setWorldTransform(trans, true);
+         }
          doc.render(pPainter, QRectF(0, 0, size.width(), size.height()));
       }
+      catch (...) {
+      }
+      pPainter->restore();
    }
-   catch (...) {
-   }
-   pPainter->restore();
 }
 
 }} // namespace
