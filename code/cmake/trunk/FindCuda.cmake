@@ -13,7 +13,7 @@ if (CUDA_INSTALLROOT)
   set(CUDA_FOUND "YES")
 endif (CUDA_INSTALLROOT)
 
-if (not CUDA_INSTALLROOT)
+if (NOT CUDA_INSTALLROOT)
   message("The CUDA installation was not found.")
 endif (NOT CUDA_INSTALLROOT)
 
