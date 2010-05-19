@@ -408,6 +408,9 @@ void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, 
 ///
 void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSet data);
 
+
+vector<int> parseStartingPositions(string str, int maxStartPos);
+
 }; /* smlearning namespace */
 
 #endif /* SMLEARNING_DATAHANDLING_H_*/

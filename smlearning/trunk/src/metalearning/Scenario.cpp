@@ -135,6 +135,7 @@ bool XMLData(Scenario::Desc &val, XMLContext* context, bool create) {
 	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
 	
 
+	XMLData(val.startingPositionsConfig, context->getContextFirst("loop startingPositions"));
 	
 	
 	return true;
@@ -341,8 +342,11 @@ void Scenario::init_positionT(Vec3& positionT) {
 void Scenario::define_start_position(){
 	//int startPosition;
 	
+
+
 	if (startingPosition == 0)
 		startPosition = floor(randomG.nextUniform (1.0, 19.0));
+		//startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 	else
 		startPosition = startingPosition;
 	
@@ -606,6 +610,8 @@ void Scenario::setup_loop(int argc, char* argv[]){
 		startingPosition = atoi(argv[3]);
 
 	dataFileName = get_base_filename_from_time ();
+
+	availableStartingPositions = parseStartingPositions(desc.startingPositionsConfig, startingPositionsCount);
 
 }
 

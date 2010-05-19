@@ -118,6 +118,8 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
 	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
 	
 
+	XMLData(val.startingPositionsConfig, context->getContextFirst("loop startingPositions"));
+
 	
 	return true;
 }
@@ -249,6 +251,9 @@ void ActiveLearnScenario::setup_loop(int argc, char* argv[]) {
 
 	if (argc > 4)
 		netconfigFileName = string (argv[4]);
+
+
+	availableStartingPositions = parseStartingPositions(desc.startingPositionsConfig, startingPositionsCount);
 	
 }
 
@@ -315,7 +320,8 @@ void ActiveLearnScenario::choose_action () {
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
 				Action action;
-				action.startPosition = floor(randomG.nextUniform (1.0, 19.0));
+				startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];				
+				//action.startPosition = floor(randomG.nextUniform (1.0, 19.0));
 				//action.speed = floor (randomG.nextUniform (3.0, 5.0));
 				action.speed = 3.0;
 				action.horizontalAngle = choose_angle(60.0, 120.0, "cont");

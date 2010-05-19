@@ -69,6 +69,10 @@
 	<distance>0.2</distance>
 </polyflapInteraction>
 
+<loop>
+	<startingPositions>1-18</startingPositions>
+</loop>
+
 
 
 

@@ -2,7 +2,7 @@
 
 /*
 
-pdf_plotter becomes a name of a .reg file to read, reads it and plots the learning progress data and error data into a pdf file. This file has the same name as the argument file and is stored in the working directory.
+smregion_eval_plot becomes a name of a .reg file to read, reads it and plots the learning progress data and error data into a pdf file. This file has the same name as the argument file and is stored in the working directory.
 
 Optionally one can specify also the first index or the first and the last index. Data between the first and last index will be plotted.
 
@@ -71,10 +71,13 @@ int main(int argc, char *argv[]) {
 
 	actionsForGnuplotScript << "set terminal postscript eps enhanced color font \"Times-Roman,14\"" << endl;
 	actionsForGnuplotScript << "set output \"|epstopdf --filter > '" + fileName + ".pdf'" << endl;
+	actionsForGnuplotScript << "set autoscale" << endl;
 	actionsForGnuplotScript << "set style line 1 lt 1 lc rgb \"red\"" << endl;
 	actionsForGnuplotScript << "set style line 2 lt 1 lc rgb \"blue\"" << endl;
 	// actionsForGnuplotScript << "set log y" << endl;
 	actionsForGnuplotScript << "set title \"Region " << region.index << "\"" << endl;
+	actionsForGnuplotScript << "set xlabel \"Iterations\" " << endl;
+	actionsForGnuplotScript << "set ylabel \"Values\" " << endl;
 	actionsForGnuplotScript << "plot  \"" + tempFileValuesName + "\" "; 
 	actionsForGnuplotScript << "using 1:2 ls 1 title 'Learning progress history' with lines, ";
 	actionsForGnuplotScript << "\"" + tempFileValuesName + "\" "; 
