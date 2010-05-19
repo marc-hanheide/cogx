@@ -178,7 +178,7 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
     mdata[3] = -scl*sin(angl); mdata[4] = scl*cos(angl); mdata[5] = 0;
     mdata[6] = 100;            mdata[7] = 100;           mdata[8] = 1;
     CvMat mat = cvMat(3, 3, CV_64FC1, mdata);
-    m_display.setObjectTransform2D("Visualization.test.SVG", "lion", &mat);
+    m_display.setObjectTransform2D("Visualization.test.SVG", "little-lion", &mat);
   }
 #else
   IplImage *iplImage = convertImageToIpl(images[0]);
@@ -199,6 +199,7 @@ void VideoViewer::runComponent()
     str << infile.rdbuf();
     infile.close();
     m_display.setObject("Visualization.test.SVG", "lion", str.str());
+    m_display.setObject("Visualization.test.SVG", "little-lion", str.str());
   }
 #else
   println("press <s> to stop/start receving images");

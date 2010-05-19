@@ -18,6 +18,14 @@ module Visualization
       double w;
    };
 
+   struct ActionInfo {
+      string label;
+      string iconLabel;   // Optional, defaults to label
+      string iconSvg;     // Optional
+      ByteSeq iconImage;  // Optional, iconSvg takes precedence
+      bool checkable;
+   };
+
    interface DisplayInterface
    {
       void setObject(string id, string partId, string svgObject);
@@ -40,9 +48,9 @@ module Visualization
       void addClient(Ice::Identity ident);
 
       // TODO: a checkbox has an initial value (0, 1, 2)
-      void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label);
-      void addButton(Ice::Identity ident, string viewId, string ctrlId, string label);
-      void addToolButton(Ice::Identity ident, string viewId, string ctrlId, string label, string svgIcon);
+      void addCheckBox(Ice::Identity ident, string viewId, string ctrlId, string label); // TODO: ActionInfo
+      void addButton(Ice::Identity ident, string viewId, string ctrlId, string label); // TODO: ActionInfo
+      void addToolButton(Ice::Identity ident, string viewId, string ctrlId, ActionInfo info);
       void enableMouseEvents(Ice::Identity ident, string viewId, bool enabled);
    };
 

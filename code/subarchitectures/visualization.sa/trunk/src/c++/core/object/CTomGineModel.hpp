@@ -16,9 +16,7 @@ class CTomGineModel: public CDisplayObject
    static std::auto_ptr<CRenderer> renderGL;
 
 public:
-   // TODO: map of parts
    std::map<std::string, TomGine::tgRenderModel*> m_Models;
-   // TomGine::tgRenderModel* m_pModel;
 
 public:
    CTomGineModel();

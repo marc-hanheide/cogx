@@ -149,16 +149,16 @@ public:
    }
 
    virtual void addToolButton(const Ice::Identity& ident, const std::string& viewId,
-         const std::string& ctrlId, const std::string& label, const std::string& svgIcon,
+         const std::string& ctrlId, const Visualization::ActionInfo& info,
          const Ice::Current&)
    {
-      // m_pDisplayServer->addToolButton(ident, viewId, ctrlId, label, svgIcon);
+      // TODO m_pDisplayServer->addToolButton(ident, viewId, ctrlId, info);
    }
 
    virtual void enableMouseEvents(const Ice::Identity& ident, const std::string& viewId,
          bool enable, const Ice::Current&)
    {
-      // m_pDisplayServer->enableMouseEvents(ident, viewId, ctrlId, enable);
+      // TODO m_pDisplayServer->enableMouseEvents(ident, viewId, ctrlId, enable);
    }
 
    //-----------------------------------------------------------------

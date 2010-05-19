@@ -64,22 +64,26 @@ void CDisplayServer::configure(const map<string,string> & _config)
    //    istringstream istr(it->second);
    //    istr >> m_Setting;
    // }
-}
 
-void CDisplayServer::start()
-{
+   // The servers have to be started before all other components
+   // so we start them in configure() instead of in start()
    debug("CDisplayServer Server: starting");
    startIceServer();
 }
 
+void CDisplayServer::start()
+{
+}
+
 void CDisplayServer::runComponent()
 {
-   sleepComponent(10);
    debug("CDisplayServer Server: running");
 
    debug("Starting EventServer");
    hIceDisplayServer.get()->startEventServer();
    debug("EventServer started");
+
+   sleepComponent(10);
 
    int argc=0;
    char **argv = NULL;
@@ -214,13 +218,13 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
    CSvgImage *pImage = NULL;
    CSvgImage *pExisting = (CSvgImage*) m_Model.getObject(id); // XXX UNSAFE !!!!
    if (pExisting) {
-      pExisting->data = xmlData;
+      pExisting->setPart(partId, xmlData);
       m_Model.refreshObject(id);
    }
    else {
       pImage = new CSvgImage();
       pImage->m_id = id;
-      pImage->data = xmlData;
+      pImage->setPart(partId, xmlData);
       m_Model.setObject(pImage);
    }
 }
@@ -263,7 +267,7 @@ void CDisplayServer::setObjectTransform2D(const std::string& id, const std::stri
    //  printf("%f\n", transform[i]);
    //}
    // TODO check size if (transform.size() != 9) transform.resize(9, 0.0);
-   pExisting->trmatrix = transform; // TODO: setPartTransform2D(partId, transform)
+   pExisting->setTransform2D(partId, transform);
    m_Model.refreshObject(id);
 }
 

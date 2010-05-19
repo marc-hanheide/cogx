@@ -10,6 +10,7 @@ cast_slice2cpp(GEN_CPP GEN_HPP DisplayServer.ice ${CAST_SLICE_DIR}
     ${COGX_ROOT}/tools/math/src/slice
     ${COGX_ROOT}/tools/hardware/video/src/slice
     /usr/share/slice
+    /usr/share/Ice/slice
     )
 
 #    ${COGX_ROOT}/tools/hardware/stereo/src/slice)
