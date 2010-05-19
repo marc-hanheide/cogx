@@ -258,8 +258,10 @@ void CDisplayServer::setObjectTransform2D(const std::string& id, const std::stri
    CSvgImage *pExisting = (CSvgImage*) m_Model.getObject(id); // XXX UNSAFE !!!!
    if (!pExisting) return;
 
-   {
+   { // XXX TEsting
       tomgine_test_updateModel(this);
+      //CDisplayView* pview = m_Model.getView("Composed View");
+      //if (pview) pview->m_Trafos["video.viewer"] = transform;
    }
 
    //debug("Setting transform");
