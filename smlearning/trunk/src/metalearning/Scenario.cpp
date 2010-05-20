@@ -344,8 +344,8 @@ void Scenario::define_start_position(){
 
 
 	if (startingPosition == 0)
-		startPosition = floor(randomG.nextUniform (1.0, /*19.0*/25.0));
-		//startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
+		//startPosition = floor(randomG.nextUniform (1.0, /*19.0*/25.0));
+		startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 	else
 		startPosition = startingPosition;
 	
