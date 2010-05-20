@@ -32,6 +32,17 @@ except:
     traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
     LOG.error("**** ObjectRecognizer: SIFTCUDA will not be available")
 
+def verifyImage(image):
+    im = image[:960,:1280] # size limit
+    # SiftGPU should support RGB, but it doesn't always work. Convert to GS.
+    if len(im.shape) > 2 and im.shape[2] == 3:
+        from PIL import Image
+        resultImage = Image.fromarray(im)
+        resultImage = resultImage.convert("L")
+        # resultImage.save('/tmp/im.jpg')
+        im = np.asarray(resultImage)
+    return im
+
 class CFeatureExtractor:
     # Processes a RGB image and returns a CFeaturepack with the extracted features
     def extractFeatures(self, image):
@@ -48,17 +59,19 @@ class CFeatureExtractorGpuBoost(CFeatureExtractor):
             self._sift = siftgpu.SiftGPU(params="-s")
         return self._sift
 
-    # Image is an RGB nparray
+    # Image is an RGB or GS nparray
     def extractFeatures(self, image):
-        self.SIFT.RunSIFT(image[:960])
+        im = verifyImage(image)
+        self.SIFT.RunSIFT(im)
         k, d = self.SIFT.GetFeatureVector()
         if k == None or d == None: return None
         return camview.CFeaturepack(k, d)
 
 class CFeatureExtractorGpu(CFeatureExtractor):
-    # Image is an RGB nparray
+    # Image is an RGB or GS nparray
     def extractFeatures(self, image):
-        k,d = siftgpu.extractFeatures(image[:960])
+        im = verifyImage(image)
+        k,d = siftgpu.extractFeatures(im)
         if k == None or d == None: return None
         return camview.CFeaturepack(k, d)
 
