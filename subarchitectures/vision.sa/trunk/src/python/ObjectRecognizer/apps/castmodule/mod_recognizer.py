@@ -6,6 +6,7 @@
 import os, sys, traceback, time
 import numpy as np
 import logging
+import cast.pylog4cxx as pylog4cxx
 
 try: import castinit
 except: pass
@@ -19,11 +20,16 @@ import ObjectRecognizer.objectmatcher as objectmatcher
 from ObjectRecognizer.featuresetup import CSiftSetup
 # NOTE: Because of OpenGL, siftgpu should only be used in one thread.
 
-LOG = logging.getLogger("mod_ObjectRecognizer")
-LOG.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-LOG.addHandler(ch)
+if 0:
+    LOG = logging.getLogger("mod_ObjectRecognizer")
+    LOG.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    LOG.addHandler(ch)
+else:
+    pylog4cxx.configure()
+    LOG = pylog4cxx.Logger("mod_recognizer", "vi.sa", "\033[34m")
+    LOG.setLevel("trace")
 
 T = timing.TimerOn()
 
@@ -193,7 +199,8 @@ imid=0
 def findMatchingObject(image, region=None):
     global Setup, Matcher, Manager, SaveImages, imid
     try:
-        print region
+        matches = []
+        LOG.info("Region: %s" % region)
         if len(Manager.modelNames) < 1:
             LOG.warnring("No model loaded")
             return ( ["*unknown*"], [1.0], [None] )
@@ -206,7 +213,7 @@ def findMatchingObject(image, region=None):
             imid += 1
             saveImage(image, "xdata/cast_objrecog_%04d.png" % imid)
         features = Setup.extractor.extractFeatures(image)
-        matches = _findMatchingObject(features)
+        # matches = _findMatchingObject(features)
         return matches
     except:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
