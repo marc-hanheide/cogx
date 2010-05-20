@@ -23,7 +23,6 @@
 */
 
 #include <tools/data_handling.h>
-#include <metalearning/Scenario.h>
 
 namespace smlearning {
 
@@ -748,6 +747,22 @@ void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVecto
 	
 }
 
+
+//------------------------------------------------------------------------------
+rnnlib::DataSequence* load_trainSeq (smlearning::Sequence& seq, int inputSize, int outputSize) {
+	rnnlib::DataSequence* trainSeq = new rnnlib::DataSequence (inputSize, outputSize);
+	vector<int> inputShape, targetShape;
+	inputShape.push_back (seq.size() - 1);
+	targetShape.push_back (seq.size() - 1);
+	trainSeq->inputs.reshape(inputShape);
+	trainSeq->targetPatterns.reshape(targetShape);
+	load_sequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq);
+	//load_sequence_Markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq);
+	return trainSeq;
+
+}
+
+
 bool concatenate_datasets (string dir, string writeFileName) {
 	boost::regex seqfile_re ("(.*)\\.seq");
 	boost::cmatch matches;
@@ -760,7 +775,10 @@ bool concatenate_datasets (string dir, string writeFileName) {
 	directory_iterator dir_iter(p), dir_end;
 	DataSet data;
 	for(;dir_iter != dir_end; ++dir_iter) {
-		if (boost::regex_match(dir_iter->leaf().c_str(), matches, seqfile_re)) {
+		string dirstring (dir_iter->leaf().c_str());
+		char *dirchar = (char *)dirstring.c_str();
+
+		if (boost::regex_match((const char*)dirchar, matches, seqfile_re)) {
 			DataSet currentData;
 			string dataBaseName (matches[1].first, matches[1].second);
 			cout << dir_iter->leaf() << endl;
@@ -864,7 +882,7 @@ map<Vec3, int, compare_Vec3> get_canonical_positions () {
 		//arm target update
 		
 		Vec3 pos (positionT);
-		Scenario::set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		/*Scenario::*/set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
 		positionsT[pos] = i;
 		
 	}

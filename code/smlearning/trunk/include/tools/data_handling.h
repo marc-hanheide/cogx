@@ -22,7 +22,7 @@
 
  
  */
-
+#pragma once
 #ifndef SMLEARNING_DATAHANDLING_H_
 #define SMLEARNING_DATAHANDLING_H_
 
@@ -40,6 +40,8 @@
 #include <boost/regex.hpp>
 
 #include <Tools/Tools.h>
+
+#include <metalearning/RNN.h>
 
 #include <tools/math_helpers.h>
 
@@ -262,6 +264,12 @@ void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVect
 ///load a sequence into inputs and target vectors (for active LSTM learning)
 ///
 void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
+
+///
+///load training data in RNNLIB format
+///
+rnnlib::DataSequence* load_trainSeq (smlearning::Sequence& seq, int inputSize, int outputSize);
+
 
 ///
 ///generation of n-fold cross-validation sets from a particular sequence file

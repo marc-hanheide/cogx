@@ -139,6 +139,12 @@ public:
 	}
 };
 
+///
+///calls set_point_coordinates for a discrete canonical number of different actions
+///
+void set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+
+
 
 }; /* smlearning namespace */
 

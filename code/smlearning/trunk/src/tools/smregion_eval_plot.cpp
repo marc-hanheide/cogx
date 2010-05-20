@@ -34,6 +34,8 @@ int main(int argc, char *argv[]) {
 	int firstIndex = 0;
 	int lastIndex = region.learningProgressHistory.size();
 
+	region.print_data ();
+
 	if (argc > 2) {
 		if (atoi(argv[2]) < firstIndex || atoi(argv[2]) > lastIndex) {
 			cerr << "Invalid first_index (out of range), using " << firstIndex << " instead." << endl;		
@@ -72,8 +74,8 @@ int main(int argc, char *argv[]) {
 	actionsForGnuplotScript << "set terminal postscript eps enhanced color font \"Times-Roman,14\"" << endl;
 	actionsForGnuplotScript << "set output \"|epstopdf --filter > '" + fileName + ".pdf'" << endl;
 	actionsForGnuplotScript << "set autoscale" << endl;
-	actionsForGnuplotScript << "set style line 1 lt 1 lc rgb \"red\"" << endl;
-	actionsForGnuplotScript << "set style line 2 lt 1 lc rgb \"blue\"" << endl;
+	actionsForGnuplotScript << "set style line 1 lt 1 lc rgb \"blue\"" << endl;
+	actionsForGnuplotScript << "set style line 2 lt 1 lc rgb \"red\"" << endl;
 	// actionsForGnuplotScript << "set log y" << endl;
 	actionsForGnuplotScript << "set title \"Region " << region.index << "\"" << endl;
 	actionsForGnuplotScript << "set xlabel \"Iterations\" " << endl;

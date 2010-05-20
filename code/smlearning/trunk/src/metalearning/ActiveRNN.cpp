@@ -69,55 +69,16 @@ void ActiveRNN::init (int inputPatternSize, int targetPatternSize, rnnlib::Weigh
 
 
 ///
-///construct RNN for active learning
-///
-/*void ActiveRNN::build (ostream& out) {
-	
-	int numWeights = net->weightContainer.weights.size();
-	out << numWeights << " weights" << endl << endl;
-
-	//build the network after the weight container
-	net->build();
-	
-	//only construct optimiser after weight container is built
-	if (conf.get<string>("optimiser", "steepest") == "rprop")
-	{
-		opt = new rnnlib::Rprop(out, &(net->weightContainer), &(net->dataExportHandler));
-	}
-	else
-	{
-		opt = new rnnlib::SteepestDescent(out, &(net->weightContainer), &(net->dataExportHandler), conf.get<double>("learnRate", 1e-4), conf.get<double>("momentum", 0.9));
-	}
-	out << "setting random seed to " << Random::set_seed(conf.get<unsigned long int>("randSeed", 0)) << endl << endl;
-
-	if (conf.get<bool>("loadWeights", false))
-	{
-		out << "loading dynamic data from "  << conf.filename << endl;
-		net->dataExportHandler.load(conf, out);
-		// out << "epoch = " << trainer.epoch << endl << endl;
-	}
-	
-	double initWeightRange = conf.get<double>("initWeightRange", 0.1);
-	out << "randomising uninitialised weights with mean 0 std. dev. " << initWeightRange << endl << endl;
-	net->weightContainer.randomise(initWeightRange);
-	out << "optimiser:" << endl << *opt << endl;
-
-	print_net_data();
-
-
-}*/
-
-///
 ///update the machine state with current sequence
 ///
-double ActiveRNN::update (const rnnlib::DataSequence& seq, /*int smregionIdx,*/ ostream& out) {
+double ActiveRNN::update (const rnnlib::DataSequence& seq, ostream& out) {
 	
 	if (rnnlib::GlobalVariables::instance().isVerbose()) {
 		out << "data sequence:" << endl;
 		out << seq;
 	}
 	double error;
-	for (int i=0; i<100; i++) {
+	for (int i=0; i<1/*00*/; i++) {
 // 	int i = 0;
 // 	do {
 		error = net->train(seq);
@@ -128,8 +89,8 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, /*int smregionIdx,*/ 
 // 		i++;
 	}
 // 	} while (error > 10.0 || i < 10);
-	double normalizationFactor = seq.num_timesteps() * 0.5;
-	error /= normalizationFactor;
+	//double normalizationFactor = seq.num_timesteps() * 0.5;
+	//error /= normalizationFactor;
 	out << "\tError: " << endl;
 	out << "\t" << error << endl;
 

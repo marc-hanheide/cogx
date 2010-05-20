@@ -70,8 +70,8 @@ protected:
 	rnnlib::DataSequence* trainSeq;
 
 	/** map of indexed sensorimotor regions */
-	typedef map<int, SMRegion> RegionsMap;
-	RegionsMap regions;
+	//typedef map<int, SMRegion> RegionsMap;
+	SMRegion::RegionsMap regions;
 
 	/** struct defining an action tuple */
 	struct Action { int startPosition; int speed; Real horizontalAngle; };
@@ -115,11 +115,6 @@ protected:
 	///calculate the splittingCriterion1 constant according to nr. of sequences
 	virtual void setup_loop(int argc, char* argv[]);
 
-	/**
-	   load training data in RNNLIB format
-	*/
-	void load_current_trainSeq (int inputSize, int outputSize);
-
 	///
 	///prepares the polyflap to use
 	///
@@ -145,11 +140,6 @@ protected:
 	///
 	void update_learners ();
 	
-	///
-	///Find the appropriate region index according to the given sensorimotor context
-	///
-	int get_SMRegion (const FeatureVector& SMContext);
-
 	///
 	///Obtain current context region pointer
 	///
