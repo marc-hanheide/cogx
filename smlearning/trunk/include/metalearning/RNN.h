@@ -88,7 +88,7 @@ struct RNN {
 	///
 	///construct RNN machine using config data
 	///
-	virtual void init (ostream& out = cout);
+	void init (ostream& out = cout);
 
 	///
 	///read config file data from a given file

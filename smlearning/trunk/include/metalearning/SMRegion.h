@@ -27,8 +27,8 @@
 #define SMLEARNING_SMREGION_H_
 
 #include <vector>
-#include <tools/data_handling.h>
 #include <metalearning/ActiveRNN.h>
+#include <tools/data_handling.h>
 
 using namespace std;
 
@@ -39,7 +39,11 @@ namespace smlearning {
 /// using a statistical measure, i.e., variance.
 /// It also handles the error and learning progress history of the
 /// corresponding learner associated to it
+
+
 struct SMRegion {
+
+	typedef map<int, SMRegion> RegionsMap;
 
 	/** index coming from a map of regions in the Scenario */
 	int index;
@@ -48,7 +52,7 @@ struct SMRegion {
 	/** vector of maximum values of the motor context vectors in the dataset */
 	vector<double> maxValuesSMVector;
 	/** size of the motor context */
-	int sMContextSize;
+	//int sMContextSize;
 	/** instances corresponding to the region */
 	DataSet data;
 	/** RNN learner corresponding to the region */
@@ -57,10 +61,20 @@ struct SMRegion {
 	vector<double> learningProgressHistory;
 	/** vector corresponding to history of errors */
 	vector<double> errorsHistory;
+	/** vector corresponding to history of corresponding starting positions */
+	vector<double> startingPositionsHistory;
 	/** constant to define the smoothing parameter in the evaluation of learning progress */
 	int smoothing;
 	/** constant to define the time window parameter in the evaluation of learning progress */
 	int timewindow;
+	/** constant used for assertions (motorCommandVector size should be predefined) */
+	static const int motorVectorSize = 5;
+	/** constant used for assertions (featureVector size should be predefined) */
+	static const int featureVectorSize = 12;
+	/** constant used for assertions (polyflap feature vector size should be predefined) */
+	static const int pfVectorSize = 6;
+	/** constant used for assertions (effector feature vector size should be predefined) */
+	static const int efVectorSize = 6;
 
 	SMRegion () {
 	}
@@ -69,7 +83,7 @@ struct SMRegion {
 		index(smRegion.index),
 		minValuesSMVector (smRegion.minValuesSMVector),
 		maxValuesSMVector (smRegion.maxValuesSMVector),
-		sMContextSize (smRegion.sMContextSize),
+		//sMContextSize (smRegion.sMContextSize),
 		data (smRegion.data),
 		learningProgressHistory (smRegion.learningProgressHistory),
 		errorsHistory (smRegion.errorsHistory),
@@ -79,10 +93,14 @@ struct SMRegion {
 	{
 	}*/
 	
-	SMRegion (int idx, int smCtxtSize, int splittingCriterion1) :
-		index(idx), sMContextSize (smCtxtSize) {
-		minValuesSMVector.resize(sMContextSize, -1.0);
-		maxValuesSMVector.resize(sMContextSize, 1.0);
+	SMRegion (int idx, /*int smCtxtSize,*/ int splittingCriterion1) :
+		index(idx)//,
+		//sMContextSize (smCtxtSize) {
+	{
+		//minValuesSMVector.resize(sMContextSize, -1.0);
+		//maxValuesSMVector.resize(sMContextSize, 1.0);
+		minValuesSMVector.resize(motorVectorSize, -1.0);
+		maxValuesSMVector.resize(motorVectorSize, 1.0);
 		timewindow = splittingCriterion1 * 0.375;
 		smoothing = splittingCriterion1 * 0.625;
 		cout << "timewindow: " << timewindow << ", smoothing: " << smoothing << endl;
@@ -91,24 +109,19 @@ struct SMRegion {
 
 	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, DataSet inheritedData, bool firstRegion ) :
 		index (idx),
-		sMContextSize (parentRegion.sMContextSize),
+		//sMContextSize (parentRegion.sMContextSize),
 		minValuesSMVector (parentRegion.minValuesSMVector),
 		maxValuesSMVector (parentRegion.maxValuesSMVector),
 		learner (parentRegion.learner),
 		data (inheritedData),
 		learningProgressHistory (parentRegion.learningProgressHistory),
 		errorsHistory (parentRegion.errorsHistory),
+		startingPositionsHistory (parentRegion.startingPositionsHistory),
 		timewindow (parentRegion.timewindow),
 		smoothing (parentRegion.smoothing) {
 		
-		//update cutting values
-		//instances must be added using add_DataSet
-		//method splittingCriterion2 takes care of appropriate splitting and cutting values calculation
-		// for (int i=0; i<sMContextSize; i++) {
-		// 	minValuesSMVector[i] = parentRegion.minValuesSMVector[i];
-		// 	maxValuesSMVector[i] = parentRegion.maxValuesSMVector[i];
-		// }
-		
+		//method splittingCriterion2 in @class ActiveLearnScenario takes care of appropriate splitting and cutting values calculation
+
 	
 		if (firstRegion)
 			maxValuesSMVector[cuttingIdx] = cuttingValue;
@@ -134,6 +147,16 @@ struct SMRegion {
 	///
 	bool read_data (string fileName);
 
+	///
+	///print region related variables
+	///
+	void print_data ();
+
+	///
+	///Find the appropriate region index according to the given sensorimotor context
+	///
+	static int get_SMRegion (const RegionsMap& regions, const FeatureVector& SMContext);
+	
 };
 
 

@@ -36,39 +36,43 @@ void SMRegion::update_learning_progress (const rnnlib::DataSequence& seq) {
 	
 	double timewindowRatio = timewindow / double(smoothing + timewindow);
 	double smoothingRatio = smoothing / double(smoothing + timewindow);
-	//double smoothing = errorsHistory.size() * smoothingRatio + 1;
 
-	int smoothingLast = timewindow + smoothing + 1;
-	int smoothingPrev = timewindow + smoothing + 1;
-	int windowidxPreviousError;
+	int smoothingLast = smoothing + 1;
+	int smoothingPrev = smoothing + 1;
+
+	int windowfirstidxPreviousError;
+	int windowlastidxPreviousError;
+	int windowfirstidxLastError;
 	if (errorsHistory.size () <= smoothing + timewindow) {
-		windowidxPreviousError = 0;
-		smoothingLast = errorsHistory.size();
+		windowfirstidxPreviousError = 0;
 	}
 	else
-		windowidxPreviousError = errorsHistory.size() -1 - (timewindow + smoothing);
+		windowfirstidxPreviousError = errorsHistory.size() -1 - (timewindow + smoothing);
 
-	int windowidxLastError;
+	if (errorsHistory.size () <= timewindow)
+		windowlastidxPreviousError = (int)ceil((errorsHistory.size() - 1) * smoothingRatio);
+	else
+		windowlastidxPreviousError = errorsHistory.size() - 1 - timewindow;
+
+	
 	if (errorsHistory.size () <= smoothing) {
-		windowidxLastError = (int)ceil((errorsHistory.size() - 1) * timewindowRatio);
-		smoothingPrev = errorsHistory.size() - windowidxLastError;
+		windowfirstidxLastError = (int)ceil((errorsHistory.size() - 1) * timewindowRatio);
+		smoothingPrev = errorsHistory.size() - windowfirstidxLastError;
+		smoothingLast = errorsHistory.size() - windowfirstidxLastError;
 	}
 	else
-		windowidxLastError = errorsHistory.size() - 1 - smoothing;
+		windowfirstidxLastError = errorsHistory.size() - 1 - smoothing;
 
-	assert (windowidxPreviousError >= 0 && windowidxLastError >= 0);
+	assert (windowfirstidxPreviousError >= 0 && windowlastidxPreviousError >= 0 && windowfirstidxLastError >= 0);
 	double accPrevSmoothError = 0.0;
 	double accLastSmoothError = 0.0;
 
-	bool lastErrorPassed = false;
-	for (int i=errorsHistory.size() - 1; i>=windowidxPreviousError; i--) {
-		accPrevSmoothError += errorsHistory[i];
-		if (!lastErrorPassed)
-			if (i == windowidxLastError) {
-				accLastSmoothError = accPrevSmoothError;
-				lastErrorPassed = true;
-			}
-	}
+	
+	for (int i=windowfirstidxLastError; i < errorsHistory.size(); i++) 
+		accLastSmoothError += errorsHistory[i];
+	for (int i=windowfirstidxPreviousError; i<windowlastidxPreviousError; i++)
+		accPrevSmoothError += errorsHistory[i];	
+	
 	accPrevSmoothError /= smoothingPrev;
 	accLastSmoothError /= smoothingLast;
 
@@ -94,6 +98,7 @@ bool SMRegion::write_data (string fileName) {
 	write_realvector (writeFile, maxValuesSMVector);
 	write_realvector (writeFile, learningProgressHistory);
 	write_realvector (writeFile, errorsHistory);
+	write_realvector (writeFile, startingPositionsHistory);
 	
 	writeFile.close ();
 
@@ -114,13 +119,52 @@ bool SMRegion::read_data (string fileName) {
 	read_realvector (readFile, maxValuesSMVector);
 	read_realvector (readFile, learningProgressHistory);
 	read_realvector (readFile, errorsHistory);
+	read_realvector (readFile, startingPositionsHistory);
 	
 	readFile.close ();
 
+	learner.init (motorVectorSize + featureVectorSize, pfVectorSize, fileName + ".net");
+
 	return true;
-	
-	//return learner.write_net_data (fileName);
 }
+
+void SMRegion::print_data () {
+	cout << "minValuesSMVector: " << endl;
+	print_featvector<double> (minValuesSMVector);
+	cout << endl << "maxValuesSMVector: " << endl;
+	print_featvector<double> (maxValuesSMVector);
+	cout << endl << "learningProgressHistory: " << endl;
+	print_featvector<double> (learningProgressHistory);
+	cout << endl << "errorsHistory: " << endl;
+	print_featvector<double> (errorsHistory);
+	cout << endl << "startingPositionsHistory: " << endl;
+	print_featvector<double> (startingPositionsHistory);
+	cout << endl;
+}
+
+
+///
+///Find the appropriate region index according to the given sensorimotor context
+///
+int SMRegion::get_SMRegion (const SMRegion::RegionsMap& regions, const FeatureVector& sMContext) {
+	for (RegionsMap::const_iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
+		bool wrongCuttingValue = false;
+		SMRegion currentRegion = regionIter->second;
+		//assert (sMContext.size() == currentRegion.sMContextSize);
+		assert (sMContext.size() == SMRegion::motorVectorSize);
+		//for (int i=0; i<currentRegion.sMContextSize; i++) {
+		for (int i=0; i<SMRegion::motorVectorSize; i++) {
+			if ( currentRegion.minValuesSMVector[i] > sMContext[i] ||
+			     currentRegion.maxValuesSMVector[i] < sMContext[i]) {
+				wrongCuttingValue = true;
+				break;
+			}
+		}
+		if (wrongCuttingValue) continue; else return currentRegion.index;
+	}
+	return -1;
+}
+
 
 
 }; /* namespace smlearning */

@@ -186,7 +186,6 @@ public:
 	///
 	void run(int argc, char* argv[]);
 
-	friend map<Vec3, int, compare_Vec3> get_canonical_positions ();
 protected:
 	/** Description */
 	Desc desc;
@@ -313,16 +312,6 @@ protected:
 	///calculate final pose according to the given direction angle
 	///
 	void set_movement_angle(const Real angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
-
-	///
-	///calculate position to direct the arm given parameters set in the learning scenario
-	///
-	static void set_point_coordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
-
-	///
-	///calls setPointCoordinates for a discrete canonical number of different actions
-	///
-	static void set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
 
 	///
 	///select a random action
