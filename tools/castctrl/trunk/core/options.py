@@ -13,6 +13,12 @@ regVarSet = re.compile (r"^\s*([a-z_0-9]+)\s*=(.*)$", re.IGNORECASE)
 
 startup_environ = os.environ.copy()
 
+# http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+if startup_environ.has_key("XDG_CONFIG_HOME"): CONFIG_DIR=startup_environ["XDG_CONFIG_HOME"]
+elif startup_environ.has_key("HOME"): CONFIG_DIR=startup_environ["HOME"] + "/.config"
+else: CONFIG_DIR="~/.config"
+CONFIG_DIR = os.path.abspath(os.path.join(CONFIG_DIR, "CASTControl"))
+
 def _xe(shexpr, env=None):
     if env == None: env = startup_environ
     for rx in [regSimple, regSimpleBrace]:
@@ -30,12 +36,23 @@ class CUserOptions(object):
     def __init__(self):
         self.textEditCmd = "gvim --servername CAST --remote-silent %l[+:] %s"
         self.terminalCmd = "gnome-terminal --working-directory='%s'" 
+        self._config = ["[USEROPTIONS]"] + optdefault.useroptions.split("\n")
+        self.modified = False
 
-    def loadConfig(self, filename):
-        if not os.path.exists(filename): return
+    @property
+    def configFile(self):
+        return os.path.join(CONFIG_DIR, "user.conf")
+
+    def loadConfig(self):
+        filename = self.configFile
+        if not os.path.exists(filename):
+            self.modified = True
+            return
         f = open(filename, "r")
+        self._config = [ ln.rstrip() for ln in f.readlines() ]
+        f.close()
         section = None
-        for ln in f.readlines():
+        for ln in self._config:
             l = ln.split('#')[0]
             l = l.strip()
             if l == "[USEROPTIONS]": section = "USER"
@@ -44,7 +61,17 @@ class CUserOptions(object):
                 if section == "USER":
                     if ln.startswith("EDITOR="): self.textEditCmd = ln[7:].strip()
                     if ln.startswith("TERMINAL="): self.terminalCmd = ln[9:].strip()
+
+    def saveConfig(self):
+        filename = self.configFile
+        if not os.path.exists(CONFIG_DIR):
+            os.makedirs(CONFIG_DIR)
+        f = open(filename, "w")
+        for ln in self._config:
+            f.write(ln); f.write("\n")
         f.close()
+        self.modified = False
+
 
 class CCastOptions(object):
     def __init__(self):
@@ -88,7 +115,7 @@ class CCastOptions(object):
                 self.cleanupScript = []
                 section = self.cleanupScript
             elif l.startswith('[') and l.endswith(']'):
-                if l == "[USEROPTIONS]": section = None
+                if l == "[USEROPTIONS]": section = None # XXX old version kept user options in same file
                 else:
                     section = []
                     self.confSection[l.strip(" []")] = section
@@ -148,8 +175,8 @@ class CCastOptions(object):
                 f.write(ln); f.write("\n")
 
         # FIXME: temporary location for user options; move to a file in home dir
-        f.write("[USEROPTIONS]\n")
-        f.write(optdefault.useroptions)
+        #f.write("[USEROPTIONS]\n")
+        #f.write(optdefault.useroptions)
 
 
     def saveHistory(self, afile):

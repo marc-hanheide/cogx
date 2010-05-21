@@ -68,6 +68,7 @@ useroptions="""
 #EDITOR=open -a textwrangler %s
 
 #TERMINAL=konsole --workdir '%s'
+#TERMINAL=konsole --new-tab --workdir '%s'
 #TERMINAL=gnome-terminal --working-directory='%s'
 """
 log4joptions="""
