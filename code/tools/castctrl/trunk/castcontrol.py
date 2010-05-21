@@ -88,7 +88,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         else: self._options.loadHistory(self.fnconf) # old place for history
         self._options.configEnvironment()
         self._userOptions = options.CUserOptions()
-        self._userOptions.loadConfig(self.fnconf) # TODO: user options should be in ~/.cast/...
+        self._userOptions.loadConfig()
 
         # move option values to UI
         self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
@@ -288,6 +288,12 @@ class CCastControlWnd(QtGui.QMainWindow):
                 lst.append("%s" % fn)
             return lst
 
+        try:
+            if self._userOptions.modified:
+                self._userOptions.saveConfig()
+        except Exception, e:
+            print "Failed to save user configuration"
+            print e
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
