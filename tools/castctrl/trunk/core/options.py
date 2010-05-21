@@ -65,7 +65,7 @@ class CUserOptions(object):
     def saveConfig(self):
         filename = self.configFile
         if not os.path.exists(CONFIG_DIR):
-            os.makedirs(CONFIG_DIR)
+            os.makedirs(CONFIG_DIR, 0700)
         f = open(filename, "w")
         for ln in self._config:
             f.write(ln); f.write("\n")
