@@ -52,6 +52,20 @@ module execution {
     module actions {
 
       /**
+       * comsys action
+       */
+      class ComsysQueryFeature extends Action {
+	    /**
+	     * The belief ID
+	     */
+	    string beliefID;
+	    /**
+	     * The name of the feature to query for
+	     */
+	    string featureID;
+      };
+
+      /**
        * Move the robot to a particular place.
        */
       class GoToPlace extends Action {
