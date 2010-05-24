@@ -3,12 +3,15 @@
 using namespace cast;
 #include <Pose3.h>
 #include <iostream>
+#include <set>
   
 using namespace std;
 using namespace cogx::Math;
 
 
 namespace spatial {
+
+const double planeThickness = 0.05;
 
 double
 evaluateOnness(const Object *objectS, const Object *objectO)
@@ -50,7 +53,6 @@ evaluateOnness(const Object *objectS, const Object *objectO)
 
   else if (objectS->type == OBJECT_PLANE &&
       objectO->type == OBJECT_BOX) {
-    const double plane_thickness = 0.05;
 
     BoxObject *Obox = (BoxObject*)objectO;
     PlaneObject *Splane = (PlaneObject*)objectS;
@@ -59,9 +61,9 @@ evaluateOnness(const Object *objectS, const Object *objectO)
       Sbox.type = OBJECT_BOX;
       Sbox.radius1 = Splane->radius1;
       Sbox.radius2 = Splane->radius2;
-      Sbox.radius3 = plane_thickness*0.5;
+      Sbox.radius3 = planeThickness*0.5;
       Sbox.pose = Splane->pose;
-      Sbox.pose.pos.z -= plane_thickness*0.5;
+      Sbox.pose.pos.z -= planeThickness*0.5;
       witness = findContactPatch(Sbox, *Obox, &patch, &maxPatchClearance);
     }
   }
@@ -690,6 +692,573 @@ evaluateOnness(const Object *objectS, const Object *objectO)
     bottomCOMContainmentWeight + planeInclinationWeight + overlapWeight;
 
   return totalWeights == 0.0 ? 0.0 : exp(totalOnness / totalWeights);
+}
+
+const double circlePlaneApproximationThreshold = 0.05; //Controls number of
+//edges in polygon used to approximate circular planes
+const double cylinderApproximationThreshold = 0.01;
+const int sphereTessellationFactor = 2; //Number of latitudes and half number of
+//longitudes. 2 makes the sphere an octahedron
+const double boxThickness = 0.02; //Controls thickness of walls of hollow container
+
+double
+evaluateInness(const Object *objectC, const Object *objectO)
+{
+  // Clip objectO to the convex hull of objectC. Compute ratio
+  // of clipped volume to total volume.
+  // Also compute depth of penetration of objectO into objectC.
+
+  // In-ness is the volume ratio, penalized by degree of penetration.
+
+  double entireVolume;
+  // Convert objectO into a Polyhedron
+  Polyhedron polyO;
+  if (objectO->type == OBJECT_PLANE) {
+    PlaneObject *plane = (PlaneObject*) objectO;
+
+    if (plane->shape == PLANE_OBJECT_RECTANGLE) {
+      double radius1 = plane->radius1;
+      double radius2 = plane->radius2;
+      polyO.vertices.push_back(vector3(radius1,radius2,0));
+      polyO.vertices.push_back(vector3(-radius1,radius2,0));
+      polyO.vertices.push_back(vector3(-radius1,-radius2,0));
+      polyO.vertices.push_back(vector3(radius1,-radius2,0));
+      polyO.vertices.push_back(vector3(radius1,radius2,-planeThickness));
+      polyO.vertices.push_back(vector3(-radius1,radius2,-planeThickness));
+      polyO.vertices.push_back(vector3(-radius1,-radius2,-planeThickness));
+      polyO.vertices.push_back(vector3(radius1,-radius2,-planeThickness));
+      polyO.faces.resize(6);
+      polyO.faces[0].push_back(Edge(0,1));
+      polyO.faces[0].push_back(Edge(1,2));
+      polyO.faces[0].push_back(Edge(2,3));
+      polyO.faces[0].push_back(Edge(3,0));
+      polyO.faces[1].push_back(Edge(4,7));
+      polyO.faces[1].push_back(Edge(7,6));
+      polyO.faces[1].push_back(Edge(6,5));
+      polyO.faces[1].push_back(Edge(5,4));
+      polyO.faces[2].push_back(Edge(0,4));
+      polyO.faces[2].push_back(Edge(4,5));
+      polyO.faces[2].push_back(Edge(5,1));
+      polyO.faces[2].push_back(Edge(1,0));
+      polyO.faces[3].push_back(Edge(1,5));
+      polyO.faces[3].push_back(Edge(5,6));
+      polyO.faces[3].push_back(Edge(6,2));
+      polyO.faces[3].push_back(Edge(2,1));
+      polyO.faces[4].push_back(Edge(2,6));
+      polyO.faces[4].push_back(Edge(6,7));
+      polyO.faces[4].push_back(Edge(7,3));
+      polyO.faces[4].push_back(Edge(3,2));
+      polyO.faces[5].push_back(Edge(3,7));
+      polyO.faces[5].push_back(Edge(7,4));
+      polyO.faces[5].push_back(Edge(4,0));
+      polyO.faces[5].push_back(Edge(0,3));
+      entireVolume = radius1*radius2*planeThickness*4;
+    }
+    else {
+      //SHAPE_CIRCLE
+      int N = 2;
+      double err;
+      double radius = plane->radius1;
+      do {
+	N++;
+	err = radius * (1-cos(M_PI/N));
+      } while (err > circlePlaneApproximationThreshold);
+
+      polyO.vertices.reserve(N*2);
+      polyO.faces = vector<vector<Edge> >(2+N);
+      double step = 2*M_PI/N;
+      for (int i = 0; i < N-1; i++) {
+	polyO.vertices.push_back(vector3(radius*cos(i*step),
+	      radius*sin(i*step), 0));
+	polyO.faces[0].push_back(Edge(i,i+1));
+	polyO.faces[1].push_back(Edge(2*N-1-i, 2*N-2-i));
+	polyO.faces[1+i].push_back(Edge(i+1,i));
+	polyO.faces[1+i].push_back(Edge(i,i+N));
+	polyO.faces[1+i].push_back(Edge(i+N,i+N+1));
+	polyO.faces[1+i].push_back(Edge(i+N+1,i+1));
+      }
+      polyO.faces[0].push_back(Edge(N-1,0));
+      polyO.faces[1].push_back(Edge(N,2*N-1));
+      polyO.faces[N+1].push_back(Edge(0,N-1));
+      polyO.faces[N+1].push_back(Edge(N-1,2*N-1));
+      polyO.faces[N+1].push_back(Edge(2*N-1,N));
+      polyO.faces[N+1].push_back(Edge(N,0));
+      for (int i = 0; i < N-1; i++) {
+	polyO.vertices.push_back(vector3(radius*cos(i*step),
+	      radius*sin(i*step), -planeThickness));
+      }
+
+      entireVolume = planeThickness * N*radius*cos(M_PI/N)*sin(M_PI/N);
+    }
+  }
+  else if (objectO->type == OBJECT_BOX) {
+    BoxObject *box = (BoxObject *)objectO;
+    double radius1 = box->radius1;
+    double radius2 = box->radius2;
+    double radius3 = box->radius3;
+    polyO.vertices.push_back(vector3(radius1,radius2,radius3));
+    polyO.vertices.push_back(vector3(-radius1,radius2,radius3));
+    polyO.vertices.push_back(vector3(-radius1,-radius2,radius3));
+    polyO.vertices.push_back(vector3(radius1,-radius2,radius3));
+    polyO.vertices.push_back(vector3(radius1,radius2,-radius3));
+    polyO.vertices.push_back(vector3(-radius1,radius2,-radius3));
+    polyO.vertices.push_back(vector3(-radius1,-radius2,-radius3));
+    polyO.vertices.push_back(vector3(radius1,-radius2,-radius3));
+    polyO.faces.resize(6);
+    polyO.faces[0].push_back(Edge(0,1));
+    polyO.faces[0].push_back(Edge(1,2));
+    polyO.faces[0].push_back(Edge(2,3));
+    polyO.faces[0].push_back(Edge(3,0));
+    polyO.faces[1].push_back(Edge(4,7));
+    polyO.faces[1].push_back(Edge(7,6));
+    polyO.faces[1].push_back(Edge(6,5));
+    polyO.faces[1].push_back(Edge(5,4));
+    polyO.faces[2].push_back(Edge(0,4));
+    polyO.faces[2].push_back(Edge(4,5));
+    polyO.faces[2].push_back(Edge(5,1));
+    polyO.faces[2].push_back(Edge(1,0));
+    polyO.faces[3].push_back(Edge(1,5));
+    polyO.faces[3].push_back(Edge(5,6));
+    polyO.faces[3].push_back(Edge(6,2));
+    polyO.faces[3].push_back(Edge(2,1));
+    polyO.faces[4].push_back(Edge(2,6));
+    polyO.faces[4].push_back(Edge(6,7));
+    polyO.faces[4].push_back(Edge(7,3));
+    polyO.faces[4].push_back(Edge(3,2));
+    polyO.faces[5].push_back(Edge(3,7));
+    polyO.faces[5].push_back(Edge(7,4));
+    polyO.faces[5].push_back(Edge(4,0));
+    polyO.faces[5].push_back(Edge(0,3));
+    entireVolume = radius1*radius2*radius3*8;
+  }
+  else {
+    cerr << "Object type not supported yet!\n";
+    exit(1);
+  }
+
+  double containedVolume;
+
+  if (objectC->type == OBJECT_BOX) {
+    //Clip ObjectO's polyhedron to the convex hull of ObjectC
+    BoxObject *box = (BoxObject*) objectC;
+
+    for (unsigned int i = 0; i < polyO.vertices.size(); i++) {
+      polyO.vertices[i] = transform(objectO->pose, polyO.vertices[i]);
+      polyO.vertices[i] = transformInverse(objectC->pose, polyO.vertices[i]);
+    }
+    clipPolyhedronToPlane(polyO, vector3(box->radius1,0,0), vector3(1,0,0));
+    clipPolyhedronToPlane(polyO, vector3(-box->radius1,0,0), vector3(-1,0,0));
+    clipPolyhedronToPlane(polyO, vector3(0, box->radius2,0), vector3(0,1,0));
+    clipPolyhedronToPlane(polyO, vector3(0, -box->radius2,0), vector3(0,-1,0));
+    clipPolyhedronToPlane(polyO, vector3(0, 0, box->radius3), vector3(0,0,1));
+    clipPolyhedronToPlane(polyO, vector3(0, 0, -box->radius3), vector3(0,0,-1));
+
+    containedVolume = computePolyhedronVolume(polyO);
+  }
+  else {
+    cerr << "Object type not supported yet!\n";
+    exit(1);
+  }
+    
+  return containedVolume / entireVolume;
+}
+
+struct ActiveFace {
+  double normalExpansion;
+  double lateralExpansion;
+  double length;
+};
+
+double
+computePolyhedronVolume(const Polyhedron &polyhedron)
+{
+  //Algorithm: Move a virtual plane upwards from the lowest vertex in the
+  //polyhedron. Integrate the area of the cross-section polygon.
+
+  //Maintain a list of active 3D edges (that become points in the polygon)
+  //Each active edge imposes 2 active faces on each side (that become
+  //2D edges in the polygon). Each active edge notifies its active faces
+  //of which its neighbor face is on that side.
+
+  //The angle between the polygon edges is computable from the face normals,
+  //projected in the xy plane. The rate of extension or retraction along
+  //the edge's normal, as the plane moves upward at unit speed, can also be
+  //gleaned from the normal vector.
+  //From the angle between edges and the extension/retraction rate, the
+  //rate of edge elongation/contraction (lateral) can  be computed:
+  //Lateral speed (one side) = 
+  //extension_rate_this_edge*cot(angle) + 
+  //extension_rate_other_edge/sin(angle)
+  //(Add both sides together for the total lateral expansion/contraction rate.
+
+  //The new area of the polygon after a displacement h is:
+  //A_new = A_old + 
+  // sum[over edges] normal_extension_rate*(Length_old + 0.5*h*lateral_extension_rate 
+  //and the incremental volume over this displacement is:
+  //V = A_0*(h) + h^3/6*sum[lateral_rate*normal_rate] + 
+  //  h^2/2*sum[length_old*normal_rate]
+
+  const double epsilon = 1e-6;
+  vector<Vector3> verts = polyhedron.vertices;
+  const vector<vector<Edge> > &faces = polyhedron.faces;
+
+  bool noSameZ = true;
+  do {
+    noSameZ = true;
+    for (unsigned int i = 0; i < verts.size()-1; i++) {
+      for (unsigned int j = i+1; j < verts.size(); j++) {
+	if (abs(verts[i].z - verts[j].z) < epsilon) {
+	  noSameZ = false;
+	}
+      }
+    }
+    if (!noSameZ) {
+      Matrix33 tmp;
+      fromRotX(tmp, 0.01);
+      Matrix33 tmp2;
+      fromRotY(tmp2, 0.003);
+      Pose3 rot;
+      rot.rot = tmp*tmp2;
+      for (unsigned int i = 0; i < verts.size(); i++) {
+	verts[i] = transform(rot, verts[i]);
+      }
+    }
+  } while (!noSameZ);
+
+
+  vector<vector<unsigned int> > vertexUpwardEdges(verts.size());
+  vector<vector<unsigned int> > vertexDownwardEdges(verts.size());
+
+  vector<pair<unsigned int, unsigned int> > edgeFaceNeighbors;
+  vector<Vector3>edgeDirs;
+
+  map<Edge, unsigned int> directedEdgeToUpwardEdgeMap;
+
+  vector<double>faceNormalRate(faces.size());
+  vector<Vector3>faceEdgeNormal(faces.size());
+
+  for (unsigned int i = 0; i < faces.size(); i++) {
+    for (unsigned int j = 0; j < faces[i].size(); j++) {
+      unsigned int fromVertNo = faces[i][j].first;
+      unsigned int toVertNo = faces[i][j].second;
+
+      double zDiff = verts[toVertNo].z - verts[fromVertNo].z;
+
+      // Each edge occurs twice; once in each of its neighbor faces.
+      // If the edge points upward along the winding of the current face,
+      // then that face is to the left of the upgoing edge.
+      // Then set this face as neighbor 1 of that edge. Otherwise,
+      // set it as number 2.
+
+      if (directedEdgeToUpwardEdgeMap.find(faces[i][j]) == directedEdgeToUpwardEdgeMap.end()) {
+	//Edge not yet registered in upward-directed representation. Do so now.
+	if (zDiff > 0) {
+	  edgeDirs.push_back(verts[toVertNo] - verts[fromVertNo]);
+	  unsigned int newEdgeID = edgeDirs.size()-1;
+	
+	  vertexUpwardEdges[fromVertNo].push_back(newEdgeID);
+	  vertexDownwardEdges[toVertNo].push_back(newEdgeID);
+
+	  directedEdgeToUpwardEdgeMap[Edge(fromVertNo,toVertNo)] = newEdgeID;
+	  directedEdgeToUpwardEdgeMap[Edge(toVertNo,fromVertNo)] = newEdgeID;
+	}
+	else {
+	  edgeDirs.push_back(verts[fromVertNo] - verts[toVertNo]);
+	  unsigned int newEdgeID = edgeDirs.size()-1;
+	
+	  vertexUpwardEdges[toVertNo].push_back(newEdgeID);
+	  vertexDownwardEdges[fromVertNo].push_back(newEdgeID);
+
+	  directedEdgeToUpwardEdgeMap[Edge(fromVertNo,toVertNo)] = newEdgeID;
+	  directedEdgeToUpwardEdgeMap[Edge(toVertNo,fromVertNo)] = newEdgeID;
+	}
+	edgeFaceNeighbors.push_back(pair<unsigned int, unsigned int>());
+      }
+
+      if (zDiff > 0) {
+	edgeFaceNeighbors[directedEdgeToUpwardEdgeMap[faces[i][j]]].first = i;
+      }
+      else {
+	edgeFaceNeighbors[directedEdgeToUpwardEdgeMap[faces[i][j]]].second = i;
+      }
+    }
+
+    //Compute normal
+    Vector3 p1 = verts[faces[i][0].first];
+    Vector3 p2 = verts[faces[i][0].second];
+    Vector3 p3 = verts[faces[i].back().first];
+
+    Vector3 normal = cross(p2-p1, p3-p1);
+    normalise(normal);
+    double zComp = normal.z;
+
+    normal.z = 0.0;
+    double horizontalComp = length(normal);
+    
+    faceNormalRate[i] = -zComp / horizontalComp; //-Tan of the inclination
+    
+    normal = normal/horizontalComp;
+    faceEdgeNormal[i] = normal;
+  }
+
+  std::set<unsigned int> activeEdges;
+
+  //Find vertex with lowest z-coordinate
+  double minZ = FLT_MAX;
+  unsigned int currentVertex = 0;
+  for (unsigned int i = 0; i < verts.size(); i++) {
+    if (verts[i].z < minZ) {
+      currentVertex = i;
+      minZ = verts[i].z;
+    }
+  }
+
+  //Initialize cross-section polygon from a single point (the lowest one),
+  //N edges and N polygon vertices
+  double currentPolygonArea = 0.0;
+  double accumulatedVolume = 0.0;
+  unsigned int verticesProcessed = 0;
+
+  vector<double> polygonEdgeLengths(faces.size());
+  vector<double> leftLateralExtensionSpeed(faces.size());
+  vector<double> rightLateralExtensionSpeed(faces.size());
+
+  while (verticesProcessed < verts.size() - 1) {
+    double currentZ = verts[currentVertex].z;
+    //Check all down-going edges of this vertex. Deactivate them;
+    //set the adjoining faces' half lateral extension speeds to 0
+    for (vector<unsigned int>::iterator it = 
+	vertexDownwardEdges[currentVertex].begin();
+	it != vertexDownwardEdges[currentVertex].end(); it++) {
+
+      unsigned int leftFaceOfEdge = edgeFaceNeighbors[*it].first;
+      unsigned int rightFaceOfEdge = edgeFaceNeighbors[*it].second;
+
+      rightLateralExtensionSpeed[leftFaceOfEdge] = 0.0;
+      leftLateralExtensionSpeed[rightFaceOfEdge] = 0.0;
+
+      activeEdges.erase(*it);
+    }
+
+    //Check all upgoing edges of this vertex. Activate them;
+    //set the adjoining faces' half lateral extension speeds
+    for (vector<unsigned int>::iterator it = 
+	vertexUpwardEdges[currentVertex].begin();
+	it != vertexUpwardEdges[currentVertex].end(); it++) {
+
+      unsigned int leftFaceOfEdge = edgeFaceNeighbors[*it].first;
+      unsigned int rightFaceOfEdge = edgeFaceNeighbors[*it].second;
+
+      double angleAtEdgeCos = -dot(faceEdgeNormal[leftFaceOfEdge],
+	  faceEdgeNormal[rightFaceOfEdge]);
+      //TODO: secure against Divide by zero
+      double angleAtEdgeSin = 
+	sqrt(1 - angleAtEdgeCos*angleAtEdgeCos);
+
+      rightLateralExtensionSpeed[leftFaceOfEdge] = 
+	faceNormalRate[leftFaceOfEdge] * angleAtEdgeCos/angleAtEdgeSin +
+	faceNormalRate[rightFaceOfEdge] / angleAtEdgeSin;
+      leftLateralExtensionSpeed[rightFaceOfEdge] = 
+	faceNormalRate[rightFaceOfEdge] * angleAtEdgeCos/angleAtEdgeSin +
+	faceNormalRate[leftFaceOfEdge] / angleAtEdgeSin;
+
+      activeEdges.insert(*it);
+    }
+
+    //Find next vertex in z-ordering
+    double minZ = FLT_MAX;
+    unsigned int nextVertex = 0;
+    for (unsigned int i = 0; i < verts.size(); i ++) {
+      if (verts[i].z > currentZ && verts[i].z < minZ) {
+	minZ = verts[i].z;
+	nextVertex = i;
+      }
+    }
+
+    //Accumulate volume
+    double dz = minZ - currentZ;
+    accumulatedVolume += dz * currentPolygonArea;
+
+    for(std::set<unsigned int>::iterator it = activeEdges.begin(); it != activeEdges.end(); it++) {
+      //Take the face to the left of this edge
+
+      //Accumulate volume
+      unsigned int faceID = edgeFaceNeighbors[*it].first;
+      accumulatedVolume += dz*dz*dz/6*faceNormalRate[faceID]*(rightLateralExtensionSpeed[faceID]+leftLateralExtensionSpeed[faceID]) +
+	dz*dz/2*polygonEdgeLengths[faceID]*faceNormalRate[faceID];
+
+      //Update cross-section area
+      currentPolygonArea += dz*dz/2*(rightLateralExtensionSpeed[faceID]+
+	  leftLateralExtensionSpeed[faceID])*faceNormalRate[faceID] +
+	dz*polygonEdgeLengths[faceID]*faceNormalRate[faceID];
+
+      //Update face edge lengths
+      polygonEdgeLengths[faceID] += (leftLateralExtensionSpeed[faceID]+
+	  rightLateralExtensionSpeed[faceID])*dz;
+    }
+
+    verticesProcessed++;
+    currentVertex = nextVertex;
+  }
+
+  return accumulatedVolume;
+}
+
+void
+clipPolyhedronToPlane(Polyhedron &polyhedron, const Vector3 &pointInPlane,
+    const Vector3 &planeNormal)
+{
+  if (polyhedron.vertices.size() == 0) 
+    return;
+  double epsilon = 1e-6;
+  // Cut in half any edge passing through the plane. Keep edges, faces, vertices
+  // on positive side of plane
+
+  // Find all vertices that will be pruned
+
+  // Find all edges with one of each type of vertex
+  // Find intersection point with plane, shorten edge to this point
+
+  std::set<unsigned int> verticesToPrune;
+  //Loop over vertices
+  for (unsigned int i = 0; i < polyhedron.vertices.size(); i++) {
+    if (dot((polyhedron.vertices[i]-pointInPlane), planeNormal) < -epsilon) {
+      verticesToPrune.insert(i);
+    }
+  }
+
+  unsigned int newVertsStartAt = polyhedron.vertices.size();
+  vector<vector<Edge> > newFaces;
+
+  map<Edge, unsigned int> edgeToSplitVertexMap;
+
+  for (unsigned int faceNo = 0; faceNo < polyhedron.faces.size(); faceNo++) {
+    vector<Edge> &edges = polyhedron.faces[faceNo];
+    int edgeGoingOut = -1;
+    int edgeGoingIn = -1;
+    for (unsigned int edgeNo = 0; edgeNo < edges.size(); edgeNo++) {
+      Edge &edge = edges[edgeNo];
+      bool vert1Inside = (verticesToPrune.find(edges[edgeNo].first) == verticesToPrune.end());
+      bool vert2Inside = (verticesToPrune.find(edges[edgeNo].second) == verticesToPrune.end());
+      if (vert1Inside != vert2Inside) {
+	  unsigned int newVertId;
+	if (edgeToSplitVertexMap.find(edge) == edgeToSplitVertexMap.end()) {
+	  // Edge intersects plane. Find intersection point
+	  Vector3 edgeVector = polyhedron.vertices[edge.second] - polyhedron.vertices[edge.first];
+	  double intersectionParam = 
+	    dot(pointInPlane - polyhedron.vertices[edge.first], planeNormal) /
+	    dot(edgeVector,
+		planeNormal); 
+
+	  // Create new vertex; put it in list
+
+	  Vector3 newVertex = polyhedron.vertices[edge.first] + edgeVector * intersectionParam;
+	  polyhedron.vertices.push_back(newVertex);
+
+ 	  newVertId = polyhedron.vertices.size() - 1;
+	}
+	else {
+	  newVertId = edgeToSplitVertexMap[edge];
+	}
+
+	edgeToSplitVertexMap[Edge(edge.second, edge.first)] = newVertId;
+	edgeToSplitVertexMap[Edge(edge.first, edge.second)] = newVertId;
+
+	// Adjust the cut edge so it has the new vertex for an end/beginning
+	if (vert1Inside && !vert2Inside) {
+	  edge.second = newVertId;
+	  edgeGoingOut = edgeNo;
+	}
+	else {
+	  edge.first = newVertId;
+	  edgeGoingIn = edgeNo;
+	}
+      }
+    }
+
+  // For all faces, check each edge if it's been cut. If an edge has been cut,
+  // find the other edge that's been cut (there has to be exactly one); add new
+  // edge between this vertex and that one
+
+    if (edgeGoingOut > -1) {
+      vector<Edge> newFace;
+      int i = edgeGoingIn;
+      for (; i != edgeGoingOut;) {
+	newFace.push_back(polyhedron.faces[faceNo][i]);
+
+	i++;
+	if ((unsigned int)i >= polyhedron.faces[faceNo].size())
+	  i = 0;
+      }
+      newFace.push_back(polyhedron.faces[faceNo][edgeGoingOut]);
+      newFace.push_back(Edge(polyhedron.faces[faceNo][edgeGoingOut].second,
+polyhedron.faces[faceNo][edgeGoingIn].first));
+      newFaces.push_back(newFace);
+    }
+    else {
+      // This face doesn't intersect the plane. Is it completely clipped?
+      bool vert1Inside = (verticesToPrune.find(edges[0].first) == verticesToPrune.end());
+      if (vert1Inside) {
+	// Leave this face in
+	newFaces.push_back(edges);
+      }
+    }
+  }
+
+  // Get convex hull of newly created vertices, add a face with those
+
+  if (newVertsStartAt < polyhedron.vertices.size()-1) {
+    vector<unsigned int> newFace;
+
+    // Compute convex hull of newInterestPoints
+    unsigned int currentPoint = newVertsStartAt;
+
+    std::set<int> donePoints;
+    do {
+      newFace.push_back(currentPoint);
+      donePoints.insert(currentPoint);
+      unsigned int nextPoint = (currentPoint == polyhedron.vertices.size()-1 ?
+	  newVertsStartAt : currentPoint + 1);
+
+      Vector3 edge = polyhedron.vertices[nextPoint] - 
+	polyhedron.vertices[currentPoint];
+      for (unsigned int otherPoint = newVertsStartAt; otherPoint < polyhedron.vertices.size(); otherPoint++) {
+	if (otherPoint != currentPoint && otherPoint != nextPoint) {
+	  double leftness = dot(planeNormal,
+	      cross(edge, polyhedron.vertices[otherPoint]-polyhedron.vertices[currentPoint]));
+	  if (leftness < -epsilon) {
+	    nextPoint = otherPoint;
+	    edge = polyhedron.vertices[otherPoint] - polyhedron.vertices[currentPoint];
+	  }
+	}
+      }
+
+      currentPoint = nextPoint;
+    } while (donePoints.find(currentPoint) == donePoints.end());
+    newFaces.push_back(vector<Edge>());
+    for (unsigned int i = 0; i < newFace.size()-1; i++) {
+      newFaces.back().push_back(Edge(newFace[i], newFace[i+1]));
+    }
+    newFaces.back().push_back(Edge(newFace.back(), newFace.front()));
+  }
+
+  // Shrink vertex set
+  map<int, int> oldVertexToNewVertexMap;
+  vector<Vector3> newVertexSet;
+  for (unsigned int i = 0; i < polyhedron.vertices.size(); i++) {
+    if (verticesToPrune.find(i) == verticesToPrune.end()) {
+      newVertexSet.push_back(polyhedron.vertices[i]);
+    }
+    oldVertexToNewVertexMap[i] = newVertexSet.size()-1;
+  }
+  polyhedron.vertices = newVertexSet;
+  for (unsigned int i = 0; i < newFaces.size(); i++) {
+    for (unsigned int j = 0; j < newFaces[i].size(); j++) {
+      newFaces[i][j].first = oldVertexToNewVertexMap[newFaces[i][j].first];
+      newFaces[i][j].second = oldVertexToNewVertexMap[newFaces[i][j].second];
+    }
+  }
+  polyhedron.faces = newFaces;
 }
 
 std::vector<Vector3>

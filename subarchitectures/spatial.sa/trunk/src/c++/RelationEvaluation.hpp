@@ -70,6 +70,16 @@ struct Witness {
   Vector3 normal; //Normal direction from A to B
 };
 
+typedef std::pair<int, int> Edge;
+
+struct Polyhedron {
+  std::vector<Vector3> vertices;
+  std::vector<std::vector<Edge> > faces; //Edge list around face (positive direction)
+};
+
+double
+evaluateInness(const Object *objectC, const Object *objectO);
+
 double
 evaluateOnness(const Object *objectS, const Object *objectO);
 
@@ -84,6 +94,13 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
 std::vector<Vector3>
 findPolygonIntersection(const std::vector<Vector3> &polygon1, 
     const std::vector<Vector3> &polygon2);
+
+double
+computePolyhedronVolume(const Polyhedron &polyhedron);
+
+void
+clipPolyhedronToPlane(Polyhedron &polyhedron, const Vector3 &pointInPlane,
+    const Vector3 &planeNormal);
 
 double
 findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal);
