@@ -214,11 +214,19 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
       done = true;
    }
 
-   // TODO: object/part
    CSvgImage *pImage = NULL;
-   CSvgImage *pExisting = (CSvgImage*) m_Model.getObject(id); // XXX UNSAFE !!!!
+   CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
-      pExisting->setPart(partId, xmlData);
+      pImage = dynamic_cast<CSvgImage*>(pExisting);
+      if (! pImage) {
+         // The retreived model is of a different type, we must replace it
+         m_Model.removeObject(id);
+         DMESSAGE("Replacing an exisiting object of different type.");
+      }
+   }
+
+   if (pImage) {
+      pImage->setPart(partId, xmlData);
       m_Model.refreshObject(id);
    }
    else {
@@ -234,10 +242,18 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
 {
    DTRACE("CDisplayServer::setTomGineObject");
 
-   // TODO: object/part
    CTomGineModel *pModel = NULL;
-   CTomGineModel *pExisting = (CTomGineModel*) m_Model.getObject(id); // XXX UNSAFE !!!!
+   CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
+      pModel = dynamic_cast<CTomGineModel*>(pExisting);
+      if (! pModel) {
+         // The retreived model is of a different type, we must replace it
+         m_Model.removeObject(id);
+         DMESSAGE("Replacing an exisiting object of different type.");
+      }
+   }
+
+   if (pModel) {
       if (data.size() < 1) pModel->removePart(partId);
       else pModel->deserialize(partId, data);
       m_Model.refreshObject(id);
@@ -254,8 +270,7 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
 void CDisplayServer::setObjectTransform2D(const std::string& id, const std::string& partId,
       const std::vector<double>& transform)
 {
-   // TODO: object/part
-   CSvgImage *pExisting = (CSvgImage*) m_Model.getObject(id); // XXX UNSAFE !!!!
+   CDisplayObject *pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 
    { // XXX TEsting
@@ -264,10 +279,6 @@ void CDisplayServer::setObjectTransform2D(const std::string& id, const std::stri
       //if (pview) pview->m_Trafos["video.viewer"] = transform;
    }
 
-   //debug("Setting transform");
-   //for(int i=0; i< transform.size(); i++) {
-   //  printf("%f\n", transform[i]);
-   //}
    // TODO check size if (transform.size() != 9) transform.resize(9, 0.0);
    pExisting->setTransform2D(partId, transform);
    m_Model.refreshObject(id);
