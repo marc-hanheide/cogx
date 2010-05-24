@@ -82,6 +82,8 @@ protected:
 
   bool m_bTestOnness;
   bool m_bSampleOnness;
+  bool m_bTestInness;
+  bool m_bSampleInness;
   bool m_bDemoSampling;
   bool m_bNoPTZ;
   bool m_bNoVision;
@@ -95,6 +97,7 @@ protected:
   peekabot::GroupProxy m_planeProxies;
   peekabot::GroupProxy m_objectProxies;
   peekabot::GroupProxy m_onnessTester;
+  peekabot::GroupProxy m_innessTester;
   std::string m_PbHost;
   int m_PbPort;
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry

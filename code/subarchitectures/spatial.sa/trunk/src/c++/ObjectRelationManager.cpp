@@ -112,6 +112,17 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     }
   }
 
+  m_bTestInness = false;
+  m_bSampleInness = false;
+  it = _config.find("--test-inness");
+  if (it != _config.end()) {
+    m_bTestInness = true;
+    it = _config.find("--sample-inness");
+    if (it != _config.end()) {
+      m_bSampleInness = true;
+    }
+  }
+
   m_bDemoSampling = false;
   it = _config.find("--demo-sampling");
   if (it != _config.end()) {
@@ -233,7 +244,8 @@ void ObjectRelationManager::start()
     m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
   }
 
-  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness) {
+  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness
+      || m_bTestInness) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
       sleep(m_RetryDelay);
       connectPeekabot();
@@ -244,11 +256,14 @@ void ObjectRelationManager::start()
     if (m_bDisplayPlaneObjectsInPB) {
       m_planeProxies.add(root, "plane_objects", peekabot::REPLACE_ON_CONFLICT);
     }
-    if (m_bDisplayPlaneObjectsInPB || m_bTestOnness) {
+    if (m_bDisplayPlaneObjectsInPB || m_bTestOnness || m_bTestInness) {
       m_objectProxies.add(root, "visual_objects", peekabot::REPLACE_ON_CONFLICT);
     }
     if (m_bTestOnness) {
       m_onnessTester.add(root, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
+    }
+    if (m_bTestInness) {
+      m_innessTester.add(root, "in-ness_tester", peekabot::REPLACE_ON_CONFLICT);
     }
     println("Connected to peekabot, ready to go");
   }
@@ -319,10 +334,44 @@ void ObjectRelationManager::runComponent()
   log("I am running!");
 
   peekabot::GroupProxy root;
-  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness) {
+  if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB || m_bTestOnness 
+      || m_bTestInness) {
     root.assign(m_PeekabotClient, "root");
   }
 
+  /*
+  //REMOVEME: test of volume calculation
+  Polyhedron pyramid;
+  pyramid.vertices.push_back(vector3(-1,-1,0));
+  pyramid.vertices.push_back(vector3(-1,1,0));
+  pyramid.vertices.push_back(vector3(1,1,0));
+  pyramid.vertices.push_back(vector3(1,-1,0));
+  pyramid.vertices.push_back(vector3(0,0,-1));
+  pyramid.faces.push_back(vector<Edge>());
+  pyramid.faces.back().push_back(Edge(3,2));
+  pyramid.faces.back().push_back(Edge(2,1));
+  pyramid.faces.back().push_back(Edge(1,0));
+  pyramid.faces.back().push_back(Edge(0,3));
+  pyramid.faces.push_back(vector<Edge>());
+  pyramid.faces.back().push_back(Edge(0,4));
+  pyramid.faces.back().push_back(Edge(4,3));
+  pyramid.faces.back().push_back(Edge(3,0));
+  pyramid.faces.push_back(vector<Edge>());
+  pyramid.faces.back().push_back(Edge(3,4));
+  pyramid.faces.back().push_back(Edge(4,2));
+  pyramid.faces.back().push_back(Edge(2,3));
+  pyramid.faces.push_back(vector<Edge>());
+  pyramid.faces.back().push_back(Edge(2,4));
+  pyramid.faces.back().push_back(Edge(4,1));
+  pyramid.faces.back().push_back(Edge(1,2));
+  pyramid.faces.push_back(vector<Edge>());
+  pyramid.faces.back().push_back(Edge(1,4));
+  pyramid.faces.back().push_back(Edge(4,0));
+  pyramid.faces.back().push_back(Edge(0,1));
+  do {
+  cout << computePolyhedronVolume(pyramid);
+  } while (true);
+*/
 
   peekabot::SphereProxy sqdp;
   peekabot::SphereProxy scwp;
@@ -340,9 +389,7 @@ void ObjectRelationManager::runComponent()
   peekabot::SphereProxy sp2;
   peekabot::SphereProxy spm2;
 
-  if (m_bTestOnness) {
-
-
+  if (m_bTestOnness || m_bTestInness) {
     table1.type = OBJECT_PLANE;
 
     Matrix33 rotation;
@@ -354,70 +401,106 @@ void ObjectRelationManager::runComponent()
     table1.radius1 = 0.5;
     table1.radius2 = 0.5;
 
-    peekabot::GroupProxy sliders;
-    sliders.add(m_onnessTester, "weights", peekabot::REPLACE_ON_CONFLICT);
+    if (m_bTestOnness) {
+      peekabot::GroupProxy sliders;
+      sliders.add(m_onnessTester, "weights", peekabot::REPLACE_ON_CONFLICT);
 
-    sqdp.add(sliders, "squareDistanceOutside", peekabot::REPLACE_ON_CONFLICT);
-    sqdp.translate(-1.0, 6.0, 10*distanceFalloffOutside);
-    sqdp.set_scale(0.1);
-    scwp.add(sliders, "squareDistanceInside", peekabot::REPLACE_ON_CONFLICT);
-    scwp.translate(0.0, 6.0, 10*distanceFalloffInside);
-    scwp.set_scale(0.1);
-    bcwp.add(sliders, "patchThreshold", peekabot::REPLACE_ON_CONFLICT);
-    bcwp.translate(1.0, 6.0, 10*patchThreshold);
-    bcwp.set_scale(0.1);
-//    pip.add(sliders, "COMDistanceFalloff", peekabot::REPLACE_ON_CONFLICT);
-//    pip.translate(2.0, 6.0, COMDistanceFalloff);
-//    pip.set_scale(0.1);
-//    op.add(sliders, "overlap", peekabot::REPLACE_ON_CONFLICT);
-//    op.translate(3.0, 6.0, overlapWeight);
-//    op.set_scale(0.1);
+      sqdp.add(sliders, "squareDistanceOutside", peekabot::REPLACE_ON_CONFLICT);
+      sqdp.translate(-1.0, 6.0, 10*distanceFalloffOutside);
+      sqdp.set_scale(0.1);
+      scwp.add(sliders, "squareDistanceInside", peekabot::REPLACE_ON_CONFLICT);
+      scwp.translate(0.0, 6.0, 10*distanceFalloffInside);
+      scwp.set_scale(0.1);
+      bcwp.add(sliders, "patchThreshold", peekabot::REPLACE_ON_CONFLICT);
+      bcwp.translate(1.0, 6.0, 10*patchThreshold);
+      bcwp.set_scale(0.1);
+      //    pip.add(sliders, "COMDistanceFalloff", peekabot::REPLACE_ON_CONFLICT);
+      //    pip.translate(2.0, 6.0, COMDistanceFalloff);
+      //    pip.set_scale(0.1);
+      //    op.add(sliders, "overlap", peekabot::REPLACE_ON_CONFLICT);
+      //    op.translate(3.0, 6.0, overlapWeight);
+      //    op.set_scale(0.1);
 
-//    dfp.add(sliders, "distanceFalloff", peekabot::REPLACE_ON_CONFLICT);
-//    dfp.translate(-1.0, 6.0, squareDistanceFalloff);
-//    dfp.set_scale(0.1);
-    csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
-    csp.translate(0.0, 6.0, 10*supportCOMContainmentSteepness);
-    csp.set_scale(0.1);
-    cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
-    cop.translate(0.0, 6.0, supportCOMContainmentOffset);
-    cop.set_scale(0.1);
+      //    dfp.add(sliders, "distanceFalloff", peekabot::REPLACE_ON_CONFLICT);
+      //    dfp.translate(-1.0, 6.0, squareDistanceFalloff);
+      //    dfp.set_scale(0.1);
+      csp.add(sliders, "containmentSteepness", peekabot::REPLACE_ON_CONFLICT);
+      csp.translate(0.0, 6.0, 10*supportCOMContainmentSteepness);
+      csp.set_scale(0.1);
+      cop.add(sliders, "containmentOffset", peekabot::REPLACE_ON_CONFLICT);
+      cop.translate(0.0, 6.0, supportCOMContainmentOffset);
+      cop.set_scale(0.1);
 
-    pp.add(m_onnessTester, "table", peekabot::REPLACE_ON_CONFLICT);
-    pp.add_vertex(table1.radius1, table1.radius2, 0);
-    pp.add_vertex(-table1.radius1, table1.radius2, 0);
-    pp.add_vertex(-table1.radius1, -table1.radius2, 0);
-    pp.add_vertex(table1.radius1, -table1.radius2, 0);
+      pp.add(m_onnessTester, "table", peekabot::REPLACE_ON_CONFLICT);
+      pp.add_vertex(table1.radius1, table1.radius2, 0);
+      pp.add_vertex(-table1.radius1, table1.radius2, 0);
+      pp.add_vertex(-table1.radius1, -table1.radius2, 0);
+      pp.add_vertex(table1.radius1, -table1.radius2, 0);
 
-    pp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
-    pp.rotate(rotAngle, 0.0, 0.0, 1.0);
+      pp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
+      pp.rotate(rotAngle, 0.0, 0.0, 1.0);
 
 
-    bp.add(m_onnessTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
-    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
-    bp.set_scale(0.19, 0.09, 0.29);
-    bp.set_opacity(0.5);
+      bp.add(m_onnessTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
+      bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
+      bp.set_scale(0.19, 0.09, 0.29);
+      bp.set_opacity(0.5);
 
-    bp2.add(m_onnessTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
-    bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
-    bp2.set_scale(0.23, 0.21, 0.26);
-    bp2.set_opacity(0.5);
+      bp2.add(m_onnessTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
+      bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
+      bp2.set_scale(0.23, 0.21, 0.26);
+      bp2.set_opacity(0.5);
 
-    sp2.add(m_onnessTester, "Onness2", peekabot::REPLACE_ON_CONFLICT);
-    sp2.translate(2.0, 3.0, 1.0);
-    spm2.add(m_onnessTester, "Onness-max2", peekabot::REPLACE_ON_CONFLICT);
-    spm2.translate(2.0, 3.0, 1.0);
-    spm2.set_opacity(0.3);
+      sp2.add(m_onnessTester, "Onness2", peekabot::REPLACE_ON_CONFLICT);
+      sp2.translate(2.0, 3.0, 1.0);
+      spm2.add(m_onnessTester, "Onness-max2", peekabot::REPLACE_ON_CONFLICT);
+      spm2.translate(2.0, 3.0, 1.0);
+      spm2.set_opacity(0.3);
+    }
+    else {
+
+      pp.add(m_innessTester, "table", peekabot::REPLACE_ON_CONFLICT);
+      pp.add_vertex(table1.radius1, table1.radius2, 0);
+      pp.add_vertex(-table1.radius1, table1.radius2, 0);
+      pp.add_vertex(-table1.radius1, -table1.radius2, 0);
+      pp.add_vertex(table1.radius1, -table1.radius2, 0);
+
+      pp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z);
+      pp.rotate(rotAngle, 0.0, 0.0, 1.0);
+
+
+      bp.add(m_innessTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
+      bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.26+0.145);
+      bp.set_scale(0.19, 0.09, 0.29);
+      bp.set_opacity(0.5);
+
+      bp2.add(m_innessTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
+      bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z + 0.13);
+      bp2.set_scale(0.23, 0.21, 0.26);
+      bp2.set_opacity(0.5);
+
+      sp2.add(m_innessTester, "Inness2", peekabot::REPLACE_ON_CONFLICT);
+      sp2.translate(2.0, 3.0, 1.0);
+      spm2.add(m_innessTester, "Inness-max2", peekabot::REPLACE_ON_CONFLICT);
+      spm2.translate(2.0, 3.0, 1.0);
+      spm2.set_opacity(0.3);
+    }
   }
 
   sleepComponent(10000);
 
   peekabot::PointCloudProxy pcloud;
-  pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
-  int nPoints = 0;
   vector<Vector3> points;
+  int nPoints = 0;
   int maxPoints = 2500;
-  points.reserve(maxPoints);
+  if (m_bSampleOnness) {
+    pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+    points.reserve(maxPoints);
+  }
+  else if (m_bSampleInness) {
+    pcloud.add(root,"inpoints", peekabot::REPLACE_ON_CONFLICT);
+    points.reserve(maxPoints);
+  }
 
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
@@ -437,6 +520,86 @@ void ObjectRelationManager::runComponent()
       }
 
       unlockComponent();
+    }
+
+    //REMOVEME: clipping test
+    peekabot::Result<peekabot::Matrix4f> r;
+    r = bp.get_transformation(peekabot::WORLD_COORDINATES);
+    if (r.succeeded()) {
+      Pose3 boxPose;
+      double m[16];
+      m[0] = r.get_result()(0,0);
+      m[1] = r.get_result()(0,1);
+      m[2] = r.get_result()(0,2);
+      m[3] = r.get_result()(0,3);
+      m[4] = r.get_result()(1,0);
+      m[5] = r.get_result()(1,1);
+      m[6] = r.get_result()(1,2);
+      m[7] = r.get_result()(1,3);
+      m[8] = r.get_result()(2,0);
+      m[9] = r.get_result()(2,1);
+      m[10] = r.get_result()(2,2);
+      m[11] = r.get_result()(2,3);
+      m[12] = r.get_result()(3,0);
+      m[13] = r.get_result()(3,1);
+      m[14] = r.get_result()(3,2);
+      m[15] = r.get_result()(3,3);
+      setRow44(boxPose, m);
+      Polyhedron polyO;
+      double radius1 = 0.095;
+      double radius2 = 0.045;
+      double radius3 = 0.145;
+      polyO.vertices.push_back(vector3(radius1,radius2,radius3));
+      polyO.vertices.push_back(vector3(-radius1,radius2,radius3));
+      polyO.vertices.push_back(vector3(-radius1,-radius2,radius3));
+      polyO.vertices.push_back(vector3(radius1,-radius2,radius3));
+      polyO.vertices.push_back(vector3(radius1,radius2,-radius3));
+      polyO.vertices.push_back(vector3(-radius1,radius2,-radius3));
+      polyO.vertices.push_back(vector3(-radius1,-radius2,-radius3));
+      polyO.vertices.push_back(vector3(radius1,-radius2,-radius3));
+      for (unsigned int i = 0; i < polyO.vertices.size(); i++) {
+	polyO.vertices[i] = transform(boxPose, polyO.vertices[i]);
+      }
+      polyO.faces.resize(6);
+      polyO.faces[0].push_back(Edge(0,1));
+      polyO.faces[0].push_back(Edge(1,2));
+      polyO.faces[0].push_back(Edge(2,3));
+      polyO.faces[0].push_back(Edge(3,0));
+      polyO.faces[1].push_back(Edge(4,7));
+      polyO.faces[1].push_back(Edge(7,6));
+      polyO.faces[1].push_back(Edge(6,5));
+      polyO.faces[1].push_back(Edge(5,4));
+      polyO.faces[2].push_back(Edge(0,4));
+      polyO.faces[2].push_back(Edge(4,5));
+      polyO.faces[2].push_back(Edge(5,1));
+      polyO.faces[2].push_back(Edge(1,0));
+      polyO.faces[3].push_back(Edge(1,5));
+      polyO.faces[3].push_back(Edge(5,6));
+      polyO.faces[3].push_back(Edge(6,2));
+      polyO.faces[3].push_back(Edge(2,1));
+      polyO.faces[4].push_back(Edge(2,6));
+      polyO.faces[4].push_back(Edge(6,7));
+      polyO.faces[4].push_back(Edge(7,3));
+      polyO.faces[4].push_back(Edge(3,2));
+      polyO.faces[5].push_back(Edge(3,7));
+      polyO.faces[5].push_back(Edge(7,4));
+      polyO.faces[5].push_back(Edge(4,0));
+      polyO.faces[5].push_back(Edge(0,3));
+      clipPolyhedronToPlane(polyO, vector3(0,0,0), vector3(0,0,1));
+      peekabot::GroupProxy clippd;
+      clippd.add(root, "clippd", peekabot::REPLACE_ON_CONFLICT);
+      for (unsigned int i = 0; i < polyO.faces.size(); i++) {
+	peekabot::PolygonProxy pop;
+	char buf[256];
+	sprintf(buf, "poly%i", i);
+	pop.add(clippd, buf, peekabot::REPLACE_ON_CONFLICT);
+	Vector3 vert = polyO.vertices[polyO.faces[i][0].first];
+	pop.add_vertex(vert.x, vert.y, vert.z);
+	for (unsigned int j = 0; j < polyO.faces[i].size(); j++) {
+	  Vector3 vert = polyO.vertices[polyO.faces[i][j].second];
+	  pop.add_vertex(vert.x, vert.y, vert.z);
+	}
+      }
     }
 
     if (m_bTestOnness) {
@@ -601,6 +764,112 @@ void ObjectRelationManager::runComponent()
 	  }
 	}
     } // if (m_bTestOnness)
+
+    if (m_bTestInness) {
+      peekabot::Result<peekabot::Matrix4f> r;
+
+      r = bp.get_transformation(peekabot::WORLD_COORDINATES);
+      if (r.succeeded()) {
+	Pose3 boxPose;
+	double m[16];
+	m[0] = r.get_result()(0,0);
+	m[1] = r.get_result()(0,1);
+	m[2] = r.get_result()(0,2);
+	m[3] = r.get_result()(0,3);
+	m[4] = r.get_result()(1,0);
+	m[5] = r.get_result()(1,1);
+	m[6] = r.get_result()(1,2);
+	m[7] = r.get_result()(1,3);
+	m[8] = r.get_result()(2,0);
+	m[9] = r.get_result()(2,1);
+	m[10] = r.get_result()(2,2);
+	m[11] = r.get_result()(2,3);
+	m[12] = r.get_result()(3,0);
+	m[13] = r.get_result()(3,1);
+	m[14] = r.get_result()(3,2);
+	m[15] = r.get_result()(3,3);
+
+	setRow44(boxPose, m);
+
+	BoxObject box1;
+
+	box1.type = OBJECT_BOX;
+	box1.pose = boxPose;
+	box1.radius1 = 0.095;
+	box1.radius2 = 0.045;
+	box1.radius3 = 0.145;
+
+	peekabot::SphereProxy sp;
+	sp.add(m_innessTester, "Inness", peekabot::REPLACE_ON_CONFLICT);
+	sp.translate(0.0, 3.0, 1.0);
+	sp.set_scale(evaluateInness(&table1, &box1));
+	peekabot::SphereProxy spm;
+	spm.add(m_innessTester, "Inness-max", peekabot::REPLACE_ON_CONFLICT);
+	spm.translate(0.0, 3.0, 1.0);
+	spm.set_opacity(0.3);
+
+
+
+	r = bp2.get_transformation(peekabot::WORLD_COORDINATES);
+	if (r.succeeded()) {
+	  Pose3 boxPose;
+	  double m[16];
+	  m[0] = r.get_result()(0,0);
+	  m[1] = r.get_result()(0,1);
+	  m[2] = r.get_result()(0,2);
+	  m[3] = r.get_result()(0,3);
+	  m[4] = r.get_result()(1,0);
+	  m[5] = r.get_result()(1,1);
+	  m[6] = r.get_result()(1,2);
+	  m[7] = r.get_result()(1,3);
+	  m[8] = r.get_result()(2,0);
+	  m[9] = r.get_result()(2,1);
+	  m[10] = r.get_result()(2,2);
+	  m[11] = r.get_result()(2,3);
+	  m[12] = r.get_result()(3,0);
+	  m[13] = r.get_result()(3,1);
+	  m[14] = r.get_result()(3,2);
+	  m[15] = r.get_result()(3,3);
+
+	  setRow44(boxPose, m);
+
+	  BoxObject box2;
+
+	  box2.type = OBJECT_BOX;
+	  box2.pose = boxPose;
+	  box2.radius1 = 0.115;
+	  box2.radius2 = 0.105;
+	  box2.radius3 = 0.13;
+
+	  sp2.set_scale(evaluateInness(&box2, &box1));
+
+//	  if (m_bSampleInness) {
+//	    Pose3 oldPose = box1.pose;
+//
+//	    if (nPoints < maxPoints) {
+//	      vector<string> testObjects;
+//	      vector<Vector3> points;
+//	      points.reserve(500);
+//	      testObjects.push_back("krispies");
+//	      testObjects.push_back("squaretable");
+//
+//	      sampleRecursively(testObjects, 0, 5, 500, points, &table1);
+//	      log("Found %i points", points.size());
+//
+//	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+//		  it++) {
+//		  //  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
+//		  //    if (nPoints > 500) 
+//		  pcloud.add_vertex(it->x, it->y, it->z);
+//		  //points.push_back(box1.pose.pos);
+//		  nPoints++;
+//		}
+//	      }
+//	    }
+
+	  }
+	}
+    } // if (m_bTestInness)
 
     sleepComponent(500);
   }
