@@ -34,7 +34,7 @@ def _xe(shexpr, env=None):
 
 class CUserOptions(object):
     def __init__(self):
-        self.textEditCmd = "gvim --servername CAST --remote-silent %l[+:] %s"
+        self.textEditCmd = "gvim --servername GVIM --remote-silent %l[+:] %s"
         self.terminalCmd = "gnome-terminal --working-directory='%s'" 
         self._config = ["[USEROPTIONS]"] + optdefault.useroptions.split("\n")
         self.modified = False
