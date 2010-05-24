@@ -3,8 +3,6 @@
  * Created: 2010-04-16
  */
 #include "CSvgImage.hpp"
-#include <QtSvg>
-#include <QSvgRenderer>
 
 using namespace std;
 
@@ -43,7 +41,7 @@ void CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
       m_Parts.push_back(pPart);
    }
    if (pPart) {
-      pPart->data = xmlData;
+      pPart->setData(xmlData);
    }
 }
 
@@ -82,7 +80,8 @@ void CSvgImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
 
       pPainter->save();
       try {
-         QSvgRenderer doc(QByteArray::fromRawData(pPart->data.c_str(), pPart->data.length()), NULL);
+         // QSvgRenderer doc(QByteArray::fromRawData(pPart->data.c_str(), pPart->data.length()), NULL);
+         QSvgRenderer& doc = pPart->getSvgDoc();
          QSize size = doc.defaultSize();
          if (pPart->trmatrix.size() == 9) {
             std::vector<double>& trmatrix = pPart->trmatrix;

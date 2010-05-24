@@ -6,25 +6,46 @@
 #define CSVGIMAGE_IRJTSHTI
 
 #include "../Model.hpp"
+#include <QSvgRenderer>
 
 namespace cogx { namespace display {
 
 class CSvgImage: public CDisplayObject
 {
+private:
    friend class CSvgImage_Render2D;
    static std::auto_ptr<CRenderer> render2D;
-public:
+// public:
    // A SVG image may have multiple parts: data + transformation
-   struct SPart
+   class SPart
    {
+      QSvgRenderer* _psvgdoc;
+   public:
       std::string id;
       std::string data;
       std::vector<double> trmatrix;
       SPart(const std::string& partId) {
          id = partId;
+         _psvgdoc = NULL;
+      }
+      ~SPart() {
+         if (_psvgdoc) delete _psvgdoc;
+         _psvgdoc = NULL;
       }
       void setIdentity() {
          trmatrix.resize(0);
+      }
+      QSvgRenderer& getSvgDoc() {
+         if (! _psvgdoc) {
+            _psvgdoc = new QSvgRenderer();
+            _psvgdoc->load(QByteArray::fromRawData(data.c_str(), data.length()));
+         }
+         return *_psvgdoc;
+      }
+      void setData(const std::string& xmlData) {
+         if (_psvgdoc) delete _psvgdoc;
+         _psvgdoc = NULL;
+         data = xmlData;
       }
    };
    std::vector<SPart*> m_Parts;
