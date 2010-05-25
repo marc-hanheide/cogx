@@ -33,7 +33,7 @@ extern double overlapWeight;
 // penalty is precisely 0.5
 
 
-enum SpatialObjectType {OBJECT_PLANE, OBJECT_BOX, OBJECT_CYLINDER, OBJECT_SPHERE};
+enum SpatialObjectType {OBJECT_PLANE, OBJECT_BOX, OBJECT_CYLINDER, OBJECT_SPHERE, OBJECT_HOLLOW_BOX};
 
 struct Object {
   SpatialObjectType type;
@@ -54,6 +54,11 @@ struct BoxObject : public Object {
   double radius1;
   double radius2;
   double radius3;
+};
+
+//Box with the top (Z+) side open
+struct HollowBoxObject : public BoxObject {
+  double thickness;
 };
 
 enum WitnessType {WITNESS_VERTEX, WITNESS_EDGE, WITNESS_FACE};
@@ -94,6 +99,9 @@ sampleOnnessDistribution(const Object *objectS, Object *objectO,
 std::vector<Vector3>
 findPolygonIntersection(const std::vector<Vector3> &polygon1, 
     const std::vector<Vector3> &polygon2);
+
+void
+mergeAnyOverlappingVertices(Polyhedron &polyhedron, double epsilon);
 
 double
 computePolyhedronVolume(const Polyhedron &polyhedron);

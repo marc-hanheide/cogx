@@ -833,13 +833,14 @@ void ObjectRelationManager::runComponent()
 
 	  setRow44(boxPose, m);
 
-	  BoxObject box2;
+	  HollowBoxObject box2;
 
-	  box2.type = OBJECT_BOX;
+	  box2.type = OBJECT_HOLLOW_BOX;
 	  box2.pose = boxPose;
 	  box2.radius1 = 0.115;
 	  box2.radius2 = 0.105;
 	  box2.radius3 = 0.13;
+	  box2.thickness = 0.02;
 
 	  sp2.set_scale(evaluateInness(&box2, &box1));
 

@@ -23,12 +23,12 @@ evaluateOnness(const Object *objectS, const Object *objectO)
   Pose3 Opose = objectO->pose;
   // Retrieve model for O
 
-  int supportSurfaceType; // 0 for point, 1 for line segment, 2 for circle, 3 for polygon
-  Vector3 supportSurfaceCenter; 		// For 0 and 2, epicenter
-  double supportSurfaceRadius;
+  //int supportSurfaceType; // 0 for point, 1 for line segment, 2 for circle, 3 for polygon
+  //Vector3 supportSurfaceCenter; 		// For 0 and 2, epicenter
+  //double supportSurfaceRadius;
   std::vector<Vector3> supportSurfaceVertices; // For 1 and 3, vertices
-  Vector3 supportPlaneNormal;
-  double supportPlaneOffset; // dot product of plane point and plane normal
+  //Vector3 supportPlaneNormal;
+  //double supportPlaneOffset; // dot product of plane point and plane normal
 
   // Find topmost surface of S:
   //	if S is a plane object, surface is a polygon or circle
@@ -45,14 +45,14 @@ evaluateOnness(const Object *objectS, const Object *objectO)
   vector<Vector3> patch;
   double maxPatchClearance;
 
-  if (objectS->type == OBJECT_BOX &&
-      objectO->type == OBJECT_BOX) {
+  if ((objectS->type == OBJECT_BOX || objectS->type == OBJECT_HOLLOW_BOX) &&
+      (objectO->type == OBJECT_BOX || objectO->type == OBJECT_HOLLOW_BOX)) {
     witness = findContactPatch(*((BoxObject*)objectS), *((BoxObject*)objectO),
 	&patch, &maxPatchClearance);
   }
 
   else if (objectS->type == OBJECT_PLANE &&
-      objectO->type == OBJECT_BOX) {
+      (objectO->type == OBJECT_BOX || objectO->type == OBJECT_HOLLOW_BOX)) {
 
     BoxObject *Obox = (BoxObject*)objectO;
     PlaneObject *Splane = (PlaneObject*)objectS;
@@ -132,6 +132,7 @@ evaluateOnness(const Object *objectS, const Object *objectO)
 
   // Old version onness below here!
 
+  /*
   if (objectS->type == OBJECT_PLANE) {
     PlaneObject *plane = (PlaneObject *)objectS;
     supportPlaneNormal.z = 1.0;
@@ -418,7 +419,6 @@ evaluateOnness(const Object *objectS, const Object *objectO)
 	onnessFactor = 1/(1+minNormalDistance*minNormalDistance/(squareDistanceFalloff*squareDistanceFalloff));
       }
       else {
-	// TODO: differentiate above/below cases
 	onnessFactor = 1/(1+minNormalDistance*minNormalDistance/(squareDistanceFalloff*squareDistanceFalloff));
       }
 
@@ -692,6 +692,7 @@ evaluateOnness(const Object *objectS, const Object *objectO)
     bottomCOMContainmentWeight + planeInclinationWeight + overlapWeight;
 
   return totalWeights == 0.0 ? 0.0 : exp(totalOnness / totalWeights);
+  */
 }
 
 const double circlePlaneApproximationThreshold = 0.05; //Controls number of
@@ -704,6 +705,13 @@ const double boxThickness = 0.02; //Controls thickness of walls of hollow contai
 double
 evaluateInness(const Object *objectC, const Object *objectO)
 {
+  if (objectC->type == OBJECT_BOX ||
+      objectC->type == OBJECT_PLANE ||
+      objectC->type == OBJECT_SPHERE ||
+      objectC->type == OBJECT_CYLINDER) {
+    return 0;
+  }
+
   // Clip objectO to the convex hull of objectC. Compute ratio
   // of clipped volume to total volume.
   // Also compute depth of penetration of objectO into objectC.
@@ -791,7 +799,7 @@ evaluateInness(const Object *objectC, const Object *objectO)
       entireVolume = planeThickness * N*radius*cos(M_PI/N)*sin(M_PI/N);
     }
   }
-  else if (objectO->type == OBJECT_BOX) {
+  else if (objectO->type == OBJECT_BOX || objectO->type == OBJECT_HOLLOW_BOX) {
     BoxObject *box = (BoxObject *)objectO;
     double radius1 = box->radius1;
     double radius2 = box->radius2;
@@ -838,7 +846,7 @@ evaluateInness(const Object *objectC, const Object *objectO)
 
   double containedVolume;
 
-  if (objectC->type == OBJECT_BOX) {
+  if (objectC->type == OBJECT_HOLLOW_BOX) {
     //Clip ObjectO's polyhedron to the convex hull of ObjectC
     BoxObject *box = (BoxObject*) objectC;
 
@@ -846,18 +854,85 @@ evaluateInness(const Object *objectC, const Object *objectO)
       polyO.vertices[i] = transform(objectO->pose, polyO.vertices[i]);
       polyO.vertices[i] = transformInverse(objectC->pose, polyO.vertices[i]);
     }
-    clipPolyhedronToPlane(polyO, vector3(box->radius1,0,0), vector3(1,0,0));
-    clipPolyhedronToPlane(polyO, vector3(-box->radius1,0,0), vector3(-1,0,0));
-    clipPolyhedronToPlane(polyO, vector3(0, box->radius2,0), vector3(0,1,0));
-    clipPolyhedronToPlane(polyO, vector3(0, -box->radius2,0), vector3(0,-1,0));
-    clipPolyhedronToPlane(polyO, vector3(0, 0, box->radius3), vector3(0,0,1));
-    clipPolyhedronToPlane(polyO, vector3(0, 0, -box->radius3), vector3(0,0,-1));
+    clipPolyhedronToPlane(polyO, vector3(box->radius1,0,0), vector3(-1,0,0));
+    clipPolyhedronToPlane(polyO, vector3(-box->radius1,0,0), vector3(1,0,0));
+    clipPolyhedronToPlane(polyO, vector3(0, box->radius2,0), vector3(0,-1,0));
+    clipPolyhedronToPlane(polyO, vector3(0, -box->radius2,0), vector3(0,1,0));
+    clipPolyhedronToPlane(polyO, vector3(0, 0, box->radius3), vector3(0,0,-1));
+    clipPolyhedronToPlane(polyO, vector3(0, 0, -box->radius3), vector3(0,0,1));
 
+    mergeAnyOverlappingVertices(polyO, 1e-6);
     containedVolume = computePolyhedronVolume(polyO);
   }
   else {
     cerr << "Object type not supported yet!\n";
     exit(1);
+  }
+
+  //Find degree of collision (i.e. maximum depth of penetration)
+  if (objectC->type == OBJECT_HOLLOW_BOX) {
+    HollowBoxObject *hb = (HollowBoxObject *)objectC;
+
+    vector<BoxObject> sides;
+    BoxObject side1;
+    side1.type = OBJECT_BOX;
+    side1.pose.pos = vector3(hb->radius1-hb->thickness/2, 0, 0);
+    side1.radius1 = hb->thickness/2;
+    side1.radius2 = hb->radius2;
+    side1.radius3 = hb->radius3;
+    sides.push_back(side1);
+
+    BoxObject side2;
+    side2.type = OBJECT_BOX;
+    side2.pose.pos = vector3(0, hb->radius1-hb->thickness/2, 0);
+    side2.radius1 = hb->radius1;
+    side2.radius2 = hb->thickness/2;
+    side2.radius3 = hb->radius3;
+    sides.push_back(side2);
+
+    BoxObject side3;
+    side3.type = OBJECT_BOX;
+    side3.pose.pos = vector3(-hb->radius1+hb->thickness/2, 0, 0);
+    side3.radius1 = hb->thickness/2;
+    side3.radius2 = hb->radius2;
+    side3.radius3 = hb->radius3;
+    sides.push_back(side3);
+
+    BoxObject side4;
+    side4.type = OBJECT_BOX;
+    side4.pose.pos = vector3(0, -hb->radius2+hb->thickness/2, 0);
+    side4.radius1 = hb->radius1;
+    side4.radius2 = hb->thickness/2;
+    side4.radius3 = hb->radius3;
+    sides.push_back(side4);
+
+    BoxObject side5;
+    side5.type = OBJECT_BOX;
+    side5.pose.pos = vector3(0, 0, -hb->radius3+hb->thickness/2);
+    side5.radius1 = hb->radius1;
+    side5.radius2 = hb->radius2;
+    side5.radius3 = hb->thickness/2;
+    sides.push_back(side5);
+
+    if (objectO->type == OBJECT_BOX) {
+      double penetrationPenalty;
+      vector<Vector3> patch;
+      for (unsigned int i = 0; i < sides.size(); i++) {
+	setIdentity(sides[i].pose.rot);
+	transform(hb->pose, sides[i].pose, sides[i].pose);
+	Witness witness = findContactPatch(sides[i], *((BoxObject*)objectO),
+	    &patch, 0);
+	if (witness.distance < 0) {
+	  penetrationPenalty -= witness.distance;
+	}
+      }
+      return containedVolume / entireVolume *
+	exp(-penetrationPenalty/distanceFalloffInside * 0.3010129996);
+    }
+    else {
+      cerr << "Trajector object type not yet supported!\n";
+      exit(1);
+    }
   }
     
   return containedVolume / entireVolume;
@@ -872,6 +947,9 @@ struct ActiveFace {
 double
 computePolyhedronVolume(const Polyhedron &polyhedron)
 {
+  if (polyhedron.vertices.size() < 4) 
+    return 0.0;
+
   //Algorithm: Move a virtual plane upwards from the lowest vertex in the
   //polyhedron. Integrate the area of the cross-section polygon.
 
@@ -1051,9 +1129,13 @@ computePolyhedronVolume(const Polyhedron &polyhedron)
 
       double angleAtEdgeCos = -dot(faceEdgeNormal[leftFaceOfEdge],
 	  faceEdgeNormal[rightFaceOfEdge]);
-      //TODO: secure against Divide by zero
+
       double angleAtEdgeSin = 
 	sqrt(1 - angleAtEdgeCos*angleAtEdgeCos);
+
+      if (abs(angleAtEdgeSin) < epsilon) {
+	angleAtEdgeSin = epsilon;
+      }
 
       rightLateralExtensionSpeed[leftFaceOfEdge] = 
 	faceNormalRate[leftFaceOfEdge] * angleAtEdgeCos/angleAtEdgeSin +
@@ -1224,7 +1306,7 @@ polyhedron.faces[faceNo][edgeGoingIn].first));
 	polyhedron.vertices[currentPoint];
       for (unsigned int otherPoint = newVertsStartAt; otherPoint < polyhedron.vertices.size(); otherPoint++) {
 	if (otherPoint != currentPoint && otherPoint != nextPoint) {
-	  double leftness = dot(planeNormal,
+	  double leftness = dot(-planeNormal,
 	      cross(edge, polyhedron.vertices[otherPoint]-polyhedron.vertices[currentPoint]));
 	  if (leftness < -epsilon) {
 	    nextPoint = otherPoint;
@@ -2921,4 +3003,54 @@ randomizeOrientation(Pose3 &pose)
 
     setRow33(pose.rot, rowMajor);
 }
+
+void
+mergeAnyOverlappingVertices(Polyhedron &polyhedron, double eps)
+{
+  if (polyhedron.vertices.size() < 2)
+    return;
+  vector<Vector3> newVerts;
+
+  map<int, int> oldVertexToNewVertexMap;
+  for (unsigned int i = 0; i < polyhedron.vertices.size()-1; i++) {
+    for (unsigned int j = i+1; j < polyhedron.vertices.size(); j++) {
+      if (vequals(polyhedron.vertices[i], 
+	    polyhedron.vertices[j], eps)) {
+	oldVertexToNewVertexMap[j] = i;
+      }
+    }
+  }
+  for (unsigned int i = 0; i < polyhedron.vertices.size(); i++) {
+    if (oldVertexToNewVertexMap.find(i) == oldVertexToNewVertexMap.end()) {
+      newVerts.push_back(polyhedron.vertices[i]);
+    }
+  }
+
+  for (unsigned int i = 0; i < polyhedron.faces.size();) {
+    for (unsigned int j = 0; j < polyhedron.faces[i].size();) {
+      if (oldVertexToNewVertexMap.find(polyhedron.faces[i][j].first) != 
+	  oldVertexToNewVertexMap.end()) {
+	polyhedron.faces[i][j].first = oldVertexToNewVertexMap[polyhedron.faces[i][j].first];
+      }
+      if (oldVertexToNewVertexMap.find(polyhedron.faces[i][j].second) != 
+	  oldVertexToNewVertexMap.end()) {
+	polyhedron.faces[i][j].second = oldVertexToNewVertexMap[polyhedron.faces[i][j].second];
+      }
+      if (polyhedron.faces[i][j].first == polyhedron.faces[i][j].second) {
+	polyhedron.faces[i].erase(polyhedron.faces[i].begin() + j);
+      }
+      else {
+	j++;
+      }
+    }
+    if (polyhedron.faces[i].size() < 3) {
+      polyhedron.faces.erase(polyhedron.faces.begin()+i);
+    }
+    else {
+      i++;
+    }
+  }
+  polyhedron.vertices = newVerts;
+}
+
 };
