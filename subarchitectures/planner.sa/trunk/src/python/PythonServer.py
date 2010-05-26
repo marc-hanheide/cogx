@@ -1,28 +1,105 @@
-import os, sys, logging, traceback, Ice
+import os, sys, string, traceback, Ice
 from os.path import abspath, dirname, join, isdir
 from collections import defaultdict
 
-LOG_FORMAT="[%(levelname)s %(name)s: %(message)s]"
-logging.basicConfig(format=LOG_FORMAT)
+# initialize logging EARLY
+
+import cast.pylog4cxx
+
+cast_log4cxx = None
+logging_reconnect = False
+
+class CASTLoggerProxy(object):
+    def __init__(self, name=None):
+        self.name = name
+        self.log = None
+        self.cast_id = None
+        self.connect()
+
+    def connect(self):
+        if self.log and self.cast_id == cast_log4cxx.id:
+            return
+        if cast_log4cxx:
+            if self.name:
+                name = "%s.%s" % (cast_log4cxx.id, self.name)
+            else:
+                name = cast_log4cxx.id
+            self.log = cast.pylog4cxx.Logger(name, cast_log4cxx.subarch, cast_log4cxx.color)
+            self.cast_id = cast_log4cxx.id
+
+    def log(self, level, msg, *args, **kwargs):
+        self.connect()
+        if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
+            args = args[0]
+        if args:
+            msg = msg % args
+            
+        self.log.info(msg)
+
+    def debug(self, msg, *args):
+        self.connect()
+        if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
+           args = args[0]
+        if args:
+           msg = msg % args
+            
+        self.log.debug(msg)
+
+    def info(self, msg, *args, **kwargs):
+        self.connect()
+        if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
+           args = args[0]
+        if args:
+           msg = msg % args
+
+        self.log.info(msg)
+
+    def warning(self, msg, *args, **kwargs):
+        self.connect()
+        if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
+            args = args[0]
+        if args:
+            msg = msg % args
+            
+        self.log.warn(msg)
+        
+    def error(self, msg, *args, **kwargs):
+        self.connect()
+        if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
+            args = args[0]
+        if args:
+            msg = msg % args
+            
+        self.log.error(msg)
+
+    def critical(self, msg, *args, **kwargs):
+        self.connect()
+        if args and (len(args) == 1) and args[0] and isinstance(args[0], dict):
+            args = args[0]
+        if args:
+            msg = msg % args
+            
+        self.log.fatal(msg)
+
+from standalone import config
+
+config.set_logging_factory(CASTLoggerProxy)
 
 import autogen.Planner as Planner
 import beliefmodels.autogen as bm
 from beliefmodels.autogen import distribs, featurecontent
-#import binder.autogen.core
 import cast.core
 import cast.cdl
-from standalone import pddl, plans, config
+from standalone import pddl, plans
 from standalone.pddl import state
-
-log = config.logger("PythonServer")
-
 
 this_path = abspath(dirname(__file__))
 
 def extend_pythonpath():
-  """add standalone planner to PYTHONPATH"""
-  standalone_path = join(this_path, "standalone")
-  sys.path.insert(0, standalone_path)
+    """add standalone planner to PYTHONPATH"""
+    standalone_path = join(this_path, "standalone")
+    sys.path.insert(0, standalone_path)
+    
 extend_pythonpath()  
 
 from standalone.task import PlanningStatusEnum, Task
@@ -32,6 +109,9 @@ BINDER_SA = "binder"
 
 TEST_DOMAIN_FN = join(dirname(__file__), "domains/springtest.mapl")
 
+
+log = config.logger()
+        
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   
   def __init__(self):
@@ -40,6 +120,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.client = None
     self.planner = StandalonePlanner()
     self.tasks = {}
+
+    global cast_log4cxx
+    cast_log4cxx = self.m_logger
+
     log.info("created new PythonServer")
 
   def configureComponent(self, config):
@@ -55,13 +139,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     if "--domain" in config:
       self.domain_fn = join(dirname(__file__), "domains", config["--domain"])
 
-    logging.getLogger().setLevel(logging.WARNING)
-    if "--log" in config:
-      logging.getLogger().setLevel(logging.INFO)
-    if "--debug" in config:
-      logging.getLogger().setLevel(logging.DEBUG)
-
-
   def getClient(self):
     if not self.client:
       self.client = self.getIceServer(self.client_name, Planner.CppServer, Planner.CppServerPrx)
@@ -69,7 +146,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     return self.client
 
   def startComponent(self):
-    pass
+    global cast_log4cxx
+    cast_log4cxx = self.m_logger
 
   def stopComponent(self):
     pass
