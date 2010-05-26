@@ -24,6 +24,18 @@ TmpEllipse::TmpEllipse(Ellipse *ellipse)
 }
 
 /**
+ * @brief Recalculate all ellipse parameters, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void TmpEllipse::RePrune(int oX, int oY, int sc)
+{
+	surf.RePrune(oX, oY, sc);
+}
+
+
+/**
  * @brief Rectify TmpEllipse
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
@@ -314,8 +326,7 @@ void StereoEllipses::ClearResults()
 
 
 /**
- * @brief Match and calculate 3D closures from 2D closures.
- * @param side LEFT/RIGHT image of stereo.images.
+ * @brief Match and calculate 3D ellipses from 2D ellipses.
  */
 void StereoEllipses::Process()
 {
@@ -332,6 +343,11 @@ printf("#### StereoEllipses::Process()\n");
 					ellipses[side].PushBack(ellipse);
 			}
 		}
+		/// TODO Insert RePrune
+// 		if(pPara.pruning)
+// 			for(unsigned i = 0; i < cubes[side].Size(); i++)
+// 				cubes[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
+
 // 		for(unsigned i = 0; i < closures[side].Size(); i++)
 // 			closures[side][i].Rectify(stereo_cam, side);
 // 		for(unsigned i = 0; i < closures[side].Size(); i++)
@@ -343,6 +359,21 @@ printf("#### StereoEllipses::Process()\n");
 // 	MatchClosures(closures[LEFT], closures[RIGHT], closMatches);
 // 	Calculate3DClosures(closures[LEFT], closures[RIGHT], closMatches, closure3ds);
 printf("#### StereoEllipses::Process() end\n");
+}
+
+
+/**
+ * @brief Match and calculate 3D rectangles from 2D rectangles.
+ * @param side LEFT/RIGHT image of stereo.images.
+ */
+void StereoEllipses::Process(int oX, int oY, int sc)
+{
+	pPara.pruning = true;
+	pPara.offsetX = oX;
+	pPara.offsetY = oY;
+	pPara.scale = sc;
+	Process();
+	pPara.pruning = false;
 }
 
 

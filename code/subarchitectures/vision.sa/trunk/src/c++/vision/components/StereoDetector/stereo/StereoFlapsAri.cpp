@@ -20,8 +20,20 @@ namespace Z
  */
 TmpFlapAri::TmpFlapAri(FlapAri *flap)
 {
-  surf[0].Init(flap->rectangles[0]);
-  surf[1].Init(flap->rectangles[1]);
+  surf[0].Init(flap->rectangle[0]);
+  surf[1].Init(flap->rectangle[1]);
+}
+
+/**
+ * @brief Recalculate all flap parameters, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void TmpFlapAri::RePrune(int oX, int oY, int sc)
+{
+	surf[0].RePrune(oX, oY, sc);
+	surf[1].RePrune(oX, oY, sc);
 }
 
 /**
@@ -432,7 +444,6 @@ void StereoFlapsAri::ClearResults()
 
 /**
  * @brief Match and calculate 3D flaps from 2D flaps.
- * @param side LEFT/RIGHT image of stereo.images.
  */
 void StereoFlapsAri::Process()
 {
@@ -448,6 +459,9 @@ void StereoFlapsAri::Process()
 					flaps[side].PushBack(flap);
 			}
 		}
+		if(pPara.pruning)
+			for(unsigned i = 0; i < flaps[side].Size(); i++)
+				flaps[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
 		for(unsigned i = 0; i < flaps[side].Size(); i++)
 			flaps[side][i].Rectify(stereo_cam, side);
 		for(unsigned i = 0; i < flaps[side].Size(); i++)
@@ -460,6 +474,19 @@ void StereoFlapsAri::Process()
   Calculate3DFlaps(flaps[LEFT], flaps[RIGHT], flapMatches, flap3ds);
 }
 
+
+/**
+ * @brief Match and calculate 3D flaps from 2D flaps.
+ */
+void StereoFlapsAri::Process(int oX, int oY, int sc)
+{
+	pPara.pruning = true;
+	pPara.offsetX = oX;
+	pPara.offsetY = oY;
+	pPara.scale = sc;
+	Process();
+	pPara.pruning = false;
+}
 
 }
 

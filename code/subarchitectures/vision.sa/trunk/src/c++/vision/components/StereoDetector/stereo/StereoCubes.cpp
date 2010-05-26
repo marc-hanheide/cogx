@@ -26,6 +26,19 @@ TmpCube::TmpCube(Cube *cube)
 }
 
 /**
+ * @brief Recalculate all cube parameters, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void TmpCube::RePrune(int oX, int oY, int sc)
+{
+	surf[0].RePrune(oX, oY, sc);
+	surf[1].RePrune(oX, oY, sc);
+	surf[2].RePrune(oX, oY, sc);
+}
+
+/**
  * @brief Rectify TmpCube
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
@@ -155,8 +168,6 @@ void StereoCubes::Draw(int side, bool masked)
 	if(side == LEFT) nrCubes = NumCubesLeft2D();
 	else nrCubes = NumCubesRight2D();
 
-//printf("StereoCubes::Draw: %u\n", nrCubes);														/// TODO wieder weg
-
 	for(int i=0; i<nrCubes; i++)
 	{
 		if(masked)
@@ -173,7 +184,6 @@ void StereoCubes::Draw(int side, bool masked)
  */
 void StereoCubes::DrawMatched(int side)
 {
-//printf("StereoCubes::DrawMatched: %u\n", cubeMatches);								/// TODO wieder weg
 	for(int i=0; i< cubeMatches; i++)
 	{
 		cubes[side][i].surf[0].Draw(RGBColor::red);
@@ -441,6 +451,9 @@ void StereoCubes::Process()
 					cubes[side].PushBack(cube);
 			}
 		}
+		if(pPara.pruning)
+			for(unsigned i = 0; i < cubes[side].Size(); i++)
+				cubes[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
 		for(unsigned i = 0; i < cubes[side].Size(); i++)
 			cubes[side][i].Rectify(stereo_cam, side);
 		for(unsigned i = 0; i < cubes[side].Size(); i++)
@@ -453,6 +466,19 @@ void StereoCubes::Process()
 //   Calculate3DCubes(cubes[LEFT], cubes[RIGHT], cubeMatches, cube3ds);
 }
 
+
+/**
+ * @brief Match and calculate 3D flaps from 2D flaps.
+ */
+void StereoCubes::Process(int oX, int oY, int sc)
+{
+	pPara.pruning = true;
+	pPara.offsetX = oX;
+	pPara.offsetY = oY;
+	pPara.scale = sc;
+	Process();
+	pPara.pruning = false;
+}
 
 }
 

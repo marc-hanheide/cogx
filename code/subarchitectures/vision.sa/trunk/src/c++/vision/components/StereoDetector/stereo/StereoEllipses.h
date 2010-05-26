@@ -29,6 +29,7 @@ public:
 
   TmpEllipse() {}
   TmpEllipse(Ellipse *ellipse);
+	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
 //   bool IsAtPosition(int x, int y) const;
@@ -70,18 +71,18 @@ public:
 	~StereoEllipses() {}
 
 	int NumEllipses2D(int side);
+	int NumEllipsesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::ELLIPSE);}		///< 
+	int NumEllipsesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::ELLIPSE);}	///< 
+
 	const TmpEllipse &Closures2D(int side, int i);
-	int NumEllipses() {return ellipse3ds.Size();}
-	const Ellipse3D &Ellipses(int i) {return ellipse3ds[i];}
+	const Ellipse3D &Ellipses(int i) {return ellipse3ds[i];}												///<
 
-	int NumEllipsesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::ELLIPSE);}
-	int NumEllipsesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::ELLIPSE);}
-
-	int NumStereoMatches() {return ellMatches;}
+	int NumStereoMatches() {return ellMatches;}																			///<
 	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
 	void ClearResults();
 	void Process();
+	void Process(int oX, int oY, int sc);
 };
 
 }

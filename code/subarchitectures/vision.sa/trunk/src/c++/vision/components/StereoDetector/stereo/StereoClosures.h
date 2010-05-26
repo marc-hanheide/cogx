@@ -32,6 +32,7 @@ public:
 
   TmpClosure() {}
   TmpClosure(Closure *closure);
+	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
 //   bool IsAtPosition(int x, int y) const;
@@ -79,18 +80,18 @@ public:
 	~StereoClosures() {}
 
 	int NumClosures2D(int side);
+	int NumClosuresLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::CLOSURE);}		///< 
+	int NumClosuresRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CLOSURE);}	///< 
+
 	const TmpClosure &Closures2D(int side, int i);
-	int NumClosures() {return closure3ds.Size();}
-	const Closure3D &Closures(int i) {return closure3ds[i];}
+	const Closure3D &Closures(int i) {return closure3ds[i];}												///< 
 
-	int NumClosuresLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::CLOSURE);}
-	int NumClosuresRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CLOSURE);}
-
-	int NumStereoMatches() {return closMatches;}
+	int NumStereoMatches() {return closMatches;}																		///< 
 	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
 	void ClearResults();
 	void Process();
+	void Process(int oX, int oY, int sc);
 };
 
 }
