@@ -1,7 +1,7 @@
 /**
  * @file Draw.cc
- * @author Richtsfeld
- * @date May 2009
+ * @author Richtsfeld Andreas, Zillich Michael
+ * @date 2007, May 2009, 2010
  * @version 0.1
  * @brief Drawing Gestalts to the OpenCv IplImage.
  **/
@@ -14,7 +14,7 @@
 
 namespace Z
 {
-																												/// TODO TODO TODO TODO TODO iplImage ist hier global definiert!!!!!!!!!!
+																						/// TODO iplImage is global
 IplImage *iplImage;													///< Draw image in Draw.cc
 RGBColor defColor = RGBColor::white;				///< Default draw color in Draw.cc
 int drawThickness = 2;											///< Default draw thickness in Draw.cc
@@ -27,10 +27,6 @@ void SetActiveDrawArea(IplImage *iI)
 {
 	iplImage = iI;
 }
-
-// // static bool THICK_LINES = false;
-// // static bool BLACK_WHITE = false;
-// // static bool draw_bw = false;
 
 /**
  * Set/unset fat lines and dots for all further drawing.
@@ -50,66 +46,6 @@ void SetActiveDrawArea(IplImage *iI)
 // {
 // //   BLACK_WHITE = set;
 // }
-
-/**
- * Set where to draw to: main or info draw area.
- */
-// void SetActiveDrawArea(QGLWidget *da)
-// {
-//   draw_area = da;
-//   // note: only main draw area is affected by fat lines and black/white
-//   if(draw_area == MainWin::main_win->draw_area)
-//   {
-//     if(THICK_LINES)
-//     {
-//       glLineWidth(2.);
-//       glPointSize(2.);
-//     }
-//     else
-//     {
-//       glLineWidth(1.);
-//       glPointSize(1.);
-//     }
-//     draw_bw = BLACK_WHITE;
-//   }
-//   else
-//   {
-//     glLineWidth(1.);
-//     glPointSize(1.);
-//     draw_bw = false;
-//   }
-// }
-
-// void SaveDrawArea(const char *filename)
-// {
-//   Image img(NULL, draw_area->width(), draw_area->height(), 3, RGB24, true);
-//   SetDrawImagesSolid();
-//   glReadPixels(0, 0, img.Width(), img.Height(), GL_RGB, GL_UNSIGNED_BYTE,
-//       img.Data());
-//   img.SavePPM_FlipVert(filename);
-// }
-
-/**
- * Draw printf style text in the status bar.
- */
-// void PrintStatus(const char *format, ...)
-// {
-//   static char msg[1024];
-//   va_list arg_list;
-//   va_start(arg_list, format);
-//   vsnprintf(msg, 1024, format, arg_list);
-//   va_end(arg_list);
-//   MainWin::main_win->statusBar()->message(msg);
-// }
-
-/**
- * Draw an image given as RGB24 char array.
- */
-void DrawImageRGB24(const char *rgb24, int width, int height)
-{
-//   glRasterPos2i(0, 0);
-//   glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, rgb24);
-}
 
 /**
  * Draw images solid.
@@ -154,34 +90,6 @@ void DrawImageRGB24(const char *rgb24, int width, int height)
 //   glPixelTransferf(GL_BLUE_BIAS, 0.);
 // }
 
-// void SetClearImagesWhite()
-// {
-//   glClearColor(1., 1., 1., 1.);
-// }
-
-// void SetClearImagesBlack()
-// {
-//   glClearColor(0., 0., 0., 1.);
-// }
-
-
-
-
-
-// void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255)
-// {
-//   if(!draw_bw)
-//     glColor4ub(r, g, b, a);
-//   else
-//   {
-//     // white stays white
-//     if(r == 255 && g == 255 && b == 255)
-//       glColor4ub(r, g, b, a);
-//     // everyting else become black
-//     else
-//       glColor4ub(0, 0, 0, a);
-//   }
-// }
 
 /**
  * @brief Set default color for drawing (if no color is explicitely given).
@@ -245,17 +153,15 @@ void DrawLine2D(double x1, double y1, double x2, double y2, unsigned char transp
  */
 void DrawArrow(Vector2 start, Vector2 end, RGBColor col)
 {
-//   double len_2 = 4.; // length/2
-//   double wid_2 = 3.; // width/2
-// 	Vector2 dir = end - start;
-// 	if (dir.y != 0.) dir = Normalise(dir);
-//   Vector2 tip = (start + end)/2. + dir*len_2;
-//   Vector2 left = (start + end)/2. - dir*len_2 +
-//     dir.NormalAntiClockwise()*wid_2;
-//   Vector2 right = (start + end)/2. - dir*len_2 +
-//     dir.NormalClockwise()*wid_2;
-//   DrawLine2D(left.x, left.y, tip.x, tip.y, col);
-//   DrawLine2D(right.x, right.y, tip.x, tip.y, col);
+  double len_2 = 4.;
+  double wid_2 = 3.;
+	Vector2 dir = end - start;
+	dir = Normalise(dir);
+  Vector2 tip = (start + end)/2. + dir*len_2;
+  Vector2 left = (start + end)/2. - dir*len_2 + dir.NormalAntiClockwise()*wid_2;
+  Vector2 right = (start + end)/2. - dir*len_2 + dir.NormalClockwise()*wid_2;
+  DrawLine2D(left.x, left.y, tip.x, tip.y, col);
+  DrawLine2D(right.x, right.y, tip.x, tip.y, col);
 }
 
 /**
@@ -326,10 +232,7 @@ static void Arc2D(double x, double y, double r, double start, double span, bool 
 	CvScalar cvCol = cvScalar(col.r, col.g, col.b);
 
 	if(r > 30000.) return;
-
-// printf("Arc2D: x-y: %4.2f-%4.2f / r: %4.1f / start: %4.1f / span: %6.6f\n", x, y, r, start, span);
 	cvEllipse(iplImage, cvPoint(x, y), cvSize(r, r), (-start)*360/(2*M_PI), 0, (-span)*360/(2*M_PI), cvCol, thickness);
-
 }
 
 /**
