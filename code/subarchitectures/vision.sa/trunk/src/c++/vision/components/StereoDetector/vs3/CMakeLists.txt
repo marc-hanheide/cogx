@@ -11,6 +11,8 @@ SET(HEADERS
 	Ball.hh
 	BallDefinition.hh
 	BestResult.hh
+#	Camera.hh
+	CEdge.hh
 	Closure.hh
 	Collinearity.hh
 	Cone.hh
@@ -111,6 +113,8 @@ SET(SOURCES
 	Arc.cc
 #	Ball.cc
 #	BestResult.cc
+#	Camera.cc
+	CEdge.cc
 	Closure.cc
 	Collinearity.cc
 #	Cone.cc
@@ -118,7 +122,7 @@ SET(SOURCES
 #	Corner.cc
 	Cube.cc
 #	Cylinder.cc
-#	EJunction.cc
+	EJunction.cc
 	Ellipse.cc
 #	Exit.cc
 #	ExtClosure.cc

@@ -18,10 +18,11 @@ static const char type_names[][NAME_LENGTH] = {
   "FORM_SEGMENTS",
   "FORM_LINES",
   "FORM_ARCS",
-  "FORM_PARALLEL_LINE_GROUPS",
+//  "FORM_PARALLEL_LINE_GROUPS",
   "FORM_ARC_JUNCTIONS",
   "FORM_CONVEX_ARC_GROUPS",
   "FORM_ELLIPSES",
+	"FORM_EXT_ELLIPSES",
   "FORM_JUNCTIONS",
   "FORM_CLOSURES",
   "FORM_RECTANGLES",
@@ -44,7 +45,9 @@ GestaltPrinciple::GestaltPrinciple(VisionCore *vc)
 
 
 /**
- * @brief Returns the name of a given gestalt principle type.
+ * @brief Returns the name of a given Gestalt principle type.
+ * @param t Type of Gestalt principle
+ * @return Name of Gestalt principle
  */
 const char* GestaltPrinciple::TypeName(Type t)
 {
@@ -52,7 +55,9 @@ const char* GestaltPrinciple::TypeName(Type t)
 }
 
 /**
- * @brief Return the enum type of a given gestalt principle type name.
+ * @brief Return the enum type of a given Gestalt principle type name.
+ * @param type_name Type name of the Gestalt principle
+ * @return Gestalt principle type
  */
 GestaltPrinciple::Type GestaltPrinciple::EnumType(const char *type_name)
 {

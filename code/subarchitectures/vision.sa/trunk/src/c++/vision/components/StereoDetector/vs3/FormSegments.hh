@@ -12,6 +12,7 @@
 #include "IdImage.hh"
 #include "Segment.hh"
 #include "GestaltPrinciple.hh"
+#include "CEdge.hh"     //jp, 20091111
 
 namespace Z
 {
@@ -22,7 +23,11 @@ namespace Z
 class FormSegments : public GestaltPrinciple
 {
 private:
+  float alpha, omega;								///< alpha and omega of the canny e.d.
   bool done;
+
+  CEdge computeEdges;   //jp, 20091111
+  void CreateSegmentsCEdge();
 
   void CreateSegmentsMatas();
   void DrawToEdgeImage(Segment *seg);
@@ -40,6 +45,7 @@ public:
   virtual void Reset();
   virtual void Operate(bool incremental);
   virtual bool NeedsOperate() {return !done;}
+  virtual void SetCanny(float a, float o);
 };
 
 }

@@ -1,7 +1,7 @@
 /**
  * @file Rectangle.hh
  * @author Richtsfeld Andreas
- * @date Februar 2008
+ * @date Februar 2008, 2010
  * @version 0.1
  * @brief Header of class rectangles
  **/
@@ -9,7 +9,7 @@
 // A rectangle may be created in different ways from an closure. Not all lines and l-junctions may be part of the rectangle. 
 // For that reason consits a rectangle of one based closure, 4 intersection points and a array of lines.
 // 
-// TODO We can mask rectangles only if they are from the same closure. Don't try to use junctions!
+// TODO Check: We can mask rectangles only if they are from the same closure.
 
 
 #ifndef Z_RECTANGLE_HH
@@ -38,26 +38,21 @@ private:
 
 public:
 	Closure *closure;					///< The underlying closure
-	Vector2 isct[4]; 					///< intersection points in counter clockwise order
-	Array<Line*> lines;				///< Lines of a rectangle
-
-	Array<LJunction*> ljcts;	///< L-junctions, in counter-clockwise order						/// TODO Die sollten eigentlich weg, da nicht konsistent.
-																																										/// Zumindest: Wenn nicht verfügbar, dann sollten die auf UNDEF_ID
-
-
-  double parallelity; 			///< parallelity value of the two opposed edge pairs. (see FormRectangles)
-	Vector2 direction[2];			///< TODO mean direction of the two line-pairs (1,3 and 2,4) (should be between isct-points)
-	double phi[2];						///< mean angle of the two line-pairs
-	Vector2 centerPoint;			///< center point of the rectangle (2D mean value of corners)
-	double radius; 						///< maximum distance from center-point to a corner-point
-	double innerRadius;				///< minimum distance from center-point to middle of lines.
+	Vector2 isct[4]; 					///< Intersection points in clockwise order
 
 	unsigned *data;						///< Image from CalculateSupport: Draw into this image to count pixels. (Bresenham alg.)
 	unsigned pixelmass;				///< Number of pixels from lines of closure
 	double pixelsupport; 			///< pixelsupport of the rectangle (in %) (>100 possible?)
 
+  double parallelity; 			///< parallelity value of the two opposed edge pairs. (see FormRectangles)
+	Vector2 direction[2];			///< mean direction of the two line-pairs (1,3 and 2,4) (should be between isct-points)
+	double phi[2];						///< mean angle of the two line-pairs
 
-  Rectangle(VisionCore *vc, Closure *c, unsigned js[4], Vector2 is[4], Array<Line*> l, double par);			/// TODO js weg
+	Vector2 centerPoint;			///< center point of the rectangle (2D mean value of corners)
+	double radius; 						///< maximum distance from center-point to a corner-point
+	double innerRadius;				///< minimum distance from center-point to middle of lines.
+
+  Rectangle(VisionCore *vc, Closure *c, Vector2 is[4], double par);
 	~Rectangle(){ delete data; };
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();

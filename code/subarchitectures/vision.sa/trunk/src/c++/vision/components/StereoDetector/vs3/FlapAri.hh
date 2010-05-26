@@ -1,9 +1,9 @@
 /**
  * @file FlapAri.hh
  * @author Andreas Richtsfeld
- * @date Jannuar 2010
+ * @date March 2010
  * @version 0.1
- * @brief Header file of Gestalt FlapAri: Flaps from rectangles.
+ * @brief Header file of Gestalt FlapAri: Form flaps from rectangles.
  **/
 
 #ifndef Z_FLAP_ARI_HH
@@ -23,41 +23,25 @@ namespace Z
 class FlapAri : public Gestalt
 {
 public:
-//  unsigned rects[2];								///< IDs of rectangles from flap																		///	TODO remove, now rectangles
-  Array<Rectangle*> rectangles;			///< Rectangles of the flap
-  Array<unsigned> sharedLines;			///< SharedLines from the two rectangles															/// TODO sollte auf Line* geändert werden
+	Rectangle *rectangle[2];					///< Rectangles of the flap
+	Array<Line*> sharedLines;					///< SharedLines from the two rectangles
 
-  double meanGap;										///< Mean value of smallest two gaps between two rectangle-corners		/// TODO kann bleiben
-	Vector2 orderedIsctR0[4];					///< Ordered intersection points of first rectangle (counter clockwise)
-	Vector2 orderedIsctR1[4];					///< Ordered intersection points of second rectangle (counter clockwise)
+	// The intersections of both rectangles are ordered clockwise. The shared line(s) are always between 0 and 3
+	Vector2 orderedIsctR0[4];					///< Ordered intersection points of first rectangle (clockwise)
+	Vector2 orderedIsctR1[4];					///< Ordered intersection points of second rectangle (clockwise)
 
-  unsigned innerJcts[4];						///< The inner 4 L-Junctions of the flap															/// TODO keine Junctions => Vector2 isct
-  unsigned outerJcts[4];						///< The outer 4 L-Junctions of the flap															/// TODO keine Junctions => Vector2 isct
-																		// [0,1] from rect[0] clockwise
-																		// [2,3] from rect[1] counter clockwise
+	// The six intersection points starting with the "inner intersection point" from both rectangles,
+	// then following all other intersection points clockwise. (0,1,2,3 is than the first rectangle,
+	// 3,4,5,0 the second one)
+	Vector2 isct[6];									///< Intersection points of the flap
 
-
-	// TODO Center und radius werden verwendet um Flaps zu maskieren.
-	Vector2 center;										///< Center point of the flap (mean value of innerJcts->iscts)
+  double meanGap;										///< Mean value of smallest two gaps between two rectangle-corners for significance
+	Vector2 center;										///< Center point of the flap
 	double radius;										///< Maximum radius from center to outerJcts->iscts
-	Vector2 rectCenter[2];						///< Center points of the rectangles
-	double rectRadius[2];							///< Maximum radius from rectCenter to junction intersections
-
-	// TODO Das hier wird für später für das Tracken von Cubes verwendet, oder? => sollte wegkommen, da es einfach nicht richtig ist, das zu tun.
-	/* 6 possibilities for oCase (Anordnung der beiden Rechtecke lt. Flap-Def):
-				Right/Left	...	oCase = 1
-				Left/Right	...	oCase = 2
-				Front/Top		...	oCase = 3
-				Top/Front		... oCase = 4
-				Left/Top		...	oCase = 5
-				Top/Right		...	oCase = 6
-	*/
-	unsigned oCase;										///< ordering of rectangles (r/l - l/r - f/t - t/f - l/t - t/r <==> 1--6)						/// TODO braucht man bei Stereo hoffentlich nicht mehr!
 
 
-  FlapAri(VisionCore *c, unsigned r0, unsigned r1, double gap, Array<unsigned> sL, unsigned iJ[4], unsigned oJ[4], Vector2 oIsctR0[4], Vector2 oIsctR1[4]);
-
-  void CalcOrientation();
+  FlapAri(VisionCore *c, Rectangle *r[2], double gap, Array<Line*> sLines, Vector2 oIsctR0[4], Vector2 oIsctR1[4]);
+	void OrderIntersections(Rectangle *r[2], Vector2 oIR0[4], Vector2 oIR1[4]);
   void CalculateSignificance();
 	bool IsInside(unsigned flap);
   virtual void Draw(int detail = 0);

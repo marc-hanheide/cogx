@@ -185,10 +185,15 @@ void VisionCore::NewImage(const IplImage *new_img)
 /**
  * @brief Process the current image incrementally for a given amount of time.
  * @param runtime_ms  amount of time to run, in microseconds.
+ * @param ca Canny alpha value
+ * @param co Canny omega value
  * TODO try-catch hier weg und nur mehr exception werfen
  */
-void VisionCore::ProcessImage(int runtime_ms) //throw Except()
+void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except() TODO
 {
+  // set parameter for canny edge detector
+  Principles(GestaltPrinciple::FORM_SEGMENTS)->SetCanny(ca, co);
+
   struct timespec start, cur;
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
   try
@@ -213,6 +218,9 @@ void VisionCore::ProcessImage(int runtime_ms) //throw Except()
   {
     printf("%s\n", e.what());
   }
+  
+  PrintRunTime();
+	printf("REAL RUNTIME FOR VC: %4.3f\n", timespec_diff(&cur, &start));
 }
 
 
@@ -221,6 +229,7 @@ void VisionCore::ProcessImage(int runtime_ms) //throw Except()
  */
 void VisionCore::ProcessImage()
 {
+	printf("VisionCore::ProcessImage: warning: function antiquated.\n");
   try
   {
     for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
@@ -255,8 +264,9 @@ void VisionCore::Draw(int detail)
  */
 void VisionCore::DrawImage()
 {
-  if(img != 0)
-    DrawImageRGB24(img->imageData, img->width, img->height);
+	printf("VisionCore::DrawImage: not yet implemented!\n");
+//   if(img != 0)
+//     DrawImageRGB24(img->imageData, img->width, img->height);
 }
 
 /**
@@ -280,6 +290,9 @@ void VisionCore::DrawGestalts(Gestalt::Type type, int detail)
 
 /**
  * @brief Draw just a single gestalt.
+ * @param type Gestalt type
+ * @param num Number of Gestalt
+ * @param detail Degree of detail
  */
 void VisionCore::DrawGestalt(Gestalt::Type type, unsigned num, int detail)
 {
@@ -289,6 +302,8 @@ void VisionCore::DrawGestalt(Gestalt::Type type, unsigned num, int detail)
 
 /**
  * @brief Draw whatever pictorial info a gestalt has to offer.
+ * @param type Gestalt type
+ * @param num Number of Gestalt
  */
 void VisionCore::DrawGestaltInfo(Gestalt::Type type, unsigned num)
 {
@@ -309,13 +324,32 @@ void VisionCore::DrawPrinciple(GestaltPrinciple::Type type, int detail)
 }
 
 /**
- * @brief Draw whatever the given gestalt principle has to draw.
+ * @brief Get property information from a Gestalt.
  * @param type Gestalt type.
+ * @param id ID of the Gestalt
+ * @return Returns the information as string.
+
  */
 const char* VisionCore::GetInfo(Gestalt::Type type, int id)
 {
-	const char* text = (Gestalts(type, id))->GetInfo(); //gestalts[type]->GetInfo();
+	const char* text = (Gestalts(type, id))->GetInfo();
 	return text;
+}
+
+/**
+ * @brief Get the Gestalt list with the number of detected Gestalts.
+ * @return Returns the information as string.
+ */
+const char* VisionCore::GetGestaltListInfo()
+{
+  const unsigned info_size = 10000;
+  static char info_text[info_size] = "";
+  int n = 0;
+
+	for(int i=0; i < Gestalt::MAX_TYPE; i++)
+		n += snprintf(info_text + n, info_size - n, "%s:  %u\n", Gestalt::TypeName((Gestalt::Type) i), gestalts[i].Size());
+
+	return info_text;
 }
 
 
@@ -353,6 +387,23 @@ double VisionCore::RunTime()
 }
 
 /**
+ * @brief Accumulated runtime of active Gestalt principles.
+ */
+void VisionCore::PrintRunTime()
+{
+	printf("Runtime VC:\n");
+  double runtime = 0.;
+  double sum = 0.;
+  for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
+    if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type) i))
+		{
+      printf("  %s :: %4.3fs\n",(principles[i]->TypeName((GestaltPrinciple::Type) i)), principles[i]->RunTime());
+			sum+= principles[i]->RunTime();
+		}
+	printf("  RUNTIME SUM               :: %4.3fs\n", sum);
+}
+
+/**
  * @brief Add a new Gestalt (of any type) to the system.
  * @param g  new Gestalt
  * @param inform  if true, inform other parts of the system of this new Gestalt, \n
@@ -374,7 +425,7 @@ void VisionCore::NewGestalt(Gestalt *g, bool inform)
  */
 void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
 {
-  switch(type)
+	switch(type)
   {
     case Gestalt::ARC:
       if(VisionCore::config.GetValueInt("FORM_CONVEX_ARC_GROUPS") == 1)
@@ -391,15 +442,10 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
     case Gestalt::L_JUNCTION:
       if(VisionCore::config.GetValueInt("FORM_CLOSURES") == 1)
         Principles(GestaltPrinciple::FORM_CLOSURES)->InformNewGestalt(type, id);
-      if(VisionCore::config.GetValueInt("FORM_CUBES") == 1)
-        Principles(GestaltPrinciple::FORM_CUBES)->InformNewGestalt(type, id);
       break;
     case Gestalt::COLLINEARITY:
       if(VisionCore::config.GetValueInt("FORM_CLOSURES") == 1)
         Principles(GestaltPrinciple::FORM_CLOSURES)->InformNewGestalt(type, id);
-      if(VisionCore::config.GetValueInt("FORM_CUBES") == 1)
-        Principles(GestaltPrinciple::FORM_CUBES)->InformNewGestalt(type, id);
-      break;
     case Gestalt::CLOSURE:
       if(VisionCore::config.GetValueInt("FORM_RECTANGLES") == 1)
         Principles(GestaltPrinciple::FORM_RECTANGLES)->InformNewGestalt(type, id);
@@ -426,6 +472,7 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
  */
 void VisionCore::SetROI(const Vector2 center, double sigma)
 {
+	printf("VisionCore::SetROI: warning: function antiquated.\n");
   roi_center = center;
   roi_sigma = sigma;
 }

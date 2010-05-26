@@ -25,7 +25,11 @@ static int CmpRectangles(const void *a, const void *b)
 
 /**
  * @brief Add edgels from a segment edgel list to an OpenCV point array.
- * @																																												/// TODO Dokumentieren
+ * @param edgels Edgel array
+ * @param num_edgels Number of added edgels.
+ * @param new_edgels New edgel array.
+ * @param start_idx Index of start point.
+ * @param end_idx Index of end point.
  */
 static void AddEdgels(CvPoint2D32f *edgels, int &num_edgels, const Array<Edgel> &new_edgels, unsigned start_idx, unsigned end_idx)
 {
@@ -44,8 +48,7 @@ bool FormRectangles::NeedsOperate()
  * @param vc Vision core
  */
 FormRectangles::FormRectangles(VisionCore *vc) : GestaltPrinciple(vc)
-{
-}
+{}
 
 /** TODO ARI: Diese Funktion funktioniert nicht? => wieso????
  * @brief Comparison function for sorting inner angles of a closure, smallerst to largest.
@@ -54,12 +57,6 @@ FormRectangles::FormRectangles(VisionCore *vc) : GestaltPrinciple(vc)
  */
 static int CmpAngles(const void *a, const void *b)
 {
-// printf("CmpAngles:\n");
-//   // if a is undefined, move it to end
-// 
-// printf("%4.3f - %4.3f\n", (*(LJunction**)a)->sig, 1.111);
-
-
   // if a is undefined, move it to end
   if(*(LJunction**)a == 0)
     return 1;   // b is first
@@ -80,7 +77,6 @@ static int CmpAngles(const void *a, const void *b)
  */
 void FormRectangles::Rank()
 {
-  // TODO ARI: homogenous rectangles are better, smaller sum of gaps is better
   RankGestalts(Gestalt::RECTANGLE, CmpRectangles);
 }
 
@@ -102,15 +98,6 @@ void FormRectangles::Mask()
   }
 }
 
-/*
-void FormRectangles::Reset(const Image *img)
-{
-  ClearHashTable();
-  for(unsigned i = 0; i < u_left.Size(); i++)
-    u_left[i].Clear();
-  u_left.Clear();
-}
-*/
 
 /** 
  * @brief InformNewGestalt
@@ -119,7 +106,7 @@ void FormRectangles::Reset(const Image *img)
  */
 void FormRectangles::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
-//   StartRunTime();																																									/// TODO Reimplement Start/Stop RunTime() in Gestalts.
+//   StartRunTime();																								/// TODO Reimplement Start/Stop RunTime() in Gestalts.
   if (type == Gestalt::CLOSURE)
 		CreateQuadrilateral(idx);
 	Rank();
@@ -129,34 +116,43 @@ void FormRectangles::InformNewGestalt(Gestalt::Type type, unsigned idx)
 
 
 /**
- * @brief Try to create a rectangle, if closure has four L-Junctions.
+ * @brief Try to create a rectangle from a closure.
+ * @param clos ID of new closure.
+ */
+void FormRectangles::CreateQuadrilateral(unsigned clos)
+{
+  if(Closures(core, clos)->NumLJunctions() == 4)
+	{
+		CreateWithFourLJ(clos);
+	}
+  else if (Closures(core, clos)->NumLJunctions() > 4)
+	{
+		if(!CreateWithMoreLJLine(clos))
+		  CreateWithMoreLJAngle(clos);
+	}
+}
+
+/**
+ * @brief Try to create a rectangles from closures with exactly four L-Junctions.
  * @param clos ID of closure
  */
 void FormRectangles::CreateWithFourLJ(unsigned clos)
 {
-	unsigned ljcts[4];																// TODO ARI: Ändern auf Array, damit gleicher Aufruf wie unten
+	Vector2 isct[4];
 	for(unsigned i = 0, j = 0; i < Closures(core, clos)->jcts.Size(); i++)
 	{
 		LJunction *lj = Closures(core, clos)->jcts[i];
 		if(Closures(core, clos)->jcts[i] != 0)					// Note => Zero holes in jcts[]
-			ljcts[j++] = lj->ID();
+			isct[j++] = lj->isct;
 	}
 
-	if (IsConvexPolygon(ljcts))
+	if (IsConvexPolygon(isct))
 	{
-		double parallelity = IsRectangle(ljcts);
-		if(parallelity > 5.)														// TODO ARI: parallelity-threshold
+		double parallelity = IsRectangle(isct);
+		if(parallelity > 5.)																																		// TODO ARI: parallelity-threshold
 		{
-			if(!RectangleExists(ljcts))
-			{
-				Vector2 isct[4]; 
-				for(unsigned i=0; i<4; i++)
-					isct[i] = LJunctions(core, ljcts[i])->isct;
-
-				Rectangle *new_r = new Rectangle(core, Closures(core, clos), ljcts, isct, Closures(core, clos)->lines, parallelity);
-				core->NewGestalt(new_r);
-			}
-		else printf("FormRectangles::CreateQuadrilateral: Rectangle exists already! Clos: %u\n", clos);											/// TODO Tritt das jemals auf?
+			Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
+			core->NewGestalt(new_r);
 		}
 	}
 }
@@ -164,44 +160,25 @@ void FormRectangles::CreateWithFourLJ(unsigned clos)
 
 /**
  * @brief Try to create a rectangle, if closure has more than four L-Junctions. \n
- * Prune short lines (<10% of largest line).
+ * We try to remove small lines to get the rectangle. This is only solveable with thresholds. \n
+ * Copy of StereoBase::TmpSurf::Init() => See for comments.
  * @param clos ID of new closure
  */
-void FormRectangles::CreateWithMoreLJLine(unsigned clos)
+bool FormRectangles::CreateWithMoreLJLine(unsigned clos)
 {
-	// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-	// Implement new else if () method, where we try to remove small lines to get the rectangle. Only solveable with thresholds!
-	/// Hier ergibt sich ein Problem: Wenn man kleine Linien rauslöscht, dann ergibt sich eine neue Gestalt, denn dann gibt es eine L-Junction im Viereck nicht!
-	/// Das Rechteck hat dann vl. 3 L-junctions und eine neue Intersection von 2 Linien zwischen denen eine kleine Linie gelöscht wird!
-	/// Das Rechteck darf dann nur mehr aus Intersection-points und den großen Linien bestehen.
-
-/// KOPIERT VON STEREO BASE => TmpSurf::Init
-
-	// array of edgel points, 10000 should be enough, i.e. a random segfault will
-	// appear at some possibly distant point in the future :)
 	CvPoint2D32f edgels[10000];
 	int num_edgels = 0;
 	vector<TempLine> lines;
 	unsigned first_l_jct = 0, i = 0;
 	bool full_round = false;
 
-	// Notes:
-	// The closure has two arrays jcts and colls of same size. If a
-	// junction between two consecutive lines is an L-jct, jct[i] points to the
-	// according L-jct and coll[i] == 0. Otherwise jct[i] == 0 and coll[i] points
-	// to the respective collinearity.
-	//
-	// lines (and junctions) are in counter-clockwise order
-	//
-	// jct i is the jct between line i-1 and line i
-	// so i-1 is the LEFT and i the RIGHT line of L-jct i
-	
 	// move to the first L-jct
 	while(i < Closures(core, clos)->jcts.Size() && Closures(core, clos)->jcts[i] == 0)
 		i++;
+
 	// note: in case clos is a circle, we have only collinearities!
 	if(i == Closures(core, clos)->jcts.Size())
-		return;
+		return false;
 	first_l_jct = i;
 
 	while(!full_round)
@@ -219,7 +196,6 @@ void FormRectangles::CreateWithMoreLJLine(unsigned clos)
 			CvMat tmp = cvMat(num_edgels, 1, CV_32FC2, edgels);
 			cvFitLine(&tmp, CV_DIST_L2, 0, 0.01, 0.01, line_params);
 			lines.push_back(TempLine(line_params[2], line_params[3], line_params[0], line_params[1]));
-			// and start new line
 			num_edgels = 0;
 		}
 
@@ -227,15 +203,12 @@ void FormRectangles::CreateWithMoreLJLine(unsigned clos)
 		if(i == first_l_jct)
 			full_round = true;
 	}
-	// we can't do anything with less than 3 lines
+
 	if(lines.size() < 3)
-	{
-		printf("FormRectangles: Houston, we have a problem!\n");
-//     return;
-	}
+    return false;
 
 	// minimum ratio of length to maximum length
-	static double LENGTH_THR_FACTOR = 0.1;
+	static double LENGTH_THR_FACTOR = 0.1;										// TODO The Threshold!
 	vector<Vector2> points(lines.size());
 	vector<double> lengths(lines.size());
 	bool done = false;
@@ -268,8 +241,7 @@ void FormRectangles::CreateWithMoreLJLine(unsigned clos)
 		done = !erased_short_line;
 	}
 
-	// calculate corner points
-	vector<Vector2> p;			///< edge points
+	vector<Vector2> p;			// intersection (corner) points
 	p.resize(lines.size());
 	for(i = 0; i < lines.size(); i++)
 	{
@@ -277,60 +249,56 @@ void FormRectangles::CreateWithMoreLJLine(unsigned clos)
 		p[i] = LineIntersection(lines[i].p, lines[i].d, lines[j].p, lines[j].d);
 	}
 
-	if(p.size() == 4) printf("FormRectangles: Neues Rechteck aus Closure gefunden: %u\n", Closures(core, clos)->ID());
+	if(p.size() == 4)
+	{
+		Vector2 isct[4]; 
+		for(unsigned i=0; i<4; i++)
+			isct[i] = p[i];
 
-	/// So - Was hat sich nun ergeben?
-	/// Neues Recteck mit Eckpunkten p und Linien "lines" anlegen, wenn p=4 ist?
-
-	/// Problem => Welche Linien sind wirklich beteiligt? => einfach alle vom Closure verwenden um sie später zum sharedLine suchen zu verwenden?
-
-	/// TODO TODO TODO TODO TODO TODO TODO Neues Rechteck anlegen!!!
+		double parallelity = IsRectangle(isct);
+		if(parallelity > 5.)   																		// TODO ARI: parallelity-threshold 
+		{
+			Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
+			core->NewGestalt(new_r);
+			return true;
+		}
+	}
+	return false;
 }
-
-
 
 
 /**
  * @brief Try to create a rectangle, if closure has more than four L-Junctions. \n
- * Find four L-junctions with a sum of angles with about 2PI (+-delta)
+ * Find four L-junctions with a sum of angles with about 2PI (+-delta). This is not \n
+ * logical grounded. Only a method to increase the efficiency.
  * @param clos ID of new closure
  */
-void FormRectangles::CreateWithMoreLJAngle(unsigned clos)
+bool FormRectangles::CreateWithMoreLJAngle(unsigned clos)
 {
-  // if closure has more than 4 L-Junctions, it is a quadriliteral, if the
-  // sum of the greatest 4 angles from the l-junctions is 2Pi +- delta
-
-	const double delta = M_PI/4.;  												// threshold 
+	const double delta = M_PI/4.;  															// TODO Another threshold 
 	double sum_angles = 0.;
 
-	// get ljcts
 	Array<unsigned> ordered_ljcts;
-
 	for(unsigned i=0; i<Closures(core, clos)->jcts.Size(); i++)
 		if(Closures(core, clos)->jcts[i] != 0)			// "without holes ;-)"
 			ordered_ljcts.PushBack(Closures(core, clos)->jcts[i]->ID());
 
-	// check if closure is a convex polygon
 	if (IsConvexPolygon(ordered_ljcts))
 	{
-
 //       ordered_ljcts.Sort(CmpAngles);		// sort by angles
 		// TODO Search the biggest four ordered LJunctions (by hand, because sort-function don't want work.
-		// TODO Stimmt das überhaupt?
 		for(unsigned a=0; a<4; a++)
 		{
 			unsigned biggest = 0;
 			double comp = 0.0;
 			for(unsigned b=a; b<ordered_ljcts.Size(); b++)
 			{
-				// suche größten Winkel
 				if(LJunctions(core, ordered_ljcts[b])->OpeningAngle() > comp)
 				{
 					comp = LJunctions(core, ordered_ljcts[b])->OpeningAngle();
 					biggest = b;
 				}
 			}
-			// change biggest with current value a
 			unsigned sav = ordered_ljcts[a];
 			ordered_ljcts[a] = ordered_ljcts[biggest];
 			ordered_ljcts[biggest] = sav;
@@ -341,14 +309,11 @@ void FormRectangles::CreateWithMoreLJAngle(unsigned clos)
 			if(ordered_ljcts[i] != 0)
 				sum_angles += LJunctions(core, ordered_ljcts[i])->OpeningAngle();
 
-		// sum of angles is within 2Pi +- delta
 		if(fabs(2*M_PI - sum_angles) <= delta)
 		{
-			// note that junctions in ordered_ljcts are not in counter-clockwise order
-			// -> go through original junction list and collect those which are the
-			// first 4 in ordered_ljcts
+			// go throug junction-list and reorder the four junctions clockwise
 			unsigned ljcts[4];
-			for(unsigned i = 0, j = 0; i < Closures(core, clos)->jcts.Size() && j < 4; i++)		// Note: Bigger than NumLJunctions()
+			for(unsigned i = 0, j = 0; i < Closures(core, clos)->jcts.Size() && j < 4; i++)
 			{
 				// if junction i is among the first 4
 				// TODO: note that this is a bit inefficient..
@@ -358,92 +323,22 @@ void FormRectangles::CreateWithMoreLJAngle(unsigned clos)
 						ljcts[j++] = Closures(core, clos)->jcts[i]->ID();
 			}
 
-			// get intersection points
 			Vector2 isct[4]; 
 			for(unsigned i=0; i<4; i++)
 				isct[i] = LJunctions(core, ljcts[i])->isct;
 
-			double parallelity = IsRectangle(ljcts);
-			if(parallelity > 5.)   													// TODO ARI: parallelity-threshold 
+			double parallelity = IsRectangle(isct);
+			if(parallelity > 5.)   																																// TODO ARI: parallelity-threshold 
 			{
-				// reject if rectangle exists	
-				if (!RectangleExists(ljcts))
-				{
-					Rectangle *new_r = new Rectangle(core, Closures(core, clos), ljcts, isct, Closures(core, clos)->lines, parallelity);		/// TODO Which lines?
-					core->NewGestalt(new_r);
-				}
+printf("FormRectangles::CreateWithMoreLJAngle: Hier wurde ein Rechteck erzeugt (Angle ding)!\n");
+				Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
+				core->NewGestalt(new_r);
+				return true;
 			}
 		}
 	}
-}
-
-
-/**
- * @brief Try to create a rectangle from a closure.
- * @param clos ID of new closure.
- */
-void FormRectangles::CreateQuadrilateral(unsigned clos)
-{
-  if(Closures(core, clos)->NumLJunctions() == 4)
-		CreateWithFourLJ(clos);
-  else if (Closures(core, clos)->NumLJunctions() > 4)
-	{
-		CreateWithMoreLJLine(clos);
-		CreateWithMoreLJAngle(clos);
-	}
-}
-
-
-/**																																					/// TODO Diese Funktion beruht auf ljcts: Weg => Dafür Rechtecke mit closure-Vergleich prunen?
- * @brief Check if this rectangle with the four l-junctions already exists.
- * @param ljcts The four L-junctions of the rectangle.
- */
-bool FormRectangles::RectangleExists(unsigned ljcts[4])
-{
-//   bool rectangleExists = false;
-//   if (NumRectangles(core)<1) rectangleExists = false;
-// 
-//   for (unsigned i=0; i<NumRectangles(core); i++)
-//   {
-// 		unsigned rectJcts[4];
-// 		for(int j=0; j<4; j++) rectJcts[j] = Rectangles(core, i)->ljcts[j]->ID();
-// 	
-// 		// if all 4 jcts same => rectangle exists already
-// 		bool found[4];
-// 		found[0]=false;	
-// 		found[1]=false;	
-// 		found[2]=false;	
-// 		found[3]=false;	
-// 		
-// 		for(int j=0; j<4; j++) 
-// 			for(int k=0; k<4; k++)
-// 				if(ljcts[j] == rectJcts[k]) found[j]=true;
-// 	
-// 		// found all 4 jcts at other rectangle? => rectangle exists
-// 		if (found[0] && found[1] && found[2] && found[3]) rectangleExists = true;
-//   }
-// 
-//   return rectangleExists;
-
 	return false;
 }
-
-
-/**
- * @brief Check if quadrilateral is a rectangle. Use therefore the parallelity of opposing edges.\n
- * We assume that we have a nearly perfect one-point projection. This means that at least one opposing \n
- * edge pair should be parallel.
- * @param ljcts The four L-Junctions of the rectangle.
- * @return Returns significance value for beeing a rectangle.
- */
-double FormRectangles::IsRectangle(unsigned ljcts[4])
-{
-  Vector2 isct[4];
-  for(int i=0; i<4; i++)
-		isct[i]=LJunctions(core, ljcts[i])->isct;
-
-	return IsRectangle(isct);
-}	
 
 
 /**
@@ -486,19 +381,6 @@ double FormRectangles::IsRectangle(Vector2 isct[4])
 
   return parallelity;
 }	
-
-/**
- * @brief Check whether the set of junctions form a convex polygon.
- * @param jcts The four junctions of the rectangle.
- * @return Returns true, if the four juntions are building a convex polygon.
- */
-bool FormRectangles::IsConvexPolygon(unsigned jcts[4])
-{
-	Vector2 p[4];
-  for(unsigned i = 0; i < 4; i++)
-    p[i] = LJunctions(core, jcts[i])->isct;
-	return IsConvexPolygon(p);
-}
 
 
 /**

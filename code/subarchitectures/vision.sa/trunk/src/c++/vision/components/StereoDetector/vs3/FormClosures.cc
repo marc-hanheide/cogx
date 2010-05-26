@@ -1,6 +1,10 @@
 /**
- * $Id: FormClosures.cc,v 1.16 2007/04/14 20:50:59 mxz Exp mxz $
- */
+ * @file FormClosures.cc
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Gestalt principle class for forming closures.
+ **/
 
 #include <algorithm>
 #include <vector>
@@ -36,7 +40,7 @@ static int CmpClosures(const void *a, const void *b)
 #define COST_INF HUGE
 
 /**
- * Comparison function object for heap.
+ * @brief Comparison function object for heap.
  * Note that the default STL heap is a max-heap, i.e. the first element is the
  * maximum. The default STL heap uses the less-than operator '<'.
  * By having heap use this LargerThan operator we get a min-heap, which is
@@ -78,7 +82,7 @@ static int CmpAngles(const void *a, const void *b)
 }
 
 /**
- * Initiate a new closure candidate from a junction and its two lines.
+ * @brief Initiate a new closure candidate from a junction and its two lines.
  */
 FormClosures::ClosCand::ClosCand(Line *line0, Line *line1,
     int open0, int open1, Bending b)
@@ -91,8 +95,8 @@ FormClosures::ClosCand::ClosCand(Line *line0, Line *line1,
 }
 
 /**
- * Extending a given closure candidate.
- * If extending at START, add left line of jct to front.
+ * @brief Extending a given closure candidate. \n
+ * If extending at START, add left line of jct to front.\n
  * If extending at END, add right line of jct to back.
  */
 FormClosures::ClosCand::ClosCand(ClosCand *old)
@@ -103,27 +107,39 @@ FormClosures::ClosCand::ClosCand(ClosCand *old)
   bend = old->bend;
 }
 
+/**
+ * @brief Return first line of a closure candidate.
+ * @return First line of closure candidate.
+ */
 Line *FormClosures::ClosCand::FirstLine()
 {
-  //return LJunctions(jcts.front())->line[LEFT];
   return lines.front();
 }
 
+/**
+ * @brief Return last line of a closure candidate.
+ * @return Last line of closure candidate.
+ */
 Line *FormClosures::ClosCand::LastLine()
 {
-  //return LJunctions(jcts.back())->line[RIGHT];
   return lines.back();
 }
 
+/**
+ * @brief Return first open line number.
+ * @return Last number of first open line.
+ */
 int FormClosures::ClosCand::FirstOpen()
 {
-  //return Other(LJunctions(jcts.front())->near_point[LEFT]);
   return open[START];
 }
 
+/**
+ * @brief Return last open line number.
+ * @return Last number of last open line.
+ */
 int FormClosures::ClosCand::LastOpen()
 {
-  //return Other(LJunctions(jcts.back())->near_point[RIGHT]);
   return open[END];
 }
 
@@ -131,6 +147,7 @@ int FormClosures::ClosCand::LastOpen()
 /**
  * Check whether adding jct at START/END would lead to a self-intersection.
  * TODO: check
+ * TODO: obsolete?
  */
 bool FormClosures::ClosCand::Intersects(Line *line)
 {
@@ -152,11 +169,17 @@ bool FormClosures::ClosCand::Intersects(Line *line)
   return false;
 }
 
-FormClosures::FormClosures(VisionCore *vc)
-: GestaltPrinciple(vc)
-{
-}
+/**
+ * @brief Constructor of Gestalt principle class FormClosures.
+ * @param vc Vision core
+ */
+FormClosures::FormClosures(VisionCore *vc) : GestaltPrinciple(vc)
+{}
 
+/**
+ * @brief Reset Gestalt principle class.
+ * @param vc Vision core
+ */
 void FormClosures::Reset()
 {
   for(unsigned i = 0; i < cands.Size(); i++)
@@ -164,6 +187,11 @@ void FormClosures::Reset()
   cands.Clear();
 }
 
+/**
+ * @brief Inform about new Gestalt.
+ * @param type Type of Gestalt.
+ * @param idx Index of new Gestalt.
+ */
 void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
   switch(type)
@@ -182,6 +210,10 @@ void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
   }
 }
 
+/**
+ * @brief Add new L-Junction and intitiate shortest path search.
+ * @param idx Index of new Gestalt.
+ */
 void FormClosures::HaveNewLJunction(unsigned idx)
 {
   LJunction *ljct = LJunctions(core, idx);
@@ -197,6 +229,10 @@ void FormClosures::HaveNewLJunction(unsigned idx)
   UpdateLNeighbors(ljct);
 }
 
+/**
+ * @brief Add new Collinearity and intitiate shortest path search.
+ * @param idx Index of new Gestalt.
+ */
 void FormClosures::HaveNewCollinearity(unsigned idx)
 {
   Collinearity *coll = Collinearities(core, idx);
@@ -212,28 +248,34 @@ void FormClosures::HaveNewCollinearity(unsigned idx)
   UpdateCNeighbors(coll);
 }
 
+/**
+ * @brief Add new T-Junction and intitiate shortest path search.
+ * @param idx Index of new Gestalt.
+ */
 void FormClosures::HaveNewTJunction(unsigned idx)
 {
   TJunction *tjct = TJunctions(core, idx);
   UpdateTNeighbors(tjct);
+	printf("FormClosures::HaveNewTJunction: function is obsolete: splitting T-Junctions into 2L+C?\n");
 }
 
-void FormClosures::UpdateLNeighbors(LJunction *ljct)
+void FormClosures::UpdateLNeighbors(LJunction *ljct)			/// TODO obsolete
 {
 }
 
-void FormClosures::UpdateCNeighbors(Collinearity *coll)
+void FormClosures::UpdateCNeighbors(Collinearity *coll)		/// TODO obsolete
 {
 }
 
-void FormClosures::UpdateTNeighbors(TJunction *tjct)
+void FormClosures::UpdateTNeighbors(TJunction *tjct)			/// TODO obsolete
 {
 }
 
 /**
- * Checks whether the given L-junction is isolated, i.e. can not form a closure.
- * Only if the open ends of LEFT and RIGHT arm have at least one continuation,
+ * @brief Checks whether the given L-junction is isolated, i.e. can not form a closure. \n
+ * Only if the open ends of LEFT and RIGHT arm have at least one continuation, \n
  * the junction could possibly form a closure.
+ * @param ljct L-Junction
  */
 bool FormClosures::IsIsolatedL(LJunction *ljct)
 {
@@ -252,9 +294,10 @@ bool FormClosures::IsIsolatedL(LJunction *ljct)
 }
 
 /**
- * Checks whether the given Collinearity is isolated, i.e. can not form a
- * closure.  Only if the open ends of first and second line have at least one
+ * @brief Checks whether the given Collinearity is isolated, i.e. can not form a \n
+ * closure.  Only if the open ends of first and second line have at least one \n
  * continuation, the collinearity could possibly form a closure.
+ * @param coll Collinearity
  */
 bool FormClosures::IsIsolatedC(Collinearity *coll)
 {
@@ -275,15 +318,21 @@ bool FormClosures::IsIsolatedC(Collinearity *coll)
 }
 
 /**
- * Return whether lines a and b already are part of the same closure.
+ * @brief Return whether lines a and b already are part of the same closure.
  * This can only happen if there is first e.g. a collinearity and then an
  * L-junction created between the same lines.
+ * @param a First line a.
+ * @param b Second lien b.
  */
 bool FormClosures::InSameClosure(Line *a, Line *b)
 {
   return a->closures.Intersect(b->closures);
 }
 
+/**
+ * @brief Add new candidate.
+ * @param jct L-Junction
+ */
 void FormClosures::NewCandidateL(LJunction *jct)
 {
   unsigned new_c = cands.Size();
@@ -297,9 +346,13 @@ void FormClosures::NewCandidateL(LJunction *jct)
   is_end_of[jct->line[RIGHT]->ID()].push_back(new_c);
 }
 
+/**
+ * @brief Add new candidate.
+ * @param coll Collinearity
+ * TODO obsolete?
+ */
 void FormClosures::NewCandidateC(Collinearity *coll)
-{
-}
+{}
 
 #if 0
 /**
@@ -422,8 +475,8 @@ void FormClosures::NewClosure(ClosCand *cand)
 #endif
 
 /**
- * Dijkstra shortest path algorithm
- * Find a path from right to left line taking only left turns.
+ * @brief Dijkstra shortest path algorithm. \n
+ * Find a path from right to left line taking only left turns. \n
  *
  * @param s  start line, which is the RIGHT arm of an L-jct
  * @param t  target line, which is the LEFT arm of that L-jct
@@ -434,8 +487,7 @@ void FormClosures::NewClosure(ClosCand *cand)
  *       - find a better distance function, properly taking into account sig.
  *         e.g. accumulated (relative) gap size
  */
-void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll,
-    Line *s, Line *t, int end_s, int end_t)
+void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll, Line *s, Line *t, int end_s, int end_t)
 {
   unsigned n = NumLines(core);
   unsigned n_visited = 0;
@@ -461,7 +513,8 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll,
     bend[s->ID()] = LEFT;
   // prepare min-heap (priority queue)
   make_heap(Q.begin(), Q.end(), comp);
-  while(n_visited < n && have_connected_vertices)
+
+	while(n_visited < n && have_connected_vertices)
   {
     // Remove best vertex from priority queue
     u = Q.front();
@@ -492,8 +545,7 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll,
       else
       {
         int cnt = 0;
-        // For each edge (u,v) outgoing from u and not intersecting the path so
-        // far
+        // For each edge (u,v) outgoing from u and not intersecting the path so far
         cnt += ExtendLJunctions(u);
         cnt += ExtendCollinearities(u);
 #ifdef FIND_NON_CONVEX
@@ -514,13 +566,14 @@ void FormClosures::ShortestPath(LJunction *ljct, Collinearity *coll,
   //for(unsigned i = Q.size() - n_visited; i < Q.size(); i++)
   //  ClearNode(Q[i]);
   // HACK END
+	
   if(cycles > 1)
     printf("%d cycles\n", cycles);  // HACK
 }
 
 /**
- * Clear all temporary path stuff for new search.
- * @param n  number of nodes in the search graph (= number of lines)
+ * @brief Clear all temporary path stuff for new search.
+ * @param n Number of nodes in the search graph (= number of lines)
  */
 void FormClosures::ClearPaths(unsigned n)
 {
@@ -548,6 +601,10 @@ void FormClosures::ClearPaths(unsigned n)
   }
 }
 
+/**
+ * @brief Clear all node stuff for new search.
+ * @param i Number of nodes in the search graph (= number of lines)
+ */
 void FormClosures::ClearNode(unsigned i)
 {
   dist[i] = COST_INF;
@@ -559,8 +616,9 @@ void FormClosures::ClearNode(unsigned i)
 }
 
 /**
- * Extend path using L-junctions.
- * @param u  last line of path so far
+ * @brief Extend path using L-junctions.
+ * @param u Last line of path so far.
+ * @return Number of extensions. 						/// TODO right?
  */
 int FormClosures::ExtendLJunctions(Line *u)
 {
@@ -581,6 +639,11 @@ int FormClosures::ExtendLJunctions(Line *u)
   return cnt;
 }
 
+/**
+ * @brief Extend path using non-convex L-junctions.
+ * @param u Last line of path so far.
+ * @return Number of extensions. 						/// TODO right?
+ */
 int FormClosures::ExtendNonConvexLJunctions(Line *u)
 {
   int cnt = 0;
@@ -592,11 +655,11 @@ int FormClosures::ExtendNonConvexLJunctions(Line *u)
 }
 
 /**
- * Extend path using L-junctions.
- * TODO: decide for a proper cost function
+ * @brief Extend path using L-junctions.
  * @param u  last line of path so far
  * @param side  extend LEFT or RIGHT L-junctions at the end of u
- * Returns the number of extensions.
+ * @return Returns the number of extensions.
+ * TODO: decide for a proper cost function
  */
 int FormClosures::ExtendLJunctions(Line *u, int side)
 {
@@ -635,9 +698,9 @@ int FormClosures::ExtendLJunctions(Line *u, int side)
 }
 
 /**
- * Extend path using collinearities.
+ * @brief Extend path using collinearities.
  * @param u  last line of path so far
- * Returns the number of extensions.
+ * @return Returns the number of extensions.
  */
 int FormClosures::ExtendCollinearities(Line *u)
 {
@@ -671,9 +734,11 @@ int FormClosures::ExtendCollinearities(Line *u)
 }
 
 /**
- * Form a new closure along path from first to last line.
- * Note: path formation made sure that the resulting polygon in non-intersecting
+ * @brief Form a new closure along path from first to last line. \n
+ * Note: path formation made sure that the resulting polygon in non-intersecting \n
  * and (mostly) convex.
+ * @param first First line of new closure.
+ * @param last Last line of new closure.
  * TODO: use a proper constructor
  */
 void FormClosures::NewClosure(Line *first, Line *last)
@@ -740,10 +805,6 @@ void FormClosures::NewClosure(Line *first, Line *last)
   new_c->CalculateSignificance();
 
   // TODO: does this really belong here...?
-  if(core->IsEnabledGestaltPrinciple(GestaltPrinciple::FORM_RECTANGLES))
-    CreateNAngles(new_c);
-
-  // TODO: does this really belong here...?
   //if(core->IsEnabledGestaltPrinciple(GestaltPrinciple::FORM_SURFACES))
   //  SolveHCF();
 
@@ -762,10 +823,10 @@ void FormClosures::NewClosure(Line *first, Line *last)
  * angles to get one 90deg angle. how much of the closure is still covered when
  * taking out such small lines in order to get rectangle?
  */
-void FormClosures::CreateNAngles(Closure *clos)
+/*void FormClosures::CreateNAngles(Closure *clos)
 {
 /// TODO ARI: Wird nicht mehr benötigt, weil in Rectangles implementiert.
-/*
+
   // if closure has 4 L-junctions, it definitely is a quadrilateral
   if(clos->NumLJunctions() == 4)
   {
@@ -804,33 +865,34 @@ void FormClosures::CreateNAngles(Closure *clos)
       core->NewGestalt(new Rectangle(core, clos, ljcts));
     }
   }
-*/
+
 }
+*/
 
 /**
- * Helper function to get the vertex point of whatever there is between two
- * lines.
+ * @brief Helper function to get the vertex point of whatever there is between two lines.
  * @param j  L-jct between lines or UNDEF_ID
  * @param c  collinearity between lines or UNDEF_ID
  */
 inline static Vector2 GetVertex(LJunction *j, Collinearity *c)
 {
-  if(j != 0 && c != 0)
-    throw Except(__HERE__, "need either L-jct or collinearity");
-  else if(j != 0)
-    return j->isct;
+	if(j != 0 && c != 0) 
+		throw Except(__HERE__, "need either L-jct or collinearity");
+	else if(j != 0) 
+		return j->isct;
   else if(c != 0)
-    return c->vertex;
-  else
-    throw Except(__HERE__, "need one of L-jct or collinearity");
+		return c->vertex;
+	else
+		throw Except(__HERE__, "need one of L-jct or collinearity");
 }
 
 /**
- * Helper function to get the vertex point of whatever there is between line
+ * @brief Helper function to get the vertex point of whatever there is between line \n
  * l and its previous line.
  * @param l_idx  line of interest
  * @param jcts  array of L-junctions of lines, containing some UNDEF_IDs
  * @param colls  array of collinearities of lines, containing some UNDEF_IDs
+ * @return Returns vertex point
  */
 inline static Vector2 GetVertex(Line *line, vector<LJunction*> &jcts,
     vector<Collinearity*> &colls)
@@ -838,15 +900,17 @@ inline static Vector2 GetVertex(Line *line, vector<LJunction*> &jcts,
   return GetVertex(jcts[line->ID()], colls[line->ID()]);
 }
 
+
 /**
- * Check whether a new line with its new L-jct or collinearity intersects the
+ * @brief Check whether a new line with its new L-jct or collinearity intersects the \n
  * path so far.
  * @param l_last  new line
  * @param j_new  the L-jct which connects l_last to the path
  * @param c_new  the coll. which connects l_last to the path
  *               (one and only one of j_new, c_new must be != UNDEF)
- * The last line must not intersect geometrically with the previous lines in the
- * path.
+ * @return Returns false, if the lines do not intersect.
+ * 
+ * The last line must not intersect geometrically with the previous lines in the  path.
  */
 bool FormClosures::LineIntersectingPath(Line *l_last, LJunction *j_new,
     Collinearity *c_new)
@@ -876,12 +940,14 @@ bool FormClosures::LineIntersectingPath(Line *l_last, LJunction *j_new,
 }
 
 /**
- * Check whether the closing line of a possible closure intersects the
+ * @brief Check whether the closing line of a possible closure intersects the \n
  * path so far.
  * @param l_close  the closing line = last on path
  * @param l_open  the opening line = first on path
  * @param j_init  the initialising L-jct between l_open and l_close, or UNDEF
  * @param c_init  the initialising coll. between l_open and l_close, or UNDEF
+ * @return Returns false, if the lines do not intersect.
+ * 
  * Note that one of j_init, c_init must be defined.
  * This function differs from LineIntersectingPath() by the fact that we do not
  * check against the opening line (which by definition must intersect with the
@@ -923,6 +989,9 @@ bool FormClosures::SimplePolygon(unsigned l_close,
 }
 */
 
+/**
+ * @brief Mask closures.
+ */
 void FormClosures::Mask()
 {
   // array containing for each line the ID of the highest ranking closure which

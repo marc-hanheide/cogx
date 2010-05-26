@@ -22,6 +22,7 @@ public:
   double dir;								///< Direction
 
   Edgel() {}
+  Edgel(const Vector2 &p_in) {p = p_in;}
   Edgel(const Vector2 &p_in, double d_in) {p = p_in; dir = d_in;}
 };
 

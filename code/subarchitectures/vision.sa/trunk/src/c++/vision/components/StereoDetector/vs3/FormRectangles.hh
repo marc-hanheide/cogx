@@ -29,23 +29,20 @@ private:
 	{
 		Vector2 p;  ///< some point on the line
 		Vector2 d;  ///< direction of the line
+
 		TempLine(float px, float py, float dx, float dy) : p(px, py), d(dx, dy) {}
 	};
 
   void Rank();
   void Mask();
 
-  void CreateWithFourLJ(unsigned clos);
-  void CreateWithMoreLJLine(unsigned clos);
-  void CreateWithMoreLJAngle(unsigned clos);
   void CreateQuadrilateral(unsigned clos);
+  void CreateWithFourLJ(unsigned clos);
+  bool CreateWithMoreLJLine(unsigned clos);
+  bool CreateWithMoreLJAngle(unsigned clos);
 
-
-  bool RectangleExists(unsigned jcts[4]);
-  bool IsConvexPolygon(unsigned jcts[4]);
-  bool IsConvexPolygon(Array<unsigned> jcts);
   bool IsConvexPolygon(Vector2 isct[4]);
-  double IsRectangle(unsigned jcts[4]);
+  bool IsConvexPolygon(Array<unsigned> jcts);			/// TODO Kann man irgendwann durch isct-Version ersetzen => Ansehen
   double IsRectangle(Vector2 isct[4]);
 
 

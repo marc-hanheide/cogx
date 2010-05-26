@@ -6,7 +6,6 @@
  * @brief Class file of Gestalt Line (VisibleLine).
  **/
 
-#include "Draw.hh"
 #include "Segment.hh"
 #include "Line.hh"
 #include "TJunction.hh"
@@ -70,22 +69,6 @@ void Line::CalculateParameters()
   }*/
 }
 
-/**
- * @brief Draw an arrow.
- * TODO Should be in Draw.cc
- */
-void Line::DrawArrow()
-{
-  double len_2 = 4.; // length/2
-  double wid_2 = 3.; // width/2
-  Vector2 tip = (point[START] + point[END])/2. + dir*len_2;
-  Vector2 left = (point[START] + point[END])/2. - dir*len_2 +
-    dir.NormalAntiClockwise()*wid_2;
-  Vector2 right = (point[START] + point[END])/2. - dir*len_2 +
-    dir.NormalClockwise()*wid_2;
-  DrawLine2D(left.x, left.y, tip.x, tip.y, RGBColor::red);
-  DrawLine2D(right.x, right.y, tip.x, tip.y, RGBColor::red);
-}
 
 /**
  * @brief Draw line. 
@@ -100,7 +83,7 @@ void Line::Draw(int detail)
     Vector2 mid_point = (point[START] + point[END])/2. + Vector2(4., -4.);
     snprintf(id_str, 20, "%u", id);
     DrawText2D(id_str, mid_point.x, mid_point.y, RGBColor::red);
-    DrawArrow();
+    DrawArrow(point[START], point[END], RGBColor::red);
   }
   /*if(detail >= 2)
   {
@@ -140,8 +123,9 @@ const char* Line::GetInfo()
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size,
-      "%s  (%.0f %.0f)-(%.0f %.0f) length: %f\n"
-      "  phi: %f\n"
+      "%s  (%.0f %.0f)-(%.0f %.0f)\n"
+      "  length: %4.2f\n"
+      "  phi: %4.3f\n"
       "  neighbours: %d\n"
       "  --------------------\n",
       Gestalt::GetInfo(),
@@ -358,9 +342,10 @@ const char* VisibleLine::GetInfo()
 					"  Visible line\n"
 					"  seg: %u\n"
 					"  label: %d\n"
-					"  energy: %f \n"
+					"  energy: %4.2f \n"
 					"  stability: %f\n"
 					"  Ts %d %d\n",
+
       Line::GetInfo(), seg->ID(), label, energy, stability,
       (t_jct[START] ? t_jct[START]->ID() : UNDEF_ID),
       (t_jct[END] ? t_jct[END]->ID() : UNDEF_ID));
@@ -368,6 +353,9 @@ const char* VisibleLine::GetInfo()
   for(unsigned i = 0; i < closures.Size(); i++)
     n += snprintf(info_text + n, info_size - n, " %u", closures[i]->ID());
   n += snprintf(info_text + n, info_size - n, "\n");
+//   n += snprintf(info_text + n, info_size - n, "  %u rectangles:", rectangles.Size());
+//   for(unsigned i = 0; i < rectangles.Size(); i++)
+//     n += snprintf(info_text + n, info_size - n, " %u", rectangles[i]->ID());  return info_text;
   return info_text;
 }
 

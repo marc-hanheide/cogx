@@ -1,5 +1,5 @@
 /**
- * $Id: FormJunctions.hh,v 1.20 2007/03/25 21:35:57 mxz Exp mxz $
+ * $Id: FormArcJunctions.cc,v 1.2 2010/05/26 12:03:44 mz Exp mz $
  */
 
 #include "Arc.hh"
@@ -192,12 +192,31 @@ void FormArcJunctions::CreateJunctions(unsigned sline,
     // TODO: this admissibility check could go into VoteImage
     if(IsctTypeAdmissible(vtype_i, vtype_j))
     {
-      // TODO: wenn eine tangente eine normale von hinten trifft, ignoriere!
-      if(!IsJunctionBetween(arc_i, arc_j))
-        //if(arc_i->ConvexWith(arc_j))
-        // HACK: 0.5 is an arbitrary threshold!
-        if(arc_i->Convexity(arc_j) >= 0.5)
-          core->NewGestalt(new AJunction(core, arc_i, arc_j, end_i, end_j));
+      bool ok = true;
+      // if a tangent hits a normal searchline "from behind", ignore
+      // first check if one of the search lines is a normal
+      if(VOTE_IS_NORMAL(vtype_i) || VOTE_IS_NORMAL(vtype_j)) 
+      {
+        Vector2 tang_i, tang_j;
+        if(VOTE_END(end_i) == START)
+          tang_i = arc_i->norm[end_i].NormalAntiClockwise();
+        else
+          tang_i = arc_i->norm[end_i].NormalClockwise();
+        if(VOTE_END(end_j) == START)
+          tang_j = arc_j->norm[end_j].NormalAntiClockwise();
+        else
+          tang_j = arc_j->norm[end_j].NormalClockwise();
+        // if tangents at respective ends point in the same direction
+        // then normal search lines will be intersected "from behind"
+        if(Dot(tang_i, tang_j) > 0.)
+          ok = false;
+      }
+      if(ok)
+        if(!IsJunctionBetween(arc_i, arc_j))
+          //if(arc_i->ConvexWith(arc_j))
+          // HACK: 0.5 is an arbitrary threshold!
+          if(arc_i->Convexity(arc_j) >= 0.5)
+            core->NewGestalt(new AJunction(core, arc_i, arc_j, end_i, end_j));
     }
   }
 }

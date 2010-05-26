@@ -36,7 +36,7 @@ void VoteImage::SetNumLines(unsigned n)
     lines[id].len = 0;
 }
 
-VoteImage::Elem *VoteImage::NewElem(/*Gestalt::Type type,*/ unsigned id)
+VoteImage::Elem *VoteImage::NewElem(unsigned id)
 {
   if(fill < store_size)
   {
@@ -60,8 +60,7 @@ void VoteImage::Clear()
   fill = 0;
 }
 
-inline void VoteImage::SetPixel(int x, int y, /*Gestalt::Type type,*/
-    unsigned id)
+inline void VoteImage::SetPixel(int x, int y, unsigned id)
 {
   Elem *e = data[y*width + x];
   if(e == 0)
@@ -74,8 +73,7 @@ inline void VoteImage::SetPixel(int x, int y, /*Gestalt::Type type,*/
   }
 }
 
-inline void VoteImage::SetAndCheckPixel(int x, int y, /*Gestalt::Type type,*/
-    unsigned id, Array<Elem> &iscts)
+inline void VoteImage::SetAndCheckPixel(int x, int y, unsigned id, Array<Elem> &iscts)
 {
   Elem *e = data[y*width + x];
   if(e == 0)
@@ -93,8 +91,7 @@ inline void VoteImage::SetAndCheckPixel(int x, int y, /*Gestalt::Type type,*/
   }
 }
 
-inline void VoteImage::CheckPixel(int x, int y, /*Gestalt::Type type,*/
-    unsigned id, Array<Elem> &iscts)
+inline void VoteImage::CheckPixel(int x, int y, unsigned id, Array<Elem> &iscts)
 {
   Elem *e = data[y*width + x];
   while(e != 0)
@@ -108,8 +105,7 @@ inline void VoteImage::CheckPixel(int x, int y, /*Gestalt::Type type,*/
  * This CheckPixel function is called from FindLineEnd.
  * Lines end only at other visible lines, not tangents or normals.
  */
-inline bool VoteImage::CheckPixel(int x, int y, /*Gestalt::Type type,*/
-    unsigned id)
+inline bool VoteImage::CheckPixel(int x, int y, unsigned id)
 {
   Elem *e = data[y*width + x];
   while(e != 0)
@@ -122,8 +118,7 @@ inline bool VoteImage::CheckPixel(int x, int y, /*Gestalt::Type type,*/
   return false;
 }
 
-inline void VoteImage::CreateIntersection(Elem *e, /*Gestalt::Type type,*/
-    unsigned id, Array<Elem> &iscts)
+inline void VoteImage::CreateIntersection(Elem *e, unsigned id, Array<Elem> &iscts)
 {
   // don't intersect edge with itself  TODO: why not?
   if(/*e->type != type ||*/ e->id/8 != id/8)
@@ -131,8 +126,7 @@ inline void VoteImage::CreateIntersection(Elem *e, /*Gestalt::Type type,*/
       iscts.PushBack(*e);
 }
 
-void VoteImage::InitLine(int x1, int y1, int x2, int y2, /*Gestalt::Type type,*/
-    unsigned id)
+void VoteImage::InitLine(int x1, int y1, int x2, int y2, unsigned id)
 {
   LineStub &line = lines[id];
   line.x = line.y = 0;
@@ -227,8 +221,7 @@ int VoteImage::ExtendLine(unsigned id, Array<Elem> &iscts)
     return -1;
 }
 
-void VoteImage::DrawLine(int x1, int y1, int x2, int y2, /*Gestalt::Type type,*/
-    unsigned id)
+void VoteImage::DrawLine(int x1, int y1, int x2, int y2, unsigned id)
 {
   int dx, dy, inc_x, inc_y, x, y, err;
 
@@ -296,8 +289,7 @@ void VoteImage::DrawLine(int x1, int y1, int x2, int y2, /*Gestalt::Type type,*/
   }
 }
 
-void VoteImage::CheckLine(int x1, int y1, int x2, int y2,
-    /*Gestalt::Type type,*/ unsigned id, Array<Elem> &iscts)
+void VoteImage::CheckLine(int x1, int y1, int x2, int y2, unsigned id, Array<Elem> &iscts)
 {
   int dx, dy, inc_x, inc_y, x, y, err;
   unsigned MAX_HYPS = 1000;
@@ -366,8 +358,7 @@ void VoteImage::CheckLine(int x1, int y1, int x2, int y2,
   }
 }
 
-void VoteImage::DrawAndCheckLine(int x1, int y1, int x2, int y2,
-    /*Gestalt::Type type,*/ unsigned id, Array<Elem> &iscts)
+void VoteImage::DrawAndCheckLine(int x1, int y1, int x2, int y2, unsigned id, Array<Elem> &iscts)
 {
   int dx, dy, inc_x, inc_y, x, y, err;
   unsigned MAX_HYPS = 1000;
@@ -439,8 +430,7 @@ void VoteImage::DrawAndCheckLine(int x1, int y1, int x2, int y2,
 /**
  * Returns false if line was clipped to 0 length.
  */
-bool VoteImage::FindLineEnd(int x1, int y1, int x2, int y2,
-    /*Gestalt::Type type,*/ unsigned id, int *xe, int *ye)
+bool VoteImage::FindLineEnd(int x1, int y1, int x2, int y2, unsigned id, int *xe, int *ye)
 {
   int dx, dy, inc_x, inc_y, x, y, err;
 

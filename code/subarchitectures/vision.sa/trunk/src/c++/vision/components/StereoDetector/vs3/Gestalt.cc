@@ -26,6 +26,7 @@ static const char type_names[][NAME_LENGTH] = {
   "T_JUNCTION",
   "L_JUNCTION",
   "A_JUNCTION",
+  "E_JUNCTION",
   "CLOSURE",
   "RECTANGLE",
   "FLAP",
