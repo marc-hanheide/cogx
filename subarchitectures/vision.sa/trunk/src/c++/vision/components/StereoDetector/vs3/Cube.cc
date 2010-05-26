@@ -1,7 +1,7 @@
 /**
- * @file Cube.cc
+ * @file Cube.hh
  * @author Richtsfeld Andreas
- * @date Februar 2009
+ * @date March 2010
  * @version 0.1
  * @brief Class file of Gestalt Cube.
  **/
@@ -20,308 +20,144 @@ namespace Z
 /**
  * @brief Constructor for Gestalt Cube: Construction from three flaps.
  * @param vc Vision core
- * @param f Flap 1
- * @param f2 Flap 2
- * @param f3 Flap 3
+ * @param f The three flaps, which are building the cube
  */
-Cube::Cube(VisionCore *vc, unsigned f, unsigned f2, unsigned f3) : Gestalt(vc, CUBE)
+Cube::Cube(VisionCore *vc, FlapAri *f[3]) : Gestalt(vc, CUBE)
 {
-	maxRatio = 5.;					/// TODO Was ist maxRatio? Threshold in CheckW2HRatio! THRESHOLD
-
-  flap = f;
-  oFlaps[0] = f2;
-  oFlaps[1] = f3;
-  closingLJct = UNDEF_ID;
-  closingColl = UNDEF_ID;
-	
-  // get the corner_points																																	/// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-  corner_points[1][0] = (LJunctions(core, FlapsAri(core, f)->innerJcts[1])->isct +						/// corner points müssen jetzt aus rectangle od. flap intersection points
-												 LJunctions(core, FlapsAri(core, f)->innerJcts[3])->isct +						/// bestimmt werden!
-												 LJunctions(core, FlapsAri(core, f2)->innerJcts[1])->isct +
-												 LJunctions(core, FlapsAri(core, f2)->innerJcts[3])->isct +
-												 LJunctions(core, FlapsAri(core, f3)->innerJcts[1])->isct +
-												 LJunctions(core, FlapsAri(core, f3)->innerJcts[3])->isct)/6;
-
-  corner_points[1][1] = (LJunctions(core, FlapsAri(core, f)->innerJcts[2])->isct +
-												 LJunctions(core, FlapsAri(core, f)->innerJcts[0])->isct)/2;
-  corner_points[0][0] = (LJunctions(core, FlapsAri(core, f2)->innerJcts[2])->isct +
-												 LJunctions(core, FlapsAri(core, f2)->innerJcts[0])->isct)/2;
-  corner_points[2][0] = (LJunctions(core, FlapsAri(core, f3)->innerJcts[2])->isct +
-												 LJunctions(core, FlapsAri(core, f3)->innerJcts[0])->isct)/2;
-
-  corner_points[0][1] = (LJunctions(core, FlapsAri(core, f)->outerJcts[1])->isct +
-												 LJunctions(core, FlapsAri(core, f2)->outerJcts[3])->isct)/2;
-  corner_points[3][0] = (LJunctions(core, FlapsAri(core, f2)->outerJcts[1])->isct +
-												 LJunctions(core, FlapsAri(core, f3)->outerJcts[3])->isct)/2;
-  corner_points[2][1] = (LJunctions(core, FlapsAri(core, f3)->outerJcts[1])->isct +
-												 LJunctions(core, FlapsAri(core, f)->outerJcts[3])->isct)/2;
-
-	// TODO Order areas macht eigentlich keinen Sinn mehr, da man die Würfelseiten nicht mehr festlegen kann
-  // Order the corner points to left/right/top area
-  OrderAreas();
-
-	// The hidden corner point of the cube calculated as mean value
-	// => 31 = 01-(10-20) = 21-(10-00) = 30-(10-11) 
-	intersection_points[0] = corner_points[0][1] - (corner_points[1][0] - corner_points[2][0]);
-	intersection_points[1] = corner_points[2][1] - (corner_points[1][0] - corner_points[0][0]);
-	intersection_points[2] = corner_points[3][0] - (corner_points[1][0] - corner_points[1][1]);
-	corner_points[3][1] = (intersection_points[0] + intersection_points[1] + intersection_points[2])/3;
-
-  CalculateProperties();
+	plausible = PlausibilityCheck(f);
+	GetCornerPoints();
 	parallelity = CheckParallelity();
-  if(parallelity > 3.0) Mask(10000);										/// TODO Threshold for parallelity (sum of all angle deviations in rad?)
-//	else if(!CheckW2HRatio()) Mask(10001);								/// TODO Threshold for W2H-Ratio
-  CalculateSignificance2();
+	CalculateProperties();
+	CalculateSignificance();
 }
 
 /**
- * @brief Constructor for Gestalt Cube for creation from flaps.
- * @param f Flap
- * @param lj L-Junction
- * @param c Collinearity
- * @param ll Junction lines left
- * @param lr Junction lines right
- * @param cL Array with ids of closing lines
+ * @brief Check the plausability of the three flaps.
+ * If flap is bent to one direction, the first rectangle is the left and the \n
+ * second one the right rectangle of the flap. When we build now a cube and this \n
+ * rules are fulfilled, then should f[0]->r[1] = f[1]->r[0] and so on ... (clockwise). \n
+ * If this check is not fulfilled, then is the cube normaly not valid!
+ * @param f The three flap references.
  */
-Cube::Cube(VisionCore *vc, unsigned f, unsigned lj, unsigned c, unsigned ll, 
-	unsigned lr, Array<unsigned> *cL) : Gestalt(vc, CUBE)
+bool Cube::PlausibilityCheck(FlapAri *f[3])
 {
-printf("NEW CUBE FROM FLAP CLOSING!!!\n");
-// 	maxRatio = 5.;
-// 
-//   flap = f;
-//   oFlaps[0] = UNDEF_ID;
-//   oFlaps[1] = UNDEF_ID;
-//   closingLJct = lj;	
-//   closingColl = c;
-// 
-//   // get corner points => they are not sorted
-//   corner_points[0][0] = LJunctions(Flaps(flap)->outerJcts[0])->isct;
-//   corner_points[0][1] = LJunctions(Flaps(flap)->outerJcts[1])->isct;
-//   corner_points[1][0] = LJunctions(Flaps(flap)->innerJcts[1])->isct;
-//   corner_points[1][1] = LJunctions(Flaps(flap)->innerJcts[0])->isct;
-//   corner_points[2][0] = LJunctions(Flaps(flap)->outerJcts[2])->isct;
-//   corner_points[2][1] = LJunctions(Flaps(flap)->outerJcts[3])->isct;
-//   if (closingLJct != UNDEF_ID)
-// 	corner_points[3][0] = LJunctions(lj)->isct;
-//   else
-//  	corner_points[3][0] = Collinearities(c)->vertex;
-//   
-//   // hidden corner of the cube => 31 = 01-(10-20) = 21-(10-00) = 30-(10-11) 
-//   // Order the corner points to left/right/top area
-//   OrderAreas();
-// 
-// //   Vector2 intersection_points[3];	// The 3 points from hidden intersection
-//   intersection_points[0] = corner_points[0][1] - (corner_points[1][0] - corner_points[2][0])*0.9;
-//   intersection_points[1] = corner_points[2][1] - (corner_points[1][0] - corner_points[0][0])*0.9;
-//   intersection_points[2] = corner_points[3][0] - (corner_points[1][0] - corner_points[1][1])*0.9;
-//     
-//   corner_points[3][1] = (intersection_points[0] + intersection_points[1] + 
-//   						 intersection_points[2])/3;
-// 
-// 
-//   // L-junction and closing lines
-//   jctLines[LEFT] = ll; 
-//   jctLines[RIGHT] = lr;
-//   cLines[0] = cL[0];
-//   cLines[1] = cL[1];
-// 	
-//   // Add Cube to lines?					// TODO ARI: Ist das notwendig?
-//   Lines(jctLines[LEFT])->AddCube(id);
-//   Lines(jctLines[RIGHT])->AddCube(id);
-//   for(unsigned i=0; i<cLines[0].Size(); i++)	
-// 	Lines(cLines[0][i])->AddCube(id);
-//   for(unsigned i=0; i<cLines[1].Size(); i++)	
-// 	Lines(cLines[1][i])->AddCube(id);
-//   
-//   CalculateProperties();
-// 	parallelity = CheckParallelity();
-//   if(parallelity > 3.0) Mask(10000);																	/// TODO Masking Threshold for parallelity
-// 	else if(!CheckW2HRatio()) Mask(10001);															/// TODO Masking Threshold for H2W-Ratio
-//   CalculateSignificance();
+	// order the flaps, so that one flap[0]->rect[1] == flap[1]->rect[0] and so on.
+	flap[0] = f[0];
+	rectangle[0] = flap[0]->rectangle[0];
+	rectangle[1] = flap[0]->rectangle[1];
+	if(f[0]->rectangle[1]->ID() == f[1]->rectangle[0]->ID() || f[0]->rectangle[1]->ID() == f[2]->rectangle[0]->ID())
+	{
+		if(f[0]->rectangle[1]->ID() == f[1]->rectangle[0]->ID())
+		{
+			flap[1] = f[1];
+			flap[2] = f[2];
+			rectangle[2] = flap[1]->rectangle[1];
+			return true;
+		}
+		if(f[0]->rectangle[1]->ID() == f[2]->rectangle[0]->ID())
+		{
+			flap[1] = f[2];
+			flap[2] = f[1];
+			rectangle[2] = flap[1]->rectangle[1];
+			return true;
+		}
+	}
+	else	// unplausible: we do not know how the flaps should be assigned.
+	{
+		flap[1] = f[1];
+		flap[2] = f[2];
+
+		if((f[0]->rectangle[0]->ID() != f[1]->rectangle[0]->ID()) && (f[0]->rectangle[1]->ID() != f[1]->rectangle[0]->ID()))
+			rectangle[2] = flap[1]->rectangle[0];
+		else
+			rectangle[2] = flap[1]->rectangle[1];
+
+		return false;
+	}
 }
 
 /**
- *	@brief Order the 3 visible areas of the cube if the cube lies with one area
- *	on the ground plane => 1/0 and 3/1 doesn´t change
- *	TODO Makes only sense with a ground plane constraint.
+ * @brief Calculate the corner points from the three rectangles. We assume, that \n
+ * each corner point is the mean value of three rectangle corners. \n
+ * 
  */
-void Cube::OrderAreas()
+void Cube::GetCornerPoints()
 {
-//   Vector2 cp[4][2];						// copy corner points
-//   for(unsigned i=0; i<4; i++)
-// 		for(unsigned j=0; j<2; j++)
-// 			cp[i][j] = corner_points[i][j];
-// 	
-//   // first area a0 => [LEFT/SHARED][TOP/BOTTOM]=[0/1][0/1]
-// //   double max_x_0 = Max(corner_points[0][0].x, corner_points[0][1].x);
-// //   double max_x_1 = Max(corner_points[1][0].x, corner_points[1][1].x);
-//   double max_y_0 = Max(corner_points[0][0].y, corner_points[0][1].y);
-//   double max_y_1 = Max(corner_points[1][0].y, corner_points[1][1].y);
-// //   double min_x_0 = Min(corner_points[0][0].x, corner_points[0][1].x);
-// //   double min_x_1 = Min(corner_points[1][0].x, corner_points[1][1].x);
-// 
-// //  double max_x_a0 = Max(max_x_0, max_x_1);
-// 	double max_y_a0 = Max(max_y_0, max_y_1);
-// //  double min_x_a0 = Min(min_x_0, min_x_1);
-// 
-//   // second area => [SHARED/RIGHT][TOP/BOTTOM]=[1/2][0/1]
-// //   double max_x_2 = Max(corner_points[2][0].x, corner_points[2][1].x);
-//   double max_y_2 = Max(corner_points[2][0].y, corner_points[2][1].y);
-// //   double min_x_2 = Min(corner_points[2][0].x, corner_points[2][1].x);
-// 	
-// //  double max_x_a1 = Max(max_x_1, max_x_2);
-// 	double max_y_a1 = Max(max_y_1, max_y_2);
-// //  double min_x_a1 = Min(min_x_1, min_x_2);
-// 
-//   // third area => [LEFT/SHARED/RIGHT/ISCT][TOP]=[0/1/2/3][0]
-// //   double max_x_3 = Max(corner_points[0][0].x, corner_points[1][0].x);
-// //   double max_x_4 = Max(corner_points[2][0].x, corner_points[3][0].x);
-//   double max_y_3 = Max(corner_points[0][0].y, corner_points[1][0].y);
-//   double max_y_4 = Max(corner_points[2][0].y, corner_points[3][0].y);
-// //   double min_x_3 = Min(corner_points[0][0].x, corner_points[1][0].x);
-// //   double min_x_4 = Min(corner_points[2][0].x, corner_points[3][0].x);
-// 
-// //  double max_x_a2 = Max(max_x_3, max_x_4);
-// 	double max_y_a2 = Max(max_y_3, max_y_4);
-// //  double min_x_a2 = Min(min_x_3, min_x_4);	
-// 	
-// 
-//   // which area is the top area?
-//   if (max_y_a0 < max_y_a1 && max_y_a0 < max_y_a2)				// 0 < 1,2 => turn left
-//   {
-// 		corner_points[0][0] = cp[1][1];
-// 		corner_points[2][0] = cp[0][0];
-// 		corner_points[3][0] = cp[0][1];
-// 
-// 		corner_points[1][1] = cp[2][0];
-// 		corner_points[2][1] = cp[3][0];
-// 
-// 		corner_points[0][1] = cp[2][1];
-// 		corner_points[1][1] = cp[2][0];
-//   }	
-//   else if (max_y_a1 < max_y_a0 && max_y_a1 < max_y_a2)	// 1 < 0,2 => turn right
-//   {
-// 		corner_points[0][0] = cp[2][0];
-// 		corner_points[2][0] = cp[1][1];
-// 		corner_points[3][0] = cp[2][1];
-// 
-// 		corner_points[1][1] = cp[0][0];
-// 		corner_points[2][1] = cp[0][1];
-// 
-// 		corner_points[0][1] = cp[3][0];
-// 		corner_points[1][1] = cp[0][0];
-//   }
+	cornerPoint[0] = (flap[0]->isct[0] + flap[1]->isct[0] + flap[2]->isct[0])/3.;
+	cornerPoint[1] = (flap[0]->isct[1] + flap[1]->isct[5] + flap[2]->isct[3])/3.;
+	cornerPoint[2] = (flap[0]->isct[2]                    + flap[2]->isct[4])/2.;
+	cornerPoint[3] = (flap[0]->isct[3] + flap[1]->isct[1] + flap[2]->isct[5])/3.;
+	cornerPoint[4] = (flap[0]->isct[4] + flap[1]->isct[2])                   /2.;
+	cornerPoint[5] = (flap[0]->isct[5] + flap[1]->isct[3] + flap[2]->isct[1])/3.;
+	cornerPoint[6] = (                   flap[1]->isct[4] + flap[2]->isct[2])/2.;
+
+	Vector2 intersection_points[3];
+	intersection_points[0] = cornerPoint[2] - (cornerPoint[0] - cornerPoint[5]);
+	intersection_points[1] = cornerPoint[6] - (cornerPoint[0] - cornerPoint[3]);
+	intersection_points[2] = cornerPoint[4] - (cornerPoint[0] - cornerPoint[1]);
+	cornerPoint[7] = (intersection_points[0] + intersection_points[1] + intersection_points[2])/3;
 }
 
+
 /**
- * @brief	Calculate properties of the cube
+ * @brief	Calculate properties of the cube. Calculate center point, inner and outer radius.
  */
 void Cube::CalculateProperties()
 {
-//   // Properties for masking
-//   center = (corner_points[0][0] + corner_points[0][1] +
-// 			corner_points[3][0] + corner_points[1][1] +
-// 			corner_points[2][0] + corner_points[2][1])/6.;
-// 
-//   double r0 = (corner_points[0][0]-center).Length();
-//   double r1 = (corner_points[0][1]-center).Length();
-//   double r2 = (corner_points[3][0]-center).Length();
-//   double r3 = (corner_points[1][1]-center).Length();
-//   double r4 = (corner_points[2][0]-center).Length();
-//   double r5 = (corner_points[2][1]-center).Length();
-//   
-//   radius = Max(r0, r1);
-//   radius = Max(radius, r2);
-//   radius = Max(radius, r3);
-//   radius = Max(radius, r4);
-//   radius = Max(radius, r5);
-// 	
-//   // Properties of ground plane
-//   groundCenter = (corner_points[0][1] + corner_points[1][1] +
-// 				  corner_points[2][1] + corner_points[3][1])/4;
+  center = (cornerPoint[0] + cornerPoint[1] + cornerPoint[2] + 
+						cornerPoint[3] + cornerPoint[4] + cornerPoint[5])/6.;
+
+	double r[5];
+	for(unsigned i=0; i<=5; i++)
+		r[i] = Length(cornerPoint[i] - cornerPoint[0]);
+	for(unsigned i=0; i<=5; i++)
+		radius = Max(r[i], r[i<6?i+1:0]);
 }
 
 
 /**
- *	@brief Check parallelity of the 4 cube edges in the 3 directions
- *	TODO This is only for masking => use it for significance!
- *	TODO Wenn schon Thresholds fürs maskieren: Dann welcher Wert wofür? => Wird hier nicht ersichtlich.
+ *	@brief Check parallelity of the 4 cube edges in the 3 directions. Calculates always \”
+ *	the deviation between the four opposing edges and adds it up.
+ *	@return Returns a significance value, representing the parallelity of the cube edges.
  */
 double Cube::CheckParallelity()	
 {
-	// value for parallelity
 	double parallelity = 0.;
-
-  // Threshold for parallelity
-//  double par = M_PI/6;																		/// TODO Threshold for parallelity
-	
-  // check parallelity between x/0 and x/1 - lines
   Vector2 edge[4];
-  edge[0] = (corner_points[0][0] - corner_points[0][1]);
-  edge[1] = (corner_points[1][0] - corner_points[1][1]);
-  edge[2] = (corner_points[2][0] - corner_points[2][1]);
-  edge[3] = (corner_points[3][0] - corner_points[3][1]);
 
-  double dir[4];
-  dir[0] = PolarAngle(edge[0]);
-  dir[1] = PolarAngle(edge[1]);
-  dir[2] = PolarAngle(edge[2]);
-  dir[3] = PolarAngle(edge[3]);
+	edge[0] = Normalise(cornerPoint[1] - cornerPoint[0]);
+	edge[1] = Normalise(cornerPoint[2] - cornerPoint[3]);
+	edge[2] = Normalise(cornerPoint[7] - cornerPoint[4]);
+	edge[3] = Normalise(cornerPoint[6] - cornerPoint[5]);
+	for(unsigned i=0; i<4; i++)
+		parallelity += acos(Dot(edge[i], edge[i<3?i+1:0]));
 
-  for(unsigned i=0; i<4; i++)
-  {
- 		int j=i+1;
- 		if (j==4) j=0;
-		parallelity += fabs(dir[i]-dir[j]);
-	}
+	edge[0] = Normalise(cornerPoint[3] - cornerPoint[0]);
+	edge[1] = Normalise(cornerPoint[4] - cornerPoint[5]);
+	edge[2] = Normalise(cornerPoint[7] - cornerPoint[6]);
+	edge[3] = Normalise(cornerPoint[2] - cornerPoint[1]);
+	for(unsigned i=0; i<4; i++)
+		parallelity += acos(Dot(edge[i], edge[i<3?i+1:0]));
 
-  edge[0] = (corner_points[0][0] - corner_points[1][0]);
-  edge[1] = (corner_points[0][1] - corner_points[1][1]);
-  edge[2] = (corner_points[3][1] - corner_points[2][1]);
-  edge[3] = (corner_points[3][0] - corner_points[2][0]);
-
-  dir[0] = PolarAngle(edge[0]);
-  dir[1] = PolarAngle(edge[1]);
-  dir[2] = PolarAngle(edge[2]);
-  dir[3] = PolarAngle(edge[3]);
-
-  for(unsigned i=0; i<4; i++)
-  {
- 		int j=i+1;
- 		if (j==4) j=0;
-		parallelity += fabs(dir[i]-dir[j]);
-	}  
-  
-  // check parallelity 
-  edge[0] = (corner_points[0][0] - corner_points[3][0]);
-  edge[1] = (corner_points[1][0] - corner_points[2][0]);
-  edge[2] = (corner_points[1][1] - corner_points[2][1]);
-  edge[3] = (corner_points[0][1] - corner_points[3][1]);
-
-  dir[0] = PolarAngle(edge[0]);
-  dir[1] = PolarAngle(edge[1]);
-  dir[2] = PolarAngle(edge[2]);
-  dir[3] = PolarAngle(edge[3]);
-
-  for(unsigned i=0; i<4; i++)
-  {
- 		int j=i+1;
- 		if (j==4) j=0;
-		parallelity += fabs(dir[i]-dir[j]);
-	}
+	edge[0] = Normalise(cornerPoint[5] - cornerPoint[0]);
+	edge[1] = Normalise(cornerPoint[6] - cornerPoint[1]);
+	edge[2] = Normalise(cornerPoint[7] - cornerPoint[2]);
+	edge[3] = Normalise(cornerPoint[4] - cornerPoint[3]);
+	for(unsigned i=0; i<4; i++)
+		parallelity += acos(Dot(edge[i], edge[i<3?i+1:0]));
 
   return parallelity;
 }
 
+
 /**
  * @brief Check ratio between width, depth and heigt of an cube. Ratio must be smaller than 10:1
- * TODO This is bad!!! => Another assumption
+ * This is bad!!! => Another assumption
  */
-bool Cube::CheckW2HRatio()
-{
-printf("Cube::CheckW2HRatio: Not yet implemented\n");
-
+// bool Cube::CheckW2HRatio()
+// {
+// printf("Cube::CheckW2HRatio: Not yet implemented\n");
+//
 // 	bool ratio = true;
 // 
 // 	Vector2 meanW = ((corner_points[1][0] - corner_points[2][0]) + (corner_points[1][1] - corner_points[2][1]) +
@@ -340,18 +176,18 @@ printf("Cube::CheckW2HRatio: Not yet implemented\n");
 // 	dhRatio = absMeanD/absMeanH;
 // 	hwRatio = absMeanH/absMeanW;
 // 
-// 	if(wdRatio > maxRatio || wdRatio < 1./maxRatio) ratio = false;				/// TODO ratio for "true" or "false" cubes
+// 	if(wdRatio > maxRatio || wdRatio < 1./maxRatio) ratio = false;				/// ratio for "true" or "false" cubes
 // 	if(dhRatio > maxRatio || dhRatio < 1./maxRatio) ratio = false;
 // 	if(hwRatio > maxRatio || hwRatio < 1./maxRatio) ratio = false;
 // 
-// /// TODO HACK ARI: Warnmeldung W-D-H falsch
+// /// ARI: Warnmeldung W-D-H falsch
 // if(!ratio)
 // {	printf("Cube::CheckW2HRatio: mean W-D-H of cube %u: %4.2f - %4.2f - %4.2f\n", id, absMeanW, absMeanD, absMeanH);
 // 	printf("	ratio: %4.2f - %4.2f - %4.2f\n", wdRatio, dhRatio, hwRatio);
 // }
 // 	return ratio;
-return 0.;
-}
+// return 0.;
+// }
 
 
 /**
@@ -360,9 +196,8 @@ return 0.;
  */
 bool Cube::IsInside(unsigned cube)
 {
-//   if((Cubes(cube)->center - center).Length() < radius) return true;
-//   else return false; 
-return false;
+  if((Cubes(core, cube)->center - center).Length() < radius) return true;
+	return false;
 }
 
 /**
@@ -371,64 +206,54 @@ return false;
  */
 void Cube::Draw(int detail)
 {
-  if (detail == 0 || detail == 1 || detail ==3)
-  {
-		DrawLine2D(corner_points[3][1].x,
-					corner_points[3][1].y,
-					corner_points[3][0].x,
-					corner_points[3][0].y, RGBColor::coral);
-		DrawLine2D(corner_points[3][1].x,
-					corner_points[3][1].y,
-					corner_points[0][1].x,
-					corner_points[0][1].y, RGBColor::magenta);
-		DrawLine2D(corner_points[3][1].x,
-					corner_points[3][1].y,
-					corner_points[2][1].x,
-					corner_points[2][1].y, RGBColor::magenta);
-		for (unsigned i=0; i<4; i++)
-		{
-			DrawLine2D(corner_points[i][0].x,
-						corner_points[i][0].y,
-						corner_points[(i<3?i+1:0)][0].x,
-						corner_points[(i<3?i+1:0)][0].y, RGBColor::red);		// red
-			
-		}
-		for (unsigned i=0; i<2; i++)
-		{
-			DrawLine2D(corner_points[i][1].x,
-						corner_points[i][1].y,
-						corner_points[(i<2?i+1:0)][1].x,
-						corner_points[(i<2?i+1:0)][1].y, RGBColor::red);	
-		}
-		DrawLine2D(corner_points[0][0].x,
-					corner_points[0][0].y,
-					corner_points[0][1].x,
-					corner_points[0][1].y, RGBColor::red);	//red
-		DrawLine2D(corner_points[1][0].x,
-					corner_points[1][0].y,
-					corner_points[1][1].x,
-					corner_points[1][1].y, RGBColor::red);
-		DrawLine2D(corner_points[2][0].x,
-					corner_points[2][0].y,
-					corner_points[2][1].x,
-					corner_points[2][1].y, RGBColor::red);
-  }
+	if (detail == 0 || detail == 1 || detail == 2)
+	{
+		// draw first transparent lines
+		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y,
+							 cornerPoint[7].x, cornerPoint[7].y, RGBColor::coral); // transparency
+		DrawLine2D(cornerPoint[7].x, cornerPoint[7].y,
+							 cornerPoint[2].x, cornerPoint[2].y, RGBColor::coral); // transparency
+		DrawLine2D(cornerPoint[7].x, cornerPoint[7].y,
+							 cornerPoint[4].x, cornerPoint[4].y, RGBColor::coral); // transparency
 
-  if(detail == 1)
+		DrawLine2D(cornerPoint[0].x, cornerPoint[0].y,
+							 cornerPoint[3].x, cornerPoint[3].y, RGBColor::red);
+		DrawLine2D(cornerPoint[1].x, cornerPoint[1].y,
+							 cornerPoint[2].x, cornerPoint[2].y, RGBColor::red);
+		DrawLine2D(cornerPoint[4].x, cornerPoint[4].y,
+							 cornerPoint[5].x, cornerPoint[5].y, RGBColor::red);
+
+		DrawLine2D(cornerPoint[4].x, cornerPoint[4].y,
+							 cornerPoint[3].x, cornerPoint[3].y, RGBColor::red);
+		DrawLine2D(cornerPoint[5].x, cornerPoint[5].y,
+							 cornerPoint[0].x, cornerPoint[0].y, RGBColor::red);
+		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y,
+							 cornerPoint[1].x, cornerPoint[1].y, RGBColor::red);
+
+		DrawLine2D(cornerPoint[2].x, cornerPoint[2].y,
+							 cornerPoint[3].x, cornerPoint[3].y, RGBColor::red);
+		DrawLine2D(cornerPoint[1].x, cornerPoint[1].y,
+							 cornerPoint[0].x, cornerPoint[0].y, RGBColor::red);
+		DrawLine2D(cornerPoint[6].x, cornerPoint[6].y,
+							 cornerPoint[5].x, cornerPoint[5].y, RGBColor::red);
+
+	}
+
+  if (detail == 1)
   {
-		printf("Cube::Draw: detail=1 => not yet implemented\n");
-// 		// Draw intersection points: 31 = 01-(10-20) = 21-(10-00) = 30-(10-11) 
-// 		FillEllipse2D(intersection_points[0].x, intersection_points[0].y, 2, 2, 255, RGBColor::red);
-// 		FillEllipse2D(intersection_points[1].x, intersection_points[1].y, 2, 2, 255, RGBColor::green);
-// 		FillEllipse2D(intersection_points[2].x, intersection_points[2].y, 2, 2, 255, RGBColor::blue);
-// 	
-// 		char text[20];
-// 		for (unsigned i=0; i<4; i++)
-// 			for (unsigned j=0; j<2; j++)
-// 			{
-// 				snprintf(text, 20, "%u/%u", i, j);
-// 				DrawText2D(text, corner_points[i][j].x, corner_points[i][j].y, RGBColor::blue);
-// 			}
+		char text[20];
+		snprintf(text, 20, "%u", ID());
+		DrawText2D(text, cornerPoint[0].x, cornerPoint[0].y-5, RGBColor::blue);
+	}
+
+  if(detail == 2)
+  {
+		char text[20];
+		for (unsigned i=0; i<8; i++)
+		{
+			snprintf(text, 20, "%u", i);
+			DrawText2D(text, cornerPoint[i].x, cornerPoint[i].y-5, RGBColor::blue);
+		}
 	}
 // 		
 // 	if(detail == 2 && (closingLJct != UNDEF_ID || closingColl != UNDEF_ID))
@@ -524,16 +349,13 @@ void Cube::Draw(int detail)
 //   {
 // 		DrawEllipse2D(center.x, center.y, radius, radius , 0., RGBColor::red);
 //   }
-//   
-//   if(detail > 3)
-//   {
-// 		Flaps(flap)->Draw(detail-2);
-// 		if (oFlaps[0] != UNDEF_ID && oFlaps[0] != UNDEF_ID)
-// 		{
-// 			Flaps(oFlaps[0])->Draw(detail-2);
-// 			Flaps(oFlaps[1])->Draw(detail-2);
-// 		}
-//   }
+
+  if(detail > 3)
+  {
+		flap[0]->Draw(detail-4);
+		flap[1]->Draw(detail-4);
+		flap[2]->Draw(detail-4);
+  }
 }
 
 
@@ -543,31 +365,23 @@ void Cube::Draw(int detail)
  */
 const char* Cube::GetInfo()
 {
-printf("Cube::GetInfo: Not yet implemented\n");
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
-  int n=0;
-// 	
-//   if (closingLJct != UNDEF_ID || closingColl != UNDEF_ID)
-//   {
-//     n += snprintf(info_text, info_size, 
-// 	  "%s\nflap: %u\nL-Junction: %u\nCollinearity: %u\njctLines: %u - %u\ncLines: ",
-//       Gestalt::GetInfo(), flap, closingLJct, closingColl, jctLines[0], jctLines[1]);
-// 	for(unsigned i=0; i<cLines[LEFT].Size(); i++)
-//   	  n += snprintf(info_text + n, info_size - n, "L(%u) ", cLines[LEFT][i]);
-// 	for(unsigned i=0; i<cLines[RIGHT].Size(); i++)
-// 	  n += snprintf(info_text + n, info_size - n, "R(%u) ", cLines[RIGHT][i]);
-//   }
-//   else	// CreateFromFlaps
-//   {
-//     n += snprintf(info_text, info_size, 
-// 	  "%s\nflaps: %u - %u - %u\n",
-//       Gestalt::GetInfo(), flap, oFlaps[0], oFlaps[1]);
-//   }
-//   
-// 	n += snprintf(info_text + n, info_size -n , 
-// 	"\ni-p: %4.2f - %4.2f\ni-p1: %4.2f - %4.2f\ni-p2: %4.2f - %4.2f", intersection_points[0].x, intersection_points[0].y, intersection_points[1].x, intersection_points[1].y, intersection_points[2].x, intersection_points[2].y);
-// 
+  int n = 0;
+
+	if(plausible)
+	  n += snprintf(info_text, info_size, "%s  is plausible\n", Gestalt::GetInfo());
+	else
+	  n += snprintf(info_text + n, info_size - n, "  is not plausible\n");
+
+  n += snprintf(info_text + n, info_size - n, "  parallelity: %4.3f (%4.1f°)\n", parallelity, parallelity*180/M_PI);
+
+  n += snprintf(info_text + n, info_size - n, "  flaps: %u - %u - %u\n",
+      flap[0]->ID(), flap[1]->ID(), flap[2]->ID());
+
+  n += snprintf(info_text + n, info_size - n, "  rectangles: %u - %u - %u",
+      rectangle[0]->ID(), rectangle[1]->ID(), rectangle[2]->ID());
+
   return info_text;
 }
 
@@ -577,31 +391,22 @@ printf("Cube::GetInfo: Not yet implemented\n");
  * @param x x-coordinate
  * @param y y-coordinate
  * @return Returns true, if cube is at this position.
- * TODO Es muss der ganze Cube berücksichtigt werden.
  */
 bool Cube::IsAtPosition(int x, int y)
 {
-  return FlapsAri(core, flap)->IsAtPosition(x, y);
+  return flap[0]->IsAtPosition(x, y) ||
+				 flap[1]->IsAtPosition(x, y) ||
+				 flap[2]->IsAtPosition(x, y);
 }
 
-
-/**
- * @brief Calculate significance for the cube.
- */
-void Cube::CalculateSignificance()
-{
-	printf("Cube::CalculateSignificance: Not yet implemented\n");
-// 	sig = Flaps(flap)->sig * 3.;
-// 	sig = sig/(2.0*parallelity);
-}
 
 /**
  * @brief Another method to calculate the significance for the cube.
  * Add significance from the three flaps and divide it by 2*parallelity
  */
-void Cube::CalculateSignificance2()
+void Cube::CalculateSignificance()
 {
-	sig = FlapsAri(core, flap)->sig + FlapsAri(core, oFlaps[0])->sig + FlapsAri(core, oFlaps[1])->sig;
+	sig = flap[0]->sig + flap[1]->sig + flap[2]->sig;
 	if(parallelity!=0) sig = sig/(2.0*parallelity);
 }
 

@@ -1,6 +1,11 @@
 /**
- * $Id: FormClosures.hh,v 1.11 2007/03/25 21:35:57 mxz Exp mxz $
- */
+ * @file FormClosures.hh
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Gestalt principle class for forming closed convex contours (closures).
+ **/
+
 
 #ifndef Z_FORM_CLOSURES_HH
 #define Z_FORM_CLOSURES_HH
@@ -15,6 +20,9 @@ using namespace __gnu_cxx;
 namespace Z
 {
 
+/**
+ * @brief Gestalt principle class for creating closed convex contours (closures).
+ */
 class FormClosures : public GestaltPrinciple
 {
 private:

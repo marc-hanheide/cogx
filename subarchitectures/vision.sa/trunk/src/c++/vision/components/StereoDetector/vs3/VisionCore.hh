@@ -73,7 +73,7 @@ public:
     return RGBColor(p[0], p[1], p[2]);
   }
   void ProcessImage();
-  void ProcessImage(int runtime_ms);
+  void ProcessImage(int runtime_ms, float ca, float co);
   void ClearGestalts();
   void Draw(int detail = 0);
   void DrawImage();
@@ -83,8 +83,10 @@ public:
   void DrawGestaltInfo(Gestalt::Type type, unsigned num);
   void DrawPrinciple(GestaltPrinciple::Type type, int detail = 0);
 	const char* GetInfo(Gestalt::Type type, int id);
+	const char* GetGestaltListInfo();
   unsigned PickGestaltAt(Gestalt::Type type, int x, int y, unsigned start_at, bool reject_masked = false);
   double RunTime();
+	void PrintRunTime();
   void SetROI(const Vector2 center, double sigma);
   void NewGestalt(Gestalt *g, bool inform = true);
   void InformNewGestalt(Gestalt::Type type, unsigned id);

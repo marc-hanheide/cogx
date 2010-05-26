@@ -1,6 +1,10 @@
 /**
- * $Id: LJunction.cc,v 1.19 2007/04/14 20:50:59 mxz Exp mxz $
- */
+ * @file LJunction.cc
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Gestalt class for L-junctions.
+ **/
 
 #include "Draw.hh"
 #include "Line.hh"
@@ -10,7 +14,9 @@ namespace Z
 {
 
 /**
- * Returns true if junction b is inside a and vice versa.
+ * @brief Returns true if junction b is inside a and vice versa.
+ * @param a First L-junction
+ * @param b Second L-junction
  */
 bool Inside(LJunction* a, LJunction* b)
 {
@@ -31,7 +37,9 @@ bool Inside(LJunction* a, LJunction* b)
 }
 
 /**
- * Returns true if junction b is inside junction a.
+ * @brief Returns true if junction b is inside junction a.
+ * @param a First L-junction
+ * @param b Second L-junction
  */
 bool Opposing(LJunction* a, LJunction* b)
 {
@@ -76,13 +84,19 @@ bool Opposing(LJunction* a, LJunction* b)
 }
 
 /**
+ * @brief Constructor of class LJunction
+ * @param vc Vision core
+ * @param line_i Line i
+ * @param line_j Line j
+ * @param end_i Line end oi intersection for line i
+ * @param end_j Line end of intersection for line j
+ * @param inter Intersection point
  * i, j .. lines
  * inter .. intersection point
  * TODO: simplify, clean up
  */
 LJunction::LJunction(VisionCore *c, Line *line_i, Line *line_j,
-    int end_i, int end_j, const Vector2 &inter)
-  : Gestalt(c, L_JUNCTION)
+    int end_i, int end_j, const Vector2 &inter) : Gestalt(c, L_JUNCTION)
 {
   // find whether line directions point to or away from the junction
   // i.e. whether the junction is nearer to the start or the end of the lines
@@ -134,12 +148,19 @@ LJunction::LJunction(VisionCore *c, Line *line_i, Line *line_j,
   // TODO: reduce gap if both ends have T-jct (as in collinearity)
 }
 
+/**
+ * @brief Recalculate LJunction parameters.
+ */
 void LJunction::Recalc()
 {
   // nothing to recalc right now
   // TODO: check this properly
 }
 
+/**
+ * @brief Draw Gestalt LJunction.
+ * @param detail Degree of detail
+ */
 void LJunction::Draw(int detail)
 {
   if(detail >= 1)
@@ -167,6 +188,9 @@ void LJunction::Draw(int detail)
   DrawPoint2D(isct.x, isct.y, RGBColor::blue);
 }
 
+/**
+ * @brief Draw info for info field.
+ */
 void LJunction::DrawInfo()
 {
   char str[100];
@@ -185,33 +209,42 @@ void LJunction::DrawInfo()
   DrawText2D(str, 0.6, 0.6, RGBColor::green);
 }
 
+/**
+ * @brief Get the Gestalt information.
+ * @return Returns a character field with the Gestalt information
+ */
 const char* LJunction::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size,
-      "%sleft: %u right: %u\ndist: %f col_dist: %f\nangle: %.3f\n",
+      "%s  left line: %u right line: %u\n  dist: %f col_dist: %f\n  angle: %.3f\n",
       Gestalt::GetInfo(), line[LEFT]->ID(), line[RIGHT]->ID(), r, col_dist,
       OpeningAngle());
   // PrintSig();
   return info_text;
 }
 
+/**
+ * @brief Returns true if Gestalt is at this position.
+ * @param x X-coordinate
+ * @param y Y-coordinate
+ * @return Returns true if Gestalt is at this position
+ */
 bool LJunction::IsAtPosition(int x, int y)
 {
   return line[LEFT]->IsAtPosition(x, y) || line[RIGHT]->IsAtPosition(x, y);
 }
 
 /**
- * Calculate accidentalness and significance.
- * Assume endpoints are distributed following a Poisson process with parameter
- * p_lep in space R2 (p_lep = prob. of line endpoints).
- * Be r the distance between endpoints of left and right line.
- * Calculate the probability that there are one or more endpoints in area A =
- * pi*r^2. Which is the same as 1 - probability that there is no endpoint in
- * area A.
- * TODO: check and fix the above descriptive text to match the actual and
- * correct code below.
+ * @brief Calculate accidentalness and significance. \n
+ * Assume endpoints are distributed following a Poisson process with parameter \n
+ * p_lep in space R2 (p_lep = prob. of line endpoints). \n
+ * Be r the distance between endpoints of left and right line. \n
+ * Calculate the probability that there are one or more endpoints in area A = pi*r^2 \n
+ * Which is the same as 1 - probability that there is no endpoint in \n
+ * area A. \n
+ * TODO: check and fix the above descriptive text to match the actual and correct code below.
  */
 void LJunction::CalculateSignificance()
 {
@@ -231,6 +264,9 @@ void LJunction::CalculateSignificance()
   sig = max(sig, 1e-6);  // TODO: properly
 }
 
+/** TODO
+ * @brief Print some factors
+ */
 void LJunction::PrintSig()
 {
   // proximity factor
@@ -248,11 +284,20 @@ void LJunction::PrintSig()
   printf("f_prox: %f  f_col: %f  f_ori: %f\n", f_prox, f_col, f_ori);
 }
 
+/**
+ * @brief Calculates the gap between the two lines.
+ * @param side Side of the line
+ * @return Returns the calculated gap between the lines.
+ */
 double LJunction::Gap(int side)
 {
   return Distance(isct, line[side]->point[near_point[side]]);
 }
 
+/**
+ * @brief Calculate the opening angle.
+ * @return Returns the opening angle between the lines.
+ */
 double LJunction::OpeningAngle()
 {
   return acos(Dot(dir[LEFT], dir[RIGHT]));

@@ -1,14 +1,14 @@
 /**
- * $Id: Arc.hh,v 1.18 2006/11/24 13:47:03 mxz Exp mxz $
+ * $Id: AJunction.hh,v 1.2 2009/04/24 11:38:50 mz Exp mz $
  */
 
 #ifndef Z_A_JUNCTION_HH
 #define Z_A_JUNCTION_HH
 
-#include "Vector2.hh"
 #include "VisionCore.hh"
 #include "Gestalt.hh"
 #include "Segment.hh"
+#include "Vector2.hh"
 
 namespace Z
 {

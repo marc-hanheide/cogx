@@ -13,6 +13,7 @@
 #include <set>
 #include "Vector2.hh"
 #include "VisionCore.hh"
+#include "Draw.hh"
 #include "Segment.hh"
 
 
@@ -41,7 +42,7 @@ protected:
   RGBColor mean_col[2];  							///< mean color LEFT/RIGHT
   void CalculateParameters();
   virtual void CalculateColors() = 0;
-  void DrawArrow();
+//   void DrawArrow();
   void MoveJunctions(Line *l2, int end);
 
 public:
@@ -57,6 +58,7 @@ public:
   TJunction* t_jct[2];								///< T-junctions at ends, START/END
   Array<TJunction*> pt_jct[2][2];			///< passive T-jcts, START/END and LEFT/RIGHT
   Array<Closure*> closures; 					// TODO: have two lists, for both senses
+//  Array<Rectangle*> rectangles; 					// TODO Soll man das hier auch so machen?
   int label;													///< label LEFT/RIGHT
   double energy;											///< energy for global conistency
   double stability;										///< stability for global consistency

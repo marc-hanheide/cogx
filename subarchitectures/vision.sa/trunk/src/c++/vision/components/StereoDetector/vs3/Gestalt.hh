@@ -9,6 +9,7 @@
 #ifndef Z_GESTALT_HH
 #define Z_GESTALT_HH
 
+#include <cstdio>
 #include "Namespace.hh"
 #include "Array.hh"
 // #include "VisionCore.hh"
@@ -36,6 +37,7 @@ public:
     T_JUNCTION,
     L_JUNCTION,
     A_JUNCTION,
+    E_JUNCTION,
     CLOSURE,
     RECTANGLE,
     FLAP,

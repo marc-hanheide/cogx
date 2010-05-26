@@ -23,22 +23,16 @@ namespace Z
  * Constructor of Gestalt class rectangle.
  * @param vc Vision core
  * @param c Closure
- * @param js[] The four junction id's. When not available, then UNDEF_ID
- * @param is[] The four intersection points in counter clockwise order.
- * @param l Lines of the closure
- * @param par Parallelity significance
+ * @param is[] The four intersection points in clockwise order.
+ * @param par Parallelity for significance value
  */
-Rectangle::Rectangle(VisionCore *vc, Closure *c, unsigned js[4], Vector2 is[4], Array<Line*> l, double par) : Gestalt(vc, RECTANGLE)
+Rectangle::Rectangle(VisionCore *vc, Closure *c, Vector2 is[4], double par) : Gestalt(vc, RECTANGLE)
 {
 	closure = c;
 	parallelity = par;
-	lines = l;
 
   for(unsigned i = 0; i < 4; i++)
 		isct[i] = is[i];
-
-  for(unsigned i = 0; i < 4; i++)
-    ljcts.PushBack(LJunctions(core, js[i]));
 
 	Init();
 }
@@ -55,17 +49,6 @@ void Rectangle::Init()
 	for (unsigned i=0; i<(core->IW()*core->IH()); i++)
 		data[i] = UNDEF_ID;
 	pixelsupport = CalculateSupport();
-
-	// calculate center point of rectangle
-	centerPoint.x = 0;
-	centerPoint.y = 0;
-	for(unsigned i=0; i<4; i++)
-	{
-		centerPoint.x += isct[i].x;
-		centerPoint.y += isct[i].y;
-	}
-	centerPoint.x = centerPoint.x/4.;
-	centerPoint.y = centerPoint.y/4.;
 
 	// get direction (PI) and angle of the two line-pairs
 	unsigned j;
@@ -87,6 +70,17 @@ void Rectangle::Init()
 
 	phi[0] = ScaleAngle_0_pi(PolarAngle(direction[0]));
 	phi[1] = ScaleAngle_0_pi(PolarAngle(direction[1]));
+
+	// calculate center point of rectangle
+	centerPoint.x = 0;
+	centerPoint.y = 0;
+	for(unsigned i=0; i<4; i++)
+	{
+		centerPoint.x += isct[i].x;
+		centerPoint.y += isct[i].y;
+	}
+	centerPoint.x = centerPoint.x/4.;
+	centerPoint.y = centerPoint.y/4.;
 
 	// calculate maximum distance from centerPoint to one of the corner of the rectangle
 	radius = (isct[0] - centerPoint).Norm();
@@ -134,9 +128,9 @@ const char* Rectangle::GetInfo()
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size, "%s"
-                                 "  closure: %u\n"
-                                 "  junctions: %u %u %u %u\n",
-      Gestalt::GetInfo(), closure->ID(), ljcts[0]->ID(), ljcts[1]->ID(), ljcts[2]->ID(), ljcts[3]->ID());
+                                 "  closure: %u\n",
+//                                  "  junctions: %u %u %u %u\n",
+      Gestalt::GetInfo(), closure->ID()/*, ljcts[0]->ID(), ljcts[1]->ID(), ljcts[2]->ID(), ljcts[3]->ID()*/);
   return info_text;
 }
 

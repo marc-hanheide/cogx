@@ -1,16 +1,10 @@
 /**
  * @file Cube.hh
  * @author Richtsfeld Andreas
- * @date Februar 2009
+ * @date March 2010
  * @version 0.1
  * @brief Header file of Gestalt Cube.
  **/
-
-/*	TODO ARI: There are different variables for finding cubes from flaps 
-**	(CreateFromFlaps) or from one flap with a L-Junction and some lines
-**	(TryFlapClosing). So there may be other variables which are undefined.
-**
-*/
 
 #ifndef Z_CUBE_HH
 #define Z_CUBE_HH
@@ -18,47 +12,38 @@
 #include "Gestalt.hh"
 #include "VisionCore.hh"
 #include "Vector2.hh"
+#include "FlapAri.hh"
+#include "Rectangle.hh"
 
 namespace Z
 {
 
 /**
  * @brief Class of Gestalt Cube.
- * TODO alle cube properties auf Referenzen ändern
  */
 class Cube : public Gestalt
 {
 public:
-  Vector2 corner_points[4][2];		///< [RIGHT/SHARED/LEFT/ISCT][TOP/BOTTOM]
- 
-  unsigned flap;									///< flap of cube
-  unsigned oFlaps[2];							///< two other flaps for the cube	(maybe undefined == UNDEF_ID)
-  unsigned closingLJct; 					///< the closing L-Junction (maybe undefined == UNDEF_ID)
-  unsigned closingColl; 					///< the closing Collinearity (maybe undefined == UNDEF_ID)
+	FlapAri *flap[3];								///< The 3 flaps, building the cube.
+	Rectangle *rectangle[3];				///< The 3 rectangles, building a cube
+	Vector2 cornerPoint[8];					///< The 8 corner points of the cube
+																	// Zero is in the center, 0-6 clockwise r0[1,2,3], r1[3,4,5], r2[5,6,1]
+																	// cornerPoint[7] is the hidden corner point of the cube.
 
-  unsigned jctLines[2]; 					///< lines from the closing LJunction/Collinearity [LEFT/RIGHT]
-  Array<unsigned> cLines[2]; 			///< lines, which close the cube from jctLines to flap->outerJunctions
+	bool plausible;									///< If flaps are ordered correct, cube is plausible.
+	double parallelity;							///< value for the parallity of the 3x4 parallel cube-edges to calc. significance
+	Vector2 center;									///< center of the cube-area
+	double radius;									///< circumscribed radius
+//	double maxRatio;								///< TODO maximum ratio between height, depth and width of the cube
 
-	double parallelity;							///< value for the parallity of the 3x4 parallel cube-edges
-
-	Vector2 intersection_points[3];	///< The three pre-calculated points from hidden intersection
-  Vector2 center;									///< center of the cube-area
-  double radius;									///< circumscribed radius
-
-  Vector2 groundCenter; 					///< center of the ground plane from the cube
-  Vector2 groundWidth;						///< width of the ground plane
-  Vector2 groundDepth; 						///< depth of the ground plane
-
-	double maxRatio;								///< TODO maximum ratio between height, depth and width of the cube
-
-  Cube(VisionCore *vc, unsigned f, unsigned f2, unsigned f3);
-  Cube(VisionCore *vc, unsigned f, unsigned lj, unsigned c, unsigned ll, unsigned lr, Array<unsigned> *cL);
-  void CalculateSignificance();
-  void CalculateSignificance2();
-  void OrderAreas();
+	Cube(VisionCore *vc, FlapAri *f[3]);
+	bool PlausibilityCheck(FlapAri *f[3]);
+	void GetCornerPoints();
   void CalculateProperties();
 	double CheckParallelity();
-  bool CheckW2HRatio();
+  void CalculateSignificance();
+  //bool CheckW2HRatio();
+
   bool IsInside(unsigned cube);
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();

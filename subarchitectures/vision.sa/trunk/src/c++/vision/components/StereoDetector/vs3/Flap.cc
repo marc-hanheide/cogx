@@ -45,7 +45,7 @@ const char* Flap::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
-  snprintf(info_text, info_size, "%sclosure: %u %u\n",
+  snprintf(info_text, info_size, "%s  closure: %u %u\n",
       Gestalt::GetInfo(), clos[0]->ID(), clos[1]->ID());
   return info_text;
 }

@@ -114,14 +114,15 @@ void FormSegments::Operate(bool incremental)
  */
 void FormSegments::Create()
 {
-  CreateSegmentsMatas();
+	// CreateSegmentsMatas();		// create edges with matas-canny
+	CreateSegmentsCEdge();			// create edges with openCV canny
   //SegmentArcsLines();
 }
 
 
 /**
  * @brief Segment arc lines
- * TODO depricated
+ * TODO obsolete
  */
 void FormSegments::SegmentArcsLines()
 {
@@ -185,8 +186,8 @@ void FormSegments::DrawToEdgeImage(Segment *seg)
 void FormSegments::CreateSegmentsMatas()
 {
 //  float alpha = 1.00;  // filter width (these are "good" values) 1.00, 1.50
-  float alpha = 0.800;  // filter width (these are "good" values) 1.00, 1.50
-  float omega = 0.001; // filter parameter  0.001
+//   float alpha = 0.800;  // filter width (these are "good" values) 1.00, 1.50
+//   float omega = 0.001; // filter parameter  0.001
   float high_thresh, low_thresh;
   const IplImage *iplimg = core->GetImage();
   FARY *grey_img = 0;
@@ -264,6 +265,46 @@ void FormSegments::CreateSegmentsMatas()
 }
 
 /**
+ * @brief Canny edge detection using openCV library.
+ * Johann Prankl, 20091111
+ */
+void FormSegments::CreateSegmentsCEdge()
+{
+  const IplImage *himg = core->GetImage();
+  double avg_len = 0.;
+
+	IplImage *edges = cvCreateImage(cvGetSize(himg), IPL_DEPTH_8U, 1 );
+  IplImage *dx = cvCreateImage(cvGetSize(himg), IPL_DEPTH_16S, 1 );
+  IplImage *dy = cvCreateImage(cvGetSize(himg), IPL_DEPTH_16S, 1 );
+
+  Array<Array<Edgel> *> segs;
+
+  computeEdges.Set(true, 3);														/// COLOR
+  computeEdges.Sobel((IplImage*) himg, dx, dy);
+  computeEdges.Canny(dx, dy, edges, 30, 140);						/// CANNY PARAMETER => good: 70, 140
+  computeEdges.LinkEdge(edges,dx, dy, segs);
+  
+  for (unsigned i=0; i<segs.Size(); i++)
+  {
+    avg_len += (segs[i]->Size());
+    core->NewGestalt(new Segment(core, *segs[i]));
+  }
+
+  // probability of an edgel, given that the previous pixel was an edgel
+  avg_len /= NumSegments(core);
+  core->p_ee = 1. - 1./avg_len;
+
+  for (unsigned i=0; i<segs.Size(); i++)
+    delete segs[i];
+  segs.Clear();
+
+  cvReleaseImage(&edges);
+  cvReleaseImage(&dx);
+  cvReleaseImage(&dy);
+}
+
+
+/**
  * @brief Rank the estimated segments.
  */
 void FormSegments::Rank()
@@ -271,5 +312,15 @@ void FormSegments::Rank()
   RankGestalts(Gestalt::SEGMENT, CmpSegments);
 }
 
+/**
+ * @brief Set the alpha and omega value for the edge detector. \n
+ * @param a Alpha value
+ * @param o Omega value
+ */
+void FormSegments::SetCanny(float a, float o)
+{
+	alpha = a;
+	omega = o;
+}
 }
 

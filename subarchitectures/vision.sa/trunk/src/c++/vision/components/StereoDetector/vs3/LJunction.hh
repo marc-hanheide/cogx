@@ -1,6 +1,10 @@
 /**
- * $Id: LJunction.hh,v 1.9 2007/02/04 23:53:03 mxz Exp mxz $
- */
+ * @file LJunction.hh
+ * @author Richtsfeld Andreas, Michael Zillich
+ * @date 2007, 2010
+ * @version 0.1
+ * @brief Gestalt class for L-junctions.
+ **/
 
 #ifndef Z_L_JUNCTION_HH
 #define Z_L_JUNCTION_HH
@@ -14,6 +18,10 @@ namespace Z
 
 class Line;
 
+
+/**
+ * @brief Gestalt class LJunction
+ */
 class LJunction : public Gestalt
 {
 private:

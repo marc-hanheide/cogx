@@ -1,7 +1,8 @@
 /**
- * $Id: Arc.hh,v 1.18 2006/11/24 13:47:03 mxz Exp mxz $
+ * $Id: AJunction.cc,v 1.2 2010/05/26 12:03:44 mz Exp mz $
  */
 
+#include <stdio.h>
 #include "Arc.hh"
 #include "AJunction.hh"
 
