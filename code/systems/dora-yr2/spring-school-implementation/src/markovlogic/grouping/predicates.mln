@@ -1,0 +1,11 @@
+
+///////////////////////////////
+// PREDICATES  
+///////////////////////////////
+
+Existence(belief)
+Shape(belief,shapeval)
+Label(belief,labelval)
+
+Outcome(outcome)
+UnifyWith(existingunion)

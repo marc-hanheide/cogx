@@ -1,0 +1,9 @@
+HOST localhost
+
+SUBARCHITECTURE binder 
+JAVA WM binder.arch.BindingWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+
+JAVA GD groupingtest binder.testing.PerceptualGroupingTest --log
+JAVA GD grouping binder.components.PerceptualGrouping_MLN --log
+JAVA GD bindermonitor binder.components.BinderMonitor --log

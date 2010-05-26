@@ -1,0 +1,27 @@
+log4j.rootLogger=TRACE, console, SocketApp
+#log4j.rootLogger=TRACE, console, FileLog, XMLLog, SocketApp
+
+# console is set to be a ConsoleAppender. 
+log4j.appender.SocketApp=org.apache.log4j.net.SocketAppender
+log4j.appender.SocketApp.Port=48143
+log4j.appender.SocketApp.RemoteHost=127.0.0.1
+
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.Threshold=DEBUG
+log4j.appender.console.layout=cast.core.logging.ComponentLayout
+log4j.appender.console.layout.ConversionPattern=%S %30c [ %05p ] - %m %n%E
+
+#log4j.appender.FileLog=org.apache.log4j.FileAppender
+#log4j.appender.FileLog.Threshold=TRACE
+#log4j.appender.FileLog.File=/tmp/cast.log
+#log4j.appender.FileLog.Append=false
+#log4j.appender.FileLog.layout=org.apache.log4j.PatternLayout
+#log4j.appender.FileLog.layout.ConversionPattern=%8r %30c [ %05p ] - %m %n
+
+#log4j.appender.XMLLog=org.apache.log4j.FileAppender
+#log4j.appender.XMLLog.Threshold=INFO
+#log4j.appender.XMLLog.File=cast-info.log
+#log4j.appender.XMLLog.Append=false
+#log4j.appender.XMLLog.layout=org.apache.log4j.xml.XMLLayout
+
+

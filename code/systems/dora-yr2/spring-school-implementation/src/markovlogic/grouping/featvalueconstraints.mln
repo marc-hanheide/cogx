@@ -1,0 +1,18 @@
+
+///////////////////////////////
+// FEATURE VALUE CONSTRAINTS
+///////////////////////////////
+
+// rules for existence dependency
+!Existence(x) => y=None v !Shape(x,y).
+!Existence(x) => y=None v !Label(x,y).
+!Existence(x) => Shape(x,None).
+!Existence(x) => Label(x,None).
+
+// mutual exclusivity and unicity constraints
+Shape(x,y) ^ Shape(x,z) => y=z.
+EXIST y Shape(x,y).
+
+Label(x,y) ^ Label(x,z) => y=z.
+EXIST y Label(x,y).
+
