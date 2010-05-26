@@ -684,13 +684,13 @@ class MAPLCompiler(Translator):
         p = Parameter("?f", FunctionType(t_object))
         indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
         p = Parameter("?f", FunctionType(t_object))
-        #i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
-        not_indomain = Predicate("not_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
+        i_indomain = Predicate("i_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
+        #not_indomain = Predicate("not_in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=False)
 
         dom.predicates.add(knowledge)
         dom.predicates.add(direct_knowledge)
         dom.predicates.add(indomain)
-        dom.predicates.add(not_indomain)
+        dom.predicates.add(i_indomain)
 
         dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
         dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]

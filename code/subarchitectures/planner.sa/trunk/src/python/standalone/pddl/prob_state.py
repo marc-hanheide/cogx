@@ -62,6 +62,9 @@ class ValueDistribution(defaultdict):
         new = ValueDistribution(self)
         new *= other
         return new
+
+    def __str__(self):
+        return "(%s)" % ", ".join("%s: %s" % (v, p) for v,p in self.iteritems())
         
 class ProbFact(Fact):
     def __new__(_class, svar, value):
@@ -255,18 +258,41 @@ class ProbabilisticState(State):
 
     def determinized_state(self, lower_threshold, upper_threshold):
         s = State(prob=self.problem)
-        svar2idvars = defaultdict(list)
+        domains = defaultdict(list)
+        exclude_domains = defaultdict(list)
+        
         for fact, prob in self.iterfacts(only_nonzero=False):
             #TODO: Handle cases with limited number of alternatives
             if prob >= upper_threshold:
                 s.set(fact)
-            elif prob < lower_threshold:
-                idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
-                svar2idvars[fact.svar].append(idvar)
-        for svar, idvars in svar2idvars.iteritems():
-            if svar not in s or s[svar] == UNKNOWN:
-                for idvar in idvars:
-                    s[idvar] = TRUE
+            elif prob > lower_threshold:
+#                idvar = fact.svar.as_modality(mapl.not_indomain, [fact.value])
+                domains[fact.svar].append(fact.value)
+            else:
+                exclude_domains[fact.svar].append(fact.value)
+                
+        for svar, values in domains.iteritems():
+            if svar in s and s[svar] != UNKNOWN:
+                #already known
+                continue
+            for v in values:
+                idvar = svar.as_modality(mapl.i_indomain, [v])
+                s[idvar] = TRUE
+
+        for svar, excluded in exclude_domains.iteritems():
+            if svar in s and s[svar] != UNKNOWN:
+                #already known
+                continue
+            if svar in domains:
+                #already handled in the previous loop
+                continue
+            excluded = set(excluded)
+            for v in self.problem.get_all_objects(svar.get_type()):
+                if v in excluded:
+                    continue
+                idvar = svar.as_modality(mapl.i_indomain, [v])
+                s[idvar] = TRUE
+
         return s
             
         
