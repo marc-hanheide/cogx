@@ -1,0 +1,20 @@
+
+
+///////////////////////////////
+// CORRELATIONS
+///////////////////////////////
+
+// general correlations
+1 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Mug) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Mug) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Ball) => UnifyWith(x)
+1 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(x,Ball) => UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(x,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(P,Sphe) ^ Label(P,Mug) => !UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(x,Cyl) ^ Label(P,Ball) => !UnifyWith(x)
+2 Existence(x) ^ Existence(P) ^ Shape(P,Cyl) ^ Label(x,Ball) => !UnifyWith(x)
+
+// at least one correlation must hold
+UnifyWith(x) => (Shape(x,Cyl) ^ Label(P,Mug)) v (Shape(P,Cyl) ^ Label(x,Mug)) v (Shape(x,Sphe) ^ Label(P,Ball)) v (Shape(P,Sphe) ^ Label(x,Ball)).
+UnifyWith(x) => Existence(x) ^ Existence(P).
+

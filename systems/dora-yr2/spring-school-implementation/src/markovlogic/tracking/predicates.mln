@@ -1,0 +1,11 @@
+
+///////////////////////////////
+// PREDICATES  
+///////////////////////////////
+
+Existence(belief)
+Type(belief,typeval)
+Is-in(belief,is-inval)
+
+Outcome(outcome)
+UnifyWith(existingunion)
