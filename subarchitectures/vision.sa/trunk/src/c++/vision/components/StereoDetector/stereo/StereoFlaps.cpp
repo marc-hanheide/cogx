@@ -25,6 +25,18 @@ TmpFlap::TmpFlap(Flap *flap)
 }
 
 /**
+ * @brief Recalculate all flap parameters, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void TmpFlap::RePrune(int oX, int oY, int sc)
+{
+	surf[0].RePrune(oX, oY, sc);
+	surf[1].RePrune(oX, oY, sc);
+}
+
+/**
  * @brief Rectify TmpFlap
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
@@ -322,7 +334,7 @@ double StereoFlaps::MatchingScore(TmpFlap &left_flap, TmpFlap &right_flap, unsig
   }
 }
 
-/**																																			/// TODO StereoFlaps verschieben
+/**
  * @brief Find right best matching flap for given left flaps, begining at position l of right flap array.
  * @param left_flap Tmp. flap of left stereo image.
  * @param right_flaps Array of all flaps from right stereo image.
@@ -431,7 +443,6 @@ void StereoFlaps::ClearResults()
 
 /**
  * @brief Match and calculate 3D flaps from 2D flaps.
- * @param side LEFT/RIGHT image of stereo.images.
  */
 void StereoFlaps::Process()
 {
@@ -449,6 +460,9 @@ void StereoFlaps::Process()
 					flaps[side].PushBack(flap);
 			}
 		}
+		if(pPara.pruning)
+			for(unsigned i = 0; i < flaps[side].Size(); i++)
+				flaps[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
 		for(unsigned i = 0; i < flaps[side].Size(); i++)
 			flaps[side][i].Rectify(stereo_cam, side);
 		for(unsigned i = 0; i < flaps[side].Size(); i++)
@@ -461,6 +475,18 @@ void StereoFlaps::Process()
   Calculate3DFlaps(flaps[LEFT], flaps[RIGHT], flapMatches, flap3ds);
 }
 
+/**
+ * @brief Match and calculate 3D flaps from 2D flaps.
+ */
+void StereoFlaps::Process(int oX, int oY, int sc)
+{
+	pPara.pruning = true;
+	pPara.offsetX = oX;
+	pPara.offsetY = oY;
+	pPara.scale = sc;
+	Process();
+	pPara.pruning = false;
+}
 
 }
 

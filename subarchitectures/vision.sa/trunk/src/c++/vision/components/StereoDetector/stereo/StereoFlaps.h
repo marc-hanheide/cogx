@@ -21,6 +21,7 @@ namespace Z
 
 /**
  * @class TmpFlap
+ * @brief Tmp. flap
  */
 class TmpFlap
 {
@@ -29,6 +30,7 @@ public:
 
   TmpFlap() {}
   TmpFlap(Flap *flap);
+	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
@@ -39,6 +41,7 @@ public:
 
 /**
  * @class Flap3D
+ * @brief 3D flap
  */
 class Flap3D
 {
@@ -51,6 +54,7 @@ public:
 
 /**
  * @class StereoFlaps Try to match flaps from the stereo images.
+ * @brief Match stereo flaps from closures
  */
 class StereoFlaps : public StereoBase
 {
@@ -73,20 +77,18 @@ public:
 	~StereoFlaps() {}
 
   int NumFlaps2D(int side);
+	int NumFlapsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::FLAP);}		///< 
+	int NumFlapsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::FLAP);}	///< 
+
   const TmpFlap &Flaps2D(int side, int i);
-  int NumFlaps() {return flap3ds.Size();}
-  const Flap3D &Flaps(int i) {return flap3ds[i];}
+  const Flap3D &Flaps(int i) {return flap3ds[i];}														///<
 
-	int NumFlapsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::FLAP);}
-	int NumFlapsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::FLAP);}
-
-	int NumStereoMatches() {return flapMatches;}
+	int NumStereoMatches() {return flapMatches;}															///< 
 	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
-
 	void ClearResults();
-
 	void Process();
+	void Process(int oX, int oY, int sc);
 };
 
 }

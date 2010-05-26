@@ -86,8 +86,8 @@ static void RefineLines(vector<TmpLine> &lines)
 //---------------------------- TmpSurf ----------------------------//
 //-----------------------------------------------------------------//
 /**
- * @brief Init tmp. surface with data of an vs3 closure
- * 																																														TODO Why calculation with pixels ...? Whats going on here?
+ * @brief Init tmp. surface with data from a closure.
+ * 																																								TODO Why calculation with edgels ...? Whats going on here?
  * @param clos Closure to init surface
  */
 void TmpSurf::Init(Closure *clos)
@@ -161,8 +161,6 @@ void TmpSurf::Init(Closure *clos)
     p[i] = LineIntersection(lines[i].p, lines[i].d, lines[j].p, lines[j].d);
   }
 
-//   id = clos->ID();									/// TODO Wozu eine id? => wurde sonst auf clos-ID gesetzt.
-
   is_valid = true;
 }
 
@@ -174,14 +172,12 @@ void TmpSurf::Init(Closure *clos)
  */
 void TmpSurf::Init(Rectangle *rectangle)
 {
-  p.resize(4);
-  pr.resize(4);
+	p.resize(4);
+	pr.resize(4);
 
 	for(unsigned i=0; i<4; i++)
-// 		p[i] = (rectangle->ljcts[i])->isct;
 		p[i] = rectangle->isct[i];
 
-//  id = UNDEF_ID;									/// TODO Wozu eine id? => wurde sonst auf clos-ID gesetzt.
   is_valid = true;
 }
 
@@ -210,36 +206,35 @@ void TmpSurf::Init(Ellipse *ell)
  */
 void TmpSurf::Init(Cube *cube, int side)
 {
-	printf("StereoBase: TmpSurf::Init(Cube *cube, int side): Implemented, but not proved!\n");
+	printf("StereoBase: TmpSurf::Init(Cube *cube, int side): Implemented, but untested\n");
 
   p.resize(4);
   pr.resize(4);
 
-	if(side == 0)				// => Oben: 00-10-20-30
+	if(side == 0)	// => first rectangle 0-1-2-3
 	{
-		p[0] = cube->corner_points[0][0];
-		p[1] = cube->corner_points[1][0];
-		p[2] = cube->corner_points[2][0];
-		p[3] = cube->corner_points[3][0];
+		p[0] = cube->cornerPoint[0];
+		p[1] = cube->cornerPoint[1];
+		p[2] = cube->cornerPoint[2];
+		p[3] = cube->cornerPoint[3];
 	}
-	else if(side == 1)	// => Rechts: 00-01-11-10
+	else if(side == 1)	// => second rectangle: 0-3-4-5
 	{
-		p[0] = cube->corner_points[0][0];
-		p[1] = cube->corner_points[0][1];
-		p[2] = cube->corner_points[1][1];
-		p[3] = cube->corner_points[1][0];
+		p[0] = cube->cornerPoint[0];
+		p[1] = cube->cornerPoint[3];
+		p[2] = cube->cornerPoint[4];
+		p[3] = cube->cornerPoint[5];
 	}
-	else if(side == 2)	// => Links: 10-11-21-20
+	else if(side == 2)	// => third rectangle: 0-5-6-1
 	{
-		p[0] = cube->corner_points[1][0];
-		p[1] = cube->corner_points[1][1];
-		p[2] = cube->corner_points[2][1];
-		p[3] = cube->corner_points[2][0];
+		p[0] = cube->cornerPoint[0];
+		p[1] = cube->cornerPoint[5];
+		p[2] = cube->cornerPoint[6];
+		p[3] = cube->cornerPoint[1];
 	}
 	else
 		printf("TmpSurf::Init: False cube side.\n");
 
-//  id = UNDEF_ID;									/// TODO Wozu eine id? => wurde sonst auf clos-ID gesetzt.
   is_valid = true;
 }
 
@@ -258,6 +253,22 @@ void TmpSurf::ShiftPointsLeft(unsigned offs)
   for(unsigned i = 0; i < p.size(); i++)
     t[i] = pr[(i + offs)%p.size()];
   pr = t;
+}
+
+
+/**
+ * @brief Recalculate the surface points, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void TmpSurf::RePrune(int oX, int oY, int sc)
+{
+	for(unsigned i = 0; i < p.size(); i++)
+	{
+		p[i].x = (oX + p[i].x)/sc;
+		p[i].y = (oY + p[i].y)/sc;
+	}
 }
 
 /**
@@ -522,7 +533,8 @@ StereoBase::Type StereoBase::EnumType(const char *type_name)
  */
 StereoBase::StereoBase()
 {
-	enabled = false;		// by default disabled
+	enabled = false;					// disabled by default
+	pPara.pruning = false;		// disabled by default
 }
 
 /**

@@ -6,6 +6,7 @@
 #define VEC_MATH_HH
 
 #include <iostream>
+#include <cstdio>
 #include <algorithm>
 #include "Vector3.hh"
 

@@ -29,9 +29,10 @@ public:
 
   TmpRectangle() {}
   TmpRectangle(Rectangle *rectangle);
+	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
-//   bool IsAtPosition(int x, int y) const;
+//   bool IsAtPosition(int x, int y) const;													/// TODO weg damit? oder braucht man noch?
   void Fuddle(unsigned off0);
   bool IsValid() {return surf.is_valid;}
 };
@@ -56,7 +57,7 @@ class StereoRectangles : public StereoBase
 {
 private:
 
-  Array<TmpRectangle> rectangles[2];				///< tmp rectangles
+  Array<TmpRectangle> rectangles[2];				///< Tmp. rectangles from the vision cores.
 	Array<Rectangle3D> rectangle3ds;					///< 3D rectangles
 	int rectMatches;													///< Number of stereo matched rectangles
 
@@ -72,18 +73,18 @@ public:
 	~StereoRectangles() {}
 
   int NumRectangles2D(int side);
+	int NumRectanglesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE);}		///< 
+	int NumRectanglesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE);}	///< 
+
   const TmpRectangle &Rectangles2D(int side, int i);
-  int NumRectangles() {return rectangle3ds.Size();}
-  const Rectangle3D &Rectangles(int i) {return rectangle3ds[i];}
+  const Rectangle3D &Rectangles(int i) {return rectangle3ds[i];}											///< 
 
-	int NumRectanglesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::RECTANGLE);}
-	int NumRectanglesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::RECTANGLE);}
-
-	int NumStereoMatches() {return rectMatches;}
+	int NumStereoMatches() {return rectMatches;}																				///< 
 	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
 	void ClearResults();
 	void Process();
+	void Process(int oX, int oY, int sc);
 };
 
 }

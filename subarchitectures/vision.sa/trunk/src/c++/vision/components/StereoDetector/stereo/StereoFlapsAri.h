@@ -30,6 +30,7 @@ public:
 
   TmpFlapAri() {}
   TmpFlapAri(FlapAri *flap);
+	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
@@ -51,6 +52,10 @@ public:
 };
 
 
+
+//--------------------------------------------------------------------//
+//-------------------------- StereoFlapsAri --------------------------//
+//--------------------------------------------------------------------//
 /**
  * @class StereoFlapsAri Try to match flaps(ari) from the stereo images.
  * @brief Match stereo flaps from FlapsAri.
@@ -76,19 +81,18 @@ public:
 	~StereoFlapsAri() {}
 
   int NumFlaps2D(int side);
+	int NumFlapsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::FLAP_ARI);}		///<
+	int NumFlapsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::FLAP_ARI);}	///<
+
   const TmpFlapAri &Flaps2D(int side, int i);
-  int NumFlaps() {return flap3ds.Size();}
-  const Flap3DAri &Flaps(int i) {return flap3ds[i];}
+  const Flap3DAri &Flaps(int i) {return flap3ds[i];}														///<
 
-	int NumFlapsLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::FLAP_ARI);}
-	int NumFlapsRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::FLAP_ARI);}
-
-	int NumStereoMatches() {return flapMatches;}
+	int NumStereoMatches() {return flapMatches;}																	///<
 	void Draw(int side, bool masked = false);
 	void DrawMatched(int side);
-
 	void ClearResults();
 	void Process();
+	void Process(int oX, int oY, int sc);
 };
 
 }

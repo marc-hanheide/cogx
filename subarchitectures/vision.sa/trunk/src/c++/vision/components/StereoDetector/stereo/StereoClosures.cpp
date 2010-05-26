@@ -24,6 +24,17 @@ TmpClosure::TmpClosure(Closure *closure)
 }
 
 /**
+ * @brief Recalculate all closure parameters, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void TmpClosure::RePrune(int oX, int oY, int sc)
+{
+	surf.RePrune(oX, oY, sc);
+}
+
+/**
  * @brief Rectify TmpClosure
  * @param cam Stereo camera parameters and functions.
  * @param side LEFT / RIGHT side of stereo
@@ -314,7 +325,6 @@ void StereoClosures::ClearResults()
 
 /**
  * @brief Match and calculate 3D closures from 2D closures.
- * @param side LEFT/RIGHT image of stereo.images.
  */
 void StereoClosures::Process()
 {
@@ -330,6 +340,9 @@ void StereoClosures::Process()
 					closures[side].PushBack(closure);
 			}
 		}
+		if(pPara.pruning)
+			for(unsigned i = 0; i < closures[side].Size(); i++)
+				closures[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
 		for(unsigned i = 0; i < closures[side].Size(); i++)
 			closures[side][i].Rectify(stereo_cam, side);
 		for(unsigned i = 0; i < closures[side].Size(); i++)
@@ -340,6 +353,20 @@ void StereoClosures::Process()
 	closMatches = 0;
 	MatchClosures(closures[LEFT], closures[RIGHT], closMatches);
 	Calculate3DClosures(closures[LEFT], closures[RIGHT], closMatches, closure3ds);
+}
+
+
+/**
+ * @brief Match and calculate 3D closures from 2D closures.
+ */
+void StereoClosures::Process(int oX, int oY, int sc)
+{
+	pPara.pruning = true;
+	pPara.offsetX = oX;
+	pPara.offsetY = oY;
+	pPara.scale = sc;
+	Process();
+	pPara.pruning = false;
 }
 
 

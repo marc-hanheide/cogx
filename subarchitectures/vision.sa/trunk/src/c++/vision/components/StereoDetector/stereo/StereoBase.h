@@ -27,6 +27,8 @@
 namespace Z
 {
 
+
+/// TODO Braucht man diese thresholds noch?
 // These are some tuning parameters to filter out "bad" surface hypotheses.
 // These might need adjusting to a specific use case.
 
@@ -63,16 +65,15 @@ public:
 class TmpSurf
 {
 public:
-//  unsigned id;						///< ID of the surface								// TODO Which surface id???? => Es wurden clos-IDs verwendet => jetzt? Braucht man wozu?
   bool is_valid;					///< validation parameter
   vector<Vector2> p;			///< original (distorted, unrectified) points
   vector<Vector2> pr;			///< rectified points
 
-  TmpSurf() {/*id = UNDEF_ID; */is_valid = false;}
+  TmpSurf() {is_valid = false;}
   TmpSurf(Closure *clos) {Init(clos);}
 	TmpSurf(Rectangle *rectangle) {Init(rectangle);}
 //	TmpSurf(Ellipse *ellipse) {Init(ellipse);}											/// TODO wird diese Funktion aufgerufen
-//	TmpSurf(Cube *cube) {Init(cube, int side);}											/// das funktioniert mit den Seiten nicht.
+//	TmpSurf(Cube *cube) {Init(cube, int side);}											/// das funktioniert mit den Seiten nicht!!!
 
   void Init(Closure *clos);
 	void Init(Rectangle *rectangle);
@@ -80,6 +81,7 @@ public:
 	void Init(Cube *cube, int side);
 
   void ShiftPointsLeft(unsigned offs);
+	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
@@ -136,6 +138,15 @@ public:
   VisionCore *vcore[2];								///< Left and right vision core
 	StereoCamera *stereo_cam;						///< Stereo camera parameters
 
+	struct PruningParameter																				///< Parameters, when pruned image will be processed at stereo core
+	{
+		bool pruning;						///< Pruned image delivered
+		int offsetX;						///< Offset x-coordinate
+		int offsetY;						///< Offset y-coordinate
+		int scale;							///< Scale between original and pruned image
+	};
+	PruningParameter pPara;																			///< Pruning parameters of an image.
+
 private:
 	bool enabled;												///< Enabled / disabled Stereo-Gestalt
 
@@ -151,18 +162,19 @@ public:
 	// functions to calculate stereo surfaces.
 //   unsigned FindMatchingSurf(TmpSurf &left_surf, Array<TmpSurf> &right_surfs, unsigned l);
 //   void MatchSurfaces(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches);
-  double MatchingScoreSurf(TmpSurf &left_surf, TmpSurf &right_surf, unsigned &match_offs);
 //   void Calculate3DSurfs(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &flapMatches, Array<Surf3D> &surf3ds);
 
+  double MatchingScoreSurf(TmpSurf &left_surf, TmpSurf &right_surf, unsigned &match_offs);
 	void EnablePrinciple(bool status);
 	bool IsEnabled() {return enabled;}
 
 	// virtual functions for the stereo classes.
 	virtual int NumStereoMatches() = 0;
 	virtual bool StereoGestalt2VisualObject(VisionData::VisualObjectPtr &obj, int id) = 0;
-	virtual void Draw(int side, bool masked = false) {}
+	virtual void Draw(int side, bool masked = false) {}																					/// TODO Sollten alle pure virtual (=0) sein.
 	virtual void DrawMatched(int side) {}
-	virtual void Process() {}
+	virtual void Process() = 0;
+	virtual void Process(int oX, int oY, int sc) = 0;
 	virtual void ClearResults() {}
 
 };

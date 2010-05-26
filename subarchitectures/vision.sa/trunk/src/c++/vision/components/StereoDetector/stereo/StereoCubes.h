@@ -29,6 +29,7 @@ public:
 
   TmpCube() {}
   TmpCube(Cube *cube);
+	void RePrune(int oX, int oY, int sc);
   void Rectify(StereoCamera *stereo_cam, int side);
   void Refine();
   bool IsAtPosition(int x, int y) const;
@@ -72,23 +73,19 @@ public:
 	StereoCubes(VisionCore *vc[2], StereoCamera *sc);
 	~StereoCubes() {}
 
-  int NumCubes2D(int side);
-					/// TODO TODO TODO TODO Sollte NumCubes2D(int LEFT/RIGHT) nicht anders ersetzt werden "NumGestalts(type, side)", dann überall gleich???
+  int NumCubes2D(int side);   /// Sollte NumCubes2D(int LEFT/RIGHT) nicht anders ersetzt werden "NumGestalts(type, side)", dann überall gleich???
 	int NumCubesLeft2D() {return vcore[LEFT]->NumGestalts(Gestalt::CUBE);}			///< Return cubes from left stereo image in 2D
 	int NumCubesRight2D() {return vcore[RIGHT]->NumGestalts(Gestalt::CUBE);}		///< Return cubes from right stereo image in 2D
-  const TmpCube &Cubes2D(int side, int i);
 
-  int NumCubes() {return cube3ds.Size();}						///< TODO Gleich wie NumStereoMatches() ??? Sollte weg und durch NumStereoMatches ersetzt werden.
+  const TmpCube &Cubes2D(int side, int i);
   const Cube3D &Cubes(int i) {return cube3ds[i];}		///< Return 3D-Cube from position i.
 
 	int NumStereoMatches() {return cubeMatches;}			///< Number of matched stereo features. TODO eigentlich hier "return cube3ds.Size();"
-
 	void Draw(int side, bool masked);
 	void DrawMatched(int side);
-
 	void ClearResults();
-
 	void Process();
+	void Process(int oX, int oY, int sc);
 };
 
 }

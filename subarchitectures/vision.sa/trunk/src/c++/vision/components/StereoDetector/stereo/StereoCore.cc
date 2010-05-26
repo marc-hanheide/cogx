@@ -19,6 +19,9 @@ extern void SetActiveDrawArea(IplImage *iI);
  */
 StereoCore::StereoCore(const string &stereocal_file) throw(Except)
 {
+	pPara = new PruningParameter;
+	pPara->pruning = false;
+
   for(int side = LEFT; side <= RIGHT; side++)
   {
     // create vision core, don't specify config file, we'll configure ourselves
@@ -26,9 +29,13 @@ StereoCore::StereoCore(const string &stereocal_file) throw(Except)
 
     // hardwire the gestalt principles we need, saves loading a config file
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_SEGMENTS);
+
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARCS);
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
+		
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_LINES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_JUNCTIONS);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CLOSURES);
@@ -88,7 +95,7 @@ void StereoCore::InitStereoGestalts()
 
 
 /**
- * @brief Clear the vision cores and the used arrays.
+ * @brief Clear the vision cores and the used stereo Gestalts.
  */
 void StereoCore::ClearResults()
 {
@@ -125,26 +132,40 @@ void StereoCore::SetActiveDrawAreaSide(int side)
 /**
  * @brief Process stereo image 
  * @param runtime_ms granted runtime in [ms] for each image
+ * @param ca Canny alpha value
+ * @param co Canny omega value
  * @param iIl Left stereo image.
  * @param iIr Right stereo image.
  * TODO Throw sollte hier implementiert werden und try-catch block weg!
  */
-void StereoCore::ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr)
+void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr)
 {
+// printf("StereoCore::ProcessStereoImage\n");
 	SetImages(iIl, iIr);
 
+// printf("StereoCore::ProcessStereoImage 1\n");
   // do monocular processing for each stereo image
   for(int side = LEFT; side <= RIGHT; side++)
   {
     vcore[side]->NewImage(side == LEFT ? img_l : img_r);
-    vcore[side]->ProcessImage(runtime_ms);
+    vcore[side]->ProcessImage(runtime_ms, ca, co);
 	}
 
+// printf("StereoCore::ProcessStereoImage 2\n");
 	// do stereo processing for enabled stereo principles
 	try 
 	{
 		for(int i = 0; i < StereoBase::MAX_TYPE; i++)
-			if(stereoGestalts[i]->IsEnabled()) stereoGestalts[i]->Process();
+		{
+			if(stereoGestalts[i]->IsEnabled())
+			{
+				if(pPara->pruning) 
+					stereoGestalts[i]->Process(pPara->offsetX, pPara->offsetY, pPara->scale);
+				else
+					stereoGestalts[i]->Process();
+			}
+		}
+		printf("StereoCore::ProcessStereoImage: process image ended.\n");
   }
 	catch(Z::Except &e) 
 	{
@@ -153,7 +174,32 @@ void StereoCore::ProcessStereoImage(int runtime_ms, IplImage *iIl, IplImage *iIr
 	}
 
 	/// HACK Print results
-	PrintResults();
+// 	PrintResults();
+
+// printf("StereoCore::ProcessStereoImage end\n");
+}
+
+
+/**
+ * @brief Process stereo image 
+ * @param runtime_ms granted runtime in [ms] for each image
+ * @param ca Canny alpha value
+ * @param co Canny omega value
+ * @param iIl Left stereo image.
+ * @param iIr Right stereo image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void StereoCore::ProcessStereoImage(int runtime_ms, float ca, float co, IplImage *iIl, IplImage *iIr, int oX, int oY, int sc)
+{
+	// set pruning parameters
+	pPara->pruning = true;
+	pPara->offsetX = oX;
+	pPara->offsetY = oY;
+	pPara->scale = sc;
+	ProcessStereoImage(runtime_ms, ca, co, iIl, iIr);
+	pPara->pruning = false;
 }
 
 
@@ -178,60 +224,50 @@ void StereoCore::GetVisualObject(StereoBase::Type type, int id, VisionData::Visu
  * @param masked Draw the masked features.
  * @param single Draw only single Gestalt.
  * @param detail Degree of detail.
- * TODO clean up
+ * @return Returns true for success.
  */
-void StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide, int id, int detail)
+bool StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iIr, bool masked, bool single, int singleSide, int id, int detail)
 {
 	SetImages(iIl, iIr);
 
-// printf("StereoCore::DrawMonoResults: type: %u - singleSide: %u - ID: %i\n", type, singleSide, id);
-	for(int side = LEFT; side <= RIGHT; side++)
-	{
-		SetColor(RGBColor::blue);
-		SetActiveDrawAreaSide(side);
-		int numGestalts = NumMonoGestalts(type, side);
+	if(!single)
+		for(int side = LEFT; side <= RIGHT; side++)
+		{
+			SetColor(RGBColor::blue);
+			SetActiveDrawAreaSide(side);
+			int numGestalts = NumMonoGestalts(type, side);
+			if (id > numGestalts) return false;
 
-// 		// show all segments if single Gestalt will be shown
-// 		if(single)
-// 			for(int i=0; i<numGestalts; i++)
-// 				if(masked)
-// 					vcore[side]->Gestalts(Gestalt::SEGMENT, i)->Draw(detail);	
-// 				else
-// 					if (vcore[side]->Gestalts(Gestalt::SEGMENT, i)->IsUnmasked())
-// 						vcore[side]->Gestalts(Gestalt::SEGMENT, i)->Draw(detail);	
-
-		// draw all Gestalts
-		if(!single)
+			// draw all Gestalts
 			for(int i=0; i<numGestalts; i++)
+			{
 				if(masked)
 					vcore[side]->Gestalts(type, i)->Draw(detail);	
 				else
 					if (vcore[side]->Gestalts(type, i)->IsUnmasked())
 						vcore[side]->Gestalts(type, i)->Draw(detail);	
-	}
+			}
+		}
 
 	if(single)
 	{
 		SetColor(RGBColor::red);
 		SetActiveDrawAreaSide(singleSide);
 		int numGestalts = NumMonoGestalts(type, singleSide);
+		if (id >= numGestalts) return false;
 
-// printf("single: numGestalts: %u > id: %u\n", numGestalts, id);
 		// draw only one gestalt if id is in range of 
-		if(id<numGestalts && id >= 0)
+		if(id < numGestalts && id >= 0)
+		{
 			if(masked)
-			{
-// printf("single (masked: ON)\n");
 				vcore[singleSide]->Gestalts(type, id)->Draw(detail);	
-			}
 			else
 				if (vcore[singleSide]->Gestalts(type, id)->IsUnmasked())
-				{
-// printf("single (masked: OFF) => is not masked\n");
 					vcore[singleSide]->Gestalts(type, id)->Draw(detail);
-				}
-// else printf("single (masked: OFF) => is masked!\n");
+		}
 	}
+
+	return true;
 }
 
 
@@ -242,16 +278,61 @@ void StereoCore::DrawMonoResults(Gestalt::Type type, IplImage *iIl, IplImage *iI
  * @param iIr Right stereo image.
  * @param matched Draw the matched features.
  */
-void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool matched)
+void StereoCore::DrawStereoResults(StereoBase::Type type, IplImage *iIl, IplImage *iIr, bool matched, bool showAllStereoMatched)
 {
 	SetImages(iIl, iIr);
 
-	for(int side = LEFT; side <= RIGHT; side++)
+	if(!showAllStereoMatched)
 	{
-		SetActiveDrawAreaSide(side);
-// 		if(detected) stereoGestalts[type]->Draw(side, masked);
-		if(matched) stereoGestalts[type]->DrawMatched(side);
+		for(int side = LEFT; side <= RIGHT; side++)
+		{
+			SetActiveDrawAreaSide(side);
+			if(matched) stereoGestalts[type]->DrawMatched(side);
+		}
 	}
+	else // show all stereo matched features
+	{
+		for(int i=0; i< StereoBase::MAX_TYPE; i++)
+		{
+			for(int side = LEFT; side <= RIGHT; side++)
+			{
+				SetActiveDrawAreaSide(side);
+				stereoGestalts[i]->DrawMatched(side);
+			}
+		}
+	}
+}
+
+
+/**
+ * @brief Draw the region of interest (ROI) into the image
+ * @param side To which side of the stereo image pair.
+ * @param roi The CvRect, describing the ROI.
+ * @param roiScale The scale between the StereoServer and the VideoServer
+ * @param iIl Left stereo image
+ * @param iIr Right stereo image
+ */
+void StereoCore::DrawROI(int side, CvRect roi, int roiScale, IplImage *iIl, IplImage *iIr)
+{
+	SetImages(iIl, iIr);
+	SetActiveDrawAreaSide(side);
+	DrawRect2D(roi.x*roiScale, roi.y*roiScale, roi.x*roiScale + roi.width*roiScale, roi.y*roiScale + roi.height*roiScale, RGBColor::red);
+}
+
+
+/**
+ * 
+ * @param side To which side of the stereo image pair.
+ * @param offsetX 
+ * @param offsetY 
+ * @param iIl Left stereo image
+ * @param iIr Right stereo image
+ */
+void StereoCore::DrawPrunedROI(int side, int offsetX, int offsetY, IplImage *iIl, IplImage *iIr)
+{
+	SetImages(iIl, iIr);
+	SetActiveDrawAreaSide(side);
+	DrawRect2D(offsetX, offsetY, offsetX + 320, offsetY + 240, RGBColor::blue);	
 }
 
 

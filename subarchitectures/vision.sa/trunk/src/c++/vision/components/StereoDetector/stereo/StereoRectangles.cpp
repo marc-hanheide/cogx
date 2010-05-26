@@ -20,7 +20,20 @@ namespace Z
  */
 TmpRectangle::TmpRectangle(Rectangle *rectangle)
 {
-	surf.Init(rectangle->closure);
+// 	surf.Init(rectangle->closure);							/// TODO Initialisieren mit Rectangle!!!!
+	surf.Init(rectangle);
+}
+
+
+/**
+ * @brief Recalculate all rectangle parameters, when image was pruned from HR image.
+ * @param oX Offset of x-coordinate
+ * @param oY Offset of y-coordinate
+ * @param sc Scale between original and pruned image
+ */
+void TmpRectangle::RePrune(int oX, int oY, int sc)
+{
+	surf.RePrune(oX, oY, sc);
 }
 
 /**
@@ -339,6 +352,9 @@ void StereoRectangles::Process()
 					rectangles[side].PushBack(rectangle);
 			}
 		}
+		if(pPara.pruning)
+			for(unsigned i = 0; i < rectangles[side].Size(); i++)
+				rectangles[side][i].RePrune(pPara.offsetX, pPara.offsetY, pPara.scale);
 		for(unsigned i = 0; i < rectangles[side].Size(); i++)
 			rectangles[side][i].Rectify(stereo_cam, side);
 		for(unsigned i = 0; i < rectangles[side].Size(); i++)
@@ -349,6 +365,21 @@ void StereoRectangles::Process()
 	rectMatches = 0;
 	MatchRectangles(rectangles[LEFT], rectangles[RIGHT], rectMatches);
 	Calculate3DRectangles(rectangles[LEFT], rectangles[RIGHT], rectMatches, rectangle3ds);
+}
+
+
+/**
+ * @brief Match and calculate 3D rectangles from 2D rectangles.
+ * @param side LEFT/RIGHT image of stereo.images.
+ */
+void StereoRectangles::Process(int oX, int oY, int sc)
+{
+	pPara.pruning = true;
+	pPara.offsetX = oX;
+	pPara.offsetY = oY;
+	pPara.scale = sc;
+	Process();
+	pPara.pruning = false;
 }
 
 
