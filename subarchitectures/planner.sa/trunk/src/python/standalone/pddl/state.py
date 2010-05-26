@@ -410,7 +410,11 @@ class State(dict):
     def set(self, fact):
         """Sets a StateVariable to a value as specified in the
         supplied Fact object."""
-        self[fact.svar] = fact.value
+        if fact.value == UNKNOWN:
+            if fact.svar in self:
+                del self[fact.svar]
+        else:
+            self[fact.svar] = fact.value
         
     def __getitem__(self, key):
         try:
