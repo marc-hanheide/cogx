@@ -29,7 +29,10 @@ def set_logfile(filename, name=None, propagate=False):
     logger = logging.getLogger(name)
     for h in logger.handlers[:]:
         logger.removeHandler(h)
-    logger.addHandler(logging.FileHandler(filename, mode='w'))
+
+    h=logging.FileHandler(filename, mode='w')
+    #h.setFormatter(logging.Formatter("%(name)s: %(message)s"))
+    logger.addHandler(h)
     if not propagate:
         logger.propagate = 0
     else:
@@ -79,5 +82,11 @@ class LoggerProxy(object):
     def critical(self, msg, *args, **kwargs):
         self.log(logging.CRITICAL, msg, *args, **kwargs)
 
+logging_factory = LoggerProxy
+        
+def set_logging_factory(factory):
+    global logging_factory
+    logging_factory = factory
+        
 def logger(name=None):
-    return LoggerProxy(name)
+    return logging_factory(name)
