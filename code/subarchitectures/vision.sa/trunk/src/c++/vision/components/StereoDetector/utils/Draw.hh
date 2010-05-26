@@ -22,7 +22,7 @@ extern RGBColor defColor;				///< Default color; set with SetColor()
 // extern void SetBlackWhite(bool set);
 /// Draw printf style text in the status bar.
 // extern void PrintStatus(const char *format, ...);
-extern void DrawImageRGB24(const char *rgb24, int width, int height);
+// extern void DrawImageRGB24(const char *rgb24, int width, int height);
 // extern void SetDrawImagesSolid();
 // extern void SetDrawImagesLight();
 // extern void SetDrawImagesDark();
