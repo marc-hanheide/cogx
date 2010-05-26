@@ -20,8 +20,8 @@ if(USE_CUDA)
       )
    set(SRC_PROGRAM_CU ${CMAKE_CURRENT_SOURCE_DIR}/../src/SiftGPU/ProgramCU.cu)
    set(OBJ_PROGRAM_CU ${CMAKE_CURRENT_BINARY_DIR}/ProgramCU.so)
-   add_custom_target(SiftProgramCU
-      # OUTPUT ${OBJ_PROGRAM_CU}
+   add_custom_command(
+      OUTPUT ${OBJ_PROGRAM_CU}
       COMMAND nvcc -c 
 	 -I${CUDA_INSTALLROOT}/include -L${CUDA_INSTALLROOT}/lib -DCUDA_SIFTGPU_ENABLED
 	 # Cuda 2.2/2.3, gcc 4.4
@@ -29,7 +29,11 @@ if(USE_CUDA)
 	 #    also removed option: -O2
 	 --compiler-options -fPIC,-fno-inline,-D__builtin_stdarg_start=__builtin_va_start
 	 -o ${OBJ_PROGRAM_CU} ${SRC_PROGRAM_CU}
-      COMMENT "Compiling CUDA code with nvcc"
+      DEPENDS ${SRC_PROGRAM_CU}
+      COMMENT "SiftProgramCU: Compiling CUDA code with nvcc"
+      )
+   add_custom_target(SiftProgramCU
+      DEPENDS ${OBJ_PROGRAM_CU}
       )
 endif(USE_CUDA)
 
@@ -48,18 +52,19 @@ SET(SOURCES
    ${CUDA_SOURCES}
    )
 
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
+set(LIBRARY_NAME ${PROJECT_NAME})
+add_library(${LIBRARY_NAME} SHARED ${SOURCES})
 target_link_libraries(${PROJECT_NAME}
    Cg CgGL GLEW IL
    ${CUDA_LIBRARIES}
    # glut
    )
 if (USE_CUDA)
-   add_dependencies(${PROJECT_NAME} SiftProgramCU)
-   set_target_properties(${PROJECT_NAME}
+   add_dependencies(${LIBRARY_NAME} SiftProgramCU)
+   set_target_properties(${LIBRARY_NAME}
       PROPERTIES
       LINK_FLAGS ${OBJ_PROGRAM_CU}
       )
 endif(USE_CUDA)
 
-INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+INSTALL(TARGETS ${LIBRARY_NAME} LIBRARY DESTINATION lib)
