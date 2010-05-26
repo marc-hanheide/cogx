@@ -120,11 +120,13 @@ protected:
 
   void recomputeOnnessForObject(const std::string &label);
   void recomputeOnnessForPlane(const std::string &label);
+  void recomputeInnessForObject(const std::string &label);
+
   void sampleOnnessForPlane(const std::string &planeLabel, 
       const std::string &objectLabel);
   void sampleOnnessForObject(const std::string &supLabel, 
       const std::string &onLabel);
-  void sampleRecursively(const std::vector<std::string> &objects, 
+  void sampleOnnessRecursively(const std::vector<std::string> &objects, 
     int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
     std::vector<cogx::Math::Vector3> &outPoints, spatial::Object *supportObject,
     const std::vector<Vector3> &triangle = std::vector<Vector3>());

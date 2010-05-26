@@ -747,7 +747,7 @@ void ObjectRelationManager::runComponent()
 	      testObjects.push_back("krispies");
 	      testObjects.push_back("squaretable");
 
-	      sampleRecursively(testObjects, 0, 5, 500, points, &table1);
+	      sampleOnnessRecursively(testObjects, 0, 5, 500, points, &table1);
 	      log("Found %i points", points.size());
 
 	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
@@ -1002,6 +1002,7 @@ ObjectRelationManager::newObject(const cast::cdl::WorkingMemoryChange &wmc)
 
 	// Check degree of onness
 	recomputeOnnessForObject(obsLabel);
+	recomputeInnessForObject(obsLabel);
 
 
 	if (m_placeInterface != 0) {
@@ -1263,6 +1264,41 @@ ObjectRelationManager::recomputeOnnessForObject(const string &label)
 
       log("Object %s on object %s is %f", label.c_str(), 
 	  it->second->label.c_str(), onness);
+    }
+  }
+}
+
+void
+ObjectRelationManager::recomputeInnessForObject(const string &label)
+{
+  if (m_objectModels.find(label) == m_objectModels.end()) {
+    log("Error! Object model was missing!");
+    return;
+  }
+  if (m_objects.find(label) == m_objects.end()) {
+    log("Error! Object was missing!");
+    return;
+  }
+
+  m_objectModels[label]->pose = m_objects[label]->pose;
+
+  for (map<string, SpatialObjectPtr>::iterator it = m_objects.begin();
+      it != m_objects.end(); it++) {
+    string containerObjectLabel = it->first;
+    if (containerObjectLabel != label) {
+
+      if (m_objectModels.find(containerObjectLabel) == m_objectModels.end()) {
+	log("Error! Container object model was missing!");
+	return;
+      }
+      m_objectModels[containerObjectLabel]->pose =
+	m_objects[containerObjectLabel]->pose;
+
+      double inness = evaluateInness(m_objectModels[containerObjectLabel],
+	  m_objectModels[label]);
+
+      log("Object %s in object %s is %f", label.c_str(),
+	  it->second->label.c_str(), inness);
     }
   }
 }
@@ -1566,7 +1602,7 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     int iterations = 0;
     while (iterations < 10000 && outPoints.size() < pdfPoints) {
       iterations++;
-      sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, pdfPoints,
+      sampleOnnessRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, pdfPoints,
 	  outPoints, supportObject);
     }
 
@@ -1692,7 +1728,7 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
       int iterations = 0;
       while (iterations < 1000 && outPoints.size() < pointCount) {
 	iterations++;
-	sampleRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 
+	sampleOnnessRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 
 	    pointCount, outPoints, supportObject);
 	cogx::Math::Vector3 tiltAngle;
 	for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
@@ -1728,7 +1764,7 @@ isInTriangle(double x, double y, const vector<Vector3> &triangle) {
 }
 
 void
-ObjectRelationManager::sampleRecursively(const vector<string> &objects, 
+ObjectRelationManager::sampleOnnessRecursively(const vector<string> &objects, 
     int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
     vector<Vector3> &outPoints, spatial::Object *supportObject,
     const vector<Vector3> &triangle)
@@ -1809,7 +1845,7 @@ ObjectRelationManager::sampleRecursively(const vector<string> &objects,
       }
       else {
 	// Sample and recurse
-	sampleRecursively(objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
+	sampleOnnessRecursively(objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
 	    outPoints, onObject);
       }
     }
