@@ -38,7 +38,6 @@
 	<!-- =================================================================== -->
 	<target name="clean" depends="init">
 		<echo>Cleaning all builds"</echo>
-        	<delete dir="output/classes"/>
 		<antcall target="template">
 			<param name="target" value="clean" />
 		</antcall>
