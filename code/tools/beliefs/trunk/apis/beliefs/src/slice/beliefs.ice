@@ -69,7 +69,7 @@ class AbstractFrame { };
  * A temporal interval defined by a start time and an
  * end time 
  */
-class TemporalInterval extends AbstractFrame {
+class TemporalInterval {
 };
 	
 
@@ -86,6 +86,7 @@ class SpatioTemporalFrame extends AbstractFrame {
 
 
 }; // end spatiotemporalframe
+
 
 // ================================
 // EPISTEMIC STATUS
@@ -285,7 +286,7 @@ struct FormulaProbPair {
 	float prob;
 };
 
-
+    
 ["java:type:java.util.LinkedList<FormulaProbPair>"] sequence<FormulaProbPair> FormulaProbPairs;
 
 
