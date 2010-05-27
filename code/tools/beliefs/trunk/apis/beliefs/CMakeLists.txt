@@ -3,5 +3,7 @@ project (Beliefs)
 
 # auto generated code
 add_subdirectory (src/cpp/autogen/)
+# util and wrapper methods
+add_subdirectory (src/cpp/utils/)
 
 
