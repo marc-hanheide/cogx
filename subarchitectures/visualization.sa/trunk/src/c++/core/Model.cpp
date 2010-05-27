@@ -225,6 +225,21 @@ bool CDisplayObject::isBitmap()
    return false;
 }
 
+void CDisplayObject::setTransform2D(const std::string& partId, const std::vector<double>& transform)
+{
+   DTRACE("CDisplayObject::setTransform2D");
+}
+
+CRenderer* CDisplayObject::getRenderer(ERenderContext context)
+{
+   return NULL;
+}
+
+void CDisplayObject::setPose3D(const std::string& partId, const std::vector<double>& positioXYZ,
+      const std::vector<double>& rotationQaternionXYZW)
+{
+}
+
 bool CDisplayObject::is3D()
 {
    return false;

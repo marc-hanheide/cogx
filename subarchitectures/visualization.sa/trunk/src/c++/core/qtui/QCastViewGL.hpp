@@ -7,6 +7,7 @@
 
 #include "QCastViewBase.hpp"
 #include <QGLWidget>
+#include "tgCamera.h"
 
 // class QCastViewGL: public QGLWidget, public cogx::display::CDisplayModelObserver
 class QCastViewGL: public QGLWidget, public QCastViewBase
@@ -18,6 +19,7 @@ private:
    int xRot;
    int yRot;
    int zRot;
+   TomGine::tgCamera m_camera;
 
 public:
    QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );

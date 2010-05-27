@@ -94,13 +94,14 @@ void QCastViewGL::initializeGL()
    glEnable(GL_LIGHTING);
    glEnable(GL_LIGHT0);
    glEnable(GL_MULTISAMPLE);
-   static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
+   static GLfloat lightPosition[4] = { 0.5, 5.0, -7.0, 1.0 };
    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 }
 
 void QCastViewGL::paintGL()
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   // m_camera.Activate();
    if (pView) {
       glLoadIdentity();
       glTranslatef(0.0, 0.0, -10.0);
@@ -124,7 +125,12 @@ void QCastViewGL::resizeGL(int width, int height)
 #else
    glOrtho(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
 #endif
+   //gluPerspective(15, 1.0*width/height, 4.0, 15.0);
+
    glMatrixMode(GL_MODELVIEW);
+
+   //m_camera.SetViewport(width, height);
+   //m_camera.SetPerspective();
 }
 
 void QCastViewGL::mousePressEvent(QMouseEvent *event)
@@ -140,10 +146,14 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
    if (event->buttons() & Qt::LeftButton) {
       setXRotation(xRot + 8 * dy);
       setYRotation(yRot + 8 * dx);
+      //m_camera.RotateF(0.1*dx);
+      //m_camera.RotateY(0.1*dy);
    }
    else if (event->buttons() & Qt::RightButton) {
       setXRotation(xRot + 8 * dy);
       setZRotation(zRot + 8 * dx);
+      //m_camera.RotateS(0.1*dx);
+      //m_camera.RotateZ(0.1*dy);
    }
 
    m_lastPos = event->pos();

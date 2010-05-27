@@ -25,7 +25,7 @@ public:
    void removePart(const std::string&partId);
    virtual bool is3D(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
-   virtual void setPose3D(const std::string partId, const std::vector<double>& position,
+   virtual void setPose3D(const std::string& partId, const std::vector<double>& position,
          const std::vector<double>& rotation); /*override*/
 };
 

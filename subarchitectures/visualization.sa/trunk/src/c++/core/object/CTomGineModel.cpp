@@ -113,7 +113,7 @@ void CTomGineModel_RenderGL::draw(CDisplayObject *pObject, void *pContext)
    }
 }
 
-void CTomGineModel::setPose3D(const std::string partId, const std::vector<double>& position,
+void CTomGineModel::setPose3D(const std::string& partId, const std::vector<double>& position,
       const std::vector<double>& rotation)
 {
    assert(position.size() == 3);
