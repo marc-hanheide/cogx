@@ -9,9 +9,9 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include <dlfcn.h>
-#include <cutil.h>
 #include <vector>
 
+//#include <cutil.h>
 #include "cudaImage.h"
 #include "cudaSift.h"
 

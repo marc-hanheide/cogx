@@ -43,9 +43,11 @@ LIBTARGET=$(OBJDIR)/$(LIB)
 
 CC = /usr/local/cuda/bin/nvcc
 CFLAGS += -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc $(PYINCLUDE)
+CFLAGS += -I/usr/local/cuda/C/include -I/usr/local/cuda/sdk/C/common/inc
 NVCCFLAGS += -Xcompiler -fPIC,-fno-strict-aliasing,-DUNIX
-NVCCFLAGS += -Xcompiler -O2 # (ubuntu 10.04) --> error with 'weak inline functions'
+# NVCCFLAGS += -Xcompiler -O2 # (ubuntu 10.04) --> error with 'weak inline functions'
 LDFLAGS += -fPIC -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib $(PYLIBDIR)
+LDFLAGS += -L/usr/local/cuda/sdk/C/lib
 LIBS += -lcudart -lcutil $(PYLINK)
 
 all : lib
