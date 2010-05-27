@@ -227,6 +227,8 @@ void CTestCase_WmResponder::runOneStep()
 
 void CTestCase_StereoPipeline::onStart()
 {
+   CTestCase_Server::onStart();
+
    m_pOwner->addChangeFilter(
      cast::createLocalTypeFilter<ProtoObject>(cast::cdl::ADD),
      new cast::MemberFunctionChangeReceiver<CTestCase_StereoPipeline>(
