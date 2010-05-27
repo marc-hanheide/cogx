@@ -236,8 +236,6 @@ void CTestCase_StereoPipeline::onStart()
 
 void CTestCase_StereoPipeline::runOneStep()
 {
-   m_pOwner->println("CTestCase_StereoPipeline: runOneStep");
-
    std::vector<CProcessItem*> queue;
 
    {
@@ -257,6 +255,7 @@ void CTestCase_StereoPipeline::runOneStep()
    }
 
    if (queue.size() > 0) {
+      m_pOwner->log("CTestCase_StereoPipeline: Got items in queue.");
       std::vector<CProcessItem*>::iterator it;
       CProcessItem *pItem;
       for (it = queue.begin(); it != queue.end(); it++) {
@@ -268,8 +267,6 @@ void CTestCase_StereoPipeline::runOneStep()
          delete pItem;
       }
    }
-
-   m_pOwner->sleepComponent(500);
 }
 
 // Receiver thread
@@ -288,7 +285,7 @@ void CTestCase_StereoPipeline::processProtoObject(const cast::cdl::WorkingMemory
      pObj = m_pOwner->getMemoryEntry<VisionData::ProtoObject>(address);
    }
    catch(cast::DoesNotExistOnWMException e) {
-     m_pOwner->log("WARNING: Proto-object ID %s removed before it could be processed", address.id.c_str());
+     m_pOwner->println("WARNING: Proto-object ID %s removed before it could be processed", address.id.c_str());
      return;
    }
 
@@ -297,10 +294,11 @@ void CTestCase_StereoPipeline::processProtoObject(const cast::cdl::WorkingMemory
    
    orice::RecognitionResultSeq results;
    try {
+      m_pOwner->log("Calling m_OrClient for Proto %s.",  address.id.c_str());
       m_OrClient.FindMatchingObjects(image, results);
    }
    catch (const Ice::ObjectNotExistException &e) {
-      m_pOwner->log("Server does not exist. %s", e.what());
+      m_pOwner->println("Server does not exist. %s", e.what());
       m_pOwner->sleepComponent(2000);
    }
 }
