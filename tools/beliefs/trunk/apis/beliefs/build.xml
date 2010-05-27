@@ -16,7 +16,7 @@
 	<!-- =================================================================== -->
 	 	
 	<!-- Controls where the output goes -->
-	<property name="output.dir" value="../../output/classes" />
+	<property name="output.dir" value="../../../../output/classes" />
 	
 	<!-- Controls what is compiled -->
 	<property name="src.dir" value="./src/java" />
