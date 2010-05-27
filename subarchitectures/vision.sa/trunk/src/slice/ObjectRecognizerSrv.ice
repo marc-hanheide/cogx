@@ -26,6 +26,8 @@ module ObjectRecognizerIce {
    sequence<RecognitionResult> RecognitionResultSeq;
 
    interface ObjectRecognizerInterface {
+      long LoadObjectModel(string modelPath);
+
       // Finds SIFT features in the image using (Py)SiftGPU.
       // Returns the number of features found. The features are stored in:
       //    out features: array with 4*n elements (order: X, Y, Scale, Rotation)
