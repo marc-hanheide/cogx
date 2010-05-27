@@ -6,4 +6,8 @@ namespace beliefs {
   class Belief : public dfkibeliefs::sitbeliefs::dBelief {
 
   };
+
+  typedef  ::IceInternal::Handle<Belief> BeliefPtr;
+ 
+
 }
