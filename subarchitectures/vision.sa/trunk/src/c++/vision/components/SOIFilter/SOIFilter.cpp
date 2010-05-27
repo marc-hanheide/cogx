@@ -158,6 +158,11 @@ void SOIFilter::configure(const map<string,string> & _config)
 	istringstream str(it->second);
 	str >> smoothCost;
   }
+
+
+#ifdef FEAT_VISUALIZATION
+  m_display.configureDisplayClient(_config);
+#endif
 }
 
 void SOIFilter::start()
@@ -170,12 +175,14 @@ void SOIFilter::start()
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
 
+#ifndef FEAT_VISUALIZATION
   if (doDisplay)
   {
 	cvNamedWindow("Full image", 1);
 	cvNamedWindow("Last ROI Segmentation", 1);
 	cvNamedWindow("Color Filtering", 1);
   }
+#endif
 
   // we want to receive detected SOIs
   addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::ADD),
@@ -194,6 +201,10 @@ void SOIFilter::start()
 
 void SOIFilter::runComponent()
 {
+#ifdef FEAT_VISUALIZATION
+  m_display.connectIceClient(*this);
+#endif
+
   while(isRunning())
   {
 	ptime t(second_clock::universal_time() + seconds(2));
@@ -282,6 +293,7 @@ void SOIFilter::runComponent()
   queuesNotEmpty->remove("filterSemaphore");
   delete queuesNotEmpty;
 
+#ifndef FEAT_VISUALIZATION
   if (doDisplay)
   {
 	log("Destroying OpenCV windows..");
@@ -289,6 +301,7 @@ void SOIFilter::runComponent()
 	cvDestroyWindow("Last ROI Segmentation");
 	cvDestroyWindow("Color Filtering");
   }
+#endif
 }
 
 void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
@@ -561,8 +574,14 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
   cvSetImageROI(colorFiltering, cvRect( 0, pos, srcL->width, srcL->height) );
   cvCopyImage(srcL, colorFiltering);
   cvResetImageROI(colorFiltering);	
+
+#ifdef FEAT_VISUALIZATION
+  //m_display.setImage("Color Filtering", srcL);
+  //m_display.setImage("Obj HLS Colors", dstL);
+#else
   //cvShowImage("Color Filtering", srcL);
   //cvShowImage("Obj HLS Colors", dstL);
+#endif
 
   cvReleaseImage(&srcL);
   //cvReleaseImage(&dstL);
@@ -1114,9 +1133,14 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	cvRectangle(iplImg, cvPoint(rect.x, rect.y),
 		cvPoint(rect.x + rect.width, rect.y + rect.height),
 		CV_RGB(0,255,0));
+
+#ifdef FEAT_VISUALIZATION
+	m_display.setImage("Full image", iplImg);
+	m_display.setImage("Color Filtering", colorFiltering);
+#else
 	cvShowImage("Full image", iplImg);
-	
 	cvShowImage("Color Filtering", colorFiltering);
+#endif
 	
 	CvSize size = cvGetSize(iplPatch);
 	
@@ -1133,7 +1157,11 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	
 	cvResetImageROI(tetraPatch);
 	
+#ifdef FEAT_VISUALIZATION
+	m_display.setImage("Last ROI Segmentation", tetraPatch);
+#else
 	cvShowImage("Last ROI Segmentation", tetraPatch);
+#endif
 	
 	cvReleaseImage(&tetraPatch);
 
