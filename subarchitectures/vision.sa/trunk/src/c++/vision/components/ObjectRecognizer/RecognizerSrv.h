@@ -63,12 +63,12 @@ public:
       m_pRecognizer = pRecognizer;
    }
 
-   virtual long LoadObjectModel(const std::string& modelPath, const Ice::Current&)
+   virtual Ice::Long LoadObjectModel(const std::string& modelPath, const Ice::Current&)
    {
       return m_pRecognizer->LoadObjectModel(modelPath);
    }
 
-   virtual long GetSifts(const Video::Image& image,
+   virtual Ice::Long GetSifts(const Video::Image& image,
          const int x0, const int y0, const int width, const int height,
          ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors,
          const Ice::Current&)
