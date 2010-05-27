@@ -27,6 +27,10 @@
 
 #include <VisionData.hpp>
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
+
 
 namespace cast
 {
@@ -112,6 +116,11 @@ private:
 
   boost::interprocess::named_semaphore* queuesNotEmpty;
 
+#ifdef FEAT_VISUALIZATION
+  cogx::display::CDisplayClient m_display;
+#endif
+
+private:
   /**
    * callback function called whenever a new SOI appears
    */
