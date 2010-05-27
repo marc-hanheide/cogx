@@ -4,6 +4,11 @@
  */
 #include "CSvgImage.hpp"
 
+#ifdef DEBUG_TRACE
+#undef DEBUG_TRACE
+#endif
+#include "../convenience.hpp"
+
 using namespace std;
 
 namespace cogx { namespace display {
@@ -47,6 +52,7 @@ void CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
 
 void CSvgImage::setTransform2D(const std::string& partId, const std::vector<double> &matrix)
 {
+   DTRACE("CSvgImage::setTransform2D");
    assert (matrix.size() == 9 || matrix.size() == 0);
    SPart* pPart = findPart(partId);
    if (! pPart) {

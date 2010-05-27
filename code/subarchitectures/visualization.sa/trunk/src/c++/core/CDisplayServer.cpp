@@ -113,7 +113,7 @@ void CDisplayServer::runComponent()
 void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       int channels, const std::vector<unsigned char>& data)
 {
-   DTRACE("CDisplayServer::setRawImage");
+   // DTRACE("CDisplayServer::setRawImage");
    CRasterImage *pImage = NULL;
    CRasterImage *pExisting = m_Model.getImage(id);
 
@@ -189,7 +189,7 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
 void CDisplayServer::setCompressedImage(const std::string& id, const std::vector<unsigned char>& data,
       const std::string &format)
 {
-   DTRACE("CDisplayServer::setCompressedImage");
+   // DTRACE("CDisplayServer::setCompressedImage");
    CRasterImage *pExisting = m_Model.getImage(id);
    CRasterImage *pImage = NULL;
 
@@ -270,6 +270,7 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
 void CDisplayServer::setObjectTransform2D(const std::string& id, const std::string& partId,
       const std::vector<double>& transform)
 {
+   // DTRACE("CDisplayServer::setTransform2D");
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 

@@ -80,10 +80,10 @@ public:
    virtual bool isBitmap();
    virtual bool is3D(); // If true, view's preferred context will be set to ContextGL
 
-   virtual CRenderer* getRenderer(ERenderContext context) { return NULL; }
-   virtual void setTransform2D(const std::string partId, const std::vector<double>& transform) {}
-   virtual void setPose3D(const std::string partId, const std::vector<double>& positioXYZ,
-         const std::vector<double>& rotationQaternionXYZW) {}
+   virtual CRenderer* getRenderer(ERenderContext context);
+   virtual void setTransform2D(const std::string& partId, const std::vector<double>& transform);
+   virtual void setPose3D(const std::string& partId, const std::vector<double>& positioXYZ,
+         const std::vector<double>& rotationQaternionXYZW);
 
    //// Some objects can be merged with a new version instead of being replaced (eg. bitmaps)
    //// Returns true if the objects were successfully merged.
