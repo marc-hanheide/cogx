@@ -18,6 +18,7 @@ include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/autogen)
 include_directories(src/c++/vision/autogen)
 
 add_subdirectory(src/c++/vision/autogen)
+add_subdirectory(src/c++/vision/libs)
 
 #add_subdirectory (src/c++/vision/components/VisualWMVisualisation)
 option(BUILD_SA_VISION_FERNS "build FERNS detector" YES)
