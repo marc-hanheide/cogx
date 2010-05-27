@@ -10,11 +10,13 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <Ice/LocalException.h>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <VideoUtils.h>
 #include <Video.hpp>
 #include <VisionData.hpp>
 #include <ObjectRecognizerSrv.hpp>
+
 
 using namespace std;
 using namespace VisionData;
@@ -31,6 +33,7 @@ CTestCase_Server::CTestCase_Server(string name, CTestRecognizer *pOwner)
 
 void CTestCase_Server::configure(const map<string,string> & _config)
 {
+   m_pOwner->log("going to: configureRecognizer");
    m_OrClient.configureRecognizer(_config);
 }
 
@@ -51,9 +54,9 @@ void CTestCase_Server::onStart()
 //   m_pOwner->removeChangeFilter(...);
 //}
 
-// The test will run 5 times, after that it will only log.
+// The test will run ccount times, after that it will only log.
 // The tests can be repeated only after the servers are restarted.
-int ccount = 5;
+int ccount = 5555;
 void CTestCase_Server::runOneStep()
 {
    m_pOwner->log("FindMatchingObjects, const image; attempts left: %d", ccount);
@@ -77,6 +80,27 @@ void CTestCase_Server::runOneStep()
 }
 
 
+void CTestCase_ServerCamera::runOneStep()
+{
+   m_pOwner->log("FindMatchingObjects, camera %d", m_pOwner->m_camId);
+
+   Video::Image image;
+   if (! m_pOwner->getOneImage(image)) {
+      m_pOwner->log("   Could not get an image");
+   }
+   else {
+      orice::RecognitionResultSeq results;
+      try {
+         m_OrClient.FindMatchingObjects(image, results);
+      }
+      catch (const Ice::ObjectNotExistException &e) {
+         m_pOwner->log("Server does not exist. %s", e.what());
+         m_pOwner->sleepComponent(2000);
+      }
+   }
+
+   m_pOwner->sleepComponent(500);
+}
 
 //------------------------------------------------------- 
 // VERIFY if the Recognizer responds to WM event
@@ -195,3 +219,88 @@ void CTestCase_WmResponder::runOneStep()
    m_pOwner->sleepComponent(5000);
 }
 
+
+//------------------------------------------------------- 
+// VERIFY if the Recognizer Serverworks with the stereo
+// pipeline (process new ProtoObjects).
+//------------------------------------------------------- 
+
+void CTestCase_StereoPipeline::onStart()
+{
+   m_pOwner->addChangeFilter(
+     cast::createLocalTypeFilter<ProtoObject>(cast::cdl::ADD),
+     new cast::MemberFunctionChangeReceiver<CTestCase_StereoPipeline>(
+        this, &CTestCase_StereoPipeline::onAdd_ProtoObject)
+     );
+}
+
+void CTestCase_StereoPipeline::runOneStep()
+{
+   m_pOwner->println("CTestCase_StereoPipeline: runOneStep");
+
+   std::vector<CProcessItem*> queue;
+
+   {
+      // id=StereoPipeline_timedWait
+      // SYNC: Lock the monitor
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
+      if (m_queue.size() < 1) {
+         // SYNC: Unlock the monitor and wait for notify() or timeout
+         m_queueMonitor.timedWait(IceUtil::Time::seconds(2));
+         // SYNC: Continue with a locked monitor
+      }
+
+      // move new items (if any) to another vector
+      queue = m_queue;
+      m_queue.clear();
+      // SYNC: unlock the monitor when going out of scope
+   }
+
+   if (queue.size() > 0) {
+      std::vector<CProcessItem*>::iterator it;
+      CProcessItem *pItem;
+      for (it = queue.begin(); it != queue.end(); it++) {
+         pItem = *it;
+         if (! pItem) continue;
+         if (pItem->m_type == "protoobject") {
+            processProtoObject(pItem->m_address);
+         }
+         delete pItem;
+      }
+   }
+
+   m_pOwner->sleepComponent(500);
+}
+
+// Receiver thread
+void CTestCase_StereoPipeline::onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+   CProcessItem* pItem = new CProcessItem("protoobject", _wmc.address);
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
+   m_queue.push_back(pItem);
+   m_queueMonitor.notify(); // wakes up the runComponent thread (<url:#r=StereoPipeline_timedWait>)
+}
+
+void CTestCase_StereoPipeline::processProtoObject(const cast::cdl::WorkingMemoryAddress& address)
+{
+   ProtoObjectPtr pObj;
+   try {
+     pObj = m_pOwner->getMemoryEntry<VisionData::ProtoObject>(address);
+   }
+   catch(cast::DoesNotExistOnWMException e) {
+     m_pOwner->log("WARNING: Proto-object ID %s removed before it could be processed", address.id.c_str());
+     return;
+   }
+
+   Video::Image image;
+   image = pObj->image;
+   
+   orice::RecognitionResultSeq results;
+   try {
+      m_OrClient.FindMatchingObjects(image, results);
+   }
+   catch (const Ice::ObjectNotExistException &e) {
+      m_pOwner->log("Server does not exist. %s", e.what());
+      m_pOwner->sleepComponent(2000);
+   }
+}

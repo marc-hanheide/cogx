@@ -14,6 +14,8 @@
 #define log printf
 #define println printf
 
+#include "convenience.hpp"
+
 using namespace std;
 using namespace VisionData;
 
@@ -95,6 +97,7 @@ CPyProxy::CPyProxy()
 
 void CPyProxy::configureRecognizer(const map<string,string> & _config)
 {
+   DTRACE("CPyProxy::configureRecognizer");
    map<string,string>::const_iterator it;
 
    if((it = _config.find("--modeldir")) != _config.end())
@@ -121,6 +124,7 @@ void CPyProxy::configureRecognizer(const map<string,string> & _config)
 
 void CPyProxy::initModule()
 {
+   DTRACE("CPyProxy::initModule");
    ostringstream pycode;
    pycode
       << "import castinit, numpy" << endl
@@ -149,10 +153,12 @@ void CPyProxy::initModule()
 // @returns pMatches: matches found with pose estimation
 PyObject* CPyProxy::processImage(const Video::Image &image, const int *region)
 {
+   DTRACE("CPyProxy::processImage");
    PyObject *pMatches = NULL;
    int nchn = 3; // This should be a field in Image...
    int ndims;
    npy_intp dims[] = {image.height, image.width, nchn};
+   log("processImage %dx%d(%d)\n", dims[1], dims[0], dims[2]);
 
    if (nchn == 3) ndims = 3;
    else if (nchn == 1) ndims = 2;
@@ -174,7 +180,7 @@ PyObject* CPyProxy::processImage(const Video::Image &image, const int *region)
          pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
 
       if (! pFunc || !PyCallable_Check(pFunc)) {
-         log("Failed to find the required python function.");
+         log("Failed to find the required python function.\n");
       }
       else {
          PyObject *pArgs = PyTuple_New(2);
@@ -189,10 +195,10 @@ PyObject* CPyProxy::processImage(const Video::Image &image, const int *region)
             PyObject *pRegion = Py_BuildValue("(iiii)", region[0], region[1],
                   region[0] + region[2], region[1] + region[3]);
             PyTuple_SetItem(pArgs, 1, pRegion);
-            log("Processing region x=%d, y=%d, w=%d, h=%d", region[0], region[1],  region[2],  region[3]);
+            log("Processing region x=%d, y=%d, w=%d, h=%d\n", region[0], region[1],  region[2],  region[3]);
          }
          else {
-            log("No region defined.");
+            log("No region defined.\n");
             PyTuple_SetItem(pArgs, 1, Py_BuildValue("")); // None!
          }
 
@@ -211,6 +217,7 @@ PyObject* CPyProxy::processImage(const Video::Image &image, const int *region)
 // pMatches: see <url:#r=MatchesFormat>
 void CPyProxy::parseMatches(PyObject *pMatches, ObjectRecognitionMatchPtr &imatch)
 {
+   DTRACE("CPyProxy::parseMatches ObjectRecognitionMatchPtr");
    if (PyTuple_Check(pMatches)) {
       int len = PyTuple_Size(pMatches);
       ostringstream ostr;
@@ -255,6 +262,7 @@ void CPyProxy::parseMatches(PyObject *pMatches, ObjectRecognitionMatchPtr &imatc
 //    TODO: pose = list_[%, rotation_matrix] instead of array_[[ %, phi, lambda, theta ]]
 void CPyProxy::parseMatches(PyObject *pMatches, ObjectRecognizerIce::RecognitionResultSeq& results)
 {
+   DTRACE("CPyProxy::parseMatches RecognitionResultSeq");
    if (PyTuple_Check(pMatches)) {
       int len = PyTuple_Size(pMatches);
       ostringstream ostr;

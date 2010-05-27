@@ -14,6 +14,8 @@ extern "C"
    }
 }
 
+#include "convenience.hpp"
+
 using namespace std;
 namespace orice = ObjectRecognizerIce;
 
@@ -40,13 +42,14 @@ void CObjectRecognizer::configure(const map<string,string> & _config)
    CASTComponent::configure(_config);
 
    m_pyRecognizer.configureRecognizer(_config);
+
+   debug("CObjectRecognizer Server: starting");
+   m_pyRecognizer.initModule();
+   startIceServer();
 }
 
 void CObjectRecognizer::start()
 {
-   debug("CObjectRecognizer Server: starting");
-   m_pyRecognizer.initModule();
-   startIceServer();
 }
 
 void CObjectRecognizer::runComponent()
@@ -72,6 +75,7 @@ long CObjectRecognizer::GetSifts(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::FloatSeq& features, ObjectRecognizerIce::FloatSeq& descriptors)
 {
+   DTRACE("CObjectRecognizer::GetSifts");
    //int region[4];
    //region[0] = x0;
    //region[1] = y0;
@@ -84,6 +88,7 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
       const int x0, const int y0, const int width, const int height,
       ObjectRecognizerIce::RecognitionResultSeq& results)
 {
+   DTRACE("CObjectRecognizer::FindMatchingObjects");
    int region[4];
    region[0] = x0;
    region[1] = y0;
@@ -93,10 +98,10 @@ void CObjectRecognizer::FindMatchingObjects(const Video::Image& image,
    PyGILState_STATE state = PyGILState_Ensure();
 
    PyObject *pMatches = m_pyRecognizer.processImage(image, region);
-   if (pMatches != NULL) {
-      m_pyRecognizer.parseMatches(pMatches, results);
-      Py_DECREF(pMatches);
-   }
+   //if (pMatches != NULL) {
+   //   m_pyRecognizer.parseMatches(pMatches, results);
+   //   Py_DECREF(pMatches);
+   //}
 
    PyGILState_Release(state);
 }

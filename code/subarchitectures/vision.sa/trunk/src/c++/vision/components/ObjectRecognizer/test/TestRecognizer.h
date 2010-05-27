@@ -17,10 +17,14 @@ class CTestRecognizer: public cast::ManagedComponent, public cast::VideoClient
 private:
    CTestCase *m_pTestCase;
    std::vector<CTestCase*> m_KnownTests;
+   Video::VideoInterfacePrx m_videoServer;
+   std::string m_videoServerName;
 
 public:
+   int m_camId;
    CTestRecognizer();
    ~CTestRecognizer();
+   bool getOneImage(Video::Image &image);
 
 protected:
    virtual void start();
