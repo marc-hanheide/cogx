@@ -88,9 +88,10 @@
 	  <slice2java tie="true" outputdir="${src.dir}"> 
 	    <fileset dir="${slice.dir}" includes="beliefs-cast.ice"/>
 	    <includepath>
-	    	 <pathelement path="${slice.dir}"/>  
-	    	<pathelement path="../beliefs/src/slice"/>  
-             <pathelement path="/usr/local/share"/>   	
+	      <pathelement path="${slice.dir}"/>  
+	      <pathelement path="../beliefs/src/slice"/>  
+	      <pathelement path="${castslice.dir}"/> 	      
+              <pathelement path="/usr/local/share"/>   	
 	    </includepath> 
 	  	
 	  </slice2java> 
