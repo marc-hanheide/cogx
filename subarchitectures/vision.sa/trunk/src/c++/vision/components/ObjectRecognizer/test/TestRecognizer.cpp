@@ -29,7 +29,10 @@ CTestRecognizer::CTestRecognizer()
 {
    m_pTestCase = NULL;
    m_KnownTests.push_back(new CTestCase_Server("server", this));
+   m_KnownTests.push_back(new CTestCase_ServerCamera("server-camera", this));
+   m_KnownTests.push_back(new CTestCase_StereoPipeline("stereo-pipeline", this));
    m_KnownTests.push_back(new CTestCase_WmResponder("wmcall", this));
+   m_camId = -1;
 }
 
 CTestRecognizer::~CTestRecognizer()
@@ -52,12 +55,32 @@ void CTestRecognizer::start()
    if (m_pTestCase != NULL) {
       m_pTestCase->onStart();
    }
+
+   if (m_videoServerName != "" && m_camId >= 0) {
+      m_videoServer = getIceServer<Video::VideoInterface>(m_videoServerName);
+
+      // register our client interface to allow the video server pushing images
+      //Video::VideoClientInterfacePtr servant = new VideoClientI(this);
+      //registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
+   }
 }
 
 void CTestRecognizer::configure(const std::map<std::string,std::string> & _config)
 {
    log("TEST configuring");
    map<string,string>::const_iterator it;
+
+   if((it = _config.find("--videoname")) != _config.end())
+   {
+      m_videoServerName = it->second;
+   }
+
+   if((it = _config.find("--camid")) != _config.end())
+   {
+      istringstream istr(it->second);
+      istr >> m_camId;
+   }
+
    vector<CTestCase*>::iterator itest;
    if (1) {
       ostringstream msg;
@@ -78,19 +101,29 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
    {
       istringstream istr(it->second);
       istr >> mode;
+      log("searching test mode: '%s'", mode.c_str());
       for (itest = m_KnownTests.begin(); itest != m_KnownTests.end(); itest++) {
-         if (mode == (*itest)->m_name) m_pTestCase = *itest;
-         break;
+         if (mode == (*itest)->m_name) {
+            m_pTestCase = *itest;
+            break;
+         }
       }
    }
 
    if (m_pTestCase != NULL) {
-      m_pTestCase->configure(_config);
       log("TEST MODE: '%s'", m_pTestCase->m_name.c_str());
+      m_pTestCase->configure(_config);
    }
    else {
-      log("WARNING: UNKNOWN TEST MODE '%s'", mode);
+      log("WARNING: UNKNOWN TEST MODE '%s'", mode.c_str());
    }
+}
+
+bool CTestRecognizer::getOneImage(Video::Image &image)
+{
+   if (m_videoServer == NULL) return false;
+   m_videoServer->getImage(m_camId, image);
+   return true;
 }
 
 void CTestRecognizer::runComponent()

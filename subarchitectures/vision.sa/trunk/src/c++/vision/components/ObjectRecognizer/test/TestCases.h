@@ -13,6 +13,25 @@
 #include <string>
 #include <map>
 
+class CTestCase_WmResponder: public CTestCase
+{
+   // TODO: Events moved from CTestRecognizer to CTestCase_WmResponder
+   // Capture Recognition Task events
+   //void onAdd_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   //void onDelete_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   //void onChange_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+
+   // Trigger recognition on some events
+   //void onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
+
+   // Some helpers for testing
+   //void _test_addRecognitionTask();
+public:
+   CTestCase_WmResponder(std::string name, CTestRecognizer *pOwner);
+   void onStart();
+   void runOneStep();
+};
+
 /*
  * Test the connection between ObjectRecognizer Client and Server.
  *
@@ -38,7 +57,9 @@
  */
 class CTestCase_Server: public CTestCase
 {
+protected:
    cogx::vision::CObjectRecognizerClient m_OrClient;
+
 public:
    // CTestRecognizer is a CASTComponent
    CTestCase_Server(std::string name, CTestRecognizer *pOwner);
@@ -53,23 +74,43 @@ public:
    void runOneStep();
 };
 
-class CTestCase_WmResponder: public CTestCase
+class CTestCase_ServerCamera: public CTestCase_Server
 {
-   // TODO: Events moved from CTestRecognizer to CTestCase_WmResponder
-   // Capture Recognition Task events
-   //void onAdd_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   //void onDelete_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   //void onChange_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-
-   // Trigger recognition on some events
-   //void onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
-
-   // Some helpers for testing
-   //void _test_addRecognitionTask();
 public:
-   CTestCase_WmResponder(std::string name, CTestRecognizer *pOwner);
-   void onStart();
+   CTestCase_ServerCamera(std::string name, CTestRecognizer *pOwner)
+      : CTestCase_Server(name, pOwner) { }
+
+   // called repeatedly from CTestRecognizer::runComponent()
    void runOneStep();
+};
+
+class CTestCase_StereoPipeline: public CTestCase_Server
+{
+   struct CProcessItem
+   {
+      std::string m_type;
+      cast::cdl::WorkingMemoryAddress m_address;
+      CProcessItem(const std::string& otype, const cast::cdl::WorkingMemoryAddress& address)
+      {
+         m_type = otype;
+         m_address = address;
+      }
+   };
+   std::vector<CProcessItem*> m_queue;
+   IceUtil::Monitor<IceUtil::Mutex> m_queueMonitor;
+public:
+   CTestCase_StereoPipeline(std::string name, CTestRecognizer *pOwner)
+      : CTestCase_Server(name, pOwner) { }
+
+   // called from CTestRecognizer::start()
+   void onStart();
+
+   // called repeatedly from CTestRecognizer::runComponent()
+   void runOneStep();
+
+private:
+   void onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
+   void processProtoObject(const cast::cdl::WorkingMemoryAddress& address);
 };
 
 #endif

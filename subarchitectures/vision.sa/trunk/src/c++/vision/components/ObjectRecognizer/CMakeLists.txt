@@ -1,9 +1,16 @@
 
+project(ObjectRecognizer)
+
 find_package(PythonLibs)
 get_filename_component(PYLIBNAME "${PYTHON_LIBRARY}" NAME)
 include_directories(. ${PYTHON_INCLUDE_PATH})
 
-add_cast_component(ObjectRecognizer Recognizer.cpp)
+add_definitions(-DDEBUG_TRACE)
+
+add_cast_component(ObjectRecognizer
+   Recognizer.cpp
+   convenience.cpp
+   )
 set_target_properties(ObjectRecognizer PROPERTIES
    COMPILE_FLAGS -DPYTHON_LIB_NAME="\\"${PYLIBNAME}\\""
    )
@@ -13,7 +20,10 @@ link_cast_component(${CAST_COMPONENT_NAME}
 
 option(BUILD_SA_VISION_OBJRECOGNIZER_SRV "build object recognizer server" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER_SRV)
-add_cast_component(ObjectRecognizerSrv RecognizerSrv.cpp RecognizerClient.cpp pythonproxy.cpp)
+add_cast_component(ObjectRecognizerSrv
+   RecognizerSrv.cpp RecognizerClient.cpp pythonproxy.cpp
+   convenience.cpp
+   )
 set_target_properties(ObjectRecognizerSrv PROPERTIES
    COMPILE_FLAGS -DPYTHON_LIB_NAME="\\"${PYLIBNAME}\\""
    )
