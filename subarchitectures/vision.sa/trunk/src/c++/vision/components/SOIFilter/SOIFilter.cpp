@@ -34,7 +34,7 @@
 
 #define MAX_PATCH_SIZE 36000
 
-#define MAX_COLOR_SAMPLE 150
+#define MAX_COLOR_SAMPLE 90
 #define COLOR_FILTERING_THRESHOLD 10
 
 #define COLOR_SAMPLE_IMG_WIDTH 5
@@ -223,26 +223,30 @@ void SOIFilter::runComponent()
 
 		if(soi.status == STABLE)
 		{
+		  soi.status = OBJECT;
 		  try
-		  {
+		  { 
 			SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
-
+			
 			ProtoObjectPtr pobj = new ProtoObject;
-			pobj->time = getCASTTime();
-			pobj->SOIList.push_back(soi.addr.id);
-			segmentObject(soiPtr, pobj->image, pobj->mask);
-			pobj->points = soiPtr->points;
+			if(segmentObject(soiPtr, pobj->image, pobj->mask))
+			{  
+			  pobj->time = getCASTTime();
+			  pobj->SOIList.push_back(soi.addr.id);
+			  pobj->points = soiPtr->points;
 
-			string objId = newDataID();
-			addToWorkingMemory(objId, pobj);
+			  string objId = newDataID();
+			  addToWorkingMemory(objId, pobj);
+			
+			  soi.objectTime = getCASTTime();
+			  soi.objId = objId;
 
-			soi.objectTime = getCASTTime();
-			soi.status = OBJECT;
-			soi.objId = objId;
-
-			log("A proto-object added ID %s count %u at %u ",
-				soi.addr.id.c_str(), soi.updCount,
-				soi.stableTime.s, soi.stableTime.us);
+			  log("A proto-object added ID %s",
+				  objId.c_str(), soi.updCount);
+			}
+			else
+			  log("Nothing segmented, no proto-object added");
+			  
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
@@ -259,34 +263,39 @@ void SOIFilter::runComponent()
 		log("A delete proto-object instruction");
 	    SOIData &soi = SOIMap[objToDelete.front()];
 
-		if(soi.status == OBJECT)
-		{
-		try
-		{
-		  deleteFromWorkingMemory(soi.objId);
+//		if(soi.status == OBJECT)
+//		{
+		  soi.status = DELETED;
+		  try
+		  {
+			if (soi.objId.size()>0 && existsOnWorkingMemory(soi.objId)) {
+			  deleteFromWorkingMemory(soi.objId);
 		
-		  log("A proto-object deleted ID: %s ", soi.objId.c_str());
+			  log("A proto-object deleted ID: %s ", soi.objId.c_str());
+			}
+			else
+			  log("WARNING: Proto-object ID %s not in WM", soi.objId.c_str());
 		
-		  SOIMap.erase(objToDelete.front());
-		  soi.status = DELETED;	
-		}
-		catch (DoesNotExistOnWMException e)
-		{
-		log("WARNING: Proto-object ID %s not in WM", soi.objId.c_str());
-		}
-		}
-		else if(soi.status == STABLE)
-		{
-		  log("Have to wait until the object is processed");
-		  objToDelete.push(soi.objId);
-		  queuesNotEmpty->post();
-		}
+//			SOIMap.erase(objToDelete.front());	  	
+		  }
+		  catch (DoesNotExistOnWMException e)
+		  {
+			log("WARNING: Proto-object ID %s not in WM (exception)", soi.objId.c_str());
+		  }
+//		}
+//		else if(soi.status == STABLE)
+//		{
+//		  log("Have to wait until the object is processed");
+//		  objToDelete.push(soi.objId);
+//		  queuesNotEmpty->post();
+//		}
 		
 		objToDelete.pop(); 
 	  }
+	  else
+		log("Timeout"); 
 	}
-	//    else
-	//		log("Timeout");   
+	//      
   }
 
   log("Removing semaphore ...");
@@ -315,6 +324,7 @@ void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
   data.addTime = obj->time;
   data.updCount = 0;
   data.status = CANDIDATE;
+//  data.objId = "";
 
   SOIMap.insert(make_pair(data.addr.id, data));
 
@@ -355,7 +365,7 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
   CASTTime time=getCASTTime();
   soi.deleteTime = time;
   
-  if(soi.status == OBJECT || soi.status == STABLE)
+  if(soi.status == OBJECT) // || soi.status == STABLE)
   {
   	objToDelete.push(soi.addr.id);
   	queuesNotEmpty->post();
@@ -806,11 +816,11 @@ return costImg;
 }*/
 
 
-vector<CvScalar> SOIFilter::colorFilter( vector<CvScalar> colors, vector<CvScalar> filterColors, int k)
+vector<CvScalar> SOIFilter::colorFilter( vector<CvScalar> colors, vector<CvScalar> filterColors, int k, int tolerance)
 {
 
   vector<CvScalar> filteredList;
-  int tolerance = COLOR_FILTERING_THRESHOLD;
+
   for(vector<CvScalar>::iterator it= colors.begin(); it != colors.end(); it++)
   {
 	int cost = getHlsDiff(filterColors, *it, k);
@@ -840,18 +850,6 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 
   vector<SurfacePoint> surfPoints =  allSurfPoints;
 
-  if(filterFlag) //HACK
-  {
-	if (surfPoints.size() > MAX_COLOR_SAMPLE)
-	  surfPoints.resize(MAX_COLOR_SAMPLE);
-  }
-  else
-	if (surfPoints.size() > MAX_COLOR_SAMPLE*2/3)
-	  surfPoints.resize(MAX_COLOR_SAMPLE*2/3);
-
-
-  int colorKval = surfPoints.size()/HUE_K_RATIO + 1;
-
   if(distcost)
   {
 	cvSet(samplePatch,cvScalar(1));
@@ -875,7 +873,17 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 
   cvConvertScale(distPatch, distScaledPatch, 1, 0);	
 
+  if(filterFlag) //HACK
+  {
+	if (surfPoints.size() > MAX_COLOR_SAMPLE)
+	  surfPoints.resize(MAX_COLOR_SAMPLE);
+  }
+  else
+	if (surfPoints.size() > MAX_COLOR_SAMPLE*3/4)
+	  surfPoints.resize(MAX_COLOR_SAMPLE*3/4);
 
+  int colorKval = min(surfPoints.size(), (size_t) MAX_COLOR_SAMPLE)/HUE_K_RATIO + 1;
+  
   vector<CvScalar> sortHlsList = getSortedHlsList(surfPoints); 
 
   if (!filterFlag)			//HACK
@@ -883,9 +891,8 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
   else
   {	
 	int size = sortHlsList.size();
-	int k = filterList.size()/HUE_K_RATIO;
-	if (k < 1) return costImg;
-	sortHlsList = colorFilter(sortHlsList, filterList, k);
+	int k = filterList.size()/HUE_K_RATIO + 1;
+	sortHlsList = colorFilter(sortHlsList, filterList, k, COLOR_FILTERING_THRESHOLD);
 
 	colorKval = sortHlsList.size()/HUE_K_RATIO + 1;
 
@@ -1024,7 +1031,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
   return result;
 }
 
-void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask)
+bool SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask)
 {
   Video::Image image;
   getRectImage(LEFT, image);
@@ -1109,9 +1116,12 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   IplImage *segPatch = cvCreateImage(sz, IPL_DEPTH_8U, 1);
 
   // TODO: possible error: lines of IplImage are aligned to 4 bytes, while Image has no alignment!
+  bool protoObj = false;
   for(int i=0; i < segMask.data.size(); i++)
   {
 	segPatch->imageData[i] = segMask.data[i]*120;
+	if(segMask.data[i]==1)
+	  protoObj = true;
   }
   
   int idx = 0;
@@ -1196,6 +1206,8 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
   cvReleaseImage(&costPatch);
   cvReleaseImage(&bgCostPatch);
   cvReleaseImage(&colorFiltering);
+  
+  return protoObj;
 }
 
 }
