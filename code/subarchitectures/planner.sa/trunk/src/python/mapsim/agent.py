@@ -69,10 +69,16 @@ class Agent(BaseAgent):
 
     def new_task(self, mapltask):
         self.mapltask = mapltask.copy()
+
+        prob_state = pddl.prob_state.ProbabilisticState.from_problem(self.mapltask)
+        state = prob_state.determinized_state(0.1, 0.9)
+        
         if global_vars.mapsim_config.add_assertions:
             self.task = Task(next_id(), self.mapltask, add_assertions=True)
+            self.task.set_state(state)
         else:
             self.task = Task(next_id(), self.mapltask)
+            self.task.set_state(state)
             
         self.planner.register_task(self.task)
 
