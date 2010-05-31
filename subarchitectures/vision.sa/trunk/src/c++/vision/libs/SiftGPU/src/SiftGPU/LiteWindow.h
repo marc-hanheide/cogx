@@ -163,11 +163,17 @@ public:
         if(display) std::cout << "Using display ["<<display<<"]\n";
 
         xDisplay = XOpenDisplay(display && display[0] ? display : NULL);
-        if(xDisplay == NULL) return;
+        if(xDisplay == NULL) {
+	    std::cout << "XOpenDisplay failed\n";
+	    return;
+	}
         int attrib[] =  {GLX_RGBA, GLX_RED_SIZE, 1, 
                          GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,  0 }; 
         xVisual = glXChooseVisual(xDisplay, DefaultScreen(xDisplay), attrib);
-        if(xVisual == NULL) return;
+        if(xVisual == NULL) {
+	    std::cout << "glXChooseVisual failed\n";
+	    return;
+	}
         xColormap = XCreateColormap(
             xDisplay, RootWindow(xDisplay, xVisual->screen), 
             xVisual->visual, AllocNone);
@@ -183,6 +189,10 @@ public:
                               CWBorderPixel |CWColormap | CWEventMask, &wa);
             
         xContext = glXCreateContext(xDisplay, xVisual,  0, GL_TRUE); 
+	if (xContext == NULL) {
+	    std::cout << "glXCreateContext failed\n";
+	    return;
+	}
     }
     void MakeCurrent()
     {
