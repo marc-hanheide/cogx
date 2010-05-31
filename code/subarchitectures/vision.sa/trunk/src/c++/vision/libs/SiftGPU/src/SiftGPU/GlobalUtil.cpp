@@ -173,7 +173,7 @@ int GlobalUtil::CreateWindowEZ()
         return 1;
     }else
     {
-        std::cerr << "Unable to create OpenGL Context!\n";
+        std::cerr << "CreateWindowEZ: Unable to create OpenGL Context!\n";
         return 0;
     }
 }
@@ -409,7 +409,7 @@ int CreateLiteWindow(LiteWindow* window)
     }
     else  
     {
-        std::cerr << "Unable to create OpenGL Context!\n";
+        std::cerr << "CreateLiteWindow: Unable to create OpenGL Context!\n";
         return 0;
     }
 }
