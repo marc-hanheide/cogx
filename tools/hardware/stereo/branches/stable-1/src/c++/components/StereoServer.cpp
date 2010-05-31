@@ -80,10 +80,8 @@ StereoServer::~StereoServer()
 
 void StereoServer::setupMyIceCommunication()
 {
-  Ice::Identity id;
-  id.name = iceStereoName;
-  id.category = "StereoServer";
-  getObjectAdapter()->add(new StereoServerI(this), id);
+  hStereoServer = new StereoServerI(this);
+  registerIceServer<Stereo::StereoInterface, StereoServerI>(hStereoServer);
 }
 
 void StereoServer::configure(const map<string,string> & _config)
@@ -112,10 +110,10 @@ void StereoServer::configure(const map<string,string> & _config)
     haveStereoConfig = true;
   }
 
-  if((it = _config.find("--stereoname")) != _config.end())
-  {
-    iceStereoName = it->second;
-  }
+  //if((it = _config.find("--stereoname")) != _config.end())
+  //{
+  //  iceStereoName = it->second;
+  //}
 
   if((it = _config.find("--display")) != _config.end())
   {
@@ -169,10 +167,12 @@ void StereoServer::configure(const map<string,string> & _config)
   // configuration consistent?
   if(camIds.size() != 2)
     throw runtime_error(exceptionMessage(__HERE__, "need exactly 2 camera IDs"));
-  if(iceStereoName.empty())
-    throw runtime_error(exceptionMessage(__HERE__, "no stereo server name given"));
+  //if(iceStereoName.empty())
+  //  throw runtime_error(exceptionMessage(__HERE__, "no stereo server name given"));
   if(!haveStereoConfig)
     throw runtime_error(exceptionMessage(__HERE__, "no stereo config file given"));
+
+  setupMyIceCommunication();
 }
 
 void StereoServer::start()
@@ -183,8 +183,6 @@ void StereoServer::start()
   // register our client interface to allow the video server pushing images
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
-
-  setupMyIceCommunication();
 
   // allocate all our various images
   for(int i = LEFT; i <= RIGHT; i++)
