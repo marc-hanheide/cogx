@@ -213,7 +213,9 @@ def findMatchingObject(image, region=None):
             imid += 1
             saveImage(image, "xdata/cast_objrecog_%04d.png" % imid)
         features = Setup.extractor.extractFeatures(image)
-        # matches = _findMatchingObject(features)
+        matches = _findMatchingObject(features)
+        if len(matches) > 0: print matches[0]
+        if len(matches) > 1: print matches[1]
         return matches
     except:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
