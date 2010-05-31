@@ -38,6 +38,9 @@ protected:
    void debug(const std::string& message) {
       if (m_pOwner) m_pOwner->debug(message);
    }
+   void log(const std::string& message) {
+      if (m_pOwner) m_pOwner->log(message);
+   }
 
 public:
    CDisplayClient();
@@ -124,14 +127,22 @@ private:
 
 public:
    void installEventReceiver() throw(std::runtime_error) {
-      if (! m_pOwner || ! m_pServer.get())
+      if (! m_pOwner)
          throw std::runtime_error(cast::exceptionMessage(__HERE__,
                   "CDisplayClient: connectIceClient() must be called before installEventReciever()."));
 
+      if (! m_pServer) {
+         log("CActiveDisplayClient: server not connected.");
+         return;
+      }
+
       debug("CDisplayClient installing an EventReceiver.");
-      if (m_pEventReceiverIceSrv.get())
-         throw std::runtime_error(cast::exceptionMessage(__HERE__,
-                  "CDisplayClient already has an EventReceiver."));
+      if (m_pEventReceiverIceSrv.get()) {
+         //throw std::runtime_error(cast::exceptionMessage(__HERE__,
+         //         "CDisplayClient already has an EventReceiver."));
+         log("CActiveDisplayClient already has an EventReceiver.");
+         return;
+      }
 
       Ice::Identity id = getEventClientId();
       debug(id.name + id.category);

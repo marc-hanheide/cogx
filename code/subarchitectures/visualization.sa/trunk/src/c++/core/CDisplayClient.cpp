@@ -41,32 +41,44 @@ void CDisplayClient::connectIceClient(CASTComponent& owner)
    m_pOwner = &owner;
 
    owner.debug("CDisplayClient connecting to CDisplayServer.");
-   if (m_pServer)
-      throw runtime_error(exceptionMessage(__HERE__,
-            "CDisplayClient already connected to server."));
+   if (m_pServer) {
+      //throw runtime_error(exceptionMessage(__HERE__,
+      //      "CDisplayClient already connected to server."));
+     owner.log("CDisplayClient already connected to server.");
+   }
 
-   if (m_serverName.empty())
-      throw runtime_error(exceptionMessage(__HERE__,
-            "DisplayServer server id not set. Use --display-server-id."));
+   if (m_serverName.empty()) {
+      //throw runtime_error(exceptionMessage(__HERE__,
+      //      "DisplayServer server id not set. Use --display-server-id."));
+      owner.println(" *** DisplayServer server id not set. Use --displayserver.");
+   }
 
-   m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
-   owner.debug("CDisplayClient Connected.");
+   try {
+     m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
+     owner.debug("CDisplayClient Connected.");
+   }
+   catch (...) {
+     owner.debug(" *** CDisplayClient could not connect to '%s'.", m_serverName.c_str());
+   }
 }
 
 void CDisplayClient::setImage(const std::string& id, const Video::Image& image)
 {
+   if (m_pServer == NULL) return;
    m_pServer->setImage(id, image);
 }
 
 void CDisplayClient::setImage(const std::string& id, const std::vector<unsigned char>& data,
     const std::string &format)
 {
+   if (m_pServer == NULL) return;
    m_pServer->setCompressedImage(id, data, format);
 }
 
 #ifdef FEAT_VISUALIZATION_OPENCV
 void CDisplayClient::setImage(const std::string& id, const IplImage* pImage) 
 {
+   if (m_pServer == NULL) return;
    if (! pImage) return;
    int nbytes = pImage->width * pImage->height * pImage->nChannels;
    if (nbytes < 1) return;
@@ -96,18 +108,21 @@ void CDisplayClient::setImage(const std::string& id, const IplImage* pImage)
 
 void CDisplayClient::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
 {
+   if (m_pServer == NULL) return;
    m_pServer->setObject(id, partId, xmlData);
 }
 
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
        const std::vector<double>& transform)
 {
+   if (m_pServer == NULL) return;
    m_pServer->setObjectTransform2D(id, partId, transform);
 }
 
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
       const cogx::Math::Matrix33& transform)
 {
+   if (m_pServer == NULL) return;
    std::vector<double> tr;
    tr.push_back(transform.m00);
    tr.push_back(transform.m01);
@@ -124,6 +139,7 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
 #ifdef FEAT_VISUALIZATION_OPENCV
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId, CvMat* pTransform)
 {
+   if (m_pServer == NULL) return;
    if (!pTransform) return;
    if (pTransform->rows < 2 || pTransform->cols < 2) return;
 
@@ -180,17 +196,20 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
 void CDisplayClient::setObjectPose3D(const std::string& id, const std::string& partId,
          const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation)
 {
+   if (m_pServer == NULL) return;
    m_pServer->setObjectPose3D(id, partId, position, rotation);
 }
 
 void CDisplayClient::addCheckBox(const std::string& viewId, const std::string& ctrlId, const std::string& label)
 {
+   if (m_pServer == NULL) return;
    Ice::Identity id = getEventClientId();
    m_pServer->addCheckBox(id, viewId, ctrlId, label);
 }
 
 void CDisplayClient::addButton(const std::string& viewId, const std::string& ctrlId, const std::string& label)
 {
+   if (m_pServer == NULL) return;
    Ice::Identity id = getEventClientId();
    m_pServer->addButton(id, viewId, ctrlId, label);
 }
