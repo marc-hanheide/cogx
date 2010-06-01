@@ -58,7 +58,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
-              <widget class="QComboBox" name="logfileCmbx">
+              <widget class="QComboBox" name="messageSourceCmbx">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                  <horstretch>4</horstretch>
@@ -74,19 +74,28 @@
                <property name="statusTip">
                 <string>Active log</string>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btLogViewAll">
-               <property name="text">
-                <string>All</string>
+               <property name="maxVisibleItems">
+                <number>20</number>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btLogViewControl">
+              <widget class="QCheckBox" name="ckShowInternalMsgs">
                <property name="text">
-                <string>Control</string>
+                <string>Internal</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="ckShowFlushMsgs">
+               <property name="text">
+                <string>Flushed</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -107,13 +116,6 @@
               <widget class="QPushButton" name="btClearMainLog">
                <property name="text">
                 <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="ckShowFlushMsgs">
-               <property name="text">
-                <string>Show Flushed</string>
                </property>
               </widget>
              </item>
@@ -1220,7 +1222,7 @@
      <x>0</x>
      <y>0</y>
      <width>883</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCast">

@@ -25,6 +25,15 @@ class CRemoteProcess(CProcessBase):
         CProcessBase.__init__(self, name, host)
         self.manager = manager
         self.messages = legacy.deque(maxlen=500)
+        self.srcid = "remote.%s.%s" % (host.host.replace('.', '_'), name.replace('.', '_'))
+
+    def getMessages(self, clear=True):
+        msgs = list(self.messages)
+        if clear: self.messages.clear()
+        return msgs
+
+    def getErrors(self, clear=True):
+        return []
 
     def getStatusStr(self):
         st = CProcessBase.getStatusStr(self)
@@ -41,7 +50,7 @@ class CRemoteProcess(CProcessBase):
     def _readMessages(self):
         msgs = self.manager.agentProxy.readMessages(self.name)
         for m in msgs:
-            self.messages.append(CMessage("R:"+m.message, m.msgtype, timestamp=m.time))
+            self.messages.append(CMessage(self.srcid, "R:"+m.message, m.msgtype, timestamp=m.time))
 
 
 class CRemoteProcessManager:
@@ -59,6 +68,12 @@ class CRemoteProcessManager:
         self.online = False
         self.observers = [] # proclist change, etc.
         self.remoteInternalMessages = legacy.deque(maxlen=500)
+        self.srcid = "remoteman.%s.%s" % (self.name.replace('.', '_'), self.address.replace('.', '_'))
+
+    def getRemoteInternalMessages(self, clear=True):
+        msgs = list(self.remoteInternalMessages)
+        if clear: self.remoteInternalMessages.clear()
+        return msgs
 
     def getStatusStr(self): # For processtree
         if self.online: return self.address
@@ -135,7 +150,8 @@ class CRemoteProcessManager:
         for p in self.proclist: p._readMessages()
         msgs = self.agentProxy.readMessages("LOGGER")
         for m in msgs:
-            self.remoteInternalMessages.append(CMessage("RI:" + m.message, m.msgtype, timestamp=m.time))
+            self.remoteInternalMessages.append(
+                CMessage(self.srcid, "RI:" + m.message, m.msgtype, timestamp=m.time))
 
 
     def stopAll(self):
@@ -148,20 +164,11 @@ class CRemoteMessageSource(CMessageSource):
         CMessageSource.__init__(self, remoteManager)
         self.yieldErrors = False
 
-    # FIXME: Iterators crash if the queue is changed from another thread.
-    # Instead of iterators, this function should probably return a list of filtered messages.
-    def getIterators(self):
-        its = []
-        if self.tmLastSeen < self.tmLastPop: self.tmLastSeen = self.tmLastPop
-        def checkTime(msg):
-            if msg.time > self.tmLastSeen:
-                self.tmLastPop = msg.time
-                return True
-            return False
+    def getMessages(self, clear=True):
+        msgs = []
         if self.yieldMessages:
-            # NOTE: self.process is a remoteManager
             for proc in self.process.proclist:
-                its.append(itertools.ifilter(lambda x: checkTime(x), proc.messages))
-            its.append(itertools.ifilter(lambda x: checkTime(x), self.process.remoteInternalMessages))
-        return its
+                msgs += proc.getMessages(clear)
+            msgs += self.process.getRemoteInternalMessages(clear)
+        return msgs
 
