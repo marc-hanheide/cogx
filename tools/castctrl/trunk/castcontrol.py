@@ -251,13 +251,16 @@ class CCastControlWnd(QtGui.QMainWindow):
         if components == "Selected components":
             con = []; coff = []
             for c in self.componentFilter:
+                if c.cid == '': continue
                 if c.status: con.append(c)
                 else: coff.append(c)
-            if len(con) < len(coff):
+            if len(con) < len(coff) + 1:
                 comps = con; cond = "m.component in"
+                extra = []
             else:
                 comps = coff; cond = "not m.component in"
-            comps = [ "'" + c.cid + "'" for c in comps ]
+                extra = ["''"]
+            comps = extra + [ "'" + c.cid + "'" for c in comps ]
             comps = ",".join(comps)
             if flt != "": flt = "(" + flt + ") and "
             flt = flt + "(" + cond + " [" + comps + "])"
@@ -266,7 +269,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             if flt != "": flt = "(" + flt + ") or "
             flt = flt + """(m.source == "castcontrol")"""
 
-        # print flt
+        # LOGGER.log(flt)
         if flt == "": self.mainLog.setFilter(None)
         else:
             try: self.mainLog.setFilter(eval("lambda m: " + flt))
@@ -466,6 +469,25 @@ class CCastControlWnd(QtGui.QMainWindow):
                 self.componentFilter.insert(0, oc)
             except ValueError:
                 self.componentFilter.insert(0, c)
+
+    # similar to buildConfigFile, but no file is generated
+    def extractComponentsFromConfig(self):
+        if self._clientConfig == None: clientConfig = ""
+        else: clientConfig = "%s" % self._clientConfig
+        clientConfig = clientConfig.strip()
+        if clientConfig == "": return
+
+        if self._hostConfig == None: hostConfig = ""
+        else: hostConfig = "%s" % self._hostConfig
+        hostConfig = hostConfig.strip()
+        lhost = self._localhost
+
+        cfg = confbuilder.CCastConfig()
+        cfg.clearRules()
+        if lhost != "": cfg.setLocalhost(lhost)
+        if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
+        cfg.prepareConfig(clientConfig)
+        self.addComponentFilters(cfg.components)
 
     # build config file from rules in hostconfig
     def buildConfigFile(self):
@@ -694,6 +716,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btEditFilterComponents_clicked(self, valid=True):
         if not valid: return
+        self.extractComponentsFromConfig()
         dlg = CSelectComponentsDlg(self)
         dlg.setComponentList(self.componentFilter)
         rv = dlg.exec_()

@@ -54,6 +54,9 @@ class CComponent:
     def __repr__(self):
         return "<CComponent %s>" % self.cid
 
+class CNullFile:
+    def write(self, msg): pass
+
 class CCastConfig:
     reInclude = re.compile(r"^\s*include\s+(\S+)", re.IGNORECASE)
     reSubarch = re.compile(r"^\s*subarchitecture\s+(\S+)", re.IGNORECASE)
@@ -140,7 +143,7 @@ class CCastConfig:
         return lines
 
     #  TODO: How to support multiple HOST definitions in .cast?
-    def prepareConfig(self, filename, afile):
+    def prepareConfig(self, filename, afile=CNullFile()):
         """
         Reads the config file and writes it to an open file-like object 'afile'
         using write(). The input file is processed with all the included files.
