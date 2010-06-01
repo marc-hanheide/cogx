@@ -10,6 +10,7 @@ from collections import deque
 
 reColorEscape = re.compile("\x1b\\[[0-9;]+m")
 reColorEscapeSplit = re.compile("(\x1b\\[[0-9;]+m)")
+reExtractComponent = re.compile("\\[([a-zA-Z]+\\s+)?([^:\\[\\] ]+):") # [DEBUG component: ...]
 
 class CMessage(object):
     MESSAGE=0
@@ -24,6 +25,11 @@ class CMessage(object):
         self.time = timestamp
         self.message = message.rstrip()
         self.msgtype = msgtype
+        self.component = ""
+        if self.msgtype == CMessage.CASTLOG:
+            mo = reExtractComponent.search(message)
+            if mo != None:
+                self.component = mo.group(2)
 
     def __cmp__(self, x):
         if self.time < x.time: return -1
