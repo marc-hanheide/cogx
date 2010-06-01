@@ -140,5 +140,9 @@ getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
 
 void
 randomizeOrientation(Pose3 &pose);
+
+void
+getRandomSampleSphere(std::vector<Matrix33> &orientations, int n);
+
 };
 #endif //RelationEvaluation_hpp

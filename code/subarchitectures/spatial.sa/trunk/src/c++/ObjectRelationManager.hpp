@@ -30,6 +30,11 @@
 using namespace SpatialProperties;
 using namespace SpatialData;
 
+namespace Cure {
+template <class T>
+class LocalGridMap;
+}
+
 namespace spatial {
 
 /**
@@ -126,13 +131,14 @@ protected:
       const std::string &objectLabel);
   void sampleOnnessForObject(const std::string &supLabel, 
       const std::string &onLabel);
-  void sampleOnnessRecursively(const std::vector<std::string> &objects, 
-    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
-    std::vector<cogx::Math::Vector3> &outPoints, spatial::Object *supportObject,
-    const std::vector<Vector3> &triangle = std::vector<Vector3>());
+  void sampleOnnessRecursively(const std::vector<spatial::Object *> &objects, 
+    int currentLevel, Cure::LocalGridMap<double> &map, 
+    spatial::Object *supportObject, double &total,
+    const std::vector<Vector3> &triangle = std::vector<Vector3>(), double baseOnness = 1.0);
 
   void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);
+  void new3DPriorRequest(const cast::cdl::WorkingMemoryChange &wmc);
 
   void setContainmentProperty(const std::string &objectLabel, int placeID, double confidence);
   void setSupportProperty(int figureID, int groundID, double confidence);
