@@ -153,7 +153,7 @@ class CCastOptions(object):
             expr = [ e.strip() for e in expr ]
             if expr[0].startswith("#") or expr[0] == "": continue
             self.options[expr[0]] = expr[1]
-            
+
     def getSection(self, sectionName):
         if self.confSection.has_key(sectionName): return self.confSection[sectionName]
         return []

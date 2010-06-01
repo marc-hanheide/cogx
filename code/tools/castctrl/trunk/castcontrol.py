@@ -196,6 +196,15 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not val in log4jlevels: val = log4jlevels[-1]
         self.ui.log4jFileLevelCmbx.setCurrentIndex(log4jlevels.index(val))
 
+        def ckint(field, default=0):
+            try: return int(self._options.getOption(field)) % 3
+            except: return default
+        self.ui.ckShowFlushMsgs.setCheckState(ckint("ckShowFlushMsgs", 2))
+        self.ui.ckShowInternalMsgs.setCheckState(ckint("ckShowInternalMsgs", 2))
+        self.ui.ckRunPeekabot.setCheckState(ckint("ckRunPeekabot", 2))
+        self.ui.ckRunPlayer.setCheckState(ckint("ckRunPlayer", 2))
+        self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
+
     def _fillMessageSourceCombo(self):
         self.ui.messageSourceCmbx.clear()
         self.ui.messageSourceCmbx.addItem("All")
@@ -354,6 +363,11 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._options.setOption("log4jServerOutfile", self._log4jServerOutfile)
             self._options.setOption("log4jConsoleLevel", self._log4jConsoleLevel)
             self._options.setOption("log4jXmlFileLevel", self._log4jXmlFileLevel)
+            self._options.setOption("ckShowFlushMsgs", self.ui.ckShowFlushMsgs.checkState())
+            self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
+            self._options.setOption("ckRunPeekabot", self.ui.ckRunPeekabot.checkState())
+            self._options.setOption("ckRunPlayer", self.ui.ckRunPlayer.checkState())
+            self._options.setOption("ckRunLog4jServer", self.ui.ckRunLog4jServer.checkState())
             self._options.saveHistory(open(self.fnhist, 'w'))
             if not os.path.exists(self.fnconf):
                 self._options.saveConfig(open(self.fnconf, 'w'))
