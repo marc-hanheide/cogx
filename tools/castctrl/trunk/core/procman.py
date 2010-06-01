@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
 # Author:  Marko Mahnič
-# Created: jun 2009 
+# Created: jun 2009
 
 import os, sys, errno
 import re
@@ -40,6 +40,7 @@ class CProcessObserver(object):
 class CRemoteHostInfo(object):
     def __init__(self, host = "localhost"):
         self.host = host
+        if self.host == None: self.host = "?"
         self.cmdPrefix = ""
 
 class CProcessBase(object):
@@ -57,6 +58,7 @@ class CProcessBase(object):
         self.status = CProcessBase.STOPPED # 0 stoped; > 0 pid; < 0 error state; see getStatusStr()
         self.error = CProcessBase.OK
         self.observers = []
+        if self.name == None: self.name = "?"
         pass
 
     def getStatusStr(self):
@@ -102,9 +104,20 @@ class CProcess(CProcessBase):
         self.msgOrder = 0
         self.willClearAt = None # Flushing
         self.pipeReader = None
+        self.srcid = "process.%s.%s" % (self.host.host.replace('.', '_'), self.name.replace('.', '_'))
 
     def __del__(self):
         self.stop()
+
+    def getMessages(self, clear=True):
+        msgs = list(self.messages)
+        if clear: self.messages.clear()
+        return msgs
+
+    def getErrors(self, clear=True):
+        msgs = list(self.errors)
+        if clear: self.errors.clear()
+        return msgs
 
     def getStatusStr(self):
         st = CProcessBase.getStatusStr(self)
@@ -220,7 +233,7 @@ class CProcess(CProcessBase):
                 typ = fnType(msg)
                 self.msgOrder += 1
                 msg = msg.decode("utf-8", "replace")
-                targetList.append(messages.CMessage(msg, typ, self.msgOrder))
+                targetList.append(messages.CMessage(self.srcid, msg, typ, self.msgOrder))
                 nl += 1
             if nl > maxcount: break
             now = time.time()
@@ -301,9 +314,9 @@ class CPipeReader_1(threading.Thread):
         while self.isRunning:
             pipes = []
             pipes.extend(self.process.getPipes())
-            if len(pipes) < 1: time.sleep(0.02)
+            if len(pipes) < 1: time.sleep(0.3)
             else:
-                (rlist, wlist, xlist) = select.select(pipes, [], [], 0.1)
+                (rlist, wlist, xlist) = select.select(pipes, [], [], 0.3)
                 if len(rlist) > 0:
                     nl = self.process.readPipes(rlist, 200)
 
@@ -323,11 +336,11 @@ class CPipeReader(threading.Thread):
             pipes = []
             for proc in procs: pipes.extend(proc.getPipes())
             if len(pipes) < 1:
-                time.sleep(0.02)
+                time.sleep(0.3)
                 continue
-            (rlist, wlist, xlist) = select.select(pipes, [], [], 0.02)
+            (rlist, wlist, xlist) = select.select(pipes, [], [], 0.3)
             if len(rlist) > 0:
-                now = time.time(); tm = now; tmend = now + 0.1
+                now = time.time(); tm = now; tmend = now + 0.2
                 for proc in procs: nl = proc.readPipes(rlist, 200)
 
     def stop(self):
@@ -423,7 +436,7 @@ class CProcessManager(object):
     #        now = time.time()
 
     #    return len(ready[0]) > 0 # True if there might be more lines to read
-    
+
     def getStatus(self, procname):
         p = self.getProcess(procname)
         if p != None:
@@ -434,7 +447,7 @@ class CProcessManager(object):
     # Remote hosts need to be locked for exclusive use before any process is started
     def lockHost(self):
         return True
- 
+
 # BAD: causes castcontrol to go to 100% of CPU use
 #def runCommand(cmd, params=None, workdir=None, name="onetime"):
 #    try:

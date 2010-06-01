@@ -100,9 +100,9 @@ class CConsoleAgent:
 
 
     def _initLocalProcesses(self, appOptions):
-        self.manager.addProcess(procman.CProcess("server-java", self._options.xe("${CMD_JAVA_SERVER}")))
-        self.manager.addProcess(procman.CProcess("server-cpp", self._options.xe("${CMD_CPP_SERVER}")))
-        self.manager.addProcess(procman.CProcess("server-python", self._options.xe("${CMD_PYTHON_SERVER}")))
+        self.manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
+        self.manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
+        self.manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
         #self.manager.addProcess(procman.CProcess("client", self._options.xe("${CMD_CAST_CLIENT}")))
         if appOptions.player_cfg != None:
             # TODO: Player configuration (file contents) could also be sent from the remote machine

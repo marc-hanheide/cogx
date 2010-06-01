@@ -17,9 +17,10 @@ class CMessage(object):
     ERROR=2
     FLUSHMSG=3
     CASTLOG=10
-    def __init__(self, message, msgtype=0, order=0, timestamp=None):
-        self.order = order
+    def __init__(self, source, message, msgtype=0, order=0, timestamp=None):
         if timestamp == None: timestamp = time.time()
+        self.source = source
+        self.order = order
         self.time = timestamp
         self.message = message.rstrip()
         self.msgtype = msgtype
@@ -88,98 +89,150 @@ class CAnsiPainter(object):
 class CMessageSource(object):
     def __init__(self, process):
         self.process = process
-        self.tmLastSeen = 0
-        self.tmLastPop = 0
         self.yieldMessages = True
         self.yieldErrors = True
 
-    # FIXME: Iterators crash if the queue is changed from another thread.
-    # Instead of iterators, this function should probably return a list of filtered messages.
-    def getIterators(self):
-        its = []
-        if self.tmLastSeen < self.tmLastPop: self.tmLastSeen = self.tmLastPop
-        def checkTime(msg):
-            if msg.time > self.tmLastSeen:
-                self.tmLastPop = msg.time
-                return True
-            return False
-        if self.yieldMessages:
-            its.append(itertools.ifilter(lambda x: checkTime(x), self.process.messages))
-        if self.yieldErrors:
-            its.append(itertools.ifilter(lambda x: checkTime(x), self.process.errors))
-        return its
-
-    def restart(self):
-        self.tmLastSeen = 0
-        self.tmLastPop = 0
+    def getMessages(self, clear=True):
+        msgs = []
+        if self.yieldMessages: msgs += self.process.getMessages(clear)
+        if self.yieldErrors: msgs += self.process.getErrors(clear)
+        return msgs
 
 class CLogMerger(object):
     def __init__(self):
+        self.maxlen = 10000
         self.messages = [] # buffer with sorted messages
-        self.sources = []
+        self._sources = []
+        self.fnMatches = None
+        self.filtered = self.messages
+        self.current = 0
 
     def clearBuffer(self):
        self.messages = []
+       self.filtered = self.messages
+       self.current = 0
+
+    def setFilter(self, fnFilter, lastMessages = -1): # fnFilter(message)
+        self.fnMatches = fnFilter
+        if fnFilter == None: self.filtered = self.messages
+        else:
+            self.filtered = []
+            self._applyFilter(self.messages)
+        self.restart(lastMessages)
+
+    def _setMessages(self, newList):
+        if self.messages == self.filtered: self.filtered = newList
+        self.messages = newList
+
+    def _applyFilter(self, newItems):
+        if self.fnMatches == None: return
+        if self.filtered == self.messages: self.filtered = []
+        for it in newItems:
+            if self.fnMatches(it):
+                self.filtered.append(it)
+
+    def _checkLength(self):
+        if len(self.messages) <= self.maxlen: return
+        nl = int(self.maxlen * 0.9)
+        delta = len(self.messages) - nl
+        self.messages = self.messages[-nl:]
+        if self.filtered == self.messages:
+            self.current -= delta
+            return
+
+        if len(self.filtered) <= self.maxlen: return
+        nl = int(self.maxlen * 0.9)
+        delta = len(self.filtered) - nl
+        self.filtered = self.filtered[-nl:]
+        self.current -= delta
+
+    def restart(self, lastMessages=-1):
+        if lastMessages > 0: self.current = max(0, len(self.filtered) - lastMessages)
+        else: self.current = 0
 
     def getNewMessages(self, maxItems=0):
-        """
-        Return up to maxItems new messages and remove them from the queue.
-        If maxItems < 1, all messages are returned.
-        """
         if maxItems < 1:
-            msgs = self.messages
-            self.messages = []
+           msgs = self.filtered[self.current:]
+           self.current = len(self.filtered)
         else:
-            msgs = self.messages[:maxItems]
-            self.messages = self.messages[maxItems:]
+           nc = self.current+maxItems
+           msgs = self.filtered[self.current:nc]
+           self.current = nc
+           if self.current > len(self.filtered):
+               self.current = len(self.filtered)
         return msgs
 
     def addSource(self, process):
-        self.removeSource(process)
-        src = CMessageSource(process)
-        self.sources.append(src)
+        # print type(process), type(process).__bases__
+        if type(process) == CMessageSource or CMessageSource in type(process).__bases__:
+            # print "A CMessageSource", type(process)
+            src = process
+            self.removeSource(src.process)
+        else:
+            self.removeSource(process)
+            src = CMessageSource(process)
+        self._sources.append(src)
         return src
 
     def removeSource(self, process):
-        srcs = [s for s in self.sources if s.process == process]
-        for s in srcs: self.sources.remove(s)
+        if type(process) == CMessageSource or CMessageSource in type(process).__bases__:
+            process = process.process
+        srcs = [s for s in self._sources if s.process == process]
+        for s in srcs: self._sources.remove(s)
 
     def hasSource(self, process):
-        for s in self.sources:
+        for s in self._sources:
             if s.process == process: return True
         return False
 
     def removeAllSources(self):
-        self.sources = []
+        self._sources = []
 
     def merge(self):
-        """
-        Merge messages from different sources into one queue.
-        The messages in the destination queue are (mostly) sorted by timestamp.
-        """
-        if len(self.sources) < 1: return
-        its = []
-        # FIXME: queues that iterators iterate over may change while fnMerge is active
-        # (source queues are filled in separate threads; messages remain in queues;)
-        for s in self.sources: its.extend(s.getIterators())
-        if len(its) > 0:
-            fnMerge = legacy.getMergeFn()
-            for msg in fnMerge(*its): self.messages.append(msg)
+        msgs = []
+        for s in self._sources: msgs.extend(s.getMessages(clear=True))
+        if len(msgs) < 1: return
+        # print len(msgs), "new messages"
+        msgs.sort()
+        if len(self.messages) < 1:
+            self._setMessages(msgs)
+            self._applyFilter(msgs)
+            return
+        first = msgs[0]
+        i = len(self.messages) - 1
+        while i > 0 and first < self.messages[i]: i -= 1
+        resorted = self.messages[i+1:]
+        # if len(resorted) > 0: print len(resorted), "resorted"
+        merged = self.messages[:i+1] + sorted(resorted + msgs)
+        self._setMessages(merged)
+        self._applyFilter(msgs)
+        self._checkLength()
 
 class CInternalLogger(object):
     def __init__(self):
         # Modelled like CProcess: messages, errors
         self.messages = legacy.deque(maxlen=500)
         self.errors = legacy.deque(maxlen=200)
+        self.srcid = "castcontrol"
+
+    def getMessages(self, clear=True):
+        msgs = list(self.messages)
+        if clear: self.messages.clear()
+        return msgs
+
+    def getErrors(self, clear=True):
+        msgs = list(self.errors)
+        if clear: self.errors.clear()
+        return msgs
 
     def log(self, msg):
-        self.messages.append(CMessage(msg))
+        self.messages.append(CMessage(self.srcid, msg))
 
     def warn(self, msg):
-        self.errors.append(CMessage(msg, msgtype=CMessage.WARNING))
+        self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.WARNING))
 
     def error(self, msg):
-        self.errors.append(CMessage(msg, msgtype=CMessage.ERROR))
+        self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.ERROR))
 
     def addMessage(self, cmsg):
         if cmsg.msgtype == CMessage.ERROR or cmsg.msgtype == CMessage.WARNING:
