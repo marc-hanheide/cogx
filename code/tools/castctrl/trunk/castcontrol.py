@@ -12,6 +12,7 @@ from core import procman, options, messages, confbuilder, network
 from core import castagentsrv, remoteproc
 from core import legacy
 from qtui import uimainwindow, uiresources
+from selectcomponentdlg import CSelectComponentsDlg
 import processtree
 
 LOGGER = messages.CInternalLogger()
@@ -94,6 +95,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._options.configEnvironment()
         self._userOptions = options.CUserOptions()
         self._userOptions.loadConfig()
+        self.componentFilter = []
 
         # move option values to UI
         self.ui.txtLocalHost.setText(self._options.getOption("localhost"))
@@ -126,7 +128,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._initLocalProcesses()
         for proc in self._manager.proclist:
             if proc != self.procBuild: self.mainLog.log.addSource(proc)
-        self._fillMessageSourceCombo()
+        self._fillMessageFilterCombo()
 
         # Auxiliary components
         self.tmStatus = QtCore.QTimer()
@@ -155,7 +157,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actStopExternalServers, QtCore.SIGNAL("triggered()"), self.onStopExternalServers)
 
         # Logging actions
-        self.connect(self.ui.messageSourceCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onMessageSourceChanged)
+        self.connect(self.ui.messageSourceCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onMessageFilterCmbxChanged)
+        self.connect(self.ui.componentFilterCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onMessageFilterCmbxChanged)
 
         # Build actions
         self.connect(self.ui.actRunMake, QtCore.SIGNAL("triggered()"), self.onRunMake)
@@ -205,9 +208,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.ckRunPlayer.setCheckState(ckint("ckRunPlayer", 2))
         self.ui.ckRunLog4jServer.setCheckState(ckint("ckRunLog4jServer", 2))
 
-    def _fillMessageSourceCombo(self):
+    def _fillMessageFilterCombo(self):
         self.ui.messageSourceCmbx.clear()
-        self.ui.messageSourceCmbx.addItem("All")
+        self.ui.messageSourceCmbx.addItem("All Sources")
         self.ui.messageSourceCmbx.addItem("All Processes")
         self.ui.messageSourceCmbx.addItem("All CAST Processes")
         self.ui.messageSourceCmbx.addItem("Cast Control Internal")
@@ -223,15 +226,20 @@ class CCastControlWnd(QtGui.QMainWindow):
         for h in self._remoteHosts:
             for p in h.proclist: addsrc(p.srcid)
 
-    def _applyMessageSource(self):
+        self.ui.componentFilterCmbx.clear()
+        self.ui.componentFilterCmbx.addItem("All components")
+        self.ui.componentFilterCmbx.addItem("Selected components")
+
+    def _applyMessageFilter(self):
         cmb = self.ui.messageSourceCmbx
         i = cmb.currentIndex()
         source = "%s" % cmb.itemText(i)
-        if source == "All":
-            self.mainLog.setFilter(None)
-            return
+        cmb = self.ui.componentFilterCmbx
+        i = cmb.currentIndex()
+        components = "%s" % cmb.itemText(i)
         flt = ""
-        if source == "Cast Control Internal":
+        if source == "All Sources": pass
+        elif source == "Cast Control Internal":
             flt = """(m.source == "castcontrol")"""
         elif source == "All Processes":
             flt = """(m.source.startswith("process."))"""
@@ -240,14 +248,35 @@ class CCastControlWnd(QtGui.QMainWindow):
         else:
             flt = """(m.source.startswith(\'%s\'))""" % source
 
-        if self.ui.ckShowInternalMsgs.isChecked():
-            if flt != "": flt = flt + " or "
+        if components == "Selected components":
+            con = []; coff = []
+            for c in self.componentFilter:
+                if c.status: con.append(c)
+                else: coff.append(c)
+            if len(con) < len(coff):
+                comps = con; cond = "m.component in"
+            else:
+                comps = coff; cond = "not m.component in"
+            comps = [ "'" + c.cid + "'" for c in comps ]
+            comps = ",".join(comps)
+            if flt != "": flt = "(" + flt + ") and "
+            flt = flt + "(" + cond + " [" + comps + "])"
+
+        if self.ui.ckShowInternalMsgs.isChecked() and flt != "":
+            if flt != "": flt = "(" + flt + ") or "
             flt = flt + """(m.source == "castcontrol")"""
 
-        self.mainLog.setFilter(eval("lambda m: " + flt))
+        # print flt
+        if flt == "": self.mainLog.setFilter(None)
+        else:
+            try: self.mainLog.setFilter(eval("lambda m: " + flt))
+            except Exception as e:
+                LOGGER.error("setFilter failed for: %s" % (flt))
+                LOGGER.error("  error was: %s" % (e))
+                self.mainLog.setFilter(None)
 
-    def onMessageSourceChanged(self, index):
-        self._applyMessageSource()
+    def onMessageFilterCmbxChanged(self, index):
+        self._applyMessageFilter()
 
     def makeConfigFileDisplay(self, fn):
         fn = "%s" % fn
@@ -426,6 +455,18 @@ class CCastControlWnd(QtGui.QMainWindow):
     def onStopCastServers(self):
         self.stopServers()
 
+    # Add components to filter; put the used components to the top of the list
+    def addComponentFilters(self, components):
+        for c in self.componentFilter: c.enabled = False
+        for c in reversed(components):
+            try:
+                i = self.componentFilter.index(c)
+                oc = self.componentFilter.pop(i)
+                oc.enabled = c.enabled
+                self.componentFilter.insert(0, oc)
+            except ValueError:
+                self.componentFilter.insert(0, c)
+
     # build config file from rules in hostconfig
     def buildConfigFile(self):
         if self._clientConfig == None: clientConfig = ""
@@ -446,7 +487,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         if hostConfig != "": cfg.addRules(open(hostConfig, "r").readlines())
         cfg.prepareConfig(clientConfig, self._tmpCastFile)
         self._tmpCastFile.flush()
-        # don't self._tmpCastFile.close()
+        # don't self._tmpCastFile.close() or it will disappear
+
+        self.addComponentFilters(cfg.components)
         return self._tmpCastFile.name
 
 
@@ -649,6 +692,14 @@ class CCastControlWnd(QtGui.QMainWindow):
         cmd = 'cmake-gui %s' % root
         procman.xrun_wait(cmd, bdir)
 
+    def on_btEditFilterComponents_clicked(self, valid=True):
+        if not valid: return
+        dlg = CSelectComponentsDlg(self)
+        dlg.setComponentList(self.componentFilter)
+        rv = dlg.exec_()
+        if rv == QtGui.QDialog.Accepted:
+            self._applyMessageFilter()
+
     def on_btClearMainLog_clicked(self, valid=True):
         if not valid: return
         self.mainLog.clearOutput()
@@ -657,7 +708,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.rereadLogs()
 
     def on_ckShowInternalMsgs_stateChanged(self, value):
-        self._applyMessageSource()
+        self._applyMessageFilter()
 
     def editFile(self, filename, line=None):
         cmd = self._userOptions.textEditCmd
@@ -710,7 +761,7 @@ class CCastControlWnd(QtGui.QMainWindow):
                 self.mainLog.log.addSource(remoteproc.CRemoteMessageSource(rpm))
 
         self.ui.processTree.expandAll()
-        self._fillMessageSourceCombo()
+        self._fillMessageFilterCombo()
 
 
     def onShowEnvironment(self):
