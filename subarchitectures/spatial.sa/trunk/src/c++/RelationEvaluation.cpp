@@ -1228,6 +1228,68 @@ getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon)
 }
 
 void
+getRandomSampleSphere(vector<Matrix33> &orientations, int n)
+{
+  //See randomizeOrientation for credit
+
+  orientations.resize(n*n*n);
+
+  float x0[] = {((float)rand())/RAND_MAX/n, ((float)rand())/RAND_MAX/n,
+    ((float)rand())/RAND_MAX/n};
+
+  double delta = 1/(double)n;
+
+  double cosdelta = cos(delta);
+  double sindelta = sin(delta);
+
+  double sinphi, cosphi;
+  double sintheta, costheta;
+  unsigned int i = 0;
+  for (double theta = x0[0]*2*M_PI; theta < 2*M_PI; theta += delta) {
+    for (double phi = x0[1]*2*M_PI; phi < 2*M_PI; phi += delta) {
+      for (double z = x0[2]*2; z < 2; z += delta) {
+        float r  = sqrt( z );
+        float Vx = sinphi * r;
+        float Vy = cosphi * r;
+        float Vz = sqrt( 2.0 - z );
+
+        /* Compute the row vector S = Transpose(V) * R, where R is a simple */
+        /* rotation by theta about the z-axis.  No need to compute Sz since */
+        /* it's just Vz.                                                    */
+
+        float st = sintheta;
+        float ct = costheta;
+        float Sx = Vx * ct - Vy * st;
+        float Sy = Vx * st + Vy * ct;
+
+        /* Construct the rotation matrix  ( V Transpose(V) - I ) R, which   */
+        /* is equivalent to V S - R.                                        */
+
+        float rowMajor[] = {Vx * Sx - ct,
+         Vx * Sy - st,
+         Vx * Vz,
+
+         Vy * Sx + st,
+         Vy * Sy - ct,
+         Vy * Vz,
+
+         Vz * Sx,
+         Vz * Sy,
+         1.0 - z};   /* This equals Vz * Vz - 1.0 */
+
+        setRow33(orientations[i], rowMajor);
+        i++;
+      }
+
+      sinphi = sinphi*cosdelta + cosphi*sindelta;
+      cosphi = cosphi*cosdelta - sinphi*sindelta;
+    }
+    sintheta = sintheta*cosdelta + costheta*sindelta;
+    costheta = costheta*cosdelta - sintheta*sindelta;
+  }
+}
+
+void
 randomizeOrientation(Pose3 &pose)
 {
 /*======================================================================*

@@ -489,18 +489,9 @@ void ObjectRelationManager::runComponent()
 
   sleepComponent(10000);
 
-  peekabot::PointCloudProxy pcloud;
   vector<Vector3> points;
   int nPoints = 0;
   int maxPoints = 2500;
-  if (m_bSampleOnness) {
-    pcloud.add(root,"onpoints", peekabot::REPLACE_ON_CONFLICT);
-    points.reserve(maxPoints);
-  }
-  else if (m_bSampleInness) {
-    pcloud.add(root,"inpoints", peekabot::REPLACE_ON_CONFLICT);
-    points.reserve(maxPoints);
-  }
 
   while (isRunning()) {
     // Dispatch recognition commands if the robot has been standing still
@@ -736,8 +727,34 @@ void ObjectRelationManager::runComponent()
 	  witp2.translate(witness.point2.x, witness.point2.y, witness.point2.z);
 	  witp2.set_scale(0.01);
 
-
 	  if (m_bSampleOnness) {
+	    Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
+		Cure::LocalGridMap<double>::MAP1, 0, 0);
+	    vector<spatial::Object *>objects;
+	    objects.push_back(&box2);
+	    objects.push_back(&box1);
+	    double total;
+	    sampleOnnessRecursively(objects, 0, pdf,
+		&table1, total);
+	    double xW2, yW2;
+	    peekabot::PointCloudProxy linecloudp;
+
+	    linecloudp.add(m_PeekabotClient, "root.distribution",
+		peekabot::REPLACE_ON_CONFLICT);
+	    linecloudp.clear_vertices();
+	    linecloudp.set_color(0.5, 0, 0.5);
+
+	    for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
+	      for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
+		if (pdf(x, y) == 0)
+		  continue;
+		pdf.index2WorldCoords(x, y, xW2, yW2);
+		linecloudp.add_vertex(xW2, yW2, pdf(x, y)*2);
+	      }
+	    }
+
+	  }
+/*	  if (m_bSampleOnness) {
 	    Pose3 oldPose = box1.pose;
 
 	    if (nPoints < maxPoints) {
@@ -747,7 +764,7 @@ void ObjectRelationManager::runComponent()
 	      testObjects.push_back("krispies");
 	      testObjects.push_back("squaretable");
 
-	      sampleOnnessRecursively(testObjects, 0, 5, 500, points, &table1);
+	      //sampleOnnessRecursively(testObjects, 0, 5, 500, points, &table1);
 	      log("Found %i points", points.size());
 
 	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
@@ -759,7 +776,7 @@ void ObjectRelationManager::runComponent()
 		  nPoints++;
 		}
 	      }
-	    }
+	    }*/
 
 	  }
 	}
@@ -1569,6 +1586,13 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0, 
 	Cure::LocalGridMap<double>::MAP1,
 	inMap->x, inMap->y);
+
+      unsigned long cellCount = outMap.getNumCells();
+      double kernelRadius = 0.2;
+      int kernelWidth = (int)(ceil(kernelRadius/outMap.getCellSize())+0.1);
+      //How many kernelRadiuses per cell
+      double kernelStep = outMap.getCellSize()/kernelRadius; 
+
     //Fill it
     vector<Vector3> outPoints;
     outPoints.reserve(pdfPoints);
@@ -1602,8 +1626,8 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     int iterations = 0;
     while (iterations < 10000 && outPoints.size() < pdfPoints) {
       iterations++;
-      sampleOnnessRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, pdfPoints,
-	  outPoints, supportObject);
+//      sampleOnnessRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, pdfPoints,
+//	  outPoints, supportObject);
     }
 
     //Paint it into outMap
@@ -1677,6 +1701,83 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
   }
 }
 
+void
+ObjectRelationManager::new3DPriorRequest(const cdl::WorkingMemoryChange &wmc) {
+  try {
+    FrontierInterface::ObjectPriorRequestPtr request =
+      getMemoryEntry<FrontierInterface::ObjectPriorRequest>(wmc.address);
+
+    if (request->objects.size() < 2) {
+      log("Error! Can't compute onness for less than 2 objects!");
+      return;
+    }
+
+    FrontierInterface::GridMapDoublePtr inMap = request->outMap;
+    Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0,
+        Cure::LocalGridMap<double>::MAP1,
+        inMap->x, inMap->y);
+
+    string supportObjectLabel = request->objects.back();
+    spatial::Object *supportObject;
+    if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
+      supportObject = &m_planeObjectModels[supportObjectLabel];
+      for (map<string, FrontierInterface::ObservedPlaneObjectPtr>::iterator it = m_planeObjects.begin(); it != m_planeObjects.end(); it++) {
+        if (it->second->label == supportObjectLabel) {
+          // update object
+          supportObject->pose.pos = it->second->pos;
+          fromAngleAxis(supportObject->pose.rot, it->second->angle, vector3(0.0, 0.0, 1.0));
+        }
+      }
+    }
+    else {
+      // For now, assume each label represents a unique object
+      if (m_objects.find(supportObjectLabel) == m_objects.end()) {
+        // The pose of this object is not known. Cannot compute onness
+        // for this hierarchy.
+        log("Error! Support object was unknown; can't compute PDF for hierarchy!");
+        overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
+        return;
+      }
+      supportObject = m_objectModels[supportObjectLabel];
+    }
+
+    vector<spatial::Object *> objectChain;
+    for (vector<string>::iterator it = request->objects.begin();
+	it != request->objects.end(); it++) {
+      if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
+	log("Can't compute ON for table on sth else!");
+	return;
+      }
+      else {
+	// For now, assume each label represents a unique object
+	if (m_objects.find(*it) == m_objects.end()) {
+	  // New object
+	  log("New SpatialObject: %s", it->c_str());
+	  m_objects[*it] = new SpatialData::SpatialObject;
+	  m_objects[*it]->label = *it;
+
+	  generateNewObjectModel(*it);
+	}
+	objectChain.push_back(m_objectModels[*it]);
+      }
+    }
+
+    double total = 0.0;
+    sampleOnnessRecursively(objectChain, request->objects.size()-2, outMap,
+          supportObject, total, vector<Vector3>(), request->probSum);
+
+
+
+    request->outMap = convertFromCureMap(outMap);
+    log("%f", total);
+    overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
+  }
+
+  catch (DoesNotExistOnWMException) {
+    log("Error! Prior request disappeared from WM!");
+  }
+}
+
   void 
 ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &wmc)
 {
@@ -1728,8 +1829,8 @@ ObjectRelationManager::newTiltAngleRequest(const cast::cdl::WorkingMemoryChange 
       int iterations = 0;
       while (iterations < 1000 && outPoints.size() < pointCount) {
 	iterations++;
-	sampleOnnessRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 
-	    pointCount, outPoints, supportObject);
+//	sampleOnnessRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, 
+//	    pointCount, outPoints, supportObject);
 	cogx::Math::Vector3 tiltAngle;
 	for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
 	  tiltAngle.x = it->x;
@@ -1763,35 +1864,25 @@ isInTriangle(double x, double y, const vector<Vector3> &triangle) {
   return true;
 }
 
+struct OffsetKernel {
+  int minxi;
+  int maxxi;
+  int minyi;
+  int maxyi;
+  vector<double> weights;
+};
+
 void
-ObjectRelationManager::sampleOnnessRecursively(const vector<string> &objects, 
-    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
-    vector<Vector3> &outPoints, spatial::Object *supportObject,
-    const vector<Vector3> &triangle)
+ObjectRelationManager::sampleOnnessRecursively(const vector<spatial::Object *> &objects, 
+    int currentLevel, Cure::LocalGridMap<double> &outMap,  spatial::Object *supportObject,
+    double &total, const vector<Vector3> &triangle, double baseOnness)
 {
   if (supportObject->pose.pos.x == -FLT_MAX) {
     log("Error! Support object pose uninitialized!");
     return;
   }
-  string currentObjectLabel = objects[currentLevel];
 
-  spatial::Object *onObject;
-  if (m_planeObjectModels.find(currentObjectLabel) != m_planeObjectModels.end()) {
-    log("Can't compute ON for table on sth else!");
-    return;
-  }
-  else {
-    // For now, assume each label represents a unique object
-    if (m_objects.find(currentObjectLabel) == m_objects.end()) {
-      // New object
-      log("New SpatialObject: %s", currentObjectLabel.c_str());
-      m_objects[currentObjectLabel] = new SpatialData::SpatialObject;
-      m_objects[currentObjectLabel]->label = currentObjectLabel;
-
-      generateNewObjectModel(currentObjectLabel);
-    }
-    onObject = m_objectModels[currentObjectLabel];
-  }
+  spatial::Object *onObject = objects[currentLevel];
 
   Pose3 oldPose = onObject->pose;
 
@@ -1821,37 +1912,131 @@ ObjectRelationManager::sampleOnnessRecursively(const vector<string> &objects,
   double maxLateral = -frameRadius*1.5;
   double minVertical = -frameRadius*1.5;
   double maxVertical = frameRadius*3;
+  int mapMinX, mapMinY;
+  int mapMaxX, mapMaxY;
+  outMap.worldCoords2Index(-maxLateral + supportObject->pose.pos.x, 
+      -maxLateral + supportObject->pose.pos.y,
+      mapMinX, mapMinY);
+  outMap.worldCoords2Index(maxLateral + supportObject->pose.pos.x,
+      maxLateral + supportObject->pose.pos.y,
+      mapMaxX, mapMaxY);
+  double zmin = supportObject->pose.pos.z + minVertical;
+  double zmax = supportObject->pose.pos.z + maxVertical;
+  int mapSize = outMap.getSize();
 
-  unsigned int pointsFound = 0;
-  unsigned int iterations = 0;
-  while (pointsFound < nSamplesPerStep && outPoints.size() < nMaxSamples &&
-      iterations < 10000) {
-    iterations++;
-    onObject->pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
-    onObject->pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+  double kernelRadius = 0.2;
+  int kernelWidth = (int)(ceil(kernelRadius/outMap.getCellSize())+0.1);
+  //How many kernelRadiuses per cell
+  double kernelStep = outMap.getCellSize()/kernelRadius; 
 
-    if (triangle.size() > 0 && currentLevel == 0 &&
-	!isInTriangle(onObject->pose.pos.x, onObject->pose.pos.y, triangle))
-	continue;
+  //Try not re-randomizing the orientation for each position sample,
+  //but create a structured sample sphere in advance?
+  //(Can be done by switching the independent three random numbers in randomizeOrientation
+  //with three ranges of equidistant numbers with a common random offset).
 
-    onObject->pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+  //With this, maybe the thresholding won't be necessary, and raw onness can be
+  //summed in each grid cell, meaning fewer samples will be needed and it won't
+  //be necessary to run-until-enough-samples.
 
-    randomizeOrientation(onObject->pose);
-    if (evaluateOnness(supportObject, onObject) > 0.5) {
-      pointsFound++;
-      if (currentLevel == 0) {
-	// This is the trajector itself
-	outPoints.push_back(onObject->pose.pos);
-      }
-      else {
-	// Sample and recurse
-	sampleOnnessRecursively(objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
-	    outPoints, onObject);
+  //Instead, a specific number of position samples can be created for each
+  //column (proportional to the height of the column, or part of the column that
+  //is sampled)
+
+  const unsigned int orientationQuantization = 5; //The actual number of orientations
+  // will be this number cubed
+  vector<Matrix33> orientations;
+  getRandomSampleSphere(orientations, orientationQuantization);
+  const unsigned int samplesPerColumn = 10;
+  vector<Vector3> offsets;
+  vector<OffsetKernel> offsetKernels;
+  for (unsigned int i = 0; i < samplesPerColumn; i++) {
+    double sx = (((double)rand())/RAND_MAX - 0.5) * outMap.getCellSize();
+    double sy = (((double)rand())/RAND_MAX - 0.5) * outMap.getCellSize();
+    double sz = ((double)rand())/RAND_MAX * (zmax - zmin);
+    offsets.push_back(vector3(sx,sy,sz));
+
+    //Put together a kernel offset by this much
+    OffsetKernel kernel;
+
+    kernel.minxi = -kernelWidth;
+    kernel.minyi = -kernelWidth;
+    kernel.maxxi = kernelWidth;
+    kernel.maxyi = kernelWidth;
+
+    double minx, miny;
+
+    outMap.index2WorldCoords(kernel.minxi,kernel.minyi,minx,miny);
+    minx -= offsets[i].x; //Relative coords of minxi, minyi in meters
+    miny -= offsets[i].y;
+    minx /= kernelRadius; //Relative coords of minxi, minyi in kernel radii
+    miny /= kernelRadius;
+
+    double sumWeights = 0.0;
+    double x = minx;
+    for (int xi = kernel.minxi; xi <= kernel.maxxi; xi++, x+=kernelStep) {
+      double y = miny;
+      for (int yi = kernel.minyi; yi <= kernel.maxyi; yi++, y+=kernelStep) {
+	double sqsum = 1 - (x*x+y*y);
+	if (sqsum > 0) {
+	  kernel.weights.push_back(sqsum);
+	  sumWeights+=sqsum;
+	}
+	else {
+	  kernel.weights.push_back(0);
+	}
       }
     }
-//    if (iterations % 100 == 0) {
-//      log("iterations: %i, points: %i", iterations, pointsFound);
-//    }
+    for (unsigned int i = 0; i < kernel.weights.size(); i++) {
+      kernel.weights[i] = kernel.weights[i]/sumWeights;
+    }
+  }
+
+  for (int mapx = mapMinX; mapx <= mapMaxX; mapx++) {
+    for (int mapy = mapMinY; mapy <= mapMaxY; mapy++) {
+      double cellCenterX, cellCenterY;
+      outMap.index2WorldCoords(mapx, mapy, cellCenterX, cellCenterY);
+
+      for (int offsetNo = 0; offsetNo < samplesPerColumn; offsetNo++) {
+	double sampleX = offsets[offsetNo].x + cellCenterX;
+	double sampleY = offsets[offsetNo].y + cellCenterY;
+	double sampleZ = offsets[offsetNo].z + zmin;
+	onObject->pose.pos.x = sampleX;
+	onObject->pose.pos.y = sampleY;
+	onObject->pose.pos.z = sampleZ;
+
+	if (triangle.size() > 0 && currentLevel == 0 &&
+	    !isInTriangle(sampleX, sampleY, triangle))
+	  continue;
+
+	for (unsigned int orientationNo = 0; orientationNo < orientations.size(); orientationNo++) {
+	  onObject->pose.rot = orientations[orientationNo];
+	  double value = evaluateOnness(supportObject, onObject);
+
+	  if (currentLevel == 0) {
+	    // This is the trajector itself
+	    // Accumulate the kernel by this much
+	    int kernelCellNo = 0;
+	    for (int xi = offsetKernels[offsetNo].minxi; xi <= offsetKernels[offsetNo].maxxi; xi++) {
+	      for (int yi = offsetKernels[offsetNo].minyi; yi <= offsetKernels[offsetNo].maxyi; yi++, kernelCellNo++) {
+		if (xi <= - mapSize || xi >= mapSize ||
+		    yi <= - mapSize || yi >= mapSize)
+		  continue;
+
+		outMap(xi, yi)+=offsetKernels[offsetNo].weights[kernelCellNo] * value * baseOnness;
+		total+=offsetKernels[offsetNo].weights[kernelCellNo] * value * baseOnness;
+	      }
+	    }
+	  }
+	  else {
+	    // Sample and recurse, if the value is above a threshold
+	    if (value > 0.05) {
+	      sampleOnnessRecursively(objects, currentLevel-1, outMap, onObject, total, triangle,
+		  value * baseOnness);
+	    }
+	  }
+	}
+      }
+    }
   }
   onObject->pose = oldPose;
 }
