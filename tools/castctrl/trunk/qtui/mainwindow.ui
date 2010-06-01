@@ -80,22 +80,19 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="ckShowInternalMsgs">
-               <property name="text">
-                <string>Internal</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
+              <widget class="QComboBox" name="componentFilterCmbx">
+               <property name="minimumSize">
+                <size>
+                 <width>200</width>
+                 <height>0</height>
+                </size>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="ckShowFlushMsgs">
+              <widget class="QPushButton" name="btEditFilterComponents">
                <property name="text">
-                <string>Flushed</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
+                <string>...</string>
                </property>
               </widget>
              </item>
@@ -118,6 +115,43 @@
                 <string>Clear</string>
                </property>
               </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_21">
+             <item>
+              <widget class="QCheckBox" name="ckShowInternalMsgs">
+               <property name="text">
+                <string>Internal</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="ckShowFlushMsgs">
+               <property name="text">
+                <string>Flushed</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_14">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>88</width>
+                 <height>17</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </item>

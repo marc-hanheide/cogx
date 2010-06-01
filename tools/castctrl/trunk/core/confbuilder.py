@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
 # Author:  Marko Mahnič
-# Created: oct 2009 
+# Created: oct 2009
 
 # Build configuration files before running various processes.
 # Configuration files are copied to a temporary file which
@@ -29,7 +29,30 @@ def quoteParams(parList):
         if p.startswith('"'): merging = True
         if p.endswith('"'): merging = False
     return pars
-    
+
+# Components extracted from the config file; used for filtering
+class CComponent:
+    def __init__(self, subarch, cid, ctype, lang):
+        self.subarch = subarch
+        self.cid = cid
+        self.ctype = ctype
+        self.lang = lang
+        self.status = 0 # included/excluded by filter
+        self.enabled = True
+
+    def __cmp__(self, cc):
+        def sc(a,b):
+            if a < b: return -1
+            if a > b: return 1
+            return 0
+        v = sc(self.cid, cc.cid)
+        if v != 0: return v
+        v = sc(self.ctype, cc.ctype)
+        if v != 0: return v
+        return sc(self.lang, cc.lang)
+
+    def __repr__(self):
+        return "<CComponent %s>" % self.cid
 
 class CCastConfig:
     reInclude = re.compile(r"^\s*include\s+(\S+)", re.IGNORECASE)
@@ -44,6 +67,7 @@ class CCastConfig:
         self.hosts = { "localhost": self._localhost, "127.0.0.1": self._localhost }
         self.rules = []
         self.subarch = ""
+        self.components = []
 
     def clearRules(self):
         self.rules = []
@@ -203,6 +227,9 @@ class CCastConfig:
         if rest == None: rest = ""
         rest = rest.strip()
 
+        comp = CComponent(self.subarch, cpid, cptype, lang)
+        self.components.append(comp)
+
         disabled = None
         for r in self.rules:
             if disabled != None: break
@@ -218,12 +245,14 @@ class CCastConfig:
                     rest = self._setHostParam(rest, idpar[1], r[2])
 
         if disabled == None: disabled = ""
-        else: disabled = "# rule(%s) " % disabled
+        else:
+            disabled = "# rule(%s) " % disabled
+            comp.enabled = False
         host = self._fixLocalhost(host)
         if rest != "":
             rest = self._fixHostParam(rest, "--player-host") # spatial
             # rest = self._fixHostParam(rest, "--serverHost") # comsys tts
-            
+
         line = "%s%s %s %s %s %s %s" % (disabled, prefix, host, lang, cptype, cpid, rest)
         return (1, line.strip())
 
