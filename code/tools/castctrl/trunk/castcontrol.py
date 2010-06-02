@@ -248,6 +248,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         else:
             flt = """(m.source.startswith(\'%s\'))""" % source
 
+        # TODO: Group components by type (WM+TM, MG, ...); separate lists in selection dlg
+        # TODO: subarch is important for WM/TM since those components don't have IDs in .cast!
         if components == "Selected components":
             con = []; coff = []
             for c in self.componentFilter:
