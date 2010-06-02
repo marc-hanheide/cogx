@@ -76,6 +76,12 @@ static long smoothFn(int p1, int p2, int l1, int l2)
   else return 0;
 }
 
+SOIFilter::SOIFilter()
+{
+  m_snapshotFiles = "xdata/snapshot/soifilter";
+  m_snapshotFlags = "A";
+}
+
 void SOIFilter::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
@@ -159,6 +165,12 @@ void SOIFilter::configure(const map<string,string> & _config)
 	str >> smoothCost;
   }
 
+  if((it = _config.find("--snapfiles")) != _config.end())
+  {
+	istringstream str(it->second);
+	str >> m_snapshotFiles;
+  }
+
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
@@ -175,7 +187,12 @@ void SOIFilter::start()
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
 
-#ifndef FEAT_VISUALIZATION
+#ifdef FEAT_VISUALIZATION
+  m_display.connectIceClient(*this);
+  m_display.installEventReceiver();
+  m_display.setEventCallback(this, &SOIFilter::handleGuiEvent);
+  m_display.addButton("Last ROI Segmentation", "take.snapshot", "&Snapshot");
+#else
   if (doDisplay)
   {
 	cvNamedWindow("Full image", 1);
@@ -199,12 +216,98 @@ void SOIFilter::start()
 
 }
 
-void SOIFilter::runComponent()
+bool SOIFilter::hasSnapFlag(char ch)
 {
+  size_t pos = m_snapshotFlags.find_first_of(string(1, ch) + "A");
+  return pos >= 0;
+}
+
+void saveImage(const std::string& name, const std::string& path, const Video::Image& image, SOIFilter *logger)
+{
+  try {
+	IplImage *iplImg = convertImageToIpl(image);
+	if (iplImg) {
+	  cvSaveImage(path.c_str(), iplImg);
+	  cvReleaseImage(&iplImg);
+	  logger->log("Saved %s to '%s'", name.c_str(), path.c_str());
+	}
+  }
+  catch (...) {
+	logger->println("Failed to save %s to '%s'", name.c_str(), path.c_str());
+  }
+}
+
+void saveMask(const std::string& name, const std::string& path, const VisionData::SegmentMask& image, SOIFilter *logger)
+{
+  try {
+	IplImage *iplImg = convertBytesToIpl(image.data, image.width, image.height, 1);
+	if (iplImg) {
+	  cvSaveImage(path.c_str(), iplImg);
+	  cvReleaseImage(&iplImg);
+	  logger->log("Saved %s to '%s'", name.c_str(), path.c_str());
+	}
+  }
+  catch (...) {
+	logger->println("Failed to save %s to '%s'", name.c_str(), path.c_str());
+  }
+}
+
+void SOIFilter::saveSnapshot()
+{
+  ProtoObjectPtr pobj = m_LastProtoObject; // A copy to avoid threading problems
+  if (pobj == NULL) {
+	debug("Snapshot: no proto object saved");
+	return;
+  }
+
+  time_t rawtime;
+  struct tm * timeinfo;
+  char buf[80];
+  time ( &rawtime );
+  timeinfo = localtime ( &rawtime );
+  strftime(buf, 80, "%Y%m%d_%H%M%S", timeinfo);
+
+  std::ostringstream ss;
+  ss << m_snapshotFiles << buf;
+  std::string path = ss.str();
+
+  if (hasSnapFlag('p')) try {
+	ofstream fpoints;
+	fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
+	fpoints.open(string(path + "p.txt").c_str(), ofstream::out);
+	fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
+	typeof(pobj->points.begin()) it;
+	for (it = pobj->points.begin(); it != pobj->points.end(); it++) {
+	  fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g << "\t" << (unsigned int)it->c.b << "\t";
+	  fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
+	}
+	fpoints.close();
+	log("Saved points to '%sp.txt'", path.c_str());
+  }
+  catch (...) {
+	println("Failed to save points to '%sp.txt'", path.c_str());
+  }
+
+  if (hasSnapFlag('s'))
+	saveImage("segmented image", string(path + "s.png"), pobj->image, this);
+
+  if (hasSnapFlag('m'))
+	saveMask("image mask", string(path + "m.png"), pobj->mask, this);
+}
+
 #ifdef FEAT_VISUALIZATION
-  m_display.connectIceClient(*this);
+void SOIFilter::handleGuiEvent(const Visualization::TEvent &event)
+{
+  if (event.type == Visualization::evButtonClick) {
+    if (event.sourceId == "take.snapshot") {
+	  saveSnapshot();
+    }
+  }
+}
 #endif
 
+void SOIFilter::runComponent()
+{
   while(isRunning())
   {
 	ptime t(second_clock::universal_time() + seconds(2));
@@ -234,6 +337,7 @@ void SOIFilter::runComponent()
 			  pobj->time = getCASTTime();
 			  pobj->SOIList.push_back(soi.addr.id);
 			  pobj->points = soiPtr->points;
+			  m_LastProtoObject = pobj;
 
 			  string objId = newDataID();
 			  addToWorkingMemory(objId, pobj);

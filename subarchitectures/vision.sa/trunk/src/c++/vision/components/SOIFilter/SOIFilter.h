@@ -116,9 +116,19 @@ private:
 
   boost::interprocess::named_semaphore* queuesNotEmpty;
 
+private:
 #ifdef FEAT_VISUALIZATION
-  cogx::display::CDisplayClient m_display;
+  cogx::display::CActiveDisplayClient<SOIFilter> m_display;
+  void handleGuiEvent(const Visualization::TEvent &event);
 #endif
+  VisionData::ProtoObjectPtr m_LastProtoObject; // We may want to save it
+  Video::Image m_ImageLeft;
+  Video::Image m_ImageRight;
+  Video::Image m_ImageRectLeft;
+  std::string m_snapshotFiles;
+  std::string m_snapshotFlags; // A:ll, p:oints, l:eft, r:ight, s:segmented, m:mask, L:eftRect, R:ightRect
+  void saveSnapshot();
+  bool hasSnapFlag(char ch);
 
 private:
   /**
@@ -192,6 +202,7 @@ protected:
   virtual void runComponent();
  
 public:
+  SOIFilter();
   virtual ~SOIFilter() {}
 };
 
