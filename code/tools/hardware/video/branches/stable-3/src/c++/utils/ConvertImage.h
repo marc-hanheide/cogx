@@ -7,6 +7,7 @@
 #define CONVERT_IMAGE_H
 
 #include <stdexcept>
+#include <vector>
 #include <cv.h>
 #include "Video.hpp"
 
@@ -30,6 +31,9 @@ void convertImageToIpl(const Video::Image & img, IplImage ** iplImg);
  * A convenience form of the above.
  */
 IplImage* convertImageToIpl(const Video::Image & image);
+
+bool convertBytesToIpl(const std::vector<unsigned char>& data, int width, int height, int nchn, IplImage ** iplImg);
+IplImage* convertBytesToIpl(const std::vector<unsigned char>& data, int width, int height, int nchn);
 
 /**
  * Convert from framework image type to an OpenCV grayscale image type
