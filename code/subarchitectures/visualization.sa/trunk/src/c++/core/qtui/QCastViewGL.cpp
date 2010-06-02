@@ -100,6 +100,7 @@ void QCastViewGL::initializeGL()
 
 void QCastViewGL::paintGL()
 {
+	glEnable(GL_LIGHTING);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    // m_camera.Activate();
    if (pView) {

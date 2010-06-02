@@ -205,13 +205,14 @@ void CDisplayServer::setCompressedImage(const std::string& id, const std::vector
 void CDisplayServer::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
 {
    DTRACE("CDisplayServer::setObject");
-   //{
-   //   static bool done = false;
-   //   if (!done) {
-   //      DTRACE("tomgine_test_createModel");
-   //      tomgine_test_createModel(&m_Model);
-   //   }
-   //   done = true;
+   //{ // FAKE
+   //  static bool done = false;
+   //  if (!done) {
+   //     DTRACE("tomgine_test_createModel");
+   //     tomgine_test_createModel(&m_Model);
+   //     lua_test_createModel(&m_Model);
+   //  }
+   //  done = true;
    //}
 
    CSvgImage *pImage = NULL;
@@ -274,10 +275,10 @@ void CDisplayServer::setObjectTransform2D(const std::string& id, const std::stri
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 
-   //{ // XXX TEsting
-   //   tomgine_test_updateModel(this);
-   //   //CDisplayView* pview = m_Model.getView("Composed View");
-   //   //if (pview) pview->m_Trafos["video.viewer"] = transform;
+   //{ // XXX FAKE, Testing
+   //  tomgine_test_updateModel(this);
+   //  //CDisplayView* pview = m_Model.getView("Composed View");
+   //  //if (pview) pview->m_Trafos["video.viewer"] = transform;
    //}
 
    // TODO check size if (transform.size() != 9) transform.resize(9, 0.0);

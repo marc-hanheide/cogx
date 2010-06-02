@@ -3,6 +3,22 @@ project(VisualizationCore)
 find_package(Qt4 REQUIRED) # http://qtnode.net/wiki/Qt4_with_cmake
 include(${QT_USE_FILE} ${QT_USE_OPENGL})
 
+set(EXPERIMENT 0)
+if(EXPERIMENT)
+   find_package(Lua51)
+   if (LUA51_FOUND)
+      include_directories(object/gllua ${LUA_INCLUDE_DIR})
+      set(EXPERIMENT_SRC
+         object/gllua/glbind.cpp
+         object/gllua/glubind.cpp
+         object/gllua/gllbuffer.cpp
+         object/gllua/gluaux.cpp
+         object/CLuaGlScript.cpp
+         )
+      set(EXPERIMENT_LIB GLU ${LUA_LIBRARIES} tolua++5.1)
+   endif(LUA51_FOUND)
+endif(EXPERIMENT)
+
 set(TOMGINE_INCLUDE
    ${QT_QTOPENGL_INCLUDE_DIR}
    ${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/VirtualScene/TomGine/include
@@ -25,6 +41,7 @@ set(SERVER_CPP
    object/CSvgImage.cpp
    object/CRasterImage.cpp
    object/CTomGineModel.cpp
+   ${EXPERIMENT_SRC}
    )
 set(GUI_CPP
    qtui/QCastApplication.cpp
@@ -65,6 +82,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${TOMGINE_LIBS}
    boost_serialization-mt
    boost_iostreams-mt
+   ${EXPERIMENT_LIB}
    )
 
 find_package(OpenCV REQUIRED)
