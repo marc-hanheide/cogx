@@ -250,7 +250,7 @@ void SOIFilter::runComponent()
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
-			log("SOI ID: %s was removed before it could be processed", soi.addr.id);
+			log("SOI ID: %s was removed before it could be processed", soi.addr.id.c_str());
 		  }
 		}
 		else if(soi.status == DELETED)
