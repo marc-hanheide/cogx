@@ -63,6 +63,7 @@ public:
    void setImage(const std::string& id, const std::vector<unsigned char>& data, const std::string &format=""); 
 
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData); 
+   void setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script);
    void setObjectTransform2D(const std::string& id, const std::string& partId,
          const cogx::Math::Matrix33& transform);
    void setObjectTransform2D(const std::string& id, const std::string& partId,

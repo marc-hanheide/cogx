@@ -57,6 +57,7 @@ public:
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData);
    void setTomGineObject(const std::string& id, const std::string& partId, 
          const std::vector<unsigned char>& data);
+   void setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script);
    void setObjectTransform2D(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
    void setObjectPose3D(const std::string& id, const std::string& partId,
@@ -112,6 +113,12 @@ public:
          const std::vector<unsigned char>& data, const Ice::Current&)
    {
       m_pDisplayServer->setTomGineObject(id, partId, data);
+   }
+
+   virtual void setLuaGlObject(const std::string& id, const std::string& partId,
+         const std::string& script, const Ice::Current&)
+   {
+      m_pDisplayServer->setLuaGlObject(id, partId, script);
    }
 
    virtual void setObjectTransform2D(const std::string& id, const std::string& partId,

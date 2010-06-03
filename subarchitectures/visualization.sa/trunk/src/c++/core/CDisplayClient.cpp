@@ -75,7 +75,9 @@ void CDisplayClient::setImage(const std::string& id, const std::vector<unsigned 
    m_pServer->setCompressedImage(id, data, format);
 }
 
-#ifdef FEAT_VISUALIZATION_OPENCV
+#ifndef FEAT_VISUALIZATION_OPENCV
+#error "FEAT_VISUALIZATION_OPENCV must be defined during v11n build."
+#endif
 void CDisplayClient::setImage(const std::string& id, const IplImage* pImage) 
 {
    if (m_pServer == NULL) return;
@@ -104,12 +106,17 @@ void CDisplayClient::setImage(const std::string& id, const IplImage* pImage)
 
    m_pServer->setRawImage(id, pImage->width, pImage->height, pImage->nChannels, data);
 }
-#endif
 
 void CDisplayClient::setObject(const std::string& id, const std::string& partId, const std::string& xmlData)
 {
    if (m_pServer == NULL) return;
    m_pServer->setObject(id, partId, xmlData);
+}
+
+void CDisplayClient::setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script)
+{
+   if (m_pServer == NULL) return;
+   m_pServer->setLuaGlObject(id, partId, script);
 }
 
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
@@ -136,7 +143,9 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
    m_pServer->setObjectTransform2D(id, partId, tr);
 }
 
-#ifdef FEAT_VISUALIZATION_OPENCV
+#ifndef FEAT_VISUALIZATION_OPENCV
+#error "FEAT_VISUALIZATION_OPENCV must be defined during v11n build."
+#endif
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId, CvMat* pTransform)
 {
    if (m_pServer == NULL) return;
@@ -191,7 +200,6 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
    //}
    m_pServer->setObjectTransform2D(id, partId, tr);
 }
-#endif
 
 void CDisplayClient::setObjectPose3D(const std::string& id, const std::string& partId,
          const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation)
