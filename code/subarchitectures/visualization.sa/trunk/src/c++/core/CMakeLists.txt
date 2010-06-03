@@ -3,7 +3,7 @@ project(VisualizationCore)
 find_package(Qt4 REQUIRED) # http://qtnode.net/wiki/Qt4_with_cmake
 include(${QT_USE_FILE} ${QT_USE_OPENGL})
 
-set(EXPERIMENT 0)
+set(EXPERIMENT 1)
 if(EXPERIMENT)
    find_package(Lua51)
    if (LUA51_FOUND)
@@ -16,6 +16,7 @@ if(EXPERIMENT)
          object/CLuaGlScript.cpp
          )
       set(EXPERIMENT_LIB GLU ${LUA_LIBRARIES} tolua++5.1)
+      add_definitions(-DV11N_OBJECT_LUA_GL)
    endif(LUA51_FOUND)
 endif(EXPERIMENT)
 

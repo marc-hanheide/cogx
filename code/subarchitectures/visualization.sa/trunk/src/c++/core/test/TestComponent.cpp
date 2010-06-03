@@ -201,6 +201,20 @@ void VideoViewer::runComponent()
     m_display.setObject("Visualization.test.SVG", "lion", str.str());
     m_display.setObject("Visualization.test.SVG", "little-lion", str.str());
   }
+  {
+    std::stringstream str;
+    str <<
+      "function render()\n"
+         "glPointSize(2)\n"
+         "glBegin(GL_POINTS)\n"
+         "for i=1,10000 do\n"
+            "glColor(0.8,0.2,0.2)\n"
+            "glVertex(0.05*i/100, 0.08*i/100, 0.3)\n"
+         "end\n"
+         "glEnd()\n"
+      "end\n";
+    m_display.setLuaGlObject("Visualization.sa.LuaGl", "Points", str.str());
+  }
 #else
   println("press <s> to stop/start receving images");
 #endif

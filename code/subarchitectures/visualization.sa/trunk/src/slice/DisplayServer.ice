@@ -43,6 +43,9 @@ module Visualization
       void setTomGineObject(string id, string partId, ByteSeq data);
       void setObjectPose3D(string id, string partId, cogx::Math::Vector3 position, Quaternion rotation);
 
+      // Pass a Lua script
+      void setLuaGlObject(string id, string partId, string script);
+
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
       void addClient(Ice::Identity ident);

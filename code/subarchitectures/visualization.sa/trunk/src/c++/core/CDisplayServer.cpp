@@ -17,6 +17,9 @@ extern "C"
 #include "object/CSvgImage.hpp"
 #include "object/CRasterImage.hpp"
 #include "object/CTomGineModel.hpp"
+#ifdef V11N_OBJECT_LUA_GL
+#include "object/CLuaGlScript.hpp"
+#endif
 
 #ifdef DEBUG_TRACE
 #undef DEBUG_TRACE
@@ -266,6 +269,36 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
       m_Model.setObject(pModel);
    }
 
+}
+
+void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script)
+{
+#ifdef V11N_OBJECT_LUA_GL
+   DTRACE("CDisplayServer::setLuaGlObject");
+
+   CLuaGlScript *pModel = NULL;
+   CDisplayObject *pExisting = m_Model.getObject(id);
+   if (pExisting) {
+      pModel = dynamic_cast<CLuaGlScript*>(pExisting);
+      if (! pModel) {
+         // The retreived model is of a different type, we must replace it
+         m_Model.removeObject(id);
+         DMESSAGE("Replacing an exisiting object of different type.");
+      }
+   }
+
+   if (pModel) {
+      if (script.size() < 1) pModel->removePart(partId);
+      else pModel->loadScript(partId, script);
+      m_Model.refreshObject(id);
+   }
+   else {
+      pModel = new CLuaGlScript();
+      pModel->m_id = id;
+      pModel->loadScript(partId, script);
+      m_Model.setObject(pModel);
+   }
+#endif
 }
 
 void CDisplayServer::setObjectTransform2D(const std::string& id, const std::string& partId,
