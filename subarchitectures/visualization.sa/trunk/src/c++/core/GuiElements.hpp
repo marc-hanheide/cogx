@@ -59,6 +59,7 @@ public:
 
    void notifyDataChange(const std::string& newValue, void* changeSource) {
       CGuiElementObserver *pObsrvr;
+      CObserver<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
       FOR_EACH(pObsrvr, Observers) {
          // The source of the data change should already be aware of the change
          // so we don't need to notify it.
