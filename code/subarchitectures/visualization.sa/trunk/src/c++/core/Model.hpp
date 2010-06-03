@@ -43,6 +43,7 @@ class CDisplayModel
 private:
    TObjectMap m_Objects;
    CPtrVector<CGuiElement> m_GuiElements;
+   // TODO: locking for m_Objects, m_Views, m_GuiElements
 
 public: // XXX Qt needs to know about the views.
    TViewMap m_Views;
