@@ -47,7 +47,76 @@ module autogen {
       Completion planningStatus;
       int planningRetries;
     };
+    
+    class Observation{
+      string predicate; 
+      stringSeq arguments;
+    };
+    
 
+    sequence<Observation> ObservationSeq;
+
+    class PDDLAction {
+      string name;
+      stringSeq arguments;
+    };
+
+    /* Decision-Theoretic planning.
+
+       A trace of execution is as follows:
+
+       (1) - \class{PythonServer} invokes \method{newTask}. Planning
+       proceeds in a new thread.
+
+       (2) - When planning is done, a first action is passed to the
+       \class{PythonServer} via its \method{deliverAction}
+
+       (3) - At this point planning is halted until a call to
+       \member{deliverObservation} is made, giving the planner the
+       observation that resulted from action execution.
+
+       (4) That process continues until the planner calls the
+       \class{PythonServer} \member{updateStatus}, informing the
+       planning server that POMDP planning is complete, or otherwise
+       that it has somehow failed.
+
+
+     */
+    interface DTPServer extends cast::interfaces::CASTComponent {
+
+      /*\class{PythonServer} informs this when an observation is
+	received.*/
+      void deliverObservation(int id, ObservationSeq observationSeq);
+
+      /*
+	
+	\argument{id} is the unique identifier of the planning
+	process. The idea is to have multile DTP sessions
+	concurrently. SHould be able to cope with getting a new id for
+	each task. Also, allowed to get the same ID for subsequent
+	tasks. Essentially this is derived from the ID of the
+	continual planning session.
+
+	The \argument{problemFile} includes everything, including default
+	knowledge. File contents should be a DT-PDDL problem definition.
+	
+	assertions...
+
+	 - Write locks both files until parsed.
+
+	 - Automatically starts planning in a NEW THREAD.
+      */
+      void newTask(int id, string probleFile, string domainFile);
+
+
+      /*\class{PythonServer} can abort planning task
+	\argument{id}. This will kill the THREAD started by the last
+	call to \method{newTask}.*/
+      void cancelTask(int id);
+      
+    };
+    
+    
     // this is for planning-internal use only and takes care of the communication between
     // (the c++ based) cast and the (python) components.
 
@@ -64,6 +133,18 @@ module autogen {
     {
       void registerTask(PlanningTask task);
       void updateTask(PlanningTask task);
+
+      /*DTP process with ID \argument{id} calls this method when: (1)
+	A useful plan has been found, and execution of that plan
+	commences, OR (2) during plan execution, an observation has
+	been received, and the corresponding action has been
+	determined.*/
+      void deliverAction(int id, PDDLAction action);
+
+      /*The DT planner can fail for some reason. In this case it
+	informs the \class{PythonServer} by posting a failed status
+	update. */
+      void updateStatus(int id, Completion status, string message);
     };
   };
 };
