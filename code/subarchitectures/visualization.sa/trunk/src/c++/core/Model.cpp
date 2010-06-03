@@ -144,6 +144,8 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       pview->addObject(pObject);
       m_Views[pview->m_id] = pview;
       views.push_back(pview);
+
+      CObserver<CDisplayModelObserver>::ReadLock lock(modelObservers);
       FOR_EACH(pobsrvr, modelObservers) {
          if (pobsrvr) pobsrvr->onViewAdded(this, pview);
       }
@@ -152,6 +154,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       DMESSAGE("Object " << pObject->m_id << " found in " << views.size() << "views");
       // XXX this was already done by CDisplayView::replaceObject etc. 
       FOR_EACH(pview, views) {
+         CObserver<CDisplayModelObserver>::ReadLock lock(modelObservers);
          FOR_EACH(pobsrvr, modelObservers) {
             if (pobsrvr) pobsrvr->onViewChanged(this, pview);
          }
@@ -276,6 +279,7 @@ void CDisplayView::addObject(CDisplayObject *pObject)
 
    m_Objects[pObject->m_id] = pObject;
    CDisplayModelObserver *pobsrvr;
+   CObserver<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
       pobsrvr->onViewChanged(NULL, this);
    }
@@ -292,6 +296,7 @@ void CDisplayView::removeObject(const std::string& id)
    m_Objects.erase(existing);
 
    CDisplayModelObserver *pobsrvr;
+   CObserver<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
       pobsrvr->onViewChanged(NULL, this);
    }
@@ -310,6 +315,7 @@ void CDisplayView::replaceObject(const std::string& id, CDisplayObject *pNew)
       m_Objects[pNew->m_id] = pNew;
 
    CDisplayModelObserver *pobsrvr;
+   CObserver<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
       pobsrvr->onViewChanged(NULL, this);
    }
@@ -324,6 +330,7 @@ void CDisplayView::refreshObject(const std::string& id)
    DMESSAGE(m_id << ": Refresh object: " << id);
 
    CDisplayModelObserver *pobsrvr;
+   CObserver<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
       pobsrvr->onViewChanged(NULL, this);
    }
@@ -332,6 +339,7 @@ void CDisplayView::refreshObject(const std::string& id)
 void CDisplayView::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
    CDisplayModelObserver *pobsrvr;
+   CObserver<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
       pobsrvr->onUiDataChanged(NULL, this, pElement, newValue);
    }
