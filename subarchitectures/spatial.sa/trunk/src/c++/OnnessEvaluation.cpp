@@ -11,6 +11,8 @@ using namespace cogx::Math;
 
 namespace spatial {
 
+const double planeThickness = 0.05;
+
 double
 evaluateOnness(const Object *objectS, const Object *objectO)
 {
@@ -1388,7 +1390,7 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
 
 	vector<Vector3>AFacePolygon;
 	//Now, project the points onto the A face,
-	//Need to reverse the winding on the bottom polygon for overlap compoutation
+	//Need to reverse the winding on the bottom polygon for overlap computation
 	vector<Vector3> patchOnA;
 	for(int i = patchOnB.size()-1; i >= 0; i--) {
 	  patchOnA.push_back(patchOnB[i] - AFaceNormal * dot(AFaceNormal, patchOnB[i]-AFaceCorner));
@@ -1415,6 +1417,75 @@ findContactPatch(const BoxObject &boxA, const BoxObject &boxB, vector<Vector3> *
   if (bestWitness.distance < -1e3)
     bestWitness.distance = -1e3;
   return bestWitness;
+}
+
+double
+getMaxPolygonClearance(const std::vector<Vector3> &polygon) 
+{
+  //Find all bisectors
+  std::vector<Vector3>bisectors;
+  std::vector<Vector3>edgeNormals;
+  bisectors.reserve(polygon.size());
+  edgeNormals.reserve(polygon.size());
+  Vector3 up = cross(polygon[1] - polygon[0], polygon.back() - polygon[0]);
+  normalise(up);
+
+  Vector3 lastEdgeDir = polygon.back()-polygon[0];
+  normalise(lastEdgeDir);
+
+  for (unsigned int i = 0; i < polygon.size(); i++) {
+    unsigned int iplus = (i == polygon.size()-1) ? 0 : i + 1;
+    Vector3 currentEdgeDir = polygon[iplus]-polygon[i];
+    normalise(currentEdgeDir);
+    edgeNormals.push_back(cross(up, currentEdgeDir));
+
+    Vector3 bisectorDir = currentEdgeDir + lastEdgeDir;
+    normalise(bisectorDir);
+    bisectors.push_back(bisectorDir);
+
+    lastEdgeDir = -currentEdgeDir;
+  }
+
+  double maxDistance = 0.0;
+  //Find all intersections between bisectors
+  vector<double> minPositiveDistanceThisBisector(polygon.size(), FLT_MAX);
+
+  for (unsigned int i = 0; i < polygon.size(); i++) {
+    for (unsigned int j = i+1; j < polygon.size(); j++) {
+      Vector3 difference = polygon[j] - polygon[i];
+
+      Vector3 normalVector =
+	difference - bisectors[j] * dot(difference, bisectors[j]);
+      double normalLength = length(normalVector);
+      double intersectionParam =  // 0 - inf
+	normalLength*normalLength / (dot(normalVector, bisectors[i]));
+      double intersectionNormalDistance = 
+	intersectionParam * dot(edgeNormals[i], bisectors[i]);
+      if (intersectionNormalDistance > 0.0) {
+	if (intersectionNormalDistance < minPositiveDistanceThisBisector[j]) {
+	  minPositiveDistanceThisBisector[j] = intersectionNormalDistance;
+	}
+	if (intersectionNormalDistance < minPositiveDistanceThisBisector[i]) {
+	  minPositiveDistanceThisBisector[i] = intersectionNormalDistance;
+	}
+	Vector3 intersectionPoint = polygon[i] + bisectors[i]*intersectionParam;
+	double otherParameter = dot(intersectionPoint - polygon[j], bisectors[j]);
+	if (otherParameter > 0.0) {
+	  if (!equals(otherParameter, intersectionParam, 0.001)) {
+	    cout << "Error! Something not right!";
+	    return 0.0;
+	  }
+	}
+      }
+    }
+  }
+  for (unsigned int i = 0; i < polygon.size(); i++) {
+    if (minPositiveDistanceThisBisector[i] < FLT_MAX &&
+	minPositiveDistanceThisBisector[i] > maxDistance) {
+      maxDistance = minPositiveDistanceThisBisector[i];
+    }
+  }
+  return maxDistance;
 }
 
 };

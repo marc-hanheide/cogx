@@ -11,15 +11,6 @@ using namespace cogx::Math;
 
 namespace spatial {
 
-const double planeThickness = 0.05;
-
-const double circlePlaneApproximationThreshold = 0.05; //Controls number of
-//edges in polygon used to approximate circular planes
-const double cylinderApproximationThreshold = 0.01;
-const int sphereTessellationFactor = 2; //Number of latitudes and half number of
-//longitudes. 2 makes the sphere an octahedron
-const double boxThickness = 0.02; //Controls thickness of walls of hollow container
-
 struct ActiveFace {
   double normalExpansion;
   double lateralExpansion;
@@ -1238,16 +1229,33 @@ getRandomSampleSphere(vector<Matrix33> &orientations, int n)
     ((float)rand())/RAND_MAX/n};
 
   double delta = 1/(double)n;
+  double deltaPhi = 2*M_PI*delta;
 
-  double cosdelta = cos(delta);
-  double sindelta = sin(delta);
+  double cosdelta = cos(deltaPhi);
+  double sindelta = sin(deltaPhi);
 
-  double sinphi, cosphi;
-  double sintheta, costheta;
+  double offsetTheta = 2*M_PI*x0[0];
+  double offsetPhi = 2*M_PI*x0[1];
+  double offsetZ = 2.0*x0[2];
+
+  double sintheta = sin(offsetTheta);
+  double costheta = cos(offsetTheta);
+  double sinphi0 = sin(offsetPhi);
+  double cosphi0 = cos(offsetPhi);
+
   unsigned int i = 0;
-  for (double theta = x0[0]*2*M_PI; theta < 2*M_PI; theta += delta) {
-    for (double phi = x0[1]*2*M_PI; phi < 2*M_PI; phi += delta) {
-      for (double z = x0[2]*2; z < 2; z += delta) {
+  for (double theta0 = 0; theta0 < 2*M_PI; theta0 += deltaPhi) {
+    double sinphi = sinphi0;
+    double cosphi = cosphi0;
+    for (double phi0 = 0; phi0 < 2*M_PI; phi0 += deltaPhi) {
+      for (double z0 = 0; z0 < 2; z0 += 2*delta) {
+	double theta = theta0 + offsetTheta;
+	double phi = phi0 + offsetPhi;
+	double z = z0 + offsetZ;
+	if (theta >= 2*M_PI) theta -= 2*M_PI;
+	if (phi >= 2*M_PI) phi -= 2*M_PI;
+	if (z >= 2) z -= 2;
+
         float r  = sqrt( z );
         float Vx = sinphi * r;
         float Vy = cosphi * r;
@@ -1281,11 +1289,15 @@ getRandomSampleSphere(vector<Matrix33> &orientations, int n)
         i++;
       }
 
-      sinphi = sinphi*cosdelta + cosphi*sindelta;
-      cosphi = cosphi*cosdelta - sinphi*sindelta;
+      double tempsin = sinphi*cosdelta + cosphi*sindelta;
+      double tempcos = cosphi*cosdelta - sinphi*sindelta;
+      sinphi = tempsin;
+      cosphi = tempcos;
     }
-    sintheta = sintheta*cosdelta + costheta*sindelta;
-    costheta = costheta*cosdelta - sintheta*sindelta;
+    double tempsin = sintheta*cosdelta + costheta*sindelta;
+    double tempcos = costheta*cosdelta - sintheta*sindelta;
+    sintheta = tempsin;
+    costheta = tempcos;
   }
 }
 
