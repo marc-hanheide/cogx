@@ -513,86 +513,6 @@ void ObjectRelationManager::runComponent()
       unlockComponent();
     }
 
-    //REMOVEME: clipping test
-    peekabot::Result<peekabot::Matrix4f> r;
-    r = bp.get_transformation(peekabot::WORLD_COORDINATES);
-    if (r.succeeded()) {
-      Pose3 boxPose;
-      double m[16];
-      m[0] = r.get_result()(0,0);
-      m[1] = r.get_result()(0,1);
-      m[2] = r.get_result()(0,2);
-      m[3] = r.get_result()(0,3);
-      m[4] = r.get_result()(1,0);
-      m[5] = r.get_result()(1,1);
-      m[6] = r.get_result()(1,2);
-      m[7] = r.get_result()(1,3);
-      m[8] = r.get_result()(2,0);
-      m[9] = r.get_result()(2,1);
-      m[10] = r.get_result()(2,2);
-      m[11] = r.get_result()(2,3);
-      m[12] = r.get_result()(3,0);
-      m[13] = r.get_result()(3,1);
-      m[14] = r.get_result()(3,2);
-      m[15] = r.get_result()(3,3);
-      setRow44(boxPose, m);
-      Polyhedron polyO;
-      double radius1 = 0.095;
-      double radius2 = 0.045;
-      double radius3 = 0.145;
-      polyO.vertices.push_back(vector3(radius1,radius2,radius3));
-      polyO.vertices.push_back(vector3(-radius1,radius2,radius3));
-      polyO.vertices.push_back(vector3(-radius1,-radius2,radius3));
-      polyO.vertices.push_back(vector3(radius1,-radius2,radius3));
-      polyO.vertices.push_back(vector3(radius1,radius2,-radius3));
-      polyO.vertices.push_back(vector3(-radius1,radius2,-radius3));
-      polyO.vertices.push_back(vector3(-radius1,-radius2,-radius3));
-      polyO.vertices.push_back(vector3(radius1,-radius2,-radius3));
-      for (unsigned int i = 0; i < polyO.vertices.size(); i++) {
-	polyO.vertices[i] = transform(boxPose, polyO.vertices[i]);
-      }
-      polyO.faces.resize(6);
-      polyO.faces[0].push_back(Edge(0,1));
-      polyO.faces[0].push_back(Edge(1,2));
-      polyO.faces[0].push_back(Edge(2,3));
-      polyO.faces[0].push_back(Edge(3,0));
-      polyO.faces[1].push_back(Edge(4,7));
-      polyO.faces[1].push_back(Edge(7,6));
-      polyO.faces[1].push_back(Edge(6,5));
-      polyO.faces[1].push_back(Edge(5,4));
-      polyO.faces[2].push_back(Edge(0,4));
-      polyO.faces[2].push_back(Edge(4,5));
-      polyO.faces[2].push_back(Edge(5,1));
-      polyO.faces[2].push_back(Edge(1,0));
-      polyO.faces[3].push_back(Edge(1,5));
-      polyO.faces[3].push_back(Edge(5,6));
-      polyO.faces[3].push_back(Edge(6,2));
-      polyO.faces[3].push_back(Edge(2,1));
-      polyO.faces[4].push_back(Edge(2,6));
-      polyO.faces[4].push_back(Edge(6,7));
-      polyO.faces[4].push_back(Edge(7,3));
-      polyO.faces[4].push_back(Edge(3,2));
-      polyO.faces[5].push_back(Edge(3,7));
-      polyO.faces[5].push_back(Edge(7,4));
-      polyO.faces[5].push_back(Edge(4,0));
-      polyO.faces[5].push_back(Edge(0,3));
-      clipPolyhedronToPlane(polyO, vector3(0,0,0), vector3(0,0,1));
-      peekabot::GroupProxy clippd;
-      clippd.add(root, "clippd", peekabot::REPLACE_ON_CONFLICT);
-      for (unsigned int i = 0; i < polyO.faces.size(); i++) {
-	peekabot::PolygonProxy pop;
-	char buf[256];
-	sprintf(buf, "poly%i", i);
-	pop.add(clippd, buf, peekabot::REPLACE_ON_CONFLICT);
-	Vector3 vert = polyO.vertices[polyO.faces[i][0].first];
-	pop.add_vertex(vert.x, vert.y, vert.z);
-	for (unsigned int j = 0; j < polyO.faces[i].size(); j++) {
-	  Vector3 vert = polyO.vertices[polyO.faces[i][j].second];
-	  pop.add_vertex(vert.x, vert.y, vert.z);
-	}
-      }
-    }
-
     if (m_bTestOnness) {
       peekabot::Result<peekabot::Vector3f> vr;
       vr = sqdp.get_position();
@@ -732,24 +652,48 @@ void ObjectRelationManager::runComponent()
 		Cure::LocalGridMap<double>::MAP1, 0, 0);
 	    vector<spatial::Object *>objects;
 	    objects.push_back(&box2);
-	    objects.push_back(&box1);
+//	    objects.push_back(&box1);
 	    double total;
 	    sampleOnnessRecursively(objects, 0, pdf,
-		&table1, total);
-	    double xW2, yW2;
-	    peekabot::PointCloudProxy linecloudp;
+		&box1, total);
+	    peekabot::LineCloudProxy linecloudp;
 
 	    linecloudp.add(m_PeekabotClient, "root.distribution",
 		peekabot::REPLACE_ON_CONFLICT);
 	    linecloudp.clear_vertices();
 	    linecloudp.set_color(0.5, 0, 0.5);
 
+	    double maxPDFValue = 0.0;
 	    for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
+	      for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
+		if (pdf(x,y) > maxPDFValue) {
+		  maxPDFValue = pdf(x,y);
+		}
+	      }
+	    }
+
+	    for (int x = -pdf.getSize(); x < pdf.getSize(); x++) {
 	      for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
 		if (pdf(x, y) == 0)
 		  continue;
+		double xW2, yW2;
+		double xW3, yW3;
 		pdf.index2WorldCoords(x, y, xW2, yW2);
-		linecloudp.add_vertex(xW2, yW2, pdf(x, y)*2);
+		pdf.index2WorldCoords(x+1, y, xW3, yW3);
+		linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
+		    xW3, yW3, pdf(x+1, y)/maxPDFValue);
+	      }
+	    }
+	    for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
+	      for (int y = -pdf.getSize(); y < pdf.getSize(); y++) {
+		if (pdf(x, y) == 0)
+		  continue;
+		double xW2, yW2;
+		double xW3, yW3;
+		pdf.index2WorldCoords(x, y, xW2, yW2);
+		pdf.index2WorldCoords(x, y+1, xW3, yW3);
+		linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
+		    xW3, yW3, pdf(x, y+1)/maxPDFValue);
 	      }
 	    }
 
@@ -1909,7 +1853,7 @@ ObjectRelationManager::sampleOnnessRecursively(const vector<spatial::Object *> &
     log("Unsupported object type!");
   }
 
-  double maxLateral = -frameRadius*1.5;
+  double maxLateral = frameRadius*1.5;
   double minVertical = -frameRadius*1.5;
   double maxVertical = frameRadius*3;
   int mapMinX, mapMinY;
@@ -1942,11 +1886,11 @@ ObjectRelationManager::sampleOnnessRecursively(const vector<spatial::Object *> &
   //column (proportional to the height of the column, or part of the column that
   //is sampled)
 
-  const unsigned int orientationQuantization = 5; //The actual number of orientations
+  const unsigned int orientationQuantization = 4; //The actual number of orientations
   // will be this number cubed
   vector<Matrix33> orientations;
   getRandomSampleSphere(orientations, orientationQuantization);
-  const unsigned int samplesPerColumn = 10;
+  const unsigned int samplesPerColumn = 15;
   vector<Vector3> offsets;
   vector<OffsetKernel> offsetKernels;
   for (unsigned int i = 0; i < samplesPerColumn; i++) {
@@ -1989,6 +1933,7 @@ ObjectRelationManager::sampleOnnessRecursively(const vector<spatial::Object *> &
     for (unsigned int i = 0; i < kernel.weights.size(); i++) {
       kernel.weights[i] = kernel.weights[i]/sumWeights;
     }
+    offsetKernels.push_back(kernel);
   }
 
   for (int mapx = mapMinX; mapx <= mapMaxX; mapx++) {
@@ -2022,7 +1967,7 @@ ObjectRelationManager::sampleOnnessRecursively(const vector<spatial::Object *> &
 		    yi <= - mapSize || yi >= mapSize)
 		  continue;
 
-		outMap(xi, yi)+=offsetKernels[offsetNo].weights[kernelCellNo] * value * baseOnness;
+		outMap(mapx+xi, mapy+yi)+=offsetKernels[offsetNo].weights[kernelCellNo] * value * baseOnness;
 		total+=offsetKernels[offsetNo].weights[kernelCellNo] * value * baseOnness;
 	      }
 	    }
