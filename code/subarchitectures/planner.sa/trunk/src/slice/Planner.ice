@@ -86,7 +86,7 @@ module autogen {
 
       /*\class{PythonServer} informs this when an observation is
 	received.*/
-      void deliverObservation(int id, ObservationSeq observationSeq);
+      void deliverObservation(int id, ObservationSeq observations);
 
       /*
 	
