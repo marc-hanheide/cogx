@@ -46,6 +46,7 @@ void QCastMainFrame::updateViewList()
    if (! m_pModel) return;
 
    cogx::display::CDisplayView *pView;
+   // TODO: RLock pModel->m_Views
    FOR_EACH_V(pView, m_pModel->m_Views) {
       QListWidgetItem* pItem = new QListWidgetItem(tr(pView->m_id.c_str()), ui.listWidget);
       // TODO: notify on click
@@ -73,12 +74,16 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
    if (pView) {
       if (! ui.wgCustomGui->hasView(pView)) {
          updateCustomUi(pView);
-         // TODO: should retrieve data for custom widgets from appropriate components.
+         // TODO: should retrieve data for custom widgets from appropriate remote display clients.
       }
       ui.drawingArea->setView(pView);
    }
 }
 
+// XXX: This function is called from another thread.
+// According to Qt docs, all GUI elements should be created in the main (GUI) thread!
+// TODO: Don't call updateViewList; instead add a request to some queue that will be
+// processed by the main thread.
 void QCastMainFrame::onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    // TODO: only if the view is not in the list
