@@ -21,6 +21,7 @@ extern "C" {
 #include "tolua++.h"
 #include "glbind.h"
 #include "glubind.h"
+#include <gl.h>
 
 #ifdef DEBUG_TRACE
 #undef DEBUG_TRACE
@@ -186,7 +187,9 @@ void CLuaGlScript_RenderGL::draw(CDisplayObject *pObject, void *pContext)
    IceUtil::RWRecMutex::RLock lock(pObject->_objectMutex);
    FOR_EACH_V(pPart, pModel->m_Models) {
       if (!pPart) continue;
+      glPushMatrix();
       pPart->exec();
+      glPopMatrix();
    }
 }
 

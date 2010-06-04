@@ -105,22 +105,12 @@ void CTomGineModel_RenderGL::draw(CDisplayObject *pObject, void *pContext)
    FOR_EACH_V(pPart, pModel->m_Models) {
       if (!pPart) continue;
 
-      // TODO: Conditional GL settings - per object
-      //if (0) {
-      //   glEnable(GL_BLEND);
-      //   glEnable(GL_CULL_FACE);
-      //   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      //}
-
+      glPushMatrix();
       // TODO: Conditional drawing of object parts (faces, normals, ...)
       pPart->DrawFaces(true);
       // pPart->DrawQuadstrips();
       pPart->DrawNormals(0.01);
-
-      //if (0) {
-      //   glDisable(GL_CULL_FACE);
-      //   glDisable(GL_BLEND);
-      //}
+      glPopMatrix();
    }
 }
 
