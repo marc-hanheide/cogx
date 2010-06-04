@@ -70,6 +70,9 @@ void CDisplayServer::configure(const map<string,string> & _config)
       throw(runtime_error)
 {
    debug("CDisplayServer Server: configuring");
+#ifdef V11N_OBJECT_LUA_GL
+   debug("v11n: Subsystem LuaGlScript enabled.");
+#endif
    CASTComponent::configure(_config);
 
    // TODO: Parse more parameters here
