@@ -1,6 +1,8 @@
 /**
- * @author Michael Zillich
+ * @author Michael Zillich (original file: VideoViewer)
  * @date February 2009
+ *
+ * Adapted by Marko Mahnič.
  */
 
 #include <highgui.h>
