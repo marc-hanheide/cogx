@@ -21,6 +21,7 @@
 
 extern std::string sfloat(double f, int precision=6);
 extern double fclocks();
+extern long long gethrtime(void);
 
 #ifdef DEBUG_TRACE
 #include <sstream>

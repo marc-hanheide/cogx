@@ -55,10 +55,18 @@ int CLuaGlScript::CScript::loadScript(const char* pscript)
 {
    if (!luaS) initLuaState();
    if (luaS) {
+      //long long t0 = gethrtime();
       int rv = luaL_loadstring(luaS, (char*) pscript);
+      //long long t1 = gethrtime();
+      //double dt = (t1 - t0) * 1e-6;
+      //printf(" ******** Time to loadstring: %lf\n", dt);
       if (rv != 0) printf("luaL_loadstring FAILED\n");
       else {
+         //t0 = gethrtime();
          rv = lua_pcall(luaS, 0, 0, 0);
+         //t1 = gethrtime();
+         //dt = (t1 - t0) * 1e-6;
+         //printf(" ******** Time to pcall: %lf\n", dt);
          if (rv != 0) {
             // TODO CScript needs an ID(object, part) so it can be printed
             printf("Problem executing script (error %d):\n   %s\n", rv, lua_tostring(luaS, -1));
@@ -72,8 +80,12 @@ int CLuaGlScript::CScript::loadScript(const char* pscript)
 int CLuaGlScript::CScript::exec()
 {
    if (!luaS) return -1;
+   // long long t0 = gethrtime();
    lua_getfield(luaS, LUA_GLOBALSINDEX, "render");
    int rv = lua_pcall(luaS, 0, 0, 0);
+   //long long t1 = gethrtime();
+   //double dt = (t1 - t0) * 1e-6;
+   //printf(" ******** Time to exec.pcall: %lf\n", dt);
    if (rv != 0) {
       // TODO CScript needs an ID(object, part) so it can be printed
       printf("Problem executing render() (error %d):\n   %s\n", rv, lua_tostring(luaS, -1));
@@ -179,3 +191,23 @@ void CLuaGlScript_RenderGL::draw(CDisplayObject *pObject, void *pContext)
 }
 
 }} // namespace
+
+// A test of rendering speed.
+// Client and server are running on the same machine (Intel Core 2 6600 2.4GHz)
+// A client produces 2500 points, and generates a string with glVertex for each point:
+//    function render()
+//      glBegin(GL_POINTS)
+//      glVertex(...)
+//      ...
+//      glEnd()
+//    end
+// The string is passed to the server (loadScript) and executed when needed (exec).
+//
+// Times:
+//   Client:
+//     4.8ms    : create string
+//    10.2ms    : transport string (this includes luaL_loadstring and pcall)
+//   Server:
+//     8.5ms    : luaL_loadstring
+//     0.03ms   : pcall (the string is parsed)
+//     0.85ms   : exec.pcall (call to render())
