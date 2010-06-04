@@ -13,15 +13,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 #ifndef OBSERVER_ELHUP7YS
 #define OBSERVER_ELHUP7YS
 
 #include "ptrvector.hpp"
 #include <IceUtil/RWRecMutex.h>
 
-
-// CObserver to be used as a public member. Not to be used as a base class.
+// CObserver: To be used as a public member. Not to be used as a base class.
 // Example:
 //    class CLookAtMeObserver { public: void onDataChanged(CLookAtMe* where); };
 //    class CLookAtMe {
@@ -29,9 +27,13 @@
 //       CObserver<CLookAtMeObserver> Observers;
 //       void changeData() {
 //          CLookAtMeObserver* pobs;
+//          CObserver<CLookAtMeObserver>::ReadLock lock(Observers);
 //          FOR_EACH(Observers, CLookAtMeObserver, pobs) pobs->onDataChanged(this);
 //       }
 //    };
+//    CLookAtMeObserver watcher;
+//    CLookAtMe test;
+//    test.Observers += &watcher;
 template<class T>
 class CObserver {
 private:
