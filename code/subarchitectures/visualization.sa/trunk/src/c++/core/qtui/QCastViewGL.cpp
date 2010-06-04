@@ -27,6 +27,9 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
 {
    DTRACE("QCastViewGL::QCastViewGL");
    pView = NULL;
+   xRot = 0;
+   yRot = 0;
+   zRot = 0;
 }
 
 QCastViewGL::~QCastViewGL()
@@ -105,13 +108,13 @@ void QCastViewGL::initializeGL()
    glEnable(GL_LIGHTING);
    glEnable(GL_LIGHT0);
    glEnable(GL_MULTISAMPLE);
-   static GLfloat lightPosition[4] = { 0.5, 5.0, -7.0, 1.0 };
+   static GLfloat lightPosition[4] = { 3.0, 3.0, 3.0, 1.0 };
    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 }
 
 void QCastViewGL::paintGL()
 {
-	glEnable(GL_LIGHTING);
+   glEnable(GL_LIGHTING);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    // m_camera.Activate();
    if (pView) {
@@ -156,14 +159,14 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
    int dy = event->y() - m_lastPos.y();
 
    if (event->buttons() & Qt::LeftButton) {
-      setXRotation(xRot + 8 * dy);
-      setYRotation(yRot + 8 * dx);
+      setXRotation(xRot + 2 * dy);
+      setYRotation(yRot + 2 * dx);
       //m_camera.RotateF(0.1*dx);
       //m_camera.RotateY(0.1*dy);
    }
    else if (event->buttons() & Qt::RightButton) {
-      setXRotation(xRot + 8 * dy);
-      setZRotation(zRot + 8 * dx);
+      setXRotation(xRot + 2 * dy);
+      setZRotation(zRot + 2 * dx);
       //m_camera.RotateS(0.1*dx);
       //m_camera.RotateZ(0.1*dy);
    }
