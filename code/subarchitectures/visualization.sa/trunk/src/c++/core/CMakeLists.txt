@@ -6,7 +6,8 @@ include(${QT_USE_FILE} ${QT_USE_OPENGL})
 set(EXPERIMENT 1)
 if(EXPERIMENT)
    find_package(Lua51)
-   if (LUA51_FOUND)
+   find_library(LUA_LIB_TOLUA_51 tolua++5.1)
+   if (LUA51_FOUND AND LUA_LIB_TOLUA_51)
       include_directories(object/gllua ${LUA_INCLUDE_DIR})
       set(EXPERIMENT_SRC
          object/gllua/glbind.cpp
@@ -15,9 +16,20 @@ if(EXPERIMENT)
          object/gllua/gluaux.cpp
          object/CLuaGlScript.cpp
          )
-      set(EXPERIMENT_LIB GLU ${LUA_LIBRARIES} tolua++5.1)
+      set(EXPERIMENT_LIB
+         GL GLU
+         ${LUA_LIBRARIES}
+         ${LUA_LIB_TOLUA_51}
+         )
       add_definitions(-DV11N_OBJECT_LUA_GL)
-   endif(LUA51_FOUND)
+   endif(LUA51_FOUND AND LUA_LIB_TOLUA_51)
+   if (NOT LUA51_FOUND)
+      message ("Lua 5.1 not found. Please install liblua5.1-?-dev")
+   endif (NOT LUA51_FOUND)
+   if (NOT LUA_LIB_TOLUA_51)
+      message ("libtolua++5.1 not found. Please install libtolua++5.1-dev")
+   endif (NOT LUA_LIB_TOLUA_51)
+
 endif(EXPERIMENT)
 
 set(TOMGINE_INCLUDE
