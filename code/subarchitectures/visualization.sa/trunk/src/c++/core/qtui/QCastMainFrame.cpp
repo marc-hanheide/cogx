@@ -26,6 +26,14 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    ui.listWidget->setSelectionMode(QAbstractItemView::SingleSelection);
    connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
          this, SLOT(onViewActivated(QListWidgetItem*)));
+
+   qRegisterMetaType<cogx::display::CDisplayModel*>("cogx::display::CDisplayModel*");
+   qRegisterMetaType<cogx::display::CDisplayView*>("cogx::display::CDisplayView*");
+   connect(this, 
+      SIGNAL(signalViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
+      this,
+      SLOT(doViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
+      Qt::QueuedConnection);
 }
 
 QCastMainFrame::~QCastMainFrame()
@@ -95,11 +103,18 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
 
 // XXX: This function is called from another thread.
 // According to Qt docs, all GUI elements should be created in the main (GUI) thread!
-// TODO: Don't call updateViewList; instead add a request to some queue that will be
-// processed by the main thread.
+// Don't call updateViewList; instead add a request to some queue that will be processed by the
+// main thread. This can be done with Qt 'queued' connections. onViewAdded() emits the signal
+// signalViewAdded() which adds a request to the GUI thread's queue. When the thread wakes up
+// it executes the (connected) slot doViewAdded() which can now safely update the GUI elements.
 void QCastMainFrame::onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    // TODO: only if the view is not in the list
+   emit signalViewAdded(pModel, pView); // connection to doViewAdded has to be of type 'queued' or 'auto'
+}
+
+void QCastMainFrame::doViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
+{
    updateViewList();
    // ui.drawingArea->onViewChanged(pModel, pView);
 }
