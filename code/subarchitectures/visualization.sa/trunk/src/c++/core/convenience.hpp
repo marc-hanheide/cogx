@@ -37,9 +37,12 @@ class __Tracer: public std::ostringstream { public:
 // #define DTRACE(str) __Tracer _tracerX((std::ostringstream() << str).str())
 #define DTRACE(str) __Tracer _tracerX; _tracerX << str; _tracerX.start()
 #define DMESSAGE(str) { __Tracer _tracerY(0); _tracerY << str; _tracerY.start(); }
+#define DVERIFYGUITHREAD(str,this) { QObject test; if (test.thread() != this->thread()) {\
+   DMESSAGE("********* " << str << " will be created in another thread.") }}
 #else
 #define DTRACE(str) 
 #define DMESSAGE(str) 
+#define DVERIFYGUITHREAD(str,this)
 #endif
 
 #endif /* end of include guard: CONVENIENCE_QEVOUBQ */

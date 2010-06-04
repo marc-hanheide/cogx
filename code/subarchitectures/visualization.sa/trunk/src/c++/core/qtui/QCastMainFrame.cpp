@@ -45,6 +45,8 @@ void QCastMainFrame::updateViewList()
    ui.listWidget->clear();
    if (! m_pModel) return;
 
+   DVERIFYGUITHREAD("QListWidgetItem-s", this);
+
    cogx::display::CDisplayView *pView;
    // TODO: RLock pModel->m_Views
    FOR_EACH_V(pView, m_pModel->m_Views) {
@@ -60,6 +62,7 @@ void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
       ui.wgCustomGui->setVisible(false);
       return;
    }
+   DVERIFYGUITHREAD("Custom GUI", this);
    ui.wgCustomGui->updateUi(m_pModel, pView);
 }
 
