@@ -46,9 +46,15 @@ private:
    void updateCustomUi(cogx::display::CDisplayView *pView);
    void updateViewList();
 
-   // CDisplayModelObserver
+   // CDisplayModelObserver notifications
 private:
    void onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+
+// signals/slots for interthread communication
+signals: 
+   void signalViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*);
+private slots:
+   void doViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
 };
 
 
