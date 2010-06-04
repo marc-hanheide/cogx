@@ -85,6 +85,9 @@ private:
 class CDisplayObject
 {
 public:
+   IceUtil::RWRecMutex _objectMutex;
+
+public:
    std::string m_id;
    double m_timestamp;
    CDisplayObject();

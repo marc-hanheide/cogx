@@ -88,6 +88,7 @@ CLuaGlScript::CLuaGlScript()
 CLuaGlScript::~CLuaGlScript()
 {
    CScript* pModel;
+   IceUtil::RWRecMutex::WLock lock(_objectMutex);
    FOR_EACH_V(pModel, m_Models) {
       if (pModel) delete pModel;
    }
@@ -97,6 +98,7 @@ CLuaGlScript::~CLuaGlScript()
 void CLuaGlScript::loadScript(const std::string& partId, const std::string& script)
 {
    CScript* pModel = NULL;
+   IceUtil::RWRecMutex::WLock lock(_objectMutex);
    if (m_Models.find(partId)->second != NULL) {
       pModel = m_Models[partId];
    }
@@ -117,9 +119,10 @@ void CLuaGlScript::removePart(const std::string& partId)
 {
    typeof(m_Models.begin()) it = m_Models.find(partId);
    if (it->second != NULL) {
+      IceUtil::RWRecMutex::WLock lock(_objectMutex);
       CScript* pModel = m_Models[partId];
       m_Models.erase(it);
-      delete pModel;
+      if (pModel) delete pModel;
    }
 }
 
@@ -167,6 +170,8 @@ void CLuaGlScript_RenderGL::draw(CDisplayObject *pObject, void *pContext)
    DMESSAGE("Models present.");
 
    CLuaGlScript::CScript* pPart;
+   // Prevent script modification while executing
+   IceUtil::RWRecMutex::RLock lock(pObject->_objectMutex);
    FOR_EACH_V(pPart, pModel->m_Models) {
       if (!pPart) continue;
       pPart->exec();
