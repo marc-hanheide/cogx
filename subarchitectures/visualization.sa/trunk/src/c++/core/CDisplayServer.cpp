@@ -37,7 +37,7 @@ extern "C"
 #endif
 #include "convenience.hpp"
 
-// #include "fake/tomgine_test.cpp"
+//#include "fake/tomgine_test.cpp"
 
 using namespace std;
 using namespace cast;
@@ -221,13 +221,13 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
 {
    DTRACE("CDisplayServer::setObject");
    //{ // FAKE
-   //  static bool done = false;
-   //  if (!done) {
-   //     DTRACE("tomgine_test_createModel");
-   //     tomgine_test_createModel(&m_Model);
-   //     lua_test_createModel(&m_Model);
-   //  }
-   //  done = true;
+   // static bool done = false;
+   // if (!done) {
+   //    DTRACE("tomgine_test_createModel");
+   //    tomgine_test_createModel(&m_Model);
+   //    lua_test_createModel(&m_Model);
+   // }
+   // done = true;
    //}
 
    CSvgImage *pImage = NULL;

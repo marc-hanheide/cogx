@@ -18,7 +18,6 @@
 
 #include "QCastViewBase.hpp"
 #include <QGLWidget>
-#include "tgCamera.h"
 
 // class QCastViewGL: public QGLWidget, public cogx::display::CDisplayModelObserver
 class QCastViewGL: public QGLWidget, public QCastViewBase
@@ -27,10 +26,10 @@ class QCastViewGL: public QGLWidget, public QCastViewBase
 private:
    cogx::display::CDisplayView* pView;
    QPoint m_lastPos;
-   int xRot;
-   int yRot;
-   int zRot;
-   TomGine::tgCamera m_camera;
+   float xRot;
+   float yRot;
+   float zRot;
+   float zoomFactor;
 
 public:
    QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
@@ -44,14 +43,14 @@ public:
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
 
 public slots:
-   void setXRotation(int angle);
-   void setYRotation(int angle);
-   void setZRotation(int angle);
+   void setXRotation(float angle);
+   void setYRotation(float angle);
+   void setZRotation(float angle);
 
 signals:
-   void xRotationChanged(int angle);
-   void yRotationChanged(int angle);
-   void zRotationChanged(int angle);
+   void xRotationChanged(float angle);
+   void yRotationChanged(float angle);
+   void zRotationChanged(float angle);
 
 protected:
    void initializeGL();
@@ -59,6 +58,7 @@ protected:
    void resizeGL(int width, int height);
    void mousePressEvent(QMouseEvent *event);
    void mouseMoveEvent(QMouseEvent *event);
+   void wheelEvent(QWheelEvent *e);
 };
 
 #endif /* end of include guard: QCASTVIEWGL_9ZC8AKWT */
