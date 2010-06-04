@@ -100,8 +100,6 @@ void CDisplayServer::runComponent()
    hIceDisplayServer.get()->startEventServer();
    debug("EventServer started");
 
-   sleepComponent(10);
-
    int argc=0;
    char **argv = NULL;
    QCastApplication app(argc, argv, this);
