@@ -32,7 +32,7 @@
 
 // typeof works only in gcc; typeof(x) will become auto in c++0x
 // iterate over maps of pointers
-// (prbl: can't break out of the outer loop; to break use __it##varpointer=amap.end())
+// XXX FOR_EACH_V(prbl: can't break out of the outer loop; to break use __it##varpointer=amap.end())
 #define FOR_EACH_V(varpointer, amap) \
    for(typeof(amap.begin()) __it##varpointer=amap.begin(); __it##varpointer != amap.end(); ) \
       for(typeof(__it##varpointer->second) varpointer = __it##varpointer->second; \
@@ -42,7 +42,7 @@
 
 // typeof works only in gcc; typeof(x) will become auto in c++0x
 // iterate over keys of maps (yields pointers to keys)
-// (prbl: can't break out of the outer loop; to break use __it##varpointer=amap.end())
+// XXX FOR_EACH_K(prbl: can't break out of the outer loop; to break use __it##varpointer=amap.end())
 #define FOR_EACH_K(varpointer, amap) \
    for(typeof(amap.begin()) __it##varpointer=amap.begin(); __it##varpointer != amap.end(); ) \
       for(const typeof(__it##varpointer->first)* varpointer = &__it##varpointer->first; \

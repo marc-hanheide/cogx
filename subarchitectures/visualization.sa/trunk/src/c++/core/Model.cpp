@@ -408,6 +408,7 @@ void CDisplayView::onOwnerDataChanged(CGuiElement *pElement, const std::string& 
 // renderer for each type of context (2D, 3D, text, etc.).
 // XXX - a single static renderer is not thread-safe!
 // TODO: the context may provide additional display options.
+// TODO: drawing order may need to be defined if the objects are not displayed side by side
 void CDisplayView::draw2D(QPainter &painter)
 {
    CDisplayObject *pObject;
@@ -432,6 +433,9 @@ void CDisplayView::draw2D(QPainter &painter)
    }
 }
 
+// TODO: dawing multiple objects in 3D
+//    - all objects in a single scene (viewport = window)
+//    - multiple scenes side by side (different viewports); how would zoom work here?
 void CDisplayView::drawGL()
 {
    CDisplayObject *pObject;
