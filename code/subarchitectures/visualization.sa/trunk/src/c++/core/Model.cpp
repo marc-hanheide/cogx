@@ -349,10 +349,21 @@ void CDisplayView::refreshObject(const std::string& id)
 
 void CDisplayView::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
+   DTRACE("CDisplayView::onUiDataChanged");
    CDisplayModelObserver *pobsrvr;
    CObserver<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
       pobsrvr->onUiDataChanged(NULL, this, pElement, newValue);
+   }
+}
+
+void CDisplayView::onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue)
+{
+   DTRACE("CDisplayView::onOwnerDataChanged");
+   CDisplayModelObserver *pobsrvr;
+   CObserver<CDisplayModelObserver>::ReadLock lock(viewObservers);
+   FOR_EACH(pobsrvr, viewObservers) {
+      pobsrvr->onUiDataChanged(NULL, NULL, pElement, newValue);
    }
 }
 

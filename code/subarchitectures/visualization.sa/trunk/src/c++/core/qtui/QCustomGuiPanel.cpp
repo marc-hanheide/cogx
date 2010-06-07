@@ -21,12 +21,23 @@
 #include <QVBoxLayout>
 #include "ChangeSlot.hpp"
 
+#ifdef DEBUG_TRACE
+#undef DEBUG_TRACE
+#endif
 #include "../convenience.hpp"
 
 QCustomGuiPanel::QCustomGuiPanel(QWidget* parent, Qt::WindowFlags flags)
    :QFrame(parent, flags)
 {
    m_pView = NULL;
+   // see: <url:QCastMainFrame.cpp#tn=QCastMainFrame::onViewAdded>
+   connect(this, 
+      SIGNAL(signalUiDataChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*,
+            cogx::display::CGuiElement*, QString)),
+      this,
+      SLOT(doUiDataChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*,
+            cogx::display::CGuiElement*, QString)),
+      Qt::QueuedConnection);
 }
 
 QCustomGuiPanel::~QCustomGuiPanel()
@@ -39,12 +50,48 @@ void QCustomGuiPanel::onUiDataChanged(cogx::display::CDisplayModel *pModel,
       cogx::display::CGuiElement *pElement, const std::string& newValue)
 {
    if (pSourceView == m_pView) return;
+   if (pElement == NULL) return;
+   DTRACE("QCustomGuiPanel::onUiDataChanged " << newValue);
 
-   // TODO: update the widget associated with pElement
-   // pWidget = findWidget(pElement);
-   // pWidget->blockSignals(true);
-   // pWidget->setValue(newValue);
-   // pWidget->blockSignals(false);
+   // If in the same thread, we can set the value for the control here
+   // otherwise we emit a signal:
+   // if (QThread::currentThread() != this->thread()) {
+      QString val = QString::fromLatin1(newValue.c_str(), newValue.size());
+      emit signalUiDataChanged(pModel, pSourceView, pElement, val);
+      return;
+   // }
+   DVERIFYGUITHREAD("Custom Update", this);
+}
+
+void QCustomGuiPanel::doUiDataChanged(cogx::display::CDisplayModel *pModel,
+      cogx::display::CDisplayView *pView,
+      cogx::display::CGuiElement *pElement, QString newValue)
+{
+   DTRACE("slot QCustomGuiPanel::doUiDataChanged");
+   DVERIFYGUITHREAD("Custom Update", this);
+
+   // NOTE: Slots MUST be owned by the appropriate widgets
+   QList<CChangeSlot*> cslots = findChildren<CChangeSlot*>();
+   // DMESSAGE("Slots found: " << cslots.size());
+   CChangeSlot *pslot;
+   QCheckBox *pBox;
+   FOR_EACH(pslot, cslots) {
+      if (!pslot) continue;
+      if (pslot->m_pGuiElement != pElement) continue;
+      // DMESSAGE("I'm going to set: " << pslot->m_pGuiElement->m_id << " to " << newValue.toStdString());
+      switch (pElement->m_type) {
+         case cogx::display::CGuiElement::wtCheckBox:
+            pBox = dynamic_cast<QCheckBox*>(pslot->parent());
+            if (pBox != NULL) {
+               pBox->blockSignals(true);
+               if (newValue == "0") pBox->setCheckState(Qt::Unchecked);
+               else pBox->setCheckState(Qt::Checked);
+               pBox->blockSignals(false);
+            }
+            break;
+         default: break;
+      };
+   }
 }
 
 void QCustomGuiPanel::removeUi()
@@ -101,6 +148,7 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
             pSlot = new CChangeSlot(pgel, pView, pButton);
             connect(pButton, SIGNAL(clicked(bool)), pSlot, SLOT(onButtonClick(bool)));
             break;
+         default: break;
       }
    }
 

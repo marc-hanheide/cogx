@@ -41,6 +41,15 @@ public:
    // CDisplayModelObserver
    void onUiDataChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pSourceView,
          cogx::display::CGuiElement *pElement, const std::string& newValue); /*override*/
+
+private:
+// signals/slots for interthread communication
+signals: 
+   void signalUiDataChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*,
+         cogx::display::CGuiElement *pElement, QString newValue); /*override*/
+private slots:
+   void doUiDataChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView,
+         cogx::display::CGuiElement *pElement, QString newValue); /*override*/
 };
 
 #endif /* end of include guard: QCUSTOMGUIPANEL_V9N1BGY9 */

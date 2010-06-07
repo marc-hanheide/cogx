@@ -81,29 +81,39 @@ void VideoViewer::start()
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
   registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
+  vector<int> camIds;
+  camIds.push_back(camId);
 
 #ifdef FEAT_VISUALIZATION
   m_bSendIplImage = false;
   m_display.connectIceClient(*this);
-#else
-  cvNamedWindow(getComponentID().c_str(), 1);
-#endif
-
-  vector<int> camIds;
-  camIds.push_back(camId);
-  // start receiving images pushed by the video server
-  videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
-  receiving = true;
-
-#ifdef FEAT_VISUALIZATION
   m_display.installEventReceiver();
   m_display.setEventCallback(this, &VideoViewer::handleGuiEvent);
+  m_display.setStateQueryCallback(this, &VideoViewer::getControlState);
+
   //m_display.addButton("toggle.viewer.running", "Start");
   m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
   m_display.addCheckBox(getComponentID(), "toggle.viewer.sendipl", "Send &IplImage");
   m_display.addButton(getComponentID(), "viewer.do.nothing", "Show &time");
   //m_display.addButton(getComponentID(), "viewer.do.nothing2", "&Test 2");
   //m_display.addButton(getComponentID(), "viewer.do.nothing3", "&Test 3");
+#else
+  cvNamedWindow(getComponentID().c_str(), 1);
+#endif
+
+  // start receiving images pushed by the video server
+  receiving = false;
+  if (receiving)
+    videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
+#ifdef FEAT_VISUALIZATION
+  else {
+    // HACK: to create a view we send a small image
+    Video::Image image;
+    for (int i = 0; i < 3; i++) image.data.push_back(177);
+    image.width=1;
+    image.height=1;
+    m_display.setImage(getComponentID(), image);
+  }
 #endif
 }
 
@@ -149,6 +159,17 @@ void VideoViewer::handleGuiEvent(const Visualization::TEvent &event)
       println("The button works.");
     }
   }
+}
+
+std::string VideoViewer::getControlState(const std::string& ctrlId)
+{
+  if (ctrlId == "toggle.viewer.running") {
+    return receiving ? "1" : "0";
+  }
+  else if (ctrlId == "toggle.viewer.sendipl") {
+    return m_bSendIplImage ? "1" : "0";
+  }
+  return "";
 }
 #endif
 

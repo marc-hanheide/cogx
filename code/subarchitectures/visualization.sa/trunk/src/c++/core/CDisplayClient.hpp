@@ -120,7 +120,8 @@ private:
          if (m_pClient) m_pClient->handleEvent(event);
       }
       std::string getControlState(const std::string& ctrlId, const Ice::Current&) { /*override*/
-         if (m_pClient) m_pClient->getControlState(ctrlId);
+         if (m_pClient) return m_pClient->getControlState(ctrlId);
+         return "";
       }
    };
 
