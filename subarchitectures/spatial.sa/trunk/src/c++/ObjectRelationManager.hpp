@@ -37,6 +37,7 @@ class LocalGridMap;
 
 namespace spatial {
 
+  enum SpatialRelationType {RELATION_ON, RELATION_IN};
 /**
  * This class monitors the sensory layer for objects and their poses, and writes
  * spatial relation structs to WM as appropriate
@@ -101,8 +102,7 @@ protected:
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_planeProxies;
   peekabot::GroupProxy m_objectProxies;
-  peekabot::GroupProxy m_onnessTester;
-  peekabot::GroupProxy m_innessTester;
+  peekabot::GroupProxy m_relationTester;
   std::string m_PbHost;
   int m_PbPort;
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
@@ -131,7 +131,8 @@ protected:
       const std::string &objectLabel);
   void sampleOnnessForObject(const std::string &supLabel, 
       const std::string &onLabel);
-  void sampleOnnessRecursively(const std::vector<spatial::Object *> &objects, 
+  void sampleBinaryRelationRecursively(const std::vector<spatial::SpatialRelationType> &relations,
+      const std::vector<spatial::Object *> &objects,
     int currentLevel, Cure::LocalGridMap<double> &map, 
     spatial::Object *supportObject, double &total,
     const std::vector<Vector3> &triangle = std::vector<Vector3>(), double baseOnness = 1.0);
