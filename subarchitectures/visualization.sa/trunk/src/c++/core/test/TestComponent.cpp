@@ -205,13 +205,20 @@ void VideoViewer::runComponent()
   }
   {
     std::stringstream str;
+    str << "function render()\n";
+    str << "N=12\n";
+    str << "tabsin={0";
+    for (int i = i; i < 12; i++) str << "," << sin(30*i*3.14/180);
+    str << "}\n";
+    str << "tabcos={1.0";
+    for (int i = i; i < 12; i++) str << "," << cos(30*i*3.14/180);
+    str << "}\n";
     str <<
-      "function render()\n"
          "glPointSize(2)\n"
          "glBegin(GL_POINTS)\n"
          "for i=1,10000 do\n"
             "glColor(0.8,0.2,0.2)\n"
-            "glVertex(0.05*i/100, 0.08*i/100, 0.3)\n"
+            "glVertex(tabcos[i%N+1], tabsin[i%N+1], i/100.0)\n"
          "end\n"
          "glEnd()\n"
       "end\n";
