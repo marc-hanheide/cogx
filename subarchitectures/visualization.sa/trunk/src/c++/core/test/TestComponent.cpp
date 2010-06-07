@@ -105,16 +105,6 @@ void VideoViewer::start()
   receiving = false;
   if (receiving)
     videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
-#ifdef FEAT_VISUALIZATION
-  else {
-    // HACK: to create a view we send a small image
-    Video::Image image;
-    for (int i = 0; i < 3; i++) image.data.push_back(177);
-    image.width=1;
-    image.height=1;
-    m_display.setImage(getComponentID(), image);
-  }
-#endif
 }
 
 #ifdef FEAT_VISUALIZATION

@@ -33,7 +33,6 @@ public:
    virtual void onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue) {}
 };
 
-
 // An instance of this class describes a dynamically created UI widget which
 // is displayed when an object associated with the widget is displayed in a
 // view.
@@ -45,14 +44,13 @@ public:
 // for each instance. When a change happens in a widget, the associated
 // CGuiElement instance is notified, which notifies all its observers including
 // CDisplayServer which finally notifies the remote client(s).
-// 
-// TODO: ATM there is no way to retrieve the data for a widget from a (remote) component
 class CGuiElement
 {
 public:
    enum TWidgetType { wtAction, wtButton, wtCheckBox, wtDropList };
    TWidgetType m_type;
-   std::string m_viewId;  // TODO: list of views (or objects?) that show the widget
+   // TODO: m_viewId could be a list of views that should show the widget
+   std::string m_viewId; 
    std::string m_id;
    std::string m_label;
    std::string m_iconLabel;

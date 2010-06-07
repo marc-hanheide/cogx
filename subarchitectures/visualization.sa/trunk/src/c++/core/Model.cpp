@@ -140,12 +140,22 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       if (pview) pview->addObject(pObject);
    }
 
-   // Notify interested observers that the views containing the object have changed.
-   CDisplayModelObserver *pobsrvr;
    views = findViewsWithObject(pObject->m_id);
-
-   // XXX Create a default view for each object (this may create too many views)
    if (views.size() < 1) {
+      // Check if there is a default view for the object
+      typeof(m_Views.begin()) it = m_Views.find(pObject->m_id);
+      if (it != m_Views.end()) {
+         pview = it->second;
+         // XXX: Set preferred context based on object type
+         if (pObject->is3D()) pview->m_preferredContext = ContextGL;
+         pview->addObject(pObject);
+         views.push_back(pview);
+      }
+   }
+
+   CDisplayModelObserver *pobsrvr;
+   if (views.size() < 1) {
+      // XXX Create a default view for each object (this may create too many views)
       DMESSAGE("Creating new view for: " << pObject->m_id);
       pview = new cogx::display::CDisplayView();
       // XXX: Set preferred context based on object type
@@ -162,6 +172,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       }
    }
    else {
+      // Notify interested observers that the views containing the object have changed.
       DMESSAGE("Object " << pObject->m_id << " found in " << views.size() << "views");
       // XXX this was already done by CDisplayView::replaceObject etc. 
       FOR_EACH(pview, views) {
@@ -208,6 +219,30 @@ bool CDisplayModel::addGuiElement(CGuiElement* pGuiElement)
       if (pgel && pgel->isSameElement(pGuiElement)) return false;
    }
    m_GuiElements.push_back(pGuiElement);
+
+   // Make sure there is a view with pgel->m_viewId
+   CDisplayView *pview;
+   bool found = false;
+   typeof(m_Views.begin()) it;
+   for (it = m_Views.begin(); it != m_Views.end(); it++) {
+      pview = it->second;
+      if (!pview) continue;
+      if (pview->m_id == pGuiElement->m_viewId) {
+         found = true;
+         break;
+      }
+   }
+   if (! found) {
+     pview = new cogx::display::CDisplayView();
+     pview->m_id = pGuiElement->m_viewId;
+     m_Views[pview->m_id] = pview;
+
+     CDisplayModelObserver *pobsrvr;
+     CObserver<CDisplayModelObserver>::ReadLock lock(modelObservers);
+     FOR_EACH(pobsrvr, modelObservers) {
+        if (pobsrvr) pobsrvr->onViewAdded(this, pview);
+     }
+   }
    return true;
 }
 
