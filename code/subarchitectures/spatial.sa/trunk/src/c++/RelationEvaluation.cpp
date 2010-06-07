@@ -49,12 +49,18 @@ computePolyhedronVolume(const Polyhedron &polyhedron)
   //V = A_0*(h) + h^3/6*sum[lateral_rate*normal_rate] + 
   //  h^2/2*sum[length_old*normal_rate]
 
-  const double epsilon = 1e-6;
+  const double epsilon = 1e-8;
   vector<Vector3> verts = polyhedron.vertices;
   const vector<vector<Edge> > &faces = polyhedron.faces;
 
   bool noSameZ = true;
+  int tries = 0;
   do {
+    tries++;
+    if (tries > 100) {
+      cerr <<  "Warning: volume computation failed.\n";
+      return 0.0;
+    }
     noSameZ = true;
     for (unsigned int i = 0; i < verts.size()-1; i++) {
       for (unsigned int j = i+1; j < verts.size(); j++) {
