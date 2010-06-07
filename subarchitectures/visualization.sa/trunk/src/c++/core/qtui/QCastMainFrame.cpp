@@ -27,8 +27,10 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
          this, SLOT(onViewActivated(QListWidgetItem*)));
 
+   // XXX: Passing pointers is unsafe
    qRegisterMetaType<cogx::display::CDisplayModel*>("cogx::display::CDisplayModel*");
    qRegisterMetaType<cogx::display::CDisplayView*>("cogx::display::CDisplayView*");
+   qRegisterMetaType<cogx::display::CGuiElement*>("cogx::display::CGuiElement*"); // Custom UI
    connect(this, 
       SIGNAL(signalViewAdded(cogx::display::CDisplayModel*, cogx::display::CDisplayView*)),
       this,
@@ -46,6 +48,11 @@ void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
    if (m_pModel) m_pModel->modelObservers -= this;
    m_pModel = pDisplayModel;
    if (m_pModel) m_pModel->modelObservers += this;
+}
+
+void QCastMainFrame::setControlDataProxy(CControlDataProxy *pProxy)
+{
+   m_pControlDataProxy = pProxy;
 }
 
 void QCastMainFrame::notifyObjectAdded(cogx::display::CDisplayObject *pObject)
@@ -95,6 +102,15 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
    if (pView) {
       if (! ui.wgCustomGui->hasView(pView)) {
          updateCustomUi(pView);
+         if (m_pControlDataProxy) {
+            cogx::display::CGuiElement* pgel;
+            CPtrVector<cogx::display::CGuiElement> elements;
+            elements = m_pModel->getGuiElements(pView->m_id);
+            FOR_EACH(pgel, elements) {
+               if (!pgel) continue;
+               m_pControlDataProxy->getControlStateAsync(pgel);
+            }
+         }
          // TODO: should retrieve data for custom widgets from appropriate remote display clients.
       }
       ui.drawingArea->setView(pView);

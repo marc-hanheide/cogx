@@ -108,6 +108,7 @@ void CDisplayServer::runComponent()
    debug("Passing the model to MainWindow");
    pMainFrame = &frame;
    pMainFrame->setModel(&m_Model);
+   pMainFrame->setControlDataProxy(this);
    frame.show();
    app.exec();
    pMainFrame = NULL;
@@ -394,14 +395,23 @@ void CDisplayServer::addButton(const Ice::Identity& ident, const std::string& vi
    }
 }
 
+// Add change notification to queue, processed in <url:#tn=CDisplayServerI::run>
 void CDisplayServer::onUiDataChanged(CGuiElement *pElement, const std::string& newValue)
 {
    debug(std::string("Time: ") + sfloat (fclocks()));
    debug(std::string("New value ") + pElement->m_id + "=" + newValue);
    DTRACE("CDisplayServer::onUiDataChanged");
-   // TODO: put the event into a queue and wake up the event (callback) server
+
    if (! hIceDisplayServer.get()) return;
    hIceDisplayServer->addDataChange(new CGuiElementValue(pElement, newValue));
+}
+
+// Add request for value to queue, processed in <url:#tn=CDisplayServerI::run>
+void CDisplayServer::getControlStateAsync(cogx::display::CGuiElement *pElement)
+{
+   DTRACE("CDisplayServer::getControlStateAsync");
+   if (! hIceDisplayServer.get()) return;
+   hIceDisplayServer->addDataChange(new CGuiElementValue(pElement, "", CGuiElementValue::get));
 }
 
 // -----------------------------------------------------------------
@@ -474,26 +484,34 @@ void CDisplayServerI::run()
          DTRACE("EventServer Woke up. Sending events.");
          // TODO: check the queues and send messages
          CGuiElementValue *pChange;
-         for(set<Visualization::EventReceiverPrx>::iterator p = clients.begin(); p != clients.end(); ++p) {
+         set<Visualization::EventReceiverPrx>::iterator p;
+         for(p = clients.begin(); p != clients.end(); p++) {
             try {
                FOR_EACH(pChange, changes) {
                   if (!pChange || !pChange->pElement) continue;
                   if (!p->get() || pChange->pElement->m_dataOwner != (*p)->ice_getIdentity())
                      continue;
 
-                  switch (pChange->pElement->m_type) {
-                     case CGuiElement::wtCheckBox:
-                        event.type = Visualization::evCheckBoxChange; break;
-                     case CGuiElement::wtButton:
-                        event.type = Visualization::evButtonClick; break;
-                     case CGuiElement::wtDropList:
-                        event.type = Visualization::evDropListChange; break;
+                  if (pChange->mode == CGuiElementValue::get) {
+                     std::string val = (*p)->getControlState(pChange->pElement->m_id);
+                     if (val.size() > 0)
+                        pChange->pElement->syncControlState(val);
                   }
+                  else if (pChange->mode == CGuiElementValue::set) {
+                     switch (pChange->pElement->m_type) {
+                        case CGuiElement::wtCheckBox:
+                           event.type = Visualization::evCheckBoxChange; break;
+                        case CGuiElement::wtButton:
+                           event.type = Visualization::evButtonClick; break;
+                        case CGuiElement::wtDropList:
+                           event.type = Visualization::evDropListChange; break;
+                     }
 
-                  event.sourceId = pChange->pElement->m_id;
-                  event.data = pChange->value;
+                     event.sourceId = pChange->pElement->m_id;
+                     event.data = pChange->value;
 
-                  (*p)->handleEvent(event);
+                     (*p)->handleEvent(event);
+                  }
                }
             }
             catch(const Ice::Exception& ex) {
@@ -565,6 +583,7 @@ void CDisplayServerI::addClient(const Ice::Identity& ident, const Ice::Current& 
    cout << "added `" << ident.name << ":" << ident.category << "'"<< endl;
 }
 
+// put the event into a queue and wake up the event (callback) server
 void CDisplayServerI::addDataChange(CGuiElementValue *pChange)
 {
    if (!pChange || !pChange->pElement) return;

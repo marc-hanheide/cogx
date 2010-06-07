@@ -32,7 +32,9 @@
 // of a Qt widget in each. All the views are observers of the CGuiElement, but
 // the source of the data change should not be notified about the change.
 // 
-// Each instance should be owned by the matching dynamic Qt widget.
+// Each instance MUST be owned by the matching dynamic Qt widget, otherwise
+// the updates from the remote owner won't work.
+// See <url:QCustomGuiPanel.cpp#tn=::doUiDataChanged>, findChildren.
 class CChangeSlot: public QObject
 {
    Q_OBJECT

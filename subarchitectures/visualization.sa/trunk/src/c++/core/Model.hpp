@@ -143,6 +143,7 @@ public:
 public:
    // CGuiElementObserver
    void onUiDataChanged(CGuiElement *pElement, const std::string& newValue);
+   void onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue);
 
 public:
    CObserver<CDisplayModelObserver> viewObservers;

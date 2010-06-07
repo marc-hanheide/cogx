@@ -36,7 +36,8 @@ typedef IceUtil::Handle<CDisplayServerI> CDisplayServerIPtr;
 // The ICE server interface (CDisplayServerI) will be created in start().
 class CDisplayServer:
    public cast::ManagedComponent,
-   public CGuiElementObserver
+   public CGuiElementObserver,
+   public CControlDataProxy
 {
 private:
    CDisplayModel m_Model;
@@ -83,6 +84,9 @@ private:
 
    // CGuiElementObserver
    void onUiDataChanged(CGuiElement *pElement, const std::string& newValue); /*override*/
+
+   // CControlDataProxy
+   void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
 };
 
 // The implementation of DisplayInterface. This class implements

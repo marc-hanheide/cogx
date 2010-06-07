@@ -77,7 +77,7 @@ module Visualization
    interface EventReceiver
    {
       void handleEvent(TEvent event);
-      string getControlState(string ctrlId);
+      string getControlState(string ctrlId); // XXX: maybe add param what
    };
 };
 

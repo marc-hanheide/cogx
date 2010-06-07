@@ -27,6 +27,10 @@ class CGuiElementObserver
 {
 public:
    virtual void onUiDataChanged(CGuiElement *pElement, const std::string& newValue) = 0;
+
+   // The CDisplayServer should not respond to this notification since it is the
+   // CDisplayServer that causes the change.
+   virtual void onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue) {}
 };
 
 
@@ -68,6 +72,7 @@ public:
       return true;
    }
 
+   // (normally) called after a change in GUI to notify subscribed observes.
    void notifyDataChange(const std::string& newValue, void* changeSource) {
       CGuiElementObserver *pObsrvr;
       CObserver<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
@@ -78,16 +83,34 @@ public:
          pObsrvr->onUiDataChanged(this, newValue);
       }
    }
+
+   // Synchronize the control state after a change in the (remote) component that 
+   // created the control (the owner). This function is called as a result of
+   // a getControlState() query.
+   // TODO: syncControlState can also be called by the owner after a change in its
+   // internal state. This requires another function in the ICE interface:
+   // DisplayInterface::setControlState.
+   void syncControlState(const std::string& newValue, bool notify=false)
+   {
+      CGuiElementObserver *pObsrvr;
+      CObserver<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
+      FOR_EACH(pObsrvr, Observers) {
+         pObsrvr->onOwnerDataChanged(this, newValue);
+      }
+   }
 };
 
 struct CGuiElementValue
 {
-   CGuiElementValue(CGuiElement *pElement, const std::string& value) {
+   enum { get, set };
+   CGuiElementValue(CGuiElement *pElement, const std::string& value, int direction=set) {
       this->pElement = pElement;
       this->value = value;
+      this->mode = direction;
    }
    CGuiElement *pElement;
    std::string value;
+   int mode; 
 };
 
 }} // namespace
