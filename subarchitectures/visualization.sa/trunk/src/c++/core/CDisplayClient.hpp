@@ -119,14 +119,19 @@ private:
       void handleEvent(const Visualization::TEvent &event, const Ice::Current&) { /*override*/
          if (m_pClient) m_pClient->handleEvent(event);
       }
+      std::string getControlState(const std::string& ctrlId, const Ice::Current&) { /*override*/
+         if (m_pClient) m_pClient->getControlState(ctrlId);
+      }
    };
 
 public:
    typedef void (T::*TEventCallbackFn)(const Visualization::TEvent& event);
+   typedef std::string (T::*TStateQueryFn)(const std::string& ctrlId);
    CActiveDisplayClient() {
       m_pEventReceiverIceSrv = NULL;
       m_pReceiver = NULL;
       m_pEventCallback = NULL;
+      m_pStateCallback = NULL;
    }
    ~CActiveDisplayClient() {
       m_pEventReceiverIceSrv = NULL;
@@ -136,6 +141,7 @@ private:
    Visualization::EventReceiverPtr m_pEventReceiverIceSrv;
    T* m_pReceiver; // XXX: m_pOwner could also be used
    TEventCallbackFn m_pEventCallback;
+   TStateQueryFn m_pStateCallback;
 
 public:
    void installEventReceiver() throw(std::runtime_error) {
@@ -165,8 +171,13 @@ public:
    }
 
    void setEventCallback(T* pReceiver, TEventCallbackFn callback) {
-      m_pReceiver = pReceiver;
+      setReceiver(pReceiver);
       m_pEventCallback = callback;
+   }
+
+   void setStateQueryCallback(T* pReceiver, TStateQueryFn callback) {
+      setReceiver(pReceiver);
+      m_pStateCallback = callback;
    }
 
 protected:
@@ -175,6 +186,33 @@ protected:
       if (m_pReceiver != NULL && m_pEventCallback != NULL) {
          debug("ActiveDisplayClient: Passing event to the Receiver component.");
          ((m_pReceiver)->*(m_pEventCallback))(event);
+      }
+   }
+
+   virtual std::string getControlState(const std::string& ctrlId) { /*override*/
+      debug(ctrlId + " queried");
+      if (m_pReceiver != NULL && m_pStateCallback != NULL) {
+         debug("ActiveDisplayClient: Querying Receiver component state.");
+         return ((m_pReceiver)->*(m_pStateCallback))(ctrlId);
+      }
+      return "";
+   }
+
+private:
+   void setReceiver(T* pReceiver) {
+      if (pReceiver == NULL && m_pReceiver == NULL) {
+         throw std::runtime_error(cast::exceptionMessage(__HERE__,
+                  "CActiveDisplayClient: A receiver must be set for the callback."));
+      }
+      if (m_pReceiver != NULL && pReceiver != m_pReceiver) {
+         throw std::runtime_error(cast::exceptionMessage(__HERE__,
+                  "CActiveDisplayClient: All callbacks must have the same receiver."));
+      }
+      if(m_pReceiver == NULL) {
+         m_pReceiver = pReceiver;
+         if (m_pReceiver != m_pOwner) {
+            debug("ActiveDisplayClient: WARNING: Event reciever is not the owner of the display client.");
+         }
       }
    }
 #endif

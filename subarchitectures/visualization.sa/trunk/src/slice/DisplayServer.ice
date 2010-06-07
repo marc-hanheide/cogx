@@ -77,7 +77,7 @@ module Visualization
    interface EventReceiver
    {
       void handleEvent(TEvent event);
-      // TODO: getControlState(ctrl-id-list) returns dictionary[ctrl-id, value]
+      string getControlState(string ctrlId);
    };
 };
 
