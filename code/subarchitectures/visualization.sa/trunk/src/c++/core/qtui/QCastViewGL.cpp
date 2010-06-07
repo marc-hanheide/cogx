@@ -27,7 +27,7 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    xRot = 0;
    yRot = 0;
    zRot = 0;
-   zoomFactor = 1.0;
+   zoomLevel = 0;
 }
 
 QCastViewGL::~QCastViewGL()
@@ -117,20 +117,22 @@ void QCastViewGL::initializeGL()
 void QCastViewGL::resizeGL(int width, int height)
 {
    float aspect = 1.0*width/height;
-   glViewport(0, 0, width, height);
 
+   glViewport(0, 0, width, height);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
    if (1) {
-      float ang = 50/zoomFactor;
-      if (ang < 5) ang = 5;
-      if (ang > 160) ang = 160;
+      float ang;
+      if (zoomLevel >= 0) ang = 50/pow(2.0, zoomLevel);
+      else ang = 50 - zoomLevel*25;
+      if (ang < 1) ang = 1;
+      if (ang > 170) ang = 170;
       gluPerspective(ang, aspect, 1.5, 20.0);
       // glFrustum (-1.0*zoomFactor, 1.0*zoomFactor, -1.0*zoomFactor, 1.0*zoomFactor, 1.5, 20.0);
    }
-   else {
-      glOrtho(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
-   }
+   //else {
+   //   glOrtho(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
+   //}
    glMatrixMode(GL_MODELVIEW);
 }
 
@@ -176,16 +178,16 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
 void QCastViewGL::wheelEvent(QWheelEvent *e)
 {
    if (e->modifiers() & Qt::ControlModifier) {
-      const double sclmin = 1/32.0;
-      const double sclmax = 32.0;
-      double zf = zoomFactor;
+      const double lvlmin = -5;
+      const double lvlmax = 5;
+      double lvl = zoomLevel;
 
-      if (e->delta() > 0) zoomFactor *= 2;
-      else zoomFactor /= 2;
-      if (zoomFactor < sclmin) zoomFactor = sclmin;
-      if (zoomFactor > sclmax) zoomFactor = sclmax;
+      if (e->delta() > 0) zoomLevel += 1;
+      else zoomLevel -= 1;
+      if (zoomLevel < lvlmin) zoomLevel = lvlmin;
+      if (zoomLevel > lvlmax) zoomLevel = lvlmax;
 
-      if (zf != zoomFactor) {
+      if (lvl != zoomLevel) {
          resizeGL(this->width(), this->height());
          updateGL();
       }

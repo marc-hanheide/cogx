@@ -29,7 +29,7 @@ private:
    float xRot;
    float yRot;
    float zRot;
-   float zoomFactor;
+   float zoomLevel;
 
 public:
    QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
