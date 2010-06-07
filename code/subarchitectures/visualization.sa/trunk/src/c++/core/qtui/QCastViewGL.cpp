@@ -106,12 +106,25 @@ void QCastViewGL::initializeGL()
 
    glEnable(GL_DEPTH_TEST);
    //glEnable(GL_CULL_FACE);
-   //glShadeModel(GL_SMOOTH);
-   glEnable(GL_LIGHTING);
-   glEnable(GL_LIGHT0);
    //glEnable(GL_MULTISAMPLE);
-   static GLfloat lightPosition[4] = { 3.0, 3.0, 3.0, 1.0 };
+   glShadeModel(GL_SMOOTH);
+
+   glEnable(GL_LIGHTING);
+   //static GLfloat global_ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+   //glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+
+   glEnable(GL_LIGHT0);
+   static GLfloat specularL[] = {0.5f, 0.5f, 0.5f , 1.0f};
+   static GLfloat ambientL[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+   static GLfloat diffuseL[] = { 0.8f, 0.8f, 0.8, 1.0f };
+   static GLfloat lightPosition[4] = { -3.0, 3.0, 5.0, 1.0 };
+   glLightfv(GL_LIGHT0, GL_AMBIENT, ambientL);
+   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseL);
+   glLightfv(GL_LIGHT0, GL_SPECULAR, specularL);
    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+   glEnable(GL_COLOR_MATERIAL);
+   glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 }
 
 void QCastViewGL::resizeGL(int width, int height)
