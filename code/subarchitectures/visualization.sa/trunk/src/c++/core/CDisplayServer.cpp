@@ -338,12 +338,6 @@ void CDisplayServer::setObjectPose3D(const std::string& id, const std::string& p
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (!pExisting) return;
 
-   //debug("Setting transform");
-   //for(int i=0; i< transform.size(); i++) {
-   //  printf("%f\n", transform[i]);
-   //}
-   // TODO check size if if (transform.size() != 16) transform.resize(16, 0.0);
-   //TODO pExisting->setPartTransform3D(partId, transform);
    std::vector<double> pos, rot;
    pos.reserve(3); rot.reserve(4);
    pos.push_back(position.x);
@@ -356,8 +350,6 @@ void CDisplayServer::setObjectPose3D(const std::string& id, const std::string& p
    pExisting->setPose3D(partId, pos, rot);
    m_Model.refreshObject(id);
 }
-
-
 
 void CDisplayServer::addCheckBox(const Ice::Identity& ident, const std::string& viewId,
       const std::string& ctrlId, const std::string& label)
