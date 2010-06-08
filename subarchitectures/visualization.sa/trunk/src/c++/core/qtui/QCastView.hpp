@@ -38,6 +38,7 @@ public:
 public:
    // QCastViewBase
    void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
+   cogx::display::CDisplayView* getView() { return pView; } /*override*/
    operator QWidget&() { return *this; } /*override*/
    // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/

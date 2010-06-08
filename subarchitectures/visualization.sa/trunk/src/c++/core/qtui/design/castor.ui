@@ -48,17 +48,18 @@
      <height>20</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuQuit">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
      <string>&amp;View</string>
     </property>
     <addaction name="actShowViewList"/>
     <addaction name="actRefreshViewList"/>
+   </widget>
+   <widget class="QMenu" name="menuQuit">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actNewWindow"/>
    </widget>
    <addaction name="menuQuit"/>
    <addaction name="menu_View"/>
@@ -113,6 +114,11 @@
   <action name="actRefreshViewList">
    <property name="text">
     <string>&amp;Refresh list of views</string>
+   </property>
+  </action>
+  <action name="actNewWindow">
+   <property name="text">
+    <string>&amp;New window</string>
    </property>
   </action>
  </widget>

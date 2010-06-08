@@ -85,3 +85,9 @@ void QViewContainer::setView(cogx::display::CDisplayView* pView)
    if (m_pDisplay) m_pDisplay->setView(pView);
 }
 
+cogx::display::CDisplayView* QViewContainer::getView()
+{
+   if (! m_pDisplay) return NULL;
+   return m_pDisplay->getView();
+}
+

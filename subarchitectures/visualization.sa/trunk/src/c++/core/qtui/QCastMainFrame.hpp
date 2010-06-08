@@ -38,6 +38,7 @@ class QCastMainFrame:
    Q_OBJECT
 private:
    Ui::MainWindow ui;
+   QString m_winText;
 
 private:
    cogx::display::CDisplayModel* m_pModel;
@@ -57,6 +58,7 @@ public slots:
 private slots:
    void onShowViewListChanged();
    void onRefreshViewList();
+   void onNewWindow();
 
 private:
    void updateCustomUi(cogx::display::CDisplayView *pView);
@@ -65,6 +67,8 @@ private:
    // CDisplayModelObserver notifications
 private:
    void onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
+   void setView(cogx::display::CDisplayView *pView);
+   void setChildMode();
 
 // signals/slots for interthread communication
 signals: 

@@ -72,6 +72,15 @@ CDisplayView* CDisplayModel::getView(const string& id)
    return pview;
 }
 
+bool CDisplayModel::isValidView(CDisplayView *pView)
+{
+   TViewMap::iterator it;
+   for (it = m_Views.begin(); it != m_Views.end(); it++) {
+      if (it->second == pView) return true;
+   }
+   return false;
+}
+
 CPtrVector<CDisplayView> CDisplayModel::findViewsWithObject(const std::string &id)
 {
    CPtrVector<CDisplayView> views;
