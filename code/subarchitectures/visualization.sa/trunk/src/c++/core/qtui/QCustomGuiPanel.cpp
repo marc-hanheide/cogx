@@ -116,7 +116,7 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
    removeUi();
 
    m_pView = pView;
-   if (!pView) return;
+   if (!pModel || !pView) return;
 
    CPtrVector<cogx::display::CGuiElement> elements;
    elements = pModel->getGuiElements(pView->m_id);
