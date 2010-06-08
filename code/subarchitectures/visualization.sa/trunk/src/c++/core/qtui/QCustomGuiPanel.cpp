@@ -79,18 +79,21 @@ void QCustomGuiPanel::doUiDataChanged(cogx::display::CDisplayModel *pModel,
       if (!pslot) continue;
       if (pslot->m_pGuiElement != pElement) continue;
       // DMESSAGE("I'm going to set: " << pslot->m_pGuiElement->m_id << " to " << newValue.toStdString());
-      switch (pElement->m_type) {
-         case cogx::display::CGuiElement::wtCheckBox:
-            pBox = dynamic_cast<QCheckBox*>(pslot->parent());
-            if (pBox != NULL) {
-               pBox->blockSignals(true);
-               if (newValue == "0") pBox->setCheckState(Qt::Unchecked);
-               else pBox->setCheckState(Qt::Checked);
-               pBox->blockSignals(false);
-            }
-            break;
-         default: break;
-      };
+      // TODO: This code is duplicated in CChangeSlot; remove it from here and call a fn from CChangeSlot.
+      // eg. pslot->setNewValue(newValue); ATM changed to pslot->onUiDataChanged()
+      //switch (pElement->m_type) {
+      //   case cogx::display::CGuiElement::wtCheckBox:
+      //      pBox = dynamic_cast<QCheckBox*>(pslot->parent());
+      //      if (pBox != NULL) {
+      //         pBox->blockSignals(true);
+      //         if (newValue == "0") pBox->setCheckState(Qt::Unchecked);
+      //         else pBox->setCheckState(Qt::Checked);
+      //         pBox->blockSignals(false);
+      //      }
+      //      break;
+      //   default: break;
+      //};
+      pslot->onUiDataChanged(pElement, newValue.toStdString());
    }
 }
 

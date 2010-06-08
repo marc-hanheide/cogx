@@ -20,6 +20,8 @@
 #include <Ice/Ice.h>
 #include "observer.hpp"
 
+class CChangeSlot;
+
 namespace cogx { namespace display {
 
 class CGuiElement;
@@ -71,16 +73,7 @@ public:
    }
 
    // (normally) called after a change in GUI to notify subscribed observes.
-   void notifyDataChange(const std::string& newValue, void* changeSource) {
-      CGuiElementObserver *pObsrvr;
-      CObserver<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
-      FOR_EACH(pObsrvr, Observers) {
-         // The source of the data change should already be aware of the change
-         // so we don't need to notify it.
-         if (pObsrvr == changeSource) continue;
-         pObsrvr->onUiDataChanged(this, newValue);
-      }
-   }
+   void notifyDataChange(const std::string& newValue, CChangeSlot* changeSource);
 
    // Synchronize the control state after a change in the (remote) component that 
    // created the control (the owner). This function is called as a result of
@@ -88,14 +81,7 @@ public:
    // TODO: syncControlState can also be called by the owner after a change in its
    // internal state. This requires another function in the ICE interface:
    // DisplayInterface::setControlState.
-   void syncControlState(const std::string& newValue, bool notify=false)
-   {
-      CGuiElementObserver *pObsrvr;
-      CObserver<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
-      FOR_EACH(pObsrvr, Observers) {
-         pObsrvr->onOwnerDataChanged(this, newValue);
-      }
-   }
+   void syncControlState(const std::string& newValue, bool notify=false);
 };
 
 struct CGuiElementValue
