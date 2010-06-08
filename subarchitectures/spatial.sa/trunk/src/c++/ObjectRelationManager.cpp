@@ -74,6 +74,10 @@ ObjectRelationManager::ObjectRelationManager()
   m_recognitionTimeThreshold = 5.0;
   m_trackerTimeThreshold = 3.0;
   m_timeSinceLastMoved = 0.0;
+
+  m_orientationQuantization = 4;
+  m_sampleNumberTarget = 1000;
+  m_kernelWidthFactor = 1.5;
 }
 
 ObjectRelationManager::~ObjectRelationManager() 
@@ -145,6 +149,21 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
   it = _config.find("--plane-model-file");
   if (it != _config.end()) {
     m_planeModelFilename = it->second;
+  }
+
+  it = _config.find("--orientations");
+  if (it != _config.end()) {
+    m_orientationQuantization = atoi(it->second.c_str());
+  }
+
+  it = _config.find("--samples");
+  if (it != _config.end()) {
+    m_sampleNumberTarget = atoi(it->second.c_str());
+  }
+
+  it = _config.find("--kernel-width-factor");
+  if (it != _config.end()) {
+    m_kernelWidthFactor = atoi(it->second.c_str());
   }
 
   m_RetryDelay = 10;
@@ -577,6 +596,8 @@ void ObjectRelationManager::runComponent()
 	    witp2.set_scale(0.01);
 
 	    if (m_bSampleOnness) {
+	      static bool sampleTable = false;
+
 	      Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
 		  Cure::LocalGridMap<double>::MAP1, 0, 0);
 	      vector<spatial::Object *>objects;
@@ -586,9 +607,18 @@ void ObjectRelationManager::runComponent()
 	      relations.push_back(RELATION_ON);
 	      //	    relations.push_back(RELATION_ON);
 
-	      double total;
+	      double total = 0.0;
+	      if (sampleTable) {
 	      sampleBinaryRelationRecursively(relations, objects, 0, pdf,
 		  &table1, total);
+	      }
+	      else {
+	      sampleBinaryRelationRecursively(relations, objects, 0, pdf,
+		  &box2, total);
+	      }
+
+	      sampleTable = !sampleTable;
+
 	      peekabot::LineCloudProxy linecloudp;
 
 	      linecloudp.add(m_PeekabotClient, "root.distribution",
@@ -1751,72 +1781,70 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
       break;
   }
 
-  int mapMinX, mapMinY;
-  int mapMaxX, mapMaxY;
-  outMap.worldCoords2Index(-maxLateral + supportObject->pose.pos.x, 
-      -maxLateral + supportObject->pose.pos.y,
-      mapMinX, mapMinY);
-  outMap.worldCoords2Index(maxLateral + supportObject->pose.pos.x,
-      maxLateral + supportObject->pose.pos.y,
-      mapMaxX, mapMaxY);
+  int mapSize = outMap.getSize();
+  double cellSize = outMap.getCellSize();
+
+  double x1 = -maxLateral + supportObject->pose.pos.x;
+  double x2 = maxLateral + supportObject->pose.pos.x;
+  double y1 = -maxLateral + supportObject->pose.pos.y;
+  double y2 = maxLateral + supportObject->pose.pos.y;
   double zmin = supportObject->pose.pos.z + minVertical;
   double zmax = supportObject->pose.pos.z + maxVertical;
-  int mapSize = outMap.getSize();
 
-  double kernelRadius = frameRadius*0.4;
-  int kernelWidth = (int)(ceil(kernelRadius/outMap.getCellSize())+0.1);
+  // Distribute N samples over the whole volume
+  double sampleVolume = (x2-x1)*(y2-y1)*(zmax-zmin);
+
+  // samplingInterval: distance between successive samples.
+  // Can be set to a non-multiple of cellSize, but that may lead to
+  // aliasing problems.
+
+  double samplingInterval = pow(sampleVolume/m_sampleNumberTarget, 1/3.0); 
+  // Round samplingInterval upward to the nearest multiple of cellSize
+  // (keeps the number of sampled positions less than sampleNumberTarget)
+  samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
+
+  double kernelRadius = samplingInterval * m_kernelWidthFactor;
+  if (kernelRadius < cellSize)
+    kernelRadius = cellSize;
+  int kernelWidth = (int)(ceil(kernelRadius/cellSize)+0.1);
   //How many kernelRadiuses per cell
-  double kernelStep = outMap.getCellSize()/kernelRadius; 
+  double kernelStep = cellSize/kernelRadius; 
 
-  //Try not re-randomizing the orientation for each position sample,
-  //but create a structured sample sphere in advance?
-  //(Can be done by switching the independent three random numbers in randomizeOrientation
-  //with three ranges of equidistant numbers with a common random offset).
-
-  //With this, maybe the thresholding won't be necessary, and raw onness can be
-  //summed in each grid cell, meaning fewer samples will be needed and it won't
-  //be necessary to run-until-enough-samples.
-
-  //Instead, a specific number of position samples can be created for each
-  //column (proportional to the height of the column, or part of the column that
-  //is sampled)
-
-  const unsigned int orientationQuantization = 4; //The actual number of orientations
-  // will be this number cubed
   vector<Matrix33> orientations;
-  getRandomSampleSphere(orientations, orientationQuantization);
-  int sampledCells = (mapMaxX-mapMinX+1)*(mapMaxY-mapMinY+1);
-  const unsigned long sampleNumberTarget = 100;
+  getRandomSampleSphere(orientations, m_orientationQuantization);
 
-  unsigned long samplesPerCell = sampleNumberTarget / sampledCells;
-  if (samplesPerCell < 1) samplesPerCell = 1;
-
-  vector<Vector3> offsets;
-  vector<OffsetKernel> offsetKernels;
-
-  const int zSteps = 20;
-  double z0 = ((double)rand())/RAND_MAX/zSteps * (zmax - zmin);
-  const unsigned long samplesPerColumn = samplesPerCell*zSteps;
-
-  for (unsigned int i = 0; i < samplesPerCell; i++) {
-    double sx = (((double)rand())/RAND_MAX - 0.5) * outMap.getCellSize();
-    double sy = (((double)rand())/RAND_MAX - 0.5) * outMap.getCellSize();
-    for (double sz = z0; sz < zmax; sz+=(zmax-zmin)/zSteps) {
-      offsets.push_back(vector3(sx,sy,sz));
+  double z0 = ((double)rand())/RAND_MAX*samplingInterval;
+  //Offset, 0-centered, along length samplingInterval
+  double xOffset = (((double)rand())/RAND_MAX) * samplingInterval; 
+  double yOffset = (((double)rand())/RAND_MAX) * samplingInterval; 
+  for (double sx = xOffset + x1;
+      sx < x2; sx += samplingInterval) {
+    for (double sy = yOffset + y1;
+	sy < y2; sy += samplingInterval) {
+      if (triangle.size() > 0 && currentLevel == 0 &&
+	  !isInTriangle(sx, sy, triangle))
+	continue;
 
       //Put together a kernel offset by this much
       OffsetKernel kernel;
 
-      kernel.minxi = -kernelWidth;
+      int sampleMapX, sampleMapY;
+      outMap.worldCoords2Index(sx, sy, sampleMapX, sampleMapY);
+
+      // Offset of sample position from center of its containing cell
+      double offsetInCellX = sx - cellSize * (floor(sx / cellSize)+0.5);
+      double offsetInCellY = sy - cellSize * (floor(sy / cellSize)+0.5);
+
+      kernel.minxi = -kernelWidth; //Relative indices of kernel patch extents
       kernel.minyi = -kernelWidth;
-      kernel.maxxi = kernelWidth;
-      kernel.maxyi = kernelWidth;
+      kernel.maxxi = +kernelWidth;
+      kernel.maxyi = +kernelWidth;
 
-      double minx, miny;
-
+      double minx, miny; 
       outMap.index2WorldCoords(kernel.minxi,kernel.minyi,minx,miny);
-      minx -= offsets[i].x; //Relative coords of minxi, minyi in meters
-      miny -= offsets[i].y;
+      minx -= offsetInCellX; //Relative coords of minxi, minyi in meters
+      miny -= offsetInCellY;
+
       minx /= kernelRadius; //Relative coords of minxi, minyi in kernel radii
       miny /= kernelRadius;
 
@@ -1825,7 +1853,9 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
       for (int xi = kernel.minxi; xi <= kernel.maxxi; xi++, x+=kernelStep) {
 	double y = miny;
 	for (int yi = kernel.minyi; yi <= kernel.maxyi; yi++, y+=kernelStep) {
-	  double sqsum = 1 - (x*x+y*y);
+	  double sq = x*x+y*y;
+	  //double sqsum = 1 - sq;
+	  double sqsum = (1-sq)*(1-sq)*(1-sq);
 	  if (sqsum > 0) {
 	    kernel.weights.push_back(sqsum);
 	    sumWeights+=sqsum;
@@ -1838,29 +1868,16 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
       for (unsigned int i = 0; i < kernel.weights.size(); i++) {
 	kernel.weights[i] = kernel.weights[i]/sumWeights;
       }
-      offsetKernels.push_back(kernel);
-    }
-  }
 
-  for (int mapx = mapMinX; mapx <= mapMaxX; mapx++) {
-    for (int mapy = mapMinY; mapy <= mapMaxY; mapy++) {
-      double cellCenterX, cellCenterY;
-      outMap.index2WorldCoords(mapx, mapy, cellCenterX, cellCenterY);
-
-      for (int offsetNo = 0; offsetNo < samplesPerColumn; offsetNo++) {
-	double sampleX = offsets[offsetNo].x + cellCenterX;
-	double sampleY = offsets[offsetNo].y + cellCenterY;
-	double sampleZ = offsets[offsetNo].z + zmin;
-	onObject->pose.pos.x = sampleX;
-	onObject->pose.pos.y = sampleY;
-	onObject->pose.pos.z = sampleZ;
-
-	if (triangle.size() > 0 && currentLevel == 0 &&
-	    !isInTriangle(sampleX, sampleY, triangle))
-	  continue;
-
+      double totalValueThisXY = 0.0; //Sum sample values of all samples at this
+	  			     //(x,y)
+      for (double sz = z0+zmin; sz < zmax; sz+=samplingInterval) {
+	double totalValueThisXYZ = 0;
 	for (unsigned int orientationNo = 0; orientationNo < orientations.size(); orientationNo++) {
 	  onObject->pose.rot = orientations[orientationNo];
+	  onObject->pose.pos.x = sx;
+	  onObject->pose.pos.y = sy;
+	  onObject->pose.pos.z = sz;
 	  double value;
 	  if (relationType == RELATION_ON) {
 	    value = evaluateOnness(supportObject, onObject);
@@ -1874,28 +1891,35 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
 	  }
 
 	  if (currentLevel == 0) {
-	    // This is the trajector itself
-	    // Accumulate the kernel by this much
-	    int kernelCellNo = 0;
-	    for (int xi = offsetKernels[offsetNo].minxi; xi <= offsetKernels[offsetNo].maxxi; xi++) {
-	      for (int yi = offsetKernels[offsetNo].minyi; yi <= offsetKernels[offsetNo].maxyi; yi++, kernelCellNo++) {
-		if (xi <= - mapSize || xi >= mapSize ||
-		    yi <= - mapSize || yi >= mapSize)
-		  continue;
-
-		outMap(mapx+xi, mapy+yi)+=offsetKernels[offsetNo].weights[kernelCellNo] * value * baseOnness;
-		total+=offsetKernels[offsetNo].weights[kernelCellNo] * value * baseOnness;
-	      }
-	    }
+	    totalValueThisXY += value;
+	    totalValueThisXYZ += value;
 	  }
 	  else {
 	    // Sample and recurse, if the value is above a threshold
 	    if (value > 0.05) {
 	      sampleBinaryRelationRecursively(relations, objects, currentLevel-1,
-	          outMap, onObject, total, triangle, value * baseOnness);
+		  outMap, onObject, total, triangle, value * baseOnness);
 	    }
 	  }
 	}
+      }
+
+      if (currentLevel == 0) {
+	// This is the trajector itself
+	// Accumulate the kernel by this much
+	int kernelCellNo = 0;
+	for (int xi = kernel.minxi; xi <= kernel.maxxi; xi++) {
+	  for (int yi = kernel.minyi; yi <= kernel.maxyi; yi++, kernelCellNo++) {
+	    if (xi <= - mapSize || xi >= mapSize ||
+		yi <= - mapSize || yi >= mapSize)
+	      continue;
+
+	    outMap(sampleMapX+xi, sampleMapY+yi)+=kernel.weights[kernelCellNo] * totalValueThisXY * baseOnness;
+	    total+=kernel.weights[kernelCellNo] * totalValueThisXY * baseOnness;
+	  }
+	}
+      }
+      else {
       }
     }
   }
