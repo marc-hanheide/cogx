@@ -15,19 +15,41 @@
  */
 
 #include "ChangeSlot.hpp"
+#include <QCheckBox>
+
 #include "../convenience.hpp"
 
 void CChangeSlot::onCheckBoxChange(int value)
 {
-   DTRACE("CChangeSlot::onCheckBoxChange");
+   DTRACE("CChangeSlot::onCheckBoxChange " << this);
    std::stringstream sval;
    sval << value;
-   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval.str(), m_pView);
+   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval.str(), this);
 }
 
 void CChangeSlot::onButtonClick(bool checked)
 {
-   DTRACE("CChangeSlot::onButtonClick");
+   DTRACE("CChangeSlot::onButtonClick " << this);
    std::string sval = checked ? "1" : "0";
-   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval, m_pView);
+   if (m_pGuiElement) m_pGuiElement->notifyDataChange(sval, this);
+}
+
+void CChangeSlot::onUiDataChanged(cogx::display::CGuiElement *pElement, const std::string& newValue)
+{
+   DTRACE("CChangeSlot::onUiDataChanged " << this);
+   if (m_pGuiElement != pElement) { DMESSAGE("WE HAVE A MIXUP"); }
+
+   QCheckBox *pBox;
+   switch (m_pGuiElement->m_type) {
+      case cogx::display::CGuiElement::wtCheckBox:
+         pBox = dynamic_cast<QCheckBox*>(parent());
+         if (pBox != NULL) {
+            pBox->blockSignals(true);
+            if (newValue == "0") pBox->setCheckState(Qt::Unchecked);
+            else pBox->setCheckState(Qt::Checked);
+            pBox->blockSignals(false);
+         }
+         break;
+      default: break;
+   };
 }

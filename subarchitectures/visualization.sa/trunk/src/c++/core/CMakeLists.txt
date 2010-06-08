@@ -51,6 +51,7 @@ set(SERVER_CPP
    convenience.cpp
    CDisplayServer.cpp
    Model.cpp
+   GuiElements.cpp
    object/CSvgImage.cpp
    object/CRasterImage.cpp
    object/CTomGineModel.cpp

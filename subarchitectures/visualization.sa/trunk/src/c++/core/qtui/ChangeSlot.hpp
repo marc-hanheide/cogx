@@ -35,7 +35,8 @@
 // Each instance MUST be owned by the matching dynamic Qt widget, otherwise
 // the updates from the remote owner won't work.
 // See <url:QCustomGuiPanel.cpp#tn=::doUiDataChanged>, findChildren.
-class CChangeSlot: public QObject
+class CChangeSlot: public QObject,
+   public cogx::display::CGuiElementObserver   
 {
    Q_OBJECT
 private:
@@ -50,13 +51,22 @@ public:
  
       // The view needs to be notified about data changes related to pGuiElement
       // A button has no data, so it doesn't need to be notified.
-      if (m_pGuiElement && m_pView && m_pGuiElement->m_type != cogx::display::CGuiElement::wtButton)
-         m_pGuiElement->Observers += m_pView;
+      if (m_pGuiElement && m_pGuiElement->m_type != cogx::display::CGuiElement::wtButton) {
+         if (m_pView) m_pGuiElement->Observers += m_pView;
+         m_pGuiElement->Observers += this;
+      }
    }
    ~CChangeSlot() {
       DMESSAGE("~Destroying CChangeSlot");
-      if (m_pGuiElement && m_pView) m_pGuiElement->Observers -= m_pView;
+      if (m_pGuiElement) {
+         if (m_pView) m_pGuiElement->Observers -= m_pView;
+         m_pGuiElement->Observers -= this;
+      }
    }
+
+public:
+   // CGuiElementObserver
+   void onUiDataChanged(cogx::display::CGuiElement *pElement, const std::string& newValue);
 
 public slots:
    void onCheckBoxChange(int value);
@@ -64,3 +74,4 @@ public slots:
 };
 
 #endif /* end of include guard: CHANGESLOT_SPOFBGTO */
+// vim:sw=3:ts=8:et
