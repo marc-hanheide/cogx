@@ -107,6 +107,16 @@ protected:
   int m_PbPort;
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
+  //The actual number of orientations
+  // will be this number cubed
+  int m_orientationQuantization;
+
+  //Number of positional samples in total to go for when sampling 
+  //a distribution. 
+  unsigned long m_sampleNumberTarget;
+
+  //Width of kernels, relative to the distance between them.
+  double m_kernelWidthFactor;
 
   void connectPeekabot();
 
