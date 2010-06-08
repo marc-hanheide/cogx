@@ -216,7 +216,20 @@ void VideoViewer::runComponent()
   }
   {
     std::stringstream str;
+    str << "function initlists()\n";
+    str <<   "if DispList:exists('myobject') then return end\n";
+    str <<   "DispList:create('myobject')\n";
+    str <<     "glBegin(GL_QUADS)\n";
+    str <<     "glVertex(0.1, 0.1, 0.1)\n";
+    str <<     "glVertex(0.3, 0.1, 0.2)\n";
+    str <<     "glVertex(0.3, 0.4, 0.3)\n";
+    str <<     "glVertex(0.0, 0.5, 0.4)\n";
+    str <<     "glEnd()\n";
+    str <<   "DispList:endList()\n";
+    str << "end\n";
+
     str << "function render()\n";
+    str << "initlists()\n";
     str << "N=36\n";
     str << "tabsin={0";
     for (int i = 0; i < 36; i++) str << "," << sin(10*i*3.14/180);
@@ -232,6 +245,13 @@ void VideoViewer::runComponent()
             "glVertex(tabcos[i%N+1], tabsin[i%N+1], -i/100.0)\n"
          "end\n"
          "glEnd()\n"
+         "glColor(0.5,0.1,0.1)\n"
+         "DispList:draw('myobject')\n"
+         "glPushMatrix()\n"
+           "glColor(0.1,0.7,0.4)\n"
+           "glTranslate(0.5,0.5,0.0)\n"
+           "DispList:draw('myobject')\n"
+         "glPopMatrix()\n"
       "end\n";
     m_display.setLuaGlObject("Visualization.sa.LuaGl", "Points", str.str());
   }
