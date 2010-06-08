@@ -1763,7 +1763,7 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
   double zmax = supportObject->pose.pos.z + maxVertical;
   int mapSize = outMap.getSize();
 
-  double kernelRadius = 0.2;
+  double kernelRadius = frameRadius*0.4;
   int kernelWidth = (int)(ceil(kernelRadius/outMap.getCellSize())+0.1);
   //How many kernelRadiuses per cell
   double kernelStep = outMap.getCellSize()/kernelRadius; 
@@ -1785,50 +1785,61 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
   // will be this number cubed
   vector<Matrix33> orientations;
   getRandomSampleSphere(orientations, orientationQuantization);
-  const unsigned int samplesPerColumn = 15;
+  int sampledCells = (mapMaxX-mapMinX+1)*(mapMaxY-mapMinY+1);
+  const unsigned long sampleNumberTarget = 100;
+
+  unsigned long samplesPerCell = sampleNumberTarget / sampledCells;
+  if (samplesPerCell < 1) samplesPerCell = 1;
+
   vector<Vector3> offsets;
   vector<OffsetKernel> offsetKernels;
-  for (unsigned int i = 0; i < samplesPerColumn; i++) {
+
+  const int zSteps = 20;
+  double z0 = ((double)rand())/RAND_MAX/zSteps * (zmax - zmin);
+  const unsigned long samplesPerColumn = samplesPerCell*zSteps;
+
+  for (unsigned int i = 0; i < samplesPerCell; i++) {
     double sx = (((double)rand())/RAND_MAX - 0.5) * outMap.getCellSize();
     double sy = (((double)rand())/RAND_MAX - 0.5) * outMap.getCellSize();
-    double sz = ((double)rand())/RAND_MAX * (zmax - zmin);
-    offsets.push_back(vector3(sx,sy,sz));
+    for (double sz = z0; sz < zmax; sz+=(zmax-zmin)/zSteps) {
+      offsets.push_back(vector3(sx,sy,sz));
 
-    //Put together a kernel offset by this much
-    OffsetKernel kernel;
+      //Put together a kernel offset by this much
+      OffsetKernel kernel;
 
-    kernel.minxi = -kernelWidth;
-    kernel.minyi = -kernelWidth;
-    kernel.maxxi = kernelWidth;
-    kernel.maxyi = kernelWidth;
+      kernel.minxi = -kernelWidth;
+      kernel.minyi = -kernelWidth;
+      kernel.maxxi = kernelWidth;
+      kernel.maxyi = kernelWidth;
 
-    double minx, miny;
+      double minx, miny;
 
-    outMap.index2WorldCoords(kernel.minxi,kernel.minyi,minx,miny);
-    minx -= offsets[i].x; //Relative coords of minxi, minyi in meters
-    miny -= offsets[i].y;
-    minx /= kernelRadius; //Relative coords of minxi, minyi in kernel radii
-    miny /= kernelRadius;
+      outMap.index2WorldCoords(kernel.minxi,kernel.minyi,minx,miny);
+      minx -= offsets[i].x; //Relative coords of minxi, minyi in meters
+      miny -= offsets[i].y;
+      minx /= kernelRadius; //Relative coords of minxi, minyi in kernel radii
+      miny /= kernelRadius;
 
-    double sumWeights = 0.0;
-    double x = minx;
-    for (int xi = kernel.minxi; xi <= kernel.maxxi; xi++, x+=kernelStep) {
-      double y = miny;
-      for (int yi = kernel.minyi; yi <= kernel.maxyi; yi++, y+=kernelStep) {
-	double sqsum = 1 - (x*x+y*y);
-	if (sqsum > 0) {
-	  kernel.weights.push_back(sqsum);
-	  sumWeights+=sqsum;
-	}
-	else {
-	  kernel.weights.push_back(0);
+      double sumWeights = 0.0;
+      double x = minx;
+      for (int xi = kernel.minxi; xi <= kernel.maxxi; xi++, x+=kernelStep) {
+	double y = miny;
+	for (int yi = kernel.minyi; yi <= kernel.maxyi; yi++, y+=kernelStep) {
+	  double sqsum = 1 - (x*x+y*y);
+	  if (sqsum > 0) {
+	    kernel.weights.push_back(sqsum);
+	    sumWeights+=sqsum;
+	  }
+	  else {
+	    kernel.weights.push_back(0);
+	  }
 	}
       }
+      for (unsigned int i = 0; i < kernel.weights.size(); i++) {
+	kernel.weights[i] = kernel.weights[i]/sumWeights;
+      }
+      offsetKernels.push_back(kernel);
     }
-    for (unsigned int i = 0; i < kernel.weights.size(); i++) {
-      kernel.weights[i] = kernel.weights[i]/sumWeights;
-    }
-    offsetKernels.push_back(kernel);
   }
 
   for (int mapx = mapMinX; mapx <= mapMaxX; mapx++) {

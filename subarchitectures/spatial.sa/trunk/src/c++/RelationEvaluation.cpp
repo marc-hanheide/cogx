@@ -407,10 +407,10 @@ polyhedron.faces[faceNo][edgeGoingIn].first));
   map<int, int> oldVertexToNewVertexMap;
   vector<Vector3> newVertexSet;
   for (unsigned int i = 0; i < polyhedron.vertices.size(); i++) {
+    oldVertexToNewVertexMap[i] = newVertexSet.size();
     if (verticesToPrune.find(i) == verticesToPrune.end()) {
       newVertexSet.push_back(polyhedron.vertices[i]);
     }
-    oldVertexToNewVertexMap[i] = newVertexSet.size()-1;
   }
   polyhedron.vertices = newVertexSet;
   for (unsigned int i = 0; i < newFaces.size(); i++) {
@@ -1381,30 +1381,26 @@ mergeAnyOverlappingVertices(Polyhedron &polyhedron, double eps)
   vector<Vector3> newVerts;
 
   map<int, int> oldVertexToNewVertexMap;
-  for (unsigned int i = 0; i < polyhedron.vertices.size()-1; i++) {
-    for (unsigned int j = i+1; j < polyhedron.vertices.size(); j++) {
-      if (vequals(polyhedron.vertices[i], 
-	    polyhedron.vertices[j], eps)) {
-	oldVertexToNewVertexMap[j] = i;
-      }
-    }
-  }
   for (unsigned int i = 0; i < polyhedron.vertices.size(); i++) {
     if (oldVertexToNewVertexMap.find(i) == oldVertexToNewVertexMap.end()) {
+      // i is a keeper.
       newVerts.push_back(polyhedron.vertices[i]);
+      // old index i -> new index last in newVerts
+      oldVertexToNewVertexMap[i] = newVerts.size()-1;
+    }
+
+    for (unsigned int j = i+1; j < polyhedron.vertices.size(); j++) {
+      if (vequals(polyhedron.vertices[i], polyhedron.vertices[j], eps)) {
+	// j is merged with i, begin last in newVerts
+	oldVertexToNewVertexMap[j] = newVerts.size()-1;
+      }
     }
   }
 
   for (unsigned int i = 0; i < polyhedron.faces.size();) {
     for (unsigned int j = 0; j < polyhedron.faces[i].size();) {
-      if (oldVertexToNewVertexMap.find(polyhedron.faces[i][j].first) != 
-	  oldVertexToNewVertexMap.end()) {
-	polyhedron.faces[i][j].first = oldVertexToNewVertexMap[polyhedron.faces[i][j].first];
-      }
-      if (oldVertexToNewVertexMap.find(polyhedron.faces[i][j].second) != 
-	  oldVertexToNewVertexMap.end()) {
-	polyhedron.faces[i][j].second = oldVertexToNewVertexMap[polyhedron.faces[i][j].second];
-      }
+      polyhedron.faces[i][j].first = oldVertexToNewVertexMap[polyhedron.faces[i][j].first];
+      polyhedron.faces[i][j].second = oldVertexToNewVertexMap[polyhedron.faces[i][j].second];
       if (polyhedron.faces[i][j].first == polyhedron.faces[i][j].second) {
 	polyhedron.faces[i].erase(polyhedron.faces[i].begin() + j);
       }
