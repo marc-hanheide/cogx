@@ -17,10 +17,13 @@
 
 extern "C" {
 #include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 }
 #include "tolua++.h"
 #include "glbind.h"
 #include "glubind.h"
+#include "v11nbind.h"
 #include <gl.h>
 
 #ifdef DEBUG_TRACE
@@ -28,7 +31,10 @@ extern "C" {
 #endif
 #include "../convenience.hpp"
 
+
 namespace cogx { namespace display {
+
+#include "v11n_luacode.inc"
 
 std::auto_ptr<CRenderer> CLuaGlScript::renderGL(new CLuaGlScript_RenderGL());
 
@@ -43,12 +49,39 @@ CLuaGlScript::CScript::~CScript()
    luaS = NULL;
 }
 
+static int reportError(lua_State *luaS)
+{
+	const char *errmsg = lua_tostring(luaS, -1);
+	printf("\nError: %s\n", errmsg ? errmsg : "<no message>");
+
+	lua_getglobal(luaS, "_TRACEBACK");
+	lua_pcall(luaS, 0, 0, 0);
+
+	return 0;
+}
+
 void CLuaGlScript::CScript::initLuaState()
 {
    if (! luaS) {
       luaS = lua_open();
+
+      // luaL_openlibs(L); we don't want io, so we open libs one by one:
+      // luaopen_io(L);
+      luaopen_base(luaS);
+      luaopen_table(luaS);
+      luaopen_string(luaS);
+      luaopen_math(luaS);
+
+      // application specific bindings
       tolua_gl_open(luaS);
       tolua_glu_open(luaS);
+      tolua_v11n_open(luaS);
+
+      lua_register(luaS, "_ALERT", reportError);
+      lua_atpanic(luaS, reportError);
+
+      // load some utility scripts
+      loadScript(luacode_displist_lua);
    }
 }
 
@@ -148,6 +181,7 @@ CRenderer* CLuaGlScript::getRenderer(ERenderContext context)
 {
    switch(context) {
       case ContextGL: return renderGL.get();
+      default: break;
    }
    return NULL;
 }

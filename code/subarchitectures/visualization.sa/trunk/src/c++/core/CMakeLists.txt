@@ -14,6 +14,8 @@ if(EXPERIMENT)
          object/gllua/glubind.cpp
          object/gllua/gllbuffer.cpp
          object/gllua/gluaux.cpp
+         object/gllua/v11n.cpp
+         object/gllua/v11nbind.cpp
          object/CLuaGlScript.cpp
          )
       set(EXPERIMENT_LIB
