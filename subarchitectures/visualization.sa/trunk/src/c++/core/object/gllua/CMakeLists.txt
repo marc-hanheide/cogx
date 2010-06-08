@@ -12,6 +12,8 @@ if (LUA51_FOUND)
    set(LUA_BIND_GLU_CPP ${CMAKE_CURRENT_BINARY_DIR}/glubind.cpp)
    set(LUA_BIND_GL_H ${CMAKE_CURRENT_BINARY_DIR}/glbind.h)
    set(LUA_BIND_GLU_H ${CMAKE_CURRENT_BINARY_DIR}/glubind.h)
+   set(LUA_BIND_V11N_CPP ${CMAKE_CURRENT_BINARY_DIR}/v11nbind.cpp)
+   set(LUA_BIND_V11N_H ${CMAKE_CURRENT_BINARY_DIR}/v11nbind.h)
 
    include_directories(.
       ${LUA_INCLUDE_DIR}
@@ -19,7 +21,7 @@ if (LUA51_FOUND)
       )
 
    add_custom_command(OUTPUT ${LUA_BIND_GL_CPP}
-      COMMAND ${CMD_TOLUA} -o ${LUA_BIND_GL_CPP} -H ${LUA_BIND_GL_H} ${CMAKE_CURRENT_SOURCE_DIR}/gl.pkg
+      COMMAND ${CMD_TOLUA} -n gl -o ${LUA_BIND_GL_CPP} -H ${LUA_BIND_GL_H} ${CMAKE_CURRENT_SOURCE_DIR}/gl.pkg
       COMMAND 
          sed -e \"s/\\\( *unsigned int\\* [a-zA-Z]* = Mtolua_new_dim\(\\\)int/\\1unsigned int/\" -i ${LUA_BIND_GL_CPP}
       COMMAND 
@@ -27,14 +29,18 @@ if (LUA51_FOUND)
       DEPENDS gl.pkg
       )
    add_custom_command(OUTPUT ${LUA_BIND_GLU_CPP}
-      COMMAND ${CMD_TOLUA} -o ${LUA_BIND_GLU_CPP} -H ${LUA_BIND_GLU_H} ${CMAKE_CURRENT_SOURCE_DIR}/glu.pkg
+      COMMAND ${CMD_TOLUA} -n glu -o ${LUA_BIND_GLU_CPP} -H ${LUA_BIND_GLU_H} ${CMAKE_CURRENT_SOURCE_DIR}/glu.pkg
       DEPENDS glu.pkg
       )
+   add_custom_command(OUTPUT ${LUA_BIND_V11N_CPP}
+     COMMAND ${CMD_TOLUA} -n v11n -o ${LUA_BIND_V11N_CPP} -H ${LUA_BIND_V11N_H} ${CMAKE_CURRENT_SOURCE_DIR}/v11n.pkg
+     DEPENDS v11n.pkg
+     )
    add_library(gllua SHARED
       ${LUA_BIND_GLU_CPP}
       ${LUA_BIND_GL_CPP} 
+      ${LUA_BIND_V11N_CPP} 
       gllbuffer.cpp gluaux.cpp
-      entry.cpp
       )
    target_link_libraries(gllua
       GL GLU
