@@ -57,6 +57,16 @@ function DispList:delete(name)
    glDeleteLists(id, 1)
 end
 
+function DispList:exists(name)
+   local ctx = v11nGetOpenGlContext()
+   if not ctx then return false end
+   local displist = self.context[ctx]
+   if not displist then return false end
+   local id = displist[name] 
+   if not id then return false end
+   return true
+end
+
 function DispList:draw(name)
    local ctx = v11nGetOpenGlContext()
    assert(ctx, "No OpenGL context is active")
