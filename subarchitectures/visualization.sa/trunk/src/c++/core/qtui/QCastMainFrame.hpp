@@ -54,6 +54,10 @@ public:
 public slots:
    void onViewActivated(QListWidgetItem *pSelected);
 
+private slots:
+   void onShowViewListChanged();
+   void onRefreshViewList();
+
 private:
    void updateCustomUi(cogx::display::CDisplayView *pView);
    void updateViewList();

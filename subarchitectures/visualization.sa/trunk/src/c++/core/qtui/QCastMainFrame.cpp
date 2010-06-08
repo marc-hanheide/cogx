@@ -27,6 +27,15 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
          this, SLOT(onViewActivated(QListWidgetItem*)));
 
+   connect(ui.actShowViewList, SIGNAL(triggered()),
+         this, SLOT(onShowViewListChanged()));
+   ui.actShowViewList->setChecked(Qt::Checked);
+   connect(ui.actRefreshViewList, SIGNAL(triggered()),
+         this, SLOT(onRefreshViewList()));
+
+   ui.wgCustomGui->setVisible(false);
+   ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
+
    // XXX: Passing pointers is unsafe
    qRegisterMetaType<cogx::display::CDisplayModel*>("cogx::display::CDisplayModel*");
    qRegisterMetaType<cogx::display::CDisplayView*>("cogx::display::CDisplayView*");
@@ -83,12 +92,18 @@ void QCastMainFrame::updateViewList()
 void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
 {
    DTRACE("QCastMainFrame::updateCustomUi");
-   if (!m_pModel || !pView) {
-      ui.wgCustomGui->setVisible(false);
-      return;
-   }
    DVERIFYGUITHREAD("Custom GUI", this);
    ui.wgCustomGui->updateUi(m_pModel, pView);
+}
+
+void QCastMainFrame::onShowViewListChanged()
+{
+   ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
+}
+
+void QCastMainFrame::onRefreshViewList()
+{
+   updateViewList();
 }
 
 // A view was activated from the GUI

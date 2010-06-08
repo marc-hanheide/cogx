@@ -45,7 +45,7 @@
      <x>0</x>
      <y>0</y>
      <width>724</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuQuit">
@@ -53,7 +53,15 @@
      <string>&amp;File</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actShowViewList"/>
+    <addaction name="actRefreshViewList"/>
+   </widget>
    <addaction name="menuQuit"/>
+   <addaction name="menu_View"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -91,6 +99,22 @@
     </layout>
    </widget>
   </widget>
+  <action name="actShowViewList">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show list of &amp;views</string>
+   </property>
+   <property name="toolTip">
+    <string>Show list of views</string>
+   </property>
+  </action>
+  <action name="actRefreshViewList">
+   <property name="text">
+    <string>&amp;Refresh list of views</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
