@@ -34,6 +34,7 @@ public:
 
    // TODO: multiple views in a grid? -> setView(index, pView)
    void setView(cogx::display::CDisplayView* pView);
+   cogx::display::CDisplayView* getView();
 
 private:
    void removeUi();

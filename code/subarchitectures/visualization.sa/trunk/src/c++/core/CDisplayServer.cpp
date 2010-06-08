@@ -103,15 +103,14 @@ void CDisplayServer::runComponent()
    int argc=0;
    char **argv = NULL;
    QCastApplication app(argc, argv, this);
-   QCastMainFrame frame;
+   QCastMainFrame* pMainFrame = new QCastMainFrame();
 
    debug("Passing the model to MainWindow");
-   pMainFrame = &frame;
    pMainFrame->setModel(&m_Model);
    pMainFrame->setControlDataProxy(this);
-   frame.show();
+   pMainFrame->show();
+   pMainFrame = NULL; // Owned by QApplication
    app.exec();
-   pMainFrame = NULL;
 
    debug("CDisplayServer Server: GUI closed.");
 

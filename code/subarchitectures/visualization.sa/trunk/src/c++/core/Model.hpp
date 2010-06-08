@@ -68,6 +68,7 @@ public:
    CDisplayObject* getObject(const std::string &id);
    CRasterImage* getImage(const std::string &id);
    CDisplayView* getView(const std::string &id);
+   bool isValidView(CDisplayView *pView);
 
 public:
    bool addGuiElement(CGuiElement* pGuiElement);

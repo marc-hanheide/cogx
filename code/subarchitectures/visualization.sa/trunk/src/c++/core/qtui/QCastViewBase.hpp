@@ -24,6 +24,7 @@ class QCastViewBase: public cogx::display::CDisplayModelObserver
 {
 public:
    virtual void setView(cogx::display::CDisplayView* pDisplayView) = 0;
+   virtual cogx::display::CDisplayView* getView() = 0;
    virtual operator QWidget&() = 0;
 };
 

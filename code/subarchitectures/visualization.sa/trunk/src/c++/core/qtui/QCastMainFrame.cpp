@@ -16,13 +16,13 @@
 #include "QCastMainFrame.hpp"
 #include "../convenience.hpp"
 
-#include <cstdio> // TODO: Temporary (printf); remove
-
 QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    : QMainWindow(parent, flags)
 {
    m_pModel = NULL;
+   m_pControlDataProxy = NULL;
    ui.setupUi(this);
+   m_winText = windowTitle();
    ui.listWidget->setSelectionMode(QAbstractItemView::SingleSelection);
    connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
          this, SLOT(onViewActivated(QListWidgetItem*)));
@@ -30,8 +30,12 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    connect(ui.actShowViewList, SIGNAL(triggered()),
          this, SLOT(onShowViewListChanged()));
    ui.actShowViewList->setChecked(Qt::Checked);
+
    connect(ui.actRefreshViewList, SIGNAL(triggered()),
          this, SLOT(onRefreshViewList()));
+
+   connect(ui.actNewWindow, SIGNAL(triggered()),
+         this, SLOT(onNewWindow()));
 
    ui.wgCustomGui->setVisible(false);
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
@@ -57,6 +61,8 @@ void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
    if (m_pModel) m_pModel->modelObservers -= this;
    m_pModel = pDisplayModel;
    if (m_pModel) m_pModel->modelObservers += this;
+
+   updateViewList();
 }
 
 void QCastMainFrame::setControlDataProxy(CControlDataProxy *pProxy)
@@ -106,17 +112,41 @@ void QCastMainFrame::onRefreshViewList()
    updateViewList();
 }
 
-// A view was activated from the GUI
-void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
+void QCastMainFrame::setChildMode()
 {
-   DTRACE("QCastMainFrame::onViewActivated");
-   if (! pSelected) return;
-   cogx::display::CDisplayView *pView;
-   DMESSAGE(pSelected->text().toStdString());
-   pView = m_pModel->getView(pSelected->text().toStdString());
-   if (pView) {
+   ui.actShowViewList->setChecked(Qt::Unchecked);
+   ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
+}
+
+void QCastMainFrame::onNewWindow()
+{
+   QCastMainFrame* pchild = new QCastMainFrame();
+   pchild->setModel(m_pModel);
+   pchild->setControlDataProxy(m_pControlDataProxy);
+   pchild->setChildMode();
+   pchild->show();
+   pchild->setView(ui.drawingArea->getView());
+}
+
+void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
+{
+   DTRACE("QCastMainFrame::setView " << pView);
+   if (! m_pModel) return;
+   if (pView && ! m_pModel->isValidView(pView)) {
+      DMESSAGE("Invalid view, set to NULL");
+      pView = NULL;
+   }
+
+   if (! pView) {
+      setWindowTitle(m_winText);
+      updateCustomUi(NULL);
+      ui.drawingArea->setView(NULL);
+   }
+   else {
+      setWindowTitle(QString::fromStdString(pView->m_id) + " - " + m_winText);
       if (! ui.wgCustomGui->hasView(pView)) {
          updateCustomUi(pView);
+         // retrieve data for custom widgets from remote display clients
          if (m_pControlDataProxy) {
             cogx::display::CGuiElement* pgel;
             CPtrVector<cogx::display::CGuiElement> elements;
@@ -126,10 +156,21 @@ void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
                m_pControlDataProxy->getControlStateAsync(pgel);
             }
          }
-         // TODO: should retrieve data for custom widgets from appropriate remote display clients.
       }
       ui.drawingArea->setView(pView);
    }
+}
+
+// A view was activated from the GUI
+void QCastMainFrame::onViewActivated(QListWidgetItem *pSelected)
+{
+   DTRACE("QCastMainFrame::onViewActivated");
+   if (! pSelected) return;
+   if (! m_pModel) return;
+   cogx::display::CDisplayView *pView;
+   DMESSAGE(pSelected->text().toStdString());
+   pView = m_pModel->getView(pSelected->text().toStdString());
+   setView(pView);
 }
 
 // XXX: This function is called from another thread.
