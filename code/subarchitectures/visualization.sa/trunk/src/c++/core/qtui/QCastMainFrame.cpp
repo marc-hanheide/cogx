@@ -21,8 +21,11 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 {
    m_pModel = NULL;
    m_pControlDataProxy = NULL;
+
    ui.setupUi(this);
    m_winText = windowTitle();
+   setAttribute(Qt::WA_DeleteOnClose);
+
    ui.listWidget->setSelectionMode(QAbstractItemView::SingleSelection);
    connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
          this, SLOT(onViewActivated(QListWidgetItem*)));
