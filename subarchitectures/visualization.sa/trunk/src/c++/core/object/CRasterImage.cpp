@@ -42,6 +42,7 @@ CRenderer* CRasterImage::getRenderer(ERenderContext context)
 {
    switch(context) {
       case Context2D: return render2D.get();
+      default: break;
    }
    return NULL;
 }

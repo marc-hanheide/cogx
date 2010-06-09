@@ -31,20 +31,22 @@ if(EXPERIMENT)
    if (NOT LUA_LIB_TOLUA_51)
       message ("libtolua++5.1 not found. Please install libtolua++5.1-dev")
    endif (NOT LUA_LIB_TOLUA_51)
-
 endif(EXPERIMENT)
 
-set(TOMGINE_INCLUDE
-   ${QT_QTOPENGL_INCLUDE_DIR}
-   ${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/VirtualScene/TomGine/include
-   /usr/include/GL
-   /usr/include/freetype2
-   )
-set(TOMGINE_LIBS
-   ${QT_QTOPENGL_LIBRARY}
-   TomGine GL
-   ftgl # requires package libftgl-dev
-   )
+set(TOMGINE_MODEL 0)
+if(TOMGINE_MODEL)
+   set(TOMGINE_SRC
+      object/CTomGineModel.cpp
+      )
+   set(TOMGINE_INCLUDE
+      ${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/VirtualScene/TomGine/include
+      )
+   set(TOMGINE_LIBS
+      TomGine GL
+      ftgl # requires package libftgl-dev
+      )
+   add_definitions(-DV11N_OBJECT_TOMGINE_MODEL)
+endif(TOMGINE_MODEL)
 
 add_definitions(-DDEBUG_TRACE)
 
@@ -56,8 +58,8 @@ set(SERVER_CPP
    GuiElements.cpp
    object/CSvgImage.cpp
    object/CRasterImage.cpp
-   object/CTomGineModel.cpp
    ${EXPERIMENT_SRC}
+   ${TOMGINE_SRC}
    )
 set(GUI_CPP
    qtui/QCastApplication.cpp
@@ -85,6 +87,9 @@ qt4_wrap_ui  (SERVER_UIC_OUTFILES ${SERVER_UI_FILES})
 include_directories( .  #./object
    ${VisualizationCore_BINARY_DIR}
    ${QT_QTSVG_INCLUDE_DIR}
+   ${QT_QTOPENGL_INCLUDE_DIR}
+   /usr/include/GL
+   /usr/include/freetype2
    ${TOMGINE_INCLUDE}
    )
 
@@ -95,6 +100,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData Math Video VideoUtils
    ${QT_LIBRARIES}
    ${QT_QTSVG_LIBRARY}
+   ${QT_QTOPENGL_LIBRARY}
    ${TOMGINE_LIBS}
    boost_serialization-mt
    boost_iostreams-mt

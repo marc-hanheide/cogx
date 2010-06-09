@@ -27,7 +27,9 @@ extern "C"
 
 #include "object/CSvgImage.hpp"
 #include "object/CRasterImage.hpp"
+#ifdef V11N_OBJECT_TOMGINE_MODEL
 #include "object/CTomGineModel.hpp"
+#endif
 #ifdef V11N_OBJECT_LUA_GL
 #include "object/CLuaGlScript.hpp"
 #endif
@@ -72,6 +74,9 @@ void CDisplayServer::configure(const map<string,string> & _config)
    debug("CDisplayServer Server: configuring");
 #ifdef V11N_OBJECT_LUA_GL
    debug("v11n: Subsystem LuaGlScript enabled.");
+#endif
+#ifdef V11N_OBJECT_TOMGINE_MODEL
+   debug("v11n: Subsystem TomGine Model enabled.");
 #endif
    CASTComponent::configure(_config);
 
@@ -256,6 +261,7 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
 void CDisplayServer::setTomGineObject(const std::string& id, const std::string& partId, 
       const std::vector<unsigned char>& data)
 {
+#ifdef V11N_OBJECT_TOMGINE_MODEL
    DTRACE("CDisplayServer::setTomGineObject");
 
    CTomGineModel *pModel = NULL;
@@ -280,7 +286,7 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
       pModel->deserialize(partId, data);
       m_Model.setObject(pModel);
    }
-
+#endif
 }
 
 void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script)
