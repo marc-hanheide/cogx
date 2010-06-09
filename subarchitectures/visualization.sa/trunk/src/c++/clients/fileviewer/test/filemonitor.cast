@@ -9,4 +9,4 @@ CPP TM AlwaysPositiveTaskManager
 CPP MG display.srv DisplayServer --log true --debug true
 
 # Monitor different files in a directory. The script filemonitor.sh will generate test files.
-CPP MG fileviewer.cli FileMonitorDC --display-server-id "display.srv" --setvars "dir=subarchitectures/visualization.sa/src/c++/clients/fileviewer/test/xdata" --monitor "CurrentPlan=dot:%(dir)/{*.dot}  AltPlan=twopi:%(dir)/{*.dot}  ImageFile=%(dir)/{*.png;*.jpg;*.pnm;*.xpm}  SvgFile=%(dir)/{*.svg}  %(dir)/{*}" --log true --debug true
+CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=subarchitectures/visualization.sa/src/c++/clients/fileviewer/test/xdata" --monitor "CurrentPlan=dot:%(dir)/{*.dot}  AltPlan=twopi:%(dir)/{*.dot}  ImageFile=%(dir)/{*.png;*.jpg;*.pnm;*.xpm}  SvgFile=%(dir)/{*.svg}  %(dir)/{*}" --log true --debug true
