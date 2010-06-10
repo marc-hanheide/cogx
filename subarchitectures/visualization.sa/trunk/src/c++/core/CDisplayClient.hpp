@@ -66,6 +66,8 @@ public:
    // -----------------------------------------------------------------
 public:
    // Set image from raw data.
+   void setImage(const std::string& id, int width, int height, int channels,
+     const std::vector<unsigned char>& data);
    void setImage(const std::string& id, const Video::Image& image); 
 
    // Set image from compressed/formatted data.

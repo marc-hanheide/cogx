@@ -2,25 +2,51 @@
 
 \section{Installation}
 
-\begin{itemize}
-   \item Add visualization.sa to SVN externals:
-   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
-      $ svn pe svn:externals .
-   \end{Verbatim}
-   Add the line:
-   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
-      ^/code/subarchitectures/visualization.sa/trunk subarchitectures/visualization.sa
-   \end{Verbatim}
+To get the visualization from the svn, edit the SVN externals in the root
+of your CogX system directory:
 
-   % TODO: the script may be in another location
-   \item install the required libraries; there is a script in visualization.sa/config
-   that you can run:
-   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
-      sudo ubuntu-install-deps.sh
-   \end{Verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   $ svn pe svn:externals .
+\end{Verbatim}
 
-   \item enable BUILD\_VISUALIZATION\_SA in cmake
-\end{itemize}
+Add the following line, save and do an svn update:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   ^/code/subarchitectures/visualization.sa/trunk subarchitectures/visualization.sa
+\end{Verbatim}
+
+The subarchitecture depends on some external libraries. If they are not
+installed, the system may still compile, but some of the features won't be
+available. The dependencies can be installed with the script in
+visualization.sa/bin: 
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   sudo visualization.sa/bin/ubuntu-install-deps.sh
+\end{Verbatim}
+
+The new subarchitecture must be added to the main file CMakeLists.txt of the 
+project. It should be added before any subarchitectures that use visualization
+so that the dependent libraries will build correctly. Add the following
+block before the first subarchitecture in CMakeLists.txt:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   option(BUILD_SA_VISUALIZATION "Build visualization libraries (Requires QT4)" NO)
+   if(BUILD_SA_VISUALIZATION)
+      set(VISUALIZATION_INCLUDE_DIRS
+         ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/autogen
+         ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/core
+         )
+      set(VISUALIZATION_LIBRARIES
+         DisplayClient VisualizationData
+         )
+      add_subdirectory(subarchitectures/visualization.sa)
+      add_definitions(-DFEAT_VISUALIZATION)
+   endif(BUILD_SA_VISUALIZATION)
+\end{Verbatim}
+
+Finally run \code{ccmake} and set \code{BUILD\_VISUALIZATION\_SA} to \code{ON}
+to enable the visualization subarchitecture.
+
 
 \section{General operation}
 
@@ -292,7 +318,7 @@ The first parameter is the name of the {\em view} that will display the UI
 element when it is active, not the name of object. This means that the UI
 element will be displayed only when an object is displayed in its default view.
 When an object is displayed in another view, the UI element won't be available.
-\todo{TODO: user-defined views will be able to specify which elements to show}
+\todo{TODO: user-defined views will be able to specify which UI elements to show}
 
 The \code{handleGuiEvent()} callback function will be called every time the
 UI element emits a known event. For the chekcbox element we need to respond
@@ -362,14 +388,14 @@ The display client can send various types of images to the server: raw images,
 \code{Video::Image}, OpenCV's \code{IplImage} and encoded images that are
 supported by Qt. An \code{IplImage} can only be sent if OpenCV was enabled
 during compilation.
-The clients interface for sending images is:
+The client-side interface for sending images is:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void setImage(const std::string& id, int width, int height, int channels,
-     const std::vector<unsigned char>& data);
+         const std::vector<unsigned char>& data);
    void setImage(const std::string& id, const Video::Image& image); 
    void setImage(const std::string& id, const std::vector<unsigned char>& data,
-      const std::string &format=""); 
+         const std::string &format=""); 
    #ifdef FEAT_VISUALIZATION_OPENCV
       void setImage(const std::string& id, const IplImage* pImage); 
    #endif
@@ -377,10 +403,37 @@ The clients interface for sending images is:
 
 Raw images can have 1 or 3 channels and the specified image size must match the
 size of \code{data}. The supported formats of the compressed image are: bmp,
-gif, jpeg, jpg, png, pbm, pgm, ppm, tiff, xbm, xpm. It the format is not
+gif, jpeg, jpg, png, pbm, pgm, ppm, tiff, xbm, xpm. If the format is not
 specified, Qt will try to deduce the type from \code{data}. An \code{IplImage}
 is first converted to a contiguous array of bytes and sent to the server as a
 raw image.
  
 Every image has an id which uniquely identifies an image on the server. This way
 an image (as any other object) can be replaced on the server.
+
+Images can only be displayed in 2D contexts. Image objects can be transformed
+by defining a $3 \times 3$ transformation matrix that is applied before
+the image is drawn.
+
+\subsection{SVG objects}
+
+SVG objects are sent to the server as XML documents which are then interpreted
+by the Qt SVG subsystem. Every SVG object can have multiple parts where each
+part is defined in a separate XML document.
+\todo{TODO: the interface to define the order of drawing for objects and parts
+is missing}
+The client-side interface for defining SVG objects is:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setObject(const std::string& id, const std::string& partId,
+         const std::string& xmlData); 
+\end{Verbatim}
+
+The function is named \code{setObject} because initially it was planned that
+the server will support multiple types of objects. Currently the server
+supports only SVG and doesn't check if the SVG file is valid.
+
+SVG objects can only be displayed in 2D contexts. Every part of an object can
+be transformed by defining a $3 \times 3$ transformation matrix that is applied
+before the part is drawn.
+

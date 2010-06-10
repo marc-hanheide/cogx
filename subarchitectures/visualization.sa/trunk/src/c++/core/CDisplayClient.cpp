@@ -86,6 +86,20 @@ void CDisplayClient::setImage(const std::string& id, const std::vector<unsigned 
    m_pServer->setCompressedImage(id, data, format);
 }
 
+void CDisplayClient::setImage(const std::string& id, int width, int height, int channels,
+     const std::vector<unsigned char>& data)
+{
+   if (m_pServer == NULL) return;
+   if (width * height * channels != data.size()) {
+     owner.println(" *** CDisplayClient: raw image size doesn't match the size of the data.");
+     return;
+   }
+   if (channels != 1 && channels != 3) {
+     owner.println(" *** CDisplayClient: only 1 and 3 channel raw images are supported.");
+   }
+   m_pServer->setRawImage(id, width, height, channels, data);
+}
+
 #ifndef FEAT_VISUALIZATION_OPENCV
 #error "FEAT_VISUALIZATION_OPENCV must be defined during v11n build."
 #endif
