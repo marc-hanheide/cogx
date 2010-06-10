@@ -4,42 +4,42 @@
 
 \begin{itemize}
    \item Add visualization.sa to SVN externals:
-   \begin{verbatim}
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
       $ svn pe svn:externals .
-   \end{verbatim}
+   \end{Verbatim}
    Add the line:
-   \begin{verbatim}
-      ^/code/subarchitectures/visualization.sa/trunk   subarchitectures/visualization.sa
-   \end{verbatim}
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
+      ^/code/subarchitectures/visualization.sa/trunk subarchitectures/visualization.sa
+   \end{Verbatim}
 
    % TODO: the script may be in another location
    \item install the required libraries; there is a script in visualization.sa/config
    that you can run:
-   \begin{verbatim}
+   \begin{Verbatim}[fontsize=\scriptsize,gobble=6]
       sudo ubuntu-install-deps.sh
-   \end{verbatim}
+   \end{Verbatim}
 
    \item enable BUILD\_VISUALIZATION\_SA in cmake
 \end{itemize}
 
 \section{General operation}
 
-The library provieds a display server that displays objects created by its
-clients.  The objects that are on the display server are groupped into views.
+The library provides a display server that displays objects created by its
+clients.  The objects that are on the display server are grouped into views.
 Initially every new object is displayed in its own view that has the same name
 as the object.
-% (TODO: Additional views can be defined on the server that display multiple objects).
+\todo{(TODO: Additional views that display multiple objects can be defined on the server)}
 The display server creates rendering contexts in which the views are displayed.
 There are two types of contexts: 2D and OpenGL.
 % (TODO: new contexts: tabular; textual; ...)
 
 The client that wants to display an object connects to the server and sends the
 serialized object to the server. Each object has a name. If an object with the
-same name already exists on the srver it is updated with the new data. Some
+same name already exists on the server it is updated with the new data. Some
 objects are composed of multiple parts where each part can be manipulated
 independently.
 
-Currently the following types of objects are suported: images, SVG graphics and
+Currently the following types of objects are supported: images, SVG graphics and
 OpenGL objects define with LuaGl script or as TomGine render-models. 
 
 The display server can also display simple user interface elements. If a view
@@ -65,8 +65,8 @@ instructions for the use of the real client.
 
 \subsection{File system monitor}
 
-The File system monitor is a CAST component that monitors the filesystem for
-changes. Usualy it observes a directory on the disk and waits for files in that
+The File system monitor is a CAST component that monitors the file system for
+changes. Usually it observes a directory on the disk and waits for files in that
 directory that have been closed after they were modified. If the modified file
 is one of the files the monitor is waiting for, it reads the file processes it
 and sends it to the server. A single component is able to monitor multiple files
@@ -78,7 +78,7 @@ for GraphWiz.
 Here is an example CAST setup of a DisplayServer and a FileMonitorDC. Note that
 all text after fileviewer.cli is on the same line.
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    HOST localhost
    SUBARCHITECTURE visualization.sa 
    CPP WM SubarchitectureWorkingMemory
@@ -86,7 +86,7 @@ all text after fileviewer.cli is on the same line.
 
    CPP MG display.srv DisplayServer
 
-   CPP MG fileviewer.cli FileMonitorDC --display-server "display.srv"
+   CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv"
       --setvars "dir=subarchitectures/visualization.sa/src/c++/clients/fileviewer/test/xdata"
       --monitor "
          CurrentPlan=dot:%(dir)/{*.dot}
@@ -95,15 +95,15 @@ all text after fileviewer.cli is on the same line.
          SvgFile=%(dir)/{*.svg}
          %(dir)/{*}"
          --log true --debug true
-\end{verbatim}
+\end{Verbatim}
 
-The file monitor first connects to the server using the parameter
-\code{--display-server}. If the server is not present, a display client will
-operate normally except it won't be able to display its resutls.
+The file monitor first connects to the server using the \code{--displayserver}
+parameter. If the server is not present, a display client will operate normally
+except it won't be able to display its results.
 
-The parameter \code{--setvars} sets some variables thata are used later when
+The parameter \code{--setvars} sets some variables that are used later when
 the component configures the monitored files. The format of the parameter
-string is \code{"var1=value1 var2=value2 ..."}. Later in the paramteter
+string is \code{"var1=value1 var2=value2 ..."}. Later in the parameter
 \code{--monitor} a variable can be inserted with \code{\%(var1)}.
 
 The most important and complex part is the definition of the files to be
@@ -112,19 +112,19 @@ that are separated by spaces. Each entry defines the directory where the files
 are, the names of the files to monitor, the converters for the files and the
 name of the object that will be created from the files. The general format of
 each entry is:
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    ObjectName=converter:directory/{filemasks}
-\end{verbatim}
+\end{Verbatim}
 
 If the converter is omitted, one of the known converters will be selected.
 If the object name is omitted, the name of the object will be the filename.
 
 We can now decode the meanings of the above definitions:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    CurrentPlan=dot:%(dir)/{*.dot}
    AltPlan=twopi:%(dir)/{*.dot}
-\end{verbatim}
+\end{Verbatim}
 
 Every new dot file in the directory will be converted with two converters: dot
 and twopi. The files converted with dot will be displayed on the server as
@@ -132,28 +132,28 @@ CurrentPlan while the files converted with twopi well be displayed as AltPlan.
 The file monitor also knows the following converters for dot: neato, circo and
 fdp.
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    ImageFile=%(dir)/{*.png;*.jpg;*.pnm;*.xpm}
    SvgFile=%(dir)/{*.svg}
-\end{verbatim}
+\end{Verbatim}
 
 Images and SVG files can be sent without conversion if the file extension is
 one of the known ones. If a SVG file is stored in a file with an extension
 other than \code{.svg}, the converter must be specified although no conversion
 will be performed:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    SvgFile=svg:%(dir)/{*.xml}
-\end{verbatim}
+\end{Verbatim}
 
 The final entry will pick up any files that change in the directory. If the
 type of the file (deduced from the extension) is one of the known types, the
 file will be sent to the server. The name of the object on the server will be
 the name of the file.
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    %(dir)/{*}"
-\end{verbatim}
+\end{Verbatim}
 
 \subsection{A Passive Display Client}
 
@@ -167,23 +167,23 @@ component in vision.sa.
 Before we can start we need to prepare the project file to use the display server.
 For every component that is defined in CMakeLists.txt we add the following:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    include_directories(${VISUALIZATION_INCLUDE_DIRS})
    link_cast_component(${CAST_COMPONENT_NAME} Video ${VISUALIZATION_LIBRARIES})
-\end{verbatim}
+\end{Verbatim}
 
 If the component uses OpenCV's IplImage we can let the client convert the image
 before it is sent to the server. To do this we need to enable the client's OpenCV
 interface with
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    add_definitions(-DFEAT_VISUALIZATION_OPENCV)
-\end{verbatim}
+\end{Verbatim}
 
 Now the component is ready to interact with the display server. The component
-will communicate with the servet through a display client:
+will communicate with the server through a display client:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    class VideoViewer : public ManagedComponent, public VideoClient
    {
    private:
@@ -191,49 +191,49 @@ will communicate with the servet through a display client:
      cogx::display::CDisplayClient m_display;
    #endif
    };
-\end{verbatim}
+\end{Verbatim}
 
 Note that all the code related to visualization.sa is enclosed in conditional
 blocks. The variable \code{FEAT\_VISUALIZATION} is defined when
-viusalisation.sa is being built. If the visualization.sa is not used in the
-project, the componetns that depend on it will continue to work, but they won't
+visualization.sa is being built. If the visualization.sa is not used in the
+project, the components that depend on it will continue to work, but they won't
 display their data unless an alternative is provided (see VideoViewer.cpp which
 uses OpenCV when visualization.sa is not used).
 
 The client must connect to the server and for that it needs the parameters of the
 connection (the parameter \code{--displaysever}):
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void VideoViewer::configure(const map<string,string> & _config)
    {
    #ifdef FEAT_VISUALIZATION
      m_display.configureDisplayClient(_config);
    #endif
    }
-\end{verbatim}
+\end{Verbatim}
 
 The connection between the client and the server is established in the component's
 \code{start()} method:
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void VideoViewer::start()
    {
    #ifdef FEAT_VISUALIZATION
       m_display.connectIceClient(*this);
    #endif
    }
-\end{verbatim}
+\end{Verbatim}
 
 When a new image is available, the VideoServer sends the image to the VideoViewer which
 passes the image to the DisplayServer:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
    {
    #ifdef FEAT_VISUALIZATION
      m_display.setImage(getComponentID(), images[0]);
    #endif
    }
-\end{verbatim}
+\end{Verbatim}
 
 Here \code{getComponentID()} is used for the name of the object since the component
 is displaying only one object. Any other string can be used instead.
@@ -246,7 +246,7 @@ elements with which it can be configured. The client receives notifications and
 requests related to these elements from the display server. The component must
 define two callback functions that will handle the events sent by the server.
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    class VideoViewer : public ManagedComponent, public VideoClient
    {
    private:
@@ -256,13 +256,13 @@ define two callback functions that will handle the events sent by the server.
      std::string getControlState(const std::string& ctrlId);
    #endif
    };
-\end{verbatim}
+\end{Verbatim}
 
 The event path from the server to the client must be initiated. This is done right
 after the component connects to the client. After the connections are established,
 the callback functions are registered:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void VideoViewer::start()
    {
    #ifdef FEAT_VISUALIZATION
@@ -272,23 +272,33 @@ the callback functions are registered:
      m_display.setStateQueryCallback(this, &VideoViewer::getControlState);
    #endif
    }
-\end{verbatim}
+\end{Verbatim}
 
-We define a checkbox element that will start or stop the flow of images
-from the server:
+The flow of images from the VideoServer to the VideoViewer can be stopped at
+any time. To let the user control the flow the component has to add a UI
+element to the display server.  An appropriate type of UI element for this
+purpose is a chekcbox:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void VideoViewer::start()
    {
    #ifdef FEAT_VISUALIZATION
      m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
    #endif
    }
-\end{verbatim}
+\end{Verbatim}
 
-Now all that is missing are the callback functions:
+The first parameter is the name of the {\em view} that will display the UI
+element when it is active, not the name of object. This means that the UI
+element will be displayed only when an object is displayed in its default view.
+When an object is displayed in another view, the UI element won't be available.
+\todo{TODO: user-defined views will be able to specify which elements to show}
 
-\begin{verbatim}
+The \code{handleGuiEvent()} callback function will be called every time the
+UI element emits a known event. For the chekcbox element we need to respond
+to the \code{evCheckBoxChange} event:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    #ifdef FEAT_VISUALIZATION
    void VideoViewer::handleGuiEvent(const Visualization::TEvent &event)
    {
@@ -308,9 +318,20 @@ Now all that is missing are the callback functions:
      }
    }
    #endif
-\end{verbatim}
+\end{Verbatim}
 
-\begin{verbatim}
+Note that the data for UI elements passed between the client and the server is
+serialized into strings. The checkbox element knows only 2 values: \code{"0"}
+and everything else.
+\todo{TODO: Add more element types, define values}
+
+A UI element may be displayed in multiple views. When a UI element is first
+displayed it must be put in a state that reflects the current state of the
+component.  Since a UI element may be created at any time it wouldn't be enough
+to set the initial state of the element at creation time. Instead, we define
+the \code{getControlState()} callback function:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    #ifdef FEAT_VISUALIZATION
    std::string VideoViewer::getControlState(const std::string& ctrlId)
    {
@@ -320,5 +341,42 @@ Now all that is missing are the callback functions:
      return "";
    }
    #endif
-\end{verbatim}
+\end{Verbatim}
 
+When the function returns \code{""} the display server won't change the state
+of the UI element.
+
+\section{Displaying objects}
+
+The server can display various types of objects. Initially it was created to
+display images, but with time other objects (supported by Qt) were added:
+SVG images and OpenGL scenes.
+
+\subsection{Images}
+
+The display client can send various types of images to the server: raw images, 
+\code{Video::Image}, OpenCV's \code{IplImage} and encoded images that are
+supported by Qt. An \code{IplImage} can only be sent if OpenCV was enabled
+during compilation.
+The clients interface for sending images is:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setImage(const std::string& id, int width, int height, int channels,
+     const std::vector<unsigned char>& data);
+   void setImage(const std::string& id, const Video::Image& image); 
+   void setImage(const std::string& id, const std::vector<unsigned char>& data,
+      const std::string &format=""); 
+   #ifdef FEAT_VISUALIZATION_OPENCV
+      void setImage(const std::string& id, const IplImage* pImage); 
+   #endif
+\end{Verbatim}
+
+Raw images can have 1 or 3 channels and the specified image size must match the
+size of \code{data}. The supported formats of the compressed image are: bmp,
+gif, jpeg, jpg, png, pbm, pgm, ppm, tiff, xbm, xpm. It the format is not
+specified, Qt will try to deduce the type from \code{data}. An \code{IplImage}
+is first converted to a contiguous array of bytes and sent to the server as a
+raw image.
+ 
+Every image has an id which uniquely identifies an image on the server. This way
+an image (as any other object) can be replaced on the server.
