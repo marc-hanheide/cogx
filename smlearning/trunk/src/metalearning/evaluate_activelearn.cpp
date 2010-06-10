@@ -1,10 +1,11 @@
+#include <tools/data_handling.h>
 #include <metalearning/SMRegion.h>
 
 using namespace smlearning;
 
 bool evaluate_activelearn (string seqFile, string dir) {
 
-	DataSet data;
+	DataSetStruct data;
 
 	if (!read_dataset (seqFile, data)) {
 		cerr << "error reading data" << endl;
@@ -41,13 +42,14 @@ bool evaluate_activelearn (string seqFile, string dir) {
 	}
 
 	double error = 0.0;
-	for (int i = 0; i < data.size(); i++) {
-		int regionidx = SMRegion::get_SMRegion (regions, data[i][0]);
+	for (int i = 0; i < data.first.size(); i++) {
+		int regionidx = SMRegion::get_SMRegion (regions, data.first[i][0]);
 		assert (regionidx != -1);
-		rnnlib::DataSequence* testSeq = load_trainSeq (data[i], SMRegion::motorVectorSize + SMRegion::featureVectorSize, SMRegion::pfVectorSize);
+		//DataSetParams params = make_tuple ((int)SMRegion::motorVectorSize + (int)SMRegion::featureVectorSize, (int)SMRegion::pfVectorSize, (int)SMRegion::motorVectorSize, (int)SMRegion::efVectorSize, false);
+		rnnlib::DataSequence* testSeq = load_trainSeq (data.first[i], data.second);
 		error += regions[regionidx].learner.net->calculate_errors (*testSeq);
 	}
-	error /= (double)data.size();
+	error /= (double)data.first.size();
 
 	cout << "Avg. sum of squares error: " << error << endl;
 

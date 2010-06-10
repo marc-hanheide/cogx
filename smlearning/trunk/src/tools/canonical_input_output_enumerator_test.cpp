@@ -6,18 +6,21 @@ int main (int argc, char* argv[]) {
 
 	string seqFile;
 	string target_dir;
+	string cfg;
 	int modulo = 0;
-	if (argc >= 4) {
-		target_dir = string (argv[3]);
+	if (argc >= 5) {
+		target_dir = string (argv[4]);
 	}
-	if (argc >= 3) {
-		modulo = atoi(argv[2]);
+	if (argc >= 4) {
+		modulo = atoi(argv[3]);
 		cout << modulo << endl;
 	}
-	if (argc >= 2)
+	if (argc >= 3) {
+		cfg.assign (argv[2]);
 		seqFile = string (argv[1]);
+	}
 	else {
-		cerr << argv[0] << " [sequence_file (without extension)]  [modulo (default: 1)] [target_dir (default:current file dir.)]" << endl;
+		cerr << argv[0] << " sequence_file (without extension) config_xml_file [modulo (default: 1)] [target_dir (default:current file dir.)]" << endl;
 		return 1;
 	}
 
@@ -26,7 +29,7 @@ int main (int argc, char* argv[]) {
 		modulo = 1;
 	}
 	
-	DataSet savedData;
+	DataSetStruct savedData;
 
 	if (!read_dataset (seqFile, savedData)) {
 		cerr << "error reading data" << endl;
@@ -35,8 +38,24 @@ int main (int argc, char* argv[]) {
 
 	string seqBaseFileName = get_seqBaseFileName (seqFile);
 
-// 	CanonicalData::DataSet newData = canonical_input_output_enumerator (savedData);
-	CanonicalData::DataSet newData = canonical_input_output_enumerator_with_time (savedData, modulo);
+	XMLParser::Desc parserDesc;
+	XMLParser::Ptr pParser = parserDesc.create ();
+	try {
+		FileReadStream fs (cfg.c_str());
+		pParser->load (fs);
+	}
+	catch (const Message& msg) {
+		std::cerr << msg << std::endl;
+		return 1;
+	}
+	XMLContext *pXMLContext = pParser->getContextRoot()->getContextFirst("golem");
+	if (pXMLContext == NULL)
+		throw MsgSystem(Message::LEVEL_CRIT, "Unknown configuration file: %s", cfg.c_str());
+	Scenario::Desc desc;
+	XMLData(desc, pXMLContext);
+
+	
+	CanonicalData::DataSet newData = canonical_input_output_enumerator_with_time (savedData, desc, modulo);
 
 	if (argc == 4)
 		// write_canonical_dataset_cryssmex_fmt (target_dir + "/" + seqBaseFileName, newData);

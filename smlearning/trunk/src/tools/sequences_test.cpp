@@ -7,7 +7,7 @@ int main(int argc, char * argv[]) {
 		cerr << argv[0] << " seq_file (without extension)" << endl;
 		return 1;
 	}
-	DataSet savedData;
+	DataSetStruct savedData;
 
 	//Generate artificial random sequences
 // 	int numSeq = atoi(argv[1]);

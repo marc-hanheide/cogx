@@ -24,6 +24,7 @@
 
 #include <tools/data_handling.h>
 
+
 namespace smlearning {
 
 #define FEATUREVECTOR_SIZE1 8
@@ -61,6 +62,25 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
 }
 
 ///
+///print DataSetParams tuple
+///
+void print_dataset_params (const DataSetParams& p) {
+	cout << "motorVectorSize: " << p.get<0>().get<0>() << ",\n";
+	cout << "featureVectorSize: " << p.get<0>().get<1>() << ",\n";
+	cout << "pfVectorSize: " << p.get<0>().get<2>() << ",\n";
+	cout << "efVectorSize: " << p.get<0>().get<3>() << ",\n";
+	cout << "storeLabels: " << p.get<1>() << "," << endl;
+	cout << "minX: " << p.get<2>().get<0>() << "," << endl;
+	cout << "minY: " << p.get<2>().get<1>() << "," << endl;
+	cout << "minZ: " << p.get<2>().get<2>() << "," << endl;
+	cout << "maxX: " << p.get<2>().get<3>() << "," << endl;
+	cout << "maxY: " << p.get<2>().get<4>() << "," << endl;
+	cout << "maxZ: " << p.get<2>().get<5>() << endl;
+}
+
+
+
+///
 ///write real vector to a file
 ///
 void write_realvector (ofstream& writeFile, const vector<double>& v) {
@@ -76,17 +96,30 @@ void write_realvector (ofstream& writeFile, const vector<double>& v) {
 ///
 ///write DataSet vector to a file
 ///
-bool write_dataset (string fileName, const DataSet& data) {
+bool write_dataset (string fileName, const DataSetStruct& data) {
 	fileName += ".seq";
 	ofstream writeFile(fileName.c_str(), ios::out | ios::binary);
 	if (!writeFile)
 		return false;
 
-	long numSeqs = data.size();
+	//write data parameters
+	writeFile.write((const char*)&data.second.get<0>().get<0>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<0>().get<1>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<0>().get<2>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<0>().get<3>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<1>(), sizeof(bool));
+	writeFile.write((const char*)&data.second.get<2>().get<0>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<2>().get<1>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<2>().get<2>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<2>().get<3>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<2>().get<4>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<2>().get<5>(), sizeof(Real));
+	
+	long numSeqs = data.first.size();
 	writeFile.write ((const char*)&numSeqs, sizeof(numSeqs));
 //  	cout << numSeqs << endl;
 	DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
+	for (s=data.first.begin(); s!= data.first.end(); s++) {
 		long seqSize = s->size();
 		writeFile.write ((const char*)&seqSize, sizeof (seqSize));
 //  		cout << "\t" << seqSize << endl;
@@ -118,11 +151,27 @@ void read_realvector (ifstream& readFile, vector<double>& v) {
 ///
 ///read DataSet vector from a file
 ///
-bool read_dataset (string fileName, DataSet& data) {
+bool read_dataset (string fileName, DataSetStruct& dataStr) {
 	fileName += ".seq";
 	ifstream readFile(fileName.c_str(), ios::in | ios::binary);
 	if (!readFile)
 		return false;
+
+	DataSet data;
+	DataSetParams params;
+
+	//get data parameters
+	readFile.read((char*)&params.get<0>().get<0>(), sizeof(int));
+	readFile.read((char*)&params.get<0>().get<1>(), sizeof(int));
+	readFile.read((char*)&params.get<0>().get<2>(), sizeof(int));
+	readFile.read((char*)&params.get<0>().get<3>(), sizeof(int));
+	readFile.read((char*)&params.get<1>(), sizeof(bool));
+	readFile.read((char*)&params.get<2>().get<0>(), sizeof(Real));
+	readFile.read((char*)&params.get<2>().get<1>(), sizeof(Real));
+	readFile.read((char*)&params.get<2>().get<2>(), sizeof(Real));
+	readFile.read((char*)&params.get<2>().get<3>(), sizeof(Real));
+	readFile.read((char*)&params.get<2>().get<4>(), sizeof(Real));
+	readFile.read((char*)&params.get<2>().get<5>(), sizeof(Real));
 
 	long numSeq;
 	readFile.read ((char* )&numSeq, sizeof(numSeq));
@@ -139,7 +188,8 @@ bool read_dataset (string fileName, DataSet& data) {
 		}
 		data.push_back(currentSequence);
 	}	
-	
+
+	dataStr = make_pair (data, params);
 	readFile.close();
 	return true;
 }
@@ -563,56 +613,66 @@ bool write_nc_file_Markov (string fileName, const DataSet& data) {
 ///
 ///write a netcdf nc file format for feature vectors using basis vectors
 ///
-bool write_nc_file_basis (string fileName, const DataSet& data) {
+bool write_nc_file_basis (string fileName, const DataSetStruct& data) {
 //basis
 	fileName += ".nc";
 
-	int initialVectorSize = data[0][0].size();
-	int featureVectorSize = initialVectorSize + data[0][1].size();
+	//int initialVectorSize = data.first[0][0].size();
+	//int featureVectorSize = initialVectorSize + data.first[0][1].size();
+	int inputSize = data.second.get<0>().get<0>() + data.second.get<0>().get<1>();
+	int outputSize = data.second.get<0>().get<2>();
+	int motorVectorSize = data.second.get<0>().get<0>();
+	int targetIndexStart = data.second.get<0>().get<3>();
 
 	FeatureVector inputVector;
 	FeatureVector targetVector;
 	vector<int> seqLengthsVector;
 	size_t numTimesteps_len = 0;
 	DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
+	for (s=data.first.begin(); s!= data.first.end(); s++) {
 		size_t seqSize = s->size() - 1;
 		seqLengthsVector.push_back( seqSize );
 		numTimesteps_len += seqSize;
 
 		Sequence::const_iterator v;
 		for (v=s->begin(); v!= s->end(); v++) {
-			FeatureVector::const_iterator n;
+			// FeatureVector::const_iterator n;
 			//put inputs and targetPatterns data
 			if (v+1 != s->end()) {
 				if (v != s->begin()) {
 					//zero padding
-					for (int i=0; i<initialVectorSize; i++)
+					for (int i=0; i<motorVectorSize; i++)
 						inputVector.push_back (0.0);
+					for (int i=0; i<inputSize - motorVectorSize; i++)
+						inputVector.push_back (v->at(i));
+
+					
 				}
-				for (n=v->begin(); n!= v->end(); n++) {
-					inputVector.push_back (*n);
-				}
-				if (v == s->begin()) {
+				else {
+					for (int i=0; i<motorVectorSize; i++)
+						//motor command info
+						inputVector.push_back (v->at(i));
 					// //zero padding
 					//completing with next feature vector info
-					for (int i=0; i<featureVectorSize - initialVectorSize; i++)
+					for (int i=0; i<inputSize - motorVectorSize; i++)
 						//inputVector.push_back (0.0);
 						inputVector.push_back ((v+1)->at(i));
 				}
 			}
 			
 			if (v != s->begin()) {
-				/*for (int i=0; i<initialVectorSize; i++)
+				/*for (int i=0; i<motorVectorSize; i++)
 				  targetVector.push_back (0.0);*/
-				for (n=v->begin() + data[0][1].size()/2; n!= v->end(); n++)
-					targetVector.push_back (*n);
+				// for (n=v->begin() + data.first[0][1].size()/2; n!= v->end(); n++)
+				for (int i=targetIndexStart; i<targetIndexStart+outputSize; i++)
+					//targetVector.push_back (*n);
+					targetVector.push_back (v->at(i));
 			}
 		}
 	}
 
 	//netcdf file storing
-	if (!write_nc_data (fileName, data, featureVectorSize, (featureVectorSize - initialVectorSize) / 2 /*+ 1*/, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
+	if (!write_nc_data (fileName, data.first, inputSize, outputSize, inputVector, targetVector, seqLengthsVector, numTimesteps_len))
 		return false;
 
 	return true;
@@ -706,41 +766,51 @@ void load_sequence_Markov (vector<float>& inputVector, vector<float>& targetVect
 ///
 ///load a sequence into inputs and target vectors (for machine learning) (basis representation)
 ///
-void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s) {
+// void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s, int inputSize, int outputSize, int motorVectorSize, int targetIndexStart) {
+void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVector, Sequence s, DataSetParams params) {
 
-	int initialVectorSize = s[0].size();
-	int sensorVectorSize = s[1].size();
-	int featureVectorSize = initialVectorSize + sensorVectorSize;
+	// int initialVectorSize = s[0].size();
+	// int sensorVectorSize = s[1].size();
+	// int featureVectorSize = initialVectorSize + sensorVectorSize;
+	int inputSize = params.get<0>().get<0>() + params.get<0>().get<1>();
+	int outputSize = params.get<0>().get<2>();
+	int motorVectorSize = params.get<0>().get<0>();
+	int targetIndexStart = params.get<0>().get<3>();
+	
 	Sequence::const_iterator v;
 	int contInput = 0;
 	int contTarget = 0;
 	for (v=s.begin(); v!= s.end(); v++) {
-		FeatureVector::const_iterator n;
+		//FeatureVector::const_iterator n;
 		//put inputs and targetPatterns data
 		if (v+1 != s.end()) {
 			if (v != s.begin()) {
-				//zero padding
-				for (int i=0; i<initialVectorSize; i++)
+				for (int i=0; i<motorVectorSize; i++)
+					//zero padding
 					inputVector[contInput++] = 0.0;
+				for (int i=0; i<inputSize - motorVectorSize; i++)
+					inputVector[contInput++] = v->at(i);
 			}
-			for (n=v->begin(); n!= v->end(); n++) {
-				inputVector[contInput++] = *n;
-			}
-			if (v == s.begin()) {
-				// //zero padding
-				//completing with next feature vector info
-				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
+			else {
+				for (int i=0; i<motorVectorSize; i++)
+					//motor command info
+					inputVector[contInput++] = v->at(i);
+				for (int i=0; i<inputSize - motorVectorSize; i++)
+					// //zero padding
 					//inputVector[contInput++] = 0.0;
+					//completing with next feature vector info
 					inputVector[contInput++] = (v+1)->at(i);
 			}
 		}
 			
 		if (v != s.begin()) {
-			/*for (int i=0; i<initialVectorSize; i++)
+			/*for (int i=0; i<motorVectorSize; i++)
 			  targetVector[contTarget++] = 0.0;*/
-			for (n=v->begin() + sensorVectorSize/2; n!= v->end(); n++) {
-				targetVector[contTarget++] = *n;
-			}
+			// for (n=v->begin() + sensorVectorSize/2; n!= v->end(); n++) {
+			for (int i=targetIndexStart; i<targetIndexStart+outputSize; i++)
+				//targetVector[contTarget++] = *n;
+				targetVector[contTarget++] = v->at(i);
+
 		}
 	}
 
@@ -749,19 +819,52 @@ void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVecto
 
 
 //------------------------------------------------------------------------------
-rnnlib::DataSequence* load_trainSeq (smlearning::Sequence& seq, int inputSize, int outputSize) {
+///
+///load training data in RNNLIB format
+///
+rnnlib::DataSequence* load_trainSeq (smlearning::Sequence& seq, DataSetParams params) {
+	int inputSize = params.get<0>().get<0>() + params.get<0>().get<1>();
+	int outputSize = params.get<0>().get<2>();
 	rnnlib::DataSequence* trainSeq = new rnnlib::DataSequence (inputSize, outputSize);
 	vector<int> inputShape, targetShape;
 	inputShape.push_back (seq.size() - 1);
 	targetShape.push_back (seq.size() - 1);
 	trainSeq->inputs.reshape(inputShape);
 	trainSeq->targetPatterns.reshape(targetShape);
-	load_sequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq);
+	load_sequence_basis (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq, params/*inputSize, outputSize, motorVectorSize, targetIndexStart*/);
 	//load_sequence_Markov (trainSeq->inputs.data, trainSeq->targetPatterns.data, seq);
 	return trainSeq;
 
 }
 
+//------------------------------------------------------------------------------
+bool check_params (DataSetParams params1, DataSetParams params2) {
+	if (params1.get<0>().get<0>() != params2.get<0>().get<0>())
+		return false;
+	if (params1.get<0>().get<1>() != params2.get<0>().get<1>())
+		return false;
+	if (params1.get<0>().get<2>() != params2.get<0>().get<2>())
+		return false;
+	if (params1.get<0>().get<3>() != params2.get<0>().get<3>())
+		return false;
+	if (params1.get<1>() != params2.get<1>())
+		return false;
+	if (params1.get<2>().get<0>() != params2.get<2>().get<0>())
+		return false;
+	if (params1.get<2>().get<1>() != params2.get<2>().get<1>())
+		return false;
+	if (params1.get<2>().get<2>() != params2.get<2>().get<2>())
+		return false;
+	if (params1.get<2>().get<3>() != params2.get<2>().get<3>())
+		return false;
+	if (params1.get<2>().get<4>() != params2.get<2>().get<4>())
+		return false;
+	if (params1.get<2>().get<5>() != params2.get<2>().get<5>())
+		return false;
+	return true;
+}
+
+//------------------------------------------------------------------------------
 
 bool concatenate_datasets (string dir, string writeFileName) {
 	boost::regex seqfile_re ("(.*)\\.seq");
@@ -773,23 +876,32 @@ bool concatenate_datasets (string dir, string writeFileName) {
 	}
 
 	directory_iterator dir_iter(p), dir_end;
-	DataSet data;
+	DataSetStruct data;
+	bool checkFlag = false;
 	for(;dir_iter != dir_end; ++dir_iter) {
 		string dirstring (dir_iter->leaf().c_str());
 		char *dirchar = (char *)dirstring.c_str();
 
 		if (boost::regex_match((const char*)dirchar, matches, seqfile_re)) {
-			DataSet currentData;
+			DataSetStruct currentData;
 			string dataBaseName (matches[1].first, matches[1].second);
 			cout << dir_iter->leaf() << endl;
 			cout << dataBaseName << endl;
 			read_dataset (dataBaseName, currentData);
-			cout << "size current data: " << currentData.size() << endl;
-			DataSet::iterator it = data.end();
-			data.insert (it, currentData.begin(), currentData.end());
+			if (!checkFlag) {
+				data.second = currentData.second;
+				checkFlag = true;
+			}
+			else {
+				assert (check_params (data.second, currentData.second));
+			}
+
+			cout << "size current data: " << currentData.first.size() << endl;
+			DataSet::iterator it = data.first.end();
+			data.first.insert (it, currentData.first.begin(), currentData.first.end());
 		}
 	}
-	cout << "size data: " << data.size() << endl;
+	cout << "size data: " << data.first.size() << endl;
 	if (!write_dataset (writeFileName, data) ) {
 		cerr << "Error writing dataset file!" << endl;
 		return false;
@@ -841,12 +953,12 @@ string get_seqBaseFileName (string seqFile) {
 ///
 ///obtain a discretization of starting finger poses from a canonical set of actions
 ///
-map<Vec3, int, compare_Vec3> get_canonical_positions () {
+map<Vec3, int, compare_Vec3> get_canonical_positions (Scenario::Desc& desc) {
 	//generate all possible polyflap poses
 	//TODO: the following data should be obtained from an xml file
 
 	//Polyflap Position and orientation
-	const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
+	/*const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
 	const Vec3 startPolyflapRotation(Real(0.0*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));//Y,X,Z
 	//Polyflap dimensions		
 	const Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
@@ -866,24 +978,33 @@ map<Vec3, int, compare_Vec3> get_canonical_positions () {
 	//const Real top = polyflapDimensions.v2* 1.2;
 	const Real top = polyflapDimensions.v2 - 0.02;
 	//lenght of the movement		
-	const Real distance = 0.2;
+	const Real distance = 0.2;*/
 
 	//initialization of arm target: the center of the polyflap
-	Vec3 positionT (0.2, 0.2, 0.001);
+	//Vec3 positionT (0.2, 0.2, 0.001);
+	Vec3 positionT (desc.startPolyflapPosition.v1, desc.startPolyflapPosition.v2, Scenario::pfWidth * 0.5);
 	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-	Vec3 polyflapNormalVec = computeNormalVector(Vec3 (0.2, 0.2, 0.0),Vec3 (0.2, 0.25, 0.0));			
+	//Vec3 polyflapNormalVec = computeNormalVector(Vec3 (0.2, 0.2, 0.0),Vec3 (0.2, 0.25, 0.0));
+	Vec3 standingPolyflapPosition (desc.startPolyflapPosition.v1, desc.startPolyflapPosition.v2 + desc.polyflapDimensions.v2 * 0.5, desc.startPolyflapPosition.v3);
+	cout << "standingPolPos: " << standingPolyflapPosition.v1 << "," << standingPolyflapPosition.v2 << "," << standingPolyflapPosition.v3 << endl;
+	Vec3 polyflapNormalVec = computeNormalVector(desc.startPolyflapPosition, standingPolyflapPosition);
+	
 	Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);
 
 	map<Vec3, int, compare_Vec3> positionsT;
-	
 
-	int smRegionsCount = 18;
-	for (int i=1; i <= smRegionsCount; i++) {
+	vector<int> availableStartingPositions = parse_startingPositions(desc.startingPositionsConfig, Scenario::startingPositionsCount);
+
+
+	//int smRegionsCount = 18;
+	//for (int i=1; i <= smRegionsCount; i++) {
+	for (int i=0; i<availableStartingPositions.size(); i++) {
 		//arm target update
 		
 		Vec3 pos (positionT);
-		/*Scenario::*/set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
-		positionsT[pos] = i;
+		///*Scenario::*/set_coordinates_into_target(i, pos, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
+		set_coordinates_into_target(availableStartingPositions[i], pos, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+		positionsT[pos] = availableStartingPositions[i];
 		
 	}
 
@@ -891,94 +1012,24 @@ map<Vec3, int, compare_Vec3> get_canonical_positions () {
 }
 
 ///
-///enumerate a dataset
-///
-CanonicalData::DataSet canonical_input_output_enumerator (DataSet data) {
-
-	//a number that slightly greater then the maximal reachable space of the arm
-	//    - used for workspace position normalization and later as a position upper bound
-	//      for random polyflap position
-	Real maxRange = 0.4;
-
-	map<Vec3, int, compare_Vec3> positionsT = get_canonical_positions ();
-	
-	map<Vec3, int>::const_iterator it;
-	cout << "map size: " << positionsT.size() << endl;
-	for (it = positionsT.begin(); it != positionsT.end(); it++) {
-		cout << "canon. pos.: "  << it->second  << ": stored start. pos.: "  << it->first.v1 << " " << it->first.v2 << " " << it->first.v3 << endl;
-	}
-
-	//Construct a new data set using a simple artificial discretization
-	//A canonical set of starting positions are obtained (i.e. the 18)
-	//Depending on feature vector size, polyflap poses and eventually finger
-	//effector poses are extracted
-	CanonicalData::DataSet newdata;
-	DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
-		Sequence::const_iterator v;
-		CanonicalData::Sequence newsequence;
-
-		stringstream motorCommandStr;
-		for (v=s->begin(); v!= s->end(); v++) {
-			CanonicalData::FeatureVector newfeaturevector;
-			long featvectorSize = v->size();
-			if (v == s->begin() ) {
-				assert (featvectorSize == 5);
-				golem::Vec3 startingPosition;
-				startingPosition.v1 = denormalize(v->at(0),0.0,maxRange);
-				startingPosition.v2 = denormalize(v->at(1),0.0,maxRange);
-				startingPosition.v3 = denormalize(v->at(2),0.0,maxRange);
-// 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
-				
-				int canonical_start_pos = positionsT.find (startingPosition)->second;
-				newfeaturevector.rawVector.push_back (canonical_start_pos);
-				newfeaturevector.rawVector.push_back (v->at(3));
-				newfeaturevector.rawVector.push_back (v->at(4));
-				//stringstream motorCommandStr;
-				motorCommandStr << canonical_start_pos << "_" << (*v)[3] << "_" << (*v)[4];
-				newfeaturevector.motorCommand = motorCommandStr.str();
-// 				cout << "motor command: " << newfeaturevector.motorCommand << endl;
-			}
-			else if (v != s->begin() ) {
-				assert (featvectorSize == 13 || featvectorSize == 7 );
-				if (featvectorSize == 7)
-					for (int i=0; i<6; i++)
-						newfeaturevector.rawVector.push_back(v->at(i));
-				else if (featvectorSize == 13)
-					for (int i=/*6*/0; i<12; i++)
-						newfeaturevector.rawVector.push_back(v->at(i));
-				stringstream labelStr;
-				labelStr << v->at(featvectorSize-1);
-				newfeaturevector.label = labelStr.str();
-				newfeaturevector.motorCommand = motorCommandStr.str();
-				
-					
-			}
-			newsequence.push_back (newfeaturevector);
-		}
-		newdata.push_back (newsequence);
-	}
-	cout << endl;
-
-	
-
-	return newdata;
-	
-}
-
-
-///
 ///enumerate a dataset taking into account time steps
-///and a  of the complete dataset
 ///
-CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data, int modulo) {
+CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSetStruct& data, Scenario::Desc& desc, int modulo) {
 	
 	//a number that slightly greater then the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
-	Real maxRange = 0.4;
+	//Real maxRange = 0.4;
+	assert (data.second.get<2>().get<0>() == desc.minX);
+	assert (data.second.get<2>().get<1>() == desc.minY);
+	assert (data.second.get<2>().get<2>() == desc.minZ);
+	assert (data.second.get<2>().get<3>() == desc.maxX);
+	assert (data.second.get<2>().get<4>() == desc.maxY);
+	assert (data.second.get<2>().get<5>() == desc.maxZ);
+	assert (data.second.get<1>());
+	assert (data.second.get<0>().get<0>() == 5);
 
-	map<Vec3, int, compare_Vec3> positionsT = get_canonical_positions ();
+	map<Vec3, int, compare_Vec3> positionsT = get_canonical_positions (desc);
 	
 	map<Vec3, int>::const_iterator it;
 	cout << "map size: " << positionsT.size() << endl;
@@ -992,7 +1043,7 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data
 	//effector poses are extracted
 	CanonicalData::DataSet newdata;
 	DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
+	for (s=data.first.begin(); s!= data.first.end(); s++) {
 		Sequence::const_iterator v;
 		CanonicalData::Sequence newsequence;
 
@@ -1003,11 +1054,11 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data
 			CanonicalData::FeatureVector newfeaturevector;
 			long featvectorSize = v->size();
 			if (v == s->begin() ) {
-				assert (featvectorSize == 5);
+				//assert (featvectorSize == 5);
 				golem::Vec3 startingPosition;
-				startingPosition.v1 = denormalize(v->at(0),0.0,maxRange);
-				startingPosition.v2 = denormalize(v->at(1),0.0,maxRange);
-				startingPosition.v3 = denormalize(v->at(2),0.0,maxRange);
+				startingPosition.v1 = denormalize(v->at(0),desc.minX,desc.maxX);
+				startingPosition.v2 = denormalize(v->at(1),desc.minY,desc.maxY);
+				startingPosition.v3 = denormalize(v->at(2),desc.minZ,desc.maxZ);
 // 				printf ("extracted start. pos.: %0.20f %0.20f %0.20f\n", startingPosition.v1, startingPosition.v2, startingPosition.v3);
 				
 				int canonical_start_pos = positionsT.find (startingPosition)->second;
@@ -1015,19 +1066,21 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSet data
 				newfeaturevector.rawVector.push_back (v->at(3));
 				newfeaturevector.rawVector.push_back (v->at(4));
 // 				stringstream motorCommandStr;
-				motorCommandBaseStr << canonical_start_pos << "_" << (*v)[3] << "_" << (*v)[4];
+				motorCommandBaseStr << canonical_start_pos << "_" << v->at(3) << "_" << v->at(4);
 				newfeaturevector.motorCommand = motorCommandBaseStr.str();
 // 				cout << "motor command: " << newfeaturevector.motorCommand << endl;
 				newsequence.push_back (newfeaturevector);
 			}
 			else if (v != s->begin() && time_step % modulo == 0) {
-				assert (featvectorSize == 13 || featvectorSize == 7 );
+				/*assert (featvectorSize == 13 || featvectorSize == 7 );
 				if (featvectorSize == 7)
 					for (int i=0; i<6; i++)
 						newfeaturevector.rawVector.push_back(v->at(i));
 				else if (featvectorSize == 13)
 					for (int i=6; i<12; i++)
-						newfeaturevector.rawVector.push_back(v->at(i));
+					newfeaturevector.rawVector.push_back(v->at(i));*/
+				for (int i=0; i<featvectorSize-1; i++)
+					newfeaturevector.rawVector.push_back(v->at(i));
 				stringstream labelStr;
 				labelStr << v->at(featvectorSize-1);
 				newfeaturevector.label = labelStr.str();
@@ -1251,8 +1304,10 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 }
 
 
-
-vector<int> parseStartingPositions(string argsStr, int maxStartPos) {
+///
+///parse a string containing a list of starting positions (TODO: write a nice reg.exp. :P )
+///
+vector<int> parse_startingPositions(string argsStr, int maxStartPos) {
 	
 	vector<int> positions;
 	int currNumber1 = 0;

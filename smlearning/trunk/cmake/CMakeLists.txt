@@ -197,6 +197,7 @@ SET(WRITE_DATA_CRYSSMEX_FMT_SOURCE
 SET(TOOLS_HEADERS
 	${SMLEARNING_ROOT}/include/tools/data_handling.h
 	${SMLEARNING_ROOT}/include/tools/math_helpers.h
+	${SMLEARNING_ROOT}/include/tools/data_structs.h
 )
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 

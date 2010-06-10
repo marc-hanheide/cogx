@@ -44,6 +44,11 @@
 
 <polyflapInteraction>
 	<maxRange>0.4</maxRange>
+	<maxX>0.4</maxX>
+	<maxY>0.4</maxY>
+	<maxZ>0.4</maxZ>
+	<minX>0.0</minX>
+	<minY>0.0</minY>
 	<minZ>-0.01</minZ>
 	<minDuration>5.0</minDuration>
 	<startPolyflapPosition>

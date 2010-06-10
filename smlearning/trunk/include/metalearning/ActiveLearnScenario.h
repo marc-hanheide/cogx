@@ -99,10 +99,10 @@ protected:
 	ActiveLearnScenario(golem::Scene &scene) : Scenario (scene) { };
 
 	/** restore predicted last polyflap and effector pose from neural activations */
-	golem::Mat34 get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
+	golem::Mat34 get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex/*, Real maxRange, Real minZ*/, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose);
 
 	/** restore sequence of predicted polyflap poses from neural activations */
-	void get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq,  vector<golem::Mat34>& currentPredictedEfSeq);
+	void get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex/*, Real maxRange, Real minZ*/, vector<golem::Mat34>& currentPredictedPfSeq,  vector<golem::Mat34>& currentPredictedEfSeq);
 
 	/** Renders the object. */
         virtual void render();
@@ -111,8 +111,9 @@ protected:
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 
 	///
-	///describe the length of experiment (number of sequences) and if given, the starting position
-	///calculate the splittingCriterion1 constant according to nr. of sequences
+	///Set the lenght of experiment (number of sequences) and if given, the starting position.
+	///Calculate the splittingCriterion1 constant according to nr. of sequences. 
+	///Get previously trained neural network if given.
 	virtual void setup_loop(int argc, char* argv[]);
 
 	///
@@ -162,10 +163,6 @@ protected:
 
 };
 
-//------------------------------------------------------------------------------
-
-/** Reads/writes Scenario description from/to a given context */
-bool XMLData(ActiveLearnScenario::Desc &val, golem::XMLContext* context, bool create = false);
 //------------------------------------------------------------------------------
 
 /** Application */

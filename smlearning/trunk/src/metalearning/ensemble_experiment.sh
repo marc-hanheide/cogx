@@ -1,15 +1,16 @@
 #!/bin/bash
 # ensemble_experiment.sh
 
-if (($# != 4));
+if (($# != 5));
 then
-	echo 'USAGE: ensemble_experiment.sh <firstStartPosition> <lastStartPosition> <numberOfIterations> <experiment (offline/active)>'
+	echo 'USAGE: ensemble_experiment.sh firstStartPosition lastStartPosition numberOfIterations experiment (offline/active) storeLabels (0 -> no / 1 -> yes)'
 	exit 1;
 fi
 
 firstStartPosition=$1;
 lastStartPosition=$2;
 numberOfIterations=$3;
+storeLabels=$5;
 
 if [ "$4" = "offline" ]
 then
@@ -32,7 +33,7 @@ do
 	echo "Starting experiment sequence from position $i.";
 	echo $program
 
-	$program $xml $numberOfIterations $i;	
+	$program $xml $numberOfIterations $i $storeLabels;
 
 	if (($? !=0 )); 
 	then

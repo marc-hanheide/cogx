@@ -9,7 +9,7 @@ int main (int argc, char* argv[]) {
 		return 1;
 	}
 	
-	DataSet savedData;
+	DataSetStruct savedData;
 	string seqFile = string (argv[1]);
 
 	if (!read_dataset (seqFile, savedData)) {
@@ -17,7 +17,8 @@ int main (int argc, char* argv[]) {
 		return 1;
 	}
 
-	print_dataset<double> (savedData);
+	print_dataset<double> (savedData.first);
+	print_dataset_params (savedData.second);
 
 	return 0;
 

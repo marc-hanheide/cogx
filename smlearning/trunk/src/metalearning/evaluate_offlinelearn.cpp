@@ -1,3 +1,4 @@
+#include <tools/data_handling.h>
 #include <metalearning/SMRegion.h>
 
 using namespace smlearning;
@@ -15,7 +16,7 @@ int main (int argc, char* argv[]) {
 		return 1;
 	}
 
-	DataSet data;
+	DataSetStruct data;
 
 	if (!read_dataset (seqFile, data)) {
 		cerr << "error reading data" << endl;
@@ -32,12 +33,13 @@ int main (int argc, char* argv[]) {
 
 	double error = 0.0;
 
-	for (int i = 0; i < data.size(); i++) {
-		rnnlib::DataSequence* testSeq = load_trainSeq (data[i], SMRegion::motorVectorSize + SMRegion::featureVectorSize, SMRegion::pfVectorSize);
+	for (int i = 0; i < data.first.size(); i++) {
+		//DataSetParams params = make_tuple ((int)(SMRegion::motorVectorSize + SMRegion::featureVectorSize), (int)SMRegion::pfVectorSize, (int)SMRegion::motorVectorSize, (int)SMRegion::efVectorSize, false);
+		rnnlib::DataSequence* testSeq = load_trainSeq (data.first[i], data.second);
 		error += myRNN.net->calculate_errors (*testSeq);
 	
 	}
-	error /= (double)data.size();
+	error /= (double)data.first.size();
 
 	cout << "Avg. sum of squares error: " << error << endl;
 

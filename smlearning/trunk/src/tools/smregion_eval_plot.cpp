@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
 	stringstream actionsForGnuplotScript;
 
-	actionsForGnuplotScript << "set terminal postscript eps enhanced color font \"Times-Roman,14\"" << endl;
+	actionsForGnuplotScript << "set terminal postscript eps enhanced color font \"Times-Roman,18\"" << endl;
 	actionsForGnuplotScript << "set output \"|epstopdf --filter > '" + fileName + ".pdf'" << endl;
 	actionsForGnuplotScript << "set autoscale" << endl;
 	actionsForGnuplotScript << "set style line 1 lt 1 lc rgb \"blue\"" << endl;

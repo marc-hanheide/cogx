@@ -28,7 +28,7 @@
 
 #include <vector>
 #include <metalearning/ActiveRNN.h>
-#include <tools/data_handling.h>
+#include <tools/data_structs.h>
 
 using namespace std;
 
@@ -61,7 +61,7 @@ struct SMRegion {
 	vector<double> learningProgressHistory;
 	/** vector corresponding to history of errors */
 	vector<double> errorsHistory;
-	/** vector corresponding to history of corresponding starting positions */
+	/** vector corresponding to history of starting positions */
 	vector<double> startingPositionsHistory;
 	/** constant to define the smoothing parameter in the evaluation of learning progress */
 	int smoothing;
@@ -78,20 +78,6 @@ struct SMRegion {
 
 	SMRegion () {
 	}
-	
-	/*SMRegion (const SMRegion& smRegion) :
-		index(smRegion.index),
-		minValuesSMVector (smRegion.minValuesSMVector),
-		maxValuesSMVector (smRegion.maxValuesSMVector),
-		//sMContextSize (smRegion.sMContextSize),
-		data (smRegion.data),
-		learningProgressHistory (smRegion.learningProgressHistory),
-		errorsHistory (smRegion.errorsHistory),
-		learner (smRegion.learner),
-		smoothing (smRegion.smoothing),
-		timewindow (smRegion.timewindow)
-	{
-	}*/
 	
 	SMRegion (int idx, /*int smCtxtSize,*/ int splittingCriterion1) :
 		index(idx)//,
