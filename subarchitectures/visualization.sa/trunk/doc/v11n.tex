@@ -265,7 +265,7 @@ Here \code{getComponentID()} is used for the name of the object since the compon
 is displaying only one object. Any other string can be used instead.
 
 
-\subsection{An Active Display Client}
+\section{Interaction with the display server}
 
 An active display client is needed when the component wants to present some UI
 elements with which it can be configured. The client receives notifications and
@@ -408,8 +408,8 @@ specified, Qt will try to deduce the type from \code{data}. An \code{IplImage}
 is first converted to a contiguous array of bytes and sent to the server as a
 raw image.
  
-Every image has an id which uniquely identifies an image on the server. This way
-an image (as any other object) can be replaced on the server.
+Every image has an id which uniquely identifies the image on the server. This
+way the image (as any other object) can be replaced on the server.
 
 Images can only be displayed in 2D contexts. Image objects can be transformed
 by defining a $3 \times 3$ transformation matrix that is applied before
@@ -578,3 +578,4 @@ the display list to be recreated ({\em myobject}) to the \code{renewal} table:
    table.insert(renewal, 'myobject')
 \end{Verbatim}
 
+\subsection{TODO: Transformations}
