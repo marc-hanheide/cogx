@@ -44,7 +44,7 @@ SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
 SET(Boost_MAJOR_VERSION 1)
 SET(Boost_MINOR_VERSION 36)
 # SET(Boost_SUBMINOR_VERSION 0)
-FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex )
+FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex program_options )
 
 # If boost was not found:
 # Use the following values if you use Ubuntu 8.10 and boost 1.39.0
@@ -74,7 +74,7 @@ ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools GolemTinyIce
 	       pthread rt GL glut expat SMLearning netcdf
- 	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY}
+ 	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	       ${QT_LIBRARIES} qwt-qt4
 	       Ice IceUtil)
 
