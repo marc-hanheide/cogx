@@ -601,23 +601,28 @@ void ObjectRelationManager::runComponent()
 	      Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
 		  Cure::LocalGridMap<double>::MAP1, 0, 0);
 	      vector<spatial::Object *>objects;
-	      objects.push_back(&box1);
-	      //	    objects.push_back(&box2);
 	      vector<spatial::SpatialRelationType> relations;
-	      relations.push_back(RELATION_ON);
+	      objects.push_back(&box1);
+
+	      if (sampleTable) {
+		objects.push_back(&table1);
+		relations.push_back(RELATION_ON);
+	      }
+	      else {
+		objects.push_back(&box2);
+		relations.push_back(RELATION_ON);
+		objects.push_back(&table1);
+		relations.push_back(RELATION_ON);
+	      }
+
+	      //	    objects.push_back(&box2);
 	      //	    relations.push_back(RELATION_ON);
 
 	      double total = 0.0;
-	      if (sampleTable) {
-	      sampleBinaryRelationRecursively(relations, objects, 0, pdf,
-		  &table1, total);
-	      }
-	      else {
-	      sampleBinaryRelationRecursively(relations, objects, 0, pdf,
-		  &box2, total);
-	      }
+	      sampleBinaryRelationRecursively(relations, objects, objects.size()-2, pdf,
+		  total);
 
-	      sampleTable = !sampleTable;
+//	      sampleTable = !sampleTable;
 
 	      peekabot::LineCloudProxy linecloudp;
 
@@ -673,14 +678,14 @@ void ObjectRelationManager::runComponent()
 		  Cure::LocalGridMap<double>::MAP1, 0, 0);
 	      vector<spatial::Object *>objects;
 	      objects.push_back(&box1);
+	      objects.push_back(&box2);
 	      //	    objects.push_back(&box2);
 	      vector<spatial::SpatialRelationType> relations;
 	      relations.push_back(RELATION_IN);
 	      //	    relations.push_back(RELATION_IN);
 
 	      double total;
-	      sampleBinaryRelationRecursively(relations, objects, 0, pdf,
-		  &box2, total);
+	      sampleBinaryRelationRecursively(relations, objects, objects.size()-2, pdf, total);
 	      peekabot::LineCloudProxy linecloudp;
 
 	      linecloudp.add(m_PeekabotClient, "root.distribution",
@@ -1418,22 +1423,15 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       return;
     }
 
-    const unsigned int pdfPoints = 150;
-
     FrontierInterface::GridMapDoublePtr inMap = request->outMap;
     Cure::LocalGridMap<double> outMap(inMap->size, inMap->cellSize, 0.0, 
 	Cure::LocalGridMap<double>::MAP1,
 	inMap->x, inMap->y);
 
-    double kernelRadius = 0.2;
-    int kernelWidth = (int)(ceil(kernelRadius/outMap.getCellSize())+0.1);
-    //How many kernelRadiuses per cell
-    double kernelStep = outMap.getCellSize()/kernelRadius; 
+    vector<spatial::Object *> objectChain;
+    vector<spatial::SpatialRelationType> relations;
 
     //Fill it
-    vector<Vector3> outPoints;
-    outPoints.reserve(pdfPoints);
-
     string supportObjectLabel = request->objects.back();
     spatial::Object *supportObject;
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
@@ -1457,79 +1455,41 @@ ObjectRelationManager::newPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       }
       supportObject = m_objectModels[supportObjectLabel];
     }
+    objectChain.push_back(supportObject);
 
-    int nSamplesPerStep = request->objects.size() == 2 ? pdfPoints : 1;
+    for (vector<string>::iterator it = request->objects.begin();
+	it != request->objects.end(); it++) {
+      if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
+	log("Can't compute ON for table on sth else!");
+	return;
+      }
+      else {
+	// For now, assume each label represents a unique object
+	if (m_objects.find(*it) == m_objects.end()) {
+	  // New object
+	  log("New SpatialObject: %s", it->c_str());
+	  m_objects[*it] = new SpatialData::SpatialObject;
+	  m_objects[*it]->label = *it;
 
-    int iterations = 0;
-    while (iterations < 10000 && outPoints.size() < pdfPoints) {
-      iterations++;
-      //      sampleOnnessRecursively(request->objects, request->objects.size()-2, nSamplesPerStep, pdfPoints,
-      //	  outPoints, supportObject);
+	  generateNewObjectModel(*it);
+	}
+	objectChain.push_back(m_objectModels[*it]);
+	relations.push_back(RELATION_ON);
+      }
     }
 
-    //Paint it into outMap
-    log("outpoint size: %d", outPoints.size());
-    if (outPoints.size() > 0) {
-#ifndef USE_KDE
-      double weight = request->probSum/outPoints.size();
-      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
-	int i, j;
-	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
-	  outMap(i,j) += weight;
-	  //	  log("outmap: (%f,%f)[%i,%i]=%f",it->x, it->y, i,j,outMap(i,j));
-	}
-      }
-#else
-      double total = 0.0;
-      unsigned long cellCount = outMap.getNumCells();
-      double kernelRadius = 0.2;
-      int kernelWidth = (int)(ceil(kernelRadius/outMap.getCellSize())+0.1);
-      //How many kernelRadiuses per cell
-      double kernelStep = outMap.getCellSize()/kernelRadius; 
+    double total = 0.0;
 
-      for (vector<Vector3>::iterator it = outPoints.begin(); it != outPoints.end(); it++) {
-	int i, j;
-	if (outMap.worldCoords2Index(it->x, it->y, i, j) == 0) {
-	  int minxi = i-kernelWidth < -outMap.getSize() ? -outMap.getSize() : i-kernelWidth;
-	  int minyi = j-kernelWidth < -outMap.getSize() ? -outMap.getSize() : j-kernelWidth;
-	  int maxxi = i+kernelWidth > outMap.getSize() ? outMap.getSize() : i+kernelWidth;
-	  int maxyi = j+kernelWidth > outMap.getSize() ? outMap.getSize() : j+kernelWidth;
-	  double minx,miny;
-	  outMap.index2WorldCoords(minxi,minyi,minx,miny);
-	  minx -= it->x; //Relative coords of minxi, minyi in meters
-	  miny -= it->y;
-	  minx /= kernelRadius; //Relative coords of minxi, minyi in kernel radii
-	  miny /= kernelRadius;
-
-	  double x = minx;
-	  for (int xi = minxi; xi <= maxxi; xi++, x+=kernelStep) {
-	    double y = miny;
-	    for (int yi = minyi; yi <= maxyi; yi++, y+=kernelStep) {
-	      double sqsum = 1 - (x*x+y*y);
-	      if (sqsum > 0) {
-		outMap(xi,yi)+=sqsum;
-		total+=sqsum;
-	      }
-	    }
-	  }
-	}
-      }
-      double weight = request->probSum/total;
-      for (unsigned long i = 0; i < cellCount; i++) {
-	if (outMap[i] != 0.0) {
-	  outMap[i] *= weight;
-	  //log("outmap: [%ii]=%f", i,outMap[i]);
-	}
-      }
-#endif
-    }
+    vector<Vector3> dummyTriangle;
+    sampleBinaryRelationRecursively(relations, objectChain, 
+	request->objects.size()-2, outMap, total, dummyTriangle, 1.0);
 
     request->outMap = convertFromCureMap(outMap);
-    double total = 0.0;
+
     for (unsigned long i = 0; i < request->outMap->contents.size(); i++) {
-      total+=request->outMap->contents[i];
+      request->outMap->contents[i] *= (request->probSum/total);
     }
-    log("%f", total);
+
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
   }
 
@@ -1554,6 +1514,9 @@ ObjectRelationManager::new3DPriorRequest(const cdl::WorkingMemoryChange &wmc) {
         Cure::LocalGridMap<double>::MAP1,
         inMap->x, inMap->y);
 
+    vector<spatial::Object *> objectChain;
+    vector<spatial::SpatialRelationType> relations;
+
     string supportObjectLabel = request->objects.back();
     spatial::Object *supportObject;
     if (m_planeObjectModels.find(supportObjectLabel) != m_planeObjectModels.end()) {
@@ -1577,9 +1540,8 @@ ObjectRelationManager::new3DPriorRequest(const cdl::WorkingMemoryChange &wmc) {
       }
       supportObject = m_objectModels[supportObjectLabel];
     }
+    objectChain.push_back(supportObject);
 
-    vector<spatial::Object *> objectChain;
-    vector<spatial::SpatialRelationType> relations;
     for (vector<string>::iterator it = request->objects.begin();
 	it != request->objects.end(); it++) {
       if (m_planeObjectModels.find(*it) != m_planeObjectModels.end()) {
@@ -1602,13 +1564,17 @@ ObjectRelationManager::new3DPriorRequest(const cdl::WorkingMemoryChange &wmc) {
     }
 
     double total = 0.0;
+
+    vector<Vector3> dummyTriangle;
     sampleBinaryRelationRecursively(relations, objectChain, request->objects.size()-2, outMap,
-          supportObject, total, vector<Vector3>(), request->probSum);
-
-
+          total, dummyTriangle, 1.0);
 
     request->outMap = convertFromCureMap(outMap);
-    log("%f", total);
+    
+    for (unsigned long i = 0; i < request->outMap->contents.size(); i++) {
+      request->outMap->contents[i] *= (request->probSum/total);
+    }
+
     overwriteWorkingMemory<FrontierInterface::ObjectPriorRequest>(wmc.address, request);
   }
 
@@ -1714,9 +1680,10 @@ struct OffsetKernel {
 void
 ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRelationType> &relations,
     const vector<spatial::Object *> &objects,
-    int currentLevel, Cure::LocalGridMap<double> &outMap,  spatial::Object *supportObject,
+    int currentLevel, Cure::LocalGridMap<double> &outMap,
     double &total, const vector<Vector3> &triangle, double baseOnness)
 {
+  spatial::Object *supportObject = objects[currentLevel+1];
   if (supportObject->pose.pos.x == -FLT_MAX) {
     log("Error! Support object pose uninitialized!");
     return;
@@ -1791,6 +1758,18 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
   double zmin = supportObject->pose.pos.z + minVertical;
   double zmax = supportObject->pose.pos.z + maxVertical;
 
+  int sampleNumberTarget; 
+  switch (objects.size()-2 - currentLevel) {
+    case 0: //Base level
+      sampleNumberTarget = m_sampleNumberTarget;
+      break;
+    case 1: //One level of indirection
+    default:
+      sampleNumberTarget = m_sampleNumberTarget / 10;
+      break;
+  }
+
+
   // Distribute N samples over the whole volume
   double sampleVolume = (x2-x1)*(y2-y1)*(zmax-zmin);
 
@@ -1798,7 +1777,7 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
   // Can be set to a non-multiple of cellSize, but that may lead to
   // aliasing problems.
 
-  double samplingInterval = pow(sampleVolume/m_sampleNumberTarget, 1/3.0); 
+  double samplingInterval = pow(sampleVolume/sampleNumberTarget, 1/3.0); 
   // Round samplingInterval upward to the nearest multiple of cellSize
   // (keeps the number of sampled positions less than sampleNumberTarget)
   samplingInterval = cellSize*(ceil(samplingInterval/cellSize));
@@ -1896,9 +1875,9 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
 	  }
 	  else {
 	    // Sample and recurse, if the value is above a threshold
-	    if (value > 0.05) {
+	    if (value > 0.5) {
 	      sampleBinaryRelationRecursively(relations, objects, currentLevel-1,
-		  outMap, onObject, total, triangle, value * baseOnness);
+		  outMap, total, triangle, value * baseOnness);
 	    }
 	  }
 	}
@@ -1908,13 +1887,13 @@ ObjectRelationManager::sampleBinaryRelationRecursively(const vector <SpatialRela
 	// This is the trajector itself
 	// Accumulate the kernel by this much
 	int kernelCellNo = 0;
-	for (int xi = kernel.minxi; xi <= kernel.maxxi; xi++) {
-	  for (int yi = kernel.minyi; yi <= kernel.maxyi; yi++, kernelCellNo++) {
+	for (int xi = sampleMapX+kernel.minxi; xi <= sampleMapX+kernel.maxxi; xi++) {
+	  for (int yi = sampleMapY+kernel.minyi; yi <= sampleMapY+kernel.maxyi; yi++, kernelCellNo++) {
 	    if (xi <= - mapSize || xi >= mapSize ||
 		yi <= - mapSize || yi >= mapSize)
 	      continue;
 
-	    outMap(sampleMapX+xi, sampleMapY+yi)+=kernel.weights[kernelCellNo] * totalValueThisXY * baseOnness;
+	    outMap(xi, yi)+=kernel.weights[kernelCellNo] * totalValueThisXY * baseOnness;
 	    total+=kernel.weights[kernelCellNo] * totalValueThisXY * baseOnness;
 	  }
 	}

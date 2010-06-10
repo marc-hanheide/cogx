@@ -143,8 +143,7 @@ protected:
       const std::string &onLabel);
   void sampleBinaryRelationRecursively(const std::vector<spatial::SpatialRelationType> &relations,
       const std::vector<spatial::Object *> &objects,
-    int currentLevel, Cure::LocalGridMap<double> &map, 
-    spatial::Object *supportObject, double &total,
+    int currentLevel, Cure::LocalGridMap<double> &map, double &total,
     const std::vector<Vector3> &triangle = std::vector<Vector3>(), double baseOnness = 1.0);
 
   void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
