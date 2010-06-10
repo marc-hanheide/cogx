@@ -360,7 +360,12 @@ void Scenario::define_start_position(){
 	else
 		startPosition = startingPosition;
 	
+
 	assert (startPosition >= 1 && startPosition <= startingPositionsCount);
+
+	usedStartingPositions.push_back(startPosition);
+
+
 }
 
 
@@ -871,6 +876,10 @@ void Scenario::write_data (){
 	//writedown_collected_data(data);
 	write_dataset (dataFileName, data);
 	/////////////////////////////////////////////////
+
+	string stpFileName = dataFileName + ".stp";
+	ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
+	write_intvector(writeToFile, usedStartingPositions);
 	
 }
 

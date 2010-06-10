@@ -170,6 +170,33 @@ public:
 			// Other stuff
 			motion2D = false;
 			speriod = 1.0;
+
+
+			maxX = 0.4;
+			maxY = 0.4;
+			maxZ = 0.4;
+			minX = 0.0;
+			minY = 0.0;
+			minZ = -0.01;
+
+			minDuration = 5.0;
+
+			startPolyflapPosition.set(0.2, 0.2, 0.2);
+			startPolyflapRotation.set(0.0, 0.0, 0.0);
+			polyflapDimensions.set(0.1, 0.1, 0.1);
+
+			over = 0.017;
+			dist = 0.05;
+			side = polyflapDimensions.v1*0.6;
+			center = polyflapDimensions.v2*0.6;
+			top = polyflapDimensions.v2 - 0.02;
+
+			distance = 0.2;
+
+			startingPositionsConfig = "1-18";
+
+
+
 		}
 		/** Checks if the description is valid. */
 		virtual bool isValid() const {
@@ -206,6 +233,13 @@ public:
 	///with learning machines running offline learning experiments.
 	///
 	void run(int argc, char* argv[]);
+
+
+
+
+	static int getStartingPositionsCount() {
+		return startingPositionsCount;
+	}
 
 protected:
 	/** Description */
@@ -282,6 +316,9 @@ protected:
 	vector<int> availableStartingPositions;
 	/** flag to decide storing labels (for pattern recognition) */
 	bool storeLabels;
+	/* vector logging used starting positions throughout the experiment */
+	vector<int> usedStartingPositions;
+	
 
 	/** Creator */
 	golem::Creator creator;

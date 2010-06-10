@@ -230,6 +230,7 @@ void ActiveLearnScenario::choose_action () {
 			this->speed = chosenAction.second.speed;
 			this->horizontalAngle = chosenAction.second.horizontalAngle;
 
+			usedStartingPositions.push_back(startPosition);
 		}
 	}
 	else
@@ -239,12 +240,16 @@ void ActiveLearnScenario::choose_action () {
 
 
 void ActiveLearnScenario::write_data (bool final){
-	cout << "ALS: writing data..." << endl;
+	//cout << "ALS: writing data..." << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
 	//string basename = writedown_collected_data(data);
-	if (final)
+	if (final) {
 		write_dataset (dataFileName, data);
+		string stpFileName = dataFileName + ".stp";
+		ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
+		write_intvector(writeToFile, usedStartingPositions);
+	}
 
 	for (SMRegion::RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
 		stringstream name;
@@ -280,7 +285,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	setup_loop(argc, argv);
 
 	regionsCount = 0;
-	SMRegion firstRegion (regionsCount, /*motorVectorSize, */splittingCriterion1 );
+	SMRegion firstRegion (regionsCount, /*motorVectorSize, */splittingCriterion1);
 	regions[regionsCount] = firstRegion;
 	if (netconfigFileName.empty())
 		regions[regionsCount].learner.init (motorVectorSize + featureVectorSize,  pfVectorSize);
@@ -513,7 +518,26 @@ void ActiveLearnScenario::update_learners () {
 	//Evaluate learning progress
 	cout << "Region: " << currentRegion->index << endl;
 	currentRegion->update_learning_progress (*trainSeq);
+
 	currentRegion->startingPositionsHistory.push_back (startPosition);
+
+	SMRegion::RegionsMap::iterator it;
+cout << "--------------------------------------------------------" << regions.size() << endl;
+	for ( it=regions.begin() ; it != regions.end(); it++ ) {
+		if (&(it->second) != currentRegion) {
+cout << "--------------------------------------------------------" << endl;
+			double lastLP = it->second.learningProgressHistory.back();
+			double lastEr = it->second.errorsHistory.back();
+			it->second.learningProgressHistory.push_back(lastLP);
+			it->second.errorsHistory.push_back(lastEr);
+			it->second.startingPositionsHistory.push_back(0);
+		}
+	
+	}
+
+
+	
+	
 }
 
 ///

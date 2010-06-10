@@ -100,7 +100,9 @@ bool SMRegion::write_data (string fileName) {
 	write_realvector (writeFile, learningProgressHistory);
 	write_realvector (writeFile, errorsHistory);
 	write_realvector (writeFile, startingPositionsHistory);
-	
+	write_intValue (writeFile, createdInIteration);
+
+
 	writeFile.close ();
 
 	return learner.write_net_data (fileName);
@@ -121,6 +123,8 @@ bool SMRegion::read_data (string fileName) {
 	read_realvector (readFile, learningProgressHistory);
 	read_realvector (readFile, errorsHistory);
 	read_realvector (readFile, startingPositionsHistory);
+	read_intValue (readFile, &createdInIteration);
+
 	
 	readFile.close ();
 
