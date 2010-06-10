@@ -1,147 +1,34 @@
-// =================================================================
-// Copyright (C) 2010 DFKI GmbH Talking Robots 
-// Geert-Jan M. Kruijff (gj@dfki.de)
-//                                                                                                                          
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public License 
-// as published by the Free Software Foundation; either version 2.1 of
-// the License, or (at your option) any later version.
-//                                                                                                                          
-// This library is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-// Lesser General Public License for more details.
-//                                                                                                                          
-// You should have received a copy of the GNU Lesser General Public
-// License along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-// 02111-1307, USA.
-// =================================================================
+package eu.cogx.beliefproxies.proxies.beliefs;
 
-// =================================================================
-// PACKAGE DEFINITION 
-package eu.cogx.beliefs;
-
-//=================================================================
-// IMPORTS
-
-// Java
 import java.util.LinkedList;
+import java.util.List;
 
+import Ice.Object;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 import de.dfki.lt.tr.beliefs.util.BeliefMissingValueException;
 import de.dfki.lt.tr.beliefs.util.BeliefNotInitializedException;
+import eu.cogx.beliefproxies.factories.ProxyFactory;
+import eu.cogx.beliefproxies.proxies.Proxy;
+import eu.cogx.beliefproxies.proxies.distributions.DistributionProxy;
+import eu.cogx.beliefproxies.proxies.frames.FrameProxy;
 
-//=================================================================
-// CLASS
+public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends DistributionProxy<?>>>
+		extends Proxy<T> {
 
-/**
- * The <tt>Belief</tt> class provides access to the underlying, slice-based data
- * structures for situated beliefs. The class focuses on accessing the various
- * parameters of a belief (identifier, type), and accessing and updating
- * epistemic status. The class also provides the principle access to content and
- * the frame of a belief. Computations on these are performed in separate
- * classes (<tt>Content</tt> and <tt>Frame</tt>, respectively).
- * <p>
- * To create a new belief, it suffices to call the default constructor. Most
- * methods for accessing the belief however assume that the belief at least has
- * been properly initialized. (If not, a <tt>BeliefNotInitializedException</tt>
- * is thrown.) This initialization is therefore best done at creation time:
- * 
- * <pre>
- * Belief belief = new Belief();
- * belief.init();
- * </pre>
- * <p>
- * 
- * A "bare" initialized belief is by default a private belief, with as agent
- * identifier "self."
- * <p>
- * The class provides several methods for accessing and updating the epistemic
- * status of a belief. For each status (<i>private, attributed</i>, and
- * <i>shared</i>) there are <tt>setX, getX</tt> and <tt>isX</tt> methods.
- * Furthermore, the class has individual methods for updating private or
- * attributed beliefs to shared beliefs. An update method constructs the list of
- * agents for which the shared belief holds, from the agents of the original
- * belief and -possibly- a list of additional agents. The following code
- * illustrates the creation of a private perceptual belief, setting its agent
- * identifier to "robot", and then updating it to a shared belief between the
- * robot and the human.
- * <p>
- * 
- * <pre>
- * Belief belief = new Belief();
- * belief.init();
- * belief.setType(&quot;percept&quot;);
- * belief.setPrivate(&quot;robot&quot;);
- * //... now something happens 
- * //... which implies the belief is shared with &quot;human&quot;
- * LinkedList otherAgents = new LinkedList&lt;String&gt;();
- * otherAgents.add(&quot;human&quot;);
- * try {
- * 	belief.updatePrivateToShared(otherAgents);
- * } catch (BeliefNotInitializedException bnie) {
- * 	System.out.println(bnie.getMessage());
- * } catch (BeliefInvalidQueryException biqe) {
- * 	System.out.println(biqe.getMessage());
- * }
- * // now the belief is shared, between &quot;robot&quot; and &quot;human&quot;
- * LinkedList agents = belief.getShared();
- * </pre>
- * <p>
- * 
- * Modeling the content of a belief is done through the (separate)
- * <tt>Content</tt> class. The <tt>Belief</tt> class provides the access to this
- * information, via <tt>get/set</tt> methods:
- * 
- * <pre>
- * Content content = new Content();
- * content.init();
- * // ... flesh out the content
- * belief.setContent(content);
- * </pre>
- * 
- * 
- * @see de.dfki.lt.tr.beliefs.data.Content
- * @see de.dfki.lt.tr.beliefs.data.Frame
- * @author Geert-Jan M. Kruijff (gj@dfki.de)
- * @version 100520
- * @started 100510
- */
+	protected final C contentFactory;
 
-public class BeliefProxy implements Proxy {
-
-	protected final dBelief _belief;
-
-	/**
-	 * Initializes the internal datastructures
-	 */
-
-	public BeliefProxy(String id) {
-		_belief = new dBelief();
-		_belief.id = id;
-		_belief.estatus = new PrivateEpistemicStatus("self");
-		_belief.frame = new FrameProxy().getFrame();
-		_belief.content = new ConditionallyIndependentDistributionProxy().getContent();
+	public BeliefProxy(Class<? extends T> class1, C factory, Object content) {
+		super(class1, content);
+		contentFactory=factory;
 	}
 
-	private void checkConsistency() {
-		assert (!_belief.id.isEmpty());
-	}
-
-	public BeliefProxy(dBelief belief) {
-		this._belief = belief;
-	}
-
-	public final Ice.Object get() {
-		return _belief;
-	}
-	
 	/**
 	 * Returns the identifier of the belief
 	 * 
@@ -150,9 +37,8 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief has a null or empty identifier
 	 */
 
-	public String getId() throws BeliefMissingValueException {
-		checkConsistency();
-		return _belief.id;
+	public String getId() {
+		return _content.id;
 	} // end getId
 
 	/**
@@ -163,9 +49,8 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief has a null or empty type
 	 */
 
-	public String getType() throws BeliefMissingValueException {
-		checkConsistency();
-		return _belief.type;
+	public String getType() {
+		return _content.type;
 	} // end getType
 
 	/**
@@ -177,8 +62,8 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief has not yet been initialized
 	 */
 
-	public void setType(String newType) throws BeliefNotInitializedException {
-		_belief.type = newType;
+	public void setType(String newType) {
+		_content.type = newType;
 	} // end setType
 
 	/**
@@ -189,8 +74,8 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief has not been initialized
 	 */
 
-	public boolean isPrivate() throws BeliefNotInitializedException {
-		if (_belief.estatus instanceof PrivateEpistemicStatus) {
+	public boolean isPrivate() {
+		if (_content.estatus instanceof PrivateEpistemicStatus) {
 			return true;
 		} else {
 			return false;
@@ -206,13 +91,12 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief is not a private belief
 	 */
 
-	public String getPrivate() throws BeliefInvalidQueryException,
-			BeliefNotInitializedException {
+	public String getPrivate() {
 		if (this.isPrivate()) {
-			return ((PrivateEpistemicStatus) _belief.estatus).agent;
+			return ((PrivateEpistemicStatus) _content.estatus).agent;
 		} else {
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _belief.id + "]: Belief does not have private status");
+					+ _content.id + "]: Belief does not have private status");
 		} // end if..else check for appropriate status
 	} // end getPrivate
 
@@ -230,21 +114,13 @@ public class BeliefProxy implements Proxy {
 	 *             If one of the arguments is null/empty
 	 */
 
-	public void setPrivate(String agent) throws BeliefInvalidQueryException,
-			BeliefNotInitializedException, BeliefMissingValueException {
-		if (agent == null || agent.equals("")) {
-			throw new BeliefMissingValueException(
-					"Cannot set [agent] in private status: Provided identifier is null/empty");
+	public void setPrivate(String agent) throws BeliefInvalidQueryException {
+		if (this.isPrivate()) {
+			((PrivateEpistemicStatus) _content.estatus).agent = agent;
 		} else {
-			checkConsistency();
-			if (this.isPrivate()) {
-				((PrivateEpistemicStatus) _belief.estatus).agent = agent;
-			} else {
-				throw new BeliefInvalidQueryException(
-						"Invalid query on belief [" + _belief.id
-								+ "]: Belief does not have private status");
-			} // end if..else check for appropriate status
-		} // end if..else check for init belief
+			throw new BeliefInvalidQueryException("Invalid query on belief ["
+					+ _content.id + "]: Belief does not have private status");
+		} // end if..else check for appropriate status
 	} // end setPrivate
 
 	/**
@@ -264,21 +140,11 @@ public class BeliefProxy implements Proxy {
 	 */
 
 	public void setAttributed(String attributingAgent,
-			LinkedList<String> attributedAgents)
-			throws BeliefNotInitializedException, BeliefMissingValueException {
-		if (attributingAgent == null || attributingAgent.equals("")) {
-			throw new BeliefMissingValueException(
-					"Cannot set [attributing agent] in attributed status: Provided identifier is null/empty");
-		}
-		if (attributedAgents == null || attributedAgents.size() == 0) {
-			throw new BeliefMissingValueException(
-					"Cannot set [attributed agent] in attributed status: Provided list is null/empty");
-		}
-		checkConsistency();
+			List<String> attributedAgents) {
 		AttributedEpistemicStatus astatus = new AttributedEpistemicStatus();
 		astatus.agent = attributingAgent;
 		astatus.attribagents = attributedAgents;
-		_belief.estatus = astatus;
+		_content.estatus = astatus;
 	} // end setAttributed
 
 	/**
@@ -289,7 +155,7 @@ public class BeliefProxy implements Proxy {
 	 */
 
 	public boolean isAttributed() throws BeliefNotInitializedException {
-		if (_belief.estatus instanceof AttributedEpistemicStatus) {
+		if (_content.estatus instanceof AttributedEpistemicStatus) {
 			return true;
 		} else {
 			return false;
@@ -306,13 +172,12 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief is not of attributed status
 	 */
 
-	public String getAttributingAgent() throws BeliefNotInitializedException,
-			BeliefInvalidQueryException {
+	public String getAttributingAgent() throws BeliefInvalidQueryException {
 		if (this.isAttributed()) {
-			return ((AttributedEpistemicStatus) _belief.estatus).agent;
+			return ((AttributedEpistemicStatus) _content.estatus).agent;
 		} else {
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _belief.id + "]: Belief does not have attributed status");
+					+ _content.id + "]: Belief does not have attributed status");
 		}
 	} // end getAttributingAgent
 
@@ -325,13 +190,13 @@ public class BeliefProxy implements Proxy {
 	 * @throws BeliefInvalidQueryException
 	 *             If the belief is not of attributed status
 	 */
-	public LinkedList<String> getAttributedToAgents()
+	public List<String> getAttributedToAgents()
 			throws BeliefNotInitializedException, BeliefInvalidQueryException {
 		if (this.isAttributed()) {
-			return (LinkedList<String>) ((AttributedEpistemicStatus) _belief.estatus).attribagents;
+			return (List<String>) ((AttributedEpistemicStatus) _content.estatus).attribagents;
 		} else {
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _belief.id + "]: Belief does not have attributed status");
+					+ _content.id + "]: Belief does not have attributed status");
 		}
 	} // end getAttributedToAgents
 
@@ -347,7 +212,7 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief has not been properly initialized
 	 */
 
-	public void setShared(LinkedList<String> agents)
+	public void setShared(List<String> agents)
 			throws BeliefMissingValueException, BeliefNotInitializedException {
 		if (agents == null || agents.size() == 0) {
 			throw new BeliefMissingValueException(
@@ -355,7 +220,7 @@ public class BeliefProxy implements Proxy {
 		} else {
 			SharedEpistemicStatus sstatus = new SharedEpistemicStatus();
 			sstatus.cgagents = agents;
-			_belief.estatus = sstatus;
+			_content.estatus = sstatus;
 		} // end if..else check for proper argument
 	} // end setShared
 
@@ -368,7 +233,7 @@ public class BeliefProxy implements Proxy {
 	 */
 
 	public boolean isShared() throws BeliefNotInitializedException {
-		return (_belief.estatus instanceof SharedEpistemicStatus);
+		return (_content.estatus instanceof SharedEpistemicStatus);
 	} // end isShared
 
 	/**
@@ -381,13 +246,13 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief is not of shared status
 	 */
 
-	public LinkedList<String> getShared() throws BeliefNotInitializedException,
+	public List<String> getShared() throws BeliefNotInitializedException,
 			BeliefInvalidQueryException {
 		if (!this.isShared()) {
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _belief.id + "]: Belief does not have shared status");
+					+ _content.id + "]: Belief does not have shared status");
 		}
-		return (LinkedList<String>) ((SharedEpistemicStatus) _belief.estatus).cgagents;
+		return (List<String>) ((SharedEpistemicStatus) _content.estatus).cgagents;
 	} // end getShared
 
 	/**
@@ -407,23 +272,19 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief is not a private belief
 	 */
 
-	public void updatePrivateToShared(LinkedList<String> otherAgents)
+	public void updatePrivateToShared(List<String> otherAgents)
 			throws BeliefMissingValueException, BeliefNotInitializedException,
 			BeliefInvalidOperationException {
-		if (otherAgents == null || otherAgents.size() == 0) {
-			throw new BeliefMissingValueException(
-					"Cannot update private to shared status with [agents]: Provided list is null/empty");
-		}
 		if (!this.isPrivate()) {
 			throw new BeliefInvalidOperationException(
 					"Cannot update a non-private belief to shared status");
 		}
-		LinkedList<String> agents = new LinkedList<String>();
-		agents.add(((PrivateEpistemicStatus) _belief.estatus).agent);
+		List<String> agents = new LinkedList<String>();
+		agents.add(((PrivateEpistemicStatus) _content.estatus).agent);
 		agents.addAll(otherAgents);
 		SharedEpistemicStatus sstatus = new SharedEpistemicStatus();
 		sstatus.cgagents = agents;
-		_belief.estatus = sstatus;
+		_content.estatus = sstatus;
 	} // end updatePrivateToShared
 
 	/**
@@ -445,18 +306,18 @@ public class BeliefProxy implements Proxy {
 					"Cannot update a non-attributed belief to shared status");
 		}
 		LinkedList<String> agents = new LinkedList<String>();
-		agents.add(((AttributedEpistemicStatus) _belief.estatus).agent);
+		agents.add(((AttributedEpistemicStatus) _content.estatus).agent);
 		agents
-				.addAll(((AttributedEpistemicStatus) _belief.estatus).attribagents);
+				.addAll(((AttributedEpistemicStatus) _content.estatus).attribagents);
 		SharedEpistemicStatus sstatus = new SharedEpistemicStatus();
 		sstatus.cgagents = agents;
-		_belief.estatus = sstatus;
+		_content.estatus = sstatus;
 	} // end updateAttributedToShared
 
 	/**
 	 * Sets the content of the belief to the provided object.
 	 * 
-	 * @param contentDelegate
+	 * @param contentProxy
 	 *            The content to store in the belief
 	 * @see ConditionallyIndependentDistributionProxy
 	 * @throws BeliefNotInitializedException
@@ -465,9 +326,9 @@ public class BeliefProxy implements Proxy {
 	 *             If the content is empty or null
 	 */
 
-	public void setContent(ContentProxy<?> contentDelegate)
+	public void setContent(Proxy<? extends ProbDistribution> contentProxy)
 			throws BeliefNotInitializedException, BeliefMissingValueException {
-		_belief.content = contentDelegate.getContent();
+		_content.content = contentProxy.get();
 	} // end setContent
 
 	/**
@@ -479,8 +340,8 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief is not initialized
 	 */
 
-	public ContentProxy<?> getContent() {
-		return ContentProxy.createDelegate(_belief.content);
+	public Proxy<? extends ProbDistribution> getContent() {
+		return contentFactory.create(_content.content);
 	} // end getContent
 
 	/**
@@ -494,13 +355,28 @@ public class BeliefProxy implements Proxy {
 	 *             If the belief is null/empty
 	 * @see FrameProxy
 	 */
-	public void setFrame(FrameProxy frameProxy)
+	public void setFrame(FrameProxy<?> frameProxy)
 			throws BeliefMissingValueException, BeliefInvalidOperationException {
 		if (frameProxy == null) {
 			throw new BeliefMissingValueException(
 					"Cannot set frame: Provided frame is null");
 		}
-		_belief.frame = frameProxy.getFrame();
+		_content.frame = frameProxy.get();
 	} // end setFrame
 
-} // end class
+	public FrameProxy<?> getFrame() {
+		return new FrameProxy<AbstractFrame>(AbstractFrame.class, _content.frame);
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		
+		return "CondIndepedentFormulaBeliefProxy [_proxyFor=" + _proxyFor
+				+ ", getId()=" + getId() + ", getType()=" + getType() + ", distribution: "+contentFactory.create(_content.content).toString()+"]";
+	}
+
+
+}
