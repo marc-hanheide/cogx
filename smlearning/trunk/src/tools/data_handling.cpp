@@ -94,6 +94,27 @@ void write_realvector (ofstream& writeFile, const vector<double>& v) {
 }
 
 ///
+///write int vector to a file
+///
+void write_intvector (ofstream& writeFile, const vector<int>& v) {
+	long featvectorSize = v.size();
+	writeFile.write ((const char*)&featvectorSize, sizeof (v.size()));
+	vector<int>::const_iterator n;
+	for (n=v.begin(); n!= v.end(); n++) {
+		writeFile.write ((const char* )&(*n), sizeof (*n));
+	}
+	
+}
+
+
+///
+///write an int value to a file
+///
+void write_intValue(ofstream& writeFile, const int v)  {
+	writeFile.write ((const char* )&v, sizeof (v));
+}
+
+///
 ///write DataSet vector to a file
 ///
 bool write_dataset (string fileName, const DataSetStruct& data) {
@@ -147,6 +168,31 @@ void read_realvector (ifstream& readFile, vector<double>& v) {
 		v.push_back (value);
 	}
 }
+
+
+///
+///read int vector from a file
+///
+void read_intvector (ifstream& readFile, vector<int>& v) {
+	long featvectorSize;
+	readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
+	// cout << "\t\t" << featvectorSize << endl;
+	for (int n=0; n<featvectorSize; n++) {
+		int value;
+		readFile.read ((char* )&value, sizeof(value));
+		v.push_back (value);
+	}
+}
+
+
+///
+///read an int value from a file
+///
+void read_intValue(ifstream& readFile,  int* v)  {
+	readFile.read ((char* )v, sizeof(*v));
+}
+
+
 
 ///
 ///read DataSet vector from a file

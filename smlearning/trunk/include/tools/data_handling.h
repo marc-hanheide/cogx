@@ -114,6 +114,16 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize);
 void write_realvector (ofstream& writeFile, const vector<double>& v);
 
 ///
+///write int vector to a file
+///
+void write_intvector (ofstream& writeFile, const vector<int>& v);
+
+///
+///write an int value to a file
+///
+void write_intValue(ofstream& writeFile, const int v);
+
+///
 ///write DataSet vector to a file
 ///
 bool write_dataset (string fileName, const DataSetStruct& data);
@@ -122,6 +132,16 @@ bool write_dataset (string fileName, const DataSetStruct& data);
 ///read real vector from a file
 ///
 void read_realvector (ifstream& readFile, vector<double>& v);
+
+///
+///read int vector from a file
+///
+void read_intvector (ifstream& readFile, vector<int>& v);
+
+///
+///read an int value from a file
+///
+void read_intValue(ifstream& readFile,  int* v);
 
 ///
 ///read DataSet vector from a file

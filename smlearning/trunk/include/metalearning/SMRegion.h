@@ -30,6 +30,8 @@
 #include <metalearning/ActiveRNN.h>
 #include <tools/data_structs.h>
 
+
+
 using namespace std;
 
 namespace smlearning {
@@ -76,10 +78,14 @@ struct SMRegion {
 	/** constant used for assertions (effector feature vector size should be predefined) */
 	static const int efVectorSize = 6;
 
+
+
+	int createdInIteration;
+
 	SMRegion () {
 	}
 	
-	SMRegion (int idx, /*int smCtxtSize,*/ int splittingCriterion1) :
+	SMRegion (int idx, /*int smCtxtSize,*/ int splittingCriterion1, int created = 0) :
 		index(idx)//,
 		//sMContextSize (smCtxtSize) {
 	{
@@ -91,9 +97,12 @@ struct SMRegion {
 		smoothing = splittingCriterion1 * 0.625;
 		cout << "timewindow: " << timewindow << ", smoothing: " << smoothing << endl;
 		//learningProgressHistory.push_back (0.0);
+		
+		createdInIteration = created;
+		
 	}
 
-	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, DataSet inheritedData, bool firstRegion ) :
+	SMRegion (SMRegion parentRegion, int idx, double cuttingValue, int cuttingIdx, DataSet inheritedData, bool firstRegion) :
 		index (idx),
 		//sMContextSize (parentRegion.sMContextSize),
 		minValuesSMVector (parentRegion.minValuesSMVector),
@@ -104,15 +113,20 @@ struct SMRegion {
 		errorsHistory (parentRegion.errorsHistory),
 		startingPositionsHistory (parentRegion.startingPositionsHistory),
 		timewindow (parentRegion.timewindow),
-		smoothing (parentRegion.smoothing) {
+		smoothing (parentRegion.smoothing),
+		createdInIteration(parentRegion.createdInIteration) {
 		
 		//method splittingCriterion2 in @class ActiveLearnScenario takes care of appropriate splitting and cutting values calculation
 
 	
-		if (firstRegion)
+		if (firstRegion){
 			maxValuesSMVector[cuttingIdx] = cuttingValue;
-		else
+		}else {
 			minValuesSMVector[cuttingIdx] = cuttingValue;
+		}
+
+
+
 	}
 
 	~SMRegion () {
