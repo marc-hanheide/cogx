@@ -437,3 +437,144 @@ SVG objects can only be displayed in 2D contexts. Every part of an object can
 be transformed by defining a $3 \times 3$ transformation matrix that is applied
 before the part is drawn.
 
+\subsection{OpenGL objects}
+
+OpenGL objects can be rendered in two ways. The more flexible option is the use
+of the GlLuaScript subsystem where normal OpenGL commands are written to a Lua
+script and sent to the server. The other option is to build TomGine models on
+the client, and send them to the server using boost serialization. 
+
+
+\subsubsection{LuaGlScript objects}
+
+A LuaGlScript objects are multipart objects where each part of the object is a
+Lua script engine into which Lua scripts are loaded. The scripts are sent to
+the server with a display client function:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setLuaGlObject(const std::string& id, const std::string& partId,
+         const std::string& script);
+\end{Verbatim}
+
+Each script has a method called \code{render()} that is called every time the
+scene needs to be rendered.  This method then calls various OpenGL functions to
+render the scene. Most of the OpenGL functions should be available (textures
+are not supported at this time). An example of a script that renders a colored
+spiral could look like this (the tables \code{tabcos} and \code{tabsin} were
+defined in another part of the same script):
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   N=36
+   function render()
+      glBegin(GL_LINES)
+      for i=1,10000 do
+         glColor(i%23/23.0,i%17/17.0,i%11/11.0)
+         glVertex(tabcos[i%N+1], tabsin[i%N+1], -i/100.0)
+      end
+      glEnd()
+   end
+\end{Verbatim}
+
+A script is loaded into the Lua script engine every time the server receives it
+from a client. This way the appearance of the object can be changed during its
+lifetime. Complex objects can use display lists to make rendering simpler and 
+faster. Lists are created for each OpenGL context separately so if an object
+is visible in multiple contexts, each context will have a copy of every
+display list defined by the object.
+\todo{VERIFY: diasplay lists are local to every LuaGlScript part}
+The following commands are available for display list management:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   DispList:create(name)
+   DispList:replace(name)
+   DispList:endList()
+   DispList:delete(name)
+   DispList:exists(name)
+   DispList:draw(name)
+\end{Verbatim}
+
+In the following example we create a function that creates a display list named
+{\em myobject}. The function \code{initlists()} calls it when {\em myobject}
+doesn't exist in the current context. Finally \code{render()} intializes the
+lists before doing the rest of the rendering.
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   function make_the_thing()
+      DispList:create('myobject')
+        glBegin(GL_TRIANGLES)
+        glVertex(0.1, 0.1, 0.1)
+        glVertex(0.3, 0.1, 0.2)
+        glVertex(0.3, 0.4, 0.3)
+        glEnd()
+      DispList:endList()
+   end
+
+   function initlists()
+      if not DispList:exists('myobject') then
+         make_the_thing()
+      end
+   end
+
+   function render()
+      initlists()
+      DispList:draw('myobject')
+      glPushMatrix()
+         glTranslate(0.5,0.5,0.0)
+         DispList:draw('myobject')
+      glPopMatrix()
+   end
+\end{Verbatim}
+
+With this approach the lists are created only once in an OpenGL context and
+only when a context is active.  When the code is loaded into the Lua script
+engine, the script is locked and the rendering of the object is not possible.
+The OpenGL context might not even be available at the time or a wrong one might
+be active. That is why all OpenGL calls should be enclosed in functions that
+are accessible only from \code{render()}.
+
+It is also possible for a programmer to change only a part of the object by
+sending a new definition for \code{make\_the\_thing()}:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   function make_the_thing()
+      DispList:create('myobject')
+        glBegin(GL_QUADS)
+        glVertex(0.1, 0.1, 0.1)
+        glVertex(0.3, 0.1, 0.2)
+        glVertex(0.3, 0.4, 0.3)
+        glVertex(0.0, 0.5, 0.4)
+        glEnd()
+      DispList:endList()
+   end
+\end{Verbatim}
+
+There is one problem with the new \code{make\_the\_thing()}: if a display list
+for {\em myobject} already exists, the function will not be executed and the
+object will keep its current shape. This can be fixed if user closes and
+reopens the OpenGL view which will create a new OpenGL context. A better
+approach is to use a global variable with a list of display list names that
+have to be recreated. We change \code{initlists()} so that it verifies if any
+objects should be deleted.
+\todo{VERIFY: code from this point on is not verified}
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   renewal = {} 
+   function initlists()
+      if #renewal > 0 then
+         local ren = renewal; renewal = {}
+         for _,name in pairs(ren) do DispList:delete(name) end
+      end
+      if not DispList:exists('myobject') then make_the_thing() end
+   end
+\end{Verbatim}
+
+When we define a new version of \code{make\_the\_thing()} we add the name of
+the display list to be recreated ({\em myobject}) to the \code{renewal} table:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   function make_the_thing()
+      ...
+   end
+   table.insert(renewal, 'myobject')
+\end{Verbatim}
+
