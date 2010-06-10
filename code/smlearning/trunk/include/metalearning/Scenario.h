@@ -53,16 +53,13 @@
 #include <XMLDataCtrl.h>
 #include <XMLDataPhys.h>
 #include <iostream>
-#include <tools/data_handling.h>
+#include <tools/data_structs.h>
 #include <tools/math_helpers.h>
-
-//#include <tr1/tuple>
 
 
 using namespace std;
 using namespace golem;
 using namespace golem::tools;
-//using namespace std::tr1;
 
 
 namespace smlearning {
@@ -107,34 +104,45 @@ public:
 		bool motion2D;
 
 		/** assumed maximum range of polyflap X-coordinate location during the experiment */
-		Real maxRange;
+		//Real maxRange;
 		/** assumed minimum value for polyflap Z-coordinate location during experiment (in xml file should have value of -0.01... bug in PhysX?) */
 		Real minZ;
+		/** assumed minimum value for polyflap X-coordinate location during experiment */
+		Real minX;
+		/** assumed minimum value for polyflap Y-coordinate location during experiment */
+		Real minY;	
+		/** assumed maximum value for polyflap Z-coordinate location during experiment */
+		Real maxZ;
+		/** assumed maximum value for polyflap X-coordinate location during experiment */
+		Real maxX;
+		/** assumed maximum value for polyflap Y-coordinate location during experiment */
+		Real maxY;	
 		
-		//minimal duration of a movement (by normal speed)
+		/** minimal duration of a movement (by normal speed) */
 		SecTmReal minDuration;
-		//Polyflap Position and orientation
-		Vec3 startPolyflapPosition; 
+		/** Polyflap Position */
+		Vec3 startPolyflapPosition;
+		/** Polyflap orientation */
 		Vec3 startPolyflapRotation; 
-		//Polyflap dimensions		
+		/** Polyflap dimensions */
 		Vec3 polyflapDimensions; 
 
 //	 	//vertical distance from the ground
 // 		const Real over = 0.01;
-		//vertical distance from the ground considering fingertip radius
+		/** vertical distance from the ground considering fingertip radius */
 		Real over;
-		//distance from the front/back of the polyflap
+		/** distance from the front/back of the polyflap */
 		Real dist; 
-		//distance from the side of the polyflap
+		/** distance from the side of the polyflap */
 		Real side; 
-		//center of the polyflap
+		/** center of the polyflap */
 		Real center; 
-		//distance from the top of the polyflap
+		/** distance from the top of the polyflap */
 		//const Real top = polyflapDimensions.v2* 1.2;
 		Real top; 
-		//lenght of the movement		
-		Real distance; 
-
+		/** lenght of the movement */
+		Real distance;
+		/** string containing the list of available starting positions */
 		string startingPositionsConfig;
 		
 		
@@ -177,6 +185,19 @@ public:
 		}
 	};
 
+	/** const number of starting positions */
+	static const int startingPositionsCount = 24;
+	/** constant used for assertions (motorCommandVector size should be predefined) */
+	static const int motorVectorSize = 5;
+	/** constant used for assertions (featureVector size should be predefined) */
+	static const int featureVectorSize = 12;
+	/** constant used for assertions (polyflap feature vector size should be predefined) */
+	static const int pfVectorSize = 6;
+	/** constant used for assertions (effector feature vector size should be predefined) */
+	static const int efVectorSize = 6;
+	/** polyflap width */
+	static const Real pfWidth = 0.002;
+
 	/** Run experiment */
 	///
 	///The experiment performed in this method behaves as follows:
@@ -205,7 +226,7 @@ protected:
 	/** Trial data */
 	LearningData learningData;
 	/** Dataset */
- 	DataSet data;
+ 	DataSetStruct data;
 	/** base file name for dataset */
 	string dataFileName;
 	/** Time */
@@ -254,25 +275,13 @@ protected:
 	int startingPosition;
 	/** pointer to bounds describing polyflap, used for some initial polyflap computations */
 	golem::Bounds::SeqPtr curPol;
-
-
-	vector<int> availableStartingPositions;
-
-
 	// Real reachedAngle;
-	
 	/** iteration counter */
 	int iteration;
-	/** const number of starting positions */
-	static const int startingPositionsCount = 24;
-	/** constant used for assertions (motorCommandVector size should be predefined) */
-	static const int motorVectorSize = 5;
-	/** constant used for assertions (featureVector size should be predefined) */
-	static const int featureVectorSize = 12;
-	/** constant used for assertions (polyflap feature vector size should be predefined) */
-	static const int pfVectorSize = 6;
-	/** constant used for assertions (effector feature vector size should be predefined) */
-	static const int efVectorSize = 6;
+	/** list of starting positions obtained from config xml file */
+	vector<int> availableStartingPositions;
+	/** flag to decide storing labels (for pattern recognition) */
+	bool storeLabels;
 
 	/** Creator */
 	golem::Creator creator;
@@ -344,7 +353,7 @@ protected:
 	void setup_home();
 
 	///
-	///describe the lenght of experiment (number of sequences) and if given, the starting position
+	///set the lenght of experiment (number of sequences), starting position, and other default values
 	///
 	virtual void setup_loop(int argc, char* argv[]);
 
@@ -484,7 +493,7 @@ protected:
 //------------------------------------------------------------------------------
 
 /** Reads/writes Scenario description from/to a given context */
-bool XMLData(Scenario::Desc &val, golem::XMLContext* context, bool create = false);
+bool XMLData(Scenario::Desc &val, golem::XMLContext* context);
 
 //------------------------------------------------------------------------------
 

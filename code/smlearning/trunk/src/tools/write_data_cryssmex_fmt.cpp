@@ -41,7 +41,7 @@ int main (int argc, char* argv[]) {
 	}
 
 
-	DataSet savedData;
+	DataSetStruct savedData;
 
 	if (!read_dataset (seqFile, savedData)) {
 		cerr << "error reading data" << endl;
@@ -51,9 +51,9 @@ int main (int argc, char* argv[]) {
 	string seqBaseFileName = get_seqBaseFileName (seqFile);
 
 	if (argc == 4)
-		write_dataset_cryssmex_fmt_with_label (target_dir + "/" + seqBaseFileName, savedData, modulo);
+		write_dataset_cryssmex_fmt_with_label (target_dir + "/" + seqBaseFileName, savedData.first, modulo);
 	else if (argc == 3 || argc == 2)
-		write_dataset_cryssmex_fmt_with_label (seqFile, savedData, modulo);
+		write_dataset_cryssmex_fmt_with_label (seqFile, savedData.first, modulo);
 
 	return 0;
 }

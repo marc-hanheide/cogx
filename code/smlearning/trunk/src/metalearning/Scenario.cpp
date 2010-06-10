@@ -35,12 +35,13 @@
  */
 
 #include <metalearning/Scenario.h>
+#include <tools/data_handling.h>
 
 namespace smlearning {
 
 //------------------------------------------------------------------------------
 
-bool XMLData(Scenario::Desc &val, XMLContext* context, bool create) {
+bool XMLData(Scenario::Desc &val, XMLContext* context) {
 	if (context == NULL) {
 		ASSERT(false)
 		return false;
@@ -83,7 +84,17 @@ bool XMLData(Scenario::Desc &val, XMLContext* context, bool create) {
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
 	//maxRange = 0.4;
-	XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+	//XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
+	//minimum X value for polyflap position
+	XMLData(val.maxX, context->getContextFirst("polyflapInteraction maxX"));
+	//minimum Y value for polyflap position
+	XMLData(val.maxY, context->getContextFirst("polyflapInteraction maxY"));
+	//minimum Z value for polyflap position
+	XMLData(val.maxZ, context->getContextFirst("polyflapInteraction maxZ"));
+	//minimum X value for polyflap position
+	XMLData(val.minX, context->getContextFirst("polyflapInteraction minX"));
+	//minimum Y value for polyflap position
+	XMLData(val.minY, context->getContextFirst("polyflapInteraction minY"));
 	//minimum Z value for polyflap position
 	XMLData(val.minZ, context->getContextFirst("polyflapInteraction minZ"));
 
@@ -199,7 +210,7 @@ Actor* Scenario::setup_polyflap(/*Scene &scene, Vec3 position, Vec3 rotation, Ve
 	Actor *polyFlapActor;
 	
 	// Create polyflap
-	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(0.002*0.5), REAL_PI_2);
+	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(desc.polyflapDimensions.v1*0.5), Real(pfWidth*0.5), REAL_PI_2);
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1));
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(desc.polyflapDimensions.v1), Real(0.002), Real(REAL_PI_2));
 
@@ -235,7 +246,7 @@ Actor* Scenario::setup_polyflap(Scene &scene, Mat34& globalPose, Vec3 dimensions
 	Actor *polyFlapActor;
 	
 	// Create polyflap
-	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.002), REAL_PI_2);
+	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(pfWidth*0.5), REAL_PI_2);
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1));
 // 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1), Real(0.002), Real(REAL_PI_2));
 
@@ -319,8 +330,8 @@ void Scenario::choose_action () {
 	//choose starting position
 	define_start_position ();
 
-	//speed = floor (randomG.nextUniform (3.0, 5.0));
-	speed = 3.0;
+	speed = floor (randomG.nextUniform (3.0, 6.0));
+	//speed = 3.0;
 
 	horizontalAngle = choose_angle(60.0, 120.0, "cont");
 
@@ -457,18 +468,18 @@ void Scenario::set_up_movement(){
 void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk) {
 
 	
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, 0.0, desc.maxRange));
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, 0.0, desc.maxRange));
-	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, 0.0, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, desc.minX, desc.maxX));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, desc.minY, desc.maxY));
+	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, desc.minZ, desc.maxZ));
 	currentFeatureVector.push_back(normalize(chunk.efRoll, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.efPitch, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.efYaw, -REAL_PI, REAL_PI));
 
 	assert (currentFeatureVector.size() == efVectorSize);
 	
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, 0.0, desc.maxRange));
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, 0.0, desc.maxRange));
-	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxRange));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, desc.minX, desc.maxX));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, desc.minY, desc.maxY));
+	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxZ));
 	currentFeatureVector.push_back(normalize(chunk.obRoll, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.obPitch, -REAL_PI, REAL_PI));
 	currentFeatureVector.push_back(normalize(chunk.obYaw, -REAL_PI, REAL_PI));
@@ -516,7 +527,10 @@ void Scenario::add_label (FeatureVector& currentFeatureVector, LearningData::Chu
 ///
 void Scenario::write_feature_vector_into_current_sequence(FeatureVector& featureVector){
 
-	assert (featureVector.size() == featureVectorSize);
+	if (storeLabels)
+		assert (featureVector.size() == featureVectorSize + 1);
+	else
+		assert (featureVector.size() == featureVectorSize);
 	/////////////////////////////////////////////////
 	//writing of the feature vector into sequence
 	learningData.currentSeq.push_back(featureVector);
@@ -546,7 +560,7 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		chunk.objectPose.R.toEuler (chunk.obRoll, chunk.obPitch, chunk.obYaw);
 
 		add_feature_vector (currentFeatureVector, chunk);
-		//add_label (currentFeatureVector, chunk);
+		if (storeLabels) add_label (currentFeatureVector, chunk);
 
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
@@ -597,20 +611,24 @@ void Scenario::setup_home(){
 
 
 ///
-///describe the lenght of experiment (number of sequences) and if given, the starting position
+///set the lenght of experiment (number of sequences), starting position, and other default values
 ///
 void Scenario::setup_loop(int argc, char* argv[]){
 	numSequences = 10000;
-	//int startingPosition = 0;
 	startingPosition = 0;
+	storeLabels = false;
 	if (argc > 2)
 		numSequences = atoi(argv[2]);
 	if (argc > 3)
 		startingPosition = atoi(argv[3]);
+	if (argc > 4)
+		storeLabels = atoi(argv[4]);
+
+	data.second = make_tuple (make_tuple((int)motorVectorSize, (int)featureVectorSize, (int)pfVectorSize, (int)efVectorSize), storeLabels, make_tuple(desc.minX, desc.minY, desc.minZ, desc.maxX, desc.maxY, desc.maxZ));
 
 	dataFileName = get_base_filename_from_time ();
 
-	availableStartingPositions = parseStartingPositions(desc.startingPositionsConfig, startingPositionsCount);
+	availableStartingPositions = parse_startingPositions(desc.startingPositionsConfig, startingPositionsCount);
 
 }
 
@@ -656,9 +674,9 @@ void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, const Vec3&
 	/////////////////////////////////////////////////
 	//writing in the initial vector	
 	//initial position, normalized
-	featureVector.push_back(normalize<double>(positionT.v1, 0.0, desc.maxRange));
-	featureVector.push_back(normalize<double>(positionT.v2, 0.0, desc.maxRange));
-	featureVector.push_back(normalize<double>(positionT.v3, 0.0, desc.maxRange));
+	featureVector.push_back(normalize<double>(positionT.v1, desc.minX, desc.maxX));
+	featureVector.push_back(normalize<double>(positionT.v2, desc.minY, desc.maxY));
+	featureVector.push_back(normalize<double>(positionT.v3, desc.minZ, desc.maxZ));
 	//initial orientation, normalized
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
@@ -913,7 +931,7 @@ void Scenario::run(int argc, char* argv[]) {
 		move_finger();
 
 		//write sequence into dataset
-		write_current_sequence_into_dataset(data);
+		write_current_sequence_into_dataset(data.first);
 
 		//turn off collision detection
 		set_collision_detection(false);		

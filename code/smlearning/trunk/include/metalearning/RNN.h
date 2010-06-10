@@ -22,7 +22,7 @@
 
  
  */
-
+#pragma once
 #ifndef SMLEARNING_RNN_H_
 #define SMLEARNING_RNN_H_
 

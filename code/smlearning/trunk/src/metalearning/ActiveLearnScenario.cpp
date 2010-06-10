@@ -17,112 +17,11 @@
 //------------------------------------------------------------------------------
 
 #include <metalearning/ActiveLearnScenario.h>
+#include <tools/data_handling.h>
 
 using namespace golem;
 
 namespace smlearning {
-
-//------------------------------------------------------------------------------
-
-bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* context, bool create) {
-	if (context == NULL) {
-		ASSERT(false)
-		return false;
-	}
-        // arm setup
-        golem::XMLData(val.armDesc.pArmDesc, context->getContextFirst("arm"));
-	
-	// finger setup
-	val.fingerDesc.clear();
-	golem::Real baseLength = golem::KatArm::L3;
-	XMLData(baseLength, context->getContextFirst("effector base_length"));
-	golem::Real fingerLength = 0.135;
-	XMLData(fingerLength, context->getContextFirst("effector finger_length"));
-	golem::Real fingerDiam = 0.02;
-	XMLData(fingerDiam, context->getContextFirst("effector finger_diameter"));
-	golem::Real tipRadius = 0.015;
-	XMLData(tipRadius, context->getContextFirst("effector tip_radius"));
-	
-	golem::BoundingBox::Desc* pFingerRodShapeDesc = new golem::BoundingBox::Desc;
-	pFingerRodShapeDesc->dimensions.set(fingerDiam/2.0, fingerLength/2.0, fingerDiam/2.0);
-	pFingerRodShapeDesc->pose.p.v2 += baseLength + fingerLength/2.0;
-	pFingerRodShapeDesc->group = val.effectorGroup;
-	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerRodShapeDesc));
-	golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
-	pFingerTipShapeDesc->radius = tipRadius;
-	pFingerTipShapeDesc->pose.p.v2 += golem::Real(baseLength + fingerLength);
-	pFingerTipShapeDesc->group = val.effectorGroup;
-	val.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));
-	
-	// end-effector reference pose
-	val.referencePose.setId();
-	val.referencePose.p.v2 += golem::Real(baseLength + fingerLength);
-
-
-	
-	//polyflap interaction settings
-
-	//a number that slightly greater then the maximal reachable space of the arm
-	//    - used for workspace position normalization and later as a position upper bound
-	//      for random polyflap position
-	//maxRange = 0.4;
-	XMLData(val.maxRange, context->getContextFirst("polyflapInteraction maxRange"));
-	//minimum Z value for polyflap position
-	XMLData(val.minZ, context->getContextFirst("polyflapInteraction minZ"));
-
-	//minimal duration of a movement (by normal speed)
-	XMLData(val.minDuration, context->getContextFirst("polyflapInteraction minDuration"));
-
-
-	Real x;
-	Real y;
-	Real z;
-	
-	//Polyflap Position and orientation
-	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapPosition x"));
-	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapPosition y"));
-	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapPosition z"));
-	val.startPolyflapPosition.set(x, y, z);
-
-	XMLData(x, context->getContextFirst("polyflapInteraction startPolyflapRotation x"));
-	XMLData(y, context->getContextFirst("polyflapInteraction startPolyflapRotation y"));
-	XMLData(z, context->getContextFirst("polyflapInteraction startPolyflapRotation z"));
-	val.startPolyflapRotation.set(y, x, z);
-
-	//Polyflap dimensions		
-	XMLData(x, context->getContextFirst("polyflapInteraction polyflapDimensions x"));
-	XMLData(y, context->getContextFirst("polyflapInteraction polyflapDimensions y"));
-	XMLData(z, context->getContextFirst("polyflapInteraction polyflapDimensions z"));
-	val.polyflapDimensions.set(x, y, z);
-
-	//vertical distance from the ground
-	//const Real over = 0.01;
-	//vertical distance from the ground considering fingertip radius
-	XMLData(val.over, context->getContextFirst("polyflapInteraction over"));
-	//distance from the front/back of the polyflap
-	XMLData(val.dist, context->getContextFirst("polyflapInteraction dist"));
-
-	Real r;
-
-	//distance from the side of the polyflap
-	XMLData(r, context->getContextFirst("polyflapInteraction side"));
-	val.side = val.polyflapDimensions.v1*r;
-	//center of the polyflap
-	XMLData(r, context->getContextFirst("polyflapInteraction center"));
-	val.center = val.polyflapDimensions.v2*r;
-	//distance from the top of the polyflap
-	//const Real top = polyflapDimensions.v2* 1.2;
-	XMLData(r, context->getContextFirst("polyflapInteraction top"));
-	val.top = val.polyflapDimensions.v2 - r;
-	//lenght of the movement		
-	XMLData(val.distance, context->getContextFirst("polyflapInteraction distance"));
-	
-
-	XMLData(val.startingPositionsConfig, context->getContextFirst("loop startingPositions"));
-
-	
-	return true;
-}
 
 //------------------------------------------------------------------------------
 
@@ -200,11 +99,11 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 // 		learningData.data.push_back(chunk);
 // 		trialTime += SecTmReal(1.0)/universe.getRenderFrameRate();
 		add_feature_vector (currentFeatureVector, chunk); 
-		//add_label (currentFeatureVector, chunk);
+		if (storeLabels) add_label (currentFeatureVector, chunk);
 		
 		write_feature_vector_into_current_sequence (currentFeatureVector);
 
-		int size = learningData.currentSeq.size();
+		// int size = learningData.currentSeq.size();
 		// for (int i=0; i<learningData.currentSeq[size-1].size(); i++) 
 		// 	cout << learningData.currentSeq[size-1][i] << " ";
 		// cout << endl;
@@ -212,17 +111,11 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		currentPfRoll = chunk.obRoll;
 		currentPfY = chunk.objectPose.p.v2;
 
-		/////////////////////////////////////////////////
-		//initialize RNN learner
-		// if (!netBuilt) {
-		// 	learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() + currentFeatureVector.size(),  /*learningData.currentMotorCommandVector.size() + */currentFeatureVector.size() / 2);
-		// 	//learner.build (startingPositionsCount, learningData.currentMotorCommandVector.size() - 3 + currentFeatureVector.size(), currentFeatureVector.size() );
-		// 	netBuilt = true;
-		// }
-		trainSeq = load_trainSeq (learningData.currentSeq, currentRegion->learner.header->inputSize, currentRegion->learner.header->outputSize);
+		//trainSeq = load_trainSeq (learningData.currentSeq, currentRegion->learner.header->inputSize, currentRegion->learner.header->outputSize, motorVectorSize, efVectorSize);
+		trainSeq = load_trainSeq (learningData.currentSeq, data.second);
 		currentRegion->learner.feed_forward (*trainSeq);
 		//get_pfefSeq_from_outputActivations (learner.net->outputLayer->outputActivations, learningData.currentMotorCommandVector.size(), desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
-		get_pfefSeq_from_outputActivations (currentRegion->learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, desc.maxRange, desc.minZ, learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
+		get_pfefSeq_from_outputActivations (currentRegion->learner.net->outputLayer->outputActivations, /*learningData.currentMotorCommandVector.size() - 3*/0, /*desc.maxRange, desc.minZ,*/ learningData.currentPredictedPfSeq, learningData.currentPredictedEfSeq);
 	
 	}
 // 	if (bStop) {
@@ -237,8 +130,9 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 }
 
 ///
-///describe the lenght of experiment (number of sequences) and if given, the starting position
-///calculate the splittingCriterion1 constant according to nr. of sequences
+///Set the lenght of experiment (number of sequences) and if given, the starting position.
+///Calculate the splittingCriterion1 constant according to nr. of sequences. 
+///Get previously trained neural network if given.
 void ActiveLearnScenario::setup_loop(int argc, char* argv[]) {
 	Scenario::setup_loop (argc, argv);
 
@@ -249,12 +143,9 @@ void ActiveLearnScenario::setup_loop(int argc, char* argv[]) {
 
 	cout << "splitting criterion: " << splittingCriterion1 << endl;
 
-	if (argc > 4)
-		netconfigFileName = string (argv[4]);
+	if (argc > 5)
+		netconfigFileName = string (argv[5]);
 
-
-	availableStartingPositions = parseStartingPositions(desc.startingPositionsConfig, startingPositionsCount);
-	
 }
 
 
@@ -266,9 +157,8 @@ void ActiveLearnScenario::initialize_polyflap(){
 	//creates a polyflap
 	create_polyflap_object();
 	
-	if (iteration == 0) {
-			objectLocalBounds = object->getLocalBoundsSeq();		
-	}
+	if (iteration == 0) objectLocalBounds = object->getLocalBoundsSeq();
+	
 	currentPfY = object->getPose().p.v2;
 
 	//computes needed information about the polyflap
@@ -320,10 +210,10 @@ void ActiveLearnScenario::choose_action () {
 			
 			for (int i=0; i<maxNumberCandidateActions; i++) {
 				Action action;
-				action.startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];				
+				action.startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
 				//action.startPosition = floor(randomG.nextUniform (1.0, 25.0));
-				//action.speed = floor (randomG.nextUniform (3.0, 5.0));
-				action.speed = 3.0;
+				action.speed = floor (randomG.nextUniform (3.0, 6.0));
+				//action.speed = 3.0;
 				action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
 				FeatureVector motorVector;
 				Vec3 pos;
@@ -446,7 +336,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 		move_finger();
 
 		//write sequence into dataset
-		write_current_sequence_into_dataset(data);
+		write_current_sequence_into_dataset(data.first);
 		write_current_sequence_into_dataset(currentRegion->data);
 
 
@@ -525,7 +415,7 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 //------------------------------------------------------------------------------
 
 
-golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex, Real maxRange, Real minZ, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose) {
+golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int startIndex/*, Real maxRange, Real minZ*/, golem::Mat34& predictedPfPose, golem::Mat34& predictedEfPose) {
 	int finalActIndex = outputActivations.shape[0] - 1;
 // 	cout << finalActIndex << endl;
 	int outputsize = outputActivations.shape[1];
@@ -535,9 +425,9 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 	assert (startIndex < outputsize);
 
 	//extract effector Pose
-	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
-	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
-	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
+	predictedEfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minX, desc.maxX);
+	predictedEfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minY, desc.maxY);
+	predictedEfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minZ, desc.maxZ);
 	Real efRoll, efPitch, efYaw;
 	efRoll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	efPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
@@ -545,9 +435,9 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 	predictedEfPose.R.fromEuler (efRoll, efPitch, efYaw);
 
 	//extract polyflap Pose
-	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
-	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], 0.0, maxRange);
-	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], minZ, maxRange);
+	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minX, desc.maxX);
+	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minY, desc.maxY);
+	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], desc.minZ, desc.maxY);
 	Real pfRoll, pfPitch, pfYaw;
 	pfRoll = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
 	pfPitch = denormalize(outputActivations[finalActIndex][startIndex++], -REAL_PI, REAL_PI);
@@ -559,7 +449,7 @@ golem::Mat34  ActiveLearnScenario::get_pfefPose_from_outputActivations (const rn
 }
 
 
-void ActiveLearnScenario::get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int sIndex, Real maxRange, Real minZ, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq) {
+void ActiveLearnScenario::get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int sIndex/*, Real maxRange, Real minZ*/, vector<golem::Mat34>& currentPredictedPfSeq, vector<golem::Mat34>& currentPredictedEfSeq) {
 
 	currentPredictedPfSeq.clear();
 	for (int i=0; i < outputActivations.shape[0]; i++) {
@@ -579,9 +469,9 @@ void ActiveLearnScenario::get_pfefSeq_from_outputActivations (const rnnlib::SeqB
 		// currentPredictedEfSeq.push_back (currentPredictedEfPose);
 		
 		//extract polyflap Pose
-		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
-		currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], minZ, maxRange);
+		currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], desc.minX, desc.maxX);
+		currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], desc.minY, desc.maxY);
+		currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], desc.minZ, desc.maxZ);
 		Real pfRoll, pfPitch, pfYaw;
 		pfRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
 		pfPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
@@ -704,7 +594,7 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 				else
 					secondSplittingSetTry.push_back (region.data[k]);
 			}
-			double quantityEval = evaluate_minimality (firstSplittingSetTry, secondSplittingSetTry, /*region.sMContextSize*/SMRegion::motorVectorSize);
+			double quantityEval = evaluate_minimality (firstSplittingSetTry, secondSplittingSetTry, motorVectorSize);
 			if (quantityEval < minimalQuantity) {
 				minimalQuantity = quantityEval;
 				firstSplittingSet = firstSplittingSetTry;
@@ -714,8 +604,8 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 			}
 		}
 	}
-	assert (firstSplittingSet.size () > 0);
-	assert (secondSplittingSet.size() > 0);
+	//assert (firstSplittingSet.size () > 0);
+	//assert (secondSplittingSet.size() > 0);
 	assert (cuttingValue != -1.0);
 	assert (cuttingIdx != -1);
 	SMRegion firstRegion (region, ++regionsCount, cuttingValue, cuttingIdx, firstSplittingSet, true);
@@ -742,7 +632,7 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 void ActivePushingApplication::run(int argc, char *argv[]) {
 
 	ActiveLearnScenario::Desc desc;
-	XMLData(desc, xmlcontext());
+	XMLData((Scenario::Desc&)desc, xmlcontext());
 
 
 
