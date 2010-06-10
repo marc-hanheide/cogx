@@ -91,11 +91,11 @@ void CDisplayClient::setImage(const std::string& id, int width, int height, int 
 {
    if (m_pServer == NULL) return;
    if (width * height * channels != data.size()) {
-     owner.println(" *** CDisplayClient: raw image size doesn't match the size of the data.");
+     m_pOwner->println(" *** CDisplayClient: raw image size doesn't match the size of the data.");
      return;
    }
    if (channels != 1 && channels != 3) {
-     owner.println(" *** CDisplayClient: only 1 and 3 channel raw images are supported.");
+     m_pOwner->println(" *** CDisplayClient: only 1 and 3 channel raw images are supported.");
    }
    m_pServer->setRawImage(id, width, height, channels, data);
 }
