@@ -1,9 +1,9 @@
-package eu.cogx.beliefproxies.factories.values;
+package eu.cogx.beliefproxies.factories.logicalcontent;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import eu.cogx.beliefproxies.factories.ProxyFactory;
 import eu.cogx.beliefproxies.proxies.Proxy;
-import eu.cogx.beliefproxies.proxies.values.FormulaProxy;
+import eu.cogx.beliefproxies.proxies.logicalcontent.FormulaProxy;
 
 public class FormulaFactory implements
 		ProxyFactory<Proxy<? extends dFormula>> {

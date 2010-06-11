@@ -4,7 +4,6 @@
 package eu.cogx.beliefproxies.proxies.distributions;
 
 import Ice.Object;
-import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import eu.cogx.beliefproxies.factories.distributions.BasicProbDistributionFactory;
 
@@ -17,7 +16,6 @@ public class CondIndependentBasicDistributionsProxy extends
 
 	public CondIndependentBasicDistributionsProxy(Object content) {
 		super(new BasicProbDistributionFactory(), content);
-		// TODO Auto-generated constructor stub
 	}
 
 	/*

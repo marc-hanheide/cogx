@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
@@ -144,6 +143,18 @@ public class CondIndependentDistributionProxy<T extends ProxyFactory<? extends D
 		return _content.distribs.size();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		String result= getClass().getSimpleName() + " [";
+		for (Entry<String, ProbDistribution> e : _content.distribs.entrySet()) {
+			result+=e.getKey() + "=>" + factory.create(e.getValue()).toString()+" ";
+		}
+		result+="] ";
+		return result;
+	}
 	/**
 	 * @return
 	 * @see java.util.Map#values()
@@ -156,18 +167,6 @@ public class CondIndependentDistributionProxy<T extends ProxyFactory<? extends D
 		}
 		return result;
 
-	}
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		String result= getClass().getSimpleName() + " [";
-		for (Entry<String, ProbDistribution> e : _content.distribs.entrySet()) {
-			result+=e.getKey() + "=>" + factory.create(e.getValue()).toString()+" ";
-		}
-		result+="] ";
-		return result;
 	}
 
 

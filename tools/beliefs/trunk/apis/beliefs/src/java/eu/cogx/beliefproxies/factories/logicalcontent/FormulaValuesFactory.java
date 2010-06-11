@@ -1,11 +1,11 @@
 /**
  * 
  */
-package eu.cogx.beliefproxies.factories.values;
+package eu.cogx.beliefproxies.factories.logicalcontent;
 
 import eu.cogx.beliefproxies.factories.ProxyFactory;
 import eu.cogx.beliefproxies.proxies.Proxy;
-import eu.cogx.beliefproxies.proxies.values.FormulaValuesProxy;
+import eu.cogx.beliefproxies.proxies.logicalcontent.FormulaValuesProxy;
 
 /**
  * @author marc

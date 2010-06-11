@@ -5,15 +5,14 @@ package eu.cogx.beliefproxies.factories.distributions;
 
 import java.util.LinkedList;
 
-import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
-import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import Ice.Object;
+import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import eu.cogx.beliefproxies.factories.ProxyFactory;
 import eu.cogx.beliefproxies.proxies.Proxy;
 import eu.cogx.beliefproxies.proxies.distributions.BasicProbDistributionProxy;
 import eu.cogx.beliefproxies.proxies.distributions.FormulaDistributionProxy;
-import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;;
 
 /**
  * @author marc

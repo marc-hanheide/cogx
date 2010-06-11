@@ -3,13 +3,9 @@
  */
 package eu.cogx.beliefproxies.proxies.distributions;
 
-import java.util.Map.Entry;
-
-import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
-import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import Ice.Object;
-import eu.cogx.beliefproxies.factories.values.FormulaValuesFactory;
-import eu.cogx.beliefproxies.proxies.values.FormulaValuesProxy;
+import eu.cogx.beliefproxies.factories.logicalcontent.FormulaValuesFactory;
+import eu.cogx.beliefproxies.proxies.logicalcontent.FormulaValuesProxy;
 
 /**
  * @author marc

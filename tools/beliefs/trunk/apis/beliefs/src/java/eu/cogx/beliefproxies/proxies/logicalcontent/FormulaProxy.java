@@ -20,7 +20,7 @@
 
 // =================================================================
 // PACKAGE DEFINITION 
-package eu.cogx.beliefproxies.proxies.values;
+package eu.cogx.beliefproxies.proxies.logicalcontent;
 
 // Belief API slice
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;

@@ -1,20 +1,17 @@
 /**
  * 
  */
-package eu.cogx.beliefproxies.proxies.values;
+package eu.cogx.beliefproxies.proxies.logicalcontent;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
-import java.util.Map.Entry;
 
+import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
-import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnknownFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
@@ -34,17 +31,8 @@ public class FormulaValuesProxy<T extends ProxyFactory<Proxy<? extends dFormula>
 		this.factory = factory;
 	}
 
-	@Override
-	public Iterator<FormulaProbPair> iterator() {
-		return _content.iterator();
-	}
-
 	public void add(dFormula formula, double d) {
 		_content.values.add(new FormulaProbPair(formula, (float) d));
-	}
-
-	public void add(String f, double d) {
-		add(new ElementaryFormula(-1, f),d);
 	}
 
 	public void add(float f, double prob) {
@@ -55,21 +43,8 @@ public class FormulaValuesProxy<T extends ProxyFactory<Proxy<? extends dFormula>
 		add(new IntegerFormula(-1, f), prob);
 	}
 
-	public FormulaProbPair findFormula(String query) {
-		for (FormulaProbPair f : _content.values) {
-			if (f.val instanceof ElementaryFormula) {
-				ElementaryFormula ef = (ElementaryFormula) f.val;
-				if (ef.prop.equals(query)) {
-					return f;
-				}
-			}
-		}
-		return null;
-	}
-
-	public float getProb(String query) {
-		FormulaProbPair f = findFormula(query);
-		return (float) ((f == null) ? 0.0 : f.prob);
+	public void add(String f, double d) {
+		add(new ElementaryFormula(-1, f),d);
 	}
 
 	public FormulaProbPair findFormula(int query) {
@@ -84,27 +59,48 @@ public class FormulaValuesProxy<T extends ProxyFactory<Proxy<? extends dFormula>
 		return null;
 	}
 
+	public FormulaProbPair findFormula(String query) {
+		for (FormulaProbPair f : _content.values) {
+			if (f.val instanceof ElementaryFormula) {
+				ElementaryFormula ef = (ElementaryFormula) f.val;
+				if (ef.prop.equals(query)) {
+					return f;
+				}
+			}
+		}
+		return null;
+	}
+
+	public FormulaProbPair findFormula(WorkingMemoryAddress query) {
+		for (FormulaProbPair f : _content.values) {
+			if (f.val instanceof PointerFormula) {
+				PointerFormula ef = (PointerFormula) f.val;
+				if (ef.pointer.equals(query)) {
+					return f;
+				}
+			}
+		}
+		return null;
+	}
+
 	public float getProb(int query) {
 		FormulaProbPair f = findFormula(query);
 		return (float) ((f == null) ? 0.0 : f.prob);
 	}
 
-	public void setProb(String query, double prob) {
+	public float getProb(String query) {
 		FormulaProbPair f = findFormula(query);
-		if (f == null)
-			_content.values.add(new FormulaProbPair(new ElementaryFormula(-1,
-					query), (float) prob));
-		else
-			f.prob = (float) prob;
+		return (float) ((f == null) ? 0.0 : f.prob);
 	}
 
-	public void setProb(int query, float prob) {
+	public float getProb(WorkingMemoryAddress query) {
 		FormulaProbPair f = findFormula(query);
-		if (f == null)
-			_content.values.add(new FormulaProbPair(new IntegerFormula(-1,
-					query), prob));
-		else
-			f.prob = prob;
+		return (float) ((f == null) ? 0.0 : f.prob);
+	}
+
+	@Override
+	public Iterator<FormulaProbPair> iterator() {
+		return _content.iterator();
 	}
 
 	public void setAll(Object[][] init) {
@@ -116,19 +112,31 @@ public class FormulaValuesProxy<T extends ProxyFactory<Proxy<? extends dFormula>
 		
 	}
 
-	private dFormula getFormulaObject(Object object) {
-		if (object == null)
-			return new UnknownFormula(-1);
-		if (object instanceof String)
-			return new ElementaryFormula(-1, (String) object);
-		else if (object instanceof Double)
-			return new FloatFormula(-1, ((Double) object).floatValue());
-		else if (object instanceof Integer)
-			return new IntegerFormula(-1, ((Integer) object).intValue());
+	public void setProb(int query, float prob) {
+		FormulaProbPair f = findFormula(query);
+		if (f == null)
+			_content.values.add(new FormulaProbPair(new IntegerFormula(-1,
+					query), prob));
 		else
-			throw new BeliefInvalidOperationException(
-					"cannot create Formula objects for type "
-							+ object.getClass().getName());
+			f.prob = prob;
+	}
+
+	public void setProb(String query, double prob) {
+		FormulaProbPair f = findFormula(query);
+		if (f == null)
+			_content.values.add(new FormulaProbPair(new ElementaryFormula(-1,
+					query), (float) prob));
+		else
+			f.prob = (float) prob;
+	}
+
+	public void setProb(WorkingMemoryAddress query, double prob) {
+		FormulaProbPair f = findFormula(query);
+		if (f == null)
+			_content.values.add(new FormulaProbPair(new PointerFormula(-1,
+					query), (float) prob));
+		else
+			f.prob = (float) prob;
 	}
 
 	/* (non-Javadoc)
@@ -147,6 +155,23 @@ public class FormulaValuesProxy<T extends ProxyFactory<Proxy<? extends dFormula>
 			}
 			result+="}";
 			return result;
+	}
+
+	protected dFormula getFormulaObject(Object object) {
+		if (object == null)
+			return new UnknownFormula(-1);
+		if (object instanceof String)
+			return new ElementaryFormula(-1, (String) object);
+		else if (object instanceof Double)
+			return new FloatFormula(-1, ((Double) object).floatValue());
+		else if (object instanceof Integer)
+			return new IntegerFormula(-1, ((Integer) object).intValue());
+		else if (object instanceof WorkingMemoryAddress)
+			return new PointerFormula(-1, ((WorkingMemoryAddress) object));
+		else
+			throw new BeliefInvalidOperationException(
+					"cannot create Formula objects for type "
+							+ object.getClass().getName());
 	}
 
 }
