@@ -376,7 +376,7 @@ of the UI element.
 
 The server can display various types of objects. Initially it was created to
 display images, but with time other objects (supported by Qt) were added:
-SVG images and OpenGL scenes.
+SVG images, HTML documents and OpenGL scenes.
 
 The objects can be geometrically transformed on the server when they are
 displayed. A client side interface is provided to set display transformations
@@ -436,6 +436,20 @@ supports only SVG and doesn't check if the SVG file is valid.
 SVG objects can only be displayed in 2D contexts. Every part of an object can
 be transformed by defining a $3 \times 3$ transformation matrix that is applied
 before the part is drawn.
+
+\subsection{HTML documents}
+
+The display server renders HTML documents with Qt-WebKit. It provides the
+sturcture of the HTML document while display clients provide chunks of
+HTML code that goes into the body of the document.
+\todo{TODO: Add support to modify head of document so that CSS can be used}
+The client-side interface for defining HTML document chunks is:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   void setHtml(const std::string& id, const std::string& partId,
+         const std::string& htmlData); 
+\end{Verbatim}
+
 
 \subsection{OpenGL objects}
 
@@ -578,4 +592,3 @@ the display list to be recreated ({\em myobject}) to the \code{renewal} table:
    table.insert(renewal, 'myobject')
 \end{Verbatim}
 
-\subsection{TODO: Transformations}
