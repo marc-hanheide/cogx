@@ -10,6 +10,8 @@
 
 #include "../Planner.hpp"
 
+#include <map>
+
 
 using namespace autogen::Planner;
 
@@ -33,7 +35,8 @@ protected:
    void runComponent(){}
    void stop(){};
   
-
+// private:
+//     std::map<int, > ;
 };
 
 
