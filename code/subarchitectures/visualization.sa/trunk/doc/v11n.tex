@@ -441,15 +441,15 @@ before the part is drawn.
 
 The display server renders HTML documents with Qt-WebKit. It provides the
 sturcture of the HTML document while display clients provide chunks of
-HTML code that goes into the body of the document.
-\todo{TODO: Add support to modify head of document so that CSS can be used}
+HTML code that goes into the head or the body of the document.
 The client-side interface for defining HTML document chunks is:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void setHtml(const std::string& id, const std::string& partId,
          const std::string& htmlData); 
+   void setHtmlHead(const std::string& id, const std::string& partId,
+         const std::string& htmlData); 
 \end{Verbatim}
-
 
 \subsection{OpenGL objects}
 
