@@ -156,7 +156,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       if (it != m_Views.end()) {
          pview = it->second;
          // XXX: Set preferred context based on object type
-         if (pObject->is3D()) pview->m_preferredContext = ContextGL;
+         pview->m_preferredContext = pObject->getPreferredContext();
          pview->addObject(pObject);
          views.push_back(pview);
       }
@@ -168,7 +168,7 @@ void CDisplayModel::setObject(CDisplayObject *pObject)
       DMESSAGE("Creating new view for: " << pObject->m_id);
       pview = new cogx::display::CDisplayView();
       // XXX: Set preferred context based on object type
-      if (pObject->is3D()) pview->m_preferredContext = ContextGL;
+      pview->m_preferredContext = pObject->getPreferredContext();
 
       pview->m_id = pObject->m_id;
       pview->addObject(pObject);
@@ -298,9 +298,9 @@ void CDisplayObject::setPose3D(const std::string& partId, const std::vector<doub
 {
 }
 
-bool CDisplayObject::is3D()
+ERenderContext CDisplayObject::getPreferredContext()
 {
-   return false;
+   return Context2D;
 }
 
 CDisplayView::CDisplayView()
@@ -454,6 +454,19 @@ void CDisplayView::drawGL()
       pRender = pObject->getRenderer(ContextGL);
       if (pRender) {
          pRender->draw(pObject, NULL);
+      }
+   }
+}
+
+void CDisplayView::drawHtml(QStringList &list)
+{
+   CDisplayObject *pObject;
+   CRenderer *pRender;
+   FOR_EACH_V(pObject, m_Objects) {
+      if (!pObject) continue;
+      pRender = pObject->getRenderer(ContextHtml);
+      if (pRender) {
+         pRender->draw(pObject, &list);
       }
    }
 }

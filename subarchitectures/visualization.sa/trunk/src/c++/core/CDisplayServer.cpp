@@ -33,6 +33,9 @@ extern "C"
 #ifdef V11N_OBJECT_LUA_GL
 #include "object/CLuaGlScript.hpp"
 #endif
+#ifdef V11N_OBJECT_HTML
+#include "object/CHtmlObject.hpp"
+#endif
 
 #ifdef DEBUG_TRACE
 #undef DEBUG_TRACE
@@ -73,10 +76,13 @@ void CDisplayServer::configure(const map<string,string> & _config)
 {
    debug("CDisplayServer Server: configuring");
 #ifdef V11N_OBJECT_LUA_GL
-   debug("v11n: Subsystem LuaGlScript enabled.");
+   debug("v11n: Subsystem 'LuaGlScript' enabled.");
 #endif
 #ifdef V11N_OBJECT_TOMGINE_MODEL
-   debug("v11n: Subsystem TomGine Model enabled.");
+   debug("v11n: Subsystem 'TomGine Model' enabled.");
+#endif
+#ifdef V11N_OBJECT_HTML
+   debug("v11n: Subsystem 'HTML' enabled.");
 #endif
    CASTComponent::configure(_config);
 
@@ -91,6 +97,7 @@ void CDisplayServer::configure(const map<string,string> & _config)
    // so we start them in configure() instead of in start()
    debug("CDisplayServer Server: starting");
    startIceServer();
+   setHtml("@info.InternalTest", "First", "Display Server Rules!");
 }
 
 void CDisplayServer::start()
@@ -314,6 +321,36 @@ void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& pa
       pModel = new CLuaGlScript();
       pModel->m_id = id;
       pModel->loadScript(partId, script);
+      m_Model.setObject(pModel);
+   }
+#endif
+}
+
+void CDisplayServer::setHtml(const std::string& id, const std::string& partId, const std::string& htmlData)
+{
+#ifdef V11N_OBJECT_HTML
+   DTRACE("CDisplayServer::setHtml");
+
+   CHtmlObject *pModel = NULL;
+   CDisplayObject *pExisting = m_Model.getObject(id);
+   if (pExisting) {
+      pModel = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pModel) {
+         // The retreived model is of a different type, we must replace it
+         m_Model.removeObject(id);
+         DMESSAGE("Replacing an exisiting object of different type.");
+      }
+   }
+
+   if (pModel) {
+      if (htmlData.size() < 1) pModel->removePart(partId);
+      else pModel->setHtml(partId, htmlData);
+      m_Model.refreshObject(id);
+   }
+   else {
+      pModel = new CHtmlObject();
+      pModel->m_id = id;
+      pModel->setHtml(partId, htmlData);
       m_Model.setObject(pModel);
    }
 #endif

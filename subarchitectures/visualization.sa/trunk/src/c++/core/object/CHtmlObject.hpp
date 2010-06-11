@@ -1,6 +1,6 @@
 /*
  * Author: Marko Mahnič
- * Created: 2010-05-10
+ * Created: 2010-06-10
  *
  * © Copyright 2010 Marko Mahnič. 
  * This program is free software: you can redistribute it and/or modify
@@ -13,39 +13,37 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef CTOMGINEMODEL_PQ3LXGLL
-#define CTOMGINEMODEL_PQ3LXGLL
+#ifndef CHTMLOBJECT_FJCZERMX
+#define CHTMLOBJECT_FJCZERMX
 
 #include "../Model.hpp"
-#include "tgRenderModel.h"
+#include <QtCore>
 
 namespace cogx { namespace display {
 
-class CTomGineModel: public CDisplayObject
+class CHtmlObject: public CDisplayObject
 {
-   friend class CTomGineModel_RenderGL;
-   static std::auto_ptr<CRenderer> renderGL;
+   friend class CHtmlObject_RenderHtml;
+   static std::auto_ptr<CRenderer> renderHtml;
+
+private:
+   std::map<std::string, QString*> m_Parts;
 
 public:
-   std::map<std::string, TomGine::tgRenderModel*> m_Models;
-
-public:
-   CTomGineModel();
-   ~CTomGineModel();
-   void deserialize(const std::string& partId, const std::vector<unsigned char>& data);
-   void removePart(const std::string& partId);
+   CHtmlObject();
+   ~CHtmlObject();
+   bool isBitmap(); /*override*/
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
-   virtual void setPose3D(const std::string& partId, const std::vector<double>& position,
-         const std::vector<double>& rotation); /*override*/
+   void setHtml(const std::string& partId, const std::string& text);
+   void removePart(const std::string& partId);
 };
 
-class CTomGineModel_RenderGL: public CRenderer
+class CHtmlObject_RenderHtml: public CRenderer
 {
 public:
    virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
 };
 
-
 }} // namespace
-#endif /* end of include guard: CTOMGINEMODEL_PQ3LXGLL */
+#endif /* end of include guard: CHTMLOBJECT_FJCZERMX */

@@ -193,6 +193,11 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
     CvMat mat = cvMat(3, 3, CV_64FC1, mdata);
     m_display.setObjectTransform2D("Visualization.test.SVG", "little-lion", &mat);
   }
+  {
+    std::stringstream str;
+    str << "The current CAST running time is " << sfloat (fclocks());
+    m_display.setHtml("@info.TestComponent", "time", str.str());
+  }
 #else
   IplImage *iplImage = convertImageToIpl(images[0]);
   cvShowImage(getComponentID().c_str(), iplImage);
@@ -254,6 +259,11 @@ void VideoViewer::runComponent()
          "glPopMatrix()\n"
       "end\n";
     m_display.setLuaGlObject("Visualization.sa.LuaGl", "Points", str.str());
+  }
+  {
+    std::stringstream strA;
+    strA << "This is the TestComponent for the Display Server<br>";
+    m_display.setHtml("@info.TestComponent", "text", strA.str());
   }
 #else
   println("press <s> to stop/start receving images");

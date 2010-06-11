@@ -17,6 +17,7 @@
 #define __TEMP_MODEL_HPP__
 
 #include <QPainter>
+#include <QStringList>
 #include <string>
 #include <map>
 #include <memory>
@@ -33,7 +34,7 @@ class CDisplayModel;
 class CRasterImage;
 class CRenderer;
 
-typedef enum { Context2D=1, ContextGL=2 } ERenderContext;
+typedef enum { Context2D=1, ContextGL=2, ContextHtml=3 } ERenderContext;
 
 typedef std::map<std::string, CDisplayObject*> TObjectMap;
 typedef std::map<std::string, CDisplayView*> TViewMap;
@@ -94,7 +95,7 @@ public:
    CDisplayObject();
    virtual ~CDisplayObject();
    virtual bool isBitmap();
-   virtual bool is3D(); // If true, view's preferred context will be set to ContextGL
+   virtual ERenderContext getPreferredContext();
 
    virtual CRenderer* getRenderer(ERenderContext context);
    virtual void setTransform2D(const std::string& partId, const std::vector<double>& transform);
@@ -138,8 +139,10 @@ public:
    bool hasObject(const std::string &id);
    bool waitsForObject(const std::string &id);
 
-   virtual void draw2D(QPainter &painter);
    virtual void drawGL();
+   // XXX: Qt objects shouldn't be here ...
+   virtual void draw2D(QPainter &painter);
+   virtual void drawHtml(QStringList &list);
 
 public:
    // CGuiElementObserver

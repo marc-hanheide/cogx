@@ -69,9 +69,9 @@ void CTomGineModel::deserialize(const std::string& partId, const std::vector<uns
    }
 }
 
-bool CTomGineModel::is3D()
+ERenderContext CTomGineModel::getPreferredContext()
 {
-   return true;
+   return ContextGL;
 }
 
 void CTomGineModel::removePart(const std::string&partId)
@@ -97,7 +97,8 @@ void CTomGineModel_RenderGL::draw(CDisplayObject *pObject, void *pContext)
 {
    DTRACE("CTomGineModel_RenderGL::draw");
    if (pObject == NULL) return;
-   CTomGineModel *pModel = (CTomGineModel*) pObject;
+   CTomGineModel *pModel = dynamic_cast<CTomGineModel*>(pObject);
+   if (pModel == NULL) return;
    if (pModel->m_Models.size() < 1) return;
    DMESSAGE("Models present.");
 

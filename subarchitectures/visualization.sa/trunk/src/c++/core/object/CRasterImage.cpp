@@ -50,7 +50,8 @@ CRenderer* CRasterImage::getRenderer(ERenderContext context)
 void CRasterImage_Render2D::draw(CDisplayObject *pObject, void *pContext)
 {
    if (pObject == NULL || pContext == NULL) return;
-   CRasterImage *pImage = (CRasterImage*) pObject;
+   CRasterImage *pImage = dynamic_cast<CRasterImage*>(pObject);
+   if (pImage == NULL) return;
    QPainter *pPainter = (QPainter*) pContext;
    if (pImage->m_pImage) {
       pPainter->drawImage(0, 0, *(pImage->m_pImage));

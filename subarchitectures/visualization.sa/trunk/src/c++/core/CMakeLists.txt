@@ -3,13 +3,13 @@ project(VisualizationCore)
 find_package(Qt4 REQUIRED) # http://qtnode.net/wiki/Qt4_with_cmake
 include(${QT_USE_FILE} ${QT_USE_OPENGL})
 
-set(EXPERIMENT 1)
-if(EXPERIMENT)
+set(LUA_EXPERIMENT 1)
+if(LUA_EXPERIMENT)
    find_package(Lua51)
    find_library(LUA_LIB_TOLUA_51 tolua++5.1)
    if (LUA51_FOUND AND LUA_LIB_TOLUA_51)
       include_directories(object/gllua ${LUA_INCLUDE_DIR})
-      set(EXPERIMENT_SRC
+      set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
          object/gllua/glbind.cpp
          object/gllua/glubind.cpp
          object/gllua/gllbuffer.cpp
@@ -18,7 +18,7 @@ if(EXPERIMENT)
          object/gllua/v11nbind.cpp
          object/CLuaGlScript.cpp
          )
-      set(EXPERIMENT_LIB
+      set(EXPERIMENT_LIB ${EXPERIMENT_LIB}
          GL GLU
          ${LUA_LIBRARIES}
          ${LUA_LIB_TOLUA_51}
@@ -31,7 +31,26 @@ if(EXPERIMENT)
    if (NOT LUA_LIB_TOLUA_51)
       message ("libtolua++5.1 not found. Please install libtolua++5.1-dev")
    endif (NOT LUA_LIB_TOLUA_51)
-endif(EXPERIMENT)
+endif(LUA_EXPERIMENT)
+
+set(WEBKIT_EXPERIMENT 1)
+if(WEBKIT_EXPERIMENT)
+   set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
+      object/CHtmlObject.cpp
+      qtui/QCastViewHtml.cpp
+      )
+   set(EXPERIMENT_MOC ${EXPERIMENT_MOC}
+      qtui/QCastViewHtml.hpp
+      )
+   set(EXPERIMENT_LIB ${EXPERIMENT_LIB}
+      ${QT_QTWEBKIT_LIBRARY}
+      )
+   include_directories(
+      ${QT_QTWEBKIT_INCLUDE_DIR}
+      )
+   add_definitions(-DV11N_OBJECT_HTML)
+endif(WEBKIT_EXPERIMENT)
+
 
 set(TOMGINE_MODEL 0)
 if(TOMGINE_MODEL)
@@ -82,7 +101,7 @@ set(SERVER_MOC_HEADERS
 set(SERVER_UI_FILES
    qtui/design/castor.ui
    )
-qt4_wrap_cpp (SERVER_MOC_OUTFILES ${SERVER_MOC_HEADERS})
+qt4_wrap_cpp (SERVER_MOC_OUTFILES ${SERVER_MOC_HEADERS} ${EXPERIMENT_MOC})
 qt4_wrap_ui  (SERVER_UIC_OUTFILES ${SERVER_UI_FILES})
 include_directories( .  #./object
    ${VisualizationCore_BINARY_DIR}
