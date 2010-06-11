@@ -1,0 +1,41 @@
+# heads you win.
+
+discount : 0.95
+
+values : reward 
+
+states : heads not-heads
+
+actions : flip1 flip2
+
+observations : observe-heads observe-not-heads 
+
+start: 0.5 0.5
+
+T: flip1 : heads : heads 0.5
+T: flip1 : heads : not-heads 0.5
+T: flip1 : not-heads : heads 0.5
+T: flip1 : not-heads : not-heads 0.5
+
+R: flip1 : heads : heads : observe-heads 50
+
+
+O: flip1 : heads : observe-heads 0.8
+O: flip1 : heads : observe-not-heads 0.2
+O: flip1 : not-heads : observe-heads 0.2
+O: flip1 : not-heads : observe-not-heads 0.8
+
+
+T: flip2 : heads : heads 0.5
+T: flip2 : heads : not-heads 0.5
+T: flip2 : not-heads : heads 0.5
+T: flip2 : not-heads : not-heads 0.5
+
+R: flip2 : heads : heads : observe-heads 0.0
+
+
+O: flip2 : heads : observe-heads 0.8
+O: flip2 : heads : observe-not-heads 0.2
+O: flip2 : not-heads : observe-heads 0.2
+O: flip2 : not-heads : observe-not-heads 0.8
+

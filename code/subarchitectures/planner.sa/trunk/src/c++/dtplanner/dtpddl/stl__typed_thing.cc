@@ -1,0 +1,69 @@
+/* Copyright (C) 2010 Charles Gretton (charles.gretton@gmail.com)
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Dear CogX team member :: Please email (charles.gretton@gmail.com)
+ * if you make a change to this and commit that change to SVN. In that
+ * email, can you please attach the source files you changed as they
+ * appeared before you changed them (i.e., fresh out of SVN), and the
+ * diff files (*). Alternatively, you could not commit your changes,
+ * but rather post me a patch (**) which I will test and then commit
+ * if it does not cause any problems under testing.
+ *
+ * (*) see http://www.gnu.org/software/diffutils/diffutils.html --
+ * GNU-09/2009
+ *
+ * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
+ * 
+ */
+#include "stl__typed_thing.hh"
+
+using std::ostream;
+
+std::ostream& basic_type::operator<<(std::ostream&o) const {return o<<hash_value();};
+
+std::string basic_type::as_string() const
+{
+    std::string str;
+    {
+        std::ostringstream oss;
+        this->operator<<(oss);
+        str = oss.str();
+    }
+
+    return std::move(str);
+}
+
+bool basic_type::operator<(const basic_type&in) const
+{return as_string() < in.as_string();};//hash_value() < in.hash_value();};
+
+bool basic_type::operator==(const basic_type&in) const
+{ return as_string() == in.as_string();};//hash_value() == in.hash_value();};
+
+// bool basic_type::operator<(const basic_type&in) const
+// {return hash_value() < in.hash_value();};
+
+// bool basic_type::operator==(const basic_type&in) const
+// { return hash_value() == in.hash_value();};
+
+
+std::ostream& std::operator<<(std::ostream& o, const basic_type& bt)
+{
+    return bt.operator<<(o);
+}
+
+std::size_t hash_value(const basic_type& bt)
+{
+    return bt.hash_value();
+}

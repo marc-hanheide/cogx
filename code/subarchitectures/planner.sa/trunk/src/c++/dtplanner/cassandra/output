@@ -1,0 +1,3 @@
+states : t1p1r6e t1p1r6s t2p1r5e t2p1r5s t2p1r6e t2p1r6s t2p2r5e t2p2r6e t3p1r4s t3p1r5s t3p1r6s t3p2r4e t3p2r5e t3p2r6e t3p3r4e t3p3r5e t3p3r6e t4p1r3s t4p1r4s t4p1r5s t4p1r6s t4p2r3e t4p3r4e t4p3r5e t4p3r6e t4p4r5e t4p4r6e t5p1r2s t5p1r3s t5p1r4s t5p1r5s t5p1r6s t5p2r3e t5p3r4e t5p4r5e t5p4r6e t5p5r4e t5p5r5e t5p5r6e t6p1r1s t6p1r2s t6p1r3s t6p1r4s t6p1r5s t6p1r6s t6p2r3e t6p3r4e t6p5r4e t6p5r5e t6p5r6e t6p6r3e t6p6r4e t6p6r5e t6p6r6e end
+actions : move wait
+observations : PX PS EE
