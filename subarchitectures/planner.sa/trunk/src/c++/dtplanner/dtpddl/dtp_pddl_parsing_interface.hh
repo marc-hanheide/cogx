@@ -26,7 +26,8 @@
  *
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  * 
- */#ifndef DTP_PDDL_PARSING_INTERFACE_HH
+ */
+#ifndef DTP_PDDL_PARSING_INTERFACE_HH
 #define DTP_PDDL_PARSING_INTERFACE_HH
 
 #include "dtp_pddl_parsing_data.hh"

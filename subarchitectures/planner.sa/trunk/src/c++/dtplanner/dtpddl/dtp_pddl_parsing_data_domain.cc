@@ -36,6 +36,12 @@
 using namespace Planning::Parsing;
 
 
+const Planning::Action_Schemas& Domain_Data::get__action_Schemas() const
+{
+    return action_Schemas;
+}
+
+
 void Domain_Data::add__derived_predicate_header()
 {
     NEW_object_referenced_WRAPPED(Planning::Derived_Predicate_Header
