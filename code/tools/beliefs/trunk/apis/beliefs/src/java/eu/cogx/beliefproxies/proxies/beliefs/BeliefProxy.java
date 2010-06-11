@@ -30,6 +30,61 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Dis
 	}
 
 	/**
+	 * Returns the attributed-to agents for a belief with attributed status
+	 * 
+	 * @return LinkedList A list of the agents to whom the belief is attribued
+	 * @throws BeliefNotInitializedException
+	 *             If the belief has not been properly initialized
+	 * @throws BeliefInvalidQueryException
+	 *             If the belief is not of attributed status
+	 */
+	public List<String> getAttributedToAgents()
+			throws BeliefNotInitializedException, BeliefInvalidQueryException {
+		if (this.isAttributed()) {
+			return (List<String>) ((AttributedEpistemicStatus) _content.estatus).attribagents;
+		} else {
+			throw new BeliefInvalidQueryException("Invalid query on belief ["
+					+ _content.id + "]: Belief does not have attributed status");
+		}
+	} // end getAttributedToAgents
+
+	/**
+	 * Returns the attributing agent for a belief with attributed status
+	 * 
+	 * @return String The agent attributing the belief to others
+	 * @throws BeliefNotInitializedException
+	 *             If the belief has not been properly initialized
+	 * @throws BeliefInvalidQueryException
+	 *             If the belief is not of attributed status
+	 */
+
+	public String getAttributingAgent() throws BeliefInvalidQueryException {
+		if (this.isAttributed()) {
+			return ((AttributedEpistemicStatus) _content.estatus).agent;
+		} else {
+			throw new BeliefInvalidQueryException("Invalid query on belief ["
+					+ _content.id + "]: Belief does not have attributed status");
+		}
+	} // end getAttributingAgent
+
+	/**
+	 * Returns the content of the belief, as a Content object
+	 * 
+	 * @return Content The content of the belief
+	 * @see ConditionallyIndependentDistributionProxy
+	 * @throws BeliefNotInitializedException
+	 *             If the belief is not initialized
+	 */
+
+	public Proxy<? extends ProbDistribution> getContent() {
+		return contentFactory.create(_content.content);
+	} // end getContent
+
+	public FrameProxy<?> getFrame() {
+		return new FrameProxy<AbstractFrame>(AbstractFrame.class, _content.frame);
+	}
+
+	/**
 	 * Returns the identifier of the belief
 	 * 
 	 * @return The id of the belief
@@ -40,47 +95,6 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Dis
 	public String getId() {
 		return _content.id;
 	} // end getId
-
-	/**
-	 * Returns the type of the belief
-	 * 
-	 * @return The type of the belief
-	 * @throws BeliefMissingValueException
-	 *             If the belief has a null or empty type
-	 */
-
-	public String getType() {
-		return _content.type;
-	} // end getType
-
-	/**
-	 * Sets the type of the belief (as a String)
-	 * 
-	 * @param newType
-	 *            The type for the belief
-	 * @throws BeliefNotInitializedException
-	 *             If the belief has not yet been initialized
-	 */
-
-	public void setType(String newType) {
-		_content.type = newType;
-	} // end setType
-
-	/**
-	 * Returns true if the belief is a private belief
-	 * 
-	 * @return boolean True if the belief is a private belief; false otherwise
-	 * @throws BeliefNotInitializedException
-	 *             If the belief has not been initialized
-	 */
-
-	public boolean isPrivate() {
-		if (_content.estatus instanceof PrivateEpistemicStatus) {
-			return true;
-		} else {
-			return false;
-		}
-	} // end isPrivate
 
 	/**
 	 * If the belief is a private belief, return the agent identifier for that
@@ -101,27 +115,78 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Dis
 	} // end getPrivate
 
 	/**
-	 * If the belief is a private belief, set the agent identifier given the
-	 * provided value
+	 * Returns the list of agents for a belief with shared status
 	 * 
-	 * @param String
-	 *            agent The agent identifier of the private belief
-	 * @throws BeliefInvalidQueryException
-	 *             If the belief is not a private belief
+	 * @return LinkedList A list of the agents who are sharing the belief
 	 * @throws BeliefNotInitializedException
-	 *             If the belief has not been initialized
-	 * @throws BeliefMissingValueException
-	 *             If one of the arguments is null/empty
+	 *             If the belief has not been properly initialized
+	 * @throws BeliefInvalidQueryException
+	 *             If the belief is not of shared status
 	 */
 
-	public void setPrivate(String agent) throws BeliefInvalidQueryException {
-		if (this.isPrivate()) {
-			((PrivateEpistemicStatus) _content.estatus).agent = agent;
-		} else {
+	public List<String> getShared() throws BeliefNotInitializedException,
+			BeliefInvalidQueryException {
+		if (!this.isShared()) {
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _content.id + "]: Belief does not have private status");
-		} // end if..else check for appropriate status
-	} // end setPrivate
+					+ _content.id + "]: Belief does not have shared status");
+		}
+		return (List<String>) ((SharedEpistemicStatus) _content.estatus).cgagents;
+	} // end getShared
+
+	/**
+	 * Returns the type of the belief
+	 * 
+	 * @return The type of the belief
+	 * @throws BeliefMissingValueException
+	 *             If the belief has a null or empty type
+	 */
+
+	public String getType() {
+		return _content.type;
+	} // end getType
+
+	/**
+	 * Returns true if the belief has attributed status
+	 * 
+	 * @throws BeliefNotInitializedException
+	 *             If the belief has not been properly initialized
+	 */
+
+	public boolean isAttributed() throws BeliefNotInitializedException {
+		if (_content.estatus instanceof AttributedEpistemicStatus) {
+			return true;
+		} else {
+			return false;
+		}
+	} // isAttributed
+
+	/**
+	 * Returns true if the belief is a private belief
+	 * 
+	 * @return boolean True if the belief is a private belief; false otherwise
+	 * @throws BeliefNotInitializedException
+	 *             If the belief has not been initialized
+	 */
+
+	public boolean isPrivate() {
+		if (_content.estatus instanceof PrivateEpistemicStatus) {
+			return true;
+		} else {
+			return false;
+		}
+	} // end isPrivate
+
+	/**
+	 * Returns whether the belief has shared epistemic status.
+	 * 
+	 * @return boolean True if the belief has shared epistemic status
+	 * @throws BeliefNotInitializedException
+	 *             If the belief has not been properly initialized
+	 */
+
+	public boolean isShared() throws BeliefNotInitializedException {
+		return (_content.estatus instanceof SharedEpistemicStatus);
+	} // end isShared
 
 	/**
 	 * Set the epistemic status of a belief to attributed.
@@ -148,57 +213,64 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Dis
 	} // end setAttributed
 
 	/**
-	 * Returns true if the belief has attributed status
+	 * Sets the content of the belief to the provided object.
 	 * 
+	 * @param contentProxy
+	 *            The content to store in the belief
+	 * @see ConditionallyIndependentDistributionProxy
 	 * @throws BeliefNotInitializedException
-	 *             If the belief has not been properly initialized
+	 *             If the belief is not initialized
+	 * @throws BeliefMissingValueException
+	 *             If the content is empty or null
 	 */
 
-	public boolean isAttributed() throws BeliefNotInitializedException {
-		if (_content.estatus instanceof AttributedEpistemicStatus) {
-			return true;
-		} else {
-			return false;
-		}
-	} // isAttributed
+	public void setContent(Proxy<? extends ProbDistribution> contentProxy)
+			throws BeliefNotInitializedException, BeliefMissingValueException {
+		_content.content = contentProxy.get();
+	} // end setContent
 
 	/**
-	 * Returns the attributing agent for a belief with attributed status
+	 * Sets the frame of the belief
 	 * 
-	 * @return String The agent attributing the belief to others
-	 * @throws BeliefNotInitializedException
-	 *             If the belief has not been properly initialized
-	 * @throws BeliefInvalidQueryException
-	 *             If the belief is not of attributed status
+	 * @param frameProxy
+	 *            The frame to be used
+	 * @throws BeliefMissingValueException
+	 *             If the frame is null
+	 * @throws BeliefInvalidOperationException
+	 *             If the belief is null/empty
+	 * @see FrameProxy
 	 */
-
-	public String getAttributingAgent() throws BeliefInvalidQueryException {
-		if (this.isAttributed()) {
-			return ((AttributedEpistemicStatus) _content.estatus).agent;
-		} else {
-			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _content.id + "]: Belief does not have attributed status");
+	public void setFrame(FrameProxy<?> frameProxy)
+			throws BeliefMissingValueException, BeliefInvalidOperationException {
+		if (frameProxy == null) {
+			throw new BeliefMissingValueException(
+					"Cannot set frame: Provided frame is null");
 		}
-	} // end getAttributingAgent
+		_content.frame = frameProxy.get();
+	} // end setFrame
 
 	/**
-	 * Returns the attributed-to agents for a belief with attributed status
+	 * If the belief is a private belief, set the agent identifier given the
+	 * provided value
 	 * 
-	 * @return LinkedList A list of the agents to whom the belief is attribued
-	 * @throws BeliefNotInitializedException
-	 *             If the belief has not been properly initialized
+	 * @param String
+	 *            agent The agent identifier of the private belief
 	 * @throws BeliefInvalidQueryException
-	 *             If the belief is not of attributed status
+	 *             If the belief is not a private belief
+	 * @throws BeliefNotInitializedException
+	 *             If the belief has not been initialized
+	 * @throws BeliefMissingValueException
+	 *             If one of the arguments is null/empty
 	 */
-	public List<String> getAttributedToAgents()
-			throws BeliefNotInitializedException, BeliefInvalidQueryException {
-		if (this.isAttributed()) {
-			return (List<String>) ((AttributedEpistemicStatus) _content.estatus).attribagents;
+
+	public void setPrivate(String agent) throws BeliefInvalidQueryException {
+		if (this.isPrivate()) {
+			((PrivateEpistemicStatus) _content.estatus).agent = agent;
 		} else {
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _content.id + "]: Belief does not have attributed status");
-		}
-	} // end getAttributedToAgents
+					+ _content.id + "]: Belief does not have private status");
+		} // end if..else check for appropriate status
+	} // end setPrivate
 
 	/**
 	 * Sets the belief to shared status, with the agents sharing the belief
@@ -225,36 +297,55 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Dis
 	} // end setShared
 
 	/**
-	 * Returns whether the belief has shared epistemic status.
+	 * Sets the type of the belief (as a String)
 	 * 
-	 * @return boolean True if the belief has shared epistemic status
+	 * @param newType
+	 *            The type for the belief
 	 * @throws BeliefNotInitializedException
-	 *             If the belief has not been properly initialized
+	 *             If the belief has not yet been initialized
 	 */
 
-	public boolean isShared() throws BeliefNotInitializedException {
-		return (_content.estatus instanceof SharedEpistemicStatus);
-	} // end isShared
+	public void setType(String newType) {
+		_content.type = newType;
+	} // end setType
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		
+		return "CondIndepedentFormulaBeliefProxy [_proxyFor=" + _proxyFor
+				+ ", getId()=" + getId() + ", getType()=" + getType() + ", distribution: "+contentFactory.create(_content.content).toString()+"]";
+	}
 
 	/**
-	 * Returns the list of agents for a belief with shared status
+	 * Updates the attributed belief to shared status. The list of agents
+	 * sharing the belief is composed of the attributing agent, and the
+	 * attributed-to agents.
 	 * 
-	 * @return LinkedList A list of the agents who are sharing the belief
+	 * @throws BeliefInvalidOperationException
+	 *             If the belief is not an attributed belief
 	 * @throws BeliefNotInitializedException
 	 *             If the belief has not been properly initialized
-	 * @throws BeliefInvalidQueryException
-	 *             If the belief is not of shared status
 	 */
 
-	public List<String> getShared() throws BeliefNotInitializedException,
-			BeliefInvalidQueryException {
-		if (!this.isShared()) {
-			throw new BeliefInvalidQueryException("Invalid query on belief ["
-					+ _content.id + "]: Belief does not have shared status");
+	public void updateAttributedToShared()
+			throws BeliefNotInitializedException,
+			BeliefInvalidOperationException {
+		if (!this.isAttributed()) {
+			throw new BeliefInvalidOperationException(
+					"Cannot update a non-attributed belief to shared status");
 		}
-		return (List<String>) ((SharedEpistemicStatus) _content.estatus).cgagents;
-	} // end getShared
-
+		LinkedList<String> agents = new LinkedList<String>();
+		agents.add(((AttributedEpistemicStatus) _content.estatus).agent);
+		agents
+				.addAll(((AttributedEpistemicStatus) _content.estatus).attribagents);
+		SharedEpistemicStatus sstatus = new SharedEpistemicStatus();
+		sstatus.cgagents = agents;
+		_content.estatus = sstatus;
+	} // end updateAttributedToShared
+	
 	/**
 	 * Updates the belief (assumed and checked to be private) to shared status.
 	 * The list of agents that share the belief is composed from the agent for
@@ -286,97 +377,6 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Dis
 		sstatus.cgagents = agents;
 		_content.estatus = sstatus;
 	} // end updatePrivateToShared
-
-	/**
-	 * Updates the attributed belief to shared status. The list of agents
-	 * sharing the belief is composed of the attributing agent, and the
-	 * attributed-to agents.
-	 * 
-	 * @throws BeliefInvalidOperationException
-	 *             If the belief is not an attributed belief
-	 * @throws BeliefNotInitializedException
-	 *             If the belief has not been properly initialized
-	 */
-
-	public void updateAttributedToShared()
-			throws BeliefNotInitializedException,
-			BeliefInvalidOperationException {
-		if (!this.isAttributed()) {
-			throw new BeliefInvalidOperationException(
-					"Cannot update a non-attributed belief to shared status");
-		}
-		LinkedList<String> agents = new LinkedList<String>();
-		agents.add(((AttributedEpistemicStatus) _content.estatus).agent);
-		agents
-				.addAll(((AttributedEpistemicStatus) _content.estatus).attribagents);
-		SharedEpistemicStatus sstatus = new SharedEpistemicStatus();
-		sstatus.cgagents = agents;
-		_content.estatus = sstatus;
-	} // end updateAttributedToShared
-
-	/**
-	 * Sets the content of the belief to the provided object.
-	 * 
-	 * @param contentProxy
-	 *            The content to store in the belief
-	 * @see ConditionallyIndependentDistributionProxy
-	 * @throws BeliefNotInitializedException
-	 *             If the belief is not initialized
-	 * @throws BeliefMissingValueException
-	 *             If the content is empty or null
-	 */
-
-	public void setContent(Proxy<? extends ProbDistribution> contentProxy)
-			throws BeliefNotInitializedException, BeliefMissingValueException {
-		_content.content = contentProxy.get();
-	} // end setContent
-
-	/**
-	 * Returns the content of the belief, as a Content object
-	 * 
-	 * @return Content The content of the belief
-	 * @see ConditionallyIndependentDistributionProxy
-	 * @throws BeliefNotInitializedException
-	 *             If the belief is not initialized
-	 */
-
-	public Proxy<? extends ProbDistribution> getContent() {
-		return contentFactory.create(_content.content);
-	} // end getContent
-
-	/**
-	 * Sets the frame of the belief
-	 * 
-	 * @param frameProxy
-	 *            The frame to be used
-	 * @throws BeliefMissingValueException
-	 *             If the frame is null
-	 * @throws BeliefInvalidOperationException
-	 *             If the belief is null/empty
-	 * @see FrameProxy
-	 */
-	public void setFrame(FrameProxy<?> frameProxy)
-			throws BeliefMissingValueException, BeliefInvalidOperationException {
-		if (frameProxy == null) {
-			throw new BeliefMissingValueException(
-					"Cannot set frame: Provided frame is null");
-		}
-		_content.frame = frameProxy.get();
-	} // end setFrame
-
-	public FrameProxy<?> getFrame() {
-		return new FrameProxy<AbstractFrame>(AbstractFrame.class, _content.frame);
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		
-		return "CondIndepedentFormulaBeliefProxy [_proxyFor=" + _proxyFor
-				+ ", getId()=" + getId() + ", getType()=" + getType() + ", distribution: "+contentFactory.create(_content.content).toString()+"]";
-	}
 
 
 }

@@ -16,30 +16,18 @@ import eu.cogx.beliefproxies.factories.distributions.CondIndependentFormulaDistr
 import eu.cogx.beliefproxies.proxies.distributions.CondIndependentFormulaDistributionsProxy;
 import eu.cogx.beliefproxies.proxies.distributions.DistributionProxy;
 import eu.cogx.beliefproxies.proxies.distributions.FormulaDistributionProxy;
-import eu.cogx.beliefproxies.proxies.values.FormulaValuesProxy;
+import eu.cogx.beliefproxies.proxies.logicalcontent.FormulaValuesProxy;
 
 /**
  * @author marc
  * 
  */
-public class CondIndepedentFormulaBeliefProxy<T extends dBelief> extends
+public class CondIndependentFormulaBeliefProxy<T extends dBelief> extends
 		BeliefProxy<T, CondIndependentFormulaDistributionFactory> implements Map<String, DistributionProxy<? extends ProbDistribution>> {
 
-	CondIndependentFormulaDistributionsProxy SUBME;
-	
-	public CondIndepedentFormulaBeliefProxy(Class<? extends T> class1,
+	public CondIndependentFormulaBeliefProxy(Class<? extends T> class1,
 			Object content) {
 		super(class1, new CondIndependentFormulaDistributionFactory(), content);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.cogx.beliefproxies.proxies.beliefs.BeliefProxy#getContent()
-	 */
-	@Override
-	public CondIndependentFormulaDistributionsProxy getContent() {
-		return contentFactory.create(_content.content);
 	}
 
 	/**
@@ -83,6 +71,16 @@ public class CondIndepedentFormulaBeliefProxy<T extends dBelief> extends
 	 */
 	public FormulaDistributionProxy get(java.lang.Object arg0) {
 		return getContent().get(arg0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see eu.cogx.beliefproxies.proxies.beliefs.BeliefProxy#getContent()
+	 */
+	@Override
+	public CondIndependentFormulaDistributionsProxy getContent() {
+		return contentFactory.create(_content.content);
 	}
 
 	/**

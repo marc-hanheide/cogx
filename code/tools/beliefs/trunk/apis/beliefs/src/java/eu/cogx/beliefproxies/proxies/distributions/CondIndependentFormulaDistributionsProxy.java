@@ -3,15 +3,10 @@
  */
 package eu.cogx.beliefproxies.proxies.distributions;
 
-import java.util.Map.Entry;
-
 import Ice.Object;
-import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
-import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import eu.cogx.beliefproxies.factories.distributions.FormulaDistributionFactory;
-import eu.cogx.beliefproxies.proxies.values.FormulaValuesProxy;
+import eu.cogx.beliefproxies.proxies.logicalcontent.FormulaValuesProxy;
 
 /**
  * @author marc
@@ -53,6 +48,17 @@ public class CondIndependentFormulaDistributionsProxy extends
 		return fdp.getDistribution();
 	}
 
+	public FormulaDistributionProxy initFeature(String string) {
+		if (_content.distribs.containsKey(string))
+			return this.get(string);
+		else {
+			FormulaDistributionProxy newOne = FormulaDistributionFactory.create(string);
+			this.put(string, newOne);
+			return newOne;
+		}
+		
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -70,17 +76,6 @@ public class CondIndependentFormulaDistributionsProxy extends
 		else
 			return factory.create(old);
 
-	}
-
-	public FormulaDistributionProxy initFeature(String string) {
-		if (_content.distribs.containsKey(string))
-			return this.get(string);
-		else {
-			FormulaDistributionProxy newOne = FormulaDistributionFactory.create(string);
-			this.put(string, newOne);
-			return newOne;
-		}
-		
 	}
 
 

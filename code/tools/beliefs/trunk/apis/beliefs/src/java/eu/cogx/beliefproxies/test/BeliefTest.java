@@ -35,9 +35,9 @@ import org.junit.Test;
 
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefproxies.factories.beliefs.CondIndependentFormulaBeliefFactory;
-import eu.cogx.beliefproxies.proxies.beliefs.CondIndepedentFormulaBeliefProxy;
+import eu.cogx.beliefproxies.proxies.beliefs.CondIndependentFormulaBeliefProxy;
 import eu.cogx.beliefproxies.proxies.distributions.CondIndependentFormulaDistributionsProxy;
-import eu.cogx.beliefproxies.proxies.values.FormulaValuesProxy;
+import eu.cogx.beliefproxies.proxies.logicalcontent.FormulaValuesProxy;
 
 //=================================================================
 // TEST CLASS
@@ -52,7 +52,7 @@ import eu.cogx.beliefproxies.proxies.values.FormulaValuesProxy;
 
 public class BeliefTest {
 
-	private CondIndepedentFormulaBeliefProxy<dBelief> belief;
+	private CondIndependentFormulaBeliefProxy<dBelief> belief;
 
 	@Before
 	public void setUp() {
