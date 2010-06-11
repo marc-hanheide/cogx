@@ -115,6 +115,9 @@ public:
    // Draws the object into the specified context. The function casts
    // the pointers to the desired types draws the object.
    virtual void draw(CDisplayObject *pObject, void *pContext) = 0;
+
+   // Some contexts may require extra drawing info
+   virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext) {}
 };
 
 
@@ -142,7 +145,7 @@ public:
    virtual void drawGL();
    // XXX: Qt objects shouldn't be here ...
    virtual void draw2D(QPainter &painter);
-   virtual void drawHtml(QStringList &list);
+   virtual void drawHtml(QStringList &head, QStringList &body);
 
 public:
    // CGuiElementObserver

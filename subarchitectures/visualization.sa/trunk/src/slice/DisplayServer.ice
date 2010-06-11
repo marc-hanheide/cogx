@@ -48,6 +48,7 @@ module Visualization
 
       // Pass an HTML chunk
       void setHtml(string id, string partId, string htmlData);
+      void setHtmlHead(string id, string partId, string htmlData);
 
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch

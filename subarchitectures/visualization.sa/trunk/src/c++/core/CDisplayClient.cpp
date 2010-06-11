@@ -150,6 +150,12 @@ void CDisplayClient::setHtml(const std::string& id, const std::string& partId, c
    m_pServer->setHtml(id, partId, htmlData);
 }
 
+void CDisplayClient::setHtmlHead(const std::string& id, const std::string& partId, const std::string& htmlData)
+{
+   if (m_pServer == NULL) return;
+   m_pServer->setHtmlHead(id, partId, htmlData);
+}
+
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
        const std::vector<double>& transform)
 {
