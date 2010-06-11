@@ -19,7 +19,7 @@
 #include "../Model.hpp"
 #include <QWidget>
 
-/*interface*/
+/*abstract class (interface)*/
 class QCastViewBase: public cogx::display::CDisplayModelObserver
 {
 public:

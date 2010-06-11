@@ -17,6 +17,9 @@
 #include "QViewContainer.hpp"
 #include "QCastView.hpp"
 #include "QCastViewGL.hpp"
+#ifdef V11N_OBJECT_HTML
+#include "QCastViewHtml.hpp"
+#endif
 #include <QVBoxLayout>
 
 #include "../convenience.hpp"
@@ -72,6 +75,11 @@ void QViewContainer::setView(cogx::display::CDisplayView* pView)
       else if (pView->m_preferredContext == cogx::display::Context2D) {
          m_pDisplay = new QCastView(this);
       }
+#ifdef V11N_OBJECT_HTML
+      else if (pView->m_preferredContext == cogx::display::ContextHtml) {
+         m_pDisplay = new QCastViewHtml(this);
+      }
+#endif
       else {
          m_pDisplay = new QCastView(this);
       }

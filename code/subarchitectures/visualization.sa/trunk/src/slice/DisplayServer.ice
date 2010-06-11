@@ -46,6 +46,9 @@ module Visualization
       // Pass a Lua script
       void setLuaGlObject(string id, string partId, string script);
 
+      // Pass an HTML chunk
+      void setHtml(string id, string partId, string htmlData);
+
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
       void addClient(Ice::Identity ident);

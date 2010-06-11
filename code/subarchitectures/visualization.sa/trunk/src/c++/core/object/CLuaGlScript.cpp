@@ -172,9 +172,9 @@ void CLuaGlScript::removePart(const std::string& partId)
    }
 }
 
-bool CLuaGlScript::is3D()
+ERenderContext CLuaGlScript::getPreferredContext()
 {
-   return true;
+   return ContextGL;
 }
 
 CRenderer* CLuaGlScript::getRenderer(ERenderContext context)
@@ -212,7 +212,8 @@ void CLuaGlScript_RenderGL::draw(CDisplayObject *pObject, void *pContext)
 {
    DTRACE("CLuaGlScript_RenderGL::draw");
    if (pObject == NULL) return;
-   CLuaGlScript *pModel = (CLuaGlScript*) pObject;
+   CLuaGlScript *pModel = dynamic_cast<CLuaGlScript*>(pObject);
+   if (pModel == NULL) return;
    if (pModel->m_Models.size() < 1) return;
    DMESSAGE("Models present.");
 
