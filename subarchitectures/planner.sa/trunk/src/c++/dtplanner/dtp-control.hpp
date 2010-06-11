@@ -22,9 +22,6 @@ public:
   DTPCONTROL(){};
   ~DTPCONTROL(){};
 
-
-  
-
   //~DTPCONTROL();
   void deliverObservation(Ice::Int, const autogen::Planner::ObservationSeq& observationSeq, const Ice::Current&);
   void newTask(Ice::Int, const std::string& probleFile, const std::string& domainFile, const Ice::Current&);  
