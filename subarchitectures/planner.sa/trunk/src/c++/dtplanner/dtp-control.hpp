@@ -16,11 +16,19 @@ using namespace autogen::Planner;
 
 class DTPCONTROL : 
   public autogen::Planner::DTPServer,
-  public cast::CASTComponent {
+  public cast::CASTComponent 
+{
 public:
-  void deliverObservation(const Ice::Current&, int id, ObservationSeq observationSeq);
-  void newTask(const Ice::Current&, int id, string probleFile, string domainFile);  
-  void cancelTask(const Ice::Current&, int id);
+  DTPCONTROL(){};
+  ~DTPCONTROL(){};
+
+
+  
+
+  //~DTPCONTROL();
+  void deliverObservation(Ice::Int, const autogen::Planner::ObservationSeq& observationSeq, const Ice::Current&);
+  void newTask(Ice::Int, const std::string& probleFile, const std::string& domainFile, const Ice::Current&);  
+  void cancelTask(Ice::Int, const Ice::Current&);
 
 protected:
   void configure(const cast::cdl::StringMap& _config, const Ice::Current& _current){}
@@ -29,19 +37,6 @@ protected:
    void stop(){};
   
 
-//   /*slice (see planner.sa/src/slice/###)*/
-//   class Internal_DTP_Server : public DTPServer  
-//   {
-//   public:
-//     Internal_DTP_Server(DTP_CONTROL*);
-//     void deliverObservation();
-//     void deliverProblem();
-//     void deliverDomain();
-//   private:
-//     DTP_CONTROL* parent;
-//   };
-
-//   Internal_DTP_Server internal_DTP_Server;
 };
 
 
