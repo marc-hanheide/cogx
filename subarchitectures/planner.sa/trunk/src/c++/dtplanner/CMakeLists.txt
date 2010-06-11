@@ -1,4 +1,13 @@
+# Author: Charles Gretton (charles.gretton@gmail.com)
+#
+
 include_directories(.)
+
+include_directories(./dtpddl/)
+
+add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native)
+
+add_definitions(-pedantic -vg -Wall -Wextra)
 
 add_cast_component(dtp-control dtp-control.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Planner)
