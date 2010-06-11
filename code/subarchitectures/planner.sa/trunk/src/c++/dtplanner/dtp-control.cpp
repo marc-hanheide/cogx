@@ -8,8 +8,8 @@ extern "C" {
 }
 
 
-void DTPCONTROL::deliverObservation(const Ice::Current&, int id, ObservationSeq observationSeq){}
+void DTPCONTROL::deliverObservation(Ice::Int id, const autogen::Planner::ObservationSeq& observationSeq, const Ice::Current&){}
 
-void DTPCONTROL::newTask(const Ice::Current&, int id, string probleFile, string domainFile); {}
+void DTPCONTROL::newTask(Ice::Int id, const std::string& probleFile, const std::string& domainFile, const Ice::Current&) {}
 
-void DTPCONTROL::cancelTask(const Ice::Current&, int id){}
+void DTPCONTROL::cancelTask(Ice::Int id, const Ice::Current&){}
