@@ -67,6 +67,10 @@ namespace Planning
             void add__problem_Name(const std::string&);
             const Planning::Problem_Name& get__problem_Name() const;
 
+            /*For Freiburg Jun 2010 */
+            void report__observations(const std::vector<std::string>& observationSeq);
+            Planning::Formula::Action_Proposition get__prescribed_action();
+            
         private:
             /*Last starting state formula parsed.*/
             Planning::Formula::Subformula starting_state;

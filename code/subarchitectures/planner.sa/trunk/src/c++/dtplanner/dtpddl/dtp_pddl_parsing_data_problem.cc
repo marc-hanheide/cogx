@@ -33,6 +33,70 @@
 
 using namespace Planning::Parsing;
 
+
+void Problem_Data::report__observations(const std::vector<std::string>& observationSeq)
+{
+}
+
+Planning::Formula::Action_Proposition Problem_Data::get__prescribed_action()
+{
+    
+    VERBOSER(1000, "Trying for prescribed action.");
+    auto action_Schemas = domain_Data->get__action_Schemas();
+
+    assert(action_Schemas.size());
+
+    auto action_index = (random() % action_Schemas.size());
+
+    auto i = 0;
+    auto _action_Schema = action_Schemas.begin();
+    for(i = 0; i != action_index; i++,_action_Schema++);
+    auto action_Schema = *_action_Schema;
+    
+    auto action_name = action_Schema.get__name();
+
+    auto action_headder = action_Schema.get__header();
+
+    auto headder_contents = action_headder.contents();
+    
+    auto arguments = std::tr1::get<1>(headder_contents);
+    
+    auto variables = get__symbols(arguments);
+    auto types = get__types(arguments);
+    
+    Planning::Constant_Arguments constants;
+
+    VERBOSER(1000, "Looking into :: "<<action_name<<std::endl);
+    
+    for(auto argument = types.begin()
+            ; argument != types.end()
+            ; argument ++){
+
+        assert(argument->size());
+        auto _type = argument->begin();
+        
+        NEW_object_referenced_WRAPPED(Planning::Type, type, _type->get__name());
+
+        Planning::Constant_Arguments potential;
+        for(auto constant = constants_description.begin()
+                ; constant != constants_description.end()
+                ; constant++){
+            if(constant->second.find(type) != constant->second.end()){
+                potential.push_back(constant->first);
+            }
+        }
+
+        auto index = (random() % potential.size());
+        constants.push_back(potential[index]);
+    }
+
+    
+    NEW_object_referenced_WRAPPED(Planning::Formula::Action_Proposition, answer, action_name, constants);
+
+    return answer;
+}
+
+
 void Problem_Data::report__starting_state()
 {
     QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,

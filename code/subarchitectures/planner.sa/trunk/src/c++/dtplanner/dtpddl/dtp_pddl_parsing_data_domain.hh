@@ -237,6 +237,8 @@ namespace Planning
             void add__percept();
             
             void add__predicate();
+
+            const Planning::Action_Schemas& get__action_Schemas() const;
             
         private:
             /*Domain observations.*/

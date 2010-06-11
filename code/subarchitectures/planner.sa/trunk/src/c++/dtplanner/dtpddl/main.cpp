@@ -3,6 +3,7 @@
 #include "Command_Line_Arguments.hh"
 #include "dtp_pddl_parsing_interface.hh"
 #include "dtp_pddl_parsing_data.hh"
+#include "dtp_pddl_parsing_data_problem.hh"
 
 
 #include "turnstyle.hh"
@@ -140,6 +141,10 @@ int main(int argc, char** argv)
             ; problem != Planning::Parsing::problems.end()
             ; problem++){
         std::cout<<*problem->second<<std::endl;
+        for(int i =0 ; i < 100; i++){
+            std::cout<<problem->second->get__prescribed_action()<<std::endl;
+        }
+        
     }
     
     return 0;
