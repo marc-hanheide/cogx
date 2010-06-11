@@ -56,7 +56,7 @@ Initially every new object is displayed in its own view that has the same name
 as the object.
 \todo{(TODO: Additional views that display multiple objects can be defined on the server)}
 The display server creates rendering contexts in which the views are displayed.
-There are two types of contexts: 2D and OpenGL.
+There are three types of contexts: 2D, OpenGL and HTML.
 % (TODO: new contexts: tabular; textual; ...)
 
 The client that wants to display an object connects to the server and sends the
@@ -65,8 +65,9 @@ same name already exists on the server it is updated with the new data. Some
 objects are composed of multiple parts where each part can be manipulated
 independently.
 
-Currently the following types of objects are supported: images, SVG graphics and
-OpenGL objects define with LuaGl script or as TomGine render-models. 
+Currently the following types of objects are supported: images, HTML documents,
+SVG graphics and OpenGL objects defined with LuaGl script or as TomGine
+render-models. 
 
 The display server can also display simple user interface elements. If a view
 is active (visible) all the UI element associated with the view are also
