@@ -28,6 +28,7 @@ class CHtmlObject: public CDisplayObject
 
 private:
    std::map<std::string, QString*> m_Parts;
+   std::map<std::string, QString*> m_HeadParts;
 
 public:
    CHtmlObject();
@@ -36,6 +37,7 @@ public:
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    void setHtml(const std::string& partId, const std::string& text);
+   void setHead(const std::string& partId, const std::string& text);
    void removePart(const std::string& partId);
 };
 
@@ -43,6 +45,7 @@ class CHtmlObject_RenderHtml: public CRenderer
 {
 public:
    virtual void draw(CDisplayObject *pObject, void *pContext); /*override*/
+   virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext); /*override*/
 };
 
 }} // namespace

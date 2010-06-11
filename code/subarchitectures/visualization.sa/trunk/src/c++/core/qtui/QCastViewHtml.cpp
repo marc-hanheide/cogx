@@ -16,7 +16,7 @@
 #include "QCastViewHtml.hpp"
 
 #ifdef DEBUG_TRACE
-//#undef DEBUG_TRACE
+#undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -60,11 +60,12 @@ void QCastViewHtml::doUpdateContent()
    DTRACE("QCastViewHtml::doUpdateContent");
 
    if (pView) {
-      QStringList list;
+      QStringList list, head, body;
+      pView->drawHtml(head, body);
       list.append("<html><head>");
-      // TODO: header parts, eg. css; pView->drawHtml(list, "head");
+      list << head;
       list.append("</head><body>");
-      pView->drawHtml(list); // , "body")
+      list << body;
       list.append("<hr>WebKit agrees with me!");
       list.append("</body></html>");
       setHtml(list.join("\n"));

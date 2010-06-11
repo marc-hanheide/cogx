@@ -24,7 +24,6 @@ using namespace std;
 
 namespace cogx { namespace display {
 
-
 CDisplayModel::CDisplayModel()
 {
    //// XXX Testing: the one and only view with one and only image
@@ -458,7 +457,7 @@ void CDisplayView::drawGL()
    }
 }
 
-void CDisplayView::drawHtml(QStringList &list)
+void CDisplayView::drawHtml(QStringList &head, QStringList &body)
 {
    CDisplayObject *pObject;
    CRenderer *pRender;
@@ -466,7 +465,8 @@ void CDisplayView::drawHtml(QStringList &list)
       if (!pObject) continue;
       pRender = pObject->getRenderer(ContextHtml);
       if (pRender) {
-         pRender->draw(pObject, &list);
+         pRender->draw("head", pObject, &head);
+         pRender->draw("body", pObject, &body);
       }
    }
 }

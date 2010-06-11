@@ -195,8 +195,18 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
   }
   {
     std::stringstream str;
-    str << "The current CAST running time is " << sfloat (fclocks());
+    str << "The current CAST running time is <span class='time'>" << sfloat (fclocks()) << "</span>";
     m_display.setHtml("@info.TestComponent", "time", str.str());
+    std::stringstream css;
+    css << "<style type='text/css'>\n";
+    css << ".time {color: ";
+    switch( ((int)fclocks()) % 3 ) {
+      case 0: css << "red"; break;
+      case 1: css << "green"; break;
+      case 2: css << "blue"; break;
+    }
+    css << ";}\n</style>\n";
+    m_display.setHtmlHead("@info.TestComponent", "time", css.str());
   }
 #else
   IplImage *iplImage = convertImageToIpl(images[0]);

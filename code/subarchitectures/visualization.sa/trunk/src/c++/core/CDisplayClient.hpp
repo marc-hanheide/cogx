@@ -78,6 +78,7 @@ public:
    void setObject(const std::string& id, const std::string& partId, const std::string& xmlData); 
    void setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script);
    void setHtml(const std::string& id, const std::string& partId, const std::string& htmlData);
+   void setHtmlHead(const std::string& id, const std::string& partId, const std::string& htmlData);
    void setObjectTransform2D(const std::string& id, const std::string& partId,
          const cogx::Math::Matrix33& transform);
    void setObjectTransform2D(const std::string& id, const std::string& partId,

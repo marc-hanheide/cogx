@@ -356,6 +356,36 @@ void CDisplayServer::setHtml(const std::string& id, const std::string& partId, c
 #endif
 }
 
+void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partId, const std::string& htmlData)
+{
+#ifdef V11N_OBJECT_HTML
+   DTRACE("CDisplayServer::setHtmlHead");
+
+   CHtmlObject *pModel = NULL;
+   CDisplayObject *pExisting = m_Model.getObject(id);
+   if (pExisting) {
+      pModel = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pModel) {
+         // The retreived model is of a different type, we must replace it
+         m_Model.removeObject(id);
+         DMESSAGE("Replacing an exisiting object of different type.");
+      }
+   }
+
+   if (pModel) {
+      if (htmlData.size() < 1) pModel->removePart(partId);
+      else pModel->setHead(partId, htmlData);
+      m_Model.refreshObject(id);
+   }
+   else {
+      pModel = new CHtmlObject();
+      pModel->m_id = id;
+      pModel->setHead(partId, htmlData);
+      m_Model.setObject(pModel);
+   }
+#endif
+}
+
 void CDisplayServer::setObjectTransform2D(const std::string& id, const std::string& partId,
       const std::vector<double>& transform)
 {
