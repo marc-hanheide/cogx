@@ -26,6 +26,8 @@ package de.dfki.lt.tr.beliefs.data;
 //IMPORTS
 
 // Belief API slice
+import Ice.Object;
+import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame; 
 
 // Belief API util
@@ -40,37 +42,10 @@ import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
  * @version	100523
  */
 
-public class Frame {
+public class Frame<T extends AbstractFrame> extends Proxy<T> {
 
-	private AbstractFrame _frame = null; 
-	
-	/**
-	 * Initializes the internal variables
-	 */
-	public void init() 
-	{
-		_frame = new AbstractFrame();	
-	} // end init
-	
-	
-	/**
-	 * Returns the slice data-structure 
-	 * @return SpatioTemporalFrame	The frame
-	 * @throws	BeliefInvalidQueryException If the frame has not been initialized
-	 */
-	public AbstractFrame getFrame() 
-	throws BeliefInvalidQueryException 
-	{ 
-		if (_frame != null) 
-		{
-			return _frame;
-		}
-		else
-		{
-			throw new BeliefInvalidQueryException("Cannot retrieve frame from non-initialized frame");
-		}
-	} // end getFrame
-	
-	
-	
+	public Frame(Class<? extends T> class1, Object content) {
+		super(class1, content);
+	}
+
 } // end class
