@@ -452,6 +452,12 @@ The client-side interface for defining HTML document chunks is:
          const std::string& htmlData); 
 \end{Verbatim}
 
+Chunks for the head and the body part of a document are independent. This means
+that a chunk in the head may have the same partId as a chunk in the body of
+a document. When a part is removed from a document, the chunks for the head
+and the body with the requested partId are removed.
+\todo{TODO: ICE interface for removing (parts of) objects is still missing}
+
 \subsection{OpenGL objects}
 
 OpenGL objects can be rendered in two ways. The more flexible option is the use
