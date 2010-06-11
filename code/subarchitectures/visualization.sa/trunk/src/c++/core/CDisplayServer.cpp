@@ -75,14 +75,25 @@ void CDisplayServer::configure(const map<string,string> & _config)
       throw(runtime_error)
 {
    debug("CDisplayServer Server: configuring");
+
+#ifdef V11N_OBJECT_HTML
+   debug("v11n: Subsystem 'HTML' enabled.");
+   setHtml("@info.DisplayServer", "001", "CogX Display Server<br>");
+   setHtml("@info.DisplayServer", "002", "Version 0.5<br><br>");
+   setHtml("@info.DisplayServer", "010", "Subsystem 'HTML' enabled.<br>");
+#ifdef V11N_OBJECT_LUA_GL
+   setHtml("@info.DisplayServer", "011", "Subsystem 'LuaGlScript' enabled.<br>");
+#endif
+#ifdef V11N_OBJECT_TOMGINE_MODEL
+   setHtml("@info.DisplayServer", "012", "Subsystem 'TomGine Model' enabled.<br>");
+#endif
+#endif
+
 #ifdef V11N_OBJECT_LUA_GL
    debug("v11n: Subsystem 'LuaGlScript' enabled.");
 #endif
 #ifdef V11N_OBJECT_TOMGINE_MODEL
    debug("v11n: Subsystem 'TomGine Model' enabled.");
-#endif
-#ifdef V11N_OBJECT_HTML
-   debug("v11n: Subsystem 'HTML' enabled.");
 #endif
    CASTComponent::configure(_config);
 
@@ -97,7 +108,6 @@ void CDisplayServer::configure(const map<string,string> & _config)
    // so we start them in configure() instead of in start()
    debug("CDisplayServer Server: starting");
    startIceServer();
-   setHtml("@info.InternalTest", "First", "Display Server Rules!");
 }
 
 void CDisplayServer::start()

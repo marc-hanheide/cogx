@@ -66,7 +66,6 @@ void QCastViewHtml::doUpdateContent()
       list << head;
       list.append("</head><body>");
       list << body;
-      list.append("<hr>WebKit agrees with me!");
       list.append("</body></html>");
       setHtml(list.join("\n"));
    }
