@@ -130,7 +130,7 @@ void CLuaGlScript::CScript::initLuaState()
 
       // load some utility scripts
       loadScript(luacode_displist_lua);
-
+      loadScript(luacode_models_lua);
    }
 }
 

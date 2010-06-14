@@ -3,17 +3,16 @@
 
 import os, sys
 outfile = "v11n_luacode.inc"
-infiles = ["displist.lua"]
+infiles = ["displist.lua", "models.lua"]
 
 f = open(outfile, "w")
 
 for fn in infiles:
-    fnfull = fn # os.path.join(indir, fn)
+    fnfull = fn
     lines = open(fnfull).readlines()
     lines = [ "" if ln.strip().startswith("--")
              else ln.rstrip().replace('\\', '\\\\').replace('"', '\\"')
              for ln in lines
-             # if ln.strip() != ""
             ]
     var = "luacode_" + fn.replace(".", "_")
     f.write("// Generated from %s\n" % fn)
