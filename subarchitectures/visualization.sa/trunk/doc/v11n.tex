@@ -99,8 +99,8 @@ is one of the files the monitor is waiting for, it reads the file processes it
 and sends it to the server. A single component is able to monitor multiple files
 in multiple directories.
 
-The files that the monitor can process are images, SVG files and files created
-for GraphWiz.
+The files that the monitor can process are images, SVG files, dot files created
+for GraphWiz, LuaGl scripts, HTML chunks.
 
 Here is an example CAST setup of a DisplayServer and a FileMonitorDC. Note that
 all text after fileviewer.cli is on the same line.
@@ -181,6 +181,9 @@ the name of the file.
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    %(dir)/{*}"
 \end{Verbatim}
+
+The converters {\em luagl}, {\em html} and {\em htmlhead} send the unprocessed
+contents of the monitored file to the server.
 
 \subsection{A Passive Display Client}
 

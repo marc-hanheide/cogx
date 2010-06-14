@@ -72,7 +72,9 @@ struct _s_init_converters_
       CFileMonitor::SConverter::add("circo", "circo -Tsvg");
       CFileMonitor::SConverter::add("fdp", "fdp -Tsvg");
       CFileMonitor::SConverter::add("svg", "", "text", "svg");
-      CFileMonitor::SConverter::add("luagl", "", "luagl", "luagl,lua");
+      CFileMonitor::SConverter::add("luagl", "", "text", "luagl,lua");
+      CFileMonitor::SConverter::add("html", "", "text", "html,htm");
+      CFileMonitor::SConverter::add("htmlhead", "", "text", "css");
    }
 } _init_converters_;
 
@@ -354,15 +356,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
          std::string fn = pinfo->directory + "/" + fname;
          std::ifstream infile;
          // No converter, read the file and send it
-         if (pConv->type == "text") {
-            debug("Send text: %s", title.c_str());
-            infile.open(fn.c_str(), std::ifstream::in);
-            std::stringstream str;
-            str << infile.rdbuf();
-            infile.close();
-            m_display.setObject(title, "FileMonitor", str.str());
-         }
-         else if (pConv->type == "luagl") {
+         if (pConv->id == "luagl") {
             debug("Send LuaGl script: %s", title.c_str());
             infile.open(fn.c_str(), std::ifstream::in);
             std::stringstream str;
@@ -381,6 +375,30 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
             infile.read((char*)&data[0], size);
             infile.close();
             m_display.setImage(title, data);
+         }
+         else if (pConv->id == "html") {
+            debug("Send HTML chunk: %s", title.c_str());
+            infile.open(fn.c_str(), std::ifstream::in);
+            std::stringstream str;
+            str << infile.rdbuf();
+            infile.close();
+            m_display.setHtml(title, "FileMonitor", str.str());
+         }
+         else if (pConv->id == "htmlhead") {
+            debug("Send HTML HEAD chunk: %s", title.c_str());
+            infile.open(fn.c_str(), std::ifstream::in);
+            std::stringstream str;
+            str << infile.rdbuf();
+            infile.close();
+            m_display.setHtmlHead(title, "FileMonitor", str.str());
+         }
+         else if (pConv->type == "text") {
+            debug("Send text ad HTML chunk: %s", title.c_str());
+            infile.open(fn.c_str(), std::ifstream::in);
+            std::stringstream str;
+            str << infile.rdbuf();
+            infile.close();
+            m_display.setHtml(title, "FileMonitor", str.str());
          }
       }
    }
