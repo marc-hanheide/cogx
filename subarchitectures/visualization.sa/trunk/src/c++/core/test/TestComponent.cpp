@@ -284,27 +284,34 @@ void VideoViewer::runComponent()
     strA << "This is the TestComponent for the Display Server<br>";
     m_display.setHtml("@info.TestComponent", "text", strA.str());
   }
+
+  int count = 0;
+  srand ( time(NULL) );
 #else
   println("press <s> to stop/start receving images");
 #endif
 
-  int count = 0;
   while(isRunning())
   {
     // needed to make the window appear
     // (an odd behaviour of OpenCV windows!)
 #ifdef FEAT_VISUALIZATION
     sleepComponent(100);
+    std::stringstream str;
     count++;
-    if (count % 5 == 0) {
-      count = 0;
+    if (count > 2 * 3 * 3 * 5 * 5 * 7 * 11 * 100) count = 0;
+    if (count % 2 == 0) {
       int dir = rand() % 4;
       switch (dir) {
-        case 0: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(1,0)"); break;
-        case 1: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(0,1)"); break;
-        case 2: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(-1,0)"); break;
-        case 3: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(0,-1)"); break;
+        case 0: str << "move(1,0)" << endl; break;
+        case 1: str << "move(0,1)" << endl; break;
+        case 2: str << "move(-1,0)" << endl; break;
+        case 3: str << "move(0,-1)" << endl; break;
       }
+    }
+    str << "boxTurn=" << (count % 36) * 10 << endl << "DispList:setDirty('pusher.box.rotation')" << endl;
+    if (str.tellp() > 0) {
+      m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", str.str());
     }
 #else
     int key = cvWaitKey(100);
