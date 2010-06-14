@@ -3,8 +3,8 @@ project(VisualizationCore)
 find_package(Qt4 REQUIRED) # http://qtnode.net/wiki/Qt4_with_cmake
 include(${QT_USE_FILE} ${QT_USE_OPENGL})
 
-set(LUA_EXPERIMENT 1)
-if(LUA_EXPERIMENT)
+option(BUILD_SA_V11N_USE_LUAGL "Build with LuaGl script support (requres lua51 and tolua++51)" ON)
+if(BUILD_SA_V11N_USE_LUAGL)
    find_package(Lua51)
    find_library(LUA_LIB_TOLUA_51 tolua++5.1)
    if (LUA51_FOUND AND LUA_LIB_TOLUA_51)
@@ -31,10 +31,10 @@ if(LUA_EXPERIMENT)
    if (NOT LUA_LIB_TOLUA_51)
       message ("libtolua++5.1 not found. Please install libtolua++5.1-dev")
    endif (NOT LUA_LIB_TOLUA_51)
-endif(LUA_EXPERIMENT)
+endif(BUILD_SA_V11N_USE_LUAGL)
 
-set(WEBKIT_EXPERIMENT 1)
-if(WEBKIT_EXPERIMENT)
+option(BUILD_SA_V11N_USE_WEBKIT "Build with HTML support (Qt-WebKit)" ON)
+if(BUILD_SA_V11N_USE_WEBKIT)
    set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
       object/CHtmlObject.cpp
       qtui/QCastViewHtml.cpp
@@ -49,11 +49,10 @@ if(WEBKIT_EXPERIMENT)
       ${QT_QTWEBKIT_INCLUDE_DIR}
       )
    add_definitions(-DV11N_OBJECT_HTML)
-endif(WEBKIT_EXPERIMENT)
+endif(BUILD_SA_V11N_USE_WEBKIT)
 
-
-set(TOMGINE_MODEL 0)
-if(TOMGINE_MODEL)
+option(BUILD_SA_V11N_USE_TOMGINE "Build with support for TomGine models (requires vision.sa)" OFF)
+if(BUILD_SA_V11N_USE_TOMGINE)
    set(TOMGINE_SRC
       object/CTomGineModel.cpp
       )
@@ -65,7 +64,7 @@ if(TOMGINE_MODEL)
       ftgl # requires package libftgl-dev
       )
    add_definitions(-DV11N_OBJECT_TOMGINE_MODEL)
-endif(TOMGINE_MODEL)
+endif(BUILD_SA_V11N_USE_TOMGINE)
 
 add_definitions(-DDEBUG_TRACE)
 

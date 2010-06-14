@@ -30,8 +30,8 @@ so that the dependent libraries will build correctly. Add the following
 block before the first subarchitecture in CMakeLists.txt:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   option(BUILD_SA_VISUALIZATION "Build visualization libraries (Requires QT4)" NO)
-   if(BUILD_SA_VISUALIZATION)
+   option(BUILD_SA_V11N "Build visualization libraries (Requires QT4)" NO)
+   if(BUILD_SA_V11N)
       set(VISUALIZATION_INCLUDE_DIRS
          ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/autogen
          ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/core
@@ -41,11 +41,11 @@ block before the first subarchitecture in CMakeLists.txt:
          )
       add_subdirectory(subarchitectures/visualization.sa)
       add_definitions(-DFEAT_VISUALIZATION)
-   endif(BUILD_SA_VISUALIZATION)
+   endif(BUILD_SA_V11N)
 \end{Verbatim}
 
-Finally run \code{ccmake} and set \code{BUILD\_VISUALIZATION\_SA} to \code{ON}
-to enable the visualization subarchitecture.
+Finally run \code{ccmake} and set \code{BUILD\_SA\_V11N} to \code{ON} to enable
+the visualization subarchitecture.
 
 
 \section{General operation}
@@ -54,10 +54,10 @@ The library provides a display server that displays objects created by its
 clients.  The objects that are on the display server are grouped into views.
 Initially every new object is displayed in its own view that has the same name
 as the object.
-\todo{(TODO: Additional views that display multiple objects can be defined on the server)}
+\todo{(TODO: It will be posible to define additional views that display multiple objects)}
 The display server creates rendering contexts in which the views are displayed.
 There are three types of contexts: 2D, OpenGL and HTML.
-% (TODO: new contexts: tabular; textual; ...)
+% (TODO: additional contexts: eg. tabular)
 
 The client that wants to display an object connects to the server and sends the
 serialized object to the server. Each object has a name. If an object with the

@@ -78,7 +78,6 @@ function make_the_box_rotation()
 end
 
 function make_the_box()
-   print('CREATING BOX MODEL')
    DispList:newList('pusher.box')
    glColor(0.0, 0.2, 1.0)
    -- StdModel:box(boxSize.cx, boxSize.cy, boxSize.cz)
