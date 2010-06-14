@@ -49,17 +49,57 @@ CLuaGlScript::CScript::~CScript()
    luaS = NULL;
 }
 
-static int reportError(lua_State *luaS)
+// http://www.sharpoblunto.com/News/lua
+std::list<std::string> _stack;
+void FunctionHook(lua_State *l, lua_Debug *ar)
 {
-	const char *errmsg = lua_tostring(luaS, -1);
-	printf("\nError: %s\n", errmsg ? errmsg : "<no message>");
+   //fill up the debug structure with information from the lua stack
+   lua_getinfo(l, "Sln", ar);
+   //push function calls to the top of the callstack
+   if (ar->event == LUA_HOOKCALL) {
 
-	lua_getglobal(luaS, "_TRACEBACK");
-	lua_pcall(luaS, 0, 0, 0);
+      std::stringstream ss;
+      ss << ar->short_src << ":"
 
-	return 0;
+	 << ar->linedefined << ": "
+	 << (ar->name == NULL ? "[UNKNOWN]" : ar->name)
+	 << " (" << ar->namewhat << ")";
+
+      _stack.push_front(ss.str());
+      //printf("   %s\n", ss.str().c_str());
+   }
+   //pop the returned function from the callstack
+   else if (ar->event ==LUA_HOOKRET) {
+
+      if (_stack.size()>0)
+      {
+	 const std::string& ss = _stack.front();
+	 //printf("   END %s\n", ss.c_str());
+      }
+   }
 }
 
+static int reportError(lua_State *luaS)
+{
+   const char *errmsg = lua_tostring(luaS, -1);
+   printf("\nError: %s\n", errmsg ? errmsg : "<no message>");
+
+   //lua_getglobal(luaS, "debug");
+   //lua_getfield(luaS, -1, "traceback");
+   //lua_remove(luaS, -2);
+   //// lua_getglobal(luaS, "_TRACEBACK");
+   //lua_pcall(luaS, 0, 0, 0);
+
+   printf("Stack size: %d\n", _stack.size());
+   typeof(_stack.begin()) it;
+   for(it = _stack.begin(); it != _stack.end(); it++) {
+      printf("   %s\n", it->c_str());
+   }
+
+   return 0;
+}
+
+ 
 void CLuaGlScript::CScript::initLuaState()
 {
    if (! luaS) {
@@ -71,6 +111,10 @@ void CLuaGlScript::CScript::initLuaState()
       luaopen_table(luaS);
       luaopen_string(luaS);
       luaopen_math(luaS);
+#if 0
+      luaopen_debug(luaS);
+      lua_sethook(luaS, &FunctionHook, LUA_MASKCALL | LUA_MASKRET, 0);
+#endif
 
       // application specific bindings
       tolua_gl_open(luaS);
@@ -82,6 +126,7 @@ void CLuaGlScript::CScript::initLuaState()
 
       // load some utility scripts
       loadScript(luacode_displist_lua);
+
    }
 }
 
@@ -94,7 +139,8 @@ int CLuaGlScript::CScript::loadScript(const char* pscript)
       //long long t1 = gethrtime();
       //double dt = (t1 - t0) * 1e-6;
       //printf(" ******** Time to loadstring: %lf\n", dt);
-      if (rv != 0) printf("luaL_loadstring FAILED\n");
+      if (rv != 0)
+	 printf(" ***** luaL_loadstring FAILED\n");
       else {
          //t0 = gethrtime();
          rv = lua_pcall(luaS, 0, 0, 0);
@@ -103,7 +149,7 @@ int CLuaGlScript::CScript::loadScript(const char* pscript)
          //printf(" ******** Time to pcall: %lf\n", dt);
          if (rv != 0) {
             // TODO CScript needs an ID(object, part) so it can be printed
-            printf("Problem executing script (error %d):\n   %s\n", rv, lua_tostring(luaS, -1));
+            printf(" ***** Problem executing script (error %d):\n   %s\n", rv, lua_tostring(luaS, -1));
          }
       }
       return rv;
@@ -113,6 +159,7 @@ int CLuaGlScript::CScript::loadScript(const char* pscript)
 
 int CLuaGlScript::CScript::exec()
 {
+   _stack.clear();
    if (!luaS) return -1;
    // long long t0 = gethrtime();
    lua_getfield(luaS, LUA_GLOBALSINDEX, "render");
@@ -122,7 +169,13 @@ int CLuaGlScript::CScript::exec()
    //printf(" ******** Time to exec.pcall: %lf\n", dt);
    if (rv != 0) {
       // TODO CScript needs an ID(object, part) so it can be printed
-      printf("Problem executing render() (error %d):\n   %s\n", rv, lua_tostring(luaS, -1));
+      printf(" ***** Problem executing render() (error %d):\n   %s\n", rv, lua_tostring(luaS, -1));
+
+      printf("Stack size: %d\n", _stack.size());
+      typeof(_stack.begin()) it;
+      for(it = _stack.begin(); it != _stack.end(); it++) {
+	 printf("   %s\n", it->c_str());
+      }
    }
    return rv;
 }

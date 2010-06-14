@@ -72,6 +72,7 @@ struct _s_init_converters_
       CFileMonitor::SConverter::add("circo", "circo -Tsvg");
       CFileMonitor::SConverter::add("fdp", "fdp -Tsvg");
       CFileMonitor::SConverter::add("svg", "", "text", "svg");
+      CFileMonitor::SConverter::add("luagl", "", "luagl", "luagl,lua");
    }
 } _init_converters_;
 
@@ -361,9 +362,17 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
             infile.close();
             m_display.setObject(title, "FileMonitor", str.str());
          }
+         else if (pConv->type == "luagl") {
+            debug("Send LuaGl script: %s", title.c_str());
+            infile.open(fn.c_str(), std::ifstream::in);
+            std::stringstream str;
+            str << infile.rdbuf();
+            infile.close();
+            m_display.setLuaGlObject(title, "FileMonitor", str.str());
+         }
          else if (pConv->id == "image") {
             debug("Send image: %s", title.c_str());
-            // TODO: read binary data from file (server needs a setCompressedImage)
+            // read binary data from file (server needs a setCompressedImage)
             std::vector<unsigned char> data;
             infile.open(fn.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
             long size = infile.tellg();

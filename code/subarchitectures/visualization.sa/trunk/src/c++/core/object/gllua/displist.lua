@@ -1,46 +1,41 @@
 
-DispList = { context={} }
+DispList = { context={}, dirty={} }
 
-function DispList:create(name)
+function DispList:_getDispListTab(create)
+   create = create or false
    local ctx = v11nGetOpenGlContext()
    assert(ctx, "No OpenGL context is active")
    local displist = self.context[ctx]
-   if displist==nil then
+   if displist==nil and create then
       displist = {}
       self.context[ctx] = displist
    end
-   assert(not displist[name], "Compiled display list named '" .. name .. "' exists.")
-
-   local id = glGenLists(1)
-   --_glErrorCheck()
-   assert(id~=0, "glGenLists failed")
-   glNewList(id, GL_COMPILE_AND_EXECUTE)
-   --_glErrorCheck()
-   assert(glIsList(id)==GL_TRUE, "glNewList failed")
-   displist[name] = id
+   return displist
 end
 
-function DispList:replace(name)
-   local ctx = v11nGetOpenGlContext()
-   assert(ctx, "No OpenGL context is active")
-   local displist = self.context[ctx]
-   if displist==nil then
-      displist = {}
-      self.context[ctx] = displist
-   end
+--function DispList:genList(name)
+--   local displist = self:_getDispListTab(create=true)
+--   assert(not displist[name], "Compiled display list named '" .. name .. "' exists.")
+
+--   local id = glGenLists(1)
+--   assert(id~=0, "glGenLists failed")
+--   displist[name] = id
+--   return id
+--end
+
+-- Define or redefine a display list
+function DispList:newList(name)
+   local displist = self:_getDispListTab(true)
    local id = displist[name] 
-   if id then
-      displist[name] = nil
-      glDeleteLists(id, 1)
+   if not id then
+      id = glGenLists(1)
+      assert(id~=0, "glGenLists failed")
+      displist[name] = id
    end
 
-   id = glGenLists(1)
-   --_glErrorCheck()
-   assert(id~=0, "glGenLists failed")
-   glNewList(id, GL_COMPILE_AND_EXECUTE)
-   --_glErrorCheck()
+   --glNewList(id, GL_COMPILE_AND_EXECUTE)
+   glNewList(id, GL_COMPILE)
    assert(glIsList(id)==GL_TRUE, "glNewList failed")
-   displist[name] = id
 end
 
 function DispList:endList()
@@ -48,32 +43,52 @@ function DispList:endList()
 end
 
 function DispList:delete(name)
-   local ctx = v11nGetOpenGlContext()
-   assert(ctx, "No OpenGL context is active")
-   local displist = self.context[ctx]
+   local displist = self:_getDispListTab(false)
    if not displist then return end
    local id = displist[name] 
    if not id then return end
+   displist[id] = nil
+   if not glIsList(id) then return end
    glDeleteLists(id, 1)
 end
 
 function DispList:exists(name)
-   local ctx = v11nGetOpenGlContext()
-   if not ctx then return false end
-   local displist = self.context[ctx]
+   local displist = self:_getDispListTab(false)
    if not displist then return false end
    local id = displist[name] 
    if not id then return false end
+   if not glIsList(id) then return false end
    return true
 end
 
 function DispList:draw(name)
-   local ctx = v11nGetOpenGlContext()
-   assert(ctx, "No OpenGL context is active")
-   local displist = self.context[ctx]
+   local displist = self:_getDispListTab(false)
    assert(displist, "No lists have been defined in this context")
    local id = displist[name] 
    assert(id, "DispList named '" .. name .. "' not found")
    glCallList(id)
 end
 
+function DispList:setDirty(name)
+   self.dirty[name] = true
+end
+
+function DispList:getDirty(names)
+   local displist = self:_getDispListTab(false)
+   local dirt = self.dirty
+   if next(dirt) ~= nil then -- not empty, clear for next round
+      self.dirty = {}
+   end
+   if displist == nil then
+      for _,n in pairs(names) do
+         dirt[n] = true
+      end
+   else
+      for _,n in pairs(names) do
+         if not displist[n] then
+            dirt[n] = true
+         end
+      end
+   end
+   return dirt
+end

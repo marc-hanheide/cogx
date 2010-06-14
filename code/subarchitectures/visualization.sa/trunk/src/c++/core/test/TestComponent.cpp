@@ -232,8 +232,9 @@ void VideoViewer::runComponent()
   {
     std::stringstream str;
     str << "function initlists()\n";
-    str <<   "if DispList:exists('myobject') then return end\n";
-    str <<   "DispList:create('myobject')\n";
+    str <<   "dirty = DispList:getDirty({'myobject'})\n";
+    str <<   "if not dirty['myobject'] then return end\n";
+    str <<   "DispList:newList('myobject')\n";
     str <<     "glBegin(GL_QUADS)\n";
     str <<     "glVertex(0.1, 0.1, 0.1)\n";
     str <<     "glVertex(0.3, 0.1, 0.2)\n";
@@ -271,6 +272,14 @@ void VideoViewer::runComponent()
     m_display.setLuaGlObject("Visualization.sa.LuaGl", "Points", str.str());
   }
   {
+    std::ifstream infile;
+    infile.open("subarchitectures/visualization.sa/src/c++/core/object/gllua/test/pusher.luagl", std::ifstream::in);
+    std::stringstream str;
+    str << infile.rdbuf();
+    infile.close();
+    m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", str.str());
+  }
+  {
     std::stringstream strA;
     strA << "This is the TestComponent for the Display Server<br>";
     m_display.setHtml("@info.TestComponent", "text", strA.str());
@@ -279,12 +288,24 @@ void VideoViewer::runComponent()
   println("press <s> to stop/start receving images");
 #endif
 
+  int count = 0;
   while(isRunning())
   {
     // needed to make the window appear
     // (an odd behaviour of OpenCV windows!)
 #ifdef FEAT_VISUALIZATION
     sleepComponent(100);
+    count++;
+    if (count % 5 == 0) {
+      count = 0;
+      int dir = rand() % 4;
+      switch (dir) {
+        case 0: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(1,0)"); break;
+        case 1: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(0,1)"); break;
+        case 2: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(-1,0)"); break;
+        case 3: m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", "move(0,-1)"); break;
+      }
+    }
 #else
     int key = cvWaitKey(100);
     switch(key)
