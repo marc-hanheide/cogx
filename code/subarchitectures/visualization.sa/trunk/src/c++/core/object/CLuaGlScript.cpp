@@ -49,6 +49,7 @@ CLuaGlScript::CScript::~CScript()
    luaS = NULL;
 }
 
+#if 0
 // http://www.sharpoblunto.com/News/lua
 std::list<std::string> _stack;
 void FunctionHook(lua_State *l, lua_Debug *ar)
@@ -78,6 +79,7 @@ void FunctionHook(lua_State *l, lua_Debug *ar)
       }
    }
 }
+#endif
 
 static int reportError(lua_State *luaS)
 {
@@ -90,11 +92,13 @@ static int reportError(lua_State *luaS)
    //// lua_getglobal(luaS, "_TRACEBACK");
    //lua_pcall(luaS, 0, 0, 0);
 
+#if 0
    printf("Stack size: %d\n", _stack.size());
    typeof(_stack.begin()) it;
    for(it = _stack.begin(); it != _stack.end(); it++) {
       printf("   %s\n", it->c_str());
    }
+#endif
 
    return 0;
 }
@@ -159,7 +163,9 @@ int CLuaGlScript::CScript::loadScript(const char* pscript)
 
 int CLuaGlScript::CScript::exec()
 {
+#if 0
    _stack.clear();
+#endif
    if (!luaS) return -1;
    // long long t0 = gethrtime();
    lua_getfield(luaS, LUA_GLOBALSINDEX, "render");
@@ -171,11 +177,13 @@ int CLuaGlScript::CScript::exec()
       // TODO CScript needs an ID(object, part) so it can be printed
       printf(" ***** Problem executing render() (error %d):\n   %s\n", rv, lua_tostring(luaS, -1));
 
+#if 0
       printf("Stack size: %d\n", _stack.size());
       typeof(_stack.begin()) it;
       for(it = _stack.begin(); it != _stack.end(); it++) {
 	 printf("   %s\n", it->c_str());
       }
+#endif
    }
    return rv;
 }
