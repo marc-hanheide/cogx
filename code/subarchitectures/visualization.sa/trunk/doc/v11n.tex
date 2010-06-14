@@ -506,12 +506,13 @@ display list defined by the object.
 The following commands are available for display list management:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   DispList:create(name)
-   DispList:replace(name)
+   DispList:newList(name)
    DispList:endList()
    DispList:delete(name)
    DispList:exists(name)
    DispList:draw(name)
+   DispList:setDirty(name)
+   DispList:getDirty(name_table)
 \end{Verbatim}
 
 In the following example we create a function that creates a display list named
@@ -521,7 +522,7 @@ lists before doing the rest of the rendering.
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    function make_the_thing()
-      DispList:create('myobject')
+      DispList:newList('myobject')
         glBegin(GL_TRIANGLES)
         glVertex(0.1, 0.1, 0.1)
         glVertex(0.3, 0.1, 0.2)
@@ -531,7 +532,8 @@ lists before doing the rest of the rendering.
    end
 
    function initlists()
-      if not DispList:exists('myobject') then
+      local dirty = DispList:getDirty( {'myobject'} )
+      if dirty['myobject'] then
          make_the_thing()
       end
    end
@@ -547,7 +549,7 @@ lists before doing the rest of the rendering.
 \end{Verbatim}
 
 With this approach the lists are created only once in an OpenGL context and
-only when a context is active.  When the code is loaded into the Lua script
+only when a context is active. When the code is loaded into the Lua script
 engine, the script is locked and the rendering of the object is not possible.
 The OpenGL context might not even be available at the time or a wrong one might
 be active. That is why all OpenGL calls should be enclosed in functions that
@@ -567,35 +569,26 @@ sending a new definition for \code{make\_the\_thing()}:
         glEnd()
       DispList:endList()
    end
+   DispList:setDirty('myobject')
 \end{Verbatim}
 
-There is one problem with the new \code{make\_the\_thing()}: if a display list
-for {\em myobject} already exists, the function will not be executed and the
-object will keep its current shape. This can be fixed if user closes and
-reopens the OpenGL view which will create a new OpenGL context. A better
-approach is to use a global variable with a list of display list names that
-have to be recreated. We change \code{initlists()} so that it verifies if any
-objects should be deleted.
-\todo{VERIFY: code from this point on is not verified}
+The function \code{setDirty()} tells the display list manager that the object
+was modified. The renderer will detect the change the next time
+\code{getDirty()} is called, in this case from \code{initlists()}.
+\code{getDirty(namelist)} returns a table with keys that represent the names of
+the objects from {\em namelist} that need to be recreated. It will contain the
+names of the objects that were not yet created and the objects that were marked
+as dirty. The list of dirty objects is reset after every call to
+\code{getDirty()}.
+
+The module \code{StdModel} defines the following functions that create simple shapes:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   renewal = {} 
-   function initlists()
-      if #renewal > 0 then
-         local ren = renewal; renewal = {}
-         for _,name in pairs(ren) do DispList:delete(name) end
-      end
-      if not DispList:exists('myobject') then make_the_thing() end
-   end
+   StdModel:box(sx, sy, sz)
+   StdModel:cylinder(rx, ry, np)
 \end{Verbatim}
 
-When we define a new version of \code{make\_the\_thing()} we add the name of
-the display list to be recreated ({\em myobject}) to the \code{renewal} table:
-
-\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   function make_the_thing()
-      ...
-   end
-   table.insert(renewal, 'myobject')
-\end{Verbatim}
+The box and the cylinder are created with the center in $(0, 0, 0)$. The
+parameters for the box define the size of the box. The cylinder has an elliptic
+shape with the given radii and is approximated with {\em np} sides.
 
