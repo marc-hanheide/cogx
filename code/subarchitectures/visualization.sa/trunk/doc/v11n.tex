@@ -80,15 +80,16 @@ and a checkbox).
 
 \section{Sending data to the server}
 
-The library provides a client component that interacts with the server. The
-client is devised in such a way that its use is as trivial as the use of
-OpenCV's function cvShowImage(). For simple objects the server can also
-be used without a client if the developer is willing to use the file system
-as a communication channel. This involves a CAST component that monitors
-the file system and sends the newly created files to the server.
+The C++ client library provides a client interface that enables the interaction
+with the server. It lets the programmer send objects to be dispayed to the
+server and receive notifications about the events emited by the user interface
+that was built on the server by the client component.
+\todo{TODO: add interfaces for Java and Python}
 
-First we will show how to use the file system monitor and then we will give
-instructions for the use of the real client.
+For simple objects the server can be used without linking to the display client
+because the file system as a communication channel. To do this a CAST
+component FileMonitor has to be added to the cast file and configured to
+monitor certain files that are created by other componetns.
 
 \subsection{File system monitor}
 
