@@ -23,6 +23,11 @@
 
 #ifdef FEAT_VISUALIZATION_OPENCV
 # include <highgui.h> // OpenCV - transport an IplImage
+# define _IplImagePtr IplImage*
+# define _CvMatPtr    CvMat*
+#else
+# define _IplImagePtr void*
+# define _CvMatPtr    void*
 #endif
 
 #include <DisplayServer.hpp> // generated from ice
@@ -91,10 +96,8 @@ public:
    void addCheckBox(const std::string& viewId, const std::string& ctrlId, const std::string& label);
    void addButton(const std::string& viewId, const std::string& ctrlId, const std::string& label);
 
-#ifdef FEAT_VISUALIZATION_OPENCV
-   void setImage(const std::string& id, const IplImage* pImage); 
-   void setObjectTransform2D(const std::string& id, const std::string& partId, CvMat* pTransform); 
-#endif
+   void setImage(const std::string& id, const _IplImagePtr pImage); 
+   void setObjectTransform2D(const std::string& id, const std::string& partId, _CvMatPtr pTransform); 
 };
 
 

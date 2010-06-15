@@ -34,9 +34,28 @@ std::string sfloat(double f, int precision=6)
    return out.str();
 }
 
+long long gethrtime(void)
+{
+  struct timespec sp;
+  int ret;
+  long long v;
+#ifdef CLOCK_MONOTONIC_HR
+  ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
+#else
+  ret=clock_gettime(CLOCK_MONOTONIC, &sp);
+#endif
+  if(ret!=0) return 0;
+  v=1000000000LL; /* seconds->nanonseconds */
+  v*=sp.tv_sec;
+  v+=sp.tv_nsec;
+  return v;
+}
+
 double fclocks()
 {
-   return 1.0 * clock() / CLOCKS_PER_SEC;
+   // clock() is not working correctly
+   // return ( (double) clock()) / CLOCKS_PER_SEC;
+   return 1e-9 * gethrtime();
 }
 // --------------------------
 
@@ -195,12 +214,12 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
   }
   {
     std::stringstream str;
-    str << "The current CAST running time is <span class='time'>" << sfloat (fclocks()) << "</span>";
+    str << "The current HR time is <span class='time'>" << sfloat (fclocks()) << "s</span></br>";
     m_display.setHtml("@info.TestComponent", "time", str.str());
     std::stringstream css;
     css << "<style type='text/css'>\n";
     css << ".time {color: ";
-    switch( ((int)fclocks()) % 3 ) {
+    switch( ((long long)fclocks()) % 3 ) {
       case 0: css << "red"; break;
       case 1: css << "green"; break;
       case 2: css << "blue"; break;
@@ -283,6 +302,21 @@ void VideoViewer::runComponent()
     std::stringstream strA;
     strA << "This is the TestComponent for the Display Server<br>";
     m_display.setHtml("@info.TestComponent", "text", strA.str());
+  }
+  if (1) {
+    std::stringstream strB;
+    clock_t a, b;
+    a = clock();
+    sleepComponent(1000);
+    b = clock();
+    strB << "Clock a=" << a << " b=" << b << " diff=" << b-a
+        << " CLOCKS_PER_SEC=" << CLOCKS_PER_SEC << "<br>" << endl;
+    double fa, fb;
+    fa = fclocks();
+    sleepComponent(1000);
+    fb = fclocks();
+    strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
+    m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
   }
 
   int count = 0;
