@@ -282,9 +282,6 @@ void DTPCONTROL::configure(const cast::cdl::StringMap& _config, const Ice::Curre
 }
 
 
-
-
-
 void DTPCONTROL::newTask(Ice::Int id,
                          const std::string& probleFile,
                          const std::string& domainFile, const Ice::Current&)
