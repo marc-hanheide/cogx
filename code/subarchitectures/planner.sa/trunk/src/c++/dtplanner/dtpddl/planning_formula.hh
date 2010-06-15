@@ -117,7 +117,7 @@ namespace Planning
         {
         };
 
-        class Exists : public type_wrapper<enum_types::forall
+        class Exists : public type_wrapper<enum_types::exists
                                            , Variable
                                            , Type
                                            , Subformula >
