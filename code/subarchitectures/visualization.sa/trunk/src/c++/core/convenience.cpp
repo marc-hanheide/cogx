@@ -32,7 +32,9 @@ std::string sfloat(double f, int precision)
 
 double fclocks()
 {
-   return 1.0 * clock() / CLOCKS_PER_SEC;
+   // clock() is not working correctly
+   // return ( (double) clock()) / CLOCKS_PER_SEC;
+   return 1e-9 * gethrtime();
 }
 
 long long gethrtime(void)
