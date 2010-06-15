@@ -136,5 +136,9 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${OPENCV_LDFLAGS}
    )
 
-add_subdirectory(test)
+option(BUILD_SA_V11N_TESTS "Build the test component for V11N" OFF)
+if(BUILD_SA_V11N_TESTS)
+   add_subdirectory(test)
+endif(BUILD_SA_V11N_TESTS)
+
 
