@@ -27,6 +27,19 @@ from ObjectRecognizer import featuresetup
 from dlgCaptureSetup import CCaptureSetupDlg, CCaptureParams
 import qtui.uiModelBuilder as uiModelBuilder
 
+try:
+    import arrick.arrickmd2 as arm
+    arm.setup("maofeng.cal")
+    turntable = 3
+    rotator = arm.Rotator(turntable, 2400)
+    rotator.init()
+except Exception as e:
+    print e
+    arm = None
+    rotator = None
+    turntable = 0
+    print "No turntable"
+
 class CImageInfo:
     def __init__(self, title = None, preview = None):
         self.vpPhi = 0
@@ -39,6 +52,25 @@ class CImageInfo:
 
     def preview(self):
         return self._preview
+
+class CInterestArea:
+    def __init__(self):
+        self.parts = (8, 8)
+        self.limits = ( (2, 6), (1, 6) )
+
+    def getLimits(self, w, h): # w = shape[1], h=shape[0]
+        x0 = w * self.limits[0][0] / self.parts[0]
+        x1 = w * self.limits[0][1] / self.parts[0]
+        y0 = h * self.limits[1][0] / self.parts[1]
+        y1 = h * self.limits[1][1] / self.parts[1]
+        return x0, x1, y0, y1
+
+    def getSubimage(self, npimage):
+        h = npimage.shape[0]
+        w = npimage.shape[1]
+        x0, x1, y0, y1 = self.getLimits(w, h)
+        siftimg = np.copy(npimage[y0:y1, x0:x1])
+        return siftimg
 
 class CModelBuilder:
     def __init__(self, model, extractor):
@@ -54,7 +86,11 @@ class CModelBuilder:
         npimg = qtimage.ndArrayFromQtImage(qim)
         vp.setImage(cvada.NumPy2Ipl(npimg))
 
-        fpack = self.extractor.extractFeatures(npimg)
+        siftimg = npimg
+        if 1:
+            siftimg = CInterestArea().getSubimage(npimg)
+
+        fpack = self.extractor.extractFeatures(siftimg)
         vp.featurePacks.append(fpack)
         phil = self.model.FM.parsePhiLambda(os.path.basename(fnImage))
         if phil != None:
@@ -252,8 +288,8 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         if self.devCapture == None: return
         if not self.devCapture.isRunning(): return
         self.frame = self.devCapture.grabFrame(copy=True)
+        cvimg = cvada.Ipl2NumPy(self.frame)
         if self.isSiftEnabled() and self.siftSetup != None:
-            cvimg = cvada.Ipl2NumPy(self.frame)
             self.siftPoints = self.siftSetup.extractor.extractFeatures(cvimg)
 
         qimg = qtimage.qtImageFromIpl(self.frame)
@@ -264,6 +300,12 @@ class CModelBuilderWnd(QtGui.QMainWindow):
                 self.drawSiftPoints(dc)
                 if self.matchModelSifts and self.model != None:
                     self.drawSiftMatches(dc)
+            x0, x1, y0, y1 = CInterestArea().getLimits(cvimg.shape[1], cvimg.shape[0])
+            dc.setPen(QtGui.QColor("green"))
+            dc.drawLine(x0, y0, x1, y0);
+            dc.drawLine(x1, y0, x1, y1);
+            dc.drawLine(x1, y1, x0, y1);
+            dc.drawLine(x0, y1, x0, y0);
         except: pass
         dc.end()
         self.ui.cameraView.setPixmap(self.canvas)
@@ -358,6 +400,8 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         step = -1 if self.paramCapture.lambdaReverse else 1
         lmb = (lmb + step * self.paramCapture.lambdaStep) % 360
         self.ui.txtLambda.setText("%d" % lmb)
+        if turntable > 0 and rotator != None:
+            rotator.moveToDeg(lmb)
 
     def loadPreviews(self, elevation = None):
         if self.model == None:

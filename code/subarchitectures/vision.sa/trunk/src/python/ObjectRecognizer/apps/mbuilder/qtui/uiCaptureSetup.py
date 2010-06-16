@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'captureSetup.ui'
 #
-# Created: Tue Aug 25 13:41:07 2009
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Wed May 26 11:36:19 2010
+#      by: PyQt4 UI code generator 4.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_dlgCaptureSetup(object):
     def setupUi(self, dlgCaptureSetup):
         dlgCaptureSetup.setObjectName("dlgCaptureSetup")
-        dlgCaptureSetup.resize(384, 131)
+        dlgCaptureSetup.resize(384, 126)
         self.verticalLayout = QtGui.QVBoxLayout(dlgCaptureSetup)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtGui.QHBoxLayout()
