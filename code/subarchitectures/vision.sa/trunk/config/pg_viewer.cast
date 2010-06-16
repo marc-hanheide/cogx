@@ -17,7 +17,7 @@ CPP TM AlwaysPositiveTaskManager
 
 # live images from stereo rig with PointGray
 ############################################
-CPP MG VideoServer PointGreyServer --setAutPropAdj "1 1 1 1 1 0" --imgsize "640 480" --framerate_fps "15" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R" --log --debug --swapredblue --format7 "640 480 0 0 0 1600" 
+CPP MG VideoServer PointGreyServer --setAutPropAdj "1 1 1 1 1 0" --imgsize "640 480" --framerate_fps "15" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R" --log --debug --swapredblue --format7 "640 480 0 0 1 1600" 
 
 
 # start cast-components
