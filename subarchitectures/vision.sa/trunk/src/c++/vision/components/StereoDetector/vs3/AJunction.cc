@@ -45,7 +45,7 @@ const char* AJunction::GetInfo()
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
   snprintf(info_text, info_size,
-      "%sstart: %u end: %u",
+      "%s  arcs @start: %u @end: %u",
       Gestalt::GetInfo(), arc[START]->ID(), arc[END]->ID());
   return info_text;
 }

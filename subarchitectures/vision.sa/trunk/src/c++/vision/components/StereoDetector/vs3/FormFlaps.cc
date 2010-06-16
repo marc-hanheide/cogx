@@ -76,8 +76,8 @@ static bool JunctionsCoincide(unsigned rect1, unsigned rect2, unsigned line)
   //     Rectangles(rect2)->jcts[j2]);
   if(Distance(p1, p2) > max_dist)
     return false;
-  //printf("yes\n\n");
-  return true; */
+  //printf("yes\n\n");*/
+  return true; 
 }
 
 
@@ -97,6 +97,7 @@ FormFlaps::FormFlaps(VisionCore *core) : GestaltPrinciple(core)
  */
 void FormFlaps::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
+	StartRunTime();
   switch(type)
   {
     case Gestalt::CLOSURE:
@@ -105,6 +106,7 @@ void FormFlaps::InformNewGestalt(Gestalt::Type type, unsigned idx)
     default:
       break;
   }
+  StopRunTime();
 }
 
 /**
@@ -189,7 +191,7 @@ void FormFlaps::HaveNewClosure(unsigned i)
  */
 void FormFlaps::NewFlap(Closure *clos_i, Closure *clos_j)
 {
-  core->NewGestalt(new Flap(core, clos_i, clos_j));
+  core->NewGestalt(GestaltPrinciple::FORM_FLAPS, new Flap(core, clos_i, clos_j));
 
   // TODO: this has O(n^2 log n) complexity, which is bad ... However typically
   // the number of flaps tends to be small. So we are fine for a while.

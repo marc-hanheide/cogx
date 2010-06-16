@@ -75,10 +75,12 @@ void FormArcJunctions::Reset()
 
 void FormArcJunctions::Operate(bool incremental)
 {
+	StartRunTime();
   if(incremental)
     OperateIncremental();
   else
     OperateNonIncremental();
+	StopRunTime();
 }
 
 void FormArcJunctions::OperateIncremental()
@@ -97,6 +99,7 @@ void FormArcJunctions::OperateIncremental()
     // try to be smart about growing search lines
     if(grow_method == GROW_SMART)
     {
+			printf("FormArcJunctions::OperateIncremental: Not yet implemented!\n");
       // HACK: not implemented yet
       //int r = ExpSelect(NumArcs(core) - 1);
       //ExtendSmartLines((Arc*)core->RankedGestalts(Gestalt::ARC, r));
@@ -216,7 +219,8 @@ void FormArcJunctions::CreateJunctions(unsigned sline,
           //if(arc_i->ConvexWith(arc_j))
           // HACK: 0.5 is an arbitrary threshold!
           if(arc_i->Convexity(arc_j) >= 0.5)
-            core->NewGestalt(new AJunction(core, arc_i, arc_j, end_i, end_j));
+            core->NewGestalt(GestaltPrinciple::FORM_ARC_JUNCTIONS, new AJunction(core, arc_i, arc_j, end_i, end_j));
+
     }
   }
 }

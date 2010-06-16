@@ -47,8 +47,10 @@ double FormParallelLineGroups::AngularResolution()
 
 void FormParallelLineGroups::Operate()
 {
+	StartRunTime();
   Create();
   Rank();
+	StopRunTime();
 }
 
 // TODO: avoid double groups

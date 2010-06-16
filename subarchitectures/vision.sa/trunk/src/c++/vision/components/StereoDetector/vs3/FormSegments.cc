@@ -45,8 +45,8 @@ FormSegments::FormSegments(VisionCore *vc) : GestaltPrinciple(vc)
 {
   done = false;
 
-  next_principles.PushBack(FORM_LINES);																							/// TODO TODO Was machen diese Sachen hier?
-  next_principles.PushBack(FORM_ARCS);
+//  next_principles.PushBack(FORM_LINES);																							/// TODO TODO Was machen diese Sachen hier?
+//  next_principles.PushBack(FORM_ARCS);
 }
 
 /**
@@ -97,6 +97,8 @@ void FormSegments::Reset()
  */
 void FormSegments::Operate(bool incremental)
 {
+	StartRunTime();
+	
   // note: we only want to run this once for repeated calls to Operate()
   if(!done)
   {
@@ -107,6 +109,8 @@ void FormSegments::Operate(bool incremental)
       DrawToEdgeImage((Segment*)core->Gestalts(Gestalt::SEGMENT, i));
     done = true;
   }
+  
+  StopRunTime();
 }
 
 /**
@@ -114,8 +118,8 @@ void FormSegments::Operate(bool incremental)
  */
 void FormSegments::Create()
 {
-	// CreateSegmentsMatas();		// create edges with matas-canny
-	CreateSegmentsCEdge();			// create edges with openCV canny
+	CreateSegmentsMatas();		// create edges with matas-canny
+// 	CreateSegmentsCEdge();			// create edges with openCV canny
   //SegmentArcsLines();
 }
 
@@ -251,7 +255,7 @@ void FormSegments::CreateSegmentsMatas()
       i++;
     }
     avg_len += edgel_arr.Size();
-    core->NewGestalt(new Segment(core, edgel_arr));
+    core->NewGestalt(GestaltPrinciple::FORM_SEGMENTS, new Segment(core, edgel_arr));
   }
   // probability of an edgel, given that the previous pixel was an edgel
   avg_len /= core->NumGestalts(Gestalt::SEGMENT);
@@ -287,7 +291,7 @@ void FormSegments::CreateSegmentsCEdge()
   for (unsigned i=0; i<segs.Size(); i++)
   {
     avg_len += (segs[i]->Size());
-    core->NewGestalt(new Segment(core, *segs[i]));
+    core->NewGestalt(GestaltPrinciple::FORM_SEGMENTS, new Segment(core, *segs[i]));
   }
 
   // probability of an edgel, given that the previous pixel was an edgel

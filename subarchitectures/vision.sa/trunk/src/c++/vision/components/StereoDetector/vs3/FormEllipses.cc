@@ -26,8 +26,7 @@ static int CmpEllipses(const void *a, const void *b)
 /**
  * @brief Constructor of class FormEllipses.
  */
-FormEllipses::FormEllipses(VisionCore *vc)
-: GestaltPrinciple(vc)
+FormEllipses::FormEllipses(VisionCore *vc) : GestaltPrinciple(vc)
 {
 }
 
@@ -38,6 +37,8 @@ FormEllipses::FormEllipses(VisionCore *vc)
  */
 void FormEllipses::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
+	StartRunTime();
+	
   switch(type)
   {
     case Gestalt::CONVEX_ARC_GROUP:
@@ -46,6 +47,8 @@ void FormEllipses::InformNewGestalt(Gestalt::Type type, unsigned idx)
     default:
       break;
   }
+  
+  StopRunTime();
 }
 
 /**
@@ -64,7 +67,7 @@ void FormEllipses::HaveNewArcGroup(unsigned idx)
     // note: in FormArcs we defined MIN_RADIUS for an arc, thus
     // the smaller axis cannot be smaller than MIN_RADIUS
     if(b > FormArcs::MIN_RADIUS)
-      core->NewGestalt(new Ellipse(core, group, x, y, a, b, phi));
+      core->NewGestalt(GestaltPrinciple::FORM_ELLIPSES, new Ellipse(core, group, x, y, a, b, phi));
   }
   Rank();
   Mask();

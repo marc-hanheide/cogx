@@ -194,6 +194,7 @@ void FormClosures::Reset()
  */
 void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
+	StartRunTime();
   switch(type)
   {
     case Gestalt::L_JUNCTION:
@@ -208,6 +209,7 @@ void FormClosures::InformNewGestalt(Gestalt::Type type, unsigned idx)
     default:
       break;
   }
+  StopRunTime();
 }
 
 /**
@@ -808,7 +810,7 @@ void FormClosures::NewClosure(Line *first, Line *last)
   //if(core->IsEnabledGestaltPrinciple(GestaltPrinciple::FORM_SURFACES))
   //  SolveHCF();
 
-  core->NewGestalt(new_c);
+  core->NewGestalt(GestaltPrinciple::FORM_CLOSURES, new_c);
   // now re-rank all closure
   // TODO: this has O(n^2 log n) complexity, which is bad ... However typically
   // the number of closures tends to be small. So we are fine for a while.

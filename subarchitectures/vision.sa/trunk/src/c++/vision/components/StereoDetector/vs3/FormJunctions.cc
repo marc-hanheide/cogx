@@ -216,6 +216,8 @@ void FormJunctions::Reset()
  */
 void FormJunctions::Operate(bool incremental)
 {
+	StartRunTime();
+	
   if(incremental)
   {
     if(first_op)
@@ -273,6 +275,8 @@ void FormJunctions::Operate(bool incremental)
       first_op = false;
     }
   }
+  
+  StopRunTime();
 }
 
 /**
@@ -762,7 +766,7 @@ Collinearity* FormJunctions::NewCollinearity(Line *line_i, Line *line_j, int end
     {
       Vector2 v = line[0]->point[near_point[0]] - line[1]->point[near_point[1]];
       Collinearity *new_c = new Collinearity(core, line_i, line_j, end_i, end_j);
-      core->NewGestalt(new_c, inform);
+      core->NewGestalt(GestaltPrinciple::FORM_JUNCTIONS, new_c, inform);
       return new_c;
     }
   return 0;
@@ -788,7 +792,7 @@ LJunction* FormJunctions::NewL(Line *line_i, Line *line_j, int end_i, int end_j)
        NoCollinearityYet(line_i, end_i, line_j))
     {
       LJunction *new_l = new LJunction(core, line_i, line_j, end_i, end_j, inter);
-      core->NewGestalt(new_l);
+      core->NewGestalt(GestaltPrinciple::FORM_JUNCTIONS, new_l);
       return new_l;
     }
   }
@@ -828,7 +832,7 @@ TJunction* FormJunctions::NewT(Line *pole, Line *left, Line *right,
                 left->point[end_l], left->tang[end_l], &g, &b);
         TJunction *new_t = new TJunction(core, pole, left, right,
               end_p, end_l, end_r, coll, ljct_l, ljct_r, g, inter);
-        core->NewGestalt(new_t);
+        core->NewGestalt(GestaltPrinciple::FORM_JUNCTIONS, new_t);
         return new_t;
       }
   }

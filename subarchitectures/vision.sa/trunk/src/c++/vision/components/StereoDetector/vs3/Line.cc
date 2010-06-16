@@ -42,6 +42,7 @@ void Line::CalculateParameters()
   tang[END] = dir;
   phi = ScaleAngle_0_2pi(PolarAngle(dir));
   len = v.Length();
+	
   // Hessian parameters
   /*if(IsZero(dir.x))
   {
@@ -241,7 +242,7 @@ void Line::AddPassiveTJunction(int end, int side, TJunction* jct)
 
 /**
  * TODO TODO Was macht diese Funktion genau?
- * @brief Move junction
+ * @brief Move junction after splitting a line
  * @param l2 Line
  * @param end Line end (start/end)
  */
@@ -360,7 +361,7 @@ const char* VisibleLine::GetInfo()
 }
 
 /**
- * 																																									TODO Wo passiert der Fehler mit dem vertauschen der Vote images
+ * 																											TODO Wo passiert der Fehler mit dem vertauschen der Vote images: gar nicht => ist statisch
  * @brief Draw vote lines of a visible line.
  */
 void VisibleLine::DrawVotes()
@@ -572,7 +573,7 @@ Line* VisibleLine::Split(const Vector2 &p)
   unsigned idx_split = FindSplitIdx(p);
   // create new line
   Line *l_new = new VisibleLine(core, seg, idx_split, idx[END]);
-  core->NewGestalt(l_new);
+  core->NewGestalt(GestaltPrinciple::FORM_LINES, l_new);
   // this line has no vote lines associated, therefore does not vote itself but
   // defers vote to original line
   l_new->defer_vote = this;
