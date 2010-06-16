@@ -11,6 +11,7 @@ set(CMAKE_INSTALL_PREFIX "${OUTPUT}" CACHE INTERNAL "Prefix prepended to install
 # use cmake files packaged with CAST as well
 set(CMAKE_MODULE_PATH /usr/local/share/cast/cmake ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH /opt/local/share/cast/cmake ${CMAKE_MODULE_PATH})
+set(QT_QTOPENGL_INCLUDE_DIR  /usr/include/qt4/QtOpenGL)
 
 find_package(CAST REQUIRED)
 include(UseCAST)
@@ -46,6 +47,11 @@ option(BUILD_SA_NAV "Build navigation subarchitecure" NO)
 if(BUILD_SA_NAV)
 add_subdirectory (subarchitectures/nav.sa)
 endif(BUILD_SA_NAV)
+
+option(BUILD_SA_VIZ "Build visualization subarchitecure" NO)
+if(BUILD_SA_VIZ)
+add_subdirectory (subarchitectures/visualization.sa)
+endif(BUILD_SA_VIZ)
 
 
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
