@@ -75,8 +75,9 @@ public:
 	void DrawROI(int side, CvRect roi, int roiScale, IplImage *iIl, IplImage *iIr);
 	void DrawPrunedROI(int side, int offsetX, int offsetY, IplImage *iIl, IplImage *iIr);
 
+	void PrintVCoreStatistics();
 	unsigned PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked);
-
+	
 	/// TODO delete later: only for debuging first results
 	void PrintResults();
 };
