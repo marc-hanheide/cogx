@@ -133,7 +133,7 @@ void PointGreyViewer::runComponent()
         }
         else
         {
-          if(!getImage) videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0); // changes the size
+          if(!getImage) videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0); // changes the size not
           println("started receving images");
         }
         receiving = !receiving;
@@ -148,8 +148,8 @@ void PointGreyViewer::runComponent()
 					{
 						int width = 320;
 						int height = 240;
-						if(!getImage) videoServer->stopReceiveImages(getComponentID().c_str());
-						if(!getImage) videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
+						videoServer->stopReceiveImages(getComponentID().c_str());
+						videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
 					}
 				break;
       case '2':  // change between different image resolutions
@@ -158,8 +158,8 @@ void PointGreyViewer::runComponent()
 					{
 						int width = 640;
 						int height = 480;
-						if(!getImage) videoServer->stopReceiveImages(getComponentID().c_str());
-						if(!getImage) videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
+						videoServer->stopReceiveImages(getComponentID().c_str());
+						videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
 					}
 				break;
       case '3':  // change between different image resolutions
@@ -168,8 +168,8 @@ void PointGreyViewer::runComponent()
 					{
 						int width = 800;
 						int height = 600;
-						if(!getImage) videoServer->stopReceiveImages(getComponentID().c_str());
-						if(!getImage) videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
+						videoServer->stopReceiveImages(getComponentID().c_str());
+						videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
 					}
 				break;
       case '4':  // change between different image resolutions
@@ -178,8 +178,8 @@ void PointGreyViewer::runComponent()
 					{
 						int width = 1024;
 						int height = 768;
-						if(!getImage) videoServer->stopReceiveImages(getComponentID().c_str());
-						if(!getImage) videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
+						videoServer->stopReceiveImages(getComponentID().c_str());
+						videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
 					}
 				break;
 			case '5':  // change between different image resolutions
@@ -188,11 +188,42 @@ void PointGreyViewer::runComponent()
 					{
 						int width = 1280;
 						int height = 960;
-						if(!getImage) videoServer->stopReceiveImages(getComponentID().c_str());
-						if(!getImage) videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
+						videoServer->stopReceiveImages(getComponentID().c_str());
+						videoServer->startReceiveImages(getComponentID().c_str(), camIds, width, height);
 					}
 				break;
-      case 'm':
+			case 'g': // get image with VideoMode7 pruned (640x480) from the high-resolution image (1280x960)
+				{				// we need this face brackets for the initialisation of variables
+					videoServer->stopReceiveImages(getComponentID().c_str());
+					lockComponent();
+
+					cout << "VideoServer: " << videoServer->getServerName() << endl;
+
+					// set Format7 properties
+					println("get image pruned from high resolution: 1280x960 => 640x480.");
+					int offsetX = 0;
+					int offsetY = 0;
+					videoServer->changeFormat7Properties(640, 480, offsetX, offsetY, 0, 1600);
+
+					// get images and display
+					Video::Image image_l, image_r;
+					videoServer->getImage(camIds[0], image_l);
+					videoServer->getImage(camIds[1], image_r);
+					IplImage *iplImage0 = convertImageToIpl(image_l);
+					cvShowImage("PointGreyViewer: LEFT", iplImage0);
+					cvReleaseImage(&iplImage0);
+					IplImage *iplImage1 = convertImageToIpl(image_r);
+					cvShowImage("PointGreyViewer: RIGHT", iplImage1);
+					cvReleaseImage(&iplImage0);
+
+					// reset Format7 properties
+					videoServer->changeFormat7Properties(640, 480, 0, 0, 1, 1600);
+
+					unlockComponent();
+					videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
+				}
+				break;
+			case 'm':
 					static int toggle = 0;
 					if(toggle == 0)
 						videoServer->changeFormat7Properties(640, 480, 0, 0, 0, 1600);
@@ -209,9 +240,10 @@ void PointGreyViewer::runComponent()
         break;
       case 'h':  // show help
 					println("c ... change between getImage() and receiveImage() call\n"
-									"s ... start/stop the receive image pushing from the video server."
-									"m ... change Format7-mode properties."
-									"1-5 ... set different image sizes: 320x240 / 640x480 / 800x600 / 1024x768 / 1280x960\n");
+									"s ... start/stop the receive image pushing from the video server.\n"
+									"m ... change Format7-mode properties.\n"
+									"g ... get image pruned from high resolution image.\n"
+									"1-5 ... set different image sizes: 320x240 / 640x480 / 800x600 / 1024x768 / 1280x960");
         break;
       default:
         break;
