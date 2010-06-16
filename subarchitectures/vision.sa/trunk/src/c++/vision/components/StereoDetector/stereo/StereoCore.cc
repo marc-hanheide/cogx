@@ -34,9 +34,13 @@ StereoCore::StereoCore(const string &stereocal_file) throw(Except)
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ARC_JUNCTIONS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_ELLIPSES);
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_SPHERES);
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_E_JUNCTIONS);
 		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_EXT_ELLIPSES);
-		
-    vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_LINES);
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CYLINDERS);
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CONES);
+
+		vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_LINES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_JUNCTIONS);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_CLOSURES);
     vcore[side]->EnableGestaltPrinciple(GestaltPrinciple::FORM_RECTANGLES);
@@ -335,6 +339,30 @@ void StereoCore::DrawPrunedROI(int side, int offsetX, int offsetY, IplImage *iIl
 	DrawRect2D(offsetX, offsetY, offsetX + 320, offsetY + 240, RGBColor::blue);	
 }
 
+/**
+ * @brief Print the statistics from the vision cores.
+ */
+void StereoCore::PrintVCoreStatistics()
+{
+	vcore[0]->PrintRunTime();
+	vcore[1]->PrintRunTime();
+}
+
+/**
+ * @brief Returns id of first gestalt at pixel position (x,y).
+ * @param side Left / right side of stereo image pair.
+ * @param type Gestalt type.
+ * @param x x-coordinate in image pixels.
+ * @param y y-coordinate in image pixels.
+ * @param start_after Choose only Gestalts with id higher than start_after.
+ * @param reject_masked Reject masked Gestalts. 
+ * @return Returns the ID of the next Gestalt.
+ */
+unsigned StereoCore::PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked)
+{
+	return vcore[side]->PickGestaltAt(type, x, y, start_after, reject_masked);
+}
+
 
 /**
  *  HACK Wieder entfernen
@@ -363,21 +391,6 @@ void StereoCore::PrintResults()
 
 }
 
-
-/**
- * @brief Returns id of first gestalt at pixel position (x,y).
- * @param side Left / right side of stereo image pair.
- * @param type Gestalt type.
- * @param x x-coordinate in image pixels.
- * @param y y-coordinate in image pixels.
- * @param start_after Choose only Gestalts with id higher than start_after.
- * @param reject_masked Reject masked Gestalts. 
- * @return Returns the ID of the next Gestalt.
- */
-unsigned StereoCore::PickGestaltAt(int side, Gestalt::Type type, int x, int y, unsigned start_after, bool reject_masked)
-{
-	return vcore[side]->PickGestaltAt(type, x, y, start_after, reject_masked);
-}
 
 
 }
