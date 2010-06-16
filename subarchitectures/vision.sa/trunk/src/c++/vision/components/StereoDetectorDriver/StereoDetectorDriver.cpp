@@ -25,7 +25,6 @@ using namespace std;
 void StereoDetectorDriver::configure(const map<string,string> & _config)
 {
 	detecting = false;
-	running = true;
 }
 
 void StereoDetectorDriver::start()
@@ -39,20 +38,20 @@ void StereoDetectorDriver::runComponent()
 	sleepProcess(100);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
 
-	VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
-	track_cmd->cmd = VisionData::START;
-	addToWorkingMemory(newDataID(), track_cmd);
-	log("tracking start-command sent!");
-  
-	// Send start detection command
+// 	VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+// 	track_cmd->cmd = VisionData::START;
+// 	addToWorkingMemory(newDataID(), track_cmd);
+// 	log("tracking start-command sent!");
+//   
+// 	// Send start detection command
 	VisionData::StereoDetectionCommandPtr detect_cmd = new VisionData::StereoDetectionCommand;
-	detect_cmd->cmd = VisionData::SDSTART;
-	addToWorkingMemory(newDataID(), detect_cmd);
-	detecting = true;
-	log("stereo detection start-command sent!");
+// 	detect_cmd->cmd = VisionData::SDSTART;
+// 	addToWorkingMemory(newDataID(), detect_cmd);
+// 	detecting = true;
+// 	log("stereo detection start-command sent!");
 
 
-	while(running)
+	while(isRunning())
 	{   
 		// Sleep for some time
 		sleepComponent(3000);
@@ -62,7 +61,16 @@ void StereoDetectorDriver::runComponent()
 			// start single detection
 			detect_cmd->cmd = VisionData::SDSINGLE;
 			addToWorkingMemory(newDataID(), detect_cmd);
-			log("single stereo detection command sent!");
+			log("single stereo detection command sent: SDSINGLE");
+
+			sleepComponent(5000);
+
+// 			// start single detection
+// 			detect_cmd->cmd = VisionData::SDSINGLEHR;
+// 			addToWorkingMemory(newDataID(), detect_cmd);
+// 			log("single stereo detection command sent: SDSINGLEHR");
+// 
+// 			sleepComponent(5000);
 		}
 	}
 }
