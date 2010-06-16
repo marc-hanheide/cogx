@@ -234,7 +234,7 @@ void FormJunctions::SetupAdmissibilityMatrix()
   // ellipses							=> E-Junctions
   if (activeEJcts)
   {
-		isct_ok[VOTE_E][VOTE_EOTL] = true; 	// edge itself & ellipse tangents
+    isct_ok[VOTE_E][VOTE_EOTL] = true; 	// edge itself & ellipse tangents
     isct_ok[VOTE_E][VOTE_EOTR] = true;	
     isct_ok[VOTE_E][VOTE_EITL] = true;
     isct_ok[VOTE_E][VOTE_EITR] = true;
