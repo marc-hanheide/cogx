@@ -111,7 +111,7 @@ void LineSegmenter::RosinFitLinesToSegment(Segment *seg)
     {
       // note: lines of length 2 often cause problems
       if(line_end[i] - line_start[i] + 1 >= 3)
-        core->NewGestalt(
+        core->NewGestalt(GestaltPrinciple::FORM_LINES,
             new VisibleLine(core, seg, line_start[i] - 1, line_end[i] - 1));
     }
   }

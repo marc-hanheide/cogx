@@ -36,6 +36,12 @@ void VoteImage::SetNumLines(unsigned n)
     lines[id].len = 0;
 }
 
+void VoteImage::ExtendNumLines(unsigned n)
+{
+  lines.Resize(n);
+  lines[lines.Size()-1].len = 0;
+}
+
 VoteImage::Elem *VoteImage::NewElem(unsigned id)
 {
   if(fill < store_size)
@@ -49,7 +55,7 @@ VoteImage::Elem *VoteImage::NewElem(unsigned id)
   else
   {
     // TODO: alloc more storage
-    printf("Oh lala! out of store!\n");
+    printf("VoteImage::NewElem: Error: out of memory!\n");
     return 0;
   }
 }
@@ -91,19 +97,30 @@ inline void VoteImage::SetAndCheckPixel(int x, int y, unsigned id, Array<Elem> &
   }
 }
 
+/**
+ * @brief Check pixel in
+ * @param x x-coordinate of pixel
+ * @param y y-coordinate of pixel
+ * @param id Index of the Gestalt
+ * @param iscts Array with found intersection elements.
+ * TODO x,y must be within the image boundaries! => no check!
+ */
 inline void VoteImage::CheckPixel(int x, int y, unsigned id, Array<Elem> &iscts)
 {
   Elem *e = data[y*width + x];
   while(e != 0)
   {
-    CreateIntersection(e, /*type,*/ id, iscts);
+    CreateIntersection(e, id, iscts);
     e = e->next;
   }
 }
 
 /**
- * This CheckPixel function is called from FindLineEnd.
+ * @brief This CheckPixel function is called from FindLineEnd.
  * Lines end only at other visible lines, not tangents or normals.
+ * @param x x-coordinate of pixel
+ * @param y y-coordinate of pixel
+ * @param id Index of the Gestalt
  */
 inline bool VoteImage::CheckPixel(int x, int y, unsigned id)
 {
@@ -111,17 +128,23 @@ inline bool VoteImage::CheckPixel(int x, int y, unsigned id)
   while(e != 0)
   {
     if(e->id%8 == VOTE_E)
-      if(/*e->type != type ||*/ e->id != id)
+      if(e->id != id)
         return true;
     e = e->next;
   }
   return false;
 }
 
+/**
+ * @brief Stores the found intersection into iscts-array, after checking.
+ * @param e Element to be stored
+ * @param id Index of the Gestalt
+ * @param iscts Element array
+ */
 inline void VoteImage::CreateIntersection(Elem *e, unsigned id, Array<Elem> &iscts)
 {
   // don't intersect edge with itself  TODO: why not?
-  if(/*e->type != type ||*/ e->id/8 != id/8)
+  if(e->id/8 != id/8)
     if(!iscts.ContainsBackwards(*e))
       iscts.PushBack(*e);
 }

@@ -19,8 +19,11 @@
 //#include "FormParallelLineGroups.hh"
 #include "FormConvexArcGroups.hh"
 #include "FormEllipses.hh"
+#include "FormSpheres.hh"
 #include "FormJunctions.hh"
 #include "FormArcJunctions.hh"
+#include "FormEJunctions.hh"
+#include "FormCylinders.hh"
 #include "FormClosures.hh"
 #include "FormRectangles.hh"
 #include "FormFlaps.hh"
@@ -35,6 +38,7 @@
 #include "Rectangle.hh"
 #include "Ellipse.hh"
 #include "VisionCore.hh"
+#include "FormCones.hh"
 
 namespace Z
 {
@@ -88,14 +92,21 @@ void VisionCore::InitGestaltPrinciples()
   // Add all Gestalt principles we know
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     principles[i] = 0;
-  principles[GestaltPrinciple::FORM_SEGMENTS] = new FormSegments(this);
-  principles[GestaltPrinciple::FORM_LINES] = new FormLines(this);
-  principles[GestaltPrinciple::FORM_ARCS] = new FormArcs(this);
-  //principles[GestaltPrinciple::FORM_PARALLEL_LINE_GROUPS] = new FormParallelLineGroups(this);
+
+	principles[GestaltPrinciple::FORM_SEGMENTS] = new FormSegments(this);
+
+  principles[GestaltPrinciple::FORM_E_JUNCTIONS] = new FormEJunctions(this);
+	principles[GestaltPrinciple::FORM_ARCS] = new FormArcs(this);
   principles[GestaltPrinciple::FORM_CONVEX_ARC_GROUPS] = new FormConvexArcGroups(this);
-  principles[GestaltPrinciple::FORM_ELLIPSES] = new FormEllipses(this);
-  principles[GestaltPrinciple::FORM_JUNCTIONS] = new FormJunctions(this);
   principles[GestaltPrinciple::FORM_ARC_JUNCTIONS] = new FormArcJunctions(this);
+  principles[GestaltPrinciple::FORM_ELLIPSES] = new FormEllipses(this);
+	principles[GestaltPrinciple::FORM_SPHERES] = new FormSpheres(this);
+// 	principles[GestaltPrinciple::FORM_EXT_ELLIPSES] = new FormExtEllipses(this);
+	principles[GestaltPrinciple::FORM_CYLINDERS] = new FormCylinders(this);
+	principles[GestaltPrinciple::FORM_CONES] = new FormCones(this);
+
+  principles[GestaltPrinciple::FORM_LINES] = new FormLines(this);
+	principles[GestaltPrinciple::FORM_JUNCTIONS] = new FormJunctions(this);
   principles[GestaltPrinciple::FORM_CLOSURES] = new FormClosures(this);
   principles[GestaltPrinciple::FORM_RECTANGLES] = new FormRectangles(this);
   principles[GestaltPrinciple::FORM_FLAPS] = new FormFlaps(this);
@@ -104,7 +115,6 @@ void VisionCore::InitGestaltPrinciples()
   for(unsigned i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     config.AddItem(GestaltPrinciple::TypeName((GestaltPrinciple::Type)i), "0");
 }
-
 
 /**
  * @brief Enable a Gestalt principle for calculation.
@@ -116,7 +126,6 @@ void VisionCore::EnableGestaltPrinciple(GestaltPrinciple::Type p)
   config.items[type] = "1";
 }
 
-
 /**
  * @brief Disable a Gestalt principle for calculation.
  * @param p Type of Gestalt principle
@@ -126,7 +135,6 @@ void VisionCore::DisableGestaltPrinciple(GestaltPrinciple::Type p)
   string type = GestaltPrinciple::TypeName((GestaltPrinciple::Type)p);
   config.items[type] = "0";
 }
-
 
 /**
  * @brief Returns true if a Gestalt principle is enabled.
@@ -139,7 +147,6 @@ bool VisionCore::IsEnabledGestaltPrinciple(GestaltPrinciple::Type p)
     config.GetValueInt(GestaltPrinciple::TypeName(p)) == 1;
 }
 
-
 /**
  * @brief Configure the Gestalt principle tree, appropriate to the config-file.
  * @param config_name Name of the config file.
@@ -149,7 +156,6 @@ void VisionCore::Configure(const string &config_name)
   if(!config_name.empty())
     config.Load(config_name);
 }
-
 
 /**
  * @brief Clear Gestalts: Deletes and clears the Gestalt list (with ranked_gestalts).
@@ -164,7 +170,6 @@ void VisionCore::ClearGestalts()
     ranked_gestalts[i].Clear();
   }
 }
-
 
 /**
  * @brief Informs the vision core about a new image and prepares for new processing (clear and reset).
@@ -188,41 +193,47 @@ void VisionCore::NewImage(const IplImage *new_img)
  * @param ca Canny alpha value
  * @param co Canny omega value
  * TODO try-catch hier weg und nur mehr exception werfen
+ * TODO AddRunTime wurde ersetzt.
  */
 void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except() TODO
 {
   // set parameter for canny edge detector
-  Principles(GestaltPrinciple::FORM_SEGMENTS)->SetCanny(ca, co);
+  Principles(GestaltPrinciple::FORM_SEGMENTS)->SetCanny(ca, co);			// TODO only for Matas Canny!!!
 
   struct timespec start, cur;
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
   try
   {
+		
+		// pre-operate
+		for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
+			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
+				principles[i]->PreOperate();
+
+		// incremental operations
     do
     {
       for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
       {
         if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i) && principles[i]->NeedsOperate())
         {
-          struct timespec t1, t2;
-          clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1);
           principles[i]->Operate(true);
-          clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t2);
-          principles[i]->AddRunTime(timespec_diff(&t2, &t1));
         }
       }
       clock_gettime(CLOCK_THREAD_CPUTIME_ID, &cur);
     } while(timespec_diff(&cur, &start) < (double)runtime_ms/1000.);
+		
+		// post-operate
+		for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
+			if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
+				principles[i]->PostOperate();
   }
   catch(Z::Except &e)
   {
     printf("%s\n", e.what());
   }
-  
-  PrintRunTime();
-	printf("REAL RUNTIME FOR VC: %4.3f\n", timespec_diff(&cur, &start));
+  realRuntime = timespec_diff(&cur, &start);
 }
-
 
 /**
  * @brief Older, non-incremental (non-anytime) version of ProcessImage
@@ -311,7 +322,6 @@ void VisionCore::DrawGestaltInfo(Gestalt::Type type, unsigned num)
     gestalts[type][num]->DrawInfo();
 }
 
-
 /**
  * @brief Draw whatever the given gestalt principle has to draw.
  * @param type Type of Gestalt principle
@@ -352,7 +362,6 @@ const char* VisionCore::GetGestaltListInfo()
 	return info_text;
 }
 
-
 /**
  * @brief Returns id of first gestalt at pixel position (x,y). \n
  * start_after can be used to skip the first gestalts. So all gestalts at x,y can be selected consecutively. \n
@@ -392,7 +401,6 @@ double VisionCore::RunTime()
 void VisionCore::PrintRunTime()
 {
 	printf("Runtime VC:\n");
-  double runtime = 0.;
   double sum = 0.;
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type) i))
@@ -400,7 +408,8 @@ void VisionCore::PrintRunTime()
       printf("  %s :: %4.3fs\n",(principles[i]->TypeName((GestaltPrinciple::Type) i)), principles[i]->RunTime());
 			sum+= principles[i]->RunTime();
 		}
-	printf("  RUNTIME SUM               :: %4.3fs\n", sum);
+	printf("  RUNTIME SUM :: %4.3fs\n", sum);
+	printf("ESTIMATED RUNTIME FOR WHOLE VC: %4.3f\n", realRuntime);
 }
 
 /**
@@ -409,12 +418,14 @@ void VisionCore::PrintRunTime()
  * @param inform  if true, inform other parts of the system of this new Gestalt, \n
  *                otherwise add quietly. Default is true.
  */
-void VisionCore::NewGestalt(Gestalt *g, bool inform)
+void VisionCore::NewGestalt(GestaltPrinciple::Type type, Gestalt *g, bool inform)
 {
-  Gestalts(g->GetType()).PushBack(g);
+	Principles(type)->StopRunTime();
+	Gestalts(g->GetType()).PushBack(g);
   RankedGestalts(g->GetType()).PushBack(g);
   if(inform)
     InformNewGestalt(g->GetType(), g->ID());
+	Principles(type)->StartRunTime();
 }
 
 /**
@@ -439,9 +450,29 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
       if(VisionCore::config.GetValueInt("FORM_ELLIPSES") == 1)
         Principles(GestaltPrinciple::FORM_ELLIPSES)->InformNewGestalt(type, id);
       break;
-    case Gestalt::L_JUNCTION:
+		case Gestalt::ELLIPSE:
+      if(VisionCore::config.GetValueInt("FORM_E_JUNCTIONS") == 1)
+        Principles(GestaltPrinciple::FORM_E_JUNCTIONS)->InformNewGestalt(type, id);   
+			if(VisionCore::config.GetValueInt("FORM_SPHERES") == 1)
+        Principles(GestaltPrinciple::FORM_SPHERES)->InformNewGestalt(type, id);
+      break;
+// 		case Gestalt::E_JUNCTION:
+//       if(VisionCore::config.GetValueInt("FORM_EXT_ELLIPSES") == 1)
+//         Principles(GestaltPrinciple::FORM_EXT_ELLIPSES)->InformNewGestalt(type, id);
+//       break;
+		case Gestalt::E_JUNCTION:
+      if(VisionCore::config.GetValueInt("FORM_CYLINDERS") == 1)
+        Principles(GestaltPrinciple::FORM_CYLINDERS)->InformNewGestalt(type, id);
+      if(VisionCore::config.GetValueInt("FORM_CONES") == 1)
+        Principles(GestaltPrinciple::FORM_CONES)->InformNewGestalt(type, id);
+      break;
+
+    
+		case Gestalt::L_JUNCTION:
       if(VisionCore::config.GetValueInt("FORM_CLOSURES") == 1)
         Principles(GestaltPrinciple::FORM_CLOSURES)->InformNewGestalt(type, id);
+      if(VisionCore::config.GetValueInt("FORM_CONES") == 1)
+        Principles(GestaltPrinciple::FORM_CONES)->InformNewGestalt(type, id);
       break;
     case Gestalt::COLLINEARITY:
       if(VisionCore::config.GetValueInt("FORM_CLOSURES") == 1)
@@ -464,7 +495,6 @@ void VisionCore::InformNewGestalt(Gestalt::Type type, unsigned id)
       break;
   }
 }
-
 
 /**
  * @brief SetROI: Set the region of interest for faster growing search lines.

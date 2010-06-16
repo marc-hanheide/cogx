@@ -38,6 +38,7 @@ class VisionCore
 private:
   Config config;																								///< configuration of the perceptual grouping
   const IplImage *img;																					///< iplImage
+  double realRuntime;																						///< Estimated runtime
 
   GestaltPrinciple* principles[GestaltPrinciple::MAX_TYPE];			///< principle list 
   Array<Gestalt*> gestalts[Gestalt::MAX_TYPE];									///< gestalt list 
@@ -88,7 +89,7 @@ public:
   double RunTime();
 	void PrintRunTime();
   void SetROI(const Vector2 center, double sigma);
-  void NewGestalt(Gestalt *g, bool inform = true);
+  void NewGestalt(GestaltPrinciple::Type type, Z::Gestalt* g, bool inform = true);
   void InformNewGestalt(Gestalt::Type type, unsigned id);
 
   unsigned IW() {return img->width;}																															///< Returns the width of the image in pixel (unsigned).
