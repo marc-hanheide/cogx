@@ -25,7 +25,6 @@ private:
    */
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
 
-  bool running;
   bool detecting;
 
 protected:
