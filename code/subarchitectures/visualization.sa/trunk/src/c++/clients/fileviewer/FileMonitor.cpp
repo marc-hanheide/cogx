@@ -84,7 +84,7 @@ CFileMonitor::SWatchInfo::SWatchInfo(const std::string &watchDef)
    watchId = -1;
    pConverter = NULL;
 
-   boost::regex rxWatch ("\\s*((\\w+)\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
+   boost::regex rxWatch ("\\s*(([\\w\\.]+)\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
    boost::smatch res;
    boost::match_flag_type flags = boost::match_default;
 
@@ -312,7 +312,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
       }
       if (pConv == NULL) {
          log("Error: Could not find a suitable converter for %s", fname.c_str());
-         return;
+         continue;
       }
       std::string title = pinfo->title;
       if (title == "") {
@@ -329,7 +329,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
          FILE *fp = popen(cmd.str().c_str(), "r");
          if (fp == NULL) {
             log("Popen failed: %s", cmd.str().c_str());
-            break;
+            continue;
          }
 
          if (pConv->type == "text") {
@@ -427,7 +427,18 @@ void CFileMonitor::runComponent()
          pinfo->watchId = wd;
       }
       else {
-         log("inotify_add_watch returned %d for %s", wd, pinfo->directory.c_str());
+         bool found = false;
+         for (typeof(m_watches.begin()) it2 = m_watches.begin(); it2 != it; it2++) {
+            SWatchInfo* pinfo2 = *it2;
+            debug("%s == %d %s", pinfo->directory.c_str(), pinfo2->watchId, pinfo2->directory.c_str());
+            if (pinfo2->directory == pinfo->directory && pinfo2->watchId >= 0) {
+               found = true;
+               pinfo->watchId = pinfo2->watchId;
+               break;
+            }
+         }
+         if (! found)
+            log("inotify_add_watch returned %d for %s", wd, pinfo->directory.c_str());
       }
    }
 
@@ -478,3 +489,4 @@ void CFileMonitor::runComponent()
 }
 
 }} // namespace
+// vim:sw=3:ts=8:et
