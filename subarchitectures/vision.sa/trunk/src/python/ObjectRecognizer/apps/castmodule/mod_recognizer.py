@@ -170,7 +170,7 @@ def _findMatchingObject(features):
         confs = [ c / sumconfs * confmax for c in confs ]
         return confs
 
-    gpmode = 2
+    gpmode = 1
     if gpmode == 1: probs = getProbs1(matches)
     elif gpmode == 2: probs = getProbs2(matches)
     else: probs = [0]
@@ -214,8 +214,15 @@ def findMatchingObject(image, region=None):
             saveImage(image, "xdata/cast_objrecog_%04d.png" % imid)
         features = Setup.extractor.extractFeatures(image)
         matches = _findMatchingObject(features)
-        if len(matches) > 0: print matches[0]
-        if len(matches) > 1: print matches[1]
+        fout = open('tmp/or_model_distrib.html', 'w')
+        fout.write("<table>")
+        if len(matches) > 1:
+            for i,m in enumerate(matches[0]):
+                if i < len(matches[1]): fout.write("<tr><td>%s</td><td>%f</td></tr>" % (m, matches[1][i]))
+                else: fout.write("<tr><td>%s</td><td>&nbsp;</td></tr>" % (m))
+        elif len(matches) > 0: print matches[0]
+        fout.write("</table>")
+        fout.close()
         return matches
     except:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()

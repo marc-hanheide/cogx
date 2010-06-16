@@ -39,7 +39,7 @@ def verifyImage(image):
         from PIL import Image
         resultImage = Image.fromarray(im)
         resultImage = resultImage.convert("L")
-        # resultImage.save('/tmp/im.jpg')
+        resultImage.save('/tmp/sift_inputimage.jpg')
         im = np.asarray(resultImage)
     return im
 
