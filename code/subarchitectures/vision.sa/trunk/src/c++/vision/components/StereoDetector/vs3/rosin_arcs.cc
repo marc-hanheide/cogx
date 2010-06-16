@@ -18,6 +18,7 @@
 #include "VisionCore.hh"
 #include "Segment.hh"
 #include "Arc.hh"
+#include "GestaltPrinciple.hh"
 
 // large radius means arc is actually a line
 static const int MAX_RADIUS = 10000;
@@ -724,7 +725,7 @@ void FitArcsToSegment(Z::VisionCore *vcore, Z::Segment *seg)
                         (unsigned)(arc_start[j] - 1 + arc_finish[j] - 1)/2,
                         (unsigned)arc_finish[j] - 1,
                         cent, (double)radii[j]);
-                vcore->NewGestalt(new_arc);
+                vcore->NewGestalt(Z::GestaltPrinciple::FORM_ARCS, new_arc);
                 if(prev_arc != 0)
                 {
                   new_arc->prev_on_seg = prev_arc;
