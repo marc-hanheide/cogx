@@ -3,7 +3,6 @@ package de.dfki.lt.tr.beliefs.data;
 import java.util.LinkedList;
 import java.util.List;
 
-import Ice.Object;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
@@ -15,14 +14,19 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 import de.dfki.lt.tr.beliefs.util.BeliefMissingValueException;
-import eu.cogx.beliefproxies.proxies.frames.FrameProxy;
 
-public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Content<?>>>
-		extends Proxy<T> {
 
-	protected final C contentFactory;
+public class Belief<T extends dBelief, C extends Content<?>> extends Proxy<T> {
 
-	public BeliefProxy(Class<? extends T> class1, C factory, Object content) {
+	public static <T2 extends dBelief, C2 extends Content<?>> Belief<T2, C2> create(
+			Class<? extends T2> type, ProxyFactory<? extends C2> factory, Ice.Object o) {
+		return new Belief<T2, C2>(type, factory, o);
+	}
+
+	protected final ProxyFactory<? extends C> contentFactory;
+
+	protected Belief(Class<? extends T> class1,
+			ProxyFactory<? extends C> factory, Ice.Object content) {
 		super(class1, content);
 		contentFactory = factory;
 	}
@@ -38,7 +42,7 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Con
 	 */
 	public List<String> getAttributedToAgents() {
 		if (this.isAttributed()) {
-			return (List<String>) ((AttributedEpistemicStatus) _content.estatus).attribagents;
+			return ((AttributedEpistemicStatus) _content.estatus).attribagents;
 		} else {
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
 					+ _content.id + "]: Belief does not have attributed status");
@@ -77,8 +81,8 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Con
 		return contentFactory.create(_content.content);
 	} // end getContent
 
-	public FrameProxy<?> getFrame() {
-		return new FrameProxy<AbstractFrame>(AbstractFrame.class,
+	public Frame<?> getFrame() {
+		return new Frame<AbstractFrame>(AbstractFrame.class,
 				_content.frame);
 	}
 
@@ -127,7 +131,7 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Con
 			throw new BeliefInvalidQueryException("Invalid query on belief ["
 					+ _content.id + "]: Belief does not have shared status");
 		}
-		return (List<String>) ((SharedEpistemicStatus) _content.estatus).cgagents;
+		return ((SharedEpistemicStatus) _content.estatus).cgagents;
 	} // end getShared
 
 	/**
@@ -236,7 +240,7 @@ public class BeliefProxy<T extends dBelief, C extends ProxyFactory<? extends Con
 	 *             If the belief is null/empty
 	 * @see FrameProxy
 	 */
-	public void setFrame(FrameProxy<?> frameProxy) {
+	public void setFrame(Frame<?> frameProxy) {
 		if (frameProxy == null) {
 			throw new BeliefMissingValueException(
 					"Cannot set frame: Provided frame is null");

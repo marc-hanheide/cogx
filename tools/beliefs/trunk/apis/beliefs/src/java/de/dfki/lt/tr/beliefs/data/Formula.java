@@ -37,24 +37,21 @@ import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
  * @started 100521
  * @version 100521
  */
-
 public class Formula<T extends dFormula> extends Proxy<T> {
 
-	protected float _probability;
+	public static <T2 extends dFormula> Formula<T2> create(
+			Class<? extends T2> class1, Ice.Object pd) {
+		return new Formula<T2>(class1, pd);
+	}
 
 	/**
 	 * Object is created from underlying slice-based datastructure, and a given
 	 * probability.
 	 */
-	public Formula(Class<T> type, T formula) {
+	protected Formula(Class<? extends T> type, Ice.Object formula) {
 		super(type, formula);
 
 	} // end constructor
-
-	public Formula(Class<T> class1, T val, float prob) {
-		super(class1, val);
-		setProbability(prob);
-	}
 
 	/**
 	 * Returns the identifier of the formula. By default this is set to -1, upon
@@ -65,22 +62,29 @@ public class Formula<T extends dFormula> extends Proxy<T> {
 	 *             If the formula has not been initialized
 	 */
 
-	public int getId()  {
+	public int getId() {
 		return _content.id;
 	} // end getId
 
 	/**
-	 * Sets the identifier of the formula.
+	 * Returns the proposition for a formula, provided the formula is
+	 * propositional
 	 * 
-	 * @param id
-	 *            The identifier (represented as an integer) for the formula
+	 * @return String The proposition of the formula
 	 * @throws BeliefNotInitializedException
-	 *             If the formula has not been initialized
+	 *             If the formula is not initialized
+	 * @throws BeliefInvalidQueryException
+	 *             If the formula is not of type proposition
 	 */
 
-	public void setId(int id)  {
-		_content.id = id;
-	} // end setId
+	public String getProposition() throws BeliefInvalidQueryException {
+		if (!(_content instanceof ElementaryFormula)) {
+			throw new BeliefInvalidQueryException(
+					"Cannot query [proposition] for formula: Formula not of type proposition");
+		} else {
+			return ((ElementaryFormula) _content).prop;
+		}
+	} // end getProposition
 
 	/**
 	 * Returns whether the formula is a proposition (or not)
@@ -95,54 +99,17 @@ public class Formula<T extends dFormula> extends Proxy<T> {
 	} // end isProposition
 
 	/**
-	 * Returns the proposition for a formula, provided the formula is
-	 * propositional
+	 * Sets the identifier of the formula.
 	 * 
-	 * @return String The proposition of the formula
+	 * @param id
+	 *            The identifier (represented as an integer) for the formula
 	 * @throws BeliefNotInitializedException
-	 *             If the formula is not initialized
-	 * @throws BeliefInvalidQueryException
-	 *             If the formula is not of type proposition
+	 *             If the formula has not been initialized
 	 */
 
-	public String getProposition() throws
-			BeliefInvalidQueryException {
-		if (!(_content instanceof ElementaryFormula)) {
-			throw new BeliefInvalidQueryException(
-					"Cannot query [proposition] for formula: Formula not of type proposition");
-		} else {
-			return ((ElementaryFormula) _content).prop;
-		}
-	} // end getProposition
-
-	/**
-	 * Sets the probability for an instantiated formula
-	 * 
-	 * @param prob
-	 *            The probability
-	 * @throws BeliefNotInitializedException
-	 *             If the formula is not initialized
-	 * @throws BeliefInvalidOperationException
-	 *             If the formula has not been instantiated
-	 */
-
-	public void setProbability(float prob) {
-		_probability = prob;
-	} // end setProbability
-
-	/**
-	 * Returns the probability for an instantiated formula
-	 * 
-	 * @return float The probability of the formula
-	 * @throws BeliefInvalidOperationException
-	 *             If the formula is not instantiated
-	 * @throws BeliefNotInitializedException
-	 *             If the formula is not initialized
-	 */
-
-	public float getProbability() {
-		return _probability;
-	} // end setProbability
+	public void setId(int id) {
+		_content.id = id;
+	} // end setId
 
 	// /**
 	// * Returns the formula and probability as a pair

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.dfki.lt.tr.beliefs.data;
 
 import java.util.Iterator;
@@ -10,6 +7,7 @@ import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
@@ -20,15 +18,28 @@ import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
 
 /**
- * @author marc
+ * a {@link Proxy} for the list of formulas considered as alternative values in
+ * a {@link BasicDistribution}.
  * 
+ * @author Marc Hanheide (marc@hanheide.de)
+ * 
+ * @param <T>
+ *            the type of the factory used to generate the Formula proxies.
  */
-public class Formulas<T extends ProxyFactory<Proxy<? extends dFormula>>>
+public class Formulas<T extends Proxy<? extends dFormula>>
 		extends DistributionContent<FormulaValues, T> implements
 		Iterable<ProbFormula<Proxy<? extends dFormula>>> {
 
-	public Formulas(T factory, Ice.Object content) {
+	public static <T2 extends Formula<?>> Formulas<T2> create(ProxyFactory<? extends T2>  factory, Ice.Object content) {
+		return new Formulas<T2>(factory, content);
+	}
+	
+	protected Formulas(ProxyFactory<? extends T>  factory, Ice.Object content) {
 		super(FormulaValues.class, factory, content);
+	}
+
+	public void add(boolean b, double prob) {
+		add(new BooleanFormula(-1, b), prob);
 	}
 
 	public void add(dFormula formula, double d) {
@@ -45,42 +56,6 @@ public class Formulas<T extends ProxyFactory<Proxy<? extends dFormula>>>
 
 	public void add(String f, double d) {
 		add(new ElementaryFormula(-1, f), d);
-	}
-
-	public FormulaProbPair findFormula(int query) {
-		for (FormulaProbPair f : _content.values) {
-			if (f.val instanceof IntegerFormula) {
-				IntegerFormula ef = (IntegerFormula) f.val;
-				if (ef.val == query) {
-					return f;
-				}
-			}
-		}
-		return null;
-	}
-
-	public FormulaProbPair findFormula(String query) {
-		for (FormulaProbPair f : _content.values) {
-			if (f.val instanceof ElementaryFormula) {
-				ElementaryFormula ef = (ElementaryFormula) f.val;
-				if (ef.prop.equals(query)) {
-					return f;
-				}
-			}
-		}
-		return null;
-	}
-
-	public FormulaProbPair findFormula(WorkingMemoryAddress query) {
-		for (FormulaProbPair f : _content.values) {
-			if (f.val instanceof PointerFormula) {
-				PointerFormula ef = (PointerFormula) f.val;
-				if (ef.pointer.equals(query)) {
-					return f;
-				}
-			}
-		}
-		return null;
 	}
 
 	public float getProb(int query) {
@@ -182,6 +157,54 @@ public class Formulas<T extends ProxyFactory<Proxy<? extends dFormula>>>
 		return result;
 	}
 
+	protected FormulaProbPair findFormula(boolean query) {
+		for (FormulaProbPair f : _content.values) {
+			if (f.val instanceof BooleanFormula) {
+				BooleanFormula ef = (BooleanFormula) f.val;
+				if (ef.val == query) {
+					return f;
+				}
+			}
+		}
+		return null;
+	}
+
+	protected FormulaProbPair findFormula(int query) {
+		for (FormulaProbPair f : _content.values) {
+			if (f.val instanceof IntegerFormula) {
+				IntegerFormula ef = (IntegerFormula) f.val;
+				if (ef.val == query) {
+					return f;
+				}
+			}
+		}
+		return null;
+	}
+
+	protected FormulaProbPair findFormula(String query) {
+		for (FormulaProbPair f : _content.values) {
+			if (f.val instanceof ElementaryFormula) {
+				ElementaryFormula ef = (ElementaryFormula) f.val;
+				if (ef.prop.equals(query)) {
+					return f;
+				}
+			}
+		}
+		return null;
+	}
+
+	protected FormulaProbPair findFormula(WorkingMemoryAddress query) {
+		for (FormulaProbPair f : _content.values) {
+			if (f.val instanceof PointerFormula) {
+				PointerFormula ef = (PointerFormula) f.val;
+				if (ef.pointer.equals(query)) {
+					return f;
+				}
+			}
+		}
+		return null;
+	}
+
 	protected dFormula getFormulaObject(Object object) {
 		if (object == null)
 			return new UnknownFormula(-1);
@@ -199,4 +222,5 @@ public class Formulas<T extends ProxyFactory<Proxy<? extends dFormula>>>
 							+ object.getClass().getName());
 	}
 
+	
 }

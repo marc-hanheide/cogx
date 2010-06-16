@@ -122,11 +122,11 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
  * @started 100523
  */
 
-public abstract class ManagedContent<T extends ProbDistribution, Factory extends ProxyFactory<? extends Proxy<?>>> extends Content<T> {
+public abstract class ManagedContent<T extends ProbDistribution, P extends  Proxy<?>> extends Content<T> {
 
-	protected Factory _factory;
+	protected ProxyFactory<? extends P> _factory;
 
-	public ManagedContent(Class<? extends T> class1, Factory factory, Object content) {
+	protected ManagedContent(Class<? extends T> class1, ProxyFactory<? extends P> factory, Object content) {
 		super(class1, content);
 		_factory = factory;
 	}
@@ -134,4 +134,5 @@ public abstract class ManagedContent<T extends ProbDistribution, Factory extends
 	protected Proxy<?> createElement(Ice.Object o) {
 		return _factory.create(o);
 	}
+	
 } // end class

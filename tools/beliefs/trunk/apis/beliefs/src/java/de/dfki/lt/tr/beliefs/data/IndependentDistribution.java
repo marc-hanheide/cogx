@@ -18,11 +18,16 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
  * @author marc
  * 
  */
-public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>>>
+public class IndependentDistribution<T extends Content<?>>
 		extends ManagedContent<CondIndependentDistribs, T> implements
-		Map<String, Content<?>> {
+		Map<String, T> {
 
-	public IndependentDistribution(T factory, Ice.Object content) {
+	public static <T2 extends Content<?>> IndependentDistribution<T2> create(
+			ProxyFactory<? extends T2> factory, Ice.Object pd) {
+		return new IndependentDistribution<T2>(factory, pd);
+	}
+
+	protected IndependentDistribution(ProxyFactory<? extends T> factory, Ice.Object content) {
 		super(CondIndependentDistribs.class, factory, content);
 	}
 
@@ -57,8 +62,8 @@ public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>
 	 * @see java.util.Map#entrySet()
 	 * 
 	 */
-	public Set<Entry<String, Content<? extends ProbDistribution>>> entrySet() {
-		Map<String, Content<? extends ProbDistribution>> result = new HashMap<String, Content<? extends ProbDistribution>>();
+	public Set<Entry<String, T>> entrySet() {
+		Map<String, T> result = new HashMap<String, T>();
 		for (Entry<String, ProbDistribution> pd : _content.distribs.entrySet()) {
 			result.put(pd.getKey(), _factory.create(pd.getValue()));
 		}
@@ -70,19 +75,11 @@ public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>
 	 * @return
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
-	public Content<? extends ProbDistribution> get(Object arg0) {
+	public T get(Object arg0) {
 		ProbDistribution entry = _content.distribs.get(arg0);
 		if (entry == null)
 			return null;
 		return _factory.create(entry);
-	}
-
-	/**
-	 * @return
-	 * @see java.util.Map#hashCode()
-	 */
-	public int hashCode() {
-		return _content.distribs.hashCode();
 	}
 
 	/**
@@ -107,8 +104,8 @@ public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>
 	 * @return
 	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
 	 */
-	public Content<? extends ProbDistribution> put(String arg0,
-			Content<? extends ProbDistribution> arg1) {
+	public T put(String arg0,
+			T arg1) {
 		return _factory.create(_content.distribs.put(arg0, arg1.get()));
 	}
 
@@ -117,7 +114,7 @@ public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
 	public void putAll(
-			Map<? extends String, ? extends Content<? extends ProbDistribution>> arg0) {
+			Map<? extends String, ? extends T> arg0) {
 		for (Entry<? extends String, ? extends Content<? extends ProbDistribution>> e : arg0
 				.entrySet()) {
 			_content.distribs.put(e.getKey(), e.getValue().get());
@@ -129,7 +126,7 @@ public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>
 	 * @return
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
-	public Content<? extends ProbDistribution> remove(Object arg0) {
+	public T remove(Object arg0) {
 		return _factory.create(_content.distribs.remove(arg0));
 	}
 
@@ -161,8 +158,8 @@ public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>
 	 * @return
 	 * @see java.util.Map#values()
 	 */
-	public Collection<Content<? extends ProbDistribution>> values() {
-		Vector<Content<? extends ProbDistribution>> result = new Vector<Content<? extends ProbDistribution>>(
+	public Collection<T> values() {
+		Vector<T> result = new Vector<T>(
 				_content.distribs.size());
 		for (ProbDistribution p : _content.distribs.values()) {
 			result.add(_factory.create(p));
@@ -170,5 +167,6 @@ public class IndependentDistribution<T extends ProxyFactory<? extends Content<?>
 		return result;
 
 	}
+
 
 }

@@ -22,27 +22,66 @@
 // PACKAGE DEFINITION 
 package de.dfki.lt.tr.beliefs.data;
 
-//=================================================================
-//IMPORTS
-
 // Belief API slice
-import Ice.Object;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
-import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame;
-
+import de.dfki.lt.tr.beliefs.slice.distribs.NormalValues;
 
 /**
- * The class <tt>Frame</tt> provides access to the situated frame of a belief.
+ * The <tt>Formula</tt> class implements the basic structure for building up
+ * content.
  * 
- * @author 	Geert-Jan M. Kruijff
- * @since	100523
- * @version	100523
+ * 
+ * @author Geert-Jan M. Kruijff (gj@dfki.de), Marc Hanheide (marc@hanheide.de)
+ * @started 100521
+ * @version 100521
  */
 
-public class Frame<T extends AbstractFrame> extends Proxy<T> {
+public class Gaussian extends Proxy<NormalValues> {
 
-	protected Frame(Class<? extends T> class1, Object content) {
-		super(class1, content);
+	public static Gaussian create(Ice.Object o) {
+		return new Gaussian(o);
+	}
+	
+	
+	/**
+	 * Object is created from underlying slice-based datastructure.
+	 */
+	protected Gaussian(Ice.Object gaussian) {
+		super(NormalValues.class, gaussian);
+
+	} // end constructor
+
+	public double getMean() {
+		return _content.mean;
+	}
+
+	/**
+	 * compute the density of value query in the current Gaussian
+	 * 
+	 * @param query
+	 * @return the probability density value for the given value
+	 */
+	public double getProb(double query) {
+		double exponent = (-((query - _content.mean) * (query - _content.mean)))
+				/ (2 * _content.variance);
+		return Math.exp(exponent) / Math.sqrt(2 * Math.PI * _content.variance);
+	}
+
+	public double getVariance() {
+		return _content.variance;
+	}
+
+	public void set(double m, double v) {
+		setMean(m);
+		setVariance(v);
+	}
+
+	public void setMean(double m) {
+		_content.mean = m;
+	}
+
+	public void setVariance(double v) {
+		_content.variance = v;
 	}
 
 } // end class

@@ -4,26 +4,31 @@
 package de.dfki.lt.tr.beliefs.data;
 
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ManagedContent;
-import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 
 /**
  * @author marc
  * 
  */
-public class BasicDistribution<T extends ProxyFactory<? extends Proxy<? extends DistributionValues>>>
-		extends ManagedContent<BasicProbDistribution, T> {
+public class BasicDistribution<T extends DistributionContent<?, ?>> extends
+		ManagedContent<BasicProbDistribution, T> {
+
+	public static <T2 extends DistributionContent<?, ?>> BasicDistribution<T2> create(
+			ProxyFactory<? extends T2> factory, Ice.Object o) {
+		return new BasicDistribution<T2>(factory, o);
+	}
+
 	/**
 	 * @param class1
 	 * @param content
 	 */
-	public BasicDistribution(T factory, Ice.Object content) {
+	protected BasicDistribution(ProxyFactory<? extends T> factory,
+			Ice.Object content) {
 		super(BasicProbDistribution.class, factory, content);
 	}
 
-	public Proxy<? extends DistributionValues> getDistribution() {
+	public T getDistribution() {
 		return _factory.create(_content.values);
 	}
 
