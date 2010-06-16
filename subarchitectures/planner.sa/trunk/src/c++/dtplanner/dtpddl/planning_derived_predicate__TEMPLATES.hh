@@ -209,7 +209,7 @@ namespace Planning
         auto arguments = get__arguments();
         auto untyped_arguments = std::tr1::get<0>(arguments);
     
-        o<<"(DERIVED_SYMBOL"<<Parent::get__id()<<" ";
+        o<<"("<<get__name()/*DERIVED_SYMBOL"<<Parent::get__id()*/<<" ";
         Planning::Formula::Printing::operator<<(o, untyped_arguments);
         o<<" )"<<std::endl;
     

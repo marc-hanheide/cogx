@@ -149,3 +149,44 @@ int main(int argc, char** argv)
     
     return 0;
 }
+
+/* 
+ *   With the organic tactility, refreshing scent and minimalist
+ *   aesthetics of bamboo lend the ASUS Bamboo Series notebook an
+ *   arresting aura of spirituality, warmth and old world charm that
+ *   synthetic materials and cold, impersonal metals will struggle to
+ *   replicate. With every touch, users will be able to feel the
+ *   difference - the bamboo gives an instant sense of familiarity, just
+ *   like the sensation one would get from running one's fingertips
+ *   across furniture. The air of individuality of each piece can be
+ *   further enhanced by several treatments that yield different colours,
+ *   or by laser etching distinctive designs onto the ASUS Bamboo Series
+ *   notebook's bamboo-clad cover. ASUS has achieved international renown
+ *   for its research into, and inspired use of, biodegradable materials
+ *   such as leather in its products, but its decision to embrace bamboo
+ *   is nothing short of ingenious.
+ * 
+ *   Through the use of bamboo which has an immense tensile strength that
+ *   rivals that of many metal alloys, the ASUS Bamboo notebook is highly
+ *   resilient - an attribute proven conclusively by the fact that it is
+ *   the first notebook to have survived the unforgiving conditions of
+ *   snow-capped Qomolangma Peak, which stands at a staggering height of
+ *   8,848 meters (29,028 feet). Bamboo also has a renewal rate that no
+ *   other plant can match. It has been known to grow 60cm in just 24
+ *   hours, reaching its maximum height in several years. Bamboo is also
+ *   capable of regenerating itself upon harvesting without necessitating
+ *   replanting, making it possibly the perfect renewable resource. The
+ *   crux of the message borne by the ASUS Bamboo Series notebook is that
+ *   "it's easy being green". Being green is a simple matter of making
+ *   smart, environmentally-conscious purchasing decisions. Choosing the
+ *   ASUS Bamboo Series notebook - or any of ASUS' notebooks, all of
+ *   which were designed and manufactured in strict adherence to the same
+ *   rigorous green policies and standards that governed the development
+ *   of the ASUS Bamboo Series notebook - over less green alternatives,
+ *   will help to preserve the Earth in no small measure.
+ * 
+ *    -- Sales pitch for the Laptop (Asus U6V-2P048C Mobility Notebook)
+ *       chosen to control Pioneer robots used for the EC FP7-IST grant
+ *       215181-CogX. Author is unknown.
+ *   
+ */

@@ -140,7 +140,9 @@ namespace Planning
             template<typename stack_type>
             static void apply(const std::string& str, stack_type& s)
             {
-                VERBOSER(111, str);
+                VERBOSER(1000, str);
+                {char ch; std::cin>>ch;}
+                
             }
         };
 

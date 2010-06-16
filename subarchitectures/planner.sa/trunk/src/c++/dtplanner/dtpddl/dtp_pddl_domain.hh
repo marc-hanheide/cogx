@@ -49,30 +49,30 @@ namespace Planning
          ******************************************************************************************************************/
         
         
-        struct s_Parameters : string<p, a, r, a, m, e, t, e, r, s > {}; // *** DOMAIN ELEMENT ***
-        struct s_COGX_Variables : string<v, a, r, i, a, b, l, e, s > {}; // *** __COGX__ DOMAIN ELEMENT ***
-        struct s_Precondition : string<p, r, e, c, o, n, d, i, t, i, o, n > {};
-        struct s_Effect : string<e, f, f, e, c, t > {};
-        struct s_Execution : string<e, x, e, c, u, t, i, o, n > {};
+        struct s_Parameters : stand_alone_string<p, a, r, a, m, e, t, e, r, s > {}; // *** DOMAIN ELEMENT ***
+        struct s_COGX_Variables : stand_alone_string<v, a, r, i, a, b, l, e, s > {}; // *** __COGX__ DOMAIN ELEMENT ***
+        struct s_Precondition : stand_alone_string<p, r, e, c, o, n, d, i, t, i, o, n > {};
+        struct s_Effect : stand_alone_string<e, f, f, e, c, t > {};
+        struct s_Execution : stand_alone_string<e, x, e, c, u, t, i, o, n > {};
 
         
         
-        struct s_Action : string< a, c, t, i, o, n > {};
-        struct s_Derived : string<d, e, r, i, v, e, d >{}; // *** DOMAIN ELEMENT ***
-        struct s_Observe : string< o,b,s,e,r,v,e > {};
+        struct s_Action : stand_alone_string< a, c, t, i, o, n > {};
+        struct s_Derived : stand_alone_string<d, e, r, i, v, e, d >{}; // *** DOMAIN ELEMENT ***
+        struct s_Observe : stand_alone_string< o,b,s,e,r,v,e > {};
         
 
         
-        struct s_Percepts: string< p, e, r, c, e, p, t, s>{}; // *** POMDP DOMAIN ELEMENT ***
-        struct s_Functions : string<f, u, n, c, t, i, o, n, s>{}; // *** DOMAIN ELEMENT ***
-        struct s_Predicates : string<p, r, e, d, i, c, a, t, e, s>{}; // *** DOMAIN ELEMENT ***
-        struct s_Types : string<t, y, p, e, s>{}; // *** DOMAIN ELEMENT ***
-        struct s_Requirements : string<r, e, q, u, i, r, e, m, e, n, t, s>{}; // *** DOMAIN ELEMENT ***
+        struct s_Percepts: stand_alone_string< p, e, r, c, e, p, t, s>{}; // *** POMDP DOMAIN ELEMENT ***
+        struct s_Functions : stand_alone_string<f, u, n, c, t, i, o, n, s>{}; // *** DOMAIN ELEMENT ***
+        struct s_Predicates : stand_alone_string<p, r, e, d, i, c, a, t, e, s>{}; // *** DOMAIN ELEMENT ***
+        struct s_Types : stand_alone_string<t, y, p, e, s>{}; // *** DOMAIN ELEMENT ***
+        struct s_Requirements : stand_alone_string<r, e, q, u, i, r, e, m, e, n, t, s>{}; // *** DOMAIN ELEMENT ***
 
 
-        struct s_Number : ifapply< string<n, u, m, b, e, r>, Function_Type_Number__Action>{};
-        struct s_Int : ifapply< string<i, n, t>, Function_Type_Int__Action> {};
-        struct s_Double : ifapply< string<d, o, u, b, l, e>, Function_Type_Double__Action>{};
+        struct s_Number : ifapply< stand_alone_string<n, u, m, b, e, r>, Function_Type_Number__Action>{};
+        struct s_Int : ifapply< stand_alone_string<i, n, t>, Function_Type_Int__Action> {};
+        struct s_Double : ifapply< stand_alone_string<d, o, u, b, l, e>, Function_Type_Double__Action>{};
 
         
         /******************************************************************************************************************
@@ -352,15 +352,23 @@ namespace Planning
         
         struct Domain_Description : plus<PDDL_DOMAIN_Element_Noise> {};
 
-        struct PDDL_Preamble_Domain : seq< Open
-                                            , pad<s_Define, space>
-                                            , Open
-                                            , s_Domain
-                                            , pad<Domain_Name, space>
-                                            , Close
-                                            , Domain_Description
-                                            , Close
-                                            > {};
+
+        
+        struct PDDL_Preamble_Domain : // seq<one<':'>
+//                                           , sor<s__Domain
+//                                                 , ifapply<Basic_Alphanumeric
+//                                                           , DEBUG__Action> >
+//                                           , pad<s_Define, space> >
+            seq< Open
+                 , pad<s_Define, space>
+                 , Open
+                 , s_Domain
+                 , pad<Domain_Name, space>
+                 , Close
+                 , Domain_Description
+                 , Close
+                 >
+        {};
         
     }
 }

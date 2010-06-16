@@ -105,7 +105,7 @@ namespace Planning
         {PRINTING;
         };
         
-        class Negation : public type_wrapper<enum_types::disjunction
+        class Negation : public type_wrapper<enum_types::negation
                                                 , Subformula >
         {PRINTING;
         };
