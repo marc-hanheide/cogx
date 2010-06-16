@@ -21,6 +21,7 @@ extern "C"
 #include "Ellipse.hh"
 #include "FormSegments.hh"
 #include "Line.hh"
+#include "EJunction.hh"
 
 namespace Z
 {
@@ -246,6 +247,9 @@ Ellipse::Ellipse(VisionCore *vc, ConvexArcGroup *grp_in,
   a = a_in;
   b = b_in;
   phi = phi_in;
+	
+	center.x = x;
+	center.y = y;
 
   // these are frequently needed by Distance(), so let's cache them
   a2 = Sqr(a);
@@ -253,6 +257,17 @@ Ellipse::Ellipse(VisionCore *vc, ConvexArcGroup *grp_in,
   b2 = Sqr(b);
   b4 = Sqr(b2);
 
+	// vertices of the ellipse normalized to 0-Pi
+  int l=0, r=1;					// left/right
+  if (phi > M_PI) {l=1; r=0;}	// change left right, if phi > Pi
+  vertex[r].x = x - (a*cos(phi));
+  vertex[r].y = y - (a*sin(phi));
+  vertex[l].x = x + (a*cos(phi));
+  vertex[l].y = y + (a*sin(phi));
+	
+  // normal direction of the ellipse (0-pi)
+  dir = Normalise(vertex[RIGHT] - vertex[LEFT]);
+	
   support = abs_support = 0.;
   fit_error = HUGE;
   area = 0.;
@@ -385,21 +400,41 @@ Vector2 Ellipse::NormalCentAxPar(const Vector2 &p)
 
 void Ellipse::Draw(int detail)
 {
+	if(detail == 1)
+	{
+		char id_str[20];
+    snprintf(id_str, 20, "%u", id);
+    DrawText2D(id_str, x, y, RGBColor::red);
+		DrawEllipse2D(x, y, a, b, phi, RGBColor::red);
+	}
   if(detail >= 2)
-    group->Draw(detail-2);
-  DrawEllipse2D(x, y, a, b, phi, RGBColor::red);
+    group->Draw(detail-1);
+	else	
+		DrawEllipse2D(x, y, a, b, phi, RGBColor::red);
 }
 
 const char* Ellipse::GetInfo()
 {
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
-  snprintf(info_text, info_size,
-    "%sparams: %.2f %.2f  %.2f %.2f  %.4f\nsupport: rel %f  abs: %f\n\
-circumference: %.2f area: %.2f\nfit_err: %f\n",
+	int n=0;
+  n += snprintf(info_text, info_size,
+		"%s  params: %.2f %.2f  %.2f %.2f  %.4f\n"
+		"  support: rel %f  abs: %f\n"
+		"  circumference: %.2f area: %.2f\n"
+		"  fit_err: %f\n",
     Gestalt::GetInfo(), x, y, a, b, phi, support, abs_support, Circumference(),
     Area(), fit_error);
-  return info_text;
+
+	n += snprintf(info_text + n, info_size - n, "------------\n  %u e-jcts left: ", ejcts[0].Size());
+	for (unsigned i=0; i<ejcts[0].Size(); i++)
+		n += snprintf(info_text + n, info_size - n, "%u ", ejcts[0][i]->ID());
+
+	n += snprintf(info_text + n, info_size - n, "\n  %u e-jcts right: ", ejcts[1].Size());
+	for (unsigned i=0; i<ejcts[1].Size(); i++)
+		n += snprintf(info_text + n, info_size - n, "%u ", ejcts[1][i]->ID());
+		
+	return info_text;
 }
 
 bool Ellipse::IsAtPosition(int x, int y)

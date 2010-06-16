@@ -27,12 +27,15 @@ public:
   {
     FORM_SEGMENTS,
     FORM_LINES,
+    FORM_E_JUNCTIONS,							// TODO not fail save: must run, before ellipse creation.
     FORM_ARCS,
-//    FORM_PARALLEL_LINE_GROUPS,
     FORM_ARC_JUNCTIONS,
     FORM_CONVEX_ARC_GROUPS,
     FORM_ELLIPSES,
+    FORM_SPHERES,
     FORM_EXT_ELLIPSES,
+    FORM_CYLINDERS,
+    FORM_CONES,
     FORM_JUNCTIONS,
     FORM_CLOSURES,
     FORM_RECTANGLES,
@@ -44,7 +47,9 @@ public:
   };
 
 private:
-  double runtime;   												///< processing runtime in [s]
+  double runtime;   								///< processing runtime in [s]
+  struct timespec startTime;				///< start time [timespec]
+  struct timespec endTime;					///< end time [timespec]
 
 protected:
   VisionCore *core;													///< Vision core
@@ -89,11 +94,21 @@ public:
    */
   virtual void Reset() {};
 
+	  /**
+   * @brief Operate the Gestalt principle before processing starts.
+   */
+  virtual void PreOperate() {};
+	
   /**
    * @brief Operate the Gestalt principle.
    * @param incremental Operate it incremental
    */
   virtual void Operate(bool incremental) {};
+
+  /**
+   * @brief Operate the Gestalt principle after processing ends.
+   */
+  virtual void PostOperate() {};
 
   /**
    * @brief Returns false, when no new processing is needed.
@@ -143,6 +158,10 @@ public:
    * @param t Runtime to add in seconds.
    */
   void AddRunTime(double t) {runtime += t;}
+  
+  void StartRunTime();
+
+	void StopRunTime();
 };
 
 }

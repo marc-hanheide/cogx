@@ -20,12 +20,12 @@ private:
   void CalculateSignificance();
 
 public:
-  Line* line[2];   ///< line 0 is the longer, line 1 the shorter one
-  int near_point[2];
-  double gap;      ///< distance between endpoints
-  double gap_cor;  ///< corrected distance if coll terminated by T-jcts
+  Line* line[2];					///< line 0 is the longer, line 1 the shorter one
+  int near_point[2];			///< TODO The nearer point to the collinearity
+  double gap;      				///< distance between endpoints
+  double gap_cor;  				///< corrected distance if coll terminated by T-jcts
   double col_dist;
-  Vector2 vertex;  // TODO: change name to midpoint or something
+  Vector2 vertex;  				// TODO: change name to midpoint or something
 
   Collinearity(VisionCore *c, Line *line_i, Line *line_j, int end_i, int end_j);
   virtual void Draw(int detail = 0);

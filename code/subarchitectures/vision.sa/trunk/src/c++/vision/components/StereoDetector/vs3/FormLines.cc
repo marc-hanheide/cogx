@@ -18,8 +18,7 @@ static int CmpLines(const void *a, const void *b)
     return 1 ;  // b is first
 }
 
-FormLines::FormLines(VisionCore *vc)
-: GestaltPrinciple(vc)
+FormLines::FormLines(VisionCore *vc) : GestaltPrinciple(vc)
 {
   done = false;
   next_principles.PushBack(FORM_JUNCTIONS);
@@ -33,6 +32,8 @@ void FormLines::Reset()
 
 void FormLines::Operate(bool incremental)
 { 
+	StartRunTime();
+	
   // note: we only want to run this once for repeated calls to Operate()
   if(!done)
   {
@@ -40,6 +41,8 @@ void FormLines::Operate(bool incremental)
     Rank();
     done = true;
   }
+  
+  StopRunTime();
 }
 
 /**

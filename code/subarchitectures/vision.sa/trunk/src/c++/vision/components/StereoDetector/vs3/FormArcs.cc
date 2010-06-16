@@ -53,6 +53,8 @@ void FormArcs::Reset()
  */
 void FormArcs::Operate(bool incremental)
 {
+	StartRunTime();
+	
   // note: we only want to run this once for repeated calls to Operate()
   if(!done)
   {
@@ -72,6 +74,8 @@ void FormArcs::Operate(bool incremental)
     Rank();
     done = true;
   }
+  
+  StopRunTime();
 }
 
 /**
@@ -108,8 +112,7 @@ void FormArcs::Rank()
  * Check whether edgels i+1 to k-1 lie on circle defined by points i, j and k.
  * As a byproduct returns center and radius of circle.
  */
-bool FormArcs::EdgelsOnCircle(Array<Edgel> &edgels, unsigned i, unsigned j,
-    unsigned k)
+bool FormArcs::EdgelsOnCircle(Array<Edgel> &edgels, unsigned i, unsigned j, unsigned k)
 {
   try
   {
@@ -163,7 +166,7 @@ bool FormArcs::FitArc(Segment *seg, unsigned *cur_pos)
         Vector2 center = CircleCenter(edgels[i].p, edgels[j].p, edgels[k].p);
         double radius = Distance(center, edgels[j].p);
         if(radius > MIN_RADIUS && radius < MAX_RADIUS)
-          core->NewGestalt(new Arc(core, seg, i, j, k, center, radius));
+          core->NewGestalt(GestaltPrinciple::FORM_ARCS, new Arc(core, seg, i, j, k, center, radius));
       }
     }
     catch(Except &e)
@@ -251,7 +254,7 @@ void FormArcs::FitArcRANSAC(Segment *seg, int l, int u)
     k = k_opt;
     j = (i+k)/2;
     if(k - i + 1 >= 6 && radius_opt > MIN_RADIUS && radius_opt < MAX_RADIUS)
-      core->NewGestalt(new Arc(core, seg, i, j, k, center_opt, radius_opt));
+      core->NewGestalt(GestaltPrinciple::FORM_ARCS, new Arc(core, seg, i, j, k, center_opt, radius_opt));
     if(i > l)
       FitArcRANSAC(seg, l, i-1);
     if(k < u)

@@ -139,13 +139,26 @@ void ConvexArcGroup::Draw(int detail)
 
 const char* ConvexArcGroup::GetInfo()
 {
+	//   int n=0;
+//   n += snprintf(info_text, info_size, "%s\nellipse: %u\nextLines: ",
+//     Gestalt::GetInfo(), ellipse);
+
+
+	
+	
   const unsigned info_size = 10000;
   static char info_text[info_size] = "";
-  snprintf(info_text, info_size,
-      "%sarcs: %d\ncoverage: %f (gap: %f), closedness: %f\n",
-      Gestalt::GetInfo(), arcs.Size(), ang_cover,
-      ArcGroupLargestAngularGap(arcs),
-      closedness);
+	int n = 0;
+	n += snprintf(info_text, info_size,
+      "%s  %d arcs: ",
+      Gestalt::GetInfo(), arcs.Size());
+
+	for (unsigned i=0; i<arcs.Size(); i++)
+		n += snprintf(info_text + n, info_size - n, "%u ", arcs[i]->ID());
+			
+	n += snprintf(info_text + n, info_size - n, "\n  coverage: %f (gap: %f)\n  closedness: %f",
+								ang_cover, ArcGroupLargestAngularGap(arcs), closedness);
+			
   return info_text;
 }
 

@@ -78,7 +78,7 @@ FormConvexArcGroups::FormConvexArcGroups(VisionCore *vc)
   // COCURV is the default of: COCURV, YUEN, ELL
   core->GetConfig().AddItem("CONVEXARCS_GROUP_CRITERION", "COCURV"/*"ELL"*/);			/// HACK ARI: Geändert auf ELL!!!
 
-	printf("################# ClearHashTable beim Start von FormConvexArcGroups #################\n");
+// 	printf("################# ClearHashTable beim Start von FormConvexArcGroups #################\n");
 	ClearHashTable();		/// HACK ARI
 }
 
@@ -93,6 +93,8 @@ void FormConvexArcGroups::Reset()
 
 void FormConvexArcGroups::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
+	StartRunTime();
+	
   Arc::STRICT_CONVEXITY =
     core->GetConfig().GetValueInt("CONVEXARCS_STRONG_CONVEXITY");
   if(core->GetConfig().GetValueString("CONVEXARCS_GROUP_CRITERION") == "COCURV")
@@ -129,6 +131,8 @@ void FormConvexArcGroups::InformNewGestalt(Gestalt::Type type, unsigned idx)
     default:
       break;
   }
+  
+  StopRunTime();
 }
 
 void FormConvexArcGroups::HaveNewArc(unsigned idx)
@@ -139,7 +143,7 @@ void FormConvexArcGroups::HaveNewArc(unsigned idx)
 // printf("    l, u: %u, %u -- hash: %u -- hashtable: %u\n", l, u, hash, hashtable[hash]);
   if(hashtable[hash] == 0)
   {
-    core->NewGestalt(new ConvexArcGroup(core, arcs, l, u,
+    core->NewGestalt(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS, new ConvexArcGroup(core, arcs, l, u,
           Evaluate(arcs, l, u, GROUP_CRITERION)));
     hashtable[hash] = 1;
   }
@@ -241,7 +245,7 @@ void FormConvexArcGroups::GreedySearch(Arc *arc, Arc *forced_next,
   hash = Hash(arcs, l, u);
   if(hashtable[hash] == 0)
   {
-    core->NewGestalt(new ConvexArcGroup(core, arcs, l, u, sig));
+    core->NewGestalt(GestaltPrinciple::FORM_CONVEX_ARC_GROUPS, new ConvexArcGroup(core, arcs, l, u, sig));
     hashtable[hash] = 1;
   }
 }

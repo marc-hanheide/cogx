@@ -8,8 +8,7 @@ SET(HEADERS
 	fitellipse.h
 	nrutil.h
 	Arc.hh
-	Ball.hh
-	BallDefinition.hh
+#	BallDefinition.hh
 	BestResult.hh
 #	Camera.hh
 	CEdge.hh
@@ -35,13 +34,13 @@ SET(HEADERS
 	Flap.hh
 	FlapDefinition.hh
 	FormArcs.hh
-	FormBalls.hh
 	FormBestResults.hh
 	FormClosures.hh
 	FormCones.hh
 	FormConvexArcGroups.hh
 	FormCorners.hh
 	FormCubes.hh
+	FormEJunctions.hh
 	FormCylinders.hh
 	FormEllipses.hh
 	FormExits.hh
@@ -56,6 +55,7 @@ SET(HEADERS
 #	FormParallelLineGroups.hh
 	FormRectangles.hh
 	FormSegments.hh
+	FormSpheres.hh
 	FormWallLines.hh
 	FormWalls.hh
 	Gestalt.hh
@@ -83,6 +83,7 @@ SET(HEADERS
 	rosin_arcline.hh
 	rosin_lines.hh
 	Segment.hh
+	Sphere.hh
 	TCubeDefinition.hh
 	TFlapDefinition.hh
 	TJunction.hh
@@ -111,17 +112,16 @@ SET(SOURCES
 #	Vector2.ic
 	AJunction.cc
 	Arc.cc
-#	Ball.cc
 #	BestResult.cc
 #	Camera.cc
 	CEdge.cc
 	Closure.cc
 	Collinearity.cc
-#	Cone.cc
+	Cone.cc
 	ConvexArcGroup.cc
 #	Corner.cc
 	Cube.cc
-#	Cylinder.cc
+	Cylinder.cc
 	EJunction.cc
 	Ellipse.cc
 #	Exit.cc
@@ -134,15 +134,15 @@ SET(SOURCES
 	Flap.cc
 	FormArcJunctions.cc
 	FormArcs.cc
-#	FormBalls.cc
 #	FormBestResults.cc
 	FormClosures.cc
-#	FormCones.cc
+	FormCones.cc
 	FormConvexArcGroups.cc
 	FormEllipses.cc
 #	FormCorners.cc
 	FormCubes.cc
-#	FormCylinders.cc
+	FormEJunctions.cc
+	FormCylinders.cc
 #	FormEllipses.cc
 #	FormExits.cc
 #	FormExtClosures.cc
@@ -156,6 +156,7 @@ SET(SOURCES
 #	FormParallelLineGroups.cc
 	FormRectangles.cc
 	FormSegments.cc
+	FormSpheres.cc
 #	FormWallLines.cc
 #	FormWalls.cc
 	Gestalt.cc
@@ -186,6 +187,7 @@ SET(SOURCES
 #	rosin_arcs.cc			=> in FormArcs.cc direkt eingebunden!
 	rosin_lines.cc
 	Segment.cc
+	Sphere.cc
 	TJunction.cc
 #	TObject.cc
 #	TrackCubes.cc

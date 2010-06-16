@@ -86,7 +86,7 @@ void FormFlapsAri::Operate(bool incremental)
  */
 void FormFlapsAri::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
-//   StartRunTime();																																				/// TODO Wieder implementieren!
+  StartRunTime();
   switch(type)
   {
     case Gestalt::RECTANGLE:
@@ -98,7 +98,7 @@ void FormFlapsAri::InformNewGestalt(Gestalt::Type type, unsigned idx)
   }
   Rank();
   Mask();
-//   StopRunTime();
+  StopRunTime();
 }
 
 
@@ -146,7 +146,8 @@ void FormFlapsAri::CreateFlapFromRectangles(unsigned idx)
 							double meanGap = MeanGap(rectangle, orderedIsctR0, orderedIsctR1);
 
 							alreadyFound = true;
-							core->NewGestalt(new FlapAri(core, rectangle, meanGap, sLines, orderedIsctR0, orderedIsctR1));
+							core->NewGestalt(GestaltPrinciple::FORM_FLAPS_ARI, 
+								new FlapAri(core, rectangle, meanGap, sLines, orderedIsctR0, orderedIsctR1));
 						}
 					}
 				}

@@ -13,6 +13,8 @@
 namespace Z
 {
 
+class EJunction;
+
 class Ellipse : public Gestalt
 {
 private:
@@ -49,12 +51,17 @@ private:
   void FillContourString();
 
 public:
-  ConvexArcGroup *group;   ///< group the ellipse was constucted from
-  double x, y, a, b, phi;  ///< ellipse parameters
-  double support;          ///< relative support
-  double abs_support;      ///< absulute support
-  double fit_error;        ///< mean fit error
-  double area;             ///< area of the ellipse
+  ConvexArcGroup *group;			///< group the ellipse was constucted from
+  double x, y, a, b, phi;			///< ellipse parameters
+  double support;							///< relative support
+  double abs_support;					///< absulute support
+  double fit_error;						///< mean fit error
+  double area;								///< area of the ellipse
+  Vector2 center;							///< center of the ellipse
+  Vector2 vertex[2];					///< vertex [LEFT/RIGHT]
+	Vector2 dir;								///< direction between vertices
+	Array<EJunction*> ejcts[2];	///< ellipse junctions of this ellipse [LEFT/RIGHT]
+
 
   Ellipse(VisionCore *vc, ConvexArcGroup *grp_in, double x_in, double y_in,
       double a_in, double b_in, double phi_in);

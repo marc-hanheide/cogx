@@ -42,7 +42,6 @@ protected:
   RGBColor mean_col[2];  							///< mean color LEFT/RIGHT
   void CalculateParameters();
   virtual void CalculateColors() = 0;
-//   void DrawArrow();
   void MoveJunctions(Line *l2, int end);
 
 public:
@@ -53,9 +52,9 @@ public:
   double len;													///< length of line TODO stimmt?
   //double s;														///< hessian form: distance
   //double theta;												///< hessian form: angle
-  Array<Collinearity*> coll[2];				///< collinearities
+  Array<Collinearity*> coll[2];				///< collinearities at line-end [START/END]
   Array<LJunction*> l_jct[2][2];			///< L-junctions at START/END and LEFT/RIGHT
-  TJunction* t_jct[2];								///< T-junctions at ends, START/END
+  TJunction* t_jct[2];								///< T-junctions at START/END
   Array<TJunction*> pt_jct[2][2];			///< passive T-jcts, START/END and LEFT/RIGHT
   Array<Closure*> closures; 					// TODO: have two lists, for both senses
 //  Array<Rectangle*> rectangles; 					// TODO Soll man das hier auch so machen?

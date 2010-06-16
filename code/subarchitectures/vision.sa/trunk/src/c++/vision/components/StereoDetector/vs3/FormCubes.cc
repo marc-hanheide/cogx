@@ -86,6 +86,7 @@ bool FormCubes::NeedsOperate()
  */
 void FormCubes::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
+	StartRunTime();
   switch(type)
   {
 		case Gestalt::FLAP_ARI:
@@ -97,6 +98,7 @@ void FormCubes::InformNewGestalt(Gestalt::Type type, unsigned idx)
   }
   Rank();
   Mask();
+	StopRunTime();
 }
 
 
@@ -179,14 +181,14 @@ bool FormCubes::CreateFromFlaps(unsigned f)
 				{
 					flap[1] = FlapsAri(core, i);
 					flap[2] = FlapsAri(core, j);
-					core->NewGestalt(new Cube(core, flap));	
+					core->NewGestalt(GestaltPrinciple::FORM_CLOSURES, new Cube(core, flap));	
 					return true;
 				}
 				else if (thirdRects[0] == foundRects[1] && thirdRects[1] == foundRects[0])
 				{
 					flap[1] = FlapsAri(core, i);
 					flap[2] = FlapsAri(core, j);
-					core->NewGestalt(new Cube(core, flap));	
+					core->NewGestalt(GestaltPrinciple::FORM_CLOSURES, new Cube(core, flap));	
 					return true;
 				}
 			}

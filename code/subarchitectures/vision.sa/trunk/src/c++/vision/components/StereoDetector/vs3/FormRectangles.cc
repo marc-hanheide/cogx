@@ -106,12 +106,12 @@ void FormRectangles::Mask()
  */
 void FormRectangles::InformNewGestalt(Gestalt::Type type, unsigned idx)
 {
-//   StartRunTime();																								/// TODO Reimplement Start/Stop RunTime() in Gestalts.
+  StartRunTime();
   if (type == Gestalt::CLOSURE)
 		CreateQuadrilateral(idx);
 	Rank();
 	Mask();
-//   StopRunTime();
+  StopRunTime();
 }
 
 
@@ -152,7 +152,7 @@ void FormRectangles::CreateWithFourLJ(unsigned clos)
 		if(parallelity > 5.)																																		// TODO ARI: parallelity-threshold
 		{
 			Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
-			core->NewGestalt(new_r);
+			core->NewGestalt(GestaltPrinciple::FORM_RECTANGLES, new_r);
 		}
 	}
 }
@@ -259,7 +259,7 @@ bool FormRectangles::CreateWithMoreLJLine(unsigned clos)
 		if(parallelity > 5.)   																		// TODO ARI: parallelity-threshold 
 		{
 			Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
-			core->NewGestalt(new_r);
+			core->NewGestalt(GestaltPrinciple::FORM_RECTANGLES, new_r);
 			return true;
 		}
 	}
@@ -332,7 +332,7 @@ bool FormRectangles::CreateWithMoreLJAngle(unsigned clos)
 			{
 printf("FormRectangles::CreateWithMoreLJAngle: Hier wurde ein Rechteck erzeugt (Angle ding)!\n");
 				Rectangle *new_r = new Rectangle(core, Closures(core, clos), isct, parallelity);
-				core->NewGestalt(new_r);
+				core->NewGestalt(GestaltPrinciple::FORM_RECTANGLES, new_r);
 				return true;
 			}
 		}

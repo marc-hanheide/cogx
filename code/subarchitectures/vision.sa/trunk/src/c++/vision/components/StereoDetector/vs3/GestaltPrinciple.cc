@@ -17,12 +17,15 @@ static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
   "FORM_SEGMENTS",
   "FORM_LINES",
+  "FORM_E_JUNCTIONS",
   "FORM_ARCS",
-//  "FORM_PARALLEL_LINE_GROUPS",
   "FORM_ARC_JUNCTIONS",
   "FORM_CONVEX_ARC_GROUPS",
   "FORM_ELLIPSES",
+  "FORM_SPHERES",
 	"FORM_EXT_ELLIPSES",
+	"FORM_CYLINDERS",
+	"FORM_CONES",
   "FORM_JUNCTIONS",
   "FORM_CLOSURES",
   "FORM_RECTANGLES",
@@ -79,6 +82,25 @@ void GestaltPrinciple::RankGestalts(Gestalt::Type type, int(*compar)(const void 
   // then set rank for each gestalt
   for(unsigned i = 0; i < core->NumGestalts(type); i++)
     core->RankedGestalts(type, i)->SetRank(i);
+}
+
+/**
+ * @brief Starts the timer for calculation of the processing time \n
+ * for each Gestalt principle.
+ */
+void GestaltPrinciple::StartRunTime()
+{
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &startTime);
+}
+
+/**
+ * @brief Stops the timer for calculation of the processing time for \n
+ * each Gestalt principle and adds the time to the runtime counter.
+ */
+void GestaltPrinciple::StopRunTime()
+{
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &endTime);
+  runtime += timespec_diff(&endTime, &startTime);
 }
 
 }
