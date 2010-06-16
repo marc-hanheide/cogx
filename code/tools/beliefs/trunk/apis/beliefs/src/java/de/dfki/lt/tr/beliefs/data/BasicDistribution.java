@@ -3,44 +3,34 @@
  */
 package de.dfki.lt.tr.beliefs.data;
 
-import de.dfki.lt.tr.beliefs.data.abstractproxies.ManagedContent;
-import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
+import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
+import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
+import de.dfki.lt.tr.beliefs.factories.DistributionContentFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 
 /**
  * @author marc
  * 
  */
-public class BasicDistribution<T extends DistributionContent<?, ?>> extends
-		ManagedContent<BasicProbDistribution, T> {
+public class BasicDistribution extends
+		GenericBasicDistribution<DistributionContent<DistributionValues>> {
 
-	public static <T2 extends DistributionContent<?, ?>> BasicDistribution<T2> create(
-			ProxyFactory<? extends T2> factory, Ice.Object o) {
-		return new BasicDistribution<T2>(factory, o);
+	public static BasicDistribution create(Ice.Object o) {
+		return new BasicDistribution(o);
+	}
+
+	public static BasicDistribution create() {
+		BasicProbDistribution o = new BasicProbDistribution("",
+				new DistributionValues());
+		return new BasicDistribution(o);
 	}
 
 	/**
 	 * @param class1
 	 * @param content
 	 */
-	protected BasicDistribution(ProxyFactory<? extends T> factory,
-			Ice.Object content) {
-		super(BasicProbDistribution.class, factory, content);
-	}
-
-	public T getDistribution() {
-		return _factory.create(_content.values);
-	}
-
-	public String getId() {
-		return _content.key;
-	}
-
-	@Override
-	public String toString() {
-		String result = getClass().getSimpleName() + " [" + _content.key + "=";
-		result += _factory.create(_content.values).toString();
-		result += "] ";
-		return result;
+	protected BasicDistribution(Ice.Object content) {
+		super(new DistributionContentFactory(), content);
 	}
 }

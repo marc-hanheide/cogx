@@ -25,6 +25,7 @@ package de.dfki.lt.tr.beliefs.data;
 // Belief API slice
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 
@@ -37,19 +38,18 @@ import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
  * @started 100521
  * @version 100521
  */
-public class Formula<T extends dFormula> extends Proxy<T> {
+public class Formula extends Proxy<dFormula> {
 
-	public static <T2 extends dFormula> Formula<T2> create(
-			Class<? extends T2> class1, Ice.Object pd) {
-		return new Formula<T2>(class1, pd);
+	public static Formula create(Ice.Object pd) {
+		return new Formula(pd);
 	}
 
 	/**
 	 * Object is created from underlying slice-based datastructure, and a given
 	 * probability.
 	 */
-	protected Formula(Class<? extends T> type, Ice.Object formula) {
-		super(type, formula);
+	protected Formula(Ice.Object formula) {
+		super(dFormula.class, formula);
 
 	} // end constructor
 
@@ -83,6 +83,26 @@ public class Formula<T extends dFormula> extends Proxy<T> {
 					"Cannot query [proposition] for formula: Formula not of type proposition");
 		} else {
 			return ((ElementaryFormula) _content).prop;
+		}
+	} // end getProposition
+
+	/**
+	 * Returns the integer for a formula, provided the formula is
+	 * an integer
+	 * 
+	 * @return String The proposition of the formula
+	 * @throws BeliefNotInitializedException
+	 *             If the formula is not initialized
+	 * @throws BeliefInvalidQueryException
+	 *             If the formula is not of type proposition
+	 */
+
+	public int getInteger() throws BeliefInvalidQueryException {
+		if (!(_content instanceof IntegerFormula)) {
+			throw new BeliefInvalidQueryException(
+					"Cannot query [proposition] for formula: Formula not of type proposition");
+		} else {
+			return ((IntegerFormula) _content).val;
 		}
 	} // end getProposition
 

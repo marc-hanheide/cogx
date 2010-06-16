@@ -24,6 +24,7 @@ package de.dfki.lt.tr.beliefs.data;
 
 // Belief API slice
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
+import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
 import de.dfki.lt.tr.beliefs.slice.distribs.NormalValues;
 
 /**
@@ -36,7 +37,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.NormalValues;
  * @version 100521
  */
 
-public class Gaussian extends Proxy<NormalValues> {
+public class Gaussian extends DistributionContent<NormalValues> {
 
 	public static Gaussian create(Ice.Object o) {
 		return new Gaussian(o);

@@ -3,9 +3,11 @@
  */
 package de.dfki.lt.tr.beliefs.factories;
 
-import de.dfki.lt.tr.beliefs.data.Belief;
-import de.dfki.lt.tr.beliefs.data.Content;
+import de.dfki.lt.tr.beliefs.data.GenericBelief;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.AbstractProxyFactory;
+import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
+import de.dfki.lt.tr.beliefs.data.genericproxies.Content;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame;
 import de.dfki.lt.tr.beliefs.slice.framing.TemporalInterval;
@@ -16,7 +18,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
  * @author marc
  * 
  */
-public class BeliefFactory extends AbstractProxyFactory<Belief<?, ?>> {
+public class BeliefFactory extends AbstractProxyFactory<GenericBelief<?, ?>> {
 
 	// public static <T2 extends dBelief> CondIndependentFormulaBeliefProxy<T2>
 	// create(Class<? extends T2> type, String beliefType, String id) throws
@@ -33,18 +35,18 @@ public class BeliefFactory extends AbstractProxyFactory<Belief<?, ?>> {
 	// return fact.cr eate(belief);
 	// }
 
-	public <T extends dBelief, C extends Content<?>> Belief<T, C> create(
-			Class<? extends T> type, DefaultProxyFactory<? extends C> fact, Ice.Object o) {
-		return Belief.create(type, fact, o);
+	public <T extends dBelief, C extends Content<?>> GenericBelief<T, C> create(
+			Class<? extends T> type, ProxyFactory<? extends C> fact, Ice.Object o) {
+		return GenericBelief.create(type, fact, o);
 	}
 	
-	public <T extends dBelief, C extends Content<?>> Belief<T, C> create(
-			Class<? extends T> type, DefaultProxyFactory<? extends C> fact,
+	public <T extends dBelief, C extends Content<?>> GenericBelief<T, C> create(
+			Class<? extends T> type, ProxyFactory<? extends C> fact,
 			String beliefType, String id) throws InstantiationException,
 			IllegalAccessException {
 		T belief = type.newInstance();
 		belief.id = id;
-		belief.content = fact.create().get();
+		belief.content = new ProbDistribution();
 		belief.estatus = new PrivateEpistemicStatus("robot");
 		belief.frame = new SpatioTemporalFrame("here", new TemporalInterval());
 		belief.hist = new AbstractBeliefHistory();
@@ -53,8 +55,8 @@ public class BeliefFactory extends AbstractProxyFactory<Belief<?, ?>> {
 	}
 
 	@Override
-	public Belief<?, ?> create(Ice.Object pd) {
-		return Belief.create(dBelief.class, new ContentFactory(), pd);
+	public GenericBelief<?, ?> create(Ice.Object pd) {
+		return GenericBelief.create(dBelief.class, new ContentFactory(), pd);
 	}
 
 }

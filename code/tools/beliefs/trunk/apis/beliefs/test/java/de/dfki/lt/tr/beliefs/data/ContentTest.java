@@ -27,25 +27,15 @@ package de.dfki.lt.tr.beliefs.data;
 //IMPORTS
 
 //Java
-import java.util.ArrayList;
-import java.util.LinkedList;
+import static org.junit.Assert.assertNotNull;
 
-//JUnit 
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-//Slice
-import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
-import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
-import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
-import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
-
-//Belief API
-import de.dfki.lt.tr.beliefs.util.BeliefException;
-import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
-import de.dfki.lt.tr.beliefs.util.BeliefMissingValueException;
+import de.dfki.lt.tr.beliefs.data.genericproxies.Content;
+import de.dfki.lt.tr.beliefs.data.genericproxies.GenericIndependentDistribution;
+import de.dfki.lt.tr.beliefs.factories.IndependentDistributionFactory;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
  * Unit tests for the <tt>de.dfki.lt.tr.beliefs.data.Content</tt> class. 
@@ -58,24 +48,29 @@ import de.dfki.lt.tr.beliefs.util.BeliefMissingValueException;
 
 public class ContentTest {
 
+	private Belief<dBelief> genericBelief;
+	private Content<?> content;
+
 	@Before
 	public void setUp() throws Exception {
-	
+		genericBelief =Belief.create(dBelief.class);
+		content =genericBelief.getContent();
 	} // end setUp
-//
-//	/** An initialized content object can be provided with a distribution */
-//	@Test
-//	public void canSetDistributionForInitializedContent () 
-//	{ 
-//		try { 
-//			Content content = new Content();
-//			content.init();
-//			ProbDistribution dist = new ProbDistribution();
-//			content.setDistribution(dist);
-//		} catch (BeliefNotInitializedException bnie) { 
-//			fail("An initialized content object can be provided with a distribution");
-//		}
-//	} // end test
+
+	/** An initialized content object can be provided with a distribution */
+	@Test
+	public void contentNotNull () 
+	{ 
+			assertNotNull(content.get());
+			assertNotNull(genericBelief.getContent().get());
+	} // end test
+	
+	@Test
+	public void setContentOfBelief() {
+		content = FormulaDistribution.create();
+		genericBelief.setContent(content);
+		FormulaDistribution fd = FormulaDistribution.create(genericBelief.getContent().get());
+	}
 //	
 //	/** Cannot set a distribution for a non-initialized content structure */
 //	@Test
