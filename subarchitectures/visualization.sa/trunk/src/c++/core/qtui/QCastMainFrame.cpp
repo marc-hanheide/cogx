@@ -14,13 +14,96 @@
  * GNU General Public License for more details.
  */
 #include "QCastMainFrame.hpp"
+#include <QSettings>
+
 #include "../convenience.hpp"
+
+class QCastFrameManager
+{
+public:
+   struct FrameInfo
+   {
+      QCastMainFrame *pFrame;
+      QString viewid;
+      QSize size;
+      QPoint pos;
+      FrameInfo()
+      {
+         pFrame = NULL;
+      }
+   };
+   QList<FrameInfo> m_frameList;
+
+   QList<QCastMainFrame*> getCastFrames()
+   {
+      QList<QCastMainFrame*> frames;
+      foreach(QWidget* pWidget, QApplication::allWidgets()) {
+         if (! pWidget->inherits("QCastMainFrame")) continue;
+         QCastMainFrame *pFrame = dynamic_cast<QCastMainFrame*>(pWidget);
+         if (! pFrame) continue;
+         frames << pFrame;
+      }
+      return frames;
+   }
+
+   void saveWindowList()
+   {
+      QList<QCastMainFrame*> frames = getCastFrames();
+
+      QSettings settings("CogX", "CastDisplayServer");
+      settings.beginGroup("WindowLayout");
+      settings.beginGroup("Default");
+      settings.remove(""); // remove settings in current group
+      int i = 0;
+      foreach(QCastMainFrame* pFrame, frames) {
+         i++;
+         cogx::display::CDisplayView *pView = pFrame->ui.drawingArea->getView();
+         settings.beginGroup(QString("frame%1").arg(i));
+         if (pView)
+            settings.setValue("view", QString::fromStdString(pView->m_id));
+         settings.setValue("size", pFrame->size());
+         settings.setValue("pos", pFrame->pos());
+         settings.endGroup(); // frame
+      }
+      settings.endGroup(); // Default
+      settings.endGroup(); // WindowLayout
+   }
+
+   void loadWindowList()
+   {
+      m_frameList.clear();
+      QSettings settings("CogX", "CastDisplayServer");
+      settings.beginGroup("WindowLayout");
+      settings.beginGroup("Default");
+      QStringList frames = settings.childKeys();
+      foreach(QString frameid, frames) {
+         FrameInfo info;
+         settings.beginGroup(frameid);
+         info.viewid = settings.value("view", "").toString();
+         info.size = settings.value("size", QSize(400, 400)).toSize();
+         info.pos = settings.value("pos", QPoint(200, 200)).toPoint();
+         settings.endGroup();
+         m_frameList << info;
+      }
+      settings.endGroup(); // Default
+      settings.endGroup(); // WindowLayout
+   }
+
+   void createMissingWindows(cogx::display::CDisplayModel *pModel)
+   {
+      if (m_frameList.size() < 1) return;
+
+      // TODO: check if the view is in the list of saved views and create a frame for it if necessary
+      // QList<QCastMainFrame*> frames = getCastFrames();
+   }
+} FrameManager;
 
 QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    : QMainWindow(parent, flags)
 {
    m_pModel = NULL;
    m_pControlDataProxy = NULL;
+   m_isChild = false;
 
    ui.setupUi(this);
    m_winText = windowTitle();
@@ -39,6 +122,9 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 
    connect(ui.actNewWindow, SIGNAL(triggered()),
          this, SLOT(onNewWindow()));
+
+   connect(ui.actSaveWindowLayout, SIGNAL(triggered()),
+         this, SLOT(onSaveWindowList()));
 
    ui.wgCustomGui->setVisible(false);
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
@@ -96,6 +182,8 @@ void QCastMainFrame::updateViewList()
       QListWidgetItem* pItem = new QListWidgetItem(tr(pView->m_id.c_str()), ui.listWidget);
       // TODO: notify on click
    }
+
+   FrameManager.createMissingWindows();
 }
 
 void QCastMainFrame::updateCustomUi(cogx::display::CDisplayView *pView)
@@ -117,6 +205,7 @@ void QCastMainFrame::onRefreshViewList()
 
 void QCastMainFrame::setChildMode()
 {
+   m_isChild = true;
    ui.actShowViewList->setChecked(Qt::Unchecked);
    ui.dockWidget->setVisible(ui.actShowViewList->isChecked());
 }
@@ -129,6 +218,11 @@ void QCastMainFrame::onNewWindow()
    pchild->setChildMode();
    pchild->show();
    pchild->setView(ui.drawingArea->getView());
+}
+
+void QCastMainFrame::onSaveWindowList()
+{
+   FrameManager.saveWindowList();
 }
 
 void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
