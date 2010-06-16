@@ -5,6 +5,9 @@ import java.util.Iterator;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
+import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
+import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
+import de.dfki.lt.tr.beliefs.factories.FormulaFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
@@ -19,23 +22,25 @@ import de.dfki.lt.tr.beliefs.util.ProbFormula;
 
 /**
  * a {@link Proxy} for the list of formulas considered as alternative values in
- * a {@link BasicDistribution}.
+ * a {@link GenericBasicDistribution}.
  * 
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  * @param <T>
  *            the type of the factory used to generate the Formula proxies.
  */
-public class Formulas<T extends Proxy<? extends dFormula>>
-		extends DistributionContent<FormulaValues, T> implements
-		Iterable<ProbFormula<Proxy<? extends dFormula>>> {
+public class Formulas extends DistributionContent<FormulaValues> implements
+		Iterable<ProbFormula> {
 
-	public static <T2 extends Formula<?>> Formulas<T2> create(ProxyFactory<? extends T2>  factory, Ice.Object content) {
-		return new Formulas<T2>(factory, content);
+	public static Formulas create(Ice.Object content) {
+		return new Formulas(content);
 	}
-	
-	protected Formulas(ProxyFactory<? extends T>  factory, Ice.Object content) {
-		super(FormulaValues.class, factory, content);
+
+	protected final FormulaFactory _factory;
+
+	protected Formulas(Ice.Object content) {
+		super(FormulaValues.class, content);
+		_factory = new FormulaFactory();
 	}
 
 	public void add(boolean b, double prob) {
@@ -74,9 +79,9 @@ public class Formulas<T extends Proxy<? extends dFormula>>
 	}
 
 	// @Override
-	public Iterator<ProbFormula<Proxy<? extends dFormula>>> iterator() {
+	public Iterator<ProbFormula> iterator() {
 		final Iterator<FormulaProbPair> internalIter = _content.iterator();
-		return new Iterator<ProbFormula<Proxy<? extends dFormula>>>() {
+		return new Iterator<ProbFormula>() {
 
 			@Override
 			public boolean hasNext() {
@@ -84,12 +89,11 @@ public class Formulas<T extends Proxy<? extends dFormula>>
 			}
 
 			@Override
-			public ProbFormula<Proxy<? extends dFormula>> next() {
+			public ProbFormula next() {
 				FormulaProbPair pair = internalIter.next();
 				if (pair != null) {
-					Proxy<? extends dFormula> s = _factory.create(pair.val);
-					return new ProbFormula<Proxy<? extends dFormula>>(s,
-							pair.prob);
+					Formula s = _factory.create(pair.val);
+					return new ProbFormula(s, pair.prob);
 				}
 				return null;
 			}
@@ -222,5 +226,4 @@ public class Formulas<T extends Proxy<? extends dFormula>>
 							+ object.getClass().getName());
 	}
 
-	
 }

@@ -12,7 +12,7 @@ import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class IndependentDistributionFactory  implements ProxyFactory<IndependentDistribution> {
+public class IndependentFormulaFactory  implements ProxyFactory<IndependentDistribution> {
 
 	@Override
 	public IndependentDistribution create(Ice.Object pd) {

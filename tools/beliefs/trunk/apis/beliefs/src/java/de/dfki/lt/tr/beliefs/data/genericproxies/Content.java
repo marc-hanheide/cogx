@@ -1,4 +1,4 @@
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 import Ice.Object;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
