@@ -70,29 +70,42 @@ namespace Planning
          ******************************************************************************************************************/
 
         
-        struct s_Domain : string<d, o, m, a, i, n> {};
+        /*PDDL items completion*/
+        struct pddl_item_completion :
+            sor< space
+                 , one<')'>
+                 , one<'('> > {}; 
+    
+        /*A string that is not the prefix for a user-defined symbol, but rather a keyword.*/
+//         template<int... Chars >
+//         struct stand_alone_string : ifthen<string<Chars...>, not_at<pddl_item_completion>>{};
+        template<int... Chars >
+        struct stand_alone_string : seq<string<Chars...>, at<pddl_item_completion> >{};
         
-        struct s_Define : string<d, e, f, i, n, e> {};
-        struct s_Either : string< e, i, t, h, e, r > {};
-        struct s_Constants : sor<string<c, o, n, s, t, a, n, t, s>
-                                 , string<o, b, j, e, c, t, s>>{}; 
+        struct s_Domain : stand_alone_string<d, o, m, a, i, n> {};
         
-        struct s_And : string<a, n, d>{};
-        struct s_Not : string<n, o, t>{}; // *** Will generate DERIVED PREDICATE *** 
-        struct s_Or : string<o, r>{}; // *** Will generate DERIVED PREDICATE *** 
-        struct s_Forall : string<f, o, r, a, l, l>{}; // *** Will generate DERIVED PREDICATE *** 
-        struct s_Exists : string<e, x, i, s, t, s>{}; // *** Will generate DERIVED PREDICATE *** 
-        struct s_If : string<i, f>{}; // *** COMPILED TO DISJUNCTION ***
+//         struct s_Define : string<d, e, f, i, n, e> {};
+        struct s_Define : stand_alone_string<d, e, f, i, n, e> {};
+        struct s_Either : stand_alone_string< e, i, t, h, e, r > {};
+        struct s_Constants : sor<stand_alone_string<c, o, n, s, t, a, n, t, s>
+                                 , stand_alone_string<o, b, j, e, c, t, s>>{}; 
+        
+        struct s_And : stand_alone_string<a, n, d>{};
+        struct s_Not : stand_alone_string<n, o, t>{}; // *** Will generate DERIVED PREDICATE *** 
+        struct s_Or : stand_alone_string<o, r>{}; // *** Will generate DERIVED PREDICATE *** 
+        struct s_Forall : stand_alone_string<f, o, r, a, l, l>{}; // *** Will generate DERIVED PREDICATE *** 
+        struct s_Exists : stand_alone_string<e, x, i, s, t, s>{}; // *** Will generate DERIVED PREDICATE *** 
+        struct s_If : stand_alone_string<i, f>{}; // *** COMPILED TO DISJUNCTION ***
 
         
-        struct s_Probabilistic : string<p, r, o, b, a, b, i, l, i, s, t, i, c>{}; // *** EFFECT ***
-        struct s_When : string<p, r, o, b, a, b, i, l, i, s, t, i, c>{}; // *** EFFECT ***
-        struct s_Foreach : string<f, o, r, e, a, c, h>{}; // *** EFFECT ***
+        struct s_Probabilistic : stand_alone_string<p, r, o, b, a, b, i, l, i, s, t, i, c>{}; // *** EFFECT ***
+        struct s_When : stand_alone_string<p, r, o, b, a, b, i, l, i, s, t, i, c>{}; // *** EFFECT ***
+        struct s_Foreach : stand_alone_string<f, o, r, e, a, c, h>{}; // *** EFFECT ***
 
         
-        struct s_Increase : string<i, n, c, r, e, a, s, e> {};
-        struct s_Decrease : string<d, e, c, r, e, a, s, e> {};
-        struct s_Assign : string<a, s, s, i, g, n> {};
+        struct s_Increase : stand_alone_string<i, n, c, r, e, a, s, e> {};
+        struct s_Decrease : stand_alone_string<d, e, c, r, e, a, s, e> {};
+        struct s_Assign : stand_alone_string<a, s, s, i, g, n> {};
 
         /******************************************************************************************************************
          * PDDL items that are represented by alphanumeric variables strings. 
@@ -122,8 +135,6 @@ namespace Planning
                                                        , one<'-'>
                                                        , one<'_'> > > >{};
 
-
-
         
         struct Domain_Name : ifapply<Basic_Alphanumeric , Domain_Name__Action>{};
         
@@ -150,7 +161,6 @@ namespace Planning
 //         /* PDDL types as the occur in the description of predicate,
 //          * fluent/function, and action arguments.*/
 //         struct Type_Names : seq< Open, pad<s_Either, space>, plus<pad<Type_Name, space> >/*_plus*/, Close >/*_seq*/{};
-
         
         
         /******************************************************************************************************************

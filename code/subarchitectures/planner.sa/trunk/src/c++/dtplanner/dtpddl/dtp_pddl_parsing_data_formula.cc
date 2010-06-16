@@ -247,6 +247,10 @@ Formula_Data::complete__quantified_formula(int quantifier)
     assert(subformulae[formula_parsing_level + 1].size());
     std::ostringstream oss;
     oss<<"DERIVED-PREDICATE-"
+       <<subformulae[formula_parsing_level + 1][0].get()->get__type_name()
+       <<"-"
+       <<quantifier
+       <<"-"
        <<subformulae[formula_parsing_level + 1][0].get()->get__id();
     NEW_object_referenced_WRAPPED(Planning::Predicate_Name,
                                   name,

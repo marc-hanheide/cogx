@@ -1,7 +1,7 @@
 
 TARGET=some
 
-CXX= g++
+CXX= ccache g++
 
 OPTIMISE := -O1 
 

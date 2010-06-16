@@ -47,14 +47,14 @@ namespace Planning
          ******************************************************************************************************************/
 
 
-        struct s_Problem : string<p, r, o, b, l, e, m> {};
-        struct s_Init : string<i, n, i, t> {};
+        struct s_Problem : stand_alone_string<p, r, o, b, l, e, m> {};
+        struct s_Init : stand_alone_string<i, n, i, t> {};
         
-        struct s_Metric : string<m, e, t, r, i, c> {};
-        struct s_Maximise : string<m, a, x, i, m, i, s, e> {};
-        struct s_Minimise : string<m, i, n, i, m, i, s, e> {};
-        struct s_Maximize : string<m, a, x, i, m, i, z, e> {};
-        struct s_Minimize : string<m, i, n, i, m, i, z, e> {};
+        struct s_Metric : stand_alone_string<m, e, t, r, i, c> {};
+        struct s_Maximise : stand_alone_string<m, a, x, i, m, i, s, e> {};
+        struct s_Minimise : stand_alone_string<m, i, n, i, m, i, s, e> {};
+        struct s_Maximize : stand_alone_string<m, a, x, i, m, i, z, e> {};
+        struct s_Minimize : stand_alone_string<m, i, n, i, m, i, z, e> {};
         
         /******************************************************************************************************************
          * PDDL items that are represented by alphanumeric variables strings. 
@@ -110,10 +110,10 @@ namespace Planning
          ******************************************************************************************************************/
 
         struct Associated_Domain
-            : seq< pad<s_Domain, space>
-                   , Domain_Name > {};
+            : seq< s_Domain
+                   , pad<Domain_Name, space> > {};
         
-                
+        
         /******************************************************************************************************************
          * High level PDDL domain description elements.
          *
