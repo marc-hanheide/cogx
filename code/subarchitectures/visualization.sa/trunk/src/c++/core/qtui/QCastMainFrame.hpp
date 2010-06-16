@@ -37,8 +37,10 @@ class QCastMainFrame:
 {
    Q_OBJECT
 private:
+   friend class QCastFrameManager;
    Ui::MainWindow ui;
    QString m_winText;
+   bool m_isChild;
 
 private:
    cogx::display::CDisplayModel* m_pModel;
@@ -59,10 +61,12 @@ private slots:
    void onShowViewListChanged();
    void onRefreshViewList();
    void onNewWindow();
+   void onSaveWindowList();
 
 private:
    void updateCustomUi(cogx::display::CDisplayView *pView);
    void updateViewList();
+   QWidgetList getCastFrames();
 
    // CDisplayModelObserver notifications
 private:
