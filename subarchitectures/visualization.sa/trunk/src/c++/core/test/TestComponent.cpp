@@ -288,7 +288,7 @@ void VideoViewer::runComponent()
            "DispList:draw('myobject')\n"
          "glPopMatrix()\n"
       "end\n";
-    m_display.setLuaGlObject("Visualization.sa.LuaGl", "Points", str.str());
+    m_display.setLuaGlObject("Visualization.sa.LuaGL", "Points", str.str());
   }
   {
     std::ifstream infile;
@@ -318,8 +318,21 @@ void VideoViewer::runComponent()
     strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
   }
+  if (0) { // XXX: This is not working because libflashplugin.so crashes.
+    std::stringstream str;
+    str << "This is the TestComponent for the Display Server<br>";
+    str << "<hr>";
+    // str << "<object type='cogxcast/displayview' data='cogxdisp://view/Visualization.test.Pusher'></object>";
+    str << "<object type='application/cast-displayview' data='cogxdisp://view/"
+        << getComponentID() << "'></object>";
+    str << "<hr>";
+    // str << "<object type='cogxcast/displayview' data='cogxdisp://view/Visualization.test.LuaGL'></object>";
+    // str << "<hr>";
+    m_display.setHtml("Visualization.test.HtmlPlugin", "text", str.str());
+  }
 
   int count = 0;
+  int boxrot = 0;
   srand ( time(NULL) );
 #else
   println("press <s> to stop/start receving images");
@@ -333,7 +346,7 @@ void VideoViewer::runComponent()
     sleepComponent(100);
     std::stringstream str;
     count++;
-    if (count > 2 * 3 * 3 * 5 * 5 * 7 * 11 * 100) count = 0;
+    if (count > 100) count = 0;
     if (count % 2 == 0) {
       int dir = rand() % 4;
       switch (dir) {
@@ -343,7 +356,8 @@ void VideoViewer::runComponent()
         case 3: str << "move(0,-1)" << endl; break;
       }
     }
-    str << "boxTurn=" << (count % 36) * 10 << endl << "DispList:setDirty('pusher.box.rotation')" << endl;
+    boxrot = (boxrot++) % 36;
+    str << "boxTurn=" << (boxrot * 10) << endl << "DispList:setDirty('pusher.box.rotation')" << endl;
     if (str.tellp() > 0) {
       m_display.setLuaGlObject("Visualization.test.Pusher", "Pusher", str.str());
     }

@@ -20,6 +20,9 @@
 #ifdef V11N_OBJECT_HTML
 #include "QCastViewHtml.hpp"
 #endif
+#ifdef V11N_OBJECT_HTML_PLUGINS
+#include "QCastPlugins.hpp"
+#endif
 #include <QVBoxLayout>
 
 #include "../convenience.hpp"
@@ -61,7 +64,7 @@ void QViewContainer::removeUi()
    }
 }
 
-void QViewContainer::setView(cogx::display::CDisplayView* pView)
+void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView)
 {
    if (! pView) {
       m_pDisplay = NULL;
@@ -87,6 +90,14 @@ void QViewContainer::setView(cogx::display::CDisplayView* pView)
 #ifdef V11N_OBJECT_HTML
       else if (pView->m_preferredContext == cogx::display::ContextHtml) {
          m_pDisplay = new QCastViewHtml(this);
+#ifdef V11N_OBJECT_HTML_PLUGINS
+         QWebPage* pPage = dynamic_cast<QCastViewHtml*>(m_pDisplay)->page();
+         if (pPage) {
+           QCastPluginFactory* pFactory = new QCastPluginFactory();
+           pFactory->setModel(pModel);
+           pPage->setPluginFactory(pFactory);
+         }
+#endif
       }
 #endif
       else {
