@@ -72,6 +72,7 @@ public:
 
 	typedef long flowtype;
 	typedef void * node_id;
+	typedef intptr_t SHIFTPTR_T;
 
 	/* interface functions */
 
@@ -166,7 +167,7 @@ private:
 #define NEIGHBOR_NODE_REV(i, shift) ((node *) ((char *)(i) - (shift)))
 	typedef struct arc_forward_st
 	{
-		uintptr_t		shift;		/* node_to = NEIGHBOR_NODE(node_from, shift) */
+		SHIFTPTR_T 		shift;		/* node_to = NEIGHBOR_NODE(node_from, shift) */
 		captype			r_cap;		/* residual capacity */
 		captype			r_rev_cap;	/* residual capacity of the reverse arc*/
 	} arc_forward;

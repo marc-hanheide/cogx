@@ -1060,7 +1060,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
   int num_pixels = width*height;
   vector<unsigned char> result(num_pixels);   // stores result of optimization
 
-  log("Segment image %ix%i \n", width, height);
+  log("Segment image %ix%i", width, height);
 
   try{
 	GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width, height, num_labels);
@@ -1099,7 +1099,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 	gc->setSmoothCost(&smoothFn);
 
 
-	log("Before optimization energy is %d\n",gc->compute_energy());
+	log("Before optimization energy is %d",gc->compute_energy());
 
 	int e1 = gc->compute_energy();
 	gc->expansion(3);
@@ -1117,7 +1117,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 			diff = abs(e1 - e2);
 			}
 			*/		
-	log("After %i expand iterations the energy is %d\n", iter, gc->compute_energy());
+	log("After %i expand iterations the energy is %d", iter, gc->compute_energy());
 
 	//		gc->swap(SWAP_ITERS);		 // run swap
 	//		log("\nAfter %i swap iterations the energy is %d\n", SWAP_ITERS, gc->compute_energy());

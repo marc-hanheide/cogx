@@ -109,7 +109,7 @@ void Graph::add_edge(node_id from, node_id to, captype cap, captype rev_cap)
 	a_rev = arc_rev_block_first -> current ++;
 
 	a_rev -> sister = (arc_forward *) from;
-	a_for -> shift  = (uintptr_t) to;
+	a_for -> shift  = (SHIFTPTR_T) to;
 	a_for -> r_cap = cap;
 	a_for -> r_rev_cap = rev_cap;
 
@@ -259,7 +259,7 @@ void Graph::prepare_graph()
 		arc_forward *af;
 		arc_reverse *ar;
 		node *from;
-		int shift = 0, shift_new;
+		SHIFTPTR_T shift = 0, shift_new;
 		captype r_cap, r_rev_cap, r_cap_new, r_rev_cap_new;
 
 		if (!(from=(node *)(a_rev->sister))) continue;
@@ -303,7 +303,7 @@ void Graph::prepare_graph()
 		ab_for -> current -> shift     = a_for -> shift;
 		ab_for -> current -> r_cap     = a_for -> r_cap;
 		ab_for -> current -> r_rev_cap = a_for -> r_rev_cap;
-		a_for -> shift = (uintptr_t) (ab_for -> current + 1);
+		a_for -> shift = (SHIFTPTR_T) (ab_for -> current + 1);
 		i -> first_out = (arc_forward *) (((char *)a_for) - 1);
 	}
 
