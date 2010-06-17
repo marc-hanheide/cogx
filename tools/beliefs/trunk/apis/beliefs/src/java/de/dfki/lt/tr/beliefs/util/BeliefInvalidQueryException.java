@@ -33,6 +33,11 @@ package de.dfki.lt.tr.beliefs.util;
 
 public class BeliefInvalidQueryException extends BeliefException {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1947620668731058393L;
+
 	public BeliefInvalidQueryException (String msg) 
 	{ 
 		super(msg); 

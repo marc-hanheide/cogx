@@ -1,15 +1,18 @@
 /**
  * 
  */
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.specificproxies;
 
 import java.util.LinkedList;
 
+import de.dfki.lt.tr.beliefs.data.Formulas;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
 import de.dfki.lt.tr.beliefs.factories.FormulasFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
  * @author marc
@@ -17,7 +20,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
  */
 public class FormulaDistribution extends GenericBasicDistribution<Formulas> {
 
-	public static FormulaDistribution create(Ice.Object o) {
+	public static FormulaDistribution create(ProbDistribution o) {
 		return new FormulaDistribution(o);
 	}
 
@@ -29,7 +32,7 @@ public class FormulaDistribution extends GenericBasicDistribution<Formulas> {
 	 * @param class1
 	 * @param content
 	 */
-	protected FormulaDistribution(Ice.Object content) {
+	protected FormulaDistribution(ProbDistribution content) {
 		super(new FormulasFactory(), content);
 	}
 

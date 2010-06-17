@@ -33,6 +33,11 @@ public class BeliefInvalidOperationException
 extends BeliefException 
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -466767075264262816L;
+
 	public BeliefInvalidOperationException (String msg) 
 	{ 
 		super(msg); 

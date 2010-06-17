@@ -8,6 +8,7 @@ import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
 import de.dfki.lt.tr.beliefs.factories.DistributionContentFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
  * @author marc
@@ -16,7 +17,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 public class BasicDistribution extends
 		GenericBasicDistribution<DistributionContent<DistributionValues>> {
 
-	public static BasicDistribution create(Ice.Object o) {
+	public static BasicDistribution create(ProbDistribution o) {
 		return new BasicDistribution(o);
 	}
 
@@ -30,7 +31,7 @@ public class BasicDistribution extends
 	 * @param class1
 	 * @param content
 	 */
-	protected BasicDistribution(Ice.Object content) {
+	protected BasicDistribution(ProbDistribution content) {
 		super(new DistributionContentFactory(), content);
 	}
 }

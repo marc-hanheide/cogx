@@ -3,18 +3,19 @@
  */
 package de.dfki.lt.tr.beliefs.data;
 
-import de.dfki.lt.tr.beliefs.data.genericproxies.Content;
-import de.dfki.lt.tr.beliefs.factories.ContentFactory;
+import de.dfki.lt.tr.beliefs.data.genericproxies.Distribution;
+import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBelief;
+import de.dfki.lt.tr.beliefs.factories.DistributionFactory;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class Belief<T extends dBelief> extends GenericBelief<T, Content<?>> {
+public class Belief<T extends dBelief> extends GenericBelief<T, Distribution<?>> {
 
 	public static <T2 extends dBelief> Belief<T2> create(
-			Class<? extends T2> type, Ice.Object o) {
+			Class<? extends T2> type, dBelief o) {
 		return new Belief<T2>(type, o);
 	}
 
@@ -24,8 +25,8 @@ public class Belief<T extends dBelief> extends GenericBelief<T, Content<?>> {
 		return new Belief<T2>(type, internal);
 	}
 
-	protected Belief(Class<? extends T> class1, Ice.Object content) {
-		super(class1, new ContentFactory(), content);
+	protected Belief(Class<? extends T> class1, dBelief content) {
+		super(class1, new DistributionFactory(), content);
 	}
 
 }

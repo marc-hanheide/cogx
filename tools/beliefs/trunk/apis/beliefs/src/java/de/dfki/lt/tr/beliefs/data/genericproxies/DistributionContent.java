@@ -12,7 +12,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
  */
 public class DistributionContent<T extends DistributionValues>
 		extends Proxy<T> {
-	public DistributionContent(Class<? extends T> type, Ice.Object content) {
+	public DistributionContent(Class<? extends T> type, DistributionValues content) {
 		super(type, content);
 	}
 

@@ -32,6 +32,11 @@ package de.dfki.lt.tr.beliefs.util;
 
 public class BeliefMissingValueException extends BeliefException {
 		
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3003046952838215278L;
+
 	public BeliefMissingValueException (String msg) { super(msg); }
 	
 	

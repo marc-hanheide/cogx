@@ -3,12 +3,9 @@
  */
 package de.dfki.lt.tr.beliefs.data;
 
-import Ice.Object;
-import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
-import de.dfki.lt.tr.beliefs.data.genericproxies.Content;
+import de.dfki.lt.tr.beliefs.data.genericproxies.Distribution;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericIndependentDistribution;
-import de.dfki.lt.tr.beliefs.factories.ContentFactory;
-import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.factories.DistributionFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
@@ -16,13 +13,13 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
  * 
  */
 public class IndependentDistribution extends
-		GenericIndependentDistribution<Content<ProbDistribution>> {
-	public static  IndependentDistribution create(Ice.Object pd) {
+		GenericIndependentDistribution<Distribution<ProbDistribution>> {
+	public static IndependentDistribution create(ProbDistribution pd) {
 		return new IndependentDistribution(pd);
 	}
 
-	protected IndependentDistribution(Object content) {
-		super(new ContentFactory(), content);
+	protected IndependentDistribution(ProbDistribution content) {
+		super(new DistributionFactory(), content);
 	}
 
 }

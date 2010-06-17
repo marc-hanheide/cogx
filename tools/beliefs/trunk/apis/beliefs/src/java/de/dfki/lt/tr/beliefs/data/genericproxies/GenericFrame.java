@@ -20,13 +20,13 @@
 
 // =================================================================
 // PACKAGE DEFINITION 
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 //=================================================================
 //IMPORTS
 
 // Belief API slice
-import Ice.Object;
+
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame;
 
@@ -39,9 +39,13 @@ import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame;
  * @version	100523
  */
 
-public class Frame<T extends AbstractFrame> extends Proxy<T> {
+public class GenericFrame<T extends AbstractFrame> extends Proxy<T> {
 
-	protected Frame(Class<? extends T> class1, Object content) {
+	public static <T2 extends AbstractFrame> GenericFrame<T2> create(Class<? extends T2> type, AbstractFrame frame) {
+		return new GenericFrame<T2>(type, frame);
+	}
+	
+	protected GenericFrame(Class<? extends T> class1, AbstractFrame content) {
 		super(class1, content);
 	}
 

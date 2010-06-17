@@ -1,12 +1,12 @@
 /**
  * 
  */
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.specificproxies;
 
-import de.dfki.lt.tr.beliefs.data.abstractproxies.ManagedContent;
+import de.dfki.lt.tr.beliefs.data.Gaussian;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
 import de.dfki.lt.tr.beliefs.factories.GaussianFactory;
-import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
  * @author marc
@@ -15,7 +15,7 @@ import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 public class GaussianDistribution extends
 		GenericBasicDistribution<Gaussian> {
 
-	public static GaussianDistribution create(Ice.Object o) {
+	public static GaussianDistribution create(ProbDistribution o) {
 		return new GaussianDistribution(o);
 	}
 
@@ -24,7 +24,7 @@ public class GaussianDistribution extends
 	 * @param content
 	 */
 	protected GaussianDistribution(
-			Ice.Object content) {
+			ProbDistribution content) {
 		super(new GaussianFactory(), content);
 	}
 }

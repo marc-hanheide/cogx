@@ -3,25 +3,19 @@
  */
 package de.dfki.lt.tr.beliefs.factories;
 
-import Ice.Object;
 import de.dfki.lt.tr.beliefs.data.IndependentDistribution;
-import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
-import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
+import de.dfki.lt.tr.beliefs.data.abstractproxies.AbstractProxyFactory;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class IndependentFormulaFactory  implements ProxyFactory<IndependentDistribution> {
+public class IndependentFormulaFactory extends
+		AbstractProxyFactory<ProbDistribution, IndependentDistribution> {
 
 	@Override
-	public IndependentDistribution create(Ice.Object pd) {
+	public IndependentDistribution create(ProbDistribution pd) {
 		return IndependentDistribution.create(pd);
 	}
-
-	@Override
-	public IndependentDistribution create(Proxy<? extends Object> proxy) {
-		return create(proxy.get());
-	}
-
 }

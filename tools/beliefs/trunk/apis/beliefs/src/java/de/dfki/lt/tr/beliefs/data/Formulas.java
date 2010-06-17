@@ -4,10 +4,9 @@ import java.util.Iterator;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
-import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
 import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
-import de.dfki.lt.tr.beliefs.factories.FormulaFactory;
+import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
@@ -32,15 +31,12 @@ import de.dfki.lt.tr.beliefs.util.ProbFormula;
 public class Formulas extends DistributionContent<FormulaValues> implements
 		Iterable<ProbFormula> {
 
-	public static Formulas create(Ice.Object content) {
+	public static Formulas create(DistributionValues content) {
 		return new Formulas(content);
 	}
 
-	protected final FormulaFactory _factory;
-
-	protected Formulas(Ice.Object content) {
+	protected Formulas(DistributionValues content) {
 		super(FormulaValues.class, content);
-		_factory = new FormulaFactory();
 	}
 
 	public void add(boolean b, double prob) {
@@ -92,7 +88,7 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 			public ProbFormula next() {
 				FormulaProbPair pair = internalIter.next();
 				if (pair != null) {
-					Formula s = _factory.create(pair.val);
+					Formula s = Formula.create(pair.val);
 					return new ProbFormula(s, pair.prob);
 				}
 				return null;
