@@ -20,7 +20,7 @@ public class IndependentBasicDistributions extends
 	}
 
 	protected IndependentBasicDistributions(ProbDistribution content) {
-		super(new BasicDistributionFactory(), content);
+		super(BasicDistributionFactory.get(), content);
 	}
 
 }

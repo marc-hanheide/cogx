@@ -13,6 +13,14 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
  */
 public class DistributionFactory extends AbstractProxyFactory<ProbDistribution, Distribution<ProbDistribution>> {
 
+	private static DistributionFactory singleton = null;
+
+	public static DistributionFactory get() {
+		if (singleton == null)
+			singleton = new DistributionFactory();
+		return singleton;
+	}
+	
 	@Override
 	public Distribution<ProbDistribution> create(ProbDistribution pd) {
 		return Distribution.create(ProbDistribution.class, pd);

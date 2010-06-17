@@ -26,7 +26,7 @@ public class Belief<T extends dBelief> extends GenericBelief<T, Distribution<?>>
 	}
 
 	protected Belief(Class<? extends T> class1, dBelief content) {
-		super(class1, new DistributionFactory(), content);
+		super(class1, DistributionFactory.get(), content);
 	}
 
 }

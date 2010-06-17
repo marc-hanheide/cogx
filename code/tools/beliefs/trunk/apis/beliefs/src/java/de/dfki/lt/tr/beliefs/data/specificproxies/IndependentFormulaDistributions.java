@@ -4,7 +4,7 @@
 package de.dfki.lt.tr.beliefs.data.specificproxies;
 
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericIndependentDistribution;
-import de.dfki.lt.tr.beliefs.factories.FormulaDistributionFactory;
+import de.dfki.lt.tr.beliefs.factories.specific.FormulaDistributionFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
@@ -19,7 +19,7 @@ public class IndependentFormulaDistributions extends
 	}
 
 	protected IndependentFormulaDistributions(ProbDistribution content) {
-		super(new FormulaDistributionFactory(), content);
+		super(FormulaDistributionFactory.get(), content);
 	}
 
 }

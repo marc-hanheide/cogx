@@ -101,7 +101,7 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 		};
 	}
 
-	public void setAll(Object[][] init) {
+	public void addAll(Object[][] init) {
 		for (Object[] entry : init) {
 			dFormula formula = getFormulaObject(entry[0]);
 			double prob = ((Double) entry[1]).floatValue();
@@ -110,13 +110,13 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 
 	}
 
-	public void setProb(int query, float prob) {
+	public void setProb(int query, double prob) {
 		FormulaProbPair f = findFormula(query);
 		if (f == null)
 			_content.values.add(new FormulaProbPair(new IntegerFormula(-1,
-					query), prob));
+					query), (float) prob));
 		else
-			f.prob = prob;
+			f.prob = (float) prob;
 	}
 
 	public void setProb(String query, double prob) {
@@ -222,4 +222,8 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 							+ object.getClass().getName());
 	}
 
+	public int size() {
+		return _content.size();
+	}
+	
 }

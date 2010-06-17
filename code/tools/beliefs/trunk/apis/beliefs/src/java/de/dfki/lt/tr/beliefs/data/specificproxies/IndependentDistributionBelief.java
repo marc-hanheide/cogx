@@ -34,7 +34,7 @@ public class IndependentDistributionBelief<T extends dBelief> extends
 
 	protected IndependentDistributionBelief(Class<? extends T> class1,
 			dBelief content) {
-		super(class1, new IndependentDistributionFactory(), content);
+		super(class1, IndependentDistributionFactory.get(), content);
 	}
 
 }

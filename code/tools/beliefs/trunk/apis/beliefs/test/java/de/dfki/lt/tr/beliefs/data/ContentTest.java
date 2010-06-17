@@ -32,8 +32,9 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.dfki.lt.tr.beliefs.data.genericproxies.Content;
+import de.dfki.lt.tr.beliefs.data.genericproxies.Distribution;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericIndependentDistribution;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.factories.IndependentDistributionFactory;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
@@ -49,26 +50,26 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 public class ContentTest {
 
 	private Belief<dBelief> genericBelief;
-	private Content<?> content;
+	private Distribution<?> distribution;
 
 	@Before
 	public void setUp() throws Exception {
 		genericBelief =Belief.create(dBelief.class);
-		content =genericBelief.getContent();
+		distribution =genericBelief.getContent();
 	} // end setUp
 
 	/** An initialized content object can be provided with a distribution */
 	@Test
 	public void contentNotNull () 
 	{ 
-			assertNotNull(content.get());
+			assertNotNull(distribution.get());
 			assertNotNull(genericBelief.getContent().get());
 	} // end test
 	
 	@Test
 	public void setContentOfBelief() {
-		content = FormulaDistribution.create();
-		genericBelief.setContent(content);
+		distribution = FormulaDistribution.create();
+		genericBelief.setContent(distribution);
 		FormulaDistribution fd = FormulaDistribution.create(genericBelief.getContent().get());
 	}
 //	
