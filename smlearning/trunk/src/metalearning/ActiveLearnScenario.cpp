@@ -17,7 +17,7 @@
 //------------------------------------------------------------------------------
 
 #include <metalearning/ActiveLearnScenario.h>
-#include <tools/data_handling.h>
+
 
 using namespace golem;
 
@@ -248,7 +248,8 @@ void ActiveLearnScenario::write_data (bool final){
 		write_dataset (dataFileName, data);
 		string stpFileName = dataFileName + ".stp";
 		ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
-		write_intvector(writeToFile, usedStartingPositions);
+		//write_intvector(writeToFile, usedStartingPositions);
+		write_realvector(writeToFile, usedStartingPositions);
 	}
 
 	for (SMRegion::RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
@@ -522,10 +523,10 @@ void ActiveLearnScenario::update_learners () {
 	currentRegion->startingPositionsHistory.push_back (startPosition);
 
 	SMRegion::RegionsMap::iterator it;
-cout << "--------------------------------------------------------" << regions.size() << endl;
+//cout << "--------------------------------------------------------" << regions.size() << endl;
 	for ( it=regions.begin() ; it != regions.end(); it++ ) {
 		if (&(it->second) != currentRegion) {
-cout << "--------------------------------------------------------" << endl;
+//cout << "--------------------------------------------------------" << endl;
 			double lastLP = it->second.learningProgressHistory.back();
 			double lastEr = it->second.errorsHistory.back();
 			it->second.learningProgressHistory.push_back(lastLP);
@@ -650,18 +651,154 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 }
 
 
+void ActiveLearnScenario::init(map<string, string> m) {
+	
+	Scenario::init(m);
+
+	netconfigFileName = "";
+
+	if (m.count("netconfigFileName")) {
+		netconfigFileName = m["netconfigFileName"];
+	}
+
+	
+}
+
+
 
 //------------------------------------------------------------------------------
+
+
+namespace po = boost::program_options;
+using namespace boost;
+
+
+
+void ActivePushingApplication::define_program_options_desc() {
+
+try {
+
+	PushingApplication::define_program_options_desc();
+
+	prgOptDesc.add_options()
+		("netconfigFileName,N", po::value<string>(), "name of the netconfig file")
+	;
+	
+
+}catch(std::exception& e) {
+	cerr << "error: " << e.what() << "\n";
+}catch(...) {
+	cerr << "Exception of unknown type!\n";
+
+}
+
+
+}
+
+
+
+
+
+void ActivePushingApplication::read_program_options(int argc, char *argv[]) {
+
+try {
+	PushingApplication::read_program_options(argc, argv);
+
+	if (vm.count("netconfigFileName")) {
+		arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
+	}
+
+}catch(std::exception& e) {
+	cerr << "error: " << e.what() << "\n";
+}catch(...) {
+	cerr << "Exception of unknown type!\n";
+
+}
+
+}
+
+
+
+
+
+int ActivePushingApplication::main(int argc, char *argv[]) {
+
+	PushingApplication::main(argc, argv);
+
+ //try {
+	
+	//po::options_description desc("Allowed options");
+	//prgOptDesc.add_options()
+/*		("help", "produce help message")
+//		("argument1, a1", po::value<int>(&opt)->default_value(10), "first argument")
+//		("argument2, a2", po::value<string>(), "first argument")
+//		("include-path,I", po::value< vector<string> >(),"include path")
+//		("input-file", po::value< vector<string> >(), "input file")
+		("numSequences,S", po::value<string>(), "number of sequences")
+		("startingPosition,P", po::value<string>(), "only starting position to use")
+		("storeLabels,L", po::value<string>(), "use true or false as argument")
+*/	//	("netconfigFileName,N", po::value<string>(), "name of the netconfig file")
+/*		("configFile", po::value<string>(), "name of the xml config file")
+*/	;
+
+/*	po::positional_options_description p;
+	p.add("configFile", -1);
+
+	po::variables_map vm;
+//	po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+	po::notify(vm);
+
+	if (vm.count("help")) {
+		cout << desc << endl;
+		return 1;
+	}
+
+	if (vm.count("numSequences")) {
+		arguments["numSequences"]=vm["numSequences"].as<string>();
+	}
+
+	if (vm.count("startingPosition")) {
+		arguments["startingPosition"]=vm["startingPosition"].as<string>();
+	}
+
+	if (vm.count("storeLabels")) {
+		arguments["storeLabels"]=vm["storeLabels"].as<string>();
+	}
+
+*/	//if (vm.count("netconfigFileName")) {
+	//	arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
+	//}
+
+/*	if (vm.count("configFile")) {
+		char* arr[2];
+		//char* arr [] = (char *){argv[0], vm["configFile"].as<string>().c_str()};
+		arr[0] = argv[0];
+		arr[1] =  vm["configFile"].as<string>().c_str();
+		Application::main(2, arr);
+	} else {
+		char* arr [] = {argv[0]};
+		Application::main(1, arr);
+	}
+
+
+}catch(std::exception& e) {
+	cerr << "error: " << e.what() << "\n";
+}catch(...) {
+	cerr << "Exception of unknown type!\n";
+}
+
+return 1;
+*/
+}
 
 void ActivePushingApplication::run(int argc, char *argv[]) {
 
 	ActiveLearnScenario::Desc desc;
 	XMLData((Scenario::Desc&)desc, xmlcontext());
 
-
-
-
 	ActiveLearnScenario *pActiveLearnScenario = dynamic_cast<ActiveLearnScenario*>(scene()->createObject(desc)); // throws
+
 	if (pActiveLearnScenario == NULL) {
 		context()->getLogger()->post(Message::LEVEL_CRIT, "ActivePushingApplication::run(): unable to cast to ActiveLearnScenario");
 		return;
@@ -669,10 +806,12 @@ void ActivePushingApplication::run(int argc, char *argv[]) {
 
 
 
+
 	// Random number generator seed
 	context()->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
 	
 	try {
+		pActiveLearnScenario->init(arguments);
 		pActiveLearnScenario->run(argc, argv);
 	}
 	catch (const ActiveLearnScenario::Interrupted&) {

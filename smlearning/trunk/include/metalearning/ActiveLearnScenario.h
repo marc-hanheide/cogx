@@ -28,6 +28,9 @@
 #include <Ice/Ice.h>
 #include <PlotApp.hh>
 
+#include <tools/data_handling.h>
+
+
 
 //------------------------------------------------------------------------------
 
@@ -47,6 +50,10 @@ public:
 	///Active Learning is implemented using Intelligent Artificial Curiosity algorithm.
 	///
 	void run(int argc, char* argv[]);
+
+	virtual void init(map<string, string> m);
+
+
 	/** Object description */
 	class Desc : public Scenario::Desc {
 	protected:
@@ -94,6 +101,10 @@ protected:
 
 	/** number of instances to decide splitting a region */
 	int splittingCriterion1;
+
+	
+
+
 
 	/** Objects can be constructed only in the Scene context. */
 	ActiveLearnScenario(golem::Scene &scene) : Scenario (scene) { };
@@ -166,11 +177,21 @@ protected:
 //------------------------------------------------------------------------------
 
 /** Application */
-class ActivePushingApplication : public golem::Application {
+class ActivePushingApplication : public smlearning::PushingApplication {
 	
+public:
+	/** Main function */
+	virtual int main(int argc, char *argv[]);
+
+	virtual void define_program_options_desc();
+	virtual void read_program_options(int argc, char *argv[]);
+
+
 protected:
+
 	/** Runs Application */
 	virtual void run(int argc, char *argv[]);
+
 };
 
 //------------------------------------------------------------------------------

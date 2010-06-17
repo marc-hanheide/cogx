@@ -98,6 +98,40 @@ void print_dataset (const DataSet& d) {
 	for_each (d.begin(), d.end(), print_sequence<T>);
 }
 
+
+///
+///write a vector to a file
+///
+template <typename T>
+void write_vector (ofstream& writeFile, const vector<T>& v) {
+	long featvectorSize = v.size();
+	writeFile.write ((const char*)&featvectorSize, sizeof (v.size()));
+	typename vector<T>::const_iterator n;
+	for (n=v.begin(); n!= v.end(); n++) {
+		writeFile.write ((const char* )&(*n), sizeof (*n));
+	}
+}
+
+
+
+///
+///read a vector to a file
+///
+template <typename T>
+void read_vector (ifstream& readFile, vector<T>& v) {
+	long featvectorSize;
+	readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
+	// cout << "\t\t" << featvectorSize << endl;
+	for (int n=0; n<featvectorSize; n++) {
+		T value;
+		readFile.read ((char* )&value, sizeof(value));
+		v.push_back (value);
+	}
+}
+
+
+
+
 ///
 ///print DataSetParams tuple
 ///
@@ -116,12 +150,7 @@ void write_realvector (ofstream& writeFile, const vector<double>& v);
 ///
 ///write int vector to a file
 ///
-void write_intvector (ofstream& writeFile, const vector<int>& v);
-
-///
-///write an int value to a file
-///
-void write_intValue(ofstream& writeFile, const int v);
+//void write_intvector (ofstream& writeFile, const vector<int>& v);
 
 ///
 ///write DataSet vector to a file
@@ -136,12 +165,7 @@ void read_realvector (ifstream& readFile, vector<double>& v);
 ///
 ///read int vector from a file
 ///
-void read_intvector (ifstream& readFile, vector<int>& v);
-
-///
-///read an int value from a file
-///
-void read_intValue(ifstream& readFile,  int* v);
+//void read_intvector (ifstream& readFile, vector<int>& v);
 
 ///
 ///read DataSet vector from a file

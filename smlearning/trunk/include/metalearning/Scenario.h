@@ -56,6 +56,8 @@
 #include <tools/data_structs.h>
 #include <tools/math_helpers.h>
 
+#include <boost/program_options.hpp>
+
 
 using namespace std;
 using namespace golem;
@@ -235,6 +237,7 @@ public:
 	void run(int argc, char* argv[]);
 
 
+	virtual void init(map<string, string> m);
 
 
 	static int getStartingPositionsCount() {
@@ -317,7 +320,9 @@ protected:
 	/** flag to decide storing labels (for pattern recognition) */
 	bool storeLabels;
 	/* vector logging used starting positions throughout the experiment */
-	vector<int> usedStartingPositions;
+	vector<double> usedStartingPositions;
+
+	//map<string,string> argumentVariables;
 	
 
 	/** Creator */
@@ -525,6 +530,9 @@ protected:
 	///
 	Real choose_angle(Real min, Real max, string form);
 
+
+	
+
 };
 
 //------------------------------------------------------------------------------
@@ -537,9 +545,30 @@ bool XMLData(Scenario::Desc &val, golem::XMLContext* context);
 /** Application */
 class PushingApplication : public golem::Application {
 	
-protected:
+
+
+	public:
+	/** Main function */
+	virtual int main(int argc, char *argv[]);
+
+	virtual void define_program_options_desc();
+	virtual void read_program_options(int argc, char *argv[]);
+
+	
+	protected:
+
+	boost::program_options::options_description prgOptDesc;
+	boost::program_options::positional_options_description p;	
+	boost::program_options::variables_map vm;
+
+	map<string,string> arguments;
+
+
 	/** Runs Application */
 	virtual void run(int argc, char *argv[]);
+
+
+
 };
 
 

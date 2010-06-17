@@ -93,6 +93,8 @@ void write_realvector (ofstream& writeFile, const vector<double>& v) {
 	
 }
 
+
+/*
 ///
 ///write int vector to a file
 ///
@@ -105,14 +107,9 @@ void write_intvector (ofstream& writeFile, const vector<int>& v) {
 	}
 	
 }
+*/
 
 
-///
-///write an int value to a file
-///
-void write_intValue(ofstream& writeFile, const int v)  {
-	writeFile.write ((const char* )&v, sizeof (v));
-}
 
 ///
 ///write DataSet vector to a file
@@ -169,7 +166,7 @@ void read_realvector (ifstream& readFile, vector<double>& v) {
 	}
 }
 
-
+/*
 ///
 ///read int vector from a file
 ///
@@ -184,14 +181,7 @@ void read_intvector (ifstream& readFile, vector<int>& v) {
 	}
 }
 
-
-///
-///read an int value from a file
-///
-void read_intValue(ifstream& readFile,  int* v)  {
-	readFile.read ((char* )v, sizeof(*v));
-}
-
+*/
 
 
 ///
