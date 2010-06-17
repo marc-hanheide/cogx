@@ -66,7 +66,11 @@ if(BUILD_SA_V11N_USE_TOMGINE)
    add_definitions(-DV11N_OBJECT_TOMGINE_MODEL)
 endif(BUILD_SA_V11N_USE_TOMGINE)
 
-add_definitions(-DDEBUG_TRACE)
+option(BUILD_SA_V11N_DEBUG_TRACE "Output a lot of debugging information" OFF)
+if(BUILD_SA_V11N_DEBUG_TRACE)
+   add_definitions(-DDEBUG_TRACE)
+endif(BUILD_SA_V11N_DEBUG_TRACE)
+
 
 set(SERVER_CPP
    ptrvector.cpp
