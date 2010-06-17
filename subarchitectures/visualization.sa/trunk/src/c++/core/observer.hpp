@@ -54,11 +54,23 @@ public:
       IceUtil::RWRecMutex::WLock lock(_observerMutex);
       m_Observers.remove(pObserver);
       m_Observers.push_back(pObserver);
+#if 0 && defined(DEBUG_TRACE)
+      std::cout << "            Adding observer " << (void*)pObserver << std::endl;
+#endif
    }
 
    void removeObserver(T* pObserver)
    {
       IceUtil::RWRecMutex::WLock lock(_observerMutex);
+#if 0 && defined(DEBUG_TRACE)
+      bool found = false;
+      T* pObs;
+      FOR_EACH(pObs, m_Observers) {
+         if (pObs == pObserver) { found = true; break; }
+      }
+      std::cout << "            Deleting " << (found ? "known" : "unknown") << " observer " << (void*)pObserver
+         << std::endl;
+#endif
       m_Observers.remove(pObserver);
    }
 

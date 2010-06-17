@@ -35,14 +35,14 @@ class __Tracer: public std::ostringstream { public:
    }
    void start() {
       text = str();
-      std::cout << std::string(level, ' ') << text << std::endl << std::flush;
+      std::cout << std::string(level, ' ') << "|beg " << text << std::endl << std::flush;
       level++;
    }
    ~__Tracer() {
       level--;
       if (level < 0) level = 0;
       if (m_reportend)
-         std::cout << std::string(level, ' ') << "END " << text << std::endl << std::flush;
+         std::cout << std::string(level, ' ') << "|end " << text << std::endl << std::flush;
    }
 };
 // #define DTRACE(str) std::cout << str << std::endl << std::flush

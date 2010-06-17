@@ -41,8 +41,9 @@ class CChangeSlot: public QObject,
    Q_OBJECT
 private:
    cogx::display::CDisplayView *m_pView;
-public:
    cogx::display::CGuiElement *m_pGuiElement;
+
+public:
    CChangeSlot(cogx::display::CGuiElement* pGuiElement, cogx::display::CDisplayView* pView, QObject* parent)
       : QObject(parent)
    {
@@ -62,6 +63,9 @@ public:
          if (m_pView) m_pGuiElement->Observers -= m_pView;
          m_pGuiElement->Observers -= this;
       }
+   }
+   cogx::display::CGuiElement* guiElementPtr() {
+      return m_pGuiElement;
    }
 
 public:
