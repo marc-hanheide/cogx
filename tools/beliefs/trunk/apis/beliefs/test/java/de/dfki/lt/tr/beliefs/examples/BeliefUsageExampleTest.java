@@ -30,7 +30,7 @@ import de.dfki.lt.tr.beliefs.util.ProbFormula;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class BeliefUsageExample {
+public class BeliefUsageExampleTest {
 
 	private dBelief incomingIndependentBelief;
 	private Belief<dBelief> genericIndependentBelief;

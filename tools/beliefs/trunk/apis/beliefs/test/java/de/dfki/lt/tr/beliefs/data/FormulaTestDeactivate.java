@@ -23,24 +23,7 @@
 package de.dfki.lt.tr.beliefs.data;
 
 
-//=================================================================
-//IMPORTS
-
-//Java
-import java.util.ArrayList;
-
-
-//JUnit 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-//Belief API util
-import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
-import de.dfki.lt.tr.beliefs.util.BeliefMissingValueException;
-
-
-public class FormulaTest {
+public class FormulaTestDeactivate {
 
 //	private Formula _formula;
 //
