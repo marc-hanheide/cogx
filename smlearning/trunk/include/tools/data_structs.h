@@ -46,10 +46,13 @@ typedef vector<double> FeatureVector;
 typedef vector<FeatureVector> Sequence;
 typedef vector<Sequence> DataSet;
 /** LearningParams tuple <motorVectorSize, featureVectorSize, pfVectorSize, efVectorSize> */
+enum { mVSize, fVSize, pfVSize, efVSize };
 typedef tuple<int, int, int, int> LearningParams;
 /** DataSetValueLimits tuple < minX, minY, minZ, maxX, maxY, maxZ> */
+enum { minX, minY, minZ, maxX, maxY, maxZ };
 typedef tuple<Real, Real, Real, Real, Real, Real> DataSetValueLimits;
 /** DataSetParams tuple <LearningParams, storeLabels, DataSetValueLimits> */
+enum {lParams, labels, limits };
 typedef tuple<LearningParams, bool, DataSetValueLimits> DataSetParams;
 typedef pair<DataSet, DataSetParams> DataSetStruct;
 
@@ -61,8 +64,9 @@ struct CanonicalData {
 	};
 	typedef vector<FeatureVector> Sequence;
 	typedef vector<Sequence> DataSet;
-
-	DataSet data;
+	typedef pair<DataSet, DataSetParams> DataSetStruct;
+	
+	DataSetStruct data;
 };
 
 

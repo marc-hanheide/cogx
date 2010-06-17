@@ -43,7 +43,6 @@
 
 
 <polyflapInteraction>
-	<maxRange>0.4</maxRange>
 	<maxX>0.4</maxX>
 	<maxY>0.4</maxY>
 	<maxZ>0.4</maxZ>

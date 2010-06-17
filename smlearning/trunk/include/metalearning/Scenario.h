@@ -62,6 +62,7 @@
 using namespace std;
 using namespace golem;
 using namespace golem::tools;
+namespace po = boost::program_options;
 
 
 namespace smlearning {
@@ -236,13 +237,10 @@ public:
 	///
 	void run(int argc, char* argv[]);
 
-
+	///
+	///set experiment default values
+	///
 	virtual void init(map<string, string> m);
-
-
-	static int getStartingPositionsCount() {
-		return startingPositionsCount;
-	}
 
 protected:
 	/** Description */
@@ -322,9 +320,6 @@ protected:
 	/* vector logging used starting positions throughout the experiment */
 	vector<double> usedStartingPositions;
 
-	//map<string,string> argumentVariables;
-	
-
 	/** Creator */
 	golem::Creator creator;
 	/** Synchronization objects */
@@ -393,11 +388,6 @@ protected:
 	///describe the home position (position, where the finger starts and ends every iteration)
 	///
 	void setup_home();
-
-	///
-	///set the lenght of experiment (number of sequences), starting position, and other default values
-	///
-	virtual void setup_loop(int argc, char* argv[]);
 
 	///
 	///try to find a path to given position, if found, move the finegr along it and wait for it to stop
@@ -555,7 +545,7 @@ class PushingApplication : public golem::Application {
 	virtual void read_program_options(int argc, char *argv[]);
 
 	
-	protected:
+protected:
 
 	boost::program_options::options_description prgOptDesc;
 	boost::program_options::positional_options_description p;	

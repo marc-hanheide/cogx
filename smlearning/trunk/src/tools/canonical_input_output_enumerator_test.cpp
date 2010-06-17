@@ -55,7 +55,7 @@ int main (int argc, char* argv[]) {
 	XMLData(desc, pXMLContext);
 
 	
-	CanonicalData::DataSet newData = canonical_input_output_enumerator_with_time (savedData, desc, modulo);
+	CanonicalData::DataSetStruct newData = canonical_input_output_enumerator_with_time (savedData, desc, modulo);
 
 	if (argc == 4)
 		// write_canonical_dataset_cryssmex_fmt (target_dir + "/" + seqBaseFileName, newData);

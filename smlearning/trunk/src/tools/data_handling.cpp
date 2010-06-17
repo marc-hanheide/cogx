@@ -65,17 +65,17 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
 ///print DataSetParams tuple
 ///
 void print_dataset_params (const DataSetParams& p) {
-	cout << "motorVectorSize: " << p.get<0>().get<0>() << ",\n";
-	cout << "featureVectorSize: " << p.get<0>().get<1>() << ",\n";
-	cout << "pfVectorSize: " << p.get<0>().get<2>() << ",\n";
-	cout << "efVectorSize: " << p.get<0>().get<3>() << ",\n";
-	cout << "storeLabels: " << p.get<1>() << "," << endl;
-	cout << "minX: " << p.get<2>().get<0>() << "," << endl;
-	cout << "minY: " << p.get<2>().get<1>() << "," << endl;
-	cout << "minZ: " << p.get<2>().get<2>() << "," << endl;
-	cout << "maxX: " << p.get<2>().get<3>() << "," << endl;
-	cout << "maxY: " << p.get<2>().get<4>() << "," << endl;
-	cout << "maxZ: " << p.get<2>().get<5>() << endl;
+	cout << "motorVectorSize: " << p.get<lParams>().get<0>() << ",\n";
+	cout << "featureVectorSize: " << p.get<lParams>().get<1>() << ",\n";
+	cout << "pfVectorSize: " << p.get<lParams>().get<2>() << ",\n";
+	cout << "efVectorSize: " << p.get<lParams>().get<3>() << ",\n";
+	cout << "storeLabels: " << p.get<labels>() << "," << endl;
+	cout << "minX: " << p.get<limits>().get<0>() << "," << endl;
+	cout << "minY: " << p.get<limits>().get<1>() << "," << endl;
+	cout << "minZ: " << p.get<limits>().get<2>() << "," << endl;
+	cout << "maxX: " << p.get<limits>().get<3>() << "," << endl;
+	cout << "maxY: " << p.get<limits>().get<4>() << "," << endl;
+	cout << "maxZ: " << p.get<limits>().get<5>() << endl;
 }
 
 
@@ -121,17 +121,17 @@ bool write_dataset (string fileName, const DataSetStruct& data) {
 		return false;
 
 	//write data parameters
-	writeFile.write((const char*)&data.second.get<0>().get<0>(), sizeof(int));
-	writeFile.write((const char*)&data.second.get<0>().get<1>(), sizeof(int));
-	writeFile.write((const char*)&data.second.get<0>().get<2>(), sizeof(int));
-	writeFile.write((const char*)&data.second.get<0>().get<3>(), sizeof(int));
-	writeFile.write((const char*)&data.second.get<1>(), sizeof(bool));
-	writeFile.write((const char*)&data.second.get<2>().get<0>(), sizeof(Real));
-	writeFile.write((const char*)&data.second.get<2>().get<1>(), sizeof(Real));
-	writeFile.write((const char*)&data.second.get<2>().get<2>(), sizeof(Real));
-	writeFile.write((const char*)&data.second.get<2>().get<3>(), sizeof(Real));
-	writeFile.write((const char*)&data.second.get<2>().get<4>(), sizeof(Real));
-	writeFile.write((const char*)&data.second.get<2>().get<5>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<lParams>().get<mVSize>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<lParams>().get<fVSize>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<lParams>().get<pfVSize>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<lParams>().get<efVSize>(), sizeof(int));
+	writeFile.write((const char*)&data.second.get<labels>(), sizeof(bool));
+	writeFile.write((const char*)&data.second.get<limits>().get<minX>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<limits>().get<minY>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<limits>().get<minZ>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<limits>().get<maxX>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<limits>().get<maxY>(), sizeof(Real));
+	writeFile.write((const char*)&data.second.get<limits>().get<maxZ>(), sizeof(Real));
 	
 	long numSeqs = data.first.size();
 	writeFile.write ((const char*)&numSeqs, sizeof(numSeqs));
@@ -197,17 +197,17 @@ bool read_dataset (string fileName, DataSetStruct& dataStr) {
 	DataSetParams params;
 
 	//get data parameters
-	readFile.read((char*)&params.get<0>().get<0>(), sizeof(int));
-	readFile.read((char*)&params.get<0>().get<1>(), sizeof(int));
-	readFile.read((char*)&params.get<0>().get<2>(), sizeof(int));
-	readFile.read((char*)&params.get<0>().get<3>(), sizeof(int));
-	readFile.read((char*)&params.get<1>(), sizeof(bool));
-	readFile.read((char*)&params.get<2>().get<0>(), sizeof(Real));
-	readFile.read((char*)&params.get<2>().get<1>(), sizeof(Real));
-	readFile.read((char*)&params.get<2>().get<2>(), sizeof(Real));
-	readFile.read((char*)&params.get<2>().get<3>(), sizeof(Real));
-	readFile.read((char*)&params.get<2>().get<4>(), sizeof(Real));
-	readFile.read((char*)&params.get<2>().get<5>(), sizeof(Real));
+	readFile.read((char*)&params.get<lParams>().get<mVSize>(), sizeof(int));
+	readFile.read((char*)&params.get<lParams>().get<fVSize>(), sizeof(int));
+	readFile.read((char*)&params.get<lParams>().get<pfVSize>(), sizeof(int));
+	readFile.read((char*)&params.get<lParams>().get<efVSize>(), sizeof(int));
+	readFile.read((char*)&params.get<labels>(), sizeof(bool));
+	readFile.read((char*)&params.get<limits>().get<minX>(), sizeof(Real));
+	readFile.read((char*)&params.get<limits>().get<minY>(), sizeof(Real));
+	readFile.read((char*)&params.get<limits>().get<minZ>(), sizeof(Real));
+	readFile.read((char*)&params.get<limits>().get<maxX>(), sizeof(Real));
+	readFile.read((char*)&params.get<limits>().get<maxY>(), sizeof(Real));
+	readFile.read((char*)&params.get<limits>().get<maxZ>(), sizeof(Real));
 
 	long numSeq;
 	readFile.read ((char* )&numSeq, sizeof(numSeq));
@@ -655,10 +655,10 @@ bool write_nc_file_basis (string fileName, const DataSetStruct& data) {
 
 	//int initialVectorSize = data.first[0][0].size();
 	//int featureVectorSize = initialVectorSize + data.first[0][1].size();
-	int inputSize = data.second.get<0>().get<0>() + data.second.get<0>().get<1>();
-	int outputSize = data.second.get<0>().get<2>();
-	int motorVectorSize = data.second.get<0>().get<0>();
-	int targetIndexStart = data.second.get<0>().get<3>();
+	int inputSize = data.second.get<lParams>().get<mVSize>() + data.second.get<lParams>().get<fVSize>();
+	int outputSize = data.second.get<lParams>().get<pfVSize>();
+	int motorVectorSize = data.second.get<lParams>().get<mVSize>();
+	int targetIndexStart = data.second.get<lParams>().get<efVSize>();
 
 	FeatureVector inputVector;
 	FeatureVector targetVector;
@@ -808,10 +808,10 @@ void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVecto
 	// int initialVectorSize = s[0].size();
 	// int sensorVectorSize = s[1].size();
 	// int featureVectorSize = initialVectorSize + sensorVectorSize;
-	int inputSize = params.get<0>().get<0>() + params.get<0>().get<1>();
-	int outputSize = params.get<0>().get<2>();
-	int motorVectorSize = params.get<0>().get<0>();
-	int targetIndexStart = params.get<0>().get<3>();
+	int inputSize = params.get<lParams>().get<mVSize>() + params.get<lParams>().get<fVSize>();
+	int outputSize = params.get<lParams>().get<pfVSize>();
+	int motorVectorSize = params.get<lParams>().get<mVSize>();
+	int targetIndexStart = params.get<lParams>().get<efVSize>();
 	
 	Sequence::const_iterator v;
 	int contInput = 0;
@@ -859,8 +859,8 @@ void load_sequence_basis (vector<float>& inputVector, vector<float>& targetVecto
 ///load training data in RNNLIB format
 ///
 rnnlib::DataSequence* load_trainSeq (smlearning::Sequence& seq, DataSetParams params) {
-	int inputSize = params.get<0>().get<0>() + params.get<0>().get<1>();
-	int outputSize = params.get<0>().get<2>();
+	int inputSize = params.get<lParams>().get<mVSize>() + params.get<lParams>().get<fVSize>();
+	int outputSize = params.get<lParams>().get<pfVSize>();
 	rnnlib::DataSequence* trainSeq = new rnnlib::DataSequence (inputSize, outputSize);
 	vector<int> inputShape, targetShape;
 	inputShape.push_back (seq.size() - 1);
@@ -875,27 +875,27 @@ rnnlib::DataSequence* load_trainSeq (smlearning::Sequence& seq, DataSetParams pa
 
 //------------------------------------------------------------------------------
 bool check_params (DataSetParams params1, DataSetParams params2) {
-	if (params1.get<0>().get<0>() != params2.get<0>().get<0>())
+	if (params1.get<lParams>().get<mVSize>() != params2.get<lParams>().get<mVSize>())
 		return false;
-	if (params1.get<0>().get<1>() != params2.get<0>().get<1>())
+	if (params1.get<lParams>().get<fVSize>() != params2.get<lParams>().get<fVSize>())
 		return false;
-	if (params1.get<0>().get<2>() != params2.get<0>().get<2>())
+	if (params1.get<lParams>().get<pfVSize>() != params2.get<lParams>().get<pfVSize>())
 		return false;
-	if (params1.get<0>().get<3>() != params2.get<0>().get<3>())
+	if (params1.get<lParams>().get<efVSize>() != params2.get<lParams>().get<efVSize>())
 		return false;
-	if (params1.get<1>() != params2.get<1>())
+	if (params1.get<labels>() != params2.get<labels>())
 		return false;
-	if (params1.get<2>().get<0>() != params2.get<2>().get<0>())
+	if (params1.get<limits>().get<minX>() != params2.get<limits>().get<minX>())
 		return false;
-	if (params1.get<2>().get<1>() != params2.get<2>().get<1>())
+	if (params1.get<limits>().get<minY>() != params2.get<limits>().get<minY>())
 		return false;
-	if (params1.get<2>().get<2>() != params2.get<2>().get<2>())
+	if (params1.get<limits>().get<minZ>() != params2.get<limits>().get<minZ>())
 		return false;
-	if (params1.get<2>().get<3>() != params2.get<2>().get<3>())
+	if (params1.get<limits>().get<maxX>() != params2.get<limits>().get<maxX>())
 		return false;
-	if (params1.get<2>().get<4>() != params2.get<2>().get<4>())
+	if (params1.get<limits>().get<maxY>() != params2.get<limits>().get<maxY>())
 		return false;
-	if (params1.get<2>().get<5>() != params2.get<2>().get<5>())
+	if (params1.get<limits>().get<maxZ>() != params2.get<limits>().get<maxZ>())
 		return false;
 	return true;
 }
@@ -1050,20 +1050,20 @@ map<Vec3, int, compare_Vec3> get_canonical_positions (Scenario::Desc& desc) {
 ///
 ///enumerate a dataset taking into account time steps
 ///
-CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSetStruct& data, Scenario::Desc& desc, int modulo) {
+CanonicalData::DataSetStruct canonical_input_output_enumerator_with_time (DataSetStruct& data, Scenario::Desc& desc, int modulo) {
 	
 	//a number that slightly greater then the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
 	//Real maxRange = 0.4;
-	assert (data.second.get<2>().get<0>() == desc.minX);
-	assert (data.second.get<2>().get<1>() == desc.minY);
-	assert (data.second.get<2>().get<2>() == desc.minZ);
-	assert (data.second.get<2>().get<3>() == desc.maxX);
-	assert (data.second.get<2>().get<4>() == desc.maxY);
-	assert (data.second.get<2>().get<5>() == desc.maxZ);
-	assert (data.second.get<1>());
-	assert (data.second.get<0>().get<0>() == 5);
+	assert (data.second.get<limits>().get<minX>() == desc.minX);
+	assert (data.second.get<limits>().get<minY>() == desc.minY);
+	assert (data.second.get<limits>().get<minZ>() == desc.minZ);
+	assert (data.second.get<limits>().get<maxX>() == desc.maxX);
+	assert (data.second.get<limits>().get<maxY>() == desc.maxY);
+	assert (data.second.get<limits>().get<maxZ>() == desc.maxZ);
+	assert (data.second.get<labels>());
+	assert (data.second.get<lParams>().get<mVSize>() == 5);
 
 	map<Vec3, int, compare_Vec3> positionsT = get_canonical_positions (desc);
 	
@@ -1132,9 +1132,7 @@ CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSetStruc
 	}
 	cout << endl;
 
-	
-
-	return newdata;
+	return make_pair(newdata, data.second);
 }
 
 
@@ -1152,7 +1150,7 @@ void write_canonical_dataset_cryssmex_fmt (string writeFileName, CanonicalData::
 	int outputVectorSize = 0;
 	int stateVectorSize = data[0][1].rawVector.size();
 	
-	ofstream writeFile(writeFileName.c_str(), ios::out);
+	ofstream writeFile(writeFileName.c_str(), ios::out | ios::binary);
 
 	writeFile << "# input dim" << endl;
 	writeFile << inputVectorSize << endl;
@@ -1230,7 +1228,7 @@ void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, 
 	int outputVectorSize = 1;
 
 	writeFileName += ".cry";
-	ofstream writeFile(writeFileName.c_str(), ios::out);
+	ofstream writeFile(writeFileName.c_str(), ios::out | ios::binary);
 
 	writeFile << "# input dim" << endl;
 	writeFile << inputVectorSize << endl;
@@ -1271,19 +1269,26 @@ void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, 
 ///write a dataset in cryssmex format. This code assumes vectorial data format
 ///and works as a regression predictor (output is of the same dimensionality as the state space) and canonical format for the input
 ///
-void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSet data ) {
+void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSetStruct& data, bool pfefState, bool pfefOutput ) {
 	//assuming an input(output) vector be symbolic (dimensionality 0 in cryssmex)
 	writeFileName += ".cry";
 
-	assert (data.size() >= 1);
-	assert (data[0].size() >= 2);
+	assert (data.first.size() >= 1);
+	assert (data.first[0].size() >= 2);
 	
 	int inputVectorSize = 0;
-	int stateVectorSize = data[0][1].rawVector.size(); 
-	int outputVectorSize = data[0][2].rawVector.size();
-	assert (stateVectorSize == outputVectorSize);
-	
-	ofstream writeFile(writeFileName.c_str(), ios::out);
+	int stateVectorSize;
+	int outputVectorSize;
+	if (pfefState)
+		stateVectorSize = data.second.get<lParams>().get<fVSize>();
+	else
+		stateVectorSize = data.second.get<lParams>().get<pfVSize>();
+	if (pfefOutput)
+		outputVectorSize = data.second.get<lParams>().get<fVSize>();
+	else
+		outputVectorSize = data.second.get<lParams>().get<pfVSize>();
+
+	ofstream writeFile(writeFileName.c_str(), ios::out | ios::binary);
 
 	writeFile << "# input dim" << endl;
 	writeFile << inputVectorSize << endl;
@@ -1294,7 +1299,7 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 
 	set<string> motorCommandsSet;
 	CanonicalData::DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
+	for (s=data.first.begin(); s!= data.first.end(); s++) {
 
 		CanonicalData::Sequence::const_iterator v;
 		for (v=s->begin(); v!= s->end(); v++) {
@@ -1315,8 +1320,7 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 	writeFile << "# output examples" << endl << "0.0" << endl;
 	writeFile.precision(20);
 
-	//CanonicalData::DataSet::const_iterator s;
-	for (s=data.begin(); s!= data.end(); s++) {
+	for (s=data.first.begin(); s!= data.first.end(); s++) {
 		CanonicalData::Sequence::const_iterator v;
 
 		for (v=s->begin(); v!= s->end(); v++) {
@@ -1325,11 +1329,18 @@ void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, Cano
 				FeatureVector::const_iterator n;
 				string currentMotorCommand = v->motorCommand;
 				writeFile << currentMotorCommand << "   ";
-				for (n=v->rawVector.begin(); n!= v->rawVector.end(); n++)
-					writeFile << *n << " ";
-
-				for (n=(v+1)->rawVector.begin(); n!=(v+1)->rawVector.end(); n++)
-					writeFile << *n << " ";
+				int start;
+				pfefState ? start=0 : start=data.second.get<lParams>().get<efVSize>();
+				for (int i=start; i<stateVectorSize+start; i++)
+					writeFile << v->rawVector[i] << " ";
+				// for (n=v->rawVector.begin(); n!= v->rawVector.end(); n++)
+				//	writeFile << *n << " ";
+				
+				pfefOutput ? start=0 : start=data.second.get<lParams>().get<efVSize>();
+				for (int i=start; i<outputVectorSize+start; i++)
+					writeFile << (v+1)->rawVector[i] << " ";
+				// for (n=(v+1)->rawVector.begin(); n!=(v+1)->rawVector.end(); n++)
+				// 	writeFile << *n << " ";
 				writeFile << endl;
 			}
 		}
@@ -1355,65 +1366,65 @@ vector<int> parse_startingPositions(string argsStr, int maxStartPos) {
 	string::iterator it;
 	for ( it=argsStr.begin() ; it < argsStr.end(); it++ ) {
 		const char character = *it;
-cout << "character "  << character << endl;
+		// cout << "character "  << character << endl;
 		if (isdigit(character) && !range) {
 			currNumber1 *= 10;
 			currNumber1 += atoi(&character);
-cout << "case 1: new nr1: " << currNumber1 << endl;
+			// cout << "case 1: new nr1: " << currNumber1 << endl;
 		} else if (isdigit(character) && range) {
 			currNumber2 *= 10;
 			currNumber2 += atoi(&character);
-cout << "case 2: new nr2: " << currNumber2 << endl;
+			// cout << "case 2: new nr2: " << currNumber2 << endl;
 		} else if (character == "-"[0]) {
-cout << "case 3: dash" << endl;
+			// cout << "case 3: dash" << endl;
 			range = true;
 		} else  if (character == ","[0]) {
-cout << "case 4: comma" << endl;
+			// cout << "case 4: comma" << endl;
 			if (currNumber1 > 0 && currNumber1 <= maxStartPos) {
-cout << "appending nr1 :" << currNumber1 << endl;
+				// cout << "appending nr1 :" << currNumber1 << endl;
 			positions.push_back(currNumber1);
 			}
 			if (range) {
-cout << "range on" << endl;
+				// cout << "range on" << endl;
 				for (int i = (currNumber1 + 1); i < currNumber2; i++) {
 					if (i > 0 && i <= maxStartPos) {
 					positions.push_back(i);
-cout << "appending :" << i << endl;
+					// cout << "appending :" << i << endl;
 					}
 				}
 				if (currNumber1 > 0 && currNumber2 <= maxStartPos) {
-cout << "appending nr2 :" << currNumber2 << endl;
+					// cout << "appending nr2 :" << currNumber2 << endl;
 				positions.push_back(currNumber2);			
 				}
 			}
 			currNumber1 = 0;
 			currNumber2 = 0;
 			range = false;
-cout << "variables set back: " << currNumber1 << " " << currNumber2 << " " << range << endl;
+// cout << "variables set back: " << currNumber1 << " " << currNumber2 << " " << range << endl;
 		} else {
-cout << "nothing" << endl;
+			// cout << "nothing" << endl;
 		} 
 	}
 	if (argsStr.at(argsStr.length()-1) != ","[0]) {
 			if (currNumber1 > 0 && currNumber1 <= maxStartPos) {
-cout << "appending nr1 :" << currNumber1 << endl;
+				// cout << "appending nr1 :" << currNumber1 << endl;
 			positions.push_back(currNumber1);
 			}
 			if (range) {
-cout << "range on" << endl;
+				// cout << "range on" << endl;
 				for (int i = (currNumber1 + 1); i < currNumber2; i++) {
 					if (i > 0 && i <= maxStartPos) {
 					positions.push_back(i);
-cout << "appending :" << i << endl;
+					// cout << "appending :" << i << endl;
 					}
 				}
 				if (currNumber1 > 0 && currNumber2 <= maxStartPos) {
-cout << "appending nr2 :" << currNumber2 << endl;
+					// cout << "appending nr2 :" << currNumber2 << endl;
 				positions.push_back(currNumber2);			
 				}
 			}
 	}
-cout << "finished" << endl;
+	// cout << "finished" << endl;
 	return positions;
 }
 
