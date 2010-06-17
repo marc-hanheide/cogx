@@ -8,6 +8,7 @@
          <pathelement path="${ice.jar}"/>
          <pathelement path="${cast.jar}"/>
          <pathelement path="${antice.jar}"/>
+         <pathelement path="${log4j.jar}"/>
      </path>
 
 	
@@ -59,7 +60,7 @@
 	 
 	<!-- Use the main classpath as long as production and test code not separated -->
 	<path id="build.classpath.test">
-		<pathelement path="${build.classpath}"/> 
+		<path refid="build.classpath"/> 
 		<pathelement path="${output.dir}" />
 	</path>
 	
@@ -144,7 +145,7 @@
 		<mkdir dir="${junit.data}"/>
 		<junit printsummary="yes" fork="true" haltonfailure="no">
 			<classpath>
-				<path refid="build.classpath"/>
+				<path refid="build.classpath.test"/>
 			</classpath>
 			<formatter type="xml"/>
 			<batchtest haltonfailure="no" todir="${junit.data}">
