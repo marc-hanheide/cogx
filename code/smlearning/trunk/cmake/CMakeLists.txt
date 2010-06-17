@@ -169,13 +169,9 @@ SET(PRINT_DATASET_SOURCE
         ${SMLEARNING_ROOT}/src/tools/print_dataset.cpp
 )
 
-SET(SMREGION_EVAL_PLOT_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/smregion_eval_plot.cpp
+SET(EVAL_PLOTTING_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/eval_plotting.cpp
 )
-
-SET(STARTING_POSITIONS_EVAL_PLOT_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/starting_positions_eval_plot.cpp
-) 
 
 SET(EVALUATE_ACTIVELEARN_SOURCE
         ${SMLEARNING_ROOT}/src/metalearning/evaluate_activelearn.cpp
@@ -281,8 +277,7 @@ ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(canonical_input_output_enumerator_test ${CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE})
 ADD_EXECUTABLE(print_dataset ${PRINT_DATASET_SOURCE})
-ADD_EXECUTABLE(smregion_eval_plot ${SMREGION_EVAL_PLOT_SOURCE})
-ADD_EXECUTABLE(starting_positions_eval_plot ${STARTING_POSITIONS_EVAL_PLOT_SOURCE})
+ADD_EXECUTABLE(eval_plotting ${EVAL_PLOTTING_SOURCE})
 ADD_EXECUTABLE(evaluate_activelearn ${EVALUATE_ACTIVELEARN_SOURCE})
 ADD_EXECUTABLE(evaluate_offlinelearn ${EVALUATE_OFFLINELEARN_SOURCE})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
@@ -303,8 +298,7 @@ INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS canonical_input_output_enumerator_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS smregion_eval_plot RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS starting_positions_eval_plot RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evaluate_activelearn RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evaluate_offlinelearn RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)

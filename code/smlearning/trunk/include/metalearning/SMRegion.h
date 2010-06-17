@@ -80,12 +80,12 @@ struct SMRegion {
 
 
 
-	int createdInIteration;
+	
 
 	SMRegion () {
 	}
 	
-	SMRegion (int idx, /*int smCtxtSize,*/ int splittingCriterion1, int created = 0) :
+	SMRegion (int idx, /*int smCtxtSize,*/ int splittingCriterion1/*, int created = 0*/) :
 		index(idx)//,
 		//sMContextSize (smCtxtSize) {
 	{
@@ -98,7 +98,7 @@ struct SMRegion {
 		cout << "timewindow: " << timewindow << ", smoothing: " << smoothing << endl;
 		//learningProgressHistory.push_back (0.0);
 		
-		createdInIteration = created;
+		
 		
 	}
 
@@ -113,8 +113,7 @@ struct SMRegion {
 		errorsHistory (parentRegion.errorsHistory),
 		startingPositionsHistory (parentRegion.startingPositionsHistory),
 		timewindow (parentRegion.timewindow),
-		smoothing (parentRegion.smoothing),
-		createdInIteration(parentRegion.createdInIteration) {
+		smoothing (parentRegion.smoothing) {
 		
 		//method splittingCriterion2 in @class ActiveLearnScenario takes care of appropriate splitting and cutting values calculation
 

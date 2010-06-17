@@ -619,6 +619,7 @@ void Scenario::setup_home(){
 ///set the lenght of experiment (number of sequences), starting position, and other default values
 ///
 void Scenario::setup_loop(int argc, char* argv[]){
+/*	
 	numSequences = 10000;
 	startingPosition = 0;
 	storeLabels = false;
@@ -628,6 +629,8 @@ void Scenario::setup_loop(int argc, char* argv[]){
 		startingPosition = atoi(argv[3]);
 	if (argc > 4)
 		storeLabels = atoi(argv[4]);
+
+*/
 
 	data.second = make_tuple (make_tuple((int)motorVectorSize, (int)featureVectorSize, (int)pfVectorSize, (int)efVectorSize), storeLabels, make_tuple(desc.minX, desc.minY, desc.minZ, desc.maxX, desc.maxY, desc.maxZ));
 
@@ -879,8 +882,8 @@ void Scenario::write_data (){
 
 	string stpFileName = dataFileName + ".stp";
 	ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
-	write_intvector(writeToFile, usedStartingPositions);
-	
+	//write_intvector(writeToFile, usedStartingPositions);
+	write_realvector(writeToFile, usedStartingPositions);
 }
 
 
@@ -1006,7 +1009,149 @@ void Scenario::set_movement_angle(const Real angle, golem::WorkspaceCoord& pose,
 }
 
 
+
+
+
+void Scenario::init(map<string, string> m) {
+	numSequences = 10000;
+	startingPosition = 0;
+	storeLabels = false;
+	
+	if (m.count("numSequences")) {
+		numSequences = atoi((m["numSequences"]).c_str());
+		
+	}
+
+	if (m.count("startingPosition")) {
+		startingPosition = atoi((m["startingPosition"]).c_str());
+	}
+
+	if (m.count("storeLabels") && (m["storeLabels"] == "true")) {
+		storeLabels = true;
+	}	
+}
+
 //------------------------------------------------------------------------------
+
+namespace po = boost::program_options;
+using namespace boost;
+
+void PushingApplication::define_program_options_desc() {
+
+
+ try {
+
+	//po::options_description desc("Allowed options");
+	//const string prgOptDescName = "Allowed options";
+	//prgOptDesc/* = new po::options_description("Allowed options")*/();
+	prgOptDesc.add_options()
+		("help", "produce help message")
+		("numSequences,S", po::value<string>(), "number of sequences")
+		("startingPosition,P", po::value<string>(), "only starting position to use")
+		("storeLabels,L", po::value<string>(), "use true or false as argument")
+		//("netconfigFileName,N", po::value<string>(), "name of the netconfig file")
+		("configFile", po::value<string>(), "name of the xml config file")
+	;
+
+	//po::positional_options_description p;
+	p.add("configFile", -1);
+
+	
+
+
+
+}catch(std::exception& e) {
+	cerr << "error: " << e.what() << "\n";
+}catch(...) {
+	cerr << "Exception of unknown type!\n";
+
+}
+
+}
+
+
+
+
+void PushingApplication::read_program_options(int argc, char *argv[]) {
+
+
+try {
+	//po::variables_map vm;
+//	po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::store(po::command_line_parser(argc, argv).options(prgOptDesc).positional(p).run(), vm);
+	po::notify(vm);
+
+	if (vm.count("help")) {
+		cout << prgOptDesc << endl;
+		return;
+	}
+
+	if (vm.count("numSequences")) {
+		arguments["numSequences"]=vm["numSequences"].as<string>();
+	}
+
+	if (vm.count("startingPosition")) {
+		arguments["startingPosition"]=vm["startingPosition"].as<string>();
+	}
+
+	if (vm.count("storeLabels")) {
+		arguments["storeLabels"]=vm["storeLabels"].as<string>();
+	}
+
+	//if (vm.count("netconfigFileName")) {
+	//	arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
+	//}
+
+
+}catch(std::exception& e) {
+	cerr << "error: " << e.what() << "\n";
+}catch(...) {
+	cerr << "Exception of unknown type!\n";
+
+}
+
+
+}
+
+
+
+int PushingApplication::main(int argc, char *argv[]) {
+
+
+ try {
+
+	define_program_options_desc();
+
+	read_program_options(argc, argv);
+
+
+	if (vm.count("configFile")) {
+		char* arr[2];
+		//char* arr [] = (char *){argv[0], vm["configFile"].as<string>().c_str()};
+		arr[0] = argv[0];
+		arr[1] =  (char*)vm["configFile"].as<string>().c_str();
+		Application::main(2, arr);
+	} else {
+		char* arr [] = {argv[0]};
+		Application::main(1, arr);
+	}
+
+	
+
+
+
+
+}catch(std::exception& e) {
+	cerr << "error: " << e.what() << "\n";
+}catch(...) {
+	cerr << "Exception of unknown type!\n";
+}
+
+return 1;
+
+}
+
+
 
 void PushingApplication::run(int argc, char *argv[]) {
 
@@ -1023,6 +1168,7 @@ void PushingApplication::run(int argc, char *argv[]) {
 	context()->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
 	
 	try {
+		pScenario->init(arguments);
 		pScenario->run(argc, argv);
 	}
 	catch (const Scenario::Interrupted&) {
