@@ -10,6 +10,8 @@ include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/autogen)
 
 # auto generated code
 include_directories(src/c++/autogen)
+include_directories(src/c++/core)
+
 add_subdirectory(src/c++/autogen)
 add_subdirectory(src/c++/core)
 add_subdirectory(src/c++/clients)
