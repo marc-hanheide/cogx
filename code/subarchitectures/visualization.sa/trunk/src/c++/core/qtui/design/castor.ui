@@ -57,10 +57,13 @@
    </widget>
    <widget class="QMenu" name="menuQuit">
     <property name="title">
-     <string>&amp;File</string>
+     <string>&amp;Window</string>
     </property>
     <addaction name="actNewWindow"/>
+    <addaction name="actCloseSomeWindows"/>
+    <addaction name="separator"/>
     <addaction name="actSaveWindowLayout"/>
+    <addaction name="actRestoreWindowLayout"/>
    </widget>
    <addaction name="menuQuit"/>
    <addaction name="menu_View"/>
@@ -124,7 +127,25 @@
   </action>
   <action name="actSaveWindowLayout">
    <property name="text">
-    <string>Save Window &amp;Layout</string>
+    <string>&amp;Save window layout</string>
+   </property>
+  </action>
+  <action name="actCloseSomeWindows">
+   <property name="text">
+    <string>Close some windows</string>
+   </property>
+  </action>
+  <action name="actRestoreLayoutStartup">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Restore Layout at Startup</string>
+   </property>
+  </action>
+  <action name="actRestoreWindowLayout">
+   <property name="text">
+    <string>&amp;Restore window layout</string>
    </property>
   </action>
  </widget>

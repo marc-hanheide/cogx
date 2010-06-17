@@ -48,7 +48,16 @@ void QViewContainer::removeUi()
    QList<QObject*> wdgts = findChildren<QObject*>();
    QObject *pobj;
    FOR_EACH(pobj, wdgts) {
-      if (pobj) pobj->setParent(&todelete);
+      if (!pobj) continue;
+
+      pobj->setParent(&todelete);
+      QCastViewBase* pViewWin = dynamic_cast<QCastViewBase*>(pobj);
+      if (pViewWin != NULL) {
+         cogx::display::CDisplayView* pView = pViewWin->getView();
+         if (pView) {
+            pView->viewObservers.removeObserver(pViewWin);
+         }
+      }
    }
 }
 

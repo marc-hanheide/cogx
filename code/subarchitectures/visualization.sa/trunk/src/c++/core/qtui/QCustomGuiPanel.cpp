@@ -77,22 +77,8 @@ void QCustomGuiPanel::doUiDataChanged(cogx::display::CDisplayModel *pModel,
    QCheckBox *pBox;
    FOR_EACH(pslot, cslots) {
       if (!pslot) continue;
-      if (pslot->m_pGuiElement != pElement) continue;
+      if (pslot->guiElementPtr() != pElement) continue;
       // DMESSAGE("I'm going to set: " << pslot->m_pGuiElement->m_id << " to " << newValue.toStdString());
-      // TODO: This code is duplicated in CChangeSlot; remove it from here and call a fn from CChangeSlot.
-      // eg. pslot->setNewValue(newValue); ATM changed to pslot->onUiDataChanged()
-      //switch (pElement->m_type) {
-      //   case cogx::display::CGuiElement::wtCheckBox:
-      //      pBox = dynamic_cast<QCheckBox*>(pslot->parent());
-      //      if (pBox != NULL) {
-      //         pBox->blockSignals(true);
-      //         if (newValue == "0") pBox->setCheckState(Qt::Unchecked);
-      //         else pBox->setCheckState(Qt::Checked);
-      //         pBox->blockSignals(false);
-      //      }
-      //      break;
-      //   default: break;
-      //};
       pslot->onUiDataChanged(pElement, newValue.toStdString());
    }
 }
@@ -115,6 +101,8 @@ void QCustomGuiPanel::removeUi()
 void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView)
 {
    DTRACE("QCustomGuiPanel::updateUi");
+   if (m_pView) m_pView->viewObservers -= this;
+
    setVisible(false);
    removeUi();
 
@@ -123,10 +111,7 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
 
    CPtrVector<cogx::display::CGuiElement> elements;
    elements = pModel->getGuiElements(pView->m_id);
-   if (elements.size() < 1) {
-      if (pView) pView->viewObservers -= this;
-      return;
-   }
+   if (elements.size() < 1) return;
 
    // Create new widgets
    cogx::display::CGuiElement* pgel;

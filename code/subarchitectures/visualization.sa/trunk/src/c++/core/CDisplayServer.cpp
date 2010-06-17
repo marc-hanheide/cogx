@@ -81,6 +81,16 @@ void CDisplayServer::configure(const map<string,string> & _config)
    setHtml("@info.DisplayServer", "001", "CogX Display Server<br>");
    setHtml("@info.DisplayServer", "002", "Version 0.5<br><br>");
    setHtml("@info.DisplayServer", "010", "Subsystem 'HTML' enabled.<br>");
+   /* XXX: This was probably fixed (customguipanel didn't remove m_pView from observers)
+   setHtmlHead("@info.DisplayServer.bugs", "css001",
+         "<style> .em { color: red; } </style>");
+   setHtml("@info.DisplayServer.bugs", "900",
+         "<br><span class='em'>WARNING</span>: Closing windows may crash the CAST system, "
+         "especially if they display objects that change frequently.<br>");
+   setHtml("@info.DisplayServer.bugs", "901",
+         "<br><span class='em'>WARNING</span>: 'Restore Window Layout' may crash the CAST system. "
+         "It should be safe to use it at the beginning of a run.<br>");
+   */
 #ifdef V11N_OBJECT_LUA_GL
    setHtml("@info.DisplayServer", "011", "Subsystem 'LuaGlScript' enabled.<br>");
 #endif

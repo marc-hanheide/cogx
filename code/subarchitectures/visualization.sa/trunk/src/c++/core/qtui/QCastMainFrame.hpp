@@ -13,12 +13,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 #ifndef QCASTMAINFRAME_DYSTP55V
 #define QCASTMAINFRAME_DYSTP55V
 
 #include "ui_castor.h"
 #include <QMainWindow>
+#include <QMutex>
 #include "../Model.hpp"
 
 class CControlDataProxy
@@ -31,6 +31,41 @@ public:
    virtual void getControlStateAsync(cogx::display::CGuiElement *pElement) = 0;
 };
 
+class QCastMainFrame;
+class QCastFrameManager: public QObject
+{
+   Q_OBJECT
+private:
+   struct FrameInfo
+   {
+      QCastMainFrame *pFrame;
+      QString viewid;
+      QSize size;
+      QPoint pos;
+      bool main;
+      FrameInfo()
+      {
+         pFrame = NULL;
+         main = false;
+      }
+   };
+   QList<FrameInfo> m_frameList;
+   QCastMainFrame* checkMainWindow(QCastMainFrame *pSkip);
+   QList<QCastMainFrame*> getCastFrames();
+   QMutex m_creatorMutex;
+   QMutex m_closerMutex;
+
+public:
+   QCastFrameManager();
+   void saveWindowList();
+   void loadWindowList();
+   void createMissingWindows(QCastMainFrame* pSomeFrame, cogx::display::CDisplayModel *pModel);
+   void closeChildWindows();
+
+public slots:
+   void frameDestroyed(QObject *pobj);
+};
+
 class QCastMainFrame:
    public QMainWindow,
    public cogx::display::CDisplayModelObserver
@@ -40,7 +75,7 @@ private:
    friend class QCastFrameManager;
    Ui::MainWindow ui;
    QString m_winText;
-   bool m_isChild;
+   bool m_isMainWindow;
 
 private:
    cogx::display::CDisplayModel* m_pModel;
@@ -62,6 +97,8 @@ private slots:
    void onRefreshViewList();
    void onNewWindow();
    void onSaveWindowList();
+   void onCloseSomeWindows();
+   void onRestoreWindowLayout();
 
 private:
    void updateCustomUi(cogx::display::CDisplayView *pView);
@@ -73,6 +110,8 @@ private:
    void onViewAdded(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void setView(cogx::display::CDisplayView *pView);
    void setChildMode();
+   void closeEvent(QCloseEvent *event);
+   QCastMainFrame* createChildWindow();
 
 // signals/slots for interthread communication
 signals: 

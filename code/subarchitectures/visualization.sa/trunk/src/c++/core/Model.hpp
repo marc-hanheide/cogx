@@ -101,14 +101,16 @@ public:
    virtual void setTransform2D(const std::string& partId, const std::vector<double>& transform);
    virtual void setPose3D(const std::string& partId, const std::vector<double>& positioXYZ,
          const std::vector<double>& rotationQaternionXYZW);
-
-   //// Some objects can be merged with a new version instead of being replaced (eg. bitmaps)
-   //// Returns true if the objects were successfully merged.
-   //// When false is returned, the old object should be replaced with the new one.
-   //virtual bool Merge(CDisplayObject *pObject);
 };
 
 
+// An abstract class that renders an object into a context.
+// Each object returns an instance of a renderer to render it in
+// the specified context (if the context type is supported).
+//
+// A renderer should not have any member variables so that a single
+// static instance can be used for all drawing -- the renderer can
+// be safely shared between multiple threads.
 class CRenderer
 {
 public:
@@ -116,7 +118,7 @@ public:
    // the pointers to the desired types draws the object.
    virtual void draw(CDisplayObject *pObject, void *pContext) = 0;
 
-   // Some contexts may require extra drawing info
+   // Some contexts require extra drawing info
    virtual void draw(const std::string& info, CDisplayObject *pObject, void *pContext) {}
 };
 

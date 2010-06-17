@@ -14,9 +14,10 @@
  * GNU General Public License for more details.
  */
 #include "QCastViewHtml.hpp"
+#include <QWebFrame>
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+// #undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -42,6 +43,19 @@ QCastViewHtml::~QCastViewHtml()
    pView = NULL;
 }
 
+void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
+{
+   if (pView != NULL) {
+      pView->viewObservers.removeObserver(this);
+   }
+   pView = pDisplayView;
+   if (pView != NULL) {
+      pView->viewObservers.addObserver(this);
+   }
+   m_bModified = true;
+   update();
+}
+
 // TODO: reload the document! but not in paintEvent -- it causes a SIGBUS
 // Queue an event an process when idle
 
@@ -61,6 +75,11 @@ void QCastViewHtml::doUpdateContent()
 
    if (pView) {
       QStringList list, head, body;
+      QWebPage* pPage = page();
+      QWebFrame* pFrame = NULL;
+      if (pPage) pFrame = pPage->currentFrame();
+      int sbv = 0;
+      if (pFrame) sbv = pFrame->scrollBarValue(Qt::Vertical);
       pView->drawHtml(head, body);
       list.append("<html><head>");
       list << head;
@@ -68,21 +87,9 @@ void QCastViewHtml::doUpdateContent()
       list << body;
       list.append("</body></html>");
       setHtml(list.join("\n"));
+      if (pFrame) pFrame->setScrollBarValue(Qt::Vertical, sbv);
    }
 
-   update();
-}
-
-void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
-{
-   if (pView != NULL) {
-      pView->viewObservers.removeObserver(this);
-   }
-   pView = pDisplayView;
-   if (pView != NULL) {
-      pView->viewObservers.addObserver(this);
-   }
-   m_bModified = true;
    update();
 }
 
