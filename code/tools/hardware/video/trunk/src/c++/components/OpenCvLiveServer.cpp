@@ -364,6 +364,11 @@ void OpenCvLiveServer::retrieveFrame(int camId, int width, int height,
   retrieveFrameInternal(i, width, height, frame);
 }
 
+void OpenCvLiveServer::retrieveHRFrames(std::vector<Video::Image> &frames)
+{
+	printf("OpenCvLiveServer::retrieveHRFrames: not yet implemented.\n");
+}
+
 void OpenCvLiveServer::getImageSize(int &width, int &height)
 {
   width = this->width;
@@ -436,6 +441,35 @@ void OpenCvLiveServer::copyImage(const IplImage *iplImg, Video::Image &img)
 
   if(haveBayer())
     cvReleaseImage(&tmp);
+}
+
+/**
+ * @brief This function is only for the PointGrey server available: experimental mode.
+ * @param width Image width
+ * @param height Image height
+ * @param offsetX Offset in x- direction for Format7 mode.
+ * @param offsetY Offset in y- direction for Format7 mode.
+ * @param mode Image grabbing mode for the Format7 mode.
+ * @param fps Requested framerate [1/s]
+ */
+void OpenCvLiveServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
+{
+	log("only for the PointGrey server available: abort.");
+}
+
+bool OpenCvLiveServer::inFormat7Mode()
+{
+	return false;
+}
+
+/**
+ * @brief Get the server name
+ * @param name Server name (PointGreyServer / OpenCvImgSeqServer / OpenCvLiveServer)
+ */
+const std::string OpenCvLiveServer::getServerName()
+{
+	const std::string str("OpenCvLiveServer");
+	return str;
 }
 
 }

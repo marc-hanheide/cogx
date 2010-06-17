@@ -1,6 +1,7 @@
 /**
- * @author Michael Zillich
- * @date Februrary 2009
+ * @author Michael Zillich, Andreas Richtsfeld
+ * @date Februrary 2009, 2010
+ * @brief
  */
 
 #ifndef OPEN_CV_LIVE_SERVER_H
@@ -12,7 +13,7 @@
 #include <sys/time.h>
 #include <cv.h>
 #include <highgui.h>
-#include <dc1394/types.h>	// apt-get libdc1394-22-dev
+#include <dc1394/types.h>		// apt-get libdc1394-22-dev
 #include <dc1394/control.h>	// apt-get libdc1394-22-dev
 #include "VideoServer.h"
 
@@ -20,13 +21,13 @@ namespace cast
 {
 
 /**
- * Video device simply wrapping the OpenCV capture API.
+ * @brief Video device simply wrapping the OpenCV capture API.
  */
 class OpenCvLiveServer : public VideoServer
 {
 private:
   /**
-   * Class for measuring how many things happen per second.
+   * @brief Class for measuring how many things happen per second. \n
    * author: Nick Hawes
    */
   class Timer
@@ -87,17 +88,14 @@ private:
   /**
    * Converts an IplImage to a system Image format.
    */
-  void copyImage(const IplImage *iplImg, Video::Image &img)
-    throw(std::runtime_error);
+  void copyImage(const IplImage *iplImg, Video::Image &img) throw(std::runtime_error);
   bool haveBayer() {return bayerCvt != CV_COLORCVT_MAX;}
   void grabFramesInternal();
-  void retrieveFrameInternal(int camIdx, int width, int height,
-      Video::Image &frame);
-  virtual void retrieveFrames(const std::vector<int> &camIds,
-    int width, int height, std::vector<Video::Image> &frames);
-  virtual void retrieveFrames(int width, int height,
-    std::vector<Video::Image> &frames);
+  void retrieveFrameInternal(int camIdx, int width, int height, Video::Image &frame);
+  virtual void retrieveFrames(const std::vector<int> &camIds, int width, int height, std::vector<Video::Image> &frames);
+  virtual void retrieveFrames(int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrame(int camId, int width, int height, Video::Image &frame);
+	virtual void retrieveHRFrames(std::vector<Video::Image> &frames);
 
 public:
   OpenCvLiveServer();
@@ -107,6 +105,10 @@ public:
   virtual void grabFrames();
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
+	virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize);
+	virtual bool inFormat7Mode();
+	virtual const std::string getServerName();
+
   // void enableUndistortion(const float dist[4]);
   // void disableUndistortion();
 };

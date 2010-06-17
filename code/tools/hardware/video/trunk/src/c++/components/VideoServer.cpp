@@ -47,10 +47,20 @@ void VideoServerI::getImages(ImageSeq& images, const Ice::Current&)
   vidSrv->getImages(images);
 }
 
+void VideoServerI::getImages(Ice::Int width, Ice::Int height, ImageSeq& images, const Ice::Current&)
+{
+  vidSrv->getImages(width, height, images);
+}
+
 void VideoServerI::getScaledImages(Ice::Int width, Ice::Int height,
       ImageSeq& images, const Ice::Current&)
 {
   vidSrv->getScaledImages(width, height, images);
+}
+
+bool VideoServerI::getHRImages(ImageSeq& images, const Ice::Current&)
+{
+	return vidSrv->getHRImages(images);
 }
 
 void VideoServerI::startReceiveImages(const std::string& receiverComponentId,
@@ -66,11 +76,24 @@ void VideoServerI::stopReceiveImages(const std::string& receiverComponentId,
   vidSrv->stopReceiveImages(receiverComponentId);
 }
 
-void VideoServerI::changeFormat7Properties(Ice::Int width, Ice::Int height, Ice::Int offsetX,															/// TODO changeFormat7Properties
+void VideoServerI::changeFormat7Properties(Ice::Int width, Ice::Int height, Ice::Int offsetX,
     Ice::Int offsetY, Ice::Int mode, Ice::Int fps, const Ice::Current&)
 {
 	vidSrv->changeFormat7Properties(width, height, offsetX, offsetY, mode, fps);
 }
+
+bool VideoServerI::inFormat7Mode(const Ice::Current&)
+{
+	return vidSrv->inFormat7Mode();
+}
+
+std::string VideoServerI::getServerName(const Ice::Current&)
+{
+	return vidSrv->getServerName();
+}
+
+
+
 
 
 /**
@@ -180,8 +203,7 @@ void VideoServer::start()
         &VideoServer::receiveCameraParameters));
 }
 
-void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange &
-    _wmc)
+void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
 {
   CameraParametersWrapperPtr newCam = getMemoryEntry<CameraParametersWrapper>(_wmc.address);
   // find the camera paramters that need updating and update pose and time stamp
@@ -256,6 +278,16 @@ void VideoServer::getImages(std::vector<Video::Image> &images)
   unlockComponent();
 }
 
+void VideoServer::getImages(int width, int height, std::vector<Video::Image> &images)
+{
+  lockComponent();
+  retrieveFrames(width, height, images);
+  if(swapRB)
+    for(size_t i = 0; i < images.size(); i++)
+      SwapRedBlueChannel(images[i]);
+  unlockComponent();
+}
+
 void VideoServer::getScaledImages(int width, int height, std::vector<Video::Image> &images)
 {
   lockComponent();
@@ -266,9 +298,21 @@ void VideoServer::getScaledImages(int width, int height, std::vector<Video::Imag
   unlockComponent();
 }
 
-void VideoServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
+bool VideoServer::getHRImages(std::vector<Video::Image> &images)
 {
+	  lockComponent();
+		retrieveHRFrames(images);
+		if(swapRB)
+			for(size_t i = 0; i < images.size(); i++)
+				SwapRedBlueChannel(images[i]);
+	  unlockComponent();
+		return true;																					/// TODO TODO TODO TODO 
 }
+
+
+void VideoServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize) {}
+bool VideoServer::inFormat7Mode() {}
+const std::string VideoServer::getServerName() {}
 
 void VideoServer::runComponent()
 {

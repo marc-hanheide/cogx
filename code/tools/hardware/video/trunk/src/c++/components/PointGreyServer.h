@@ -92,7 +92,6 @@ private:
     float getRate() const {return mean.getMean();}
   };
 
-
   FlyCapture2::BusManager busMgr;											///< FlyCapture2 bus manager
   FlyCapture2::Camera **cameras;											///< FlyCapture2 cameras
   std::vector<FlyCapture2::Image> retrievedImages;		///< FlyCapture2 retrieved images from different cameras
@@ -105,8 +104,9 @@ private:
   int fps;																						///< Frames per second
   int videoMode;																			///< Mode 0/1: pruned/resized
   int paketSize;																			///< Paket size for VideoMode7
-	bool useVideoMode7;																	///< Use VideoMode7
+	bool useVideoMode7;																	///< True, if VideoMode7 / Format7 mode is active.
   bool setAutomaticPropertyAdjustment;								///< Automatic property adjustment between different cameras.
+	bool isCapturing;																		///< Capturing of frames is started.
 
   FlyCapture2::VideoMode selectVideoMode(int &_width, int &_height);
   FlyCapture2::FrameRate selectFrameRate(int &_fps);
@@ -129,13 +129,17 @@ private:
 	bool IsCurrentlyInFormat7(int camId);
 	bool GetFormat7ImageParametersFromCamera(FlyCapture2::Mode mode, unsigned int* pLeft, unsigned int* pTop, unsigned int* pWidth, unsigned int* pHeight);
 	void SetVideoMode7(int camId);
+	void StartSyncCapturing();
+	void StopCapturing();
 
   void copyImage(const FlyCapture2::Image &flyImg, Video::Image &img) throw(std::runtime_error);
   void grabFramesInternal();
   void retrieveFrameInternal(int camIdx, int width, int height, Video::Image &frame);
+	void retrieveHRFramesInternal(std::vector<Video::Image> &frames);
   virtual void retrieveFrames(const std::vector<int> &camIds, int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrames(int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrame(int camId, int width, int height, Video::Image &frame);
+	virtual void retrieveHRFrames(std::vector<Video::Image> &frames);
 
 public:
   PointGreyServer();
@@ -145,6 +149,8 @@ public:
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
 	virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize);
+	virtual bool inFormat7Mode();
+	virtual const std::string getServerName();
 };
 
 }

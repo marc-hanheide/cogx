@@ -223,6 +223,11 @@ void OpenCvImgSeqServer::retrieveFrame(int camId, int width, int height,
   retrieveFrameInternal(i, width, height, frame);
 }
 
+void OpenCvImgSeqServer::retrieveHRFrames(std::vector<Video::Image> &frames)
+{
+	printf("OpenCvImgSeqServer::retrieveHRFrames: not yet implemented.\n");
+}
+
 /**
  * Returns whether any frames have been grabbed yet.
  */
@@ -302,5 +307,37 @@ void OpenCvImgSeqServer::configure(const map<string,string> & _config)
   init(fileTemplates, start, end, step);
 }
 
+/**
+ * @brief This function is only for the PointGrey server available: experimental mode.
+ * @param width Image width
+ * @param height Image height
+ * @param offsetX Offset in x- direction for Format7 mode.
+ * @param offsetY Offset in y- direction for Format7 mode.
+ * @param mode Image grabbing mode for the Format7 mode.
+ * @param fps Requested framerate [1/s]
+ */
+void OpenCvImgSeqServer::changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize)
+{
+	log("only for the PointGrey server available: abort.");
 }
 
+/**
+ * @brief Camera is not in Format7 mode.
+ * @return Returns false, when cameras not in Format7 mode.
+ */
+bool OpenCvImgSeqServer::inFormat7Mode()
+{
+	return false;
+}
+
+/**
+ * @brief Get the server name
+ * @param name Server name (PointGreyServer / OpenCvImgSeqServer / OpenCvLiveServer)
+ */
+const std::string OpenCvImgSeqServer::getServerName()
+{
+	const std::string str("OpenCvImgSeqServer");
+	return str;
+}
+
+}
