@@ -33,9 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.dfki.lt.tr.beliefs.data.genericproxies.Distribution;
-import de.dfki.lt.tr.beliefs.data.genericproxies.GenericIndependentDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.factories.IndependentDistributionFactory;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
@@ -70,7 +68,7 @@ public class ContentTest {
 	public void setContentOfBelief() {
 		distribution = FormulaDistribution.create();
 		genericBelief.setContent(distribution);
-		FormulaDistribution fd = FormulaDistribution.create(genericBelief.getContent().get());
+		FormulaDistribution.create(genericBelief.getContent().get());
 	}
 //	
 //	/** Cannot set a distribution for a non-initialized content structure */

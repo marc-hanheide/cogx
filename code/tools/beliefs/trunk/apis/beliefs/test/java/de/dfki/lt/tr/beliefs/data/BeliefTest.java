@@ -25,8 +25,6 @@ package de.dfki.lt.tr.beliefs.data;
 //=================================================================
 //IMPORTS
 
-// Java
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -37,8 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBelief;
-import de.dfki.lt.tr.beliefs.factories.DistributionFactory;
-import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
 import de.dfki.lt.tr.beliefs.util.BeliefMissingValueException;
@@ -174,7 +170,7 @@ public class BeliefTest {
 	public void attributedBeliefCanReturnAttributedToAgents() {
 		this.setBeliefToAttributed();
 		List<String> attribAgents = genericBelief.getAttributedToAgents();
-		assertEquals((String) attribAgents.get(0), "human");
+		assertEquals(attribAgents.get(0), "human");
 	} // end test
 
 	/**
