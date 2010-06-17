@@ -34,6 +34,11 @@ package de.dfki.lt.tr.beliefs.util;
 
 public class BeliefException extends RuntimeException {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2948777686218122416L;
+
 	public BeliefException () { 
 		super("");
 	}

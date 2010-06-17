@@ -14,6 +14,8 @@ public abstract class Proxy<T extends Ice.Object> {
 	protected final Class<? extends T> _proxyFor;
 	protected final T _content;
 	protected final Logger _logger;
+	
+	
 
 	/** create a Proxy
 	 * @param class1
@@ -42,6 +44,8 @@ public abstract class Proxy<T extends Ice.Object> {
 		}
 	}
 
+	
+	
 	/**
 	 * @return the content of this proxy
 	 */

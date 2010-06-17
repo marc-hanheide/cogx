@@ -18,16 +18,16 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
  * @author marc
  * 
  */
-public class GenericIndependentDistribution<T extends Content<?>>
-		extends ManagedContent<CondIndependentDistribs, T> implements
+public class GenericIndependentDistribution<T extends Distribution<?>>
+		extends ManagedContent<CondIndependentDistribs, ProbDistribution, T> implements
 		Map<String, T> {
 
-	public static <T2 extends Content<?>> GenericIndependentDistribution<T2> create(
-			ProxyFactory<? extends T2> factory, Ice.Object pd) {
+	public static <T2 extends Distribution<?>> GenericIndependentDistribution<T2> create(
+			ProxyFactory<ProbDistribution, ? extends T2> factory, ProbDistribution pd) {
 		return new GenericIndependentDistribution<T2>(factory, pd);
 	}
 
-	protected GenericIndependentDistribution(ProxyFactory<? extends T> factory, Ice.Object content) {
+	protected GenericIndependentDistribution(ProxyFactory<ProbDistribution, ? extends T> factory, ProbDistribution content) {
 		super(CondIndependentDistribs.class, factory, content);
 	}
 
@@ -115,7 +115,7 @@ public class GenericIndependentDistribution<T extends Content<?>>
 	 */
 	public void putAll(
 			Map<? extends String, ? extends T> arg0) {
-		for (Entry<? extends String, ? extends Content<? extends ProbDistribution>> e : arg0
+		for (Entry<? extends String, ? extends Distribution<? extends ProbDistribution>> e : arg0
 				.entrySet()) {
 			_content.distribs.put(e.getKey(), e.getValue().get());
 		}

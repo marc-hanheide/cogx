@@ -11,7 +11,7 @@ import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
  * 
  */
 public class GenericFactory extends
-		AbstractProxyFactory<Proxy<? extends Ice.Object>> {
+		AbstractProxyFactory<Ice.Object, Proxy<? extends Ice.Object>> {
 
 	@Override
 	public Proxy<Ice.Object> create(Ice.Object pd) {

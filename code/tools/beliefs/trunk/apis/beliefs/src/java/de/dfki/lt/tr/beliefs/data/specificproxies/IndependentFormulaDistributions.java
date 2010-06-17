@@ -1,11 +1,11 @@
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  */
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.specificproxies;
 
-import Ice.Object;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericIndependentDistribution;
 import de.dfki.lt.tr.beliefs.factories.FormulaDistributionFactory;
+import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -14,11 +14,11 @@ import de.dfki.lt.tr.beliefs.factories.FormulaDistributionFactory;
 public class IndependentFormulaDistributions extends
 		GenericIndependentDistribution<FormulaDistribution> {
 
-	public static IndependentFormulaDistributions create(Ice.Object o) {
+	public static IndependentFormulaDistributions create(ProbDistribution o) {
 		return new IndependentFormulaDistributions(o);
 	}
 
-	protected IndependentFormulaDistributions(Object content) {
+	protected IndependentFormulaDistributions(ProbDistribution content) {
 		super(new FormulaDistributionFactory(), content);
 	}
 

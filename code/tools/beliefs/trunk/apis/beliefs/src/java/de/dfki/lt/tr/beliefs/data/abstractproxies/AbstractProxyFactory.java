@@ -9,8 +9,8 @@ package de.dfki.lt.tr.beliefs.data.abstractproxies;
  * @param <T>
  *            the type of proxy that is generate by this factory.
  */
-public abstract class AbstractProxyFactory<T extends Proxy<?>> implements
-		ProxyFactory<T> {
+public abstract class AbstractProxyFactory<C extends Ice.Object, T extends Proxy<? extends C>>
+		implements ProxyFactory<C, T> {
 
 	/*
 	 * (non-Javadoc)
@@ -20,7 +20,7 @@ public abstract class AbstractProxyFactory<T extends Proxy<?>> implements
 	 * .lt.tr.beliefs.data.abstractproxies.Proxy)
 	 */
 	@Override
-	public T create(Proxy<? extends Ice.Object> proxy) {
+	public T create(Proxy<? extends C> proxy) {
 		return create(proxy.get());
 	}
 

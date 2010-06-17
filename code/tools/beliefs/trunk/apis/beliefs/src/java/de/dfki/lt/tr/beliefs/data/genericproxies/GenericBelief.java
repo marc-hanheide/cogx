@@ -1,12 +1,10 @@
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
-import de.dfki.lt.tr.beliefs.data.genericproxies.Content;
-import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
@@ -21,11 +19,11 @@ import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 import de.dfki.lt.tr.beliefs.util.BeliefMissingValueException;
 
-public class GenericBelief<T extends dBelief, C extends Content<?>> extends Proxy<T> {
+public class GenericBelief<T extends dBelief, C extends Distribution<?>> extends Proxy<T> {
 
-	public static <T2 extends dBelief, C2 extends Content<?>> GenericBelief<T2, C2> create(
-			Class<? extends T2> type, ProxyFactory<? extends C2> factory,
-			Ice.Object o) {
+	public static <T2 extends dBelief, C2 extends Distribution<?>> GenericBelief<T2, C2> create(
+			Class<? extends T2> type, ProxyFactory<ProbDistribution, ? extends C2> factory,
+			dBelief o) {
 		return new GenericBelief<T2, C2>(type, factory, o);
 	}
 
@@ -48,10 +46,10 @@ public class GenericBelief<T extends dBelief, C extends Content<?>> extends Prox
 
 	}
 	
-	protected final ProxyFactory<? extends C> contentFactory;
+	protected final ProxyFactory<ProbDistribution, ? extends C> contentFactory;
 
 	protected GenericBelief(Class<? extends T> class1,
-			ProxyFactory<? extends C> factory, Ice.Object content) {
+			ProxyFactory<ProbDistribution, ? extends C> factory, dBelief content) {
 		super(class1, content);
 		contentFactory = factory;
 	}
@@ -106,8 +104,8 @@ public class GenericBelief<T extends dBelief, C extends Content<?>> extends Prox
 		return contentFactory.create(_content.content);
 	} // end getContent
 
-	public Frame<?> getFrame() {
-		return new Frame<AbstractFrame>(AbstractFrame.class, _content.frame);
+	public GenericFrame<AbstractFrame> getFrame() {
+		return GenericFrame.create(AbstractFrame.class, _content.frame);
 	}
 
 	/**
@@ -264,7 +262,7 @@ public class GenericBelief<T extends dBelief, C extends Content<?>> extends Prox
 	 *             If the belief is null/empty
 	 * @see FrameProxy
 	 */
-	public void setFrame(Frame<?> frameProxy) {
+	public void setFrame(GenericFrame<?> frameProxy) {
 		if (frameProxy == null) {
 			throw new BeliefMissingValueException(
 					"Cannot set frame: Provided frame is null");

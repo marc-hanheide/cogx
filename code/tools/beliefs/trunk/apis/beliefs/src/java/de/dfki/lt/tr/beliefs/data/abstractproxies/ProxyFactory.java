@@ -9,7 +9,7 @@ package de.dfki.lt.tr.beliefs.data.abstractproxies;
  * @author marc
  *
  */
-public interface ProxyFactory<T extends Proxy<? extends Ice.Object>> {
-	public T create(Ice.Object pd);
-	public T create(Proxy<? extends Ice.Object> proxy);
+public interface ProxyFactory<C extends Ice.Object, T extends Proxy<? extends C>> {
+	public T create(C o);
+	public T create(Proxy<? extends C> proxy);
 }

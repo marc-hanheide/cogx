@@ -26,8 +26,8 @@ package de.dfki.lt.tr.beliefs.data.abstractproxies;
 //IMPORTS
 
 //Java
-import Ice.Object;
-import de.dfki.lt.tr.beliefs.data.genericproxies.Content;
+import de.dfki.lt.tr.beliefs.data.genericproxies.Distribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
@@ -122,17 +122,19 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
  * @started 100523
  */
 
-public abstract class ManagedContent<T extends ProbDistribution, P extends  Proxy<?>> extends Content<T> {
+public abstract class ManagedContent<T extends ProbDistribution, C extends Ice.Object, P extends Proxy<? extends C>>
+		extends Distribution<T> {
 
-	protected ProxyFactory<? extends P> _factory;
+	protected ProxyFactory<C, ? extends P> _factory;
 
-	protected ManagedContent(Class<? extends T> class1, ProxyFactory<? extends P> factory, Object content) {
+	protected ManagedContent(Class<? extends T> class1,
+			ProxyFactory<C, ? extends P> factory, ProbDistribution content) {
 		super(class1, content);
 		_factory = factory;
 	}
 
-	protected Proxy<?> createElement(Ice.Object o) {
+	protected P createElement(C o) {
 		return _factory.create(o);
 	}
-	
+
 } // end class

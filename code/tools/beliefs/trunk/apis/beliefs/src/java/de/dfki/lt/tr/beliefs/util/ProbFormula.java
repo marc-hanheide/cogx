@@ -4,9 +4,6 @@
 package de.dfki.lt.tr.beliefs.util;
 
 import de.dfki.lt.tr.beliefs.data.Formula;
-import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 
 /**
  * @author marc

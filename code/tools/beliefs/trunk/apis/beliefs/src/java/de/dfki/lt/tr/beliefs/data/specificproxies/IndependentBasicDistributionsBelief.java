@@ -1,10 +1,11 @@
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  */
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.specificproxies;
 
 import java.util.HashMap;
 
+import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBelief;
 import de.dfki.lt.tr.beliefs.factories.IndependentBasicDistributionsFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
@@ -18,7 +19,7 @@ public class IndependentBasicDistributionsBelief<T extends dBelief> extends
 		GenericBelief<T, IndependentBasicDistributions> {
 
 	public static <T2 extends dBelief> IndependentBasicDistributionsBelief<T2> create(
-			Class<? extends T2> type, Ice.Object o) {
+			Class<? extends T2> type, dBelief o) {
 		return new IndependentBasicDistributionsBelief<T2>(type, o);
 	}
 
@@ -31,7 +32,7 @@ public class IndependentBasicDistributionsBelief<T extends dBelief> extends
 	}
 
 	protected IndependentBasicDistributionsBelief(Class<? extends T> class1,
-			Ice.Object content) {
+			dBelief content) {
 		super(class1, new IndependentBasicDistributionsFactory(), content);
 	}
 
