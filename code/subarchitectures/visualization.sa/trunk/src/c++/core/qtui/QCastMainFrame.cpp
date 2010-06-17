@@ -17,6 +17,9 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#ifdef V11N_OBJECT_HTML_PLUGINS
+#include <QWebSettings>
+#endif
 
 #include "../convenience.hpp"
 
@@ -247,6 +250,10 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 
    QStatusBar *pBar = statusBar();
    if (pBar) pBar->setVisible(false);
+
+#ifdef V11N_OBJECT_HTML_PLUGINS
+   QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+#endif
 }
 
 QCastMainFrame::~QCastMainFrame()
@@ -373,7 +380,7 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
    if (! pView) {
       setWindowTitle(m_winText);
       updateCustomUi(NULL);
-      ui.drawingArea->setView(NULL);
+      ui.drawingArea->setView(NULL, NULL);
    }
    else {
       setWindowTitle(QString::fromStdString(pView->m_id) + " - " + m_winText);
@@ -390,7 +397,7 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
             }
          }
       }
-      ui.drawingArea->setView(pView);
+      ui.drawingArea->setView(m_pModel, pView);
    }
 }
 

@@ -49,7 +49,21 @@ if(BUILD_SA_V11N_USE_WEBKIT)
       ${QT_QTWEBKIT_INCLUDE_DIR}
       )
    add_definitions(-DV11N_OBJECT_HTML)
+
+
+   # Disabled because of libflashplugin.so that crashes with WebKit (Ubuntu 10.04)
+   set(WEBKIT_PLUGINS 0)
+   if (WEBKIT_PLUGINS)
+      set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
+         qtui/QCastPlugins.cpp
+         )
+      set(EXPERIMENT_MOC ${EXPERIMENT_MOC}
+         qtui/QCastPlugins.hpp
+         )
+      add_definitions(-DV11N_OBJECT_HTML_PLUGINS)
+   endif (WEBKIT_PLUGINS)
 endif(BUILD_SA_V11N_USE_WEBKIT)
+
 
 option(BUILD_SA_V11N_USE_TOMGINE "Build with support for TomGine models (requires vision.sa)" OFF)
 if(BUILD_SA_V11N_USE_TOMGINE)

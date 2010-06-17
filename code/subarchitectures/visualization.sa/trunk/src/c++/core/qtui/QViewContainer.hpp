@@ -33,7 +33,7 @@ public:
    ~QViewContainer ();
 
    // TODO: multiple views in a grid? -> setView(index, pView)
-   void setView(cogx::display::CDisplayView* pView);
+   void setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView);
    cogx::display::CDisplayView* getView();
 
 private:
