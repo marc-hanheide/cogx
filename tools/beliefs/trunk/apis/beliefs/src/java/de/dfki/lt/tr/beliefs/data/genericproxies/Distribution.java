@@ -1,6 +1,7 @@
 package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
+import de.dfki.lt.tr.beliefs.factories.DistributionFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
@@ -21,5 +22,11 @@ public class Distribution<T extends ProbDistribution> extends Proxy<T> {
 	protected Distribution(Class<? extends T> class1, ProbDistribution content) {
 		super(class1, content);
 	}
+	
+	public Distribution<ProbDistribution> asDistribution() {
+		return DistributionFactory.get().create(this);
+	}
+	
+
 
 }

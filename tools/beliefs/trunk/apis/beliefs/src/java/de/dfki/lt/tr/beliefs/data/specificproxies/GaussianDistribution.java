@@ -5,7 +5,7 @@ package de.dfki.lt.tr.beliefs.data.specificproxies;
 
 import de.dfki.lt.tr.beliefs.data.Gaussian;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
-import de.dfki.lt.tr.beliefs.factories.GaussianFactory;
+import de.dfki.lt.tr.beliefs.factories.specific.GaussianFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**
@@ -25,6 +25,6 @@ public class GaussianDistribution extends
 	 */
 	protected GaussianDistribution(
 			ProbDistribution content) {
-		super(new GaussianFactory(), content);
+		super(GaussianFactory.get(), content);
 	}
 }

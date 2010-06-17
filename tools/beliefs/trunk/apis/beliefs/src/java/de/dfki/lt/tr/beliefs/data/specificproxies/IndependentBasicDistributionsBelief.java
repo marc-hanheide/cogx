@@ -6,7 +6,7 @@ package de.dfki.lt.tr.beliefs.data.specificproxies;
 import java.util.HashMap;
 
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBelief;
-import de.dfki.lt.tr.beliefs.factories.IndependentBasicDistributionsFactory;
+import de.dfki.lt.tr.beliefs.factories.specific.IndependentBasicDistributionsFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
@@ -33,7 +33,7 @@ public class IndependentBasicDistributionsBelief<T extends dBelief> extends
 
 	protected IndependentBasicDistributionsBelief(Class<? extends T> class1,
 			dBelief content) {
-		super(class1, new IndependentBasicDistributionsFactory(), content);
+		super(class1, IndependentBasicDistributionsFactory.get(), content);
 	}
 
 }

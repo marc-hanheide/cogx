@@ -15,6 +15,15 @@ public class DistributionContentFactory
 		extends
 		AbstractProxyFactory<DistributionValues, DistributionContent<DistributionValues>> {
 
+	private static DistributionContentFactory singleton = null;
+
+	public static DistributionContentFactory get() {
+		if (singleton == null)
+			singleton = new DistributionContentFactory();
+		return singleton;
+	}
+
+
 	@Override
 	public DistributionContent<DistributionValues> create(DistributionValues pd) {
 		return new DistributionContent<DistributionValues>(

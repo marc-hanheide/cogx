@@ -27,7 +27,6 @@ package de.dfki.lt.tr.beliefs.data.abstractproxies;
 
 //Java
 import de.dfki.lt.tr.beliefs.data.genericproxies.Distribution;
-import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
 /**

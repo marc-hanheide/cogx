@@ -2,6 +2,8 @@ package de.dfki.lt.tr.beliefs.data.abstractproxies;
 
 import org.apache.log4j.Logger;
 
+import Ice.Object;
+
 /**
  * provide a type safe encapsulation of a slice data type
  * 
@@ -15,8 +17,21 @@ public abstract class Proxy<T extends Ice.Object> {
 	protected final T _content;
 	protected final Logger _logger;
 	
+	public static <Tin extends Ice.Object, P2 extends Proxy<? extends Tin>> P2 create(ProxyFactory<Tin, P2> factory, Tin object) {
+		return factory.create(object);
+	}
 	
-
+	public <P2 extends Proxy<? extends T>> P2 getAs(ProxyFactory<T, P2> factory) {
+		return factory.create(this);
+	}
+	
+	public static <Tin extends Ice.Object, P2 extends Proxy<? extends Tin>> P2 create(ProxyFactory<Tin, P2> factory, Proxy<? extends Tin> object) {
+		return factory.create(object);
+	}
+	
+	
+	
+	
 	/** create a Proxy
 	 * @param class1
 	 *            the type this proxy shall encapsulate
@@ -56,10 +71,14 @@ public abstract class Proxy<T extends Ice.Object> {
 	/**
 	 * @return the class this proxy is for
 	 */
-	public Class<? extends T> proxyFor() {
-		return _proxyFor;
+	public Class<? extends Object> proxyFor() {
+		return _content.getClass();
 	}
 
+	public boolean isFor(Class<? extends T> type) {
+		return (type.isAssignableFrom(proxyFor()));
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

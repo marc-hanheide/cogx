@@ -36,7 +36,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.dfki.lt.tr.beliefs.factories.ContentFactory;
+import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBelief;
+import de.dfki.lt.tr.beliefs.factories.DistributionFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidOperationException;

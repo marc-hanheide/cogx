@@ -14,6 +14,14 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 public class IndependentDistributionFactory extends
 		AbstractProxyFactory<ProbDistribution, IndependentDistribution> {
 
+	private static IndependentDistributionFactory singleton = null;
+
+	public static IndependentDistributionFactory get() {
+		if (singleton == null)
+			singleton = new IndependentDistributionFactory();
+		return singleton;
+	}
+
 	@Override
 	public IndependentDistribution create(ProbDistribution pd) {
 		return IndependentDistribution.create(pd);

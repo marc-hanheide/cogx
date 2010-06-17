@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ManagedContent;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
+import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 
@@ -18,16 +19,19 @@ import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
  * @author marc
  * 
  */
-public class GenericIndependentDistribution<T extends Distribution<?>>
-		extends ManagedContent<CondIndependentDistribs, ProbDistribution, T> implements
+public class GenericIndependentDistribution<T extends Distribution<?>> extends
+		ManagedContent<CondIndependentDistribs, ProbDistribution, T> implements
 		Map<String, T> {
 
 	public static <T2 extends Distribution<?>> GenericIndependentDistribution<T2> create(
-			ProxyFactory<ProbDistribution, ? extends T2> factory, ProbDistribution pd) {
+			ProxyFactory<ProbDistribution, ? extends T2> factory,
+			ProbDistribution pd) {
 		return new GenericIndependentDistribution<T2>(factory, pd);
 	}
 
-	protected GenericIndependentDistribution(ProxyFactory<ProbDistribution, ? extends T> factory, ProbDistribution content) {
+	protected GenericIndependentDistribution(
+			ProxyFactory<ProbDistribution, ? extends T> factory,
+			ProbDistribution content) {
 		super(CondIndependentDistribs.class, factory, content);
 	}
 
@@ -98,23 +102,41 @@ public class GenericIndependentDistribution<T extends Distribution<?>>
 		return _content.distribs.keySet();
 	}
 
+	// /**
+	// * @param arg0
+	// * @param arg1
+	// * @return
+	// * @see java.util.Map#put(java.lang.Object, java.lang.Object)
+	// */
+	// public T put(String arg0,
+	// T arg1) {
+	// return _factory.create(_content.distribs.put(arg0, arg1.get()));
+	// }
+
 	/**
 	 * @param arg0
 	 * @param arg1
 	 * @return
 	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
 	 */
-	public T put(String arg0,
-			T arg1) {
-		return _factory.create(_content.distribs.put(arg0, arg1.get()));
+	public T put(String arg0, T arg1) {
+		if ((arg1.get() instanceof BasicProbDistribution)) {
+			// write the new key
+			((BasicProbDistribution) arg1.get()).key=arg0;
+		}
+		ProbDistribution c=_content.distribs.put(arg0, arg1.get());
+		if (c!=null)
+			return _factory.create(c);
+		else
+			return null;
 	}
+
 
 	/**
 	 * @param arg0
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
-	public void putAll(
-			Map<? extends String, ? extends T> arg0) {
+	public void putAll(Map<? extends String, ? extends T> arg0) {
 		for (Entry<? extends String, ? extends Distribution<? extends ProbDistribution>> e : arg0
 				.entrySet()) {
 			_content.distribs.put(e.getKey(), e.getValue().get());
@@ -159,14 +181,12 @@ public class GenericIndependentDistribution<T extends Distribution<?>>
 	 * @see java.util.Map#values()
 	 */
 	public Collection<T> values() {
-		Vector<T> result = new Vector<T>(
-				_content.distribs.size());
+		Vector<T> result = new Vector<T>(_content.distribs.size());
 		for (ProbDistribution p : _content.distribs.values()) {
 			result.add(_factory.create(p));
 		}
 		return result;
 
 	}
-
 
 }
