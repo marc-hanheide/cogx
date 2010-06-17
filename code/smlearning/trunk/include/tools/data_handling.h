@@ -334,7 +334,7 @@ map<Vec3, int, compare_Vec3> get_canonical_positions ();
 ///
 ///enumerate a dataset using a canonical representation taking into account time steps
 ///
-CanonicalData::DataSet canonical_input_output_enumerator_with_time (DataSetStruct& data, Scenario::Desc& scenario, int modulo = 1);
+CanonicalData::DataSetStruct canonical_input_output_enumerator_with_time (DataSetStruct& data, Scenario::Desc& scenario, int modulo = 1);
 
 ///
 ///write a dataset in cryssmex format by using the canonical representation
@@ -349,9 +349,11 @@ void write_dataset_cryssmex_fmt_with_label (string writeFileName, DataSet data, 
 
 ///
 ///write a dataset in cryssmex format. This code assumes vectorial data format
-///and works as a regression predictor (output is of the same dimensionality as the state space) and canonical format for the input
+///and works as a regression predictor and canonical format for the input
+///\params pfEfPredictor variable allows prediction of both polyflap and effector vectors (output
+///        space of the same dimensionality of state space)
 ///
-void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSet data);
+void write_canonical_dataset_cryssmex_fmt_regression (string writeFileName, CanonicalData::DataSetStruct& data, bool pfefState = true, bool pfefOutput = false);
 
 ///
 ///parse a string containing a list of starting positions (TODO: write a nice reg.exp. :P )

@@ -51,6 +51,9 @@ public:
 	///
 	void run(int argc, char* argv[]);
 
+	///
+	///set experiment default values
+	///
 	virtual void init(map<string, string> m);
 
 
@@ -120,12 +123,6 @@ protected:
 
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
-
-	///
-	///Set the lenght of experiment (number of sequences) and if given, the starting position.
-	///Calculate the splittingCriterion1 constant according to nr. of sequences. 
-	///Get previously trained neural network if given.
-	virtual void setup_loop(int argc, char* argv[]);
 
 	///
 	///prepares the polyflap to use

@@ -78,7 +78,7 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, ostream& out) {
 		out << seq;
 	}
 	double error;
-	for (int i=0; i<100; i++) {
+	for (int i=0; i<1; i++) {
 // 	int i = 0;
 // 	do {
 		error = net->train(seq);

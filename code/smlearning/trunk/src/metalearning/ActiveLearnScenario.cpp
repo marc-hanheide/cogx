@@ -130,26 +130,6 @@ void ActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 }
 
 ///
-///Set the lenght of experiment (number of sequences) and if given, the starting position.
-///Calculate the splittingCriterion1 constant according to nr. of sequences. 
-///Get previously trained neural network if given.
-void ActiveLearnScenario::setup_loop(int argc, char* argv[]) {
-	Scenario::setup_loop (argc, argv);
-
-	splittingCriterion1 = numSequences / startingPositionsCount;
-
-	if (splittingCriterion1 < 5)
-		splittingCriterion1 = 4;
-
-	cout << "splitting criterion: " << splittingCriterion1 << endl;
-
-	if (argc > 5)
-		netconfigFileName = string (argv[5]);
-
-}
-
-
-///
 ///prepares the polyflap to use
 ///
 void ActiveLearnScenario::initialize_polyflap(){
@@ -243,7 +223,6 @@ void ActiveLearnScenario::write_data (bool final){
 	//cout << "ALS: writing data..." << endl;
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	//string basename = writedown_collected_data(data);
 	if (final) {
 		write_dataset (dataFileName, data);
 		string stpFileName = dataFileName + ".stp";
@@ -281,9 +260,6 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 
 	//setup and move to home position; define fingertip orientation
 	setup_home();
-
-	//define numSequences and startingPosition
-	setup_loop(argc, argv);
 
 	regionsCount = 0;
 	SMRegion firstRegion (regionsCount, /*motorVectorSize, */splittingCriterion1);
@@ -523,10 +499,8 @@ void ActiveLearnScenario::update_learners () {
 	currentRegion->startingPositionsHistory.push_back (startPosition);
 
 	SMRegion::RegionsMap::iterator it;
-//cout << "--------------------------------------------------------" << regions.size() << endl;
 	for ( it=regions.begin() ; it != regions.end(); it++ ) {
 		if (&(it->second) != currentRegion) {
-//cout << "--------------------------------------------------------" << endl;
 			double lastLP = it->second.learningProgressHistory.back();
 			double lastEr = it->second.errorsHistory.back();
 			it->second.learningProgressHistory.push_back(lastLP);
@@ -655,6 +629,13 @@ void ActiveLearnScenario::init(map<string, string> m) {
 	
 	Scenario::init(m);
 
+	splittingCriterion1 = numSequences / startingPositionsCount;
+
+	if (splittingCriterion1 < 5)
+		splittingCriterion1 = 4;
+
+	cout << "splitting criterion: " << splittingCriterion1 << endl;
+	
 	netconfigFileName = "";
 
 	if (m.count("netconfigFileName")) {
@@ -667,11 +648,6 @@ void ActiveLearnScenario::init(map<string, string> m) {
 
 
 //------------------------------------------------------------------------------
-
-
-namespace po = boost::program_options;
-using namespace boost;
-
 
 
 void ActivePushingApplication::define_program_options_desc() {
@@ -701,17 +677,17 @@ try {
 
 void ActivePushingApplication::read_program_options(int argc, char *argv[]) {
 
-try {
-	PushingApplication::read_program_options(argc, argv);
+	try {
+		PushingApplication::read_program_options(argc, argv);
 
-	if (vm.count("netconfigFileName")) {
-		arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
-	}
+		if (vm.count("netconfigFileName")) {
+			arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
+		}
 
-}catch(std::exception& e) {
-	cerr << "error: " << e.what() << "\n";
-}catch(...) {
-	cerr << "Exception of unknown type!\n";
+	} catch(std::exception& e) {
+		cerr << "error: " << e.what() << "\n";
+	} catch(...) {
+		cerr << "Exception of unknown type!\n";
 
 }
 
@@ -725,71 +701,6 @@ int ActivePushingApplication::main(int argc, char *argv[]) {
 
 	PushingApplication::main(argc, argv);
 
- //try {
-	
-	//po::options_description desc("Allowed options");
-	//prgOptDesc.add_options()
-/*		("help", "produce help message")
-//		("argument1, a1", po::value<int>(&opt)->default_value(10), "first argument")
-//		("argument2, a2", po::value<string>(), "first argument")
-//		("include-path,I", po::value< vector<string> >(),"include path")
-//		("input-file", po::value< vector<string> >(), "input file")
-		("numSequences,S", po::value<string>(), "number of sequences")
-		("startingPosition,P", po::value<string>(), "only starting position to use")
-		("storeLabels,L", po::value<string>(), "use true or false as argument")
-*/	//	("netconfigFileName,N", po::value<string>(), "name of the netconfig file")
-/*		("configFile", po::value<string>(), "name of the xml config file")
-*/	;
-
-/*	po::positional_options_description p;
-	p.add("configFile", -1);
-
-	po::variables_map vm;
-//	po::store(po::parse_command_line(argc, argv, desc), vm);
-	po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-	po::notify(vm);
-
-	if (vm.count("help")) {
-		cout << desc << endl;
-		return 1;
-	}
-
-	if (vm.count("numSequences")) {
-		arguments["numSequences"]=vm["numSequences"].as<string>();
-	}
-
-	if (vm.count("startingPosition")) {
-		arguments["startingPosition"]=vm["startingPosition"].as<string>();
-	}
-
-	if (vm.count("storeLabels")) {
-		arguments["storeLabels"]=vm["storeLabels"].as<string>();
-	}
-
-*/	//if (vm.count("netconfigFileName")) {
-	//	arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
-	//}
-
-/*	if (vm.count("configFile")) {
-		char* arr[2];
-		//char* arr [] = (char *){argv[0], vm["configFile"].as<string>().c_str()};
-		arr[0] = argv[0];
-		arr[1] =  vm["configFile"].as<string>().c_str();
-		Application::main(2, arr);
-	} else {
-		char* arr [] = {argv[0]};
-		Application::main(1, arr);
-	}
-
-
-}catch(std::exception& e) {
-	cerr << "error: " << e.what() << "\n";
-}catch(...) {
-	cerr << "Exception of unknown type!\n";
-}
-
-return 1;
-*/
 }
 
 void ActivePushingApplication::run(int argc, char *argv[]) {

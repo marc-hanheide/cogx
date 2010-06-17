@@ -614,33 +614,6 @@ void Scenario::setup_home(){
 	orientationT.set(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 }
 
-
-///
-///set the lenght of experiment (number of sequences), starting position, and other default values
-///
-void Scenario::setup_loop(int argc, char* argv[]){
-/*	
-	numSequences = 10000;
-	startingPosition = 0;
-	storeLabels = false;
-	if (argc > 2)
-		numSequences = atoi(argv[2]);
-	if (argc > 3)
-		startingPosition = atoi(argv[3]);
-	if (argc > 4)
-		storeLabels = atoi(argv[4]);
-
-*/
-
-	data.second = make_tuple (make_tuple((int)motorVectorSize, (int)featureVectorSize, (int)pfVectorSize, (int)efVectorSize), storeLabels, make_tuple(desc.minX, desc.minY, desc.minZ, desc.maxX, desc.maxY, desc.maxZ));
-
-	dataFileName = get_base_filename_from_time ();
-
-	availableStartingPositions = parse_startingPositions(desc.startingPositionsConfig, startingPositionsCount);
-
-}
-
-
 ///
 ///try to find a path to given position, if found, move the finegr along it and wait for it to stop
 ///
@@ -901,11 +874,7 @@ void Scenario::run(int argc, char* argv[]) {
 	//setup and move to home position; define fingertip orientation
 	setup_home();
 
-	//define numSequences and startingPosition
-	setup_loop(argc, argv);
-	
-	
-	
+
 	//start of the experiment loop
 	for (iteration = 0; iteration<numSequences; iteration++) {
 		
@@ -1010,8 +979,9 @@ void Scenario::set_movement_angle(const Real angle, golem::WorkspaceCoord& pose,
 
 
 
-
-
+///
+///set experiment default values
+///
 void Scenario::init(map<string, string> m) {
 	numSequences = 10000;
 	startingPosition = 0;
@@ -1028,18 +998,23 @@ void Scenario::init(map<string, string> m) {
 
 	if (m.count("storeLabels") && (m["storeLabels"] == "true")) {
 		storeLabels = true;
-	}	
+	}
+
+	data.second = make_tuple (make_tuple((int)motorVectorSize, (int)featureVectorSize, (int)pfVectorSize, (int)efVectorSize), storeLabels, make_tuple(desc.minX, desc.minY, desc.minZ, desc.maxX, desc.maxY, desc.maxZ));
+
+	dataFileName = get_base_filename_from_time ();
+
+	availableStartingPositions = parse_startingPositions(desc.startingPositionsConfig, startingPositionsCount);
+
+	
 }
 
 //------------------------------------------------------------------------------
 
-namespace po = boost::program_options;
-using namespace boost;
-
 void PushingApplication::define_program_options_desc() {
 
 
- try {
+	try {
 
 	//po::options_description desc("Allowed options");
 	//const string prgOptDescName = "Allowed options";
@@ -1060,13 +1035,13 @@ void PushingApplication::define_program_options_desc() {
 
 
 
-}catch(std::exception& e) {
-	cerr << "error: " << e.what() << "\n";
-}catch(...) {
-	cerr << "Exception of unknown type!\n";
+	} catch(std::exception& e) {
+		cerr << "error: " << e.what() << "\n";
+	} catch(...) {
+		cerr << "Exception of unknown type!\n";
 
-}
-
+	}
+	
 }
 
 
@@ -1118,7 +1093,7 @@ try {
 int PushingApplication::main(int argc, char *argv[]) {
 
 
- try {
+	try {
 
 	define_program_options_desc();
 
@@ -1141,14 +1116,14 @@ int PushingApplication::main(int argc, char *argv[]) {
 
 
 
-}catch(std::exception& e) {
-	cerr << "error: " << e.what() << "\n";
-}catch(...) {
-	cerr << "Exception of unknown type!\n";
-}
+	} catch(std::exception& e) {
+		cerr << "error: " << e.what() << "\n";
+	} catch(...) {
+		cerr << "Exception of unknown type!\n";
+	}
 
-return 1;
-
+	return 1;
+	
 }
 
 
