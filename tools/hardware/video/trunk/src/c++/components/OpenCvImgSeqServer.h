@@ -64,13 +64,12 @@ private:
    */
   bool haveFrames();
   void grabFramesInternal() throw(std::runtime_error);
-  void retrieveFrameInternal(int camIdx, int width, int height,
-    Video::Image &frame);
-  virtual void retrieveFrames(const std::vector<int> &camIds,
-    int width, int height, std::vector<Video::Image> &frames);
-  virtual void retrieveFrames(int width, int height,
-    std::vector<Video::Image> &frames);
+  void retrieveFrameInternal(int camIdx, int width, int height, Video::Image &frame);
+  virtual void retrieveFrames(const std::vector<int> &camIds, int width, int height, std::vector<Video::Image> &frames);
+  virtual void retrieveFrames(int width, int height, std::vector<Video::Image> &frames);
   virtual void retrieveFrame(int camId, int width, int height, Video::Image &frame);
+	virtual void retrieveHRFrames(std::vector<Video::Image> &frames);
+
 
 public:
   OpenCvImgSeqServer();
@@ -80,6 +79,9 @@ public:
   virtual void grabFrames();
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
+	virtual void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int paketSize);
+	virtual bool inFormat7Mode();
+	virtual const std::string getServerName();
 };
 
 }
