@@ -52,6 +52,8 @@ if(BUILD_SA_V11N_USE_WEBKIT)
 
 
    # Disabled because of libflashplugin.so that crashes with WebKit (Ubuntu 10.04)
+   # If nspluginwrapper is removed, it works, but the server crashes when the HTML
+   # context is closed. TODO: Requires debugging (QViewContainer, QCastView, ...)
    set(WEBKIT_PLUGINS 0)
    if (WEBKIT_PLUGINS)
       set(EXPERIMENT_SRC ${EXPERIMENT_SRC}

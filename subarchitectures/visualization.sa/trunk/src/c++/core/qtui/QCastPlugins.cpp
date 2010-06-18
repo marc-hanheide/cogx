@@ -16,6 +16,7 @@
 #include "QCastPlugins.hpp"
 #include "QViewContainer.hpp"
 #include <QUrl>
+#include <QFrame>
 
 #include "../convenience.hpp"
 
@@ -32,18 +33,26 @@ void QCastPluginFactory::setModel(cogx::display::CDisplayModel* pModel)
 QObject* QCastPluginFactory::create (const QString &mimeType, const QUrl& url,
       const QStringList& argumentNames, const QStringList& argumentValues) const
 {
-   DTRACE("QCastPluginFactory::create");
-   if (mimeType == "application/cast-displayview") {
-      QViewContainer* pPlug = new QViewContainer();
-      if (m_pModel) {
-         QString viewName = url.path(); // "cogxdisp://view/<path>"
+   try {
+      DTRACE("QCastPluginFactory::create " << mimeType.toStdString());
+      if (mimeType == "application/cast-displayview") {
+         QViewContainer* pPlug = new QViewContainer();
+         DMESSAGE("QViewContainer created");
+         if (m_pModel) {
+            QString viewName = url.path().mid(1); // "cogxdisp://view/<path>"
+            DMESSAGE("View to show " << viewName.toStdString());
 
-         typeof(m_pModel->m_Views.begin()) it = m_pModel->m_Views.find(viewName.toStdString());
-         if (it == m_pModel->m_Views.end()) {
-            pPlug->setView(m_pModel, it->second);
+            typeof(m_pModel->m_Views.begin()) it = m_pModel->m_Views.find(viewName.toStdString());
+            if (! (it == m_pModel->m_Views.end())) {
+               pPlug->setView(m_pModel, it->second);
+               DMESSAGE("setView applied: " << it->second->m_id);
+            }
          }
+         return pPlug;
       }
-      return pPlug;
+   }
+   catch (...) {
+      DMESSAGE("MISERABLY FAILED");
    }
    return NULL;
 }
