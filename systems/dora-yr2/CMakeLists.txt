@@ -32,6 +32,12 @@ add_subdirectory (tools/beliefs/apis/beliefs)
 add_subdirectory (tools/beliefs/apis/beliefs+cast)
 endif(BUILD_BELIEFS)
 
+option(BUILD_SA_VIZ "Build visualization subarchitecure" NO)
+if(BUILD_SA_VIZ)
+include(subarchitectures/visualization.sa/cmake/v11n.cmake) 
+add_subdirectory (subarchitectures/visualization.sa)
+endif(BUILD_SA_VIZ)
+
 option(BUILD_SA_BINDING "Build binder subarchitecure" NO)
 if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
@@ -47,11 +53,6 @@ option(BUILD_SA_NAV "Build navigation subarchitecure" NO)
 if(BUILD_SA_NAV)
 add_subdirectory (subarchitectures/nav.sa)
 endif(BUILD_SA_NAV)
-
-option(BUILD_SA_VIZ "Build visualization subarchitecure" NO)
-if(BUILD_SA_VIZ)
-add_subdirectory (subarchitectures/visualization.sa)
-endif(BUILD_SA_VIZ)
 
 
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
