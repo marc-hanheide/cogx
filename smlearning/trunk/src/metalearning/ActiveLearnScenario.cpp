@@ -228,7 +228,8 @@ void ActiveLearnScenario::write_data (bool final){
 		string stpFileName = dataFileName + ".stp";
 		ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
 		//write_intvector(writeToFile, usedStartingPositions);
-		write_realvector(writeToFile, usedStartingPositions);
+		//write_realvector(writeToFile, usedStartingPositions);
+		write_vector<double>(writeToFile, usedStartingPositions);
 	}
 
 	for (SMRegion::RegionsMap::iterator regionIter = regions.begin(); regionIter != regions.end(); regionIter++) {
@@ -625,9 +626,10 @@ void ActiveLearnScenario::split_region (SMRegion& region) {
 }
 
 
-void ActiveLearnScenario::init(map<string, string> m) {
+//void ActiveLearnScenario::init(map<string, string> m) {
+void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 	
-	Scenario::init(m);
+	Scenario::init(vm);
 
 	splittingCriterion1 = numSequences / startingPositionsCount;
 
@@ -638,9 +640,15 @@ void ActiveLearnScenario::init(map<string, string> m) {
 	
 	netconfigFileName = "";
 
-	if (m.count("netconfigFileName")) {
+/*	if (m.count("netconfigFileName")) {
 		netconfigFileName = m["netconfigFileName"];
 	}
+*/
+	if (vm.count("netconfigFileName")) {
+		netconfigFileName = vm["netconfigFileName"].as<string>();
+	}
+
+
 
 	
 }
@@ -673,7 +681,7 @@ try {
 
 
 
-
+/*
 
 void ActivePushingApplication::read_program_options(int argc, char *argv[]) {
 
@@ -689,17 +697,24 @@ void ActivePushingApplication::read_program_options(int argc, char *argv[]) {
 	} catch(...) {
 		cerr << "Exception of unknown type!\n";
 
-}
+	}
 
 }
-
-
+*/
 
 
 
 int ActivePushingApplication::main(int argc, char *argv[]) {
 
-	PushingApplication::main(argc, argv);
+	//PushingApplication::main(argc, argv);
+
+	define_program_options_desc();
+
+	if (read_program_options(argc, argv)) {
+		return 1;
+	}
+
+	start_experiment(argv);
 
 }
 
@@ -722,7 +737,8 @@ void ActivePushingApplication::run(int argc, char *argv[]) {
 	context()->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
 	
 	try {
-		pActiveLearnScenario->init(arguments);
+		//pActiveLearnScenario->init(arguments);
+		pActiveLearnScenario->init(vm);
 		pActiveLearnScenario->run(argc, argv);
 	}
 	catch (const ActiveLearnScenario::Interrupted&) {

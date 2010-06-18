@@ -79,7 +79,7 @@ void print_dataset_params (const DataSetParams& p) {
 }
 
 
-
+/*
 ///
 ///write real vector to a file
 ///
@@ -92,7 +92,7 @@ void write_realvector (ofstream& writeFile, const vector<double>& v) {
 	}
 	
 }
-
+*/
 
 /*
 ///
@@ -144,7 +144,7 @@ bool write_dataset (string fileName, const DataSetStruct& data) {
 		Sequence::const_iterator v;
 
 		for (v=s->begin(); v!= s->end(); v++) {
-			write_realvector (writeFile, *v);
+			write_vector<double> (writeFile, *v);
 		}
 	}
 	
@@ -152,6 +152,8 @@ bool write_dataset (string fileName, const DataSetStruct& data) {
 	return true;
 }
 
+
+/*
 ///
 ///read real vector from a file
 ///
@@ -165,6 +167,8 @@ void read_realvector (ifstream& readFile, vector<double>& v) {
 		v.push_back (value);
 	}
 }
+
+*/
 
 /*
 ///
@@ -219,7 +223,7 @@ bool read_dataset (string fileName, DataSetStruct& dataStr) {
 //  		cout << "\t" << seqSize << endl;
 		for (int v=0; v<seqSize; v++) {
 			FeatureVector currentVector;
-			read_realvector (readFile, currentVector);
+			read_vector<double> (readFile, currentVector);
 			currentSequence.push_back (currentVector);
 		}
 		data.push_back(currentSequence);

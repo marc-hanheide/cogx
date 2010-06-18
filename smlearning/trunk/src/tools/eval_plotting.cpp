@@ -188,7 +188,8 @@ int lastIndex;
 			cerr << "Specified stp file couldn't be read. Exiting..." << endl;
 			return 1;
 		} else {
-			read_realvector(readFile, experimentStartingPositions);
+			//read_realvector(readFile, experimentStartingPositions);
+			read_vector<double>(readFile, experimentStartingPositions);
 			cout << "stp file loaded." << endl;
 		}
 	}	
@@ -220,7 +221,6 @@ int lastIndex;
 	
 
 
-	
 	if (windowSize > (lastIndex-firstIndex)) {
 		windowSize = (lastIndex-firstIndex);
 	}
