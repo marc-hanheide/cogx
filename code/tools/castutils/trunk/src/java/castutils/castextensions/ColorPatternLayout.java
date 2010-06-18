@@ -71,6 +71,7 @@ public class ColorPatternLayout extends PatternLayout {
 	 * pass to PatternLayout and reset to default color afterwards.
 	 * 
 	 */
+	@Override
 	public String format(LoggingEvent loggingEvent) {
 		String color = componentColorMap.get(loggingEvent.getLoggerName());
 		if (color == null) {
