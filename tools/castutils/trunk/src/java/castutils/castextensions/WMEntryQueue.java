@@ -44,7 +44,8 @@ public class WMEntryQueue extends
 			return entry;
 		}
 		
-        public String toString() {
+        @Override
+		public String toString() {
             String name;
             if (entry != null) {
                     name = entry.getClass().getName();

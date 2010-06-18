@@ -24,15 +24,13 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import castutils.castextensions.WMEntrySet.ChangeHandler;
-import castutils.viewer.plugins.Plugin;
-
 import org.apache.log4j.Logger;
 
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.logging.ComponentLogger;
+import castutils.castextensions.WMEntrySet.ChangeHandler;
+import castutils.viewer.plugins.Plugin;
 
 /**
  * @author marc
@@ -82,7 +80,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	}
 
 	public ViewerGUI() {
-		this(ComponentLogger.getLogger(ViewerGUI.class));
+		this(Logger.getLogger(ViewerGUI.class));
 	}
 
 	private synchronized void mapToTableModel() {
@@ -161,12 +159,14 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 				 */
 				private static final long serialVersionUID = -2359545345696140088L;
 
+				@Override
 				public boolean isCellEditable(int row, int column) {
 					return false;
 				}
 			};
 
 			jTable.addMouseListener(new MouseAdapter() {
+				@Override
 				public void mouseClicked(MouseEvent e) {
 					showDetails(jTable.getSelectedRow());
 				}
