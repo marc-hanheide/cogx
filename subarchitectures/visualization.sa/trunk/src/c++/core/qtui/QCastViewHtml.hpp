@@ -25,6 +25,8 @@ class QCastViewHtml: public QWebView, public QCastViewBase
 private:
    cogx::display::CDisplayView* pView;
    bool m_bModified;
+   QString m_jsFormCap;
+   static QString m_jQuery;
 
 public:
    QCastViewHtml( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
@@ -46,6 +48,8 @@ signals:
 
 private slots:
    void doUpdateContent();
+   void createJsObjects();
+   void finishLoading(bool);
 };
 
 #endif /* end of include guard: QCASTVIEWHTML_X94VTZ5D */
