@@ -1,8 +1,0 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain tutorial/meet-the-people.mapl --log
-
-SUBARCHITECTURE planner.sa
-
-###############################################################################
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
-
