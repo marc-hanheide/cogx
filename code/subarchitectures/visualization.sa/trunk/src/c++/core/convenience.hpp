@@ -38,6 +38,11 @@ class __Tracer: public std::ostringstream { public:
       std::cout << std::string(level, ' ') << "|beg " << text << std::endl << std::flush;
       level++;
    }
+   void message() {
+      text = str();
+      std::cout << std::string(level, ' ') << text << std::endl << std::flush;
+      level++;
+   }
    ~__Tracer() {
       level--;
       if (level < 0) level = 0;
@@ -48,7 +53,7 @@ class __Tracer: public std::ostringstream { public:
 // #define DTRACE(str) std::cout << str << std::endl << std::flush
 // #define DTRACE(str) __Tracer _tracerX((std::ostringstream() << str).str())
 #define DTRACE(str) __Tracer _tracerX; _tracerX << str; _tracerX.start()
-#define DMESSAGE(str) { __Tracer _tracerY(0); _tracerY << str; _tracerY.start(); }
+#define DMESSAGE(str) { __Tracer _tracerY(0); _tracerY << str; _tracerY.message(); }
 #define DVERIFYGUITHREAD(str,this) { QObject test; if (test.thread() != this->thread()) {\
    DMESSAGE("********* " << str << " will be created in another thread.") }}
 #else

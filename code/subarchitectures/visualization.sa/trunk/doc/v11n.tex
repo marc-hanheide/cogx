@@ -24,24 +24,13 @@ visualization.sa/bin:
    sudo visualization.sa/bin/ubuntu-install-deps.sh
 \end{Verbatim}
 
-The new subarchitecture must be added to the main file CMakeLists.txt of the 
+The new subarchitecture must be added to the main CMakeLists.txt file of the 
 project. It should be added before any subarchitectures that use visualization
 so that the dependent libraries will build correctly. Add the following
 block before the first subarchitecture in CMakeLists.txt:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
-   option(BUILD_SA_V11N "Build visualization libraries (Requires QT4)" NO)
-   if(BUILD_SA_V11N)
-      set(VISUALIZATION_INCLUDE_DIRS
-         ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/autogen
-         ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/core
-         )
-      set(VISUALIZATION_LIBRARIES
-         DisplayClient VisualizationData
-         )
-      add_subdirectory(subarchitectures/visualization.sa)
-      add_definitions(-DFEAT_VISUALIZATION)
-   endif(BUILD_SA_V11N)
+   include(subarchitectures/visualization.sa/cmake/v11n.cmake)
 \end{Verbatim}
 
 Finally run \code{ccmake} and set \code{BUILD\_SA\_V11N} to \code{ON} to enable

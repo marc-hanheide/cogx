@@ -318,18 +318,28 @@ void VideoViewer::runComponent()
     strB << "FClocks fa=" << fa << " fb=" << fb << " diff=" << fb-fa << "<br>" << endl;
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
   }
-  if (0) { // XXX: This is not working because libflashplugin.so crashes.
+#ifdef V11N_OBJECT_HTML_PLUGINS
+  { // XXX: This is not working because libflashplugin.so crashes. Remove nspluginwrapper and it's better.
     std::stringstream str;
     str << "This is the TestComponent for the Display Server<br>";
     str << "<hr>";
-    // str << "<object type='cogxcast/displayview' data='cogxdisp://view/Visualization.test.Pusher'></object>";
     str << "<object type='application/cast-displayview' data='cogxdisp://view/"
         << getComponentID() << "'></object>";
     str << "<hr>";
-    // str << "<object type='cogxcast/displayview' data='cogxdisp://view/Visualization.test.LuaGL'></object>";
-    // str << "<hr>";
+    str << "<object type='application/cast-displayview' data='cogxdisp://view/Visualization.test.SVG'></object>";
+    str << "<hr>";
+    str << "<object type='application/cast-displayview' data='cogxdisp://view/Visualization.test.Pusher'></object>";
+    str << "<hr>";
+    str << "<object type='application/cast-displayview' data='cogxdisp://view/Visualization.sa.LuaGL'></object>";
+    str << "<hr>";
+    // Recursive WebKit ...
+    str << "<object type='application/cast-displayview' data='cogxdisp://view/@info.DisplayServer'></object>";
+    str << "<hr>";
+    str << "<object type='application/cast-displayview' data='cogxdisp://view/@info.TestComponent'></object>";
+    str << "<hr>";
     m_display.setHtml("Visualization.test.HtmlPlugin", "text", str.str());
   }
+#endif
 
   int count = 0;
   int boxrot = 0;

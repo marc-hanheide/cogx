@@ -105,8 +105,8 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
       }
 
       if (m_pDisplay) {
-         QWidget &wdg = *m_pDisplay;
-         pLayout->addWidget(&wdg);
+         QWidget *pWdg = dynamic_cast<QWidget*>(m_pDisplay);
+         if (pWdg) pLayout->addWidget(pWdg);
       }
    }
 
