@@ -81,6 +81,9 @@ void CDisplayServer::configure(const map<string,string> & _config)
    setHtml("@info.DisplayServer", "001", "CogX Display Server<br>");
    setHtml("@info.DisplayServer", "002", "Version 0.5<br><br>");
    setHtml("@info.DisplayServer", "010", "Subsystem 'HTML' enabled.<br>");
+#ifdef V11N_OBJECT_HTML_PLUGINS
+   setHtml("@info.DisplayServer", "011", "Subsystem 'HTML Plugins' enabled.<br>");
+#endif
    /* XXX: This was probably fixed (customguipanel didn't remove m_pView from observers)
    setHtmlHead("@info.DisplayServer.bugs", "css001",
          "<style> .em { color: red; } </style>");
@@ -92,10 +95,10 @@ void CDisplayServer::configure(const map<string,string> & _config)
          "It should be safe to use it at the beginning of a run.<br>");
    */
 #ifdef V11N_OBJECT_LUA_GL
-   setHtml("@info.DisplayServer", "011", "Subsystem 'LuaGlScript' enabled.<br>");
+   setHtml("@info.DisplayServer", "020", "Subsystem 'LuaGlScript' enabled.<br>");
 #endif
 #ifdef V11N_OBJECT_TOMGINE_MODEL
-   setHtml("@info.DisplayServer", "012", "Subsystem 'TomGine Model' enabled.<br>");
+   setHtml("@info.DisplayServer", "030", "Subsystem 'TomGine Model' enabled.<br>");
 #endif
 #endif
 
