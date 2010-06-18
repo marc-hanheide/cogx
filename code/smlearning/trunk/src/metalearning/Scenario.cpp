@@ -1012,9 +1012,9 @@ void Scenario::init(boost::program_options::variables_map vm) {
 	}
 
 	if (vm.count("storeLabels")) {
-		if (vm["storeLabels"].as<string>() == "true") {
+		//if (vm["storeLabels"].as<string>() == "true") {
 			storeLabels = true;
-		}
+		//}
 	}
 
 
