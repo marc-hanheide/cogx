@@ -856,7 +856,8 @@ void Scenario::write_data (){
 	string stpFileName = dataFileName + ".stp";
 	ofstream writeToFile (stpFileName.c_str(), ios::out | ios::binary);
 	//write_intvector(writeToFile, usedStartingPositions);
-	write_realvector(writeToFile, usedStartingPositions);
+	//write_realvector(writeToFile, usedStartingPositions);
+	write_vector<double> (writeToFile, usedStartingPositions);
 }
 
 
@@ -982,12 +983,13 @@ void Scenario::set_movement_angle(const Real angle, golem::WorkspaceCoord& pose,
 ///
 ///set experiment default values
 ///
-void Scenario::init(map<string, string> m) {
+//void Scenario::init(map<string, string> m) {
+void Scenario::init(boost::program_options::variables_map vm) {
 	numSequences = 10000;
 	startingPosition = 0;
 	storeLabels = false;
 	
-	if (m.count("numSequences")) {
+/*	if (m.count("numSequences")) {
 		numSequences = atoi((m["numSequences"]).c_str());
 		
 	}
@@ -999,6 +1001,23 @@ void Scenario::init(map<string, string> m) {
 	if (m.count("storeLabels") && (m["storeLabels"] == "true")) {
 		storeLabels = true;
 	}
+*/
+
+	if (vm.count("numSequences")) {
+		numSequences = atoi(vm["numSequences"].as<string>().c_str());
+	}
+
+	if (vm.count("startingPosition")) {
+		startingPosition = atoi(vm["startingPosition"].as<string>().c_str());
+	}
+
+	if (vm.count("storeLabels")) {
+		if (vm["storeLabels"].as<string>() == "true") {
+			storeLabels = true;
+		}
+	}
+
+
 
 	data.second = make_tuple (make_tuple((int)motorVectorSize, (int)featureVectorSize, (int)pfVectorSize, (int)efVectorSize), storeLabels, make_tuple(desc.minX, desc.minY, desc.minZ, desc.maxX, desc.maxY, desc.maxZ));
 
@@ -1020,16 +1039,16 @@ void PushingApplication::define_program_options_desc() {
 	//const string prgOptDescName = "Allowed options";
 	//prgOptDesc/* = new po::options_description("Allowed options")*/();
 	prgOptDesc.add_options()
-		("help", "produce help message")
+		("help,h", "produce help message")
 		("numSequences,S", po::value<string>(), "number of sequences")
 		("startingPosition,P", po::value<string>(), "only starting position to use")
-		("storeLabels,L", po::value<string>(), "use true or false as argument")
+		("storeLabels,L", "store labels")
 		//("netconfigFileName,N", po::value<string>(), "name of the netconfig file")
-		("configFile", po::value<string>(), "name of the xml config file")
+		("configFile,C", po::value<string>(), "name of the xml config file")
 	;
 
 	//po::positional_options_description p;
-	p.add("configFile", -1);
+	//p.add("configFile", -1);
 
 	
 
@@ -1047,20 +1066,20 @@ void PushingApplication::define_program_options_desc() {
 
 
 
-void PushingApplication::read_program_options(int argc, char *argv[]) {
+int PushingApplication::read_program_options(int argc, char *argv[]) {
 
 
 try {
 	//po::variables_map vm;
-//	po::store(po::parse_command_line(argc, argv, desc), vm);
-	po::store(po::command_line_parser(argc, argv).options(prgOptDesc).positional(p).run(), vm);
+	po::store(po::parse_command_line(argc, argv, prgOptDesc), vm);
+//	po::store(po::command_line_parser(argc, argv).options(prgOptDesc).positional(p).run(), vm);
 	po::notify(vm);
 
 	if (vm.count("help")) {
 		cout << prgOptDesc << endl;
-		return;
+		return 1;
 	}
-
+/*
 	if (vm.count("numSequences")) {
 		arguments["numSequences"]=vm["numSequences"].as<string>();
 	}
@@ -1072,7 +1091,7 @@ try {
 	if (vm.count("storeLabels")) {
 		arguments["storeLabels"]=vm["storeLabels"].as<string>();
 	}
-
+*/
 	//if (vm.count("netconfigFileName")) {
 	//	arguments["netconfigFileName"]=vm["netconfigFileName"].as<string>();
 	//}
@@ -1090,6 +1109,28 @@ try {
 
 
 
+int PushingApplication::start_experiment(char *argv[]) {
+	int problemOccured;
+	if (vm.count("configFile")) {
+		char* arr[2];
+		//char* arr [] = (char *){argv[0], vm["configFile"].as<string>().c_str()};
+		arr[0] = argv[0];
+		arr[1] =  (char*)vm["configFile"].as<string>().c_str();
+		problemOccured = Application::main(2, arr);
+	} else {
+		char* arr [] = {argv[0]};
+		problemOccured = Application::main(1, arr);
+	}
+	if (problemOccured) {
+		cout << endl << "Please use the option -C or --configFile for the configuration file path argument." << endl;
+		cout << endl << prgOptDesc << endl;
+		return 1;
+	}
+		
+}
+
+
+
 int PushingApplication::main(int argc, char *argv[]) {
 
 
@@ -1097,9 +1138,13 @@ int PushingApplication::main(int argc, char *argv[]) {
 
 	define_program_options_desc();
 
-	read_program_options(argc, argv);
+	if (read_program_options(argc, argv)) {
+		return 1;
+	}
 
 
+	start_experiment(argv);
+/*
 	if (vm.count("configFile")) {
 		char* arr[2];
 		//char* arr [] = (char *){argv[0], vm["configFile"].as<string>().c_str()};
@@ -1110,8 +1155,7 @@ int PushingApplication::main(int argc, char *argv[]) {
 		char* arr [] = {argv[0]};
 		Application::main(1, arr);
 	}
-
-	
+*/	
 
 
 
@@ -1130,6 +1174,7 @@ int PushingApplication::main(int argc, char *argv[]) {
 
 void PushingApplication::run(int argc, char *argv[]) {
 
+
 	Scenario::Desc desc;
 	XMLData(desc, xmlcontext());
 
@@ -1143,7 +1188,8 @@ void PushingApplication::run(int argc, char *argv[]) {
 	context()->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context()->getRandSeed()._U32[0]);
 	
 	try {
-		pScenario->init(arguments);
+		//pScenario->init(arguments);
+		pScenario->init(vm);
 		pScenario->run(argc, argv);
 	}
 	catch (const Scenario::Interrupted&) {
@@ -1151,6 +1197,15 @@ void PushingApplication::run(int argc, char *argv[]) {
 	
 	scene()->releaseObject(*pScenario);
 }
+
+
+
+
+
+
+
+
+
 
 
 

@@ -240,7 +240,8 @@ public:
 	///
 	///set experiment default values
 	///
-	virtual void init(map<string, string> m);
+	//virtual void init(map<string, string> m);
+	virtual void init(boost::program_options::variables_map vm);
 
 protected:
 	/** Description */
@@ -542,17 +543,21 @@ class PushingApplication : public golem::Application {
 	virtual int main(int argc, char *argv[]);
 
 	virtual void define_program_options_desc();
-	virtual void read_program_options(int argc, char *argv[]);
+	virtual int read_program_options(int argc, char *argv[]);
+
+	boost::program_options::variables_map vm;
 
 	
-protected:
+	protected:
 
 	boost::program_options::options_description prgOptDesc;
 	boost::program_options::positional_options_description p;	
-	boost::program_options::variables_map vm;
+	//boost::program_options::variables_map vm;
 
-	map<string,string> arguments;
+	//map<string,string> arguments;
 
+
+	virtual int start_experiment(char *argv[]);
 
 	/** Runs Application */
 	virtual void run(int argc, char *argv[]);
