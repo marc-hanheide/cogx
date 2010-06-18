@@ -38,9 +38,11 @@ if(BUILD_SA_V11N_USE_WEBKIT)
    set(EXPERIMENT_SRC ${EXPERIMENT_SRC}
       object/CHtmlObject.cpp
       qtui/QCastViewHtml.cpp
+      qtui/html/formcap.cpp
       )
    set(EXPERIMENT_MOC ${EXPERIMENT_MOC}
       qtui/QCastViewHtml.hpp
+      qtui/html/formcap.hpp
       )
    set(EXPERIMENT_LIB ${EXPERIMENT_LIB}
       ${QT_QTWEBKIT_LIBRARY}
@@ -120,8 +122,13 @@ set(SERVER_MOC_HEADERS
 set(SERVER_UI_FILES
    qtui/design/castor.ui
    )
+set(SERVER_RESOURCE_FILES
+   qtui/design/jquery.qrc
+   )
 qt4_wrap_cpp (SERVER_MOC_OUTFILES ${SERVER_MOC_HEADERS} ${EXPERIMENT_MOC})
 qt4_wrap_ui  (SERVER_UIC_OUTFILES ${SERVER_UI_FILES})
+qt4_add_resources (SERVER_RESOURCE_OUTFILES ${SERVER_RESOURCE_FILES})
+message("R: " ${SERVER_RESOURCE_OUTFILES})
 include_directories( .  #./object
    ${VisualizationCore_BINARY_DIR}
    ${QT_QTSVG_INCLUDE_DIR}
@@ -133,7 +140,10 @@ include_directories( .  #./object
 
 add_cast_component(DisplayServer
    ${SERVER_CPP} ${GUI_CPP}
-   ${SERVER_MOC_OUTFILES} ${SERVER_UIC_OUTFILES})
+   ${SERVER_MOC_OUTFILES}
+   ${SERVER_UIC_OUTFILES}
+   ${SERVER_RESOURCE_OUTFILES}
+   )
 link_cast_component(${CAST_COMPONENT_NAME}
    VisualizationData Math Video VideoUtils
    ${QT_LIBRARIES}

@@ -14,12 +14,17 @@
  * GNU General Public License for more details.
  */
 #include "QCastViewHtml.hpp"
+#include "html/formcap.hpp"
 #include <QWebFrame>
+#include <QFile>
 
 #ifdef DEBUG_TRACE
 // #undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
+
+static const QString jsObjectName("CastQFormObserver");
+QString QCastViewHtml::m_jQuery;
 
 QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
 {
@@ -32,6 +37,27 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    connect(this, SIGNAL(updateContent()),
          this, SLOT(doUpdateContent()),
          Qt::QueuedConnection);
+
+   if (m_jQuery.length() < 1) {
+      DMESSAGE("Loading resource: jQuery");
+      QFile file;
+      file.setFileName(":/jquery.min.js");
+      file.open(QIODevice::ReadOnly);
+      m_jQuery = file.readAll();
+      file.close();
+   }
+
+   // Capture GET and POST events from forms that support it
+   m_jsFormCap = QCastFormObserver::getJavaScript(jsObjectName, true);
+   QWebPage* pPage = page();
+   QWebFrame* pFrame = NULL;
+   if (pPage) pFrame = pPage->currentFrame();
+   if (pFrame) {
+      connect(pFrame, SIGNAL(javaScriptWindowObjectCleared()),
+            this, SLOT(createJsObjects()));
+      connect(this, SIGNAL(loadFinished(bool)),
+            this, SLOT(finishLoading(bool)));
+   }
 }
 
 QCastViewHtml::~QCastViewHtml()
@@ -42,6 +68,26 @@ QCastViewHtml::~QCastViewHtml()
    }
    pView = NULL;
 }
+
+void QCastViewHtml::createJsObjects()
+{
+   DTRACE("QCastViewHtml::createJsObjects");
+   QWebPage* pPage = page();
+   QWebFrame* pFrame = NULL;
+   if (pPage) pFrame = pPage->currentFrame();
+   if (pFrame) {
+      QObject* pObj = new QCastFormObserver();
+      pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
+   }
+}
+
+void QCastViewHtml::finishLoading(bool)
+{
+   //progress = 100;
+   //adjustTitle();
+   // page()->mainFrame()->evaluateJavaScript(m_jQuery);
+}
+
 
 void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
 {
@@ -82,6 +128,14 @@ void QCastViewHtml::doUpdateContent()
       if (pFrame) sbv = pFrame->scrollBarValue(Qt::Vertical);
       pView->drawHtml(head, body);
       list.append("<html><head>");
+
+      // TODO: if this->hasForms() {
+      list << "<script type=\"text/javascript\">\n";
+      list << m_jQuery;
+      list << "</script>\n";
+      list << m_jsFormCap;
+      // }
+
       list << head;
       list.append("</head><body>");
       list << body;

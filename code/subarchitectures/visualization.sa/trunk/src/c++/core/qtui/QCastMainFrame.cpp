@@ -18,8 +18,8 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #ifdef V11N_OBJECT_HTML_PLUGINS
-#include <QWebSettings>
 #endif
+#include <QWebSettings>
 
 #include "../convenience.hpp"
 
@@ -254,6 +254,8 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 #ifdef V11N_OBJECT_HTML_PLUGINS
    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
 #endif
+   QWebSettings::globalSettings()->setAttribute(QWebSettings::JavascriptEnabled, true);
+   QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 }
 
 QCastMainFrame::~QCastMainFrame()

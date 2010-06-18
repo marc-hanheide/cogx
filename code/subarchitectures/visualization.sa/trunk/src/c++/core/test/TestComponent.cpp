@@ -340,6 +340,18 @@ void VideoViewer::runComponent()
     m_display.setHtml("Visualization.test.HtmlPlugin", "text", str.str());
   }
 #endif
+  {
+    // Forms
+    std::stringstream str;
+    str << "This is the TestComponent for the Display Server<br>";
+    str << "<hr>";
+    str << "<form id=\"testForm\" method=\"post\" action=\"javascript:history.go(-1)\" "
+        "onsubmit=\"return MyLibSubmit('#testForm')\" >";
+    str << "<input type=\"text\" name=\"val\" value=\"Some value\" />";
+    str << "<input type=\"submit\" name=\"submit\" value=\"Send\"/>";
+    str << "</form>";
+    m_display.setHtml("Visualization.test.HtmlForm", "text", str.str());
+  }
 
   int count = 0;
   int boxrot = 0;

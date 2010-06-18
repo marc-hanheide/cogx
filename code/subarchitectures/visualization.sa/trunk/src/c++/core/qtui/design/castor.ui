@@ -169,6 +169,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="jquery.qrc"/>
+ </resources>
  <connections/>
 </ui>
