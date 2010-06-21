@@ -366,7 +366,7 @@ void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
 	  }
 	}
 	
-	usleep(10000);
+	usleep(500000);
       }
       log("Moved.");
       sleep(1);
