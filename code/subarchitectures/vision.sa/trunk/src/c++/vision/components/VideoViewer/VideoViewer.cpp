@@ -82,7 +82,6 @@ void VideoViewer::start()
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
   m_display.installEventReceiver();
-  m_display.setEventCallback(this, &VideoViewer::handleGuiEvent);
   m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
@@ -96,28 +95,36 @@ void VideoViewer::start()
 }
 
 #ifdef FEAT_VISUALIZATION
-void VideoViewer::handleGuiEvent(const Visualization::TEvent &event)
+void VideoViewer::CVvDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
   debug(event.data + " (received by VideoViewer)");
   if (event.type == Visualization::evCheckBoxChange) {
     if (event.sourceId == "toggle.viewer.running") {
       debug(std::string("Time: ") + sfloat (fclocks()));
       bool newrcv = (event.data != "0");
-      if (newrcv != receiving) {
-        if(receiving) {
-          videoServer->stopReceiveImages(getComponentID());
-          println("Stopped receiving images");
+      if (newrcv != pViewer->receiving) {
+        if(pViewer->receiving) {
+          pViewer->videoServer->stopReceiveImages(pViewer->getComponentID());
+          pViewer->println("Stopped receiving images");
         }
         else {
           vector<int> camIds;
-          camIds.push_back(camId);
-          videoServer->startReceiveImages(getComponentID(), camIds, 0, 0);
-          println("Started receiving images");
+          camIds.push_back(pViewer->camId);
+          pViewer->videoServer->startReceiveImages(pViewer->getComponentID(), camIds, 0, 0);
+          pViewer->println("Started receiving images");
         }
-        receiving = !receiving;
+        pViewer->receiving = !pViewer->receiving;
       }
     }
   }
+}
+
+std::string VideoViewer::CVvDisplayClient::getControlState(const std::string& ctrlId)
+{
+  if (ctrlId == "toggle.viewer.running") {
+    return pViewer->receiving ? "1" : "0";
+  }
+  return "";
 }
 #endif
 

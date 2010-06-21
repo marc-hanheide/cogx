@@ -21,8 +21,9 @@
 namespace cast
 {
 
-class VideoViewer : public ManagedComponent,
-                    public VideoClient
+class VideoViewer:
+    public ManagedComponent,
+    public VideoClient
 {
 private:
   /**
@@ -43,8 +44,16 @@ private:
   bool receiving;
 
 #ifdef FEAT_VISUALIZATION
-  cogx::display::CActiveDisplayClient<VideoViewer> m_display;
-  void handleGuiEvent(const Visualization::TEvent &event);
+  class CVvDisplayClient: public cogx::display::CDisplayClient
+  {
+    VideoViewer* pViewer;
+  public:
+    CVvDisplayClient() { pViewer = NULL; }
+    void setClientData(VideoViewer* pVideoViewer) { pViewer = pVideoViewer; }
+    void handleEvent(const Visualization::TEvent &event); /*override*/
+    std::string getControlState(const std::string& ctrlId); /*override*/
+  };
+  CVvDisplayClient m_display;
 #endif
 
 protected:
@@ -66,7 +75,12 @@ protected:
   virtual void runComponent();
 
 public:
-  VideoViewer() : camId(0) {}
+  VideoViewer() : camId(0)
+  {
+#ifdef FEAT_VISUALIZATION
+    m_display.setClientData(this);
+#endif
+  }
   virtual ~VideoViewer() {}
   /**
    * The callback function for images pushed by the image server.
