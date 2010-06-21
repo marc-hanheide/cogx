@@ -19,7 +19,6 @@
 
 (:goal  (and  
               (exists (?r - robot)  (and  (forall (?p - place)  (explored ?p))))
-              (soft-goal 12 (= (is-in robot_3__q) place_1__q))
         )
 )
 
