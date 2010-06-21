@@ -57,7 +57,7 @@ public class PlanAllManager extends ManagedComponent {
 	/** this is the the very last resort time out... if a plan has been executed in this amount of time we break
 	 * 
 	 */
-	int failsafeExectutionTimeoutSecs = 450;
+	int failsafeExectutionTimeoutSecs = 600;
 
 	/** this is the the very last resort time out... if a plan has not been delivered in time 
 	 * 
