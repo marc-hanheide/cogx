@@ -130,6 +130,9 @@ def make_po_plan(actions, task):
     
     for starttime, action in actions:
         t1 = time.time()
+        if action.startswith("ignore-soft-goal-"):
+            continue
+
         action, args = MAPLAction(action, task)
         pnode = getRWDescription(action, args, state, starttime)
         plan.add_node(pnode)

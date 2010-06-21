@@ -316,8 +316,8 @@ class Term(object):
             if term.__class__ == FunctionTerm:
                 return "(%s %s)" % (term.function.name, " ".join(results))
             elif isinstance(term, Term):
-                return term.object.name
-            return term.name
+                return str(term.object.name)
+            return str(term.name)
         return self.visit(printVisitor)
     
     def get_type(self):
