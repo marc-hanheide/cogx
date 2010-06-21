@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+
+<!-- This is a MobileRobotics PeopleBot, with bumpers and the gripper, but
+     sonars are undefined.-->
+
+<!-- Copyright 2008 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+
+  <model>
+    <name>peoplebot_base</name>
+    <file>peoplebot/peoplebot.pbmf</file>
+    <children>
+
+      <!-- ********************************************
+	   ******* Optional 1-DOF gripper arm *********
+	   ******************************************** -->
+      
+      <slider>
+	<name>gripper_arm_track</name>
+	<axis>0 0 1</axis>
+	<min>0.0</min>
+	<max>0.4685</max>
+	<initial>0.2</initial>
+	<children>
+	  <model>
+	    <name>gripper_arm</name>
+	    <file>peoplebot/peoplebot_gripper_arm.pbmf</file>
+	    <children>
+	      <slider>
+		<name>left_gripper_track</name>	
+		<axis>0 1 0</axis>
+		<min>0.0</min>
+		<max>0.09</max>
+		<initial>0.04</initial>
+		<children>
+		  <model>
+		    <name>left_gripper</name>
+		    <file>peoplebot/peoplebot_left_gripper.pbmf</file>
+		  </model>
+		</children>
+	      </slider>
+	      <slider>
+		<name>right_gripper_track</name>
+		<axis>0 -1 0</axis>
+		<min>0.0</min>
+		<max>0.09</max>
+		<initial>0.04</initial>
+		<children>
+		  <model>
+		    <name>right_gripper</name>
+		    <file>peoplebot/peoplebot_right_gripper.pbmf</file>
+		  </model>
+		</children>
+	      </slider>
+	    </children>
+	  </model>	  
+	</children>
+      </slider>
+
+      <!-- ********************************************
+	   *******   Toe-level bump sensors  **********
+	   ******************************************** -->
+
+      <group>
+	<name>bumpers</name>
+	<children>
+	  <color r="0.15" g="0.15" b="0.15">
+	    <group>
+	      <name>front_bumper_1</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f1.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>front_bumper_2</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f2.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>front_bumper_3</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f3.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>front_bumper_4</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f4.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>front_bumper_5</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f5.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>rear_bumper_1</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r1.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>rear_bumper_2</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r2.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>rear_bumper_3</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r3.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>rear_bumper_4</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r4.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+
+	    <group>
+	      <name>rear_bumper_5</name>	  
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r5.pbmf</file>
+		</model>
+	      </children>
+	    </group>
+	    
+	  </color>
+	</children>
+      </group>
+    </children>
+
+  </model>
+
+</scene>

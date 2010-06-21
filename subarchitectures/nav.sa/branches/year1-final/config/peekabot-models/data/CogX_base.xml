@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+
+<!-- Copyright 2009 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+  
+  <include file="p3dx-no-rear-sonar.xml">
+    
+    <inject at="chassis">
+
+    <!-- ********************************************
+         ********** Hokuyo Urg rangefinder  *********
+	 ******************************************** -->
+      
+    <group>
+      <name>rangefinder</name>
+	
+      <transform>
+        <translate>0.14 0 0.24</translate>
+      </transform>
+      
+      <children>
+	<model><file>hokuyo_urg/hokuyo_urg.pbmf</file></model>
+      </children>
+    </group>
+
+    
+    <!-- ********************************************
+	 ************ Super structure  **************
+	 ******************************************** -->
+    
+    <group>
+      <name>superstructure</name>
+
+      <transform>
+        <translate>0 0 0.24</translate>
+      </transform>
+      
+      <children>
+        
+        <color r="0.5" g="0.5" b="0.5">
+          <cube>
+            
+            <name>sidebeam_left</name>
+            
+            <transform>
+              <translate>-0.07 0.044 0.012</translate>
+            </transform>
+            
+            <scale>0.3 0.044 0.024</scale>
+            
+          </cube>
+        </color>
+        
+        <color r="0.5" g="0.5" b="0.5">
+          <cube>
+            
+            <name>sidebeam_right</name>
+            
+            <transform>
+              <translate>-0.07 -0.044 0.012</translate>
+            </transform>
+            
+            <scale>0.3 0.044 0.024</scale>
+          </cube>
+        </color>
+        
+        <color r="0.5" g="0.5" b="0.5">
+          <cube>
+            
+            <name>vertbeam</name>
+            
+            <transform>
+              <!-- x = -0.07 - 0.3/2 + 0.044/2 + 0.044 -->
+              <translate>-0.154 0 0.505</translate>
+            </transform>
+            
+            <scale>0.044 0.044 1.01</scale>
+            
+          </cube>
+        </color>
+        
+        <color r="0.5" g="0.5" b="0.5">
+          <cube>
+            
+            <name>topbeam</name>
+            
+            <transform>
+              <!-- x = -0.154 + 0.35/2 - 0.05-->
+              <translate> -0.029 0 1.022</translate>
+            </transform>
+            
+            <scale>0.35 0.044 0.024</scale>
+            
+          </cube>
+        </color>
+
+        <color r="0.9" g="0.9" b="0.9">         
+          <cube>
+            
+            <name>ptumount_bottom</name>
+            
+            <transform>
+              <!-- x = -0.029 + 0.35/2-0.125/2 -->
+              <translate> 0.0835 0 1.037</translate>
+            </transform>
+            
+            <scale>0.125 0.07 0.006</scale>
+            
+          </cube>          
+        </color>
+        
+        <color r="0.5" g="0.5" b="0.5">
+          <polygon>
+            
+            <name>computerplate</name>
+            
+            <transform>
+              <!-- x= -0.029 - 0.35/2 + 0.25/2 - 0.07 -->
+              <translate> -0.149 0 1.034</translate>
+            </transform>
+            
+            <vertices>
+              <vertex> 0.125 0.15 0</vertex>
+              <vertex> 0.125 -0.15 0</vertex>
+              <vertex> -0.075 -0.15 0</vertex>
+              <vertex> -0.125 -0.10 0</vertex>
+              <vertex> -0.125 0.10 0</vertex>
+              <vertex> -0.075 0.15 0</vertex>
+              <vertex> 0.125 0.15 0</vertex>
+            </vertices>
+
+          </polygon>
+        </color>
+
+        <!-- ********************************************
+	     ********** PTU + Stereo camera  ************
+	     ******************************************** -->
+
+        <group>
+	  <name>ptu</name>
+          
+	  <transform>
+	    <translate>0.106 0 1.034</translate>
+	  </transform>
+          
+	  <children>
+	    <include file="dp_ptu_d46.xml">
+	      <inject at="pan.tilt">
+
+                <color r="0.5" g="0.5" b="0.5">
+	          <cube>
+		    <name>baseline</name>
+                    
+		    <transform>
+		      <translate>0 0 0.046</translate>
+		    </transform>
+                    
+                    <scale> 0.024 0.24 0.012 </scale>
+                    
+		    <children>
+                      
+                      <model>
+                        <file>flea2.pbmf</file>
+                        <name>cam_left</name>
+                        <transform>
+                          <translate>0 0.06 0</translate>
+                        </transform>
+                      </model>          
+                      
+                      <model>
+                        <file>flea2.pbmf</file>
+                        <name>cam_right</name>
+                        <transform>
+                          <translate>0 -0.06 0</translate>
+                        </transform>
+                      </model>          
+                    
+		    </children>
+                    
+	          </cube>
+                </color>
+	      </inject>
+	    </include>
+	  </children>
+        </group>
+
+      </children>
+
+    </group>
+
+    </inject>
+    
+  </include>
+
+</scene>
