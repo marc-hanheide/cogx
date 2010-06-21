@@ -7,7 +7,7 @@ include_directories(../ObjectTracker/Tracker/include)
 include_directories(/usr/include/opencv)
 
 add_subdirectory(matrix)
-add_subdirectory(SiftGPU/linux)
+#add_subdirectory(SiftGPU/linux)
 
 # Set the sources.
 SET(SOURCES 
@@ -33,6 +33,6 @@ SET(SOURCES
 
 add_cast_component(ObjectRecognizer3D ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} Tracker matrix siftgpu)
+link_cast_component(${CAST_COMPONENT_NAME} Tracker matrix)
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore Cg CgGL GLEW glut IL)
 
