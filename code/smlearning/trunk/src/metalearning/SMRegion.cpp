@@ -94,8 +94,8 @@ bool SMRegion::write_data (string fileName) {
 	if (!writeFile)
 		return false;  
 
-/*	writeFile.write ((const char*)&index, sizeof (index));
-	write_realvector (writeFile, minValuesSMVector);
+	writeFile.write ((const char*)&index, sizeof (index));
+/*	write_realvector (writeFile, minValuesSMVector);
 	write_realvector (writeFile, maxValuesSMVector);
 	write_realvector (writeFile, learningProgressHistory);
 	write_realvector (writeFile, errorsHistory);
