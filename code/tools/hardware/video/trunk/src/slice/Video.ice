@@ -130,7 +130,7 @@ module Video {
   sequence<Image> ImageSeq;
 
   /**
-   * A video server, serving images from one ore more cameras.
+   * A video server, serving images from one or more cameras.
    */
   interface VideoInterface {
     int getNumCameras();
@@ -142,10 +142,13 @@ module Video {
     //void getScaledImage(int camId, int width, int height, out Image img);
     void getScaledImages(int width, int height, out ImageSeq images);
     //void getScaledImages(IntSeq camIds, int width, int height, out ImageSeq images);
+    bool getHRImages(out ImageSeq images);
     void startReceiveImages(string receiverComponentId, IntSeq camIds,
         int width, int height);
     void stopReceiveImages(string receiverComponentId);
     void changeFormat7Properties(int width, int height, int offsetX, int offsetY, int mode, int fps);
+    bool inFormat7Mode();
+    string getServerName();
   };
   
   interface VideoClientInterface {

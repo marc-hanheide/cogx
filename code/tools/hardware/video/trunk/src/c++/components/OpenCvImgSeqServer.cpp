@@ -3,7 +3,7 @@
  * @date October 2006
  */
 
-#include <highgui.h>
+#include <opencv/highgui.h>
 #include <cast/core/CASTUtils.hpp>
 #include <VideoUtils.h>
 #include "OpenCvImgSeqServer.h"

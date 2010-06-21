@@ -145,5 +145,54 @@ void SwapRedBlueChannel(Video::Image & img)
   }
 }
 
+void PruneImageArea(IplImage *iplImg_src, IplImage & iplImg_dst, int width, int height, int offsetX, int offsetY)	/// TODO aufräumen!
+{
+// printf("nChannels = %u\n", iplImg_src->nChannels);
+// printf("iplImage->width/height: %u/%u\n", iplImg_src->width, iplImg_src->height);
+// printf("width/height: %u/%u\n", width, height);
+
+	unsigned imgP = 0;
+	for(unsigned y=offsetY; y<offsetY+height; y++)
+	{
+		for(unsigned x=offsetX; x<offsetX+width; x++)
+		{
+			for(unsigned c=0; c<iplImg_src->nChannels; c++)
+			{
+// if (first) printf("x-y: %u-%u\n", offsetX, offsetY);
+// if (first) printf("widthStep: %u\n", iplImg_src->widthStep);
+// if (first) printf("imgP: %u from %u\n", imgP, 3*x + y*iplImg_src->widthStep + c);
+// first = false;
+				iplImg_dst.imageData[imgP] = iplImg_src->imageData[3*x + y*iplImg_src->widthStep + c];
+				imgP++;
+// printf("%u \n", imgP);
+			}
+		}
+	}
+
+	printf("PruneImageArea ready!!!\n");
+	printf("  w/h: %u/%u\n", iplImg_dst.width, iplImg_dst.height);
+/*	
+	int x, y, c;
+	for(y = 0; y < iplImg->height; y++)
+		for(x = 0; x < iplImg->width; x++)
+			for(c = 0; c < 3; c++)
+			{
+				assert(3*(y*img.width + x) + c < img.data.size());
+				img.data[3*(y*img.width + x) + c] = iplImg->imageData[y*iplImg->widthStep + 3*x + c];
+			}*/
+
+// ((uchar *)(img->imageData + i*img->widthStep))[j*img->nChannels + 0]=111; // B
+// ((uchar *)(img->imageData + i*img->widthStep))[j*img->nChannels + 1]=112; // G
+// ((uchar *)(img->imageData + i*img->widthStep))[j*img->nChannels + 2]=113; // R
+
+
+// 	CvRect rect = cvRect(offsetX, offsetY, width, height);
+// 	cvSetImageROI(iplImg_src, rect);
+//   cvCopyImage(iplImg_src, iplImg_dst);
 }
+}
+
+
+
+
 
