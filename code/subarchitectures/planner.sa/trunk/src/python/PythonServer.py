@@ -118,6 +118,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     cast.core.CASTComponent.__init__(self)
     self.domain_fn = TEST_DOMAIN_FN
     self.client = None
+    self.dt = None
     self.planner = StandalonePlanner()
     self.tasks = {}
 
@@ -134,8 +135,19 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     log.debug("It worked. We got a server: %s", str(server))
     
     self.client_name = config.get("--wm", "Planner")
+    self.dt_name = config.get("--dt", "PlannerDTServer")
     self.show_dot = "--nodot" not in config
 
+    if "--dtdomain" in config:
+        self.dtdomain_fn = join(dirname(__file__), "domains", config["--dtdomain"])
+    else:
+        self.dtdomain_fn = None
+        
+    if "--dtproblem" in config:
+        self.dtproblem_fn = join(dirname(__file__), "domains", config["--dtproblem"])
+    else:
+        self.dtproblem_fn = None
+    
     if "--domain" in config:
       self.domain_fn = join(dirname(__file__), "domains", config["--domain"])
 
@@ -145,6 +157,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       log.info("Connected to CppServer %s", self.client_name)
     return self.client
 
+  def getDT(self):
+    if not self.dt:
+      self.dt = self.getIceServer(self.dt_name, Planner.DTPServer, Planner.DTPServerPrx)
+      log.info("Connected to DTPServer %s", self.dt_name)
+    return self.dt
+  
   def startComponent(self):
     global cast_log4cxx
     cast_log4cxx = self.m_logger
@@ -162,9 +180,16 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #print "OBJECTS: " + task_desc.objects;
     #print "INIT: " + task_desc.state;
 
+    # test the DT interface
+    if self.dtdomain_fn and self.dtproblem_fn:
+        log.info("Calling DT planner with problem '%s' and domain '%s'", self.dtproblem_fn, self.dtdomain_fn)
+        self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
+        self.getDT().newTask(task_desc.id, self.dtproblem_fn, self.dtdomain_fn);
+        return
+
     import task_preprocessor
     task = task_preprocessor.generate_mapl_task(task_desc, self.domain_fn)
-    self.tasks[task_desc.id] = task
+    self.tasks[task_desc.id] = task      
 
     self.planner.register_task(task)
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
@@ -330,6 +355,36 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.replan()
     self.deliver_plan(task)
 
+  def deliverAction(taskId, action, current=None):
+    if taskId not in self.tasks:
+      log.warning("Warning: received action for task %d, but no such task found.", taskId)
+      return
+    
+    log.info("received new action from DT")
+      
+    task = self.tasks[taskId]
+
+    #create featurevalues
+    uargs = [featvalue_from_object(task.mapltask[arg], task.namedict, task.beliefdict) for arg in action.arguments]
+    
+    fullname = action.name + " ".join(action.args)
+    outplan = [Planner.Action(task.taskID, action.name, uargs, fullname, Planner.Completion.PENDING)]
+
+    log.info("First action: %s", outplan[0].fullName)
+    
+    self.getClient().deliverPlan(task.taskID, outplan);
+
+  def updateStatus(taskId, status, message, current=None):
+      if taskId not in self.tasks:
+          log.warning("Warning: received state update for task %d, but no such task found.", taskId)
+          return
+
+      log.info("DT planner updates status to %s with the following message: %s", str(status), message)
+      
+      #just forward the status for now
+      self.getClient().setStatus(taskId, status);
+    
+    
 def compute_state_updates(_state, old_state, actions, failed):
   diffstate = state.State()
   for action in actions:
