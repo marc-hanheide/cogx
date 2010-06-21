@@ -263,24 +263,42 @@ is displaying only one object. Any other string can be used instead.
 
 An active display client is needed when the component wants to present some UI
 elements with which it can be configured. The client receives notifications and
-requests related to these elements from the display server. The component must
-define two callback functions that will handle the events sent by the server.
+requests related to these elements from the display server. To achieve this 
+a few methods must be overridden in a class derived from the CDisplayClient:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    class VideoViewer : public ManagedComponent, public VideoClient
    {
    private:
    #ifdef FEAT_VISUALIZATION
+     class CVvDisplayClient: public cogx::display::CDisplayClient
+     {
+       VideoViewer* pViewer;
+     public:
+       CVvDisplayClient() { pViewer = NULL; }
+       void setClientData(VideoViewer* pVideoViewer) { pViewer = pVideoViewer; }
+       void handleEvent(const Visualization::TEvent &event); /*override*/
+       std::string getControlState(const std::string& ctrlId); /*override*/
+     };
      cogx::display::CActiveDisplayClient<VideoViewer> m_display;
-     void handleGuiEvent(const Visualization::TEvent &event);
-     std::string getControlState(const std::string& ctrlId);
    #endif
    };
 \end{Verbatim}
 
-The event path from the server to the client must be initiated. This is done right
-after the component connects to the client. After the connections are established,
-the callback functions are registered:
+In the constructor of the VideoViewer we call \code{setClientData()} so that
+the new display client will be able to access the VideoViewer:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+  VideoViewer() : camId(0)
+  {
+#ifdef FEAT_VISUALIZATION
+    m_display.setClientData(this);
+#endif
+  }
+\end{Verbatim}
+
+The event path from the server to the client must be initialized. This is done
+right after the component connects to the client:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    void VideoViewer::start()
@@ -288,8 +306,6 @@ the callback functions are registered:
    #ifdef FEAT_VISUALIZATION
      m_display.connectIceClient(*this);
      m_display.installEventReceiver();
-     m_display.setEventCallback(this, &VideoViewer::handleGuiEvent);
-     m_display.setStateQueryCallback(this, &VideoViewer::getControlState);
    #endif
    }
 \end{Verbatim}
@@ -314,13 +330,29 @@ element will be displayed only when an object is displayed in its default view.
 When an object is displayed in another view, the UI element won't be available.
 \todo{TODO: user-defined views will be able to specify which UI elements to show}
 
-The \code{handleGuiEvent()} callback function will be called every time the
-UI element emits a known event. For the chekcbox element we need to respond
-to the \code{evCheckBoxChange} event:
+When the UI element is first displayed it has to obtain the current state from
+the component that created it. This is done with the method
+\code{getControlState()}:
+
+\begin{Verbatim}[fontsize=\scriptsize,gobble=3]
+   std::string VideoViewer::CVvDisplayClient::getControlState(
+         const std::string& ctrlId)
+   {
+     if (ctrlId == "toggle.viewer.running") {
+       return pViewer->receiving ? "1" : "0";
+     }
+     return "";
+   }
+\end{Verbatim}
+
+The method \code{handleGuiEvent()} will be called every time the UI element
+emits a known event. For the chekcbox element we need to respond to the
+\code{evCheckBoxChange} event:
 
 \begin{Verbatim}[fontsize=\scriptsize,gobble=3]
    #ifdef FEAT_VISUALIZATION
-   void VideoViewer::handleGuiEvent(const Visualization::TEvent &event)
+   void VideoViewer::CVvDisplayClient::handleGuiEvent(
+         const Visualization::TEvent &event)
    {
      if (event.type == Visualization::evCheckBoxChange) {
        if (event.sourceId == "toggle.viewer.running") {
