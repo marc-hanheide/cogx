@@ -11,8 +11,8 @@
 #include <vector>
 #include <stdexcept>
 #include <sys/time.h>
-#include <cv.h>
-#include <highgui.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 #include <dc1394/types.h>		// apt-get libdc1394-22-dev
 #include <dc1394/control.h>	// apt-get libdc1394-22-dev
 #include "VideoServer.h"

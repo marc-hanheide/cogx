@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
-#include <cv.h>
+#include <opencv/cv.h>
 #include "VideoServer.h"
 
 namespace cast
