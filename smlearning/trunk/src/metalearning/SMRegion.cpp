@@ -95,12 +95,7 @@ bool SMRegion::write_data (string fileName) {
 		return false;  
 
 	writeFile.write ((const char*)&index, sizeof (index));
-/*	write_realvector (writeFile, minValuesSMVector);
-	write_realvector (writeFile, maxValuesSMVector);
-	write_realvector (writeFile, learningProgressHistory);
-	write_realvector (writeFile, errorsHistory);
-	write_realvector (writeFile, startingPositionsHistory);
-*/	write_vector<double> (writeFile, minValuesSMVector);
+	write_vector<double> (writeFile, minValuesSMVector);
 	write_vector<double> (writeFile, maxValuesSMVector);
 	write_vector<double> (writeFile, learningProgressHistory);
 	write_vector<double> (writeFile, errorsHistory);
@@ -123,12 +118,7 @@ bool SMRegion::read_data (string fileName) {
 		return false;  
 
 	readFile.read ((char *)&index, sizeof(index));
-/*	read_realvector (readFile, minValuesSMVector);
-	read_realvector (readFile, maxValuesSMVector);
-	read_realvector (readFile, learningProgressHistory);
-	read_realvector (readFile, errorsHistory);
-	read_realvector (readFile, startingPositionsHistory);
-*/	read_vector<double> (readFile, minValuesSMVector);
+	read_vector<double> (readFile, minValuesSMVector);
 	read_vector<double> (readFile, maxValuesSMVector);
 	read_vector<double> (readFile, learningProgressHistory);
 	read_vector<double> (readFile, errorsHistory);

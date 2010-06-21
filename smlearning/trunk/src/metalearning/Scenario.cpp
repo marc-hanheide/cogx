@@ -330,8 +330,8 @@ void Scenario::choose_action () {
 	//choose starting position
 	define_start_position ();
 
-	speed = floor (randomG.nextUniform (3.0, 6.0));
-	//speed = 3.0;
+	//speed = floor (randomG.nextUniform (3.0, 6.0));
+	speed = 3.0;
 
 	horizontalAngle = choose_angle(60.0, 120.0, "cont");
 
@@ -472,7 +472,7 @@ void Scenario::set_up_movement(){
 ///
 void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, LearningData::Chunk& chunk) {
 
-	
+	try {
 	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v1, desc.minX, desc.maxX));
 	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v2, desc.minY, desc.maxY));
 	currentFeatureVector.push_back(normalize(chunk.effectorPose.p.v3, desc.minZ, desc.maxZ));
@@ -481,7 +481,11 @@ void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, Learning
 	currentFeatureVector.push_back(normalize(chunk.efYaw, -REAL_PI, REAL_PI));
 
 	assert (currentFeatureVector.size() == efVectorSize);
-	
+	} catch ( ... ) {
+		cerr << "Error normalizing effector feature vector " << endl;
+	};
+
+	try {
 	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v1, desc.minX, desc.maxX));
 	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v2, desc.minY, desc.maxY));
 	currentFeatureVector.push_back(normalize(chunk.objectPose.p.v3, desc.minZ, desc.maxZ));
@@ -490,6 +494,9 @@ void Scenario::add_feature_vector (FeatureVector& currentFeatureVector, Learning
 	currentFeatureVector.push_back(normalize(chunk.obYaw, -REAL_PI, REAL_PI));
 
 	assert (currentFeatureVector.size() == efVectorSize + pfVectorSize);
+	} catch ( ... ) {
+		cerr << "Error normalizing polyflap feature vector " << endl;
+	};
 	
 }
 
@@ -655,6 +662,7 @@ void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, const Vec3&
 	/////////////////////////////////////////////////
 	//writing in the initial vector	
 	//initial position, normalized
+	try {
 	featureVector.push_back(normalize<double>(positionT.v1, desc.minX, desc.maxX));
 	featureVector.push_back(normalize<double>(positionT.v2, desc.minY, desc.maxY));
 	featureVector.push_back(normalize<double>(positionT.v3, desc.minZ, desc.maxZ));
@@ -664,6 +672,9 @@ void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, const Vec3&
 //	currentMotorCommandVector.push_back(normalize<double>(orientationT.v3, -REAL_PI, REAL_PI));
 	//end pose info missing (must be added later 
 	/////////////////////////////////////////////////
+	} catch ( ... ) {
+		cerr << "Error normalizing finger pos. feature vector..." << endl;
+	}
 }
 
 
@@ -672,6 +683,7 @@ void Scenario::write_finger_pos_and_or(FeatureVector& featureVector, const Vec3&
 ///
 void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, const int speed, const Real horizontalAngle){
 
+	try {
 	/////////////////////////////////////////////////
 	//writing in the initial vector
 	featureVector.push_back(normalize<double>(speed, 3.0, 5.0));
@@ -683,6 +695,9 @@ void Scenario::write_finger_speed_and_angle(FeatureVector& featureVector, const 
 	//writing in the initial vector
 	featureVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
 	/////////////////////////////////////////////////
+	} catch ( ... ) {
+		cerr << "Error normalizing finger speed/angle..." << endl;
+	}
 }
 
 

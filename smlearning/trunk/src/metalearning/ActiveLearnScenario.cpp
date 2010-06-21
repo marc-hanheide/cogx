@@ -191,9 +191,8 @@ void ActiveLearnScenario::choose_action () {
 			for (int i=0; i<maxNumberCandidateActions; i++) {
 				Action action;
 				action.startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
-				//action.startPosition = floor(randomG.nextUniform (1.0, 25.0));
-				action.speed = floor (randomG.nextUniform (3.0, 6.0));
-				//action.speed = 3.0;
+				//action.speed = floor (randomG.nextUniform (3.0, 6.0));
+				action.speed = 3.0;
 				action.horizontalAngle = choose_angle(60.0, 120.0, "cont");
 				FeatureVector motorVector;
 				Vec3 pos;

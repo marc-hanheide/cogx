@@ -27,40 +27,6 @@
 
 namespace smlearning {
 
-#define FEATUREVECTOR_SIZE1 8
-#define FEATUREVECTOR_SIZE2 6
-
-void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
-	// initialize random seed:
-	srand ((unsigned)time(NULL) );
-	
-	// generate random number:
-	double randNr;
-
-	for (int s=0; s<numSeq; s++) {
-		Sequence currentSequence;
-		for (int v=0; v<seqSize; v++) {
-
-			FeatureVector currentVector;
-			int vectorSize;
-			if (v==0)
-				vectorSize = FEATUREVECTOR_SIZE1;
-			else
-				vectorSize = FEATUREVECTOR_SIZE2;
-		
-			for (int n=0; n< vectorSize; n++) {
-				randNr = (rand() % 10 + 1) / 10.0;
-				currentVector.push_back (randNr);			
-			}
-
-			
-			currentSequence.push_back (currentVector);	
-		}
-		data.push_back (currentSequence);
-	}
-
-}
-
 ///
 ///print DataSetParams tuple
 ///
@@ -77,38 +43,6 @@ void print_dataset_params (const DataSetParams& p) {
 	cout << "maxY: " << p.get<limits>().get<4>() << "," << endl;
 	cout << "maxZ: " << p.get<limits>().get<5>() << endl;
 }
-
-
-/*
-///
-///write real vector to a file
-///
-void write_realvector (ofstream& writeFile, const vector<double>& v) {
-	long featvectorSize = v.size();
-	writeFile.write ((const char*)&featvectorSize, sizeof (v.size()));
-	vector<double>::const_iterator n;
-	for (n=v.begin(); n!= v.end(); n++) {
-		writeFile.write ((const char* )&(*n), sizeof (*n));
-	}
-	
-}
-*/
-
-/*
-///
-///write int vector to a file
-///
-void write_intvector (ofstream& writeFile, const vector<int>& v) {
-	long featvectorSize = v.size();
-	writeFile.write ((const char*)&featvectorSize, sizeof (v.size()));
-	vector<int>::const_iterator n;
-	for (n=v.begin(); n!= v.end(); n++) {
-		writeFile.write ((const char* )&(*n), sizeof (*n));
-	}
-	
-}
-*/
-
 
 
 ///
@@ -151,41 +85,6 @@ bool write_dataset (string fileName, const DataSetStruct& data) {
 	writeFile.close();
 	return true;
 }
-
-
-/*
-///
-///read real vector from a file
-///
-void read_realvector (ifstream& readFile, vector<double>& v) {
-	long featvectorSize;
-	readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
-	// cout << "\t\t" << featvectorSize << endl;
-	for (int n=0; n<featvectorSize; n++) {
-		double value;
-		readFile.read ((char* )&value, sizeof(value));
-		v.push_back (value);
-	}
-}
-
-*/
-
-/*
-///
-///read int vector from a file
-///
-void read_intvector (ifstream& readFile, vector<int>& v) {
-	long featvectorSize;
-	readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
-	// cout << "\t\t" << featvectorSize << endl;
-	for (int n=0; n<featvectorSize; n++) {
-		int value;
-		readFile.read ((char* )&value, sizeof(value));
-		v.push_back (value);
-	}
-}
-
-*/
 
 
 ///

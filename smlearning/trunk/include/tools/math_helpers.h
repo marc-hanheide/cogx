@@ -57,7 +57,9 @@ R normalize(R const& value, R const& min, R const& max) {
 	R relativeVal = val - min;
 	R res = relativeVal/interval;
 	res = -1.0 + (res*2.0);
-	assert (res >= -1.0 && res <= 1.0);
+	//assert (res >= -1.0 && res <= 1.0);
+	if (!(res >= -1.0 && res <= 1.0))
+		throw true;
 	return res;
 }
 

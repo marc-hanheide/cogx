@@ -538,7 +538,7 @@ class PushingApplication : public golem::Application {
 	
 
 
-	public:
+public:
 	/** Main function */
 	virtual int main(int argc, char *argv[]);
 
@@ -548,14 +548,10 @@ class PushingApplication : public golem::Application {
 	boost::program_options::variables_map vm;
 
 	
-	protected:
+protected:
 
 	boost::program_options::options_description prgOptDesc;
 	boost::program_options::positional_options_description p;	
-	//boost::program_options::variables_map vm;
-
-	//map<string,string> arguments;
-
 
 	virtual int start_experiment(char *argv[]);
 
