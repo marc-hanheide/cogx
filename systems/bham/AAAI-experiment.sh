@@ -6,9 +6,9 @@ trap 'kill $PIDS' INT TERM PIPE QUIT ABRT HUP
 
 LOGNAME=./AAAI-log.`date "+%F_%R"`
 
-xterm -e bash -c "tools/scripts/log4j-server log4j.properties.server > $LOGNAME.xml" &
-PIDS="$PIDS $!"
-sleep 3
+#xterm -e bash -c "tools/scripts/log4j-server log4j.properties.server > $LOGNAME.xml" &
+#PIDS="$PIDS $!"
+#sleep 3
 
 xterm -e player subarchitectures/nav.sa/config/stage_models/dfki_lt_objsearch/cogxp3-AAAI.cfg &
 PIDS="$PIDS $!"
