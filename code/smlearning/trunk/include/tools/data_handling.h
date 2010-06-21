@@ -138,34 +138,9 @@ void read_vector (ifstream& readFile, vector<T>& v) {
 void print_dataset_params (const DataSetParams& p);
 
 ///
-///generation of random sequences (for testing purposes)
-///
-void generate_rand_sequences (DataSet& data, long numSeq, long seqSize);
-
-///
-///write real vector to a file
-///
-//void write_realvector (ofstream& writeFile, const vector<double>& v);
-
-///
-///write int vector to a file
-///
-//void write_intvector (ofstream& writeFile, const vector<int>& v);
-
-///
 ///write DataSet vector to a file
 ///
 bool write_dataset (string fileName, const DataSetStruct& data);
-
-///
-///read real vector from a file
-///
-//void read_realvector (ifstream& readFile, vector<double>& v);
-
-///
-///read int vector from a file
-///
-//void read_intvector (ifstream& readFile, vector<int>& v);
 
 ///
 ///read DataSet vector from a file

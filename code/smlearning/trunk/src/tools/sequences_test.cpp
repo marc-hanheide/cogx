@@ -2,6 +2,44 @@
 
 using namespace smlearning;
 
+#define FEATUREVECTOR_SIZE1 8
+#define FEATUREVECTOR_SIZE2 6
+
+///
+///generation of random sequences (for testing purposes)
+///
+void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
+	// initialize random seed:
+	srand ((unsigned)time(NULL) );
+	
+	// generate random number:
+	double randNr;
+
+	for (int s=0; s<numSeq; s++) {
+		smlearning::Sequence currentSequence;
+		for (int v=0; v<seqSize; v++) {
+
+			FeatureVector currentVector;
+			int vectorSize;
+			if (v==0)
+				vectorSize = FEATUREVECTOR_SIZE1;
+			else
+				vectorSize = FEATUREVECTOR_SIZE2;
+		
+			for (int n=0; n< vectorSize; n++) {
+				randNr = (rand() % 10 + 1) / 10.0;
+				currentVector.push_back (randNr);			
+			}
+
+			
+			currentSequence.push_back (currentVector);	
+		}
+		data.push_back (currentSequence);
+	}
+
+}
+
+
 int main(int argc, char * argv[]) {
 	if (argc < 2) {
 		cerr << argv[0] << " seq_file (without extension)" << endl;
