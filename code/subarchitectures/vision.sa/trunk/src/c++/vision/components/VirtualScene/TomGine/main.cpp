@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 // 	shape_creator.CreateCylinder(shape, 0.1, 0.2, 16, 2, true);
 	shape.m_material = matBlueBlend;
 	
-	tgLabel label("resources/FreeSansBold.ttf");
+	tgLabel label("/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf");
 	label.AddText("Camera");
 	label.AddText("Logitech");
 	
