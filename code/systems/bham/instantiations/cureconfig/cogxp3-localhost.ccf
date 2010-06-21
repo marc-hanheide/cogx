@@ -3,6 +3,7 @@ CogXdemo
 
 PEEKABOT_HOST
 localhost
+#192.168.13.1
 
 PEEKABOT_ROBOT_XML_FILE
 CogX_base.xml
