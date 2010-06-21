@@ -14,7 +14,7 @@ namespace cogx { namespace display {
 class CFileMonitor: public cast::ManagedComponent
 {
 private:
-   cogx::display::CActiveDisplayClient<CFileMonitor> m_display;
+   cogx::display::CDisplayClient m_display;
    // void handleGuiEvent(const Visualization::TEvent &event);
 
    struct SConverter {

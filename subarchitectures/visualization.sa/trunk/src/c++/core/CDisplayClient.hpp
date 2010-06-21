@@ -98,10 +98,56 @@ public:
 
    void setImage(const std::string& id, const _IplImagePtr pImage); 
    void setObjectTransform2D(const std::string& id, const std::string& partId, _CvMatPtr pTransform); 
+
+private:
+   // -----------------------------------------------------------------
+   // An Active Display Client can receive events from a Display Server.
+   // -----------------------------------------------------------------
+   class CEventReceiverI: public Visualization::EventReceiver
+   {
+   private:
+      CDisplayClient *m_pClient;
+   public:
+      CEventReceiverI(CDisplayClient *pClient) {
+         m_pClient = pClient;
+      }
+      void handleEvent(const Visualization::TEvent &event, const Ice::Current&) {
+         if (m_pClient) m_pClient->handleEvent(event);
+      }
+      std::string getControlState(const std::string& ctrlId, const Ice::Current&) {
+         if (m_pClient) return m_pClient->getControlState(ctrlId);
+         return "";
+      }
+      void handleForm(const std::string& formId, const std::map<std::string, std::string>& fields,
+            const Ice::Current&)
+      {
+         if (m_pClient) m_pClient->handleForm(formId, fields);
+      }
+      void getFormData(const std::string& formId, std::map<std::string, std::string>& fields,
+            const Ice::Current&)
+      {
+         if (m_pClient) m_pClient->getFormData(formId, fields);
+      }
+   };
+
+   // To make a Display Client active, the methods to handle events
+   // must be implemented in a CDisplayClient subclass and
+   // installEventReceiver() must be called.
+private:
+   Visualization::EventReceiverPtr m_pEventReceiverIceSrv;
+
+public:
+   void installEventReceiver() throw(std::runtime_error); 
+
+public:
+   virtual void handleEvent(const Visualization::TEvent &event);
+   virtual std::string getControlState(const std::string& ctrlId);
+   virtual void handleForm(const std::string& formId, const std::map<std::string, std::string>& fields);
+   virtual void getFormData(const std::string& formId, std::map<std::string, std::string>& fields);
 };
 
 
-#if 1
+#if 0
 // -----------------------------------------------------------------
 // An Active Display Client can receive events from a Display Server.
 //
@@ -111,16 +157,16 @@ public:
 // the server is automatically subscribed to the events from the
 // added elements.
 // -----------------------------------------------------------------
-template<class T>
+// template<class T>
 class CActiveDisplayClient: public CDisplayClient
 {
 private:
    class CEventReceiverI: public Visualization::EventReceiver
    {
    private:
-      CActiveDisplayClient<T> *m_pClient;
+      CActiveDisplayClient/*<T>*/ *m_pClient;
    public:
-      CEventReceiverI(CActiveDisplayClient<T> *pClient) {
+      CEventReceiverI(CActiveDisplayClient/*<T>*/ *pClient) {
          m_pClient = pClient;
       }
       void handleEvent(const Visualization::TEvent &event, const Ice::Current&) { /*override*/
@@ -130,16 +176,26 @@ private:
          if (m_pClient) return m_pClient->getControlState(ctrlId);
          return "";
       }
+      void handleForm(const std::string& formId, const std::map<std::string, std::string>& fields,
+            const Ice::Current&)
+      {
+         if (m_pClient) m_pClient->handleForm(formId, fields);
+      }
+      void getFormData(const std::string& formId, std::map<std::string, std::string>& fields,
+            const Ice::Current&)
+      {
+         if (m_pClient) m_pClient->getFormData(formId, fields);
+      }
    };
 
 public:
-   typedef void (T::*TEventCallbackFn)(const Visualization::TEvent& event);
-   typedef std::string (T::*TStateQueryFn)(const std::string& ctrlId);
+   //typedef void (T::*TEventCallbackFn)(const Visualization::TEvent& event);
+   //typedef std::string (T::*TStateQueryFn)(const std::string& ctrlId);
    CActiveDisplayClient() {
       m_pEventReceiverIceSrv = NULL;
-      m_pReceiver = NULL;
-      m_pEventCallback = NULL;
-      m_pStateCallback = NULL;
+      //m_pReceiver = NULL;
+      //m_pEventCallback = NULL;
+      //m_pStateCallback = NULL;
    }
    ~CActiveDisplayClient() {
       m_pEventReceiverIceSrv = NULL;
@@ -147,9 +203,9 @@ public:
 
 private:
    Visualization::EventReceiverPtr m_pEventReceiverIceSrv;
-   T* m_pReceiver; // XXX: m_pOwner could also be used
-   TEventCallbackFn m_pEventCallback;
-   TStateQueryFn m_pStateCallback;
+   //T* m_pReceiver; // XXX: m_pOwner could also be used
+   //TEventCallbackFn m_pEventCallback;
+   //TStateQueryFn m_pStateCallback;
 
 public:
    void installEventReceiver() throw(std::runtime_error) {
@@ -178,53 +234,63 @@ public:
       debug("CDisplayClient EventReceiver installed.");
    }
 
-   void setEventCallback(T* pReceiver, TEventCallbackFn callback) {
-      setReceiver(pReceiver);
-      m_pEventCallback = callback;
-   }
+   //void setEventCallback(T* pReceiver, TEventCallbackFn callback) {
+   //   setReceiver(pReceiver);
+   //   m_pEventCallback = callback;
+   //}
 
-   void setStateQueryCallback(T* pReceiver, TStateQueryFn callback) {
-      setReceiver(pReceiver);
-      m_pStateCallback = callback;
-   }
+   //void setStateQueryCallback(T* pReceiver, TStateQueryFn callback) {
+   //   setReceiver(pReceiver);
+   //   m_pStateCallback = callback;
+   //}
 
 protected:
    virtual void handleEvent(const Visualization::TEvent &event) {
-      debug(event.data + " (received)");
-      if (m_pReceiver != NULL && m_pEventCallback != NULL) {
-         debug("ActiveDisplayClient: Passing event to the Receiver component.");
-         ((m_pReceiver)->*(m_pEventCallback))(event);
-      }
+      //debug(event.data + " (received)");
+      //if (m_pReceiver != NULL && m_pEventCallback != NULL) {
+      //   debug("ActiveDisplayClient: Passing event to the Receiver component.");
+      //   ((m_pReceiver)->*(m_pEventCallback))(event);
+      //}
    }
 
    virtual std::string getControlState(const std::string& ctrlId) { /*override*/
-      debug(ctrlId + " queried");
-      if (m_pReceiver != NULL && m_pStateCallback != NULL) {
-         debug("ActiveDisplayClient: Querying Receiver component state.");
-         return ((m_pReceiver)->*(m_pStateCallback))(ctrlId);
-      }
+      //debug(ctrlId + " queried");
+      //if (m_pReceiver != NULL && m_pStateCallback != NULL) {
+      //   debug("ActiveDisplayClient: Querying Receiver component state.");
+      //   return ((m_pReceiver)->*(m_pStateCallback))(ctrlId);
+      //}
       return "";
    }
 
-private:
-   void setReceiver(T* pReceiver) {
-      if (pReceiver == NULL && m_pReceiver == NULL) {
-         throw std::runtime_error(cast::exceptionMessage(__HERE__,
-                  "CActiveDisplayClient: A receiver must be set for the callback."));
-      }
-      if (m_pReceiver != NULL && pReceiver != m_pReceiver) {
-         throw std::runtime_error(cast::exceptionMessage(__HERE__,
-                  "CActiveDisplayClient: All callbacks must have the same receiver."));
-      }
-      if(m_pReceiver == NULL) {
-         m_pReceiver = pReceiver;
-         if (m_pReceiver != m_pOwner) {
-            debug("ActiveDisplayClient: WARNING: Event reciever is not the owner of the display client.");
-         }
-      }
+   virtual void handleForm(const std::string& formId, const std::map<std::string, std::string>& fields)
+   {
+      //debug(formId + " (handleForm)");
    }
-#endif
+
+   virtual void getFormData(const std::string& formId, std::map<std::string, std::string>& fields)
+   {
+      //debug(formId + " (getFormData)");
+   }
+
+//private:
+//   void setReceiver(T* pReceiver) {
+//      if (pReceiver == NULL && m_pReceiver == NULL) {
+//         throw std::runtime_error(cast::exceptionMessage(__HERE__,
+//                  "CActiveDisplayClient: A receiver must be set for the callback."));
+//      }
+//      if (m_pReceiver != NULL && pReceiver != m_pReceiver) {
+//         throw std::runtime_error(cast::exceptionMessage(__HERE__,
+//                  "CActiveDisplayClient: All callbacks must have the same receiver."));
+//      }
+//      if(m_pReceiver == NULL) {
+//         m_pReceiver = pReceiver;
+//         if (m_pReceiver != m_pOwner) {
+//            debug("ActiveDisplayClient: WARNING: Event reciever is not the owner of the display client.");
+//         }
+//      }
+//   }
 };
+#endif
 
 } } // namespace
 #endif // include once

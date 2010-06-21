@@ -73,6 +73,52 @@ void CDisplayClient::connectIceClient(CASTComponent& owner)
    }
 }
 
+void CDisplayClient::installEventReceiver() throw(std::runtime_error)
+{
+  if (! m_pOwner)
+    throw std::runtime_error(cast::exceptionMessage(__HERE__,
+          "CDisplayClient: connectIceClient() must be called before installEventReciever()."));
+
+  if (! m_pServer) {
+    log("CActiveDisplayClient: server not connected.");
+    return;
+  }
+
+  debug("CDisplayClient installing an EventReceiver.");
+  if (m_pEventReceiverIceSrv.get()) {
+    //throw std::runtime_error(cast::exceptionMessage(__HERE__,
+    //         "CDisplayClient already has an EventReceiver."));
+    log("CActiveDisplayClient already has an EventReceiver.");
+    return;
+  }
+
+  Ice::Identity id = getEventClientId();
+  debug(id.name + id.category);
+  m_pEventReceiverIceSrv = new CEventReceiverI(this);
+  m_pOwner->registerIceServer<Visualization::EventReceiver>(id.name, id.category, m_pEventReceiverIceSrv);
+  m_pServer->addClient(id);
+  debug("CDisplayClient EventReceiver installed.");
+}
+
+void CDisplayClient::handleEvent(const Visualization::TEvent &event)
+{
+  debug("handleEvent NOT IMPLEMENTED");
+}
+
+std::string CDisplayClient::getControlState(const std::string& ctrlId)
+{
+  debug("getControlState NOT IMPLEMENTED");
+  return "";
+}
+
+void CDisplayClient::handleForm(const std::string& formId, const std::map<std::string, std::string>& fields)
+{
+}
+
+void CDisplayClient::getFormData(const std::string& formId, std::map<std::string, std::string>& fields)
+{
+}
+
 void CDisplayClient::setImage(const std::string& id, const Video::Image& image)
 {
    if (m_pServer == NULL) return;
