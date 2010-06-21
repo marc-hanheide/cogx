@@ -169,6 +169,7 @@ class Task(object):
 class PDDLWriter(pddl.writer.Writer):
     def __init__(self):
         self.compiler = pddl.translators.ADLCompiler()
+        self.problem = None
         #self.compiler = mapl.translators.ModalPredicateCompiler()
         
     def write_problem(self, problem):
@@ -177,8 +178,13 @@ class PDDLWriter(pddl.writer.Writer):
         log.debug("total time for translation: %f", time.time()-t0)
         return pddl.writer.Writer.write_problem(self, p2)
 
-    def write_domain(self, domain):
-        dom = self.compiler.translate(domain)
+    def write_domain(self, domain, problem=None):
+        if not problem:
+            dom = self.compiler.translate(domain)
+        else:
+            prob = self.compiler.translate(problem)
+            dom = prob.domain
+            
         return pddl.writer.Writer.write_domain(self, dom)
 
 class TFDWriter(PDDLWriter):

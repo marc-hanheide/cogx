@@ -381,7 +381,7 @@ class Downward(BasePlanner):
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "mutex.pddl", "output.sas", "output", "sas_plan", "stdout.out")]
 
         w = task.FDWriter()
-        dom_str = "\n".join(w.write_domain(_task.mapltask.domain))
+        dom_str = "\n".join(w.write_domain(_task.mapltask.domain, _task.mapltask))
         prob_str = "\n".join(w.write_problem(_task.mapltask))
         mutex_str = "\n".join(w.write_mutex(w.mutex_groups))
         pddl_strs = dom_str, prob_str, mutex_str
