@@ -34,7 +34,7 @@ public class PatrolPlaceGenerator extends AbstractMotiveGenerator {
 	 * the place hasn't been explored for longer than this amount the gain is >
 	 * 0.5 otherwise it's smaller using an exp reciproc model.
 	 */
-	private static final long EXP_NORM = 30000;
+	private static final double EXP_NORM = 30000.0;
 	private HashMap<Long, WorkingMemoryAddress> m_placeIDtoMotiveWMA;
 
 	public PatrolPlaceGenerator() {
