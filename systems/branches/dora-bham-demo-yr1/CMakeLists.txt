@@ -53,11 +53,6 @@ add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
 
 
-option(BUILD_HAL_TTS "Build hardware tts" YES)
-if(BUILD_HAL_TTS)
-add_subdirectory (tools/hardware/tts)
-endif(BUILD_HAL_TTS)
-
 option(BUILD_HAL_PTZ "Build hardware ptz" YES)
 if(BUILD_HAL_PTZ)
 add_subdirectory (tools/hardware/ptz)
