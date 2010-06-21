@@ -679,6 +679,11 @@ class State(dict):
             return False, [], []
             
         def checkConditionVisitor(cond):
+            if isinstance(cond, conditions.SoftGoalCondition):
+                result, svars, univ = checkConditionVisitor(cond.cond)
+                if not result:
+                    return True, [], []
+                return result, svars, univ
             if isinstance(cond, conditions.LiteralCondition):
                 if relevantVars is not None:
                     self.read_svars.clear()

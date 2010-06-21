@@ -131,10 +131,35 @@ class Condition(object):
             return QuantifiedCondition.parse(it, scope, UniversalCondition)
         elif tag == "exists":
             return QuantifiedCondition.parse(it, scope, ExistentialCondition)
+        elif tag == "soft-goal" or tag == "preference":
+            penalty = float(it.get().token.string)
+            soft_goal_cond = it.get(list, "condition")
+            cond = Condition.parse(iter(soft_goal_cond), scope)
+            it.no_more_tokens()
+            return SoftGoalCondition(penalty, cond, scope)
         else:
             return LiteralCondition.parse(it.reset(), scope)
 
         raise NotImplementedError
+
+class SoftGoalCondition(Condition):
+    def __init__(self, _penalty, _cond, _scope = None):
+        self.penalty = _penalty
+        self.cond = _cond
+        self.scope = _scope
+
+    def copy(self, new_scope=None, new_parts = None, copy_instance=False):
+        if not new_parts:
+            new_parts = [self.cond]
+        if not new_scope:
+            new_scope = self.scope
+        return SoftGoalCondition(self.penalty, new_parts[0], new_scope)
+
+    def negate(self):
+        raise NotImplementedError
+
+    def visit(self, fn):
+        return fn(self, [self.cond.visit(fn)])
 
 class Falsity(Condition):
     """This class represents an always false condition."""

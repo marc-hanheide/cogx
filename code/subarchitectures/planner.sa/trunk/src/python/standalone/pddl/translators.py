@@ -46,10 +46,54 @@ class Translator(object):
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+
+class SoftGoalCompiler(Translator):
+    def __init__(self, **kwargs):
+        self.depends = []
+        self.counter = 0
+
+    def translate_problem(self, _problem):
+        domain = self.translate_domain(_problem.domain)
+        p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+
+        self.counter = 0
+
+        @visitors.replace
+        def visitor(cond, parts):
+            if isinstance(cond, conditions.SoftGoalCondition):
+                help_lit_str = "soft-goal-%i-ignored" % self.counter
+                action_name = "ignore-soft-goal-%i" % self.counter
+                pred = predicates.Predicate(help_lit_str,[])
+                p2.domain.predicates.add(pred)
+
+                cost_increase = predicates.Term(cond.penalty)
+
+                help_lit = conditions.LiteralCondition(pred,[], cond.scope)
+                parts = [cond.cond, help_lit]
+                goal_dis = conditions.Disjunction(parts, cond.scope)
+
+                term = predicates.Term(builtin.total_cost,[])
+
+                cost_eff = effects.SimpleEffect(builtin.increase,[term,cost_increase], cond.scope)
+                help_eff = effects.SimpleEffect(pred,[], cond.scope)
+                simple_effs = [cost_eff,help_eff]
+
+                eff = effects.ConjunctiveEffect(simple_effs, cond.scope)
+                help_act = actions.Action(action_name,[],None,eff,p2.domain)
+                p2.domain.actions.append(help_act)
+                p2.actions.append(help_act)
+
+                self.counter += 1
+                return goal_dis
+
+        p2.goal = p2.goal.visit(visitor)
+        return p2
+
+        
     
 class ADLCompiler(Translator):
     def __init__(self, **kwargs):
-        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs)]
+        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs), SoftGoalCompiler(**kwargs)]
 
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
