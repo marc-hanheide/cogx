@@ -16,7 +16,7 @@ extern "C"
 {
   cast::CASTComponentPtr newComponent()
   {
-    return new cast::VideoViewer();
+    return new cogx::test::VideoViewer();
   }
 }
 
@@ -60,8 +60,7 @@ double fclocks()
 // --------------------------
 
 
-namespace cast
-{
+namespace cogx { namespace test {
 
 using namespace std;
 using namespace VisionData;
@@ -107,8 +106,8 @@ void VideoViewer::start()
   m_bSendIplImage = false;
   m_display.connectIceClient(*this);
   m_display.installEventReceiver();
-  m_display.setEventCallback(this, &VideoViewer::handleGuiEvent);
-  m_display.setStateQueryCallback(this, &VideoViewer::getControlState);
+  //m_display.setEventCallback(this, &VideoViewer::handleGuiEvent);
+  //m_display.setStateQueryCallback(this, &VideoViewer::getControlState);
 
   //m_display.addButton("toggle.viewer.running", "Start");
   m_display.addCheckBox(getComponentID(), "toggle.viewer.running", "&Streaming");
@@ -127,37 +126,37 @@ void VideoViewer::start()
 }
 
 #ifdef FEAT_VISUALIZATION
-void VideoViewer::handleGuiEvent(const Visualization::TEvent &event)
+void VideoViewer::CVvDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
   debug(event.data + " (received by VideoViewer)");
   if (event.type == Visualization::evCheckBoxChange) {
     if (event.sourceId == "toggle.viewer.running") {
       debug(std::string("Time: ") + sfloat (fclocks()));
       bool newrcv = (event.data != "0");
-      if (newrcv != receiving) {
-        if(receiving) {
-          videoServer->stopReceiveImages(getComponentID());
-          println("Stopped receiving images");
+      if (newrcv != pViewer->receiving) {
+        if(pViewer->receiving) {
+          pViewer->videoServer->stopReceiveImages(pViewer->getComponentID());
+          pViewer->println("Stopped receiving images");
         }
         else {
           vector<int> camIds;
-          camIds.push_back(camId);
-          videoServer->startReceiveImages(getComponentID(), camIds, 0, 0);
-          println("Started receiving images");
+          camIds.push_back(pViewer->camId);
+          pViewer->videoServer->startReceiveImages(pViewer->getComponentID(), camIds, 0, 0);
+          pViewer->println("Started receiving images");
         }
-        receiving = !receiving;
+        pViewer->receiving = !pViewer->receiving;
       }
     }
     else if (event.sourceId == "toggle.viewer.sendipl") {
       debug(std::string("Time: ") + sfloat (fclocks()));
       bool newrcv = (event.data != "0");
-      if (m_bSendIplImage != newrcv) {
-        m_bSendIplImage = newrcv;
-        if(m_bSendIplImage) {
-          println("Sendind images of type IplImage.");
+      if (pViewer->m_bSendIplImage != newrcv) {
+        pViewer->m_bSendIplImage = newrcv;
+        if(pViewer->m_bSendIplImage) {
+          pViewer->println("Sendind images of type IplImage.");
         }
         else {
-          println("Sending images of type Video::Image.");
+          pViewer->println("Sending images of type Video::Image.");
         }
       }
     }
@@ -165,18 +164,18 @@ void VideoViewer::handleGuiEvent(const Visualization::TEvent &event)
   else if (event.type == Visualization::evButtonClick) {
     if (event.sourceId == "viewer.do.nothing") {
       debug(std::string("Time: ") + sfloat (fclocks()));
-      println("The button works.");
+      pViewer->println("The button works.");
     }
   }
 }
 
-std::string VideoViewer::getControlState(const std::string& ctrlId)
+std::string VideoViewer::CVvDisplayClient::getControlState(const std::string& ctrlId)
 {
   if (ctrlId == "toggle.viewer.running") {
-    return receiving ? "1" : "0";
+    return pViewer->receiving ? "1" : "0";
   }
   else if (ctrlId == "toggle.viewer.sendipl") {
-    return m_bSendIplImage ? "1" : "0";
+    return pViewer->m_bSendIplImage ? "1" : "0";
   }
   return "";
 }
@@ -409,5 +408,5 @@ void VideoViewer::runComponent()
   }
 }
 
-}
+}} // namespace
 
