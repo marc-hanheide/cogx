@@ -1,0 +1,66 @@
+<!-- Inner build file for a module in the CogX system -->
+<project name="demo-code" default="compile" basedir=".">
+
+        <!-- =================================================================== -->
+        <!-- Add JAR files to classpath                                          -->
+        <!-- =================================================================== -->
+        <path id="build.classpath">
+            <pathelement path="${ice.jar}"/>
+            <pathelement path="${cast.jar}"/>
+            <fileset dir="lib">
+              <include name="**/*.jar"/>
+            </fileset>
+        </path>
+
+	<!-- Controls where the output goes -->
+	<property name="output.dir" value="../output/classes" />
+
+	<!-- Controls what is compiled -->
+	<property name="src.dir" value="./src/java" />
+	<property name="slice.dir" value="./src/slice" />
+
+	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
+	<taskdef name="slice2java" classname="Slice2JavaTask"/>
+
+	
+	<!-- =================================================================== -->
+	<!-- Preparation                                                         -->
+	<!-- =================================================================== -->
+	<target name="prepare"  description="any project-specific init">
+	  <mkdir dir="${output.dir}"/>
+	</target>
+
+
+
+
+
+
+
+
+	<target name="slice" depends="" description="generates source from slice"/>
+
+	<!-- =================================================================== -->
+	<!-- Expand libraries                                                    -->
+	<!-- =================================================================== -->
+
+    <target name="expandlibs" depends="prepare">
+    </target>
+	
+	<!-- =================================================================== -->
+	<!-- Basic compilation                                                   -->
+	<!-- =================================================================== -->
+	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<classpath refid="build.classpath"/> </javac>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Cleanup                                                             -->
+	<!-- =================================================================== -->
+
+	<target name="clean">
+	        <delete file="${src.dir}/.depend"/>
+	</target>
+
+
+</project>
