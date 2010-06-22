@@ -5,7 +5,7 @@ INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-binder.cast
-#INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 
 # binder ######################################################################
@@ -28,5 +28,6 @@ INCLUDE includes/motivation.sa/motivation-no-avs.cast
 
 # verb stuff
 JAVA MG verbal.kint patrol.PatrolDemoVerbalisation
+JAVA MG handsome patrol.HeadTurner
 
 
