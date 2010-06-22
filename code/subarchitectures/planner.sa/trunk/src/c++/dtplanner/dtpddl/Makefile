@@ -27,6 +27,9 @@ all: $(DEPENDS) $(OBJECTS) $(TARGET)
 libdtplanning: $(LOBJECTS)
 	libtool --mode=link $(CXX) $(LOBJECTS) $(LDFLAGS) -o libdtplanning.la -module -avoid-version -rpath /usr/local/lib
 
+install: libdtplanning
+	cp libdtplanning.so /usr/local/lib
+
 %.lo: %.cc
 	libtool --mode=compile  $(CXX) $(CPPFLAGS) $< -c -o $@
 
