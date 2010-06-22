@@ -156,6 +156,20 @@ public class VerbalisationFacade {
 				});
 	}
 
+	public <EntryType extends Ice.ObjectImpl> void verbaliseCannedTextOnAddition(
+			final Class<EntryType> _entryClass, final RandomStringBank _texts) {
+
+		m_component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				_entryClass, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _arg0)
+							throws CASTException {
+						verbaliseCannedText(_texts.next());
+					}
+				});
+	}
+
 	public <EntryType extends Ice.ObjectImpl> void verbaliseOnOverwrite(
 			final Class<EntryType> _entryClass,
 			final TextGenerator<EntryType> _generator) {
@@ -171,6 +185,8 @@ public class VerbalisationFacade {
 					}
 				});
 	}
+	
+	
 
 	public <EntryType extends Ice.ObjectImpl> void verbaliseCannedTextOnOverwrite(
 			final Class<EntryType> _entryClass, final String _text) {
@@ -182,6 +198,20 @@ public class VerbalisationFacade {
 					public void workingMemoryChanged(WorkingMemoryChange _arg0)
 							throws CASTException {
 						verbaliseCannedText(_text);
+					}
+				});
+	}
+	
+	public <EntryType extends Ice.ObjectImpl> void verbaliseCannedTextOnOverwrite(
+			final Class<EntryType> _entryClass, final RandomStringBank _texts) {
+
+		m_component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				_entryClass, WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _arg0)
+							throws CASTException {
+						verbaliseCannedText(_texts.next());
 					}
 				});
 	}
@@ -238,6 +268,20 @@ public class VerbalisationFacade {
 					public void workingMemoryChanged(WorkingMemoryChange _arg0)
 							throws CASTException {
 						verbaliseCannedText(_text);
+					}
+				});
+	}
+	
+	public <EntryType extends Ice.ObjectImpl> void verbaliseCannedTextOnDeletion(
+			final Class<EntryType> _entryClass, final RandomStringBank _texts) {
+
+		m_component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				_entryClass, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _arg0)
+							throws CASTException {
+						verbaliseCannedText(_texts.next());
 					}
 				});
 	}
