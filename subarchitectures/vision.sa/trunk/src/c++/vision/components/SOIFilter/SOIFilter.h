@@ -118,8 +118,15 @@ private:
 
 private:
 #ifdef FEAT_VISUALIZATION
-  cogx::display::CActiveDisplayClient<SOIFilter> m_display;
-  void handleGuiEvent(const Visualization::TEvent &event);
+  class CSfDisplayClient: public cogx::display::CDisplayClient
+  {
+    SOIFilter* pFilter;
+  public:
+    CSfDisplayClient() { pFilter = NULL; }
+    void setClientData(SOIFilter* pSoiFilter) { pFilter = pSoiFilter; }
+    void handleEvent(const Visualization::TEvent &event); /*override*/
+  };
+  cogx::display::CDisplayClient m_display;
 #endif
   VisionData::ProtoObjectPtr m_LastProtoObject; // We may want to save it
   Video::Image m_ImageLeft;

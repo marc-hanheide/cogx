@@ -190,7 +190,6 @@ void SOIFilter::start()
 #ifdef FEAT_VISUALIZATION
   m_display.connectIceClient(*this);
   m_display.installEventReceiver();
-  m_display.setEventCallback(this, &SOIFilter::handleGuiEvent);
   m_display.addButton("Last ROI Segmentation", "take.snapshot", "&Snapshot");
 #else
   if (doDisplay)
@@ -296,11 +295,11 @@ void SOIFilter::saveSnapshot()
 }
 
 #ifdef FEAT_VISUALIZATION
-void SOIFilter::handleGuiEvent(const Visualization::TEvent &event)
+void SOIFilter::CSfDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
   if (event.type == Visualization::evButtonClick) {
     if (event.sourceId == "take.snapshot") {
-	  saveSnapshot();
+	  pFilter->saveSnapshot();
     }
   }
 }
