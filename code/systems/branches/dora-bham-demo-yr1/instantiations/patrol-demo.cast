@@ -27,6 +27,6 @@ INCLUDE includes/planner.sa/planner.cast
 INCLUDE includes/motivation.sa/motivation-no-avs.cast
 
 # verb stuff
-JAVA MG verbal.kint dora.DoraVerbalisation
+JAVA MG verbal.kint patrol.PatrolDemoVerbalisation
 
 
