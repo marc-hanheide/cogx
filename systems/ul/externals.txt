@@ -8,8 +8,9 @@
 ^/code/subarchitectures/nav.sa/branches/stable-0        subarchitectures/nav.sa
 ^/code/subarchitectures/planner.sa/branches/stable-1    subarchitectures/planner.sa
 ^/code/subarchitectures/spatial.sa/branches/stable-1    subarchitectures/spatial.sa
-^/code/subarchitectures/vision.sa/branches/stable-0     subarchitectures/vision.sa-stable
 ^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
+^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
+
 
 ^/code/tools/beliefmodels/trunk                   tools/beliefmodels
 ^/code/tools/camcalb2/trunk                       tools/camcalb2
@@ -22,14 +23,15 @@
 ^/code/tools/hardware/ptz/trunk                   tools/hardware/ptz
 ^/code/tools/hardware/robotbase/branches/stable-1 tools/hardware/robotbase
 ^/code/tools/hardware/sonar/branches/stable-0     tools/hardware/sonar
-^/code/tools/hardware/stereo/branches/stable-1    tools/hardware/stereo
+^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
 ^/code/tools/hardware/tests/trunk                 tools/hardware/tests
 ^/code/tools/hardware/tts/trunk                   tools/hardware/tts
 ^/code/tools/hardware/utils/branches/stable-0     tools/hardware/utils
-^/code/tools/hardware/video/branches/stable-3     tools/hardware/video
+^/code/tools/hardware/video/trunk                 tools/hardware/video
 ^/code/tools/interconnectivity-branches/stable-0  tools/interconnectivity
 ^/code/tools/mary                                 tools/mary
 ^/code/tools/math/branches/stable-0               tools/math
 ^/code/tools/python/trunk                         tools/python
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/testing/trunk                        tools/testing
+
