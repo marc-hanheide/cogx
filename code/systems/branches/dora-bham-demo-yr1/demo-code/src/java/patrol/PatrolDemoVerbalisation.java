@@ -32,7 +32,8 @@ public class PatrolDemoVerbalisation extends ManagedComponent {
 			new String[] { "Boink", "I will come back here", "Keep going",
 					"Steady on", "Easy there driver", "", "", "", "",
 					"Beep beep", "Coming through", "Excuse me please",
-					"Look out", });
+					"Look out", "I'll be back", "Danger",
+					"Hello there handsome" });
 
 	private static final RandomStringBank HOMING_SAYINGS = new RandomStringBank(
 			new String[] { "I am going home",
@@ -129,6 +130,13 @@ public class PatrolDemoVerbalisation extends ManagedComponent {
 	public void runComponent() {
 		m_verbals
 				.verbaliseCannedText("Hello, my name is Dora and I will be your robot today.");
+
+		// spout random sayings and random intervals
+		while (isRunning()) {
+			sleepComponent((long) (10000 + Math.random() * 20000));
+			m_verbals.verbaliseCannedText(NEW_PLACE_SAYINGS.next());
+		}
+
 	}
 
 }
