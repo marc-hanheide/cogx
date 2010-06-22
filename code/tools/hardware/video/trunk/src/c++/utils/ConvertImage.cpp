@@ -50,6 +50,44 @@ IplImage* convertImageToIpl(const Video::Image & img)
   return iplImg;
 }
 
+bool convertBytesToIpl(const std::vector<unsigned char>& data, int width, int height, int nchn, IplImage ** iplImg)
+{
+  if(*iplImg != 0)
+    if(width != (*iplImg)->width || height != (*iplImg)->height || nchn != (*iplImg)->nChannels != nchn)
+      cvReleaseImage(iplImg);
+
+  if (nchn != 1 && nchn != 3) return false;
+  if (width * height * nchn > data.size()) return false;
+
+  if(*iplImg == 0)
+    *iplImg = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, nchn);
+  assert(*iplImg != 0);
+
+#ifndef FAST_DIRTY_CONVERSION
+  int x, y, c;
+  // note: this neat triple loop might be somewhat slower than a memcpy, but
+  // makes sure images are copied correctly irrespective of memory layout and
+  // line padding.
+  for(y = 0; y < height; y++)
+    for(x = 0; x < width; x++)
+      for(c = 0; c < nchn; c++)
+        (*iplImg)->imageData[y*(*iplImg)->widthStep + nchn*x + c] =
+          data[nchn*(y*width + x) + c];
+#else
+  memcpy((*iplImg)->imageData, &data[0],
+      (*iplImg)->height*(*iplImg)->widthStep);
+#endif
+
+  return true;
+}
+
+IplImage* convertBytesToIpl(const std::vector<unsigned char>& data, int width, int height, int nchn)
+{
+  IplImage *iplImg = 0;
+  convertBytesToIpl(data, width, height, nchn, &iplImg);
+  return iplImg;
+}
+
 void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
   throw(runtime_error)
 {
