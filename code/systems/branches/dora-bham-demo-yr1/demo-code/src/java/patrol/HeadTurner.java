@@ -1,10 +1,13 @@
 package patrol;
 
-import ptz.PTZInterface;
 import ptz.PTZInterfacePrx;
+import ptz.PTZInterfacePrxHelper;
 import ptz.PTZPose;
-import cast.CASTException;
+import Ice.Communicator;
+import Ice.Identity;
+import Ice.ObjectPrx;
 import cast.architecture.ManagedComponent;
+import cast.cdl.CPPSERVERPORT;
 
 public class HeadTurner extends ManagedComponent {
 
@@ -17,9 +20,18 @@ public class HeadTurner extends ManagedComponent {
 	@Override
 	protected void start() {
 		try {
-			m_ptzServer = getIceServer("ptz.server", PTZInterface.class,
-					PTZInterfacePrx.class);
-		} catch (CASTException e) {
+
+			Communicator ic = Ice.Util.initialize();
+
+			Identity id = new Identity("PTZServer", "PTZServer");
+
+			StringBuilder sb = new StringBuilder(ic.identityToString(id));
+			sb.append(":default -h localhost -p ");
+			sb.append(CPPSERVERPORT.value);
+
+			ObjectPrx base = ic.stringToProxy(sb.toString());
+			m_ptzServer = PTZInterfacePrxHelper.uncheckedCast(base);
+		} catch (Exception e) {
 			logException(e);
 		}
 	}
