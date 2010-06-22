@@ -59,7 +59,7 @@ public class VerbalisationFacade {
 	/**
 	 * @param _text
 	 */
-	protected void verbaliseCannedText(String _text) {
+	public void verbaliseCannedText(String _text) {
 		if (!_text.isEmpty()) {
 			LogicalForm _greetingLF = lfForCannedText(_text);
 			verbaliseLF(_greetingLF);
