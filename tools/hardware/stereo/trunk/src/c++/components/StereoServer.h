@@ -80,6 +80,11 @@ private:
   Video::VideoInterfacePrx videoServer;
 
   /**
+   * the ICE stereo server instance
+   */
+  Stereo::StereoInterfacePtr hStereoServer;
+
+  /**
    * Stereo parameters
    */
   StereoCamera stereoCam;

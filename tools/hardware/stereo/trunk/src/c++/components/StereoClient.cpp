@@ -23,22 +23,17 @@ StereoClient::StereoClient()
 void StereoClient::startStereoCommunication(CASTComponent &owner)
   throw(runtime_error)
 {
-  ostringstream stereoServerAddr;
-  Ice::Identity id;
-
-  id.name = stereoServerName;
-  id.category = "StereoServer";
-  stereoServerAddr << owner.getCommunicator()->identityToString(id)
-    << ":default -h " << stereoServerHost << " -p " << stereoServerPort;
-
-  Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(stereoServerAddr.str());
-  // doing a checkedCast here freezes the server
-  // stereoServer = Stereo::StereoInterfacePrx::checkedCast(base);
-  stereoServer = Stereo::StereoInterfacePrx::uncheckedCast(base);
-  if(!stereoServer)
+  try {
+    stereoServer = owner.getIceServer<Stereo::StereoInterface>(stereoServerName);
+    owner.debug("StereoClient Connected.");
+  }
+  catch (...) {
+    owner.println(" *** StereoClient could not connect to '%s'.", stereoServerName.c_str());
     throw runtime_error(exceptionMessage(__HERE__,
           "failed to connect to stereo server: %s",
-          stereoServerAddr.str().c_str()));
+          stereoServerName.c_str()));
+  }
+
 }
 
 void StereoClient::configureStereoCommunication(const map<string,string> & _config)
@@ -46,10 +41,10 @@ void StereoClient::configureStereoCommunication(const map<string,string> & _conf
 {
   map<string,string>::const_iterator it;
 
-  if((it = _config.find("--stereohost")) != _config.end())
-  {
-    stereoServerHost = it->second;
-  }
+  //if((it = _config.find("--stereohost")) != _config.end())
+  //{
+  //  stereoServerHost = it->second;
+  //}
   if((it = _config.find("--stereoname")) != _config.end())
   {
     stereoServerName = it->second;
@@ -57,8 +52,8 @@ void StereoClient::configureStereoCommunication(const map<string,string> & _conf
 
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
-  if(stereoServerHost.empty())
-    throw runtime_error(exceptionMessage(__HERE__, "no stereo server host given"));
+  //if(stereoServerHost.empty())
+  //  throw runtime_error(exceptionMessage(__HERE__, "no stereo server host given"));
   if(stereoServerName.empty())
     throw runtime_error(exceptionMessage(__HERE__, "no stereo server name given"));
 }
