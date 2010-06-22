@@ -1,11 +1,13 @@
 
 TARGET=some
 
-CXX= ccache g++
+CXX= g++
+
+CXXPREFIX= ccache
 
 OPTIMISE := -O1 
 
-CPPFLAGS := -ggdb -ftemplate-depth-1000 -I./pegtl-0.30/include/ -I/data/private/grettonc/include/ -I/data/private/grettonc/include/coin/ -std=c++0x -pedantic
+CPPFLAGS := -ggdb -ftemplate-depth-1000 -I./pegtl-0.30/include/ -std=c++0x -pedantic
 
 WARNINGS := -Wall -Wextra
 
@@ -16,15 +18,17 @@ CXXFLAGS :=  -march=native $(WARNINGS) $(OPTIMISE)
 SOURCES := $(wildcard *.cc)
 DEPENDS := $(SOURCES:.cc=.d)
 OBJECTS := $(SOURCES:.cc=.o)
+LOBJECTS := $(SOURCES:.cc=.lo)
 
 .PHONY: all clean
 
 all: $(DEPENDS) $(OBJECTS) $(TARGET)
 
-libdtplanning: $(OBJECTS)
-	ar rv libptplanning.a $(OBJECTS)
-	ranlib libptplanning.a
+libdtplanning: $(LOBJECTS)
+	libtool --mode=link $(CXX) $(LOBJECTS) $(LDFLAGS) -o libdtplanning.la -module -avoid-version -rpath /usr/local/lib
 
+%.lo: %.cc
+	libtool --mode=compile  $(CXX) $(CPPFLAGS) $< -c -o $@
 
 $(TARGET): $(OBJECTS) 
 	$(CXX) -o $@ main.cpp $(OBJECTS) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) 
@@ -33,10 +37,11 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(CPPFLAGS) $< -c -o $@
 
 %.d: %.cc
-	$(CXX) $(CPPFLAGS) -MM -MT $@ $< -o $@
+	$(CXXPREFIX) $(CXX) $(CPPFLAGS) -MM -MT $@ $< -o $@
 
 %: %.cc %.d
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+	$(CXXPREFIX) $(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJECTS) $(TARGET) $(DEPENDS) libptplanning.a
+	rm -f $(OBJECTS) $(TARGET) $(DEPENDS) libptplanning.a $(LOBJECTS)
+	rm -r .libs
