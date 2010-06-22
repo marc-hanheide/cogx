@@ -439,6 +439,7 @@ class Downward(BasePlanner):
         
         try:
             pddl_output = open(plan_path).read()
+            print pddl_output
         except IOError:
             print "Warning: Fast Downward did not find a plan or crashed."
             print "Call was:", cmd
