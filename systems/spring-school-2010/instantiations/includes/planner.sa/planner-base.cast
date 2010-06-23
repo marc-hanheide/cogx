@@ -1,4 +1,14 @@
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain tutorial/meet-the-people.mapl --log
+# COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug --dtdomain /home/cogx/Work2010/spring-school-2010/subarchitectures/planner.sa/src/c++/dtplanner/dtpddl/EXAMPLES/test3.domain.pddl --dtproblem  /home/cogx/Work2010/spring-school-2010/subarchitectures/planner.sa/src/c++/dtplanner/dtpddl/EXAMPLES/test3.domain.pddl
+
+# COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+
+
+# COMPONENT PYTHON PlannerPythonServer PythonServer --domain ./spring-school-implementation/domains/springtest.mapl --log
+
+
+COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug  --nodot --dtdomain test3.domain.pddl --dtproblem test3.problem.pddl
+
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 
 SUBARCHITECTURE planner.sa
 
