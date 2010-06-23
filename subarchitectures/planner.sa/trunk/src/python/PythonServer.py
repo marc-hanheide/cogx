@@ -139,12 +139,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.show_dot = "--nodot" not in config
 
     if "--dtdomain" in config:
-        self.dtdomain_fn = join(dirname(__file__), "domains", config["--dtdomain"])
+        self.dtdomain_fn = join(dirname(__file__), "dtdomains", config["--dtdomain"])
     else:
         self.dtdomain_fn = None
         
     if "--dtproblem" in config:
-        self.dtproblem_fn = join(dirname(__file__), "domains", config["--dtproblem"])
+        self.dtproblem_fn = join(dirname(__file__), "dtdomains", config["--dtproblem"])
     else:
         self.dtproblem_fn = None
     
