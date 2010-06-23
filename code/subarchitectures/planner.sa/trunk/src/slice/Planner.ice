@@ -58,7 +58,7 @@ module autogen {
 
     class PDDLAction {
       string name;
-      stringSeq arguments;
+        stringSeq arguments;
     };
 
     /* Decision-Theoretic planning.

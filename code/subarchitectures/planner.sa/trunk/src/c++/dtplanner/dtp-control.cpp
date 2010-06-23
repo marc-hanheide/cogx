@@ -216,17 +216,36 @@ void  DTPCONTROL::post_action(Ice::Int id)
         
         Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
         auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
+//         std::ostringstream oss;
+//         oss<<action;
+//         auto action_as_string = oss.str();
+
+        
+        auto name = std::tr1::get<0>(action.contents());
         std::ostringstream oss;
-        oss<<action;
-        auto action_as_string = oss.str();
+        oss<<name;
+        auto action_name = oss.str();
+        
+        auto _arguments = std::tr1::get<1>(action.contents());
+        std::vector<std::string> action_arguments;
+
+        for(auto argument = _arguments.begin()
+                ; argument != _arguments.end()
+                ; argument++){
+            std::ostringstream oss;
+            oss<<*argument;
+            action_arguments.push_back(oss.str());
+        }
+        
         
         /*Moritz, how do I go about this???*/
         autogen::Planner::PDDLAction* _pddlaction = new autogen::Planner::PDDLAction();
         autogen::Planner::PDDLActionPtr  pddlaction(_pddlaction);
-        pddlaction->name = action_as_string;
+//         pddlaction->name = action_as_string;
+        pddlaction->name = action_name;
+        pddlaction->arguments = action_arguments;
         pyServer->deliverAction(id, pddlaction);
 
-        
         
         /*Moritz, how do I go about this???*/
         //SOMETHINGORRATHERNOTHING.deliverAction(id, pddlaction)
@@ -287,21 +306,34 @@ void DTPCONTROL::configure(const cast::cdl::StringMap& _config, const Ice::Curre
 
 
 void DTPCONTROL::newTask(Ice::Int id,
-                         const std::string& probleFile,
+                         const std::string& problemFile,
                          const std::string& domainFile, const Ice::Current&)
 {
-    Planning::Parsing::parse_domain(domainFile);
-    Planning::Parsing::parse_problem(probleFile);
+    VERBOSER(1000, "for task ::"<<id
+             <<" got problem at :: "<<problemFile
+             <<" and domain at :: "<<domainFile);
 
+
+    VERBOSER(1000, "Parsing domain."<<std::endl);
+    Planning::Parsing::parse_domain(domainFile);
+    
+    VERBOSER(1000, "Parsing problem."<<std::endl);
+    Planning::Parsing::parse_problem(problemFile);
+
+    VERBOSER(1000, "Attempting thread assignments."<<std::endl);
     thread_to_domain[id] = Planning::Parsing::domain_Stack->get__domain_Name();
     thread_to_problem[id] = Planning::Parsing::problem_Stack->get__problem_Name();
     
+    VERBOSER(1000, "Spawning the thread that posts actions to Moritz's system."<<std::endl);
     /*Planning is complete, now start \member{post_action} in a thread.*/
     spawn__post_action__thread(id);
 }
 
 void DTPCONTROL::_cancelTask(Ice::Int id)
 {
+
+    VERBOSER(1000, "Got an attempt to cancel the task :: "<<id<<std::endl);
+    
     /*Kill the thread associated with task \argument{id}.*/
     thread_statuus[id] = false;
     pthread_mutex_unlock(thread_mutex[id].get());
