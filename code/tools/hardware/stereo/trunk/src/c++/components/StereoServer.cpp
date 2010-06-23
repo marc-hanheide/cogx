@@ -330,13 +330,15 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
   // census->printTiming();
   census->getDisparityMap(disparityImg);
 
-  if(medianSize > 0)
-  {
-    IplImage *tmp = cvCloneImage(disparityImg);
-    cvSmooth(disparityImg, tmp, CV_MEDIAN, medianSize);
-    swap(disparityImg, tmp);
-    cvReleaseImage(&tmp);
-  }
+// TODO TODO TODO OpenCV does not support "float-smoothing" anymore!
+// Find another solution!
+//  if(medianSize > 0)
+//  {
+//    IplImage *tmp = cvCloneImage(disparityImg);
+//    cvSmooth(disparityImg, tmp, CV_MEDIAN, medianSize);
+//    swap(disparityImg, tmp);
+//    cvReleaseImage(&tmp);
+//  }
 
   // use OpenCV stereo match (which is pretty bad)
   //stereoCam.DisparityImage(greyImg[LEFT], greyImg[RIGHT], disparityImg);
