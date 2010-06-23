@@ -229,14 +229,18 @@ void  DTPCONTROL::post_action(Ice::Int id)
         auto _arguments = std::tr1::get<1>(action.contents());
         std::vector<std::string> action_arguments;
 
+        VERBOSER(1000, "DTP posting an action :: "<<action_name<<std::endl
+                 <<"Arguments are :: "<<_arguments);
         for(auto argument = _arguments.begin()
                 ; argument != _arguments.end()
                 ; argument++){
             std::ostringstream oss;
             oss<<*argument;
-            action_arguments.push_back(oss.str());
+            auto _argument = oss.str();
+            
+            action_arguments.push_back(_argument);
+            VERBOSER(1000, "Arg :: "<<_argument);
         }
-        
         
         /*Moritz, how do I go about this???*/
         autogen::Planner::PDDLAction* _pddlaction = new autogen::Planner::PDDLAction();
@@ -245,10 +249,6 @@ void  DTPCONTROL::post_action(Ice::Int id)
         pddlaction->name = action_name;
         pddlaction->arguments = action_arguments;
         pyServer->deliverAction(id, pddlaction);
-
-        
-        /*Moritz, how do I go about this???*/
-        //SOMETHINGORRATHERNOTHING.deliverAction(id, pddlaction)
     }
 }
 
