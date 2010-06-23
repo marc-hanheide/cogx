@@ -40,18 +40,18 @@ double SeparableFilter(CudaImage *dataA, CudaImage *dataB,
     return 0.0;
   }
   unsigned int hTimer;
-  CUT_SAFE_CALL(cutCreateTimer(&hTimer));
+  // CUT_SAFE_CALL(cutCreateTimer(&hTimer));
   const unsigned int kernelSize = (2*RADIUS+1)*sizeof(float);
   CUDA_SAFE_CALL(cudaMemcpyToSymbol(d_Kernel, h_Kernel, kernelSize));
-  CUT_SAFE_CALL(cutResetTimer(hTimer));
-  CUT_SAFE_CALL(cutStartTimer(hTimer));
+  // CUT_SAFE_CALL(cutResetTimer(hTimer));
+  // CUT_SAFE_CALL(cutStartTimer(hTimer));
         
 #if 1
   dim3 blockGridRows(iDivUp(width, ROW_TILE_W), height);
   dim3 threadBlockRows(WARP_SIZE + ROW_TILE_W + RADIUS);
   ConvRowGPU<RADIUS><<<blockGridRows, threadBlockRows>>>(d_Temp,
     d_DataA, width, height); //%%%%
-  CUT_CHECK_ERROR("ConvRowGPU() execution failed\n");
+  // CUT_CHECK_ERROR("ConvRowGPU() execution failed\n");
   CUDA_SAFE_CALL(cudaThreadSynchronize());
 #endif
 #if 1
@@ -60,15 +60,15 @@ double SeparableFilter(CudaImage *dataA, CudaImage *dataB,
   dim3 threadBlockColumns(COLUMN_TILE_W, 8);
   ConvColGPU<RADIUS><<<blockGridColumns, threadBlockColumns>>>(d_DataB, 
 							       d_Temp, width, height, COLUMN_TILE_W*8, width*8); 
-  CUT_CHECK_ERROR("ConvColGPU() execution failed\n");
+  // CUT_CHECK_ERROR("ConvColGPU() execution failed\n");
   CUDA_SAFE_CALL(cudaThreadSynchronize());
 #endif
-  CUT_SAFE_CALL(cutStopTimer(hTimer));
-  double gpuTime = cutGetTimerValue(hTimer);
+  // CUT_SAFE_CALL(cutStopTimer(hTimer));
+  double gpuTime = 0; // cutGetTimerValue(hTimer);
 #ifdef VERBOSE
-  printf("SeparableFilter time =        %.2f msec\n", gpuTime);
+  // printf("SeparableFilter time =        %.2f msec\n", gpuTime);
 #endif
-  CUT_SAFE_CALL(cutDeleteTimer(hTimer));
+  // CUT_SAFE_CALL(cutDeleteTimer(hTimer));
   return gpuTime;
 }
 
