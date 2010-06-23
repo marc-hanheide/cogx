@@ -12,6 +12,7 @@ link_directories(${PEEKABOT_INSTALLROOT}/lib)
 Find_package(Cure)
 include_directories(${CURE_INSTALLROOT}/include/cure)
 include_directories(/usr/local/include/opencv)
+include_directories(/usr/include/opencv)
 link_directories(${CURE_INSTALLROOT}/lib/cure)
 
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/components/)
