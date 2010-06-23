@@ -11,7 +11,7 @@
 #include <dlfcn.h>
 
 #include <gl.h>
-#include <SiftGPU.h>
+#include <SiftGPU/SiftGPU.h>
 
 #define PyArray_NDIMS(obj) (((PyArrayObject *)(obj))->nd)
 

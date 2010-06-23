@@ -12,10 +12,10 @@
 #include <vector>
 
 //#include <cutil.h>
-#include "cudaImage.h"
-#include "cudaSift.h"
+#include "CudaSift/cudaImage.h"
+#include "CudaSift/cudaSift.h"
 
-#include "featureUploadH.h"
+#include "CudaSift/featureUploadH.h"
 
 #define PyArray_NDIMS(obj) (((PyArrayObject *)(obj))->nd)
 
