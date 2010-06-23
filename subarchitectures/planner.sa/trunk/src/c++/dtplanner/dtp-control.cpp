@@ -236,6 +236,7 @@ void  DTPCONTROL::post_action(Ice::Int id)
 void DTPCONTROL::start()
 {
     try	{
+        log("Trying to connect to python server...");
         pyServer = getIceServer<autogen::Planner::PythonServer>(m_python_server);
     }
     catch (const Ice::Exception& ex) {
@@ -244,6 +245,7 @@ void DTPCONTROL::start()
     catch (const char* msg) {
         std::cerr << msg << std::endl;
     }
+    log("Planner DTPCONTROL: running");
 }
 
 void DTPCONTROL::stop()
@@ -279,6 +281,8 @@ void DTPCONTROL::configure(const cast::cdl::StringMap& _config, const Ice::Curre
     else {
         m_python_server = "PlannerPythonServer";
     }
+
+    registerIceServer<autogen::Planner::DTPServer, autogen::Planner::DTPServer>(this);
 }
 
 

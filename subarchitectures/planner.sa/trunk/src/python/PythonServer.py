@@ -182,9 +182,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     # test the DT interface
     if self.dtdomain_fn and self.dtproblem_fn:
+        task = Task(task_desc.id)
+        self.tasks[task_desc.id] = task
+        task.dt_calls = 1
         log.info("Calling DT planner with problem '%s' and domain '%s'", self.dtproblem_fn, self.dtdomain_fn)
         self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
         self.getDT().newTask(task_desc.id, self.dtproblem_fn, self.dtdomain_fn);
+        log.info("done")
         return
 
     import task_preprocessor
@@ -355,7 +359,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.replan()
     self.deliver_plan(task)
 
-  def deliverAction(taskId, action, current=None):
+  def deliverAction(self, taskId, action, current=None):
     if taskId not in self.tasks:
       log.warning("Warning: received action for task %d, but no such task found.", taskId)
       return
@@ -363,18 +367,41 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     log.info("received new action from DT")
       
     task = self.tasks[taskId]
+    task.dt_actions += 1
+
+    if task.dt_actions >= 6:
+        log.info("cancelling dt task")
+        self.getDT().cancelTask(taskId)
+        log.info("cancelled.")
+        task.dt_calls + 1
+        if task.dt_calls >= 3:
+            log.info("cancelling planning task")
+            self.getClient().updateStatus(taskId, Planner.Completion.PLANNING_FAILURE)
+        else:
+            log.info("and restarting.")
+            self.getDT().newTask(task_desc.id, self.dtproblem_fn, self.dtdomain_fn);
+            log.info("restart done.")
+        return
+            
+            
 
     #create featurevalues
     uargs = [featvalue_from_object(task.mapltask[arg], task.namedict, task.beliefdict) for arg in action.arguments]
     
-    fullname = action.name + " ".join(action.args)
+    fullname = action.name + " ".join(action.arguments)
     outplan = [Planner.Action(task.taskID, action.name, uargs, fullname, Planner.Completion.PENDING)]
 
     log.info("First action: %s", outplan[0].fullName)
-    
-    self.getClient().deliverPlan(task.taskID, outplan);
 
-  def updateStatus(taskId, status, message, current=None):
+    obs = Planner.Observation("predicate", ["arg1", "arg2"])
+    
+    self.getDT().deliverObservation(taskId, [obs])
+
+    log.info("delivered dummy observation")
+    
+    #self.getClient().deliverPlan(task.taskID, outplan);
+
+  def updateStatus(self, taskId, status, message, current=None):
       if taskId not in self.tasks:
           log.warning("Warning: received state update for task %d, but no such task found.", taskId)
           return
