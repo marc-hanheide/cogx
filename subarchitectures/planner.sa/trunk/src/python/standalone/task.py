@@ -34,6 +34,7 @@ class Task(object):
         #for dt testing only
         self.dt_calls = 0
         self.dt_actions = 0
+        self.dt_orig_id = 0
         # private
         self._state = None
         

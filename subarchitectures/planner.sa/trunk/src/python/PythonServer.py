@@ -182,13 +182,15 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     # test the DT interface
     if self.dtdomain_fn and self.dtproblem_fn:
-        task = Task(task_desc.id)
-        self.tasks[task_desc.id] = task
-        task.dt_calls = 1
-        log.info("Calling DT planner with problem '%s' and domain '%s'", self.dtproblem_fn, self.dtdomain_fn)
         self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
-        self.getDT().newTask(task_desc.id, self.dtproblem_fn, self.dtdomain_fn);
-        log.info("done")
+        for tid in xrange(task_desc.id, task_desc.id+3):
+            task = Task(tid)
+            task.dt_orig_id = task_desc.id
+            self.tasks[tid] = task
+            task.dt_calls = 1
+            log.info("Calling DT planner with problem '%s' and domain '%s'", self.dtproblem_fn, self.dtdomain_fn)
+            self.getDT().newTask(tid, self.dtproblem_fn, self.dtdomain_fn);
+            log.info("done (id=%d)", tid)
         return
 
     import task_preprocessor
@@ -376,7 +378,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
         task.dt_calls + 1
         if task.dt_calls >= 3:
             log.info("cancelling planning task")
-            self.getClient().updateStatus(taskId, Planner.Completion.PLANNING_FAILURE)
+            self.getClient().updateStatus(task.dt_orig_id, Planner.Completion.PLANNING_FAILURE)
         else:
             log.info("and restarting.")
             self.getDT().newTask(task_desc.id, self.dtproblem_fn, self.dtdomain_fn);
