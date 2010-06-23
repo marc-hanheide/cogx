@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 # SIFT implementation with pure CUDA
 # * Matching works.
 # * Extraction works, but is not stable; depends on the image and its size.
+# * References to functions from libcutil.a removed.
 # ########################################################################### 
 
 project(LibCudaSift)
