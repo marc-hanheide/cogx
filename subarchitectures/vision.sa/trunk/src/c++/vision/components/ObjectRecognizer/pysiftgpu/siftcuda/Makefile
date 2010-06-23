@@ -48,7 +48,7 @@ NVCCFLAGS += -Xcompiler -fPIC,-fno-strict-aliasing,-DUNIX
 # NVCCFLAGS += -Xcompiler -O2 # (ubuntu 10.04) --> error with 'weak inline functions'
 LDFLAGS += -fPIC -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib $(PYLIBDIR)
 LDFLAGS += -L/usr/local/cuda/sdk/C/lib
-LIBS += -lcudart -lcutil $(PYLINK)
+LIBS += $(PYLINK) -lcudart # -lcutil 
 
 all : lib
 lib : $(LIBTARGET)

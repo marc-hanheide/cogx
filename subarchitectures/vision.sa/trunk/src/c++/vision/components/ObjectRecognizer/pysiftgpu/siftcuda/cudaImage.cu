@@ -11,17 +11,17 @@
 
 void StartTimer(unsigned int *hTimer)
 {
-  CUT_SAFE_CALL(cutCreateTimer(hTimer));
-  CUT_SAFE_CALL(cutResetTimer(*hTimer));
-  CUT_SAFE_CALL(cutStartTimer(*hTimer));
+  //CUT_SAFE_CALL(cutCreateTimer(hTimer));
+  //CUT_SAFE_CALL(cutResetTimer(*hTimer));
+  //CUT_SAFE_CALL(cutStartTimer(*hTimer));
 }
 
 double StopTimer(unsigned int hTimer)
 {
-  CUT_SAFE_CALL(cutStopTimer(hTimer));
-  double gpuTime = cutGetTimerValue(hTimer);	
-  CUT_SAFE_CALL(cutDeleteTimer(hTimer));
-  return gpuTime;
+  //CUT_SAFE_CALL(cutStopTimer(hTimer));
+  //double gpuTime = cutGetTimerValue(hTimer);	
+  //CUT_SAFE_CALL(cutDeleteTimer(hTimer));
+  return 0; // gpuTime;
 }
 
 int iDivUp(int a, int b) {
