@@ -10,7 +10,6 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
-// #include <cast/core/CASTComponent.hpp>
 #include <cast/architecture/ManagedComponent.hpp>
 
 #include "ObjectRecognizerSrv.hpp" // generated from ice
@@ -18,12 +17,24 @@
 #include "pythonproxy.h"
 #include "RecognizerClient.h"
 
+#include "sifts/Features.h"
+
 namespace cogx { namespace vision {
 
 // CObjectRecognizer is the component that will be created when CAST starts.
 // The ICE server interface (ObjectRecognizerI) will be created in start().
-class CObjectRecognizer: public cast::ManagedComponent, public CObjectRecognizerMethods
+class CObjectRecognizer:
+   public cast::ManagedComponent,
+   public CObjectRecognizerMethods
 {
+private:
+   CPyProxy m_pyRecognizer;
+   CSiftExtractor *m_pSiftExtractor;
+   CSiftMatcher   *m_pSiftMatcher;
+
+private:
+   void startIceServer();
+
 public:
    CObjectRecognizer();
    ~CObjectRecognizer();
@@ -42,13 +53,6 @@ public:
    virtual void FindMatchingObjects(const Video::Image&,
          const int x0, const int y0, const int width, const int height,
          ObjectRecognizerIce::RecognitionResultSeq&);
-
-private:
-   CPyProxy m_pyRecognizer;
-
-private:
-   void startIceServer();
-
 };
 
 
