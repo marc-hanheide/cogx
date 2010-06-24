@@ -60,6 +60,7 @@ class PreferenceCompiler(Translator):
         self.costIncrease = 0
         self.prefCondScope = None
         self.prefFound = False
+        self.totalCostFound = False
 
     def translate_action(self, action, domain):    
         self.prefFound = False
@@ -81,12 +82,27 @@ class PreferenceCompiler(Translator):
 
         action1.name = "ignore-preferences-" + action1.name
 
-        costTerm = predicates.Term(self.costIncrease)
+        self.totalCostFound = False
         totalCostTerm = predicates.Term(builtin.total_cost,[])
-        cost_eff = effects.SimpleEffect(builtin.increase,[totalCostTerm,costTerm], self.prefCondScope)
-        effs = [action1.effect,cost_eff]
-        new_eff = effects.ConjunctiveEffect(effs,action1.effect.scope)
-        action1.effect = new_eff
+
+        @visitors.replace
+        def visitor3(eff, parts):
+            if isinstance(eff, effects.SimpleEffect):
+                if eff.predicate == builtin.increase:
+                    if eff.args[0] == totalCostTerm:
+                        costTerm2 = predicates.Term(self.costIncrease+eff.args[1].object.value)
+                        cost_eff2 = effects.SimpleEffect(builtin.increase,[totalCostTerm,costTerm2], eff.scope)
+                        self.totalCostFound = True
+                        return cost_eff2
+
+        action1.effect = action1.effect.visit(visitor3)
+
+        if not self.totalCostFound:
+            costTerm = predicates.Term(self.costIncrease+1)
+            cost_eff = effects.SimpleEffect(builtin.increase,[totalCostTerm,costTerm], self.prefCondScope)
+            effs = [action1.effect,cost_eff]
+            new_eff = effects.ConjunctiveEffect(effs,action1.effect.scope)
+            action1.effect = new_eff
 
         action2 = action.copy(domain)
 
