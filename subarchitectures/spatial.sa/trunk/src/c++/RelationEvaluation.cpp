@@ -17,6 +17,24 @@ struct ActiveFace {
   double length;
 };
 
+double patchThreshold = 0.030;
+
+// Distance at which onness drops by half
+double distanceFalloffOutside			= 0.015; 
+double distanceFalloffInside			= 0.010; 
+
+double supportCOMContainmentSteepness		= 1;
+double supportCOMContainmentOffset		= 0.5;
+
+//Old params;unused
+double squareDistanceWeight			= 1.0;
+double supportCOMContainmentWeight		= 1.0;
+double bottomCOMContainmentOffset		= 0.0;
+double bottomCOMContainmentWeight		= 1.0;
+double bottomCOMContainmentSteepness		= 1.0;
+double planeInclinationWeight			= 1.0;
+double overlapWeight				= 1.0;
+
 double
 computePolyhedronVolume(const Polyhedron &polyhedron)
 {

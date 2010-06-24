@@ -1424,7 +1424,7 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
 {
   //Find all bisectors
   std::vector<Vector3>bisectors;
-  std::vector<Vector3>edgeNormals;
+  std::vector<Vector3>edgeNormals; // Pointing inward (left) from each edge [i+1]-[i]
   bisectors.reserve(polygon.size());
   edgeNormals.reserve(polygon.size());
   Vector3 up = cross(polygon[1] - polygon[0], polygon.back() - polygon[0]);
@@ -1452,13 +1452,22 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
 
   for (unsigned int i = 0; i < polygon.size(); i++) {
     for (unsigned int j = i+1; j < polygon.size(); j++) {
+      // Vector from i to j
       Vector3 difference = polygon[j] - polygon[i];
 
+      // Component of above vector perpendicular to the
+      // bisector at j
       Vector3 normalVector =
 	difference - bisectors[j] * dot(difference, bisectors[j]);
+
       double normalLength = length(normalVector);
-      double intersectionParam =  // 0 - inf
-	normalLength*normalLength / (dot(normalVector, bisectors[i]));
+
+      // Inverse cosine of angle between bisector[i] and normalVector
+      double invCosine = normalLength / (dot(normalVector, bisectors[i]));
+
+      // Distance along bisector[i] to intersection with bisector[j]
+      double intersectionParam =  normalLength * invCosine;
+
       double intersectionNormalDistance = 
 	intersectionParam * dot(edgeNormals[i], bisectors[i]);
       if (intersectionNormalDistance > 0.0) {
@@ -1467,14 +1476,6 @@ getMaxPolygonClearance(const std::vector<Vector3> &polygon)
 	}
 	if (intersectionNormalDistance < minPositiveDistanceThisBisector[i]) {
 	  minPositiveDistanceThisBisector[i] = intersectionNormalDistance;
-	}
-	Vector3 intersectionPoint = polygon[i] + bisectors[i]*intersectionParam;
-	double otherParameter = dot(intersectionPoint - polygon[j], bisectors[j]);
-	if (otherParameter > 0.0) {
-	  if (!equals(otherParameter, intersectionParam, 0.001)) {
-	    cout << "Error! Something not right!";
-	    return 0.0;
-	  }
 	}
       }
     }
