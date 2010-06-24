@@ -44,11 +44,20 @@
 	  </slice2java>
 	</target>
 
+	<!-- =================================================================== -->
+        <!-- slice file compilation                                              -->
+        <!-- =================================================================== -->
+        <target name="compile-slice" depends="slice" description="compiles the source code">
+                <javac srcdir="${src.dir}/VisionData" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+                                <classpath refid="build.classpath"/>
+                                </javac>
+        </target>
+
 	
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice" description="compiles the source code">
+	<target name="compile" depends="compile-slice" description="compiles the source code">
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
 		<classpath refid="build.classpath"/> </javac>
 	</target>
@@ -57,7 +66,7 @@
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
 	<target name="clean">
-
+                <delete dir="${src.dir}/**"/>
 	</target>
 
 
