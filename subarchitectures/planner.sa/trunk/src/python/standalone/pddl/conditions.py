@@ -168,10 +168,10 @@ class PreferenceCondition(Condition):
         self.scope = _scope
 
     def copy(self, new_scope=None, new_parts = None, copy_instance=False):
-        if not new_parts:
-            new_parts = [self.cond]
         if not new_scope:
             new_scope = self.scope
+        if not new_parts:
+            new_parts = [self.cond.copy(new_scope=new_scope, copy_instance=copy_instance)]
         return PreferenceCondition(self.penalty, new_parts[0], new_scope)
 
     def negate(self):
