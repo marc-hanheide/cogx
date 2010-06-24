@@ -16,7 +16,7 @@
  
 (:action load-truck
   :agent (?truck)
-  :parameters (?obj ?loc)
+  :parameters (?obj ?loc ?t)
   :precondition
    (and 
         (package ?obj) 
@@ -24,6 +24,7 @@
         (location ?loc)
         (at ?truck ?loc)
         (at ?obj ?loc)
+        (preference 20 (and (truck ?t) (not (= ?truck ?t)) (at ?t ?loc)))
    )
   :effect
    (and (not (at ?obj ?loc)) (in ?obj ?truck)))
