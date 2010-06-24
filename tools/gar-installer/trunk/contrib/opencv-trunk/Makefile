@@ -1,10 +1,12 @@
-GARNAME = opencv
-GARVERSION = trunk
+GARNAME = OpenCV
+GARVERSION = 2.1.0
 CATEGORIES = bootstrap
-DISTFILES = $(GARNAME).tgz
+DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
 MAINTAINER = mhanheid
 
-MASTER_SITES =  svnhttps://opencvlibrary.svn.sourceforge.net/svnroot/opencvlibrary/trunk/opencv/
+MASTER_SITES =  http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.1/
+#svnhttps://opencvlibrary.svn.sourceforge.net/svnroot/opencvlibrary/trunk/opencv/
+
 
 
 LIBDEPS = 
@@ -25,14 +27,14 @@ include ../../gar.extend.mk
 
 CONFIGURE_ARGS = -D OPENCV_CONFIG_FILE_INCLUDE_DIR:PATH=$(prefix)/include/opencv -D CMAKE_INSTALL_PREFIX:PATH=$(prefix)
 
-checksum-$(DISTFILES):  
-	true
-checksum-$(PATCHFILES): 
-	true
-	
-SVN_REVISION=-r 1845
+#checksum-$(DISTFILES):  
+#	true
+#checksum-$(PATCHFILES): 
+#	true
 
-	
-	
+SVN_REVISION=-r 2218
+
+
+
 
 
