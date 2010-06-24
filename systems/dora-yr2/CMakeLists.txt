@@ -50,12 +50,6 @@ add_subdirectory (subarchitectures/motivation.sa)
 endif(BUILD_SA_MOTIVATION)
 
 
-option(BUILD_SA_NAV "Build navigation subarchitecure" NO)
-if(BUILD_SA_NAV)
-add_subdirectory (subarchitectures/nav.sa)
-endif(BUILD_SA_NAV)
-
-
 option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
 if(BUILD_HAL_ROBOT)
 add_subdirectory (tools/hardware/robotbase)
