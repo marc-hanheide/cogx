@@ -37,7 +37,6 @@ class LocalGridMap;
 
 namespace spatial {
 
-  enum SpatialRelationType {RELATION_ON, RELATION_IN};
 /**
  * This class monitors the sensory layer for objects and their poses, and writes
  * spatial relation structs to WM as appropriate
@@ -141,10 +140,6 @@ protected:
       const std::string &objectLabel);
   void sampleOnnessForObject(const std::string &supLabel, 
       const std::string &onLabel);
-  void sampleBinaryRelationRecursively(const std::vector<spatial::SpatialRelationType> &relations,
-      const std::vector<spatial::Object *> &objects,
-    int currentLevel, Cure::LocalGridMap<double> &map, double &total,
-    const std::vector<Vector3> &triangle = std::vector<Vector3>(), double baseOnness = 1.0);
 
   void newTiltAngleRequest(const cast::cdl::WorkingMemoryChange &);
   void newPriorRequest(const cast::cdl::WorkingMemoryChange &);

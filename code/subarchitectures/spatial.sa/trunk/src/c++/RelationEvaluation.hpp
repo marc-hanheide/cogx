@@ -1,11 +1,11 @@
 #ifndef RelationEvaluation_hpp
 #define RelationEvaluation_hpp
 
-#include <SpatialData.hpp>
+//#include <SpatialData.hpp>
 #include <vector>
-//#include <Math.hpp>
+#include <Math.hpp>
 
-using namespace SpatialData;
+//using namespace SpatialData;
 using namespace cogx::Math;
 
 namespace spatial {
@@ -34,6 +34,8 @@ extern double overlapWeight;
 
 
 enum SpatialObjectType {OBJECT_PLANE, OBJECT_BOX, OBJECT_CYLINDER, OBJECT_SPHERE, OBJECT_HOLLOW_BOX};
+
+enum SpatialRelationType {RELATION_ON, RELATION_IN};
 
 struct Object {
   SpatialObjectType type;
