@@ -13,6 +13,7 @@ from predicates import *
 class Translator(object):
     def __init__(self, **kwargs):
         self.depends = []
+        
     def translate(self, entity, **kwargs):
         t0 = time.time()
         for translator in self.depends:
@@ -95,6 +96,24 @@ class ADLCompiler(Translator):
     def __init__(self, **kwargs):
         self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs), SoftGoalCompiler(**kwargs)]
 
+    @staticmethod
+    def condition_visitor(cond, parts):
+        if isinstance(cond, conditions.Truth):
+            return conditions.Conjunction([])
+        return visitors.flatten(cond, parts)
+        
+    def translate_action(self, action, domain=None):
+        a2 = action.copy(newdomain=domain)
+        
+        a2.precondition = visitors.visit(a2.precondition, ADLCompiler.condition_visitor)
+        a2.replan = visitors.visit(a2.replan, ADLCompiler.condition_visitor)
+        return a2
+
+    def translate_axiom(self, axiom, domain=None):
+        a2 = axiom.copy(newdomain=domain)
+        a2.condition = visitors.visit(a2.condition, ADLCompiler.condition_visitor)
+        return a2
+
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
         p2 = problem.Problem(_problem.name, _problem.objects, [], _problem.goal, domain, _problem.optimization, _problem.opt_func)
@@ -102,19 +121,20 @@ class ADLCompiler(Translator):
             if not i.negated:
                 p2.init.append(i.copy(new_scope=p2))
 
+        p2.goal = visitors.visit(p2.goal, ADLCompiler.condition_visitor)
         #make sure that the goal is in the form FD likes (exactly one "and" at the top level)
-        if not isinstance(p2.goal, conditions.Conjunction):
-            p2.goal = conditions.Conjunction([p2.goal])
-        else:
-            newparts = []
-            open_parts = p2.goal.parts[:]
-            while open_parts:
-                part = open_parts.pop(0)
-                if isinstance(part, conditions.Conjunction):
-                    open_parts += part.parts
-                else:
-                    newparts.append(part)
-            p2.goal = conditions.Conjunction(newparts)
+        # if not isinstance(p2.goal, conditions.Conjunction):
+        #     p2.goal = conditions.Conjunction([p2.goal])
+        # else:
+        #     newparts = []
+        #     open_parts = p2.goal.parts[:]
+        #     while open_parts:
+        #         part = open_parts.pop(0)
+        #         if isinstance(part, conditions.Conjunction):
+        #             open_parts += part.parts
+        #         else:
+        #             newparts.append(part)
+        #     p2.goal = conditions.Conjunction(newparts)
             
         return p2
 
