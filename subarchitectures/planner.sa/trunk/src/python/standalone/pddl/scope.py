@@ -221,7 +221,7 @@ class Scope(dict):
 
         Arguments:
         obj -- TypedObject or Parameter to add."""
-        if isinstance(obj, (tuple, list)):
+        if isinstance(obj, (tuple, list, set)):
             for o in obj:
                 dict.__setitem__(self, o.name, o)
         else:

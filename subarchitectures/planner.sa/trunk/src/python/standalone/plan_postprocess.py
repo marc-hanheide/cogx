@@ -130,8 +130,11 @@ def make_po_plan(actions, task):
     
     for starttime, action in actions:
         t1 = time.time()
-        if action.startswith("ignore-soft-goal-"):
+        if action.startswith("ignore-preference-"):
             continue
+
+        if action.startswith("ignore-preferences-"):
+            action = action[len("ignore-preferences-"):]
 
         action, args = MAPLAction(action, task)
         pnode = getRWDescription(action, args, state, starttime)

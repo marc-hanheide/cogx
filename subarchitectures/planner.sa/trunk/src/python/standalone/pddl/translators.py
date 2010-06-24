@@ -38,8 +38,8 @@ class Translator(object):
     def translate_domain(self, _domain):
         dom = domain.Domain(_domain.name, _domain.types.copy(), set(_domain.constants), _domain.predicates.copy(), _domain.functions.copy(), [], [])
         dom.requirements = _domain.requirements.copy()
-        dom.actions = [self.translate_action(a, dom) for a in _domain.actions]
-        dom.axioms = [self.translate_axiom(a, dom) for a in _domain.axioms]
+        dom.actions += [self.translate_action(a, dom) for a in _domain.actions]
+        dom.axioms += [self.translate_axiom(a, dom) for a in _domain.axioms]
         dom.stratify_axioms()
         dom.name2action = None
         return dom
@@ -48,10 +48,57 @@ class Translator(object):
         domain = self.translate_domain(_problem.domain)
         return problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
 
-class SoftGoalCompiler(Translator):
+class IntermediateCompiler(Translator):
     def __init__(self, **kwargs):
         self.depends = []
         self.counter = 0
+
+class PreferenceCompiler(Translator):
+    def __init__(self, **kwargs):
+        self.depends = [IntermediateCompiler(**kwargs)]
+        self.counter = 0
+        self.costIncrease = 0
+        self.prefCondScope = None
+        self.prefFound = False
+
+    def translate_action(self, action, domain):    
+        self.prefFound = False
+        action1 = action.copy(domain)
+
+        @visitors.copy
+        def visitor1(cond, parts):
+            if isinstance(cond, conditions.PreferenceCondition):
+                assert not self.prefFound, "only one preference per precondition supported"
+                self.prefFound = True
+                self.costIncrease = cond.penalty
+                self.prefCondScope = cond.scope
+                return conditions.Conjunction([])
+
+        action1.precondition = action1.precondition.visit(visitor1)
+
+        if not self.prefFound:
+            return action1
+
+        action1.name = "ignore-preferences-" + action1.name
+
+        costTerm = predicates.Term(self.costIncrease)
+        totalCostTerm = predicates.Term(builtin.total_cost,[])
+        cost_eff = effects.SimpleEffect(builtin.increase,[totalCostTerm,costTerm], self.prefCondScope)
+        effs = [action1.effect,cost_eff]
+        new_eff = effects.ConjunctiveEffect(effs,action1.effect.scope)
+        action1.effect = new_eff
+
+        action2 = action.copy(domain)
+
+        @visitors.copy
+        def visitor2(cond, parts):
+            if isinstance(cond, conditions.PreferenceCondition):
+                return cond.cond
+
+        action2.precondition = action2.precondition.visit(visitor2)
+        domain.actions.append(action2)
+
+        return action1
 
     def translate_problem(self, _problem):
         domain = self.translate_domain(_problem.domain)
@@ -61,9 +108,9 @@ class SoftGoalCompiler(Translator):
 
         @visitors.replace
         def visitor(cond, parts):
-            if isinstance(cond, conditions.SoftGoalCondition):
-                help_lit_str = "soft-goal-%i-ignored" % self.counter
-                action_name = "ignore-soft-goal-%i" % self.counter
+            if isinstance(cond, conditions.PreferenceCondition):
+                help_lit_str = "preference-%i-ignored" % self.counter
+                action_name = "ignore-preference-%i" % self.counter
                 pred = predicates.Predicate(help_lit_str,[])
                 p2.domain.predicates.add(pred)
 
@@ -79,8 +126,9 @@ class SoftGoalCompiler(Translator):
                 help_eff = effects.SimpleEffect(pred,[], cond.scope)
                 simple_effs = [cost_eff,help_eff]
 
+                precond = help_lit.negate()
                 eff = effects.ConjunctiveEffect(simple_effs, cond.scope)
-                help_act = actions.Action(action_name,[],None,eff,p2.domain)
+                help_act = actions.Action(action_name,[],precond,eff,p2.domain)
                 p2.domain.actions.append(help_act)
                 p2.actions.append(help_act)
 
@@ -94,7 +142,7 @@ class SoftGoalCompiler(Translator):
     
 class ADLCompiler(Translator):
     def __init__(self, **kwargs):
-        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs), SoftGoalCompiler(**kwargs)]
+        self.depends = [ModalPredicateCompiler(**kwargs), ObjectFluentCompiler(**kwargs), CompositeTypeCompiler(**kwargs), PreferenceCompiler(**kwargs)]
 
     @staticmethod
     def condition_visitor(cond, parts):
