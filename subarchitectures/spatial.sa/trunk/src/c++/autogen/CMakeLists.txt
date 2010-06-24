@@ -26,6 +26,13 @@ add_library(FrontierInterface SHARED ${GEN_CPP_FI})
 target_link_libraries(FrontierInterface CDL NavData SpatialData)
 install(TARGETS FrontierInterface LIBRARY DESTINATION lib)
 
+cast_slice2cpp(GEN_CPP_ND GEN_HPP_ND NavData.ice ${CAST_SLICE_DIR}
+				 ${COGX_ROOT}/tools/math/src/slice)
+add_library(NavData SHARED ${GEN_CPP_ND})
+target_link_libraries(NavData CDL)
+target_link_libraries(NavData Math)
+install(TARGETS NavData LIBRARY DESTINATION lib)
+
 
 if(BUILD_SA_BINDING)
   cast_slice2cpp(GEN_CPP_BE GEN_HPP_BE Marshalling.ice ${CAST_SLICE_DIR}
