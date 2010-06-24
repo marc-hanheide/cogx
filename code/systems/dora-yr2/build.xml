@@ -38,8 +38,8 @@
  		<ant target="${target}" dir="tools/beliefs" />
 		<!-- <ant target="${target}" dir="subarchitectures/binder" />  -->
  		<!-- <ant target="${target}" dir="subarchitectures/nav.sa" />  -->
-  		<!-- <ant target="${target}" dir="subarchitectures/spatial.sa" /> -->
- 		<!-- <ant target="${target}" dir="subarchitectures/vision.sa" />  -->
+  		<ant target="${target}" dir="subarchitectures/spatial.sa" />
+ 		<ant target="${target}" dir="subarchitectures/vision.sa" />
  		<!-- <ant target="${target}" dir="subarchitectures/planner.sa" />  -->
 		<!-- <ant target="${target}" dir="subarchitectures/coma.sa" />  -->
  		<!-- <ant target="${target}" dir="subarchitectures/motivation.sa" /> -->
