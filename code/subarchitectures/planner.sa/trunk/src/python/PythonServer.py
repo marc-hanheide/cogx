@@ -388,12 +388,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
             
 
     #create featurevalues
-    uargs = [featvalue_from_object(task.mapltask[arg], task.namedict, task.beliefdict) for arg in action.arguments]
+    #uargs = [featvalue_from_object(task.mapltask[arg], task.namedict, task.beliefdict) for arg in action.arguments]
     
     fullname = action.name + " ".join(action.arguments)
-    outplan = [Planner.Action(task.taskID, action.name, uargs, fullname, Planner.Completion.PENDING)]
+    #outplan = [Planner.Action(task.taskID, action.name, uargs, fullname, Planner.Completion.PENDING)]
 
-    log.info("First action: %s", outplan[0].fullName)
+    log.info("First action: %s", fullname)
 
     obs = Planner.Observation("predicate", ["arg1", "arg2"])
     
