@@ -24,8 +24,8 @@ BUILD_SCRIPTS = $(WORKSRC)/Makefile
 INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
-
-CONFIGURE_ARGS = -D OPENCV_CONFIG_FILE_INCLUDE_DIR:PATH=$(prefix)/include/opencv -D CMAKE_INSTALL_PREFIX:PATH=$(prefix)
+#-D OPENCV_CONFIG_FILE_INCLUDE_DIR:PATH=$(prefix)/include/opencv
+CONFIGURE_ARGS =  -D CMAKE_INSTALL_PREFIX:PATH=$(prefix)
 
 #checksum-$(DISTFILES):  
 #	true
