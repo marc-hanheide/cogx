@@ -471,7 +471,7 @@ class State(dict):
         if term.__class__ == ConstantTerm:
             return term.object
         if term.__class__ == VariableTerm:
-            assert term.is_instantiated(), "%s is not instantiated" % str(term)
+            assert term.is_instantiated(), "%s is not instantiated" % str(term.object)
             return term.get_instance()
         if term.__class__ == FunctionVariableTerm:
             assert term.is_instantiated(), "%s is not instantiated" % str(term)
@@ -679,7 +679,7 @@ class State(dict):
             return False, [], []
             
         def checkConditionVisitor(cond):
-            if isinstance(cond, conditions.SoftGoalCondition):
+            if isinstance(cond, conditions.PreferenceCondition):
                 result, svars, univ = checkConditionVisitor(cond.cond)
                 if not result:
                     return True, [], []

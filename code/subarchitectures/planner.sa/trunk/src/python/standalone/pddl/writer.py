@@ -200,8 +200,10 @@ class Writer(object):
                 head = "forall (%s)" % self.write_typelist(cond.values())
             elif cond.__class__ == conditions.ExistentialCondition:
                 head = "exists (%s)" % self.write_typelist(cond.values())
-            elif cond.__class__ == conditions.SoftGoalCondition:
-                head = "soft-goal %s" % cond.penalty
+            elif cond.__class__ == conditions.PreferenceCondition:
+                head = "preference %s" % cond.penalty
+            elif cond.__class__ == conditions.Truth:
+                head = ""
             elif cond.__class__ == durative.TimedCondition:
                 if cond.time == "start":
                     head = "at start"

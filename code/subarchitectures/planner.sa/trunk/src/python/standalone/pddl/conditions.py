@@ -57,6 +57,25 @@ class Condition(object):
                 return [p for p in vars if p not in cond.args]
         return set(self.visit(visitor))
 
+    def get_constants(self):
+        """Return the set of objects/constants that are used in this Condition."""
+        
+        def visitor(cond, results=[]):
+            if isinstance(cond, predicates.Term):
+                if cond.__class__ == predicates.FunctionTerm:
+                    return sum(results, [])
+                if isinstance(cond, predicates.ConstantTerm):
+                    return [cond.object]
+                return []
+            if isinstance(cond, LiteralCondition):
+                return sum([t.visit(visitor) for t in cond.args], [])
+            if isinstance( cond, JunctionCondition):
+                return sum(results, [])
+            if isinstance(cond, QuantifiedCondition):
+                vars = results[0]
+                return [p for p in vars if p not in cond.args]
+        return set(self.visit(visitor))
+
     def has_class(self, _class):
         """Return True if any descendant of this Condition is of class '_class'.
 
@@ -136,13 +155,13 @@ class Condition(object):
             soft_goal_cond = it.get(list, "condition")
             cond = Condition.parse(iter(soft_goal_cond), scope)
             it.no_more_tokens()
-            return SoftGoalCondition(penalty, cond, scope)
+            return PreferenceCondition(penalty, cond, scope)
         else:
             return LiteralCondition.parse(it.reset(), scope)
 
         raise NotImplementedError
 
-class SoftGoalCondition(Condition):
+class PreferenceCondition(Condition):
     def __init__(self, _penalty, _cond, _scope = None):
         self.penalty = _penalty
         self.cond = _cond
@@ -153,7 +172,7 @@ class SoftGoalCondition(Condition):
             new_parts = [self.cond]
         if not new_scope:
             new_scope = self.scope
-        return SoftGoalCondition(self.penalty, new_parts[0], new_scope)
+        return PreferenceCondition(self.penalty, new_parts[0], new_scope)
 
     def negate(self):
         raise NotImplementedError
