@@ -611,17 +611,18 @@ SampleCloud::composit(const SampleCloud &B) const {
   int CYL = 2 * C.yExtent + 1;
   int CZL = 2 * C.zExtent + 1;
 
-  int nOrientations1 = A.object1Orientations.size();
-  int nOrientations2 = B.object2Orientations.size();
-  int nSummedOrientations = A.object2Orientations.size();
+  const int nOrientations1 = A.object1Orientations.size();
+  const int nOrientations2 = B.object2Orientations.size();
+  const int nSummedOrientations = A.object2Orientations.size();
 
-  int valuesPer3DPoint = nOrientations1 * nOrientations2;
+  const int valuesPer3DPoint = nOrientations1 * nOrientations2;
 
   // Now, loop over all the sample points in A
 
   long samplesInA = AYL * AZL * (2*A.xExtent+1);
   long samplesInB = BYL * BZL * (2*B.xExtent+1);
 
+  double tmp[1000]; //FIXME
   for (int a = 0, ca = 0; a < samplesInA; a++, ca+=AStepInC) {
     long pointOffsetInA = valuesPer3DPoint * a;
     for (int b = 0, cb = 0; b < samplesInB; b++, cb+=BStepInC) {
@@ -629,10 +630,13 @@ SampleCloud::composit(const SampleCloud &B) const {
       long pointOffsetInC = valuesPer3DPoint * (ca+cb);
 
       for (int i = 0; i < nOrientations1; i++) {
+	for (int k = 0; k < nSummedOrientations; k++) {
+	  tmp[k] = A.values[pointOffsetInA + nSummedOrientations * i + k];
+	}
 	for (int j = 0; j < nOrientations2; j++) {
 	  double sum = 0.0;
 	  for (int k = 0; k < nSummedOrientations; k++) {
-	    sum += A.values[pointOffsetInA + nSummedOrientations * i + k]
+	    sum += tmp[k] 
 	      * B.values[pointOffsetInB + nOrientations2 * k + j];
 	  }
 	  C.values[pointOffsetInC + nOrientations2 * i + j] += sum;
