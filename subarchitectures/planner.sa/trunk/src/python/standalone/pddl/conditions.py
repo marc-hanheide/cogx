@@ -61,6 +61,10 @@ class Condition(object):
         """Return the set of objects/constants that are used in this Condition."""
         
         def visitor(cond, results=[]):
+            if isinstance(cond, IntermediateCondition):
+                return results[0]
+            if isinstance (cond, PreferenceCondition):
+                return results[0]
             if isinstance(cond, predicates.Term):
                 if cond.__class__ == predicates.FunctionTerm:
                     return sum(results, [])
@@ -152,14 +156,38 @@ class Condition(object):
             return QuantifiedCondition.parse(it, scope, ExistentialCondition)
         elif tag == "soft-goal" or tag == "preference":
             penalty = float(it.get().token.string)
-            soft_goal_cond = it.get(list, "condition")
-            cond = Condition.parse(iter(soft_goal_cond), scope)
+            preferenceCond = it.get(list, "condition")
+            cond = Condition.parse(iter(preferenceCond), scope)
             it.no_more_tokens()
             return PreferenceCondition(penalty, cond, scope)
+        elif tag == "intermediate" or tag == "sometime":
+            intermediateCond = it.get(list, "condition")
+            cond = Condition.parse(iter(intermediateCond), scope)
+            it.no_more_tokens()
+            return IntermediateCondition(cond, scope)
         else:
             return LiteralCondition.parse(it.reset(), scope)
 
         raise NotImplementedError
+
+class IntermediateCondition(Condition):
+    def __init__(self, _cond, _scope = None):
+        self.cond = _cond
+        self.scope = _scope
+
+    def copy(self, new_scope=None, new_parts = None, copy_instance=False):
+        if not new_scope:
+            new_scope = self.scope
+        if not new_parts:
+            new_parts = [self.cond.copy(new_scope=new_scope, copy_instance=copy_instance)]
+        return IntermediateCondition(new_parts[0], new_scope)
+
+    #TODO: negate!
+    def negate(self):
+        raise NotImplementedError
+
+    def visit(self, fn):
+        return fn(self, [self.cond.visit(fn)])
 
 class PreferenceCondition(Condition):
     def __init__(self, _penalty, _cond, _scope = None):

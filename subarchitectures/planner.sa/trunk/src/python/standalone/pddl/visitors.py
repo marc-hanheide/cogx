@@ -30,6 +30,8 @@ def replace(f):
             elem.condition = results[0]
         elif isinstance(elem, (effects.UniversalEffect, effects.ConditionalEffect)):
             elem.effect = results[0]
+        elif isinstance(elem, (conditions.PreferenceCondition, conditions.IntermediateCondition)):
+            elem.cond = results[0]
         return elem
     return replace_visitor
 

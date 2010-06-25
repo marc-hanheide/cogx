@@ -684,6 +684,11 @@ class State(dict):
                 if not result:
                     return True, [], []
                 return result, svars, univ
+            if isinstance(cond, conditions.IntermediateCondition):
+                result, svars, univ = checkConditionVisitor(cond.cond)
+                if not result:
+                    return True, [], []
+                return result, svars, univ
             if isinstance(cond, conditions.LiteralCondition):
                 if relevantVars is not None:
                     self.read_svars.clear()
