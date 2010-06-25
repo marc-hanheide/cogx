@@ -24,10 +24,10 @@
         (location ?loc)
         (at ?truck ?loc)
         (at ?obj ?loc)
-        (preference 20 (and (truck ?t) (not (= ?truck ?t)) (at ?t ?loc)))
+      ;  (preference -2 (and (truck ?t) (not (= ?truck ?t)) (at ?t ?loc)))
    )
   :effect
-   (and (not (at ?obj ?loc)) (in ?obj ?truck)))
+   (and (not (at ?obj ?loc)) (in ?obj ?truck) (increase (total-cost ) 7)))
 
 (:action load-airplane
   :agent (?airplane)
