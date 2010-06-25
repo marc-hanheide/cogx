@@ -53,6 +53,11 @@ class Problem(domain.Domain):
         self.objects.add(object)
         self.add(object)
 
+    def remove_object(self, object):
+        if object.name in self:
+            self.objects.remove(self[object.name])
+            del self[object.name]
+
     def get_all_objects(self, type):
         if isinstance(type, types.FunctionType):
             for func in self.functions:

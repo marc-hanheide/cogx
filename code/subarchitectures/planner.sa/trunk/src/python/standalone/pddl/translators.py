@@ -53,6 +53,41 @@ class IntermediateCompiler(Translator):
         self.depends = []
         self.counter = 0
 
+    def translate_problem(self, _problem):
+        domain = self.translate_domain(_problem.domain)
+        p2 = problem.Problem(_problem.name, _problem.objects, _problem.init, _problem.goal, domain, _problem.optimization, _problem.opt_func)
+
+        self.counter = 0
+
+        @visitors.replace
+        def visitor(cond, parts):
+            if isinstance(cond, conditions.IntermediateCondition):
+                helpLitStr = "intermediate-%i-fullfilled" % self.counter
+                actionName = "fullfill-intermediate-%i" % self.counter
+                pred = predicates.Predicate(helpLitStr,[])
+                p2.domain.predicates.add(pred)
+
+                goalToken = conditions.LiteralCondition(pred,[], cond.scope)
+
+                eff = effects.SimpleEffect(pred,[],cond.scope)
+                consts = cond.get_constants()
+                p2.domain.constants |= consts
+                p2.domain.add(consts)
+
+                for c in consts:
+                    p2.remove_object(c)
+
+                helpAct = actions.Action(actionName, [], cond.cond, eff, p2.domain)
+                p2.domain.actions.append(helpAct)
+                p2.actions.append(helpAct)
+
+                self.counter += 1
+                return goalToken
+
+        p2.goal = p2.goal.visit(visitor)
+        
+        return p2
+
 class PreferenceCompiler(Translator):
     def __init__(self, **kwargs):
         self.depends = [IntermediateCompiler(**kwargs)]
@@ -62,7 +97,7 @@ class PreferenceCompiler(Translator):
         self.prefFound = False
         self.totalCostFound = False
 
-    def translate_action(self, action, domain):    
+    def translate_action(self, action, domain):
         self.prefFound = False
         action1 = action.copy(domain)
 
