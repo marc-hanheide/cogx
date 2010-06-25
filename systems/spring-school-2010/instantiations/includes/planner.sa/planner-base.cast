@@ -3,12 +3,12 @@
 # COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 
 
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain ./spring-school-implementation/domains/springtest.mapl --log
+# COMPONENT PYTHON PlannerPythonServer PythonServer --domain ./spring-school-implementation/domains/springtest.mapl --log
 
 
-# COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug  --nodot --dtdomain test3.domain.pddl --dtproblem test3.problem.pddl
+COMPONENT PYTHON PlannerPythonServer PythonServer --log --debug  --nodot --dtdomain test3.domain.pddl --dtproblem test3.problem.pddl
 
-# COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 
 SUBARCHITECTURE planner.sa
 
