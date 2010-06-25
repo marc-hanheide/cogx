@@ -82,7 +82,7 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
-add_cast_component(ObjectRelationManager ObjectRelationManager.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
+add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
