@@ -69,6 +69,9 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
     Mutex mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t());
     thread_mutex[id] = mutex;
     
+    Mutex running_mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t());
+    thread_running_mutex[id] = running_mutex;
+    
     
     
     threads[id] = thread;
@@ -209,8 +212,15 @@ void  DTPCONTROL::post_action(Ice::Int id)
 {
     while(thread_statuus[id]){
         pthread_mutex_lock(thread_mutex[id].get());
+        pthread_mutex_lock(thread_running_mutex[id].get());
 
-        if(!thread_statuus[id]){return;} 
+
+        if(!thread_statuus[id]){
+            pthread_mutex_unlock(thread_mutex[id].get());
+            pthread_mutex_unlock(thread_running_mutex[id].get());
+            return;
+        }
+        
         
         if(thread_to_domain.find(id) == thread_to_domain.end()) return;
         
@@ -249,6 +259,9 @@ void  DTPCONTROL::post_action(Ice::Int id)
         pddlaction->name = action_name;
         pddlaction->arguments = action_arguments;
         pyServer->deliverAction(id, pddlaction);
+
+        
+        pthread_mutex_unlock(thread_running_mutex[id].get());
     }
 }
 
@@ -331,21 +344,25 @@ void DTPCONTROL::newTask(Ice::Int id,
 
 void DTPCONTROL::_cancelTask(Ice::Int id)
 {
-
+    pthread_mutex_lock(thread_running_mutex[id].get());
+    
     VERBOSER(1000, "Got an attempt to cancel the task :: "<<id<<std::endl);
     
     /*Kill the thread associated with task \argument{id}.*/
     thread_statuus[id] = false;
+    pthread_mutex_unlock(thread_running_mutex[id].get());
     pthread_mutex_unlock(thread_mutex[id].get());
     
     pthread_join(*threads[id].get(), 0);
-    pthread_mutex_unlock(thread_mutex[id].get()); 
+//     pthread_mutex_unlock(thread_mutex[id].get()); 
     pthread_mutex_destroy(thread_mutex[id].get());
+    pthread_mutex_destroy(thread_running_mutex[id].get());
     pthread_attr_destroy(thread_attributes[id].get());
     
     thread_attributes.erase(id);
     threads.erase(id);
     thread_mutex.erase(id);
+    thread_running_mutex.erase(id);
     thread_to_domain.erase(id);
     thread_to_problem.erase(id);
 }

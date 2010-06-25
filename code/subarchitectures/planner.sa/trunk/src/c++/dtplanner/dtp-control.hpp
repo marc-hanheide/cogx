@@ -86,6 +86,10 @@ private:
      * \index{Ice::Int}*/
     std::map<Ice::Int, Mutex> thread_mutex;
     
+    /* When shutting things down, we have to ensure that an action is
+     * not executing.*/
+    std::map<Ice::Int, Mutex> thread_runnin_mutex;
+    
     /* Thread associated with task \index{Ice::Int}*/
     std::map<Ice::Int, Thread> threads;
     
