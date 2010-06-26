@@ -4,7 +4,7 @@
 libs="libqt4-dev"  # huge list of dependencies
 
 # OpenGL
-ligs="$libs  libgl1-mesa-dev  libglu1-mesa-dev"
+libs="$libs  libgl1-mesa-dev  libglu1-mesa-dev"
 
 # Font rendering in opengl
 libs="$libs  libftgl-dev"
