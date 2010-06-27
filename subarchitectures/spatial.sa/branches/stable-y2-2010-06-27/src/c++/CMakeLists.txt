@@ -1,0 +1,137 @@
+include_directories(../autogen)
+
+Find_package(Player)
+Find_package(X11)
+
+
+find_package(Peekabot)
+include_directories(${PEEKABOT_INSTALLROOT}/include)
+link_directories(${PEEKABOT_INSTALLROOT}/lib)
+
+
+Find_package(Cure)
+include_directories(${CURE_INSTALLROOT}/include/cure)
+include_directories(/usr/local/include/opencv)
+include_directories(/usr/include/opencv)
+link_directories(${CURE_INSTALLROOT}/lib/cure)
+
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/components/)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen/)
+include_directories(${COGX_ROOT}/tools/hardware/robotbase/src/c++/components/)
+include_directories(${COGX_ROOT}/tools/hardware/robotbase/src/c++/autogen/)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/components/)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils/)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen/)
+include_directories(${COGX_ROOT}/tools/hardware/utils/src/c++/components/)
+include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/math/src/c++/math)
+include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
+if(BUILD_SA_BINDING)
+include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/)
+endif(BUILD_SA_BINDING)
+
+# -------------- NAV.SA ----------------
+
+option(BUILD_SA_SPATIAL_PEEKABOT "Build spatial.sa PeekaBot components" YES)
+if(BUILD_SA_SPATIAL_PEEKABOT)
+
+add_cast_component(DisplayNavInPB DisplayNavInPB.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData Laser Scan2dReceiver)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+
+add_cast_component(PeekabotControl PeekabotControl.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+
+endif(BUILD_SA_SPATIAL_PEEKABOT)
+
+add_cast_component(SlamProcess SlamProcess.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Scan2dReceiver Robotbase OdometryReceiver CureHWUtils)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
+# -------------- /NAV.SA ----------------
+
+
+add_cast_component(SpatialTranslation SpatialTranslation.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData  FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} NavData )
+link_cast_component(${CAST_COMPONENT_NAME} DLIB)
+#link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
+add_cast_component(SpatialControl SpatialControl.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
+add_cast_component(PlaceManager PlaceManager.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData SpatialProperties FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} DLIB)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
+add_cast_component(LocalMapManager GridObjectFinder.cpp LocalMapManager.cpp) 
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData FrontierInterface Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils VisionData PTZ highgui cv)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
+add_cast_component(ObjectRelationManager ObjectRelationManager.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialProperties peekabot PTZ FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
+
+add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
+if(BUILD_SA_BINDING)
+add_cast_component(ProxyMarshaller ProxyMarshaller.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} BinderAbstract)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData SpatialProperties NavData)
+link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials Marshalling)
+endif(BUILD_SA_BINDING)
+
+if(BUILD_SA_BINDING)
+add_cast_component(ConnectivityWriter ConnectivityWriter.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData SpatialProperties)
+link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials Marshalling)
+endif(BUILD_SA_BINDING)
+
+if(BUILD_SA_BINDING)
+add_cast_component(SelfRepresenter SelfRepresenter.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData SpatialProperties FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials Marshalling)
+endif(BUILD_SA_BINDING)
+
+add_cast_component(PathQueryProcessor PathQueryProcessor.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+
+add_cast_component(ExplorationTester ExplorationTester.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} DLIB)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+# add_cast_component(Pusher Pusher.cpp)
+# link_cast_component(${CAST_COMPONENT_NAME} NavData)
+
+add_cast_component(AdvObjectSearch AdvObjectSearch.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} peekabot NavData SpatialData VisionData Laser Robotbase RobotbaseClientUtils Scan2dReceiver OdometryReceiver PTZ)
+link_cast_component(${CAST_COMPONENT_NAME} FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES} ${OPENCV_LDFLAGS})
+
+
+
