@@ -35,6 +35,7 @@ private:
       std::string watchDef;
       int watchId;
       std::string title;
+      std::string section;
       std::string directory;
       std::vector<std::string> filemasks;
       SConverter* pConverter;
