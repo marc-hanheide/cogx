@@ -17,6 +17,7 @@ import spatial.motivation.PatrolPlaceGenerator;
 
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
+import motivation.slice.GeneralGoalMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
@@ -49,6 +50,8 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JSlider jPatrolPrioritySlider = null;
 
+	private JSlider jGeneralPrioritySlider = null;
+	
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
 		if (motive instanceof ExploreMotive)
@@ -57,6 +60,8 @@ public class ManualSelectFilter implements MotiveFilter {
 			return MotivePriority.convert(jHomePrioritySlider.getValue());
 		else if (motive instanceof CategorizeRoomMotive)
 			return MotivePriority.convert(jCategorizePrioritySlider.getValue());
+		else if (motive instanceof GeneralGoalMotive)
+			return MotivePriority.convert(jGeneralPrioritySlider.getValue());
 		else if (motive instanceof PatrolMotive)
 			return MotivePriority.convert(jPatrolPrioritySlider.getValue());
 		else
@@ -134,6 +139,8 @@ public class ManualSelectFilter implements MotiveFilter {
 			gridLayout.setColumns(1);
 			jMotivesPanel = new JPanel();
 			jMotivesPanel.setLayout(gridLayout);
+			jMotivesPanel.add(new JLabel("General Goal"));
+			jMotivesPanel.add(getJSliderGeneral());
 			jMotivesPanel.add(new JLabel("Categorize"));
 			jMotivesPanel.add(getJSliderCategorize());
 			jMotivesPanel.add(new JLabel("Explore"));
@@ -214,6 +221,7 @@ public class ManualSelectFilter implements MotiveFilter {
 					jCategorizePrioritySlider.setValue(0);
 					jHomePrioritySlider.setValue(0);
 					jPatrolPrioritySlider.setValue(0);
+					jGeneralPrioritySlider.setValue(0);
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
@@ -247,6 +255,18 @@ public class ManualSelectFilter implements MotiveFilter {
 		jSlider.setSnapToTicks(true);
 		return jSlider;
 
+	}
+
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderGeneral() {
+		if (jGeneralPrioritySlider == null) {
+			jGeneralPrioritySlider = createPrioritySlider();
+		}
+		return jGeneralPrioritySlider;
 	}
 
 	/**

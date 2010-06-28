@@ -1,8 +1,8 @@
 package execution.util;
 
-import cast.cdl.WorkingMemoryAddress;
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
+import cast.cdl.WorkingMemoryAddress;
 import execution.slice.TriBool;
 
 public class PlannedActionWrapper implements ActionMonitor {

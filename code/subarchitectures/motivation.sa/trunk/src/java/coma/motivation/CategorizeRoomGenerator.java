@@ -14,7 +14,7 @@ import motivation.slice.Motive;
 import castutils.facades.BinderFacade;
 import castutils.facades.SpatialFacade;
 import SpatialData.Place;
-import binder.autogen.core.Proxy;
+import beliefmodels.autogen.beliefs.Belief;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -140,15 +140,15 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 			Set<Long> truePlaceIds = new HashSet<Long>();
 			log("number of places in room: " + placesInRoom.size());
 			for (Place p : placesInRoom) {
-				Proxy pp = binder.findPlaceProxy(p);
+				Belief pp = binder.findPlaceProxy(p);
 				truePlaceIds.add(p.id);
 				if (pp != null) {
 					log("looking for related proxies");
-					Map<WorkingMemoryAddress, Proxy> related = binder
+					Map<WorkingMemoryAddress, Belief> related = binder
 							.getRelatedProxies(pp, "connected");
 					log("  found " + related.size()
 							+ " related proxies for place " + p.id);
-					for (Proxy prx : related.values()) {
+					for (Belief prx : related.values()) {
 						Long id = new Long(binder.getPlaceIdFromProxy(prx));
 						// if this connected place is not in the list of true
 						// places add it as a placeholder
