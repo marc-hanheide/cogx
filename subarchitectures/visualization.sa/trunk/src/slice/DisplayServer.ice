@@ -77,11 +77,14 @@ module Visualization
       float x;
       float y; // Position of the mouse click inside the control
    };
-
+   
+   dictionary<string, string> TFormFieldMap;
    interface EventReceiver
    {
       void handleEvent(TEvent event);
       string getControlState(string ctrlId); // XXX: maybe add param what
+      void handleForm(string formId, TFormFieldMap fields);
+      void getFormData(string formId, out TFormFieldMap fields);
    };
 };
 
