@@ -9,7 +9,7 @@ namespace cogx { namespace vision {
 
 // Examples:
 //    throw Exception("An exception with a simple string description");
-//    throw EXCEPTION("A more complex (" << "ostringstream" << ") description");
+//    throw Exception(EXCEPTMSG("A more complex -" << "ostringstream" << "- description"));
 class Exception: public std::exception
 {
    std::string _what;
@@ -19,8 +19,8 @@ public:
    ~Exception() throw() {}
    virtual const char* what() const throw() { return _what.c_str(); }
 };
-#define EXCEPTION( streamexpr ) \
-   Exception((std::ostringstream&)(std::ostringstream() << streamexpr))
+//#define EXCEPTMSG(streamexpr)  ((std::ostringstream&)(std::ostringstream() << streamexpr)).str()
+#define EXCEPTMSG(streamexpr)  (std::ostringstream&)(std::ostringstream() << streamexpr)
 
 }} // namespace
 #endif /* end of include guard: EXCEPTION_WQJ9V10Y */
