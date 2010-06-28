@@ -4,14 +4,15 @@ import motivation.util.PlaceUnionEventRelation;
 import castutils.castextensions.CausalEventMonitor;
 import castutils.castextensions.WMEventQueue;
 import SpatialData.Place;
-import binder.autogen.core.UnionConfiguration;
+import beliefmodels.autogen.beliefs.Belief;
+
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
 
 public class PropagationTest extends ManagedComponent {
 	WMEventQueue eq;
-	CausalEventMonitor<Place, UnionConfiguration> cer;
+	CausalEventMonitor<Place, Belief> cer;
 
 	/*
 	 * (non-Javadoc)

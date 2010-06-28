@@ -2,6 +2,7 @@
 #define EXECUTION_ICE
 
 #include <cast/slice/CDL.ice>
+#include <beliefmodels.ice>
 #include <Planner.ice>
 
 
@@ -63,6 +64,34 @@ module execution {
 	     * The name of the feature to query for
 	     */
 	    string featureID;
+	    /**
+	     * Generic question to ask... if empty, belief information is used
+	     */
+	    string question;
+      };
+
+      /**
+       * comsys action
+       */
+      class ComsysTestFeatureValue extends Action {
+	    /**
+	     * The belief ID
+	     */
+	    string beliefID;
+	    /**
+	     * The feature type
+	     */
+	    string featureType;
+	    /**
+	    * The value to query
+	    */
+	    beliefmodels::autogen::featurecontent::FeatureValue featureValue;
+	    /**
+	     * Generic question to ask... if empty, belief information is used
+	     */
+	    string question;
+	    
+
       };
 
       /**
@@ -76,6 +105,8 @@ module execution {
       };
 
       sequence<long> LongSeq;	
+      sequence<string> StringSeq;	
+
       /**
        * Move the robot to a particular place.
        */
@@ -104,6 +135,36 @@ module execution {
 	string message;
       };
 
+
+
+      /**
+       * Try to detect objects with these labels.
+       */
+      class DetectObjects extends Action {
+	StringSeq labels;
+      };
+      
+      /**
+       * Run the people detector without moving the robot.
+       */
+      class DetectPeople extends Action {};
+	
+
+      /**
+       * Turn the robot in stages to look for people.
+       */
+      class LookForPeople extends Action {};
+      
+      /**
+       * Turn the robot in stages to look for objects.
+       */
+      class LookForObjects extends Action {
+	StringSeq labels;
+      };
+      
+
+
+      
 
     };
 

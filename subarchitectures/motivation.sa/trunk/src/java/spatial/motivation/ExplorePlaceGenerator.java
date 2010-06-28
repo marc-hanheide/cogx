@@ -258,7 +258,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		if (_probabilityDistribution == null)
 			return 0.0;
 		else
-			return ((FloatValue) _probabilityDistribution.data[0].value).value;
+			return ((FloatValue) _probabilityDistribution.data.get(0).value).value;
 	}
 
 	private double getFirstPropertyValue(PlaceProperty _property) {

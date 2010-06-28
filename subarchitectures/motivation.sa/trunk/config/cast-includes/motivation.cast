@@ -1,12 +1,11 @@
 # execution ###################################################################
-JAVA MG executor execution.components.PrototypePlanExecutor 
-
+JAVA MG executor execution.components.SpringSchoolExecutionMediator
 
 # motivation ##################################################################
-JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator 
-JAVA MG PatrolPlaceGenerator spatial.motivation.PatrolPlaceGenerator 
-JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator
-JAVA MG HomingGenerator   spatial.motivation.HomingGenerator
+
+JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(exists (?r - robot) (forall (?h - person) (kval ?r (name ?h))))"
+
+#JAVA MG goal-generator motivation.components.generators.GeneralGoalGenerator --goal "(forall (?p - place) (visited ?p))"
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
