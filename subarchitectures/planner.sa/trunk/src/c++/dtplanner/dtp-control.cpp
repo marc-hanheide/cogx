@@ -69,8 +69,6 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
     Mutex mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t());
     thread_mutex[id] = mutex;
     
-    Mutex running_mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t());
-    thread_running_mutex[id] = running_mutex;
     
     
     
@@ -82,8 +80,9 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
                               <<id);
 
     
-    QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setdetachstate(attributes.get(), PTHREAD_CREATE_JOINABLE),
-                              "Failed to make joinable thread attributes for DTP planning task :: "
+    QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setdetachstate(attributes.get(), PTHREAD_CREATE_DETACHED),//PTHREAD_CREATE_JOINABLE),
+                              "Failed to make detached thread attributes for DTP planning task :: "
+//                               "Failed to make joinable thread attributes for DTP planning task :: "
                               <<id);
     
     QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setscope(attributes.get(), PTHREAD_SCOPE_SYSTEM),
@@ -175,22 +174,71 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
     
 }
 
+#define METHOD_PREFIX                           \
+    if(!isRunning()){return;}                   \
+    pthread_mutex_lock(destructor_mutex.get()); \
+    lockComponent();                            \
+
+
+#define METHOD_RETURN                                   \
+    {                                                   \
+    pthread_mutex_unlock(destructor_mutex.get());       \
+    unlockComponent();                                  \
+    return ;                                            \
+    }                                                   \
+
+#define LOOP_CLOSE                                      \
+    {                                                   \
+    pthread_mutex_unlock(destructor_mutex.get());       \
+    unlockComponent();                                  \
+    }                                                   \
+
 
 DTPCONTROL::DTPCONTROL()
+ :destructor_mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t())
 {
 }
 
 DTPCONTROL::~DTPCONTROL()
 {
+    while(cannot_be_killed()){
+        sleep(1);
+    }
+    
+    pthread_mutex_destroy(destructor_mutex.get());
 }
 
-
+bool DTPCONTROL::cannot_be_killed() const
+{
+    pthread_mutex_lock(destructor_mutex.get());
+    threads.size();
+    pthread_mutex_unlock(destructor_mutex.get());
+}
 
 void DTPCONTROL::deliverObservation(Ice::Int id,
                                     const autogen::Planner::ObservationSeq& observationSeq,
                                     const Ice::Current&){
-    if(thread_to_domain.find(id) == thread_to_domain.end()) return;
+    VERBOSER(1000, "DTP got an observation on  :: "<<id);
+    METHOD_PREFIX;
+    
+    /* Supposed to be ignoring signals on to $id$.*/
+    if(!thread_statuus[id]){
+        METHOD_RETURN;
+    }
+    
+    /* Task is being killed.*/
+    if(observationSeq.size() == 0){
+        thread_statuus[id] = false;
+        VERBOSER(1000, "DTP observation was to kill task  :: "<<id);
+        pthread_mutex_unlock(thread_mutex[id].get());
+        METHOD_RETURN;
+    }
 
+    QUERY_UNRECOVERABLE_ERROR
+        (thread_to_domain.find(id) != thread_to_domain.end()
+         , "Could not find domain for task :: "<<id<<std::endl);
+
+    
     std::vector<std::string> observations;
     
     for(auto obs = observationSeq.begin()
@@ -205,30 +253,31 @@ void DTPCONTROL::deliverObservation(Ice::Int id,
     Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
     Planning::Parsing::problems[pi]->report__observations(observations);
     
+    VERBOSER(1000, "DTP observation now triggering action on task  :: "<<id);
     pthread_mutex_unlock(thread_mutex[id].get());
+    
+    METHOD_RETURN;
 }
 
 void  DTPCONTROL::post_action(Ice::Int id)
 {
+    VERBOSER(1000, "DTP posting actions on :: "<<id);
+    
     while(thread_statuus[id]){
         pthread_mutex_lock(thread_mutex[id].get());
-        pthread_mutex_lock(thread_running_mutex[id].get());
 
-
+        METHOD_PREFIX;
+        
         if(!thread_statuus[id]){
-            pthread_mutex_unlock(thread_mutex[id].get());
-            pthread_mutex_unlock(thread_running_mutex[id].get());
-            return;
+            break;
         }
-        
-        
-        if(thread_to_domain.find(id) == thread_to_domain.end()) return;
+
+        QUERY_UNRECOVERABLE_ERROR
+            (thread_to_domain.find(id) != thread_to_domain.end()
+             , "Could not find domain for task :: "<<id<<std::endl);
         
         Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
         auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
-//         std::ostringstream oss;
-//         oss<<action;
-//         auto action_as_string = oss.str();
 
         
         auto name = std::tr1::get<0>(action.contents());
@@ -260,9 +309,22 @@ void  DTPCONTROL::post_action(Ice::Int id)
         pddlaction->arguments = action_arguments;
         pyServer->deliverAction(id, pddlaction);
 
-        
-        pthread_mutex_unlock(thread_running_mutex[id].get());
+
+        LOOP_CLOSE;
     }
+
+    VERBOSER(1000, "DTP killing task  :: "<<id);
+    
+    pthread_mutex_unlock(thread_mutex[id].get()); 
+    pthread_mutex_destroy(thread_mutex[id].get());
+    pthread_attr_destroy(thread_attributes[id].get());
+    thread_attributes.erase(id);
+    threads.erase(id);
+    thread_mutex.erase(id);
+    thread_to_domain.erase(id);
+    thread_to_problem.erase(id);
+    
+    METHOD_RETURN;
 }
 
 void DTPCONTROL::start()
@@ -282,21 +344,15 @@ void DTPCONTROL::start()
 
 void DTPCONTROL::stop()
 {
-    std::vector<Ice::Int> tasks_to_kill(threads.size());
-    
-    auto i = 0;
-    auto thread = threads.begin();
-    for(; thread != threads.end(); i++,thread++){
-        tasks_to_kill[i] = thread->first;
+    if(cannot_be_killed()){
+        WARNING("CRITICAL ERROR -- Attempt to stop DTP component before\n"
+                <<"all the planning tasks have been cancelled.\n"
+                <<"DTP component is now UNSTABLE.");
     }
-
-    for( i =0; i < tasks_to_kill.size(); i++){
-        _cancelTask(tasks_to_kill[i]);
-    }
-    
 }
 
 void DTPCONTROL::runComponent(){
+    VERBOSER(1000, "CAST runComponent called for DTP.");
 }
 
 void DTPCONTROL::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current)
@@ -322,6 +378,8 @@ void DTPCONTROL::newTask(Ice::Int id,
                          const std::string& problemFile,
                          const std::string& domainFile, const Ice::Current&)
 {
+    METHOD_PREFIX;
+    
     VERBOSER(1000, "for task ::"<<id
              <<" got problem at :: "<<problemFile
              <<" and domain at :: "<<domainFile);
@@ -340,34 +398,16 @@ void DTPCONTROL::newTask(Ice::Int id,
     VERBOSER(1000, "Spawning the thread that posts actions to Moritz's system."<<std::endl);
     /*Planning is complete, now start \member{post_action} in a thread.*/
     spawn__post_action__thread(id);
+
+    METHOD_RETURN;
 }
 
-void DTPCONTROL::_cancelTask(Ice::Int id)
-{
-    pthread_mutex_lock(thread_running_mutex[id].get());
-    
-    VERBOSER(1000, "Got an attempt to cancel the task :: "<<id<<std::endl);
-    
-    /*Kill the thread associated with task \argument{id}.*/
-    thread_statuus[id] = false;
-    pthread_mutex_unlock(thread_running_mutex[id].get());
-    pthread_mutex_unlock(thread_mutex[id].get());
-    
-    pthread_join(*threads[id].get(), 0);
-//     pthread_mutex_unlock(thread_mutex[id].get()); 
-    pthread_mutex_destroy(thread_mutex[id].get());
-    pthread_mutex_destroy(thread_running_mutex[id].get());
-    pthread_attr_destroy(thread_attributes[id].get());
-    
-    thread_attributes.erase(id);
-    threads.erase(id);
-    thread_mutex.erase(id);
-    thread_running_mutex.erase(id);
-    thread_to_domain.erase(id);
-    thread_to_problem.erase(id);
-}
 
-void DTPCONTROL::cancelTask(Ice::Int id, const Ice::Current&)
+void DTPCONTROL::cancelTask(Ice::Int id, const Ice::Current& ice_current)
 {
-    _cancelTask(id);
+    VERBOSER(1000, "DTP cancel called for task :: "<<id<<std::endl);
+    deliverObservation(id,
+                       autogen::Planner::ObservationSeq(),
+                       ice_current);
+    
 }

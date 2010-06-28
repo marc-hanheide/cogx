@@ -30,7 +30,10 @@ public:
 
     //~DTPCONTROL();
     void deliverObservation(Ice::Int, const autogen::Planner::ObservationSeq& observationSeq, const Ice::Current&);
-    void newTask(Ice::Int, const std::string& probleFile, const std::string& domainFile, const Ice::Current&);  
+    void newTask(Ice::Int, const std::string& probleFile, const std::string& domainFile, const Ice::Current&);
+    
+    /* Joins the thread associated with DTP planning task indexed by
+     * \argument{id}. (see \member{cancelTask} and \member{stop})*/
     void cancelTask(Ice::Int, const Ice::Current&);
 
     /* Running in a thread. Is woken up every time an observation comes
@@ -47,15 +50,15 @@ protected:
     /*Does nothing.*/
     void runComponent();
 
-    
-  
+    /* Can a call to ~DTPCONTROL be made?*/
+    bool cannot_be_killed() const;
 private:
     /* Freiburg python planning server.*/
     PythonServerPrx pyServer;
     
-    /* Joins the thread associated with DTP planning task indexed by
-     * \argument{id}. (see \member{cancelTask} and \member{stop})*/
-    void _cancelTask(Ice::Int);
+//     /* Joins the thread associated with DTP planning task indexed by
+//      * \argument{id}. (see \member{cancelTask} and \member{stop})*/
+//     void _cancelTask(Ice::Int);
     
     /* Called by \member{newTask}. Creates a thread that executes
      * \member{post_action(id)}. \members{thread_statuus,
@@ -85,10 +88,9 @@ private:
      * action executes, etc...) associated with task
      * \index{Ice::Int}*/
     std::map<Ice::Int, Mutex> thread_mutex;
-    
-    /* When shutting things down, we have to ensure that an action is
-     * not executing.*/
-    std::map<Ice::Int, Mutex> thread_running_mutex;
+
+    /* Can this class be destructed.*/
+    mutable Mutex destructor_mutex;
     
     /* Thread associated with task \index{Ice::Int}*/
     std::map<Ice::Int, Thread> threads;
