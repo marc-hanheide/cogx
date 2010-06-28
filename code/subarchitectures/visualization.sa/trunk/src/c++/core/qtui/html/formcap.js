@@ -19,11 +19,11 @@ $.fn.serializeObject = function(){
 var POST = MyQObject.getPost();
 var GET = MyQObject.getGet();
 function MyLibSubmit(form_selector) {
-	var ob = $(form_selector).serializeObject();
-	if ($(form_selector).attr('method').toLowerCase() == 'post') {
-		MyQObject.setPost(ob);
-	} else {
-		MyQObject.setGet(ob);
-	}
-	return true;
+    var ob = $(form_selector).serializeObject();
+    if ($(form_selector).attr('method').toLowerCase() == 'post') {
+	MyQObject.setPost(ob);
+    } else {
+	MyQObject.setGet(ob);
+    }
+    return true;
 }

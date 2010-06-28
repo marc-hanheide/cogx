@@ -84,7 +84,7 @@ CFileMonitor::SWatchInfo::SWatchInfo(const std::string &watchDef)
    watchId = -1;
    pConverter = NULL;
 
-   boost::regex rxWatch ("\\s*(([\\w\\.]+)\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
+   boost::regex rxWatch ("\\s*(([\\w\\.]+)(#[\\w]+)?\\=)?((\\w+)\\:)?([^{]+)(\\{([^}]+)\\})?\\s*");
    boost::smatch res;
    boost::match_flag_type flags = boost::match_default;
 
@@ -99,9 +99,10 @@ CFileMonitor::SWatchInfo::SWatchInfo(const std::string &watchDef)
    //printf("5: %s\n", res[5].str().c_str());
    //printf("7: %s\n", res[7].str().c_str());
    title = res[2];
-   directory = res[5];
-   std::string converter = res[4];
-   std::string masks = res[7];
+   section = res[3];
+   directory = res[6];
+   std::string converter = res[5];
+   std::string masks = res[8];
 
    if (converter != "") {
       pConverter = SConverter::find(converter);
@@ -321,6 +322,9 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
          else title = fname.substr(fd+1);
       }
 
+      std::string section = pinfo->section;
+      if (section == "") section = "FileMonitor";
+
       if (pConv->command != "") {
          debug("Convert cmd: %s -> %s", pConv->command.c_str(), title.c_str());
          std::ostringstream cmd;
@@ -345,7 +349,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
                }
             }
 
-            m_display.setObject(title, "FileMonitor", xml.str());
+            m_display.setObject(title, section, xml.str());
          }
          else {
             // TODO: capture binary data from stream
@@ -362,7 +366,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
             std::stringstream str;
             str << infile.rdbuf();
             infile.close();
-            m_display.setLuaGlObject(title, "FileMonitor", str.str());
+            m_display.setLuaGlObject(title, section, str.str());
          }
          else if (pConv->id == "image") {
             debug("Send image: %s", title.c_str());
@@ -382,7 +386,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
             std::stringstream str;
             str << infile.rdbuf();
             infile.close();
-            m_display.setHtml(title, "FileMonitor", str.str());
+            m_display.setHtml(title, section, str.str());
          }
          else if (pConv->id == "htmlhead") {
             debug("Send HTML HEAD chunk: %s", title.c_str());
@@ -390,7 +394,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
             std::stringstream str;
             str << infile.rdbuf();
             infile.close();
-            m_display.setHtmlHead(title, "FileMonitor", str.str());
+            m_display.setHtmlHead(title, section, str.str());
          }
          else if (pConv->type == "text") {
             debug("Send text ad HTML chunk: %s", title.c_str());
@@ -398,7 +402,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
             std::stringstream str;
             str << infile.rdbuf();
             infile.close();
-            m_display.setHtml(title, "FileMonitor", str.str());
+            m_display.setHtml(title, section, str.str());
          }
       }
    }
