@@ -1,3 +1,18 @@
+/*
+ * @author:  Marko Mahnič
+ * @created: jun 2010 
+ *
+ * © Copyright 2010 Marko Mahnič. 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
 
 #include "MatcherCudaSift.h"
 
@@ -5,6 +20,7 @@
 #include "CudaSift/featureUploadH.h"
 
 #include <cmath>
+#include <iostream>
 
 namespace cogx { namespace vision {
 
@@ -46,6 +62,7 @@ void copyVectorToSiftData(TSiftVector& a, SiftData &data)
    for (long i = 0; i < nPoints; i++) {
       a[i]->getDescriptor((float*)&data.h_data[i].data[0]);
    }
+   
    data.numPts = nPoints;
 }
 
@@ -60,6 +77,7 @@ long appendMatches(SiftData& a, SiftData& b, TFeatureMatchVector& matches)
          CFeatureMatch m;
          m.indexA = i;
          m.indexB = a.h_data[i].match;
+         m.distance = a.h_data[i].score;
          matches.push_back(m);
       }
    }

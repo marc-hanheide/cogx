@@ -2,22 +2,22 @@
  * @author:  Marko Mahnič
  * @created: feb 2010 
  */
-
 #ifndef RECOGNIZER_SRV_HPP_
 #define RECOGNIZER_SRV_HPP_
+
+#include "RecognizerClient.h"
+#include "models/ObjectModel.h"
+#include "sifts/Features.h"
+
+#include "ObjectRecognizerSrv.hpp" // generated from ice
+
+#include <cast/architecture/ManagedComponent.hpp>
 
 #include <string>
 #include <vector>
 #include <map>
 #include <stdexcept>
-#include <cast/architecture/ManagedComponent.hpp>
 
-#include "ObjectRecognizerSrv.hpp" // generated from ice
-
-#include "pythonproxy.h"
-#include "RecognizerClient.h"
-
-#include "sifts/Features.h"
 
 namespace cogx { namespace vision {
 
@@ -28,12 +28,14 @@ class CObjectRecognizer:
    public CObjectRecognizerMethods
 {
 private:
-   CPyProxy m_pyRecognizer;
+   //CPyProxy m_pyRecognizer;
    CSiftExtractor *m_pSiftExtractor;
    CSiftMatcher   *m_pSiftMatcher;
+   std::vector<CObjectModel*> m_models;
 
 private:
    void startIceServer();
+   void loadModels(const std::string& from, const std::vector<std::string>& modelnames);
 
 public:
    CObjectRecognizer();

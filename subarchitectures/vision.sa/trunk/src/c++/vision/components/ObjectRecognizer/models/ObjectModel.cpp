@@ -13,21 +13,18 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef MATCHER_TZWIWD1K
-#define MATCHER_TZWIWD1K
-
-#include "Features.h"
+#include "ObjectModel.h"
 
 namespace cogx { namespace vision {
 
-class CSiftMatcherCudaSift: public CSiftMatcher
+CObjectModel::~CObjectModel()
 {
-public:
-   virtual void matchSiftDescriptors(TSiftVector& a, TSiftVector& b,
-         TFeatureMatchVector& matches);
-   virtual void matchSiftDescriptors(TSiftVector& a, std::vector<TSiftVector*>& bb,
-         std::vector<TFeatureMatchVector*>& matches);
-};
+   typeof(m_views.begin()) itv;
+   for(itv = m_views.begin(); itv != m_views.end(); itv++) {
+      CObjectView* pView = *itv;
+      if (pView) delete pView;
+   }
+}
 
 }} // namespace
-#endif /* end of include guard: MATCHER_TZWIWD1K */
+// vim:sw=3:ts=8:et

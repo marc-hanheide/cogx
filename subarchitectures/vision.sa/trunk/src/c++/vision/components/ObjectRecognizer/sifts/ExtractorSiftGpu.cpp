@@ -1,3 +1,18 @@
+/*
+ * @author:  Marko Mahnič
+ * @created: jun 2010 
+ *
+ * © Copyright 2010 Marko Mahnič. 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
 
 #include "ExtractorSiftGpu.h"
 #include "Exception.h"
@@ -44,8 +59,8 @@ SiftGPU* CSiftExtractorGPU::getSiftGpu()
 long CSiftExtractorGPU::extractSifts(IplImage* pImage, TSiftVector& sifts)
 {
    if (pImage->depth != IPL_DEPTH_8U && pImage->nChannels!=1)
-      throw EXCEPTION("SiftGPU: Unsupported Image Format ("
-            << pImage->nChannels << "chn * " << pImage->depth << "bits).");
+      throw Exception(EXCEPTMSG("SiftGPU: Unsupported Image Format ("
+            << pImage->nChannels << "chn * " << pImage->depth << "bits)."));
    int rv;
    SiftGPU* pGpu = getSiftGpu();
    rv = pGpu->RunSIFT(pImage->width, pImage->height, (unsigned char*) pImage->imageData,

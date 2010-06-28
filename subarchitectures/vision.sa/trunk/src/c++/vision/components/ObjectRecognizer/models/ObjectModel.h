@@ -13,21 +13,37 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef MATCHER_TZWIWD1K
-#define MATCHER_TZWIWD1K
 
-#include "Features.h"
+#ifndef OBJECTMODEL_NKBUMPY0
+#define OBJECTMODEL_NKBUMPY0
+
+#include "sifts/Features.h"
+
+#include <string>
+#include <vector>
 
 namespace cogx { namespace vision {
 
-class CSiftMatcherCudaSift: public CSiftMatcher
+class CObjectView
 {
+   friend class CModelLoader;
 public:
-   virtual void matchSiftDescriptors(TSiftVector& a, TSiftVector& b,
-         TFeatureMatchVector& matches);
-   virtual void matchSiftDescriptors(TSiftVector& a, std::vector<TSiftVector*>& bb,
-         std::vector<TFeatureMatchVector*>& matches);
+   long long m_id;
+   std::string m_imagefile; // image filename without path
+   float m_phi, m_lambda, m_rotation;
+   TSiftVector m_features;
 };
 
-}} // namespace
-#endif /* end of include guard: MATCHER_TZWIWD1K */
+class CObjectModel
+{
+   friend class CModelLoader;
+public:
+   ~CObjectModel();
+   long long m_id;
+   std::string m_name;
+   std::vector<CObjectView*> m_views;
+};
+
+}} //namespace
+#endif /* end of include guard: OBJECTMODEL_NKBUMPY0 */
+// vim:sw=3:ts=8:et
