@@ -210,9 +210,11 @@ DTPCONTROL::~DTPCONTROL()
 
 bool DTPCONTROL::cannot_be_killed() const
 {
+    bool answer = false;
     pthread_mutex_lock(destructor_mutex.get());
-    threads.size();
+    answer = threads.size();
     pthread_mutex_unlock(destructor_mutex.get());
+    return answer;
 }
 
 void DTPCONTROL::deliverObservation(Ice::Int id,
