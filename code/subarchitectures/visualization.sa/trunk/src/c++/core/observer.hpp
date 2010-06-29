@@ -18,16 +18,19 @@
 
 #include "ptrvector.hpp"
 #include <IceUtil/RWRecMutex.h>
+#include <iostream>
 
-// CObserver: To be used as a public member. Not to be used as a base class.
+// CObserverList: To be used as a public member. Not to be used as a base class.
 // Example:
-//    class CLookAtMeObserver { public: void onDataChanged(CLookAtMe* where); };
+//    class CLookAtMeObserver: {
+//       public: void onDataChanged(CLookAtMe* where);
+//    };
 //    class CLookAtMe {
 //    public:
-//       CObserver<CLookAtMeObserver> Observers;
+//       CObserverList<CLookAtMeObserver> Observers;
 //       void changeData() {
 //          CLookAtMeObserver* pobs;
-//          CObserver<CLookAtMeObserver>::ReadLock lock(Observers);
+//          CObserverList<CLookAtMeObserver>::ReadLock lock(Observers);
 //          FOR_EACH(Observers, CLookAtMeObserver, pobs) pobs->onDataChanged(this);
 //       }
 //    };
@@ -35,7 +38,8 @@
 //    CLookAtMe test;
 //    test.Observers += &watcher;
 template<class T>
-class CObserver {
+class CObserverList
+{
 private:
    CPtrVector<T> m_Observers;
    IceUtil::RWRecMutex _observerMutex;
@@ -43,11 +47,15 @@ private:
 public:
    class ReadLock
    {
-      CObserver* pOwner;
+      CObserverList* pOwner;
    public:
-      ReadLock(CObserver& owner) { pOwner = &owner; pOwner->_observerMutex.readLock(); }
+      ReadLock(CObserverList& owner) { pOwner = &owner; pOwner->_observerMutex.readLock(); }
       ~ReadLock() { pOwner->_observerMutex.unlock(); }
    };
+
+   ~CObserverList() {
+      clearObservers();
+   }
 
    void addObserver(T* pObserver)
    {
@@ -74,7 +82,7 @@ public:
       m_Observers.remove(pObserver);
    }
 
-   void clearObservers(T* pObserver)
+   void clearObservers()
    {
       IceUtil::RWRecMutex::WLock lock(_observerMutex);
       m_Observers.clear();
@@ -103,3 +111,4 @@ public:
 };
 
 #endif /* OBSERVER_ELHUP7YS */
+// vim:sw=3:ts=8:et

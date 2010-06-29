@@ -74,9 +74,10 @@ public:
 public:
    bool addGuiElement(CGuiElement* pGuiElement);
    CPtrVector<CGuiElement> getGuiElements(const std::string &viewId);
+   //bool registerHtmlForm(const Ice::Identity& owner, const std::string &objectId, const std::string &partId);
 
-//public:
-   CObserver<CDisplayModelObserver> modelObservers;
+public:
+   CObserverList<CDisplayModelObserver> modelObservers;
 
 private:
    CPtrVector<CDisplayView> findViewsWithObject(const std::string &id);
@@ -155,7 +156,7 @@ public:
    void onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue);
 
 public:
-   CObserver<CDisplayModelObserver> viewObservers;
+   CObserverList<CDisplayModelObserver> viewObservers;
 };
 
 }} // namespace

@@ -96,6 +96,7 @@ set(SERVER_CPP
    CDisplayServer.cpp
    Model.cpp
    GuiElements.cpp
+   HtmlElements.cpp
    object/CSvgImage.cpp
    object/CRasterImage.cpp
    ${EXPERIMENT_SRC}
@@ -128,7 +129,6 @@ set(SERVER_RESOURCE_FILES
 qt4_wrap_cpp (SERVER_MOC_OUTFILES ${SERVER_MOC_HEADERS} ${EXPERIMENT_MOC})
 qt4_wrap_ui  (SERVER_UIC_OUTFILES ${SERVER_UI_FILES})
 qt4_add_resources (SERVER_RESOURCE_OUTFILES ${SERVER_RESOURCE_FILES})
-message("R: " ${SERVER_RESOURCE_OUTFILES})
 include_directories( .  #./object
    ${VisualizationCore_BINARY_DIR}
    ${QT_QTSVG_INCLUDE_DIR}

@@ -72,6 +72,8 @@ public:
    void setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script);
    void setHtml(const std::string& id, const std::string& partId, const std::string& htmlData);
    void setHtmlHead(const std::string& id, const std::string& partId, const std::string& htmlData);
+   void setHtmlForm(const Ice::Identity& ident, const std::string& id, const std::string& partId,
+         const std::string& htmlData);
    void setObjectTransform2D(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
    void setObjectPose3D(const std::string& id, const std::string& partId,
@@ -148,6 +150,12 @@ public:
          const std::string& htmlData, const Ice::Current&)
    {
       m_pDisplayServer->setHtmlHead(id, partId, htmlData);
+   }
+
+   virtual void setHtmlForm(const Ice::Identity& ident, const std::string& id, const std::string& partId,
+         const std::string& htmlData, const Ice::Current&)
+   {
+      m_pDisplayServer->setHtmlForm(ident, id, partId, htmlData);
    }
 
    virtual void setObjectTransform2D(const std::string& id, const std::string& partId,

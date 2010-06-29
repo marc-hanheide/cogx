@@ -23,6 +23,7 @@ class QCastViewHtml: public QWebView, public QCastViewBase
 {
    Q_OBJECT
 private:
+   cogx::display::CDisplayModel* pModel;
    cogx::display::CDisplayView* pView;
    bool m_bModified;
    QString m_jsFormCap;
@@ -34,12 +35,14 @@ public:
 
 public:
    // QCastViewBase
+   void setModel(cogx::display::CDisplayModel* pDisplayModel); /*override*/
    void setView(cogx::display::CDisplayView* pDisplayView); /*override*/
    cogx::display::CDisplayView* getView() { return pView; } /*override*/
    operator QWidget&() { return *this; } /*override*/
  
    // CDisplayModelObserver
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
+
 private:
    void paintEvent(QPaintEvent* event);
 
@@ -53,3 +56,4 @@ private slots:
 };
 
 #endif /* end of include guard: QCASTVIEWHTML_X94VTZ5D */
+// vim:sw=3:ts=8:et

@@ -26,9 +26,15 @@ CHtmlObject::CHtmlObject()
 
 CHtmlObject::~CHtmlObject()
 {
-   typeof(m_Parts.begin()) itmap;
-   for(itmap = m_Parts.begin(); itmap != m_Parts.end(); itmap++) {
-      if (itmap->second) delete itmap->second;
+   typeof(m_HeadParts.begin()) ithdr;
+   for(ithdr = m_HeadParts.begin(); ithdr != m_HeadParts.end(); ithdr++) {
+      if (ithdr->second) delete ithdr->second;
+   }
+   m_HeadParts.clear();
+
+   typeof(m_Parts.begin()) itp;
+   for(itp = m_Parts.begin(); itp != m_Parts.end(); itp++) {
+      if (itp->second) delete itp->second;
    }
    m_Parts.clear();
 }
@@ -53,51 +59,68 @@ CRenderer* CHtmlObject::getRenderer(ERenderContext context)
 
 void CHtmlObject::setHtml(const std::string& partId, const std::string& text)
 {
-   QString* pPart = NULL;
+   CHtmlChunk* pPart = NULL;
    if (m_Parts.find(partId)->second != NULL) {
       pPart = m_Parts[partId];
    }
 
    if (pPart == NULL) {
-      pPart = new QString();
+      pPart = new CHtmlChunk(partId, CHtmlChunk::html);
       m_Parts[partId] = pPart;
    }
 
    if (pPart) {
-      *pPart = QString::fromStdString(text);
+      pPart->setContent(text);
+   }
+}
+
+void CHtmlObject::setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text)
+{
+   CHtmlChunk* pPart = NULL;
+   if (m_Parts.find(partId)->second != NULL) {
+      pPart = m_Parts[partId];
+   }
+
+   if (pPart == NULL) {
+      pPart = new CHtmlChunk(partId, CHtmlChunk::form, ident);
+      m_Parts[partId] = pPart;
+   }
+
+   if (pPart) {
+      pPart->setContent(text);
    }
 }
 
 void CHtmlObject::setHead(const std::string& partId, const std::string& text)
 {
-   QString* pPart = NULL;
+   CHtmlChunk* pPart = NULL;
    if (m_HeadParts.find(partId)->second != NULL) {
       pPart = m_HeadParts[partId];
    }
 
    if (pPart == NULL) {
-      pPart = new QString();
+      pPart = new CHtmlChunk(partId, CHtmlChunk::head);
       m_HeadParts[partId] = pPart;
    }
 
    if (pPart) {
-      *pPart = QString::fromStdString(text);
+      pPart->m_html = QString::fromStdString(text);
    }
 }
 
 void CHtmlObject::removePart(const std::string& partId)
 {
-   typeof(m_Parts.begin()) itmap = m_Parts.find(partId);
-   if (itmap->second != NULL) {
-      QString* pPart = m_Parts[partId];
-      m_Parts.erase(itmap);
+   typeof(m_Parts.begin()) itpart = m_Parts.find(partId);
+   if (itpart->second != NULL) {
+      CHtmlChunk* pPart = itpart->second;
+      m_Parts.erase(itpart);
       delete pPart;
    }
 
-   itmap = m_HeadParts.find(partId);
-   if (itmap->second != NULL) {
-      QString* pPart = m_HeadParts[partId];
-      m_HeadParts.erase(itmap);
+   typeof(m_HeadParts.begin()) ithd = m_HeadParts.find(partId);
+   if (ithd->second != NULL) {
+      CHtmlChunk* pPart = m_HeadParts[partId];
+      m_HeadParts.erase(ithd);
       delete pPart;
    }
 }
@@ -112,8 +135,8 @@ void CHtmlObject_RenderHtml::draw(CDisplayObject *pObject, void *pContext)
 
    typeof(pHtml->m_Parts.begin()) itmap;
    for(itmap = pHtml->m_Parts.begin(); itmap != pHtml->m_Parts.end(); itmap++) {
-      if (itmap->second) 
-         pList->append(*(itmap->second));
+      CHtmlChunk *pChunk = itmap->second;
+      pList->append(pChunk->m_html);
    }
 }
 
@@ -128,18 +151,19 @@ void CHtmlObject_RenderHtml::draw(const std::string& info, CDisplayObject *pObje
    if (info == "head") {
       typeof(pHtml->m_HeadParts.begin()) itmap;
       for(itmap = pHtml->m_HeadParts.begin(); itmap != pHtml->m_HeadParts.end(); itmap++) {
-         if (itmap->second) 
-            pList->append(*(itmap->second));
+         CHtmlChunk *pChunk = itmap->second;
+         pList->append(pChunk->m_html);
       }
    }
 
    if (info == "body") {
       typeof(pHtml->m_Parts.begin()) itmap;
       for(itmap = pHtml->m_Parts.begin(); itmap != pHtml->m_Parts.end(); itmap++) {
-         if (itmap->second) 
-            pList->append(*(itmap->second));
+         CHtmlChunk *pChunk = itmap->second;
+         pList->append(pChunk->m_html);
       }
    }
 }
 
 }} // namespace
+// vim:sw=3:ts=8:et

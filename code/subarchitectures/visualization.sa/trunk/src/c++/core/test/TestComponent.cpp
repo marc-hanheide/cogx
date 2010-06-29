@@ -318,7 +318,9 @@ void VideoViewer::runComponent()
     m_display.setHtml("@info.TestComponent", "zclock_test", strB.str());
   }
 #ifdef V11N_OBJECT_HTML_PLUGINS
-  { // XXX: This is not working because libflashplugin.so crashes. Remove nspluginwrapper and it's better.
+  {
+    // XXX: This is not working because libflashplugin.so crashes.
+    // Remove nspluginwrapper and it's better ... except no flash in firefox :(
     std::stringstream str;
     str << "This is the TestComponent for the Display Server<br>";
     str << "<hr>";

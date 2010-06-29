@@ -17,7 +17,7 @@
 #define CHTMLOBJECT_FJCZERMX
 
 #include "../Model.hpp"
-#include <QtCore>
+#include "../HtmlElements.hpp"
 
 namespace cogx { namespace display {
 
@@ -27,8 +27,8 @@ class CHtmlObject: public CDisplayObject
    static std::auto_ptr<CRenderer> renderHtml;
 
 private:
-   std::map<std::string, QString*> m_Parts;
-   std::map<std::string, QString*> m_HeadParts;
+   std::map<std::string, CHtmlChunk*> m_Parts;
+   std::map<std::string, CHtmlChunk*> m_HeadParts;
 
 public:
    CHtmlObject();
@@ -37,6 +37,7 @@ public:
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
    void setHtml(const std::string& partId, const std::string& text);
+   void setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text);
    void setHead(const std::string& partId, const std::string& text);
    void removePart(const std::string& partId);
 };
@@ -50,3 +51,4 @@ public:
 
 }} // namespace
 #endif /* end of include guard: CHTMLOBJECT_FJCZERMX */
+// vim:sw=3:ts=8:et

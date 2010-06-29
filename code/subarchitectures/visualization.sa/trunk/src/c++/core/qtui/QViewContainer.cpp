@@ -110,7 +110,10 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
       }
    }
 
-   if (m_pDisplay) m_pDisplay->setView(pView);
+   if (m_pDisplay) {
+      m_pDisplay->setModel(pModel);
+      m_pDisplay->setView(pView);
+   }
 }
 
 cogx::display::CDisplayView* QViewContainer::getView()

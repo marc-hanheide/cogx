@@ -28,8 +28,10 @@ class CGuiElement;
 class CGuiElementObserver
 {
 public:
+   // Pass the data change caused by UI interaction to the observer
    virtual void onUiDataChanged(CGuiElement *pElement, const std::string& newValue) = 0;
 
+   // Pass the changes from the owner to the GUI element
    // The CDisplayServer should not respond to this notification since it is the
    // CDisplayServer that causes the change.
    virtual void onOwnerDataChanged(CGuiElement *pElement, const std::string& newValue) {}
@@ -62,7 +64,7 @@ public:
    // TODO: list of subscribed clients (CAST components); notify on change
    // TODO: wtDropList has a list of items
 
-   CObserver<CGuiElementObserver> Observers;
+   CObserverList<CGuiElementObserver> Observers;
 
    bool isSameElement(CGuiElement *pGuiElement) {
       if (! pGuiElement) return false;
@@ -84,6 +86,8 @@ public:
    void syncControlState(const std::string& newValue, bool notify=false);
 };
 
+// CGuiElementValue is used for ICE communication: instances are stored in
+// a queue in hIceDisplayServer.
 struct CGuiElementValue
 {
    enum { get, set };
@@ -99,3 +103,4 @@ struct CGuiElementValue
 
 }} // namespace
 #endif /* end of include guard: GUIELEMENTS_6I8U02AA */
+// vim:sw=3:ts=8:et
