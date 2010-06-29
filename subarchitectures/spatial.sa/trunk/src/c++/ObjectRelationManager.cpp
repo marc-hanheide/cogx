@@ -23,7 +23,6 @@
 #include <SpatialData.hpp>
 #include <Navigation/LocalGridMap.hh>
 #include "CureMapConversion.hpp"
-
 #include "DensitySampling.hpp"
 
 #define USE_KDE
@@ -459,28 +458,31 @@ void ObjectRelationManager::runComponent()
     }
 
     if (m_bTestOnness || m_bTestInness) {
-      peekabot::Result<peekabot::Matrix4f> r;
+    
+      
+      peekabot::Result<peekabot::Transformation> r;
 
       r = bp.get_transformation(peekabot::WORLD_COORDINATES);
       if (r.succeeded()) {
 	Pose3 boxPose;
 	double m[16];
-	m[0] = r.get_result()(0,0);
-	m[1] = r.get_result()(0,1);
-	m[2] = r.get_result()(0,2);
-	m[3] = r.get_result()(0,3);
-	m[4] = r.get_result()(1,0);
-	m[5] = r.get_result()(1,1);
-	m[6] = r.get_result()(1,2);
-	m[7] = r.get_result()(1,3);
-	m[8] = r.get_result()(2,0);
-	m[9] = r.get_result()(2,1);
-	m[10] = r.get_result()(2,2);
-	m[11] = r.get_result()(2,3);
-	m[12] = r.get_result()(3,0);
-	m[13] = r.get_result()(3,1);
-	m[14] = r.get_result()(3,2);
-	m[15] = r.get_result()(3,3);
+
+	m[0] = r.get_result().x.x; 
+	m[1] = r.get_result().y.x;
+	m[2] = r.get_result().z.x;
+	m[3] = r.get_result().pos.x;
+	m[4] = r.get_result().y.x;
+	m[5] = r.get_result().y.y;
+	m[6] = r.get_result().z.z;
+	m[7] = r.get_result().pos.y;
+	m[8] = r.get_result().z.x;
+	m[9] = r.get_result().z.y; 
+	m[10] = r.get_result().z.z; 
+	m[11] = r.get_result().pos.z; 
+	m[12] = 0;
+	m[13] = 0;
+	m[14] = 0;
+	m[15] = 0;
 
 	setRow44(boxPose, m);
 
@@ -500,7 +502,26 @@ void ObjectRelationManager::runComponent()
 	if (r.succeeded()) {
 	  Pose3 boxPose;
 	  double m[16];
-	  m[0] = r.get_result()(0,0);
+
+	  m[0] = r.get_result().x.x;
+	  m[1] = r.get_result().y.x;
+	  m[2] = r.get_result().z.x;
+	  m[3] = r.get_result().pos.x;
+	  m[4] = r.get_result().y.x;
+	  m[5] = r.get_result().y.y;
+	  m[6] = r.get_result().z.z;
+	  m[7] = r.get_result().pos.y;
+	  m[8] = r.get_result().z.x;
+	  m[9] = r.get_result().z.y;
+	  m[10] = r.get_result().z.z;
+	  m[11] = r.get_result().pos.z;
+	  m[12] = 0;
+	  m[13] = 0;
+	  m[14] = 0;
+	  m[15] = 0;
+
+	  
+	 /* m[0] = r.get_result()(0,0);
 	  m[1] = r.get_result()(0,1);
 	  m[2] = r.get_result()(0,2);
 	  m[3] = r.get_result()(0,3);
@@ -515,7 +536,7 @@ void ObjectRelationManager::runComponent()
 	  m[12] = r.get_result()(3,0);
 	  m[13] = r.get_result()(3,1);
 	  m[14] = r.get_result()(3,2);
-	  m[15] = r.get_result()(3,3);
+	  m[15] = r.get_result()(3,3);*/
 
 	  setRow44(boxPose, m);
 
@@ -536,22 +557,22 @@ void ObjectRelationManager::runComponent()
 	getRandomSampleSphere(oris3, 3);
 
 	  if (m_bTestOnness) {
-	    peekabot::Result<peekabot::Vector3f> vr;
-	    vr = sqdp.get_position();
-	    if (vr.succeeded()) distanceFalloffOutside= 0.1*vr.get_result()(2);
-	    vr = scwp.get_position();
-	    if (vr.succeeded()) distanceFalloffInside = 0.1*vr.get_result()(2);
-	    vr = bcwp.get_position();
-	    if (vr.succeeded()) patchThreshold = 0.1*vr.get_result()(2);
-	    vr = csp.get_position();
+	    peekabot::Result<peekabot::Transformation> vr;
+	    vr = sqdp.get_transformation();
+	    if (vr.succeeded()) distanceFalloffOutside= 0.1*vr.get_result().pos.z;
+	    vr = scwp.get_transformation();
+	    if (vr.succeeded()) distanceFalloffInside = 0.1*vr.get_result().pos.z;
+	    vr = bcwp.get_transformation();
+	    if (vr.succeeded()) patchThreshold = 0.1*vr.get_result().pos.z;
+	    vr = csp.get_transformation();
 	    if (vr.succeeded()) {
 	      //	bottomCOMContainmentSteepness = 
-	      supportCOMContainmentSteepness = 0.1*vr.get_result()(2);
+	      supportCOMContainmentSteepness = 0.1*vr.get_result().pos.z;
 	    }
-	    vr = cop.get_position();
+	    vr = cop.get_transformation();
 	    if (vr.succeeded()) {
 	      //	bottomCOMContainmentOffset = 
-	      supportCOMContainmentOffset = vr.get_result()(2);
+	      supportCOMContainmentOffset = vr.get_result().pos.z;
 	    }
 
 	    sp.set_scale(evaluateOnness(&table1, &box1));
