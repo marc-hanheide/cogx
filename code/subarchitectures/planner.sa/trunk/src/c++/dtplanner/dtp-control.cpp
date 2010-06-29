@@ -383,7 +383,7 @@ void DTPCONTROL::get_observation(Ice::Int id,
     get_turn(id, Turn::observer);
     
     METHOD_PREFIX;
-    VERBOSER(1001, "DTP dealing with an observation for task  :: "<<id);
+    VERBOSER(2000, "DTP dealing with an observation for task "<<id);
     
     /* Supposed to be ignoring signals on to $id$.*/
     if(!thread_statuus[id]){
@@ -394,7 +394,7 @@ void DTPCONTROL::get_observation(Ice::Int id,
     /* Task is being killed.*/
     if(observationSeq.size() == 0){
         thread_statuus[id] = false;
-        VERBOSER(1001, "DTP observation was to kill task  :: "<<id);
+        VERBOSER(2000, "DTP observation was to kill task "<<id);
 //         pthread_mutex_unlock(thread_mutex[id].get());
         swap_turn(id, Turn::observer);
         METHOD_RETURN;
@@ -440,6 +440,7 @@ void DTPCONTROL::get_observation(Ice::Int id,
     swap_turn(id, Turn::observer);
 //     pthread_mutex_unlock(thread_mutex[id].get());
     
+    VERBOSER(2000, "DTP observation has been delt with, time to post an action for task "<<id);
     METHOD_RETURN; 
 }
 
@@ -483,7 +484,7 @@ void DTPCONTROL::get_turn(Ice::Int id, Turn turn)
 
 void  DTPCONTROL::post_action(Ice::Int id)
 {
-    VERBOSER(1001, "DTP posting actions on :: "<<id);
+    VERBOSER(2000, "DTP START-UP posting actions for task "<<id);
     
     while(true){//thread_statuus[id]){
         VERBOSER(1001, "DTP action posting trying for mutex :: "<<id);
@@ -491,12 +492,12 @@ void  DTPCONTROL::post_action(Ice::Int id)
         get_turn(id, Turn::actor);
 //         pthread_mutex_lock(thread_mutex[id].get());
         
-        VERBOSER(1001, "DTP action posting got mutex for :: "<<id);
         LOOP_OPEN;
+        VERBOSER(2000, "DTP posting  an  action for task "<<id);
         
         if(!thread_statuus[id]){
-            VERBOSER(1001, "DTP no need to post action on :: "<<id<<std::endl
-                     <<"Action posting on that task is shutting down.");
+            VERBOSER(2000, "DTP action posting withdrawn for task "<<id<<std::endl
+                     <<"That was cancelled.");
             break;
         }
 
@@ -545,20 +546,18 @@ void  DTPCONTROL::post_action(Ice::Int id)
         VERBOSER(1001, "DTP Done posting the action :: "<<pddlaction->name);
 
 
-        VERBOSER(1001, "Closing the action posting loop for task :: "<<id);
 
         swap_turn(id, Turn::actor);
+        
+        VERBOSER(2000, "DTP done action post for task "<<id);
         LOOP_CLOSE;
     }
 
-    VERBOSER(1001, "DTP killing task  :: "<<id);
+    VERBOSER(2000, "DTP killing action posting thread for task  :: "<<id);
     
-//     pthread_mutex_unlock(thread_mutex[id].get()); 
-//     pthread_mutex_destroy(thread_mutex[id].get());
     pthread_attr_destroy(thread_attributes[id].get());
     thread_attributes.erase(id);
     threads.erase(id);
-//     thread_mutex.erase(id);
     thread_to_domain.erase(id);
     thread_to_problem.erase(id);
     whose_turn_is_it.erase(id);
@@ -630,7 +629,7 @@ void DTPCONTROL::newTask(Ice::Int id,
     VERBOSER(1001, "DTP Parsing problem."<<std::endl);
     Planning::Parsing::parse_problem(problemFile);
     
-    VERBOSER(1001, "DTP Attempting thread assignments. \n"
+    VERBOSER(2000, "DTP START-UP New task... \n"
              <<"Thread :: "<<id<<std::endl
              <<"Problem :: "<<Planning::Parsing::problem_Stack->get__problem_Name()<<std::endl
              <<"Domain :: "<<Planning::Parsing::problem_Stack->get__domain_Data()->get__domain_Name()<<std::endl);
@@ -652,15 +651,16 @@ void DTPCONTROL::newTask(Ice::Int id,
     /*Planning is complete, now start \member{post_action} in a thread.*/
     spawn__post_action__thread(id);
 
+    VERBOSER(2000, "DTP  START-UP  task "<<id<<" spawned");
     METHOD_RETURN;
 }
 
 
 void DTPCONTROL::cancelTask(Ice::Int id, const Ice::Current& ice_current)
 {
-    VERBOSER(1001, "DTP cancel called for task :: "<<id<<std::endl);
+    VERBOSER(2000, "DTP SHUT-DOWN cancel task "<<id<<std::endl);
     deliverObservation(id,
                        autogen::Planner::ObservationSeq(),
                        ice_current);
-    
+    VERBOSER(2000, "DTP  SHUT-DOWN cancel task "<<id<<" observation has been delivered."<<std::endl);
 }
