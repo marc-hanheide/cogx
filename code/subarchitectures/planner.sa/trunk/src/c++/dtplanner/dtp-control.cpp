@@ -45,10 +45,14 @@ namespace CAST_THREADS {
 
 void* DTPCONTROL__pthread_METHOD_CALLBACK(void* _argument)
 {
+    VERBOSER(1000, "DTP starting thread for posting actions.");
+    
     typedef std::tr1::tuple<int, DTPCONTROL*> Argument;
     auto argument = reinterpret_cast< Argument*>(_argument);
     auto task_id = std::tr1::get<0>(*argument);
     auto dtpcontrol = std::tr1::get<1>(*argument);
+
+    VERBOSER(1000, "DTP making post_action call for :: "<<task_id);
     
     dtpcontrol->post_action(task_id);
 
@@ -157,7 +161,7 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
             default:
                 WARNING("No idea why we couldn't spawn a thread. The error code we were given is :: "
                         <<result<<" Trying again...");
-                sleep(1 * number_of_attempted_thread_invocations);
+                usleep((10 * number_of_attempted_thread_invocations));
                 break;
         }
            
@@ -170,28 +174,44 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
                                   <<" times... and still nothing!");
         
     }
-    
-    
 }
 
 #define METHOD_PREFIX                           \
     if(!isRunning()){return;}                   \
+    VERBOSER(1000, "DTP -- METHOD_PREFIX -- isRunning");       \
     pthread_mutex_lock(destructor_mutex.get()); \
+    if(!isRunning()){return;}                   \
+    VERBOSER(1000, "DTP -- METHOD_PREFIX -- destructor");       \
     lockComponent();                            \
+    VERBOSER(1000, "DTP -- METHOD_PREFIX -- CAST");       \
+    
 
-
-#define METHOD_RETURN                                   \
+#define METHOD_RETURN                                       \
+    {                                                       \
+        pthread_mutex_unlock(destructor_mutex.get());       \
+        VERBOSER(1000, "DTP -- METHOD_RETURN -- destructor");      \
+        unlockComponent();                                  \
+        VERBOSER(1000, "DTP -- METHOD_RETURN -- CAST");      \
+        return ;                                            \
+    }                                                       \
+        
+#define LOOP_CLOSE                                          \
+    {                                                       \
+        pthread_mutex_unlock(destructor_mutex.get());       \
+        VERBOSER(1000, "DTP -- LOOP_CLOSE -- destructor");      \
+        unlockComponent();                                  \
+        VERBOSER(1000, "DTP -- LOOP_CLOSE -- CAST");        \
+    }                                                       \
+        
+#define LOOP_OPEN                                       \
     {                                                   \
-    pthread_mutex_unlock(destructor_mutex.get());       \
-    unlockComponent();                                  \
-    return ;                                            \
+        pthread_mutex_lock(destructor_mutex.get());     \
+        VERBOSER(1000, "DTP -- LOOP_OPEN -- destructor");      \
+        lockComponent();                                \
+        VERBOSER(1000, "DTP -- LOOP_OPEN -- CAST");      \
     }                                                   \
+        
 
-#define LOOP_CLOSE                                      \
-    {                                                   \
-    pthread_mutex_unlock(destructor_mutex.get());       \
-    unlockComponent();                                  \
-    }                                                   \
 
 
 DTPCONTROL::DTPCONTROL()
@@ -202,7 +222,22 @@ DTPCONTROL::DTPCONTROL()
 DTPCONTROL::~DTPCONTROL()
 {
     while(cannot_be_killed()){
-        sleep(1);
+        std::ostringstream oss;
+
+        LOOP_OPEN;
+        for(auto thread = threads.begin()
+                ; thread != threads.end()
+                ; thread++){
+            oss<<thread->first<<" ";
+        }
+        LOOP_CLOSE;
+
+        std::string tmp = oss.str();
+        
+        WARNING("Unable to destroy DTP component. Still has active tasls."<<std::endl
+                <<"Those tasks are :: "<<tmp<<std::endl
+                <<"Please kill those by some calls to cancelTask(TASK_ID)"<<std::endl);
+        usleep(100);
     }
     
     pthread_mutex_destroy(destructor_mutex.get());
@@ -220,11 +255,13 @@ bool DTPCONTROL::cannot_be_killed() const
 void DTPCONTROL::deliverObservation(Ice::Int id,
                                     const autogen::Planner::ObservationSeq& observationSeq,
                                     const Ice::Current&){
-    VERBOSER(1000, "DTP got an observation on  :: "<<id);
+    VERBOSER(1000, "DTP got an observation for task :: "<<id);
     METHOD_PREFIX;
+    VERBOSER(1000, "DTP dealing with an observation for task  :: "<<id);
     
     /* Supposed to be ignoring signals on to $id$.*/
     if(!thread_statuus[id]){
+        VERBOSER(1000, "DTP was requested to ignore observations on task :: "<<id);
         METHOD_RETURN;
     }
     
@@ -236,10 +273,27 @@ void DTPCONTROL::deliverObservation(Ice::Int id,
         METHOD_RETURN;
     }
 
+    if(thread_to_domain.find(id) == thread_to_domain.end()){
+        WARNING("Posting observation to DTP for task :: "<<id<<std::endl
+                <<", however we don't have a domain for that task."<<std::endl
+                <<"Will sleep a while and see if a domain appears."<<std::endl);
+        for(auto i = 1; i < 4; i++){
+            usleep(10);
+            if(thread_to_domain.find(id) != thread_to_domain.end()){
+                WARNING("Sleeping worked, got a domain for DTP task :: "<<id<<std::endl);
+                break;
+            } 
+            WARNING("Sleeping in order to get a DTP for task :: "<<id<<std::endl
+                    <<"Failed for :: "<<i<<" sleeps");
+        }
+    }
+    
     QUERY_UNRECOVERABLE_ERROR
-        (thread_to_domain.find(id) != thread_to_domain.end()
+        (thread_to_domain.find(id) == thread_to_domain.end()
          , "Could not find domain for task :: "<<id<<std::endl);
 
+    VERBOSER(1000, "DTP has a domain for task :: "<<id<<std::endl
+             <<"And is therefore at a point to take the observation seriously.");
     
     std::vector<std::string> observations;
     
@@ -265,18 +319,21 @@ void  DTPCONTROL::post_action(Ice::Int id)
 {
     VERBOSER(1000, "DTP posting actions on :: "<<id);
     
-    while(thread_statuus[id]){
+    while(true){//thread_statuus[id]){
+        VERBOSER(1000, "DTP action posting trying for mutex :: "<<id);
         pthread_mutex_lock(thread_mutex[id].get());
-
-        METHOD_PREFIX;
+        VERBOSER(1000, "DTP action posting got mutex for :: "<<id);
+        LOOP_OPEN;
         
         if(!thread_statuus[id]){
+            VERBOSER(1000, "DTP no need to post action on :: "<<id<<std::endl
+                     <<"Action posting on that task is shutting down.");
             break;
         }
 
         QUERY_UNRECOVERABLE_ERROR
-            (thread_to_domain.find(id) != thread_to_domain.end()
-             , "Could not find domain for task :: "<<id<<std::endl);
+            (thread_to_domain.find(id) == thread_to_domain.end()
+             , "DTP Could not find domain for task :: "<<id<<std::endl);
         
         Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
         auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
@@ -309,9 +366,14 @@ void  DTPCONTROL::post_action(Ice::Int id)
 //         pddlaction->name = action_as_string;
         pddlaction->name = action_name;
         pddlaction->arguments = action_arguments;
+
+        
+        VERBOSER(1000, "DTP Posting the action :: "<<pddlaction->name);
         pyServer->deliverAction(id, pddlaction);
+        VERBOSER(1000, "DTP Done posting the action :: "<<pddlaction->name);
 
 
+        VERBOSER(1000, "Closing the action posting loop for task :: "<<id);
         LOOP_CLOSE;
     }
 
@@ -382,22 +444,22 @@ void DTPCONTROL::newTask(Ice::Int id,
 {
     METHOD_PREFIX;
     
-    VERBOSER(1000, "for task ::"<<id
+    VERBOSER(1000, "DTP for task ::"<<id
              <<" got problem at :: "<<problemFile
              <<" and domain at :: "<<domainFile);
 
 
-    VERBOSER(1000, "Parsing domain."<<std::endl);
+    VERBOSER(1000, "DTP Parsing domain."<<std::endl);
     Planning::Parsing::parse_domain(domainFile);
     
-    VERBOSER(1000, "Parsing problem."<<std::endl);
+    VERBOSER(1000, "DTP Parsing problem."<<std::endl);
     Planning::Parsing::parse_problem(problemFile);
 
-    VERBOSER(1000, "Attempting thread assignments."<<std::endl);
+    VERBOSER(1000, "DTP Attempting thread assignments."<<std::endl);
     thread_to_domain[id] = Planning::Parsing::domain_Stack->get__domain_Name();
     thread_to_problem[id] = Planning::Parsing::problem_Stack->get__problem_Name();
     
-    VERBOSER(1000, "Spawning the thread that posts actions to Moritz's system."<<std::endl);
+    VERBOSER(1000, "DTP Spawning the thread that posts actions to Moritz's system."<<std::endl);
     /*Planning is complete, now start \member{post_action} in a thread.*/
     spawn__post_action__thread(id);
 
