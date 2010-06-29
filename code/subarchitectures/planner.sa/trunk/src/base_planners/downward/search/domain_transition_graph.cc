@@ -203,6 +203,7 @@ public:
 };
 
 void ValueTransition::simplify() {
+  // Simplification should already 
   simplify_labels(labels);
   simplify_labels(ccg_labels);
 }
@@ -249,14 +250,18 @@ void ValueTransition::simplify_labels(
 	for(int i = 0; i < key.size(); i++)
 	  if(mask & (1 << i))
 	    subset.push_back(key[i]);
-	if(label_index.count(subset)) {
-	  match = true;
-	  break;
+    HashMap::iterator found = label_index.find(subset);
+	if(found != label_index.end()) {
+      if (old_labels[label_no].op->get_cost() >= old_labels[found->second].op->get_cost()) {
+        match = true;
+        break;
+      }
 	}
       }
     }
     if(!match)
       label_vec.push_back(old_labels[label_no]);
   }
+
 }
 

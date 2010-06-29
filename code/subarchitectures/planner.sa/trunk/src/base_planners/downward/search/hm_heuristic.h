@@ -1,5 +1,5 @@
-#ifndef HMHEURISTIC_H_
-#define HMHEURISTIC_H_
+#ifndef HM_HEURISTIC_H
+#define HM_HEURISTIC_H
 
 #include <iostream>
 #include <algorithm>
@@ -13,6 +13,11 @@ using namespace std;
 
 typedef vector<pair<int, int> > tuple;
 
+/**
+ * The h^m heuristic.
+ * This is a preliminary implementation, and it is very slow.
+ * Please do not use this for comparison.
+ */
 class HMHeuristic : public Heuristic{
 public:
 	HMHeuristic(int _m);
@@ -35,7 +40,6 @@ protected:
 	int eval(tuple &t);
 	int update_hm_entry(tuple &t, int val);
 	void extend_tuple(tuple &t, const Operator &op);
-	void extend_tuple(tuple &t, const Operator &op, tuple &others, int var);
 
 	// some helper methods
 	int check_tuple_in_tuple(const tuple &tup, const tuple& big_tuple);
@@ -100,6 +104,15 @@ protected:
 		return false;
 	}
 
+	bool contradict_effect_of(const Operator &op, int var, int val) {
+        for (int j = 0; j < op.get_pre_post().size(); j++) {
+            if ((op.get_pre_post()[j].var == var) && (op.get_pre_post()[j].post != val)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 	void generate_all_tuples() {
 		tuple t;
@@ -130,4 +143,4 @@ protected:
 
 };
 
-#endif /* HMHEURISTIC_H_ */
+#endif

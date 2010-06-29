@@ -23,9 +23,12 @@
 #include "general_lazy_best_first_search.h"
 #include "lazy_best_first_search_engine.h"
 #include "lazy_wa_star.h"
+#include "learning/selective_max_heuristic.h"
+#include "enforced_hill_climbing_search.h"
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include <vector>
 using namespace std;
 
@@ -56,11 +59,18 @@ int main(int argc, const char **argv) {
     bool use_hm = false;
     int m_hm = 2;
     int lm_type = LandmarksCountHeuristic::rpg_sasp;
+    bool use_selective_max = false;
+    bool use_ehc_search = false;
+    bool ehc_rank_by_preferred = false;
 
     for (int i = 1; i < argc; i++) {
         for (const char *c = argv[i]; *c != 0; c++) {
             if (*c == 'o') {
                 a_star_search = true; // "o"ptimal
+            } else if (*c == 'e') {
+                use_ehc_search = true; // "e"enforced hill climbing
+            } else if (*c == 'r') {
+                ehc_rank_by_preferred = true;
             } else if (*c == 'c') {
                 cg_heuristic = true;
             } else if (*c == 'C') {
@@ -112,6 +122,8 @@ int main(int argc, const char **argv) {
                 lm_heuristic_optimal = true;
             } else if (*c == 'L') {
                 lm_preferred = true;
+            } else if (*c == 'M') {
+                use_selective_max = true;
             } else if (*c == 'D') {
                 additive_preferred_operators = true;
             } else if (*c == 'g') {
@@ -209,7 +221,7 @@ int main(int argc, const char **argv) {
     if (!cg_heuristic && !cyclic_cg_heuristic
        && !ff_heuristic && !additive_heuristic && !goal_count_heuristic
        && !blind_search_heuristic && !fd_heuristic && !hsp_max_heuristic
-       && !lm_cut_heuristic && !lm_heuristic && !use_hm) {
+       && !lm_cut_heuristic && !lm_heuristic && !use_hm && !use_selective_max) {
         cerr << "Error: you must select at least one heuristic!" << endl
              << "If you are unsure, choose options \"cCfF\"." << endl;
         return 2;
@@ -240,7 +252,7 @@ int main(int argc, const char **argv) {
     int iteration_no = 0;
     bool solution_found = false;
     int wa_star_weights[] = {10, 5, 3, 2, 1, -1};
-    int wastar_bound = -1;
+    int wastar_bound = numeric_limits<int>::max();
     int wastar_weight = wa_star_weights[0];
     bool reducing_weight = true;
     bool synergy = false;
@@ -267,9 +279,15 @@ int main(int argc, const char **argv) {
         } else if (iterative_search) {
             engine = new LazyWeightedAStar(wastar_weight);
             ((LazyWeightedAStar*)engine)->set_bound(wastar_bound);
+        } else if (use_ehc_search) {
+            engine = new EnforcedHillClimbingSearch();
+            if (ehc_rank_by_preferred) {
+                ((EnforcedHillClimbingSearch*)engine)->set_preferred_usage(rank_preferred_first);
+            }
         } else {
             engine = new BestFirstSearchEngine;
         }
+
 
         // Test if synergies can be used between FF heuristic and landmark pref. ops.
         // Used to achieve LAMA's behaviour. (Note: this uses a different version
@@ -318,19 +336,31 @@ int main(int argc, const char **argv) {
                 new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type),
                 true, lm_preferred);
         }
+        if (use_selective_max) {
+            SelectiveMaxHeuristic *sel_max = new SelectiveMaxHeuristic();
+            sel_max->add_heuristic(new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type));
+            sel_max->add_heuristic(new LandmarkCutHeuristic);
+            engine->add_heuristic(sel_max, true, false);
+        }
 
         Timer search_timer;
         engine->search();
         search_timer.stop();
         g_timer.stop();
         if (engine->found_solution()) {
-            save_plan(engine->get_plan());
-            wastar_bound = engine->get_plan().size();
+//            save_plan(engine->get_plan());
+//            wastar_bound = 0;
+//			for(SearchEngine::Plan::const_iterator i = engine->get_plan().begin(); i != engine->get_plan().end(); ++i) {
+//			  wastar_bound += (*i)->get_cost();
+//			}
+            int plan_cost = save_plan(engine->get_plan());
+            wastar_bound = plan_cost;
         } else {
             iterative_search = false;
         }
 
         engine->statistics();
+
         if (cg_heuristic || cg_preferred_operators) {
             cout << "Cache hits: " << g_cache_hits << endl;
             cout << "Cache misses: " << g_cache_misses << endl;

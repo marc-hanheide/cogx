@@ -1,5 +1,5 @@
-#ifndef LAZYBESTFIRSTSEARCHENGINE_H_
-#define LAZYBESTFIRSTSEARCHENGINE_H_
+#ifndef LAZY_BEST_FIRST_SEARCH_ENGINE_H
+#define LAZY_BEST_FIRST_SEARCH_ENGINE_H
 
 #include "general_lazy_best_first_search.h"
 
@@ -11,4 +11,4 @@ public:
     virtual ~LazyBestFirstSearchEngine();
 };
 
-#endif /* LAZYBESTFIRSTSEARCHENGINE_H_ */
+#endif

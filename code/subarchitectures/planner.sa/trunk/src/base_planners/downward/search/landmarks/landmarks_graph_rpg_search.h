@@ -1,12 +1,5 @@
-/*
- * LandmarksGraphSearch.h
- *
- *  Created on: Nov 12, 2009
- *      Author: karpase
- */
-
-#ifndef LANDMARKSGRAPHSEARCH_H_
-#define LANDMARKSGRAPHSEARCH_H_
+#ifndef LANDMARKS_LANDMARKS_GRAPH_RPG_SEARCH_H
+#define LANDMARKS_LANDMARKS_GRAPH_RPG_SEARCH_H
 
 #include "landmarks_graph.h"
 
@@ -24,4 +17,4 @@ public:
     virtual ~LandmarksGraphRpgSearch();
 };
 
-#endif /* LANDMARKSGRAPHSEARCH_H_ */
+#endif

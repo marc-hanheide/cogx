@@ -27,6 +27,10 @@ ALLOW_CONFLICTING_EFFECTS = True
 USE_PARTIAL_ENCODING = True
 DETECT_UNREACHABLE = True
 
+## Setting the following variable to True can cause a severe
+## performance penalty due to weaker relevance analysis (see issue7).
+ADD_IMPLIED_PRECONDITIONS = False
+
 removed_implied_effect_counter = 0
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -200,9 +204,10 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
     # assert eff_condition != other_condition, "Duplicate effect"
     # assert eff_condition and other_condition, "Dominated conditional effect"
 
-    implied_precondition = set()
-    for fact in condition.iteritems():
-        implied_precondition.update(implied_facts[fact])
+    if ADD_IMPLIED_PRECONDITIONS:
+        implied_precondition = set()
+        for fact in condition.iteritems():
+            implied_precondition.update(implied_facts[fact])
 
     pre_post = []
     for var, (post, eff_condition_lists) in effect.iteritems():
@@ -212,7 +217,8 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
             if prune_stupid_effect_conditions(var, post, eff_condition_lists):
                 global simplified_effect_condition_counter
                 simplified_effect_condition_counter += 1
-            if pre == -1 and (var, 1 - post) in implied_precondition:
+            if (ADD_IMPLIED_PRECONDITIONS and
+                pre == -1 and (var, 1 - post) in implied_precondition):
                 global added_implied_precondition_counter
                 added_implied_precondition_counter += 1
                 pre = 1 - post
@@ -358,8 +364,11 @@ def pddl_to_sas(task, mutex_file):
         mutex_ranges, mutex_dict = strips_to_sas_dictionary(
             mutex_groups, assert_partial=False)
 
-    with timers.timing("Building implied facts dictionary..."):
-        implied_facts = build_implied_facts(strips_to_sas, groups, mutex_groups)
+    if ADD_IMPLIED_PRECONDITIONS:
+        with timers.timing("Building implied facts dictionary..."):
+            implied_facts = build_implied_facts(strips_to_sas, groups, mutex_groups)
+    else:
+        implied_facts = {}
 
     with timers.timing("Translating task", block=True):
         sas_task = translate_task(
@@ -563,8 +572,8 @@ if __name__ == "__main__":
         task, mutex_file = pddl.open()
 
     # EXPERIMENTAL!
-    #import psyco
-    #psyco.full()
+    import psyco
+    psyco.full()
 
     sas_task = pddl_to_sas(task, mutex_file)
     

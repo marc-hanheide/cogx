@@ -5,34 +5,12 @@
 #include <cassert>
 #include <ext/hash_map>
 #include "state_proxy.h"
+#include "search_node_info.h"
 
 using namespace std;
 using namespace __gnu_cxx;
 
 
-class SearchNodeInfo {
-    friend class SearchNode;
-    friend class SearchSpace;
-
-    enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
-
-    /*
-      NodeStatus status;
-      int g;
-      int h;
-    */
-
-    unsigned int status: 2;
-    int g: 15;
-    int h: 15;
-    const state_var_t *parent_state;
-    const Operator *creating_operator;
-
-    SearchNodeInfo()
-	: status(NEW), g(-1), h(-1), parent_state(0), creating_operator(0) {
-    }
-
-};
 
 
 SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
@@ -41,19 +19,6 @@ SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
 
 State SearchNode::get_state() const {
     return State(state_buffer);
-}
-
-bool SearchNode::is_goal() const {
-	// any state with h > 0 is not a goal state
-	if (info.h > 0) {
-		return false;
-	}
-	// if we use action costs, h == 0 is not enough, we need to check
-	if(g_use_metric) {
-		State state = get_state();
-		return test_goal(state);
-	}
-    return true;
 }
 
 bool SearchNode::is_open() const {
@@ -80,6 +45,10 @@ int SearchNode::get_h() const {
     return info.h;
 }
 
+const state_var_t *SearchNode::get_parent_buffer() const {
+    return info.parent_state;
+}
+
 void SearchNode::open_initial(int h) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
@@ -101,8 +70,10 @@ void SearchNode::open(int h, const SearchNode &parent_node,
 
 void SearchNode::reopen(const SearchNode &parent_node,
 			const Operator *parent_op) {
+
     assert(info.status == SearchNodeInfo::OPEN ||
            info.status == SearchNodeInfo::CLOSED);
+
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;

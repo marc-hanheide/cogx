@@ -5,7 +5,8 @@
 #include <vector>
 using namespace std;
 
-class Operator;
+#include "operator.h"
+
 class Axiom;
 class Variable;
 
@@ -21,6 +22,7 @@ private:
     bool operator<(const Transition &other) const;
     int target;
     int op;
+    int cost;
     Condition condition;
   };
   typedef vector<Transition> Vertex;
@@ -28,7 +30,8 @@ private:
   int level;
 public:
   DomainTransitionGraph(const Variable &var);
-  void addTransition(int from, int to, const Operator &op, int op_index);
+  void addTransition(int from, int to, const Operator &op, int op_index,
+                     const Operator::PrePost &pre_pos);
   void addAxTransition(int from, int to, const Axiom &ax, int ax_index);
   void finalize();
   void dump() const;

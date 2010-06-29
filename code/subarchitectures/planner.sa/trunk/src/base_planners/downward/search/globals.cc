@@ -17,14 +17,13 @@ using namespace std;
 #include "timer.h"
 
 bool test_goal(const State &state) {
-	for(int i = 0; i < g_goal.size(); i++) {
-		if(state[g_goal[i].first] != g_goal[i].second) {
-			return false;
-		}
-	}
-	return true;
+    for(int i = 0; i < g_goal.size(); i++) {
+        if(state[g_goal[i].first] != g_goal[i].second) {
+            return false;
+        }
+    }
+    return true;
 }
-
 
 bool peek_magic(istream &in, string magic) {
   string word;
@@ -192,4 +191,5 @@ bool g_merge_and_shrink_forbid_merge_across_buckets = false;
 
 Timer g_timer;
 
-FFHeuristic *g_ff_heur;
+FFHeuristic *g_ff_heur = 0;
+SearchSpace* g_learning_search_space = 0;
