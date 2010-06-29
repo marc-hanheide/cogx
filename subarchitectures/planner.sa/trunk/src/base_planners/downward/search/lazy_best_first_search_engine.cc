@@ -1,7 +1,7 @@
 #include "lazy_best_first_search_engine.h"
-#include "open-lists/standard_scalar_open_list.h"
-#include "open-lists/alternation_open_list.h"
-#include "open-lists/tiebreaking_open_list.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/alternation_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
 #include "scalar_evaluator.h"
 #include "heuristic.h"
 #include <vector>
@@ -23,16 +23,16 @@ void LazyBestFirstSearchEngine::initialize() {
 
     assert(heuristics.size() > 0);
 
-    if (heuristics.size() + preferred_operator_heuristics.size() == 1) {
+    if ((heuristics.size() == 1) &&  (preferred_operator_heuristics.size() == 0)) {
         open_list = new StandardScalarOpenList<OpenListEntryLazy>(heuristics[0]);
     }
     else {
         vector<OpenList<OpenListEntryLazy>*> inner_lists;
-        for (int i = 0; i < heuristics.size(); i++) {
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(heuristics[i], false));
-        }
-        for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(preferred_operator_heuristics[i], true));
+        for (int i = 0; i < estimate_heuristics.size(); i++) {
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(estimate_heuristics[i], false));
+            if (preferred_operator_heuristics.size() > 0) {
+                inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(estimate_heuristics[i], true));
+            }
         }
         open_list = new AlternationOpenList<OpenListEntryLazy>(inner_lists);
     }

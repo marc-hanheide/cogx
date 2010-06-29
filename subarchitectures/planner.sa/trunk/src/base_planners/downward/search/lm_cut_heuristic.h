@@ -3,6 +3,7 @@
 
 #include "heuristic.h"
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
@@ -35,11 +36,24 @@ class RelaxedOperator;
    more operators.
 */
 
+enum PropositionStatus {
+    UNREACHED = 0,
+    REACHED = 1,
+    GOAL_ZONE = 2,
+    BEFORE_GOAL_ZONE = 3
+};
+
 const int COST_MULTIPLIER = 1;
 // Choose 1 for maximum speed, larger values for possibly better
 // heuristic accuracy. Heuristic computation time should increase
 // roughly linearly with the multiplier.
 
+/* TODO: In some very preliminary tests in the IPC-2008 Elevators
+   domain (more precisely, on Elevators-01), a larger cost multiplier
+   (I tried 10) reduced expansion count quite a bit, although not
+   enough to balance the extra runtime. Worth experimenting a bit to
+   see the effect, though.
+ */
 
 struct RelaxedOperator {
     const Operator *op;
@@ -55,12 +69,16 @@ struct RelaxedOperator {
                     const Operator *the_op, int base)
         : op(the_op), precondition(pre), effects(eff), base_cost(base) {
     }
+
+    inline int h_max_cost() const;
+    inline void update_h_max_supporter();
 };
 
 struct RelaxedProposition {
     std::vector<RelaxedOperator *> precondition_of;
     std::vector<RelaxedOperator *> effect_of;
 
+    PropositionStatus status;
     int h_max_cost;
     /* TODO: Also add the rpg depth? The Python implementation used
        this for tie breaking, and it led to better landmark extraction
@@ -78,7 +96,6 @@ struct RelaxedProposition {
        depths). See if the init h values degrade compared to Python without
        explicit depth tie-breaking, then decide.
     */
-    bool in_excluded_set;
 
     RelaxedProposition() {
     }
@@ -92,6 +109,7 @@ class LandmarkCutHeuristic : public Heuristic {
     RelaxedProposition artificial_precondition;
     RelaxedProposition artificial_goal;
     std::vector<Bucket> reachable_queue;
+    int iteration_limit;
 
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
@@ -99,14 +117,17 @@ class LandmarkCutHeuristic : public Heuristic {
     void add_relaxed_operator(const std::vector<RelaxedProposition *> &precondition,
                               const std::vector<RelaxedProposition *> &effects,
                               const Operator *op, int base_cost);
-    void setup_exploration_queue(bool clear_exclude_set);
+    void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
-    void relaxed_exploration(bool first_exploration,
-                             std::vector<RelaxedOperator *> &cut);
+    void first_exploration(const State &state);
+    void first_exploration_incremental(std::vector<RelaxedOperator *> &cut);
+    void second_exploration(const State &state, std::vector<RelaxedProposition *> &queue,
+			    std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
         assert(cost >= 0);
-        if(prop->h_max_cost == -1 || prop->h_max_cost > cost) {
+        if(prop->status == UNREACHED || prop->h_max_cost > cost) {
+	    prop->status = REACHED;
             prop->h_max_cost = cost;
             if(cost >= reachable_queue.size())
                 reachable_queue.resize(cost + 1);
@@ -115,9 +136,26 @@ class LandmarkCutHeuristic : public Heuristic {
     }
 
     void mark_goal_plateau(RelaxedProposition *subgoal);
+    void validate_h_max() const;
 public:
-    LandmarkCutHeuristic(bool use_cache=false);
+    LandmarkCutHeuristic(int _iteration_limit=-1, bool use_cache=false);
     virtual ~LandmarkCutHeuristic();
 };
+
+inline int RelaxedOperator::h_max_cost() const {
+    assert(!unsatisfied_preconditions);
+    int result = precondition[0]->h_max_cost;
+    for(int i = 1; i < precondition.size(); i++)
+	result = std::max(result, precondition[i]->h_max_cost);
+    return result;
+}
+
+inline void RelaxedOperator::update_h_max_supporter() {
+    assert(!unsatisfied_preconditions);
+    for(int i = 0; i < precondition.size(); i++)
+	if(precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
+	    h_max_supporter = precondition[i];
+    assert(h_max_cost() == h_max_supporter->h_max_cost);
+}
 
 #endif

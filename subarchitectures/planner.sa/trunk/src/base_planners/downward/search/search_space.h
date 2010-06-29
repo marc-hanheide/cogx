@@ -2,12 +2,17 @@
 #define SEARCH_SPACE_H
 
 #include "state.h" // for state_var_t
+#include <vector>
+#include <ext/hash_map>
+#include "state.h"
+#include "state_proxy.h"
+#include "search_node_info.h"
 
 #include <vector>
 
 class Operator;
 class State;
-class SearchNodeInfo;
+class StateProxy;
 
 class SearchNode {
     state_var_t *state_buffer;
@@ -20,7 +25,6 @@ public:
     }
     State get_state() const;
 
-    bool is_goal() const;
     bool is_new() const;
     bool is_open() const;
     bool is_closed() const;
@@ -28,6 +32,7 @@ public:
 
     int get_g() const;
     int get_h() const;
+    const state_var_t *get_parent_buffer() const;
 
     void open_initial(int h);
     void open(int h, const SearchNode &parent_node,

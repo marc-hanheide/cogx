@@ -1,14 +1,15 @@
-#ifndef GENERALLAZYBESTFIRSTSEARCH_H_
-#define GENERALLAZYBESTFIRSTSEARCH_H_
+#ifndef GENERAL_LAZY_BEST_FIRST_SEARCH_H
+#define GENERAL_LAZY_BEST_FIRST_SEARCH_H
 
 #include <vector>
 
 #include "closed_list.h"
-#include "open-lists/open_list.h"
+#include "open_lists/open_list.h"
 #include "search_engine.h"
 #include "state.h"
 #include "scalar_evaluator.h"
 #include "search_space.h"
+#include "search_progress.h"
 
 class Heuristic;
 class Operator;
@@ -21,20 +22,19 @@ protected:
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     int bound;
+    enum {original, pref_first, shuffled} succ_mode;
 
-    SearchSpace search_space;
     OpenList<OpenListEntryLazy> *open_list;
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
-
-    vector<int> best_heuristic_values;
+    vector<Heuristic *> estimate_heuristics;
 
     State current_state;
     state_var_t *current_predecessor_buffer;
     const Operator *current_operator;
     int current_g;
 
-    int generated_states;
+    SearchProgress search_progress;
 
     virtual void initialize();
     virtual int step();
@@ -42,13 +42,12 @@ protected:
     void generate_successors();
     int fetch_next_state();
 
-    bool check_goal();
-    bool check_progress();
-    void report_progress();
     void reward_progress();
 
     void set_open_list(OpenList<OpenListEntryLazy> *open);
+    void get_successor_operators(vector<const Operator *> &ops);
 public:
+
     GeneralLazyBestFirstSearch(bool reopen_closed);
     virtual ~GeneralLazyBestFirstSearch();
 
@@ -60,4 +59,4 @@ public:
     int get_bound() {return bound;}
 };
 
-#endif /* GENERALLAZYBESTFIRSTSEARCH_H_ */
+#endif

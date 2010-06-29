@@ -12,8 +12,8 @@
 using namespace std;
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(bool use_cache)
-    : Heuristic(use_cache) {
+LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit, bool use_cache)
+    : Heuristic(use_cache), iteration_limit(_iteration_limit) {
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -119,24 +119,18 @@ void LandmarkCutHeuristic::add_relaxed_operator(
 }
 
 // heuristic computation
-void LandmarkCutHeuristic::setup_exploration_queue(bool clear_exclude_set) {
+void LandmarkCutHeuristic::setup_exploration_queue() {
     reachable_queue.clear();
 
     for(int var = 0; var < propositions.size(); var++) {
         for(int value = 0; value < propositions[var].size(); value++) {
             RelaxedProposition &prop = propositions[var][value];
-            prop.h_max_cost = -1;
-            if(clear_exclude_set)
-                prop.in_excluded_set = false;
+            prop.status = UNREACHED;
         }
     }
 
-    artificial_goal.h_max_cost = -1;
-    if(clear_exclude_set)
-        artificial_goal.in_excluded_set = false;
-    artificial_precondition.h_max_cost = -1;
-    if(clear_exclude_set)
-        artificial_precondition.in_excluded_set = false;
+    artificial_goal.status = UNREACHED;
+    artificial_precondition.status = UNREACHED;
 
     for(int i = 0; i < relaxed_operators.size(); i++) {
         RelaxedOperator &op = relaxed_operators[i];
@@ -153,14 +147,9 @@ void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
     enqueue_if_necessary(&artificial_precondition, 0);
 }
 
-void LandmarkCutHeuristic::relaxed_exploration(
-    bool first_exploration, vector<RelaxedOperator *> &cut) {
-    /* TODO: The second exploration essentially does a breadth-first
-       search because we don't really need to recompute h_max values
-       in that one -- we could make this even more efficient by
-       actually implementing it differently, but that would require
-       some more sweeping changes in data structures, so let's put
-       that off for a while. */
+void LandmarkCutHeuristic::first_exploration(const State &state) {
+    setup_exploration_queue();
+    setup_exploration_queue_state(state);
     for(int bucket_no = 0; bucket_no < reachable_queue.size(); bucket_no++) {
         for(;;) {
             Bucket &bucket = reachable_queue[bucket_no];
@@ -169,7 +158,6 @@ void LandmarkCutHeuristic::relaxed_exploration(
             //       resized.
             if(bucket.empty())
                 break;
-            assert(first_exploration || bucket_no == 0);
             RelaxedProposition *prop = bucket.back();
             bucket.pop_back();
             int prop_cost = prop->h_max_cost;
@@ -183,46 +171,152 @@ void LandmarkCutHeuristic::relaxed_exploration(
                 relaxed_op->unsatisfied_preconditions--;
                 assert(relaxed_op->unsatisfied_preconditions >= 0);
                 if(relaxed_op->unsatisfied_preconditions == 0) {
-                    if(first_exploration) {
-                        relaxed_op->h_max_supporter = prop;
-                        int target_cost = prop_cost + relaxed_op->cost;
-                        for(int j = 0; j < relaxed_op->effects.size(); j++) {
-                            RelaxedProposition *effect = relaxed_op->effects[j];
-                            enqueue_if_necessary(effect, target_cost);
-                        }
-                    } else {
-                        bool add_to_cut = false;
-                        for(int j = 0; j < relaxed_op->effects.size(); j++) {
-                            RelaxedProposition *effect = relaxed_op->effects[j];
-                            if(effect->in_excluded_set) {
-                                assert(relaxed_op->cost > 0);
-                                add_to_cut = true;
-                                cut.push_back(relaxed_op);
-                                break;
-                            }
-                        }
-                        if(!add_to_cut) {
-                            for(int j = 0; j < relaxed_op->effects.size(); j++) {
-                                RelaxedProposition *effect = relaxed_op->effects[j];
-                                enqueue_if_necessary(effect, 0);
-                            }
-                        }
-                    }
+		    relaxed_op->h_max_supporter = prop;
+		    int target_cost = prop_cost + relaxed_op->cost;
+		    for(int j = 0; j < relaxed_op->effects.size(); j++) {
+			RelaxedProposition *effect = relaxed_op->effects[j];
+			enqueue_if_necessary(effect, target_cost);
+		    }
                 }
             }
         }
     }
 }
 
+void LandmarkCutHeuristic::first_exploration_incremental(
+    vector<RelaxedOperator *> &cut) {
+    // TODO: This implementation may not be very suitable for problems
+    //       with action costs because of potential reexpansions; might
+    //       use a priority queue instead. Needs testing.
+    // TODO: We could probably integrate the h_max test with the h_max supporter
+    //       update to avoid iterating through the operator preconditions too
+    //       often.
+    // TODO: Maybe it's worth storing h_max values in the actual operators.
+    //       Or maybe not.
+    vector<pair<int, RelaxedOperator *> > queue;
+    for(int i = 0; i < cut.size(); i++) {
+	RelaxedOperator *op = cut[i];
+	queue.push_back(make_pair(op->h_max_cost() + op->cost, op));
+    }
+    while(!queue.empty()) {
+	int cost = queue.back().first;
+	RelaxedOperator *op = queue.back().second;
+	queue.pop_back();
+	for(int i = 0; i < op->effects.size(); i++) {
+	    RelaxedProposition *prop = op->effects[i];
+	    int old_prop_cost = prop->h_max_cost;
+	    if(old_prop_cost > cost) {
+		prop->h_max_cost = cost;
+		/* Note: Instead of iterations over all operators of which
+		   prop is a precondition, we only really want to iterate
+		   over all operators of which prop is the h_max supporter.
+		   Iterating over all instead may give us asymptotically
+		   worse performence, but maintaining the extra data
+		   structures to keep track of the best supporter relationship
+		   is probably a waste of time in the common case of few
+		   preconditions per operator.
+		   TODO: Try this out. */
+		for(int j = 0; j < prop->precondition_of.size(); j++) {
+		    RelaxedOperator *next_op = prop->precondition_of[j];
+		    if(next_op->h_max_supporter == prop) {
+			int next_op_cost = next_op->h_max_cost();
+			next_op->update_h_max_supporter();
+			if(next_op_cost < old_prop_cost) {
+			    queue.push_back(
+				make_pair(next_op_cost + next_op->cost,
+					  next_op));
+			}
+		    }
+		}
+	    }
+        }
+    }
+}
+
+void LandmarkCutHeuristic::second_exploration(
+    const State &state, vector<RelaxedProposition *> &queue, vector<RelaxedOperator *> &cut) {
+    assert(queue.empty());
+
+    artificial_precondition.status = BEFORE_GOAL_ZONE;
+    queue.push_back(&artificial_precondition);
+
+    for(int var = 0; var < propositions.size(); var++) {
+        RelaxedProposition *init_prop = &propositions[var][state[var]];
+	init_prop->status = BEFORE_GOAL_ZONE;
+	queue.push_back(init_prop);
+    }
+
+    while(!queue.empty()) {
+	RelaxedProposition *prop = queue.back();
+	queue.pop_back();
+	const vector<RelaxedOperator *> &triggered_operators =
+	    prop->precondition_of;
+	for(int i = 0; i < triggered_operators.size(); i++) {
+	    RelaxedOperator *relaxed_op = triggered_operators[i];
+	    if(relaxed_op->h_max_supporter == prop) {
+		bool reached_goal_zone = false;
+		for(int j = 0; j < relaxed_op->effects.size(); j++) {
+		    RelaxedProposition *effect = relaxed_op->effects[j];
+		    if(effect->status == GOAL_ZONE) {
+			assert(relaxed_op->cost > 0);
+			reached_goal_zone = true;
+			cut.push_back(relaxed_op);
+			break;
+		    }
+		}
+		if(!reached_goal_zone) {
+		    for(int j = 0; j < relaxed_op->effects.size(); j++) {
+			RelaxedProposition *effect = relaxed_op->effects[j];
+			if(effect->status != BEFORE_GOAL_ZONE) {
+			    assert(effect->status == REACHED);
+			    effect->status = BEFORE_GOAL_ZONE;
+			    queue.push_back(effect);
+			}
+		    }
+		}
+            }
+        }
+    }
+}
+
 void LandmarkCutHeuristic::mark_goal_plateau(RelaxedProposition *subgoal) {
-    assert(subgoal);
-    if(!subgoal->in_excluded_set) {
-        subgoal->in_excluded_set = true;
-        const vector<RelaxedOperator *> effect_of = subgoal->effect_of;
+    // NOTE: subgoal can be null if we got here via recursion through
+    // a zero-cost action that is relaxed unreachable. (This can only
+    // happen in domains which have zero-cost actions to start with.)
+    // For example, this happens in pegsol-strips #01.
+    if(subgoal && subgoal->status != GOAL_ZONE) {
+        subgoal->status = GOAL_ZONE;
+        const vector<RelaxedOperator *> &effect_of = subgoal->effect_of;
         for(int i = 0; i < effect_of.size(); i++)
             if(effect_of[i]->cost == 0)
                 mark_goal_plateau(effect_of[i]->h_max_supporter);
     }
+}
+
+void LandmarkCutHeuristic::validate_h_max() const {
+#ifndef NDEBUG
+    for(int i = 0; i < relaxed_operators.size(); i++) {
+	const RelaxedOperator *op = &relaxed_operators[i];
+	const vector<RelaxedProposition *> prec = op->precondition;
+	if(op->unsatisfied_preconditions) {
+	    bool reachable = true;
+	    for(int j = 0; j < prec.size(); j++)
+		if(prec[j]->status == UNREACHED) {
+		    reachable = false;
+		    break;
+		}
+	    assert(!reachable);
+	    assert(!op->h_max_supporter);
+	} else {
+	    assert(op->h_max_supporter);
+	    int h_max_cost = op->h_max_supporter->h_max_cost;
+	    for(int j = 0; j < prec.size(); j++) {
+		assert(prec[j]->status != UNREACHED);
+		assert(prec[j]->h_max_cost <= h_max_cost);
+	    }
+	}
+    }
+#endif
 }
 
 int LandmarkCutHeuristic::compute_heuristic(const State &state) {
@@ -231,27 +325,29 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         RelaxedOperator &op = relaxed_operators[i];
         op.cost = op.base_cost * COST_MULTIPLIER;
     }
-    
-    // cout << "*" << flush;
+
+    //cout << "*" << flush;
     int total_cost = 0;
+
+    // The following two variables could be declared inside the loop
+    // ("queue" even inside second_exploration), but having them here
+    // saves reallocations and hence provides a measurable speed
+    // boost.
     vector<RelaxedOperator *> cut;
-    while(true) {
-        cut.clear();
-        setup_exploration_queue(true);
-        setup_exploration_queue_state(state);
-        relaxed_exploration(true, cut);
-        assert(cut.empty());
-        int cost = artificial_goal.h_max_cost;
-        // cout << "cost = " << cost << "..." << endl;
-        if(cost == -1)
-            return DEAD_END;
-        if(cost == 0)
-            break;
-        // cout << "total_cost = " << total_cost << "..." << endl;
+    vector<RelaxedProposition *> queue;
+    first_exploration(state);
+    // validate_h_max();
+    if(artificial_goal.status == UNREACHED)
+	return DEAD_END;
+
+    int num_iterations = 0;
+    while ((artificial_goal.h_max_cost != 0) && ((iteration_limit == -1) || (num_iterations < iteration_limit))) {
+        num_iterations++;
+        //cout << "h_max = " << artificial_goal.h_max_cost << "..." << endl;
+        //cout << "total_cost = " << total_cost << "..." << endl;
         mark_goal_plateau(&artificial_goal);
-        setup_exploration_queue(false);
-        setup_exploration_queue_state(state);
-        relaxed_exploration(false, cut);
+        assert(cut.empty());
+        second_exploration(state, queue, cut);
         assert(!cut.empty());
         int cut_cost = numeric_limits<int>::max();
         for(int i = 0; i < cut.size(); i++) {
@@ -261,9 +357,43 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         }
         for(int i = 0; i < cut.size(); i++)
             cut[i]->cost -= cut_cost;
+	//cout << "{" << cut_cost << "}" << flush;
         total_cost += cut_cost;
-        assert(artificial_goal.h_max_cost == -1);
+
+
+
+	first_exploration_incremental(cut);
+	// validate_h_max();
+	// TODO: Need better name for all explorations; e.g. this could
+	//       be "recompute_h_max"; second_exploration could be
+	//       "mark_zones" or whatever.
+        cut.clear();
+
+	// TODO: Make this more efficient. For example, we can use
+	//       a round-dependent counter for GOAL_ZONE and BEFORE_GOAL_ZONE,
+	//       or something based on total_cost, in which case we don't
+	//       need a per-round reinitialization.
+	for(int var = 0; var < propositions.size(); var++) {
+	    for(int value = 0; value < propositions[var].size(); value++) {
+		RelaxedProposition &prop = propositions[var][value];
+		if(prop.status == GOAL_ZONE || prop.status == BEFORE_GOAL_ZONE)
+		    prop.status = REACHED;
+	    }
+	}
+	artificial_goal.status = REACHED;
+	artificial_precondition.status = REACHED;
     }
-    // cout << "[" << total_cost << "]" << flush;
+    //cout << "[" << total_cost << "]" << flush;
+    //cout << "**************************" << endl;
     return (total_cost + COST_MULTIPLIER - 1) / COST_MULTIPLIER;
 }
+
+/* TODO:
+   It looks like the change in r3638 reduced the quality of the heuristic
+   a bit (at least a preliminary glance at Elevators-03 suggests that).
+   The only arbitrary aspect is the tie-breaking policy in choosing h_max
+   supporters, so maybe that is adversely affected by the incremental
+   procedure? In that case, maybe we should play around with this a bit,
+   e.g. use a different tie-breaking rule in every round to spread out the
+   values a bit.
+ */

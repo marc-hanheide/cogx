@@ -1,9 +1,10 @@
-#ifndef STATE_PROXY_H_
-#define STATE_PROXY_H_
+#ifndef STATE_PROXY_H
+#define STATE_PROXY_H
 
 #include "state.h"
 #include "globals.h"
 
+#include <ext/hash_map>
 
 
 class StateProxy {
@@ -60,4 +61,4 @@ namespace __gnu_cxx {
 }
 
 
-#endif /* STATE_PROXY_H_ */
+#endif

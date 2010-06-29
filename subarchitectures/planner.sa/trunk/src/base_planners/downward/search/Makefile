@@ -10,11 +10,11 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  domain_transition_graph.h \
           operator.h state.h successor_generator.h causal_graph.h \
 	  best_first_search.h eager_greedy_best_first_search.h axioms.h cache.h \
-          search_engine.h open-lists/open_list_buckets.h closed_list.h \
-          timer.h open-lists/standard_scalar_open_list.h \
-          open-lists/tiebreaking_open_list.h open-lists/alternation_open_list.h \
-		  open-lists/pareto_open_list.h \
-	  search_space.h fh_open_list.h a_star_search.h general_eager_best_first_search.h \
+          search_engine.h open_lists/open_list_buckets.h closed_list.h \
+          timer.h open_lists/standard_scalar_open_list.h \
+          open_lists/tiebreaking_open_list.h open_lists/alternation_open_list.h \
+		  open_lists/pareto_open_list.h \
+	  search_node_info.h search_space.h fh_open_list.h a_star_search.h general_eager_best_first_search.h \
 	  landmarks/landmarks_graph.h landmarks/landmarks_graph_rpg_sasp.h \
 	  landmarks/landmarks_count_heuristic.h landmarks/exploration.h \
 	  landmarks/landmark_status_manager.h \
@@ -23,7 +23,22 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  landmarks/landmarks_graph_rpg_search.h\
 	  hm_heuristic.h \
 	  weighted_evaluator.h sum_evaluator.h g_evaluator.h general_lazy_best_first_search.h\
-	  lazy_best_first_search_engine.h lazy_wa_star.h
+	  lazy_best_first_search_engine.h lazy_wa_star.h \
+	  learning/feature_extractor.h \
+	  learning/state_vars_feature_extractor.h \
+	  learning/composite_feature_extractor.h \
+	  learning/node_info_feature_extractor.h \
+	  learning/landmarks_feature_extractor.h \
+	  learning/g_feature_extractor.h \
+	  learning/state_space_sample.h \
+	  learning/PDB_state_space_sample.h \
+	  learning/probe_state_space_sample.h \
+	  learning/classifier.h \
+	  learning/naive_bayes_classifier.h \
+	  learning/AODE.h \
+	  learning/selective_max_heuristic.h \
+          learning/maximum_heuristic.h \
+	  enforced_hill_climbing_search.h pref_evaluator.h search_progress.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 OBJECTS = $(SOURCES:%.cc=obj/%.o)
@@ -117,7 +132,7 @@ $(PROFILE_OBJECTS): obj/%.profile.o: %.cc
 
 $(RELEASE_OBJECTS): obj/%.release.o: %.cc
 	$(CC) $(RELEASEOPT) -c $< -o $@
-	
+
 clean:
 	rm -f $(OBJECTS) $(PROFILE_OBJECTS) $(RELEASE_OBJECTS) *~ *.pyc
 	rm -f Makefile.depend profile-search gmon.out PROFILE core

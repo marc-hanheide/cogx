@@ -1,5 +1,5 @@
-#ifndef LAZY_WA_STAR_H_
-#define LAZY_WA_STAR_H_
+#ifndef LAZY_WA_STAR_H
+#define LAZY_WA_STAR_H
 
 #include "general_lazy_best_first_search.h"
 
@@ -12,4 +12,4 @@ public:
     virtual ~LazyWeightedAStar();
 };
 
-#endif /* LAZY_WA_STAR_H_ */
+#endif
