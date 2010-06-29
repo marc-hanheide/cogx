@@ -24,7 +24,7 @@ void CGuiElement::notifyDataChange(const std::string& newValue, CChangeSlot* cha
 {
    DTRACE("CGuiElement::notifyDataChange");
    CGuiElementObserver *pObsrvr;
-   CObserver<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
+   CObserverList<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
    FOR_EACH(pObsrvr, Observers) {
       // The source of the data change should already be aware of the change
       // so we don't need to notify it.
@@ -44,10 +44,11 @@ void CGuiElement::syncControlState(const std::string& newValue, bool notify)
 {
    DTRACE("CGuiElement::syncControlState");
    CGuiElementObserver *pObsrvr;
-   CObserver<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
+   CObserverList<CGuiElementObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
    FOR_EACH(pObsrvr, Observers) {
       pObsrvr->onOwnerDataChanged(this, newValue);
    }
 }
 
 }} // namespace
+// vim:sw=3:ts=8:et

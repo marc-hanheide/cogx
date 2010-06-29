@@ -409,6 +409,39 @@ void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partI
 #endif
 }
 
+void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& id,
+      const std::string& partId, const std::string& htmlData)
+{
+#ifdef V11N_OBJECT_HTML
+   DTRACE("CDisplayServer::setHtmlForm");
+
+   CHtmlObject *pModel = NULL;
+   CDisplayObject *pExisting = m_Model.getObject(id);
+   if (pExisting) {
+      pModel = dynamic_cast<CHtmlObject*>(pExisting);
+      if (! pModel) {
+         // The retreived model is of a different type, we must replace it
+         m_Model.removeObject(id);
+         DMESSAGE("Replacing an exisiting object of different type.");
+      }
+   }
+
+   if (pModel) {
+      if (htmlData.size() < 1) pModel->removePart(partId);
+      else pModel->setForm(ident, partId, htmlData);
+      //m_Model.registerHtmlForm(ident, id, partId);
+      m_Model.refreshObject(id);
+   }
+   else {
+      pModel = new CHtmlObject();
+      pModel->m_id = id;
+      pModel->setForm(ident, partId, htmlData);
+      //m_Model.registerHtmlForm(ident, id, partId);
+      m_Model.setObject(pModel);
+   }
+#endif
+}
+
 void CDisplayServer::setObjectTransform2D(const std::string& id, const std::string& partId,
       const std::vector<double>& transform)
 {
@@ -542,8 +575,6 @@ void CDisplayServerI::run()
 {
    m_pDisplayServer->debug("CDisplayServerI->run() entered");
    // Called by CCallbackSenderThread
-   // TODO: the real work should probably be performed by m_pDisplayServer
-   // OTOH this function could monitor the (event) queues of m_pDisplayServer
    while (true) {
       std::set<Visualization::EventReceiverPrx> clients;
       CPtrVector<CGuiElementValue> changes;
@@ -569,7 +600,7 @@ void CDisplayServerI::run()
 
       if(!clients.empty() && !changes.empty()) {
          DTRACE("EventServer Woke up. Sending events.");
-         // TODO: check the queues and send messages
+         // check the queues and send messages
          CGuiElementValue *pChange;
          set<Visualization::EventReceiverPrx>::iterator p;
          for(p = clients.begin(); p != clients.end(); p++) {
@@ -580,11 +611,13 @@ void CDisplayServerI::run()
                      continue;
 
                   if (pChange->mode == CGuiElementValue::get) {
+                     // Get data from the ui elemente owner
                      std::string val = (*p)->getControlState(pChange->pElement->m_id);
                      if (val.size() > 0)
                         pChange->pElement->syncControlState(val);
                   }
                   else if (pChange->mode == CGuiElementValue::set) {
+                     // Send new data to the ui elemente owner
                      switch (pChange->pElement->m_type) {
                         case CGuiElement::wtCheckBox:
                            event.type = Visualization::evCheckBoxChange; break;
@@ -648,7 +681,7 @@ void CDisplayServerI::destroyEventServer()
 void CDisplayServerI::addClient(const Ice::Identity& ident, const Ice::Current& current)
 {
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-   cout << "adding client `" << ident.name << ":" << ident.category << "'"<< endl;
+   cout << "v11n: adding client `" << ident.name << ":" << ident.category << "'"<< endl;
 
    // HACK: The EventReceiver has the same id as the main component, but a different
    // category; it runs on the same machine as the component.
@@ -665,9 +698,10 @@ void CDisplayServerI::addClient(const Ice::Identity& ident, const Ice::Current& 
    m_EventClients.insert(client);
 
    // from the demo (doesn't work, returns NULL even on the same machine):
-   //Visualization::EventReceiverPrx client =
+   // Visualization::EventReceiverPrx client =
    //      Visualization::EventReceiverPrx::uncheckedCast(current.con->createProxy(ident));
-   cout << "added `" << ident.name << ":" << ident.category << "'"<< endl;
+   // -------------
+   cout << "v11n: added `" << ident.name << ":" << ident.category << "'"<< endl;
 }
 
 // put the event into a queue and wake up the event (callback) server

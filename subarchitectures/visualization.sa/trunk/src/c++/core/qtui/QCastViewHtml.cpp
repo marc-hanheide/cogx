@@ -23,7 +23,7 @@
 #endif
 #include "convenience.hpp"
 
-static const QString jsObjectName("CastQFormObserver");
+static const QString jsObjectName("CastQFormProxy");
 QString QCastViewHtml::m_jQuery;
 
 QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
@@ -48,7 +48,7 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    }
 
    // Capture GET and POST events from forms that support it
-   m_jsFormCap = QCastFormObserver::getJavaScript(jsObjectName, true);
+   m_jsFormCap = QCastFormProxy::getJavaScript(jsObjectName, true);
    QWebPage* pPage = page();
    QWebFrame* pFrame = NULL;
    if (pPage) pFrame = pPage->currentFrame();
@@ -76,7 +76,9 @@ void QCastViewHtml::createJsObjects()
    QWebFrame* pFrame = NULL;
    if (pPage) pFrame = pPage->currentFrame();
    if (pFrame) {
-      QObject* pObj = new QCastFormObserver();
+      // TODO: QCastFormObserver needs pModel to find registered html forms 
+      // and retreive the IDs of components to be notified
+      QObject* pObj = new QCastFormProxy();
       pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
    }
 }
@@ -88,6 +90,10 @@ void QCastViewHtml::finishLoading(bool)
    // page()->mainFrame()->evaluateJavaScript(m_jQuery);
 }
 
+void QCastViewHtml::setModel(cogx::display::CDisplayModel* pDisplayModel)
+{
+   pModel = pDisplayModel;
+}
 
 void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
 {
@@ -119,6 +125,7 @@ void QCastViewHtml::doUpdateContent()
 {
    DTRACE("QCastViewHtml::doUpdateContent");
 
+   // TODO: save current form values and restore after update
    if (pView) {
       QStringList list, head, body;
       QWebPage* pPage = page();

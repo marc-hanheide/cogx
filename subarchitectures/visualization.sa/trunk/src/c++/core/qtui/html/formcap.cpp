@@ -8,38 +8,70 @@
 #endif
 #include "convenience.hpp"
 
-void QCastFormObserver::setPost(const QMap<QString,QVariant>& object)
+QCastFormProxy::QCastFormProxy(/*CHtmlChunk* pForm*/)
 {
-   DTRACE("QCastFormObserver::setPost");
-   _post = object;
-#ifdef DEBUG_TRACE
-   foreach (QString str, object.keys()) {
-      DMESSAGE(str.toStdString() << ":" << object.value(str).toString().toStdString());
+   //m_pForm = pForm;
+   m_pForm = NULL;
+   if (m_pForm) {
+      m_pForm->Observers.addObserver(this);
    }
-#endif
 }
 
-QMap<QString, QVariant> QCastFormObserver::getPost()
+QCastFormProxy::~QCastFormProxy()
 {
-   DTRACE("QCastFormObserver::getPost");
+   if (m_pForm) {
+      m_pForm->Observers.removeObserver(this);
+   }
+}
+
+void QCastFormProxy::sendValues(const QMap<QString,QVariant>& object)
+{
+   DTRACE("QCastFormProxy::sendValues");
+   if (m_pForm) {
+      cogx::display::TFormValues vals;
+      foreach (QString str, object.keys()) {
+         vals[str.toStdString()] = object.value(str).toString().toStdString();
+         DMESSAGE(str.toStdString() << ":" << object.value(str).toString().toStdString());
+      }
+      m_pForm->notifyFormSubmit(vals, this);
+   }
+   else {
+      DMESSAGE("FORM NOT ATTACHED");
+      foreach (QString str, object.keys()) {
+         DMESSAGE(str.toStdString() << ":" << object.value(str).toString().toStdString());
+      }
+   }
+}
+
+void QCastFormProxy::setPost(const QString& formid, const QMap<QString,QVariant>& object)
+{
+   DTRACE("QCastFormProxy::setPost " << formid.toStdString());
+   _post = object;
+   sendValues(object);
+}
+
+QMap<QString, QVariant> QCastFormProxy::getPost()
+{
+   DTRACE("QCastFormProxy::getPost");
    return _post;
 }
 
-void QCastFormObserver::setGet(const QMap<QString,QVariant>& object)
+void QCastFormProxy::setGet(const QString& formid, const QMap<QString,QVariant>& object)
 {
-   DTRACE("QCastFormObserver::setGet");
+   DTRACE("QCastFormProxy::setGet");
    _get = object;
+   sendValues(object);
 }
 
-QMap<QString, QVariant> QCastFormObserver::getGet()
+QMap<QString, QVariant> QCastFormProxy::getGet()
 {
-   DTRACE("QCastFormObserver::getGet");
+   DTRACE("QCastFormProxy::getGet");
    return _get;
 }
 
-QString QCastFormObserver::getJavaScript(const QString& jsObjectName, bool htmlScriptBlock)
+QString QCastFormProxy::getJavaScript(const QString& jsObjectName, bool htmlScriptBlock)
 {
-   DTRACE("QCastFormObserver::getJavaScript");
+   DTRACE("QCastFormProxy::getJavaScript");
    QStringList str;
    if (htmlScriptBlock) str << "<script type=\"text/javascript\">\n";
    QString jsc = jscode_formcap_js;
@@ -48,4 +80,17 @@ QString QCastFormObserver::getJavaScript(const QString& jsObjectName, bool htmlS
    return str.join("");
 }
 
+// This function can only be called if the form is displayed in multiple windows and
+// is submitted in another window.
+void QCastFormProxy::onFormSubmitted(cogx::display::CHtmlChunk *pForm,
+      const cogx::display::TFormValues& newValues)
+{
+   // TODO: pass the data to the form
+}
+
+void QCastFormProxy::onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,
+      const cogx::display::TFormValues& newValues)
+{
+   // TODO: (important) pass the data to the form
+}
 

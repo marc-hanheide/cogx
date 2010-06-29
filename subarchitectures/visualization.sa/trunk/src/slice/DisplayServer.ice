@@ -50,6 +50,10 @@ module Visualization
       void setHtml(string id, string partId, string htmlData);
       void setHtmlHead(string id, string partId, string htmlData);
 
+      // Create an active HTML form that sends the data to the client.
+      // Note: don't use the <form> tag in htmlData, it will be added.
+      void setHtmlForm(Ice::Identity ident, string id, string partId, string htmlData);
+
       // Event handlers need to subscribe
       // TODO: parameter: which views to watch
       void addClient(Ice::Identity ident);
@@ -89,3 +93,4 @@ module Visualization
 };
 
 #endif
+// vim:sw=3:ts=8:et:ai

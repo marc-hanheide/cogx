@@ -16,14 +16,14 @@ $.fn.serializeObject = function(){
     });
     return object;
 };
-var POST = MyQObject.getPost();
-var GET = MyQObject.getGet();
+//var POST = MyQObject.getPost();
+//var GET = MyQObject.getGet();
 function MyLibSubmit(form_selector) {
     var ob = $(form_selector).serializeObject();
     if ($(form_selector).attr('method').toLowerCase() == 'post') {
-	MyQObject.setPost(ob);
+	MyQObject.setPost(form_selector, ob);
     } else {
-	MyQObject.setGet(ob);
+	MyQObject.setGet(form_selector, ob);
     }
     return true;
 }
