@@ -43,18 +43,37 @@ namespace CAST_THREADS {
 
 
 
-void* DTPCONTROL__pthread_METHOD_CALLBACK(void* _argument)
+void* DTPCONTROL__pthread_METHOD_post_action__CALLBACK(void* _argument)
 {
-    VERBOSER(1000, "DTP starting thread for posting actions.");
+    VERBOSER(1001, "DTP starting thread for posting actions.");
     
     typedef std::tr1::tuple<int, DTPCONTROL*> Argument;
     auto argument = reinterpret_cast< Argument*>(_argument);
     auto task_id = std::tr1::get<0>(*argument);
     auto dtpcontrol = std::tr1::get<1>(*argument);
 
-    VERBOSER(1000, "DTP making post_action call for :: "<<task_id);
+    VERBOSER(1001, "DTP making post_action call for :: "<<task_id);
     
     dtpcontrol->post_action(task_id);
+
+    delete argument;
+    
+    pthread_exit(_argument);
+}
+
+void* DTPCONTROL__pthread_METHOD_get_observation__CALLBACK(void* _argument)
+{
+    VERBOSER(1001, "DTP starting thread for posting actions.");
+    
+    typedef std::tr1::tuple<int,  DTPCONTROL*, autogen::Planner::ObservationSeq> Argument;
+    auto argument = reinterpret_cast< Argument*>(_argument);
+    auto task_id = std::tr1::get<0>(*argument);
+    auto dtpcontrol = std::tr1::get<1>(*argument);
+    auto osequence = std::tr1::get<2>(*argument);
+
+    VERBOSER(1001, "DTP making post_action call for :: "<<task_id);
+    
+    dtpcontrol->get_observation(task_id, osequence);
 
     delete argument;
     
@@ -70,10 +89,12 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
     
     /*The thread at $id$ is wanted.*/
     thread_statuus[id] = true;
-    Mutex mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t());
-    thread_mutex[id] = mutex;
+//     Mutex mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t());
+//     thread_mutex[id] = mutex;
     
-    
+//     Mutex _mutex(CAST_THREADS::give_me_a_new__pthread_mutex_t());
+//     whose_turn_is_it__mutex[id] = _mutex;
+    whose_turn_is_it[id] = Turn::actor;
     
     
     threads[id] = thread;
@@ -108,7 +129,7 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
     auto number_of_attempted_thread_invocations = 0;
     while(0 != (result = pthread_create(thread.get(),
                                         attributes.get(),
-                                        DTPCONTROL__pthread_METHOD_CALLBACK,
+                                        DTPCONTROL__pthread_METHOD_post_action__CALLBACK,
                                         argument))){
         
 #ifdef _POSIX_THREAD_THREADS_MAX
@@ -173,6 +194,108 @@ void DTPCONTROL::spawn__post_action__thread(Ice::Int id)
                                   <<number_of_attempted_thread_invocations
                                   <<" times... and still nothing!");
         
+    }
+}
+
+void DTPCONTROL::spawn__get_observation__thread(Ice::Int id,  const autogen::Planner::ObservationSeq& osequence)
+{
+    
+    auto thread = Thread(new pthread_t());
+    auto attributes = Thread_Attributes(new pthread_attr_t());
+    
+    QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_init(attributes.get()),
+                              "Failed to initialise thread attributes for DTP planning task :: "
+                              <<id);
+
+    
+    QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setdetachstate(attributes.get(), PTHREAD_CREATE_DETACHED),//PTHREAD_CREATE_JOINABLE),
+                              "Failed to make detached thread attributes for DTP planning task :: "
+//                               "Failed to make joinable thread attributes for DTP planning task :: "
+                              <<id);
+    
+    QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setscope(attributes.get(), PTHREAD_SCOPE_SYSTEM),
+                              "Failed to make thread attributes with SYSTEM scope for DTP planning task :: "
+                              <<id);
+
+    
+    QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setinheritsched(attributes.get(), PTHREAD_INHERIT_SCHED),
+                              "Failed to make thread attributes with the execution scheduling"<<std::endl
+                              <<"of its parent for task :: "
+                              <<id);
+    
+    
+    typedef std::tr1::tuple<Ice::Int, DTPCONTROL*, autogen::Planner::ObservationSeq> Argument;
+    Argument* argument = new Argument(id, this, osequence);
+    
+    /*Attempt to spawn a new thread.*/
+    auto result = 0;
+    auto number_of_attempted_thread_invocations = 0;
+    while(0 != (result = pthread_create(thread.get(),
+                                        attributes.get(),
+                                        DTPCONTROL__pthread_METHOD_get_observation__CALLBACK,
+                                        argument))){
+        
+#ifdef _POSIX_THREAD_THREADS_MAX
+        WARNING("Failed to spawn a thread. "
+                <<"Perhaps the upper limit on the number we can spawn is :: "
+                <<_POSIX_THREAD_THREADS_MAX<<".");
+#endif
+
+                
+        switch(result){
+            case EAGAIN:
+                WARNING("Your system lacked the necessary resources"
+                        <<" to create another thread, OR your system-imposed"
+                        <<" limit  on  the  total  number  of threads in"
+                        <<" a process {PTHREAD_THREADS_MAX} would be exceeded. Nice grammar!!"
+                        <<" Anyway, I will try again after waiting for threads"
+                        <<" I am perhaps responsible for...");
+                usleep(100 * number_of_attempted_thread_invocations);
+                break;
+            case EINVAL:
+                UNRECOVERABLE_ERROR("My bad. I specified thread attribute values that are invalid."
+                                    <<" Nothing to be done.. so I am killing myself "
+                                    <<"-- i.e., \"pthread_exit(0)\".");
+
+                pthread_exit(0);
+                break;
+            case EPERM:
+                UNRECOVERABLE_ERROR("The caller does not have appropriate permission to"
+                                    <<" set the required scheduling parameters or"
+                                    <<" scheduling policy. Whatever that means ;)"
+                                    <<" Nothing to be done, I am killing myself -- "
+                                    <<"-- i.e., \"pthread_exit(0)\".");
+                        
+                pthread_exit(0);
+                break;
+                /*#include<bits/local_lim.h>*/
+
+            case ENOMEM:
+                UNRECOVERABLE_ERROR("Oh great! pthread_create() just gave me a ENOMEM. "
+                                    <<"This undocumented behaviour occurs under Redhat Linux 2.4 "
+                                    <<"when too many threads have been created in the non-detached "
+                                    <<"mode, and the limited available memory in some system stack "
+                                    <<"is consumed. At that point no new threads can be created "
+                                    <<"in non-detached mode until those threads are "
+                                    <<"detached/killed, or the parent process(es) killed and restarted. "
+                                    <<"My behaviour here is to crash, better luck next time chief!");
+                        
+                pthread_exit(0);
+                break;
+            default:
+                WARNING("No idea why we couldn't spawn a thread. The error code we were given is :: "
+                        <<result<<" Trying again...");
+                usleep((10 * number_of_attempted_thread_invocations));
+                break;
+        }
+           
+        number_of_attempted_thread_invocations++;     
+                
+        QUERY_UNRECOVERABLE_ERROR(number_of_attempted_thread_invocations > 4,/*FIX : Magic number*/
+                                  "Can't start an observation thread for task :: "<<id
+                                  <<" Already tried :: "
+                                  <<number_of_attempted_thread_invocations
+                                  <<" times... and still nothing!");   
     }
 }
 
@@ -252,24 +375,28 @@ bool DTPCONTROL::cannot_be_killed() const
     return answer;
 }
 
-void DTPCONTROL::deliverObservation(Ice::Int id,
-                                    const autogen::Planner::ObservationSeq& observationSeq,
-                                    const Ice::Current&){
-    VERBOSER(1000, "DTP got an observation for task :: "<<id);
+void DTPCONTROL::get_observation(Ice::Int id,
+                                 const autogen::Planner::ObservationSeq& observationSeq)
+{
+
+    VERBOSER(1001, "DTP got an observation posted for task :: "<<id);
+    get_turn(id, Turn::observer);
+    
     METHOD_PREFIX;
-    VERBOSER(1000, "DTP dealing with an observation for task  :: "<<id);
+    VERBOSER(1001, "DTP dealing with an observation for task  :: "<<id);
     
     /* Supposed to be ignoring signals on to $id$.*/
     if(!thread_statuus[id]){
-        VERBOSER(1000, "DTP was requested to ignore observations on task :: "<<id);
+        VERBOSER(1001, "DTP was requested to ignore observations on task :: "<<id);
         METHOD_RETURN;
     }
     
     /* Task is being killed.*/
     if(observationSeq.size() == 0){
         thread_statuus[id] = false;
-        VERBOSER(1000, "DTP observation was to kill task  :: "<<id);
-        pthread_mutex_unlock(thread_mutex[id].get());
+        VERBOSER(1001, "DTP observation was to kill task  :: "<<id);
+//         pthread_mutex_unlock(thread_mutex[id].get());
+        swap_turn(id, Turn::observer);
         METHOD_RETURN;
     }
 
@@ -292,7 +419,7 @@ void DTPCONTROL::deliverObservation(Ice::Int id,
         (thread_to_domain.find(id) == thread_to_domain.end()
          , "Could not find domain for task :: "<<id<<std::endl);
 
-    VERBOSER(1000, "DTP has a domain for task :: "<<id<<std::endl
+    VERBOSER(1001, "DTP has a domain for task :: "<<id<<std::endl
              <<"And is therefore at a point to take the observation seriously.");
     
     std::vector<std::string> observations;
@@ -309,24 +436,66 @@ void DTPCONTROL::deliverObservation(Ice::Int id,
     Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
     Planning::Parsing::problems[pi]->report__observations(observations);
     
-    VERBOSER(1000, "DTP observation now triggering action on task  :: "<<id);
-    pthread_mutex_unlock(thread_mutex[id].get());
+    VERBOSER(1001, "DTP observation now triggering action on task  :: "<<id);
+    swap_turn(id, Turn::observer);
+//     pthread_mutex_unlock(thread_mutex[id].get());
     
-    METHOD_RETURN;
+    METHOD_RETURN; 
+}
+
+void DTPCONTROL::deliverObservation(Ice::Int id,
+                                    const autogen::Planner::ObservationSeq& observationSeq,
+                                    const Ice::Current&){
+    
+    VERBOSER(1001, "DTP THREAD SPAWNING got an observation posted for task :: "<<id);
+    spawn__get_observation__thread(id, observationSeq);
+}
+
+void DTPCONTROL::swap_turn(Ice::Int id, Turn turn)
+{
+    assert(whose_turn_is_it.find(id) != whose_turn_is_it.end());
+//     pthread_mutex_lock(whose_turn_is_it__mutex[id].get());
+    whose_turn_is_it[id] = ((turn==Turn::actor)?(Turn::observer):(Turn::actor));
+//     pthread_mutex_unlock(whose_turn_is_it__mutex[id].get());
+}
+
+void DTPCONTROL::get_turn(Ice::Int id, Turn turn)
+{
+    
+    bool my_turn = false;
+    while(!my_turn){
+        LOOP_OPEN;
+        
+        if(whose_turn_is_it.find(id) == whose_turn_is_it.end()){
+            LOOP_CLOSE;
+            break;
+        }
+        
+        
+//         pthread_mutex_lock(whose_turn_is_it__mutex[id].get());
+        my_turn = (whose_turn_is_it[id] == ((turn==Turn::actor)?(Turn::actor):(Turn::observer)));
+//         pthread_mutex_unlock(whose_turn_is_it__mutex[id].get());
+        LOOP_CLOSE;
+        
+        usleep(10);
+    }
 }
 
 void  DTPCONTROL::post_action(Ice::Int id)
 {
-    VERBOSER(1000, "DTP posting actions on :: "<<id);
+    VERBOSER(1001, "DTP posting actions on :: "<<id);
     
     while(true){//thread_statuus[id]){
-        VERBOSER(1000, "DTP action posting trying for mutex :: "<<id);
-        pthread_mutex_lock(thread_mutex[id].get());
-        VERBOSER(1000, "DTP action posting got mutex for :: "<<id);
+        VERBOSER(1001, "DTP action posting trying for mutex :: "<<id);
+        
+        get_turn(id, Turn::actor);
+//         pthread_mutex_lock(thread_mutex[id].get());
+        
+        VERBOSER(1001, "DTP action posting got mutex for :: "<<id);
         LOOP_OPEN;
         
         if(!thread_statuus[id]){
-            VERBOSER(1000, "DTP no need to post action on :: "<<id<<std::endl
+            VERBOSER(1001, "DTP no need to post action on :: "<<id<<std::endl
                      <<"Action posting on that task is shutting down.");
             break;
         }
@@ -336,6 +505,9 @@ void  DTPCONTROL::post_action(Ice::Int id)
              , "DTP Could not find domain for task :: "<<id<<std::endl);
         
         Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
+        QUERY_UNRECOVERABLE_ERROR
+            (Planning::Parsing::problems.find(pi) == Planning::Parsing::problems.end()
+             , "DTP Could not find problem for task :: "<<id<<std::endl);
         auto action = Planning::Parsing::problems[pi]->get__prescribed_action();
 
         
@@ -347,7 +519,7 @@ void  DTPCONTROL::post_action(Ice::Int id)
         auto _arguments = std::tr1::get<1>(action.contents());
         std::vector<std::string> action_arguments;
 
-        VERBOSER(1000, "DTP posting an action :: "<<action_name<<std::endl
+        VERBOSER(1001, "DTP posting an action :: "<<action_name<<std::endl
                  <<"Arguments are :: "<<_arguments);
         for(auto argument = _arguments.begin()
                 ; argument != _arguments.end()
@@ -357,7 +529,7 @@ void  DTPCONTROL::post_action(Ice::Int id)
             auto _argument = oss.str();
             
             action_arguments.push_back(_argument);
-            VERBOSER(1000, "Arg :: "<<_argument);
+            VERBOSER(1001, "Arg :: "<<_argument);
         }
         
         /*Moritz, how do I go about this???*/
@@ -368,25 +540,28 @@ void  DTPCONTROL::post_action(Ice::Int id)
         pddlaction->arguments = action_arguments;
 
         
-        VERBOSER(1000, "DTP Posting the action :: "<<pddlaction->name);
+        VERBOSER(1001, "DTP Posting the action :: "<<pddlaction->name);
         pyServer->deliverAction(id, pddlaction);
-        VERBOSER(1000, "DTP Done posting the action :: "<<pddlaction->name);
+        VERBOSER(1001, "DTP Done posting the action :: "<<pddlaction->name);
 
 
-        VERBOSER(1000, "Closing the action posting loop for task :: "<<id);
+        VERBOSER(1001, "Closing the action posting loop for task :: "<<id);
+
+        swap_turn(id, Turn::actor);
         LOOP_CLOSE;
     }
 
-    VERBOSER(1000, "DTP killing task  :: "<<id);
+    VERBOSER(1001, "DTP killing task  :: "<<id);
     
-    pthread_mutex_unlock(thread_mutex[id].get()); 
-    pthread_mutex_destroy(thread_mutex[id].get());
+//     pthread_mutex_unlock(thread_mutex[id].get()); 
+//     pthread_mutex_destroy(thread_mutex[id].get());
     pthread_attr_destroy(thread_attributes[id].get());
     thread_attributes.erase(id);
     threads.erase(id);
-    thread_mutex.erase(id);
+//     thread_mutex.erase(id);
     thread_to_domain.erase(id);
     thread_to_problem.erase(id);
+    whose_turn_is_it.erase(id);
     
     METHOD_RETURN;
 }
@@ -416,7 +591,7 @@ void DTPCONTROL::stop()
 }
 
 void DTPCONTROL::runComponent(){
-    VERBOSER(1000, "CAST runComponent called for DTP.");
+    VERBOSER(1001, "CAST runComponent called for DTP.");
 }
 
 void DTPCONTROL::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current)
@@ -444,22 +619,36 @@ void DTPCONTROL::newTask(Ice::Int id,
 {
     METHOD_PREFIX;
     
-    VERBOSER(1000, "DTP for task ::"<<id
+    VERBOSER(1001, "DTP for task ::"<<id
              <<" got problem at :: "<<problemFile
              <<" and domain at :: "<<domainFile);
 
 
-    VERBOSER(1000, "DTP Parsing domain."<<std::endl);
+    VERBOSER(1001, "DTP Parsing domain."<<std::endl);
     Planning::Parsing::parse_domain(domainFile);
     
-    VERBOSER(1000, "DTP Parsing problem."<<std::endl);
+    VERBOSER(1001, "DTP Parsing problem."<<std::endl);
     Planning::Parsing::parse_problem(problemFile);
-
-    VERBOSER(1000, "DTP Attempting thread assignments."<<std::endl);
-    thread_to_domain[id] = Planning::Parsing::domain_Stack->get__domain_Name();
-    thread_to_problem[id] = Planning::Parsing::problem_Stack->get__problem_Name();
     
-    VERBOSER(1000, "DTP Spawning the thread that posts actions to Moritz's system."<<std::endl);
+    VERBOSER(1001, "DTP Attempting thread assignments. \n"
+             <<"Thread :: "<<id<<std::endl
+             <<"Problem :: "<<Planning::Parsing::problem_Stack->get__problem_Name()<<std::endl
+             <<"Domain :: "<<Planning::Parsing::problem_Stack->get__domain_Data()->get__domain_Name()<<std::endl);
+//     thread_to_domain[id] = Planning::Parsing::domain_Stack->get__domain_Name();
+    thread_to_domain[id] = Planning::Parsing::problem_Stack->get__domain_Data()->get__domain_Name();
+    thread_to_problem[id] = Planning::Parsing::problem_Stack->get__problem_Name();
+
+
+    QUERY_UNRECOVERABLE_ERROR
+        (thread_to_domain.find(id) == thread_to_domain.end()
+         , "DTP just finished parsing, and yet could not find domain for task :: "<<id<<std::endl);
+        
+    Planning::Parsing::Problem_Identifier pi(thread_to_domain[id], thread_to_problem[id]);
+    QUERY_UNRECOVERABLE_ERROR
+        (Planning::Parsing::problems.find(pi) == Planning::Parsing::problems.end()
+         , "DTP Could not find problem for task :: "<<id<<std::endl);
+    
+    VERBOSER(1001, "DTP Spawning the thread that posts actions to Moritz's system."<<std::endl);
     /*Planning is complete, now start \member{post_action} in a thread.*/
     spawn__post_action__thread(id);
 
@@ -469,7 +658,7 @@ void DTPCONTROL::newTask(Ice::Int id,
 
 void DTPCONTROL::cancelTask(Ice::Int id, const Ice::Current& ice_current)
 {
-    VERBOSER(1000, "DTP cancel called for task :: "<<id<<std::endl);
+    VERBOSER(1001, "DTP cancel called for task :: "<<id<<std::endl);
     deliverObservation(id,
                        autogen::Planner::ObservationSeq(),
                        ice_current);

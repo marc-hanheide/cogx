@@ -70,4 +70,9 @@ void Planning::Parsing::parse_problem(const std::string& problem_file_name)
                                   problem_Stack->get__problem_Name());
     
     problems[identifier] = Planning::Parsing::problem_Stack;
+
+    
+//     QUERY_UNRECOVERABLE_ERROR
+//         (Planning::Parsing::problems.find(pi) == Planning::Parsing::problems.end()
+//          , "DTP Could not find problem for task :: "<<id<<std::endl);
 }

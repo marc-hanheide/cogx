@@ -41,7 +41,7 @@ Old fashioned debugging -- ERROR STREAM
 
 ---------------------------------*/
 #ifndef DEBUG_LEVEL
-#define DEBUG_LEVEL 500
+#define DEBUG_LEVEL 1000
 #endif
 
 #ifndef DEBUG_LINE_WIDTH

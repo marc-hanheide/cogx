@@ -25,6 +25,8 @@ class DTPCONTROL :
     public cast::CASTComponent 
 {
 public:
+    enum Turn {observer, actor};
+    
     DTPCONTROL();
     ~DTPCONTROL();
 
@@ -39,6 +41,14 @@ public:
     /* Running in a thread. Is woken up every time an observation comes
      * in on the relevant task.*/
     void post_action(Ice::Int id);
+
+    
+    void get_turn(Ice::Int id, Turn turn);
+    void swap_turn(Ice::Int id, Turn turn);
+    
+    /*(see \method{deliverObservation})*/
+    void get_observation(Ice::Int id,
+                    const autogen::Planner::ObservationSeq& observationSeq);
 protected:
 
     
@@ -65,7 +75,9 @@ private:
      * thread_mutex, threads, thread_attributes} are configured during
      * this call.*/ 
     void spawn__post_action__thread(Ice::Int id);
-
+    void spawn__get_observation__thread(Ice::Int id,
+                                        const autogen::Planner::ObservationSeq& osequence);
+    
     /* Name of the CAST planning component (see \module{WMControl} and
      * \method{configure})*/
     std::string m_python_server;
@@ -84,11 +96,16 @@ private:
      * with task \index{Ice::Int}*/
     std::map<Ice::Int, bool> thread_statuus;
     
-    /* Mutex (action executes, then observation is received, then
-     * action executes, etc...) associated with task
-     * \index{Ice::Int}*/
-    std::map<Ice::Int, Mutex> thread_mutex;
-
+//     /* Mutex (action executes, then observation is received, then
+//      * action executes, etc...) associated with task
+//      * \index{Ice::Int}*/
+//     std::map<Ice::Int, Mutex> thread_mutex;
+    
+    /* Should be be observing or acting on thread \argument{Ice::Int}.*/
+    std::map<Ice::Int, Turn> whose_turn_is_it;
+//     std::map<Ice::Int, Mutex> whose_turn_is_it__mutex;
+        
+    
     /* Can this class be destructed.*/
     mutable Mutex destructor_mutex;
     
