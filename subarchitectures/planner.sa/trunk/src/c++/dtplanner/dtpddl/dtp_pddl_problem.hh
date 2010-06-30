@@ -101,7 +101,8 @@ namespace Planning
         struct Metric
             : seq< pad<s_Metric, space>
                    , Optimisation_Criteria
-                   , Effect_Subformulae<Typeless_Function> > {};
+                   , Effect_Subformulae<Typeless_Function>
+                   , ifapply<success, Objective_Formula__Action>  > {};
         
         /******************************************************************************************************************
          * Domain associated with problem specification.

@@ -29,37 +29,57 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  *
  */
-#ifndef DTP_PDDL_PARSING_ACTIONS_PROBLEM_HH
-#define DTP_PDDL_PARSING_ACTIONS_PROBLEM_HH
 
 
-#include "dtp_pddl_parsing_actions.hh"
+#ifndef SOLVER_HH
+#define SOLVER_HH
+
+#include "dtp_pddl_parsing_data.hh"
 #include "dtp_pddl_parsing_data_problem.hh"
 
 namespace Planning
 {
-    namespace Parsing
+    class Solver
     {
-        using namespace pegtl;
-        
-        DECLARATION__PEGTL_ACTION(Minimise__Action);
-        DECLARATION__PEGTL_ACTION(Maximise__Action);
-        DECLARATION__PEGTL_ACTION(Problem_Name__Action);
-        DECLARATION__PEGTL_ACTION(Starting_State__Action);
-        DECLARATION__PEGTL_ACTION(Objective_Formula__Action);
-        
-//         SIMPLE_PEGTL_ACTION(, );
-//         SIMPLE_PEGTL_ACTION(, );
-//         FORWARDING_PEGTL_ACTION(, );
-//         FORWARDING_PEGTL_ACTION(, );
-//         FORWARDING_PEGTL_ACTION(, );
-//         UNIMPLEMENTED_PEGTL_ACTION();/* TODO */
-//         UNIMPLEMENTED_PEGTL_ACTION();/* TODO */
-//         UNIMPLEMENTED_PEGTL_ACTION();/* TODO */
-//         UNIMPLEMENTED_PEGTL_ACTION();/* TODO */
-        
-    }
-}
+    public:
+        /*Problem that is the target of the solution procedure.*/
+        Solver(Planning::Parsing::Problem_Data&);
 
+        /*
+         *
+         * - Merge instance data from the \member{problem} and its
+         * associated problem.
+         *
+         */
+        void preprocess();
+
+        /*Is this solver in a sane state?*/
+        bool sanity() const;
+
+    private:
+
+        /* - Add \member{domain_Data::constants} and assocaited data to
+         * \member{problem_Data}.*/
+        void proprocess__Constants_Data();
+        
+    private:
+        
+        /* PDDL types for \member{constants}*/
+        C__PTR_ANNOTATION(Planning::Parsing::Problem_Data::Constants_Description) constants_Description;
+        
+        /* PDDL objects and constants.*/
+        C__PTR_ANNOTATION(Constants) constants;
+        
+        /*(see \member{preprocess})*/
+        bool preprocessed;
+
+        /*Problem targetted by this solver.*/
+        Planning::Parsing::Problem_Data& problem_Data;
+        
+        /* Domain data associated with \member{problem} (see
+         * \member{preprocess}).*/
+        CXX__PTR_ANNOTATION(Planning::Parsing::Domain_Data) domain_Data;
+    };
+}
 
 #endif

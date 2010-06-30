@@ -45,6 +45,7 @@ namespace Planning
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Minimise__Action, report__minimisation_objective);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Maximise__Action, report__maximisation_objective);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Starting_State__Action, report__starting_state);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Objective_Formula__Action, report__objective_function);
     }
 }
 

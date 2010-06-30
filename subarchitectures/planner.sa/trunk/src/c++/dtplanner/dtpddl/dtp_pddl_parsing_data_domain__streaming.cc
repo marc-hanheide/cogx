@@ -70,8 +70,8 @@ std::ostream& std::operator<<(std::ostream& o, const Planning::Parsing::Domain_D
 
     
     o<<"(:constants "<<endl;
-    for(auto constant = data.constants_description.begin()
-            ; constant != data.constants_description.end()
+    for(auto constant = data.constants_Description.begin()
+            ; constant != data.constants_Description.end()
             ; constant++){
 
         QUERY_UNRECOVERABLE_ERROR(!constant->second.size(),
