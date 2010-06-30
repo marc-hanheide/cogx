@@ -76,9 +76,13 @@ void QCastViewHtml::createJsObjects()
    QWebFrame* pFrame = NULL;
    if (pPage) pFrame = pPage->currentFrame();
    if (pFrame) {
-      // TODO: QCastFormObserver needs pModel to find registered html forms 
-      // and retreive the IDs of components to be notified
-      QObject* pObj = new QCastFormProxy();
+      QCastFormProxy* pObj = new QCastFormProxy();
+      CPtrVector<cogx::display::CHtmlChunk> forms;
+      if (pView) pView->getHtmlForms(forms);
+      cogx::display::CHtmlChunk* pForm;
+      FOR_EACH(pForm, forms) {
+         pObj->registerForm(pForm);
+      }
       pFrame->addToJavaScriptWindowObject(jsObjectName, pObj);
    }
 }
@@ -114,8 +118,8 @@ void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
 void QCastViewHtml::paintEvent(QPaintEvent* event)
 {
    if (m_bModified) {
-      emit updateContent(); // Queued update
       m_bModified = false;
+      emit updateContent(); // Queued update
       return;
    }
    QWebView::paintEvent(event);

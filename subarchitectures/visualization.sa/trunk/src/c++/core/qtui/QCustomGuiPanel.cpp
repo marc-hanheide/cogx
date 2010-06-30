@@ -110,7 +110,7 @@ void QCustomGuiPanel::updateUi(cogx::display::CDisplayModel *pModel, cogx::displ
    if (!pModel || !pView) return;
 
    CPtrVector<cogx::display::CGuiElement> elements;
-   elements = pModel->getGuiElements(pView->m_id);
+   pModel->getGuiElements(pView->m_id, elements);
    if (elements.size() < 1) return;
 
    // Create new widgets

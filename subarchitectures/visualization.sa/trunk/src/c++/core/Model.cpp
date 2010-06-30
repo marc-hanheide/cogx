@@ -254,14 +254,17 @@ bool CDisplayModel::addGuiElement(CGuiElement* pGuiElement)
    return true;
 }
 
-CPtrVector<CGuiElement> CDisplayModel::getGuiElements(const std::string &viewId)
+int CDisplayModel::getGuiElements(const std::string &viewId, CPtrVector<CGuiElement>& elements)
 {
-   CPtrVector<CGuiElement> elements;
    CGuiElement *pgel;
+   int count = 0;
    FOR_EACH(pgel, m_GuiElements) {
-      if (pgel && pgel->m_viewId == viewId) elements.push_back(pgel);
+      if (pgel && pgel->m_viewId == viewId) {
+         elements.push_back(pgel);
+         count++;
+      }
    }
-   return elements;
+   return count;
 }
 
 //bool CDisplayModel::Merge(CDisplayObject *pObject)
@@ -300,6 +303,11 @@ void CDisplayObject::setPose3D(const std::string& partId, const std::vector<doub
 ERenderContext CDisplayObject::getPreferredContext()
 {
    return Context2D;
+}
+
+int CDisplayObject::getHtmlForms(CPtrVector<CHtmlChunk>& forms)
+{
+   return 0;
 }
 
 CDisplayView::CDisplayView()
@@ -469,6 +477,17 @@ void CDisplayView::drawHtml(QStringList &head, QStringList &body)
          pRender->draw("body", pObject, &body);
       }
    }
+}
+
+int CDisplayView::getHtmlForms(CPtrVector<CHtmlChunk>& forms)
+{
+   int count = 0;
+   CDisplayObject *pObject;
+   FOR_EACH_V(pObject, m_Objects) {
+      if (!pObject) continue;
+      count += pObject->getHtmlForms(forms);
+   }
+   return count;
 }
 
 }} // namespace

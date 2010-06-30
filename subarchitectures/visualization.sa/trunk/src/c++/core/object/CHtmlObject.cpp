@@ -65,7 +65,7 @@ void CHtmlObject::setHtml(const std::string& partId, const std::string& text)
    }
 
    if (pPart == NULL) {
-      pPart = new CHtmlChunk(partId, CHtmlChunk::html);
+      pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::html);
       m_Parts[partId] = pPart;
    }
 
@@ -82,12 +82,15 @@ void CHtmlObject::setForm(const Ice::Identity& ident, const std::string& partId,
    }
 
    if (pPart == NULL) {
-      pPart = new CHtmlChunk(partId, CHtmlChunk::form, ident);
+      pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::form, ident);
       m_Parts[partId] = pPart;
    }
 
    if (pPart) {
-      pPart->setContent(text);
+      std::string formtag;
+      formtag += "<form id=\"" + pPart->htmlid() + "\" method=\"post\" action=\"javascript:history.go(-1)\" ";
+      formtag += "onsubmit=\"return MyLibSubmit('#" + pPart->htmlid() + "')\" >\n";
+      pPart->setContent(formtag + text + "\n</form>");
    }
 }
 
@@ -99,13 +102,27 @@ void CHtmlObject::setHead(const std::string& partId, const std::string& text)
    }
 
    if (pPart == NULL) {
-      pPart = new CHtmlChunk(partId, CHtmlChunk::head);
+      pPart = new CHtmlChunk(m_id, partId, CHtmlChunk::head);
       m_HeadParts[partId] = pPart;
    }
 
    if (pPart) {
       pPart->m_html = QString::fromStdString(text);
    }
+}
+
+int CHtmlObject::getHtmlForms(CPtrVector<CHtmlChunk>& forms)
+{
+   typeof(m_Parts.begin()) itmap;
+   int count = 0;
+   for(itmap = m_Parts.begin(); itmap != m_Parts.end(); itmap++) {
+      CHtmlChunk *pChunk = itmap->second;
+      if (pChunk->type() == CHtmlChunk::form) {
+         forms.push_back(pChunk);
+         count++;
+      }
+   }
+   return count;
 }
 
 void CHtmlObject::removePart(const std::string& partId)

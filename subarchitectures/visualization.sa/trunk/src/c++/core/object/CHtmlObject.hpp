@@ -36,6 +36,7 @@ public:
    bool isBitmap(); /*override*/
    virtual ERenderContext getPreferredContext(); /*override*/
    virtual CRenderer* getRenderer(ERenderContext context); /*override*/
+   virtual int getHtmlForms(CPtrVector<CHtmlChunk>& forms); /*override*/
    void setHtml(const std::string& partId, const std::string& text);
    void setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text);
    void setHead(const std::string& partId, const std::string& text);

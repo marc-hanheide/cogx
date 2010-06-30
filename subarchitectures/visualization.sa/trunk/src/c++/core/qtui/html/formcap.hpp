@@ -22,17 +22,21 @@ class QCastFormProxy:
 private:
    QMap<QString, QVariant> _post;
    QMap<QString, QVariant> _get;
-   cogx::display::CHtmlChunk* m_pForm;
+   typedef std::map<std::string, cogx::display::CHtmlChunk*> TFormMap;
+   typedef TFormMap::iterator TFormMapIterator;
+   TFormMap m_Forms;
 
 private:
-   void sendValues(const QMap<QString,QVariant>& object);
+   void sendValues(const QString& formid, const QMap<QString,QVariant>& object);
 
 public:
    // TODO: redo from scratch;
    //    - maybe: a list of forms instd. of m_pForm
    //    - when sending verify if pForm.m_htmlid is the same as in setPost
-   QCastFormProxy(/*CHtmlChunk* pForm=NULL*/);
+   QCastFormProxy();
    ~QCastFormProxy();
+   void registerForm(cogx::display::CHtmlChunk* pForm);
+   void removeForm(cogx::display::CHtmlChunk* pForm);
 
 public slots:
    void setPost(const QString& formid, const QMap<QString,QVariant>& object);

@@ -25,6 +25,7 @@
 #include "ptrvector.hpp"
 #include "observer.hpp"
 #include "GuiElements.hpp"
+#include "HtmlElements.hpp"
 
 namespace cogx { namespace display {
 
@@ -73,8 +74,7 @@ public:
 
 public:
    bool addGuiElement(CGuiElement* pGuiElement);
-   CPtrVector<CGuiElement> getGuiElements(const std::string &viewId);
-   //bool registerHtmlForm(const Ice::Identity& owner, const std::string &objectId, const std::string &partId);
+   int getGuiElements(const std::string &viewId, CPtrVector<CGuiElement>& elements);
 
 public:
    CObserverList<CDisplayModelObserver> modelObservers;
@@ -102,6 +102,8 @@ public:
    virtual void setTransform2D(const std::string& partId, const std::vector<double>& transform);
    virtual void setPose3D(const std::string& partId, const std::vector<double>& positioXYZ,
          const std::vector<double>& rotationQaternionXYZW);
+
+   virtual int getHtmlForms(CPtrVector<CHtmlChunk>& forms);
 };
 
 
@@ -129,7 +131,6 @@ public:
 class CDisplayView: public CGuiElementObserver
 {
    TObjectMap m_Objects;
-public: // XXX remove
    std::map<std::string, std::vector<double> > m_Trafos;
    std::map<std::string, bool> m_SubscribedObjects;
 
@@ -149,6 +150,7 @@ public:
    // XXX: Qt objects shouldn't be here ...
    virtual void draw2D(QPainter &painter);
    virtual void drawHtml(QStringList &head, QStringList &body);
+   virtual int getHtmlForms(CPtrVector<CHtmlChunk>& forms);
 
 public:
    // CGuiElementObserver
