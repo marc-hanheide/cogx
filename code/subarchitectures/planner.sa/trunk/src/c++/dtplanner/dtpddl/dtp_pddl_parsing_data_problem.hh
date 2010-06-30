@@ -50,11 +50,14 @@ namespace Planning
             Problem_Data(CXX__PTR_ANNOTATION(Domain_Data)& domain_Data);
 
             const CXX__PTR_ANNOTATION(Domain_Data)& get__domain_Data() const;
+            CXX__PTR_ANNOTATION(Domain_Data) get__domain_Data();
             
             void report__minimisation_objective();
             void report__maximisation_objective();
             
             void report__starting_state();
+            
+            void report__objective_function();
             
             /* Associate a domain model with name
              * \argument{Domain_Name} with this problem.*/
@@ -92,6 +95,13 @@ namespace Planning
             typedef Problem_Identifier Identifier;
         };
     }
+}
+
+
+namespace std
+{
+    std::ostream& operator<<(std::ostream&
+                             , const Planning::Parsing::Problem_Data::Objective&);
 }
 
 

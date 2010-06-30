@@ -44,17 +44,28 @@ namespace Planning
         class Constants_Data : virtual public Types_Data
         {
         public:
+            
+            typedef std::map<Constant, Types > Constants_Description;
+            
             void commit__constants();
             void convert__type_of_type__TO__type_of_constant();
+            
             void add__constants();
             void add__constant(const std::string& str);
             void add__type_of_constant(const std::string& str);
 
-        protected:
+            const Planning::Constants& get__constants() const;
+            Planning::Constants get__constants();
             
-            /*Each constant/object symbol has a type. If non is given,
+            const Planning::Types& get__constantx_types(const Constant&) const;
+            Planning::Types get__constantx_types(const Constant&);
+
+            const Constants_Description& get__constants_Description() const;
+            Constants_Description get__constants_Description();
+        protected:
+            /* Each constant/object symbol has a type. If none is given,
              * this defaults to the type "object".*/
-            std::map<Constant, Types > constants_description;
+            Constants_Description constants_Description;
             
             /* Last list of constants parsed.*/
             Planning::Constants constants;

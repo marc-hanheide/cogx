@@ -8,6 +8,8 @@
 
 #include "turnstyle.hh"
 
+#include "solver.hh"
+
 using std::endl;
 
 /* WARNING :: C++ zero initialisation is not safe.*/
@@ -131,21 +133,29 @@ int main(int argc, char** argv)
     
     assert(Planning::Parsing::domains.size() > 0);
 
-    for(auto domain = Planning::Parsing::domains.begin()
-            ; domain != Planning::Parsing::domains.end()
-            ; domain++){
-        std::cout<<*domain->second<<std::endl;
-    }
+//     for(auto domain = Planning::Parsing::domains.begin()
+//             ; domain != Planning::Parsing::domains.end()
+//             ; domain++){
+//         std::cout<<*domain->second<<std::endl;
+//     }
     
     for(auto problem = Planning::Parsing::problems.begin()
             ; problem != Planning::Parsing::problems.end()
             ; problem++){
-        std::cout<<*problem->second<<std::endl;
-        for(int i =0 ; i < 100; i++){
-            std::cout<<problem->second->get__prescribed_action()<<std::endl;
-        }
         
+        std::cout<<*problem->second<<std::endl;
+//         for(int i =0 ; i < 100; i++){
+//             std::cout<<problem->second->get__prescribed_action()<<std::endl;
+//         }
+        
+        Planning::Solver solver(*problem->second);
+        solver.preprocess();
+        
+        std::cout<<*problem->second->get__domain_Data()<<std::endl;
+        std::cout<<*problem->second<<std::endl;
     }
+    
+
     
     return 0;
 }

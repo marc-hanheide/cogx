@@ -29,12 +29,66 @@
  */
 
 #include "dtp_pddl_parsing_data_problem.hh"
+#include "dtp_pddl_parsing_data_domain.hh"
 
 using namespace Planning::Parsing;
+
+
+namespace std
+{
+    std::ostream& operator<<(std::ostream& o, const Planning::Parsing::Problem_Data::Objective& objective)
+    {
+        using namespace Planning::Parsing;//::Problem_Data;
+        if(objective == Problem_Data::Objective::maximise){
+            o<<"maximise";
+        } else if (objective == Problem_Data::Objective::minimise) {
+            o<<"minimise";
+        } else {
+            UNRECOVERABLE_ERROR("Unknown objective :: "<<objective<<std::endl);
+        }
+        
+        return o;
+    }
+}
+
+
 
 std::ostream& std::operator<<(std::ostream& o, const Planning::Parsing::Problem_Data& data)
 {
 
+    o<<"(define ("<<data.get__problem_Name()<<")"<<std::endl;
+    o<<"(:domain "<<data.domain_Data->get__domain_Name()<<")"<<std::endl;
+
+    
+    o<<"(:objects "<<endl;
+    for(auto constant = data.constants_Description.begin()
+            ; constant != data.constants_Description.end()
+            ; constant++){
+
+        QUERY_UNRECOVERABLE_ERROR(!constant->second.size(),
+                                  "Object :: "<<constant->first<<std::endl
+                                  <<"was given without a type specification."<<std::endl);
+        
+        o<<constant->first<<" - (either ";
+        
+        for(auto r_type = constant->second.begin()
+                ; r_type != constant->second.end()
+                ; r_type++){
+            o<<*r_type<<" ";
+        }
+        
+        o<<")"<<endl;
+    }
+    o<<" ) "<<endl;    
+
+    o<<"(:init ";
+    o<<data.starting_state<<std::endl;
+    o<<")"<<std::endl;
+    
+    o<<"(:metric "<<data.objective<<" "<<data.objective_function<<" ) "<<std::endl;//maximize (reward) )
+    
+    o<<")";
+    
     return o;
 }
 

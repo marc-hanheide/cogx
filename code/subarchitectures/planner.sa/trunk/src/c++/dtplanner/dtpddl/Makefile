@@ -3,7 +3,7 @@ TARGET=some
 
 CXX= g++
 
-CXXPREFIX= ccache
+CXXPREFIX= #ccache
 
 OPTIMISE := -O1 
 
@@ -22,7 +22,7 @@ LOBJECTS := $(SOURCES:.cc=.lo)
 
 .PHONY: all clean
 
-all: $(DEPENDS) $(OBJECTS) $(TARGET)
+all: $(DEPENDS) $(OBJECTS) $(TARGET) 
 
 libdtplanning: $(LOBJECTS)
 	libtool --mode=link $(CXX) $(LOBJECTS) $(LDFLAGS) -o libdtplanning.la -module -avoid-version -rpath /usr/local/lib
@@ -33,7 +33,7 @@ install: libdtplanning
 %.lo: %.cc
 	libtool --mode=compile  $(CXX) $(CPPFLAGS) $< -c -o $@
 
-$(TARGET): $(OBJECTS) 
+$(TARGET): $(OBJECTS) main.cpp
 	$(CXX) -o $@ main.cpp $(OBJECTS) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) 
 
 %.o: %.cc

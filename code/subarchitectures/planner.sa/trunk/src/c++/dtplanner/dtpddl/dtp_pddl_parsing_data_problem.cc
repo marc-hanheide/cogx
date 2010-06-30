@@ -78,8 +78,8 @@ Planning::Formula::Action_Proposition Problem_Data::get__prescribed_action()
         NEW_object_referenced_WRAPPED(Planning::Type, type, _type->get__name());
 
         Planning::Constant_Arguments potential;
-        for(auto constant = constants_description.begin()
-                ; constant != constants_description.end()
+        for(auto constant = constants_Description.begin()
+                ; constant != constants_Description.end()
                 ; constant++){
             if(constant->second.find(type) != constant->second.end()){
                 potential.push_back(constant->first);
@@ -116,9 +116,33 @@ void Problem_Data::report__starting_state()
     subformulae[1] = Formula::Subformulae();
 }
 
+void Problem_Data::report__objective_function()
+{
+    QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,
+                              "Expecting formulae to appear at parse level :: "<<0<<std::endl
+                              <<"But got :: "<<formula_parsing_level<<std::endl
+                              <<"When parsing objective."<<std::endl);
+    
+    QUERY_UNRECOVERABLE_ERROR(
+        subformulae.find(1) == subformulae.end()
+        , "Parsed an empty objective."<<std::endl);
+    
+    QUERY_UNRECOVERABLE_ERROR(
+        subformulae[1].size() != 1
+        , "Parsed multiple separate formula while getting objective."<<std::endl);
+    
+    this->objective_function = subformulae[1].back();
+    subformulae[1] = Formula::Subformulae();
+}
+
 
 const CXX__PTR_ANNOTATION(Domain_Data)& Problem_Data::get__domain_Data() const
 {return domain_Data;}
+
+
+CXX__PTR_ANNOTATION(Domain_Data)  Problem_Data::get__domain_Data()
+{return domain_Data;}
+
 
 Problem_Data::Problem_Data(CXX__PTR_ANNOTATION(Domain_Data)& domain_Data)
     :domain_Data(domain_Data)

@@ -52,15 +52,15 @@ void Constants_Data::add__constants()
     for(auto constant = constants.begin()
             ; constant != constants.end()
             ; constant++){
-        if(constants_description.find(*constant) == constants_description.end()){
-            constants_description[*constant] = Types();
+        if(constants_Description.find(*constant) == constants_Description.end()){
+            constants_Description[*constant] = Types();
         }
 
         if(types_of_constants.size() == 0){/*If the constant was given without a type.*/
             NEW_object_referenced_WRAPPED(Planning::Type, object_type, "object");
-            constants_description[*constant].insert(object_type);
+            constants_Description[*constant].insert(object_type);
         } else {
-            constants_description[*constant]
+            constants_Description[*constant]
                 .insert(types_of_constants.begin()
                         , types_of_constants.end());
         }
@@ -81,3 +81,45 @@ void Constants_Data::add__type_of_constant(const std::string& str)
     NEW_object_referenced_WRAPPED(Type, type, str);
     types_of_constants.insert(type);
 }
+
+
+
+const Planning::Constants& Constants_Data::get__constants() const
+{return constants;}
+
+Planning::Constants Constants_Data::get__constants()
+{return constants;}
+
+const Planning::Types& Constants_Data::get__constantx_types(const Constant& constant) const
+{
+    
+    QUERY_UNRECOVERABLE_ERROR(
+        constants_Description.find(constant) == constants_Description.end()
+        , "Could not find types for constant :: "<<constant);
+
+    return constants_Description.find(constant)->second;
+    
+}
+
+Planning::Types Constants_Data::get__constantx_types(const Constant& constant)
+{
+    QUERY_UNRECOVERABLE_ERROR(
+        constants_Description.find(constant) == constants_Description.end()
+        , "Could not find types for constant :: "<<constant);
+
+    return constants_Description.find(constant)->second;//constants_Description[constant];
+}
+
+const std::map<Planning::Constant, Planning::Types >&
+Constants_Data::get__constants_Description() const
+{
+    return constants_Description;
+}
+
+std::map<Planning::Constant, Planning::Types >
+Constants_Data::get__constants_Description()
+{
+    return constants_Description;
+}
+
+            
