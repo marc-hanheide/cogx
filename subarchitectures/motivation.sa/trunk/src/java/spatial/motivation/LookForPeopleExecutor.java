@@ -1,6 +1,5 @@
 package spatial.motivation;
 
-import VisionData.PeopleDetectionCommand;
 import cast.AlreadyExistsOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -22,19 +21,19 @@ public class LookForPeopleExecutor extends TurnAndLookExecutor {
 	protected void triggerDetection() {
 		m_component.log("detection triggered");
 
-		
+		// TODO: put that back in place as soon as we have got the people stuff back in place
 		// Fire off a detection command
-		PeopleDetectionCommand detect = new PeopleDetectionCommand();
-		String id = m_component.newDataID();
-		try {
-			m_component
-					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
-							WorkingMemoryOperation.DELETE),
-							getAfterDetectionReceiver());
-			m_component.addToWorkingMemory(id, detect);
-		} catch (AlreadyExistsOnWMException e) {
-			e.printStackTrace();
-		}
+//		PeopleDetectionCommand detect = new PeopleDetectionCommand();
+//		String id = m_component.newDataID();
+//		try {
+//			m_component
+//					.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+//							WorkingMemoryOperation.DELETE),
+//							getAfterDetectionReceiver());
+//			m_component.addToWorkingMemory(id, detect);
+//		} catch (AlreadyExistsOnWMException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 }

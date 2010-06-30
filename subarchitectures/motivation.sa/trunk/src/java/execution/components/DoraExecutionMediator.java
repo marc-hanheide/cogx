@@ -1,22 +1,17 @@
 package execution.components;
 
-import java.util.List;
-
 import autogen.Planner.Action;
-import beliefmodels.autogen.beliefs.Belief;
-import beliefmodels.autogen.featurecontent.FeatureValue;
-import beliefmodels.autogen.featurecontent.IntegerValue;
-import beliefmodels.autogen.featurecontent.PointerValue;
 import cast.CASTException;
-import castutils.facades.BinderFacade;
+import de.dfki.lt.tr.beliefs.data.formulas.Formula;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.ActionExecutionException;
-import execution.slice.actions.ComsysQueryFeature;
-import execution.slice.actions.ComsysTestFeatureValue;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
-import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionConverter;
+import facades.BinderFacade;
 
 /**
  * Execution mediator specifically for Dora/Spring School.
@@ -54,23 +49,17 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 			GoToPlace act = newActionInstance(GoToPlace.class);
-			String placeUnionID = ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
-			Belief placeUnion = m_binderFacade.getBelief(placeUnionID);
+			WMPointer beliefPtr = WMPointer.create(_plannedAction.arguments[1]);
 
-			if (placeUnion == null) {
-				throw new ActionExecutionException(
-						"No union for place union id: " + placeUnionID);
-			}
+			// read the belief from WM
+			IndependentFormulaDistributionsBelief<dBelief> placeUnion = IndependentFormulaDistributionsBelief
+					.create(dBelief.class, getMemoryEntry(beliefPtr.getVal(),
+							dBelief.class));
 
-			List<FeatureValue> placeIDFeatures = m_binderFacade
-					.getFeatureValue(placeUnion, "PlaceId");
-			if (placeIDFeatures.isEmpty()) {
-				throw new ActionExecutionException(
-						"No PlaceId features for union id: " + placeUnionID);
+			Formula placeProperty = placeUnion.getContent().get("PlaceId")
+					.getDistribution().firstValue();
+			act.placeID = placeProperty.getInteger();
 
-			}
-			IntegerValue placeID = (IntegerValue) placeIDFeatures.get(0);
-			act.placeID = placeID.val;
 			return act;
 		} else if (_plannedAction.name.equals("look-for-object")) {
 			assert _plannedAction.arguments.length == 1 : "look-for-object action arity is expected to be 1";
@@ -83,25 +72,30 @@ public class DoraExecutionMediator extends PlanExecutionMediator implements
 
 			DetectPeople act = newActionInstance(DetectPeople.class);
 			return act;
-		} else if (_plannedAction.name.equals("ask-for-placename")) {
-			assert _plannedAction.arguments.length == 2 : "ask-for-feature action arity is expected to be 2";
-			String beliefID =  ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
-			String featureID = "name";
-			ComsysQueryFeature act = newActionInstance(ComsysQueryFeature.class);
-            act.beliefID = beliefID;
-            act.featureID = featureID;
-			return act;
-		} else if (_plannedAction.name.equals("verify-placename")) {
-			assert _plannedAction.arguments.length == 3 : "ask-for-feature action arity is expected to be 2";
-			String beliefID =  ((PointerValue) _plannedAction.arguments[1]).beliefId.id;
-			String featureID = "name";
-			ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
-            act.beliefID = beliefID;
-            act.featureType = featureID;
-            act.featureValue = _plannedAction.arguments[2];
-			return act;
+			// } else if (_plannedAction.name.equals("ask-for-placename")) {
+			// assert _plannedAction.arguments.length == 2 :
+			// "ask-for-feature action arity is expected to be 2";
+			// String beliefID = ((PointerValue)
+			// _plannedAction.arguments[1]).beliefId.id;
+			// String featureID = "name";
+			// ComsysQueryFeature act =
+			// newActionInstance(ComsysQueryFeature.class);
+			// act.beliefID = beliefID;
+			// act.featureID = featureID;
+			// return act;
+			// } else if (_plannedAction.name.equals("verify-placename")) {
+			// assert _plannedAction.arguments.length == 3 :
+			// "ask-for-feature action arity is expected to be 2";
+			// String beliefID = ((PointerValue)
+			// _plannedAction.arguments[1]).beliefId.id;
+			// String featureID = "name";
+			// ComsysTestFeatureValue act =
+			// newActionInstance(ComsysTestFeatureValue.class);
+			// act.beliefID = beliefID;
+			// act.featureType = featureID;
+			// act.featureValue = _plannedAction.arguments[2];
+			// return act;
 		}
-
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
 	}

@@ -18,7 +18,7 @@ import VisionData.DetectionCommand;
 import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
 
-import comadata.ComaRoom;
+
 
 /**
  * - found new place N - found new placeholder N - found new room N - seen
@@ -214,8 +214,8 @@ public class DoraVerbalisation extends ManagedComponent {
 		// m_verbals.verbaliseOnAddition(VisualObject.class,
 		// VISUAL_OBJECT_GENERATOR);
 
-		m_verbals.verbaliseOnOverwrite(ComaRoom.class,
-				new RoomCategoryTextGenerator());
+//		m_verbals.verbaliseOnOverwrite(ComaRoom.class,
+//				new RoomCategoryTextGenerator());
 
 		m_verbals.verbaliseCannedTextOnAddition(GatewayPlaceProperty.class,
 				"Ah ha. Looks like there is a door here");

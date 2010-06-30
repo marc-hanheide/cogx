@@ -11,7 +11,6 @@ import motivation.factories.MotiveFactory;
 import motivation.slice.Motive;
 import motivation.slice.PatrolMotive;
 import castutils.CASTTimeUtil;
-import castutils.facades.SpatialFacade;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import cast.CASTException;
@@ -22,6 +21,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import facades.SpatialFacade;
 
 /**
  * @author marc

@@ -13,7 +13,6 @@ import motivation.factories.MotiveFactory;
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import castutils.castextensions.WMEntrySet;
-import castutils.facades.SpatialFacade;
 import Ice.ObjectImpl;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
@@ -30,6 +29,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
+import facades.SpatialFacade;
 
 /**
  * @author marc
@@ -110,15 +110,15 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 						motive.costs = (float) SpatialFacade.get(this)
 								.queryCosts(currentPlace.id,
 										((ExploreMotive) motive).placeID);
-						if (SpatialFacade.get(this).getRoom(currentPlace) != SpatialFacade
-								.get(this).getRoom(source)) {
-							// TODO leaving a room is quite expensive
-							log("  multiplying costs by "
-									+ MULTIPLIER_OTHER_ROOM
-									+ " because it's another room: current="
-									+ currentPlace.id + " checked=" + source.id);
-							motive.costs *= MULTIPLIER_OTHER_ROOM;
-						}
+//						if (SpatialFacade.get(this).getRoom(currentPlace) != SpatialFacade
+//								.get(this).getRoom(source)) {
+//							// TODO leaving a room is quite expensive
+//							log("  multiplying costs by "
+//									+ MULTIPLIER_OTHER_ROOM
+//									+ " because it's another room: current="
+//									+ currentPlace.id + " checked=" + source.id);
+//							motive.costs *= MULTIPLIER_OTHER_ROOM;
+//						}
 					} else {
 						println("couldn't compute proper costs... leaving costs untouched");
 					}
@@ -258,7 +258,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		if (_probabilityDistribution == null)
 			return 0.0;
 		else
-			return ((FloatValue) _probabilityDistribution.data.get(0).value).value;
+			return ((FloatValue) _probabilityDistribution.data[0].value).value;
 	}
 
 	private double getFirstPropertyValue(PlaceProperty _property) {
