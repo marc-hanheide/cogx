@@ -49,6 +49,14 @@ link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 
+add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} peekabot)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
+
 endif(BUILD_SA_SPATIAL_PEEKABOT)
 
 add_cast_component(SlamProcess SlamProcess.cpp)
@@ -87,12 +95,6 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData VisionData SpatialPropert
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 
-add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
-link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
-link_cast_component(${CAST_COMPONENT_NAME} peekabot)
-link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 if(BUILD_SA_BINDING)
 add_cast_component(ProxyMarshaller ProxyMarshaller.cpp)
@@ -107,12 +109,9 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData SpatialProperties)
 link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials Marshalling)
 endif(BUILD_SA_BINDING)
 
-if(BUILD_SA_BINDING)
 add_cast_component(SelfRepresenter SelfRepresenter.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} NavData)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData SpatialProperties FrontierInterface)
-link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials Marshalling)
-endif(BUILD_SA_BINDING)
 
 add_cast_component(PathQueryProcessor PathQueryProcessor.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} NavData)
