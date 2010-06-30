@@ -16,13 +16,35 @@
 #include "HtmlElements.hpp"
 #include "qtui/html/formcap.hpp"
 
+#ifdef DEBUG_TRACE
+// #undef DEBUG_TRACE
+#endif
+#include "convenience.hpp"
+
 namespace cogx { namespace display {
 
-CHtmlChunk::CHtmlChunk(const std::string& id, EChunkType type, const Ice::Identity& ident)
+CHtmlChunk::CHtmlChunk(const std::string& id, const std::string& partId, EChunkType type,
+      const Ice::Identity& ident)
 {
    m_id = id;
+   m_partId = partId;
    m_type = type;
    m_dataOwner = ident;
+   if (m_type == form) m_htmlId = "form";
+   else m_htmlId = "chunk";
+
+   std::string str = "_" + id + "_" + partId;
+   int len = str.size();
+   char prevch = ' ';
+   for(int i = 0; i < len; i++) {
+      char ch = str[i];
+      if (isalnum(ch)) m_htmlId += ch;
+      else {
+         ch = '_';
+         if (prevch != ch) m_htmlId += ch;
+      }
+      prevch = ch;
+   }
 }
 
 void CHtmlChunk::setContent(const std::string& content)
@@ -32,7 +54,7 @@ void CHtmlChunk::setContent(const std::string& content)
 
 void CHtmlChunk::notifyFormSubmit(TFormValues& formData, const QCastFormProxy* changeSource)
 {
-   //DTRACE("CHtmlChunk::notifyFormSubmit");
+   DTRACE("CHtmlChunk::notifyFormSubmit");
    CHtmlFormObserver *pObsrvr;
    CObserverList<CHtmlFormObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
    FOR_EACH(pObsrvr, Observers) {

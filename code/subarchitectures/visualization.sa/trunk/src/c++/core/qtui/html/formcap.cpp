@@ -8,32 +8,51 @@
 #endif
 #include "convenience.hpp"
 
-QCastFormProxy::QCastFormProxy(/*CHtmlChunk* pForm*/)
+QCastFormProxy::QCastFormProxy()
 {
-   //m_pForm = pForm;
-   m_pForm = NULL;
-   if (m_pForm) {
-      m_pForm->Observers.addObserver(this);
-   }
 }
 
 QCastFormProxy::~QCastFormProxy()
 {
-   if (m_pForm) {
-      m_pForm->Observers.removeObserver(this);
+   for(TFormMapIterator it = m_Forms.begin(); it != m_Forms.end(); it++) {
+      cogx::display::CHtmlChunk* pForm = it->second;
+      pForm->Observers.removeObserver(this);
    }
 }
 
-void QCastFormProxy::sendValues(const QMap<QString,QVariant>& object)
+void QCastFormProxy::registerForm(cogx::display::CHtmlChunk* pForm)
+{
+   if (!pForm) return;
+   m_Forms[pForm->htmlid()] = pForm;
+   pForm->Observers.addObserver(this);
+}
+
+void QCastFormProxy::removeForm(cogx::display::CHtmlChunk* pForm)
+{
+   if (!pForm) return;
+   pForm->Observers.removeObserver(this);
+   m_Forms.erase(pForm->htmlid());
+}
+
+void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVariant>& object)
 {
    DTRACE("QCastFormProxy::sendValues");
-   if (m_pForm) {
+   cogx::display::CHtmlChunk* pForm = NULL;
+   
+   std::string id = formid.mid(1).toStdString(); // remove leading '#' from id
+   TFormMapIterator it = m_Forms.find(id);
+   DMESSAGE("Looking for " << id << " among " << m_Forms.size() << " forms");
+   if (it == m_Forms.end()) pForm = NULL;
+   else pForm = it->second;
+
+   // TODO: find form with formid
+   if (pForm) {
       cogx::display::TFormValues vals;
       foreach (QString str, object.keys()) {
          vals[str.toStdString()] = object.value(str).toString().toStdString();
          DMESSAGE(str.toStdString() << ":" << object.value(str).toString().toStdString());
       }
-      m_pForm->notifyFormSubmit(vals, this);
+      pForm->notifyFormSubmit(vals, this);
    }
    else {
       DMESSAGE("FORM NOT ATTACHED");
@@ -47,7 +66,7 @@ void QCastFormProxy::setPost(const QString& formid, const QMap<QString,QVariant>
 {
    DTRACE("QCastFormProxy::setPost " << formid.toStdString());
    _post = object;
-   sendValues(object);
+   sendValues(formid, object);
 }
 
 QMap<QString, QVariant> QCastFormProxy::getPost()
@@ -58,9 +77,9 @@ QMap<QString, QVariant> QCastFormProxy::getPost()
 
 void QCastFormProxy::setGet(const QString& formid, const QMap<QString,QVariant>& object)
 {
-   DTRACE("QCastFormProxy::setGet");
+   DTRACE("QCastFormProxy::setGet " << formid.toStdString());
    _get = object;
-   sendValues(object);
+   sendValues(formid, object);
 }
 
 QMap<QString, QVariant> QCastFormProxy::getGet()

@@ -16,7 +16,8 @@
 #ifndef HTMLELEMENTS_Y03BCHFJ
 #define HTMLELEMENTS_Y03BCHFJ
 
-#include "Model.hpp"
+#include <string>
+#include <Ice/Ice.h>
 #include "observer.hpp"
 
 // Using QString to store HTML to reduce the amount of conversions from std::string.
@@ -49,6 +50,7 @@ public:
 private:
    EChunkType m_type;
    std::string m_id;
+   std::string m_partId;
    std::string m_htmlId;      // a valid hmtl id generated from m_id
 
 public:
@@ -58,9 +60,11 @@ public:
    CObserverList<CHtmlFormObserver> Observers;
 
 public:
-   CHtmlChunk(const std::string& id, EChunkType type=html, const Ice::Identity& ident=Ice::Identity());
+   CHtmlChunk(const std::string& id, const std::string& partId, EChunkType type=html,
+         const Ice::Identity& ident=Ice::Identity());
    void setContent(const std::string& content);
    EChunkType type() { return m_type; }
+   std::string htmlid() { return m_htmlId; }
 
    // (normally) called after a submit subscribed observes.
    void notifyFormSubmit(TFormValues& formData, const QCastFormProxy* changeSource);

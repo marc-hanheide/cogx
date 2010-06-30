@@ -202,6 +202,13 @@ void CDisplayClient::setHtmlHead(const std::string& id, const std::string& partI
    m_pServer->setHtmlHead(id, partId, htmlData);
 }
 
+void CDisplayClient::setHtmlForm(const std::string& id, const std::string& partId, const std::string& htmlData)
+{
+   if (m_pServer == NULL) return;
+   Ice::Identity iceid = getEventClientId();
+   m_pServer->setHtmlForm(iceid, id, partId, htmlData);
+}
+
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
        const std::vector<double>& transform)
 {
@@ -344,5 +351,6 @@ void CActiveDisplayClient::handleEvent(const Visualization::TEvent& event)
 }
 #endif
 
-} } // namespace
+}} // namespace
+// vim:sw=3:ts=8:et
 

@@ -392,7 +392,7 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
          if (m_pControlDataProxy) {
             cogx::display::CGuiElement* pgel;
             CPtrVector<cogx::display::CGuiElement> elements;
-            elements = m_pModel->getGuiElements(pView->m_id);
+            m_pModel->getGuiElements(pView->m_id, elements);
             FOR_EACH(pgel, elements) {
                if (!pgel) continue;
                m_pControlDataProxy->getControlStateAsync(pgel);
