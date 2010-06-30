@@ -3,7 +3,7 @@
  */
 package de.dfki.lt.tr.beliefs.util;
 
-import de.dfki.lt.tr.beliefs.data.Formula;
+import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 
 /**
  * @author marc

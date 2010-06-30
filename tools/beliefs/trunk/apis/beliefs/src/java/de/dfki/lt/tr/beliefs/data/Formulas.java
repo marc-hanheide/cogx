@@ -4,8 +4,10 @@ import java.util.Iterator;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
+import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.genericproxies.DistributionContent;
 import de.dfki.lt.tr.beliefs.data.genericproxies.GenericBasicDistribution;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
@@ -224,6 +226,10 @@ public class Formulas extends DistributionContent<FormulaValues> implements
 
 	public int size() {
 		return _content.size();
+	}
+
+	public Formula firstValue() {
+		return Formula.create(_content.get(0).val);
 	}
 	
 }
