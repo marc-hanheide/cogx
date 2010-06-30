@@ -81,11 +81,24 @@ std::ostream& std::operator<<(std::ostream& o, const Planning::Parsing::Problem_
     }
     o<<" ) "<<endl;    
 
-    o<<"(:init ";
-    o<<data.starting_state<<std::endl;
-    o<<")"<<std::endl;
     
-    o<<"(:metric "<<data.objective<<" "<<data.objective_function<<" ) "<<std::endl;//maximize (reward) )
+    CXX__deref__shared_ptr<basic_type> thingi;
+    assert(!thingi.use_count());
+    
+    if(data.starting_state.use_count()){
+        o<<"(:init ";
+        o<<data.starting_state<<std::endl;
+        o<<")"<<std::endl;
+    }
+    
+    if(data.goal_formula.use_count()){
+        o<<"(:goal "<<data.goal_formula<<" ) "<<std::endl;
+    }
+
+    if(data.objective_function.use_count()){
+        o<<"(:metric "<<data.objective<<" "<<data.objective_function<<" ) "<<std::endl;//maximize (reward) )
+    }
+    
     
     o<<")";
     

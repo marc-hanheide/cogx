@@ -9,127 +9,136 @@
 18:                 from dtp_pddl_parsing_actions.cc:30:
 28:In file included from planning_symbols.hh:35,
 29:                 from dtp_pddl_parsing_data.hh:35,
-30:                 from dtp_pddl_parsing_data.cc:31:
-40:In file included from planning_symbols.hh:35,
-41:                 from dtp_pddl_parsing_data.hh:35,
-42:                 from dtp_pddl_parsing_actions.hh:130,
-43:                 from dtp_pddl_parsing_actions_domain.hh:35,
-44:                 from dtp_pddl_parsing_actions_domain.cc:30:
-54:In file included from planning_symbols.hh:35,
-55:                 from dtp_pddl_parsing_data.hh:35,
-56:                 from dtp_pddl_parsing_actions.hh:130,
-57:                 from dtp_pddl_parsing_actions_problem.hh:36,
-58:                 from dtp_pddl_parsing_actions_problem.cc:30:
+30:                 from dtp_pddl_parsing_actions.hh:130,
+31:                 from dtp_pddl_parsing_actions_problem.hh:36,
+32:                 from dtp_pddl_parsing_actions_problem.cc:30:
+42:In file included from planning_symbols.hh:35,
+43:                 from dtp_pddl_parsing_data.hh:35,
+44:                 from dtp_pddl_parsing_actions.hh:130,
+45:                 from dtp_pddl_parsing_actions_domain.hh:35,
+46:                 from dtp_pddl_parsing_actions_domain.cc:30:
+56:In file included from planning_symbols.hh:35,
+57:                 from dtp_pddl_parsing_data.hh:35,
+58:                 from dtp_pddl_parsing_data.cc:31:
 68:In file included from planning_symbols.hh:35,
-69:                 from dtp_pddl_parsing_data.hh:35,
-70:                 from dtp_pddl_parsing_data_domain.hh:33,
-71:                 from dtp_pddl_parsing_data_domain__actions.cc:31:
-81:In file included from planning_symbols.hh:35,
-82:                 from dtp_pddl_parsing_data_constants.hh:36,
-83:                 from dtp_pddl_parsing_data_constants.cc:30:
-93:In file included from stl__typed_thing.hh:54,
-94:                 from planning_symbols.hh:35,
-95:                 from dtp_pddl_parsing_data.hh:35,
-96:                 from dtp_pddl_parsing_data.cc:31:
-97:stl__deref_tools.hh:89: warning: extra ';'
-98:stl__deref_tools.hh:91: warning: extra ';'
-99:stl__deref_tools.hh:93: warning: extra ';'
-100:stl__deref_tools.hh:109: warning: extra ';'
-101:stl__deref_tools.hh:154: warning: extra ';'
-102:stl__deref_tools.hh:155: warning: extra ';'
-103:stl__deref_tools.hh:161: warning: extra ';'
-104:stl__deref_tools.hh:219: warning: extra ';'
-105:stl__deref_tools.hh:221: warning: extra ';'
-106:In file included from stl__typed_thing.hh:54,
-107:                 from planning_symbols.hh:35,
-108:                 from dtp_pddl_parsing_data.hh:35,
-109:                 from dtp_pddl_parsing_actions.hh:130,
-110:                 from dtp_pddl.hh:35,
-111:                 from dtp_pddl.cc:30:
-112:stl__deref_tools.hh:89: warning: extra ';'
-113:stl__deref_tools.hh:91: warning: extra ';'
-114:stl__deref_tools.hh:93: warning: extra ';'
-115:stl__deref_tools.hh:109: warning: extra ';'
-116:stl__deref_tools.hh:154: warning: extra ';'
-117:stl__deref_tools.hh:155: warning: extra ';'
-118:stl__deref_tools.hh:161: warning: extra ';'
-119:stl__deref_tools.hh:219: warning: extra ';'
-120:stl__deref_tools.hh:221: warning: extra ';'
-121:In file included from stl__typed_thing.hh:54,
-122:                 from planning_symbols.hh:35,
-123:                 from dtp_pddl_parsing_data.hh:35,
-124:                 from dtp_pddl_parsing_actions.hh:130,
-125:                 from dtp_pddl_parsing_actions.cc:30:
-126:stl__deref_tools.hh:89: warning: extra ';'
-127:stl__deref_tools.hh:91: warning: extra ';'
-128:stl__deref_tools.hh:93: warning: extra ';'
-129:stl__deref_tools.hh:109: warning: extra ';'
-130:stl__deref_tools.hh:154: warning: extra ';'
-131:stl__deref_tools.hh:155: warning: extra ';'
-132:stl__deref_tools.hh:161: warning: extra ';'
-133:stl__deref_tools.hh:219: warning: extra ';'
-134:stl__deref_tools.hh:221: warning: extra ';'
-135:In file included from stl__typed_thing.hh:54,
-136:                 from planning_symbols.hh:35,
-137:                 from dtp_pddl_parsing_data.hh:35,
-138:                 from dtp_pddl_parsing_data_domain.hh:33,
-139:                 from dtp_pddl_parsing_data_domain__actions.cc:31:
-140:stl__deref_tools.hh:89: warning: extra ';'
-141:stl__deref_tools.hh:91: warning: extra ';'
-142:stl__deref_tools.hh:93: warning: extra ';'
-143:stl__deref_tools.hh:109: warning: extra ';'
-144:stl__deref_tools.hh:154: warning: extra ';'
-145:stl__deref_tools.hh:155: warning: extra ';'
-146:stl__deref_tools.hh:161: warning: extra ';'
-147:stl__deref_tools.hh:219: warning: extra ';'
-148:stl__deref_tools.hh:221: warning: extra ';'
-149:In file included from stl__typed_thing.hh:54,
-150:                 from planning_symbols.hh:35,
-151:                 from dtp_pddl_parsing_data_constants.hh:36,
-152:                 from dtp_pddl_parsing_data_constants.cc:30:
-153:stl__deref_tools.hh:89: warning: extra ';'
-154:stl__deref_tools.hh:91: warning: extra ';'
-155:stl__deref_tools.hh:93: warning: extra ';'
-156:stl__deref_tools.hh:109: warning: extra ';'
-157:stl__deref_tools.hh:154: warning: extra ';'
-158:stl__deref_tools.hh:155: warning: extra ';'
-159:stl__deref_tools.hh:161: warning: extra ';'
-160:stl__deref_tools.hh:219: warning: extra ';'
-161:stl__deref_tools.hh:221: warning: extra ';'
-162:In file included from stl__typed_thing.hh:54,
-163:                 from planning_symbols.hh:35,
-164:                 from dtp_pddl_parsing_data.hh:35,
-165:                 from dtp_pddl_parsing_actions.hh:130,
-166:                 from dtp_pddl_parsing_actions_domain.hh:35,
-167:                 from dtp_pddl_parsing_actions_domain.cc:30:
-168:stl__deref_tools.hh:89: warning: extra ';'
-169:stl__deref_tools.hh:91: warning: extra ';'
-170:stl__deref_tools.hh:93: warning: extra ';'
-171:stl__deref_tools.hh:109: warning: extra ';'
-172:stl__deref_tools.hh:154: warning: extra ';'
-173:stl__deref_tools.hh:155: warning: extra ';'
-174:stl__deref_tools.hh:161: warning: extra ';'
-175:stl__deref_tools.hh:219: warning: extra ';'
-176:stl__deref_tools.hh:221: warning: extra ';'
-177:In file included from stl__typed_thing.hh:54,
-178:                 from planning_symbols.hh:35,
-179:                 from dtp_pddl_parsing_data.hh:35,
-180:                 from dtp_pddl_parsing_actions.hh:130,
-181:                 from dtp_pddl_parsing_actions_problem.hh:36,
-182:                 from dtp_pddl_parsing_actions_problem.cc:30:
-183:stl__deref_tools.hh:89: warning: extra ';'
-184:stl__deref_tools.hh:91: warning: extra ';'
-185:stl__deref_tools.hh:93: warning: extra ';'
-186:stl__deref_tools.hh:109: warning: extra ';'
-187:stl__deref_tools.hh:154: warning: extra ';'
-188:stl__deref_tools.hh:155: warning: extra ';'
-189:stl__deref_tools.hh:161: warning: extra ';'
-190:stl__deref_tools.hh:219: warning: extra ';'
-191:stl__deref_tools.hh:221: warning: extra ';'
-192:In file included from planning_symbols.hh:35,
-193:                 from dtp_pddl_parsing_data.hh:35,
-194:                 from dtp_pddl_parsing_data_domain.hh:33,
-195:                 from dtp_pddl_parsing_data_domain.cc:30:
+69:                 from dtp_pddl_parsing_data_constants.hh:36,
+70:                 from dtp_pddl_parsing_data_constants.cc:30:
+80:In file included from stl__typed_thing.hh:54,
+81:                 from planning_symbols.hh:35,
+82:                 from dtp_pddl_parsing_data.hh:35,
+83:                 from dtp_pddl_parsing_actions.hh:130,
+84:                 from dtp_pddl_parsing_actions.cc:30:
+85:stl__deref_tools.hh:90: warning: extra ';'
+86:stl__deref_tools.hh:92: warning: extra ';'
+87:stl__deref_tools.hh:94: warning: extra ';'
+88:stl__deref_tools.hh:110: warning: extra ';'
+89:stl__deref_tools.hh:155: warning: extra ';'
+90:stl__deref_tools.hh:156: warning: extra ';'
+91:stl__deref_tools.hh:162: warning: extra ';'
+92:stl__deref_tools.hh:220: warning: extra ';'
+93:stl__deref_tools.hh:222: warning: extra ';'
+94:In file included from stl__typed_thing.hh:54,
+95:                 from planning_symbols.hh:35,
+96:                 from dtp_pddl_parsing_data.hh:35,
+97:                 from dtp_pddl_parsing_actions.hh:130,
+98:                 from dtp_pddl.hh:35,
+99:                 from dtp_pddl.cc:30:
+100:stl__deref_tools.hh:90: warning: extra ';'
+101:stl__deref_tools.hh:92: warning: extra ';'
+102:stl__deref_tools.hh:94: warning: extra ';'
+103:stl__deref_tools.hh:110: warning: extra ';'
+104:stl__deref_tools.hh:155: warning: extra ';'
+105:stl__deref_tools.hh:156: warning: extra ';'
+106:stl__deref_tools.hh:162: warning: extra ';'
+107:stl__deref_tools.hh:220: warning: extra ';'
+108:stl__deref_tools.hh:222: warning: extra ';'
+109:In file included from stl__typed_thing.hh:54,
+110:                 from planning_symbols.hh:35,
+111:                 from dtp_pddl_parsing_data.hh:35,
+112:                 from dtp_pddl_parsing_actions.hh:130,
+113:                 from dtp_pddl_parsing_actions_problem.hh:36,
+114:                 from dtp_pddl_parsing_actions_problem.cc:30:
+115:stl__deref_tools.hh:90: warning: extra ';'
+116:stl__deref_tools.hh:92: warning: extra ';'
+117:stl__deref_tools.hh:94: warning: extra ';'
+118:stl__deref_tools.hh:110: warning: extra ';'
+119:stl__deref_tools.hh:155: warning: extra ';'
+120:stl__deref_tools.hh:156: warning: extra ';'
+121:stl__deref_tools.hh:162: warning: extra ';'
+122:stl__deref_tools.hh:220: warning: extra ';'
+123:stl__deref_tools.hh:222: warning: extra ';'
+124:In file included from planning_symbols.hh:35,
+125:                 from dtp_pddl_parsing_data.hh:35,
+126:                 from dtp_pddl_parsing_data_domain.hh:33,
+127:                 from dtp_pddl_parsing_data_domain__actions.cc:31:
+137:In file included from stl__typed_thing.hh:54,
+138:                 from planning_symbols.hh:35,
+139:                 from dtp_pddl_parsing_data.hh:35,
+140:                 from dtp_pddl_parsing_actions.hh:130,
+141:                 from dtp_pddl_parsing_actions_domain.hh:35,
+142:                 from dtp_pddl_parsing_actions_domain.cc:30:
+143:stl__deref_tools.hh:90: warning: extra ';'
+144:stl__deref_tools.hh:92: warning: extra ';'
+145:stl__deref_tools.hh:94: warning: extra ';'
+146:stl__deref_tools.hh:110: warning: extra ';'
+147:stl__deref_tools.hh:155: warning: extra ';'
+148:stl__deref_tools.hh:156: warning: extra ';'
+149:stl__deref_tools.hh:162: warning: extra ';'
+150:stl__deref_tools.hh:220: warning: extra ';'
+151:stl__deref_tools.hh:222: warning: extra ';'
+152:In file included from stl__typed_thing.hh:54,
+153:                 from planning_symbols.hh:35,
+154:                 from dtp_pddl_parsing_data.hh:35,
+155:                 from dtp_pddl_parsing_data.cc:31:
+156:stl__deref_tools.hh:90: warning: extra ';'
+157:stl__deref_tools.hh:92: warning: extra ';'
+158:stl__deref_tools.hh:94: warning: extra ';'
+159:stl__deref_tools.hh:110: warning: extra ';'
+160:stl__deref_tools.hh:155: warning: extra ';'
+161:stl__deref_tools.hh:156: warning: extra ';'
+162:stl__deref_tools.hh:162: warning: extra ';'
+163:stl__deref_tools.hh:220: warning: extra ';'
+164:stl__deref_tools.hh:222: warning: extra ';'
+165:In file included from planning_formula.hh:159,
+166:                 from dtp_pddl_parsing_data.hh:36,
+167:                 from dtp_pddl_parsing_actions.hh:130,
+168:                 from dtp_pddl_parsing_actions.cc:30:
+169:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+170:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+171:In file included from stl__typed_thing.hh:54,
+172:                 from planning_symbols.hh:35,
+173:                 from dtp_pddl_parsing_data_constants.hh:36,
+174:                 from dtp_pddl_parsing_data_constants.cc:30:
+175:stl__deref_tools.hh:90: warning: extra ';'
+176:stl__deref_tools.hh:92: warning: extra ';'
+177:stl__deref_tools.hh:94: warning: extra ';'
+178:stl__deref_tools.hh:110: warning: extra ';'
+179:stl__deref_tools.hh:155: warning: extra ';'
+180:stl__deref_tools.hh:156: warning: extra ';'
+181:stl__deref_tools.hh:162: warning: extra ';'
+182:stl__deref_tools.hh:220: warning: extra ';'
+183:stl__deref_tools.hh:222: warning: extra ';'
+184:In file included from stl__typed_thing.hh:54,
+185:                 from planning_symbols.hh:35,
+186:                 from dtp_pddl_parsing_data.hh:35,
+187:                 from dtp_pddl_parsing_data_domain.hh:33,
+188:                 from dtp_pddl_parsing_data_domain__actions.cc:31:
+189:stl__deref_tools.hh:90: warning: extra ';'
+190:stl__deref_tools.hh:92: warning: extra ';'
+191:stl__deref_tools.hh:94: warning: extra ';'
+192:stl__deref_tools.hh:110: warning: extra ';'
+193:stl__deref_tools.hh:155: warning: extra ';'
+194:stl__deref_tools.hh:156: warning: extra ';'
+195:stl__deref_tools.hh:162: warning: extra ';'
+196:stl__deref_tools.hh:220: warning: extra ';'
+197:stl__deref_tools.hh:222: warning: extra ';'
+198:In file included from planning_formula.hh:159,
+199:                 from dtp_pddl_parsing_data.hh:36,
+200:                 from dtp_pddl_parsing_actions.hh:130,
+201:                 from dtp_pddl_parsing_actions_problem.hh:36,
+202:                 from dtp_pddl_parsing_actions_problem.cc:30:
+203:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+204:planning_formula__TEMPLATES.hh:52: warning: extra ';'
 205:In file included from planning_formula.hh:159,
 206:                 from dtp_pddl_parsing_data.hh:36,
 207:                 from dtp_pddl_parsing_actions.hh:130,
@@ -137,517 +146,534 @@
 209:                 from dtp_pddl.cc:30:
 210:planning_formula__TEMPLATES.hh:51: warning: extra ';'
 211:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-212:In file included from planning_formula.hh:159,
-213:                 from dtp_pddl_parsing_data.hh:36,
-214:                 from dtp_pddl_parsing_actions.hh:130,
-215:                 from dtp_pddl_parsing_actions.cc:30:
-216:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-217:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-218:In file included from planning_formula.hh:159,
-219:                 from dtp_pddl_parsing_data.hh:36,
-220:                 from dtp_pddl_parsing_data.cc:31:
-221:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-222:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-223:In file included from planning_formula.hh:159,
-224:                 from dtp_pddl_parsing_data.hh:36,
-225:                 from dtp_pddl_parsing_data_domain.hh:33,
-226:                 from dtp_pddl_parsing_data_domain__actions.cc:31:
-227:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-228:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-229:In file included from planning_formula.hh:159,
-230:                 from dtp_pddl_parsing_data.hh:36,
-231:                 from dtp_pddl_parsing_actions.hh:130,
-232:                 from dtp_pddl_parsing_actions_domain.hh:35,
-233:                 from dtp_pddl_parsing_actions_domain.cc:30:
-234:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-235:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-236:In file included from planning_formula.hh:159,
-237:                 from dtp_pddl_parsing_data.hh:36,
-238:                 from dtp_pddl_parsing_actions.hh:130,
-239:                 from dtp_pddl_parsing_actions_problem.hh:36,
-240:                 from dtp_pddl_parsing_actions_problem.cc:30:
-241:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-242:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-243:In file included from planning_symbols.hh:35,
-244:                 from dtp_pddl_parsing_data.hh:35,
-245:                 from dtp_pddl_parsing_data_domain.hh:33,
-246:                 from dtp_pddl_parsing_data_domain__observations.cc:31:
-256:In file included from planning_symbols.hh:35,
-257:                 from dtp_pddl_parsing_data.hh:35,
-258:                 from dtp_pddl_parsing_data_domain.hh:33,
-259:                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
-269:dtp_pddl_parsing_actions_problem.cc:44: warning: extra ';'
-270:dtp_pddl_parsing_actions_problem.cc:45: warning: extra ';'
-271:dtp_pddl_parsing_actions_problem.cc:46: warning: extra ';'
-272:dtp_pddl_parsing_actions_problem.cc:47: warning: extra ';'
-273:dtp_pddl_parsing_actions_problem.cc:61: warning: extra ';'
-274:dtp_pddl_parsing_actions_problem.cc:64: warning: extra ';'
-275:dtp_pddl_parsing_actions_problem.cc:66: warning: extra ';'
-276:dtp_pddl_parsing_actions_problem.cc:67: warning: extra ';'
-277:dtp_pddl_parsing_actions_problem.cc:68: warning: extra ';'
-278:dtp_pddl_parsing_actions_problem.cc:69: warning: extra ';'
-279:dtp_pddl_parsing_actions_problem.cc:72: warning: extra ';'
-280:dtp_pddl_parsing_actions_problem.cc:74: warning: extra ';'
-281:dtp_pddl_parsing_actions_problem.cc:75: warning: extra ';'
-282:dtp_pddl_parsing_actions_problem.cc:77: warning: extra ';'
-283:dtp_pddl_parsing_actions_problem.cc:78: warning: extra ';'
-284:dtp_pddl_parsing_actions_problem.cc:79: warning: extra ';'
-285:dtp_pddl_parsing_actions_problem.cc:80: warning: extra ';'
-286:dtp_pddl_parsing_actions_problem.cc:81: warning: extra ';'
-287:dtp_pddl_parsing_actions_problem.cc:84: warning: extra ';'
-288:dtp_pddl_parsing_actions_problem.cc:85: warning: extra ';'
-289:dtp_pddl_parsing_actions_problem.cc:86: warning: extra ';'
-290:dtp_pddl_parsing_actions_problem.cc:87: warning: extra ';'
-291:dtp_pddl_parsing_actions_problem.cc:89: warning: extra ';'
-292:dtp_pddl_parsing_actions_problem.cc:90: warning: extra ';'
-293:dtp_pddl_parsing_actions_problem.cc:91: warning: extra ';'
-294:dtp_pddl_parsing_actions_problem.cc:94: warning: extra ';'
-295:dtp_pddl_parsing_actions_problem.cc:95: warning: extra ';'
-296:dtp_pddl_parsing_actions_problem.cc:97: warning: extra ';'
-297:dtp_pddl_parsing_actions_problem.cc:98: warning: extra ';'
-298:dtp_pddl_parsing_actions_problem.cc:101: warning: extra ';'
-299:dtp_pddl_parsing_actions_problem.cc:104: warning: extra ';'
-300:dtp_pddl_parsing_actions_problem.cc:105: warning: extra ';'
-301:dtp_pddl_parsing_actions_problem.cc:107: warning: extra ';'
-302:dtp_pddl_parsing_actions_problem.cc:109: warning: extra ';'
-303:dtp_pddl_parsing_actions_problem.cc:110: warning: extra ';'
-304:dtp_pddl_parsing_actions_problem.cc:111: warning: extra ';'
-305:dtp_pddl_parsing_actions_problem.cc:112: warning: extra ';'
-306:In file included from planning_symbols.hh:35,
-307:                 from dtp_pddl_parsing_data_formula.hh:34,
-308:                 from dtp_pddl_parsing_data_formula.cc:30:
-318:dtp_pddl_parsing_actions_problem.cc:113: warning: extra ';'
-319:dtp_pddl_parsing_actions_problem.cc:116: warning: extra ';'
-320:dtp_pddl_parsing_actions_problem.cc:117: warning: extra ';'
-321:dtp_pddl_parsing_actions_problem.cc:118: warning: extra ';'
-322:dtp_pddl_parsing_actions_problem.cc:119: warning: extra ';'
-323:dtp_pddl_parsing_actions_problem.cc:121: warning: extra ';'
-324:dtp_pddl_parsing_actions_problem.cc:122: warning: extra ';'
-325:dtp_pddl_parsing_actions_problem.cc:131: warning: extra ';'
-326:In file included from stl__typed_thing.hh:54,
-327:                 from planning_symbols.hh:35,
-328:                 from dtp_pddl_parsing_data.hh:35,
-329:                 from dtp_pddl_parsing_data_domain.hh:33,
-330:                 from dtp_pddl_parsing_data_domain.cc:30:
-331:stl__deref_tools.hh:89: warning: extra ';'
-332:stl__deref_tools.hh:91: warning: extra ';'
-333:stl__deref_tools.hh:93: warning: extra ';'
-334:stl__deref_tools.hh:109: warning: extra ';'
-335:stl__deref_tools.hh:154: warning: extra ';'
-336:stl__deref_tools.hh:155: warning: extra ';'
-337:stl__deref_tools.hh:161: warning: extra ';'
-338:stl__deref_tools.hh:219: warning: extra ';'
-339:stl__deref_tools.hh:221: warning: extra ';'
-340:dtp_pddl_parsing_actions_domain.cc:44: warning: extra ';'
-341:dtp_pddl_parsing_actions_domain.cc:45: warning: extra ';'
-342:dtp_pddl_parsing_actions_domain.cc:46: warning: extra ';'
-343:dtp_pddl_parsing_actions_domain.cc:47: warning: extra ';'
-344:dtp_pddl_parsing_actions_domain.cc:48: warning: extra ';'
-345:dtp_pddl_parsing_actions_domain.cc:49: warning: extra ';'
-346:dtp_pddl_parsing_actions_domain.cc:50: warning: extra ';'
-347:dtp_pddl_parsing_actions_domain.cc:51: warning: extra ';'
-348:dtp_pddl_parsing_actions_domain.cc:52: warning: extra ';'
-349:dtp_pddl_parsing_actions_domain.cc:53: warning: extra ';'
-350:dtp_pddl_parsing_actions_domain.cc:54: warning: extra ';'
-351:dtp_pddl_parsing_actions_domain.cc:55: warning: extra ';'
-352:dtp_pddl_parsing_actions_domain.cc:56: warning: extra ';'
-353:dtp_pddl_parsing_actions_domain.cc:57: warning: extra ';'
-354:dtp_pddl_parsing_actions_domain.cc:58: warning: extra ';'
-355:dtp_pddl_parsing_actions_domain.cc:59: warning: extra ';'
-356:dtp_pddl_parsing_actions_domain.cc:60: warning: extra ';'
-357:dtp_pddl_parsing_actions_domain.cc:61: warning: extra ';'
-358:dtp_pddl_parsing_actions_domain.cc:62: warning: extra ';'
-359:dtp_pddl_parsing_actions_domain.cc:63: warning: extra ';'
-360:dtp_pddl_parsing_actions_domain.cc:64: warning: extra ';'
-361:dtp_pddl_parsing_actions_domain.cc:79: warning: extra ';'
-362:dtp_pddl_parsing_actions_domain.cc:80: warning: extra ';'
-363:dtp_pddl_parsing_actions_domain.cc:81: warning: extra ';'
-364:dtp_pddl_parsing_actions_domain.cc:82: warning: extra ';'
-365:dtp_pddl_parsing_actions_domain.cc:83: warning: extra ';'
-366:dtp_pddl_parsing_actions_domain.cc:84: warning: extra ';'
-367:dtp_pddl_parsing_actions_domain.cc:85: warning: extra ';'
-368:dtp_pddl_parsing_actions_domain.cc:86: warning: extra ';'
-369:dtp_pddl_parsing_actions_domain.cc:87: warning: extra ';'
-370:dtp_pddl_parsing_actions_domain.cc:88: warning: extra ';'
-371:dtp_pddl_parsing_actions_domain.cc:89: warning: extra ';'
-372:dtp_pddl_parsing_actions_domain.cc:90: warning: extra ';'
-373:dtp_pddl_parsing_actions_domain.cc:91: warning: extra ';'
-374:dtp_pddl_parsing_actions_domain.cc:92: warning: extra ';'
-375:dtp_pddl_parsing_actions_domain.cc:93: warning: extra ';'
-376:dtp_pddl_parsing_actions_domain.cc:94: warning: extra ';'
-377:dtp_pddl_parsing_actions_domain.cc:95: warning: extra ';'
-378:dtp_pddl_parsing_actions_domain.cc:96: warning: extra ';'
-379:dtp_pddl_parsing_actions_domain.cc:97: warning: extra ';'
-380:dtp_pddl_parsing_actions_domain.cc:98: warning: extra ';'
-381:dtp_pddl_parsing_actions_domain.cc:99: warning: extra ';'
-382:dtp_pddl_parsing_actions_domain.cc:100: warning: extra ';'
-383:dtp_pddl_parsing_actions_domain.cc:101: warning: extra ';'
-384:dtp_pddl_parsing_actions_domain.cc:102: warning: extra ';'
-385:dtp_pddl_parsing_actions_domain.cc:103: warning: extra ';'
-386:dtp_pddl_parsing_actions_domain.cc:104: warning: extra ';'
-387:dtp_pddl_parsing_actions_domain.cc:105: warning: extra ';'
-388:dtp_pddl_parsing_actions_domain.cc:106: warning: extra ';'
-389:dtp_pddl_parsing_actions_domain.cc:107: warning: extra ';'
-390:dtp_pddl_parsing_actions_domain.cc:108: warning: extra ';'
-391:dtp_pddl_parsing_actions_domain.cc:109: warning: extra ';'
-392:dtp_pddl_parsing_actions_domain.cc:112: warning: extra ';'
-393:dtp_pddl_parsing_actions_domain.cc:113: warning: extra ';'
-394:dtp_pddl_parsing_actions_domain.cc:114: warning: extra ';'
-395:dtp_pddl_parsing_actions_domain.cc:115: warning: extra ';'
-396:dtp_pddl_parsing_actions_domain.cc:116: warning: extra ';'
-397:dtp_pddl_parsing_actions_domain.cc:118: warning: extra ';'
-398:dtp_pddl_parsing_actions_domain.cc:119: warning: extra ';'
-399:dtp_pddl_parsing_actions_domain.cc:120: warning: extra ';'
-400:dtp_pddl_parsing_actions_domain.cc:121: warning: extra ';'
-401:dtp_pddl_parsing_actions_domain.cc:122: warning: extra ';'
-402:In file included from stl__typed_thing.hh:54,
-403:                 from planning_symbols.hh:35,
-404:                 from dtp_pddl_parsing_data.hh:35,
-405:                 from dtp_pddl_parsing_data_domain.hh:33,
-406:                 from dtp_pddl_parsing_data_domain__observations.cc:31:
-407:stl__deref_tools.hh:89: warning: extra ';'
-408:stl__deref_tools.hh:91: warning: extra ';'
-409:stl__deref_tools.hh:93: warning: extra ';'
-410:stl__deref_tools.hh:109: warning: extra ';'
-411:stl__deref_tools.hh:154: warning: extra ';'
-412:stl__deref_tools.hh:155: warning: extra ';'
-413:stl__deref_tools.hh:161: warning: extra ';'
-414:stl__deref_tools.hh:219: warning: extra ';'
-415:stl__deref_tools.hh:221: warning: extra ';'
-416:In file included from stl__typed_thing.hh:54,
-417:                 from planning_symbols.hh:35,
-418:                 from dtp_pddl_parsing_data.hh:35,
-419:                 from dtp_pddl_parsing_data_domain.hh:33,
-420:                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
-421:stl__deref_tools.hh:89: warning: extra ';'
-422:stl__deref_tools.hh:91: warning: extra ';'
-423:stl__deref_tools.hh:93: warning: extra ';'
-424:stl__deref_tools.hh:109: warning: extra ';'
-425:stl__deref_tools.hh:154: warning: extra ';'
-426:stl__deref_tools.hh:155: warning: extra ';'
-427:stl__deref_tools.hh:161: warning: extra ';'
-428:stl__deref_tools.hh:219: warning: extra ';'
-429:stl__deref_tools.hh:221: warning: extra ';'
-430:In file included from planning_symbols.hh:35,
-431:                 from dtp_pddl_parsing_data.hh:35,
-432:                 from dtp_pddl_parsing_data_problem.hh:34,
-433:                 from dtp_pddl_parsing_data_problem.cc:31:
-443:In file included from planning_formula.hh:159,
-444:                 from dtp_pddl_parsing_data.hh:36,
-445:                 from dtp_pddl_parsing_data_domain.hh:33,
-446:                 from dtp_pddl_parsing_data_domain.cc:30:
-447:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-448:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-449:In file included from stl__typed_thing.hh:54,
-450:                 from planning_symbols.hh:35,
-451:                 from dtp_pddl_parsing_data_formula.hh:34,
-452:                 from dtp_pddl_parsing_data_formula.cc:30:
-453:stl__deref_tools.hh:89: warning: extra ';'
-454:stl__deref_tools.hh:91: warning: extra ';'
-455:stl__deref_tools.hh:93: warning: extra ';'
-456:stl__deref_tools.hh:109: warning: extra ';'
-457:stl__deref_tools.hh:154: warning: extra ';'
-458:stl__deref_tools.hh:155: warning: extra ';'
-459:stl__deref_tools.hh:161: warning: extra ';'
-460:stl__deref_tools.hh:219: warning: extra ';'
-461:stl__deref_tools.hh:221: warning: extra ';'
-462:In file included from planning_symbols.hh:35,
-463:                 from dtp_pddl_parsing_data.hh:35,
-464:                 from dtp_pddl_parsing_data_problem.hh:34,
-465:                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
-475:In file included from planning_symbols.hh:35,
-476:                 from dtp_pddl_parsing_data_types.hh:36,
-477:                 from dtp_pddl_parsing_data_types.cc:30:
-487:In file included from planning_formula.hh:159,
-488:                 from dtp_pddl_parsing_data.hh:36,
-489:                 from dtp_pddl_parsing_data_domain.hh:33,
-490:                 from dtp_pddl_parsing_data_domain__observations.cc:31:
-491:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-492:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-493:dtp_pddl_parsing_data_domain.cc:246: warning: extra ';'
-494:In file included from planning_formula.hh:159,
-495:                 from dtp_pddl_parsing_data.hh:36,
-496:                 from dtp_pddl_parsing_data_domain.hh:33,
-497:                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
-498:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-499:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-500:In file included from stl__typed_thing.hh:54,
-501:                 from planning_symbols.hh:35,
-502:                 from dtp_pddl_parsing_data.hh:35,
-503:                 from dtp_pddl_parsing_data_problem.hh:34,
-504:                 from dtp_pddl_parsing_data_problem.cc:31:
-505:stl__deref_tools.hh:89: warning: extra ';'
-506:stl__deref_tools.hh:91: warning: extra ';'
-507:stl__deref_tools.hh:93: warning: extra ';'
-508:stl__deref_tools.hh:109: warning: extra ';'
-509:stl__deref_tools.hh:154: warning: extra ';'
-510:stl__deref_tools.hh:155: warning: extra ';'
-511:stl__deref_tools.hh:161: warning: extra ';'
-512:stl__deref_tools.hh:219: warning: extra ';'
-513:stl__deref_tools.hh:221: warning: extra ';'
-514:In file included from stl__typed_thing.hh:54,
-515:                 from planning_symbols.hh:35,
-516:                 from dtp_pddl_parsing_data.hh:35,
-517:                 from dtp_pddl_parsing_data_problem.hh:34,
-518:                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
-519:stl__deref_tools.hh:89: warning: extra ';'
-520:stl__deref_tools.hh:91: warning: extra ';'
-521:stl__deref_tools.hh:93: warning: extra ';'
-522:stl__deref_tools.hh:109: warning: extra ';'
-523:stl__deref_tools.hh:154: warning: extra ';'
+212:In file included from planning_symbols.hh:35,
+213:                 from dtp_pddl_parsing_data.hh:35,
+214:                 from dtp_pddl_parsing_data_domain.hh:33,
+215:                 from dtp_pddl_parsing_data_domain__observations.cc:31:
+225:In file included from planning_symbols.hh:35,
+226:                 from dtp_pddl_parsing_data.hh:35,
+227:                 from dtp_pddl_parsing_data_domain.hh:33,
+228:                 from dtp_pddl_parsing_data_domain.cc:30:
+238:dtp_pddl_parsing_actions_problem.cc:44: warning: extra ';'
+239:dtp_pddl_parsing_actions_problem.cc:45: warning: extra ';'
+240:dtp_pddl_parsing_actions_problem.cc:46: warning: extra ';'
+241:dtp_pddl_parsing_actions_problem.cc:47: warning: extra ';'
+242:dtp_pddl_parsing_actions_problem.cc:48: warning: extra ';'
+243:dtp_pddl_parsing_actions_problem.cc:49: warning: extra ';'
+244:dtp_pddl_parsing_actions_problem.cc:63: warning: extra ';'
+245:dtp_pddl_parsing_actions_problem.cc:66: warning: extra ';'
+246:dtp_pddl_parsing_actions_problem.cc:68: warning: extra ';'
+247:dtp_pddl_parsing_actions_problem.cc:69: warning: extra ';'
+248:dtp_pddl_parsing_actions_problem.cc:70: warning: extra ';'
+249:dtp_pddl_parsing_actions_problem.cc:71: warning: extra ';'
+250:dtp_pddl_parsing_actions_problem.cc:74: warning: extra ';'
+251:dtp_pddl_parsing_actions_problem.cc:76: warning: extra ';'
+252:dtp_pddl_parsing_actions_problem.cc:77: warning: extra ';'
+253:dtp_pddl_parsing_actions_problem.cc:79: warning: extra ';'
+254:dtp_pddl_parsing_actions_problem.cc:80: warning: extra ';'
+255:dtp_pddl_parsing_actions_problem.cc:81: warning: extra ';'
+256:dtp_pddl_parsing_actions_problem.cc:82: warning: extra ';'
+257:dtp_pddl_parsing_actions_problem.cc:83: warning: extra ';'
+258:dtp_pddl_parsing_actions_problem.cc:86: warning: extra ';'
+259:dtp_pddl_parsing_actions_problem.cc:87: warning: extra ';'
+260:dtp_pddl_parsing_actions_problem.cc:88: warning: extra ';'
+261:dtp_pddl_parsing_actions_problem.cc:89: warning: extra ';'
+262:dtp_pddl_parsing_actions_problem.cc:90: warning: extra ';'
+263:dtp_pddl_parsing_actions_problem.cc:91: warning: extra ';'
+264:dtp_pddl_parsing_actions_problem.cc:92: warning: extra ';'
+265:dtp_pddl_parsing_actions_problem.cc:93: warning: extra ';'
+266:dtp_pddl_parsing_actions_problem.cc:94: warning: extra ';'
+267:dtp_pddl_parsing_actions_problem.cc:96: warning: extra ';'
+268:dtp_pddl_parsing_actions_problem.cc:97: warning: extra ';'
+269:dtp_pddl_parsing_actions_problem.cc:98: warning: extra ';'
+270:dtp_pddl_parsing_actions_problem.cc:101: warning: extra ';'
+271:dtp_pddl_parsing_actions_problem.cc:102: warning: extra ';'
+272:dtp_pddl_parsing_actions_problem.cc:108: warning: extra ';'
+273:dtp_pddl_parsing_actions_problem.cc:111: warning: extra ';'
+274:dtp_pddl_parsing_actions_problem.cc:112: warning: extra ';'
+275:In file included from planning_symbols.hh:35,
+276:                 from dtp_pddl_parsing_data.hh:35,
+277:                 from dtp_pddl_parsing_data_domain.hh:33,
+278:                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
+288:In file included from planning_formula.hh:159,
+289:                 from dtp_pddl_parsing_data.hh:36,
+290:                 from dtp_pddl_parsing_data.cc:31:
+291:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+292:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+293:dtp_pddl_parsing_actions_problem.cc:114: warning: extra ';'
+294:dtp_pddl_parsing_actions_problem.cc:116: warning: extra ';'
+295:dtp_pddl_parsing_actions_problem.cc:117: warning: extra ';'
+296:dtp_pddl_parsing_actions_problem.cc:119: warning: extra ';'
+297:In file included from planning_formula.hh:159,
+298:                 from dtp_pddl_parsing_data.hh:36,
+299:                 from dtp_pddl_parsing_actions.hh:130,
+300:                 from dtp_pddl_parsing_actions_domain.hh:35,
+301:                 from dtp_pddl_parsing_actions_domain.cc:30:
+302:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+303:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+304:dtp_pddl_parsing_actions_problem.cc:120: warning: extra ';'
+305:dtp_pddl_parsing_actions_problem.cc:124: warning: extra ';'
+306:dtp_pddl_parsing_actions_problem.cc:125: warning: extra ';'
+307:dtp_pddl_parsing_actions_problem.cc:126: warning: extra ';'
+308:dtp_pddl_parsing_actions_problem.cc:127: warning: extra ';'
+309:dtp_pddl_parsing_actions_problem.cc:139: warning: extra ';'
+310:In file included from stl__typed_thing.hh:54,
+311:                 from planning_symbols.hh:35,
+312:                 from dtp_pddl_parsing_data.hh:35,
+313:                 from dtp_pddl_parsing_data_domain.hh:33,
+314:                 from dtp_pddl_parsing_data_domain__observations.cc:31:
+315:stl__deref_tools.hh:90: warning: extra ';'
+316:stl__deref_tools.hh:92: warning: extra ';'
+317:stl__deref_tools.hh:94: warning: extra ';'
+318:stl__deref_tools.hh:110: warning: extra ';'
+319:stl__deref_tools.hh:155: warning: extra ';'
+320:stl__deref_tools.hh:156: warning: extra ';'
+321:stl__deref_tools.hh:162: warning: extra ';'
+322:stl__deref_tools.hh:220: warning: extra ';'
+323:stl__deref_tools.hh:222: warning: extra ';'
+324:In file included from stl__typed_thing.hh:54,
+325:                 from planning_symbols.hh:35,
+326:                 from dtp_pddl_parsing_data.hh:35,
+327:                 from dtp_pddl_parsing_data_domain.hh:33,
+328:                 from dtp_pddl_parsing_data_domain.cc:30:
+329:stl__deref_tools.hh:90: warning: extra ';'
+330:stl__deref_tools.hh:92: warning: extra ';'
+331:stl__deref_tools.hh:94: warning: extra ';'
+332:stl__deref_tools.hh:110: warning: extra ';'
+333:stl__deref_tools.hh:155: warning: extra ';'
+334:stl__deref_tools.hh:156: warning: extra ';'
+335:stl__deref_tools.hh:162: warning: extra ';'
+336:stl__deref_tools.hh:220: warning: extra ';'
+337:stl__deref_tools.hh:222: warning: extra ';'
+338:In file included from planning_formula.hh:159,
+339:                 from dtp_pddl_parsing_data.hh:36,
+340:                 from dtp_pddl_parsing_data_domain.hh:33,
+341:                 from dtp_pddl_parsing_data_domain__actions.cc:31:
+342:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+343:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+344:dtp_pddl_parsing_actions_domain.cc:44: warning: extra ';'
+345:dtp_pddl_parsing_actions_domain.cc:45: warning: extra ';'
+346:dtp_pddl_parsing_actions_domain.cc:46: warning: extra ';'
+347:dtp_pddl_parsing_actions_domain.cc:47: warning: extra ';'
+348:dtp_pddl_parsing_actions_domain.cc:48: warning: extra ';'
+349:dtp_pddl_parsing_actions_domain.cc:49: warning: extra ';'
+350:dtp_pddl_parsing_actions_domain.cc:50: warning: extra ';'
+351:dtp_pddl_parsing_actions_domain.cc:51: warning: extra ';'
+352:dtp_pddl_parsing_actions_domain.cc:52: warning: extra ';'
+353:dtp_pddl_parsing_actions_domain.cc:53: warning: extra ';'
+354:dtp_pddl_parsing_actions_domain.cc:54: warning: extra ';'
+355:dtp_pddl_parsing_actions_domain.cc:55: warning: extra ';'
+356:dtp_pddl_parsing_actions_domain.cc:56: warning: extra ';'
+357:dtp_pddl_parsing_actions_domain.cc:57: warning: extra ';'
+358:dtp_pddl_parsing_actions_domain.cc:58: warning: extra ';'
+359:dtp_pddl_parsing_actions_domain.cc:59: warning: extra ';'
+360:dtp_pddl_parsing_actions_domain.cc:60: warning: extra ';'
+361:dtp_pddl_parsing_actions_domain.cc:61: warning: extra ';'
+362:dtp_pddl_parsing_actions_domain.cc:62: warning: extra ';'
+363:dtp_pddl_parsing_actions_domain.cc:63: warning: extra ';'
+364:dtp_pddl_parsing_actions_domain.cc:64: warning: extra ';'
+365:dtp_pddl_parsing_actions_domain.cc:79: warning: extra ';'
+366:dtp_pddl_parsing_actions_domain.cc:80: warning: extra ';'
+367:dtp_pddl_parsing_actions_domain.cc:81: warning: extra ';'
+368:dtp_pddl_parsing_actions_domain.cc:82: warning: extra ';'
+369:dtp_pddl_parsing_actions_domain.cc:83: warning: extra ';'
+370:dtp_pddl_parsing_actions_domain.cc:84: warning: extra ';'
+371:dtp_pddl_parsing_actions_domain.cc:85: warning: extra ';'
+372:dtp_pddl_parsing_actions_domain.cc:86: warning: extra ';'
+373:dtp_pddl_parsing_actions_domain.cc:87: warning: extra ';'
+374:dtp_pddl_parsing_actions_domain.cc:88: warning: extra ';'
+375:dtp_pddl_parsing_actions_domain.cc:89: warning: extra ';'
+376:dtp_pddl_parsing_actions_domain.cc:90: warning: extra ';'
+377:dtp_pddl_parsing_actions_domain.cc:91: warning: extra ';'
+378:dtp_pddl_parsing_actions_domain.cc:92: warning: extra ';'
+379:dtp_pddl_parsing_actions_domain.cc:93: warning: extra ';'
+380:dtp_pddl_parsing_actions_domain.cc:94: warning: extra ';'
+381:dtp_pddl_parsing_actions_domain.cc:95: warning: extra ';'
+382:dtp_pddl_parsing_actions_domain.cc:96: warning: extra ';'
+383:dtp_pddl_parsing_actions_domain.cc:97: warning: extra ';'
+384:dtp_pddl_parsing_actions_domain.cc:98: warning: extra ';'
+385:dtp_pddl_parsing_actions_domain.cc:99: warning: extra ';'
+386:dtp_pddl_parsing_actions_domain.cc:100: warning: extra ';'
+387:dtp_pddl_parsing_actions_domain.cc:101: warning: extra ';'
+388:dtp_pddl_parsing_actions_domain.cc:102: warning: extra ';'
+389:dtp_pddl_parsing_actions_domain.cc:103: warning: extra ';'
+390:dtp_pddl_parsing_actions_domain.cc:104: warning: extra ';'
+391:dtp_pddl_parsing_actions_domain.cc:105: warning: extra ';'
+392:dtp_pddl_parsing_actions_domain.cc:106: warning: extra ';'
+393:dtp_pddl_parsing_actions_domain.cc:107: warning: extra ';'
+394:dtp_pddl_parsing_actions_domain.cc:108: warning: extra ';'
+395:dtp_pddl_parsing_actions_domain.cc:109: warning: extra ';'
+396:dtp_pddl_parsing_actions_domain.cc:112: warning: extra ';'
+397:dtp_pddl_parsing_actions_domain.cc:113: warning: extra ';'
+398:dtp_pddl_parsing_actions_domain.cc:114: warning: extra ';'
+399:dtp_pddl_parsing_actions_domain.cc:115: warning: extra ';'
+400:dtp_pddl_parsing_actions_domain.cc:116: warning: extra ';'
+401:dtp_pddl_parsing_actions_domain.cc:118: warning: extra ';'
+402:dtp_pddl_parsing_actions_domain.cc:119: warning: extra ';'
+403:dtp_pddl_parsing_actions_domain.cc:120: warning: extra ';'
+404:dtp_pddl_parsing_actions_domain.cc:121: warning: extra ';'
+405:dtp_pddl_parsing_actions_domain.cc:122: warning: extra ';'
+406:In file included from planning_symbols.hh:35,
+407:                 from dtp_pddl_parsing_data_formula.hh:34,
+408:                 from dtp_pddl_parsing_data_formula.cc:30:
+418:In file included from stl__typed_thing.hh:54,
+419:                 from planning_symbols.hh:35,
+420:                 from dtp_pddl_parsing_data.hh:35,
+421:                 from dtp_pddl_parsing_data_domain.hh:33,
+422:                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
+423:stl__deref_tools.hh:90: warning: extra ';'
+424:stl__deref_tools.hh:92: warning: extra ';'
+425:stl__deref_tools.hh:94: warning: extra ';'
+426:stl__deref_tools.hh:110: warning: extra ';'
+427:stl__deref_tools.hh:155: warning: extra ';'
+428:stl__deref_tools.hh:156: warning: extra ';'
+429:stl__deref_tools.hh:162: warning: extra ';'
+430:stl__deref_tools.hh:220: warning: extra ';'
+431:stl__deref_tools.hh:222: warning: extra ';'
+432:In file included from planning_symbols.hh:35,
+433:                 from dtp_pddl_parsing_data.hh:35,
+434:                 from dtp_pddl_parsing_data_problem.hh:34,
+435:                 from dtp_pddl_parsing_data_problem.cc:31:
+445:In file included from planning_symbols.hh:35,
+446:                 from dtp_pddl_parsing_data.hh:35,
+447:                 from dtp_pddl_parsing_data_problem.hh:34,
+448:                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
+458:In file included from planning_formula.hh:159,
+459:                 from dtp_pddl_parsing_data.hh:36,
+460:                 from dtp_pddl_parsing_data_domain.hh:33,
+461:                 from dtp_pddl_parsing_data_domain.cc:30:
+462:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+463:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+464:In file included from planning_formula.hh:159,
+465:                 from dtp_pddl_parsing_data.hh:36,
+466:                 from dtp_pddl_parsing_data_domain.hh:33,
+467:                 from dtp_pddl_parsing_data_domain__observations.cc:31:
+468:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+469:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+470:In file included from stl__typed_thing.hh:54,
+471:                 from planning_symbols.hh:35,
+472:                 from dtp_pddl_parsing_data_formula.hh:34,
+473:                 from dtp_pddl_parsing_data_formula.cc:30:
+474:stl__deref_tools.hh:90: warning: extra ';'
+475:stl__deref_tools.hh:92: warning: extra ';'
+476:stl__deref_tools.hh:94: warning: extra ';'
+477:stl__deref_tools.hh:110: warning: extra ';'
+478:stl__deref_tools.hh:155: warning: extra ';'
+479:stl__deref_tools.hh:156: warning: extra ';'
+480:stl__deref_tools.hh:162: warning: extra ';'
+481:stl__deref_tools.hh:220: warning: extra ';'
+482:stl__deref_tools.hh:222: warning: extra ';'
+483:In file included from planning_formula.hh:159,
+484:                 from dtp_pddl_parsing_data.hh:36,
+485:                 from dtp_pddl_parsing_data_domain.hh:33,
+486:                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
+487:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+488:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+489:In file included from stl__typed_thing.hh:54,
+490:                 from planning_symbols.hh:35,
+491:                 from dtp_pddl_parsing_data.hh:35,
+492:                 from dtp_pddl_parsing_data_problem.hh:34,
+493:                 from dtp_pddl_parsing_data_problem.cc:31:
+494:stl__deref_tools.hh:90: warning: extra ';'
+495:stl__deref_tools.hh:92: warning: extra ';'
+496:stl__deref_tools.hh:94: warning: extra ';'
+497:stl__deref_tools.hh:110: warning: extra ';'
+498:stl__deref_tools.hh:155: warning: extra ';'
+499:stl__deref_tools.hh:156: warning: extra ';'
+500:stl__deref_tools.hh:162: warning: extra ';'
+501:stl__deref_tools.hh:220: warning: extra ';'
+502:stl__deref_tools.hh:222: warning: extra ';'
+503:In file included from planning_symbols.hh:35,
+504:                 from dtp_pddl_parsing_data_types.hh:36,
+505:                 from dtp_pddl_parsing_data_types.cc:30:
+515:In file included from stl__typed_thing.hh:54,
+516:                 from planning_symbols.hh:35,
+517:                 from dtp_pddl_parsing_data.hh:35,
+518:                 from dtp_pddl_parsing_data_problem.hh:34,
+519:                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
+520:stl__deref_tools.hh:90: warning: extra ';'
+521:stl__deref_tools.hh:92: warning: extra ';'
+522:stl__deref_tools.hh:94: warning: extra ';'
+523:stl__deref_tools.hh:110: warning: extra ';'
 524:stl__deref_tools.hh:155: warning: extra ';'
-525:stl__deref_tools.hh:161: warning: extra ';'
-526:stl__deref_tools.hh:219: warning: extra ';'
-527:stl__deref_tools.hh:221: warning: extra ';'
-528:In file included from planning_formula.hh:159,
-529:                 from planning_derived_predicate.hh:34,
-530:                 from dtp_pddl_parsing_data_formula.hh:37,
-531:                 from dtp_pddl_parsing_data_formula.cc:30:
-532:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-533:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-534:In file included from stl__typed_thing.hh:54,
-535:                 from planning_symbols.hh:35,
-536:                 from dtp_pddl_parsing_data_types.hh:36,
-537:                 from dtp_pddl_parsing_data_types.cc:30:
-538:stl__deref_tools.hh:89: warning: extra ';'
-539:stl__deref_tools.hh:91: warning: extra ';'
-540:stl__deref_tools.hh:93: warning: extra ';'
-541:stl__deref_tools.hh:109: warning: extra ';'
-542:stl__deref_tools.hh:154: warning: extra ';'
-543:stl__deref_tools.hh:155: warning: extra ';'
-544:stl__deref_tools.hh:161: warning: extra ';'
-545:stl__deref_tools.hh:219: warning: extra ';'
-546:stl__deref_tools.hh:221: warning: extra ';'
-547:In file included from planning_formula.hh:159,
-548:                 from dtp_pddl_parsing_data.hh:36,
-549:                 from dtp_pddl_parsing_data_problem.hh:34,
-550:                 from dtp_pddl_parsing_data_problem.cc:31:
-551:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-552:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-553:In file included from planning_formula.hh:159,
-554:                 from dtp_pddl_parsing_data.hh:36,
-555:                 from dtp_pddl_parsing_data_problem.hh:34,
-556:                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
-557:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-558:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-559:In file included from planning_symbols.hh:35,
-560:                 from dtp_pddl_parsing_data.hh:35,
-561:                 from dtp_pddl_parsing_interface.hh:32,
-562:                 from dtp_pddl_parsing_interface.cc:30:
-572:In file included from planning_symbols.hh:35,
-573:                 from dtp_pddl_parsing_data.hh:35,
-574:                 from dtp_pddl_parsing_interface.hh:32,
-575:                 from dtp_pddl_parsing_interface_domain.cc:30:
-585:In file included from stl__typed_thing.hh:54,
-586:                 from planning_symbols.hh:35,
-587:                 from dtp_pddl_parsing_data.hh:35,
-588:                 from dtp_pddl_parsing_interface.hh:32,
-589:                 from dtp_pddl_parsing_interface.cc:30:
-590:stl__deref_tools.hh:89: warning: extra ';'
-591:stl__deref_tools.hh:91: warning: extra ';'
-592:stl__deref_tools.hh:93: warning: extra ';'
-593:stl__deref_tools.hh:109: warning: extra ';'
-594:stl__deref_tools.hh:154: warning: extra ';'
-595:stl__deref_tools.hh:155: warning: extra ';'
-596:stl__deref_tools.hh:161: warning: extra ';'
-597:stl__deref_tools.hh:219: warning: extra ';'
-598:stl__deref_tools.hh:221: warning: extra ';'
-599:In file included from planning_symbols.hh:35,
-600:                 from dtp_pddl_parsing_data.hh:35,
-601:                 from dtp_pddl_parsing_interface.hh:32,
-602:                 from dtp_pddl_parsing_interface_problem.cc:30:
-612:In file included from stl__typed_thing.hh:54,
-613:                 from planning_symbols.hh:35,
-614:                 from dtp_pddl_parsing_data.hh:35,
-615:                 from dtp_pddl_parsing_interface.hh:32,
-616:                 from dtp_pddl_parsing_interface_domain.cc:30:
-617:stl__deref_tools.hh:89: warning: extra ';'
-618:stl__deref_tools.hh:91: warning: extra ';'
-619:stl__deref_tools.hh:93: warning: extra ';'
-620:stl__deref_tools.hh:109: warning: extra ';'
-621:stl__deref_tools.hh:154: warning: extra ';'
-622:stl__deref_tools.hh:155: warning: extra ';'
-623:stl__deref_tools.hh:161: warning: extra ';'
-624:stl__deref_tools.hh:219: warning: extra ';'
-625:stl__deref_tools.hh:221: warning: extra ';'
-626:In file included from planning_formula.hh:159,
-627:                 from dtp_pddl_parsing_data.hh:36,
-628:                 from dtp_pddl_parsing_interface.hh:32,
-629:                 from dtp_pddl_parsing_interface.cc:30:
-630:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-631:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-632:In file included from stl__typed_thing.hh:54,
-633:                 from planning_symbols.hh:35,
-634:                 from dtp_pddl_parsing_data.hh:35,
-635:                 from dtp_pddl_parsing_interface.hh:32,
-636:                 from dtp_pddl_parsing_interface_problem.cc:30:
-637:stl__deref_tools.hh:89: warning: extra ';'
-638:stl__deref_tools.hh:91: warning: extra ';'
-639:stl__deref_tools.hh:93: warning: extra ';'
-640:stl__deref_tools.hh:109: warning: extra ';'
-641:stl__deref_tools.hh:154: warning: extra ';'
-642:stl__deref_tools.hh:155: warning: extra ';'
-643:stl__deref_tools.hh:161: warning: extra ';'
-644:stl__deref_tools.hh:219: warning: extra ';'
-645:stl__deref_tools.hh:221: warning: extra ';'
-646:In file included from planning_symbols.hh:35,
-647:                 from planning_formula.hh:33,
-648:                 from planning_action_schema.hh:33,
-649:                 from planning_action_schema.cc:30:
-659:In file included from planning_formula.hh:159,
-660:                 from dtp_pddl_parsing_data.hh:36,
-661:                 from dtp_pddl_parsing_interface.hh:32,
-662:                 from dtp_pddl_parsing_interface_domain.cc:30:
-663:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-664:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-665:In file included from planning_formula.hh:159,
-666:                 from dtp_pddl_parsing_data.hh:36,
-667:                 from dtp_pddl_parsing_interface.hh:32,
-668:                 from dtp_pddl_parsing_interface_problem.cc:30:
-669:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-670:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-671:In file included from planning_symbols.hh:35,
-672:                 from planning_formula.hh:33,
-673:                 from planning_formula.cc:30:
-683:In file included from stl__typed_thing.hh:54,
-684:                 from planning_symbols.hh:35,
-685:                 from planning_formula.hh:33,
-686:                 from planning_action_schema.hh:33,
-687:                 from planning_action_schema.cc:30:
-688:stl__deref_tools.hh:89: warning: extra ';'
-689:stl__deref_tools.hh:91: warning: extra ';'
-690:stl__deref_tools.hh:93: warning: extra ';'
-691:stl__deref_tools.hh:109: warning: extra ';'
-692:stl__deref_tools.hh:154: warning: extra ';'
-693:stl__deref_tools.hh:155: warning: extra ';'
-694:stl__deref_tools.hh:161: warning: extra ';'
-695:stl__deref_tools.hh:219: warning: extra ';'
-696:stl__deref_tools.hh:221: warning: extra ';'
-697:In file included from planning_symbols.hh:35,
-698:                 from planning_formula.hh:33,
-699:                 from planning_derived_predicate.hh:34,
-700:                 from planning_derived_predicate.cc:30:
-710:In file included from stl__typed_thing.hh:54,
-711:                 from planning_symbols.hh:35,
-712:                 from planning_formula.hh:33,
-713:                 from planning_formula.cc:30:
-714:stl__deref_tools.hh:89: warning: extra ';'
-715:stl__deref_tools.hh:91: warning: extra ';'
-716:stl__deref_tools.hh:93: warning: extra ';'
-717:stl__deref_tools.hh:109: warning: extra ';'
-718:stl__deref_tools.hh:154: warning: extra ';'
-719:stl__deref_tools.hh:155: warning: extra ';'
-720:stl__deref_tools.hh:161: warning: extra ';'
-721:stl__deref_tools.hh:219: warning: extra ';'
-722:stl__deref_tools.hh:221: warning: extra ';'
-723:In file included from stl__typed_thing.hh:54,
-724:                 from planning_symbols.hh:35,
-725:                 from planning_formula.hh:33,
-726:                 from planning_derived_predicate.hh:34,
-727:                 from planning_derived_predicate.cc:30:
-728:stl__deref_tools.hh:89: warning: extra ';'
-729:stl__deref_tools.hh:91: warning: extra ';'
-730:stl__deref_tools.hh:93: warning: extra ';'
-731:stl__deref_tools.hh:109: warning: extra ';'
-732:stl__deref_tools.hh:154: warning: extra ';'
-733:stl__deref_tools.hh:155: warning: extra ';'
-734:stl__deref_tools.hh:161: warning: extra ';'
-735:stl__deref_tools.hh:219: warning: extra ';'
-736:stl__deref_tools.hh:221: warning: extra ';'
-737:In file included from planning_symbols.hh:35,
-738:                 from planning_formula.hh:33,
-739:                 from planning_observation_schema.hh:33,
-740:                 from planning_observation_schema.cc:30:
-750:In file included from planning_formula.hh:159,
-751:                 from planning_action_schema.hh:33,
-752:                 from planning_action_schema.cc:30:
-753:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-754:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-755:In file included from planning_formula.hh:159,
-756:                 from planning_formula.cc:30:
-757:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-758:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-759:planning_formula.cc:82: warning: extra ';'
-760:planning_formula.cc:83: warning: extra ';'
-761:planning_formula.cc:84: warning: extra ';'
-762:In file included from stl__typed_thing.hh:54,
-763:                 from planning_symbols.hh:35,
-764:                 from planning_formula.hh:33,
-765:                 from planning_observation_schema.hh:33,
-766:                 from planning_observation_schema.cc:30:
-767:stl__deref_tools.hh:89: warning: extra ';'
-768:stl__deref_tools.hh:91: warning: extra ';'
-769:stl__deref_tools.hh:93: warning: extra ';'
-770:stl__deref_tools.hh:109: warning: extra ';'
-771:stl__deref_tools.hh:154: warning: extra ';'
-772:stl__deref_tools.hh:155: warning: extra ';'
-773:stl__deref_tools.hh:161: warning: extra ';'
-774:stl__deref_tools.hh:219: warning: extra ';'
-775:stl__deref_tools.hh:221: warning: extra ';'
-776:In file included from planning_formula.hh:159,
-777:                 from planning_derived_predicate.hh:34,
-778:                 from planning_derived_predicate.cc:30:
-779:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-780:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-781:In file included from planning_symbols.hh:35,
-782:                 from planning_symbols.cc:30:
-792:In file included from planning_formula.hh:159,
-793:                 from planning_observation_schema.hh:33,
-794:                 from planning_observation_schema.cc:30:
-795:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-796:planning_formula__TEMPLATES.hh:52: warning: extra ';'
-797:In file included from stl__typed_thing.cc:30:
-807:In file included from stl__typed_thing.hh:54,
-808:                 from planning_symbols.hh:35,
-809:                 from planning_symbols.cc:30:
-810:stl__deref_tools.hh:89: warning: extra ';'
-811:stl__deref_tools.hh:91: warning: extra ';'
-812:stl__deref_tools.hh:93: warning: extra ';'
-813:stl__deref_tools.hh:109: warning: extra ';'
-814:stl__deref_tools.hh:154: warning: extra ';'
-815:stl__deref_tools.hh:155: warning: extra ';'
-816:stl__deref_tools.hh:161: warning: extra ';'
-817:stl__deref_tools.hh:219: warning: extra ';'
-818:stl__deref_tools.hh:221: warning: extra ';'
-819:planning_symbols.cc:92: warning: extra ';'
-820:planning_symbols.cc:93: warning: extra ';'
-821:planning_symbols.cc:95: warning: extra ';'
-822:planning_symbols.cc:96: warning: extra ';'
-823:In file included from stl__typed_thing.hh:54,
-824:                 from stl__typed_thing.cc:30:
-825:stl__deref_tools.hh:89: warning: extra ';'
-826:stl__deref_tools.hh:91: warning: extra ';'
-827:stl__deref_tools.hh:93: warning: extra ';'
-828:stl__deref_tools.hh:109: warning: extra ';'
-829:stl__deref_tools.hh:154: warning: extra ';'
-830:stl__deref_tools.hh:155: warning: extra ';'
-831:stl__deref_tools.hh:161: warning: extra ';'
-832:stl__deref_tools.hh:219: warning: extra ';'
-833:stl__deref_tools.hh:221: warning: extra ';'
-834:stl__typed_thing.cc:34: warning: extra ';'
-835:stl__typed_thing.cc:49: warning: extra ';'
-836:stl__typed_thing.cc:52: warning: extra ';'
-837:In file included from planning_symbols.hh:35,
-838:                 from dtp_pddl_parsing_data.hh:35,
-839:                 from dtp_pddl_parsing_interface.hh:32,
-840:                 from main.cpp:4:
-850:In file included from stl__typed_thing.hh:54,
-851:                 from planning_symbols.hh:35,
-852:                 from dtp_pddl_parsing_data.hh:35,
-853:                 from dtp_pddl_parsing_interface.hh:32,
-854:                 from main.cpp:4:
-855:stl__deref_tools.hh:89: warning: extra ';'
-856:stl__deref_tools.hh:91: warning: extra ';'
-857:stl__deref_tools.hh:93: warning: extra ';'
-858:stl__deref_tools.hh:109: warning: extra ';'
-859:stl__deref_tools.hh:154: warning: extra ';'
-860:stl__deref_tools.hh:155: warning: extra ';'
-861:stl__deref_tools.hh:161: warning: extra ';'
-862:stl__deref_tools.hh:219: warning: extra ';'
-863:stl__deref_tools.hh:221: warning: extra ';'
-864:In file included from planning_formula.hh:159,
-865:                 from dtp_pddl_parsing_data.hh:36,
-866:                 from dtp_pddl_parsing_interface.hh:32,
-867:                 from main.cpp:4:
-868:planning_formula__TEMPLATES.hh:51: warning: extra ';'
-869:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+525:stl__deref_tools.hh:156: warning: extra ';'
+526:stl__deref_tools.hh:162: warning: extra ';'
+527:stl__deref_tools.hh:220: warning: extra ';'
+528:stl__deref_tools.hh:222: warning: extra ';'
+529:dtp_pddl_parsing_data_domain.cc:245: warning: extra ';'
+530:In file included from planning_formula.hh:159,
+531:                 from planning_derived_predicate.hh:34,
+532:                 from dtp_pddl_parsing_data_formula.hh:37,
+533:                 from dtp_pddl_parsing_data_formula.cc:30:
+534:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+535:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+536:In file included from planning_formula.hh:159,
+537:                 from dtp_pddl_parsing_data.hh:36,
+538:                 from dtp_pddl_parsing_data_problem.hh:34,
+539:                 from dtp_pddl_parsing_data_problem.cc:31:
+540:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+541:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+542:In file included from stl__typed_thing.hh:54,
+543:                 from planning_symbols.hh:35,
+544:                 from dtp_pddl_parsing_data_types.hh:36,
+545:                 from dtp_pddl_parsing_data_types.cc:30:
+546:stl__deref_tools.hh:90: warning: extra ';'
+547:stl__deref_tools.hh:92: warning: extra ';'
+548:stl__deref_tools.hh:94: warning: extra ';'
+549:stl__deref_tools.hh:110: warning: extra ';'
+550:stl__deref_tools.hh:155: warning: extra ';'
+551:stl__deref_tools.hh:156: warning: extra ';'
+552:stl__deref_tools.hh:162: warning: extra ';'
+553:stl__deref_tools.hh:220: warning: extra ';'
+554:stl__deref_tools.hh:222: warning: extra ';'
+555:In file included from planning_formula.hh:159,
+556:                 from dtp_pddl_parsing_data.hh:36,
+557:                 from dtp_pddl_parsing_data_problem.hh:34,
+558:                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
+559:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+560:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+561:In file included from planning_symbols.hh:35,
+562:                 from dtp_pddl_parsing_data.hh:35,
+563:                 from dtp_pddl_parsing_interface.hh:33,
+564:                 from dtp_pddl_parsing_interface.cc:30:
+574:In file included from planning_symbols.hh:35,
+575:                 from dtp_pddl_parsing_data.hh:35,
+576:                 from dtp_pddl_parsing_interface.hh:33,
+577:                 from dtp_pddl_parsing_interface_domain.cc:30:
+587:In file included from stl__typed_thing.hh:54,
+588:                 from planning_symbols.hh:35,
+589:                 from dtp_pddl_parsing_data.hh:35,
+590:                 from dtp_pddl_parsing_interface.hh:33,
+591:                 from dtp_pddl_parsing_interface.cc:30:
+592:stl__deref_tools.hh:90: warning: extra ';'
+593:stl__deref_tools.hh:92: warning: extra ';'
+594:stl__deref_tools.hh:94: warning: extra ';'
+595:stl__deref_tools.hh:110: warning: extra ';'
+596:stl__deref_tools.hh:155: warning: extra ';'
+597:stl__deref_tools.hh:156: warning: extra ';'
+598:stl__deref_tools.hh:162: warning: extra ';'
+599:stl__deref_tools.hh:220: warning: extra ';'
+600:stl__deref_tools.hh:222: warning: extra ';'
+601:In file included from stl__typed_thing.hh:54,
+602:                 from planning_symbols.hh:35,
+603:                 from dtp_pddl_parsing_data.hh:35,
+604:                 from dtp_pddl_parsing_interface.hh:33,
+605:                 from dtp_pddl_parsing_interface_domain.cc:30:
+606:stl__deref_tools.hh:90: warning: extra ';'
+607:stl__deref_tools.hh:92: warning: extra ';'
+608:stl__deref_tools.hh:94: warning: extra ';'
+609:stl__deref_tools.hh:110: warning: extra ';'
+610:stl__deref_tools.hh:155: warning: extra ';'
+611:stl__deref_tools.hh:156: warning: extra ';'
+612:stl__deref_tools.hh:162: warning: extra ';'
+613:stl__deref_tools.hh:220: warning: extra ';'
+614:stl__deref_tools.hh:222: warning: extra ';'
+615:In file included from planning_formula.hh:159,
+616:                 from dtp_pddl_parsing_data.hh:36,
+617:                 from dtp_pddl_parsing_interface.hh:33,
+618:                 from dtp_pddl_parsing_interface.cc:30:
+619:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+620:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+621:In file included from planning_symbols.hh:35,
+622:                 from dtp_pddl_parsing_data.hh:35,
+623:                 from dtp_pddl_parsing_interface.hh:33,
+624:                 from dtp_pddl_parsing_interface_problem.cc:30:
+634:In file included from planning_formula.hh:159,
+635:                 from dtp_pddl_parsing_data.hh:36,
+636:                 from dtp_pddl_parsing_interface.hh:33,
+637:                 from dtp_pddl_parsing_interface_domain.cc:30:
+638:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+639:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+640:In file included from stl__typed_thing.hh:54,
+641:                 from planning_symbols.hh:35,
+642:                 from dtp_pddl_parsing_data.hh:35,
+643:                 from dtp_pddl_parsing_interface.hh:33,
+644:                 from dtp_pddl_parsing_interface_problem.cc:30:
+645:stl__deref_tools.hh:90: warning: extra ';'
+646:stl__deref_tools.hh:92: warning: extra ';'
+647:stl__deref_tools.hh:94: warning: extra ';'
+648:stl__deref_tools.hh:110: warning: extra ';'
+649:stl__deref_tools.hh:155: warning: extra ';'
+650:stl__deref_tools.hh:156: warning: extra ';'
+651:stl__deref_tools.hh:162: warning: extra ';'
+652:stl__deref_tools.hh:220: warning: extra ';'
+653:stl__deref_tools.hh:222: warning: extra ';'
+654:In file included from planning_symbols.hh:35,
+655:                 from planning_formula.hh:33,
+656:                 from planning_action_schema.hh:33,
+657:                 from planning_action_schema.cc:30:
+667:In file included from planning_symbols.hh:35,
+668:                 from planning_formula.hh:33,
+669:                 from planning_derived_predicate.hh:34,
+670:                 from planning_derived_predicate.cc:30:
+680:In file included from planning_symbols.hh:35,
+681:                 from planning_formula.hh:33,
+682:                 from planning_formula.cc:30:
+692:In file included from planning_formula.hh:159,
+693:                 from dtp_pddl_parsing_data.hh:36,
+694:                 from dtp_pddl_parsing_interface.hh:33,
+695:                 from dtp_pddl_parsing_interface_problem.cc:30:
+696:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+697:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+698:In file included from stl__typed_thing.hh:54,
+699:                 from planning_symbols.hh:35,
+700:                 from planning_formula.hh:33,
+701:                 from planning_action_schema.hh:33,
+702:                 from planning_action_schema.cc:30:
+703:stl__deref_tools.hh:90: warning: extra ';'
+704:stl__deref_tools.hh:92: warning: extra ';'
+705:stl__deref_tools.hh:94: warning: extra ';'
+706:stl__deref_tools.hh:110: warning: extra ';'
+707:stl__deref_tools.hh:155: warning: extra ';'
+708:stl__deref_tools.hh:156: warning: extra ';'
+709:stl__deref_tools.hh:162: warning: extra ';'
+710:stl__deref_tools.hh:220: warning: extra ';'
+711:stl__deref_tools.hh:222: warning: extra ';'
+712:In file included from stl__typed_thing.hh:54,
+713:                 from planning_symbols.hh:35,
+714:                 from planning_formula.hh:33,
+715:                 from planning_derived_predicate.hh:34,
+716:                 from planning_derived_predicate.cc:30:
+717:stl__deref_tools.hh:90: warning: extra ';'
+718:stl__deref_tools.hh:92: warning: extra ';'
+719:stl__deref_tools.hh:94: warning: extra ';'
+720:stl__deref_tools.hh:110: warning: extra ';'
+721:stl__deref_tools.hh:155: warning: extra ';'
+722:stl__deref_tools.hh:156: warning: extra ';'
+723:stl__deref_tools.hh:162: warning: extra ';'
+724:stl__deref_tools.hh:220: warning: extra ';'
+725:stl__deref_tools.hh:222: warning: extra ';'
+726:In file included from stl__typed_thing.hh:54,
+727:                 from planning_symbols.hh:35,
+728:                 from planning_formula.hh:33,
+729:                 from planning_formula.cc:30:
+730:stl__deref_tools.hh:90: warning: extra ';'
+731:stl__deref_tools.hh:92: warning: extra ';'
+732:stl__deref_tools.hh:94: warning: extra ';'
+733:stl__deref_tools.hh:110: warning: extra ';'
+734:stl__deref_tools.hh:155: warning: extra ';'
+735:stl__deref_tools.hh:156: warning: extra ';'
+736:stl__deref_tools.hh:162: warning: extra ';'
+737:stl__deref_tools.hh:220: warning: extra ';'
+738:stl__deref_tools.hh:222: warning: extra ';'
+739:In file included from planning_formula.hh:159,
+740:                 from planning_derived_predicate.hh:34,
+741:                 from planning_derived_predicate.cc:30:
+742:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+743:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+744:In file included from planning_formula.hh:159,
+745:                 from planning_action_schema.hh:33,
+746:                 from planning_action_schema.cc:30:
+747:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+748:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+749:In file included from planning_formula.hh:159,
+750:                 from planning_formula.cc:30:
+751:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+752:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+753:planning_formula.cc:82: warning: extra ';'
+754:planning_formula.cc:83: warning: extra ';'
+755:planning_formula.cc:84: warning: extra ';'
+756:In file included from planning_symbols.hh:35,
+757:                 from planning_formula.hh:33,
+758:                 from planning_observation_schema.hh:33,
+759:                 from planning_observation_schema.cc:30:
+769:In file included from planning_symbols.hh:35,
+770:                 from planning_symbols.cc:30:
+780:In file included from planning_symbols.hh:35,
+781:                 from dtp_pddl_parsing_data.hh:35,
+782:                 from solver.hh:37,
+783:                 from solver.cc:1:
+793:In file included from stl__typed_thing.cc:30:
+803:In file included from stl__typed_thing.hh:54,
+804:                 from planning_symbols.hh:35,
+805:                 from planning_symbols.cc:30:
+806:stl__deref_tools.hh:90: warning: extra ';'
+807:stl__deref_tools.hh:92: warning: extra ';'
+808:stl__deref_tools.hh:94: warning: extra ';'
+809:stl__deref_tools.hh:110: warning: extra ';'
+810:stl__deref_tools.hh:155: warning: extra ';'
+811:stl__deref_tools.hh:156: warning: extra ';'
+812:stl__deref_tools.hh:162: warning: extra ';'
+813:stl__deref_tools.hh:220: warning: extra ';'
+814:stl__deref_tools.hh:222: warning: extra ';'
+815:In file included from stl__typed_thing.hh:54,
+816:                 from planning_symbols.hh:35,
+817:                 from planning_formula.hh:33,
+818:                 from planning_observation_schema.hh:33,
+819:                 from planning_observation_schema.cc:30:
+820:stl__deref_tools.hh:90: warning: extra ';'
+821:stl__deref_tools.hh:92: warning: extra ';'
+822:stl__deref_tools.hh:94: warning: extra ';'
+823:stl__deref_tools.hh:110: warning: extra ';'
+824:stl__deref_tools.hh:155: warning: extra ';'
+825:stl__deref_tools.hh:156: warning: extra ';'
+826:stl__deref_tools.hh:162: warning: extra ';'
+827:stl__deref_tools.hh:220: warning: extra ';'
+828:stl__deref_tools.hh:222: warning: extra ';'
+829:planning_symbols.cc:92: warning: extra ';'
+830:planning_symbols.cc:93: warning: extra ';'
+831:planning_symbols.cc:95: warning: extra ';'
+832:planning_symbols.cc:96: warning: extra ';'
+833:In file included from stl__typed_thing.hh:54,
+834:                 from planning_symbols.hh:35,
+835:                 from dtp_pddl_parsing_data.hh:35,
+836:                 from solver.hh:37,
+837:                 from solver.cc:1:
+838:stl__deref_tools.hh:90: warning: extra ';'
+839:stl__deref_tools.hh:92: warning: extra ';'
+840:stl__deref_tools.hh:94: warning: extra ';'
+841:stl__deref_tools.hh:110: warning: extra ';'
+842:stl__deref_tools.hh:155: warning: extra ';'
+843:stl__deref_tools.hh:156: warning: extra ';'
+844:stl__deref_tools.hh:162: warning: extra ';'
+845:stl__deref_tools.hh:220: warning: extra ';'
+846:stl__deref_tools.hh:222: warning: extra ';'
+847:In file included from stl__typed_thing.hh:54,
+848:                 from stl__typed_thing.cc:30:
+849:stl__deref_tools.hh:90: warning: extra ';'
+850:stl__deref_tools.hh:92: warning: extra ';'
+851:stl__deref_tools.hh:94: warning: extra ';'
+852:stl__deref_tools.hh:110: warning: extra ';'
+853:stl__deref_tools.hh:155: warning: extra ';'
+854:stl__deref_tools.hh:156: warning: extra ';'
+855:stl__deref_tools.hh:162: warning: extra ';'
+856:stl__deref_tools.hh:220: warning: extra ';'
+857:stl__deref_tools.hh:222: warning: extra ';'
+858:stl__typed_thing.cc:34: warning: extra ';'
+859:stl__typed_thing.cc:49: warning: extra ';'
+860:stl__typed_thing.cc:52: warning: extra ';'
+861:In file included from planning_formula.hh:159,
+862:                 from planning_observation_schema.hh:33,
+863:                 from planning_observation_schema.cc:30:
+864:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+865:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+866:In file included from planning_formula.hh:159,
+867:                 from dtp_pddl_parsing_data.hh:36,
+868:                 from solver.hh:37,
+869:                 from solver.cc:1:
+870:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+871:planning_formula__TEMPLATES.hh:52: warning: extra ';'
+872:In file included from planning_symbols.hh:35,
+873:                 from dtp_pddl_parsing_data.hh:35,
+874:                 from dtp_pddl_parsing_interface.hh:33,
+875:                 from main.cpp:4:
+885:In file included from stl__typed_thing.hh:54,
+886:                 from planning_symbols.hh:35,
+887:                 from dtp_pddl_parsing_data.hh:35,
+888:                 from dtp_pddl_parsing_interface.hh:33,
+889:                 from main.cpp:4:
+890:stl__deref_tools.hh:90: warning: extra ';'
+891:stl__deref_tools.hh:92: warning: extra ';'
+892:stl__deref_tools.hh:94: warning: extra ';'
+893:stl__deref_tools.hh:110: warning: extra ';'
+894:stl__deref_tools.hh:155: warning: extra ';'
+895:stl__deref_tools.hh:156: warning: extra ';'
+896:stl__deref_tools.hh:162: warning: extra ';'
+897:stl__deref_tools.hh:220: warning: extra ';'
+898:stl__deref_tools.hh:222: warning: extra ';'
+899:In file included from planning_formula.hh:159,
+900:                 from dtp_pddl_parsing_data.hh:36,
+901:                 from dtp_pddl_parsing_interface.hh:33,
+902:                 from main.cpp:4:
+903:planning_formula__TEMPLATES.hh:51: warning: extra ';'
+904:planning_formula__TEMPLATES.hh:52: warning: extra ';'

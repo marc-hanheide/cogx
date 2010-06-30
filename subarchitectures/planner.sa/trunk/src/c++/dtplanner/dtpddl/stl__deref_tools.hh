@@ -80,7 +80,8 @@ class CXX__deref__shared_ptr
 public:
     explicit CXX__deref__shared_ptr(const CXX__PTR_ANNOTATION(T)&);
     explicit CXX__deref__shared_ptr();
-    
+
+    long use_count()const{return contents.use_count();};
     CXX__PTR_ANNOTATION(T) get() const;
     bool operator==(const CXX__deref__shared_ptr&) const;
     bool operator<(const CXX__deref__shared_ptr&) const;
@@ -102,7 +103,7 @@ CXX__deref__shared_ptr<T>::CXX__deref__shared_ptr(const CXX__PTR_ANNOTATION(T)&i
 
 template<typename T>
 CXX__deref__shared_ptr<T>::CXX__deref__shared_ptr()
-    :contents(static_cast<T*>(NULL))
+    :contents()//static_cast<T*>(NULL))
 {}
 
 template<typename T>

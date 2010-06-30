@@ -56,8 +56,8 @@ namespace Planning
             void report__maximisation_objective();
             
             void report__starting_state();
-            
             void report__objective_function();
+            void report__goal_formula();
             
             /* Associate a domain model with name
              * \argument{Domain_Name} with this problem.*/
@@ -75,6 +75,9 @@ namespace Planning
             Planning::Formula::Action_Proposition get__prescribed_action();
             
         private:
+            /*Description of the planning goal.*/
+            Planning::Formula::Subformula goal_formula;
+            
             /*Last starting state formula parsed.*/
             Planning::Formula::Subformula starting_state;
             

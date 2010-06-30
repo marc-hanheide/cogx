@@ -46,6 +46,7 @@ namespace Planning
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Maximise__Action, report__maximisation_objective);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Starting_State__Action, report__starting_state);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Objective_Formula__Action, report__objective_function);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Goal_Formula__Action, report__goal_formula);
     }
 }
 
@@ -85,6 +86,11 @@ namespace Planning
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Dive__Action, report__dive);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Emerge__Action, report__emerge);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(And__Action, report__and_formula);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Forall__Action, report__forall_formula);
+        problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Variable_Argument__Action, add__variable_argument);
+        problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Type__Action, add__type);
+        problem__FORWARDING_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Type__Action, add__type_of_type);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Argument__Action, commit__argument_types);
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Probabilistic__Action, report__probabilistic_formula);
         
         problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Number_In_Effect__Action, report__number_in_effect);
@@ -95,8 +101,8 @@ namespace Planning
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Action_Name__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Percept_Name__Action);
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Function_Name__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Variable_Argument__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Argument__Action);
+// //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Variable_Argument__Action);
+// //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Argument__Action);
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Dive__Action);
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Emerge__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Empty_Formula__Action);
@@ -109,9 +115,10 @@ namespace Planning
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(And__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Or__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(If__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Variable_Cluster__Action);
+//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Variable_Cluster__Action);
+        problem__SIMPLE_PEGTL_ACTION__IMPLEMENTATION(Variable_Cluster__Action, stack__typed_Arguments);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Exists__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Forall__Action);
+//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Forall__Action);
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Formula__Action);
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Constant_Argument__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Conditional_Effect__Action);
@@ -119,8 +126,8 @@ namespace Planning
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Decrease__Action);
         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Assign__Action);
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Number__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type__Action);
-        problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Type__Action);
+//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type__Action);
+//         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Type__Action);
         
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Constant__Action);
 //         problem__UNIMPLEMENTED_PEGTL_ACTION__IMPLEMENTATION(Type_Of_Constant__Action);

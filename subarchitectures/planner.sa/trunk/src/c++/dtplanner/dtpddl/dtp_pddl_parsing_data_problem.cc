@@ -136,6 +136,26 @@ void Problem_Data::report__objective_function()
 }
 
 
+void Problem_Data::report__goal_formula()
+{
+    QUERY_UNRECOVERABLE_ERROR(0 != formula_parsing_level,
+                              "Expecting formulae to appear at parse level :: "<<0<<std::endl
+                              <<"But got :: "<<formula_parsing_level<<std::endl
+                              <<"When parsing goal."<<std::endl);
+    
+    QUERY_UNRECOVERABLE_ERROR(
+        subformulae.find(1) == subformulae.end()
+        , "Parsed an empty goal."<<std::endl);
+    
+    QUERY_UNRECOVERABLE_ERROR(
+        subformulae[1].size() != 1
+        , "Parsed multiple separate formula while getting goal."<<std::endl);
+    
+    this->goal_formula = subformulae[1].back();
+    subformulae[1] = Formula::Subformulae();
+}
+
+
 const CXX__PTR_ANNOTATION(Domain_Data)& Problem_Data::get__domain_Data() const
 {return domain_Data;}
 
