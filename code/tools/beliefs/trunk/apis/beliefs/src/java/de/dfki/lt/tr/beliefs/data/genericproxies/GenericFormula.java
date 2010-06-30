@@ -20,7 +20,7 @@
 
 // =================================================================
 // PACKAGE DEFINITION 
-package de.dfki.lt.tr.beliefs.data;
+package de.dfki.lt.tr.beliefs.data.genericproxies;
 
 // Belief API slice
 import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
@@ -38,18 +38,18 @@ import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
  * @started 100521
  * @version 100521
  */
-public class Formula extends Proxy<dFormula> {
+public class GenericFormula<T extends dFormula> extends Proxy<T> {
 
-	public static Formula create(Ice.Object pd) {
-		return new Formula(pd);
+	public static <T2 extends dFormula> GenericFormula<T2> create(Class<? extends T2> type, Ice.Object pd) {
+		return new GenericFormula<T2>(type,pd);
 	}
 
 	/**
 	 * Object is created from underlying slice-based datastructure, and a given
 	 * probability.
 	 */
-	protected Formula(Ice.Object formula) {
-		super(dFormula.class, formula);
+	protected GenericFormula(Class<? extends T> type , Ice.Object formula) {
+		super(type, formula);
 
 	} // end constructor
 

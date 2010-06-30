@@ -7,6 +7,7 @@ import de.dfki.lt.tr.beliefs.data.abstractproxies.Proxy;
 import de.dfki.lt.tr.beliefs.data.abstractproxies.ProxyFactory;
 import de.dfki.lt.tr.beliefs.slice.distribs.ProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.framing.AbstractFrame;
@@ -53,6 +54,12 @@ public class GenericBelief<T extends dBelief, C extends Distribution<?>> extends
 		super(class1, content);
 		contentFactory = factory;
 	}
+	
+	public EpistemicStatus getStatus() {
+		return _content.estatus;
+	}
+
+
 
 	/**
 	 * Returns the attributed-to agents for a belief with attributed status
