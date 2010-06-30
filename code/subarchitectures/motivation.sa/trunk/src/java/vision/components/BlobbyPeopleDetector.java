@@ -173,7 +173,6 @@ public class BlobbyPeopleDetector extends ManagedComponent {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private static String toString(Person _person) {
 		return CASTUtils.concatenate("Person ", _person.angle, " degrees ",
 				_person.distance, " distance");

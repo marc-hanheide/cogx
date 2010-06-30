@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -20,16 +21,18 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import beliefmodels.autogen.beliefs.StableBelief;
-import beliefmodels.autogen.distribs.CondIndependentDistribs;
-import beliefmodels.autogen.distribs.ProbDistribution;
-import beliefmodels.autogen.featurecontent.BooleanValue;
-import beliefmodels.autogen.featurecontent.FeatureValue;
-import beliefmodels.autogen.featurecontent.FloatValue;
-import beliefmodels.autogen.featurecontent.IntegerValue;
-import beliefmodels.autogen.featurecontent.StringValue;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
+import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.components.GraphicalExecutionManager;
 import execution.slice.Action;
 
@@ -60,8 +63,8 @@ public class ActionInterfaceFrame extends JFrame {
 	private GraphicalExecutionManager m_exeMan;
 	private JTable m_beliefTable;
 	private DefaultTableModel m_beliefTableModel;
-	private static final Object[] FEATURE_VALUE_TYPES = { StringValue.class,
-			IntegerValue.class, FloatValue.class, BooleanValue.class };
+	private static final Class<?>[] FEATURE_VALUE_TYPES = { ElementaryFormula.class,
+			IntegerFormula.class, FloatFormula.class, BooleanFormula.class };
 
 	/**
 	 * This is the default constructor
@@ -331,29 +334,29 @@ public class ActionInterfaceFrame extends JFrame {
 			return;
 		}
 
-		FeatureValue fv = null;
-
-		if (_valueType == StringValue.class) {
-			fv = new StringValue(_value);
-		} else if (_valueType == IntegerValue.class) {
-			fv = new IntegerValue(Integer.parseInt(_value));
-		} else if (_valueType == FloatValue.class) {
-			fv = new FloatValue(Float.parseFloat(_value));
-		} else if (_valueType == BooleanValue.class) {
-			fv = new BooleanValue(Boolean.parseBoolean(_value));
-		} else {
+//		FeatureValue fv = null;
+//
+//		if (_valueType == StringValue.class) {
+//			fv = new StringValue(_value);
+//		} else if (_valueType == IntegerValue.class) {
+//			fv = new IntegerValue(Integer.parseInt(_value));
+//		} else if (_valueType == FloatValue.class) {
+//			fv = new FloatValue(Float.parseFloat(_value));
+//		} else if (_valueType == BooleanValue.class) {
+//			fv = new BooleanValue(Boolean.parseBoolean(_value));
+//		} else {
 			assert (false);
-		}
+//		}
 
 		//final sanity check in case assertions are disable
-		if(fv != null) {
-			try {
-				m_exeMan.triggerFeatureValueTest(_beliefID, _featureLabel, fv,
-						new MonitorPanel());
-			} catch (CASTException e) {
-				m_exeMan.logException(e);
-			}
-		}
+//		if(fv != null) {
+//			try {
+//				m_exeMan.triggerFeatureValueTest(_beliefID, _featureLabel, fv,
+//						new MonitorPanel());
+//			} catch (CASTException e) {
+//				m_exeMan.logException(e);
+//			}
+//		}
 		
 	}
 
@@ -485,13 +488,15 @@ public class ActionInterfaceFrame extends JFrame {
 		return m_beliefTable;
 	}
 
-	public void addBelief(WorkingMemoryAddress _address, StableBelief _belief) {
+	public void addBelief(WorkingMemoryAddress _address, dBelief _belief) {
 		println(_belief.type);
-		assert (_belief.content instanceof CondIndependentDistribs);
-		CondIndependentDistribs cid = (CondIndependentDistribs) _belief.content;
-		Map<String, ProbDistribution> featureDistributions = cid.distribs;
-		for (String featureType : featureDistributions.keySet()) {
-			println(featureType);
+		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief.create(dBelief.class, _belief);
+
+		IndependentFormulaDistributions cid = b.getContent();
+		
+		
+		for (Entry<String, FormulaDistribution> featureType : cid.entrySet()) {
+			println(featureType.getValue().get());
 		}
 		m_beliefTableModel.addRow(new Object[] { _address.id, _belief.type });
 		pack();

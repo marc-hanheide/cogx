@@ -6,8 +6,6 @@ package execution.components;
 import java.util.Map;
 
 import SpatialData.Place;
-import beliefmodels.autogen.beliefs.StableBelief;
-import beliefmodels.autogen.featurecontent.FeatureValue;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -17,9 +15,9 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.ComsysQueryFeature;
-import execution.slice.actions.ComsysTestFeatureValue;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.GoToPlace;
@@ -82,18 +80,18 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 		// use these to harvest beliefs
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				StableBelief.class, WorkingMemoryOperation.ADD),
+				dBelief.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
 						addStableBelief(_wmc.address, getMemoryEntry(
-								_wmc.address, StableBelief.class));
+								_wmc.address, dBelief.class));
 					}
 				});
 
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				StableBelief.class, WorkingMemoryOperation.DELETE),
+				dBelief.class, WorkingMemoryOperation.DELETE),
 				new WorkingMemoryChangeReceiver() {
 
 					@Override
@@ -111,7 +109,7 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	}
 
 	private void addStableBelief(WorkingMemoryAddress _address,
-			StableBelief _belief) {
+			dBelief _belief) {
 		m_gui.addBelief(_address, _belief);
 	}
 
@@ -189,15 +187,15 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID, String _featureLabel,
-			FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
-		ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
-		act.beliefID = _beliefID;
-		act.featureType = _featureLabel;
-		act.featureValue = _fv;
-		m_currentActionAddress = triggerExecution(act, _monitor);
-		return m_currentActionAddress;		
-	}
+//	public WorkingMemoryAddress triggerFeatureValueTest(String _beliefID, String _featureLabel,
+//			FeatureValue _fv, ActionMonitor _monitor) throws CASTException {
+//		ComsysTestFeatureValue act = newActionInstance(ComsysTestFeatureValue.class);
+//		act.beliefID = _beliefID;
+//		act.featureType = _featureLabel;
+//		act.featureValue = _fv;
+//		m_currentActionAddress = triggerExecution(act, _monitor);
+//		return m_currentActionAddress;		
+//	}
 
 
 }

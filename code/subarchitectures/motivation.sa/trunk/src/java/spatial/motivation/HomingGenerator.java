@@ -16,7 +16,8 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import castutils.facades.SpatialFacade;
+import facades.SpatialFacade;
+
 
 /**
  * @author marc

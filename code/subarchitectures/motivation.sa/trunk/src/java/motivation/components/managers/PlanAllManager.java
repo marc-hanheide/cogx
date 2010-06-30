@@ -16,8 +16,6 @@ import java.util.concurrent.TimeoutException;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
-import motivation.util.PlaceUnionEventRelation;
-import motivation.util.RoomUnionEventRelation;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
@@ -31,9 +29,9 @@ import cast.cdl.WorkingMemoryPermissions;
 import castutils.castextensions.WMLock;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
-import castutils.facades.BinderFacade;
-import castutils.facades.ExecutorFacade;
-import castutils.facades.PlannerFacade;
+import facades.BinderFacade;
+import facades.ExecutorFacade;
+import facades.PlannerFacade;
 
 /**
  * @author marc
