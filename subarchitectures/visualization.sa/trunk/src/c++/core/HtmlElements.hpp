@@ -51,7 +51,7 @@ private:
    EChunkType m_type;
    std::string m_id;
    std::string m_partId;
-   std::string m_htmlId;      // a valid hmtl id generated from m_id
+   std::string m_htmlId; // a valid hmtl id generated from type, m_id and m_partId
 
 public:
    Ice::Identity m_dataOwner; // the ID of the component that receives data from a form
@@ -64,7 +64,9 @@ public:
          const Ice::Identity& ident=Ice::Identity());
    void setContent(const std::string& content);
    EChunkType type() { return m_type; }
-   std::string htmlid() { return m_htmlId; }
+   const std::string& htmlid() { return m_htmlId; }
+   const std::string& id() { return m_id; }
+   const std::string& partId() { return m_partId; }
 
    // (normally) called after a submit subscribed observes.
    void notifyFormSubmit(TFormValues& formData, const QCastFormProxy* changeSource);

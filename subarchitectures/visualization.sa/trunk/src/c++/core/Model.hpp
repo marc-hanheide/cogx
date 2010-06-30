@@ -16,16 +16,16 @@
 #ifndef __TEMP_MODEL_HPP__
 #define __TEMP_MODEL_HPP__
 
+#include "ptrvector.hpp"
+#include "observer.hpp"
+#include "GuiElements.hpp"
+#include "HtmlElements.hpp"
+
 #include <QPainter>
 #include <QStringList>
 #include <string>
 #include <map>
 #include <memory>
-
-#include "ptrvector.hpp"
-#include "observer.hpp"
-#include "GuiElements.hpp"
-#include "HtmlElements.hpp"
 
 namespace cogx { namespace display {
 
@@ -38,7 +38,9 @@ class CRenderer;
 typedef enum { Context2D=1, ContextGL=2, ContextHtml=3 } ERenderContext;
 
 typedef std::map<std::string, CDisplayObject*> TObjectMap;
+typedef TObjectMap::iterator TObjectMapIterator;
 typedef std::map<std::string, CDisplayView*> TViewMap;
+typedef TViewMap::iterator TViewMapIterator;
 
 class CDisplayModelObserver
 {

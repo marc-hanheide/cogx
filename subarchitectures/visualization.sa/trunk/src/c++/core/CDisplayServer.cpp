@@ -38,7 +38,7 @@ extern "C"
 #endif
 
 #ifdef DEBUG_TRACE
-#undef DEBUG_TRACE
+// #undef DEBUG_TRACE
 #endif
 #include "convenience.hpp"
 
@@ -272,7 +272,7 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
       if (! pImage) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
-         DMESSAGE("Replacing an exisiting object of different type.");
+         DMESSAGE("setObject: Replacing an exisiting object of different type.");
       }
    }
 
@@ -301,7 +301,7 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
       if (! pModel) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
-         DMESSAGE("Replacing an exisiting object of different type.");
+         DMESSAGE("setTomGineObject: Replacing an exisiting object of different type.");
       }
    }
 
@@ -322,7 +322,7 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
 void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& partId, const std::string& script)
 {
 #ifdef V11N_OBJECT_LUA_GL
-   DTRACE("CDisplayServer::setLuaGlObject");
+   //DTRACE("CDisplayServer::setLuaGlObject");
 
    CLuaGlScript *pModel = NULL;
    CDisplayObject *pExisting = m_Model.getObject(id);
@@ -331,7 +331,7 @@ void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& pa
       if (! pModel) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
-         DMESSAGE("Replacing an exisiting object of different type.");
+         DMESSAGE("setLuaGlObject: Replacing an exisiting object of different type.");
       }
    }
 
@@ -361,7 +361,7 @@ void CDisplayServer::setHtml(const std::string& id, const std::string& partId, c
       if (! pModel) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
-         DMESSAGE("Replacing an exisiting object of different type.");
+         DMESSAGE("setHtml: Replacing an exisiting object of different type.");
       }
    }
 
@@ -391,7 +391,7 @@ void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partI
       if (! pModel) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
-         DMESSAGE("Replacing an exisiting object of different type.");
+         DMESSAGE("setHtmlHead: Replacing an exisiting object of different type.");
       }
    }
 
@@ -422,7 +422,7 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
       if (! pModel) {
          // The retreived model is of a different type, we must replace it
          m_Model.removeObject(id);
-         DMESSAGE("Replacing an exisiting object of different type.");
+         DMESSAGE("setHtmlForm: Replacing an exisiting object of different type.");
       }
    }
 
@@ -435,8 +435,8 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
    else {
       pModel = new CHtmlObject();
       pModel->m_id = id;
-      pModel->setForm(ident, partId, htmlData);
-      //m_Model.registerHtmlForm(ident, id, partId);
+      CHtmlChunk* pForm = pModel->setForm(ident, partId, htmlData);
+      if (pForm) pForm->Observers.addObserver(this);
       m_Model.setObject(pModel);
    }
 #endif
@@ -534,6 +534,19 @@ void CDisplayServer::getControlStateAsync(cogx::display::CGuiElement *pElement)
    hIceDisplayServer->addDataChange(new CGuiElementValue(pElement, "", CGuiElementValue::get));
 }
 
+void CDisplayServer::onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues)
+{
+   //TODO: add newValues into the communicator queue
+   DTRACE("TODO: CDisplayServer::onFormSubmitted");
+   CDisplayServerI::CqeFormValue* pData = new CDisplayServerI::CqeFormValue();
+   pData->mode = CDisplayServerI::CqeFormValue::set;
+   pData->ownerid = pForm->m_dataOwner;
+   pData->objectid = pForm->id();
+   pData->chunkid = pForm->partId();
+   pData->values = newValues;
+   hIceDisplayServer->addFormDataChange(pData);
+}
+
 // -----------------------------------------------------------------
 // CDisplayServerI
 // -----------------------------------------------------------------
@@ -578,6 +591,7 @@ void CDisplayServerI::run()
    while (true) {
       std::set<Visualization::EventReceiverPrx> clients;
       CPtrVector<CGuiElementValue> changes;
+      CPtrVector<CqeFormValue> formChanges;
 
       {
          // SYNC: Lock the monitor
@@ -593,6 +607,8 @@ void CDisplayServerI::run()
          clients = m_EventClients;
          changes = m_EventQueue;
          m_EventQueue.clear();
+         formChanges = m_FormQueue;
+         m_FormQueue.clear();
          // SYNC: unlock the monitor
       }
 
@@ -602,17 +618,23 @@ void CDisplayServerI::run()
          DTRACE("EventServer Woke up. Sending events.");
          // check the queues and send messages
          CGuiElementValue *pChange;
+
+         // XXX: we are assuming that a pElement won't be deleted while in queue
+         // If at some point we start deleting pElements, this code should be reviewed,
+         // and the content of CGuiElementValue changed.
          set<Visualization::EventReceiverPrx>::iterator p;
          for(p = clients.begin(); p != clients.end(); p++) {
+            Visualization::EventReceiverPrx pRcvr = *p;
+            Ice::Identity idReceiver = pRcvr->ice_getIdentity();
             try {
                FOR_EACH(pChange, changes) {
                   if (!pChange || !pChange->pElement) continue;
-                  if (!p->get() || pChange->pElement->m_dataOwner != (*p)->ice_getIdentity())
+                  if (!p->get() || pChange->pElement->m_dataOwner != idReceiver)
                      continue;
 
                   if (pChange->mode == CGuiElementValue::get) {
                      // Get data from the ui elemente owner
-                     std::string val = (*p)->getControlState(pChange->pElement->m_id);
+                     std::string val = pRcvr->getControlState(pChange->pElement->m_id);
                      if (val.size() > 0)
                         pChange->pElement->syncControlState(val);
                   }
@@ -630,26 +652,63 @@ void CDisplayServerI::run()
                      event.sourceId = pChange->pElement->m_id;
                      event.data = pChange->value;
 
-                     (*p)->handleEvent(event);
+                     pRcvr->handleEvent(event);
                   }
                }
             }
             catch(const Ice::Exception& ex) {
-               DMESSAGE("handleEvent crashed with Ice::Exception: " << ex);
-               //cerr << "removing client `" << _communicator->identityToString((*p)->ice_getIdentity())
-               //   << "':\n" << ex << endl;
-
+               DMESSAGE(" *** handleEvent crashed with Ice::Exception: " << ex);
                IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
                m_EventClients.erase(*p);
             }
             catch(...) {
-               DMESSAGE("handleEvent crashed for unknonw reasons");
+               DMESSAGE(" *** handleEvent crashed for unknonw reasons");
             }
          }
          FOR_EACH(pChange, changes) {
             if(pChange) delete pChange;
          }
          changes.clear();
+      }
+
+      if(!clients.empty() && !formChanges.empty()) {
+         DTRACE("Sending form changes.");
+         // check the queues and send messages
+         CqeFormValue *pChange;
+
+         // XXX: we are assuming that a pElement won't be deleted while in queue
+         // If at some point we start deleting pElements, this code should be reviewed,
+         // and the content of CGuiElementValue changed.
+         set<Visualization::EventReceiverPrx>::iterator p;
+         for(p = clients.begin(); p != clients.end(); p++) {
+            Visualization::EventReceiverPrx pRcvr = *p;
+            Ice::Identity idReceiver = pRcvr->ice_getIdentity();
+            try {
+               FOR_EACH(pChange, formChanges) {
+                  if (!pChange) continue;
+                  if (!p->get() || pChange->ownerid != idReceiver) continue;
+
+                  if (pChange->mode == CqeFormValue::set) {
+                     pRcvr->handleForm(pChange->objectid, pChange->chunkid, pChange->values);
+                  }
+                  else if (pChange->mode == CqeFormValue::get) {
+                     // XXX Not yet
+                  }
+               }
+            }
+            catch(const Ice::Exception& ex) {
+               DMESSAGE(" *** handleForm crashed with Ice::Exception: " << ex);
+               IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+               m_EventClients.erase(*p);
+            }
+            catch(...) {
+               DMESSAGE(" *** handleForm crashed for unknonw reasons");
+            }
+         }
+         FOR_EACH(pChange, formChanges) {
+            if(pChange) delete pChange;
+         }
+         formChanges.clear();
       }
    }
 } 
@@ -707,10 +766,24 @@ void CDisplayServerI::addClient(const Ice::Identity& ident, const Ice::Current& 
 // put the event into a queue and wake up the event (callback) server
 void CDisplayServerI::addDataChange(CGuiElementValue *pChange)
 {
-   if (!pChange || !pChange->pElement) return;
+   if (!pChange) return;
+   if (!pChange->pElement) {
+      delete pChange;
+      return;
+   }
 
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
    m_EventQueue.push_back(pChange);
+   m_EventMonitor.notify();
+}
+
+void CDisplayServerI::addFormDataChange(CqeFormValue *pChange)
+{
+   DTRACE("CDisplayServerI::addFormDataChange");
+   if (!pChange) return;
+
+   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+   m_FormQueue.push_back(pChange);
    m_EventMonitor.notify();
 }
 

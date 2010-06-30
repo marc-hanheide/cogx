@@ -119,15 +119,15 @@ private:
          if (m_pClient) return m_pClient->getControlState(ctrlId);
          return "";
       }
-      void handleForm(const std::string& formId, const std::map<std::string, std::string>& fields,
-            const Ice::Current&)
+      void handleForm(const std::string& id, const std::string& partId,
+            const std::map<std::string, std::string>& fields, const Ice::Current&)
       {
-         if (m_pClient) m_pClient->handleForm(formId, fields);
+         if (m_pClient) m_pClient->handleForm(id, partId, fields);
       }
-      void getFormData(const std::string& formId, std::map<std::string, std::string>& fields,
-            const Ice::Current&)
+      void getFormData(const std::string& id, const std::string& partId,
+            std::map<std::string, std::string>& fields, const Ice::Current&)
       {
-         if (m_pClient) m_pClient->getFormData(formId, fields);
+         if (m_pClient) m_pClient->getFormData(id, partId, fields);
       }
    };
 
@@ -143,8 +143,10 @@ public:
 public:
    virtual void handleEvent(const Visualization::TEvent &event);
    virtual std::string getControlState(const std::string& ctrlId);
-   virtual void handleForm(const std::string& formId, const std::map<std::string, std::string>& fields);
-   virtual void getFormData(const std::string& formId, std::map<std::string, std::string>& fields);
+   virtual void handleForm(const std::string& id, const std::string& partId,
+         const std::map<std::string, std::string>& fields);
+   virtual void getFormData(const std::string& id, const std::string& partId,
+         std::map<std::string, std::string>& fields);
 };
 
 
