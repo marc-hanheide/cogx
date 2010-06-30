@@ -49,6 +49,7 @@ namespace Planning
 
         struct s_Problem : stand_alone_string<p, r, o, b, l, e, m> {};
         struct s_Init : stand_alone_string<i, n, i, t> {};
+        struct s_Goal : stand_alone_string<g, o, a, l> {};
         
         struct s_Metric : stand_alone_string<m, e, t, r, i, c> {};
         struct s_Maximise : stand_alone_string<m, a, x, i, m, i, s, e> {};
@@ -103,6 +104,18 @@ namespace Planning
                    , Optimisation_Criteria
                    , Effect_Subformulae<Typeless_Function>
                    , ifapply<success, Objective_Formula__Action>  > {};
+
+
+        /******************************************************************************************************************
+         * Goals.
+         *
+         *
+         ******************************************************************************************************************/
+
+        struct Goal
+            : seq< pad<s_Goal, space>
+                   , Basic_Precondition_Subformulae
+                   , ifapply<success, Goal_Formula__Action>  > {};
         
         /******************************************************************************************************************
          * Domain associated with problem specification.
@@ -126,6 +139,7 @@ namespace Planning
                 , Associated_Domain//:domain
                 , Initial_State
                 , Metric
+                , Goal
                 > {};
         
         struct PDDL_PROBLEM_Element_Noise : seq<Open

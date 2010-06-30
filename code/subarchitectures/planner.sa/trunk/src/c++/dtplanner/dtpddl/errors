@@ -27,7 +27,9 @@ stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_data.cc:31:
+                 from dtp_pddl_parsing_actions.hh:130,
+                 from dtp_pddl_parsing_actions_problem.hh:36,
+                 from dtp_pddl_parsing_actions_problem.cc:30:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
@@ -53,22 +55,7 @@ stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_actions.hh:130,
-                 from dtp_pddl_parsing_actions_problem.hh:36,
-                 from dtp_pddl_parsing_actions_problem.cc:30:
-stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
-In file included from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_data_domain.hh:33,
-                 from dtp_pddl_parsing_data_domain__actions.cc:31:
+                 from dtp_pddl_parsing_data.cc:31:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
@@ -93,106 +80,51 @@ stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_data.cc:31:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+                 from dtp_pddl_parsing_actions.hh:130,
+                 from dtp_pddl_parsing_actions.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_actions.hh:130,
                  from dtp_pddl.hh:35,
                  from dtp_pddl.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_actions.hh:130,
-                 from dtp_pddl_parsing_actions.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_data_domain.hh:33,
-                 from dtp_pddl_parsing_data_domain__actions.cc:31:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data_constants.hh:36,
-                 from dtp_pddl_parsing_data_constants.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_actions.hh:130,
-                 from dtp_pddl_parsing_actions_domain.hh:35,
-                 from dtp_pddl_parsing_actions_domain.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_actions.hh:130,
                  from dtp_pddl_parsing_actions_problem.hh:36,
                  from dtp_pddl_parsing_actions_problem.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_domain.hh:33,
-                 from dtp_pddl_parsing_data_domain.cc:30:
+                 from dtp_pddl_parsing_data_domain__actions.cc:31:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
@@ -202,42 +134,79 @@ stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
-In file included from planning_formula.hh:159,
-                 from dtp_pddl_parsing_data.hh:36,
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_actions.hh:130,
-                 from dtp_pddl.hh:35,
-                 from dtp_pddl.cc:30:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
+                 from dtp_pddl_parsing_actions_domain.hh:35,
+                 from dtp_pddl_parsing_actions_domain.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
+                 from dtp_pddl_parsing_data.cc:31:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
                  from dtp_pddl_parsing_actions.hh:130,
                  from dtp_pddl_parsing_actions.cc:30:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
-In file included from planning_formula.hh:159,
-                 from dtp_pddl_parsing_data.hh:36,
-                 from dtp_pddl_parsing_data.cc:31:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
-In file included from planning_formula.hh:159,
-                 from dtp_pddl_parsing_data.hh:36,
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data_constants.hh:36,
+                 from dtp_pddl_parsing_data_constants.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_domain.hh:33,
                  from dtp_pddl_parsing_data_domain__actions.cc:31:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
-In file included from planning_formula.hh:159,
-                 from dtp_pddl_parsing_data.hh:36,
-                 from dtp_pddl_parsing_actions.hh:130,
-                 from dtp_pddl_parsing_actions_domain.hh:35,
-                 from dtp_pddl_parsing_actions_domain.cc:30:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
                  from dtp_pddl_parsing_actions.hh:130,
                  from dtp_pddl_parsing_actions_problem.hh:36,
                  from dtp_pddl_parsing_actions_problem.cc:30:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
+In file included from planning_formula.hh:159,
+                 from dtp_pddl_parsing_data.hh:36,
+                 from dtp_pddl_parsing_actions.hh:130,
+                 from dtp_pddl.hh:35,
+                 from dtp_pddl.cc:30:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
 In file included from planning_symbols.hh:35,
@@ -256,7 +225,7 @@ stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_domain.hh:33,
-                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
+                 from dtp_pddl_parsing_data_domain.cc:30:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
@@ -270,42 +239,43 @@ dtp_pddl_parsing_actions_problem.cc:44: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:45: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:46: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:47: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:61: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:64: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:48: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:49: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:63: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:66: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:67: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:68: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:69: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:72: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:70: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:71: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:74: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:75: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:76: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:77: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:78: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:79: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:80: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:81: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:84: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:85: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:82: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:83: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:86: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:87: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:88: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:89: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:90: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:91: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:92: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:93: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:94: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:95: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:96: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:97: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:98: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:101: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:104: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:105: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:107: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:109: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:110: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:102: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:108: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:111: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:112: warning: extra ';'
 In file included from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data_formula.hh:34,
-                 from dtp_pddl_parsing_data_formula.cc:30:
+                 from dtp_pddl_parsing_data.hh:35,
+                 from dtp_pddl_parsing_data_domain.hh:33,
+                 from dtp_pddl_parsing_data_domain__streaming.cc:31:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
@@ -315,28 +285,62 @@ stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
-dtp_pddl_parsing_actions_problem.cc:113: warning: extra ';'
+In file included from planning_formula.hh:159,
+                 from dtp_pddl_parsing_data.hh:36,
+                 from dtp_pddl_parsing_data.cc:31:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:114: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:116: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:117: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:118: warning: extra ';'
 dtp_pddl_parsing_actions_problem.cc:119: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:121: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:122: warning: extra ';'
-dtp_pddl_parsing_actions_problem.cc:131: warning: extra ';'
+In file included from planning_formula.hh:159,
+                 from dtp_pddl_parsing_data.hh:36,
+                 from dtp_pddl_parsing_actions.hh:130,
+                 from dtp_pddl_parsing_actions_domain.hh:35,
+                 from dtp_pddl_parsing_actions_domain.cc:30:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:120: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:124: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:125: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:126: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:127: warning: extra ';'
+dtp_pddl_parsing_actions_problem.cc:139: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
+                 from dtp_pddl_parsing_data_domain.hh:33,
+                 from dtp_pddl_parsing_data_domain__observations.cc:31:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_domain.hh:33,
                  from dtp_pddl_parsing_data_domain.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from planning_formula.hh:159,
+                 from dtp_pddl_parsing_data.hh:36,
+                 from dtp_pddl_parsing_data_domain.hh:33,
+                 from dtp_pddl_parsing_data_domain__actions.cc:31:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
 dtp_pddl_parsing_actions_domain.cc:44: warning: extra ';'
 dtp_pddl_parsing_actions_domain.cc:45: warning: extra ';'
 dtp_pddl_parsing_actions_domain.cc:46: warning: extra ';'
@@ -399,38 +403,49 @@ dtp_pddl_parsing_actions_domain.cc:119: warning: extra ';'
 dtp_pddl_parsing_actions_domain.cc:120: warning: extra ';'
 dtp_pddl_parsing_actions_domain.cc:121: warning: extra ';'
 dtp_pddl_parsing_actions_domain.cc:122: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_data_domain.hh:33,
-                 from dtp_pddl_parsing_data_domain__observations.cc:31:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+In file included from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data_formula.hh:34,
+                 from dtp_pddl_parsing_data_formula.cc:30:
+stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_domain.hh:33,
                  from dtp_pddl_parsing_data_domain__streaming.cc:31:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_problem.hh:34,
                  from dtp_pddl_parsing_data_problem.cc:31:
+stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
+In file included from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
+                 from dtp_pddl_parsing_data_problem.hh:34,
+                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
@@ -446,51 +461,25 @@ In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data_domain.cc:30:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data_formula.hh:34,
-                 from dtp_pddl_parsing_data_formula.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_data_problem.hh:34,
-                 from dtp_pddl_parsing_data_problem__streaming.cc:31:
-stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
-In file included from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data_types.hh:36,
-                 from dtp_pddl_parsing_data_types.cc:30:
-stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
                  from dtp_pddl_parsing_data_domain.hh:33,
                  from dtp_pddl_parsing_data_domain__observations.cc:31:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
-dtp_pddl_parsing_data_domain.cc:246: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data_formula.hh:34,
+                 from dtp_pddl_parsing_data_formula.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
                  from dtp_pddl_parsing_data_domain.hh:33,
@@ -502,54 +491,67 @@ In file included from stl__typed_thing.hh:54,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_problem.hh:34,
                  from dtp_pddl_parsing_data_problem.cc:31:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data_types.hh:36,
+                 from dtp_pddl_parsing_data_types.cc:30:
+stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
                  from dtp_pddl_parsing_data_problem.hh:34,
                  from dtp_pddl_parsing_data_problem__streaming.cc:31:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+dtp_pddl_parsing_data_domain.cc:245: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from planning_derived_predicate.hh:34,
                  from dtp_pddl_parsing_data_formula.hh:37,
                  from dtp_pddl_parsing_data_formula.cc:30:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data_types.hh:36,
-                 from dtp_pddl_parsing_data_types.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
                  from dtp_pddl_parsing_data_problem.hh:34,
                  from dtp_pddl_parsing_data_problem.cc:31:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data_types.hh:36,
+                 from dtp_pddl_parsing_data_types.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
                  from dtp_pddl_parsing_data_problem.hh:34,
@@ -558,7 +560,7 @@ planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from dtp_pddl_parsing_interface.cc:30:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
@@ -571,7 +573,7 @@ stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from dtp_pddl_parsing_interface_domain.cc:30:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
@@ -585,20 +587,40 @@ stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from dtp_pddl_parsing_interface.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
+                 from dtp_pddl_parsing_interface.hh:33,
+                 from dtp_pddl_parsing_interface_domain.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from planning_formula.hh:159,
+                 from dtp_pddl_parsing_data.hh:36,
+                 from dtp_pddl_parsing_interface.hh:33,
+                 from dtp_pddl_parsing_interface.cc:30:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from dtp_pddl_parsing_interface_problem.cc:30:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
@@ -609,40 +631,26 @@ stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
-                 from dtp_pddl_parsing_interface_domain.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
-                 from dtp_pddl_parsing_interface.hh:32,
-                 from dtp_pddl_parsing_interface.cc:30:
+                 from dtp_pddl_parsing_interface.hh:33,
+                 from dtp_pddl_parsing_interface_domain.cc:30:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from dtp_pddl_parsing_interface_problem.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_symbols.hh:35,
                  from planning_formula.hh:33,
                  from planning_action_schema.hh:33,
@@ -656,18 +664,19 @@ stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
-In file included from planning_formula.hh:159,
-                 from dtp_pddl_parsing_data.hh:36,
-                 from dtp_pddl_parsing_interface.hh:32,
-                 from dtp_pddl_parsing_interface_domain.cc:30:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
-In file included from planning_formula.hh:159,
-                 from dtp_pddl_parsing_data.hh:36,
-                 from dtp_pddl_parsing_interface.hh:32,
-                 from dtp_pddl_parsing_interface_problem.cc:30:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
+In file included from planning_symbols.hh:35,
+                 from planning_formula.hh:33,
+                 from planning_derived_predicate.hh:34,
+                 from planning_derived_predicate.cc:30:
+stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from planning_symbols.hh:35,
                  from planning_formula.hh:33,
                  from planning_formula.cc:30:
@@ -680,73 +689,58 @@ stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
+In file included from planning_formula.hh:159,
+                 from dtp_pddl_parsing_data.hh:36,
+                 from dtp_pddl_parsing_interface.hh:33,
+                 from dtp_pddl_parsing_interface_problem.cc:30:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from planning_formula.hh:33,
                  from planning_action_schema.hh:33,
                  from planning_action_schema.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from planning_symbols.hh:35,
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
                  from planning_formula.hh:33,
                  from planning_derived_predicate.hh:34,
                  from planning_derived_predicate.cc:30:
-stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from planning_formula.hh:33,
                  from planning_formula.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
-                 from planning_formula.hh:33,
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from planning_formula.hh:159,
                  from planning_derived_predicate.hh:34,
                  from planning_derived_predicate.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from planning_symbols.hh:35,
-                 from planning_formula.hh:33,
-                 from planning_observation_schema.hh:33,
-                 from planning_observation_schema.cc:30:
-stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
-stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from planning_action_schema.hh:33,
                  from planning_action_schema.cc:30:
@@ -759,25 +753,19 @@ planning_formula__TEMPLATES.hh:52: warning: extra ';'
 planning_formula.cc:82: warning: extra ';'
 planning_formula.cc:83: warning: extra ';'
 planning_formula.cc:84: warning: extra ';'
-In file included from stl__typed_thing.hh:54,
-                 from planning_symbols.hh:35,
+In file included from planning_symbols.hh:35,
                  from planning_formula.hh:33,
                  from planning_observation_schema.hh:33,
                  from planning_observation_schema.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
-stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
-In file included from planning_formula.hh:159,
-                 from planning_derived_predicate.hh:34,
-                 from planning_derived_predicate.cc:30:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
+stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from planning_symbols.hh:35,
                  from planning_symbols.cc:30:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
@@ -789,11 +777,19 @@ stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
-In file included from planning_formula.hh:159,
-                 from planning_observation_schema.hh:33,
-                 from planning_observation_schema.cc:30:
-planning_formula__TEMPLATES.hh:51: warning: extra ';'
-planning_formula__TEMPLATES.hh:52: warning: extra ';'
+In file included from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
+                 from solver.hh:37,
+                 from solver.cc:1:
+stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:84:67: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:93:72: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:99:80: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:105:86: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:115:71: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:120:79: warning: ISO C does not permit named variadic macros
+stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from stl__typed_thing.cc:30:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
@@ -807,36 +803,75 @@ stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from planning_symbols.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from planning_symbols.hh:35,
+                 from planning_formula.hh:33,
+                 from planning_observation_schema.hh:33,
+                 from planning_observation_schema.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 planning_symbols.cc:92: warning: extra ';'
 planning_symbols.cc:93: warning: extra ';'
 planning_symbols.cc:95: warning: extra ';'
 planning_symbols.cc:96: warning: extra ';'
 In file included from stl__typed_thing.hh:54,
-                 from stl__typed_thing.cc:30:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+                 from planning_symbols.hh:35,
+                 from dtp_pddl_parsing_data.hh:35,
+                 from solver.hh:37,
+                 from solver.cc:1:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
+In file included from stl__typed_thing.hh:54,
+                 from stl__typed_thing.cc:30:
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
+stl__deref_tools.hh:155: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 stl__typed_thing.cc:34: warning: extra ';'
 stl__typed_thing.cc:49: warning: extra ';'
 stl__typed_thing.cc:52: warning: extra ';'
+In file included from planning_formula.hh:159,
+                 from planning_observation_schema.hh:33,
+                 from planning_observation_schema.cc:30:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
+In file included from planning_formula.hh:159,
+                 from dtp_pddl_parsing_data.hh:36,
+                 from solver.hh:37,
+                 from solver.cc:1:
+planning_formula__TEMPLATES.hh:51: warning: extra ';'
+planning_formula__TEMPLATES.hh:52: warning: extra ';'
 In file included from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from main.cpp:4:
 stl__typed_thing.hh:74:53: warning: ISO C does not permit named variadic macros
 stl__typed_thing.hh:79:61: warning: ISO C does not permit named variadic macros
@@ -850,20 +885,20 @@ stl__typed_thing.hh:125:85: warning: ISO C does not permit named variadic macros
 In file included from stl__typed_thing.hh:54,
                  from planning_symbols.hh:35,
                  from dtp_pddl_parsing_data.hh:35,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from main.cpp:4:
-stl__deref_tools.hh:89: warning: extra ';'
-stl__deref_tools.hh:91: warning: extra ';'
-stl__deref_tools.hh:93: warning: extra ';'
-stl__deref_tools.hh:109: warning: extra ';'
-stl__deref_tools.hh:154: warning: extra ';'
+stl__deref_tools.hh:90: warning: extra ';'
+stl__deref_tools.hh:92: warning: extra ';'
+stl__deref_tools.hh:94: warning: extra ';'
+stl__deref_tools.hh:110: warning: extra ';'
 stl__deref_tools.hh:155: warning: extra ';'
-stl__deref_tools.hh:161: warning: extra ';'
-stl__deref_tools.hh:219: warning: extra ';'
-stl__deref_tools.hh:221: warning: extra ';'
+stl__deref_tools.hh:156: warning: extra ';'
+stl__deref_tools.hh:162: warning: extra ';'
+stl__deref_tools.hh:220: warning: extra ';'
+stl__deref_tools.hh:222: warning: extra ';'
 In file included from planning_formula.hh:159,
                  from dtp_pddl_parsing_data.hh:36,
-                 from dtp_pddl_parsing_interface.hh:32,
+                 from dtp_pddl_parsing_interface.hh:33,
                  from main.cpp:4:
 planning_formula__TEMPLATES.hh:51: warning: extra ';'
 planning_formula__TEMPLATES.hh:52: warning: extra ';'

@@ -43,7 +43,7 @@ namespace Planning
         class Types_Data
         {
         public:
-            ~Types_Data(){};
+            ~Types_Data();
             
             /* In PDDL we have a specification element
              * (:types typename_1 typename_2 ... - (either typename_N typename N+1 ... ) )
@@ -63,7 +63,7 @@ namespace Planning
             
             virtual Planning::Types find__type_of_variable(const Planning::Variable&) const;
             
-            void stack__typed_Arguments();
+//             void stack__typed_Arguments();
             
             /* The contents of \member{types} is treated as domain
              * types from hereon -- unless a further commitment is

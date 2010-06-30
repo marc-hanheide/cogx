@@ -122,13 +122,6 @@ void Domain_Data::commit__derived_predicate()
 
 
 
-void Domain_Data::stack__typed_Arguments()
-{
-    VERBOSER(41, "Pushing back quantified arguments :: "<<typed_Arguments);
-    stack_of__Typed_Arguments.push(typed_Arguments);
-    typed_Arguments = Typed_Arguments();
-}
-
 Planning::Types Domain_Data::find__type_of_variable(const Planning::Variable& in) const
 {
     auto answer = find__action_Header(in);

@@ -35,6 +35,7 @@
 
 using namespace Planning::Parsing;
 
+Types_Data::~Types_Data(){}
 
 void Types_Data::commit__types()
 {
@@ -159,4 +160,5 @@ void Types_Data::add__type_of_type(const std::string& str){
     NEW_object_referenced_WRAPPED(Type, type, str);
     types_of_types.insert(type);
 }
+
 

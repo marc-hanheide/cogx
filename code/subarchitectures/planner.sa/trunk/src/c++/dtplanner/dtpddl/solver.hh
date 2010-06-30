@@ -65,10 +65,10 @@ namespace Planning
     private:
         
         /* PDDL types for \member{constants}*/
-        C__PTR_ANNOTATION(Planning::Parsing::Problem_Data::Constants_Description) constants_Description;
+        Planning::Parsing::Problem_Data::Constants_Description constants_Description;
         
         /* PDDL objects and constants.*/
-        C__PTR_ANNOTATION(Constants) constants;
+        Constants constants;
         
         /*(see \member{preprocess})*/
         bool preprocessed;

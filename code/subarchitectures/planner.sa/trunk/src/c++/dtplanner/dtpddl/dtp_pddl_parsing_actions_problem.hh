@@ -47,6 +47,8 @@ namespace Planning
         DECLARATION__PEGTL_ACTION(Problem_Name__Action);
         DECLARATION__PEGTL_ACTION(Starting_State__Action);
         DECLARATION__PEGTL_ACTION(Objective_Formula__Action);
+        DECLARATION__PEGTL_ACTION(Goal_Formula__Action);
+        
         
 //         SIMPLE_PEGTL_ACTION(, );
 //         SIMPLE_PEGTL_ACTION(, );

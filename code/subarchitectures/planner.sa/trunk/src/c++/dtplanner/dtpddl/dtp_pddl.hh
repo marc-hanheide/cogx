@@ -271,6 +271,41 @@ namespace Planning
          * \module{dtp_pddl_parsing_data_formula}). */
         struct Typeless_Predicate_or_Function : sor<Typeless_Predicate, Typeless_Function> {};
         
+        /******************************************************************************************************************
+         * High level PDDL domain description elements.
+         *
+         * - Precondition Formulae
+         *
+         ******************************************************************************************************************/
+        
+        template<typename ATOMIC_SYMBOL>
+        struct Precondition_Operator : sor<ifapply<s_And, And__Action>,
+                              ifapply<s_Or, Or__Action>,
+                              ifapply<s_Not, Not__Action>,
+                              ifapply<s_If, If__Action>,
+                              ifapply<s_Forall, Forall__Action>,
+                              ifapply<s_Exists, Exists__Action>,
+                              
+                              /*....................................*/
+                              /*These arguments have to be constant.*/
+                              /*....................................*/
+                              ifapply<ifapply<plus<Argument__VARIABLE_ONLY>
+                                              , Skip_Next____Formula__Action____Action>
+                                      , Variable_Cluster__Action>,
+                              /*....................................*/
+                              
+                              ifapply<ATOMIC_SYMBOL, Skip_Next____Formula__Action____Action>,
+                              ifapply<success, Empty_Formula__Action> /* Empty formula, means no action precondition. */> {};
+
+        template<typename ATOMIC_SYMBOL>
+        struct Precondition_Subformulae
+            : seq< ifapply<Open, Dive__Action>
+                   , Precondition_Operator<ATOMIC_SYMBOL>
+                   , ifapply< star<Precondition_Subformulae<ATOMIC_SYMBOL>>,  Formula__Action>
+                   , ifapply<Close, Emerge__Action> > {}; 
+
+        struct Basic_Precondition_Subformulae : Precondition_Subformulae<Typeless_Predicate> {};
+        
 
         /******************************************************************************************************************
          * High level PDDL domain description elements.
@@ -323,7 +358,8 @@ namespace Planning
         {};
             
         struct State_Effect_Subformulae : Effect_Subformulae<Typeless_Predicate_or_Function> {};//Typeless_Predicate> {};
-        
+
+
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////TESTING        /////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////

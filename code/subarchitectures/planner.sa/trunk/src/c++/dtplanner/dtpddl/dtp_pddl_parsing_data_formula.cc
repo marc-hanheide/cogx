@@ -653,4 +653,10 @@ void Formula_Data::report__predicate_name(const std::string& str)
     predicate_Name = tmp;
 }
 
+void Formula_Data::stack__typed_Arguments()
+{
+    VERBOSER(41, "Pushing back quantified arguments :: "<<typed_Arguments);
+    stack_of__Typed_Arguments.push(typed_Arguments);
+    typed_Arguments = Typed_Arguments();
+}
 

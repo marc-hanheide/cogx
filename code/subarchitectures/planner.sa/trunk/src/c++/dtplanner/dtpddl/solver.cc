@@ -8,9 +8,9 @@ using namespace Planning::Parsing;
 
 Solver::Solver(Planning::Parsing::Problem_Data& problem_Data)
     :problem_Data(problem_Data),
-     preprocessed(false),
-     constants_Description(0),
-     constants(0)
+     preprocessed(false)// ,
+//      constants_Description(0),
+//      constants(0)
 {
 }
 
@@ -47,8 +47,14 @@ void Solver::proprocess__Constants_Data()
             ->add__constants();
     }
 
-    constants_Description = &(domain_Data->get__constants_Description());
-    constants = &(domain_Data->get__constants());
+//     constants_Description
+//         = const_cast<Planning::Parsing::Problem_Data::Constants_Description*>
+//         (&(domain_Data->get__constants_Description()));
+//     constants
+//         = const_cast<Constants*>(&(domain_Data->get__constants()));
+
+    constants_Description = domain_Data->get__constants_Description();
+    constants = domain_Data->get__constants();
 }
 
 

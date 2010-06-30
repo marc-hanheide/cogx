@@ -43,6 +43,9 @@ namespace Planning
         class Formula_Data : virtual public Types_Data
         {
         public:
+
+
+            void stack__typed_Arguments();
             
             void report__percept_name(const std::string& str);
             void report__function_name(const std::string& str);
