@@ -179,6 +179,16 @@ std::string VideoViewer::CVvDisplayClient::getControlState(const std::string& ct
   }
   return "";
 }
+
+void VideoViewer::CVvDisplayClient::handleForm(const std::string& id, const std::string& partId,
+      const std::map<std::string, std::string>& fields)
+{
+  pViewer->println("Form: %s#%s", id.c_str(), partId.c_str());
+  typeof(fields.begin()) it;
+  for(it = fields.begin(); it != fields.end(); it++) {
+    pViewer->println("   %s = %s", it->first.c_str(), it->second.c_str());
+  }
+}
 #endif
 
 void VideoViewer::destroy()

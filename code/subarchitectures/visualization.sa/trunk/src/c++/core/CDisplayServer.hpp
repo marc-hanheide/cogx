@@ -15,17 +15,20 @@
  */
 #ifndef __DISPLAYSERVER_CDISPLAYSERVER_H__
 #define __DISPLAYSERVER_CDISPLAYSERVER_H__
-#include <string>
-#include <map>
-#include <set>
-#include <stdexcept>
+#include "DisplayServer.hpp" // generated from ice
+#include "qtui/QCastMainFrame.hpp"
+#include "Model.hpp"
+#include "GuiElements.hpp"
+#include "HtmlElements.hpp"
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Ice/Ice.h>
 #include <IceUtil/IceUtil.h>
 
-#include <DisplayServer.hpp> // generated from ice
-#include "qtui/QCastMainFrame.hpp"
-#include "Model.hpp"
+#include <string>
+#include <map>
+#include <set>
+#include <stdexcept>
 
 namespace cogx { namespace display {
 
@@ -37,6 +40,7 @@ typedef IceUtil::Handle<CDisplayServerI> CDisplayServerIPtr;
 class CDisplayServer:
    public cast::ManagedComponent,
    public CGuiElementObserver,
+   public CHtmlFormObserver,
    public CControlDataProxy
 {
 private:
@@ -91,6 +95,9 @@ private:
 
    // CControlDataProxy
    void getControlStateAsync(cogx::display::CGuiElement *pElement); /*override*/
+
+   // CHtmlFormObserver
+   void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
 };
 
 // The implementation of DisplayInterface. This class implements
@@ -209,6 +216,16 @@ public:
    // Implement event callbacks; the sender is a separate thread
    // See Ice demo: demo/Ice/bidir
    //-----------------------------------------------------------------
+public:
+   struct CqeFormValue {
+      enum EDirection { get, set };
+      EDirection mode;
+      Ice::Identity ownerid;
+      std::string objectid;
+      std::string chunkid;
+      TFormValues values;
+   };
+
 private:
    class CCallbackSenderThread : public IceUtil::Thread
    {
@@ -229,6 +246,7 @@ private:
    // TODO: client subscribes to events from selected views/dialogs
    std::set<Visualization::EventReceiverPrx> m_EventClients;
    CPtrVector<CGuiElementValue> m_EventQueue;
+   CPtrVector<CqeFormValue> m_FormQueue;
    IceUtil::ThreadPtr m_pEventSenderThread;
 
    void run();
@@ -238,6 +256,7 @@ public:
    void destroyEventServer(); 
    virtual void addClient(const Ice::Identity& ident, const Ice::Current& current); 
    void addDataChange(CGuiElementValue *pChange);
+   void addFormDataChange(CqeFormValue *pChange);
 };
 
 } } // namespace

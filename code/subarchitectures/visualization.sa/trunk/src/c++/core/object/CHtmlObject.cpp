@@ -74,7 +74,7 @@ void CHtmlObject::setHtml(const std::string& partId, const std::string& text)
    }
 }
 
-void CHtmlObject::setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text)
+CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& partId, const std::string& text)
 {
    CHtmlChunk* pPart = NULL;
    if (m_Parts.find(partId)->second != NULL) {
@@ -92,6 +92,8 @@ void CHtmlObject::setForm(const Ice::Identity& ident, const std::string& partId,
       formtag += "onsubmit=\"return MyLibSubmit('#" + pPart->htmlid() + "')\" >\n";
       pPart->setContent(formtag + text + "\n</form>");
    }
+
+   return pPart;
 }
 
 void CHtmlObject::setHead(const std::string& partId, const std::string& text)
