@@ -45,12 +45,26 @@ void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVaria
    if (it == m_Forms.end()) pForm = NULL;
    else pForm = it->second;
 
-   // TODO: find form with formid
    if (pForm) {
       cogx::display::TFormValues vals;
       foreach (QString str, object.keys()) {
-         vals[str.toStdString()] = object.value(str).toString().toStdString();
-         DMESSAGE(str.toStdString() << ":" << object.value(str).toString().toStdString());
+         QVariant val = object.value(str);
+         std::string sval;
+         if (val.type() == QVariant::String)
+            sval = val.toString().toStdString();
+         else if (val.type() == QVariant::List) {
+            QVariantList lst = val.toList();
+            sval = "";
+            foreach(QVariant item, lst) {
+               QString s = item.toString();
+               s.replace('\n', '\r');
+               s.replace(QRegExp("\r+"), " ");
+               if (sval.size() == 0) sval = s.toStdString();
+               else sval += std::string("\n") + s.toStdString();
+            }
+         }
+         vals[str.toStdString()] = sval;
+         DMESSAGE(val.type() << " " << str.toStdString() << ":" << sval);
       }
       pForm->notifyFormSubmit(vals, this);
    }
@@ -59,6 +73,26 @@ void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVaria
       foreach (QString str, object.keys()) {
          DMESSAGE(str.toStdString() << ":" << object.value(str).toString().toStdString());
       }
+   }
+}
+
+QMap<QString, QVariant> QCastFormProxy::getValues(const QString& formid)
+{
+   DTRACE("QCastFormProxy::getValues");
+   cogx::display::CHtmlChunk* pForm = NULL;
+   
+   std::string id = formid.mid(1).toStdString(); // remove leading '#' from id
+   TFormMapIterator it = m_Forms.find(id);
+   DMESSAGE("Looking for " << id << " among " << m_Forms.size() << " forms");
+   if (it == m_Forms.end()) pForm = NULL;
+   else pForm = it->second;
+
+   if (pForm) {
+      return _post;
+   }
+   else {
+      DMESSAGE("NO SUCH FORM: " << formid.toStdString());
+      return QMap<QString, QVariant>();
    }
 }
 

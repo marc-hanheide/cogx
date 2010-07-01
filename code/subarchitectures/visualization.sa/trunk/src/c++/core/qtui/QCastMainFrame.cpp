@@ -273,7 +273,7 @@ void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
    updateViewList();
 }
 
-void QCastMainFrame::setControlDataProxy(CControlDataProxy *pProxy)
+void QCastMainFrame::setControlDataProxy(cogx::display::COwnerDataProxy *pProxy)
 {
    m_pControlDataProxy = pProxy;
 }
@@ -396,6 +396,14 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
             FOR_EACH(pgel, elements) {
                if (!pgel) continue;
                m_pControlDataProxy->getControlStateAsync(pgel);
+            }
+
+            CPtrVector<cogx::display::CHtmlChunk> forms;
+            pView->getHtmlForms(forms);
+            cogx::display::CHtmlChunk* pForm;
+            FOR_EACH(pForm, forms) {
+               if (!pForm) continue;
+               m_pControlDataProxy->getFormStateAsync(pForm);
             }
          }
       }

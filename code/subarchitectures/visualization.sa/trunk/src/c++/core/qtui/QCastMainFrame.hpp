@@ -21,16 +21,6 @@
 #include <QMutex>
 #include "../Model.hpp"
 
-class CControlDataProxy
-{
-public:
-   // Issue a request to retreive the value for a control from the (remote) owner.
-   // see: <url:../GuiElements.hpp#tn=syncControlState>
-   // see: <url:../CDisplayServer.cpp#tn=CDisplayServerI::addDataChange>
-   // see: <url:../CDisplayServer.cpp#tn=CDisplayServerI::run>
-   virtual void getControlStateAsync(cogx::display::CGuiElement *pElement) = 0;
-};
-
 class QCastMainFrame;
 class QCastFrameManager: public QObject
 {
@@ -79,13 +69,13 @@ private:
 
 private:
    cogx::display::CDisplayModel* m_pModel;
-   CControlDataProxy* m_pControlDataProxy;
+   cogx::display::COwnerDataProxy* m_pControlDataProxy;
 
 public:
    QCastMainFrame( QWidget * parent = 0, Qt::WindowFlags flags = 0 );
    ~QCastMainFrame();
    void setModel(cogx::display::CDisplayModel* pDisplayModel);
-   void setControlDataProxy(CControlDataProxy *pProxy);
+   void setControlDataProxy(cogx::display::COwnerDataProxy *pProxy);
 
    void notifyObjectAdded(cogx::display::CDisplayObject *pObject);
 

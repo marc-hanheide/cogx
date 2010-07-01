@@ -18,6 +18,10 @@
 #include <CDisplayClient.hpp>
 #endif
 
+#include <map>
+#include <string>
+#include <sstream>
+
 namespace cogx { namespace test {
 
 using namespace cast;
@@ -57,8 +61,11 @@ private:
     std::string getControlState(const std::string& ctrlId); /*override*/
     void handleForm(const std::string& id, const std::string& partId,
         const std::map<std::string, std::string>& fields); /*override*/
+    void getFormData(const std::string& id, const std::string& partId,
+        std::map<std::string, std::string>& fields); /*override*/
   };
   CVvDisplayClient m_display;
+  cogx::display::CFormValues m_HtmlForm;
 #endif
 
 protected:

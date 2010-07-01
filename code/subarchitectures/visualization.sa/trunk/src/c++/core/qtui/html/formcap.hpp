@@ -43,11 +43,13 @@ public slots:
    QMap<QString, QVariant> getPost();
    void setGet(const QString& formid, const QMap<QString,QVariant>& object);
    QMap<QString, QVariant> getGet();
+   QMap<QString, QVariant> getValues(const QString& formid);
 
+public:
    static QString getJavaScript(const QString& jsObjectName, bool htmlScriptBlock = false);
 
-// CHtmlFormObserver
 public:
+   // CHtmlFormObserver
    virtual void onFormSubmitted(cogx::display::CHtmlChunk *pForm,
          const cogx::display::TFormValues& newValues);
    virtual void onOwnerDataChanged(cogx::display::CHtmlChunk *pForm,

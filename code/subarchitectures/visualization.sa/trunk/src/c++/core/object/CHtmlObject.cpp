@@ -88,8 +88,9 @@ CHtmlChunk* CHtmlObject::setForm(const Ice::Identity& ident, const std::string& 
 
    if (pPart) {
       std::string formtag;
+      // see: <url:../qtui/html/formcap.js>
       formtag += "<form id=\"" + pPart->htmlid() + "\" method=\"post\" action=\"javascript:history.go(-1)\" ";
-      formtag += "onsubmit=\"return MyLibSubmit('#" + pPart->htmlid() + "')\" >\n";
+      formtag += "onsubmit=\"return CogxJsSubmit('#" + pPart->htmlid() + "')\" >\n";
       pPart->setContent(formtag + text + "\n</form>");
    }
 

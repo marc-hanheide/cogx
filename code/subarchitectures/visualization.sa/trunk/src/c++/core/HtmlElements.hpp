@@ -56,6 +56,7 @@ private:
 public:
    Ice::Identity m_dataOwner; // the ID of the component that receives data from a form
    QString m_html;
+   TFormValues m_formData; // reused when the HTML document is reloaded
 
    CObserverList<CHtmlFormObserver> Observers;
 
