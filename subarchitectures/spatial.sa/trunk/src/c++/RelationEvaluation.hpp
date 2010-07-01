@@ -35,7 +35,7 @@ extern double overlapWeight;
 
 enum SpatialObjectType {OBJECT_PLANE, OBJECT_BOX, OBJECT_CYLINDER, OBJECT_SPHERE, OBJECT_HOLLOW_BOX};
 
-enum SpatialRelationType {RELATION_ON, RELATION_IN};
+enum SpatialRelationType {RELATION_ON, RELATION_IN, RELATION_COMPOSITE};
 
 struct Object {
   SpatialObjectType type;

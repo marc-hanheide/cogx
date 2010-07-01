@@ -42,10 +42,17 @@ using namespace cogx::Math;
 
 namespace spatial {
 
+class SampleCloud;
+
+ostream &operator<<(ostream &o, const SampleCloud &c);
+istream &operator>>(istream &o, SampleCloud &c);
+
 class SampleCloud
 {
   public:
+    friend class DensitySampler;
     SampleCloud(const spatial::Object *o1, const spatial::Object *o2, 
+	spatial::SpatialRelationType rel,
 	Vector3 offset,
 	double intervalQuantum,
 	int intervalMultiplier, //Set to 0 if all extents are 0 (i.e. single sample)
@@ -59,7 +66,10 @@ class SampleCloud
     ~SampleCloud() { delete object1; delete object2; };
     SampleCloud &operator=(const SampleCloud &a);
 
-    void compute(spatial::SpatialRelationType rel);
+    friend ostream &spatial::operator<<(ostream &o, const SampleCloud &c);
+    friend istream &spatial::operator>>(istream &o, SampleCloud &c);
+
+    void compute();
 
     SampleCloud composit(const SampleCloud &B) const;
 
@@ -71,9 +81,11 @@ class SampleCloud
 
     spatial::Object *object1;
     spatial::Object *object2;
+    spatial::SpatialRelationType rel;
 
     Vector3 sampleOffset;
     double sampleIntervalQuantum;
+    double kernelRadius;
     int sampleIntervalMultiplier;
     int xExtent;
     int yExtent;
@@ -83,19 +95,74 @@ class SampleCloud
 
 };
 
-void 
-sampleBinaryRelationRecursively(const vector<spatial::SpatialRelationType> &relations,
-      const std::vector<spatial::Object *> &objects,
-    int currentLevel, Cure::LocalGridMap<double> &map, 
-    int sampleNumberTarget, int orientationQuantization, double kernelWidthFactor,
-    double &total,
-    const std::vector<Vector3> &triangle = std::vector<Vector3>(), double baseOnness = 1.0);
-
-void sampleBinaryRelationSystematically(const std::vector <SpatialRelationType> &relations,
-    const std::vector<spatial::Object *> &objects,
-    Cure::LocalGridMap<double> &outMap,
-    int sampleNumberTarget, int orientationQuantization, double kernelWidthFactor,
-    double &total, double baseValue);
+struct SampleCloudContainer
+{
+  SampleCloud *cloud;
+  string obj1Label;
+  string obj2Label;
 };
+
+class DensitySampler
+{
+  public:
+    DensitySampler() : m_orientationQuantization(4),
+    m_sampleNumberTarget(1000),
+    m_kernelWidthFactor(1.5) 
+  { 
+  };
+    ~DensitySampler() 
+    {
+      for (vector<SampleCloudContainer>::iterator it = m_sampleClouds.begin();
+	  it != m_sampleClouds.end(); it++) {
+	delete it->cloud;
+      }
+    }
+
+    void 
+      sampleBinaryRelationRecursively(
+	  const vector<spatial::SpatialRelationType> &relations,
+	  const std::vector<spatial::Object *> &objects,
+	  int currentLevel, Cure::LocalGridMap<double> &map, 
+	  double &total,
+	  const std::vector<Vector3> &triangle = std::vector<Vector3>(),
+	  double baseOnness = 1.0);
+
+    void
+      sampleBinaryRelationSystematically(
+	  const std::vector <SpatialRelationType> &relations,
+	  const std::vector<spatial::Object *> &objects,
+	  const vector<Matrix33> &supportObjectOrientations,
+	  const std::vector<string> &objectLabels,
+	  Cure::LocalGridMap<double> &outMap,
+	  double &total, double baseValue);
+
+    void setOrientationQuantization(int q) { m_orientationQuantization = q; }
+    void setSampleNumberTarget(int n) { m_sampleNumberTarget = n; }
+    void setKernelWidthFactor(double f) { m_kernelWidthFactor = f; }
+  protected:
+    SampleCloud *
+    createRelativeSampleCloud(SpatialRelationType relationType,
+	Object *o1, Object *o2, 
+	const vector<Matrix33> &orientations1,
+	const vector<Matrix33> &orientations2,
+	double cellSize);
+    vector<SampleCloudContainer> m_sampleClouds;
+    map<string, vector<Matrix33> > m_objectOrientations;
+
+    //The actual number of orientations
+    // will be this number cubed
+    int m_orientationQuantization;
+
+    //Number of positional samples in total to go for when sampling 
+    //a distribution. 
+    unsigned long m_sampleNumberTarget;
+
+    //Width of kernels, relative to the distance between them.
+    double m_kernelWidthFactor;
+};
+
+};
+
+
 #endif
 
