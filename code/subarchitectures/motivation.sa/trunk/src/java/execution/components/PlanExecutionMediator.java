@@ -7,6 +7,7 @@ import java.util.Map;
 
 import motivation.slice.PlanProxy;
 import autogen.Planner.Completion;
+import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
@@ -150,10 +151,6 @@ public abstract class PlanExecutionMediator extends AbstractExecutionManager {
 		}
 	}
 
-	
-
-	
-
 	private class PlanGenerator extends SleepyThread {
 
 		public PlanGenerator() {
@@ -176,7 +173,10 @@ public abstract class PlanExecutionMediator extends AbstractExecutionManager {
 		String id = newDataID();
 
 		PlanningTask plan = newPlanningTask();
-		plan.goal = m_goal;
+		plan.goals = new Goal[1];
+		plan.goals[0].goalString = m_goal;
+		plan.goals[0].importance = -1;
+		plan.goals[0].isInPlan = false;
 
 		addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 				WorkingMemoryOperation.OVERWRITE),
@@ -211,7 +211,7 @@ public abstract class PlanExecutionMediator extends AbstractExecutionManager {
 	 * @return
 	 */
 	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, null, null, null, Completion.PENDING,
+		return new PlanningTask(0, null, true, null, null, Completion.PENDING,
 				0, Completion.PENDING, 0);
 	}
 

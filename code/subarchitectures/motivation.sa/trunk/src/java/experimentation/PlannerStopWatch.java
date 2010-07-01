@@ -67,7 +67,7 @@ public class PlannerStopWatch extends ManagedComponent {
 									+ plan.planningStatus.toString() + "/"
 									+ plan.executionStatus.toString() + "/"
 									+ plan.planningRetries + "/"
-									+ plan.goal + "/"
+									+ plan.goals[0].goalString + "/"
 									+ plan.plan.length);
 						else
 							log("watch is not running");
