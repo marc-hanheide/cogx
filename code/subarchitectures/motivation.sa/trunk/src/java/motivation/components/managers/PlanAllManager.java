@@ -29,9 +29,9 @@ import cast.cdl.WorkingMemoryPermissions;
 import castutils.castextensions.WMLock;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
 import castutils.castextensions.WMEntrySet.ChangeHandler;
+import eu.cogx.planner.facade.PlannerFacade;
 import facades.BinderFacade;
 import facades.ExecutorFacade;
-import facades.PlannerFacade;
 
 /**
  * @author marc
@@ -75,7 +75,7 @@ public class PlanAllManager extends ManagedComponent {
 		wmLock = new WMLock(this, "SchedulerManagerSync", true);
 		motives = WMMotiveSet.create(this);
 		binderFacade = new BinderFacade(this);
-		plannerFacade = new PlannerFacade(this, binderFacade);
+		plannerFacade = new PlannerFacade(this);
 		executorFacade = new ExecutorFacade(this);
 		activeMotiveEventQueue = new WMMotiveEventQueue();
 		backgroundExecutor = Executors.newCachedThreadPool();
