@@ -9,8 +9,6 @@ import Ice.ObjectImpl;
 import cast.architecture.ManagedComponent;
 import castutils.castextensions.WMEntrySynchronizer.TransferFunction;
 import eu.cogx.perceptmediator.PerceptBindingMediator;
-import eu.cogx.perceptmediator.components.PlaceConnectivityMediator;
-import eu.cogx.perceptmediator.components.PlaceMediator;
 import eu.cogx.perceptmediator.transferfunctions.abstr.DependentDiscreteTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
