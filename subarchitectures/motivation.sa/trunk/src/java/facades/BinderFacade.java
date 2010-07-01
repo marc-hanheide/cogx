@@ -1,20 +1,11 @@
 package facades;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-
-import castutils.castextensions.CASTHelper;
-import castutils.castextensions.WMView;
-import SpatialData.Place;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import castutils.castextensions.CASTHelper;
+import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.Belief;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 

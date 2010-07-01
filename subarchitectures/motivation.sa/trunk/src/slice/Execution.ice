@@ -2,7 +2,7 @@
 #define EXECUTION_ICE
 
 #include <cast/slice/CDL.ice>
-#include <beliefmodels.ice>
+//#include <beliefs.ice>
 #include <Planner.ice>
 
 
@@ -73,26 +73,26 @@ module execution {
       /**
        * comsys action
        */
-      class ComsysTestFeatureValue extends Action {
-	    /**
-	     * The belief ID
-	     */
-	    string beliefID;
-	    /**
-	     * The feature type
-	     */
-	    string featureType;
-	    /**
-	    * The value to query
-	    */
-	    beliefmodels::autogen::featurecontent::FeatureValue featureValue;
-	    /**
-	     * Generic question to ask... if empty, belief information is used
-	     */
-	    string question;
+      // class ComsysTestFeatureValue extends Action {
+      // 	    /**
+      // 	     * The belief ID
+      // 	     */
+      // 	    string beliefID;
+      // 	    /**
+      // 	     * The feature type
+      // 	     */
+      // 	    string featureType;
+      // 	    /**
+      // 	    * The value to query
+      // 	    */
+      // 	    beliefmodels::autogen::featurecontent::FeatureValue featureValue;
+      // 	    /**
+      // 	     * Generic question to ask... if empty, belief information is used
+      // 	     */
+      // 	    string question;
 	    
 
-      };
+      // };
 
       /**
        * Move the robot to a particular place.
